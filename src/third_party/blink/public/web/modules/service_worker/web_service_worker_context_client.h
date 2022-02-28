@@ -31,8 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_CONTEXT_CLIENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_CONTEXT_CLIENT_H_
 
-#include <memory>
-
 #include "base/memory/scoped_refptr.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
@@ -42,7 +40,7 @@
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_fetch_context.h"
 #include "third_party/blink/public/platform/web_url.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-forward.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -52,14 +50,8 @@ namespace blink {
 
 class WebServiceWorkerContextProxy;
 class WebString;
-
-// Used to pass the mojom struct blink.mojom.FetchEventPreloadHandle across the
-// boundary between //content and Blink.
-struct WebFetchEventPreloadHandle {
-  CrossVariantMojoRemote<network::mojom::URLLoaderInterfaceBase> url_loader;
-  CrossVariantMojoReceiver<network::mojom::URLLoaderClientInterfaceBase>
-      url_loader_client_receiver;
-};
+class WebURLResponse;
+struct WebServiceWorkerError;
 
 // WebServiceWorkerContextClient is a "client" of a service worker execution
 // context. This interface is implemented by the embedder and allows the
@@ -166,7 +158,8 @@ class WebServiceWorkerContextClient {
   virtual void SetupNavigationPreload(
       int fetch_event_id,
       const WebURL& url,
-      std::unique_ptr<WebFetchEventPreloadHandle> preload_handle) {}
+      CrossVariantMojoReceiver<network::mojom::URLLoaderClientInterfaceBase>
+          preload_url_loader_client_receiver) {}
 
   // Called when we need to request to terminate this worker due to idle
   // timeout.
@@ -177,6 +170,27 @@ class WebServiceWorkerContextClient {
   // worker. This is called on the initiator thread.
   virtual scoped_refptr<blink::WebServiceWorkerFetchContext>
   CreateWorkerFetchContextOnInitiatorThread() = 0;
+
+  // Called to resolve the FetchEvent.preloadResponse promise.
+  virtual void OnNavigationPreloadResponse(
+      int fetch_event_id,
+      std::unique_ptr<WebURLResponse> response,
+      mojo::ScopedDataPipeConsumerHandle data_pipe) = 0;
+
+  // Called when the navigation preload request completed. Either
+  // OnNavigationPreloadComplete() or OnNavigationPreloadError() must be
+  // called to release the preload related resources.
+  virtual void OnNavigationPreloadComplete(int fetch_event_id,
+                                           base::TimeTicks completion_time,
+                                           int64_t encoded_data_length,
+                                           int64_t encoded_body_length,
+                                           int64_t decoded_body_length) = 0;
+
+  // Called when an error occurred while receiving the response of the
+  // navigation preload request.
+  virtual void OnNavigationPreloadError(
+      int fetch_event_id,
+      std::unique_ptr<WebServiceWorkerError> error) = 0;
 };
 
 }  // namespace blink

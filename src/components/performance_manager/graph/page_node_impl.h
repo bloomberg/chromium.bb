@@ -7,10 +7,9 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/types/pass_key.h"
@@ -47,7 +46,12 @@ class PageNodeImpl
                const GURL& visible_url,
                bool is_visible,
                bool is_audible,
-               base::TimeTicks visibility_change_time);
+               base::TimeTicks visibility_change_time,
+               PageState page_state);
+
+  PageNodeImpl(const PageNodeImpl&) = delete;
+  PageNodeImpl& operator=(const PageNodeImpl&) = delete;
+
   ~PageNodeImpl() override;
 
   // Returns the web contents associated with this page node. It is valid to
@@ -101,6 +105,7 @@ class PageNodeImpl
   const std::string& contents_mime_type() const;
   bool had_form_interaction() const;
   const absl::optional<freezing::FreezingVote>& freezing_vote() const;
+  PageState page_state() const;
 
   // Invoked to set/clear the opener of this page.
   void SetOpenerFrameNode(FrameNodeImpl* opener);
@@ -116,6 +121,7 @@ class PageNodeImpl
       uint64_t private_footprint_kb_estimate);
   void set_has_nonempty_beforeunload(bool has_nonempty_beforeunload);
   void set_freezing_vote(absl::optional<freezing::FreezingVote> freezing_vote);
+  void set_page_state(PageState page_state);
 
   void SetLifecycleStateForTesting(LifecycleState lifecycle_state) {
     SetLifecycleState(lifecycle_state);
@@ -189,6 +195,7 @@ class PageNodeImpl
   friend class PageNodeImplDescriber;
 
   // PageNode implementation.
+  PageState GetPageState() const override;
   const std::string& GetBrowserContextID() const override;
   const FrameNode* GetOpenerFrameNode() const override;
   const FrameNode* GetEmbedderFrameNode() const override;
@@ -275,12 +282,12 @@ class PageNodeImpl
   const std::string browser_context_id_;
 
   // The opener of this page, if there is one.
-  FrameNodeImpl* opener_frame_node_ GUARDED_BY_CONTEXT(sequence_checker_) =
-      nullptr;
+  raw_ptr<FrameNodeImpl> opener_frame_node_
+      GUARDED_BY_CONTEXT(sequence_checker_) = nullptr;
 
   // The embedder of this page, if there is one.
-  FrameNodeImpl* embedder_frame_node_ GUARDED_BY_CONTEXT(sequence_checker_) =
-      nullptr;
+  raw_ptr<FrameNodeImpl> embedder_frame_node_
+      GUARDED_BY_CONTEXT(sequence_checker_) = nullptr;
 
   // The way in which this page was embedded, if it was embedded.
   EmbeddingType embedding_type_ GUARDED_BY_CONTEXT(sequence_checker_) =
@@ -298,7 +305,8 @@ class PageNodeImpl
       is_audible_ GUARDED_BY_CONTEXT(sequence_checker_){false};
   // The loading state. This is driven by instrumentation in the browser
   // process.
-  ObservedProperty::NotifiesOnlyOnChanges<
+  ObservedProperty::NotifiesOnlyOnChangesWithPreviousValue<
+      LoadingState,
       LoadingState,
       &PageNodeObserver::OnLoadingStateChanged>
       loading_state_ GUARDED_BY_CONTEXT(sequence_checker_){
@@ -341,6 +349,12 @@ class PageNodeImpl
       absl::optional<freezing::FreezingVote>,
       &PageNodeObserver::OnFreezingVoteChanged>
       freezing_vote_ GUARDED_BY_CONTEXT(sequence_checker_);
+  // The state of this page.
+  ObservedProperty::NotifiesOnlyOnChangesWithPreviousValue<
+      PageState,
+      PageState,
+      &PageNodeObserver::OnPageStateChanged>
+      page_state_ GUARDED_BY_CONTEXT(sequence_checker_){PageState::kActive};
 
   // Storage for PageLoadTracker user data.
   std::unique_ptr<NodeAttachedData> page_load_tracker_data_
@@ -361,8 +375,6 @@ class PageNodeImpl
   base::WeakPtr<PageNodeImpl> weak_this_;
   base::WeakPtrFactory<PageNodeImpl> weak_factory_
       GUARDED_BY_CONTEXT(sequence_checker_){this};
-
-  DISALLOW_COPY_AND_ASSIGN(PageNodeImpl);
 };
 
 }  // namespace performance_manager

@@ -5,5 +5,10 @@
 import("//third_party/protobuf/proto_library.gni")
 
 proto_library("proto") {
-  sources = [ "share_history_message.proto" ]
+  sources = [
+    "share_history_message.proto",
+    "share_ranking_message.proto",
+    "share_target.proto",
+  ]
+  cc_generator_options = "lite=true:"
 }

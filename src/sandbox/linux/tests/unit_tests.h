@@ -7,7 +7,6 @@
 
 #include <sys/syscall.h>
 
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "sandbox/linux/tests/sandbox_test_runner_function_pointer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -129,6 +128,10 @@ class UnitTests {
                              const std::string& msg,
                              const void* aux);
 
+  UnitTests() = delete;
+  UnitTests(const UnitTests&) = delete;
+  UnitTests& operator=(const UnitTests&) = delete;
+
   // Runs a test inside a short-lived process. Do not call this function
   // directly. It is automatically invoked by SANDBOX_TEST(). Most sandboxing
   // functions make global irreversible changes to the execution environment
@@ -198,9 +201,6 @@ class UnitTests {
   static void DeathBySignal(int status,
                             const std::string& msg,
                             const void* aux);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(UnitTests);
 };
 
 }  // namespace

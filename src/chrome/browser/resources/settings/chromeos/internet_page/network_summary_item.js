@@ -9,11 +9,26 @@
  * section. See crbug.com/726380.
  */
 
-(function() {
+import '//resources/cr_components/chromeos/network/network_icon.m.js';
+import '//resources/cr_components/chromeos/network/network_siminfo.m.js';
+import '//resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import '//resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import '//resources/cr_elements/shared_vars_css.m.js';
+import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+
+import {getSimSlotCount, hasActiveCellularNetwork, isActiveSim, isConnectedToNonCellularNetwork} from '//resources/cr_components/chromeos/network/cellular_utils.m.js';
+import {CrPolicyNetworkBehaviorMojo} from '//resources/cr_components/chromeos/network/cr_policy_network_behavior_mojo.m.js';
+import {OncMojo} from '//resources/cr_components/chromeos/network/onc_mojo.m.js';
+import {CrPolicyIndicatorType} from '//resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
+import {assert, assertNotReached} from '//resources/js/assert.m.js';
+import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
+import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 
 const mojom = chromeos.networkConfig.mojom;
 
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'network-summary-item',
 
   behaviors: [
@@ -74,14 +89,6 @@ Polymer({
             loadTimeData.getBoolean('showTechnologyBadge');
       }
     },
-
-    /** @private */
-    isUpdatedCellularUiEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('updatedCellularActivationUi');
-      }
-    },
   },
 
   /*
@@ -113,20 +120,6 @@ Polymer({
     // No network state, use device state.
     const deviceState = this.deviceState;
     if (deviceState) {
-      // Type specific scanning or initialization states.
-      if (deviceState.type === mojom.NetworkType.kCellular &&
-          !this.isUpdatedCellularUiEnabled_) {
-        if (deviceState.scanning) {
-          return this.i18n('internetMobileSearching');
-        }
-        if (deviceState.deviceState === mojom.DeviceStateType.kUninitialized) {
-          return this.i18n('internetDeviceInitializing');
-        }
-        if (deviceState.deviceState === mojom.DeviceStateType.kDisabling) {
-          return this.i18n('internetDeviceDisabling');
-        }
-      }
-
       if (deviceState.type === mojom.NetworkType.kTether) {
         if (deviceState.deviceState === mojom.DeviceStateType.kUninitialized) {
           return this.i18n('tetherEnableBluetooth');
@@ -172,17 +165,6 @@ Polymer({
       return name ? this.i18n('networkListItemConnectingTo', name) :
                     this.i18n('networkListItemConnecting');
     }
-    if (networkState.type === mojom.NetworkType.kCellular && deviceState &&
-        !this.isUpdatedCellularUiEnabled_) {
-      // If there is no cellular SIM and the updated UI flag is disabled,
-      // simply display 'Off'. See b/162564761 for details.
-      if (deviceState.simAbsent) {
-        return this.i18n('deviceOff');
-      }
-      if (deviceState.scanning) {
-        return this.i18n('internetMobileSearching');
-      }
-    }
     return this.i18n('networkListItemNotConnected');
   },
 
@@ -225,15 +207,11 @@ Polymer({
     }
 
     const {pSimSlots, eSimSlots} = getSimSlotCount(deviceState);
-    if (this.isUpdatedCellularUiEnabled_) {
-      if (eSimSlots > 0) {
-        // Do not show simInfo if |updatedCellularActivationUi| flag is enabled
-        // and if we are using an eSIM enabled device.
-        return false;
-      }
-      return this.simLocked_(deviceState);
+    if (eSimSlots > 0) {
+      // Do not show simInfo if we are using an eSIM enabled device.
+      return false;
     }
-    return this.simLockedOrAbsent_(deviceState);
+    return this.simLocked_(deviceState);
   },
 
   /**
@@ -255,7 +233,7 @@ Polymer({
    */
   shouldShowLockedWarningMessage_(deviceState) {
     if (!deviceState || deviceState.type !== mojom.NetworkType.kCellular ||
-        !deviceState.simLockStatus || !this.isUpdatedCellularUiEnabled_) {
+        !deviceState.simLockStatus) {
       return false;
     }
 
@@ -266,21 +244,6 @@ Polymer({
     }
 
     return !!deviceState.simLockStatus.lockType;
-  },
-
-  /**
-   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
-   * @return {boolean}
-   * @private
-   */
-  simLockedOrAbsent_(deviceState) {
-    if (!deviceState) {
-      return false;
-    }
-    if (deviceState.simAbsent) {
-      return true;
-    }
-    return this.simLocked_(deviceState);
   },
 
   /**
@@ -491,23 +454,16 @@ Polymer({
     }
 
     if (type === mojom.NetworkType.kCellular) {
-      if (this.isUpdatedCellularUiEnabled_) {
-        if (OncMojo.deviceIsInhibited(deviceState)) {
-          // The "Mobile data" subpage should be shown if the device state is
-          // inhibited and the flag is enabled.
-          return true;
-        }
-        // When network type is Cellular and |updatedCellularActivationUi| is
-        // enabled, always show "Mobile data" subpage, when at least one eSIM
-        // or pSIM slot is available
-        const {pSimSlots, eSimSlots} = getSimSlotCount(deviceState);
-        if (eSimSlots > 0 || pSimSlots > 0) {
-          return true;
-        }
-      } else if (this.simLockedOrAbsent_(deviceState)) {
-        // No subpage should be shown if the SIM is locked/absent. The user
-        // should unlock their SIM before a subpage is possible.
-        return false;
+      if (OncMojo.deviceIsInhibited(deviceState)) {
+        // The "Mobile data" subpage should be shown if the device state is
+        // inhibited.
+        return true;
+      }
+      // When network type is Cellular, always show "Mobile data" subpage, when
+      // at least one eSIM or pSIM slot is available
+      const {pSimSlots, eSimSlots} = getSimSlotCount(deviceState);
+      if (eSimSlots > 0 || pSimSlots > 0) {
+        return true;
       }
     }
 
@@ -652,4 +608,3 @@ Polymer({
     return this.i18n('OncType' + OncMojo.getNetworkTypeString(type));
   },
 });
-})();

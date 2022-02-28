@@ -8,8 +8,9 @@
 #include <cstddef>
 
 #include "cc/paint/paint_op_buffer.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 
 namespace cc {
 
@@ -31,6 +32,22 @@ FakeContentLayerClient::ImageData::ImageData(PaintImage img,
 FakeContentLayerClient::ImageData::ImageData(const ImageData& other) = default;
 
 FakeContentLayerClient::ImageData::~ImageData() = default;
+
+FakeContentLayerClient::SkottieData::SkottieData(
+    scoped_refptr<SkottieWrapper> skottie,
+    const gfx::Rect& dst,
+    float t,
+    SkottieFrameDataMap images)
+    : skottie(std::move(skottie)), dst(dst), t(t), images(std::move(images)) {}
+
+FakeContentLayerClient::SkottieData::SkottieData(const SkottieData& other) =
+    default;
+
+FakeContentLayerClient::SkottieData&
+FakeContentLayerClient::SkottieData::operator=(const SkottieData& other) =
+    default;
+
+FakeContentLayerClient::SkottieData::~SkottieData() = default;
 
 FakeContentLayerClient::FakeContentLayerClient() = default;
 
@@ -84,6 +101,14 @@ FakeContentLayerClient::PaintContentsToDisplayList() {
     }
   }
 
+  for (const SkottieData& skottie_data : skottie_data_) {
+    display_list->StartPaint();
+    display_list->push<DrawSkottieOp>(skottie_data.skottie,
+                                      gfx::RectToSkRect(skottie_data.dst),
+                                      skottie_data.t, skottie_data.images);
+    display_list->EndPaintOfUnpaired(PaintableRegion());
+  }
+
   if (contains_slow_paths_) {
     // Add 6 slow paths, passing the reporting threshold.
     SkPath path;
@@ -120,7 +145,7 @@ FakeContentLayerClient::PaintContentsToDisplayList() {
   if (has_draw_text_op_) {
     display_list->StartPaint();
     display_list->push<DrawTextBlobOp>(
-        SkTextBlob::MakeFromString("any", SkFont()), 0, 0, PaintFlags());
+        SkTextBlob::MakeFromString("any", SkFont()), 0.0f, 0.0f, PaintFlags());
     display_list->EndPaintOfUnpaired(PaintableRegion());
   }
 

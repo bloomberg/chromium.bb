@@ -33,49 +33,94 @@ using TP = ThemeProperties;
 // unpacked on the filesystem.)
 constexpr char kDefaultThemeGalleryID[] = "hkacjpbfdknhflllbcmjibkdeoafencn";
 
+// Returns an array of light and dark mode versions of the given color id
+// Ex: [light mode, dark mode]
 const std::array<SkColor, 2> GetTabGroupColors(int color_id) {
+  // Depending on UI variation enabled, dark mode saved group chip colors are
+  // calculated by blending the default dark mode toolbar color with the tab
+  // strip group colors at 24% or 48% alpha.
+  const SkColor default_dark_toolbar_color =
+      TP::GetDefaultColor(TP::COLOR_TOOLBAR, false, true);
+  float tab_group_chip_alpha = 0.24f;
+
+  // Flat version of dark mode colors used in bookmarks bar to fill
+  // the buttons.
+  const SkColor kFlatGrey = SkColorSetRGB(0x5D, 0x5E, 0x62);
+  const SkColor kFlatBlue = SkColorSetRGB(0x49, 0x54, 0x68);
+  const SkColor kFlatRed = SkColorSetRGB(0x62, 0x4A, 0x4B);
+  const SkColor kFlatGreen = SkColorSetRGB(0x47, 0x59, 0x50);
+  const SkColor kFlatYellow = SkColorSetRGB(0x65, 0x5C, 0x44);
+  const SkColor kFlatCyan = SkColorSetRGB(0x45, 0x5D, 0x65);
+  const SkColor kFlatPurple = SkColorSetRGB(0x58, 0x4A, 0x68);
+  const SkColor kFlatPink = SkColorSetRGB(0x65, 0x4A, 0x5D);
+  const SkColor kFlatOrange = color_utils::AlphaBlend(
+      gfx::kGoogleOrange300, default_dark_toolbar_color, tab_group_chip_alpha);
+
   switch (color_id) {
     case TP::COLOR_TAB_GROUP_CONTEXT_MENU_BLUE:
     case TP::COLOR_TAB_GROUP_DIALOG_BLUE:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_BLUE:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_BLUE:
       return {gfx::kGoogleBlue600, gfx::kGoogleBlue300};
+    case TP::COLOR_TAB_GROUP_BOOKMARK_BAR_BLUE:
+      return {gfx::kGoogleBlue050, kFlatBlue};
     case TP::COLOR_TAB_GROUP_CONTEXT_MENU_RED:
     case TP::COLOR_TAB_GROUP_DIALOG_RED:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_RED:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_RED:
       return {gfx::kGoogleRed600, gfx::kGoogleRed300};
+    case TP::COLOR_TAB_GROUP_BOOKMARK_BAR_RED:
+      return {gfx::kGoogleRed050, kFlatRed};
     case TP::COLOR_TAB_GROUP_CONTEXT_MENU_YELLOW:
     case TP::COLOR_TAB_GROUP_DIALOG_YELLOW:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_YELLOW:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_YELLOW:
-      return {gfx::kGoogleYellow900, gfx::kGoogleYellow300};
+      return {gfx::kGoogleYellow600, gfx::kGoogleYellow300};
+    case TP::COLOR_TAB_GROUP_BOOKMARK_BAR_YELLOW:
+      return {gfx::kGoogleYellow050, kFlatYellow};
     case TP::COLOR_TAB_GROUP_CONTEXT_MENU_GREEN:
     case TP::COLOR_TAB_GROUP_DIALOG_GREEN:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_GREEN:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_GREEN:
-      return {gfx::kGoogleGreen600, gfx::kGoogleGreen300};
+      return {gfx::kGoogleGreen700, gfx::kGoogleGreen300};
+    case TP::COLOR_TAB_GROUP_BOOKMARK_BAR_GREEN:
+      return {gfx::kGoogleGreen050, kFlatGreen};
     case TP::COLOR_TAB_GROUP_CONTEXT_MENU_PINK:
     case TP::COLOR_TAB_GROUP_DIALOG_PINK:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_PINK:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_PINK:
       return {gfx::kGooglePink700, gfx::kGooglePink300};
+    case TP::COLOR_TAB_GROUP_BOOKMARK_BAR_PINK:
+      return {gfx::kGooglePink050, kFlatPink};
     case TP::COLOR_TAB_GROUP_CONTEXT_MENU_PURPLE:
     case TP::COLOR_TAB_GROUP_DIALOG_PURPLE:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_PURPLE:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_PURPLE:
-      return {gfx::kGooglePurple600, gfx::kGooglePurple200};
+      return {gfx::kGooglePurple500, gfx::kGooglePurple300};
+    case TP::COLOR_TAB_GROUP_BOOKMARK_BAR_PURPLE:
+      return {gfx::kGooglePurple050, kFlatPurple};
     case TP::COLOR_TAB_GROUP_CONTEXT_MENU_CYAN:
     case TP::COLOR_TAB_GROUP_DIALOG_CYAN:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_CYAN:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_CYAN:
       return {gfx::kGoogleCyan900, gfx::kGoogleCyan300};
+    case TP::COLOR_TAB_GROUP_BOOKMARK_BAR_CYAN:
+      return {gfx::kGoogleCyan050, kFlatCyan};
+    case TP::COLOR_TAB_GROUP_CONTEXT_MENU_ORANGE:
+    case TP::COLOR_TAB_GROUP_DIALOG_ORANGE:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_ORANGE:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_ORANGE:
+      return {gfx::kGoogleOrange400, gfx::kGoogleOrange300};
+    case TP::COLOR_TAB_GROUP_BOOKMARK_BAR_ORANGE:
+      return {gfx::kGoogleOrange050, kFlatOrange};
+    case TP::COLOR_TAB_GROUP_BOOKMARK_BAR_GREY:
+      return {gfx::kGoogleGrey100, kFlatGrey};
     case TP::COLOR_TAB_GROUP_CONTEXT_MENU_GREY:
     case TP::COLOR_TAB_GROUP_DIALOG_GREY:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_GREY:
     case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_GREY:
     default:
-      return {gfx::kGoogleGrey700, gfx::kGoogleGrey400};
+      return {gfx::kGoogleGrey700, gfx::kGoogleGrey300};
   }
 }
 
@@ -200,7 +245,7 @@ int ThemeHelper::GetDisplayProperty(int id,
 base::RefCountedMemory* ThemeHelper::GetRawData(
     int id,
     const CustomThemeSupplier* theme_supplier,
-    ui::ScaleFactor scale_factor) {
+    ui::ResourceScaleFactor scale_factor) {
   // Check to see whether we should substitute some images.
   int ntp_alternate =
       GetDisplayProperty(TP::NTP_LOGO_ALTERNATE, theme_supplier);
@@ -213,7 +258,7 @@ base::RefCountedMemory* ThemeHelper::GetRawData(
   if (!data) {
     data =
         ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
-            id, ui::SCALE_FACTOR_100P);
+            id, ui::k100Percent);
   }
 
   return data;
@@ -303,7 +348,7 @@ SkColor ThemeHelper::GetDefaultColor(
     bool incognito,
     const CustomThemeSupplier* theme_supplier) const {
   if (TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_GREY <= id &&
-      id <= TP::COLOR_TAB_GROUP_CONTEXT_MENU_CYAN)
+      id <= TP::MAX_COLOR_BOOKMARK_BAR)
     return GetTabGroupColor(id, incognito, theme_supplier);
 
   // For backward compat with older themes, some newer colors are generated from
@@ -313,6 +358,18 @@ SkColor ThemeHelper::GetDefaultColor(
                     incognito, theme_supplier);
   };
   switch (id) {
+    case TP::COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND: {
+      return GetColor(TP::COLOR_DOWNLOAD_SHELF, incognito, theme_supplier,
+                      nullptr);
+    }
+    case TP::COLOR_DOWNLOAD_SHELF_BUTTON_TEXT: {
+      const SkColor download_shelf_color =
+          GetColor(TP::COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND, incognito,
+                   theme_supplier, nullptr);
+      return color_utils::PickGoogleColor(
+          gfx::kGoogleBlue500, download_shelf_color,
+          color_utils::kMinimumReadableContrastRatio);
+    }
     case TP::COLOR_OMNIBOX_BACKGROUND: {
       // TODO(http://crbug.com/878664): Enable for all cases.
       if (!IsCustomTheme(theme_supplier))
@@ -356,7 +413,7 @@ SkColor ThemeHelper::GetDefaultColor(
       // The active color is overridden in GtkUi.
       return SkColorSetA(
           GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, incognito, theme_supplier),
-          0x6E);
+          gfx::kGoogleGreyAlpha500);
     case TP::COLOR_LOCATION_BAR_BORDER:
       return SkColorSetA(SK_ColorBLACK, 0x4D);
     case TP::COLOR_TOOLBAR_TOP_SEPARATOR:
@@ -383,9 +440,9 @@ SkColor ThemeHelper::GetDefaultColor(
           GetColor(TP::COLOR_TOOLBAR, incognito, theme_supplier));
     }
     case TP::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
-      if (IsDefaultTheme(theme_supplier))
-        break;
-      return GetColor(TP::COLOR_LOCATION_BAR_BORDER, incognito, theme_supplier);
+      return SkColorSetA(
+          GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, incognito, theme_supplier),
+          0x3A);
     case TP::COLOR_NTP_TEXT_LIGHT:
       return IncreaseLightness(
           GetColor(TP::COLOR_NTP_TEXT, incognito, theme_supplier), 0.40);
@@ -414,6 +471,13 @@ SkColor ThemeHelper::GetDefaultColor(
                            ? ui::NativeTheme::kColorId_ThrobberSpinningColor
                            : ui::NativeTheme::kColorId_ThrobberWaitingColor,
                        ui::NativeTheme::GetInstanceForNativeUi());
+    }
+    case TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE:
+    case TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE: {
+      return GetColor(id == TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE
+                          ? TP::COLOR_FRAME_ACTIVE
+                          : TP::COLOR_FRAME_INACTIVE,
+                      incognito, theme_supplier);
     }
   }
 
@@ -636,9 +700,7 @@ absl::optional<ThemeHelper::OmniboxColor> ThemeHelper::GetOmniboxColorImpl(
         {{dark ? gfx::kGoogleBlue050 : gfx::kGoogleBlue900, false}});
   };
   const auto results_bg_selected_color = [&]() {
-    return blend_toward_max_contrast(
-        results_bg_color(),
-        OmniboxFieldTrial::IsRefinedFocusStateEnabled() ? 0x1A : 0x29);
+    return blend_toward_max_contrast(results_bg_color(), 0x1A);
   };
   const auto blend_with_clamped_contrast = [&](OmniboxColor bg) {
     return blend_for_min_contrast(fg, fg, blend_for_min_contrast(bg, bg));
@@ -680,8 +742,6 @@ absl::optional<ThemeHelper::OmniboxColor> ThemeHelper::GetOmniboxColorImpl(
       return url_color(results_bg_hovered_color());
     case TP::COLOR_OMNIBOX_RESULTS_URL_SELECTED:
       return url_color(results_bg_selected_color());
-    case TP::COLOR_OMNIBOX_RESULTS_FOCUS_BAR:
-      return {{dark ? gfx::kGoogleBlue300 : gfx::kGoogleBlue600, false}};
     case TP::COLOR_OMNIBOX_RESULTS_BUTTON_BORDER:
       return blend_toward_max_contrast(bg, gfx::kGoogleGreyAlpha400);
     case TP::COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT:
@@ -703,7 +763,7 @@ SkColor ThemeHelper::GetTabGroupColor(
     bool incognito,
     const CustomThemeSupplier* theme_supplier) const {
   // Deal with tab group colors in the tabstrip.
-  if (id <= TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_CYAN) {
+  if (id <= TP::MAX_COLOR_TABSTRIP_INACTIVE) {
     int tab_color_id = id < TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_GREY
                            ? TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE
                            : TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE;
@@ -719,5 +779,17 @@ SkColor ThemeHelper::GetTabGroupColor(
   }
 
   // Deal with the rest of the tab group colors.
-  return GetTabGroupColors(id)[UseDarkModeColors(theme_supplier)];
+  bool use_dark_mode_colors;
+  if (id >= TP::COLOR_TAB_GROUP_DIALOG_GREY &&
+      id <= TP::MAX_COLOR_BOOKMARK_BAR) {
+    // To support custom themes, assume that the dark mode palette is more
+    // appropriate for bookmark chips, tab group dialog bubble, and context sub
+    // menu when the bookmark bar appears to be light text on dark bookmark bar.
+    bool has_custom_color = true;
+    use_dark_mode_colors = !color_utils::IsDark(GetColor(
+        TP::COLOR_BOOKMARK_TEXT, incognito, theme_supplier, &has_custom_color));
+  } else {
+    use_dark_mode_colors = UseDarkModeColors(theme_supplier);
+  }
+  return GetTabGroupColors(id)[incognito || use_dark_mode_colors];
 }

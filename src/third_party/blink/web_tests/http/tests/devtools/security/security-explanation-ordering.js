@@ -38,11 +38,12 @@
         Security.SecurityModel.Events.VisibleSecurityStateChanged,
         pageVisibleSecurityState);
 
-  var request = new SDK.NetworkRequest(0, 'http://foo.test', 'https://foo.test', 0, 0, null);
+  var request = SDK.NetworkRequest.create(
+      0, 'http://foo.test', 'https://foo.test', 0, 0, null);
   SecurityTestRunner.dispatchRequestFinished(request);
 
   var explanations =
-      Security.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName('security-explanation');
+      Security.SecurityPanel.instance().mainView.contentElement.getElementsByClassName('security-explanation');
   for (var i = 0; i < explanations.length; i++)
     TestRunner.dumpDeepInnerHTML(explanations[i]);
   TestRunner.completeTest();

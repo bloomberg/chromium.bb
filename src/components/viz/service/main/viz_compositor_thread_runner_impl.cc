@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/message_loop/message_pump_type.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
@@ -30,20 +30,8 @@
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "ui/gfx/switches.h"
 
-#if BUILDFLAG(USE_VIZ_DEVTOOLS)
-#include "components/ui_devtools/css_agent.h"
-#include "components/ui_devtools/devtools_server.h"
-#include "components/ui_devtools/viz/dom_agent_viz.h"
-#include "components/ui_devtools/viz/overlay_agent_viz.h"
-#endif
-
 #if defined(USE_OZONE)
-#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
-#endif
-
-#if defined(USE_X11)
-#include "ui/base/x/x11_ui_thread.h"
 #endif
 
 namespace viz {
@@ -66,18 +54,10 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
   std::unique_ptr<base::Thread> thread;
   base::Thread::Options thread_options;
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
-    auto* platform = ui::OzonePlatform::GetInstance();
-    thread_options.message_pump_type =
-        platform->GetPlatformProperties().message_pump_type_for_viz_compositor;
-    thread = std::make_unique<base::Thread>(kThreadName);
-  }
-#endif
-#if defined(USE_X11)
-  if (!thread) {
-    thread = std::make_unique<ui::X11UiThread>(kThreadName);
-    thread_options.message_pump_type = base::MessagePumpType::UI;
-  }
+  auto* platform = ui::OzonePlatform::GetInstance();
+  thread_options.message_pump_type =
+      platform->GetPlatformProperties().message_pump_type_for_viz_compositor;
+  thread = std::make_unique<base::Thread>(kThreadName);
 #endif
   if (!thread)
     thread = std::make_unique<base::Thread>(kThreadName);
@@ -99,7 +79,7 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
   thread_options.priority = thread_priority;
 #endif  // !defined(OS_APPLE)
 
-  CHECK(thread->StartWithOptions(thread_options));
+  CHECK(thread->StartWithOptions(std::move(thread_options)));
 
   // Setup tracing sampler profiler as early as possible.
   thread->task_runner()->PostTask(
@@ -145,7 +125,7 @@ void VizCompositorThreadRunnerImpl::CreateFrameSinkManager(
     mojom::FrameSinkManagerParamsPtr params,
     gpu::CommandBufferTaskExecutor* task_executor,
     GpuServiceImpl* gpu_service,
-    gfx::RenderingPipeline* gpu_pipeline) {
+    HintSessionFactory* hint_session_factory) {
   // All of the unretained objects are owned on the GPU thread and destroyed
   // after VizCompositorThread has been shutdown.
   task_runner_->PostTask(
@@ -154,27 +134,14 @@ void VizCompositorThreadRunnerImpl::CreateFrameSinkManager(
                                 base::Unretained(this), std::move(params),
                                 base::Unretained(task_executor),
                                 base::Unretained(gpu_service),
-                                base::Unretained(gpu_pipeline)));
+                                base::Unretained(hint_session_factory)));
 }
-
-#if BUILDFLAG(USE_VIZ_DEVTOOLS)
-void VizCompositorThreadRunnerImpl::CreateVizDevTools(
-    mojom::VizDevToolsParamsPtr params) {
-  // It is safe to use Unretained(this) because |this| owns the |task_runner_|,
-  // and will outlive it.
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &VizCompositorThreadRunnerImpl::CreateVizDevToolsOnCompositorThread,
-          base::Unretained(this), std::move(params)));
-}
-#endif
 
 void VizCompositorThreadRunnerImpl::CreateFrameSinkManagerOnCompositorThread(
     mojom::FrameSinkManagerParamsPtr params,
     gpu::CommandBufferTaskExecutor* task_executor,
     GpuServiceImpl* gpu_service,
-    gfx::RenderingPipeline* gpu_pipeline) {
+    HintSessionFactory* hint_session_factory) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!frame_sink_manager_);
   if (features::IsUsingSkiaRenderer())
@@ -223,48 +190,14 @@ void VizCompositorThreadRunnerImpl::CreateFrameSinkManagerOnCompositorThread(
   init_params.log_capture_pipeline_in_webrtc =
       features::ShouldWebRtcLogCapturePipeline();
   init_params.debug_renderer_settings = params->debug_renderer_settings;
-  init_params.gpu_pipeline = gpu_pipeline;
+  init_params.host_process_id = gpu_service->host_process_id();
+  init_params.hint_session_factory = hint_session_factory;
 
   frame_sink_manager_ = std::make_unique<FrameSinkManagerImpl>(init_params);
   frame_sink_manager_->BindAndSetClient(
       std::move(params->frame_sink_manager), nullptr,
       std::move(params->frame_sink_manager_client));
-
-#if BUILDFLAG(USE_VIZ_DEVTOOLS)
-  if (pending_viz_dev_tools_params_)
-    InitVizDevToolsOnCompositorThread(std::move(pending_viz_dev_tools_params_));
-#endif
 }
-
-#if BUILDFLAG(USE_VIZ_DEVTOOLS)
-void VizCompositorThreadRunnerImpl::CreateVizDevToolsOnCompositorThread(
-    mojom::VizDevToolsParamsPtr params) {
-  if (!frame_sink_manager_) {
-    DCHECK(!pending_viz_dev_tools_params_);
-    pending_viz_dev_tools_params_ = std::move(params);
-    return;
-  }
-  InitVizDevToolsOnCompositorThread(std::move(params));
-}
-
-void VizCompositorThreadRunnerImpl::InitVizDevToolsOnCompositorThread(
-    mojom::VizDevToolsParamsPtr params) {
-  DCHECK(frame_sink_manager_);
-  devtools_server_ = ui_devtools::UiDevToolsServer::CreateForViz(
-      std::move(params->server_socket), params->server_port);
-  auto dom_agent =
-      std::make_unique<ui_devtools::DOMAgentViz>(frame_sink_manager_.get());
-  auto css_agent = std::make_unique<ui_devtools::CSSAgent>(dom_agent.get());
-  auto overlay_agent =
-      std::make_unique<ui_devtools::OverlayAgentViz>(dom_agent.get());
-  auto devtools_client = std::make_unique<ui_devtools::UiDevToolsClient>(
-      "VizDevToolsClient", devtools_server_.get());
-  devtools_client->AddAgent(std::move(dom_agent));
-  devtools_client->AddAgent(std::move(css_agent));
-  devtools_client->AddAgent(std::move(overlay_agent));
-  devtools_server_->AttachClient(std::move(devtools_client));
-}
-#endif
 
 void VizCompositorThreadRunnerImpl::TearDownOnCompositorThread() {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -274,9 +207,6 @@ void VizCompositorThreadRunnerImpl::TearDownOnCompositorThread() {
         server_shared_bitmap_manager_.get());
   }
 
-#if BUILDFLAG(USE_VIZ_DEVTOOLS)
-  devtools_server_.reset();
-#endif
   frame_sink_manager_.reset();
   output_surface_provider_.reset();
   server_shared_bitmap_manager_.reset();

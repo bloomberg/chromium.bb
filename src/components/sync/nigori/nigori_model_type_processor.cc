@@ -10,11 +10,14 @@
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
+#include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/forwarding_model_type_processor.h"
 #include "components/sync/engine/model_type_processor_metrics.h"
 #include "components/sync/model/processor_entity.h"
 #include "components/sync/model/type_entities_count.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
+#include "components/sync/protocol/entity_metadata.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 
@@ -251,7 +254,9 @@ void NigoriModelTypeProcessor::GetAllNodesForDebugging(
   std::unique_ptr<base::DictionaryValue> root_node;
   root_node = entity_data->ToDictionaryValue();
   if (entity_) {
-    root_node->Set("metadata", EntityMetadataToValue(entity_->metadata()));
+    root_node->SetKey("metadata",
+                      base::Value::FromUniquePtrValue(
+                          EntityMetadataToValue(entity_->metadata())));
   }
 
   // Function isTypeRootNode in sync_node_browser.js use PARENT_ID and
@@ -319,7 +324,6 @@ void NigoriModelTypeProcessor::Put(std::unique_ptr<EntityData> entity_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(entity_data);
   DCHECK(!entity_data->is_deleted());
-  DCHECK(entity_data->is_folder);
   DCHECK(!entity_data->name.empty());
   DCHECK(!entity_data->specifics.has_encrypted());
   DCHECK_EQ(NIGORI, GetModelTypeFromSpecifics(entity_data->specifics));

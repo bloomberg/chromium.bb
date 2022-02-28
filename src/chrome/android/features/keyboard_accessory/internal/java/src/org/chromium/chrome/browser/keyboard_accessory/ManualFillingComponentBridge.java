@@ -1,3 +1,4 @@
+
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -17,11 +18,13 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.FooterCommand;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.OptionToggle;
+import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.PromoCodeInfo;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 class ManualFillingComponentBridge {
     private final SparseArray<PropertyProvider<AccessorySheetData>> mProviders =
@@ -146,6 +149,13 @@ class ManualFillingComponentBridge {
     }
 
     @CalledByNative
+    private void showAccessorySheetTab(int tabType) {
+        if (getManualFillingComponent() != null) {
+            getManualFillingComponent().showAccessorySheetTab(tabType);
+        }
+    }
+
+    @CalledByNative
     private void addOptionToggleToAccessorySheetData(Object objAccessorySheetData,
             String displayText, boolean enabled, @AccessoryAction int accessoryAction) {
         ((AccessorySheetData) objAccessorySheetData)
@@ -158,16 +168,16 @@ class ManualFillingComponentBridge {
 
     @CalledByNative
     private Object addUserInfoToAccessorySheetData(
-            Object objAccessorySheetData, String origin, boolean isPslMatch) {
-        UserInfo userInfo = new UserInfo(origin, isPslMatch);
+            Object objAccessorySheetData, String origin, boolean isExactMatch, GURL iconUrl) {
+        UserInfo userInfo = new UserInfo(origin, isExactMatch, iconUrl);
         ((AccessorySheetData) objAccessorySheetData).getUserInfoList().add(userInfo);
         return userInfo;
     }
 
     @CalledByNative
     private void addFieldToUserInfo(Object objUserInfo, @AccessoryTabType int sheetType,
-            String displayText, String a11yDescription, String guid, boolean isObfuscated,
-            boolean selectable) {
+            String displayText, String textToFill, String a11yDescription, String guid,
+            boolean isObfuscated, boolean selectable) {
         Callback<UserInfoField> callback = null;
         if (selectable) {
             callback = (field) -> {
@@ -180,7 +190,40 @@ class ManualFillingComponentBridge {
         }
         ((UserInfo) objUserInfo)
                 .getFields()
-                .add(new UserInfoField(displayText, a11yDescription, guid, isObfuscated, callback));
+                .add(new UserInfoField.Builder()
+                                .setDisplayText(displayText)
+                                .setTextToFill(textToFill)
+                                .setA11yDescription(a11yDescription)
+                                .setId(guid)
+                                .setIsObfuscated(isObfuscated)
+                                .setCallback(callback)
+                                .build());
+    }
+
+    @CalledByNative
+    private void addPromoCodeInfoToAccessorySheetData(Object objAccessorySheetData,
+            @AccessoryTabType int sheetType, String displayText, String textToFill,
+            String a11yDescription, String guid, boolean isObfuscated, String detailsText) {
+        PromoCodeInfo promoCodeInfo = new PromoCodeInfo();
+        ((AccessorySheetData) objAccessorySheetData).getPromoCodeInfoList().add(promoCodeInfo);
+
+        Callback<UserInfoField> callback = null;
+        callback = (field) -> {
+            assert mNativeView != 0 : "Controller was destroyed but the bridge wasn't!";
+            ManualFillingMetricsRecorder.recordSuggestionSelected(sheetType, field.isObfuscated());
+            ManualFillingComponentBridgeJni.get().onFillingTriggered(
+                    mNativeView, ManualFillingComponentBridge.this, sheetType, field);
+        };
+        ((PromoCodeInfo) promoCodeInfo)
+                .setPromoCode(new UserInfoField.Builder()
+                                      .setDisplayText(displayText)
+                                      .setTextToFill(textToFill)
+                                      .setA11yDescription(a11yDescription)
+                                      .setId(guid)
+                                      .setIsObfuscated(isObfuscated)
+                                      .setCallback(callback)
+                                      .build());
+        ((PromoCodeInfo) promoCodeInfo).setDetailsText(detailsText);
     }
 
     @CalledByNative

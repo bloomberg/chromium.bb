@@ -11,12 +11,12 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/security_token_pin/constants.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/certificate_provider/security_token_pin_dialog_host.h"
 #include "chrome/browser/ash/certificate_provider/security_token_pin_dialog_host_popup_impl.h"
-#include "chromeos/components/security_token_pin/constants.h"
 #include "components/account_id/account_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -57,7 +57,7 @@ class PinDialogManager final {
 
   // Removes the specified sign request, aborting both the current and the
   // future PIN dialogs related to it.
-  void AbortSignRequest(const std::string& extension_id, int sign_request_id);
+  void RemoveSignRequest(const std::string& extension_id, int sign_request_id);
 
   // Creates and displays a new PIN dialog, or reuses the old dialog with just
   // updating the parameters if active one exists.

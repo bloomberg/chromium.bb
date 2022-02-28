@@ -13,13 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for `tf.data.Dataset.unbatch()`."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 import numpy as np
 
+from tensorflow.python.data.kernel_tests import checkpoint_test_base
 from tensorflow.python.data.kernel_tests import test_base
 from tensorflow.python.data.ops import dataset_ops
 from tensorflow.python.framework import combinations
@@ -222,6 +219,34 @@ class UnbatchTest(test_base.DatasetTestBase, parameterized.TestCase):
     dataset = dataset_ops.Dataset.from_tensors(
         (list(range(10)), None)).unbatch().map(lambda x, y: x)
     self.assertDatasetProduces(dataset, expected_output=range(10))
+
+  @combinations.generate(test_base.default_test_combinations())
+  def testName(self):
+    dataset = dataset_ops.Dataset.from_tensors([42]).unbatch(name="unbatch")
+    self.assertDatasetProduces(dataset, [42])
+
+
+class UnbatchCheckpointTest(checkpoint_test_base.CheckpointTestBase,
+                            parameterized.TestCase):
+
+  def build_dataset(self, multiplier=15.0, tensor_slice_len=2, batch_size=2):
+    components = (np.arange(tensor_slice_len), np.array([[1, 2, 3]]) *
+                  np.arange(tensor_slice_len)[:, np.newaxis],
+                  np.array(multiplier) * np.arange(tensor_slice_len))
+
+    return dataset_ops.Dataset.from_tensor_slices(components).batch(
+        batch_size).unbatch()
+
+  @combinations.generate(
+      combinations.times(test_base.default_test_combinations(),
+                         checkpoint_test_base.default_test_combinations()))
+  def test(self, verify_fn):
+    tensor_slice_len = 8
+    batch_size = 2
+    num_outputs = tensor_slice_len
+    verify_fn(self,
+              lambda: self.build_dataset(15.0, tensor_slice_len, batch_size),
+              num_outputs)
 
 
 if __name__ == "__main__":

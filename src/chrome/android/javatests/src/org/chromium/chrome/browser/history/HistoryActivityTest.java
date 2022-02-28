@@ -59,6 +59,7 @@ import org.chromium.components.browser_ui.widget.RecyclerViewTestUtils;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemViewHolder;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -78,6 +79,7 @@ import java.util.concurrent.TimeUnit;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class HistoryActivityTest {
+    // TODO(crbug.com/1238144): Migrate to BaseActivityTestRule.
     @Rule
     public final IntentsTestRule<HistoryActivity> mActivityTestRule =
             new IntentsTestRule<>(HistoryActivity.class, false, false);
@@ -115,7 +117,7 @@ public class HistoryActivityTest {
         mHistoryProvider.addItem(mItem1);
         mHistoryProvider.addItem(mItem2);
 
-        HistoryManager.setProviderForTests(mHistoryProvider);
+        HistoryContentManager.setProviderForTests(mHistoryProvider);
 
         launchHistoryActivity();
         HistoryTestUtils.setupHistoryTestHeaders(mAdapter, mTestObserver);
@@ -126,11 +128,13 @@ public class HistoryActivityTest {
     private void launchHistoryActivity() {
         HistoryActivity activity = mActivityTestRule.launchActivity(null);
         mHistoryManager = activity.getHistoryManagerForTests();
-        mAdapter = mHistoryManager.getAdapterForTests();
+        mAdapter = mHistoryManager.getContentManagerForTests().getAdapter();
+        mRecyclerView = mHistoryManager.getContentManagerForTests().getRecyclerView();
         mTestObserver = new TestObserver();
-        mHistoryManager.getSelectionDelegateForTests().addObserver(mTestObserver);
-        mAdapter.registerAdapterDataObserver(mTestObserver);
-        mRecyclerView = activity.findViewById(R.id.selectable_list_recycler_view);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mHistoryManager.getSelectionDelegateForTests().addObserver(mTestObserver);
+            mAdapter.registerAdapterDataObserver(mTestObserver);
+        });
     }
 
     @Test
@@ -249,14 +253,16 @@ public class HistoryActivityTest {
     @Test
     @SmallTest
     public void testOpenItemIntent() {
-        Intent intent = mHistoryManager.getOpenUrlIntent(mItem1.getUrl(), null, false);
+        Intent intent = mHistoryManager.getContentManagerForTests().getOpenUrlIntent(
+                mItem1.getUrl(), null, false);
         Assert.assertEquals(mItem1.getUrl().getSpec(), intent.getDataString());
         Assert.assertFalse(intent.hasExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB));
         Assert.assertFalse(intent.hasExtra(Browser.EXTRA_CREATE_NEW_TAB));
         Assert.assertEquals(PageTransition.AUTO_BOOKMARK,
                 intent.getIntExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, -1));
 
-        intent = mHistoryManager.getOpenUrlIntent(mItem2.getUrl(), true, true);
+        intent = mHistoryManager.getContentManagerForTests().getOpenUrlIntent(
+                mItem2.getUrl(), true, true);
         Assert.assertEquals(mItem2.getUrl().getSpec(), intent.getDataString());
         Assert.assertTrue(
                 intent.getBooleanExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false));
@@ -330,7 +336,7 @@ public class HistoryActivityTest {
 
         toggleItemSelection(2);
         Assert.assertTrue(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
-        Assert.assertEquals(View.VISIBLE, toolbarShadow.getVisibility());
+        Assert.assertEquals(View.GONE, toolbarShadow.getVisibility());
 
         toggleItemSelection(2);
         Assert.assertFalse(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
@@ -362,7 +368,7 @@ public class HistoryActivityTest {
         // Select an item and assert that the search view is no longer showing.
         toggleItemSelection(2);
         Assert.assertTrue(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
-        Assert.assertEquals(View.VISIBLE, toolbarShadow.getVisibility());
+        Assert.assertEquals(View.GONE, toolbarShadow.getVisibility());
         Assert.assertEquals(View.GONE, toolbarSearchView.getVisibility());
 
         // Clear the selection and assert that the search view is showing again.
@@ -427,7 +433,8 @@ public class HistoryActivityTest {
         // Hide disclaimers to simulate setup for https://crbug.com/1071468.
         TestThreadUtils.runOnUiThreadBlocking(() -> mHistoryManager.onMenuItemClick(infoMenuItem));
         Assert.assertFalse("Privacy disclaimers should be hidden.",
-                mHistoryManager.shouldShowInfoHeaderIfAvailable());
+                mHistoryManager.getContentManagerForTests()
+                        .getShouldShowPrivacyDisclaimersIfAvailable());
 
         // Simulate call indicating there are not other forms of browsing data.
         setHasOtherFormsOfBrowsingData(false);
@@ -572,7 +579,8 @@ public class HistoryActivityTest {
                 mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
         mTestObserver.onSigninStateChangedCallback.waitForCallback(
                 0, 1, SyncTestUtil.TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        Assert.assertEquals(coreAccountInfo, mAccountManagerTestRule.getCurrentSignedInAccount());
+        Assert.assertEquals(
+                coreAccountInfo, mAccountManagerTestRule.getPrimaryAccount(ConsentLevel.SYNC));
 
         // Wait for recycler view changes after sign in.
         CriteriaHelper.pollUiThread(() -> !mRecyclerView.isAnimating());
@@ -619,7 +627,7 @@ public class HistoryActivityTest {
                                    .getSigninManager(Profile.getLastUsedRegularProfile())
                                    .signOut(SignoutReason.SIGNOUT_TEST));
         mTestObserver.onSigninStateChangedCallback.waitForCallback(currentCallCount, 1);
-        Assert.assertNull(mAccountManagerTestRule.getCurrentSignedInAccount());
+        Assert.assertNull(mAccountManagerTestRule.getPrimaryAccount(ConsentLevel.SYNC));
 
         // Remove observer
         TestThreadUtils.runOnUiThreadBlocking(

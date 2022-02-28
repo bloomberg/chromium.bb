@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/dbus/bluez_dbus_client.h"
@@ -37,6 +36,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLEAdvertisingManagerClient
     virtual void AdvertisingManagerRemoved(
         const dbus::ObjectPath& object_path) {}
   };
+
+  BluetoothLEAdvertisingManagerClient(
+      const BluetoothLEAdvertisingManagerClient&) = delete;
+  BluetoothLEAdvertisingManagerClient& operator=(
+      const BluetoothLEAdvertisingManagerClient&) = delete;
 
   ~BluetoothLEAdvertisingManagerClient() override;
 
@@ -89,9 +93,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLEAdvertisingManagerClient
 
  protected:
   BluetoothLEAdvertisingManagerClient();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothLEAdvertisingManagerClient);
 };
 
 }  // namespace bluez

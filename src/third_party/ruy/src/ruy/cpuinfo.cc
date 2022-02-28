@@ -9,7 +9,7 @@
 #include "ruy/platform.h"
 
 #ifdef RUY_HAVE_CPUINFO
-#include "include/cpuinfo.h"
+#include <cpuinfo.h>
 #endif
 
 namespace ruy {
@@ -101,7 +101,12 @@ bool CpuInfo::Sse42() {
   return EnsureInitialized() && cpuinfo_has_x86_sse4_2();
 }
 
-bool CpuInfo::Avx2() { return EnsureInitialized() && cpuinfo_has_x86_avx2(); }
+bool CpuInfo::Avx2Fma() {
+  return EnsureInitialized() && cpuinfo_has_x86_avx2() &&
+         cpuinfo_has_x86_fma3();
+}
+
+bool CpuInfo::Avx() { return EnsureInitialized() && cpuinfo_has_x86_avx(); }
 
 bool CpuInfo::Avx512() {
   return EnsureInitialized() && cpuinfo_has_x86_avx512f() &&
@@ -111,6 +116,32 @@ bool CpuInfo::Avx512() {
 
 bool CpuInfo::AvxVnni() {
   return EnsureInitialized() && cpuinfo_has_x86_avx512vnni();
+}
+
+bool CpuInfo::CurrentCpuIsA55ish() {
+  if (!EnsureInitialized()) {
+    return false;
+  }
+
+  switch (cpuinfo_get_uarch(cpuinfo_get_current_uarch_index())->uarch) {
+    case cpuinfo_uarch_cortex_a53:
+    case cpuinfo_uarch_cortex_a55r0:
+    case cpuinfo_uarch_cortex_a55:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool CpuInfo::CurrentCpuIsX1() {
+  if (!EnsureInitialized()) {
+    return false;
+  }
+  if (cpuinfo_get_uarch(cpuinfo_get_current_uarch_index())->uarch ==
+      cpuinfo_uarch_cortex_x1) {
+    return true;
+  }
+  return false;
 }
 
 #else  // not defined RUY_HAVE_CPUINFO
@@ -126,9 +157,12 @@ bool CpuInfo::EnsureInitialized() {
 }
 bool CpuInfo::NeonDotprod() { return false; }
 bool CpuInfo::Sse42() { return false; }
-bool CpuInfo::Avx2() { return false; }
+bool CpuInfo::Avx() { return false; }
+bool CpuInfo::Avx2Fma() { return false; }
 bool CpuInfo::Avx512() { return false; }
 bool CpuInfo::AvxVnni() { return false; }
+bool CpuInfo::CurrentCpuIsA55ish() { return false; }
+bool CpuInfo::CurrentCpuIsX1() { return false; }
 
 #endif
 

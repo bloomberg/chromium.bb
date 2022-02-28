@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_formatted_text.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_child_layout_context.h"
@@ -21,6 +22,7 @@ namespace blink {
 
 void CanvasFormattedText::Trace(Visitor* visitor) const {
   visitor->Trace(text_runs_);
+  visitor->Trace(block_);
   ScriptWrappable::Trace(visitor);
 }
 
@@ -146,9 +148,6 @@ sk_sp<PaintRecord> CanvasFormattedText::PaintFormattedText(
   LayoutBlockFlow* block = GetLayoutBlock(document, font);
   NGBlockNode block_node(block);
   NGInlineNode node(block);
-  // Call IsEmptyInline to force prepare layout.
-  if (node.IsEmptyInline())
-    return nullptr;
 
   // TODO(sushraja) Once we add support for writing mode on the canvas formatted
   // text, fix this to be not hardcoded horizontal top to bottom.
@@ -166,13 +165,12 @@ sk_sp<PaintRecord> CanvasFormattedText::PaintFormattedText(
       To<NGPhysicalBoxFragment>(block_results->PhysicalFragment());
   block->RecalcFragmentsVisualOverflow();
   bounds = FloatRect(block->PhysicalVisualOverflowRect());
-
-  PaintRecordBuilder paint_record_builder;
-  PaintInfo paint_info(paint_record_builder.Context(), CullRect::Infinite(),
+  auto* paint_record_builder = MakeGarbageCollected<PaintRecordBuilder>();
+  PaintInfo paint_info(paint_record_builder->Context(), CullRect::Infinite(),
                        PaintPhase::kForeground, kGlobalPaintNormalPhase, 0);
   NGBoxFragmentPainter(fragment).PaintObject(
       paint_info, PhysicalOffset(LayoutUnit(x), LayoutUnit(y)));
-  return paint_record_builder.EndRecording();
+  return paint_record_builder->EndRecording();
 }
 
 }  // namespace blink

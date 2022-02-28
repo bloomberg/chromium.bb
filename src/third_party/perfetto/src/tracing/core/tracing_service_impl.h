@@ -77,6 +77,9 @@ class TracingServiceImpl : public TracingService {
   static constexpr uint8_t kSyncMarker[] = {0x82, 0x47, 0x7a, 0x76, 0xb2, 0x8d,
                                             0x42, 0xba, 0x81, 0xdc, 0x33, 0x32,
                                             0x6d, 0x57, 0xa0, 0x79};
+  static constexpr size_t kMaxTracePacketSliceSize =
+      128 * 1024 - 512;  // This is ipc::kIPCBufferSize - 512, see assertion in
+                         // tracing_integration_test.cc and b/195065199
 
   // The implementation behind the service endpoint exposed to each producer.
   class ProducerEndpointImpl : public TracingService::ProducerEndpoint {
@@ -87,12 +90,14 @@ class TracingServiceImpl : public TracingService {
                          base::TaskRunner*,
                          Producer*,
                          const std::string& producer_name,
+                         const std::string& sdk_version,
                          bool in_process,
                          bool smb_scraping_enabled);
     ~ProducerEndpointImpl() override;
 
     // TracingService::ProducerEndpoint implementation.
     void RegisterDataSource(const DataSourceDescriptor&) override;
+    void UpdateDataSource(const DataSourceDescriptor&) override;
     void UnregisterDataSource(const std::string& name) override;
     void RegisterTraceWriter(uint32_t writer_id,
                              uint32_t target_buffer) override;
@@ -154,6 +159,7 @@ class TracingServiceImpl : public TracingService {
     size_t shmem_page_size_hint_bytes_ = 0;
     bool is_shmem_provided_by_producer_ = false;
     const std::string name_;
+    std::string sdk_version_;
     bool in_process_;
     bool smb_scraping_enabled_;
 
@@ -245,6 +251,7 @@ class TracingServiceImpl : public TracingService {
   // Called by ProducerEndpointImpl.
   void DisconnectProducer(ProducerID);
   void RegisterDataSource(ProducerID, const DataSourceDescriptor&);
+  void UpdateDataSource(ProducerID, const DataSourceDescriptor&);
   void UnregisterDataSource(ProducerID, const std::string& name);
   void CopyProducerPageIntoLogBuffer(ProducerID,
                                      uid_t,
@@ -278,7 +285,30 @@ class TracingServiceImpl : public TracingService {
              uint32_t timeout_ms,
              ConsumerEndpoint::FlushCallback);
   void FlushAndDisableTracing(TracingSessionID);
-  bool ReadBuffers(TracingSessionID, ConsumerEndpointImpl*);
+
+  // Starts reading the internal tracing buffers from the tracing session `tsid`
+  // and sends them to `*consumer` (which must be != nullptr).
+  //
+  // Only reads a limited amount of data in one call. If there's more data,
+  // immediately schedules itself on a PostTask.
+  //
+  // Returns false in case of error.
+  bool ReadBuffersIntoConsumer(TracingSessionID tsid,
+                               ConsumerEndpointImpl* consumer);
+
+  // Reads all the tracing buffers from the tracing session `tsid` and writes
+  // them into the associated file.
+  //
+  // Reads all the data in the buffers (or until the file is full) before
+  // returning.
+  //
+  // If the tracing session write_period_ms is 0, the file is full or there has
+  // been an error, flushes the file and closes it. Otherwise, schedules itself
+  // to be executed after write_period_ms.
+  //
+  // Returns false in case of error.
+  bool ReadBuffersIntoFile(TracingSessionID);
+
   void FreeBuffers(TracingSessionID);
 
   // Service implementation.
@@ -291,7 +321,8 @@ class TracingServiceImpl : public TracingService {
       ProducerSMBScrapingMode smb_scraping_mode =
           ProducerSMBScrapingMode::kDefault,
       size_t shared_memory_page_size_hint_bytes = 0,
-      std::unique_ptr<SharedMemory> shm = nullptr) override;
+      std::unique_ptr<SharedMemory> shm = nullptr,
+      const std::string& sdk_version = {}) override;
 
   std::unique_ptr<TracingService::ConsumerEndpoint> ConnectConsumer(
       Consumer*,
@@ -646,6 +677,10 @@ class TracingServiceImpl : public TracingService {
   void ScrapeSharedMemoryBuffers(TracingSession*, ProducerEndpointImpl*);
   void PeriodicClearIncrementalStateTask(TracingSessionID, bool post_next_only);
   TraceBuffer* GetBufferByID(BufferID);
+  bool ReadBuffers(TracingSessionID, TracingSession*, ConsumerEndpointImpl*);
+  // Returns true if `*tracing_session` is waiting for a trigger that hasn't
+  // happened.
+  static bool IsWaitingForTrigger(TracingSession*);
   void OnStartTriggersTimeout(TracingSessionID tsid);
   void MaybeLogUploadEvent(const TraceConfig&,
                            PerfettoStatsdAtom atom,

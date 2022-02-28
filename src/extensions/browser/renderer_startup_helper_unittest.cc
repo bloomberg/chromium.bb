@@ -5,6 +5,7 @@
 #include "extensions/browser/renderer_startup_helper.h"
 
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "extensions/browser/extension_prefs.h"
@@ -121,6 +122,13 @@ class RendererStartupHelperInterceptor : public RendererStartupHelper,
     std::move(callback).Run();
   }
 
+  void UpdatePermissions(const std::string& extension_id,
+                         PermissionSet active_permissions,
+                         PermissionSet withheld_permissions,
+                         URLPatternSet policy_blocked_hosts,
+                         URLPatternSet policy_allowed_hosts,
+                         bool uses_default_policy_host_restrictions) override {}
+
   void UpdateDefaultPolicyHostRestrictions(
       URLPatternSet default_policy_blocked_hosts,
       URLPatternSet default_policy_allowed_hosts) override {
@@ -149,13 +157,18 @@ class RendererStartupHelperInterceptor : public RendererStartupHelper,
   size_t num_loaded_extensions_;
   size_t num_loaded_extensions_in_incognito_;
   std::vector<std::string> unloaded_extensions_;
-  content::BrowserContext* browser_context_;
+  raw_ptr<content::BrowserContext> browser_context_;
   mojo::AssociatedReceiverSet<mojom::Renderer> receivers_;
 };
 
 class RendererStartupHelperTest : public ExtensionsTest {
  public:
   RendererStartupHelperTest() {}
+
+  RendererStartupHelperTest(const RendererStartupHelperTest&) = delete;
+  RendererStartupHelperTest& operator=(const RendererStartupHelperTest&) =
+      delete;
+
   ~RendererStartupHelperTest() override {}
 
   void SetUp() override {
@@ -259,7 +272,7 @@ class RendererStartupHelperTest : public ExtensionsTest {
   }
 
   std::unique_ptr<RendererStartupHelperInterceptor> helper_;
-  ExtensionRegistry* registry_;  // Weak.
+  raw_ptr<ExtensionRegistry> registry_;  // Weak.
   std::unique_ptr<content::MockRenderProcessHost> render_process_host_;
   std::unique_ptr<content::MockRenderProcessHost>
       incognito_render_process_host_;
@@ -274,8 +287,6 @@ class RendererStartupHelperTest : public ExtensionsTest {
         .SetID(crx_file::id_util::GenerateId(id_input))
         .Build();
   }
-
-  DISALLOW_COPY_AND_ASSIGN(RendererStartupHelperTest);
 };
 
 // Tests extension loading, unloading and activation and render process creation

@@ -31,15 +31,16 @@
 
 #include <memory>
 
-#include "src/init/v8.h"
-
+#include "include/v8-function.h"
 #include "include/v8-profiler.h"
 #include "src/api/api-inl.h"
 #include "src/base/hashmap.h"
 #include "src/base/optional.h"
+#include "src/base/strings.h"
 #include "src/codegen/assembler-inl.h"
 #include "src/debug/debug.h"
 #include "src/heap/heap-inl.h"
+#include "src/init/v8.h"
 #include "src/objects/objects-inl.h"
 #include "src/profiler/allocation-tracker.h"
 #include "src/profiler/heap-profiler.h"
@@ -51,10 +52,10 @@
 using i::AllocationTraceNode;
 using i::AllocationTraceTree;
 using i::AllocationTracker;
-using i::ArrayVector;
 using i::SourceLocation;
-using i::Vector;
+using v8::base::ArrayVector;
 using v8::base::Optional;
+using v8::base::Vector;
 using v8::internal::heap::GrowNewSpaceToMaximumCapacity;
 
 namespace {
@@ -77,10 +78,10 @@ class NamedEntriesDetector {
     list.push_back(root);
     CheckEntry(root);
     while (!list.empty()) {
-      i::HeapEntry* entry = list.back();
+      i::HeapEntry* heap_entry = list.back();
       list.pop_back();
-      for (int i = 0; i < entry->children_count(); ++i) {
-        i::HeapGraphEdge* edge = entry->child(i);
+      for (int i = 0; i < heap_entry->children_count(); ++i) {
+        i::HeapGraphEdge* edge = heap_entry->child(i);
         if (edge->type() == i::HeapGraphEdge::kShortcut) continue;
         i::HeapEntry* child = edge->to();
         v8::base::HashMap::Entry* entry = visited.LookupOrInsert(
@@ -188,9 +189,9 @@ static bool HasString(v8::Isolate* isolate, const v8::HeapGraphNode* node,
                       const char* contents) {
   for (int i = 0, count = node->GetChildrenCount(); i < count; ++i) {
     const v8::HeapGraphEdge* prop = node->GetChild(i);
-    const v8::HeapGraphNode* node = prop->GetToNode();
-    if (node->GetType() == v8::HeapGraphNode::kString) {
-      v8::String::Utf8Value node_name(isolate, node->GetName());
+    const v8::HeapGraphNode* dest_node = prop->GetToNode();
+    if (dest_node->GetType() == v8::HeapGraphNode::kString) {
+      v8::String::Utf8Value node_name(isolate, dest_node->GetName());
       if (strcmp(contents, *node_name) == 0) return true;
     }
   }
@@ -200,7 +201,7 @@ static bool HasString(v8::Isolate* isolate, const v8::HeapGraphNode* node,
 static void EnsureNoUninstrumentedInternals(v8::Isolate* isolate,
                                             const v8::HeapGraphNode* node) {
   for (int i = 0; i < 20; ++i) {
-    i::ScopedVector<char> buffer(10);
+    v8::base::ScopedVector<char> buffer(10);
     const v8::HeapGraphNode* internal =
         GetProperty(isolate, node, v8::HeapGraphEdge::kInternal,
                     i::IntToCString(i, buffer));
@@ -1055,14 +1056,14 @@ class TestJSONStream : public v8::OutputStream {
     if (abort_countdown_ > 0) --abort_countdown_;
     if (abort_countdown_ == 0) return kAbort;
     CHECK_GT(chars_written, 0);
-    i::Vector<char> chunk = buffer_.AddBlock(chars_written, '\0');
+    v8::base::Vector<char> chunk = buffer_.AddBlock(chars_written, '\0');
     i::MemCopy(chunk.begin(), buffer, chars_written);
     return kContinue;
   }
   virtual WriteResult WriteUint32Chunk(uint32_t* buffer, int chars_written) {
     UNREACHABLE();
   }
-  void WriteTo(i::Vector<char> dest) { buffer_.WriteTo(dest); }
+  void WriteTo(v8::base::Vector<char> dest) { buffer_.WriteTo(dest); }
   int eos_signaled() { return eos_signaled_; }
   int size() { return buffer_.size(); }
 
@@ -1074,7 +1075,8 @@ class TestJSONStream : public v8::OutputStream {
 
 class OneByteResource : public v8::String::ExternalOneByteStringResource {
  public:
-  explicit OneByteResource(i::Vector<char> string) : data_(string.begin()) {
+  explicit OneByteResource(v8::base::Vector<char> string)
+      : data_(string.begin()) {
     length_ = string.length();
   }
   const char* data() const override { return data_; }
@@ -1107,7 +1109,7 @@ TEST(HeapSnapshotJSONSerialization) {
   snapshot->Serialize(&stream, v8::HeapSnapshot::kJSON);
   CHECK_GT(stream.size(), 0);
   CHECK_EQ(1, stream.eos_signaled());
-  i::ScopedVector<char> json(stream.size());
+  v8::base::ScopedVector<char> json(stream.size());
   stream.WriteTo(json);
 
   // Verify that snapshot string is valid JSON.
@@ -1554,7 +1556,7 @@ class TestActivityControl : public v8::ActivityControl {
         total_(0),
         abort_count_(abort_count),
         reported_finish_(false) {}
-  ControlOption ReportProgressValue(int done, int total) override {
+  ControlOption ReportProgressValue(uint32_t done, uint32_t total) override {
     done_ = done;
     total_ = total;
     CHECK_LE(done_, total_);
@@ -1871,7 +1873,7 @@ TEST(NativeSnapshotObjectIdMoving) {
   CHECK_NOT_NULL(merged_node);
 
   {
-    v8::HandleScope scope(isolate);
+    v8::HandleScope inner_scope(isolate);
     auto local = v8::Local<v8::String>::New(isolate, wrapper);
     i::Handle<i::String> internal = i::Handle<i::String>::cast(
         v8::Utils::OpenHandle(*v8::Local<v8::String>::Cast(local)));
@@ -2086,7 +2088,7 @@ TEST(GetHeapValueForDeletedObject) {
   {
     // Perform the check inside a nested local scope to avoid creating a
     // reference to the object we are deleting.
-    v8::HandleScope scope(env->GetIsolate());
+    v8::HandleScope inner_scope(env->GetIsolate());
     CHECK(heap_profiler->FindObjectById(prop->GetId())->IsObject());
   }
   CompileRun("delete a.p;");
@@ -2357,7 +2359,7 @@ TEST(HiddenPropertiesFastCase) {
       GetProperty(isolate, global, v8::HeapGraphEdge::kProperty, "c");
   CHECK(c);
   const v8::HeapGraphNode* hidden_props =
-      GetProperty(isolate, global, v8::HeapGraphEdge::kProperty, "<symbol>");
+      GetProperty(isolate, c, v8::HeapGraphEdge::kProperty, "<symbol key>");
   CHECK(!hidden_props);
 
   v8::Local<v8::Value> cHandle =
@@ -2376,10 +2378,32 @@ TEST(HiddenPropertiesFastCase) {
   c = GetProperty(isolate, global, v8::HeapGraphEdge::kProperty, "c");
   CHECK(c);
   hidden_props =
-      GetProperty(isolate, c, v8::HeapGraphEdge::kProperty, "<symbol>");
+      GetProperty(isolate, c, v8::HeapGraphEdge::kProperty, "<symbol key>");
   CHECK(hidden_props);
 }
 
+TEST(SymbolsAndPrivateClassFields) {
+  v8::Isolate* isolate = CcTest::isolate();
+  LocalContext env;
+  v8::HandleScope scope(isolate);
+  v8::HeapProfiler* heap_profiler = isolate->GetHeapProfiler();
+
+  CompileRun(
+      "class C { #private = this; [Symbol('MySymbol')] = this; };\n"
+      "c = new C;\n");
+  const v8::HeapSnapshot* snapshot = heap_profiler->TakeHeapSnapshot();
+  CHECK(ValidateSnapshot(snapshot));
+  const v8::HeapGraphNode* global = GetGlobalObject(snapshot);
+  const v8::HeapGraphNode* c =
+      GetProperty(isolate, global, v8::HeapGraphEdge::kProperty, "c");
+  CHECK(c);
+  const v8::HeapGraphNode* prop;
+  prop = GetProperty(isolate, c, v8::HeapGraphEdge::kProperty, "#private");
+  CHECK(prop);
+  prop = GetProperty(isolate, c, v8::HeapGraphEdge::kProperty,
+                     "<symbol MySymbol>");
+  CHECK(prop);
+}
 
 TEST(AccessorInfo) {
   LocalContext env;
@@ -2622,8 +2646,8 @@ TEST(ManyLocalsInSharedContext) {
   // Check all the objects have got their names.
   // ... well check just every 15th because otherwise it's too slow in debug.
   for (int i = 0; i < num_objects - 1; i += 15) {
-    i::EmbeddedVector<char, 100> var_name;
-    i::SNPrintF(var_name, "f_%d", i);
+    v8::base::EmbeddedVector<char, 100> var_name;
+    v8::base::SNPrintF(var_name, "f_%d", i);
     const v8::HeapGraphNode* f_object =
         GetProperty(env->GetIsolate(), context_object,
                     v8::HeapGraphEdge::kContextVariable, var_name.begin());
@@ -2727,8 +2751,8 @@ static const v8::HeapGraphNode* GetNodeByPath(v8::Isolate* isolate,
       const v8::HeapGraphNode* to_node = edge->GetToNode();
       v8::String::Utf8Value edge_name(isolate, edge->GetName());
       v8::String::Utf8Value node_name(isolate, to_node->GetName());
-      i::EmbeddedVector<char, 100> name;
-      i::SNPrintF(name, "%s::%s", *edge_name, *node_name);
+      v8::base::EmbeddedVector<char, 100> name;
+      v8::base::SNPrintF(name, "%s::%s", *edge_name, *node_name);
       if (strstr(name.begin(), path[current_depth])) {
         node = to_node;
         break;
@@ -2805,9 +2829,8 @@ static const char* record_trace_tree_source =
 "\n"
 "for (var i = 0; i < 100; i++) start();\n";
 
-
 static AllocationTraceNode* FindNode(
-    AllocationTracker* tracker, const Vector<const char*>& names) {
+    AllocationTracker* tracker, const v8::base::Vector<const char*>& names) {
   AllocationTraceNode* node = tracker->trace_tree()->root();
   for (int i = 0; node != nullptr && i < names.length(); i++) {
     const char* name = names[i];
@@ -2825,7 +2848,6 @@ static AllocationTraceNode* FindNode(
   }
   return node;
 }
-
 
 TEST(ArrayGrowLeftTrim) {
   LocalContext env;
@@ -2849,7 +2871,7 @@ TEST(ArrayGrowLeftTrim) {
   // Print for better diagnostics in case of failure.
   tracker->trace_tree()->Print(tracker);
 
-  AllocationTraceNode* node = FindNode(tracker, ArrayVector(names));
+  AllocationTraceNode* node = FindNode(tracker, v8::base::ArrayVector(names));
   CHECK(node);
   CHECK_GE(node->allocation_count(), 2u);
   CHECK_GE(node->allocation_size(), 4u * 5u);
@@ -2874,7 +2896,7 @@ TEST(TrackHeapAllocationsWithInlining) {
   tracker->trace_tree()->Print(tracker);
 
   const char* names[] = {"", "start", "f_0_0"};
-  AllocationTraceNode* node = FindNode(tracker, ArrayVector(names));
+  AllocationTraceNode* node = FindNode(tracker, v8::base::ArrayVector(names));
   CHECK(node);
   // In lite mode, there is feedback and feedback metadata.
   unsigned int num_nodes = (i::FLAG_lite_mode) ? 6 : 8;
@@ -2908,7 +2930,7 @@ TEST(TrackHeapAllocationsWithoutInlining) {
   tracker->trace_tree()->Print(tracker);
 
   const char* names[] = {"", "start", "f_0_0", "f_0_1", "f_0_2"};
-  AllocationTraceNode* node = FindNode(tracker, ArrayVector(names));
+  AllocationTraceNode* node = FindNode(tracker, v8::base::ArrayVector(names));
   CHECK(node);
   CHECK_GE(node->allocation_count(), 100u);
   CHECK_GE(node->allocation_size(), 4 * node->allocation_count());
@@ -2957,7 +2979,7 @@ TEST(TrackBumpPointerAllocations) {
     // Print for better diagnostics in case of failure.
     tracker->trace_tree()->Print(tracker);
 
-    AllocationTraceNode* node = FindNode(tracker, ArrayVector(names));
+    AllocationTraceNode* node = FindNode(tracker, v8::base::ArrayVector(names));
     CHECK(node);
     CHECK_GE(node->allocation_count(), 100u);
     CHECK_GE(node->allocation_size(), 4 * node->allocation_count());
@@ -2982,7 +3004,7 @@ TEST(TrackBumpPointerAllocations) {
     // Print for better diagnostics in case of failure.
     tracker->trace_tree()->Print(tracker);
 
-    AllocationTraceNode* node = FindNode(tracker, ArrayVector(names));
+    AllocationTraceNode* node = FindNode(tracker, v8::base::ArrayVector(names));
     CHECK(node);
     CHECK_LT(node->allocation_count(), 100u);
 
@@ -3011,7 +3033,7 @@ TEST(TrackV8ApiAllocation) {
   // Print for better diagnostics in case of failure.
   tracker->trace_tree()->Print(tracker);
 
-  AllocationTraceNode* node = FindNode(tracker, ArrayVector(names));
+  AllocationTraceNode* node = FindNode(tracker, v8::base::ArrayVector(names));
   CHECK(node);
   CHECK_GE(node->allocation_count(), 2u);
   CHECK_GE(node->allocation_size(), 4 * node->allocation_count());
@@ -3610,7 +3632,7 @@ TEST(AddressToTraceMap) {
 
 static const v8::AllocationProfile::Node* FindAllocationProfileNode(
     v8::Isolate* isolate, v8::AllocationProfile* profile,
-    const Vector<const char*>& names) {
+    const v8::base::Vector<const char*>& names) {
   v8::AllocationProfile::Node* node = profile->GetRootNode();
   for (int i = 0; node != nullptr && i < names.length(); ++i) {
     const char* name = names[i];
@@ -3682,7 +3704,7 @@ TEST(SamplingHeapProfiler) {
 
     const char* names[] = {"", "foo", "bar"};
     auto node_bar = FindAllocationProfileNode(env->GetIsolate(), profile.get(),
-                                              ArrayVector(names));
+                                              v8::base::ArrayVector(names));
     CHECK(node_bar);
 
     heap_profiler->StopSamplingHeapProfiler();
@@ -3706,12 +3728,12 @@ TEST(SamplingHeapProfiler) {
 
     const char* names1[] = {"", "start", "f_0_0", "f_0_1", "f_0_2"};
     auto node1 = FindAllocationProfileNode(env->GetIsolate(), profile.get(),
-                                           ArrayVector(names1));
+                                           v8::base::ArrayVector(names1));
     CHECK(node1);
 
     const char* names2[] = {"", "generateFunctions"};
     auto node2 = FindAllocationProfileNode(env->GetIsolate(), profile.get(),
-                                           ArrayVector(names2));
+                                           v8::base::ArrayVector(names2));
     CHECK(node2);
 
     heap_profiler->StopSamplingHeapProfiler();
@@ -3768,12 +3790,12 @@ TEST(SamplingHeapProfilerRateAgnosticEstimates) {
     CHECK(profile);
 
     const char* path_to_foo[] = {"", "foo"};
-    auto node_foo = FindAllocationProfileNode(env->GetIsolate(), profile.get(),
-                                              ArrayVector(path_to_foo));
+    auto node_foo = FindAllocationProfileNode(
+        env->GetIsolate(), profile.get(), v8::base::ArrayVector(path_to_foo));
     CHECK(node_foo);
     const char* path_to_bar[] = {"", "foo", "bar"};
-    auto node_bar = FindAllocationProfileNode(env->GetIsolate(), profile.get(),
-                                              ArrayVector(path_to_bar));
+    auto node_bar = FindAllocationProfileNode(
+        env->GetIsolate(), profile.get(), v8::base::ArrayVector(path_to_bar));
     CHECK(node_bar);
 
     // Function bar can be inlined in foo.
@@ -3792,12 +3814,12 @@ TEST(SamplingHeapProfilerRateAgnosticEstimates) {
     CHECK(profile);
 
     const char* path_to_foo[] = {"", "foo"};
-    auto node_foo = FindAllocationProfileNode(env->GetIsolate(), profile.get(),
-                                              ArrayVector(path_to_foo));
+    auto node_foo = FindAllocationProfileNode(
+        env->GetIsolate(), profile.get(), v8::base::ArrayVector(path_to_foo));
     CHECK(node_foo);
     const char* path_to_bar[] = {"", "foo", "bar"};
-    auto node_bar = FindAllocationProfileNode(env->GetIsolate(), profile.get(),
-                                              ArrayVector(path_to_bar));
+    auto node_bar = FindAllocationProfileNode(
+        env->GetIsolate(), profile.get(), v8::base::ArrayVector(path_to_bar));
     CHECK(node_bar);
 
     // Function bar can be inlined in foo.
@@ -3836,7 +3858,7 @@ TEST(SamplingHeapProfilerApiAllocation) {
   CHECK(profile);
   const char* names[] = {"(V8 API)"};
   auto node = FindAllocationProfileNode(env->GetIsolate(), profile.get(),
-                                        ArrayVector(names));
+                                        v8::base::ArrayVector(names));
   CHECK(node);
 
   heap_profiler->StopSamplingHeapProfiler();
@@ -3933,23 +3955,23 @@ TEST(SamplingHeapProfilerPretenuredInlineAllocations) {
 
   GrowNewSpaceToMaximumCapacity(CcTest::heap());
 
-  i::ScopedVector<char> source(1024);
-  i::SNPrintF(source,
-              "var number_elements = %d;"
-              "var elements = new Array(number_elements);"
-              "function f() {"
-              "  for (var i = 0; i < number_elements; i++) {"
-              "    elements[i] = [{}, {}, {}];"
-              "  }"
-              "  return elements[number_elements - 1];"
-              "};"
-              "%%PrepareFunctionForOptimization(f);"
-              "f(); gc();"
-              "f(); f();"
-              "%%OptimizeFunctionOnNextCall(f);"
-              "f();"
-              "f;",
-              i::AllocationSite::kPretenureMinimumCreated + 1);
+  v8::base::ScopedVector<char> source(1024);
+  v8::base::SNPrintF(source,
+                     "var number_elements = %d;"
+                     "var elements = new Array(number_elements);"
+                     "function f() {"
+                     "  for (var i = 0; i < number_elements; i++) {"
+                     "    elements[i] = [{}, {}, {}];"
+                     "  }"
+                     "  return elements[number_elements - 1];"
+                     "};"
+                     "%%PrepareFunctionForOptimization(f);"
+                     "f(); gc();"
+                     "f(); f();"
+                     "%%OptimizeFunctionOnNextCall(f);"
+                     "f();"
+                     "f;",
+                     i::AllocationSite::kPretenureMinimumCreated + 1);
 
   v8::Local<v8::Function> f =
       v8::Local<v8::Function>::Cast(CompileRun(source.begin()));
@@ -3974,7 +3996,7 @@ TEST(SamplingHeapProfilerPretenuredInlineAllocations) {
 
   const char* names[] = {"f"};
   auto node_f = FindAllocationProfileNode(env->GetIsolate(), profile.get(),
-                                          ArrayVector(names));
+                                          v8::base::ArrayVector(names));
   CHECK(node_f);
 
   int count = 0;
@@ -4004,7 +4026,7 @@ TEST(SamplingHeapProfilerLargeInterval) {
   CHECK(profile);
   const char* names[] = {"(EXTERNAL)"};
   auto node = FindAllocationProfileNode(env->GetIsolate(), profile.get(),
-                                        ArrayVector(names));
+                                        v8::base::ArrayVector(names));
   CHECK(node);
 
   heap_profiler->StopSamplingHeapProfiler();
@@ -4103,7 +4125,7 @@ TEST(WeakReference) {
           .Build();
   CHECK(code->IsCode());
 
-  fv->set_maybe_optimized_code(i::HeapObjectReference::Weak(*code),
+  fv->set_maybe_optimized_code(i::HeapObjectReference::Weak(ToCodeT(*code)),
                                v8::kReleaseStore);
   fv->set_flags(i::FeedbackVector::OptimizationTierBits::encode(
                     i::OptimizationTier::kTopTier) |
@@ -4176,7 +4198,7 @@ TEST(HeapSnapshotDeleteDuringTakeSnapshot) {
     WeakData* data =
         new WeakData{heap_profiler->TakeHeapSnapshot(), &gc_calls, &handle};
 
-    v8::HandleScope scope(env->GetIsolate());
+    v8::HandleScope inner_scope(env->GetIsolate());
     handle.Reset(env->GetIsolate(), v8::Object::New(env->GetIsolate()));
     handle.SetWeak(
         data,

@@ -105,7 +105,6 @@ export function waitForScrollLeft<T extends Element>(element: T, desiredScrollLe
 
   const timeBetweenPolls = 50;
 
-
   return new Promise(resolve => {
     const pollForScrollLeft = () => {
       const newScrollLeft = element.scrollLeft;
@@ -133,6 +132,16 @@ export function waitForScrollLeft<T extends Element>(element: T, desiredScrollLe
 export function dispatchClickEvent<T extends Element>(element: T, options: MouseEventInit = {}) {
   const clickEvent = new MouseEvent('click', options);
   element.dispatchEvent(clickEvent);
+}
+
+export function dispatchFocusEvent<T extends Element>(element: T, options: FocusEventInit = {}) {
+  const focusEvent = new FocusEvent('focus', options);
+  element.dispatchEvent(focusEvent);
+}
+
+export function dispatchFocusOutEvent<T extends Element>(element: T, options: FocusEventInit = {}) {
+  const focusEvent = new FocusEvent('focusout', options);
+  element.dispatchEvent(focusEvent);
 }
 
 /**
@@ -214,12 +223,12 @@ export function stripLitHtmlCommentNodes(text: string) {
 }
 
 /**
- * Returns an array of textContents
- * NewLine and multiple space characters are replaced with single space character
+ * Returns an array of textContents.
+ * Multiple consecutive newLine and space characters are removed.
  */
-export function getCleanTextContentFromElements(shadowRoot: ShadowRoot, selector: string) {
+export function getCleanTextContentFromElements(shadowRoot: ShadowRoot, selector: string): string[] {
   const elements = Array.from(shadowRoot.querySelectorAll(selector));
   return elements.map(element => {
-    return element.textContent ? element.textContent.trim().replace(/[ \n]+/g, ' ') : '';
+    return element.textContent ? element.textContent.trim().replace(/[ \n]{2,}/g, '') : '';
   });
 }

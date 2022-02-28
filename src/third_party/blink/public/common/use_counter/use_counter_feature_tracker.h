@@ -24,6 +24,10 @@ class BLINK_COMMON_EXPORT UseCounterFeatureTracker {
 
   void ResetForTesting(const UseCounterFeature&);
 
+  // Returns whether all recorded features in `other` are also recorded
+  // in `this`.
+  bool ContainsForTesting(const UseCounterFeatureTracker& other) const;
+
  private:
   void Set(const UseCounterFeature&, bool);
 
@@ -37,6 +41,14 @@ class BLINK_COMMON_EXPORT UseCounterFeatureTracker {
   std::bitset<static_cast<size_t>(mojom::PermissionsPolicyFeature::kMaxValue) +
               1>
       violated_permissions_policy_features_;
+  std::bitset<static_cast<size_t>(
+                  blink::mojom::PermissionsPolicyFeature::kMaxValue) +
+              1>
+      iframe_permissions_policy_features_;
+  std::bitset<static_cast<size_t>(
+                  blink::mojom::PermissionsPolicyFeature::kMaxValue) +
+              1>
+      header_permissions_policy_features_;
 };
 
 }  // namespace blink

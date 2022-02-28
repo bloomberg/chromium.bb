@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "remoting/protocol/network_settings.h"
@@ -70,6 +70,10 @@ class IceTransportChannel : public sigslot::has_slots<> {
 
   explicit IceTransportChannel(
       scoped_refptr<TransportContext> transport_context);
+
+  IceTransportChannel(const IceTransportChannel&) = delete;
+  IceTransportChannel& operator=(const IceTransportChannel&) = delete;
+
   ~IceTransportChannel() override;
 
   // Connects the channel and calls the |callback| after that.
@@ -116,7 +120,7 @@ class IceTransportChannel : public sigslot::has_slots<> {
   scoped_refptr<TransportContext> transport_context_;
 
   std::string name_;
-  Delegate* delegate_ = nullptr;
+  raw_ptr<Delegate> delegate_ = nullptr;
   ConnectedCallback callback_;
   std::string ice_username_fragment_;
 
@@ -132,8 +136,6 @@ class IceTransportChannel : public sigslot::has_slots<> {
   base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<IceTransportChannel> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(IceTransportChannel);
 };
 
 }  // namespace protocol

@@ -32,17 +32,19 @@ import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.signin.services.SigninMetricsUtils;
-import org.chromium.chrome.browser.signin.ui.SignOutDialogFragment;
-import org.chromium.chrome.browser.signin.ui.SignOutDialogFragment.SignOutDialogListener;
-import org.chromium.chrome.browser.signin.ui.SigninUtils;
 import org.chromium.chrome.browser.superviseduser.FilteringBehavior;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.sync.SyncService;
+import org.chromium.chrome.browser.ui.signin.SignOutDialogFragment;
+import org.chromium.chrome.browser.ui.signin.SignOutDialogFragment.SignOutDialogListener;
+import org.chromium.chrome.browser.ui.signin.SigninUtils;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
+import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.GAIAServiceType;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
@@ -86,11 +88,11 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
     private Profile mProfile;
     private String mSignedInAccountName;
     private ProfileDataCache mProfileDataCache;
-    private @Nullable ProfileSyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
+    private @Nullable SyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
 
     @Override
     public void onCreatePreferences(Bundle savedState, String rootKey) {
-        ProfileSyncService syncService = ProfileSyncService.get();
+        SyncService syncService = SyncService.get();
         if (syncService != null) {
             // Prevent sync settings changes from taking effect until the user leaves this screen.
             mSyncSetupInProgressHandle = syncService.getSetupInProgressHandle();
@@ -106,10 +108,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         SigninMetricsUtils.logProfileAccountManagementMenu(
                 ProfileAccountManagementMetrics.VIEW, mGaiaServiceType);
 
-        mProfileDataCache = mProfile.isChild()
-                ? ProfileDataCache.createWithDefaultImageSize(
-                        requireContext(), R.drawable.ic_account_child_20dp)
-                : ProfileDataCache.createWithDefaultImageSizeAndNoBadge(requireContext());
+        mProfileDataCache = ProfileDataCache.createWithDefaultImageSizeAndNoBadge(requireContext());
     }
 
     @Override
@@ -175,7 +174,15 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         configureSignOutSwitch();
         configureChildAccountPreferences();
 
-        updateAccountsList();
+        AccountManagerFacadeProvider.getInstance().getAccounts().then(this::updateAccountsList);
+    }
+
+    /**
+     * The ProfileDataCache object needs to be accessible in some tests, for example in order to
+     * await the completion of async population of the cache.
+     */
+    public ProfileDataCache getProfileDataCacheForTesting() {
+        return mProfileDataCache;
     }
 
     private boolean canAddAccounts() {
@@ -195,7 +202,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
             signOutPreference.setTitle(
                     IdentityServicesProvider.get()
                                     .getIdentityManager(Profile.getLastUsedRegularProfile())
-                                    .hasPrimaryAccount()
+                                    .hasPrimaryAccount(ConsentLevel.SYNC)
                             ? R.string.sign_out_and_turn_off_sync
                             : R.string.sign_out);
             signOutPreference.setOnPreferenceClickListener(preference -> {
@@ -260,8 +267,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
             Drawable newIcon = ApiCompatibilityUtils.getDrawable(
                     getResources(), R.drawable.ic_drive_site_white_24dp);
             newIcon.mutate().setColorFilter(
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.default_icon_color),
-                    PorterDuff.Mode.SRC_IN);
+                    SemanticColorUtils.getDefaultIconColor(getContext()), PorterDuff.Mode.SRC_IN);
             childContent.setIcon(newIcon);
         } else {
             PreferenceScreen prefScreen = getPreferenceScreen();
@@ -271,11 +277,15 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         }
     }
 
-    private void updateAccountsList() {
-        PreferenceCategory accountsCategory =
-                (PreferenceCategory) findPreference(PREF_ACCOUNTS_CATEGORY);
-        if (accountsCategory == null) return;
+    private void updateAccountsList(List<Account> accounts) {
+        setAccountBadges(accounts);
 
+        PreferenceCategory accountsCategory = findPreference(PREF_ACCOUNTS_CATEGORY);
+        if (accountsCategory == null) {
+            // This pref is dynamically added/removed many times, so it might not be present by now.
+            // More details can be found in crbug/1221491.
+            return;
+        }
         accountsCategory.removeAll();
 
         accountsCategory.addPreference(
@@ -285,7 +295,6 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         accountsCategory.addPreference(createManageYourGoogleAccountPreference());
         accountsCategory.addPreference(createDividerPreference(R.layout.divider_preference));
 
-        List<Account> accounts = AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts();
         for (Account account : accounts) {
             if (!mSignedInAccountName.equals(account.name)) {
                 accountsCategory.addPreference(createAccountPreference(account));
@@ -369,10 +378,22 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         return getPreferenceManager().getContext();
     }
 
+    private void setAccountBadges(List<Account> accounts) {
+        for (Account account : accounts) {
+            AccountManagerFacadeProvider.getInstance().checkChildAccountStatus(
+                    account, (status, childAccount) -> {
+                        if (ChildAccountStatus.isChild(status)) {
+                            mProfileDataCache.setBadge(
+                                    childAccount, R.drawable.ic_account_child_20dp);
+                        }
+                    });
+        }
+    }
+
     // ProfileDataCache.Observer implementation:
     @Override
     public void onProfileDataUpdated(String accountEmail) {
-        updateAccountsList();
+        AccountManagerFacadeProvider.getInstance().getAccounts().then(this::updateAccountsList);
     }
 
     // SignOutDialogListener implementation:
@@ -380,10 +401,9 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
     public void onSignOutClicked(boolean forceWipeUserData) {
         // In case the user reached this fragment without being signed in, we guard the sign out so
         // we do not hit a native crash.
-        if (IdentityServicesProvider.get()
+        if (!IdentityServicesProvider.get()
                         .getIdentityManager(Profile.getLastUsedRegularProfile())
-                        .getPrimaryAccountInfo(ConsentLevel.SIGNIN)
-                == null) {
+                        .hasPrimaryAccount(ConsentLevel.SIGNIN)) {
             return;
         }
         final DialogFragment clearDataProgressDialog = new ClearDataProgressDialog();

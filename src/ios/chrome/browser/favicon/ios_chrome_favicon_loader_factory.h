@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
@@ -26,6 +25,10 @@ class IOSChromeFaviconLoaderFactory : public BrowserStateKeyedServiceFactory {
   // with SetTestingFactory to use the FaviconService instance during testing.
   static TestingFactory GetDefaultFactory();
 
+  IOSChromeFaviconLoaderFactory(const IOSChromeFaviconLoaderFactory&) = delete;
+  IOSChromeFaviconLoaderFactory& operator=(
+      const IOSChromeFaviconLoaderFactory&) = delete;
+
  private:
   friend class base::NoDestructor<IOSChromeFaviconLoaderFactory>;
 
@@ -38,8 +41,6 @@ class IOSChromeFaviconLoaderFactory : public BrowserStateKeyedServiceFactory {
   web::BrowserState* GetBrowserStateToUse(
       web::BrowserState* context) const override;
   bool ServiceIsNULLWhileTesting() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(IOSChromeFaviconLoaderFactory);
 };
 
 #endif  // IOS_CHROME_BROWSER_FAVICON_IOS_CHROME_FAVICON_LOADER_FACTORY_H_

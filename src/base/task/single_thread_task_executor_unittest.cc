@@ -14,18 +14,18 @@
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/pending_task.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/current_thread.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_observer.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind.h"
@@ -55,6 +55,8 @@
 #include "base/win/current_module.h"
 #include "base/win/message_window.h"
 #include "base/win/scoped_handle.h"
+
+#include <windows.h>
 #endif
 
 using ::testing::IsNull;
@@ -99,6 +101,9 @@ class Foo : public RefCounted<Foo> {
  public:
   Foo() : test_count_(0) {}
 
+  Foo(const Foo&) = delete;
+  Foo& operator=(const Foo&) = delete;
+
   void Test0() { ++test_count_; }
 
   void Test1ConstRef(const std::string& a) {
@@ -135,8 +140,6 @@ class Foo : public RefCounted<Foo> {
 
   int test_count_;
   std::string result_;
-
-  DISALLOW_COPY_AND_ASSIGN(Foo);
 };
 
 // This function runs slowly to simulate a large amount of work being done.
@@ -154,7 +157,7 @@ static void RecordRunTimeFunc(TimeTicks* run_time, int* quit_counter) {
   // Cause our Run function to take some time to execute.  As a result we can
   // count on subsequent RecordRunTimeFunc()s running at a future time,
   // without worry about the resolution of our system clock being an issue.
-  SlowFunc(TimeDelta::FromMilliseconds(10), quit_counter);
+  SlowFunc(Milliseconds(10), quit_counter);
 }
 
 enum TaskType {
@@ -254,6 +257,9 @@ class DummyTaskObserver : public TaskObserver {
         num_tasks_processed_(0),
         num_tasks_(num_tasks) {}
 
+  DummyTaskObserver(const DummyTaskObserver&) = delete;
+  DummyTaskObserver& operator=(const DummyTaskObserver&) = delete;
+
   ~DummyTaskObserver() override = default;
 
   void WillProcessTask(const PendingTask& pending_task,
@@ -276,8 +282,6 @@ class DummyTaskObserver : public TaskObserver {
   int num_tasks_started_;
   int num_tasks_processed_;
   const int num_tasks_;
-
-  DISALLOW_COPY_AND_ASSIGN(DummyTaskObserver);
 };
 
 // A method which reposts itself |depth| times.
@@ -294,13 +298,6 @@ void QuitFunc(TaskList* order, int cookie) {
   order->RecordStart(QUITMESSAGELOOP, cookie);
   RunLoop::QuitCurrentWhenIdleDeprecated();
   order->RecordEnd(QUITMESSAGELOOP, cookie);
-}
-
-void PostNTasks(int posts_remaining) {
-  if (posts_remaining > 1) {
-    ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, BindOnce(&PostNTasks, posts_remaining - 1));
-  }
 }
 
 #if defined(OS_WIN)
@@ -370,11 +367,11 @@ void RecursiveFuncWin(scoped_refptr<SingleThreadTaskRunner> task_runner,
   // Poll for the MessageBox. Don't do this at home! At the speed we do it,
   // you will never realize one MessageBox was shown.
   for (; expect_window;) {
-    HWND window = ::FindWindow(L"#32770", kMessageBoxTitle);
+    HWND window = ::FindWindowW(L"#32770", kMessageBoxTitle);
     if (window) {
       // Dismiss it.
       for (;;) {
-        HWND button = ::FindWindowEx(window, NULL, L"Button", NULL);
+        HWND button = ::FindWindowExW(window, NULL, L"Button", NULL);
         if (button != NULL) {
           EXPECT_EQ(0, ::SendMessage(button, WM_LBUTTONDOWN, 0, 0));
           EXPECT_EQ(0, ::SendMessage(button, WM_LBUTTONUP, 0, 0));
@@ -488,7 +485,7 @@ void RunTest_IOHandler() {
   thread.task_runner()->PostTask(
       FROM_HERE, BindOnce(&TestIOHandler::Init, Unretained(&handler)));
   // Make sure the thread runs and sleeps for lack of work.
-  PlatformThread::Sleep(TimeDelta::FromMilliseconds(100));
+  PlatformThread::Sleep(Milliseconds(100));
 
   const char buffer[] = "Hello there!";
   DWORD written;
@@ -514,6 +511,12 @@ class SingleThreadTaskExecutorTypedTest
     : public ::testing::TestWithParam<MessagePumpType> {
  public:
   SingleThreadTaskExecutorTypedTest() = default;
+
+  SingleThreadTaskExecutorTypedTest(const SingleThreadTaskExecutorTypedTest&) =
+      delete;
+  SingleThreadTaskExecutorTypedTest& operator=(
+      const SingleThreadTaskExecutorTypedTest&) = delete;
+
   ~SingleThreadTaskExecutorTypedTest() = default;
 
   static std::string ParamInfoToString(
@@ -543,9 +546,6 @@ class SingleThreadTaskExecutorTypedTest
     NOTREACHED();
     return "";
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SingleThreadTaskExecutorTypedTest);
 };
 
 TEST_P(SingleThreadTaskExecutorTypedTest, PostTask) {
@@ -581,7 +581,7 @@ TEST_P(SingleThreadTaskExecutorTypedTest, PostDelayedTask_Basic) {
 
   // Test that PostDelayedTask results in a delayed task.
 
-  const TimeDelta kDelay = TimeDelta::FromMilliseconds(100);
+  const TimeDelta kDelay = Milliseconds(100);
 
   int num_tasks = 1;
   TimeTicks run_time;
@@ -605,12 +605,12 @@ TEST_P(SingleThreadTaskExecutorTypedTest, PostDelayedTask_InDelayOrder) {
 
   executor.task_runner()->PostDelayedTask(
       FROM_HERE, BindOnce(&RecordRunTimeFunc, &run_time1, &num_tasks),
-      TimeDelta::FromMilliseconds(200));
+      Milliseconds(200));
   // If we get a large pause in execution (due to a context switch) here, this
   // test could fail.
   executor.task_runner()->PostDelayedTask(
       FROM_HERE, BindOnce(&RecordRunTimeFunc, &run_time2, &num_tasks),
-      TimeDelta::FromMilliseconds(10));
+      Milliseconds(10));
 
   RunLoop().Run();
   EXPECT_EQ(0, num_tasks);
@@ -629,7 +629,7 @@ TEST_P(SingleThreadTaskExecutorTypedTest, PostDelayedTask_InPostOrder) {
   // posted at the exact same time.  It would be nice if the API allowed us to
   // specify the desired run time.
 
-  const TimeDelta kDelay = TimeDelta::FromMilliseconds(100);
+  const TimeDelta kDelay = Milliseconds(100);
 
   int num_tasks = 2;
   TimeTicks run_time1, run_time2;
@@ -651,7 +651,7 @@ TEST_P(SingleThreadTaskExecutorTypedTest, PostDelayedTask_InPostOrder_2) {
   // Test that a delayed task still runs after a normal tasks even if the
   // normal tasks take a long time to run.
 
-  const TimeDelta kPause = TimeDelta::FromMilliseconds(50);
+  const TimeDelta kPause = Milliseconds(50);
 
   int num_tasks = 2;
   TimeTicks run_time;
@@ -660,7 +660,7 @@ TEST_P(SingleThreadTaskExecutorTypedTest, PostDelayedTask_InPostOrder_2) {
                                    BindOnce(&SlowFunc, kPause, &num_tasks));
   executor.task_runner()->PostDelayedTask(
       FROM_HERE, BindOnce(&RecordRunTimeFunc, &run_time, &num_tasks),
-      TimeDelta::FromMilliseconds(10));
+      Milliseconds(10));
 
   TimeTicks time_before_run = TimeTicks::Now();
   RunLoop().Run();
@@ -690,7 +690,7 @@ TEST_P(SingleThreadTaskExecutorTypedTest, PostDelayedTask_InPostOrder_3) {
 
   executor.task_runner()->PostDelayedTask(
       FROM_HERE, BindOnce(&RecordRunTimeFunc, &run_time2, &num_tasks),
-      TimeDelta::FromMilliseconds(1));
+      Milliseconds(1));
 
   RunLoop().Run();
   EXPECT_EQ(0, num_tasks);
@@ -711,10 +711,10 @@ TEST_P(SingleThreadTaskExecutorTypedTest, PostDelayedTask_SharedTimer) {
 
   executor.task_runner()->PostDelayedTask(
       FROM_HERE, BindOnce(&RecordRunTimeFunc, &run_time1, &num_tasks),
-      TimeDelta::FromSeconds(1000));
+      Seconds(1000));
   executor.task_runner()->PostDelayedTask(
       FROM_HERE, BindOnce(&RecordRunTimeFunc, &run_time2, &num_tasks),
-      TimeDelta::FromMilliseconds(10));
+      Milliseconds(10));
 
   TimeTicks start_time = TimeTicks::Now();
 
@@ -728,7 +728,7 @@ TEST_P(SingleThreadTaskExecutorTypedTest, PostDelayedTask_SharedTimer) {
   // In case both timers somehow run at nearly the same time, sleep a little
   // and then run all pending to force them both to have run.  This is just
   // encouraging flakiness if there is any.
-  PlatformThread::Sleep(TimeDelta::FromMilliseconds(100));
+  PlatformThread::Sleep(Milliseconds(100));
   RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(run_time1.is_null());
@@ -757,7 +757,7 @@ class RecordDeletionProbe : public RefCounted<RecordDeletionProbe> {
   }
 
   scoped_refptr<RecordDeletionProbe> post_on_delete_;
-  bool* was_deleted_;
+  raw_ptr<bool> was_deleted_;
 };
 
 }  // namespace
@@ -779,7 +779,7 @@ TEST_P(SingleThreadTaskExecutorTypedTest, DISABLED_EnsureDeletion) {
         FROM_HERE,
         BindOnce(&RecordDeletionProbe::Run,
                  new RecordDeletionProbe(nullptr, &b_was_deleted)),
-        TimeDelta::FromMilliseconds(1000));
+        Milliseconds(1000));
   }
   EXPECT_TRUE(a_was_deleted);
   EXPECT_TRUE(b_was_deleted);
@@ -926,8 +926,7 @@ TEST_P(SingleThreadTaskExecutorTypedTest, NonNestableDelayedInNestedLoop) {
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                           BindOnce(&OrderedFunc, &order, 3));
   ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      BindOnce(&SleepFunc, &order, 4, TimeDelta::FromMilliseconds(50)));
+      FROM_HERE, BindOnce(&SleepFunc, &order, 4, Milliseconds(50)));
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                           BindOnce(&OrderedFunc, &order, 5));
   ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
@@ -1388,12 +1387,12 @@ TEST_P(SingleThreadTaskExecutorTypedTest, IsIdleForTesting) {
   EXPECT_TRUE(CurrentThread::Get()->IsIdleForTesting());
   executor.task_runner()->PostTask(FROM_HERE, BindOnce([]() {}));
   executor.task_runner()->PostDelayedTask(FROM_HERE, BindOnce([]() {}),
-                                          TimeDelta::FromMilliseconds(10));
+                                          Milliseconds(10));
   EXPECT_FALSE(CurrentThread::Get()->IsIdleForTesting());
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(CurrentThread::Get()->IsIdleForTesting());
 
-  PlatformThread::Sleep(TimeDelta::FromMilliseconds(20));
+  PlatformThread::Sleep(Milliseconds(20));
   EXPECT_TRUE(CurrentThread::Get()->IsIdleForTesting());
 }
 
@@ -1483,12 +1482,11 @@ TEST(SingleThreadTaskExecutorTest, PostDelayedTask_SharedTimer_SubPump) {
   // This very delayed task should never run.
   executor.task_runner()->PostDelayedTask(
       FROM_HERE, BindOnce(&RecordRunTimeFunc, &run_time, &num_tasks),
-      TimeDelta::FromSeconds(1000));
+      Seconds(1000));
 
   // This slightly delayed task should run from within SubPumpFunc.
-  executor.task_runner()->PostDelayedTask(FROM_HERE,
-                                          BindOnce(&::PostQuitMessage, 0),
-                                          TimeDelta::FromMilliseconds(10));
+  executor.task_runner()->PostDelayedTask(
+      FROM_HERE, BindOnce(&::PostQuitMessage, 0), Milliseconds(10));
 
   Time start_time = Time::Now();
 
@@ -1502,7 +1500,7 @@ TEST(SingleThreadTaskExecutorTest, PostDelayedTask_SharedTimer_SubPump) {
   // In case both timers somehow run at nearly the same time, sleep a little
   // and then run all pending to force them both to have run.  This is just
   // encouraging flakiness if there is any.
-  PlatformThread::Sleep(TimeDelta::FromMilliseconds(100));
+  PlatformThread::Sleep(Milliseconds(100));
   RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(run_time.is_null());
@@ -1532,8 +1530,7 @@ bool DelayedQuitOnSystemTimer(UINT message,
                               LRESULT* result) {
   if (message == static_cast<UINT>(WM_TIMER)) {
     ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, BindOnce(&::PostQuitMessage, 0),
-        TimeDelta::FromMilliseconds(10));
+        FROM_HERE, BindOnce(&::PostQuitMessage, 0), Milliseconds(10));
   }
   *result = 0;
   return true;
@@ -1728,9 +1725,9 @@ TEST(SingleThreadTaskExecutorTest,
   executor.task_runner()->PostTask(
       FROM_HERE, BindOnce(&SubPumpFunc, run_loop.QuitClosure()));
   executor.task_runner()->PostTask(FROM_HERE,
-                                   BindOnce(&SubPumpFunc, DoNothing::Once()));
+                                   BindOnce(&SubPumpFunc, DoNothing()));
   executor.task_runner()->PostTask(FROM_HERE,
-                                   BindOnce(&SubPumpFunc, DoNothing::Once()));
+                                   BindOnce(&SubPumpFunc, DoNothing()));
 
   // Quit two layers (with tasks in between to allow each quit to be handled
   // before continuing -- ::PostQuitMessage() sets a bit, it's not a real queued
@@ -1862,8 +1859,8 @@ TEST(SingleThreadTaskExecutorTest, HighResolutionTimer) {
   SingleThreadTaskExecutor executor;
   Time::EnableHighResolutionTimer(true);
 
-  constexpr TimeDelta kFastTimer = TimeDelta::FromMilliseconds(5);
-  constexpr TimeDelta kSlowTimer = TimeDelta::FromMilliseconds(100);
+  constexpr TimeDelta kFastTimer = Milliseconds(5);
+  constexpr TimeDelta kSlowTimer = Milliseconds(100);
 
   {
     // Post a fast task to enable the high resolution timers.
@@ -1923,8 +1920,8 @@ class DestructionObserverProbe : public RefCounted<DestructionObserverProbe> {
     *task_destroyed_ = true;
   }
 
-  bool* task_destroyed_;
-  bool* destruction_observer_called_;
+  raw_ptr<bool> task_destroyed_;
+  raw_ptr<bool> destruction_observer_called_;
 };
 
 class MLDestructionObserver : public CurrentThread::DestructionObserver {
@@ -1942,8 +1939,8 @@ class MLDestructionObserver : public CurrentThread::DestructionObserver {
   }
 
  private:
-  bool* task_destroyed_;
-  bool* destruction_observer_called_;
+  raw_ptr<bool> task_destroyed_;
+  raw_ptr<bool> destruction_observer_called_;
   bool task_destroyed_before_message_loop_;
 };
 
@@ -1953,7 +1950,7 @@ TEST(SingleThreadTaskExecutorTest, DestructionObserverTest) {
   // Verify that the destruction observer gets called at the very end (after
   // all the pending tasks have been destroyed).
   auto executor = std::make_unique<SingleThreadTaskExecutor>();
-  const TimeDelta kDelay = TimeDelta::FromMilliseconds(100);
+  const TimeDelta kDelay = Milliseconds(100);
 
   bool task_destroyed = false;
   bool destruction_observer_called = false;
@@ -2138,6 +2135,10 @@ namespace {
 class PostTaskOnDestroy {
  public:
   PostTaskOnDestroy(int times) : times_remaining_(times) {}
+
+  PostTaskOnDestroy(const PostTaskOnDestroy&) = delete;
+  PostTaskOnDestroy& operator=(const PostTaskOnDestroy&) = delete;
+
   ~PostTaskOnDestroy() { PostTaskWithPostingDestructor(times_remaining_); }
 
   // Post a task that will repost itself on destruction |times| times.
@@ -2151,8 +2152,6 @@ class PostTaskOnDestroy {
 
  private:
   const int times_remaining_;
-
-  DISALLOW_COPY_AND_ASSIGN(PostTaskOnDestroy);
 };
 
 }  // namespace

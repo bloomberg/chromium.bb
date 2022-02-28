@@ -1,3 +1,7 @@
+// Copyright 2021 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 /*
  * Copyright (C) 2010 Nikita Vasilyev. All rights reserved.
  * Copyright (C) 2010 Joseph Pecoraro. All rights reserved.
@@ -13,7 +17,7 @@
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
- *     * Neither the name of Google Inc. nor the names of its
+ *     * Neither the #name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
  *
@@ -30,81 +34,78 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as SupportedCSSProperties from '../../generated/SupportedCSSProperties.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 
 export class CSSMetadata {
-  _values: string[];
-  _longhands: Map<string, string[]>;
-  _shorthands: Map<string, string[]>;
-  _inherited: Set<string>;
-  _svgProperties: Set<string>;
-  _propertyValues: Map<string, string[]>;
-  _aliasesFor: Map<string, string>;
-  _valuesSet: Set<string>;
-  _nameValuePresets: string[];
-  _nameValuePresetsIncludingSVG: string[];
+  readonly #values: string[];
+  readonly #longhands: Map<string, string[]>;
+  readonly #shorthands: Map<string, string[]>;
+  readonly #inherited: Set<string>;
+  readonly #svgProperties: Set<string>;
+  readonly #propertyValues: Map<string, string[]>;
+  readonly #aliasesFor: Map<string, string>;
+  #valuesSet: Set<string>;
+  readonly #nameValuePresetsInternal: string[];
+  readonly #nameValuePresetsIncludingSVG: string[];
 
   constructor(properties: CSSPropertyDefinition[], aliasesFor: Map<string, string>) {
-    this._values = [];
-    this._longhands = new Map();
-    this._shorthands = new Map();
-    this._inherited = new Set();
-    this._svgProperties = new Set();
-    this._propertyValues = new Map();
-    this._aliasesFor = aliasesFor;
+    this.#values = [];
+    this.#longhands = new Map();
+    this.#shorthands = new Map();
+    this.#inherited = new Set();
+    this.#svgProperties = new Set();
+    this.#propertyValues = new Map();
+    this.#aliasesFor = aliasesFor;
     for (let i = 0; i < properties.length; ++i) {
       const property = properties[i];
       const propertyName = property.name;
       if (!CSS.supports(propertyName, 'initial')) {
         continue;
       }
-      this._values.push(propertyName);
+      this.#values.push(propertyName);
 
       if (property.inherited) {
-        this._inherited.add(propertyName);
+        this.#inherited.add(propertyName);
       }
       if (property.svg) {
-        this._svgProperties.add(propertyName);
+        this.#svgProperties.add(propertyName);
       }
 
       const longhands = properties[i].longhands;
       if (longhands) {
-        this._longhands.set(propertyName, longhands);
+        this.#longhands.set(propertyName, longhands);
         for (let j = 0; j < longhands.length; ++j) {
           const longhandName = longhands[j];
-          let shorthands = this._shorthands.get(longhandName);
+          let shorthands = this.#shorthands.get(longhandName);
           if (!shorthands) {
             shorthands = [];
-            this._shorthands.set(longhandName, shorthands);
+            this.#shorthands.set(longhandName, shorthands);
           }
           shorthands.push(propertyName);
         }
       }
     }
-    this._values.sort(CSSMetadata._sortPrefixesToEnd);
-    this._valuesSet = new Set(this._values);
+    this.#values.sort(CSSMetadata.sortPrefixesToEnd);
+    this.#valuesSet = new Set(this.#values);
 
-    // Reads in auto-generated property names and values from blink/public/renderer/core/css/css_properties.json5
+    // Reads in auto-generated property names and #values from blink/public/renderer/core/css/css_properties.json5
     // treats _generatedPropertyValues as basis
     const propertyValueSets = new Map<string, Set<string>>();
     for (const [propertyName, basisValueObj] of Object.entries(SupportedCSSProperties.generatedPropertyValues)) {
       propertyValueSets.set(propertyName, new Set(basisValueObj.values));
     }
     // and add manually maintained map of extra prop-value pairs
-    for (const [propertyName, extraValueObj] of Object.entries(_extraPropertyValues)) {
-      if (propertyValueSets.has(propertyName)) {
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // @ts-expect-error
-        Platform.SetUtilities.addAll(propertyValueSets.get(propertyName), extraValueObj.values);
+    for (const [propertyName, extraValueObj] of Object.entries(extraPropertyValues)) {
+      const propertyValueSet = propertyValueSets.get(propertyName);
+      if (propertyValueSet) {
+        Platform.SetUtilities.addAll(propertyValueSet, extraValueObj.values);
       } else {
         propertyValueSets.set(propertyName, new Set(extraValueObj.values));
       }
     }
-    // finally add common keywords to value sets and convert property values
+    // finally add common keywords to value sets and convert property #values
     // into arrays since callers expect arrays
     for (const [propertyName, values] of propertyValueSets) {
       for (const commonKeyword of CommonKeywords) {
@@ -113,24 +114,24 @@ export class CSSMetadata {
         }
       }
 
-      this._propertyValues.set(propertyName, [...values]);
+      this.#propertyValues.set(propertyName, [...values]);
     }
 
-    this._nameValuePresets = [];
-    this._nameValuePresetsIncludingSVG = [];
-    for (const name of this._valuesSet) {
-      const values = this._specificPropertyValues(name)
+    this.#nameValuePresetsInternal = [];
+    this.#nameValuePresetsIncludingSVG = [];
+    for (const name of this.#valuesSet) {
+      const values = this.specificPropertyValues(name)
                          .filter(value => CSS.supports(name, value))
-                         .sort(CSSMetadata._sortPrefixesToEnd);
+                         .sort(CSSMetadata.sortPrefixesToEnd);
       const presets = values.map(value => `${name}: ${value}`);
       if (!this.isSVGProperty(name)) {
-        this._nameValuePresets.push(...presets);
+        this.#nameValuePresetsInternal.push(...presets);
       }
-      this._nameValuePresetsIncludingSVG.push(...presets);
+      this.#nameValuePresetsIncludingSVG.push(...presets);
     }
   }
 
-  static _sortPrefixesToEnd(a: string, b: string): 1|- 1|0 {
+  private static sortPrefixesToEnd(a: string, b: string): 1|- 1|0 {
     const aIsPrefixed = a.startsWith('-webkit-');
     const bIsPrefixed = b.startsWith('-webkit-');
     if (aIsPrefixed && !bIsPrefixed) {
@@ -143,28 +144,28 @@ export class CSSMetadata {
   }
 
   allProperties(): string[] {
-    return this._values;
+    return this.#values;
   }
 
   nameValuePresets(includeSVG?: boolean): string[] {
-    return includeSVG ? this._nameValuePresetsIncludingSVG : this._nameValuePresets;
+    return includeSVG ? this.#nameValuePresetsIncludingSVG : this.#nameValuePresetsInternal;
   }
 
   isSVGProperty(name: string): boolean {
     name = name.toLowerCase();
-    return this._svgProperties.has(name);
+    return this.#svgProperties.has(name);
   }
 
-  longhands(shorthand: string): string[]|null {
-    return this._longhands.get(shorthand) || null;
+  getLonghands(shorthand: string): string[]|null {
+    return this.#longhands.get(shorthand) || null;
   }
 
-  shorthands(longhand: string): string[]|null {
-    return this._shorthands.get(longhand) || null;
+  getShorthands(longhand: string): string[]|null {
+    return this.#shorthands.get(longhand) || null;
   }
 
   isColorAwareProperty(propertyName: string): boolean {
-    return _colorAwareProperties.has(propertyName.toLowerCase()) || this.isCustomProperty(propertyName.toLowerCase());
+    return colorAwareProperties.has(propertyName.toLowerCase()) || this.isCustomProperty(propertyName.toLowerCase());
   }
 
   isFontFamilyProperty(propertyName: string): boolean {
@@ -175,7 +176,7 @@ export class CSSMetadata {
     const lowerCasedName = propertyName.toLowerCase();
     // TODO: @Yisi, parse hsl(), hsla(), hwb() and lch()
     // See also https://drafts.csswg.org/css-color/#hue-syntax
-    return _colorAwareProperties.has(lowerCasedName) || _angleAwareProperties.has(lowerCasedName);
+    return colorAwareProperties.has(lowerCasedName) || angleAwareProperties.has(lowerCasedName);
   }
 
   isGridAreaDefiningProperty(propertyName: string): boolean {
@@ -188,19 +189,19 @@ export class CSSMetadata {
     if (propertyName === 'line-height') {
       return false;
     }
-    return _distanceProperties.has(propertyName) || propertyName.startsWith('margin') ||
+    return distanceProperties.has(propertyName) || propertyName.startsWith('margin') ||
         propertyName.startsWith('padding') || propertyName.indexOf('width') !== -1 ||
         propertyName.indexOf('height') !== -1;
   }
 
   isBezierAwareProperty(propertyName: string): boolean {
     propertyName = propertyName.toLowerCase();
-    return _bezierAwareProperties.has(propertyName) || this.isCustomProperty(propertyName);
+    return bezierAwareProperties.has(propertyName) || this.isCustomProperty(propertyName);
   }
 
   isFontAwareProperty(propertyName: string): boolean {
     propertyName = propertyName.toLowerCase();
-    return _fontAwareProperties.has(propertyName) || this.isCustomProperty(propertyName);
+    return fontAwareProperties.has(propertyName) || this.isCustomProperty(propertyName);
   }
 
   isCustomProperty(propertyName: string): boolean {
@@ -215,7 +216,7 @@ export class CSSMetadata {
   isStringProperty(propertyName: string): boolean {
     propertyName = propertyName.toLowerCase();
     // TODO(crbug.com/1033910): Generalize this to all CSS properties
-    // that accept <string> values.
+    // that accept <string> #values.
     return propertyName === 'content';
   }
 
@@ -225,7 +226,7 @@ export class CSSMetadata {
     }
     name = name.toLowerCase();
 
-    const aliasFor = this._aliasesFor.get(name);
+    const aliasFor = this.#aliasesFor.get(name);
     if (aliasFor) {
       return aliasFor;
     }
@@ -234,7 +235,7 @@ export class CSSMetadata {
       return name;
     }
     const match = name.match(/(?:-webkit-)(.+)/);
-    if (!match || !this._valuesSet.has(match[1])) {
+    if (!match || !this.#valuesSet.has(match[1])) {
       return name;
     }
     return match[1];
@@ -246,19 +247,19 @@ export class CSSMetadata {
         propertyName.startsWith('-ms-') || propertyName.startsWith('-o-') || propertyName.startsWith('-webkit-')) {
       return true;
     }
-    return this._valuesSet.has(propertyName);
+    return this.#valuesSet.has(propertyName);
   }
 
   isPropertyInherited(propertyName: string): boolean {
     propertyName = propertyName.toLowerCase();
-    return propertyName.startsWith('--') || this._inherited.has(this.canonicalPropertyName(propertyName)) ||
-        this._inherited.has(propertyName);
+    return propertyName.startsWith('--') || this.#inherited.has(this.canonicalPropertyName(propertyName)) ||
+        this.#inherited.has(propertyName);
   }
 
-  _specificPropertyValues(propertyName: string): string[] {
+  private specificPropertyValues(propertyName: string): string[] {
     const unprefixedName = propertyName.replace(/^-webkit-/, '');
-    const propertyValues = this._propertyValues;
-    // _propertyValues acts like cache; missing properties are added with possible common keywords
+    const propertyValues = this.#propertyValues;
+    // #propertyValues acts like cache; missing properties are added with possible common keywords
     let keywords: (string[]|undefined) = propertyValues.get(propertyName) || propertyValues.get(unprefixedName);
     if (!keywords) {
       keywords = [];
@@ -272,17 +273,17 @@ export class CSSMetadata {
     return keywords;
   }
 
-  propertyValues(propertyName: string): string[] {
+  getPropertyValues(propertyName: string): string[] {
     const acceptedKeywords = ['inherit', 'initial', 'revert', 'unset'];
     propertyName = propertyName.toLowerCase();
-    acceptedKeywords.push(...this._specificPropertyValues(propertyName));
+    acceptedKeywords.push(...this.specificPropertyValues(propertyName));
     if (this.isColorAwareProperty(propertyName)) {
       acceptedKeywords.push('currentColor');
-      for (const color in Common.Color.Nicknames) {
+      for (const color of Common.Color.Nicknames.keys()) {
         acceptedKeywords.push(color);
       }
     }
-    return acceptedKeywords.sort(CSSMetadata._sortPrefixesToEnd);
+    return acceptedKeywords.sort(CSSMetadata.sortPrefixesToEnd);
   }
 
   propertyUsageWeight(property: string): number {
@@ -294,7 +295,7 @@ export class CSSMetadata {
     startColumn: number,
     endColumn: number,
   }|null {
-    const values = _valuePresets.get(key);
+    const values = valuePresets.get(key);
     let text: string|(string | null | undefined) = values ? values.get(value) : null;
     if (!text) {
       return null;
@@ -321,28 +322,24 @@ export const URLRegex = /url\(\s*('.+?'|".+?"|[^)]+)\s*\)/g;
  *    "a a ."
  *
  * 'grid', 'grid-template', e.g.
- *    [track-name] "a a ." minmax(50px, auto) [track-name]
+ *    [track-#name] "a a ." minmax(50px, auto) [track-#name]
  */
 export const GridAreaRowRegex = /((?:\[[\w\- ]+\]\s*)*(?:"[^"]+"|'[^']+'))[^'"\[]*\[?[^'"\[]*/;
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-let _instance: CSSMetadata|null = null;
+let cssMetadataInstance: CSSMetadata|null = null;
 
 export function cssMetadata(): CSSMetadata {
-  if (!_instance) {
+  if (!cssMetadataInstance) {
     const supportedProperties = (SupportedCSSProperties.generatedProperties as CSSPropertyDefinition[]);
-    _instance = new CSSMetadata(supportedProperties, SupportedCSSProperties.generatedAliasesFor);
+    cssMetadataInstance = new CSSMetadata(supportedProperties, SupportedCSSProperties.generatedAliasesFor);
   }
-  return _instance;
+  return cssMetadataInstance;
 }
 
 /**
  * The pipe character '|' indicates where text selection should be set.
  */
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _imageValuePresetMap = new Map([
+const imageValuePresetMap = new Map([
   ['linear-gradient', 'linear-gradient(|45deg, black, transparent|)'],
   ['radial-gradient', 'radial-gradient(|black, transparent|)'],
   ['repeating-linear-gradient', 'repeating-linear-gradient(|45deg, black, transparent 100px|)'],
@@ -350,9 +347,7 @@ const _imageValuePresetMap = new Map([
   ['url', 'url(||)'],
 ]);
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _filterValuePresetMap = new Map([
+const filterValuePresetMap = new Map([
   ['blur', 'blur(|1px|)'],
   ['brightness', 'brightness(|0.5|)'],
   ['contrast', 'contrast(|0.5|)'],
@@ -366,14 +361,12 @@ const _filterValuePresetMap = new Map([
   ['url', 'url(||)'],
 ]);
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _valuePresets = new Map([
-  ['filter', _filterValuePresetMap],
-  ['backdrop-filter', _filterValuePresetMap],
-  ['background', _imageValuePresetMap],
-  ['background-image', _imageValuePresetMap],
-  ['-webkit-mask-image', _imageValuePresetMap],
+const valuePresets = new Map([
+  ['filter', filterValuePresetMap],
+  ['backdrop-filter', filterValuePresetMap],
+  ['background', imageValuePresetMap],
+  ['background-image', imageValuePresetMap],
+  ['-webkit-mask-image', imageValuePresetMap],
   [
     'transform',
     new Map([
@@ -401,9 +394,7 @@ const _valuePresets = new Map([
   ],
 ]);
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _distanceProperties = new Set<string>([
+const distanceProperties = new Set<string>([
   'background-position',
   'border-spacing',
   'bottom',
@@ -425,9 +416,7 @@ const _distanceProperties = new Set<string>([
   'row-gap',
 ]);
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _bezierAwareProperties = new Set<string>([
+const bezierAwareProperties = new Set<string>([
   'animation',
   'animation-timing-function',
   'transition',
@@ -438,14 +427,10 @@ const _bezierAwareProperties = new Set<string>([
   '-webkit-transition-timing-function',
 ]);
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _fontAwareProperties =
+const fontAwareProperties =
     new Set<string>(['font-size', 'line-height', 'font-weight', 'font-family', 'letter-spacing']);
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _colorAwareProperties = new Set<string>([
+const colorAwareProperties = new Set<string>([
   'accent-color',
   'background',
   'background-color',
@@ -500,9 +485,7 @@ const _colorAwareProperties = new Set<string>([
 ]);
 
 // In addition to `_colorAwareProperties`, the following properties contain CSS <angle> units.
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _angleAwareProperties = new Set<string>([
+const angleAwareProperties = new Set<string>([
   '-webkit-border-image',
   'transform',
   '-webkit-transform',
@@ -515,10 +498,8 @@ const _angleAwareProperties = new Set<string>([
   'font-style',
 ]);
 
-// manually maintained list of property values to add into autocomplete list
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _extraPropertyValues = {
+// manually maintained list of property #values to add into autocomplete list
+const extraPropertyValues = {
   'background-repeat': {values: ['repeat', 'repeat-x', 'repeat-y', 'no-repeat', 'space', 'round']},
   'content': {values: ['normal', 'close-quote', 'no-close-quote', 'no-open-quote', 'open-quote']},
   'baseline-shift': {values: ['baseline']},
@@ -586,7 +567,6 @@ const _extraPropertyValues = {
       'ui-monospace',
       'ui-rounded',
       '-webkit-body',
-      '-webkit-pictograph',
     ],
   },
   'zoom': {values: ['normal']},

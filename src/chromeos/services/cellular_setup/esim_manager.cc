@@ -6,6 +6,7 @@
 
 #include <sstream>
 
+#include "ash/constants/ash_features.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/network/network_event_log.h"
@@ -20,6 +21,9 @@
 namespace chromeos {
 namespace cellular_setup {
 namespace {
+
+// The Stork SM-DS Prod server used to fetch pending ESim profiles.
+const char kStorkSmdsServerAddress[] = "prod.smds.rsp.goog";
 
 void LogEuiccPaths(const std::set<dbus::ObjectPath>& new_euicc_paths) {
   if (new_euicc_paths.empty()) {
@@ -38,8 +42,17 @@ void LogEuiccPaths(const std::set<dbus::ObjectPath>& new_euicc_paths) {
 
 }  // namespace
 
+// static
+std::string ESimManager::GetRootSmdsAddress() {
+  // An empty string indicates that the root GSMA address should be used.
+  return features::IsUseStorkSmdsServerAddressEnabled()
+             ? kStorkSmdsServerAddress
+             : std::string();
+}
+
 ESimManager::ESimManager()
     : ESimManager(NetworkHandler::Get()->cellular_connection_handler(),
+                  NetworkHandler::Get()->cellular_esim_installer(),
                   NetworkHandler::Get()->cellular_esim_profile_handler(),
                   NetworkHandler::Get()->cellular_esim_uninstall_handler(),
                   NetworkHandler::Get()->cellular_inhibitor(),
@@ -48,12 +61,14 @@ ESimManager::ESimManager()
 
 ESimManager::ESimManager(
     CellularConnectionHandler* cellular_connection_handler,
+    CellularESimInstaller* cellular_esim_installer,
     CellularESimProfileHandler* cellular_esim_profile_handler,
     CellularESimUninstallHandler* cellular_esim_uninstall_handler,
     CellularInhibitor* cellular_inhibitor,
     NetworkConnectionHandler* network_connection_handler,
     NetworkStateHandler* network_state_handler)
     : cellular_connection_handler_(cellular_connection_handler),
+      cellular_esim_installer_(cellular_esim_installer),
       cellular_esim_profile_handler_(cellular_esim_profile_handler),
       cellular_esim_uninstall_handler_(cellular_esim_uninstall_handler),
       cellular_inhibitor_(cellular_inhibitor),

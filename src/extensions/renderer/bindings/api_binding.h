@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "extensions/renderer/bindings/argument_spec.h"
@@ -77,6 +76,10 @@ class APIBinding {
              APIRequestHandler* request_handler,
              APIEventHandler* event_handler,
              BindingAccessChecker* access_checker);
+
+  APIBinding(const APIBinding&) = delete;
+  APIBinding& operator=(const APIBinding&) = delete;
+
   ~APIBinding();
 
   // Returns a new v8::Object for the API this APIBinding represents.
@@ -174,8 +177,6 @@ class APIBinding {
   v8::Eternal<v8::ObjectTemplate> object_template_;
 
   base::WeakPtrFactory<APIBinding> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(APIBinding);
 };
 
 }  // namespace extensions

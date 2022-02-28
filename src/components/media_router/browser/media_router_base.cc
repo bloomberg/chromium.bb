@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
-#include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using blink::mojom::PresentationConnectionState;
@@ -22,6 +21,11 @@ class MediaRouterBase::InternalMediaRoutesObserver
  public:
   explicit InternalMediaRoutesObserver(MediaRouter* router)
       : MediaRoutesObserver(router), has_route(false) {}
+
+  InternalMediaRoutesObserver(const InternalMediaRoutesObserver&) = delete;
+  InternalMediaRoutesObserver& operator=(const InternalMediaRoutesObserver&) =
+      delete;
+
   ~InternalMediaRoutesObserver() override {}
 
   // MediaRoutesObserver
@@ -42,9 +46,6 @@ class MediaRouterBase::InternalMediaRoutesObserver
   bool has_route;
   std::vector<MediaRoute> current_routes;
   std::vector<MediaRoute::Id> off_the_record_route_ids;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InternalMediaRoutesObserver);
 };
 
 MediaRouterBase::~MediaRouterBase() {
@@ -177,7 +178,7 @@ base::Value MediaRouterBase::GetState() const {
 }
 
 void MediaRouterBase::GetProviderState(
-    MediaRouteProviderId provider_id,
+    mojom::MediaRouteProviderId provider_id,
     mojom::MediaRouteProvider::GetStateCallback callback) const {
   NOTREACHED() << "Should not invoke MediaRouterBase::GetProviderState()";
   std::move(callback).Run(mojom::ProviderStatePtr());

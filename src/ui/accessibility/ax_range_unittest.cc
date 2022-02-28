@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -97,7 +98,7 @@ class TestAXRangeScreenRectDelegate : public AXRangeRectDelegate {
   }
 
  private:
-  TestAXTreeManager* const tree_manager_;
+  const raw_ptr<TestAXTreeManager> tree_manager_;
 };
 
 class AXRangeTest : public ::testing::Test, public TestAXTreeManager {
@@ -114,6 +115,10 @@ class AXRangeTest : public ::testing::Test, public TestAXTreeManager {
       BUTTON.substr().append(TEXT_FIELD).append(AFTER_LINE);
 
   AXRangeTest();
+
+  AXRangeTest(const AXRangeTest&) = delete;
+  AXRangeTest& operator=(const AXRangeTest&) = delete;
+
   ~AXRangeTest() override = default;
 
  protected:
@@ -141,8 +146,6 @@ class AXRangeTest : public ::testing::Test, public TestAXTreeManager {
 
  private:
   testing::ScopedAXEmbeddedObjectBehaviorSetter ax_embedded_object_behavior_;
-
-  DISALLOW_COPY_AND_ASSIGN(AXRangeTest);
 };
 
 // These tests use kSuppressCharacter behavior.
@@ -253,9 +256,8 @@ void AXRangeTest::SetUp() {
   text_field_.role = ax::mojom::Role::kTextField;
   text_field_.AddState(ax::mojom::State::kEditable);
   text_field_.SetValue(TEXT_FIELD);
-  text_field_.AddIntListAttribute(
-      ax::mojom::IntListAttribute::kCachedLineStarts,
-      std::vector<int32_t>{0, 7});
+  text_field_.AddIntListAttribute(ax::mojom::IntListAttribute::kLineStarts,
+                                  std::vector<int32_t>{0, 7});
   text_field_.child_ids.push_back(static_text1_.id);
   text_field_.child_ids.push_back(line_break1_.id);
   text_field_.child_ids.push_back(static_text2_.id);
@@ -415,6 +417,56 @@ void AXRangeTest::SetUp() {
 }
 
 }  // namespace
+
+TEST_F(AXRangeTest, RangeOfContents) {
+  const AXNode* root = GetNodeFromTree(ROOT_ID);
+  const TestPositionRange root_range =
+      TestPositionRange::RangeOfContents(*root);
+  const AXNode* text_field = GetNodeFromTree(TEXT_FIELD_ID);
+  const TestPositionRange text_field_range =
+      TestPositionRange::RangeOfContents(*text_field);
+  const AXNode* static_text = GetNodeFromTree(STATIC_TEXT1_ID);
+  const TestPositionRange static_text_range =
+      TestPositionRange::RangeOfContents(*static_text);
+  const AXNode* inline_box = GetNodeFromTree(INLINE_BOX1_ID);
+  const TestPositionRange inline_box_range =
+      TestPositionRange::RangeOfContents(*inline_box);
+
+  EXPECT_TRUE(root_range.anchor()->IsTreePosition());
+  EXPECT_EQ(root_range.anchor()->GetAnchor(), root);
+  EXPECT_EQ(root_range.anchor()->child_index(), 0);
+  EXPECT_TRUE(root_range.focus()->IsTreePosition());
+  EXPECT_EQ(root_range.focus()->GetAnchor(), root);
+  EXPECT_EQ(root_range.focus()->child_index(), 4);
+
+  EXPECT_TRUE(text_field_range.anchor()->IsTextPosition())
+      << "Atomic text fields should be leaf nodes hence we get a text "
+         "position.";
+  EXPECT_EQ(text_field_range.anchor()->GetAnchor(), text_field);
+  EXPECT_EQ(text_field_range.anchor()->text_offset(), 0);
+  EXPECT_TRUE(text_field_range.focus()->IsTextPosition())
+      << "Atomic text fields should be leaf nodes hence we get a text "
+         "position.";
+  EXPECT_EQ(text_field_range.focus()->GetAnchor(), text_field);
+  EXPECT_EQ(text_field_range.focus()->text_offset(), 14)
+      << "Should be length of \"Line 1\\nLine 2\\n\".";
+
+  EXPECT_TRUE(static_text_range.anchor()->IsTextPosition());
+  EXPECT_EQ(static_text_range.anchor()->GetAnchor(), static_text);
+  EXPECT_EQ(static_text_range.anchor()->text_offset(), 0);
+  EXPECT_TRUE(static_text_range.focus()->IsTextPosition());
+  EXPECT_EQ(static_text_range.focus()->GetAnchor(), static_text);
+  EXPECT_EQ(static_text_range.focus()->text_offset(), 6)
+      << "Should be length of \"Line 1\".";
+
+  EXPECT_TRUE(inline_box_range.anchor()->IsTextPosition());
+  EXPECT_EQ(inline_box_range.anchor()->GetAnchor(), inline_box);
+  EXPECT_EQ(inline_box_range.anchor()->text_offset(), 0);
+  EXPECT_TRUE(inline_box_range.focus()->IsTextPosition());
+  EXPECT_EQ(inline_box_range.focus()->GetAnchor(), inline_box);
+  EXPECT_EQ(inline_box_range.focus()->text_offset(), 6)
+      << "Should be length of \"Line 1\".";
+}
 
 TEST_F(AXRangeTest, EqualityOperators) {
   TestPositionInstance null_position = AXNodePosition::CreateNullPosition();
@@ -1048,13 +1100,15 @@ TEST_F(AXRangeTest, GetTextAddingNewlineBetweenParagraphs) {
     TestPositionRange backward_test_range(std::move(range_end),
                                           std::move(range_start));
     size_t appended_newlines_count = 0;
-    EXPECT_EQ(expected_text, forward_test_range.GetText(
-                                 AXTextConcatenationBehavior::kAsInnerText, -1,
-                                 false, &appended_newlines_count));
+    EXPECT_EQ(expected_text,
+              forward_test_range.GetText(
+                  AXTextConcatenationBehavior::kWithParagraphBreaks, -1, false,
+                  &appended_newlines_count));
     EXPECT_EQ(expected_appended_newlines_count, appended_newlines_count);
-    EXPECT_EQ(expected_text, backward_test_range.GetText(
-                                 AXTextConcatenationBehavior::kAsInnerText, -1,
-                                 false, &appended_newlines_count));
+    EXPECT_EQ(expected_text,
+              backward_test_range.GetText(
+                  AXTextConcatenationBehavior::kWithParagraphBreaks, -1, false,
+                  &appended_newlines_count));
     EXPECT_EQ(expected_appended_newlines_count, appended_newlines_count);
   };
 
@@ -1108,16 +1162,19 @@ TEST_F(AXRangeTest, GetTextWithMaxCount) {
       ax::mojom::TextAffinity::kDownstream);
 
   TestPositionRange test_range(line1_start->Clone(), line2_end->Clone());
-  EXPECT_EQ(LINE_1.substr(0, 2),
-            test_range.GetText(AXTextConcatenationBehavior::kAsInnerText, 2));
+  EXPECT_EQ(
+      LINE_1.substr(0, 2),
+      test_range.GetText(AXTextConcatenationBehavior::kWithParagraphBreaks, 2));
 
   // Test the case where an appended newline falls right at max_count.
-  EXPECT_EQ(LINE_1.substr().append(NEWLINE),
-            test_range.GetText(AXTextConcatenationBehavior::kAsInnerText, 7));
+  EXPECT_EQ(
+      LINE_1.substr().append(NEWLINE),
+      test_range.GetText(AXTextConcatenationBehavior::kWithParagraphBreaks, 7));
 
   // Test passing -1 for max_count.
   EXPECT_EQ(LINE_1.substr().append(NEWLINE).append(LINE_2),
-            test_range.GetText(AXTextConcatenationBehavior::kAsInnerText, -1));
+            test_range.GetText(
+                AXTextConcatenationBehavior::kWithParagraphBreaks, -1));
 }
 
 TEST_F(AXRangeTest, GetTextWithList) {
@@ -1251,11 +1308,11 @@ TEST_F(AXRangeTest, GetTextWithList) {
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_TRUE(end->IsTextPosition());
   TestPositionRange forward_range(start->Clone(), end->Clone());
-  EXPECT_EQ(kAllText,
-            forward_range.GetText(AXTextConcatenationBehavior::kAsInnerText));
+  EXPECT_EQ(kAllText, forward_range.GetText(
+                          AXTextConcatenationBehavior::kWithParagraphBreaks));
   TestPositionRange backward_range(std::move(end), std::move(start));
-  EXPECT_EQ(kAllText,
-            backward_range.GetText(AXTextConcatenationBehavior::kAsInnerText));
+  EXPECT_EQ(kAllText, backward_range.GetText(
+                          AXTextConcatenationBehavior::kWithParagraphBreaks));
 }
 
 TEST_F(AXRangeTest, GetRects) {

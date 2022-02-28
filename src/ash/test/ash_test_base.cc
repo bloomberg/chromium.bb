@@ -29,9 +29,8 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_widget_builder.h"
 #include "ash/test/test_window_builder.h"
-#include "ash/test_screenshot_delegate.h"
 #include "ash/test_shell_delegate.h"
-#include "ash/utility/screenshot_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/work_area_insets.h"
@@ -74,6 +73,11 @@ class AshEventGeneratorDelegate
     : public aura::test::EventGeneratorDelegateAura {
  public:
   AshEventGeneratorDelegate() = default;
+
+  AshEventGeneratorDelegate(const AshEventGeneratorDelegate&) = delete;
+  AshEventGeneratorDelegate& operator=(const AshEventGeneratorDelegate&) =
+      delete;
+
   ~AshEventGeneratorDelegate() override = default;
 
   // aura::test::EventGeneratorDelegateAura overrides:
@@ -82,9 +86,6 @@ class AshEventGeneratorDelegate
     display::Display display = screen->GetDisplayNearestPoint(point_in_screen);
     return Shell::GetRootWindowForDisplayId(display.id())->GetHost()->window();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AshEventGeneratorDelegate);
 };
 
 }  // namespace
@@ -206,6 +207,13 @@ std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
       .BuildOwnsNativeWidget();
 }
 
+// static
+std::unique_ptr<views::Widget> AshTestBase::CreateFramelessTestWidget() {
+  return TestWidgetBuilder()
+      .SetWidgetType(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS)
+      .BuildOwnsNativeWidget();
+}
+
 std::unique_ptr<aura::Window> AshTestBase::CreateAppWindow(
     const gfx::Rect& bounds_in_screen,
     AppType app_type,
@@ -295,11 +303,6 @@ void AshTestBase::SetUserPref(const std::string& user_email,
   prefs->Set(path, value);
 }
 
-TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {
-  return static_cast<TestScreenshotDelegate*>(
-      Shell::Get()->screenshot_controller()->screenshot_delegate_.get());
-}
-
 TestSessionControllerClient* AshTestBase::GetSessionControllerClient() {
   return ash_test_helper_->test_session_controller_client();
 }
@@ -310,6 +313,10 @@ TestSystemTrayClient* AshTestBase::GetSystemTrayClient() {
 
 AppListTestHelper* AshTestBase::GetAppListTestHelper() {
   return ash_test_helper_->app_list_test_helper();
+}
+
+TestAppListClient* AshTestBase::GetTestAppListClient() {
+  return GetAppListTestHelper()->app_list_client();
 }
 
 AmbientAshTestHelper* AshTestBase::GetAmbientAshTestHelper() {
@@ -325,6 +332,14 @@ void AshTestBase::SimulateUserLogin(const std::string& user_email,
   TestSessionControllerClient* session = GetSessionControllerClient();
   session->AddUserSession(user_email, user_type);
   session->SwitchActiveUser(AccountId::FromUserEmail(user_email));
+  session->SetSessionState(SessionState::ACTIVE);
+}
+
+void AshTestBase::SimulateUserLogin(const AccountId& account_id,
+                                    user_manager::UserType user_type) {
+  TestSessionControllerClient* session = GetSessionControllerClient();
+  session->AddUserSession(account_id, account_id.GetUserEmail(), user_type);
+  session->SwitchActiveUser(account_id);
   session->SetSessionState(SessionState::ACTIVE);
 }
 
@@ -458,12 +473,26 @@ bool AshTestBase::TestIfMouseWarpsAt(ui::test::EventGenerator* event_generator,
              .id();
 }
 
+void AshTestBase::PressAndReleaseKey(ui::KeyboardCode key_code, int flags) {
+  GetEventGenerator()->PressAndReleaseKey(key_code, flags);
+}
+
 void AshTestBase::SimulateMouseClickAt(
     ui::test::EventGenerator* event_generator,
     const views::View* target_view) {
   DCHECK(target_view);
   event_generator->MoveMouseTo(target_view->GetBoundsInScreen().CenterPoint());
   event_generator->ClickLeftButton();
+}
+
+bool AshTestBase::EnterOverview(OverviewEnterExitType type) {
+  return Shell::Get()->overview_controller()->StartOverview(
+      OverviewStartAction::kTests, type);
+}
+
+bool AshTestBase::ExitOverview(OverviewEnterExitType type) {
+  return Shell::Get()->overview_controller()->EndOverview(
+      OverviewEndAction::kTests, type);
 }
 
 void AshTestBase::SwapPrimaryDisplay() {

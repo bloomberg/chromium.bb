@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/cart/cart_db_content.pb.h"
@@ -122,13 +123,13 @@ class CartServiceBrowserTest : public InProcessBrowserTest {
         ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
     // TODO(crbug.com/1206094): Investigate TabStripModelObserver-based waiting
     // mechanism.
-    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(2));
+    base::PlatformThread::Sleep(base::Seconds(2));
     base::RunLoop().RunUntilIdle();
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  CartService* service_;
-  Profile* profile_;
+  raw_ptr<CartService> service_;
+  raw_ptr<Profile> profile_;
   net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
 };
 
@@ -277,8 +278,8 @@ IN_PROC_BROWSER_TEST_F(CartServiceBrowserDiscountTest,
                        DISABLED_LoadDiscountInCurrentTab) {
   cart_db::ChromeCartContentProto merchant_proto =
       BuildProto(kFakeMerchantA, kFakeMerchantURLA);
-  cart_db::DiscountInfoProto* added_discount =
-      merchant_proto.mutable_discount_info()->add_discount_info();
+  cart_db::RuleDiscountInfoProto* added_discount =
+      merchant_proto.mutable_discount_info()->add_rule_discount_info();
   added_discount->set_rule_id("fake_id");
   added_discount->set_percent_off(5);
   added_discount->set_raw_merchant_offer_id("fake_offer_id");

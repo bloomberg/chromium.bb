@@ -40,7 +40,6 @@
 
 using ::testing::InSequence;
 using ::testing::StrictMock;
-using base::TimeDelta;
 
 namespace media {
 namespace mp4 {
@@ -274,7 +273,7 @@ constexpr char kShakaPackagerUMA[] = "Media.MSE.DetectedShakaPackagerInMp4";
 TEST_F(MP4StreamParserTest, DidNotUseShakaPackager) {
   // Encrypted files have non-zero duration and are treated as recorded streams.
   auto params = GetDefaultInitParametersExpectations();
-  params.duration = base::TimeDelta::FromMicroseconds(2736066);
+  params.duration = base::Microseconds(2736066);
   params.liveness = DemuxerStream::LIVENESS_RECORDED;
   params.detected_audio_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
@@ -288,7 +287,7 @@ TEST_F(MP4StreamParserTest, DidNotUseShakaPackager) {
 
 TEST_F(MP4StreamParserTest, UsedShakaPackager) {
   auto params = GetDefaultInitParametersExpectations();
-  params.duration = base::TimeDelta::FromMicroseconds(2736000);
+  params.duration = base::Microseconds(2736000);
   params.liveness = DemuxerStream::LIVENESS_RECORDED;
   params.detected_audio_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
@@ -462,7 +461,7 @@ TEST_F(MP4StreamParserTest, MissingSampleEncryptionInfo) {
   // Encrypted test mp4 files have non-zero duration and are treated as
   // recorded streams.
   auto params = GetDefaultInitParametersExpectations();
-  params.duration = base::TimeDelta::FromMicroseconds(23219);
+  params.duration = base::Microseconds(23219);
   params.liveness = DemuxerStream::LIVENESS_RECORDED;
   params.detected_video_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
@@ -490,7 +489,7 @@ TEST_F(MP4StreamParserTest, HEVC_in_MP4_container) {
   EXPECT_MEDIA_LOG(ErrorLog("Unsupported VisualSampleEntry type hev1"));
 #endif
   auto params = GetDefaultInitParametersExpectations();
-  params.duration = base::TimeDelta::FromMicroseconds(1002000);
+  params.duration = base::Microseconds(1002000);
   params.liveness = DemuxerStream::LIVENESS_RECORDED;
   params.detected_audio_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
@@ -499,7 +498,7 @@ TEST_F(MP4StreamParserTest, HEVC_in_MP4_container) {
   EXPECT_EQ(expect_success,
             AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
-  EXPECT_EQ(kCodecHEVC, video_decoder_config_.codec());
+  EXPECT_EQ(VideoCodec::kHEVC, video_decoder_config_.codec());
   EXPECT_EQ(HEVCPROFILE_MAIN, video_decoder_config_.profile());
 #endif
 }
@@ -569,7 +568,7 @@ TEST_F(MP4StreamParserTest, CencWithEncryptionInfoStoredAsAuxDataInMdat) {
   // Encrypted test mp4 files have non-zero duration and are treated as
   // recorded streams.
   auto params = GetDefaultInitParametersExpectations();
-  params.duration = base::TimeDelta::FromMicroseconds(2736066);
+  params.duration = base::Microseconds(2736066);
   params.liveness = DemuxerStream::LIVENESS_RECORDED;
   params.detected_audio_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
@@ -583,7 +582,7 @@ TEST_F(MP4StreamParserTest, CencWithSampleEncryptionBox) {
   // Encrypted test mp4 files have non-zero duration and are treated as
   // recorded streams.
   auto params = GetDefaultInitParametersExpectations();
-  params.duration = base::TimeDelta::FromMicroseconds(2736066);
+  params.duration = base::Microseconds(2736066);
   params.liveness = DemuxerStream::LIVENESS_RECORDED;
   params.detected_audio_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
@@ -595,7 +594,7 @@ TEST_F(MP4StreamParserTest, CencWithSampleEncryptionBox) {
 
 TEST_F(MP4StreamParserTest, NaturalSizeWithoutPASP) {
   auto params = GetDefaultInitParametersExpectations();
-  params.duration = base::TimeDelta::FromMicroseconds(1000966);
+  params.duration = base::Microseconds(1000966);
   params.liveness = DemuxerStream::LIVENESS_RECORDED;
   params.detected_audio_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
@@ -609,7 +608,7 @@ TEST_F(MP4StreamParserTest, NaturalSizeWithoutPASP) {
 
 TEST_F(MP4StreamParserTest, NaturalSizeWithPASP) {
   auto params = GetDefaultInitParametersExpectations();
-  params.duration = base::TimeDelta::FromMicroseconds(1000966);
+  params.duration = base::Microseconds(1000966);
   params.liveness = DemuxerStream::LIVENESS_RECORDED;
   params.detected_audio_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
@@ -634,7 +633,7 @@ TEST_F(MP4StreamParserTest, DemuxingAC3) {
 #endif
 
   auto params = GetDefaultInitParametersExpectations();
-  params.duration = base::TimeDelta::FromMicroseconds(1045000);
+  params.duration = base::Microseconds(1045000);
   params.liveness = DemuxerStream::LIVENESS_RECORDED;
   params.detected_video_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
@@ -658,7 +657,7 @@ TEST_F(MP4StreamParserTest, DemuxingEAC3) {
 #endif
 
   auto params = GetDefaultInitParametersExpectations();
-  params.duration = base::TimeDelta::FromMicroseconds(1045000);
+  params.duration = base::Microseconds(1045000);
   params.liveness = DemuxerStream::LIVENESS_RECORDED;
   params.detected_video_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
@@ -718,23 +717,29 @@ TEST_F(MP4StreamParserTest, Vp9) {
   EXPECT_EQ(hdr_metadata.max_content_light_level, 1000u);
   EXPECT_EQ(hdr_metadata.max_frame_average_light_level, 640u);
 
-  const auto& mastering_metadata = hdr_metadata.mastering_metadata;
+  const auto& color_volume_metadata = hdr_metadata.color_volume_metadata;
 
   constexpr float kColorCoordinateUnit = 1 / 16.0f;
-  EXPECT_NEAR(mastering_metadata.primary_r.x(), 0.68, kColorCoordinateUnit);
-  EXPECT_NEAR(mastering_metadata.primary_r.y(), 0.31998, kColorCoordinateUnit);
-  EXPECT_NEAR(mastering_metadata.primary_g.x(), 0.26496, kColorCoordinateUnit);
-  EXPECT_NEAR(mastering_metadata.primary_g.y(), 0.68998, kColorCoordinateUnit);
-  EXPECT_NEAR(mastering_metadata.primary_b.x(), 0.15, kColorCoordinateUnit);
-  EXPECT_NEAR(mastering_metadata.primary_b.y(), 0.05998, kColorCoordinateUnit);
-  EXPECT_NEAR(mastering_metadata.white_point.x(), 0.314, kColorCoordinateUnit);
-  EXPECT_NEAR(mastering_metadata.white_point.y(), 0.351, kColorCoordinateUnit);
+  EXPECT_NEAR(color_volume_metadata.primary_r.x(), 0.68, kColorCoordinateUnit);
+  EXPECT_NEAR(color_volume_metadata.primary_r.y(), 0.31998,
+              kColorCoordinateUnit);
+  EXPECT_NEAR(color_volume_metadata.primary_g.x(), 0.26496,
+              kColorCoordinateUnit);
+  EXPECT_NEAR(color_volume_metadata.primary_g.y(), 0.68998,
+              kColorCoordinateUnit);
+  EXPECT_NEAR(color_volume_metadata.primary_b.x(), 0.15, kColorCoordinateUnit);
+  EXPECT_NEAR(color_volume_metadata.primary_b.y(), 0.05998,
+              kColorCoordinateUnit);
+  EXPECT_NEAR(color_volume_metadata.white_point.x(), 0.314,
+              kColorCoordinateUnit);
+  EXPECT_NEAR(color_volume_metadata.white_point.y(), 0.351,
+              kColorCoordinateUnit);
 
   constexpr float kLuminanceMaxUnit = 1 / 8.0f;
-  EXPECT_NEAR(mastering_metadata.luminance_max, 1000.0f, kLuminanceMaxUnit);
+  EXPECT_NEAR(color_volume_metadata.luminance_max, 1000.0f, kLuminanceMaxUnit);
 
   constexpr float kLuminanceMinUnit = 1 / 14.0;
-  EXPECT_NEAR(mastering_metadata.luminance_min, 0.01f, kLuminanceMinUnit);
+  EXPECT_NEAR(color_volume_metadata.luminance_min, 0.01f, kLuminanceMinUnit);
 }
 
 TEST_F(MP4StreamParserTest, FourCCToString) {
@@ -781,7 +786,7 @@ TEST_F(MP4StreamParserTest, TextTrackDetection) {
 
 TEST_F(MP4StreamParserTest, MultiTrackFile) {
   auto params = GetDefaultInitParametersExpectations();
-  params.duration = base::TimeDelta::FromMilliseconds(4248);
+  params.duration = base::Milliseconds(4248);
   params.liveness = DemuxerStream::LIVENESS_RECORDED;
   params.detected_audio_track_count = 2;
   params.detected_video_track_count = 2;

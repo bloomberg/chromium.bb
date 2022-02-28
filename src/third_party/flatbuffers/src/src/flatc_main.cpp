@@ -23,15 +23,15 @@ static void Warn(const flatbuffers::FlatCompiler *flatc,
                  const std::string &warn, bool show_exe_name) {
   (void)flatc;
   if (show_exe_name) { printf("%s: ", g_program_name); }
-  printf("warning: %s\n", warn.c_str());
+  fprintf(stderr, "warning: %s\n", warn.c_str());
 }
 
 static void Error(const flatbuffers::FlatCompiler *flatc,
                   const std::string &err, bool usage, bool show_exe_name) {
   if (show_exe_name) { printf("%s: ", g_program_name); }
-  printf("error: %s\n", err.c_str());
+  fprintf(stderr, "error: %s\n", err.c_str());
   if (usage && flatc) {
-    printf("%s", flatc->GetUsageString(g_program_name).c_str());
+    fprintf(stderr, "%s", flatc->GetUsageString(g_program_name).c_str());
   }
   exit(1);
 }
@@ -69,23 +69,16 @@ int main(int argc, const char *argv[]) {
       "Generate Go files for tables/structs", nullptr },
     { flatbuffers::GenerateJava, "-j", "--java", "Java", true,
       flatbuffers::GenerateJavaGRPC, flatbuffers::IDLOptions::kJava,
-      "Generate Java classes for tables/structs",
-      flatbuffers::JavaCSharpMakeRule },
-    { flatbuffers::GenerateJSTS, "-s", "--js", "JavaScript", true, nullptr,
-      flatbuffers::IDLOptions::kJs,
-      "Generate JavaScript code for tables/structs",
-      flatbuffers::JSTSMakeRule },
+      "Generate Java classes for tables/structs", flatbuffers::JavaMakeRule },
     { flatbuffers::GenerateDart, "-d", "--dart", "Dart", true, nullptr,
       flatbuffers::IDLOptions::kDart,
       "Generate Dart classes for tables/structs", flatbuffers::DartMakeRule },
-    { flatbuffers::GenerateJSTS, "-T", "--ts", "TypeScript", true, nullptr,
-      flatbuffers::IDLOptions::kTs,
-      "Generate TypeScript code for tables/structs",
-      flatbuffers::JSTSMakeRule },
+    { flatbuffers::GenerateTS, "-T", "--ts", "TypeScript", true,
+      flatbuffers::GenerateTSGRPC, flatbuffers::IDLOptions::kTs,
+      "Generate TypeScript code for tables/structs", flatbuffers::TSMakeRule },
     { flatbuffers::GenerateCSharp, "-n", "--csharp", "C#", true, nullptr,
       flatbuffers::IDLOptions::kCSharp,
-      "Generate C# classes for tables/structs",
-      flatbuffers::JavaCSharpMakeRule },
+      "Generate C# classes for tables/structs", flatbuffers::CSharpMakeRule },
     { flatbuffers::GeneratePython, "-p", "--python", "Python", true,
       flatbuffers::GeneratePythonGRPC, flatbuffers::IDLOptions::kPython,
       "Generate Python files for tables/structs", nullptr },

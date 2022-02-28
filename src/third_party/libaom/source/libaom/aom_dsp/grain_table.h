@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-#include "aom_dsp/grain_synthesis.h"
+#include "aom_dsp/grain_params.h"
 #include "aom/internal/aom_codec_internal.h"
 
 typedef struct aom_film_grain_table_entry_t {

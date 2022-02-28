@@ -12,7 +12,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 
 namespace device {
@@ -29,6 +28,10 @@ class FakeGattReadResultWinrt
   explicit FakeGattReadResultWinrt(
       BluetoothGattService::GattErrorCode error_code);
   explicit FakeGattReadResultWinrt(std::vector<uint8_t> data);
+
+  FakeGattReadResultWinrt(const FakeGattReadResultWinrt&) = delete;
+  FakeGattReadResultWinrt& operator=(const FakeGattReadResultWinrt&) = delete;
+
   ~FakeGattReadResultWinrt() override;
 
   // IGattReadResult:
@@ -48,8 +51,6 @@ class FakeGattReadResultWinrt
           GenericAttributeProfile::GattCommunicationStatus_Success;
   std::vector<uint8_t> data_;
   uint8_t protocol_error_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeGattReadResultWinrt);
 };
 
 }  // namespace device

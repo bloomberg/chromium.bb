@@ -3458,7 +3458,6 @@ void Texture::Storage(const Functions& gl, TYPES tex_type, GLuint width, GLuint 
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 }
 
@@ -3525,7 +3524,6 @@ void Texture::Update(const Functions& gl, TYPES tex_type, GLuint width, GLuint h
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 }
 
@@ -4072,7 +4070,6 @@ std::string Variable::Descriptor::GetDefinition(FLAVOUR flavour, STORAGE storage
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	if (BUILTIN != m_type)
@@ -4124,7 +4121,6 @@ std::string Variable::Descriptor::GetDefinition(FLAVOUR flavour, STORAGE storage
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	replaceToken("STORAGE", position, storage_str, definition);
@@ -4690,7 +4686,6 @@ void ProgramInterface::cloneVariableForStage(const Variable& variable, Shader::S
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 }
 
@@ -4775,7 +4770,6 @@ Variable* ProgramInterface::cloneVariableForStage(const Variable& variable, Shad
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	return result;
@@ -5170,7 +5164,6 @@ GLint TestBase::getLastInputLocation(Utils::Shader::STAGES stage, const Utils::T
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	/* Zero means no array, but 1 slot is required */
@@ -5245,7 +5238,6 @@ GLint TestBase::getLastOutputLocation(Utils::Shader::STAGES stage, const Utils::
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	/* Zero means no array, but 1 slot is required */
@@ -19783,6 +19775,9 @@ FragmentDataLocationAPITest::FragmentDataLocationAPITest(deqp::Context& context)
 	, m_gohan(context)
 	, m_goten(context)
 	, m_chichi(context)
+	, m_goku_location(0)
+	, m_gohan_location(0)
+	, m_chichi_location(0)
 {
 }
 
@@ -21451,7 +21446,6 @@ std::string XFBTooSmallStrideTest::getShaderSource(GLuint test_case_index, Utils
 			break;
 		default:
 			TCU_FAIL("Invalid enum");
-			break;
 		}
 	}
 
@@ -21793,7 +21787,6 @@ std::string XFBVariableStrideTest::getShaderSource(GLuint test_case_index, Utils
 			break;
 		default:
 			TCU_FAIL("Invalid enum");
-			break;
 		}
 	}
 
@@ -22147,7 +22140,6 @@ std::string XFBBlockStrideTest::getShaderSource(GLuint test_case_index, Utils::S
 			break;
 		default:
 			TCU_FAIL("Invalid enum");
-			break;
 		}
 	}
 
@@ -22623,7 +22615,6 @@ std::string XFBDuplicatedStrideTest::getShaderSource(GLuint test_case_index, Uti
 			break;
 		default:
 			TCU_FAIL("Invalid enum");
-			break;
 		}
 	}
 
@@ -24037,7 +24028,6 @@ std::string XFBExceedBufferLimitTest::getShaderSource(GLuint test_case_index, Ut
 			break;
 		default:
 			TCU_FAIL("Invalid enum");
-			break;
 		}
 	}
 
@@ -24378,7 +24368,6 @@ std::string XFBExceedOffsetLimitTest::getShaderSource(GLuint test_case_index, Ut
 			break;
 		default:
 			TCU_FAIL("Invalid enum");
-			break;
 		}
 	}
 
@@ -24769,7 +24758,6 @@ std::string XFBGlobalBufferTest::getShaderSource(GLuint test_case_index, Utils::
 			break;
 		default:
 			TCU_FAIL("Invalid enum");
-			break;
 		}
 	}
 
@@ -25118,7 +25106,6 @@ std::string XFBStrideTest::getShaderSource(GLuint test_case_index, Utils::Shader
 
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	/* */
@@ -25389,7 +25376,6 @@ std::string XFBBlockMemberBufferTest::getShaderSource(GLuint test_case_index, Ut
 			break;
 		default:
 			TCU_FAIL("Invalid enum");
-			break;
 		}
 	}
 
@@ -25672,7 +25658,6 @@ std::string XFBOutputOverlappingTest::getShaderSource(GLuint test_case_index, Ut
 			break;
 		default:
 			TCU_FAIL("Invalid enum");
-			break;
 		}
 	}
 
@@ -25971,7 +25956,6 @@ std::string XFBInvalidOffsetAlignmentTest::getShaderSource(GLuint test_case_inde
 			break;
 		default:
 			TCU_FAIL("Invalid enum");
-			break;
 		}
 	}
 
@@ -26300,7 +26284,6 @@ std::string XFBCaptureInactiveOutputVariableTest::getShaderSource(GLuint test_ca
 
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	/* */
@@ -26734,7 +26717,6 @@ std::string XFBCaptureInactiveOutputComponentTest::getShaderSource(GLuint test_c
 
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	/* */
@@ -27112,7 +27094,6 @@ std::string XFBCaptureInactiveOutputBlockMemberTest::getShaderSource(GLuint				 
 
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	/* */
@@ -27462,7 +27443,6 @@ std::string XFBCaptureStructTest::getShaderSource(GLuint test_case_index, Utils:
 
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	/* */
@@ -27639,7 +27619,6 @@ std::string XFBCaptureUnsizedArrayTest::getShaderSource(GLuint test_case_index, 
 			break;
 		default:
 			TCU_FAIL("Invalid enum");
-			break;
 		}
 	}
 
@@ -28007,7 +27986,6 @@ std::string XFBExplicitLocationTest::getShaderSource(GLuint test_case_index, Uti
 
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	/* */
@@ -28459,7 +28437,6 @@ std::string XFBExplicitLocationStructTest::getShaderSource(GLuint test_case_inde
 
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	/* */

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "device/vr/windows/d3d11_texture_helper.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_event.h"
 #include "mojo/public/c/system/platform_handle.h"
@@ -475,7 +475,9 @@ bool D3D11TextureHelper::CompositeLayer(LayerData& layer) {
 
   D3D11_TEXTURE2D_DESC desc;
   render_state_.target_texture_->GetDesc(&desc);
-  D3D11_VIEWPORT viewport = {0, 0, desc.Width, desc.Height, 0, 1};
+  D3D11_VIEWPORT viewport = {
+      0, 0, static_cast<float>(desc.Width), static_cast<float>(desc.Height),
+      0, 1};
   render_state_.d3d11_device_context_->RSSetViewports(1, &viewport);
   render_state_.d3d11_device_context_->IASetPrimitiveTopology(
       D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

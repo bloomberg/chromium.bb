@@ -30,6 +30,8 @@ class AudioParameters;
 
 namespace audio {
 
+class DeviceOutputListener;
+class InputStreamActivityMonitor;
 class InputSyncWriter;
 class UserInputMonitor;
 
@@ -51,10 +53,16 @@ class InputStream final : public media::mojom::AudioInputStream,
       mojo::PendingRemote<media::mojom::AudioLog> log,
       media::AudioManager* manager,
       std::unique_ptr<UserInputMonitor> user_input_monitor,
+      InputStreamActivityMonitor* activity_monitor,
+      DeviceOutputListener* device_output_listener,
       const std::string& device_id,
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
       bool enable_agc);
+
+  InputStream(const InputStream&) = delete;
+  InputStream& operator=(const InputStream&) = delete;
+
   ~InputStream() override;
 
   const base::UnguessableToken& id() const { return id_; }
@@ -99,8 +107,6 @@ class InputStream final : public media::mojom::AudioInputStream,
   SEQUENCE_CHECKER(owning_sequence_);
 
   base::WeakPtrFactory<InputStream> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(InputStream);
 };
 
 }  // namespace audio

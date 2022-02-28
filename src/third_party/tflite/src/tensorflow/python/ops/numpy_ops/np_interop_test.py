@@ -14,14 +14,13 @@
 # ==============================================================================
 """Tests for interop between TF ops, numpy_ops, and numpy methods."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as onp
 import tensorflow.compat.v2 as tf
 
-import tensorflow.python.ops.numpy_ops as np
+from tensorflow.python.framework import ops
+from tensorflow.python.framework import test_util
+from tensorflow.python.ops import numpy_ops as np
+from tensorflow.python.ops.numpy_ops import np_math_ops
 
 
 # Tests for code snippet put in README.md
@@ -93,11 +92,22 @@ class InteropTest(tf.test.TestCase):
 
     dx, dy = t.gradient([xx, yy], [x, y])
 
-    # # TODO(nareshmodi): Figure out a way to rewrap ndarray as tensors.
-    # self.assertIsInstance(dx, np.ndarray)
-    # self.assertIsInstance(dy, np.ndarray)
+    self.assertIsInstance(dx, np.ndarray)
+    self.assertIsInstance(dy, np.ndarray)
     self.assertAllClose(dx, 2.0)
     self.assertAllClose(dy, 3.0)
+
+  def testGradientTapeNoneGradients(self):
+    y = np.asarray(2.0)
+
+    with tf.GradientTape() as t:
+      x = np.asarray(3.0)
+      t.watch([x])
+      z = 2 * x
+
+    dz = t.gradient(z, y)
+
+    self.assertIsNone(dz)
 
   def testCondInterop(self):
     x = np.asarray(3.0)
@@ -163,16 +173,26 @@ class InteropTest(tf.test.TestCase):
     self.assertIsInstance(sq, onp.ndarray)
     self.assertEqual(100., sq[0])
 
-    # TODO(nareshmodi): Fails since the autopacking code doesn't use
-    # nest.flatten.
+# TODO(b/171313773): why doesn't tensor have __array_module__
+  def testArrayModule(self):
+    self.skipTest("Tensor doesn't have __array_module__")
+    arr = np.asarray([10])
 
+    module = arr.__array_module__((tf.Tensor,))
+    self.assertIs(module, tf.experimental.numpy)
 
+    class Dummy:
+      pass
+    module = arr.__array_module__((tf.Tensor, Dummy))
+    self.assertIs(module, NotImplemented)
+
+# TODO(nareshmodi): Fails since the autopacking code doesn't use
+# nest.flatten.
 #   def testAutopacking(self):
 #     arr1 = np.asarray(1.)
 #     arr2 = np.asarray(2.)
 #     arr3 = np.asarray(3.)
 #     t = ops.convert_to_tensor_v2([arr1, arr2, arr3])
-
 #     self.assertEqual(t.numpy(), [1., 2., 3.])
 
   def testDistStratInterop(self):
@@ -181,19 +201,17 @@ class InteropTest(tf.test.TestCase):
 
     multiplier = np.asarray(5.)
 
-    with strategy.scope():
+    @tf.function
+    def run():
+      ctx = tf.distribute.get_replica_context()
+      val = np.asarray(ctx.replica_id_in_sync_group)
+      return val * multiplier
 
-      @tf.function
-      def run():
-        ctx = tf.distribute.get_replica_context()
-        val = np.asarray(ctx.replica_id_in_sync_group)
-        return val * multiplier
+    distributed_values = strategy.run(run)
+    reduced = strategy.reduce(
+        tf.distribute.ReduceOp.SUM, distributed_values, axis=None)
 
-      distributed_values = strategy.run(run)
-      reduced = strategy.reduce(
-          tf.distribute.ReduceOp.SUM, distributed_values, axis=None)
-
-    values = distributed_values.values
+    values = strategy.experimental_local_results(distributed_values)
 
     # Note that this should match the number of virtual CPUs.
     self.assertLen(values, 3)
@@ -207,6 +225,169 @@ class InteropTest(tf.test.TestCase):
     # "strategy.reduce" doesn't rewrap in ndarray.
     # self.assertIsInstance(reduced, np.ndarray)
     self.assertAllClose(reduced, 15)
+
+  @test_util.disable_tfrt('b/180469928')
+  def testPyFuncInterop(self):
+    def py_func_fn(a, b):
+      return a + b
+
+    @tf.function
+    def fn(a, b):
+      result = tf.py_function(py_func_fn, [a, b], a.dtype)
+      return np.asarray(result)
+
+    a = np.asarray(1.)
+    b = np.asarray(2.)
+
+    result = fn(a, b)
+    self.assertIsInstance(result, np.ndarray)
+    self.assertAllClose(result, 3.)
+
+  def testDatasetInterop(self):
+    values = [1, 2, 3, 4, 5, 6]
+    values_as_array = np.asarray(values)
+
+    # Tensor dataset
+    dataset = tf.data.Dataset.from_tensors(values_as_array)
+
+    for value, value_from_dataset in zip([values_as_array], dataset):
+      self.assertIsInstance(value_from_dataset, np.ndarray)
+      self.assertAllEqual(value_from_dataset, value)
+
+    # Tensor slice dataset
+    dataset = tf.data.Dataset.from_tensor_slices(values_as_array)
+
+    for value, value_from_dataset in zip(values, dataset):
+      self.assertIsInstance(value_from_dataset, np.ndarray)
+      self.assertAllEqual(value_from_dataset, value)
+
+    # # TODO(nareshmodi): as_numpy_iterator() doesn't work.
+    # items = list(dataset.as_numpy_iterator())
+
+    # Map over a dataset.
+    dataset = dataset.map(lambda x: np.add(x, 1))
+
+    for value, value_from_dataset in zip(values, dataset):
+      self.assertIsInstance(value_from_dataset, np.ndarray)
+      self.assertAllEqual(value_from_dataset, value + 1)
+
+    # Batch a dataset.
+    dataset = tf.data.Dataset.from_tensor_slices(values_as_array).batch(2)
+
+    for value, value_from_dataset in zip([[1, 2], [3, 4], [5, 6]], dataset):
+      self.assertIsInstance(value_from_dataset, np.ndarray)
+      self.assertAllEqual(value_from_dataset, value)
+
+  def testKerasInterop(self):
+    # Return an ndarray from the model.
+    inputs = tf.keras.layers.Input(shape=(10,))
+    output_layer = tf.keras.layers.Lambda(np.square)(inputs)
+    model = tf.keras.Model([inputs], output_layer)
+
+    values = onp.arange(10, dtype=onp.float32)
+    values_as_array = np.asarray(values)
+
+    result = model(values)
+    self.assertIsInstance(result, np.ndarray)
+    self.assertAllClose(result, onp.square(values))
+
+    result = model(values_as_array)
+    self.assertIsInstance(result, np.ndarray)
+    self.assertAllClose(result, onp.square(values))
+
+  def testKerasInteropSequential(self):
+    class ProjectionLayer(tf.keras.layers.Layer):
+      """Linear projection layer using TF NumPy."""
+
+      def __init__(self, units):
+        super(ProjectionLayer, self).__init__()
+        self._units = units
+
+      def build(self, input_shape):
+        stddev = np.sqrt(self._units).astype(np.float32)
+        initial_value = np.random.randn(input_shape[1], self._units).astype(
+            np.float32) / stddev
+        # Note that TF NumPy can interoperate with tf.Variable.
+        self.w = tf.Variable(initial_value, trainable=True)
+
+      def call(self, inputs):
+        return np.matmul(inputs, self.w)
+
+    model = tf.keras.Sequential(
+        [tf.keras.layers.Dense(100), ProjectionLayer(2)])
+    output = model.call(np.random.randn(10, 100).astype(np.float32))
+
+    self.assertIsInstance(output, np.ndarray)
+
+    dense_layer = tf.keras.layers.Dense(100)
+    output = dense_layer(np.random.randn(10, 100).astype(np.float32))
+
+  def testPForInterop(self):
+    def outer_product(a):
+      return np.tensordot(a, a, 0)
+
+    batch_size = 100
+    a = np.ones((batch_size, 32, 32))
+    c = tf.vectorized_map(outer_product, a)
+
+    self.assertIsInstance(c, np.ndarray)
+    self.assertEqual(c.shape, (batch_size, 32, 32, 32, 32))
+
+    c = tf.vectorized_map(lambda x: x.T, a)
+
+    self.assertIsInstance(c, np.ndarray)
+    self.assertEqual(c.shape, (batch_size, 32, 32))
+
+  def testJacobian(self):
+    with tf.GradientTape() as g:
+      x = np.asarray([1., 2.])
+      y = np.asarray([3., 4.])
+      g.watch(x)
+      g.watch(y)
+      z = x * x * y
+
+    jacobian = g.jacobian(z, [x, y])
+    answer = [tf.linalg.diag(2 * x * y), tf.linalg.diag(x * x)]
+
+    self.assertIsInstance(jacobian[0], np.ndarray)
+    self.assertIsInstance(jacobian[1], np.ndarray)
+    self.assertAllClose(jacobian, answer)
+
+  def testBatchJacobian(self):
+    with tf.GradientTape() as g:
+      x = np.asarray([[1., 2.], [3., 4.]])
+      y = np.asarray([[3., 4.], [5., 6.]])
+      g.watch(x)
+      g.watch(y)
+      z = x * x * y
+
+    batch_jacobian = g.batch_jacobian(z, x)
+    answer = tf.stack(
+        [tf.linalg.diag(2 * x[0] * y[0]),
+         tf.linalg.diag(2 * x[1] * y[1])])
+
+    self.assertIsInstance(batch_jacobian, np.ndarray)
+    self.assertAllClose(batch_jacobian, answer)
+
+  def testForwardprop(self):
+    x = np.asarray([1., 2.])
+    xt = np.asarray([3., 4.])
+    with tf.autodiff.ForwardAccumulator(x, xt) as acc:
+      y = x * 2.
+    yt = acc.jvp(y)
+    self.assertIsInstance(yt, np.ndarray)
+    self.assertAllClose([6., 8.], yt)
+    z = np.asarray([1.])
+    self.assertIsNone(acc.jvp(z))
+
+  def testMapFn(self):
+    x = np.asarray([1., 2.])
+    mapped_x = tf.map_fn(lambda x: (x[0]+1, x[1]+1), (x, x))
+
+    self.assertIsInstance(mapped_x[0], np.ndarray)
+    self.assertIsInstance(mapped_x[1], np.ndarray)
+    self.assertAllClose(mapped_x[0], [2., 3.])
+    self.assertAllClose(mapped_x[1], [2., 3.])
 
 
 class FunctionTest(InteropTest):
@@ -227,7 +408,9 @@ class FunctionTest(InteropTest):
 
   def testLen(self):
 
-    @tf.function
+    # len can be fixed by autograph.
+    # TODO(wangpeng): this test can just be removed
+    @tf.function(autograph=False)
     def f(x):
       # Note that shape of input to len is data dependent.
       return len(np.where(x)[0])
@@ -269,5 +452,7 @@ class VariableTest(InteropTest):
 
 
 if __name__ == '__main__':
+  ops.enable_numpy_style_type_promotion()
+  np_math_ops.enable_numpy_methods_on_tensor()
   tf.compat.v1.enable_eager_execution()
   tf.test.main()

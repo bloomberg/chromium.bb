@@ -21,6 +21,7 @@
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/dummy_histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/metrics_hashes.h"
@@ -105,6 +106,9 @@ class Histogram::Factory {
           int32_t flags)
     : Factory(name, HISTOGRAM, minimum, maximum, bucket_count, flags) {}
 
+  Factory(const Factory&) = delete;
+  Factory& operator=(const Factory&) = delete;
+
   // Create histogram based on construction parameters. Caller takes
   // ownership of the returned object.
   HistogramBase* Build();
@@ -151,9 +155,6 @@ class Histogram::Factory {
   HistogramBase::Sample maximum_;
   uint32_t bucket_count_;
   int32_t flags_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Factory);
 };
 
 HistogramBase* Histogram::Factory::Build() {
@@ -571,7 +572,7 @@ bool Histogram::AddSamplesFromPickle(PickleIterator* iter) {
   return unlogged_samples_->AddFromPickle(iter);
 }
 
-base::DictionaryValue Histogram::ToGraphDict() const {
+base::Value Histogram::ToGraphDict() const {
   std::unique_ptr<SampleVector> snapshot = SnapshotAllSamples();
   return snapshot->ToGraphDict(histogram_name(), flags());
 }
@@ -672,11 +673,13 @@ std::unique_ptr<SampleVector> Histogram::SnapshotUnloggedSamples() const {
   return samples;
 }
 
-void Histogram::GetParameters(DictionaryValue* params) const {
-  params->SetString("type", HistogramTypeToString(GetHistogramType()));
-  params->SetIntKey("min", declared_min());
-  params->SetIntKey("max", declared_max());
-  params->SetIntKey("bucket_count", static_cast<int>(bucket_count()));
+Value Histogram::GetParameters() const {
+  Value params(Value::Type::DICTIONARY);
+  params.SetStringKey("type", HistogramTypeToString(GetHistogramType()));
+  params.SetIntKey("min", declared_min());
+  params.SetIntKey("max", declared_max());
+  params.SetIntKey("bucket_count", static_cast<int>(bucket_count()));
+  return params;
 }
 
 //------------------------------------------------------------------------------
@@ -696,6 +699,9 @@ class LinearHistogram::Factory : public Histogram::Factory {
                          bucket_count, flags) {
     descriptions_ = descriptions;
   }
+
+  Factory(const Factory&) = delete;
+  Factory& operator=(const Factory&) = delete;
 
  protected:
   BucketRanges* CreateRanges() override {
@@ -728,9 +734,7 @@ class LinearHistogram::Factory : public Histogram::Factory {
   }
 
  private:
-  const DescriptionPair* descriptions_;
-
-  DISALLOW_COPY_AND_ASSIGN(Factory);
+  raw_ptr<const DescriptionPair> descriptions_;
 };
 
 LinearHistogram::~LinearHistogram() = default;
@@ -991,6 +995,9 @@ class BooleanHistogram::Factory : public Histogram::Factory {
   Factory(const std::string& name, int32_t flags)
     : Histogram::Factory(name, BOOLEAN_HISTOGRAM, 1, 2, 3, flags) {}
 
+  Factory(const Factory&) = delete;
+  Factory& operator=(const Factory&) = delete;
+
  protected:
   BucketRanges* CreateRanges() override {
     BucketRanges* ranges = new BucketRanges(3 + 1);
@@ -1002,9 +1009,6 @@ class BooleanHistogram::Factory : public Histogram::Factory {
       const BucketRanges* ranges) override {
     return WrapUnique(new BooleanHistogram(GetPermanentName(name_), ranges));
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Factory);
 };
 
 HistogramBase* BooleanHistogram::FactoryGet(const std::string& name,
@@ -1088,6 +1092,9 @@ class CustomHistogram::Factory : public Histogram::Factory {
     custom_ranges_ = custom_ranges;
   }
 
+  Factory(const Factory&) = delete;
+  Factory& operator=(const Factory&) = delete;
+
  protected:
   BucketRanges* CreateRanges() override {
     // Remove the duplicates in the custom ranges array.
@@ -1111,9 +1118,7 @@ class CustomHistogram::Factory : public Histogram::Factory {
   }
 
  private:
-  const std::vector<Sample>* custom_ranges_;
-
-  DISALLOW_COPY_AND_ASSIGN(Factory);
+  raw_ptr<const std::vector<Sample>> custom_ranges_;
 };
 
 HistogramBase* CustomHistogram::FactoryGet(

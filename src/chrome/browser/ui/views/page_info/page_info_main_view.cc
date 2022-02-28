@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/reputation/safety_tip_ui_helper.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/page_info/chrome_page_info_ui_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
@@ -15,16 +16,23 @@
 #include "chrome/browser/ui/views/page_info/chosen_object_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_navigation_handler.h"
 #include "chrome/browser/ui/views/page_info/page_info_security_content_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_view_factory.h"
+#include "chrome/browser/ui/views/page_info/permission_toggle_row_view.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/url_constants.h"
+#include "components/page_info/core/features.h"
+#include "components/permissions/permission_util.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
+#include "ui/views/background.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
@@ -35,31 +43,16 @@
 
 namespace {
 
-// The column set id of the permissions table for |permissions_view_|.
-constexpr int kPermissionColumnSetId = 0;
-// The column set id of the `ChosenObjectView` instances for |selector_rows_|.
-constexpr int kChosenObjectSectionId = 1;
-// The column set id for separators between and after permissions section.
-constexpr int kSeparatorSectionId = 2;
-
-int GetSideMargin() {
-  return ChromeLayoutProvider::Get()
-      ->GetInsetsMetric(views::INSETS_DIALOG)
-      .left();
-}
-
-int GetImageButtonRightPadding() {
-  return ChromeLayoutProvider::Get()
-      ->GetInsetsMetric(views::INSETS_VECTOR_IMAGE_BUTTON)
-      .right();
-}
+constexpr int kMinPermissionRowHeight = 40;
+constexpr float kMaxPermissionRowCount = 10.5;
 
 }  // namespace
 
 PageInfoMainView::PageInfoMainView(
     PageInfo* presenter,
     ChromePageInfoUiDelegate* ui_delegate,
-    PageInfoNavigationHandler* navigation_handler)
+    PageInfoNavigationHandler* navigation_handler,
+    base::OnceClosure initialized_callback)
     : presenter_(presenter),
       ui_delegate_(ui_delegate),
       navigation_handler_(navigation_handler) {
@@ -71,57 +64,83 @@ PageInfoMainView::PageInfoMainView(
   const int hover_list_spacing =
       layout_provider->GetDistanceMetric(DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
 
-  views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>());
-  constexpr int kColumnId = 0;
-  views::ColumnSet* column_set = layout->AddColumnSet(kColumnId);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 
-  layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
-  layout->AddView(CreateBubbleHeaderView());
-  layout->AddPaddingRow(views::GridLayout::kFixedSize, hover_list_spacing);
+  AddChildView(CreateBubbleHeaderView())
+      ->SetProperty(views::kMarginsKey,
+                    gfx::Insets(0, 0, hover_list_spacing, 0));
 
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_VR)
-  layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
-  page_feature_info_view_ = layout->AddView(std::make_unique<views::View>());
+  page_feature_info_view_ = AddChildView(std::make_unique<views::View>());
 #endif
 
-  layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
-  security_container_view_ = layout->AddView(CreateContainerView());
+  security_container_view_ = AddChildView(CreateContainerView());
 
-  layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
-  permissions_view_ = layout->AddView(std::make_unique<views::View>());
+  permissions_view_ = AddChildView(std::make_unique<views::View>());
+  permissions_view_->SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kVertical);
 
-  layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
-  site_settings_view_ = layout->AddView(CreateContainerView());
+  site_settings_view_ = AddChildView(CreateContainerView());
 
-  if (ui_delegate_->ShouldShowSiteSettings()) {
-    layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
-    const std::u16string& tooltip =
-        l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_SETTINGS_TOOLTIP);
-    site_settings_link_ = layout->AddView(std::make_unique<PageInfoHoverButton>(
+  int link_text_id = 0;
+  int tooltip_text_id = 0;
+  if (ui_delegate_->ShouldShowSiteSettings(&link_text_id, &tooltip_text_id)) {
+    site_settings_link_ = AddChildView(std::make_unique<PageInfoHoverButton>(
         base::BindRepeating(
             [](PageInfoMainView* view) {
               view->HandleMoreInfoRequest(view->site_settings_link_);
             },
             this),
-        PageInfoUI::GetSiteSettingsIcon(), IDS_PAGE_INFO_SITE_SETTINGS_LINK,
-        std::u16string(),
-        PageInfoMainView::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS,
-        tooltip, std::u16string(), PageInfoUI::GetLaunchIcon()));
+        PageInfoViewFactory::GetSiteSettingsIcon(),
+        /*title_resource_id=*/link_text_id, std::u16string(),
+        PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS,
+        /*tooltip_text=*/l10n_util::GetStringUTF16(tooltip_text_id),
+        std::u16string(), PageInfoViewFactory::GetLaunchIcon()));
   }
 
-  presenter_->InitializeUiState(this);
+  if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSite)) {
+    about_this_site_section_ = AddChildView(CreateContainerView());
+  }
+
+  presenter_->InitializeUiState(this, std::move(initialized_callback));
 }
 
 PageInfoMainView::~PageInfoMainView() = default;
+
+void PageInfoMainView::EnsureCookieInfo() {
+  if (cookie_button_ == nullptr) {
+    // Get the icon.
+    PageInfo::PermissionInfo info;
+    info.type = ContentSettingsType::COOKIES;
+    info.setting = CONTENT_SETTING_ALLOW;
+    const ui::ImageModel icon = PageInfoViewFactory::GetPermissionIcon(info);
+
+    const std::u16string& tooltip =
+        l10n_util::GetStringUTF16(IDS_PAGE_INFO_COOKIES_TOOLTIP);
+
+    // Create the cookie button, leaving the secondary text blank since the
+    // cookie count is not yet known.
+    cookie_button_ =
+        std::make_unique<PageInfoHoverButton>(
+            base::BindRepeating(
+                [](PageInfoMainView* view) {
+                  view->HandleMoreInfoRequest(view->cookie_button_);
+                },
+                this),
+            icon, IDS_PAGE_INFO_COOKIES, /*secondary_text=*/u"",
+            PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG,
+            tooltip, std::u16string(), PageInfoViewFactory::GetLaunchIcon())
+            .release();
+    site_settings_view_->AddChildView(cookie_button_.get());
+  }
+}
 
 void PageInfoMainView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
   // Calculate the number of cookies used by this site. |cookie_info_list|
   // should only ever have 2 items: first- and third-party cookies.
   DCHECK_EQ(cookie_info_list.size(), 2u);
-  int total_allowed = 0;
+  unsigned int total_allowed = 0;
   for (const auto& i : cookie_info_list) {
     total_allowed += i.allowed;
   }
@@ -133,29 +152,7 @@ void PageInfoMainView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
   // Create the cookie button if it doesn't yet exist. This method gets called
   // each time site data is updated, so if it *does* already exist, skip this
   // part and just update the text.
-  if (cookie_button_ == nullptr) {
-    // Get the icon.
-    PageInfo::PermissionInfo info;
-    info.type = ContentSettingsType::COOKIES;
-    info.setting = CONTENT_SETTING_ALLOW;
-    const ui::ImageModel icon = PageInfoUI::GetPermissionIcon(info);
-
-    const std::u16string& tooltip =
-        l10n_util::GetStringUTF16(IDS_PAGE_INFO_COOKIES_TOOLTIP);
-
-    cookie_button_ =
-        std::make_unique<PageInfoHoverButton>(
-            base::BindRepeating(
-                [](PageInfoMainView* view) {
-                  view->HandleMoreInfoRequest(view->cookie_button_);
-                },
-                this),
-            icon, IDS_PAGE_INFO_COOKIES, num_cookies_text,
-            VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG, tooltip,
-            std::u16string(), PageInfoUI::GetLaunchIcon())
-            .release();
-    site_settings_view_->AddChildView(cookie_button_);
-  }
+  PageInfoMainView::EnsureCookieInfo();
 
   // Update the text displaying the number of allowed cookies.
   cookie_button_->SetTitleText(IDS_PAGE_INFO_COOKIES, num_cookies_text);
@@ -166,6 +163,11 @@ void PageInfoMainView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
 void PageInfoMainView::SetPermissionInfo(
     const PermissionInfoList& permission_info_list,
     ChosenObjectInfoList chosen_object_info_list) {
+  if (permission_info_list.empty() && chosen_object_info_list.empty()) {
+    permissions_view_->RemoveAllChildViews();
+    return;
+  }
+
   // This method is called when Page Info is constructed/displayed, then called
   // again whenever permissions/chosen objects change while the bubble is still
   // opened. Once Page Info is displaying a non-zero number of permissions, all
@@ -176,99 +178,124 @@ void PageInfoMainView::SetPermissionInfo(
   // case that can be recovered from by closing & reopening the bubble.
   // TODO(patricialor): Investigate removing callsites to this method other than
   // the constructor.
-  if (!permissions_view_->children().empty())
+  if (!permissions_view_->children().empty()) {
+    UpdateResetButton(permission_info_list);
     return;
+  }
 
-  if (permission_info_list.empty() && chosen_object_info_list.empty())
-    return;
+  permissions_view_->AddChildView(PageInfoViewFactory::CreateSeparator());
 
-  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
-  const int hover_list_spacing =
-      layout_provider->GetDistanceMetric(DISTANCE_CONTENT_LIST_VERTICAL_SINGLE);
+  auto* scroll_view =
+      permissions_view_->AddChildView(std::make_unique<views::ScrollView>());
+  scroll_view->ClipHeightTo(0,
+                            kMinPermissionRowHeight * kMaxPermissionRowCount);
+  scroll_view->SetDrawOverflowIndicator(false);
+  auto* content_view =
+      scroll_view->SetContents(std::make_unique<views::View>());
+  content_view->SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kVertical);
+  content_view->SetID(PageInfoViewFactory::VIEW_ID_PAGE_INFO_PERMISSION_VIEW);
 
-  views::GridLayout* layout = permissions_view_->SetLayoutManager(
-      std::make_unique<views::GridLayout>());
-
-  views::ColumnSet* separator_set = layout->AddColumnSet(kSeparatorSectionId);
-  separator_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                           1.0, views::GridLayout::ColumnSize::kUsePreferred,
-                           views::GridLayout::kFixedSize, 0);
-
-  layout->StartRowWithPadding(
-      views::GridLayout::kFixedSize, kSeparatorSectionId,
-      views::GridLayout::kFixedSize, hover_list_spacing);
-  layout->AddView(std::make_unique<views::Separator>());
-  layout->AddPaddingRow(views::GridLayout::kFixedSize, hover_list_spacing);
-
-  LayoutPermissionsLikeUiRow(layout, kPermissionColumnSetId);
-
-  // |ChosenObjectView| will layout itself, so just add the missing padding
-  // here.
-  const int side_margin = GetSideMargin();
-  views::ColumnSet* chosen_object_set =
-      layout->AddColumnSet(kChosenObjectSectionId);
-  chosen_object_set->AddPaddingColumn(views::GridLayout::kFixedSize,
-                                      side_margin);
-  chosen_object_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                               1.0,
-                               views::GridLayout::ColumnSize::kUsePreferred,
-                               views::GridLayout::kFixedSize, 0);
-  // Adjust right padding by the delete button's insets to align all icons on
-  // the right side.
-  chosen_object_set->AddPaddingColumn(
-      views::GridLayout::kFixedSize,
-      side_margin - GetImageButtonRightPadding());
-  int min_height_for_permission_rows = 0;
+  // If there is a permission that supports one time grants, offset all other
+  // permissions to align toggles.
+  bool should_show_spacer = false;
   for (const auto& permission : permission_info_list) {
-    std::unique_ptr<PermissionSelectorRow> selector =
-        std::make_unique<PermissionSelectorRow>(ui_delegate_, permission,
-                                                layout);
-    selector->AddObserver(this);
-    min_height_for_permission_rows = std::max(
-        min_height_for_permission_rows, selector->MinHeightForPermissionRow());
-    selector_rows_.push_back(std::move(selector));
+    if (permissions::PermissionUtil::CanPermissionBeAllowedOnce(
+            permission.type)) {
+      should_show_spacer = true;
+    }
   }
 
-  // Ensure most comboboxes are the same width by setting them all to the widest
-  // combobox size, provided it does not exceed a maximum width.
-  // For selected options that are over the maximum width, allow them to assume
-  // their full width. If the combobox selection is changed, this may make the
-  // widths inconsistent again, but that is OK since the widths will be updated
-  // on the next time the bubble is opened.
-  const int maximum_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      views::DISTANCE_BUTTON_MAX_LINKABLE_WIDTH);
-  int combobox_width = 0;
-  for (const auto& selector : selector_rows_) {
-    int curr_width = selector->GetComboboxWidth();
-    if (maximum_width >= curr_width)
-      combobox_width = std::max(combobox_width, curr_width);
+  for (const auto& permission : permission_info_list) {
+    auto* toggle_row =
+        content_view->AddChildView(std::make_unique<PermissionToggleRowView>(
+            ui_delegate_, navigation_handler_, permission, should_show_spacer));
+    toggle_row->AddObserver(this);
+    toggle_row->SetProperty(views::kCrossAxisAlignmentKey,
+                            views::LayoutAlignment::kStretch);
+    toggle_rows_.push_back(std::move(toggle_row));
   }
-  for (const auto& selector : selector_rows_)
-    selector->SetMinComboboxWidth(combobox_width);
 
   for (auto& object : chosen_object_info_list) {
-    // Since chosen objects are presented after permissions in the same list,
-    // make sure its height is the same as the permissions row's minimum height
-    // plus padding.
-    layout->StartRow(1.0, kChosenObjectSectionId,
-                     min_height_for_permission_rows);
     // The view takes ownership of the object info.
     auto object_view = std::make_unique<ChosenObjectView>(
         std::move(object),
         presenter_->GetChooserContextFromUIInfo(object->ui_info)
             ->GetObjectDisplayName(object->chooser_object->value));
     object_view->AddObserver(this);
-    layout->AddView(std::move(object_view));
+    chosen_object_rows_.push_back(
+        content_view->AddChildView(std::move(object_view)));
   }
 
-  layout->StartRowWithPadding(
-      views::GridLayout::kFixedSize, kSeparatorSectionId,
-      views::GridLayout::kFixedSize, hover_list_spacing);
-  layout->AddView(std::make_unique<views::Separator>());
-  layout->AddPaddingRow(views::GridLayout::kFixedSize, hover_list_spacing);
+  const int controls_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_RELATED_CONTROL_VERTICAL);
+  reset_button_ = content_view->AddChildView(
+      std::make_unique<views::MdTextButton>(base::BindRepeating(
+          [=](PageInfoMainView* view) {
+            for (auto* toggle_row : view->toggle_rows_) {
+              toggle_row->ResetPermission();
+            }
+            for (auto* object_row : view->chosen_object_rows_) {
+              object_row->ResetPermission();
+            }
+            view->chosen_object_rows_.clear();
+            view->PreferredSizeChanged();
+            view->presenter_->RecordPageInfoAction(
+                PageInfo::PageInfoAction::PAGE_INFO_PERMISSIONS_CLEARED);
+          },
+          base::Unretained(this))));
+  reset_button_->SetProperty(views::kCrossAxisAlignmentKey,
+                             views::LayoutAlignment::kStart);
+  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
+  // Offset the reset button by left button padding, icon size and distance
+  // between icon and label to match text in the row above.
+  const int side_offset =
+      layout_provider
+          ->GetInsetsMetric(ChromeInsetsMetric::INSETS_PAGE_INFO_HOVER_BUTTON)
+          .left() +
+      GetLayoutConstant(PAGE_INFO_ICON_SIZE) +
+      layout_provider->GetDistanceMetric(
+          views::DISTANCE_RELATED_LABEL_HORIZONTAL);
+  reset_button_->SetProperty(
+      views::kMarginsKey,
+      gfx::Insets(controls_spacing, side_offset, controls_spacing, 0));
+  reset_button_->SetID(
+      PageInfoViewFactory::VIEW_ID_PAGE_INFO_RESET_PERMISSIONS_BUTTON);
 
-  layout->Layout(permissions_view_);
+  // If a permission is in a non-default state or chooser object is present,
+  // show reset button.
+  reset_button_->SetVisible(false);
+  UpdateResetButton(permission_info_list);
+  permissions_view_->AddChildView(PageInfoViewFactory::CreateSeparator());
+
   PreferredSizeChanged();
+}
+
+void PageInfoMainView::UpdateResetButton(
+    const PermissionInfoList& permission_info_list) {
+  reset_button_->SetEnabled(false);
+  int num_permissions = 0;
+  for (const auto& permission : permission_info_list) {
+    const bool is_permission_user_managed =
+        permission.source == content_settings::SETTING_SOURCE_USER &&
+        (ui_delegate_->ShouldShowAllow(permission.type) ||
+         ui_delegate_->ShouldShowAsk(permission.type));
+    if (is_permission_user_managed &&
+        permission.setting != CONTENT_SETTING_DEFAULT) {
+      reset_button_->SetEnabled(true);
+      reset_button_->SetVisible(true);
+    }
+    num_permissions++;
+  }
+  for (auto* object_view : chosen_object_rows_) {
+    if (object_view->GetVisible()) {
+      reset_button_->SetEnabled(true);
+      reset_button_->SetVisible(true);
+      num_permissions++;
+    }
+  }
+  reset_button_->SetText(l10n_util::GetPluralStringFUTF16(
+      IDS_PAGE_INFO_RESET_PERMISSIONS, num_permissions));
 }
 
 void PageInfoMainView::SetIdentityInfo(const IdentityInfo& identity_info) {
@@ -277,7 +304,7 @@ void PageInfoMainView::SetIdentityInfo(const IdentityInfo& identity_info) {
 
   title_->SetText(base::UTF8ToUTF16(identity_info.site_identity));
 
-  security_container_view_->RemoveAllChildViews(true);
+  security_container_view_->RemoveAllChildViews();
   if (security_description->summary_style == SecuritySummaryColor::GREEN) {
     // base::Unretained(navigation_handler_) is safe because navigation_handler_
     // is the bubble view which is the owner of this view and therefore will
@@ -286,12 +313,25 @@ void PageInfoMainView::SetIdentityInfo(const IdentityInfo& identity_info) {
         std::make_unique<PageInfoHoverButton>(
             base::BindRepeating(&PageInfoNavigationHandler::OpenSecurityPage,
                                 base::Unretained(navigation_handler_)),
-            PageInfoUI::GetConnectionSecureIcon(), 0, std::u16string(),
-            VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SECURITY_INFORMATION,
-            std::u16string(), std::u16string(),
-            PageInfoUI::GetOpenSubpageIcon())
+            PageInfoViewFactory::GetConnectionSecureIcon(), 0, std::u16string(),
+            PageInfoViewFactory::
+                VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SECURITY_INFORMATION,
+            l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_SUBPAGE_BUTTON),
+            std::u16string(), PageInfoViewFactory::GetOpenSubpageIcon())
             .release());
     connection_button_->SetTitleText(security_description->summary);
+
+    // Show "About this site" section only if connection is secure, because
+    // security information has higher priority.
+    if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSite)) {
+      auto info = ui_delegate_->GetAboutThisSiteInfo();
+      presenter_->SetAboutThisSiteShown(info.has_value());
+      if (info.has_value()) {
+        about_this_site_section_->RemoveAllChildViews();
+        about_this_site_section_->AddChildView(
+            CreateAboutThisSiteSection(info.value()));
+      }
+    }
   } else {
     security_content_view_ = security_container_view_->AddChildView(
         std::make_unique<PageInfoSecurityContentView>(
@@ -319,7 +359,7 @@ void PageInfoMainView::SetPageFeatureInfo(const PageFeatureInfo& info) {
       content_view->SetLayoutManager(std::make_unique<views::FlexLayout>());
 
   auto icon = std::make_unique<NonAccessibleImageView>();
-  icon->SetImage(PageInfoUI::GetVrSettingsIcon());
+  icon->SetImage(PageInfoViewFactory::GetVrSettingsIcon());
   content_view->AddChildView(std::move(icon));
 
   auto label = std::make_unique<views::Label>(
@@ -346,7 +386,7 @@ void PageInfoMainView::SetPageFeatureInfo(const PageFeatureInfo& info) {
           },
           this),
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_VR_TURN_OFF_BUTTON_TEXT));
-  exit_button->SetID(VIEW_ID_PAGE_INFO_BUTTON_END_VR);
+  exit_button->SetID(PageInfoViewFactory::VIEW_ID_PAGE_INFO_BUTTON_END_VR);
   exit_button->SetProminent(true);
   // Set views::kInternalPaddingKey for flex layout to account for internal
   // button padding when calculating margins.
@@ -383,6 +423,7 @@ void PageInfoMainView::OnChosenObjectDeleted(
     const PageInfoUI::ChosenObjectInfo& info) {
   presenter_->OnSiteChosenObjectDeleted(info.ui_info,
                                         info.chooser_object->value);
+  PreferredSizeChanged();
 }
 
 std::unique_ptr<views::View> PageInfoMainView::CreateContainerView() {
@@ -403,51 +444,15 @@ void PageInfoMainView::HandleMoreInfoRequest(views::View* source) {
 
 void PageInfoMainView::HandleMoreInfoRequestAsync(int view_id) {
   switch (view_id) {
-    case PageInfoMainView::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS:
+    case PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS:
       presenter_->OpenSiteSettingsView();
       break;
-    case PageInfoMainView::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG:
+    case PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG:
       presenter_->OpenCookiesDialog();
       break;
     default:
       NOTREACHED();
   }
-}
-
-void PageInfoMainView::LayoutPermissionsLikeUiRow(views::GridLayout* layout,
-                                                  int column_id) {
-  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
-  const int side_margin = GetSideMargin();
-  // A permissions row will have an icon, title, and combobox, with a padding
-  // column on either side to match the dialog insets. Note the combobox can be
-  // variable widths depending on the text inside.
-  // *----------------------------------------------*
-  // |++| Icon | Permission Title     | Combobox |++|
-  // *----------------------------------------------*
-  views::ColumnSet* permissions_set = layout->AddColumnSet(column_id);
-  permissions_set->AddPaddingColumn(views::GridLayout::kFixedSize, side_margin);
-  permissions_set->AddColumn(
-      views::GridLayout::CENTER, views::GridLayout::CENTER,
-      views::GridLayout::kFixedSize, views::GridLayout::ColumnSize::kFixed,
-      kIconColumnWidth, 0);
-  permissions_set->AddPaddingColumn(
-      views::GridLayout::kFixedSize,
-      layout_provider->GetDistanceMetric(
-          views::DISTANCE_RELATED_LABEL_HORIZONTAL));
-  permissions_set->AddColumn(views::GridLayout::LEADING,
-                             views::GridLayout::CENTER, 1.0,
-                             views::GridLayout::ColumnSize::kUsePreferred,
-                             views::GridLayout::kFixedSize, 0);
-  permissions_set->AddPaddingColumn(
-      views::GridLayout::kFixedSize,
-      layout_provider->GetDistanceMetric(
-          views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
-  permissions_set->AddColumn(views::GridLayout::TRAILING,
-                             views::GridLayout::FILL,
-                             views::GridLayout::kFixedSize,
-                             views::GridLayout::ColumnSize::kUsePreferred,
-                             views::GridLayout::kFixedSize, 0);
-  permissions_set->AddPaddingColumn(views::GridLayout::kFixedSize, side_margin);
 }
 
 gfx::Size PageInfoMainView::CalculatePreferredSize() const {
@@ -468,7 +473,9 @@ std::unique_ptr<views::View> PageInfoMainView::CreateBubbleHeaderView() {
   header->SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetInteriorMargin(gfx::Insets(0, kIconColumnWidth));
   title_ = header->AddChildView(std::make_unique<views::Label>(
-      std::u16string(), views::style::CONTEXT_DIALOG_TITLE));
+      std::u16string(), views::style::CONTEXT_DIALOG_TITLE,
+      views::style::STYLE_PRIMARY,
+      gfx::DirectionalityMode::DIRECTIONALITY_AS_URL));
   title_->SetMultiLine(true);
   title_->SetAllowCharacterBreak(true);
   title_->SetProperty(
@@ -492,4 +499,27 @@ std::unique_ptr<views::View> PageInfoMainView::CreateBubbleHeaderView() {
   header->AddChildView(close_button.release());
 
   return header;
+}
+
+std::unique_ptr<views::View> PageInfoMainView::CreateAboutThisSiteSection(
+    const page_info::proto::SiteInfo& info) {
+  auto about_this_site_section = std::make_unique<views::View>();
+  about_this_site_section
+      ->SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kVertical);
+  about_this_site_section->AddChildView(PageInfoViewFactory::CreateSeparator());
+
+  auto* about_this_site_button = about_this_site_section->AddChildView(
+      std::make_unique<PageInfoHoverButton>(
+          base::BindRepeating(&PageInfoNavigationHandler::OpenAboutThisSitePage,
+                              base::Unretained(navigation_handler_), info),
+          PageInfoViewFactory::GetAboutThisSiteIcon(),
+          IDS_PAGE_INFO_ABOUT_THIS_SITE_HEADER, std::u16string(),
+          PageInfoViewFactory::VIEW_ID_PAGE_INFO_ABOUT_THIS_SITE_BUTTON,
+          l10n_util::GetStringUTF16(IDS_PAGE_INFO_ABOUT_THIS_SITE_TOOLTIP),
+          base::UTF8ToUTF16(info.description().description()),
+          PageInfoViewFactory::GetOpenSubpageIcon()));
+  about_this_site_button->SetSubtitleMultiline(false);
+
+  return about_this_site_section;
 }

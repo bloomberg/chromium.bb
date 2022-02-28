@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
@@ -31,6 +30,10 @@ class SyncErrorInfoBarDelegate : public ConfirmInfoBarDelegate,
  public:
   SyncErrorInfoBarDelegate(ChromeBrowserState* browser_state,
                            id<SyncPresenter> presenter);
+
+  SyncErrorInfoBarDelegate(const SyncErrorInfoBarDelegate&) = delete;
+  SyncErrorInfoBarDelegate& operator=(const SyncErrorInfoBarDelegate&) = delete;
+
   ~SyncErrorInfoBarDelegate() override;
 
   // Creates a sync error infobar and adds it to |infobar_manager|.
@@ -46,9 +49,10 @@ class SyncErrorInfoBarDelegate : public ConfirmInfoBarDelegate,
   int GetButtons() const override;
   std::u16string GetButtonLabel(InfoBarButton button) const override;
   gfx::Image GetIcon() const override;
+  bool UseIconBackgroundTint() const override;
   bool Accept() override;
 
-  // ProfileSyncServiceObserver implementation.
+  // syncer::SyncServiceObserver implementation.
   void OnStateChanged(syncer::SyncService* sync) override;
 
  private:
@@ -58,8 +62,6 @@ class SyncErrorInfoBarDelegate : public ConfirmInfoBarDelegate,
   std::u16string message_;
   std::u16string button_text_;
   id<SyncPresenter> presenter_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncErrorInfoBarDelegate);
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_UTILS_SYNC_ERROR_INFOBAR_DELEGATE_H_

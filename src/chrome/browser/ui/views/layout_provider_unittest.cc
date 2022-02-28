@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -26,6 +26,8 @@
 #endif
 
 #if defined(OS_WIN)
+#include <windows.h>
+
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "ui/display/win/dpi.h"
@@ -47,6 +49,9 @@ class LayoutProviderTest : public testing::Test {
  public:
   LayoutProviderTest() {}
 
+  LayoutProviderTest(const LayoutProviderTest&) = delete;
+  LayoutProviderTest& operator=(const LayoutProviderTest&) = delete;
+
  protected:
   static void SetUpTestSuite() {
 #if defined(OS_WIN)
@@ -57,9 +62,6 @@ class LayoutProviderTest : public testing::Test {
     // unexpected state.
     gfx::FontList::SetDefaultFontDescription(std::string());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LayoutProviderTest);
 };
 
 // Check whether the system is in the default configuration. This test will fail
@@ -343,7 +345,8 @@ TEST_F(LayoutProviderTest, TypographyLineHeight) {
   } kExpectedIncreases[] = {{CONTEXT_HEADLINE, 4, 8},
                             {views::style::CONTEXT_DIALOG_TITLE, 1, 4},
                             {views::style::CONTEXT_DIALOG_BODY_TEXT, 2, 4},
-                            {CONTEXT_DIALOG_BODY_TEXT_SMALL, 4, 5}};
+                            {CONTEXT_DIALOG_BODY_TEXT_SMALL, 4, 5},
+                            {views::style::CONTEXT_BUTTON_MD, 0, 1}};
 
   for (size_t i = 0; i < base::size(kExpectedIncreases); ++i) {
     SCOPED_TRACE(testing::Message() << "Testing index: " << i);
@@ -353,13 +356,6 @@ TEST_F(LayoutProviderTest, TypographyLineHeight) {
     EXPECT_GE(increase.max, line_spacing - font.GetHeight());
     EXPECT_LE(increase.min, line_spacing - font.GetHeight());
   }
-
-  // Buttons should specify zero line height (i.e. use the font's height) so
-  // buttons have flexibility to configure their own spacing.
-  EXPECT_EQ(0,
-            views::style::GetLineHeight(views::style::CONTEXT_BUTTON, kStyle));
-  EXPECT_EQ(
-      0, views::style::GetLineHeight(views::style::CONTEXT_BUTTON_MD, kStyle));
 }
 
 // Ensure that line heights reported in a default bot configuration match the

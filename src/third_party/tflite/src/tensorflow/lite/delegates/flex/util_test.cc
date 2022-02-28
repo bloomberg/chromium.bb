@@ -18,8 +18,14 @@ limitations under the License.
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "tensorflow/core/framework/resource_handle.h"
+#include "tensorflow/core/protobuf/error_codes.pb.h"
+#include "tensorflow/lite/c/c_api_types.h"
+#include "tensorflow/lite/c/common.h"
 #include "tensorflow/lite/string_type.h"
+#include "tensorflow/lite/string_util.h"
 #include "tensorflow/lite/testing/util.h"
+#include "tensorflow/lite/util.h"
 
 namespace tflite {
 namespace flex {
@@ -109,34 +115,155 @@ TEST(UtilTest, CopyShapeAndType) {
 TEST(UtilTest, TypeConversionsFromTFLite) {
   EXPECT_EQ(TF_FLOAT, GetTensorFlowDataType(kTfLiteNoType));
   EXPECT_EQ(TF_FLOAT, GetTensorFlowDataType(kTfLiteFloat32));
+  EXPECT_EQ(TF_HALF, GetTensorFlowDataType(kTfLiteFloat16));
+  EXPECT_EQ(TF_DOUBLE, GetTensorFlowDataType(kTfLiteFloat64));
   EXPECT_EQ(TF_INT16, GetTensorFlowDataType(kTfLiteInt16));
   EXPECT_EQ(TF_INT32, GetTensorFlowDataType(kTfLiteInt32));
   EXPECT_EQ(TF_UINT8, GetTensorFlowDataType(kTfLiteUInt8));
   EXPECT_EQ(TF_INT64, GetTensorFlowDataType(kTfLiteInt64));
+  EXPECT_EQ(TF_UINT64, GetTensorFlowDataType(kTfLiteUInt64));
   EXPECT_EQ(TF_COMPLEX64, GetTensorFlowDataType(kTfLiteComplex64));
+  EXPECT_EQ(TF_COMPLEX128, GetTensorFlowDataType(kTfLiteComplex128));
   EXPECT_EQ(TF_STRING, GetTensorFlowDataType(kTfLiteString));
   EXPECT_EQ(TF_BOOL, GetTensorFlowDataType(kTfLiteBool));
+  EXPECT_EQ(TF_RESOURCE, GetTensorFlowDataType(kTfLiteResource));
+  EXPECT_EQ(TF_VARIANT, GetTensorFlowDataType(kTfLiteVariant));
 }
 
 TEST(UtilTest, TypeConversionsFromTensorFlow) {
+  EXPECT_EQ(kTfLiteFloat16, GetTensorFlowLiteType(TF_HALF));
   EXPECT_EQ(kTfLiteFloat32, GetTensorFlowLiteType(TF_FLOAT));
+  EXPECT_EQ(kTfLiteFloat64, GetTensorFlowLiteType(TF_DOUBLE));
   EXPECT_EQ(kTfLiteInt16, GetTensorFlowLiteType(TF_INT16));
   EXPECT_EQ(kTfLiteInt32, GetTensorFlowLiteType(TF_INT32));
   EXPECT_EQ(kTfLiteUInt8, GetTensorFlowLiteType(TF_UINT8));
   EXPECT_EQ(kTfLiteInt64, GetTensorFlowLiteType(TF_INT64));
+  EXPECT_EQ(kTfLiteUInt64, GetTensorFlowLiteType(TF_UINT64));
   EXPECT_EQ(kTfLiteComplex64, GetTensorFlowLiteType(TF_COMPLEX64));
+  EXPECT_EQ(kTfLiteComplex128, GetTensorFlowLiteType(TF_COMPLEX128));
   EXPECT_EQ(kTfLiteString, GetTensorFlowLiteType(TF_STRING));
   EXPECT_EQ(kTfLiteBool, GetTensorFlowLiteType(TF_BOOL));
-  EXPECT_EQ(kTfLiteNoType, GetTensorFlowLiteType(TF_RESOURCE));
-  EXPECT_EQ(kTfLiteNoType, GetTensorFlowLiteType(TF_VARIANT));
+  EXPECT_EQ(kTfLiteResource, GetTensorFlowLiteType(TF_RESOURCE));
+  EXPECT_EQ(kTfLiteVariant, GetTensorFlowLiteType(TF_VARIANT));
+}
+
+TEST(UtilTest, GetTfLiteResourceIdentifier) {
+  // Constructs a fake resource tensor.
+  TfLiteTensor tensor;
+  tensor.allocation_type = kTfLiteDynamic;
+  tensor.type = kTfLiteResource;
+  std::vector<int> dims = {1};
+  tensor.dims = ConvertVectorToTfLiteIntArray(dims);
+  tensor.data.raw = nullptr;
+  TfLiteTensorRealloc(sizeof(int32_t), &tensor);
+  tensor.delegate = nullptr;
+  tensor.data.i32[0] = 1;
+
+  EXPECT_EQ(TfLiteResourceIdentifier(&tensor), "tflite_resource_variable:1");
+  TfLiteIntArrayFree(tensor.dims);
+  TfLiteTensorDataFree(&tensor);
+}
+
+TEST(UtilTest, GetTfLiteResourceTensorFromResourceHandle) {
+  tensorflow::ResourceHandle handle;
+  handle.set_name("tflite_resource_variable:1");
+
+  TfLiteTensor tensor;
+  tensor.allocation_type = kTfLiteDynamic;
+  tensor.type = kTfLiteResource;
+  tensor.data.raw = nullptr;
+  std::vector<int> dims = {1};
+  tensor.dims = ConvertVectorToTfLiteIntArray(dims);
+  EXPECT_TRUE(GetTfLiteResourceTensorFromResourceHandle(handle, &tensor));
+  EXPECT_EQ(tensor.data.i32[0], 1);
+
+  TfLiteIntArrayFree(tensor.dims);
+  TfLiteTensorDataFree(&tensor);
+}
+
+TEST(UtilTest, CreateTfTensorFromTfLiteTensorResourceOrVariant) {
+  TfLiteTensor tensor;
+  tensor.type = kTfLiteResource;
+  EXPECT_EQ(CreateTfTensorFromTfLiteTensor(&tensor).status().code(),
+            tensorflow::error::INVALID_ARGUMENT);
+  tensor.type = kTfLiteVariant;
+  EXPECT_EQ(CreateTfTensorFromTfLiteTensor(&tensor).status().code(),
+            tensorflow::error::INVALID_ARGUMENT);
+}
+
+TEST(UtilTest, CreateTfTensorFromTfLiteTensorFloat) {
+  TfLiteTensor tflite_tensor;
+  tflite_tensor.type = kTfLiteFloat32;
+  tflite_tensor.allocation_type = kTfLiteDynamic;
+  tflite_tensor.sparsity = nullptr;
+  tflite_tensor.dims_signature = nullptr;
+
+  TfLiteQuantization quant;
+  quant.type = kTfLiteNoQuantization;
+  quant.params = nullptr;
+  tflite_tensor.quantization = quant;
+
+  TfLiteIntArray* dims = TfLiteIntArrayCreate(2);
+  dims->data[0] = 1;
+  dims->data[1] = 3;
+  tflite_tensor.dims = dims;
+  float data_arr[] = {1.1, 0.456, 0.322};
+  std::vector<float_t> data(std::begin(data_arr), std::end(data_arr));
+  size_t num_bytes = data.size() * sizeof(float_t);
+  tflite_tensor.data.raw = static_cast<char*>(malloc(num_bytes));
+  memcpy(tflite_tensor.data.raw, data.data(), num_bytes);
+  tflite_tensor.bytes = num_bytes;
+
+  auto tf_tensor_or = CreateTfTensorFromTfLiteTensor(&tflite_tensor);
+  EXPECT_TRUE(tf_tensor_or.ok());
+  tensorflow::Tensor tf_tensor = tf_tensor_or.ValueOrDie();
+  EXPECT_EQ(tf_tensor.NumElements(), 3);
+  auto* tf_data = static_cast<float_t*>(tf_tensor.data());
+  for (float weight : data_arr) {
+    EXPECT_EQ(*tf_data, weight);
+    tf_data++;
+  }
+
+  TfLiteTensorFree(&tflite_tensor);
+}
+
+TEST(UtilTest, CreateTfTensorFromTfLiteTensorString) {
+  TfLiteTensor tflite_tensor;
+  tflite_tensor.type = kTfLiteString;
+  tflite_tensor.is_variable = false;
+  tflite_tensor.sparsity = nullptr;
+  tflite_tensor.data.raw = nullptr;
+  tflite_tensor.dims_signature = nullptr;
+  tflite_tensor.allocation_type = kTfLiteArenaRw;
+
+  TfLiteQuantization quant;
+  quant.type = kTfLiteNoQuantization;
+  quant.params = nullptr;
+  tflite_tensor.quantization = quant;
+
+  TfLiteIntArray* dims = TfLiteIntArrayCreate(2);
+  dims->data[0] = 1;
+  dims->data[1] = 2;
+  tflite_tensor.dims = dims;
+  std::string data_arr[] = {std::string("a_str\0ing", 9), "b_string"};
+  tflite::DynamicBuffer buf;
+  for (const auto& value : data_arr) {
+    buf.AddString(value.data(), value.length());
+  }
+  buf.WriteToTensor(&tflite_tensor, nullptr);
+
+  auto tf_tensor_or = CreateTfTensorFromTfLiteTensor(&tflite_tensor);
+  EXPECT_TRUE(tf_tensor_or.ok());
+  tensorflow::Tensor tf_tensor = tf_tensor_or.ValueOrDie();
+  EXPECT_EQ(tf_tensor.NumElements(), 2);
+  auto* tf_data = static_cast<tensorflow::tstring*>(tf_tensor.data());
+  for (const auto& str : data_arr) {
+    EXPECT_EQ(*tf_data, str);
+    tf_data++;
+  }
+  TfLiteTensorFree(&tflite_tensor);
 }
 
 }  // namespace
 }  // namespace flex
 }  // namespace tflite
-
-int main(int argc, char** argv) {
-  ::tflite::LogToStderr();
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}

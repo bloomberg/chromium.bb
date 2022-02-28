@@ -11,7 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "ios/chrome/browser/download/download_test_util.h"
-#include "ios/chrome/browser/download/pass_kit_mime_type.h"
+#include "ios/chrome/browser/download/mime_type_util.h"
 #import "ios/chrome/test/fakes/fake_pass_kit_tab_helper_delegate.h"
 #import "ios/web/public/test/fakes/fake_download_task.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
@@ -101,12 +101,9 @@ TEST_F(PassKitTabHelperTest, ValidPassKitFile) {
 
   std::string pass_data =
       testing::GetTestFileContents(testing::kPkPassFilePath);
-  auto buffer = base::MakeRefCounted<net::IOBuffer>(pass_data.size());
-  memcpy(buffer->data(), pass_data.c_str(), pass_data.size());
-  // Writing to URLFetcherStringWriter, which is used by PassKitTabHelper is
-  // synchronous, so it's ok to ignore Write's completion callback.
-  task_ptr->GetResponseWriter()->Write(buffer.get(), pass_data.size(),
-                                       base::DoNothing());
+  NSData* data = [NSData dataWithBytes:pass_data.data()
+                                length:pass_data.size()];
+  task_ptr->SetResponseData(data);
   task_ptr->SetDone(true);
 
   EXPECT_EQ(1U, delegate_.passes.count);

@@ -366,13 +366,6 @@ static int init_duplicate_context(MpegEncContext *s)
     if (s->mb_height & 1)
         yc_size += 2*s->b8_stride + 2*s->mb_stride;
 
-    s->sc.edge_emu_buffer =
-    s->me.scratchpad   =
-    s->me.temp         =
-    s->sc.rd_scratchpad   =
-    s->sc.b_scratchpad    =
-    s->sc.obmc_scratchpad = NULL;
-
     if (s->encoding) {
         if (!FF_ALLOCZ_TYPED_ARRAY(s->me.map,       ME_MAP_SIZE) ||
             !FF_ALLOCZ_TYPED_ARRAY(s->me.score_map, ME_MAP_SIZE))
@@ -413,6 +406,35 @@ static int init_duplicate_context(MpegEncContext *s)
     return 0;
 }
 
+/**
+ * Initialize an MpegEncContext's thread contexts. Presumes that
+ * slice_context_count is already set and that all the fields
+ * that are freed/reset in free_duplicate_context() are NULL.
+ */
+static int init_duplicate_contexts(MpegEncContext *s)
+{
+    int nb_slices = s->slice_context_count, ret;
+
+    /* We initialize the copies before the original so that
+     * fields allocated in init_duplicate_context are NULL after
+     * copying. This prevents double-frees upon allocation error. */
+    for (int i = 1; i < nb_slices; i++) {
+        s->thread_context[i] = av_memdup(s, sizeof(MpegEncContext));
+        if (!s->thread_context[i])
+            return AVERROR(ENOMEM);
+        if ((ret = init_duplicate_context(s->thread_context[i])) < 0)
+            return ret;
+        s->thread_context[i]->start_mb_y =
+            (s->mb_height * (i    ) + nb_slices / 2) / nb_slices;
+        s->thread_context[i]->end_mb_y   =
+            (s->mb_height * (i + 1) + nb_slices / 2) / nb_slices;
+    }
+    s->start_mb_y = 0;
+    s->end_mb_y   = nb_slices > 1 ? (s->mb_height + nb_slices / 2) / nb_slices
+                                  : s->mb_height;
+    return init_duplicate_context(s);
+}
+
 static void free_duplicate_context(MpegEncContext *s)
 {
     if (!s)
@@ -433,6 +455,15 @@ static void free_duplicate_context(MpegEncContext *s)
     av_freep(&s->dpcm_macroblock);
     av_freep(&s->ac_val_base);
     s->block = NULL;
+}
+
+static void free_duplicate_contexts(MpegEncContext *s)
+{
+    for (int i = 1; i < s->slice_context_count; i++) {
+        free_duplicate_context(s->thread_context[i]);
+        av_freep(&s->thread_context[i]);
+    }
+    free_duplicate_context(s);
 }
 
 static void backup_duplicate_context(MpegEncContext *bak, MpegEncContext *src)
@@ -524,7 +555,6 @@ int ff_mpeg_update_thread_context(AVCodecContext *dst,
     }
 
     if (s->height != s1->height || s->width != s1->width || s->context_reinit) {
-        s->context_reinit = 0;
         s->height = s1->height;
         s->width  = s1->width;
         if ((ret = ff_mpv_common_frame_size_change(s)) < 0)
@@ -932,59 +962,52 @@ av_cold int ff_mpv_common_init(MpegEncContext *s)
     for (i = 0; i < MAX_PICTURE_COUNT; i++) {
         s->picture[i].f = av_frame_alloc();
         if (!s->picture[i].f)
-            return AVERROR(ENOMEM);
+            goto fail_nomem;
     }
 
     if (!(s->next_picture.f    = av_frame_alloc()) ||
         !(s->last_picture.f    = av_frame_alloc()) ||
         !(s->current_picture.f = av_frame_alloc()) ||
         !(s->new_picture.f     = av_frame_alloc()))
-        return AVERROR(ENOMEM);
+        goto fail_nomem;
 
     if ((ret = init_context_frame(s)))
-        return AVERROR(ENOMEM);
+        goto fail;
 
+#if FF_API_FLAG_TRUNCATED
     s->parse_context.state = -1;
+#endif
 
     s->context_initialized = 1;
     memset(s->thread_context, 0, sizeof(s->thread_context));
     s->thread_context[0]   = s;
+    s->slice_context_count = nb_slices;
 
 //     if (s->width && s->height) {
-    if (nb_slices > 1) {
-        for (i = 0; i < nb_slices; i++) {
-            if (i) {
-                s->thread_context[i] = av_memdup(s, sizeof(MpegEncContext));
-                if (!s->thread_context[i])
-                    return AVERROR(ENOMEM);
-            }
-            if ((ret = init_duplicate_context(s->thread_context[i])) < 0)
-                return ret;
-            s->thread_context[i]->start_mb_y =
-                (s->mb_height * (i) + nb_slices / 2) / nb_slices;
-            s->thread_context[i]->end_mb_y   =
-                (s->mb_height * (i + 1) + nb_slices / 2) / nb_slices;
-        }
-    } else {
-        if ((ret = init_duplicate_context(s)) < 0)
-            return ret;
-        s->start_mb_y = 0;
-        s->end_mb_y   = s->mb_height;
-    }
-    s->slice_context_count = nb_slices;
+    ret = init_duplicate_contexts(s);
+    if (ret < 0)
+        goto fail;
 //     }
 
     return 0;
+ fail_nomem:
+    ret = AVERROR(ENOMEM);
+ fail:
+    ff_mpv_common_end(s);
+    return ret;
 }
 
 /**
- * Frees and resets MpegEncContext fields depending on the resolution.
+ * Frees and resets MpegEncContext fields depending on the resolution
+ * as well as the slice thread contexts.
  * Is used during resolution changes to avoid a full reinitialization of the
  * codec.
  */
 static void free_context_frame(MpegEncContext *s)
 {
     int i, j, k;
+
+    free_duplicate_contexts(s);
 
     av_freep(&s->mb_type);
     av_freep(&s->p_mv_table_base);
@@ -1038,16 +1061,6 @@ int ff_mpv_common_frame_size_change(MpegEncContext *s)
     if (!s->context_initialized)
         return AVERROR(EINVAL);
 
-    if (s->slice_context_count > 1) {
-        for (i = 0; i < s->slice_context_count; i++) {
-            free_duplicate_context(s->thread_context[i]);
-        }
-        for (i = 1; i < s->slice_context_count; i++) {
-            av_freep(&s->thread_context[i]);
-        }
-    } else
-        free_duplicate_context(s);
-
     free_context_frame(s);
 
     if (s->picture)
@@ -1067,42 +1080,33 @@ int ff_mpv_common_frame_size_change(MpegEncContext *s)
 
     if ((s->width || s->height) &&
         (err = av_image_check_size(s->width, s->height, 0, s->avctx)) < 0)
-        return err;
+        goto fail;
+
+    /* set chroma shifts */
+    err = av_pix_fmt_get_chroma_sub_sample(s->avctx->pix_fmt,
+                                           &s->chroma_x_shift,
+                                           &s->chroma_y_shift);
+    if (err < 0)
+        goto fail;
 
     if ((err = init_context_frame(s)))
-        return err;
+        goto fail;
 
     memset(s->thread_context, 0, sizeof(s->thread_context));
     s->thread_context[0]   = s;
 
     if (s->width && s->height) {
-        int nb_slices = s->slice_context_count;
-        if (nb_slices > 1) {
-            for (i = 0; i < nb_slices; i++) {
-                if (i) {
-                    s->thread_context[i] = av_memdup(s, sizeof(MpegEncContext));
-                    if (!s->thread_context[i]) {
-                        return AVERROR(ENOMEM);
-                    }
-                }
-                if ((err = init_duplicate_context(s->thread_context[i])) < 0)
-                    return err;
-                s->thread_context[i]->start_mb_y =
-                    (s->mb_height * (i) + nb_slices / 2) / nb_slices;
-                s->thread_context[i]->end_mb_y   =
-                    (s->mb_height * (i + 1) + nb_slices / 2) / nb_slices;
-            }
-        } else {
-            err = init_duplicate_context(s);
-            if (err < 0)
-                return err;
-            s->start_mb_y = 0;
-            s->end_mb_y   = s->mb_height;
-        }
-        s->slice_context_count = nb_slices;
+        err = init_duplicate_contexts(s);
+        if (err < 0)
+            goto fail;
     }
+    s->context_reinit = 0;
 
     return 0;
+ fail:
+    free_context_frame(s);
+    s->context_reinit = 1;
+    return err;
 }
 
 /* init common structure for both encoder and decoder */
@@ -1113,18 +1117,14 @@ void ff_mpv_common_end(MpegEncContext *s)
     if (!s)
         return;
 
-    if (s->slice_context_count > 1) {
-        for (i = 0; i < s->slice_context_count; i++) {
-            free_duplicate_context(s->thread_context[i]);
-        }
-        for (i = 1; i < s->slice_context_count; i++) {
-            av_freep(&s->thread_context[i]);
-        }
+    free_context_frame(s);
+    if (s->slice_context_count > 1)
         s->slice_context_count = 1;
-    } else free_duplicate_context(s);
 
+#if FF_API_FLAG_TRUNCATED
     av_freep(&s->parse_context.buffer);
     s->parse_context.buffer_size = 0;
+#endif
 
     av_freep(&s->bitstream_buffer);
     s->allocated_bitstream_buffer_size = 0;
@@ -1153,9 +1153,8 @@ void ff_mpv_common_end(MpegEncContext *s)
     ff_mpeg_unref_picture(s->avctx, &s->new_picture);
     av_frame_free(&s->new_picture.f);
 
-    free_context_frame(s);
-
     s->context_initialized      = 0;
+    s->context_reinit           = 0;
     s->last_picture_ptr         =
     s->next_picture_ptr         =
     s->current_picture_ptr      = NULL;
@@ -1418,7 +1417,7 @@ void ff_mpv_frame_end(MpegEncContext *s)
 void ff_print_debug_info(MpegEncContext *s, Picture *p, AVFrame *pict)
 {
     ff_print_debug_info2(s->avctx, pict, s->mbskip_table, p->mb_type,
-                         p->qscale_table, p->motion_val, &s->low_delay,
+                         p->qscale_table, p->motion_val,
                          s->mb_width, s->mb_height, s->mb_stride, s->quarter_sample);
 }
 
@@ -2320,12 +2319,14 @@ void ff_mpeg_flush(AVCodecContext *avctx){
     s->mb_x= s->mb_y= 0;
     s->closed_gop= 0;
 
+#if FF_API_FLAG_TRUNCATED
     s->parse_context.state= -1;
     s->parse_context.frame_start_found= 0;
     s->parse_context.overread= 0;
     s->parse_context.overread_index= 0;
     s->parse_context.index= 0;
     s->parse_context.last_index= 0;
+#endif
     s->bitstream_buffer_size=0;
     s->pp_time=0;
 }

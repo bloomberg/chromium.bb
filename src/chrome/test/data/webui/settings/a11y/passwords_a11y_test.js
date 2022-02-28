@@ -6,8 +6,8 @@ import 'chrome://settings/lazy_load.js';
 
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {PasswordManagerImpl, routes} from 'chrome://settings/settings.js';
-import {createPasswordEntry} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
-import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
+import {createPasswordEntry} from '../passwords_and_autofill_fake_data.js';
+import {TestPasswordManagerProxy} from '../test_password_manager_proxy.js';
 
 /** @type {PasswordsSectionElement}*/
 let passwordsSection = null;
@@ -21,7 +21,7 @@ const whenReady = new Promise((resolve) => {
   // APIs for fake data.
   window.history.pushState('object or string', 'Test', routes.PASSWORDS.path);
 
-  PasswordManagerImpl.instance_ = new TestPasswordManagerProxy();
+  PasswordManagerImpl.setInstance(new TestPasswordManagerProxy());
   passwordManager = PasswordManagerImpl.getInstance();
 
   settingsUi = document.createElement('settings-ui');
@@ -30,10 +30,10 @@ const whenReady = new Promise((resolve) => {
   // the URL set above) once the settings-ui element is attached
   settingsUi.addEventListener('settings-section-expanded', () => {
     // Passwords section should be loaded before setup is complete.
-    passwordsSection = settingsUi.$$('settings-main')
-                           .$$('settings-basic-page')
-                           .$$('settings-autofill-page')
-                           .$$('passwords-section');
+    passwordsSection = settingsUi.shadowRoot.querySelector('settings-main')
+                           .shadowRoot.querySelector('settings-basic-page')
+                           .shadowRoot.querySelector('settings-autofill-page')
+                           .shadowRoot.querySelector('passwords-section');
     assertTrue(!!passwordsSection);
 
     assertEquals(passwordManager, passwordsSection.passwordManager_);

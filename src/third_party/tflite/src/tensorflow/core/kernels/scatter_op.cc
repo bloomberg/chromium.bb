@@ -21,19 +21,14 @@ limitations under the License.
 #include "tensorflow/core/kernels/scatter_functor.h"
 #include "tensorflow/core/platform/mutex.h"
 #include "tensorflow/core/platform/types.h"
+#include "tensorflow/core/util/determinism.h"
 #include "tensorflow/core/util/util.h"
 
-#ifdef TENSORFLOW_USE_SYCL
-#include "tensorflow/core/common_runtime/sycl/sycl_util.h"
-#endif  // TENSORFLOW_USE_SYCL
 
 namespace tensorflow {
 
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
-#ifdef TENSORFLOW_USE_SYCL
-typedef Eigen::SyclDevice SYCLDevice;
-#endif  // TENSORFLOW_USE_SYCL
 
 // Check whether updates.shape = indices.shape + params.shape[1:]
 static bool ValidShapes(const Tensor& params, const Tensor& updates,
@@ -79,6 +74,15 @@ class ScatterUpdateOp : public OpKernel {
   //   in the graph?
   explicit ScatterUpdateOp(OpKernelConstruction* c) : OpKernel(c) {
     OP_REQUIRES_OK(c, c->GetAttr("use_locking", &use_exclusive_lock_));
+    if (std::is_same<Device, GPUDevice>::value) {
+      OP_REQUIRES(
+          c, !OpDeterminismRequired(),
+          errors::Unimplemented(
+              "Determinism is not yet supported in GPU implementation of "
+              "Scatter ops with ref inputs. Consider using resource variables "
+              "instead if you want to run Scatter when op determinism is "
+              "enabled."));
+    }
   }
 
   void Compute(OpKernelContext* c) override {
@@ -102,7 +106,7 @@ class ScatterUpdateOp : public OpKernel {
     if (!c->status().ok()) return;
 
     // Check that we have enough index space
-    const int64 N_big = indices.NumElements();
+    const int64_t N_big = indices.NumElements();
     OP_REQUIRES(
         c, N_big <= std::numeric_limits<Index>::max(),
         errors::InvalidArgument("indices has too many elements for ",
@@ -151,94 +155,6 @@ class ScatterUpdateOp : public OpKernel {
   }
 };
 
-#ifdef TENSORFLOW_USE_SYCL
-template <typename T, typename Index, scatter_op::UpdateOp op>
-class ScatterUpdateOp<SYCLDevice, T, Index, op> : public OpKernel {
- public:
-  explicit ScatterUpdateOp(OpKernelConstruction* c) : OpKernel(c) {
-    OP_REQUIRES_OK(c, c->GetAttr("use_locking", &use_exclusive_lock_));
-  }
-
-  void Compute(OpKernelContext* c) override {
-    if (use_exclusive_lock_) {
-      // Hold mutex while we apply updates
-      mutex_lock l(*c->input_ref_mutex(0));
-      DoCompute(c);
-    } else {
-      DoCompute(c);
-    }
-  }
-
- private:
-  bool use_exclusive_lock_;
-
-  void DoCompute(OpKernelContext* c) {
-    Tensor params = c->mutable_input(0, use_exclusive_lock_);
-    const Tensor& indices = c->input(1);
-    const Tensor& updates = c->input(2);
-    DoValidationChecking(c, params, indices, updates);
-    if (!c->status().ok()) return;
-
-    // Check that we have enough index space
-    const int64 N_big = indices.NumElements();
-    OP_REQUIRES(
-        c, N_big <= std::numeric_limits<Index>::max(),
-        errors::InvalidArgument("indices has too many elements for ",
-                                DataTypeString(DataTypeToEnum<Index>::v()),
-                                " indexing: ", N_big, " > ",
-                                std::numeric_limits<Index>::max()));
-    const Index N = static_cast<Index>(indices.NumElements());
-    OP_REQUIRES(
-        c, params.dim_size(0) <= std::numeric_limits<Index>::max(),
-        errors::InvalidArgument("params.shape[0] too large for ",
-                                DataTypeString(DataTypeToEnum<Index>::v()),
-                                " indexing: ", params.dim_size(0), " > ",
-                                std::numeric_limits<Index>::max()));
-
-    // We always return the input ref.
-    c->forward_ref_input_to_ref_output(0, 0);
-
-    if (N > 0) {
-      auto index_size = indices.NumElements() * sizeof(Index);
-      Tensor indices_host = Tensor(indices.dtype(), indices.shape());
-
-      auto src_ptr = GetBase(&indices);
-      auto dst_ptr = GetBase(&indices_host);
-
-      c->eigen_sycl_device().memcpyDeviceToHost(
-          dst_ptr, static_cast<const Index*>(src_ptr), index_size);
-
-      auto indices_flat = indices_host.flat<Index>();
-      auto params_flat = params.flat_outer_dims<T>();
-
-      if (TensorShapeUtils::IsScalar(updates.shape())) {
-        const auto update = updates.scalar<T>();
-
-        functor::ScatterScalarFunctorSYCL<T, Index, op> functor;
-        const Index bad_i = functor(c, c->template eigen_device<SYCLDevice>(),
-                                    params_flat, update, indices_flat);
-        OP_REQUIRES(c, bad_i < 0,
-                    errors::InvalidArgument(
-                        "indices", SliceDebugString(indices.shape(), bad_i),
-                        " = ", indices_flat(bad_i), " is not in [0, ",
-                        params.dim_size(0), ")"));
-      } else {
-        auto updates_flat =
-            updates.shaped<T, 2>({N, updates.NumElements() / N});
-
-        functor::ScatterFunctorSYCL<T, Index, op> functor;
-        const Index bad_i = functor(c, c->template eigen_device<SYCLDevice>(),
-                                    params_flat, updates_flat, indices_flat);
-        OP_REQUIRES(c, bad_i < 0,
-                    errors::InvalidArgument(
-                        "indices", SliceDebugString(indices.shape(), bad_i),
-                        " = ", indices_flat(bad_i), " is not in [0, ",
-                        params.dim_size(0), ")"));
-      }
-    }
-  }
-};
-#endif  // TENSORFLOW_USE_SYCL
 
 #define REGISTER_SCATTER_KERNEL_INDEX(type, index_type, dev, name, op) \
   REGISTER_KERNEL_BUILDER(Name(name)                                   \
@@ -249,7 +165,7 @@ class ScatterUpdateOp<SYCLDevice, T, Index, op> : public OpKernel {
 
 #define REGISTER_SCATTER_KERNEL(type, dev, name, op)         \
   REGISTER_SCATTER_KERNEL_INDEX(type, int32, dev, name, op); \
-  REGISTER_SCATTER_KERNEL_INDEX(type, int64, dev, name, op);
+  REGISTER_SCATTER_KERNEL_INDEX(type, int64_t, dev, name, op);
 
 #define REGISTER_SCATTER_ARITHMETIC(type, dev)                                 \
   REGISTER_SCATTER_KERNEL(type, dev, "ScatterAdd", scatter_op::UpdateOp::ADD); \
@@ -286,29 +202,13 @@ TF_CALL_ALL_TYPES(REGISTER_SCATTER_UPDATE_CPU);
 
 #define REGISTER_SCATTER_UPDATE_GPU(type) REGISTER_SCATTER_UPDATE(type, GPU);
 
-TF_CALL_GPU_NUMBER_TYPES_NO_HALF(REGISTER_SCATTER_ARITHMETIC_GPU);
+TF_CALL_GPU_NUMBER_TYPES(REGISTER_SCATTER_ARITHMETIC_GPU);
 TF_CALL_GPU_NUMBER_TYPES(REGISTER_SCATTER_MINMAX_GPU);
-TF_CALL_GPU_NUMBER_TYPES_NO_HALF(REGISTER_SCATTER_UPDATE_GPU);
+TF_CALL_GPU_NUMBER_TYPES(REGISTER_SCATTER_UPDATE_GPU);
 
 #endif  // GOOGLE_CUDA || TENSORFLOW_USE_ROCM
 
 // Registers GPU kernels.
-#if TENSORFLOW_USE_SYCL
-#define REGISTER_SCATTER_ARITHMETIC_SYCL(type) \
-  REGISTER_SCATTER_ARITHMETIC(type, SYCL);
-
-#define REGISTER_SCATTER_MINMAX_SYCL(type) REGISTER_SCATTER_MINMAX(type, SYCL);
-
-#define REGISTER_SCATTER_UPDATE_SYCL(type) REGISTER_SCATTER_UPDATE(type, SYCL);
-
-TF_CALL_GPU_NUMBER_TYPES_NO_HALF(REGISTER_SCATTER_ARITHMETIC_SYCL);
-TF_CALL_GPU_NUMBER_TYPES_NO_HALF(REGISTER_SCATTER_MINMAX_SYCL);
-TF_CALL_GPU_NUMBER_TYPES_NO_HALF(REGISTER_SCATTER_UPDATE_SYCL);
-
-#undef REGISTER_SCATTER_ARITHMETIC_SYCL
-#undef REGISTER_SCATTER_MINMAX_SYCL
-#undef REGISTER_SCATTER_UPDATE_SYCL
-#endif  // TENSORFLOW_USE_SYCL
 
 #undef REGISTER_SCATTER_ARITHMETIC
 #undef REGISTER_SCATTER_ARITHMETIC_CPU

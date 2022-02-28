@@ -8,12 +8,14 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.provider.Settings;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.ScaleAnimation;
@@ -21,8 +23,11 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
+import org.chromium.ui.UiUtils;
+import org.chromium.ui.util.ColorUtils;
 import org.chromium.ui.widget.AnchoredPopupWindow;
 import org.chromium.ui.widget.RectProvider;
 
@@ -42,12 +47,14 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
     private final float mTouchPointYPx;
     private final float mTopContentOffsetPx;
     private final boolean mIsPopup;
+    private final boolean mShouldRemoveScrim;
 
     private float mContextMenuSourceXPx;
     private float mContextMenuSourceYPx;
     private int mContextMenuFirstLocationYPx;
-    private AnchoredPopupWindow mPopupWindow;
+    private @Nullable AnchoredPopupWindow mPopupWindow;
     private View mLayout;
+    private OnLayoutChangeListener mOnLayoutChangeListener;
 
     private int mTopMarginPx;
     private int mBottomMarginPx;
@@ -70,13 +77,15 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
      * @param layout The context menu layout that will house the menu.
      * @param contentView The context menu view to display on the dialog.
      * @param isPopup Whether the context menu is being shown in a {@link AnchoredPopupWindow}.
+     * @param shouldRemoveScrim Whether the context menu should removes the scrim behind the dialog
+     *         visually.
      * @param popupMargin The margin for the context menu.
      * @param desiredPopupContentWidth The desired width for the content of the context menu.
      */
     public ContextMenuDialog(Activity ownerActivity, int theme, float touchPointXPx,
             float touchPointYPx, float topContentOffsetPx, int topMarginPx, int bottomMarginPx,
-            View layout, View contentView, boolean isPopup, @Nullable Integer popupMargin,
-            @Nullable Integer desiredPopupContentWidth) {
+            View layout, View contentView, boolean isPopup, boolean shouldRemoveScrim,
+            @Nullable Integer popupMargin, @Nullable Integer desiredPopupContentWidth) {
         super(ownerActivity, theme);
         mActivity = ownerActivity;
         mTouchPointXPx = touchPointXPx;
@@ -87,6 +96,7 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
         mContentView = contentView;
         mLayout = layout;
         mIsPopup = isPopup;
+        mShouldRemoveScrim = shouldRemoveScrim;
         mPopupMargin = popupMargin;
         mDesiredPopupContentWidth = desiredPopupContentWidth;
     }
@@ -97,6 +107,25 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
         Window dialogWindow = getWindow();
         dialogWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         dialogWindow.setLayout(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        if (mShouldRemoveScrim) {
+            dialogWindow.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+            dialogWindow.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+            dialogWindow.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+            // Set the navigation bar when API level >= 27 to match android:navigationBarColor
+            // reference in styles.xml.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                dialogWindow.setNavigationBarColor(mActivity.getWindow().getNavigationBarColor());
+                UiUtils.setNavigationBarIconColor(dialogWindow.getDecorView(),
+                        mActivity.getResources().getBoolean(R.bool.window_light_navigation_bar));
+            }
+            // Apply the status bar color in case the website had override them.
+            ApiCompatibilityUtils.setStatusBarColor(
+                    dialogWindow, mActivity.getWindow().getStatusBarColor());
+            ApiCompatibilityUtils.setStatusBarIconColor(dialogWindow.getDecorView().getRootView(),
+                    !ColorUtils.shouldUseLightForegroundOnBackground(
+                            mActivity.getWindow().getStatusBarColor()));
+        }
 
         // Both bottom margin and top margin must be set together to ensure default
         // values are not relied upon for custom behavior.
@@ -109,14 +138,27 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
             layoutParams.topMargin = mTopMarginPx;
         }
 
-        (mIsPopup ? mLayout : mContentView).addOnLayoutChangeListener(new OnLayoutChangeListener() {
+        mOnLayoutChangeListener = new OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                // // If the layout size does not change (e.g. call due to #forceLayout), do nothing
+                // // because we don't want to dismiss the context menu.
+                if (left == oldLeft && right == oldRight && top == oldTop && bottom == oldBottom) {
+                    return;
+                }
+
                 if (mIsPopup) {
                     // If the menu is a popup, wait for the layout to be measured, then proceed with
                     // showing the popup window.
                     if (v.getMeasuredHeight() == 0) return;
+
+                    // If dialog is showing and the layout changes, we might lost the anchor point.
+                    // We'll dismiss the context menu and remove the listener.
+                    if (mPopupWindow != null && mPopupWindow.isShowing()) {
+                        dismiss();
+                        return;
+                    }
 
                     final int posX = (int) mTouchPointXPx;
                     final int posY = (int) (mTouchPointYPx + mTopContentOffsetPx);
@@ -138,10 +180,12 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
                     if (v.getMeasuredHeight() == 0) return;
 
                     startEnterAnimation();
+                    v.removeOnLayoutChangeListener(this);
+                    mOnLayoutChangeListener = null;
                 }
-                v.removeOnLayoutChangeListener(this);
             }
-        });
+        };
+        (mIsPopup ? mLayout : mContentView).addOnLayoutChangeListener(mOnLayoutChangeListener);
     }
 
     private void startEnterAnimation() {
@@ -167,12 +211,23 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
     @Override
     public void dismiss() {
         if (mIsPopup) {
-            mPopupWindow.dismiss();
+            if (mPopupWindow != null) {
+                mPopupWindow.dismiss();
+                mPopupWindow = null;
+            }
+            if (mOnLayoutChangeListener != null) {
+                mLayout.removeOnLayoutChangeListener(mOnLayoutChangeListener);
+                mOnLayoutChangeListener = null;
+            }
             super.dismiss();
 
             return;
         }
 
+        if (mOnLayoutChangeListener != null) {
+            mContentView.removeOnLayoutChangeListener(mOnLayoutChangeListener);
+            mOnLayoutChangeListener = null;
+        }
         int[] contextMenuFinalLocationPx = new int[2];
         mContentView.getLocationOnScreen(contextMenuFinalLocationPx);
         // Recalculate mContextMenuDestinationY because the context menu's final location may not be

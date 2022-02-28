@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -144,6 +144,10 @@ class AutomationWebContentsObserver
       public content::WebContentsUserData<AutomationWebContentsObserver>,
       public AutomationEventRouterObserver {
  public:
+  AutomationWebContentsObserver(const AutomationWebContentsObserver&) = delete;
+  AutomationWebContentsObserver& operator=(
+      const AutomationWebContentsObserver&) = delete;
+
   ~AutomationWebContentsObserver() override {
     automation_event_router_observer_.Reset();
   }
@@ -256,11 +260,19 @@ class AutomationWebContentsObserver
     web_contents()->SetAccessibilityMode(std::move(new_mode));
   }
 
+  void ExtensionListenerAdded() override {
+    // This call resets accessibility.
+    if (web_contents())
+      web_contents()->EnableWebContentsOnlyAccessibilityMode();
+  }
+
  private:
   friend class content::WebContentsUserData<AutomationWebContentsObserver>;
 
   explicit AutomationWebContentsObserver(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents),
+        content::WebContentsUserData<AutomationWebContentsObserver>(
+            *web_contents),
         browser_context_(web_contents->GetBrowserContext()) {
     if (web_contents->IsCurrentlyAudible()) {
       content::RenderFrameHost* rfh = web_contents->GetMainFrame();
@@ -279,25 +291,23 @@ class AutomationWebContentsObserver
         AutomationEventRouter::GetInstance());
   }
 
-  content::BrowserContext* browser_context_;
+  raw_ptr<content::BrowserContext> browser_context_;
 
   base::ScopedObservation<extensions::AutomationEventRouter,
                           extensions::AutomationEventRouterObserver>
       automation_event_router_observer_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(AutomationWebContentsObserver);
 };
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(AutomationWebContentsObserver)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AutomationWebContentsObserver);
 
 ExtensionFunction::ResponseAction AutomationInternalEnableTabFunction::Run() {
   const AutomationInfo* automation_info = AutomationInfo::Get(extension());
   EXTENSION_FUNCTION_VALIDATE(automation_info);
 
   using api::automation_internal::EnableTab::Params;
-  std::unique_ptr<Params> params(Params::Create(*args_));
+  std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   content::WebContents* contents = NULL;
   AutomationInternalApiDelegate* automation_api_delegate =
@@ -339,7 +349,7 @@ ExtensionFunction::ResponseAction AutomationInternalEnableTabFunction::Run() {
 
   // This gets removed when the extension process dies.
   AutomationEventRouter::GetInstance()->RegisterListenerForOneTree(
-      extension_id(), source_process_id(), ax_tree_id);
+      extension_id(), source_process_id(), GetSenderWebContents(), ax_tree_id);
 
   return RespondNow(
       ArgumentList(api::automation_internal::EnableTab::Results::Create(
@@ -349,21 +359,6 @@ ExtensionFunction::ResponseAction AutomationInternalEnableTabFunction::Run() {
 absl::optional<std::string> AutomationInternalEnableTreeFunction::EnableTree(
     const ui::AXTreeID& ax_tree_id,
     const ExtensionId& extension_id) {
-  ui::AXActionHandlerRegistry* registry =
-      ui::AXActionHandlerRegistry::GetInstance();
-  ui::AXActionHandlerBase* action_handler =
-      registry->GetActionHandler(ax_tree_id);
-  if (action_handler) {
-    // Explicitly invalidate the pre-existing source tree first. This ensures
-    // the source tree sends a complete tree when the next event occurs. This
-    // is required whenever the client extension is reloaded.
-    ui::AXActionData action;
-    action.target_tree_id = ax_tree_id;
-    action.source_extension_id = extension_id;
-    action.action = ax::mojom::Action::kInternalInvalidateTree;
-    action_handler->PerformAction(action);
-  }
-
   AutomationInternalApiDelegate* automation_api_delegate =
       ExtensionsAPIClient::Get()->GetAutomationInternalApiDelegate();
   if (automation_api_delegate->EnableTree(ax_tree_id))
@@ -372,7 +367,7 @@ absl::optional<std::string> AutomationInternalEnableTreeFunction::EnableTree(
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromAXTreeID(ax_tree_id);
   if (!rfh)
-    return "unable to load tab";
+    return absl::nullopt;
 
   content::WebContents* contents =
       content::WebContents::FromRenderFrameHost(rfh);
@@ -389,7 +384,7 @@ absl::optional<std::string> AutomationInternalEnableTreeFunction::EnableTree(
 ExtensionFunction::ResponseAction AutomationInternalEnableTreeFunction::Run() {
   using api::automation_internal::EnableTree::Params;
 
-  std::unique_ptr<Params> params(Params::Create(*args_));
+  std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   ui::AXTreeID ax_tree_id = ui::AXTreeID::FromString(params->tree_id);
@@ -611,6 +606,18 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
     case api::automation::ACTION_TYPE_EXPAND:
       action->action = ax::mojom::Action::kExpand;
       break;
+    case api::automation::ACTION_TYPE_RESUMEMEDIA:
+      action->action = ax::mojom::Action::kResumeMedia;
+      break;
+    case api::automation::ACTION_TYPE_STARTDUCKINGMEDIA:
+      action->action = ax::mojom::Action::kStartDuckingMedia;
+      break;
+    case api::automation::ACTION_TYPE_STOPDUCKINGMEDIA:
+      action->action = ax::mojom::Action::kStopDuckingMedia;
+      break;
+    case api::automation::ACTION_TYPE_SUSPENDMEDIA:
+      action->action = ax::mojom::Action::kSuspendMedia;
+      break;
     case api::automation::ACTION_TYPE_ANNOTATEPAGEIMAGES:
     case api::automation::ACTION_TYPE_SIGNALENDOFTEST:
     case api::automation::ACTION_TYPE_INTERNALINVALIDATETREE:
@@ -625,34 +632,29 @@ AutomationInternalPerformActionFunction::Result::Result(const Result&) =
     default;
 AutomationInternalPerformActionFunction::Result::~Result() = default;
 
+// static
 AutomationInternalPerformActionFunction::Result
 AutomationInternalPerformActionFunction::PerformAction(
-    const ui::AXTreeID& tree_id,
-    int32_t automation_node_id,
-    const std::string& action_type,
-    int request_id,
-    const base::DictionaryValue& additional_properties,
-    const std::string& extension_id,
+    const ui::AXActionData& data,
     const Extension* extension,
     const AutomationInfo* automation_info) {
   Result result;
   result.validation_success = true;
 
-  ui::AXActionHandlerRegistry* registry =
-      ui::AXActionHandlerRegistry::GetInstance();
-
   // The ash implementation of crosapi registers itself as an action observer.
   // This allows it to forward actions in parallel to Lacros.
-  registry->PerformAction(tree_id, automation_node_id, action_type, request_id,
-                          additional_properties);
+  ui::AXActionHandlerRegistry* registry =
+      ui::AXActionHandlerRegistry::GetInstance();
+  registry->PerformAction(data);
 
-  ui::AXActionHandlerBase* action_handler = registry->GetActionHandler(tree_id);
+  ui::AXActionHandlerBase* action_handler =
+      registry->GetActionHandler(data.target_tree_id);
   if (action_handler) {
     // Handle an AXActionHandler with a rfh first. Some actions require a rfh ->
     // web contents and this api requires web contents to perform a permissions
     // check.
     content::RenderFrameHost* rfh =
-        content::RenderFrameHost::FromAXTreeID(tree_id);
+        content::RenderFrameHost::FromAXTreeID(data.target_tree_id);
     if (rfh) {
       content::WebContents* contents =
           content::WebContents::FromRenderFrameHost(rfh);
@@ -672,36 +674,28 @@ AutomationInternalPerformActionFunction::PerformAction(
       }
 
       // Handle internal actions.
-      api::automation_internal::ActionTypePrivate internal_action_type =
-          api::automation_internal::ParseActionTypePrivate(action_type);
       content::MediaSession* session = content::MediaSession::Get(contents);
-      switch (internal_action_type) {
-        case api::automation_internal::ACTION_TYPE_PRIVATE_STARTDUCKINGMEDIA:
+      switch (data.action) {
+        case ax::mojom::Action::kStartDuckingMedia:
           session->StartDucking();
           return result;
-        case api::automation_internal::ACTION_TYPE_PRIVATE_STOPDUCKINGMEDIA:
+        case ax::mojom::Action::kStopDuckingMedia:
           session->StopDucking();
           return result;
-        case api::automation_internal::ACTION_TYPE_PRIVATE_RESUMEMEDIA:
+        case ax::mojom::Action::kResumeMedia:
           session->Resume(content::MediaSession::SuspendType::kSystem);
           return result;
-        case api::automation_internal::ACTION_TYPE_PRIVATE_SUSPENDMEDIA:
+        case ax::mojom::Action::kSuspendMedia:
           session->Suspend(content::MediaSession::SuspendType::kSystem);
           return result;
-        case api::automation_internal::ACTION_TYPE_PRIVATE_NONE:
-          // Not a private action.
+        default:
           break;
       }
     }
 
-    ui::AXActionData data;
-    Result result = ConvertToAXActionData(
-        tree_id, automation_node_id, action_type, request_id,
-        additional_properties, extension_id, &data);
     action_handler->PerformAction(data);
-    return result;
   }
-  result.automation_error = "Unable to perform action on unknown tree.";
+
   return result;
 }
 
@@ -711,16 +705,25 @@ AutomationInternalPerformActionFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(automation_info && automation_info->interact);
 
   using api::automation_internal::PerformAction::Params;
-  std::unique_ptr<Params> params(Params::Create(*args_));
+  std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   int* request_id_ptr = params->args.request_id.get();
   int request_id = request_id_ptr ? *request_id_ptr : -1;
-  Result result =
-      PerformAction(ui::AXTreeID::FromString(params->args.tree_id),
-                    params->args.automation_node_id, params->args.action_type,
-                    request_id, params->opt_args.additional_properties,
-                    extension_id(), extension(), automation_info);
+
+  ui::AXActionData data;
+  Result result = ConvertToAXActionData(
+      ui::AXTreeID::FromString(params->args.tree_id),
+      params->args.automation_node_id, params->args.action_type, request_id,
+      params->opt_args.additional_properties, extension_id(), &data);
+
+  if (!result.validation_success) {
+    // This macro has a built in |return|.
+    EXTENSION_FUNCTION_VALIDATE(false);
+  }
+
+  result = PerformAction(data, extension(), automation_info);
+
   if (!result.validation_success) {
     // This macro has a built in |return|.
     EXTENSION_FUNCTION_VALIDATE(false);
@@ -742,7 +745,7 @@ AutomationInternalEnableDesktopFunction::Run() {
 
   // This gets removed when the extension process dies.
   AutomationEventRouter::GetInstance()->RegisterListenerWithDesktopPermission(
-      extension_id(), source_process_id());
+      extension_id(), source_process_id(), GetSenderWebContents());
 
   AutomationInternalApiDelegate* automation_api_delegate =
       ExtensionsAPIClient::Get()->GetAutomationInternalApiDelegate();
@@ -765,7 +768,7 @@ AutomationInternalQuerySelectorFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(automation_info);
 
   using api::automation_internal::QuerySelector::Params;
-  std::unique_ptr<Params> params(Params::Create(*args_));
+  std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromAXTreeID(

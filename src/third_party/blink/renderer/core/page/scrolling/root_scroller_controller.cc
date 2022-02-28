@@ -59,19 +59,19 @@ bool FillsViewport(const Element& element) {
   if (!quad.IsRectilinear())
     return false;
 
-  IntRect bounding_box = EnclosingIntRect(quad.BoundingBox());
+  gfx::Rect bounding_box = ToEnclosingRect(quad.BoundingBox());
 
-  IntSize icb_size = top_document.GetLayoutView()->GetLayoutSize();
+  gfx::Size icb_size = top_document.GetLayoutView()->GetLayoutSize();
 
   float zoom = top_document.GetFrame()->PageZoomFactor();
-  IntSize controls_hidden_size = ExpandedIntSize(
+  gfx::Size controls_hidden_size = ToCeiledSize(
       top_document.View()->ViewportSizeForViewportUnits().ScaledBy(zoom));
 
-  if (bounding_box.Size() != icb_size &&
-      bounding_box.Size() != controls_hidden_size)
+  if (bounding_box.size() != icb_size &&
+      bounding_box.size() != controls_hidden_size)
     return false;
 
-  return bounding_box.Location() == IntPoint::Zero();
+  return bounding_box.origin().IsOrigin();
 }
 
 // If the element is an iframe this grabs the ScrollableArea for the owned

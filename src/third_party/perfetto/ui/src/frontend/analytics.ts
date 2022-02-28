@@ -12,18 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {getCurrentChannel} from '../common/channels';
 import {globals} from '../frontend/globals';
 import * as version from '../gen/perfetto_version';
+
+import {Router} from './router';
 
 type TraceCategories = 'Trace Actions'|'Record Trace'|'User Actions';
 const ANALYTICS_ID = 'UA-137828855-1';
 const PAGE_TITLE = 'no-page-title';
 
 export function initAnalytics() {
-  // Only initialize logging on prod or staging
-  if (window.location.origin.startsWith('http://localhost:') ||
-      window.location.origin.endsWith('.perfetto.dev') ||
-      window.location.origin.endsWith('staging-dot-perfetto-ui.appspot.com')) {
+  // Only initialize logging on the official site and on localhost (to catch
+  // analytics bugs when testing locally).
+  // Skip analytics is the fragment has "testing=1", this is used by UI tests.
+  if ((window.location.origin.startsWith('http://localhost:') ||
+       window.location.origin.endsWith('.perfetto.dev')) &&
+      !globals.testing) {
     return new AnalyticsImpl();
   }
   return new NullAnalytics();
@@ -40,6 +45,7 @@ export interface Analytics {
   updatePath(_: string): void;
   logEvent(_x: TraceCategories|null, _y: string): void;
   logError(_x: string, _y?: boolean): void;
+  isEnabled(): boolean;
 }
 
 export class NullAnalytics implements Analytics {
@@ -47,6 +53,9 @@ export class NullAnalytics implements Analytics {
   updatePath(_: string) {}
   logEvent(_x: TraceCategories|null, _y: string) {}
   logError(_x: string) {}
+  isEnabled(): boolean {
+    return false;
+  }
 }
 
 class AnalyticsImpl implements Analytics {
@@ -81,7 +90,7 @@ class AnalyticsImpl implements Analytics {
     script.src = 'https://www.googletagmanager.com/gtag/js?id=' + ANALYTICS_ID;
     script.defer = true;
     document.head.appendChild(script);
-    const route = globals.state.route || '/';
+    const route = Router.parseUrl(window.location.href).page || '/';
     console.log(
         `GA initialized. route=${route}`,
         `isInternalUser=${globals.isInternalUser}`);
@@ -97,7 +106,7 @@ class AnalyticsImpl implements Analytics {
       page_title: PAGE_TITLE,
       dimension1: globals.isInternalUser ? '1' : '0',
       dimension2: version.VERSION,
-      dimension3: globals.channel,
+      dimension3: getCurrentChannel(),
     });
     this.updatePath(route);
   }
@@ -113,5 +122,9 @@ class AnalyticsImpl implements Analytics {
 
   logError(description: string, fatal = true) {
     gtagGlobals.gtag('event', 'exception', {description, fatal});
+  }
+
+  isEnabled(): boolean {
+    return true;
   }
 }

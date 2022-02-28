@@ -5,14 +5,15 @@
 #ifndef ASH_PROJECTOR_UI_PROJECTOR_BAR_VIEW_H_
 #define ASH_PROJECTOR_UI_PROJECTOR_BAR_VIEW_H_
 
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "ash/projector/model/projector_ui_model.h"
 #include "ash/projector/ui/projector_color_button.h"
 #include "ash/projector/ui/projector_image_button.h"
+#include "base/gtest_prod_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/view.h"
-
-#include <vector>
 
 namespace views {
 class BoxLayoutView;
@@ -57,8 +58,18 @@ class ASH_EXPORT ProjectorBarView : public views::View {
   bool IsClosedCaptionEnabled() const;
 
  private:
+  friend class ProjectorUiControllerTest;
+  FRIEND_TEST_ALL_PREFIXES(ProjectorUiControllerTest, UmaMetricsTest);
+
   // The location of the bar.
-  enum class BarLocation { kUpperLeft, kUpperRight, kLowerRight, kLowerLeft };
+  enum class BarLocation {
+    kUpperLeft,
+    kUpperCenter,
+    kUpperRight,
+    kLowerRight,
+    kLowerCenter,
+    kLowerLeft
+  };
 
   // The state of the marker bar.
   enum class MarkerBarState { kDisabled, kHighlighted, kExpanded };
@@ -108,7 +119,7 @@ class ASH_EXPORT ProjectorBarView : public views::View {
   views::BoxLayoutView* marker_bar_ = nullptr;
   views::BoxLayoutView* tools_bar_ = nullptr;
 
-  BarLocation bar_location_ = BarLocation::kLowerLeft;
+  BarLocation bar_location_ = BarLocation::kLowerCenter;
   MarkerBarState marker_bar_state_ = MarkerBarState::kDisabled;
 
   ProjectorControllerImpl* projector_controller_ = nullptr;

@@ -8,10 +8,10 @@
 #include <map>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
+#include "chrome/browser/ash/file_manager/volume_manager_observer.h"
+#include "chrome/browser/chromeos/extensions/file_manager/system_notification_manager.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 
@@ -30,11 +30,15 @@ enum DeviceState {
 class DeviceEventRouter : public VolumeManagerObserver,
                           public chromeos::PowerManagerClient::Observer {
  public:
-  DeviceEventRouter();
+  explicit DeviceEventRouter(SystemNotificationManager* notification_manager);
 
   // |overriding_time_delta| overrides time delta of delayed tasks for testing
   // |so that the tasks are executed by RunLoop::RunUntilIdle.
-  explicit DeviceEventRouter(base::TimeDelta overriding_time_delta);
+  DeviceEventRouter(SystemNotificationManager* notificaton_manager,
+                    base::TimeDelta overriding_time_delta);
+
+  DeviceEventRouter(const DeviceEventRouter&) = delete;
+  DeviceEventRouter& operator=(const DeviceEventRouter&) = delete;
 
   ~DeviceEventRouter() override;
 
@@ -42,8 +46,8 @@ class DeviceEventRouter : public VolumeManagerObserver,
   void Startup();
 
   // VolumeManagerObserver overrides.
-  void OnDiskAdded(const chromeos::disks::Disk& disk, bool mounting) override;
-  void OnDiskRemoved(const chromeos::disks::Disk& disk) override;
+  void OnDiskAdded(const ash::disks::Disk& disk, bool mounting) override;
+  void OnDiskRemoved(const ash::disks::Disk& disk) override;
   void OnDeviceAdded(const std::string& device_path) override;
   void OnDeviceRemoved(const std::string& device_path) override;
   void OnVolumeMounted(chromeos::MountError error_code,
@@ -85,6 +89,10 @@ class DeviceEventRouter : public VolumeManagerObserver,
   // Returns external storage is disabled or not.
   virtual bool IsExternalStorageDisabled() = 0;
 
+  SystemNotificationManager* system_notification_manager() {
+    return notification_manager_;
+  }
+
  private:
   void StartupDelayed();
   void SuspendDoneDelayed();
@@ -95,7 +103,9 @@ class DeviceEventRouter : public VolumeManagerObserver,
   // Sets device state to the device having |device_path|.
   void SetDeviceState(const std::string& device_path, DeviceState state);
 
-  // Whther to use zero time delta for testing or not.
+  SystemNotificationManager* notification_manager_;
+
+  // Whether to use zero time delta for testing or not.
   const base::TimeDelta resume_time_delta_;
   const base::TimeDelta startup_time_delta_;
 
@@ -114,7 +124,6 @@ class DeviceEventRouter : public VolumeManagerObserver,
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<DeviceEventRouter> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(DeviceEventRouter);
 };
 }  // namespace file_manager
 

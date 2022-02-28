@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SCREEN_ENUMERATION_SCREEN_CHANGE_MONITOR_H_
 #define CONTENT_BROWSER_SCREEN_ENUMERATION_SCREEN_CHANGE_MONITOR_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "ui/display/display_observer.h"
 
@@ -30,6 +32,8 @@ class ScreenChangeMonitor : public display::DisplayObserver {
   void OnDidRemoveDisplays() override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
+
+  display::ScopedOptionalDisplayObserver display_observer_{this};
 
   // The callback to run on screen change events.
   base::RepeatingCallback<void(bool)> callback_;

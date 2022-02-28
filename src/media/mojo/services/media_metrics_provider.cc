@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
+#include "media/base/key_systems.h"
 #include "media/learning/mojo/mojo_learning_task_controller_service.h"
 #include "media/mojo/services/video_decode_stats_recorder.h"
 #include "media/mojo/services/watch_time_recorder.h"
@@ -72,6 +73,13 @@ MediaMetricsProvider::~MediaMetricsProvider() {
   builder.SetIsTopFrame(is_top_frame_);
   builder.SetIsEME(uma_info_.is_eme);
   builder.SetIsMSE(is_mse_);
+  builder.SetRendererType(static_cast<int>(renderer_type_));
+  builder.SetKeySystem(GetKeySystemIntForUKM(key_system_));
+  builder.SetIsHardwareSecure(is_hardware_secure_);
+  builder.SetAudioEncryptionType(
+      static_cast<int>(uma_info_.audio_pipeline_info.encryption_type));
+  builder.SetVideoEncryptionType(
+      static_cast<int>(uma_info_.video_pipeline_info.encryption_type));
   builder.SetFinalPipelineStatus(uma_info_.last_pipeline_status);
   if (!is_mse_) {
     builder.SetURLScheme(static_cast<int64_t>(url_scheme_));
@@ -94,21 +102,35 @@ std::string MediaMetricsProvider::GetUMANameForAVStream(
     const PipelineInfo& player_info) {
   constexpr char kPipelineUmaPrefix[] = "Media.PipelineStatus.AudioVideo.";
   std::string uma_name = kPipelineUmaPrefix;
-  if (player_info.video_codec == kCodecVP8)
+  // TODO(xhwang): Use a helper function to simply the codec name mapping.
+  if (player_info.video_codec == VideoCodec::kVP8)
     uma_name += "VP8.";
-  else if (player_info.video_codec == kCodecVP9)
+  else if (player_info.video_codec == VideoCodec::kVP9)
     uma_name += "VP9.";
-  else if (player_info.video_codec == kCodecH264)
+  else if (player_info.video_codec == VideoCodec::kH264)
     uma_name += "H264.";
-  else if (player_info.video_codec == kCodecAV1)
+  else if (player_info.video_codec == VideoCodec::kAV1)
     uma_name += "AV1.";
+  else if (player_info.video_codec == VideoCodec::kHEVC)
+    uma_name += "HEVC.";
+  else if (player_info.video_codec == VideoCodec::kDolbyVision)
+    uma_name += "DolbyVision.";
   else
     return uma_name + "Other";
 
+  // Add Renderer name when not using the default RendererImpl.
+  if (renderer_type_ == RendererType::kMediaFoundation) {
+    return uma_name + GetRendererName(RendererType::kMediaFoundation);
+  } else if (renderer_type_ != RendererType::kDefault) {
+    return uma_name + "UnknownRenderer";
+  }
+
+  // Using default RendererImpl. Put more detailed info into the UMA name.
 #if !defined(OS_ANDROID)
   if (player_info.video_pipeline_info.decoder_type ==
-      VideoDecoderType::kDecrypting)
+      VideoDecoderType::kDecrypting) {
     return uma_name + "DVD";
+  }
 #endif
 
   if (player_info.video_pipeline_info.has_decrypting_demuxer_stream)
@@ -118,6 +140,7 @@ std::string MediaMetricsProvider::GetUMANameForAVStream(
   // reported as HW forever, regardless of the underlying platform
   // implementation.
   uma_name += player_info.video_pipeline_info.is_platform_decoder ? "HW" : "SW";
+
   return uma_name;
 }
 
@@ -166,16 +189,15 @@ void MediaMetricsProvider::ReportPipelineUMA() {
 void MediaMetricsProvider::Create(
     BrowsingMode is_incognito,
     FrameStatus is_top_frame,
-    GetSourceIdCallback get_source_id_cb,
-    GetOriginCallback get_origin_cb,
+    ukm::SourceId source_id,
+    learning::FeatureValue origin,
     VideoDecodePerfHistory::SaveCallback save_cb,
     GetLearningSessionCallback learning_session_cb,
     GetRecordAggregateWatchTimeCallback get_record_playback_cb,
     mojo::PendingReceiver<mojom::MediaMetricsProvider> receiver) {
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<MediaMetricsProvider>(
-          is_incognito, is_top_frame, get_source_id_cb.Run(),
-          get_origin_cb.Run(), std::move(save_cb),
+          is_incognito, is_top_frame, source_id, origin, std::move(save_cb),
           std::move(learning_session_cb),
           std::move(get_record_playback_cb).Run()),
       std::move(receiver));
@@ -199,7 +221,7 @@ void MediaMetricsProvider::SetHaveEnough() {
   uma_info_.has_reached_have_enough = true;
 }
 
-void MediaMetricsProvider::SetVideoPipelineInfo(const VideoDecoderInfo& info) {
+void MediaMetricsProvider::SetVideoPipelineInfo(const VideoPipelineInfo& info) {
   auto old_decoder = uma_info_.video_pipeline_info.decoder_type;
   if (old_decoder != VideoDecoderType::kUnknown &&
       old_decoder != info.decoder_type)
@@ -207,7 +229,7 @@ void MediaMetricsProvider::SetVideoPipelineInfo(const VideoDecoderInfo& info) {
   uma_info_.video_pipeline_info = info;
 }
 
-void MediaMetricsProvider::SetAudioPipelineInfo(const AudioDecoderInfo& info) {
+void MediaMetricsProvider::SetAudioPipelineInfo(const AudioPipelineInfo& info) {
   uma_info_.audio_pipeline_info = info;
 }
 
@@ -259,6 +281,18 @@ void MediaMetricsProvider::SetContainerName(
   DCHECK(initialized_);
   DCHECK(!container_name_.has_value());
   container_name_ = container_name;
+}
+
+void MediaMetricsProvider::SetRendererType(RendererType renderer_type) {
+  renderer_type_ = renderer_type;
+}
+
+void MediaMetricsProvider::SetKeySystem(const std::string& key_system) {
+  key_system_ = key_system;
+}
+
+void MediaMetricsProvider::SetIsHardwareSecure() {
+  is_hardware_secure_ = true;
 }
 
 void MediaMetricsProvider::AcquireWatchTimeRecorder(
