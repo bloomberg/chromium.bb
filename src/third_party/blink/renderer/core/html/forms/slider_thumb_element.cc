@@ -63,12 +63,10 @@ void SliderThumbElement::SetPositionFromValue() {
   if (GetLayoutObject()) {
     GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
         layout_invalidation_reason::kSliderValueChanged);
-    if (features::IsFormControlsRefreshEnabled()) {
-      HTMLInputElement* input(HostInput());
-      if (input && input->GetLayoutObject()) {
-        // the slider track selected value needs to be updated.
-        input->GetLayoutObject()->SetShouldDoFullPaintInvalidation();
-      }
+    HTMLInputElement* input(HostInput());
+    if (input && input->GetLayoutObject()) {
+      // the slider track selected value needs to be updated.
+      input->GetLayoutObject()->SetShouldDoFullPaintInvalidation();
     }
   }
 }
@@ -238,7 +236,7 @@ void SliderThumbElement::DefaultEventHandler(Event& event) {
   HTMLDivElement::DefaultEventHandler(event);
 }
 
-bool SliderThumbElement::WillRespondToMouseMoveEvents() {
+bool SliderThumbElement::WillRespondToMouseMoveEvents() const {
   const HTMLInputElement* input = HostInput();
   if (input && !input->IsDisabledFormControl() && in_drag_mode_)
     return true;
@@ -408,7 +406,8 @@ bool SliderContainerElement::CanSlide() {
   int transform_size = transforms.size();
   if (transform_size > 0) {
     for (int i = 0; i < transform_size; ++i) {
-      if (transforms.at(i)->GetType() == TransformOperation::kRotate) {
+      if (transforms.at(i)->GetType() == TransformOperation::kRotate ||
+          transforms.at(i)->GetType() == TransformOperation::kRotateZ) {
         return true;
       }
     }

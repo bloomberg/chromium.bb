@@ -35,9 +35,10 @@
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/calculation_expression_node.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -93,14 +94,13 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
       ComputedStyle::CreateInitialStyleSingleton();
   style->SetEffectiveZoom(5);
   CSSToLengthConversionData conversion_data(style.get(), style.get(), nullptr,
+                                            /* nearest_container */ nullptr,
                                             style->EffectiveZoom());
 
   TestAccumulatePixelsAndPercent(
       conversion_data,
-      CSSMathExpressionNumericLiteral::Create(
-          CSSNumericLiteralValue::Create(10,
-                                         CSSPrimitiveValue::UnitType::kPixels),
-          true),
+      CSSMathExpressionNumericLiteral::Create(CSSNumericLiteralValue::Create(
+          10, CSSPrimitiveValue::UnitType::kPixels)),
       50, 0);
 
   TestAccumulatePixelsAndPercent(
@@ -108,12 +108,10 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
       CSSMathExpressionBinaryOperation::Create(
           CSSMathExpressionNumericLiteral::Create(
               CSSNumericLiteralValue::Create(
-                  10, CSSPrimitiveValue::UnitType::kPixels),
-              true),
+                  10, CSSPrimitiveValue::UnitType::kPixels)),
           CSSMathExpressionNumericLiteral::Create(
               CSSNumericLiteralValue::Create(
-                  20, CSSPrimitiveValue::UnitType::kPixels),
-              true),
+                  20, CSSPrimitiveValue::UnitType::kPixels)),
           CSSMathOperator::kAdd),
       150, 0);
 
@@ -122,12 +120,10 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
       CSSMathExpressionBinaryOperation::Create(
           CSSMathExpressionNumericLiteral::Create(
               CSSNumericLiteralValue::Create(
-                  1, CSSPrimitiveValue::UnitType::kInches),
-              true),
+                  1, CSSPrimitiveValue::UnitType::kInches)),
           CSSMathExpressionNumericLiteral::Create(
               CSSNumericLiteralValue::Create(
-                  2, CSSPrimitiveValue::UnitType::kNumber),
-              true),
+                  2, CSSPrimitiveValue::UnitType::kNumber)),
           CSSMathOperator::kMultiply),
       960, 0);
 
@@ -137,30 +133,26 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
           CSSMathExpressionBinaryOperation::Create(
               CSSMathExpressionNumericLiteral::Create(
                   CSSNumericLiteralValue::Create(
-                      50, CSSPrimitiveValue::UnitType::kPixels),
-                  true),
+                      50, CSSPrimitiveValue::UnitType::kPixels)),
               CSSMathExpressionNumericLiteral::Create(
                   CSSNumericLiteralValue::Create(
-                      0.25, CSSPrimitiveValue::UnitType::kNumber),
-                  false),
+                      0.25, CSSPrimitiveValue::UnitType::kNumber)),
               CSSMathOperator::kMultiply),
           CSSMathExpressionBinaryOperation::Create(
               CSSMathExpressionNumericLiteral::Create(
                   CSSNumericLiteralValue::Create(
-                      20, CSSPrimitiveValue::UnitType::kPixels),
-                  true),
+                      20, CSSPrimitiveValue::UnitType::kPixels)),
               CSSMathExpressionNumericLiteral::Create(
                   CSSNumericLiteralValue::Create(
-                      40, CSSPrimitiveValue::UnitType::kPercentage),
-                  false),
+                      40, CSSPrimitiveValue::UnitType::kPercentage)),
               CSSMathOperator::kSubtract),
           CSSMathOperator::kSubtract),
       -37.5, 40);
 }
 
 TEST(CSSCalculationValue, RefCount) {
-  scoped_refptr<const CalculationValue> calc =
-      CalculationValue::Create(PixelsAndPercent(1, 2), kValueRangeAll);
+  scoped_refptr<const CalculationValue> calc = CalculationValue::Create(
+      PixelsAndPercent(1, 2), Length::ValueRange::kAll);
 
   // FIXME: Test the Length construction without using the ref count value.
 
@@ -175,8 +167,8 @@ TEST(CSSCalculationValue, RefCount) {
     Length length_c(calc);
     length_c = length_a;
 
-    Length length_d(
-        CalculationValue::Create(PixelsAndPercent(1, 2), kValueRangeAll));
+    Length length_d(CalculationValue::Create(PixelsAndPercent(1, 2),
+                                             Length::ValueRange::kAll));
     length_d = length_a;
   }
   EXPECT_TRUE(calc->HasOneRef());
@@ -210,6 +202,85 @@ TEST(CSSCalculationValue, AddToLengthUnitValues) {
       expectation,
       SetLengthArray(
           actual, "calc((1 * 2) * (5px + 20em / 2) - 80% / (3 - 1) + 5px)")));
+}
+
+TEST(CSSMathExpressionNode, TestParseDeeplyNestedExpression) {
+  enum Kind {
+    kCalc,
+    kMin,
+    kMax,
+    kClamp,
+  };
+
+  // Ref: https://bugs.chromium.org/p/chromium/issues/detail?id=1211283
+  const struct TestCase {
+    const Kind kind;
+    const int nest_num;
+    const bool expected;
+  } test_cases[] = {
+      {kCalc, 1, true},
+      {kCalc, 10, true},
+      {kCalc, kMaxExpressionDepth - 1, true},
+      {kCalc, kMaxExpressionDepth, false},
+      {kCalc, kMaxExpressionDepth + 1, false},
+      {kMin, 1, true},
+      {kMin, 10, true},
+      {kMin, kMaxExpressionDepth - 1, true},
+      {kMin, kMaxExpressionDepth, false},
+      {kMin, kMaxExpressionDepth + 1, false},
+      {kMax, 1, true},
+      {kMax, 10, true},
+      {kMax, kMaxExpressionDepth - 1, true},
+      {kMax, kMaxExpressionDepth, false},
+      {kMax, kMaxExpressionDepth + 1, false},
+      {kClamp, 1, true},
+      {kClamp, 10, true},
+      {kClamp, kMaxExpressionDepth - 1, true},
+      {kClamp, kMaxExpressionDepth, false},
+      {kClamp, kMaxExpressionDepth + 1, false},
+  };
+
+  for (const auto& test_case : test_cases) {
+    std::stringstream ss;
+
+    // Make nested expression as follows:
+    // calc(1px + calc(1px + calc(1px)))
+    // min(1px, 1px + min(1px, 1px + min(1px, 1px)))
+    // max(1px, 1px + max(1px, 1px + max(1px, 1px)))
+    // clamp(1px, 1px, 1px + clamp(1px, 1px, 1px + clamp(1px, 1px, 1px)))
+    for (int i = 0; i < test_case.nest_num; i++) {
+      if (i)
+        ss << " + ";
+      switch (test_case.kind) {
+        case kCalc:
+          ss << "calc(1px";
+          break;
+        case kMin:
+          ss << "min(1px, 1px";
+          break;
+        case kMax:
+          ss << "max(1px, 1px";
+          break;
+        case kClamp:
+          ss << "clamp(1px, 1px, 1px";
+          break;
+      }
+    }
+    for (int i = 0; i < test_case.nest_num; i++) {
+      ss << ")";
+    }
+
+    CSSTokenizer tokenizer(String(ss.str().c_str()));
+    const auto tokens = tokenizer.TokenizeToEOF();
+    const CSSParserTokenRange range(tokens);
+    const CSSMathExpressionNode* res = CSSMathExpressionNode::ParseCalc(range);
+
+    if (test_case.expected) {
+      EXPECT_TRUE(res);
+    } else {
+      EXPECT_FALSE(res);
+    }
+  }
 }
 
 }  // anonymous namespace

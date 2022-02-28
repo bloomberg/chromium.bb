@@ -4,7 +4,7 @@
 
 import {assert} from 'chai';
 
-import {waitFor} from '../../shared/helper.js';
+import {getBrowserAndPages, waitFor, waitForAria} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
 import {openPanelViaMoreTools} from '../helpers/settings-helpers.js';
 
@@ -44,4 +44,46 @@ describe('Rendering pane', () => {
     ].join('');
     assert.deepEqual(actual, expected);
   });
+
+  it('includes UI for emulating prefers-contrast media feature', async function() {
+    await openPanelViaMoreTools('Rendering');
+
+    // TODO(sartang@microsoft.com): Remove this condition once feature is fully enabled
+    const {frontend} = getBrowserAndPages();
+    const hasSupport = await frontend.evaluate(() => {
+      return window.matchMedia('(prefers-contrast)').media === '(prefers-contrast)';
+    });
+
+    if (!hasSupport) {
+      // @ts-ignore
+      this.skip();
+    }
+
+    const option = await waitFor('option[value="custom"]');
+    const actual = await option.evaluate(node => {
+      const select = node.closest('select');
+      return select ? select.textContent : '';
+    });
+    const expected = [
+      'No emulation',
+      'prefers-contrast: more',
+      'prefers-contrast: less',
+      'prefers-contrast: custom',
+    ].join('');
+    assert.deepEqual(actual, expected);
+  });
+
+  it('includes UI for emulating auto dark mode', async () => {
+    await openPanelViaMoreTools('Rendering');
+
+    const option = await waitForAria('Emulate auto dark mode Enables automatic dark mode for the inspected page.');
+    const actual = await option.evaluate(node => node.textContent);
+    const expected = [
+      'No emulation',
+      'Enable',
+      'Disable',
+    ].join('');
+    assert.deepEqual(actual, expected);
+  });
+
 });

@@ -20,6 +20,8 @@ SizesAttributeParser::SizesAttributeParser(
       length_(0),
       length_was_set_(false) {
   DCHECK(media_values_);
+  DCHECK(media_values_->Width().has_value());
+  DCHECK(media_values_->Height().has_value());
   is_valid_ =
       Parse(CSSParserTokenRange(CSSTokenizer(attribute).TokenizeToEOF()));
 }
@@ -41,7 +43,7 @@ bool SizesAttributeParser::CalculateLengthInPixels(CSSParserTokenRange range,
     if ((media_values_->ComputeLength(start_token.NumericValue(),
                                       start_token.GetUnitType(), length)) &&
         (length >= 0)) {
-      result = clampTo<float>(length);
+      result = ClampTo<float>(length);
       return true;
     }
   } else if (type == kFunctionToken) {
@@ -61,7 +63,7 @@ bool SizesAttributeParser::CalculateLengthInPixels(CSSParserTokenRange range,
 bool SizesAttributeParser::MediaConditionMatches(
     const MediaQuerySet& media_condition) {
   // A Media Condition cannot have a media type other then screen.
-  MediaQueryEvaluator media_query_evaluator(*media_values_);
+  MediaQueryEvaluator media_query_evaluator(media_values_);
   return media_query_evaluator.Eval(media_condition);
 }
 
@@ -107,7 +109,7 @@ float SizesAttributeParser::EffectiveSize() {
 
 float SizesAttributeParser::EffectiveSizeDefaultValue() {
   // Returning the equivalent of "100vw"
-  return clampTo<float>(media_values_->ViewportWidth());
+  return ClampTo<float>(*media_values_->Width());
 }
 
 }  // namespace blink

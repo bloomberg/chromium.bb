@@ -46,59 +46,65 @@ bool CXFA_FFSignature::OnMouseExit() {
   return false;
 }
 
-bool CXFA_FFSignature::AcceptsFocusOnButtonDown(uint32_t dwFlags,
-                                                const CFX_PointF& point,
-                                                FWL_MouseCommand command) {
+bool CXFA_FFSignature::AcceptsFocusOnButtonDown(
+    Mask<XFA_FWL_KeyFlag> dwFlags,
+    const CFX_PointF& point,
+    CFWL_MessageMouse::MouseCommand command) {
   return false;
 }
 
-bool CXFA_FFSignature::OnLButtonDown(uint32_t dwFlags,
+bool CXFA_FFSignature::OnLButtonDown(Mask<XFA_FWL_KeyFlag> dwFlags,
                                      const CFX_PointF& point) {
   return false;
 }
 
-bool CXFA_FFSignature::OnLButtonUp(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFSignature::OnLButtonUp(Mask<XFA_FWL_KeyFlag> dwFlags,
+                                   const CFX_PointF& point) {
   return false;
 }
 
-bool CXFA_FFSignature::OnLButtonDblClk(uint32_t dwFlags,
+bool CXFA_FFSignature::OnLButtonDblClk(Mask<XFA_FWL_KeyFlag> dwFlags,
                                        const CFX_PointF& point) {
   return false;
 }
 
-bool CXFA_FFSignature::OnMouseMove(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFSignature::OnMouseMove(Mask<XFA_FWL_KeyFlag> dwFlags,
+                                   const CFX_PointF& point) {
   return false;
 }
 
-bool CXFA_FFSignature::OnMouseWheel(uint32_t dwFlags,
+bool CXFA_FFSignature::OnMouseWheel(Mask<XFA_FWL_KeyFlag> dwFlags,
                                     const CFX_PointF& point,
                                     const CFX_Vector& delta) {
   return false;
 }
 
-bool CXFA_FFSignature::OnRButtonDown(uint32_t dwFlags,
+bool CXFA_FFSignature::OnRButtonDown(Mask<XFA_FWL_KeyFlag> dwFlags,
                                      const CFX_PointF& point) {
   return false;
 }
 
-bool CXFA_FFSignature::OnRButtonUp(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFSignature::OnRButtonUp(Mask<XFA_FWL_KeyFlag> dwFlags,
+                                   const CFX_PointF& point) {
   return false;
 }
 
-bool CXFA_FFSignature::OnRButtonDblClk(uint32_t dwFlags,
+bool CXFA_FFSignature::OnRButtonDblClk(Mask<XFA_FWL_KeyFlag> dwFlags,
                                        const CFX_PointF& point) {
   return false;
 }
 
-bool CXFA_FFSignature::OnKeyDown(uint32_t dwKeyCode, uint32_t dwFlags) {
+bool CXFA_FFSignature::OnKeyDown(XFA_FWL_VKEYCODE dwKeyCode,
+                                 Mask<XFA_FWL_KeyFlag> dwFlags) {
   return false;
 }
 
-bool CXFA_FFSignature::OnKeyUp(uint32_t dwKeyCode, uint32_t dwFlags) {
+bool CXFA_FFSignature::OnKeyUp(XFA_FWL_VKEYCODE dwKeyCode,
+                               Mask<XFA_FWL_KeyFlag> dwFlags) {
   return false;
 }
 
-bool CXFA_FFSignature::OnChar(uint32_t dwChar, uint32_t dwFlags) {
+bool CXFA_FFSignature::OnChar(uint32_t nChar, Mask<XFA_FWL_KeyFlag> dwFlags) {
   return false;
 }
 

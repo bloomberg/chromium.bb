@@ -87,6 +87,18 @@ config("icu_code") {
       "/wd4267",  # Conversion from size_t on 64-bits.
       "/utf-8",  # ICU source files are in UTF-8.
     ]
+    if (!is_clang) {
+      cflags += [
+        # Ignore some msvc warnings here because V8 still supports msvc.
+        "/wd4244",  # Conversion: possible loss of data.
+      ]
+      defines += [
+        # https://crbug.com/1274247
+        # <ctgmath> is deprecated in C++17, but ICU still uses it, so we should
+        # silence the warning for now.
+        "_SILENCE_CXX17_C_HEADER_DEPRECATION_WARNING"
+      ]
+    }
   } else if (is_linux || is_chromeos || is_android || icu_is_in_fuchsia) {
     cflags += [ "-Wno-unused-function" ]
   }
@@ -175,9 +187,14 @@ template("generate_icu_component") {
                                "visibility",
                              ])
       if (is_fuchsia) {
+        base_output_name = target_name
+        if (defined(invoker.output_name)) {
+          base_output_name = invoker.output_name
+        }
+
         # Fuchsia puts its own libicu*.so in /system/lib where we need to put our
         # .so when doing component builds, so we need to give this a different name.
-        output_name = "${target_name}_cr${fuchsia_output_name_postfix}"
+        output_name = "${base_output_name}_cr${fuchsia_output_name_postfix}"
       } else {
         assert(fuchsia_output_name_postfix == "")
       }
@@ -243,12 +260,12 @@ template("generate_icui18n") {
 
 generate_icui18n("icui18n") {
   extra_configs = []
-  icuuc_deps = [ ":icuuc" ]
+  icuuc_deps = [ ":icuuc_private" ]
 }
 
 generate_icui18n("icui18n_hidden_visibility") {
   extra_configs = [ ":visibility_hidden" ]
-  icuuc_deps = [ ":icuuc_hidden_visibility" ]
+  icuuc_deps = [ ":icuuc_private_hidden_visibility" ]
   if (is_fuchsia && !icu_is_in_fuchsia) {
     fuchsia_output_name_postfix = "_hidden_visibility"
   }
@@ -273,7 +290,7 @@ template("generate_icuuc") {
                            ])
 
     sources = icuuc_sources
-    public = icuuc_public
+    public_deps = [ ":icuuc_public" ]
 
     defines = [ "U_COMMON_IMPLEMENTATION" ]
     deps = [ ":icudata" ]
@@ -286,11 +303,34 @@ template("generate_icuuc") {
   }
 }
 
-generate_icuuc("icuuc") {
-  extra_configs = []
+group("icuuc") {
+  public_deps = [ ":icuuc_private" ]
 }
-generate_icuuc("icuuc_hidden_visibility") {
+
+group("icuuc_hidden_visibility") {
+  public_deps = [ ":icuuc_private_hidden_visibility" ]
+}
+
+source_set("icuuc_public") {
+  sources = icuuc_public
+}
+
+generate_icuuc("icuuc_private") {
+  extra_configs = []
+  output_name = "icuuc"
+  visibility = [
+    ":icui18n",
+    ":icuuc",
+  ]
+}
+
+generate_icuuc("icuuc_private_hidden_visibility") {
   extra_configs = [ ":visibility_hidden" ]
+  output_name = "icuuc_hidden_visibility"
+  visibility = [
+    ":icui18n_hidden_visibility",
+    ":icuuc_hidden_visibility",
+  ]
   if (is_fuchsia && !icu_is_in_fuchsia) {
     fuchsia_output_name_postfix = "_hidden_visibility"
   }

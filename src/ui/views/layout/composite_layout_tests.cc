@@ -4,6 +4,8 @@
 
 #include <memory>
 
+#include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/animation_container.h"
@@ -36,8 +38,7 @@ namespace views {
 
 namespace {
 
-constexpr base::TimeDelta kDefaultAnimationDuration =
-    base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kDefaultAnimationDuration = base::Seconds(1);
 constexpr int kIconDimension = 20;
 constexpr gfx::Size kIconSize(kIconDimension, kIconDimension);
 constexpr int kLabelWidth = 70;
@@ -171,7 +172,7 @@ class SimulatedExtensionsContainer : public SimulatedToolbarElement {
 
   void AddIconAt(int position, bool initially_visible) {
     DCHECK_GE(position, 0);
-    DCHECK_LT(position, int{children().size()});
+    DCHECK_LT(position, static_cast<int>(children().size()));
     auto new_child = std::make_unique<StaticSizedView>(kIconSize);
     new_child->SetVisible(initially_visible);
     if (initially_visible)
@@ -181,13 +182,13 @@ class SimulatedExtensionsContainer : public SimulatedToolbarElement {
 
   void RemoveIconAt(int position) {
     DCHECK_GE(position, 0);
-    DCHECK_LT(position, int{children().size()} - 1);
+    DCHECK_LT(position, static_cast<int>(children().size()) - 1);
     visible_views_.erase(RemoveChildViewT<View>(children()[position]).get());
   }
 
   void SetIconVisibility(int position, bool visible) {
     DCHECK_GE(position, 0);
-    DCHECK_LT(position, int{children().size()} - 1);
+    DCHECK_LT(position, static_cast<int>(children().size()) - 1);
     auto* const button = children()[position];
     if (visible) {
       layout()->FadeIn(button);
@@ -202,8 +203,8 @@ class SimulatedExtensionsContainer : public SimulatedToolbarElement {
     DCHECK_GE(from, 0);
     DCHECK_GE(to, 0);
     DCHECK_NE(from, to);
-    DCHECK_LT(from, int{children().size()} - 1);
-    DCHECK_LT(to, int{children().size()} - 1);
+    DCHECK_LT(from, static_cast<int>(children().size()) - 1);
+    DCHECK_LT(to, static_cast<int>(children().size()) - 1);
     ReorderChildView(children()[from], to);
   }
 
@@ -228,7 +229,7 @@ class SimulatedExtensionsContainer : public SimulatedToolbarElement {
       const int available_width = width() - kIconDimension;
       DCHECK_GE(available_width, 0);
       int num_visible = 0;
-      for (int i = 0; i < int{children().size()} - 1; ++i) {
+      for (int i = 0; i < static_cast<int>(children().size()) - 1; ++i) {
         const View* const child = children()[i];
         if (child->GetVisible()) {
           ++num_visible;
@@ -248,13 +249,13 @@ class SimulatedExtensionsContainer : public SimulatedToolbarElement {
             num_visible,
             (available_size.width().value() - kIconDimension) / kIconDimension);
       }
-      DCHECK_LT(num_visible, int{children().size()});
+      DCHECK_LT(num_visible, static_cast<int>(children().size()));
       if (expected_num_icons.has_value())
         EXPECT_EQ(expected_num_icons.value(), num_visible);
       // Verify that the correct icons are visible and are in the correct place
       // with the correct size.
       int x = 0;
-      for (int i = 0; i < int{children().size()} - 1; ++i) {
+      for (int i = 0; i < static_cast<int>(children().size()) - 1; ++i) {
         const View* const child = children()[i];
         if (base::Contains(visible_views_, child)) {
           if (num_visible > 0) {
@@ -367,8 +368,8 @@ class SimulatedToolbar : public View {
   // views::View:
   const char* GetClassName() const override { return "SimulatedToolbar"; }
 
-  SimulatedExtensionsContainer* extensions_;
-  SimulatedAvatarButton* avatar_;
+  raw_ptr<SimulatedExtensionsContainer> extensions_;
+  raw_ptr<SimulatedAvatarButton> avatar_;
 };
 
 }  // anonymous namespace
@@ -379,6 +380,13 @@ class SimulatedToolbar : public View {
 class CompositeLayoutTest : public testing::Test {
  public:
   void SetUp() override {
+    // In case the user is running these tests manually on a machine where
+    // animation is disabled for accessibility or visual reasons (e.g. on a
+    // Windows system via Chrome Remote Desktop), force animation on for the
+    // purposes of testing these layout configurations.
+    animation_lock_ = gfx::AnimationTestApi::SetRichAnimationRenderMode(
+        gfx::Animation::RichAnimationRenderMode::FORCE_ENABLED);
+
     toolbar_ = std::make_unique<SimulatedToolbar>();
     toolbar_->SetSize(kDefaultToolbarSize);
     extensions_test_api_ = std::make_unique<gfx::AnimationContainerTestApi>(
@@ -406,7 +414,7 @@ class CompositeLayoutTest : public testing::Test {
   }
 
   void AdvanceAnimations(int ms) {
-    const auto delta = base::TimeDelta::FromMilliseconds(ms);
+    const auto delta = base::Milliseconds(ms);
     if (avatar()->layout()->is_animating())
       avatar_test_api_->IncrementTime(delta);
     if (extensions()->layout()->is_animating())
@@ -454,6 +462,8 @@ class CompositeLayoutTest : public testing::Test {
   std::unique_ptr<gfx::AnimationContainerTestApi> extensions_test_api_;
   std::unique_ptr<gfx::AnimationContainerTestApi> avatar_test_api_;
   std::unique_ptr<SimulatedToolbar> toolbar_;
+  std::unique_ptr<base::AutoReset<gfx::Animation::RichAnimationRenderMode>>
+      animation_lock_;
 };
 
 // ------------

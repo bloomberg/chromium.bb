@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/sql_table_builder.h"
 
@@ -35,6 +34,10 @@ namespace password_manager {
 class AffiliationDatabase {
  public:
   AffiliationDatabase();
+
+  AffiliationDatabase(const AffiliationDatabase&) = delete;
+  AffiliationDatabase& operator=(const AffiliationDatabase&) = delete;
+
   ~AffiliationDatabase();
 
   // Opens an existing database at |path|, or creates a new one if none exists,
@@ -71,6 +74,10 @@ class AffiliationDatabase {
       const AffiliatedFacetsWithUpdateTime& affiliated_facets,
       std::vector<AffiliatedFacetsWithUpdateTime>* removed_affiliations);
 
+  // Removes all the stored equivalence classes and branding information which
+  // aren't represented by |facet_uris|.
+  void RemoveMissingFacetURI(std::vector<FacetURI> facet_uris);
+
   // Deletes the database file at |path| along with all its auxiliary files. The
   // database must be closed before calling this.
   static void Delete(const base::FilePath& path);
@@ -102,8 +109,6 @@ class AffiliationDatabase {
 
   // The SQL connection to the database.
   std::unique_ptr<sql::Database> sql_connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(AffiliationDatabase);
 };
 
 }  // namespace password_manager

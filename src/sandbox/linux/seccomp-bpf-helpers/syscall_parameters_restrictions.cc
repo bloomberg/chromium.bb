@@ -10,8 +10,10 @@
 #include <sched.h>
 #include <signal.h>
 #include <stdint.h>
+#include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/prctl.h>
+#include <sys/ptrace.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -19,7 +21,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "base/macros.h"
 #include "base/notreached.h"
 #include "base/synchronization/synchronization_buildflags.h"
 #include "build/build_config.h"
@@ -34,10 +35,6 @@
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 #include "sandbox/linux/system_headers/linux_time.h"
 
-// PNaCl toolchain does not provide sys/ioctl.h and sys/ptrace.h headers.
-#if !defined(OS_NACL_NONSFI)
-#include <sys/ioctl.h>
-#include <sys/ptrace.h>
 #if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
     !defined(__arm__) && !defined(__aarch64__) &&           \
     !defined(PTRACE_GET_THREAD_AREA)
@@ -47,7 +44,6 @@
 // defined on aarch64, so don't try to include this on those platforms.
 #include <asm/ptrace-abi.h>
 #endif
-#endif  // !OS_NACL_NONSFI
 
 #if defined(OS_ANDROID)
 
@@ -64,6 +60,14 @@
 #if defined(__mips__) && !defined(MAP_STACK)
 #define MAP_STACK 0x40000
 #endif
+
+// Temporary definitions for Arm's Memory Tagging Extension (MTE) and Branch
+// Target Identification (BTI).
+#if defined(ARCH_CPU_ARM64)
+#define PROT_MTE 0x20
+#define PROT_BTI 0x10
+#endif
+
 namespace {
 
 inline bool IsArchitectureX86_64() {
@@ -123,7 +127,6 @@ using sandbox::bpf_dsl::ResultExpr;
 
 namespace sandbox {
 
-#if !defined(OS_NACL_NONSFI)
 // Allow Glibc's and Android pthread creation flags, crash on any other
 // thread creation attempts and EPERM attempts to use neither
 // CLONE_VM nor CLONE_THREAD (all fork implementations), unless CLONE_VFORK is
@@ -229,7 +232,15 @@ ResultExpr RestrictMprotectFlags() {
   // "denied" mask because of the negation operator.
   // Significantly, we don't permit weird undocumented flags such as
   // PROT_GROWSDOWN.
-  const uint64_t kAllowedMask = PROT_READ | PROT_WRITE | PROT_EXEC;
+#if defined(ARCH_CPU_ARM64)
+  // Allows PROT_MTE and PROT_BTI (as explained higher up) on only Arm
+  // platforms.
+  const uint64_t kArchSpecificFlags = PROT_MTE | PROT_BTI;
+#else
+  const uint64_t kArchSpecificFlags = 0;
+#endif
+  const uint64_t kAllowedMask =
+      PROT_READ | PROT_WRITE | PROT_EXEC | kArchSpecificFlags;
   const Arg<int> prot(2);
   return If((prot & ~kAllowedMask) == 0, Allow()).Else(CrashSIGSYS());
 }
@@ -365,7 +376,6 @@ ResultExpr RestrictGetrusage() {
   return If(AnyOf(who == RUSAGE_SELF, who == RUSAGE_THREAD), Allow())
          .Else(CrashSIGSYS());
 }
-#endif  // !defined(OS_NACL_NONSFI)
 
 ResultExpr RestrictClockID() {
   static_assert(4 == sizeof(clockid_t), "clockid_t is not 32bit");
@@ -419,7 +429,6 @@ ResultExpr RestrictPrlimitToGetrlimit(pid_t target_pid) {
       .Else(Error(EPERM));
 }
 
-#if !defined(OS_NACL_NONSFI)
 ResultExpr RestrictPtrace() {
   const Arg<int> request(0);
 #if defined(__aarch64__)
@@ -444,6 +453,10 @@ ResultExpr RestrictPtrace() {
 #endif
       .Default(CrashSIGSYSPtrace());
 }
-#endif  // defined(OS_NACL_NONSFI)
+
+ResultExpr RestrictPkeyAllocFlags() {
+  const Arg<int> flags(0);
+  return If(flags == 0, Allow()).Else(CrashSIGSYS());
+}
 
 }  // namespace sandbox.

@@ -170,7 +170,9 @@ class BASE_EXPORT Pickle {
   Pickle& operator=(const Pickle& other);
 
   // Returns the number of bytes written in the Pickle, including the header.
-  size_t size() const { return header_size_ + header_->payload_size; }
+  size_t size() const {
+    return header_ ? header_size_ + header_->payload_size : 0;
+  }
 
   // Returns the data for this Pickle.
   const void* data() const { return header_; }
@@ -310,6 +312,8 @@ class BASE_EXPORT Pickle {
  private:
   friend class PickleIterator;
 
+  // `header_` is not a raw_ptr<...> for performance reasons (based on analysis
+  // of sampling profiler data).
   Header* header_;
   size_t header_size_;  // Supports extra data between header and payload.
   // Allocation size of payload (or -1 if allocation is const). Note: this

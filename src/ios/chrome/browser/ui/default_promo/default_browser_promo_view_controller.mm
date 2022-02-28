@@ -28,23 +28,19 @@
   self.helpButtonAccessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_HELP_ACCESSIBILITY_LABEL);
 
-  self.primaryActionAvailable = YES;
-  self.secondaryActionAvailable = YES;
   self.showDismissBarButton = NO;
   self.titleString = GetDefaultBrowserPromoTitle();
   self.subtitleString =
       IsInModifiedStringsGroup()
           ? l10n_util::GetNSString(IDS_IOS_DEFAULT_BROWSER_LEARN_MORE_MESSAGE)
           : l10n_util::GetNSString(IDS_IOS_DEFAULT_BROWSER_DESCRIPTION);
-  self.primaryActionString =
-      l10n_util::GetNSString(IDS_IOS_DEFAULT_BROWSER_MAIN_BUTTON_TEXT);
+  self.primaryActionString = l10n_util::GetNSString(IDS_IOS_OPEN_SETTINGS);
   if (IsInRemindMeLaterGroup() &&
       !ShouldShowRemindMeLaterDefaultBrowserFullscreenPromo()) {
     // Show the Remind Me Later button if the user is in the correct experiment
     // group and this isn't the second impression.
     self.secondaryActionString = l10n_util::GetNSString(
         IDS_IOS_DEFAULT_BROWSER_REMIND_ME_LATER_BUTTON_TEXT);
-    self.tertiaryActionAvailable = YES;
     self.tertiaryActionString =
         l10n_util::GetNSString(IDS_IOS_DEFAULT_BROWSER_SECONDARY_BUTTON_TEXT);
   } else {
@@ -52,9 +48,6 @@
         l10n_util::GetNSString(IDS_IOS_DEFAULT_BROWSER_SECONDARY_BUTTON_TEXT);
   }
   self.dismissBarButtonSystemItem = UIBarButtonSystemItemCancel;
-  if (@available(iOS 13.4, *)) {
-    self.pointerInteractionEnabled = YES;
-  }
   [super loadView];
 }
 

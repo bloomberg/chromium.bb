@@ -40,7 +40,7 @@
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_scanner.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
@@ -70,7 +70,7 @@ constexpr bool kDefaultScroll = false;
 constexpr float kLineHeight = 5.33;
 
 // Default scrolling animation time period (s).
-constexpr base::TimeDelta kScrollTime = base::TimeDelta::FromMilliseconds(433);
+constexpr base::TimeDelta kScrollTime = base::Milliseconds(433);
 
 bool IsNonPercentage(double value,
                      const char* method,

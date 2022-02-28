@@ -18,19 +18,21 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.blink.mojom.DisplayMode;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.browserservices.intents.WebApkDistributor;
 import org.chromium.chrome.browser.browserservices.intents.WebApkExtras;
-import org.chromium.chrome.browser.browserservices.intents.WebDisplayMode;
 import org.chromium.chrome.browser.browserservices.intents.WebappIcon;
+import org.chromium.chrome.browser.browserservices.intents.WebappInfo;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestPage;
+import org.chromium.components.webapps.WebApkDistributor;
+import org.chromium.components.webapps.WebApkUpdateReason;
 import org.chromium.components.webapps.WebappsIconUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.device.mojom.ScreenOrientationLockType;
@@ -78,7 +80,7 @@ public class WebApkUpdateManagerTest {
     private static final String WEBAPK_SHORT_NAME = "Manifest test app";
     private static final String WEBAPK_ICON_URL = "/chrome/test/data/banners/image-512px.png";
     private static final String WEBAPK_ICON_MURMUR2_HASH = "7742433188808797392";
-    private static final @WebDisplayMode int WEBAPK_DISPLAY_MODE = WebDisplayMode.STANDALONE;
+    private static final @DisplayMode.EnumType int WEBAPK_DISPLAY_MODE = DisplayMode.STANDALONE;
     private static final int WEBAPK_ORIENTATION = ScreenOrientationLockType.LANDSCAPE;
     private static final long WEBAPK_THEME_COLOR = 2147483648L;
     private static final long WEBAPK_BACKGROUND_COLOR = 2147483648L;
@@ -124,7 +126,8 @@ public class WebApkUpdateManagerTest {
         @Override
         protected void storeWebApkUpdateRequestToFile(String updateRequestPath, WebappInfo info,
                 String primaryIconUrl, String splashIconUrl, boolean isManifestStale,
-                List<Integer> updateReasons, Callback<Boolean> callback) {
+                boolean isAppIdentityUpdateSupported, List<Integer> updateReasons,
+                Callback<Boolean> callback) {
             mLastUpdateReasons = updateReasons;
         }
 
@@ -159,7 +162,7 @@ public class WebApkUpdateManagerTest {
         public String name;
         public String shortName;
         public Map<String, String> iconUrlToMurmur2HashMap;
-        public @WebDisplayMode int displayMode;
+        public @DisplayMode.EnumType int displayMode;
         public int orientation;
         public long themeColor;
         public long backgroundColor;
@@ -204,11 +207,11 @@ public class WebApkUpdateManagerTest {
     private boolean checkUpdateNeeded(
             final CreationData creationData, boolean acceptDialogIfAppears) throws Exception {
         CallbackHelper waiter = new CallbackHelper();
-        final TestWebApkUpdateManager updateManager =
-                new TestWebApkUpdateManager(waiter, mActivity.getActivityTabProvider(),
-                        mActivity.getLifecycleDispatcher(), acceptDialogIfAppears);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TestWebApkUpdateManager updateManager =
+                    new TestWebApkUpdateManager(waiter, mActivity.getActivityTabProvider(),
+                            mActivity.getLifecycleDispatcher(), acceptDialogIfAppears);
             WebappDataStorage storage =
                     WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
             BrowserServicesIntentDataProvider intentDataProvider =
@@ -310,7 +313,7 @@ public class WebApkUpdateManagerTest {
         creationData.iconUrlToMurmur2HashMap.put(
                 mTestServer.getURL("/chrome/test/data/banners/launcher-icon-3x.png"),
                 "16812314236514539104");
-        creationData.displayMode = WebDisplayMode.STANDALONE;
+        creationData.displayMode = DisplayMode.STANDALONE;
         creationData.orientation = ScreenOrientationLockType.LANDSCAPE;
         creationData.themeColor = 2147483648L;
         creationData.backgroundColor = 2147483648L;

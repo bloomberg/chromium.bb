@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "extensions/browser/extension_registry.h"
@@ -36,6 +36,12 @@ class ExtensionServiceTestWithInstall : public ExtensionServiceTestBase,
   ExtensionServiceTestWithInstall();
   explicit ExtensionServiceTestWithInstall(
       std::unique_ptr<content::BrowserTaskEnvironment> task_environment);
+
+  ExtensionServiceTestWithInstall(const ExtensionServiceTestWithInstall&) =
+      delete;
+  ExtensionServiceTestWithInstall& operator=(
+      const ExtensionServiceTestWithInstall&) = delete;
+
   ~ExtensionServiceTestWithInstall() override;
 
  protected:
@@ -135,7 +141,7 @@ class ExtensionServiceTestWithInstall : public ExtensionServiceTestBase,
 
   // TODO(treib,devlin): Make these private and add accessors as needed.
   extensions::ExtensionList loaded_;
-  const Extension* installed_;
+  raw_ptr<const Extension> installed_;
   bool was_update_;
   std::string old_name_;
   std::string unloaded_id_;
@@ -153,8 +159,6 @@ class ExtensionServiceTestWithInstall : public ExtensionServiceTestBase,
 
   base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionServiceTestWithInstall);
 };
 
 }  // namespace extensions

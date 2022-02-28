@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/browser.h"
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
@@ -24,6 +24,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
+#include "printing/buildflags/buildflags.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 using content::SiteInstance;
@@ -34,6 +35,10 @@ using session_manager::SessionState;
 class BrowserUnitTest : public BrowserWithTestWindowTest {
  public:
   BrowserUnitTest() {}
+
+  BrowserUnitTest(const BrowserUnitTest&) = delete;
+  BrowserUnitTest& operator=(const BrowserUnitTest&) = delete;
+
   ~BrowserUnitTest() override {}
 
   // Caller owns the memory.
@@ -41,9 +46,6 @@ class BrowserUnitTest : public BrowserWithTestWindowTest {
     return WebContentsTester::CreateTestWebContents(
         profile(), SiteInstance::Create(profile()));
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserUnitTest);
 };
 
 // Ensure crashed tabs are not reloaded when selected. crbug.com/232323
@@ -112,6 +114,7 @@ TEST_F(BrowserUnitTest, MAYBE_SetBackgroundColorForNewTab) {
             *raw_contents2->GetMainFrame()->GetView()->GetBackgroundColor());
 }
 
+#if BUILDFLAG(ENABLE_PRINTING)
 // Ensure the print command gets disabled when a tab crashes.
 TEST_F(BrowserUnitTest, DisablePrintOnCrashedTab) {
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
@@ -134,6 +137,7 @@ TEST_F(BrowserUnitTest, DisablePrintOnCrashedTab) {
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_PRINT));
   EXPECT_FALSE(chrome::CanPrint(browser()));
 }
+#endif  // BUILDFLAG(ENABLE_PRINTING)
 
 // Ensure the zoom-in and zoom-out commands get disabled when a tab crashes.
 TEST_F(BrowserUnitTest, DisableZoomOnCrashedTab) {
@@ -186,8 +190,8 @@ TEST_F(BrowserUnitTest, CreateBrowserFailsIfProfileDisallowsBrowserWindows) {
 
 // Tests BrowserCreate() when Incognito mode is disabled.
 TEST_F(BrowserUnitTest, CreateBrowserWithIncognitoModeDisabled) {
-  IncognitoModePrefs::SetAvailability(profile()->GetPrefs(),
-                                      IncognitoModePrefs::DISABLED);
+  IncognitoModePrefs::SetAvailability(
+      profile()->GetPrefs(), IncognitoModePrefs::Availability::kDisabled);
 
   // Creating a browser window in OTR profile should fail if incognito is
   // disabled.
@@ -205,8 +209,8 @@ TEST_F(BrowserUnitTest, CreateBrowserWithIncognitoModeDisabled) {
 
 // Tests BrowserCreate() when Incognito mode is forced.
 TEST_F(BrowserUnitTest, CreateBrowserWithIncognitoModeForced) {
-  IncognitoModePrefs::SetAvailability(profile()->GetPrefs(),
-                                      IncognitoModePrefs::FORCED);
+  IncognitoModePrefs::SetAvailability(
+      profile()->GetPrefs(), IncognitoModePrefs::Availability::kForced);
 
   // Creating a browser window in the original profile should fail if incognito
   // is forced.
@@ -225,7 +229,7 @@ TEST_F(BrowserUnitTest, CreateBrowserWithIncognitoModeForced) {
 
 // Tests BrowserCreate() with not restrictions on incognito mode.
 TEST_F(BrowserUnitTest, CreateBrowserWithIncognitoModeEnabled) {
-  ASSERT_EQ(IncognitoModePrefs::ENABLED,
+  ASSERT_EQ(IncognitoModePrefs::Availability::kEnabled,
             IncognitoModePrefs::GetAvailability(profile()->GetPrefs()));
 
   // Creating a browser in the original test profile should succeed.
@@ -278,6 +282,10 @@ TEST_F(BrowserUnitTest, CreateBrowserDuringKioskSplashScreen) {
 class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {
  public:
   BrowserBookmarkBarTest() {}
+
+  BrowserBookmarkBarTest(const BrowserBookmarkBarTest&) = delete;
+  BrowserBookmarkBarTest& operator=(const BrowserBookmarkBarTest&) = delete;
+
   ~BrowserBookmarkBarTest() override {}
 
  protected:
@@ -302,6 +310,12 @@ class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {
    public:
     BookmarkBarStateTestBrowserWindow()
         : browser_(nullptr), bookmark_bar_state_(BookmarkBar::HIDDEN) {}
+
+    BookmarkBarStateTestBrowserWindow(
+        const BookmarkBarStateTestBrowserWindow&) = delete;
+    BookmarkBarStateTestBrowserWindow& operator=(
+        const BookmarkBarStateTestBrowserWindow&) = delete;
+
     ~BookmarkBarStateTestBrowserWindow() override {}
 
     void set_browser(Browser* browser) { browser_ = browser; }
@@ -327,13 +341,9 @@ class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {
                                             reason);
     }
 
-    Browser* browser_;  // Weak ptr.
+    raw_ptr<Browser> browser_;  // Weak ptr.
     BookmarkBar::State bookmark_bar_state_;
-
-    DISALLOW_COPY_AND_ASSIGN(BookmarkBarStateTestBrowserWindow);
   };
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserBookmarkBarTest);
 };
 
 // Ensure bookmark bar states in Browser and BrowserWindow are in sync after
@@ -384,45 +394,20 @@ TEST_F(BrowserBookmarkBarTest, StateOnActiveTabChanged) {
   EXPECT_EQ(BookmarkBar::SHOW, window_bookmark_bar_state());
 }
 
-class GuestBrowserUnitTest : public BrowserUnitTest,
-                             public testing::WithParamInterface<bool> {
- public:
-  GuestBrowserUnitTest() : is_ephemeral_(GetParam()) {
-    // Change the value if Ephemeral is not supported.
-    is_ephemeral_ &=
-        TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
-            scoped_feature_list_, is_ephemeral_);
-  }
-
-  bool is_ephemeral() const { return is_ephemeral_; }
-
- private:
-  bool is_ephemeral_;
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// Tests that Browser::Create creates a guest session browser for appropriate
-// OTR/non-OTR type for old and ephemeral Guest profiles.
-TEST_P(GuestBrowserUnitTest, CreateGuestSessionBrowser) {
+// Tests that Browser::Create creates a guest session browser.
+TEST_F(BrowserUnitTest, CreateGuestSessionBrowser) {
   TestingProfile* test_profile = profile_manager()->CreateGuestProfile();
   TestingProfile::Builder otr_profile_builder;
   otr_profile_builder.SetGuestSession();
   Profile* guest_profile = nullptr;
 
-  if (is_ephemeral()) {
-    // Try creating an OTR profile for ephemeral Guest profile, it should fail.
-    EXPECT_FALSE(otr_profile_builder.BuildIncognito(test_profile));
-    guest_profile = test_profile;
-  } else {
-    // Try creating a browser in original guest profile - it should fail.
-    EXPECT_EQ(Browser::CreationStatus::kErrorProfileUnsuitable,
-              Browser::GetCreationStatusForProfile(test_profile));
+  // Try creating a browser in original guest profile - it should fail.
+  EXPECT_EQ(Browser::CreationStatus::kErrorProfileUnsuitable,
+            Browser::GetCreationStatusForProfile(test_profile));
 
-    // Create OTR profile for the Guest profile.
-    EXPECT_TRUE(otr_profile_builder.BuildIncognito(test_profile));
-    guest_profile =
-        test_profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
-  }
+  // Create OTR profile for the Guest profile.
+  EXPECT_TRUE(otr_profile_builder.BuildIncognito(test_profile));
+  guest_profile = test_profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
   // Creating a browser should succeed.
   Browser::CreateParams create_params =
@@ -433,7 +418,3 @@ TEST_P(GuestBrowserUnitTest, CreateGuestSessionBrowser) {
       std::unique_ptr<Browser>(Browser::Create(create_params));
   EXPECT_TRUE(browser);
 }
-
-INSTANTIATE_TEST_SUITE_P(AllGuestTypes,
-                         GuestBrowserUnitTest,
-                         /*is_ephemeral=*/testing::Bool());

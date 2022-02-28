@@ -48,9 +48,10 @@ SectionDimensionsElf MakeSectionDimensions(const BufferRegion& region,
 }
 
 // Helper to manipulate an image with one or more relocation tables.
-template <class ElfIntelTraits>
+template <class ELF_INTEL_TRAITS>
 class FakeImageWithReloc {
  public:
+  using ElfIntelTraits = ELF_INTEL_TRAITS;
   struct RelocSpec {
     offset_t start;
     std::vector<uint8_t> data;
@@ -61,7 +62,8 @@ class FakeImageWithReloc {
                      const std::vector<RelocSpec>& reloc_specs)
       : image_data_(image_size, 0xFF),
         mutable_image_(&image_data_[0], image_data_.size()) {
-    translator_.Initialize({{0, image_size, base_rva, image_size}});
+    translator_.Initialize({{0, static_cast<offset_t>(image_size), base_rva,
+                             static_cast<rva_t>(image_size)}});
     // Set up test image with reloc sections.
     for (const RelocSpec& reloc_spec : reloc_specs) {
       BufferRegion reloc_region = {reloc_spec.start, reloc_spec.data.size()};

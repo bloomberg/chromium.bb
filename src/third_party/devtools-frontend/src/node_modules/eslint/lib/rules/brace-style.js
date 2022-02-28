@@ -17,7 +17,6 @@ module.exports = {
 
         docs: {
             description: "enforce consistent brace style for blocks",
-            category: "Stylistic Issues",
             recommended: false,
             url: "https://eslint.org/docs/rules/brace-style"
         },
@@ -155,6 +154,12 @@ module.exports = {
                 if (!astUtils.STATEMENT_LIST_PARENTS.has(node.parent.type)) {
                     validateCurlyPair(sourceCode.getFirstToken(node), sourceCode.getLastToken(node));
                 }
+            },
+            StaticBlock(node) {
+                validateCurlyPair(
+                    sourceCode.getFirstToken(node, { skip: 1 }), // skip the `static` token
+                    sourceCode.getLastToken(node)
+                );
             },
             ClassBody(node) {
                 validateCurlyPair(sourceCode.getFirstToken(node), sourceCode.getLastToken(node));

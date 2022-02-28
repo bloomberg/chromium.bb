@@ -26,7 +26,7 @@
 
 // About multi-planar formats.
 //
-// Dawn supports additional multi-planar formats when the multiplanar_formats extension is enabled.
+// Dawn supports additional multi-planar formats when the multiplanar-formats extension is enabled.
 // When enabled, Dawn treats planar data as sub-resources (ie. 1 sub-resource == 1 view == 1 plane).
 // A multi-planar format name encodes the channel mapping and order of planes. For example,
 // R8BG8Biplanar420Unorm is YUV 4:2:0 where Plane 0 = R8, and Plane 1 = BG8.
@@ -45,19 +45,20 @@ namespace dawn_native {
     enum class Aspect : uint8_t;
     class DeviceBase;
 
-    // This mirrors wgpu::TextureComponentType as a bitmask instead.
-    enum class ComponentTypeBit : uint8_t {
+    // This mirrors wgpu::TextureSampleType as a bitmask instead.
+    enum class SampleTypeBit : uint8_t {
         None = 0x0,
         Float = 0x1,
-        Sint = 0x2,
-        Uint = 0x4,
-        DepthComparison = 0x8,
+        UnfilterableFloat = 0x2,
+        Depth = 0x4,
+        Sint = 0x8,
+        Uint = 0x10,
     };
 
     // Converts an wgpu::TextureComponentType to its bitmask representation.
-    ComponentTypeBit ToComponentTypeBit(wgpu::TextureComponentType type);
+    SampleTypeBit ToSampleTypeBit(wgpu::TextureComponentType type);
     // Converts an wgpu::TextureSampleType to its bitmask representation.
-    ComponentTypeBit SampleTypeToComponentTypeBit(wgpu::TextureSampleType sampleType);
+    SampleTypeBit SampleTypeToSampleTypeBit(wgpu::TextureSampleType sampleType);
 
     struct TexelBlockInfo {
         uint32_t byteSize;
@@ -67,14 +68,16 @@ namespace dawn_native {
 
     struct AspectInfo {
         TexelBlockInfo block;
+        // TODO(crbug.com/dawn/367): Replace TextureComponentType with TextureSampleType, or make it
+        // an internal Dawn enum.
         wgpu::TextureComponentType baseType;
-        ComponentTypeBit supportedComponentTypes;
+        SampleTypeBit supportedSampleTypes;
         wgpu::TextureFormat format;
     };
 
     // The number of formats Dawn knows about. Asserts in BuildFormatTable ensure that this is the
     // exact number of known format.
-    static constexpr size_t kKnownFormatCount = 55;
+    static constexpr size_t kKnownFormatCount = 96;
 
     struct Format;
     using FormatTable = std::array<Format, kKnownFormatCount>;
@@ -88,6 +91,8 @@ namespace dawn_native {
         bool isSupported;
         bool supportsStorageUsage;
         Aspect aspects;
+        // Only used for renderable color formats, number of color channels.
+        uint8_t componentCount;
 
         bool IsColor() const;
         bool HasDepth() const;
@@ -124,13 +129,13 @@ namespace dawn_native {
 
 }  // namespace dawn_native
 
-namespace wgpu {
+namespace dawn {
 
     template <>
-    struct IsDawnBitmask<dawn_native::ComponentTypeBit> {
+    struct IsDawnBitmask<dawn_native::SampleTypeBit> {
         static constexpr bool enable = true;
     };
 
-}  // namespace wgpu
+}  // namespace dawn
 
 #endif  // DAWNNATIVE_FORMAT_H_

@@ -17,10 +17,12 @@
 #ifndef SRC_TRACE_PROCESSOR_IMPORTERS_FTRACE_FTRACE_TOKENIZER_H_
 #define SRC_TRACE_PROCESSOR_IMPORTERS_FTRACE_FTRACE_TOKENIZER_H_
 
-#include "protos/perfetto/trace/ftrace/ftrace_event_bundle.pbzero.h"
+#include "perfetto/trace_processor/trace_blob_view.h"
+#include "src/trace_processor/importers/common/clock_tracker.h"
 #include "src/trace_processor/storage/trace_storage.h"
 #include "src/trace_processor/types/trace_processor_context.h"
-#include "src/trace_processor/util/trace_blob_view.h"
+
+#include "protos/perfetto/trace/ftrace/ftrace_event_bundle.pbzero.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -32,24 +34,34 @@ class FtraceTokenizer {
   explicit FtraceTokenizer(TraceProcessorContext* context)
       : context_(context) {}
 
-  void TokenizeFtraceBundle(TraceBlobView bundle, PacketSequenceState*);
+  base::Status TokenizeFtraceBundle(TraceBlobView bundle,
+                                    PacketSequenceState*,
+                                    uint32_t packet_sequence_id);
 
  private:
   void TokenizeFtraceEvent(uint32_t cpu,
+                           ClockTracker::ClockId,
                            TraceBlobView event,
-                           PacketSequenceState*);
+                           PacketSequenceState* state);
   void TokenizeFtraceCompactSched(uint32_t cpu,
-                                  const uint8_t* data,
-                                  size_t size);
+                                  ClockTracker::ClockId,
+                                  protozero::ConstBytes);
   void TokenizeFtraceCompactSchedSwitch(
       uint32_t cpu,
+      ClockTracker::ClockId,
       const protos::pbzero::FtraceEventBundle::CompactSched::Decoder& compact,
       const std::vector<StringId>& string_table);
   void TokenizeFtraceCompactSchedWaking(
       uint32_t cpu,
+      ClockTracker::ClockId,
       const protos::pbzero::FtraceEventBundle::CompactSched::Decoder& compact,
       const std::vector<StringId>& string_table);
 
+  void HandleFtraceClockSnapshot(int64_t ftrace_ts,
+                                 int64_t boot_ts,
+                                 uint32_t packet_sequence_id);
+
+  int64_t latest_ftrace_clock_snapshot_ts_ = 0;
   TraceProcessorContext* context_;
 };
 

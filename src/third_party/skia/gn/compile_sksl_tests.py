@@ -28,11 +28,12 @@ def executeWorklist(input, worklist):
     # Invoke skslc, passing in the worklist.
     worklist.close()
     try:
-        output = subprocess.check_output([skslc, worklist.name], stderr=subprocess.STDOUT)
+        output = subprocess.check_output([
+            skslc, worklist.name], stderr=subprocess.STDOUT).decode('utf-8')
     except subprocess.CalledProcessError as err:
         if err.returncode != 1:
             print("### " + input + " skslc error:\n")
-            print("\n".join(err.output.splitlines()))
+            print("\n".join(err.output.decode('utf-8').splitlines()))
             sys.exit(err.returncode)
         pass  # Compile errors (exit code 1) are expected and normal in test code
 
@@ -46,13 +47,13 @@ def makeEmptyFile(path):
         pass
 
 def extensionForSpirvAsm(ext):
-    return ext if (ext == '.frag' or ext == '.vert' or ext == '.geom') else '.frag'
+    return ext if (ext == '.frag' or ext == '.vert') else '.frag'
 
 if settings != "--settings" and settings != "--nosettings":
     sys.exit("### Expected --settings or --nosettings, got " + settings)
 
 targets = []
-worklist = tempfile.NamedTemporaryFile(suffix='.worklist', delete=False)
+worklist = tempfile.NamedTemporaryFile(suffix='.worklist', delete=False, mode='w')
 
 # The `inputs` array pairs off input files with their matching output directory, e.g.:
 #     //skia/tests/sksl/shared/test.sksl
@@ -73,21 +74,7 @@ for input, targetDir in pairwise(inputs):
 
     targets.append(target)
 
-    if lang == "--fp":
-        worklist.write(input + "\n")
-        worklist.write(target + ".cpp\n")
-        worklist.write(settings + "\n\n")
-        worklist.write(input + "\n")
-        worklist.write(target + ".h\n")
-        worklist.write(settings + "\n\n")
-    elif lang == "--dslfp":
-        worklist.write(input + "\n")
-        worklist.write(target + ".dsl.cpp\n")
-        worklist.write(settings + "\n\n")
-        worklist.write(input + "\n")
-        worklist.write(target + ".h\n")
-        worklist.write(settings + "\n\n")
-    elif lang == "--glsl":
+    if lang == "--glsl":
         worklist.write(input + "\n")
         worklist.write(target + ".glsl\n")
         worklist.write(settings + "\n\n")
@@ -108,13 +95,12 @@ for input, targetDir in pairwise(inputs):
         worklist.write(target + ".stage\n")
         worklist.write(settings + "\n\n")
     else:
-        sys.exit("### Expected one of: --fp --dslfp --glsl --metal --spirv --skvm --stage, got " +
-                 lang)
+        sys.exit("### Expected one of: --glsl --metal --spirv --skvm --stage --dsl, got " + lang)
 
     # Compile items one at a time.
     if not batchCompile:
         executeWorklist(input, worklist)
-        worklist = tempfile.NamedTemporaryFile(suffix='.worklist', delete=False)
+        worklist = tempfile.NamedTemporaryFile(suffix='.worklist', delete=False, mode='w')
 
 # Compile everything all in one go.
 if batchCompile:
@@ -122,22 +108,3 @@ if batchCompile:
 else:
     worklist.close()
     os.remove(worklist.name)
-
-# A special case cleanup pass, just for CPP and H files: if either one of these files starts with
-# `### Compilation failed`, its sibling should be replaced by an empty file. This improves clarity
-# during code review; a failure on either file means that success on the sibling is irrelevant.
-if lang == "--fp" or lang == "--dslfp":
-    cppExtension = (".dsl.cpp" if lang == "--dslfp" else ".cpp")
-    hExtension = ".h"
-
-    for target in targets:
-        cppFile = open(target + cppExtension, 'r')
-        hFile = open(target + hExtension, 'r')
-        if cppFile.readline().startswith("### Compilation failed"):
-            # The CPP had a compilation failure. Clear the header file.
-            hFile.close()
-            makeEmptyFile(target + hExtension)
-        elif hFile.readline().startswith("### Compilation failed"):
-            # The header had a compilation failure. Clear the CPP file.
-            cppFile.close()
-            makeEmptyFile(target + cppExtension)

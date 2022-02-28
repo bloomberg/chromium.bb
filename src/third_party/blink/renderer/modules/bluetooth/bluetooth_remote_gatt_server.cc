@@ -98,7 +98,7 @@ ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* script_state) {
                         task_runner_);
 
   service->RemoteServerConnect(
-      device_->id(), std::move(client),
+      device_->GetDevice()->id, std::move(client),
       WTF::Bind(&BluetoothRemoteGATTServer::ConnectCallback,
                 WrapPersistent(this), WrapPersistent(resolver)));
 
@@ -112,7 +112,7 @@ void BluetoothRemoteGATTServer::disconnect(ScriptState* script_state) {
   client_receivers_.Clear();
   mojom::blink::WebBluetoothService* service =
       device_->GetBluetooth()->Service();
-  service->RemoteServerDisconnect(device_->id());
+  service->RemoteServerDisconnect(device_->GetDevice()->id);
 }
 
 // Callback that allows us to resolve the promise with a single service or
@@ -167,11 +167,7 @@ void BluetoothRemoteGATTServer::GetPrimaryServicesCallback(
 
 ScriptPromise BluetoothRemoteGATTServer::getPrimaryService(
     ScriptState* script_state,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const V8BluetoothServiceUUID* service,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const StringOrUnsignedLong& service,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
   String service_uuid = BluetoothUUID::getService(service, exception_state);
   if (exception_state.HadException())
@@ -184,11 +180,7 @@ ScriptPromise BluetoothRemoteGATTServer::getPrimaryService(
 
 ScriptPromise BluetoothRemoteGATTServer::getPrimaryServices(
     ScriptState* script_state,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const V8BluetoothServiceUUID* service,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const StringOrUnsignedLong& service,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
   String service_uuid = BluetoothUUID::getService(service, exception_state);
   if (exception_state.HadException())
@@ -227,7 +219,7 @@ ScriptPromise BluetoothRemoteGATTServer::GetPrimaryServicesImpl(
   mojom::blink::WebBluetoothService* service =
       device_->GetBluetooth()->Service();
   service->RemoteServerGetPrimaryServices(
-      device_->id(), quantity, services_uuid,
+      device_->GetDevice()->id, quantity, services_uuid,
       WTF::Bind(&BluetoothRemoteGATTServer::GetPrimaryServicesCallback,
                 WrapPersistent(this), services_uuid, quantity,
                 WrapPersistent(resolver)));

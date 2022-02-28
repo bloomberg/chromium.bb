@@ -13,21 +13,24 @@
 #include "base/check_op.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "pdf/ppapi_migration/callback.h"
 #include "pdf/ppapi_migration/geometry_conversions.h"
 #include "pdf/ppapi_migration/image.h"
-#include "ppapi/c/pp_errors.h"
+#include "pdf/ppapi_migration/result_codes.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/blit.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace chrome_pdf {
 
@@ -53,7 +56,7 @@ bool PepperGraphics::Flush(ResultCallback callback) {
   // Should only happen if pp::Graphics2D::Flush() is called while a callback is
   // still pending, which should never happen if PaintManager is managing all
   // flushes.
-  DCHECK_EQ(PP_OK, result);
+  DCHECK_EQ(Result::kSuccess, result);
   pp_callback.Run(result);
   return false;
 }
@@ -131,17 +134,35 @@ void SkiaGraphics::Scroll(const gfx::Rect& clip, const gfx::Vector2d& amount) {
     return;
   }
 
+  // TODO(crbug.com/1263614): Use `SkSurface::notifyContentWillChange()`.
   gfx::ScrollCanvas(skia_graphics_->getCanvas(), clip, amount);
 }
 
 void SkiaGraphics::SetScale(float scale) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  if (scale <= 0.0f) {
+    NOTREACHED();
+    return;
+  }
+
+  client_->UpdateScale(scale);
 }
 
 void SkiaGraphics::SetLayerTransform(float scale,
                                      const gfx::Point& origin,
                                      const gfx::Vector2d& translate) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  if (scale <= 0.0f) {
+    NOTREACHED();
+    return;
+  }
+
+  // translate_with_origin = origin - scale * origin - translate
+  gfx::Vector2dF translate_with_origin = origin.OffsetFromOrigin();
+  translate_with_origin.Scale(1.0f - scale);
+  translate_with_origin.Subtract(translate);
+
+  // TODO(crbug.com/1263614): Pepper defers updates until `Flush()`. Determine
+  // if `SkiaGraphics` should do something similar.
+  client_->UpdateLayerTransform(scale, translate_with_origin);
 }
 
 }  // namespace chrome_pdf

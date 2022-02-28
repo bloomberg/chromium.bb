@@ -10,24 +10,25 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/autofill_gstatic_reader.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/autofill/payments/autofill_error_dialog_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/autofill_progress_dialog_controller_impl.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/autofill/android/save_address_profile_flow_manager.h"
+#include "chrome/browser/autofill/android/save_update_address_profile_flow_manager.h"
+#include "chrome/browser/ui/android/autofill/save_card_message_controller_android.h"
 #include "components/autofill/core/browser/ui/payments/card_expiration_date_fix_flow_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_name_fix_flow_controller_impl.h"
 #else  // !OS_ANDROID
@@ -51,6 +52,9 @@ class ChromeAutofillClient
 #endif  // !defined(OS_ANDROID)
 {
  public:
+  ChromeAutofillClient(const ChromeAutofillClient&) = delete;
+  ChromeAutofillClient& operator=(const ChromeAutofillClient&) = delete;
+
   ~ChromeAutofillClient() override;
 
   // AutofillClient:
@@ -74,14 +78,24 @@ class ChromeAutofillClient
   translate::TranslateDriver* GetTranslateDriver() override;
   std::string GetVariationConfigCountryCode() const override;
   profile_metrics::BrowserProfileType GetProfileType() const override;
-  std::unique_ptr<InternalAuthenticator> CreateCreditCardInternalAuthenticator(
-      content::RenderFrameHost* rfh) override;
+  std::unique_ptr<webauthn::InternalAuthenticator>
+  CreateCreditCardInternalAuthenticator(content::RenderFrameHost* rfh) override;
 
   void ShowAutofillSettings(bool show_credit_card_settings) override;
+  void ShowCardUnmaskOtpInputDialog(
+      const size_t& otp_length,
+      base::WeakPtr<OtpUnmaskDelegate> delegate) override;
+  void OnUnmaskOtpVerificationResult(OtpUnmaskResult unmask_result) override;
   void ShowUnmaskPrompt(const CreditCard& card,
                         UnmaskCardReason reason,
                         base::WeakPtr<CardUnmaskDelegate> delegate) override;
   void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
+  void ShowUnmaskAuthenticatorSelectionDialog(
+      const std::vector<CardUnmaskChallengeOption>& challenge_options,
+      base::OnceCallback<void(const std::string&)>
+          confirm_unmask_challenge_option_callback,
+      base::OnceClosure cancel_unmasking_closure) override;
+  void DismissUnmaskAuthenticatorSelectionDialog(bool server_success) override;
 #if !defined(OS_ANDROID)
   std::vector<std::string> GetAllowedMerchantsForVirtualCards() override;
   std::vector<std::string> GetAllowedBinRangesForVirtualCards() override;
@@ -150,8 +164,15 @@ class ChromeAutofillClient
   void HideAutofillPopup(PopupHidingReason reason) override;
   void ShowOfferNotificationIfApplicable(
       const AutofillOfferData* offer) override;
-  void OnVirtualCardFetched(const CreditCard* card,
-                            const std::u16string& cvc) override;
+  void OnVirtualCardDataAvailable(
+      const std::u16string& masked_card_identifier_string,
+      const CreditCard* credit_card,
+      const std::u16string& cvc,
+      const gfx::Image& card_image) override;
+  void ShowVirtualCardErrorDialog(bool is_permanent_error) override;
+  void ShowAutofillProgressDialog(base::OnceClosure cancel_callback) override;
+  void CloseAutofillProgressDialog(
+      bool show_confirmation_before_closing) override;
   bool IsAutofillAssistantShowing() override;
   bool IsAutocompleteEnabled() override;
   void PropagateAutofillPredictions(
@@ -170,8 +191,12 @@ class ChromeAutofillClient
       base::OnceCallback<void(const std::string&)> callback) override;
 
   // content::WebContentsObserver implementation.
-  void MainFrameWasResized(bool width_changed) override;
+  void PrimaryMainFrameWasResized(bool width_changed) override;
   void WebContentsDestroyed() override;
+  void OnWebContentsLostFocus(
+      content::RenderWidgetHost* render_widget_host) override;
+  void OnWebContentsFocused(
+      content::RenderWidgetHost* render_widget_host) override;
 
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_for_testing() {
     return popup_controller_;
@@ -190,14 +215,12 @@ class ChromeAutofillClient
   explicit ChromeAutofillClient(content::WebContents* web_contents);
 
   Profile* GetProfile() const;
-  absl::optional<AccountInfo> GetAccountInfo();
   bool IsMultipleAccountUser();
   std::u16string GetAccountHolderName();
 
   std::unique_ptr<payments::PaymentsClient> payments_client_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
-  CardUnmaskPromptControllerImpl unmask_controller_;
   std::unique_ptr<LogManager> log_manager_;
   // If set to true, the popup will stay open regardless of external changes on
   // the test machine, that may normally cause the popup to be hidden
@@ -206,12 +229,18 @@ class ChromeAutofillClient
   CardExpirationDateFixFlowControllerImpl
       card_expiration_date_fix_flow_controller_;
   CardNameFixFlowControllerImpl card_name_fix_flow_controller_;
-  SaveAddressProfileFlowManager save_address_profile_flow_manager_;
+  SaveCardMessageControllerAndroid save_card_message_controller_android_;
+  SaveUpdateAddressProfileFlowManager save_update_address_profile_flow_manager_;
 #endif
+  CardUnmaskPromptControllerImpl unmask_controller_;
+  AutofillErrorDialogControllerImpl autofill_error_dialog_controller_;
+  std::unique_ptr<AutofillProgressDialogControllerImpl>
+      autofill_progress_dialog_controller_;
+
+  // True if and only if the associated web_contents() is currently focused.
+  bool has_focus_ = false;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeAutofillClient);
 };
 
 }  // namespace autofill

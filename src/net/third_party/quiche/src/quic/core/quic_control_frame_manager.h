@@ -11,8 +11,10 @@
 #include "absl/container/flat_hash_map.h"
 #include "quic/core/frames/quic_frame.h"
 #include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_error_codes.h"
 #include "quic/core/quic_types.h"
 #include "common/quiche_circular_deque.h"
+#include "common/quiche_linked_hash_map.h"
 
 namespace quic {
 
@@ -52,8 +54,7 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
 
   // Tries to send a WINDOW_UPDATE_FRAME. Buffers the frame if it cannot be sent
   // immediately.
-  void WriteOrBufferRstStream(QuicControlFrameId id,
-                              QuicRstStreamErrorCode error,
+  void WriteOrBufferRstStream(QuicControlFrameId id, QuicResetStreamError error,
                               QuicStreamOffset bytes_written);
 
   // Tries to send a GOAWAY_FRAME. Buffers the frame if it cannot be sent
@@ -80,7 +81,7 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
 
   // Tries to send an IETF-QUIC STOP_SENDING frame. The frame is buffered if it
   // can not be sent immediately.
-  void WriteOrBufferStopSending(QuicRstStreamErrorCode code,
+  void WriteOrBufferStopSending(QuicResetStreamError error,
                                 QuicStreamId stream_id);
 
   // Tries to send an HANDSHAKE_DONE frame. The frame is buffered if it can not
@@ -95,8 +96,7 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   // Tries to send a NEW_CONNECTION_ID frame. The frame is buffered if it cannot
   // be sent immediately.
   void WriteOrBufferNewConnectionId(
-      const QuicConnectionId& connection_id,
-      uint64_t sequence_number,
+      const QuicConnectionId& connection_id, uint64_t sequence_number,
       uint64_t retire_prior_to,
       const StatelessResetToken& stateless_reset_token);
 
@@ -178,7 +178,8 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   // TODO(fayang): switch to linked_hash_set when chromium supports it. The bool
   // is not used here.
   // Lost control frames waiting to be retransmitted.
-  QuicLinkedHashMap<QuicControlFrameId, bool> pending_retransmissions_;
+  quiche::QuicheLinkedHashMap<QuicControlFrameId, bool>
+      pending_retransmissions_;
 
   DelegateInterface* delegate_;
 

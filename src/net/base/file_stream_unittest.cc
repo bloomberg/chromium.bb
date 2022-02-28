@@ -9,12 +9,12 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/current_thread.h"
@@ -592,10 +592,10 @@ class TestWriteReadCompletionCallback {
   int result_;
   bool have_result_;
   bool waiting_for_result_;
-  FileStream* stream_;
-  int* total_bytes_written_;
-  int* total_bytes_read_;
-  std::string* data_read_;
+  raw_ptr<FileStream> stream_;
+  raw_ptr<int> total_bytes_written_;
+  raw_ptr<int> total_bytes_read_;
+  raw_ptr<std::string> data_read_;
   scoped_refptr<DrainableIOBuffer> drainable_;
 };
 
@@ -703,8 +703,8 @@ class TestWriteCloseCompletionCallback {
   int result_;
   bool have_result_;
   bool waiting_for_result_;
-  FileStream* stream_;
-  int* total_bytes_written_;
+  raw_ptr<FileStream> stream_;
+  raw_ptr<int> total_bytes_written_;
   scoped_refptr<DrainableIOBuffer> drainable_;
 };
 
@@ -746,7 +746,7 @@ TEST_F(FileStreamTest, OpenAndDelete) {
   base::Thread worker_thread("StreamTest");
   ASSERT_TRUE(worker_thread.Start());
 
-  bool prev = base::ThreadRestrictions::SetIOAllowed(false);
+  base::ScopedDisallowBlocking disallow_blocking;
   std::unique_ptr<FileStream> stream(
       new FileStream(worker_thread.task_runner()));
   int flags = base::File::FLAG_OPEN | base::File::FLAG_WRITE |
@@ -770,7 +770,6 @@ TEST_F(FileStreamTest, OpenAndDelete) {
   // open_callback won't be called.
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(open_callback.have_result());
-  base::ThreadRestrictions::SetIOAllowed(prev);
 }
 
 // Verify that Write() errors are mapped correctly.

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/containers/contains.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -72,11 +71,10 @@ class PhoneFieldTest : public testing::Test {
     field->name = ASCIIToUTF16(name);
     field->form_control_type = "select-one";
 
-    std::vector<std::u16string> contents16;
-    for (auto* const element : contents)
-      contents16.push_back(base::UTF8ToUTF16(element));
-
-    field->option_contents = contents16;
+    for (auto* const element : contents) {
+      field->options.push_back(
+          {.value = u"", .content = base::UTF8ToUTF16(element)});
+    }
   }
 
   std::vector<std::unique_ptr<AutofillField>> list_;

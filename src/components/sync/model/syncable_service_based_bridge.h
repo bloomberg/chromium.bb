@@ -11,7 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/sync/model/model_error.h"
@@ -21,7 +21,7 @@
 
 namespace sync_pb {
 class EntitySpecifics;
-}  // namespace sync_pb
+}
 
 namespace syncer {
 
@@ -44,6 +44,11 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
       OnceModelTypeStoreFactory store_factory,
       std::unique_ptr<ModelTypeChangeProcessor> change_processor,
       SyncableService* syncable_service);
+
+  SyncableServiceBasedBridge(const SyncableServiceBasedBridge&) = delete;
+  SyncableServiceBasedBridge& operator=(const SyncableServiceBasedBridge&) =
+      delete;
+
   ~SyncableServiceBasedBridge() override;
 
   // ModelTypeSyncBridge implementation.
@@ -98,7 +103,7 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
   void ReportErrorIfSet(const absl::optional<ModelError>& error);
 
   const ModelType type_;
-  SyncableService* const syncable_service_;
+  const raw_ptr<SyncableService> syncable_service_;
 
   std::unique_ptr<ModelTypeStore> store_;
   bool syncable_service_started_;
@@ -110,8 +115,6 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<SyncableServiceBasedBridge> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SyncableServiceBasedBridge);
 };
 
 }  // namespace syncer

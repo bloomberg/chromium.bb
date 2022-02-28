@@ -37,22 +37,23 @@ namespace dawn_native {
     }  // anonymous namespace
 
     OwnedCompilationMessages::OwnedCompilationMessages() {
+        mCompilationInfo.nextInChain = 0;
         mCompilationInfo.messageCount = 0;
         mCompilationInfo.messages = nullptr;
     }
 
-    void OwnedCompilationMessages::AddMessage(std::string message,
-                                              wgpu::CompilationMessageType type,
-                                              uint64_t lineNum,
-                                              uint64_t linePos,
-                                              uint64_t offset,
-                                              uint64_t length) {
+    void OwnedCompilationMessages::AddMessageForTesting(std::string message,
+                                                        wgpu::CompilationMessageType type,
+                                                        uint64_t lineNum,
+                                                        uint64_t linePos,
+                                                        uint64_t offset,
+                                                        uint64_t length) {
         // Cannot add messages after GetCompilationInfo has been called.
         ASSERT(mCompilationInfo.messages == nullptr);
 
         mMessageStrings.push_back(message);
-        mMessages.push_back({nullptr, static_cast<WGPUCompilationMessageType>(type), lineNum,
-                             linePos, offset, length});
+        mMessages.push_back({nullptr, nullptr, static_cast<WGPUCompilationMessageType>(type),
+                             lineNum, linePos, offset, length});
     }
 
     void OwnedCompilationMessages::AddMessage(const tint::diag::Diagnostic& diagnostic) {
@@ -100,8 +101,8 @@ namespace dawn_native {
             mMessageStrings.push_back(diagnostic.message);
         }
 
-        mMessages.push_back({nullptr, tintSeverityToMessageType(diagnostic.severity), lineNum,
-                             linePos, offset, length});
+        mMessages.push_back({nullptr, nullptr, tintSeverityToMessageType(diagnostic.severity),
+                             lineNum, linePos, offset, length});
     }
 
     void OwnedCompilationMessages::AddMessages(const tint::diag::List& diagnostics) {
@@ -111,6 +112,8 @@ namespace dawn_native {
         for (const auto& diag : diagnostics) {
             AddMessage(diag);
         }
+
+        AddFormattedTintMessages(diagnostics);
     }
 
     void OwnedCompilationMessages::ClearMessages() {
@@ -134,6 +137,52 @@ namespace dawn_native {
         }
 
         return &mCompilationInfo;
+    }
+
+    const std::vector<std::string>& OwnedCompilationMessages::GetFormattedTintMessages() {
+        return mFormattedTintMessages;
+    }
+
+    void OwnedCompilationMessages::AddFormattedTintMessages(const tint::diag::List& diagnostics) {
+        tint::diag::List messageList;
+        size_t warningCount = 0;
+        size_t errorCount = 0;
+        for (auto& diag : diagnostics) {
+            switch (diag.severity) {
+                case (tint::diag::Severity::Fatal):
+                case (tint::diag::Severity::Error):
+                case (tint::diag::Severity::InternalCompilerError): {
+                    errorCount++;
+                    messageList.add(tint::diag::Diagnostic(diag));
+                    break;
+                }
+                case (tint::diag::Severity::Warning): {
+                    warningCount++;
+                    messageList.add(tint::diag::Diagnostic(diag));
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+        if (errorCount == 0 && warningCount == 0) {
+            return;
+        }
+        tint::diag::Formatter::Style style;
+        style.print_newline_at_end = false;
+        std::ostringstream t;
+        if (errorCount > 0) {
+            t << errorCount << " error(s) ";
+            if (warningCount > 0) {
+                t << "and ";
+            }
+        }
+        if (warningCount > 0) {
+            t << warningCount << " warning(s) ";
+        }
+        t << "generated while compiling the shader:" << std::endl
+          << tint::diag::Formatter{style}.format(messageList);
+        mFormattedTintMessages.push_back(t.str());
     }
 
 }  // namespace dawn_native

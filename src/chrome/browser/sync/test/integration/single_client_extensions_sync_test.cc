@@ -3,12 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "chrome/browser/sync/test/integration/await_match_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
-#include "components/sync/driver/profile_sync_service.h"
+#include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "content/public/test/browser_test.h"
 

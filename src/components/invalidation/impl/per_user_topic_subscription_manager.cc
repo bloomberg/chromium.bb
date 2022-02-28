@@ -14,9 +14,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -104,7 +104,7 @@ class PerProjectDictionaryPrefUpdate {
 
  private:
   DictionaryPrefUpdate update_;
-  base::Value* per_sender_pref_;
+  raw_ptr<base::Value> per_sender_pref_;
 };
 
 // Added in M76.
@@ -164,6 +164,9 @@ struct PerUserTopicSubscriptionManager::SubscriptionEntry {
                     PerUserTopicSubscriptionRequest::RequestType type,
                     bool topic_is_public = false);
 
+  SubscriptionEntry(const SubscriptionEntry&) = delete;
+  SubscriptionEntry& operator=(const SubscriptionEntry&) = delete;
+
   // Destruction of this object causes cancellation of the request.
   ~SubscriptionEntry();
 
@@ -183,8 +186,6 @@ struct PerUserTopicSubscriptionManager::SubscriptionEntry {
   std::string last_request_access_token;
 
   bool has_retried_on_auth_error = false;
-
-  DISALLOW_COPY_AND_ASSIGN(SubscriptionEntry);
 };
 
 PerUserTopicSubscriptionManager::SubscriptionEntry::SubscriptionEntry(
@@ -247,13 +248,12 @@ void PerUserTopicSubscriptionManager::Init() {
 
   std::vector<std::string> keys_to_remove;
   // Load subscribed topics from prefs.
-  for (const auto& it : update->DictItems()) {
+  for (auto it : update->DictItems()) {
     Topic topic = it.first;
-    std::string private_topic_name;
-    if (it.second.GetAsString(&private_topic_name) &&
-        !private_topic_name.empty()) {
-      topic_to_private_topic_[topic] = private_topic_name;
-      private_topic_to_topic_[private_topic_name] = topic;
+    const std::string* private_topic_name = it.second.GetIfString();
+    if (private_topic_name && !private_topic_name->empty()) {
+      topic_to_private_topic_[topic] = *private_topic_name;
+      private_topic_to_topic_[*private_topic_name] = topic;
     } else {
       // Couldn't decode the pref value; remove it.
       keys_to_remove.push_back(topic);

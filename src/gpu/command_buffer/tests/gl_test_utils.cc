@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
@@ -402,7 +401,7 @@ bool GpuCommandBufferTestEGL::InitializeEGL(int width, int height) {
       new_impl = gl::GLImplementationParts(gl::kGLImplementationEGLANGLE);
 
     const auto allowed_impls = gl::init::GetAllowedGLImplementations();
-    if (!base::Contains(allowed_impls, new_impl.gl)) {
+    if (!new_impl.IsAllowed(allowed_impls)) {
       LOG(INFO) << "Skip test, no EGL implementation is available";
       return false;
     }

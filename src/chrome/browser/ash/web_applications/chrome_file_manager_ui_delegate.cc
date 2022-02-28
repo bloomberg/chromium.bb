@@ -7,10 +7,12 @@
 #include <memory.h>
 
 #include "base/values.h"
+#include "chrome/browser/ash/file_manager/file_manager_string_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/file_manager/file_manager_string_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "ui/webui/webui_allowlist.h"
 
 ChromeFileManagerUIDelegate::ChromeFileManagerUIDelegate(content::WebUI* web_ui)
     : web_ui_(web_ui) {
@@ -19,10 +21,10 @@ ChromeFileManagerUIDelegate::ChromeFileManagerUIDelegate(content::WebUI* web_ui)
 
 void ChromeFileManagerUIDelegate::PopulateLoadTimeData(
     content::WebUIDataSource* source) const {
-  std::unique_ptr<base::DictionaryValue> dict = GetFileManagerStrings();
+  base::Value dict = GetFileManagerStrings();
 
   const std::string locale = g_browser_process->GetApplicationLocale();
-  AddFileManagerFeatureStrings(locale, Profile::FromWebUI(web_ui_), dict.get());
+  AddFileManagerFeatureStrings(locale, Profile::FromWebUI(web_ui_), &dict);
 
-  source->AddLocalizedStrings(*dict.get());
+  source->AddLocalizedStrings(base::Value::AsDictionaryValue(dict));
 }

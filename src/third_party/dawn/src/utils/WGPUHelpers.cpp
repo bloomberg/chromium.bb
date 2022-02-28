@@ -26,7 +26,6 @@
 #include <sstream>
 
 namespace utils {
-
     wgpu::ShaderModule CreateShaderModuleFromASM(const wgpu::Device& device, const char* source) {
         // Use SPIRV-Tools's C API to assemble the SPIR-V assembly text to binary. Because the types
         // aren't RAII, we don't return directly on success and instead always go through the code
@@ -161,7 +160,8 @@ namespace utils {
 
     BasicRenderPass CreateBasicRenderPass(const wgpu::Device& device,
                                           uint32_t width,
-                                          uint32_t height) {
+                                          uint32_t height,
+                                          wgpu::TextureFormat format) {
         DAWN_ASSERT(width > 0 && height > 0);
 
         wgpu::TextureDescriptor descriptor;
@@ -170,7 +170,7 @@ namespace utils {
         descriptor.size.height = height;
         descriptor.size.depthOrArrayLayers = 1;
         descriptor.sampleCount = 1;
-        descriptor.format = BasicRenderPass::kDefaultColorFormat;
+        descriptor.format = format;
         descriptor.mipLevelCount = 1;
         descriptor.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
         wgpu::Texture color = device.CreateTexture(&descriptor);
@@ -296,23 +296,17 @@ namespace utils {
         storageTexture.viewDimension = textureViewDimension;
     }
 
+    // ExternalTextureBindingLayout never contains data, so just make one that can be reused instead
+    // of declaring a new one every time it's needed.
+    wgpu::ExternalTextureBindingLayout kExternalTextureBindingLayout = {};
+
     BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
         uint32_t entryBinding,
         wgpu::ShaderStage entryVisibility,
-        wgpu::BindingType entryType,
-        bool bufferHasDynamicOffset,
-        uint64_t bufferMinBindingSize,
-        wgpu::TextureViewDimension textureViewDimension,
-        wgpu::TextureComponentType textureComponent,
-        wgpu::TextureFormat storageFormat) {
+        wgpu::ExternalTextureBindingLayout* bindingLayout) {
         binding = entryBinding;
         visibility = entryVisibility;
-        type = entryType;
-        hasDynamicOffset = bufferHasDynamicOffset;
-        minBufferBindingSize = bufferMinBindingSize;
-        viewDimension = textureViewDimension;
-        textureComponentType = textureComponent;
-        storageTextureFormat = storageFormat;
+        nextInChain = bindingLayout;
     }
 
     BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
@@ -328,6 +322,13 @@ namespace utils {
     BindingInitializationHelper::BindingInitializationHelper(uint32_t binding,
                                                              const wgpu::TextureView& textureView)
         : binding(binding), textureView(textureView) {
+    }
+
+    BindingInitializationHelper::BindingInitializationHelper(
+        uint32_t binding,
+        const wgpu::ExternalTexture& externalTexture)
+        : binding(binding) {
+        externalTextureBindingEntry.externalTexture = externalTexture;
     }
 
     BindingInitializationHelper::BindingInitializationHelper(uint32_t binding,
@@ -346,6 +347,9 @@ namespace utils {
         result.buffer = buffer;
         result.offset = offset;
         result.size = size;
+        if (externalTextureBindingEntry.externalTexture != nullptr) {
+            result.nextInChain = &externalTextureBindingEntry;
+        }
 
         return result;
     }

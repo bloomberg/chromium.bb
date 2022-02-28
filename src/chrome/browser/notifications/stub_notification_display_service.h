@@ -10,8 +10,10 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
+#include "chrome/common/notifications/notification_operation.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/message_center/public/cpp/notification.h"
 
@@ -32,7 +34,7 @@ class StubNotificationDisplayService : public NotificationDisplayServiceImpl {
       content::BrowserContext* browser_context);
 
   typedef base::RepeatingCallback<void(
-      NotificationCommon::Operation operation,
+      NotificationOperation operation,
       NotificationHandler::Type notification_type,
       const GURL& origin,
       const std::string& notification_id,
@@ -102,7 +104,7 @@ class StubNotificationDisplayService : public NotificationDisplayServiceImpl {
              const std::string& notification_id) override;
   void GetDisplayed(DisplayedNotificationsCallback callback) override;
   void ProcessNotificationOperation(
-      NotificationCommon::Operation operation,
+      NotificationOperation operation,
       NotificationHandler::Type notification_type,
       const GURL& origin,
       const std::string& notification_id,
@@ -135,7 +137,7 @@ class StubNotificationDisplayService : public NotificationDisplayServiceImpl {
   base::RepeatingClosure notification_added_closure_;
   base::RepeatingClosure notification_closed_closure_;
   std::vector<NotificationData> notifications_;
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   ProcessNotificationOperationCallback process_notification_operation_delegate_;
 };

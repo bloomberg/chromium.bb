@@ -4,8 +4,8 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/message_loop/message_pump_type.h"
-#include "base/stl_util.h"
 #include "base/task/single_thread_task_executor.h"
 #include "components/exo/wayland/clients/client_base.h"
 #include "components/exo/wayland/clients/client_helper.h"
@@ -36,12 +36,13 @@ void FrameCallback(void* data, wl_callback* callback, uint32_t time) {
 class SubSurfaceClient : public ClientBase {
  public:
   SubSurfaceClient() = default;
+
+  SubSurfaceClient(const SubSurfaceClient&) = delete;
+  SubSurfaceClient& operator=(const SubSurfaceClient&) = delete;
+
   ~SubSurfaceClient() override = default;
 
   void Run(const ClientBase::InitParams& params);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SubSurfaceClient);
 };
 
 void SubSurfaceClient::Run(const ClientBase::InitParams& params) {
@@ -62,8 +63,10 @@ void SubSurfaceClient::Run(const ClientBase::InitParams& params) {
 
   constexpr int32_t kSubsurfaceWidth = 128;
   constexpr int32_t kSubsurfaceHeight = 128;
-  auto subbuffer = CreateBuffer(gfx::Size(kSubsurfaceWidth, kSubsurfaceHeight),
-                                params.drm_format, params.bo_usage);
+  auto subbuffer =
+      CreateBuffer(gfx::Size(kSubsurfaceWidth, kSubsurfaceHeight),
+                   params.drm_format, params.bo_usage,
+                   /*add_buffer_listener=*/!params.use_release_fences);
   if (!subbuffer) {
     LOG(ERROR) << "Failed to create subbuffer";
     return;

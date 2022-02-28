@@ -55,11 +55,6 @@ struct StructTraits<media::mojom::VideoFrameMetadataDataView,
     return input.hw_protected;
   }
 
-  static uint32_t hw_protected_validation_id(
-      const media::VideoFrameMetadata& input) {
-    return input.hw_protected_validation_id;
-  }
-
   static bool power_efficient(const media::VideoFrameMetadata& input) {
     return input.power_efficient;
   }
@@ -70,6 +65,11 @@ struct StructTraits<media::mojom::VideoFrameMetadataDataView,
 
   static bool interactive_content(const media::VideoFrameMetadata& input) {
     return input.interactive_content;
+  }
+
+  static bool texture_origin_is_top_left(
+      const media::VideoFrameMetadata& input) {
+    return input.texture_origin_is_top_left;
   }
 
   GENERATE_OPT_SERIALIZATION(int, capture_counter, 0)

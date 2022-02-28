@@ -10,7 +10,6 @@
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
@@ -23,6 +22,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
@@ -134,6 +134,12 @@ WorkletGlobalScope::WorkletGlobalScope(
 
   // WorkletGlobalScopes are not currently provided with UKM source IDs.
   DCHECK_EQ(creation_params->ukm_source_id, ukm::kInvalidSourceId);
+
+  if (creation_params->code_cache_host_interface.is_valid()) {
+    code_cache_host_ =
+        std::make_unique<CodeCacheHost>(mojo::Remote<mojom::CodeCacheHost>(
+            std::move(creation_params->code_cache_host_interface)));
+  }
 }
 
 WorkletGlobalScope::~WorkletGlobalScope() = default;
@@ -221,6 +227,14 @@ const base::UnguessableToken& WorkletGlobalScope::GetDevToolsToken() const {
     return frame_->GetDevToolsFrameToken();
   }
   return GetThread()->GetDevToolsWorkerToken();
+}
+
+CodeCacheHost* WorkletGlobalScope::GetCodeCacheHost() {
+  if (IsMainThreadWorkletGlobalScope())
+    return frame_->Loader().GetDocumentLoader()->GetCodeCacheHost();
+  if (!code_cache_host_)
+    return nullptr;
+  return code_cache_host_.get();
 }
 
 CoreProbeSink* WorkletGlobalScope::GetProbeSink() {

@@ -32,11 +32,12 @@ message DeviceInfoSpecifics {
   optional SyncEnums.DeviceType device_type = 3;
 
   // The UserAgent used when contacting the Chrome Sync server.
+  // Only present when talking to the HTTP server.
   optional string sync_user_agent = 4;
 
   // The Chrome instance's version.  Updated (if necessary) on every startup.
   // DEPRECATED in M92. Still populated for backward compatibility.
-  optional string chrome_version = 5 [deprecated=true];
+  optional string chrome_version = 5 [deprecated = true];
 
   // Last time when pre-sync data on the device was saved. The device can be
   // restored to state back to this time. In millisecond since UNIX epoch.
@@ -44,7 +45,7 @@ message DeviceInfoSpecifics {
   optional int64 deprecated_backup_timestamp = 6 [deprecated = true];
 
   // Device_id that is stable until user signs out. This device_id is used for
-  // annotating login scoped refresh token.
+  // annotating login scoped refresh token. Present only for Chrome Clients.
   optional string signin_scoped_device_id = 7;
 
   // This field is updated to be the current time periodically, and is also set
@@ -134,6 +135,8 @@ message SharingSpecificFields {
     CLICK_TO_CALL_V2 = 7;
     // Suppots Shared Clipboard via both VAPID and sender ID.
     SHARED_CLIPBOARD_V2 = 8;
+    // Supports optimization guide push notification.
+    OPTIMIZATION_GUIDE_PUSH_NOTIFICATION = 9;
   }
 
   // A list of enabled Sharing features.

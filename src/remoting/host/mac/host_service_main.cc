@@ -24,11 +24,10 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "remoting/base/logging.h"
-#include "remoting/host/host_exit_codes.h"
-#include "remoting/host/logging.h"
+#include "remoting/host/base/host_exit_codes.h"
+#include "remoting/host/base/switches.h"
+#include "remoting/host/base/username.h"
 #include "remoting/host/mac/constants_mac.h"
-#include "remoting/host/switches.h"
-#include "remoting/host/username.h"
 #include "remoting/host/version.h"
 
 namespace remoting {
@@ -48,8 +47,7 @@ constexpr char kNativeMessagingHostPath[] =
 constexpr int kSigtermExitCode = 128 + SIGTERM;
 
 // Constants controlling the host process relaunch throttling.
-constexpr base::TimeDelta kMinimumRelaunchInterval =
-    base::TimeDelta::FromMinutes(1);
+constexpr base::TimeDelta kMinimumRelaunchInterval = base::Minutes(1);
 constexpr int kMaximumHostFailures = 10;
 
 // Exit code 126 is defined by Posix to mean "Command found, but not
@@ -244,8 +242,6 @@ int HostService::RunHost() {
     HOST_LOG << "Host returned non-permanent exit code " << exit_code_string
              << " at " << base::Time::Now();
   }
-
-  return 0;
 }
 
 bool HostService::Disable() {

@@ -14,12 +14,11 @@
 
 import {searchSegment} from '../../base/binary_search';
 import {Actions} from '../../common/actions';
-import {TrackState} from '../../common/state';
 import {fromNs, toNs} from '../../common/time';
-import {HEAP_PROFILE_HOVERED_COLOR} from '../../frontend/flamegraph';
+import {FLAMEGRAPH_HOVERED_COLOR} from '../../frontend/flamegraph';
 import {globals} from '../../frontend/globals';
 import {TimeScale} from '../../frontend/time_scale';
-import {Track} from '../../frontend/track';
+import {NewTrackArgs, Track} from '../../frontend/track';
 import {trackRegistry} from '../../frontend/track_registry';
 
 import {Config, Data, HEAP_PROFILE_TRACK_KIND} from './common';
@@ -32,16 +31,16 @@ const RECT_HEIGHT = 30.5;
 
 class HeapProfileTrack extends Track<Config, Data> {
   static readonly kind = HEAP_PROFILE_TRACK_KIND;
-  static create(trackState: TrackState): HeapProfileTrack {
-    return new HeapProfileTrack(trackState);
+  static create(args: NewTrackArgs): HeapProfileTrack {
+    return new HeapProfileTrack(args);
   }
 
   private centerY = this.getHeight() / 2;
   private markerWidth = (this.getHeight() - MARGIN_TOP) / 2;
   private hoveredTs: number|undefined = undefined;
 
-  constructor(trackState: TrackState) {
-    super(trackState);
+  constructor(args: NewTrackArgs) {
+    super(args);
   }
 
   getHeight() {
@@ -82,10 +81,10 @@ class HeapProfileTrack extends Track<Config, Data> {
     ctx.lineTo(x + this.markerWidth, y);
     ctx.lineTo(x, y - this.markerWidth);
     ctx.closePath();
-    ctx.fillStyle = isHovered ? HEAP_PROFILE_HOVERED_COLOR : HEAP_PROFILE_COLOR;
+    ctx.fillStyle = isHovered ? FLAMEGRAPH_HOVERED_COLOR : HEAP_PROFILE_COLOR;
     ctx.fill();
     if (strokeWidth > 0) {
-      ctx.strokeStyle = HEAP_PROFILE_HOVERED_COLOR;
+      ctx.strokeStyle = FLAMEGRAPH_HOVERED_COLOR;
       ctx.lineWidth = strokeWidth;
       ctx.stroke();
     }

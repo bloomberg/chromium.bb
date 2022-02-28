@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/tag_collection.h"
 #include "third_party/blink/renderer/core/editing/commands/clipboard_commands.h"
@@ -52,6 +53,7 @@
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/ime/edit_context.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 #include "third_party/blink/renderer/core/editing/kill_ring.h"
 #include "third_party/blink/renderer/core/editing/selection_modifier.h"
@@ -70,7 +72,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -1959,6 +1961,53 @@ bool EditorCommand::Execute(const String& parameter,
       if (frame_->GetDocument()->GetFrame() != frame_)
         return false;
     }
+
+    // If EditContext is active, we may return early and not execute the
+    // command.
+    if (auto* edit_context =
+            frame_->GetInputMethodController().GetActiveEditContext()) {
+      // From EditContext's point of view, there are 3 kinds of commands:
+      switch (command_->command_type) {
+        case EditingCommandType::kToggleBold:
+        case EditingCommandType::kToggleItalic:
+        case EditingCommandType::kToggleUnderline:
+        case EditingCommandType::kInsertTab:
+        case EditingCommandType::kInsertBacktab:
+        case EditingCommandType::kInsertNewline:
+        case EditingCommandType::kInsertLineBreak:
+          // 1) BeforeInput event only, ex ctrl+B or <enter>.
+          return true;
+        case EditingCommandType::kDeleteBackward:
+          // 2) BeforeInput event + EditContext behavior, ex. backspace/delete.
+          edit_context->DeleteBackward();
+          return true;
+        case EditingCommandType::kDeleteForward:
+          edit_context->DeleteForward();
+          return true;
+        case EditingCommandType::kDeleteWordBackward:
+          edit_context->DeleteWordBackward();
+          return true;
+        case EditingCommandType::kDeleteWordForward:
+          edit_context->DeleteWordForward();
+          return true;
+        default:
+          // 3) BeforeInput event + default DOM behavior, ex. caret navigation.
+          // In this case, it's no-op for EditContext.
+          break;
+      }
+    }
+  }
+
+  // We need to force unlock activatable DisplayLocks for Editor::FindString
+  // before the following call to UpdateStyleAndLayout. Otherwise,
+  // ExecuteFindString/Editor::FindString will hit bad style/layout data.
+  absl::optional<DisplayLockDocumentState::ScopedForceActivatableDisplayLocks>
+      forced_locks;
+  if (command_->command_type == EditingCommandType::kFindString) {
+    forced_locks = GetFrame()
+                       .GetDocument()
+                       ->GetDisplayLockDocumentState()
+                       .GetScopedForceActivatableLocks();
   }
 
   GetFrame().GetDocument()->UpdateStyleAndLayout(

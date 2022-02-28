@@ -8,8 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/compiler_specific.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/webcrypto/webcrypto_impl.h"
@@ -32,13 +31,12 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   ~BlinkPlatformImpl() override;
 
   // blink::Platform implementation.
-  bool IsURLSupportedForAppCache(const blink::WebURL& url) override;
   bool IsURLSavableForSavableResource(const blink::WebURL& url) override;
   size_t MaxDecodedImageBytes() override;
   bool IsLowEndDevice() override;
   void RecordAction(const blink::UserMetricsAction&) override;
   blink::WebData GetDataResource(int resource_id,
-                                 ui::ScaleFactor scale_factor) override;
+                                 ui::ResourceScaleFactor scale_factor) override;
   blink::WebData UncompressDataResource(int resource_id) override;
   blink::WebString QueryLocalizedString(int resource_id) override;
   blink::WebString QueryLocalizedString(int resource_id,

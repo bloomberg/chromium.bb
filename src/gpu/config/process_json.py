@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -37,23 +37,16 @@ _OS_TYPE_MAP = {
   }
 
 INTEL_DRIVER_VERSION_SCHEMA = '''
-The version format of Intel graphics driver is AA.BB.CCC.DDDD.
-DDDD(old schema) or CCC.DDDD(new schema) is the build number. That is,
-indicates the actual driver number. The comparison between old schema
-and new schema is NOT valid. In such a condition the only comparison
-operator that returns true is "not equal".
+The version format of Intel graphics driver is AA.BB.CC.DDDD (legacy schema)
+and AA.BB.CCC.DDDD (new schema).
 
 AA.BB: You are free to specify the real number here, but they are meaningless
 when comparing two version numbers. Usually it's okay to leave it to "0.0".
 
-CCC: It's necessary for new schema. Regarding to old schema, you can speicy
-the real number or any number less than 100 in order to differentiate from
-new schema.
+CC or CCC: It's meaningful to indicate different branches. Different CC means
+different branch, while all CCCs share the same branch.
 
-DDDD: It's always meaningful. It must not be "0" under old schema.
-
-Legal: "24.20.100.7000", "0.0.100.7000", "0.0.0.7000", "0.0.100.0"
-Illegal: "24.0.0.0", "24.20.0.0", "0.0.99.0"
+DDDD: It's always meaningful.
 '''
 
 NVIDIA_DRIVER_VERSION_SCHEMA = '''
@@ -74,15 +67,13 @@ def check_intel_driver_version(version):
   for ver in ver_list:
     if not ver.isdigit():
       return False
-  if int(ver_list[2]) < 100 and ver_list[3] == '0':
-    return False
   return True
 
 def check_nvidia_driver_version(version):
   ver_list = version.split('.')
   # Allow "456" to match "456.*", so allow a single-entry list.
   if len(ver_list) == 0 or len(ver_list) > 2:
-    return False;
+    return False
   elif len(ver_list) == 2 and len(ver_list[1]) != 2:
     return False
   # Must start with three digits, whether it's "456.*" or "456.78".
@@ -156,21 +147,21 @@ def load_gpu_driver_bug_workarounds(workaround_type_filename):
 
 def get_feature_set(features, total_feature_set):
   assert len(features) > 0
-  feature_set = set([])
+  feature_set = dict()
   for feature in features:
     if feature == 'all':
-      feature_set = set(total_feature_set)
+      feature_set = {k:1 for k in total_feature_set}
     elif isinstance(feature, dict):
       for key in feature:
         if key == 'exceptions':
           for exception in feature['exceptions']:
             assert exception in feature_set
-            feature_set.remove(exception)
+            del feature_set[exception]
         else:
           raise KeyError('only exceptions are allowed')
     else:
       assert feature in total_feature_set
-      feature_set.add(feature)
+      feature_set[feature] = 1
   return feature_set
 
 
@@ -178,7 +169,7 @@ def write_features(feature_set, feature_name_prefix, var_name,
                    data_helper_file):
   data_helper_file.write('const int %s[%d] = {\n' %
                          (var_name, len(feature_set)))
-  for feature in feature_set:
+  for feature in feature_set.keys():
     data_helper_file.write(feature_name_prefix + feature.upper())
     data_helper_file.write(',\n')
   data_helper_file.write('};\n\n')
@@ -606,7 +597,7 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
                   'Intel' in driver_vendor)
       assert is_intel, 'Intel driver schema is only for Intel GPUs'
       valid_version = check_intel_driver_version(driver_version['value'])
-      if driver_version.has_key('value2'):
+      if 'value2' in driver_version:
         valid_version = (valid_version and
                          check_intel_driver_version(driver_version['value2']))
       assert valid_version, INTEL_DRIVER_VERSION_SCHEMA
@@ -616,7 +607,7 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
       is_nvidia = (format(vendor_id, '#04x') == '0x10de')
       assert is_nvidia, 'Nvidia driver schema is only for Nvidia GPUs'
       valid_version = check_nvidia_driver_version(driver_version['value'])
-      if driver_version.has_key('value2'):
+      if 'value2' in driver_version:
         valid_version = (valid_version and
                          check_nvidia_driver_version(driver_version['value2']))
       assert valid_version, NVIDIA_DRIVER_VERSION_SCHEMA
@@ -678,6 +669,7 @@ def write_intel_gpu_series_list(entry_id, is_exception, exception_id,
       'apollolake': 'kApollolake',
       'skylake': 'kSkylake',
       'geminilake': 'kGeminilake',
+      'amberlake': 'kAmberlake',
       'kabylake': 'kKabylake',
       'coffeelake': 'kCoffeelake',
       'whiskeylake': 'kWhiskeylake',
@@ -686,7 +678,10 @@ def write_intel_gpu_series_list(entry_id, is_exception, exception_id,
       'icelake': 'kIcelake',
       'elkhartlake': 'kElkhartlake',
       'jasperlake': 'kJasperlake',
-      'tigerlake': 'kTigerlake'
+      'tigerlake': 'kTigerlake',
+      'rocketlake': 'kRocketlake',
+      'dg1': 'kDG1',
+      'alderlake': 'kAlderlake'
     }
     for series in intel_gpu_series_list:
       assert series in intel_gpu_series_map
@@ -750,7 +745,7 @@ def write_entry(entry, total_feature_set, feature_name_prefix,
   if 'driver_update_url' in entry:
     description += (' Please update your graphics driver via this link: ' +
                     entry['driver_update_url'])
-  data_file.write('"%s",\n' % description);
+  data_file.write('"%s",\n' % description)
   # Features
   if 'features' in entry:
     var_name = 'kFeatureListFor%sEntry%d' % (unique_symbol_id, entry_id)

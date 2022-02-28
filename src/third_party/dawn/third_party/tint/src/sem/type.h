@@ -52,6 +52,18 @@ class Type : public Castable<Type, Node> {
   /// @returns the inner type if this is a reference, `this` otherwise
   const Type* UnwrapRef() const;
 
+  /// @returns the size in bytes of the type. This may include tail padding.
+  /// @note opaque types will return a size of 0.
+  virtual uint32_t Size() const;
+
+  /// @returns the alignment in bytes of the type. This may include tail
+  /// padding.
+  /// @note opaque types will return a size of 0.
+  virtual uint32_t Align() const;
+
+  /// @returns true if constructible as per
+  /// https://gpuweb.github.io/gpuweb/wgsl/#constructible-types
+  virtual bool IsConstructible() const;
 
   /// @returns true if this type is a scalar
   bool is_scalar() const;
@@ -69,6 +81,10 @@ class Type : public Castable<Type, Node> {
   bool is_float_scalar_or_vector_or_matrix() const;
   /// @returns true if this type is an integer scalar
   bool is_integer_scalar() const;
+  /// @returns true if this type is a signed integer scalar
+  bool is_signed_integer_scalar() const;
+  /// @returns true if this type is an unsigned integer scalar
+  bool is_unsigned_integer_scalar() const;
   /// @returns true if this type is a signed integer vector
   bool is_signed_integer_vector() const;
   /// @returns true if this type is an unsigned vector
@@ -85,6 +101,8 @@ class Type : public Castable<Type, Node> {
   bool is_bool_scalar_or_vector() const;
   /// @returns true if this type is a numeric vector
   bool is_numeric_vector() const;
+  /// @returns true if this type is a vector of scalar type
+  bool is_scalar_vector() const;
   /// @returns true if this type is a numeric scale or vector
   bool is_numeric_scalar_or_vector() const;
   /// @returns true if this type is a handle type

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #import "components/autofill/ios/browser/autofill_java_script_feature.h"
 
@@ -130,7 +131,7 @@ void SuggestionControllerJavaScriptFeature::
       frame, "suggestion.hasPreviousNextElements", parameters,
       base::BindOnce(&ProcessPreviousAndNextElementsPresenceResult,
                      std::move(completion_handler)),
-      base::TimeDelta::FromSeconds(kJavaScriptExecutionTimeoutInSeconds));
+      base::Seconds(kJavaScriptExecutionTimeoutInSeconds));
 }
 
 void SuggestionControllerJavaScriptFeature::CloseKeyboardForFrame(

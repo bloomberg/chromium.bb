@@ -5,7 +5,6 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_WEBGPU_DECODER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_WEBGPU_DECODER_H_
 
-#include "base/macros.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/gpu_gles2_export.h"
@@ -33,6 +32,9 @@ class GPU_GLES2_EXPORT WebGPUDecoder : public DecoderContext,
                                gles2::Outputter* outputter,
                                const GpuPreferences& gpu_preferences);
 
+  WebGPUDecoder(const WebGPUDecoder&) = delete;
+  WebGPUDecoder& operator=(const WebGPUDecoder&) = delete;
+
   ~WebGPUDecoder() override;
 
   // WebGPU-specific initialization that's different than DecoderContext's
@@ -49,9 +51,6 @@ class GPU_GLES2_EXPORT WebGPUDecoder : public DecoderContext,
   WebGPUDecoder(DecoderClient* client,
                 CommandBufferServiceBase* command_buffer_service,
                 gles2::Outputter* outputter);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebGPUDecoder);
 };
 
 }  // namespace webgpu

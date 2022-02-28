@@ -28,33 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Platform from '../../core/platform/platform.js';
 
-export class TextRange {
+export interface SerializedTextRange {
   startLine: number;
   startColumn: number;
   endLine: number;
   endColumn: number;
+}
 
-  constructor(startLine: number, startColumn: number, endLine: number, endColumn: number) {
-    this.startLine = startLine;
-    this.startColumn = startColumn;
-    this.endLine = endLine;
-    this.endColumn = endColumn;
+export class TextRange {
+  constructor(public startLine: number, public startColumn: number, public endLine: number, public endColumn: number) {
   }
 
   static createFromLocation(line: number, column: number): TextRange {
     return new TextRange(line, column, line, column);
   }
 
-  static fromObject(serializedTextRange: {
-    startLine: number,
-    startColumn: number,
-    endLine: number,
-    endColumn: number,
-  }): TextRange {
+  static fromObject(serializedTextRange: SerializedTextRange): TextRange {
     return new TextRange(
         serializedTextRange.startLine, serializedTextRange.startColumn, serializedTextRange.endLine,
         serializedTextRange.endColumn);
@@ -236,29 +227,6 @@ export class TextRange {
 }
 
 export class SourceRange {
-  offset: number;
-  length: number;
-  constructor(offset: number, length: number) {
-    this.offset = offset;
-    this.length = length;
-  }
-}
-
-export class SourceEdit {
-  sourceURL: string;
-  oldRange: TextRange;
-  newText: string;
-  constructor(sourceURL: string, oldRange: TextRange, newText: string) {
-    this.sourceURL = sourceURL;
-    this.oldRange = oldRange;
-    this.newText = newText;
-  }
-
-  static comparator(edit1: SourceEdit, edit2: SourceEdit): number {
-    return TextRange.comparator(edit1.oldRange, edit2.oldRange);
-  }
-
-  newRange(): TextRange {
-    return TextRange.fromEdit(this.oldRange, this.newText);
+  constructor(public offset: number, public length: number) {
   }
 }

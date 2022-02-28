@@ -23,7 +23,6 @@
 #include "base/callback_forward.h"
 #include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -31,10 +30,11 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/safe_browsing/content/browser/client_side_phishing_model.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "net/base/ip_address.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
@@ -72,6 +72,11 @@ class ClientSideDetectionService : public KeyedService {
   };
 
   explicit ClientSideDetectionService(std::unique_ptr<Delegate> delegate);
+
+  ClientSideDetectionService(const ClientSideDetectionService&) = delete;
+  ClientSideDetectionService& operator=(const ClientSideDetectionService&) =
+      delete;
+
   ~ClientSideDetectionService() override;
 
   void Shutdown() override;
@@ -85,6 +90,7 @@ class ClientSideDetectionService : public KeyedService {
   void RemoveClientSideDetectionHost(ClientSideDetectionHost* host);
 
   void OnURLLoaderComplete(network::SimpleURLLoader* url_loader,
+                           base::Time start_time,
                            std::unique_ptr<std::string> response_body);
 
   // Sends a request to the SafeBrowsing servers with the ClientPhishingRequest.
@@ -102,15 +108,17 @@ class ClientSideDetectionService : public KeyedService {
       ClientReportPhishingRequestCallback callback,
       const std::string& access_token);
 
-  // Returns true if the given IP address string falls within a private
+  // Returns true if the given IP address falls within a private
   // (unroutable) network block.  Pages which are hosted on these IP addresses
   // are exempt from client-side phishing detection.  This is called by the
   // ClientSideDetectionHost prior to sending the renderer a
   // SafeBrowsingMsg_StartPhishingDetection IPC.
-  //
-  // ip_address should be a dotted IPv4 address, or an unbracketed IPv6
-  // address.
-  virtual bool IsPrivateIPAddress(const std::string& ip_address) const;
+  virtual bool IsPrivateIPAddress(const net::IPAddress& address) const;
+
+  // Returns true if the given IP address does not refer to remote content. For
+  // example, local files and chrome:// pages will create navigations that
+  // return true.
+  virtual bool IsLocalResource(const net::IPAddress& address) const;
 
   // Returns true and sets is_phishing if url is in the cache and valid.
   virtual bool GetValidCachedResult(const GURL& url, bool* is_phishing);
@@ -127,7 +135,7 @@ class ClientSideDetectionService : public KeyedService {
 
   // Returns the model string. Used only for protobuf model. Virtual so that
   // mock implementation can override it.
-  virtual std::string GetModelStr();
+  virtual const std::string& GetModelStr();
 
   // Returns the model type (protobuf or flatbuffer). Virtual so that mock
   // implementation can override it.
@@ -253,8 +261,6 @@ class ClientSideDetectionService : public KeyedService {
   // Used to asynchronously call the callbacks for
   // SendClientReportPhishingRequest.
   base::WeakPtrFactory<ClientSideDetectionService> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionService);
 };
 
 }  // namespace safe_browsing

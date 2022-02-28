@@ -4,7 +4,11 @@
 
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
+#include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/public/common/content_features.h"
+#include "content/public/test/fake_local_frame.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/navigation_simulator_impl.h"
 #include "content/test/test_render_view_host.h"
@@ -13,6 +17,7 @@
 #include "net/cookies/site_for_cookies.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -36,7 +41,7 @@ TEST_F(RenderFrameHostImplTest, ExpectedMainWorldOrigin) {
         static_cast<RenderFrameHostImpl*>(rfh)
             ->FindLatestNavigationRequestThatIsStillCommitting();
 
-    return in_flight_request ? in_flight_request->GetOriginForURLLoaderFactory()
+    return in_flight_request ? in_flight_request->GetOriginToCommit()
                              : rfh->GetLastCommittedOrigin();
   };
 
@@ -47,7 +52,7 @@ TEST_F(RenderFrameHostImplTest, ExpectedMainWorldOrigin) {
     simulator->Start();
     simulator->Commit();
   }
-  RenderFrameHost* initial_rfh = main_rfh();
+  RenderFrameHostImpl* initial_rfh = main_test_rfh();
   // This test is for a bug that only happens when there is no RFH swap on
   // same-site navigations, so we should disable same-site proactive
   // BrowsingInstance for |initial_rfh| before continiung.
@@ -61,6 +66,8 @@ TEST_F(RenderFrameHostImplTest, ExpectedMainWorldOrigin) {
             get_expected_main_world_origin(main_rfh()));
   EXPECT_EQ(url::Origin::Create(initial_url),
             main_rfh()->GetLastCommittedOrigin());
+  EXPECT_EQ(blink::StorageKey(url::Origin::Create(initial_url)),
+            main_test_rfh()->storage_key());
 
   // Verify expected main world origin when a pending navigation was started but
   // hasn't yet reached the ready-to-commit state.
@@ -79,6 +86,8 @@ TEST_F(RenderFrameHostImplTest, ExpectedMainWorldOrigin) {
             get_expected_main_world_origin(main_rfh()));
   EXPECT_EQ(url::Origin::Create(initial_url),
             main_rfh()->GetLastCommittedOrigin());
+  EXPECT_EQ(blink::StorageKey(url::Origin::Create(initial_url)),
+            main_test_rfh()->storage_key());
 
   // Verify expected main world origin once we are again in a steady state -
   // after a commit.
@@ -87,6 +96,8 @@ TEST_F(RenderFrameHostImplTest, ExpectedMainWorldOrigin) {
             get_expected_main_world_origin(main_rfh()));
   EXPECT_EQ(url::Origin::Create(final_url),
             main_rfh()->GetLastCommittedOrigin());
+  EXPECT_EQ(blink::StorageKey(url::Origin::Create(final_url)),
+            main_test_rfh()->storage_key());
 
   // As a test correctness check, verify that there was no RFH swap (the bug
   // this test protects against would only happen if there is no swap).  In
@@ -101,6 +112,8 @@ TEST_F(RenderFrameHostImplTest, ExpectedMainWorldOrigin) {
 TEST_F(RenderFrameHostImplTest, IsolationInfoDuringCommit) {
   GURL initial_url = GURL("https://initial.example.test/");
   url::Origin expected_initial_origin = url::Origin::Create(initial_url);
+  blink::StorageKey expected_initial_storage_key =
+      blink::StorageKey(expected_initial_origin);
   net::IsolationInfo expected_initial_isolation_info =
       net::IsolationInfo::Create(
           net::IsolationInfo::RequestType::kOther, expected_initial_origin,
@@ -110,6 +123,8 @@ TEST_F(RenderFrameHostImplTest, IsolationInfoDuringCommit) {
 
   GURL final_url = GURL("https://final.example.test/");
   url::Origin expected_final_origin = url::Origin::Create(final_url);
+  blink::StorageKey expected_final_storage_key =
+      blink::StorageKey(expected_final_origin);
   net::IsolationInfo expected_final_isolation_info = net::IsolationInfo::Create(
       net::IsolationInfo::RequestType::kOther, expected_final_origin,
       expected_final_origin,
@@ -130,6 +145,7 @@ TEST_F(RenderFrameHostImplTest, IsolationInfoDuringCommit) {
 
   // Check values for the initial commit.
   EXPECT_EQ(expected_initial_origin, main_rfh()->GetLastCommittedOrigin());
+  EXPECT_EQ(expected_initial_storage_key, main_test_rfh()->storage_key());
   EXPECT_TRUE(expected_initial_isolation_info.IsEqualForTesting(
       main_rfh()->GetIsolationInfoForSubresources()));
   EXPECT_EQ(expected_initial_isolation_info.network_isolation_key(),
@@ -145,6 +161,7 @@ TEST_F(RenderFrameHostImplTest, IsolationInfoDuringCommit) {
       NavigationSimulator::CreateRendererInitiated(final_url, main_rfh());
   simulator2->Start();
   EXPECT_EQ(expected_initial_origin, main_rfh()->GetLastCommittedOrigin());
+  EXPECT_EQ(expected_initial_storage_key, main_test_rfh()->storage_key());
   EXPECT_TRUE(expected_initial_isolation_info.IsEqualForTesting(
       main_rfh()->GetIsolationInfoForSubresources()));
   EXPECT_EQ(expected_initial_isolation_info.network_isolation_key(),
@@ -159,6 +176,7 @@ TEST_F(RenderFrameHostImplTest, IsolationInfoDuringCommit) {
   simulator2->ReadyToCommit();
   simulator2->Wait();
   EXPECT_EQ(expected_initial_origin, main_rfh()->GetLastCommittedOrigin());
+  EXPECT_EQ(expected_initial_storage_key, main_test_rfh()->storage_key());
   EXPECT_TRUE(expected_initial_isolation_info.IsEqualForTesting(
       main_rfh()->GetIsolationInfoForSubresources()));
   EXPECT_EQ(expected_initial_isolation_info.network_isolation_key(),
@@ -172,6 +190,7 @@ TEST_F(RenderFrameHostImplTest, IsolationInfoDuringCommit) {
   // after a commit.
   simulator2->Commit();
   EXPECT_EQ(expected_final_origin, main_rfh()->GetLastCommittedOrigin());
+  EXPECT_EQ(expected_final_storage_key, main_test_rfh()->storage_key());
   EXPECT_TRUE(expected_final_isolation_info.IsEqualForTesting(
       main_rfh()->GetIsolationInfoForSubresources()));
   EXPECT_EQ(expected_final_isolation_info.network_isolation_key(),
@@ -217,7 +236,7 @@ TEST_F(RenderFrameHostImplTest, PolicyContainerLifecycle) {
   std::unique_ptr<WebContentsImpl> new_contents(
       WebContentsImpl::CreateWithOpener(params, child_frame));
   RenderFrameHostImpl* new_frame =
-      new_contents->GetFrameTree()->root()->current_frame_host();
+      new_contents->GetPrimaryFrameTree().root()->current_frame_host();
 
   ASSERT_NE(new_frame->policy_container_host(), nullptr);
   EXPECT_EQ(new_frame->policy_container_host()->referrer_policy(),
@@ -277,6 +296,127 @@ TEST_F(RenderFrameHostImplTest, FaviconURLsResetWithNavigation) {
   navigation->SetTransition(transition);
   navigation->Commit();
   EXPECT_EQ(0u, contents()->GetFaviconURLs().size());
+}
+
+TEST_F(RenderFrameHostImplTest, ChildOfAnonymousIsAnonymous) {
+  EXPECT_FALSE(main_test_rfh()->anonymous());
+
+  auto* child_frame = static_cast<TestRenderFrameHost*>(
+      content::RenderFrameHostTester::For(main_test_rfh())
+          ->AppendChild("child"));
+  EXPECT_FALSE(child_frame->anonymous());
+  EXPECT_FALSE(child_frame->storage_key().nonce().has_value());
+
+  child_frame->frame_tree_node()->set_anonymous(true);
+  EXPECT_FALSE(child_frame->anonymous());
+  EXPECT_FALSE(child_frame->storage_key().nonce().has_value());
+
+  // A navigation in the anonymous iframe commits an anonymous RFH.
+  std::unique_ptr<NavigationSimulator> navigation =
+      NavigationSimulator::CreateRendererInitiated(
+          GURL("https://example.com/navigation.html"), child_frame);
+  navigation->Commit();
+  child_frame =
+      static_cast<TestRenderFrameHost*>(navigation->GetFinalRenderFrameHost());
+  EXPECT_TRUE(child_frame->anonymous());
+  EXPECT_TRUE(child_frame->storage_key().nonce().has_value());
+
+  // An anonymous document sets a nonce on its network isolation key.
+  EXPECT_TRUE(child_frame->GetNetworkIsolationKey().GetNonce().has_value());
+  EXPECT_EQ(main_test_rfh()->GetPage().anonymous_iframes_nonce(),
+            child_frame->GetNetworkIsolationKey().GetNonce().value());
+
+  // A child of an anonymous RFH is anonymous.
+  auto* grandchild_frame = static_cast<TestRenderFrameHost*>(
+      content::RenderFrameHostTester::For(child_frame)
+          ->AppendChild("grandchild"));
+  EXPECT_TRUE(grandchild_frame->anonymous());
+  EXPECT_TRUE(child_frame->storage_key().nonce().has_value());
+
+  // The two anonymous RFH's storage keys should have the same nonce.
+  EXPECT_EQ(child_frame->storage_key().nonce().value(),
+            grandchild_frame->storage_key().nonce().value());
+
+  // Also the anonymous initial empty document sets a nonce on its network
+  // isolation key.
+  EXPECT_TRUE(
+      grandchild_frame->GetNetworkIsolationKey().GetNonce().has_value());
+  EXPECT_EQ(main_test_rfh()->GetPage().anonymous_iframes_nonce(),
+            grandchild_frame->GetNetworkIsolationKey().GetNonce().value());
+}
+
+// FakeLocalFrame implementation that records calls to BeforeUnload().
+class FakeLocalFrameWithBeforeUnload : public content::FakeLocalFrame {
+ public:
+  explicit FakeLocalFrameWithBeforeUnload(TestRenderFrameHost* test_host) {
+    Init(test_host->GetRemoteAssociatedInterfaces());
+  }
+
+  bool was_before_unload_called() const { return was_before_unload_called_; }
+
+  void RunBeforeUnloadCallback() {
+    ASSERT_TRUE(before_unload_callback_);
+    std::move(before_unload_callback_)
+        .Run(true, base::TimeTicks::Now(), base::TimeTicks::Now());
+  }
+
+  // FakeLocalFrame:
+  void BeforeUnload(bool is_reload, BeforeUnloadCallback callback) override {
+    was_before_unload_called_ = true;
+    before_unload_callback_ = std::move(callback);
+  }
+
+ private:
+  bool was_before_unload_called_ = false;
+  BeforeUnloadCallback before_unload_callback_;
+};
+
+// Verifies BeforeUnload() is not sent to renderer if there is no before
+// unload handler present.
+TEST_F(RenderFrameHostImplTest, BeforeUnloadNotSentToRenderer) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAvoidUnnecessaryBeforeUnloadCheck);
+  FakeLocalFrameWithBeforeUnload local_frame(contents()->GetMainFrame());
+  auto simulator = NavigationSimulatorImpl::CreateBrowserInitiated(
+      GURL("https://example.com/simple.html"), contents());
+  simulator->set_block_invoking_before_unload_completed_callback(true);
+  simulator->Start();
+  EXPECT_TRUE(
+      contents()->GetMainFrame()->is_waiting_for_beforeunload_completion());
+  EXPECT_FALSE(local_frame.was_before_unload_called());
+  // This is necessary to trigger FakeLocalFrameWithBeforeUnload to be bound.
+  contents()->GetMainFrame()->FlushLocalFrameMessages();
+  // This runs a MessageLoop, which also results in the PostTask() scheduled
+  // completing.
+  local_frame.FlushMessages();
+  EXPECT_FALSE(local_frame.was_before_unload_called());
+  // Because of the nested message loops run by the previous calls, the task
+  // that RenderFrameHostImpl will have also completed.
+  EXPECT_FALSE(
+      contents()->GetMainFrame()->is_waiting_for_beforeunload_completion());
+}
+
+// Verifies BeforeUnloadNotSentToRenderer() is sent to renderer.
+TEST_F(RenderFrameHostImplTest, BeforeUnloadSentToRenderer) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAvoidUnnecessaryBeforeUnloadCheck);
+  FakeLocalFrameWithBeforeUnload local_frame(contents()->GetMainFrame());
+  auto simulator = NavigationSimulatorImpl::CreateBrowserInitiated(
+      GURL("https://example.com/simple.html"), contents());
+  simulator->set_block_invoking_before_unload_completed_callback(true);
+  simulator->Start();
+  EXPECT_TRUE(
+      contents()->GetMainFrame()->is_waiting_for_beforeunload_completion());
+  // This is necessary to trigger FakeLocalFrameWithBeforeUnload to be bound.
+  contents()->GetMainFrame()->FlushLocalFrameMessages();
+  local_frame.FlushMessages();
+  EXPECT_TRUE(local_frame.was_before_unload_called());
+  EXPECT_TRUE(
+      contents()->GetMainFrame()->is_waiting_for_beforeunload_completion());
+  // Needed to avoid DCHECK in mojo if callback is not run.
+  local_frame.RunBeforeUnloadCallback();
 }
 
 }  // namespace content

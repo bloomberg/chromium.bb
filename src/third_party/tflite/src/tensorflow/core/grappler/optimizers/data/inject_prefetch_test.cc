@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,87 +28,140 @@ namespace tensorflow {
 namespace grappler {
 namespace {
 
-TEST(MakeStateless, ParallelMap) {
-  using test::function::NDef;
-  GrapplerItem item;
-  item.graph = test::function::GDef(
-      {NDef("start", "Const", {}, {{"value", 0}, {"dtype", DT_INT32}}),
-       NDef("stop", "Const", {}, {{"value", 10}, {"dtype", DT_INT32}}),
-       NDef("step", "Const", {}, {{"value", 1}, {"dtype", DT_INT32}}),
-       NDef("range", "RangeDataset", {"start", "stop", "step"}, {}),
-       NDef("num_parallel_calls", "Const", {},
-            {{"value", 1}, {"dtype", DT_INT32}}),
-       graph_tests_utils::MakeParallelMapNode("map", "range",
-                                              "num_parallel_calls", "XTimesTwo",
-                                              /*sloppy=*/false)},
-      // FunctionLib
-      {
-          test::function::XTimesTwo(),
-      });
+using test::function::NDef;
 
-  InjectPrefetch optimizer;
-  GraphDef output;
-  TF_ASSERT_OK(optimizer.Optimize(nullptr, item, &output));
-  EXPECT_TRUE(graph_utils::ContainsNodeWithOp("PrefetchDataset", output));
-  int index = graph_utils::FindGraphNodeWithOp("PrefetchDataset", output);
-  EXPECT_FALSE(output.node(index).attr().at("legacy_autotune").b());
+constexpr char kPrefetchDataset[] = "PrefetchDataset";
+constexpr char kOptionsDataset[] = "OptionsDataset";
+
+Status Optimize(InjectPrefetch &optimizer, const GrapplerItem &item,
+                GraphDef *output, bool autotune) {
+  RewriterConfig_CustomGraphOptimizer config;
+  if (autotune) {
+    (*config.mutable_parameter_map())["autotune"].set_s("true");
+  } else {
+    (*config.mutable_parameter_map())["autotune"].set_s("false");
+  }
+  TF_RETURN_IF_ERROR(optimizer.Init(&config));
+  return optimizer.Optimize(nullptr, item, output);
 }
 
-TEST(MakeStateless, ParallelInterleave) {
-  using test::function::NDef;
-  GrapplerItem item;
-  item.graph = test::function::GDef(
-      {NDef("start", "Const", {}, {{"value", 0}, {"dtype", DT_INT32}}),
-       NDef("stop", "Const", {}, {{"value", 10}, {"dtype", DT_INT32}}),
-       NDef("step", "Const", {}, {{"value", 1}, {"dtype", DT_INT32}}),
-       NDef("range", "RangeDataset", {"start", "stop", "step"}, {}),
-       NDef("cycle_length", "Const", {}, {{"value", 1}, {"dtype", DT_INT32}}),
-       NDef("block_length", "Const", {}, {{"value", 1}, {"dtype", DT_INT32}}),
-       NDef("num_parallel_calls", "Const", {},
-            {{"value", 1}, {"dtype", DT_INT32}}),
-       graph_tests_utils::MakeParallelInterleaveV2Node(
-           "interleave", "range", "cycle_length", "block_length",
-           "num_parallel_calls", "XTimesTwo", /*sloppy=*/false)},
-      // FunctionLib
-      {
-          test::function::XTimesTwo(),
-      });
-
+Status OptimizeWithInjectPrefetch(const GrapplerItem &item, GraphDef *output,
+                                  bool autotune) {
   InjectPrefetch optimizer;
-  GraphDef output;
-  TF_ASSERT_OK(optimizer.Optimize(nullptr, item, &output));
-  EXPECT_TRUE(graph_utils::ContainsNodeWithOp("PrefetchDataset", output));
-  int index = graph_utils::FindGraphNodeWithOp("PrefetchDataset", output);
-  EXPECT_FALSE(output.node(index).attr().at("legacy_autotune").b());
+  return Optimize(optimizer, item, output, autotune);
 }
 
-TEST(MakeStateless, MapAndBatch) {
-  using test::function::NDef;
+Status OptimizeWithInjectPrefetchEligible(const GrapplerItem &item,
+                                          GraphDef *output, bool autotune) {
+  InjectPrefetchEligible optimizer;
+  return Optimize(optimizer, item, output, autotune);
+}
+
+class InjectPrefetchParameterizedTest : public ::testing::TestWithParam<bool> {
+};
+
+TEST_P(InjectPrefetchParameterizedTest, TestAutotuneSetting) {
+  const bool autotune = GetParam();
+
   GrapplerItem item;
   item.graph = test::function::GDef(
       {NDef("start", "Const", {}, {{"value", 0}, {"dtype", DT_INT32}}),
        NDef("stop", "Const", {}, {{"value", 10}, {"dtype", DT_INT32}}),
        NDef("step", "Const", {}, {{"value", 1}, {"dtype", DT_INT32}}),
-       NDef("range", "RangeDataset", {"start", "stop", "step"}, {}),
-       NDef("batch_size", "Const", {}, {{"value", 32}, {"dtype", DT_INT64}}),
-       NDef("num_parallel_calls", "Const", {},
-            {{"value", 1}, {"dtype", DT_INT64}}),
-       NDef("drop_remainder", "Const", {},
-            {{"value", false}, {"dtype", DT_BOOL}}),
-       graph_tests_utils::MakeMapAndBatchNode(
-           "map_and_batch", "range", "batch_size", "num_parallel_calls",
-           "drop_remainder", "XTimesTwo")},
-      // FunctionLib
-      {
-          test::function::XTimesTwo(),
-      });
+       NDef("range", "RangeDataset", {"start", "stop", "step"},
+            {{"output_shapes", gtl::ArraySlice<TensorShape>{}},
+             {"output_types", gtl::ArraySlice<DataType>{}}}),
+       NDef("Sink", "Identity", {"range"}, {})});
 
-  InjectPrefetch optimizer;
+  item.fetch.push_back("Sink");
+
+  // Test inject_prefetch
+  GraphDef inject_prefetch_output;
+  TF_ASSERT_OK(
+      OptimizeWithInjectPrefetch(item, &inject_prefetch_output, autotune));
+  EXPECT_EQ(autotune, graph_utils::ContainsNodeWithOp(kPrefetchDataset,
+                                                      inject_prefetch_output));
+  EXPECT_EQ(autotune, graph_utils::ContainsGraphNodeWithName(
+                          "inject/prefetch_range", inject_prefetch_output));
+
+  // Test inject_prefetch_eligible
+  GraphDef inject_prefetch_eligible_output;
+  TF_ASSERT_OK(OptimizeWithInjectPrefetchEligible(
+      item, &inject_prefetch_eligible_output, autotune));
+  EXPECT_EQ(false, graph_utils::ContainsNodeWithOp(
+                       kPrefetchDataset, inject_prefetch_eligible_output));
+  EXPECT_EQ(false,
+            graph_utils::ContainsGraphNodeWithName(
+                "inject/prefetch_range", inject_prefetch_eligible_output));
+  EXPECT_EQ(item.graph.DebugString(),
+            inject_prefetch_eligible_output.DebugString());
+}
+
+INSTANTIATE_TEST_SUITE_P(AutotuneSetting, InjectPrefetchParameterizedTest,
+                         ::testing::Values(false, true));
+
+TEST(InjectPrefetchTest, FromFunctionDef) {
+  GrapplerItem item;
+  item.graph = test::function::GDef(
+      {NDef("start", "Const", {}, {{"value", 0}, {"dtype", DT_INT32}}),
+       NDef("stop", "Const", {}, {{"value", 10}, {"dtype", DT_INT32}}),
+       NDef("step", "Const", {}, {{"value", 1}, {"dtype", DT_INT32}}),
+       NDef("range", "RangeDataset", {"start", "stop", "step"},
+            {{"output_shapes", gtl::ArraySlice<TensorShape>{}},
+             {"output_types", gtl::ArraySlice<DataType>{}}}),
+       NDef("Sink", "_Retval", {"range"}, {})});
+
+  item.fetch.push_back("Sink");
+
   GraphDef output;
-  TF_ASSERT_OK(optimizer.Optimize(nullptr, item, &output));
-  EXPECT_TRUE(graph_utils::ContainsNodeWithOp("PrefetchDataset", output));
-  int index = graph_utils::FindGraphNodeWithOp("PrefetchDataset", output);
-  EXPECT_FALSE(output.node(index).attr().at("legacy_autotune").b());
+  TF_ASSERT_OK(OptimizeWithInjectPrefetch(item, &output, true));
+  EXPECT_FALSE(graph_utils::ContainsNodeWithOp(kPrefetchDataset, output));
+}
+
+TEST(InjectPrefetchTest, AlreadyPrefetched) {
+  GrapplerItem item;
+  item.graph = test::function::GDef(
+      {NDef("start", "Const", {}, {{"value", 0}, {"dtype", DT_INT32}}),
+       NDef("stop", "Const", {}, {{"value", 10}, {"dtype", DT_INT32}}),
+       NDef("step", "Const", {}, {{"value", 1}, {"dtype", DT_INT32}}),
+       NDef("range", "RangeDataset", {"start", "stop", "step"},
+            {{"output_shapes", gtl::ArraySlice<TensorShape>{}},
+             {"output_types", gtl::ArraySlice<DataType>{}}}),
+       NDef("prefetch", kPrefetchDataset, {"range"}, {}),
+       NDef("Sink", "Identity", {"prefetch"}, {})});
+
+  item.fetch.push_back("Sink");
+
+  GraphDef output;
+  TF_ASSERT_OK(OptimizeWithInjectPrefetch(item, &output, true));
+  EXPECT_TRUE(graph_utils::ContainsNodeWithOp(kPrefetchDataset, output));
+  EXPECT_EQ(6, output.node_size());
+}
+
+TEST(InjectPrefetchTest, OptionsFollowedByPrefetched) {
+  GrapplerItem item;
+  item.graph = test::function::GDef(
+      {NDef("start", "Const", {}, {{"value", 0}, {"dtype", DT_INT32}}),
+       NDef("stop", "Const", {}, {{"value", 10}, {"dtype", DT_INT32}}),
+       NDef("step", "Const", {}, {{"value", 1}, {"dtype", DT_INT32}}),
+       NDef("range", "RangeDataset", {"start", "stop", "step"},
+            {{"output_shapes", gtl::ArraySlice<TensorShape>{}},
+             {"output_types", gtl::ArraySlice<DataType>{}}}),
+       NDef("prefetch", kPrefetchDataset, {"range"},
+            {{"output_shapes", gtl::ArraySlice<TensorShape>{}},
+             {"output_types", gtl::ArraySlice<DataType>{}}}),
+       NDef("options", kOptionsDataset, {"prefetch"},
+            {{"output_shapes", gtl::ArraySlice<TensorShape>{}},
+             {"output_types", gtl::ArraySlice<DataType>{}}}),
+       NDef("Sink", "Identity", {"options"}, {})});
+
+  item.fetch.push_back("Sink");
+
+  GraphDef output;
+  TF_ASSERT_OK(OptimizeWithInjectPrefetch(item, &output, true));
+  EXPECT_FALSE(graph_utils::ContainsGraphNodeWithName("inject/prefetch_options",
+                                                      output));
+  EXPECT_EQ(7, output.node_size());
 }
 
 }  // namespace

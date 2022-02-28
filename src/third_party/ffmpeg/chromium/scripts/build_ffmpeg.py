@@ -26,6 +26,7 @@ FFMPEG_DIR = os.path.abspath(os.path.join(SCRIPTS_DIR, '..', '..'))
 CHROMIUM_ROOT_DIR = os.path.abspath(os.path.join(FFMPEG_DIR, '..', '..'))
 NDK_ROOT_DIR = os.path.abspath(
     os.path.join(CHROMIUM_ROOT_DIR, 'third_party', 'android_ndk'))
+SUCCESS_TOKEN = 'THIS_BUILD_WORKED'
 
 sys.path.append(os.path.join(CHROMIUM_ROOT_DIR, 'build'))
 import gn_helpers
@@ -39,8 +40,7 @@ BRANDINGS = [
 ARCH_MAP = {
     'android': ['ia32', 'x64', 'arm-neon', 'arm64'],
     'linux': [
-        'ia32', 'x64', 'mipsel', 'mips64el', 'noasm-x64', 'arm', 'arm-neon',
-        'arm64'
+        'ia32', 'x64', 'noasm-x64', 'arm', 'arm-neon', 'arm64'
     ],
     'mac': ['x64', 'arm64'],
     'win': ['ia32', 'x64', 'arm64'],
@@ -469,8 +469,15 @@ def SetupMacCrossCompileToolchain(target_arch):
 
 
 def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
-                config_only, config, configure_flags):
+                config_only, config, configure_flags, options):
   config_dir = 'build.%s.%s/%s' % (target_arch, target_os, config)
+
+  # See if the token file exists, and skip building if '--fast' is given.
+  token_file = os.path.join(config_dir, SUCCESS_TOKEN)
+  if os.path.exists(token_file) and options.fast:
+    print('Success token exists, skipping build of %s' % config_dir)
+    return
+
   shutil.rmtree(config_dir, ignore_errors=True)
   os.makedirs(os.path.join(config_dir, 'out'))
 
@@ -558,9 +565,9 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
   if target_os in (host_os, host_os + '-noasm', 'android',
                    'win', 'mac') and not config_only:
     libraries = [
-        os.path.join('libavcodec', GetDsoName(target_os, 'avcodec', 58)),
-        os.path.join('libavformat', GetDsoName(target_os, 'avformat', 58)),
-        os.path.join('libavutil', GetDsoName(target_os, 'avutil', 56)),
+        os.path.join('libavcodec', GetDsoName(target_os, 'avcodec', 59)),
+        os.path.join('libavformat', GetDsoName(target_os, 'avformat', 59)),
+        os.path.join('libavutil', GetDsoName(target_os, 'avutil', 57)),
     ]
     PrintAndCheckCall(
         ['make', '-j%d' % parallel_jobs] + libraries, cwd=config_dir)
@@ -592,6 +599,10 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
 
   RewriteFile(os.path.join(config_dir, 'config.h'), post_make_rewrites)
 
+  # Yay!  create the token file so that we can skip this in the future.
+  with open(token_file, 'w'):
+    pass
+
 
 def main(argv):
   clean_arch_map = {k: '|'.join(v) for k, v in ARCH_MAP.items()}
@@ -608,6 +619,10 @@ def main(argv):
       action='store_true',
       help='Skip the build step. Useful when a given platform '
       'is not necessary for generate_gn.py')
+  parser.add_option(
+      '--fast',
+      action='store_true',
+      help='Skip building (successfully) if the success token file exists')
   options, args = parser.parse_args(argv)
 
   if len(args) < 1:
@@ -1033,7 +1048,7 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
 
     print('%s configure/build:' % branding)
     BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
-                options.config_only, branding, configure_flags)
+                options.config_only, branding, configure_flags, options)
 
   # Only build Chromium, Chrome for ia32, x86 non-android platforms.
   if target_os != 'android':

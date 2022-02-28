@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "chromecast/media/cma/backend/android/media_pipeline_backend_android.h"
@@ -110,6 +109,10 @@ class ManagedAudioSink {
   using Delegate = AudioSinkAndroid::Delegate;
 
   explicit ManagedAudioSink(SinkType sink_type);
+
+  ManagedAudioSink(const ManagedAudioSink&) = delete;
+  ManagedAudioSink& operator=(const ManagedAudioSink&) = delete;
+
   ~ManagedAudioSink();
 
   // Resets the sink_ object by removing it from the manager and deleting it.
@@ -133,8 +136,6 @@ class ManagedAudioSink {
 
   SinkType sink_type_;
   AudioSinkAndroid* sink_;
-
-  DISALLOW_COPY_AND_ASSIGN(ManagedAudioSink);
 };
 
 }  // namespace media

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_EXTENSIONS_MANAGER_H_
 #define CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_EXTENSIONS_MANAGER_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/supports_user_data.h"
 #include "extensions/browser/extension_registry.h"
@@ -20,6 +20,11 @@ class ShortcutsExtensionsManager
       public extensions::ExtensionRegistryObserver {
  public:
   explicit ShortcutsExtensionsManager(Profile* profile);
+
+  ShortcutsExtensionsManager(const ShortcutsExtensionsManager&) = delete;
+  ShortcutsExtensionsManager& operator=(const ShortcutsExtensionsManager&) =
+      delete;
+
   ~ShortcutsExtensionsManager() override;
 
   // extensions::ExtensionRegistryObserver:
@@ -32,9 +37,7 @@ class ShortcutsExtensionsManager
   base::ScopedObservation<extensions::ExtensionRegistry,
                           extensions::ExtensionRegistryObserver>
       registry_observation_{this};
-  Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShortcutsExtensionsManager);
+  raw_ptr<Profile> profile_;
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_EXTENSIONS_MANAGER_H_

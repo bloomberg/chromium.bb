@@ -14,7 +14,7 @@
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "net/cookies/cookie_util.h"
+#include "components/content_settings/core/common/features.h"
 
 #if defined(OS_ANDROID)
 #include "media/base/android/media_drm_bridge.h"
@@ -126,6 +126,10 @@ void ContentSettingsRegistry::Init() {
 
   // WARNING: The string names of the permissions passed in below are used to
   // generate preference names and should never be changed!
+  //
+  // If a permission is DELETED, please update
+  // PrefProvider::DiscardOrMigrateObsoletePreferences() and
+  // DefaultProvider::DiscardOrMigrateObsoletePreferences() accordingly.
 
   Register(ContentSettingsType::COOKIES, "cookies", CONTENT_SETTING_ALLOW,
            WebsiteSettingsInfo::SYNCABLE,
@@ -345,13 +349,9 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::PERSISTENT,
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_AND_INSECURE_ORIGINS);
 
-  ContentSetting legacy_cookie_access_initial_default =
-      net::cookie_util::IsSameSiteByDefaultCookiesEnabled()
-          ? CONTENT_SETTING_BLOCK
-          : CONTENT_SETTING_ALLOW;
   Register(ContentSettingsType::LEGACY_COOKIE_ACCESS, "legacy-cookie-access",
-           legacy_cookie_access_initial_default,
-           WebsiteSettingsInfo::UNSYNCABLE, AllowlistedSchemes(),
+           CONTENT_SETTING_BLOCK, WebsiteSettingsInfo::UNSYNCABLE,
+           AllowlistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::SINGLE_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::ALL_PLATFORMS,
@@ -602,16 +602,45 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::PERSISTENT,
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY);
 
-  Register(ContentSettingsType::FILE_HANDLING, "file-handling",
-           CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
+  Register(ContentSettingsType::JAVASCRIPT_JIT, "javascript-jit",
+           CONTENT_SETTING_ALLOW, WebsiteSettingsInfo::UNSYNCABLE,
            AllowlistedSchemes(),
-           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_ASK,
-                         CONTENT_SETTING_BLOCK),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::SINGLE_ORIGIN_ONLY_SCOPE,
-           WebsiteSettingsRegistry::DESKTOP,
-           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
+           ContentSettingsInfo::INHERIT_IN_INCOGNITO,
            ContentSettingsInfo::PERSISTENT,
-           ContentSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY);
+           ContentSettingsInfo::EXCEPTIONS_ON_SECURE_AND_INSECURE_ORIGINS);
+
+  const auto auto_dark_web_content_setting =
+#if defined(OS_ANDROID)
+      content_settings::kDarkenWebsitesCheckboxOptOut.Get()
+          ? CONTENT_SETTING_ALLOW
+          : CONTENT_SETTING_BLOCK;
+#else
+      CONTENT_SETTING_ALLOW;
+#endif  // defined(OS_ANDROID)
+
+  Register(ContentSettingsType::AUTO_DARK_WEB_CONTENT, "auto-dark-web-content",
+           auto_dark_web_content_setting, WebsiteSettingsInfo::UNSYNCABLE,
+           AllowlistedSchemes(),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
+           WebsiteSettingsInfo::SINGLE_ORIGIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::PLATFORM_ANDROID,
+           ContentSettingsInfo::INHERIT_IN_INCOGNITO,
+           ContentSettingsInfo::PERSISTENT,
+           ContentSettingsInfo::EXCEPTIONS_ON_SECURE_AND_INSECURE_ORIGINS);
+
+  Register(ContentSettingsType::REQUEST_DESKTOP_SITE, "request-desktop-site",
+           CONTENT_SETTING_BLOCK, WebsiteSettingsInfo::UNSYNCABLE,
+           AllowlistedSchemes(),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
+           WebsiteSettingsInfo::SINGLE_ORIGIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::PLATFORM_ANDROID,
+           ContentSettingsInfo::INHERIT_IN_INCOGNITO,
+           ContentSettingsInfo::PERSISTENT,
+           ContentSettingsInfo::EXCEPTIONS_ON_SECURE_AND_INSECURE_ORIGINS);
 }
 
 void ContentSettingsRegistry::Register(

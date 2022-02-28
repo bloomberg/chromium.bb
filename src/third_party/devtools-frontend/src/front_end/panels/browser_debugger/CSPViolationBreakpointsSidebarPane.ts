@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 
@@ -27,15 +25,15 @@ export class CSPViolationBreakpointsSidebarPane extends CategorizedBreakpointsSi
     return cspViolationBreakpointsSidebarPaneInstance;
   }
 
-  _getBreakpointFromPausedDetails(details: SDK.DebuggerModel.DebuggerPausedDetails):
-      SDK.DOMDebuggerModel.CategorizedBreakpoint|null {
+  protected getBreakpointFromPausedDetails(details: SDK.DebuggerModel.DebuggerPausedDetails):
+      SDK.CategorizedBreakpoint.CategorizedBreakpoint|null {
     const breakpointType = details.auxData && details.auxData['violationType'] ? details.auxData['violationType'] : '';
     const breakpoints = SDK.DOMDebuggerModel.DOMDebuggerManager.instance().cspViolationBreakpoints();
     const breakpoint = breakpoints.find(x => x.type() === breakpointType);
     return breakpoint ? breakpoint : null;
   }
 
-  _toggleBreakpoint(breakpoint: SDK.DOMDebuggerModel.CategorizedBreakpoint, enabled: boolean): void {
+  protected toggleBreakpoint(breakpoint: SDK.CategorizedBreakpoint.CategorizedBreakpoint, enabled: boolean): void {
     breakpoint.setEnabled(enabled);
     SDK.DOMDebuggerModel.DOMDebuggerManager.instance().updateCSPViolationBreakpoints();
   }

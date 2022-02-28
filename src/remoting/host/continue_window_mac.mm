@@ -11,7 +11,6 @@
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "remoting/base/string_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -38,6 +37,10 @@ namespace remoting {
 class ContinueWindowMac : public ContinueWindow {
  public:
   ContinueWindowMac();
+
+  ContinueWindowMac(const ContinueWindowMac&) = delete;
+  ContinueWindowMac& operator=(const ContinueWindowMac&) = delete;
+
   ~ContinueWindowMac() override;
 
  protected:
@@ -47,8 +50,6 @@ class ContinueWindowMac : public ContinueWindow {
 
  private:
   base::scoped_nsobject<ContinueWindowMacController> controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContinueWindowMac);
 };
 
 ContinueWindowMac::ContinueWindowMac() {

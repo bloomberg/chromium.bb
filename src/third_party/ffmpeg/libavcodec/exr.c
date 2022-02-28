@@ -418,11 +418,16 @@ static int huf_decode(VLC *vlc, GetByteContext *gb, int nbits, int run_sym,
 
     init_get_bits(&gbit, gb->buffer, nbits);
     while (get_bits_left(&gbit) > 0 && oe < no) {
-        uint16_t x = get_vlc2(&gbit, vlc->table, 12, 2);
+        uint16_t x = get_vlc2(&gbit, vlc->table, 12, 3);
 
         if (x == run_sym) {
             int run = get_bits(&gbit, 8);
-            uint16_t fill = out[oe - 1];
+            uint16_t fill;
+
+            if (oe == 0 || oe + run > no)
+                return AVERROR_INVALIDDATA;
+
+            fill = out[oe - 1];
 
             while (run-- > 0)
                 out[oe++] = fill;
@@ -1009,7 +1014,9 @@ static int dwa_uncompress(EXRContext *s, const uint8_t *src, int compressed_size
     dc_count = AV_RL64(src + 72);
     ac_compression = AV_RL64(src + 80);
 
-    if (compressed_size < 88LL + lo_size + ac_size + dc_size + rle_csize)
+    if (   compressed_size < (uint64_t)(lo_size | ac_size | dc_size | rle_csize) || compressed_size < 88LL + lo_size + ac_size + dc_size + rle_csize
+        || ac_count > (uint64_t)INT_MAX/2
+    )
         return AVERROR_INVALIDDATA;
 
     bytestream2_init(&gb, src + 88, compressed_size - 88);
@@ -1026,11 +1033,13 @@ static int dwa_uncompress(EXRContext *s, const uint8_t *src, int compressed_size
     }
 
     if (ac_size > 0) {
-        unsigned long dest_len = ac_count * 2LL;
+        unsigned long dest_len;
         GetByteContext agb = gb;
 
         if (ac_count > 3LL * td->xsize * s->scan_lines_per_block)
             return AVERROR_INVALIDDATA;
+
+        dest_len = ac_count * 2LL;
 
         av_fast_padded_malloc(&td->ac_data, &td->ac_size, dest_len);
         if (!td->ac_data)
@@ -1054,12 +1063,14 @@ static int dwa_uncompress(EXRContext *s, const uint8_t *src, int compressed_size
         bytestream2_skip(&gb, ac_size);
     }
 
-    if (dc_size > 0) {
-        unsigned long dest_len = dc_count * 2LL;
+    {
+        unsigned long dest_len;
         GetByteContext agb = gb;
 
-        if (dc_count > (6LL * td->xsize * td->ysize + 63) / 64)
+        if (dc_count != dc_w * dc_h * 3)
             return AVERROR_INVALIDDATA;
+
+        dest_len = dc_count * 2LL;
 
         av_fast_padded_malloc(&td->dc_data, &td->dc_size, FFALIGN(dest_len, 64) * 2);
         if (!td->dc_data)
@@ -1214,6 +1225,11 @@ static int decode_block(AVCodecContext *avctx, void *tdata,
             return AVERROR_PATCHWELCOME;
         }
 
+        if (tile_x && s->tile_attr.xSize + (int64_t)FFMAX(s->xmin, 0) >= INT_MAX / tile_x )
+            return AVERROR_INVALIDDATA;
+        if (tile_y && s->tile_attr.ySize + (int64_t)FFMAX(s->ymin, 0) >= INT_MAX / tile_y )
+            return AVERROR_INVALIDDATA;
+
         line = s->ymin + s->tile_attr.ySize * tile_y;
         col = s->tile_attr.xSize * tile_x;
 
@@ -1288,6 +1304,9 @@ static int decode_block(AVCodecContext *avctx, void *tdata,
          /* bytes to add at the right of the display window */
         axmax = FFMAX(0, (avctx->width - (s->xmax + 1))) * step;
     }
+
+    if (avctx->max_pixels && uncompressed_size > avctx->max_pixels * 16LL)
+        return AVERROR_INVALIDDATA;
 
     if (data_size < uncompressed_size || s->is_tile) { /* td->tmp is use for tile reorganization */
         av_fast_padded_malloc(&td->tmp, &td->tmp_size, uncompressed_size);
@@ -1785,6 +1804,7 @@ static int decode_header(EXRContext *s, AVFrame *frame)
             ymax   = bytestream2_get_le32(gb);
 
             if (xmin > xmax || ymin > ymax ||
+                ymax == INT_MAX || xmax == INT_MAX ||
                 (unsigned)xmax - xmin >= INT_MAX ||
                 (unsigned)ymax - ymin >= INT_MAX) {
                 ret = AVERROR_INVALIDDATA;
@@ -2233,9 +2253,9 @@ static av_cold int decode_init(AVCodecContext *avctx)
     }
 
     // allocate thread data, used for non EXR_RAW compression types
-    s->thread_data = av_mallocz_array(avctx->thread_count, sizeof(EXRThreadData));
+    s->thread_data = av_calloc(avctx->thread_count, sizeof(*s->thread_data));
     if (!s->thread_data)
-        return AVERROR_INVALIDDATA;
+        return AVERROR(ENOMEM);
 
     return 0;
 }
@@ -2321,7 +2341,7 @@ static const AVClass exr_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_exr_decoder = {
+const AVCodec ff_exr_decoder = {
     .name             = "exr",
     .long_name        = NULL_IF_CONFIG_SMALL("OpenEXR image"),
     .type             = AVMEDIA_TYPE_VIDEO,

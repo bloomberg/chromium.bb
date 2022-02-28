@@ -10,7 +10,8 @@
 #include <string>
 #include <utility>
 
-#include "base/macros.h"
+#include "ash/components/arc/session/arc_session_runner.h"
+#include "ash/components/arc/session/arc_stop_reason.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -18,11 +19,9 @@
 #include "chrome/browser/ash/arc/session/adb_sideloading_availability_delegate_impl.h"
 #include "chrome/browser/ash/arc/session/arc_app_id_provider_impl.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager_observer.h"
-#include "chrome/browser/chromeos/policy/android_management_client.h"
+#include "chrome/browser/ash/policy/arc/android_management_client.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "components/arc/session/arc_session_runner.h"
-#include "components/arc/session/arc_stop_reason.h"
 #include "components/policy/core/common/policy_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -39,6 +38,7 @@ constexpr const char kGeneratedPropertyFilesPathVm[] =
 
 class ArcAndroidManagementChecker;
 class ArcDataRemover;
+class ArcDlcInstaller;
 class ArcFastAppReinstallStarter;
 class ArcPaiStarter;
 class ArcProvisioningResult;
@@ -122,6 +122,10 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   ArcSessionManager(std::unique_ptr<ArcSessionRunner> arc_session_runner,
                     std::unique_ptr<AdbSideloadingAvailabilityDelegateImpl>
                         adb_sideloading_availability_delegate);
+
+  ArcSessionManager(const ArcSessionManager&) = delete;
+  ArcSessionManager& operator=(const ArcSessionManager&) = delete;
+
   ~ArcSessionManager() override;
 
   static ArcSessionManager* Get();
@@ -152,6 +156,10 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // Initializes ArcSessionManager. Before this runs, Profile must be set
   // via SetProfile().
   void Initialize();
+
+  // Set the device scale factor used to start the arc. This must be called
+  // before staring mini-ARC.
+  void SetDefaultDeviceScaleFactor(float default_device_scale_factor);
 
   void Shutdown();
 
@@ -192,6 +200,10 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // If it is already requested to disable, no-op.
   void RequestDisable();
 
+  // Requests to disable ARC session and remove ARC data.
+  // If it is already requested to disable, no-op.
+  void RequestDisableWithArcDataRemoval();
+
   // Requests to remove the ARC data.
   // If ARC is stopped, triggers to remove the data. Otherwise, queues to
   // remove the data after ARC stops.
@@ -203,6 +215,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   void OnWindowClosed() override;
   void OnRetryClicked() override;
   void OnSendFeedbackClicked() override;
+  void OnRunNetworkTestsClicked() override;
 
   // StopArc(), then restart. Between them data clear may happens.
   // This is a special method to support enterprise device lost case.
@@ -318,6 +331,10 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // Reports statuses of OptIn flow to UMA.
   class ScopedOptInFlowTracker;
 
+  // Requests to disable ARC session and allows to optionally remove ARC data.
+  // If ARC is already disabled, no-op.
+  void RequestDisable(bool remove_arc_data);
+
   // RequestEnable() has a check in order not to trigger starting procedure
   // twice. This method can be called to bypass that check when restarting.
   // Returns true if ARC is started directly.
@@ -395,7 +412,8 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // Requests the support host (if it exists) to show the error, and notifies
   // the observers.
   void ShowArcSupportHostError(ArcSupportHost::ErrorInfo error_info,
-                               bool should_show_send_feedback);
+                               bool should_show_send_feedback,
+                               bool should_show_run_network_tests);
 
   // chromeos::SessionManagerClient::Observer:
   void EmitLoginPromptVisibleCalled() override;
@@ -468,10 +486,10 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // transitioning to the managed state.
   base::OneShotTimer wait_for_policy_timer_;
 
+  std::unique_ptr<ArcDlcInstaller> arc_dlc_installer_;
+
   // Must be the last member.
   base::WeakPtrFactory<ArcSessionManager> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionManager);
 };
 
 // Outputs the stringified |state| to |os|. This is only for logging purposes.

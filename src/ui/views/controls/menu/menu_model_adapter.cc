@@ -122,6 +122,7 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
   menu_item_view->set_is_new(model->IsNewFeatureAt(model_index));
   menu_item_view->set_may_have_mnemonics(
       model->MayHaveMnemonicsAt(model_index));
+  menu_item_view->set_accessible_name(model->GetAccessibleNameAt(model_index));
   const ui::ElementIdentifier element_id =
       model->GetElementIdentifierAt(model_index);
   if (element_id)
@@ -136,7 +137,9 @@ MenuItemView* MenuModelAdapter::AppendMenuItemFromModel(ui::MenuModel* model,
                                                         MenuItemView* menu,
                                                         int item_id) {
   const int menu_index =
-      menu->HasSubmenu() ? int{menu->GetSubmenu()->children().size()} : 0;
+      menu->HasSubmenu()
+          ? static_cast<int>(menu->GetSubmenu()->children().size())
+          : 0;
   return AddMenuItemFromModelAt(model, model_index, menu, menu_index, item_id);
 }
 
@@ -199,19 +202,17 @@ std::u16string MenuModelAdapter::GetLabel(int id) const {
   return std::u16string();
 }
 
-void MenuModelAdapter::GetLabelStyle(int id, LabelStyle* style) const {
+const gfx::FontList* MenuModelAdapter::GetLabelFontList(int id) const {
   ui::MenuModel* model = menu_model_;
   int index = 0;
   if (ui::MenuModel::GetModelAndIndexForCommandId(id, &model, &index)) {
     const gfx::FontList* font_list = model->GetLabelFontListAt(index);
-    if (font_list) {
-      style->font_list = *font_list;
-      return;
-    }
+    if (font_list)
+      return font_list;
   }
 
   // This line may be reached for the empty menu item.
-  return MenuDelegate::GetLabelStyle(id, style);
+  return MenuDelegate::GetLabelFontList(id);
 }
 
 bool MenuModelAdapter::IsCommandEnabled(int id) const {

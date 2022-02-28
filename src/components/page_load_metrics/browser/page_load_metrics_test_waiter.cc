@@ -63,10 +63,14 @@ void PageLoadMetricsTestWaiter::AddSubFrameExpectation(TimingField field) {
 
 void PageLoadMetricsTestWaiter::AddWebFeatureExpectation(
     blink::mojom::WebFeature web_feature) {
-  size_t feature_idx = static_cast<size_t>(web_feature);
-  if (!expected_.web_features_.test(feature_idx)) {
-    expected_.web_features_.set(feature_idx);
-  }
+  AddUseCounterFeatureExpectation(
+      {blink::mojom::UseCounterFeatureType::kWebFeature,
+       static_cast<blink::UseCounterFeature::EnumValue>(web_feature)});
+}
+
+void PageLoadMetricsTestWaiter::AddUseCounterFeatureExpectation(
+    const blink::UseCounterFeature& feature) {
+  expected_.feature_tracker_.TestAndSet(feature);
 }
 
 void PageLoadMetricsTestWaiter::AddSubframeNavigationExpectation() {
@@ -92,7 +96,8 @@ void PageLoadMetricsTestWaiter::AddMinimumAggregateCpuTimeExpectation(
   expected_minimum_aggregate_cpu_time_ = minimum;
 }
 
-void PageLoadMetricsTestWaiter::AddMemoryUpdateExpectation(int routing_id) {
+void PageLoadMetricsTestWaiter::AddMemoryUpdateExpectation(
+    content::GlobalRenderFrameHostId routing_id) {
   expected_.memory_update_frame_ids_.insert(routing_id);
 }
 
@@ -107,7 +112,9 @@ bool PageLoadMetricsTestWaiter::DidObserveInPage(TimingField field) const {
 
 bool PageLoadMetricsTestWaiter::DidObserveWebFeature(
     blink::mojom::WebFeature feature) const {
-  return observed_.web_features_.test(static_cast<size_t>(feature));
+  return observed_.feature_tracker_.Test(
+      {blink::mojom::UseCounterFeatureType::kWebFeature,
+       static_cast<blink::UseCounterFeature::EnumValue>(feature)});
 }
 
 void PageLoadMetricsTestWaiter::Wait() {
@@ -206,11 +213,7 @@ void PageLoadMetricsTestWaiter::OnFeaturesUsageObserved(
     content::RenderFrameHost* rfh,
     const std::vector<blink::UseCounterFeature>& features) {
   for (const auto& feature : features) {
-    // TODO(crbug.com/1194678): Expand test converage to other feature types.
-    if (feature.type() != blink::mojom::UseCounterFeatureType::kWebFeature)
-      continue;
-
-    observed_.web_features_.set(feature.value());
+    observed_.feature_tracker_.TestAndSet(feature);
   }
 
   if (ExpectationsSatisfied() && run_loop_)
@@ -241,8 +244,7 @@ void PageLoadMetricsTestWaiter::OnDidFinishSubFrameNavigation(
 void PageLoadMetricsTestWaiter::OnV8MemoryChanged(
     const std::vector<MemoryUpdate>& memory_updates) {
   for (const auto& update : memory_updates)
-    observed_.memory_update_frame_ids_.insert(
-        update.routing_id.frame_routing_id);
+    observed_.memory_update_frame_ids_.insert(update.routing_id);
 
   if (ExpectationsSatisfied() && run_loop_)
     run_loop_->Quit();
@@ -328,7 +330,7 @@ void PageLoadMetricsTestWaiter::OnCommit(
   AddObserver(tracker);
 }
 
-void PageLoadMetricsTestWaiter::OnRestoredFromBackForwardCache(
+void PageLoadMetricsTestWaiter::OnActivate(
     page_load_metrics::PageLoadTracker* tracker) {
   // A PageLoadMetricsWaiter should only wait for events from a single page
   // load.
@@ -365,13 +367,12 @@ bool PageLoadMetricsTestWaiter::ResourceUseExpectationsSatisfied() const {
           current_network_bytes_ >= expected_minimum_network_bytes_);
 }
 
-bool PageLoadMetricsTestWaiter::WebFeaturesExpectationsSatisfied() const {
+bool PageLoadMetricsTestWaiter::UseCounterExpectationsSatisfied() const {
   // We are only interested to see if all features being set in
-  // |expected_.web_features_| are observed, but don't care about whether extra
-  // features are observed.
-  return ((expected_.web_features_ & observed_.web_features_) ^
-          expected_.web_features_)
-      .none();
+  // |expected_.feature_tracker| are observed, but don't care about whether
+  // extra features are observed.
+  return observed_.feature_tracker_.ContainsForTesting(
+      expected_.feature_tracker_);
 }
 
 bool PageLoadMetricsTestWaiter::SubframeNavigationExpectationsSatisfied()
@@ -413,7 +414,7 @@ bool PageLoadMetricsTestWaiter::ExpectationsSatisfied() const {
   return expected_.page_fields_.AreAllSetIn(observed_.page_fields_) &&
          expected_.subframe_fields_.AreAllSetIn(observed_.subframe_fields_) &&
          ResourceUseExpectationsSatisfied() &&
-         WebFeaturesExpectationsSatisfied() &&
+         UseCounterExpectationsSatisfied() &&
          SubframeNavigationExpectationsSatisfied() &&
          SubframeDataExpectationsSatisfied() &&
          IsSubset(expected_.frame_sizes_, observed_.frame_sizes_) &&

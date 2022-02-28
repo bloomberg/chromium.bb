@@ -8,10 +8,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -21,18 +19,14 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/avatar_icon_util.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
-#include "components/signin/public/identity_manager/consent_level.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/storage_partition.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_features.h"
-#endif
 
 GAIAInfoUpdateService::GAIAInfoUpdateService(
     signin::IdentityManager* identity_manager,
@@ -71,12 +65,8 @@ void GAIAInfoUpdateService::UpdatePrimaryAccount() {
     ClearProfileEntry();
   }
 
-  auto maybe_account_info =
-      identity_manager_
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              unconsented_primary_account_info.account_id);
-  if (maybe_account_info.has_value())
-    UpdatePrimaryAccount(maybe_account_info.value());
+  UpdatePrimaryAccount(identity_manager_->FindExtendedAccountInfoByAccountId(
+      unconsented_primary_account_info.account_id));
 }
 
 void GAIAInfoUpdateService::UpdatePrimaryAccount(const AccountInfo& info) {
@@ -101,14 +91,6 @@ void GAIAInfoUpdateService::UpdatePrimaryAccount(const AccountInfo& info) {
     entry->SetGAIAPicture(info.last_downloaded_image_url_with_size,
                           info.account_image);
   }
-}
-
-// static
-bool GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(Profile* profile) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  return base::FeatureList::IsEnabled(chromeos::features::kAvatarToolbarButton);
-#endif
-  return true;
 }
 
 void GAIAInfoUpdateService::UpdateAnyAccount(const AccountInfo& info) {
@@ -197,12 +179,8 @@ void GAIAInfoUpdateService::OnAccountsInCookieUpdated(
     // downloaded).
     for (gaia::ListedAccount account :
          accounts_in_cookie_jar_info.signed_in_accounts) {
-      auto maybe_account_info =
-          identity_manager_
-              ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-                  account.id);
-      if (maybe_account_info.has_value())
-        UpdateAnyAccount(*maybe_account_info);
+      UpdateAnyAccount(
+          identity_manager_->FindExtendedAccountInfoByAccountId(account.id));
     }
   }
 }
