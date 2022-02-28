@@ -12,9 +12,8 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/browser/notifications/notification_database.h"
@@ -32,6 +31,10 @@ class GURL;
 namespace base {
 class SequencedTaskRunner;
 }
+
+namespace blink {
+class StorageKey;
+}  // namespace blink
 
 namespace url {
 class Origin;
@@ -58,6 +61,11 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
       const base::FilePath& path,
       BrowserContext* browser_context,
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context);
+
+  PlatformNotificationContextImpl(const PlatformNotificationContextImpl&) =
+      delete;
+  PlatformNotificationContextImpl& operator=(
+      const PlatformNotificationContextImpl&) = delete;
 
   // To be called to initialize the instance.
   void Initialize();
@@ -101,6 +109,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
                               DeleteResultCallback callback) override;
   void DeleteAllNotificationDataWithTag(
       const std::string& tag,
+      absl::optional<bool> is_shown_by_browser,
       const GURL& origin,
       DeleteAllResultCallback callback) override;
   void DeleteAllNotificationDataForBlockedOrigins(
@@ -123,7 +132,8 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
 
   // ServiceWorkerContextCoreObserver implementation.
   void OnRegistrationDeleted(int64_t registration_id,
-                             const GURL& pattern) override;
+                             const GURL& pattern,
+                             const blink::StorageKey& key) override;
   void OnStorageWiped() override;
 
  private:
@@ -275,10 +285,12 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   // database. Optionally filtered by |tag|. Must only be called on the
   // |task_runner_| thread. |callback| will be invoked on the UI thread when the
   // operation has completed.
-  void DoDeleteAllNotificationDataForOrigins(std::set<GURL> origins,
-                                             const std::string& tag,
-                                             DeleteAllResultCallback callback,
-                                             bool initialized);
+  void DoDeleteAllNotificationDataForOrigins(
+      std::set<GURL> origins,
+      const std::string& tag,
+      absl::optional<bool> is_shown_by_browser,
+      DeleteAllResultCallback callback,
+      bool initialized);
 
   // Actually writes the notification resources to the database. Must only be
   // called on the |task_runner_| thread. |callback| will be invoked on the UI
@@ -318,7 +330,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   base::FilePath path_;
-  BrowserContext* browser_context_;
+  raw_ptr<BrowserContext> browser_context_;
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
@@ -341,8 +353,6 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
 
   // Flag if the |browser_context_| has been shutdown already.
   bool has_shutdown_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformNotificationContextImpl);
 };
 
 }  // namespace content

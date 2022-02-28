@@ -28,6 +28,7 @@ namespace dawn_native { namespace d3d12 {
 
     class CommandRecordingContext;
     class Device;
+    class D3D11on12ResourceCacheEntry;
 
     DXGI_FORMAT D3D12TextureFormat(wgpu::TextureFormat format);
     MaybeError ValidateD3D12TextureCanBeWrapped(ID3D12Resource* d3d12Resource,
@@ -39,13 +40,15 @@ namespace dawn_native { namespace d3d12 {
       public:
         static ResultOrError<Ref<Texture>> Create(Device* device,
                                                   const TextureDescriptor* descriptor);
-        static ResultOrError<Ref<Texture>> CreateExternalImage(Device* device,
-                                                               const TextureDescriptor* descriptor,
-                                                               ComPtr<ID3D12Resource> d3d12Texture,
-                                                               ExternalMutexSerial acquireMutexKey,
-                                                               ExternalMutexSerial releaseMutexKey,
-                                                               bool isSwapChainTexture,
-                                                               bool isInitialized);
+        static ResultOrError<Ref<Texture>> CreateExternalImage(
+            Device* device,
+            const TextureDescriptor* descriptor,
+            ComPtr<ID3D12Resource> d3d12Texture,
+            Ref<D3D11on12ResourceCacheEntry> d3d11on12Resource,
+            ExternalMutexSerial acquireMutexKey,
+            ExternalMutexSerial releaseMutexKey,
+            bool isSwapChainTexture,
+            bool isInitialized);
         static ResultOrError<Ref<Texture>> Create(Device* device,
                                                   const TextureDescriptor* descriptor,
                                                   ComPtr<ID3D12Resource> d3d12Texture);
@@ -55,11 +58,14 @@ namespace dawn_native { namespace d3d12 {
         DXGI_FORMAT GetD3D12CopyableSubresourceFormat(Aspect aspect) const;
 
         D3D12_RENDER_TARGET_VIEW_DESC GetRTVDescriptor(uint32_t mipLevel,
-                                                       uint32_t baseArrayLayer,
-                                                       uint32_t layerCount) const;
+                                                       uint32_t baseSlice,
+                                                       uint32_t sliceCount) const;
         D3D12_DEPTH_STENCIL_VIEW_DESC GetDSVDescriptor(uint32_t mipLevel,
                                                        uint32_t baseArrayLayer,
-                                                       uint32_t layerCount) const;
+                                                       uint32_t layerCount,
+                                                       Aspect aspects,
+                                                       bool depthReadOnly,
+                                                       bool stencilReadOnly) const;
         void EnsureSubresourceContentInitialized(CommandRecordingContext* commandContext,
                                                  const SubresourceRange& range);
 
@@ -89,13 +95,18 @@ namespace dawn_native { namespace d3d12 {
         MaybeError InitializeAsInternalTexture();
         MaybeError InitializeAsExternalTexture(const TextureDescriptor* descriptor,
                                                ComPtr<ID3D12Resource> d3d12Texture,
+                                               Ref<D3D11on12ResourceCacheEntry> d3d11on12Resource,
                                                ExternalMutexSerial acquireMutexKey,
                                                ExternalMutexSerial releaseMutexKey,
                                                bool isSwapChainTexture);
         MaybeError InitializeAsSwapChainTexture(ComPtr<ID3D12Resource> d3d12Texture);
 
+        void SetLabelHelper(const char* prefix);
+
         // Dawn API
+        void SetLabelImpl() override;
         void DestroyImpl() override;
+
         MaybeError ClearTexture(CommandRecordingContext* commandContext,
                                 const SubresourceRange& range,
                                 TextureBase::ClearValue clearValue);
@@ -123,10 +134,11 @@ namespace dawn_native { namespace d3d12 {
 
         ResourceHeapAllocation mResourceAllocation;
         bool mSwapChainTexture = false;
+        D3D12_RESOURCE_FLAGS mD3D12ResourceFlags;
 
         ExternalMutexSerial mAcquireMutexKey = ExternalMutexSerial(0);
         ExternalMutexSerial mReleaseMutexKey = ExternalMutexSerial(0);
-        ComPtr<IDXGIKeyedMutex> mDxgiKeyedMutex;
+        Ref<D3D11on12ResourceCacheEntry> mD3D11on12Resource;
     };
 
     class TextureView final : public TextureViewBase {
@@ -138,7 +150,8 @@ namespace dawn_native { namespace d3d12 {
 
         const D3D12_SHADER_RESOURCE_VIEW_DESC& GetSRVDescriptor() const;
         D3D12_RENDER_TARGET_VIEW_DESC GetRTVDescriptor() const;
-        D3D12_DEPTH_STENCIL_VIEW_DESC GetDSVDescriptor() const;
+        D3D12_DEPTH_STENCIL_VIEW_DESC GetDSVDescriptor(bool depthReadOnly,
+                                                       bool stencilReadOnly) const;
         D3D12_UNORDERED_ACCESS_VIEW_DESC GetUAVDescriptor() const;
 
       private:

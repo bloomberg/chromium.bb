@@ -194,7 +194,8 @@ TEST(PacketReceiveStatsTrackerTest, ComputesJitterCorrectly) {
   const auto diff = kTrueJitter - report.jitter.ToDuration<Clock::duration>(
                                       kRtpVideoTimebase);
   constexpr auto kMaxDiffAtEnd = Clock::to_duration(milliseconds(2));
-  EXPECT_NEAR(0, diff.count(), kMaxDiffAtEnd.count());
+  EXPECT_NEAR(0, static_cast<double>(diff.count()),
+              static_cast<double>(kMaxDiffAtEnd.count()));
 }
 
 }  // namespace

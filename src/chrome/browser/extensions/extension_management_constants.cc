@@ -4,10 +4,14 @@
 
 #include "chrome/browser/extensions/extension_management_constants.h"
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 
 namespace extensions {
 namespace schema_constants {
+
+// Some values below are used by the policy component to filter out policy
+// values. They must be synced with
+// components/policy/core/common/policy_loader_common.cc
 
 const char kWildcard[] = "*";
 
@@ -41,14 +45,15 @@ const char kForcePinned[] = "force_pinned";
 const char kDefaultUnpinned[] = "default_unpinned";
 
 const AllowedTypesMapEntry kAllowedTypesMap[] = {
-  { "extension",           Manifest::TYPE_EXTENSION },
-  { "theme",               Manifest::TYPE_THEME },
-  { "user_script",         Manifest::TYPE_USER_SCRIPT },
-  { "hosted_app",          Manifest::TYPE_HOSTED_APP },
-  { "legacy_packaged_app", Manifest::TYPE_LEGACY_PACKAGED_APP },
-  { "platform_app",        Manifest::TYPE_PLATFORM_APP },
-  // TODO(binjin): Add shared_module type here and update ExtensionAllowedTypes
-  // policy.
+    {"extension", Manifest::TYPE_EXTENSION},
+    {"theme", Manifest::TYPE_THEME},
+    {"user_script", Manifest::TYPE_USER_SCRIPT},
+    {"hosted_app", Manifest::TYPE_HOSTED_APP},
+    {"legacy_packaged_app", Manifest::TYPE_LEGACY_PACKAGED_APP},
+    {"platform_app", Manifest::TYPE_PLATFORM_APP},
+    {"chromeos_system_extension", Manifest::TYPE_CHROMEOS_SYSTEM_EXTENSION},
+    // TODO(binjin): Add shared_module type here and update
+    // ExtensionAllowedTypes policy.
 };
 
 const size_t kAllowedTypesMapSize = base::size(kAllowedTypesMap);

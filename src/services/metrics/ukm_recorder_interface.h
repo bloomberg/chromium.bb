@@ -5,6 +5,7 @@
 #ifndef SERVICES_METRICS_UKM_RECORDER_INTERFACE_H_
 #define SERVICES_METRICS_UKM_RECORDER_INTERFACE_H_
 
+#include "base/memory/raw_ptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 
@@ -17,6 +18,10 @@ namespace metrics {
 class UkmRecorderInterface : public ukm::mojom::UkmRecorderInterface {
  public:
   UkmRecorderInterface(ukm::UkmRecorder* ukm_recorder);
+
+  UkmRecorderInterface(const UkmRecorderInterface&) = delete;
+  UkmRecorderInterface& operator=(const UkmRecorderInterface&) = delete;
+
   ~UkmRecorderInterface() override;
 
   static void Create(
@@ -28,9 +33,7 @@ class UkmRecorderInterface : public ukm::mojom::UkmRecorderInterface {
   void AddEntry(ukm::mojom::UkmEntryPtr entry) override;
   void UpdateSourceURL(int64_t source_id, const std::string& url) override;
 
-  ukm::UkmRecorder* ukm_recorder_;
-
-  DISALLOW_COPY_AND_ASSIGN(UkmRecorderInterface);
+  raw_ptr<ukm::UkmRecorder> ukm_recorder_;
 };
 
 }  // namespace metrics

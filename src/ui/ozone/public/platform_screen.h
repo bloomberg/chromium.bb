@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/values.h"
 #include "ui/gfx/gpu_extra_info.h"
 #include "ui/gfx/native_widget_types.h"
@@ -46,6 +45,10 @@ namespace ui {
 class COMPONENT_EXPORT(OZONE_BASE) PlatformScreen {
  public:
   PlatformScreen();
+
+  PlatformScreen(const PlatformScreen&) = delete;
+  PlatformScreen& operator=(const PlatformScreen&) = delete;
+
   virtual ~PlatformScreen();
 
   // Provide a |display:;Display| for each physical display available to Chrome.
@@ -83,8 +86,11 @@ class COMPONENT_EXPORT(OZONE_BASE) PlatformScreen {
   virtual display::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const = 0;
 
-  // Suspends the platform-specific screensaver, if applicable.
-  virtual void SetScreenSaverSuspended(bool suspend);
+  // Suspends or un-suspends the platform-specific screensaver, and returns
+  // whether the operation was successful. Can be called more than once with the
+  // same value for |suspend|, but those states should not stack: the first
+  // alternating value should toggle the state of the suspend.
+  virtual bool SetScreenSaverSuspended(bool suspend);
 
   // Returns whether the screensaver is currently running.
   virtual bool IsScreenSaverActive() const;
@@ -102,7 +108,7 @@ class COMPONENT_EXPORT(OZONE_BASE) PlatformScreen {
 
   // Returns human readable description of the window manager, desktop, and
   // other system properties related to the compositing.
-  virtual base::Value GetGpuExtraInfoAsListValue(
+  virtual std::vector<base::Value> GetGpuExtraInfo(
       const gfx::GpuExtraInfo& gpu_extra_info);
 
   // Sets device scale factor received from external sources such as toolkits.
@@ -110,11 +116,8 @@ class COMPONENT_EXPORT(OZONE_BASE) PlatformScreen {
   virtual void SetDeviceScaleFactor(float scale);
 
  protected:
-  void StorePlatformNameIntoListValue(base::Value& list_value,
-                                      const std::string& platform_name);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PlatformScreen);
+  void StorePlatformNameIntoListOfValues(std::vector<base::Value>& values,
+                                         const std::string& platform_name);
 };
 
 }  // namespace ui

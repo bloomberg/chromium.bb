@@ -17,16 +17,18 @@
 #include "ash/public/cpp/ambient/ambient_metrics.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
+#include "ash/public/cpp/ambient/proto/photo_cache_entry.pb.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/barrier_closure.h"
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "chromeos/assistant/internal/ambient/backdrop_client_config.h"
-#include "chromeos/assistant/internal/proto/google3/backdrop/backdrop.pb.h"
+#include "chromeos/assistant/internal/proto/backdrop/backdrop.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "net/base/load_flags.h"
@@ -37,6 +39,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -105,28 +108,28 @@ std::string BuildBackdropTopicDetails(
   return result;
 }
 
-AmbientModeTopicType ToAmbientModeTopicType(
+::ambient::TopicType ToAmbientModeTopicType(
     const backdrop::ScreenUpdate_Topic& topic) {
   if (!topic.has_topic_type())
-    return AmbientModeTopicType::kOther;
+    return ::ambient::TopicType::kOther;
 
   switch (topic.topic_type()) {
     case backdrop::CURATED:
-      return AmbientModeTopicType::kCurated;
+      return ::ambient::TopicType::kCurated;
     case backdrop::PERSONAL_PHOTO:
-      return AmbientModeTopicType::kPersonal;
+      return ::ambient::TopicType::kPersonal;
     case backdrop::FEATURED_PHOTO:
-      return AmbientModeTopicType::kFeatured;
+      return ::ambient::TopicType::kFeatured;
     case backdrop::GEO_PHOTO:
-      return AmbientModeTopicType::kGeo;
+      return ::ambient::TopicType::kGeo;
     case backdrop::CULTURAL_INSTITUTE:
-      return AmbientModeTopicType::kCulturalInstitute;
+      return ::ambient::TopicType::kCulturalInstitute;
     case backdrop::RSS_TOPIC:
-      return AmbientModeTopicType::kRss;
+      return ::ambient::TopicType::kRss;
     case backdrop::CAPTURED_ON_PIXEL:
-      return AmbientModeTopicType::kCapturedOnPixel;
+      return ::ambient::TopicType::kCapturedOnPixel;
     default:
-      return AmbientModeTopicType::kOther;
+      return ::ambient::TopicType::kOther;
   }
 }
 
@@ -208,10 +211,15 @@ ScreenUpdate ToScreenUpdate(
 
       AmbientModeTopic ambient_topic;
       ambient_topic.topic_type = topic_type;
-      if (backdrop_topic.has_portrait_image_url())
+
+      // If the |portrait_image_url| field is not empty, we assume the image is
+      // portrait.
+      if (backdrop_topic.has_portrait_image_url()) {
         ambient_topic.url = backdrop_topic.portrait_image_url();
-      else
+        ambient_topic.is_portrait = true;
+      } else {
         ambient_topic.url = backdrop_topic.url();
+      }
 
       if (backdrop_topic.has_related_topic()) {
         if (backdrop_topic.related_topic().has_portrait_image_url()) {
@@ -223,6 +231,8 @@ ScreenUpdate ToScreenUpdate(
         }
       }
       ambient_topic.details = BuildBackdropTopicDetails(backdrop_topic);
+      ambient_topic.related_details =
+          BuildBackdropTopicDetails(backdrop_topic.related_topic());
       screen_update.next_topics.emplace_back(ambient_topic);
     }
   }
@@ -382,16 +392,6 @@ void AmbientBackendControllerImpl::UpdateSettings(
       weak_factory_.GetWeakPtr(), settings, std::move(callback)));
 }
 
-void AmbientBackendControllerImpl::FetchSettingPreview(
-    int preview_width,
-    int preview_height,
-    OnSettingPreviewFetchedCallback callback) {
-  Shell::Get()->ambient_controller()->RequestAccessToken(
-      base::BindOnce(&AmbientBackendControllerImpl::FetchSettingPreviewInternal,
-                     weak_factory_.GetWeakPtr(), preview_width, preview_height,
-                     std::move(callback)));
-}
-
 void AmbientBackendControllerImpl::FetchPersonalAlbums(
     int banner_width,
     int banner_height,
@@ -466,14 +466,14 @@ void AmbientBackendControllerImpl::FetchScreenUpdateInfoInternal(
   std::string client_id = GetClientId();
   BackdropClientConfig::Request request =
       backdrop_client_config_.CreateFetchScreenUpdateRequest(
-          num_topics, gaia_id, access_token, client_id);
+          num_topics, gaia_id, access_token, client_id,
+          /*use_new_url=*/features::IsAmbientModeNewUrlEnabled());
   auto resource_request = CreateResourceRequest(request);
 
   // For portrait photos, the server returns image of half requested width.
   // When the device is in portrait mode, where only shows one portrait photo,
   // it will cause unnecessary scaling. To reduce this effect, always requesting
   // the landscape display size.
-  // TODO(b/172075868): Support tiling in portrait mode.
   gfx::Size display_size_px = GetDisplaySizeInPixel();
   const int width = std::max(display_size_px.width(), display_size_px.height());
   const int height =
@@ -600,47 +600,6 @@ void AmbientBackendControllerImpl::OnUpdateSettings(
   std::move(callback).Run(success);
 }
 
-void AmbientBackendControllerImpl::FetchSettingPreviewInternal(
-    int preview_width,
-    int preview_height,
-    OnSettingPreviewFetchedCallback callback,
-    const std::string& gaia_id,
-    const std::string& access_token) {
-  if (gaia_id.empty() || access_token.empty()) {
-    DVLOG(2) << "Failed to fetch access token";
-    // Returns an empty instance to indicate the failure.
-    std::move(callback).Run(/*preview_urls=*/{});
-    return;
-  }
-
-  BackdropClientConfig::Request request =
-      backdrop_client_config_.CreateFetchSettingPreviewRequest(
-          preview_width, preview_height, gaia_id, access_token);
-  std::unique_ptr<network::ResourceRequest> resource_request =
-      CreateResourceRequest(request);
-  auto backdrop_url_loader = std::make_unique<BackdropURLLoader>();
-  auto* loader_ptr = backdrop_url_loader.get();
-  loader_ptr->Start(
-      std::move(resource_request), /*request_body=*/absl::nullopt,
-      NO_TRAFFIC_ANNOTATION_YET,
-      base::BindOnce(&AmbientBackendControllerImpl::OnSettingPreviewFetched,
-                     weak_factory_.GetWeakPtr(), std::move(callback),
-                     std::move(backdrop_url_loader)));
-}
-
-void AmbientBackendControllerImpl::OnSettingPreviewFetched(
-    OnSettingPreviewFetchedCallback callback,
-    std::unique_ptr<BackdropURLLoader> backdrop_url_loader,
-    std::unique_ptr<std::string> response) {
-  DCHECK(backdrop_url_loader);
-
-  // Parse the |SettingPreviewResponse| out from the response string.
-  // Note that the |preview_urls| can be empty if the parsing has failed.
-  std::vector<std::string> preview_urls =
-      BackdropClientConfig::ParseSettingPreviewResponse(*response);
-  std::move(callback).Run(std::move(preview_urls));
-}
-
 void AmbientBackendControllerImpl::FetchPersonalAlbumsInternal(
     int banner_width,
     int banner_height,
@@ -659,7 +618,7 @@ void AmbientBackendControllerImpl::FetchPersonalAlbumsInternal(
   BackdropClientConfig::Request request =
       backdrop_client_config_.CreateFetchPersonalAlbumsRequest(
           banner_width, banner_height, num_albums, resume_token, gaia_id,
-          access_token);
+          access_token, features::IsAmbientModeNewUrlEnabled());
   std::unique_ptr<network::ResourceRequest> resource_request =
       CreateResourceRequest(request);
   auto backdrop_url_loader = std::make_unique<BackdropURLLoader>();

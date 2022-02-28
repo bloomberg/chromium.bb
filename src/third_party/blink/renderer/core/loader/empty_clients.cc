@@ -54,7 +54,7 @@ ChromeClient& GetStaticEmptyChromeClientInstance() {
 
 class EmptyPopupMenu : public PopupMenu {
  public:
-  void Show() override {}
+  void Show(ShowEventType) override {}
   void Hide() override {}
   void UpdateFromElement(UpdateReason) override {}
   void DisconnectClient() override {}
@@ -87,6 +87,12 @@ void EmptyChromeClient::AttachRootLayer(scoped_refptr<cc::Layer>, LocalFrame*) {
 
 String EmptyChromeClient::AcceptLanguages() {
   return String();
+}
+
+bool EmptyChromeClient::StartDeferringCommits(LocalFrame& main_frame,
+                                              base::TimeDelta timeout,
+                                              cc::PaintHoldingReason reason) {
+  return false;
 }
 
 void EmptyLocalFrameClient::BeginNavigation(
@@ -137,6 +143,12 @@ std::pair<RemoteFrame*, PortalToken> EmptyLocalFrameClient::CreatePortal(
 }
 
 RemoteFrame* EmptyLocalFrameClient::AdoptPortal(HTMLPortalElement*) {
+  return nullptr;
+}
+
+RemoteFrame* EmptyLocalFrameClient::CreateFencedFrame(
+    HTMLFencedFrameElement*,
+    mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>) {
   return nullptr;
 }
 

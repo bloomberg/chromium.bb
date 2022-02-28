@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
@@ -31,6 +30,9 @@ class HistoryServiceFactory : public BrowserStateKeyedServiceFactory {
       ServiceAccessType access_type);
   static HistoryServiceFactory* GetInstance();
 
+  HistoryServiceFactory(const HistoryServiceFactory&) = delete;
+  HistoryServiceFactory& operator=(const HistoryServiceFactory&) = delete;
+
  private:
   friend class base::NoDestructor<HistoryServiceFactory>;
 
@@ -43,8 +45,6 @@ class HistoryServiceFactory : public BrowserStateKeyedServiceFactory {
   web::BrowserState* GetBrowserStateToUse(
       web::BrowserState* context) const override;
   bool ServiceIsNULLWhileTesting() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(HistoryServiceFactory);
 };
 
 }  // namespace ios

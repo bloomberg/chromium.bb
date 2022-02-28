@@ -8,7 +8,6 @@
 #include <map>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -24,18 +23,29 @@ namespace storage {
 class COMPONENT_EXPORT(STORAGE_BROWSER) BlobUrlRegistry {
  public:
   explicit BlobUrlRegistry(base::WeakPtr<BlobUrlRegistry> fallback = nullptr);
+
+  BlobUrlRegistry(const BlobUrlRegistry&) = delete;
+  BlobUrlRegistry& operator=(const BlobUrlRegistry&) = delete;
+
   ~BlobUrlRegistry();
 
   // Creates a url mapping from blob to the given url. Returns false if
   // there already is a map for the URL.
-  bool AddUrlMapping(const GURL& url,
-                     mojo::PendingRemote<blink::mojom::Blob> blob);
+  bool AddUrlMapping(
+      const GURL& url,
+      mojo::PendingRemote<blink::mojom::Blob> blob,
+      // TODO(https://crbug.com/1224926): Remove this once experiment is over.
+      const base::UnguessableToken& unsafe_agent_cluster_id);
 
   // Removes the given URL mapping. Returns false if the url wasn't mapped.
   bool RemoveUrlMapping(const GURL& url);
 
   // Returns if the url is mapped to a blob.
   bool IsUrlMapped(const GURL& blob_url) const;
+
+  // TODO(https://crbug.com/1224926): Remove this once experiment is over.
+  absl::optional<base::UnguessableToken> GetUnsafeAgentClusterID(
+      const GURL& blob_url) const;
 
   // Returns the blob from the given url. Returns a null remote if the mapping
   // doesn't exist.
@@ -65,12 +75,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobUrlRegistry {
   base::WeakPtr<BlobUrlRegistry> fallback_;
 
   std::map<GURL, mojo::PendingRemote<blink::mojom::Blob>> url_to_blob_;
+  // TODO(https://crbug.com/1224926): Remove this once experiment is over.
+  std::map<GURL, base::UnguessableToken> url_to_unsafe_agent_cluster_id_;
   std::map<base::UnguessableToken,
            std::pair<GURL, mojo::PendingRemote<blink::mojom::Blob>>>
       token_to_url_and_blob_;
 
   base::WeakPtrFactory<BlobUrlRegistry> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(BlobUrlRegistry);
 };
 
 }  // namespace storage

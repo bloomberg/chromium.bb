@@ -291,4 +291,87 @@ TEST_F(ShillServiceClientTest, GetWiFiPassphrase) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(ShillServiceClientTest, GetEapPassphrase) {
+  const char kPassphrase[] = "passphrase";
+
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  writer.AppendString(kPassphrase);
+
+  // Set expectations.
+  PrepareForMethodCall(shill::kGetEapPassphraseFunction,
+                       base::BindRepeating(&ExpectNoArgument), response.get());
+  // Call method.
+  base::MockCallback<base::OnceCallback<void(const std::string&)>> mock_closure;
+  base::MockCallback<ShillServiceClient::ErrorCallback> mock_error_callback;
+  client_->GetEapPassphrase(dbus::ObjectPath(kExampleServicePath),
+                            mock_closure.Get(), mock_error_callback.Get());
+  EXPECT_CALL(mock_closure, Run(kPassphrase)).Times(1);
+  EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
+
+  // Run the message loop.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ShillServiceClientTest, RequestTrafficCounters) {
+  // Set up value of response.
+  base::Value traffic_counters(base::Value::Type::LIST);
+
+  base::Value chrome_dict(base::Value::Type::DICTIONARY);
+  chrome_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceChrome));
+  chrome_dict.SetKey("rx_bytes", base::Value(12));
+  chrome_dict.SetKey("tx_bytes", base::Value(34));
+  traffic_counters.Append(std::move(chrome_dict));
+
+  base::Value user_dict(base::Value::Type::DICTIONARY);
+  user_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceUser));
+  user_dict.SetKey("rx_bytes", base::Value(90));
+  user_dict.SetKey("tx_bytes", base::Value(87));
+  traffic_counters.Append(std::move(user_dict));
+
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  AppendValueDataAsVariant(&writer, traffic_counters);
+
+  // Set expectations.
+  PrepareForMethodCall(shill::kRequestTrafficCountersFunction,
+                       base::BindRepeating(&ExpectNoArgument), response.get());
+
+  // Call method.
+  base::RunLoop run_loop;
+  client_->RequestTrafficCounters(
+      dbus::ObjectPath(kExampleServicePath),
+      base::BindOnce(
+          [](base::Value* expected_traffic_counters,
+             base::OnceClosure quit_closure,
+             absl::optional<base::Value> actual_traffic_counters) {
+            ASSERT_TRUE(actual_traffic_counters);
+            EXPECT_EQ(*expected_traffic_counters, *actual_traffic_counters);
+            std::move(quit_closure).Run();
+          },
+          &traffic_counters, run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+TEST_F(ShillServiceClientTest, ResetTrafficCounters) {
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(shill::kResetTrafficCountersFunction,
+                       base::BindRepeating(&ExpectNoArgument), response.get());
+  // Call method.
+  base::MockCallback<base::OnceClosure> mock_closure;
+  base::MockCallback<ShillServiceClient::ErrorCallback> mock_error_callback;
+  client_->ResetTrafficCounters(dbus::ObjectPath(kExampleServicePath),
+                                mock_closure.Get(), mock_error_callback.Get());
+  EXPECT_CALL(mock_closure, Run()).Times(1);
+  EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
+
+  // Run the message loop.
+  base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace chromeos

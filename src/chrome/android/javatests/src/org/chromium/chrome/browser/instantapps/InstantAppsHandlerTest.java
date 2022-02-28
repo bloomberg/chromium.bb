@@ -18,18 +18,22 @@ import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.IntentUtils;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.browserservices.intents.WebappConstants;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.url.GURL;
 
@@ -37,10 +41,16 @@ import org.chromium.url.GURL;
  * Unit tests for {@link InstantAppsHandler}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@Batch(Batch.PER_CLASS)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class InstantAppsHandlerTest {
+    @ClassRule
+    public static ChromeTabbedActivityTestRule sActivityTestRule =
+            new ChromeTabbedActivityTestRule();
+
     @Rule
-    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    public BlankCTATabInitialStateRule mBlankCTATabInitialStateRule =
+            new BlankCTATabInitialStateRule(sActivityTestRule, false);
 
     private TestInstantAppsHandler mHandler;
     private Context mContext;
@@ -55,8 +65,6 @@ public class InstantAppsHandlerTest {
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityOnBlankPage();
-
         mContext = InstrumentationRegistry.getTargetContext();
         mHandler = new TestInstantAppsHandler();
 
@@ -102,7 +110,7 @@ public class InstantAppsHandlerTest {
 
         Intent signedIntent = createViewIntent();
         signedIntent.setPackage(mContext.getPackageName());
-        IntentHandler.addTrustedIntentExtras(signedIntent);
+        IntentUtils.addTrustedIntentExtras(signedIntent);
 
         Assert.assertFalse(mHandler.handleIncomingIntent(mContext, signedIntent, false, true));
     }
@@ -111,7 +119,7 @@ public class InstantAppsHandlerTest {
     @SmallTest
     public void testInstantAppsDisabled_launchFromShortcut() {
         Intent i = createViewIntent();
-        i.putExtra(ShortcutHelper.EXTRA_SOURCE, 1);
+        i.putExtra(WebappConstants.EXTRA_SOURCE, 1);
         Assert.assertFalse(mHandler.handleIncomingIntent(mContext, i, false, true));
     }
 
@@ -166,7 +174,7 @@ public class InstantAppsHandlerTest {
                 ()
                         -> Assert.assertFalse(mHandler.handleNavigation(mContext,
                                 new GURL(INSTANT_APP_URL), new GURL(REFERRER_URI.toString()),
-                                mActivityTestRule.getActivity()
+                                sActivityTestRule.getActivity()
                                         .getTabModelSelector()
                                         .getCurrentTab())));
         Assert.assertFalse(mHandler.mLaunchInstantApp);
@@ -185,9 +193,10 @@ public class InstantAppsHandlerTest {
                         new IntentFilter(Intent.ACTION_MAIN), null, true);
 
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> mHandler.launchFromBanner(new InstantAppsBannerData("App", null,
+                ()
+                        -> mHandler.launchFromBanner(new InstantAppsBannerData("App", null,
                                 INSTANT_APP_URL, REFERRER_URI, i, "Launch",
-                                mActivityTestRule.getActivity()
+                                sActivityTestRule.getActivity()
                                         .getTabModelSelector()
                                         .getCurrentTab()
                                         .getWebContents(),
@@ -209,7 +218,7 @@ public class InstantAppsHandlerTest {
                 ()
                         -> Assert.assertTrue(mHandler.handleNavigation(mContext,
                                 new GURL(INSTANT_APP_URL), new GURL(REFERRER_URI.toString()),
-                                mActivityTestRule.getActivity()
+                                sActivityTestRule.getActivity()
                                         .getTabModelSelector()
                                         .getCurrentTab())));
         Assert.assertFalse(mHandler.mStartedAsyncCall);

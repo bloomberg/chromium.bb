@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "components/url_matcher/url_matcher_constants.h"
@@ -36,7 +37,7 @@ std::unique_ptr<base::DictionaryValue> SimpleManifest() {
 struct RecordingCondition {
   typedef int MatchData;
 
-  URLMatcherConditionFactory* factory;
+  raw_ptr<URLMatcherConditionFactory> factory;
   std::unique_ptr<base::Value> value;
 
   void GetURLMatcherConditionSets(
@@ -137,10 +138,12 @@ struct FulfillableCondition {
       *error = "Expected dict";
       return result;
     }
-    if (!dict->GetInteger("url_id", &result->condition_set_id))
-      result->condition_set_id = -1;
-    if (!dict->GetInteger("max", &result->max_value))
+    result->condition_set_id = dict->FindIntKey("url_id").value_or(-1);
+    if (absl::optional<int> max_value_int = dict->FindIntKey("max")) {
+      result->max_value = *max_value_int;
+    } else {
       *error = "Expected integer at ['max']";
+    }
     if (result->condition_set_id != -1) {
       result->condition_set = new URLMatcherConditionSet(
           result->condition_set_id,
@@ -215,8 +218,6 @@ class SummingAction : public base::RefCounted<SummingAction> {
       const base::Value& action,
       std::string* error,
       bool* bad_message) {
-    int increment = 0;
-    int min_priority = 0;
     const base::DictionaryValue* dict = nullptr;
     EXPECT_TRUE(action.GetAsDictionary(&dict));
     if (dict->HasKey("error")) {
@@ -228,10 +229,11 @@ class SummingAction : public base::RefCounted<SummingAction> {
       return nullptr;
     }
 
-    EXPECT_TRUE(dict->GetInteger("value", &increment));
-    dict->GetInteger("priority", &min_priority);
+    absl::optional<int> increment = dict->FindIntKey("value");
+    EXPECT_TRUE(increment);
+    int min_priority = dict->FindIntKey("priority").value_or(0);
     return scoped_refptr<const SummingAction>(
-        new SummingAction(increment, min_priority));
+        new SummingAction(*increment, min_priority));
   }
 
   void Apply(const std::string& extension_id,

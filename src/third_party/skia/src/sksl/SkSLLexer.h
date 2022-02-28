@@ -11,6 +11,7 @@
 #define SKSL_Lexer
 #include <cstddef>
 #include <cstdint>
+#include "include/core/SkStringView.h"
 namespace SkSL {
 
 struct Token {
@@ -18,6 +19,7 @@ struct Token {
         TK_END_OF_FILE,
         TK_FLOAT_LITERAL,
         TK_INT_LITERAL,
+        TK_BAD_OCTAL,
         TK_TRUE_LITERAL,
         TK_FALSE_LITERAL,
         TK_IF,
@@ -46,11 +48,13 @@ struct Token {
         TK_HASSIDEEFFECTS,
         TK_STRUCT,
         TK_LAYOUT,
-        TK_ENUM,
-        TK_CLASS,
+        TK_HIGHP,
+        TK_MEDIUMP,
+        TK_LOWP,
+        TK_ES3,
+        TK_RESERVED,
         TK_IDENTIFIER,
         TK_DIRECTIVE,
-        TK_SECTION,
         TK_LPAREN,
         TK_RPAREN,
         TK_LBRACE,
@@ -77,7 +81,6 @@ struct Token {
         TK_LOGICALAND,
         TK_LOGICALNOT,
         TK_QUESTION,
-        TK_COLONCOLON,
         TK_COLON,
         TK_EQ,
         TK_EQEQ,
@@ -105,34 +108,42 @@ struct Token {
         TK_NONE,
     };
 
-    Token() : fKind(Kind::TK_NONE), fOffset(-1), fLength(-1) {}
+    Token() {}
+    Token(Kind kind, int32_t offset, int32_t length, int32_t line)
+            : fKind(kind), fOffset(offset), fLength(length), fLine(line) {}
 
-    Token(Kind kind, int32_t offset, int32_t length)
-            : fKind(kind), fOffset(offset), fLength(length) {}
-
-    Kind fKind;
-    int fOffset;
-    int fLength;
+    Kind fKind = Kind::TK_NONE;
+    int32_t fOffset = -1;
+    int32_t fLength = -1;
+    int32_t fLine = -1;
 };
 
 class Lexer {
 public:
-    void start(const char* text, int32_t length) {
+    void start(skstd::string_view text) {
         fText = text;
-        fLength = length;
         fOffset = 0;
+        fLine = 1;
     }
 
     Token next();
 
-    int32_t getCheckpoint() const { return fOffset; }
+    struct Checkpoint {
+        int32_t fOffset;
+        int32_t fLine;
+    };
 
-    void rewindToCheckpoint(int32_t checkpoint) { fOffset = checkpoint; }
+    Checkpoint getCheckpoint() const { return {fOffset, fLine}; }
+
+    void rewindToCheckpoint(Checkpoint checkpoint) {
+        fOffset = checkpoint.fOffset;
+        fLine = checkpoint.fLine;
+    }
 
 private:
-    const char* fText;
-    int32_t fLength;
+    skstd::string_view fText;
     int32_t fOffset;
+    int32_t fLine;
 };
 
 }  // namespace SkSL

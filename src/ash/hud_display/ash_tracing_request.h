@@ -5,6 +5,8 @@
 #ifndef ASH_HUD_DISPLAY_ASH_TRACING_REQUEST_H_
 #define ASH_HUD_DISPLAY_ASH_TRACING_REQUEST_H_
 
+#include <sys/stat.h>
+
 #include <memory>
 
 #include "base/callback_forward.h"
@@ -105,7 +107,7 @@ class AshTracingRequest {
   };
 
   // Will start tracing (asynchronously).
-  AshTracingRequest(AshTracingManager* tracing_manager);
+  explicit AshTracingRequest(AshTracingManager* tracing_manager);
   AshTracingRequest(const AshTracingRequest&) = delete;
   AshTracingRequest& operator=(const AshTracingRequest&) = delete;
 

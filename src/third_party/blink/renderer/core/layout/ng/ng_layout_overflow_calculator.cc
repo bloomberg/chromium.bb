@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
@@ -38,7 +39,7 @@ PhysicalRect NGLayoutOverflowCalculator::RecalculateLayoutOverflowForFragment(
       fragment.Padding(), fragment.Size(), writing_direction);
 
   if (const NGFragmentItems* items = fragment.Items())
-    calculator.AddItems(*items);
+    calculator.AddItems(fragment, *items);
 
   for (const auto& child : fragment.PostLayoutChildren()) {
     const auto* box_fragment =
@@ -127,24 +128,24 @@ const PhysicalRect NGLayoutOverflowCalculator::Result(
   alternate_overflow.UniteEvenIfEmpty(AdjustOverflowForScrollOrigin(
       converter.ToPhysical(block_end_padding_rect)));
 
+  if (normal_overflow == alternate_overflow)
+    return normal_overflow;
+
+  // Use |normal_overflow| if we already had inline overflow.
+  if (converter.ToLogical(alternate_overflow.size).inline_size !=
+      converter.ToLogical(padding_rect_.size).inline_size)
+    return normal_overflow;
+
   // We'd like everything to be |normal_overflow|, lets see what the impact
   // would be.
   if (node_.Style().OverflowInlineDirection() == EOverflow::kAuto ||
       node_.Style().OverflowInlineDirection() == EOverflow::kScroll) {
-    if (alternate_overflow.size.width != normal_overflow.size.width) {
-      if (alternate_overflow.size.width != padding_rect_.size.width) {
-        UseCounter::Count(
-            node_.GetDocument(),
-            node_.IsFlexibleBox()
-                ? WebFeature::kNewLayoutOverflowDifferentAndAlreadyScrollsFlex
-                : WebFeature::
-                      kNewLayoutOverflowDifferentAndAlreadyScrollsBlock);
-      } else {
-        UseCounter::Count(node_.GetDocument(),
-                          node_.IsFlexibleBox()
-                              ? WebFeature::kNewLayoutOverflowDifferentFlex
-                              : WebFeature::kNewLayoutOverflowDifferentBlock);
-      }
+    UseCounter::Count(node_.GetDocument(),
+                      WebFeature::kNewLayoutOverflowDifferentBlock);
+    if (!inflow_bounds->IsEmpty()) {
+      UseCounter::Count(
+          node_.GetDocument(),
+          WebFeature::kNewLayoutOverflowDifferentBlockWithNonEmptyInflowBounds);
     }
   }
 
@@ -152,9 +153,16 @@ const PhysicalRect NGLayoutOverflowCalculator::Result(
 }
 
 template <typename Items>
-void NGLayoutOverflowCalculator::AddItemsInternal(const Items& items) {
+void NGLayoutOverflowCalculator::AddItemsInternal(
+    const LayoutObject* layout_object,
+    const Items& items) {
   bool has_hanging = false;
   PhysicalRect line_rect;
+
+  // |LayoutNGTextCombine| doesn't not cause layout overflow because combined
+  // text fits in 1em by using width variant font or scaling.
+  if (UNLIKELY(IsA<LayoutNGTextCombine>(layout_object)))
+    return;
 
   for (const auto& item : items) {
     if (const auto* line_box = item->LineBoxFragment()) {
@@ -205,12 +213,15 @@ void NGLayoutOverflowCalculator::AddItemsInternal(const Items& items) {
 }
 
 void NGLayoutOverflowCalculator::AddItems(
+    const LayoutObject* layout_object,
     const NGFragmentItemsBuilder::ItemWithOffsetList& items) {
-  AddItemsInternal(items);
+  AddItemsInternal(layout_object, items);
 }
 
-void NGLayoutOverflowCalculator::AddItems(const NGFragmentItems& items) {
-  AddItemsInternal(items.Items());
+void NGLayoutOverflowCalculator::AddItems(
+    const NGPhysicalBoxFragment& box_fragment,
+    const NGFragmentItems& items) {
+  AddItemsInternal(box_fragment.GetLayoutObject(), items.Items());
 }
 
 void NGLayoutOverflowCalculator::AddTableCollapsedBorders(

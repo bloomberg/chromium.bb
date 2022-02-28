@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "components/infobars/core/infobar.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_driver.h"
@@ -54,12 +55,11 @@ class MockTranslateClient : public TranslateClient {
                     TranslateErrors::Type,
                     bool));
   MOCK_METHOD1(IsTranslatableURL, bool(const GURL&));
-  MOCK_METHOD1(ShowReportLanguageDetectionErrorUI, void(const GURL&));
   MOCK_CONST_METHOD0(IsAutofillAssistantRunning, bool());
 
  private:
-  TranslateDriver* driver_;
-  PrefService* prefs_;
+  raw_ptr<TranslateDriver> driver_;
+  raw_ptr<PrefService> prefs_;
 };
 
 }  // namespace testing

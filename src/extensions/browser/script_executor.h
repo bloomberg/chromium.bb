@@ -11,14 +11,14 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/values.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/mojom/action_type.mojom-shared.h"
+#include "extensions/common/mojom/code_injection.mojom.h"
 #include "extensions/common/mojom/css_origin.mojom-shared.h"
 #include "extensions/common/mojom/host_id.mojom-forward.h"
 #include "extensions/common/mojom/run_location.mojom-shared.h"
 #include "extensions/common/user_script.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 
@@ -45,6 +45,10 @@ using ScriptsExecutedNotification = base::RepeatingCallback<
 class ScriptExecutor {
  public:
   explicit ScriptExecutor(content::WebContents* web_contents);
+
+  ScriptExecutor(const ScriptExecutor&) = delete;
+  ScriptExecutor& operator=(const ScriptExecutor&) = delete;
+
   ~ScriptExecutor();
 
   // The scope of the script injection across the frames.
@@ -64,12 +68,6 @@ class ScriptExecutor {
   enum ProcessType {
     DEFAULT_PROCESS,
     WEB_VIEW_PROCESS,
-  };
-
-  // The type of result the caller is interested in.
-  enum ResultType {
-    NO_RESULT,
-    JSON_SERIALIZED_RESULT,
   };
 
   struct FrameResult {
@@ -97,6 +95,15 @@ class ScriptExecutor {
   using ScriptFinishedCallback =
       base::OnceCallback<void(std::vector<FrameResult> frame_results)>;
 
+  // Generates an injection key based on the host ID and either the file URL, if
+  // available, or the code string. The format of the key is
+  // "<type><host_id><digest>", where <type> is one of "F" (file) and "C"
+  // (code), <host_id> is the host ID, and <digest> is an unspecified hash
+  // digest of the file URL or the code string, respectively.
+  static std::string GenerateInjectionKey(const mojom::HostID& host_id,
+                                          const GURL& script_url,
+                                          const std::string& code);
+
   // Executes a script. The arguments match mojom::ExecuteCodeParams in
   // frame.mojom (request_id is populated automatically).
   //
@@ -109,18 +116,13 @@ class ScriptExecutor {
   // before a response is received (in this case the callback will be with a
   // failure and appropriate error message).
   void ExecuteScript(const mojom::HostID& host_id,
-                     mojom::ActionType action_type,
-                     const std::string& code,
+                     mojom::CodeInjectionPtr injection,
                      FrameScope frame_scope,
                      const std::set<int>& frame_ids,
                      MatchAboutBlank match_about_blank,
                      mojom::RunLocation run_at,
                      ProcessType process_type,
                      const GURL& webview_src,
-                     const GURL& script_url,
-                     bool user_gesture,
-                     mojom::CSSOrigin css_origin,
-                     ResultType result_type,
                      ScriptFinishedCallback callback);
 
   // Set the observer for ScriptsExecutedNotification callbacks.
@@ -129,11 +131,9 @@ class ScriptExecutor {
   }
 
  private:
-  content::WebContents* web_contents_;
+  raw_ptr<content::WebContents> web_contents_;
 
   ScriptsExecutedNotification observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScriptExecutor);
 };
 
 }  // namespace extensions

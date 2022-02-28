@@ -32,7 +32,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
         'GIT_HTTP_LOW_SPEED_LIMIT': '102400',  # in bytes
         'GIT_HTTP_LOW_SPEED_TIME': 1800,  # in seconds
     }
-    if self.m.buildbucket.build.id != 0:
+    if self.m.buildbucket.build.id == 0:
+      env['DEPOT_TOOLS_COLLECT_METRICS'] = '0'
+    else:
       env['DEPOT_TOOLS_REPORT_BUILD'] = '%s/%s/%s/%s' % (
           self.m.buildbucket.build.builder.project,
           self.m.buildbucket.build.builder.bucket,
@@ -68,7 +70,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
       raise self.m.step.InfraFailure(
           'invalid (host, project) pair in '
           'buildbucket.build.input.gitiles_commit: '
-          '(%r, %r) does not match any of configured gclient solutions '
+          '(%s, %s) does not match any of configured gclient solutions '
           'and not present in gclient_config.repo_path_map' % (
               commit.host, commit.project))
 
@@ -208,7 +210,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
       # definition says "The Gitiles commit to run against.".
       # However, here we ignore it if the config specified a revision.
       # This is necessary because existing builders rely on this behavior,
-      # e.g. they want to force refs/heads/master at the config level.
+      # e.g. they want to force refs/heads/main at the config level.
       in_commit_repo_path = self._get_commit_repo_path(in_commit, cfg)
       # The repo_path that comes back on Windows will have backslashes, which
       # won't match the paths that the gclient configs and bot_update script use
@@ -313,7 +315,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # Ah hah! Now that everything is in place, lets run bot_update!
     step_result = None
     try:
-      step_result = self(name, cmd, step_test_data=step_test_data, **kwargs)
+      # Error code 88 is the 'patch failure' code for patch apply failure.
+      step_result = self(name, cmd, step_test_data=step_test_data,
+                         ok_ret=(0, 88), **kwargs)
     except self.m.step.StepFailure as f:
       step_result = f.result
       raise
@@ -344,6 +348,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
             raise self.m.step.InfraFailure(
                 'Patch failure: Git reported a download failure')
           else:
+            # Mark it as failure so we provide useful logs
+            # https://crbug.com/1207685
+            step_result.presentation.status = 'FAILURE'
             # This is actual patch failure.
             self.m.tryserver.set_patch_failure_tryjob_result()
             self.m.cq.set_do_not_retry_build()
@@ -397,8 +404,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
             # ref.
             out_commit.ref = in_rev
           elif in_rev == 'HEAD':
-            # bot_update.py interprets HEAD as refs/heads/master
-            out_commit.ref = 'refs/heads/master'
+            # bot_update.py interprets HEAD as refs/heads/main
+            out_commit.ref = 'refs/heads/main'
           elif out_commit.id == in_commit.id and in_commit.ref:
             # Derive output ref from the input ref.
             out_commit.ref = in_commit.ref
@@ -429,7 +436,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     If there's no Gerrit CL associated with the run, returns 'HEAD'.
     Otherwise this queries Gerrit for the correct destination ref, which
-    might differ from refs/heads/master.
+    might differ from refs/heads/main.
 
     Args:
       * cfg: The used gclient config.
@@ -439,7 +446,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     Returns:
         A destination ref as understood by bot_update.py if available
-        and if different from refs/heads/master, returns 'HEAD' otherwise.
+        and if different from refs/heads/main, returns 'HEAD' otherwise.
     """
     # Ignore project paths other than the one belonging to the current CL.
     patch_path = self.m.gclient.get_gerrit_patch_root(gclient_config=cfg)
@@ -448,11 +455,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     if not patch_path or path != patch_path:
       return 'HEAD'
 
-    target_ref = self.m.tryserver.gerrit_change_target_ref
-    if target_ref == 'refs/heads/master':
-      return 'HEAD'
-
-    return target_ref
+    return self.m.tryserver.gerrit_change_target_ref
 
   def resolve_fixed_revision(self, bot_update_json, name):
     """Sets a fixed revision for a single dependency using project revision

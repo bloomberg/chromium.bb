@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/check_op.h"
-#include "base/stl_util.h"
 
 namespace {
 
@@ -25,12 +24,9 @@ namespace {
 // Otherwise the total latency can freely fluctuate between 0 and
 // |kMaxQueueLatency|.
 
-constexpr base::TimeDelta kMaxQueueLatency =
-    base::TimeDelta::FromMilliseconds(150);
-constexpr base::TimeDelta kUnderrunRecoveryLatency =
-    base::TimeDelta::FromMilliseconds(60);
-constexpr base::TimeDelta kOverrunRecoveryLatency =
-    base::TimeDelta::FromMilliseconds(90);
+constexpr base::TimeDelta kMaxQueueLatency = base::Milliseconds(150);
+constexpr base::TimeDelta kUnderrunRecoveryLatency = base::Milliseconds(60);
+constexpr base::TimeDelta kOverrunRecoveryLatency = base::Milliseconds(90);
 
 }  // namespace
 

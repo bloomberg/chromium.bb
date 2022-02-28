@@ -12,9 +12,9 @@ const modelToEventListeners = new WeakMap<SDK.LogModel.LogModel, Common.EventTar
 
 let instance: LogManager|null = null;
 
-export class LogManager implements SDK.SDKModel.SDKModelObserver<SDK.LogModel.LogModel> {
+export class LogManager implements SDK.TargetManager.SDKModelObserver<SDK.LogModel.LogModel> {
   private constructor() {
-    SDK.SDKModel.TargetManager.instance().observeModels(SDK.LogModel.LogModel, this);
+    SDK.TargetManager.TargetManager.instance().observeModels(SDK.LogModel.LogModel, this);
   }
 
   static instance({forceNew}: {forceNew: boolean} = {forceNew: false}): LogManager {
@@ -34,24 +34,28 @@ export class LogManager implements SDK.SDKModel.SDKModelObserver<SDK.LogModel.Lo
   modelRemoved(logModel: SDK.LogModel.LogModel): void {
     const eventListeners = modelToEventListeners.get(logModel);
     if (eventListeners) {
-      Common.EventTarget.EventTarget.removeEventListeners(eventListeners);
+      Common.EventTarget.removeEventListeners(eventListeners);
     }
   }
 
-  private logEntryAdded(event: Common.EventTarget.EventTargetEvent): void {
-    const data = event.data as {
-      logModel: SDK.LogModel.LogModel,
-      entry: Protocol.Log.LogEntry,
+  private logEntryAdded(event: Common.EventTarget.EventTargetEvent<SDK.LogModel.EntryAddedEvent>): void {
+    const {logModel, entry} = event.data;
+    const target = logModel.target();
+    const details = {
+      url: entry.url,
+      line: entry.lineNumber,
+      parameters: [entry.text, ...(entry.args ?? [])],
+      stackTrace: entry.stackTrace,
+      timestamp: entry.timestamp,
+      workerId: entry.workerId,
+      category: entry.category,
+      affectedResources: entry.networkRequestId ? {requestId: entry.networkRequestId} : undefined,
     };
-    const target = data.logModel.target();
-
     const consoleMessage = new SDK.ConsoleModel.ConsoleMessage(
-        target.model(SDK.RuntimeModel.RuntimeModel), data.entry.source, data.entry.level, data.entry.text, undefined,
-        data.entry.url, data.entry.lineNumber, undefined, [data.entry.text, ...(data.entry.args || [])],
-        data.entry.stackTrace, data.entry.timestamp, undefined, undefined, data.entry.workerId);
+        target.model(SDK.RuntimeModel.RuntimeModel), entry.source, entry.level, entry.text, details);
 
-    if (data.entry.networkRequestId) {
-      NetworkLog.instance().associateConsoleMessageWithRequest(consoleMessage, data.entry.networkRequestId);
+    if (entry.networkRequestId) {
+      NetworkLog.instance().associateConsoleMessageWithRequest(consoleMessage, entry.networkRequestId);
     }
 
     if (consoleMessage.source === Protocol.Log.LogEntrySource.Worker) {
@@ -60,11 +64,11 @@ export class LogManager implements SDK.SDKModel.SDKModelObserver<SDK.LogModel.Lo
       // user can see messages from the worker which has been already destroyed.
       // When opening DevTools, give us some time to connect to the worker and
       // not report the message twice if the worker is still alive.
-      if (SDK.SDKModel.TargetManager.instance().targetById(workerId)) {
+      if (SDK.TargetManager.TargetManager.instance().targetById(workerId)) {
         return;
       }
       setTimeout(() => {
-        if (!SDK.SDKModel.TargetManager.instance().targetById(workerId)) {
+        if (!SDK.TargetManager.TargetManager.instance().targetById(workerId)) {
           SDK.ConsoleModel.ConsoleModel.instance().addMessage(consoleMessage);
         }
       }, 1000);

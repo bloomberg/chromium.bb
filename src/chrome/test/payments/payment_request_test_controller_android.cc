@@ -28,17 +28,13 @@ bool PaymentRequestTestController::ClickPaymentHandlerCloseButton() {
   return ClickPaymentHandlerCloseButtonForTest();
 }
 
+bool PaymentRequestTestController::CloseDialog() {
+  return CloseDialogForTest();
+}
+
 bool PaymentRequestTestController::ConfirmPayment() {
   NOTIMPLEMENTED();
   return false;
-}
-
-bool PaymentRequestTestController::ConfirmMinimalUI() {
-  return ConfirmMinimalUIForTest();
-}
-
-bool PaymentRequestTestController::DismissMinimalUI() {
-  return DismissMinimalUIForTest();
 }
 
 bool PaymentRequestTestController::IsAndroidMarshmallowOrLollipop() {
@@ -66,6 +62,8 @@ void PaymentRequestTestController::SetUpOnMainThread() {
                           base::Unretained(this)),
       base::BindRepeating(&PaymentRequestTestController::set_app_descriptions,
                           base::Unretained(this)),
+      base::BindRepeating(&PaymentRequestTestController::OnErrorDisplayed,
+                          base::Unretained(this)),
       base::BindRepeating(&PaymentRequestTestController::OnNotSupportedError,
                           base::Unretained(this)),
       base::BindRepeating(&PaymentRequestTestController::OnConnectionTerminated,
@@ -74,7 +72,7 @@ void PaymentRequestTestController::SetUpOnMainThread() {
                           base::Unretained(this)),
       base::BindRepeating(&PaymentRequestTestController::OnCompleteCalled,
                           base::Unretained(this)),
-      base::BindRepeating(&PaymentRequestTestController::OnMinimalUIReady,
+      base::BindRepeating(&PaymentRequestTestController::OnUIDisplayed,
                           base::Unretained(this)));
 
   SetUseDelegateOnPaymentRequestForTesting(
@@ -123,9 +121,6 @@ void PaymentRequestTestController::SetTwaPackageName(
 }
 
 void PaymentRequestTestController::SetHasAuthenticator(bool has_authenticator) {
-  // TODO(https://crbug.com/1110320): Implement SetHasAuthenticator() for
-  // Android, so secure payment confirmation can be integration tested on
-  // Android as well.
   has_authenticator_ = has_authenticator;
 }
 
@@ -159,6 +154,10 @@ void PaymentRequestTestController::OnAppListReady() {
   if (observer_)
     observer_->OnAppListReady();
 }
+void PaymentRequestTestController::OnErrorDisplayed() {
+  if (observer_)
+    observer_->OnErrorDisplayed();
+}
 void PaymentRequestTestController::OnNotSupportedError() {
   if (observer_)
     observer_->OnNotSupportedError();
@@ -179,9 +178,9 @@ void PaymentRequestTestController::OnCompleteCalled() {
     observer_->OnCompleteCalled();
 }
 
-void PaymentRequestTestController::OnMinimalUIReady() {
+void PaymentRequestTestController::OnUIDisplayed() {
   if (observer_)
-    observer_->OnMinimalUIReady();
+    observer_->OnUIDisplayed();
 }
 
 }  // namespace payments

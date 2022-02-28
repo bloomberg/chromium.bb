@@ -45,9 +45,9 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.m
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.switchTabModel;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabModelTabCount;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
-import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
-import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 import static org.chromium.components.embedder_support.util.UrlConstants.NTP_URL;
+import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
+import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -99,12 +99,12 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabStateExtractor;
+import org.chromium.chrome.browser.tabmodel.IncognitoTabHostUtils;
 import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
@@ -118,6 +118,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherCoordinator;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiThemeProvider;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.undo_tab_close_snackbar.UndoBarController;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
@@ -208,7 +209,7 @@ public class StartSurfaceLayoutTest {
         mUrl = mTestServer.getURL("/chrome/test/data/android/navigate/simple.html");
         mRepeat = 1;
 
-        mTabListDelegate = mStartSurfaceLayout.getStartSurfaceForTesting().getTabListDelegate();
+        mTabListDelegate = mStartSurfaceLayout.getStartSurfaceForTesting().getGridTabListDelegate();
         mTabListDelegate.setBitmapCallbackForTesting(mBitmapListener);
         assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting());
 
@@ -423,6 +424,7 @@ public class StartSurfaceLayoutTest {
     @EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     @MinAndroidSdkLevel(Build.VERSION_CODES.M) // TODO(crbug.com/997065#c8): remove SDK restriction.
+    @DisabledTest(message = "https://crbug.com/1272561")
     public void testTabToGridFromLiveTabSoftAnimation() throws InterruptedException {
         assertTrue(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
         prepareTabs(2, 0, NTP_URL);
@@ -575,6 +577,7 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @DisabledTest(message = "crbug.com/1237623 test is flaky")
     public void testGridToTabToOtherFrozen() throws InterruptedException {
         assertFalse(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
         prepareTabs(2, 0, mUrl);
@@ -766,6 +769,7 @@ public class StartSurfaceLayoutTest {
     @EnableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"})
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
             message = "https://crbug.com/1023833")
+    @DisabledTest(message = "https://crbug.com/1233169")
     public void testIncognitoToggle_thumbnailFetchCount() throws InterruptedException {
         // clang-format on
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -919,6 +923,7 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @Feature("TabSuggestion")
+    @FlakyTest(message = "https://crbug.com/1230107")
     // clang-format off
     @EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study",
             ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"})
@@ -988,6 +993,7 @@ public class StartSurfaceLayoutTest {
     @DisableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS})
     @CommandLineFlags.Add({BASE_PARAMS + "/tab_grid_layout_android_new_tab_tile/NewTabTile"
             + "/tab_grid_layout_android_new_tab/false"})
+    @DisabledTest(message = "https://crbug.com/1051961")
     public void testNewTabTile() throws InterruptedException {
         // clang-format on
         // TODO(yuezhanggg): Modify TabUiTestHelper.verifyTabSwitcherCardCount so that it can be
@@ -1085,8 +1091,10 @@ public class StartSurfaceLayoutTest {
         @Override
         public void check(View view, NoMatchingViewException noMatchException) {
             if (noMatchException != null) throw noMatchException;
-            int tabListPadding =
-                    (int) view.getResources().getDimension(R.dimen.tab_list_card_padding);
+            float tabListPadding =
+                    TabUiThemeProvider.getTabGridCardMarginForDialogAnimation(view.getContext());
+            float messageCardMargin =
+                    TabUiThemeProvider.getMessageCardMarginDimension(view.getContext());
 
             assertTrue(view instanceof RecyclerView);
             RecyclerView recyclerView = (RecyclerView) view;
@@ -1099,8 +1107,10 @@ public class StartSurfaceLayoutTest {
             assertEquals(TabProperties.UiType.MESSAGE, messageItemViewHolder.getItemViewType());
             View messageItemView = messageItemViewHolder.itemView;
 
-            // The message card item width should always be recyclerView width minus padding.
-            assertEquals(recyclerView.getWidth() - 2 * tabListPadding, messageItemView.getWidth());
+            // The message card item width should always be recyclerView width minus padding and
+            // margin.
+            assertEquals(recyclerView.getWidth() - 2 * tabListPadding - 2 * messageCardMargin,
+                    (float) messageItemView.getWidth(), 1.0f);
         }
     }
 
@@ -2037,7 +2047,7 @@ public class StartSurfaceLayoutTest {
         CriteriaHelper.pollUiThread(()
                                             -> newActivity.getCurrentTabModel().isIncognito(),
                 "New Activity current TabModel is not incognito");
-        TestThreadUtils.runOnUiThreadBlocking(IncognitoUtils::closeAllIncognitoTabs);
+        TestThreadUtils.runOnUiThreadBlocking(IncognitoTabHostUtils::closeAllIncognitoTabs);
 
         assertTrue("Deferred startup never completed", mActivityTestRule.waitForDeferredStartup());
 

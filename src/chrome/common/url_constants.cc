@@ -20,6 +20,9 @@ const char kAutomaticSettingsResetLearnMoreURL[] =
 const char kAdvancedProtectionDownloadLearnMoreURL[] =
     "https://support.google.com/accounts/accounts?p=safe-browsing";
 
+const char kAppNotificationsBrowserSettingsURL[] =
+    "chrome://settings/content/notifications";
+
 const char kBluetoothAdapterOffHelpURL[] =
     "https://support.google.com/chrome?p=bluetooth";
 
@@ -28,9 +31,6 @@ const char kCastCloudServicesHelpURL[] =
 
 const char kCastNoDestinationFoundURL[] =
     "https://support.google.com/chromecast/?p=no_cast_destination";
-
-const char kChooserBluetoothOverviewURL[] =
-    "https://support.google.com/chrome?p=bluetooth";
 
 const char kChooserHidOverviewUrl[] =
     "https://support.google.com/chrome?p=webhid";
@@ -157,6 +157,10 @@ const char kFlashDeprecationLearnMoreURL[] =
 const char kGoogleAccountActivityControlsURL[] =
     "https://myaccount.google.com/activitycontrols/search";
 
+const char kGoogleAccountActivityControlsURLInPrivacyReview[] =
+    "https://myaccount.google.com/activitycontrols/"
+    "search&utm_source=chrome&utm_medium=privacy-guide";
+
 const char kGoogleAccountLanguagesURL[] =
     "https://myaccount.google.com/language";
 
@@ -164,6 +168,9 @@ const char kGoogleAccountURL[] = "https://myaccount.google.com";
 
 const char kGoogleAccountChooserURL[] =
     "https://accounts.google.com/AccountChooser";
+
+const char kGoogleAccountDeviceActivityURL[] =
+    "https://myaccount.google.com/device-activity?utm_source=chrome";
 
 const char kGooglePasswordManagerURL[] = "https://passwords.google.com";
 
@@ -183,7 +190,7 @@ const char kMixedContentDownloadBlockingLearnMoreUrl[] =
     "https://support.google.com/chrome/?p=mixed_content_downloads";
 
 const char kMyActivityUrlInClearBrowsingData[] =
-    "https://myactivity.google.com/myactivity/?utm_source=chrome_cbd";
+    "https://myactivity.google.com/myactivity?utm_source=chrome_cbd";
 
 const char kOmniboxLearnMoreURL[] =
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -279,6 +286,12 @@ const char kSyncGoogleDashboardURL[] =
 const char kSyncLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_sign_in";
 
+#if !defined(OS_ANDROID)
+const char kSyncTrustedVaultOptInURL[] =
+    "https://passwords.google.com/encryption/enroll?"
+    "utm_source=chrome&utm_medium=desktop&utm_campaign=encryption_enroll";
+#endif
+
 const char kUpgradeHelpCenterBaseURL[] =
     "https://support.google.com/installer/?product="
     "{8A69D345-D564-463c-AFF1-A69D9E530F96}&error=";
@@ -319,6 +332,10 @@ const char kArcPrivacyPolicyURLPath[] = "arc/privacy_policy";
 
 const char kArcTermsURLPath[] = "arc/terms";
 
+// TODO(crbug.com/1248270): Use real link to Bluetooth pairing learn more.
+const char kBluetoothPairingLearnMoreUrl[] =
+    "https://support.google.com/chromebook/?p=bluetooth_pairing";
+
 const char kChromeAccessibilityHelpURL[] =
     "https://support.google.com/chromebook/topic/6323347";
 
@@ -336,8 +353,6 @@ const char kChromeOSGestureEducationHelpURL[] =
 
 const char kChromePaletteHelpURL[] =
     "https://support.google.com/chromebook?p=stylus_help";
-
-const char kCrosScheme[] = "cros";
 
 const char kCupsPrintLearnMoreURL[] =
     "https://support.google.com/chromebook?p=chromebook_printing";
@@ -381,6 +396,9 @@ const char kAndroidMessagesLearnMoreURL[] =
 const char kLanguageSettingsLearnMoreUrl[] =
     "https://support.google.com/chromebook/answer/1059490";
 
+const char kLanguagePacksLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=language_packs";
+
 const char kLearnMoreEnterpriseURL[] =
     "https://support.google.com/chromebook/?p=managed";
 
@@ -395,10 +413,10 @@ const char kNaturalScrollHelpURL[] =
 
 const char kOemEulaURLPath[] = "oem";
 
-const char kOnlineEulaURLPath[] =
+const char kGoogleEulaOnlineURLPath[] =
     "https://policies.google.com/terms/embedded?hl=%s";
 
-const char kAdditionalToSOnlineURLPath[] =
+const char kCrosEulaOnlineURLPath[] =
     "https://www.google.com/intl/%s/chrome/terms/";
 
 const char kOsSettingsSearchHelpURL[] =
@@ -464,5 +482,9 @@ const char kChromeSyncLearnMoreURL[] =
 const char kOutdatedPluginLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ib_outdated_plugin";
 #endif
+
+// TODO (b/184137843): Use real link to phone hub notifications and apps access.
+const char kPhoneHubPermissionLearnMoreURL[] =
+    "https://support.google.com/chromebook/?p=multidevice";
 
 }  // namespace chrome

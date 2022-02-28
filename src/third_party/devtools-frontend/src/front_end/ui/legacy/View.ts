@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
-import type {TabbedPane} from './TabbedPane.js';                  // eslint-disable-line no-unused-vars
-import type {ToolbarItem, ToolbarMenuButton} from './Toolbar.js'; // eslint-disable-line no-unused-vars
+import type {TabbedPane} from './TabbedPane.js';
+import type {ToolbarItem, ToolbarMenuButton} from './Toolbar.js';
 import {ViewManager} from './ViewManager.js';
 import type {Widget} from './Widget.js';
-import {VBox} from './Widget.js';  // eslint-disable-line no-unused-vars
+import {VBox} from './Widget.js';
 export interface View {
   viewId(): string;
 
   title(): string;
 
   isCloseable(): boolean;
+
+  isPreviewFeature(): boolean;
 
   isTransient(): boolean;
 
@@ -26,18 +26,18 @@ export interface View {
 }
 
 export class SimpleView extends VBox implements View {
-  _title: string;
+  private readonly titleInternal: string;
   constructor(title: string, isWebComponent?: boolean) {
     super(isWebComponent);
-    this._title = title;
+    this.titleInternal = title;
   }
 
   viewId(): string {
-    return this._title;
+    return this.titleInternal;
   }
 
   title(): string {
-    return this._title;
+    return this.titleInternal;
   }
 
   isCloseable(): boolean {
@@ -61,6 +61,10 @@ export class SimpleView extends VBox implements View {
   }
 
   disposeView(): void {
+  }
+
+  isPreviewFeature(): boolean {
+    return false;
   }
 }
 

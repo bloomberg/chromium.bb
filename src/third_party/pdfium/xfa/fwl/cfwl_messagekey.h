@@ -7,21 +7,23 @@
 #ifndef XFA_FWL_CFWL_MESSAGEKEY_H_
 #define XFA_FWL_CFWL_MESSAGEKEY_H_
 
+#include "core/fxcrt/mask.h"
 #include "xfa/fwl/cfwl_message.h"
+#include "xfa/fwl/fwl_widgetdef.h"
 
 class CFWL_MessageKey final : public CFWL_Message {
  public:
-  enum class Type { kKeyDown, kKeyUp, kChar };
+  enum class KeyCommand : uint8_t { kKeyDown, kKeyUp, kChar };
 
   CFWL_MessageKey(CFWL_Widget* pDstTarget,
-                  Type cmd,
-                  uint32_t flags,
-                  uint32_t keycode);
+                  KeyCommand subtype,
+                  Mask<XFA_FWL_KeyFlag> flags,
+                  uint32_t dwKeyCodeOrChar);
   ~CFWL_MessageKey() override;
 
-  const Type m_dwCmd;
-  const uint32_t m_dwFlags;
-  const uint32_t m_dwKeyCode;
+  const KeyCommand m_dwCmd;
+  const Mask<XFA_FWL_KeyFlag> m_dwFlags;
+  const uint32_t m_dwKeyCodeOrChar;
 };
 
 #endif  // XFA_FWL_CFWL_MESSAGEKEY_H_

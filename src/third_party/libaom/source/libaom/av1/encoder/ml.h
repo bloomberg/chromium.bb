@@ -71,6 +71,9 @@ void av1_nn_predict_v2(const float *features, NN_CONFIG_V2 *nn_config,
 // output[i] = exp(input[i]) / sum_{k \in [0,n)}(exp(input[k]))
 void av1_nn_softmax(const float *input, float *output, int n);
 
+// A faster but less accurate version of av1_nn_softmax(input, output, 16)
+void av1_nn_fast_softmax_16_c(const float *input, float *output);
+
 // Applies a precision reduction to output of av1_nn_predict to prevent
 // mismatches between C and SIMD implementations.
 void av1_nn_output_prec_reduce(float *const output, int num_output);

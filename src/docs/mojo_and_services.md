@@ -294,7 +294,6 @@ Then the actual `MathService` implementation:
 
 ``` cpp
 // src/chrome/services/math/math_service.h
-#include "base/macros.h"
 #include "chrome/services/math/public/mojom/math_service.mojom.h"
 
 namespace math {
@@ -302,9 +301,9 @@ namespace math {
 class MathService : public mojom::MathService {
  public:
   explicit MathService(mojo::PendingReceiver<mojom::MathService> receiver);
-  ~MathService() override;
   MathService(const MathService&) = delete;
   MathService& operator=(const MathService&) = delete;
+  ~MathService() override;
 
  private:
   // mojom::MathService:
@@ -421,18 +420,32 @@ NOTE: To ensure the execution of the response callback, the
 and [this note from an earlier section](#sending-a-message)).
 ***
 
-### Using a non-standard sandbox
+### Specifying a sandbox
 
-Ideally services will run inside the utility process sandbox, in which
-case there is nothing else to do. For services that need a custom
-sandbox, a new sandbox type must be defined in consultation with
-security-dev@chromium.org.  To launch with a custom sandbox a
-specialization of `GetServiceSandboxType()` must be supplied in an
-appropriate `service_sandbox_type.h` such as
-[`//chrome/browser/service_sandbox_type.h`](https://cs.chromium.org/chromium/src/chrome/browser/service_sandbox_type.h)
-or
-[`//content/browser/service_sandbox_type.h`](https://cs.chromium.org/chromium/src/content/browser/service_sandbox_type.h)
-and included where `ServiceProcessHost::Launch()` is called.
+All services must specify a sandbox. Ideally services will run inside the
+`kService` process sandbox unless they need access to operating system
+resources. For services that need a custom sandbox, a new sandbox type must be
+defined in consultation with security-dev@chromium.org.
+
+The preferred way to define the sandbox for your interface is by specifying a
+`[ServiceSandbox=type]` attribute on your `interface {}` in its `.mojom` file:
+
+```
+import "sandbox/policy/mojom/sandbox.mojom"
+[ServiceSandbox=sandbox.mojom.Sandbox.kService]
+interface FakeService {
+  ...
+};
+```
+
+Valid values are those in
+[`//sandbox/policy/mojom/sandbox.mojom`](https://cs.chromium.org/chromium/src/sandbox/policy/mojom/sandbox.mojom). Note
+that the sandbox is only applied if the interface is launched
+out-of-process using `content::ServiceProcessHost::Launch()`.
+
+As a last resort, dynamic or feature based mapping to an underlying platform
+sandbox can be achieved but requires plumbing through ContentBrowserClient
+(e.g. `ShouldEnableNetworkServiceSandbox()`).
 
 ## Content-Layer Services Overview
 

@@ -70,7 +70,7 @@ ui::AXTreeID GetAXTreeIDFromRenderFrameHost(content::RenderFrameHost* rfh) {
 
 // A class that installs itself as the sink to handle automation event bundles
 // from AutomationManagerAura, then waits until an automation event indicates
-// that a given node ID is focused.
+// that a given node ID is focused or an AX event is sent.
 class AutomationEventWaiter
     : public extensions::AutomationEventRouterInterface {
  public:
@@ -78,6 +78,9 @@ class AutomationEventWaiter
     AutomationManagerAura::GetInstance()->set_automation_event_router_interface(
         this);
   }
+
+  AutomationEventWaiter(const AutomationEventWaiter&) = delete;
+  AutomationEventWaiter& operator=(const AutomationEventWaiter&) = delete;
 
   virtual ~AutomationEventWaiter() {
     // Don't bother to reconnect to AutomationEventRouter because it's not
@@ -98,11 +101,14 @@ class AutomationEventWaiter
     run_loop_ = std::make_unique<base::RunLoop>();
   }
 
-  std::unique_ptr<ui::AXEvent> WaitForEvent(ax::mojom::Event event_type) {
+  std::unique_ptr<ui::AXEvent> WaitForEvent(
+      ax::mojom::Event event_type,
+      ui::AXNodeID target_node_id = ui::kInvalidAXNodeID) {
     event_type_to_wait_for_ = event_type;
+    event_target_node_id_to_wait_for_ = target_node_id;
     run_loop_->Run();
     run_loop_ = std::make_unique<base::RunLoop>();
-    return std::move(most_recent_event_);
+    return std::move(matched_wait_for_event_);
   }
 
   bool WasNodeIdFocused(int node_id) {
@@ -140,8 +146,10 @@ class AutomationEventWaiter
       return;
 
     for (const ui::AXEvent& event : events) {
-      if (event.event_type == event_type_to_wait_for_) {
-        most_recent_event_ = std::make_unique<ui::AXEvent>(event);
+      if (event.event_type == event_type_to_wait_for_ &&
+          (event_target_node_id_to_wait_for_ == ui::kInvalidAXNodeID ||
+           event_target_node_id_to_wait_for_ == event.id)) {
+        matched_wait_for_event_ = std::make_unique<ui::AXEvent>(event);
         event_type_to_wait_for_ = ax::mojom::Event::kNone;
         run_loop_->Quit();
       }
@@ -165,10 +173,9 @@ class AutomationEventWaiter
   ui::AXNodeID node_id_to_wait_for_ = ui::kInvalidAXNodeID;
   std::vector<int> focused_node_ids_;
 
-  std::unique_ptr<ui::AXEvent> most_recent_event_;
+  std::unique_ptr<ui::AXEvent> matched_wait_for_event_;
   ax::mojom::Event event_type_to_wait_for_ = ax::mojom::Event::kNone;
-
-  DISALLOW_COPY_AND_ASSIGN(AutomationEventWaiter);
+  ui::AXNodeID event_target_node_id_to_wait_for_ = ui::kInvalidAXNodeID;
 };
 
 ui::TableColumn TestTableColumn(int id, const std::string& title) {
@@ -194,9 +201,10 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, WebAppearsOnce) {
   manager->Enable();
   auto* tree = manager->tree_.get();
 
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      GURL("data:text/html;charset=utf-8,<button autofocus>Click me</button>"));
+      GURL(
+          "data:text/html;charset=utf-8,<button autofocus>Click me</button>")));
 
   auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -219,7 +227,6 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, WebAppearsOnce) {
     for (size_t i = 0; i < web_hosts.size(); i++) {
       ui::AXNodeData node_data;
       tree->SerializeNode(web_hosts[i], &node_data);
-      LOG(ERROR) << i << ": " << node_data.ToString();
     }
   }
 }
@@ -293,6 +300,7 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, MAYBE_ScrollView) {
   auto* cache_ptr = cache.get();
   AutomationManagerAura* manager = AutomationManagerAura::GetInstance();
   manager->set_ax_aura_obj_cache_for_testing(std::move(cache));
+  AutomationEventWaiter waiter;
   manager->Enable();
   auto* tree = manager->tree_.get();
 
@@ -346,17 +354,25 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, MAYBE_ScrollView) {
               node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax),
               kAllowedError);
 
-  // Scroll right and check the X position.
+  // Scroll right and check a scroll event occurred and the X position.
   ui::AXActionData action_data;
   action_data.action = ax::mojom::Action::kScrollRight;
   scroll_view_wrapper->HandleAccessibleAction(action_data);
+  auto event_from_views =
+      waiter.WaitForEvent(ax::mojom::Event::kScrollPositionChanged);
+  ASSERT_NE(nullptr, event_from_views.get());
+  EXPECT_EQ(ax::mojom::EventFrom::kNone, event_from_views->event_from);
   tree->SerializeNode(scroll_view_wrapper, &node_data);
   EXPECT_NEAR(200, node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollX),
               kAllowedError);
 
-  // Scroll down and check the Y position.
+  // Scroll down and check a scroll event occurred and the Y position.
   action_data.action = ax::mojom::Action::kScrollDown;
   scroll_view_wrapper->HandleAccessibleAction(action_data);
+  event_from_views =
+      waiter.WaitForEvent(ax::mojom::Event::kScrollPositionChanged);
+  ASSERT_NE(nullptr, event_from_views.get());
+  EXPECT_EQ(ax::mojom::EventFrom::kNone, event_from_views->event_from);
   tree->SerializeNode(scroll_view_wrapper, &node_data);
   EXPECT_NEAR(200, node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollY),
               kAllowedError);
@@ -365,6 +381,10 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, MAYBE_ScrollView) {
   action_data.action = ax::mojom::Action::kSetScrollOffset;
   action_data.target_point.SetPoint(50, 315);
   scroll_view_wrapper->HandleAccessibleAction(action_data);
+  event_from_views =
+      waiter.WaitForEvent(ax::mojom::Event::kScrollPositionChanged);
+  ASSERT_NE(nullptr, event_from_views.get());
+  EXPECT_EQ(ax::mojom::EventFrom::kNone, event_from_views->event_from);
   tree->SerializeNode(scroll_view_wrapper, &node_data);
   EXPECT_EQ(50, node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollX));
   EXPECT_EQ(315, node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollY));
@@ -378,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, MAYBE_ScrollView) {
 #else
 #define MAYBE_TableView TableView
 #endif
-IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, TableView) {
+IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, MAYBE_TableView) {
   // Make our own AXAuraObjCache.
   auto cache = std::make_unique<views::AXAuraObjCache>();
   auto* cache_ptr = cache.get();
@@ -418,18 +438,14 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, TableView) {
   columns.push_back(TestTableColumn(2, "Origin"));
   columns.push_back(TestTableColumn(3, "Price"));
   auto model = std::make_unique<TestTableModel>(4);  // Create 4 rows.
-  auto table = std::make_unique<views::TableView>(
-      model.get(), columns, views::TEXT_ONLY, /* single_selection = */ true);
-  // Note: normally views are owned by their parent view, but we get a
-  // possible crash if the table outlives the table model (which is scoped
-  // to this function). So we make the table owned by client, and that
-  // ensures that both the table and model are destroyed when they go out
-  // of scope.
-  table->set_owned_by_client();
 
   // Add the TableView to our Widget's root view and give it bounds.
-  views::View* root_view = widget->GetRootView();
-  root_view->AddChildView(table.get());
+  // WARNING: This holds a raw pointer to `model`. To ensure the table doesn't
+  // outlive its model, it must be manually deleted at the bottom of this
+  // function.
+  views::TableView* const table = widget->GetRootView()->AddChildView(
+      std::make_unique<views::TableView>(model.get(), columns, views::TEXT_ONLY,
+                                         /* single_selection = */ true));
   table->SetBounds(0, 0, 200, 200);
 
   // Show the widget.
@@ -461,12 +477,12 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, TableView) {
     ui::AXNode* cell =
         waiter.ax_tree()->GetFromId(ax_cell_0_0_wrapper->GetUniqueId());
     ASSERT_TRUE(cell);
-    EXPECT_EQ(ax::mojom::Role::kCell, cell->data().role);
+    EXPECT_EQ(ax::mojom::Role::kCell, cell->GetRole());
     gfx::RectF cell_bounds = waiter.ax_tree()->GetTreeBounds(cell);
     SCOPED_TRACE("Cell: " + cell_bounds.ToString());
 
     ui::AXNode* window = cell->parent();
-    while (window && window->data().role != ax::mojom::Role::kWindow)
+    while (window && window->GetRole() != ax::mojom::Role::kWindow)
       window = window->parent();
     ASSERT_TRUE(window);
 
@@ -485,6 +501,9 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, TableView) {
     EXPECT_GT(cell_bounds.height(), 0);
     EXPECT_LT(cell_bounds.height(), window_bounds.height() / 2);
   }
+  // Remove and destroy the TableView, it refers to `model` which is about to go
+  // out of scope.
+  widget->GetRootView()->RemoveChildViewT(table);
 }
 
 IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, EventFromAction) {
@@ -518,7 +537,8 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, EventFromAction) {
   // Focus view1, simulating the non-accessibility action, block until we get an
   // accessibility event that shows this view is focused.
   view1->RequestFocus();
-  auto event_from_views = waiter.WaitForEvent(ax::mojom::Event::kFocus);
+  auto event_from_views = waiter.WaitForEvent(
+      ax::mojom::Event::kFocus, view1->GetViewAccessibility().GetUniqueId());
   ASSERT_NE(nullptr, event_from_views.get());
   EXPECT_EQ(ax::mojom::EventFrom::kNone, event_from_views->event_from);
 
@@ -530,7 +550,8 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, EventFromAction) {
   action_data.target_node_id = wrapper2->GetUniqueId();
 
   manager->PerformAction(action_data);
-  auto event_from_action = waiter.WaitForEvent(ax::mojom::Event::kFocus);
+  auto event_from_action = waiter.WaitForEvent(
+      ax::mojom::Event::kFocus, view2->GetViewAccessibility().GetUniqueId());
   ASSERT_NE(nullptr, event_from_action.get());
   EXPECT_EQ(ax::mojom::EventFrom::kAction, event_from_action->event_from);
 
@@ -580,4 +601,36 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest,
   EXPECT_NE(nullptr, registry->GetActionHandler(tree_id));
   manager->Enable();
   EXPECT_NE(nullptr, registry->GetActionHandler(tree_id));
+}
+
+IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, GetFocusOnChildTree) {
+  views::AXAuraObjCache cache;
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.bounds = {0, 0, 200, 200};
+  widget->Init(std::move(params));
+  widget->Show();
+  widget->Activate();
+
+  cache.set_focused_widget_for_testing(widget);
+
+  // No focus falls back on root view.
+  EXPECT_EQ(cache.GetOrCreate(widget->GetRootView()), cache.GetFocus());
+
+  // A child of the client view results in a focus if it has a tree id.
+  views::View* child =
+      widget->non_client_view()->client_view()->children().front();
+  ASSERT_NE(nullptr, child);
+
+  // No tree id yet.
+  EXPECT_EQ(cache.GetOrCreate(widget->GetRootView()), cache.GetFocus());
+
+  // Now, there's a tree id.
+  child->GetViewAccessibility().OverrideChildTreeID(
+      ui::AXTreeID::CreateNewAXTreeID());
+  EXPECT_EQ(cache.GetOrCreate(child), cache.GetFocus());
+
+  cache.set_focused_widget_for_testing(nullptr);
+
+  AddFailureOnWidgetAccessibilityError(widget);
 }

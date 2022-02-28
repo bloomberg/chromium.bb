@@ -14,6 +14,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace video_tutorials {
 namespace {
@@ -76,6 +77,10 @@ class TutorialFetcherImpl : public TutorialFetcher {
         url_loader_factory_.get(),
         base::BindOnce(&TutorialFetcherImpl::OnDownloadComplete,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void OnAcceptLanguagesChanged(const std::string& accept_languages) override {
+    accept_languages_ = accept_languages;
   }
 
   // Build the request to get tutorial info.

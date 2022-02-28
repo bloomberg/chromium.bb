@@ -17,7 +17,6 @@
 class CFGAS_GEGraphics;
 class CXFA_Edge;
 class CXFA_Fill;
-class CXFA_Margin;
 class CXFA_Stroke;
 
 class CXFA_Box : public CXFA_Node {
@@ -42,7 +41,7 @@ class CXFA_Box : public CXFA_Node {
  protected:
   CXFA_Box(CXFA_Document* pDoc,
            XFA_PacketType ePacket,
-           uint32_t validPackets,
+           Mask<XFA_XDPPACKET> validPackets,
            XFA_ObjectType oType,
            XFA_Element eType,
            pdfium::span<const PropertyData> properties,
@@ -53,8 +52,8 @@ class CXFA_Box : public CXFA_Node {
 
  private:
   bool IsCircular();
-  Optional<int32_t> GetStartAngle();
-  Optional<int32_t> GetSweepAngle();
+  absl::optional<int32_t> GetStartAngle();
+  absl::optional<int32_t> GetSweepAngle();
 
   std::vector<CXFA_Stroke*> GetStrokesInternal(bool bNull);
   void DrawFill(const std::vector<CXFA_Stroke*>& strokes,

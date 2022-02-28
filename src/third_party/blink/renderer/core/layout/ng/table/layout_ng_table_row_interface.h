@@ -19,7 +19,6 @@ class LayoutNGTableCellInterface;
 class LayoutNGTableRowInterface {
  public:
   virtual const LayoutObject* ToLayoutObject() const = 0;
-  virtual const LayoutTableRow* ToLayoutTableRow() const = 0;
   virtual LayoutNGTableInterface* TableInterface() const = 0;
   virtual unsigned RowIndex() const = 0;
   virtual LayoutNGTableSectionInterface* SectionInterface() const = 0;

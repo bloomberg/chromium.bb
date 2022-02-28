@@ -38,11 +38,12 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "third_party/icu/source/common/unicode/utf8.h"
 
@@ -132,14 +133,17 @@ class TablePrinter {
   explicit TablePrinter(FILE* stream)
       : stream_(stream), values_on_this_line_(0), current_offset_(0) {}
 
+  TablePrinter(const TablePrinter&) = delete;
+  TablePrinter& operator=(const TablePrinter&) = delete;
+
   void PrintValue(uint8_t value) {
     if (values_on_this_line_ == 0) {
       fputs("   ", stream_);
     } else if (values_on_this_line_ == kMaxValuesPerLine) {
-      fprintf(stream_, "  // 0x%02x\n   ", current_offset_);
+      fprintf(stream_.get(), "  // 0x%02x\n   ", current_offset_);
       values_on_this_line_ = 0;
     }
-    fprintf(stream_, " 0x%02x,", static_cast<int>(value));
+    fprintf(stream_.get(), " 0x%02x,", static_cast<int>(value));
     ++values_on_this_line_;
     ++current_offset_;
   }
@@ -149,13 +153,13 @@ class TablePrinter {
       fputs("      ", stream_);
       ++values_on_this_line_;
     }
-    fprintf(stream_, "  // 0x%02x\n", current_offset_);
+    fprintf(stream_.get(), "  // 0x%02x\n", current_offset_);
     values_on_this_line_ = 0;
   }
 
  private:
   // stdio stream. Not owned.
-  FILE* stream_;
+  raw_ptr<FILE> stream_;
 
   // Number of values so far printed on this line.
   int values_on_this_line_;
@@ -164,8 +168,6 @@ class TablePrinter {
   int current_offset_;
 
   static const int kMaxValuesPerLine = 8;
-
-  DISALLOW_COPY_AND_ASSIGN(TablePrinter);
 };
 
 // Start by filling a PairVector with characters. The resulting vector goes from

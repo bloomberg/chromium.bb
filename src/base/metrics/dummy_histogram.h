@@ -23,6 +23,9 @@ class BASE_EXPORT DummyHistogram : public HistogramBase {
  public:
   static DummyHistogram* GetInstance();
 
+  DummyHistogram(const DummyHistogram&) = delete;
+  DummyHistogram& operator=(const DummyHistogram&) = delete;
+
   // HistogramBase:
   void CheckName(const StringPiece& name) const override {}
   uint64_t name_hash() const override;
@@ -38,20 +41,18 @@ class BASE_EXPORT DummyHistogram : public HistogramBase {
   std::unique_ptr<HistogramSamples> SnapshotDelta() override;
   std::unique_ptr<HistogramSamples> SnapshotFinalDelta() const override;
   void WriteAscii(std::string* output) const override {}
-  base::DictionaryValue ToGraphDict() const override;
+  Value ToGraphDict() const override;
 
  protected:
   // HistogramBase:
   void SerializeInfoImpl(Pickle* pickle) const override {}
-  void GetParameters(DictionaryValue* params) const override {}
+  Value GetParameters() const override;
 
  private:
   friend class NoDestructor<DummyHistogram>;
 
   DummyHistogram() : HistogramBase("dummy_histogram") {}
   ~DummyHistogram() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(DummyHistogram);
 };
 
 }  // namespace base

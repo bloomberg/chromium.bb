@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Unit tests for curses-based CLI widgets."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.debug.cli import curses_widgets
 from tensorflow.python.debug.cli import debugger_cli_common
 from tensorflow.python.framework import test_util
@@ -43,11 +39,11 @@ class CNHTest(test_util.TensorFlowTestCase):
     self.assertFalse(nav_history.can_go_forward())
     self.assertFalse(nav_history.can_go_back())
 
-    with self.assertRaisesRegexp(ValueError, "Empty navigation history"):
+    with self.assertRaisesRegex(ValueError, "Empty navigation history"):
       nav_history.go_back()
-    with self.assertRaisesRegexp(ValueError, "Empty navigation history"):
+    with self.assertRaisesRegex(ValueError, "Empty navigation history"):
       nav_history.go_forward()
-    with self.assertRaisesRegexp(ValueError, "Empty navigation history"):
+    with self.assertRaisesRegex(ValueError, "Empty navigation history"):
       nav_history.update_scroll_position(3)
 
   def testAddOneItemWorks(self):

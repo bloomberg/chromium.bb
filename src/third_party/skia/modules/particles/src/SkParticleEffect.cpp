@@ -138,7 +138,7 @@ void SkParticleEffectParams::prepare(const skresources::ResourceProvider* resour
     }
 
     auto buildProgram = [this](const SkSL::String& code) -> std::unique_ptr<SkParticleProgram> {
-        SkSL::ShaderCapsPointer caps = SkSL::ShaderCapsFactory::Standalone();
+        std::unique_ptr<SkSL::ShaderCaps> caps = SkSL::ShaderCapsFactory::Standalone();
         SkSL::Compiler compiler(caps.get());
 
         // We use two separate blocks of uniforms (ie two args of stride 0). The first is for skvm
@@ -146,7 +146,7 @@ void SkParticleEffectParams::prepare(const skresources::ResourceProvider* resour
         // and after it's populated, the values never need to be touched again.
         // The second uniform arg is for things declared as 'uniform' in the SkSL (including the
         // built-in declarations of 'dt' and 'effect').
-        skvm::Uniforms efUniforms(skvm::Ptr{0}, 0);
+        skvm::Uniforms efUniforms(skvm::UPtr{0}, 0);
         auto alloc = std::make_unique<SkArenaAlloc>(0);
 
         std::vector<std::unique_ptr<SkSL::ExternalFunction>> externalFns;
@@ -178,15 +178,18 @@ void SkParticleEffectParams::prepare(const skresources::ResourceProvider* resour
             }
 
             skvm::Builder b;
-            skvm::Ptr efUniformPtr   = b.uniform(),  // aka efUniforms.base
-                      skslUniformPtr = b.uniform();
+            skvm::UPtr efUniformPtr   = b.uniform(),  // aka efUniforms.base
+                       skslUniformPtr = b.uniform();
             (void)efUniformPtr;
 
             std::vector<skvm::Val> uniformIDs;
             for (int i = 0; i < uniformInfo->fUniformSlotCount; ++i) {
                 uniformIDs.push_back(b.uniform32(skslUniformPtr, i * sizeof(int)).id);
             }
-            SkSL::ProgramToSkVM(*program, *fn, &b, SkMakeSpan(uniformIDs));
+            if (!SkSL::ProgramToSkVM(*program, *fn, &b, /*debugTrace=*/nullptr,
+                                     SkMakeSpan(uniformIDs))) {
+                return skvm::Program{};
+            }
             return b.done();
         };
 

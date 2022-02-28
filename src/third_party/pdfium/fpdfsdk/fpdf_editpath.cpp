@@ -10,32 +10,40 @@
 #include "core/fpdfapi/page/cpdf_path.h"
 #include "core/fpdfapi/page/cpdf_pathobject.h"
 #include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/stl_util.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "third_party/base/span.h"
-#include "third_party/base/stl_util.h"
 
 // These checks are here because core/ and public/ cannot depend on each other.
-static_assert(CFX_GraphStateData::LineCapButt == FPDF_LINECAP_BUTT,
-              "CFX_GraphStateData::LineCapButt value mismatch");
-static_assert(CFX_GraphStateData::LineCapRound == FPDF_LINECAP_ROUND,
-              "CFX_GraphStateData::LineCapRound value mismatch");
-static_assert(CFX_GraphStateData::LineCapSquare ==
+static_assert(static_cast<int>(CFX_GraphStateData::LineCap::kButt) ==
+                  FPDF_LINECAP_BUTT,
+              "CFX_GraphStateData::LineCap::kButt value mismatch");
+static_assert(static_cast<int>(CFX_GraphStateData::LineCap::kRound) ==
+                  FPDF_LINECAP_ROUND,
+              "CFX_GraphStateData::LineCap::kRound value mismatch");
+static_assert(static_cast<int>(CFX_GraphStateData::LineCap::kSquare) ==
                   FPDF_LINECAP_PROJECTING_SQUARE,
-              "CFX_GraphStateData::LineCapSquare value mismatch");
+              "CFX_GraphStateData::LineCap::kSquare value mismatch");
 
-static_assert(CFX_GraphStateData::LineJoinMiter == FPDF_LINEJOIN_MITER,
-              "CFX_GraphStateData::LineJoinMiter value mismatch");
-static_assert(CFX_GraphStateData::LineJoinRound == FPDF_LINEJOIN_ROUND,
-              "CFX_GraphStateData::LineJoinRound value mismatch");
-static_assert(CFX_GraphStateData::LineJoinBevel == FPDF_LINEJOIN_BEVEL,
-              "CFX_GraphStateData::LineJoinBevel value mismatch");
+static_assert(static_cast<int>(CFX_GraphStateData::LineJoin::kMiter) ==
+                  FPDF_LINEJOIN_MITER,
+              "CFX_GraphStateData::LineJoin::kMiter value mismatch");
+static_assert(static_cast<int>(CFX_GraphStateData::LineJoin::kRound) ==
+                  FPDF_LINEJOIN_ROUND,
+              "CFX_GraphStateData::LineJoin::kRound value mismatch");
+static_assert(static_cast<int>(CFX_GraphStateData::LineJoin::kBevel) ==
+                  FPDF_LINEJOIN_BEVEL,
+              "CFX_GraphStateData::LineJoin::kBevel value mismatch");
 
-static_assert(static_cast<int>(FXPT_TYPE::LineTo) == FPDF_SEGMENT_LINETO,
-              "FXPT_TYPE::LineTo value mismatch");
-static_assert(static_cast<int>(FXPT_TYPE::BezierTo) == FPDF_SEGMENT_BEZIERTO,
-              "FXPT_TYPE::BezierTo value mismatch");
-static_assert(static_cast<int>(FXPT_TYPE::MoveTo) == FPDF_SEGMENT_MOVETO,
-              "FXPT_TYPE::MoveTo value mismatch");
+static_assert(static_cast<int>(CFX_Path::Point::Type::kLine) ==
+                  FPDF_SEGMENT_LINETO,
+              "CFX_Path::Point::Type::kLine value mismatch");
+static_assert(static_cast<int>(CFX_Path::Point::Type::kBezier) ==
+                  FPDF_SEGMENT_BEZIERTO,
+              "CFX_Path::Point::Type::kBezier value mismatch");
+static_assert(static_cast<int>(CFX_Path::Point::Type::kMove) ==
+                  FPDF_SEGMENT_MOVETO,
+              "CFX_Path::Point::Type::kMove value mismatch");
 
 namespace {
 
@@ -49,7 +57,7 @@ CPDF_PathObject* CPDFPathObjectFromFPDFPageObject(FPDF_PAGEOBJECT page_object) {
 FPDF_EXPORT FPDF_PAGEOBJECT FPDF_CALLCONV FPDFPageObj_CreateNewPath(float x,
                                                                     float y) {
   auto pPathObj = std::make_unique<CPDF_PathObject>();
-  pPathObj->path().AppendPoint(CFX_PointF(x, y), FXPT_TYPE::MoveTo);
+  pPathObj->path().AppendPoint(CFX_PointF(x, y), CFX_Path::Point::Type::kMove);
   pPathObj->DefaultStates();
 
   // Caller takes ownership.
@@ -72,7 +80,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFPath_CountSegments(FPDF_PAGEOBJECT path) {
   auto* pPathObj = CPDFPathObjectFromFPDFPageObject(path);
   if (!pPathObj)
     return -1;
-  return pdfium::CollectionSize<int>(pPathObj->path().GetPoints());
+  return fxcrt::CollectionSize<int>(pPathObj->path().GetPoints());
 }
 
 FPDF_EXPORT FPDF_PATHSEGMENT FPDF_CALLCONV
@@ -81,8 +89,8 @@ FPDFPath_GetPathSegment(FPDF_PAGEOBJECT path, int index) {
   if (!pPathObj)
     return nullptr;
 
-  pdfium::span<const FX_PATHPOINT> points = pPathObj->path().GetPoints();
-  if (!pdfium::IndexInBounds(points, index))
+  pdfium::span<const CFX_Path::Point> points = pPathObj->path().GetPoints();
+  if (!fxcrt::IndexInBounds(points, index))
     return nullptr;
 
   return FPDFPathSegmentFromFXPathPoint(&points[index]);
@@ -95,7 +103,7 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPath_MoveTo(FPDF_PAGEOBJECT path,
   if (!pPathObj)
     return false;
 
-  pPathObj->path().AppendPoint(CFX_PointF(x, y), FXPT_TYPE::MoveTo);
+  pPathObj->path().AppendPoint(CFX_PointF(x, y), CFX_Path::Point::Type::kMove);
   pPathObj->SetDirty(true);
   return true;
 }
@@ -107,7 +115,7 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPath_LineTo(FPDF_PAGEOBJECT path,
   if (!pPathObj)
     return false;
 
-  pPathObj->path().AppendPoint(CFX_PointF(x, y), FXPT_TYPE::LineTo);
+  pPathObj->path().AppendPoint(CFX_PointF(x, y), CFX_Path::Point::Type::kLine);
   pPathObj->SetDirty(true);
   return true;
 }
@@ -124,9 +132,9 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPath_BezierTo(FPDF_PAGEOBJECT path,
     return false;
 
   CPDF_Path& cpath = pPathObj->path();
-  cpath.AppendPoint(CFX_PointF(x1, y1), FXPT_TYPE::BezierTo);
-  cpath.AppendPoint(CFX_PointF(x2, y2), FXPT_TYPE::BezierTo);
-  cpath.AppendPoint(CFX_PointF(x3, y3), FXPT_TYPE::BezierTo);
+  cpath.AppendPoint(CFX_PointF(x1, y1), CFX_Path::Point::Type::kBezier);
+  cpath.AppendPoint(CFX_PointF(x2, y2), CFX_Path::Point::Type::kBezier);
+  cpath.AppendPoint(CFX_PointF(x3, y3), CFX_Path::Point::Type::kBezier);
   pPathObj->SetDirty(true);
   return true;
 }
@@ -178,33 +186,6 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPath_GetDrawMode(FPDF_PAGEOBJECT path,
     *fillmode = FPDF_FILLMODE_NONE;
 
   *stroke = pPathObj->stroke();
-  return true;
-}
-
-FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPath_GetMatrix(FPDF_PAGEOBJECT path,
-                                                       FS_MATRIX* matrix) {
-  if (!path || !matrix)
-    return false;
-
-  CPDF_PathObject* pPathObj = CPDFPathObjectFromFPDFPageObject(path);
-  if (!pPathObj)
-    return false;
-
-  *matrix = FSMatrixFromCFXMatrix(pPathObj->matrix());
-  return true;
-}
-
-FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
-FPDFPath_SetMatrix(FPDF_PAGEOBJECT path, const FS_MATRIX* matrix) {
-  if (!matrix)
-    return false;
-
-  CPDF_PathObject* pPathObj = CPDFPathObjectFromFPDFPageObject(path);
-  if (!pPathObj)
-    return false;
-
-  pPathObj->set_matrix(CFXMatrixFromFSMatrix(*matrix));
-  pPathObj->SetDirty(true);
   return true;
 }
 

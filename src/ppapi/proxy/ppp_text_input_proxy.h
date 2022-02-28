@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "ppapi/c/dev/ppp_text_input_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
@@ -19,6 +18,10 @@ namespace proxy {
 class PPP_TextInput_Proxy : public InterfaceProxy {
  public:
   PPP_TextInput_Proxy(Dispatcher* dispatcher);
+
+  PPP_TextInput_Proxy(const PPP_TextInput_Proxy&) = delete;
+  PPP_TextInput_Proxy& operator=(const PPP_TextInput_Proxy&) = delete;
+
   ~PPP_TextInput_Proxy() override;
 
   static const PPP_TextInput_Dev* GetProxyInterface();
@@ -35,8 +38,6 @@ class PPP_TextInput_Proxy : public InterfaceProxy {
   // pointer so we don't have to retrieve it from the dispatcher each time.
   // In the host, this value is always NULL.
   const PPP_TextInput_Dev* ppp_text_input_impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(PPP_TextInput_Proxy);
 };
 
 }  // namespace proxy

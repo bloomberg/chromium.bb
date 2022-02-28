@@ -18,7 +18,9 @@ message Model {
   oneof model {
     DecisionTree decision_tree = 1;
     Ensemble ensemble = 2;
-    // The URL that the model can be downloaded from.
+    // When passed from the server, this is the URL that the model can be
+    // downloaded from. When used internally within Chrome, this contains the
+    // absolute file path where the model file is saved on disk.
     string download_url = 5;
   }
   // The tag number is high to allow models to be added and an uncommon number
@@ -133,14 +135,6 @@ message Int32Value {
   optional int32 value = 1;
 }
 
-// Wrapper message for `string`.
-//
-// The JSON representation for `StringValue` is JSON string.
-message StringValue {
-  // The string value.
-  optional string value = 1;
-}
-
 // Wrapper message for `double`.
 //
 // The JSON representation for `DoubleValue` is JSON number.
@@ -197,7 +191,16 @@ message PredictionModel {
   optional Model model = 2;
 }
 
-//  Metadata for a prediction model for a specific optimization target.
+message AdditionalModelFile {
+  // When sent by the server, this contains the basenames of the additional
+  // files that should be kept and sent to this model's consumers. When used
+  // only locally within Chrome, the full path is given.
+  optional string file_path = 1;
+}
+
+// Metadata for a prediction model for a specific optimization target.
+//
+// Next ID: 8
 message ModelInfo {
   reserved 3;
 
@@ -211,6 +214,14 @@ message ModelInfo {
   //
   // Note that this should only be populated if part of the response.
   repeated string supported_host_model_features = 5;
+  // Additional files required by this model version.
+  //
+  // If populated, these files are included in the downloaded archive for this
+  // model and should be passed along to the consumer.
+  //
+  // This does not need to be sent to the server in the request for an update to
+  // this model. The server will ignore this if sent.
+  repeated AdditionalModelFile additional_files = 7;
   // Mechanism used for model owners to attach metadata to the request or
   // response.
   //
@@ -236,9 +247,35 @@ enum OptimizationTarget {
   OPTIMIZATION_TARGET_SEGMENTATION_SHARE = 5;
   // Target for segmentation: Voice user.
   OPTIMIZATION_TARGET_SEGMENTATION_VOICE = 6;
+  // Target for model validation.
+  OPTIMIZATION_TARGET_MODEL_VALIDATION = 7;
+  // Target for determining entities present on a page.
+  OPTIMIZATION_TARGET_PAGE_ENTITIES = 8;
+  // Target for Chrome Permissions Suggestions Service: Notification permission.
+  OPTIMIZATION_TARGET_NOTIFICATION_PERMISSION_PREDICTIONS = 9;
+  // Target that enables data collection on client side for various experiments.
+  OPTIMIZATION_TARGET_SEGMENTATION_DUMMY = 10;
+  // Target for segmentation: Chrome Android Start user.
+  OPTIMIZATION_TARGET_SEGMENTATION_CHROME_START_ANDROID = 11;
+  // Target for segmentation: Query Tiles user.
+  OPTIMIZATION_TARGET_SEGMENTATION_QUERY_TILES = 12;
+  // Target for determining the UI visibility of a page.
+  OPTIMIZATION_TARGET_PAGE_VISIBILITY = 13;
+  // Target for supplying the Autofill Assistant annotate DOM model via the
+  // model downloader.
+  OPTIMIZATION_TARGET_AUTOFILL_ASSISTANT = 14;
+  // Target for determining topics present on a page.
+  // TODO(crbug/1266504): Remove PAGE_TOPICS in favor of this target.
+  OPTIMIZATION_TARGET_PAGE_TOPICS_V2 = 15;
 }
 
 // The types of models that can be evaluated.
+//
+// Please only update these enums when a new major version of TFLite rolls.
+//
+// For example: v1.2.3
+//                 ^
+//                 Change when this number increments.
 enum ModelType {
   MODEL_TYPE_UNKNOWN = 0;
   // A decision tree.
@@ -248,6 +285,13 @@ enum ModelType {
   // A model using only operations that are supported by TensorflowLite 2.3.0
   // with updated FULLY_CONNECTED and BATCH_MUL versions for quantized models.
   MODEL_TYPE_TFLITE_2_3_0_1 = 3;
+  // TensorflowLite version 2.4.2, and a bit more up to internal rev number
+  // 381280669.
+  MODEL_TYPE_TFLITE_2_4 = 4;
+  // TensorflowLite version 2.7.*. This is where regular ~HEAD rolls started.
+  MODEL_TYPE_TFLITE_2_7 = 5;
+  // A model using only operations that are supported by TensorflowLite 2.8.0.
+  MODEL_TYPE_TFLITE_2_8 = 6;
 }
 
 // A set of model features and the host that it applies to.

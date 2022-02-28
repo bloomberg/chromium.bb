@@ -4,11 +4,32 @@
 
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../scripts/build/ninja/devtools_module.gni")
+import("../../../scripts/build/ninja/generate_css.gni")
 import("../../../third_party/typescript/typescript.gni")
 import("../visibility.gni")
 
+generate_css("css_files") {
+  sources = [
+    "classesPaneWidget.css",
+    "computedStyleSidebarPane.css",
+    "computedStyleWidgetTree.css",
+    "domLinkifier.css",
+    "elementStatePaneWidget.css",
+    "elementsPanel.css",
+    "elementsTreeOutline.css",
+    "layoutPane.css",
+    "metricsSidebarPane.css",
+    "nodeStackTraceWidget.css",
+    "platformFontsWidget.css",
+    "propertiesWidget.css",
+    "stylesSectionTree.css",
+    "stylesSidebarPane.css",
+  ]
+}
+
 devtools_module("elements") {
   sources = [
+    "AccessibilityTreeUtils.ts",
     "AccessibilityTreeView.ts",
     "ClassesPaneWidget.ts",
     "ColorSwatchPopoverIcon.ts",
@@ -35,6 +56,7 @@ devtools_module("elements") {
     "StyleEditorWidget.ts",
     "StylePropertyHighlighter.ts",
     "StylePropertyTreeElement.ts",
+    "StylePropertyUtils.ts",
     "StylesSidebarPane.ts",
   ]
 
@@ -52,12 +74,14 @@ devtools_module("elements") {
     "../../panels/emulation:bundle",
     "../../panels/event_listeners:bundle",
     "../../panels/mobile_throttling:bundle",
+    "../../ui/components/adorners:bundle",
+    "../../ui/components/code_highlighter:bundle",
+    "../../ui/components/text_editor:bundle",
     "../../ui/components/tree_outline:bundle",
     "../../ui/legacy:bundle",
     "../../ui/legacy/components/color_picker:bundle",
     "../../ui/legacy/components/inline_editor:bundle",
     "../../ui/legacy/components/object_ui:bundle",
-    "../../ui/legacy/components/text_editor:bundle",
     "../../ui/legacy/components/utils:bundle",
     "../../ui/lit-html:bundle",
     "./components:bundle",
@@ -69,14 +93,13 @@ devtools_module("elements") {
   ]
 }
 
-copy_to_gen("legacy_css") {
-  sources = [ "layoutPane.css" ]
-}
-
 devtools_entrypoint("bundle") {
   entrypoint = "elements.ts"
 
-  deps = [ ":elements" ]
+  deps = [
+    ":css_files",
+    ":elements",
+  ]
 
   visibility = [
     ":*",
@@ -90,7 +113,6 @@ devtools_entrypoint("bundle") {
     "../../ui/components/docs/layout_pane/*",
 
     # TODO(crbug.com/1202788): Remove invalid dependents
-    "../../models/recorder/*",
     "../issues/*",
     "../network/*",
   ]

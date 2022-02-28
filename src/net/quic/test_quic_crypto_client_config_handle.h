@@ -5,7 +5,7 @@
 #ifndef NET_QUIC_TEST_QUIC_CRYPTO_CLIENT_CONFIG_HANDLE_H_
 #define NET_QUIC_TEST_QUIC_CRYPTO_CLIENT_CONFIG_HANDLE_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "net/quic/quic_crypto_client_config_handle.h"
 
 namespace quic {
@@ -19,14 +19,16 @@ namespace net {
 class TestQuicCryptoClientConfigHandle : public QuicCryptoClientConfigHandle {
  public:
   TestQuicCryptoClientConfigHandle(quic::QuicCryptoClientConfig* crypto_config);
+
+  TestQuicCryptoClientConfigHandle& operator=(
+      const TestQuicCryptoClientConfigHandle&) = delete;
+
   ~TestQuicCryptoClientConfigHandle() override;
 
   quic::QuicCryptoClientConfig* GetConfig() const override;
 
  private:
-  quic::QuicCryptoClientConfig* const crypto_config_;
-
-  DISALLOW_ASSIGN(TestQuicCryptoClientConfigHandle);
+  const raw_ptr<quic::QuicCryptoClientConfig> crypto_config_;
 };
 
 }  // namespace net

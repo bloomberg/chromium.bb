@@ -16,7 +16,6 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -69,9 +68,9 @@ const unsigned int kRecentlyClosedCount = 8;
 const size_t kMaximumMenuWidthInChars = 50;
 
 // Constants used in menu definitions.  The first non-Chrome command is at
-// IDC_FIRST_BOOKMARK_MENU.
+// IDC_FIRST_UNBOUNDED_MENU.
 enum ReservedCommandId {
-  kLastChromeCommand = IDC_FIRST_BOOKMARK_MENU - 1,
+  kLastChromeCommand = IDC_FIRST_UNBOUNDED_MENU - 1,
   kMenuEnd,
   kSeparator,
   kSubmenu,
@@ -145,13 +144,6 @@ constexpr DbusAppmenuCommand kToolsMenu[] = {
     {IDC_DEV_TOOLS_DEVICES, IDS_DEV_TOOLS_DEVICES},
     {kMenuEnd}};
 
-// TODO(crbug.com/1108289): Remove after launch.
-constexpr DbusAppmenuCommand kOldProfilesMenu[] = {
-    {kSeparator},
-    {kTagProfileEdit, IDS_PROFILES_MANAGE_BUTTON_LABEL},
-    {kTagProfileCreate, IDS_PROFILES_CREATE_BUTTON_LABEL},
-    {kMenuEnd}};
-
 constexpr DbusAppmenuCommand kProfilesMenu[] = {
     {kSeparator},
     {kTagProfileEdit, IDS_PROFILES_MANAGE_BUTTON_LABEL},
@@ -192,6 +184,9 @@ std::vector<std::pair<ui::MenuModel*, int>> FindMenuItemsForCommand(
 struct DbusAppmenu::HistoryItem {
   HistoryItem() : session_id(SessionID::InvalidValue()) {}
 
+  HistoryItem(const HistoryItem&) = delete;
+  HistoryItem& operator=(const HistoryItem&) = delete;
+
   // The title for the menu item.
   std::u16string title;
   // The URL that will be navigated to if the user selects this item.
@@ -209,9 +204,6 @@ struct DbusAppmenu::HistoryItem {
   // is the owner of all items. If it is not a window, then the entry is a
   // single page and the vector will be empty.
   std::vector<HistoryItem*> tabs;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HistoryItem);
 };
 
 DbusAppmenu::DbusAppmenu(BrowserView* browser_view, uint32_t browser_frame_id)
@@ -256,10 +248,7 @@ void DbusAppmenu::Initialize(DbusMenu::InitializedCallback callback) {
   BuildStaticMenu(IDS_VIEW_MENU_LINUX, kViewMenu);
   history_menu_ = BuildStaticMenu(IDS_HISTORY_MENU_LINUX, kHistoryMenu);
   BuildStaticMenu(IDS_TOOLS_MENU_LINUX, kToolsMenu);
-  profiles_menu_ =
-      base::FeatureList::IsEnabled(features::kNewProfilePicker)
-          ? BuildStaticMenu(IDS_PROFILES_MENU_NAME, kProfilesMenu)
-          : BuildStaticMenu(IDS_PROFILES_OPTIONS_GROUP_NAME, kOldProfilesMenu);
+  profiles_menu_ = BuildStaticMenu(IDS_PROFILES_MENU_NAME, kProfilesMenu);
   BuildStaticMenu(IDS_HELP_MENU_LINUX, kHelpMenu);
 
   pref_change_registrar_.Init(browser_->profile()->GetPrefs());

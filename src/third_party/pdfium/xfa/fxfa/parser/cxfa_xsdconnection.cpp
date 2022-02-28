@@ -12,8 +12,8 @@
 namespace {
 
 const CXFA_Node::PropertyData kXsdConnectionPropertyData[] = {
-    {XFA_Element::Uri, 1, 0},
-    {XFA_Element::RootElement, 1, 0},
+    {XFA_Element::Uri, 1, {}},
+    {XFA_Element::RootElement, 1, {}},
 };
 
 const CXFA_Node::AttributeData kXsdConnectionAttributeData[] = {
@@ -27,7 +27,7 @@ CXFA_XsdConnection::CXFA_XsdConnection(CXFA_Document* doc,
                                        XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_ConnectionSet,
+                XFA_XDPPACKET::kConnectionSet,
                 XFA_ObjectType::Node,
                 XFA_Element::XsdConnection,
                 kXsdConnectionPropertyData,

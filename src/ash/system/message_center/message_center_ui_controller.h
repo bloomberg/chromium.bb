@@ -8,9 +8,11 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/session/session_observer.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/system/message_center/message_center_ui_delegate.h"
-#include "base/macros.h"
-#include "base/observer_list.h"
+#include "base/scoped_observation.h"
+#include "base/timer/timer.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
@@ -26,9 +28,15 @@ namespace ash {
 // UiDelegate when the tray is changed, as well as when bubbles are shown and
 // hidden.
 class ASH_EXPORT MessageCenterUiController
-    : public message_center::MessageCenterObserver {
+    : public message_center::MessageCenterObserver,
+      public SessionObserver {
  public:
   explicit MessageCenterUiController(MessageCenterUiDelegate* delegate);
+
+  MessageCenterUiController(const MessageCenterUiController&) = delete;
+  MessageCenterUiController& operator=(const MessageCenterUiController&) =
+      delete;
+
   ~MessageCenterUiController() override;
 
   // Shows or updates the message center bubble and hides the popup bubble.
@@ -79,7 +87,11 @@ class ASH_EXPORT MessageCenterUiController
   void OnNotificationPopupShown(const std::string& notification_id,
                                 bool mark_notification_as_read) override;
 
+  // SessionObserver:
+  void OnFirstSessionStarted() override;
+
  private:
+  void OnLoginTimerEnded();
   void OnMessageCenterChanged();
   void NotifyUiControllerChanged();
   void HidePopupBubbleInternal();
@@ -92,7 +104,11 @@ class ASH_EXPORT MessageCenterUiController
   // Set true to hide MessageCenterView when the last notification is dismissed.
   bool hide_on_last_notification_ = true;
 
-  DISALLOW_COPY_AND_ASSIGN(MessageCenterUiController);
+  int notifications_displayed_in_first_minute_count_ = 0;
+  base::OneShotTimer login_notification_logging_timer_;
+
+  base::ScopedObservation<SessionController, SessionObserver> session_observer_{
+      this};
 };
 
 }  // namespace ash

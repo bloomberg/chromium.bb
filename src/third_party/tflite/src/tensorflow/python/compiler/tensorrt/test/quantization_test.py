@@ -14,13 +14,8 @@
 # ==============================================================================
 """Model script to test TF-TensorRT integration."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 
-from tensorflow.compiler.tf2tensorrt._pywrap_py_utils import get_linked_tensorrt_version
 from tensorflow.python.compiler.tensorrt.test import tf_trt_integration_test_base as trt_test
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
@@ -65,8 +60,7 @@ class QuantizationMissingAllRangesTest(trt_test.TfTrtIntegrationTestBase):
 
   def ShouldRunTest(self, run_params):
     # Only test static engine mode, with or without calibration.
-    return (get_linked_tensorrt_version()[0] >= 5 and
-            trt_test.IsQuantizationMode(run_params.precision_mode) and
+    return (trt_test.IsQuantizationMode(run_params.precision_mode) and
             not run_params.convert_online and not run_params.dynamic_engine
            ), "test static engine, offline conversion and INT8"
 
@@ -90,8 +84,7 @@ class QuantizationWithRangesTest(trt_test.TfTrtIntegrationTestBase):
 
   def ShouldRunTest(self, run_params):
     # Test static/dynamic engine with/without calibration.
-    return (get_linked_tensorrt_version()[0] >= 5 and
-            trt_test.IsQuantizationMode(run_params.precision_mode) and
+    return (trt_test.IsQuantizationMode(run_params.precision_mode) and
             not run_params.convert_online), "test offline conversion and INT8"
 
   def ExpectedEnginesToBuild(self, run_params):

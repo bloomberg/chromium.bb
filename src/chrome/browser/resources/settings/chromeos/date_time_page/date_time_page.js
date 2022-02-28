@@ -8,14 +8,39 @@
  * settings.
  */
 
+import '//resources/cr_elements/cr_link_row/cr_link_row.js';
+import '//resources/cr_elements/policy/cr_policy_indicator.m.js';
+import '//resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
+import '../../controls/settings_toggle_button.js';
+import '../../settings_page/settings_subpage.js';
+import '../../settings_shared_css.js';
+import './date_time_types.js';
+import './timezone_selector.js';
+import './timezone_subpage.js';
+
+import {addWebUIListener, removeWebUIListener, sendWithPromise, WebUIListener} from '//resources/js/cr.m.js';
+import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
+import {WebUIListenerBehavior} from '//resources/js/web_ui_listener_behavior.m.js';
+import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../../i18n_setup.js';
+import {Route, Router} from '../../router.js';
+import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
+import {routes} from '../os_route.m.js';
+import {PrefsBehavior} from '../prefs_behavior.js';
+import {RouteObserverBehavior} from '../route_observer_behavior.js';
+
+import {TimeZoneBrowserProxy, TimeZoneBrowserProxyImpl} from './timezone_browser_proxy.js';
+
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'settings-date-time-page',
 
   behaviors: [
     DeepLinkingBehavior,
     I18nBehavior,
     PrefsBehavior,
-    settings.RouteObserverBehavior,
+    RouteObserverBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -44,9 +69,9 @@ Polymer({
       type: Object,
       value() {
         const map = new Map();
-        if (settings.routes.DATETIME_TIMEZONE_SUBPAGE) {
+        if (routes.DATETIME_TIMEZONE_SUBPAGE) {
           map.set(
-              settings.routes.DATETIME_TIMEZONE_SUBPAGE.path,
+              routes.DATETIME_TIMEZONE_SUBPAGE.path,
               '#timeZoneSettingsTrigger');
         }
         return map;
@@ -85,12 +110,12 @@ Polymer({
     },
   },
 
-  /** @private {?settings.TimeZoneBrowserProxy} */
+  /** @private {?TimeZoneBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   created() {
-    this.browserProxy_ = settings.TimeZoneBrowserProxyImpl.getInstance();
+    this.browserProxy_ = TimeZoneBrowserProxyImpl.getInstance();
   },
 
   /** @override */
@@ -101,12 +126,12 @@ Polymer({
   },
 
   /**
-   * @param {!settings.Route} route
-   * @param {!settings.Route} oldRoute
+   * @param {!Route} route
+   * @param {!Route} oldRoute
    */
   currentRouteChanged(route, oldRoute) {
     // Does not apply to this page.
-    if (route !== settings.routes.DATETIME) {
+    if (route !== routes.DATETIME) {
       return;
     }
 
@@ -154,7 +179,6 @@ Polymer({
 
   /** @private */
   openTimeZoneSubpage_() {
-    settings.Router.getInstance().navigateTo(
-        settings.routes.DATETIME_TIMEZONE_SUBPAGE);
+    Router.getInstance().navigateTo(routes.DATETIME_TIMEZONE_SUBPAGE);
   },
 });

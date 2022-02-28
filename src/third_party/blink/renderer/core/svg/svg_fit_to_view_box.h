@@ -24,11 +24,14 @@
 
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
+namespace gfx {
+class RectF;
+class SizeF;
+}  // namespace gfx
+
 namespace blink {
 
 class AffineTransform;
-class FloatRect;
-class FloatSize;
 class QualifiedName;
 class SVGAnimatedPreserveAspectRatio;
 class SVGAnimatedRect;
@@ -37,11 +40,13 @@ class SVGPreserveAspectRatio;
 
 class SVGFitToViewBox : public GarbageCollectedMixin {
  public:
-  static AffineTransform ViewBoxToViewTransform(const FloatRect& view_box_rect,
-                                                const SVGPreserveAspectRatio*,
-                                                const FloatSize& viewport_size);
+  static AffineTransform ViewBoxToViewTransform(
+      const gfx::RectF& view_box_rect,
+      const SVGPreserveAspectRatio*,
+      const gfx::SizeF& viewport_size);
 
   static bool IsKnownAttribute(const QualifiedName&);
+  bool HasValidViewBox() const;
 
   // JS API
   SVGAnimatedRect* viewBox() const { return view_box_.Get(); }

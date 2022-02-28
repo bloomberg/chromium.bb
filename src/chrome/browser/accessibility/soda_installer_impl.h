@@ -36,16 +36,14 @@ class SodaInstallerImpl : public SodaInstaller,
   base::FilePath GetSodaBinaryPath() const override;
 
   // Currently only implemented in the chromeos-specific subclass.
-  base::FilePath GetLanguagePath() const override;
+  base::FilePath GetLanguagePath(const std::string& language) const override;
 
   // SodaInstaller:
   void InstallLanguage(const std::string& language,
                        PrefService* global_prefs) override;
-  bool IsSodaInstalled() const override;
-  bool IsLanguageInstalled(
-      const std::string& locale_or_language) const override;
+  std::vector<std::string> GetAvailableLanguages() const override;
 
- private:
+ protected:
   // SodaInstaller:
   void InstallSoda(PrefService* global_prefs) override;
   void UninstallSoda(PrefService* global_prefs) override;
@@ -56,6 +54,7 @@ class SodaInstallerImpl : public SodaInstaller,
   void OnSodaBinaryInstalled();
   void OnSodaLanguagePackInstalled(speech::LanguageCode language_code);
 
+ private:
   std::map<std::string, update_client::CrxUpdateItem> downloading_components_;
 
   base::ScopedObservation<component_updater::ComponentUpdateService,
