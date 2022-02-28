@@ -65,7 +65,9 @@ import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
+import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
 import org.chromium.components.browser_ui.widget.InsetObserverView;
+import org.chromium.components.browser_ui.widget.TouchEventObserver;
 import org.chromium.components.content_capture.OnscreenContentProvider;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.ImeAdapter;
@@ -117,25 +119,6 @@ public class CompositorViewHolder extends FrameLayout
          */
         void initializeCompositorContent(LayoutManagerImpl layoutManager, View urlBar,
                 ViewGroup contentContainer, ControlContainer controlContainer);
-    }
-
-    /**
-     * Observer interface for any object that needs to process touch events.
-     */
-    public interface TouchEventObserver {
-        /**
-         * Determine if touch events should be forwarded to the observing object.
-         * Should return {@link true} if the object decided to consume the events.
-         * @param e {@link MotionEvent} object to process.
-         * @return {@code true} if the observer will process touch events going forward.
-         */
-        boolean shouldInterceptTouchEvent(MotionEvent e);
-
-        /**
-         * Handle touch events.
-         * @param e {@link MotionEvent} object to process.
-         */
-        void handleTouchEvent(MotionEvent e);
     }
 
     private ObserverList<TouchEventObserver> mTouchEventObservers = new ObserverList<>();
@@ -686,6 +669,7 @@ public class CompositorViewHolder extends FrameLayout
         } else if (eventAction == MotionEvent.ACTION_CANCEL
                 || eventAction == MotionEvent.ACTION_UP) {
             mInGesture = false;
+            updateViewportSize();
         }
     }
 
@@ -1097,6 +1081,7 @@ public class CompositorViewHolder extends FrameLayout
 
         mDidSwapFrameCallbacks.addAll(mOnCompositorLayoutCallbacks);
         mOnCompositorLayoutCallbacks.clear();
+        updateNeedsSwapBuffersCallback();
 
         TraceEvent.end("CompositorViewHolder:layout");
     }
@@ -1143,7 +1128,10 @@ public class CompositorViewHolder extends FrameLayout
 
     @Override
     public void requestRender(Runnable onUpdateEffective) {
-        if (onUpdateEffective != null) mOnCompositorLayoutCallbacks.add(onUpdateEffective);
+        if (onUpdateEffective != null) {
+            mOnCompositorLayoutCallbacks.add(onUpdateEffective);
+            updateNeedsSwapBuffersCallback();
+        }
         mCompositorView.requestRender();
     }
 
@@ -1181,6 +1169,7 @@ public class CompositorViewHolder extends FrameLayout
 
         mDidSwapBuffersCallbacks.addAll(mDidSwapFrameCallbacks);
         mDidSwapFrameCallbacks.clear();
+        updateNeedsSwapBuffersCallback();
     }
 
     @Override
@@ -1189,6 +1178,7 @@ public class CompositorViewHolder extends FrameLayout
             runnable.run();
         }
         mDidSwapBuffersCallbacks.clear();
+        updateNeedsSwapBuffersCallback();
     }
 
     @Override
@@ -1399,6 +1389,7 @@ public class CompositorViewHolder extends FrameLayout
             }
 
             // CompositorView always has index of 0.
+            // TODO(crbug.com/1216949): Look into enforcing the z-order of the views.
             addView(mView, 1);
 
             setFocusable(false);
@@ -1431,7 +1422,13 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     private void setTab(Tab tab) {
-        if (tab != null) tab.loadIfNeeded();
+        // The StartSurfaceUserData.getInstance().getUnusedTabRestoredAtStartup() is only true when
+        // the Start surface is showing in the startup and there isn't any Tab opened. Thus, no
+        // Tab needs to be loaded. Once a new Tab is opening and Start surface is hiding, this flag
+        // will be reset.
+        if (tab != null && !StartSurfaceUserData.getInstance().getUnusedTabRestoredAtStartup()) {
+            tab.loadIfNeeded();
+        }
 
         View newView = tab != null ? tab.getView() : null;
         if (mView == newView) return;
@@ -1702,6 +1699,13 @@ public class CompositorViewHolder extends FrameLayout
             }
             return mPixelRect;
         }
+    }
+
+    // Should be called any time inputs used to compute `needsSwapCallback` changes.
+    private void updateNeedsSwapBuffersCallback() {
+        boolean needsSwapCallback = !mOnCompositorLayoutCallbacks.isEmpty()
+                || !mDidSwapFrameCallbacks.isEmpty() || !mDidSwapBuffersCallbacks.isEmpty();
+        mCompositorView.setRenderHostNeedsDidSwapBuffersCallback(needsSwapCallback);
     }
 
     void setCompositorViewForTesting(CompositorView compositorView) {

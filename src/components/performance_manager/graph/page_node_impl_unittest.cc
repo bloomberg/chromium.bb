@@ -5,6 +5,7 @@
 #include "components/performance_manager/graph/page_node_impl.h"
 
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/graph_impl_operations.h"
 #include "components/performance_manager/graph/process_node_impl.h"
@@ -61,9 +62,9 @@ TEST_F(PageNodeImplTest, AddFrameBasic) {
   auto parent_frame =
       CreateFrameNodeAutoId(process_node.get(), page_node.get());
   auto child1_frame = CreateFrameNodeAutoId(process_node.get(), page_node.get(),
-                                            parent_frame.get(), 1);
+                                            parent_frame.get());
   auto child2_frame = CreateFrameNodeAutoId(process_node.get(), page_node.get(),
-                                            parent_frame.get(), 2);
+                                            parent_frame.get());
 
   // Validate that all frames are tallied to the page.
   EXPECT_EQ(3u, GraphImplOperations::GetFrameNodes(page_node.get()).size());
@@ -73,7 +74,7 @@ TEST_F(PageNodeImplTest, RemoveFrame) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   auto page_node = CreateNode<PageNodeImpl>();
   auto frame_node =
-      CreateFrameNodeAutoId(process_node.get(), page_node.get(), nullptr, 0);
+      CreateFrameNodeAutoId(process_node.get(), page_node.get(), nullptr);
 
   // Ensure correct page-frame relationship has been established.
   auto frame_nodes = GraphImplOperations::GetFrameNodes(page_node.get());
@@ -92,13 +93,13 @@ TEST_F(PageNodeImplTest, TimeSinceLastVisibilityChange) {
 
   mock_graph.page->SetIsVisible(true);
   EXPECT_TRUE(mock_graph.page->is_visible());
-  AdvanceClock(base::TimeDelta::FromSeconds(42));
-  EXPECT_EQ(base::TimeDelta::FromSeconds(42),
+  AdvanceClock(base::Seconds(42));
+  EXPECT_EQ(base::Seconds(42),
             mock_graph.page->TimeSinceLastVisibilityChange());
 
   mock_graph.page->SetIsVisible(false);
-  AdvanceClock(base::TimeDelta::FromSeconds(23));
-  EXPECT_EQ(base::TimeDelta::FromSeconds(23),
+  AdvanceClock(base::Seconds(23));
+  EXPECT_EQ(base::Seconds(23),
             mock_graph.page->TimeSinceLastVisibilityChange());
   EXPECT_FALSE(mock_graph.page->is_visible());
 }
@@ -115,9 +116,8 @@ TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
   EXPECT_EQ(url, mock_graph.page->main_frame_url());
   EXPECT_EQ(10u, mock_graph.page->navigation_id());
   EXPECT_EQ(kHtmlMimeType, mock_graph.page->contents_mime_type());
-  AdvanceClock(base::TimeDelta::FromSeconds(11));
-  EXPECT_EQ(base::TimeDelta::FromSeconds(11),
-            mock_graph.page->TimeSinceLastNavigation());
+  AdvanceClock(base::Seconds(11));
+  EXPECT_EQ(base::Seconds(11), mock_graph.page->TimeSinceLastNavigation());
 
   // 2nd navigation.
   url = GURL("http://www.example.org/bobcat");
@@ -126,9 +126,8 @@ TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
   EXPECT_EQ(url, mock_graph.page->main_frame_url());
   EXPECT_EQ(20u, mock_graph.page->navigation_id());
   EXPECT_EQ(kHtmlMimeType, mock_graph.page->contents_mime_type());
-  AdvanceClock(base::TimeDelta::FromSeconds(17));
-  EXPECT_EQ(base::TimeDelta::FromSeconds(17),
-            mock_graph.page->TimeSinceLastNavigation());
+  AdvanceClock(base::Seconds(17));
+  EXPECT_EQ(base::Seconds(17), mock_graph.page->TimeSinceLastNavigation());
 
   // Test a same-document navigation.
   url = GURL("http://www.example.org/bobcat#fun");
@@ -137,9 +136,8 @@ TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
   EXPECT_EQ(url, mock_graph.page->main_frame_url());
   EXPECT_EQ(30u, mock_graph.page->navigation_id());
   EXPECT_EQ(kHtmlMimeType, mock_graph.page->contents_mime_type());
-  AdvanceClock(base::TimeDelta::FromSeconds(17));
-  EXPECT_EQ(base::TimeDelta::FromSeconds(17),
-            mock_graph.page->TimeSinceLastNavigation());
+  AdvanceClock(base::Seconds(17));
+  EXPECT_EQ(base::Seconds(17), mock_graph.page->TimeSinceLastNavigation());
 
   // Test a navigation to a page with a different MIME type.
   url = GURL("http://www.example.org/document.pdf");
@@ -148,9 +146,8 @@ TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
   EXPECT_EQ(url, mock_graph.page->main_frame_url());
   EXPECT_EQ(40u, mock_graph.page->navigation_id());
   EXPECT_EQ(kPdfMimeType, mock_graph.page->contents_mime_type());
-  AdvanceClock(base::TimeDelta::FromSeconds(17));
-  EXPECT_EQ(base::TimeDelta::FromSeconds(17),
-            mock_graph.page->TimeSinceLastNavigation());
+  AdvanceClock(base::Seconds(17));
+  EXPECT_EQ(base::Seconds(17), mock_graph.page->TimeSinceLastNavigation());
 }
 
 TEST_F(PageNodeImplTest, BrowserContextID) {
@@ -232,7 +229,8 @@ class LenientMockObserver : public PageNodeImpl::Observer {
                void(const PageNode*, const FrameNode*, EmbeddingType));
   MOCK_METHOD1(OnIsVisibleChanged, void(const PageNode*));
   MOCK_METHOD1(OnIsAudibleChanged, void(const PageNode*));
-  MOCK_METHOD1(OnLoadingStateChanged, void(const PageNode*));
+  MOCK_METHOD2(OnLoadingStateChanged,
+               void(const PageNode*, PageNode::LoadingState));
   MOCK_METHOD1(OnUkmSourceIdChanged, void(const PageNode*));
   MOCK_METHOD1(OnPageLifecycleStateChanged, void(const PageNode*));
   MOCK_METHOD1(OnPageIsHoldingWebLockChanged, void(const PageNode*));
@@ -244,6 +242,7 @@ class LenientMockObserver : public PageNodeImpl::Observer {
   MOCK_METHOD1(OnHadFormInteractionChanged, void(const PageNode*));
   MOCK_METHOD2(OnFreezingVoteChanged,
                void(const PageNode*, absl::optional<freezing::FreezingVote>));
+  MOCK_METHOD2(OnPageStateChanged, void(const PageNode*, PageNode::PageState));
 
   void SetNotifiedPageNode(const PageNode* page_node) {
     notified_page_node_ = page_node;
@@ -256,7 +255,7 @@ class LenientMockObserver : public PageNodeImpl::Observer {
   }
 
  private:
-  const PageNode* notified_page_node_ = nullptr;
+  raw_ptr<const PageNode> notified_page_node_ = nullptr;
 };
 
 using MockObserver = ::testing::StrictMock<LenientMockObserver>;
@@ -289,8 +288,9 @@ TEST_F(PageNodeImplTest, ObserverWorks) {
   page_node->SetIsAudible(true);
   EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
 
-  EXPECT_CALL(obs, OnLoadingStateChanged(_))
-      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  EXPECT_CALL(obs, OnLoadingStateChanged(_, _))
+      .WillOnce(testing::WithArg<0>(
+          Invoke(&obs, &MockObserver::SetNotifiedPageNode)));
   page_node->SetLoadingState(PageNode::LoadingState::kLoading);
   EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
 
@@ -410,6 +410,43 @@ TEST_F(PageNodeImplTest, VisitMainFrameNodes) {
               },
               base::Unretained(&visited))));
   EXPECT_EQ(1u, visited.size());
+}
+
+TEST_F(PageNodeImplTest, BackForwardCache) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
+  EXPECT_EQ(PageNode::PageState::kActive, page->page_state());
+
+  MockObserver obs;
+  graph()->AddPageNodeObserver(&obs);
+
+  EXPECT_CALL(obs, OnPageStateChanged(_, PageNode::PageState::kActive));
+  page->set_page_state(PageNode::PageState::kBackForwardCache);
+  EXPECT_EQ(PageNode::PageState::kBackForwardCache, page->page_state());
+
+  graph()->RemovePageNodeObserver(&obs);
+}
+
+TEST_F(PageNodeImplTest, Prerendering) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>(
+      WebContentsProxy(),                   // wc_proxy
+      std::string(),                        // browser_context_id
+      GURL(),                               // url
+      false,                                // is_visible
+      false,                                // is_audible
+      base::TimeTicks::Now(),               // visibility_change_time
+      PageNode::PageState::kPrerendering);  // page_state
+  EXPECT_EQ(PageNode::PageState::kPrerendering, page->page_state());
+
+  MockObserver obs;
+  graph()->AddPageNodeObserver(&obs);
+
+  EXPECT_CALL(obs, OnPageStateChanged(_, PageNode::PageState::kPrerendering));
+  page->set_page_state(PageNode::PageState::kActive);
+  EXPECT_EQ(PageNode::PageState::kActive, page->page_state());
+
+  graph()->RemovePageNodeObserver(&obs);
 }
 
 }  // namespace performance_manager

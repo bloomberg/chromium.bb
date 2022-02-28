@@ -12,12 +12,10 @@
 
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
-#include "base/containers/flat_map.h"
 #include "base/containers/linked_list.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/synchronization/condition_variable.h"
 #include "build/build_config.h"
 #include "leveldb/cache.h"
@@ -224,6 +222,9 @@ class LEVELDB_EXPORT DBTracker {
   // DBTracker singleton instance.
   static DBTracker* GetInstance();
 
+  DBTracker(const DBTracker&) = delete;
+  DBTracker& operator=(const DBTracker&) = delete;
+
   // Returns the memory-infra dump for |tracked_db|. Can be used to attach
   // additional info to the database dump, or to properly attribute memory
   // usage in memory dump providers that also dump |tracked_db|.
@@ -293,8 +294,6 @@ class LEVELDB_EXPORT DBTracker {
   mutable base::Lock databases_lock_;
   base::LinkedList<TrackedDBImpl> databases_;
   std::unique_ptr<MemoryDumpProvider> mdp_;
-
-  DISALLOW_COPY_AND_ASSIGN(DBTracker);
 };
 
 // Opens a database with the specified "name" and "options" (see note) and

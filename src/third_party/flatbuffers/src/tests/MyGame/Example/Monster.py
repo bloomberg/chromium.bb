@@ -11,12 +11,16 @@ class Monster(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAsMonster(cls, buf, offset):
+    def GetRootAs(cls, buf, offset=0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = Monster()
         x.Init(buf, n + offset)
         return x
 
+    @classmethod
+    def GetRootAsMonster(cls, buf, offset=0):
+        """This method is deprecated. Please switch to GetRootAs."""
+        return cls.GetRootAs(buf, offset)
     @classmethod
     def MonsterBufferHasIdentifier(cls, buf, offset, size_prefixed=False):
         return flatbuffers.util.BufferHasIdentifier(buf, offset, b"\x4D\x4F\x4E\x53", size_prefixed=size_prefixed)
@@ -203,6 +207,14 @@ class Monster(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(30))
         if o != 0:
             return self._tab.GetVectorAsNumpy(flatbuffers.number_types.Uint8Flags, o)
+        return 0
+
+    # Monster
+    def TestnestedflatbufferNestedRoot(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(30))
+        if o != 0:
+            from MyGame.Example.Monster import Monster
+            return Monster.GetRootAsMonster(self._tab.Bytes, self._tab.Vector(o))
         return 0
 
     # Monster
@@ -719,75 +731,296 @@ class Monster(object):
             return self._tab.Get(flatbuffers.number_types.Int8Flags, o + self._tab.Pos)
         return -1
 
-def MonsterStart(builder): builder.StartObject(49)
-def MonsterAddPos(builder, pos): builder.PrependStructSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(pos), 0)
-def MonsterAddMana(builder, mana): builder.PrependInt16Slot(1, mana, 150)
-def MonsterAddHp(builder, hp): builder.PrependInt16Slot(2, hp, 100)
-def MonsterAddName(builder, name): builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(name), 0)
-def MonsterAddInventory(builder, inventory): builder.PrependUOffsetTRelativeSlot(5, flatbuffers.number_types.UOffsetTFlags.py_type(inventory), 0)
-def MonsterStartInventoryVector(builder, numElems): return builder.StartVector(1, numElems, 1)
-def MonsterAddColor(builder, color): builder.PrependUint8Slot(6, color, 8)
-def MonsterAddTestType(builder, testType): builder.PrependUint8Slot(7, testType, 0)
-def MonsterAddTest(builder, test): builder.PrependUOffsetTRelativeSlot(8, flatbuffers.number_types.UOffsetTFlags.py_type(test), 0)
-def MonsterAddTest4(builder, test4): builder.PrependUOffsetTRelativeSlot(9, flatbuffers.number_types.UOffsetTFlags.py_type(test4), 0)
-def MonsterStartTest4Vector(builder, numElems): return builder.StartVector(4, numElems, 2)
-def MonsterAddTestarrayofstring(builder, testarrayofstring): builder.PrependUOffsetTRelativeSlot(10, flatbuffers.number_types.UOffsetTFlags.py_type(testarrayofstring), 0)
-def MonsterStartTestarrayofstringVector(builder, numElems): return builder.StartVector(4, numElems, 4)
-def MonsterAddTestarrayoftables(builder, testarrayoftables): builder.PrependUOffsetTRelativeSlot(11, flatbuffers.number_types.UOffsetTFlags.py_type(testarrayoftables), 0)
-def MonsterStartTestarrayoftablesVector(builder, numElems): return builder.StartVector(4, numElems, 4)
-def MonsterAddEnemy(builder, enemy): builder.PrependUOffsetTRelativeSlot(12, flatbuffers.number_types.UOffsetTFlags.py_type(enemy), 0)
-def MonsterAddTestnestedflatbuffer(builder, testnestedflatbuffer): builder.PrependUOffsetTRelativeSlot(13, flatbuffers.number_types.UOffsetTFlags.py_type(testnestedflatbuffer), 0)
-def MonsterStartTestnestedflatbufferVector(builder, numElems): return builder.StartVector(1, numElems, 1)
-def MonsterAddTestempty(builder, testempty): builder.PrependUOffsetTRelativeSlot(14, flatbuffers.number_types.UOffsetTFlags.py_type(testempty), 0)
-def MonsterAddTestbool(builder, testbool): builder.PrependBoolSlot(15, testbool, 0)
-def MonsterAddTesthashs32Fnv1(builder, testhashs32Fnv1): builder.PrependInt32Slot(16, testhashs32Fnv1, 0)
-def MonsterAddTesthashu32Fnv1(builder, testhashu32Fnv1): builder.PrependUint32Slot(17, testhashu32Fnv1, 0)
-def MonsterAddTesthashs64Fnv1(builder, testhashs64Fnv1): builder.PrependInt64Slot(18, testhashs64Fnv1, 0)
-def MonsterAddTesthashu64Fnv1(builder, testhashu64Fnv1): builder.PrependUint64Slot(19, testhashu64Fnv1, 0)
-def MonsterAddTesthashs32Fnv1a(builder, testhashs32Fnv1a): builder.PrependInt32Slot(20, testhashs32Fnv1a, 0)
-def MonsterAddTesthashu32Fnv1a(builder, testhashu32Fnv1a): builder.PrependUint32Slot(21, testhashu32Fnv1a, 0)
-def MonsterAddTesthashs64Fnv1a(builder, testhashs64Fnv1a): builder.PrependInt64Slot(22, testhashs64Fnv1a, 0)
-def MonsterAddTesthashu64Fnv1a(builder, testhashu64Fnv1a): builder.PrependUint64Slot(23, testhashu64Fnv1a, 0)
-def MonsterAddTestarrayofbools(builder, testarrayofbools): builder.PrependUOffsetTRelativeSlot(24, flatbuffers.number_types.UOffsetTFlags.py_type(testarrayofbools), 0)
-def MonsterStartTestarrayofboolsVector(builder, numElems): return builder.StartVector(1, numElems, 1)
-def MonsterAddTestf(builder, testf): builder.PrependFloat32Slot(25, testf, 3.14159)
-def MonsterAddTestf2(builder, testf2): builder.PrependFloat32Slot(26, testf2, 3.0)
-def MonsterAddTestf3(builder, testf3): builder.PrependFloat32Slot(27, testf3, 0.0)
-def MonsterAddTestarrayofstring2(builder, testarrayofstring2): builder.PrependUOffsetTRelativeSlot(28, flatbuffers.number_types.UOffsetTFlags.py_type(testarrayofstring2), 0)
-def MonsterStartTestarrayofstring2Vector(builder, numElems): return builder.StartVector(4, numElems, 4)
-def MonsterAddTestarrayofsortedstruct(builder, testarrayofsortedstruct): builder.PrependUOffsetTRelativeSlot(29, flatbuffers.number_types.UOffsetTFlags.py_type(testarrayofsortedstruct), 0)
-def MonsterStartTestarrayofsortedstructVector(builder, numElems): return builder.StartVector(8, numElems, 4)
-def MonsterAddFlex(builder, flex): builder.PrependUOffsetTRelativeSlot(30, flatbuffers.number_types.UOffsetTFlags.py_type(flex), 0)
-def MonsterStartFlexVector(builder, numElems): return builder.StartVector(1, numElems, 1)
-def MonsterAddTest5(builder, test5): builder.PrependUOffsetTRelativeSlot(31, flatbuffers.number_types.UOffsetTFlags.py_type(test5), 0)
-def MonsterStartTest5Vector(builder, numElems): return builder.StartVector(4, numElems, 2)
-def MonsterAddVectorOfLongs(builder, vectorOfLongs): builder.PrependUOffsetTRelativeSlot(32, flatbuffers.number_types.UOffsetTFlags.py_type(vectorOfLongs), 0)
-def MonsterStartVectorOfLongsVector(builder, numElems): return builder.StartVector(8, numElems, 8)
-def MonsterAddVectorOfDoubles(builder, vectorOfDoubles): builder.PrependUOffsetTRelativeSlot(33, flatbuffers.number_types.UOffsetTFlags.py_type(vectorOfDoubles), 0)
-def MonsterStartVectorOfDoublesVector(builder, numElems): return builder.StartVector(8, numElems, 8)
-def MonsterAddParentNamespaceTest(builder, parentNamespaceTest): builder.PrependUOffsetTRelativeSlot(34, flatbuffers.number_types.UOffsetTFlags.py_type(parentNamespaceTest), 0)
-def MonsterAddVectorOfReferrables(builder, vectorOfReferrables): builder.PrependUOffsetTRelativeSlot(35, flatbuffers.number_types.UOffsetTFlags.py_type(vectorOfReferrables), 0)
-def MonsterStartVectorOfReferrablesVector(builder, numElems): return builder.StartVector(4, numElems, 4)
-def MonsterAddSingleWeakReference(builder, singleWeakReference): builder.PrependUint64Slot(36, singleWeakReference, 0)
-def MonsterAddVectorOfWeakReferences(builder, vectorOfWeakReferences): builder.PrependUOffsetTRelativeSlot(37, flatbuffers.number_types.UOffsetTFlags.py_type(vectorOfWeakReferences), 0)
-def MonsterStartVectorOfWeakReferencesVector(builder, numElems): return builder.StartVector(8, numElems, 8)
-def MonsterAddVectorOfStrongReferrables(builder, vectorOfStrongReferrables): builder.PrependUOffsetTRelativeSlot(38, flatbuffers.number_types.UOffsetTFlags.py_type(vectorOfStrongReferrables), 0)
-def MonsterStartVectorOfStrongReferrablesVector(builder, numElems): return builder.StartVector(4, numElems, 4)
-def MonsterAddCoOwningReference(builder, coOwningReference): builder.PrependUint64Slot(39, coOwningReference, 0)
-def MonsterAddVectorOfCoOwningReferences(builder, vectorOfCoOwningReferences): builder.PrependUOffsetTRelativeSlot(40, flatbuffers.number_types.UOffsetTFlags.py_type(vectorOfCoOwningReferences), 0)
-def MonsterStartVectorOfCoOwningReferencesVector(builder, numElems): return builder.StartVector(8, numElems, 8)
-def MonsterAddNonOwningReference(builder, nonOwningReference): builder.PrependUint64Slot(41, nonOwningReference, 0)
-def MonsterAddVectorOfNonOwningReferences(builder, vectorOfNonOwningReferences): builder.PrependUOffsetTRelativeSlot(42, flatbuffers.number_types.UOffsetTFlags.py_type(vectorOfNonOwningReferences), 0)
-def MonsterStartVectorOfNonOwningReferencesVector(builder, numElems): return builder.StartVector(8, numElems, 8)
-def MonsterAddAnyUniqueType(builder, anyUniqueType): builder.PrependUint8Slot(43, anyUniqueType, 0)
-def MonsterAddAnyUnique(builder, anyUnique): builder.PrependUOffsetTRelativeSlot(44, flatbuffers.number_types.UOffsetTFlags.py_type(anyUnique), 0)
-def MonsterAddAnyAmbiguousType(builder, anyAmbiguousType): builder.PrependUint8Slot(45, anyAmbiguousType, 0)
-def MonsterAddAnyAmbiguous(builder, anyAmbiguous): builder.PrependUOffsetTRelativeSlot(46, flatbuffers.number_types.UOffsetTFlags.py_type(anyAmbiguous), 0)
-def MonsterAddVectorOfEnums(builder, vectorOfEnums): builder.PrependUOffsetTRelativeSlot(47, flatbuffers.number_types.UOffsetTFlags.py_type(vectorOfEnums), 0)
-def MonsterStartVectorOfEnumsVector(builder, numElems): return builder.StartVector(1, numElems, 1)
-def MonsterAddSignedEnum(builder, signedEnum): builder.PrependInt8Slot(48, signedEnum, -1)
-def MonsterEnd(builder): return builder.EndObject()
+    # Monster
+    def Testrequirednestedflatbuffer(self, j):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(102))
+        if o != 0:
+            a = self._tab.Vector(o)
+            return self._tab.Get(flatbuffers.number_types.Uint8Flags, a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 1))
+        return 0
 
+    # Monster
+    def TestrequirednestedflatbufferAsNumpy(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(102))
+        if o != 0:
+            return self._tab.GetVectorAsNumpy(flatbuffers.number_types.Uint8Flags, o)
+        return 0
+
+    # Monster
+    def TestrequirednestedflatbufferNestedRoot(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(102))
+        if o != 0:
+            from MyGame.Example.Monster import Monster
+            return Monster.GetRootAsMonster(self._tab.Bytes, self._tab.Vector(o))
+        return 0
+
+    # Monster
+    def TestrequirednestedflatbufferLength(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(102))
+        if o != 0:
+            return self._tab.VectorLen(o)
+        return 0
+
+    # Monster
+    def TestrequirednestedflatbufferIsNone(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(102))
+        return o == 0
+
+    # Monster
+    def ScalarKeySortedTables(self, j):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(104))
+        if o != 0:
+            x = self._tab.Vector(o)
+            x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 4
+            x = self._tab.Indirect(x)
+            from MyGame.Example.Stat import Stat
+            obj = Stat()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
+    # Monster
+    def ScalarKeySortedTablesLength(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(104))
+        if o != 0:
+            return self._tab.VectorLen(o)
+        return 0
+
+    # Monster
+    def ScalarKeySortedTablesIsNone(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(104))
+        return o == 0
+
+def MonsterStart(builder): builder.StartObject(51)
+def Start(builder):
+    return MonsterStart(builder)
+def MonsterAddPos(builder, pos): builder.PrependStructSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(pos), 0)
+def AddPos(builder, pos):
+    return MonsterAddPos(builder, pos)
+def MonsterAddMana(builder, mana): builder.PrependInt16Slot(1, mana, 150)
+def AddMana(builder, mana):
+    return MonsterAddMana(builder, mana)
+def MonsterAddHp(builder, hp): builder.PrependInt16Slot(2, hp, 100)
+def AddHp(builder, hp):
+    return MonsterAddHp(builder, hp)
+def MonsterAddName(builder, name): builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(name), 0)
+def AddName(builder, name):
+    return MonsterAddName(builder, name)
+def MonsterAddInventory(builder, inventory): builder.PrependUOffsetTRelativeSlot(5, flatbuffers.number_types.UOffsetTFlags.py_type(inventory), 0)
+def AddInventory(builder, inventory):
+    return MonsterAddInventory(builder, inventory)
+def MonsterStartInventoryVector(builder, numElems): return builder.StartVector(1, numElems, 1)
+def StartInventoryVector(builder, numElems):
+    return MonsterStartInventoryVector(builder, numElems)
+def MonsterAddColor(builder, color): builder.PrependUint8Slot(6, color, 8)
+def AddColor(builder, color):
+    return MonsterAddColor(builder, color)
+def MonsterAddTestType(builder, testType): builder.PrependUint8Slot(7, testType, 0)
+def AddTestType(builder, testType):
+    return MonsterAddTestType(builder, testType)
+def MonsterAddTest(builder, test): builder.PrependUOffsetTRelativeSlot(8, flatbuffers.number_types.UOffsetTFlags.py_type(test), 0)
+def AddTest(builder, test):
+    return MonsterAddTest(builder, test)
+def MonsterAddTest4(builder, test4): builder.PrependUOffsetTRelativeSlot(9, flatbuffers.number_types.UOffsetTFlags.py_type(test4), 0)
+def AddTest4(builder, test4):
+    return MonsterAddTest4(builder, test4)
+def MonsterStartTest4Vector(builder, numElems): return builder.StartVector(4, numElems, 2)
+def StartTest4Vector(builder, numElems):
+    return MonsterStartTest4Vector(builder, numElems)
+def MonsterAddTestarrayofstring(builder, testarrayofstring): builder.PrependUOffsetTRelativeSlot(10, flatbuffers.number_types.UOffsetTFlags.py_type(testarrayofstring), 0)
+def AddTestarrayofstring(builder, testarrayofstring):
+    return MonsterAddTestarrayofstring(builder, testarrayofstring)
+def MonsterStartTestarrayofstringVector(builder, numElems): return builder.StartVector(4, numElems, 4)
+def StartTestarrayofstringVector(builder, numElems):
+    return MonsterStartTestarrayofstringVector(builder, numElems)
+def MonsterAddTestarrayoftables(builder, testarrayoftables): builder.PrependUOffsetTRelativeSlot(11, flatbuffers.number_types.UOffsetTFlags.py_type(testarrayoftables), 0)
+def AddTestarrayoftables(builder, testarrayoftables):
+    return MonsterAddTestarrayoftables(builder, testarrayoftables)
+def MonsterStartTestarrayoftablesVector(builder, numElems): return builder.StartVector(4, numElems, 4)
+def StartTestarrayoftablesVector(builder, numElems):
+    return MonsterStartTestarrayoftablesVector(builder, numElems)
+def MonsterAddEnemy(builder, enemy): builder.PrependUOffsetTRelativeSlot(12, flatbuffers.number_types.UOffsetTFlags.py_type(enemy), 0)
+def AddEnemy(builder, enemy):
+    return MonsterAddEnemy(builder, enemy)
+def MonsterAddTestnestedflatbuffer(builder, testnestedflatbuffer): builder.PrependUOffsetTRelativeSlot(13, flatbuffers.number_types.UOffsetTFlags.py_type(testnestedflatbuffer), 0)
+def AddTestnestedflatbuffer(builder, testnestedflatbuffer):
+    return MonsterAddTestnestedflatbuffer(builder, testnestedflatbuffer)
+def MonsterStartTestnestedflatbufferVector(builder, numElems): return builder.StartVector(1, numElems, 1)
+def StartTestnestedflatbufferVector(builder, numElems):
+    return MonsterStartTestnestedflatbufferVector(builder, numElems)
+def MonsterMakeTestnestedflatbufferVectorFromBytes(builder, bytes):
+    builder.StartVector(1, len(bytes), 1)
+    builder.head = builder.head - len(bytes)
+    builder.Bytes[builder.head : builder.head + len(bytes)] = bytes
+    return builder.EndVector()
+def MakeTestnestedflatbufferVectorFromBytes(builder, bytes):
+    return MonsterMakeTestnestedflatbufferVectorFromBytes(builder, bytes)
+def MonsterAddTestempty(builder, testempty): builder.PrependUOffsetTRelativeSlot(14, flatbuffers.number_types.UOffsetTFlags.py_type(testempty), 0)
+def AddTestempty(builder, testempty):
+    return MonsterAddTestempty(builder, testempty)
+def MonsterAddTestbool(builder, testbool): builder.PrependBoolSlot(15, testbool, 0)
+def AddTestbool(builder, testbool):
+    return MonsterAddTestbool(builder, testbool)
+def MonsterAddTesthashs32Fnv1(builder, testhashs32Fnv1): builder.PrependInt32Slot(16, testhashs32Fnv1, 0)
+def AddTesthashs32Fnv1(builder, testhashs32Fnv1):
+    return MonsterAddTesthashs32Fnv1(builder, testhashs32Fnv1)
+def MonsterAddTesthashu32Fnv1(builder, testhashu32Fnv1): builder.PrependUint32Slot(17, testhashu32Fnv1, 0)
+def AddTesthashu32Fnv1(builder, testhashu32Fnv1):
+    return MonsterAddTesthashu32Fnv1(builder, testhashu32Fnv1)
+def MonsterAddTesthashs64Fnv1(builder, testhashs64Fnv1): builder.PrependInt64Slot(18, testhashs64Fnv1, 0)
+def AddTesthashs64Fnv1(builder, testhashs64Fnv1):
+    return MonsterAddTesthashs64Fnv1(builder, testhashs64Fnv1)
+def MonsterAddTesthashu64Fnv1(builder, testhashu64Fnv1): builder.PrependUint64Slot(19, testhashu64Fnv1, 0)
+def AddTesthashu64Fnv1(builder, testhashu64Fnv1):
+    return MonsterAddTesthashu64Fnv1(builder, testhashu64Fnv1)
+def MonsterAddTesthashs32Fnv1a(builder, testhashs32Fnv1a): builder.PrependInt32Slot(20, testhashs32Fnv1a, 0)
+def AddTesthashs32Fnv1a(builder, testhashs32Fnv1a):
+    return MonsterAddTesthashs32Fnv1a(builder, testhashs32Fnv1a)
+def MonsterAddTesthashu32Fnv1a(builder, testhashu32Fnv1a): builder.PrependUint32Slot(21, testhashu32Fnv1a, 0)
+def AddTesthashu32Fnv1a(builder, testhashu32Fnv1a):
+    return MonsterAddTesthashu32Fnv1a(builder, testhashu32Fnv1a)
+def MonsterAddTesthashs64Fnv1a(builder, testhashs64Fnv1a): builder.PrependInt64Slot(22, testhashs64Fnv1a, 0)
+def AddTesthashs64Fnv1a(builder, testhashs64Fnv1a):
+    return MonsterAddTesthashs64Fnv1a(builder, testhashs64Fnv1a)
+def MonsterAddTesthashu64Fnv1a(builder, testhashu64Fnv1a): builder.PrependUint64Slot(23, testhashu64Fnv1a, 0)
+def AddTesthashu64Fnv1a(builder, testhashu64Fnv1a):
+    return MonsterAddTesthashu64Fnv1a(builder, testhashu64Fnv1a)
+def MonsterAddTestarrayofbools(builder, testarrayofbools): builder.PrependUOffsetTRelativeSlot(24, flatbuffers.number_types.UOffsetTFlags.py_type(testarrayofbools), 0)
+def AddTestarrayofbools(builder, testarrayofbools):
+    return MonsterAddTestarrayofbools(builder, testarrayofbools)
+def MonsterStartTestarrayofboolsVector(builder, numElems): return builder.StartVector(1, numElems, 1)
+def StartTestarrayofboolsVector(builder, numElems):
+    return MonsterStartTestarrayofboolsVector(builder, numElems)
+def MonsterAddTestf(builder, testf): builder.PrependFloat32Slot(25, testf, 3.14159)
+def AddTestf(builder, testf):
+    return MonsterAddTestf(builder, testf)
+def MonsterAddTestf2(builder, testf2): builder.PrependFloat32Slot(26, testf2, 3.0)
+def AddTestf2(builder, testf2):
+    return MonsterAddTestf2(builder, testf2)
+def MonsterAddTestf3(builder, testf3): builder.PrependFloat32Slot(27, testf3, 0.0)
+def AddTestf3(builder, testf3):
+    return MonsterAddTestf3(builder, testf3)
+def MonsterAddTestarrayofstring2(builder, testarrayofstring2): builder.PrependUOffsetTRelativeSlot(28, flatbuffers.number_types.UOffsetTFlags.py_type(testarrayofstring2), 0)
+def AddTestarrayofstring2(builder, testarrayofstring2):
+    return MonsterAddTestarrayofstring2(builder, testarrayofstring2)
+def MonsterStartTestarrayofstring2Vector(builder, numElems): return builder.StartVector(4, numElems, 4)
+def StartTestarrayofstring2Vector(builder, numElems):
+    return MonsterStartTestarrayofstring2Vector(builder, numElems)
+def MonsterAddTestarrayofsortedstruct(builder, testarrayofsortedstruct): builder.PrependUOffsetTRelativeSlot(29, flatbuffers.number_types.UOffsetTFlags.py_type(testarrayofsortedstruct), 0)
+def AddTestarrayofsortedstruct(builder, testarrayofsortedstruct):
+    return MonsterAddTestarrayofsortedstruct(builder, testarrayofsortedstruct)
+def MonsterStartTestarrayofsortedstructVector(builder, numElems): return builder.StartVector(8, numElems, 4)
+def StartTestarrayofsortedstructVector(builder, numElems):
+    return MonsterStartTestarrayofsortedstructVector(builder, numElems)
+def MonsterAddFlex(builder, flex): builder.PrependUOffsetTRelativeSlot(30, flatbuffers.number_types.UOffsetTFlags.py_type(flex), 0)
+def AddFlex(builder, flex):
+    return MonsterAddFlex(builder, flex)
+def MonsterStartFlexVector(builder, numElems): return builder.StartVector(1, numElems, 1)
+def StartFlexVector(builder, numElems):
+    return MonsterStartFlexVector(builder, numElems)
+def MonsterAddTest5(builder, test5): builder.PrependUOffsetTRelativeSlot(31, flatbuffers.number_types.UOffsetTFlags.py_type(test5), 0)
+def AddTest5(builder, test5):
+    return MonsterAddTest5(builder, test5)
+def MonsterStartTest5Vector(builder, numElems): return builder.StartVector(4, numElems, 2)
+def StartTest5Vector(builder, numElems):
+    return MonsterStartTest5Vector(builder, numElems)
+def MonsterAddVectorOfLongs(builder, vectorOfLongs): builder.PrependUOffsetTRelativeSlot(32, flatbuffers.number_types.UOffsetTFlags.py_type(vectorOfLongs), 0)
+def AddVectorOfLongs(builder, vectorOfLongs):
+    return MonsterAddVectorOfLongs(builder, vectorOfLongs)
+def MonsterStartVectorOfLongsVector(builder, numElems): return builder.StartVector(8, numElems, 8)
+def StartVectorOfLongsVector(builder, numElems):
+    return MonsterStartVectorOfLongsVector(builder, numElems)
+def MonsterAddVectorOfDoubles(builder, vectorOfDoubles): builder.PrependUOffsetTRelativeSlot(33, flatbuffers.number_types.UOffsetTFlags.py_type(vectorOfDoubles), 0)
+def AddVectorOfDoubles(builder, vectorOfDoubles):
+    return MonsterAddVectorOfDoubles(builder, vectorOfDoubles)
+def MonsterStartVectorOfDoublesVector(builder, numElems): return builder.StartVector(8, numElems, 8)
+def StartVectorOfDoublesVector(builder, numElems):
+    return MonsterStartVectorOfDoublesVector(builder, numElems)
+def MonsterAddParentNamespaceTest(builder, parentNamespaceTest): builder.PrependUOffsetTRelativeSlot(34, flatbuffers.number_types.UOffsetTFlags.py_type(parentNamespaceTest), 0)
+def AddParentNamespaceTest(builder, parentNamespaceTest):
+    return MonsterAddParentNamespaceTest(builder, parentNamespaceTest)
+def MonsterAddVectorOfReferrables(builder, vectorOfReferrables): builder.PrependUOffsetTRelativeSlot(35, flatbuffers.number_types.UOffsetTFlags.py_type(vectorOfReferrables), 0)
+def AddVectorOfReferrables(builder, vectorOfReferrables):
+    return MonsterAddVectorOfReferrables(builder, vectorOfReferrables)
+def MonsterStartVectorOfReferrablesVector(builder, numElems): return builder.StartVector(4, numElems, 4)
+def StartVectorOfReferrablesVector(builder, numElems):
+    return MonsterStartVectorOfReferrablesVector(builder, numElems)
+def MonsterAddSingleWeakReference(builder, singleWeakReference): builder.PrependUint64Slot(36, singleWeakReference, 0)
+def AddSingleWeakReference(builder, singleWeakReference):
+    return MonsterAddSingleWeakReference(builder, singleWeakReference)
+def MonsterAddVectorOfWeakReferences(builder, vectorOfWeakReferences): builder.PrependUOffsetTRelativeSlot(37, flatbuffers.number_types.UOffsetTFlags.py_type(vectorOfWeakReferences), 0)
+def AddVectorOfWeakReferences(builder, vectorOfWeakReferences):
+    return MonsterAddVectorOfWeakReferences(builder, vectorOfWeakReferences)
+def MonsterStartVectorOfWeakReferencesVector(builder, numElems): return builder.StartVector(8, numElems, 8)
+def StartVectorOfWeakReferencesVector(builder, numElems):
+    return MonsterStartVectorOfWeakReferencesVector(builder, numElems)
+def MonsterAddVectorOfStrongReferrables(builder, vectorOfStrongReferrables): builder.PrependUOffsetTRelativeSlot(38, flatbuffers.number_types.UOffsetTFlags.py_type(vectorOfStrongReferrables), 0)
+def AddVectorOfStrongReferrables(builder, vectorOfStrongReferrables):
+    return MonsterAddVectorOfStrongReferrables(builder, vectorOfStrongReferrables)
+def MonsterStartVectorOfStrongReferrablesVector(builder, numElems): return builder.StartVector(4, numElems, 4)
+def StartVectorOfStrongReferrablesVector(builder, numElems):
+    return MonsterStartVectorOfStrongReferrablesVector(builder, numElems)
+def MonsterAddCoOwningReference(builder, coOwningReference): builder.PrependUint64Slot(39, coOwningReference, 0)
+def AddCoOwningReference(builder, coOwningReference):
+    return MonsterAddCoOwningReference(builder, coOwningReference)
+def MonsterAddVectorOfCoOwningReferences(builder, vectorOfCoOwningReferences): builder.PrependUOffsetTRelativeSlot(40, flatbuffers.number_types.UOffsetTFlags.py_type(vectorOfCoOwningReferences), 0)
+def AddVectorOfCoOwningReferences(builder, vectorOfCoOwningReferences):
+    return MonsterAddVectorOfCoOwningReferences(builder, vectorOfCoOwningReferences)
+def MonsterStartVectorOfCoOwningReferencesVector(builder, numElems): return builder.StartVector(8, numElems, 8)
+def StartVectorOfCoOwningReferencesVector(builder, numElems):
+    return MonsterStartVectorOfCoOwningReferencesVector(builder, numElems)
+def MonsterAddNonOwningReference(builder, nonOwningReference): builder.PrependUint64Slot(41, nonOwningReference, 0)
+def AddNonOwningReference(builder, nonOwningReference):
+    return MonsterAddNonOwningReference(builder, nonOwningReference)
+def MonsterAddVectorOfNonOwningReferences(builder, vectorOfNonOwningReferences): builder.PrependUOffsetTRelativeSlot(42, flatbuffers.number_types.UOffsetTFlags.py_type(vectorOfNonOwningReferences), 0)
+def AddVectorOfNonOwningReferences(builder, vectorOfNonOwningReferences):
+    return MonsterAddVectorOfNonOwningReferences(builder, vectorOfNonOwningReferences)
+def MonsterStartVectorOfNonOwningReferencesVector(builder, numElems): return builder.StartVector(8, numElems, 8)
+def StartVectorOfNonOwningReferencesVector(builder, numElems):
+    return MonsterStartVectorOfNonOwningReferencesVector(builder, numElems)
+def MonsterAddAnyUniqueType(builder, anyUniqueType): builder.PrependUint8Slot(43, anyUniqueType, 0)
+def AddAnyUniqueType(builder, anyUniqueType):
+    return MonsterAddAnyUniqueType(builder, anyUniqueType)
+def MonsterAddAnyUnique(builder, anyUnique): builder.PrependUOffsetTRelativeSlot(44, flatbuffers.number_types.UOffsetTFlags.py_type(anyUnique), 0)
+def AddAnyUnique(builder, anyUnique):
+    return MonsterAddAnyUnique(builder, anyUnique)
+def MonsterAddAnyAmbiguousType(builder, anyAmbiguousType): builder.PrependUint8Slot(45, anyAmbiguousType, 0)
+def AddAnyAmbiguousType(builder, anyAmbiguousType):
+    return MonsterAddAnyAmbiguousType(builder, anyAmbiguousType)
+def MonsterAddAnyAmbiguous(builder, anyAmbiguous): builder.PrependUOffsetTRelativeSlot(46, flatbuffers.number_types.UOffsetTFlags.py_type(anyAmbiguous), 0)
+def AddAnyAmbiguous(builder, anyAmbiguous):
+    return MonsterAddAnyAmbiguous(builder, anyAmbiguous)
+def MonsterAddVectorOfEnums(builder, vectorOfEnums): builder.PrependUOffsetTRelativeSlot(47, flatbuffers.number_types.UOffsetTFlags.py_type(vectorOfEnums), 0)
+def AddVectorOfEnums(builder, vectorOfEnums):
+    return MonsterAddVectorOfEnums(builder, vectorOfEnums)
+def MonsterStartVectorOfEnumsVector(builder, numElems): return builder.StartVector(1, numElems, 1)
+def StartVectorOfEnumsVector(builder, numElems):
+    return MonsterStartVectorOfEnumsVector(builder, numElems)
+def MonsterAddSignedEnum(builder, signedEnum): builder.PrependInt8Slot(48, signedEnum, -1)
+def AddSignedEnum(builder, signedEnum):
+    return MonsterAddSignedEnum(builder, signedEnum)
+def MonsterAddTestrequirednestedflatbuffer(builder, testrequirednestedflatbuffer): builder.PrependUOffsetTRelativeSlot(49, flatbuffers.number_types.UOffsetTFlags.py_type(testrequirednestedflatbuffer), 0)
+def AddTestrequirednestedflatbuffer(builder, testrequirednestedflatbuffer):
+    return MonsterAddTestrequirednestedflatbuffer(builder, testrequirednestedflatbuffer)
+def MonsterStartTestrequirednestedflatbufferVector(builder, numElems): return builder.StartVector(1, numElems, 1)
+def StartTestrequirednestedflatbufferVector(builder, numElems):
+    return MonsterStartTestrequirednestedflatbufferVector(builder, numElems)
+def MonsterMakeTestrequirednestedflatbufferVectorFromBytes(builder, bytes):
+    builder.StartVector(1, len(bytes), 1)
+    builder.head = builder.head - len(bytes)
+    builder.Bytes[builder.head : builder.head + len(bytes)] = bytes
+    return builder.EndVector()
+def MakeTestrequirednestedflatbufferVectorFromBytes(builder, bytes):
+    return MonsterMakeTestrequirednestedflatbufferVectorFromBytes(builder, bytes)
+def MonsterAddScalarKeySortedTables(builder, scalarKeySortedTables): builder.PrependUOffsetTRelativeSlot(50, flatbuffers.number_types.UOffsetTFlags.py_type(scalarKeySortedTables), 0)
+def AddScalarKeySortedTables(builder, scalarKeySortedTables):
+    return MonsterAddScalarKeySortedTables(builder, scalarKeySortedTables)
+def MonsterStartScalarKeySortedTablesVector(builder, numElems): return builder.StartVector(4, numElems, 4)
+def StartScalarKeySortedTablesVector(builder, numElems):
+    return MonsterStartScalarKeySortedTablesVector(builder, numElems)
+def MonsterEnd(builder): return builder.EndObject()
+def End(builder):
+    return MonsterEnd(builder)
 import MyGame.Example.Ability
 import MyGame.Example.Any
 import MyGame.Example.AnyAmbiguousAliases
@@ -856,6 +1089,8 @@ class MonsterT(object):
         self.anyAmbiguous = None  # type: Union[None, MyGame.Example.Monster.MonsterT, MyGame.Example.Monster.MonsterT, MyGame.Example.Monster.MonsterT]
         self.vectorOfEnums = None  # type: List[int]
         self.signedEnum = -1  # type: int
+        self.testrequirednestedflatbuffer = None  # type: List[int]
+        self.scalarKeySortedTables = None  # type: List[MyGame.Example.Stat.StatT]
 
     @classmethod
     def InitFromBuf(cls, buf, pos):
@@ -1033,6 +1268,21 @@ class MonsterT(object):
             else:
                 self.vectorOfEnums = monster.VectorOfEnumsAsNumpy()
         self.signedEnum = monster.SignedEnum()
+        if not monster.TestrequirednestedflatbufferIsNone():
+            if np is None:
+                self.testrequirednestedflatbuffer = []
+                for i in range(monster.TestrequirednestedflatbufferLength()):
+                    self.testrequirednestedflatbuffer.append(monster.Testrequirednestedflatbuffer(i))
+            else:
+                self.testrequirednestedflatbuffer = monster.TestrequirednestedflatbufferAsNumpy()
+        if not monster.ScalarKeySortedTablesIsNone():
+            self.scalarKeySortedTables = []
+            for i in range(monster.ScalarKeySortedTablesLength()):
+                if monster.ScalarKeySortedTables(i) is None:
+                    self.scalarKeySortedTables.append(None)
+                else:
+                    stat_ = MyGame.Example.Stat.StatT.InitFromObj(monster.ScalarKeySortedTables(i))
+                    self.scalarKeySortedTables.append(stat_)
 
     # MonsterT
     def Pack(self, builder):
@@ -1045,14 +1295,14 @@ class MonsterT(object):
                 MonsterStartInventoryVector(builder, len(self.inventory))
                 for i in reversed(range(len(self.inventory))):
                     builder.PrependUint8(self.inventory[i])
-                inventory = builder.EndVector(len(self.inventory))
+                inventory = builder.EndVector()
         if self.test is not None:
             test = self.test.Pack(builder)
         if self.test4 is not None:
             MonsterStartTest4Vector(builder, len(self.test4))
             for i in reversed(range(len(self.test4))):
                 self.test4[i].Pack(builder)
-            test4 = builder.EndVector(len(self.test4))
+            test4 = builder.EndVector()
         if self.testarrayofstring is not None:
             testarrayofstringlist = []
             for i in range(len(self.testarrayofstring)):
@@ -1060,7 +1310,7 @@ class MonsterT(object):
             MonsterStartTestarrayofstringVector(builder, len(self.testarrayofstring))
             for i in reversed(range(len(self.testarrayofstring))):
                 builder.PrependUOffsetTRelative(testarrayofstringlist[i])
-            testarrayofstring = builder.EndVector(len(self.testarrayofstring))
+            testarrayofstring = builder.EndVector()
         if self.testarrayoftables is not None:
             testarrayoftableslist = []
             for i in range(len(self.testarrayoftables)):
@@ -1068,7 +1318,7 @@ class MonsterT(object):
             MonsterStartTestarrayoftablesVector(builder, len(self.testarrayoftables))
             for i in reversed(range(len(self.testarrayoftables))):
                 builder.PrependUOffsetTRelative(testarrayoftableslist[i])
-            testarrayoftables = builder.EndVector(len(self.testarrayoftables))
+            testarrayoftables = builder.EndVector()
         if self.enemy is not None:
             enemy = self.enemy.Pack(builder)
         if self.testnestedflatbuffer is not None:
@@ -1078,7 +1328,7 @@ class MonsterT(object):
                 MonsterStartTestnestedflatbufferVector(builder, len(self.testnestedflatbuffer))
                 for i in reversed(range(len(self.testnestedflatbuffer))):
                     builder.PrependUint8(self.testnestedflatbuffer[i])
-                testnestedflatbuffer = builder.EndVector(len(self.testnestedflatbuffer))
+                testnestedflatbuffer = builder.EndVector()
         if self.testempty is not None:
             testempty = self.testempty.Pack(builder)
         if self.testarrayofbools is not None:
@@ -1088,7 +1338,7 @@ class MonsterT(object):
                 MonsterStartTestarrayofboolsVector(builder, len(self.testarrayofbools))
                 for i in reversed(range(len(self.testarrayofbools))):
                     builder.PrependBool(self.testarrayofbools[i])
-                testarrayofbools = builder.EndVector(len(self.testarrayofbools))
+                testarrayofbools = builder.EndVector()
         if self.testarrayofstring2 is not None:
             testarrayofstring2list = []
             for i in range(len(self.testarrayofstring2)):
@@ -1096,12 +1346,12 @@ class MonsterT(object):
             MonsterStartTestarrayofstring2Vector(builder, len(self.testarrayofstring2))
             for i in reversed(range(len(self.testarrayofstring2))):
                 builder.PrependUOffsetTRelative(testarrayofstring2list[i])
-            testarrayofstring2 = builder.EndVector(len(self.testarrayofstring2))
+            testarrayofstring2 = builder.EndVector()
         if self.testarrayofsortedstruct is not None:
             MonsterStartTestarrayofsortedstructVector(builder, len(self.testarrayofsortedstruct))
             for i in reversed(range(len(self.testarrayofsortedstruct))):
                 self.testarrayofsortedstruct[i].Pack(builder)
-            testarrayofsortedstruct = builder.EndVector(len(self.testarrayofsortedstruct))
+            testarrayofsortedstruct = builder.EndVector()
         if self.flex is not None:
             if np is not None and type(self.flex) is np.ndarray:
                 flex = builder.CreateNumpyVector(self.flex)
@@ -1109,12 +1359,12 @@ class MonsterT(object):
                 MonsterStartFlexVector(builder, len(self.flex))
                 for i in reversed(range(len(self.flex))):
                     builder.PrependUint8(self.flex[i])
-                flex = builder.EndVector(len(self.flex))
+                flex = builder.EndVector()
         if self.test5 is not None:
             MonsterStartTest5Vector(builder, len(self.test5))
             for i in reversed(range(len(self.test5))):
                 self.test5[i].Pack(builder)
-            test5 = builder.EndVector(len(self.test5))
+            test5 = builder.EndVector()
         if self.vectorOfLongs is not None:
             if np is not None and type(self.vectorOfLongs) is np.ndarray:
                 vectorOfLongs = builder.CreateNumpyVector(self.vectorOfLongs)
@@ -1122,7 +1372,7 @@ class MonsterT(object):
                 MonsterStartVectorOfLongsVector(builder, len(self.vectorOfLongs))
                 for i in reversed(range(len(self.vectorOfLongs))):
                     builder.PrependInt64(self.vectorOfLongs[i])
-                vectorOfLongs = builder.EndVector(len(self.vectorOfLongs))
+                vectorOfLongs = builder.EndVector()
         if self.vectorOfDoubles is not None:
             if np is not None and type(self.vectorOfDoubles) is np.ndarray:
                 vectorOfDoubles = builder.CreateNumpyVector(self.vectorOfDoubles)
@@ -1130,7 +1380,7 @@ class MonsterT(object):
                 MonsterStartVectorOfDoublesVector(builder, len(self.vectorOfDoubles))
                 for i in reversed(range(len(self.vectorOfDoubles))):
                     builder.PrependFloat64(self.vectorOfDoubles[i])
-                vectorOfDoubles = builder.EndVector(len(self.vectorOfDoubles))
+                vectorOfDoubles = builder.EndVector()
         if self.parentNamespaceTest is not None:
             parentNamespaceTest = self.parentNamespaceTest.Pack(builder)
         if self.vectorOfReferrables is not None:
@@ -1140,7 +1390,7 @@ class MonsterT(object):
             MonsterStartVectorOfReferrablesVector(builder, len(self.vectorOfReferrables))
             for i in reversed(range(len(self.vectorOfReferrables))):
                 builder.PrependUOffsetTRelative(vectorOfReferrableslist[i])
-            vectorOfReferrables = builder.EndVector(len(self.vectorOfReferrables))
+            vectorOfReferrables = builder.EndVector()
         if self.vectorOfWeakReferences is not None:
             if np is not None and type(self.vectorOfWeakReferences) is np.ndarray:
                 vectorOfWeakReferences = builder.CreateNumpyVector(self.vectorOfWeakReferences)
@@ -1148,7 +1398,7 @@ class MonsterT(object):
                 MonsterStartVectorOfWeakReferencesVector(builder, len(self.vectorOfWeakReferences))
                 for i in reversed(range(len(self.vectorOfWeakReferences))):
                     builder.PrependUint64(self.vectorOfWeakReferences[i])
-                vectorOfWeakReferences = builder.EndVector(len(self.vectorOfWeakReferences))
+                vectorOfWeakReferences = builder.EndVector()
         if self.vectorOfStrongReferrables is not None:
             vectorOfStrongReferrableslist = []
             for i in range(len(self.vectorOfStrongReferrables)):
@@ -1156,7 +1406,7 @@ class MonsterT(object):
             MonsterStartVectorOfStrongReferrablesVector(builder, len(self.vectorOfStrongReferrables))
             for i in reversed(range(len(self.vectorOfStrongReferrables))):
                 builder.PrependUOffsetTRelative(vectorOfStrongReferrableslist[i])
-            vectorOfStrongReferrables = builder.EndVector(len(self.vectorOfStrongReferrables))
+            vectorOfStrongReferrables = builder.EndVector()
         if self.vectorOfCoOwningReferences is not None:
             if np is not None and type(self.vectorOfCoOwningReferences) is np.ndarray:
                 vectorOfCoOwningReferences = builder.CreateNumpyVector(self.vectorOfCoOwningReferences)
@@ -1164,7 +1414,7 @@ class MonsterT(object):
                 MonsterStartVectorOfCoOwningReferencesVector(builder, len(self.vectorOfCoOwningReferences))
                 for i in reversed(range(len(self.vectorOfCoOwningReferences))):
                     builder.PrependUint64(self.vectorOfCoOwningReferences[i])
-                vectorOfCoOwningReferences = builder.EndVector(len(self.vectorOfCoOwningReferences))
+                vectorOfCoOwningReferences = builder.EndVector()
         if self.vectorOfNonOwningReferences is not None:
             if np is not None and type(self.vectorOfNonOwningReferences) is np.ndarray:
                 vectorOfNonOwningReferences = builder.CreateNumpyVector(self.vectorOfNonOwningReferences)
@@ -1172,7 +1422,7 @@ class MonsterT(object):
                 MonsterStartVectorOfNonOwningReferencesVector(builder, len(self.vectorOfNonOwningReferences))
                 for i in reversed(range(len(self.vectorOfNonOwningReferences))):
                     builder.PrependUint64(self.vectorOfNonOwningReferences[i])
-                vectorOfNonOwningReferences = builder.EndVector(len(self.vectorOfNonOwningReferences))
+                vectorOfNonOwningReferences = builder.EndVector()
         if self.anyUnique is not None:
             anyUnique = self.anyUnique.Pack(builder)
         if self.anyAmbiguous is not None:
@@ -1184,7 +1434,23 @@ class MonsterT(object):
                 MonsterStartVectorOfEnumsVector(builder, len(self.vectorOfEnums))
                 for i in reversed(range(len(self.vectorOfEnums))):
                     builder.PrependUint8(self.vectorOfEnums[i])
-                vectorOfEnums = builder.EndVector(len(self.vectorOfEnums))
+                vectorOfEnums = builder.EndVector()
+        if self.testrequirednestedflatbuffer is not None:
+            if np is not None and type(self.testrequirednestedflatbuffer) is np.ndarray:
+                testrequirednestedflatbuffer = builder.CreateNumpyVector(self.testrequirednestedflatbuffer)
+            else:
+                MonsterStartTestrequirednestedflatbufferVector(builder, len(self.testrequirednestedflatbuffer))
+                for i in reversed(range(len(self.testrequirednestedflatbuffer))):
+                    builder.PrependUint8(self.testrequirednestedflatbuffer[i])
+                testrequirednestedflatbuffer = builder.EndVector()
+        if self.scalarKeySortedTables is not None:
+            scalarKeySortedTableslist = []
+            for i in range(len(self.scalarKeySortedTables)):
+                scalarKeySortedTableslist.append(self.scalarKeySortedTables[i].Pack(builder))
+            MonsterStartScalarKeySortedTablesVector(builder, len(self.scalarKeySortedTables))
+            for i in reversed(range(len(self.scalarKeySortedTables))):
+                builder.PrependUOffsetTRelative(scalarKeySortedTableslist[i])
+            scalarKeySortedTables = builder.EndVector()
         MonsterStart(builder)
         if self.pos is not None:
             pos = self.pos.Pack(builder)
@@ -1261,5 +1527,9 @@ class MonsterT(object):
         if self.vectorOfEnums is not None:
             MonsterAddVectorOfEnums(builder, vectorOfEnums)
         MonsterAddSignedEnum(builder, self.signedEnum)
+        if self.testrequirednestedflatbuffer is not None:
+            MonsterAddTestrequirednestedflatbuffer(builder, testrequirednestedflatbuffer)
+        if self.scalarKeySortedTables is not None:
+            MonsterAddScalarKeySortedTables(builder, scalarKeySortedTables)
         monster = MonsterEnd(builder)
         return monster

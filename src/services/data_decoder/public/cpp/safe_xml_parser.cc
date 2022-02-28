@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -89,7 +88,7 @@ bool GetXmlElementNamespacePrefix(const base::Value& element,
 
   // The namespaces dictionary is prefix -> URI, so we have to do a reverse
   // lookup.
-  for (const auto& item : namespaces->DictItems()) {
+  for (auto item : namespaces->DictItems()) {
     if (item.second.GetString() == namespace_uri) {
       *prefix = item.first;
       return true;

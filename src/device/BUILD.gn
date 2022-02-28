@@ -42,14 +42,14 @@ test("device_unittests") {
     "bluetooth/test/bluetooth_gatt_server_test.h",
     "bluetooth/test/bluetooth_test.cc",
     "bluetooth/test/bluetooth_test.h",
+    "bluetooth/test/mock_pairing_delegate.cc",
+    "bluetooth/test/mock_pairing_delegate.h",
     "bluetooth/test/test_bluetooth_adapter_observer.cc",
     "bluetooth/test/test_bluetooth_adapter_observer.h",
     "bluetooth/test/test_bluetooth_advertisement_observer.cc",
     "bluetooth/test/test_bluetooth_advertisement_observer.h",
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.cc",
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.h",
-    "bluetooth/test/test_pairing_delegate.cc",
-    "bluetooth/test/test_pairing_delegate.h",
     "gamepad/abstract_haptic_gamepad_unittest.cc",
     "gamepad/dualshock4_controller_unittest.cc",
     "gamepad/gamepad_blocklist_unittest.cc",
@@ -129,6 +129,7 @@ test("device_unittests") {
     "//device/gamepad",
     "//device/gamepad:test_helpers",
     "//device/gamepad/public/cpp:shared_with_blink",
+    "//device/gamepad/public/cpp:switches",
     "//device/gamepad/public/mojom",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
@@ -143,6 +144,7 @@ test("device_unittests") {
 
   data_deps = [
     "bluetooth/strings:bluetooth_test_strings",
+    "//testing/buildbot/filters:device_unittests_filters",
     "//ui/resources:ui_test_pak_data",
   ]
 
@@ -235,9 +237,16 @@ test("device_unittests") {
     ]
   }
 
-  if (is_chromeos_ash) {
-    sources += [ "bluetooth/chromeos/bluetooth_utils_unittest.cc" ]
-    deps += [ "//ash/constants" ]
+  if (is_chromeos_ash || is_chromeos_lacros) {
+    sources += [
+      "bluetooth/bluetooth_low_energy_scan_filter_unittest.cc",
+      "bluetooth/chromeos/bluetooth_connection_logger_unittest.cc",
+      "bluetooth/chromeos/bluetooth_utils_unittest.cc",
+    ]
+    deps += [ "//chromeos/constants" ]
+    if (is_chromeos_lacros) {
+      deps += [ "//chromeos/lacros:test_support" ]
+    }
   }
 
   if ((is_chromeos || is_linux) && use_dbus) {
@@ -253,13 +262,23 @@ test("device_unittests") {
       "bluetooth/bluez/bluetooth_socket_bluez_unittest.cc",
       "bluetooth/dbus/bluetooth_gatt_application_service_provider_unittest.cc",
       "bluetooth/dbus/bluetooth_gatt_characteristic_service_provider_unittest.cc",
+      "bluetooth/floss/bluetooth_floss_unittest.cc",
+      "bluetooth/floss/floss_adapter_client_unittest.cc",
+      "bluetooth/floss/floss_manager_client_unittest.cc",
       "bluetooth/test/bluetooth_test_bluez.cc",
       "bluetooth/test/bluetooth_test_bluez.h",
     ]
 
-    deps += [ "//dbus" ]
+    deps += [
+      "//dbus",
+      "//dbus:test_support",
+    ]
 
-    if (is_chromeos_ash) {
+    if (is_chromeos_ash || is_chromeos_lacros) {
+      sources += [
+        "bluetooth/dbus/bluetooth_advertisement_monitor_application_service_provider_unittest.cc",
+        "bluetooth/dbus/bluetooth_advertisement_monitor_service_provider_unittest.cc",
+      ]
       deps += [ "//services/data_decoder/public/mojom" ]
     }
   }

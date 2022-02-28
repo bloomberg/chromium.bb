@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <limits>
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -17,7 +16,8 @@
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/check_op.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -72,7 +72,7 @@ static_assert(sizeof(wchar_t) > 2, "wchar_t is too small");
 
 void UTF16ToWChar(void* pBuffer, size_t iLength) {
   DCHECK(pBuffer);
-  DCHECK(iLength > 0);
+  DCHECK_GT(iLength, 0);
 
   uint16_t* pSrc = static_cast<uint16_t*>(pBuffer);
   wchar_t* pDst = static_cast<wchar_t*>(pBuffer);
@@ -111,18 +111,18 @@ CFX_SeekableStreamProxy::CFX_SeekableStreamProxy(
   bom &= BOM_UTF8_MASK;
   if (bom == BOM_UTF8) {
     m_wBOMLength = 3;
-    m_wCodePage = FX_CODEPAGE_UTF8;
+    m_wCodePage = FX_CodePage::kUTF8;
   } else {
     bom &= BOM_UTF16_MASK;
     if (bom == BOM_UTF16_BE) {
       m_wBOMLength = 2;
-      m_wCodePage = FX_CODEPAGE_UTF16BE;
+      m_wCodePage = FX_CodePage::kUTF16BE;
     } else if (bom == BOM_UTF16_LE) {
       m_wBOMLength = 2;
-      m_wCodePage = FX_CODEPAGE_UTF16LE;
+      m_wCodePage = FX_CodePage::kUTF16LE;
     } else {
       m_wBOMLength = 0;
-      m_wCodePage = FXSYS_GetACP();
+      m_wCodePage = FX_GetACP();
     }
   }
 
@@ -159,7 +159,7 @@ void CFX_SeekableStreamProxy::Seek(From eSeek, FX_FILESIZE iOffset) {
       pdfium::clamp(m_iPosition, static_cast<FX_FILESIZE>(0), GetSize());
 }
 
-void CFX_SeekableStreamProxy::SetCodePage(uint16_t wCodePage) {
+void CFX_SeekableStreamProxy::SetCodePage(FX_CodePage wCodePage) {
   if (m_wBOMLength > 0)
     return;
   m_wCodePage = wCodePage;
@@ -187,12 +187,12 @@ size_t CFX_SeekableStreamProxy::ReadBlock(wchar_t* pStr, size_t size) {
   if (!pStr || size == 0)
     return 0;
 
-  if (m_wCodePage == FX_CODEPAGE_UTF16LE ||
-      m_wCodePage == FX_CODEPAGE_UTF16BE) {
+  if (m_wCodePage == FX_CodePage::kUTF16LE ||
+      m_wCodePage == FX_CodePage::kUTF16BE) {
     size_t iBytes = size * 2;
     size_t iLen = ReadData(reinterpret_cast<uint8_t*>(pStr), iBytes);
     size = iLen / 2;
-    if (m_wCodePage == FX_CODEPAGE_UTF16BE)
+    if (m_wCodePage == FX_CodePage::kUTF16BE)
       SwapByteOrder(reinterpret_cast<uint16_t*>(pStr), size);
 
 #if defined(WCHAR_T_IS_UTF32)
@@ -209,7 +209,7 @@ size_t CFX_SeekableStreamProxy::ReadBlock(wchar_t* pStr, size_t size) {
 
   std::vector<uint8_t, FxAllocAllocator<uint8_t>> buf(iBytes);
   size_t iLen = ReadData(buf.data(), iBytes);
-  if (m_wCodePage != FX_CODEPAGE_UTF8)
+  if (m_wCodePage != FX_CodePage::kUTF8)
     return 0;
 
   size_t iSrc;

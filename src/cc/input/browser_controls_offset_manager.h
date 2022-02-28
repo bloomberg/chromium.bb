@@ -8,10 +8,12 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/trees/browser_controls_params.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -84,8 +86,15 @@ class CC_EXPORT BrowserControlsOffsetManager {
                                   BrowserControlsState current,
                                   bool animate);
 
+  // Return the browser control constraint that must be synced to the
+  // main renderer thread (to trigger viewport and related changes).
   BrowserControlsState PullConstraintForMainThread(
       bool* out_changed_since_commit);
+  // Called to notify this object that the control constraint has
+  // been pushed to the main thread. When a compositor commit does not
+  // happen the value pulled by the method above may not be synced;
+  // a call to this method notifies us that it has.
+  void NotifyConstraintSyncedToMainThread();
 
   void OnBrowserControlsParamsChanged(bool animate_changes);
 
@@ -122,7 +131,7 @@ class CC_EXPORT BrowserControlsOffsetManager {
   void SetBottomMinHeightOffsetAnimationRange(float from, float to);
 
   // The client manages the lifecycle of this.
-  BrowserControlsOffsetManagerClient* client_;
+  raw_ptr<BrowserControlsOffsetManagerClient> client_;
 
   BrowserControlsState permitted_state_;
 

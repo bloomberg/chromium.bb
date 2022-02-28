@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 #include "chrome/services/speech/soda/soda_client.h"
 
-#include <unistd.h>
+#include <algorithm>
 #include <memory>
 
 #include "base/files/file_path.h"
@@ -11,11 +11,18 @@
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
+#include "build/build_config.h"
 #include "chrome/services/speech/soda/proto/soda_api.pb.h"
 #include "chrome/services/speech/soda/soda_test_paths.h"
 #include "media/audio/wav_audio_handler.h"
 #include "media/base/audio_bus.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
 namespace soda {
 
@@ -59,6 +66,9 @@ void OnSodaResponse(const char* serialized_proto,
 }
 
 void SodaClientUnitTest::AddRecognitionResult(std::string result) {
+  // The language pack used by the MacOS builder is newer and has punctuation
+  // enabled whereas the one used by the Linux builder does not.
+  result.erase(std::remove(result.begin(), result.end(), ','), result.end());
   recognition_results_.push_back(std::move(result));
 }
 
@@ -94,7 +104,8 @@ TEST_F(SodaClientUnitTest, CreateSodaClient) {
   speech::soda::chrome::ExtendedSodaConfigMsg config_msg;
   config_msg.set_channel_count(handler->num_channels());
   config_msg.set_sample_rate(handler->sample_rate());
-  config_msg.set_language_pack_directory(config_file_path.value().c_str());
+  config_msg.set_language_pack_directory(
+      config_file_path.AsUTF8Unsafe().c_str());
   config_msg.set_simulate_realtime_testonly(false);
   config_msg.set_enable_lang_id(false);
   config_msg.set_recognition_mode(
@@ -141,7 +152,11 @@ TEST_F(SodaClientUnitTest, CreateSodaClient) {
 
       // Sleep for 20ms to simulate real-time audio. SODA requires audio
       // streaming in order to return events.
+#if defined(OS_WIN)
+      ::Sleep(20);
+#else
       usleep(20000);
+#endif
     }
   }
 

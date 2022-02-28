@@ -5,6 +5,7 @@
 #include "chrome/browser/page_load_metrics/integration_tests/metric_integration_test.h"
 
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/test/browser_test.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
@@ -24,6 +25,10 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, UserTiming) {
     }
     </script>
   )HTML");
+  // Ensure that the previous page won't be stored in the back/forward cache, so
+  // that the histogram will be recorded when the previous page is unloaded.
+  web_contents()->GetController().GetBackForwardCache().DisableForTesting(
+      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // Check web perf API.
   const base::ListValue eval_result =
@@ -35,7 +40,7 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, UserTiming) {
   const double interactive = eval_result.GetList()[2].GetDouble();
   EXPECT_GT(interactive, 0.0);
 
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
 
   // Check UKM. We compare the webexposed value to the UKM value. The webexposed
   // value will be rounded whereas the UKM value will not, so it may be off by 1

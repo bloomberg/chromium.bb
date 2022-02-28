@@ -4,11 +4,16 @@
 
 #include "fxjs/cfx_v8.h"
 
-#include <cmath>
+#include <math.h>
+
 #include <memory>
 
 #include "testing/fxv8_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "v8/include/v8-container.h"
+#include "v8/include/v8-context.h"
+#include "v8/include/v8-date.h"
+#include "v8/include/v8-isolate.h"
 
 namespace {
 bool getter_sentinel = false;
@@ -83,7 +88,7 @@ TEST_F(CFXV8UnitTest, NewUndefined) {
   auto undef = cfx_v8()->NewUndefined();
   EXPECT_FALSE(cfx_v8()->ToBoolean(undef));
   EXPECT_EQ(0, cfx_v8()->ToInt32(undef));
-  EXPECT_TRUE(std::isnan(cfx_v8()->ToDouble(undef)));
+  EXPECT_TRUE(isnan(cfx_v8()->ToDouble(undef)));
   EXPECT_EQ("undefined", cfx_v8()->ToByteString(undef));
   EXPECT_EQ(L"undefined", cfx_v8()->ToWideString(undef));
   EXPECT_TRUE(cfx_v8()->ToObject(undef).IsEmpty());

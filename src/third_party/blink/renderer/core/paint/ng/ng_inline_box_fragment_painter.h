@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_INLINE_BOX_FRAGMENT_PAINTER_H_
 
 #include "base/dcheck_is_on.h"
+#include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/inline_box_painter_base.h"
@@ -79,7 +80,7 @@ class NGInlineBoxFragmentPainterBase : public InlineBoxPainterBase {
 
   BorderPaintingType GetBorderPaintType(
       const PhysicalRect& adjusted_frame_rect,
-      IntRect& adjusted_clip_rect,
+      gfx::Rect& adjusted_clip_rect,
       bool object_has_multiple_boxes) const override;
   void PaintNormalBoxShadow(const PaintInfo&,
                             const ComputedStyle&,
@@ -91,7 +92,7 @@ class NGInlineBoxFragmentPainterBase : public InlineBoxPainterBase {
   void PaintBackgroundBorderShadow(const PaintInfo&,
                                    const PhysicalOffset& paint_offset);
 
-  IntRect VisualRect(const PhysicalOffset& paint_offset);
+  gfx::Rect VisualRect(const PhysicalOffset& paint_offset);
 
   const NGPhysicalFragment& inline_box_fragment_;
   const NGFragmentItem& inline_box_item_;
@@ -190,7 +191,7 @@ class NGLineBoxFragmentPainter : public NGInlineBoxFragmentPainterBase {
     DCHECK_EQ(line_box_fragment.Type(),
               NGPhysicalFragment::NGFragmentType::kFragmentLineBox);
     DCHECK(NeedsPaint(line_box_fragment));
-    DCHECK(layout_block_flow.IsLayoutNGMixin());
+    DCHECK(layout_block_flow.IsLayoutNGObject());
   }
 
   const NGPhysicalLineBoxFragment& PhysicalFragment() const {

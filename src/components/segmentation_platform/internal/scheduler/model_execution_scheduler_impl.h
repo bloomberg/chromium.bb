@@ -5,13 +5,20 @@
 #ifndef COMPONENTS_SEGMENTATION_PLATFORM_INTERNAL_SCHEDULER_MODEL_EXECUTION_SCHEDULER_IMPL_H_
 #define COMPONENTS_SEGMENTATION_PLATFORM_INTERNAL_SCHEDULER_MODEL_EXECUTION_SCHEDULER_IMPL_H_
 
+#include "base/memory/raw_ptr.h"
 #include "components/segmentation_platform/internal/scheduler/model_execution_scheduler.h"
 
 #include "base/cancelable_callback.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/segmentation_platform/internal/execution/model_execution_manager.h"
 #include "components/segmentation_platform/internal/execution/model_execution_status.h"
+#include "components/segmentation_platform/internal/platform_options.h"
+
+namespace base {
+class Clock;
+}  // namespace base
 
 namespace segmentation_platform {
 
@@ -24,10 +31,14 @@ class SignalStorageConfig;
 
 class ModelExecutionSchedulerImpl : public ModelExecutionScheduler {
  public:
-  ModelExecutionSchedulerImpl(Observer* observer,
-                              SegmentInfoDatabase* segment_database,
-                              SignalStorageConfig* signal_storage_config,
-                              ModelExecutionManager* model_execution_manager);
+  ModelExecutionSchedulerImpl(
+      std::vector<Observer*>&& observers,
+      SegmentInfoDatabase* segment_database,
+      SignalStorageConfig* signal_storage_config,
+      ModelExecutionManager* model_execution_manager,
+      base::flat_set<optimization_guide::proto::OptimizationTarget> segment_ids,
+      base::Clock* clock,
+      const PlatformOptions& platform_options);
   ~ModelExecutionSchedulerImpl() override;
 
   // Disallow copy/assign.
@@ -54,18 +65,27 @@ class ModelExecutionSchedulerImpl : public ModelExecutionScheduler {
 
   void OnResultSaved(OptimizationTarget segment_id, bool success);
 
-  // Observer listening to model exeuction events. Required by the segment
+  // Observers listening to model exeuction events. Required by the segment
   // selection pipeline.
-  Observer* observer_;
+  std::vector<Observer*> observers_;
 
   // The database storing metadata and results.
-  SegmentInfoDatabase* segment_database_;
+  raw_ptr<SegmentInfoDatabase> segment_database_;
 
   // Used for confirming if the signals have been collected long enough.
-  SignalStorageConfig* signal_storage_config_;
+  raw_ptr<SignalStorageConfig> signal_storage_config_;
 
   // The class that executes the models.
-  ModelExecutionManager* model_execution_manager_;
+  raw_ptr<ModelExecutionManager> model_execution_manager_;
+
+  // The set of all known segments.
+  base::flat_set<optimization_guide::proto::OptimizationTarget>
+      all_segment_ids_;
+
+  // The time provider.
+  raw_ptr<base::Clock> clock_;
+
+  const PlatformOptions platform_options_;
 
   // In-flight model execution requests. Will be killed if we get a model
   // update.

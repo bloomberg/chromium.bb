@@ -54,7 +54,7 @@ struct ShaderInfo
 	bool					compileOk;		//!< Did compilation succeed?
 	deUint64				compileTimeUs;	//!< Compile time in microseconds (us).
 
-	ShaderInfo (void) : compileOk(false), compileTimeUs(0) {}
+	ShaderInfo (void) : type(SHADERTYPE_LAST), compileOk(false), compileTimeUs(0) {}
 };
 
 /*--------------------------------------------------------------------*//*!
@@ -335,6 +335,16 @@ struct IntersectionSource : public ShaderSource
 struct CallableSource : public ShaderSource
 {
 	CallableSource(const std::string& source_) : ShaderSource(glu::SHADERTYPE_CALLABLE, source_) {}
+};
+
+struct TaskSource : public ShaderSource
+{
+	TaskSource(const std::string& source_) : ShaderSource(glu::SHADERTYPE_TASK, source_) {}
+};
+
+struct MeshSource : public ShaderSource
+{
+	MeshSource(const std::string& source_) : ShaderSource(glu::SHADERTYPE_MESH, source_) {}
 };
 
 struct ProgramSources

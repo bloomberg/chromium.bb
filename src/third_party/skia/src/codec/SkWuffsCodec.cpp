@@ -113,6 +113,10 @@ static SkCodec::Result reset_and_decode_image_config(wuffs_gif__decoder*       d
         SkCodecPrintf("initialize: %s", status.message());
         return SkCodec::kInternalError;
     }
+
+    // See https://bugs.chromium.org/p/skia/issues/detail?id=12055
+    decoder->set_quirk_enabled(WUFFS_GIF__QUIRK_IGNORE_TOO_MUCH_PIXEL_DATA, true);
+
     while (true) {
         status = decoder->decode_image_config(imgcfg, b);
         if (status.repr == nullptr) {
@@ -693,7 +697,7 @@ SkCodec::Result SkWuffsCodec::onIncrementalDecodeTwoPass() {
         draw.fDst.reset(dstInfo(), fIncrDecDst, fIncrDecRowBytes);
         SkMatrix matrix = SkMatrix::RectToRect(SkRect::Make(this->dimensions()),
                                                SkRect::Make(this->dstInfo().dimensions()));
-        SkSimpleMatrixProvider matrixProvider(matrix);
+        SkMatrixProvider matrixProvider(matrix);
         draw.fMatrixProvider = &matrixProvider;
         SkRasterClip rc(SkIRect::MakeSize(this->dstInfo().dimensions()));
         draw.fRC = &rc;

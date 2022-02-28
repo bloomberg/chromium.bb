@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
 
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/multi_column_fragmentainer_group.h"
@@ -44,12 +45,19 @@ LayoutMultiColumnSet* LayoutMultiColumnSet::CreateAnonymous(
     LayoutFlowThread& flow_thread,
     const ComputedStyle& parent_style) {
   Document& document = flow_thread.GetDocument();
-  LayoutMultiColumnSet* layout_object = new LayoutMultiColumnSet(&flow_thread);
+  LayoutMultiColumnSet* layout_object =
+      MakeGarbageCollected<LayoutMultiColumnSet>(&flow_thread);
   layout_object->SetDocumentForAnonymous(&document);
   layout_object->SetStyle(
       document.GetStyleResolver().CreateAnonymousStyleWithDisplay(
           parent_style, EDisplay::kBlock));
   return layout_object;
+}
+
+void LayoutMultiColumnSet::Trace(Visitor* visitor) const {
+  visitor->Trace(fragmentainer_groups_);
+  visitor->Trace(flow_thread_);
+  LayoutBlockFlow::Trace(visitor);
 }
 
 unsigned LayoutMultiColumnSet::FragmentainerGroupIndexAtFlowThreadOffset(

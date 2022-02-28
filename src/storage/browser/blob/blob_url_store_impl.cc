@@ -5,6 +5,7 @@
 #include "storage/browser/blob/blob_url_store_impl.h"
 
 #include "base/bind.h"
+#include "base/strings/strcat.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_url_loader_factory.h"
@@ -58,9 +59,9 @@ class BlobURLTokenImpl : public blink::mojom::BlobURLToken {
   const base::UnguessableToken token_;
 };
 
-BlobURLStoreImpl::BlobURLStoreImpl(base::WeakPtr<BlobUrlRegistry> registry,
-                                   BlobRegistryImpl::Delegate* delegate)
-    : registry_(std::move(registry)), delegate_(delegate) {}
+BlobURLStoreImpl::BlobURLStoreImpl(const url::Origin& origin,
+                                   base::WeakPtr<BlobUrlRegistry> registry)
+    : origin_(origin), registry_(std::move(registry)) {}
 
 BlobURLStoreImpl::~BlobURLStoreImpl() {
   if (registry_) {
@@ -69,47 +70,28 @@ BlobURLStoreImpl::~BlobURLStoreImpl() {
   }
 }
 
-void BlobURLStoreImpl::Register(mojo::PendingRemote<blink::mojom::Blob> blob,
-                                const GURL& url,
-                                RegisterCallback callback) {
-  if (!url.SchemeIsBlob()) {
-    mojo::ReportBadMessage("Invalid scheme passed to BlobURLStore::Register");
-    std::move(callback).Run();
-    return;
-  }
-  if (!delegate_->CanCommitURL(url)) {
-    mojo::ReportBadMessage(
-        "Non committable URL passed to BlobURLStore::Register");
-    std::move(callback).Run();
-    return;
-  }
-  if (BlobUrlUtils::UrlHasFragment(url)) {
-    mojo::ReportBadMessage(
-        "URL with fragment passed to BlobURLStore::Register");
+void BlobURLStoreImpl::Register(
+    mojo::PendingRemote<blink::mojom::Blob> blob,
+    const GURL& url,
+    // TODO(https://crbug.com/1224926): Remove this once experiment is over.
+    const base::UnguessableToken& unsafe_agent_cluster_id,
+    RegisterCallback callback) {
+  // TODO(mek): Generate blob URLs here, rather than validating the URLs the
+  // renderer process generated.
+  if (!BlobUrlIsValid(url, "Register")) {
     std::move(callback).Run();
     return;
   }
 
   if (registry_)
-    registry_->AddUrlMapping(url, std::move(blob));
+    registry_->AddUrlMapping(url, std::move(blob), unsafe_agent_cluster_id);
   urls_.insert(url);
   std::move(callback).Run();
 }
 
 void BlobURLStoreImpl::Revoke(const GURL& url) {
-  if (!url.SchemeIsBlob()) {
-    mojo::ReportBadMessage("Invalid scheme passed to BlobURLStore::Revoke");
+  if (!BlobUrlIsValid(url, "Revoke"))
     return;
-  }
-  if (!delegate_->CanCommitURL(url)) {
-    mojo::ReportBadMessage(
-        "Non committable URL passed to BlobURLStore::Revoke");
-    return;
-  }
-  if (BlobUrlUtils::UrlHasFragment(url)) {
-    mojo::ReportBadMessage("URL with fragment passed to BlobURLStore::Revoke");
-    return;
-  }
 
   if (registry_)
     registry_->RemoveUrlMapping(url);
@@ -118,30 +100,73 @@ void BlobURLStoreImpl::Revoke(const GURL& url) {
 
 void BlobURLStoreImpl::Resolve(const GURL& url, ResolveCallback callback) {
   if (!registry_) {
-    std::move(callback).Run(mojo::NullRemote());
+    std::move(callback).Run(mojo::NullRemote(), absl::nullopt);
     return;
   }
   mojo::PendingRemote<blink::mojom::Blob> blob = registry_->GetBlobFromUrl(url);
-  std::move(callback).Run(std::move(blob));
+  std::move(callback).Run(std::move(blob),
+                          registry_->GetUnsafeAgentClusterID(url));
 }
 
 void BlobURLStoreImpl::ResolveAsURLLoaderFactory(
     const GURL& url,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
+    ResolveAsURLLoaderFactoryCallback callback) {
   BlobURLLoaderFactory::Create(
       registry_ ? registry_->GetBlobFromUrl(url) : mojo::NullRemote(), url,
       std::move(receiver));
+  std::move(callback).Run(registry_->GetUnsafeAgentClusterID(url));
 }
 
 void BlobURLStoreImpl::ResolveForNavigation(
     const GURL& url,
-    mojo::PendingReceiver<blink::mojom::BlobURLToken> token) {
-  if (!registry_)
+    mojo::PendingReceiver<blink::mojom::BlobURLToken> token,
+    ResolveForNavigationCallback callback) {
+  if (!registry_) {
+    std::move(callback).Run(absl::nullopt);
     return;
+  }
   mojo::PendingRemote<blink::mojom::Blob> blob = registry_->GetBlobFromUrl(url);
-  if (!blob)
+  if (!blob) {
+    std::move(callback).Run(absl::nullopt);
     return;
+  }
   new BlobURLTokenImpl(registry_, url, std::move(blob), std::move(token));
+  std::move(callback).Run(registry_->GetUnsafeAgentClusterID(url));
+}
+
+bool BlobURLStoreImpl::BlobUrlIsValid(const GURL& url,
+                                      const char* method) const {
+  if (!url.SchemeIsBlob()) {
+    mojo::ReportBadMessage(
+        base::StrCat({"Invalid scheme passed to BlobURLStore::", method}));
+    return false;
+  }
+  url::Origin url_origin = url::Origin::Create(url);
+  // For file:// origins blink sometimes creates blob URLs with "null" as origin
+  // and other times "file://" (based on a runtime setting). On the other hand,
+  // `origin_` will always be a non-opaque file: origin for pages loaded from
+  // file:// URLs. To deal with this, we treat file:// origins and
+  // opaque origins separately from non-opaque origins.
+  bool valid_origin = true;
+  if (url_origin.scheme() == url::kFileScheme) {
+    valid_origin = origin_.scheme() == url::kFileScheme;
+  } else if (url_origin.opaque()) {
+    valid_origin = origin_.opaque() || origin_.scheme() == url::kFileScheme;
+  } else {
+    valid_origin = origin_ == url_origin;
+  }
+  if (!valid_origin) {
+    mojo::ReportBadMessage(base::StrCat(
+        {"URL with invalid origin passed to BlobURLStore::", method}));
+    return false;
+  }
+  if (BlobUrlUtils::UrlHasFragment(url)) {
+    mojo::ReportBadMessage(
+        base::StrCat({"URL with fragment passed to BlobURLStore::", method}));
+    return false;
+  }
+  return true;
 }
 
 }  // namespace storage

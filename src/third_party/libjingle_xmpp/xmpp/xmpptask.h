@@ -15,7 +15,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "third_party/libjingle_xmpp/task_runner/task.h"
 #include "third_party/libjingle_xmpp/task_runner/taskparent.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
@@ -57,6 +56,10 @@ class XmppTask;
 class XmppClientInterface {
  public:
   XmppClientInterface();
+
+  XmppClientInterface(const XmppClientInterface&) = delete;
+  XmppClientInterface& operator=(const XmppClientInterface&) = delete;
+
   virtual ~XmppClientInterface();
 
   virtual XmppEngine::State GetState() const = 0;
@@ -69,8 +72,6 @@ class XmppClientInterface {
   virtual void AddXmppTask(XmppTask* task, XmppEngine::HandlerLevel level) = 0;
   virtual void RemoveXmppTask(XmppTask* task) = 0;
   sigslot::signal0<> SignalDisconnected;
-
-  DISALLOW_COPY_AND_ASSIGN(XmppClientInterface);
 };
 
 // XmppTaskParentInterface is the interface require for any parent of
@@ -85,11 +86,13 @@ class XmppTaskParentInterface : public jingle_xmpp::Task {
   explicit XmppTaskParentInterface(jingle_xmpp::TaskParent* parent)
       : Task(parent) {
   }
+
+  XmppTaskParentInterface(const XmppTaskParentInterface&) = delete;
+  XmppTaskParentInterface& operator=(const XmppTaskParentInterface&) = delete;
+
   virtual ~XmppTaskParentInterface() {}
 
   virtual XmppClientInterface* GetClient() = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(XmppTaskParentInterface);
 };
 
 class XmppTaskBase : public XmppTaskParentInterface {
@@ -98,6 +101,10 @@ class XmppTaskBase : public XmppTaskParentInterface {
       : XmppTaskParentInterface(parent),
         parent_(parent) {
   }
+
+  XmppTaskBase(const XmppTaskBase&) = delete;
+  XmppTaskBase& operator=(const XmppTaskBase&) = delete;
+
   virtual ~XmppTaskBase() {}
 
   virtual XmppClientInterface* GetClient() {
@@ -106,8 +113,6 @@ class XmppTaskBase : public XmppTaskParentInterface {
 
  protected:
   XmppTaskParentInterface* parent_;
-
-  DISALLOW_COPY_AND_ASSIGN(XmppTaskBase);
 };
 
 class XmppTask : public XmppTaskBase,

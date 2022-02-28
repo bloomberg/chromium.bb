@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_ANDROID_BATTERY_METRICS_H_
 
 #include "base/android/radio_utils.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/sequence_checker.h"
@@ -24,6 +23,9 @@ class AndroidBatteryMetrics
  public:
   static AndroidBatteryMetrics* GetInstance();
 
+  AndroidBatteryMetrics(const AndroidBatteryMetrics&) = delete;
+  AndroidBatteryMetrics& operator=(const AndroidBatteryMetrics&) = delete;
+
   // ProcessVisibilityTracker::ProcessVisibilityObserver implementation:
   void OnVisibilityChanged(bool visible) override;
 
@@ -36,7 +38,7 @@ class AndroidBatteryMetrics
   void OnPowerStateChange(bool on_battery_power) override;
 
   void UpdateMetricsEnabled();
-  void CaptureAndReportMetrics();
+  void CaptureAndReportMetrics(bool disabling);
   void UpdateAndReportRadio();
   void MonitorRadioState();
 
@@ -47,12 +49,10 @@ class AndroidBatteryMetrics
 
   // Battery drain is captured and reported periodically in this interval while
   // the device is on battery power and the app is visible.
-  static constexpr base::TimeDelta kMetricsInterval =
-      base::TimeDelta::FromSeconds(30);
+  static constexpr base::TimeDelta kMetricsInterval = base::Seconds(30);
 
   // Radio state is polled with this interval to count radio wakeups.
-  static constexpr base::TimeDelta kRadioStateInterval =
-      base::TimeDelta::FromSeconds(1);
+  static constexpr base::TimeDelta kRadioStateInterval = base::Seconds(1);
 
   bool app_visible_;
   bool on_battery_power_;
@@ -70,8 +70,6 @@ class AndroidBatteryMetrics
   int observed_capacity_drops_ = 0;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(AndroidBatteryMetrics);
 };
 
 }  // namespace content

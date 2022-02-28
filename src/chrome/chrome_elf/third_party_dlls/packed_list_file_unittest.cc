@@ -119,6 +119,10 @@ bool GetTestModules(std::vector<TestModule>* test_modules,
 //------------------------------------------------------------------------------
 
 class ThirdPartyFileTest : public testing::Test {
+ public:
+  ThirdPartyFileTest(const ThirdPartyFileTest&) = delete;
+  ThirdPartyFileTest& operator=(const ThirdPartyFileTest&) = delete;
+
  protected:
   ThirdPartyFileTest() = default;
 
@@ -142,7 +146,7 @@ class ThirdPartyFileTest : public testing::Test {
   void CreateTestFile() {
     base::File file(base::FilePath(bl_test_file_path_),
                     base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
-                        base::File::FLAG_SHARE_DELETE |
+                        base::File::FLAG_WIN_SHARE_DELETE |
                         base::File::FLAG_DELETE_ON_CLOSE);
     ASSERT_TRUE(file.IsValid());
 
@@ -175,8 +179,6 @@ class ThirdPartyFileTest : public testing::Test {
   std::wstring bl_test_file_path_;
   std::vector<TestModule> test_array_;
   std::vector<PackedListModule> test_packed_array_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThirdPartyFileTest);
 };
 
 //------------------------------------------------------------------------------

@@ -5,7 +5,6 @@
 ##  tree. An additional intellectual property rights grant can be found
 ##  in the file PATENTS.  All contributing project authors may
 ##  be found in the AUTHORS file in the root of the source tree.
-cmake_minimum_required(VERSION 3.2)
 
 include(CheckCXXCompilerFlag)
 

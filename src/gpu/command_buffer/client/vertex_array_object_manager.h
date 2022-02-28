@@ -11,7 +11,7 @@
 #include <memory>
 #include <unordered_map>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "gles2_impl_export.h"
 
 namespace gpu {
@@ -30,6 +30,10 @@ class GLES2_IMPL_EXPORT VertexArrayObjectManager {
       GLuint array_buffer_id,
       GLuint element_array_buffer_id,
       bool support_client_side_arrays);
+
+  VertexArrayObjectManager(const VertexArrayObjectManager&) = delete;
+  VertexArrayObjectManager& operator=(const VertexArrayObjectManager&) = delete;
+
   ~VertexArrayObjectManager();
 
   bool IsReservedId(GLuint id) const;
@@ -119,17 +123,14 @@ class GLES2_IMPL_EXPORT VertexArrayObjectManager {
   GLsizei collection_buffer_size_;
   std::unique_ptr<int8_t[]> collection_buffer_;
 
-  VertexArrayObject* default_vertex_array_object_;
-  VertexArrayObject* bound_vertex_array_object_;
+  raw_ptr<VertexArrayObject> default_vertex_array_object_;
+  raw_ptr<VertexArrayObject> bound_vertex_array_object_;
   VertexArrayObjectMap vertex_array_objects_;
 
   const bool support_client_side_arrays_;
-
-  DISALLOW_COPY_AND_ASSIGN(VertexArrayObjectManager);
 };
 
 }  // namespace gles2
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_VERTEX_ARRAY_OBJECT_MANAGER_H_
-

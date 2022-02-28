@@ -35,7 +35,7 @@ class GatherOp : public XlaOpKernel {
   }
 
   void Compile(XlaOpKernelContext* ctx) override {
-    std::vector<int64> slice_sizes;
+    std::vector<int64_t> slice_sizes;
     OP_REQUIRES_OK(ctx,
                    ctx->ConstantInputAsIntVector("slice_sizes", &slice_sizes));
     xla::XlaOp result =
@@ -49,7 +49,8 @@ class GatherOp : public XlaOpKernel {
   bool indices_are_sorted_;
 };
 
-REGISTER_XLA_OP(Name("XlaGather"), GatherOp);
+REGISTER_XLA_OP(Name("XlaGather").CompileTimeConstantInput("slice_sizes"),
+                GatherOp);
 
 class ScatterOp : public XlaOpKernel {
  public:

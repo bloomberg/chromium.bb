@@ -21,6 +21,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace {
 constexpr char kGetAccessTokenBodyFormat[] =
@@ -339,7 +340,7 @@ bool OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenSuccessResponse(
             value->GetInteger(kExpiresInKey, &expires_in);
   if (ok) {
     token_response->expiration_time =
-        base::Time::Now() + base::TimeDelta::FromSeconds(9 * expires_in / 10);
+        base::Time::Now() + base::Seconds(9 * expires_in / 10);
   }
   return ok;
 }

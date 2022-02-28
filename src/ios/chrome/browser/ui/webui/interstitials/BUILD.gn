@@ -16,7 +16,7 @@ source_set("interstitials") {
     ":constants",
     "//base",
     "//components/resources",
-    "//components/safe_browsing/core/db:v4_protocol_manager_util",
+    "//components/safe_browsing/core/browser/db:v4_protocol_manager_util",
     "//components/safe_browsing/ios/browser:allow_list",
     "//components/security_interstitials/core",
     "//components/security_interstitials/core:unsafe_resource",
@@ -44,7 +44,6 @@ source_set("constants") {
 }
 
 source_set("eg2_tests") {
-  defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",

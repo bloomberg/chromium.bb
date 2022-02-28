@@ -9,6 +9,9 @@
 #include "ash/ambient/test/ambient_ash_test_base.h"
 #include "ash/ambient/ui/ambient_container_view.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
+#include "ash/public/cpp/ambient/proto/photo_cache_entry.pb.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/image_view.h"
 
@@ -20,6 +23,7 @@ using AmbientPhotoViewTest = AmbientAshTestBase;
 // screen is portrait. The top and bottom of the image will be cut off, as
 // the height of the image is taller than the height of the screen.
 TEST_F(AmbientPhotoViewTest, ShouldResizePortraitImageForPortraitScreen) {
+  SetPhotoOrientation(/*portrait=*/true);
   SetDecodedPhotoSize(/*width=*/10, /*height=*/20);
 
   UpdateDisplay("600x800");
@@ -32,18 +36,17 @@ TEST_F(AmbientPhotoViewTest, ShouldResizePortraitImageForPortraitScreen) {
 
   // Image should be full width. Image height should extend above and below the
   // visible part of the screen.
-  ASSERT_EQ(image_view->GetImageBoundsForTesting(),
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
             gfx::Rect(/*x=*/0, /*y=*/-200, /*width=*/600, /*height=*/1200));
-  ASSERT_EQ(image_view->GetRelatedImageBoundsForTesting(), gfx::Rect());
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(), gfx::Rect());
 }
 
-// Test that image is scaled to fill screen width when the image is landscape
-// and the screen is portrait. There will be black bars to the top and bottom of
-// the image, as the height of the image is less than the height of the screen.
+// Test that two landscape images are scaled and filed to fill screen when the
+// screen is portrait.
 TEST_F(AmbientPhotoViewTest, ShouldResizeLandscapeImageForPortraitScreen) {
   SetDecodedPhotoSize(/*width=*/30, /*height=*/20);
 
-  UpdateDisplay("600x800");
+  UpdateDisplay("600x808");
 
   ShowAmbientScreen();
 
@@ -51,16 +54,16 @@ TEST_F(AmbientPhotoViewTest, ShouldResizeLandscapeImageForPortraitScreen) {
 
   auto* image_view = GetAmbientBackgroundImageView();
 
-  // Image should be full width. Image should have equal empty space top and
-  // bottom.
-  ASSERT_EQ(image_view->GetImageBoundsForTesting(),
-            gfx::Rect(/*x=*/0, /*y=*/200, /*width=*/600, /*height=*/400));
-  ASSERT_EQ(image_view->GetRelatedImageBoundsForTesting(), gfx::Rect());
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
+            gfx::Rect(/*x=*/0, /*y=*/0, /*width=*/600, /*height=*/400));
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(),
+            gfx::Rect(/*x=*/0, /*y=*/408, /*width=*/600, /*height=*/400));
 }
 
 // Test that two portrait images are scaled and tiled to fill screen when the
 // screen is landscape.
 TEST_F(AmbientPhotoViewTest, ShouldTileTwoPortraitImagesForLandscapeScreen) {
+  SetPhotoOrientation(/*portrait=*/true);
   SetDecodedPhotoSize(/*width=*/10, /*height=*/20);
 
   UpdateDisplay("808x600");
@@ -75,10 +78,10 @@ TEST_F(AmbientPhotoViewTest, ShouldTileTwoPortraitImagesForLandscapeScreen) {
   // spaing in between.
   // Image should be full width. Image height should extend above and below the
   // visible part of the view.
-  ASSERT_EQ(image_view->GetImageBoundsForTesting(),
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
             gfx::Rect(/*x=*/0, /*y=*/-100, /*width=*/400, /*height=*/800));
-  ASSERT_EQ(image_view->GetRelatedImageBoundsForTesting(),
-            gfx::Rect(/*x=*/0, /*y=*/-100, /*width=*/400, /*height=*/800));
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(),
+            gfx::Rect(/*x=*/408, /*y=*/-100, /*width=*/400, /*height=*/800));
 }
 
 // Test that two portrait images are scaled and tiled to fill screen when the
@@ -86,6 +89,7 @@ TEST_F(AmbientPhotoViewTest, ShouldTileTwoPortraitImagesForLandscapeScreen) {
 // pixel.
 TEST_F(AmbientPhotoViewTest,
        ShouldTileTwoPortraitImagesForLandscapeScreenWithOddWidth) {
+  SetPhotoOrientation(/*portrait=*/true);
   SetDecodedPhotoSize(/*width=*/10, /*height=*/20);
 
   constexpr int kScreenWidth = 809;
@@ -107,20 +111,19 @@ TEST_F(AmbientPhotoViewTest,
   const int image_width = (kScreenWidth - kMarginLeftOfRelatedImageDip + 1) / 2;
   const int image_height = 20 * image_width / 10;
   const int y = (kScreenHeight - image_height) / 2;
-  ASSERT_EQ(image_view->GetImageBoundsForTesting(),
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
             gfx::Rect(/*x=*/0, /*y=*/y, /*width=*/image_width,
                       /*height=*/image_height));
-  ASSERT_EQ(image_view->GetRelatedImageBoundsForTesting(),
-            gfx::Rect(/*x=*/0, /*y=*/-100, /*width=*/400, /*height=*/800));
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(),
+            gfx::Rect(/*x=*/409, /*y=*/-100, /*width=*/400, /*height=*/800));
 }
 
-// Test that landscape images can be tiled when screen is landscape as long as
-// they are related.
+// Test that only show one landscape image when screen is landscape.
 TEST_F(AmbientPhotoViewTest,
        ShouldNotTileTwoLandscapeImagesForLandscapeScreen) {
   SetDecodedPhotoSize(/*width=*/20, /*height=*/10);
 
-  UpdateDisplay("808x600");
+  UpdateDisplay("800x600");
 
   ShowAmbientScreen();
 
@@ -128,19 +131,19 @@ TEST_F(AmbientPhotoViewTest,
 
   auto* image_view = GetAmbientBackgroundImageView();
 
-  // Show two landscape image.
+  // Show one landscape image.
   // Image should be full height. Image width should extend equally to the left
   // and right of the visible part of the screen.
-  ASSERT_EQ(image_view->GetImageBoundsForTesting(),
-            gfx::Rect(/*x=*/0, /*y=*/200, /*width=*/400, /*height=*/200));
-  ASSERT_EQ(image_view->GetRelatedImageBoundsForTesting(),
-            gfx::Rect(/*x=*/0, /*y=*/200, /*width=*/400, /*height=*/200));
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
+            gfx::Rect(/*x=*/-200, /*y=*/0, /*width=*/1200, /*height=*/600));
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(), gfx::Rect());
 }
 
 // Test that only have one available image will not be tiled when screen is
 // landscape.
 TEST_F(AmbientPhotoViewTest,
        ShouldNotTileIfRelatedImageIsNullForLandscapeScreen) {
+  SetPhotoOrientation(/*portrait=*/true);
   SetDecodedPhotoSize(/*width=*/10, /*height=*/20);
 
   UpdateDisplay("800x600");
@@ -160,9 +163,9 @@ TEST_F(AmbientPhotoViewTest,
   // Only show one portrait image.
   // Image should be full height. Image should have equal empty space left and
   // right.
-  ASSERT_EQ(image_view->GetImageBoundsForTesting(),
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
             gfx::Rect(/*x=*/254, /*y=*/0, /*width=*/300, /*height=*/600));
-  ASSERT_EQ(image_view->GetRelatedImageBoundsForTesting(), gfx::Rect());
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(), gfx::Rect());
 }
 
 // Test that image is scaled to fill screen height when the image is landscape
@@ -188,14 +191,16 @@ TEST_F(AmbientPhotoViewTest, ShouldResizeLandscapeImageForLandscapeScreen) {
 
   // Image should be full height. Image width should extend equally to the left
   // and right of the visible part of the screen.
-  ASSERT_EQ(image_view->GetImageBoundsForTesting(),
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
             gfx::Rect(/*x=*/-46, /*y=*/0, /*width=*/900, /*height=*/600));
-  ASSERT_EQ(image_view->GetRelatedImageBoundsForTesting(), gfx::Rect());
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(), gfx::Rect());
 }
 
 // Test that when rotates to portrait screen, will dynamically only show one
 // portrait image.
-TEST_F(AmbientPhotoViewTest, ShouldNotTileWhenRotateToPortraitScreen) {
+TEST_F(AmbientPhotoViewTest,
+       ShouldNotTilePortraitImagesWhenRotateToPortraitScreen) {
+  SetPhotoOrientation(/*portrait=*/true);
   SetDecodedPhotoSize(/*width=*/10, /*height=*/20);
 
   UpdateDisplay("808x600");
@@ -210,24 +215,93 @@ TEST_F(AmbientPhotoViewTest, ShouldNotTileWhenRotateToPortraitScreen) {
   // spaing in between.
   // Image should be full width. Image height should extend above and below the
   // visible part of the view.
-  ASSERT_EQ(image_view->GetImageBoundsForTesting(),
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
             gfx::Rect(/*x=*/0, /*y=*/-100, /*width=*/400, /*height=*/800));
-  ASSERT_EQ(image_view->GetRelatedImageBoundsForTesting(),
-            gfx::Rect(/*x=*/0, /*y=*/-100, /*width=*/400, /*height=*/800));
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(),
+            gfx::Rect(/*x=*/408, /*y=*/-100, /*width=*/400, /*height=*/800));
 
   // Rotate screen.
   UpdateDisplay("600x808");
   // Only one image will show.
   // Image should be full width. Image height should extend above and below the
   // visible part of the screen.
-  ASSERT_EQ(image_view->GetImageBoundsForTesting(),
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
             gfx::Rect(/*x=*/0, /*y=*/-196, /*width=*/600, /*height=*/1200));
-  ASSERT_EQ(image_view->GetRelatedImageBoundsForTesting(), gfx::Rect());
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(), gfx::Rect());
+}
+
+// Test that when rotates to portrait screen, will dynamically show two paired
+// landscape images.
+TEST_F(AmbientPhotoViewTest,
+       ShouldTileLandscapeImagesWhenRotateToPortraitScreen) {
+  SetDecodedPhotoSize(/*width=*/20, /*height=*/10);
+
+  UpdateDisplay("808x600");
+
+  ShowAmbientScreen();
+
+  FastForwardToNextImage();
+
+  auto* image_view = GetAmbientBackgroundImageView();
+
+  // Will show one landscape image.
+  // Image should be full height. Image height should extend left and right the
+  // visible part of the view.
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
+            gfx::Rect(/*x=*/-196, /*y=*/0, /*width=*/1200, /*height=*/600));
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(), gfx::Rect());
+
+  // Rotate screen.
+  UpdateDisplay("600x808");
+  // Will show paired landscape images.
+  // Image should be full height. Image height should extend left and right the
+  // visible part of the screen.
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
+            gfx::Rect(/*x=*/-100, /*y=*/0, /*width=*/800, /*height=*/400));
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(),
+            gfx::Rect(/*x=*/-100, /*y=*/408, /*width=*/800, /*height=*/400));
+}
+
+// Test that when rotates to portrait screen, will rotate Geo landscape images.
+TEST_F(AmbientPhotoViewTest,
+       ShouldRotateGeoLandscapeImageWhenRotateToPortraitScreen) {
+  SetDecodedPhotoSize(/*width=*/20, /*height=*/10);
+  SetPhotoTopicType(::ambient::TopicType::kGeo);
+
+  UpdateDisplay("808x600");
+
+  ShowAmbientScreen();
+
+  FastForwardToNextImage();
+
+  auto* image_view = GetAmbientBackgroundImageView();
+
+  // Will show one landscape image.
+  // Image should be full height. Image height should extend left and right the
+  // visible part of the view.
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
+            gfx::Rect(/*x=*/-196, /*y=*/0, /*width=*/1200, /*height=*/600));
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(), gfx::Rect());
+
+  // Rotate screen.
+  int64_t internal_display_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .SetFirstDisplayAsInternalDisplay();
+  display_manager()->SetDisplayRotation(internal_display_id,
+                                        display::Display::Rotation::ROTATE_90,
+                                        display::Display::RotationSource::USER);
+  // Will show one rotated image.
+  // Image should be full width. Image height should extend above and below the
+  // visible part of the screen.
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
+            gfx::Rect(/*x=*/0, /*y=*/-196, /*width=*/600, /*height=*/1200));
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(), gfx::Rect());
 }
 
 // Test that when rotates to landscape screen, will dynamically tile two
 // portrait images.
 TEST_F(AmbientPhotoViewTest, ShouldTileWhenRotateToLandscapeScreen) {
+  SetPhotoOrientation(/*portrait=*/true);
   SetDecodedPhotoSize(/*width=*/10, /*height=*/20);
 
   UpdateDisplay("600x808");
@@ -241,9 +315,9 @@ TEST_F(AmbientPhotoViewTest, ShouldTileWhenRotateToLandscapeScreen) {
   // Only one image will show.
   // Image should be full width. Image height should extend above and below the
   // visible part of the screen.
-  ASSERT_EQ(image_view->GetImageBoundsForTesting(),
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
             gfx::Rect(/*x=*/0, /*y=*/-196, /*width=*/600, /*height=*/1200));
-  ASSERT_EQ(image_view->GetRelatedImageBoundsForTesting(), gfx::Rect());
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(), gfx::Rect());
 
   // Rotate screen.
   UpdateDisplay("808x600");
@@ -252,14 +326,15 @@ TEST_F(AmbientPhotoViewTest, ShouldTileWhenRotateToLandscapeScreen) {
   // spaing in between.
   // Image should be full width. Image height should extend above and below the
   // visible part of the view.
-  ASSERT_EQ(image_view->GetImageBoundsForTesting(),
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
             gfx::Rect(/*x=*/0, /*y=*/-100, /*width=*/400, /*height=*/800));
-  ASSERT_EQ(image_view->GetRelatedImageBoundsForTesting(),
-            gfx::Rect(/*x=*/0, /*y=*/-100, /*width=*/400, /*height=*/800));
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(),
+            gfx::Rect(/*x=*/408, /*y=*/-100, /*width=*/400, /*height=*/800));
 }
 
 // Test that two protrat images will resize when bounds changes in landscape.
 TEST_F(AmbientPhotoViewTest, ShouldResizeTiledPortraitImagesWhenBoundsChanged) {
+  SetPhotoOrientation(/*portrait=*/true);
   SetDecodedPhotoSize(/*width=*/10, /*height=*/20);
 
   UpdateDisplay("808x600");
@@ -274,10 +349,10 @@ TEST_F(AmbientPhotoViewTest, ShouldResizeTiledPortraitImagesWhenBoundsChanged) {
   // spaing in between.
   // Image should be full width. Image height should extend above and below the
   // visible part of the view.
-  ASSERT_EQ(image_view->GetImageBoundsForTesting(),
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
             gfx::Rect(/*x=*/0, /*y=*/-100, /*width=*/400, /*height=*/800));
-  ASSERT_EQ(image_view->GetRelatedImageBoundsForTesting(),
-            gfx::Rect(/*x=*/0, /*y=*/-100, /*width=*/400, /*height=*/800));
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(),
+            gfx::Rect(/*x=*/408, /*y=*/-100, /*width=*/400, /*height=*/800));
 
   // Bounds changes so that image will be shown in portrait view.
   UpdateDisplay("508x200");
@@ -286,10 +361,11 @@ TEST_F(AmbientPhotoViewTest, ShouldResizeTiledPortraitImagesWhenBoundsChanged) {
   // spaing in between.
   // Image should be full height. Image should have equal empty space left and
   // right.
-  ASSERT_EQ(image_view->GetImageBoundsForTesting(),
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
             gfx::Rect(/*x=*/75, /*y=*/0, /*width=*/100, /*height=*/200));
-  ASSERT_EQ(image_view->GetRelatedImageBoundsForTesting(),
-            gfx::Rect(/*x=*/75, /*y=*/0, /*width=*/100, /*height=*/200));
+  ASSERT_EQ(
+      image_view->GetRelatedImageBoundsInScreenForTesting(),
+      gfx::Rect(/*x=*/(258 + 75), /*y=*/0, /*width=*/100, /*height=*/200));
 
   // Bounds changes so that image will be shown in portrait view.
   UpdateDisplay("308x200");
@@ -298,10 +374,10 @@ TEST_F(AmbientPhotoViewTest, ShouldResizeTiledPortraitImagesWhenBoundsChanged) {
   // spaing in between.
   // Image should be full width. Image height should extend above and below the
   // visible part of the view.
-  ASSERT_EQ(image_view->GetImageBoundsForTesting(),
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
             gfx::Rect(/*x=*/0, /*y=*/-50, /*width=*/150, /*height=*/300));
-  ASSERT_EQ(image_view->GetRelatedImageBoundsForTesting(),
-            gfx::Rect(/*x=*/0, /*y=*/-50, /*width=*/150, /*height=*/300));
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(),
+            gfx::Rect(/*x=*/158, /*y=*/-50, /*width=*/150, /*height=*/300));
 
   // Bounds changes to exact aspect ratio of the image.
   UpdateDisplay("208x200");
@@ -309,10 +385,10 @@ TEST_F(AmbientPhotoViewTest, ShouldResizeTiledPortraitImagesWhenBoundsChanged) {
   // Will tile two portrait images. Each image will fill 100x200 area with 8px
   // spaing in between.
   // Image should be full width and height.
-  ASSERT_EQ(image_view->GetImageBoundsForTesting(),
+  ASSERT_EQ(image_view->GetImageBoundsInScreenForTesting(),
             gfx::Rect(/*x=*/0, /*y=*/0, /*width=*/100, /*height=*/200));
-  ASSERT_EQ(image_view->GetRelatedImageBoundsForTesting(),
-            gfx::Rect(/*x=*/0, /*y=*/0, /*width=*/100, /*height=*/200));
+  ASSERT_EQ(image_view->GetRelatedImageBoundsInScreenForTesting(),
+            gfx::Rect(/*x=*/108, /*y=*/0, /*width=*/100, /*height=*/200));
 }
 
 }  // namespace ash

@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/history/core/browser/download_database.h"
 #include "components/history/core/browser/history_types.h"
@@ -61,7 +61,7 @@ class HistoryDatabase : public DownloadDatabase,
     ~TransactionScoper() { db_->CommitTransaction(); }
 
    private:
-    HistoryDatabase* db_;
+    raw_ptr<HistoryDatabase> db_;
   };
 
   // Must call Init() to complete construction. Although it can be created on
@@ -69,6 +69,9 @@ class HistoryDatabase : public DownloadDatabase,
   // database cleanup.
   HistoryDatabase(DownloadInterruptReason download_interrupt_reason_none,
                   DownloadInterruptReason download_interrupt_reason_crash);
+
+  HistoryDatabase(const HistoryDatabase&) = delete;
+  HistoryDatabase& operator=(const HistoryDatabase&) = delete;
 
   ~HistoryDatabase() override;
 
@@ -158,10 +161,6 @@ class HistoryDatabase : public DownloadDatabase,
   // visit id wasn't found.
   SegmentID GetSegmentID(VisitID visit_id);
 
-  // TODO(https://crbug.com/1141501): this is for an experiment, and will be
-  // removed once data is collected from experiment.
-  bool GetVisitsForUrl2(URLID url_id, VisitVector* visits) override;
-
   // Retrieves/Updates early expiration threshold, which specifies the earliest
   // known point in history that may possibly to contain visits suitable for
   // early expiration (AUTO_SUBFRAMES).
@@ -205,8 +204,6 @@ class HistoryDatabase : public DownloadDatabase,
   sql::MetaTable meta_table_;
 
   base::Time cached_early_expiration_threshold_;
-
-  DISALLOW_COPY_AND_ASSIGN(HistoryDatabase);
 };
 
 }  // namespace history

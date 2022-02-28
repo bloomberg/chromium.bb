@@ -81,12 +81,12 @@ bool MigrateDeviceIdInSettings(base::DictionaryValue* settings,
   DCHECK_EQ(2, device.stable_device_id_version);
 
   std::string old_device_id = GetVersionedDeviceIdString(device, 1);
-  std::unique_ptr<base::Value> value;
-  if (!settings->Remove(old_device_id, &value))
+  absl::optional<base::Value> value = settings->ExtractKey(old_device_id);
+  if (!value)
     return false;
 
   DCHECK_EQ(intended_key, GetDeviceIdString(device));
-  settings->Set(intended_key, std::move(value));
+  settings->SetPath(intended_key, std::move(*value));
   return true;
 }
 
@@ -121,9 +121,9 @@ void AudioDevicesPrefHandlerImpl::SetOutputVolumePrefValue(
   // if one exists.
   if (device.stable_device_id_version == 2) {
     std::string old_device_id = GetVersionedDeviceIdString(device, 1);
-    device_volume_settings_->Remove(old_device_id, nullptr);
+    device_volume_settings_->RemoveKey(old_device_id);
   }
-  device_volume_settings_->SetDouble(GetDeviceIdString(device), value);
+  device_volume_settings_->SetDoubleKey(GetDeviceIdString(device), value);
 
   SaveDevicesVolumePref();
 }
@@ -139,11 +139,11 @@ void AudioDevicesPrefHandlerImpl::SetInputGainPrefValue(
   // |device_volume_settings_|.
   // TODO(baileyberro): Remove this check in M94.
   if (device_volume_settings_->HasKey(device_id)) {
-    device_volume_settings_->Remove(device_id, nullptr);
+    device_volume_settings_->RemoveKey(device_id);
     SaveDevicesVolumePref();
   }
 
-  device_gain_settings_->SetDouble(device_id, value);
+  device_gain_settings_->SetDoubleKey(device_id, value);
   SaveDevicesGainPref();
 }
 
@@ -152,9 +152,8 @@ bool AudioDevicesPrefHandlerImpl::GetMuteValue(const AudioDevice& device) {
   if (!device_mute_settings_->HasKey(device_id_str))
     MigrateDeviceMuteSettings(device_id_str, device);
 
-  int mute = kPrefMuteOff;
-  device_mute_settings_->GetInteger(device_id_str, &mute);
-
+  int mute =
+      device_mute_settings_->FindIntKey(device_id_str).value_or(kPrefMuteOff);
   return (mute == kPrefMuteOn);
 }
 
@@ -164,7 +163,7 @@ void AudioDevicesPrefHandlerImpl::SetMuteValue(const AudioDevice& device,
   // if one exists.
   if (device.stable_device_id_version == 2) {
     std::string old_device_id = GetVersionedDeviceIdString(device, 1);
-    device_mute_settings_->Remove(old_device_id, nullptr);
+    device_mute_settings_->RemoveKey(old_device_id);
   }
   device_mute_settings_->SetInteger(GetDeviceIdString(device),
                                     mute ? kPrefMuteOn : kPrefMuteOff);
@@ -174,18 +173,18 @@ void AudioDevicesPrefHandlerImpl::SetMuteValue(const AudioDevice& device,
 void AudioDevicesPrefHandlerImpl::SetDeviceActive(const AudioDevice& device,
                                                   bool active,
                                                   bool activate_by_user) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetBoolean(kActiveKey, active);
+  base::DictionaryValue dict;
+  dict.SetBoolean(kActiveKey, active);
   if (active)
-    dict->SetBoolean(kActivateByUserKey, activate_by_user);
+    dict.SetBoolean(kActivateByUserKey, activate_by_user);
 
   // Use this opportunity to remove device record under deprecated device ID,
   // if one exists.
   if (device.stable_device_id_version == 2) {
     std::string old_device_id = GetVersionedDeviceIdString(device, 1);
-    device_state_settings_->Remove(old_device_id, nullptr);
+    device_state_settings_->RemoveKey(old_device_id);
   }
-  device_state_settings_->Set(GetDeviceIdString(device), std::move(dict));
+  device_state_settings_->SetPath(GetDeviceIdString(device), std::move(dict));
   SaveDevicesStatePref();
 }
 
@@ -203,18 +202,27 @@ bool AudioDevicesPrefHandlerImpl::GetDeviceActive(const AudioDevice& device,
     LOG(ERROR) << "Could not get device state for device:" << device.ToString();
     return false;
   }
-  if (!dict->GetBoolean(kActiveKey, active)) {
+
+  absl::optional<bool> active_opt = dict->FindBoolKey(kActiveKey);
+  if (!active_opt.has_value()) {
     LOG(ERROR) << "Could not get active value for device:" << device.ToString();
     return false;
   }
 
-  if (*active && !dict->GetBoolean(kActivateByUserKey, activate_by_user)) {
+  *active = active_opt.value();
+  if (!*active)
+    return true;
+
+  absl::optional<bool> activate_by_user_opt =
+      dict->FindBoolKey(kActivateByUserKey);
+  if (!activate_by_user_opt.has_value()) {
     LOG(ERROR) << "Could not get activate_by_user value for previously "
                   "active device:"
                << device.ToString();
     return false;
   }
 
+  *activate_by_user = activate_by_user_opt.value();
   return true;
 }
 
@@ -238,11 +246,7 @@ double AudioDevicesPrefHandlerImpl::GetOutputVolumePrefValue(
   std::string device_id_str = GetDeviceIdString(device);
   if (!device_volume_settings_->HasKey(device_id_str))
     MigrateDeviceVolumeGainSettings(device_id_str, device);
-
-  double value;
-  device_volume_settings_->GetDouble(device_id_str, &value);
-
-  return value;
+  return *device_volume_settings_->FindDoubleKey(device_id_str);
 }
 
 double AudioDevicesPrefHandlerImpl::GetInputGainPrefValue(
@@ -251,11 +255,7 @@ double AudioDevicesPrefHandlerImpl::GetInputGainPrefValue(
   std::string device_id_str = GetDeviceIdString(device);
   if (!device_gain_settings_->HasKey(device_id_str))
     SetInputGainPrefValue(device, kDefaultInputGainPercent);
-
-  double value;
-  device_gain_settings_->GetDouble(device_id_str, &value);
-
-  return value;
+  return *device_gain_settings_->FindDoubleKey(device_id_str);
 }
 
 double AudioDevicesPrefHandlerImpl::GetDeviceDefaultOutputVolume(
@@ -310,7 +310,7 @@ void AudioDevicesPrefHandlerImpl::LoadDevicesMutePref() {
 
 void AudioDevicesPrefHandlerImpl::SaveDevicesMutePref() {
   DictionaryPrefUpdate dict_update(local_state_, prefs::kAudioDevicesMute);
-  dict_update->Clear();
+  dict_update->DictClear();
   dict_update->MergeDictionary(device_mute_settings_.get());
 }
 
@@ -324,7 +324,7 @@ void AudioDevicesPrefHandlerImpl::LoadDevicesVolumePref() {
 void AudioDevicesPrefHandlerImpl::SaveDevicesVolumePref() {
   DictionaryPrefUpdate dict_update(local_state_,
                                    prefs::kAudioDevicesVolumePercent);
-  dict_update->Clear();
+  dict_update->DictClear();
   dict_update->MergeDictionary(device_volume_settings_.get());
 }
 
@@ -338,7 +338,7 @@ void AudioDevicesPrefHandlerImpl::LoadDevicesGainPref() {
 void AudioDevicesPrefHandlerImpl::SaveDevicesGainPref() {
   DictionaryPrefUpdate dict_update(local_state_,
                                    prefs::kAudioDevicesGainPercent);
-  dict_update->Clear();
+  dict_update->DictClear();
   dict_update->MergeDictionary(device_gain_settings_.get());
 }
 
@@ -351,7 +351,7 @@ void AudioDevicesPrefHandlerImpl::LoadDevicesStatePref() {
 
 void AudioDevicesPrefHandlerImpl::SaveDevicesStatePref() {
   DictionaryPrefUpdate dict_update(local_state_, prefs::kAudioDevicesState);
-  dict_update->Clear();
+  dict_update->DictClear();
   dict_update->MergeDictionary(device_state_settings_.get());
 }
 
@@ -389,7 +389,7 @@ void AudioDevicesPrefHandlerImpl::MigrateDeviceVolumeGainSettings(
     // If there was no recorded value for deprecated device ID, use value from
     // global vloume pref.
     double old_volume = local_state_->GetDouble(prefs::kAudioVolumePercent);
-    device_volume_settings_->SetDouble(device_key, old_volume);
+    device_volume_settings_->SetDoubleKey(device_key, old_volume);
   }
   SaveDevicesVolumePref();
 }
@@ -405,7 +405,7 @@ void AudioDevicesPrefHandlerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kAudioDevicesGainPercent);
   registry->RegisterDictionaryPref(prefs::kAudioDevicesMute);
   registry->RegisterDictionaryPref(prefs::kAudioDevicesState);
-  registry->RegisterBooleanPref(prefs::kInputNoiseCancellationEnabled, false);
+  registry->RegisterBooleanPref(prefs::kInputNoiseCancellationEnabled, true);
 
   // Register the prefs backing the audio muting policies.
   // Policy for audio input is handled by kAudioCaptureAllowed in the Chrome

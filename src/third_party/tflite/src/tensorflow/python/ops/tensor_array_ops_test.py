@@ -14,9 +14,7 @@
 # ==============================================================================
 """Tests for tensor_array_ops."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+import numpy as np
 
 from tensorflow.python.eager import def_function
 from tensorflow.python.framework import constant_op
@@ -71,6 +69,18 @@ class TensorArrayOpsTest(test.TestCase):
 
     self.assertAllEqual(fn(['a', 'b', 'c'], ['c', 'd', 'e']),
                         [b'a', b'b', b'c', b'c', b'd', b'e'])
+
+  def test_init_numpy_shape(self):
+    @def_function.function
+    def fn():
+      values = tensor_array_ops.TensorArray(
+          np.float32,
+          size=1,
+          dynamic_size=False,
+          element_shape=np.array((2, 3)))
+      values = values.write(0, np.ones((2, 3)))
+      return values.concat()
+    self.assertAllEqual(fn(), [[1., 1., 1.], [1., 1., 1.]])
 
 
 if __name__ == '__main__':

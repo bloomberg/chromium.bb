@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/account_id/account_id.h"
@@ -21,6 +20,8 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace ash {
+
 // This class is responsible for operations with External Token Handle.
 // Handle is an extra token associated with OAuth refresh token that have
 // exactly same lifetime. It is not secure, and it's only purpose is checking
@@ -28,6 +29,10 @@ class DictionaryValue;
 class TokenHandleUtil {
  public:
   TokenHandleUtil();
+
+  TokenHandleUtil(const TokenHandleUtil&) = delete;
+  TokenHandleUtil& operator=(const TokenHandleUtil&) = delete;
+
   ~TokenHandleUtil();
 
   enum TokenHandleStatus { VALID, INVALID, UNKNOWN };
@@ -56,6 +61,8 @@ class TokenHandleUtil {
   static void StoreTokenHandle(const AccountId& account_id,
                                const std::string& handle);
 
+  static void ClearTokenHandle(const AccountId& account_id);
+
   static void SetInvalidTokenForTesting(const char* token);
 
   static void SetLastCheckedPrefForTesting(const AccountId& account_id,
@@ -71,6 +78,10 @@ class TokenHandleUtil {
         const std::string& token,
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         TokenValidationCallback callback);
+
+    TokenDelegate(const TokenDelegate&) = delete;
+    TokenDelegate& operator=(const TokenDelegate&) = delete;
+
     ~TokenDelegate() override;
 
     void OnOAuthError() override;
@@ -86,8 +97,6 @@ class TokenHandleUtil {
     base::TimeTicks tokeninfo_response_start_time_;
     TokenValidationCallback callback_;
     gaia::GaiaOAuthClient gaia_client_;
-
-    DISALLOW_COPY_AND_ASSIGN(TokenDelegate);
   };
 
   void OnValidationComplete(const std::string& token);
@@ -97,8 +106,14 @@ class TokenHandleUtil {
       validation_delegates_;
 
   base::WeakPtrFactory<TokenHandleUtil> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TokenHandleUtil);
 };
+
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::TokenHandleUtil;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SIGNIN_TOKEN_HANDLE_UTIL_H_

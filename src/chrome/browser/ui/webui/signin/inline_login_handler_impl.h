@@ -10,7 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,6 +36,10 @@ class SigninUIError;
 class InlineLoginHandlerImpl : public InlineLoginHandler {
  public:
   InlineLoginHandlerImpl();
+
+  InlineLoginHandlerImpl(const InlineLoginHandlerImpl&) = delete;
+  InlineLoginHandlerImpl& operator=(const InlineLoginHandlerImpl&) = delete;
+
   ~InlineLoginHandlerImpl() override;
 
   using InlineLoginHandler::web_ui;
@@ -89,9 +93,9 @@ class InlineLoginHandlerImpl : public InlineLoginHandler {
     ~FinishCompleteLoginParams();
 
     // Pointer to WebUI handler.  May be nullptr.
-    InlineLoginHandlerImpl* handler;
+    raw_ptr<InlineLoginHandlerImpl> handler;
     // The isolate storage partition containing sign in cookies.
-    content::StoragePartition* partition;
+    raw_ptr<content::StoragePartition> partition;
     // URL of sign in containing parameters such as email, source, etc.
     GURL url;
     // Path to profile being signed in. Non empty only when unlocking a profile
@@ -126,8 +130,6 @@ class InlineLoginHandlerImpl : public InlineLoginHandler {
   bool confirm_untrusted_signin_;
 
   base::WeakPtrFactory<InlineLoginHandlerImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(InlineLoginHandlerImpl);
 };
 
 // Handles details of signing the user in with IdentityManager and turning on
@@ -150,6 +152,10 @@ class InlineSigninHelper : public GaiaAuthConsumer {
       const std::string& signin_scoped_device_id,
       bool confirm_untrusted_signin,
       bool is_force_sign_in_with_usermanager);
+
+  InlineSigninHelper(const InlineSigninHelper&) = delete;
+  InlineSigninHelper& operator=(const InlineSigninHelper&) = delete;
+
   ~InlineSigninHelper() override;
 
  protected:
@@ -176,7 +182,7 @@ class InlineSigninHelper : public GaiaAuthConsumer {
 
   GaiaAuthFetcher gaia_auth_fetcher_;
   base::WeakPtr<InlineLoginHandlerImpl> handler_;
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   Profile::CreateStatus create_status_;
   GURL current_url_;
   std::string email_;
@@ -185,8 +191,6 @@ class InlineSigninHelper : public GaiaAuthConsumer {
   std::string auth_code_;
   bool confirm_untrusted_signin_;
   bool is_force_sign_in_with_usermanager_;
-
-  DISALLOW_COPY_AND_ASSIGN(InlineSigninHelper);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SIGNIN_INLINE_LOGIN_HANDLER_IMPL_H_

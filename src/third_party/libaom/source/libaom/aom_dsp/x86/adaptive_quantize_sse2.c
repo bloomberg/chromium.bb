@@ -13,7 +13,7 @@
 #include <emmintrin.h>
 #include "config/aom_dsp_rtcd.h"
 #include "aom/aom_integer.h"
-#include "av1/encoder/av1_quantize.h"
+#include "aom_dsp/quantize.h"
 #include "aom_dsp/x86/quantize_x86.h"
 
 void aom_quantize_b_adaptive_sse2(

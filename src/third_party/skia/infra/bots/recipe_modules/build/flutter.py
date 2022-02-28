@@ -9,7 +9,7 @@ IMAGES = {
     # scripts require jdk8.
     'Debian9': (
         'gcr.io/skia-public/debian9@sha256:'
-        'f48edc56b621a44ee2f985555f9b09c2802da15d56bb4e43666faabbec80d569'),
+        '5541f5674eee0a1558f1335c711f674f85f96b9ae8fb6c289f42dd81479a768e'),
 }
 
 def compile_fn(api, checkout_root, out_dir):

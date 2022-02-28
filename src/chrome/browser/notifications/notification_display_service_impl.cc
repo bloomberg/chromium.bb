@@ -17,6 +17,7 @@
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/persistent_notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/tailored_security/notification_handler_desktop.h"
 #include "chrome/browser/updates/announcement_notification/announcement_notification_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -30,7 +31,7 @@
 #endif
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) || \
-    defined(OS_WIN)
+    defined(OS_WIN) || defined(OS_FUCHSIA)
 #include "chrome/browser/send_tab_to_self/desktop_notification_handler.h"
 #include "chrome/browser/sharing/sharing_notification_handler.h"
 #endif
@@ -63,9 +64,7 @@ NotificationDisplayServiceImpl* NotificationDisplayServiceImpl::GetForProfile(
 // static
 void NotificationDisplayServiceImpl::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_LINUX)
   registry->RegisterBooleanPref(prefs::kAllowNativeNotifications, true);
   registry->RegisterBooleanPref(prefs::kAllowSystemNotifications, true);
 #endif
@@ -87,6 +86,13 @@ NotificationDisplayServiceImpl::NotificationDisplayServiceImpl(Profile* profile)
         NotificationHandler::Type::SEND_TAB_TO_SELF,
         std::make_unique<send_tab_to_self::DesktopNotificationHandler>(
             profile_));
+#endif
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) || \
+    defined(OS_WIN)
+    AddNotificationHandler(
+        NotificationHandler::Type::TAILORED_SECURITY,
+        std::make_unique<safe_browsing::TailoredSecurityNotificationHandler>());
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -132,7 +138,7 @@ NotificationDisplayServiceImpl::~NotificationDisplayServiceImpl() {
 }
 
 void NotificationDisplayServiceImpl::ProcessNotificationOperation(
-    NotificationCommon::Operation operation,
+    NotificationOperation operation,
     NotificationHandler::Type notification_type,
     const GURL& origin,
     const std::string& notification_id,
@@ -152,21 +158,21 @@ void NotificationDisplayServiceImpl::ProcessNotificationOperation(
   base::OnceClosure completed_closure = base::BindOnce(&OperationCompleted);
 
   switch (operation) {
-    case NotificationCommon::OPERATION_CLICK:
+    case NotificationOperation::kClick:
       handler->OnClick(profile_, origin, notification_id, action_index, reply,
                        std::move(completed_closure));
       break;
-    case NotificationCommon::OPERATION_CLOSE:
+    case NotificationOperation::kClose:
       DCHECK(by_user.has_value());
       handler->OnClose(profile_, origin, notification_id, by_user.value(),
                        std::move(completed_closure));
       for (auto& observer : observers_)
         observer.OnNotificationClosed(notification_id);
       break;
-    case NotificationCommon::OPERATION_DISABLE_PERMISSION:
+    case NotificationOperation::kDisablePermission:
       handler->DisableNotifications(profile_, origin);
       break;
-    case NotificationCommon::OPERATION_SETTINGS:
+    case NotificationOperation::kSettings:
       handler->OpenSettings(profile_, origin);
       break;
   }
@@ -269,7 +275,7 @@ void NotificationDisplayServiceImpl::RemoveObserver(Observer* observer) {
 // Callback to run once the profile has been loaded in order to perform a
 // given |operation| in a notification.
 void NotificationDisplayServiceImpl::ProfileLoadedCallback(
-    NotificationCommon::Operation operation,
+    NotificationOperation operation,
     NotificationHandler::Type notification_type,
     const GURL& origin,
     const std::string& notification_id,

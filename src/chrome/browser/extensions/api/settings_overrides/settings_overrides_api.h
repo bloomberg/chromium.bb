@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "components/search_engines/template_url_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -24,6 +24,10 @@ class SettingsOverridesAPI : public BrowserContextKeyedAPI,
                              public ExtensionRegistryObserver {
  public:
   explicit SettingsOverridesAPI(content::BrowserContext* context);
+
+  SettingsOverridesAPI(const SettingsOverridesAPI&) = delete;
+  SettingsOverridesAPI& operator=(const SettingsOverridesAPI&) = delete;
+
   ~SettingsOverridesAPI() override;
 
   // BrowserContextKeyedAPI implementation.
@@ -51,14 +55,12 @@ class SettingsOverridesAPI : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "SettingsOverridesAPI"; }
 
-  Profile* profile_;
-  TemplateURLService* url_service_;
+  raw_ptr<Profile> profile_;
+  raw_ptr<TemplateURLService> url_service_;
 
   // Listen to extension load, unloaded notifications.
   base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SettingsOverridesAPI);
 };
 
 template <>

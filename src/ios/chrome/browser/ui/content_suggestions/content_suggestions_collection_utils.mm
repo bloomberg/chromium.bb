@@ -12,12 +12,12 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/components/ui_util/dynamic_type_util.h"
+#include "ui/base/device_form_factor.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -29,6 +29,7 @@ namespace {
 // Width of search field.
 const CGFloat kSearchFieldLarge = 432;
 const CGFloat kSearchFieldSmall = 343;
+const CGFloat kSearchFieldSmallMin = 304;
 const CGFloat kSearchFieldMinMargin = 8;
 
 // Top margin for the doodle.
@@ -59,9 +60,6 @@ const CGFloat kGoogleSearchDoodleShrunkHeight = 68;
 // Height for the shrunk logo frame.
 // TODO(crbug.com/1170491): clean up post-launch.
 const CGFloat kGoogleSearchLogoShrunkHeight = 36;
-
-// Height for the doodle frame when Google is not the default search engine.
-const CGFloat kNonGoogleSearchDoodleHeight = 60;
 }
 
 namespace content_suggestions {
@@ -73,12 +71,14 @@ const CGFloat kReturnToRecentTabSectionBottomMargin = 25;
 CGFloat doodleHeight(BOOL logoIsShowing,
                      BOOL doodleIsShowing,
                      UITraitCollection* traitCollection) {
+  // For users with non-Google default search engine, there is no doodle.
   if (!IsRegularXRegularSizeClass(traitCollection) && !logoIsShowing) {
-    return kNonGoogleSearchDoodleHeight;
+    return 0;
   }
 
   if (ShouldShrinkLogoForStartSurface() && logoIsShowing) {
-    if (doodleIsShowing || IsIPadIdiom()) {
+    if (doodleIsShowing ||
+        (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET)) {
       return kGoogleSearchDoodleShrunkHeight;
     } else {
       return kGoogleSearchLogoShrunkHeight;
@@ -118,7 +118,9 @@ CGFloat searchFieldWidth(CGFloat superviewWidth,
     return kSearchFieldLarge;
 
   // Special case for narrow sizes.
-  return MIN(kSearchFieldSmall, superviewWidth - kSearchFieldMinMargin * 2);
+  return MAX(
+      kSearchFieldSmallMin,
+      MIN(kSearchFieldSmall, superviewWidth - kSearchFieldMinMargin * 2));
 }
 
 CGFloat heightForLogoHeader(BOOL logoIsShowing,
@@ -182,12 +184,10 @@ void configureVoiceSearchButton(UIButton* voiceSearchButton,
                                                IDS_IOS_ACCNAME_VOICE_SEARCH)];
   [voiceSearchButton setAccessibilityIdentifier:@"Voice Search"];
 
-  if (@available(iOS 13.4, *)) {
-      voiceSearchButton.pointerInteractionEnabled = YES;
-      // Make the pointer shape fit the location bar's semi-circle end shape.
-      voiceSearchButton.pointerStyleProvider =
-          CreateLiftEffectCirclePointerStyleProvider();
-  }
+  voiceSearchButton.pointerInteractionEnabled = YES;
+  // Make the pointer shape fit the location bar's semi-circle end shape.
+  voiceSearchButton.pointerStyleProvider =
+      CreateLiftEffectCirclePointerStyleProvider();
 }
 
 UIView* nearestAncestor(UIView* view, Class aClass) {

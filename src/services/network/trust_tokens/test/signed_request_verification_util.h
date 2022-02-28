@@ -13,7 +13,6 @@
 #include "net/http/http_request_headers.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -31,7 +30,7 @@ namespace test {
 // - If |error_out| is non-null, on failure, sets it to a human-readable
 // description of the reason the verification failed.
 // - If |verifier| is non-null, uses the given verifier to verify the
-// signatures instead of Ed25519.
+// signatures instead of ecdsa_secp256r1_sha256.
 bool ReconstructSigningDataAndVerifySignatures(
     const GURL& destination,
     const net::HttpRequestHeaders& headers,
@@ -39,7 +38,7 @@ bool ReconstructSigningDataAndVerifySignatures(
                                  base::span<const uint8_t> signature,
                                  base::span<const uint8_t> verification_key,
                                  const std::string& sig_alg)> verifier =
-        {},  // defaults to Ed25519
+        {},  // defaults to ecdsa_secp256r1_sha256
     std::string* error_out = nullptr,
     std::map<std::string, std::string>* verification_keys_out = nullptr,
     mojom::TrustTokenSignRequestData* sign_request_data_out = nullptr);

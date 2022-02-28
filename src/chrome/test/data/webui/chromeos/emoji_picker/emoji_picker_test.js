@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {GROUP_ICON_SIZE} from 'chrome://emoji-picker/constants.js';
+import {EMOJI_PICKER_TOTAL_EMOJI_WIDTH} from 'chrome://emoji-picker/constants.js';
 import {EmojiButton} from 'chrome://emoji-picker/emoji_button.js';
 import {EmojiPicker} from 'chrome://emoji-picker/emoji_picker.js';
 import {EmojiPickerApiProxyImpl} from 'chrome://emoji-picker/emoji_picker_api_proxy.js';
@@ -11,7 +11,7 @@ import {EMOJI_DATA_LOADED, EMOJI_VARIANTS_SHOWN} from 'chrome://emoji-picker/eve
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {assertFalse, assertGT, assertLT, assertTrue} from '../../chai_assert.js';
+import {assertEquals, assertFalse, assertGT, assertLT, assertTrue} from '../../chai_assert.js';
 
 import {deepQuerySelector, dispatchMouseEvent, timeout, waitForCondition, waitForEvent, waitWithTimeout} from './emoji_picker_test_util.js';
 
@@ -77,7 +77,8 @@ suite('<emoji-picker>', () => {
 
   test('Highlight bar should under emotions on start', () => {
     const button = findInEmojiPicker('#bar');
-    assertCloseTo(GROUP_ICON_SIZE, parseFloat(button.style.left));
+    assertCloseTo(
+        EMOJI_PICKER_TOTAL_EMOJI_WIDTH, parseFloat(button.style.left));
   });
 
   test('clicking second tab should activate it and scroll', async () => {
@@ -96,7 +97,7 @@ suite('<emoji-picker>', () => {
     // wait so emoji-groups render and we have something to scroll to.
     await waitForCondition(
         () => findInEmojiPicker(
-            '[data-group="5"] > emoji-group', 'emoji-button', 'button'));
+            '[data-group="2"] > emoji-group', 'emoji-button', 'button'));
     thirdButton.click();
 
     // wait while waiting for scroll to happen and update buttons.
@@ -138,6 +139,31 @@ suite('<emoji-picker>', () => {
         // check text is correct.
         const recentText = recentlyUsed.innerText;
         assertTrue(recentText.includes(String.fromCodePoint(128512)));
+      });
+
+  test(
+      'clicking an emoji with no text field should copy it to the clipboard',
+      async () => {
+        // Note: this whole test has no text field, so we should always copy to
+        // the clipboard.
+        EmojiPickerApiProxyImpl.getInstance().isIncognitoTextField = () =>
+            new Promise((resolve) => resolve({incognito: false}));
+        // yield to allow emoji-group and emoji buttons to render.
+        const emojiButton = await waitForCondition(
+            () => findInEmojiPicker(
+                '[data-group="0"] > emoji-group', 'emoji-button', 'button'));
+        emojiButton.click();
+
+        // wait until emoji exists in recently used section.
+        const recentlyUsed = await waitForCondition(
+            () => findInEmojiPicker(
+                '[data-group=history] > emoji-group', 'emoji-button',
+                'button'));
+
+        // check text is correct.
+        const recentText = recentlyUsed.innerText;
+        await navigator.clipboard.readText().then(
+            text => assertEquals(String.fromCodePoint(128512), text));
       });
 
   test('recently-used should have variants for variant emoji', async () => {
@@ -324,6 +350,16 @@ suite('<emoji-picker>', () => {
 
       assertLT(pickerRect.left, variantsRect2.left);
       assertLT(variantsRect2.right, pickerRect.right);
+    });
+  });
+
+  suite('<emoji-search>', () => {
+    test('works when there are no results', async () => {
+      // This test just ensures that no errors are thrown.
+      const enterEvent = new KeyboardEvent(
+          'keydown', {cancelable: true, key: 'Enter', keyCode: 13});
+      const search = findInEmojiPicker('emoji-search');
+      search.onKeyDown(enterEvent);
     });
   });
 });

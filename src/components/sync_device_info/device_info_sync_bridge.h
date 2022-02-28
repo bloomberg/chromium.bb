@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -26,6 +26,7 @@
 
 namespace sync_pb {
 class DeviceInfoSpecifics;
+enum SyncEnums_DeviceType : int;
 }  // namespace sync_pb
 
 namespace syncer {
@@ -44,6 +45,10 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
       OnceModelTypeStoreFactory store_factory,
       std::unique_ptr<ModelTypeChangeProcessor> change_processor,
       std::unique_ptr<DeviceInfoPrefs> device_info_prefs);
+
+  DeviceInfoSyncBridge(const DeviceInfoSyncBridge&) = delete;
+  DeviceInfoSyncBridge& operator=(const DeviceInfoSyncBridge&) = delete;
+
   ~DeviceInfoSyncBridge() override;
 
   LocalDeviceInfoProvider* GetLocalDeviceInfoProvider();
@@ -51,11 +56,17 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   // Refresh local copy of device info in memory, and informs sync of the
   // change. Used when the caller knows a property of local device info has
   // changed (e.g. SharingInfo), and must be sync-ed to other devices as soon as
-  // possible, without waiting for the periodic commits. |callback| will be
-  // called when device info is synced. The device info will be compared with
-  // the local copy. If the data has been updated, then it will be committed.
-  // Otherwise nothing happens and the |callback| will be never called.
-  void RefreshLocalDeviceInfoIfNeeded(base::OnceClosure callback);
+  // possible, without waiting for the periodic commits. The device info will be
+  // compared with the local copy. If the data has been updated, then it will be
+  // committed. Otherwise nothing happens.
+  void RefreshLocalDeviceInfoIfNeeded();
+
+  // The |callback| will be invoked on each successful commit with newly enabled
+  // data types list. This is needed to invoke an additional GetUpdates request
+  // for the data types which have been just enabled and subscribed for new
+  // invalidations.
+  void SetCommittedAdditionalInterestedDataTypesCallback(
+      base::RepeatingCallback<void(const ModelTypeSet&)> callback);
 
   // ModelTypeSyncBridge implementation.
   void OnSyncStarting(const DataTypeActivationRequest& request) override;
@@ -80,7 +91,8 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   std::vector<std::unique_ptr<DeviceInfo>> GetAllDeviceInfo() const override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  int CountActiveDevices() const override;
+  std::map<sync_pb::SyncEnums_DeviceType, int> CountActiveDevicesByType()
+      const override;
   bool IsRecentLocalCacheGuid(const std::string& cache_guid) const override;
 
   // For testing only.
@@ -140,12 +152,6 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   void CommitAndNotify(std::unique_ptr<ModelTypeStore::WriteBatch> batch,
                        bool should_notify);
 
-  // Counts the number of active devices relative to |now|. The activeness of a
-  // device depends on the amount of time since it was updated, which means
-  // comparing it against the current time. |now| is passed into this method to
-  // allow unit tests to control expected results.
-  int CountActiveDevices(const base::Time now) const;
-
   // Deletes locally old data and metadata entries without issuing tombstones.
   void ExpireOldEntries();
 
@@ -159,6 +165,11 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
 
   absl::optional<SyncMode> sync_mode_;
 
+  // Used to restrict reuploads of local device info on incoming tombstones.
+  // This is necessary to prevent uncontrolled commits based on incoming
+  // updates.
+  bool reuploaded_on_tombstone_ = false;
+
   // Registered observers, not owned.
   base::ObserverList<Observer, true>::Unchecked observers_;
 
@@ -168,13 +179,20 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   // Used to update our local device info once every pulse interval.
   base::OneShotTimer pulse_timer_;
 
+  // Used to force upload of local device info after initialization. Used in
+  // tests only.
+  bool force_reupload_for_test_ = false;
+
   std::vector<base::OnceClosure> device_info_synced_callback_list_;
+
+  // Called when a new interested data type list has been committed. Only newly
+  // enabled data types will be passed. May be empty.
+  base::RepeatingCallback<void(const ModelTypeSet&)>
+      new_interested_data_types_callback_;
 
   const std::unique_ptr<DeviceInfoPrefs> device_info_prefs_;
 
   base::WeakPtrFactory<DeviceInfoSyncBridge> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceInfoSyncBridge);
 };
 
 }  // namespace syncer

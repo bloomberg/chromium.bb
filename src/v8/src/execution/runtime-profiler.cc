@@ -20,46 +20,10 @@
 namespace v8 {
 namespace internal {
 
-// Number of times a function has to be seen on the stack before it is
-// optimized.
-static const int kProfilerTicksBeforeOptimization = 3;
-
-// The number of ticks required for optimizing a function increases with
-// the size of the bytecode. This is in addition to the
-// kProfilerTicksBeforeOptimization required for any function.
-static const int kBytecodeSizeAllowancePerTick = 1100;
-
 // Maximum size in bytes of generate code for a function to allow OSR.
 static const int kOSRBytecodeSizeAllowanceBase = 119;
 
 static const int kOSRBytecodeSizeAllowancePerTick = 44;
-
-// Maximum size in bytes of generated code for a function to be optimized
-// the very first time it is seen on the stack.
-static const int kMaxBytecodeSizeForEarlyOpt = 81;
-
-// Number of times a function has to be seen on the stack before it is
-// OSRed in TurboProp
-// This value is chosen so TurboProp OSRs at similar time as TurboFan. The
-// current interrupt budger of TurboFan is approximately 10 times that of
-// TurboProp and we wait for 4 ticks (3 for marking for optimization and an
-// additional tick to mark it for OSR) and hence this is set to 4 * 10.
-// TODO(mythria): This value should be based on
-// FLAG_ticks_scale_factor_for_top_tier.
-static const int kProfilerTicksForTurboPropOSR = 4 * 10;
-
-// These are used to decide when we tiering up to Turboprop.
-// The number of ticks required for tiering up to Turboprop is based on how
-// "soon" the function becomes hot. We use kMidTierGlobalTicksScaleFactor to
-// scale the difference in global ticks since the last time a function saw a
-// tick. The scaled difference is used to to increase the number of ticks
-// required for tiering up to Turboprop.
-static const int kMidTierGlobalTicksScaleFactor = 100;
-
-// This is used to limit the number of additional ticks that the
-// kMidTierGlobalTicksScaleFactor can increase threshold for mid-tier tier
-// tierup.
-static const int kMaxAdditionalMidTierGlobalTicks = 10;
 
 #define OPTIMIZATION_REASON_LIST(V)   \
   V(DoNotOptimize, "do not optimize") \
@@ -122,7 +86,7 @@ void TraceRecompile(JSFunction function, OptimizationReason reason,
 }  // namespace
 
 RuntimeProfiler::RuntimeProfiler(Isolate* isolate)
-    : isolate_(isolate), any_ic_changed_(false), current_global_ticks_(0) {}
+    : isolate_(isolate), any_ic_changed_(false) {}
 
 void RuntimeProfiler::Optimize(JSFunction function, OptimizationReason reason,
                                CodeKind code_kind) {
@@ -192,39 +156,15 @@ void RuntimeProfiler::MaybeOptimizeFrame(JSFunction function,
   if (reason != OptimizationReason::kDoNotOptimize) {
     Optimize(function, reason, code_kind);
   }
-  function.feedback_vector()
-      .set_global_ticks_at_last_runtime_profiler_interrupt(
-          current_global_ticks_);
 }
 
 bool RuntimeProfiler::MaybeOSR(JSFunction function, UnoptimizedFrame* frame) {
   int ticks = function.feedback_vector().profiler_ticks();
-  // TODO(rmcilroy): Also ensure we only OSR top-level code if it is smaller
-  // than kMaxToplevelSourceSize.
-
-  // Turboprop optimizes quite early. So don't attempt to OSR if the loop isn't
-  // hot enough.
-  // TODO(mythria): We should decide when to OSR based on number of ticks
-  // instead of checking if it has been marked for optimization. That will allow
-  // us to unify OSR decisions from different tiers and we can remove this
-  // special case here for Turboprop. If we do that also remove the code to
-  // reset the marker in Runtime_CompileForOnStackReplacement.
-  if (FLAG_turboprop && ticks < kProfilerTicksForTurboPropOSR) {
-    return false;
-  }
-
   if (function.IsMarkedForOptimization() ||
       function.IsMarkedForConcurrentOptimization() ||
       function.HasAvailableOptimizedCode()) {
-    // Attempt OSR if we are still running interpreted code even though the
-    // the function has long been marked or even already been optimized.
-    // OSR should happen roughly at the same with or without FLAG_turboprop.
-    // Turboprop has much lower interrupt budget so scale the ticks accordingly.
-    int scale_factor =
-        FLAG_turboprop ? FLAG_interrupt_budget_scale_factor_for_top_tier : 1;
-    int64_t scaled_ticks = static_cast<int64_t>(ticks) / scale_factor;
     int64_t allowance = kOSRBytecodeSizeAllowanceBase +
-                        scaled_ticks * kOSRBytecodeSizeAllowancePerTick;
+                        ticks * kOSRBytecodeSizeAllowancePerTick;
     if (function.shared().GetBytecodeArray(isolate_).length() <= allowance) {
       AttemptOnStackReplacement(frame);
     }
@@ -235,13 +175,9 @@ bool RuntimeProfiler::MaybeOSR(JSFunction function, UnoptimizedFrame* frame) {
 
 namespace {
 
-bool ShouldOptimizeAsSmallFunction(int bytecode_size, int ticks,
-                                   bool any_ic_changed,
-                                   bool active_tier_is_turboprop) {
-  if (FLAG_turboprop) return false;
-  if (any_ic_changed || bytecode_size >= kMaxBytecodeSizeForEarlyOpt)
-    return false;
-  return true;
+bool ShouldOptimizeAsSmallFunction(int bytecode_size, bool any_ic_changed) {
+  return !any_ic_changed &&
+         bytecode_size < FLAG_max_bytecode_size_for_early_opt;
 }
 
 }  // namespace
@@ -254,27 +190,14 @@ OptimizationReason RuntimeProfiler::ShouldOptimize(JSFunction function,
   if (V8_UNLIKELY(FLAG_turboprop) && function.ActiveTierIsToptierTurboprop()) {
     return OptimizationReason::kDoNotOptimize;
   }
-  int ticks = function.feedback_vector().profiler_ticks();
-  bool active_tier_is_turboprop = function.ActiveTierIsMidtierTurboprop();
-  int ticks_for_optimization =
-      kProfilerTicksBeforeOptimization +
-      (bytecode.length() / kBytecodeSizeAllowancePerTick);
-  if (FLAG_turboprop && !active_tier_is_turboprop) {
-    DCHECK_EQ(function.NextTier(), CodeKind::TURBOPROP);
-    int global_ticks_diff =
-        (current_global_ticks_ -
-         function.feedback_vector()
-             .global_ticks_at_last_runtime_profiler_interrupt());
-    ticks_for_optimization =
-        ticks_for_optimization +
-        std::min(global_ticks_diff / kMidTierGlobalTicksScaleFactor,
-                 kMaxAdditionalMidTierGlobalTicks);
-  }
+  const int ticks = function.feedback_vector().profiler_ticks();
+  const int ticks_for_optimization =
+      FLAG_ticks_before_optimization +
+      (bytecode.length() / FLAG_bytecode_size_allowance_per_tick);
   if (ticks >= ticks_for_optimization) {
     return OptimizationReason::kHotAndStable;
-  } else if (ShouldOptimizeAsSmallFunction(bytecode.length(), ticks,
-                                           any_ic_changed_,
-                                           active_tier_is_turboprop)) {
+  } else if (ShouldOptimizeAsSmallFunction(bytecode.length(),
+                                           any_ic_changed_)) {
     // If no IC was patched since the last tick and this function is very
     // small, optimistically optimize it now.
     return OptimizationReason::kSmallFunction;
@@ -286,7 +209,7 @@ OptimizationReason RuntimeProfiler::ShouldOptimize(JSFunction function,
       PrintF("ICs changed]\n");
     } else {
       PrintF(" too large for small function optimization: %d/%d]\n",
-             bytecode.length(), kMaxBytecodeSizeForEarlyOpt);
+             bytecode.length(), FLAG_max_bytecode_size_for_early_opt);
     }
   }
   return OptimizationReason::kDoNotOptimize;
@@ -297,10 +220,6 @@ RuntimeProfiler::MarkCandidatesForOptimizationScope::
     : handle_scope_(profiler->isolate_), profiler_(profiler) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("v8.compile"),
                "V8.MarkCandidatesForOptimization");
-  if (profiler_->current_global_ticks_ <
-      FeedbackVector::GlobalTicksAtLastRuntimeProfilerInterruptBits::kMax - 1) {
-    profiler_->current_global_ticks_ += 1;
-  }
 }
 
 RuntimeProfiler::MarkCandidatesForOptimizationScope::
@@ -313,7 +232,7 @@ void RuntimeProfiler::MarkCandidatesForOptimization(JavaScriptFrame* frame) {
   MarkCandidatesForOptimizationScope scope(this);
 
   JSFunction function = frame->function();
-  CodeKind code_kind = function.GetActiveTier();
+  CodeKind code_kind = function.GetActiveTier().value();
 
   DCHECK(function.shared().is_compiled());
   DCHECK(function.shared().IsInterpreted());

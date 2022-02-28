@@ -11,7 +11,6 @@
 #include <IOSurface/IOSurface.h>
 
 #include "base/mac/scoped_cftyperef.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/service/image_factory.h"
@@ -32,6 +31,12 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactoryIOSurface
       public ImageFactory {
  public:
   GpuMemoryBufferFactoryIOSurface();
+
+  GpuMemoryBufferFactoryIOSurface(const GpuMemoryBufferFactoryIOSurface&) =
+      delete;
+  GpuMemoryBufferFactoryIOSurface& operator=(
+      const GpuMemoryBufferFactoryIOSurface&) = delete;
+
   ~GpuMemoryBufferFactoryIOSurface() override;
 
   // Overridden from GpuMemoryBufferFactory:
@@ -76,8 +81,6 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactoryIOSurface
   // used with any GPU process by passing a mach_port to CreateImageCHROMIUM.
   IOSurfaceMap io_surfaces_;
   base::Lock io_surfaces_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactoryIOSurface);
 };
 
 }  // namespace gpu

@@ -277,7 +277,6 @@ void QuerierImpl::StopQuery(const std::string& service, Callback* callback) {
   if (callbacks.empty()) {
     callback_map_.erase(callbacks_it);
 
-    ServiceKey key(service, kLocalDomain);
     DomainName domain = key.GetName();
 
     std::function<void(const DomainName&)> stop_mdns_query(
@@ -306,12 +305,12 @@ void QuerierImpl::ReinitializeQueries(const std::string& service) {
   const DomainName domain = key.GetName();
 
   std::function<void(const DomainName&)> start_callback(
-      [this](const DomainName& domain) {
-        mdns_querier_->StartQuery(domain, DnsType::kANY, DnsClass::kANY, this);
+      [this](const DomainName& d) {
+        mdns_querier_->StartQuery(d, DnsType::kANY, DnsClass::kANY, this);
       });
   std::function<void(const DomainName&)> stop_callback(
-      [this](const DomainName& domain) {
-        mdns_querier_->StopQuery(domain, DnsType::kANY, DnsClass::kANY, this);
+      [this](const DomainName& d) {
+        mdns_querier_->StopQuery(d, DnsType::kANY, DnsClass::kANY, this);
       });
   graph_->StopTracking(domain, std::move(stop_callback));
 

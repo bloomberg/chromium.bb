@@ -34,8 +34,8 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/transform_util.h"
 #include "ui/views/background.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -91,8 +91,6 @@ void FadeInWidgetToOverview(views::Widget* widget,
   aura::Window* window = widget->GetNativeWindow();
   if (window->layer()->GetTargetOpacity() == 1.f)
     return;
-
-  gfx::Transform original_transform = window->transform();
 
   // Fade in the widget from its current opacity.
   ScopedOverviewAnimationSettings scoped_overview_animation_settings(
@@ -270,7 +268,7 @@ gfx::Rect GetGridBoundsInScreen(
     return bounds;
 
   DCHECK(opposite_position);
-  const bool horizontal = SplitViewController::IsLayoutHorizontal();
+  const bool horizontal = SplitViewController::IsLayoutHorizontal(target_root);
   const int min_length =
       (horizontal ? work_area.width() : work_area.height()) / 3;
   const int current_length = horizontal ? bounds.width() : bounds.height();
@@ -284,7 +282,8 @@ gfx::Rect GetGridBoundsInScreen(
   else
     bounds.set_height(min_length);
 
-  if (SplitViewController::IsPhysicalLeftOrTop(*opposite_position)) {
+  if (SplitViewController::IsPhysicalLeftOrTop(*opposite_position,
+                                               target_root)) {
     // If we are shifting to the left or top we need to update the origin as
     // well.
     const int offset = min_length - current_length;

@@ -19,6 +19,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -43,6 +44,8 @@ const char kProduct[] = "Chrome_ChromeOS";
 const char kProduct[] = "Chrome_Linux";
 #elif defined(OS_ANDROID)
 const char kProduct[] = "Chrome_Android";
+#elif defined(OS_FUCHSIA)
+const char kProduct[] = "Chrome_Fuchsia";
 #else
 #error Platform not supported.
 #endif

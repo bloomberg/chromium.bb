@@ -22,11 +22,11 @@ limitations under the License.
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "tensorflow/core/platform/logging.h"
+#include "tensorflow/core/util/command_line_flags.h"
 #include "tensorflow/lite/toco/args.h"
 #include "tensorflow/lite/toco/toco_graphviz_dump_options.h"
 #include "tensorflow/lite/toco/toco_port.h"
-#include "tensorflow/core/platform/logging.h"
-#include "tensorflow/core/util/command_line_flags.h"
 
 // "batch" flag only exists internally
 #ifdef PLATFORM_GOOGLE
@@ -263,7 +263,8 @@ void ReadModelFlagsFromCommandLineFlags(
     QCHECK(uses_multi_input_flags);
     std::vector<std::string> mean_values =
         absl::StrSplit(parsed_model_flags.mean_values.value(), ',');
-    QCHECK(mean_values.size() == model_flags->input_arrays_size());
+    QCHECK(static_cast<int>(mean_values.size()) ==
+           model_flags->input_arrays_size());
     for (size_t i = 0; i < mean_values.size(); ++i) {
       char* last = nullptr;
       model_flags->mutable_input_arrays(i)->set_mean_value(
@@ -280,7 +281,8 @@ void ReadModelFlagsFromCommandLineFlags(
     QCHECK(uses_multi_input_flags);
     std::vector<std::string> std_values =
         absl::StrSplit(parsed_model_flags.std_values.value(), ',');
-    QCHECK(std_values.size() == model_flags->input_arrays_size());
+    QCHECK(static_cast<int>(std_values.size()) ==
+           model_flags->input_arrays_size());
     for (size_t i = 0; i < std_values.size(); ++i) {
       char* last = nullptr;
       model_flags->mutable_input_arrays(i)->set_std_value(
@@ -298,7 +300,8 @@ void ReadModelFlagsFromCommandLineFlags(
     QCHECK(uses_multi_input_flags);
     std::vector<std::string> input_data_types =
         absl::StrSplit(parsed_model_flags.input_data_types.value(), ',');
-    QCHECK(input_data_types.size() == model_flags->input_arrays_size());
+    QCHECK(static_cast<int>(input_data_types.size()) ==
+           model_flags->input_arrays_size());
     for (size_t i = 0; i < input_data_types.size(); ++i) {
       IODataType type;
       QCHECK(IODataType_Parse(input_data_types[i], &type));
@@ -321,7 +324,8 @@ void ReadModelFlagsFromCommandLineFlags(
     QCHECK(uses_multi_input_flags);
     std::vector<std::string> input_shapes =
         absl::StrSplit(parsed_model_flags.input_shapes.value(), ':');
-    QCHECK(input_shapes.size() == model_flags->input_arrays_size());
+    QCHECK(static_cast<int>(input_shapes.size()) ==
+           model_flags->input_arrays_size());
     for (size_t i = 0; i < input_shapes.size(); ++i) {
       auto* shape = model_flags->mutable_input_arrays(i)->mutable_shape();
       shape->clear_dims();
@@ -359,10 +363,15 @@ void ReadModelFlagsFromCommandLineFlags(
       } else if (key == "back_edge_source_array") {
         rnn_state_proto->set_back_edge_source_array(value);
       } else if (key == "size") {
-        int32 size = 0;
+        int32_t size = 0;
         CHECK(absl::SimpleAtoi(value, &size));
         CHECK_GT(size, 0);
         rnn_state_proto->set_size(size);
+      } else if (key == "num_dims") {
+        int32_t size = 0;
+        CHECK(absl::SimpleAtoi(value, &size));
+        CHECK_GT(size, 0);
+        rnn_state_proto->set_num_dims(size);
       } else {
         LOG(FATAL) << "Unknown key '" << key << "' in --rnn_states";
       }
@@ -382,12 +391,12 @@ void ReadModelFlagsFromCommandLineFlags(
       if (key == "count_type") {
         model_check_proto->set_count_type(value);
       } else if (key == "count_min") {
-        int32 count = 0;
+        int32_t count = 0;
         CHECK(absl::SimpleAtoi(value, &count));
         CHECK_GE(count, -1);
         model_check_proto->set_count_min(count);
       } else if (key == "count_max") {
-        int32 count = 0;
+        int32_t count = 0;
         CHECK(absl::SimpleAtoi(value, &count));
         CHECK_GE(count, -1);
         model_check_proto->set_count_max(count);

@@ -20,19 +20,38 @@ constexpr auto CallInterfaceDescriptor::DefaultRegisterArray() {
   return registers;
 }
 
+#if DEBUG
+template <typename DerivedDescriptor>
+void StaticCallInterfaceDescriptor<DerivedDescriptor>::
+    VerifyArgumentRegisterCount(CallInterfaceDescriptorData* data, int argc) {
+  RegList allocatable_regs = data->allocatable_registers();
+  if (argc >= 1) DCHECK(allocatable_regs | a0.bit());
+  if (argc >= 2) DCHECK(allocatable_regs | a1.bit());
+  if (argc >= 3) DCHECK(allocatable_regs | a2.bit());
+  if (argc >= 4) DCHECK(allocatable_regs | a3.bit());
+  if (argc >= 5) DCHECK(allocatable_regs | a4.bit());
+  if (argc >= 6) DCHECK(allocatable_regs | a5.bit());
+  if (argc >= 7) DCHECK(allocatable_regs | a6.bit());
+  if (argc >= 8) DCHECK(allocatable_regs | a7.bit());
+  // Additional arguments are passed on the stack.
+}
+#endif  // DEBUG
+
 // static
-constexpr auto RecordWriteDescriptor::registers() {
-  return RegisterArray(a0, a1, a2, a3, kReturnRegister0);
+constexpr auto WriteBarrierDescriptor::registers() {
+  return RegisterArray(a1, a5, a4, a2, a0, a3);
 }
 
 // static
 constexpr auto DynamicCheckMapsDescriptor::registers() {
+  STATIC_ASSERT(kReturnRegister0 == a0);
   return RegisterArray(kReturnRegister0, a1, a2, a3, cp);
 }
 
 // static
-constexpr auto EphemeronKeyBarrierDescriptor::registers() {
-  return RegisterArray(a0, a1, a2, a3, kReturnRegister0);
+constexpr auto DynamicCheckMapsWithFeedbackVectorDescriptor::registers() {
+  STATIC_ASSERT(kReturnRegister0 == a0);
+  return RegisterArray(kReturnRegister0, a1, a2, a3, cp);
 }
 
 // static
@@ -99,7 +118,7 @@ constexpr auto CallTrampolineDescriptor::registers() {
 
 // static
 constexpr auto CallVarargsDescriptor::registers() {
-  // a0 : number of arguments (on the stack, not including receiver)
+  // a0 : number of arguments (on the stack)
   // a1 : the target to call
   // a4 : arguments list length (untagged)
   // a2 : arguments list (FixedArray)
@@ -117,13 +136,13 @@ constexpr auto CallForwardVarargsDescriptor::registers() {
 // static
 constexpr auto CallFunctionTemplateDescriptor::registers() {
   // a1 : function template info
-  // a0 : number of arguments (on the stack, not including receiver)
+  // a0 : number of arguments (on the stack)
   return RegisterArray(a1, a0);
 }
 
 // static
 constexpr auto CallWithSpreadDescriptor::registers() {
-  // a0 : number of arguments (on the stack, not including receiver)
+  // a0 : number of arguments (on the stack)
   // a1 : the target to call
   // a2 : the object to spread
   return RegisterArray(a1, a0, a2);
@@ -138,7 +157,7 @@ constexpr auto CallWithArrayLikeDescriptor::registers() {
 
 // static
 constexpr auto ConstructVarargsDescriptor::registers() {
-  // a0 : number of arguments (on the stack, not including receiver)
+  // a0 : number of arguments (on the stack)
   // a1 : the target to call
   // a3 : the new target
   // a4 : arguments list length (untagged)
@@ -157,7 +176,7 @@ constexpr auto ConstructForwardVarargsDescriptor::registers() {
 
 // static
 constexpr auto ConstructWithSpreadDescriptor::registers() {
-  // a0 : number of arguments (on the stack, not including receiver)
+  // a0 : number of arguments (on the stack)
   // a1 : the target to call
   // a3 : the new target
   // a2 : the object to spread
@@ -231,7 +250,7 @@ constexpr auto InterpreterDispatchDescriptor::registers() {
 
 // static
 constexpr auto InterpreterPushArgsThenCallDescriptor::registers() {
-  return RegisterArray(a0,   // argument count (not including receiver)
+  return RegisterArray(a0,   // argument count
                        a2,   // address of first argument
                        a1);  // the target callable to be call
 }
@@ -239,7 +258,7 @@ constexpr auto InterpreterPushArgsThenCallDescriptor::registers() {
 // static
 constexpr auto InterpreterPushArgsThenConstructDescriptor::registers() {
   return RegisterArray(
-      a0,   // argument count (not including receiver)
+      a0,   // argument count
       a4,   // address of the first argument
       a1,   // constructor to call
       a3,   // new target

@@ -44,15 +44,15 @@ import android.app.Instrumentation.ActivityResult;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
-import android.support.test.InstrumentationRegistry;
 import android.widget.RadioButton;
 
 import androidx.test.espresso.intent.Intents;
 import androidx.test.filters.MediumTest;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
@@ -77,9 +77,10 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ShowFormProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -91,23 +92,12 @@ import java.util.List;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class AutofillAssistantFormActionTest {
+    private final CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
+
     @Rule
-    public CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
-
-    private static final String TEST_PAGE = "/components/test/data/autofill_assistant/html/"
-            + "autofill_assistant_target_website.html";
-
-    @Before
-    public void setUp() {
-        AutofillAssistantPreferencesUtil.setInitialPreferences(true);
-        mTestRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(),
-                mTestRule.getTestServer().getURL(TEST_PAGE)));
-        mTestRule.getActivity()
-                .getRootUiCoordinatorForTesting()
-                .getScrimCoordinator()
-                .disableAnimationForTesting(true);
-    }
+    public final TestRule mRulesChain =
+            RuleChain.outerRule(mTestRule).around(new AutofillAssistantCustomTabTestRule(
+                    mTestRule, "autofill_assistant_target_website.html"));
 
     /**
      * Creates a close-to-real example of a form action with multiple counters and choices,
@@ -162,7 +152,7 @@ public class AutofillAssistantFormActionTest {
                                                 .setDescriptionLine1("$20.00 per item")
                                                 .setDescriptionLine2("<link1>Details</link1>"))));
         // FormAction.
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setShowForm(ShowFormProto.newBuilder()
                                               .setChip(ChipProto.newBuilder()
                                                                .setType(ChipType.HIGHLIGHTED_ACTION)
@@ -171,10 +161,9 @@ public class AutofillAssistantFormActionTest {
                          .build());
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath("autofill_assistant_target_website.html")
-                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
-                                ChipProto.newBuilder().setText("Autostart")))
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
                         .build(),
                 list);
 
@@ -186,13 +175,13 @@ public class AutofillAssistantFormActionTest {
         // TODO(b/144690738) Remove the isDisplayed() condition.
         onView(allOf(withId(R.id.value), withEffectiveVisibility(VISIBLE),
                        hasSibling(hasDescendant(withText("Counter 1")))))
-                .check(matches(hasTextColor(R.color.modern_grey_800_alpha_38)));
+                .check(matches(hasTextColor(R.color.baseline_neutral_900_alpha_38)));
         onView(allOf(withId(R.id.increase_button), withEffectiveVisibility(VISIBLE),
                        hasSibling(hasDescendant(withText("Counter 1")))))
                 .check(matches(hasTintColor(R.color.modern_blue_600)));
         onView(allOf(withId(R.id.decrease_button), withEffectiveVisibility(VISIBLE),
                        hasSibling(hasDescendant(withText("Counter 1")))))
-                .check(matches(hasTintColor(R.color.modern_grey_800_alpha_38)));
+                .check(matches(hasTintColor(R.color.baseline_neutral_900_alpha_38)));
         // Click on Counter 1 +, increase from 0 to 1.
         onView(allOf(withId(R.id.increase_button), withEffectiveVisibility(VISIBLE),
                        hasSibling(hasDescendant(withText("Counter 1")))))
@@ -202,7 +191,7 @@ public class AutofillAssistantFormActionTest {
                 .check(matches(hasTextColor(R.color.modern_blue_600)));
         onView(allOf(withId(R.id.increase_button), withEffectiveVisibility(VISIBLE),
                        hasSibling(hasDescendant(withText("Counter 1")))))
-                .check(matches(hasTintColor(R.color.modern_grey_800_alpha_38)));
+                .check(matches(hasTintColor(R.color.baseline_neutral_900_alpha_38)));
         // Decrease button is still disabled due to the minCountersSum requirement.
 
         // Click expand label to make Counter 2 visible.
@@ -239,7 +228,7 @@ public class AutofillAssistantFormActionTest {
 
         // Finish form action, wait for response and prepare next set of actions.
         List<ActionProto> nextActions = new ArrayList<>();
-        nextActions.add((ActionProto) ActionProto.newBuilder()
+        nextActions.add(ActionProto.newBuilder()
                                 .setPrompt(PromptProto.newBuilder()
                                                    .setMessage("Finished")
                                                    .addChoices(Choice.newBuilder().setChip(
@@ -307,7 +296,7 @@ public class AutofillAssistantFormActionTest {
                                 .setMinCountersSum(2)
                                 .setMinimizeText("Minimize")
                                 .setExpandText("Expand")));
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setShowForm(ShowFormProto.newBuilder()
                                               .setChip(ChipProto.newBuilder()
                                                                .setType(ChipType.HIGHLIGHTED_ACTION)
@@ -316,10 +305,9 @@ public class AutofillAssistantFormActionTest {
                          .build());
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath("autofill_assistant_target_website.html")
-                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
-                                ChipProto.newBuilder().setText("Autostart")))
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
                         .build(),
                 list);
 
@@ -386,7 +374,7 @@ public class AutofillAssistantFormActionTest {
                                                                 OpenUrlInCCT.newBuilder().setUrl(
                                                                         "https://www.google.com"))));
         // FormAction.
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setShowForm(ShowFormProto.newBuilder()
                                               .setChip(ChipProto.newBuilder()
                                                                .setType(ChipType.HIGHLIGHTED_ACTION)
@@ -395,10 +383,9 @@ public class AutofillAssistantFormActionTest {
                          .build());
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath("autofill_assistant_target_website.html")
-                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
-                                ChipProto.newBuilder().setText("Autostart")))
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
                         .build(),
                 list);
 
@@ -449,7 +436,7 @@ public class AutofillAssistantFormActionTest {
                                               .setTitle("Prompt title")
                                               .setText("Prompt text"));
         // FormAction.
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setShowForm(ShowFormProto.newBuilder()
                                               .setChip(ChipProto.newBuilder()
                                                                .setType(ChipType.HIGHLIGHTED_ACTION)
@@ -458,10 +445,9 @@ public class AutofillAssistantFormActionTest {
                          .build());
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath("autofill_assistant_target_website.html")
-                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
-                                ChipProto.newBuilder().setText("Autostart")))
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
                         .build(),
                 list);
 
@@ -493,7 +479,7 @@ public class AutofillAssistantFormActionTest {
                                                 .setDescriptionLine2("<link1>Details</link1>"))))
                         .setInfoLabel("Info label");
         // FormAction.
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setShowForm(ShowFormProto.newBuilder()
                                               .setChip(ChipProto.newBuilder()
                                                                .setType(ChipType.HIGHLIGHTED_ACTION)
@@ -509,7 +495,7 @@ public class AutofillAssistantFormActionTest {
                                 .setDescriptionLine2("<link1>Details</link1>"))));
 
         // FormAction.
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setShowForm(ShowFormProto.newBuilder()
                                               .setChip(ChipProto.newBuilder()
                                                                .setType(ChipType.HIGHLIGHTED_ACTION)
@@ -518,10 +504,9 @@ public class AutofillAssistantFormActionTest {
                          .build());
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath("autofill_assistant_target_website.html")
-                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
-                                ChipProto.newBuilder().setText("Autostart")))
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
                         .build(),
                 list);
 
@@ -536,5 +521,68 @@ public class AutofillAssistantFormActionTest {
         waitUntilViewMatchesCondition(withText("Finish"), isCompletelyDisplayed());
         onView(withText("Info label")).check(matches(not(isDisplayed())));
         onView(withId(R.id.info_button)).check(matches(not(isDisplayed())));
+    }
+
+    private void startTestCounterExpansion(boolean accessibilityEnabled) {
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(
+                                accessibilityEnabled));
+
+        FormProto.Builder formProto =
+                FormProto.newBuilder().addInputs(FormInputProto.newBuilder().setCounter(
+                        CounterInputProto.newBuilder()
+                                .addCounters(CounterInputProto.Counter.newBuilder()
+                                                     .setLabel("Counter 1")
+                                                     .setDescriptionLine1("$34.00 per item"))
+                                .addCounters(CounterInputProto.Counter.newBuilder()
+                                                     .setLabel("Counter 2")
+                                                     .setDescriptionLine1("$387.00 per item"))
+                                .setMinimizedCount(1)
+                                .setMinCountersSum(2)
+                                .setMinimizeText("Minimize")
+                                .setExpandText("Expand")));
+
+        // FormAction.
+        List<ActionProto> list = Collections.singletonList(
+                ActionProto.newBuilder()
+                        .setShowForm(ShowFormProto.newBuilder()
+                                             .setChip(ChipProto.newBuilder()
+                                                              .setType(ChipType.HIGHLIGHTED_ACTION)
+                                                              .setText("Continue"))
+                                             .setForm(formProto))
+                        .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                SupportedScriptProto.newBuilder()
+                        .setPath("autofill_assistant_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
+                        .build(),
+                list);
+
+        startAutofillAssistant(mTestRule.getActivity(),
+                new AutofillAssistantTestService(Collections.singletonList(script)));
+    }
+
+    @Test
+    @MediumTest
+    @DisableIf.Build(sdk_is_less_than = 21)
+    public void testCounterExpandEnabledWithoutAccessibility() {
+        startTestCounterExpansion(false);
+
+        waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
+        // Expand label is visible when accessibility is disabled.
+        onView(withId(R.id.expand_label)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    @DisableIf.Build(sdk_is_less_than = 21)
+    public void testCounterExpandDisabledWithAccessibility() {
+        startTestCounterExpansion(true);
+
+        waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
+        // Expand label is hidden when accessibility is enabled.
+        onView(withId(R.id.expand_label)).check(matches(not(isDisplayed())));
     }
 }

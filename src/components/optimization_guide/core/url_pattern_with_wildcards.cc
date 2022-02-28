@@ -5,7 +5,6 @@
 #include "components/optimization_guide/core/url_pattern_with_wildcards.h"
 
 #include "base/check_op.h"
-#include "base/macros.h"
 
 namespace {
 
@@ -32,7 +31,6 @@ std::vector<std::string> SplitURLPattern(const std::string& url_pattern) {
         search_start_pos, next_wildcard_pos - search_start_pos));
     search_start_pos = next_wildcard_pos + 1;
   }
-  return split_subpatterns;
 }
 
 }  // namespace
