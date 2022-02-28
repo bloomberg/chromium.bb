@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/session_sync_service_factory.h"
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -61,6 +62,9 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
 #endif  // defined(OS_ANDROID)
   }
 
+  SyncSessionsClientImpl(const SyncSessionsClientImpl&) = delete;
+  SyncSessionsClientImpl& operator=(const SyncSessionsClientImpl&) = delete;
+
   ~SyncSessionsClientImpl() override {}
 
   // SyncSessionsClient implementation.
@@ -113,12 +117,10 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   }
 
  private:
-  Profile* const profile_;
+  const raw_ptr<Profile> profile_;
   std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
       window_delegates_getter_;
   sync_sessions::SessionSyncPrefs session_sync_prefs_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncSessionsClientImpl);
 };
 
 }  // namespace

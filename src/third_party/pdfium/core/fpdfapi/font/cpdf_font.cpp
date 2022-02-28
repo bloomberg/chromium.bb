@@ -6,6 +6,7 @@
 
 #include "core/fpdfapi/font/cpdf_font.h"
 
+#include <algorithm>
 #include <limits>
 #include <memory>
 #include <utility>
@@ -25,12 +26,14 @@
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/cpdf_stream_acc.h"
+#include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxcrt/stl_util.h"
 #include "core/fxge/cfx_fontmapper.h"
 #include "core/fxge/fx_font.h"
 #include "core/fxge/fx_freetype.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -105,10 +108,6 @@ const CPDF_CIDFont* CPDF_Font::AsCIDFont() const {
 
 CPDF_CIDFont* CPDF_Font::AsCIDFont() {
   return nullptr;
-}
-
-bool CPDF_Font::IsUnicodeCompatible() const {
-  return false;
 }
 
 size_t CPDF_Font::CountChar(ByteStringView pString) const {
@@ -214,7 +213,8 @@ void CPDF_Font::LoadFontDescriptor(const CPDF_Dictionary* pFontDesc) {
   if (!m_pFontFile)
     return;
 
-  if (!m_Font.LoadEmbedded(m_pFontFile->GetSpan(), IsVertWriting())) {
+  if (!m_Font.LoadEmbedded(m_pFontFile->GetSpan(), IsVertWriting(),
+                           pFontFile->KeyForCache())) {
     pData->MaybePurgeFontFileStreamAcc(m_pFontFile->GetStream()->AsStream());
     m_pFontFile = nullptr;
   }
@@ -242,18 +242,10 @@ void CPDF_Font::CheckFontMetrics() {
           m_FontBBox = rect;
           bFirst = false;
         } else {
-          if (m_FontBBox.top < rect.top) {
-            m_FontBBox.top = rect.top;
-          }
-          if (m_FontBBox.right < rect.right) {
-            m_FontBBox.right = rect.right;
-          }
-          if (m_FontBBox.left > rect.left) {
-            m_FontBBox.left = rect.left;
-          }
-          if (m_FontBBox.bottom > rect.bottom) {
-            m_FontBBox.bottom = rect.bottom;
-          }
+          m_FontBBox.left = std::min(m_FontBBox.left, rect.left);
+          m_FontBBox.top = std::max(m_FontBBox.top, rect.top);
+          m_FontBBox.right = std::max(m_FontBBox.right, rect.right);
+          m_FontBBox.bottom = std::min(m_FontBBox.bottom, rect.bottom);
         }
       }
     }
@@ -287,7 +279,7 @@ int CPDF_Font::GetStringWidth(ByteStringView pString) {
 RetainPtr<CPDF_Font> CPDF_Font::GetStockFont(CPDF_Document* pDoc,
                                              ByteStringView name) {
   ByteString fontname(name);
-  Optional<CFX_FontMapper::StandardFont> font_id =
+  absl::optional<CFX_FontMapper::StandardFont> font_id =
       CFX_FontMapper::GetStandardFontName(&fontname);
   if (!font_id.has_value())
     return nullptr;
@@ -383,13 +375,14 @@ uint32_t CPDF_Font::FallbackFontFromCharcode(uint32_t charcode) {
     safeWeight *= 5;
     m_FontFallbacks[0]->LoadSubst("Arial", IsTrueTypeFont(), m_Flags,
                                   safeWeight.ValueOrDefault(FXFONT_FW_NORMAL),
-                                  m_ItalicAngle, 0, IsVertWriting());
+                                  m_ItalicAngle, FX_CodePage::kDefANSI,
+                                  IsVertWriting());
   }
   return 0;
 }
 
 int CPDF_Font::FallbackGlyphFromCharcode(int fallbackFont, uint32_t charcode) {
-  if (!pdfium::IndexInBounds(m_FontFallbacks, fallbackFont))
+  if (!fxcrt::IndexInBounds(m_FontFallbacks, fallbackFont))
     return -1;
 
   WideString str = UnicodeFromCharCode(charcode);

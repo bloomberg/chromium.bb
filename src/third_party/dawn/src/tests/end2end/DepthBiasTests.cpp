@@ -16,7 +16,7 @@
 #include "common/Math.h"
 #include "tests/DawnTest.h"
 #include "utils/ComboRenderPipelineDescriptor.h"
-#include "utils/TextureFormatUtils.h"
+#include "utils/TextureUtils.h"
 #include "utils/WGPUHelpers.h"
 
 constexpr static unsigned int kRTSize = 2;
@@ -38,7 +38,7 @@ class DepthBiasTests : public DawnTest {
                 vertexSource = R"(
     [[stage(vertex)]]
     fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
-        let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+        var pos = array<vec2<f32>, 6>(
             vec2<f32>(-1.0, -1.0),
             vec2<f32>( 1.0, -1.0),
             vec2<f32>(-1.0,  1.0),
@@ -54,7 +54,7 @@ class DepthBiasTests : public DawnTest {
                 vertexSource = R"(
     [[stage(vertex)]]
     fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
-        let pos : array<vec3<f32>, 6> = array<vec3<f32>, 6>(
+        var pos = array<vec3<f32>, 6>(
             vec3<f32>(-1.0, -1.0, 0.0),
             vec3<f32>( 1.0, -1.0, 0.0),
             vec3<f32>(-1.0,  1.0, 0.5),
@@ -95,7 +95,7 @@ class DepthBiasTests : public DawnTest {
         renderPassDesc.cDepthStencilAttachmentInfo.clearDepth = depthClear;
 
         // Create a render pipeline to render the quad
-        utils::ComboRenderPipelineDescriptor2 renderPipelineDesc;
+        utils::ComboRenderPipelineDescriptor renderPipelineDesc;
 
         renderPipelineDesc.vertex.module = vertexModule;
         renderPipelineDesc.cFragment.module = fragmentModule;
@@ -109,7 +109,7 @@ class DepthBiasTests : public DawnTest {
             depthStencil->depthCompare = wgpu::CompareFunction::Greater;
         }
 
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&renderPipelineDesc);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&renderPipelineDesc);
 
         // Draw the quad (two triangles)
         wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
@@ -140,11 +140,11 @@ class DepthBiasTests : public DawnTest {
 // Test adding positive bias to output
 TEST_P(DepthBiasTests, PositiveBiasOnFloat) {
     // NVIDIA GPUs under Vulkan seem to be using a different scale than everyone else.
-    DAWN_SKIP_TEST_IF(IsVulkan() && IsNvidia());
+    DAWN_SUPPRESS_TEST_IF(IsVulkan() && IsNvidia());
 
     // OpenGL uses a different scale than the other APIs
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGL());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
 
     // Draw quad flat on z = 0.25 with 0.25 bias
     RunDepthBiasTest(wgpu::TextureFormat::Depth32Float, 0, QuadAngle::Flat,
@@ -163,8 +163,8 @@ TEST_P(DepthBiasTests, PositiveBiasOnFloat) {
 // Test adding positive bias to output with a clamp
 TEST_P(DepthBiasTests, PositiveBiasOnFloatWithClamp) {
     // Clamping support in OpenGL is spotty
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGL());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
 
     // Draw quad flat on z = 0.25 with 0.25 bias clamped at 0.125.
     RunDepthBiasTest(wgpu::TextureFormat::Depth32Float, 0, QuadAngle::Flat,
@@ -183,10 +183,10 @@ TEST_P(DepthBiasTests, PositiveBiasOnFloatWithClamp) {
 // Test adding negative bias to output
 TEST_P(DepthBiasTests, NegativeBiasOnFloat) {
     // NVIDIA GPUs seems to be using a different scale than everyone else
-    DAWN_SKIP_TEST_IF(IsVulkan() && IsNvidia());
+    DAWN_SUPPRESS_TEST_IF(IsVulkan() && IsNvidia());
 
     // OpenGL uses a different scale than the other APIs
-    DAWN_SKIP_TEST_IF(IsOpenGL());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGL());
 
     // Draw quad flat on z = 0.25 with -0.25 bias, depth clear of 0.125
     RunDepthBiasTest(wgpu::TextureFormat::Depth32Float, 0.125, QuadAngle::Flat,
@@ -205,8 +205,8 @@ TEST_P(DepthBiasTests, NegativeBiasOnFloat) {
 // Test adding negative bias to output with a clamp
 TEST_P(DepthBiasTests, NegativeBiasOnFloatWithClamp) {
     // Clamping support in OpenGL is spotty
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGL());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
 
     // Draw quad flat on z = 0.25 with -0.25 bias clamped at -0.125.
     RunDepthBiasTest(wgpu::TextureFormat::Depth32Float, 0, QuadAngle::Flat,
@@ -225,7 +225,7 @@ TEST_P(DepthBiasTests, NegativeBiasOnFloatWithClamp) {
 // Test adding positive infinite slope bias to output
 TEST_P(DepthBiasTests, PositiveInfinitySlopeBiasOnFloat) {
     // NVIDIA GPUs do not clamp values to 1 when using Inf slope bias.
-    DAWN_SKIP_TEST_IF(IsVulkan() && IsNvidia());
+    DAWN_SUPPRESS_TEST_IF(IsVulkan() && IsNvidia());
 
     // Draw quad with z from 0 to 0.5 with inf slope bias
     RunDepthBiasTest(wgpu::TextureFormat::Depth32Float, 0.125, QuadAngle::TiltedX, 0,
@@ -244,7 +244,7 @@ TEST_P(DepthBiasTests, PositiveInfinitySlopeBiasOnFloat) {
 // Test adding positive infinite slope bias to output
 TEST_P(DepthBiasTests, NegativeInfinityBiasOnFloat) {
     // NVIDIA GPUs do not clamp values to 0 when using -Inf slope bias.
-    DAWN_SKIP_TEST_IF(IsVulkan() && IsNvidia());
+    DAWN_SUPPRESS_TEST_IF(IsVulkan() && IsNvidia());
 
     // Draw quad with z from 0 to 0.5 with -inf slope bias
     RunDepthBiasTest(wgpu::TextureFormat::Depth32Float, 0.125, QuadAngle::TiltedX, 0,
@@ -312,7 +312,7 @@ TEST_P(DepthBiasTests, PositiveBiasOn24bit) {
                      0.25f * (1 << 25), 0, 0);
 
     // Only the bottom left quad has colors. 0.5 quad > 0.4 clear.
-    // TODO(enrico.galli@intel.com): Switch to depth sampling once feature has been enabled.
+    // TODO(crbug.com/dawn/820): Switch to depth sampling once feature has been enabled.
     std::vector<RGBA8> expected = {
         RGBA8::kRed, RGBA8::kRed,  //
         RGBA8::kRed, RGBA8::kRed,  //
@@ -324,8 +324,8 @@ TEST_P(DepthBiasTests, PositiveBiasOn24bit) {
 // Test adding positive bias to output with a clamp
 TEST_P(DepthBiasTests, PositiveBiasOn24bitWithClamp) {
     // Clamping support in OpenGL is spotty
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGL());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
 
     // Draw quad flat on z = 0.25 with 0.25 bias clamped at 0.125.
     RunDepthBiasTest(wgpu::TextureFormat::Depth24PlusStencil8, 0.4f, QuadAngle::Flat,
@@ -333,7 +333,7 @@ TEST_P(DepthBiasTests, PositiveBiasOn24bitWithClamp) {
 
     // Since we cleared with a depth of 0.4 and clamped bias at 0.4, the depth test will fail. 0.25
     // + 0.125 < 0.4 clear.
-    // TODO(enrico.galli@intel.com): Switch to depth sampling once feature has been enabled.
+    // TODO(crbug.com/dawn/820): Switch to depth sampling once feature has been enabled.
     std::vector<RGBA8> zero = {
         RGBA8::kZero, RGBA8::kZero,  //
         RGBA8::kZero, RGBA8::kZero,  //
@@ -348,7 +348,7 @@ TEST_P(DepthBiasTests, PositiveSlopeBiasOn24bit) {
     RunDepthBiasTest(wgpu::TextureFormat::Depth24PlusStencil8, 0.4f, QuadAngle::TiltedX, 0, 1, 0);
 
     // Only the top half of the quad has a depth > 0.4 clear
-    // TODO(enrico.galli@intel.com): Switch to depth sampling once feature has been enabled.
+    // TODO(crbug.com/dawn/820): Switch to depth sampling once feature has been enabled.
     std::vector<RGBA8> expected = {
         RGBA8::kRed, RGBA8::kRed,    //
         RGBA8::kZero, RGBA8::kZero,  //

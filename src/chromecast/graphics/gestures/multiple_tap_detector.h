@@ -7,7 +7,6 @@
 
 #include <deque>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/events/event.h"
@@ -46,6 +45,10 @@ class MultipleTapDetector : public ui::EventRewriter {
  public:
   MultipleTapDetector(aura::Window* root_window,
                       MultipleTapDetectorDelegate* delegate);
+
+  MultipleTapDetector(const MultipleTapDetector&) = delete;
+  MultipleTapDetector& operator=(const MultipleTapDetector&) = delete;
+
   ~MultipleTapDetector() override;
 
   void set_enabled(bool enabled) { enabled_ = enabled; }
@@ -88,8 +91,6 @@ class MultipleTapDetector : public ui::EventRewriter {
     const Continuation continuation;
   };
   std::deque<Stash> stashed_events_;
-
-  DISALLOW_COPY_AND_ASSIGN(MultipleTapDetector);
 };
 
 }  // namespace chromecast

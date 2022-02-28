@@ -1,4 +1,6 @@
 {
+  "version": "5.8",
+  "log_list_timestamp": "2022-02-01T01:37:38Z",
   "operators": [
     {
       "name": "Google",
@@ -242,8 +244,8 @@
           "url": "https://ct1.digicert-ct.com/log/",
           "mmd": 86400,
           "state": {
-            "usable": {
-              "timestamp": "2015-05-20T16:40:09Z"
+            "retired": {
+              "timestamp": "2022-01-24T00:00:00Z"
             }
           }
         },
@@ -282,8 +284,8 @@
           "url": "https://yeti2022.ct.digicert.com/log/",
           "mmd": 86400,
           "state": {
-            "usable": {
-              "timestamp": "2018-08-24T00:53:07Z"
+            "retired": {
+              "timestamp": "2021-07-21T00:00:00Z"
             }
           },
           "temporal_interval": {
@@ -614,8 +616,8 @@
           "url": "https://ct2021.trustasia.com/log2021/",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2021-05-11T07:00:00Z"
+            "usable": {
+              "timestamp": "2021-10-16T01:46:32Z"
             }
           },
           "temporal_interval": {

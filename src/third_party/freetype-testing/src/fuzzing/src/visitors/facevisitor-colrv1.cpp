@@ -20,8 +20,8 @@
 
 #include "utils/logging.h"
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
+#include <freetype/ftcolor.h>
 
 
 template<> struct std::hash<FT_OpaquePaint>
@@ -191,15 +191,15 @@ namespace {
       break;
     }
 
-    case FT_COLR_PAINTFORMAT_TRANSFORMED:
+    case FT_COLR_PAINTFORMAT_TRANSFORM:
     {
       LOG( INFO ) << "PaintTransformed,"
-                  << " xx " << colrv1_paint.u.transformed.affine.xx
-                  << " xy " << colrv1_paint.u.transformed.affine.xy
-                  << " yx " << colrv1_paint.u.transformed.affine.yx
-                  << " yy " << colrv1_paint.u.transformed.affine.yy
-                  << " dx " << colrv1_paint.u.transformed.affine.dx
-                  << " dy " << colrv1_paint.u.transformed.affine.dy;
+                  << " xx " << colrv1_paint.u.transform.affine.xx
+                  << " xy " << colrv1_paint.u.transform.affine.xy
+                  << " yx " << colrv1_paint.u.transform.affine.yx
+                  << " yy " << colrv1_paint.u.transform.affine.yy
+                  << " dx " << colrv1_paint.u.transform.affine.dx
+                  << " dy " << colrv1_paint.u.transform.affine.dy;
       break;
     }
 
@@ -208,6 +208,16 @@ namespace {
       LOG( INFO ) << "PaintTranslate,"
                   << " dx " << colrv1_paint.u.translate.dx
                   << " dy " << colrv1_paint.u.translate.dy;
+      break;
+    }
+
+    case FT_COLR_PAINTFORMAT_SCALE:
+    {
+      LOG( INFO ) << "PaintScale,"
+                  << " center.x " << colrv1_paint.u.scale.center_x
+                  << " center.y " << colrv1_paint.u.scale.center_y
+                  << " scale.x " << colrv1_paint.u.scale.scale_x
+                  << " scale.y " << colrv1_paint.u.scale.scale_y;
       break;
     }
 
@@ -309,6 +319,13 @@ namespace {
                                             FT_COLOR_NO_ROOT_TRANSFORM );
       break;
 
+    case FT_COLR_PAINTFORMAT_TRANSFORM:
+      colrv1_draw_paint( face, paint );
+      traverse_result = colrv1_traverse_paint( face,
+                                               paint.u.transform.paint,
+                                               visited_set );
+      break;
+
     case FT_COLR_PAINTFORMAT_TRANSLATE:
       colrv1_draw_paint( face, paint );
       traverse_result = colrv1_traverse_paint( face,
@@ -316,10 +333,10 @@ namespace {
                                                visited_set );
       break;
 
-    case FT_COLR_PAINTFORMAT_TRANSFORMED:
+    case FT_COLR_PAINTFORMAT_SCALE:
       colrv1_draw_paint( face, paint );
       traverse_result = colrv1_traverse_paint( face,
-                                               paint.u.transformed.paint,
+                                               paint.u.scale.paint,
                                                visited_set );
       break;
 
@@ -386,6 +403,23 @@ namespace {
                                    root_transform,
                                    &opaque_paint ) )
     {
+      FT_ClipBox colr_glyph_clip_box;
+      FT_Get_Color_Glyph_ClipBox( ft_face, glyph_id, &colr_glyph_clip_box );
+      LOG( INFO ) << "ClipBox,"
+                  << " glyph_id " << glyph_id
+                  << " bottom_left ("
+                  << colr_glyph_clip_box.bottom_left.x << ", "
+                  << colr_glyph_clip_box.bottom_left.y << ")"
+                  << " top_left ("
+                  << colr_glyph_clip_box.top_left.x << ", "
+                  << colr_glyph_clip_box.top_left.y << ")"
+                  << " top_right ("
+                  << colr_glyph_clip_box.top_right.x << ", "
+                  << colr_glyph_clip_box.top_right.y << ")"
+                  << " bottom_right ("
+                  << colr_glyph_clip_box.bottom_right.x << ", "
+                  << colr_glyph_clip_box.bottom_right.y << ")";
+
       VisitedSet visited_set;
       has_colrv1_layers = true;
       colrv1_traverse_paint( ft_face, opaque_paint, visited_set );

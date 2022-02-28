@@ -15,44 +15,35 @@ limitations under the License.
 
 #include "tensorflow/lite/interpreter.h"
 
+#include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include <map>
 #include <memory>
+#include <new>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "third_party/eigen3/Eigen/Core"
-#include "tensorflow/lite/core/api/error_reporter.h"
+#include "tensorflow/lite/c/builtin_op_data.h"
+#include "tensorflow/lite/c/c_api_types.h"
+#include "tensorflow/lite/delegates/utils/simple_delegate.h"
 #include "tensorflow/lite/external_cpu_backend_context.h"
-#include "tensorflow/lite/kernels/cpu_backend_context.h"
+#include "tensorflow/lite/interpreter_test_util.h"
+#include "tensorflow/lite/kernels/builtin_op_kernels.h"
 #include "tensorflow/lite/kernels/internal/compatibility.h"
 #include "tensorflow/lite/kernels/kernel_util.h"
-#include "tensorflow/lite/kernels/register.h"
-#include "tensorflow/lite/schema/schema_generated.h"
+#include "tensorflow/lite/string_type.h"
 #include "tensorflow/lite/string_util.h"
 #include "tensorflow/lite/testing/util.h"
-#include "tensorflow/lite/version.h"
+#include "tensorflow/lite/util.h"
 
 namespace tflite {
-
-// InterpreterTest is a friend of Interpreter, so it can access context_.
-class InterpreterTest : public ::testing::Test {
- public:
-  template <typename Delegate>
-  static TfLiteStatus ModifyGraphWithDelegate(
-      Interpreter* interpreter, std::unique_ptr<Delegate> delegate) {
-    Interpreter::TfLiteDelegatePtr tflite_delegate(
-        delegate.release(), [](TfLiteDelegate* delegate) {
-          delete reinterpret_cast<Delegate*>(delegate);
-        });
-    return interpreter->ModifyGraphWithDelegate(std::move(tflite_delegate));
-  }
-
- protected:
-  TfLiteContext* GetInterpreterContext() { return interpreter_.context_; }
-
-  Interpreter interpreter_;
-};
 
 namespace ops {
 namespace builtin {
@@ -60,6 +51,7 @@ TfLiteRegistration* Register_PADV2();
 TfLiteRegistration* Register_NEG();
 }  // namespace builtin
 }  // namespace ops
+
 namespace {
 
 using ::testing::IsEmpty;
@@ -199,9 +191,10 @@ TEST(BasicInterpreter, CheckAllocate) {
     TfLiteType type;
     size_t size;
   } cases[] = {
-      {kTfLiteFloat32, sizeof(float)}, {kTfLiteInt32, sizeof(int32_t)},
-      {kTfLiteUInt8, sizeof(uint8_t)}, {kTfLiteInt64, sizeof(int64_t)},
-      {kTfLiteInt16, sizeof(int16_t)}, {kTfLiteFloat16, sizeof(TfLiteFloat16)},
+      {kTfLiteFloat32, sizeof(float)},         {kTfLiteInt32, sizeof(int32_t)},
+      {kTfLiteUInt32, sizeof(uint32_t)},       {kTfLiteUInt8, sizeof(uint8_t)},
+      {kTfLiteInt64, sizeof(int64_t)},         {kTfLiteInt16, sizeof(int16_t)},
+      {kTfLiteFloat16, sizeof(TfLiteFloat16)},
   };
 
   for (auto test : cases) {
@@ -271,11 +264,11 @@ TEST(BasicInterpreter, CheckQuantization) {
 TEST(BasicInterpreter, CheckResize) {
   const float floats[] = {-3., -4.};
   const int32_t int32s[] = {-3, -4};
+  const uint32_t uint32s[] = {3, 4};
   const uint8_t uint8s[] = {3, 4};
   const int64_t int64s[] = {6, -7};
   const int16_t int16s[] = {8, -9};
-  const Eigen::half float16s[] = {Eigen::half_impl::float_to_half_rtne(-3.f),
-                                  Eigen::half_impl::float_to_half_rtne(-4.f)};
+  const Eigen::half float16s[] = {Eigen::half(-3.f), Eigen::half(-4.f)};
 
   struct {
     TfLiteType type;
@@ -284,6 +277,7 @@ TEST(BasicInterpreter, CheckResize) {
   } cases[] = {
       {kTfLiteFloat32, sizeof(float), reinterpret_cast<const char*>(floats)},
       {kTfLiteInt32, sizeof(int32_t), reinterpret_cast<const char*>(int32s)},
+      {kTfLiteUInt32, sizeof(uint32_t), reinterpret_cast<const char*>(uint32s)},
       {kTfLiteUInt8, sizeof(uint8_t), reinterpret_cast<const char*>(uint8s)},
       {kTfLiteInt64, sizeof(int64_t), reinterpret_cast<const char*>(int64s)},
       {kTfLiteInt16, sizeof(int16_t), reinterpret_cast<const char*>(int16s)},
@@ -323,8 +317,9 @@ TEST(BasicInterpreter, CheckResize) {
 TEST(BasicInterpreter, CheckAlignment) {
   struct {
     TfLiteType type;
-  } cases[] = {{kTfLiteFloat32}, {kTfLiteInt32}, {kTfLiteUInt8},
-               {kTfLiteInt64},   {kTfLiteInt16}, {kTfLiteFloat16}};
+  } cases[] = {{kTfLiteFloat32}, {kTfLiteInt32}, {kTfLiteUInt32},
+               {kTfLiteUInt8},   {kTfLiteInt64}, {kTfLiteInt16},
+               {kTfLiteFloat16}};
 
   for (auto test : cases) {
     Interpreter interpreter;
@@ -623,8 +618,10 @@ TfLiteRegistration GetPassthroughOpRegistration() {
   reg.prepare = [](TfLiteContext* context, TfLiteNode* node) {
     auto* first_new_tensor = static_cast<int*>(node->user_data);
 
-    const TfLiteTensor* tensor0 = GetInput(context, node, 0);
-    TfLiteTensor* tensor1 = GetOutput(context, node, 0);
+    const TfLiteTensor* tensor0;
+    TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, 0, &tensor0));
+    TfLiteTensor* tensor1;
+    TF_LITE_ENSURE_OK(context, GetOutputSafe(context, node, 0, &tensor1));
 
     TfLiteIntArray* newSize = TfLiteIntArrayCopy(tensor0->dims);
     TF_LITE_ENSURE_STATUS(context->ResizeTensor(context, tensor1, newSize));
@@ -648,7 +645,8 @@ TfLiteRegistration GetPassthroughOpRegistration() {
     return kTfLiteOk;
   };
   reg.invoke = [](TfLiteContext* context, TfLiteNode* node) {
-    const TfLiteTensor* a0 = GetInput(context, node, 0);
+    const TfLiteTensor* a0;
+    TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, 0, &a0));
 
     auto populate = [&](int id) {
       TfLiteTensor* t = &context->tensors[id];
@@ -782,8 +780,10 @@ TEST(BasicInterpreter, ThreeStepAllocate) {
   // String-in String-out node.
   TfLiteRegistration reg_copy = {nullptr, nullptr, nullptr, nullptr};
   reg_copy.invoke = [](TfLiteContext* context, TfLiteNode* node) {
-    const TfLiteTensor* input = GetInput(context, node, 0);
-    TfLiteTensor* output = GetOutput(context, node, 0);
+    const TfLiteTensor* input;
+    TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, 0, &input));
+    TfLiteTensor* output;
+    TF_LITE_ENSURE_OK(context, GetOutputSafe(context, node, 0, &output));
     DynamicBuffer buf;
     StringRef str_ref = GetString(input, 0);
     buf.AddString(str_ref);
@@ -794,14 +794,17 @@ TEST(BasicInterpreter, ThreeStepAllocate) {
   // String-in Int-out node.
   TfLiteRegistration reg_len = {nullptr, nullptr, nullptr, nullptr};
   reg_len.prepare = [](TfLiteContext* context, TfLiteNode* node) {
-    TfLiteTensor* output = GetOutput(context, node, 0);
+    TfLiteTensor* output;
+    TF_LITE_ENSURE_OK(context, GetOutputSafe(context, node, 0, &output));
     TfLiteIntArray* outputSize = TfLiteIntArrayCreate(1);
     outputSize->data[0] = 1;
     return context->ResizeTensor(context, output, outputSize);
   };
   reg_len.invoke = [](TfLiteContext* context, TfLiteNode* node) {
-    const TfLiteTensor* a0 = GetInput(context, node, 0);
-    TfLiteTensor* a1 = GetOutput(context, node, 0);
+    const TfLiteTensor* a0;
+    TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, 0, &a0));
+    TfLiteTensor* a1;
+    TF_LITE_ENSURE_OK(context, GetOutputSafe(context, node, 0, &a1));
     a1->data.i32[0] = a0->bytes;
     return kTfLiteOk;
   };
@@ -850,14 +853,18 @@ TEST(BasicInterpreter, AllocateTwice) {
 
   TfLiteRegistration reg = {nullptr, nullptr, nullptr, nullptr};
   reg.prepare = [](TfLiteContext* context, TfLiteNode* node) {
-    const TfLiteTensor* tensor0 = GetInput(context, node, 0);
-    TfLiteTensor* tensor1 = GetOutput(context, node, 0);
+    const TfLiteTensor* tensor0;
+    TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, 0, &tensor0));
+    TfLiteTensor* tensor1;
+    TF_LITE_ENSURE_OK(context, GetOutputSafe(context, node, 0, &tensor1));
     TfLiteIntArray* newSize = TfLiteIntArrayCopy(tensor0->dims);
     return context->ResizeTensor(context, tensor1, newSize);
   };
   reg.invoke = [](TfLiteContext* context, TfLiteNode* node) {
-    const TfLiteTensor* a0 = GetInput(context, node, 0);
-    TfLiteTensor* a1 = GetOutput(context, node, 0);
+    const TfLiteTensor* a0;
+    TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, 0, &a0));
+    TfLiteTensor* a1;
+    TF_LITE_ENSURE_OK(context, GetOutputSafe(context, node, 0, &a1));
     int num = a0->dims->data[0];
     for (int i = 0; i < num; i++) {
       a1->data.f[i] = a0->data.f[i];
@@ -957,17 +964,6 @@ TEST(BasicInterpreter, TestOverflow) {
   }
 }
 
-TEST(BasicInterpreter, TestUseNNAPI) {
-  TestErrorReporter reporter;
-  Interpreter interpreter(&reporter);
-  interpreter.UseNNAPI(true);
-  ASSERT_EQ(interpreter.AllocateTensors(), kTfLiteOk);
-  ASSERT_EQ(interpreter.Invoke(), kTfLiteOk);
-  interpreter.UseNNAPI(false);
-  ASSERT_EQ(reporter.error_messages(),
-            "Attempting to disable NNAPI delegate after it's applied.");
-}
-
 TEST(BasicInterpreter, TestUnsupportedDelegateFunctions) {
   Interpreter interpreter;
   ASSERT_EQ(interpreter.AddTensors(2), kTfLiteOk);
@@ -1060,6 +1056,57 @@ TEST(BasicInterpreter, DynamicTensorsResizeDescendants) {
   ASSERT_EQ(interpreter.tensor(3)->bytes, sizeof(float) * 10 * 14);
 }
 
+TEST(BasicInterpreter, ReleaseDynamicTensors) {
+  // Assemble a graph with a node that has dynamically sized output (via the
+  // pad op), followed by a node with a standard element-wise op (negate).
+  Interpreter interpreter;
+  interpreter.AddTensors(4);
+  interpreter.SetInputs({0, 1});
+  interpreter.SetOutputs({3});
+  TfLiteQuantizationParams quant;
+  interpreter.SetTensorParametersReadWrite(/*tensor_index=*/0,
+                                           /*type=*/kTfLiteFloat32, /*name=*/"",
+                                           /*dims=*/{2, 2, 1, 1},
+                                           /*quantization=*/quant);
+  interpreter.SetTensorParametersReadWrite(
+      /*tensor_index=*/1, /*type=*/kTfLiteInt32, /*name=*/"", /*dims=*/{4, 2},
+      /*quantization=*/quant);
+  interpreter.SetTensorParametersReadWrite(/*tensor_index=*/2,
+                                           /*type=*/kTfLiteFloat32, /*name=*/"",
+                                           /*dims=*/{}, /*quantization=*/quant);
+  interpreter.SetTensorParametersReadWrite(/*tensor_index=*/3,
+                                           /*type=*/kTfLiteFloat32, /*name=*/"",
+                                           /*dims=*/{}, /*quantization=*/quant);
+
+  TfLiteRegistration* pad_op = tflite::ops::builtin::Register_PADV2();
+  TfLiteRegistration* neg_op = tflite::ops::builtin::Register_NEG();
+  interpreter.AddNodeWithParameters(
+      /*inputs=*/{0, 1}, /*outputs=*/{2}, /*init_data=*/nullptr,
+      /*init_data_size=*/0, /*builtin_data=*/nullptr, /*registration=*/pad_op);
+  interpreter.AddNodeWithParameters(
+      /*inputs=*/{2}, /*outputs=*/{3}, /*init_data=*/nullptr,
+      /*init_data_size=*/0, /*builtin_data=*/nullptr, /*registration=*/neg_op);
+  ASSERT_EQ(interpreter.AllocateTensors(), kTfLiteOk);
+
+  // Configure [[2,2],[4,4]] padding and execute the graph.
+  const std::vector<int> padding = {2, 2, 2, 2, 0, 0, 0, 0};
+  int* tensor_value = interpreter.typed_tensor<int>(1);
+  for (int i = 0; i < padding.size(); ++i) {
+    tensor_value[i] = padding[i];
+  }
+
+  // Invoke without calling `EnsureDynamicTensorsAreReleased`.
+  ASSERT_EQ(interpreter.Invoke(), kTfLiteOk);
+  ASSERT_NE(interpreter.tensor(2)->data.raw, nullptr);
+
+  interpreter.EnsureDynamicTensorsAreReleased();
+  ASSERT_EQ(interpreter.Invoke(), kTfLiteOk);
+
+  // Check that the intermediate dynamic tensor's memory is released.
+  ASSERT_EQ(interpreter.tensor(2)->data.raw, nullptr);
+  ASSERT_EQ(interpreter.tensor(3)->bytes, sizeof(float) * 6 * 6);
+}
+
 TEST(InterpreterTensorsCapacityTest, TestWithinHeadroom) {
   Interpreter interpreter;
   ASSERT_EQ(interpreter.AddTensors(Interpreter::kTensorsReservedCapacity),
@@ -1131,26 +1178,32 @@ TEST_F(InterpreterTest, GetSetResetExternalContexts) {
   };
 
   EXPECT_EQ(TestExternalContext::Get(context), nullptr);
-  interpreter_.SetNumThreads(4);
+  ASSERT_EQ(interpreter_->SetNumThreads(4), kTfLiteOk);
 
   TestExternalContext::Set(context, &external_context);
   EXPECT_EQ(TestExternalContext::Get(context), &external_context);
-  interpreter_.SetNumThreads(4);
-  interpreter_.SetNumThreads(5);
+  ASSERT_EQ(interpreter_->SetNumThreads(4), kTfLiteOk);
+  ASSERT_EQ(interpreter_->SetNumThreads(5), kTfLiteOk);
   EXPECT_EQ(external_context.num_refreshes, 2);
 
   // Reset refresh count to 0
   external_context.num_refreshes = 0;
   // Below should not call external context refresh
-  interpreter_.SetNumThreads(-2);
+  ASSERT_EQ(interpreter_->SetNumThreads(-2), kTfLiteError);
   EXPECT_EQ(external_context.num_refreshes, 0);
 
-  interpreter_.SetNumThreads(-1);
+  ASSERT_EQ(interpreter_->SetNumThreads(-1), kTfLiteOk);
   EXPECT_EQ(external_context.num_refreshes, 1);
 
   TestExternalContext::Set(context, nullptr);
   EXPECT_EQ(TestExternalContext::Get(context), nullptr);
-  interpreter_.SetNumThreads(4);
+  ASSERT_EQ(interpreter_->SetNumThreads(4), kTfLiteOk);
+}
+
+TEST_F(InterpreterTest, SetNumThreadsSucceedsWithZero) {
+  ASSERT_EQ(interpreter_->SetNumThreads(0), kTfLiteOk);
+  // num_threads == 0 has the same effect as num_threads == 1.
+  EXPECT_EQ(interpreter_->subgraph(0)->context()->recommended_num_threads, 1);
 }
 
 struct TestCpuBackendContext : public TfLiteInternalBackendContext {
@@ -1181,7 +1234,7 @@ TEST_F(InterpreterTest, ExternalBackendContextClearsCachesOnDelete) {
 // node graph that can be executed in either [0,1] order or [1,0] order.
 // The CopyOp records when it is invoked in the class member run_order_
 // so we can test whether the execution plan was honored.
-class TestExecutionPlan : public ::testing::Test {
+class TestExecutionPlan : public InterpreterTest {
   // Encapsulates the node ids and provides them to a C primitive data type
   // Allocatable with placement new, but never destructed, so make sure this
   // doesn't own any heap allocated data. This is then is used as op local
@@ -1207,8 +1260,10 @@ class TestExecutionPlan : public ::testing::Test {
 
     reg.prepare = [](TfLiteContext* context, TfLiteNode* node) {
       // Set output size to input size
-      const TfLiteTensor* tensor0 = GetInput(context, node, 0);
-      TfLiteTensor* tensor1 = GetOutput(context, node, 0);
+      const TfLiteTensor* tensor0;
+      TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, 0, &tensor0));
+      TfLiteTensor* tensor1;
+      TF_LITE_ENSURE_OK(context, GetOutputSafe(context, node, 0, &tensor1));
       TfLiteIntArray* newSize = TfLiteIntArrayCopy(tensor0->dims);
       return context->ResizeTensor(context, tensor1, newSize);
     };
@@ -1217,8 +1272,10 @@ class TestExecutionPlan : public ::testing::Test {
       CallReporting* call_reporting =
           static_cast<CallReporting*>(node->builtin_data);
       // Copy input data to output data.
-      const TfLiteTensor* a0 = GetInput(context, node, 0);
-      TfLiteTensor* a1 = GetOutput(context, node, 0);
+      const TfLiteTensor* a0;
+      TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, 0, &a0));
+      TfLiteTensor* a1;
+      TF_LITE_ENSURE_OK(context, GetOutputSafe(context, node, 0, &a1));
       int num = a0->dims->data[0];
       for (int i = 0; i < num; i++) {
         a1->data.f[i] = a0->data.f[i];
@@ -1240,21 +1297,21 @@ class TestExecutionPlan : public ::testing::Test {
     CallReporting* call_reporting_1 =
         static_cast<CallReporting*>(malloc(sizeof(CallReporting)));
     new (call_reporting_1) CallReporting(input, &run_order_);
-    ASSERT_EQ(interpreter_.AddNodeWithParameters(
+    ASSERT_EQ(interpreter_->AddNodeWithParameters(
                   {0}, {2}, nullptr, 0, static_cast<void*>(call_reporting_1),
                   &copy_op),
               kTfLiteOk);
-    ASSERT_EQ(interpreter_.ResizeInputTensor(input, {3}), kTfLiteOk);
+    ASSERT_EQ(interpreter_->ResizeInputTensor(input, {3}), kTfLiteOk);
   }
 
   void SetUp() final {
     // Add two inputs and two outputs that don't depend on each other
-    ASSERT_EQ(interpreter_.AddTensors(4), kTfLiteOk);
-    interpreter_.SetInputs({0, 1});
-    interpreter_.SetOutputs({2, 3});
+    ASSERT_EQ(interpreter_->AddTensors(4), kTfLiteOk);
+    interpreter_->SetInputs({0, 1});
+    interpreter_->SetOutputs({2, 3});
     TfLiteQuantizationParams quantized;
     for (int tensor_index = 0; tensor_index < 4; tensor_index++) {
-      ASSERT_EQ(interpreter_.SetTensorParametersReadWrite(
+      ASSERT_EQ(interpreter_->SetTensorParametersReadWrite(
                     tensor_index, kTfLiteFloat32, "", {3}, quantized),
                 kTfLiteOk);
     }
@@ -1267,40 +1324,38 @@ class TestExecutionPlan : public ::testing::Test {
     MakeCopyNode(0, 2);
     MakeCopyNode(1, 3);
 
-    ASSERT_EQ(interpreter_.AllocateTensors(), kTfLiteOk);
+    ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
   }
 
  protected:
-  Interpreter interpreter_;
-
   // list of node_ids that were run
   std::vector<int> run_order_;
 };
 
 TEST_F(TestExecutionPlan, DefaultExecutionPlan) {
   // Check default order
-  ASSERT_EQ(interpreter_.Invoke(), kTfLiteOk);
+  ASSERT_EQ(interpreter_->Invoke(), kTfLiteOk);
   ASSERT_EQ(run_order_, std::vector<int>({0, 1}));
 }
 
 TEST_F(TestExecutionPlan, ReversedExecutionPlan) {
   // Check reversed order
-  interpreter_.SetExecutionPlan({1, 0});
-  ASSERT_EQ(interpreter_.Invoke(), kTfLiteOk);
+  SetExecutionPlan({1, 0});
+  ASSERT_EQ(interpreter_->Invoke(), kTfLiteOk);
   ASSERT_EQ(run_order_, std::vector<int>({1, 0}));
 }
 
 TEST_F(TestExecutionPlan, SubsetExecutionPlan) {
   // Check running only node index 1
-  interpreter_.SetExecutionPlan({1});
-  ASSERT_EQ(interpreter_.Invoke(), kTfLiteOk);
+  SetExecutionPlan({1});
+  ASSERT_EQ(interpreter_->Invoke(), kTfLiteOk);
   ASSERT_EQ(run_order_, std::vector<int>({1}));
 }
 
 TEST_F(TestExecutionPlan, NullExecutionPlan) {
   // Check nothing executed.
-  interpreter_.SetExecutionPlan({});
-  ASSERT_EQ(interpreter_.Invoke(), kTfLiteOk);
+  SetExecutionPlan({});
+  ASSERT_EQ(interpreter_->Invoke(), kTfLiteOk);
   ASSERT_EQ(run_order_, std::vector<int>());
 }
 
@@ -1372,30 +1427,28 @@ bool CheckCancellation(void* data) {
 static struct CancellationData cancellation_data_;
 
 // Test fixture to test cancellation within the Interpreter.
-class CancellationTest : public ::testing::Test {
+class CancellationTest : public InterpreterTest {
  public:
-  TfLiteStatus Invoke() { return interpreter_.Invoke(); }
+  TfLiteStatus Invoke() { return interpreter_->Invoke(); }
   void Cancel() { cancellation_data_.is_cancelled = true; }
 
   // Adds an CancelOp with input tensor `input` and output tensor `output`.
   void MakeCancelNode(int input, int output) {
     TfLiteRegistration op = CancelOpRegistration();
-    ASSERT_EQ(interpreter_.AddNodeWithParameters({input}, {output}, nullptr, 0,
-                                                 nullptr, &op),
+    ASSERT_EQ(interpreter_->AddNodeWithParameters({input}, {output}, nullptr, 0,
+                                                  nullptr, &op),
               kTfLiteOk);
-    ASSERT_EQ(interpreter_.ResizeInputTensor(input, {3}), kTfLiteOk);
+    ASSERT_EQ(interpreter_->ResizeInputTensor(input, {3}), kTfLiteOk);
   }
 
   // Adds an OkOp with input tensor `input` and output tensor `output`.
   void MakeOkNode(int input, int output) {
     TfLiteRegistration op = OkOpRegistration();
-    ASSERT_EQ(interpreter_.AddNodeWithParameters({input}, {output}, nullptr, 0,
-                                                 nullptr, &op),
+    ASSERT_EQ(interpreter_->AddNodeWithParameters({input}, {output}, nullptr, 0,
+                                                  nullptr, &op),
               kTfLiteOk);
-    ASSERT_EQ(interpreter_.ResizeInputTensor(input, {3}), kTfLiteOk);
+    ASSERT_EQ(interpreter_->ResizeInputTensor(input, {3}), kTfLiteOk);
   }
-
-  Interpreter interpreter_;
 
  private:
   // Build the kernel registration for an op that cancels the operation.
@@ -1405,8 +1458,10 @@ class CancellationTest : public ::testing::Test {
     // Set output size to the input size in CancelOp::Prepare(). Code exists to
     // have a framework in Prepare. The input and output tensors are not used.
     reg.prepare = [](TfLiteContext* context, TfLiteNode* node) {
-      const TfLiteTensor* in_tensor = GetInput(context, node, 0);
-      TfLiteTensor* out_tensor = GetOutput(context, node, 0);
+      const TfLiteTensor* in_tensor;
+      TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, 0, &in_tensor));
+      TfLiteTensor* out_tensor;
+      TF_LITE_ENSURE_OK(context, GetOutputSafe(context, node, 0, &out_tensor));
       TfLiteIntArray* new_size = TfLiteIntArrayCopy(in_tensor->dims);
       return context->ResizeTensor(context, out_tensor, new_size);
     };
@@ -1425,8 +1480,10 @@ class CancellationTest : public ::testing::Test {
     // Set output size to the input size in OkOp::Prepare(). Code exists to have
     // a framework in Prepare. The input and output tensors are not used.
     reg.prepare = [](TfLiteContext* context, TfLiteNode* node) {
-      const TfLiteTensor* in_tensor = GetInput(context, node, 0);
-      TfLiteTensor* out_tensor = GetOutput(context, node, 0);
+      const TfLiteTensor* in_tensor;
+      TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, 0, &in_tensor));
+      TfLiteTensor* out_tensor;
+      TF_LITE_ENSURE_OK(context, GetOutputSafe(context, node, 0, &out_tensor));
       TfLiteIntArray* new_size = TfLiteIntArrayCopy(in_tensor->dims);
       return context->ResizeTensor(context, out_tensor, new_size);
     };
@@ -1442,24 +1499,24 @@ class CancellationTest : public ::testing::Test {
 
     // Set up the interpreter. Create the input and output tensors.
     int num_tensors = 3;
-    ASSERT_EQ(interpreter_.AddTensors(num_tensors), kTfLiteOk);
-    interpreter_.SetInputs({0});
-    interpreter_.SetOutputs({2});
+    ASSERT_EQ(interpreter_->AddTensors(num_tensors), kTfLiteOk);
+    interpreter_->SetInputs({0});
+    interpreter_->SetOutputs({2});
     TfLiteQuantizationParams quantized;
     for (int tensor_index = 0; tensor_index < num_tensors; tensor_index++) {
-      ASSERT_EQ(interpreter_.SetTensorParametersReadWrite(
+      ASSERT_EQ(interpreter_->SetTensorParametersReadWrite(
                     tensor_index, kTfLiteFloat32, "", {3}, quantized),
                 kTfLiteOk);
     }
-    interpreter_.SetCancellationFunction(&cancellation_data_,
-                                         &CheckCancellation);
+    interpreter_->SetCancellationFunction(&cancellation_data_,
+                                          &CheckCancellation);
   }
 };
 
 TEST_F(CancellationTest, CancelBeforeInvoke) {
   // Cancel prior to calling Invoke.
   CancellationTest::MakeOkNode(1, 2);
-  ASSERT_EQ(interpreter_.AllocateTensors(), kTfLiteOk);
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
 
   CancellationTest::Cancel();
   TfLiteStatus invoke_error_code = CancellationTest::Invoke();
@@ -1474,17 +1531,622 @@ TEST_F(CancellationTest, CancelDuringInvoke) {
   // `kTfLiteOk` if executed.
   CancellationTest::MakeCancelNode(0, 1);
   CancellationTest::MakeOkNode(1, 2);
-  ASSERT_EQ(interpreter_.AllocateTensors(), kTfLiteOk);
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
 
   TfLiteStatus invoke_error_code = CancellationTest::Invoke();
   ASSERT_EQ(invoke_error_code, kTfLiteError);
 }
 
+// Tests functionality related to custom memory allocations in TFLite.
+class TestCustomAllocation : public InterpreterTest {
+ protected:
+  void SetUp() override {
+    // Simple model with two custom ops that add 2 float tensors each.
+    interpreter_.reset(new Interpreter);
+    interpreter_->AddTensors(7);
+    interpreter_->SetInputs({0, 1});
+    interpreter_->SetOutputs({3, 4, 6});
+    TfLiteQuantizationParams quant;
+    interpreter_->SetTensorParametersReadWrite(0, kTfLiteFloat32, "", {3},
+                                               quant);
+    interpreter_->SetTensorParametersReadWrite(1, kTfLiteFloat32, "", {3},
+                                               quant);
+    interpreter_->SetTensorParametersReadWrite(2, kTfLiteFloat32, "", {3},
+                                               quant);
+    interpreter_->SetTensorParametersReadWrite(3, kTfLiteFloat32, "", {3},
+                                               quant);
+    interpreter_->SetTensorParametersReadWrite(4, kTfLiteFloat32, "", {3},
+                                               quant);
+    interpreter_->SetTensorParametersReadWrite(5, kTfLiteFloat32, "", {3},
+                                               quant, /*is_variable=*/true);
+    interpreter_->SetTensorParametersReadWrite(6, kTfLiteFloat32, "", {3},
+                                               quant);
+    auto* add_reg = ops::builtin::Register_ADD();
+    TfLiteAddParams* builtin_data0 =
+        reinterpret_cast<TfLiteAddParams*>(malloc(sizeof(TfLiteAddParams)));
+    TfLiteAddParams* builtin_data1 =
+        reinterpret_cast<TfLiteAddParams*>(malloc(sizeof(TfLiteAddParams)));
+    TfLiteAddParams* builtin_data2 =
+        reinterpret_cast<TfLiteAddParams*>(malloc(sizeof(TfLiteAddParams)));
+    TfLiteAddParams* builtin_data3 =
+        reinterpret_cast<TfLiteAddParams*>(malloc(sizeof(TfLiteAddParams)));
+    builtin_data0->activation = kTfLiteActNone;
+    builtin_data1->activation = kTfLiteActNone;
+    builtin_data2->activation = kTfLiteActNone;
+    builtin_data3->activation = kTfLiteActNone;
+    interpreter_->AddNodeWithParameters({0, 0}, {2}, nullptr, 0, builtin_data0,
+                                        add_reg);
+    interpreter_->AddNodeWithParameters({1, 1}, {3}, nullptr, 0, builtin_data1,
+                                        add_reg);
+    interpreter_->AddNodeWithParameters({2, 1}, {4}, nullptr, 0, builtin_data2,
+                                        add_reg);
+    interpreter_->AddNodeWithParameters({0, 5}, {6}, nullptr, 0, builtin_data3,
+                                        add_reg);
+    interpreter_->SetVariables({5});
+  }
+
+  void AssignCustomAllocForTensor(int tensor_idx, int required_alignment) {
+    const TfLiteTensor* tensor = interpreter_->tensor(tensor_idx);
+    auto tensor_alloc = NewCustomAlloc(tensor->bytes, required_alignment);
+    ASSERT_EQ(
+        interpreter_->SetCustomAllocationForTensor(tensor_idx, tensor_alloc),
+        kTfLiteOk);
+  }
+
+  void VerifyInvoke() {
+    std::vector<float> input = {1.0f, 2.0f, 3.0f};
+    std::vector<float> variable = {0.0f, 1.0f, 2.0f};
+    std::vector<float> expected_output = {2.0f, 4.0f, 6.0f};
+
+    // typed_tensor<...> should work irrespective of custom alloc, since it
+    // accesses output_tensor.data.
+    memcpy(interpreter_->typed_tensor<float>(interpreter_->variables()[0]),
+           variable.data(), 3 * sizeof(float));
+    memcpy(interpreter_->typed_tensor<float>(0), input.data(),
+           3 * sizeof(float));
+    memcpy(interpreter_->typed_tensor<float>(1), input.data(),
+           3 * sizeof(float));
+    ASSERT_EQ(interpreter_->Invoke(), kTfLiteOk);
+    TfLiteTensor* output_tensor =
+        interpreter_->tensor(interpreter_->outputs()[0]);
+    for (int i = 0; i < 3; ++i) {
+      EXPECT_EQ(output_tensor->data.f[i], expected_output[i]) << i;
+    }
+  }
+
+  // Actual initialized allocation is more than num_bytes, to account for
+  // required_allocation.
+  TfLiteCustomAllocation NewCustomAlloc(size_t num_bytes,
+                                        int required_alignment) {
+    // Extra memory to ensure alignment.
+    char* new_alloc = new char[num_bytes + required_alignment];
+    char* new_underlying_buffer_aligned_ptr = reinterpret_cast<char*>(
+        AlignTo(required_alignment, reinterpret_cast<intptr_t>(new_alloc)));
+    custom_alloc_buffers_.emplace_back(new_alloc);
+
+    return TfLiteCustomAllocation(
+        {new_underlying_buffer_aligned_ptr, num_bytes});
+  }
+
+  intptr_t AlignTo(size_t alignment, intptr_t offset) {
+    return offset % alignment == 0 ? offset
+                                   : offset + (alignment - offset % alignment);
+  }
+
+  void TearDown() override {
+    interpreter_.reset();
+    custom_alloc_buffers_.clear();
+  }
+
+ protected:
+  TfLiteAddParams add_params_;
+  std::vector<std::unique_ptr<char[]>> custom_alloc_buffers_;
+};
+
+TEST_F(TestCustomAllocation, InvalidAlignment) {
+  const TfLiteTensor* input_tensor =
+      interpreter_->tensor(interpreter_->inputs()[0]);
+  intptr_t dummy_ptr = kDefaultTensorAlignment - 1;
+  TfLiteCustomAllocation input_alloc{reinterpret_cast<void*>(dummy_ptr),
+                                     input_tensor->bytes};
+  ASSERT_EQ(interpreter_->SetCustomAllocationForTensor(
+                interpreter_->inputs()[0], input_alloc),
+            kTfLiteError);
+
+  // Allocate tensors & Invoke should still work.
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+  VerifyInvoke();
+}
+
+TEST_F(TestCustomAllocation, InvalidAlignment_SkipCheck) {
+  const TfLiteTensor* input_tensor =
+      interpreter_->tensor(interpreter_->inputs()[0]);
+  const int required_alignment = kDefaultTensorAlignment - 1;
+  auto tensor_alloc = NewCustomAlloc(input_tensor->bytes, required_alignment);
+  ASSERT_EQ(interpreter_->SetCustomAllocationForTensor(
+                interpreter_->inputs()[0], tensor_alloc,
+                /**flags**/ kTfLiteCustomAllocationFlagsSkipAlignCheck),
+            kTfLiteOk);
+
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+}
+
+TEST_F(TestCustomAllocation, InsufficientBytes) {
+  auto input_alloc = NewCustomAlloc(4, kDefaultTensorAlignment);
+
+  // Setting the custom alloc works, but AllocateTensors doesn't.
+  ASSERT_EQ(interpreter_->SetCustomAllocationForTensor(
+                interpreter_->inputs()[0], input_alloc),
+            kTfLiteOk);
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteError);
+  ASSERT_EQ(interpreter_->Invoke(), kTfLiteError);
+}
+
+TEST_F(TestCustomAllocation, CustomInputAlloc) {
+  // Set custom allocation for one input tensor.
+  AssignCustomAllocForTensor(interpreter_->inputs()[0],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+  VerifyInvoke();
+}
+
+TEST_F(TestCustomAllocation, CustomInputAlloc_MultipleAssigns) {
+  // Set custom allocation for one input tensor.
+  AssignCustomAllocForTensor(interpreter_->inputs()[0],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+
+  AssignCustomAllocForTensor(interpreter_->inputs()[0],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+  VerifyInvoke();
+
+  AssignCustomAllocForTensor(interpreter_->inputs()[0],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+  VerifyInvoke();
+}
+
+TEST_F(TestCustomAllocation, CustomInputAlloc_AllocateTensorsBefore) {
+  // Allocate tensors.
+  // Allocating now will cause TFLite to reserve some extra memory, but nothing
+  // should break.
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+
+  AssignCustomAllocForTensor(interpreter_->inputs()[0],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+
+  VerifyInvoke();
+}
+
+TEST_F(TestCustomAllocation, CustomInputAndOutputAllocs) {
+  // Set custom allocations for all IO tensors.
+  AssignCustomAllocForTensor(interpreter_->inputs()[0],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+  AssignCustomAllocForTensor(interpreter_->inputs()[1],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+  AssignCustomAllocForTensor(interpreter_->outputs()[0],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+  AssignCustomAllocForTensor(interpreter_->outputs()[1],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+  VerifyInvoke();
+}
+
+// Ensure that custom allocs work for tensors on persistent arena as well.
+TEST_F(TestCustomAllocation, CustomAlloc_VariableTensor) {
+  // Set custom allocation for one input tensor.
+  AssignCustomAllocForTensor(interpreter_->variables()[0],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+  VerifyInvoke();
+
+  AssignCustomAllocForTensor(interpreter_->variables()[0],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+
+  std::vector<float> input = {2.0f, 3.0f, 4.0f};
+  std::vector<float> variable = {1.0f, 2.0f, 3.0f};
+  std::vector<float> expected_output = {3.0f, 5.0f, 7.0f};
+  memcpy(interpreter_->typed_tensor<float>(interpreter_->variables()[0]),
+         variable.data(), 3 * sizeof(float));
+  memcpy(interpreter_->typed_tensor<float>(0), input.data(), 3 * sizeof(float));
+  memcpy(interpreter_->typed_tensor<float>(1), input.data(), 3 * sizeof(float));
+  ASSERT_EQ(interpreter_->Invoke(), kTfLiteOk);
+
+  // expected_output = input + variable
+  TfLiteTensor* output_tensor =
+      interpreter_->tensor(interpreter_->outputs()[2]);
+  for (int i = 0; i < 3; ++i) {
+    EXPECT_EQ(output_tensor->data.f[i], expected_output[i]) << i;
+  }
+}
+
+TEST_F(TestCustomAllocation, ResizeInputsWithoutEnoughMemory) {
+  // Set custom allocations for all input tensors.
+  AssignCustomAllocForTensor(interpreter_->inputs()[0],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+  AssignCustomAllocForTensor(interpreter_->inputs()[1],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+
+  // Now resize tensors to double the size.
+  ASSERT_EQ(interpreter_->ResizeInputTensor(interpreter_->inputs()[0], {2, 3}),
+            kTfLiteOk);
+  ASSERT_EQ(interpreter_->ResizeInputTensor(interpreter_->inputs()[1], {2, 3}),
+            kTfLiteOk);
+
+  // Since the custom memory previously allocated isn't enough,
+  // AllocateTensors() will fail.
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteError);
+  // Interpreter should no longer be in invokable state, so expect failure.
+  ASSERT_EQ(interpreter_->Invoke(), kTfLiteError);
+}
+
+TEST_F(TestCustomAllocation, ResizeInputsWithEnoughMemory) {
+  // Set custom allocations for all input tensors, with double the required
+  // memory.
+  const TfLiteTensor* input0_tensor =
+      interpreter_->tensor(interpreter_->inputs()[0]);
+  auto input0_alloc =
+      NewCustomAlloc(2 * input0_tensor->bytes, kDefaultTensorAlignment);
+  ASSERT_EQ(interpreter_->SetCustomAllocationForTensor(
+                interpreter_->inputs()[0], input0_alloc),
+            kTfLiteOk);
+  const TfLiteTensor* input1_tensor =
+      interpreter_->tensor(interpreter_->inputs()[1]);
+  auto input1_alloc =
+      NewCustomAlloc(2 * input1_tensor->bytes, kDefaultTensorAlignment);
+  ASSERT_EQ(interpreter_->SetCustomAllocationForTensor(
+                interpreter_->inputs()[1], input1_alloc),
+            kTfLiteOk);
+
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+
+  // Now resize tensors to double the size.
+  ASSERT_EQ(interpreter_->ResizeInputTensor(interpreter_->inputs()[0], {6, 1}),
+            kTfLiteOk);
+  ASSERT_EQ(interpreter_->ResizeInputTensor(interpreter_->inputs()[1], {6, 1}),
+            kTfLiteOk);
+
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+
+  std::vector<float> input = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+  std::vector<float> expected_output = {2.0f, 4.0f, 6.0f, 8.0f, 10.0f, 12.0f};
+  TfLiteTensor* tensor = interpreter_->tensor(interpreter_->outputs()[0]);
+  memcpy(interpreter_->typed_tensor<float>(0), input.data(), 6 * sizeof(float));
+  memcpy(interpreter_->typed_tensor<float>(1), input.data(), 6 * sizeof(float));
+  ASSERT_EQ(interpreter_->Invoke(), kTfLiteOk);
+  for (int i = 0; i < 6; ++i) {
+    EXPECT_EQ(tensor->data.f[i], expected_output[i]) << i;
+  }
+
+  ASSERT_EQ(interpreter_->ResizeInputTensor(interpreter_->inputs()[0], {3, 1}),
+            kTfLiteOk);
+  ASSERT_EQ(interpreter_->ResizeInputTensor(interpreter_->inputs()[1], {3, 1}),
+            kTfLiteOk);
+
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+  VerifyInvoke();
+}
+
+// Verify typical use-cases where tensors are resized & custom allocs need to be
+// set for every Invoke().
+TEST_F(TestCustomAllocation, ResizeAndAllocateForEveryInvoke) {
+  // First assign exactly sized allocs for all IO tensors.
+  AssignCustomAllocForTensor(interpreter_->inputs()[0],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+  AssignCustomAllocForTensor(interpreter_->inputs()[1],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+  AssignCustomAllocForTensor(interpreter_->outputs()[0],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+  AssignCustomAllocForTensor(interpreter_->outputs()[1],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+
+  // Now resize inputs to a smaller: {3, 1} to {1, 1}.
+  // Total alloc sized required now: 1 float == 4 bytes.
+  ASSERT_EQ(interpreter_->ResizeInputTensor(interpreter_->inputs()[0], {1, 1}),
+            kTfLiteOk);
+  ASSERT_EQ(interpreter_->ResizeInputTensor(interpreter_->inputs()[1], {1, 1}),
+            kTfLiteOk);
+  // Assign allocs for all I/O tensors.
+  // Even though the smaller output tensor sizes have not been propagated yet,
+  // custom allocation works because verification of allocs happens after
+  // preparing all ops & tensors.
+  auto input0_alloc =
+      NewCustomAlloc(/**num_bytes=**/ 4, kDefaultTensorAlignment);
+  ASSERT_EQ(interpreter_->SetCustomAllocationForTensor(
+                interpreter_->inputs()[0], input0_alloc),
+            kTfLiteOk);
+  auto input1_alloc =
+      NewCustomAlloc(/**num_bytes=**/ 4, kDefaultTensorAlignment);
+  ASSERT_EQ(interpreter_->SetCustomAllocationForTensor(
+                interpreter_->inputs()[1], input1_alloc),
+            kTfLiteOk);
+  auto output0_alloc =
+      NewCustomAlloc(/**num_bytes=**/ 4, kDefaultTensorAlignment);
+  ASSERT_EQ(interpreter_->SetCustomAllocationForTensor(
+                interpreter_->outputs()[0], output0_alloc),
+            kTfLiteOk);
+  auto output1_alloc =
+      NewCustomAlloc(/**num_bytes=**/ 4, kDefaultTensorAlignment);
+  ASSERT_EQ(interpreter_->SetCustomAllocationForTensor(
+                interpreter_->outputs()[1], output1_alloc),
+            kTfLiteOk);
+  // AllocateTensors works.
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+
+  std::vector<float> input = {2.0f};
+  std::vector<float> expected_output = {4.0f};
+  TfLiteTensor* tensor = interpreter_->tensor(interpreter_->outputs()[0]);
+  memcpy(interpreter_->typed_tensor<float>(0), input.data(), sizeof(float));
+  memcpy(interpreter_->typed_tensor<float>(1), input.data(), sizeof(float));
+  ASSERT_EQ(interpreter_->Invoke(), kTfLiteOk);
+  EXPECT_EQ(tensor->data.f[0], expected_output[0]);
+}
+
+// Tests that AllocateTensors() correctly verifies custom allocations even if
+// graph is in Invokable state without any memory planning changes.
+TEST_F(TestCustomAllocation, ResizeAndAllocate_InvalidAllocAfterInvokable) {
+  AssignCustomAllocForTensor(interpreter_->inputs()[0],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+  AssignCustomAllocForTensor(interpreter_->inputs()[1],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+  AssignCustomAllocForTensor(interpreter_->outputs()[0],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+  AssignCustomAllocForTensor(interpreter_->outputs()[1],
+                             /*required_alignment=*/kDefaultTensorAlignment);
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+  VerifyInvoke();
+
+  // Now assign an insufficiently big buffer for output.
+  auto invalid_output_alloc =
+      NewCustomAlloc(/**num_bytes=**/ 4, kDefaultTensorAlignment);
+  ASSERT_EQ(interpreter_->SetCustomAllocationForTensor(
+                interpreter_->outputs()[0], invalid_output_alloc),
+            kTfLiteOk);
+  // AllocateTensors should not pass.
+  ASSERT_NE(interpreter_->AllocateTensors(), kTfLiteOk);
+}
+
+// Similar to test above, but one of the intermediate tensors is dynamic.
+TEST_F(TestCustomAllocation, ResizeAndAllocate_WithDynamicTensor) {
+  // Tensor 2 is output from op 0.
+  TfLiteTensor* intermediate_tensor = interpreter_->tensor(2);
+  intermediate_tensor->allocation_type = kTfLiteDynamic;
+  // AllocateTensors & VerifyInvoke should work as usual.
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+  VerifyInvoke();
+
+  // Resize inputs so that minimum alloc size for outputs is now 4 bytes.
+  ASSERT_EQ(interpreter_->ResizeInputTensor(interpreter_->inputs()[0], {1, 1}),
+            kTfLiteOk);
+  ASSERT_EQ(interpreter_->ResizeInputTensor(interpreter_->inputs()[1], {1, 1}),
+            kTfLiteOk);
+  // Assign smaller allocs for all I/O tensors.
+  auto input0_alloc =
+      NewCustomAlloc(/**num_bytes=**/ 4, kDefaultTensorAlignment);
+  ASSERT_EQ(interpreter_->SetCustomAllocationForTensor(
+                interpreter_->inputs()[0], input0_alloc),
+            kTfLiteOk);
+  auto input1_alloc =
+      NewCustomAlloc(/**num_bytes=**/ 4, kDefaultTensorAlignment);
+  ASSERT_EQ(interpreter_->SetCustomAllocationForTensor(
+                interpreter_->inputs()[1], input1_alloc),
+            kTfLiteOk);
+  auto output0_alloc =
+      NewCustomAlloc(/**num_bytes=**/ 4, kDefaultTensorAlignment);
+  ASSERT_EQ(interpreter_->SetCustomAllocationForTensor(
+                interpreter_->outputs()[0], output0_alloc),
+            kTfLiteOk);
+  auto output1_alloc =
+      NewCustomAlloc(/**num_bytes=**/ 4, kDefaultTensorAlignment);
+  ASSERT_EQ(interpreter_->SetCustomAllocationForTensor(
+                interpreter_->outputs()[1], output1_alloc),
+            kTfLiteOk);
+  // AllocateTensors works.
+  // Note that output allocs cannot be verified at this time, since all ops
+  // haven't been Prepared yet.
+  // Output allocs will be verified during Invoke.
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+
+  std::vector<float> input = {2.0f};
+  std::vector<float> expected_output = {4.0f};
+  TfLiteTensor* tensor = interpreter_->tensor(interpreter_->outputs()[0]);
+  memcpy(interpreter_->typed_tensor<float>(0), input.data(), sizeof(float));
+  memcpy(interpreter_->typed_tensor<float>(1), input.data(), sizeof(float));
+  ASSERT_EQ(interpreter_->Invoke(), kTfLiteOk);
+  EXPECT_EQ(tensor->data.f[0], expected_output[0]);
+
+  // Now try with a smaller output alloc & verify AllocateTensors fails.
+  intermediate_tensor = interpreter_->tensor(2);
+  intermediate_tensor->allocation_type = kTfLiteDynamic;
+  auto invalid_output0_alloc =
+      NewCustomAlloc(/**num_bytes=**/ 2, kDefaultTensorAlignment);
+  ASSERT_EQ(interpreter_->SetCustomAllocationForTensor(
+                interpreter_->outputs()[0], invalid_output0_alloc),
+            kTfLiteOk);
+  ASSERT_NE(interpreter_->AllocateTensors(), kTfLiteOk);
+}
+
+// Tests related to lazy delegate providers that are primarily used for applying
+// TfLite delegates by default.
+class TestLazyDelegateProvider : public InterpreterTest {
+ protected:
+  class DummyLazyDelegateKernel : public SimpleDelegateKernelInterface {
+   public:
+    explicit DummyLazyDelegateKernel(bool prepare_error)
+        : prepare_error_(prepare_error) {}
+    TfLiteStatus Init(TfLiteContext* context,
+                      const TfLiteDelegateParams* params) override {
+      return kTfLiteOk;
+    }
+
+    TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) override {
+      return prepare_error_ ? kTfLiteError : kTfLiteOk;
+    }
+
+    TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) override {
+      return kTfLiteOk;
+    }
+
+   private:
+    const bool prepare_error_;
+  };
+
+  class DummyLazyDelegate : public SimpleDelegateInterface {
+   public:
+    explicit DummyLazyDelegate(bool return_error)
+        : return_error_(return_error) {}
+    bool IsNodeSupportedByDelegate(const TfLiteRegistration* registration,
+                                   const TfLiteNode* node,
+                                   TfLiteContext* context) const override {
+      return true;
+    }
+    TfLiteStatus Initialize(TfLiteContext* context) override {
+      return kTfLiteOk;
+    }
+    const char* Name() const override { return "DummyLazyDelegateForTest"; }
+    std::unique_ptr<SimpleDelegateKernelInterface>
+    CreateDelegateKernelInterface() override {
+      return std::unique_ptr<SimpleDelegateKernelInterface>(
+          new DummyLazyDelegateKernel(return_error_));
+    }
+    SimpleDelegateInterface::Options DelegateOptions() const override {
+      return SimpleDelegateInterface::Options();
+    }
+
+   private:
+    bool return_error_;
+  };
+
+  void InitWithLazyDelegate(bool create_dyanmic_tensor = false,
+                            bool return_error = false) {
+    TfLiteRegistration reg = {nullptr};
+    ASSERT_EQ(interpreter_->AddTensors(2), kTfLiteOk);
+    interpreter_->SetInputs({0});
+    interpreter_->SetOutputs({1});
+    interpreter_->AddNodeWithParameters({0}, {1}, nullptr, 0, nullptr, &reg);
+
+    Interpreter::TfLiteDelegatePtr delegate(
+        TfLiteDelegateFactory::CreateSimpleDelegate(
+            std::unique_ptr<SimpleDelegateInterface>(
+                new DummyLazyDelegate(return_error))),
+        TfLiteDelegateFactory::DeleteSimpleDelegate);
+    mutable_lazy_delegate_providers()->push_back([=](int /*num_threads*/) {
+      return Interpreter::TfLiteDelegatePtr(
+          TfLiteDelegateFactory::CreateSimpleDelegate(
+              std::unique_ptr<SimpleDelegateInterface>(
+                  new DummyLazyDelegate(return_error))),
+          TfLiteDelegateFactory::DeleteSimpleDelegate);
+    });
+
+    if (create_dyanmic_tensor) {
+      // Mark the output as dynamic tensor.
+      interpreter_->tensor(1)->data.raw = nullptr;
+      interpreter_->tensor(1)->allocation_type = kTfLiteDynamic;
+    }
+  }
+};
+
+TEST_F(TestLazyDelegateProvider, ApplicationSuccess) {
+  InitWithLazyDelegate();
+  EXPECT_EQ(kTfLiteOk, interpreter_->AllocateTensors());
+  // We clear Interpreter::lazy_delegate_providers_ after they are tried out.
+  EXPECT_TRUE(mutable_lazy_delegate_providers()->empty());
+  EXPECT_TRUE(HasDelegates());
+  EXPECT_TRUE(IsFullyDelegated());
+}
+
+TEST_F(TestLazyDelegateProvider, ApplicationFailure) {
+  InitWithLazyDelegate(false /* create_dyanmic_tensor */,
+                       true /* return_error */);
+  // As the the lazy delegate fails to prepare, kTfLiteDelegateError is
+  // returned and Interpreter::lazy_delegate_providers_ is cleared anyway.
+  EXPECT_EQ(kTfLiteDelegateError, ApplyLazyDelegateProviders());
+  EXPECT_TRUE(mutable_lazy_delegate_providers()->empty());
+
+  EXPECT_EQ(kTfLiteOk, interpreter_->AllocateTensors());
+  EXPECT_FALSE(HasDelegates());
+  EXPECT_FALSE(IsFullyDelegated());
+}
+
+TEST_F(TestLazyDelegateProvider, ApplicationSkipped) {
+  InitWithLazyDelegate(true /* create_dyanmic_tensor */);
+  EXPECT_EQ(kTfLiteOk, interpreter_->AllocateTensors());
+  EXPECT_TRUE(mutable_lazy_delegate_providers()->empty());
+  // As the delegate doesn't allow dynamic tensor, the delegate won't be applied
+  // and the interpreter doesn't have any delegate applied.
+  EXPECT_FALSE(HasDelegates());
+  EXPECT_FALSE(IsFullyDelegated());
+}
+
+TEST_F(InterpreterTest, SingleSignature_get_signatures) {
+  const char kSignatureKey[] = "test_method";
+  BuildSignature(kSignatureKey, {{"Input1", 0}, {"Input2", 1}},
+                 {{"Output1", 5}});
+  auto results = interpreter_->signature_keys();
+  ASSERT_EQ(1, results.size());
+  EXPECT_EQ(kSignatureKey, *results[0]);
+}
+
+TEST_F(InterpreterTest, SingleSignature_get_inputs) {
+  const char kSignatureKey[] = "test_method";
+  const std::map<std::string, uint32_t> inputs = {{"Input1", 0}, {"Input2", 1}};
+  const std::map<std::string, uint32_t> outputs = {{"Output1", 5}};
+  BuildSignature(kSignatureKey, inputs, outputs);
+  EXPECT_THAT(interpreter_->signature_inputs(kSignatureKey),
+              testing::Eq(inputs));
+  EXPECT_THAT(interpreter_->signature_outputs(kSignatureKey),
+              testing::Eq(outputs));
+}
+
+TEST_F(InterpreterTest, SingleSignature_validate_get_tensor) {
+  const char kSignatureKey[] = "test_method";
+  const std::map<std::string, uint32_t> inputs = {{"Input1", 0}, {"Input2", 1}};
+  const std::map<std::string, uint32_t> outputs = {{"Output1", 5}};
+
+  BuildSignature(kSignatureKey, inputs, outputs);
+  ASSERT_EQ(interpreter_->AddTensors(6), kTfLiteOk);
+  ASSERT_EQ(interpreter_->SetInputs({0, 1}), kTfLiteOk);
+  ASSERT_EQ(interpreter_->SetOutputs({5}), kTfLiteOk);
+  ASSERT_EQ(interpreter_->SetTensorParametersReadWrite(
+                0, kTfLiteFloat32, "", {3}, TfLiteQuantizationParams()),
+            kTfLiteOk);
+  ASSERT_EQ(interpreter_->SetTensorParametersReadWrite(
+                1, kTfLiteFloat32, "", {3}, TfLiteQuantizationParams()),
+            kTfLiteOk);
+  ASSERT_EQ(
+      interpreter_->ResizeInputTensor(interpreter_->inputs()[0], {1, 2, 3}),
+      kTfLiteOk);
+  ASSERT_EQ(
+      interpreter_->ResizeInputTensor(interpreter_->inputs()[1], {1, 2, 3}),
+      kTfLiteOk);
+  ASSERT_EQ(interpreter_->AllocateTensors(), kTfLiteOk);
+
+  EXPECT_TRUE(interpreter_->input_tensor_by_signature(
+                  "Input1", kSignatureKey) != nullptr);
+  EXPECT_TRUE(interpreter_->input_tensor_by_signature(
+                  "Input2", kSignatureKey) != nullptr);
+  EXPECT_TRUE(interpreter_->output_tensor_by_signature(
+                  "Output1", kSignatureKey) != nullptr);
+
+  // Invalid tensor
+  EXPECT_EQ(interpreter_->input_tensor_by_signature("Input3", kSignatureKey),
+            nullptr);
+  EXPECT_EQ(interpreter_->output_tensor_by_signature("Input3", kSignatureKey),
+            nullptr);
+  // Invalid method
+  EXPECT_EQ(interpreter_->input_tensor_by_signature("Input1", "InvalidMethod"),
+            nullptr);
+  EXPECT_EQ(
+      interpreter_->output_tensor_by_signature("Output1", "InvalidMethod"),
+      nullptr);
+}
+
 }  // namespace
 }  // namespace tflite
-
-int main(int argc, char** argv) {
-  ::tflite::LogToStderr();
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}

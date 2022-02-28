@@ -26,9 +26,9 @@ TEST_F(BinaryExpressionTest, Creation) {
   auto* rhs = Expr("rhs");
 
   auto* r = create<BinaryExpression>(BinaryOp::kEqual, lhs, rhs);
-  EXPECT_EQ(r->lhs(), lhs);
-  EXPECT_EQ(r->rhs(), rhs);
-  EXPECT_EQ(r->op(), BinaryOp::kEqual);
+  EXPECT_EQ(r->lhs, lhs);
+  EXPECT_EQ(r->rhs, rhs);
+  EXPECT_EQ(r->op, BinaryOp::kEqual);
 }
 
 TEST_F(BinaryExpressionTest, Creation_WithSource) {
@@ -37,7 +37,7 @@ TEST_F(BinaryExpressionTest, Creation_WithSource) {
 
   auto* r = create<BinaryExpression>(Source{Source::Location{20, 2}},
                                      BinaryOp::kEqual, lhs, rhs);
-  auto src = r->source();
+  auto src = r->source;
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
@@ -88,19 +88,6 @@ TEST_F(BinaryExpressionTest, Assert_DifferentProgramID_RHS) {
                                     b2.Expr("rhs"));
       },
       "internal compiler error");
-}
-
-TEST_F(BinaryExpressionTest, ToStr) {
-  auto* lhs = Expr("lhs");
-  auto* rhs = Expr("rhs");
-
-  auto* r = create<BinaryExpression>(BinaryOp::kEqual, lhs, rhs);
-  EXPECT_EQ(str(r), R"(Binary[not set]{
-  Identifier[not set]{lhs}
-  equal
-  Identifier[not set]{rhs}
-}
-)");
 }
 
 }  // namespace

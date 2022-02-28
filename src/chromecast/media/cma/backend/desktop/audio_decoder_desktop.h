@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 
@@ -19,6 +18,10 @@ class MediaSinkDesktop;
 class AudioDecoderDesktop : public MediaPipelineBackend::AudioDecoder {
  public:
   AudioDecoderDesktop();
+
+  AudioDecoderDesktop(const AudioDecoderDesktop&) = delete;
+  AudioDecoderDesktop& operator=(const AudioDecoderDesktop&) = delete;
+
   ~AudioDecoderDesktop() override;
 
   void Start(base::TimeDelta start_pts);
@@ -38,7 +41,6 @@ class AudioDecoderDesktop : public MediaPipelineBackend::AudioDecoder {
  private:
   Delegate* delegate_;
   std::unique_ptr<MediaSinkDesktop> sink_;
-  DISALLOW_COPY_AND_ASSIGN(AudioDecoderDesktop);
 };
 
 }  // namespace media

@@ -1,18 +1,22 @@
-import { TypedArrayBufferView, TypedArrayBufferViewConstructor } from '../gpu_test.js';
+import { memcpy, TypedArrayBufferView } from '../../common/util/util.js';
 
+import { align } from './math.js';
+
+/**
+ * Creates a buffer with the contents of some TypedArray.
+ */
 export function makeBufferWithContents(
   device: GPUDevice,
   dataArray: TypedArrayBufferView,
-  usage: GPUBufferUsageFlags
+  usage: GPUBufferUsageFlags,
+  opts: { padToMultipleOf4?: boolean } = {}
 ): GPUBuffer {
   const buffer = device.createBuffer({
     mappedAtCreation: true,
-    size: dataArray.byteLength,
+    size: align(dataArray.byteLength, opts.padToMultipleOf4 ? 4 : 1),
     usage,
   });
-  const mappedBuffer = buffer.getMappedRange();
-  const constructor = dataArray.constructor as TypedArrayBufferViewConstructor;
-  new constructor(mappedBuffer).set(dataArray);
+  memcpy({ src: dataArray }, { dst: buffer.getMappedRange() });
   buffer.unmap();
   return buffer;
 }

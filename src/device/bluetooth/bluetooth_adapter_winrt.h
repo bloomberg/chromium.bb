@@ -16,7 +16,6 @@
 
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -33,6 +32,9 @@ class BluetoothDeviceWinrt;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
  public:
+  BluetoothAdapterWinrt(const BluetoothAdapterWinrt&) = delete;
+  BluetoothAdapterWinrt& operator=(const BluetoothAdapterWinrt&) = delete;
+
   // BluetoothAdapter:
   std::string GetAddress() const override;
   std::string GetName() const override;
@@ -261,8 +263,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothAdapterWinrt> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterWinrt);
 };
 
 }  // namespace device

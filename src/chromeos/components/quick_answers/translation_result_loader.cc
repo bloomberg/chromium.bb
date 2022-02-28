@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/public/cpp/quick_answers/controller/quick_answers_browser_client.h"
 #include "base/json/json_writer.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_utils.h"
@@ -14,16 +13,16 @@
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 namespace {
 
 using base::Value;
-using network::mojom::URLLoaderFactory;
 
 // The JSON we generate looks like this:
 // {
@@ -61,7 +60,7 @@ std::string BuildTranslationRequestBody(const IntentInfo& intent_info) {
 }  // namespace
 
 TranslationResultLoader::TranslationResultLoader(
-    URLLoaderFactory* url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     ResultLoaderDelegate* delegate)
     : ResultLoader(url_loader_factory, delegate) {}
 
@@ -70,7 +69,7 @@ TranslationResultLoader::~TranslationResultLoader() = default;
 void TranslationResultLoader::BuildRequest(
     const PreprocessedOutput& preprocessed_output,
     BuildRequestCallback callback) const {
-  ash::QuickAnswersBrowserClient::Get()->RequestAccessToken(base::BindOnce(
+  delegate()->RequestAccessToken(base::BindOnce(
       &TranslationResultLoader::OnRequestAccessTokenComplete,
       base::Unretained(this), preprocessed_output, std::move(callback)));
 }
@@ -105,4 +104,4 @@ void TranslationResultLoader::OnRequestAccessTokenComplete(
 }
 
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash

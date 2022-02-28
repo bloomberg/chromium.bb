@@ -12,9 +12,9 @@
 #include "base/callback_list.h"
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
-#include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "ui/base/interaction/element_identifier.h"
 
@@ -127,6 +127,15 @@ class COMPONENT_EXPORT(UI_BASE) ElementTracker
   using Subscription = base::CallbackListSubscription;
   using ElementList = std::vector<TrackedElement*>;
 
+  // Identifier that should be used by each framework to create a
+  // TrackedElement from an element that does not alreayd have an identifier.
+  //
+  // Currently, the identifier is not removed when the code that needs the
+  // element completes, but in the future we may implement a ref-counting
+  // system for systems that use a temporary identifier so that it does not
+  // persist longer than it is needed.
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kTemporaryIdentifier);
+
   // Gets the element tracker to be used by clients to subscribe to and receive
   // events.
   static ElementTracker* GetElementTracker();
@@ -136,7 +145,7 @@ class COMPONENT_EXPORT(UI_BASE) ElementTracker
 
   // Returns either the one element matching the given `id` and `context`, or
   // null if there are none. Will generate an error if there is more than one
-  // element with `id|`in `context`. Only visible elements are returned.
+  // element with `id` in `context`. Only visible elements are returned.
   //
   // Use when you want to verify that there's only one matching element in the
   // given context.
@@ -155,6 +164,10 @@ class COMPONENT_EXPORT(UI_BASE) ElementTracker
   // The list may be empty.
   ElementList GetAllMatchingElements(ElementIdentifier id,
                                      ElementContext context);
+
+  // Returns all known elements with the given `id`. The context for each can
+  // be retrieved from the TrackedElement itself. No order is guaranteed.
+  ElementList GetAllMatchingElementsInAnyContext(ElementIdentifier id);
 
   // Returns whether an element with identifier `id` in `context` is visible.
   bool IsElementVisible(ElementIdentifier id, ElementContext context);
@@ -215,7 +228,9 @@ class COMPONENT_EXPORT(UI_BASE) SafeElementReference {
   SafeElementReference();
   explicit SafeElementReference(TrackedElement* element);
   SafeElementReference(SafeElementReference&& other);
+  SafeElementReference(const SafeElementReference& other);
   SafeElementReference& operator=(SafeElementReference&& other);
+  SafeElementReference& operator=(const SafeElementReference& other);
   ~SafeElementReference();
 
   TrackedElement* get() { return element_; }
@@ -227,7 +242,7 @@ class COMPONENT_EXPORT(UI_BASE) SafeElementReference {
   void OnElementHidden(TrackedElement* element);
 
   ElementTracker::Subscription subscription_;
-  TrackedElement* element_ = nullptr;
+  raw_ptr<TrackedElement> element_ = nullptr;
 };
 
 }  // namespace ui

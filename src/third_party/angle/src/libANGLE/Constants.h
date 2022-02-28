@@ -33,6 +33,9 @@ enum
     IMPLEMENTATION_MAX_FRAMEBUFFER_ATTACHMENTS =
         IMPLEMENTATION_MAX_DRAW_BUFFERS + 2,  // 2 extra for depth and/or stencil buffers
 
+    // The vast majority of devices support only one dual-source draw buffer
+    IMPLEMENTATION_MAX_DUAL_SOURCE_DRAW_BUFFERS = 1,
+
     IMPLEMENTATION_MAX_VERTEX_SHADER_UNIFORM_BUFFERS   = 16,
     IMPLEMENTATION_MAX_GEOMETRY_SHADER_UNIFORM_BUFFERS = 16,
     IMPLEMENTATION_MAX_FRAGMENT_SHADER_UNIFORM_BUFFERS = 16,
@@ -104,6 +107,11 @@ constexpr uint32_t kMinimumComputeStorageBuffers = 4;
 constexpr uint32_t kMinimumShaderUniformBlocks = 12;
 // Table 6.31 MAX_VERTEX_OUTPUT_COMPONENTS minimum value = 64
 constexpr uint32_t kMinimumVertexOutputComponents = 64;
+
+// OpenGL ES 3.2+ Minimum Values
+// Table 21.42 TEXTURE_BUFFER_OFFSET_ALIGNMENT minimum value = 256
+constexpr uint32_t kMinTextureBufferOffsetAlignment = 256;
+
 }  // namespace limits
 
 }  // namespace gl

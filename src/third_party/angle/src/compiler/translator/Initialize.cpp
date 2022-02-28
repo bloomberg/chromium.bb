@@ -45,6 +45,10 @@ void InitExtensionBehavior(const ShBuiltInResources &resources, TExtensionBehavi
     {
         extBehavior[TExtension::EXT_frag_depth] = EBhUndefined;
     }
+    if (resources.EXT_primitive_bounding_box)
+    {
+        extBehavior[TExtension::EXT_primitive_bounding_box] = EBhUndefined;
+    }
     if (resources.EXT_shader_texture_lod)
     {
         extBehavior[TExtension::EXT_shader_texture_lod] = EBhUndefined;
@@ -85,6 +89,10 @@ void InitExtensionBehavior(const ShBuiltInResources &resources, TExtensionBehavi
     {
         extBehavior[TExtension::EXT_geometry_shader] = EBhUndefined;
     }
+    if (resources.OES_geometry_shader)
+    {
+        extBehavior[TExtension::OES_geometry_shader] = EBhUndefined;
+    }
     if (resources.OES_shader_io_blocks)
     {
         extBehavior[TExtension::OES_shader_io_blocks] = EBhUndefined;
@@ -117,9 +125,9 @@ void InitExtensionBehavior(const ShBuiltInResources &resources, TExtensionBehavi
     {
         extBehavior[TExtension::ANGLE_multi_draw] = EBhUndefined;
     }
-    if (resources.ANGLE_base_vertex_base_instance)
+    if (resources.ANGLE_base_vertex_base_instance_shader_builtin)
     {
-        extBehavior[TExtension::ANGLE_base_vertex_base_instance] = EBhUndefined;
+        extBehavior[TExtension::ANGLE_base_vertex_base_instance_shader_builtin] = EBhUndefined;
     }
     if (resources.WEBGL_video_texture)
     {

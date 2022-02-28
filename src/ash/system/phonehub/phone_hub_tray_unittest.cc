@@ -4,6 +4,10 @@
 
 #include "ash/system/phonehub/phone_hub_tray.h"
 
+#include "ash/components/phonehub/fake_connection_scheduler.h"
+#include "ash/components/phonehub/fake_notification_access_manager.h"
+#include "ash/components/phonehub/fake_phone_hub_manager.h"
+#include "ash/components/phonehub/phone_model_test_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/test/test_new_window_delegate.h"
 #include "ash/shell.h"
@@ -16,10 +20,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
-#include "chromeos/components/phonehub/fake_connection_scheduler.h"
-#include "chromeos/components/phonehub/fake_notification_access_manager.h"
-#include "chromeos/components/phonehub/fake_phone_hub_manager.h"
-#include "chromeos/components/phonehub/phone_model_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event.h"
@@ -29,15 +29,14 @@ namespace ash {
 
 namespace {
 
-constexpr base::TimeDelta kConnectingViewGracePeriod =
-    base::TimeDelta::FromSeconds(40);
+constexpr base::TimeDelta kConnectingViewGracePeriod = base::Seconds(40);
 
 // A mock implementation of |NewWindowDelegate| for use in tests.
 class MockNewWindowDelegate : public testing::NiceMock<TestNewWindowDelegate> {
  public:
   // TestNewWindowDelegate:
   MOCK_METHOD(void,
-              NewTabWithUrl,
+              OpenUrl,
               (const GURL& url, bool from_user_interaction),
               (override));
 };
@@ -63,38 +62,27 @@ class PhoneHubTrayTest : public AshTestBase {
         StatusAreaWidgetTestHelper::GetStatusAreaWidget()->phone_hub_tray();
 
     GetFeatureStatusProvider()->SetStatus(
-        chromeos::phonehub::FeatureStatus::kEnabledAndConnected);
+        phonehub::FeatureStatus::kEnabledAndConnected);
     phone_hub_tray_->SetPhoneHubManager(&phone_hub_manager_);
 
     phone_hub_manager_.mutable_phone_model()->SetPhoneStatusModel(
-        chromeos::phonehub::CreateFakePhoneStatusModel());
+        phonehub::CreateFakePhoneStatusModel());
   }
 
-  chromeos::phonehub::FakeFeatureStatusProvider* GetFeatureStatusProvider() {
+  phonehub::FakeFeatureStatusProvider* GetFeatureStatusProvider() {
     return phone_hub_manager_.fake_feature_status_provider();
   }
 
-  chromeos::phonehub::FakeNotificationAccessManager*
-  GetNotificationAccessManager() {
+  phonehub::FakeNotificationAccessManager* GetNotificationAccessManager() {
     return phone_hub_manager_.fake_notification_access_manager();
   }
 
-  chromeos::phonehub::FakeConnectionScheduler* GetConnectionScheduler() {
+  phonehub::FakeConnectionScheduler* GetConnectionScheduler() {
     return phone_hub_manager_.fake_connection_scheduler();
   }
 
-  chromeos::phonehub::FakeOnboardingUiTracker* GetOnboardingUiTracker() {
+  phonehub::FakeOnboardingUiTracker* GetOnboardingUiTracker() {
     return phone_hub_manager_.fake_onboarding_ui_tracker();
-  }
-
-  // Simulate a mouse click on the given view.
-  // Waits for the event to be processed.
-  void ClickOnAndWait(const views::View* view) {
-    ui::test::EventGenerator* generator = GetEventGenerator();
-    generator->MoveMouseTo(view->GetBoundsInScreen().CenterPoint());
-    generator->ClickLeftButton();
-
-    base::RunLoop().RunUntilIdle();
   }
 
   void PressReturnKeyOnTrayButton() {
@@ -103,7 +91,9 @@ class PhoneHubTrayTest : public AshTestBase {
     phone_hub_tray_->PerformAction(key_event);
   }
 
-  void ClickTrayButton() { ClickOnAndWait(phone_hub_tray_); }
+  void ClickTrayButton() {
+    SimulateMouseClickAt(GetEventGenerator(), phone_hub_tray_);
+  }
 
   // When first connecting, the connecting view is shown for 30 seconds when
   // disconnected, so in order to show the disconnecting view, we need to fast
@@ -166,17 +156,17 @@ class PhoneHubTrayTest : public AshTestBase {
 
   views::Button* notification_opt_in_set_up_button() {
     return static_cast<views::Button*>(bubble_view()->GetViewByID(
-        PhoneHubViewID::kNotificationOptInSetUpButton));
+        PhoneHubViewID::kSubFeatureOptInConfirmButton));
   }
 
   views::Button* notification_opt_in_dismiss_button() {
     return static_cast<views::Button*>(bubble_view()->GetViewByID(
-        PhoneHubViewID::kNotificationOptInDismissButton));
+        PhoneHubViewID::kSubFeatureOptInDismissButton));
   }
 
  protected:
   PhoneHubTray* phone_hub_tray_ = nullptr;
-  chromeos::phonehub::FakePhoneHubManager phone_hub_manager_;
+  phonehub::FakePhoneHubManager phone_hub_manager_;
   base::test::ScopedFeatureList feature_list_;
   MockNewWindowDelegate* new_window_delegate_;
   std::unique_ptr<TestNewWindowDelegateProvider> delegate_provider_;
@@ -184,20 +174,20 @@ class PhoneHubTrayTest : public AshTestBase {
 
 TEST_F(PhoneHubTrayTest, SetPhoneHubManager) {
   // Set a new manager.
-  chromeos::phonehub::FakePhoneHubManager new_manager;
+  phonehub::FakePhoneHubManager new_manager;
   new_manager.fake_feature_status_provider()->SetStatus(
-      chromeos::phonehub::FeatureStatus::kEnabledAndConnected);
+      phonehub::FeatureStatus::kEnabledAndConnected);
   phone_hub_tray_->SetPhoneHubManager(&new_manager);
   EXPECT_TRUE(phone_hub_tray_->GetVisible());
 
   // Changing the old manager should have no effect.
   GetFeatureStatusProvider()->SetStatus(
-      chromeos::phonehub::FeatureStatus::kNotEligibleForFeature);
+      phonehub::FeatureStatus::kNotEligibleForFeature);
   EXPECT_TRUE(phone_hub_tray_->GetVisible());
 
   // Only the new manager should work.
   new_manager.fake_feature_status_provider()->SetStatus(
-      chromeos::phonehub::FeatureStatus::kNotEligibleForFeature);
+      phonehub::FeatureStatus::kNotEligibleForFeature);
   EXPECT_FALSE(phone_hub_tray_->GetVisible());
 
   // Set no manager.
@@ -235,7 +225,7 @@ TEST_F(PhoneHubTrayTest, FocusBubbleWhenOpenedByKeyboard) {
 
 TEST_F(PhoneHubTrayTest, ShowNotificationOptInViewWhenAccessNotGranted) {
   GetNotificationAccessManager()->SetAccessStatusInternal(
-      chromeos::phonehub::NotificationAccessManager::AccessStatus::
+      phonehub::NotificationAccessManager::AccessStatus::
           kAvailableButNotGranted);
 
   ClickTrayButton();
@@ -244,7 +234,8 @@ TEST_F(PhoneHubTrayTest, ShowNotificationOptInViewWhenAccessNotGranted) {
   EXPECT_TRUE(notification_opt_in_view()->GetVisible());
 
   // Simulate a click on "Dismiss" button.
-  ClickOnAndWait(notification_opt_in_dismiss_button());
+  SimulateMouseClickAt(GetEventGenerator(),
+                       notification_opt_in_dismiss_button());
 
   // Clicking on "Dismiss" should hide the view and also disable the ability to
   // show it again.
@@ -255,8 +246,7 @@ TEST_F(PhoneHubTrayTest, ShowNotificationOptInViewWhenAccessNotGranted) {
 
 TEST_F(PhoneHubTrayTest, HideNotificationOptInViewWhenAccessHasBeenGranted) {
   GetNotificationAccessManager()->SetAccessStatusInternal(
-      chromeos::phonehub::NotificationAccessManager::AccessStatus::
-          kAccessGranted);
+      phonehub::NotificationAccessManager::AccessStatus::kAccessGranted);
 
   ClickTrayButton();
 
@@ -266,7 +256,7 @@ TEST_F(PhoneHubTrayTest, HideNotificationOptInViewWhenAccessHasBeenGranted) {
 
 TEST_F(PhoneHubTrayTest, HideNotificationOptInViewWhenAccessIsProhibited) {
   GetNotificationAccessManager()->SetAccessStatusInternal(
-      chromeos::phonehub::NotificationAccessManager::AccessStatus::kProhibited);
+      phonehub::NotificationAccessManager::AccessStatus::kProhibited);
 
   ClickTrayButton();
 
@@ -276,7 +266,7 @@ TEST_F(PhoneHubTrayTest, HideNotificationOptInViewWhenAccessIsProhibited) {
 
 TEST_F(PhoneHubTrayTest, StartNotificationSetUpFlow) {
   GetNotificationAccessManager()->SetAccessStatusInternal(
-      chromeos::phonehub::NotificationAccessManager::AccessStatus::
+      phonehub::NotificationAccessManager::AccessStatus::
           kAvailableButNotGranted);
 
   ClickTrayButton();
@@ -285,7 +275,7 @@ TEST_F(PhoneHubTrayTest, StartNotificationSetUpFlow) {
 
   // Clicking on the set up button should open the corresponding settings page
   // for the notification set up flow.
-  EXPECT_CALL(new_window_delegate(), NewTabWithUrl)
+  EXPECT_CALL(new_window_delegate(), OpenUrl)
       .WillOnce([](const GURL& url, bool from_user_interaction) {
         EXPECT_EQ(GURL("chrome://os-settings/multidevice/"
                        "features?showNotificationAccessSetupDialog"),
@@ -293,19 +283,19 @@ TEST_F(PhoneHubTrayTest, StartNotificationSetUpFlow) {
         EXPECT_TRUE(from_user_interaction);
       });
 
-  ClickOnAndWait(notification_opt_in_set_up_button());
+  SimulateMouseClickAt(GetEventGenerator(),
+                       notification_opt_in_set_up_button());
 
   // Simulate that notification access has been granted.
   GetNotificationAccessManager()->SetAccessStatusInternal(
-      chromeos::phonehub::NotificationAccessManager::AccessStatus::
-          kAccessGranted);
+      phonehub::NotificationAccessManager::AccessStatus::kAccessGranted);
 
   // This view should be dismissed.
   EXPECT_FALSE(notification_opt_in_view()->GetVisible());
 
   // Simulate that notification access has been revoked by the phone.
   GetNotificationAccessManager()->SetAccessStatusInternal(
-      chromeos::phonehub::NotificationAccessManager::AccessStatus::
+      phonehub::NotificationAccessManager::AccessStatus::
           kAvailableButNotGranted);
 
   // This view should show up again.
@@ -317,7 +307,7 @@ TEST_F(PhoneHubTrayTest, HideTrayItemOnUiStateChange) {
   EXPECT_TRUE(phone_hub_tray_->is_active());
 
   GetFeatureStatusProvider()->SetStatus(
-      chromeos::phonehub::FeatureStatus::kNotEligibleForFeature);
+      phonehub::FeatureStatus::kNotEligibleForFeature);
 
   EXPECT_FALSE(phone_hub_tray_->is_active());
   EXPECT_FALSE(phone_hub_tray_->GetVisible());
@@ -331,7 +321,7 @@ TEST_F(PhoneHubTrayTest, TransitionContentView) {
   EXPECT_EQ(PhoneHubViewID::kPhoneConnectedView, content_view()->GetID());
 
   GetFeatureStatusProvider()->SetStatus(
-      chromeos::phonehub::FeatureStatus::kEnabledButDisconnected);
+      phonehub::FeatureStatus::kEnabledButDisconnected);
   FastForwardByConnectingViewGracePeriod();
 
   EXPECT_TRUE(content_view());
@@ -341,7 +331,7 @@ TEST_F(PhoneHubTrayTest, TransitionContentView) {
 TEST_F(PhoneHubTrayTest, StartOnboardingFlow) {
   // Simulate a pending setup state to show the onboarding screen.
   GetFeatureStatusProvider()->SetStatus(
-      chromeos::phonehub::FeatureStatus::kEligiblePhoneButNotSetUp);
+      phonehub::FeatureStatus::kEligiblePhoneButNotSetUp);
   GetOnboardingUiTracker()->SetShouldShowOnboardingUi(true);
 
   ClickTrayButton();
@@ -353,7 +343,7 @@ TEST_F(PhoneHubTrayTest, StartOnboardingFlow) {
   EXPECT_EQ(0u, GetOnboardingUiTracker()->handle_get_started_call_count());
 
   // Simulate a click on the "Get started" button.
-  ClickOnAndWait(onboarding_get_started_button());
+  SimulateMouseClickAt(GetEventGenerator(), onboarding_get_started_button());
   // It should invoke the |HandleGetStarted| call.
   EXPECT_EQ(1u, GetOnboardingUiTracker()->handle_get_started_call_count());
 }
@@ -361,7 +351,7 @@ TEST_F(PhoneHubTrayTest, StartOnboardingFlow) {
 TEST_F(PhoneHubTrayTest, DismissOnboardingFlowByClickingAckButton) {
   // Simulate a pending setup state to show the onboarding screen.
   GetFeatureStatusProvider()->SetStatus(
-      chromeos::phonehub::FeatureStatus::kEligiblePhoneButNotSetUp);
+      phonehub::FeatureStatus::kEligiblePhoneButNotSetUp);
   GetOnboardingUiTracker()->SetShouldShowOnboardingUi(true);
 
   ClickTrayButton();
@@ -371,14 +361,14 @@ TEST_F(PhoneHubTrayTest, DismissOnboardingFlowByClickingAckButton) {
   EXPECT_TRUE(onboarding_main_view());
 
   // Simulate a click on the "Dismiss" button.
-  ClickOnAndWait(onboarding_dismiss_button());
+  SimulateMouseClickAt(GetEventGenerator(), onboarding_dismiss_button());
 
   // It should transit to show the dismiss prompt.
   EXPECT_TRUE(onboarding_dismiss_prompt_view());
   EXPECT_TRUE(onboarding_dismiss_prompt_view()->GetVisible());
 
   // Simulate a click on the "OK, got it" button to ack.
-  ClickOnAndWait(onboarding_dismiss_ack_button());
+  SimulateMouseClickAt(GetEventGenerator(), onboarding_dismiss_ack_button());
 
   // Clicking "Ok, got it" button should dismiss the bubble, hide the tray icon,
   // and disable the ability to show onboarding UI again.
@@ -390,7 +380,7 @@ TEST_F(PhoneHubTrayTest, DismissOnboardingFlowByClickingAckButton) {
 TEST_F(PhoneHubTrayTest, DismissOnboardingFlowByClickingOutside) {
   // Simulate a pending setup state to show the onboarding screen.
   GetFeatureStatusProvider()->SetStatus(
-      chromeos::phonehub::FeatureStatus::kEligiblePhoneButNotSetUp);
+      phonehub::FeatureStatus::kEligiblePhoneButNotSetUp);
   GetOnboardingUiTracker()->SetShouldShowOnboardingUi(true);
 
   ClickTrayButton();
@@ -400,7 +390,7 @@ TEST_F(PhoneHubTrayTest, DismissOnboardingFlowByClickingOutside) {
   EXPECT_TRUE(onboarding_main_view());
 
   // Simulate a click on the "Dismiss" button.
-  ClickOnAndWait(onboarding_dismiss_button());
+  SimulateMouseClickAt(GetEventGenerator(), onboarding_dismiss_button());
 
   // It should transit to show the dismiss prompt.
   EXPECT_TRUE(onboarding_dismiss_prompt_view());
@@ -419,7 +409,7 @@ TEST_F(PhoneHubTrayTest, DismissOnboardingFlowByClickingOutside) {
 TEST_F(PhoneHubTrayTest, ClickButtonsOnDisconnectedView) {
   // Simulates a phone disconnected error state to show the disconnected view.
   GetFeatureStatusProvider()->SetStatus(
-      chromeos::phonehub::FeatureStatus::kEnabledButDisconnected);
+      phonehub::FeatureStatus::kEnabledButDisconnected);
   FastForwardByConnectingViewGracePeriod();
 
   EXPECT_EQ(0u, GetConnectionScheduler()->num_schedule_connection_now_calls());
@@ -435,14 +425,14 @@ TEST_F(PhoneHubTrayTest, ClickButtonsOnDisconnectedView) {
   EXPECT_EQ(PhoneHubViewID::kDisconnectedView, content_view()->GetID());
 
   // Simulates a click on the "Refresh" button.
-  ClickOnAndWait(disconnected_refresh_button());
+  SimulateMouseClickAt(GetEventGenerator(), disconnected_refresh_button());
 
   // Clicking "Refresh" button should schedule a connection attempt.
   EXPECT_EQ(2u, GetConnectionScheduler()->num_schedule_connection_now_calls());
 
   // Clicking "Learn More" button should open the corresponding help center
   // article in a browser tab.
-  EXPECT_CALL(new_window_delegate(), NewTabWithUrl)
+  EXPECT_CALL(new_window_delegate(), OpenUrl)
       .WillOnce([](const GURL& url, bool from_user_interaction) {
         EXPECT_EQ(GURL("https://support.google.com/chromebook?p=phone_hub"),
                   url);
@@ -450,41 +440,42 @@ TEST_F(PhoneHubTrayTest, ClickButtonsOnDisconnectedView) {
       });
 
   // Simulates a click on the "Learn more" button.
-  ClickOnAndWait(disconnected_learn_more_button());
+  SimulateMouseClickAt(GetEventGenerator(), disconnected_learn_more_button());
 }
 
 TEST_F(PhoneHubTrayTest, ClickButtonOnBluetoothDisabledView) {
   // Simulate a Bluetooth unavailable state.
   GetFeatureStatusProvider()->SetStatus(
-      chromeos::phonehub::FeatureStatus::kUnavailableBluetoothOff);
+      phonehub::FeatureStatus::kUnavailableBluetoothOff);
   ClickTrayButton();
   EXPECT_TRUE(phone_hub_tray_->is_active());
   EXPECT_EQ(PhoneHubViewID::kBluetoothDisabledView, content_view()->GetID());
 
   // Clicking "Learn more" button should open the corresponding help center
   // article in a browser tab.
-  EXPECT_CALL(new_window_delegate(), NewTabWithUrl)
+  EXPECT_CALL(new_window_delegate(), OpenUrl)
       .WillOnce([](const GURL& url, bool from_user_interaction) {
         EXPECT_EQ(GURL("https://support.google.com/chromebook?p=phone_hub"),
                   url);
         EXPECT_TRUE(from_user_interaction);
       });
   // Simulate a click on "Learn more" button.
-  ClickOnAndWait(bluetooth_disabled_learn_more_button());
+  SimulateMouseClickAt(GetEventGenerator(),
+                       bluetooth_disabled_learn_more_button());
 }
 
 TEST_F(PhoneHubTrayTest, CloseBubbleWhileShowingSameView) {
   // Simulate the views returned to PhoneHubTray are the same and open and
   // close tray.
   GetFeatureStatusProvider()->SetStatus(
-      chromeos::phonehub::FeatureStatus::kEnabledAndConnecting);
+      phonehub::FeatureStatus::kEnabledAndConnecting);
   ClickTrayButton();
   EXPECT_TRUE(phone_hub_tray_->is_active());
   EXPECT_EQ(PhoneHubViewID::kPhoneConnectingView, content_view()->GetID());
   ClickTrayButton();
   EXPECT_FALSE(phone_hub_tray_->is_active());
   GetFeatureStatusProvider()->SetStatus(
-      chromeos::phonehub::FeatureStatus::kEnabledButDisconnected);
+      phonehub::FeatureStatus::kEnabledButDisconnected);
   EXPECT_FALSE(content_view());
 }
 
@@ -494,14 +485,14 @@ TEST_F(PhoneHubTrayTest, OnSessionChanged) {
 
   // Disable the tray first.
   GetFeatureStatusProvider()->SetStatus(
-      chromeos::phonehub::FeatureStatus::kNotEligibleForFeature);
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(3));
+      phonehub::FeatureStatus::kNotEligibleForFeature);
+  task_environment()->FastForwardBy(base::Seconds(3));
   EXPECT_FALSE(phone_hub_tray_->GetVisible());
 
   // Enable it to let it visible.
   GetFeatureStatusProvider()->SetStatus(
-      chromeos::phonehub::FeatureStatus::kEnabledAndConnecting);
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(3));
+      phonehub::FeatureStatus::kEnabledAndConnected);
+  task_environment()->FastForwardBy(base::Seconds(3));
   EXPECT_TRUE(phone_hub_tray_->GetVisible());
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOGIN_PRIMARY);
@@ -514,28 +505,28 @@ TEST_F(PhoneHubTrayTest, OnSessionChanged) {
   // Gives it a small duration to let the session get changed. This duration is
   // way smaller than the animation duration, so that the animation will not
   // finish when this duration ends. The same for the other places below.
-  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(20));
+  task_environment()->FastForwardBy(base::Milliseconds(20));
   for (int i = 0; i < 3; i++) {
     SCOPED_TRACE(::testing::Message() << "iteration=" << i);
     EXPECT_FALSE(phone_hub_tray_->layer()->GetAnimator()->is_animating());
     EXPECT_TRUE(phone_hub_tray_->GetVisible());
     GetFeatureStatusProvider()->SetStatus(
-        chromeos::phonehub::FeatureStatus::kNotEligibleForFeature);
-    task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+        phonehub::FeatureStatus::kNotEligibleForFeature);
+    task_environment()->FastForwardBy(base::Seconds(1));
     EXPECT_FALSE(phone_hub_tray_->GetVisible());
     GetFeatureStatusProvider()->SetStatus(
-        chromeos::phonehub::FeatureStatus::kEnabledAndConnecting);
+        phonehub::FeatureStatus::kEnabledAndConnected);
   }
   EXPECT_FALSE(phone_hub_tray_->layer()->GetAnimator()->is_animating());
   EXPECT_TRUE(phone_hub_tray_->GetVisible());
 
   // Animation is enabled after 5 seconds. We already fast forwarded 3 second in
   // the above loop. So here we are forwarding 2 more seconds.
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(2));
+  task_environment()->FastForwardBy(base::Seconds(2));
   GetFeatureStatusProvider()->SetStatus(
-      chromeos::phonehub::FeatureStatus::kNotEligibleForFeature);
+      phonehub::FeatureStatus::kNotEligibleForFeature);
   GetFeatureStatusProvider()->SetStatus(
-      chromeos::phonehub::FeatureStatus::kEnabledAndConnecting);
+      phonehub::FeatureStatus::kEnabledAndConnected);
   EXPECT_TRUE(phone_hub_tray_->layer()->GetAnimator()->is_animating());
   EXPECT_TRUE(phone_hub_tray_->GetVisible());
 }

@@ -17,9 +17,6 @@
 #ifndef LIBGAV1_SRC_PREDICTION_MASK_H_
 #define LIBGAV1_SRC_PREDICTION_MASK_H_
 
-#include <cstddef>
-#include <cstdint>
-
 #include "src/utils/bit_mask_set.h"
 #include "src/utils/types.h"
 

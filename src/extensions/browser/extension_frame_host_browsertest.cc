@@ -81,12 +81,14 @@ class TestShellExtensionWebContentsObserver
 
   explicit TestShellExtensionWebContentsObserver(
       content::WebContents* web_contents)
-      : ExtensionWebContentsObserver(web_contents) {}
+      : ExtensionWebContentsObserver(web_contents),
+        content::WebContentsUserData<TestShellExtensionWebContentsObserver>(
+            *web_contents) {}
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(TestShellExtensionWebContentsObserver)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TestShellExtensionWebContentsObserver);
 
 class TestShellExtensionHostDelegate : public ShellExtensionHostDelegate {
  public:

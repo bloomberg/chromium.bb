@@ -10,16 +10,17 @@
 
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/simple_test_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/custom_handlers/test_protocol_handler_registry_delegate.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,8 +41,9 @@ class SiteSettingsCounterTest : public testing::Test {
 #else
     zoom_map_ = nullptr;
 #endif
-    handler_registry_ = std::make_unique<ProtocolHandlerRegistry>(
-        profile(), std::make_unique<TestProtocolHandlerRegistryDelegate>());
+    handler_registry_ =
+        std::make_unique<custom_handlers::ProtocolHandlerRegistry>(
+            profile(), std::make_unique<TestProtocolHandlerRegistryDelegate>());
 
     counter_ = std::make_unique<SiteSettingsCounter>(
         map(), zoom_map(), handler_registry(), profile_->GetPrefs());
@@ -60,7 +62,7 @@ class SiteSettingsCounterTest : public testing::Test {
 
   content::HostZoomMap* zoom_map() { return zoom_map_; }
 
-  ProtocolHandlerRegistry* handler_registry() {
+  custom_handlers::ProtocolHandlerRegistry* handler_registry() {
     return handler_registry_.get();
   }
 
@@ -114,8 +116,8 @@ class SiteSettingsCounterTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
 
   scoped_refptr<HostContentSettingsMap> map_;
-  content::HostZoomMap* zoom_map_;
-  std::unique_ptr<ProtocolHandlerRegistry> handler_registry_;
+  raw_ptr<content::HostZoomMap> zoom_map_;
+  std::unique_ptr<custom_handlers::ProtocolHandlerRegistry> handler_registry_;
   std::unique_ptr<SiteSettingsCounter> counter_;
   bool finished_;
   browsing_data::BrowsingDataCounter::ResultInt result_;
@@ -140,19 +142,19 @@ TEST_F(SiteSettingsCounterTest, CountWithTimePeriod) {
   map()->SetClockForTesting(&test_clock);
 
   // Create a setting at Now()-90min.
-  test_clock.SetNow(base::Time::Now() - base::TimeDelta::FromMinutes(90));
+  test_clock.SetNow(base::Time::Now() - base::Minutes(90));
   map()->SetContentSettingDefaultScope(
       GURL("http://www.google.com"), GURL("http://www.google.com"),
       ContentSettingsType::POPUPS, CONTENT_SETTING_ALLOW);
 
   // Create a setting at Now()-30min.
-  test_clock.SetNow(base::Time::Now() - base::TimeDelta::FromMinutes(30));
+  test_clock.SetNow(base::Time::Now() - base::Minutes(30));
   map()->SetContentSettingDefaultScope(
       GURL("http://maps.google.com"), GURL("http://maps.google.com"),
       ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ALLOW);
 
   // Create a setting at Now()-31days.
-  test_clock.SetNow(base::Time::Now() - base::TimeDelta::FromDays(31));
+  test_clock.SetNow(base::Time::Now() - base::Days(31));
   map()->SetContentSettingDefaultScope(
       GURL("http://www.google.com"), GURL("http://www.google.com"),
       ContentSettingsType::MEDIASTREAM_CAMERA, CONTENT_SETTING_ALLOW);
@@ -277,10 +279,9 @@ TEST_F(SiteSettingsCounterTest, ProtocolHandlerCounting) {
   handler_registry()->OnAcceptRegisterProtocolHandler(
       ProtocolHandler("news", GURL("https://www.google.com"), now,
                       blink::ProtocolHandlerSecurityLevel::kStrict));
-  handler_registry()->OnAcceptRegisterProtocolHandler(
-      ProtocolHandler("mailto", GURL("https://maps.google.com"),
-                      now - base::TimeDelta::FromMinutes(90),
-                      blink::ProtocolHandlerSecurityLevel::kStrict));
+  handler_registry()->OnAcceptRegisterProtocolHandler(ProtocolHandler(
+      "mailto", GURL("https://maps.google.com"), now - base::Minutes(90),
+      blink::ProtocolHandlerSecurityLevel::kStrict));
   EXPECT_TRUE(handler_registry()->IsHandledProtocol("news"));
   EXPECT_TRUE(handler_registry()->IsHandledProtocol("mailto"));
 

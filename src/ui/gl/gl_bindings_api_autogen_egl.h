@@ -81,6 +81,10 @@ EGLBoolean eglExportDMABUFImageQueryMESAFn(EGLDisplay dpy,
                                            int* fourcc,
                                            int* num_planes,
                                            EGLuint64KHR* modifiers) override;
+EGLBoolean eglExportVkImageANGLEFn(EGLDisplay dpy,
+                                   EGLImageKHR image,
+                                   void* vk_image,
+                                   void* vk_image_create_info) override;
 EGLBoolean eglGetCompositorTimingANDROIDFn(EGLDisplay dpy,
                                            EGLSurface surface,
                                            EGLint numTimestamps,
@@ -161,6 +165,9 @@ EGLBoolean eglQueryContextFn(EGLDisplay dpy,
                              EGLint attribute,
                              EGLint* value) override;
 EGLBoolean eglQueryDebugKHRFn(EGLint attribute, EGLAttrib* value) override;
+EGLBoolean eglQueryDeviceAttribEXTFn(EGLDeviceEXT device,
+                                     EGLint attribute,
+                                     EGLAttrib* value) override;
 EGLBoolean eglQueryDevicesEXTFn(EGLint max_devices,
                                 EGLDeviceEXT* devices,
                                 EGLint* num_devices) override;
@@ -169,6 +176,9 @@ const char* eglQueryDeviceStringEXTFn(EGLDeviceEXT device,
 EGLBoolean eglQueryDisplayAttribANGLEFn(EGLDisplay dpy,
                                         EGLint attribute,
                                         EGLAttrib* value) override;
+EGLBoolean eglQueryDisplayAttribEXTFn(EGLDisplay dpy,
+                                      EGLint attribute,
+                                      EGLAttrib* value) override;
 EGLBoolean eglQueryStreamKHRFn(EGLDisplay dpy,
                                EGLStreamKHR stream,
                                EGLenum attribute,

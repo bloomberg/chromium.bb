@@ -43,7 +43,9 @@ class RTC_EXPORT DesktopCaptureOptions {
   DesktopCaptureOptions& operator=(DesktopCaptureOptions&& options);
 
 #if defined(WEBRTC_USE_X11)
-  SharedXDisplay* x_display() const { return x_display_; }
+  const rtc::scoped_refptr<SharedXDisplay>& x_display() const {
+    return x_display_;
+  }
   void set_x_display(rtc::scoped_refptr<SharedXDisplay> x_display) {
     x_display_ = x_display;
   }
@@ -53,7 +55,8 @@ class RTC_EXPORT DesktopCaptureOptions {
   // TODO(zijiehe): Remove both DesktopConfigurationMonitor and
   // FullScreenChromeWindowDetector out of DesktopCaptureOptions. It's not
   // reasonable for external consumers to set these two parameters.
-  DesktopConfigurationMonitor* configuration_monitor() const {
+  const rtc::scoped_refptr<DesktopConfigurationMonitor>& configuration_monitor()
+      const {
     return configuration_monitor_;
   }
   // If nullptr is set, ScreenCapturer won't work and WindowCapturer may return
@@ -67,7 +70,8 @@ class RTC_EXPORT DesktopCaptureOptions {
   void set_allow_iosurface(bool allow) { allow_iosurface_ = allow; }
 #endif
 
-  FullScreenWindowDetector* full_screen_window_detector() const {
+  const rtc::scoped_refptr<FullScreenWindowDetector>&
+  full_screen_window_detector() const {
     return full_screen_window_detector_;
   }
   void set_full_screen_window_detector(
@@ -98,6 +102,24 @@ class RTC_EXPORT DesktopCaptureOptions {
   }
 
 #if defined(WEBRTC_WIN)
+  // Enumerating windows owned by the current process on Windows has some
+  // complications due to |GetWindowText*()| APIs potentially causing a
+  // deadlock (see the comments in the `GetWindowListHandler()` function in
+  // window_capture_utils.cc for more details on the deadlock).
+  // To avoid this issue, consumers can either ensure that the thread that runs
+  // their message loop never waits on `GetSourceList()`, or they can set this
+  // flag to false which will prevent windows running in the current process
+  // from being enumerated and included in the results. Consumers can still
+  // provide the WindowId for their own windows to `SelectSource()` and capture
+  // them.
+  bool enumerate_current_process_windows() const {
+    return enumerate_current_process_windows_;
+  }
+  void set_enumerate_current_process_windows(
+      bool enumerate_current_process_windows) {
+    enumerate_current_process_windows_ = enumerate_current_process_windows;
+  }
+
   bool allow_use_magnification_api() const {
     return allow_use_magnification_api_;
   }
@@ -158,6 +180,7 @@ class RTC_EXPORT DesktopCaptureOptions {
   rtc::scoped_refptr<FullScreenWindowDetector> full_screen_window_detector_;
 
 #if defined(WEBRTC_WIN)
+  bool enumerate_current_process_windows_ = true;
   bool allow_use_magnification_api_ = false;
   bool allow_directx_capturer_ = false;
   bool allow_cropping_window_capturer_ = false;

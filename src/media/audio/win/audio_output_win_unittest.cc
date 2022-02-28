@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
 #include "base/test/task_environment.h"
@@ -149,7 +150,7 @@ class ReadOnlyMappedFile {
 
  private:
   HANDLE fmap_;
-  char* start_;
+  raw_ptr<char> start_;
   uint32_t size_;
 };
 
@@ -434,8 +435,8 @@ TEST_F(WinAudioTest, PCMWaveStreamPendingBytes) {
   NiceMock<MockAudioSourceCallback> source;
   EXPECT_TRUE(oas->Open());
 
-  const base::TimeDelta delay_100_ms = base::TimeDelta::FromMilliseconds(100);
-  const base::TimeDelta delay_200_ms = base::TimeDelta::FromMilliseconds(200);
+  const base::TimeDelta delay_100_ms = base::Milliseconds(100);
+  const base::TimeDelta delay_200_ms = base::Milliseconds(200);
 
   // Audio output stream has either a double or triple buffer scheme. We expect
   // the delay to reach up to 200 ms depending on the number of buffers used.
@@ -523,7 +524,7 @@ class SyncSocketSource : public AudioOutputStream::AudioSourceCallback {
   void OnError(ErrorType type) override {}
 
  private:
-  base::SyncSocket* socket_;
+  raw_ptr<base::SyncSocket> socket_;
   const AudioParameters params_;
   int packet_size_;
   std::unique_ptr<float, base::AlignedFreeDeleter> data_;
@@ -569,11 +570,10 @@ DWORD __stdcall SyncSocketThread(void* context) {
     // blocking call and will not proceed until we receive the signal.
     if (ctx.socket->Receive(&control_signal, sizeof(control_signal)) == 0)
       break;
-    base::TimeDelta delay =
-        base::TimeDelta::FromMicroseconds(ctx.buffer->params.delay_us);
+    base::TimeDelta delay = base::Microseconds(ctx.buffer->params.delay_us);
     base::TimeTicks delay_timestamp =
-        base::TimeTicks() + base::TimeDelta::FromMicroseconds(
-                                ctx.buffer->params.delay_timestamp_us);
+        base::TimeTicks() +
+        base::Microseconds(ctx.buffer->params.delay_timestamp_us);
     sine.OnMoreData(delay, delay_timestamp, 0, audio_bus.get());
 
     // Send the audio data to the Audio Stream.

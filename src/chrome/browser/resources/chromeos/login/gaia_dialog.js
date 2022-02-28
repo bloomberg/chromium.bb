@@ -46,6 +46,14 @@ Polymer({
     },
 
     /**
+     * Whether to hide back button if form can't go back.
+     */
+    hideBackButtonIfCantGoBack: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Used to display SAML notice.
      * @private
      */
@@ -232,6 +240,7 @@ Polymer({
         chrome.send(
             'metricsHandler:recordBooleanHistogram',
             [CHROMEOS_GAIA_PASSWORD_METRIC, false]);
+        chrome.send('passwordEntered');
       },
       'authCompleted': (e) => {
         // Only record the metric for Gaia flow without 3rd-party SAML IdP.
@@ -258,6 +267,8 @@ Polymer({
   },
 
   show() {
+    this.navigationEnabled = true;
+    chrome.send('enableShelfButtons', [true]);
     this.getFrame().focus();
   },
 
@@ -265,7 +276,7 @@ Polymer({
     // Note: Can't use |this.$|, since it returns cached references to elements
     // originally present in DOM, while the signin-frame is  dynamically
     // recreated (see Authenticator.setWebviewPartition()).
-    return this.$$('#signin-frame');
+    return this.shadowRoot.querySelector('#signin-frame');
   },
 
   clickPrimaryButtonForTesting() {
@@ -332,6 +343,16 @@ Polymer({
    */
   isButtonEnabled_(navigationEnabled, buttonEnabled) {
     return navigationEnabled && buttonEnabled;
+  },
+
+  /**
+   * Whether the back button is hidden.
+   * @param {boolean} hideBackButtonIfCantGoBack - whether it should be hidden.
+   * @param {boolean} canGoBack - whether the form can go back.
+   * @private
+   */
+  isBackButtonHidden(hideBackButtonIfCantGoBack, canGoBack) {
+    return hideBackButtonIfCantGoBack && !canGoBack;
   },
 
   /**

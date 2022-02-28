@@ -16,14 +16,12 @@
 
 namespace viz {
 OverlayProcessorMac::OverlayProcessorMac(bool enable_ca_overlay)
-    : enable_ca_overlay_(enable_ca_overlay),
-      ca_layer_overlay_processor_(std::make_unique<CALayerOverlayProcessor>()) {
-}
+    : ca_layer_overlay_processor_(
+          std::make_unique<CALayerOverlayProcessor>(enable_ca_overlay)) {}
 
 OverlayProcessorMac::OverlayProcessorMac(
     std::unique_ptr<CALayerOverlayProcessor> ca_layer_overlay_processor)
-    : enable_ca_overlay_(true),
-      ca_layer_overlay_processor_(std::move(ca_layer_overlay_processor)) {}
+    : ca_layer_overlay_processor_(std::move(ca_layer_overlay_processor)) {}
 
 OverlayProcessorMac::~OverlayProcessorMac() = default;
 
@@ -52,7 +50,7 @@ gfx::Rect OverlayProcessorMac::GetAndResetOverlayDamage() {
 void OverlayProcessorMac::ProcessForOverlays(
     DisplayResourceProvider* resource_provider,
     AggregatedRenderPassList* render_passes,
-    const SkMatrix44& output_color_matrix,
+    const skia::Matrix44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap& render_pass_filters,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
@@ -62,27 +60,21 @@ void OverlayProcessorMac::ProcessForOverlays(
     gfx::Rect* damage_rect,
     std::vector<gfx::Rect>* content_bounds) {
   TRACE_EVENT0("viz", "OverlayProcessorMac::ProcessForOverlays");
-  auto& render_pass = render_passes->back();
+  auto* render_pass = render_passes->back().get();
 
   // Clear to get ready to handle output surface as overlay.
   output_surface_already_handled_ = false;
   previous_frame_full_bounding_rect_ = render_pass->output_rect;
 
-  // Skip overlay processing if we have copy request.
-  if (!render_pass->copy_requests.empty())
-    return;
-
   // We could have surfaceless overlay but not ca overlay system on. In this
   // case we would still have the OutputSurfaceOverlayPlane.
-  if (!enable_ca_overlay_)
-    return;
 
   // First, try to use ProcessForCALayerOverlays to replace all DrawQuads in
   // |render_pass->quad_list| with CALayerOverlays in |candidates|.
-  if (ca_layer_overlay_processor_->ProcessForCALayerOverlays(
-          resource_provider, gfx::RectF(render_pass->output_rect),
-          render_pass->quad_list, render_pass_filters,
-          render_pass_backdrop_filters, candidates)) {
+  bool success = ca_layer_overlay_processor_->ProcessForCALayerOverlays(
+      render_pass, resource_provider, gfx::RectF(render_pass->output_rect),
+      render_pass_filters, render_pass_backdrop_filters, candidates);
+  if (success) {
     // Mark the output surface as already handled (there is no output surface
     // anymore).
     output_surface_already_handled_ = true;
@@ -97,14 +89,12 @@ void OverlayProcessorMac::ProcessForOverlays(
     // RenderPass overlays still point into that list. So instead, to avoid
     // drawing the root RenderPass, we set |damage_rect| to be empty.
     *damage_rect = gfx::Rect();
+  } else {
+    ca_layer_overlay_processor_->PutForcedOverlayContentIntoUnderlays(
+        resource_provider, render_pass, gfx::RectF(render_pass->output_rect),
+        &render_pass->quad_list, render_pass_filters,
+        render_pass_backdrop_filters, candidates);
   }
-
-  // TODO(crbug.com/1204555): uncomment the following call once underlay
-  // mechanism is properly implemented on MacOS.
-  // ca_layer_overlay_processor_->PutForcedOverlayContentIntoOverlays(
-  //    resource_provider, render_pass.get(),
-  //    gfx::RectF(render_pass->output_rect), &render_pass->quad_list,
-  //    render_pass_filters, render_pass_backdrop_filters, candidates);
 }
 
 void OverlayProcessorMac::AdjustOutputSurfaceOverlay(

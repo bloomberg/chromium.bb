@@ -19,7 +19,9 @@ limitations under the License.
 
 #include "tensorflow/cc/saved_model/constants.h"
 #include "tensorflow/cc/saved_model/loader_util.h"
+#include "tensorflow/cc/saved_model/metrics.h"
 #include "tensorflow/cc/saved_model/reader.h"
+#include "tensorflow/cc/saved_model/util.h"
 #include "tensorflow/core/framework/attr_value.pb.h"
 #include "tensorflow/core/framework/function.pb.h"
 #include "tensorflow/core/framework/node_def.pb.h"
@@ -32,6 +34,7 @@ limitations under the License.
 #include "tensorflow/core/platform/env.h"
 #include "tensorflow/core/platform/errors.h"
 #include "tensorflow/core/protobuf/graph_debug_info.pb.h"
+#include "tensorflow/core/protobuf/meta_graph.pb.h"
 #include "tensorflow/core/protobuf/saver.pb.h"
 #include "tensorflow/core/public/session.h"
 #include "tensorflow/core/public/session_options.h"
@@ -62,6 +65,8 @@ auto* load_latency_by_stage = monitoring::Sampler<2>::New(
 
 constexpr char kLoadAttemptFail[] = "fail";
 constexpr char kLoadAttemptSuccess[] = "success";
+// `tensorflow::LoadSavedModel` API label.
+constexpr char kCCLoadLabel[] = "cc_load";
 
 uint64 GetLatencyMicroseconds(const uint64 start_microseconds) {
   const uint64 end_microseconds = EnvTime::NowMicros();
@@ -103,22 +108,12 @@ static Status ValidateSavedTensors(const GraphDef& graph_def) {
     const FunctionDefLibrary& library = graph_def.library();
     for (const auto& function : library.function()) {
       for (const auto& node : function.node_def()) {
-	TF_RETURN_IF_ERROR(ValidateNode(node));
+        TF_RETURN_IF_ERROR(ValidateNode(node));
       }
     }
   }
 
   return Status::OK();
-}
-
-Status LoadMetaGraphIntoSession(const MetaGraphDef& meta_graph_def,
-                                const SessionOptions& session_options,
-                                std::unique_ptr<Session>* session) {
-  Session* session_p = nullptr;
-  TF_RETURN_IF_ERROR(NewSession(session_options, &session_p));
-  session->reset(session_p);
-  TF_RETURN_IF_ERROR(ValidateSavedTensors(meta_graph_def.graph_def()));
-  return (*session)->Create(meta_graph_def.graph_def());
 }
 
 Tensor CreateStringTensor(const string& value) {
@@ -244,22 +239,18 @@ Status RunRestore(const RunOptions& run_options, const string& export_dir,
                  nullptr /* outputs */, &run_metadata, session);
 }
 
-Status ReadSavedModelDebugInfoIfPresent(
-    const string& export_dir,
-    std::unique_ptr<GraphDebugInfo>* debug_info_proto) {
-  LOG(INFO) << "Reading SavedModel debug info (if present) from: "
-            << export_dir;
+}  // namespace
 
-  const string debug_info_pb_path =
-      io::JoinPath(export_dir, "debug", "saved_model_debug_info.pb");
-  if (Env::Default()->FileExists(debug_info_pb_path).ok()) {
-    GraphDebugInfo debug_info;
-    TF_RETURN_IF_ERROR(
-        ReadBinaryProto(Env::Default(), debug_info_pb_path, &debug_info));
-    *debug_info_proto =
-        absl::make_unique<GraphDebugInfo>(std::move(debug_info));
-  }
-  return Status::OK();
+SavedModelBundleInterface::~SavedModelBundleInterface() {}
+
+Status LoadMetagraphIntoSession(const SessionOptions& session_options,
+                                const MetaGraphDef& meta_graph,
+                                std::unique_ptr<Session>* session) {
+  Session* session_p = nullptr;
+  TF_RETURN_IF_ERROR(NewSession(session_options, &session_p));
+  session->reset(session_p);
+  TF_RETURN_IF_ERROR(ValidateSavedTensors(meta_graph.graph_def()));
+  return (*session)->Create(meta_graph.graph_def());
 }
 
 Status LoadSavedModelInternal(const SessionOptions& session_options,
@@ -267,50 +258,23 @@ Status LoadSavedModelInternal(const SessionOptions& session_options,
                               const string& export_dir,
                               const std::unordered_set<string>& tags,
                               SavedModelBundle* const bundle) {
-  const uint64 read_start_microseconds = Env::Default()->NowMicros();
   TF_RETURN_IF_ERROR(ReadMetaGraphDefFromSavedModel(export_dir, tags,
                                                     &bundle->meta_graph_def));
   TF_RETURN_IF_ERROR(
       ReadSavedModelDebugInfoIfPresent(export_dir, &bundle->debug_info));
-  TF_RETURN_IF_ERROR(LoadMetaGraphIntoSession(
-      bundle->meta_graph_def, session_options, &bundle->session));
-
-  std::vector<AssetFileDef> asset_file_defs;
-  TF_RETURN_IF_ERROR(
-      internal::GetAssetFileDefs(bundle->meta_graph_def, &asset_file_defs));
-  TF_RETURN_IF_ERROR(
-      RunRestore(run_options, export_dir,
-                 bundle->meta_graph_def.saver_def().restore_op_name(),
-                 bundle->meta_graph_def.saver_def().filename_tensor_name(),
-                 asset_file_defs, bundle->session.get()));
-  // Record walltime spent in restoring graph from disk, but postpone metric
-  // increments until graph init finishes.
-  const uint64 restore_graph_walltime =
-      GetLatencyMicroseconds(read_start_microseconds);
-
-  const uint64 graph_init_start_microseconds = Env::Default()->NowMicros();
-  string init_op_name;
-  TF_RETURN_IF_ERROR(
-      internal::GetInitOp(export_dir, bundle->meta_graph_def, &init_op_name));
-  TF_RETURN_IF_ERROR(RunInitOp(run_options, export_dir, bundle->meta_graph_def,
-                               asset_file_defs, bundle->session.get(),
-                               init_op_name));
-  load_latency_by_stage->GetCell(export_dir, "restore_graph")
-      ->Add(restore_graph_walltime);
-  // Record wall time spent in init op.
-  load_latency_by_stage->GetCell(export_dir, "init_graph")
-      ->Add(GetLatencyMicroseconds(graph_init_start_microseconds));
+  TF_RETURN_IF_ERROR(LoadMetagraphIntoSession(
+      session_options, bundle->meta_graph_def, &bundle->session));
+  TF_RETURN_IF_ERROR(RestoreSession(run_options, bundle->meta_graph_def,
+                                    export_dir, &bundle->session));
   return Status::OK();
 }
-
-}  // namespace
-
-SavedModelBundleInterface::~SavedModelBundleInterface() {}
 
 Status LoadSavedModel(const SessionOptions& session_options,
                       const RunOptions& run_options, const string& export_dir,
                       const std::unordered_set<string>& tags,
                       SavedModelBundle* const bundle) {
+  metrics::SavedModelReadApi(kCCLoadLabel).IncrementBy(1);
+
   // TODO(robson): Add tests for the counters.
   const uint64 start_microseconds = Env::Default()->NowMicros();
   const Status status = LoadSavedModelInternal(session_options, run_options,
@@ -439,6 +403,37 @@ class LiteSessionWrapper : public Session {
   const std::unique_ptr<Session> wrapped_;
 };
 }  // namespace
+
+Status RestoreSession(const RunOptions& run_options,
+                      const MetaGraphDef& meta_graph, const string& export_dir,
+                      std::unique_ptr<Session>* session) {
+  const uint64 read_start_microseconds = Env::Default()->NowMicros();
+  std::vector<AssetFileDef> asset_file_defs;
+  TF_RETURN_IF_ERROR(internal::GetAssetFileDefs(meta_graph, &asset_file_defs));
+  if (meta_graph.has_saver_def()) {
+    TF_RETURN_IF_ERROR(RunRestore(run_options, export_dir,
+                                  meta_graph.saver_def().restore_op_name(),
+                                  meta_graph.saver_def().filename_tensor_name(),
+                                  asset_file_defs, session->get()));
+  }
+  // Record walltime spent in restoring graph from disk, but postpone metric
+  // increments until graph init finishes.
+  const uint64 restore_graph_walltime =
+      GetLatencyMicroseconds(read_start_microseconds);
+
+  const uint64 graph_init_start_microseconds = Env::Default()->NowMicros();
+  string init_op_name;
+  TF_RETURN_IF_ERROR(
+      internal::GetInitOp(export_dir, meta_graph, &init_op_name));
+  TF_RETURN_IF_ERROR(RunInitOp(run_options, export_dir, meta_graph,
+                               asset_file_defs, session->get(), init_op_name));
+  load_latency_by_stage->GetCell(export_dir, "restore_graph")
+      ->Add(restore_graph_walltime);
+  // Record wall time spent in init op.
+  load_latency_by_stage->GetCell(export_dir, "init_graph")
+      ->Add(GetLatencyMicroseconds(graph_init_start_microseconds));
+  return Status::OK();
+}
 
 Status LoadSavedModel(const SessionOptions& session_options,
                       const RunOptions& run_options, const string& export_dir,

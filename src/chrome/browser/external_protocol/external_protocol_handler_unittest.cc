@@ -189,15 +189,11 @@ class ExternalProtocolHandlerTest : public testing::Test {
     ExternalProtocolHandler::SetDelegateForTesting(&delegate_);
     delegate_.set_block_state(block_state);
     delegate_.set_os_state(os_state);
-    int process_id = web_contents_->GetMainFrame()
-                         ->GetRenderViewHost()
-                         ->GetProcess()
-                         ->GetID();
-    int routing_id =
-        web_contents_->GetMainFrame()->GetRenderViewHost()->GetRoutingID();
-    ExternalProtocolHandler::LaunchUrl(url, process_id, routing_id,
-                                       ui::PAGE_TRANSITION_LINK, true,
-                                       initiating_origin);
+    ExternalProtocolHandler::LaunchUrl(
+        url,
+        base::BindRepeating(&ExternalProtocolHandlerTest::GetWebContents,
+                            base::Unretained(this)),
+        ui::PAGE_TRANSITION_LINK, true, initiating_origin);
     run_loop_.Run();
     ExternalProtocolHandler::SetDelegateForTesting(nullptr);
 
@@ -216,6 +212,8 @@ class ExternalProtocolHandlerTest : public testing::Test {
       EXPECT_FALSE(delegate_.initiating_origin().has_value());
     }
   }
+
+  content::WebContents* GetWebContents() const { return web_contents_.get(); }
 
   content::BrowserTaskEnvironment task_environment_;
 
@@ -346,6 +344,10 @@ TEST_F(ExternalProtocolHandlerTest, TestGetBlockStateDefaultBlock) {
   EXPECT_EQ(ExternalProtocolHandler::BLOCK, block_state);
   block_state = ExternalProtocolHandler::GetBlockState("ie.http", nullptr,
                                                        profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::BLOCK, block_state);
+  EXPECT_EQ("mk", GURL("mk:@FooBar:ie.http:res://foo.bar/baz").scheme());
+  block_state =
+      ExternalProtocolHandler::GetBlockState("mk", nullptr, profile_.get());
   EXPECT_EQ(ExternalProtocolHandler::BLOCK, block_state);
   EXPECT_TRUE(
       profile_->GetPrefs()

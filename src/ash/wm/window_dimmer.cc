@@ -34,8 +34,7 @@ WindowDimmer::WindowDimmer(aura::Window* parent,
     ::wm::SetWindowVisibilityAnimationType(
         window_, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
     ::wm::SetWindowVisibilityAnimationDuration(
-        window_,
-        base::TimeDelta::FromMilliseconds(kDefaultDimAnimationDurationMs));
+        window_, base::Milliseconds(kDefaultDimAnimationDurationMs));
   }
   window_->AddObserver(this);
 
@@ -85,9 +84,11 @@ void WindowDimmer::OnWindowBoundsChanged(aura::Window* window,
 void WindowDimmer::OnWindowDestroying(aura::Window* window) {
   if (window == parent_) {
     parent_->RemoveObserver(this);
-    if (delegate_)
-      delegate_->OnDimmedWindowDestroying(window);
     parent_ = nullptr;
+    if (delegate_) {
+      delegate_->OnDimmedWindowDestroying(window);
+      // `this` can be deleted above. So don't access any member after this.
+    }
   } else {
     DCHECK_EQ(window_, window);
     window_->RemoveObserver(this);

@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
@@ -29,9 +28,11 @@ class TestCookieManager : public network::mojom::CookieManager {
   void GetAllCookies(GetAllCookiesCallback callback) override {}
   void GetAllCookiesWithAccessSemantics(
       GetAllCookiesWithAccessSemanticsCallback callback) override {}
-  void GetCookieList(const GURL& url,
-                     const net::CookieOptions& cookie_options,
-                     GetCookieListCallback callback) override {}
+  void GetCookieList(
+      const GURL& url,
+      const net::CookieOptions& cookie_options,
+      const net::CookiePartitionKeyCollection& cookie_partition_key_collection,
+      GetCookieListCallback callback) override {}
   void DeleteCanonicalCookie(const net::CanonicalCookie& cookie,
                              DeleteCanonicalCookieCallback callback) override {}
   void DeleteCookies(network::mojom::CookieDeletionFilterPtr filter,

@@ -314,7 +314,7 @@ union Color
 		uint16_t r = 0;
 		uint16_t g = 0;
 		uint16_t b = 0;
-		const uint16_t a = halfFloat1;
+		uint16_t a = halfFloat1;
 
 		RGBA(uint16_t r, uint16_t g, uint16_t b)
 		    : r(r)
@@ -325,12 +325,10 @@ union Color
 
 		RGBA &operator=(const RGBA &other)
 		{
-			if(this != &other)
-			{
-				this->r = other.r;
-				this->g = other.g;
-				this->b = other.b;
-			}
+			this->r = other.r;
+			this->g = other.g;
+			this->b = other.b;
+			this->a = halfFloat1;
 
 			return *this;
 		}
@@ -350,12 +348,15 @@ union Color
 	{
 	}
 
+	Color(const Color &other)
+	{
+		this->rgba = other.rgba;
+	}
+
 	Color &operator=(const Color &other)
 	{
-		if(this != &other)
-		{
-			this->rgba = other.rgba;
-		}
+		this->rgba = other.rgba;
+
 		return *this;
 	}
 
@@ -634,6 +635,7 @@ enum DataType
 	EP3 = 3,
 	Mode,
 	Partition,
+	End,
 };
 
 enum Channel
@@ -648,18 +650,14 @@ struct DeltaBits
 {
 	size_t channel[3];
 
-	DeltaBits()
+	constexpr DeltaBits()
+	    : channel{ 0, 0, 0 }
 	{
-		channel[R] = 0;
-		channel[G] = 0;
-		channel[B] = 0;
 	}
 
-	DeltaBits(int r, int g, int b)
+	constexpr DeltaBits(size_t r, size_t g, size_t b)
+	    : channel{ r, g, b }
 	{
-		channel[R] = r;
-		channel[G] = g;
-		channel[B] = b;
 	}
 };
 
@@ -669,26 +667,23 @@ struct ModeDesc
 	bool hasDelta;
 	int partitionCount;
 	int endpointBits;
-	int numEndpoints;
 	DeltaBits deltaBits;
 
-	ModeDesc()
+	constexpr ModeDesc()
 	    : number(-1)
 	    , hasDelta(false)
 	    , partitionCount(0)
 	    , endpointBits(0)
-	    , numEndpoints(0)
 	{
 	}
 
-	ModeDesc(int number, bool hasDelta, int partitionCount, int endpointBits, DeltaBits deltaBits)
+	constexpr ModeDesc(int number, bool hasDelta, int partitionCount, int endpointBits, DeltaBits deltaBits)
 	    : number(number)
 	    , hasDelta(hasDelta)
 	    , partitionCount(partitionCount)
 	    , endpointBits(endpointBits)
 	    , deltaBits(deltaBits)
 	{
-		numEndpoints = partitionCount * 2;
 	}
 };
 
@@ -700,9 +695,16 @@ struct BlockDesc
 	int LSB;
 	ModeDesc modeDesc;
 
-	BlockDesc() = default;
+	constexpr BlockDesc()
+	    : type(End)
+	    , channel(None)
+	    , MSB(0)
+	    , LSB(0)
+	    , modeDesc()
+	{
+	}
 
-	BlockDesc(DataType type, Channel channel, int MSB, int LSB, ModeDesc modeDesc)
+	constexpr BlockDesc(const DataType type, Channel channel, int MSB, int LSB, ModeDesc modeDesc)
 	    : type(type)
 	    , channel(channel)
 	    , MSB(MSB)
@@ -711,197 +713,224 @@ struct BlockDesc
 	{
 	}
 
-	BlockDesc(DataType type, Channel channel, int MSB, int LSB)
+	constexpr BlockDesc(DataType type, Channel channel, int MSB, int LSB)
 	    : type(type)
 	    , channel(channel)
 	    , MSB(MSB)
 	    , LSB(LSB)
+	    , modeDesc()
 	{
 	}
 };
 
-// Table describing the bitfields for each mode from the LSB to the MSB before
-// the index data starts.
+// Turns a legal mode into an index into the BlockDesc table.
+// Illegal or reserved modes return -1.
+static int modeToIndex(uint8_t mode)
+{
+	if(mode <= 3)
+	{
+		return mode;
+	}
+	else if((mode & 0x2) != 0)
+	{
+		if(mode <= 18)
+		{
+			// Turns 6 into 4, 7 into 5, 10 into 6, etc.
+			return (mode / 2) + 1 + (mode & 0x1);
+		}
+		else if(mode == 22 || mode == 26 || mode == 30)
+		{
+			// Turns 22 into 11, 26 into 12, etc.
+			return mode / 4 + 6;
+		}
+	}
+
+	return -1;
+}
+
+// Returns a description of the bitfields for each mode from the LSB
+// to the MSB before the index data starts.
 //
-// The numbers come from the BC6h block description. The basic format is a list of bitfield
-// descriptors of the form:
+// The numbers come from the BC6h block description. Each BlockDesc in the
 //   {Type, Channel, MSB, LSB}
-//   * Type describes which endpoint this is, or if this is a mode or a partition number.
+//   * Type describes which endpoint this is, or if this is a mode, a partition
+//     number, or the end of the block description.
 //   * Channel describes one of the 3 color channels within an endpoint
 //   * MSB and LSB specificy:
 //      * The size of the bitfield being read
 //      * The position of the bitfield within the variable it is being read to
-//      * And if the bitfield is stored in reverse bit order
-//     If MSB < LSB then the bitfield is stored in reverse order. The size of the bitfield
-//     is abs(MSB-LSB+1). And the position of the bitfield within the variable is
-//     min(LSB, MSB).
+//      * If the bitfield is stored in reverse bit order
+//     If MSB < LSB then the bitfield is stored in reverse order. The size of
+//     the bitfield is abs(MSB-LSB+1). And the position of the bitfield within
+//     the variable is min(LSB, MSB).
 //
-// Invalid or reserved modes do not have any fields within them.
-static const std::vector<BlockDesc> blockDescs[32] = {
+// Invalid or reserved modes return an empty list.
+static constexpr int NumBlocks = 14;
+// The largest number of descriptions within a block.
+static constexpr int MaxBlockDescIndex = 26;
+static constexpr BlockDesc blockDescs[NumBlocks][MaxBlockDescIndex] = {
 	// clang-format off
-	// Mode 0
-	{ { Mode, None, 1, 0, { 0, true, 2, 10, { 5, 5, 5 } } },
-	  { EP2, G, 4, 4 }, { EP2, B, 4, 4 }, { EP3, B, 4, 4 },
-	  { EP0, R, 9, 0 }, { EP0, G, 9, 0 }, { EP0, B, 9, 0 },
-	  { EP1, R, 4, 0 }, { EP3, G, 4, 4 }, { EP2, G, 3, 0 },
-	  { EP1, G, 4, 0 }, { EP3, B, 0, 0 }, { EP3, G, 3, 0 },
-	  { EP1, B, 4, 0 }, { EP3, B, 1, 1 }, { EP2, B, 3, 0 },
-	  { EP2, R, 4, 0 }, { EP3, B, 2, 2 }, { EP3, R, 4, 0 },
-	  { EP3, B, 3, 3 },
-	  { Partition, None, 4, 0 } },
-	// Mode 1
-	{ { Mode, None, 1, 0, { 1, true, 2, 7, { 6, 6, 6 } } },
-	  { EP2, G, 5, 5 }, { EP3, G, 5, 4 }, { EP0, R, 6, 0 },
-	  { EP3, B, 1, 0 }, { EP2, B, 4, 4 }, { EP0, G, 6, 0 },
-	  { EP2, B, 5, 5 }, { EP3, B, 2, 2 }, { EP2, G, 4, 4 },
-	  { EP0, B, 6, 0 }, { EP3, B, 3, 3 }, { EP3, B, 5, 5 },
-      { EP3, B, 4, 4 }, { EP1, R, 5, 0 }, { EP2, G, 3, 0 },
-      { EP1, G, 5, 0 }, { EP3, G, 3, 0 }, { EP1, B, 5, 0 },
-      { EP2, B, 3, 0 }, { EP2, R, 5, 0 }, { EP3, R, 5, 0 },
-	  { Partition, None, 4, 0 } },
-	// Mode 2
-	{ { Mode, None, 4, 0, { 2, true, 2, 11, { 5, 4, 4 } } },
-	  { EP0, R, 9, 0 }, { EP0, G, 9, 0 }, { EP0, B, 9, 0 },
-	  { EP1, R, 4, 0 }, { EP0, R, 10, 10 }, { EP2, G, 3, 0 },
-	  { EP1, G, 3, 0 }, { EP0, G, 10, 10 }, { EP3, B, 0, 0 },
-	  { EP3, G, 3, 0 }, { EP1, B, 3, 0 }, { EP0, B, 10, 10 },
-	  { EP3, B, 1, 1 }, { EP2, B, 3, 0 }, { EP2, R, 4, 0 },
-	  { EP3, B, 2, 2 }, { EP3, R, 4, 0 }, { EP3, B, 3, 3 },
-	  { Partition, None, 4, 0 } },
-	// Mode 3
+	// Mode 0, Index 0
 	{
-	    { Mode, None, 4, 0, { 3, false, 1, 10, { 0, 0, 0 } } },
-	    { EP0, R, 9, 0 }, { EP0, G, 9, 0 }, { EP0, B, 9, 0 },
-	    { EP1, R, 9, 0 }, { EP1, G, 9, 0 }, { EP1, B, 9, 0 },
+		{ Mode, None, 1, 0, { 0, true, 2, 10, { 5, 5, 5 } } },
+		{ EP2, G, 4, 4 }, { EP2, B, 4, 4 }, { EP3, B, 4, 4 },
+		{ EP0, R, 9, 0 }, { EP0, G, 9, 0 }, { EP0, B, 9, 0 },
+		{ EP1, R, 4, 0 }, { EP3, G, 4, 4 }, { EP2, G, 3, 0 },
+		{ EP1, G, 4, 0 }, { EP3, B, 0, 0 }, { EP3, G, 3, 0 },
+		{ EP1, B, 4, 0 }, { EP3, B, 1, 1 }, { EP2, B, 3, 0 },
+		{ EP2, R, 4, 0 }, { EP3, B, 2, 2 }, { EP3, R, 4, 0 },
+		{ EP3, B, 3, 3 },
+		{ Partition, None, 4, 0 },
+		{ End, None, 0, 0},
 	},
-	// Mode 4: Illegal
-	{},
-	// Mode 5: Illegal
-	{},
-	// Mode 6
-	{ { Mode, None, 4, 0, { 6, true, 2, 11, { 4, 5, 4 } } },
-	  { EP0, R, 9, 0 }, { EP0, G, 9, 0 }, { EP0, B, 9, 0 },
-	  { EP1, R, 3, 0 }, { EP0, R, 10, 10 }, { EP3, G, 4, 4 },
-	  { EP2, G, 3, 0 }, { EP1, G, 4, 0 }, { EP0, G, 10, 10 },
-	  { EP3, G, 3, 0 }, { EP1, B, 3, 0 }, { EP0, B, 10, 10 },
-	  { EP3, B, 1, 1 }, { EP2, B, 3, 0 }, { EP2, R, 3, 0 },
-	  { EP3, B, 0, 0 }, { EP3, B, 2, 2 }, { EP3, R, 3, 0 },
-	  { EP2, G, 4, 4 }, { EP3, B, 3, 3 },
-	  { Partition, None, 4, 0 } },
-	// Mode 7
+	// Mode 1, Index 1
 	{
-	    { Mode, None, 4, 0, { 7, true, 1, 11, { 9, 9, 9 } } },
-	    { EP0, R, 9, 0 }, { EP0, G, 9, 0 }, { EP0, B, 9, 0 },
-	    { EP1, R, 8, 0 }, { EP0, R, 10, 10 }, { EP1, G, 8, 0 },
-	    { EP0, G, 10, 10 }, { EP1, B, 8, 0 }, { EP0, B, 10, 10 },
+		{ Mode, None, 1, 0, { 1, true, 2, 7, { 6, 6, 6 } } },
+		{ EP2, G, 5, 5 }, { EP3, G, 5, 4 }, { EP0, R, 6, 0 },
+		{ EP3, B, 1, 0 }, { EP2, B, 4, 4 }, { EP0, G, 6, 0 },
+		{ EP2, B, 5, 5 }, { EP3, B, 2, 2 }, { EP2, G, 4, 4 },
+		{ EP0, B, 6, 0 }, { EP3, B, 3, 3 }, { EP3, B, 5, 5 },
+		{ EP3, B, 4, 4 }, { EP1, R, 5, 0 }, { EP2, G, 3, 0 },
+		{ EP1, G, 5, 0 }, { EP3, G, 3, 0 }, { EP1, B, 5, 0 },
+		{ EP2, B, 3, 0 }, { EP2, R, 5, 0 }, { EP3, R, 5, 0 },
+		{ Partition, None, 4, 0 },
+		{ End, None, 0, 0},
 	},
-	// Mode 8: Illegal
-	{},
-	// Mode 9: Illegal
-	{},
-	// Mode 10
-	{ { Mode, None, 4, 0, { 10, true, 2, 11, { 4, 4, 5 } } },
-	  { EP0, R, 9, 0 }, { EP0, G, 9, 0 }, { EP0, B, 9, 0 },
-	  { EP1, R, 3, 0 }, { EP0, R, 10, 10 }, { EP2, B, 4, 4 },
-	  { EP2, G, 3, 0 }, { EP1, G, 3, 0 }, { EP0, G, 10, 10 },
-	  { EP3, B, 0, 0 }, { EP3, G, 3, 0 }, { EP1, B, 4, 0 },
-	  { EP0, B, 10, 10 }, { EP2, B, 3, 0 }, { EP2, R, 3, 0 },
-	  { EP3, B, 1, 1 }, { EP3, B, 2, 2 }, { EP3, R, 3, 0 },
-      { EP3, B, 4, 4 }, { EP3, B, 3, 3 },
-	  { Partition, None, 4, 0 } },
-	// Mode 11
+	// Mode 2, Index 2
 	{
-	    { Mode, None, 4, 0, { 11, true, 1, 12, { 8, 8, 8 } } },
-	    { EP0, R, 9, 0 }, { EP0, G, 9, 0 }, { EP0, B, 9, 0 },
-	    { EP1, R, 7, 0 }, { EP0, R, 10, 11 }, { EP1, G, 7, 0 },
-	    { EP0, G, 10, 11 }, { EP1, B, 7, 0 }, { EP0, B, 10, 11 },
+		{ Mode, None, 4, 0, { 2, true, 2, 11, { 5, 4, 4 } } },
+		{ EP0, R, 9, 0 }, { EP0, G, 9, 0 }, { EP0, B, 9, 0 },
+		{ EP1, R, 4, 0 }, { EP0, R, 10, 10 }, { EP2, G, 3, 0 },
+		{ EP1, G, 3, 0 }, { EP0, G, 10, 10 }, { EP3, B, 0, 0 },
+		{ EP3, G, 3, 0 }, { EP1, B, 3, 0 }, { EP0, B, 10, 10 },
+		{ EP3, B, 1, 1 }, { EP2, B, 3, 0 }, { EP2, R, 4, 0 },
+		{ EP3, B, 2, 2 }, { EP3, R, 4, 0 }, { EP3, B, 3, 3 },
+		{ Partition, None, 4, 0 },
+		{ End, None, 0, 0},
 	},
-	// Mode 12: Illegal
-	{},
-	// Mode 13: Illegal
-	{},
-	// Mode 14
-	{ { Mode, None, 4, 0, { 14, true, 2, 9, { 5, 5, 5 } } },
-	  { EP0, R, 8, 0 }, { EP2, B, 4, 4 }, { EP0, G, 8, 0 },
-	  { EP2, G, 4, 4 }, { EP0, B, 8, 0 }, { EP3, B, 4, 4 },
-	  { EP1, R, 4, 0 }, { EP3, G, 4, 4 }, { EP2, G, 3, 0 },
-	  { EP1, G, 4, 0 }, { EP3, B, 0, 0 }, { EP3, G, 3, 0 },
-	  { EP1, B, 4, 0 }, { EP3, B, 1, 1 }, { EP2, B, 3, 0 },
-	  { EP2, R, 4, 0 }, { EP3, B, 2, 2 }, { EP3, R, 4, 0 },
-	  { EP3, B, 3, 3 },
-	  { Partition, None, 4, 0 } },
-	// Mode 15
+	// Mode 3, Index 3
 	{
-	    { Mode, None, 4, 0, { 15, true, 1, 16, { 4, 4, 4 } } },
-	    { EP0, R, 9, 0 }, { EP0, G, 9, 0 }, { EP0, B, 9, 0 },
-	    { EP1, R, 3, 0 }, { EP0, R, 10, 15 }, { EP1, G, 3, 0 },
-	    { EP0, G, 10, 15 }, { EP1, B, 3, 0 }, { EP0, B, 10, 15 },
+		{ Mode, None, 4, 0, { 3, false, 1, 10, { 0, 0, 0 } } },
+		{ EP0, R, 9, 0 }, { EP0, G, 9, 0 }, { EP0, B, 9, 0 },
+		{ EP1, R, 9, 0 }, { EP1, G, 9, 0 }, { EP1, B, 9, 0 },
+		{ End, None, 0, 0},
 	},
-	// Mode 16: Illegal
-	{},
-	// Mode 17: Illegal
-	{},
-	// Mode 18
-	{ { Mode, None, 4, 0, { 18, true, 2, 8, { 6, 5, 5 } } },
-	  { EP0, R, 7, 0 }, { EP3, G, 4, 4 }, { EP2, B, 4, 4 },
-	  { EP0, G, 7, 0 }, { EP3, B, 2, 2 }, { EP2, G, 4, 4 },
-	  { EP0, B, 7, 0 }, { EP3, B, 3, 3 }, { EP3, B, 4, 4 },
-      { EP1, R, 5, 0 }, { EP2, G, 3, 0 }, { EP1, G, 4, 0 },
-      { EP3, B, 0, 0 }, { EP3, G, 3, 0 }, { EP1, B, 4, 0 },
-      { EP3, B, 1, 1 }, { EP2, B, 3, 0 }, { EP2, R, 5, 0 },
-      { EP3, R, 5, 0 },
-	  { Partition, None, 4, 0 } },
-	// Mode 19: Reserved
-	{},
-	// Mode 20: Illegal
-	{},
-	// Mode 21: Illegal
-	{},
-	// Mode 22:
-	{ { Mode, None, 4, 0, { 22, true, 2, 8, { 5, 6, 5 } } },
-	  { EP0, R, 7, 0 }, { EP3, B, 0, 0 }, { EP2, B, 4, 4 },
-	  { EP0, G, 7, 0 }, { EP2, G, 5, 5 }, { EP2, G, 4, 4 },
-      { EP0, B, 7, 0 }, { EP3, G, 5, 5 }, { EP3, B, 4, 4 },
-      { EP1, R, 4, 0 }, { EP3, G, 4, 4 }, { EP2, G, 3, 0 },
-      { EP1, G, 5, 0 }, { EP3, G, 3, 0 }, { EP1, B, 4, 0 },
-      { EP3, B, 1, 1 }, { EP2, B, 3, 0 }, { EP2, R, 4, 0 },
-      { EP3, B, 2, 2 }, { EP3, R, 4, 0 }, { EP3, B, 3, 3 },
-	  { Partition, None, 4, 0 } },
-	// Mode 23: Reserved
-	{},
-	// Mode 24: Illegal
-	{},
-	// Mode 25: Illegal
-	{},
-	// Mode 26
-	{ { Mode, None, 4, 0, { 26, true, 2, 8, { 5, 5, 6 } } },
-	  { EP0, R, 7, 0 }, { EP3, B, 1, 1 }, { EP2, B, 4, 4 },
-	  { EP0, G, 7, 0 }, { EP2, B, 5, 5 }, { EP2, G, 4, 4 },
-	  { EP0, B, 7, 0 }, { EP3, B, 5, 5 }, { EP3, B, 4, 4 },
-      { EP1, R, 4, 0 }, { EP3, G, 4, 4 }, { EP2, G, 3, 0 },
-      { EP1, G, 4, 0 }, { EP3, B, 0, 0 }, { EP3, G, 3, 0 },
-      { EP1, B, 5, 0 }, { EP2, B, 3, 0 }, { EP2, R, 4, 0 },
-      { EP3, B, 2, 2 }, { EP3, R, 4, 0 }, { EP3, B, 3, 3 },
-	  { Partition, None, 4, 0 } },
-	// Mode 27: Reserved
-	{},
-	// Mode 28: Illegal
-	{},
-	// Mode 29: Illegal
-	{},
-	// Mode 30
-	{ { Mode, None, 4, 0, { 30, false, 2, 6, { 0, 0, 0 } } },
-	  { EP0, R, 5, 0 }, { EP3, G, 4, 4 }, { EP3, B, 0, 0 },
-      { EP3, B, 1, 1 }, { EP2, B, 4, 4 }, { EP0, G, 5, 0 },
-      { EP2, G, 5, 5 }, { EP2, B, 5, 5 }, { EP3, B, 2, 2 },
-      { EP2, G, 4, 4 }, { EP0, B, 5, 0 }, { EP3, G, 5, 5 },
-      { EP3, B, 3, 3 }, { EP3, B, 5, 5 }, { EP3, B, 4, 4 },
-      { EP1, R, 5, 0 }, { EP2, G, 3, 0 }, { EP1, G, 5, 0 },
-      { EP3, G, 3, 0 }, { EP1, B, 5, 0 }, { EP2, B, 3, 0 },
-      { EP2, R, 5, 0 }, { EP3, R, 5, 0 },
-	  { Partition, None, 4, 0 } },
-	// Mode 31: Reserved
-	{},
+	// Mode 6, Index 4
+	{
+		{ Mode, None, 4, 0, { 6, true, 2, 11, { 4, 5, 4 } } }, // 1 1
+		{ EP0, R, 9, 0 }, { EP0, G, 9, 0 }, { EP0, B, 9, 0 },
+		{ EP1, R, 3, 0 }, { EP0, R, 10, 10 }, { EP3, G, 4, 4 },
+		{ EP2, G, 3, 0 }, { EP1, G, 4, 0 }, { EP0, G, 10, 10 },
+		{ EP3, G, 3, 0 }, { EP1, B, 3, 0 }, { EP0, B, 10, 10 },
+		{ EP3, B, 1, 1 }, { EP2, B, 3, 0 }, { EP2, R, 3, 0 },
+		{ EP3, B, 0, 0 }, { EP3, B, 2, 2 }, { EP3, R, 3, 0 }, // 18 19
+		{ EP2, G, 4, 4 }, { EP3, B, 3, 3 }, // 2 21
+		{ Partition, None, 4, 0 },
+		{ End, None, 0, 0},
+	},
+	// Mode 7, Index 5
+	{
+		{ Mode, None, 4, 0, { 7, true, 1, 11, { 9, 9, 9 } } },
+		{ EP0, R, 9, 0 }, { EP0, G, 9, 0 }, { EP0, B, 9, 0 },
+		{ EP1, R, 8, 0 }, { EP0, R, 10, 10 }, { EP1, G, 8, 0 },
+		{ EP0, G, 10, 10 }, { EP1, B, 8, 0 }, { EP0, B, 10, 10 },
+		{ End, None, 0, 0},
+	},
+	// Mode 10, Index 6
+	{
+		{ Mode, None, 4, 0, { 10, true, 2, 11, { 4, 4, 5 } } },
+		{ EP0, R, 9, 0 }, { EP0, G, 9, 0 }, { EP0, B, 9, 0 },
+		{ EP1, R, 3, 0 }, { EP0, R, 10, 10 }, { EP2, B, 4, 4 },
+		{ EP2, G, 3, 0 }, { EP1, G, 3, 0 }, { EP0, G, 10, 10 },
+		{ EP3, B, 0, 0 }, { EP3, G, 3, 0 }, { EP1, B, 4, 0 },
+		{ EP0, B, 10, 10 }, { EP2, B, 3, 0 }, { EP2, R, 3, 0 },
+		{ EP3, B, 1, 1 }, { EP3, B, 2, 2 }, { EP3, R, 3, 0 },
+		{ EP3, B, 4, 4 }, { EP3, B, 3, 3 },
+		{ Partition, None, 4, 0 },
+		{ End, None, 0, 0},
+	},
+	// Mode 11, Index 7
+	{
+		{ Mode, None, 4, 0, { 11, true, 1, 12, { 8, 8, 8 } } },
+		{ EP0, R, 9, 0 }, { EP0, G, 9, 0 }, { EP0, B, 9, 0 },
+		{ EP1, R, 7, 0 }, { EP0, R, 10, 11 }, { EP1, G, 7, 0 },
+		{ EP0, G, 10, 11 }, { EP1, B, 7, 0 }, { EP0, B, 10, 11 },
+		{ End, None, 0, 0},
+	},
+	// Mode 14, Index 8
+	{
+		{ Mode, None, 4, 0, { 14, true, 2, 9, { 5, 5, 5 } } },
+		{ EP0, R, 8, 0 }, { EP2, B, 4, 4 }, { EP0, G, 8, 0 },
+		{ EP2, G, 4, 4 }, { EP0, B, 8, 0 }, { EP3, B, 4, 4 },
+		{ EP1, R, 4, 0 }, { EP3, G, 4, 4 }, { EP2, G, 3, 0 },
+		{ EP1, G, 4, 0 }, { EP3, B, 0, 0 }, { EP3, G, 3, 0 },
+		{ EP1, B, 4, 0 }, { EP3, B, 1, 1 }, { EP2, B, 3, 0 },
+		{ EP2, R, 4, 0 }, { EP3, B, 2, 2 }, { EP3, R, 4, 0 },
+		{ EP3, B, 3, 3 },
+		{ Partition, None, 4, 0 },
+		{ End, None, 0, 0},
+	},
+	// Mode 15, Index 9
+	{
+		{ Mode, None, 4, 0, { 15, true, 1, 16, { 4, 4, 4 } } },
+		{ EP0, R, 9, 0 }, { EP0, G, 9, 0 }, { EP0, B, 9, 0 },
+		{ EP1, R, 3, 0 }, { EP0, R, 10, 15 }, { EP1, G, 3, 0 },
+		{ EP0, G, 10, 15 }, { EP1, B, 3, 0 }, { EP0, B, 10, 15 },
+		{ End, None, 0, 0},
+	},
+	// Mode 18, Index 10
+	{
+		{ Mode, None, 4, 0, { 18, true, 2, 8, { 6, 5, 5 } } },
+		{ EP0, R, 7, 0 }, { EP3, G, 4, 4 }, { EP2, B, 4, 4 },
+		{ EP0, G, 7, 0 }, { EP3, B, 2, 2 }, { EP2, G, 4, 4 },
+		{ EP0, B, 7, 0 }, { EP3, B, 3, 3 }, { EP3, B, 4, 4 },
+		{ EP1, R, 5, 0 }, { EP2, G, 3, 0 }, { EP1, G, 4, 0 },
+		{ EP3, B, 0, 0 }, { EP3, G, 3, 0 }, { EP1, B, 4, 0 },
+		{ EP3, B, 1, 1 }, { EP2, B, 3, 0 }, { EP2, R, 5, 0 },
+		{ EP3, R, 5, 0 },
+		{ Partition, None, 4, 0 },
+		{ End, None, 0, 0},
+	},
+	// Mode 22, Index 11
+	{
+		{ Mode, None, 4, 0, { 22, true, 2, 8, { 5, 6, 5 } } },
+		{ EP0, R, 7, 0 }, { EP3, B, 0, 0 }, { EP2, B, 4, 4 },
+		{ EP0, G, 7, 0 }, { EP2, G, 5, 5 }, { EP2, G, 4, 4 },
+		{ EP0, B, 7, 0 }, { EP3, G, 5, 5 }, { EP3, B, 4, 4 },
+		{ EP1, R, 4, 0 }, { EP3, G, 4, 4 }, { EP2, G, 3, 0 },
+		{ EP1, G, 5, 0 }, { EP3, G, 3, 0 }, { EP1, B, 4, 0 },
+		{ EP3, B, 1, 1 }, { EP2, B, 3, 0 }, { EP2, R, 4, 0 },
+		{ EP3, B, 2, 2 }, { EP3, R, 4, 0 }, { EP3, B, 3, 3 },
+		{ Partition, None, 4, 0 },
+		{ End, None, 0, 0},
+	},
+	// Mode 26, Index 12
+	{
+		{ Mode, None, 4, 0, { 26, true, 2, 8, { 5, 5, 6 } } },
+		{ EP0, R, 7, 0 }, { EP3, B, 1, 1 }, { EP2, B, 4, 4 },
+		{ EP0, G, 7, 0 }, { EP2, B, 5, 5 }, { EP2, G, 4, 4 },
+		{ EP0, B, 7, 0 }, { EP3, B, 5, 5 }, { EP3, B, 4, 4 },
+		{ EP1, R, 4, 0 }, { EP3, G, 4, 4 }, { EP2, G, 3, 0 },
+		{ EP1, G, 4, 0 }, { EP3, B, 0, 0 }, { EP3, G, 3, 0 },
+		{ EP1, B, 5, 0 }, { EP2, B, 3, 0 }, { EP2, R, 4, 0 },
+		{ EP3, B, 2, 2 }, { EP3, R, 4, 0 }, { EP3, B, 3, 3 },
+		{ Partition, None, 4, 0 },
+		{ End, None, 0, 0},
+	},
+	// Mode 30, Index 13
+	{
+		{ Mode, None, 4, 0, { 30, false, 2, 6, { 0, 0, 0 } } },
+		{ EP0, R, 5, 0 }, { EP3, G, 4, 4 }, { EP3, B, 0, 0 },
+		{ EP3, B, 1, 1 }, { EP2, B, 4, 4 }, { EP0, G, 5, 0 },
+		{ EP2, G, 5, 5 }, { EP2, B, 5, 5 }, { EP3, B, 2, 2 },
+		{ EP2, G, 4, 4 }, { EP0, B, 5, 0 }, { EP3, G, 5, 5 },
+		{ EP3, B, 3, 3 }, { EP3, B, 5, 5 }, { EP3, B, 4, 4 },
+		{ EP1, R, 5, 0 }, { EP2, G, 3, 0 }, { EP1, G, 5, 0 },
+		{ EP3, G, 3, 0 }, { EP1, B, 5, 0 }, { EP2, B, 3, 0 },
+		{ EP2, R, 5, 0 }, { EP3, R, 5, 0 },
+		{ Partition, None, 4, 0 },
+		{ End, None, 0, 0},
+	}
 	// clang-format on
 };
 
@@ -925,8 +954,9 @@ struct Block
 			mode = data.consumeBits(4, 0);
 		}
 
-		// Illegal or reserved mode
-		if(blockDescs[mode].size() == 0)
+		int blockIndex = modeToIndex(mode);
+		// Handle illegal or reserved mode
+		if(blockIndex == -1)
 		{
 			for(int y = 0; y < 4 && y + dstY < dstHeight; y++)
 			{
@@ -938,16 +968,17 @@ struct Block
 			}
 			return;
 		}
+		const BlockDesc *blockDesc = blockDescs[blockIndex];
 
 		RGBf e[4];
 		e[0].isSigned = e[1].isSigned = e[2].isSigned = e[3].isSigned = isSigned;
 
 		int partition = 0;
 		ModeDesc modeDesc;
-		// For assertion checks
-		modeDesc.number = -1;
-		for(auto desc : blockDescs[mode])
+		for(int index = 0; blockDesc[index].type != End; index++)
 		{
+			const BlockDesc desc = blockDesc[index];
+
 			switch(desc.type)
 			{
 			case Mode:
@@ -982,12 +1013,10 @@ struct Block
 			}
 		}
 
-		ASSERT_MSG(modeDesc.number != -1, "Failed to decode mode %d", mode);
-
 		// Sign extension
 		if(isSigned)
 		{
-			for(int ep = 0; ep < modeDesc.numEndpoints; ep++)
+			for(int ep = 0; ep < modeDesc.partitionCount * 2; ep++)
 			{
 				e[ep].extendSign();
 			}
@@ -995,7 +1024,7 @@ struct Block
 		else if(modeDesc.hasDelta)
 		{
 			// Don't sign-extend the base endpoint in an unsigned format.
-			for(int ep = 1; ep < modeDesc.numEndpoints; ep++)
+			for(int ep = 1; ep < modeDesc.partitionCount * 2; ep++)
 			{
 				e[ep].extendSign();
 			}
@@ -1004,13 +1033,13 @@ struct Block
 		// Turn the deltas into endpoints
 		if(modeDesc.hasDelta)
 		{
-			for(int ep = 1; ep < modeDesc.numEndpoints; ep++)
+			for(int ep = 1; ep < modeDesc.partitionCount * 2; ep++)
 			{
 				e[ep].resolveDelta(e[0]);
 			}
 		}
 
-		for(int ep = 0; ep < modeDesc.numEndpoints; ep++)
+		for(int ep = 0; ep < modeDesc.partitionCount * 2; ep++)
 		{
 			e[ep].unquantize();
 		}

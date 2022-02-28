@@ -12,6 +12,7 @@
 #include "base/auto_reset.h"
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -162,7 +163,17 @@ struct TypeConverter<mojom::AutocompleteMatchPtr, AutocompleteMatch> {
     result->allowed_to_be_default_match = input.allowed_to_be_default_match;
     result->type = AutocompleteMatchType::ToString(input.type);
     result->is_search_type = AutocompleteMatch::IsSearchType(input.type);
-    result->has_tab_match = input.has_tab_match;
+    auto subtypes = input.subtypes;
+    size_t type = std::u16string::npos;
+    AutocompleteController::GetMatchTypeAndExtendSubtypes(input, &type,
+                                                          &subtypes);
+    std::vector<std::string> subtypes_str;
+    subtypes_str.push_back(base::NumberToString(type));
+    std::transform(subtypes.begin(), subtypes.end(),
+                   std::back_inserter(subtypes_str),
+                   static_cast<std::string (*)(int)>(base::NumberToString));
+    result->aqs_type_subtypes = base::JoinString(subtypes_str, ",");
+    result->has_tab_match = input.has_tab_match.value_or(false);
     if (input.associated_keyword.get()) {
       result->associated_keyword =
           base::UTF16ToUTF8(input.associated_keyword->keyword);
@@ -170,8 +181,7 @@ struct TypeConverter<mojom::AutocompleteMatchPtr, AutocompleteMatch> {
     result->keyword = base::UTF16ToUTF8(input.keyword);
     result->duplicates = static_cast<int32_t>(input.duplicate_matches.size());
     result->from_previous = input.from_previous;
-    result->pedal_id =
-        input.pedal ? static_cast<int32_t>(input.pedal->id()) : 0;
+    result->pedal_id = input.action ? input.action->GetID() : 0;
     result->additional_info =
         mojo::ConvertTo<std::vector<mojom::AutocompleteAdditionalInfoPtr>>(
             input.additional_info);

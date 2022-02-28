@@ -11,10 +11,10 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/time/tick_clock.h"
 #include "build/build_config.h"
 #include "components/blocklist/opt_out_blocklist/opt_out_blocklist_data.h"
@@ -95,6 +95,11 @@ class AdsPageLoadMetricsObserver
       const ApplicationLocaleGetter& application_local_getter,
       base::TickClock* clock = nullptr,
       heavy_ad_intervention::HeavyAdBlocklist* blocklist = nullptr);
+
+  AdsPageLoadMetricsObserver(const AdsPageLoadMetricsObserver&) = delete;
+  AdsPageLoadMetricsObserver& operator=(const AdsPageLoadMetricsObserver&) =
+      delete;
+
   ~AdsPageLoadMetricsObserver() override;
 
   // PageLoadMetricsObserver
@@ -128,7 +133,7 @@ class AdsPageLoadMetricsObserver
   void OnFrameIntersectionUpdate(
       content::RenderFrameHost* render_frame_host,
       const mojom::FrameIntersectionUpdate& intersection_update) override;
-  void OnFrameDeleted(int frame_tree_node_id) override;
+  void OnSubFrameDeleted(int frame_tree_node_id) override;
 
   void SetHeavyAdThresholdNoiseProviderForTesting(
       std::unique_ptr<HeavyAdThresholdNoiseProvider> noise_provider) {
@@ -188,10 +193,9 @@ class AdsPageLoadMetricsObserver
       const subresource_filter::mojom::ActivationState& activation_state)
       override;
 
-  void UpdateAdFrameData(FrameTreeNodeId ad_id,
+  void UpdateAdFrameData(content::NavigationHandle* navigation_handle,
                          bool is_adframe,
-                         bool should_ignored_detected_ad,
-                         content::RenderFrameHost* ad_host);
+                         bool should_ignore_detected_ad);
 
   // Gets the number of bytes that we may have not attributed to ad
   // resources due to the resource being reported as an ad late.
@@ -218,9 +222,10 @@ class AdsPageLoadMetricsObserver
   void RecordPerFrameHistogramsForHeavyAds(const FrameTreeData& ad_frame_data);
 
   // Checks to see if a resource is waiting for a navigation in the given
-  // RenderFrameHost to commit before it can be processed. If so, call
+  // frame to commit before it can be processed. If so, call
   // OnResourceDataUpdate for the delayed resource.
-  void ProcessOngoingNavigationResource(content::RenderFrameHost* rfh);
+  void ProcessOngoingNavigationResource(
+      content::NavigationHandle* navigation_handle);
 
   // Records whether an ad frame was ignored by the Restricted Navigation
   // AdTagging feature. For frames that are ignored, this is recorded when a
@@ -276,12 +281,12 @@ class AdsPageLoadMetricsObserver
   // the frame elements are being destroyed in the renderer.
   bool process_display_state_updates_ = true;
 
-  ScopedObserver<subresource_filter::SubresourceFilterObserverManager,
-                 subresource_filter::SubresourceFilterObserver>
-      subresource_observer_;
+  base::ScopedObservation<subresource_filter::SubresourceFilterObserverManager,
+                          subresource_filter::SubresourceFilterObserver>
+      subresource_observation_{this};
 
   // The tick clock used to get the current time. Can be replaced by tests.
-  const base::TickClock* clock_;
+  raw_ptr<const base::TickClock> clock_;
 
   // Whether the page load currently being observed is a reload of a previous
   // page.
@@ -299,13 +304,13 @@ class AdsPageLoadMetricsObserver
 
   // Pointer to the HeavyAdService from which the heavy ad blocklist is obtained
   // in production.
-  heavy_ad_intervention::HeavyAdService* heavy_ad_service_;
+  raw_ptr<heavy_ad_intervention::HeavyAdService> heavy_ad_service_;
 
   ApplicationLocaleGetter application_locale_getter_;
 
   // Pointer to the blocklist used to throttle the heavy ad intervention. Can
   // be replaced by tests.
-  heavy_ad_intervention::HeavyAdBlocklist* heavy_ad_blocklist_;
+  raw_ptr<heavy_ad_intervention::HeavyAdBlocklist> heavy_ad_blocklist_;
 
   // Whether the heavy ad privacy mitigations feature is enabled.
   const bool heavy_ad_privacy_mitigations_enabled_;
@@ -326,8 +331,6 @@ class AdsPageLoadMetricsObserver
 
   // Tracks number of memory updates received.
   int memory_update_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(AdsPageLoadMetricsObserver);
 };
 
 }  // namespace page_load_metrics

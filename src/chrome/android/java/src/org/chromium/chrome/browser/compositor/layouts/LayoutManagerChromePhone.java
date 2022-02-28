@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.compositor.layouts;
 import android.content.Context;
 import android.view.ViewGroup;
 
+import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
@@ -48,9 +49,10 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
             ObservableSupplier<TabContentManager> tabContentManagerSupplier,
             Supplier<LayerTitleCache> layerTitleCacheSupplier,
             OneshotSupplierImpl<OverviewModeBehavior> overviewModeBehaviorSupplier,
-            Supplier<TopUiThemeColorProvider> topUiThemeColorProvider) {
+            Supplier<TopUiThemeColorProvider> topUiThemeColorProvider, JankTracker jankTracker) {
         super(host, contentContainer, true, startSurface, tabContentManagerSupplier,
-                layerTitleCacheSupplier, overviewModeBehaviorSupplier, topUiThemeColorProvider);
+                layerTitleCacheSupplier, overviewModeBehaviorSupplier, topUiThemeColorProvider,
+                jankTracker);
     }
 
     @Override
@@ -65,9 +67,6 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
 
         super.init(selector, creator, controlContainer, dynamicResourceLoader, topUiColorProvider);
 
-        // Set up layout parameters
-        mStaticLayout.setLayoutHandlesTabLifecycles(false);
-
         // Initialize Layouts
         TabContentManager tabContentManager = mTabContentManagerSupplier.get();
         assert tabContentManager != null;
@@ -77,8 +76,9 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
     @Override
     public boolean closeAllTabsRequest(boolean incognito) {
         if (getActiveLayout() == mStaticLayout && !incognito) {
-            startShowing(DeviceClassManager.enableAccessibilityLayout() ? mOverviewListLayout
-                                                                        : mOverviewLayout,
+            startShowing(DeviceClassManager.enableAccessibilityLayout(mHost.getContext())
+                            ? mOverviewListLayout
+                            : mOverviewLayout,
                     /* animate= */ false);
         }
         return super.closeAllTabsRequest(incognito);
@@ -118,8 +118,9 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
     @Override
     protected void tabClosed(int id, int nextId, boolean incognito, boolean tabRemoved) {
         boolean showOverview = nextId == Tab.INVALID_TAB_ID;
-        Layout overviewLayout = DeviceClassManager.enableAccessibilityLayout() ? mOverviewListLayout
-                                                                               : mOverviewLayout;
+        Layout overviewLayout = DeviceClassManager.enableAccessibilityLayout(mHost.getContext())
+                ? mOverviewListLayout
+                : mOverviewLayout;
         if (getActiveLayout() != overviewLayout && showOverview) {
             // Since there will be no 'next' tab to display, switch to
             // overview mode when the animation is finished.
@@ -135,7 +136,7 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
     }
 
     @Override
-    protected void tabCreating(int sourceId, String url, boolean isIncognito) {
+    protected void tabCreating(int sourceId, boolean isIncognito) {
         if (getActiveLayout() != null && !getActiveLayout().isStartingToHide()
                 && overlaysHandleTabCreating() && getActiveLayout().handlesTabCreating()) {
             // If the current layout in the foreground, let it handle the tab creation animation.

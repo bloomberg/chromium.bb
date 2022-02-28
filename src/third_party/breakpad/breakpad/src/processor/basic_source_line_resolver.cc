@@ -40,6 +40,7 @@
 
 #include <limits>
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -49,9 +50,11 @@
 
 #include "processor/tokenize.h"
 
-using std::map;
-using std::vector;
+using std::deque;
 using std::make_pair;
+using std::map;
+using std::unique_ptr;
+using std::vector;
 
 namespace google_breakpad {
 
@@ -125,6 +128,7 @@ bool BasicSourceLineResolver::Module::LoadMapFromMemory(
   linked_ptr<Function> cur_func;
   int line_number = 0;
   int num_errors = 0;
+  int inline_num_errors = 0;
   char* save_ptr;
 
   // If the length is 0, we can still pretend we have a symbol file. This is
@@ -202,6 +206,17 @@ bool BasicSourceLineResolver::Module::LoadMapFromMemory(
       // Ignore these as well, they're similarly just for housekeeping.
       //
       // INFO CODE_ID <code id> <filename>
+    } else if (strncmp(buffer, "INLINE ", 7) == 0) {
+      linked_ptr<Inline> in = ParseInline(buffer);
+      if (!in.get())
+        LogParseError("ParseInline failed", line_number, &inline_num_errors);
+      else
+        cur_func->AppendInline(in);
+    } else if (strncmp(buffer, "INLINE_ORIGIN ", 14) == 0) {
+      if (!ParseInlineOrigin(buffer)) {
+        LogParseError("ParseInlineOrigin failed", line_number,
+                      &inline_num_errors);
+      }
     } else {
       if (!cur_func.get()) {
         LogParseError("Found source line data without a function",
@@ -225,7 +240,67 @@ bool BasicSourceLineResolver::Module::LoadMapFromMemory(
   return true;
 }
 
-void BasicSourceLineResolver::Module::LookupAddress(StackFrame* frame) const {
+void BasicSourceLineResolver::Module::ConstructInlineFrames(
+    StackFrame* frame,
+    MemAddr address,
+    const ContainedRangeMap<uint64_t, linked_ptr<Inline>>& inline_map,
+    deque<unique_ptr<StackFrame>>* inlined_frames) const {
+  vector<const linked_ptr<Inline>*> inlines;
+  if (!inline_map.RetrieveRanges(address, inlines)) {
+    return;
+  }
+
+  for (const linked_ptr<Inline>* const in : inlines) {
+    unique_ptr<StackFrame> new_frame =
+        unique_ptr<StackFrame>(new StackFrame(*frame));
+    auto origin = inline_origins_.find(in->get()->origin_id);
+    if (origin != inline_origins_.end()) {
+      new_frame->function_name = origin->second->name;
+    } else {
+      new_frame->function_name = "<name omitted>";
+    }
+    
+    // Store call site file and line in current frame, which will be updated
+    // later.
+    new_frame->source_line = in->get()->call_site_line;
+    if (in->get()->has_call_site_file_id) {
+      auto file = files_.find(in->get()->call_site_file_id);
+      if (file != files_.end()) {
+        new_frame->source_file_name = file->second;
+      }
+    }
+
+    // Use the starting address of the inlined range as inlined function base.
+    new_frame->function_base = new_frame->module->base_address();
+    for (const auto& range : in->get()->inline_ranges) {
+      if (address >= range.first && address < range.first + range.second) {
+        new_frame->function_base += range.first;
+        break;
+      }
+    }
+    new_frame->trust = StackFrame::FRAME_TRUST_INLINE;
+
+    // The inlines vector has an order from innermost entry to outermost entry.
+    // By push_back, we will have inlined_frames with the same order.
+    inlined_frames->push_back(std::move(new_frame));
+  }
+
+  // Update the source file and source line for each inlined frame.
+  if (!inlined_frames->empty()) {
+    string parent_frame_source_file_name = frame->source_file_name;
+    int parent_frame_source_line = frame->source_line;
+    frame->source_file_name = inlined_frames->back()->source_file_name;
+    frame->source_line = inlined_frames->back()->source_line;
+    for (unique_ptr<StackFrame>& inlined_frame : *inlined_frames) {
+      std::swap(inlined_frame->source_file_name, parent_frame_source_file_name);
+      std::swap(inlined_frame->source_line, parent_frame_source_line);
+    }
+  }
+}
+
+void BasicSourceLineResolver::Module::LookupAddress(
+    StackFrame* frame,
+    deque<unique_ptr<StackFrame>>* inlined_frames) const {
   MemAddr address = frame->instruction - frame->module->base_address();
 
   // First, look for a FUNC record that covers address. Use
@@ -255,6 +330,11 @@ void BasicSourceLineResolver::Module::LookupAddress(StackFrame* frame) const {
       }
       frame->source_line = line->line;
       frame->source_line_base = frame->module->base_address() + line_base;
+    }
+
+    // Check if this is inlined function call.
+    if (inlined_frames) {
+      ConstructInlineFrames(frame, address, func->inlines, inlined_frames);
     }
   } else if (public_symbols_.Retrieve(address,
                                       &public_symbol, &public_address) &&
@@ -355,6 +435,41 @@ bool BasicSourceLineResolver::Module::ParseFile(char* file_line) {
     return true;
   }
   return false;
+}
+
+bool BasicSourceLineResolver::Module::ParseInlineOrigin(
+  char* inline_origin_line) {
+  bool has_file_id;
+  long origin_id;
+  long source_file_id;
+  char* origin_name;
+  if (SymbolParseHelper::ParseInlineOrigin(inline_origin_line, &has_file_id,
+                                           &origin_id, &source_file_id,
+                                           &origin_name)) {
+    inline_origins_.insert(make_pair(
+        origin_id,
+        new InlineOrigin(has_file_id, source_file_id, origin_name)));
+    return true;
+  }
+  return false;
+}
+
+linked_ptr<BasicSourceLineResolver::Inline>
+BasicSourceLineResolver::Module::ParseInline(char* inline_line) {
+  bool has_call_site_file_id;
+  long inline_nest_level;
+  long call_site_line;
+  long call_site_file_id;
+  long origin_id;
+  vector<std::pair<MemAddr, MemAddr>> ranges;
+  if (SymbolParseHelper::ParseInline(inline_line, &has_call_site_file_id,
+                                     &inline_nest_level, &call_site_line,
+                                     &call_site_file_id, &origin_id, &ranges)) {
+    return linked_ptr<Inline>(new Inline(has_call_site_file_id,
+                                         inline_nest_level, call_site_line,
+                                         call_site_file_id, origin_id, ranges));
+  }
+  return linked_ptr<Inline>();
 }
 
 BasicSourceLineResolver::Function*
@@ -502,6 +617,19 @@ bool BasicSourceLineResolver::Module::ParseCFIFrameInfo(
   return true;
 }
 
+bool BasicSourceLineResolver::Function::AppendInline(linked_ptr<Inline> in) {
+  // This happends if in's parent wasn't added due to a malformed INLINE record.
+  if (in->inline_nest_level > last_added_inline_nest_level + 1)
+    return false;
+
+  last_added_inline_nest_level = in->inline_nest_level;
+
+  // Store all ranges into current level of inlines.
+  for (auto range : in->inline_ranges)
+    inlines.StoreRange(range.first, range.second, in);
+  return true;
+}
+
 // static
 bool SymbolParseHelper::ParseFile(char* file_line, long* index,
                                   char** filename) {
@@ -524,6 +652,146 @@ bool SymbolParseHelper::ParseFile(char* file_line, long* index,
   *filename = tokens[1];
   if (!*filename) {
     return false;
+  }
+
+  return true;
+}
+
+// static
+bool SymbolParseHelper::ParseInlineOrigin(char* inline_origin_line,
+                                          bool* has_file_id,
+                                          long* origin_id,
+                                          long* file_id,
+                                          char** name) {
+  // Old INLINE_ORIGIN format:
+  // INLINE_ORIGIN <origin_id> <file_id> <name>
+  // New INLINE_ORIGIN format:
+  // INLINE_ORIGIN <origin_id> <name>
+  assert(strncmp(inline_origin_line, "INLINE_ORIGIN ", 14) == 0);
+  inline_origin_line += 14;  // skip prefix
+  vector<char*> tokens;
+  // Split the line into two parts so that the first token is "<origin_id>", and
+  // second token is either "<file_id> <name>"" or "<name>"" depending on the
+  // format version.
+  if (!Tokenize(inline_origin_line, kWhitespace, 2, &tokens)) {
+    return false;
+  }
+
+  char* after_number;
+  *origin_id = strtol(tokens[0], &after_number, 10);
+  if (!IsValidAfterNumber(after_number) || *origin_id < 0 ||
+      *origin_id == std::numeric_limits<long>::max()) {
+    return false;
+  }
+
+  // If the field after origin_id is a number, then it's old format.
+  char* remaining_line = tokens[1];
+  *has_file_id = true;
+  for (size_t i = 0;
+       i < strlen(remaining_line) && remaining_line[i] != ' ' && *has_file_id;
+       ++i) {
+    // If the file id is -1, it might be an artificial function that doesn't
+    // have file id. So, we consider -1 as a valid special case.
+    if (remaining_line[i] == '-' && i == 0) {
+      continue;
+    }
+    *has_file_id = isdigit(remaining_line[i]);
+  }
+
+  if (*has_file_id) {
+    // If it's old format, split "<file_id> <name>" to {"<field_id>", "<name>"}.
+    if (!Tokenize(remaining_line, kWhitespace, 2, &tokens)) {
+      return false;
+    }
+    *file_id = strtol(tokens[0], &after_number, 10);
+    // If the file id is -1, it might be an artificial function that doesn't
+    // have file id. So, we consider -1 as a valid special case.
+    if (!IsValidAfterNumber(after_number) || *file_id < -1 ||
+        *file_id == std::numeric_limits<long>::max()) {
+      return false;
+    }
+  }
+
+  *name = tokens[1];
+  if (!*name) {
+    return false;
+  }
+
+  return true;
+}
+
+// static
+bool SymbolParseHelper::ParseInline(
+    char* inline_line,
+    bool* has_call_site_file_id,
+    long* inline_nest_level,
+    long* call_site_line,
+    long* call_site_file_id,
+    long* origin_id,
+    vector<std::pair<MemAddr, MemAddr>>* ranges) {
+  // Old INLINE format:
+  // INLINE <inline_nest_level> <call_site_line> <origin_id> [<address> <size>]+
+  // New INLINE format:
+  // INLINE <inline_nest_level> <call_site_line> <call_site_file_id> <origin_id>
+  // [<address> <size>]+
+  assert(strncmp(inline_line, "INLINE ", 7) == 0);
+  inline_line += 7; // skip prefix
+
+  vector<char*> tokens;
+  // Increase max_tokens if necessary.
+  Tokenize(inline_line, kWhitespace, 512, &tokens);
+
+  // Determine the version of INLINE record by parity of the vector length.
+  *has_call_site_file_id = tokens.size() % 2 == 0;
+
+  // The length of the vector should be at least 5.
+  if (tokens.size() < 5) {
+    return false;
+  }
+
+  char* after_number;
+  size_t next_idx = 0;
+
+  *inline_nest_level = strtol(tokens[next_idx++], &after_number, 10);
+  if (!IsValidAfterNumber(after_number) || *inline_nest_level < 0 ||
+      *inline_nest_level == std::numeric_limits<long>::max()) {
+    return false;
+  }
+
+  *call_site_line = strtol(tokens[next_idx++], &after_number, 10);
+  if (!IsValidAfterNumber(after_number) || *call_site_line < 0 ||
+      *call_site_line == std::numeric_limits<long>::max()) {
+    return false;
+  }
+
+  if (*has_call_site_file_id) {
+    *call_site_file_id = strtol(tokens[next_idx++], &after_number, 10);
+    // If the file id is -1, it might be an artificial function that doesn't
+    // have file id. So, we consider -1 as a valid special case.
+    if (!IsValidAfterNumber(after_number) || *call_site_file_id < -1 ||
+        *call_site_file_id == std::numeric_limits<long>::max()) {
+      return false;
+    }
+  }
+
+  *origin_id = strtol(tokens[next_idx++], &after_number, 10);
+  if (!IsValidAfterNumber(after_number) || *origin_id < 0 ||
+      *origin_id == std::numeric_limits<long>::max()) {
+    return false;
+  }
+
+  while (next_idx < tokens.size()) {
+    MemAddr address = strtoull(tokens[next_idx++], &after_number, 16);
+    if (!IsValidAfterNumber(after_number) ||
+        address == std::numeric_limits<unsigned long long>::max()) {
+      return false;
+    }
+    MemAddr size = strtoull(tokens[next_idx++], &after_number, 16);
+    if (!IsValidAfterNumber(after_number) ||
+        size == std::numeric_limits<unsigned long long>::max()) {
+      return false;
+    }
+    ranges->push_back({address, size});
   }
 
   return true;

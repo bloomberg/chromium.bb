@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/media_router/common/media_route.h"
 
 namespace media_router {
@@ -25,6 +25,10 @@ class MediaRoutesObserver {
   explicit MediaRoutesObserver(MediaRouter* router)
       : MediaRoutesObserver(router, MediaSource::Id()) {}
   MediaRoutesObserver(MediaRouter* router, const MediaSource::Id& source_id);
+
+  MediaRoutesObserver(const MediaRoutesObserver&) = delete;
+  MediaRoutesObserver& operator=(const MediaRoutesObserver&) = delete;
+
   virtual ~MediaRoutesObserver();
 
   // Invoked when the list of routes and their associated sinks have been
@@ -42,10 +46,8 @@ class MediaRoutesObserver {
   const MediaSource::Id source_id() const { return source_id_; }
 
  private:
-  MediaRouter* const router_;
+  const raw_ptr<MediaRouter> router_;
   const MediaSource::Id source_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaRoutesObserver);
 };
 
 }  // namespace media_router

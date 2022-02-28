@@ -4,13 +4,13 @@
 
 #include "ash/system/network/network_section_header_view.h"
 
-#include "ash/constants/ash_features.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/icon_button.h"
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/tray_network_state_model.h"
@@ -125,6 +125,9 @@ int GetAddESimTooltipMessageId() {
       return IDS_ASH_STATUS_TRAY_INHIBITED_CELLULAR_REFRESHING_PROFILE_LIST;
     case chromeos::network_config::mojom::InhibitReason::kNotInhibited:
       return IDS_ASH_STATUS_TRAY_ADD_CELLULAR_LABEL;
+    case chromeos::network_config::mojom::InhibitReason::kResettingEuiccMemory:
+      // TODO(crbug.com/1231305) Update when reset reason strings are finalized.
+      return IDS_ASH_STATUS_TRAY_INHIBITED_CELLULAR_REMOVING_PROFILE;
   }
 }
 
@@ -226,16 +229,6 @@ int MobileSectionHeaderView::UpdateToggleAndGetStatusMessage(
       return IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;
     }
 
-    const DeviceStateProperties* cellular_device =
-        model()->GetDevice(NetworkType::kCellular);
-
-    if (!base::FeatureList::IsEnabled(
-            chromeos::features::kUpdatedCellularActivationUi) &&
-        cellular_device && cellular_device->sim_absent) {
-      SetToggleVisibility(false);
-      return IDS_ASH_STATUS_TRAY_SIM_CARD_MISSING;
-    }
-
     if (IsCellularDeviceInhibited()) {
       // When a device is inhibited, it cannot process any new operations. Thus,
       // keep the toggle on to show users that the device is active, but set it
@@ -255,15 +248,6 @@ int MobileSectionHeaderView::UpdateToggleAndGetStatusMessage(
     if (cellular_state == DeviceStateType::kDisabling) {
       return IDS_ASH_STATUS_TRAY_NETWORK_MOBILE_DISABLING;
     }
-
-    if (!chromeos::features::IsCellularActivationUiEnabled() &&
-        cellular_device->sim_lock_status &&
-        !cellular_device->sim_lock_status->lock_type.empty()) {
-      return IDS_ASH_STATUS_TRAY_SIM_CARD_LOCKED;
-    }
-    if (!chromeos::features::IsCellularActivationUiEnabled() &&
-        cellular_device->scanning)
-      return IDS_ASH_STATUS_TRAY_MOBILE_SCANNING;
 
     if (cellular_enabled) {
       if (mobile_has_networks)
@@ -352,9 +336,6 @@ void MobileSectionHeaderView::OnToggleToggled(bool is_on) {
 }
 
 void MobileSectionHeaderView::AddExtraButtons(bool enabled) {
-  if (!chromeos::features::IsCellularActivationUiEnabled())
-    return;
-
   // The button navigates to Settings, only add it if this can occur.
   if (!TrayPopupUtils::CanOpenWebUISettings())
     return;
@@ -378,10 +359,10 @@ void MobileSectionHeaderView::PerformAddExtraButtons(bool enabled) {
   can_add_esim_button_be_enabled_ = enabled;
   const gfx::VectorIcon& icon = base::i18n::IsRTL() ? kAddCellularNetworkRtlIcon
                                                     : kAddCellularNetworkIcon;
-  add_esim_button_ = new TopShortcutButton(
+  add_esim_button_ = new IconButton(
       base::BindRepeating(&MobileSectionHeaderView::AddCellularButtonPressed,
                           base::Unretained(this)),
-      icon, GetAddESimTooltipMessageId());
+      IconButton::Type::kSmall, &icon, GetAddESimTooltipMessageId());
 
   add_esim_button_->SetEnabled(enabled && !IsCellularDeviceInhibited());
 
@@ -405,7 +386,7 @@ void MobileSectionHeaderView::EnableBluetooth() {
       ->SetPrimaryUserBluetoothPowerSetting(true /* enabled */);
   waiting_for_tether_initialize_ = true;
   enable_bluetooth_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kBluetoothTimeoutDelaySeconds),
+      FROM_HERE, base::Seconds(kBluetoothTimeoutDelaySeconds),
       base::BindOnce(&MobileSectionHeaderView::OnEnableBluetoothTimeout,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -439,10 +420,11 @@ void WifiSectionHeaderView::OnToggleToggled(bool is_on) {
 }
 
 void WifiSectionHeaderView::AddExtraButtons(bool enabled) {
-  auto* join_button = new TopShortcutButton(
+  auto* join_button = new IconButton(
       base::BindRepeating(&WifiSectionHeaderView::JoinButtonPressed,
                           base::Unretained(this)),
-      vector_icons::kWifiAddIcon, IDS_ASH_STATUS_TRAY_OTHER_WIFI);
+      IconButton::Type::kSmall, &vector_icons::kWifiAddIcon,
+      IDS_ASH_STATUS_TRAY_OTHER_WIFI);
   join_button->SetEnabled(enabled);
   container()->AddView(TriView::Container::END, join_button);
   join_button_ = join_button;

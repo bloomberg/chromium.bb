@@ -6,13 +6,13 @@
 
 #include <memory>
 
-#include "cc/test/geometry_test_utils.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 namespace vr {
 
@@ -49,7 +49,7 @@ class ResizerTest : public testing::Test {
   void CheckScale(float scale) { EXPECT_FLOAT_EQ(scale, ComputeScale()); }
 
  protected:
-  Resizer* resizer_ = nullptr;
+  raw_ptr<Resizer> resizer_ = nullptr;
   UiScene scene_;
 };
 

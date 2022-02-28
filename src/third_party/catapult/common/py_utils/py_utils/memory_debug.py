@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import heapq
 import logging
 import os
@@ -26,8 +27,7 @@ def FormatBytes(value):
 
   if value is not None:
     return '%.1f %s' % GetValueAndUnit(value)
-  else:
-    return 'N/A'
+  return 'N/A'
 
 
 def _GetProcessInfo(p):

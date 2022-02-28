@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "services/device/geolocation/position_cache.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
 
@@ -17,6 +16,10 @@ namespace device {
 class FakePositionCache : public PositionCache {
  public:
   FakePositionCache();
+
+  FakePositionCache(const FakePositionCache&) = delete;
+  FakePositionCache& operator=(const FakePositionCache&) = delete;
+
   ~FakePositionCache() override;
 
   void CachePosition(const WifiData& wifi_data,
@@ -30,7 +33,6 @@ class FakePositionCache : public PositionCache {
  private:
   std::vector<std::pair<WifiData, mojom::Geoposition>> data;
   mojom::Geoposition last_used_position;
-  DISALLOW_COPY_AND_ASSIGN(FakePositionCache);
 };
 
 }  // namespace device

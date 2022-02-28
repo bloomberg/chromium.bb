@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 
 namespace gcm {
@@ -16,6 +15,10 @@ namespace gcm {
 class FakeGCMStatsRecorder : public GCMStatsRecorder {
  public:
   FakeGCMStatsRecorder();
+
+  FakeGCMStatsRecorder(const FakeGCMStatsRecorder&) = delete;
+  FakeGCMStatsRecorder& operator=(const FakeGCMStatsRecorder&) = delete;
+
   ~FakeGCMStatsRecorder() override;
 
   void RecordCheckinInitiated(uint64_t android_id) override;
@@ -66,9 +69,6 @@ class FakeGCMStatsRecorder : public GCMStatsRecorder {
   void RecordIncomingSendError(const std::string& app_id,
                                const std::string& receiver_id,
                                const std::string& message_id) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeGCMStatsRecorder);
 };
 
 }  // namespace gcm

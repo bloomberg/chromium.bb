@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -50,6 +49,11 @@ class MediaTransferProtocolDaemonClientImpl
       : proxy_(bus->GetObjectProxy(mtpd::kMtpdServiceName,
                                    dbus::ObjectPath(mtpd::kMtpdServicePath))),
         listen_for_changes_called_(false) {}
+
+  MediaTransferProtocolDaemonClientImpl(
+      const MediaTransferProtocolDaemonClientImpl&) = delete;
+  MediaTransferProtocolDaemonClientImpl& operator=(
+      const MediaTransferProtocolDaemonClientImpl&) = delete;
 
   // MediaTransferProtocolDaemonClient override.
   void EnumerateStorages(EnumerateStoragesCallback callback,
@@ -506,8 +510,6 @@ class MediaTransferProtocolDaemonClientImpl
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<MediaTransferProtocolDaemonClientImpl> weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDaemonClientImpl);
 };
 
 }  // namespace

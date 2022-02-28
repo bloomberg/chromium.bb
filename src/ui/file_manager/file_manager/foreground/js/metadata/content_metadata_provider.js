@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import {MetadataItem} from './metadata_item.m.js';
-// #import {MetadataProvider} from './metadata_provider.m.js';
-// #import {ThumbnailLoader} from '../thumbnail_loader.m.js';
-// #import * as wrappedUtil from '../../../common/js/util.m.js'; const {util} = wrappedUtil;
-// #import {ImageLoaderClient} from 'chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/image_loader_client.m.js';
-// #import {LoadImageRequest, LoadImageResponseStatus} from 'chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/load_image_request.m.js';
-// #import {FileType} from '../../../common/js/file_type.m.js';
-// #import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
-// clang-format on
+import {ImageLoaderClient} from 'chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/image_loader_client.js';
+import {LoadImageRequest, LoadImageResponseStatus} from 'chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/load_image_request.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+
+import {FileType} from '../../../common/js/file_type.js';
+import {util} from '../../../common/js/util.js';
+import {ThumbnailLoader} from '../thumbnail_loader.js';
+
+import {MetadataItem} from './metadata_item.js';
+import {MetadataProvider} from './metadata_provider.js';
 
 /** @final */
-/* #export */ class ContentMetadataProvider extends MetadataProvider {
+export class ContentMetadataProvider extends MetadataProvider {
   /**
    * @param {!MessagePort=} opt_messagePort Message port overriding the default
    *     worker port.
@@ -515,7 +515,7 @@ ContentMetadataProvider.PROPERTY_NAMES = [
  * @const @private {string}
  */
 ContentMetadataProvider.DEFAULT_WORKER_SCRIPT_ =
-    'foreground/js/metadata/metadata_dispatcher.m.js';
+    'foreground/js/metadata/metadata_dispatcher.js';
 
 /**
  * Worker script URL that is overwritten by client code.

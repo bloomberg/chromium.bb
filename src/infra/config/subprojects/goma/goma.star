@@ -17,14 +17,13 @@ luci.bucket(
         ),
         acl.entry(
             roles = acl.BUILDBUCKET_OWNER,
-            groups = "google/luci-task-force@google.com",
+            groups = "project-chromium-admins",
         ),
     ],
 )
 
 defaults.bucket.set("goma")
 defaults.build_numbers.set(True)
-defaults.configure_kitchen.set(True)
 defaults.cores.set(8)
 defaults.cpu.set(cpu.X86_64)
 defaults.executable.set("recipe:chromium")
@@ -34,7 +33,6 @@ defaults.pool.set("luci.chromium.ci")
 defaults.service_account.set(
     "goma-release-testing@chops-service-accounts.iam.gserviceaccount.com",
 )
-defaults.swarming_tags.set(["vpython:native-python-wrapper"])
 defaults.triggered_by.set(["chromium-gitiles-trigger"])
 
 # Builders appear after the function used to define them, with all builders
@@ -74,6 +72,14 @@ fyi_goma_rbe_canary_builder(
 )
 
 fyi_goma_rbe_canary_builder(
+    name = "Mac M1 Builder (dbg) Goma RBE Canary (clobber)",
+    cores = None,
+    goma_jobs = goma.jobs.J80,
+    os = os.MAC_11,
+    cpu = cpu.ARM64,
+)
+
+fyi_goma_rbe_canary_builder(
     name = "android-archive-dbg-goma-rbe-ats-canary",
     goma_enable_ats = True,
 )
@@ -90,8 +96,8 @@ fyi_goma_rbe_canary_builder(
 fyi_goma_rbe_canary_builder(
     name = "ios-device-goma-rbe-canary-clobber",
     cores = None,
-    os = os.MAC_10_15,
-    xcode = xcode.x12d4e,
+    os = os.MAC_11,
+    xcode = xcode.x13main,
 )
 
 fyi_goma_rbe_canary_builder(
@@ -118,6 +124,12 @@ fyi_goma_rbe_canary_builder(
 
 fyi_goma_rbe_canary_builder(
     name = "Win Builder Goma RBE Canary",
+    goma_enable_ats = False,
+    os = os.WINDOWS_DEFAULT,
+)
+
+fyi_goma_rbe_canary_builder(
+    name = "Win Builder Goma RBE Canary (clobber)",
     goma_enable_ats = False,
     os = os.WINDOWS_DEFAULT,
 )
@@ -201,8 +213,8 @@ fyi_goma_rbe_latest_client_builder(
 fyi_goma_rbe_latest_client_builder(
     name = "ios-device-goma-rbe-latest-clobber",
     cores = None,
-    os = os.MAC_10_15,
-    xcode = xcode.x12d4e,
+    os = os.MAC_11,
+    xcode = xcode.x13main,
 )
 
 fyi_goma_rbe_latest_client_builder(
@@ -315,8 +327,8 @@ def goma_mac_builder(
 goma_mac_builder(
     name = "Chromium iOS Goma RBE ToT",
     goma_backend = goma.backend.RBE_TOT,
-    os = os.MAC_10_15,
-    xcode = xcode.x12d4e,
+    os = os.MAC_11,
+    xcode = xcode.x13main,
 )
 
 goma_mac_builder(

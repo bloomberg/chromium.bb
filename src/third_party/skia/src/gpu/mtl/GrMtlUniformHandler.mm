@@ -17,70 +17,56 @@
 
 GR_NORETAIN_BEGIN
 
-// TODO: this class is basically copy and pasted from GrVklUniformHandler so that we can have
-// some shaders working. The SkSL Metal code generator was written to work with GLSL generated for
-// the Ganesh Vulkan backend, so it should all work. There might be better ways to do things in
-// Metal and/or some Vulkan GLSLisms left in.
-
 // To determine whether a current offset is aligned, we can just 'and' the lowest bits with the
 // alignment mask. A value of 0 means aligned, any other value is how many bytes past alignment we
 // are. This works since all alignments are powers of 2. The mask is always (alignment - 1).
 static uint32_t grsltype_to_alignment_mask(GrSLType type) {
     switch(type) {
-        case kByte_GrSLType: // fall through
-        case kUByte_GrSLType:
-            return 0x0;
-        case kByte2_GrSLType: // fall through
-        case kUByte2_GrSLType:
-            return 0x1;
-        case kByte3_GrSLType: // fall through
-        case kByte4_GrSLType:
-        case kUByte3_GrSLType:
-        case kUByte4_GrSLType:
+        case kInt_GrSLType:
+        case kUInt_GrSLType:
+        case kFloat_GrSLType:
             return 0x3;
-        case kShort_GrSLType: // fall through
+        case kInt2_GrSLType:
+        case kUInt2_GrSLType:
+        case kFloat2_GrSLType:
+            return 0x7;
+        case kInt3_GrSLType:
+        case kUInt3_GrSLType:
+        case kFloat3_GrSLType:
+        case kInt4_GrSLType:
+        case kUInt4_GrSLType:
+        case kFloat4_GrSLType:
+            return 0xF;
+
+        case kFloat2x2_GrSLType:
+            return 0x7;
+        case kFloat3x3_GrSLType:
+            return 0xF;
+        case kFloat4x4_GrSLType:
+            return 0xF;
+
+        case kShort_GrSLType:
         case kUShort_GrSLType:
+        case kHalf_GrSLType:
             return 0x1;
-        case kShort2_GrSLType: // fall through
+        case kShort2_GrSLType:
         case kUShort2_GrSLType:
+        case kHalf2_GrSLType:
             return 0x3;
-        case kShort3_GrSLType: // fall through
+        case kShort3_GrSLType:
         case kShort4_GrSLType:
         case kUShort3_GrSLType:
         case kUShort4_GrSLType:
+        case kHalf3_GrSLType:
+        case kHalf4_GrSLType:
             return 0x7;
-        case kInt_GrSLType:
-        case kUint_GrSLType:
+
+        case kHalf2x2_GrSLType:
             return 0x3;
-        case kInt2_GrSLType:
-        case kUint2_GrSLType:
+        case kHalf3x3_GrSLType:
             return 0x7;
-        case kInt3_GrSLType:
-        case kUint3_GrSLType:
-        case kInt4_GrSLType:
-        case kUint4_GrSLType:
-            return 0xF;
-        case kHalf_GrSLType: // fall through
-        case kFloat_GrSLType:
-            return 0x3;
-        case kHalf2_GrSLType: // fall through
-        case kFloat2_GrSLType:
+        case kHalf4x4_GrSLType:
             return 0x7;
-        case kHalf3_GrSLType: // fall through
-        case kFloat3_GrSLType:
-            return 0xF;
-        case kHalf4_GrSLType: // fall through
-        case kFloat4_GrSLType:
-            return 0xF;
-        case kHalf2x2_GrSLType: // fall through
-        case kFloat2x2_GrSLType:
-            return 0x7;
-        case kHalf3x3_GrSLType: // fall through
-        case kFloat3x3_GrSLType:
-            return 0xF;
-        case kHalf4x4_GrSLType: // fall through
-        case kFloat4x4_GrSLType:
-            return 0xF;
 
         // This query is only valid for certain types.
         case kVoid_GrSLType:
@@ -102,69 +88,51 @@ static uint32_t grsltype_to_alignment_mask(GrSLType type) {
 /** Returns the size in bytes taken up in Metal buffers for GrSLTypes. */
 static inline uint32_t grsltype_to_mtl_size(GrSLType type) {
     switch(type) {
-        case kByte_GrSLType:
-            return sizeof(int8_t);
-        case kByte2_GrSLType:
-            return 2 * sizeof(int8_t);
-        case kByte3_GrSLType:
-            return 4 * sizeof(int8_t);
-        case kByte4_GrSLType:
-            return 4 * sizeof(int8_t);
-        case kUByte_GrSLType:
-            return sizeof(uint8_t);
-        case kUByte2_GrSLType:
-            return 2 * sizeof(uint8_t);
-        case kUByte3_GrSLType:
-            return 4 * sizeof(uint8_t);
-        case kUByte4_GrSLType:
-            return 4 * sizeof(uint8_t);
-        case kShort_GrSLType:
-            return sizeof(int16_t);
-        case kShort2_GrSLType:
-            return 2 * sizeof(int16_t);
-        case kShort3_GrSLType:
-            return 4 * sizeof(int16_t);
-        case kShort4_GrSLType:
-            return 4 * sizeof(int16_t);
-        case kUShort_GrSLType:
-            return sizeof(uint16_t);
-        case kUShort2_GrSLType:
-            return 2 * sizeof(uint16_t);
-        case kUShort3_GrSLType:
-            return 4 * sizeof(uint16_t);
-        case kUShort4_GrSLType:
-            return 4 * sizeof(uint16_t);
-        case kHalf_GrSLType: // fall through
+        case kInt_GrSLType:
+        case kUInt_GrSLType:
         case kFloat_GrSLType:
-            return sizeof(float);
-        case kHalf2_GrSLType: // fall through
+            return 4;
+        case kInt2_GrSLType:
+        case kUInt2_GrSLType:
         case kFloat2_GrSLType:
-            return 2 * sizeof(float);
-        case kHalf3_GrSLType: // fall through
+            return 8;
+        case kInt3_GrSLType:
+        case kUInt3_GrSLType:
         case kFloat3_GrSLType:
-        case kHalf4_GrSLType:
-        case kFloat4_GrSLType:
-            return 4 * sizeof(float);
-        case kInt_GrSLType: // fall through
-        case kUint_GrSLType:
-            return sizeof(int32_t);
-        case kInt2_GrSLType: // fall through
-        case kUint2_GrSLType:
-            return 2 * sizeof(int32_t);
-        case kInt3_GrSLType: // fall through
-        case kUint3_GrSLType:
         case kInt4_GrSLType:
-        case kUint4_GrSLType:
-            return 4 * sizeof(int32_t);
-        case kHalf2x2_GrSLType: // fall through
+        case kUInt4_GrSLType:
+        case kFloat4_GrSLType:
+            return 16;
+
         case kFloat2x2_GrSLType:
-            return 4 * sizeof(float);
-        case kHalf3x3_GrSLType: // fall through
+            return 16;
         case kFloat3x3_GrSLType:
-            return 12 * sizeof(float);
-        case kHalf4x4_GrSLType: // fall through
+            return 48;
         case kFloat4x4_GrSLType:
-            return 16 * sizeof(float);
+            return 64;
+
+        case kShort_GrSLType:
+        case kUShort_GrSLType:
+        case kHalf_GrSLType:
+            return 2;
+        case kShort2_GrSLType:
+        case kUShort2_GrSLType:
+        case kHalf2_GrSLType:
+            return 4;
+        case kShort3_GrSLType:
+        case kShort4_GrSLType:
+        case kUShort3_GrSLType:
+        case kUShort4_GrSLType:
+        case kHalf3_GrSLType:
+        case kHalf4_GrSLType:
+            return 8;
+
+        case kHalf2x2_GrSLType:
+            return 8;
+        case kHalf3x3_GrSLType:
+            return 24;
+        case kHalf4x4_GrSLType:
+            return 32;
 
         // This query is only valid for certain types.
         case kVoid_GrSLType:
@@ -238,17 +206,23 @@ GrGLSLUniformHandler::UniformHandle GrMtlUniformHandler::internalAddUniformArray
 
     // When outputing the GLSL, only the outer uniform block will get the Uniform modifier. Thus
     // we set the modifier to none for all uniforms declared inside the block.
-    UniformInfo& uni = fUniforms.push_back(MtlUniformInfo{
-        {
-            GrShaderVar{std::move(resolvedName), type, GrShaderVar::TypeModifier::None, arrayCount,
-                        std::move(layoutQualifier), SkString()},
-            kFragment_GrShaderFlag | kVertex_GrShaderFlag, owner, SkString(name)
-        },
-        offset
-    });
+    MtlUniformInfo tempInfo;
+    tempInfo.fVariable = GrShaderVar{std::move(resolvedName),
+                                     type,
+                                     GrShaderVar::TypeModifier::None,
+                                     arrayCount,
+                                     std::move(layoutQualifier),
+                                     SkString()};
+
+    tempInfo.fVisibility = kFragment_GrShaderFlag | kVertex_GrShaderFlag;
+    tempInfo.fOwner      = owner;
+    tempInfo.fRawName    = SkString(name);
+    tempInfo.fUBOffset   = offset;
+
+    fUniforms.push_back(tempInfo);
 
     if (outName) {
-        *outName = uni.fVariable.c_str();
+        *outName = fUniforms.back().fVariable.c_str();
     }
 
     return GrGLSLUniformHandler::UniformHandle(fUniforms.count() - 1);
@@ -269,15 +243,20 @@ GrGLSLUniformHandler::SamplerHandle GrMtlUniformHandler::addSampler(
     SkString layoutQualifier;
     layoutQualifier.appendf("binding=%d", binding);
 
-    fSamplers.push_back(MtlUniformInfo{
-        {
-            GrShaderVar{std::move(mangleName), GrSLCombinedSamplerTypeForTextureType(type),
-                        GrShaderVar::TypeModifier::Uniform, GrShaderVar::kNonArray,
-                        std::move(layoutQualifier), SkString()},
-            kFragment_GrShaderFlag, nullptr, SkString(name)
-        },
-        0
-    });
+    MtlUniformInfo tempInfo;
+    tempInfo.fVariable = GrShaderVar{std::move(mangleName),
+                                     GrSLCombinedSamplerTypeForTextureType(type),
+                                     GrShaderVar::TypeModifier::Uniform,
+                                     GrShaderVar::kNonArray,
+                                     std::move(layoutQualifier),
+                                     SkString()};
+
+    tempInfo.fVisibility = kFragment_GrShaderFlag;
+    tempInfo.fOwner      = nullptr;
+    tempInfo.fRawName    = SkString(name);
+    tempInfo.fUBOffset   = 0;
+
+    fSamplers.push_back(tempInfo);
 
     fSamplerSwizzles.push_back(swizzle);
     SkASSERT(fSamplerSwizzles.count() == fSamplers.count());

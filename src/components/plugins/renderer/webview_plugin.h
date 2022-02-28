@@ -9,11 +9,11 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner_helpers.h"
+#include "base/task/sequenced_task_runner_helpers.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
-#include "third_party/blink/public/mojom/page/widget.mojom.h"
+#include "third_party/blink/public/mojom/widget/platform_widget.mojom.h"
 #include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -186,6 +186,10 @@ class WebViewPlugin : public blink::WebPlugin, public blink::WebViewObserver {
     void SetCursor(const ui::Cursor& cursor) override;
     void UpdateTooltipUnderCursor(const std::u16string& tooltip_text,
                                   base::i18n::TextDirection hint) override;
+    void UpdateTooltipFromKeyboard(const std::u16string& tooltip_text,
+                                   base::i18n::TextDirection hint,
+                                   const gfx::Rect& bounds) override;
+    void ClearKeyboardTriggeredTooltip() override;
     void TextInputStateChanged(ui::mojom::TextInputStatePtr state) override {}
     void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
                                 base::i18n::TextDirection anchor_dir,
@@ -202,6 +206,10 @@ class WebViewPlugin : public blink::WebPlugin, public blink::WebViewObserver {
             render_frame_metadata_observer_client_receiver,
         mojo::PendingRemote<cc::mojom::RenderFrameMetadataObserver>
             render_frame_metadata_observer) override {}
+
+    // This function sets the "title" attribute to the text value passed by
+    // parameter on the container's element, if possible.
+    void UpdateTooltip(const std::u16string& tooltip_text);
 
    private:
     WebViewPlugin* plugin_;

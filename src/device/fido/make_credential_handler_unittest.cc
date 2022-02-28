@@ -8,9 +8,11 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/values.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -80,8 +82,7 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
         test_data::kClientDataJson, std::move(rp), std::move(user),
         std::move(credential_params));
 
-    MakeCredentialRequestHandler::Options options(
-        authenticator_selection_criteria);
+    MakeCredentialOptions options(authenticator_selection_criteria);
     options.allow_skipping_pin_touch = true;
 
     auto handler = std::make_unique<MakeCredentialRequestHandler>(
@@ -134,9 +135,9 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<test::FakeFidoDiscoveryFactory> fake_discovery_factory_ =
       std::make_unique<test::FakeFidoDiscoveryFactory>();
-  test::FakeFidoDiscovery* discovery_;
-  test::FakeFidoDiscovery* nfc_discovery_;
-  test::FakeFidoDiscovery* platform_discovery_;
+  raw_ptr<test::FakeFidoDiscovery> discovery_;
+  raw_ptr<test::FakeFidoDiscovery> nfc_discovery_;
+  raw_ptr<test::FakeFidoDiscovery> platform_discovery_;
   scoped_refptr<::testing::NiceMock<MockBluetoothAdapter>> mock_adapter_;
   std::unique_ptr<MockFidoDevice> pending_mock_platform_device_;
   TestMakeCredentialRequestCallback cb_;
@@ -395,8 +396,8 @@ ACTION_P(Reply, reply) {
       base::BindOnce(
           [](base::OnceCallback<void(absl::optional<std::vector<uint8_t>>)>
                  callback,
-             std::vector<uint8_t> reply) {
-            std::move(callback).Run(std::move(reply));
+             std::vector<uint8_t> reply_bytes) {
+            std::move(callback).Run(std::move(reply_bytes));
           },
           std::move(arg1), std::vector<uint8_t>(reply.begin(), reply.end())));
 }

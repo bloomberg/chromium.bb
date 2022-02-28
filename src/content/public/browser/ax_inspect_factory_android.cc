@@ -7,14 +7,20 @@
 #include "base/notreached.h"
 #include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_android.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_android_external.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 
 namespace content {
 
 // static
 std::unique_ptr<ui::AXTreeFormatter>
 AXInspectFactory::CreatePlatformFormatter() {
-  return AXInspectFactory::CreateFormatter(kAndroid);
+  // The default platform tree formatter for Android uses the "external" tree,
+  // i.e. pulling from the AccessibilityNodeInfo objects in the Java-side code.
+  // If the internal tree is desired, then CreateFormatter() should be called
+  // with the appropriate tree type.
+  return AXInspectFactory::CreateFormatter(ui::AXApiType::kAndroidExternal);
 }
 
 // static
@@ -22,16 +28,24 @@ std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreatePlatformRecorder(
     BrowserAccessibilityManager* manager,
     base::ProcessId pid,
     const ui::AXTreeSelector& selector) {
-  return AXInspectFactory::CreateRecorder(kAndroid, manager, pid, selector);
+  return AXInspectFactory::CreateRecorder(ui::AXApiType::kAndroid, manager, pid,
+                                          selector);
 }
 
 // static
 std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(
-    AXInspectFactory::Type type) {
+    ui::AXApiType::Type type) {
+  // Developer mode: crash immediately on any accessibility fatal error.
+  // This only runs during integration tests, or if a developer is
+  // using an inspection tool, e.g. chrome://accessibility.
+  BrowserAccessibilityManager::AlwaysFailFast();
+
   switch (type) {
-    case kAndroid:
+    case ui::AXApiType::kAndroid:
       return std::make_unique<AccessibilityTreeFormatterAndroid>();
-    case kBlink:
+    case ui::AXApiType::kAndroidExternal:
+      return std::make_unique<AccessibilityTreeFormatterAndroidExternal>();
+    case ui::AXApiType::kBlink:
       return std::make_unique<AccessibilityTreeFormatterBlink>();
     default:
       NOTREACHED() << "Unsupported inspect type " << type;
@@ -41,10 +55,15 @@ std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(
 
 // static
 std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreateRecorder(
-    AXInspectFactory::Type type,
+    ui::AXApiType::Type type,
     BrowserAccessibilityManager* manager,
     base::ProcessId pid,
     const ui::AXTreeSelector& selector) {
+  // Developer mode: crash immediately on any accessibility fatal error.
+  // This only runs during integration tests, or if a developer is
+  // using an inspection tool, e.g. chrome://accessibility.
+  BrowserAccessibilityManager::AlwaysFailFast();
+
   NOTREACHED() << "Unsupported inspect type " << type;
   return nullptr;
 }

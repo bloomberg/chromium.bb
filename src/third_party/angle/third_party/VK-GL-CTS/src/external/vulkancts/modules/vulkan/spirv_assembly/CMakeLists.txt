@@ -75,6 +75,10 @@ set(DEQP_VK_SPIRV_ASSEMBLY_SRCS
 	vktSpvAsmFloatControlsExtensionlessTests.hpp
 	vktSpvAsmTrinaryMinMaxTests.cpp
 	vktSpvAsmTrinaryMinMaxTests.hpp
+	vktSpvAsmIntegerDotProductTests.cpp
+	vktSpvAsmIntegerDotProductTests.hpp
+	vktSpvAsmPhysicalStorageBufferPointerTests.cpp
+	vktSpvAsmPhysicalStorageBufferPointerTests.hpp
 	)
 
 set(DEQP_VK_SPIRV_ASSEMBLY_LIBS

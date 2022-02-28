@@ -5,7 +5,7 @@
 #ifndef UI_DISPLAY_WIN_TEST_SCOPED_SCREEN_WIN_H_
 #define UI_DISPLAY_WIN_TEST_SCOPED_SCREEN_WIN_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/display/win/screen_win.h"
 
 namespace display {
@@ -19,12 +19,14 @@ namespace test {
 class ScopedScreenWin : public ScreenWin {
  public:
   ScopedScreenWin();
+
+  ScopedScreenWin(const ScopedScreenWin&) = delete;
+  ScopedScreenWin& operator=(const ScopedScreenWin&) = delete;
+
   ~ScopedScreenWin() override;
 
  private:
-  Screen* old_screen_ = Screen::SetScreenInstance(this);
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedScreenWin);
+  raw_ptr<Screen> old_screen_ = Screen::SetScreenInstance(this);
 };
 
 }  // namespace test

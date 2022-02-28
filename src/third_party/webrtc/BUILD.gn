@@ -39,7 +39,6 @@ if (!build_with_chromium) {
     if (rtc_include_tests) {
       deps += [
         ":rtc_unittests",
-        ":slow_tests",
         ":video_engine_tests",
         ":voip_unittests",
         ":webrtc_nonparallel_tests",
@@ -118,8 +117,15 @@ config("common_inherited_config") {
   cflags = []
   ldflags = []
 
+  if (rtc_dlog_always_on) {
+    defines += [ "DLOG_ALWAYS_ON" ]
+  }
+
   if (rtc_enable_symbol_export || is_component_build) {
-    defines = [ "WEBRTC_ENABLE_SYMBOL_EXPORT" ]
+    defines += [ "WEBRTC_ENABLE_SYMBOL_EXPORT" ]
+  }
+  if (rtc_enable_objc_symbol_export) {
+    defines += [ "WEBRTC_ENABLE_OBJC_SYMBOL_EXPORT" ]
   }
 
   if (build_with_mozilla) {
@@ -221,14 +227,6 @@ config("common_inherited_config") {
 
 # TODO(bugs.webrtc.org/9693): Remove the possibility to suppress this warning
 # as soon as WebRTC compiles without it.
-config("no_exit_time_destructors") {
-  if (is_clang) {
-    cflags = [ "-Wno-exit-time-destructors" ]
-  }
-}
-
-# TODO(bugs.webrtc.org/9693): Remove the possibility to suppress this warning
-# as soon as WebRTC compiles without it.
 config("no_global_constructors") {
   if (is_clang) {
     cflags = [ "-Wno-global-constructors" ]
@@ -264,6 +262,10 @@ config("common_config") {
 
   if (rtc_libvpx_build_vp9) {
     defines += [ "RTC_ENABLE_VP9" ]
+  }
+
+  if (rtc_include_dav1d_in_internal_decoder_factory) {
+    defines += [ "RTC_DAV1D_IN_INTERNAL_DECODER_FACTORY" ]
   }
 
   if (rtc_enable_sctp) {
@@ -302,7 +304,10 @@ config("common_config") {
     defines += [ "WEBRTC_EXCLUDE_AUDIO_PROCESSING_MODULE" ]
   }
 
-  cflags = []
+  # TODO(webrtc:13219): Fix -Wshadow instances and enable.
+  if (is_clang) {
+    cflags += [ "-Wno-shadow" ]
+  }
 
   if (build_with_chromium) {
     defines += [
@@ -340,26 +345,12 @@ config("common_config") {
     if (is_clang) {
       cflags += [
         "-Wc++11-narrowing",
-        "-Wimplicit-fallthrough",
-        "-Wthread-safety",
-        "-Winconsistent-missing-override",
         "-Wundef",
       ]
 
-      # use_xcode_clang only refers to the iOS toolchain, host binaries use
-      # chromium's clang always.
-      if (!is_nacl &&
-          (!use_xcode_clang || current_toolchain == host_toolchain)) {
-        # Flags NaCl (Clang 3.7) and Xcode 7.3 (Clang clang-703.0.31) do not
-        # recognize.
+      if (!is_nacl) {
+        # Flags NaCl (Clang 3.7) do not recognize.
         cflags += [ "-Wunused-lambda-capture" ]
-      }
-
-      if (use_xcode_clang) {
-        # This may be removed if the clang version in xcode > 12.4 includes the
-        # fix https://reviews.llvm.org/D73007.
-        # https://bugs.llvm.org/show_bug.cgi?id=44556
-        cflags += [ "-Wno-range-loop-analysis" ]
       }
     }
 
@@ -435,10 +426,6 @@ config("common_config") {
 
 config("common_objc") {
   frameworks = [ "Foundation.framework" ]
-
-  if (rtc_use_metal_rendering) {
-    defines = [ "RTC_SUPPORTS_METAL" ]
-  }
 }
 
 if (!build_with_chromium) {
@@ -520,6 +507,10 @@ if (!build_with_chromium) {
     rtc_executable("webrtc_lib_link_test") {
       testonly = true
 
+      # This target is used for checking to link, so do not check dependencies
+      # on gn check.
+      check_includes = false  # no-presubmit-check TODO(bugs.webrtc.org/12785)
+
       sources = [ "webrtc_lib_link_test.cc" ]
       deps = [
         # NOTE: Don't add deps here. If this test fails to link, it means you
@@ -569,6 +560,7 @@ if (rtc_include_tests && !build_with_chromium) {
       "rtc_base/experiments:experiments_unittests",
       "rtc_base/system:file_wrapper_unittests",
       "rtc_base/task_utils:pending_task_safety_flag_unittests",
+      "rtc_base/task_utils:repeating_task_unittests",
       "rtc_base/task_utils:to_queued_task_unittests",
       "sdk:sdk_tests",
       "test:rtp_test_utils",
@@ -605,17 +597,6 @@ if (rtc_include_tests && !build_with_chromium) {
         "test:benchmark_main",
       ]
     }
-  }
-
-  # This runs tests that must run in real time and therefore can take some
-  # time to execute. They are in a separate executable to avoid making the
-  # regular unittest suite too slow to run frequently.
-  rtc_test("slow_tests") {
-    testonly = true
-    deps = [
-      "rtc_base/task_utils:repeating_task_unittests",
-      "test:test_main",
-    ]
   }
 
   # TODO(pbos): Rename test suite, this is no longer "just" for video targets.

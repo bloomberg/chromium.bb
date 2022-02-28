@@ -8,6 +8,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -16,6 +17,16 @@
 #include "url/url_constants.h"
 
 namespace network {
+
+namespace {
+
+base::debug::CrashKeyString* GetRequestInitiatorOriginLockCrashKey() {
+  static auto* crash_key = base::debug::AllocateCrashKeyString(
+      "request_initiator_origin_lock", base::debug::CrashKeySize::Size64);
+  return crash_key;
+}
+
+}  // namespace
 
 InitiatorLockCompatibility VerifyRequestInitiatorLock(
     const absl::optional<url::Origin>& request_initiator_origin_lock,
@@ -44,24 +55,17 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
   return InitiatorLockCompatibility::kIncorrectLock;
 }
 
-url::Origin GetTrustworthyInitiator(
-    const absl::optional<url::Origin>& request_initiator_origin_lock,
-    const absl::optional<url::Origin>& request_initiator) {
-  // Returning a unique origin as a fallback should be safe - such origin will
-  // be considered cross-origin from all other origins.
-  url::Origin unique_origin_fallback;
+namespace debug {
 
-  if (!request_initiator.has_value())
-    return unique_origin_fallback;
+ScopedRequestInitiatorOriginLockCrashKey::
+    ScopedRequestInitiatorOriginLockCrashKey(
+        const absl::optional<url::Origin>& request_initiator_origin_lock)
+    : ScopedOriginCrashKey(
+          GetRequestInitiatorOriginLockCrashKey(),
+          base::OptionalOrNullptr(request_initiator_origin_lock)) {}
 
-  InitiatorLockCompatibility initiator_compatibility =
-      VerifyRequestInitiatorLock(request_initiator_origin_lock,
-                                 request_initiator);
-  if (initiator_compatibility == InitiatorLockCompatibility::kIncorrectLock)
-    return unique_origin_fallback;
+ScopedRequestInitiatorOriginLockCrashKey::
+    ~ScopedRequestInitiatorOriginLockCrashKey() = default;
 
-  // If all the checks above passed, then |request_initiator| is trustworthy.
-  return request_initiator.value();
-}
-
+}  // namespace debug
 }  // namespace network

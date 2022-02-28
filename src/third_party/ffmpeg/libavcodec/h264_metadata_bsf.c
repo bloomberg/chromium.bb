@@ -61,6 +61,7 @@ typedef struct H264MetadataContext {
 
     AVRational tick_rate;
     int fixed_frame_rate_flag;
+    int zero_new_constraint_set_flags;
 
     int crop_left;
     int crop_right;
@@ -228,6 +229,10 @@ static int h264_metadata_update_sps(AVBSFContext *bsf,
         need_vui = 1;
     }
     SET_VUI_FIELD(fixed_frame_rate_flag);
+    if (ctx->zero_new_constraint_set_flags) {
+        sps->constraint_set4_flag = 0;
+        sps->constraint_set5_flag = 0;
+    }
 
     if (sps->separate_colour_plane_flag || sps->chroma_format_idc == 0) {
         crop_unit_x = 1;
@@ -371,7 +376,7 @@ static int h264_metadata_handle_display_orientation(AVBSFContext *bsf,
         H264RawSEIDisplayOrientation *disp =
             &ctx->display_orientation_payload;
         uint8_t *data;
-        buffer_size_t size;
+        size_t size;
         int write = 0;
 
         data = av_packet_get_side_data(pkt, AV_PKT_DATA_DISPLAYMATRIX, &size);
@@ -462,11 +467,11 @@ static int h264_metadata_update_fragment(AVBSFContext *bsf, AVPacket *pkt,
     int err, i, has_sps, seek_point;
 
     // If an AUD is present, it must be the first NAL unit.
-    if (au->units[0].type == H264_NAL_AUD) {
+    if (au->nb_units && au->units[0].type == H264_NAL_AUD) {
         if (ctx->aud == BSF_ELEMENT_REMOVE)
             ff_cbs_delete_unit(au, 0);
     } else {
-        if (ctx->aud == BSF_ELEMENT_INSERT) {
+        if (pkt && ctx->aud == BSF_ELEMENT_INSERT) {
             err = h264_metadata_insert_aud(bsf, au);
             if (err < 0)
                 return err;
@@ -618,6 +623,9 @@ static const AVOption h264_metadata_options[] = {
     { "fixed_frame_rate_flag", "Set VUI fixed frame rate flag",
         OFFSET(fixed_frame_rate_flag), AV_OPT_TYPE_INT,
         { .i64 = -1 }, -1, 1, FLAGS },
+    { "zero_new_constraint_set_flags", "Set constraint_set4_flag / constraint_set5_flag to zero",
+        OFFSET(zero_new_constraint_set_flags), AV_OPT_TYPE_BOOL,
+        { .i64 = 0 }, 0, 1, FLAGS },
 
     { "crop_left", "Set left border crop offset",
         OFFSET(crop_left), AV_OPT_TYPE_INT,

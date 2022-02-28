@@ -13,6 +13,8 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "base/bind.h"
+#include "base/cxx17_backports.h"
 
 namespace ash {
 
@@ -110,7 +112,12 @@ std::u16string PrivacyScreenToastController::GetAccessibleNameForBubble() {
   return toast_view_->GetAccessibleName();
 }
 
-void PrivacyScreenToastController::OnPrivacyScreenSettingChanged(bool enabled) {
+void PrivacyScreenToastController::OnPrivacyScreenSettingChanged(
+    bool enabled,
+    bool notify_ui) {
+  if (!notify_ui)
+    return;
+
   if (tray_->IsBubbleShown())
     return;
 
@@ -128,8 +135,8 @@ void PrivacyScreenToastController::StartAutoCloseTimer() {
   if (Shell::Get()->accessibility_controller()->spoken_feedback().enabled())
     autoclose_delay = kTrayPopupAutoCloseDelayInSecondsWithSpokenFeedback;
 
-  close_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(autoclose_delay),
-                     this, &PrivacyScreenToastController::HideToast);
+  close_timer_.Start(FROM_HERE, base::Seconds(autoclose_delay), this,
+                     &PrivacyScreenToastController::HideToast);
 }
 
 void PrivacyScreenToastController::UpdateToastView() {
@@ -138,9 +145,9 @@ void PrivacyScreenToastController::UpdateToastView() {
     toast_view_->SetPrivacyScreenEnabled(
         /*enabled=*/privacy_screen_controller->GetEnabled(),
         /*managed=*/privacy_screen_controller->IsManaged());
-    int width = base::ClampToRange(toast_view_->GetPreferredSize().width(),
-                                   kPrivacyScreenToastMinWidth,
-                                   kPrivacyScreenToastMaxWidth);
+    int width =
+        base::clamp(toast_view_->GetPreferredSize().width(),
+                    kPrivacyScreenToastMinWidth, kPrivacyScreenToastMaxWidth);
     bubble_view_->SetPreferredWidth(width);
   }
 }

@@ -70,6 +70,8 @@ enum class EdgeKind {
   kForward
 };
 
+enum : uint32_t { kInvalidBlockPos = ~(0u) };
+
 /// Bookkeeping info for a basic block.
 struct BlockInfo {
   /// Constructor
@@ -84,7 +86,8 @@ struct BlockInfo {
   uint32_t id = 0;
 
   /// The position of this block in the reverse structured post-order.
-  uint32_t pos = 0;
+  /// If the block is not in that order, then this remains the invalid value.
+  uint32_t pos = kInvalidBlockPos;
 
   /// If this block is a header, then this is the ID of the merge block.
   uint32_t merge_for_header = 0;
@@ -202,6 +205,12 @@ enum class SkipReason {
   /// function parameter).
   kOpaqueObject,
 
+  /// `kSinkPointerIntoUse`: used to avoid emitting certain pointer expressions,
+  /// by instead generating their reference expression directly at the point of
+  /// use. For example, we apply this to OpAccessChain when indexing into a
+  /// vector, to avoid generating address-of vector component expressions.
+  kSinkPointerIntoUse,
+
   /// `kPointSizeBuiltinPointer`: the value is a pointer to the Position builtin
   /// variable.  Don't generate its address.  Avoid generating stores to this
   /// pointer.
@@ -210,19 +219,6 @@ enum class SkipReason {
   /// PointSize builtin. Use 1.0f instead, because that's the only value
   /// supported by WebGPU.
   kPointSizeBuiltinValue,
-
-  /// `kSampleIdBuiltinPointer`: the value is a pointer to the SampleId builtin
-  /// variable.  Don't generate its address.
-  kSampleIdBuiltinPointer,
-
-  /// `kVertexIndexBuiltinPointer`: the value is a pointer to the VertexIndex
-  /// builtin variable.  Don't generate its address.
-  kVertexIndexBuiltinPointer,
-
-  /// `kInstanceIndexBuiltinPointer`: the value is a pointer to the
-  /// InstanceIndex
-  /// builtin variable.  Don't generate its address.
-  kInstanceIndexBuiltinPointer,
 
   /// `kSampleMaskInBuiltinPointer`: the value is a pointer to the SampleMaskIn
   /// builtin input variable.  Don't generate its address.
@@ -291,7 +287,7 @@ struct DefInfo {
   /// to that variable, and each SPIR-V use becomes a WGSL read from the
   /// variable.
   /// TODO(dneto): This works for constants of storable type, but not, for
-  /// example, pointers.
+  /// example, pointers. crbug.com/tint/98
   bool requires_hoisted_def = false;
 
   /// If the definition is an OpPhi, then `phi_var` is the name of the
@@ -303,8 +299,13 @@ struct DefInfo {
   /// This is required to carry a storage class override from a storage
   /// buffer expressed in the old style (with Uniform storage class)
   /// that needs to be remapped to StorageBuffer storage class.
-  /// This is kNone for non-pointers.
-  ast::StorageClass storage_class = ast::StorageClass::kNone;
+  /// This is kInvalid for non-pointers.
+  ast::StorageClass storage_class = ast::StorageClass::kInvalid;
+
+  /// The expression to use when sinking pointers into their use.
+  /// When encountering a use of this instruction, we will emit this expression
+  /// instead.
+  TypedExpression sink_pointer_source_expr = {};
 
   /// The reason, if any, that this value should be ignored.
   /// Normally no values are ignored.  This field can be updated while
@@ -330,20 +331,14 @@ inline std::ostream& operator<<(std::ostream& o, const DefInfo& di) {
     case SkipReason::kOpaqueObject:
       o << " skip:opaque";
       break;
+    case SkipReason::kSinkPointerIntoUse:
+      o << " skip:sink_pointer";
+      break;
     case SkipReason::kPointSizeBuiltinPointer:
       o << " skip:pointsize_pointer";
       break;
     case SkipReason::kPointSizeBuiltinValue:
       o << " skip:pointsize_value";
-      break;
-    case SkipReason::kSampleIdBuiltinPointer:
-      o << " skip:sampleid_pointer";
-      break;
-    case SkipReason::kVertexIndexBuiltinPointer:
-      o << " skip:vertexindex_pointer";
-      break;
-    case SkipReason::kInstanceIndexBuiltinPointer:
-      o << " skip:instanceindex_pointer";
       break;
     case SkipReason::kSampleMaskInBuiltinPointer:
       o << " skip:samplemaskin_pointer";
@@ -371,13 +366,10 @@ class StatementBuilder : public Castable<StatementBuilder, ast::Statement> {
 
   /// @param builder the program builder
   /// @returns the build AST node
-  virtual ast::Statement* Build(ProgramBuilder* builder) const = 0;
+  virtual const ast::Statement* Build(ProgramBuilder* builder) const = 0;
 
  private:
   Node* Clone(CloneContext*) const override;
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
 };
 
 /// A FunctionEmitter emits a SPIR-V function onto a Tint AST module.
@@ -424,14 +416,84 @@ class FunctionEmitter {
   ParserImpl* parser() { return &parser_impl_; }
 
   /// Emits the entry point as a wrapper around its implementation function.
+  /// Pipeline inputs become formal parameters, and pipeline outputs become
+  /// return values.
   /// @returns false if emission failed.
   bool EmitEntryPointAsWrapper();
+
+  /// Creates one or more entry point input parameters corresponding to a
+  /// part of an input variable.  The part of the input variable is specfied
+  /// by the `index_prefix`, which successively indexes into the variable.
+  /// Also generates the assignment statements that copy the input parameter
+  /// to the corresponding part of the variable.  Assumes the variable
+  /// has already been created in the Private storage class.
+  /// @param var_name The name of the variable
+  /// @param var_type The store type of the variable
+  /// @param decos The variable's decorations
+  /// @param index_prefix Indices stepping into the variable, indicating
+  /// what part of the variable to populate.
+  /// @param tip_type The type of the component inside variable, after indexing
+  /// with the indices in `index_prefix`.
+  /// @param forced_param_type The type forced by WGSL, if the variable is a
+  /// builtin, otherwise the same as var_type.
+  /// @param params The parameter list where the new parameter is appended.
+  /// @param statements The statement list where the assignment is appended.
+  /// @returns false if emission failed
+  bool EmitPipelineInput(std::string var_name,
+                         const Type* var_type,
+                         ast::DecorationList* decos,
+                         std::vector<int> index_prefix,
+                         const Type* tip_type,
+                         const Type* forced_param_type,
+                         ast::VariableList* params,
+                         ast::StatementList* statements);
+
+  /// Creates one or more struct members from an output variable, and the
+  /// expressions that compute the value they contribute to the entry point
+  /// return value.  The part of the output variable is specfied
+  /// by the `index_prefix`, which successively indexes into the variable.
+  /// Assumes the variable has already been created in the Private storage
+  /// class.
+  /// @param var_name The name of the variable
+  /// @param var_type The store type of the variable
+  /// @param decos The variable's decorations
+  /// @param index_prefix Indices stepping into the variable, indicating
+  /// what part of the variable to populate.
+  /// @param tip_type The type of the component inside variable, after indexing
+  /// with the indices in `index_prefix`.
+  /// @param forced_member_type The type forced by WGSL, if the variable is a
+  /// builtin, otherwise the same as var_type.
+  /// @param return_members The struct member list where the new member is
+  /// added.
+  /// @param return_exprs The expression list where the return expression is
+  /// added.
+  /// @returns false if emission failed
+  bool EmitPipelineOutput(std::string var_name,
+                          const Type* var_type,
+                          ast::DecorationList* decos,
+                          std::vector<int> index_prefix,
+                          const Type* tip_type,
+                          const Type* forced_member_type,
+                          ast::StructMemberList* return_members,
+                          ast::ExpressionList* return_exprs);
+
+  /// Updates the decoration list, replacing an existing Location decoration
+  /// with another having one higher location value. Does nothing if no
+  /// location decoration exists.
+  /// Assumes the list contains at most one Location decoration.
+  /// @param decos the decoration list to modify
+  void IncrementLocation(ast::DecorationList* decos);
+
+  /// Returns the Location dcoration, if it exists.
+  /// @param decos the list of decorations to search
+  /// @returns the Location decoration, or nullptr if it doesn't exist
+  const ast::Decoration* GetLocation(const ast::DecorationList& decos);
 
   /// Create an ast::BlockStatement representing the body of the function.
   /// This creates the statement stack, which is non-empty for the lifetime
   /// of the function.
   /// @returns the body of the function, or null on error
-  ast::BlockStatement* MakeFunctionBody();
+  const ast::BlockStatement* MakeFunctionBody();
 
   /// Emits the function body, populating the bottom entry of the statements
   /// stack.
@@ -612,8 +674,8 @@ class FunctionEmitter {
   /// @param src_info the source block
   /// @param dest_info the destination block
   /// @returns the new statement, or a null statement
-  ast::Statement* MakeBranch(const BlockInfo& src_info,
-                             const BlockInfo& dest_info) const {
+  const ast::Statement* MakeBranch(const BlockInfo& src_info,
+                                   const BlockInfo& dest_info) const {
     return MakeBranchDetailed(src_info, dest_info, false, nullptr);
   }
 
@@ -623,8 +685,8 @@ class FunctionEmitter {
   /// @param src_info the source block
   /// @param dest_info the destination block
   /// @returns the new statement, or a null statement
-  ast::Statement* MakeForcedBranch(const BlockInfo& src_info,
-                                   const BlockInfo& dest_info) const {
+  const ast::Statement* MakeForcedBranch(const BlockInfo& src_info,
+                                         const BlockInfo& dest_info) const {
     return MakeBranchDetailed(src_info, dest_info, true, nullptr);
   }
 
@@ -642,10 +704,11 @@ class FunctionEmitter {
   /// @param forced if true, always emit the branch (if it exists in WGSL)
   /// @param flow_guard_name_ptr return parameter for control flow guard name
   /// @returns the new statement, or a null statement
-  ast::Statement* MakeBranchDetailed(const BlockInfo& src_info,
-                                     const BlockInfo& dest_info,
-                                     bool forced,
-                                     std::string* flow_guard_name_ptr) const;
+  const ast::Statement* MakeBranchDetailed(
+      const BlockInfo& src_info,
+      const BlockInfo& dest_info,
+      bool forced,
+      std::string* flow_guard_name_ptr) const;
 
   /// Returns a new if statement with the given statements as the then-clause
   /// and the else-clause.  Either or both clauses might be nullptr. If both
@@ -654,9 +717,9 @@ class FunctionEmitter {
   /// @param then_stmt the statement for the then clause of the if, or nullptr
   /// @param else_stmt the statement for the else clause of the if, or nullptr
   /// @returns the new statement, or nullptr
-  ast::Statement* MakeSimpleIf(ast::Expression* condition,
-                               ast::Statement* then_stmt,
-                               ast::Statement* else_stmt) const;
+  const ast::Statement* MakeSimpleIf(const ast::Expression* condition,
+                                     const ast::Statement* then_stmt,
+                                     const ast::Statement* else_stmt) const;
 
   /// Emits the statements for an normal-terminator OpBranchConditional
   /// where one branch is a case fall through (the true branch if and only
@@ -671,7 +734,7 @@ class FunctionEmitter {
   /// branch
   /// @returns the false if emission fails
   bool EmitConditionalCaseFallThrough(const BlockInfo& src_info,
-                                      ast::Expression* cond,
+                                      const ast::Expression* cond,
                                       EdgeKind other_edge_kind,
                                       const BlockInfo& other_dest,
                                       bool fall_through_is_true_branch);
@@ -699,9 +762,20 @@ class FunctionEmitter {
   bool EmitConstDefOrWriteToHoistedVar(const spvtools::opt::Instruction& inst,
                                        TypedExpression ast_expr);
 
-  /// Makes an expression
+  /// If the result ID of the given instruction is hoisted, then emits
+  /// a statement to write the expression to the hoisted variable, and
+  /// returns true.  Otherwise return false.
+  /// @param inst the SPIR-V instruction defining a value.
+  /// @param ast_expr the expression to assign.
+  /// @returns true if the instruction has an associated hoisted variable.
+  bool WriteIfHoistedVar(const spvtools::opt::Instruction& inst,
+                         TypedExpression ast_expr);
+
+  /// Makes an expression from a SPIR-V ID.
+  /// if the SPIR-V result type is a pointer.
   /// @param id the SPIR-V ID of the value
-  /// @returns true if emission has not yet failed.
+  /// @returns an AST expression for the instruction, or an invalid
+  /// TypedExpression on error.
   TypedExpression MakeExpression(uint32_t id);
 
   /// Creates an expression and supporting statements for a combinatorial
@@ -763,6 +837,13 @@ class FunctionEmitter {
     return where->second.get();
   }
 
+  /// Is the block, represented by info, in the structured block order?
+  /// @param info the block
+  /// @returns true if the block is in the structured block order.
+  bool IsInBlockOrder(const BlockInfo* info) const {
+    return info && info->pos != kInvalidBlockPos;
+  }
+
   /// Gets the local definition info for a result ID.
   /// @param id the SPIR-V ID of local definition.
   /// @returns the definition info for the given ID, if it exists, or nullptr
@@ -782,13 +863,6 @@ class FunctionEmitter {
     }
     return SkipReason::kDontSkip;
   }
-
-  /// Returns the WGSL variable name for an input builtin variable whose
-  /// translation is managed via the SkipReason mechanism.
-  /// @param skip_reason the skip reason for the special variable
-  /// @returns the variable name for a special builtin variable
-  /// that is handled via the "skip" mechanism.
-  std::string NameForSpecialInputBuiltin(SkipReason skip_reason);
 
   /// Returns the most deeply nested structured construct which encloses the
   /// WGSL scopes of names declared in both block positions. Each position must
@@ -851,6 +925,13 @@ class FunctionEmitter {
   /// @returns the value itself, or converted to signed integral
   TypedExpression ToSignedIfUnsigned(TypedExpression value);
 
+  /// @param value_id the value identifier to check
+  /// @returns true if the given SPIR-V id represents a constant float 0.
+  bool IsFloatZero(uint32_t value_id);
+  /// @param value_id the value identifier to check
+  /// @returns true if the given SPIR-V id represents a constant float 1.
+  bool IsFloatOne(uint32_t value_id);
+
  private:
   /// FunctionDeclaration contains the parsed information for a function header.
   struct FunctionDeclaration {
@@ -890,6 +971,18 @@ class FunctionEmitter {
   /// @returns a new expression node
   TypedExpression MakeOperand(const spvtools::opt::Instruction& inst,
                               uint32_t operand_index);
+
+  /// Copies a typed expression to the result, but when the type is a pointer
+  /// or reference type, ensures the storage class is not defaulted.  That is,
+  /// it changes a storage class of "none" to "function".
+  /// @param expr a typed expression
+  /// @results a copy of the expression, with possibly updated type
+  TypedExpression InferFunctionStorageClass(TypedExpression expr);
+
+  /// Returns an expression for a SPIR-V OpFMod instruction.
+  /// @param inst the SPIR-V instruction
+  /// @returns an expression
+  TypedExpression MakeFMod(const spvtools::opt::Instruction& inst);
 
   /// Returns an expression for a SPIR-V OpAccessChain or OpInBoundsAccessChain
   /// instruction.
@@ -953,13 +1046,15 @@ class FunctionEmitter {
   /// given instruction.
   /// @param inst the SPIR-V instruction
   /// @returns an identifier expression, or null on error
-  ast::Expression* GetImageExpression(const spvtools::opt::Instruction& inst);
+  const ast::Expression* GetImageExpression(
+      const spvtools::opt::Instruction& inst);
 
   /// Get the expression for the sampler operand from the first operand to the
   /// given instruction.
   /// @param inst the SPIR-V instruction
   /// @returns an identifier expression, or null on error
-  ast::Expression* GetSamplerExpression(const spvtools::opt::Instruction& inst);
+  const ast::Expression* GetSamplerExpression(
+      const spvtools::opt::Instruction& inst);
 
   /// Emits a texture builtin function call for a SPIR-V instruction that
   /// accesses an image or sampled image.
@@ -981,7 +1076,7 @@ class FunctionEmitter {
   /// @param texel the texel
   /// @param texture_type the type of the storage texture
   /// @returns the texel, after necessary conversion.
-  ast::Expression* ConvertTexelForStorage(
+  const ast::Expression* ConvertTexelForStorage(
       const spvtools::opt::Instruction& inst,
       TypedExpression texel,
       const Texture* texture_type);
@@ -1009,7 +1104,7 @@ class FunctionEmitter {
   /// Does nothing if the statement is null.
   /// @param statement the new statement
   /// @returns a pointer to the statement.
-  ast::Statement* AddStatement(ast::Statement* statement);
+  const ast::Statement* AddStatement(const ast::Statement* statement);
 
   /// AddStatementBuilder() constructs and adds the StatementBuilder of type
   /// `T` to the top of the statement stack.
@@ -1017,7 +1112,7 @@ class FunctionEmitter {
   /// @return the built StatementBuilder
   template <typename T, typename... ARGS>
   T* AddStatementBuilder(ARGS&&... args) {
-    TINT_ASSERT(!statements_stack_.empty());
+    TINT_ASSERT(Reader, !statements_stack_.empty());
     return statements_stack_.back().AddStatementBuilder<T>(
         std::forward<ARGS>(args)...);
   }
@@ -1028,7 +1123,7 @@ class FunctionEmitter {
   Source GetSourceForInst(const spvtools::opt::Instruction& inst) const;
 
   /// @returns the last statetment in the top of the statement stack.
-  ast::Statement* LastStatement();
+  const ast::Statement* LastStatement();
 
   using CompletionAction = std::function<void(const ast::StatementList&)>;
 
@@ -1053,7 +1148,7 @@ class FunctionEmitter {
 
     /// Add() adds `statement` to the block.
     /// Add() must not be called after calling Finalize().
-    void Add(ast::Statement* statement);
+    void Add(const ast::Statement* statement);
 
     /// AddStatementBuilder() constructs and adds the StatementBuilder of type
     /// `T` to the block.
@@ -1090,7 +1185,7 @@ class FunctionEmitter {
     /// The ID of the block at which the completion action should be triggered
     /// and this statement block discarded. This is often the `end_id` of
     /// `construct` itself.
-    uint32_t const end_id_;
+    const uint32_t end_id_;
     /// The completion action finishes processing this statement block.
     FunctionEmitter::CompletionAction const completion_action_;
     /// The list of statements being built, if this construct is not a switch.
@@ -1122,15 +1217,23 @@ class FunctionEmitter {
   void PushTrueGuard(uint32_t end_id);
 
   /// @returns a boolean true expression.
-  ast::Expression* MakeTrue(const Source&) const;
+  const ast::Expression* MakeTrue(const Source&) const;
 
   /// @returns a boolean false expression.
-  ast::Expression* MakeFalse(const Source&) const;
+  const ast::Expression* MakeFalse(const Source&) const;
 
   /// @param expr the expression to take the address of
   /// @returns a TypedExpression that is the address-of `expr` (`&expr`)
   /// @note `expr` must be a reference type
   TypedExpression AddressOf(TypedExpression expr);
+
+  /// Returns AddressOf(expr) if expr is has reference type and
+  /// the instruction has a pointer result type.  Otherwise returns expr.
+  /// @param expr the expression to take the address of
+  /// @returns a TypedExpression that is the address-of `expr` (`&expr`)
+  /// @note `expr` must be a reference type
+  TypedExpression AddressOfIfNeeded(TypedExpression expr,
+                                    const spvtools::opt::Instruction* inst);
 
   /// @param expr the expression to dereference
   /// @returns a TypedExpression that is the dereference-of `expr` (`*expr`)

@@ -7,8 +7,8 @@
 #include "chrome/common/safe_browsing/mock_binary_feature_extractor.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/download/public/common/mock_download_item.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/file_system_access_write_item.h"
 #include "content/public/test/browser_task_environment.h"
@@ -25,15 +25,6 @@ class DownloadRequestMakerTest : public testing::Test {
   DownloadRequestMakerTest()
       : mock_feature_extractor_(
             new testing::StrictMock<MockBinaryFeatureExtractor>()) {}
-
-  void TearDown() override {
-    // Destroying the profile triggers a call to leveldb_proto::
-    // ProtoDatabaseProvider::SetSharedDBDeleteObsoleteDelayForTesting, which
-    // can race with leveldb_proto::SharedProtoDatabase::OnDatabaseInit
-    // on another thread.  Allowing those tasks to complete before we destroy
-    // the profile should fix the race.
-    task_environment_.RunUntilIdle();
-  }
 
  protected:
   content::BrowserTaskEnvironment task_environment_;

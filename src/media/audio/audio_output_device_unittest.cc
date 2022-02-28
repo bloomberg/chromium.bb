@@ -12,13 +12,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/unsafe_shared_memory_region.h"
-#include "base/single_thread_task_runner.h"
 #include "base/sync_socket.h"
-#include "base/task_runner.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/task/task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -46,8 +46,7 @@ namespace {
 constexpr char kDefaultDeviceId[] = "";
 constexpr char kNonDefaultDeviceId[] = "valid-nondefault-device-id";
 constexpr char kUnauthorizedDeviceId[] = "unauthorized-device-id";
-constexpr base::TimeDelta kAuthTimeout =
-    base::TimeDelta::FromMilliseconds(10000);
+constexpr base::TimeDelta kAuthTimeout = base::Milliseconds(10000);
 
 class MockRenderCallback : public AudioRendererSink::RenderCallback {
  public:
@@ -88,6 +87,10 @@ class MockAudioOutputIPC : public AudioOutputIPC {
 class AudioOutputDeviceTest : public testing::Test {
  public:
   AudioOutputDeviceTest();
+
+  AudioOutputDeviceTest(const AudioOutputDeviceTest&) = delete;
+  AudioOutputDeviceTest& operator=(const AudioOutputDeviceTest&) = delete;
+
   ~AudioOutputDeviceTest() override;
 
   void ReceiveAuthorization(OutputDeviceStatus device_status);
@@ -106,7 +109,7 @@ class AudioOutputDeviceTest : public testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   AudioParameters default_audio_parameters_;
   StrictMock<MockRenderCallback> callback_;
-  MockAudioOutputIPC* audio_output_ipc_;  // owned by audio_device_
+  raw_ptr<MockAudioOutputIPC> audio_output_ipc_;  // owned by audio_device_
   scoped_refptr<AudioOutputDevice> audio_device_;
   OutputDeviceStatus device_status_;
 
@@ -117,8 +120,6 @@ class AudioOutputDeviceTest : public testing::Test {
   WritableSharedMemoryMapping shared_memory_mapping_;
   CancelableSyncSocket browser_socket_;
   CancelableSyncSocket renderer_socket_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioOutputDeviceTest);
 };
 
 AudioOutputDeviceTest::AudioOutputDeviceTest()
@@ -140,7 +141,8 @@ void AudioOutputDeviceTest::CreateDevice(const std::string& device_id,
 
   audio_output_ipc_ = new NiceMock<MockAudioOutputIPC>();
   audio_device_ = new AudioOutputDevice(
-      base::WrapUnique(audio_output_ipc_), task_env_.GetMainThreadTaskRunner(),
+      base::WrapUnique(audio_output_ipc_.get()),
+      task_env_.GetMainThreadTaskRunner(),
       AudioSinkParameters(base::UnguessableToken(), device_id), timeout);
 }
 
@@ -297,7 +299,8 @@ TEST_F(AudioOutputDeviceTest, AuthorizationFailsBeforeInitialize_NoError) {
   StopAudioDevice();
   audio_output_ipc_ = new NiceMock<MockAudioOutputIPC>();
   audio_device_ = new AudioOutputDevice(
-      base::WrapUnique(audio_output_ipc_), task_env_.GetMainThreadTaskRunner(),
+      base::WrapUnique(audio_output_ipc_.get()),
+      task_env_.GetMainThreadTaskRunner(),
       AudioSinkParameters(base::UnguessableToken(), kDefaultDeviceId),
       kAuthTimeout);
   EXPECT_CALL(

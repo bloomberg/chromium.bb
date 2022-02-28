@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/interception.h"
 #include "sandbox/win/src/ipc_tags.h"
@@ -19,6 +19,10 @@ namespace sandbox {
 class SignedDispatcher : public Dispatcher {
  public:
   explicit SignedDispatcher(PolicyBase* policy_base);
+
+  SignedDispatcher(const SignedDispatcher&) = delete;
+  SignedDispatcher& operator=(const SignedDispatcher&) = delete;
+
   ~SignedDispatcher() override {}
 
   // Dispatcher interface.
@@ -28,8 +32,7 @@ class SignedDispatcher : public Dispatcher {
   // Processes IPC requests coming from calls to CreateSection in the target.
   bool CreateSection(IPCInfo* ipc, HANDLE file_handle);
 
-  PolicyBase* policy_base_;
-  DISALLOW_COPY_AND_ASSIGN(SignedDispatcher);
+  raw_ptr<PolicyBase> policy_base_;
 };
 
 }  // namespace sandbox

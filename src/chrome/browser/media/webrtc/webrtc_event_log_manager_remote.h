@@ -10,8 +10,9 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_history.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
@@ -33,6 +34,11 @@ class WebRtcRemoteEventLogManager final
   WebRtcRemoteEventLogManager(
       WebRtcRemoteEventLogsObserver* observer,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
+
+  WebRtcRemoteEventLogManager(const WebRtcRemoteEventLogManager&) = delete;
+  WebRtcRemoteEventLogManager& operator=(const WebRtcRemoteEventLogManager&) =
+      delete;
+
   ~WebRtcRemoteEventLogManager() override;
 
   // Sets a network::NetworkConnectionTracker which will be used to track
@@ -416,7 +422,7 @@ class WebRtcRemoteEventLogManager final
   // This is used to inform WebRtcEventLogManager when remote-bound logging
   // of a peer connection starts/stops, which allows WebRtcEventLogManager to
   // decide when to ask WebRTC to start/stop sending event logs.
-  WebRtcRemoteEventLogsObserver* const observer_;
+  const raw_ptr<WebRtcRemoteEventLogsObserver> observer_;
 
   // The IDs of the BrowserContexts for which logging is enabled, mapped to
   // the directory where each BrowserContext's remote-bound logs are stored.
@@ -450,7 +456,7 @@ class WebRtcRemoteEventLogManager final
   base::FilePath currently_uploaded_file_;
 
   // Provides notifications of network changes.
-  network::NetworkConnectionTracker* network_connection_tracker_;
+  raw_ptr<network::NetworkConnectionTracker> network_connection_tracker_;
 
   // Whether the network we are currently connected to, if any, is one over
   // which we may upload.
@@ -484,8 +490,6 @@ class WebRtcRemoteEventLogManager final
   // here. In reality, this is never auto-destroyed; see destructor for details.
   std::unique_ptr<base::WeakPtrFactory<WebRtcRemoteEventLogManager>>
       weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebRtcRemoteEventLogManager);
 };
 
 }  // namespace webrtc_event_logging

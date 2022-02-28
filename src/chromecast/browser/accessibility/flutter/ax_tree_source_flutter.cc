@@ -12,6 +12,7 @@
 #include "chromecast/browser/accessibility/accessibility_manager.h"
 #include "chromecast/browser/accessibility/flutter/flutter_semantics_node_wrapper.h"
 #include "chromecast/browser/cast_browser_process.h"
+#include "chromecast/browser/cast_web_contents_observer.h"
 #include "chromecast/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_utterance.h"
@@ -86,6 +87,7 @@ AXTreeSourceFlutter::AXTreeSourceFlutter(
       event_router_(event_router
                         ? event_router
                         : extensions::AutomationEventRouter::GetInstance()),
+      cast_web_contents_(nullptr),
       accessibility_enabled_(false) {
   DCHECK(delegate_);
 }
@@ -146,12 +148,12 @@ void AXTreeSourceFlutter::NotifyAccessibilityEvent(
     }
   }
 
+  tree_map_.clear();
+  cached_computed_bounds_.clear();
   if (event_data->node_data_size() > 0) {
-    // Unless there are new nodes, don't clear previous maps so we
+    // Unless there are new nodes, don't clear previous parent map so we
     // can detect reparenting above.
-    tree_map_.clear();
     parent_map_.clear();
-    cached_computed_bounds_.clear();
   }
 
   window_id_ = event_data->window_id();
@@ -224,7 +226,8 @@ void AXTreeSourceFlutter::NotifyAccessibilityEvent(
               child_tree_observers_[contents->id()] = std::make_unique<
                   AXTreeSourceFlutter::AXTreeWebContentsObserver>(
                   contents->web_contents(), this);
-              contents->AddObserver(this);
+              CastWebContentsObserver::Observe(contents);
+              cast_web_contents_ = contents;
               break;
             }
           }
@@ -735,11 +738,11 @@ void AXTreeSourceFlutter::UpdateTree() {
   NotifyAccessibilityEvent(&last_event_data_);
 }
 
-void AXTreeSourceFlutter::OnPageStopped(CastWebContents* cast_web_contents,
-                                        int error_code) {
+void AXTreeSourceFlutter::PageStopped(PageState page_state, int error_code) {
   // Webview is gone. Stop observing.
-  cast_web_contents->RemoveObserver(this);
-  child_tree_observers_.erase(cast_web_contents->id());
+  CastWebContentsObserver::Observe(nullptr);
+  child_tree_observers_.erase(cast_web_contents_->id());
+  cast_web_contents_ = nullptr;
 }
 
 void AXTreeSourceFlutter::SetAccessibilityEnabled(bool value) {

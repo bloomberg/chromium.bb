@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WORKER_OR_WORKLET_SCRIPT_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WORKER_OR_WORKLET_SCRIPT_CONTROLLER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/rejected_promises.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -46,6 +45,12 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
     : public GarbageCollected<WorkerOrWorkletScriptController> {
  public:
   WorkerOrWorkletScriptController(WorkerOrWorkletGlobalScope*, v8::Isolate*);
+
+  WorkerOrWorkletScriptController(const WorkerOrWorkletScriptController&) =
+      delete;
+  WorkerOrWorkletScriptController& operator=(
+      const WorkerOrWorkletScriptController&) = delete;
+
   virtual ~WorkerOrWorkletScriptController();
   void Dispose();
 
@@ -110,8 +115,6 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
   bool execution_forbidden_ = false;
 
   scoped_refptr<RejectedPromises> rejected_promises_;
-
-  DISALLOW_COPY_AND_ASSIGN(WorkerOrWorkletScriptController);
 };
 
 }  // namespace blink

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -42,8 +43,8 @@ class TestAddAppWindowObserver
   extensions::AppWindow* WaitForAppWindow();
 
  private:
-  extensions::AppWindowRegistry* registry_;  // Not owned.
-  extensions::AppWindow* window_;            // Not owned.
+  raw_ptr<extensions::AppWindowRegistry> registry_;  // Not owned.
+  raw_ptr<extensions::AppWindow> window_;            // Not owned.
   base::RunLoop run_loop_;
 };
 
@@ -104,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedApp) {
       ->LaunchAppWithParams(apps::AppLaunchParams(
           extension->id(), apps::mojom::LaunchContainer::kLaunchContainerNone,
           WindowOpenDisposition::NEW_WINDOW,
-          apps::mojom::AppLaunchSource::kSourceTest));
+          apps::mojom::LaunchSource::kFromTest));
   extensions::AppWindow* window = add_window_observer.WaitForAppWindow();
   ASSERT_TRUE(window);
 

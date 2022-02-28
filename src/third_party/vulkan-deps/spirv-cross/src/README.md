@@ -1,3 +1,8 @@
+<!--
+    Copyright 2020-2021 The Khronos Group, Inc.
+    SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # SPIRV-Cross
 
 SPIRV-Cross is a tool designed for parsing and converting SPIR-V to other shader languages.
@@ -10,8 +15,8 @@ SPIRV-Cross is a tool designed for parsing and converting SPIR-V to other shader
   - Convert SPIR-V to readable, usable and efficient GLSL
   - Convert SPIR-V to readable, usable and efficient Metal Shading Language (MSL)
   - Convert SPIR-V to readable, usable and efficient HLSL
+  - Convert SPIR-V to a JSON reflection format
   - Convert SPIR-V to debuggable C++ [DEPRECATED]
-  - Convert SPIR-V to a JSON reflection format [EXPERIMENTAL]
   - Reflection API to simplify the creation of Vulkan pipeline layouts
   - Reflection API to modify and tweak OpDecorations
   - Supports "all" of vertex, fragment, tessellation, geometry and compute shaders.
@@ -161,12 +166,12 @@ for (i = 0; i < count; i++)
 }
 
 // Modify options.
-spvc_compiler_create_compiler_options(context, &options);
+spvc_compiler_create_compiler_options(compiler_glsl, &options);
 spvc_compiler_options_set_uint(options, SPVC_COMPILER_OPTION_GLSL_VERSION, 330);
 spvc_compiler_options_set_bool(options, SPVC_COMPILER_OPTION_GLSL_ES, SPVC_FALSE);
 spvc_compiler_install_compiler_options(compiler_glsl, options);
 
-spvc_compiler_compile(compiler, &result);
+spvc_compiler_compile(compiler_glsl, &result);
 printf("Cross-compiled source: %s\n", result);
 
 // Frees all memory we allocated so far.
@@ -439,9 +444,6 @@ All pull requests should ensure that test output does not change unexpectedly. T
 
 ```
 ./checkout_glslang_spirv_tools.sh # Checks out glslang and SPIRV-Tools at a fixed revision which matches the reference output.
-                                  # NOTE: Some users have reported problems cloning from git:// paths. To use https:// instead pass in
-                                  # $ PROTOCOL=https ./checkout_glslang_spirv_tools.sh
-                                  # instead.
 ./build_glslang_spirv_tools.sh    # Builds glslang and SPIRV-Tools.
 ./test_shaders.sh                 # Runs over all changes and makes sure that there are no deltas compared to reference files.
 ```

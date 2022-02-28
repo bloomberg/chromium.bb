@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -22,7 +21,9 @@
 #include "components/version_info/version_info.h"
 #include "google_apis/google_api_keys.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/gurl.h"
 
 namespace policy {
 

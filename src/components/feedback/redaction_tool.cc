@@ -4,8 +4,8 @@
 
 #include "components/feedback/redaction_tool.h"
 
-#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/strings/strcat.h"
@@ -52,6 +52,8 @@ CustomPatternWithAlias kCustomPatternsWithContext[] = {
 
     // wpa_supplicant
     {"SSID", "(?i-s)(\\bssid[= ]')(.+)(')"},
+    {"SSID", "(?i-s)(\\bssid[= ]\")(.+)(\")"},
+    {"SSID", "(\\* SSID=)(.+)($)"},
     {"SSIDHex", "(?-s)(\\bSSID - hexdump\\(len=[0-9]+\\): )(.+)()"},
 
     // shill
@@ -63,7 +65,7 @@ CustomPatternWithAlias kCustomPatternsWithContext[] = {
     // edid-decode, where if we genericized it further then we would catch too
     // many other cases that we don't want to redact.
     {"Serial",
-     "(?i-s)(\\bserial\\s*_?(?:number)?['\"]?\\s*[:=]\\s*['\"]?)"
+     "(?i-s)(\\bserial\\s*_?(?:number)?['\"]?\\s*[:=|]\\s*['\"]?)"
      "([0-9a-zA-Z\\-.:\\/\\\\\\x00-\\x09\\x0B-\\x1F]+)(\\b)"},
     {"Serial", "( Serial Number )(\\d+)(\\b)"},
 
@@ -74,6 +76,9 @@ CustomPatternWithAlias kCustomPatternsWithContext[] = {
     // UUIDs given by the 'blkid' tool. These don't necessarily look like
     // standard UUIDs, so treat them specially.
     {"UUID", R"xxx((UUID=")([0-9a-zA-Z-]+)("))xxx"},
+    // Also cover UUIDs given by the 'lvs' and 'pvs' tools, which similarly
+    // don't necessarily look like standard UUIDs.
+    {"UUID", R"xxx(("[lp]v_uuid":")([0-9a-zA-Z-]+)("))xxx"},
 
     // Volume labels presented in the 'blkid' tool, and as part of removable
     // media paths shown in various logs such as cros-disks (in syslog).
@@ -86,6 +91,9 @@ CustomPatternWithAlias kCustomPatternsWithContext[] = {
     // capture everything until the end of the line, since the mount path is the
     // last field.
     {"Volume Label", R"xxx((/media/removable/)(.+?)(['"/\n]|$))xxx"},
+
+    // IPP (Internet Printing Protocol) Addresses
+    {"IPP Address", R"xxx((ipp:\/\/)(.+?)(\/ipp))xxx"},
 };
 
 bool MaybeUnmapAddress(net::IPAddress* addr) {
@@ -726,6 +734,7 @@ std::string RedactionTool::RedactCustomPatternWithoutContext(
   re2::StringPiece text(input);
   re2::StringPiece skipped;
   re2::StringPiece matched_id;
+  const re2::StringPiece dash("-");
   while (FindAndConsumeAndGetSkipped(&text, *re, &skipped, &matched_id)) {
     if (IsUrlExempt(matched_id, first_party_extension_ids_)) {
       skipped.AppendToString(&result);
@@ -737,6 +746,14 @@ std::string RedactionTool::RedactCustomPatternWithoutContext(
     if (identifier_space->count(matched_id_as_string) == 0) {
       replacement_id = MaybeScrubIPAddress(matched_id_as_string);
       if (replacement_id != matched_id_as_string) {
+        // USB paths can be confused with IPv4 Addresses because they can look
+        // similar: n-n.n.n.n . Ignore replacement if previous char is `-`
+        if (skipped.ends_with(dash) && strcmp("IPv4", pattern.alias) == 0) {
+          skipped.AppendToString(&result);
+          matched_id.AppendToString(&result);
+          continue;
+        }
+
         // The weird NumberToString trick is because Windows does not like
         // to deal with %zu and a size_t in printf, nor does it support %llu.
         replacement_id = base::StringPrintf(

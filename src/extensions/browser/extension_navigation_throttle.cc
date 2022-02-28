@@ -46,7 +46,8 @@ namespace {
 // given |web_contents|.
 bool ShouldBlockNavigationToPlatformAppResource(
     const Extension* platform_app,
-    content::WebContents* web_contents) {
+    content::NavigationHandle& navigation_handle) {
+  content::WebContents* web_contents = navigation_handle.GetWebContents();
   mojom::ViewType view_type = GetViewType(web_contents);
   DCHECK_NE(mojom::ViewType::kInvalid, view_type);
 
@@ -72,6 +73,18 @@ bool ShouldBlockNavigationToPlatformAppResource(
 
   // Navigation within a guest web contents.
   if (view_type == mojom::ViewType::kExtensionGuest) {
+    // Navigating within a PDF viewer extension (see crbug.com/1252154). This
+    // exemption is only for the PDF resource. The initial navigation to the PDF
+    // loads the PDF viewer extension, which would have already passed the
+    // checks in this navigation throttle.
+    if (navigation_handle.IsPdf()) {
+      const url::Origin& initiator_origin =
+          navigation_handle.GetInitiatorOrigin().value();
+      CHECK_EQ(initiator_origin.scheme(), kExtensionScheme);
+      CHECK_EQ(initiator_origin.host(), extension_misc::kPdfExtensionId);
+      return false;
+    }
+
     // Platform apps can be embedded by other platform apps using an <appview>
     // tag.
     AppViewGuest* app_view = AppViewGuest::FromWebContents(web_contents);
@@ -132,6 +145,11 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
     }
   }
 
+  // Some checks below will need to know whether this navigation is in a
+  // <webview> guest.
+  guest_view::GuestViewBase* guest =
+      guest_view::GuestViewBase::FromWebContents(web_contents);
+
   // Is this navigation targeting an extension resource?
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
   const GURL& url = navigation_handle()->GetURL();
@@ -148,8 +166,19 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
     target_extension =
         registry->enabled_extensions().GetByID(target_origin.host());
   } else {
-    // If the navigation is not to a chrome-extension resource, no need to
-    // perform any more checks; it's outside of the purview of this throttle.
+    // If this navigation is in a guest, check if the URL maps to the Chrome
+    // Web Store hosted app. If so, block the navigation to avoid a renderer
+    // kill later, see https://crbug.com/1197674.
+    if (guest) {
+      const Extension* hosted_app =
+          registry->enabled_extensions().GetHostedAppByURL(url);
+      if (hosted_app && hosted_app->id() == kWebStoreAppId)
+        return content::NavigationThrottle::BLOCK_REQUEST;
+    }
+
+    // Otherwise, the navigation is not to a chrome-extension resource, and
+    // there is no need to perform any more checks; it's outside of the purview
+    // of this throttle.
     return content::NavigationThrottle::PROCEED;
   }
 
@@ -199,61 +228,59 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
     }
   }
 
-  if (navigation_handle()->IsInMainFrame()) {
-    guest_view::GuestViewBase* guest =
-        guest_view::GuestViewBase::FromWebContents(web_contents);
-    if (url_has_extension_scheme && guest) {
-      // This only handles top-level navigations. For subresources, is is done
-      // in url_request_util::AllowCrossRendererResourceLoad.
-      const std::string& owner_extension_id = guest->owner_host();
-      const Extension* owner_extension =
-          registry->enabled_extensions().GetByID(owner_extension_id);
+  if (url_has_extension_scheme && guest) {
+    // Check whether the guest is allowed to load the extension URL. This is
+    // usually allowed only for the guest's owner extension resources, and only
+    // if those resources are marked as webview-accessible. This check is
+    // needed for both navigations and subresources. The code below handles
+    // navigations, and url_request_util::AllowCrossRendererResourceLoad()
+    // handles subresources.
+    const std::string& owner_extension_id = guest->owner_host();
+    const Extension* owner_extension =
+        registry->enabled_extensions().GetByID(owner_extension_id);
 
-      content::StoragePartitionConfig storage_partition_config =
-          content::StoragePartitionConfig::CreateDefault(browser_context);
-      bool is_guest = navigation_handle()->GetStartingSiteInstance()->IsGuest();
-      if (is_guest) {
-        is_guest = WebViewGuest::GetGuestPartitionConfigForSite(
-            browser_context,
-            navigation_handle()->GetStartingSiteInstance()->GetSiteURL(),
-            &storage_partition_config);
-      }
-      CHECK_EQ(is_guest,
-               navigation_handle()->GetStartingSiteInstance()->IsGuest());
+    content::StoragePartitionConfig storage_partition_config =
+        content::StoragePartitionConfig::CreateDefault(browser_context);
+    bool is_guest = navigation_handle()->GetStartingSiteInstance()->IsGuest();
+    if (is_guest) {
+      storage_partition_config = navigation_handle()
+                                     ->GetStartingSiteInstance()
+                                     ->GetStoragePartitionConfig();
+    }
+    CHECK_EQ(is_guest,
+             navigation_handle()->GetStartingSiteInstance()->IsGuest());
 
-      bool allowed = true;
-      url_request_util::AllowCrossRendererResourceLoadHelper(
-          is_guest, target_extension, owner_extension,
-          storage_partition_config.partition_name(), url.path(),
-          navigation_handle()->GetPageTransition(), &allowed);
-      if (!allowed) {
-        RecordExtensionResourceAccessResult(
-            source_id, url, ExtensionResourceAccessResult::kFailure);
-        return content::NavigationThrottle::BLOCK_REQUEST;
-      }
+    bool allowed = true;
+    url_request_util::AllowCrossRendererResourceLoadHelper(
+        is_guest, target_extension, owner_extension,
+        storage_partition_config.partition_name(), url.path(),
+        navigation_handle()->GetPageTransition(), &allowed);
+    if (!allowed) {
+      RecordExtensionResourceAccessResult(
+          source_id, url, ExtensionResourceAccessResult::kFailure);
+      return content::NavigationThrottle::BLOCK_REQUEST;
     }
   }
 
   if (target_extension->is_platform_app() &&
       ShouldBlockNavigationToPlatformAppResource(target_extension,
-                                                 web_contents)) {
+                                                 *navigation_handle())) {
     RecordExtensionResourceAccessResult(
         source_id, url, ExtensionResourceAccessResult::kFailure);
     return content::NavigationThrottle::BLOCK_REQUEST;
   }
 
-  // Navigations with no initiator (e.g. browser-initiated requests) are always
-  // considered trusted, and thus allowed.
-  //
-  // Note that GuestView navigations initiated by the embedder also count as a
-  // browser-initiated navigation.
-  if (!navigation_handle()->GetInitiatorOrigin().has_value()) {
-    DCHECK(!navigation_handle()->IsRendererInitiated());
+  // A browser-initiated navigation is always considered trusted, and thus
+  // allowed.
+  if (!navigation_handle()->IsRendererInitiated())
     return content::NavigationThrottle::PROCEED;
-  }
 
-  // All renderer-initiated navigations must have an initiator.
-  DCHECK(navigation_handle()->GetInitiatorOrigin().has_value());
+  // A renderer-initiated request without an initiator origin is a history
+  // traversal to an entry that was originally loaded in a browser-initiated
+  // navigation. Those are trusted, too.
+  if (!navigation_handle()->GetInitiatorOrigin().has_value())
+    return content::NavigationThrottle::PROCEED;
+
   const url::Origin& initiator_origin =
       navigation_handle()->GetInitiatorOrigin().value();
 
@@ -327,10 +354,9 @@ ExtensionNavigationThrottle::WillRedirectRequest() {
 
 content::NavigationThrottle::ThrottleCheckResult
 ExtensionNavigationThrottle::WillProcessResponse() {
-  if (navigation_handle()->IsServedFromBackForwardCache() ||
-      (navigation_handle()->SandboxFlagsToCommit() &
+  if ((navigation_handle()->SandboxFlagsToCommit() &
        network::mojom::WebSandboxFlags::kPlugins) ==
-          network::mojom::WebSandboxFlags::kNone) {
+      network::mojom::WebSandboxFlags::kNone) {
     return PROCEED;
   }
 

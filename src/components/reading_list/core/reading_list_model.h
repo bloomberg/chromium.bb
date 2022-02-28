@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "components/reading_list/core/reading_list_entry.h"
@@ -30,6 +31,9 @@ class ModelTypeSyncBridge;
 class ReadingListModel {
  public:
   class ScopedReadingListBatchUpdate;
+
+  ReadingListModel(const ReadingListModel&) = delete;
+  ReadingListModel& operator=(const ReadingListModel&) = delete;
 
   // Returns true if the model finished loading. Until this returns true the
   // reading list is not ready for use.
@@ -97,9 +101,14 @@ class ReadingListModel {
 
   // Adds |url| at the top of the unread entries, and removes entries with the
   // same |url| from everywhere else if they exist. The entry title will be a
-  // trimmed copy of |title|.
-  // The addition may be asynchronous, and the data will be available only once
-  // the observers are notified.
+  // trimmed copy of |title|. |time_to_read_minutes| is the estimated time to
+  // read the page. The addition may be asynchronous, and the data will be
+  // available only once the observers are notified.
+  virtual const ReadingListEntry& AddEntry(
+      const GURL& url,
+      const std::string& title,
+      reading_list::EntrySource source,
+      base::TimeDelta estimated_read_time) = 0;
   virtual const ReadingListEntry& AddEntry(
       const GURL& url,
       const std::string& title,
@@ -117,6 +126,8 @@ class ReadingListModel {
   // Methods to mutate an entry. Will locate the relevant entry by URL. Does
   // nothing if the entry is not found.
   virtual void SetEntryTitle(const GURL& url, const std::string& title) = 0;
+  virtual void SetEstimatedReadTime(const GURL& url,
+                                    base::TimeDelta estimated_read_time) = 0;
   virtual void SetEntryDistilledState(
       const GURL& url,
       ReadingListEntry::DistillationState state) = 0;
@@ -147,15 +158,17 @@ class ReadingListModel {
    public:
     explicit ScopedReadingListBatchUpdate(ReadingListModel* model);
 
+    ScopedReadingListBatchUpdate(const ScopedReadingListBatchUpdate&) = delete;
+    ScopedReadingListBatchUpdate& operator=(
+        const ScopedReadingListBatchUpdate&) = delete;
+
     ~ScopedReadingListBatchUpdate() override;
 
     void ReadingListModelLoaded(const ReadingListModel* model) override;
     void ReadingListModelBeingShutdown(const ReadingListModel* model) override;
 
    private:
-    ReadingListModel* model_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedReadingListBatchUpdate);
+    raw_ptr<ReadingListModel> model_;
   };
 
  protected:
@@ -179,8 +192,6 @@ class ReadingListModel {
 
  private:
   unsigned int current_batch_updates_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(ReadingListModel);
 };
 
 #endif  // COMPONENTS_READING_LIST_CORE_READING_LIST_MODEL_H_

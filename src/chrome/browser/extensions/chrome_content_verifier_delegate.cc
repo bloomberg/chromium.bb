@@ -23,11 +23,12 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/extensions/corrupted_extension_reinstaller.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_verifier.h"
-#include "chrome/browser/extensions/policy_extension_reinstaller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chromeos/components/chromebox_for_meetings/buildflags/buildflags.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -38,6 +39,7 @@
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_url_handlers.h"
+#include "extensions/common/switches.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/escape.h"
 
@@ -51,10 +53,9 @@ namespace {
 
 absl::optional<ChromeContentVerifierDelegate::VerifyInfo::Mode>&
 GetModeForTesting() {
-  static base::NoDestructor<
-      absl::optional<ChromeContentVerifierDelegate::VerifyInfo::Mode>>
+  static absl::optional<ChromeContentVerifierDelegate::VerifyInfo::Mode>
       testing_mode;
-  return *testing_mode;
+  return testing_mode;
 }
 
 const char kContentVerificationExperimentName[] =
@@ -74,8 +75,14 @@ ChromeContentVerifierDelegate::VerifyInfo::Mode
 ChromeContentVerifierDelegate::GetDefaultMode() {
   if (GetModeForTesting())
     return *GetModeForTesting();
-
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+#if BUILDFLAG(PLATFORM_CFM)
+  if (command_line->HasSwitch(
+          extensions::switches::kDisableAppContentVerification)) {
+    return VerifyInfo::Mode::NONE;
+  }
+#endif  // BUILDFLAG(PLATFORM_CFM)
 
   VerifyInfo::Mode experiment_value;
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -140,10 +147,7 @@ void ChromeContentVerifierDelegate::SetDefaultModeForTesting(
 
 ChromeContentVerifierDelegate::ChromeContentVerifierDelegate(
     content::BrowserContext* context)
-    : context_(context),
-      default_mode_(GetDefaultMode()),
-      policy_extension_reinstaller_(
-          std::make_unique<PolicyExtensionReinstaller>(context_)) {}
+    : context_(context), default_mode_(GetDefaultMode()) {}
 
 ChromeContentVerifierDelegate::~ChromeContentVerifierDelegate() {
 }
@@ -179,7 +183,7 @@ GURL ChromeContentVerifierDelegate::GetSignatureFetchUrl(
 
   GURL base_url = extension_urls::GetWebstoreUpdateUrl();
   GURL::Replacements replacements;
-  replacements.SetQuery(query.c_str(), url::Component(0, query.length()));
+  replacements.SetQueryStr(query);
   return base_url.ReplaceComponents(replacements);
 }
 
@@ -207,6 +211,8 @@ void ChromeContentVerifierDelegate::VerifyFailed(
   ExtensionService* service = system->extension_service();
   PendingExtensionManager* pending_manager =
       service->pending_extension_manager();
+  CorruptedExtensionReinstaller* corrupted_extension_reinstaller =
+      service->corrupted_extension_reinstaller();
 
   const VerifyInfo info = GetVerifyInfo(*extension);
 
@@ -263,7 +269,7 @@ void ChromeContentVerifierDelegate::VerifyFailed(
         extension->location());
     service->DisableExtension(extension_id, disable_reason::DISABLE_CORRUPTED);
     // Attempt to reinstall.
-    policy_extension_reinstaller_->NotifyExtensionDisabledDueToCorruption();
+    corrupted_extension_reinstaller->NotifyExtensionDisabledDueToCorruption();
     return;
   }
 
@@ -276,12 +282,7 @@ void ChromeContentVerifierDelegate::VerifyFailed(
                             ContentVerifyJob::FAILURE_REASON_MAX);
 }
 
-void ChromeContentVerifierDelegate::Shutdown() {
-  // Shut down |policy_extension_reinstaller_| on its creation thread. |this|
-  // can be destroyed through InfoMap on IO thread, we do not want to destroy
-  // |policy_extension_reinstaller_| there.
-  policy_extension_reinstaller_.reset();
-}
+void ChromeContentVerifierDelegate::Shutdown() {}
 
 bool ChromeContentVerifierDelegate::IsFromWebstore(
     const Extension& extension) const {
