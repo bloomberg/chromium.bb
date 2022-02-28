@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
@@ -77,7 +78,7 @@ class RasterInProcessCommandBufferTest : public ::testing::Test {
 
  protected:
   InProcessGpuThreadHolder gpu_thread_holder_;
-  raster::RasterInterface* ri_;  // not owned
+  raw_ptr<raster::RasterInterface> ri_;  // not owned
   std::unique_ptr<GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
   std::unique_ptr<GpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<RasterInProcessContext> context_;
@@ -107,7 +108,8 @@ TEST_F(RasterInProcessCommandBufferTest, AllowedBetweenBeginEndRasterCHROMIUM) {
   // Call BeginRasterCHROMIUM.
   ri_->BeginRasterCHROMIUM(
       /*sk_color=*/0, /*needs_clear=*/true, /*msaa_sample_count=*/0,
-      /*can_use_lcd_text=*/false, color_space, mailbox.name);
+      gpu::raster::kNoMSAA, /*can_use_lcd_text=*/false, color_space,
+      mailbox.name);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
 
   // Should flag an error this command is not allowed between a Begin and

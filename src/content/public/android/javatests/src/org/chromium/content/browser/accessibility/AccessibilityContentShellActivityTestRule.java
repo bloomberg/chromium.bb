@@ -7,10 +7,12 @@ package org.chromium.content.browser.accessibility;
 import static org.chromium.content.browser.accessibility.AccessibilityContentShellTestUtils.ANP_ERROR;
 import static org.chromium.content.browser.accessibility.AccessibilityContentShellTestUtils.END_OF_TEST_ERROR;
 import static org.chromium.content.browser.accessibility.AccessibilityContentShellTestUtils.NODE_TIMEOUT_ERROR;
+import static org.chromium.content.browser.accessibility.AccessibilityContentShellTestUtils.READY_FOR_TEST_ERROR;
 import static org.chromium.content.browser.accessibility.AccessibilityContentShellTestUtils.sContentShellDelegate;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -22,10 +24,15 @@ import org.junit.Assert;
 
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -33,8 +40,21 @@ import java.util.concurrent.ExecutionException;
  */
 @SuppressLint("VisibleForTests")
 public class AccessibilityContentShellActivityTestRule extends ContentShellActivityTestRule {
+    // Test output error messages.
+    protected static final String EVENTS_ERROR =
+            "Generated events and actions did not match expectations.";
+    protected static final String NODE_ERROR =
+            "Generated AccessibilityNodeInfo tree did not match expectations.";
+    protected static final String EXPECTATIONS_NULL =
+            "Test expectations were null, perhaps the file is missing?";
+    protected static final String RESULTS_NULL =
+            "Test results were null, did you add the tracker to WebContentsAccessibilityImpl?";
+    protected static final String MISSING_FILE_ERROR =
+            "Input file could not be read, perhaps the file is missing?";
+
     // Member variables required for testing framework. Although they are the same object, we will
     // instantiate an object of type |AccessibilityNodeProvider| for convenience.
+    protected static final String BASE_DIRECTORY = "/chromium_tests_root";
     public AccessibilityNodeProvider mNodeProvider;
     public WebContentsAccessibilityImpl mWcax;
 
@@ -46,6 +66,26 @@ public class AccessibilityContentShellActivityTestRule extends ContentShellActiv
     }
 
     /**
+     * Helper methods for setup of a basic web contents accessibility unit test.
+     *
+     * This method replaces the usual setUp() method annotated with @Before because we wish to
+     * load different data with each test, but the process is the same for all tests.
+     *
+     * Leaving a commented @Before annotation on each method as a reminder/context clue.
+     */
+    /* @Before */
+    protected void setupTestFromFile(String file) {
+        // Verify file exists before beginning the test.
+        verifyInputFile(file);
+
+        launchContentShellWithUrl(UrlUtils.getIsolatedTestFileUrl(file));
+        waitForActiveShellToBeDoneLoading();
+        setupTestFramework();
+        setAccessibilityDelegate();
+        sendReadyForTestSignal();
+    }
+
+    /**
      * Helper method to set up our tests. This method replaces the @Before method.
      * Leaving a commented @Before annotation on method as a reminder/context clue.
      */
@@ -54,6 +94,7 @@ public class AccessibilityContentShellActivityTestRule extends ContentShellActiv
         mWcax = getWebContentsAccessibility();
         mWcax.setState(true);
         mWcax.setAccessibilityEnabledForTesting();
+        mWcax.setBrowserAccessibilityStateForTesting();
 
         mNodeProvider = getAccessibilityNodeProvider();
 
@@ -92,7 +133,7 @@ public class AccessibilityContentShellActivityTestRule extends ContentShellActiv
      * Helper method to call AccessibilityNodeInfo.getChildId and convert to a virtual
      * view ID using reflection, since the needed methods are hidden.
      */
-    private int getChildId(AccessibilityNodeInfo node, int index) {
+    protected int getChildId(AccessibilityNodeInfo node, int index) {
         try {
             Method getChildIdMethod =
                     AccessibilityNodeInfo.class.getMethod("getChildId", int.class);
@@ -166,6 +207,25 @@ public class AccessibilityContentShellActivityTestRule extends ContentShellActiv
     }
 
     /**
+     * Helper method to perform an action on the UI, then poll for a given criteria to verify
+     * the action was completed.
+     *
+     * @param viewId int                   virtualViewId of the given node
+     * @param action int                   desired AccessibilityNodeInfo action
+     * @param args Bundle                  action bundle
+     * @param criteria Callable<Boolean>   criteria to poll against to verify completion
+     * @return boolean                     return value of performAction
+     * @throws ExecutionException          Error
+     * @throws Throwable                   Error
+     */
+    public boolean performActionOnUiThread(int viewId, int action, Bundle args,
+            Callable<Boolean> criteria) throws ExecutionException, Throwable {
+        boolean returnValue = performActionOnUiThread(viewId, action, args);
+        CriteriaHelper.pollUiThread(criteria, NODE_TIMEOUT_ERROR);
+        return returnValue;
+    }
+
+    /**
      * Helper method for executing a given JS method for the current web contents.
      */
     public void executeJS(String method) {
@@ -185,10 +245,10 @@ public class AccessibilityContentShellActivityTestRule extends ContentShellActiv
                 performActionOnUiThread(virtualViewId, AccessibilityNodeInfo.ACTION_FOCUS, null));
         Assert.assertTrue(performActionOnUiThread(
                 virtualViewId, AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null));
-        AccessibilityNodeInfo nodeInfo = mNodeProvider.createAccessibilityNodeInfo(virtualViewId);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mNodeProvider.createAccessibilityNodeInfo(virtualViewId));
 
         CriteriaHelper.pollUiThread(() -> {
-            nodeInfo.recycle();
             return mNodeProvider.createAccessibilityNodeInfo(virtualViewId)
                     .isAccessibilityFocused();
         }, NODE_TIMEOUT_ERROR);
@@ -204,6 +264,17 @@ public class AccessibilityContentShellActivityTestRule extends ContentShellActiv
     }
 
     /**
+     * Call through the WebContentsAccessibilityImpl to send a signal that we are ready to begin
+     * a test (using the kEndOfTest signal for simplicity). Poll until we receive the generated
+     * Blink event in response, then reset the tracker.
+     */
+    public void sendReadyForTestSignal() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> mWcax.signalEndOfTestForTesting());
+        CriteriaHelper.pollUiThread(() -> mTracker.testComplete(), READY_FOR_TEST_ERROR);
+        TestThreadUtils.runOnUiThreadBlocking(() -> mTracker.signalReadyForTest());
+    }
+
+    /**
      * Call through the WebContentsAccessibilityImpl to send a kEndOfTest event to signal that we
      * are done with a test. Poll until we receive the generated Blink event in response.
      */
@@ -214,9 +285,47 @@ public class AccessibilityContentShellActivityTestRule extends ContentShellActiv
 
     /**
      * Helper method to generate results from the |AccessibilityActionAndEventTracker|.
+     *
      * @return          String      List of all actions and events performed during test.
      */
     public String getTrackerResults() {
         return mTracker.results();
+    }
+
+    /**
+     * Read the contents of a file, and return as a String.
+     *
+     * @param file                  File to read (including path and name)
+     * @return String               Contents of the given file.
+     */
+    protected String readExpectationFile(String file) {
+        String directory = Environment.getExternalStorageDirectory().getPath() + BASE_DIRECTORY;
+
+        try {
+            File expectedFile = new File(directory, "/" + file);
+            FileInputStream fis = new FileInputStream(expectedFile);
+
+            byte[] data = new byte[(int) expectedFile.length()];
+            fis.read(data);
+            fis.close();
+
+            return new String(data);
+        } catch (IOException e) {
+            throw new AssertionError(EXPECTATIONS_NULL, e);
+        }
+    }
+
+    /**
+     * Check that a given file exists on disk.
+     *
+     * @param file                  String - file to check, including path and name
+     */
+    protected void verifyInputFile(String file) {
+        String directory = Environment.getExternalStorageDirectory().getPath() + BASE_DIRECTORY;
+
+        File expectedFile = new File(directory, "/" + file);
+        Assert.assertTrue(MISSING_FILE_ERROR + " could not find the directory: " + directory
+                        + ", and/or file: " + expectedFile.getPath(),
+                expectedFile.exists());
     }
 }

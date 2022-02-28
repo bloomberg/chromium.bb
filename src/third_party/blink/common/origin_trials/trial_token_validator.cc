@@ -15,18 +15,22 @@
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_result.h"
 
+namespace blink {
 namespace {
 
-static base::RepeatingCallback<blink::OriginTrialPolicy*()>& PolicyGetter() {
-  static base::NoDestructor<
-      base::RepeatingCallback<blink::OriginTrialPolicy*()>>
-      policy(base::BindRepeating(
-          []() -> blink::OriginTrialPolicy* { return nullptr; }));
+static base::RepeatingCallback<OriginTrialPolicy*()>& PolicyGetter() {
+  static base::NoDestructor<base::RepeatingCallback<OriginTrialPolicy*()>>
+      policy(
+          base::BindRepeating([]() -> OriginTrialPolicy* { return nullptr; }));
   return *policy;
 }
-}  // namespace
 
-namespace blink {
+bool IsDeprecationTrialPossible() {
+  OriginTrialPolicy* policy = PolicyGetter().Run();
+  return policy && policy->IsOriginTrialsSupported();
+}
+
+}  // namespace
 
 TrialTokenValidator::TrialTokenValidator() {}
 
@@ -38,8 +42,8 @@ void TrialTokenValidator::SetOriginTrialPolicyGetter(
 }
 
 void TrialTokenValidator::ResetOriginTrialPolicyGetter() {
-  SetOriginTrialPolicyGetter(base::BindRepeating(
-      []() -> blink::OriginTrialPolicy* { return nullptr; }));
+  SetOriginTrialPolicyGetter(
+      base::BindRepeating([]() -> OriginTrialPolicy* { return nullptr; }));
 }
 
 TrialTokenResult TrialTokenValidator::ValidateToken(
@@ -59,13 +63,13 @@ TrialTokenResult TrialTokenValidator::ValidateToken(
   if (!policy || !policy->IsOriginTrialsSupported())
     return TrialTokenResult(OriginTrialTokenStatus::kNotSupported);
 
-  std::vector<base::StringPiece> public_keys = policy->GetPublicKeys();
+  std::vector<OriginTrialPublicKey> public_keys = policy->GetPublicKeys();
   if (public_keys.size() == 0)
     return TrialTokenResult(OriginTrialTokenStatus::kNotSupported);
 
   OriginTrialTokenStatus status;
   std::unique_ptr<TrialToken> trial_token;
-  for (auto& key : public_keys) {
+  for (OriginTrialPublicKey& key : public_keys) {
     trial_token = TrialToken::From(token, key, &status);
     if (status == OriginTrialTokenStatus::kSuccess)
       break;
@@ -124,13 +128,30 @@ bool TrialTokenValidator::RequestEnablesFeature(
     const net::HttpResponseHeaders* response_headers,
     base::StringPiece feature_name,
     base::Time current_time) const {
-  if (!IsTrialPossibleOnOrigin(request_url))
-    return false;
+  return IsTrialPossibleOnOrigin(request_url) &&
+         ResponseBearsValidTokenForFeature(request_url, *response_headers,
+                                           feature_name, current_time);
+}
 
+bool TrialTokenValidator::RequestEnablesDeprecatedFeature(
+    const GURL& request_url,
+    const net::HttpResponseHeaders* response_headers,
+    base::StringPiece feature_name,
+    base::Time current_time) const {
+  return IsDeprecationTrialPossible() &&
+         ResponseBearsValidTokenForFeature(request_url, *response_headers,
+                                           feature_name, current_time);
+}
+
+bool TrialTokenValidator::ResponseBearsValidTokenForFeature(
+    const GURL& request_url,
+    const net::HttpResponseHeaders& response_headers,
+    base::StringPiece feature_name,
+    base::Time current_time) const {
   url::Origin origin = url::Origin::Create(request_url);
   size_t iter = 0;
   std::string token;
-  while (response_headers->EnumerateHeader(&iter, "Origin-Trial", &token)) {
+  while (response_headers.EnumerateHeader(&iter, "Origin-Trial", &token)) {
     TrialTokenResult result = ValidateToken(token, origin, current_time);
     // TODO(mek): Log the validation errors to histograms?
     if (result.Status() == OriginTrialTokenStatus::kSuccess)

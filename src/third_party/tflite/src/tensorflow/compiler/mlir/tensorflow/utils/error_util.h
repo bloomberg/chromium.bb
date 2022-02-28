@@ -27,7 +27,7 @@ limitations under the License.
 namespace mlir {
 
 // TensorFlow's Status is used for error reporting back to callers.
-using tensorflow::Status;
+using ::tensorflow::Status;
 
 // Diagnostic handler that collects all the diagnostics reported and can produce
 // a Status to return to callers. This is for the case where MLIR functions are
@@ -38,9 +38,12 @@ class StatusScopedDiagnosticHandler : public SourceMgrDiagnosticHandler {
  public:
   // Constructs a diagnostic handler in a context. If propagate is true, then
   // diagnostics reported are also propagated back to the original diagnostic
-  // handler.
+  // handler.  If filter_stack is true, a reduced stack will be produced.
+
   explicit StatusScopedDiagnosticHandler(MLIRContext* context,
-                                         bool propagate = false);
+                                         bool propagate = false,
+                                         bool filter_stack = false);
+
   // On destruction error consumption is verified.
   ~StatusScopedDiagnosticHandler();
 

@@ -10,7 +10,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -27,9 +26,9 @@
 #include "sql/statement.h"
 #include "url/gurl.h"
 
-#if !defined(OS_MAC)
+#if !defined(OS_MAC) && !defined(OS_FUCHSIA)
 #include "chrome/utility/importer/nss_decryptor.h"
-#endif
+#endif  // !defined(OS_MAC) && !defined(OS_FUCHSIA)
 
 namespace {
 
@@ -150,13 +149,13 @@ void FirefoxImporter::StartImport(const importer::SourceProfile& source_profile,
     ImportBookmarks();
     bridge_->NotifyItemEnded(importer::FAVORITES);
   }
-#if !defined(OS_MAC)
+#if !defined(OS_MAC) && !defined(OS_FUCHSIA)
   if ((items & importer::PASSWORDS) && !cancelled()) {
     bridge_->NotifyItemStarted(importer::PASSWORDS);
     ImportPasswords();
     bridge_->NotifyItemEnded(importer::PASSWORDS);
   }
-#endif
+#endif  // !defined(OS_MAC) && !defined(OS_FUCHSIA)
   if ((items & importer::AUTOFILL_FORM_DATA) && !cancelled()) {
     bridge_->NotifyItemStarted(importer::AUTOFILL_FORM_DATA);
     ImportAutofillFormData();
@@ -375,7 +374,7 @@ void FirefoxImporter::ImportBookmarks() {
   }
 }
 
-#if !defined(OS_MAC)
+#if !defined(OS_MAC) && !defined(OS_FUCHSIA)
 void FirefoxImporter::ImportPasswords() {
   // Initializes NSS3.
   NSSDecryptor decryptor;
@@ -401,7 +400,7 @@ void FirefoxImporter::ImportPasswords() {
     }
   }
 }
-#endif
+#endif  // !defined(OS_MAC) && !defined(OS_FUCHSIA)
 
 void FirefoxImporter::ImportHomepage() {
   GURL home_page = GetHomepage(source_path_);

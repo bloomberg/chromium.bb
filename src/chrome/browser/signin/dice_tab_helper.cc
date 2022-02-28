@@ -15,7 +15,8 @@
 #include "google_apis/gaia/gaia_urls.h"
 
 DiceTabHelper::DiceTabHelper(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsUserData<DiceTabHelper>(*web_contents),
+      content::WebContentsObserver(web_contents) {}
 
 DiceTabHelper::~DiceTabHelper() = default;
 
@@ -65,13 +66,16 @@ void DiceTabHelper::DidStartNavigation(
     return;
 
   // Ignore internal navigations.
-  if (!navigation_handle->IsInMainFrame() ||
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
   }
 
   if (!IsSigninPageNavigation(navigation_handle)) {
     // Navigating away from the signin page.
+    // Note that currently any indication of a navigation is enough to consider
+    // this tab unsuitable for re-use, even if the navigation does not end up
+    // committing.
     is_chrome_signin_page_ = false;
   }
 }
@@ -82,13 +86,16 @@ void DiceTabHelper::DidFinishNavigation(
     return;
 
   // Ignore internal navigations.
-  if (!navigation_handle->IsInMainFrame() ||
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
   }
 
   if (!IsSigninPageNavigation(navigation_handle)) {
     // Navigating away from the signin page.
+    // Note that currently any indication of a navigation is enough to consider
+    // this tab unsuitable for re-use, even if the navigation does not end up
+    // committing.
     is_chrome_signin_page_ = false;
     return;
   }
@@ -103,8 +110,8 @@ bool DiceTabHelper::IsSigninPageNavigation(
     content::NavigationHandle* navigation_handle) const {
   return !navigation_handle->IsErrorPage() &&
          navigation_handle->GetRedirectChain()[0] == signin_url_ &&
-         navigation_handle->GetURL().GetOrigin() ==
+         navigation_handle->GetURL().DeprecatedGetOriginAsURL() ==
              GaiaUrls::GetInstance()->gaia_url();
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(DiceTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(DiceTabHelper);

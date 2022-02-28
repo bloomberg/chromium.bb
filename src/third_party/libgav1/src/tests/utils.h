@@ -22,6 +22,7 @@
 #include <string>
 
 #include "absl/base/config.h"
+#include "absl/strings/string_view.h"
 #include "absl/time/time.h"
 #include "src/gav1/decoder_buffer.h"
 #include "src/utils/memory.h"
@@ -131,6 +132,24 @@ void CheckMd5Digest(const char name[], const char function_name[],
 void CheckMd5Digest(const char name[], const char function_name[],
                     const char expected_digest[], const char actual_digest[],
                     absl::Duration elapsed_time);
+
+//------------------------------------------------------------------------------
+// Reads the test data from |file_name| as a string into |output|. The
+// |is_output_file| argument controls the expansion of |file_name| to its full
+// path. When |is_output_file| is true GetTestData() reads from
+// utils.cc::GetTempDir(), and when it is false the file is read from
+// utils.cc::GetSourceDir().
+void GetTestData(absl::string_view file_name, bool is_output_file,
+                 std::string* output);
+
+//------------------------------------------------------------------------------
+// Returns the full path to |file_name| from libgav1/tests/data.
+std::string GetTestInputFilePath(absl::string_view file_name);
+
+//------------------------------------------------------------------------------
+// Returns the full path to |file_name| in a location where the file can be
+// opened for writing.
+std::string GetTestOutputFilePath(absl::string_view file_name);
 
 }  // namespace test_utils
 }  // namespace libgav1

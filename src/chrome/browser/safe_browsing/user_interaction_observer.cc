@@ -11,10 +11,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/buildflags.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/buildflags/buildflags.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -173,7 +175,7 @@ void SafeBrowsingUserInteractionObserver::DidFinishNavigation(
     content::NavigationHandle* handle) {
   // Remove the observer on a top frame navigation to another page. The user is
   // now on another page so we don't need to wait for an interaction.
-  if (!handle->IsInMainFrame() || handle->IsSameDocument()) {
+  if (!handle->IsInPrimaryMainFrame() || handle->IsSameDocument()) {
     return;
   }
   // If this is the first navigation we are seeing, it must be the
@@ -370,7 +372,7 @@ void SafeBrowsingUserInteractionObserver::ShowInterstitial(
   interstitial_shown_ = true;
   CleanUp();
   RecordUMA(event);
-  SafeBrowsingUIManager::StartDisplayingBlockingPage(ui_manager_, resource_);
+  ui_manager_->StartDisplayingBlockingPage(resource_);
   Detach();
   // DO NOT add code past this point. |this| is destroyed.
 }

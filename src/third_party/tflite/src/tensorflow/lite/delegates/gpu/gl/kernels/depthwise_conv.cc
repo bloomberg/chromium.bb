@@ -38,6 +38,10 @@ class DepthwiseConvolution : public NodeShader {
  public:
   absl::Status GenerateCode(const GenerationContext& ctx,
                             GeneratedCode* generated_code) const final {
+    if (ctx.input_shapes.size() != 1) {
+      return absl::UnimplementedError(
+          "DepthWise Convolution does not support more than 1 runtime tensor");
+    }
     const auto& attr =
         absl::any_cast<const DepthwiseConvolution2DAttributes&>(ctx.op_attr);
     auto weights = attr.weights.shape;
@@ -88,7 +92,6 @@ class DepthwiseConvolution : public NodeShader {
       source = R"(
         int offsets_count = $kernel_w$ * $kernel_h$;
         int src_layer_offset = (gid.z % $channel_multiplier$) * 4;
-        int filter_offset = gid.z * $src_depth$ * offsets_count * 4;
         int i = 0;
         for (int ky = 0; ky < $kernel_h$; ky++) {
           for (int kx = 0; kx < $kernel_w$; kx++, i++) {
@@ -97,7 +100,6 @@ class DepthwiseConvolution : public NodeShader {
       source = R"(
         int offsets_count = $offsets_count$;
         int src_layer_offset = (gid.z % $channel_multiplier$) * 4;
-        int filter_offset = gid.z * $src_depth$ * offsets_count * 4;
         for (int i = 0; i < offsets_count; ++i) {
           ivec2 coord = gid.xy * $stride$ + $offsets[i]$;)";
     }
@@ -117,8 +119,7 @@ class DepthwiseConvolution : public NodeShader {
           input_[(src_layer_offset + 2) / $channel_multiplier$],
           input_[(src_layer_offset + 3) / $channel_multiplier$]
         );
-        int filter_offset = gid.z * offsets_count + i;
-        value_0 += input_shifted * $weights[filter_offset]$;
+        value_0 += input_shifted * $weights[gid.z * offsets_count + i]$;
       }
 )";
     if (offsets_count_too_large) {
@@ -137,7 +138,7 @@ class DepthwiseConvolution : public NodeShader {
         /*workload=*/uint3(),
         /*workgroup=*/
         GetIdealWorkgroupIfPossible(
-            ctx.gpu_info->gpu_model, OperationType::DEPTHWISE_CONVOLUTION,
+            *ctx.gpu_info, OperationType::DEPTHWISE_CONVOLUTION,
             HW(attr.weights.shape.h, attr.weights.shape.w), attr.strides,
             OHWI(attr.weights.shape.o, ctx.input_shapes[0][1],
                  ctx.input_shapes[0][2], ctx.input_shapes[0][3])),

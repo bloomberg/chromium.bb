@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/check_op.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/time/time.h"
@@ -348,11 +349,11 @@ class TouchSelectionControllerImpl::EditingHandleView : public View {
   bool GetDrawInvisible() const { return draw_invisible_; }
 
  private:
-  TouchSelectionControllerImpl* controller_;
+  raw_ptr<TouchSelectionControllerImpl> controller_;
 
   // In local coordinates
   gfx::SelectionBound selection_bound_;
-  gfx::Image* image_;
+  raw_ptr<gfx::Image> image_;
 
   // If true, this is a handle corresponding to the single cursor, otherwise it
   // is a handle corresponding to one of the two selection bounds.
@@ -578,8 +579,7 @@ void TouchSelectionControllerImpl::ExecuteCommand(int command_id,
   // Note that we only log the duration stats for the 'successful' selections,
   // i.e. selections ending with the execution of a command.
   UMA_HISTOGRAM_CUSTOM_TIMES("Event.TouchSelection.Duration", duration,
-                             base::TimeDelta::FromMilliseconds(500),
-                             base::TimeDelta::FromSeconds(60), 60);
+                             base::Milliseconds(500), base::Seconds(60), 60);
   client_view_->ExecuteCommand(command_id, event_flags);
 }
 
@@ -644,8 +644,7 @@ void TouchSelectionControllerImpl::QuickMenuTimerFired() {
 void TouchSelectionControllerImpl::StartQuickMenuTimer() {
   if (quick_menu_timer_.IsRunning())
     return;
-  quick_menu_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(200),
-                          this,
+  quick_menu_timer_.Start(FROM_HERE, base::Milliseconds(200), this,
                           &TouchSelectionControllerImpl::QuickMenuTimerFired);
 }
 

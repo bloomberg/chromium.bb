@@ -9,10 +9,10 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/base_export.h"
 #include "base/check_op.h"
-#include "base/macros.h"
 
 // Use ScopedMachVM to supervise ownership of pages in the current process
 // through the Mach VM subsystem. Pages allocated with vm_allocate can be
@@ -54,6 +54,9 @@ class BASE_EXPORT ScopedMachVM {
     DCHECK_EQ(size % PAGE_SIZE, 0u);
   }
 
+  ScopedMachVM(const ScopedMachVM&) = delete;
+  ScopedMachVM& operator=(const ScopedMachVM&) = delete;
+
   ~ScopedMachVM() {
     if (size_) {
       vm_deallocate(mach_task_self(), address_, size_);
@@ -91,8 +94,6 @@ class BASE_EXPORT ScopedMachVM {
  private:
   vm_address_t address_;
   vm_size_t size_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedMachVM);
 };
 
 }  // namespace mac

@@ -19,6 +19,10 @@
 
 class GrDirectContext;
 
+namespace base {
+class TimeDelta;
+}
+
 namespace gpu {
 namespace raster {
 class RasterInterface;
@@ -29,37 +33,6 @@ namespace media {
 
 class VideoFramePool;
 class VideoFrame;
-
-// Computes the pixel aspect ratio of a given |visible_rect| from its
-// |natural_size|.
-//
-// See https://en.wikipedia.org/wiki/Pixel_aspect_ratio for a detailed
-// definition.
-//
-// Returns NaN or Infinity if |visible_rect| or |natural_size| are empty.
-//
-// Note: Something has probably gone wrong if you need to call this function;
-// pixel aspect ratios should be the source of truth.
-//
-// TODO(crbug.com/837337): Decide how to encode 'not provided' for pixel aspect
-// ratios, and return that if one of the inputs is empty.
-MEDIA_EXPORT double GetPixelAspectRatio(const gfx::Rect& visible_rect,
-                                        const gfx::Size& natural_size);
-
-// Increases (at most) one of the dimensions of |visible_rect| to produce
-// a |natural_size| with the given pixel aspect ratio.
-//
-// Returns gfx::Size() if |pixel_aspect_ratio| is not finite and positive.
-MEDIA_EXPORT gfx::Size GetNaturalSize(const gfx::Rect& visible_rect,
-                                      double pixel_aspect_ratio);
-
-// Overload that takes the pixel aspect ratio as an integer fraction (and
-// |visible_size| instead of |visible_rect|).
-//
-// Returns gfx::Size() if numerator or denominator are not positive.
-MEDIA_EXPORT gfx::Size GetNaturalSize(const gfx::Size& visible_size,
-                                      int aspect_ratio_numerator,
-                                      int aspect_ratio_denominator);
 
 // Fills |frame| containing YUV data to the given color values.
 MEDIA_EXPORT void FillYUV(VideoFrame* frame, uint8_t y, uint8_t u, uint8_t v);
@@ -128,6 +101,16 @@ MEDIA_EXPORT gfx::Size ScaleSizeToFitWithinTarget(const gfx::Size& size,
 MEDIA_EXPORT gfx::Size ScaleSizeToEncompassTarget(const gfx::Size& size,
                                                   const gfx::Size& target);
 
+// Calculates the largest sub-rectangle of a rectangle of size |size| with
+// roughly the same aspect ratio as |target| and centered both horizontally
+// and vertically within the rectangle. It's "roughly" the same aspect ratio
+// because its dimensions may be rounded down to be a multiple of |alignment|.
+// The origin of the rectangle is also aligned down to a multiple of
+// |alignment|. Note that |alignment| must be a power of 2.
+MEDIA_EXPORT gfx::Rect CropSizeForScalingToTarget(const gfx::Size& size,
+                                                  const gfx::Size& target,
+                                                  size_t alignment = 1u);
+
 // Returns the size of a rectangle whose upper left corner is at the origin (0,
 // 0) and whose bottom right corner is the same as that of |rect|. This is
 // useful to get the size of a buffer that contains the visible rectangle plus
@@ -169,6 +152,17 @@ MEDIA_EXPORT scoped_refptr<VideoFrame> ReadbackTextureBackedFrameToMemorySync(
     gpu::raster::RasterInterface* ri,
     GrDirectContext* gr_context,
     VideoFramePool* pool = nullptr);
+
+// Synchronously reads a single plane. |src_rect| is relative to the plane,
+// which may be smaller than |frame| due to subsampling.
+MEDIA_EXPORT bool ReadbackTexturePlaneToMemorySync(
+    const VideoFrame& src_frame,
+    size_t src_plane,
+    gfx::Rect& src_rect,
+    uint8_t* dest_pixels,
+    size_t dest_stride,
+    gpu::raster::RasterInterface* ri,
+    GrDirectContext* gr_context);
 
 // Converts a frame with I420A format into I420 by dropping alpha channel.
 MEDIA_EXPORT scoped_refptr<VideoFrame> WrapAsI420VideoFrame(

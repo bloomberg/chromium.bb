@@ -1,5 +1,6 @@
 /*
  * Copyright 2016-2021 The Brenwill Workshop Ltd.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +19,6 @@
  * At your option, you may choose to accept this material under either:
  *  1. The Apache License, Version 2.0, found at <http://www.apache.org/licenses/LICENSE-2.0>, or
  *  2. The MIT License, found at <http://opensource.org/licenses/MIT>.
- * SPDX-License-Identifier: Apache-2.0 OR MIT.
  */
 
 #ifndef SPIRV_CROSS_MSL_HPP
@@ -60,6 +60,7 @@ enum MSLShaderInputFormat
 struct MSLShaderInput
 {
 	uint32_t location = 0;
+	uint32_t component = 0;
 	MSLShaderInputFormat format = MSL_SHADER_INPUT_FORMAT_OTHER;
 	spv::BuiltIn builtin = spv::BuiltInMax;
 	uint32_t vecsize = 0;
@@ -656,6 +657,7 @@ protected:
 		SPVFuncImplFMul,
 		SPVFuncImplFAdd,
 		SPVFuncImplFSub,
+		SPVFuncImplQuantizeToF16,
 		SPVFuncImplCubemapTo2DArrayFace,
 		SPVFuncImplUnsafeArray, // Allow Metal to use the array<T> template to make arrays a value type
 		SPVFuncImplInverse4x4,
@@ -730,9 +732,11 @@ protected:
 	                        const std::string &qualifier = "", uint32_t base_offset = 0) override;
 	void emit_struct_padding_target(const SPIRType &type) override;
 	std::string type_to_glsl(const SPIRType &type, uint32_t id = 0) override;
+	void emit_block_hints(const SPIRBlock &block) override;
 
 	// Allow Metal to use the array<T> template to make arrays a value type
 	std::string type_to_array_glsl(const SPIRType &type) override;
+	std::string constant_op_expression(const SPIRConstantOp &cop) override;
 
 	// Threadgroup arrays can't have a wrapper type
 	std::string variable_decl(const SPIRVariable &variable) override;
@@ -799,8 +803,12 @@ protected:
 	{
 		struct LocationMeta
 		{
+			uint32_t base_type_id = 0;
 			uint32_t num_components = 0;
-			uint32_t ib_index = ~0u;
+			bool flat = false;
+			bool noperspective = false;
+			bool centroid = false;
+			bool sample = false;
 		};
 		std::unordered_map<uint32_t, LocationMeta> location_meta;
 		bool strip_array = false;
@@ -815,6 +823,9 @@ protected:
 	                                               SPIRType &ib_type, SPIRVariable &var, InterfaceBlockMeta &meta);
 	void add_plain_variable_to_interface_block(spv::StorageClass storage, const std::string &ib_var_ref,
 	                                           SPIRType &ib_type, SPIRVariable &var, InterfaceBlockMeta &meta);
+	bool add_component_variable_to_interface_block(spv::StorageClass storage, const std::string &ib_var_ref,
+	                                               SPIRVariable &var, const SPIRType &type,
+	                                               InterfaceBlockMeta &meta);
 	void add_plain_member_variable_to_interface_block(spv::StorageClass storage, const std::string &ib_var_ref,
 	                                                  SPIRType &ib_type, SPIRVariable &var, uint32_t index,
 	                                                  InterfaceBlockMeta &meta);
@@ -828,7 +839,7 @@ protected:
 	void mark_location_as_used_by_shader(uint32_t location, const SPIRType &type,
 	                                     spv::StorageClass storage, bool fallback = false);
 	uint32_t ensure_correct_builtin_type(uint32_t type_id, spv::BuiltIn builtin);
-	uint32_t ensure_correct_input_type(uint32_t type_id, uint32_t location,
+	uint32_t ensure_correct_input_type(uint32_t type_id, uint32_t location, uint32_t component,
 	                                   uint32_t num_components, bool strip_array);
 
 	void emit_custom_templates();
@@ -853,11 +864,13 @@ protected:
 	std::string to_swizzle_expression(uint32_t id);
 	std::string to_buffer_size_expression(uint32_t id);
 	bool is_sample_rate() const;
+	bool is_intersection_query() const;
 	bool is_direct_input_builtin(spv::BuiltIn builtin);
 	std::string builtin_qualifier(spv::BuiltIn builtin);
 	std::string builtin_type_decl(spv::BuiltIn builtin, uint32_t id = 0);
 	std::string built_in_func_arg(spv::BuiltIn builtin, bool prefix_comma);
 	std::string member_attribute_qualifier(const SPIRType &type, uint32_t index);
+	std::string member_location_attribute_qualifier(const SPIRType &type, uint32_t index);
 	std::string argument_decl(const SPIRFunction::Parameter &arg);
 	std::string round_fp_tex_coords(std::string tex_coords, bool coord_is_fp);
 	uint32_t get_metal_resource_index(SPIRVariable &var, SPIRType::BaseType basetype, uint32_t plane = 0);
@@ -919,6 +932,8 @@ protected:
 	void build_implicit_builtins();
 	uint32_t build_constant_uint_array_pointer();
 	void emit_entry_point_declarations() override;
+	bool uses_explicit_early_fragment_test();
+
 	uint32_t builtin_frag_coord_id = 0;
 	uint32_t builtin_sample_id_id = 0;
 	uint32_t builtin_sample_mask_id = 0;
@@ -947,8 +962,8 @@ protected:
 
 	bool does_shader_write_sample_mask = false;
 
-	void cast_to_builtin_store(uint32_t target_id, std::string &expr, const SPIRType &expr_type) override;
-	void cast_from_builtin_load(uint32_t source_id, std::string &expr, const SPIRType &expr_type) override;
+	void cast_to_variable_store(uint32_t target_id, std::string &expr, const SPIRType &expr_type) override;
+	void cast_from_variable_load(uint32_t source_id, std::string &expr, const SPIRType &expr_type) override;
 	void emit_store_statement(uint32_t lhs_expression, uint32_t rhs_expression) override;
 
 	void analyze_sampled_image_usage();
@@ -970,7 +985,7 @@ protected:
 	Options msl_options;
 	std::set<SPVFuncImpl> spv_function_implementations;
 	// Must be ordered to ensure declarations are in a specific order.
-	std::map<uint32_t, MSLShaderInput> inputs_by_location;
+	std::map<LocationComponentPair, MSLShaderInput> inputs_by_location;
 	std::unordered_map<uint32_t, MSLShaderInput> inputs_by_builtin;
 	std::unordered_set<uint32_t> location_inputs_in_use;
 	std::unordered_set<uint32_t> location_inputs_in_use_fallback;
@@ -1084,6 +1099,9 @@ protected:
 	bool is_supported_argument_buffer_type(const SPIRType &type) const;
 
 	bool variable_storage_requires_stage_io(spv::StorageClass storage) const;
+
+	bool has_additional_fixed_sample_mask() const { return msl_options.additional_fixed_sample_mask != 0xffffffff; }
+	std::string additional_fixed_sample_mask_str() const;
 
 	// OpcodeHandler that handles several MSL preprocessing operations.
 	struct OpCodePreprocessor : OpcodeHandler

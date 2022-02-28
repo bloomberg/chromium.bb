@@ -7,6 +7,8 @@
 /adobe/flash/symbols
 /aemu-linux-arm64
 /aemu-linux-x64
+/aemu-mac-arm64
+/aemu-mac-x64
 /amd/
 /android_build_tools/aapt2/aapt2
 /android_build_tools/aapt2/lib64/*.so
@@ -35,15 +37,10 @@
 /apache-win32/bin/iconv/*.so
 /apache-win32/modules/*.so
 /apache-win32/modules/*.dll
-/apache-mac/bin/httpd
-/apache-mac/bin/openssl
-/apache-mac/lib/*.dylib
-/apache-mac/libexec/apache2/*.so
 /arcore-android-sdk/src/
 /arcore-android-sdk/test-apks/arcore/*.apk
 /asan
 /barhopper
-/bazel/desugar/*.jar
 /binutils
 /bison
 /boringssl/src
@@ -52,6 +49,9 @@
 /byte_buddy/android_sdk_build_tools_25_0_2
 /byte_buddy/lib/
 /cardboard-java/src
+/cast_core/prebuilts
+/cast_core/public/src
+/cast_web_runtime
 /catapult
 /ced/src
 /checkstyle/*.jar
@@ -71,6 +71,7 @@
 /dawn
 /depot_tools
 /devtools-frontend/src
+/devtools-frontend-internal
 /directxsdk
 /dom_distiller_js/dist
 /eigen3/src
@@ -96,8 +97,6 @@
 /glfw/src
 /gn/
 /gnu_binutils/
-/google_android_play_core/core-*.aar
-/google_appengine_cloudstorage
 /google_benchmark/src
 /google_toolbox_for_mac/src
 /googlemac
@@ -131,9 +130,10 @@
 /leveldatabase/src
 /leveldb
 /libaom/source/libaom
-/libc++-static/libc++.a
 /libaddressinput/src
+/libassistant
 /libavif/src
+/libc++-static/libc++.a
 /libdrm/src
 /libFuzzer/src
 /libgav1/src
@@ -160,7 +160,6 @@
 /llvm-build
 /llvm-build-tools
 /lss
-/marble
 /material_design_icons/src
 /mesa/src
 /mingw-w64
@@ -175,6 +174,8 @@
 /neon_2_sse/src
 /netty-tcnative/src
 /netty4/src
+/js_code_coverage/node_modules
+/js_code_coverage/*.tar.gz
 /node/linux
 /node/mac
 /node/node_modules
@@ -195,7 +196,6 @@
 /ppapi
 /proguard/lib/
 /protobuf/java/lite/target/
-/protoc_javalite/protoc-gen-javalite
 /psyco_win32
 /pthreads-win32
 /py_trace_event/src
@@ -238,7 +238,6 @@
 /tflite/src
 /tint/src
 /tsan/
-/turbine/src
 /turbine/*.jar
 /ub-uiautomator/lib
 /ukey2/src
@@ -249,6 +248,8 @@
 /vulkan-deps
 /vulkan_memory_allocator
 /wayland/src
+/wayland-protocols/gtk
+/wayland-protocols/kde
 /wayland-protocols/src
 /webdriver/pylib
 /webdriver/python/selenium

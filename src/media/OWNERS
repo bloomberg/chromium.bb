@@ -10,6 +10,7 @@
 
 set noparent
 cassew@google.com
+cassew@chromium.org
 chcunningham@chromium.org
 dalecurtis@chromium.org
 eugene@chromium.org
@@ -22,7 +23,7 @@ wolenetz@chromium.org
 xhwang@chromium.org
 
 # For Fuchsia-specific changes:
-per-file *_fuchsia*=file://build/fuchsia/OWNERS
+per-file ..._fuchsia*=file://build/fuchsia/OWNERS
 
 # For GpuMemoryBuffer-related changes:
 per-file *gpu_memory_buffer*=dcastagna@chromium.org

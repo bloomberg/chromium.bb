@@ -29,10 +29,6 @@ config("swiftshader_main_private_config") {
         "-Wno-sign-compare",
       ]
     }
-  } else if (current_cpu == "x86" || current_cpu == "x64") {
-    cflags = [ "-msse2" ]
-    defines =
-        [ "NO_SANITIZE_FUNCTION=__attribute__((no_sanitize(\"function\")))" ]
   }
 }
 
@@ -46,6 +42,8 @@ swiftshader_source_set("swiftshader_main") {
     "FrameBuffer.cpp",
     "SwiftConfig.cpp",
   ]
+
+  defines = []
 
   if (use_ozone && !is_win) {
     sources += [
@@ -62,11 +60,12 @@ swiftshader_source_set("swiftshader_main") {
     ]
   }
 
-  if (use_x11) {
+  if (ozone_platform_x11) {
     sources += [
       "FrameBufferX11.cpp",
       "libX11.cpp",
     ]
+    defines += [ "SWIFTSHADER_USE_X11" ]
   }
 
   if (is_win) {

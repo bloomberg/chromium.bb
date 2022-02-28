@@ -15,8 +15,8 @@
 #include "config/aom_config.h"
 
 #include "aom/aom_integer.h"
-#include "av1/common/arm/mem_neon.h"
-#include "av1/common/arm/transpose_neon.h"
+#include "aom_dsp/arm/mem_neon.h"
+#include "aom_dsp/arm/transpose_neon.h"
 
 static INLINE uint8x8_t lpf_mask(uint8x8_t p3q3, uint8x8_t p2q2, uint8x8_t p1q1,
                                  uint8x8_t p0q0, const uint8_t blimit,

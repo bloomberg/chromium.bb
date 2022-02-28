@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "services/audio/service.h"
@@ -36,6 +36,11 @@ class OwningAudioManagerAccessor : public Service::AudioManagerAccessor {
 
   explicit OwningAudioManagerAccessor(
       AudioManagerFactoryCallback audio_manager_factory_cb);
+
+  OwningAudioManagerAccessor(const OwningAudioManagerAccessor&) = delete;
+  OwningAudioManagerAccessor& operator=(const OwningAudioManagerAccessor&) =
+      delete;
+
   ~OwningAudioManagerAccessor() override;
 
   media::AudioManager* GetAudioManager() final;
@@ -50,10 +55,9 @@ class OwningAudioManagerAccessor : public Service::AudioManagerAccessor {
 #endif
   AudioManagerFactoryCallback audio_manager_factory_cb_;
   std::unique_ptr<media::AudioManager> audio_manager_;
-  media::AudioLogFactory* log_factory_ = nullptr;  // not owned.
+  raw_ptr<media::AudioLogFactory> log_factory_ = nullptr;  // not owned.
 
   THREAD_CHECKER(thread_checker_);
-  DISALLOW_COPY_AND_ASSIGN(OwningAudioManagerAccessor);
 };
 
 }  // namespace audio

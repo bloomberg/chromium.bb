@@ -13,11 +13,12 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/cxx17_backports.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/stringize_macros.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
@@ -36,11 +37,12 @@
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
 using remoting::protocol::MockPairingRegistryDelegate;
 using remoting::protocol::PairingRegistry;
 using remoting::protocol::SynchronousPairingRegistry;
-
-namespace {
+using ::testing::Optional;
 
 void VerifyHelloResponse(std::unique_ptr<base::DictionaryValue> response) {
   ASSERT_TRUE(response);
@@ -103,13 +105,10 @@ void VerifyGetUsageStatsConsentResponse(
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
   EXPECT_EQ("getUsageStatsConsentResponse", value);
-  bool supported, allowed, set_by_policy;
-  EXPECT_TRUE(response->GetBoolean("supported", &supported));
-  EXPECT_TRUE(response->GetBoolean("allowed", &allowed));
-  EXPECT_TRUE(response->GetBoolean("setByPolicy", &set_by_policy));
-  EXPECT_TRUE(supported);
-  EXPECT_TRUE(allowed);
-  EXPECT_TRUE(set_by_policy);
+
+  EXPECT_THAT(response->FindBoolKey("supported"), Optional(true));
+  EXPECT_THAT(response->FindBoolKey("allowed"), Optional(true));
+  EXPECT_THAT(response->FindBoolKey("setByPolicy"), Optional(true));
 }
 
 void VerifyStopDaemonResponse(std::unique_ptr<base::DictionaryValue> response) {
@@ -170,6 +169,11 @@ namespace remoting {
 class MockDaemonControllerDelegate : public DaemonController::Delegate {
  public:
   MockDaemonControllerDelegate();
+
+  MockDaemonControllerDelegate(const MockDaemonControllerDelegate&) = delete;
+  MockDaemonControllerDelegate& operator=(const MockDaemonControllerDelegate&) =
+      delete;
+
   ~MockDaemonControllerDelegate() override;
 
   // DaemonController::Delegate interface.
@@ -184,9 +188,6 @@ class MockDaemonControllerDelegate : public DaemonController::Delegate {
                     DaemonController::CompletionCallback done) override;
   void Stop(DaemonController::CompletionCallback done) override;
   DaemonController::UsageStatsConsent GetUsageStatsConsent() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockDaemonControllerDelegate);
 };
 
 MockDaemonControllerDelegate::MockDaemonControllerDelegate() = default;
@@ -247,6 +248,11 @@ MockDaemonControllerDelegate::GetUsageStatsConsent() {
 class Me2MeNativeMessagingHostTest : public testing::Test {
  public:
   Me2MeNativeMessagingHostTest();
+
+  Me2MeNativeMessagingHostTest(const Me2MeNativeMessagingHostTest&) = delete;
+  Me2MeNativeMessagingHostTest& operator=(const Me2MeNativeMessagingHostTest&) =
+      delete;
+
   ~Me2MeNativeMessagingHostTest() override;
 
   void SetUp() override;
@@ -265,7 +271,7 @@ class Me2MeNativeMessagingHostTest : public testing::Test {
  protected:
   // Reference to the MockDaemonControllerDelegate, which is owned by
   // |channel_|.
-  MockDaemonControllerDelegate* daemon_controller_delegate_;
+  raw_ptr<MockDaemonControllerDelegate> daemon_controller_delegate_;
 
  private:
   void StartHost();
@@ -290,8 +296,6 @@ class Me2MeNativeMessagingHostTest : public testing::Test {
   // Task runner of the host thread.
   scoped_refptr<AutoThreadTaskRunner> host_task_runner_;
   std::unique_ptr<NativeMessagingPipe> native_messaging_pipe_;
-
-  DISALLOW_COPY_AND_ASSIGN(Me2MeNativeMessagingHostTest);
 };
 
 Me2MeNativeMessagingHostTest::Me2MeNativeMessagingHostTest() = default;
@@ -337,8 +341,8 @@ void Me2MeNativeMessagingHostTest::StartHost() {
   ASSERT_TRUE(MakePipe(&output_read_file_, &output_write_file));
 
   daemon_controller_delegate_ = new MockDaemonControllerDelegate();
-  scoped_refptr<DaemonController> daemon_controller(
-      new DaemonController(base::WrapUnique(daemon_controller_delegate_)));
+  scoped_refptr<DaemonController> daemon_controller(new DaemonController(
+      base::WrapUnique(daemon_controller_delegate_.get())));
 
   scoped_refptr<PairingRegistry> pairing_registry =
       new SynchronousPairingRegistry(
@@ -494,7 +498,7 @@ TEST_F(Me2MeNativeMessagingHostTest, All) {
   message.SetString("pin", "1234");
   WriteMessageToInputPipe(message);
 
-  message.Clear();
+  message.DictClear();
   message.SetInteger("id", next_id++);
   message.SetString("type", "generateKeyPair");
   WriteMessageToInputPipe(message);
@@ -523,7 +527,7 @@ TEST_F(Me2MeNativeMessagingHostTest, All) {
   message.SetString("type", "updateDaemonConfig");
   WriteMessageToInputPipe(message);
 
-  config.Clear();
+  config.DictClear();
   config.SetBoolean("start", true);
   message.Set("config", config.CreateDeepCopy());
   message.SetBoolean("consent", true);

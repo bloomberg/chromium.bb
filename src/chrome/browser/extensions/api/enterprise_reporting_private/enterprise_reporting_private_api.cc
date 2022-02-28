@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/enterprise/signals/device_info_fetcher.h"
+#include "chrome/browser/enterprise/signals/signals_common.h"
 #include "chrome/browser/enterprise/util/managed_browser_utils.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
@@ -28,33 +29,49 @@ const char kEndpointVerificationRetrievalFailed[] =
     "Failed to retrieve the endpoint verification data.";
 const char kEndpointVerificationStoreFailed[] =
     "Failed to store the endpoint verification data.";
+#endif  // !defined(OS_CHROMEOS)
 
 api::enterprise_reporting_private::SettingValue ToInfoSettingValue(
-    enterprise_signals::DeviceInfo::SettingValue value) {
-  using SettingValue = enterprise_signals::DeviceInfo::SettingValue;
+    enterprise_signals::SettingValue value) {
   switch (value) {
-    case SettingValue::NONE:
+    case enterprise_signals::SettingValue::NONE:
       return api::enterprise_reporting_private::SETTING_VALUE_NONE;
-    case SettingValue::UNKNOWN:
+    case enterprise_signals::SettingValue::UNKNOWN:
       return api::enterprise_reporting_private::SETTING_VALUE_UNKNOWN;
-    case SettingValue::DISABLED:
+    case enterprise_signals::SettingValue::DISABLED:
       return api::enterprise_reporting_private::SETTING_VALUE_DISABLED;
-    case SettingValue::ENABLED:
+    case enterprise_signals::SettingValue::ENABLED:
       return api::enterprise_reporting_private::SETTING_VALUE_ENABLED;
   }
 }
-#endif  // !defined(OS_CHROMEOS)
 
 api::enterprise_reporting_private::ContextInfo ToContextInfo(
-    const enterprise_signals::ContextInfo& signals) {
+    enterprise_signals::ContextInfo&& signals) {
   api::enterprise_reporting_private::ContextInfo info;
 
-  info.browser_affiliation_ids = signals.browser_affiliation_ids;
-  info.profile_affiliation_ids = signals.profile_affiliation_ids;
-  info.on_file_attached_providers = signals.on_file_attached_providers;
-  info.on_file_downloaded_providers = signals.on_file_downloaded_providers;
-  info.on_bulk_data_entry_providers = signals.on_bulk_data_entry_providers;
-  info.on_security_event_providers = signals.on_security_event_providers;
+  info.browser_affiliation_ids = std::move(signals.browser_affiliation_ids);
+  info.profile_affiliation_ids = std::move(signals.profile_affiliation_ids);
+  info.on_file_attached_providers =
+      std::move(signals.on_file_attached_providers);
+  info.on_file_downloaded_providers =
+      std::move(signals.on_file_downloaded_providers);
+  info.on_bulk_data_entry_providers =
+      std::move(signals.on_bulk_data_entry_providers);
+  info.on_security_event_providers =
+      std::move(signals.on_security_event_providers);
+  info.site_isolation_enabled = signals.site_isolation_enabled;
+  info.chrome_cleanup_enabled =
+      signals.chrome_cleanup_enabled.has_value()
+          ? std::make_unique<bool>(signals.chrome_cleanup_enabled.value())
+          : nullptr;
+  info.chrome_remote_desktop_app_blocked =
+      signals.chrome_remote_desktop_app_blocked;
+  info.third_party_blocking_enabled =
+      signals.third_party_blocking_enabled.has_value()
+          ? std::make_unique<bool>(signals.third_party_blocking_enabled.value())
+          : nullptr;
+  info.os_firewall = ToInfoSettingValue(signals.os_firewall);
+  info.system_dns_servers = std::move(signals.system_dns_servers);
   switch (signals.realtime_url_check_mode) {
     case safe_browsing::REAL_TIME_CHECK_DISABLED:
       info.realtime_url_check_mode = extensions::api::
@@ -66,7 +83,48 @@ api::enterprise_reporting_private::ContextInfo ToContextInfo(
               REALTIME_URL_CHECK_MODE_ENABLED_MAIN_FRAME;
       break;
   }
-  info.browser_version = signals.browser_version;
+  info.browser_version = std::move(signals.browser_version);
+  info.built_in_dns_client_enabled = signals.built_in_dns_client_enabled;
+
+  switch (signals.safe_browsing_protection_level) {
+    case safe_browsing::SafeBrowsingState::NO_SAFE_BROWSING:
+      info.safe_browsing_protection_level = extensions::api::
+          enterprise_reporting_private::SAFE_BROWSING_LEVEL_DISABLED;
+      break;
+    case safe_browsing::SafeBrowsingState::STANDARD_PROTECTION:
+      info.safe_browsing_protection_level = extensions::api::
+          enterprise_reporting_private::SAFE_BROWSING_LEVEL_STANDARD;
+      break;
+    case safe_browsing::SafeBrowsingState::ENHANCED_PROTECTION:
+      info.safe_browsing_protection_level = extensions::api::
+          enterprise_reporting_private::SAFE_BROWSING_LEVEL_ENHANCED;
+      break;
+  }
+  if (!signals.password_protection_warning_trigger.has_value()) {
+    info.password_protection_warning_trigger = extensions::api::
+        enterprise_reporting_private::PASSWORD_PROTECTION_TRIGGER_POLICY_UNSET;
+  } else {
+    switch (signals.password_protection_warning_trigger.value()) {
+      case safe_browsing::PASSWORD_PROTECTION_OFF:
+        info.password_protection_warning_trigger =
+            extensions::api::enterprise_reporting_private::
+                PASSWORD_PROTECTION_TRIGGER_PASSWORD_PROTECTION_OFF;
+        break;
+      case safe_browsing::PASSWORD_REUSE:
+        info.password_protection_warning_trigger =
+            extensions::api::enterprise_reporting_private::
+                PASSWORD_PROTECTION_TRIGGER_PASSWORD_REUSE;
+        break;
+      case safe_browsing::PHISHING_REUSE:
+        info.password_protection_warning_trigger =
+            extensions::api::enterprise_reporting_private::
+                PASSWORD_PROTECTION_TRIGGER_PHISHING_REUSE;
+        break;
+      case safe_browsing::PASSWORD_PROTECTION_TRIGGER_MAX:
+        NOTREACHED();
+        break;
+    }
+  }
 
   return info;
 }
@@ -96,6 +154,9 @@ EnterpriseReportingPrivateGetDeviceIdFunction::
     ~EnterpriseReportingPrivateGetDeviceIdFunction() = default;
 
 // getPersistentSecret
+
+#if !defined(OS_LINUX)
+
 EnterpriseReportingPrivateGetPersistentSecretFunction::
     EnterpriseReportingPrivateGetPersistentSecretFunction() = default;
 EnterpriseReportingPrivateGetPersistentSecretFunction::
@@ -106,7 +167,7 @@ EnterpriseReportingPrivateGetPersistentSecretFunction::Run() {
   std::unique_ptr<
       api::enterprise_reporting_private::GetPersistentSecret::Params>
       params(api::enterprise_reporting_private::GetPersistentSecret::Params::
-                 Create(*args_));
+                 Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   bool force_create = params->reset_secret ? *params->reset_secret : false;
   base::ThreadPool::PostTask(
@@ -146,6 +207,8 @@ void EnterpriseReportingPrivateGetPersistentSecretFunction::SendResponse(
   }
 }
 
+#endif  // !defined(OS_LINUX)
+
 // getDeviceData
 
 EnterpriseReportingPrivateGetDeviceDataFunction::
@@ -157,7 +220,7 @@ ExtensionFunction::ResponseAction
 EnterpriseReportingPrivateGetDeviceDataFunction::Run() {
   std::unique_ptr<api::enterprise_reporting_private::GetDeviceData::Params>
       params(api::enterprise_reporting_private::GetDeviceData::Params::Create(
-          *args_));
+          args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   base::ThreadPool::PostTask(
       FROM_HERE,
@@ -193,7 +256,7 @@ void EnterpriseReportingPrivateGetDeviceDataFunction::SendResponse(
       return;
     case RetrieveDeviceDataStatus::kDataRecordNotFound:
       VLOG(1) << "The Endpoint Verification data is not present.";
-      Respond(NoArguments());
+      Respond(OneArgument(base::Value(base::Value::BlobStorage())));
       return;
     default:
       VLOG(1) << "Endpoint Verification data retrieval error: "
@@ -213,7 +276,7 @@ ExtensionFunction::ResponseAction
 EnterpriseReportingPrivateSetDeviceDataFunction::Run() {
   std::unique_ptr<api::enterprise_reporting_private::SetDeviceData::Params>
       params(api::enterprise_reporting_private::SetDeviceData::Params::Create(
-          *args_));
+          args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   base::ThreadPool::PostTask(
       FROM_HERE,
@@ -257,19 +320,33 @@ EnterpriseReportingPrivateGetDeviceInfoFunction::
 // static
 api::enterprise_reporting_private::DeviceInfo
 EnterpriseReportingPrivateGetDeviceInfoFunction::ToDeviceInfo(
-    enterprise_signals::DeviceInfo device_signals) {
+    enterprise_signals::DeviceInfo&& device_signals) {
   api::enterprise_reporting_private::DeviceInfo device_info;
 
-  device_info.os_name = device_signals.os_name;
-  device_info.os_version = device_signals.os_version;
-  device_info.device_host_name = device_signals.device_host_name;
-  device_info.device_model = device_signals.device_model;
-  device_info.serial_number = device_signals.serial_number;
+  device_info.os_name = std::move(device_signals.os_name);
+  device_info.os_version = std::move(device_signals.os_version);
+  device_info.security_patch_level =
+      std::move(device_signals.security_patch_level);
+  device_info.device_host_name = std::move(device_signals.device_host_name);
+  device_info.device_model = std::move(device_signals.device_model);
+  device_info.serial_number = std::move(device_signals.serial_number);
   device_info.screen_lock_secured =
       ToInfoSettingValue(device_signals.screen_lock_secured);
   device_info.disk_encrypted =
       ToInfoSettingValue(device_signals.disk_encrypted);
-  device_info.mac_addresses = device_signals.mac_addresses;
+  device_info.mac_addresses = std::move(device_signals.mac_addresses);
+  if (device_signals.windows_machine_domain.has_value()) {
+    device_info.windows_machine_domain = std::make_unique<std::string>(
+        device_signals.windows_machine_domain.value());
+  } else {
+    device_info.windows_machine_domain = nullptr;
+  }
+  if (device_signals.windows_user_domain.has_value()) {
+    device_info.windows_user_domain = std::make_unique<std::string>(
+        device_signals.windows_user_domain.value());
+  } else {
+    device_info.windows_user_domain = nullptr;
+  }
 
   return device_info;
 }
@@ -331,8 +408,8 @@ EnterpriseReportingPrivateGetContextInfoFunction::Run() {
 
 void EnterpriseReportingPrivateGetContextInfoFunction::OnContextInfoRetrieved(
     enterprise_signals::ContextInfo context_info) {
-  Respond(OneArgument(
-      base::Value::FromUniquePtrValue(ToContextInfo(context_info).ToValue())));
+  Respond(OneArgument(base::Value::FromUniquePtrValue(
+      ToContextInfo(std::move(context_info)).ToValue())));
 }
 
 // getCertificate
@@ -346,7 +423,7 @@ ExtensionFunction::ResponseAction
 EnterpriseReportingPrivateGetCertificateFunction::Run() {
   std::unique_ptr<api::enterprise_reporting_private::GetCertificate::Params>
       params(api::enterprise_reporting_private::GetCertificate::Params::Create(
-          *args_));
+          args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // If AutoSelectCertificateForUrl is not set at the machine level, this

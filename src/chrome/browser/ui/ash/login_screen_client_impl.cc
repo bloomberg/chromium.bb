@@ -10,8 +10,10 @@
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
 #include "base/bind.h"
+#include "base/memory/scoped_refptr.h"
 #include "chrome/browser/ash/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
+#include "chrome/browser/ash/login/hats_unlock_survey_trigger.h"
 #include "chrome/browser/ash/login/help_app_launcher.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/login_auth_recorder.h"
@@ -19,9 +21,9 @@
 #include "chrome/browser/ash/login/reauth_stats.h"
 #include "chrome/browser/ash/login/saml/in_session_password_sync_manager.h"
 #include "chrome/browser/ash/login/saml/in_session_password_sync_manager_factory.h"
+#include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/user_adding_screen.h"
-#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
@@ -46,7 +48,8 @@ LoginScreenClientImpl::Delegate::~Delegate() = default;
 LoginScreenClientImpl::ParentAccessDelegate::~ParentAccessDelegate() = default;
 
 LoginScreenClientImpl::LoginScreenClientImpl()
-    : auth_recorder_(std::make_unique<chromeos::LoginAuthRecorder>()) {
+    : auth_recorder_(std::make_unique<ash::LoginAuthRecorder>()),
+      unlock_survey_trigger_(std::make_unique<ash::HatsUnlockSurveyTrigger>()) {
   // Register this object as the client interface implementation.
   ash::LoginScreen::Get()->SetClient(this);
 
@@ -95,7 +98,7 @@ void LoginScreenClientImpl::RemoveLoginScreenShownObserver(
   login_screen_shown_observers_.RemoveObserver(observer);
 }
 
-chromeos::LoginAuthRecorder* LoginScreenClientImpl::auth_recorder() {
+ash::LoginAuthRecorder* LoginScreenClientImpl::auth_recorder() {
   return auth_recorder_.get();
 }
 
@@ -107,10 +110,11 @@ void LoginScreenClientImpl::AuthenticateUserWithPasswordOrPin(
   if (delegate_) {
     delegate_->HandleAuthenticateUserWithPasswordOrPin(
         account_id, password, authenticated_by_pin, std::move(callback));
-    auth_recorder_->RecordAuthMethod(
-        authenticated_by_pin
-            ? chromeos::LoginAuthRecorder::AuthMethod::kPin
-            : chromeos::LoginAuthRecorder::AuthMethod::kPassword);
+    auto auth_method = authenticated_by_pin
+                           ? ash::LoginAuthRecorder::AuthMethod::kPin
+                           : ash::LoginAuthRecorder::AuthMethod::kPassword;
+    auth_recorder_->RecordAuthMethod(auth_method);
+    unlock_survey_trigger_->ShowSurveyIfSelected(account_id, auth_method);
   } else {
     LOG(ERROR) << "Failed AuthenticateUserWithPasswordOrPin; no delegate";
     std::move(callback).Run(false);
@@ -122,7 +126,9 @@ void LoginScreenClientImpl::AuthenticateUserWithEasyUnlock(
   if (delegate_) {
     delegate_->HandleAuthenticateUserWithEasyUnlock(account_id);
     auth_recorder_->RecordAuthMethod(
-        chromeos::LoginAuthRecorder::AuthMethod::kSmartlock);
+        ash::LoginAuthRecorder::AuthMethod::kSmartlock);
+    unlock_survey_trigger_->ShowSurveyIfSelected(
+        account_id, ash::LoginAuthRecorder::AuthMethod::kSmartlock);
   }
 }
 
@@ -133,7 +139,9 @@ void LoginScreenClientImpl::AuthenticateUserWithChallengeResponse(
     delegate_->HandleAuthenticateUserWithChallengeResponse(account_id,
                                                            std::move(callback));
     auth_recorder_->RecordAuthMethod(
-        chromeos::LoginAuthRecorder::AuthMethod::kChallengeResponse);
+        ash::LoginAuthRecorder::AuthMethod::kChallengeResponse);
+    unlock_survey_trigger_->ShowSurveyIfSelected(
+        account_id, ash::LoginAuthRecorder::AuthMethod::kChallengeResponse);
   }
 }
 
@@ -196,6 +204,12 @@ void LoginScreenClientImpl::ShowGaiaSignin(const AccountId& prefilled_account) {
   }
 }
 
+void LoginScreenClientImpl::ShowOsInstallScreen() {
+  if (ash::LoginDisplayHost::default_host()) {
+    ash::LoginDisplayHost::default_host()->ShowOsInstallScreen();
+  }
+}
+
 void LoginScreenClientImpl::OnRemoveUserWarningShown() {
   ProfileMetrics::LogProfileDeleteUser(
       ProfileMetrics::DELETE_PROFILE_USER_MANAGER_SHOW_WARNING);
@@ -204,10 +218,11 @@ void LoginScreenClientImpl::OnRemoveUserWarningShown() {
 void LoginScreenClientImpl::RemoveUser(const AccountId& account_id) {
   ProfileMetrics::LogProfileDeleteUser(
       ProfileMetrics::DELETE_PROFILE_USER_MANAGER);
-  user_manager::UserManager::Get()->RemoveUser(account_id,
-                                               nullptr /*delegate*/);
-  if (chromeos::LoginDisplayHost::default_host())
-    chromeos::LoginDisplayHost::default_host()->UpdateAddUserButtonStatus();
+  user_manager::UserManager::Get()->RemoveUser(
+      account_id, user_manager::UserRemovalReason::LOCAL_USER_INITIATED,
+      /*delegate=*/nullptr);
+  if (ash::LoginDisplayHost::default_host())
+    ash::LoginDisplayHost::default_host()->UpdateAddUserButtonStatus();
 }
 
 void LoginScreenClientImpl::LaunchPublicSession(
@@ -229,28 +244,27 @@ void LoginScreenClientImpl::RequestPublicSessionKeyboardLayouts(
 
 void LoginScreenClientImpl::HandleAccelerator(
     ash::LoginAcceleratorAction action) {
-  if (chromeos::LoginDisplayHost::default_host())
-    chromeos::LoginDisplayHost::default_host()->HandleAccelerator(action);
+  if (ash::LoginDisplayHost::default_host())
+    ash::LoginDisplayHost::default_host()->HandleAccelerator(action);
 }
 
 void LoginScreenClientImpl::ShowAccountAccessHelpApp(
     gfx::NativeWindow parent_window) {
-  scoped_refptr<chromeos::HelpAppLauncher>(
-      new chromeos::HelpAppLauncher(parent_window))
-      ->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+  base::MakeRefCounted<ash::HelpAppLauncher>(parent_window)
+      ->ShowHelpTopic(ash::HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
 }
 
-void LoginScreenClientImpl::ShowParentAccessHelpApp(
-    gfx::NativeWindow parent_window) {
-  scoped_refptr<chromeos::HelpAppLauncher>(
-      new chromeos::HelpAppLauncher(parent_window))
-      ->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_PARENT_ACCESS_CODE);
+void LoginScreenClientImpl::ShowParentAccessHelpApp() {
+  // Don't pass in a parent window so that the size of the help dialog is not
+  // bounded by its parent window.
+  base::MakeRefCounted<ash::HelpAppLauncher>(/*parent_window=*/nullptr)
+      ->ShowHelpTopic(ash::HelpAppLauncher::HELP_PARENT_ACCESS_CODE);
 }
 
 void LoginScreenClientImpl::ShowLockScreenNotificationSettings() {
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       ProfileManager::GetActiveUserProfile(),
-      chromeos::settings::mojom::kSecurityAndSignInSubpagePath);
+      chromeos::settings::mojom::kSecurityAndSignInSubpagePathV2);
 }
 
 void LoginScreenClientImpl::OnFocusLeavingSystemTray(bool reverse) {
@@ -273,28 +287,39 @@ void LoginScreenClientImpl::LoadWallpaper(const AccountId& account_id) {
 }
 
 void LoginScreenClientImpl::SignOutUser() {
-  chromeos::ScreenLocker::default_screen_locker()->Signout();
+  ash::ScreenLocker::default_screen_locker()->Signout();
 }
 
 void LoginScreenClientImpl::CancelAddUser() {
-  chromeos::UserAddingScreen::Get()->Cancel();
+  ash::UserAddingScreen::Get()->Cancel();
 }
 
 void LoginScreenClientImpl::LoginAsGuest() {
-  DCHECK(!chromeos::ScreenLocker::default_screen_locker());
-  if (chromeos::LoginDisplayHost::default_host()) {
-    chromeos::LoginDisplayHost::default_host()
-        ->GetExistingUserController()
-        ->Login(chromeos::UserContext(user_manager::USER_TYPE_GUEST,
-                                      user_manager::GuestAccountId()),
-                chromeos::SigninSpecifics());
+  DCHECK(!ash::ScreenLocker::default_screen_locker());
+  if (ash::LoginDisplayHost::default_host()) {
+    ash::LoginDisplayHost::default_host()->GetExistingUserController()->Login(
+        chromeos::UserContext(user_manager::USER_TYPE_GUEST,
+                              user_manager::GuestAccountId()),
+        ash::SigninSpecifics());
+  }
+}
+
+void LoginScreenClientImpl::ShowGuestTosScreen() {
+  // Guet ToS screen is only shown if EULA was not already accepted.
+  if (ash::StartupUtils::IsEulaAccepted()) {
+    LoginAsGuest();
+    return;
+  }
+
+  DCHECK(!ash::ScreenLocker::default_screen_locker());
+  if (ash::LoginDisplayHost::default_host()) {
+    ash::LoginDisplayHost::default_host()->ShowGuestTosScreen();
   }
 }
 
 void LoginScreenClientImpl::OnMaxIncorrectPasswordAttempted(
     const AccountId& account_id) {
-  RecordReauthReason(account_id,
-                     chromeos::ReauthReason::INCORRECT_PASSWORD_ENTERED);
+  RecordReauthReason(account_id, ash::ReauthReason::INCORRECT_PASSWORD_ENTERED);
 }
 
 void LoginScreenClientImpl::SetPublicSessionKeyboardLayout(
@@ -317,9 +342,8 @@ void LoginScreenClientImpl::SetPublicSessionKeyboardLayout(
     dictionary->GetString("title", &title);
     input_method_item.title = title;
 
-    bool selected;
-    dictionary->GetBoolean("selected", &selected);
-    input_method_item.selected = selected;
+    input_method_item.selected =
+        dictionary->FindBoolKey("selected").value_or(false);
     result.push_back(std::move(input_method_item));
   }
   ash::LoginScreen::Get()->GetModel()->SetPublicSessionKeyboardLayouts(
@@ -327,8 +351,8 @@ void LoginScreenClientImpl::SetPublicSessionKeyboardLayout(
 }
 
 void LoginScreenClientImpl::OnUserActivity() {
-  if (chromeos::LoginDisplayHost::default_host()) {
-    chromeos::LoginDisplayHost::default_host()
+  if (ash::LoginDisplayHost::default_host()) {
+    ash::LoginDisplayHost::default_host()
         ->GetExistingUserController()
         ->ResetAutoLoginTimer();
   }
@@ -343,16 +367,15 @@ void LoginScreenClientImpl::OnParentAccessValidation(
 
 void LoginScreenClientImpl::ShowGaiaSigninInternal(
     const AccountId& prefilled_account) {
-  if (chromeos::LoginDisplayHost::default_host()) {
-    chromeos::LoginDisplayHost::default_host()->ShowGaiaDialog(
-        prefilled_account);
+  if (ash::LoginDisplayHost::default_host()) {
+    ash::LoginDisplayHost::default_host()->ShowGaiaDialog(prefilled_account);
   } else {
     const user_manager::User* user =
         user_manager::UserManager::Get()->FindUser(prefilled_account);
     Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
     DCHECK(session_manager::SessionManager::Get()->IsScreenLocked());
-    chromeos::InSessionPasswordSyncManager* password_sync_manager =
-        chromeos::InSessionPasswordSyncManagerFactory::GetForProfile(profile);
+    auto* password_sync_manager =
+        ash::InSessionPasswordSyncManagerFactory::GetForProfile(profile);
     if (password_sync_manager) {
       password_sync_manager->CreateAndShowDialog();
     }

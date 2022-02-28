@@ -15,6 +15,7 @@
 #include "SampleUtils.h"
 
 #include "utils/ComboRenderPipelineDescriptor.h"
+#include "utils/ScopedAutoreleasePool.h"
 #include "utils/SystemUtils.h"
 #include "utils/WGPUHelpers.h"
 
@@ -121,12 +122,12 @@ void initRender() {
 
     depthStencilView = CreateDefaultDepthStencilView(device);
 
-    utils::ComboRenderPipelineDescriptor2 descriptor;
+    utils::ComboRenderPipelineDescriptor descriptor;
 
     descriptor.vertex.module = vsModule;
     descriptor.vertex.bufferCount = 2;
     descriptor.cBuffers[0].arrayStride = sizeof(Particle);
-    descriptor.cBuffers[0].stepMode = wgpu::InputStepMode::Instance;
+    descriptor.cBuffers[0].stepMode = wgpu::VertexStepMode::Instance;
     descriptor.cBuffers[0].attributeCount = 2;
     descriptor.cAttributes[0].offset = offsetof(Particle, pos);
     descriptor.cAttributes[0].format = wgpu::VertexFormat::Float32x2;
@@ -143,7 +144,7 @@ void initRender() {
     descriptor.EnableDepthStencil(wgpu::TextureFormat::Depth24PlusStencil8);
     descriptor.cTargets[0].format = GetPreferredSwapChainTextureFormat();
 
-    renderPipeline = device.CreateRenderPipeline2(&descriptor);
+    renderPipeline = device.CreateRenderPipeline(&descriptor);
 }
 
 void initSim() {
@@ -166,11 +167,11 @@ void initSim() {
             particles : array<Particle>;
         };
         [[binding(0), group(0)]] var<uniform> params : SimParams;
-        [[binding(1), group(0)]] var<storage> particlesA : [[access(read)]] Particles;
-        [[binding(2), group(0)]] var<storage> particlesB : [[access(read_write)]] Particles;
+        [[binding(1), group(0)]] var<storage, read> particlesA : Particles;
+        [[binding(2), group(0)]] var<storage, read_write> particlesB : Particles;
 
         // https://github.com/austinEng/Project6-Vulkan-Flocking/blob/master/data/shaders/computeparticles/particle.comp
-        [[stage(compute)]]
+        [[stage(compute), workgroup_size(1)]]
         fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
             var index : u32 = GlobalInvocationID.x;
             if (index >= params.particleCount) {
@@ -253,8 +254,8 @@ void initSim() {
 
     wgpu::ComputePipelineDescriptor csDesc;
     csDesc.layout = pl;
-    csDesc.computeStage.module = module;
-    csDesc.computeStage.entryPoint = "main";
+    csDesc.compute.module = module;
+    csDesc.compute.entryPoint = "main";
     updatePipeline = device.CreateComputePipeline(&csDesc);
 
     for (uint32_t i = 0; i < 2; ++i) {
@@ -324,6 +325,7 @@ int main(int argc, const char* argv[]) {
     init();
 
     while (!ShouldQuit()) {
+        utils::ScopedAutoreleasePool pool;
         frame();
         utils::USleep(16000);
     }

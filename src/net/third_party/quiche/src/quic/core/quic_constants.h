@@ -28,7 +28,7 @@ const uint64_t kNumMicrosPerSecond = kNumMicrosPerMilli * kNumMillisPerSecond;
 // Default number of connections for N-connection emulation.
 const uint32_t kDefaultNumConnections = 2;
 // Default initial maximum size in bytes of a QUIC packet.
-const QuicByteCount kDefaultMaxPacketSize = 1350;
+const QuicByteCount kDefaultMaxPacketSize = 1250;
 // Default initial maximum size in bytes of a QUIC packet for servers.
 const QuicByteCount kDefaultServerMaxPacketSize = 1000;
 // Maximum transmission unit on Ethernet.
@@ -295,10 +295,14 @@ QUIC_EXPORT_PRIVATE extern const char* const kEPIDGoogleFrontEnd;
 QUIC_EXPORT_PRIVATE extern const char* const kEPIDGoogleFrontEnd0;
 
 // HTTP/3 Datagrams.
-enum : QuicDatagramFlowId {
-  kFirstDatagramFlowIdClient = 0,
-  kFirstDatagramFlowIdServer = 1,
-  kDatagramFlowIdIncrement = 2,
+enum : QuicDatagramContextId {
+  kFirstDatagramContextIdClient = 0,
+  kFirstDatagramContextIdServer = 1,
+  kDatagramContextIdIncrement = 2,
+};
+
+enum : uint64_t {
+  kHttpDatagramStreamIdDivisor = 4,
 };
 
 }  // namespace quic

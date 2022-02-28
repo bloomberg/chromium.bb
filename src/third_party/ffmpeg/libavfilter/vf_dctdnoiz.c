@@ -564,6 +564,9 @@ static int config_input(AVFilterLink *inlink)
                inlink->h - s->pr_height);
 
     max_slice_h = s->pr_height / ((s->bsize - 1) * 2);
+    if (max_slice_h == 0)
+        return AVERROR(EINVAL);
+
     s->nb_threads = FFMIN3(MAX_THREADS, ff_filter_get_nb_threads(ctx), max_slice_h);
     av_log(ctx, AV_LOG_DEBUG, "threads: [max=%d hmax=%d user=%d] => %d\n",
            MAX_THREADS, max_slice_h, ff_filter_get_nb_threads(ctx), s->nb_threads);
@@ -651,18 +654,11 @@ static av_cold int init(AVFilterContext *ctx)
     return 0;
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_BGR24, AV_PIX_FMT_RGB24,
-        AV_PIX_FMT_GBRP,
-        AV_PIX_FMT_NONE
-    };
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
-}
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_BGR24, AV_PIX_FMT_RGB24,
+    AV_PIX_FMT_GBRP,
+    AV_PIX_FMT_NONE
+};
 
 typedef struct ThreadData {
     float *src, *dst;
@@ -745,7 +741,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
             .src = s->cbuf[0][plane],
             .dst = s->cbuf[1][plane],
         };
-        ctx->internal->execute(ctx, filter_slice, &td, NULL, s->nb_threads);
+        ff_filter_execute(ctx, filter_slice, &td, NULL, s->nb_threads);
     }
     s->color_correlation(out->data, out->linesize[0],
                          s->cbuf[1], s->p_linesize,
@@ -811,7 +807,6 @@ static const AVFilterPad dctdnoiz_inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad dctdnoiz_outputs[] = {
@@ -819,18 +814,17 @@ static const AVFilterPad dctdnoiz_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
-AVFilter ff_vf_dctdnoiz = {
+const AVFilter ff_vf_dctdnoiz = {
     .name          = "dctdnoiz",
     .description   = NULL_IF_CONFIG_SMALL("Denoise frames using 2D DCT."),
     .priv_size     = sizeof(DCTdnoizContext),
     .init          = init,
     .uninit        = uninit,
-    .query_formats = query_formats,
-    .inputs        = dctdnoiz_inputs,
-    .outputs       = dctdnoiz_outputs,
+    FILTER_INPUTS(dctdnoiz_inputs),
+    FILTER_OUTPUTS(dctdnoiz_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .priv_class    = &dctdnoiz_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
 };

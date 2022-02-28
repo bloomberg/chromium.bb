@@ -25,7 +25,7 @@ class GitilesTestApi(recipe_test_api.RecipeTestApi):
                 new_files=['%s.py' % (chr(i + ord('a')))],
                 email='fake_%s@fake_%i.email.com' % (s, i),
             )
-            for i in xrange(n)
+            for i in range(n)
         ],
     }
     if cursor:
@@ -87,9 +87,15 @@ class GitilesTestApi(recipe_test_api.RecipeTestApi):
     return d
 
   def make_hash(self, *bases):
-    return hashlib.sha1(':'.join(bases)).hexdigest()
+    return hashlib.sha1(':'.join(bases).encode('utf-8')).hexdigest()
 
   def make_encoded_file(self, data):
+    value = None
+    # TODO(crbug.com/1227140): Clean up when py2 is no longer supported.
+    try:
+      value = base64.b64encode(data.encode('utf-8')).decode('utf-8')
+    except UnicodeDecodeError:  #pragma: nocover
+      value = base64.b64encode(data)
     return self.m.json.output({
-        'value': base64.b64encode(data),
+        'value': value,
     })

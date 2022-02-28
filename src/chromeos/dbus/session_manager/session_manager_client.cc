@@ -20,11 +20,9 @@
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/writable_shared_memory_region.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -56,6 +54,11 @@ using RetrievePolicyResponseType =
 constexpr char kEmptyAccountId[] = "";
 // The timeout used when starting the android container is 90 seconds
 constexpr int kStartArcTimeout = 90 * 1000;
+
+// TODO(b/205032502): Because upgrading the container from mini to full often
+// takes more than 25 seconds, increasing it to 1 minute for now. Once we have
+// the update metrics, update the timeout to a tighter value.
+constexpr int kUpgradeTimeoutMs = 60 * 1000;  // 60 seconds
 
 // 10MB. It's the current restriction enforced by session manager.
 const size_t kSharedMemoryDataSizeLimit = 10 * 1024 * 1024;
@@ -167,6 +170,10 @@ bool ReadSecretFromSharedMemory(base::ScopedFD fd,
 class SessionManagerClientImpl : public SessionManagerClient {
  public:
   SessionManagerClientImpl() = default;
+
+  SessionManagerClientImpl(const SessionManagerClientImpl&) = delete;
+  SessionManagerClientImpl& operator=(const SessionManagerClientImpl&) = delete;
+
   ~SessionManagerClientImpl() override = default;
 
   // SessionManagerClient overrides:
@@ -395,6 +402,25 @@ class SessionManagerClientImpl : public SessionManagerClient {
         login_manager::kSessionManagerHandleLockScreenDismissed);
   }
 
+  bool RequestBrowserDataMigration(
+      const cryptohome::AccountIdentifier& cryptohome_id) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerStartBrowserDataMigration);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(cryptohome_id.account_id());
+    dbus::ScopedDBusError error;
+    std::unique_ptr<dbus::Response> response =
+        blocking_method_caller_->CallMethodAndBlockWithError(&method_call,
+                                                             &error);
+    if (!response) {
+      LOG(ERROR) << "RequestBrowserDataMigration failed.";
+      return false;
+    }
+
+    return true;
+  }
+
   void RetrieveActiveSessions(ActiveSessionsCallback callback) override {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
@@ -508,13 +534,26 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   void SetFeatureFlagsForUser(
       const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::vector<std::string>& feature_flags) override {
+      const std::vector<std::string>& feature_flags,
+      const std::map<std::string, std::string>& origin_list_flags) override {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
         login_manager::kSessionManagerSetFeatureFlagsForUser);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(cryptohome_id.account_id());
     writer.AppendArrayOfStrings(feature_flags);
+
+    dbus::MessageWriter dict_writer(nullptr);
+    writer.OpenArray("{ss}", &dict_writer);
+    for (const auto& origin_entry : origin_list_flags) {
+      dbus::MessageWriter entry_writer(nullptr);
+      dict_writer.OpenDictEntry(&entry_writer);
+      entry_writer.AppendString(origin_entry.first);
+      entry_writer.AppendString(origin_entry.second);
+      dict_writer.CloseContainer(&entry_writer);
+    }
+    writer.CloseContainer(&dict_writer);
+
     session_manager_proxy_->CallMethod(&method_call,
                                        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                                        base::DoNothing());
@@ -534,6 +573,18 @@ class SessionManagerClientImpl : public SessionManagerClient {
     session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_INFINITE,
         base::BindOnce(&SessionManagerClientImpl::OnGetServerBackedStateKeys,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void GetPsmDeviceActiveSecret(
+      PsmDeviceActiveSecretCallback callback) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerGetPsmDeviceActiveSecret);
+
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SessionManagerClientImpl::OnGetPsmDeviceActiveSecret,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -566,7 +617,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     writer.AppendProtoAsArrayOfBytes(request);
 
     session_manager_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kUpgradeTimeoutMs,
         base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
@@ -709,18 +760,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
     std::move(callback).Run(response);
   }
 
-  // Called when `StorePolicyEx()` finishes.
-  void OnStorePolicyEx(base::TimeTicks store_policy_ex_start_time,
-                       VoidDBusMethodCallback callback,
-                       dbus::Response* response) {
-    base::TimeTicks now = base::TimeTicks::Now();
-    DCHECK(!store_policy_ex_start_time.is_null());
-    base::TimeDelta delta = now - store_policy_ex_start_time;
-    base::UmaHistogramMediumTimes("Enterprise.StorePolicy.Duration", delta);
-
-    OnVoidMethod(std::move(callback), response);
-  }
-
   // Non-blocking call to Session Manager to retrieve policy.
   void CallRetrievePolicy(const login_manager::PolicyDescriptor& descriptor,
                           RetrievePolicyCallback callback) {
@@ -784,17 +823,13 @@ class SessionManagerClientImpl : public SessionManagerClient {
     writer.AppendArrayOfBytes(
         reinterpret_cast<const uint8_t*>(policy_blob.data()),
         policy_blob.size());
-    // TODO(crbug/1155533) On grunt devices, initially storing device policy may
-    // take about 45s, which is longer than the default timeout for dbus calls.
-    // We need to investigate why this is happening. In the meantime, increase
-    // the timeout to make sure enrollment does not fail.
-    // Record the timing to find a reasonable timeout value.
-    base::TimeTicks store_policy_ex_start_time = base::TimeTicks::Now();
+    // The timeout is intentionally chosen to be that big because on some
+    // devices the operation is slow and a short timeout would lead to
+    // unnecessary enrollment failures. See crbug.com/1155533 for context.
     session_manager_proxy_->CallMethod(
-        &method_call, /*timeout_ms=*/90000,
-        base::BindOnce(&SessionManagerClientImpl::OnStorePolicyEx,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       store_policy_ex_start_time, std::move(callback)));
+        &method_call, /*timeout_ms=*/180000,
+        base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // Called when kSessionManagerRetrieveActiveSessions method is complete.
@@ -1013,6 +1048,27 @@ class SessionManagerClientImpl : public SessionManagerClient {
     std::move(callback).Run(state_keys);
   }
 
+  // Called when kSessionManagerGetPsmDeviceActiveSecret method is complete.
+  void OnGetPsmDeviceActiveSecret(PsmDeviceActiveSecretCallback callback,
+                                  dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to get response OnGetPsmDeviceActiveSecret.";
+      std::move(callback).Run(std::string());
+      return;
+    }
+
+    std::string psm_device_active_secret;
+    dbus::MessageReader reader(response);
+
+    if (!reader.PopString(&psm_device_active_secret)) {
+      LOG(ERROR) << "Received a non-string response from dbus.";
+      std::move(callback).Run(std::string());
+      return;
+    }
+
+    std::move(callback).Run(psm_device_active_secret);
+  }
+
   void OnGetArcStartTime(DBusMethodCallback<base::TimeTicks> callback,
                          dbus::Response* response) {
     if (!response) {
@@ -1090,8 +1146,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<SessionManagerClientImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SessionManagerClientImpl);
 };
 
 SessionManagerClient::SessionManagerClient() {

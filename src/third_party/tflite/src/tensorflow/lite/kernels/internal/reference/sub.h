@@ -47,11 +47,11 @@ inline void SubNonBroadcast(const ArithmeticParams& params,
 
 inline void SubNonBroadcast(const ArithmeticParams& params,
                             const RuntimeShape& input1_shape,
-                            const int32* input1_data,
+                            const int32_t* input1_data,
                             const RuntimeShape& input2_shape,
-                            const int32* input2_data,
+                            const int32_t* input2_data,
                             const RuntimeShape& output_shape,
-                            int32* output_data) {
+                            int32_t* output_data) {
   const int flat_size =
       MatchingElementsSize(input1_shape, input2_shape, output_shape);
   for (int i = 0; i < flat_size; ++i) {
@@ -65,10 +65,6 @@ inline void SubNonBroadcast(const ArithmeticParams& params,
 // dimensionality if the runtime code does a single loop over one dimension
 // that handles broadcasting as the base case. The code generator would then
 // generate max(D1, D2) nested for loops.
-// TODO(b/151345101): BroadcastSub is intentionally duplicated from
-// reference_ops.h. Once an optimized version is implemented and NdArrayDesc<T>
-// is no longer referenced in this file, move NdArrayDesc<T> from types.h to
-// reference_ops.h.
 template <int N = 5>
 inline void BroadcastSubSlow(const ArithmeticParams& params,
                              const RuntimeShape& input1_shape,
@@ -112,69 +108,12 @@ inline void BroadcastSubSlow(const ArithmeticParams& params,
 template <int N = 5>
 inline void BroadcastSubSlow(const ArithmeticParams& params,
                              const RuntimeShape& input1_shape,
-                             const uint8* input1_data,
+                             const int32_t* input1_data,
                              const RuntimeShape& input2_shape,
-                             const uint8* input2_data,
+                             const int32_t* input2_data,
                              const RuntimeShape& output_shape,
-                             uint8* output_data) {
-  ruy::profiler::ScopeLabel label("BroadcastSubSlow/uint8");
-  TFLITE_DCHECK_LE(input1_shape.DimensionsCount(), N);
-  TFLITE_DCHECK_LE(input2_shape.DimensionsCount(), N);
-  TFLITE_DCHECK_LE(output_shape.DimensionsCount(), N);
-  NdArrayDesc<N> desc1;
-  NdArrayDesc<N> desc2;
-  NdArrayDesc<N> output_desc;
-  NdArrayDescsForElementwiseBroadcast(input1_shape, input2_shape, &desc1,
-                                      &desc2);
-  CopyDimsToDesc(RuntimeShape::ExtendedShape(N, output_shape), &output_desc);
-
-  // In Tensorflow, the dimensions are canonically named (batch_number, row,
-  // col, channel), with extents (batches, height, width, depth), with the
-  // trailing dimension changing most rapidly (channels has the smallest stride,
-  // typically 1 element).
-  //
-  // In generated C code, we store arrays with the dimensions reversed. The
-  // first dimension has smallest stride.
-  //
-  // We name our variables by their Tensorflow convention, but generate C code
-  // nesting loops such that the innermost loop has the smallest stride for the
-  // best cache behavior.
-  auto sub_func = [&](int indexes[N]) {
-    const int32 input1_val =
-        params.input1_offset + input1_data[SubscriptToIndex(desc1, indexes)];
-    const int32 input2_val =
-        params.input2_offset + input2_data[SubscriptToIndex(desc2, indexes)];
-    const int32 shifted_input1_val = input1_val * (1 << params.left_shift);
-    const int32 shifted_input2_val = input2_val * (1 << params.left_shift);
-    const int32 scaled_input1_val =
-        MultiplyByQuantizedMultiplierSmallerThanOneExp(
-            shifted_input1_val, params.input1_multiplier, params.input1_shift);
-    const int32 scaled_input2_val =
-        MultiplyByQuantizedMultiplierSmallerThanOneExp(
-            shifted_input2_val, params.input2_multiplier, params.input2_shift);
-    const int32 raw_sub = scaled_input1_val - scaled_input2_val;
-    const int32 raw_output =
-        MultiplyByQuantizedMultiplierSmallerThanOneExp(
-            raw_sub, params.output_multiplier, params.output_shift) +
-        params.output_offset;
-    const int32 clamped_output =
-        std::min(params.quantized_activation_max,
-                 std::max(params.quantized_activation_min, raw_output));
-    output_data[SubscriptToIndex(output_desc, indexes)] =
-        static_cast<uint8>(clamped_output);
-  };
-  NDOpsHelper<N>(output_desc, sub_func);
-}
-
-template <int N = 5>
-inline void BroadcastSubSlow(const ArithmeticParams& params,
-                             const RuntimeShape& input1_shape,
-                             const int32* input1_data,
-                             const RuntimeShape& input2_shape,
-                             const int32* input2_data,
-                             const RuntimeShape& output_shape,
-                             int32* output_data) {
-  ruy::profiler::ScopeLabel label("BroadcastSubSlow/int32");
+                             int32_t* output_data) {
+  ruy::profiler::ScopeLabel label("BroadcastSubSlow/int32_t");
   TFLITE_DCHECK_LE(input1_shape.DimensionsCount(), N);
   TFLITE_DCHECK_LE(input2_shape.DimensionsCount(), N);
   TFLITE_DCHECK_LE(output_shape.DimensionsCount(), N);
@@ -207,14 +146,16 @@ inline void BroadcastSubSlow(const ArithmeticParams& params,
 }
 
 template <int N = 5>
-inline void BroadcastSubSlow(const ArithmeticParams& params,
-                             const RuntimeShape& input1_shape,
-                             const int8_t* input1_data,
-                             const RuntimeShape& input2_shape,
-                             const int8_t* input2_data,
-                             const RuntimeShape& output_shape,
-                             int8_t* output_data) {
-  ruy::profiler::ScopeLabel label("BroadcastSubSlow/int8");
+void BroadcastSubSlow(const ArithmeticParams& params,
+                      const RuntimeShape& input1_shape,
+                      const int64_t* input1_data,
+                      const RuntimeShape& input2_shape,
+                      const int64_t* input2_data,
+                      const RuntimeShape& output_shape, int64_t* output_data) {
+  ruy::profiler::ScopeLabel label("BroadcastSubSlow/int64_t");
+  TFLITE_DCHECK_LE(input1_shape.DimensionsCount(), N);
+  TFLITE_DCHECK_LE(input2_shape.DimensionsCount(), N);
+  TFLITE_DCHECK_LE(output_shape.DimensionsCount(), N);
   NdArrayDesc<N> desc1;
   NdArrayDesc<N> desc2;
   NdArrayDesc<N> output_desc;
@@ -234,28 +175,11 @@ inline void BroadcastSubSlow(const ArithmeticParams& params,
   // nesting loops such that the innermost loop has the smallest stride for the
   // best cache behavior.
   auto sub_func = [&](int indexes[N]) {
-    const int32_t input1_val =
-        params.input1_offset + input1_data[SubscriptToIndex(desc1, indexes)];
-    const int32_t input2_val =
-        params.input2_offset + input2_data[SubscriptToIndex(desc2, indexes)];
-    const int32_t shifted_input1_val = input1_val * (1 << params.left_shift);
-    const int32_t shifted_input2_val = input2_val * (1 << params.left_shift);
-    const int32_t scaled_input1_val =
-        MultiplyByQuantizedMultiplierSmallerThanOneExp(
-            shifted_input1_val, params.input1_multiplier, params.input1_shift);
-    const int32_t scaled_input2_val =
-        MultiplyByQuantizedMultiplierSmallerThanOneExp(
-            shifted_input2_val, params.input2_multiplier, params.input2_shift);
-    const int32_t raw_sub = scaled_input1_val - scaled_input2_val;
-    const int32_t raw_output =
-        MultiplyByQuantizedMultiplierSmallerThanOneExp(
-            raw_sub, params.output_multiplier, params.output_shift) +
-        params.output_offset;
-    const int32_t clamped_output =
-        std::min(params.quantized_activation_max,
-                 std::max(params.quantized_activation_min, raw_output));
     output_data[SubscriptToIndex(output_desc, indexes)] =
-        static_cast<int8_t>(clamped_output);
+        ActivationFunctionWithMinMax(
+            input1_data[SubscriptToIndex(desc1, indexes)] -
+                input2_data[SubscriptToIndex(desc2, indexes)],
+            params.int64_activation_min, params.int64_activation_max);
   };
   NDOpsHelper<N>(output_desc, sub_func);
 }
@@ -297,77 +221,136 @@ void BroadcastSubSlow(const ArithmeticParams& params,
   NDOpsHelper<N>(output_desc, sub_func);
 }
 
-// Element-wise Sub that can often be used for inner loop of broadcast sub as
-// well as the non-broadcast sub.
-inline void SubElementwise(int size, const ArithmeticParams& params,
-                           const uint8* input1_data, const uint8* input2_data,
-                           uint8* output_data) {
-  TFLITE_DCHECK_GT(params.input1_offset, -256);
-  TFLITE_DCHECK_GT(params.input2_offset, -256);
-  TFLITE_DCHECK_LT(params.input1_offset, 256);
-  TFLITE_DCHECK_LT(params.input2_offset, 256);
+template <int N = 5>
+inline void BroadcastSub16POTSlow(const ArithmeticParams& params,
+                                  const RuntimeShape& input1_shape,
+                                  const int16_t* input1_data,
+                                  const RuntimeShape& input2_shape,
+                                  const int16_t* input2_data,
+                                  const RuntimeShape& output_shape,
+                                  int16_t* output_data) {
+  ruy::profiler::ScopeLabel label("BroadcastSub16POTSlow/int16_t");
+  NdArrayDesc<N> desc1;
+  NdArrayDesc<N> desc2;
+  NdArrayDesc<N> output_desc;
+  NdArrayDescsForElementwiseBroadcast(input1_shape, input2_shape, &desc1,
+                                      &desc2);
+  CopyDimsToDesc(RuntimeShape::ExtendedShape(N, output_shape), &output_desc);
 
-  for (int i = 0; i < size; ++i) {
-    const int32 input1_val = params.input1_offset + input1_data[i];
-    const int32 input2_val = params.input2_offset + input2_data[i];
-    const int32 shifted_input1_val = input1_val * (1 << params.left_shift);
-    const int32 shifted_input2_val = input2_val * (1 << params.left_shift);
-    const int32 scaled_input1_val =
+  // In Tensorflow, the dimensions are canonically named (batch_number, row,
+  // col, channel), with extents (batches, height, width, depth), with the
+  // trailing dimension changing most rapidly (channels has the smallest stride,
+  // typically 1 element).
+  //
+  // In generated C code, we store arrays with the dimensions reversed. The
+  // first dimension has smallest stride.
+  //
+  // We name our variables by their Tensorflow convention, but generate C code
+  // nesting loops such that the innermost loop has the smallest stride for the
+  // best cache behavior.
+  auto sub_func = [&](int indexes[N]) {
+    const int32_t input1_val = input1_data[SubscriptToIndex(desc1, indexes)];
+    const int32_t input2_val = input2_data[SubscriptToIndex(desc2, indexes)];
+    const int32_t scaled_input1_val =
+        gemmlowp::RoundingDivideByPOT(input1_val, -params.input1_shift);
+    const int32_t scaled_input2_val =
+        gemmlowp::RoundingDivideByPOT(input2_val, -params.input2_shift);
+    const int32_t raw_output = scaled_input1_val - scaled_input2_val;
+    const int32_t clamped_output =
+        std::min(params.quantized_activation_max,
+                 std::max(params.quantized_activation_min, raw_output));
+    output_data[SubscriptToIndex(output_desc, indexes)] =
+        static_cast<int16_t>(clamped_output);
+  };
+  NDOpsHelper<N>(output_desc, sub_func);
+}
+
+template <typename T, int N = 5>
+void BroadcastQuantSubSlow(const ArithmeticParams& params,
+                           const RuntimeShape& input1_shape,
+                           const T* input1_data,
+                           const RuntimeShape& input2_shape,
+                           const T* input2_data,
+                           const RuntimeShape& output_shape, T* output_data) {
+  ruy::profiler::ScopeLabel label("BroadcastQuantSubSlow/T");
+  NdArrayDesc<N> desc1;
+  NdArrayDesc<N> desc2;
+  NdArrayDesc<N> output_desc;
+  NdArrayDescsForElementwiseBroadcast(input1_shape, input2_shape, &desc1,
+                                      &desc2);
+  CopyDimsToDesc(RuntimeShape::ExtendedShape(N, output_shape), &output_desc);
+
+  // In Tensorflow, the dimensions are canonically named (batch_number, row,
+  // col, channel), with extents (batches, height, width, depth), with the
+  // trailing dimension changing most rapidly (channels has the smallest stride,
+  // typically 1 element).
+  //
+  // In generated C code, we store arrays with the dimensions reversed. The
+  // first dimension has smallest stride.
+  //
+  // We name our variables by their Tensorflow convention, but generate C code
+  // nesting loops such that the innermost loop has the smallest stride for the
+  // best cache behavior.
+  auto sub_func = [&](int indexes[N]) {
+    const int32_t input1_val =
+        params.input1_offset + input1_data[SubscriptToIndex(desc1, indexes)];
+    const int32_t input2_val =
+        params.input2_offset + input2_data[SubscriptToIndex(desc2, indexes)];
+    const int32_t shifted_input1_val = input1_val * (1 << params.left_shift);
+    const int32_t shifted_input2_val = input2_val * (1 << params.left_shift);
+    const int32_t scaled_input1_val =
         MultiplyByQuantizedMultiplierSmallerThanOneExp(
             shifted_input1_val, params.input1_multiplier, params.input1_shift);
-    const int32 scaled_input2_val =
+    const int32_t scaled_input2_val =
         MultiplyByQuantizedMultiplierSmallerThanOneExp(
             shifted_input2_val, params.input2_multiplier, params.input2_shift);
-    const int32 raw_sub = scaled_input1_val - scaled_input2_val;
-    const int32 raw_output =
+    const int32_t raw_sub = scaled_input1_val - scaled_input2_val;
+    const int32_t raw_output =
         MultiplyByQuantizedMultiplierSmallerThanOneExp(
             raw_sub, params.output_multiplier, params.output_shift) +
         params.output_offset;
-    const int32 clamped_output =
+    const int32_t clamped_output =
         std::min(params.quantized_activation_max,
                  std::max(params.quantized_activation_min, raw_output));
-    output_data[i] = static_cast<uint8>(clamped_output);
-  }
+    output_data[SubscriptToIndex(output_desc, indexes)] =
+        static_cast<T>(clamped_output);
+  };
+  NDOpsHelper<N>(output_desc, sub_func);
 }
 
 // Element-wise add that can often be used for inner loop of broadcast add as
 // well as the non-broadcast add.
+template <typename T>
 inline void SubElementwise(int size, const ArithmeticParams& params,
-                           const int8_t* input1_data, const int8_t* input2_data,
-                           int8_t* output_data) {
-  const int32_t int8_max_value = std::numeric_limits<int8_t>::max();
-  TFLITE_DCHECK_GE(params.input1_offset, -1 * int8_max_value);
-  TFLITE_DCHECK_GE(params.input2_offset, -1 * int8_max_value);
-  TFLITE_DCHECK_LE(params.input1_offset, int8_max_value);
-  TFLITE_DCHECK_LE(params.input2_offset, int8_max_value);
-
+                           const T* input1_data, const T* input2_data,
+                           T* output_data) {
   for (int i = 0; i < size; ++i) {
-    const int32 input1_val = params.input1_offset + input1_data[i];
-    const int32 input2_val = params.input2_offset + input2_data[i];
-    const int32 shifted_input1_val = input1_val * (1 << params.left_shift);
-    const int32 shifted_input2_val = input2_val * (1 << params.left_shift);
-    const int32 scaled_input1_val =
+    const int32_t input1_val = params.input1_offset + input1_data[i];
+    const int32_t input2_val = params.input2_offset + input2_data[i];
+    const int32_t shifted_input1_val = input1_val * (1 << params.left_shift);
+    const int32_t shifted_input2_val = input2_val * (1 << params.left_shift);
+    const int32_t scaled_input1_val =
         MultiplyByQuantizedMultiplierSmallerThanOneExp(
             shifted_input1_val, params.input1_multiplier, params.input1_shift);
-    const int32 scaled_input2_val =
+    const int32_t scaled_input2_val =
         MultiplyByQuantizedMultiplierSmallerThanOneExp(
             shifted_input2_val, params.input2_multiplier, params.input2_shift);
-    const int32 raw_sub = scaled_input1_val - scaled_input2_val;
-    const int32 raw_output =
+    const int32_t raw_sub = scaled_input1_val - scaled_input2_val;
+    const int32_t raw_output =
         MultiplyByQuantizedMultiplierSmallerThanOneExp(
             raw_sub, params.output_multiplier, params.output_shift) +
         params.output_offset;
-    const int32 clamped_output =
+    const int32_t clamped_output =
         std::min(params.quantized_activation_max,
                  std::max(params.quantized_activation_min, raw_output));
-    output_data[i] = static_cast<int8_t>(clamped_output);
+    output_data[i] = static_cast<T>(clamped_output);
   }
 }
 
 inline void Sub(const ArithmeticParams& params,
-                const RuntimeShape& input1_shape, const uint8* input1_data,
-                const RuntimeShape& input2_shape, const uint8* input2_data,
-                const RuntimeShape& output_shape, uint8* output_data) {
+                const RuntimeShape& input1_shape, const uint8_t* input1_data,
+                const RuntimeShape& input2_shape, const uint8_t* input2_data,
+                const RuntimeShape& output_shape, uint8_t* output_data) {
   TFLITE_DCHECK_LE(params.quantized_activation_min,
                    params.quantized_activation_max);
   const int flat_size =
@@ -390,11 +373,27 @@ inline void Sub(const ArithmeticParams& params,
   const int flat_size =
       MatchingElementsSize(input1_shape, input2_shape, output_shape);
 
-  const int32_t int8_max_value = std::numeric_limits<int8_t>::max();
-  TFLITE_DCHECK_GE(params.input1_offset, -1 * int8_max_value);
-  TFLITE_DCHECK_GE(params.input2_offset, -1 * int8_max_value);
-  TFLITE_DCHECK_LE(params.input1_offset, int8_max_value);
-  TFLITE_DCHECK_LE(params.input2_offset, int8_max_value);
+  TFLITE_DCHECK_GE(params.input1_offset, -128);
+  TFLITE_DCHECK_GE(params.input2_offset, -128);
+  // offset = -quantization_params.zero_point in PrepareGeneralSubOp().
+  // So it's maximum can be 128 not 127.
+  TFLITE_DCHECK_LE(params.input1_offset, 128);
+  TFLITE_DCHECK_LE(params.input2_offset, 128);
+  SubElementwise(flat_size, params, input1_data, input2_data, output_data);
+}
+
+inline void Sub(const ArithmeticParams& params,
+                const RuntimeShape& input1_shape, const int16_t* input1_data,
+                const RuntimeShape& input2_shape, const int16_t* input2_data,
+                const RuntimeShape& output_shape, int16_t* output_data) {
+  TFLITE_DCHECK_LE(params.quantized_activation_min,
+                   params.quantized_activation_max);
+
+  const int flat_size =
+      MatchingElementsSize(input1_shape, input2_shape, output_shape);
+
+  TFLITE_DCHECK_EQ(params.input1_offset, 0);
+  TFLITE_DCHECK_EQ(params.input2_offset, 0);
   SubElementwise(flat_size, params, input1_data, input2_data, output_data);
 }
 
@@ -434,39 +433,42 @@ void Sub(const ArithmeticParams& params, const RuntimeShape& input1_shape,
   }
 }
 
-inline void SubWithActivation(const ArithmeticParams& params,
-                              const RuntimeShape& input1_shape,
-                              const int32* input1_data,
-                              const RuntimeShape& input2_shape,
-                              const int32* input2_data,
-                              const RuntimeShape& output_shape,
-                              int32* output_data) {
+inline void SetActivationMinMax(const ArithmeticParams& params,
+                                int32_t* activation_min,
+                                int32_t* activation_max) {
+  *activation_min = params.quantized_activation_min;
+  *activation_max = params.quantized_activation_max;
+}
+
+inline void SetActivationMinMax(const ArithmeticParams& params,
+                                float* activation_min, float* activation_max) {
+  *activation_min = params.float_activation_min;
+  *activation_max = params.float_activation_max;
+}
+
+inline void SetActivationMinMax(const ArithmeticParams& params,
+                                int64_t* activation_min,
+                                int64_t* activation_max) {
+  *activation_min = params.int64_activation_min;
+  *activation_max = params.int64_activation_max;
+}
+
+template <typename T>
+inline void SubWithActivation(
+    const ArithmeticParams& params, const RuntimeShape& input1_shape,
+    const T* input1_data, const RuntimeShape& input2_shape,
+    const T* input2_data, const RuntimeShape& output_shape, T* output_data) {
   ruy::profiler::ScopeLabel label("SubWithActivation");
   const int flat_size =
       MatchingElementsSize(input1_shape, input2_shape, output_shape);
+  T activation_min, activation_max;
+  SetActivationMinMax(params, &activation_min, &activation_max);
+
   for (int i = 0; i < flat_size; ++i) {
     output_data[i] = ActivationFunctionWithMinMax(
-        input1_data[i] - input2_data[i], params.quantized_activation_min,
-        params.quantized_activation_max);
+        input1_data[i] - input2_data[i], activation_min, activation_max);
   }
 }
-
-inline void SubWithActivation(const ArithmeticParams& params,
-                              const RuntimeShape& input1_shape,
-                              const float* input1_data,
-                              const RuntimeShape& input2_shape,
-                              const float* input2_data,
-                              const RuntimeShape& output_shape,
-                              float* output_data) {
-  const int flat_size =
-      MatchingElementsSize(input1_shape, input2_shape, output_shape);
-  for (int i = 0; i < flat_size; ++i) {
-    output_data[i] = ActivationFunctionWithMinMax(
-        input1_data[i] - input2_data[i], params.float_activation_min,
-        params.float_activation_max);
-  }
-}
-
 
 }  // namespace reference_ops
 }  // namespace tflite

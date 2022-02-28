@@ -1,3 +1,25 @@
+glmark2 2021.02 (20210215)
+==========================
+
+* Meson build system support for DRM/X11/Wayland builds.
+* Fix precision handling in various fragment shaders.
+* Fix spurious failures when using --validate.
+* Always draw to the correct, offscreen buffer when using --off-screen.
+* Don't prefer framebuffer formats with more than 8 bytes per component.
+* Add basic mouse and keyboard support on Wayland.
+
+glmark2 2020.04 (20200428)
+==========================
+
+* Port Wayland flavor to xdg-shell window management.
+* Support recent Android SDK/NDK versions.
+* Add support for Windows via WGL and ANGLE-EGL.
+* Support Raspberry Pi's dispmanx.
+* Use glad for GL headers and dynamic GL library loading.
+* Add --data-path command-line option to set data path at runtime.
+* Add 'nframes' scene option to limit the number of rendered frames.
+* Add F-Droid/fastlane metadata.
+
 glmark2 2017.07 (20170728)
 ==========================
 

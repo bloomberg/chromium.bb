@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/upload_data_stream.h"
@@ -27,6 +27,9 @@ class CronetUploadDataStream : public net::UploadDataStream {
  public:
   class Delegate {
    public:
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
+
     // Called once during initial setup on the network thread, called before
     // all other methods.
     virtual void InitializeOnNetworkThread(
@@ -51,12 +54,13 @@ class CronetUploadDataStream : public net::UploadDataStream {
    protected:
     Delegate() {}
     virtual ~Delegate() {}
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
   CronetUploadDataStream(Delegate* delegate, int64_t size);
+
+  CronetUploadDataStream(const CronetUploadDataStream&) = delete;
+  CronetUploadDataStream& operator=(const CronetUploadDataStream&) = delete;
+
   ~CronetUploadDataStream() override;
 
   // Failure is handled at the Java layer. These two success callbacks are
@@ -99,12 +103,10 @@ class CronetUploadDataStream : public net::UploadDataStream {
   // Set to false when a read starts, true when a rewind completes.
   bool at_front_of_stream_;
 
-  Delegate* const delegate_;
+  const raw_ptr<Delegate> delegate_;
 
   // Vends pointers on the network thread, though created on a client thread.
   base::WeakPtrFactory<CronetUploadDataStream> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CronetUploadDataStream);
 };
 
 }  // namespace cronet

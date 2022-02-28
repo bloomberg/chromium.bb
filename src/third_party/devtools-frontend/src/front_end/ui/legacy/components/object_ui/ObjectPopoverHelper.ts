@@ -28,30 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as UI from '../../legacy.js';
 import * as Components from '../utils/utils.js';
 
 import {CustomPreviewComponent} from './CustomPreviewComponent.js';
+import objectPopoverStyles from './objectPopover.css.js';
 import {ObjectPropertiesSection} from './ObjectPropertiesSection.js';
+import objectValueStyles from './objectValue.css.js';
 
 export class ObjectPopoverHelper {
-  _linkifier: Components.Linkifier.Linkifier|null;
-  _resultHighlightedAsDOM: boolean;
+  private readonly linkifier: Components.Linkifier.Linkifier|null;
+  private readonly resultHighlightedAsDOM: boolean;
   constructor(linkifier: Components.Linkifier.Linkifier|null, resultHighlightedAsDOM: boolean) {
-    this._linkifier = linkifier;
-    this._resultHighlightedAsDOM = resultHighlightedAsDOM;
+    this.linkifier = linkifier;
+    this.resultHighlightedAsDOM = resultHighlightedAsDOM;
   }
 
   dispose(): void {
-    if (this._resultHighlightedAsDOM) {
+    if (this.resultHighlightedAsDOM) {
       SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
     }
-    if (this._linkifier) {
-      this._linkifier.dispose();
+    if (this.linkifier) {
+      this.linkifier.dispose();
     }
   }
 
@@ -74,13 +74,11 @@ export class ObjectPopoverHelper {
       } else {
         popoverContentElement = document.createElement('div');
         popoverContentElement.classList.add('object-popover-content');
-        UI.Utils.appendStyle(
-            popoverContentElement, 'ui/legacy/components/object_ui/objectPopover.css', {enableLegacyPatching: false});
+        popover.registerCSSFiles([objectPopoverStyles]);
         const titleElement = popoverContentElement.createChild('div', 'monospace object-popover-title');
         titleElement.createChild('span').textContent = description;
         linkifier = new Components.Linkifier.Linkifier();
-        const section = new ObjectPropertiesSection(
-            result, '', linkifier, undefined, undefined, undefined, true /* showOverflow */);
+        const section = new ObjectPropertiesSection(result, '', linkifier, true /* showOverflow */);
         section.element.classList.add('object-popover-tree');
         section.titleLessMode();
         popoverContentElement.appendChild(section.element);
@@ -94,10 +92,7 @@ export class ObjectPopoverHelper {
 
     popoverContentElement = document.createElement('span');
     popoverContentElement.dataset.stableNameForTest = 'object-popover-content';
-    UI.Utils.appendStyle(
-        popoverContentElement, 'ui/legacy/components/object_ui/objectValue.css', {enableLegacyPatching: false});
-    UI.Utils.appendStyle(
-        popoverContentElement, 'ui/legacy/components/object_ui/objectPopover.css', {enableLegacyPatching: false});
+    popover.registerCSSFiles([objectValueStyles, objectPopoverStyles]);
     const valueElement = popoverContentElement.createChild('span', 'monospace object-value-' + result.type);
     valueElement.style.whiteSpace = 'pre';
 

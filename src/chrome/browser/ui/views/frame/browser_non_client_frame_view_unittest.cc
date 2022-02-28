@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -25,6 +26,10 @@ class BrowserNonClientFrameViewTest : public TestWithBrowserView {
   explicit BrowserNonClientFrameViewTest(Browser::Type type)
       : TestWithBrowserView(type), frame_view_(nullptr) {}
 
+  BrowserNonClientFrameViewTest(const BrowserNonClientFrameViewTest&) = delete;
+  BrowserNonClientFrameViewTest& operator=(
+      const BrowserNonClientFrameViewTest&) = delete;
+
   // TestWithBrowserView override:
   void SetUp() override {
 #if defined(OS_WIN)
@@ -40,10 +45,7 @@ class BrowserNonClientFrameViewTest : public TestWithBrowserView {
 
  protected:
   // Owned by the browser view.
-  BrowserNonClientFrameView* frame_view_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewTest);
+  raw_ptr<BrowserNonClientFrameView> frame_view_;
 };
 
 class BrowserNonClientFrameViewPopupTest

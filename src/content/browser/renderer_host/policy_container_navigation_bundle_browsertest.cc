@@ -212,15 +212,14 @@ IN_PROC_BROWSER_TEST_F(PolicyContainerNavigationBundleBrowserTest,
 // are ignored in favor of the policies from the entry.
 IN_PROC_BROWSER_TEST_F(PolicyContainerNavigationBundleBrowserTest,
                        FinalPoliciesAboutSrcDocWithParentAndHistory) {
-  RenderFrameHostImpl* root = root_frame_host();
-
   // First navigate to a local scheme with non-default policies. To do that, we
   // first navigate to a document with a public address space, then have that
   // document navigate itself to `about:blank`. The final blank document
   // inherits its policies from the first document, and stores them in its
   // frame navigation entry for restoring later.
   EXPECT_TRUE(NavigateToURL(shell()->web_contents(), PublicUrl()));
-  EXPECT_TRUE(NavigateToURLFromRenderer(root, AboutBlankUrl()));
+  EXPECT_TRUE(NavigateToURLFromRenderer(root_frame_host(), AboutBlankUrl()));
+  RenderFrameHostImpl* root = root_frame_host();
 
   // Embed another frame with different policies, to use as the "parent".
   std::string script_template = R"(
@@ -306,8 +305,12 @@ IN_PROC_BROWSER_TEST_F(PolicyContainerNavigationBundleBrowserTest,
   EXPECT_TRUE(NavigateToURL(tab, PublicUrl()));
   EXPECT_EQ(PublicUrl(), tab->GetLastCommittedURL());
 
-  // Navigate to about:blank to put policies to navigation entry.
-  EXPECT_TRUE(NavigateToURLFromRenderer(root_frame_host(), AboutBlankUrl()));
+  // Navigate by doing a client-redirect (through renderer-initiated
+  // replacement) to about:blank to put policies to navigation entry.
+  TestNavigationObserver navigation_observer(shell()->web_contents());
+  EXPECT_TRUE(
+      ExecJs(root_frame_host(), "window.location.replace('about:blank');"));
+  navigation_observer.WaitForNavigationFinished();
   EXPECT_EQ(AboutBlankUrl(), tab->GetLastCommittedURL());
 
   // Now reload to original url and ensure that history entry policies stored

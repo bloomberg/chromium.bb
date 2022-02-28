@@ -6,12 +6,15 @@
 
 #include "core/fxcrt/fx_coordinates.h"
 
+#include <math.h>
+
 #include <utility>
 
 #include "build/build_config.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_safe_types.h"
-#include "third_party/base/stl_util.h"
+#include "core/fxcrt/fx_system.h"
+#include "third_party/base/cxx17_backports.h"
 
 #ifndef NDEBUG
 #include <ostream>
@@ -59,6 +62,21 @@ static_assert(sizeof(FX_RECT::bottom) == sizeof(RECT::bottom),
 
 }  // namespace
 
+template <>
+float CFX_VTemplate<float>::Length() const {
+  return FXSYS_sqrt2(x, y);
+}
+
+template <>
+void CFX_VTemplate<float>::Normalize() {
+  float fLen = Length();
+  if (fLen < 0.0001f)
+    return;
+
+  x /= fLen;
+  y /= fLen;
+}
+
 bool FX_RECT::Valid() const {
   FX_SAFE_INT32 w = right;
   FX_SAFE_INT32 h = bottom;
@@ -87,9 +105,35 @@ void FX_RECT::Intersect(const FX_RECT& src) {
   }
 }
 
+FX_RECT FX_RECT::SwappedClipBox(int width,
+                                int height,
+                                bool bFlipX,
+                                bool bFlipY) const {
+  FX_RECT rect;
+  if (bFlipY) {
+    rect.left = height - top;
+    rect.right = height - bottom;
+  } else {
+    rect.left = top;
+    rect.right = bottom;
+  }
+  if (bFlipX) {
+    rect.top = width - left;
+    rect.bottom = width - right;
+  } else {
+    rect.top = left;
+    rect.bottom = right;
+  }
+  rect.Normalize();
+  return rect;
+}
+
 // Y-axis runs the opposite way in FX_RECT.
 CFX_FloatRect::CFX_FloatRect(const FX_RECT& rect)
     : left(rect.left), bottom(rect.top), right(rect.right), top(rect.bottom) {}
+
+CFX_FloatRect::CFX_FloatRect(const CFX_PointF& point)
+    : left(point.x), bottom(point.y), right(point.x), top(point.y) {}
 
 // static
 CFX_FloatRect CFX_FloatRect::GetBBox(const CFX_PointF* pPoints, int nPoints) {
@@ -369,7 +413,7 @@ float CFX_Matrix::GetXUnit() const {
     return (a > 0 ? a : -a);
   if (a == 0)
     return (b > 0 ? b : -b);
-  return sqrt(a * a + b * b);
+  return FXSYS_sqrt2(a, b);
 }
 
 float CFX_Matrix::GetYUnit() const {
@@ -377,7 +421,7 @@ float CFX_Matrix::GetYUnit() const {
     return (d > 0 ? d : -d);
   if (d == 0)
     return (c > 0 ? c : -c);
-  return sqrt(c * c + d * d);
+  return FXSYS_sqrt2(c, d);
 }
 
 CFX_FloatRect CFX_Matrix::GetUnitRect() const {
@@ -387,7 +431,7 @@ CFX_FloatRect CFX_Matrix::GetUnitRect() const {
 float CFX_Matrix::TransformXDistance(float dx) const {
   float fx = a * dx;
   float fy = b * dx;
-  return sqrt(fx * fx + fy * fy);
+  return FXSYS_sqrt2(fx, fy);
 }
 
 float CFX_Matrix::TransformDistance(float distance) const {

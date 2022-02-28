@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
@@ -95,6 +96,11 @@ class SettingsResetterTestDelegate
  public:
   explicit SettingsResetterTestDelegate(int* num_resets)
       : num_resets_(num_resets) {}
+
+  SettingsResetterTestDelegate(const SettingsResetterTestDelegate&) = delete;
+  SettingsResetterTestDelegate& operator=(const SettingsResetterTestDelegate&) =
+      delete;
+
   ~SettingsResetterTestDelegate() override = default;
 
   void FetchDefaultSettings(
@@ -113,9 +119,7 @@ class SettingsResetterTestDelegate
   }
 
  private:
-  int* num_resets_;
-
-  DISALLOW_COPY_AND_ASSIGN(SettingsResetterTestDelegate);
+  raw_ptr<int> num_resets_;
 };
 
 // Indicates the possible values to be written to the registry for cleanup

@@ -30,8 +30,6 @@
 
 // Type and function utilities for implementing parameterized tests.
 
-// GOOGLETEST_CM0001 DO NOT DELETE
-
 #ifndef GOOGLETEST_INCLUDE_GTEST_INTERNAL_GTEST_PARAM_UTIL_H_
 #define GOOGLETEST_INCLUDE_GTEST_INTERNAL_GTEST_PARAM_UTIL_H_
 
@@ -478,7 +476,7 @@ class ParameterizedTestSuiteInfoBase {
 //
 // Report a the name of a test_suit as safe to ignore
 // as the side effect of construction of this type.
-struct MarkAsIgnored {
+struct GTEST_API_ MarkAsIgnored {
   explicit MarkAsIgnored(const char* test_suite);
 };
 
@@ -654,7 +652,7 @@ class ParameterizedTestSuiteInfo : public ParameterizedTestSuiteInfoBase {
 
     // Check for invalid characters
     for (std::string::size_type index = 0; index < name.size(); ++index) {
-      if (!isalnum(name[index]) && name[index] != '_')
+      if (!IsAlNum(name[index]) && name[index] != '_')
         return false;
     }
 

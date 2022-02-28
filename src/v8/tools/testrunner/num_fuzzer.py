@@ -20,7 +20,7 @@ from testrunner.testproc import fuzzer
 from testrunner.testproc.base import TestProcProducer
 from testrunner.testproc.combiner import CombinerProc
 from testrunner.testproc.execution import ExecutionProc
-from testrunner.testproc.expectation import ForgiveTimeoutProc
+from testrunner.testproc.expectation import ExpectationProc
 from testrunner.testproc.filter import StatusFileFilterProc, NameFilterProc
 from testrunner.testproc.loader import LoadProc
 from testrunner.testproc.progress import ResultsTracker
@@ -63,6 +63,11 @@ class NumFuzzer(base_runner.BaseTestRunner):
                       help="probability [0-10] of adding --random-gc-interval "
                            "flag to the test")
 
+    # Stress stack size
+    parser.add_option("--stress-stack-size", default=0, type="int",
+                      help="probability [0-10] of adding --stack-size "
+                           "flag to the test")
+
     # Stress tasks
     parser.add_option("--stress-delay-tasks", default=0, type="int",
                       help="probability [0-10] of adding --stress-delay-tasks "
@@ -71,13 +76,16 @@ class NumFuzzer(base_runner.BaseTestRunner):
                       help="probability [0-10] of adding --thread-pool-size "
                            "flag to the test")
 
-    # Stress deopt
+    # Stress compiler
     parser.add_option("--stress-deopt", default=0, type="int",
                       help="probability [0-10] of adding --deopt-every-n-times "
                            "flag to the test")
     parser.add_option("--stress-deopt-min", default=1, type="int",
                       help="extends --stress-deopt to have minimum interval "
                            "between deopt points")
+    parser.add_option("--stress-interrupt-budget", default=0, type="int",
+                      help="probability [0-10] of adding the --interrupt-budget "
+                           "flag to the test")
 
     # Combine multiple tests
     parser.add_option("--combine-tests", default=False, action="store_true",
@@ -119,7 +127,11 @@ class NumFuzzer(base_runner.BaseTestRunner):
 
   def _runner_flags(self):
     """Extra default flags specific to the test runner implementation."""
-    return ['--no-abort-on-contradictory-flags']
+    return [
+      '--no-abort-on-contradictory-flags',
+      '--testing-d8-test-runner',
+      '--no-fail'
+    ]
 
   def _get_statusfile_variables(self, options):
     variables = (
@@ -133,6 +145,7 @@ class NumFuzzer(base_runner.BaseTestRunner):
                              options.stress_compaction,
                              options.stress_gc,
                              options.stress_delay_tasks,
+                             options.stress_stack_size,
                              options.stress_thread_pool_size])),
     })
     return variables
@@ -154,7 +167,7 @@ class NumFuzzer(base_runner.BaseTestRunner):
       # TODO(majeski): Improve sharding when combiner is present. Maybe select
       # different random seeds for shards instead of splitting tests.
       self._create_shard_proc(options),
-      ForgiveTimeoutProc(),
+      ExpectationProc(),
       combiner,
       self._create_fuzzer(fuzzer_rng, options),
       sigproc,
@@ -221,6 +234,7 @@ class NumFuzzer(base_runner.BaseTestRunner):
     add('marking', options.stress_marking)
     add('scavenge', options.stress_scavenge)
     add('gc_interval', options.stress_gc)
+    add('stack', options.stress_stack_size)
     add('threads', options.stress_thread_pool_size)
     add('delay', options.stress_delay_tasks)
     add('deopt', options.stress_deopt, options.stress_deopt_min)

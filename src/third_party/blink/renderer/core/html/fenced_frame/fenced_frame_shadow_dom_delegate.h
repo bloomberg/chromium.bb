@@ -12,6 +12,11 @@ namespace blink {
 
 class KURL;
 
+// This is one of the underlying implementations of the `HTMLFencedFrameElement`
+// interface. It can be activated by enabling the
+// `blink::features::kFencedFrames` feature, and setting its feature param value
+// to `FencedFramesImplementationType::kShadowDOM`. See the documentation above
+// `FencedFrameDelegate`.
 class CORE_EXPORT FencedFrameShadowDOMDelegate
     : public HTMLFencedFrameElement::FencedFrameDelegate {
  public:
@@ -19,6 +24,9 @@ class CORE_EXPORT FencedFrameShadowDOMDelegate
 
   void DidGetInserted() override;
   void Navigate(const KURL&) override;
+
+ private:
+  void AddUserAgentShadowContent(ShadowRoot&);
 };
 
 }  // namespace blink

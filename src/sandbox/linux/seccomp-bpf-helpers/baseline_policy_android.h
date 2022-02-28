@@ -7,7 +7,6 @@
 
 #include <sys/types.h>
 
-#include "base/macros.h"
 #include "sandbox/linux/seccomp-bpf-helpers/baseline_policy.h"
 #include "sandbox/sandbox_export.h"
 
@@ -26,6 +25,11 @@ namespace sandbox {
 class SANDBOX_EXPORT BaselinePolicyAndroid : public BaselinePolicy {
  public:
   BaselinePolicyAndroid();
+  explicit BaselinePolicyAndroid(bool allow_sched_affinity);
+
+  BaselinePolicyAndroid(const BaselinePolicyAndroid&) = delete;
+  BaselinePolicyAndroid& operator=(const BaselinePolicyAndroid&) = delete;
+
   ~BaselinePolicyAndroid() override;
 
   // sandbox::BaselinePolicy:
@@ -33,7 +37,7 @@ class SANDBOX_EXPORT BaselinePolicyAndroid : public BaselinePolicy {
       int system_call_number) const override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BaselinePolicyAndroid);
+  bool allow_sched_affinity_ = false;
 };
 
 }  // namespace sandbox

@@ -21,10 +21,11 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
@@ -216,7 +217,7 @@ class CompositorImpl::AndroidHostDisplayClient : public viz::HostDisplayClient {
   }
 
  private:
-  CompositorImpl* compositor_;
+  raw_ptr<CompositorImpl> compositor_;
 };
 
 class CompositorImpl::ScopedCachedBackBuffer {
@@ -291,18 +292,14 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       client_(client),
       needs_animate_(false),
       pending_frames_(0U),
-      layer_tree_frame_sink_request_pending_(false) {
+      layer_tree_frame_sink_request_pending_(false),
+      lock_manager_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(client);
 
   SetRootWindow(root_window);
-
-  // Listen to display density change events and update painted device scale
-  // factor accordingly.
-  display::Screen::GetScreen()->AddObserver(this);
 }
 
 CompositorImpl::~CompositorImpl() {
-  display::Screen::GetScreen()->RemoveObserver(this);
   DetachRootWindow();
   // Clean-up any surface references.
   SetSurface(nullptr, false);
@@ -419,10 +416,6 @@ void CompositorImpl::CreateLayerTreeHost() {
     settings.initial_debug_state.show_debug_borders.set();
   settings.single_thread_proxy_scheduler = true;
   settings.use_painted_device_scale_factor = true;
-  // TODO(crbug.com/933846): LatencyRecovery is causing jank on Android. Disable
-  // for now, with a plan to disable more widely once viz launches.
-  settings.enable_impl_latency_recovery = false;
-  settings.enable_main_latency_recovery = false;
 
   animation_host_ = cc::AnimationHost::CreateMainInstance();
 
@@ -430,7 +423,8 @@ void CompositorImpl::CreateLayerTreeHost() {
   params.client = this;
   params.task_graph_runner =
       CompositorDependenciesAndroid::Get().GetTaskGraphRunner();
-  params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+  params.main_task_runner =
+      content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput});
   params.settings = &settings;
   params.mutator_host = animation_host_.get();
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, std::move(params));
@@ -492,6 +486,7 @@ void CompositorImpl::TearDownDisplayAndUnregisterRootFrameSink() {
   // before it can be reset.
   display_private_.reset();
   GetHostFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
+  display_client_.reset();
 }
 
 void CompositorImpl::RegisterRootFrameSink() {
@@ -681,6 +676,14 @@ bool CompositorImpl::SupportsETC1NonPowerOfTwo() const {
   return gpu_capabilities_.texture_format_etc1_npot;
 }
 
+std::unique_ptr<ui::CompositorLock> CompositorImpl::GetCompositorLock(
+    base::TimeDelta timeout) {
+  if (!host_)
+    return nullptr;
+  return lock_manager_.GetCompositorLock(/*client=*/nullptr, timeout,
+                                         host_->DeferMainFrameUpdate());
+}
+
 void CompositorImpl::DidSubmitCompositorFrame() {
   TRACE_EVENT0("compositor", "CompositorImpl::DidSubmitCompositorFrame");
   pending_frames_++;
@@ -699,7 +702,7 @@ void CompositorImpl::DidLoseLayerTreeFrameSink() {
   client_->DidSwapFrame(0);
 }
 
-void CompositorImpl::DidCommit(base::TimeTicks) {
+void CompositorImpl::DidCommit(base::TimeTicks, base::TimeTicks) {
   root_window_->OnCompositingDidCommit();
 }
 
@@ -812,7 +815,7 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   pending_frames_ = 0;
   gpu_capabilities_ = context_provider->ContextCapabilities();
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::ThreadTaskRunnerHandle::Get();
+      content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput});
 
   auto root_params = viz::mojom::RootCompositorFrameSinkParams::New();
 
@@ -854,6 +857,15 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   GetHostFrameSinkManager()->CreateRootCompositorFrameSink(
       std::move(root_params));
 
+  display_private_->SetSwapCompletionCallbackEnabled(
+      enable_swap_completion_callbacks_);
+  display_private_->SetDisplayVisible(true);
+  display_private_->Resize(size_);
+  display_private_->SetDisplayColorSpaces(display_color_spaces_);
+  display_private_->SetVSyncPaused(vsync_paused_);
+  display_private_->SetSupportedRefreshRates(
+      root_window_->GetSupportedRefreshRates());
+
   // Create LayerTreeFrameSink with the browser end of CompositorFrameSink.
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
   params.compositor_task_runner = task_runner;
@@ -866,12 +878,6 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
           std::move(context_provider), nullptr, &params);
   host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
-  display_private_->SetDisplayVisible(true);
-  display_private_->Resize(size_);
-  display_private_->SetDisplayColorSpaces(display_color_spaces_);
-  display_private_->SetVSyncPaused(vsync_paused_);
-  display_private_->SetSupportedRefreshRates(
-      root_window_->GetSupportedRefreshRates());
 }
 
 viz::LocalSurfaceId CompositorImpl::GenerateLocalSurfaceId() {
@@ -928,6 +934,16 @@ void CompositorImpl::PreserveChildSurfaceControls() {
 void CompositorImpl::RequestPresentationTimeForNextFrame(
     PresentationTimeCallback callback) {
   host_->RequestPresentationTimeForNextFrame(std::move(callback));
+}
+
+void CompositorImpl::SetDidSwapBuffersCallbackEnabled(bool enable) {
+  if (enable_swap_completion_callbacks_ == enable)
+    return;
+  enable_swap_completion_callbacks_ = enable;
+  if (display_private_) {
+    display_private_->SetSwapCompletionCallbackEnabled(
+        enable_swap_completion_callbacks_);
+  }
 }
 
 void CompositorImpl::DecrementPendingReadbacks() {

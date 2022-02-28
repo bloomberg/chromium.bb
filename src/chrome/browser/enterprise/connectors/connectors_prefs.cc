@@ -8,7 +8,7 @@
 
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
-#include "chrome/browser/enterprise/connectors/file_system/access_token_fetcher.h"
+#include "chrome/browser/enterprise/connectors/file_system/account_info_utils.h"
 #include "chrome/browser/enterprise/connectors/service_provider_config.h"
 
 #include "components/prefs/pref_registry_simple.h"
@@ -23,6 +23,8 @@ const char kOnFileAttachedPref[] = "enterprise_connectors.on_file_attached";
 const char kOnFileDownloadedPref[] = "enterprise_connectors.on_file_downloaded";
 
 const char kOnBulkDataEntryPref[] = "enterprise_connectors.on_bulk_data_entry";
+
+const char kOnPrintPref[] = "enterprise_connectors.on_print";
 
 const char kOnSecurityEventPref[] = "enterprise_connectors.on_security_event";
 
@@ -39,12 +41,9 @@ const char kOnFileDownloadedScopePref[] =
     "enterprise_connectors.scope.on_file_downloaded";
 const char kOnBulkDataEntryScopePref[] =
     "enterprise_connectors.scope.on_bulk_data_entry";
+const char kOnPrintScopePref[] = "enterprise_connectors.scope.on_print";
 const char kOnSecurityEventScopePref[] =
     "enterprise_connectors.scope.on_security_event";
-
-// Template to store the Box folder_id for caching purposes
-constexpr char kFileSystemUploadFolderIdPref[] =
-    "enterprise_connectors.file_system.box.folder_id";
 
 namespace {
 
@@ -71,10 +70,12 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kOnFileAttachedPref);
   registry->RegisterListPref(kOnFileDownloadedPref);
   registry->RegisterListPref(kOnBulkDataEntryPref);
+  registry->RegisterListPref(kOnPrintPref);
   registry->RegisterListPref(kOnSecurityEventPref);
   registry->RegisterIntegerPref(kOnFileAttachedScopePref, 0);
   registry->RegisterIntegerPref(kOnFileDownloadedScopePref, 0);
   registry->RegisterIntegerPref(kOnBulkDataEntryScopePref, 0);
+  registry->RegisterIntegerPref(kOnPrintScopePref, 0);
   registry->RegisterIntegerPref(kOnSecurityEventScopePref, 0);
   registry->RegisterListPref(kContextAwareAccessSignalsAllowlistPref);
 

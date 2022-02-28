@@ -23,8 +23,7 @@ class ClientHintsBrowserTest : public WebLayerBrowserTest {
     WebLayerBrowserTest::SetUpOnMainThread();
     BrowserProcess::GetInstance()
         ->GetNetworkQualityTracker()
-        ->ReportRTTsAndThroughputForTesting(
-            base::TimeDelta::FromMilliseconds(500), 100);
+        ->ReportRTTsAndThroughputForTesting(base::Milliseconds(500), 100);
 
     EXPECT_TRUE(embedded_test_server()->Start());
   }
@@ -32,8 +31,7 @@ class ClientHintsBrowserTest : public WebLayerBrowserTest {
   void SetAcceptClientHints() {
     NavigateAndWaitForCompletion(
         embedded_test_server()->GetURL(
-            "/set-header?Accept-CH: device-memory,rtt&Accept-CH-Lifetime: "
-            "86400"),
+            "/set-header?Accept-CH: device-memory,rtt"),
         shell());
   }
 

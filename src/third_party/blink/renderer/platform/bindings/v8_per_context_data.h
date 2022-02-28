@@ -37,8 +37,9 @@
 #include "gin/public/gin_embedders.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -59,6 +60,8 @@ class PLATFORM_EXPORT V8PerContextData final
     : public GarbageCollected<V8PerContextData> {
  public:
   explicit V8PerContextData(v8::Local<v8::Context>);
+  V8PerContextData(const V8PerContextData&) = delete;
+  V8PerContextData& operator=(const V8PerContextData&) = delete;
 
   static V8PerContextData* From(v8::Local<v8::Context>);
 
@@ -75,7 +78,7 @@ class PLATFORM_EXPORT V8PerContextData final
   v8::Local<v8::Object> CreateWrapperFromCache(const WrapperTypeInfo* type) {
     auto it = wrapper_boilerplates_.find(type);
     return it != wrapper_boilerplates_.end()
-               ? it->value.Get()->Clone()
+               ? it->value->Clone()
                : CreateWrapperFromCacheSlowCase(type);
   }
 
@@ -83,7 +86,7 @@ class PLATFORM_EXPORT V8PerContextData final
   // context-dependent properties are installed).
   v8::Local<v8::Function> ConstructorForType(const WrapperTypeInfo* type) {
     auto it = constructor_map_.find(type);
-    return it != constructor_map_.end() ? it->value.NewLocal(isolate_)
+    return it != constructor_map_.end() ? it->value.Get(isolate_)
                                         : ConstructorForTypeSlowCase(type);
   }
 
@@ -151,8 +154,6 @@ class PLATFORM_EXPORT V8PerContextData final
 
   using DataMap = HeapHashMap<const char*, Member<Data>>;
   DataMap data_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(V8PerContextData);
 };
 
 }  // namespace blink

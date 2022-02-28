@@ -13,7 +13,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/ignore_result.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -28,8 +28,8 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/core/file_type_policies.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/content/common/file_type_policies.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "crypto/sha2.h"
 #include "extensions/buildflags/buildflags.h"
 

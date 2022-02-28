@@ -56,7 +56,7 @@ struct Holder {
     auto surface = std::make_unique<exo::Surface>();
     surface->Attach(buffer.get());
     auto sub_surface = std::make_unique<exo::SubSurface>(surface.get(), parent);
-    sub_surface->SetPosition(bounds.origin());
+    sub_surface->SetPosition(gfx::PointF(bounds.origin()));
 
     auto* surface_ptr = surface.get();
     sub_surfaces.push_back(std::make_tuple<>(
@@ -142,6 +142,13 @@ ShellSurfaceBuilder& ShellSurfaceBuilder::SetCanMinimize(bool can_minimize) {
   return *this;
 }
 
+ShellSurfaceBuilder& ShellSurfaceBuilder::SetMaximumSize(
+    const gfx::Size& size) {
+  DCHECK(!built_);
+  max_size_ = size;
+  return *this;
+}
+
 ShellSurfaceBuilder& ShellSurfaceBuilder::SetDisableMovement() {
   DCHECK(!built_);
   disable_movement_ = true;
@@ -189,6 +196,9 @@ std::unique_ptr<ShellSurface> ShellSurfaceBuilder::BuildShellSurface() {
 
   if (disable_movement_)
     shell_surface->DisableMovement();
+
+  if (!max_size_.IsEmpty())
+    shell_surface->SetMaximumSize(max_size_);
 
   if (commit_on_build_) {
     holder->root_surface->Commit();

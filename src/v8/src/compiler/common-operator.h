@@ -51,20 +51,6 @@ inline size_t hash_value(BranchHint hint) { return static_cast<size_t>(hint); }
 
 V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream&, BranchHint);
 
-enum class IsSafetyCheck : uint8_t {
-  kCriticalSafetyCheck,
-  kSafetyCheck,
-  kNoSafetyCheck
-};
-
-// Get the more critical safety check of the two arguments.
-IsSafetyCheck CombineSafetyChecks(IsSafetyCheck, IsSafetyCheck);
-
-V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream&, IsSafetyCheck);
-inline size_t hash_value(IsSafetyCheck is_safety_check) {
-  return static_cast<size_t>(is_safety_check);
-}
-
 enum class TrapId : uint32_t {
 #define DEF_ENUM(Name, ...) k##Name,
   FOREACH_WASM_TRAPREASON(DEF_ENUM)
@@ -78,24 +64,6 @@ std::ostream& operator<<(std::ostream&, TrapId trap_id);
 
 TrapId TrapIdOf(const Operator* const op);
 
-struct BranchOperatorInfo {
-  BranchHint hint;
-  IsSafetyCheck is_safety_check;
-};
-
-inline size_t hash_value(const BranchOperatorInfo& info) {
-  return base::hash_combine(info.hint, info.is_safety_check);
-}
-
-V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream&, BranchOperatorInfo);
-
-inline bool operator==(const BranchOperatorInfo& a,
-                       const BranchOperatorInfo& b) {
-  return a.hint == b.hint && a.is_safety_check == b.is_safety_check;
-}
-
-V8_EXPORT_PRIVATE const BranchOperatorInfo& BranchOperatorInfoOf(
-    const Operator* const) V8_WARN_UNUSED_RESULT;
 V8_EXPORT_PRIVATE BranchHint BranchHintOf(const Operator* const)
     V8_WARN_UNUSED_RESULT;
 
@@ -106,23 +74,17 @@ int ValueInputCountOfReturn(Operator const* const op);
 class DeoptimizeParameters final {
  public:
   DeoptimizeParameters(DeoptimizeKind kind, DeoptimizeReason reason,
-                       FeedbackSource const& feedback,
-                       IsSafetyCheck is_safety_check)
-      : kind_(kind),
-        reason_(reason),
-        feedback_(feedback),
-        is_safety_check_(is_safety_check) {}
+                       FeedbackSource const& feedback)
+      : kind_(kind), reason_(reason), feedback_(feedback) {}
 
   DeoptimizeKind kind() const { return kind_; }
   DeoptimizeReason reason() const { return reason_; }
   const FeedbackSource& feedback() const { return feedback_; }
-  IsSafetyCheck is_safety_check() const { return is_safety_check_; }
 
  private:
   DeoptimizeKind const kind_;
   DeoptimizeReason const reason_;
   FeedbackSource const feedback_;
-  IsSafetyCheck is_safety_check_;
 };
 
 bool operator==(DeoptimizeParameters, DeoptimizeParameters);
@@ -134,8 +96,6 @@ std::ostream& operator<<(std::ostream&, DeoptimizeParameters p);
 
 DeoptimizeParameters const& DeoptimizeParametersOf(Operator const* const)
     V8_WARN_UNUSED_RESULT;
-
-IsSafetyCheck IsSafetyCheckOf(const Operator* op) V8_WARN_UNUSED_RESULT;
 
 class SelectParameters final {
  public:
@@ -177,8 +137,12 @@ PhiRepresentationOf(const Operator* const) V8_WARN_UNUSED_RESULT;
 // function. This class bundles the index and a debug name for such operators.
 class ParameterInfo final {
  public:
+  static constexpr int kMinIndex = Linkage::kJSCallClosureParamIndex;
+
   ParameterInfo(int index, const char* debug_name)
-      : index_(index), debug_name_(debug_name) {}
+      : index_(index), debug_name_(debug_name) {
+    DCHECK_LE(kMinIndex, index);
+  }
 
   int index() const { return index_; }
   const char* debug_name() const { return debug_name_; }
@@ -465,13 +429,17 @@ class V8_EXPORT_PRIVATE CommonOperatorBuilder final
   CommonOperatorBuilder(const CommonOperatorBuilder&) = delete;
   CommonOperatorBuilder& operator=(const CommonOperatorBuilder&) = delete;
 
+  // A dummy value node temporarily used as input when the actual value doesn't
+  // matter. This operator is inserted only in SimplifiedLowering and is
+  // expected to not survive dead code elimination.
+  const Operator* Plug();
+
   const Operator* Dead();
   const Operator* DeadValue(MachineRepresentation rep);
   const Operator* Unreachable();
   const Operator* StaticAssert(const char* source);
   const Operator* End(size_t control_input_count);
-  const Operator* Branch(BranchHint = BranchHint::kNone,
-                         IsSafetyCheck = IsSafetyCheck::kSafetyCheck);
+  const Operator* Branch(BranchHint = BranchHint::kNone);
   const Operator* IfTrue();
   const Operator* IfFalse();
   const Operator* IfSuccess();
@@ -483,18 +451,14 @@ class V8_EXPORT_PRIVATE CommonOperatorBuilder final
   const Operator* Throw();
   const Operator* Deoptimize(DeoptimizeKind kind, DeoptimizeReason reason,
                              FeedbackSource const& feedback);
-  const Operator* DeoptimizeIf(
-      DeoptimizeKind kind, DeoptimizeReason reason,
-      FeedbackSource const& feedback,
-      IsSafetyCheck is_safety_check = IsSafetyCheck::kSafetyCheck);
-  const Operator* DeoptimizeUnless(
-      DeoptimizeKind kind, DeoptimizeReason reason,
-      FeedbackSource const& feedback,
-      IsSafetyCheck is_safety_check = IsSafetyCheck::kSafetyCheck);
+  const Operator* DeoptimizeIf(DeoptimizeKind kind, DeoptimizeReason reason,
+                               FeedbackSource const& feedback);
+  const Operator* DeoptimizeUnless(DeoptimizeKind kind, DeoptimizeReason reason,
+                                   FeedbackSource const& feedback);
   // DynamicCheckMapsWithDeoptUnless will call the dynamic map check builtin if
   // the condition is false, which may then either deoptimize or resume
   // execution.
-  const Operator* DynamicCheckMapsWithDeoptUnless();
+  const Operator* DynamicCheckMapsWithDeoptUnless(bool is_inlined_frame_state);
   const Operator* TrapIf(TrapId trap_id);
   const Operator* TrapUnless(TrapId trap_id);
   const Operator* Return(int value_input_count = 1);
@@ -568,9 +532,6 @@ class V8_EXPORT_PRIVATE CommonOperatorBuilder final
       const wasm::FunctionSig* signature);
 #endif  // V8_ENABLE_WEBASSEMBLY
 
-  const Operator* MarkAsSafetyCheck(const Operator* op,
-                                    IsSafetyCheck safety_check);
-
   const Operator* DelayedStringConstant(const StringConstantBase* str);
 
  private:
@@ -613,12 +574,7 @@ class CommonNodeWrapperBase : public NodeWrapper {
 class FrameState : public CommonNodeWrapperBase {
  public:
   explicit constexpr FrameState(Node* node) : CommonNodeWrapperBase(node) {
-    // TODO(jgruber): Disallow kStart (needed for PromiseConstructorBasic unit
-    // test, among others). Also, outer_frame_state points at the start node
-    // for non-inlined functions. This could be avoided by checking
-    // has_outer_frame_state() before casting to FrameState.
-    DCHECK(node->opcode() == IrOpcode::kFrameState ||
-           node->opcode() == IrOpcode::kStart);
+    DCHECK_EQ(node->opcode(), IrOpcode::kFrameState);
   }
 
   FrameStateInfo frame_state_info() const {
@@ -653,15 +609,13 @@ class FrameState : public CommonNodeWrapperBase {
   Node* function() const { return node()->InputAt(kFrameStateFunctionInput); }
 
   // An outer frame state exists for inlined functions; otherwise it points at
-  // the start node.
-  bool has_outer_frame_state() const {
-    Node* maybe_outer_frame_state = node()->InputAt(kFrameStateOuterStateInput);
-    DCHECK(maybe_outer_frame_state->opcode() == IrOpcode::kFrameState ||
-           maybe_outer_frame_state->opcode() == IrOpcode::kStart);
-    return maybe_outer_frame_state->opcode() == IrOpcode::kFrameState;
-  }
-  FrameState outer_frame_state() const {
-    return FrameState{node()->InputAt(kFrameStateOuterStateInput)};
+  // the start node. Could also be dead.
+  Node* outer_frame_state() const {
+    Node* result = node()->InputAt(kFrameStateOuterStateInput);
+    DCHECK(result->opcode() == IrOpcode::kFrameState ||
+           result->opcode() == IrOpcode::kStart ||
+           result->opcode() == IrOpcode::kDeadValue);
+    return result;
   }
 };
 
@@ -780,12 +734,13 @@ class DynamicCheckMapsWithDeoptUnlessNode final : public CommonNodeWrapperBase {
   V(Condition, condition, 0, BoolT) \
   V(Slot, slot, 1, IntPtrT)         \
   V(Map, map, 2, Map)               \
-  V(Handler, handler, 3, Object)
+  V(Handler, handler, 3, Object)    \
+  V(FeedbackVector, feedback_vector, 4, FeedbackVector)
   INPUTS(DEFINE_INPUT_ACCESSORS)
 #undef INPUTS
 
   FrameState frame_state() {
-    return FrameState{NodeProperties::GetValueInput(node(), 4)};
+    return FrameState{NodeProperties::GetValueInput(node(), 5)};
   }
 };
 

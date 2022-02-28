@@ -11,10 +11,8 @@
 
 #include "base/callback_forward.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -42,9 +40,6 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenLoader
     TPM_TOKEN_STATUS_DISABLED
   };
 
-  using TPMReadyCallback = base::OnceCallback<void(bool)>;
-  using TPMReadyCallbackList = std::vector<TPMReadyCallback>;
-
   // Sets the global instance. Must be called before any calls to Get().
   // The global instance will immediately start observing |LoginState|.
   static void Initialize();
@@ -58,6 +53,9 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenLoader
 
   // Gets the global instance. Initialize() must be called before this.
   static TPMTokenLoader* Get();
+
+  TPMTokenLoader(const TPMTokenLoader&) = delete;
+  TPMTokenLoader& operator=(const TPMTokenLoader&) = delete;
 
   // Returns true if the global instance has been initialized.
   static bool IsInitialized();
@@ -74,10 +72,6 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenLoader
   // |EnsureStarted| is not called) system token loading will start when the
   // login state changes to LOGGED_IN_ACTIVE.
   void EnsureStarted();
-
-  // Checks if the TPM token is enabled. If the state is unknown, |callback|
-  // will be called back once the TPM state is known.
-  TPMTokenStatus IsTPMTokenEnabled(TPMReadyCallback callback);
 
   std::string tpm_user_pin() const { return tpm_user_pin_; }
 
@@ -113,17 +107,14 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenLoader
 
   bool initialized_for_test_;
 
-  TPMReadyCallbackList tpm_ready_callback_list_;
-
   // The states are traversed in this order but some might get omitted or never
   // be left.
   enum TPMTokenState {
     TPM_STATE_UNKNOWN,
     TPM_INITIALIZATION_STARTED,
-    TPM_TOKEN_ENABLED_FOR_NSS,
-    TPM_DISABLED,
     TPM_TOKEN_INFO_RECEIVED,
     TPM_TOKEN_INITIALIZED,
+    TPM_DISABLED,
   };
   TPMTokenState tpm_token_state_;
 
@@ -143,10 +134,13 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenLoader
   scoped_refptr<base::SequencedTaskRunner> crypto_task_runner_;
 
   base::WeakPtrFactory<TPMTokenLoader> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TPMTokenLoader);
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when //chromeos/test is moved to ash.
+namespace ash {
+using ::chromeos::TPMTokenLoader;
+}
 
 #endif  // CHROMEOS_TPM_TPM_TOKEN_LOADER_H_

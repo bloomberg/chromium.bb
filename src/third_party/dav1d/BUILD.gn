@@ -79,6 +79,10 @@ config("public_dav1d_config") {
     defines += [ "STACK_ALIGNMENT=$stack_alignment" ]
   }
 
+  if (!is_android && !is_win) {
+    defines += [ "HAVE_PTHREAD_GETAFFINITY_NP=1" ]
+  }
+
   # Don't let dav1d export any symbols. Otherwise the verify_order step on macOS
   # can fail since these exports end up in the final Chromium binary.
   defines += [ "DAV1D_API=" ]
@@ -111,7 +115,7 @@ if (is_win) {
   if (needs_stack_alignment) {
     dav1d_copts += [ stackalign_flag ]
   }
-  if (is_mac) {
+  if (is_mac || is_ios) {
     dav1d_copts += [ "-D_DARWIN_C_SOURCE" ]
   }
   if (is_linux || is_chromeos || is_android || current_os == "aix") {
@@ -146,7 +150,7 @@ if (enable_nasm) {
     }
 
     # Necessary to ensure macOS symbols end up with a _ prefix.
-    if (is_mac) {
+    if (is_mac || is_ios) {
       defines += [ "PREFIX" ]
     }
   }
@@ -239,6 +243,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
     sources = [
       "libdav1d/src/x86/cpu.c",
       "libdav1d/src/x86/cpu.h",
+      "libdav1d/src/x86/refmvs_init.c",
     ]
 
     # x86/msac.h redefines macros in msac.h if x86/msac.h is included and
@@ -262,6 +267,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
     sources = [
       "libdav1d/src/arm/cpu.c",
       "libdav1d/src/arm/cpu.h",
+      "libdav1d/src/arm/refmvs_init.c",
     ]
 
     # These are not template based so should only be built once.
@@ -278,7 +284,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
     ]
 
     # Necessary to ensure macOS symbols end up with a _ prefix.
-    if (is_mac) {
+    if (is_mac || is_ios) {
       defines = [ "PREFIX" ]
     }
 

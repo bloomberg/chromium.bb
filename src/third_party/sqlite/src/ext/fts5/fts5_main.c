@@ -22,7 +22,9 @@
 ** assert() conditions in the fts5 code are activated - conditions that are
 ** only true if it is guaranteed that the fts5 database is not corrupt.
 */
+#ifdef SQLITE_DEBUG
 int sqlite3_fts5_may_be_corrupt = 1;
+#endif
 
 
 typedef struct Fts5Auxdata Fts5Auxdata;
@@ -1947,13 +1949,15 @@ static int fts5CacheInstArray(Fts5Cursor *pCsr){
 
         nInst++;
         if( nInst>=pCsr->nInstAlloc ){
-          pCsr->nInstAlloc = pCsr->nInstAlloc ? pCsr->nInstAlloc*2 : 32;
+          int nNewSize = pCsr->nInstAlloc ? pCsr->nInstAlloc*2 : 32;
           aInst = (int*)sqlite3_realloc64(
-              pCsr->aInst, pCsr->nInstAlloc*sizeof(int)*3
+              pCsr->aInst, nNewSize*sizeof(int)*3
               );
           if( aInst ){
             pCsr->aInst = aInst;
+            pCsr->nInstAlloc = nNewSize;
           }else{
+            nInst--;
             rc = SQLITE_NOMEM;
             break;
           }

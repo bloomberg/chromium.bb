@@ -4,35 +4,21 @@
 
 namespace http2 {
 namespace adapter {
-namespace {
-
-void DeleteOptions(nghttp2_option* options) {
-  if (options) {
-    nghttp2_option_del(options);
-  }
-}
-
-}  // namespace
 
 NgHttp2Session::NgHttp2Session(Perspective perspective,
                                nghttp2_session_callbacks_unique_ptr callbacks,
-                               nghttp2_option* options,
-                               void* userdata)
-    : session_(MakeSessionPtr(nullptr)),
-      options_(options, DeleteOptions),
-      perspective_(perspective) {
+                               const nghttp2_option* options, void* userdata)
+    : session_(MakeSessionPtr(nullptr)), perspective_(perspective) {
   nghttp2_session* session;
-  switch (perspective) {
+  switch (perspective_) {
     case Perspective::kClient:
-      nghttp2_session_client_new2(&session, callbacks.get(), userdata,
-                                  options_.get());
+      nghttp2_session_client_new2(&session, callbacks.get(), userdata, options);
       break;
     case Perspective::kServer:
-      nghttp2_session_server_new2(&session, callbacks.get(), userdata,
-                                  options_.get());
+      nghttp2_session_server_new2(&session, callbacks.get(), userdata, options);
       break;
   }
-  session_.reset(session);
+  session_ = MakeSessionPtr(session);
 }
 
 NgHttp2Session::~NgHttp2Session() {
@@ -44,7 +30,7 @@ NgHttp2Session::~NgHttp2Session() {
       << " or pending writes: " << pending_writes;
 }
 
-ssize_t NgHttp2Session::ProcessBytes(absl::string_view bytes) {
+int64_t NgHttp2Session::ProcessBytes(absl::string_view bytes) {
   return nghttp2_session_mem_recv(
       session_.get(), reinterpret_cast<const uint8_t*>(bytes.data()),
       bytes.size());

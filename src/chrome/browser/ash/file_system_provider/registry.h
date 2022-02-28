@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "chrome/browser/ash/file_system_provider/registry_interface.h"
 #include "chrome/browser/ash/file_system_provider/watcher.h"
 
@@ -18,7 +17,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
 
-namespace chromeos {
+namespace ash {
 namespace file_system_provider {
 
 // Key names for preferences.
@@ -42,6 +41,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 class Registry : public RegistryInterface {
  public:
   explicit Registry(Profile* profile);
+
+  Registry(const Registry&) = delete;
+  Registry& operator=(const Registry&) = delete;
+
   ~Registry() override;
 
   // RegistryInterface overrides.
@@ -56,10 +59,9 @@ class Registry : public RegistryInterface {
 
  private:
   Profile* profile_;  // Not owned.
-  DISALLOW_COPY_AND_ASSIGN(Registry);
 };
 
 }  // namespace file_system_provider
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_FILE_SYSTEM_PROVIDER_REGISTRY_H_

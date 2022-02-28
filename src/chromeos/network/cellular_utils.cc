@@ -4,6 +4,7 @@
 
 #include "chromeos/network/cellular_utils.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
@@ -64,13 +65,9 @@ std::vector<CellularESimProfile> GenerateProfilesFromEuicc(
     HermesProfileClient::Properties* profile_properties =
         HermesProfileClient::Get()->GetProperties(profile_path);
 
-    // Only consider profiles of type kOperational. Other profile types are only
-    // used for testing and should not be exposed to the UI.
-    if (profile_properties->profile_class().value() !=
-        hermes::profile::ProfileClass::kOperational) {
-      continue;
-    }
-
+    // Hermes only exposes eSIM profiles with relevant profile class. e.g.
+    // Test profiles are exposed only when Hermes is put into test mode.
+    // No additional profile filtering is done on Chrome side.
     profiles.emplace_back(
         FromProfileState(profile_properties->state().value()), profile_path,
         eid, profile_properties->iccid().value(),
@@ -154,6 +151,17 @@ std::string GenerateStubCellularServicePath(const std::string& iccid) {
 
 bool IsStubCellularServicePath(const std::string& service_path) {
   return base::StartsWith(service_path, kNonShillCellularNetworkPathPrefix);
+}
+
+absl::optional<dbus::ObjectPath> GetCurrentEuiccPath() {
+  bool use_external_euicc = base::FeatureList::IsEnabled(
+      chromeos::features::kCellularUseExternalEuicc);
+  const std::vector<dbus::ObjectPath>& euicc_paths =
+      HermesManagerClient::Get()->GetAvailableEuiccs();
+  if (euicc_paths.empty() || (use_external_euicc && euicc_paths.size() < 2))
+    return absl::nullopt;
+
+  return use_external_euicc ? euicc_paths[1] : euicc_paths[0];
 }
 
 }  // namespace chromeos

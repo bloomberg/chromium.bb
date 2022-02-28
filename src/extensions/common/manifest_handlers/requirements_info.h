@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handler.h"
@@ -30,6 +29,10 @@ struct RequirementsInfo : public Extension::ManifestData {
 class RequirementsHandler : public ManifestHandler {
  public:
   RequirementsHandler();
+
+  RequirementsHandler(const RequirementsHandler&) = delete;
+  RequirementsHandler& operator=(const RequirementsHandler&) = delete;
+
   ~RequirementsHandler() override;
 
   bool Parse(Extension* extension, std::u16string* error) override;
@@ -38,8 +41,6 @@ class RequirementsHandler : public ManifestHandler {
 
  private:
   base::span<const char* const> Keys() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(RequirementsHandler);
 };
 
 }  // namespace extensions

@@ -5,7 +5,6 @@
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
 #include "build/branding_buildflags.h"
 
-#include "base/macros.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -18,12 +17,15 @@ class IOSChromeMetricsServiceAccessorTest : public PlatformTest {
  public:
   IOSChromeMetricsServiceAccessorTest() {}
 
+  IOSChromeMetricsServiceAccessorTest(
+      const IOSChromeMetricsServiceAccessorTest&) = delete;
+  IOSChromeMetricsServiceAccessorTest& operator=(
+      const IOSChromeMetricsServiceAccessorTest&) = delete;
+
   PrefService* GetLocalState() { return local_state_.Get(); }
 
  private:
   IOSChromeScopedTestingLocalState local_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOSChromeMetricsServiceAccessorTest);
 };
 
 TEST_F(IOSChromeMetricsServiceAccessorTest, MetricsReportingEnabled) {

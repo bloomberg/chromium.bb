@@ -9,15 +9,21 @@
 
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "components/content_creation/notes/core/note_features.h"
 #include "components/content_creation/notes/core/templates/note_template.h"
 #include "components/content_creation/notes/core/templates/template_types.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content_creation {
 
 class TemplateStoreTest : public testing::Test {
-  void SetUp() override { template_store_ = std::make_unique<TemplateStore>(); }
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(kWebNotesStylizeEnabled);
+    template_store_ = std::make_unique<TemplateStore>(&testing_pref_service_);
+  }
 
  protected:
   void ValidateTemplates(const std::vector<NoteTemplate>& note_templates) {
@@ -39,6 +45,8 @@ class TemplateStoreTest : public testing::Test {
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+  TestingPrefServiceSimple testing_pref_service_;
   std::unique_ptr<TemplateStore> template_store_;
 };
 
@@ -49,7 +57,7 @@ TEST_F(TemplateStoreTest, GetTemplatesSuccess) {
 
   template_store_->GetTemplates(base::BindLambdaForTesting(
       [&run_loop, this](std::vector<NoteTemplate> templates) {
-        EXPECT_EQ(7U, templates.size());
+        EXPECT_EQ(10U, templates.size());
 
         ValidateTemplates(templates);
 

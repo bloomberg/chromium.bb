@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2017 gRPC authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -80,7 +81,7 @@ _BM_SPECS = {
         'dyn': ['end_of_stream', 'request_size'],
     },
     'BM_HpackParserParseHeader': {
-        'tpl': ['fixture', 'on_header'],
+        'tpl': ['fixture'],
         'dyn': [],
     },
     'BM_CallCreateDestroy': {

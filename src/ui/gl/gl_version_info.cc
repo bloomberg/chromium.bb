@@ -4,9 +4,11 @@
 
 #include "ui/gl/gl_version_info.h"
 
+#include <map>
+#include <vector>
+
 #include "base/check_op.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"

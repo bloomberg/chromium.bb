@@ -43,9 +43,9 @@ the previous configuration where new steps were added blindly, and could cause
 failures on the tryservers. For more details about the configuration of the
 bots, see the [GPU bot details].
 
-[recipe framework]: https://chromium.googlesource.com/external/github.com/luci/recipes-py/+/master/doc/user_guide.md
-[recipes/chromium]:        https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipes/chromium.py
-[recipes/chromium_trybot]: https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipes/chromium_trybot.py
+[recipe framework]: https://chromium.googlesource.com/external/github.com/luci/recipes-py/+/main/doc/user_guide.md
+[recipes/chromium]:        https://chromium.googlesource.com/chromium/tools/build/+/main/scripts/slave/recipes/chromium.py
+[recipes/chromium_trybot]: https://chromium.googlesource.com/chromium/tools/build/+/main/scripts/slave/recipes/chromium_trybot.py
 [GPU bot details]: gpu_testing_bot_details.md
 
 The physical hardware for the GPU bots lives in the Swarming pool\*. The
@@ -86,7 +86,7 @@ overview of this documentation and links back to various portions.
 Please see the [GPU Pixel Wrangling instructions] for links to dashboards
 showing the status of various bots in the GPU fleet.
 
-[GPU Pixel Wrangling instructions]: pixel_wrangling.md#Fleet-Status
+[GPU Pixel Wrangling instructions]: http://go/gpu-pixel-wrangler#fleet-status
 
 ## Using the GPU Bots
 
@@ -159,7 +159,7 @@ If you find it necessary to try patches against other sub-repositories than
 Chromium (`src/`) and ANGLE (`src/third_party/angle/`), please
 [file a bug](http://crbug.com/new) with component Internals\>GPU\>Testing.
 
-[ANGLE project]: https://chromium.googlesource.com/angle/angle/+/master/README.md
+[ANGLE project]: https://chromium.googlesource.com/angle/angle/+/main/README.md
 [tryserver.chromium.angle]: https://build.chromium.org/p/tryserver.chromium.angle/waterfall
 [file a bug]: http://crbug.com/new
 
@@ -183,7 +183,8 @@ which aren't allowed to run on the regular Chromium waterfalls:
 *   `audio_unittests`
 
 The remaining GPU tests are run via Telemetry.  In order to run them, just
-build the `chrome` target and then
+build the `telemetry_gpu_integration_test` target (or
+`telemetry_gpu_integration_test_android_chrome` for Android) and then
 invoke `src/content/test/gpu/run_gpu_integration_test.py` with the appropriate
 argument. The tests this script can invoke are
 in `src/content/test/gpu/gpu_tests/`. For example:
@@ -198,9 +199,16 @@ The pixel tests are a bit special. See
 [the section on running them locally](#Running-the-pixel-tests-locally) for
 details.
 
-If you're testing on Android and have built and deployed
-`ChromePublic.apk` to the device, use `--browser=android-chromium` to
-invoke it.
+The `--browser=release` argument can be changed to `--browser=debug` if you
+built in a directory such as `out/Debug`. If you built in some non-standard
+directory such as `out/my_special_gn_config`, you can instead specify
+`--browser=exact --browser-executable=out/my_special_gn_config/chrome`.
+
+If you're testing on Android, use `--browser=android-chromium` instead of
+`--browser=release/debug` to invoke it. Additionally, Telemetry will likely
+complain about being unable to find the browser binary on Android if you build
+in a non-standard output directory. Thus, `out/Release` or `out/Debug` are
+suggested when testing on Android.
 
 **Note:** The tests require some third-party Python packages. Obtaining these
 packages is handled automatically by `vpython`, and the script's shebang should
@@ -355,10 +363,10 @@ Example usage:
 If, for some reason, the local run code is unable to determine what the git
 revision is, simply pass `--git-revision aabbccdd`. Note that `aabbccdd` must
 be replaced with an actual Chromium src revision (typically whatever revision
-origin/master is currently synced to) in order for the tests to work. This can
+origin/main is currently synced to) in order for the tests to work. This can
 be done automatically using:
 ``run_gpu_integration_test.py pixel --no-skia-gold-failure --local-pixel-tests
---passthrough --git-revision `git rev-parse origin/master` ``
+--passthrough --git-revision `git rev-parse origin/main` ``
 
 ## Running Binaries from the Bots Locally
 
@@ -368,7 +376,7 @@ machine loosely matches the architecture and OS of the bot.
 The easiest way to do this is to find the ID of the swarming task and use
 "swarming.py reproduce" to re-run it:
 
-*   `./src/tools/swarming_client/swarming.py reproduce -S https://chromium-swarm.appspot.com [task ID]`
+*   `./src/tools/luci-go/swarming reproduce -S https://chromium-swarm.appspot.com [task ID]`
 
 The task ID can be found in the stdio for the "trigger" step for the test. For
 example, look at a recent build from the [Mac Release (Intel)] bot, and
@@ -396,17 +404,16 @@ a swarming task, which contains something like:
 
 ```
 Download inputs files into directory foo:
-# (if needed, use "\${platform}" as-is) cipd install "infra/tools/luci/isolated/\${platform}" -root bar
-# (if needed) ./bar/isolated login
-./bar/isolated download -I https://isolateserver.appspot.com --namespace default-gzip -isolated 07f20bcb2b29b3d8f4ba73166313a37efd651746 -output-dir foo
+# (if needed, use "\${platform}" as-is) cipd install "infra/tools/luci/cas/\${platform}" -root bar
+# (if needed) ./bar/cas login
+./bar/cas download -cas-instance projects/chromium-swarm/instances/default_instance -digest 68ae1d6b22673b0ab7b4427ca1fc2a4761c9ee53474105b9076a23a67e97a18a/647 -dir foo
 ```
 
 Before attempting to download an isolate, you must ensure you have permission
 to access the isolate server. Full instructions can be [found
 here][isolate-server-credentials]. For most cases, you can simply run:
 
-*   `./src/tools/swarming_client/auth.py login
-    --service=https://isolateserver.appspot.com`
+*   `./src/tools/luci-go/isolate login`
 
 The above link requires that you log in with your @google.com credentials. It's
 not known at the present time whether this works with @chromium.org accounts.
@@ -420,7 +427,7 @@ See the [Swarming documentation] for instructions on how to upload your binaries
 
 Be sure to use the correct swarming dimensions for your desired GPU e.g. "1002:6613" instead of "AMD Radeon R7 240 (1002:6613)" which is how it appears on swarming task page.  You can query bots in the chromium.tests.gpu pool to find the correct dimensions:
 
-*   `vpython tools\swarming_client\swarming.py bots -S chromium-swarm.appspot.com -d pool chromium.tests.gpu`
+*   `tools\luci-go\swarming bots -S chromium-swarm.appspot.com -d pool=chromium.tests.gpu`
 
 [Swarming documentation]: https://www.chromium.org/developers/testing/isolated-testing/for-swes#TOC-Run-a-test-built-locally-on-Swarming
 
@@ -492,11 +499,7 @@ all you need to do is make sure that your new test runs correctly via isolates.
 See the documentation from the GPU bot details on [adding new isolated
 tests][new-isolates] for the gn args and authentication needed to upload
 isolates to the isolate server. Most likely the new test will be Telemetry
-based, and included in the `telemetry_gpu_test_run` isolate. You can then
-invoke it via:
-
-*   `./src/tools/swarming_client/run_isolated.py -s [HASH]
-    -I https://isolateserver.appspot.com -- [TEST_NAME] [TEST_ARGUMENTS]`
+based, and included in the `telemetry_gpu_test_run` isolate.
 
 [new-isolates]: gpu_testing_bot_details.md#Adding-a-new-isolated-test-to-the-bots
 
@@ -505,15 +508,15 @@ invoke it via:
 The tests that are run by the GPU bots are described by a couple of JSON files
 in the Chromium workspace:
 
-*   [`chromium.gpu.json`](https://chromium.googlesource.com/chromium/src/+/master/testing/buildbot/chromium.gpu.json)
-*   [`chromium.gpu.fyi.json`](https://chromium.googlesource.com/chromium/src/+/master/testing/buildbot/chromium.gpu.fyi.json)
+*   [`chromium.gpu.json`](https://chromium.googlesource.com/chromium/src/+/main/testing/buildbot/chromium.gpu.json)
+*   [`chromium.gpu.fyi.json`](https://chromium.googlesource.com/chromium/src/+/main/testing/buildbot/chromium.gpu.fyi.json)
 
 These files are autogenerated by the following script:
 
-*   [`generate_buildbot_json.py`](https://chromium.googlesource.com/chromium/src/+/master/testing/buildbot/generate_buildbot_json.py)
+*   [`generate_buildbot_json.py`](https://chromium.googlesource.com/chromium/src/+/main/testing/buildbot/generate_buildbot_json.py)
 
 This script is documented in
-[`testing/buildbot/README.md`](https://chromium.googlesource.com/chromium/src/+/master/testing/buildbot/README.md). The
+[`testing/buildbot/README.md`](https://chromium.googlesource.com/chromium/src/+/main/testing/buildbot/README.md). The
 JSON files are parsed by the chromium and chromium_trybot recipes, and describe
 two basic types of tests:
 
@@ -556,7 +559,7 @@ itself will contain links. In either case, these links will direct to Gold
 pages showing the image produced by the image and the approved image that most
 closely matches it.
 
-Note that for the tests which programatically check colors in certain regions of
+Note that for the tests which programmatically check colors in certain regions of
 the image (tests with `expected_colors` fields in [pixel_test_pages]), there
 likely won't be a closest approved image since those tests only upload data to
 Gold in the event of a failure.
@@ -570,7 +573,7 @@ you will have to approve new images. Simply run your CL through the CQ and
 follow the steps outline [here][pixel wrangling triage] under the "Check if any
 pixel test failures are actual failures or need to be rebaselined." step.
 
-[pixel wrangling triage]: pixel_wrangling.md#How-to-Keep-the-Bots-Green
+[pixel wrangling triage]: http://go/gpu-pixel-wrangler-info#how-to-keep-the-bots-green
 
 If you are adding a new pixel test, it is beneficial to set the
 `grace_period_end` argument in the test's definition. This will allow the test
@@ -679,4 +682,4 @@ include links to the failing builds and copies of the logs, since the logs
 expire after a few days. [GPU pixel wranglers] should give the highest priority
 to eliminating flakiness on the tree.
 
-[GPU pixel wranglers]: pixel_wrangling.md
+[GPU pixel wranglers]: http://go/gpu-pixel-wrangler

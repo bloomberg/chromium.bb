@@ -13,14 +13,13 @@
 #include <string>
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
-#include "base/numerics/ranges.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "chromecast/media/audio/wav_header.h"
 #include "chromecast/media/cma/backend/cast_audio_json.h"
@@ -100,6 +99,9 @@ class WavMixerInputSource : public MixerInput::Source {
               << "s.";
   }
 
+  WavMixerInputSource(const WavMixerInputSource&) = delete;
+  WavMixerInputSource& operator=(const WavMixerInputSource&) = delete;
+
   ~WavMixerInputSource() override = default;
 
   bool AtEnd() { return input_handler_->AtEnd(cursor_); }
@@ -154,8 +156,6 @@ class WavMixerInputSource : public MixerInput::Source {
   size_t cursor_ = 0;
   const std::string device_id_;
   const size_t bytes_per_frame_;
-
-  DISALLOW_COPY_AND_ASSIGN(WavMixerInputSource);
 };
 
 // OutputHandler interface to allow switching between alsa and file output.
@@ -184,6 +184,9 @@ class WavOutputHandler : public OutputHandler {
                                 sizeof(header_));
   }
 
+  WavOutputHandler(const WavOutputHandler&) = delete;
+  WavOutputHandler& operator=(const WavOutputHandler&) = delete;
+
   ~WavOutputHandler() override {
     // Update size and re-write header. We only really need to overwrite 8 bytes
     // but it is easy and cheap to overwrite the whole header.
@@ -200,7 +203,7 @@ class WavOutputHandler : public OutputHandler {
                 clipped_data.size() * sizeof(clipped_data[0]));
     if (saturate_output) {
       for (size_t i = 0; i < clipped_data.size(); ++i) {
-        clipped_data[i] = base::ClampToRange(clipped_data[i], -1.0f, 1.0f);
+        clipped_data[i] = base::clamp(clipped_data[i], -1.0f, 1.0f);
       }
     }
     wav_file_.WriteAtCurrentPos(reinterpret_cast<char*>(clipped_data.data()),
@@ -211,13 +214,15 @@ class WavOutputHandler : public OutputHandler {
   WavHeader header_;
   base::File wav_file_;
   const int num_channels_;
-
-  DISALLOW_COPY_AND_ASSIGN(WavOutputHandler);
 };
 
 class AudioMetrics {
  public:
   AudioMetrics(int num_channels) : num_channels_(num_channels) {}
+
+  AudioMetrics(const AudioMetrics&) = delete;
+  AudioMetrics& operator=(const AudioMetrics&) = delete;
+
   ~AudioMetrics() = default;
 
   void ProcessFrames(float* data, int num_frames) {
@@ -248,8 +253,6 @@ class AudioMetrics {
   int total_samples_ = 0;
   float largest_sample_ = 0.0f;
   double squared_sum_ = 0.0;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioMetrics);
 };
 
 Parameters ReadArgs(int argc, char* argv[]) {

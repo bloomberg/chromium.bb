@@ -9,8 +9,8 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -24,12 +24,25 @@ extern const char kIntentActionMain[];
 extern const char kIntentActionView[];
 extern const char kIntentActionSend[];
 extern const char kIntentActionSendMultiple[];
+extern const char kIntentActionCreateNote[];
+
+struct SharedText {
+  std::string text;
+  GURL url;
+};
 
 // Create an intent struct from URL.
 apps::mojom::IntentPtr CreateIntentFromUrl(const GURL& url);
 
+// Create an intent struct for a Create Note action.
+apps::mojom::IntentPtr CreateCreateNoteIntent();
+
+// Create an intent struct with the list of files with action kIntentActionView.
+apps::mojom::IntentPtr CreateViewIntentFromFiles(
+    std::vector<apps::mojom::IntentFilePtr> files);
+
 // Create an intent struct from the filesystem urls and mime types
-// of a list of files.
+// of a list of files with action kIntentActionSend{Multiple}.
 apps::mojom::IntentPtr CreateShareIntentFromFiles(
     const std::vector<GURL>& filesystem_urls,
     const std::vector<std::string>& mime_types);
@@ -74,6 +87,15 @@ bool IntentMatchesCondition(const apps::mojom::IntentPtr& intent,
 // matches all existing conditions in the filter.
 bool IntentMatchesFilter(const apps::mojom::IntentPtr& intent,
                          const apps::mojom::IntentFilterPtr& filter);
+
+// Return true if |filter| only contains file extension pattern matches.
+bool FilterIsForFileExtensions(const apps::mojom::IntentFilterPtr& filter);
+
+bool IsGenericFileHandler(const apps::mojom::IntentPtr& intent,
+                          const apps::mojom::IntentFilterPtr& filter);
+
+// Return true if `intent` corresponds to a share intent.
+bool IsShareIntent(const apps::mojom::IntentPtr& intent);
 
 // Return true if |value| matches |pattern| with simple glob syntax.
 // In this syntax, you can use the '*' character to match against zero or
@@ -122,14 +144,30 @@ apps::mojom::OptionalBool GetBoolValueFromDict(
 absl::optional<GURL> GetGurlValueFromDict(const base::DictionaryValue& dict,
                                           const std::string& key_name);
 
-// Gets std::vector<::GURL> from base::DictionaryValue, e.g. { "file_urls":
-// "/abc, /a" } returns std::vector<::GURL>{"/abc, /a"}.
-absl::optional<std::vector<::GURL>> GetFileUrlsFromDict(
+// Gets std::vector<IntentFilePtr> from base::DictionaryValue, e.g. {
+// "file_urls": "/abc, /a" } returns
+// std::vector<apps::mojom::IntentFilePtr>{"/abc", "/a"}.
+absl::optional<std::vector<apps::mojom::IntentFilePtr>> GetFilesFromDict(
     const base::DictionaryValue& dict,
     const std::string& key_name);
 
 // Converts base::Value to Intent.
 apps::mojom::IntentPtr ConvertValueToIntent(base::Value&& value);
+
+// Calculates the least general mime type that matches all of the given ones.
+// E.g., for ["image/jpeg", "image/png"] it will be "image/*". ["text/html",
+// "text/html"] will return "text/html", and ["text/html", "image/jpeg"]
+// becomes the fully wildcard pattern.
+std::string CalculateCommonMimeType(const std::vector<std::string>& mime_types);
+
+// Extracts the text from |share_text| to populate the SharedText struct. If
+// |SharedText.url| is populated, the value will always be a valid parsed URL.
+// The |share_text| passed in here should be the share_text field from
+// apps::mojom::IntentPtr.
+//
+// Testing covered by share_target_utils_unittest.cc as this function was
+// migrated out from web_app::ShareTargetUtils.
+SharedText ExtractSharedText(const std::string& share_text);
 
 }  // namespace apps_util
 
