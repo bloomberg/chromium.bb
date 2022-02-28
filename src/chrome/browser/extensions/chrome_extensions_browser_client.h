@@ -9,13 +9,10 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/extensions/media_router_extension_access_logger_impl.h"
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/kiosk/kiosk_delegate.h"
@@ -37,6 +34,7 @@ namespace extensions {
 class ChromeComponentExtensionResourceManager;
 class ChromeExtensionsAPIClient;
 class ChromeProcessManagerDelegate;
+class ScopedExtensionUpdaterKeepAlive;
 
 // Implementation of BrowserClient for Chrome, which includes
 // knowledge of Profiles, BrowserContexts and incognito.
@@ -47,6 +45,11 @@ class ChromeProcessManagerDelegate;
 class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
  public:
   ChromeExtensionsBrowserClient();
+
+  ChromeExtensionsBrowserClient(const ChromeExtensionsBrowserClient&) = delete;
+  ChromeExtensionsBrowserClient& operator=(
+      const ChromeExtensionsBrowserClient&) = delete;
+
   ~ChromeExtensionsBrowserClient() override;
 
   // ExtensionsBrowserClient overrides:
@@ -81,9 +84,8 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       mojo::PendingReceiver<network::mojom::URLLoader> loader,
       const base::FilePath& resource_relative_path,
       int resource_id,
-      const std::string& content_security_policy,
-      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-      bool send_cors_header) override;
+      scoped_refptr<net::HttpResponseHeaders> headers,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client) override;
   bool AllowCrossRendererResourceLoad(
       const network::ResourceRequest& request,
       network::mojom::RequestDestination destination,
@@ -136,9 +138,8 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
                                      mojom::ViewType view_type) override;
   scoped_refptr<update_client::UpdateClient> CreateUpdateClient(
       content::BrowserContext* context) override;
-  std::unique_ptr<content::BluetoothChooser> CreateBluetoothChooser(
-      content::RenderFrameHost* frame,
-      const content::BluetoothChooser::EventHandler& event_handler) override;
+  std::unique_ptr<ScopedExtensionUpdaterKeepAlive> CreateUpdaterKeepAlive(
+      content::BrowserContext* context) override;
   bool IsActivityLoggingEnabled(content::BrowserContext* context) override;
   void GetTabAndWindowIdForWebContents(content::WebContents* web_contents,
                                        int* tab_id,
@@ -158,19 +159,18 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   base::FilePath GetSaveFilePath(content::BrowserContext* context) override;
   void SetLastSaveFilePath(content::BrowserContext* context,
                            const base::FilePath& path) override;
-  const MediaRouterExtensionAccessLogger* GetMediaRouterAccessLogger()
-      const override;
   bool HasIsolatedStorage(const std::string& extension_id,
                           content::BrowserContext* context) override;
   bool IsScreenshotRestricted(
       content::WebContents* web_contents) const override;
   bool IsValidTabId(content::BrowserContext* context,
                     int tab_id) const override;
+  void NotifyExtensionApiTabExecuteScript(
+      content::BrowserContext* context,
+      const ExtensionId& extension_id,
+      const std::string& code) const override;
 
   static void set_did_chrome_update_for_testing(bool did_update);
-
-  static void SetMediaRouterAccessLoggerForTesting(
-      MediaRouterExtensionAccessLogger* media_router_access_logger);
 
  private:
   friend struct base::LazyInstanceTraitsBase<ChromeExtensionsBrowserClient>;
@@ -188,10 +188,6 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   std::unique_ptr<KioskDelegate> kiosk_delegate_;
 
   UserScriptListener user_script_listener_;
-
-  MediaRouterExtensionAccessLoggerImpl media_router_access_logger_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsBrowserClient);
 };
 
 }  // namespace extensions

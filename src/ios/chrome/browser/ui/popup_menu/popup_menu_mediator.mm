@@ -36,6 +36,7 @@
 #include "ios/chrome/browser/policy/policy_features.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
+#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
@@ -53,7 +54,9 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/web/features.h"
+#import "ios/chrome/browser/url_loading/image_search_param_generator.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -61,7 +64,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/components/webui/web_ui_url_constants.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/text_zoom_provider.h"
+#import "ios/public/provider/chrome/browser/text_zoom/text_zoom_api.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #include "ios/web/common/features.h"
 #include "ios/web/common/user_agent.h"
@@ -583,6 +586,24 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
                                 type);
 }
 
+- (void)searchCopiedImage {
+  ClipboardRecentContent* clipboardRecentContent =
+      ClipboardRecentContent::GetInstance();
+  clipboardRecentContent->GetRecentImageFromClipboard(
+      base::BindOnce(^(absl::optional<gfx::Image> optionalImage) {
+        if (!optionalImage) {
+          return;
+        }
+        UIImage* image = [optionalImage.value().ToUIImage() copy];
+        web::NavigationManager::WebLoadParams webParams =
+            ImageSearchParamGenerator::LoadParamsForImage(
+                image, self.templateURLService);
+        UrlLoadParams params = UrlLoadParams::InCurrentTab(webParams);
+
+        self.URLLoadingBrowserAgent->Load(params);
+      }));
+}
+
 #pragma mark - IOSLanguageDetectionTabHelperObserving
 
 - (void)iOSLanguageDetectionTabHelper:
@@ -931,8 +952,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 
   NSArray* collectionActions = [self collectionItems];
 
-  if (base::FeatureList::IsEnabled(kEnableIOSManagedSettingsUI) &&
-      _browserPolicyConnector &&
+  if (_browserPolicyConnector &&
       _browserPolicyConnector->HasMachineLevelPolicies()) {
     // Show enterprise infomation when chrome is managed by policy and the
     // settings UI flag is enabled.
@@ -1000,7 +1020,8 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
       @"popup_menu_translate", kToolsMenuTranslateId);
   if (self.engagementTracker &&
       self.engagementTracker->ShouldTriggerHelpUI(
-          feature_engagement::kIPHBadgedTranslateManualTriggerFeature)) {
+          feature_engagement::kIPHBadgedTranslateManualTriggerFeature) &&
+      self.isTranslateEnabled) {
     self.translateItem.badgeText = l10n_util::GetNSStringWithFixup(
         IDS_IOS_TOOLS_MENU_CELL_NEW_FEATURE_BADGE);
   }
@@ -1013,9 +1034,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
   [actionsArray addObject:self.findInPageItem];
 
   // Text Zoom
-  if (ios::GetChromeBrowserProvider()
-          ->GetTextZoomProvider()
-          ->IsTextZoomEnabled()) {
+  if (ios::provider::IsTextZoomEnabled()) {
     self.textZoomItem = CreateTableViewItem(
         IDS_IOS_TOOLS_MENU_TEXT_ZOOM, PopupMenuActionTextZoom,
         @"popup_menu_text_zoom", kToolsMenuTextZoom);
@@ -1047,7 +1066,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 
   // Report an Issue.
   if (ios::GetChromeBrowserProvider()
-          ->GetUserFeedbackProvider()
+          .GetUserFeedbackProvider()
           ->IsUserFeedbackEnabled()) {
     TableViewItem* reportIssue = CreateTableViewItem(
         IDS_IOS_OPTIONS_REPORT_AN_ISSUE, PopupMenuActionReportIssue,
@@ -1167,7 +1186,8 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 // Returns YES if incognito NTP title and image should be used for back/forward
 // item associated with |URL|.
 - (BOOL)shouldUseIncognitoNTPResourcesForURL:(const GURL&)URL {
-  return URL.GetOrigin() == kChromeUINewTabURL && self.isIncognito &&
+  return URL.DeprecatedGetOriginAsURL() == kChromeUINewTabURL &&
+         self.isIncognito &&
          base::FeatureList::IsEnabled(kUpdateHistoryEntryPointsInIncognito);
 }
 

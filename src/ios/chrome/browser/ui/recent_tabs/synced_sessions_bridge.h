@@ -7,9 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-
 #include "base/callback_list.h"
-#include "base/macros.h"
 #include "base/scoped_observation.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
@@ -32,13 +30,18 @@ class SyncedSessionsObserverBridge : public signin::IdentityManager::Observer {
  public:
   SyncedSessionsObserverBridge(id<SyncedSessionsObserver> owner,
                                ChromeBrowserState* browserState);
+
+  SyncedSessionsObserverBridge(const SyncedSessionsObserverBridge&) = delete;
+  SyncedSessionsObserverBridge& operator=(const SyncedSessionsObserverBridge&) =
+      delete;
+
   ~SyncedSessionsObserverBridge() override;
   // signin::IdentityManager::Observer implementation.
   void OnPrimaryAccountChanged(
       const signin::PrimaryAccountChangeEvent& event) override;
 
-  // Returns true if user is signed in.
-  bool IsSignedIn();
+  // Returns true if user has granted sync consent.
+  bool HasSyncConsent();
 
  private:
   void OnForeignSessionChanged();
@@ -49,8 +52,6 @@ class SyncedSessionsObserverBridge : public signin::IdentityManager::Observer {
                           signin::IdentityManager::Observer>
       identity_manager_observation_{this};
   base::CallbackListSubscription foreign_session_updated_subscription_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncedSessionsObserverBridge);
 };
 
 }  // namespace synced_sessions

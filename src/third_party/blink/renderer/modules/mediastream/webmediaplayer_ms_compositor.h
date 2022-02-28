@@ -71,6 +71,10 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
       WebMediaPlayer::SurfaceLayerMode surface_layer_mode,
       const base::WeakPtr<WebMediaPlayerMS>& player);
 
+  WebMediaPlayerMSCompositor(const WebMediaPlayerMSCompositor&) = delete;
+  WebMediaPlayerMSCompositor& operator=(const WebMediaPlayerMSCompositor&) =
+      delete;
+
   // Can be called from any thread.
   cc::UpdateSubmissionStateCB GetUpdateSubmissionStateCallback() {
     return update_submission_state_callback_;
@@ -192,7 +196,7 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   void CheckForFrameChanges(
       bool is_first_frame,
       bool has_frame_size_changed,
-      absl::optional<media::VideoRotation> new_frame_rotation,
+      absl::optional<media::VideoTransformation> new_frame_transform,
       absl::optional<bool> new_frame_opacity);
 
   void StartRenderingInternal();
@@ -289,8 +293,6 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   base::Lock current_frame_lock_;
 
   base::WeakPtrFactory<WebMediaPlayerMSCompositor> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMSCompositor);
 };
 
 struct WebMediaPlayerMSCompositorTraits {

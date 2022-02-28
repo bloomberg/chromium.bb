@@ -12,7 +12,7 @@
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_profile_handler.h"
-#include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/onc/network_onc_utils.h"
 #include "dbus/object_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -71,8 +71,8 @@ void NetworkTestHelperBase::ResetDevicesAndServices() {
   // Set initial IPConfigs for the wifi device. The IPConfigs are set up in
   // FakeShillManagerClient::SetupDefaultEnvironment() and do not get cleared.
   base::ListValue ip_configs;
-  ip_configs.AppendString("ipconfig_v4_path");
-  ip_configs.AppendString("ipconfig_v6_path");
+  ip_configs.Append("ipconfig_v4_path");
+  ip_configs.Append("ipconfig_v6_path");
   device_test_->SetDeviceProperty(kDevicePath, shill::kIPConfigsProperty,
                                   ip_configs,
                                   /*notify_changed=*/false);

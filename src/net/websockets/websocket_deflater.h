@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "net/base/net_export.h"
 
@@ -30,6 +29,10 @@ class NET_EXPORT_PRIVATE WebSocketDeflater {
   };
 
   explicit WebSocketDeflater(ContextTakeOverMode mode);
+
+  WebSocketDeflater(const WebSocketDeflater&) = delete;
+  WebSocketDeflater& operator=(const WebSocketDeflater&) = delete;
+
   ~WebSocketDeflater();
 
   // Returns true if there is no error and false otherwise.
@@ -69,8 +72,6 @@ class NET_EXPORT_PRIVATE WebSocketDeflater {
   std::vector<char> fixed_buffer_;
   // true if bytes were added after last Finish().
   bool are_bytes_added_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebSocketDeflater);
 };
 
 }  // namespace net

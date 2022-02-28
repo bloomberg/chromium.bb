@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
+import * as IconButton from '../../../components/icon_button/icon_button.js';
 import * as UI from '../../legacy.js';
 
 import {getRegisteredProviders, Provider, registerProvider} from './FilteredListWidget.js';
@@ -12,15 +11,16 @@ import {QuickOpenImpl} from './QuickOpen.js';
 let helpQuickOpenInstance: HelpQuickOpen;
 
 export class HelpQuickOpen extends Provider {
-  _providers: {
+  private providers: {
     prefix: string,
+    iconName: string,
     title: string,
   }[];
 
   private constructor() {
     super();
-    this._providers = [];
-    getRegisteredProviders().forEach(this._addProvider.bind(this));
+    this.providers = [];
+    getRegisteredProviders().forEach(this.addProvider.bind(this));
   }
 
   static instance(opts: {
@@ -33,37 +33,51 @@ export class HelpQuickOpen extends Provider {
     return helpQuickOpenInstance;
   }
 
-  _addProvider(extension: {
+  private addProvider(extension: {
     prefix: string,
-    title?: () => string,
+    iconName: string,
+    titlePrefix: () => string,
+    titleSuggestion?: () => string,
   }): void {
-    if (extension.title) {
-      this._providers.push({prefix: extension.prefix || '', title: extension.title()});
+    if (extension.titleSuggestion) {
+      this.providers.push({
+        prefix: extension.prefix || '',
+        iconName: extension.iconName,
+        title: extension.titlePrefix() + ' ' + extension.titleSuggestion(),
+      });
     }
   }
 
   itemCount(): number {
-    return this._providers.length;
+    return this.providers.length;
   }
 
   itemKeyAt(itemIndex: number): string {
-    return this._providers[itemIndex].prefix;
+    return this.providers[itemIndex].prefix;
   }
 
   itemScoreAt(itemIndex: number, _query: string): number {
-    return -this._providers[itemIndex].prefix.length;
+    return -this.providers[itemIndex].prefix.length;
   }
 
   renderItem(itemIndex: number, _query: string, titleElement: Element, _subtitleElement: Element): void {
-    const provider = this._providers[itemIndex];
-    const prefixElement = titleElement.createChild('span', 'monospace');
-    prefixElement.textContent = (provider.prefix || '…') + ' ';
+    const provider = this.providers[itemIndex];
+
+    const iconElement = new IconButton.Icon.Icon();
+    iconElement.data = {
+      iconName: provider.iconName,
+      color: 'var(--color-text-primary)',
+      width: '18px',
+      height: '18px',
+    };
+    titleElement.parentElement?.parentElement?.insertBefore(iconElement, titleElement.parentElement);
+
     UI.UIUtils.createTextChild(titleElement, provider.title);
   }
 
   selectItem(itemIndex: number|null, _promptValue: string): void {
     if (itemIndex !== null) {
-      QuickOpenImpl.show(this._providers[itemIndex].prefix);
+      QuickOpenImpl.show(this.providers[itemIndex].prefix);
     }
   }
 
@@ -74,6 +88,8 @@ export class HelpQuickOpen extends Provider {
 
 registerProvider({
   prefix: '?',
-  title: undefined,
+  iconName: 'ic_command_help',
   provider: () => Promise.resolve(HelpQuickOpen.instance()),
+  titlePrefix: () => 'Help',
+  titleSuggestion: undefined,
 });

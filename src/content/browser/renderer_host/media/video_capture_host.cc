@@ -7,14 +7,18 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/token.h"
+#include "base/unguessable_token.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace content {
@@ -30,6 +34,10 @@ class VideoCaptureHost::RenderProcessHostDelegateImpl
  public:
   explicit RenderProcessHostDelegateImpl(uint32_t render_process_id)
       : render_process_id_(render_process_id) {}
+
+  RenderProcessHostDelegateImpl(const RenderProcessHostDelegateImpl&) = delete;
+  RenderProcessHostDelegateImpl& operator=(
+      const RenderProcessHostDelegateImpl&) = delete;
 
   ~RenderProcessHostDelegateImpl() override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -54,7 +62,6 @@ class VideoCaptureHost::RenderProcessHostDelegateImpl
 
  private:
   const uint32_t render_process_id_;
-  DISALLOW_COPY_AND_ASSIGN(RenderProcessHostDelegateImpl);
 };
 
 VideoCaptureHost::VideoCaptureHost(uint32_t render_process_id,
@@ -86,7 +93,7 @@ void VideoCaptureHost::Create(
 
 VideoCaptureHost::~VideoCaptureHost() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (auto it = controllers_.begin(); it != controllers_.end(); ) {
+  for (auto it = controllers_.begin(); it != controllers_.end();) {
     const base::WeakPtr<VideoCaptureController>& controller = it->second;
     if (controller) {
       const VideoCaptureControllerID controller_id(it->first);
@@ -182,7 +189,8 @@ void VideoCaptureHost::OnStarted(
 
   if (base::Contains(device_id_to_observer_map_, controller_id)) {
     device_id_to_observer_map_[controller_id]->OnStateChanged(
-        media::mojom::VideoCaptureState::STARTED);
+        media::mojom::VideoCaptureResult::NewState(
+            media::mojom::VideoCaptureState::STARTED));
     NotifyStreamAdded();
   }
 }
@@ -211,7 +219,8 @@ void VideoCaptureHost::Start(
   const VideoCaptureControllerID controller_id(device_id);
   if (controllers_.find(controller_id) != controllers_.end()) {
     device_id_to_observer_map_[device_id]->OnStateChanged(
-        media::mojom::VideoCaptureState::STARTED);
+        media::mojom::VideoCaptureResult::NewState(
+            media::mojom::VideoCaptureState::STARTED));
     NotifyStreamAdded();
     return;
   }
@@ -231,7 +240,8 @@ void VideoCaptureHost::Stop(const base::UnguessableToken& device_id) {
 
   if (base::Contains(device_id_to_observer_map_, device_id)) {
     device_id_to_observer_map_[device_id]->OnStateChanged(
-        media::mojom::VideoCaptureState::STOPPED);
+        media::mojom::VideoCaptureResult::NewState(
+            media::mojom::VideoCaptureState::STOPPED));
   }
   device_id_to_observer_map_.erase(controller_id);
 
@@ -252,7 +262,8 @@ void VideoCaptureHost::Pause(const base::UnguessableToken& device_id) {
       it->second.get(), controller_id, this);
   if (base::Contains(device_id_to_observer_map_, device_id)) {
     device_id_to_observer_map_[device_id]->OnStateChanged(
-        media::mojom::VideoCaptureState::PAUSED);
+        media::mojom::VideoCaptureResult::NewState(
+            media::mojom::VideoCaptureState::PAUSED));
   }
 }
 
@@ -276,7 +287,8 @@ void VideoCaptureHost::Resume(const base::UnguessableToken& device_id,
       session_id, params, it->second.get(), controller_id, this);
   if (base::Contains(device_id_to_observer_map_, device_id)) {
     device_id_to_observer_map_[device_id]->OnStateChanged(
-        media::mojom::VideoCaptureState::RESUMED);
+        media::mojom::VideoCaptureResult::NewState(
+            media::mojom::VideoCaptureState::RESUMED));
   }
 }
 
@@ -335,7 +347,7 @@ void VideoCaptureHost::GetDeviceFormatsInUse(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   media::VideoCaptureFormats formats_in_use;
   if (!media_stream_manager_->video_capture_manager()->GetDeviceFormatsInUse(
-           session_id, &formats_in_use)) {
+          session_id, &formats_in_use)) {
     DLOG(WARNING) << "Could not retrieve device format(s) in use";
   }
   std::move(callback).Run(formats_in_use);
@@ -379,7 +391,7 @@ void VideoCaptureHost::DoError(const VideoCaptureControllerID& controller_id,
 
   if (base::Contains(device_id_to_observer_map_, controller_id)) {
     device_id_to_observer_map_[controller_id]->OnStateChanged(
-        media::mojom::VideoCaptureState::FAILED);
+        media::mojom::VideoCaptureResult::NewErrorCode(error));
   }
 
   DeleteVideoCaptureController(controller_id, error);
@@ -394,7 +406,8 @@ void VideoCaptureHost::DoEnded(const VideoCaptureControllerID& controller_id) {
 
   if (base::Contains(device_id_to_observer_map_, controller_id)) {
     device_id_to_observer_map_[controller_id]->OnStateChanged(
-        media::mojom::VideoCaptureState::ENDED);
+        media::mojom::VideoCaptureResult::NewState(
+            media::mojom::VideoCaptureState::ENDED));
   }
 
   DeleteVideoCaptureController(controller_id, media::VideoCaptureError::kNone);
@@ -419,7 +432,9 @@ void VideoCaptureHost::OnControllerAdded(
   if (!controller) {
     if (base::Contains(device_id_to_observer_map_, controller_id)) {
       device_id_to_observer_map_[device_id]->OnStateChanged(
-          media::mojom::VideoCaptureState::FAILED);
+          media::mojom::VideoCaptureResult::NewErrorCode(
+              media::VideoCaptureError::
+                  kVideoCaptureControllerInvalidOrUnsupportedVideoCaptureParametersRequested));
     }
     controllers_.erase(controller_id);
     return;

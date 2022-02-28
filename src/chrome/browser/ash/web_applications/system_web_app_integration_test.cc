@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,12 +40,12 @@ void SystemWebAppIntegrationTest::ExpectSystemWebAppValid(
   Browser* app_browser;
   LaunchAppWithoutWaiting(app_type, &app_browser);
 
-  web_app::AppId app_id = app_browser->app_controller()->GetAppId();
+  web_app::AppId app_id = app_browser->app_controller()->app_id();
   EXPECT_EQ(GetManager().GetAppIdForSystemApp(app_type), app_id);
   EXPECT_TRUE(GetManager().IsSystemWebApp(app_id));
 
-  web_app::AppRegistrar& registrar =
-      web_app::WebAppProviderBase::GetProviderBase(profile())->registrar();
+  web_app::WebAppRegistrar& registrar =
+      web_app::WebAppProvider::GetForTest(profile())->registrar();
   EXPECT_EQ(title, registrar.GetAppShortName(app_id));
   EXPECT_EQ(base::ASCIIToUTF16(title),
             app_browser->window()->GetNativeWindow()->GetTitle());
@@ -62,7 +62,7 @@ void SystemWebAppIntegrationTest::ExpectSystemWebAppValid(
   observer.WaitForNavigationFinished();
   EXPECT_EQ(url, web_contents->GetLastCommittedURL());
 
-  content::WebUI* web_ui = web_contents->GetCommittedWebUI();
+  content::WebUI* web_ui = web_contents->GetWebUI();
   ASSERT_TRUE(web_ui);
   EXPECT_TRUE(web_ui->GetController());
 

@@ -64,8 +64,7 @@ ukm::UkmService* MetricsServiceClient::GetUkmService() {
   return nullptr;
 }
 
-bool MetricsServiceClient::ShouldUploadMetricsForUserId(
-    const uint64_t user_id) {
+bool MetricsServiceClient::ShouldUploadMetricsForUserId(uint64_t user_id) {
   return true;
 }
 
@@ -87,7 +86,7 @@ base::TimeDelta MetricsServiceClient::GetUploadInterval() {
         metrics::switches::kMetricsUploadIntervalSec);
     int custom_upload_interval;
     if (base::StringToInt(switch_value, &custom_upload_interval)) {
-      return base::TimeDelta::FromSeconds(
+      return base::Seconds(
           std::max(custom_upload_interval, kMetricsUploadIntervalSecMinimum));
     }
     LOG(DFATAL) << "Malformed value for --metrics-upload-interval. "
@@ -128,7 +127,7 @@ bool MetricsServiceClient::AreNotificationListenersEnabledOnAllProfiles() {
   return false;
 }
 
-std::string MetricsServiceClient::GetAppPackageName() {
+std::string MetricsServiceClient::GetAppPackageNameIfLoggable() {
   return std::string();
 }
 
@@ -161,8 +160,7 @@ void MetricsServiceClient::UpdateRunningServices() {
 }
 
 bool MetricsServiceClient::IsMetricsReportingForceEnabled() const {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kForceEnableMetricsReporting);
+  return ::metrics::IsMetricsReportingForceEnabled();
 }
 
 }  // namespace metrics

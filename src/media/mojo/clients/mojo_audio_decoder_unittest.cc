@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
@@ -69,6 +69,9 @@ class MojoAudioDecoderTest : public ::testing::Test {
         task_environment_.GetMainThreadTaskRunner(),
         std::move(remote_audio_decoder));
   }
+
+  MojoAudioDecoderTest(const MojoAudioDecoderTest&) = delete;
+  MojoAudioDecoderTest& operator=(const MojoAudioDecoderTest&) = delete;
 
   ~MojoAudioDecoderTest() override {
     // Destroy |mojo_audio_decoder_| first so that the service will be
@@ -140,9 +143,9 @@ class MojoAudioDecoderTest : public ::testing::Test {
     EXPECT_CALL(*this, OnInitialized(SameStatusCode(status)))
         .WillOnce(InvokeWithoutArgs(this, &MojoAudioDecoderTest::QuitLoop));
 
-    AudioDecoderConfig audio_config(kCodecVorbis, kSampleFormat, kChannelLayout,
-                                    kDefaultSampleRate, EmptyExtraData(),
-                                    EncryptionScheme::kUnencrypted);
+    AudioDecoderConfig audio_config(
+        AudioCodec::kVorbis, kSampleFormat, kChannelLayout, kDefaultSampleRate,
+        EmptyExtraData(), EncryptionScheme::kUnencrypted);
 
     mojo_audio_decoder_->Initialize(
         audio_config, nullptr,
@@ -241,16 +244,13 @@ class MojoAudioDecoderTest : public ::testing::Test {
   scoped_refptr<base::SingleThreadTaskRunner> service_task_runner_;
 
   // Owned by the connection on the service thread.
-  MojoAudioDecoderService* mojo_audio_decoder_service_ = nullptr;
+  raw_ptr<MojoAudioDecoderService> mojo_audio_decoder_service_ = nullptr;
 
   // Service side mock.
-  StrictMock<MockAudioDecoder>* mock_audio_decoder_ = nullptr;
+  raw_ptr<StrictMock<MockAudioDecoder>> mock_audio_decoder_ = nullptr;
 
   int num_of_decodes_ = 0;
   int decode_count_ = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MojoAudioDecoderTest);
 };
 
 TEST_F(MojoAudioDecoderTest, Initialize_Success) {

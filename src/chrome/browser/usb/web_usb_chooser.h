@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 
@@ -24,6 +24,9 @@ class WebUsbChooser {
  public:
   explicit WebUsbChooser(content::RenderFrameHost* render_frame_host);
 
+  WebUsbChooser(const WebUsbChooser&) = delete;
+  WebUsbChooser& operator=(const WebUsbChooser&) = delete;
+
   virtual ~WebUsbChooser();
 
   void GetPermission(
@@ -38,9 +41,7 @@ class WebUsbChooser {
   content::RenderFrameHost* render_frame_host() { return render_frame_host_; }
 
  private:
-  content::RenderFrameHost* const render_frame_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebUsbChooser);
+  const raw_ptr<content::RenderFrameHost> render_frame_host_;
 };
 
 #endif  // CHROME_BROWSER_USB_WEB_USB_CHOOSER_H_

@@ -26,7 +26,7 @@
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -37,7 +37,7 @@
 #include "components/favicon/core/fallback_url_util.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon_base/favicon_url_parser.h"
-#include "components/history_clusters/core/memories_features.h"
+#include "components/history_clusters/core/features.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/prefs/pref_service.h"
 #include "components/query_parser/snippet.h"
@@ -241,7 +241,7 @@ base::Value HistoryEntryToValue(
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   SupervisedUserService* supervised_user_service = nullptr;
-  if (profile->IsSupervised()) {
+  if (profile->IsChild()) {
     supervised_user_service =
         SupervisedUserServiceFactory::GetForProfile(profile);
   }
@@ -265,9 +265,8 @@ base::Value HistoryEntryToValue(
   result.SetStringKey("remoteIconUrlForUma",
                       entry.remote_icon_url_for_uma.spec());
 
-  // Additional debugging fields that are only shown if the
-  // history_clusters::kDebug feature is enabled.
-  if (base::FeatureList::IsEnabled(history_clusters::kDebug)) {
+  // Additional debugging fields shown only if the debug feature is enabled.
+  if (base::FeatureList::IsEnabled(history_clusters::kUserVisibleDebug)) {
     base::Value debug(base::Value::Type::DICTIONARY);
     debug.SetBoolKey("isUrlInLocalDatabase", IsUrlInLocalDatabase(entry));
     debug.SetIntKey("visitCount", entry.visit_count);
@@ -314,24 +313,24 @@ void BrowsingHistoryHandler::RegisterMessages() {
       profile, std::make_unique<FaviconSource>(
                    profile, chrome::FaviconUrlFormat::kFavicon2));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "queryHistory",
       base::BindRepeating(&BrowsingHistoryHandler::HandleQueryHistory,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "queryHistoryContinuation",
       base::BindRepeating(
           &BrowsingHistoryHandler::HandleQueryHistoryContinuation,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "removeVisits",
       base::BindRepeating(&BrowsingHistoryHandler::HandleRemoveVisits,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "clearBrowsingData",
       base::BindRepeating(&BrowsingHistoryHandler::HandleClearBrowsingData,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "removeBookmark",
       base::BindRepeating(&BrowsingHistoryHandler::HandleRemoveBookmark,
                           base::Unretained(this)));
@@ -342,7 +341,7 @@ void BrowsingHistoryHandler::StartQueryHistory() {
   HistoryService* local_history = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
+      SyncServiceFactory::GetForProfile(profile);
   browsing_history_service_ = std::make_unique<BrowsingHistoryService>(
       this, local_history, sync_service);
 

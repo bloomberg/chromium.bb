@@ -146,9 +146,8 @@ class OSXFindTest(FindTestBase):
       return
 
     types = self.DoFindAllTypes()
-    self.assertEquals(
-        set(types),
-        {
+    self.assertEqual(
+        set(types), {
             'debug', 'release', 'content-shell-debug', 'content-shell-release',
             'canary', 'system'
         })
@@ -195,7 +194,7 @@ class LinuxFindTest(fake_filesystem_unittest.TestCase):
   def DoFindAllTypes(self):
     return [b.browser_type for b in self.DoFindAll()]
 
-  @decorators.Disabled('android')  # http://crbug.com/905359
+  @decorators.Disabled('android')  # Test not applicable to Android
   def testFindAllWithCheckout(self):
     # CHROMIUM_OUTPUT_DIR affects the outcome of the tests, so temporarily
     # remove it from the environment.
@@ -206,7 +205,7 @@ class LinuxFindTest(fake_filesystem_unittest.TestCase):
         for browser in ['chrome', 'content_shell']:
           self.CreateBrowser('/src/out/%s/%s' % (target, browser))
 
-      self.assertEquals(
+      self.assertEqual(
           set(self.DoFindAllTypes()),
           {'debug', 'release', 'content-shell-debug', 'content-shell-release'})
     finally:
@@ -218,7 +217,7 @@ class LinuxFindTest(fake_filesystem_unittest.TestCase):
 
     self.assertFalse(self.DoFindAllTypes())
 
-  @decorators.Disabled('android')  # http://crbug.com/905359
+  @decorators.Disabled('android')  # Test not applicable to Android
   def testFindWithProvidedExecutable(self):
     self.CreateBrowser('/foo/chrome')
     self._finder_options.browser_executable = '/foo/chrome'
@@ -237,23 +236,23 @@ class LinuxFindTest(fake_filesystem_unittest.TestCase):
       self.DoFindAllTypes()
     self.assertIn('does not exist or is not executable', str(cm.exception))
 
-  @decorators.Disabled('android')  # http://crbug.com/905359
+  @decorators.Disabled('android')  # Test not applicable to Android
   def testFindAllWithInstalled(self):
     official_names = ['chrome', 'chrome-beta', 'chrome-unstable']
 
     for name in official_names:
       self.CreateBrowser('/opt/google/%s/chrome' % name)
 
-    self.assertEquals(set(self.DoFindAllTypes()), {'stable', 'beta', 'dev'})
+    self.assertEqual(set(self.DoFindAllTypes()), {'stable', 'beta', 'dev'})
 
-  @decorators.Disabled('android')  # http://crbug.com/905359
+  @decorators.Disabled('android')  # Test not applicable to Android
   def testFindAllSystem(self):
     self.CreateBrowser('/opt/google/chrome/chrome')
     os.symlink('/opt/google/chrome/chrome', '/usr/bin/google-chrome')
 
-    self.assertEquals(set(self.DoFindAllTypes()), {'system', 'stable'})
+    self.assertEqual(set(self.DoFindAllTypes()), {'system', 'stable'})
 
-  @decorators.Disabled('android')  # http://crbug.com/905359
+  @decorators.Disabled('android')  # Test not applicable to Android
   def testFindAllSystemIsBeta(self):
     self.CreateBrowser('/opt/google/chrome/chrome')
     self.CreateBrowser('/opt/google/chrome-beta/chrome')
@@ -261,8 +260,8 @@ class LinuxFindTest(fake_filesystem_unittest.TestCase):
 
     google_chrome = [browser for browser in self.DoFindAll()
                      if browser.browser_type == 'system'][0]
-    self.assertEquals('/opt/google/chrome-beta',
-                      google_chrome._browser_directory)
+    self.assertEqual('/opt/google/chrome-beta',
+                     google_chrome._browser_directory)
 
 
 class WinFindTest(FindTestBase):
@@ -288,13 +287,11 @@ class WinFindTest(FindTestBase):
       return
 
     types = self.DoFindAllTypes()
-    self.assertEquals(
-        set(types),
-        {
+    self.assertEqual(
+        set(types), {
             'debug', 'release', 'content-shell-debug', 'content-shell-release',
             'system', 'canary'
-        }
-    )
+        })
 
   def testFindAllWithExact(self):
     if not self.CanFindAvailableBrowsers():
@@ -302,13 +299,11 @@ class WinFindTest(FindTestBase):
 
     self._finder_options.browser_executable = 'c:\\tmp\\chrome.exe'
     types = self.DoFindAllTypes()
-    self.assertEquals(
-        set(types),
-        {
+    self.assertEqual(
+        set(types), {
             'exact', 'debug', 'release', 'content-shell-debug',
             'content-shell-release', 'system', 'canary'
-        }
-    )
+        })
 
   def testNoErrorWithUnrecognizedExecutableName(self):
     if not self.CanFindAvailableBrowsers():

@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 #include "tools/benchmark/benchmark_codec_jpeg.h"
 
 #include <stddef.h>
@@ -24,17 +15,15 @@
 #include <string>
 
 #include "lib/extras/codec_jpg.h"
+#include "lib/extras/time.h"
 #include "lib/jxl/base/data_parallel.h"
 #include "lib/jxl/base/padded_bytes.h"
 #include "lib/jxl/base/span.h"
 #include "lib/jxl/base/thread_pool_internal.h"
-#include "lib/jxl/base/time.h"
 #include "lib/jxl/codec_in_out.h"
 #include "tools/cmdline.h"
 
-#ifdef MEMORY_SANITIZER
-#include "sanitizer/msan_interface.h"
-#endif
+using jxl::extras::JpegEncoder;
 
 namespace jxl {
 
@@ -51,10 +40,10 @@ bool ParseChromaSubsampling(const char* param,
                             YCbCrChromaSubsampling* subsampling) {
   std::vector<std::pair<
       std::string, std::pair<std::array<uint8_t, 3>, std::array<uint8_t, 3>>>>
-      options = {{"444", {{1, 1, 1}, {1, 1, 1}}},
-                 {"420", {{2, 1, 1}, {2, 1, 1}}},
-                 {"422", {{2, 1, 1}, {1, 1, 1}}},
-                 {"440", {{1, 1, 1}, {2, 1, 1}}}};
+      options = {{"444", {{{1, 1, 1}}, {{1, 1, 1}}}},
+                 {"420", {{{2, 1, 1}}, {{2, 1, 1}}}},
+                 {"422", {{{2, 1, 1}}, {{1, 1, 1}}}},
+                 {"440", {{{1, 1, 1}}, {{2, 1, 1}}}}};
   for (const auto& option : options) {
     if (param == option.first) {
       JXL_CHECK(subsampling->Set(option.second.first.data(),
@@ -115,8 +104,8 @@ class JPEGCodec : public ImageCodec {
                     jpegxl::tools::SpeedStats* speed_stats) override {
     double elapsed_deinterleave;
     const double start = Now();
-    JXL_RETURN_IF_ERROR(
-        DecodeImageJPG(compressed, pool, io, &elapsed_deinterleave));
+    JXL_RETURN_IF_ERROR(extras::DecodeImageJPG(compressed, ColorHints(), pool,
+                                               io, &elapsed_deinterleave));
     const double end = Now();
     speed_stats->NotifyElapsed(end - start - elapsed_deinterleave);
     return true;

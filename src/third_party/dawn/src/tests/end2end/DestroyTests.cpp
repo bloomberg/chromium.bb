@@ -17,13 +17,15 @@
 #include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/WGPUHelpers.h"
 
+using ::testing::HasSubstr;
+
 constexpr uint32_t kRTSize = 4;
 
 class DestroyTest : public DawnTest {
   protected:
     void SetUp() override {
         DawnTest::SetUp();
-        DAWN_SKIP_TEST_IF(HasToggleEnabled("skip_validation"));
+        DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("skip_validation"));
 
         renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
@@ -38,7 +40,7 @@ class DestroyTest : public DawnTest {
                   return vec4<f32>(0.0, 1.0, 0.0, 1.0);
               })");
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
         descriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
@@ -48,7 +50,7 @@ class DestroyTest : public DawnTest {
         descriptor.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
         descriptor.cTargets[0].format = renderPass.colorFormat;
 
-        pipeline = device.CreateRenderPipeline2(&descriptor);
+        pipeline = device.CreateRenderPipeline(&descriptor);
 
         vertexBuffer = utils::CreateBufferFromData<float>(
             device, wgpu::BufferUsage::Vertex,
@@ -150,6 +152,47 @@ TEST_P(DestroyTest, TextureSubmitDestroySubmit) {
 
     // Submit fails because texture was destroyed
     ASSERT_DEVICE_ERROR(queue.Submit(1, &commands));
+}
+
+// Attempting to set an object label after it has been destroyed should not cause an error.
+TEST_P(DestroyTest, DestroyThenSetLabel) {
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
+    std::string label = "test";
+    wgpu::BufferDescriptor descriptor;
+    descriptor.size = 4;
+    descriptor.usage = wgpu::BufferUsage::Uniform;
+    wgpu::Buffer buffer = device.CreateBuffer(&descriptor);
+    buffer.Destroy();
+    buffer.SetLabel(label.c_str());
+}
+
+// Device destroy before buffer submit will result in error.
+TEST_P(DestroyTest, DestroyDeviceBeforeSubmit) {
+    // TODO(crbug.com/dawn/628) Add more comprehensive tests with destroy and backends.
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
+    wgpu::CommandBuffer commands = CreateTriangleCommandBuffer();
+
+    // Tests normally don't expect a device lost error, but since we are destroying the device, we
+    // actually do, so we need to override the default device lost callback.
+    ExpectDeviceDestruction();
+    device.Destroy();
+    ASSERT_DEVICE_ERROR_MSG(queue.Submit(1, &commands), HasSubstr("[Device] is lost."));
+}
+
+// Regression test for crbug.com/1276928 where a lingering BGL reference in Vulkan with at least one
+// BG instance could cause bad memory reads because members in the BGL whose destuctors expected a
+// live device were not released until after the device was destroyed.
+TEST_P(DestroyTest, DestroyDeviceLingeringBGL) {
+    // Create and hold the layout reference so that its destructor gets called after the device has
+    // been destroyed via device.Destroy().
+    wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Filtering}});
+    utils::MakeBindGroup(device, layout, {{0, device.CreateSampler()}});
+
+    // Tests normally don't expect a device lost error, but since we are destroying the device, we
+    // actually do, so we need to override the default device lost callback.
+    ExpectDeviceDestruction();
+    device.Destroy();
 }
 
 DAWN_INSTANTIATE_TEST(DestroyTest,

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/unguessable_token.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
@@ -18,7 +19,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/common/chrome_features.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/instance_update.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -170,33 +173,45 @@ void AppServiceWrapper::GetAppIcon(
     int size_hint_in_dp,
     base::OnceCallback<void(absl::optional<gfx::ImageSkia>)> on_icon_ready)
     const {
-  apps::AppServiceProxyChromeOs* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile_);
   const std::string app_service_id = AppServiceIdFromAppId(app_id, profile_);
   DCHECK(!app_service_id.empty());
 
-  auto icon_type =
-      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
-          ? apps::mojom::IconType::kStandard
-          : apps::mojom::IconType::kUncompressed;
-  proxy->LoadIconFromIconKey(
-      app_id.app_type(), app_service_id, apps::mojom::IconKey::New(), icon_type,
-      size_hint_in_dp,
-      /* allow_placeholder_icon */ false,
-      base::BindOnce(
-          [](base::OnceCallback<void(absl::optional<gfx::ImageSkia>)> callback,
-             apps::mojom::IconValuePtr icon_value) {
-            auto icon_type = (base::FeatureList::IsEnabled(
-                                 features::kAppServiceAdaptiveIcon))
-                                 ? apps::mojom::IconType::kStandard
-                                 : apps::mojom::IconType::kUncompressed;
-            if (!icon_value || icon_value->icon_type != icon_type) {
-              std::move(callback).Run(absl::nullopt);
-            } else {
-              std::move(callback).Run(icon_value->uncompressed);
-            }
-          },
-          std::move(on_icon_ready)));
+  if (base::FeatureList::IsEnabled(features::kAppServiceLoadIconWithoutMojom)) {
+    apps::IconKey icon_key;
+    GetAppProxy()->LoadIconFromIconKey(
+        apps::ConvertMojomAppTypToAppType(app_id.app_type()), app_service_id,
+        icon_key, apps::IconType::kStandard, size_hint_in_dp,
+        /* allow_placeholder_icon */ false,
+        base::BindOnce(
+            [](base::OnceCallback<void(absl::optional<gfx::ImageSkia>)>
+                   callback,
+               apps::IconValuePtr icon_value) {
+              if (!icon_value ||
+                  icon_value->icon_type != apps::IconType::kStandard) {
+                std::move(callback).Run(absl::nullopt);
+              } else {
+                std::move(callback).Run(icon_value->uncompressed);
+              }
+            },
+            std::move(on_icon_ready)));
+  } else {
+    GetAppProxy()->LoadIconFromIconKey(
+        app_id.app_type(), app_service_id, apps::mojom::IconKey::New(),
+        apps::mojom::IconType::kStandard, size_hint_in_dp,
+        /* allow_placeholder_icon */ false,
+        base::BindOnce(
+            [](base::OnceCallback<void(absl::optional<gfx::ImageSkia>)>
+                   callback,
+               apps::mojom::IconValuePtr icon_value) {
+              if (!icon_value ||
+                  icon_value->icon_type != apps::mojom::IconType::kStandard) {
+                std::move(callback).Run(absl::nullopt);
+              } else {
+                std::move(callback).Run(icon_value->uncompressed);
+              }
+            },
+            std::move(on_icon_ready)));
+  }
 }
 
 std::string AppServiceWrapper::GetAppServiceId(const AppId& app_id) const {
@@ -282,13 +297,15 @@ void AppServiceWrapper::OnInstanceUpdate(const apps::InstanceUpdate& update) {
   bool is_destroyed = update.State() & apps::InstanceState::kDestroyed;
   for (auto& listener : listeners_) {
     if (is_active) {
-      listener.OnAppActive(app_id, update.Window(), update.LastUpdatedTime());
+      listener.OnAppActive(app_id, update.InstanceId(),
+                           update.LastUpdatedTime());
     } else {
-      listener.OnAppInactive(app_id, update.Window(), update.LastUpdatedTime());
+      listener.OnAppInactive(app_id, update.InstanceId(),
+                             update.LastUpdatedTime());
     }
 
     if (is_destroyed) {
-      listener.OnAppDestroyed(app_id, update.Window(),
+      listener.OnAppDestroyed(app_id, update.InstanceId(),
                               update.LastUpdatedTime());
     }
   }
@@ -299,25 +316,23 @@ void AppServiceWrapper::OnInstanceRegistryWillBeDestroyed(
   apps::InstanceRegistry::Observer::Observe(nullptr);
 }
 
-apps::AppServiceProxyChromeOs* AppServiceWrapper::GetAppProxy() {
+apps::AppServiceProxy* AppServiceWrapper::GetAppProxy() const {
   return apps::AppServiceProxyFactory::GetForProfile(profile_);
 }
 
 apps::AppRegistryCache& AppServiceWrapper::GetAppCache() const {
-  return apps::AppServiceProxyFactory::GetForProfile(profile_)
-      ->AppRegistryCache();
+  return GetAppProxy()->AppRegistryCache();
 }
 
 apps::InstanceRegistry& AppServiceWrapper::GetInstanceRegistry() const {
-  return apps::AppServiceProxyFactory::GetForProfile(profile_)
-      ->InstanceRegistry();
+  return GetAppProxy()->InstanceRegistry();
 }
 
 bool AppServiceWrapper::ShouldIncludeApp(const AppId& app_id) const {
   if (IsHiddenArcApp(app_id))
     return false;
 
-  if (app_id.app_type() == apps::mojom::AppType::kExtension) {
+  if (app_id.app_type() == apps::mojom::AppType::kChromeApp) {
     const extensions::Extension* extension =
         extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
             app_id.app_id(),

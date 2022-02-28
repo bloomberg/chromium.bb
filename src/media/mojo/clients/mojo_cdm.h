@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -26,6 +25,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -51,6 +51,9 @@ class MojoCdm final : public ContentDecryptionModule,
           const SessionClosedCB& session_closed_cb,
           const SessionKeysChangeCB& session_keys_change_cb,
           const SessionExpirationUpdateCB& session_expiration_update_cb);
+
+  MojoCdm(const MojoCdm&) = delete;
+  MojoCdm& operator=(const MojoCdm&) = delete;
 
   // ContentDecryptionModule implementation.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
@@ -93,7 +96,8 @@ class MojoCdm final : public ContentDecryptionModule,
   void OnSessionMessage(const std::string& session_id,
                         MessageType message_type,
                         const std::vector<uint8_t>& message) final;
-  void OnSessionClosed(const std::string& session_id) final;
+  void OnSessionClosed(const std::string& session_id,
+                       CdmSessionClosedReason reason) final;
   void OnSessionKeysChange(
       const std::string& session_id,
       bool has_additional_usable_key,
@@ -159,8 +163,6 @@ class MojoCdm final : public ContentDecryptionModule,
 
   // This must be the last member.
   base::WeakPtrFactory<MojoCdm> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MojoCdm);
 };
 
 }  // namespace media

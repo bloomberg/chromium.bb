@@ -14,7 +14,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/auth.h"
@@ -48,6 +48,9 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // job that fails for unencrypted requests if current settings dont allow
   // them. Never returns nullptr.
   static std::unique_ptr<URLRequestJob> Create(URLRequest* request);
+
+  URLRequestHttpJob(const URLRequestHttpJob&) = delete;
+  URLRequestHttpJob& operator=(const URLRequestHttpJob&) = delete;
 
   void SetRequestHeadersCallback(RequestHeadersCallback callback) override;
   void SetEarlyResponseHeadersCallback(
@@ -123,7 +126,9 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void OnHeadersReceivedCallback(int result);
   void OnStartCompleted(int result);
   void OnReadCompleted(int result);
-  void NotifyBeforeStartTransactionCallback(int result);
+  void NotifyBeforeStartTransactionCallback(
+      int result,
+      const absl::optional<HttpRequestHeaders>& headers);
   // This just forwards the call to URLRequestJob::NotifyConnected().
   // We need it because that method is protected and cannot be bound in a
   // callback in this class.
@@ -197,13 +202,27 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   bool ShouldFixMismatchedContentLength(int rv) const;
 
   // Returns the effective response headers, considering that they may be
-  // overridden by |override_response_headers_|.
+  // overridden by `override_response_headers_` or
+  // `override_response_info_::headers`.
   HttpResponseHeaders* GetResponseHeaders() const;
+
+  // Compute the `cookie_partition_key_` for the request. Partitioned cookies
+  // will be set using this key and only partitioned cookies with this partition
+  // key will be sent.
+  // Sets `cookie_partition_key_` to nullopt if cookie partitioning is not
+  // enabled, if the NIK has no top-frame site, or if the instance has no
+  // cookie store.
+  void ComputeCookiePartitionKey();
 
   RequestPriority priority_;
 
   HttpRequestInfo request_info_;
-  const HttpResponseInfo* response_info_;
+  raw_ptr<const HttpResponseInfo> response_info_;
+
+  // Used for any logic, e.g. DNS-based scheme upgrade, that needs to synthesize
+  // response info to override the real response info. Transaction should be
+  // cleared before setting.
+  std::unique_ptr<HttpResponseInfo> override_response_info_;
 
   // Auth states for proxy and origin server.
   AuthState proxy_auth_state_;
@@ -251,7 +270,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // to inform the NetworkDelegate that it may not call back.
   bool awaiting_callback_;
 
-  const HttpUserAgentSettings* http_user_agent_settings_;
+  raw_ptr<const HttpUserAgentSettings> http_user_agent_settings_;
 
   // Keeps track of total received bytes over the network from transactions used
   // by this job that have already been destroyed.
@@ -264,9 +283,13 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   ResponseHeadersCallback early_response_headers_callback_;
   ResponseHeadersCallback response_headers_callback_;
 
-  base::WeakPtrFactory<URLRequestHttpJob> weak_factory_{this};
+  // Partitioned cookies will be set using this key and only partitioned cookies
+  // with this partition key will be sent.
+  //
+  // Unpartitioned cookies are unaffected by this field.
+  absl::optional<CookiePartitionKey> cookie_partition_key_;
 
-  DISALLOW_COPY_AND_ASSIGN(URLRequestHttpJob);
+  base::WeakPtrFactory<URLRequestHttpJob> weak_factory_{this};
 };
 
 }  // namespace net

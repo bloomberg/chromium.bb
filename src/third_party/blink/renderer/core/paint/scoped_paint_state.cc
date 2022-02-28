@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 
 namespace blink {
 
@@ -20,9 +21,8 @@ void ScopedPaintState::AdjustForPaintOffsetTranslation(
     // are painting table row background behind a cell having paint offset
     // translation.
     input_paint_info_.context.Save();
-    FloatSize translation = paint_offset_translation.Translation2D();
-    input_paint_info_.context.Translate(translation.Width(),
-                                        translation.Height());
+    gfx::Vector2dF translation = paint_offset_translation.Translation2D();
+    input_paint_info_.context.Translate(translation.x(), translation.y());
     paint_offset_translation_as_drawing_ = true;
   } else {
     chunk_properties_.emplace(
@@ -55,28 +55,27 @@ void ScopedBoxContentsPaintState::AdjustForBoxContents(const LayoutBox& box) {
                             fragment_to_paint_->ContentsProperties(), box,
                             input_paint_info_.DisplayItemTypeForClipping());
 
-  // Then adjust paint offset and cull rect for scroll translation.
   const auto* properties = fragment_to_paint_->PaintProperties();
-  if (!properties)
-    return;
-  const auto* scroll_translation = properties->ScrollTranslation();
-  if (!scroll_translation)
-    return;
+  const auto* scroll_translation =
+      properties ? properties->ScrollTranslation() : nullptr;
 
   // See comments for ScrollTranslation in object_paint_properties.h
   // for the reason of adding ScrollOrigin(). The paint offset will
   // be used only for the scrolling contents that are not painted through
   // descendant objects' Paint() method, e.g. inline boxes.
-  paint_offset_ += PhysicalOffset(box.ScrollOrigin());
+  if (scroll_translation)
+    paint_offset_ += PhysicalOffset(box.ScrollOrigin());
 
   if (RuntimeEnabledFeatures::CullRectUpdateEnabled()) {
+    // We calculated cull rects for PaintLayers only.
+    if (!box.HasLayer())
+      return;
     adjusted_paint_info_.emplace(input_paint_info_);
     adjusted_paint_info_->SetCullRect(
         fragment_to_paint_->GetContentsCullRect());
-    if (box.HasLayer() && box.Layer()->PreviousPaintResult() == kFullyPainted) {
+    if (box.Layer()->PreviousPaintResult() == kFullyPainted) {
       PhysicalRect contents_visual_rect =
-          box.PhysicalContentsVisualOverflowRect();
-      contents_visual_rect.Move(fragment_to_paint_->PaintOffset());
+          PaintLayerPainter::ContentsVisualRect(*fragment_to_paint_, box);
       if (!PhysicalRect(fragment_to_paint_->GetContentsCullRect().Rect())
                .Contains(contents_visual_rect)) {
         box.Layer()->SetPreviousPaintResult(kMayBeClippedByCullRect);
@@ -94,8 +93,10 @@ void ScopedBoxContentsPaintState::AdjustForBoxContents(const LayoutBox& box) {
   if (IsA<LayoutView>(box) && input_paint_info_.GetCullRect().IsInfinite())
     return;
 
-  adjusted_paint_info_.emplace(input_paint_info_);
-  adjusted_paint_info_->TransformCullRect(*scroll_translation);
+  if (scroll_translation) {
+    adjusted_paint_info_.emplace(input_paint_info_);
+    adjusted_paint_info_->TransformCullRect(*scroll_translation);
+  }
 }
 
 }  // namespace blink

@@ -228,7 +228,7 @@ int HandshakeWithFakeServer(QuicConfig* server_quic_config,
                             MockQuicConnectionHelper* helper,
                             MockAlarmFactory* alarm_factory,
                             PacketSavingConnection* client_conn,
-                            QuicCryptoClientStream* client,
+                            QuicCryptoClientStreamBase* client,
                             std::string alpn) {
   auto* server_conn = new testing::NiceMock<PacketSavingConnection>(
       helper, alarm_factory, Perspective::IS_SERVER,
@@ -593,7 +593,7 @@ void CompareCrypters(const QuicEncrypter* encrypter,
 
 }  // namespace
 
-void CompareClientAndServerKeys(QuicCryptoClientStream* client,
+void CompareClientAndServerKeys(QuicCryptoClientStreamBase* client,
                                 QuicCryptoServerStreamBase* server) {
   QuicFramer* client_framer = QuicConnectionPeer::GetFramer(
       QuicStreamPeer::session(client)->connection());
@@ -634,22 +634,6 @@ void CompareClientAndServerKeys(QuicCryptoClientStream* client,
       "subkey secret", client_subkey_secret.data(),
       client_subkey_secret.length(), server_subkey_secret.data(),
       server_subkey_secret.length());
-
-  const char kSampleLabel[] = "label";
-  const char kSampleContext[] = "context";
-  const size_t kSampleOutputLength = 32;
-  std::string client_key_extraction;
-  std::string server_key_extraction;
-  EXPECT_TRUE(client->ExportKeyingMaterial(kSampleLabel, kSampleContext,
-                                           kSampleOutputLength,
-                                           &client_key_extraction));
-  EXPECT_TRUE(server->ExportKeyingMaterial(kSampleLabel, kSampleContext,
-                                           kSampleOutputLength,
-                                           &server_key_extraction));
-  quiche::test::CompareCharArraysWithHexError(
-      "sample key extraction", client_key_extraction.data(),
-      client_key_extraction.length(), server_key_extraction.data(),
-      server_key_extraction.length());
 }
 
 QuicTag ParseTag(const char* tagstr) {
@@ -743,6 +727,12 @@ void MovePackets(PacketSavingConnection* source_conn,
 
   size_t index = *inout_packet_index;
   for (; index < source_conn->encrypted_packets_.size(); index++) {
+    if (!dest_conn->connected()) {
+      QUIC_LOG(INFO)
+          << "Destination connection disconnected. Skipping packet at index "
+          << index;
+      continue;
+    }
     // In order to properly test the code we need to perform encryption and
     // decryption so that the crypters latch when expected. The crypters are in
     // |dest_conn|, but we don't want to try and use them there. Instead we swap

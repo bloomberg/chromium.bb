@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/uninstall_reason.h"
@@ -39,6 +38,9 @@ testing::AssertionResult HasSingleExtension(
 class TestObserver : public ExtensionRegistryObserver {
  public:
   TestObserver() {}
+
+  TestObserver(const TestObserver&) = delete;
+  TestObserver& operator=(const TestObserver&) = delete;
 
   void Reset() {
     loaded_.clear();
@@ -83,8 +85,6 @@ class TestObserver : public ExtensionRegistryObserver {
   ExtensionList unloaded_;
   ExtensionList installed_;
   ExtensionList uninstalled_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
 TEST_F(ExtensionRegistryTest, FillAndClearRegistry) {

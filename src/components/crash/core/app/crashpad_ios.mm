@@ -45,7 +45,7 @@ const std::map<std::string, std::string>& GetProcessSimpleAnnotations() {
       process_annotations["channel"] = base::SysNSStringToUTF8(channel);
       NSString* version =
           base::mac::ObjCCast<NSString>([base::mac::FrameworkBundle()
-              objectForInfoDictionaryKey:@"CFBundleShortVersionString"]);
+              objectForInfoDictionaryKey:@"CFBundleVersion"]);
       process_annotations["ver"] = base::SysNSStringToUTF8(version);
       process_annotations["plat"] = std::string("iOS");
       process_annotations["crashpad"] = std::string("yes");
@@ -63,35 +63,38 @@ void ProcessIntermediateDumps(
   GetCrashpadClient().ProcessIntermediateDumps(annotations);
 }
 
-void StartProcesingPendingReports() {
-  GetCrashpadClient().StartProcesingPendingReports();
+void ProcessIntermediateDump(
+    const base::FilePath& file,
+    const std::map<std::string, std::string>& annotations) {
+  GetCrashpadClient().ProcessIntermediateDump(file, annotations);
+}
+
+void StartProcessingPendingReports() {
+  GetCrashpadClient().StartProcessingPendingReports();
 }
 
 namespace internal {
 
-base::FilePath PlatformCrashpadInitialization(
+bool PlatformCrashpadInitialization(
     bool initial_client,
     bool browser_process,
     bool embedded_handler,
     const std::string& user_data_dir,
     const base::FilePath& exe_path,
-    const std::vector<std::string>& initial_arguments) {
-  base::FilePath database_path;  // Only valid in the browser process.
+    const std::vector<std::string>& initial_arguments,
+    base::FilePath* database_path) {
   DCHECK(!embedded_handler);     // This is not used on iOS.
   DCHECK(exe_path.empty());      // This is not used on iOS.
   DCHECK(initial_arguments.empty());
+  DCHECK(initial_client);
 
-  if (initial_client) {
-    @autoreleasepool {
-      CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
-      crash_reporter_client->GetCrashDumpLocation(&database_path);
-      std::string url = crash_reporter_client->GetUploadUrl();
-      GetCrashpadClient().StartCrashpadInProcessHandler(
-          database_path, url, GetProcessSimpleAnnotations());
-    }  // @autoreleasepool
-  }
-
-  return database_path;
+  @autoreleasepool {
+    CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
+    crash_reporter_client->GetCrashDumpLocation(database_path);
+    std::string url = crash_reporter_client->GetUploadUrl();
+    return GetCrashpadClient().StartCrashpadInProcessHandler(
+        *database_path, url, GetProcessSimpleAnnotations());
+  }  // @autoreleasepool
 }
 
 }  // namespace internal

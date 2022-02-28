@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_CONTEXTUALSEARCH_CONTEXTUAL_SEARCH_RANKER_LOGGER_IMPL_H_
 
 #include "base/android/jni_android.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
@@ -35,6 +36,12 @@ enum AssistRankerPrediction {
 class ContextualSearchRankerLoggerImpl {
  public:
   ContextualSearchRankerLoggerImpl(JNIEnv* env, jobject obj);
+
+  ContextualSearchRankerLoggerImpl(const ContextualSearchRankerLoggerImpl&) =
+      delete;
+  ContextualSearchRankerLoggerImpl& operator=(
+      const ContextualSearchRankerLoggerImpl&) = delete;
+
   ~ContextualSearchRankerLoggerImpl();
 
   // Calls the destructor.  Should be called when this native object is no
@@ -89,7 +96,7 @@ class ContextualSearchRankerLoggerImpl {
 
   // The |BrowserContext| currently associated with the above predictor.
   // The object not owned by ContextualSearchRankerLoggerImpl.
-  content::BrowserContext* browser_context_ = nullptr;
+  raw_ptr<content::BrowserContext> browser_context_ = nullptr;
 
   // The current RankerExample or null.
   // Set of features from one example of a Tap to predict a suppression
@@ -101,8 +108,6 @@ class ContextualSearchRankerLoggerImpl {
 
   // The linked Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContextualSearchRankerLoggerImpl);
 };
 
 #endif  // CHROME_BROWSER_ANDROID_CONTEXTUALSEARCH_CONTEXTUAL_SEARCH_RANKER_LOGGER_IMPL_H_

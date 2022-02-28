@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Test configs for pool operators."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow.compat.v1 as tf
 from tensorflow.lite.testing.zip_test_utils import create_tensor_data
 from tensorflow.lite.testing.zip_test_utils import make_zip_of_tests
@@ -55,6 +51,7 @@ def make_pool_tests(pool_op_in, allow_fully_quantize=False):
             "padding": ["SAME", "VALID"],
             "data_format": ["NHWC"],  # TODO(aselle): NCHW  would be good
             "fully_quantize": [False],
+            "quant_16x8": [False]
         },
         {
             "ksize": [[2, 1, 1, 2], [1, 1, 1, 1], [1, 1, 2, 1], [1, 10, 11, 1]],
@@ -65,6 +62,16 @@ def make_pool_tests(pool_op_in, allow_fully_quantize=False):
             "padding": ["SAME", "VALID"],
             "data_format": ["NHWC"],  # TODO(aselle): NCHW  would be good
             "fully_quantize": [True],
+            "quant_16x8": [False]
+        },
+        {
+            "ksize": [[1, 1, 1, 1]],
+            "strides": [[1, 1, 1, 1]],
+            "input_shape": [[1, 1, 1, 1]],
+            "padding": ["SAME", "VALID"],
+            "data_format": ["NHWC"],
+            "fully_quantize": [True],
+            "quant_16x8": [True]
         }
     ]
     # test_parameters include fully_quantize option only when

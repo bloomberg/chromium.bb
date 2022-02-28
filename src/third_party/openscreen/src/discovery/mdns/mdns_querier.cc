@@ -18,6 +18,7 @@
 #include "discovery/mdns/mdns_receiver.h"
 #include "discovery/mdns/mdns_sender.h"
 #include "discovery/mdns/public/mdns_constants.h"
+#include "util/std_util.h"
 
 namespace openscreen {
 namespace discovery {
@@ -36,16 +37,13 @@ bool IsNegativeResponseFor(const MdnsRecord& record, DnsType type) {
   // RFC 6762 section 6.1, the NSEC bit must NOT be set in the received NSEC
   // record to indicate this is an mDNS NSEC record rather than a traditional
   // DNS NSEC record.
-  if (std::find(nsec.types().begin(), nsec.types().end(), DnsType::kNSEC) !=
-      nsec.types().end()) {
+  if (Contains(nsec.types(), DnsType::kNSEC)) {
     return false;
   }
 
-  return std::find_if(nsec.types().begin(), nsec.types().end(),
-                      [type](DnsType stored_type) {
-                        return stored_type == type ||
-                               stored_type == DnsType::kANY;
-                      }) != nsec.types().end();
+  return ContainsIf(nsec.types(), [type](DnsType stored_type) {
+    return stored_type == type || stored_type == DnsType::kANY;
+  });
 }
 
 struct HashDnsType {
@@ -335,8 +333,8 @@ const MdnsRecordTracker& MdnsQuerier::RecordTrackerLruCache::StartTracking(
     MdnsRecord record,
     DnsType dns_type) {
   auto expiration_callback = [this](const MdnsRecordTracker* tracker,
-                                    const MdnsRecord& record) {
-    querier_->OnRecordExpired(tracker, record);
+                                    const MdnsRecord& r) {
+    querier_->OnRecordExpired(tracker, r);
   };
 
   while (lru_order_.size() >=
@@ -644,12 +642,11 @@ void MdnsQuerier::ProcessRecord(const MdnsRecord& record) {
   // NSEC records this will be all records which the record dictates the
   // nonexistence of.
   std::vector<DnsType> types;
-  int types_count = 0;
+  size_t types_count = 0;
   const DnsType* types_ptr = nullptr;
   if (record.dns_type() == DnsType::kNSEC) {
     const auto& nsec_rdata = absl::get<NsecRecordRdata>(record.rdata());
-    if (std::find(nsec_rdata.types().begin(), nsec_rdata.types().end(),
-                  DnsType::kANY) != nsec_rdata.types().end()) {
+    if (Contains(nsec_rdata.types(), DnsType::kANY)) {
       types_ptr = kTranslatedNsecAnyQueryTypes.data();
       types_count = kTranslatedNsecAnyQueryTypes.size();
     } else {
@@ -663,7 +660,7 @@ void MdnsQuerier::ProcessRecord(const MdnsRecord& record) {
   }
 
   // Apply the update for each type that the record is associated with.
-  for (int i = 0; i < types_count; ++i) {
+  for (size_t i = 0; i < types_count; ++i) {
     DnsType dns_type = types_ptr[i];
     switch (record.record_type()) {
       case RecordType::kShared: {
@@ -748,7 +745,7 @@ void MdnsQuerier::ProcessSinglyTrackedUniqueRecord(
 
   auto on_rdata_change = [this, r = std::move(record_for_callback),
                           existed_previously,
-                          will_exist](const MdnsRecordTracker& tracker) {
+                          will_exist](const MdnsRecordTracker& t) {
     // If RDATA on the record is different, notify that the record has
     // been updated.
     if (existed_previously && will_exist) {
@@ -820,10 +817,10 @@ void MdnsQuerier::ProcessCallbacks(const MdnsRecord& record,
 }
 
 void MdnsQuerier::AddQuestion(const MdnsQuestion& question) {
-  auto tracker = std::make_unique<MdnsQuestionTracker>(
+  auto question_tracker = std::make_unique<MdnsQuestionTracker>(
       question, sender_, task_runner_, now_function_, random_delay_, config_);
-  MdnsQuestionTracker* ptr = tracker.get();
-  questions_.emplace(question.name(), std::move(tracker));
+  MdnsQuestionTracker* ptr = question_tracker.get();
+  questions_.emplace(question.name(), std::move(question_tracker));
 
   // Let all records associated with this question know that there is a new
   // query that can be used for their refresh.

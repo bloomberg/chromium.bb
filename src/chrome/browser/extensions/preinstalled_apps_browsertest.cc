@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 
 #include "base/json/json_reader.h"
@@ -13,17 +14,23 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
 #include "build/branding_buildflags.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
-#include "chrome/browser/web_applications/components/preinstalled_app_install_features.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/extension_status_utils.h"
+#include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
+#include "chrome/browser/web_applications/preinstalled_app_install_features.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_manager.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_utils.h"
-#include "chrome/browser/web_applications/test/test_os_integration_manager.h"
-#include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/test/fake_os_integration_manager.h"
+#include "chrome/browser/web_applications/test/fake_web_app_provider.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_installation_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -126,8 +133,8 @@ class PreinstalledAppsMigrationBrowserTest
     : public PreinstalledAppsBrowserTest {
  public:
   PreinstalledAppsMigrationBrowserTest()
-      : test_web_app_provider_creator_(base::BindRepeating(
-            &PreinstalledAppsMigrationBrowserTest::CreateTestWebAppProvider,
+      : fake_web_app_provider_creator_(base::BindRepeating(
+            &PreinstalledAppsMigrationBrowserTest::CreateFakeWebAppProvider,
             base::Unretained(this))) {
     // Skip migration on startup because we override the configs used, and need
     // to do that a little later (because we need the embedded test server up
@@ -181,6 +188,8 @@ class PreinstalledAppsMigrationBrowserTest
   // We override this to also wait for the PreinstalledWebAppManager.
   void WaitForSystemReady() override {
     PreinstalledAppsBrowserTest::WaitForSystemReady();
+    web_app::test::WaitUntilReady(
+        web_app::WebAppProvider::GetForTest(browser()->profile()));
 
     // For web app migration tests, we want to set up extension app shortcut
     // locations to test that they are preserved.
@@ -194,7 +203,7 @@ class PreinstalledAppsMigrationBrowserTest
 
     {
       web_app::PreinstalledWebAppManager& web_app_manager =
-          web_app::WebAppProvider::Get(profile())
+          web_app::WebAppProvider::GetForTest(profile())
               ->preinstalled_web_app_manager();
       base::RunLoop run_loop;
       auto quit =
@@ -234,25 +243,36 @@ class PreinstalledAppsMigrationBrowserTest
   // Returns true if the web app is currently installed in this profile (even if
   // it was installed from a previous run).
   bool IsWebAppCurrentlyInstalled() {
-    const web_app::AppId app_id = web_app::GenerateAppIdFromURL(GetAppUrl());
-    return web_app::WebAppProvider::Get(profile())->registrar().IsInstalled(
-        app_id);
+    const web_app::AppId app_id =
+        web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, GetAppUrl());
+    return web_app::WebAppProvider::GetForTest(profile())
+        ->registrar()
+        .IsInstalled(app_id);
+  }
+
+  bool CanWebAppAlwaysUpdateIdentity() {
+    const web_app::AppId app_id =
+        web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, GetAppUrl());
+    const web_app::WebApp* web_app =
+        web_app::WebAppProvider::GetForTest(profile())->registrar().GetAppById(
+            app_id);
+    return CanWebAppUpdateIdentity(web_app);
   }
 
   ExtensionRegistry* registry() { return ExtensionRegistry::Get(profile()); }
 
  protected:
-  web_app::TestShortcutManager* shortcut_manager_;
-  web_app::TestOsIntegrationManager* os_integration_manager_;
+  raw_ptr<web_app::TestShortcutManager> shortcut_manager_;
+  raw_ptr<web_app::FakeOsIntegrationManager> os_integration_manager_;
 
  private:
-  std::unique_ptr<KeyedService> CreateTestWebAppProvider(Profile* profile) {
-    auto provider = std::make_unique<web_app::TestWebAppProvider>(profile);
+  std::unique_ptr<KeyedService> CreateFakeWebAppProvider(Profile* profile) {
+    auto provider = std::make_unique<web_app::FakeWebAppProvider>(profile);
     auto shortcut_manager =
         std::make_unique<web_app::TestShortcutManager>(profile);
     shortcut_manager_ = shortcut_manager.get();
     auto os_integration_manager =
-        std::make_unique<web_app::TestOsIntegrationManager>(
+        std::make_unique<web_app::FakeOsIntegrationManager>(
             profile, std::move(shortcut_manager), nullptr, nullptr, nullptr);
     os_integration_manager_ = os_integration_manager.get();
     provider->SetOsIntegrationManager(std::move(os_integration_manager));
@@ -260,7 +280,7 @@ class PreinstalledAppsMigrationBrowserTest
     return provider;
   }
 
-  web_app::TestWebAppProviderCreator test_web_app_provider_creator_;
+  web_app::FakeWebAppProviderCreator fake_web_app_provider_creator_;
   std::vector<base::Value> app_configs_;
   std::map<GURL, web_app::ExternallyManagedAppManager::InstallResult>
       install_results_;
@@ -308,6 +328,7 @@ IN_PROC_BROWSER_TEST_F(PreinstalledAppsBrowserTest, TestUninstall) {
   EXPECT_FALSE(registry()->enabled_extensions().GetByID(kDefaultInstalledId));
 }
 
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // A fun back-and-forth with enabling-and-disabling the web app migration
 // feature. This is designed to exercise the flow needed in case of a rollback.
 IN_PROC_BROWSER_TEST_F(PreinstalledAppsMigrationBrowserTest,
@@ -326,23 +347,28 @@ IN_PROC_BROWSER_TEST_F(PreinstalledAppsMigrationBrowserTest,
   // Next, the feature is enabled. The web app should be installed, and the
   // extension app uninstalled.
   TestExtensionRegistryObserver observer(registry(), kDefaultInstalledId);
+  base::RunLoop extension_shortcuts_deleted_loop;
+  web_app::WaitForExtensionShortcutsDeleted(
+      kDefaultInstalledId, extension_shortcuts_deleted_loop.QuitClosure());
   WaitForSystemReady();
   EXPECT_TRUE(WasMigratedToWebApp());
   EXPECT_TRUE(WasWebAppInstalledInThisRun());
   EXPECT_TRUE(IsWebAppCurrentlyInstalled());
 
+  // Subtle: The uninstallation happens extra-asynchronously (even after it's
+  // reported as happening through the PreinstalledWebAppManager).
+  ASSERT_TRUE(observer.WaitForExtensionUninstalled());
+  EXPECT_FALSE(registry()->enabled_extensions().GetByID(kDefaultInstalledId));
+
   // Verify that the migration preserves shortcut states of the uninstalled
-  // extension app.
+  // extension app. The shortcuts for the new app are not created until after
+  // the old shortcuts have been deleted, so wait for that first.
+  extension_shortcuts_deleted_loop.Run();
   EXPECT_EQ(1u, os_integration_manager_->num_create_shortcuts_calls());
   EXPECT_TRUE(os_integration_manager_->did_add_to_desktop());
   auto options = os_integration_manager_->get_last_install_options();
   EXPECT_TRUE(options->os_hooks[web_app::OsHookType::kRunOnOsLogin]);
   EXPECT_FALSE(options->add_to_quick_launch_bar);
-
-  // Subtle: The uninstallation happens extra-asynchronously (even after it's
-  // reported as happening through the PreinstalledWebAppManager).
-  ASSERT_TRUE(observer.WaitForExtensionUninstalled());
-  EXPECT_FALSE(registry()->enabled_extensions().GetByID(kDefaultInstalledId));
 }
 
 IN_PROC_BROWSER_TEST_F(PreinstalledAppsMigrationBrowserTest,
@@ -361,23 +387,28 @@ IN_PROC_BROWSER_TEST_F(PreinstalledAppsMigrationBrowserTest,
   // Finally, re-enable the feature (simulating us fixing the glitch).
   // The extension app should be re-uninstalled.
   TestExtensionRegistryObserver observer(registry(), kDefaultInstalledId);
+  base::RunLoop extension_shortcuts_deleted_loop;
+  web_app::WaitForExtensionShortcutsDeleted(
+      kDefaultInstalledId, extension_shortcuts_deleted_loop.QuitClosure());
   WaitForSystemReady();
   EXPECT_TRUE(WasMigratedToWebApp());
   EXPECT_TRUE(WasWebAppInstalledInThisRun());
   EXPECT_TRUE(IsWebAppCurrentlyInstalled());
 
+  // Subtle: The uninstallation happens extra-asynchronously (even after it's
+  // reported as happening through the PreinstalledWebAppManager).
+  ASSERT_TRUE(observer.WaitForExtensionUninstalled());
+  EXPECT_FALSE(registry()->enabled_extensions().GetByID(kDefaultInstalledId));
+
   // Verify that the migration preserves shortcut states of the uninstalled
-  // extension app.
+  // extension app. The shortcuts for the new app are not created until after
+  // the old shortcuts have been deleted, so wait for that first.
+  extension_shortcuts_deleted_loop.Run();
   EXPECT_EQ(1u, os_integration_manager_->num_create_shortcuts_calls());
   EXPECT_TRUE(os_integration_manager_->did_add_to_desktop());
   auto options = os_integration_manager_->get_last_install_options();
   EXPECT_TRUE(options->os_hooks[web_app::OsHookType::kRunOnOsLogin]);
   EXPECT_FALSE(options->add_to_quick_launch_bar);
-
-  // Subtle: The uninstallation happens extra-asynchronously (even after it's
-  // reported as happening through the PreinstalledWebAppManager).
-  ASSERT_TRUE(observer.WaitForExtensionUninstalled());
-  EXPECT_FALSE(registry()->enabled_extensions().GetByID(kDefaultInstalledId));
 }
 
 IN_PROC_BROWSER_TEST_F(PreinstalledAppsMigrationBrowserTest,
@@ -429,6 +460,7 @@ IN_PROC_BROWSER_TEST_F(PreinstalledAppsMigrationBrowserTest,
 
   EXPECT_FALSE(registry()->enabled_extensions().GetByID(kDefaultInstalledId));
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 IN_PROC_BROWSER_TEST_F(PreinstalledAppsMigrationEnabledBrowserTest,
                        PRE_TestAppInstalled) {
@@ -472,5 +504,15 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(registry()->enabled_extensions().GetByID(kDefaultInstalledId));
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
+IN_PROC_BROWSER_TEST_F(PreinstalledAppsMigrationBrowserTest,
+                       TestDefaultAppsCanUpdateIdentity) {
+  TestExtensionRegistryObserver observer(registry(), kDefaultInstalledId);
+  WaitForSystemReady();
+  EXPECT_TRUE(WasMigratedToWebApp());
+  EXPECT_TRUE(WasWebAppInstalledInThisRun());
+  EXPECT_TRUE(IsWebAppCurrentlyInstalled());
+  EXPECT_TRUE(CanWebAppAlwaysUpdateIdentity());
+}
 
 }  // namespace extensions

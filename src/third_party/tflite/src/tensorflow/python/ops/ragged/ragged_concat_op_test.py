@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for ragged_array_ops.concat."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 
 from tensorflow.python.eager import context
@@ -275,8 +271,8 @@ class RaggedConcatOpTest(test_util.TensorFlowTestCase,
                       message=None,
                       ragged_ranks=None):
     rt_inputs = self._rt_inputs_to_tensors(rt_inputs, ragged_ranks)
-    self.assertRaisesRegexp(error, message, ragged_concat_ops.concat, rt_inputs,
-                            axis)
+    self.assertRaisesRegex(error, message, ragged_concat_ops.concat, rt_inputs,
+                           axis)
 
   @parameterized.parameters([
       dict(
@@ -294,7 +290,7 @@ class RaggedConcatOpTest(test_util.TensorFlowTestCase,
         array_ops.placeholder_with_default(rt, shape=None) for rt in rt_inputs
     ]
     concatenated = ragged_concat_ops.concat(rt_inputs, axis)
-    with self.assertRaisesRegexp(error, message):
+    with self.assertRaisesRegex(error, message):
       self.evaluate(concatenated)
 
   def testNegativeAxisWithUnknownRankError(self):
@@ -304,8 +300,9 @@ class RaggedConcatOpTest(test_util.TensorFlowTestCase,
         array_ops.placeholder(dtypes.int64),
         array_ops.placeholder(dtypes.int64)
     ]
-    self.assertRaisesRegexp(
-        ValueError, r'axis may only be negative if ndims is statically known.',
+    self.assertRaisesRegex(
+        ValueError,
+        r'axis=-1 may only be negative if ndims is statically known.',
         ragged_concat_ops.concat, rt_inputs, -1)
 
   def testSingleTensorInput(self):

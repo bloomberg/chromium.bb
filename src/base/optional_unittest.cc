@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/ignore_result.h"
 #include "base/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1653,7 +1653,7 @@ TEST(OptionalTest, ValueNotEq_NotEmpty) {
   }
 }
 
-TEST(OPtionalTest, ValueNotEq_DifferentType) {
+TEST(OptionalTest, ValueNotEq_DifferentType) {
   absl::optional<int> opt(0);
   EXPECT_FALSE(opt != 0.0);
 }
@@ -1699,7 +1699,7 @@ TEST(OptionalTest, ValueLess_NotEmpty) {
   }
 }
 
-TEST(OPtionalTest, ValueLess_DifferentType) {
+TEST(OptionalTest, ValueLess_DifferentType) {
   absl::optional<int> opt(0);
   EXPECT_TRUE(opt < 1.0);
 }

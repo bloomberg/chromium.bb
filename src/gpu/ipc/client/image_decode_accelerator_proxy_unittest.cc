@@ -6,13 +6,12 @@
 #include <utility>
 #include <vector>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/test/task_environment.h"
 #include "cc/paint/paint_image.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/client/image_decode_accelerator_proxy.h"
 #include "gpu/ipc/common/command_buffer_id.h"
-#include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/mock_gpu_channel.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -4,6 +4,7 @@
 
 #include "components/blocked_content/android/popup_blocked_message_delegate.h"
 
+#include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/blocked_content/popup_blocker_tab_helper.h"
@@ -38,10 +39,6 @@ class PopupBlockedMessageDelegateTest
 
   HostContentSettingsMap* settings_map() { return settings_map_.get(); }
 
-  base::RepeatingCallback<int(int)> GetResourceIdMapper() {
-    return base::BindRepeating(ResourceMap);
-  }
-
   bool EnqueueMessage(int num_pops,
                       base::OnceClosure on_accept_callback,
                       bool success);
@@ -54,15 +51,13 @@ class PopupBlockedMessageDelegateTest
     return popup_blocked_message_delegate_;
   }
 
-  static int ResourceMap(int id) { return -1; }
-
  private:
-  PopupBlockerTabHelper* helper_ = nullptr;
+  raw_ptr<PopupBlockerTabHelper> helper_ = nullptr;
   base::test::ScopedFeatureList feature_list_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   scoped_refptr<HostContentSettingsMap> settings_map_;
   messages::MockMessageDispatcherBridge message_dispatcher_bridge_;
-  PopupBlockedMessageDelegate* popup_blocked_message_delegate_;
+  raw_ptr<PopupBlockedMessageDelegate> popup_blocked_message_delegate_;
 };
 
 PopupBlockedMessageDelegateTest::~PopupBlockedMessageDelegateTest() {
@@ -107,7 +102,6 @@ bool PopupBlockedMessageDelegateTest::EnqueueMessage(
   EXPECT_CALL(message_dispatcher_bridge_, EnqueueMessage)
       .WillOnce(testing::Return(success));
   return GetDelegate()->ShowMessage(num_pops, settings_map(),
-                                    GetResourceIdMapper(),
                                     std::move(on_accept_callback));
 }
 
@@ -130,12 +124,12 @@ TEST_F(PopupBlockedMessageDelegateTest, MessagePropertyValues) {
   EXPECT_EQ(l10n_util::GetPluralStringFUTF16(IDS_POPUPS_BLOCKED_INFOBAR_TEXT,
                                              num_popups),
             GetMessageWrapper()->GetTitle());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_SHOW_CONTENT),
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_POPUPS_BLOCKED_INFOBAR_BUTTON_SHOW),
             GetMessageWrapper()->GetPrimaryButtonText());
 
   // Should update title; #EnqueueMessage ensure message is enqueued only once.
   GetDelegate()->ShowMessage(num_popups + 1, settings_map(),
-                             GetResourceIdMapper(), base::NullCallback());
+                             base::NullCallback());
   EXPECT_EQ(l10n_util::GetPluralStringFUTF16(IDS_POPUPS_BLOCKED_INFOBAR_TEXT,
                                              num_popups + 1),
             GetMessageWrapper()->GetTitle());

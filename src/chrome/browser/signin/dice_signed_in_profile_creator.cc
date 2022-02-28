@@ -9,6 +9,7 @@
 #include "base/check.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
@@ -18,10 +19,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-
-const void* const
-    DiceSignedInProfileCreator::kGuestSigninTokenTransferredUserDataKey =
-        &DiceSignedInProfileCreator::kGuestSigninTokenTransferredUserDataKey;
 
 // Waits until the tokens are loaded and calls the callback. The callback is
 // called immediately if the tokens are already loaded, and called with nullptr
@@ -46,7 +43,7 @@ class TokensLoadedCallbackRunner : public signin::IdentityManager::Observer {
   // signin::IdentityManager::Observer implementation:
   void OnRefreshTokensLoaded() override {
     scoped_identity_manager_observer_.Reset();
-    std::move(callback_).Run(profile_);
+    std::move(callback_).Run(profile_.get());
   }
 
   void OnIdentityManagerShutdown(signin::IdentityManager* manager) override {
@@ -54,8 +51,8 @@ class TokensLoadedCallbackRunner : public signin::IdentityManager::Observer {
     std::move(callback_).Run(nullptr);
   }
 
-  Profile* profile_;
-  signin::IdentityManager* identity_manager_;
+  raw_ptr<Profile> profile_;
+  raw_ptr<signin::IdentityManager> identity_manager_;
   base::ScopedObservation<signin::IdentityManager,
                           signin::IdentityManager::Observer>
       scoped_identity_manager_observer_{this};
@@ -87,7 +84,7 @@ TokensLoadedCallbackRunner::TokensLoadedCallbackRunner(
   DCHECK(identity_manager_);
   DCHECK(callback_);
   DCHECK(!identity_manager_->AreRefreshTokensLoaded());
-  scoped_identity_manager_observer_.Observe(identity_manager_);
+  scoped_identity_manager_observer_.Observe(identity_manager_.get());
 }
 
 DiceSignedInProfileCreator::DiceSignedInProfileCreator(
@@ -104,10 +101,13 @@ DiceSignedInProfileCreator::DiceSignedInProfileCreator(
   // experiment to surface a Guest mode link in the DiceWebSigninIntercept
   // and is only used to sign in to the web through account consistency and
   // does NOT enable sync or any other browser level functionality.
-  // TODO(https://crbug.com/1125474): Revise the comment after ephemeral Guest
-  // profiles are finalized.
+  // TODO(https://crbug.com/1225171): Revise the comment after Guest mode plans
+  // are finalized.
   if (use_guest_profile) {
-    DCHECK(Profile::IsEphemeralGuestProfileEnabled());
+    // TODO(https://crbug.com/1225171): Re-enabled if ephemeral based Guest mode
+    // is added. Remove the code otherwise.
+    NOTREACHED();
+
     // Make sure the callback is not called synchronously.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -163,11 +163,6 @@ void DiceSignedInProfileCreator::OnNewProfileCreated(
     case Profile::CREATE_STATUS_INITIALIZED:
       OnNewProfileInitialized(new_profile);
       return;
-    case Profile::CREATE_STATUS_REMOTE_FAIL:
-    case Profile::CREATE_STATUS_CANCELED:
-    case Profile::MAX_CREATE_STATUS:
-      NOTREACHED() << "Invalid profile creation status";
-      FALLTHROUGH;
     case Profile::CREATE_STATUS_LOCAL_FAIL:
       NOTREACHED() << "Error creating new profile";
       if (callback_)
@@ -211,8 +206,6 @@ void DiceSignedInProfileCreator::OnNewProfileTokensLoaded(
   auto* new_profile_accounts_mutator =
       IdentityManagerFactory::GetForProfile(new_profile)->GetAccountsMutator();
   accounts_mutator->MoveAccount(new_profile_accounts_mutator, account_id_);
-  if (new_profile->IsEphemeralGuestProfile())
-    GuestSigninTokenTransferredUserData::Set(new_profile);
   if (callback_)
     std::move(callback_).Run(new_profile);
 }

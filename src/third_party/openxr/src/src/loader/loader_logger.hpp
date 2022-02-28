@@ -1,22 +1,10 @@
-// Copyright (c) 2017-2020 The Khronos Group Inc.
+// Copyright (c) 2017-2021, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR MIT
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// Author: Mark Young <marky@lunarg.com>
+// Initial Author: Mark Young <marky@lunarg.com>
 //
 
 #pragma once
@@ -29,6 +17,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <shared_mutex>
 
 #include <openxr/openxr.h>
 
@@ -69,6 +58,7 @@ enum XrLoaderLogType {
     XR_LOADER_LOG_STDOUT,
     XR_LOADER_LOG_DEBUG_UTILS,
     XR_LOADER_LOG_DEBUGGER,
+    XR_LOADER_LOG_LOGCAT,
 };
 
 class LoaderLogRecorder {
@@ -183,6 +173,8 @@ class LoaderLogger {
 
    private:
     LoaderLogger();
+
+    std::shared_timed_mutex _mutex;
 
     // List of *all* available recorder objects (including created specifically for an Instance)
     std::vector<std::unique_ptr<LoaderLogRecorder>> _recorders;

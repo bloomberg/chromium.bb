@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/thread_annotations.h"
 #include "sql/meta_table.h"
@@ -50,6 +49,11 @@ namespace net {
 class SQLitePersistentStoreBackendBase
     : public base::RefCountedThreadSafe<SQLitePersistentStoreBackendBase> {
  public:
+  SQLitePersistentStoreBackendBase(const SQLitePersistentStoreBackendBase&) =
+      delete;
+  SQLitePersistentStoreBackendBase& operator=(
+      const SQLitePersistentStoreBackendBase&) = delete;
+
   // Posts a task to flush pending operations to the database in the background.
   // |callback| is run in the foreground when it is done.
   void Flush(base::OnceClosure callback);
@@ -190,8 +194,6 @@ class SQLitePersistentStoreBackendBase
       GUARDED_BY(before_commit_callback_lock_);
   // Guards |before_commit_callback_|.
   base::Lock before_commit_callback_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(SQLitePersistentStoreBackendBase);
 };
 
 }  // namespace net

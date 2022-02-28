@@ -2,23 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import type * as Protocol from '../../generated/protocol.js';
 
-import type {CSSModel, Edit} from './CSSModel.js';
-import {CSSLocation} from './CSSModel.js';                         // eslint-disable-line no-unused-vars
-import type {CSSStyleSheetHeader} from './CSSStyleSheetHeader.js'; // eslint-disable-line no-unused-vars
+import type {CSSModel} from './CSSModel.js';
+import {CSSQuery} from './CSSQuery.js';
 
 export class CSSMediaQuery {
-  _active: boolean;
-  _expressions: CSSMediaQueryExpression[]|null;
+  readonly #activeInternal: boolean;
+  readonly #expressionsInternal: CSSMediaQueryExpression[]|null;
   constructor(payload: Protocol.CSS.MediaQuery) {
-    this._active = payload.active;
-    this._expressions = [];
+    this.#activeInternal = payload.active;
+    this.#expressionsInternal = [];
     for (let j = 0; j < payload.expressions.length; ++j) {
-      this._expressions.push(CSSMediaQueryExpression.parsePayload(payload.expressions[j]));
+      this.#expressionsInternal.push(CSSMediaQueryExpression.parsePayload(payload.expressions[j]));
     }
   }
 
@@ -27,26 +24,26 @@ export class CSSMediaQuery {
   }
 
   active(): boolean {
-    return this._active;
+    return this.#activeInternal;
   }
 
   expressions(): CSSMediaQueryExpression[]|null {
-    return this._expressions;
+    return this.#expressionsInternal;
   }
 }
 
 export class CSSMediaQueryExpression {
-  _value: number;
-  _unit: string;
-  _feature: string;
-  _valueRange: TextUtils.TextRange.TextRange|null;
-  _computedLength: number|null;
+  readonly #valueInternal: number;
+  readonly #unitInternal: string;
+  readonly #featureInternal: string;
+  readonly #valueRangeInternal: TextUtils.TextRange.TextRange|null;
+  readonly #computedLengthInternal: number|null;
   constructor(payload: Protocol.CSS.MediaQueryExpression) {
-    this._value = payload.value;
-    this._unit = payload.unit;
-    this._feature = payload.feature;
-    this._valueRange = payload.valueRange ? TextUtils.TextRange.TextRange.fromObject(payload.valueRange) : null;
-    this._computedLength = payload.computedLength || null;
+    this.#valueInternal = payload.value;
+    this.#unitInternal = payload.unit;
+    this.#featureInternal = payload.feature;
+    this.#valueRangeInternal = payload.valueRange ? TextUtils.TextRange.TextRange.fromObject(payload.valueRange) : null;
+    this.#computedLengthInternal = payload.computedLength || null;
   }
 
   static parsePayload(payload: Protocol.CSS.MediaQueryExpression): CSSMediaQueryExpression {
@@ -54,52 +51,41 @@ export class CSSMediaQueryExpression {
   }
 
   value(): number {
-    return this._value;
+    return this.#valueInternal;
   }
 
   unit(): string {
-    return this._unit;
+    return this.#unitInternal;
   }
 
   feature(): string {
-    return this._feature;
+    return this.#featureInternal;
   }
 
   valueRange(): TextUtils.TextRange.TextRange|null {
-    return this._valueRange;
+    return this.#valueRangeInternal;
   }
 
   computedLength(): number|null {
-    return this._computedLength;
+    return this.#computedLengthInternal;
   }
 }
 
-export class CSSMedia {
-  _cssModel: CSSModel;
-  text?: string;
+export class CSSMedia extends CSSQuery {
   source?: Protocol.CSS.CSSMediaSource;
   sourceURL?: string;
-  range?: TextUtils.TextRange.TextRange|null;
-  styleSheetId?: string;
   mediaList?: CSSMediaQuery[]|null;
-  constructor(cssModel: CSSModel, payload: Protocol.CSS.CSSMedia) {
-    this._cssModel = cssModel;
-    this._reinitialize(payload);
-  }
-
-  static parsePayload(cssModel: CSSModel, payload: Protocol.CSS.CSSMedia): CSSMedia {
-    return new CSSMedia(cssModel, payload);
-  }
 
   static parseMediaArrayPayload(cssModel: CSSModel, payload: Protocol.CSS.CSSMedia[]): CSSMedia[] {
-    const result = [];
-    for (let i = 0; i < payload.length; ++i) {
-      result.push(CSSMedia.parsePayload(cssModel, payload[i]));
-    }
-    return result;
+    return payload.map(mq => new CSSMedia(cssModel, mq));
   }
 
-  _reinitialize(payload: Protocol.CSS.CSSMedia): void {
+  constructor(cssModel: CSSModel, payload: Protocol.CSS.CSSMedia) {
+    super(cssModel);
+    this.reinitialize(payload);
+  }
+
+  reinitialize(payload: Protocol.CSS.CSSMedia): void {
     this.text = payload.text;
     this.source = payload.source;
     this.sourceURL = payload.sourceURL || '';
@@ -114,24 +100,6 @@ export class CSSMedia {
     }
   }
 
-  rebase(edit: Edit): void {
-    if (this.styleSheetId !== edit.styleSheetId || !this.range) {
-      return;
-    }
-    if (edit.oldRange.equal(this.range)) {
-      this._reinitialize((edit.payload as Protocol.CSS.CSSMedia));
-    } else {
-      this.range = this.range.rebaseAfterTextEdit(edit.oldRange, edit.newRange);
-    }
-  }
-
-  equal(other: CSSMedia): boolean {
-    if (!this.styleSheetId || !this.range || !other.range) {
-      return false;
-    }
-    return this.styleSheetId === other.styleSheetId && this.range.equal(other.range);
-  }
-
   active(): boolean {
     if (!this.mediaList) {
       return true;
@@ -142,41 +110,6 @@ export class CSSMedia {
       }
     }
     return false;
-  }
-
-  lineNumberInSource(): number|undefined {
-    if (!this.range) {
-      return undefined;
-    }
-    const header = this.header();
-    if (!header) {
-      return undefined;
-    }
-    return header.lineNumberInSource(this.range.startLine);
-  }
-
-  columnNumberInSource(): number|undefined {
-    if (!this.range) {
-      return undefined;
-    }
-    const header = this.header();
-    if (!header) {
-      return undefined;
-    }
-    return header.columnNumberInSource(this.range.startLine, this.range.startColumn);
-  }
-
-  header(): CSSStyleSheetHeader|null {
-    return this.styleSheetId ? this._cssModel.styleSheetHeaderForId(this.styleSheetId) : null;
-  }
-
-  rawLocation(): CSSLocation|null {
-    const header = this.header();
-    if (!header || this.lineNumberInSource() === undefined) {
-      return null;
-    }
-    const lineNumber = Number(this.lineNumberInSource());
-    return new CSSLocation(header, lineNumber, this.columnNumberInSource());
   }
 }
 

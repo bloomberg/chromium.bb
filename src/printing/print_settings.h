@@ -10,7 +10,6 @@
 
 #include "base/component_export.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "printing/mojom/print.mojom.h"
 #include "printing/page_range.h"
 #include "printing/page_setup.h"
@@ -52,23 +51,8 @@ std::string GetIppColorModelForModel(mojom::ColorModel color_model);
 #endif
 #endif  // defined(USE_CUPS)
 
-// Inform the printing system that it may embed this user-agent string
-// in its output's metadata.
-COMPONENT_EXPORT(PRINTING) void SetAgent(const std::string& user_agent);
-COMPONENT_EXPORT(PRINTING) const std::string& GetAgent();
-
 class COMPONENT_EXPORT(PRINTING) PrintSettings {
  public:
-#if defined(OS_WIN)
-  enum PrinterType {
-    TYPE_NONE = 0,
-    TYPE_TEXTONLY,
-    TYPE_XPS,
-    TYPE_POSTSCRIPT_LEVEL2,
-    TYPE_POSTSCRIPT_LEVEL3
-  };
-#endif
-
   // Media properties requested by the user. Default instance represents
   // default media selection.
   struct RequestedMedia {
@@ -87,8 +71,8 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   PrintSettings();
-  PrintSettings(const PrintSettings&) = delete;
-  PrintSettings& operator=(const PrintSettings&) = delete;
+  PrintSettings(const PrintSettings&);
+  PrintSettings& operator=(const PrintSettings&);
   ~PrintSettings();
 
   // Reinitialize the settings to the default values.
@@ -125,6 +109,11 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
   const PageSetup& page_setup_device_units() const {
     return page_setup_device_units_;
   }
+  // `set_page_setup_device_units()` intended to be used only for mojom
+  // validation.
+  void set_page_setup_device_units(const PageSetup& page_setup_device_units) {
+    page_setup_device_units_ = page_setup_device_units;
+  }
 
   void set_device_name(const std::u16string& device_name) {
     device_name_ = device_name;
@@ -146,6 +135,9 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
 
   void set_rasterize_pdf(bool rasterize_pdf) { rasterize_pdf_ = rasterize_pdf; }
   bool rasterize_pdf() const { return rasterize_pdf_; }
+
+  void set_rasterize_pdf_dpi(int32_t dpi) { rasterize_pdf_dpi_ = dpi; }
+  int32_t rasterize_pdf_dpi() const { return rasterize_pdf_dpi_; }
 
   void set_supports_alpha_blend(bool supports_alpha_blend) {
     supports_alpha_blend_ = supports_alpha_blend;
@@ -199,19 +191,25 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
   mojom::DuplexMode duplex_mode() const { return duplex_mode_; }
 
 #if defined(OS_WIN)
-  void set_print_text_with_gdi(bool use_gdi) { print_text_with_gdi_ = use_gdi; }
-  bool print_text_with_gdi() const { return print_text_with_gdi_; }
-
-  void set_printer_type(PrinterType type) { printer_type_ = type; }
-  bool printer_is_textonly() const {
-    return printer_type_ == PrinterType::TYPE_TEXTONLY;
+  void set_printer_language_type(mojom::PrinterLanguageType type) {
+    printer_language_type_ = type;
   }
-  bool printer_is_xps() const { return printer_type_ == PrinterType::TYPE_XPS; }
-  bool printer_is_ps2() const {
-    return printer_type_ == PrinterType::TYPE_POSTSCRIPT_LEVEL2;
+  mojom::PrinterLanguageType printer_language_type() const {
+    return printer_language_type_;
   }
-  bool printer_is_ps3() const {
-    return printer_type_ == PrinterType::TYPE_POSTSCRIPT_LEVEL3;
+  bool printer_language_is_textonly() const {
+    return printer_language_type_ == mojom::PrinterLanguageType::kTextOnly;
+  }
+  bool printer_language_is_xps() const {
+    return printer_language_type_ == mojom::PrinterLanguageType::kXps;
+  }
+  bool printer_language_is_ps2() const {
+    return printer_language_type_ ==
+           mojom::PrinterLanguageType::kPostscriptLevel2;
+  }
+  bool printer_language_is_ps3() const {
+    return printer_language_type_ ==
+           mojom::PrinterLanguageType::kPostscriptLevel3;
   }
 #endif
 
@@ -241,15 +239,15 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
 
   void set_pin_value(const std::string& pin_value) { pin_value_ = pin_value; }
   const std::string& pin_value() const { return pin_value_; }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
-  // Cookie generator. It is used to initialize PrintedDocument with its
-  // associated PrintSettings, to be sure that each generated PrintedPage is
-  // correctly associated with its corresponding PrintedDocument.
+  // Cookie generator. It is used to initialize `PrintedDocument` with its
+  // associated `PrintSettings`, to be sure that each generated `PrintedPage`
+  // is correctly associated with its corresponding `PrintedDocument`.
   static int NewCookie();
 
  private:
-  // Multi-page printing. Each PageRange describes a from-to page combination.
+  // Multi-page printing. Each `PageRange` describes a from-to page combination.
   // This permits printing selected pages only.
   PageRanges ranges_;
 
@@ -301,6 +299,11 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
   // True if PDF should be printed as a raster PDF
   bool rasterize_pdf_;
 
+  // The DPI which overrides the calculated value normally used when
+  // rasterizing a PDF.  A non-positive value would be an invalid choice of a
+  // DPI and indicates no override.
+  int32_t rasterize_pdf_dpi_;
+
   // Is the orientation landscape or portrait.
   bool landscape_;
 
@@ -308,10 +311,7 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
   bool supports_alpha_blend_;
 
 #if defined(OS_WIN)
-  // True to print text with GDI.
-  bool print_text_with_gdi_;
-
-  PrinterType printer_type_;
+  mojom::PrinterLanguageType printer_language_type_;
 #endif
 
   bool is_modifiable_;

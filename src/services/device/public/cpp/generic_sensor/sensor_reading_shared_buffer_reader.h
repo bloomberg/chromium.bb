@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "mojo/public/cpp/system/buffer.h"
 
 namespace device {
@@ -22,6 +21,11 @@ class SensorReadingSharedBufferReader {
   static std::unique_ptr<SensorReadingSharedBufferReader> Create(
       mojo::ScopedSharedBufferHandle reading_buffer_handle,
       uint64_t reading_buffer_offset);
+
+  SensorReadingSharedBufferReader(const SensorReadingSharedBufferReader&) =
+      delete;
+  SensorReadingSharedBufferReader& operator=(
+      const SensorReadingSharedBufferReader&) = delete;
 
   ~SensorReadingSharedBufferReader();
 
@@ -40,8 +44,6 @@ class SensorReadingSharedBufferReader {
 
   mojo::ScopedSharedBufferHandle shared_buffer_handle_;
   mojo::ScopedSharedBufferMapping shared_buffer_;
-
-  DISALLOW_COPY_AND_ASSIGN(SensorReadingSharedBufferReader);
 };
 
 }  // namespace device

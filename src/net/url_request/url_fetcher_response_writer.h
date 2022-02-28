@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_once_callback.h"
@@ -69,6 +68,10 @@ class NET_EXPORT URLFetcherResponseWriter {
 class NET_EXPORT URLFetcherStringWriter : public URLFetcherResponseWriter {
  public:
   URLFetcherStringWriter();
+
+  URLFetcherStringWriter(const URLFetcherStringWriter&) = delete;
+  URLFetcherStringWriter& operator=(const URLFetcherStringWriter&) = delete;
+
   ~URLFetcherStringWriter() override;
 
   const std::string& data() const { return data_; }
@@ -83,8 +86,6 @@ class NET_EXPORT URLFetcherStringWriter : public URLFetcherResponseWriter {
 
  private:
   std::string data_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLFetcherStringWriter);
 };
 
 // URLFetcherResponseWriter implementation for files.
@@ -97,6 +98,10 @@ class NET_EXPORT URLFetcherFileWriter : public URLFetcherResponseWriter {
   URLFetcherFileWriter(
       scoped_refptr<base::SequencedTaskRunner> file_task_runner,
       const base::FilePath& file_path);
+
+  URLFetcherFileWriter(const URLFetcherFileWriter&) = delete;
+  URLFetcherFileWriter& operator=(const URLFetcherFileWriter&) = delete;
+
   ~URLFetcherFileWriter() override;
 
   const base::FilePath& file_path() const { return file_path_; }
@@ -142,8 +147,6 @@ class NET_EXPORT URLFetcherFileWriter : public URLFetcherResponseWriter {
   CompletionOnceCallback callback_;
 
   base::WeakPtrFactory<URLFetcherFileWriter> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(URLFetcherFileWriter);
 };
 
 }  // namespace net

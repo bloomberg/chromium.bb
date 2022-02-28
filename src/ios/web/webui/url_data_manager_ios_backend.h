@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "ios/web/public/webui/url_data_source_ios.h"
 #include "ios/web/webui/url_data_manager_ios.h"
@@ -36,6 +35,10 @@ class URLDataManagerIOSBackend : public base::SupportsUserData::Data {
   typedef int RequestID;
 
   URLDataManagerIOSBackend();
+
+  URLDataManagerIOSBackend(const URLDataManagerIOSBackend&) = delete;
+  URLDataManagerIOSBackend& operator=(const URLDataManagerIOSBackend&) = delete;
+
   ~URLDataManagerIOSBackend() override;
 
   // Invoked to create the protocol handler for chrome://. |is_incognito| should
@@ -92,8 +95,6 @@ class URLDataManagerIOSBackend : public base::SupportsUserData::Data {
 
   // The ID we'll use for the next request we receive.
   RequestID next_request_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLDataManagerIOSBackend);
 };
 
 }  // namespace web

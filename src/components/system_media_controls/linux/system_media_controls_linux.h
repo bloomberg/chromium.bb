@@ -8,8 +8,6 @@
 #include <string>
 
 #include "base/component_export.h"
-#include "base/containers/flat_map.h"
-#include "base/containers/flat_set.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -44,6 +42,10 @@ class COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS) SystemMediaControlsLinux
     : public SystemMediaControls {
  public:
   explicit SystemMediaControlsLinux(const std::string& product_name);
+
+  SystemMediaControlsLinux(const SystemMediaControlsLinux&) = delete;
+  SystemMediaControlsLinux& operator=(const SystemMediaControlsLinux&) = delete;
+
   ~SystemMediaControlsLinux() override;
 
   // Starts the DBus service.
@@ -123,8 +125,6 @@ class COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS) SystemMediaControlsLinux
   bool service_ready_ = false;
 
   base::ObserverList<SystemMediaControlsObserver> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemMediaControlsLinux);
 };
 
 }  // namespace internal

@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "build/buildflag.h"
@@ -52,6 +52,9 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
  public:
   HttpNetworkTransaction(RequestPriority priority,
                          HttpNetworkSession* session);
+
+  HttpNetworkTransaction(const HttpNetworkTransaction&) = delete;
+  HttpNetworkTransaction& operator=(const HttpNetworkTransaction&) = delete;
 
   ~HttpNetworkTransaction() override;
 
@@ -204,11 +207,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   int BuildRequestHeaders(bool using_http_proxy_without_tunnel);
 
 #if BUILDFLAG(ENABLE_REPORTING)
-  // Processes the Reporting-Endpoints header specified in document reporting
-  // spec, if one exists. This header configures where the Reporting API (in
-  // net/reporting) will send reports for the document.
-  void ProcessReportingEndpointsHeader();
-
   // Processes the Report-To header, if one exists. This header configures where
   // the Reporting API (in //net/reporting) will send reports for the origin.
   void ProcessReportToHeader();
@@ -323,12 +321,12 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   CompletionRepeatingCallback io_callback_;
   CompletionOnceCallback callback_;
 
-  HttpNetworkSession* session_;
+  raw_ptr<HttpNetworkSession> session_;
 
   NetLogWithSource net_log_;
 
   // Reset to null at the start of the Read state machine.
-  const HttpRequestInfo* request_;
+  raw_ptr<const HttpRequestInfo> request_;
 
   // The requested URL.
   GURL url_;
@@ -421,7 +419,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   // The helper object to use to create WebSocketHandshakeStreamBase
   // objects. Only relevant when establishing a WebSocket connection.
-  WebSocketHandshakeStreamBase::CreateHelper*
+  raw_ptr<WebSocketHandshakeStreamBase::CreateHelper>
       websocket_handshake_stream_base_create_helper_;
 
   BeforeNetworkStartCallback before_network_start_callback_;
@@ -448,8 +446,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   size_t num_restarts_;
 
   bool close_connection_on_destruction_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(HttpNetworkTransaction);
 };
 
 }  // namespace net

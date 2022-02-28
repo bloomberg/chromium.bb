@@ -21,7 +21,6 @@
 
 #include "gtest/gtest.h"
 #include "spirv-tools/libspirv.hpp"
-#include "src/transform/spirv.h"
 #include "src/writer/spirv/binary_writer.h"
 
 namespace tint {
@@ -74,7 +73,7 @@ class TestHelperBase : public ProgramBuilder, public BASE {
       ASSERT_TRUE(program->IsValid())
           << diag::Formatter().format(program->Diagnostics());
     }();
-    auto result = transform::Spirv().Run(program.get());
+    auto result = Sanitize(program.get());
     [&]() {
       ASSERT_TRUE(result.program.IsValid())
           << diag::Formatter().format(result.program.Diagnostics());

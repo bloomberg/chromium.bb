@@ -118,7 +118,7 @@ interface PaperTooltipElement extends LegacyElementMixin, HTMLElement {
    * that your animationConfig has the exact format below.
    */
   animationConfig: object|null|undefined;
-  _showing: boolean|null|undefined;
+  _showing: boolean;
   hostAttributes: object|null;
 
   /**
@@ -126,7 +126,7 @@ interface PaperTooltipElement extends LegacyElementMixin, HTMLElement {
    * either the element given by the `for` attribute, or the immediate parent
    * of the tooltip.
    */
-  readonly target: any;
+  target: any;
   attached(): void;
   detached(): void;
 

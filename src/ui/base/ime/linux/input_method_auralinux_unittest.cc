@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,6 +16,7 @@
 #include "ui/base/ime/linux/fake_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 
 namespace ui {
@@ -65,6 +65,11 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
         eat_key_(false),
         focused_(false) {}
 
+  LinuxInputMethodContextForTesting(const LinuxInputMethodContextForTesting&) =
+      delete;
+  LinuxInputMethodContextForTesting& operator=(
+      const LinuxInputMethodContextForTesting&) = delete;
+
   void SetSyncMode(bool is_sync_mode) { is_sync_mode_ = is_sync_mode; }
   void SetEatKey(bool eat_key) { eat_key_ = eat_key; }
 
@@ -112,6 +117,19 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
     return eat_key_;
   }
 
+  bool IsPeekKeyEvent(const ui::KeyEvent& key_event) override {
+    const auto* properties = key_event.properties();
+    // For the purposes of tests if kPropertyKeyboardImeFlag is not
+    // explicitly set assume the event is not a key event.
+    if (!properties)
+      return false;
+    auto it = properties->find(kPropertyKeyboardImeFlag);
+    if (it == properties->end()) {
+      return false;
+    }
+    return !(it->second[0] & kPropertyKeyboardImeIgnoredFlag);
+  }
+
   void Reset() override {}
 
   void Focus() override { focused_ = true; }
@@ -134,6 +152,8 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
     TestResult::GetInstance()->RecordAction(base::ASCIIToUTF16(re.str()));
   }
 
+  void SetContentType(TextInputType input_type, int input_flags) override {}
+
  private:
   LinuxInputMethodContextDelegate* delegate_;
   std::vector<std::u16string> actions_;
@@ -141,8 +161,6 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
   bool eat_key_;
   bool focused_;
   gfx::Rect cursor_position_;
-
-  DISALLOW_COPY_AND_ASSIGN(LinuxInputMethodContextForTesting);
 };
 
 class LinuxInputMethodContextFactoryForTesting
@@ -150,20 +168,27 @@ class LinuxInputMethodContextFactoryForTesting
  public:
   LinuxInputMethodContextFactoryForTesting() {}
 
+  LinuxInputMethodContextFactoryForTesting(
+      const LinuxInputMethodContextFactoryForTesting&) = delete;
+  LinuxInputMethodContextFactoryForTesting& operator=(
+      const LinuxInputMethodContextFactoryForTesting&) = delete;
+
   std::unique_ptr<LinuxInputMethodContext> CreateInputMethodContext(
       LinuxInputMethodContextDelegate* delegate,
       bool is_simple) const override {
     return std::unique_ptr<ui::LinuxInputMethodContext>(
         new LinuxInputMethodContextForTesting(delegate));
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LinuxInputMethodContextFactoryForTesting);
 };
 
 class InputMethodDelegateForTesting : public internal::InputMethodDelegate {
  public:
   InputMethodDelegateForTesting() {}
+
+  InputMethodDelegateForTesting(const InputMethodDelegateForTesting&) = delete;
+  InputMethodDelegateForTesting& operator=(
+      const InputMethodDelegateForTesting&) = delete;
+
   ~InputMethodDelegateForTesting() override {}
 
   ui::EventDispatchDetails DispatchKeyEventPostIME(
@@ -185,9 +210,6 @@ class InputMethodDelegateForTesting : public internal::InputMethodDelegate {
     TestResult::GetInstance()->RecordAction(base::ASCIIToUTF16(action));
     return ui::EventDispatchDetails();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InputMethodDelegateForTesting);
 };
 
 class TextInputClientForTesting : public DummyTextInputClient {
@@ -264,6 +286,10 @@ class TextInputClientForTesting : public DummyTextInputClient {
 };
 
 class InputMethodAuraLinuxTest : public testing::Test {
+ public:
+  InputMethodAuraLinuxTest(const InputMethodAuraLinuxTest&) = delete;
+  InputMethodAuraLinuxTest& operator=(const InputMethodAuraLinuxTest&) = delete;
+
  protected:
   InputMethodAuraLinuxTest()
       : factory_(nullptr),
@@ -313,8 +339,6 @@ class InputMethodAuraLinuxTest : public testing::Test {
   LinuxInputMethodContextForTesting* context_;
   LinuxInputMethodContextForTesting* context_simple_;
   TestResult* test_result_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputMethodAuraLinuxTest);
 };
 
 TEST_F(InputMethodAuraLinuxTest, BasicSyncModeTest) {
@@ -527,6 +551,24 @@ TEST_F(InputMethodAuraLinuxTest, DeadKeyTest) {
 TEST_F(InputMethodAuraLinuxTest, DeadKeySimpleContextTest) {
   DeadKeyTest(TEXT_INPUT_TYPE_NONE, input_method_auralinux_, context_simple_,
               test_result_);
+}
+
+// Wayland may send both a peek key event and a key event for key events not
+// consumed by IME. In that case, the peek key should not be dispatched.
+TEST_F(InputMethodAuraLinuxTest, MockWaylandEventsTest) {
+  KeyEvent peek_key(ET_KEY_PRESSED, VKEY_TAB, 0);
+  ui::Event::Properties properties;
+  properties[ui::kPropertyKeyboardImeFlag] =
+      std::vector<uint8_t>(ui::kPropertyKeyboardImeIgnoredFlag);
+  peek_key.SetProperties(properties);
+  input_method_auralinux_->DispatchKeyEvent(&peek_key);
+  // No expected action for peek key events.
+  test_result_->Verify();
+
+  KeyEvent key(ET_KEY_PRESSED, VKEY_TAB, 0);
+  input_method_auralinux_->DispatchKeyEvent(&key);
+  test_result_->ExpectAction("keydown:9");
+  test_result_->Verify();
 }
 
 TEST_F(InputMethodAuraLinuxTest, MultiCommitsTest) {

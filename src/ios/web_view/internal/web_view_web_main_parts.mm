@@ -12,6 +12,8 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/sync/driver/sync_driver_switches.h"
+#include "components/variations/variations_ids_provider.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/cwv_flags_internal.h"
@@ -50,12 +52,16 @@ void WebViewWebMainParts::PreCreateThreads() {
 
   ApplicationContext::GetInstance()->PreCreateThreads();
 
+  variations::VariationsIdsProvider::Create(
+      variations::VariationsIdsProvider::Mode::kUseSignedInState);
+
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   std::string enable_features = base::JoinString(
       {
           autofill::features::kAutofillUpstream.name,
-          autofill::features::kAutofillEnableAccountWalletStorage.name,
           password_manager::features::kEnablePasswordsAccountStorage.name,
+          switches::kSyncTrustedVaultPassphraseiOSRPC.name,
+          switches::kSyncTrustedVaultPassphraseRecovery.name,
       },
       ",");
   std::string disabled_features = base::JoinString(
@@ -96,33 +102,33 @@ void WebViewWebMainParts::LoadNonScalableResources() {
   base::PathService::Get(base::DIR_MODULE, &pak_file);
   pak_file = pak_file.Append(FILE_PATH_LITERAL("web_view_resources.pak"));
   ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
-  resource_bundle.AddDataPackFromPath(pak_file, ui::SCALE_FACTOR_NONE);
+  resource_bundle.AddDataPackFromPath(pak_file, ui::kScaleFactorNone);
 }
 
 void WebViewWebMainParts::LoadScalableResources() {
   ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
-  if (ui::ResourceBundle::IsScaleFactorSupported(ui::SCALE_FACTOR_100P)) {
+  if (ui::ResourceBundle::IsScaleFactorSupported(ui::k100Percent)) {
     base::FilePath pak_file_100;
     base::PathService::Get(base::DIR_MODULE, &pak_file_100);
     pak_file_100 =
         pak_file_100.Append(FILE_PATH_LITERAL("web_view_100_percent.pak"));
-    resource_bundle.AddDataPackFromPath(pak_file_100, ui::SCALE_FACTOR_100P);
+    resource_bundle.AddDataPackFromPath(pak_file_100, ui::k100Percent);
   }
 
-  if (ui::ResourceBundle::IsScaleFactorSupported(ui::SCALE_FACTOR_200P)) {
+  if (ui::ResourceBundle::IsScaleFactorSupported(ui::k200Percent)) {
     base::FilePath pak_file_200;
     base::PathService::Get(base::DIR_MODULE, &pak_file_200);
     pak_file_200 =
         pak_file_200.Append(FILE_PATH_LITERAL("web_view_200_percent.pak"));
-    resource_bundle.AddDataPackFromPath(pak_file_200, ui::SCALE_FACTOR_200P);
+    resource_bundle.AddDataPackFromPath(pak_file_200, ui::k200Percent);
   }
 
-  if (ui::ResourceBundle::IsScaleFactorSupported(ui::SCALE_FACTOR_300P)) {
+  if (ui::ResourceBundle::IsScaleFactorSupported(ui::k300Percent)) {
     base::FilePath pak_file_300;
     base::PathService::Get(base::DIR_MODULE, &pak_file_300);
     pak_file_300 =
         pak_file_300.Append(FILE_PATH_LITERAL("web_view_300_percent.pak"));
-    resource_bundle.AddDataPackFromPath(pak_file_300, ui::SCALE_FACTOR_300P);
+    resource_bundle.AddDataPackFromPath(pak_file_300, ui::k300Percent);
   }
 }
 

@@ -8,7 +8,7 @@ from __future__ import absolute_import
 
 import collections
 import functools
-import httplib
+from six.moves import http_client
 import logging
 
 from google.appengine.api import urlfetch_errors
@@ -24,6 +24,7 @@ from dashboard.pinpoint.models import exploration
 # attempts max (that's 4 iterations).
 MIN_ATTEMPTS = 10
 MAX_ATTEMPTS = 160
+MAX_BUILDS = 30
 _DEFAULT_SPECULATION_LEVELS = 2
 
 FUNCTIONAL = 'functional'
@@ -118,6 +119,11 @@ class JobState(object):
     self._attempts[change] = []
     self.AddAttempts(change)
 
+    if len(self._changes) > MAX_BUILDS:
+      raise errors.BuildCancelled("""The number of builds exceeded %d. Aborting Job.
+            Consult https://chromium.googlesource.com/catapult/+/HEAD/dashboard/dashboard/pinpoint/docs/abort_error.md
+            for suggestions on next steps.""" % MAX_BUILDS)
+
   def Explore(self):
     """Compare Changes and bisect by adding additional Changes as needed.
 
@@ -177,7 +183,8 @@ class JobState(object):
       logging.debug('Edit list: %s', additional_changes)
       for index, change in additional_changes:
         self.AddChange(change, index)
-    except (httplib.HTTPException, urlfetch_errors.DeadlineExceededError) as e:
+    except (http_client.HTTPException,
+            urlfetch_errors.DeadlineExceededError) as e:
       logging.debug('Encountered error: %s', e)
       raise errors.RecoverableError(e)
 

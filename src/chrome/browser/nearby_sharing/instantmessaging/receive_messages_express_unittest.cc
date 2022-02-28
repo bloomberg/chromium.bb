@@ -89,8 +89,8 @@ class ReceiveMessagesExpressTest : public testing::Test {
       : test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {
-    identity_test_environment_.MakeUnconsentedPrimaryAccountAvailable(
-        kTestAccount);
+    identity_test_environment_.MakePrimaryAccountAvailable(
+        kTestAccount, signin::ConsentLevel::kSignin);
   }
   ~ReceiveMessagesExpressTest() override = default;
 
@@ -249,7 +249,6 @@ TEST_F(ReceiveMessagesExpressTest, SuccessfulPartialResponse) {
 
 TEST_F(ReceiveMessagesExpressTest, StopPreventsPendingTransfer) {
   base::RunLoop run_loop;
-
   StartReceivingMessages(&run_loop, /*token_success=*/true);
 
   // Calls OnDataReceived() in ReceiveMessagesExpress.

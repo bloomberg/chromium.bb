@@ -125,8 +125,10 @@ def FindAllAvailableDevices(options):
   if options.browser_type not in fuchsia_interface.FUCHSIA_BROWSERS:
     return []
 
-  if platform.system() != 'Linux' or platform.machine() != 'x86_64':
-    logging.warning('Fuchsia in Telemetry only supports Linux x64 hosts.')
+  if (platform.system() != 'Linux' or (
+      platform.machine() != 'x86_64' and platform.machine() != 'aarch64')):
+    logging.warning(
+        'Fuchsia in Telemetry only supports Linux x64 or arm64hosts.')
     return []
 
   # If the ssh port of the device has been forwarded to a port on the host,
@@ -140,7 +142,7 @@ def FindAllAvailableDevices(options):
                           managed_repo=options.fuchsia_repo)]
 
   # If the IP address of the device is specified, use that directly.
-  elif options.fuchsia_device_address:
+  if options.fuchsia_device_address:
     return [FuchsiaDevice(target_name='device_target',
                           host=options.fuchsia_device_address,
                           system_log_file=options.fuchsia_system_log_file,

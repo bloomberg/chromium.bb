@@ -22,6 +22,7 @@ import org.chromium.base.Log;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -32,9 +33,11 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.NetError;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
@@ -88,8 +91,9 @@ public class ContinuousSearchTabHelperTest {
             mSearchUrl = url;
             mQuery = query;
             new Handler().postDelayed(() -> {
-                mListener.onResult(new ContinuousNavigationMetadata(
-                        mSearchUrl, mQuery, 0, new ArrayList<PageGroup>()));
+                mListener.onResult(new ContinuousNavigationMetadata(mSearchUrl, mQuery,
+                        new ContinuousNavigationMetadata.Provider(0, null, 0),
+                        new ArrayList<PageGroup>()));
             }, 300);
         }
 
@@ -182,7 +186,7 @@ public class ContinuousSearchTabHelperTest {
                 Assert.fail("Tab never started loading.");
             }
         };
-        tab.addObserver(observer);
+        TestThreadUtils.runOnUiThreadBlocking(() -> tab.addObserver(observer));
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> { tab.loadUrl(params); });
 
@@ -198,11 +202,12 @@ public class ContinuousSearchTabHelperTest {
             Assert.fail("Tab timed out while loading.");
         }
 
-        tab.removeObserver(observer);
+        TestThreadUtils.runOnUiThreadBlocking(() -> tab.removeObserver(observer));
     }
 
     @Test
     @MediumTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testContinuousSearchFakeResults() throws TimeoutException {
         WaitableContinuousNavigationUserDataObserver observer =
                 new WaitableContinuousNavigationUserDataObserver();
@@ -228,7 +233,7 @@ public class ContinuousSearchTabHelperTest {
                 "Timed out waiting for SearchResultUserDataObserver#onUpdate", 5000,
                 TimeUnit.MILLISECONDS);
 
-        // Check the retuned data.
+        // Check the returned data.
         Assert.assertEquals("cat dog", observer.mMetadata.getQuery());
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             ContinuousNavigationUserDataImpl continuousNavigationUserData =
@@ -242,8 +247,8 @@ public class ContinuousSearchTabHelperTest {
 
         // Invalidate the data.
         loadUrl(tab, new LoadUrlParams(UrlConstants.ABOUT_URL));
-        observer.mInvalidateCallbackHelper.waitForFirst(
-                "Timed out waiting for SearchResultUserDataObserver#onInvalidate", 5000,
+        observer.mInvalidateCallbackHelper.waitForCallback(
+                "Timed out waiting for SearchResultUserDataObserver#onInvalidate", 0, 1, 5000,
                 TimeUnit.MILLISECONDS);
     }
 }

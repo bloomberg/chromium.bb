@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_enum_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 
 // This file provides helpers for converting WebGPU objects, descriptors,
@@ -21,33 +21,23 @@
 
 namespace blink {
 
-class DoubleSequenceOrGPUColorDict;
 class GPUColorDict;
 class GPUProgrammableStage;
 class GPUImageCopyTexture;
 class GPUImageDataLayout;
-class UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict;
-class UnsignedLongEnforceRangeSequenceOrGPUOrigin3DDict;
 
 // These conversions are used multiple times and are declared here. Conversions
 // used only once, for example for object construction, are defined
 // individually.
 WGPUColor AsDawnColor(const Vector<double>&);
 WGPUColor AsDawnType(const GPUColorDict*);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 WGPUColor AsDawnType(const V8GPUColor* webgpu_color);
-WGPUExtent3D AsDawnType(const V8GPUExtent3D* webgpu_extent, GPUDevice* device);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-WGPUColor AsDawnType(const DoubleSequenceOrGPUColorDict*);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-// TODO(crbug.com/1181288): Remove the old IDL union version.
-WGPUExtent3D AsDawnType(
-    const UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict*,
-    GPUDevice* device);
-WGPUOrigin3D AsDawnType(
-    const UnsignedLongEnforceRangeSequenceOrGPUOrigin3DDict*);
-WGPUTextureCopyView AsDawnType(const GPUImageCopyTexture* webgpu_view,
-                               GPUDevice* device);
+WGPUExtent3D AsDawnType(const V8GPUExtent3D* webgpu_extent);
+WGPUOrigin3D AsDawnType(const V8GPUOrigin3D* webgpu_extent);
+WGPUImageCopyTexture AsDawnType(const GPUImageCopyTexture* webgpu_view,
+                                GPUDevice* device);
+WGPUTextureFormat AsDawnType(SkColorType color_type);
+
 const char* ValidateTextureDataLayout(const GPUImageDataLayout* webgpu_layout,
                                       WGPUTextureDataLayout* layout);
 using OwnedProgrammableStageDescriptor =

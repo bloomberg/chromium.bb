@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/geometry/length_box.h"
 #include "third_party/blink/renderer/platform/geometry/length_size.h"
@@ -38,10 +37,12 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 
 class ComputedStyle;
+class Document;
 class Element;
 class File;
 class FontDescription;
@@ -122,10 +123,8 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   // Highlight and text colors for TextMatches.
   Color PlatformTextSearchHighlightColor(
       bool active_match,
-      bool in_forced_colors_mode,
       mojom::blink::ColorScheme color_scheme) const;
   Color PlatformTextSearchColor(bool active_match,
-                                bool in_forced_colors_mode,
                                 mojom::blink::ColorScheme color_scheme) const;
 
   virtual Color FocusRingColor(mojom::blink::ColorScheme color_scheme) const;
@@ -146,7 +145,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual base::TimeDelta CaretBlinkInterval() const;
 
   // System fonts and colors for CSS.
-  void SystemFont(CSSValueID system_font_id, FontDescription&);
+  void SystemFont(CSSValueID system_font_id, FontDescription&, const Document*);
   virtual Color SystemColor(CSSValueID,
                             mojom::blink::ColorScheme color_scheme) const;
 
@@ -166,7 +165,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   // Returns size of one slider tick mark for a horizontal track.
   // For vertical tracks we rotate it and use it. i.e. Width is always length
   // along the track.
-  virtual IntSize SliderTickSize() const = 0;
+  virtual gfx::Size SliderTickSize() const = 0;
   // Returns the distance of slider tick origin from the slider track center.
   virtual int SliderTickOffsetFromTrackCenter() const = 0;
 
@@ -192,6 +191,8 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual Color GetAccentColor(mojom::blink::ColorScheme color_scheme) const {
     return Color();
   }
+
+  bool InForcedColorsMode() const { return in_forced_colors_mode_; }
 
  protected:
   // The platform selection color.
@@ -233,6 +234,12 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   bool HasCustomFocusRingColor() const;
   Color GetCustomFocusRingColor() const;
 
+  Color DefaultSystemColor(CSSValueID,
+                           mojom::blink::ColorScheme color_scheme) const;
+  Color SystemColorFromNativeTheme(
+      CSSValueID,
+      mojom::blink::ColorScheme color_scheme) const;
+
  private:
   // This function is to be implemented in your platform-specific theme
   // implementation to hand back the appropriate platform theme.
@@ -244,12 +251,14 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   ControlPart AdjustAppearanceWithElementType(const ComputedStyle& style,
                                               const Element* element);
 
+  void UpdateForcedColorsState();
+
   Color custom_focus_ring_color_;
   bool has_custom_focus_ring_color_;
-  base::TimeDelta caret_blink_interval_ =
-      base::TimeDelta::FromMilliseconds(500);
+  base::TimeDelta caret_blink_interval_ = base::Milliseconds(500);
 
   bool delegates_menu_list_rendering_ = false;
+  bool in_forced_colors_mode_ = false;
 
   // This color is expected to be drawn on a semi-transparent overlay,
   // making it more transparent than its alpha value indicates.

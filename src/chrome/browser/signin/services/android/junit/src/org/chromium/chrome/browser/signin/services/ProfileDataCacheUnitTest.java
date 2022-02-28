@@ -18,12 +18,11 @@ import org.robolectric.RuntimeEnvironment;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.R;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountId;
-import org.chromium.components.signin.identitymanager.AccountInfoService;
+import org.chromium.components.signin.identitymanager.AccountInfoServiceProvider;
 import org.chromium.components.signin.identitymanager.AccountTrackerService;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.identitymanager.IdentityManagerJni;
@@ -32,7 +31,6 @@ import org.chromium.components.signin.identitymanager.IdentityManagerJni;
  * Unit tests for {@link ProfileDataCache}
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Features.EnableFeatures({ChromeFeatureList.DEPRECATE_MENAGERIE_API})
 public class ProfileDataCacheUnitTest {
     private static final long NATIVE_IDENTITY_MANAGER = 10001L;
     private static final String ACCOUNT_EMAIL = "test@gmail.com";
@@ -42,9 +40,6 @@ public class ProfileDataCacheUnitTest {
 
     @Rule
     public final JniMocker mocker = new JniMocker();
-
-    @Rule
-    public final Features.JUnitProcessor processor = new Features.JUnitProcessor();
 
     @Rule
     public final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
@@ -66,14 +61,16 @@ public class ProfileDataCacheUnitTest {
     @Before
     public void setUp() {
         mocker.mock(IdentityManagerJni.TEST_HOOKS, mIdentityManagerNativeMock);
-        AccountInfoService.init(mIdentityManager, mAccountTrackerServiceMock);
         mProfileDataCache = ProfileDataCache.createWithDefaultImageSizeAndNoBadge(
                 RuntimeEnvironment.application.getApplicationContext());
+
+        // Add an observer for IdentityManager::onExtendedAccountInfoUpdated.
+        mAccountManagerTestRule.observeIdentityManager(mIdentityManager);
     }
 
     @After
     public void tearDown() {
-        AccountInfoService.resetForTests();
+        AccountInfoServiceProvider.resetForTests();
     }
 
     @Test
@@ -82,10 +79,12 @@ public class ProfileDataCacheUnitTest {
         final AccountInfo accountInfo = new AccountInfo(new CoreAccountId("gaia-id-test"),
                 ACCOUNT_EMAIL, "gaia-id-test", fullName, null, null);
         mProfileDataCache.addObserver(mObserverMock);
+        Assert.assertFalse(mProfileDataCache.hasProfileData(ACCOUNT_EMAIL));
         Assert.assertNull(mProfileDataCache.getProfileDataOrDefault(ACCOUNT_EMAIL).getFullName());
 
         mIdentityManager.onExtendedAccountInfoUpdated(accountInfo);
 
+        Assert.assertTrue(mProfileDataCache.hasProfileData(ACCOUNT_EMAIL));
         Assert.assertEquals(
                 fullName, mProfileDataCache.getProfileDataOrDefault(ACCOUNT_EMAIL).getFullName());
     }
@@ -96,11 +95,26 @@ public class ProfileDataCacheUnitTest {
         final AccountInfo accountInfo = new AccountInfo(new CoreAccountId("gaia-id-test"),
                 ACCOUNT_EMAIL, "gaia-id-test", null, givenName, null);
         mProfileDataCache.addObserver(mObserverMock);
+        Assert.assertFalse(mProfileDataCache.hasProfileData(ACCOUNT_EMAIL));
         Assert.assertNull(mProfileDataCache.getProfileDataOrDefault(ACCOUNT_EMAIL).getGivenName());
 
         mIdentityManager.onExtendedAccountInfoUpdated(accountInfo);
 
+        Assert.assertTrue(mProfileDataCache.hasProfileData(ACCOUNT_EMAIL));
         Assert.assertEquals(
                 givenName, mProfileDataCache.getProfileDataOrDefault(ACCOUNT_EMAIL).getGivenName());
+    }
+
+    @Test
+    public void accountInfoIsUpdatedWithOnlyBadgeConfig() {
+        mProfileDataCache.setBadge(R.drawable.ic_sync_badge_error_20dp);
+        final AccountInfo accountInfo = new AccountInfo(
+                new CoreAccountId("gaia-id-test"), ACCOUNT_EMAIL, "gaia-id-test", null, null, null);
+        mProfileDataCache.addObserver(mObserverMock);
+        Assert.assertFalse(mProfileDataCache.hasProfileData(ACCOUNT_EMAIL));
+
+        mIdentityManager.onExtendedAccountInfoUpdated(accountInfo);
+
+        Assert.assertTrue(mProfileDataCache.hasProfileData(ACCOUNT_EMAIL));
     }
 }

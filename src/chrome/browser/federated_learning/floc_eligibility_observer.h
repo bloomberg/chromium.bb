@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_FEDERATED_LEARNING_FLOC_ELIGIBILITY_OBSERVER_H_
 #define CHROME_BROWSER_FEDERATED_LEARNING_FLOC_ELIGIBILITY_OBSERVER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
-#include "content/public/browser/render_document_host_user_data.h"
+#include "content/public/browser/document_user_data.h"
 
 namespace content {
 class WebContents;
@@ -27,7 +28,7 @@ namespace federated_learning {
 // When the page is considered eligible for floc computation, a corresponding
 // HistoryService API will be called to persistently set the eligibility bit.
 class FlocEligibilityObserver
-    : public content::RenderDocumentHostUserData<FlocEligibilityObserver> {
+    : public content::DocumentUserData<FlocEligibilityObserver> {
  public:
   using ObservePolicy =
       page_load_metrics::PageLoadMetricsObserver::ObservePolicy;
@@ -47,11 +48,11 @@ class FlocEligibilityObserver
  private:
   explicit FlocEligibilityObserver(content::RenderFrameHost* rfh);
 
-  friend class content::RenderDocumentHostUserData<FlocEligibilityObserver>;
+  friend class content::DocumentUserData<FlocEligibilityObserver>;
 
   void OnOptInSignalObserved();
 
-  content::WebContents* web_contents_;
+  raw_ptr<content::WebContents> web_contents_;
 
   // |eligible_commit_| means all the commit time prerequisites are met
   // (i.e. IP was publicly routable AND permissions policy is "allow"). It can
@@ -62,7 +63,7 @@ class FlocEligibilityObserver
 
   bool observed_opt_in_signal_ = false;
 
-  RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL();
+  DOCUMENT_USER_DATA_KEY_DECL();
 };
 
 }  // namespace federated_learning

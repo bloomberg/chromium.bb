@@ -19,12 +19,13 @@
 #include "extensions/common/features/feature_provider.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
 constexpr char kErrNotReady[] = "Manager for remote apps is not ready";
 constexpr char kErrFolderIdDoesNotExist[] = "Folder ID provided does not exist";
+constexpr char kErrAppIdDoesNotExist[] = "App ID provided does not exist";
 
 static bool g_bypass_checks_for_testing_ = false;
 
@@ -65,12 +66,13 @@ RemoteAppsImpl::RemoteAppsImpl(RemoteAppsManager* manager) : manager_(manager) {
 RemoteAppsImpl::~RemoteAppsImpl() = default;
 
 void RemoteAppsImpl::Bind(
-    mojo::PendingReceiver<remote_apps::mojom::RemoteApps> pending_remote_apps,
-    mojo::PendingRemote<remote_apps::mojom::RemoteAppLaunchObserver>
+    mojo::PendingReceiver<chromeos::remote_apps::mojom::RemoteApps>
+        pending_remote_apps,
+    mojo::PendingRemote<chromeos::remote_apps::mojom::RemoteAppLaunchObserver>
         pending_observer) {
   receivers_.Add(this, std::move(pending_remote_apps));
   app_launch_observers_.Add(
-      mojo::Remote<remote_apps::mojom::RemoteAppLaunchObserver>(
+      mojo::Remote<chromeos::remote_apps::mojom::RemoteAppLaunchObserver>(
           std::move(pending_observer)));
 }
 
@@ -92,15 +94,36 @@ void RemoteAppsImpl::AddApp(const std::string& name,
                      std::move(callback)));
 }
 
-void RemoteAppsImpl::OnAppLaunched(const std::string& id) {
-  if (!base::Contains(app_ids_, id))
+void RemoteAppsImpl::DeleteApp(const std::string& app_id,
+                               DeleteAppCallback callback) {
+  ash::RemoteAppsError error = manager_->DeleteApp(app_id);
+
+  switch (error) {
+    case RemoteAppsError::kNotReady:
+      std::move(callback).Run(kErrNotReady);
+      return;
+    case RemoteAppsError::kNone:
+      app_ids_.erase(app_id);
+      std::move(callback).Run(absl::nullopt);
+      return;
+    case RemoteAppsError::kAppIdDoesNotExist:
+      std::move(callback).Run(kErrAppIdDoesNotExist);
+      return;
+    case RemoteAppsError::kFolderIdDoesNotExist:
+      // Impossible to reach - only occurs for |AddApp()|.
+      DCHECK(false);
+  }
+}
+
+void RemoteAppsImpl::OnAppLaunched(const std::string& app_id) {
+  if (!base::Contains(app_ids_, app_id))
     return;
   for (auto& observer : app_launch_observers_)
-    observer->OnRemoteAppLaunched(id);
+    observer->OnRemoteAppLaunched(app_id);
 }
 
 void RemoteAppsImpl::OnAppAdded(AddAppCallback callback,
-                                const std::string& id,
+                                const std::string& app_id,
                                 RemoteAppsError error) {
   switch (error) {
     case RemoteAppsError::kNotReady:
@@ -110,14 +133,13 @@ void RemoteAppsImpl::OnAppAdded(AddAppCallback callback,
       std::move(callback).Run(absl::nullopt, kErrFolderIdDoesNotExist);
       return;
     case RemoteAppsError::kNone:
-      app_ids_.insert(id);
-      std::move(callback).Run(id, absl::nullopt);
+      app_ids_.insert(app_id);
+      std::move(callback).Run(app_id, absl::nullopt);
       return;
     case RemoteAppsError::kAppIdDoesNotExist:
-      // Only occurs when deleting an app, which is not yet implemented in the
-      // API.
+      // Impossible to reach - only occurs for |DeleteApp()|.
       DCHECK(false);
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

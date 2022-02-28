@@ -24,8 +24,6 @@
 #include "third_party/blink/renderer/core/html/html_script_element.h"
 
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/core/v8/html_script_element_or_svg_script_element.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_htmlscriptelement_svgscriptelement.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -36,6 +34,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/core/script/script_runner.h"
+#include "third_party/blink/renderer/core/script_type_names.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -125,6 +124,11 @@ Node::InsertionNotificationRequest HTMLScriptElement::InsertedInto(
   return kInsertionShouldCallDidNotifySubtreeInsertions;
 }
 
+void HTMLScriptElement::RemovedFrom(ContainerNode& insertion_point) {
+  HTMLElement::RemovedFrom(insertion_point);
+  loader_->ReleaseWebBundleResource();
+}
+
 void HTMLScriptElement::DidNotifySubtreeInsertionsToDocument() {
   loader_->DidNotifySubtreeInsertionsToDocument();
 }
@@ -133,11 +137,6 @@ void HTMLScriptElement::setText(const String& string) {
   setTextContent(string);
 }
 
-void HTMLScriptElement::text(StringOrTrustedScript& result) {
-  result.SetString(TextFromChildren());
-}
-
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 void HTMLScriptElement::setInnerTextForBinding(
     const V8UnionStringTreatNullAsEmptyStringOrTrustedScript*
         string_or_trusted_script,
@@ -152,23 +151,7 @@ void HTMLScriptElement::setInnerTextForBinding(
   HTMLElement::setInnerText(value, exception_state);
   script_text_internal_slot_ = ParkableString(value.Impl());
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-void HTMLScriptElement::setInnerTextForBinding(
-    const StringTreatNullAsEmptyStringOrTrustedScript& string_or_trusted_script,
-    ExceptionState& exception_state) {
-  String value = TrustedTypesCheckForScript(
-      string_or_trusted_script, GetExecutionContext(), exception_state);
-  if (!exception_state.HadException()) {
-    // https://w3c.github.io/webappsec-trusted-types/dist/spec/#setting-slot-values
-    // On setting, the innerText [...] perform the regular steps, and then set
-    // content object's [[ScriptText]] internal slot value [...].
-    HTMLElement::setInnerText(value, exception_state);
-    script_text_internal_slot_ = ParkableString(value.Impl());
-  }
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 void HTMLScriptElement::setTextContentForBinding(
     const V8UnionStringOrTrustedScript* value,
     ExceptionState& exception_state) {
@@ -182,21 +165,6 @@ void HTMLScriptElement::setTextContentForBinding(
   Node::setTextContent(string);
   script_text_internal_slot_ = ParkableString(string.Impl());
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-void HTMLScriptElement::setTextContentForBinding(
-    const StringOrTrustedScript& string_or_trusted_script,
-    ExceptionState& exception_state) {
-  String value = TrustedTypesCheckForScript(
-      string_or_trusted_script, GetExecutionContext(), exception_state);
-  if (!exception_state.HadException()) {
-    // https://w3c.github.io/webappsec-trusted-types/dist/spec/#setting-slot-values
-    // On setting, [..] textContent [..] perform the regular steps, and then set
-    // content object's [[ScriptText]] internal slot value [...].
-    Node::setTextContent(value);
-    script_text_internal_slot_ = ParkableString(value.Impl());
-  }
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void HTMLScriptElement::setTextContent(const String& string) {
   // https://w3c.github.io/webappsec-trusted-types/dist/spec/#setting-slot-values
@@ -324,19 +292,15 @@ ExecutionContext* HTMLScriptElement::GetExecutionContext() const {
   return Node::GetExecutionContext();
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 V8HTMLOrSVGScriptElement* HTMLScriptElement::AsV8HTMLOrSVGScriptElement() {
   if (IsInShadowTree())
     return nullptr;
   return MakeGarbageCollected<V8HTMLOrSVGScriptElement>(this);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-void HTMLScriptElement::SetScriptElementForBinding(
-    HTMLScriptElementOrSVGScriptElement& element) {
-  if (!IsInShadowTree())
-    element.SetHTMLScriptElement(this);
+
+DOMNodeId HTMLScriptElement::GetDOMNodeId() {
+  return DOMNodeIds::IdForNode(this);
 }
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void HTMLScriptElement::DispatchLoadEvent() {
   DispatchEvent(*Event::Create(event_type_names::kLoad));
@@ -356,6 +320,29 @@ Element& HTMLScriptElement::CloneWithoutAttributesAndChildren(
       CreateElementFlags::ByCloneNode().SetAlreadyStarted(
           loader_->AlreadyStarted());
   return *factory.CreateElement(TagQName(), flags, IsValue());
+}
+
+// static
+bool HTMLScriptElement::supports(ScriptState* script_state,
+                                 const AtomicString& type) {
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  if (type == script_type_names::kClassic)
+    return true;
+  if (type == script_type_names::kModule)
+    return true;
+  if (type == script_type_names::kImportmap)
+    return true;
+
+  if ((type == script_type_names::kSpeculationrules) &&
+      RuntimeEnabledFeatures::SpeculationRulesEnabled(execution_context)) {
+    return true;
+  }
+  if ((type == script_type_names::kWebbundle) &&
+      RuntimeEnabledFeatures::SubresourceWebBundlesEnabled(execution_context)) {
+    return true;
+  }
+
+  return false;
 }
 
 void HTMLScriptElement::Trace(Visitor* visitor) const {

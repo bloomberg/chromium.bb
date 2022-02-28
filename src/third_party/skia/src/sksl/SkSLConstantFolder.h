@@ -16,12 +16,11 @@
 namespace SkSL {
 
 class Context;
-class ErrorReporter;
 class Expression;
 
 /**
  * Performs constant folding on IR expressions. This simplifies expressions containing
- * compile-time constants, such as replacing `IntLiteral(2) + IntLiteral(2)` with `IntLiteral(4)`.
+ * compile-time constants, such as replacing `Literal(2) + Literal(2)` with `Literal(4)`.
  */
 class ConstantFolder {
 public:
@@ -32,10 +31,10 @@ public:
     static bool GetConstantInt(const Expression& value, SKSL_INT* out);
 
     /**
-     * If value is a float literal or const float variable with a known value, returns true and
-     * stores the value in out. Otherwise returns false.
+     * If value is a literal or const scalar variable with a known value, returns true and stores
+     * the value in out. Otherwise returns false.
      */
-    static bool GetConstantFloat(const Expression& value, SKSL_FLOAT* out);
+    static bool GetConstantValue(const Expression& value, double* out);
 
     /**
      * If the expression is a const variable with a known compile-time-constant value, returns that
@@ -50,16 +49,9 @@ public:
     static std::unique_ptr<Expression> MakeConstantValueForVariable(
             std::unique_ptr<Expression> expr);
 
-    /**
-     * Reports an error and returns true if op is a division / mod operator and right is zero or
-     * contains a zero element.
-     */
-    static bool ErrorOnDivideByZero(const Context& context, int offset, Operator op,
-                                    const Expression& right);
-
     /** Simplifies the binary expression `left OP right`. Returns null if it can't be simplified. */
     static std::unique_ptr<Expression> Simplify(const Context& context,
-                                                int offset,
+                                                int line,
                                                 const Expression& left,
                                                 Operator op,
                                                 const Expression& right,

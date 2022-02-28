@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.accounts.Account;
 import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
 import android.app.backup.BackupManager;
@@ -43,6 +44,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -148,13 +150,6 @@ public class ChromeBackupAgentImpl extends ChromeBackupAgent.Impl {
             out.writeObject(mNames);
             out.writeObject(mValues);
         }
-    }
-
-    @VisibleForTesting
-    protected boolean accountExistsOnDevice(String userName) {
-        return AccountUtils.findAccountByName(
-                       AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(), userName)
-                != null;
     }
 
     // TODO (aberent) Refactor the tests to use a mocked ChromeBrowserInitializer, and make this
@@ -353,7 +348,7 @@ public class ChromeBackupAgentImpl extends ChromeBackupAgent.Impl {
         }
 
         // If the user hasn't signed in, or can't sign in, then don't restore anything.
-        if (restoredUserName == null || !accountExistsOnDevice(restoredUserName)) {
+        if (!accountExistsOnDevice(restoredUserName)) {
             setRestoreStatus(RestoreStatus.NOT_SIGNED_IN);
             Log.i(TAG, "Chrome was not signed in with a known account name, not restoring");
             return;
@@ -420,6 +415,15 @@ public class ChromeBackupAgentImpl extends ChromeBackupAgent.Impl {
                 latch.countDown();
             }
         };
+    }
+
+    private boolean accountExistsOnDevice(String accountName) {
+        return PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
+            List<Account> accounts = AccountUtils.getAccountsIfFulfilledOrEmpty(
+                    AccountManagerFacadeProvider.getInstance().getAccounts());
+            return accountName != null
+                    && AccountUtils.findAccountByName(accounts, accountName) != null;
+        });
     }
 
     /**

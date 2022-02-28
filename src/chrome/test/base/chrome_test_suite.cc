@@ -76,7 +76,9 @@ void ChromeTestSuite::Initialize() {
 
   if (!browser_dir_.empty()) {
     base::PathService::Override(base::DIR_EXE, browser_dir_);
+#if !defined(OS_FUCHSIA)
     base::PathService::Override(base::DIR_MODULE, browser_dir_);
+#endif  // !defined(OS_FUCHSIA)
   }
 
   // Disable external libraries load if we are under python process in
@@ -114,7 +116,8 @@ void ChromeTestSuite::Initialize() {
   CHECK(scoped_temp_dir_.CreateUniqueTempDir());
   base::FilePath temp_path = scoped_temp_dir_.GetPath();
   chrome::SetLacrosDefaultPaths(/*documents_dir=*/temp_path,
-                                /*downloads_dir=*/temp_path);
+                                /*downloads_dir=*/temp_path,
+                                /*drivefs=*/base::FilePath());
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
