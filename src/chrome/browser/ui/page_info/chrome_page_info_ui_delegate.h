@@ -7,15 +7,26 @@
 
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
+#include "components/page_info/core/proto/about_this_site_metadata.pb.h"
 #include "components/page_info/page_info_ui_delegate.h"
 #include "url/gurl.h"
 
 class Profile;
 
+namespace content {
+class WebContents;
+}
+
+namespace ui {
+class Event;
+}
+
 class ChromePageInfoUiDelegate : public PageInfoUiDelegate {
  public:
-  ChromePageInfoUiDelegate(Profile* profile, const GURL& site_url);
+  ChromePageInfoUiDelegate(content::WebContents* web_contents,
+                           const GURL& site_url);
   ~ChromePageInfoUiDelegate() override = default;
 
   // Whether the combobox option for allowing a permission should be shown for
@@ -25,10 +36,19 @@ class ChromePageInfoUiDelegate : public PageInfoUiDelegate {
   // Whether the combobox option to ask a permission should be shown for `type`.
   bool ShouldShowAsk(ContentSettingsType type);
 
+  // If "allow" option is not available, return the reason why.
+  std::u16string GetAutomaticallyBlockedReason(ContentSettingsType type);
+
+  // Returns "About this site" info for the active page.
+  absl::optional<page_info::proto::SiteInfo> GetAboutThisSiteInfo();
+
+  void AboutThisSiteSourceClicked(GURL url, const ui::Event& event);
+
 #if !defined(OS_ANDROID)
-  // Whether to show a link that takes the user to the chrome://settings subpage
-  // for `site_url_`.
-  bool ShouldShowSiteSettings();
+  // If PageInfo should show a link to the site or app's settings page, this
+  // will return true and set the params to the appropriate resource IDs (IDS_*).
+  // Otherwise, it will return false.
+  bool ShouldShowSiteSettings(int* link_text_id, int* tooltip_text_id);
 
   // The returned string, if non-empty, should be added as a sublabel that gives
   // extra details to the user concerning the granted permission.
@@ -36,12 +56,15 @@ class ChromePageInfoUiDelegate : public PageInfoUiDelegate {
 
   // PageInfoUiDelegate implementation
   bool IsBlockAutoPlayEnabled() override;
+  bool IsMultipleTabsOpen() override;
 #endif  // !defined(OS_ANDROID)
   permissions::PermissionResult GetPermissionStatus(
       ContentSettingsType type) override;
 
  private:
-  Profile* profile_;
+  Profile* GetProfile() const;
+
+  raw_ptr<content::WebContents> web_contents_;
   GURL site_url_;
 };
 

@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/jxl/enc_entropy_coder.h"
 
@@ -80,7 +71,7 @@ int32_t NumNonZeroExceptLLF(const size_t cx, const size_t cy,
         const auto coef =
             AndNot(llf_mask, Load(di, &block[y * cx * kBlockDim + x]));
 
-        neg_sum_zero += VecFromMask(coef == zero);
+        neg_sum_zero += VecFromMask(di, coef == zero);
       }
     }
   }
@@ -89,7 +80,7 @@ int32_t NumNonZeroExceptLLF(const size_t cx, const size_t cy,
   for (size_t y = cy; y < cy * kBlockDim; y++) {
     for (size_t x = 0; x < cx * kBlockDim; x += Lanes(di)) {
       const auto coef = Load(di, &block[y * cx * kBlockDim + x]);
-      neg_sum_zero += VecFromMask(coef == zero);
+      neg_sum_zero += VecFromMask(di, coef == zero);
     }
   }
 
@@ -130,7 +121,7 @@ int32_t NumNonZero8x8ExceptDC(const int32_t* JXL_RESTRICT block,
       // DC counts as zero so we don't include it in nzeros.
       const auto coef = AndNot(dc_mask, Load(di, &block[y * kBlockDim + x]));
 
-      neg_sum_zero += VecFromMask(coef == zero);
+      neg_sum_zero += VecFromMask(di, coef == zero);
     }
   }
 
@@ -138,7 +129,7 @@ int32_t NumNonZero8x8ExceptDC(const int32_t* JXL_RESTRICT block,
   for (size_t y = 1; y < kBlockDim; y++) {
     for (size_t x = 0; x < kBlockDim; x += Lanes(di)) {
       const auto coef = Load(di, &block[y * kBlockDim + x]);
-      neg_sum_zero += VecFromMask(coef == zero);
+      neg_sum_zero += VecFromMask(di, coef == zero);
     }
   }
 

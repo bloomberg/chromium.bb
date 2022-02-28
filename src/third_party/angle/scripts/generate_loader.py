@@ -155,9 +155,6 @@ def gen_gles_loader(gles_preamble, path, header_lib, export, internal_prefix, fi
 
     all_cmds = xml.all_cmd_names.get_all_commands()
 
-    if registry_xml.support_EGL_ANGLE_explicit_context:
-        all_cmds += [cmd + "ContextANGLE" for cmd in xml.all_cmd_names.get_all_commands()]
-
     # Ensure there are no duplicates
     assert (len(all_cmds) == len(set(all_cmds))), "Duplicate command names found"
 
@@ -237,9 +234,8 @@ def gen_trace_gles_and_egl_loaders():
 def gen_util_wgl_loader():
 
     supported_wgl_extensions = [
-        "WGL_ARB_create_context",
-        "WGL_ARB_extensions_string",
-        "WGL_EXT_swap_control",
+        "WGL_ARB_create_context", "WGL_ARB_extensions_string", "WGL_ARB_pixel_format",
+        "WGL_EXT_colorspace", "WGL_EXT_swap_control"
     ]
 
     source = "wgl.xml"
@@ -322,13 +318,14 @@ trace_gles_preamble = """#if defined(GL_GLES_PROTOTYPES) && GL_GLES_PROTOTYPES
 #endif  // defined(GL_GLES_PROTOTYPES)
 
 #include "angle_gl.h"
-#include "restricted_traces_autogen.h"
+#include "restricted_traces_export.h"
 """
 
-trace_egl_preamble = """#include "restricted_traces_autogen.h"
-
+trace_egl_preamble = """
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
+
+#include "restricted_traces_export.h"
 """
 
 util_wgl_preamble = """

@@ -2,10 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import division
+
 import itertools
 import re
 
+# TODO(crbug.com/1227140): Clean up when py2 is no longer supported.
+try:
+  _INTEGER_TYPES = (int, long)
+except NameError:  # pragma: no cover
+  _INTEGER_TYPES = (int,)
+
 from recipe_engine import recipe_api
+from recipe_engine import util as recipe_util
 
 class GitApi(recipe_api.RecipeApi):
   _GIT_HASH_RE = re.compile('[0-9a-f]{40}', re.IGNORECASE)
@@ -20,16 +29,9 @@ class GitApi(recipe_api.RecipeApi):
     options = kwargs.pop('git_config_options', {})
     for k, v in sorted(options.items()):
       git_cmd.extend(['-c', '%s=%s' % (k, v)])
-    can_fail_build = kwargs.pop('can_fail_build', True)
-    try:
-      with self.m.context(cwd=(self.m.context.cwd or self.m.path['checkout'])):
-        return self.m.step(name, git_cmd + list(args), infra_step=infra_step,
-                           **kwargs)
-    except self.m.step.StepFailure as f:
-      if can_fail_build:
-        raise
-      else:
-        return f.result
+    with self.m.context(cwd=(self.m.context.cwd or self.m.path['checkout'])):
+      return self.m.step(name, git_cmd + list(args), infra_step=infra_step,
+                          **kwargs)
 
   def fetch_tags(self, remote_name=None, **kwargs):
     """Fetches all tags from the remote."""
@@ -45,21 +47,22 @@ class GitApi(recipe_api.RecipeApi):
     return self('cat-file', 'blob', '%s:%s' % (commit_hash, file_path),
                 **kwargs)
 
-  def count_objects(self, previous_result=None, can_fail_build=False, **kwargs):
+  def count_objects(self, previous_result=None, raise_on_failure=False, **kwargs):
     """Returns `git count-objects` result as a dict.
 
     Args:
       * previous_result (dict): the result of previous count_objects call.
         If passed, delta is reported in the log and step text.
-      * can_fail_build (bool): if True, may fail the build and/or raise an
-        exception. Defaults to False.
+      * raise_on_failure (bool): if True, an exception will be raised if the
+        operation fails. Defaults to False.
 
     Returns:
       A dict of count-object values, or None if count-object run failed.
     """
     if previous_result:
       assert isinstance(previous_result, dict)
-      assert all(isinstance(v, long) for v in previous_result.values())
+      assert all(
+          isinstance(v, _INTEGER_TYPES) for v in previous_result.values())
       assert 'size' in previous_result
       assert 'size-pack' in previous_result
 
@@ -67,18 +70,19 @@ class GitApi(recipe_api.RecipeApi):
     try:
       step_result = self(
           'count-objects', '-v', stdout=self.m.raw_io.output(),
-          can_fail_build=can_fail_build, **kwargs)
+          raise_on_failure=raise_on_failure, **kwargs)
 
       if not step_result.stdout:
         return None
 
       result = {}
       for line in step_result.stdout.splitlines():
+        line = line.decode('utf-8')
         name, value = line.split(':', 1)
-        result[name] = long(value.strip())
+        result[name] = int(value.strip())
 
       def results_to_text(results):
-        return ['  %s: %s' % (k, v) for k, v in results.items()]
+        return ['  %s: %s' % (k, v) for k, v in sorted(results.items())]
 
       step_result.presentation.logs['result'] = results_to_text(result)
 
@@ -103,16 +107,16 @@ class GitApi(recipe_api.RecipeApi):
       return result
     except Exception as ex:
       if step_result:
-        step_result.presentation.logs['exception'] = ['%r' % ex]
+        step_result.presentation.logs['exception'] = recipe_util.format_ex(ex)
         step_result.presentation.status = self.m.step.WARNING
-      if can_fail_build:
+      if raise_on_failure:
         raise recipe_api.InfraFailure('count-objects failed: %s' % ex)
       return None
 
   def checkout(self, url, ref=None, dir_path=None, recursive=False,
                submodules=True, submodule_update_force=False,
                keep_paths=None, step_suffix=None,
-               curl_trace_file=None, can_fail_build=True,
+               curl_trace_file=None, raise_on_failure=True,
                set_got_revision=False, remote_name=None,
                display_fetch_size=None, file_name=None,
                submodule_update_recursive=True,
@@ -132,7 +136,7 @@ class GitApi(recipe_api.RecipeApi):
       * curl_trace_file (Path): if not None, dump GIT_CURL_VERBOSE=1 trace to that
           file. Useful for debugging git issue reproducible only on bots. It has
           a side effect of all stderr output of 'git fetch' going to that file.
-      * can_fail_build (bool): if False, ignore errors during fetch or checkout.
+      * raise_on_failure (bool): if False, ignore errors during fetch or checkout.
       * set_got_revision (bool): if True, resolves HEAD and sets got_revision
           property.
       * remote_name (str): name of the git remote to use
@@ -197,30 +201,30 @@ class GitApi(recipe_api.RecipeApi):
           self('cache', 'populate', '-c',
                self.m.path['cache'].join('git'), url,
                name='populate cache',
-               can_fail_build=can_fail_build)
+               raise_on_failure=raise_on_failure)
           dir_cmd = self(
               'cache', 'exists', '--quiet',
               '--cache-dir', self.m.path['cache'].join('git'), url,
-              can_fail_build=can_fail_build,
+              raise_on_failure=raise_on_failure,
               stdout=self.m.raw_io.output(),
               step_test_data=lambda:
                   self.m.raw_io.test_api.stream_output('mirror_dir'))
-          mirror_dir = dir_cmd.stdout.strip()
+          mirror_dir = dir_cmd.stdout.strip().decode('utf-8')
           self('remote', 'set-url', 'origin', mirror_dir,
-               can_fail_build=can_fail_build)
+               raise_on_failure=raise_on_failure)
 
       # There are five kinds of refs we can be handed:
       # 0) None. In this case, we default to api.buildbucket.gitiles_commit.ref.
-      # 1) A fully qualified branch name, e.g. 'refs/heads/master'.
+      # 1) A fully qualified branch name, e.g. 'refs/heads/main'.
       #    Chop off 'refs/heads/' and now it matches case (4).
       # 2) A 40-character SHA1 hash.
       # 3) A fully-qualifed arbitrary ref, e.g. 'refs/foo/bar/baz'.
-      # 4) A branch name, e.g. 'master'.
+      # 4) A branch name, e.g. 'main'.
       # Note that 'FETCH_HEAD' can be many things (and therefore not a valid
       # checkout target) if many refs are fetched, but we only explicitly fetch
       # one ref here, so this is safe.
       if not ref:                                  # Case 0.
-        ref = self.m.buildbucket.gitiles_commit.ref or 'master'
+        ref = self.m.buildbucket.gitiles_commit.ref or 'main'
 
       # If it's a fully-qualified branch name, trim the 'refs/heads/' prefix.
       if ref.startswith('refs/heads/'):            # Case 1.
@@ -262,7 +266,7 @@ class GitApi(recipe_api.RecipeApi):
         self('fetch', *fetch_args,
           name=fetch_step_name,
           stderr=fetch_stderr,
-          can_fail_build=can_fail_build)
+          raise_on_failure=raise_on_failure)
       if display_fetch_size:
         self.count_objects(
             name='count-objects after %s' % fetch_step_name,
@@ -273,19 +277,19 @@ class GitApi(recipe_api.RecipeApi):
       if file_name:
         self('checkout', '-f', checkout_ref, '--', file_name,
           name='git checkout%s' % step_suffix,
-          can_fail_build=can_fail_build)
+          raise_on_failure=raise_on_failure)
 
       else:
         self('checkout', '-f', checkout_ref,
           name='git checkout%s' % step_suffix,
-          can_fail_build=can_fail_build)
+          raise_on_failure=raise_on_failure)
 
       rev_parse_step = self('rev-parse', 'HEAD',
                            name='read revision',
-                           stdout=self.m.raw_io.output(),
-                           can_fail_build=False,
+                           stdout=self.m.raw_io.output_text(),
+                           raise_on_failure=False,
                            step_test_data=lambda:
-                              self.m.raw_io.test_api.stream_output('deadbeef'))
+                              self.m.raw_io.test_api.stream_output_text('deadbeef'))
 
       if rev_parse_step.presentation.status == 'SUCCESS':
         sha = rev_parse_step.stdout.strip()
@@ -299,12 +303,12 @@ class GitApi(recipe_api.RecipeApi):
 
       self('clean', '-f', '-d', '-x', *clean_args,
         name='git clean%s' % step_suffix,
-        can_fail_build=can_fail_build)
+        raise_on_failure=raise_on_failure)
 
       if submodules:
         self('submodule', 'sync',
           name='submodule sync%s' % step_suffix,
-          can_fail_build=can_fail_build)
+          raise_on_failure=raise_on_failure)
         submodule_update = ['submodule', 'update', '--init']
         if submodule_update_recursive:
           submodule_update.append('--recursive')
@@ -312,7 +316,7 @@ class GitApi(recipe_api.RecipeApi):
           submodule_update.append('--force')
         self(*submodule_update,
           name='submodule update%s' % step_suffix,
-          can_fail_build=can_fail_build)
+          raise_on_failure=raise_on_failure)
 
     return retVal
 
@@ -323,7 +327,7 @@ class GitApi(recipe_api.RecipeApi):
       step_test_data = lambda: self.m.raw_io.test_api.stream_output(test_data)
     return self('show', commit, '--format=%at', '-s',
                 stdout=self.m.raw_io.output(),
-                step_test_data=step_test_data).stdout.rstrip()
+                step_test_data=step_test_data).stdout.rstrip().decode('utf-8')
 
   def rebase(self, name_prefix, branch, dir_path, remote_name=None,
              **kwargs):
@@ -338,7 +342,7 @@ class GitApi(recipe_api.RecipeApi):
     remote_name = remote_name or 'origin'
     with self.m.context(cwd=dir_path):
       try:
-        self('rebase', '%s/master' % remote_name,
+        self('rebase', '%s/main' % remote_name,
              name="%s rebase" % name_prefix, **kwargs)
       except self.m.step.StepFailure:
         self('rebase', '--abort', name='%s rebase abort' % name_prefix,
@@ -361,7 +365,7 @@ class GitApi(recipe_api.RecipeApi):
     value = result.stdout
     if value:
       value = value.strip()
-      result.presentation.step_text = value
+      result.presentation.step_text = value.decode('utf-8')
     return value
 
   def get_remote_url(self, remote_name=None, **kwargs):
@@ -389,23 +393,70 @@ class GitApi(recipe_api.RecipeApi):
       rev_list_args = ['--all']
     self('bundle', 'create', bundle_path, *rev_list_args, **kwargs)
 
-  def new_branch(self, branch, name=None, upstream=None, **kwargs):
+  def new_branch(self,
+                 branch,
+                 name=None,
+                 upstream=None,
+                 upstream_current=False,
+                 **kwargs):
     """Runs git new-branch on a Git repository, to be used before git cl
     upload.
 
     Args:
       * branch (str): new branch name, which must not yet exist.
       * name (str): step name.
-      * upstream (str): to origin/master.
+      * upstream (str): to origin/main.
+      * upstream_current (bool): whether to use '--upstream_current'.
       * kwargs: Forwarded to '__call__'.
     """
+    if upstream and upstream_current:
+      raise ValueError('Can not define both upstream and upstream_current')
     env = self.m.context.env
     env['PATH'] = self.m.path.pathsep.join([
         str(self.repo_resource()), '%(PATH)s'])
     args = ['new-branch', branch]
     if upstream:
       args.extend(['--upstream', upstream])
+    if upstream_current:
+      args.append('--upstream_current')
     if not name:
       name = 'git new-branch %s' % branch
     with self.m.context(env=env):
       return self(*args, name=name, **kwargs)
+
+  def number(self, commitrefs=None, test_values=None):
+    """Computes the generation number of some commits.
+
+    Args:
+      * commitrefs (list[str]): A list of commit references. If none are
+        provided, the generation number for HEAD will be retrieved.
+      * test_values (list[str]): A list of numbers to use as the return
+        value during tests. It is an error if the length of the list
+        does not match the number of commitrefs (1 if commitrefs is not
+        provided).
+
+    Returns:
+    A list of strings containing the generation numbers of the commits.
+    If non-empty commitrefs was provided, the order of the returned
+    numbers will correspond to the order of the provided commitrefs.
+    """
+
+    def step_test_data():
+      refs = commitrefs or ['HEAD']
+      if test_values:
+        assert len(test_values) == len(refs)
+      values = test_values or range(3000, 3000 + len(refs))
+      output = '\n'.join(str(v) for v in values)
+      return self.m.raw_io.test_api.stream_output_text(output)
+
+    args = ['number']
+    args.extend(commitrefs or [])
+    # Put depot_tools on the path so that git-number can be found
+    with self.m.depot_tools.on_path():
+      # git-number is only meant for use on bots, so it prints an error message
+      # if CHROME_HEADLESS is not set
+      with self.m.context(env={'CHROME_HEADLESS': '1'}):
+        step_result = self(*args,
+                          stdout=self.m.raw_io.output_text(add_output_log=True),
+                          step_test_data=step_test_data)
+    return [l.strip() for l in step_result.stdout.strip().splitlines()]

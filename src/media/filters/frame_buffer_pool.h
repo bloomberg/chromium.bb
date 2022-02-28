@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/time/default_tick_clock.h"
@@ -31,6 +31,9 @@ class MEDIA_EXPORT FrameBufferPool
       public base::trace_event::MemoryDumpProvider {
  public:
   FrameBufferPool();
+
+  FrameBufferPool(const FrameBufferPool&) = delete;
+  FrameBufferPool& operator=(const FrameBufferPool&) = delete;
 
   // Called when a frame buffer allocation is needed. Upon return |fb_priv| will
   // be set to a private value used to identify the buffer in future calls and a
@@ -96,11 +99,9 @@ class MEDIA_EXPORT FrameBufferPool
   bool force_allocation_error_ = false;
 
   // |tick_clock_| is always a DefaultTickClock outside of testing.
-  const base::TickClock* tick_clock_;
+  raw_ptr<const base::TickClock> tick_clock_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(FrameBufferPool);
 };
 
 }  // namespace media

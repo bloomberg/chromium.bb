@@ -8,8 +8,9 @@
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/containers/flat_map.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/download_ui_model.h"
@@ -27,10 +28,13 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   // Only show a context menu for a dangerous download if it is malicious.
   static bool WantsContextMenu(DownloadUIModel* download_model);
 
+  DownloadShelfContextMenu(const DownloadShelfContextMenu&) = delete;
+  DownloadShelfContextMenu& operator=(const DownloadShelfContextMenu&) = delete;
+
   ~DownloadShelfContextMenu() override;
 
  protected:
-  explicit DownloadShelfContextMenu(DownloadUIModel* download);
+  explicit DownloadShelfContextMenu(base::WeakPtr<DownloadUIModel> download);
 
   // Returns the correct menu model depending on the state of the download item.
   // Returns nullptr if the download was destroyed.
@@ -45,6 +49,11 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   std::u16string GetLabelForCommandId(int command_id) const override;
 
  private:
+  friend class DownloadShelfContextMenuTest;
+  FRIEND_TEST_ALL_PREFIXES(DownloadShelfContextMenuTest,
+                           InvalidDownloadWontCrashContextMenu);
+  FRIEND_TEST_ALL_PREFIXES(DownloadShelfContextMenuTest, RecordCommandsEnabled);
+
   // Detaches self from |download_item_|. Called when the DownloadItem is
   // destroyed or when this object is being destroyed.
   void DetachFromDownloadItem();
@@ -63,6 +72,8 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
 
   void AddAutoOpenToMenu(ui::SimpleMenuModel* model);
 
+  void RecordCommandsEnabled(ui::SimpleMenuModel* model);
+
   // We show slightly different menus if the download is in progress vs. if the
   // download has finished.
   std::unique_ptr<ui::SimpleMenuModel> in_progress_download_menu_model_;
@@ -74,11 +85,14 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   std::unique_ptr<ui::SimpleMenuModel> deep_scanning_menu_model_;
   std::unique_ptr<ui::SimpleMenuModel> mixed_content_download_menu_model_;
 
-  // Information source.
-  DownloadUIModel* download_;
-  std::unique_ptr<DownloadCommands> download_commands_;
+  // Whether or not a histogram has been emitted recording which
+  // Download commands were enabled
+  bool download_commands_enabled_recorded_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(DownloadShelfContextMenu);
+  // Information source.
+  // Use WeakPtr because the context menu may outlive |download_|.
+  base::WeakPtr<DownloadUIModel> download_;
+  std::unique_ptr<DownloadCommands> download_commands_;
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_CONTEXT_MENU_H_

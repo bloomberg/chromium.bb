@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/app/content_main_delegate.h"
 
@@ -26,17 +24,24 @@ class WebTestBrowserMainRunner;
 class ShellMainDelegate : public ContentMainDelegate {
  public:
   explicit ShellMainDelegate(bool is_content_browsertests = false);
+
+  ShellMainDelegate(const ShellMainDelegate&) = delete;
+  ShellMainDelegate& operator=(const ShellMainDelegate&) = delete;
+
   ~ShellMainDelegate() override;
 
   // ContentMainDelegate implementation:
   bool BasicStartupComplete(int* exit_code) override;
+  bool ShouldCreateFeatureList() override;
   void PreSandboxStartup() override;
-  int RunProcess(const std::string& process_type,
-                 const MainFunctionParams& main_function_params) override;
+  absl::variant<int, MainFunctionParams> RunProcess(
+      const std::string& process_type,
+      MainFunctionParams main_function_params) override;
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
   void ZygoteForked() override;
 #endif
   void PreBrowserMain() override;
+  void PostEarlyInitialization(bool is_running_tests) override;
   ContentClient* CreateContentClient() override;
   ContentBrowserClient* CreateContentBrowserClient() override;
   ContentGpuClient* CreateContentGpuClient() override;
@@ -65,9 +70,6 @@ class ShellMainDelegate : public ContentMainDelegate {
   std::unique_ptr<ShellContentRendererClient> renderer_client_;
   std::unique_ptr<ShellContentUtilityClient> utility_client_;
   std::unique_ptr<ShellContentClient> content_client_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShellMainDelegate);
 };
 
 }  // namespace content

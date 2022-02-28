@@ -9,7 +9,6 @@
 
 #include "third_party/blink/public/web/web_frame_serializer.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
@@ -32,6 +31,9 @@ class FrameSerializerDelegateImpl final : public FrameSerializer::Delegate {
 
   FrameSerializerDelegateImpl(WebFrameSerializer::MHTMLPartsGenerationDelegate&,
                               HeapHashSet<WeakMember<const Element>>&);
+  FrameSerializerDelegateImpl(const FrameSerializerDelegateImpl&) = delete;
+  FrameSerializerDelegateImpl& operator=(const FrameSerializerDelegateImpl&) =
+      delete;
   ~FrameSerializerDelegateImpl() override = default;
 
   // FrameSerializer::Delegate implementation.
@@ -53,8 +55,6 @@ class FrameSerializerDelegateImpl final : public FrameSerializer::Delegate {
   WebFrameSerializer::MHTMLPartsGenerationDelegate& web_delegate_;
   HeapHashSet<WeakMember<const Element>>& shadow_template_elements_;
   bool popup_overlays_skipped_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameSerializerDelegateImpl);
 };
 
 }  // namespace blink

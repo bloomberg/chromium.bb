@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_FAVICON_LARGE_ICON_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_FAVICON_LARGE_ICON_SERVICE_FACTORY_H_
 
-#include "base/macros.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 namespace base {
@@ -29,6 +28,13 @@ class LargeIconServiceFactory : public BrowserContextKeyedServiceFactory {
 
   static LargeIconServiceFactory* GetInstance();
 
+  LargeIconServiceFactory(const LargeIconServiceFactory&) = delete;
+  LargeIconServiceFactory& operator=(const LargeIconServiceFactory&) = delete;
+
+  // Returns the icon size requested from server. The returned value takes into
+  // account the state of `features::kLargeFaviconFromGoogle`.
+  static int desired_size_in_dip_for_server_requests();
+
  private:
   friend struct base::DefaultSingletonTraits<LargeIconServiceFactory>;
 
@@ -41,8 +47,6 @@ class LargeIconServiceFactory : public BrowserContextKeyedServiceFactory {
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
   bool ServiceIsNULLWhileTesting() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(LargeIconServiceFactory);
 };
 
 #endif  // CHROME_BROWSER_FAVICON_LARGE_ICON_SERVICE_FACTORY_H_

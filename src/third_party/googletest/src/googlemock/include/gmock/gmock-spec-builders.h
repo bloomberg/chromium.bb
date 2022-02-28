@@ -56,8 +56,6 @@
 // where all clauses are optional, and .InSequence()/.After()/
 // .WillOnce() can appear any number of times.
 
-// GOOGLETEST_CM0002 DO NOT DELETE
-
 #ifndef GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_SPEC_BUILDERS_H_
 #define GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_SPEC_BUILDERS_H_
 
@@ -890,7 +888,7 @@ class GTEST_API_ ExpectationBase {
   mutable Mutex mutex_;  // Protects action_count_checked_.
 };  // class ExpectationBase
 
-// Impements an expectation for the given function type.
+// Implements an expectation for the given function type.
 template <typename F>
 class TypedExpectation : public ExpectationBase {
  public:
@@ -1510,7 +1508,7 @@ class FunctionMocker<R(Args...)> final : public UntypedFunctionMockerBase {
 
   // Performs the default action of this mock function on the given
   // arguments and returns the result. Asserts (or throws if
-  // exceptions are enabled) with a helpful call descrption if there
+  // exceptions are enabled) with a helpful call description if there
   // is no valid return value. This method doesn't depend on the
   // mutable state of this object, and thus can be called concurrently
   // without locking.
@@ -1838,12 +1836,12 @@ corresponding to the provided F argument.
 It makes use of MockFunction easier by allowing it to accept more F arguments
 than just function signatures.
 
-Specializations provided here cover only a signature type itself and
-std::function. However, if need be it can be easily extended to cover also other
-types (like for example boost::function).
+Specializations provided here cover a signature type itself and any template
+that can be parameterized with a signature, including std::function and
+boost::function.
 */
 
-template <typename F>
+template <typename F, typename = void>
 struct SignatureOf;
 
 template <typename R, typename... Args>
@@ -1851,8 +1849,10 @@ struct SignatureOf<R(Args...)> {
   using type = R(Args...);
 };
 
-template <typename F>
-struct SignatureOf<std::function<F>> : SignatureOf<F> {};
+template <template <typename> class C, typename F>
+struct SignatureOf<C<F>,
+                   typename std::enable_if<std::is_function<F>::value>::type>
+    : SignatureOf<F> {};
 
 template <typename F>
 using SignatureOfT = typename SignatureOf<F>::type;

@@ -28,19 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as NetworkComponents from './components/components.js';
 
 import {EventSourceMessagesView} from './EventSourceMessagesView.js';
-import type {UIHeaderSection} from './NetworkSearchScope.js';
-import type {NetworkTimeCalculator} from './NetworkTimeCalculator.js'; // eslint-disable-line no-unused-vars
+import type {NetworkTimeCalculator} from './NetworkTimeCalculator.js';
 import {RequestCookiesView} from './RequestCookiesView.js';
 import {RequestHeadersView} from './RequestHeadersView.js';
+import {RequestPayloadView} from './RequestPayloadView.js';
 import {RequestInitiatorView} from './RequestInitiatorView.js';
 import {RequestPreviewView} from './RequestPreviewView.js';
 import {RequestResponseView} from './RequestResponseView.js';
@@ -55,7 +54,7 @@ const UIStrings = {
   /**
   *@description Text in Network Item View of the Network panel
   */
-  headersAndRequestBody: 'Headers and request body',
+  payload: 'Payload',
   /**
   *@description Text in Network Item View of the Network panel
   */
@@ -128,160 +127,182 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/network/NetworkItemView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class NetworkItemView extends UI.TabbedPane.TabbedPane {
-  _request: SDK.NetworkRequest.NetworkRequest;
-  _resourceViewTabSetting: Common.Settings.Setting<Tabs>;
-  _headersView: RequestHeadersView;
-  _responseView: RequestResponseView|undefined;
-  _cookiesView: RequestCookiesView|null;
-  _initialTab?: Tabs;
+  private requestInternal: SDK.NetworkRequest.NetworkRequest;
+  private readonly resourceViewTabSetting: Common.Settings.Setting<NetworkForward.UIRequestLocation.UIRequestTabs>;
+  private readonly headersView: RequestHeadersView;
+  private payloadView: RequestPayloadView|null;
+  private readonly responseView: RequestResponseView|undefined;
+  private cookiesView: RequestCookiesView|null;
+  private initialTab?: NetworkForward.UIRequestLocation.UIRequestTabs;
 
-  constructor(request: SDK.NetworkRequest.NetworkRequest, calculator: NetworkTimeCalculator, initialTab?: Tabs) {
+  constructor(
+      request: SDK.NetworkRequest.NetworkRequest, calculator: NetworkTimeCalculator,
+      initialTab?: NetworkForward.UIRequestLocation.UIRequestTabs) {
     super();
-    this._request = request;
+    this.requestInternal = request;
     this.element.classList.add('network-item-view');
 
-    this._resourceViewTabSetting = Common.Settings.Settings.instance().createSetting('resourceViewTab', Tabs.Preview);
+    this.resourceViewTabSetting = Common.Settings.Settings.instance().createSetting(
+        'resourceViewTab', NetworkForward.UIRequestLocation.UIRequestTabs.Preview);
 
-    this._headersView = new RequestHeadersView(request);
+    this.headersView = new RequestHeadersView(request);
     this.appendTab(
-        Tabs.Headers, i18nString(UIStrings.headers), this._headersView, i18nString(UIStrings.headersAndRequestBody));
+        NetworkForward.UIRequestLocation.UIRequestTabs.Headers, i18nString(UIStrings.headers), this.headersView,
+        i18nString(UIStrings.headers));
 
-    this.addEventListener(UI.TabbedPane.Events.TabSelected, this._tabSelected, this);
+    this.payloadView = null;
+    this.maybeAppendPayloadPanel();
+
+    this.addEventListener(UI.TabbedPane.Events.TabSelected, this.tabSelected, this);
 
     if (request.resourceType() === Common.ResourceType.resourceTypes.WebSocket) {
       const frameView = new ResourceWebSocketFrameView(request);
-      this.appendTab(Tabs.WsFrames, i18nString(UIStrings.messages), frameView, i18nString(UIStrings.websocketMessages));
+      this.appendTab(
+          NetworkForward.UIRequestLocation.UIRequestTabs.WsFrames, i18nString(UIStrings.messages), frameView,
+          i18nString(UIStrings.websocketMessages));
     } else if (request.mimeType === SDK.NetworkRequest.MIME_TYPE.EVENTSTREAM) {
-      this.appendTab(Tabs.EventSource, i18nString(UIStrings.eventstream), new EventSourceMessagesView(request));
+      this.appendTab(
+          NetworkForward.UIRequestLocation.UIRequestTabs.EventSource, i18nString(UIStrings.eventstream),
+          new EventSourceMessagesView(request));
     } else {
-      this._responseView = new RequestResponseView(request);
+      this.responseView = new RequestResponseView(request);
       const previewView = new RequestPreviewView(request);
-      this.appendTab(Tabs.Preview, i18nString(UIStrings.preview), previewView, i18nString(UIStrings.responsePreview));
+      this.appendTab(
+          NetworkForward.UIRequestLocation.UIRequestTabs.Preview, i18nString(UIStrings.preview), previewView,
+          i18nString(UIStrings.responsePreview));
       const signedExchangeInfo = request.signedExchangeInfo();
       if (signedExchangeInfo && signedExchangeInfo.errors && signedExchangeInfo.errors.length) {
         const icon = UI.Icon.Icon.create('smallicon-error');
         UI.Tooltip.Tooltip.install(icon, i18nString(UIStrings.signedexchangeError));
-        this.setTabIcon(Tabs.Preview, icon);
+        this.setTabIcon(NetworkForward.UIRequestLocation.UIRequestTabs.Preview, icon);
       }
       this.appendTab(
-          Tabs.Response, i18nString(UIStrings.response), this._responseView, i18nString(UIStrings.rawResponseData));
+          NetworkForward.UIRequestLocation.UIRequestTabs.Response, i18nString(UIStrings.response), this.responseView,
+          i18nString(UIStrings.rawResponseData));
     }
 
     this.appendTab(
-        Tabs.Initiator, i18nString(UIStrings.initiator), new RequestInitiatorView(request),
-        i18nString(UIStrings.requestInitiatorCallStack));
+        NetworkForward.UIRequestLocation.UIRequestTabs.Initiator, i18nString(UIStrings.initiator),
+        new RequestInitiatorView(request), i18nString(UIStrings.requestInitiatorCallStack));
 
     this.appendTab(
-        Tabs.Timing, i18nString(UIStrings.timing), new RequestTimingView(request, calculator),
-        i18nString(UIStrings.requestAndResponseTimeline));
+        NetworkForward.UIRequestLocation.UIRequestTabs.Timing, i18nString(UIStrings.timing),
+        new RequestTimingView(request, calculator), i18nString(UIStrings.requestAndResponseTimeline));
 
     if (request.trustTokenParams()) {
       this.appendTab(
-          Tabs.TrustTokens, i18nString(UIStrings.trustTokens),
+          NetworkForward.UIRequestLocation.UIRequestTabs.TrustTokens, i18nString(UIStrings.trustTokens),
           new NetworkComponents.RequestTrustTokensView.RequestTrustTokensView(request),
           i18nString(UIStrings.trustTokenOperationDetails));
     }
 
-    this._cookiesView = null;
+    this.cookiesView = null;
 
-    this._initialTab = initialTab || this._resourceViewTabSetting.get();
+    this.initialTab = initialTab || this.resourceViewTabSetting.get();
     // Selecting tabs should not be handled by the super class.
     this.setAutoSelectFirstItemOnShow(false);
   }
 
   wasShown(): void {
     super.wasShown();
-    this._request.addEventListener(
-        SDK.NetworkRequest.Events.RequestHeadersChanged, this._maybeAppendCookiesPanel, this);
-    this._request.addEventListener(
-        SDK.NetworkRequest.Events.ResponseHeadersChanged, this._maybeAppendCookiesPanel, this);
-    this._request.addEventListener(
-        SDK.NetworkRequest.Events.TrustTokenResultAdded, this._maybeShowErrorIconInTrustTokenTabHeader, this);
-    this._maybeAppendCookiesPanel();
-    this._maybeShowErrorIconInTrustTokenTabHeader();
+    this.requestInternal.addEventListener(
+        SDK.NetworkRequest.Events.RequestHeadersChanged, this.requestHeadersChanged, this);
+    this.requestInternal.addEventListener(
+        SDK.NetworkRequest.Events.ResponseHeadersChanged, this.maybeAppendCookiesPanel, this);
+    this.requestInternal.addEventListener(
+        SDK.NetworkRequest.Events.TrustTokenResultAdded, this.maybeShowErrorIconInTrustTokenTabHeader, this);
+    this.maybeAppendCookiesPanel();
+    this.maybeShowErrorIconInTrustTokenTabHeader();
 
     // Only select the initial tab the first time the view is shown after construction.
     // When the view is re-shown (without re-constructing) users or revealers might have changed
     // the selected tab in the mean time. Show the previously selected tab in that
     // case instead, by simply doing nohting.
-    if (this._initialTab) {
-      this._selectTab(this._initialTab);
-      this._initialTab = undefined;
+    if (this.initialTab) {
+      this.selectTabInternal(this.initialTab);
+      this.initialTab = undefined;
     }
   }
 
   willHide(): void {
-    this._request.removeEventListener(
-        SDK.NetworkRequest.Events.RequestHeadersChanged, this._maybeAppendCookiesPanel, this);
-    this._request.removeEventListener(
-        SDK.NetworkRequest.Events.ResponseHeadersChanged, this._maybeAppendCookiesPanel, this);
-    this._request.removeEventListener(
-        SDK.NetworkRequest.Events.TrustTokenResultAdded, this._maybeShowErrorIconInTrustTokenTabHeader, this);
+    this.requestInternal.removeEventListener(
+        SDK.NetworkRequest.Events.RequestHeadersChanged, this.requestHeadersChanged, this);
+    this.requestInternal.removeEventListener(
+        SDK.NetworkRequest.Events.ResponseHeadersChanged, this.maybeAppendCookiesPanel, this);
+    this.requestInternal.removeEventListener(
+        SDK.NetworkRequest.Events.TrustTokenResultAdded, this.maybeShowErrorIconInTrustTokenTabHeader, this);
   }
 
-  _maybeAppendCookiesPanel(): void {
-    const cookiesPresent = this._request.hasRequestCookies() || this._request.responseCookies.length > 0;
-    console.assert(cookiesPresent || !this._cookiesView, 'Cookies were introduced in headers and then removed!');
-    if (cookiesPresent && !this._cookiesView) {
-      this._cookiesView = new RequestCookiesView(this._request);
+  private async requestHeadersChanged(): Promise<void> {
+    this.maybeAppendCookiesPanel();
+    this.maybeAppendPayloadPanel();
+  }
+
+  private maybeAppendCookiesPanel(): void {
+    const cookiesPresent = this.requestInternal.hasRequestCookies() || this.requestInternal.responseCookies.length > 0;
+    console.assert(cookiesPresent || !this.cookiesView, 'Cookies were introduced in headers and then removed!');
+    if (cookiesPresent && !this.cookiesView) {
+      this.cookiesView = new RequestCookiesView(this.requestInternal);
       this.appendTab(
-          Tabs.Cookies, i18nString(UIStrings.cookies), this._cookiesView,
+          NetworkForward.UIRequestLocation.UIRequestTabs.Cookies, i18nString(UIStrings.cookies), this.cookiesView,
           i18nString(UIStrings.requestAndResponseCookies));
     }
   }
 
-  _maybeShowErrorIconInTrustTokenTabHeader(): void {
-    const trustTokenResult = this._request.trustTokenOperationDoneEvent();
+  private async maybeAppendPayloadPanel(): Promise<void> {
+    if (this.hasTab('payload')) {
+      return;
+    }
+    if (this.requestInternal.queryParameters || await this.requestInternal.requestFormData()) {
+      this.payloadView = new RequestPayloadView(this.requestInternal);
+      this.appendTab(
+          NetworkForward.UIRequestLocation.UIRequestTabs.Payload, i18nString(UIStrings.payload), this.payloadView,
+          i18nString(UIStrings.payload), /* userGesture=*/ void 0,
+          /* isCloseable=*/ void 0, /* isPreviewFeature=*/ void 0, /* index=*/ 1);
+    }
+  }
+
+  private maybeShowErrorIconInTrustTokenTabHeader(): void {
+    const trustTokenResult = this.requestInternal.trustTokenOperationDoneEvent();
     if (trustTokenResult &&
         !NetworkComponents.RequestTrustTokensView.statusConsideredSuccess(trustTokenResult.status)) {
-      this.setTabIcon(Tabs.TrustTokens, UI.Icon.Icon.create('smallicon-error'));
+      this.setTabIcon(
+          NetworkForward.UIRequestLocation.UIRequestTabs.TrustTokens, UI.Icon.Icon.create('smallicon-error'));
     }
   }
 
-  _selectTab(tabId: string): void {
+  private selectTabInternal(tabId: string): void {
     if (!this.selectTab(tabId)) {
-      this.selectTab('headers');
+      // maybeAppendPayloadPanel might cause payload tab to appear asynchronously, so
+      // it makes sense to retry on the next tick
+      setTimeout(() => {
+        if (!this.selectTab(tabId)) {
+          this.selectTab('headers');
+        }
+      }, 0);
     }
   }
 
-  _tabSelected(event: {
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: any,
-  }): void {
+  private tabSelected(event: Common.EventTarget.EventTargetEvent<UI.TabbedPane.EventData>): void {
     if (!event.data.isUserGesture) {
       return;
     }
-    this._resourceViewTabSetting.set(event.data.tabId);
+    this.resourceViewTabSetting.set(event.data.tabId as NetworkForward.UIRequestLocation.UIRequestTabs);
   }
 
   request(): SDK.NetworkRequest.NetworkRequest {
-    return this._request;
+    return this.requestInternal;
   }
 
   async revealResponseBody(line?: number): Promise<void> {
-    this._selectTab(Tabs.Response);
-    if (this._responseView && typeof line === 'number') {
-      await this._responseView.revealLine((line as number));
+    this.selectTabInternal(NetworkForward.UIRequestLocation.UIRequestTabs.Response);
+    if (this.responseView && typeof line === 'number') {
+      await this.responseView.revealLine((line as number));
     }
   }
 
-  revealHeader(section: UIHeaderSection, header: string|undefined): void {
-    this._selectTab(Tabs.Headers);
-    this._headersView.revealHeader(section, header);
+  revealHeader(section: NetworkForward.UIRequestLocation.UIHeaderSection, header: string|undefined): void {
+    this.selectTabInternal(NetworkForward.UIRequestLocation.UIRequestTabs.Headers);
+    this.headersView.revealHeader(section, header);
   }
-}
-
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export enum Tabs {
-  Cookies = 'cookies',
-  EventSource = 'eventSource',
-  Headers = 'headers',
-  Initiator = 'initiator',
-  Preview = 'preview',
-  Response = 'response',
-  Timing = 'timing',
-  TrustTokens = 'trustTokens',
-  WsFrames = 'webSocketFrames',
 }

@@ -91,12 +91,6 @@ void FakeUserDataAuthClient::Remove(
   ReturnProtobufMethodCallback(::user_data_auth::RemoveReply(),
                                std::move(callback));
 }
-void FakeUserDataAuthClient::Rename(
-    const ::user_data_auth::RenameRequest& request,
-    RenameCallback callback) {
-  ReturnProtobufMethodCallback(::user_data_auth::RenameReply(),
-                               std::move(callback));
-}
 void FakeUserDataAuthClient::GetKeyData(
     const ::user_data_auth::GetKeyDataRequest& request,
     GetKeyDataCallback callback) {
@@ -204,8 +198,7 @@ void FakeUserDataAuthClient::StartMigrateToDircrypto(
   dircrypto_migration_progress_ = 0;
   if (run_default_dircrypto_migration_) {
     dircrypto_migration_progress_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kDircryptoMigrationUpdateIntervalMs),
+        FROM_HERE, base::Milliseconds(kDircryptoMigrationUpdateIntervalMs),
         this, &FakeUserDataAuthClient::OnDircryptoMigrationProgressUpdated);
   }
 }
@@ -262,6 +255,21 @@ void FakeUserDataAuthClient::AuthenticateAuthSession(
   } else {
     it->second.authenticated = true;
     reply.set_authenticated(true);
+  }
+  ReturnProtobufMethodCallback(reply, std::move(callback));
+}
+
+void FakeUserDataAuthClient::AddCredentials(
+    const ::user_data_auth::AddCredentialsRequest& request,
+    AddCredentialsCallback callback) {
+  ::user_data_auth::AddCredentialsReply reply;
+
+  const std::string auth_session_id = request.auth_session_id();
+
+  const auto it = auth_sessions_.find(auth_session_id);
+  if (it == auth_sessions_.end()) {
+    reply.set_error(::user_data_auth::CryptohomeErrorCode::
+                        CRYPTOHOME_INVALID_AUTH_SESSION_TOKEN);
   }
   ReturnProtobufMethodCallback(reply, std::move(callback));
 }

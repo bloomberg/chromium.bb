@@ -17,12 +17,12 @@
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/containers/queue.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/common/gpu/gpu_vsync_callback.h"
 #include "components/viz/common/resources/resource_format.h"
@@ -106,6 +106,10 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
  public:
   InProcessCommandBuffer(CommandBufferTaskExecutor* task_executor,
                          const GURL& active_url);
+
+  InProcessCommandBuffer(const InProcessCommandBuffer&) = delete;
+  InProcessCommandBuffer& operator=(const InProcessCommandBuffer&) = delete;
+
   ~InProcessCommandBuffer() override;
 
   // If |surface| is not null, use it directly; in this case, the command
@@ -193,7 +197,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
       SurfaceHandle parent_window,
       SurfaceHandle child_window) override;
 #endif
-  void DidSwapBuffersComplete(SwapBuffersCompleteParams params) override;
+  void DidSwapBuffersComplete(SwapBuffersCompleteParams params,
+                              gfx::GpuFenceHandle release_fence) override;
   const gles2::FeatureInfo* GetFeatureInfo() const override;
   const GpuPreferences& GetGpuPreferences() const override;
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
@@ -236,7 +241,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
     bool EnableWrappedSkImage() const;
 
    private:
-    InProcessCommandBuffer* command_buffer_;
+    raw_ptr<InProcessCommandBuffer> command_buffer_;
   };
 
   // Provides a callback that can be used to preserve the back buffer for the
@@ -346,7 +351,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   // Callback implementations on the client thread.
   void OnContextLost();
-  void DidSwapBuffersCompleteOnOriginThread(SwapBuffersCompleteParams params);
+  void DidSwapBuffersCompleteOnOriginThread(SwapBuffersCompleteParams params,
+                                            gfx::GpuFenceHandle release_fence);
   void BufferPresentedOnOriginThread(uint64_t swap_id,
                                      uint32_t flags,
                                      const gfx::PresentationFeedback& feedback);
@@ -366,28 +372,27 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   // Members accessed on the gpu thread (possibly with the exception of
   // creation):
-  DisplayCompositorMemoryAndTaskControllerOnGpu* gpu_dependency_;
+  raw_ptr<DisplayCompositorMemoryAndTaskControllerOnGpu> gpu_dependency_;
   std::unique_ptr<DisplayCompositorMemoryAndTaskControllerOnGpu>
       gpu_dependency_holder_;
   bool use_virtualized_gl_context_ = false;
-  raster::GrShaderCache* gr_shader_cache_ = nullptr;
+  raw_ptr<raster::GrShaderCache> gr_shader_cache_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
   std::unique_ptr<CommandBufferService> command_buffer_;
   std::unique_ptr<DecoderContext> decoder_;
-  absl::optional<raster::GrCacheController> gr_cache_controller_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<SyncPointClientState> sync_point_client_state_;
 
   // Used to throttle PerformDelayedWorkOnGpuThread.
   bool delayed_work_pending_ = false;
-  ImageFactory* image_factory_ = nullptr;
-  GpuChannelManagerDelegate* gpu_channel_manager_delegate_ = nullptr;
+  raw_ptr<ImageFactory> image_factory_ = nullptr;
+  raw_ptr<GpuChannelManagerDelegate> gpu_channel_manager_delegate_ = nullptr;
   // Sequence checker for tasks that run on the gpu "thread".
   SEQUENCE_CHECKER(gpu_sequence_checker_);
 
   // Members accessed on the client thread:
-  GpuControlClient* gpu_control_client_ = nullptr;
+  raw_ptr<GpuControlClient> gpu_control_client_ = nullptr;
 #if DCHECK_IS_ON()
   bool context_lost_ = false;
 #endif
@@ -395,7 +400,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   base::Lock last_state_lock_;
   int32_t last_put_offset_ = -1;
   Capabilities capabilities_;
-  GpuMemoryBufferManager* gpu_memory_buffer_manager_ = nullptr;
+  raw_ptr<GpuMemoryBufferManager> gpu_memory_buffer_manager_ = nullptr;
   uint64_t next_fence_sync_release_ = 1;
   std::vector<SyncToken> next_flush_sync_token_fences_;
   // Sequence checker for client sequence used for initialization, destruction,
@@ -405,13 +410,13 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   // Accessed on both threads:
   base::WaitableEvent flush_event_;
-  CommandBufferTaskExecutor* const task_executor_;
+  const raw_ptr<CommandBufferTaskExecutor> task_executor_;
 
   // If no SingleTaskSequence is passed in, create our own.
   std::unique_ptr<GpuTaskSchedulerHelper> task_scheduler_holder_;
 
   // Pointer to the SingleTaskSequence that actually does the scheduling.
-  SingleTaskSequence* task_sequence_;
+  raw_ptr<SingleTaskSequence> task_sequence_;
   std::unique_ptr<SharedImageInterfaceInProcess> shared_image_interface_;
 
   // The group of contexts that share namespaces with this context.
@@ -450,8 +455,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
       this};
   base::WeakPtrFactory<InProcessCommandBuffer> gpu_thread_weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(InProcessCommandBuffer);
 };
 
 }  // namespace gpu

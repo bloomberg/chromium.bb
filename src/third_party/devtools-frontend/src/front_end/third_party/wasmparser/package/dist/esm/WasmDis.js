@@ -604,13 +604,25 @@ export class WasmDisassembler {
             case 12 /* br */:
             case 13 /* br_if */:
             case 212 /* br_on_null */:
+            case 214 /* br_on_non_null */:
             case 64322 /* br_on_cast */:
+            case 64323 /* br_on_cast_fail */:
             case 64352 /* br_on_func */:
+            case 64355 /* br_on_non_func */:
             case 64353 /* br_on_data */:
+            case 64356 /* br_on_non_data */:
             case 64354 /* br_on_i31 */:
+            case 64357 /* br_on_non_i31 */:
                 this.appendBuffer(" ");
                 this.appendBuffer(this.useLabel(operator.brDepth));
                 break;
+            case 64326 /* br_on_cast_static */:
+            case 64327 /* br_on_cast_static_fail */: {
+                const label = this.useLabel(operator.brDepth);
+                const refType = this._nameResolver.getTypeName(operator.refType, true);
+                this.appendBuffer(` ${label} ${refType}`);
+                break;
+            }
             case 14 /* br_table */:
                 for (var i = 0; i < operator.brTable.length; i++) {
                     this.appendBuffer(" ");
@@ -644,6 +656,11 @@ export class WasmDisassembler {
             case 19 /* return_call_indirect */:
                 this.printFuncType(operator.typeIndex);
                 break;
+            case 28 /* select_with_type */: {
+                const selectType = this.typeToString(operator.selectType);
+                this.appendBuffer(` ${selectType}`);
+                break;
+            }
             case 32 /* local_get */:
             case 33 /* local_set */:
             case 34 /* local_tee */:
@@ -846,9 +863,16 @@ export class WasmDisassembler {
             }
             case 64304 /* rtt_canon */:
             case 64305 /* rtt_sub */:
+            case 64306 /* rtt_fresh_sub */:
+            case 64324 /* ref_test_static */:
+            case 64325 /* ref_cast_static */:
+            case 64264 /* struct_new_default */:
             case 64258 /* struct_new_default_with_rtt */:
+            case 64263 /* struct_new */:
             case 64257 /* struct_new_with_rtt */:
+            case 64284 /* array_new_default */:
             case 64274 /* array_new_default_with_rtt */:
+            case 64283 /* array_new */:
             case 64273 /* array_new_with_rtt */:
             case 64275 /* array_get */:
             case 64276 /* array_get_s */:
@@ -857,6 +881,19 @@ export class WasmDisassembler {
             case 64279 /* array_len */: {
                 const refType = this._nameResolver.getTypeName(operator.refType, true);
                 this.appendBuffer(` ${refType}`);
+                break;
+            }
+            case 64280 /* array_copy */: {
+                const dstType = this._nameResolver.getTypeName(operator.refType, true);
+                const srcType = this._nameResolver.getTypeName(operator.srcType, true);
+                this.appendBuffer(` ${dstType} ${srcType}`);
+                break;
+            }
+            case 64281 /* array_init */:
+            case 64282 /* array_init_static */: {
+                const refType = this._nameResolver.getTypeName(operator.refType, true);
+                const length = operator.brDepth; // Overloaded field.
+                this.appendBuffer(` ${refType} ${length}`);
                 break;
             }
         }
@@ -998,7 +1035,7 @@ export class WasmDisassembler {
                     this.appendBuffer(`  (memory ${memoryName}`);
                     if (this._exportMetadata !== null) {
                         for (const exportName of this._exportMetadata.getMemoryExportNames(memoryIndex)) {
-                            this.appendBuffer(` (export "${exportName}")`);
+                            this.appendBuffer(` (export ${JSON.stringify(exportName)})`);
                         }
                     }
                     this.appendBuffer(` ${limitsToString(memoryInfo.limits)}`);
@@ -1015,7 +1052,7 @@ export class WasmDisassembler {
                     this.appendBuffer(`  (event ${eventName}`);
                     if (this._exportMetadata !== null) {
                         for (const exportName of this._exportMetadata.getEventExportNames(eventIndex)) {
-                            this.appendBuffer(` (export "${exportName}")`);
+                            this.appendBuffer(` (export ${JSON.stringify(exportName)})`);
                         }
                     }
                     this.printFuncType(eventInfo.typeIndex);
@@ -1029,7 +1066,7 @@ export class WasmDisassembler {
                     this.appendBuffer(`  (table ${tableName}`);
                     if (this._exportMetadata !== null) {
                         for (const exportName of this._exportMetadata.getTableExportNames(tableIndex)) {
-                            this.appendBuffer(` (export "${exportName}")`);
+                            this.appendBuffer(` (export ${JSON.stringify(exportName)})`);
                         }
                     }
                     this.appendBuffer(` ${limitsToString(tableInfo.limits)} ${this.typeToString(tableInfo.elementType)})`);
@@ -1081,7 +1118,7 @@ export class WasmDisassembler {
                             this.appendBuffer(`  (func ${funcName}`);
                             if (this._exportMetadata !== null) {
                                 for (const exportName of this._exportMetadata.getFunctionExportNames(funcIndex)) {
-                                    this.appendBuffer(` (export "${exportName}")`);
+                                    this.appendBuffer(` (export ${JSON.stringify(exportName)})`);
                                 }
                             }
                             this.appendBuffer(` (import `);
@@ -1097,7 +1134,7 @@ export class WasmDisassembler {
                             this.appendBuffer(`  (global ${globalName}`);
                             if (this._exportMetadata !== null) {
                                 for (const exportName of this._exportMetadata.getGlobalExportNames(globalIndex)) {
-                                    this.appendBuffer(` (export "${exportName}")`);
+                                    this.appendBuffer(` (export ${JSON.stringify(exportName)})`);
                                 }
                             }
                             this.appendBuffer(` (import `);
@@ -1111,7 +1148,7 @@ export class WasmDisassembler {
                             this.appendBuffer(`  (memory ${memoryName}`);
                             if (this._exportMetadata !== null) {
                                 for (const exportName of this._exportMetadata.getMemoryExportNames(memoryIndex)) {
-                                    this.appendBuffer(` (export "${exportName}")`);
+                                    this.appendBuffer(` (export ${JSON.stringify(exportName)})`);
                                 }
                             }
                             this.appendBuffer(` (import `);
@@ -1129,7 +1166,7 @@ export class WasmDisassembler {
                             this.appendBuffer(`  (table ${tableName}`);
                             if (this._exportMetadata !== null) {
                                 for (const exportName of this._exportMetadata.getTableExportNames(tableIndex)) {
-                                    this.appendBuffer(` (export "${exportName}")`);
+                                    this.appendBuffer(` (export ${JSON.stringify(exportName)})`);
                                 }
                             }
                             this.appendBuffer(` (import `);
@@ -1143,7 +1180,7 @@ export class WasmDisassembler {
                             this.appendBuffer(`  (event ${eventName}`);
                             if (this._exportMetadata !== null) {
                                 for (const exportName of this._exportMetadata.getEventExportNames(eventIndex)) {
-                                    this.appendBuffer(` (export "${exportName}")`);
+                                    this.appendBuffer(` (export ${JSON.stringify(exportName)})`);
                                 }
                             }
                             this.appendBuffer(` (import `);
@@ -1191,7 +1228,7 @@ export class WasmDisassembler {
                     this.appendBuffer(`  (global ${globalName}`);
                     if (this._exportMetadata !== null) {
                         for (const exportName of this._exportMetadata.getGlobalExportNames(globalIndex)) {
-                            this.appendBuffer(` (export "${exportName}")`);
+                            this.appendBuffer(` (export ${JSON.stringify(exportName)})`);
                         }
                     }
                     this.appendBuffer(` ${this.globalTypeToString(globalInfo.type)}`);
@@ -1206,20 +1243,39 @@ export class WasmDisassembler {
                     this._types.push(typeEntry);
                     if (!this._skipTypes) {
                         var typeName = this._nameResolver.getTypeName(typeIndex, false);
+                        var superTypeName = undefined;
+                        if (typeEntry.supertype !== undefined) {
+                            superTypeName = this.typeIndexToString(typeEntry.supertype);
+                        }
                         if (typeEntry.form === -32 /* func */) {
                             this.appendBuffer(`  (type ${typeName} (func`);
                             this.printFuncType(typeIndex);
                             this.appendBuffer("))");
+                        }
+                        else if (typeEntry.form === -35 /* func_subtype */) {
+                            this.appendBuffer(`  (type ${typeName} (func_subtype`);
+                            this.printFuncType(typeIndex);
+                            this.appendBuffer(` (supertype ${superTypeName})))`);
                         }
                         else if (typeEntry.form === -33 /* struct */) {
                             this.appendBuffer(`  (type ${typeName} (struct`);
                             this.printStructType(typeIndex);
                             this.appendBuffer("))");
                         }
+                        else if (typeEntry.form === -36 /* struct_subtype */) {
+                            this.appendBuffer(`  (type ${typeName} (struct_subtype`);
+                            this.printStructType(typeIndex);
+                            this.appendBuffer(` (supertype ${superTypeName})))`);
+                        }
                         else if (typeEntry.form === -34 /* array */) {
                             this.appendBuffer(`  (type ${typeName} (array`);
                             this.printArrayType(typeIndex);
                             this.appendBuffer("))");
+                        }
+                        else if (typeEntry.form === -37 /* array_subtype */) {
+                            this.appendBuffer(`  (type ${typeName} (array_subtype`);
+                            this.printArrayType(typeIndex);
+                            this.appendBuffer(`) (supertype ${superTypeName})))`);
                         }
                         else {
                             throw new Error(`Unknown type form: ${typeEntry.form}`);
@@ -1291,7 +1347,7 @@ export class WasmDisassembler {
                     this.appendBuffer(this._nameResolver.getFunctionName(this._funcIndex, false, false));
                     if (this._exportMetadata !== null) {
                         for (const exportName of this._exportMetadata.getFunctionExportNames(this._funcIndex)) {
-                            this.appendBuffer(` (export "${exportName}")`);
+                            this.appendBuffer(` (export ${JSON.stringify(exportName)})`);
                         }
                     }
                     for (var i = 0; i < type.params.length; i++) {

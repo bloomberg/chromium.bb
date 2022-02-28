@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -20,7 +19,6 @@
 #include "content/public/browser/network_service_instance.h"
 
 using base::Time;
-using base::TimeDelta;
 using content::BrowserThread;
 
 namespace {
@@ -43,8 +41,8 @@ DialRegistry::DialRegistry()
       registry_generation_(0),
       last_event_registry_generation_(0),
       label_count_(0),
-      refresh_interval_delta_(TimeDelta::FromSeconds(kDialRefreshIntervalSecs)),
-      expiration_delta_(TimeDelta::FromSeconds(kDialExpirationSecs)),
+      refresh_interval_delta_(base::Seconds(kDialRefreshIntervalSecs)),
+      expiration_delta_(base::Seconds(kDialExpirationSecs)),
       max_devices_(kDialMaxDevices),
       clock_(base::DefaultClock::GetInstance()) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -165,9 +163,9 @@ bool DialRegistry::ReadyToDiscover() {
 
 bool DialRegistry::DiscoverNow() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!ReadyToDiscover()) {
+  if (!ReadyToDiscover())
     return false;
-  }
+
   if (!dial_) {
     OnDialError(DIAL_UNKNOWN);
     return false;
@@ -247,7 +245,7 @@ bool DialRegistry::IsDeviceExpired(const DialDeviceData& device) const {
   // Check against the device's cache-control header, if set.
   if (device.has_max_age()) {
     Time max_age_expiration_time =
-        device.response_time() + TimeDelta::FromSeconds(device.max_age());
+        device.response_time() + base::Seconds(device.max_age());
     if (now > max_age_expiration_time)
       return true;
   }
@@ -358,9 +356,6 @@ void DialRegistry::OnConnectionChanged(network::mojom::ConnectionType type) {
       if (dial_) {
         OnDialError(DIAL_NETWORK_DISCONNECTED);
         StopPeriodicDiscovery();
-        // TODO(justinlin): As an optimization, we can probably keep our device
-        // list around and restore it if we reconnected to the exact same
-        // network.
         Clear();
         MaybeSendEvent();
       }

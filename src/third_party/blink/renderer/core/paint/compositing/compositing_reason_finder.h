@@ -30,8 +30,22 @@ class CORE_EXPORT CompositingReasonFinder {
   // Returns the direct reasons for compositing the given layer.
   static CompositingReasons DirectReasons(const PaintLayer&);
 
-  static CompositingReasons DirectReasonsForPaintProperties(
+  // Composited scrolling reason is not included because
+  // PaintLayerScrollableArea needs the result of this function to determine
+  // composited scrolling status.
+  static CompositingReasons DirectReasonsForPaintPropertiesExceptScrolling(
       const LayoutObject&);
+
+  static bool ShouldForcePreferCompositingToLCDText(
+      const LayoutObject&,
+      CompositingReasons reasons_except_scrolling);
+
+  // In CompositeAfterPaint, this must be called after
+  // DirectReasonsForPaintPropertiesExceptForScrolling() and
+  // PaintLayerScrollableArea::UpdateNeedsCompositedScrolling().
+  static CompositingReasons DirectReasonsForPaintProperties(
+      const LayoutObject&,
+      CompositingReasons reasons_except_scrolling);
 
   static CompositingReasons DirectReasonsForSVGChildPaintProperties(
       const LayoutObject&);
@@ -46,9 +60,12 @@ class CORE_EXPORT CompositingReasonFinder {
       const ComputedStyle&);
   static CompositingReasons CompositingReasonsFor3DTransform(
       const LayoutObject&);
+  static CompositingReasons CompositingReasonsFor3DSceneLeaf(
+      const LayoutObject&);
   static bool RequiresCompositingForRootScroller(const PaintLayer&);
 
-  static bool RequiresCompositingForScrollDependentPosition(const PaintLayer&);
+  static CompositingReasons CompositingReasonsForScrollDependentPosition(
+      const PaintLayer&);
 
   static bool RequiresCompositingForAffectedByOuterViewportBoundsDelta(
       const LayoutObject&);

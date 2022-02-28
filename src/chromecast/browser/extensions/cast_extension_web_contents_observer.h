@@ -5,7 +5,6 @@
 #ifndef CHROMECAST_BROWSER_EXTENSIONS_CAST_EXTENSION_WEB_CONTENTS_OBSERVER_H_
 #define CHROMECAST_BROWSER_EXTENSIONS_CAST_EXTENSION_WEB_CONTENTS_OBSERVER_H_
 
-#include "base/macros.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "extensions/browser/extension_web_contents_observer.h"
 
@@ -16,6 +15,11 @@ class CastExtensionWebContentsObserver
     : public ExtensionWebContentsObserver,
       public content::WebContentsUserData<CastExtensionWebContentsObserver> {
  public:
+  CastExtensionWebContentsObserver(const CastExtensionWebContentsObserver&) =
+      delete;
+  CastExtensionWebContentsObserver& operator=(
+      const CastExtensionWebContentsObserver&) = delete;
+
   ~CastExtensionWebContentsObserver() override;
 
   // Creates and initializes an instance of this class for the given
@@ -28,8 +32,6 @@ class CastExtensionWebContentsObserver
   explicit CastExtensionWebContentsObserver(content::WebContents* web_contents);
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(CastExtensionWebContentsObserver);
 };
 
 }  // namespace extensions

@@ -7,12 +7,14 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "net/base/net_errors.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+
+class GURL;
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -53,6 +55,12 @@ class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
       base::WeakPtr<ServiceWorkerHost> worker_host,
       scoped_refptr<network::SharedURLLoaderFactory>
           loader_factory_for_new_scripts);
+
+  ServiceWorkerScriptLoaderFactory(const ServiceWorkerScriptLoaderFactory&) =
+      delete;
+  ServiceWorkerScriptLoaderFactory& operator=(
+      const ServiceWorkerScriptLoaderFactory&) = delete;
+
   ~ServiceWorkerScriptLoaderFactory() override;
 
   // network::mojom::URLLoaderFactory:
@@ -117,8 +125,6 @@ class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
   std::unique_ptr<ServiceWorkerCacheWriter> cache_writer_;
 
   base::WeakPtrFactory<ServiceWorkerScriptLoaderFactory> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptLoaderFactory);
 };
 
 }  // namespace content

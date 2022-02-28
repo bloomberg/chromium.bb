@@ -8,6 +8,7 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/memory/raw_ptr.h"
 
 namespace ui {
 class WindowAndroid;
@@ -25,6 +26,11 @@ class PasswordReuseDialogViewAndroid {
   explicit PasswordReuseDialogViewAndroid(
       PasswordReuseControllerAndroid* controller);
 
+  PasswordReuseDialogViewAndroid(const PasswordReuseDialogViewAndroid&) =
+      delete;
+  PasswordReuseDialogViewAndroid& operator=(
+      const PasswordReuseDialogViewAndroid&) = delete;
+
   // Destructor must delete its Java counterpart.
   ~PasswordReuseDialogViewAndroid();
 
@@ -32,17 +38,18 @@ class PasswordReuseDialogViewAndroid {
   void Show(ui::WindowAndroid* window_android);
 
   // Called from Java to native.
+  void CheckPasswords(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj);
+  void Ignore(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void Close(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
  private:
   // The controller which owns this dialog and handles the dialog events.
   // |controller_| owns |this|.
-  PasswordReuseControllerAndroid* controller_;
+  raw_ptr<PasswordReuseControllerAndroid> controller_;
 
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordReuseDialogViewAndroid);
 };
 
 }  // namespace safe_browsing

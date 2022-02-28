@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
@@ -19,6 +18,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,6 +33,10 @@ namespace {
 class MockDelegate : public HeaderModificationDelegate {
  public:
   MockDelegate() = default;
+
+  MockDelegate(const MockDelegate&) = delete;
+  MockDelegate& operator=(const MockDelegate&) = delete;
+
   ~MockDelegate() override = default;
 
   MOCK_METHOD1(ShouldInterceptNavigation, bool(content::WebContents* contents));
@@ -49,8 +53,6 @@ class MockDelegate : public HeaderModificationDelegate {
 
  private:
   base::WeakPtrFactory<MockDelegate> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MockDelegate);
 };
 
 content::WebContents::Getter NullWebContentsGetter() {
@@ -63,6 +65,12 @@ class ChromeSigninProxyingURLLoaderFactoryTest : public testing::Test {
  public:
   ChromeSigninProxyingURLLoaderFactoryTest()
       : test_factory_receiver_(&test_factory_) {}
+
+  ChromeSigninProxyingURLLoaderFactoryTest(
+      const ChromeSigninProxyingURLLoaderFactoryTest&) = delete;
+  ChromeSigninProxyingURLLoaderFactoryTest& operator=(
+      const ChromeSigninProxyingURLLoaderFactoryTest&) = delete;
+
   ~ChromeSigninProxyingURLLoaderFactoryTest() override {}
 
   base::WeakPtr<MockDelegate> StartRequest(
@@ -113,8 +121,6 @@ class ChromeSigninProxyingURLLoaderFactoryTest : public testing::Test {
   network::TestURLLoaderFactory test_factory_;
   mojo::Receiver<network::mojom::URLLoaderFactory> test_factory_receiver_;
   std::unique_ptr<std::string> response_body_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeSigninProxyingURLLoaderFactoryTest);
 };
 
 TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, NoModification) {

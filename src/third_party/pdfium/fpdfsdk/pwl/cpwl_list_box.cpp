@@ -64,32 +64,29 @@ void CPWL_ListBox::DrawThisAppearance(CFX_RenderDevice* pDevice,
     IPWL_SystemHandler* pSysHandler = GetSystemHandler();
     if (m_pListCtrl->IsItemSelected(i)) {
       if (pSysHandler->IsSelectionImplemented()) {
-        CPWL_EditImpl::DrawEdit(pDevice, mtUser2Device,
-                                m_pListCtrl->GetItemEdit(i),
-                                GetTextColor().ToFXColor(255), rcList, ptOffset,
-                                nullptr, pSysHandler, m_pFormFiller.Get());
-        pSysHandler->OutputSelectedRect(m_pFormFiller.Get(), rcItem);
+        m_pListCtrl->GetItemEdit(i)->DrawEdit(
+            pDevice, mtUser2Device, GetTextColor().ToFXColor(255), rcList,
+            ptOffset, nullptr, pSysHandler, GetAttachedData());
+        pSysHandler->OutputSelectedRect(GetAttachedData(), rcItem);
       } else {
         pDevice->DrawFillRect(&mtUser2Device, rcItem,
                               ArgbEncode(255, 0, 51, 113));
-        CPWL_EditImpl::DrawEdit(
-            pDevice, mtUser2Device, m_pListCtrl->GetItemEdit(i),
-            ArgbEncode(255, 255, 255, 255), rcList, ptOffset, nullptr,
-            pSysHandler, m_pFormFiller.Get());
+        m_pListCtrl->GetItemEdit(i)->DrawEdit(
+            pDevice, mtUser2Device, ArgbEncode(255, 255, 255, 255), rcList,
+            ptOffset, nullptr, pSysHandler, GetAttachedData());
       }
     } else {
-      CPWL_EditImpl::DrawEdit(pDevice, mtUser2Device,
-                              m_pListCtrl->GetItemEdit(i),
-                              GetTextColor().ToFXColor(255), rcList, ptOffset,
-                              nullptr, pSysHandler, nullptr);
+      m_pListCtrl->GetItemEdit(i)->DrawEdit(
+          pDevice, mtUser2Device, GetTextColor().ToFXColor(255), rcList,
+          ptOffset, nullptr, pSysHandler, nullptr);
     }
   }
 }
 
-bool CPWL_ListBox::OnKeyDown(uint16_t nChar, uint32_t nFlag) {
-  CPWL_Wnd::OnKeyDown(nChar, nFlag);
+bool CPWL_ListBox::OnKeyDown(FWL_VKEYCODE nKeyCode, Mask<FWL_EVENTFLAG> nFlag) {
+  CPWL_Wnd::OnKeyDown(nKeyCode, nFlag);
 
-  switch (nChar) {
+  switch (nKeyCode) {
     default:
       return false;
     case FWL_VKEY_Up:
@@ -101,43 +98,44 @@ bool CPWL_ListBox::OnKeyDown(uint16_t nChar, uint32_t nFlag) {
       break;
   }
 
-  switch (nChar) {
+  switch (nKeyCode) {
     case FWL_VKEY_Up:
-      m_pListCtrl->OnVK_UP(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
+      m_pListCtrl->OnVK_UP(IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag));
       break;
     case FWL_VKEY_Down:
-      m_pListCtrl->OnVK_DOWN(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
+      m_pListCtrl->OnVK_DOWN(IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag));
       break;
     case FWL_VKEY_Home:
-      m_pListCtrl->OnVK_HOME(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
+      m_pListCtrl->OnVK_HOME(IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag));
       break;
     case FWL_VKEY_Left:
-      m_pListCtrl->OnVK_LEFT(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
+      m_pListCtrl->OnVK_LEFT(IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag));
       break;
     case FWL_VKEY_End:
-      m_pListCtrl->OnVK_END(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
+      m_pListCtrl->OnVK_END(IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag));
       break;
     case FWL_VKEY_Right:
-      m_pListCtrl->OnVK_RIGHT(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
+      m_pListCtrl->OnVK_RIGHT(IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag));
       break;
-    case FWL_VKEY_Delete:
+    default:
       break;
   }
   OnNotifySelectionChanged(true, nFlag);
   return true;
 }
 
-bool CPWL_ListBox::OnChar(uint16_t nChar, uint32_t nFlag) {
+bool CPWL_ListBox::OnChar(uint16_t nChar, Mask<FWL_EVENTFLAG> nFlag) {
   CPWL_Wnd::OnChar(nChar, nFlag);
 
-  if (!m_pListCtrl->OnChar(nChar, IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag)))
+  if (!m_pListCtrl->OnChar(nChar, IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag)))
     return false;
 
   OnNotifySelectionChanged(true, nFlag);
   return true;
 }
 
-bool CPWL_ListBox::OnLButtonDown(uint32_t nFlag, const CFX_PointF& point) {
+bool CPWL_ListBox::OnLButtonDown(Mask<FWL_EVENTFLAG> nFlag,
+                                 const CFX_PointF& point) {
   CPWL_Wnd::OnLButtonDown(nFlag, point);
 
   if (ClientHitTest(point)) {
@@ -145,14 +143,15 @@ bool CPWL_ListBox::OnLButtonDown(uint32_t nFlag, const CFX_PointF& point) {
     SetFocus();
     SetCapture();
 
-    m_pListCtrl->OnMouseDown(point, IsSHIFTpressed(nFlag),
-                             IsCTRLpressed(nFlag));
+    m_pListCtrl->OnMouseDown(point, IsSHIFTKeyDown(nFlag),
+                             IsCTRLKeyDown(nFlag));
   }
 
   return true;
 }
 
-bool CPWL_ListBox::OnLButtonUp(uint32_t nFlag, const CFX_PointF& point) {
+bool CPWL_ListBox::OnLButtonUp(Mask<FWL_EVENTFLAG> nFlag,
+                               const CFX_PointF& point) {
   CPWL_Wnd::OnLButtonUp(nFlag, point);
 
   if (m_bMouseDown) {
@@ -167,14 +166,15 @@ void CPWL_ListBox::SetHoverSel(bool bHoverSel) {
   m_bHoverSel = bHoverSel;
 }
 
-bool CPWL_ListBox::OnMouseMove(uint32_t nFlag, const CFX_PointF& point) {
+bool CPWL_ListBox::OnMouseMove(Mask<FWL_EVENTFLAG> nFlag,
+                               const CFX_PointF& point) {
   CPWL_Wnd::OnMouseMove(nFlag, point);
 
   if (m_bHoverSel && !IsCaptureMouse() && ClientHitTest(point))
     m_pListCtrl->Select(m_pListCtrl->GetItemIndex(point));
   if (m_bMouseDown)
-    m_pListCtrl->OnMouseMove(point, IsSHIFTpressed(nFlag),
-                             IsCTRLpressed(nFlag));
+    m_pListCtrl->OnMouseMove(point, IsSHIFTKeyDown(nFlag),
+                             IsCTRLKeyDown(nFlag));
 
   return true;
 }
@@ -201,7 +201,8 @@ bool CPWL_ListBox::RePosChildWnd() {
   return true;
 }
 
-bool CPWL_ListBox::OnNotifySelectionChanged(bool bKeyDown, uint32_t nFlag) {
+bool CPWL_ListBox::OnNotifySelectionChanged(bool bKeyDown,
+                                            Mask<FWL_EVENTFLAG> nFlag) {
   if (!m_pFillerNotify)
     return false;
 
@@ -267,8 +268,10 @@ void CPWL_ListBox::OnSetScrollInfoY(float fPlateMin,
   if (!pScroll)
     return;
 
-  if (IsFloatBigger(Info.fPlateWidth, Info.fContentMax - Info.fContentMin) ||
-      IsFloatEqual(Info.fPlateWidth, Info.fContentMax - Info.fContentMin)) {
+  if (FXSYS_IsFloatBigger(Info.fPlateWidth,
+                          Info.fContentMax - Info.fContentMin) ||
+      FXSYS_IsFloatEqual(Info.fPlateWidth,
+                         Info.fContentMax - Info.fContentMin)) {
     if (pScroll->IsVisible()) {
       pScroll->SetVisible(false);
       RePosChildWnd();
@@ -309,14 +312,6 @@ void CPWL_ListBox::ScrollToListItem(int32_t nItemIndex) {
   m_pListCtrl->ScrollToListItem(nItemIndex);
 }
 
-void CPWL_ListBox::ResetContent() {
-  m_pListCtrl->Clear();
-}
-
-void CPWL_ListBox::Reset() {
-  m_pListCtrl->Cancel();
-}
-
 bool CPWL_ListBox::IsMultipleSel() const {
   return m_pListCtrl->IsMultipleSel();
 }
@@ -342,10 +337,6 @@ int32_t CPWL_ListBox::GetCount() const {
   return m_pListCtrl->GetCount();
 }
 
-int32_t CPWL_ListBox::FindNext(int32_t nIndex, wchar_t nChar) const {
-  return m_pListCtrl->FindNext(nIndex, nChar);
-}
-
 CFX_FloatRect CPWL_ListBox::GetContentRect() const {
   return m_pListCtrl->GetContentRect();
 }
@@ -359,13 +350,13 @@ CFX_FloatRect CPWL_ListBox::GetListRect() const {
   return GetWindowRect().GetDeflated(width, width);
 }
 
-bool CPWL_ListBox::OnMouseWheel(uint32_t nFlag,
+bool CPWL_ListBox::OnMouseWheel(Mask<FWL_EVENTFLAG> nFlag,
                                 const CFX_PointF& point,
                                 const CFX_Vector& delta) {
   if (delta.y < 0)
-    m_pListCtrl->OnVK_DOWN(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
+    m_pListCtrl->OnVK_DOWN(IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag));
   else
-    m_pListCtrl->OnVK_UP(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
+    m_pListCtrl->OnVK_UP(IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag));
 
   OnNotifySelectionChanged(false, nFlag);
   return true;

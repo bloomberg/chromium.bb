@@ -29,8 +29,22 @@ TEST_F(HlslUnaryOpTest, AddressOf) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitExpression(pre, out, op)) << gen.error();
-  EXPECT_EQ(result(), "expr");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, op)) << gen.error();
+  EXPECT_EQ(out.str(), "expr");
+}
+
+TEST_F(HlslUnaryOpTest, Complement) {
+  Global("expr", ty.u32(), ast::StorageClass::kPrivate);
+  auto* op =
+      create<ast::UnaryOpExpression>(ast::UnaryOp::kComplement, Expr("expr"));
+  WrapInFunction(op);
+
+  GeneratorImpl& gen = Build();
+
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, op)) << gen.error();
+  EXPECT_EQ(out.str(), "~(expr)");
 }
 
 TEST_F(HlslUnaryOpTest, Indirection) {
@@ -44,31 +58,34 @@ TEST_F(HlslUnaryOpTest, Indirection) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitExpression(pre, out, op)) << gen.error();
-  EXPECT_EQ(result(), "expr");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, op)) << gen.error();
+  EXPECT_EQ(out.str(), "expr");
 }
 
 TEST_F(HlslUnaryOpTest, Not) {
-  Global("expr", ty.f32(), ast::StorageClass::kPrivate);
+  Global("expr", ty.bool_(), ast::StorageClass::kPrivate);
   auto* op = create<ast::UnaryOpExpression>(ast::UnaryOp::kNot, Expr("expr"));
   WrapInFunction(op);
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitExpression(pre, out, op)) << gen.error();
-  EXPECT_EQ(result(), "!(expr)");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, op)) << gen.error();
+  EXPECT_EQ(out.str(), "!(expr)");
 }
 
 TEST_F(HlslUnaryOpTest, Negation) {
-  Global("expr", ty.f32(), ast::StorageClass::kPrivate);
+  Global("expr", ty.i32(), ast::StorageClass::kPrivate);
   auto* op =
       create<ast::UnaryOpExpression>(ast::UnaryOp::kNegation, Expr("expr"));
   WrapInFunction(op);
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitExpression(pre, out, op)) << gen.error();
-  EXPECT_EQ(result(), "-(expr)");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, op)) << gen.error();
+  EXPECT_EQ(out.str(), "-(expr)");
 }
 }  // namespace
 }  // namespace hlsl

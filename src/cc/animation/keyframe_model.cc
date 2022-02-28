@@ -12,7 +12,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -55,7 +54,13 @@ KeyframeModel::TargetPropertyId::TargetPropertyId(
 KeyframeModel::TargetPropertyId::TargetPropertyId(
     const TargetPropertyId& other) = default;
 
+KeyframeModel::TargetPropertyId::TargetPropertyId(TargetPropertyId&& other) =
+    default;
+
 KeyframeModel::TargetPropertyId::~TargetPropertyId() = default;
+
+KeyframeModel::TargetPropertyId& KeyframeModel::TargetPropertyId::operator=(
+    TargetPropertyId&& other) = default;
 
 std::unique_ptr<KeyframeModel> KeyframeModel::Create(
     std::unique_ptr<gfx::AnimationCurve> curve,
@@ -63,7 +68,8 @@ std::unique_ptr<KeyframeModel> KeyframeModel::Create(
     int group_id,
     TargetPropertyId target_property_id) {
   return base::WrapUnique(new KeyframeModel(std::move(curve), keyframe_model_id,
-                                            group_id, target_property_id));
+                                            group_id,
+                                            std::move(target_property_id)));
 }
 
 std::unique_ptr<KeyframeModel> KeyframeModel::CreateImplInstance(
@@ -97,7 +103,7 @@ KeyframeModel::KeyframeModel(std::unique_ptr<gfx::AnimationCurve> curve,
                          keyframe_model_id,
                          target_property_id.target_property_type()),
       group_(group_id),
-      target_property_id_(target_property_id),
+      target_property_id_(std::move(target_property_id)),
       needs_synchronized_start_time_(false),
       received_finished_event_(false),
       is_controlling_instance_(false),

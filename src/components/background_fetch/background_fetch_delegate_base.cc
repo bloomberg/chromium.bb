@@ -14,9 +14,9 @@
 #include "build/build_config.h"
 #include "components/background_fetch/job_details.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/download/public/background_service/background_download_service.h"
 #include "components/download/public/background_service/blob_context_getter_factory.h"
 #include "components/download/public/background_service/download_params.h"
-#include "components/download/public/background_service/download_service.h"
 #include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_context.h"
@@ -81,6 +81,7 @@ void BackgroundFetchDelegateBase::DownloadUrl(
     const std::string& download_guid,
     const std::string& method,
     const GURL& url,
+    ::network::mojom::CredentialsMode credentials_mode,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     const net::HttpRequestHeaders& headers,
     bool has_request_body) {
@@ -95,6 +96,7 @@ void BackgroundFetchDelegateBase::DownloadUrl(
   params.request_params.method = method;
   params.request_params.url = url;
   params.request_params.request_headers = headers;
+  params.request_params.credentials_mode = credentials_mode;
   params.callback =
       base::BindRepeating(&BackgroundFetchDelegateBase::OnDownloadReceived,
                           weak_ptr_factory_.GetWeakPtr());
@@ -108,6 +110,9 @@ void BackgroundFetchDelegateBase::DownloadUrl(
     DoShowUi(job_id);
     job_details->MarkJobAsStarted();
   }
+
+  params.request_params.isolation_info =
+      job_details->fetch_description->isolation_info;
 
   if (job_details->job_state == JobDetails::State::kStartedButPaused) {
     job_details->on_resume = base::BindOnce(
@@ -151,11 +156,12 @@ void BackgroundFetchDelegateBase::ResumeDownload(const std::string& job_id) {
     std::move(job_details->on_resume).Run();
 }
 
-void BackgroundFetchDelegateBase::CancelDownload(const std::string& job_id) {
+void BackgroundFetchDelegateBase::CancelDownload(std::string job_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   JobDetails* job_details = GetJobDetails(job_id);
 
-  if (job_details->job_state == JobDetails::State::kDownloadsComplete ||
+  if (!job_details ||
+      job_details->job_state == JobDetails::State::kDownloadsComplete ||
       job_details->job_state == JobDetails::State::kJobComplete) {
     // The cancel event arrived after the fetch was complete; ignore it.
     return;

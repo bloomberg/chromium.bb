@@ -47,6 +47,12 @@ DisplayColorSpaces::DisplayColorSpaces() {
     buffer_format = DefaultBufferFormat();
 }
 
+DisplayColorSpaces::DisplayColorSpaces(const gfx::DisplayColorSpaces&) =
+    default;
+
+DisplayColorSpaces& DisplayColorSpaces::operator=(
+    const gfx::DisplayColorSpaces&) = default;
+
 DisplayColorSpaces::DisplayColorSpaces(const gfx::ColorSpace& c)
     : DisplayColorSpaces() {
   if (!c.IsValid())

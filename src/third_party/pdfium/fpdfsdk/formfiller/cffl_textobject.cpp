@@ -8,24 +8,11 @@
 
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfdoc/cpdf_bafontmap.h"
+#include "fpdfsdk/cpdfsdk_widget.h"
 
-CPWL_Wnd* CFFL_TextObject::ResetPWLWindow(CPDFSDK_PageView* pPageView,
-                                          bool bRestoreValue) {
-  if (bRestoreValue)
-    SaveState(pPageView);
-
-  DestroyPWLWindow(pPageView);
-  if (bRestoreValue)
-    RestoreState(pPageView);
-
-  ObservedPtr<CPWL_Wnd> pRet(GetPWLWindow(pPageView, !bRestoreValue));
-  m_pWidget->UpdateField();  // May invoke JS, invalidating |pRet|.
-  return pRet.Get();
-}
-
-CFFL_TextObject::CFFL_TextObject(CPDFSDK_FormFillEnvironment* pApp,
+CFFL_TextObject::CFFL_TextObject(CFFL_InteractiveFormFiller* pFormFiller,
                                  CPDFSDK_Widget* pWidget)
-    : CFFL_FormFiller(pApp, pWidget) {}
+    : CFFL_FormField(pFormFiller, pWidget) {}
 
 CFFL_TextObject::~CFFL_TextObject() {
   // Destroy view classes before this object's members are destroyed since
@@ -33,7 +20,23 @@ CFFL_TextObject::~CFFL_TextObject() {
   DestroyWindows();
 }
 
-CPDF_BAFontMap* CFFL_TextObject::MaybeCreateFontMap() {
+CPWL_Wnd* CFFL_TextObject::ResetPWLWindow(const CPDFSDK_PageView* pPageView) {
+  DestroyPWLWindow(pPageView);
+  ObservedPtr<CPWL_Wnd> pRet(CreateOrUpdatePWLWindow(pPageView));
+  m_pWidget->UpdateField();  // May invoke JS, invalidating |pRet|.
+  return pRet.Get();
+}
+
+CPWL_Wnd* CFFL_TextObject::RestorePWLWindow(const CPDFSDK_PageView* pPageView) {
+  SavePWLWindowState(pPageView);
+  DestroyPWLWindow(pPageView);
+  RecreatePWLWindowFromSavedState(pPageView);
+  ObservedPtr<CPWL_Wnd> pRet(GetPWLWindow(pPageView));
+  m_pWidget->UpdateField();  // May invoke JS, invalidating |pRet|.
+  return pRet.Get();
+}
+
+CPDF_BAFontMap* CFFL_TextObject::GetOrCreateFontMap() {
   if (!m_pFontMap) {
     m_pFontMap = std::make_unique<CPDF_BAFontMap>(
         m_pWidget->GetPDFPage()->GetDocument(),

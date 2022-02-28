@@ -11,6 +11,9 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/arc/arc_features.h"
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
@@ -19,7 +22,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
@@ -28,6 +30,7 @@
 #include "chrome/browser/ash/arc/arc_web_contents_data.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/login/configuration_keys.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
@@ -37,7 +40,7 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -45,9 +48,6 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/arc/arc_features.h"
-#include "components/arc/arc_prefs.h"
-#include "components/arc/arc_util.h"
 #include "components/embedder_support/user_agent_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
@@ -149,7 +149,7 @@ bool IsUnaffiliatedArcAllowed() {
         return true;
     }
   }
-  if (ash::CrosSettings::Get()->GetBoolean(chromeos::kUnaffiliatedArcAllowed,
+  if (ash::CrosSettings::Get()->GetBoolean(ash::kUnaffiliatedArcAllowed,
                                            &arc_allowed)) {
     return arc_allowed;
   }
@@ -288,6 +288,10 @@ void ResetArcAllowedCheckForTesting(const Profile* profile) {
   g_profile_status_check.Get().erase(profile);
 }
 
+void ClearArcAllowedCheckForTesting() {
+  g_profile_status_check.Get().clear();
+}
+
 bool IsArcBlockedDueToIncompatibleFileSystem(const Profile* profile) {
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
@@ -379,18 +383,11 @@ bool SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled) {
     // |arc_session_manager| can be nullptr in unit_tests.
     if (!arc_session_manager)
       return false;
-    if (enabled) {
+    if (enabled)
       arc_session_manager->RequestEnable();
-    } else {
-      // Before calling RequestDisable here we cache enable_requested because
-      // RequestArcDataRemoval was refactored outside of RequestDisable where
-      // it was called only in case enable_requested was true (RequestDisable
-      // sets enable_requested to false).
-      const bool enable_requested = arc_session_manager->enable_requested();
-      arc_session_manager->RequestDisable();
-      if (enable_requested)
-        arc_session_manager->RequestArcDataRemoval();
-    }
+    else
+      arc_session_manager->RequestDisableWithArcDataRemoval();
+
     return true;
   }
   profile->GetPrefs()->SetBoolean(prefs::kArcEnabled, enabled);
@@ -425,12 +422,16 @@ bool IsArcOobeOptInActive() {
   // Check if Chrome OS OOBE flow is currently showing.
   // TODO(b/65861628): Redesign the OptIn flow since there is no longer reason
   // to have two different OptIn flows.
-  if (!chromeos::LoginDisplayHost::default_host())
+  if (!ash::LoginDisplayHost::default_host())
     return false;
 
-  // Use the legacy logic for first sign-in OOBE OptIn flow. Make sure the user
-  // is new.
-  return user_manager::UserManager::Get()->IsCurrentUserNew();
+  // ARC OOBE opt-in will only be active if the user did not complete the
+  // onboarding flow yet. The OnboardingCompletedVersion preference will only be
+  // saved after the onboarding flow is completed.
+  AccountId account_id =
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  return !known_user.GetOnboardingCompletedVersion(account_id).has_value();
 }
 
 bool IsArcOobeOptInConfigurationBased() {
@@ -438,7 +439,7 @@ bool IsArcOobeOptInConfigurationBased() {
   if (!IsArcOobeOptInActive())
     return false;
   // Check that configuration exist.
-  auto* oobe_configuration = chromeos::OobeConfiguration::Get();
+  auto* oobe_configuration = ash::OobeConfiguration::Get();
   if (!oobe_configuration)
     return false;
   if (!oobe_configuration->CheckCompleted())
@@ -446,7 +447,7 @@ bool IsArcOobeOptInConfigurationBased() {
   // Check configuration value that triggers automatic ARC TOS acceptance.
   auto& configuration = oobe_configuration->GetConfiguration();
   auto* auto_accept = configuration.FindKeyOfType(
-      chromeos::configuration::kArcTosAutoAccept, base::Value::Type::BOOLEAN);
+      ash::configuration::kArcTosAutoAccept, base::Value::Type::BOOLEAN);
   if (!auto_accept)
     return false;
   return auto_accept->GetBool();
@@ -463,7 +464,7 @@ bool IsArcTermsOfServiceNegotiationNeeded(const Profile* profile) {
       !ShouldShowOptInForTesting()) {
     VLOG(1) << "Skip ARC Terms of Service negotiation for managed user. "
             << "Don't record B&R and GLS if admin leave it as user to decide "
-            << "and user sikps the opt-in dialog.";
+            << "and user skips the opt-in dialog.";
     return false;
   }
 
@@ -534,7 +535,7 @@ bool IsArcStatsReportingEnabled() {
   }
 
   bool pref = false;
-  ash::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref, &pref);
+  ash::CrosSettings::Get()->GetBoolean(ash::kStatsReportingPref, &pref);
   return pref;
 }
 
@@ -574,37 +575,20 @@ void UpdateArcFileSystemCompatibilityPrefIfNeeded(
                      std::move(callback)));
 }
 
-ArcSupervisionTransition GetSupervisionTransition(const Profile* profile) {
+ArcManagementTransition GetManagementTransition(const Profile* profile) {
   DCHECK(profile);
   DCHECK(profile->GetPrefs());
 
-  const ArcSupervisionTransition supervision_transition =
-      static_cast<ArcSupervisionTransition>(
-          profile->GetPrefs()->GetInteger(prefs::kArcSupervisionTransition));
-  const bool is_child_to_regular_enabled =
-      base::FeatureList::IsEnabled(kEnableChildToRegularTransitionFeature);
-  const bool is_regular_to_child_enabled =
-      base::FeatureList::IsEnabled(kEnableRegularToChildTransitionFeature);
+  const ArcManagementTransition management_transition =
+      static_cast<ArcManagementTransition>(
+          profile->GetPrefs()->GetInteger(prefs::kArcManagementTransition));
   const bool is_unmanaged_to_managed_enabled =
       base::FeatureList::IsEnabled(kEnableUnmanagedToManagedTransitionFeature);
-
-  switch (supervision_transition) {
-    case ArcSupervisionTransition::NO_TRANSITION:
-      // Do nothing.
-      break;
-    case ArcSupervisionTransition::CHILD_TO_REGULAR:
-      if (!is_child_to_regular_enabled)
-        return ArcSupervisionTransition::NO_TRANSITION;
-      break;
-    case ArcSupervisionTransition::REGULAR_TO_CHILD:
-      if (!is_regular_to_child_enabled)
-        return ArcSupervisionTransition::NO_TRANSITION;
-      break;
-    case ArcSupervisionTransition::UNMANAGED_TO_MANAGED:
-      if (!is_unmanaged_to_managed_enabled)
-        return ArcSupervisionTransition::NO_TRANSITION;
+  if (management_transition == ArcManagementTransition::UNMANAGED_TO_MANAGED &&
+      !is_unmanaged_to_managed_enabled) {
+    return ArcManagementTransition::NO_TRANSITION;
   }
-  return supervision_transition;
+  return management_transition;
 }
 
 bool IsPlayStoreAvailable() {
@@ -642,6 +626,8 @@ aura::Window* GetArcWindow(int32_t task_id) {
 std::unique_ptr<content::WebContents> CreateArcCustomTabWebContents(
     Profile* profile,
     const GURL& url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   scoped_refptr<content::SiteInstance> site_instance =
       tab_util::GetSiteInstanceForNewTab(profile, url);
   content::WebContents::CreateParams create_params(profile, site_instance);
@@ -659,7 +645,8 @@ std::unique_ptr<content::WebContents> CreateArcCustomTabWebContents(
   ua_override.ua_string_override = content::BuildUserAgentFromOSAndProduct(
       kOsOverrideForTabletSite, product);
 
-  ua_override.ua_metadata_override = embedder_support::GetUserAgentMetadata();
+  ua_override.ua_metadata_override =
+      embedder_support::GetUserAgentMetadata(g_browser_process->local_state());
   ua_override.ua_metadata_override->platform = "Android";
   ua_override.ua_metadata_override->platform_version = "9";
   ua_override.ua_metadata_override->model = "Chrome tablet";
@@ -675,8 +662,9 @@ std::unique_ptr<content::WebContents> CreateArcCustomTabWebContents(
   web_contents->GetController().LoadURLWithParams(load_url_params);
 
   // Add a flag to remember this tab originated in the ARC context.
-  web_contents->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
-                            std::make_unique<arc::ArcWebContentsData>());
+  web_contents->SetUserData(
+      &arc::ArcWebContentsData::kArcTransitionFlag,
+      std::make_unique<arc::ArcWebContentsData>(web_contents.get()));
 
   return web_contents;
 }

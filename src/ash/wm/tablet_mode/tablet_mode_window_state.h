@@ -9,7 +9,6 @@
 
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
-#include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
@@ -38,6 +37,10 @@ class TabletModeWindowState : public WindowState::State {
                         bool snap,
                         bool animate_bounds_on_attach,
                         bool entering_tablet_mode);
+
+  TabletModeWindowState(const TabletModeWindowState&) = delete;
+  TabletModeWindowState& operator=(const TabletModeWindowState&) = delete;
+
   ~TabletModeWindowState() override;
 
   void set_ignore_wm_events(bool ignore) { ignore_wm_events_ = ignore; }
@@ -72,9 +75,9 @@ class TabletModeWindowState : public WindowState::State {
   chromeos::WindowStateType GetMaximizedOrCenteredWindowType(
       WindowState* window_state);
 
-  // If |target_state| is LEFT/RIGHT_SNAPPED and the window can be snapped,
-  // returns |target_state|. Otherwise depending on the capabilities of the
-  // window either returns |WindowStateType::kMaximized| or
+  // If |target_state| is PRIMARY/SECONDARY_SNAPPED and the window can be
+  // snapped, returns |target_state|. Otherwise depending on the capabilities
+  // of the window either returns |WindowStateType::kMaximized| or
   // |WindowStateType::kNormal|.
   chromeos::WindowStateType GetSnappedWindowStateType(
       WindowState* window_state,
@@ -117,8 +120,6 @@ class TabletModeWindowState : public WindowState::State {
 
   // If true, the state will not process events.
   bool ignore_wm_events_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TabletModeWindowState);
 };
 
 }  // namespace ash

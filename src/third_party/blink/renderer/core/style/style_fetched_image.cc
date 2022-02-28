@@ -61,11 +61,6 @@ StyleFetchedImage::StyleFetchedImage(ImageResourceContent* image,
 
 StyleFetchedImage::~StyleFetchedImage() = default;
 
-void StyleFetchedImage::Dispose() {
-  image_->RemoveObserver(this);
-  image_ = nullptr;
-}
-
 bool StyleFetchedImage::IsEqual(const StyleImage& other) const {
   if (!other.IsImageResource())
     return false;
@@ -107,10 +102,17 @@ bool StyleFetchedImage::ErrorOccurred() const {
   return image_->ErrorOccurred();
 }
 
-FloatSize StyleFetchedImage::ImageSize(
-    const Document&,
+bool StyleFetchedImage::IsAccessAllowed(String& failing_url) const {
+  DCHECK(image_->IsLoaded());
+  if (image_->IsAccessAllowed())
+    return true;
+  failing_url = image_->Url().ElidedString();
+  return false;
+}
+
+gfx::SizeF StyleFetchedImage::ImageSize(
     float multiplier,
-    const FloatSize& default_object_size,
+    const gfx::SizeF& default_object_size,
     RespectImageOrientationEnum respect_orientation) const {
   Image* image = image_->GetImage();
   if (image_->HasDevicePixelRatioHeaderValue()) {
@@ -120,7 +122,7 @@ FloatSize StyleFetchedImage::ImageSize(
     return ImageSizeForSVGImage(svg_image, multiplier, default_object_size);
   }
   respect_orientation = ForceOrientationIfNecessary(respect_orientation);
-  FloatSize size(image->Size(respect_orientation));
+  gfx::SizeF size(image->Size(respect_orientation));
   return ApplyZoom(size, multiplier);
 }
 
@@ -166,7 +168,7 @@ scoped_refptr<Image> StyleFetchedImage::GetImage(
     const ImageResourceObserver&,
     const Document&,
     const ComputedStyle& style,
-    const FloatSize& target_size) const {
+    const gfx::SizeF& target_size) const {
   Image* image = image_->GetImage();
   if (image->IsPlaceholderImage()) {
     static_cast<PlaceholderImage*>(image)->SetIconAndTextScaleFactor(
@@ -222,6 +224,7 @@ void StyleFetchedImage::Trace(Visitor* visitor) const {
   visitor->Trace(image_);
   visitor->Trace(document_);
   StyleImage::Trace(visitor);
+  ImageResourceObserver::Trace(visitor);
 }
 
 }  // namespace blink

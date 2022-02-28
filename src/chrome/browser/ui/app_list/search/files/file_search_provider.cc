@@ -13,7 +13,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "base/time/time.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/files/file_result.h"
 
@@ -56,7 +57,7 @@ std::string CreateFnmatchQuery(const std::string& query) {
 
 // Returns a vector of matched filepaths and a bool indicating whether or not
 // the path is a directory.
-std::vector<std::pair<base::FilePath, bool>> SearchFilesByPattern(
+std::vector<FileSearchProvider::PathInfo> SearchFilesByPattern(
     const base::FilePath& root_path,
     const std::string& query,
     const base::TimeTicks& query_start_time) {
@@ -66,17 +67,18 @@ std::vector<std::pair<base::FilePath, bool>> SearchFilesByPattern(
       base::FileEnumerator::DIRECTORIES | base::FileEnumerator::FILES,
       CreateFnmatchQuery(query), base::FileEnumerator::FolderSearchPolicy::ALL);
 
-  const auto time_limit = base::TimeDelta::FromMilliseconds(kSearchTimeoutMs);
+  const auto time_limit = base::Milliseconds(kSearchTimeoutMs);
   bool timed_out = false;
-  std::vector<std::pair<base::FilePath, bool>> matched_paths;
+  std::vector<FileSearchProvider::PathInfo> matched_paths;
   for (base::FilePath path = enumerator.Next(); !path.empty();
        path = enumerator.Next()) {
-    matched_paths.emplace_back(path, enumerator.GetInfo().IsDirectory());
+    matched_paths.emplace_back(
+        path, enumerator.GetInfo().IsDirectory(),
+        base::Time::FromTimeT(enumerator.GetInfo().stat().st_atime));
 
-    if (matched_paths.size() == kMaxResults)
+    if (matched_paths.size() == kMaxResults) {
       break;
-
-    if (base::TimeTicks::Now() - query_start_time > time_limit) {
+    } else if (base::TimeTicks::Now() - query_start_time > time_limit) {
       timed_out = true;
       break;
     }
@@ -89,6 +91,7 @@ std::vector<std::pair<base::FilePath, bool>> SearchFilesByPattern(
 
 FileSearchProvider::FileSearchProvider(Profile* profile)
     : profile_(profile),
+      thumbnail_loader_(profile),
       root_path_(file_manager::util::GetMyFilesFolderForProfile(profile)) {
   DCHECK(profile_);
   DCHECK(!root_path_.empty());
@@ -125,25 +128,42 @@ void FileSearchProvider::Start(const std::u16string& query) {
 }
 
 void FileSearchProvider::OnSearchComplete(
-    const std::vector<std::pair<base::FilePath, bool>>& paths) {
+    std::vector<FileSearchProvider::PathInfo> paths) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Sort paths by the time of last access.
+  std::sort(paths.begin(), paths.end(),
+            [](const FileSearchProvider::PathInfo& a,
+               const FileSearchProvider::PathInfo& b) {
+              return a.last_accessed < b.last_accessed;
+            });
 
+  constexpr double kScoreEps = 1.0e-5;
   SearchProvider::Results results;
-  for (const auto& path : paths)
-    results.emplace_back(MakeResult(path));
-  SwapResults(&results);
+  for (int i = 0; i < paths.size(); ++i) {
+    double relevance =
+        FileResult::CalculateRelevance(last_tokenized_query_, paths[i].path);
+    // Slightly penalize scores for less recently accessed files, but don't let
+    // the relevance go below zero.
+    relevance = std::max(0.0, relevance - (paths.size() - i) * kScoreEps);
+    DCHECK((relevance >= 0.0) && (relevance <= 1.0));
+    results.emplace_back(MakeResult(paths[i], relevance));
+  }
 
+  SwapResults(&results);
   UMA_HISTOGRAM_TIMES("Apps.AppList.FileSearchProvider.Latency",
                       base::TimeTicks::Now() - query_start_time_);
 }
 
 std::unique_ptr<FileResult> FileSearchProvider::MakeResult(
-    const std::pair<base::FilePath, bool>& path) {
-  const auto type =
-      path.second ? FileResult::Type::kDirectory : FileResult::Type::kFile;
-  return std::make_unique<FileResult>(
-      kFileSearchSchema, path.first, ash::AppListSearchResultType::kFileSearch,
-      last_query_, last_tokenized_query_, type, profile_);
+    const FileSearchProvider::PathInfo& path,
+    const double relevance) {
+  const auto type = path.is_directory ? FileResult::Type::kDirectory
+                                      : FileResult::Type::kFile;
+  auto result = std::make_unique<FileResult>(
+      kFileSearchSchema, path.path, ash::AppListSearchResultType::kFileSearch,
+      last_query_, relevance, type, profile_);
+  result->RequestThumbnail(&thumbnail_loader_);
+  return result;
 }
 
 }  // namespace app_list

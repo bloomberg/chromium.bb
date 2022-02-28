@@ -17,10 +17,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
+import androidx.annotation.Nullable;
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -677,7 +677,6 @@ public class PeerConnectionEndToEndTest {
                        .createIceServer());
 
     PeerConnection.RTCConfiguration rtcConfig = new PeerConnection.RTCConfiguration(iceServers);
-    rtcConfig.enableDtlsSrtp = true;
 
     ObserverExpectations offeringExpectations = new ObserverExpectations("PCTest:offerer");
     PeerConnection offeringPC = factory.createPeerConnection(rtcConfig, offeringExpectations);
@@ -944,7 +943,6 @@ public class PeerConnectionEndToEndTest {
                        .createIceServer());
 
     PeerConnection.RTCConfiguration rtcConfig = new PeerConnection.RTCConfiguration(iceServers);
-    rtcConfig.enableDtlsSrtp = true;
 
     ObserverExpectations offeringExpectations = new ObserverExpectations("PCTest:offerer");
     PeerConnection offeringPC = factory.createPeerConnection(rtcConfig, offeringExpectations);
@@ -1172,7 +1170,6 @@ public class PeerConnectionEndToEndTest {
         PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
 
     PeerConnection.RTCConfiguration rtcConfig = new PeerConnection.RTCConfiguration(iceServers);
-    rtcConfig.enableDtlsSrtp = true;
 
     ObserverExpectations offeringExpectations = new ObserverExpectations("PCTest:offerer");
     PeerConnection offeringPC = factory.createPeerConnection(rtcConfig, offeringExpectations);

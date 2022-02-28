@@ -4,7 +4,10 @@
 
 #include "chrome/updater/policy/dm_policy_manager.h"
 
+#include <memory>
+
 #include "base/enterprise_util.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/updater/constants.h"
@@ -55,7 +58,13 @@ DMPolicyManager::DMPolicyManager(
 DMPolicyManager::~DMPolicyManager() = default;
 
 bool DMPolicyManager::IsManaged() const {
-  return true;
+#if defined(OS_WIN) || defined(OS_MAC)
+  return base::IsMachineExternallyManaged();
+#else
+  // crbug.com/1276162 - implement.
+  NOTIMPLEMENTED();
+  return false;
+#endif
 }
 
 std::string DMPolicyManager::source() const {
@@ -66,7 +75,8 @@ bool DMPolicyManager::GetLastCheckPeriodMinutes(int* minutes) const {
   if (!omaha_settings_.has_auto_update_check_period_minutes())
     return false;
 
-  *minutes = int{omaha_settings_.auto_update_check_period_minutes()};
+  *minutes =
+      static_cast<int>(omaha_settings_.auto_update_check_period_minutes());
   return true;
 }
 
@@ -81,9 +91,9 @@ bool DMPolicyManager::GetUpdatesSuppressedTimes(
       !updates_suppressed.has_duration_min())
     return false;
 
-  suppressed_times->start_hour = updates_suppressed.start_hour();
-  suppressed_times->start_minute = updates_suppressed.start_minute();
-  suppressed_times->duration_minute = updates_suppressed.duration_min();
+  suppressed_times->start_hour_ = updates_suppressed.start_hour();
+  suppressed_times->start_minute_ = updates_suppressed.start_minute();
+  suppressed_times->duration_minute_ = updates_suppressed.duration_min();
   return true;
 }
 
@@ -222,6 +232,16 @@ bool DMPolicyManager::IsRollbackToTargetVersionAllowed(
                        ::wireless_android_enterprise_devicemanagement::
                            ROLLBACK_TO_TARGET_VERSION_ENABLED);
   return true;
+}
+
+std::unique_ptr<PolicyManagerInterface> CreateDMPolicyManager() {
+  std::unique_ptr<
+      ::wireless_android_enterprise_devicemanagement::OmahaSettingsClientProto>
+      omaha_settings = GetDefaultDMStorage()->GetOmahaPolicySettings();
+  if (!omaha_settings)
+    return nullptr;
+
+  return std::make_unique<DMPolicyManager>(*omaha_settings);
 }
 
 }  // namespace updater

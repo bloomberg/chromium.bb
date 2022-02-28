@@ -55,7 +55,6 @@ class ProcessCollector(object):
 
   def Init(self):
     """Performs any required initialization before starting tracing."""
-    pass
 
   def GetProcesses(self):
     """Fetches the top processes returned by top command.
@@ -134,7 +133,7 @@ class WindowsProcessCollector(ProcessCollector):
   def _GetPhysicalMemoryBytes(self):
     """Returns the number of bytes of physical memory on the computer."""
     raw_output = subprocess.check_output(
-        self._GET_PHYSICAL_MEMORY_BYTES_SHELL_COMMAND)
+        self._GET_PHYSICAL_MEMORY_BYTES_SHELL_COMMAND).decode('utf-8')
     # The bytes of physical memory is on the second row (after the header row).
     return int(raw_output.strip().split('\n')[1])
 
@@ -142,7 +141,8 @@ class WindowsProcessCollector(ProcessCollector):
     try:
       # Skip the header and total rows and strip the trailing newline.
       return subprocess.check_output(
-          self._GET_PERF_DATA_SHELL_COMMAND).strip().split('\n')[2:]
+          self._GET_PERF_DATA_SHELL_COMMAND).decode(
+              'utf-8').strip().split('\n')[2:]
     except subprocess.CalledProcessError as e:
       logging.warning(
           'wmic failed with error code %d when running command, which gave '
@@ -190,7 +190,8 @@ class WindowsProcessCollector(ProcessCollector):
     """
     # Skip the header row and strip the trailing newline.
     process_strings = subprocess.check_output(
-        self._GET_COMMANDS_SHELL_COMMAND).strip().split('\n')[1:]
+        self._GET_COMMANDS_SHELL_COMMAND).decode(
+            'utf-8').strip().split('\n')[1:]
     command_by_pid = {}
     for process_string in process_strings:
       process_string = process_string.strip()
@@ -227,7 +228,8 @@ class LinuxProcessCollector(ProcessCollector):
 
   def _GetProcessesAsStrings(self):
     # Skip the header row and strip the trailing newline.
-    return subprocess.check_output(self._SHELL_COMMAND).strip().split('\n')[1:]
+    return subprocess.check_output(self._SHELL_COMMAND).decode(
+        'utf-8').strip().split('\n')[1:]
 
   def _ParseProcessString(self, proc_string):
     return _ParsePsProcessString(proc_string)
@@ -251,7 +253,8 @@ class MacProcessCollector(ProcessCollector):
 
   def _GetProcessesAsStrings(self):
     # Skip the header row and strip the trailing newline.
-    return subprocess.check_output(self._SHELL_COMMAND).strip().split('\n')[1:]
+    return subprocess.check_output(self._SHELL_COMMAND).decode(
+        'utf-8').strip().split('\n')[1:]
 
   def _ParseProcessString(self, proc_string):
     return _ParsePsProcessString(proc_string)

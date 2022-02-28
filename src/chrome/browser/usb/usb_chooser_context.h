@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/containers/queue.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -33,6 +32,10 @@ class UsbChooserContext : public permissions::ObjectPermissionContextBase,
                           public device::mojom::UsbDeviceManagerClient {
  public:
   explicit UsbChooserContext(Profile* profile);
+
+  UsbChooserContext(const UsbChooserContext&) = delete;
+  UsbChooserContext& operator=(const UsbChooserContext&) = delete;
+
   ~UsbChooserContext() override;
 
   // This observer can be used to be notified of changes to USB devices that are
@@ -53,6 +56,7 @@ class UsbChooserContext : public permissions::ObjectPermissionContextBase,
   std::vector<std::unique_ptr<Object>> GetAllGrantedObjects() override;
   void RevokeObjectPermission(const url::Origin& origin,
                               const base::Value& object) override;
+  std::string GetKeyForObject(const base::Value& object) override;
   bool IsValidObject(const base::Value& object) override;
   std::u16string GetObjectDisplayName(const base::Value& object) override;
 
@@ -122,8 +126,6 @@ class UsbChooserContext : public permissions::ObjectPermissionContextBase,
   base::ObserverList<DeviceObserver> device_observer_list_;
 
   base::WeakPtrFactory<UsbChooserContext> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UsbChooserContext);
 };
 
 #endif  // CHROME_BROWSER_USB_USB_CHOOSER_CONTEXT_H_

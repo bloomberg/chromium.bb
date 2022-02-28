@@ -4,14 +4,16 @@
 
 #include "services/device/usb/usb_service_win.h"
 
+// windows.h must be included first.
+#include <windows.h>
+
+#define INITGUID
+
+#include <devpkey.h>
 #include <objbase.h>
 #include <setupapi.h>
 #include <stdint.h>
 #include <usbiodef.h>
-#include "base/strings/string_piece_forward.h"
-
-#define INITGUID
-#include <devpkey.h>
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
@@ -19,15 +21,15 @@
 #include "base/memory/free_deleter.h"
 #include "base/memory/ptr_util.h"
 #include "base/scoped_generic.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/scoped_thread_priority.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_devinfo.h"
 #include "base/win/scoped_handle.h"
@@ -415,12 +417,11 @@ UsbDeviceWin::FunctionInfo GetFunctionInfo(const std::wstring& instance_id) {
 
 class UsbServiceWin::BlockingTaskRunnerHelper {
  public:
-  explicit BlockingTaskRunnerHelper(base::WeakPtr<UsbServiceWin> service)
-      : service_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        service_(service) {}
-  ~BlockingTaskRunnerHelper() {}
-
-  void EnumerateDevices() {
+  BlockingTaskRunnerHelper(
+      base::WeakPtr<UsbServiceWin> service,
+      scoped_refptr<base::SequencedTaskRunner> service_task_runner)
+      : service_task_runner_(std::move(service_task_runner)),
+        service_(std::move(service)) {
     // Boost priority while potentially loading SetupAPI.dll for the following
     // functions on a background thread.
     SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
@@ -450,6 +451,8 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
     service_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&UsbServiceWin::HelperStarted, service_));
   }
+
+  ~BlockingTaskRunnerHelper() = default;
 
   void OnDeviceAdded(const GUID& guid, const std::wstring& device_path) {
     // Boost priority while potentially loading SetupAPI.dll and Ole32.dll on a
@@ -580,22 +583,19 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
 
   // Calls back to |service_| must be posted to |service_task_runner_|, which
   // runs tasks on the thread where that object lives.
-  scoped_refptr<base::SingleThreadTaskRunner> service_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> service_task_runner_;
   base::WeakPtr<UsbServiceWin> service_;
 };
 
 UsbServiceWin::UsbServiceWin()
-    : UsbService(),
-      blocking_task_runner_(CreateBlockingTaskRunner()),
-      helper_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)) {
+    : blocking_task_runner_(CreateBlockingTaskRunner()) {
   DeviceMonitorWin* device_monitor = DeviceMonitorWin::GetForAllInterfaces();
   if (device_monitor)
     device_observation_.Observe(device_monitor);
 
-  helper_.reset(new BlockingTaskRunnerHelper(weak_factory_.GetWeakPtr()));
-  blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::EnumerateDevices,
-                                base::Unretained(helper_.get())));
+  helper_ = base::SequenceBound<BlockingTaskRunnerHelper>(
+      blocking_task_runner_, weak_factory_.GetWeakPtr(),
+      base::SequencedTaskRunnerHandle::Get());
 }
 
 UsbServiceWin::~UsbServiceWin() {
@@ -612,10 +612,8 @@ void UsbServiceWin::GetDevices(GetDevicesCallback callback) {
 
 void UsbServiceWin::OnDeviceAdded(const GUID& class_guid,
                                   const std::wstring& device_path) {
-  blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&BlockingTaskRunnerHelper::OnDeviceAdded,
-                     base::Unretained(helper_.get()), class_guid, device_path));
+  helper_.AsyncCall(&BlockingTaskRunnerHelper::OnDeviceAdded)
+      .WithArgs(class_guid, device_path);
 }
 
 void UsbServiceWin::OnDeviceRemoved(const GUID& class_guid,
@@ -670,9 +668,10 @@ void UsbServiceWin::CreateDeviceObject(
   auto device = base::MakeRefCounted<UsbDeviceWin>(
       device_path, hub_path, functions, bus_number, port_number, driver_type);
   devices_by_path_[device->device_path()] = device;
-  device->ReadDescriptors(base::BindOnce(&UsbServiceWin::DeviceReady,
-                                         weak_factory_.GetWeakPtr(), device,
-                                         driver_name));
+  device->ReadDescriptors(
+      blocking_task_runner_,
+      base::BindOnce(&UsbServiceWin::DeviceReady, weak_factory_.GetWeakPtr(),
+                     device, driver_name));
 }
 
 void UsbServiceWin::UpdateFunction(

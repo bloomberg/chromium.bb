@@ -28,7 +28,6 @@ using WgslGeneratorImplTest = TestHelper;
 TEST_F(WgslGeneratorImplTest, Emit_Function) {
   auto* func = Func("my_func", ast::VariableList{}, ty.void_(),
                     ast::StatementList{
-                        create<ast::DiscardStatement>(),
                         Return(),
                     },
                     ast::DecorationList{});
@@ -39,7 +38,6 @@ TEST_F(WgslGeneratorImplTest, Emit_Function) {
 
   ASSERT_TRUE(gen.EmitFunction(func));
   EXPECT_EQ(gen.result(), R"(  fn my_func() {
-    discard;
     return;
   }
 )");
@@ -50,7 +48,6 @@ TEST_F(WgslGeneratorImplTest, Emit_Function_WithParams) {
       "my_func", ast::VariableList{Param("a", ty.f32()), Param("b", ty.i32())},
       ty.void_(),
       ast::StatementList{
-          create<ast::DiscardStatement>(),
           Return(),
       },
       ast::DecorationList{});
@@ -61,7 +58,6 @@ TEST_F(WgslGeneratorImplTest, Emit_Function_WithParams) {
 
   ASSERT_TRUE(gen.EmitFunction(func));
   EXPECT_EQ(gen.result(), R"(  fn my_func(a : f32, b : i32) {
-    discard;
     return;
   }
 )");
@@ -162,12 +158,12 @@ TEST_F(WgslGeneratorImplTest,
   // };
   // [[binding(0), group(0)]] var<storage> data : Data;
   //
-  // [[stage(compute)]]
+  // [[stage(compute), workgroup_size(1)]]
   // fn a() {
   //   return;
   // }
   //
-  // [[stage(compute)]]
+  // [[stage(compute), workgroup_size(1)]]
   // fn b() {
   //   return;
   // }
@@ -175,9 +171,7 @@ TEST_F(WgslGeneratorImplTest,
   auto* s = Structure("Data", {Member("d", ty.f32())},
                       {create<ast::StructBlockDecoration>()});
 
-  auto* ac = ty.access(ast::AccessControl::kReadWrite, s);
-
-  Global("data", ac, ast::StorageClass::kStorage, nullptr,
+  Global("data", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kReadWrite,
          ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
@@ -194,6 +188,7 @@ TEST_F(WgslGeneratorImplTest,
          },
          ast::DecorationList{
              Stage(ast::PipelineStage::kCompute),
+             WorkgroupSize(1),
          });
   }
 
@@ -208,6 +203,7 @@ TEST_F(WgslGeneratorImplTest,
          },
          ast::DecorationList{
              Stage(ast::PipelineStage::kCompute),
+             WorkgroupSize(1),
          });
   }
 
@@ -219,15 +215,15 @@ struct Data {
   d : f32;
 };
 
-[[binding(0), group(0)]] var<storage> data : [[access(read_write)]] Data;
+[[binding(0), group(0)]] var<storage, read_write> data : Data;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn a() {
   var v : f32 = data.d;
   return;
 }
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn b() {
   var v : f32 = data.d;
   return;

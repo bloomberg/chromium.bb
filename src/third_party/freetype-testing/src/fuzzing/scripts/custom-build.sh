@@ -337,7 +337,7 @@ if [[ "${build_type}" == "f" ]]; then
     build_ft_trace="n"
 else
     print_q    "Add FreeType tracing?"
-    print_info "yes" "activate 'FT_DEBUG_LEVEL_{TRACE,ERROR}' and 'FT_DEBUG_MEMORY'"
+    print_info "yes" "activate 'FT_DEBUG_LEVEL_{TRACE,ERROR}' and 'FT_DEBUG_{MEMORY,LOGGING}'"
     print_nl
 
     build_ft_trace=$( ask_user "y|n" "n" )
@@ -345,8 +345,9 @@ else
 fi
 
 if [[ "${build_ft_trace}" == "y" ]]; then
-    cflags="  ${cflags}   -DFT_DEBUG_LEVEL_TRACE -DFT_DEBUG_LEVEL_ERROR -DFT_DEBUG_MEMORY"
-    cxxflags="${cxxflags} -DFT_DEBUG_LEVEL_TRACE -DFT_DEBUG_LEVEL_ERROR -DFT_DEBUG_MEMORY"
+    cflags="  ${cflags}   -DFT_DEBUG_LEVEL_TRACE -DFT_DEBUG_LEVEL_ERROR -DFT_DEBUG_MEMORY -DFT_DEBUG_LOGGING -pthread"
+    cxxflags="${cxxflags} -DFT_DEBUG_LEVEL_TRACE -DFT_DEBUG_LEVEL_ERROR -DFT_DEBUG_MEMORY -DFT_DEBUG_LOGGING -pthread"
+    ldflags=" ${ldflags}  -pthread"
 
     driver_name="${driver_name}-fttrace"
 fi

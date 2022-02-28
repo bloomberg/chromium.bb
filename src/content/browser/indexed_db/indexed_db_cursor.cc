@@ -52,8 +52,9 @@ IndexedDBCursor::IndexedDBCursor(
     indexed_db::CursorType cursor_type,
     blink::mojom::IDBTaskType task_type,
     base::WeakPtr<IndexedDBTransaction> transaction)
-    : origin_(
-          transaction->BackingStoreTransaction()->backing_store()->origin()),
+    : storage_key_(transaction->BackingStoreTransaction()
+                       ->backing_store()
+                       ->storage_key()),
       task_type_(task_type),
       cursor_type_(cursor_type),
       transaction_(std::move(transaction)),
@@ -128,7 +129,7 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
   if (value) {
     mojo_value = IndexedDBValue::ConvertAndEraseValue(value);
     external_objects.swap(value->external_objects);
-    dispatcher_host->CreateAllExternalObjects(origin_, external_objects,
+    dispatcher_host->CreateAllExternalObjects(storage_key_, external_objects,
                                               &mojo_value->external_objects);
   } else {
     mojo_value = blink::mojom::IDBValue::New();
@@ -209,7 +210,7 @@ leveldb::Status IndexedDBCursor::CursorContinueOperation(
   if (value) {
     mojo_value = IndexedDBValue::ConvertAndEraseValue(value);
     external_objects.swap(value->external_objects);
-    dispatcher_host->CreateAllExternalObjects(origin_, external_objects,
+    dispatcher_host->CreateAllExternalObjects(storage_key_, external_objects,
                                               &mojo_value->external_objects);
   } else {
     mojo_value = blink::mojom::IDBValue::New();
@@ -336,7 +337,7 @@ leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
     mojo_values.push_back(
         IndexedDBValue::ConvertAndEraseValue(&found_values[i]));
     dispatcher_host->CreateAllExternalObjects(
-        origin_, found_values[i].external_objects,
+        storage_key_, found_values[i].external_objects,
         &mojo_values[i]->external_objects);
   }
 

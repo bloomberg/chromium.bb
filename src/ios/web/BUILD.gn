@@ -40,6 +40,7 @@ source_set("web") {
     ":navigation_resources",
     ":plugin_placeholder_js",
     ":resources",
+    ":share_workaround_js",
     ":threads",
     "//base",
     "//components/leveldb_proto",
@@ -105,7 +106,6 @@ source_set("core") {
 }
 
 source_set("eg_app_support+eg2") {
-  defines = [ "CHROME_EARL_GREY_2" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
 
@@ -271,7 +271,6 @@ source_set("ios_web_navigation_unittests") {
     "navigation/crw_navigation_item_holder_unittest.mm",
     "navigation/crw_session_storage_unittest.mm",
     "navigation/crw_wk_navigation_states_unittest.mm",
-    "navigation/error_retry_state_machine_unittest.mm",
     "navigation/navigation_context_impl_unittest.mm",
     "navigation/navigation_item_impl_unittest.mm",
     "navigation/navigation_item_storage_builder_unittest.mm",
@@ -279,6 +278,7 @@ source_set("ios_web_navigation_unittests") {
     "navigation/navigation_manager_util_unittest.mm",
     "navigation/nscoder_util_unittest.mm",
     "navigation/session_storage_builder_unittest.mm",
+    "navigation/synthesized_session_restore_unittest.mm",
     "navigation/wk_back_forward_list_item_holder_unittest.mm",
     "navigation/wk_navigation_action_policy_util_unittest.mm",
     "navigation/wk_navigation_action_util_unittest.mm",
@@ -403,6 +403,7 @@ source_set("ios_web_web_state_unittests") {
     "//ios/web/web_state",
     "//ios/web/web_state:page_viewport_state",
     "//ios/web/web_state:policy_decision_state_tracker",
+    "//ios/web/web_state:test_util",
     "//ios/web/web_state:web_view_internal_creation_util",
     "//net:test_support",
     "//testing/gmock",
@@ -555,6 +556,7 @@ test("ios_web_inttests") {
     "//ios/testing:http_server_bundle_data",
     "//ios/web:resources_grit",
     "//ios/web/common",
+    "//ios/web/common:uikit",
     "//ios/web/common:web_view_creation_util",
     "//ios/web/download:download_inttests",
     "//ios/web/favicon:inttests",
@@ -580,17 +582,19 @@ test("ios_web_inttests") {
     "//ios/web/test:test_constants",
     "//ios/web/test:test_support",
     "//ios/web/web_state",
+    "//ios/web/web_state:test_util",
     "//ios/web/web_state/ui:crw_context_menu_controller",
     "//mojo/core/embedder",
     "//net:test_support",
     "//services/network/public/cpp",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
     "//testing/gtest",
     "//ui/base:test_support",
     "//ui/resources",
   ]
   sources = [
     "browser_state_web_view_partition_inttest.mm",
-    "cookie_blocking_inttest.mm",
     "find_in_page/find_in_page_manager_inttest.mm",
     "navigation/crw_error_page_helper_inttest.mm",
     "navigation/crw_wk_navigation_handler_inttest.mm",
@@ -614,48 +618,18 @@ test("ios_web_inttests") {
   assert_no_deps = ios_assert_no_deps
 }
 
-js_compile_bundle("main_frame_web_bundle") {
-  visibility = [ ":js_resources" ]
-  closure_entry_point = "__crWeb.mainFrameWebBundle"
-
-  # Silence warning when compiling text-fragment-utils.js until the code
-  # has been rolled (see https://crbug.com/1129390).
-  suppressed_warnings = [ "uselessCode" ]
-
-  sources = [
-    "//third_party/text-fragments-polyfill/src/src/text-fragment-utils.js",
-    "web_state/js/resources/main_frame_web_bundle.js",
-    "web_state/js/resources/navigation.js",
-    "web_state/js/resources/text_fragments.js",
-  ]
-}
-
-js_compile_bundle("all_frames_web_bundle") {
-  visibility = [ ":js_resources" ]
-  closure_entry_point = "__crWeb.allFramesWebBundle"
-
-  sources = [
-    "web_state/js/resources/all_frames_web_bundle.js",
-    "web_state/js/resources/cookie.js",
-    "web_state/js/resources/share_workaround.js",
-  ]
-}
-
-js_compile_bundle("all_frames_document_end_web_bundle") {
-  visibility = [ ":js_resources" ]
-  closure_entry_point = "__crWeb.allFramesDocumentEndWebBundle"
-
-  sources = [
-    "js_messaging/resources/setup_frame.js",
-    "web_state/js/resources/all_frames_document_end_web_bundle.js",
-  ]
-}
-
 js_compile_bundle("plugin_placeholder_js") {
   visibility = [ ":web" ]
   closure_entry_point = "__crWeb.pluginPlaceholder"
 
   sources = [ "web_state/js/resources/plugin_placeholder.js" ]
+}
+
+js_compile_bundle("share_workaround_js") {
+  visibility = [ ":web" ]
+  closure_entry_point = "__crWeb.shareWorkaround"
+
+  sources = [ "web_state/js/resources/share_workaround.js" ]
 }
 
 js_compile_bundle("base_js") {
@@ -680,12 +654,6 @@ js_compile_bundle("message_js") {
 }
 
 js_compile_checked("js_resources") {
-  public_deps = [
-    ":all_frames_document_end_web_bundle",
-    ":all_frames_web_bundle",
-    ":main_frame_web_bundle",
-  ]
-
   js_modules = [
     "//ios/web/web_state/js/resources/base.js",
     "//ios/web/web_state/js/resources/common.js",

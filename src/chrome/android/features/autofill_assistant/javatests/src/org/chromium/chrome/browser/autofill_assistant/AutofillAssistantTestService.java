@@ -32,7 +32,7 @@ import java.util.List;
 @JNINamespace("autofill_assistant")
 public class AutofillAssistantTestService
         implements AutofillAssistantService,
-                   AutofillAssistantServiceInjector.NativeServiceProvider {
+                   AutofillAssistantDependencyInjector.NativeServiceProvider {
     public enum ScriptsReturnMode {
         ONE_BY_ONE,
         ALL_AT_ONCE,
@@ -56,7 +56,7 @@ public class AutofillAssistantTestService
     AutofillAssistantTestService(
             List<AutofillAssistantTestScript> scripts, ScriptsReturnMode scriptsReturnMode) {
         this(scripts,
-                (ClientSettingsProto) ClientSettingsProto.newBuilder()
+                ClientSettingsProto.newBuilder()
                         .setIntegrationTestSettings(
                                 ClientSettingsProto.IntegrationTestSettings.newBuilder()
                                         .setDisableHeaderAnimations(true)
@@ -83,7 +83,7 @@ public class AutofillAssistantTestService
      * in order to take effect!
      */
     void scheduleForInjection() {
-        AutofillAssistantServiceInjector.setServiceToInject(this);
+        AutofillAssistantDependencyInjector.setServiceToInject(this);
     }
 
     /**
@@ -149,7 +149,7 @@ public class AutofillAssistantTestService
         mProcessedActions = processedActions;
         mNextActionsCounter++;
         ActionsResponseProto responseProto =
-                (ActionsResponseProto) ActionsResponseProto.newBuilder()
+                ActionsResponseProto.newBuilder()
                         .addAllActions(mNextActions)
                         .setGlobalPayload(ByteString.copyFrom(globalPayload))
                         .setScriptPayload(ByteString.copyFrom(scriptPayload))

@@ -6,13 +6,10 @@
 #define CHROME_BROWSER_PRINTING_PRINT_PREVIEW_DIALOG_CONTROLLER_H_
 
 #include <map>
-#include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/tab_contents/web_contents_collection.h"
-#include "components/sessions/core/session_id.h"
 
 class GURL;
 
@@ -34,14 +31,23 @@ class PrintPreviewDialogController
  public:
   PrintPreviewDialogController();
 
+  PrintPreviewDialogController(const PrintPreviewDialogController&) = delete;
+  PrintPreviewDialogController& operator=(const PrintPreviewDialogController&) =
+      delete;
+
   static PrintPreviewDialogController* GetInstance();
 
   // Initiate print preview for |initiator|.
   // Call this instead of GetOrCreatePreviewDialog().
   static void PrintPreview(content::WebContents* initiator);
 
-  // Returns true if |url| is a print preview url.
+  // Returns true if `url` is a Print Preview dialog URL (has `chrome://print`
+  // origin).
   static bool IsPrintPreviewURL(const GURL& url);
+
+  // Returns true if `url` is a Print Preview content URL (has
+  // `chrome-untrusted://print` origin).
+  static bool IsPrintPreviewContentURL(const GURL& url);
 
   // Get/Create the print preview dialog for |initiator|.
   // Exposed for unit tests.
@@ -126,8 +132,6 @@ class PrintPreviewDialogController
   // Whether the PrintPreviewDialogController is in the middle of creating a
   // print preview dialog.
   bool is_creating_print_preview_dialog_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogController);
 };
 
 }  // namespace printing

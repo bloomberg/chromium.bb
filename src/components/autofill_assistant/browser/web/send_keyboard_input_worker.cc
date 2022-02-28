@@ -6,21 +6,15 @@
 
 #include "base/logging.h"
 #include "components/autofill_assistant/browser/string_conversions_util.h"
+#include "components/autofill_assistant/browser/web/keyboard_input_data.h"
 #include "components/autofill_assistant/browser/web/web_controller_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 namespace autofill_assistant {
 namespace {
-
-absl::optional<std::vector<std::string>> GetCommandForDomKey(
-    ui::DomKey dom_key) {
-  if (dom_key == ui::DomKey::BACKSPACE) {
-    return std::vector<std::string>({"DeleteBackward"});
-  }
-  return absl::nullopt;
-}
 
 std::unique_ptr<input::DispatchKeyEventParams> CreateKeyEventParamsForKeyEvent(
     input::DispatchKeyEventType type,
@@ -31,9 +25,6 @@ std::unique_ptr<input::DispatchKeyEventParams> CreateKeyEventParamsForKeyEvent(
     params->SetTimestamp(timestamp->ToDoubleT());
   }
 
-  if (key_event.has_key_identifier()) {
-    params->SetKeyIdentifier(key_event.key_identifier());
-  }
   if (key_event.has_code()) {
     params->SetCode(key_event.code());
   }
@@ -46,6 +37,11 @@ std::unique_ptr<input::DispatchKeyEventParams> CreateKeyEventParamsForKeyEvent(
   if (!key_event.command().empty()) {
     params->SetCommands(std::vector<std::string>(key_event.command().begin(),
                                                  key_event.command().end()));
+  }
+  if (key_event.has_key_code()) {
+    // Set legacy keyCode for the KeyEvent as described here:
+    // https://w3c.github.io/uievents/#dom-keyboardevent-keycode
+    params->SetWindowsVirtualKeyCode(key_event.key_code());
   }
 
   return params;
@@ -78,13 +74,6 @@ KeyEvent SendKeyboardInputWorker::KeyEventFromCodepoint(UChar32 codepoint) {
   auto dom_key = ui::DomKey::FromCharacter(codepoint);
   if (dom_key.IsValid()) {
     key_event.set_key(ui::KeycodeConverter::DomKeyToKeyString(dom_key));
-    auto commands = GetCommandForDomKey(dom_key);
-    if (commands.has_value()) {
-      for (const std::string& command : *commands) {
-        key_event.add_command(command);
-      }
-    }
-
   } else {
 #ifdef NDEBUG
     VLOG(1) << __func__ << ": Failed to set DomKey for codepoint";
@@ -92,6 +81,14 @@ KeyEvent SendKeyboardInputWorker::KeyEventFromCodepoint(UChar32 codepoint) {
     DVLOG(1) << __func__
              << ": Failed to set DomKey for codepoint: " << codepoint;
 #endif
+  }
+
+  auto key_info =
+      keyboard_input_data::GetDevToolsDispatchKeyEventParamsForCodepoint(
+          codepoint);
+  key_event.set_key_code(static_cast<int32_t>(key_info.key_code));
+  if (!key_info.command.empty()) {
+    key_event.add_command(key_info.command);
   }
 
   return key_event;
@@ -109,8 +106,7 @@ void SendKeyboardInputWorker::Start(const std::string& frame_id,
   }
 
   callback_ = std::move(callback);
-  key_press_delay_ =
-      base::TimeDelta::FromMilliseconds(key_press_delay_in_millisecond);
+  key_press_delay_ = base::Milliseconds(key_press_delay_in_millisecond);
   frame_id_ = frame_id;
   key_events_ = key_events;
 
@@ -126,8 +122,8 @@ void SendKeyboardInputWorker::Start(const std::string& frame_id,
   // sort events by timestamp, we assign a unique,increasing timestamp to each
   // key events.
   pending_key_events_ = 2 * key_events.size();
-  base::Time base_ts = base::Time::Now() -
-                       base::TimeDelta::FromMilliseconds(2 * key_events.size());
+  base::Time base_ts =
+      base::Time::Now() - base::Milliseconds(2 * key_events.size());
 
   auto* devtools_input = devtools_client_->GetInput();
   auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
@@ -135,9 +131,8 @@ void SendKeyboardInputWorker::Start(const std::string& frame_id,
   // any time.
 
   for (size_t i = 0; i < key_events.size(); i++) {
-    base::Time keydown_ts = base_ts + base::TimeDelta::FromMilliseconds(2 * i);
-    base::Time keyup_ts =
-        base_ts + base::TimeDelta::FromMilliseconds(2 * i + 1);
+    base::Time keydown_ts = base_ts + base::Milliseconds(2 * i);
+    base::Time keyup_ts = base_ts + base::Milliseconds(2 * i + 1);
     devtools_input->DispatchKeyEvent(
         CreateKeyEventParamsForKeyEvent(input::DispatchKeyEventType::KEY_DOWN,
                                         keydown_ts, key_events[i]),

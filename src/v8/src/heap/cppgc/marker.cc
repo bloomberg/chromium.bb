@@ -4,12 +4,14 @@
 
 #include "src/heap/cppgc/marker.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 
 #include "include/cppgc/heap-consistency.h"
 #include "include/cppgc/platform.h"
 #include "src/base/platform/time.h"
+#include "src/heap/cppgc/globals.h"
 #include "src/heap/cppgc/heap-object-header.h"
 #include "src/heap/cppgc/heap-page.h"
 #include "src/heap/cppgc/heap-visitor.h"
@@ -38,7 +40,7 @@ bool EnterIncrementalMarkingIfNeeded(Marker::MarkingConfig config,
     WriteBarrier::IncrementalOrConcurrentMarkingFlagUpdater::Enter();
 #if defined(CPPGC_CAGED_HEAP)
     heap.caged_heap().local_data().is_incremental_marking_in_progress = true;
-#endif
+#endif  // defined(CPPGC_CAGED_HEAP)
     return true;
   }
   return false;
@@ -52,7 +54,7 @@ bool ExitIncrementalMarkingIfNeeded(Marker::MarkingConfig config,
     WriteBarrier::IncrementalOrConcurrentMarkingFlagUpdater::Exit();
 #if defined(CPPGC_CAGED_HEAP)
     heap.caged_heap().local_data().is_incremental_marking_in_progress = false;
-#endif
+#endif  // defined(CPPGC_CAGED_HEAP)
     return true;
   }
   return false;
@@ -77,15 +79,6 @@ void VisitRememberedSlots(HeapBase& heap,
     void* value = *reinterpret_cast<void**>(slot);
     mutator_marking_state.DynamicallyMarkAddress(static_cast<Address>(value));
   }
-#endif
-}
-
-// Assumes that all spaces have their LABs reset.
-void ResetRememberedSet(HeapBase& heap) {
-#if defined(CPPGC_YOUNG_GENERATION)
-  auto& local_data = heap.caged_heap().local_data();
-  local_data.age_table.Reset(&heap.caged_heap().allocator());
-  heap.remembered_slots().clear();
 #endif
 }
 
@@ -201,6 +194,27 @@ MarkerBase::~MarkerBase() {
   marking_worklists_.weak_containers_worklist()->Clear();
 }
 
+class MarkerBase::IncrementalMarkingAllocationObserver final
+    : public StatsCollector::AllocationObserver {
+ public:
+  static constexpr size_t kMinAllocatedBytesPerStep = 256 * kKB;
+
+  explicit IncrementalMarkingAllocationObserver(MarkerBase& marker)
+      : marker_(marker) {}
+
+  void AllocatedObjectSizeIncreased(size_t delta) final {
+    current_allocated_size_ += delta;
+    if (current_allocated_size_ > kMinAllocatedBytesPerStep) {
+      marker_.AdvanceMarkingOnAllocation();
+      current_allocated_size_ = 0;
+    }
+  }
+
+ private:
+  MarkerBase& marker_;
+  size_t current_allocated_size_ = 0;
+};
+
 void MarkerBase::StartMarking() {
   DCHECK(!is_marking_);
   StatsCollector::EnabledScope stats_scope(
@@ -214,7 +228,7 @@ void MarkerBase::StartMarking() {
 
   is_marking_ = true;
   if (EnterIncrementalMarkingIfNeeded(config_, heap())) {
-    StatsCollector::EnabledScope stats_scope(
+    StatsCollector::EnabledScope inner_stats_scope(
         heap().stats_collector(), StatsCollector::kMarkIncrementalStart);
 
     // Performing incremental or concurrent marking.
@@ -226,7 +240,12 @@ void MarkerBase::StartMarking() {
         MarkingConfig::MarkingType::kIncrementalAndConcurrent) {
       mutator_marking_state_.Publish();
       concurrent_marker_->Start();
+      concurrent_marking_active_ = true;
     }
+    incremental_marking_allocation_observer_ =
+        std::make_unique<IncrementalMarkingAllocationObserver>(*this);
+    heap().stats_collector()->RegisterObserver(
+        incremental_marking_allocation_observer_.get());
   }
 }
 
@@ -237,18 +256,17 @@ void MarkerBase::EnterAtomicPause(MarkingConfig::StackState stack_state) {
                                            StatsCollector::kMarkAtomicPrologue);
 
   if (ExitIncrementalMarkingIfNeeded(config_, heap())) {
-    // Cancel remaining concurrent/incremental tasks.
-    concurrent_marker_->Cancel();
+    // Cancel remaining incremental tasks. Concurrent marking jobs are left to
+    // run in parallel with the atomic pause until the mutator thread runs out
+    // of work.
     incremental_marking_handle_.Cancel();
+    heap().stats_collector()->UnregisterObserver(
+        incremental_marking_allocation_observer_.get());
+    incremental_marking_allocation_observer_.reset();
   }
   config_.stack_state = stack_state;
   config_.marking_type = MarkingConfig::MarkingType::kAtomic;
-
-  // Lock guards against changes to {Weak}CrossThreadPersistent handles, that
-  // may conflict with marking. E.g., a WeakCrossThreadPersistent may be
-  // converted into a CrossThreadPersistent which requires that the handle
-  // is either cleared or the object is retained.
-  g_process_mutex.Pointer()->Lock();
+  mutator_marking_state_.set_in_atomic_pause();
 
   {
     // VisitRoots also resets the LABs.
@@ -260,6 +278,17 @@ void MarkerBase::EnterAtomicPause(MarkingConfig::StackState stack_state) {
       MarkNotFullyConstructedObjects();
     }
   }
+  if (heap().marking_support() ==
+      MarkingConfig::MarkingType::kIncrementalAndConcurrent) {
+    // Start parallel marking.
+    mutator_marking_state_.Publish();
+    if (concurrent_marking_active_) {
+      concurrent_marker_->NotifyIncrementalMutatorStepCompleted();
+    } else {
+      concurrent_marker_->Start();
+      concurrent_marking_active_ = true;
+    }
+  }
 }
 
 void MarkerBase::LeaveAtomicPause() {
@@ -269,7 +298,6 @@ void MarkerBase::LeaveAtomicPause() {
     StatsCollector::EnabledScope stats_scope(
         heap().stats_collector(), StatsCollector::kMarkAtomicEpilogue);
     DCHECK(!incremental_marking_handle_);
-    ResetRememberedSet(heap());
     heap().stats_collector()->NotifyMarkingCompleted(
         // GetOverallMarkedBytes also includes concurrently marked bytes.
         schedule_.GetOverallMarkedBytes());
@@ -307,6 +335,7 @@ void MarkerBase::ProcessWeakness() {
   heap().GetWeakPersistentRegion().Trace(&visitor());
   // Processing cross-thread handles requires taking the process lock.
   g_process_mutex.Get().AssertHeld();
+  CHECK(visited_cross_thread_persistents_in_atomic_pause_);
   heap().GetWeakCrossThreadPersistentRegion().Trace(&visitor());
 
   // Call weak callbacks on objects that may now be pointing to dead objects.
@@ -336,13 +365,6 @@ void MarkerBase::VisitRoots(MarkingConfig::StackState stack_state) {
           heap().stats_collector(), StatsCollector::kMarkVisitPersistents);
       heap().GetStrongPersistentRegion().Trace(&visitor());
     }
-    if (config_.marking_type == MarkingConfig::MarkingType::kAtomic) {
-      StatsCollector::DisabledScope inner_stats_scope(
-          heap().stats_collector(),
-          StatsCollector::kMarkVisitCrossThreadPersistents);
-      g_process_mutex.Get().AssertHeld();
-      heap().GetStrongCrossThreadPersistentRegion().Trace(&visitor());
-    }
   }
 
   if (stack_state != MarkingConfig::StackState::kNoHeapPointers) {
@@ -353,6 +375,24 @@ void MarkerBase::VisitRoots(MarkingConfig::StackState stack_state) {
   if (config_.collection_type == MarkingConfig::CollectionType::kMinor) {
     VisitRememberedSlots(heap(), mutator_marking_state_);
   }
+}
+
+bool MarkerBase::VisitCrossThreadPersistentsIfNeeded() {
+  if (config_.marking_type != MarkingConfig::MarkingType::kAtomic ||
+      visited_cross_thread_persistents_in_atomic_pause_)
+    return false;
+
+  StatsCollector::DisabledScope inner_stats_scope(
+      heap().stats_collector(),
+      StatsCollector::kMarkVisitCrossThreadPersistents);
+  // Lock guards against changes to {Weak}CrossThreadPersistent handles, that
+  // may conflict with marking. E.g., a WeakCrossThreadPersistent may be
+  // converted into a CrossThreadPersistent which requires that the handle
+  // is either cleared or the object is retained.
+  g_process_mutex.Pointer()->Lock();
+  heap().GetStrongCrossThreadPersistentRegion().Trace(&visitor());
+  visited_cross_thread_persistents_in_atomic_pause_ = true;
+  return (heap().GetStrongCrossThreadPersistentRegion().NodesInUse() > 0);
 }
 
 void MarkerBase::ScheduleIncrementalMarkingTask() {
@@ -387,6 +427,16 @@ void MarkerBase::AdvanceMarkingOnAllocation() {
   }
 }
 
+bool MarkerBase::CancelConcurrentMarkingIfNeeded() {
+  if (config_.marking_type != MarkingConfig::MarkingType::kAtomic ||
+      !concurrent_marking_active_)
+    return false;
+
+  concurrent_marker_->Cancel();
+  concurrent_marking_active_ = false;
+  return true;
+}
+
 bool MarkerBase::AdvanceMarkingWithLimits(v8::base::TimeDelta max_duration,
                                           size_t marked_bytes_limit) {
   bool is_done = false;
@@ -399,8 +449,16 @@ bool MarkerBase::AdvanceMarkingWithLimits(v8::base::TimeDelta max_duration,
         heap().stats_collector(),
         StatsCollector::kMarkTransitiveClosureWithDeadline, "deadline_ms",
         max_duration.InMillisecondsF());
-    is_done = ProcessWorklistsWithDeadline(
-        marked_bytes_limit, v8::base::TimeTicks::Now() + max_duration);
+    const auto deadline = v8::base::TimeTicks::Now() + max_duration;
+    is_done = ProcessWorklistsWithDeadline(marked_bytes_limit, deadline);
+    if (is_done && VisitCrossThreadPersistentsIfNeeded()) {
+      // Both limits are absolute and hence can be passed along without further
+      // adjustment.
+      is_done = ProcessWorklistsWithDeadline(marked_bytes_limit, deadline);
+    }
+    if (is_done && CancelConcurrentMarkingIfNeeded()) {
+      is_done = ProcessWorklistsWithDeadline(marked_bytes_limit, deadline);
+    }
     schedule_.UpdateMutatorThreadMarkedBytes(
         mutator_marking_state_.marked_bytes());
   }
@@ -421,7 +479,9 @@ bool MarkerBase::ProcessWorklistsWithDeadline(
     size_t marked_bytes_deadline, v8::base::TimeTicks time_deadline) {
   StatsCollector::EnabledScope stats_scope(
       heap().stats_collector(), StatsCollector::kMarkTransitiveClosure);
+  bool saved_did_discover_new_ephemeron_pairs;
   do {
+    mutator_marking_state_.ResetDidDiscoverNewEphemeronPairs();
     if ((config_.marking_type == MarkingConfig::MarkingType::kAtomic) ||
         schedule_.ShouldFlushEphemeronPairs()) {
       mutator_marking_state_.FlushDiscoveredEphemeronPairs();
@@ -496,10 +556,23 @@ bool MarkerBase::ProcessWorklistsWithDeadline(
               })) {
         return false;
       }
+      if (!DrainWorklistWithBytesAndTimeDeadline(
+              mutator_marking_state_, marked_bytes_deadline, time_deadline,
+              mutator_marking_state_.retrace_marked_objects_worklist(),
+              [this](HeapObjectHeader* header) {
+                // Retracing does not increment marked bytes as the object has
+                // already been processed before.
+                DynamicallyTraceMarkedObject<AccessMode::kNonAtomic>(visitor(),
+                                                                     *header);
+              })) {
+        return false;
+      }
     }
 
+    saved_did_discover_new_ephemeron_pairs =
+        mutator_marking_state_.DidDiscoverNewEphemeronPairs();
     {
-      StatsCollector::EnabledScope stats_scope(
+      StatsCollector::EnabledScope inner_stats_scope(
           heap().stats_collector(), StatsCollector::kMarkProcessEphemerons);
       if (!DrainWorklistWithBytesAndTimeDeadline(
               mutator_marking_state_, marked_bytes_deadline, time_deadline,
@@ -511,7 +584,8 @@ bool MarkerBase::ProcessWorklistsWithDeadline(
         return false;
       }
     }
-  } while (!mutator_marking_state_.marking_worklist().IsLocalAndGlobalEmpty());
+  } while (!mutator_marking_state_.marking_worklist().IsLocalAndGlobalEmpty() ||
+           saved_did_discover_new_ephemeron_pairs);
   return true;
 }
 
@@ -542,13 +616,6 @@ void MarkerBase::SetMainThreadMarkingDisabledForTesting(bool value) {
 
 void MarkerBase::WaitForConcurrentMarkingForTesting() {
   concurrent_marker_->JoinForTesting();
-}
-
-void MarkerBase::NotifyCompactionCancelled() {
-  // Compaction cannot be cancelled while concurrent marking is active.
-  DCHECK_EQ(MarkingConfig::MarkingType::kAtomic, config_.marking_type);
-  DCHECK_IMPLIES(concurrent_marker_, !concurrent_marker_->IsActive());
-  mutator_marking_state_.NotifyCompactionCancelled();
 }
 
 Marker::Marker(Key key, HeapBase& heap, cppgc::Platform* platform,

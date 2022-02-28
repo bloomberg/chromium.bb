@@ -9,10 +9,12 @@
 #include <memory>
 
 #include "base/component_export.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
+#include "base/types/pass_key.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -55,8 +57,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MessageQuotaChecker
     double GetDecayedRateAverage(base::TimeTicks when) const;
 
     // The length of a sampling interval in seconds.
-    static constexpr base::TimeDelta kSamplingInterval =
-        base::TimeDelta::FromSeconds(5);
+    static constexpr base::TimeDelta kSamplingInterval = base::Seconds(5);
 
     // Returns the start of the sampling interval after the interval that
     // |when| falls into.
@@ -79,9 +80,16 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MessageQuotaChecker
     double decayed_average_ = 0.0;
   };
 
+  // Exposed for use in tests.
+  struct Configuration;
+
   // Returns a new instance if this invocation has been sampled for quota
   // checking.
   static scoped_refptr<MessageQuotaChecker> MaybeCreate();
+
+  // Public for base::MakeRefCounted(). Use MaybeCreate().
+  MessageQuotaChecker(const Configuration* config,
+                      base::PassKey<MessageQuotaChecker>);
 
   // Call before writing a message to |message_pipe_|.
   void BeforeWrite();
@@ -99,14 +107,12 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MessageQuotaChecker
 
   // Test support.
   size_t GetCurrentQuotaStatusForTesting();
-  struct Configuration;
   static Configuration GetConfigurationForTesting();
   static scoped_refptr<MessageQuotaChecker> MaybeCreateForTesting(
       const Configuration& config);
 
  private:
   friend class base::RefCountedThreadSafe<MessageQuotaChecker>;
-  explicit MessageQuotaChecker(const Configuration* config);
   ~MessageQuotaChecker();
   static Configuration GetConfiguration();
   static scoped_refptr<MessageQuotaChecker> MaybeCreateImpl(
@@ -117,7 +123,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MessageQuotaChecker
   absl::optional<size_t> GetCurrentMessagePipeQuota();
   void QuotaCheckImpl(size_t num_enqueued);
 
-  const Configuration* config_;
+  raw_ptr<const Configuration> config_;
 
   // The time ticks when this instance was created.
   const base::TimeTicks creation_time_;

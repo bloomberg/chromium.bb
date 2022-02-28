@@ -23,6 +23,10 @@ class FullscreenShellSurface : public SurfaceTreeHost,
                                public views::WidgetDelegate {
  public:
   FullscreenShellSurface();
+
+  FullscreenShellSurface(const FullscreenShellSurface&) = delete;
+  FullscreenShellSurface& operator=(const FullscreenShellSurface&) = delete;
+
   ~FullscreenShellSurface() override;
 
   // Set the callback to run when the user wants the shell surface to be closed.
@@ -63,7 +67,6 @@ class FullscreenShellSurface : public SurfaceTreeHost,
   void OnSurfaceDestroying(Surface* surface) override;
 
   // views::WidgetDelegate:
-  bool CanResize() const override;
   bool CanMaximize() const override;
   bool CanMinimize() const override;
   bool ShouldShowWindowTitle() const override;
@@ -96,8 +99,6 @@ class FullscreenShellSurface : public SurfaceTreeHost,
   base::RepeatingClosure close_callback_;
   base::OnceClosure surface_destroyed_callback_;
   FullscreenShellView* contents_view_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FullscreenShellSurface);
 };
 
 }  // namespace exo

@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
@@ -56,7 +57,7 @@ namespace {
 MATCHER_P(CertChainMatches, expected_cert, "") {
   net::CertificateList actual_certs =
       net::X509Certificate::CreateCertificateListFromBytes(
-          arg.data(), arg.size(),
+          base::as_bytes(base::make_span(arg)),
           net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
   if (actual_certs.empty()) {
     *result_listener << "failed to parse arg";
@@ -218,7 +219,7 @@ class TrialComparisonCertVerifierControllerTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<safe_browsing::SafeBrowsingService> sb_service_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
-  TestingProfile* profile_;
+  raw_ptr<TestingProfile> profile_;
 
   mojo::Remote<cert_verifier::mojom::TrialComparisonCertVerifierReportClient>
       report_client_;

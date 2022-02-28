@@ -7,6 +7,7 @@
 #include "xfa/fwl/theme/cfwl_carettp.h"
 
 #include "xfa/fgas/graphics/cfgas_gecolor.h"
+#include "xfa/fgas/graphics/cfgas_gegraphics.h"
 #include "xfa/fgas/graphics/cfgas_gepath.h"
 #include "xfa/fwl/cfwl_caret.h"
 #include "xfa/fwl/cfwl_themebackground.h"
@@ -18,8 +19,8 @@ CFWL_CaretTP::~CFWL_CaretTP() = default;
 
 void CFWL_CaretTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
   switch (pParams.m_iPart) {
-    case CFWL_Part::Background: {
-      if (!(pParams.m_dwStates & CFWL_PartState_HightLight))
+    case CFWL_ThemePart::Part::kBackground: {
+      if (!(pParams.m_dwStates & CFWL_PartState::kHightLight))
         return;
 
       DrawCaretBK(pParams.GetGraphics(), pParams.m_dwStates, pParams.m_PartRect,
@@ -32,7 +33,7 @@ void CFWL_CaretTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
 }
 
 void CFWL_CaretTP::DrawCaretBK(CFGAS_GEGraphics* pGraphics,
-                               uint32_t dwStates,
+                               Mask<CFWL_PartState> dwStates,
                                const CFX_RectF& rect,
                                const CFX_Matrix& matrix) {
   CFGAS_GEPath path;

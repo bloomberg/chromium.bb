@@ -15,7 +15,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
@@ -61,6 +61,12 @@ namespace base {
 class CommandLine;
 }
 
+namespace breadcrumbs {
+class ApplicationBreadcrumbsLogger;
+class BreadcrumbManager;
+class BreadcrumbPersistentStorageManager;
+}  // namespace breadcrumbs
+
 namespace extensions {
 class ExtensionsBrowserClient;
 }
@@ -78,6 +84,11 @@ namespace webrtc_event_logging {
 class WebRtcEventLogManager;
 }  // namespace webrtc_event_logging
 
+namespace speech {
+class SodaInstallerImpl;
+class SodaInstallerImplChromeOS;
+}  // namespace speech
+
 // Real implementation of BrowserProcess that creates and returns the services.
 class BrowserProcessImpl : public BrowserProcess,
                            public KeepAliveStateObserver {
@@ -86,6 +97,10 @@ class BrowserProcessImpl : public BrowserProcess,
   // will take the PrefService owned by the creator as the Local State instead
   // of loading the JSON file from disk.
   explicit BrowserProcessImpl(StartupData* startup_data);
+
+  BrowserProcessImpl(const BrowserProcessImpl&) = delete;
+  BrowserProcessImpl& operator=(const BrowserProcessImpl&) = delete;
+
   ~BrowserProcessImpl() override;
 
   // Called to complete initialization.
@@ -143,7 +158,6 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory()
       override;
   network::NetworkQualityTracker* network_quality_tracker() override;
-  WatchDogThread* watchdog_thread() override;
   ProfileManager* profile_manager() override;
   PrefService* local_state() override;
   variations::VariationsService* variations_service() override;
@@ -200,7 +214,13 @@ class BrowserProcessImpl : public BrowserProcess,
   resource_coordinator::ResourceCoordinatorParts* resource_coordinator_parts()
       override;
 
+#if !defined(OS_ANDROID)
+  SerialPolicyAllowedPorts* serial_policy_allowed_ports() override;
+#endif
+
   BuildState* GetBuildState() override;
+  breadcrumbs::BreadcrumbPersistentStorageManager*
+  GetBreadcrumbPersistentStorageManager() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -215,7 +235,6 @@ class BrowserProcessImpl : public BrowserProcess,
   // changes to the render process.
   void CreateNetworkQualityObserver();
 
-  void CreateWatchdogThread();
   void CreateProfileManager();
   void CreateIconManager();
   void CreateNotificationPlatformBridge();
@@ -238,10 +257,7 @@ class BrowserProcessImpl : public BrowserProcess,
   void Pin();
   void Unpin();
 
-  StartupData* const startup_data_;
-
-  bool created_watchdog_thread_ = false;
-  std::unique_ptr<WatchDogThread> watchdog_thread_;
+  const raw_ptr<StartupData> startup_data_;
 
   // Must be destroyed after |local_state_|.
   std::unique_ptr<policy::ChromeBrowserPolicyConnector>
@@ -250,10 +266,10 @@ class BrowserProcessImpl : public BrowserProcess,
   bool created_profile_manager_ = false;
   std::unique_ptr<ProfileManager> profile_manager_;
 
-  std::unique_ptr<PrefService> local_state_;
+  const std::unique_ptr<PrefService> local_state_;
 
   // |metrics_services_manager_| owns this.
-  ChromeMetricsServicesManagerClient* metrics_services_manager_client_ =
+  raw_ptr<ChromeMetricsServicesManagerClient> metrics_services_manager_client_ =
       nullptr;
 
   // Must be destroyed before |local_state_|.
@@ -296,7 +312,7 @@ class BrowserProcessImpl : public BrowserProcess,
       background_printing_manager_;
 #endif
 
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(ENABLE_CHROME_NOTIFICATIONS)
   // Manager for desktop notification UI.
   bool created_notification_ui_manager_ = false;
   std::unique_ptr<NotificationUIManager> notification_ui_manager_;
@@ -374,6 +390,19 @@ class BrowserProcessImpl : public BrowserProcess,
   // but some users of component updater only install per-user.
   std::unique_ptr<component_updater::ComponentUpdateService> component_updater_;
 
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+  // Used to create a singleton instance of SodaInstallerImpl, which can be
+  // retrieved using speech::SodaInstaller::GetInstance().
+  // SodaInstallerImpl depends on ComponentUpdateService, so define it here
+  // to ensure that SodaInstallerImpl gets destructed first.
+  std::unique_ptr<speech::SodaInstallerImpl> soda_installer_impl_;
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Chrome OS has a different implementation of SodaInstaller.
+  std::unique_ptr<speech::SodaInstallerImplChromeOS> soda_installer_impl_;
+#endif
+
 #if BUILDFLAG(ENABLE_PLUGINS)
   std::unique_ptr<PluginsResourceService> plugins_resource_service_;
 #endif
@@ -403,6 +432,8 @@ class BrowserProcessImpl : public BrowserProcess,
   // Called to signal the process' main message loop to exit.
   base::OnceClosure quit_closure_;
 
+  std::unique_ptr<SerialPolicyAllowedPorts> serial_policy_allowed_ports_;
+
   BuildState build_state_;
 #endif
 
@@ -410,9 +441,15 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<base::android::ApplicationStatusListener> app_state_listener_;
 #endif
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  // Stores application-wide breadcrumb events. Null if breadcrumbs logging is
+  // disabled.
+  std::unique_ptr<breadcrumbs::BreadcrumbManager> breadcrumb_manager_;
+  // Observes application-wide events and logs them to |breadcrumb_manager_|.
+  // Null if breadcrumbs logging is disabled.
+  std::unique_ptr<breadcrumbs::ApplicationBreadcrumbsLogger>
+      application_breadcrumbs_logger_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 #endif  // CHROME_BROWSER_BROWSER_PROCESS_IMPL_H_

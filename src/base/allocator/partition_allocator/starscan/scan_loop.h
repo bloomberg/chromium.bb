@@ -12,6 +12,7 @@
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/starscan/starscan_fwd.h"
 #include "base/compiler_specific.h"
+#include "base/memory/tagging.h"
 #include "build/build_config.h"
 
 #if defined(ARCH_CPU_X86_64)
@@ -50,7 +51,9 @@ class ScanLoop {
   ScanLoop(const ScanLoop&) = delete;
   ScanLoop& operator=(const ScanLoop&) = delete;
 
-  // Scan input range. Assumes the range is properly aligned.
+  // Scan input range. Assumes the range is properly aligned. Please note that
+  // the function doesn't remask the input range and assumes MTE is disabled
+  // when function is called.
   void Run(uintptr_t* begin, uintptr_t* end);
 
  private:
@@ -88,7 +91,7 @@ void ScanLoop<Derived>::Run(uintptr_t* begin, uintptr_t* end) {
 
 template <typename Derived>
 void ScanLoop<Derived>::RunUnvectorized(uintptr_t* begin, uintptr_t* end) {
-  PA_DCHECK(!(reinterpret_cast<uintptr_t>(begin) % sizeof(uintptr_t)));
+  PA_SCAN_DCHECK(!(reinterpret_cast<uintptr_t>(begin) % sizeof(uintptr_t)));
 #if defined(PA_HAS_64_BITS_POINTERS)
   static constexpr uintptr_t mask = Derived::CageMask();
   const uintptr_t base = derived().CageBase();
@@ -113,7 +116,7 @@ __attribute__((target("avx2"))) void ScanLoop<Derived>::RunAVX2(
     uintptr_t* end) {
   static constexpr size_t kAlignmentRequirement = 32;
   static constexpr size_t kWordsInVector = 4;
-  PA_DCHECK(!(reinterpret_cast<uintptr_t>(begin) % kAlignmentRequirement));
+  PA_SCAN_DCHECK(!(reinterpret_cast<uintptr_t>(begin) % kAlignmentRequirement));
   // Stick to integer instructions. This brings slightly better throughput. For
   // example, according to the Intel docs, on Broadwell and Haswell the CPI of
   // vmovdqa (_mm256_load_si256) is twice smaller (0.25) than that of vmovapd
@@ -150,7 +153,7 @@ __attribute__((target("sse4.1"))) void ScanLoop<Derived>::RunSSE4(
     uintptr_t* end) {
   static constexpr size_t kAlignmentRequirement = 16;
   static constexpr size_t kWordsInVector = 2;
-  PA_DCHECK(!(reinterpret_cast<uintptr_t>(begin) % kAlignmentRequirement));
+  PA_SCAN_DCHECK(!(reinterpret_cast<uintptr_t>(begin) % kAlignmentRequirement));
   const __m128i vbase = _mm_set1_epi64x(derived().CageBase());
   const __m128i cage_mask = _mm_set1_epi64x(derived().CageMask());
 
@@ -185,7 +188,7 @@ template <typename Derived>
 void ScanLoop<Derived>::RunNEON(uintptr_t* begin, uintptr_t* end) {
   static constexpr size_t kAlignmentRequirement = 16;
   static constexpr size_t kWordsInVector = 2;
-  PA_DCHECK(!(reinterpret_cast<uintptr_t>(begin) % kAlignmentRequirement));
+  PA_SCAN_DCHECK(!(reinterpret_cast<uintptr_t>(begin) % kAlignmentRequirement));
   const uint64x2_t vbase = vdupq_n_u64(derived().CageBase());
   const uint64x2_t cage_mask = vdupq_n_u64(derived().CageMask());
 

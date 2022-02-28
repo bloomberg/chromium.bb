@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_REMOTEPLAYBACK_REMOTE_PLAYBACK_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_REMOTEPLAYBACK_REMOTE_PLAYBACK_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -57,6 +56,9 @@ class MODULES_EXPORT RemotePlayback final
   static RemotePlayback& From(HTMLMediaElement&);
 
   explicit RemotePlayback(HTMLMediaElement&);
+
+  RemotePlayback(const RemotePlayback&) = delete;
+  RemotePlayback& operator=(const RemotePlayback&) = delete;
 
   // Notifies this object that disableRemotePlayback attribute was set on the
   // corresponding media element.
@@ -177,8 +179,6 @@ class MODULES_EXPORT RemotePlayback final
       target_presentation_connection_;
 
   HeapHashSet<Member<RemotePlaybackObserver>> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemotePlayback);
 };
 
 }  // namespace blink

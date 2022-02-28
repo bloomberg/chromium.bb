@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/file_system_provider/notification_manager.h"
 
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
 #include "chrome/browser/notifications/notification_display_service.h"
@@ -16,7 +15,7 @@
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
-namespace chromeos {
+namespace ash {
 namespace file_system_provider {
 namespace {
 
@@ -126,4 +125,4 @@ void NotificationManager::OnNotificationResult(NotificationResult result) {
 }
 
 }  // namespace file_system_provider
-}  // namespace chromeos
+}  // namespace ash

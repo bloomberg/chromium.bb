@@ -5,7 +5,7 @@
 const {assert} = chai;
 
 import * as UI from '../../../../front_end/ui/legacy/legacy.js';
-import {assertNotNull} from '../../../../front_end/core/platform/platform.js';
+import {assertNotNullOrUndefined} from '../../../../front_end/core/platform/platform.js';
 
 describe('Vector', () => {
   it('can be instantiated without issues', () => {
@@ -99,7 +99,7 @@ describe('CubicBezier', () => {
   it('is able to return a cubic bezier from a valid string', () => {
     const testText = 'linear';
     const cubicBezier = UI.Geometry.CubicBezier.parse(testText);
-    assertNotNull(cubicBezier);
+    assertNotNullOrUndefined(cubicBezier);
     assert.strictEqual(cubicBezier.controlPoints[0].x, 0, 'x value for the first point was not set correctly');
     assert.strictEqual(cubicBezier.controlPoints[0].y, 0, 'y value for the first point was not set correctly');
     assert.strictEqual(cubicBezier.controlPoints[1].x, 1, 'x value for the second point was not set correctly');
@@ -402,82 +402,6 @@ describe('Size', () => {
     const resultSize = size1.addHeight(5);
     assert.strictEqual(resultSize.width, 1, 'width value was not scaled correctly');
     assert.strictEqual(resultSize.height, 7, 'height value was not scaled correctly');
-  });
-});
-
-describe('Insets', () => {
-  it('can be instantiated without issues', () => {
-    const insets = new UI.Geometry.Insets(1, 2, 3, 4);
-    assert.strictEqual(insets.left, 1, 'left value was not set correctly');
-    assert.strictEqual(insets.top, 2, 'top value was not set correctly');
-    assert.strictEqual(insets.right, 3, 'right value was not set correctly');
-    assert.strictEqual(insets.bottom, 4, 'bottom value was not set correctly');
-  });
-
-  it('is able to check if it is equal to another Insets', () => {
-    const insets1 = new UI.Geometry.Insets(1, 2, 3, 4);
-    const insets2 = new UI.Geometry.Insets(5, 6, 7, 7);
-    const insets3 = new UI.Geometry.Insets(1, 2, 3, 4);
-    const result1 = insets1.isEqual(insets2);
-    const result2 = insets1.isEqual(insets3);
-    assert.isFalse(result1, 'insets2 was considered equal');
-    assert.isTrue(result2, 'insets3 was not considered equal');
-  });
-});
-
-describe('Rect', () => {
-  it('can be instantiated without issues', () => {
-    const rect = new UI.Geometry.Rect(1, 2, 3, 4);
-    assert.strictEqual(rect.left, 1, 'left value was not set correctly');
-    assert.strictEqual(rect.top, 2, 'top value was not set correctly');
-    assert.strictEqual(rect.width, 3, 'width value was not set correctly');
-    assert.strictEqual(rect.height, 4, 'height value was not set correctly');
-  });
-
-  it('is able to check if it is equal to another Rect', () => {
-    const rect1 = new UI.Geometry.Rect(1, 2, 3, 4);
-    const rect2 = new UI.Geometry.Rect(5, 6, 7, 7);
-    const rect3 = new UI.Geometry.Rect(1, 2, 3, 4);
-    const result1 = rect1.isEqual(rect2);
-    const result2 = rect1.isEqual(rect3);
-    assert.isFalse(result1, 'rect2 was considered equal');
-    assert.isTrue(result2, 'rect3 was not considered equal');
-  });
-
-  it('is able to be scaled to a certain value', () => {
-    const rect = new UI.Geometry.Rect(1, 2, 3, 4);
-    const resultRect = rect.scale(2);
-    assert.strictEqual(resultRect.left, 2, 'left value was not set correctly');
-    assert.strictEqual(resultRect.top, 4, 'top value was not set correctly');
-    assert.strictEqual(resultRect.width, 6, 'width value was not set correctly');
-    assert.strictEqual(resultRect.height, 8, 'height value was not set correctly');
-  });
-
-  it('is able to return a size consisting of the height and width of the rectangle', () => {
-    const rect = new UI.Geometry.Rect(1, 2, 3, 4);
-    const result = rect.size();
-    assert.strictEqual(result.width, 3, 'width value was not set correctly');
-    assert.strictEqual(result.height, 4, 'height value was not set correctly');
-  });
-
-  it('is able to return a rectangle relative to an origin', () => {
-    const rect = new UI.Geometry.Rect(5, 6, 7, 8);
-    const origin = new UI.Geometry.Rect(1, 2, 3, 4);
-    const result = rect.relativeTo(origin);
-    assert.strictEqual(result.left, 4, 'left value was not set correctly');
-    assert.strictEqual(result.top, 4, 'top value was not set correctly');
-    assert.strictEqual(result.width, 7, 'width value was not set correctly');
-    assert.strictEqual(result.height, 8, 'height value was not set correctly');
-  });
-
-  it('is able to return a rectangle rebased to an origin', () => {
-    const rect = new UI.Geometry.Rect(5, 6, 7, 8);
-    const origin = new UI.Geometry.Rect(1, 2, 3, 4);
-    const result = rect.rebaseTo(origin);
-    assert.strictEqual(result.left, 6, 'left value was not set correctly');
-    assert.strictEqual(result.top, 8, 'top value was not set correctly');
-    assert.strictEqual(result.width, 7, 'width value was not set correctly');
-    assert.strictEqual(result.height, 8, 'height value was not set correctly');
   });
 });
 

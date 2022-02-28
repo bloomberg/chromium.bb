@@ -16,7 +16,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"  // nogncheck
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -33,10 +33,10 @@ constexpr size_t kMaxCrashesCountToRetrieve = 10;
 constexpr size_t kCrashIdStringSize = 16;
 
 // For recent crashes, which is for all reports, look back one hour.
-constexpr base::TimeDelta kOneHourTimeDelta = base::TimeDelta::FromHours(1);
+constexpr base::TimeDelta kOneHourTimeDelta = base::Hours(1);
 
 // For all crashes, which is for only @google.com reports, look back 120 days.
-constexpr base::TimeDelta k120DaysTimeDelta = base::TimeDelta::FromDays(120);
+constexpr base::TimeDelta k120DaysTimeDelta = base::Days(120);
 
 }  // namespace
 
