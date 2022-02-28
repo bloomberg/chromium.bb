@@ -36,24 +36,25 @@ constexpr int kFrameParallelThresholdMultiplier =
 // Computes the number of frame threads to be used based on the following
 // heuristic:
 //   * If |thread_count| == 1, return 0.
-//   * If |thread_count| <= |tile_count| * 4, return 0.
+//   * If |thread_count| <= |tile_count| * kFrameParallelThresholdMultiplier,
+//     return 0.
 //   * Otherwise, return the largest value of i which satisfies the following
 //     condition: i + i * tile_columns <= thread_count. This ensures that there
 //     are at least |tile_columns| worker threads for each frame thread.
 //   * This function will never return 1 or a value > |thread_count|.
 //
-//  This heuristic is based empirical performance data. The in-frame threading
-//  model (combination of tile multithreading, superblock row multithreading and
-//  post filter multithreading) performs better than the frame parallel model
-//  until we reach the threshold of |thread_count| > |tile_count| *
-//  kFrameParallelThresholdMultiplier.
+//  This heuristic is based on empirical performance data. The in-frame
+//  threading model (combination of tile multithreading, superblock row
+//  multithreading and post filter multithreading) performs better than the
+//  frame parallel model until we reach the threshold of |thread_count| >
+//  |tile_count| * kFrameParallelThresholdMultiplier.
 //
 //  It is a function of |tile_count| since tile threading and superblock row
-//  multithreading will scale only as a factor of |tile_count|. The threshold 4
-//  is arrived at based on empirical data. The general idea is that superblock
-//  row multithreading plateaus at 4 * |tile_count| because in most practical
-//  cases there aren't more than that many superblock rows and columns available
-//  to work on in parallel.
+//  multithreading will scale only as a factor of |tile_count|. The threshold
+//  kFrameParallelThresholdMultiplier is arrived at based on empirical data.
+//  The general idea is that superblock row multithreading plateaus at 4 *
+//  |tile_count| because in most practical cases there aren't more than that
+//  many superblock rows and columns available to work on in parallel.
 int ComputeFrameThreadCount(int thread_count, int tile_count,
                             int tile_columns) {
   assert(thread_count > 0);

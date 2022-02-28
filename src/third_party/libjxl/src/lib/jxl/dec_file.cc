@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/jxl/dec_file.h"
 
@@ -73,7 +64,8 @@ Status DecodePreview(const DecompressParams& dparams,
 
   // Else: default or kOn => decode preview.
   PassesDecoderState dec_state;
-  JXL_RETURN_IF_ERROR(dec_state.output_encoding_info.Set(metadata.m));
+  JXL_RETURN_IF_ERROR(dec_state.output_encoding_info.Set(
+      metadata, ColorEncoding::LinearSRGB(metadata.m.color_encoding.IsGray())));
   JXL_RETURN_IF_ERROR(DecodeFrame(dparams, &dec_state, pool, reader, preview,
                                   metadata, constraints,
                                   /*is_preview=*/true));
@@ -143,7 +135,9 @@ Status DecodeFile(const DecompressParams& dparams,
     }
 
     PassesDecoderState dec_state;
-    JXL_RETURN_IF_ERROR(dec_state.output_encoding_info.Set(io->metadata.m));
+    JXL_RETURN_IF_ERROR(dec_state.output_encoding_info.Set(
+        io->metadata,
+        ColorEncoding::LinearSRGB(io->metadata.m.color_encoding.IsGray())));
 
     io->frames.clear();
     Status dec_ok(false);
@@ -153,6 +147,7 @@ Status DecodeFile(const DecompressParams& dparams,
         io->frames.back().jpeg_data = std::move(jpeg_data);
       }
       // Skip frames that are not displayed.
+      bool found_displayed_frame = true;
       do {
         dec_ok =
             DecodeFrame(dparams, &dec_state, pool, &reader, &io->frames.back(),
@@ -161,13 +156,19 @@ Status DecodeFile(const DecompressParams& dparams,
           JXL_RETURN_IF_ERROR(dec_ok);
         } else if (!dec_ok) {
           io->frames.pop_back();
+          found_displayed_frame = false;
           break;
         }
       } while (dec_state.shared->frame_header.frame_type !=
                    FrameType::kRegularFrame &&
                dec_state.shared->frame_header.frame_type !=
                    FrameType::kSkipProgressive);
-      io->dec_pixels += io->frames.back().xsize() * io->frames.back().ysize();
+      if (found_displayed_frame) {
+        // if found_displayed_frame is true io->frames shouldn't be empty
+        // because we added a frame before the loop.
+        JXL_ASSERT(!io->frames.empty());
+        io->dec_pixels += io->frames.back().xsize() * io->frames.back().ysize();
+      }
     } while (!dec_state.shared->frame_header.is_last && dec_ok);
 
     if (io->frames.empty()) return JXL_FAILURE("Not enough data.");
@@ -180,7 +181,7 @@ Status DecodeFile(const DecompressParams& dparams,
     }
     // Suppress errors when decoding partial files with DC frames.
     if (!reader.AllReadsWithinBounds() && dparams.allow_partial_files) {
-      (void)reader.Close();
+      reader_closer.CloseAndSuppressError();
     }
 
     io->CheckMetadata();

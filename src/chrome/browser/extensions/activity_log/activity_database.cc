@@ -23,7 +23,7 @@
 #include "third_party/sqlite/sqlite3.h"
 
 #if defined(OS_MAC)
-#include "base/mac/mac_util.h"
+#include "base/mac/backup_util.h"
 #endif
 
 namespace extensions {
@@ -39,7 +39,14 @@ static const int kSizeThresholdForFlush = 200;
 
 ActivityDatabase::ActivityDatabase(ActivityDatabase::Delegate* delegate)
     : delegate_(delegate),
-      db_({.exclusive_locking = false, .page_size = 4096, .cache_size = 32}),
+      db_({
+          .exclusive_locking = true,
+          .page_size = 4096,
+          .cache_size = 32,
+          // TODO(pwnall): Add a meta table and remove this option.
+          .mmap_alt_status_discouraged = true,
+          .enable_views_discouraged = true,  // Required by mmap_alt_status.
+      }),
       valid_db_(false),
       batch_mode_(true),
       already_closed_(false),
@@ -47,9 +54,9 @@ ActivityDatabase::ActivityDatabase(ActivityDatabase::Delegate* delegate)
   DETACH_FROM_SEQUENCE(sequence_checker_);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExtensionActivityLogTesting)) {
-    batching_period_ = base::TimeDelta::FromSeconds(10);
+    batching_period_ = base::Seconds(10);
   } else {
-    batching_period_ = base::TimeDelta::FromMinutes(2);
+    batching_period_ = base::Minutes(2);
   }
 }
 
@@ -67,9 +74,6 @@ void ActivityDatabase::Init(const base::FilePath& db_name) {
   db_.set_error_callback(base::BindRepeating(
       &ActivityDatabase::DatabaseErrorCallback, base::Unretained(this)));
 
-  // This db does not use [meta] table, store mmap status data elsewhere.
-  db_.set_mmap_alt_status();
-
   if (!db_.Open(db_name)) {
     LOG(ERROR) << db_.GetErrorMessage();
     return LogInitFailure();
@@ -83,7 +87,7 @@ void ActivityDatabase::Init(const base::FilePath& db_name) {
 
 #if defined(OS_MAC)
   // Exclude the database from backups.
-  base::mac::SetFileBackupExclusion(db_name);
+  base::mac::SetBackupExclusion(db_name);
 #endif
 
   if (!delegate_->InitDatabase(&db_))
@@ -206,9 +210,7 @@ void ActivityDatabase::RecordBatchedActionsWhileTesting() {
 void ActivityDatabase::SetTimerForTesting(int ms) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   timer_.Stop();
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromMilliseconds(ms),
-               this,
+  timer_.Start(FROM_HERE, base::Milliseconds(ms), this,
                &ActivityDatabase::RecordBatchedActionsWhileTesting);
 }
 

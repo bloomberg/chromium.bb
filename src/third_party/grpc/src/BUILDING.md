@@ -20,7 +20,7 @@ If you plan to build using CMake
 If you are a contributor and plan to build and run tests, install the following as well:
 ```sh
  $ # clang and LLVM C++ lib is only required for sanitizer builds
- $ [sudo] apt-get install clang-5.0 libc++-dev
+ $ [sudo] apt-get install clang libc++-dev
 ```
 
 ## MacOS
@@ -245,6 +245,12 @@ $ make
 
 [Cross-compile example](test/distrib/cpp/run_distrib_test_cmake_aarch64_cross.sh)
 
+### A note on SONAME and its ABI compatibility implications in the cmake build
+
+Best efforts are made to bump the SONAME revision during ABI breaches. While a
+change in the SONAME clearly indicates an ABI incompatibility, no hard guarantees
+can be made about any sort of ABI stability across the same SONAME version.
+
 ## Building with make on UNIX systems (deprecated)
 
 NOTE: `make` used to be gRPC's default build system, but we're no longer recommending it. You should use `bazel` or `cmake` instead. The `Makefile` is only intended for internal usage and is not meant for public consumption.
@@ -263,10 +269,10 @@ $ make
 
 ### A note on `protoc`
 
-By default gRPC uses [protocol buffers](https://github.com/google/protobuf),
+By default gRPC uses [protocol buffers](https://github.com/protocolbuffers/protobuf),
 you will need the `protoc` compiler to generate stub server and client code.
 
-If you compile gRPC from source, as described below, the Makefile will
+If you compile gRPC from source, as described above, the Makefile will
 automatically try compiling the `protoc` in third_party if you cloned the
 repository recursively and it detects that you do not already have 'protoc' compiler
 installed.

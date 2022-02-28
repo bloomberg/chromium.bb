@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_NETWORK_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_NETWORK_UI_H_
 
-#include "base/macros.h"
 #include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom-forward.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom-forward.h"
@@ -23,6 +22,10 @@ namespace chromeos {
 class NetworkUI : public ui::MojoWebUIController {
  public:
   explicit NetworkUI(content::WebUI* web_ui);
+
+  NetworkUI(const NetworkUI&) = delete;
+  NetworkUI& operator=(const NetworkUI&) = delete;
+
   ~NetworkUI() override;
 
   static void GetLocalizedStrings(base::DictionaryValue* localized_strings);
@@ -51,8 +54,6 @@ class NetworkUI : public ui::MojoWebUIController {
 
  private:
   WEB_UI_CONTROLLER_TYPE_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkUI);
 };
 
 }  // namespace chromeos

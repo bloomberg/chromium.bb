@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Unit tests for common values and methods of TensorFlow Debugger."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import json
 
 from tensorflow.python.debug.lib import common
@@ -27,7 +23,7 @@ from tensorflow.python.platform import googletest
 
 class CommonTest(test_util.TensorFlowTestCase):
 
-  @test_util.run_deprecated_v1
+  @test_util.run_v1_only("Relies on tensor name, which is unavailable in TF2")
   def testOnFeedOneFetch(self):
     a = constant_op.constant(10.0, name="a")
     b = constant_op.constant(20.0, name="b")
@@ -36,7 +32,7 @@ class CommonTest(test_util.TensorFlowTestCase):
     self.assertItemsEqual(["a:0"], loaded[0])
     self.assertItemsEqual(["b:0"], loaded[1])
 
-  @test_util.run_deprecated_v1
+  @test_util.run_v1_only("Relies on tensor name, which is unavailable in TF2")
   def testGetRunKeyFlat(self):
     a = constant_op.constant(10.0, name="a")
     b = constant_op.constant(20.0, name="b")
@@ -45,7 +41,7 @@ class CommonTest(test_util.TensorFlowTestCase):
     self.assertItemsEqual(["a:0"], loaded[0])
     self.assertItemsEqual(["a:0", "b:0"], loaded[1])
 
-  @test_util.run_deprecated_v1
+  @test_util.run_v1_only("Relies on tensor name, which is unavailable in TF2")
   def testGetRunKeyNestedFetches(self):
     a = constant_op.constant(10.0, name="a")
     b = constant_op.constant(20.0, name="b")

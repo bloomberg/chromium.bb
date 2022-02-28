@@ -68,8 +68,12 @@ struct FormGroupValue {
 // Convenience declaration for multiple FormGroup values.
 using FormGroupValues = std::vector<FormGroupValue>;
 
-// Creates a non-empty LocalFrameToken (no variation among different calls).
-LocalFrameToken GetLocalFrameToken();
+using RandomizeFrame = base::StrongAlias<struct RandomizeFrameTag, bool>;
+
+// Creates non-empty LocalFrameToken. If `randomize` is true, the
+// LocalFrameToken is generated randomly, otherwise it is stable.
+LocalFrameToken GetLocalFrameToken(
+    RandomizeFrame randomize = RandomizeFrame(false));
 
 // Creates new, pairwise distinct FormRendererIds.
 FormRendererId MakeFormRendererId();
@@ -77,11 +81,15 @@ FormRendererId MakeFormRendererId();
 // Creates new, pairwise distinct FieldRendererIds.
 FieldRendererId MakeFieldRendererId();
 
-// Creates new, pairwise distinct FormGlobalIds.
-FormGlobalId MakeFormGlobalId();
+// Creates new, pairwise distinct FormGlobalIds. If `randomize` is true, the
+// LocalFrameToken is generated randomly, otherwise it is stable.
+FormGlobalId MakeFormGlobalId(
+    RandomizeFrame randomize_frame = RandomizeFrame(false));
 
-// Creates new, pairwise distinct FieldGlobalIds.
-FieldGlobalId MakeFieldGlobalId();
+// Creates new, pairwise distinct FieldGlobalIds. If `randomize` is true, the
+// LocalFrameToken is generated randomly, otherwise it is stable.
+FieldGlobalId MakeFieldGlobalId(
+    RandomizeFrame randomize_frame = RandomizeFrame(false));
 
 // Helper function to set values and verification statuses to a form group.
 void SetFormGroupValues(FormGroup& form_group,
@@ -158,6 +166,11 @@ void CreateTestCreditCardFormData(FormData* form,
                                   bool split_names = false,
                                   const char* unique_id = nullptr);
 
+// Strips those members from |form| and |field| that are not serialized via
+// mojo, i.e., resets them to `{}`.
+FormData WithoutUnserializedData(FormData form);
+FormFieldData WithoutUnserializedData(FormFieldData field);
+
 // Returns a full profile with valid info according to rules for Canada.
 AutofillProfile GetFullValidProfileForCanada();
 
@@ -228,8 +241,11 @@ AutofillOfferData GetCardLinkedOfferData1();
 // the one above.
 AutofillOfferData GetCardLinkedOfferData2();
 
-// Returns an Autofill promo code offer data full of dummy info.
-AutofillOfferData GetPromoCodeOfferData();
+// Returns an Autofill promo code offer data full of dummy info, using |origin|
+// if provided and expired if |is_expired| is true.
+AutofillOfferData GetPromoCodeOfferData(
+    GURL origin = GURL("http://www.example.com"),
+    bool is_expired = false);
 
 // A unit testing utility that is common to a number of the Autofill unit
 // tests.  |SetProfileInfo| provides a quick way to populate a profile with
@@ -365,7 +381,8 @@ std::vector<FormSignature> GetEncodedSignatures(
 void GenerateTestAutofillPopup(
     AutofillExternalDelegate* autofill_external_delegate);
 
-std::string ObfuscatedCardDigitsAsUTF8(const std::string& str);
+std::string ObfuscatedCardDigitsAsUTF8(const std::string& str,
+                                       int obfuscation_length = 4);
 
 // Returns 2-digit month string, like "02", "10".
 std::string NextMonth();

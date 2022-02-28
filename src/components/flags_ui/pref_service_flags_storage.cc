@@ -22,40 +22,40 @@ PrefServiceFlagsStorage::PrefServiceFlagsStorage(PrefService* prefs)
 PrefServiceFlagsStorage::~PrefServiceFlagsStorage() {}
 
 std::set<std::string> PrefServiceFlagsStorage::GetFlags() const {
-  const base::ListValue* enabled_experiments =
+  const base::Value* enabled_experiments =
       prefs_->GetList(prefs::kAboutFlagsEntries);
   std::set<std::string> flags;
   for (const auto& entry : enabled_experiments->GetList()) {
-    std::string experiment_name;
-    if (!entry.GetAsString(&experiment_name)) {
+    if (!entry.is_string()) {
       LOG(WARNING) << "Invalid entry in " << prefs::kAboutFlagsEntries;
       continue;
     }
-    flags.insert(experiment_name);
+    flags.insert(entry.GetString());
   }
   return flags;
 }
 
 bool PrefServiceFlagsStorage::SetFlags(const std::set<std::string>& flags) {
   ListPrefUpdate update(prefs_, prefs::kAboutFlagsEntries);
-  base::ListValue* experiments_list = update.Get();
+  base::Value* experiments_list = update.Get();
+  DCHECK(experiments_list->is_list());
 
-  experiments_list->Clear();
-  for (auto it = flags.begin(); it != flags.end(); ++it) {
-    experiments_list->AppendString(*it);
-  }
+  experiments_list->ClearList();
+  for (const auto& flag : flags)
+    experiments_list->Append(flag);
 
   return true;
 }
 
 std::string PrefServiceFlagsStorage::GetOriginListFlag(
     const std::string& internal_entry_name) const {
-  const base::DictionaryValue* origin_lists =
+  const base::Value* origin_lists =
       prefs_->GetDictionary(prefs::kAboutFlagsOriginLists);
   if (!origin_lists)
     return std::string();
-  const base::Value* value = origin_lists->FindKey(internal_entry_name);
-  return value ? value->GetString() : std::string();
+  if (const std::string* s = origin_lists->FindStringKey(internal_entry_name))
+    return *s;
+  return std::string();
 }
 
 void PrefServiceFlagsStorage::SetOriginListFlag(

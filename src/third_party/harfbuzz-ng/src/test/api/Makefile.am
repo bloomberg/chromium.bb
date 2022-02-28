@@ -38,13 +38,16 @@ TEST_PROGS = \
 	test-common \
 	test-draw \
 	test-font \
+	test-font-scale \
 	test-map \
 	test-object \
 	test-ot-alternates \
 	test-ot-color \
+	test-ot-collect-glyphs \
 	test-ot-face \
 	test-ot-glyphname \
 	test-ot-ligature-carets \
+	test-ot-layout \
 	test-ot-name \
 	test-ot-meta \
 	test-ot-metrics \

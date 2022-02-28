@@ -5,7 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_API_EXECUTE_CODE_FUNCTION_H_
 #define EXTENSIONS_BROWSER_API_EXECUTE_CODE_FUNCTION_H_
 
-#include "base/macros.h"
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/script_executor.h"
 #include "extensions/common/api/extension_types.h"
@@ -20,6 +23,9 @@ namespace extensions {
 class ExecuteCodeFunction : public ExtensionFunction {
  public:
   ExecuteCodeFunction();
+
+  ExecuteCodeFunction(const ExecuteCodeFunction&) = delete;
+  ExecuteCodeFunction& operator=(const ExecuteCodeFunction&) = delete;
 
  protected:
   ~ExecuteCodeFunction() override;
@@ -54,8 +60,8 @@ class ExecuteCodeFunction : public ExtensionFunction {
 
   // Called when contents from the loaded file have been localized.
   void DidLoadAndLocalizeFile(const std::string& file,
-                              bool success,
-                              std::unique_ptr<std::string> data);
+                              std::vector<std::unique_ptr<std::string>> data,
+                              absl::optional<std::string> load_error);
 
   const mojom::HostID& host_id() const { return host_id_; }
   void set_host_id(const mojom::HostID& host_id) { host_id_ = host_id; }
@@ -95,8 +101,6 @@ class ExecuteCodeFunction : public ExtensionFunction {
 
   // The ID of the root frame to inject into.
   int root_frame_id_ = -1;
-
-  DISALLOW_COPY_AND_ASSIGN(ExecuteCodeFunction);
 };
 
 }  // namespace extensions

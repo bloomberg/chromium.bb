@@ -12,6 +12,7 @@
 #include <ostream>
 #include <vector>
 
+#include "absl/container/inlined_vector.h"
 #include "quic/core/quic_connection_id.h"
 #include "quic/core/quic_error_codes.h"
 #include "quic/core/quic_packet_number.h"
@@ -25,7 +26,13 @@ namespace quic {
 using QuicPacketLength = uint16_t;
 using QuicControlFrameId = uint32_t;
 using QuicMessageId = uint32_t;
-using QuicDatagramFlowId = uint64_t;
+
+// TODO(b/181256914) replace QuicDatagramStreamId with QuicStreamId once we
+// remove support for draft-ietf-masque-h3-datagram-00 in favor of later drafts.
+using QuicDatagramStreamId = uint64_t;
+using QuicDatagramContextId = uint64_t;
+// Note that for draft-ietf-masque-h3-datagram-00, we represent the flow ID as a
+// QuicDatagramStreamId.
 
 // IMPORTANT: IETF QUIC defines stream IDs and stream counts as being unsigned
 // 62-bit numbers. However, we have decided to only support up to 2^32-1 streams
@@ -49,6 +56,10 @@ using StatelessResetToken = std::array<char, kStatelessResetTokenLength>;
 
 // WebTransport session IDs are stream IDs.
 using WebTransportSessionId = uint64_t;
+// WebTransport stream reset codes are 8-bit.
+using WebTransportStreamError = uint8_t;
+// WebTransport session error codes are 32-bit.
+using WebTransportSessionError = uint32_t;
 
 enum : size_t { kQuicPathFrameBufferSize = 8 };
 using QuicPathFrameBuffer = std::array<uint8_t, kQuicPathFrameBufferSize>;
@@ -72,8 +83,7 @@ struct QUIC_EXPORT_PRIVATE QuicConsumedData {
   // default gtest object printer to read uninitialize memory. So we need
   // to teach gtest how to print this object.
   QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(
-      std::ostream& os,
-      const QuicConsumedData& s);
+      std::ostream& os, const QuicConsumedData& s);
 
   // How many bytes were consumed.
   size_t bytes_consumed;
@@ -191,8 +201,7 @@ QUIC_EXPORT_PRIVATE std::string TransmissionTypeToString(
     TransmissionType transmission_type);
 
 QUIC_EXPORT_PRIVATE std::ostream& operator<<(
-    std::ostream& os,
-    TransmissionType transmission_type);
+    std::ostream& os, TransmissionType transmission_type);
 
 enum HasRetransmittableData : uint8_t {
   NO_RETRANSMITTABLE_DATA,
@@ -213,8 +222,7 @@ enum class ConnectionCloseSource { FROM_PEER, FROM_SELF };
 QUIC_EXPORT_PRIVATE std::string ConnectionCloseSourceToString(
     ConnectionCloseSource connection_close_source);
 QUIC_EXPORT_PRIVATE std::ostream& operator<<(
-    std::ostream& os,
-    const ConnectionCloseSource& connection_close_source);
+    std::ostream& os, const ConnectionCloseSource& connection_close_source);
 
 // Should a connection be closed silently or not.
 enum class ConnectionCloseBehavior {
@@ -226,8 +234,7 @@ enum class ConnectionCloseBehavior {
 QUIC_EXPORT_PRIVATE std::string ConnectionCloseBehaviorToString(
     ConnectionCloseBehavior connection_close_behavior);
 QUIC_EXPORT_PRIVATE std::ostream& operator<<(
-    std::ostream& os,
-    const ConnectionCloseBehavior& connection_close_behavior);
+    std::ostream& os, const ConnectionCloseBehavior& connection_close_behavior);
 
 enum QuicFrameType : uint8_t {
   // Regular frame types. The values set here cannot change without the
@@ -331,7 +338,12 @@ enum QuicIetfFrameType : uint64_t {
   IETF_EXTENSION_MESSAGE_V99 = 0x31,
 
   // An QUIC extension frame for sender control of acknowledgement delays
-  IETF_ACK_FREQUENCY = 0xaf
+  IETF_ACK_FREQUENCY = 0xaf,
+
+  // A QUIC extension frame which augments the IETF_ACK frame definition with
+  // packet receive timestamps.
+  // TODO(ianswett): Determine a proper value to replace this temporary value.
+  IETF_ACK_RECEIVE_TIMESTAMPS = 0x22,
 };
 QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
                                              const QuicIetfFrameType& c);
@@ -474,11 +486,17 @@ QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
 // Enumeration of whether a server endpoint will request a client certificate,
 // and whether that endpoint requires a valid client certificate to establish a
 // connection.
-enum class ClientCertMode {
+enum class ClientCertMode : uint8_t {
   kNone,     // Do not request a client certificate.  Default server behavior.
   kRequest,  // Request a certificate, but allow unauthenticated connections.
   kRequire,  // Require clients to provide a valid certificate.
 };
+
+QUIC_EXPORT_PRIVATE absl::string_view ClientCertModeToString(
+    ClientCertMode mode);
+
+QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
+                                             ClientCertMode mode);
 
 enum AddressChangeType : uint8_t {
   // IP address and port remain unchanged.
@@ -567,8 +585,7 @@ struct QUIC_EXPORT_PRIVATE AckedPacket {
         receive_timestamp(receive_timestamp) {}
 
   friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(
-      std::ostream& os,
-      const AckedPacket& acked_packet);
+      std::ostream& os, const AckedPacket& acked_packet);
 
   QuicPacketNumber packet_number;
   // Number of bytes sent in the packet that was acknowledged.
@@ -580,7 +597,7 @@ struct QUIC_EXPORT_PRIVATE AckedPacket {
 };
 
 // A vector of acked packets.
-using AckedPacketVector = QuicInlinedVector<AckedPacket, 2>;
+using AckedPacketVector = absl::InlinedVector<AckedPacket, 2>;
 
 // Information about a newly lost packet.
 struct QUIC_EXPORT_PRIVATE LostPacket {
@@ -588,8 +605,7 @@ struct QUIC_EXPORT_PRIVATE LostPacket {
       : packet_number(packet_number), bytes_lost(bytes_lost) {}
 
   friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(
-      std::ostream& os,
-      const LostPacket& lost_packet);
+      std::ostream& os, const LostPacket& lost_packet);
 
   QuicPacketNumber packet_number;
   // Number of bytes sent in the packet that was lost.
@@ -597,7 +613,7 @@ struct QUIC_EXPORT_PRIVATE LostPacket {
 };
 
 // A vector of lost packets.
-using LostPacketVector = QuicInlinedVector<LostPacket, 2>;
+using LostPacketVector = absl::InlinedVector<LostPacket, 2>;
 
 // Please note, this value cannot used directly for packet serialization.
 enum QuicLongHeaderType : uint8_t {
@@ -674,7 +690,7 @@ enum WriteStreamDataResult {
   WRITE_FAILED,    // Trying to write nonexistent data of a stream
 };
 
-enum StreamType {
+enum StreamType : uint8_t {
   // Bidirectional streams allow for data to be sent in both directions.
   BIDIRECTIONAL,
 
@@ -737,8 +753,7 @@ enum QuicConnectionCloseType {
 };
 
 QUIC_EXPORT_PRIVATE std::ostream& operator<<(
-    std::ostream& os,
-    const QuicConnectionCloseType type);
+    std::ostream& os, const QuicConnectionCloseType type);
 
 QUIC_EXPORT_PRIVATE std::string QuicConnectionCloseTypeString(
     QuicConnectionCloseType type);
@@ -825,6 +840,50 @@ QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
                                              const KeyUpdateReason reason);
 
 QUIC_EXPORT_PRIVATE std::string KeyUpdateReasonString(KeyUpdateReason reason);
+
+// QuicSSLConfig contains configurations to be applied on a SSL object, which
+// overrides the configurations in SSL_CTX.
+struct QUIC_NO_EXPORT QuicSSLConfig {
+  // Whether TLS early data should be enabled. If not set, default to enabled.
+  absl::optional<bool> early_data_enabled;
+  // Whether TLS session tickets are supported. If not set, default to
+  // supported.
+  absl::optional<bool> disable_ticket_support;
+  // If set, used to configure the SSL object with
+  // SSL_set_signing_algorithm_prefs.
+  absl::optional<absl::InlinedVector<uint16_t, 8>> signing_algorithm_prefs;
+  // Client certificate mode for mTLS support. Only used at server side.
+  ClientCertMode client_cert_mode = ClientCertMode::kNone;
+};
+
+// QuicDelayedSSLConfig contains a subset of SSL config that can be applied
+// after BoringSSL's early select certificate callback. This overwrites all SSL
+// configs applied before cert selection.
+struct QUIC_NO_EXPORT QuicDelayedSSLConfig {
+  // Client certificate mode for mTLS support. Only used at server side.
+  // absl::nullopt means do not change client certificate mode.
+  absl::optional<ClientCertMode> client_cert_mode;
+};
+
+// ParsedClientHello contains client hello information extracted from a fully
+// received client hello.
+struct QUIC_NO_EXPORT ParsedClientHello {
+  std::string sni;                 // QUIC crypto and TLS.
+  std::string uaid;                // QUIC crypto only.
+  std::vector<std::string> alpns;  // QUIC crypto and TLS.
+  std::string legacy_version_encapsulation_inner_packet;  // QUIC crypto only.
+  // The unvalidated retry token from the last received packet of a potentially
+  // multi-packet client hello. TLS only.
+  std::string retry_token;
+  bool resumption_attempted = false;  // TLS only.
+  bool early_data_attempted = false;  // TLS only.
+};
+
+QUIC_EXPORT_PRIVATE bool operator==(const ParsedClientHello& a,
+                                    const ParsedClientHello& b);
+
+QUIC_EXPORT_PRIVATE std::ostream& operator<<(
+    std::ostream& os, const ParsedClientHello& parsed_chlo);
 
 }  // namespace quic
 

@@ -17,8 +17,8 @@
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/no_destructor.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"
 #import "components/remote_cocoa/app_shim/browser_native_widget_window_mac.h"
 #import "components/remote_cocoa/app_shim/certificate_viewer.h"
@@ -52,7 +52,7 @@ using remote_cocoa::mojom::VisibilityTransition;
 using remote_cocoa::mojom::WindowVisibilityState;
 
 namespace {
-constexpr auto kUIPaintTimeout = base::TimeDelta::FromSeconds(5);
+constexpr auto kUIPaintTimeout = base::Seconds(5);
 
 bool AreWindowShadowsDisabled() {
   // When:
@@ -316,11 +316,9 @@ NativeWidgetNSWindowBridge::NativeWidgetNSWindowBridge(
       text_input_host_(text_input_host) {
   DCHECK(GetIdToWidgetImplMap().find(id_) == GetIdToWidgetImplMap().end());
   GetIdToWidgetImplMap().insert(std::make_pair(id_, this));
-  display::Screen::GetScreen()->AddObserver(this);
 }
 
 NativeWidgetNSWindowBridge::~NativeWidgetNSWindowBridge() {
-  display::Screen::GetScreen()->RemoveObserver(this);
   GetPendingWindowTitleMap().erase(window_.get());
   // The delegate should be cleared already. Note this enforces the precondition
   // that -[NSWindow close] is invoked on the hosted window before the
@@ -1173,6 +1171,20 @@ void NativeWidgetNSWindowBridge::UpdateWindowControlsOverlayNSView(
   }
 }
 
+void NativeWidgetNSWindowBridge::RemoveWindowControlsOverlayNSView(
+    const mojom::WindowControlsOverlayNSViewType overlay_type) {
+  switch (overlay_type) {
+    case mojom::WindowControlsOverlayNSViewType::kCaptionButtonContainer:
+      [caption_buttons_overlay_nsview_ removeFromSuperview];
+      caption_buttons_overlay_nsview_.reset();
+      break;
+    case mojom::WindowControlsOverlayNSViewType::kWebAppFrameToolbar:
+      [web_app_frame_toolbar_overlay_nsview_ removeFromSuperview];
+      web_app_frame_toolbar_overlay_nsview_.reset();
+      break;
+  }
+}
+
 NSWindow* NativeWidgetNSWindowBridge::ns_window() {
   return window_.get();
 }
@@ -1278,6 +1290,7 @@ void NativeWidgetNSWindowBridge::SetOpacity(float opacity) {
 
 void NativeWidgetNSWindowBridge::SetWindowLevel(int32_t level) {
   [window_ setLevel:level];
+  [bridged_view_ updateCursorTrackingArea];
 
   // Windows that have a higher window level than NSNormalWindowLevel default to
   // NSWindowCollectionBehaviorTransient. Set the value explicitly here to match
@@ -1506,14 +1519,31 @@ void NativeWidgetNSWindowBridge::ShowAsModalSheet() {
   // alive (i.e. it has not set the window delegate to nil).
   // TODO(crbug.com/841631): Migrate to `[NSWindow
   // beginSheet:completionHandler:]` instead of this method.
+  auto begin_sheet_closure = base::BindOnce(base::RetainBlock(^{
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  [NSApp beginSheet:window_
-      modalForWindow:parent_window
-       modalDelegate:window_
-      didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-         contextInfo:nullptr];
+    [NSApp beginSheet:window_
+        modalForWindow:parent_window
+         modalDelegate:window_
+        didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+           contextInfo:nullptr];
 #pragma clang diagnostic pop
+  }));
+
+  if (host_helper_->MustPostTaskToRunModalSheetAnimation()) {
+    // This function is called via mojo when using remote cocoa. Inside the
+    // nested run loop, we will wait for a message providing the correctly-sized
+    // frame for the new sheet. This message will not be processed until we
+    // return from handling this message, because it will coming on the same
+    // pipe. Avoid the resulting hang by posting a task to show the modal
+    // sheet (which will be executed on a fresh stack, which will not block
+    // the message).
+    // https://crbug.com/1234509
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, std::move(begin_sheet_closure));
+  } else {
+    std::move(begin_sheet_closure).Run();
+  }
 }
 
 }  // namespace remote_cocoa

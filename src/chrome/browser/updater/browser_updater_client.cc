@@ -5,7 +5,6 @@
 #include "chrome/browser/updater/browser_updater_client.h"
 
 #include <string>
-#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -46,14 +45,14 @@ void BrowserUpdaterClient::CheckForUpdate(
       FROM_HERE, base::BindRepeating(version_updater_callback, update_state));
   BeginUpdateCheck(
       base::BindRepeating(&BrowserUpdaterClient::HandleStatusUpdate, this,
-                          std::move(version_updater_callback)),
+                          version_updater_callback),
       base::BindOnce(&BrowserUpdaterClient::UpdateCompleted, this,
-                     std::move(version_updater_callback)));
+                     version_updater_callback));
 }
 
 void BrowserUpdaterClient::HandleStatusUpdate(
     base::RepeatingCallback<void(updater::UpdateService::UpdateState)> callback,
-    updater::UpdateService::UpdateState update_state) {
+    const updater::UpdateService::UpdateState& update_state) {
   callback_task_runner_->PostTask(FROM_HERE,
                                   base::BindRepeating(callback, update_state));
 }

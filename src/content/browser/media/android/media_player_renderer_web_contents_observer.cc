@@ -10,7 +10,9 @@ namespace content {
 
 MediaPlayerRendererWebContentsObserver::MediaPlayerRendererWebContentsObserver(
     WebContents* web_contents)
-    : WebContentsObserver(web_contents) {}
+    : WebContentsObserver(web_contents),
+      WebContentsUserData<MediaPlayerRendererWebContentsObserver>(
+          *web_contents) {}
 
 MediaPlayerRendererWebContentsObserver::
     ~MediaPlayerRendererWebContentsObserver() = default;
@@ -41,6 +43,6 @@ void MediaPlayerRendererWebContentsObserver::WebContentsDestroyed() {
   players_.clear();
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaPlayerRendererWebContentsObserver)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaPlayerRendererWebContentsObserver);
 
 }  // namespace content

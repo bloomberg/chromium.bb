@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
+import type * as Platform from '../../core/platform/platform.js';
 
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum
@@ -70,6 +70,108 @@ export const EventDescriptors = [
   [Events.ShowPanel, 'showPanel', ['panelName']],
 ];
 
+export interface DispatchMessageChunkEvent {
+  messageChunk: string;
+  messageSize: number;
+}
+
+export interface EyeDropperPickedColorEvent {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+}
+
+export interface DevToolsFileSystem {
+  type: string;
+  fileSystemName: string;
+  rootURL: string;
+  fileSystemPath: Platform.DevToolsPath.RawPathString;
+}
+
+export interface FileSystemAddedEvent {
+  errorMessage?: string;
+  fileSystem: DevToolsFileSystem|null;
+}
+
+export interface FilesChangedEvent {
+  changed: Platform.DevToolsPath.RawPathString[];
+  added: Platform.DevToolsPath.RawPathString[];
+  removed: Platform.DevToolsPath.RawPathString[];
+}
+
+export interface IndexingEvent {
+  requestId: number;
+  fileSystemPath: string;
+}
+
+export interface IndexingTotalWorkCalculatedEvent extends IndexingEvent {
+  totalWork: number;
+}
+
+export interface IndexingWorkedEvent extends IndexingEvent {
+  worked: number;
+}
+
+export interface KeyEventUnhandledEvent {
+  type: string;
+  key: string;
+  keyCode: number;
+  modifiers: number;
+}
+
+export interface RevealSourceLineEvent {
+  url: string;
+  lineNumber: number;
+  columnNumber: number;
+}
+
+export interface SavedURLEvent {
+  url: string;
+  fileSystemPath: string;
+}
+
+export interface SearchCompletedEvent {
+  requestId: number;
+  files: Platform.DevToolsPath.RawPathString[];
+}
+
+// While `EventDescriptors` are used to dynamically dispatch host binding events,
+// the `EventTypes` "type map" is used for type-checking said events by TypeScript.
+// `EventTypes` is not used at runtime.
+// Please note that the "dispatch" side can't be type-checked as the dispatch is
+// done dynamically.
+export type EventTypes = {
+  [Events.AppendedToURL]: string,
+  [Events.CanceledSaveURL]: string,
+  [Events.ContextMenuCleared]: void,
+  [Events.ContextMenuItemSelected]: number,
+  [Events.DeviceCountUpdated]: number,
+  [Events.DevicesDiscoveryConfigChanged]: Adb.Config,
+  [Events.DevicesPortForwardingStatusChanged]: void,
+  [Events.DevicesUpdated]: void,
+  [Events.DispatchMessage]: string,
+  [Events.DispatchMessageChunk]: DispatchMessageChunkEvent,
+  [Events.EnterInspectElementMode]: void,
+  [Events.EyeDropperPickedColor]: EyeDropperPickedColorEvent,
+  [Events.FileSystemsLoaded]: DevToolsFileSystem[],
+  [Events.FileSystemRemoved]: Platform.DevToolsPath.RawPathString,
+  [Events.FileSystemAdded]: FileSystemAddedEvent,
+  [Events.FileSystemFilesChangedAddedRemoved]: FilesChangedEvent,
+  [Events.IndexingTotalWorkCalculated]: IndexingTotalWorkCalculatedEvent,
+  [Events.IndexingWorked]: IndexingWorkedEvent,
+  [Events.IndexingDone]: IndexingEvent,
+  [Events.KeyEventUnhandled]: KeyEventUnhandledEvent,
+  [Events.ReattachMainTarget]: void,
+  [Events.ReloadInspectedPage]: boolean,
+  [Events.RevealSourceLine]: RevealSourceLineEvent,
+  [Events.SavedURL]: SavedURLEvent,
+  [Events.SearchCompleted]: SearchCompletedEvent,
+  [Events.SetInspectedTabId]: string,
+  [Events.SetUseSoftMenu]: boolean,
+  [Events.ShowPanel]: string,
+};
+
 export interface InspectorFrontendHostAPI {
   addFileSystem(type?: string): void;
 
@@ -126,6 +228,8 @@ export interface InspectorFrontendHostAPI {
   loadNetworkResource(
       url: string, headers: string, streamId: number, callback: (arg0: LoadNetworkResourceResult) => void): void;
 
+  registerPreference(name: string, options: {synced?: boolean}): void;
+
   getPreferences(callback: (arg0: {
                    [x: string]: string,
                  }) => void): void;
@@ -135,6 +239,8 @@ export interface InspectorFrontendHostAPI {
   removePreference(name: string): void;
 
   clearPreferences(): void;
+
+  getSyncInformation(callback: (arg0: SyncInformation) => void): void;
 
   upgradeDraggedFileSystemPermissions(fileSystem: FileSystem): void;
 
@@ -187,7 +293,10 @@ export interface InspectorFrontendHostAPI {
   isHostedMode(): boolean;
 
   setAddExtensionCallback(callback: (arg0: ExtensionDescriptor) => void): void;
+
+  initialTargetId(): Promise<string|null>;
 }
+
 export interface ContextMenuDescriptor {
   type: string;
   id?: number;
@@ -217,6 +326,16 @@ export interface ShowSurveyResult {
 export interface CanShowSurveyResult {
   canShowSurvey: boolean;
 }
+export interface SyncInformation {
+  /** Whether Chrome Sync is enabled and active */
+  isSyncActive: boolean;
+  /** Whether syncing of Chrome Settings is enabled via Chrome Sync is enabled */
+  arePreferencesSynced?: boolean;
+  /** The email of the account used for syncing */
+  accountEmail?: string;
+  /** The image of the account used for syncing. Its a base64 encoded PNG */
+  accountImage?: string;
+}
 
 /**
  * Enum for recordPerformanceHistogram
@@ -229,7 +348,6 @@ export interface CanShowSurveyResult {
 // eslint-disable-next-line rulesdir/const_enum
 export enum EnumeratedHistogram {
   ActionTaken = 'DevTools.ActionTaken',
-  ColorPickerFixedColor = 'DevTools.ColorPicker.FixedColor',
   PanelClosed = 'DevTools.PanelClosed',
   PanelShown = 'DevTools.PanelShown',
   SidebarPaneShown = 'DevTools.SidebarPaneShown',
@@ -243,9 +361,16 @@ export enum EnumeratedHistogram {
   ExperimentEnabledAtLaunch = 'DevTools.ExperimentEnabledAtLaunch',
   ExperimentEnabled = 'DevTools.ExperimentEnabled',
   ExperimentDisabled = 'DevTools.ExperimentDisabled',
-  CssEditorOpened = 'DevTools.CssEditorOpened',
   DeveloperResourceLoaded = 'DevTools.DeveloperResourceLoaded',
   DeveloperResourceScheme = 'DevTools.DeveloperResourceScheme',
   LinearMemoryInspectorRevealedFrom = 'DevTools.LinearMemoryInspector.RevealedFrom',
   LinearMemoryInspectorTarget = 'DevTools.LinearMemoryInspector.Target',
+  Language = 'DevTools.Language',
+  ConsoleShowsCorsErrors = 'DevTools.ConsoleShowsCorsErrors',
+  SyncSetting = 'DevTools.SyncSetting',
+  RecordingEdited = 'DevTools.RecordingEdited',
+  RecordingExported = 'DevTools.RecordingExported',
+  RecordingReplayFinished = 'DevTools.RecordingReplayFinished',
+  RecordingReplayStarted = 'DevTools.RecordingReplayStarted',
+  RecordingToggled = 'DevTools.RecordingToggled',
 }

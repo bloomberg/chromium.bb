@@ -19,7 +19,8 @@
 #include "chrome/utility/services.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
-#include "sandbox/policy/switches.h"
+#include "sandbox/policy/mojom/sandbox.mojom.h"
+#include "sandbox/policy/sandbox_type.h"
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_WIN)
 #include "chrome/utility/printing_handler.h"
@@ -34,9 +35,6 @@ base::LazyInstance<ChromeContentUtilityClient::NetworkBinderCreationCallback>::
 
 ChromeContentUtilityClient::ChromeContentUtilityClient()
     : utility_process_running_elevated_(false) {
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_WIN)
-  printing_handler_ = std::make_unique<printing::PrintingHandler>();
-#endif
 }
 
 ChromeContentUtilityClient::~ChromeContentUtilityClient() = default;
@@ -44,9 +42,10 @@ ChromeContentUtilityClient::~ChromeContentUtilityClient() = default;
 void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
     mojo::BinderMap* binders) {
 #if defined(OS_WIN)
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  utility_process_running_elevated_ = command_line->HasSwitch(
-      sandbox::policy::switches::kNoSandboxAndElevatedPrivileges);
+  auto& cmd_line = *base::CommandLine::ForCurrentProcess();
+  auto sandbox_type = sandbox::policy::SandboxTypeFromCommandLine(cmd_line);
+  utility_process_running_elevated_ =
+      sandbox_type == sandbox::mojom::Sandbox::kNoSandboxAndElevatedPrivileges;
 #endif
 
   // If our process runs with elevated privileges, only add elevated Mojo
@@ -57,18 +56,6 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
   // to ensure security review coverage.
   if (!utility_process_running_elevated_)
     ExposeElevatedChromeUtilityInterfacesToBrowser(binders);
-}
-
-bool ChromeContentUtilityClient::OnMessageReceived(
-    const IPC::Message& message) {
-  if (utility_process_running_elevated_)
-    return false;
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_WIN)
-  if (printing_handler_->OnMessageReceived(message))
-    return true;
-#endif
-  return false;
 }
 
 void ChromeContentUtilityClient::RegisterNetworkBinders(
@@ -108,17 +95,12 @@ void ChromeContentUtilityClient::PostIOThreadCreated(
     base::SingleThreadTaskRunner* io_thread_task_runner) {
   io_thread_task_runner->PostTask(
       FROM_HERE, base::BindOnce(&ThreadProfiler::StartOnChildThread,
-                                metrics::CallStackProfileParams::IO_THREAD));
+                                metrics::CallStackProfileParams::Thread::kIo));
 }
 
 void ChromeContentUtilityClient::RegisterIOThreadServices(
     mojo::ServiceFactory& services) {
   return ::RegisterIOThreadServices(services);
-}
-
-bool ChromeContentUtilityClient::GetDefaultUserDataDirectory(
-    base::FilePath* path) {
-  return base::PathService::Get(chrome::DIR_USER_DATA, path);
 }
 
 // static

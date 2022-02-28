@@ -326,7 +326,7 @@ gfx::NativeViewAccessible AXFragmentRootWin::GetNativeViewAccessible() {
   // Automation. Signal observers when we're asked for a platform object on it.
   for (WinAccessibilityAPIUsageObserver& observer :
        GetWinAccessibilityAPIUsageObserverList()) {
-    observer.OnUIAutomationUsed();
+    observer.OnBasicUIAutomationUsed();
   }
   return platform_node_.Get();
 }
@@ -335,7 +335,7 @@ bool AXFragmentRootWin::IsControlElement() {
   return delegate_->IsAXFragmentRootAControlElement();
 }
 
-gfx::NativeViewAccessible AXFragmentRootWin::GetParent() {
+gfx::NativeViewAccessible AXFragmentRootWin::GetParent() const {
   return delegate_->GetParentOfAXFragmentRoot();
 }
 

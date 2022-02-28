@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "content/browser/payments/payment_app_content_unittest_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,6 +68,9 @@ class PaymentManagerTest : public PaymentAppContentUnitTestBase {
     EXPECT_NE(nullptr, manager_);
   }
 
+  PaymentManagerTest(const PaymentManagerTest&) = delete;
+  PaymentManagerTest& operator=(const PaymentManagerTest&) = delete;
+
   PaymentManager* payment_manager() const { return manager_; }
 
   void DeletePaymentInstrument(const std::string& instrument_key,
@@ -119,9 +122,7 @@ class PaymentManagerTest : public PaymentAppContentUnitTestBase {
 
  private:
   // Owned by payment_app_context_.
-  PaymentManager* manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaymentManagerTest);
+  raw_ptr<PaymentManager> manager_;
 };
 
 TEST_F(PaymentManagerTest, SetAndGetPaymentInstrument) {

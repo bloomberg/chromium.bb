@@ -9,7 +9,7 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/pepper/pepper_file_ref_host.h"
 #include "ppapi/c/pp_instance.h"
@@ -29,6 +29,11 @@ class PepperExternalFileRefBackend : public PepperFileRefBackend {
   PepperExternalFileRefBackend(ppapi::host::PpapiHost* host,
                                int render_process_id,
                                const base::FilePath& path);
+
+  PepperExternalFileRefBackend(const PepperExternalFileRefBackend&) = delete;
+  PepperExternalFileRefBackend& operator=(const PepperExternalFileRefBackend&) =
+      delete;
+
   ~PepperExternalFileRefBackend() override;
 
   // PepperFileRefBackend overrides.
@@ -63,15 +68,13 @@ class PepperExternalFileRefBackend : public PepperFileRefBackend {
                            base::File::Error error,
                            const base::File::Info& file_info);
 
-  ppapi::host::PpapiHost* host_;
+  raw_ptr<ppapi::host::PpapiHost> host_;
   base::FilePath path_;
   int render_process_id_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   base::WeakPtrFactory<PepperExternalFileRefBackend> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PepperExternalFileRefBackend);
 };
 
 }  // namespace content

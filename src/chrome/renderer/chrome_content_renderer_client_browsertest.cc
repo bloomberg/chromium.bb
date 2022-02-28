@@ -55,11 +55,10 @@ TEST_F(ChromeContentRendererClientSearchBoxTest, RewriteThumbnailURL) {
   ChromeContentRendererClient* client =
       static_cast<ChromeContentRendererClient*>(content_renderer_client_.get());
 
-  // Create a thumbnail URL containing the correct render view ID and an
+  // Create a thumbnail URL containing the correct render frame ID and an
   // arbitrary instant restricted ID.
-  GURL thumbnail_url(base::StringPrintf(
-      "chrome-search:/thumb/%i/1",
-      render_frame->GetRenderView()->GetRoutingID()));
+  GURL thumbnail_url(base::StringPrintf("chrome-search:/thumb/%i/1",
+                                        render_frame->GetRoutingID()));
 
   GURL result;
   // Make sure the SearchBox rewrites a thumbnail request from the main frame.
@@ -168,7 +167,7 @@ class ChromeContentRendererClientBrowserTest :
 IN_PROC_BROWSER_TEST_P(ChromeContentRendererClientBrowserTest,
                        RewriteYouTubeFlashEmbed) {
   GURL url(https_server()->GetURL("/flash_embeds.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -182,7 +181,7 @@ IN_PROC_BROWSER_TEST_P(ChromeContentRendererClientBrowserTest,
 IN_PROC_BROWSER_TEST_P(ChromeContentRendererClientBrowserTest,
                        RewriteYouTubeFlashEmbedObject) {
   GURL url(https_server()->GetURL("/flash_embeds.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   content::WebContents* web_contents =
      browser()->tab_strip_model()->GetActiveWebContents();
 

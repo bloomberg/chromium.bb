@@ -15,9 +15,9 @@
 namespace {
 
 const CXFA_Node::PropertyData kCalculatePropertyData[] = {
-    {XFA_Element::Message, 1, 0},
-    {XFA_Element::Script, 1, 0},
-    {XFA_Element::Extras, 1, 0},
+    {XFA_Element::Message, 1, {}},
+    {XFA_Element::Script, 1, {}},
+    {XFA_Element::Extras, 1, {}},
 };
 
 const CXFA_Node::AttributeData kCalculateAttributeData[] = {
@@ -33,7 +33,7 @@ const CXFA_Node::AttributeData kCalculateAttributeData[] = {
 CXFA_Calculate::CXFA_Calculate(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
+                {XFA_XDPPACKET::kTemplate, XFA_XDPPACKET::kForm},
                 XFA_ObjectType::Node,
                 XFA_Element::Calculate,
                 kCalculatePropertyData,
@@ -54,11 +54,11 @@ CXFA_Script* CXFA_Calculate::GetScriptIfExists() {
   return GetChild<CXFA_Script>(0, XFA_Element::Script, false);
 }
 
-WideString CXFA_Calculate::GetMessageText() {
-  CXFA_Message* pNode = GetChild<CXFA_Message>(0, XFA_Element::Message, false);
+WideString CXFA_Calculate::GetMessageText() const {
+  const auto* pNode = GetChild<CXFA_Message>(0, XFA_Element::Message, false);
   if (!pNode)
     return WideString();
 
-  CXFA_Text* text = pNode->GetChild<CXFA_Text>(0, XFA_Element::Text, false);
+  const auto* text = pNode->GetChild<CXFA_Text>(0, XFA_Element::Text, false);
   return text ? text->GetContent() : WideString();
 }

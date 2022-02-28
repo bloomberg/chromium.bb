@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "services/device/generic_sensor/platform_sensor_fusion.h"
 
 namespace device {
@@ -17,6 +16,9 @@ class FakePlatformSensorFusion : public PlatformSensorFusion {
  public:
   explicit FakePlatformSensorFusion(
       std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm);
+
+  FakePlatformSensorFusion(const FakePlatformSensorFusion&) = delete;
+  FakePlatformSensorFusion& operator=(const FakePlatformSensorFusion&) = delete;
 
   // PlatformSensorFusion:
   bool GetSourceReading(mojom::SensorType type, SensorReading* result) override;
@@ -31,8 +33,6 @@ class FakePlatformSensorFusion : public PlatformSensorFusion {
  private:
   base::flat_map<mojom::SensorType, std::pair<SensorReading, bool>>
       sensor_readings_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakePlatformSensorFusion);
 };
 
 }  // namespace device

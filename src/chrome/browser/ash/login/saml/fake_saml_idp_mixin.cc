@@ -18,13 +18,12 @@
 #include "net/base/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using net::test_server::BasicHttpResponse;
-using net::test_server::HttpRequest;
-using net::test_server::HttpResponse;
-
-namespace chromeos {
-
+namespace ash {
 namespace {
+
+using ::net::test_server::BasicHttpResponse;
+using ::net::test_server::HttpRequest;
+using ::net::test_server::HttpResponse;
 
 // The header that the server returns in a HTTP response to ask the client to
 // authenticate.
@@ -50,7 +49,8 @@ constexpr char kSamlVerifiedAccessChallengeHeader[] =
 constexpr char kSamlVerifiedAccessResponseHeader[] =
     "x-verified-access-challenge-response";
 
-constexpr char kTpmChallenge[] = {0, 1, 2, 'c', 'h', 'a', 'l', 253, 254, 255};
+constexpr char kTpmChallenge[] = {0,   1,   2,      'c',    'h',
+                                  'a', 'l', '\xFD', '\xFE', '\xFF'};
 
 std::string GetTpmChallenge() {
   return std::string(kTpmChallenge, base::size(kTpmChallenge));
@@ -256,8 +256,7 @@ std::unique_ptr<HttpResponse> FakeSamlIdpMixin::BuildResponseForLoginAuth(
     const HttpRequest& request,
     const GURL& request_url) {
   const std::string relay_state = GetRelayState(request);
-  GURL redirect_url =
-      gaia_mixin_->gaia_https_forwarder()->GetURLForSSLHost("").Resolve("/SSO");
+  GURL redirect_url = gaia_mixin_->GetFakeGaiaURL("/SSO");
 
   if (!login_auth_html_template_.empty()) {
     return BuildHTMLResponse(login_auth_html_template_, relay_state,
@@ -345,4 +344,4 @@ void FakeSamlIdpMixin::ClearChallengeResponse() {
   challenge_response_.reset();
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -138,14 +138,13 @@ void PaymentRequestPlatformBrowserTestBase::OnAppListReady() {
   if (event_waiter_)
     event_waiter_->OnEvent(TestEvent::kAppListReady);
 }
+void PaymentRequestPlatformBrowserTestBase::OnErrorDisplayed() {
+  if (event_waiter_)
+    event_waiter_->OnEvent(TestEvent::kErrorDisplayed);
+}
 void PaymentRequestPlatformBrowserTestBase::OnCompleteCalled() {
   if (event_waiter_)
     event_waiter_->OnEvent(TestEvent::kPaymentCompleted);
-}
-
-void PaymentRequestPlatformBrowserTestBase::OnMinimalUIReady() {
-  if (event_waiter_)
-    event_waiter_->OnEvent(TestEvent::kMinimalUIReady);
 }
 
 void PaymentRequestPlatformBrowserTestBase::OnUIDisplayed() {

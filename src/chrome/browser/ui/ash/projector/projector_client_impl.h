@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/public/cpp/projector/projector_client.h"
+#include "ash/public/cpp/projector/projector_controller.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/speech/speech_recognizer_delegate.h"
@@ -15,14 +16,23 @@
 #include "components/soda/constants.h"
 #include "components/soda/soda_installer.h"
 
+namespace views {
+class WebView;
+}  // namespace views
+
 class OnDeviceSpeechRecognizer;
 
 // The client implementation for the ProjectorController in ash/. This client is
 // responsible for handling requests that have browser dependencies.
 class ProjectorClientImpl : public ash::ProjectorClient,
-                            public SpeechRecognizerDelegate,
-                            public speech::SodaInstaller::Observer {
+                            public SpeechRecognizerDelegate {
  public:
+  // RecordingOverlayViewImpl calls this function to initialize the annotator
+  // tool.
+  static void InitForProjectorAnnotator(views::WebView* web_view);
+
+  explicit ProjectorClientImpl(ash::ProjectorController* controller);
+
   ProjectorClientImpl();
   ProjectorClientImpl(const ProjectorClientImpl&) = delete;
   ProjectorClientImpl& operator=(const ProjectorClientImpl&) = delete;
@@ -34,36 +44,26 @@ class ProjectorClientImpl : public ash::ProjectorClient,
   void ShowSelfieCam() override;
   void CloseSelfieCam() override;
   bool IsSelfieCamVisible() const override;
+  bool GetDriveFsMountPointPath(base::FilePath* result) const override;
+  bool IsDriveFsMounted() const override;
+  void OpenProjectorApp() const override;
+  void MinimizeProjectorApp() const override;
+  void OnNewScreencastPreconditionChanged(bool can_start) const override;
 
   // SpeechRecognizerDelegate:
   void OnSpeechResult(
       const std::u16string& text,
       bool is_final,
-      const absl::optional<SpeechRecognizerDelegate::TranscriptTiming>& timing)
-      override;
+      const absl::optional<media::SpeechRecognitionResult>& timing) override;
   // This class is not utilizing the information about sound level.
   void OnSpeechSoundLevelChanged(int16_t level) override {}
   void OnSpeechRecognitionStateChanged(
       SpeechRecognizerStatus new_state) override;
 
-  // speech::SodaInstaller::Observer:
-  void OnSodaInstalled() override;
-  // We are not utilizing the following methods. Mark them as empty overrides.
-  void OnSodaLanguagePackInstalled(
-      speech::LanguageCode language_code) override {}
-  void OnSodaError() override {}
-  void OnSodaLanguagePackError(speech::LanguageCode language_code) override {}
-  void OnSodaProgress(int combined_progress) override {}
-  void OnSodaLanguagePackProgress(int language_progress,
-                                  speech::LanguageCode language_code) override {
-  }
-
  private:
+  ash::ProjectorController* const controller_;
   SpeechRecognizerStatus recognizer_status_ =
       SpeechRecognizerStatus::SPEECH_RECOGNIZER_OFF;
-  base::ScopedObservation<speech::SodaInstaller,
-                          speech::SodaInstaller::Observer>
-      observed_soda_installer_{this};
   std::unique_ptr<OnDeviceSpeechRecognizer> speech_recognizer_;
   chromeos::SelfieCamBubbleManager selfie_cam_bubble_manager_;
   base::WeakPtrFactory<ProjectorClientImpl> weak_ptr_factory_{this};

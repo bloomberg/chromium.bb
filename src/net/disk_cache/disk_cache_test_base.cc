@@ -11,7 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
@@ -302,9 +302,15 @@ int DiskCacheTestWithCache::GetAvailableRange(disk_cache::Entry* entry,
                                               int64_t offset,
                                               int len,
                                               int64_t* start) {
-  net::TestCompletionCallback cb;
-  int rv = entry->GetAvailableRange(offset, len, start, cb.callback());
-  return cb.GetResult(rv);
+  TestRangeResultCompletionCallback cb;
+  disk_cache::RangeResult result =
+      cb.GetResult(entry->GetAvailableRange(offset, len, cb.callback()));
+
+  if (result.net_error == net::OK) {
+    *start = result.start;
+    return result.available_len;
+  }
+  return result.net_error;
 }
 
 void DiskCacheTestWithCache::TrimForTest(bool empty) {
@@ -332,13 +338,12 @@ void DiskCacheTestWithCache::AddDelay() {
     const base::Time initial_time = base::Time::Now();
     do {
       base::PlatformThread::YieldCurrentThread();
-    } while (base::Time::Now() - initial_time <
-             base::TimeDelta::FromSeconds(1));
+    } while (base::Time::Now() - initial_time < base::Seconds(1));
   }
 
   base::Time initial = base::Time::Now();
   while (base::Time::Now() <= initial) {
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
+    base::PlatformThread::Sleep(base::Milliseconds(1));
   };
 }
 

@@ -6,7 +6,7 @@
 
 #include "base/check_op.h"
 
-namespace chromeos {
+namespace ash {
 namespace file_system_provider {
 
 ProviderId::ProviderId(const std::string& internal_id,
@@ -89,6 +89,8 @@ MountOptions::MountOptions(const std::string& file_system_id,
 
 MountOptions::MountOptions(const MountOptions& source) = default;
 
+MountOptions& MountOptions::operator=(const MountOptions& source) = default;
+
 ProvidedFileSystemInfo::ProvidedFileSystemInfo()
     : writable_(false),
       supports_notify_tag_(false),
@@ -140,4 +142,4 @@ ProvidedFileSystemInfo::ProvidedFileSystemInfo(
 ProvidedFileSystemInfo::~ProvidedFileSystemInfo() {}
 
 }  // namespace file_system_provider
-}  // namespace chromeos
+}  // namespace ash

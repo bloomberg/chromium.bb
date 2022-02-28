@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
 namespace device {
@@ -20,6 +20,11 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
  public:
   explicit TestBluetoothAdapterObserver(
       scoped_refptr<BluetoothAdapter> adapter);
+
+  TestBluetoothAdapterObserver(const TestBluetoothAdapterObserver&) = delete;
+  TestBluetoothAdapterObserver& operator=(const TestBluetoothAdapterObserver&) =
+      delete;
+
   ~TestBluetoothAdapterObserver() override;
 
   // Reset counters and cached values.
@@ -263,7 +268,7 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
   std::vector<bool> device_connected_state_changed_values_;
 #endif
   int device_removed_count_;
-  BluetoothDevice* last_device_;
+  raw_ptr<BluetoothDevice> last_device_;
 
   // GATT related:
   int gatt_service_added_count_;
@@ -287,8 +292,6 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
   std::string last_gatt_descriptor_id_;
   BluetoothUUID last_gatt_descriptor_uuid_;
   std::vector<uint8_t> last_changed_descriptor_value_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBluetoothAdapterObserver);
 };
 
 }  // namespace device

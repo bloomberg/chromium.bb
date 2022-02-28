@@ -31,12 +31,14 @@
 #    include "common/windows_with_undefs.h"
 #endif
 
+typedef void* EGLImage;
+
 namespace dawn_native { namespace opengl {
 
-    class Device : public DeviceBase {
+    class Device final : public DeviceBase {
       public:
         static ResultOrError<Device*> Create(AdapterBase* adapter,
-                                             const DeviceDescriptor* descriptor,
+                                             const DawnDeviceDescriptor* descriptor,
                                              const OpenGLFunctions& functions);
         ~Device() override;
 
@@ -48,6 +50,11 @@ namespace dawn_native { namespace opengl {
         const GLFormat& GetGLFormat(const Format& format);
 
         void SubmitFenceSync();
+
+        MaybeError ValidateEGLImageCanBeWrapped(const TextureDescriptor* descriptor,
+                                                ::EGLImage image);
+        TextureBase* CreateTextureWrappingEGLImage(const ExternalImageDescriptor* descriptor,
+                                                   ::EGLImage image);
 
         ResultOrError<Ref<CommandBufferBase>> CreateCommandBuffer(
             CommandEncoder* encoder,
@@ -74,23 +81,20 @@ namespace dawn_native { namespace opengl {
 
       private:
         Device(AdapterBase* adapter,
-               const DeviceDescriptor* descriptor,
+               const DawnDeviceDescriptor* descriptor,
                const OpenGLFunctions& functions);
 
         ResultOrError<Ref<BindGroupBase>> CreateBindGroupImpl(
             const BindGroupDescriptor* descriptor) override;
         ResultOrError<Ref<BindGroupLayoutBase>> CreateBindGroupLayoutImpl(
-            const BindGroupLayoutDescriptor* descriptor) override;
+            const BindGroupLayoutDescriptor* descriptor,
+            PipelineCompatibilityToken pipelineCompatibilityToken) override;
         ResultOrError<Ref<BufferBase>> CreateBufferImpl(
             const BufferDescriptor* descriptor) override;
-        ResultOrError<Ref<ComputePipelineBase>> CreateComputePipelineImpl(
-            const ComputePipelineDescriptor* descriptor) override;
         ResultOrError<Ref<PipelineLayoutBase>> CreatePipelineLayoutImpl(
             const PipelineLayoutDescriptor* descriptor) override;
         ResultOrError<Ref<QuerySetBase>> CreateQuerySetImpl(
             const QuerySetDescriptor* descriptor) override;
-        ResultOrError<Ref<RenderPipelineBase>> CreateRenderPipelineImpl(
-            const RenderPipelineDescriptor2* descriptor) override;
         ResultOrError<Ref<SamplerBase>> CreateSamplerImpl(
             const SamplerDescriptor* descriptor) override;
         ResultOrError<Ref<ShaderModuleBase>> CreateShaderModuleImpl(
@@ -107,10 +111,14 @@ namespace dawn_native { namespace opengl {
         ResultOrError<Ref<TextureViewBase>> CreateTextureViewImpl(
             TextureBase* texture,
             const TextureViewDescriptor* descriptor) override;
+        Ref<ComputePipelineBase> CreateUninitializedComputePipelineImpl(
+            const ComputePipelineDescriptor* descriptor) override;
+        Ref<RenderPipelineBase> CreateUninitializedRenderPipelineImpl(
+            const RenderPipelineDescriptor* descriptor) override;
 
         void InitTogglesFromDriver();
         ResultOrError<ExecutionSerial> CheckAndUpdateCompletedSerials() override;
-        void ShutDownImpl() override;
+        void DestroyImpl() override;
         MaybeError WaitForIdleForDestruction() override;
 
         std::queue<std::pair<GLsync, ExecutionSerial>> mFencesInFlight;

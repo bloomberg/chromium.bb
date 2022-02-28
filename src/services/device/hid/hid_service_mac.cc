@@ -80,7 +80,8 @@ scoped_refptr<HidDeviceInfo> CreateDeviceInfo(
   }
 
   int32_t location_id = GetIntProperty(service, CFSTR(kIOHIDLocationIDKey));
-  std::string physical_device_id = base::NumberToString(location_id);
+  std::string physical_device_id =
+      location_id == 0 ? "" : base::NumberToString(location_id);
 
   return new HidDeviceInfo(
       entry_id, physical_device_id,
@@ -132,6 +133,7 @@ HidServiceMac::~HidServiceMac() {}
 
 void HidServiceMac::Connect(const std::string& device_guid,
                             bool allow_protected_reports,
+                            bool allow_fido_reports,
                             ConnectCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -147,7 +149,7 @@ void HidServiceMac::Connect(const std::string& device_guid,
       base::BindOnce(&HidServiceMac::OpenOnBlockingThread, map_entry->second),
       base::BindOnce(&HidServiceMac::DeviceOpened, weak_factory_.GetWeakPtr(),
                      map_entry->second, allow_protected_reports,
-                     std::move(callback)));
+                     allow_fido_reports, std::move(callback)));
 }
 
 base::WeakPtr<HidService> HidServiceMac::GetWeakPtr() {
@@ -196,12 +198,13 @@ base::ScopedCFTypeRef<IOHIDDeviceRef> HidServiceMac::OpenOnBlockingThread(
 void HidServiceMac::DeviceOpened(
     scoped_refptr<HidDeviceInfo> device_info,
     bool allow_protected_reports,
+    bool allow_fido_reports,
     ConnectCallback callback,
     base::ScopedCFTypeRef<IOHIDDeviceRef> hid_device) {
   if (hid_device) {
     std::move(callback).Run(base::MakeRefCounted<HidConnectionMac>(
-        std::move(hid_device), std::move(device_info),
-        allow_protected_reports));
+        std::move(hid_device), std::move(device_info), allow_protected_reports,
+        allow_fido_reports));
   } else {
     std::move(callback).Run(nullptr);
   }

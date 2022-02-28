@@ -1,6 +1,7 @@
 {
   "Linux ASan LSan Builder": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "is_asan": true,
       "is_component_build": false,
@@ -25,6 +26,7 @@
   },
   "Linux Chromium OS ASan LSan Builder": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "is_asan": true,
       "is_component_build": false,
@@ -37,6 +39,7 @@
   },
   "Linux ChromiumOS MSan Builder": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
       "is_msan": true,
@@ -47,29 +50,24 @@
   },
   "Linux MSan Builder": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
       "is_msan": true,
       "msan_track_origins": 2,
-      "use_goma": true
-    }
-  },
-  "Linux TSan (bionic)": {
-    "gn_args": {
-      "enable_nacl": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "is_tsan": true,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "Linux TSan Builder": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_nacl": false,
       "is_component_build": false,
       "is_debug": false,
       "is_tsan": true,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "Mac ASan 64 Builder": {
@@ -85,37 +83,44 @@
   },
   "WebKit Linux ASAN": {
     "gn_args": {
+      "dcheck_always_on": false,
       "ffmpeg_branding": "Chrome",
       "is_asan": true,
       "is_component_build": false,
       "is_debug": false,
       "is_lsan": true,
       "proprietary_codecs": true,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "WebKit Linux Leak": {
     "gn_args": {
+      "dcheck_always_on": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
       "proprietary_codecs": true,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "WebKit Linux MSAN": {
     "gn_args": {
+      "dcheck_always_on": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
       "is_msan": true,
       "msan_track_origins": 2,
       "proprietary_codecs": true,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "android-asan": {
     "gn_args": {
+      "dcheck_always_on": false,
       "ffmpeg_branding": "Chrome",
       "is_asan": true,
       "is_clang": true,
@@ -130,6 +135,7 @@
   },
   "linux-ubsan-vptr": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
       "is_ubsan_no_recover": true,
@@ -139,6 +145,7 @@
   },
   "win-asan": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_ipc_fuzzer": true,
       "is_asan": true,
       "is_component_build": false,

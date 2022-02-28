@@ -16,6 +16,7 @@
 
 #include "common/Platform.h"
 #include "dawn_native/BackendConnection.h"
+#include "dawn_native/ChainUtils_autogen.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/ErrorData.h"
 #include "dawn_native/VulkanBackend.h"
@@ -44,13 +45,14 @@
 namespace dawn_native { namespace vulkan {
 
     // static
-    ResultOrError<Device*> Device::Create(Adapter* adapter, const DeviceDescriptor* descriptor) {
+    ResultOrError<Device*> Device::Create(Adapter* adapter,
+                                          const DawnDeviceDescriptor* descriptor) {
         Ref<Device> device = AcquireRef(new Device(adapter, descriptor));
         DAWN_TRY(device->Initialize());
         return device.Detach();
     }
 
-    Device::Device(Adapter* adapter, const DeviceDescriptor* descriptor)
+    Device::Device(Adapter* adapter, const DawnDeviceDescriptor* descriptor)
         : DeviceBase(adapter, descriptor) {
         InitTogglesFromDriver();
     }
@@ -61,12 +63,12 @@ namespace dawn_native { namespace vulkan {
 
         // Initialize the "instance" procs of our local function table.
         VulkanFunctions* functions = GetMutableFunctions();
-        *functions = ToBackend(GetAdapter())->GetBackend()->GetFunctions();
+        *functions = ToBackend(GetAdapter())->GetVulkanInstance()->GetFunctions();
 
         // Two things are crucial if device initialization fails: the function pointers to destroy
         // objects, and the fence deleter that calls these functions. Do not do anything before
         // these two are set up, so that a failed initialization doesn't cause a crash in
-        // ShutDownImpl()
+        // DestroyImpl()
         {
             VkPhysicalDevice physicalDevice = ToBackend(GetAdapter())->GetPhysicalDevice();
 
@@ -99,7 +101,7 @@ namespace dawn_native { namespace vulkan {
     }
 
     Device::~Device() {
-        ShutDownBase();
+        Destroy();
     }
 
     ResultOrError<Ref<BindGroupBase>> Device::CreateBindGroupImpl(
@@ -107,8 +109,9 @@ namespace dawn_native { namespace vulkan {
         return BindGroup::Create(this, descriptor);
     }
     ResultOrError<Ref<BindGroupLayoutBase>> Device::CreateBindGroupLayoutImpl(
-        const BindGroupLayoutDescriptor* descriptor) {
-        return BindGroupLayout::Create(this, descriptor);
+        const BindGroupLayoutDescriptor* descriptor,
+        PipelineCompatibilityToken pipelineCompatibilityToken) {
+        return BindGroupLayout::Create(this, descriptor, pipelineCompatibilityToken);
     }
     ResultOrError<Ref<BufferBase>> Device::CreateBufferImpl(const BufferDescriptor* descriptor) {
         return Buffer::Create(this, descriptor);
@@ -118,9 +121,9 @@ namespace dawn_native { namespace vulkan {
         const CommandBufferDescriptor* descriptor) {
         return CommandBuffer::Create(encoder, descriptor);
     }
-    ResultOrError<Ref<ComputePipelineBase>> Device::CreateComputePipelineImpl(
+    Ref<ComputePipelineBase> Device::CreateUninitializedComputePipelineImpl(
         const ComputePipelineDescriptor* descriptor) {
-        return ComputePipeline::Create(this, descriptor);
+        return ComputePipeline::CreateUninitialized(this, descriptor);
     }
     ResultOrError<Ref<PipelineLayoutBase>> Device::CreatePipelineLayoutImpl(
         const PipelineLayoutDescriptor* descriptor) {
@@ -130,9 +133,9 @@ namespace dawn_native { namespace vulkan {
         const QuerySetDescriptor* descriptor) {
         return QuerySet::Create(this, descriptor);
     }
-    ResultOrError<Ref<RenderPipelineBase>> Device::CreateRenderPipelineImpl(
-        const RenderPipelineDescriptor2* descriptor) {
-        return RenderPipeline::Create(this, descriptor);
+    Ref<RenderPipelineBase> Device::CreateUninitializedRenderPipelineImpl(
+        const RenderPipelineDescriptor* descriptor) {
+        return RenderPipeline::CreateUninitialized(this, descriptor);
     }
     ResultOrError<Ref<SamplerBase>> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
         return Sampler::Create(this, descriptor);
@@ -160,20 +163,30 @@ namespace dawn_native { namespace vulkan {
         const TextureViewDescriptor* descriptor) {
         return TextureView::Create(texture, descriptor);
     }
+    void Device::InitializeComputePipelineAsyncImpl(Ref<ComputePipelineBase> computePipeline,
+                                                    WGPUCreateComputePipelineAsyncCallback callback,
+                                                    void* userdata) {
+        ComputePipeline::InitializeAsync(std::move(computePipeline), callback, userdata);
+    }
+    void Device::InitializeRenderPipelineAsyncImpl(Ref<RenderPipelineBase> renderPipeline,
+                                                   WGPUCreateRenderPipelineAsyncCallback callback,
+                                                   void* userdata) {
+        RenderPipeline::InitializeAsync(std::move(renderPipeline), callback, userdata);
+    }
 
     MaybeError Device::TickImpl() {
         RecycleCompletedCommands();
 
         ExecutionSerial completedSerial = GetCompletedCommandSerial();
 
-        for (Ref<BindGroupLayout>& bgl :
-             mBindGroupLayoutsPendingDeallocation.IterateUpTo(completedSerial)) {
-            bgl->FinishDeallocation(completedSerial);
+        for (Ref<DescriptorSetAllocator>& allocator :
+             mDescriptorAllocatorsPendingDeallocation.IterateUpTo(completedSerial)) {
+            allocator->FinishDeallocation(completedSerial);
         }
-        mBindGroupLayoutsPendingDeallocation.ClearUpTo(completedSerial);
 
         mResourceMemoryAllocator->Tick(completedSerial);
         mDeleter->Tick(completedSerial);
+        mDescriptorAllocatorsPendingDeallocation.ClearUpTo(completedSerial);
 
         if (mRecordingContext.used) {
             DAWN_TRY(SubmitPendingCommands());
@@ -183,14 +196,14 @@ namespace dawn_native { namespace vulkan {
     }
 
     VkInstance Device::GetVkInstance() const {
-        return ToBackend(GetAdapter())->GetBackend()->GetVkInstance();
+        return ToBackend(GetAdapter())->GetVulkanInstance()->GetVkInstance();
     }
     const VulkanDeviceInfo& Device::GetDeviceInfo() const {
         return mDeviceInfo;
     }
 
     const VulkanGlobalInfo& Device::GetGlobalInfo() const {
-        return ToBackend(GetAdapter())->GetBackend()->GetGlobalInfo();
+        return ToBackend(GetAdapter())->GetVulkanInstance()->GetGlobalInfo();
     }
 
     VkDevice Device::GetVkDevice() const {
@@ -213,8 +226,12 @@ namespace dawn_native { namespace vulkan {
         return mRenderPassCache.get();
     }
 
-    void Device::EnqueueDeferredDeallocation(BindGroupLayout* bindGroupLayout) {
-        mBindGroupLayoutsPendingDeallocation.Enqueue(bindGroupLayout, GetPendingCommandSerial());
+    ResourceMemoryAllocator* Device::GetResourceMemoryAllocator() const {
+        return mResourceMemoryAllocator.get();
+    }
+
+    void Device::EnqueueDeferredDeallocation(DescriptorSetAllocator* allocator) {
+        mDescriptorAllocatorsPendingDeallocation.Enqueue(allocator, GetPendingCommandSerial());
     }
 
     CommandRecordingContext* Device::GetPendingRecordingContext() {
@@ -249,7 +266,13 @@ namespace dawn_native { namespace vulkan {
 
         VkFence fence = VK_NULL_HANDLE;
         DAWN_TRY_ASSIGN(fence, GetUnusedFence());
-        DAWN_TRY(CheckVkSuccess(fn.QueueSubmit(mQueue, 1, &submitInfo, fence), "vkQueueSubmit"));
+        DAWN_TRY_WITH_CLEANUP(
+            CheckVkSuccess(fn.QueueSubmit(mQueue, 1, &submitInfo, fence), "vkQueueSubmit"), {
+                // If submitting to the queue fails, move the fence back into the unused fence
+                // list, as if it were never acquired. Not doing so would leak the fence since
+                // it would be neither in the unused list nor in the in-flight list.
+                mUnusedFences.push_back(fence);
+            });
 
         // Enqueue the semaphores before incrementing the serial, so that they can be deleted as
         // soon as the current submission is finished.
@@ -299,14 +322,13 @@ namespace dawn_native { namespace vulkan {
         features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
         PNextChainBuilder featuresChain(&features2);
 
-        // Always require independentBlend because it is a core Dawn feature
-        usedKnobs.features.independentBlend = VK_TRUE;
-        // Always require imageCubeArray because it is a core Dawn feature
-        usedKnobs.features.imageCubeArray = VK_TRUE;
-        // Always require fragmentStoresAndAtomics because it is required by end2end tests.
-        usedKnobs.features.fragmentStoresAndAtomics = VK_TRUE;
-        // Always require depthBiasClamp because it is a core Dawn feature
+        // Required for core WebGPU features.
         usedKnobs.features.depthBiasClamp = VK_TRUE;
+        usedKnobs.features.fragmentStoresAndAtomics = VK_TRUE;
+        usedKnobs.features.fullDrawIndexUint32 = VK_TRUE;
+        usedKnobs.features.imageCubeArray = VK_TRUE;
+        usedKnobs.features.independentBlend = VK_TRUE;
+        usedKnobs.features.sampleRateShading = VK_TRUE;
 
         if (IsRobustnessEnabled()) {
             usedKnobs.features.robustBufferAccess = VK_TRUE;
@@ -326,19 +348,31 @@ namespace dawn_native { namespace vulkan {
             usedKnobs.features.samplerAnisotropy = VK_TRUE;
         }
 
-        if (IsExtensionEnabled(Extension::TextureCompressionBC)) {
+        if (IsFeatureEnabled(Feature::TextureCompressionBC)) {
             ASSERT(ToBackend(GetAdapter())->GetDeviceInfo().features.textureCompressionBC ==
                    VK_TRUE);
             usedKnobs.features.textureCompressionBC = VK_TRUE;
         }
 
-        if (IsExtensionEnabled(Extension::PipelineStatisticsQuery)) {
+        if (IsFeatureEnabled(Feature::TextureCompressionETC2)) {
+            ASSERT(ToBackend(GetAdapter())->GetDeviceInfo().features.textureCompressionETC2 ==
+                   VK_TRUE);
+            usedKnobs.features.textureCompressionETC2 = VK_TRUE;
+        }
+
+        if (IsFeatureEnabled(Feature::TextureCompressionASTC)) {
+            ASSERT(ToBackend(GetAdapter())->GetDeviceInfo().features.textureCompressionASTC_LDR ==
+                   VK_TRUE);
+            usedKnobs.features.textureCompressionASTC_LDR = VK_TRUE;
+        }
+
+        if (IsFeatureEnabled(Feature::PipelineStatisticsQuery)) {
             ASSERT(ToBackend(GetAdapter())->GetDeviceInfo().features.pipelineStatisticsQuery ==
                    VK_TRUE);
             usedKnobs.features.pipelineStatisticsQuery = VK_TRUE;
         }
 
-        if (IsExtensionEnabled(Extension::ShaderFloat16)) {
+        if (IsFeatureEnabled(Feature::ShaderFloat16)) {
             const VulkanDeviceInfo& deviceInfo = ToBackend(GetAdapter())->GetDeviceInfo();
             ASSERT(deviceInfo.HasExt(DeviceExt::ShaderFloat16Int8) &&
                    deviceInfo.shaderFloat16Int8Features.shaderFloat16 == VK_TRUE &&
@@ -354,6 +388,11 @@ namespace dawn_native { namespace vulkan {
                               VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR);
             featuresChain.Add(&usedKnobs._16BitStorageFeatures,
                               VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES);
+        }
+
+        if (IsFeatureEnabled(Feature::DepthClamping)) {
+            ASSERT(ToBackend(GetAdapter())->GetDeviceInfo().features.depthClamp == VK_TRUE);
+            usedKnobs.features.depthClamp = VK_TRUE;
         }
 
         // Find a universal queue family
@@ -449,7 +488,7 @@ namespace dawn_native { namespace vulkan {
     }
 
     void Device::InitTogglesFromDriver() {
-        // TODO(jiawei.shao@intel.com): tighten this workaround when this issue is fixed in both
+        // TODO(crbug.com/dawn/857): tighten this workaround when this issue is fixed in both
         // Vulkan SPEC and drivers.
         SetToggle(Toggle::UseTemporaryBufferInCompressedTextureToTextureCopy, true);
 
@@ -458,25 +497,10 @@ namespace dawn_native { namespace vulkan {
     }
 
     void Device::ApplyDepth24PlusS8Toggle() {
-        VkPhysicalDevice physicalDevice = ToBackend(GetAdapter())->GetPhysicalDevice();
-
-        bool supportsD32s8 = false;
-        {
-            VkFormatProperties properties;
-            fn.GetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D32_SFLOAT_S8_UINT,
-                                                 &properties);
-            supportsD32s8 =
-                properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
-        }
-
-        bool supportsD24s8 = false;
-        {
-            VkFormatProperties properties;
-            fn.GetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D24_UNORM_S8_UINT,
-                                                 &properties);
-            supportsD24s8 =
-                properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
-        }
+        bool supportsD32s8 =
+            ToBackend(GetAdapter())->IsDepthStencilFormatSupported(VK_FORMAT_D32_SFLOAT_S8_UINT);
+        bool supportsD24s8 =
+            ToBackend(GetAdapter())->IsDepthStencilFormatSupported(VK_FORMAT_D24_UNORM_S8_UINT);
 
         ASSERT(supportsD32s8 || supportsD24s8);
 
@@ -549,8 +573,22 @@ namespace dawn_native { namespace vulkan {
         if (!mUnusedCommands.empty()) {
             CommandPoolAndBuffer commands = mUnusedCommands.back();
             mUnusedCommands.pop_back();
-            DAWN_TRY(CheckVkSuccess(fn.ResetCommandPool(mVkDevice, commands.pool, 0),
-                                    "vkResetCommandPool"));
+            DAWN_TRY_WITH_CLEANUP(CheckVkSuccess(fn.ResetCommandPool(mVkDevice, commands.pool, 0),
+                                                 "vkResetCommandPool"),
+                                  {
+                                      // vkResetCommandPool failed (it may return out-of-memory).
+                                      // Free the commands in the cleanup step before returning to
+                                      // reclaim memory.
+
+                                      // The VkCommandBuffer memory should be wholly owned by the
+                                      // pool and freed when it is destroyed, but that's not the
+                                      // case in some drivers and they leak memory. So we call
+                                      // FreeCommandBuffers before DestroyCommandPool to be safe.
+                                      // TODO(enga): Only do this on a known list of bad drivers.
+                                      fn.FreeCommandBuffers(mVkDevice, commands.pool, 1,
+                                                            &commands.commandBuffer);
+                                      fn.DestroyCommandPool(mVkDevice, commands.pool, nullptr);
+                                  });
 
             mRecordingContext.commandBuffer = commands.commandBuffer;
             mRecordingContext.commandPool = commands.pool;
@@ -681,21 +719,27 @@ namespace dawn_native { namespace vulkan {
                                            VkSemaphore* outSignalSemaphore,
                                            VkDeviceMemory* outAllocation,
                                            std::vector<VkSemaphore>* outWaitSemaphores) {
-        const TextureDescriptor* textureDescriptor =
-            reinterpret_cast<const TextureDescriptor*>(descriptor->cTextureDescriptor);
+        const TextureDescriptor* textureDescriptor = FromAPI(descriptor->cTextureDescriptor);
+
+        const DawnTextureInternalUsageDescriptor* internalUsageDesc = nullptr;
+        FindInChain(textureDescriptor->nextInChain, &internalUsageDesc);
+
+        wgpu::TextureUsage usage = textureDescriptor->usage;
+        if (internalUsageDesc != nullptr) {
+            usage |= internalUsageDesc->internalUsage;
+        }
 
         // Check services support this combination of handle type / image info
-        if (!mExternalSemaphoreService->Supported()) {
-            return DAWN_VALIDATION_ERROR("External semaphore usage not supported");
-        }
-        if (!mExternalMemoryService->SupportsImportMemory(
+        DAWN_INVALID_IF(!mExternalSemaphoreService->Supported(),
+                        "External semaphore usage not supported");
+
+        DAWN_INVALID_IF(
+            !mExternalMemoryService->SupportsImportMemory(
                 VulkanImageFormat(this, textureDescriptor->format), VK_IMAGE_TYPE_2D,
                 VK_IMAGE_TILING_OPTIMAL,
-                VulkanImageUsage(textureDescriptor->usage,
-                                 GetValidInternalFormat(textureDescriptor->format)),
-                VK_IMAGE_CREATE_ALIAS_BIT_KHR)) {
-            return DAWN_VALIDATION_ERROR("External memory usage not supported");
-        }
+                VulkanImageUsage(usage, GetValidInternalFormat(textureDescriptor->format)),
+                VK_IMAGE_CREATE_ALIAS_BIT_KHR),
+            "External memory usage not supported");
 
         // Create an external semaphore to signal when the texture is done being used
         DAWN_TRY_ASSIGN(*outSignalSemaphore,
@@ -749,14 +793,15 @@ namespace dawn_native { namespace vulkan {
         const ExternalImageDescriptorVk* descriptor,
         ExternalMemoryHandle memoryHandle,
         const std::vector<ExternalSemaphoreHandle>& waitHandles) {
-        const TextureDescriptor* textureDescriptor =
-            reinterpret_cast<const TextureDescriptor*>(descriptor->cTextureDescriptor);
+        const TextureDescriptor* textureDescriptor = FromAPI(descriptor->cTextureDescriptor);
 
         // Initial validation
         if (ConsumedError(ValidateTextureDescriptor(this, textureDescriptor))) {
             return nullptr;
         }
-        if (ConsumedError(ValidateVulkanImageCanBeWrapped(this, textureDescriptor))) {
+        if (ConsumedError(ValidateVulkanImageCanBeWrapped(this, textureDescriptor),
+                          "validating that a Vulkan image can be wrapped with %s.",
+                          textureDescriptor)) {
             return nullptr;
         }
 
@@ -798,24 +843,6 @@ namespace dawn_native { namespace vulkan {
         return result;
     }
 
-    ResultOrError<ResourceMemoryAllocation> Device::AllocateMemory(
-        VkMemoryRequirements requirements,
-        bool mappable) {
-        return mResourceMemoryAllocator->Allocate(requirements, mappable);
-    }
-
-    void Device::DeallocateMemory(ResourceMemoryAllocation* allocation) {
-        mResourceMemoryAllocator->Deallocate(allocation);
-    }
-
-    int Device::FindBestMemoryTypeIndex(VkMemoryRequirements requirements, bool mappable) {
-        return mResourceMemoryAllocator->FindBestTypeIndex(requirements, mappable);
-    }
-
-    ResourceMemoryAllocator* Device::GetResourceMemoryAllocatorForTesting() const {
-        return mResourceMemoryAllocator.get();
-    }
-
     uint32_t Device::GetComputeSubgroupSize() const {
         return mComputeSubgroupSize;
     }
@@ -845,21 +872,32 @@ namespace dawn_native { namespace vulkan {
 
             VkResult result = VkResult::WrapUnsafe(VK_TIMEOUT);
             do {
+                // If WaitForIdleForDesctruction is called while we are Disconnected, it means that
+                // the device lost came from the ErrorInjector and we need to wait without allowing
+                // any more error to be injected. This is because the device lost was "fake" and
+                // commands might still be running.
+                if (GetState() == State::Disconnected) {
+                    result = VkResult::WrapUnsafe(
+                        fn.WaitForFences(mVkDevice, 1, &*fence, true, UINT64_MAX));
+                    continue;
+                }
+
                 result = VkResult::WrapUnsafe(
                     INJECT_ERROR_OR_RUN(fn.WaitForFences(mVkDevice, 1, &*fence, true, UINT64_MAX),
                                         VK_ERROR_DEVICE_LOST));
             } while (result == VK_TIMEOUT);
+            // Ignore errors from vkWaitForFences: it can be either OOM which we can't do anything
+            // about (and we need to keep going with the destruction of all fences), or device
+            // loss, which means the workload on the GPU is no longer accessible and we can
+            // safely destroy the fence.
 
-            // TODO: Handle errors
-            ASSERT(result == VK_SUCCESS);
             fn.DestroyFence(mVkDevice, fence, nullptr);
-
             mFencesInFlight.pop();
         }
         return {};
     }
 
-    void Device::ShutDownImpl() {
+    void Device::DestroyImpl() {
         ASSERT(GetState() == State::Disconnected);
 
         // We failed during initialization so early that we don't even have a VkDevice. There is
@@ -903,7 +941,11 @@ namespace dawn_native { namespace vulkan {
         }
         mRecordingContext.signalSemaphores.clear();
 
+        // Some commands might still be marked as in-flight if we shut down because of a device
+        // loss. Recycle them as unused so that we free them below.
+        RecycleCompletedCommands();
         ASSERT(mCommandsInFlight.Empty());
+
         for (const CommandPoolAndBuffer& commands : mUnusedCommands) {
             // The VkCommandBuffer memory should be wholly owned by the pool and freed when it is
             // destroyed, but that's not the case in some drivers and the leak memory.
@@ -914,15 +956,29 @@ namespace dawn_native { namespace vulkan {
         }
         mUnusedCommands.clear();
 
+        // Some fences might still be marked as in-flight if we shut down because of a device loss.
+        // Delete them since at this point all commands are complete.
+        while (!mFencesInFlight.empty()) {
+            fn.DestroyFence(mVkDevice, *mFencesInFlight.front().first, nullptr);
+            mFencesInFlight.pop();
+        }
+
         for (VkFence fence : mUnusedFences) {
             fn.DestroyFence(mVkDevice, fence, nullptr);
         }
         mUnusedFences.clear();
 
+        ExecutionSerial completedSerial = GetCompletedCommandSerial();
+        for (Ref<DescriptorSetAllocator>& allocator :
+             mDescriptorAllocatorsPendingDeallocation.IterateUpTo(completedSerial)) {
+            allocator->FinishDeallocation(completedSerial);
+        }
+
         // Releasing the uploader enqueues buffers to be released.
         // Call Tick() again to clear them before releasing the deleter.
-        mResourceMemoryAllocator->Tick(GetCompletedCommandSerial());
-        mDeleter->Tick(GetCompletedCommandSerial());
+        mResourceMemoryAllocator->Tick(completedSerial);
+        mDeleter->Tick(completedSerial);
+        mDescriptorAllocatorsPendingDeallocation.ClearUpTo(completedSerial);
 
         // Allow recycled memory to be deleted.
         mResourceMemoryAllocator->DestroyPool();

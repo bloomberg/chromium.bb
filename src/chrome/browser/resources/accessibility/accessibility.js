@@ -57,8 +57,9 @@ const AXMode = {
   kInlineTextBoxes: 1 << 2,
   kScreenReader: 1 << 3,
   kHTML: 1 << 4,
-  kLabelImages: 1 << 5,
-  kPDF: 1 << 6,
+  kHTMLMetadata: 1 << 5,
+  kLabelImages: 1 << 6,
+  kPDF: 1 << 7,
 
   get kAXModeBasic() {
     return AXMode.kNativeAPIs | AXMode.kWebContents;
@@ -72,6 +73,11 @@ const AXMode = {
   get kAXModeComplete() {
     return AXMode.kNativeAPIs | AXMode.kWebContents | AXMode.kInlineTextBoxes |
         AXMode.kScreenReader | AXMode.kHTML;
+  },
+
+  get kAXModeCompleteNoHTML() {
+    return AXMode.kNativeAPIs | AXMode.kWebContents | AXMode.kInlineTextBoxes |
+        AXMode.kScreenReader;
   }
 };
 
@@ -179,7 +185,6 @@ function initialize() {
   bindCheckbox('text', data['text']);
   bindCheckbox('screenreader', data['screenreader']);
   bindCheckbox('html', data['html']);
-  bindCheckbox('label_images', data['labelImages']);
   bindCheckbox('internal', data['internal']);
 
   $('pages').textContent = '';
@@ -299,8 +304,7 @@ function formatRow(row, data, requestType) {
     row.appendChild(createModeElement(AXMode.kInlineTextBoxes, data, 'web'));
     row.appendChild(createModeElement(AXMode.kScreenReader, data, 'web'));
     row.appendChild(createModeElement(AXMode.kHTML, data, 'web'));
-    row.appendChild(
-        createModeElement(AXMode.kLabelImages, data, 'labelImages'));
+    row.appendChild(createModeElement(AXMode.kHTMLMetadata, data, 'metadata'));
     row.appendChild(createModeElement(AXMode.kPDF, data, 'pdf'));
   } else {
     const siteInfo = document.createElement('span');
@@ -385,6 +389,8 @@ function getNameForAccessibilityMode(mode) {
       return 'Screen reader';
     case AXMode.kHTML:
       return 'HTML';
+    case AXMode.kHTMLMetadata:
+      return 'HTML Metadata';
     case AXMode.kLabelImages:
       return 'Label images';
     case AXMode.kPDF:

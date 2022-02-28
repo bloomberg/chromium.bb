@@ -11,8 +11,7 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/macros.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
@@ -68,6 +67,10 @@ Feature::AvailabilityResult IsAvailableInChannel(Channel channel_for_feature,
 }  // namespace
 
 class SimpleFeatureTest : public testing::Test {
+ public:
+  SimpleFeatureTest(const SimpleFeatureTest&) = delete;
+  SimpleFeatureTest& operator=(const SimpleFeatureTest&) = delete;
+
  protected:
   SimpleFeatureTest() : current_channel_(Channel::UNKNOWN) {}
   bool LocationIsAvailable(SimpleFeature::Location feature_location,
@@ -85,7 +88,6 @@ class SimpleFeatureTest : public testing::Test {
 
  private:
   ScopedCurrentChannel current_channel_;
-  DISALLOW_COPY_AND_ASSIGN(SimpleFeatureTest);
 };
 
 TEST_F(SimpleFeatureTest, IsAvailableNullCase) {
@@ -378,10 +380,10 @@ TEST_F(SimpleFeatureTest, Context) {
   }
 
   {
-    SimpleFeature feature;
-    feature.set_location(SimpleFeature::COMPONENT_LOCATION);
+    SimpleFeature other_feature;
+    other_feature.set_location(SimpleFeature::COMPONENT_LOCATION);
     EXPECT_EQ(Feature::INVALID_LOCATION,
-              feature
+              other_feature
                   .IsAvailableToContext(extension.get(),
                                         Feature::BLESSED_EXTENSION_CONTEXT,
                                         Feature::CHROMEOS_PLATFORM)

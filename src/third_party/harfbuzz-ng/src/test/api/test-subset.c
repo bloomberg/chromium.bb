@@ -42,7 +42,7 @@ test_subset_32_tables (void)
   hb_set_add (codepoints, 'b');
   hb_set_add (codepoints, 'c');
 
-  subset = hb_subset (face, input);
+  subset = hb_subset_or_fail (face, input);
   g_assert (subset);
   g_assert (subset != hb_face_get_empty ());
 
@@ -64,9 +64,8 @@ test_subset_no_inf_loop (void)
   hb_set_add (codepoints, 'b');
   hb_set_add (codepoints, 'c');
 
-  subset = hb_subset (face, input);
-  g_assert (subset);
-  g_assert (subset == hb_face_get_empty ());
+  subset = hb_subset_or_fail (face, input);
+  g_assert (!subset);
 
   hb_subset_input_destroy (input);
   hb_face_destroy (subset);
@@ -86,13 +85,74 @@ test_subset_crash (void)
   hb_set_add (codepoints, 'b');
   hb_set_add (codepoints, 'c');
 
-  subset = hb_subset (face, input);
-  g_assert (subset);
-  g_assert (subset == hb_face_get_empty ());
+  subset = hb_subset_or_fail (face, input);
+  g_assert (!subset);
 
   hb_subset_input_destroy (input);
   hb_face_destroy (subset);
   hb_face_destroy (face);
+}
+
+static void
+test_subset_set_flags (void)
+{
+  hb_subset_input_t *input = hb_subset_input_create_or_fail ();
+
+  g_assert (hb_subset_input_get_flags (input) == HB_SUBSET_FLAGS_DEFAULT);
+
+  hb_subset_input_set_flags (input,
+                             HB_SUBSET_FLAGS_NAME_LEGACY |
+                             HB_SUBSET_FLAGS_NOTDEF_OUTLINE |
+                             HB_SUBSET_FLAGS_GLYPH_NAMES);
+
+  g_assert (hb_subset_input_get_flags (input) ==
+            (hb_subset_flags_t) (
+            HB_SUBSET_FLAGS_NAME_LEGACY |
+            HB_SUBSET_FLAGS_NOTDEF_OUTLINE |
+            HB_SUBSET_FLAGS_GLYPH_NAMES));
+
+  hb_subset_input_set_flags (input,
+                             HB_SUBSET_FLAGS_NAME_LEGACY |
+                             HB_SUBSET_FLAGS_NOTDEF_OUTLINE |
+                             HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES);
+
+  g_assert (hb_subset_input_get_flags (input) ==
+            (hb_subset_flags_t) (
+            HB_SUBSET_FLAGS_NAME_LEGACY |
+            HB_SUBSET_FLAGS_NOTDEF_OUTLINE |
+            HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES));
+
+
+  hb_subset_input_destroy (input);
+}
+
+
+static void
+test_subset_sets (void)
+{
+  hb_subset_input_t *input = hb_subset_input_create_or_fail ();
+  hb_set_t* set = hb_set_create ();
+
+  hb_set_add (hb_subset_input_set (input, HB_SUBSET_SETS_GLYPH_INDEX), 83);
+  hb_set_add (hb_subset_input_set (input, HB_SUBSET_SETS_UNICODE), 85);
+
+  hb_set_clear (hb_subset_input_set (input, HB_SUBSET_SETS_LAYOUT_FEATURE_TAG));
+  hb_set_add (hb_subset_input_set (input, HB_SUBSET_SETS_LAYOUT_FEATURE_TAG), 87);
+
+  hb_set_add (set, 83);
+  g_assert (hb_set_is_equal (hb_subset_input_glyph_set (input), set));
+  hb_set_clear (set);
+
+  hb_set_add (set, 85);
+  g_assert (hb_set_is_equal (hb_subset_input_unicode_set (input), set));
+  hb_set_clear (set);
+
+  hb_set_add (set, 87);
+  g_assert (hb_set_is_equal (hb_subset_input_set (input, HB_SUBSET_SETS_LAYOUT_FEATURE_TAG), set));
+  hb_set_clear (set);
+
+  hb_set_destroy (set);
+  hb_subset_input_destroy (input);
 }
 
 int
@@ -103,6 +163,8 @@ main (int argc, char **argv)
   hb_test_add (test_subset_32_tables);
   hb_test_add (test_subset_no_inf_loop);
   hb_test_add (test_subset_crash);
+  hb_test_add (test_subset_set_flags);
+  hb_test_add (test_subset_sets);
 
   return hb_test_run();
 }

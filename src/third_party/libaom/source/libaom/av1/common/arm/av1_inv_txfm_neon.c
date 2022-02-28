@@ -15,13 +15,13 @@
 #include "config/aom_dsp_rtcd.h"
 #include "config/av1_rtcd.h"
 
+#include "aom_dsp/arm/transpose_neon.h"
 #include "av1/common/av1_inv_txfm1d.h"
 #include "av1/common/av1_inv_txfm1d_cfg.h"
 #include "av1/common/av1_txfm.h"
 #include "av1/common/enums.h"
 #include "av1/common/idct.h"
 #include "av1/common/arm/av1_inv_txfm_neon.h"
-#include "av1/common/arm/transpose_neon.h"
 
 // 1D itx types
 typedef enum ATTRIBUTE_PACKED {

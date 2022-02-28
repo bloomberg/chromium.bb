@@ -21,19 +21,16 @@
 #include "perfetto/base/build_config.h"
 #include "perfetto/ext/base/string_utils.h"
 
-#include "src/trace_processor/importers/json/json_tracker.h"
+#include "perfetto/trace_processor/trace_blob_view.h"
 #include "src/trace_processor/importers/json/json_utils.h"
 #include "src/trace_processor/storage/stats.h"
 #include "src/trace_processor/trace_sorter.h"
 #include "src/trace_processor/util/status_macros.h"
-#include "src/trace_processor/util/trace_blob_view.h"
 
 namespace perfetto {
 namespace trace_processor {
 
 namespace {
-
-#if PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
 
 util::Status AppendUnescapedCharacter(char c,
                                       bool is_escaping,
@@ -60,9 +57,12 @@ util::Status AppendUnescapedCharacter(char c,
       case 't':
         key->push_back('\t');
         break;
+      case 'u':
+        // Just pass through \uxxxx escape sequences which JSON supports but is
+        // not worth the effort to parse as we never use them here.
+        key->append("\\u");
+        break;
       default:
-        // We don't support any other escape sequences (concretely \uxxxx
-        // which JSON supports but is too much effort for us to parse).
         return util::ErrStatus("Illegal character in JSON");
     }
   } else if (c != '\\') {
@@ -103,11 +103,8 @@ ReadStringRes ReadOneJsonString(const char* start,
   return ReadStringRes::kNeedsMoreData;
 }
 
-#endif  // PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
-
 }  // namespace
 
-#if PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
 ReadDictRes ReadOneJsonDict(const char* start,
                             const char* end,
                             base::StringView* value,
@@ -365,36 +362,18 @@ ReadSystemLineRes ReadOneSystemTraceLine(const char* start,
   }
   return ReadSystemLineRes::kNeedsMoreData;
 }
-#endif  // PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
 
 JsonTraceTokenizer::JsonTraceTokenizer(TraceProcessorContext* ctx)
     : context_(ctx) {}
 JsonTraceTokenizer::~JsonTraceTokenizer() = default;
 
-util::Status JsonTraceTokenizer::Parse(std::unique_ptr<uint8_t[]> data,
-                                       size_t size) {
+util::Status JsonTraceTokenizer::Parse(TraceBlobView blob) {
   PERFETTO_DCHECK(json::IsJsonSupported());
 
-#if PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
-  buffer_.insert(buffer_.end(), data.get(), data.get() + size);
+  buffer_.insert(buffer_.end(), blob.data(), blob.data() + blob.size());
   const char* buf = buffer_.data();
   const char* next = buf;
   const char* end = buf + buffer_.size();
-
-  JsonTracker* json_tracker = JsonTracker::GetOrCreate(context_);
-
-  // It's possible the displayTimeUnit key is at the end of the json
-  // file so to be correct we ought to parse the whole file looking
-  // for this key before parsing any events however this would require
-  // two passes on the file so for now we only handle displayTimeUnit
-  // correctly if it is at the beginning of the file.
-  const base::StringView view(buf, size);
-  if (view.find("\"displayTimeUnit\":\"ns\"") != base::StringView::npos) {
-    json_tracker->SetTimeUnit(json::TimeUnit::kNs);
-  } else if (view.find("\"displayTimeUnit\":\"ms\"") !=
-             base::StringView::npos) {
-    json_tracker->SetTimeUnit(json::TimeUnit::kMs);
-  }
 
   if (offset_ == 0) {
     // Strip leading whitespace.
@@ -436,23 +415,12 @@ util::Status JsonTraceTokenizer::Parse(std::unique_ptr<uint8_t[]> data,
   offset_ += static_cast<uint64_t>(next - buf);
   buffer_.erase(buffer_.begin(), buffer_.begin() + (next - buf));
   return util::OkStatus();
-#else
-  perfetto::base::ignore_result(data);
-  perfetto::base::ignore_result(size);
-  perfetto::base::ignore_result(context_);
-  perfetto::base::ignore_result(format_);
-  perfetto::base::ignore_result(position_);
-  perfetto::base::ignore_result(offset_);
-  return util::ErrStatus("Cannot parse JSON trace due to missing JSON support");
-#endif  // PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
 }
 
-#if PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
 util::Status JsonTraceTokenizer::ParseInternal(const char* start,
                                                const char* end,
                                                const char** out) {
   PERFETTO_DCHECK(json::IsJsonSupported());
-  JsonTracker* json_tracker = JsonTracker::GetOrCreate(context_);
   auto* trace_sorter = context_->sorter.get();
 
   const char* next = start;
@@ -484,13 +452,22 @@ util::Status JsonTraceTokenizer::ParseInternal(const char* start,
         return ParseInternal(next + 1, end, out);
       } else if (key == "displayTimeUnit") {
         std::string time_unit;
-        auto string_res = ReadOneJsonString(next + 1, end, &time_unit, &next);
-        if (string_res == ReadStringRes::kFatalError)
+        auto result = ReadOneJsonString(next + 1, end, &time_unit, &next);
+        if (result == ReadStringRes::kFatalError)
           return util::ErrStatus("Could not parse displayTimeUnit");
-        if (string_res == ReadStringRes::kNeedsMoreData)
-          return util::ErrStatus("displayTimeUnit too large");
-        if (time_unit != "ms" && time_unit != "ns")
-          return util::ErrStatus("displayTimeUnit unknown");
+        context_->storage->IncrementStats(stats::json_display_time_unit);
+        return ParseInternal(next, end, out);
+      } else if (key == "otherData") {
+        base::StringView unparsed;
+        const auto other = ReadOneJsonDict(next, end, &unparsed, &next);
+        if (other == ReadDictRes::kEndOfArray)
+          return util::ErrStatus(
+              "Failure parsing JSON: Missing ] in otherData");
+        if (other == ReadDictRes::kEndOfTrace)
+          return util::ErrStatus(
+              "Failure parsing JSON: Failed parsing otherData");
+        if (other == ReadDictRes::kNeedsMoreData)
+          return util::ErrStatus("Failure parsing JSON: otherData too large");
         return ParseInternal(next, end, out);
       } else {
         // If we don't recognize the key, just ignore the rest of the trace and
@@ -571,7 +548,7 @@ util::Status JsonTraceTokenizer::ParseInternal(const char* start,
         base::Optional<std::string> opt_raw_ts;
         RETURN_IF_ERROR(ExtractValueForJsonKey(unparsed, "ts", &opt_raw_ts));
         base::Optional<int64_t> opt_ts =
-            opt_raw_ts ? json_tracker->CoerceToTs(*opt_raw_ts) : base::nullopt;
+            opt_raw_ts ? json::CoerceToTs(*opt_raw_ts) : base::nullopt;
         int64_t ts = 0;
         if (opt_ts.has_value()) {
           ts = opt_ts.value();
@@ -595,7 +572,6 @@ util::Status JsonTraceTokenizer::ParseInternal(const char* start,
   *out = next;
   return util::OkStatus();
 }
-#endif  // PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
 
 void JsonTraceTokenizer::NotifyEndOfFile() {}
 

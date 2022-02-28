@@ -9,7 +9,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COMPUTED_STYLE_BASE_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/data_ref.h"
 #include "third_party/blink/renderer/core/style/member_copy.h"
@@ -143,10 +142,6 @@ class ComputedStyleBase {
 
   void InheritFrom(const ComputedStyleBase& other,
                                       IsAtShadowBoundary isAtShadowBoundary);
-  void InheritCustomPropertiesFrom(const ComputedStyleBase& other) {
-    inherited_variables_data_ = other.inherited_variables_data_;
-  }
-
   void CopyNonInheritedFromCached(
       const ComputedStyleBase& other);
 

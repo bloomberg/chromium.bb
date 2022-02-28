@@ -66,6 +66,13 @@ void QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
 
 void QuicStreamSequencer::OnCryptoFrame(const QuicCryptoFrame& frame) {
   ++num_frames_received_;
+  if (GetQuicReloadableFlag(quic_accept_empty_crypto_frame)) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_accept_empty_crypto_frame);
+    if (frame.data_length == 0) {
+      // Ignore empty crypto frame.
+      return;
+    }
+  }
   OnFrameData(frame.offset, frame.data_length, frame.data_buffer);
 }
 
@@ -236,7 +243,8 @@ void QuicStreamSequencer::MarkConsumed(size_t num_bytes_consumed) {
         << "Invalid argument to MarkConsumed."
         << " expect to consume: " << num_bytes_consumed
         << ", but not enough bytes available. " << DebugString();
-    stream_->Reset(QUIC_ERROR_PROCESSING_STREAM);
+    stream_->ResetWithError(
+        QuicResetStreamError::FromInternal(QUIC_ERROR_PROCESSING_STREAM));
     return;
   }
   stream_->AddBytesConsumed(num_bytes_consumed);

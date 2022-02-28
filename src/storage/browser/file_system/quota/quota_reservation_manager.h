@@ -14,7 +14,6 @@
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/files/file.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/common/file_system/file_system_types.h"
@@ -39,6 +38,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaReservationManager {
   class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaBackend {
    public:
     QuotaBackend() = default;
+
+    QuotaBackend(const QuotaBackend&) = delete;
+    QuotaBackend& operator=(const QuotaBackend&) = delete;
+
     virtual ~QuotaBackend() = default;
 
     // Reserves or reclaims |delta| of quota for |origin| and |type| pair.
@@ -67,12 +70,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaReservationManager {
                                      FileSystemType type) = 0;
     virtual void DecrementDirtyCount(const url::Origin& origin,
                                      FileSystemType type) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(QuotaBackend);
   };
 
   explicit QuotaReservationManager(std::unique_ptr<QuotaBackend> backend);
+
+  QuotaReservationManager(const QuotaReservationManager&) = delete;
+  QuotaReservationManager& operator=(const QuotaReservationManager&) = delete;
+
   ~QuotaReservationManager();
 
   // The entry point of the quota reservation.  Creates new reservation object
@@ -117,8 +121,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaReservationManager {
 
   base::SequenceChecker sequence_checker_;
   base::WeakPtrFactory<QuotaReservationManager> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(QuotaReservationManager);
 };
 
 }  // namespace storage

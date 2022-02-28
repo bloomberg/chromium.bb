@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
@@ -33,19 +34,20 @@ import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCo
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
-import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.components.image_fetcher.ImageFetcherConfig;
+import org.chromium.components.image_fetcher.ImageFetcherFactory;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ApplicationViewportInsetSupplier;
+import org.chromium.ui.util.AccessibilityUtil;
 import org.chromium.ui.util.TokenHolder;
 
 /**
@@ -56,6 +58,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
     private static final int FADE_IN_TRANSITION_TIME_MS = 150;
     private static final int CHANGE_BOUNDS_TRANSITION_TIME_MS = 250;
 
+    private final AccessibilityUtil mAccessibilityUtil;
     private final AssistantModel mModel;
     private final AssistantOverlayCoordinator mOverlayCoordinator;
     private final BottomSheetController mBottomSheetController;
@@ -66,7 +69,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
     @Nullable
     private WebContents mWebContents;
     private ApplicationViewportInsetSupplier mWindowApplicationInsetSupplier;
-    private final ChromeAccessibilityUtil.Observer mAccessibilityObserver;
+    private final AccessibilityUtil.Observer mAccessibilityObserver;
     private final BottomSheetObserver mBottomSheetObserver;
 
     // Child coordinators.
@@ -104,7 +107,10 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
     AssistantBottomBarCoordinator(Activity activity, AssistantModel model,
             AssistantOverlayCoordinator overlayCoordinator, BottomSheetController controller,
             ApplicationViewportInsetSupplier applicationViewportInsetSupplier,
-            TabObscuringHandler tabObscuringHandler) {
+            TabObscuringHandler tabObscuringHandler,
+            @NonNull BrowserControlsStateProvider browserControlsStateProvider,
+            AccessibilityUtil accessibilityUtil) {
+        mAccessibilityUtil = accessibilityUtil;
         mModel = model;
         mOverlayCoordinator = overlayCoordinator;
         mBottomSheetController = controller;
@@ -125,6 +131,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         mRootViewContainer =
                 (AssistantRootViewContainer) LayoutUtils.createInflater(activity).inflate(
                         R.layout.autofill_assistant_bottom_sheet_content, /* root= */ null);
+        mRootViewContainer.initialize(browserControlsStateProvider, accessibilityUtil);
         mScrollableContent = mRootViewContainer.findViewById(R.id.scrollable_content);
         ViewGroup scrollableContentContainer =
                 mScrollableContent.findViewById(R.id.scrollable_content_container);
@@ -139,11 +146,12 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         setupAnimations(model, rootView);
 
         // Instantiate child components.
-        mHeaderCoordinator = new AssistantHeaderCoordinator(activity, model.getHeaderModel());
+        mHeaderCoordinator =
+                new AssistantHeaderCoordinator(activity, model.getHeaderModel(), accessibilityUtil);
         mInfoBoxCoordinator = new AssistantInfoBoxCoordinator(activity, model.getInfoBoxModel());
         mDetailsCoordinator = new AssistantDetailsCoordinator(activity, model.getDetailsModel(),
                 ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY,
-                        AutofillAssistantUiController.getProfile()));
+                        AutofillAssistantUiController.getProfile().getProfileKey()));
         mPaymentRequestCoordinator =
                 new AssistantCollectUserDataCoordinator(activity, model.getCollectUserDataModel());
         mFormCoordinator = new AssistantFormCoordinator(activity, model.getFormModel());
@@ -202,7 +210,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
 
         mBottomSheetObserver = new EmptyBottomSheetObserver() {
             @Override
-            public void onSheetStateChanged(int newState) {
+            public void onSheetStateChanged(int newState, int reason) {
                 if (newState == SheetState.PEEK || newState == SheetState.HALF
                         || newState == SheetState.FULL) {
                     mModel.setBottomSheetState(newState);
@@ -289,7 +297,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
                                             : mTargetViewportMode);
             PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, mRootViewContainer::requestLayout);
         };
-        ChromeAccessibilityUtil.get().addObserver(mAccessibilityObserver);
+        mAccessibilityUtil.addObserver(mAccessibilityObserver);
     }
 
     AssistantActionsCarouselCoordinator getActionsCarouselCoordinator() {
@@ -354,7 +362,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
     public void destroy() {
         resetVisualViewportHeight();
         mWindowApplicationInsetSupplier.removeSupplier(mInsetSupplier);
-        ChromeAccessibilityUtil.get().removeObserver(mAccessibilityObserver);
+        mAccessibilityUtil.removeObserver(mAccessibilityObserver);
         mBottomSheetController.removeObserver(mBottomSheetObserver);
 
         if (mObscuringToken != TokenHolder.INVALID_TOKEN) {
@@ -384,7 +392,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
 
     void setViewportMode(@AssistantViewportMode int mode) {
         if (mode == mViewportMode) return;
-        if (ChromeAccessibilityUtil.get().isAccessibilityEnabled()
+        if (mAccessibilityUtil.isAccessibilityEnabled()
                 && mode != AssistantViewportMode.RESIZE_VISUAL_VIEWPORT) {
             mTargetViewportMode = mode;
             return;

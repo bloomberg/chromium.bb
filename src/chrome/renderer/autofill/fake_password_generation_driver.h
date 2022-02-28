@@ -14,12 +14,15 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class FakePasswordGenerationDriver
     : public autofill::mojom::PasswordGenerationDriver {
  public:
   FakePasswordGenerationDriver();
+
+  FakePasswordGenerationDriver(const FakePasswordGenerationDriver&) = delete;
+  FakePasswordGenerationDriver& operator=(const FakePasswordGenerationDriver&) =
+      delete;
 
   ~FakePasswordGenerationDriver() override;
 
@@ -50,8 +53,6 @@ class FakePasswordGenerationDriver
  private:
   mojo::AssociatedReceiver<autofill::mojom::PasswordGenerationDriver> receiver_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(FakePasswordGenerationDriver);
 };
 
 #endif  // CHROME_RENDERER_AUTOFILL_FAKE_PASSWORD_GENERATION_DRIVER_H_

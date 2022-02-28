@@ -6,15 +6,14 @@
 
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
-#include "third_party/blink/public/mojom/clipboard/raw_clipboard.mojom-blink.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
-#include "third_party/blink/renderer/core/clipboard/raw_system_clipboard.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -217,41 +216,36 @@ class ClipboardSvgWriter final : public ClipboardWriter {
 };
 
 // Writes a Blob with arbitrary, unsanitized content to the System Clipboard.
-class ClipboardRawDataWriter final : public ClipboardWriter {
+class ClipboardCustomFormatWriter final : public ClipboardWriter {
  public:
-  ClipboardRawDataWriter(RawSystemClipboard* raw_system_clipboard,
-                         ClipboardPromise* promise,
-                         String mime_type)
-      : ClipboardWriter(raw_system_clipboard, promise), mime_type_(mime_type) {}
-  ~ClipboardRawDataWriter() override = default;
+  ClipboardCustomFormatWriter(SystemClipboard* system_clipboard,
+                              ClipboardPromise* promise,
+                              const String& mime_type)
+      : ClipboardWriter(system_clipboard, promise), mime_type_(mime_type) {}
+  ~ClipboardCustomFormatWriter() override = default;
 
  private:
   void StartWrite(
-      DOMArrayBuffer* raw_data,
+      DOMArrayBuffer* custom_format_data,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-    // Raw Data is written directly, and doesn't require decoding.
-    Write(raw_data);
+    Write(custom_format_data);
   }
 
-  void Write(DOMArrayBuffer* raw_data) {
+  void Write(DOMArrayBuffer* custom_format_data) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-    if (raw_data->ByteLength() >=
-        mojom::blink::RawClipboardHost::kMaxDataSize) {
+    if (!promise_->GetLocalFrame())
+      return;
+    if (custom_format_data->ByteLength() >=
+        mojom::blink::ClipboardHost::kMaxDataSize) {
       promise_->RejectFromReadOrDecodeFailure();
       return;
     }
-
-    uint8_t* raw_data_pointer = static_cast<uint8_t*>(raw_data->Data());
-    mojo_base::BigBuffer buffer(std::vector<uint8_t>(
-        raw_data_pointer, raw_data_pointer + raw_data->ByteLength()));
-
-    if (!promise_->GetLocalFrame())
-      return;
-    raw_system_clipboard()->Write(mime_type_, std::move(buffer));
-
+    mojo_base::BigBuffer buffer(
+        base::make_span(static_cast<uint8_t*>(custom_format_data->Data()),
+                        custom_format_data->ByteLength()));
+    system_clipboard()->WriteUnsanitizedCustomFormat(mime_type_,
+                                                     std::move(buffer));
     promise_->CompleteWriteRepresentation();
   }
 
@@ -265,8 +259,14 @@ class ClipboardRawDataWriter final : public ClipboardWriter {
 // static
 ClipboardWriter* ClipboardWriter::Create(SystemClipboard* system_clipboard,
                                          const String& mime_type,
-                                         ClipboardPromise* promise) {
-  DCHECK(ClipboardWriter::IsValidType(mime_type, /*is_raw=*/false));
+                                         ClipboardPromise* promise,
+                                         bool is_custom_format_type) {
+  DCHECK(ClipboardWriter::IsValidType(mime_type, is_custom_format_type));
+  if (is_custom_format_type &&
+      RuntimeEnabledFeatures::ClipboardCustomFormatsEnabled()) {
+    return MakeGarbageCollected<ClipboardCustomFormatWriter>(
+        system_clipboard, promise, mime_type);
+  }
   if (mime_type == kMimeTypeImagePng) {
     return MakeGarbageCollected<ClipboardImageWriter>(system_clipboard,
                                                       promise);
@@ -286,46 +286,26 @@ ClipboardWriter* ClipboardWriter::Create(SystemClipboard* system_clipboard,
   return nullptr;
 }
 
-// static
-ClipboardWriter* ClipboardWriter::Create(
-    RawSystemClipboard* raw_system_clipboard,
-    const String& mime_type,
-    ClipboardPromise* promise) {
-  DCHECK(base::FeatureList::IsEnabled(features::kRawClipboard));
-  DCHECK(ClipboardWriter::IsValidType(mime_type, /*is_raw=*/true));
-  return MakeGarbageCollected<ClipboardRawDataWriter>(raw_system_clipboard,
-                                                      promise, mime_type);
-}
-
 ClipboardWriter::ClipboardWriter(SystemClipboard* system_clipboard,
-                                 ClipboardPromise* promise)
-    : ClipboardWriter(system_clipboard, nullptr, promise) {}
-
-ClipboardWriter::ClipboardWriter(RawSystemClipboard* raw_system_clipboard,
-                                 ClipboardPromise* promise)
-    : ClipboardWriter(nullptr, raw_system_clipboard, promise) {}
-
-ClipboardWriter::ClipboardWriter(SystemClipboard* system_clipboard,
-                                 RawSystemClipboard* raw_system_clipboard,
                                  ClipboardPromise* promise)
     : promise_(promise),
       clipboard_task_runner_(promise->GetExecutionContext()->GetTaskRunner(
           TaskType::kUserInteraction)),
       file_reading_task_runner_(promise->GetExecutionContext()->GetTaskRunner(
           TaskType::kFileReading)),
-      system_clipboard_(system_clipboard),
-      raw_system_clipboard_(raw_system_clipboard),
-      self_keep_alive_(PERSISTENT_FROM_HERE, this) {}
+      system_clipboard_(system_clipboard) {}
 
 ClipboardWriter::~ClipboardWriter() {
   DCHECK(!file_reader_);
 }
 
 // static
-bool ClipboardWriter::IsValidType(const String& type, bool is_raw) {
-  if (is_raw)
-    return type.length() < mojom::blink::RawClipboardHost::kMaxFormatSize;
-
+bool ClipboardWriter::IsValidType(const String& type,
+                                  bool is_custom_format_type) {
+  if (is_custom_format_type) {
+    return RuntimeEnabledFeatures::ClipboardCustomFormatsEnabled() &&
+           type.length() < mojom::blink::ClipboardHost::kMaxFormatSize;
+  }
   if (type == kMimeTypeImageSvg)
     return RuntimeEnabledFeatures::ClipboardSvgEnabled();
 
@@ -368,7 +348,6 @@ void ClipboardWriter::DidFail(FileErrorCode error_code) {
 void ClipboardWriter::Trace(Visitor* visitor) const {
   visitor->Trace(promise_);
   visitor->Trace(system_clipboard_);
-  visitor->Trace(raw_system_clipboard_);
 }
 
 }  // namespace blink

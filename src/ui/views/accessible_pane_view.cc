@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -25,6 +26,10 @@ class AccessiblePaneViewFocusSearch : public FocusSearch {
   explicit AccessiblePaneViewFocusSearch(AccessiblePaneView* pane_view)
       : FocusSearch(pane_view, true, true), accessible_pane_view_(pane_view) {}
 
+  AccessiblePaneViewFocusSearch(const AccessiblePaneViewFocusSearch&) = delete;
+  AccessiblePaneViewFocusSearch& operator=(
+      const AccessiblePaneViewFocusSearch&) = delete;
+
  protected:
   View* GetParent(View* v) override {
     return accessible_pane_view_->ContainsForFocusSearch(root(), v)
@@ -39,8 +44,7 @@ class AccessiblePaneViewFocusSearch : public FocusSearch {
   }
 
  private:
-  AccessiblePaneView* accessible_pane_view_;
-  DISALLOW_COPY_AND_ASSIGN(AccessiblePaneViewFocusSearch);
+  raw_ptr<AccessiblePaneView> accessible_pane_view_;
 };
 
 AccessiblePaneView::AccessiblePaneView()
@@ -50,7 +54,7 @@ AccessiblePaneView::AccessiblePaneView()
 
 AccessiblePaneView::~AccessiblePaneView() {
   if (pane_has_focus_) {
-    focus_manager_->RemoveFocusChangeListener(this);
+    RemovePaneFocus();
   }
 }
 

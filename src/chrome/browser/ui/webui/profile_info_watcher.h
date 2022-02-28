@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "components/prefs/pref_member.h"
 
@@ -23,6 +23,10 @@ class IdentityManager;
 class ProfileInfoWatcher : public ProfileAttributesStorage::Observer {
  public:
   ProfileInfoWatcher(Profile* profile, base::RepeatingClosure callback);
+
+  ProfileInfoWatcher(const ProfileInfoWatcher&) = delete;
+  ProfileInfoWatcher& operator=(const ProfileInfoWatcher&) = delete;
+
   ~ProfileInfoWatcher() override;
 
   // Gets the authenticated username (e.g. username@gmail.com) for |profile_|.
@@ -40,14 +44,12 @@ class ProfileInfoWatcher : public ProfileAttributesStorage::Observer {
   void RunCallback();
 
   // Weak reference to the profile this class observes.
-  Profile* const profile_;
+  const raw_ptr<Profile> profile_;
 
   // Called when the authenticated username changes.
   base::RepeatingClosure callback_;
 
   BooleanPrefMember signin_allowed_pref_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileInfoWatcher);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_PROFILE_INFO_WATCHER_H_

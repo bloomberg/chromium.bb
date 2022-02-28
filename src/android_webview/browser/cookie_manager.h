@@ -10,6 +10,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/containers/circular_deque.h"
+#include "base/files/file_path.h"
 #include "base/no_destructor.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread.h"
@@ -84,6 +85,9 @@ namespace android_webview {
 class CookieManager {
  public:
   static CookieManager* GetInstance();
+
+  CookieManager(const CookieManager&) = delete;
+  CookieManager& operator=(const CookieManager&) = delete;
 
   // Passes a |cookie_manager_remote|, which this will use for CookieManager
   // APIs going forward. Only called in the Network Service path, with the
@@ -270,8 +274,6 @@ class CookieManager {
 
   // The CookieManager shared with the NetworkContext.
   mojo::Remote<network::mojom::CookieManager> mojo_cookie_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(CookieManager);
 };
 
 }  // namespace android_webview

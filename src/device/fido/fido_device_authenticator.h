@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -38,11 +37,21 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
     : public FidoAuthenticator {
  public:
   explicit FidoDeviceAuthenticator(std::unique_ptr<FidoDevice> device);
+
+  FidoDeviceAuthenticator(const FidoDeviceAuthenticator&) = delete;
+  FidoDeviceAuthenticator& operator=(const FidoDeviceAuthenticator&) = delete;
+
   ~FidoDeviceAuthenticator() override;
 
   // FidoAuthenticator:
   void InitializeAuthenticator(base::OnceClosure callback) override;
+  void ExcludeAppIdCredentialsBeforeMakeCredential(
+      CtapMakeCredentialRequest request,
+      MakeCredentialOptions options,
+      base::OnceCallback<void(CtapDeviceResponseCode, absl::optional<bool>)>)
+      override;
   void MakeCredential(CtapMakeCredentialRequest request,
+                      MakeCredentialOptions options,
                       MakeCredentialCallback callback) override;
   void GetAssertion(CtapGetAssertionRequest request,
                     CtapGetAssertionOptions options,
@@ -83,6 +92,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void DeleteCredential(const pin::TokenResponse& pin_token,
                         const PublicKeyCredentialDescriptor& credential_id,
                         DeleteCredentialCallback callback) override;
+  bool SupportsUpdateUserInformation() const override;
+  void UpdateUserInformation(const pin::TokenResponse& pin_token,
+                             const PublicKeyCredentialDescriptor& credential_id,
+                             const PublicKeyCredentialUserEntity& updated_user,
+                             UpdateUserInformationCallback callback) override;
 
   void GetModality(BioEnrollmentCallback callback) override;
   void GetSensorInfo(BioEnrollmentCallback callback) override;
@@ -262,8 +276,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   absl::optional<PINUVAuthProtocol> chosen_pin_uv_auth_protocol_;
 
   base::WeakPtrFactory<FidoDeviceAuthenticator> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FidoDeviceAuthenticator);
 };
 
 }  // namespace device

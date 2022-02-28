@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_METRICS_H_
 #define CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_METRICS_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/site_engagement/content/site_engagement_observer.h"
 #include "url/gurl.h"
@@ -77,7 +79,12 @@ class WebAppMetrics : public KeyedService,
 
  private:
   void CountUserInstalledApps();
-  enum class TabSwitching { kFrom, kTo, kBackgroundClosing };
+  enum class TabSwitching {
+    kFrom,
+    kTo,
+    kBackgroundClosing,
+    kForegroundClosing
+  };
   void UpdateUkmData(content::WebContents* web_contents, TabSwitching mode);
 
   // Calculate number of user installed apps once on start to avoid cpu costs
@@ -86,10 +93,10 @@ class WebAppMetrics : public KeyedService,
   int num_user_installed_apps_ = kNumUserInstalledAppsNotCounted;
 
   base::flat_map<web_app::AppId, base::Time> app_last_interacted_time_{};
-  content::WebContents* foreground_web_contents_ = nullptr;
+  raw_ptr<content::WebContents> foreground_web_contents_ = nullptr;
   GURL last_recorded_web_app_start_url_;
 
-  Profile* const profile_;
+  const raw_ptr<Profile> profile_;
 
   BrowserTabStripTracker browser_tab_strip_tracker_;
 

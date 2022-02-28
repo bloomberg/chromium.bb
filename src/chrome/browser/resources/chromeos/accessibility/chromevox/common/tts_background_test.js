@@ -40,6 +40,8 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Preprocess', function() {
   assertEquals('A', preprocess('A'));
   assertEquals('a.', preprocess('a.'));
   assertEquals('.a', preprocess('.a'));
+  assertEquals('Ａ', preprocess('ａ'));
+  assertEquals('Б', preprocess('б'));
 
   // Only summarize punctuation if there are three or more occurrences without
   // a space in between.
@@ -66,6 +68,21 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Preprocess', function() {
   // Repetitions for the pound sterling shouldn't be summarized.
   assertEquals(
       'pound sterling pound sterling pound sterling', preprocess('£££'));
+
+  // Negative currency values.
+  assertEquals('-1 dollar', preprocess('-$1'));
+  assertEquals('-1.12 dollar', preprocess('-$1.12'));
+  assertEquals('-1,123.58 dollar', preprocess('-$1,123.58'));
+  assertEquals('-1,123,581.3 dollar', preprocess('-$1,123,581.3'));
+  assertEquals('-1,123.58 pound sterling', preprocess('-£1,123.58'));
+
+  // Bullets
+  assertEquals('bullet', preprocess('\u2022'));
+  assertEquals('3 bullets', preprocess('\u2022\u2022\u2022'));
+  assertEquals('white bullet', preprocess('\u25e6'));
+  assertEquals('3 white bullets', preprocess('\u25e6\u25e6\u25e6'));
+  assertEquals('square bullet', preprocess('\u25a0'));
+  assertEquals('3 square bullets', preprocess('\u25a0\u25a0\u25a0'));
 });
 
 TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
@@ -81,7 +98,7 @@ TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
   };
 
   // Asks this test to process the next task immediately.
-  const flushNextTask = function() {
+  const flushNextTask = () => {
     const task = tasks.shift();
     if (!task) {
       return;
@@ -94,7 +111,7 @@ TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
       assertEquals(task.expectedVoice, actualVoice);
       flushNextTask();
     }));
-  }.bind(this);
+  };
 
   assertTrue(!tts.currentVoice);
 
@@ -131,7 +148,7 @@ TEST_F(
     'ChromeVoxTtsBackgroundTest', 'DISABLED_EmptyStringCallsCallbacks',
     function() {
       let startCalls = 0, endCalls = 0;
-      assertCallsCallbacks = function(text, speakCalls) {
+      assertCallsCallbacks = (text, speakCalls) => {
         tts.speak(text, QueueMode.QUEUE, {
           startCallback() {
             ++startCalls;
@@ -142,7 +159,7 @@ TEST_F(
             assertEquals(endCalls, startCalls);
           })
         });
-      }.bind(this);
+      };
 
       assertCallsCallbacks('', 1);
       assertCallsCallbacks('  ', 2);
@@ -176,6 +193,8 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'AnnounceCapitalLetters', function() {
   localStorage['capitalStrategy'] = 'announceCapitals';
   assertEquals('Cap A', preprocess('A'));
   assertEquals('Cap Z', preprocess('Z'));
+  assertEquals('Cap Ａ', preprocess('Ａ'));
+  assertEquals('Cap Б', preprocess('Б'));
 
   // Do not announce capital for the following inputs.
   assertEquals('BB', preprocess('BB'));
@@ -248,6 +267,13 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'NumberReadingStyle', function() {
   assertEquals(
       'An unanswered call lasts for 30 seconds.', lastSpokenTextString);
 
+  tts.speak('１００');
+  assertEquals('１００', lastSpokenTextString);
+
+  tts.speak('An unanswered call lasts for ３０ seconds.');
+  assertEquals(
+      'An unanswered call lasts for ３０ seconds.', lastSpokenTextString);
+
   localStorage['numberReadingStyle'] = 'asDigits';
   tts.speak('100');
   assertEquals('1 0 0', lastSpokenTextString);
@@ -255,6 +281,13 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'NumberReadingStyle', function() {
   tts.speak('An unanswered call lasts for 30 seconds.');
   assertEquals(
       'An unanswered call lasts for 3 0 seconds.', lastSpokenTextString);
+
+  tts.speak('１００');
+  assertEquals('１ ０ ０', lastSpokenTextString);
+
+  tts.speak('An unanswered call lasts for ３０ seconds.');
+  assertEquals(
+      'An unanswered call lasts for ３ ０ seconds.', lastSpokenTextString);
 });
 
 SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'SplitLongText', function() {
@@ -341,9 +374,15 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Phonetics', function() {
   tts.speak('t', QueueMode.QUEUE, {lang: 'ja', phoneticCharacters: true});
   assertTrue(spokenStrings.includes('T'));
   assertTrue(spokenStrings.includes('ティー タイム'));
+
   tts.speak('a', QueueMode.QUEUE, {lang: 'ja', phoneticCharacters: true});
   assertTrue(spokenStrings.includes('A'));
   assertTrue(spokenStrings.includes('エイ アニマル'));
+
+  tts.speak('A', QueueMode.QUEUE, {lang: 'ja', phoneticCharacters: true});
+  assertTrue(spokenStrings.includes('A'));
+  assertTrue(spokenStrings.includes('エイ アニマル'));
+
   tts.speak('人', QueueMode.QUEUE, {lang: 'ja', phoneticCharacters: true});
   assertTrue(spokenStrings.includes('人'));
   assertTrue(spokenStrings.includes('ヒト，ニンゲン ノ ニン'));
@@ -462,4 +501,50 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'InterjectUtterances', function() {
     {textString: 'there.', queueMode: QueueMode.QUEUE},
     {textString: 'How are you?', queueMode: QueueMode.QUEUE}
   ]);
+});
+
+SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Mute', function() {
+  // Fake out setTimeout for our purposes.
+  let lastSetTimeoutCallback;
+  window.setTimeout = (callback, delay) => {
+    lastSetTimeoutCallback = callback;
+  };
+
+  // Mock this to ensure no events are triggered.
+  chrome.tts.speak = () => {};
+  // Push some text into the speech queue and verify state.
+  tts.speak('Hello', QueueMode.FLUSH, {});
+  tts.speak('world.', QueueMode.QUEUE, {});
+  this.expectUtteranceQueueIsLike([
+    {textString: 'Hello', queueMode: QueueMode.FLUSH},
+    {textString: 'world.', queueMode: QueueMode.QUEUE}
+  ]);
+
+  // Toggle speech off.
+  tts.toggleSpeechOnOrOff();
+
+  // The above call should have resulted in a setTimeout; call it.
+  assertTrue(!!lastSetTimeoutCallback);
+  lastSetTimeoutCallback();
+  lastSetTimeoutCallback = undefined;
+
+  // Make assertions.
+  assertEquals(null, tts.currentUtterance_);
+  this.expectUtteranceQueueIsLike([]);
+});
+
+TEST_F('ChromeVoxTtsBackgroundTest', 'ResetTtsSettingsClearsVoice', function() {
+  this.newCallback(async () => {
+    ChromeVox.tts.ttsEngines_[0].currentVoice = '';
+    CommandHandler.onCommand('resetTextToSpeechSettings');
+    await new Promise(r => {
+      ChromeVox.tts.speak = textString => {
+        if (textString === 'Reset text to speech settings to default values') {
+          r();
+        }
+      };
+    });
+    assertEquals(
+        constants.SYSTEM_VOICE, ChromeVox.tts.ttsEngines_[0].currentVoice);
+  })();
 });

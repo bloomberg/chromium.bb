@@ -16,7 +16,6 @@ limitations under the License.
 #define TENSORFLOW_C_EAGER_ABSTRACT_CONTEXT_H_
 
 #include <memory>
-#include <vector>
 
 #include "tensorflow/c/eager/abstract_function.h"
 #include "tensorflow/c/eager/abstract_operation.h"
@@ -33,7 +32,7 @@ namespace tensorflow {
 // environment, a traced representation etc.
 class AbstractContext {
  protected:
-  enum AbstractContextKind { kTracing, kImmediateExecution };
+  enum AbstractContextKind { kGraph, kMlir, kEager, kTfrt, kTape, kOpHandler };
   explicit AbstractContext(AbstractContextKind kind) : kind_(kind) {}
   virtual ~AbstractContext() {}
 
@@ -43,7 +42,7 @@ class AbstractContext {
   // Release any underlying resources, including the interface object.
   //
   // WARNING: The destructor of this class is marked as protected to disallow
-  // clients from directly destroying this object since it may manage it's own
+  // clients from directly destroying this object since it may manage its own
   // lifetime through ref counting. Thus clients MUST call Release() in order to
   // destroy an instance of this class.
   virtual void Release() = 0;

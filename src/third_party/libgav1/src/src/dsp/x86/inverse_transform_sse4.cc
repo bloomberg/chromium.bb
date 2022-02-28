@@ -41,7 +41,8 @@ namespace {
 #include "src/dsp/inverse_transform.inc"
 
 template <int store_width, int store_count>
-LIBGAV1_ALWAYS_INLINE void StoreDst(int16_t* dst, int32_t stride, int32_t idx,
+LIBGAV1_ALWAYS_INLINE void StoreDst(int16_t* LIBGAV1_RESTRICT dst,
+                                    int32_t stride, int32_t idx,
                                     const __m128i* s) {
   // NOTE: It is expected that the compiler will unroll these loops.
   if (store_width == 16) {
@@ -63,8 +64,8 @@ LIBGAV1_ALWAYS_INLINE void StoreDst(int16_t* dst, int32_t stride, int32_t idx,
 }
 
 template <int load_width, int load_count>
-LIBGAV1_ALWAYS_INLINE void LoadSrc(const int16_t* src, int32_t stride,
-                                   int32_t idx, __m128i* x) {
+LIBGAV1_ALWAYS_INLINE void LoadSrc(const int16_t* LIBGAV1_RESTRICT src,
+                                   int32_t stride, int32_t idx, __m128i* x) {
   // NOTE: It is expected that the compiler will unroll these loops.
   if (load_width == 16) {
     for (int i = 0; i < load_count; i += 4) {
@@ -1638,9 +1639,10 @@ LIBGAV1_ALWAYS_INLINE bool Identity4DcOnly(void* dest, int adjusted_tx_height,
 
 LIBGAV1_ALWAYS_INLINE void Identity4ColumnStoreToFrame(
     Array2DView<uint8_t> frame, const int start_x, const int start_y,
-    const int tx_width, const int tx_height, const int16_t* source) {
+    const int tx_width, const int tx_height,
+    const int16_t* LIBGAV1_RESTRICT source) {
   const int stride = frame.columns();
-  uint8_t* dst = frame[start_y] + start_x;
+  uint8_t* LIBGAV1_RESTRICT dst = frame[start_y] + start_x;
 
   const __m128i v_multiplier_fraction =
       _mm_set1_epi16(static_cast<int16_t>(kIdentity4MultiplierFraction << 3));
@@ -1685,9 +1687,10 @@ LIBGAV1_ALWAYS_INLINE void Identity4ColumnStoreToFrame(
 
 LIBGAV1_ALWAYS_INLINE void Identity4RowColumnStoreToFrame(
     Array2DView<uint8_t> frame, const int start_x, const int start_y,
-    const int tx_width, const int tx_height, const int16_t* source) {
+    const int tx_width, const int tx_height,
+    const int16_t* LIBGAV1_RESTRICT source) {
   const int stride = frame.columns();
-  uint8_t* dst = frame[start_y] + start_x;
+  uint8_t* LIBGAV1_RESTRICT dst = frame[start_y] + start_x;
 
   const __m128i v_multiplier_fraction =
       _mm_set1_epi16(static_cast<int16_t>(kIdentity4MultiplierFraction << 3));
@@ -1789,9 +1792,10 @@ LIBGAV1_ALWAYS_INLINE bool Identity8DcOnly(void* dest, int adjusted_tx_height,
 
 LIBGAV1_ALWAYS_INLINE void Identity8ColumnStoreToFrame_SSE4_1(
     Array2DView<uint8_t> frame, const int start_x, const int start_y,
-    const int tx_width, const int tx_height, const int16_t* source) {
+    const int tx_width, const int tx_height,
+    const int16_t* LIBGAV1_RESTRICT source) {
   const int stride = frame.columns();
-  uint8_t* dst = frame[start_y] + start_x;
+  uint8_t* LIBGAV1_RESTRICT dst = frame[start_y] + start_x;
   const __m128i v_eight = _mm_set1_epi16(8);
   if (tx_width == 4) {
     int i = 0;
@@ -1883,9 +1887,10 @@ LIBGAV1_ALWAYS_INLINE bool Identity16DcOnly(void* dest, int adjusted_tx_height,
 
 LIBGAV1_ALWAYS_INLINE void Identity16ColumnStoreToFrame_SSE4_1(
     Array2DView<uint8_t> frame, const int start_x, const int start_y,
-    const int tx_width, const int tx_height, const int16_t* source) {
+    const int tx_width, const int tx_height,
+    const int16_t* LIBGAV1_RESTRICT source) {
   const int stride = frame.columns();
-  uint8_t* dst = frame[start_y] + start_x;
+  uint8_t* LIBGAV1_RESTRICT dst = frame[start_y] + start_x;
   const __m128i v_eight = _mm_set1_epi16(8);
   const __m128i v_multiplier =
       _mm_set1_epi16(static_cast<int16_t>(kIdentity4MultiplierFraction << 4));
@@ -1966,9 +1971,10 @@ LIBGAV1_ALWAYS_INLINE bool Identity32DcOnly(void* dest,
 
 LIBGAV1_ALWAYS_INLINE void Identity32ColumnStoreToFrame(
     Array2DView<uint8_t> frame, const int start_x, const int start_y,
-    const int tx_width, const int tx_height, const int16_t* source) {
+    const int tx_width, const int tx_height,
+    const int16_t* LIBGAV1_RESTRICT source) {
   const int stride = frame.columns();
-  uint8_t* dst = frame[start_y] + start_x;
+  uint8_t* LIBGAV1_RESTRICT dst = frame[start_y] + start_x;
   const __m128i v_two = _mm_set1_epi16(2);
 
   int i = 0;
@@ -1995,7 +2001,7 @@ LIBGAV1_ALWAYS_INLINE void Identity32ColumnStoreToFrame(
 // Process 4 wht4 rows and columns.
 LIBGAV1_ALWAYS_INLINE void Wht4_SSE4_1(Array2DView<uint8_t> frame,
                                        const int start_x, const int start_y,
-                                       const void* source,
+                                       const void* LIBGAV1_RESTRICT source,
                                        const int adjusted_tx_height) {
   const auto* const src = static_cast<const int16_t*>(source);
   __m128i s[4], x[4];
@@ -2058,12 +2064,11 @@ LIBGAV1_ALWAYS_INLINE void Wht4_SSE4_1(Array2DView<uint8_t> frame,
 
   // Store to frame.
   const int stride = frame.columns();
-  uint8_t* dst = frame[start_y] + start_x;
+  uint8_t* LIBGAV1_RESTRICT dst = frame[start_y] + start_x;
   for (int row = 0; row < 4; ++row) {
     const __m128i frame_data = Load4(dst);
     const __m128i a = _mm_cvtepu8_epi16(frame_data);
-    // Saturate to prevent overflowing int16_t
-    const __m128i b = _mm_adds_epi16(a, s[row]);
+    const __m128i b = _mm_add_epi16(a, s[row]);
     Store4(dst, _mm_packus_epi16(b, b));
     dst += stride;
   }
@@ -2075,13 +2080,13 @@ LIBGAV1_ALWAYS_INLINE void Wht4_SSE4_1(Array2DView<uint8_t> frame,
 template <bool enable_flip_rows = false>
 LIBGAV1_ALWAYS_INLINE void StoreToFrameWithRound(
     Array2DView<uint8_t> frame, const int start_x, const int start_y,
-    const int tx_width, const int tx_height, const int16_t* source,
-    TransformType tx_type) {
+    const int tx_width, const int tx_height,
+    const int16_t* LIBGAV1_RESTRICT source, TransformType tx_type) {
   const bool flip_rows =
       enable_flip_rows ? kTransformFlipRowsMask.Contains(tx_type) : false;
   const __m128i v_eight = _mm_set1_epi16(8);
   const int stride = frame.columns();
-  uint8_t* dst = frame[start_y] + start_x;
+  uint8_t* LIBGAV1_RESTRICT dst = frame[start_y] + start_x;
   if (tx_width == 4) {
     for (int i = 0; i < tx_height; ++i) {
       const int row = flip_rows ? (tx_height - i - 1) * 4 : i * 4;
@@ -2262,8 +2267,10 @@ void Dct4TransformLoopRow_SSE4_1(TransformType /*tx_type*/,
 
 void Dct4TransformLoopColumn_SSE4_1(TransformType tx_type,
                                     TransformSize tx_size,
-                                    int adjusted_tx_height, void* src_buffer,
-                                    int start_x, int start_y, void* dst_frame) {
+                                    int adjusted_tx_height,
+                                    void* LIBGAV1_RESTRICT src_buffer,
+                                    int start_x, int start_y,
+                                    void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2325,8 +2332,10 @@ void Dct8TransformLoopRow_SSE4_1(TransformType /*tx_type*/,
 
 void Dct8TransformLoopColumn_SSE4_1(TransformType tx_type,
                                     TransformSize tx_size,
-                                    int adjusted_tx_height, void* src_buffer,
-                                    int start_x, int start_y, void* dst_frame) {
+                                    int adjusted_tx_height,
+                                    void* LIBGAV1_RESTRICT src_buffer,
+                                    int start_x, int start_y,
+                                    void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2386,9 +2395,10 @@ void Dct16TransformLoopRow_SSE4_1(TransformType /*tx_type*/,
 
 void Dct16TransformLoopColumn_SSE4_1(TransformType tx_type,
                                      TransformSize tx_size,
-                                     int adjusted_tx_height, void* src_buffer,
+                                     int adjusted_tx_height,
+                                     void* LIBGAV1_RESTRICT src_buffer,
                                      int start_x, int start_y,
-                                     void* dst_frame) {
+                                     void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2441,9 +2451,10 @@ void Dct32TransformLoopRow_SSE4_1(TransformType /*tx_type*/,
 
 void Dct32TransformLoopColumn_SSE4_1(TransformType tx_type,
                                      TransformSize tx_size,
-                                     int adjusted_tx_height, void* src_buffer,
+                                     int adjusted_tx_height,
+                                     void* LIBGAV1_RESTRICT src_buffer,
                                      int start_x, int start_y,
-                                     void* dst_frame) {
+                                     void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2486,9 +2497,10 @@ void Dct64TransformLoopRow_SSE4_1(TransformType /*tx_type*/,
 
 void Dct64TransformLoopColumn_SSE4_1(TransformType tx_type,
                                      TransformSize tx_size,
-                                     int adjusted_tx_height, void* src_buffer,
+                                     int adjusted_tx_height,
+                                     void* LIBGAV1_RESTRICT src_buffer,
                                      int start_x, int start_y,
-                                     void* dst_frame) {
+                                     void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2535,9 +2547,10 @@ void Adst4TransformLoopRow_SSE4_1(TransformType /*tx_type*/,
 
 void Adst4TransformLoopColumn_SSE4_1(TransformType tx_type,
                                      TransformSize tx_size,
-                                     int adjusted_tx_height, void* src_buffer,
+                                     int adjusted_tx_height,
+                                     void* LIBGAV1_RESTRICT src_buffer,
                                      int start_x, int start_y,
-                                     void* dst_frame) {
+                                     void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2594,9 +2607,10 @@ void Adst8TransformLoopRow_SSE4_1(TransformType /*tx_type*/,
 
 void Adst8TransformLoopColumn_SSE4_1(TransformType tx_type,
                                      TransformSize tx_size,
-                                     int adjusted_tx_height, void* src_buffer,
+                                     int adjusted_tx_height,
+                                     void* LIBGAV1_RESTRICT src_buffer,
                                      int start_x, int start_y,
-                                     void* dst_frame) {
+                                     void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2658,9 +2672,10 @@ void Adst16TransformLoopRow_SSE4_1(TransformType /*tx_type*/,
 
 void Adst16TransformLoopColumn_SSE4_1(TransformType tx_type,
                                       TransformSize tx_size,
-                                      int adjusted_tx_height, void* src_buffer,
+                                      int adjusted_tx_height,
+                                      void* LIBGAV1_RESTRICT src_buffer,
                                       int start_x, int start_y,
-                                      void* dst_frame) {
+                                      void* LIBGAV1_RESTRICT dst_frame) {
   auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
@@ -2727,8 +2742,9 @@ void Identity4TransformLoopRow_SSE4_1(TransformType tx_type,
 void Identity4TransformLoopColumn_SSE4_1(TransformType tx_type,
                                          TransformSize tx_size,
                                          int adjusted_tx_height,
-                                         void* src_buffer, int start_x,
-                                         int start_y, void* dst_frame) {
+                                         void* LIBGAV1_RESTRICT src_buffer,
+                                         int start_x, int start_y,
+                                         void* LIBGAV1_RESTRICT dst_frame) {
   auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
@@ -2799,8 +2815,9 @@ void Identity8TransformLoopRow_SSE4_1(TransformType tx_type,
 void Identity8TransformLoopColumn_SSE4_1(TransformType tx_type,
                                          TransformSize tx_size,
                                          int adjusted_tx_height,
-                                         void* src_buffer, int start_x,
-                                         int start_y, void* dst_frame) {
+                                         void* LIBGAV1_RESTRICT src_buffer,
+                                         int start_x, int start_y,
+                                         void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2839,8 +2856,9 @@ void Identity16TransformLoopRow_SSE4_1(TransformType /*tx_type*/,
 void Identity16TransformLoopColumn_SSE4_1(TransformType tx_type,
                                           TransformSize tx_size,
                                           int adjusted_tx_height,
-                                          void* src_buffer, int start_x,
-                                          int start_y, void* dst_frame) {
+                                          void* LIBGAV1_RESTRICT src_buffer,
+                                          int start_x, int start_y,
+                                          void* LIBGAV1_RESTRICT dst_frame) {
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
 
@@ -2884,8 +2902,9 @@ void Identity32TransformLoopRow_SSE4_1(TransformType /*tx_type*/,
 void Identity32TransformLoopColumn_SSE4_1(TransformType /*tx_type*/,
                                           TransformSize tx_size,
                                           int adjusted_tx_height,
-                                          void* src_buffer, int start_x,
-                                          int start_y, void* dst_frame) {
+                                          void* LIBGAV1_RESTRICT src_buffer,
+                                          int start_x, int start_y,
+                                          void* LIBGAV1_RESTRICT dst_frame) {
   auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
@@ -2907,8 +2926,10 @@ void Wht4TransformLoopRow_SSE4_1(TransformType tx_type, TransformSize tx_size,
 
 void Wht4TransformLoopColumn_SSE4_1(TransformType tx_type,
                                     TransformSize tx_size,
-                                    int adjusted_tx_height, void* src_buffer,
-                                    int start_x, int start_y, void* dst_frame) {
+                                    int adjusted_tx_height,
+                                    void* LIBGAV1_RESTRICT src_buffer,
+                                    int start_x, int start_y,
+                                    void* LIBGAV1_RESTRICT dst_frame) {
   assert(tx_type == kTransformTypeDctDct);
   assert(tx_size == kTransformSize4x4);
   static_cast<void>(tx_type);
@@ -2928,88 +2949,88 @@ void Init8bpp() {
   assert(dsp != nullptr);
 
   // Maximum transform size for Dct is 64.
-#if DSP_ENABLED_8BPP_SSE4_1(1DTransformSize4_1DTransformDct)
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize4][kRow] =
+#if DSP_ENABLED_8BPP_SSE4_1(Transform1dSize4_Transform1dDct)
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize4][kRow] =
       Dct4TransformLoopRow_SSE4_1;
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize4][kColumn] =
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize4][kColumn] =
       Dct4TransformLoopColumn_SSE4_1;
 #endif
-#if DSP_ENABLED_8BPP_SSE4_1(1DTransformSize8_1DTransformDct)
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize8][kRow] =
+#if DSP_ENABLED_8BPP_SSE4_1(Transform1dSize8_Transform1dDct)
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize8][kRow] =
       Dct8TransformLoopRow_SSE4_1;
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize8][kColumn] =
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize8][kColumn] =
       Dct8TransformLoopColumn_SSE4_1;
 #endif
-#if DSP_ENABLED_8BPP_SSE4_1(1DTransformSize16_1DTransformDct)
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize16][kRow] =
+#if DSP_ENABLED_8BPP_SSE4_1(Transform1dSize16_Transform1dDct)
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize16][kRow] =
       Dct16TransformLoopRow_SSE4_1;
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize16][kColumn] =
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize16][kColumn] =
       Dct16TransformLoopColumn_SSE4_1;
 #endif
-#if DSP_ENABLED_8BPP_SSE4_1(1DTransformSize32_1DTransformDct)
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize32][kRow] =
+#if DSP_ENABLED_8BPP_SSE4_1(Transform1dSize32_Transform1dDct)
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize32][kRow] =
       Dct32TransformLoopRow_SSE4_1;
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize32][kColumn] =
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize32][kColumn] =
       Dct32TransformLoopColumn_SSE4_1;
 #endif
-#if DSP_ENABLED_8BPP_SSE4_1(1DTransformSize64_1DTransformDct)
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize64][kRow] =
+#if DSP_ENABLED_8BPP_SSE4_1(Transform1dSize64_Transform1dDct)
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize64][kRow] =
       Dct64TransformLoopRow_SSE4_1;
-  dsp->inverse_transforms[k1DTransformDct][k1DTransformSize64][kColumn] =
+  dsp->inverse_transforms[kTransform1dDct][kTransform1dSize64][kColumn] =
       Dct64TransformLoopColumn_SSE4_1;
 #endif
 
   // Maximum transform size for Adst is 16.
-#if DSP_ENABLED_8BPP_SSE4_1(1DTransformSize4_1DTransformAdst)
-  dsp->inverse_transforms[k1DTransformAdst][k1DTransformSize4][kRow] =
+#if DSP_ENABLED_8BPP_SSE4_1(Transform1dSize4_Transform1dAdst)
+  dsp->inverse_transforms[kTransform1dAdst][kTransform1dSize4][kRow] =
       Adst4TransformLoopRow_SSE4_1;
-  dsp->inverse_transforms[k1DTransformAdst][k1DTransformSize4][kColumn] =
+  dsp->inverse_transforms[kTransform1dAdst][kTransform1dSize4][kColumn] =
       Adst4TransformLoopColumn_SSE4_1;
 #endif
-#if DSP_ENABLED_8BPP_SSE4_1(1DTransformSize8_1DTransformAdst)
-  dsp->inverse_transforms[k1DTransformAdst][k1DTransformSize8][kRow] =
+#if DSP_ENABLED_8BPP_SSE4_1(Transform1dSize8_Transform1dAdst)
+  dsp->inverse_transforms[kTransform1dAdst][kTransform1dSize8][kRow] =
       Adst8TransformLoopRow_SSE4_1;
-  dsp->inverse_transforms[k1DTransformAdst][k1DTransformSize8][kColumn] =
+  dsp->inverse_transforms[kTransform1dAdst][kTransform1dSize8][kColumn] =
       Adst8TransformLoopColumn_SSE4_1;
 #endif
-#if DSP_ENABLED_8BPP_SSE4_1(1DTransformSize16_1DTransformAdst)
-  dsp->inverse_transforms[k1DTransformAdst][k1DTransformSize16][kRow] =
+#if DSP_ENABLED_8BPP_SSE4_1(Transform1dSize16_Transform1dAdst)
+  dsp->inverse_transforms[kTransform1dAdst][kTransform1dSize16][kRow] =
       Adst16TransformLoopRow_SSE4_1;
-  dsp->inverse_transforms[k1DTransformAdst][k1DTransformSize16][kColumn] =
+  dsp->inverse_transforms[kTransform1dAdst][kTransform1dSize16][kColumn] =
       Adst16TransformLoopColumn_SSE4_1;
 #endif
 
   // Maximum transform size for Identity transform is 32.
-#if DSP_ENABLED_8BPP_SSE4_1(1DTransformSize4_1DTransformIdentity)
-  dsp->inverse_transforms[k1DTransformIdentity][k1DTransformSize4][kRow] =
+#if DSP_ENABLED_8BPP_SSE4_1(Transform1dSize4_Transform1dIdentity)
+  dsp->inverse_transforms[kTransform1dIdentity][kTransform1dSize4][kRow] =
       Identity4TransformLoopRow_SSE4_1;
-  dsp->inverse_transforms[k1DTransformIdentity][k1DTransformSize4][kColumn] =
+  dsp->inverse_transforms[kTransform1dIdentity][kTransform1dSize4][kColumn] =
       Identity4TransformLoopColumn_SSE4_1;
 #endif
-#if DSP_ENABLED_8BPP_SSE4_1(1DTransformSize8_1DTransformIdentity)
-  dsp->inverse_transforms[k1DTransformIdentity][k1DTransformSize8][kRow] =
+#if DSP_ENABLED_8BPP_SSE4_1(Transform1dSize8_Transform1dIdentity)
+  dsp->inverse_transforms[kTransform1dIdentity][kTransform1dSize8][kRow] =
       Identity8TransformLoopRow_SSE4_1;
-  dsp->inverse_transforms[k1DTransformIdentity][k1DTransformSize8][kColumn] =
+  dsp->inverse_transforms[kTransform1dIdentity][kTransform1dSize8][kColumn] =
       Identity8TransformLoopColumn_SSE4_1;
 #endif
-#if DSP_ENABLED_8BPP_SSE4_1(1DTransformSize16_1DTransformIdentity)
-  dsp->inverse_transforms[k1DTransformIdentity][k1DTransformSize16][kRow] =
+#if DSP_ENABLED_8BPP_SSE4_1(Transform1dSize16_Transform1dIdentity)
+  dsp->inverse_transforms[kTransform1dIdentity][kTransform1dSize16][kRow] =
       Identity16TransformLoopRow_SSE4_1;
-  dsp->inverse_transforms[k1DTransformIdentity][k1DTransformSize16][kColumn] =
+  dsp->inverse_transforms[kTransform1dIdentity][kTransform1dSize16][kColumn] =
       Identity16TransformLoopColumn_SSE4_1;
 #endif
-#if DSP_ENABLED_8BPP_SSE4_1(1DTransformSize32_1DTransformIdentity)
-  dsp->inverse_transforms[k1DTransformIdentity][k1DTransformSize32][kRow] =
+#if DSP_ENABLED_8BPP_SSE4_1(Transform1dSize32_Transform1dIdentity)
+  dsp->inverse_transforms[kTransform1dIdentity][kTransform1dSize32][kRow] =
       Identity32TransformLoopRow_SSE4_1;
-  dsp->inverse_transforms[k1DTransformIdentity][k1DTransformSize32][kColumn] =
+  dsp->inverse_transforms[kTransform1dIdentity][kTransform1dSize32][kColumn] =
       Identity32TransformLoopColumn_SSE4_1;
 #endif
 
   // Maximum transform size for Wht is 4.
-#if DSP_ENABLED_8BPP_SSE4_1(1DTransformSize4_1DTransformWht)
-  dsp->inverse_transforms[k1DTransformWht][k1DTransformSize4][kRow] =
+#if DSP_ENABLED_8BPP_SSE4_1(Transform1dSize4_Transform1dWht)
+  dsp->inverse_transforms[kTransform1dWht][kTransform1dSize4][kRow] =
       Wht4TransformLoopRow_SSE4_1;
-  dsp->inverse_transforms[k1DTransformWht][k1DTransformSize4][kColumn] =
+  dsp->inverse_transforms[kTransform1dWht][kTransform1dSize4][kColumn] =
       Wht4TransformLoopColumn_SSE4_1;
 #endif
 }

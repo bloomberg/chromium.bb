@@ -14,8 +14,8 @@ android_library("java") {
   ]
 
   srcjar_deps = [
+    "//components/signin/public/base:consent_level_enum_javagen",
     "//components/signin/public/base:signin_metrics_enum_javagen",
-    "//components/signin/public/identity_manager:identity_manager_enum_javagen",
   ]
 
   sources = [
@@ -33,13 +33,14 @@ android_library("java") {
     "java/src/org/chromium/components/signin/ChildAccountStatus.java",
     "java/src/org/chromium/components/signin/ConnectionRetry.java",
     "java/src/org/chromium/components/signin/PatternMatcher.java",
-    "java/src/org/chromium/components/signin/ProfileDataSource.java",
     "java/src/org/chromium/components/signin/SystemAccountManagerDelegate.java",
     "java/src/org/chromium/components/signin/base/AccountInfo.java",
     "java/src/org/chromium/components/signin/base/CoreAccountId.java",
     "java/src/org/chromium/components/signin/base/CoreAccountInfo.java",
     "java/src/org/chromium/components/signin/base/GoogleServiceAuthError.java",
     "java/src/org/chromium/components/signin/identitymanager/AccountInfoService.java",
+    "java/src/org/chromium/components/signin/identitymanager/AccountInfoServiceImpl.java",
+    "java/src/org/chromium/components/signin/identitymanager/AccountInfoServiceProvider.java",
     "java/src/org/chromium/components/signin/identitymanager/AccountTrackerService.java",
     "java/src/org/chromium/components/signin/identitymanager/IdentityManager.java",
     "java/src/org/chromium/components/signin/identitymanager/IdentityMutator.java",
@@ -80,6 +81,7 @@ android_library("signin_java_test_support") {
     ":test_support_jni_headers",
     "//base:base_java",
     "//base:jni_java",
+    "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:guava_android_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/mockito:mockito_java",
@@ -87,9 +89,9 @@ android_library("signin_java_test_support") {
   sources = [
     "java/src/org/chromium/components/signin/test/util/AccountHolder.java",
     "java/src/org/chromium/components/signin/test/util/AccountManagerFacadeUtil.java",
+    "java/src/org/chromium/components/signin/test/util/FakeAccountInfoService.java",
     "java/src/org/chromium/components/signin/test/util/FakeAccountManagerDelegate.java",
     "java/src/org/chromium/components/signin/test/util/FakeAccountManagerFacade.java",
-    "java/src/org/chromium/components/signin/test/util/FakeProfileDataSource.java",
   ]
   resources_package = "org.chromium.components.signin.test.util"
 }
@@ -127,8 +129,9 @@ java_library("junit") {
   sources = [
     "junit/src/org/chromium/components/signin/AccountManagerFacadeImplTest.java",
     "junit/src/org/chromium/components/signin/AccountRenameCheckerTest.java",
+    "junit/src/org/chromium/components/signin/AccountUtilsTest.java",
     "junit/src/org/chromium/components/signin/PatternMatcherTest.java",
-    "junit/src/org/chromium/components/signin/identitymanager/AccountInfoServiceTest.java",
+    "junit/src/org/chromium/components/signin/identitymanager/AccountInfoServiceImplTest.java",
     "junit/src/org/chromium/components/signin/identitymanager/AccountTrackerServiceTest.java",
   ]
   deps = [

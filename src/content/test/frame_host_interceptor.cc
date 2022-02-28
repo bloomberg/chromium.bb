@@ -6,12 +6,14 @@
 
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/common/frame.mojom-test-utils.h"
 #include "content/common/frame.mojom.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 
 namespace content {
 
@@ -24,6 +26,9 @@ class FrameHostInterceptor::FrameAgent
       : interceptor_(interceptor),
         rfhi_(static_cast<RenderFrameHostImpl*>(rfh)),
         impl_(receiver().SwapImplForTesting(this)) {}
+
+  FrameAgent(const FrameAgent&) = delete;
+  FrameAgent& operator=(const FrameAgent&) = delete;
 
   ~FrameAgent() override {
     auto* old_impl = receiver().SwapImplForTesting(impl_);
@@ -41,8 +46,8 @@ class FrameHostInterceptor::FrameAgent
   FrameHost* GetForwardingInterface() override { return impl_; }
 
   void BeginNavigation(
-      mojom::CommonNavigationParamsPtr common_params,
-      mojom::BeginNavigationParamsPtr begin_params,
+      blink::mojom::CommonNavigationParamsPtr common_params,
+      blink::mojom::BeginNavigationParamsPtr begin_params,
       mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
       mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
       mojo::PendingRemote<blink::mojom::PolicyContainerHostKeepAliveHandle>
@@ -58,28 +63,29 @@ class FrameHostInterceptor::FrameAgent
   }
 
  private:
-  FrameHostInterceptor* interceptor_;
+  raw_ptr<FrameHostInterceptor> interceptor_;
 
-  RenderFrameHostImpl* rfhi_;
-  mojom::FrameHost* impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameAgent);
+  raw_ptr<RenderFrameHostImpl> rfhi_;
+  raw_ptr<mojom::FrameHost> impl_;
 };
 
 FrameHostInterceptor::FrameHostInterceptor(WebContents* web_contents)
     : WebContentsObserver(web_contents) {
-  for (auto* rfh : web_contents->GetAllFrames()) {
-    if (rfh->IsRenderFrameLive())
-      RenderFrameCreated(rfh);
-  }
+  web_contents->ForEachRenderFrameHost(base::BindRepeating(
+      [](FrameHostInterceptor* interceptor,
+         RenderFrameHost* render_frame_host) {
+        if (render_frame_host->IsRenderFrameLive())
+          interceptor->RenderFrameCreated(render_frame_host);
+      },
+      this));
 }
 
 FrameHostInterceptor::~FrameHostInterceptor() = default;
 
 bool FrameHostInterceptor::WillDispatchBeginNavigation(
     RenderFrameHost* render_frame_host,
-    mojom::CommonNavigationParamsPtr* common_params,
-    mojom::BeginNavigationParamsPtr* begin_params,
+    blink::mojom::CommonNavigationParamsPtr* common_params,
+    blink::mojom::BeginNavigationParamsPtr* begin_params,
     mojo::PendingRemote<blink::mojom::BlobURLToken>* blob_url_token,
     mojo::PendingAssociatedRemote<mojom::NavigationClient>* navigation_client) {
   return true;

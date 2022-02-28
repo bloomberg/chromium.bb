@@ -15,6 +15,7 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -29,8 +30,7 @@ StatusAreaOverflowButtonTray::IconView::IconView()
     : slide_animation_(std::make_unique<gfx::SlideAnimation>(this)) {
   slide_animation_->Reset(1.0);
   slide_animation_->SetTweenType(gfx::Tween::EASE_OUT);
-  slide_animation_->SetSlideDuration(
-      base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+  slide_animation_->SetSlideDuration(base::Milliseconds(kAnimationDurationMs));
 
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
