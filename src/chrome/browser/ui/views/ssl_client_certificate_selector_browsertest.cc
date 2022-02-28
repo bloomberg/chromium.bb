@@ -4,8 +4,10 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_client_auth_metrics.h"
 #include "chrome/browser/ssl/ssl_client_auth_requestor_mock.h"
@@ -88,7 +90,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
   scoped_refptr<StrictMock<SSLClientAuthRequestorMock>> auth_requestor_;
   // The selector will be deleted when a cert is selected or the tab is closed.
-  SSLClientCertificateSelector* selector_ = nullptr;
+  raw_ptr<SSLClientCertificateSelector> selector_ = nullptr;
 };
 
 class SSLClientCertificateSelectorMultiTabTest
@@ -162,14 +164,20 @@ class SSLClientCertificateSelectorMultiTabTest
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_2_;
   scoped_refptr<StrictMock<SSLClientAuthRequestorMock>> auth_requestor_1_;
   scoped_refptr<StrictMock<SSLClientAuthRequestorMock>> auth_requestor_2_;
-  SSLClientCertificateSelector* selector_1_;
-  SSLClientCertificateSelector* selector_2_;
+  raw_ptr<SSLClientCertificateSelector> selector_1_;
+  raw_ptr<SSLClientCertificateSelector> selector_2_;
 };
 
 class SSLClientCertificateSelectorMultiProfileTest
     : public SSLClientCertificateSelectorTest {
  public:
   SSLClientCertificateSelectorMultiProfileTest() = default;
+
+  SSLClientCertificateSelectorMultiProfileTest(
+      const SSLClientCertificateSelectorMultiProfileTest&) = delete;
+  SSLClientCertificateSelectorMultiProfileTest& operator=(
+      const SSLClientCertificateSelectorMultiProfileTest&) = delete;
+
   ~SSLClientCertificateSelectorMultiProfileTest() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -214,13 +222,10 @@ class SSLClientCertificateSelectorMultiProfileTest
   }
 
  protected:
-  Browser* browser_1_;
+  raw_ptr<Browser> browser_1_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_1_;
   scoped_refptr<StrictMock<SSLClientAuthRequestorMock> > auth_requestor_1_;
-  SSLClientCertificateSelector* selector_1_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SSLClientCertificateSelectorMultiProfileTest);
+  raw_ptr<SSLClientCertificateSelector> selector_1_;
 };
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, SelectNone) {
@@ -331,7 +336,14 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest, SelectSecond) {
   EXPECT_CALL(*auth_requestor_, CancelCertificateSelection());
 }
 
-IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest, Escape) {
+// TODO(crbug.com/1249827): Test is flaky on Mac, Linux and Lacros.
+#if defined(OS_MAC) || defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_Escape DISABLED_Escape
+#else
+#define MAYBE_Escape Escape
+#endif
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest,
+                       MAYBE_Escape) {
   EXPECT_CALL(*auth_requestor_1_, CertificateSelected(nullptr, nullptr));
 
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(
@@ -346,8 +358,14 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest, Escape) {
   EXPECT_CALL(*auth_requestor_, CancelCertificateSelection());
 }
 
+// TODO(crbug.com/1249705): Test is flaky on Mac, Linux and Lacros.
+#if defined(OS_MAC) || defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_SelectDefault DISABLED_SelectDefault
+#else
+#define MAYBE_SelectDefault SelectDefault
+#endif
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest,
-                       SelectDefault) {
+                       MAYBE_SelectDefault) {
   EXPECT_CALL(*auth_requestor_1_,
               CertificateSelected(cert_identity_1_->certificate(),
                                   cert_identity_1_->ssl_private_key()));

@@ -117,10 +117,10 @@ float smooth_cutoff(float x) {
 }
 
 half4 main(float2 xy) {
-    half4 before = sample(before_map, xy);
-    half4 after = sample(after_map, xy);
+    half4 before = before_map.eval(xy);
+    half4 after = after_map.eval(xy);
 
-    float m = smooth_cutoff(sample(threshold_map, xy).r);
+    float m = smooth_cutoff(threshold_map.eval(xy).r);
     return mix(before, after, half(m));
 }`;
 

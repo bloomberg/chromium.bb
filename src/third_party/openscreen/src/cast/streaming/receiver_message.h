@@ -26,7 +26,8 @@ enum class MediaCapability {
   kH264,
   kVp8,
   kVp9,
-  kHevc
+  kHevc,
+  kAv1
 };
 
 struct ReceiverCapability {

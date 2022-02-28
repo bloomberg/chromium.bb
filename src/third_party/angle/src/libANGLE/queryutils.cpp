@@ -8,6 +8,8 @@
 
 #include "libANGLE/queryutils.h"
 
+#include <algorithm>
+
 #include "common/utilities.h"
 
 #include "libANGLE/Buffer.h"
@@ -86,7 +88,6 @@ void ConvertFromColor(const ColorGeneric &color, GLfloat *outParams)
     }
     else
     {
-        ASSERT(color.type == ColorGeneric::Type::Float);
         color.colorF.writeData(outParams);
     }
 }
@@ -96,7 +97,6 @@ void ConvertFromColor(const ColorGeneric &color, GLint *outParams)
 {
     if (isPureInteger)
     {
-        ASSERT(color.type == ColorGeneric::Type::Int);
         outParams[0] = color.colorI.red;
         outParams[1] = color.colorI.green;
         outParams[2] = color.colorI.blue;
@@ -104,7 +104,6 @@ void ConvertFromColor(const ColorGeneric &color, GLint *outParams)
     }
     else
     {
-        ASSERT(color.type == ColorGeneric::Type::Float);
         outParams[0] = floatToNormalized<GLint>(color.colorF.red);
         outParams[1] = floatToNormalized<GLint>(color.colorF.green);
         outParams[2] = floatToNormalized<GLint>(color.colorF.blue);
@@ -117,11 +116,12 @@ void ConvertFromColor(const ColorGeneric &color, GLuint *outParams)
 {
     if (isPureInteger)
     {
-        ASSERT(color.type == ColorGeneric::Type::UInt);
-        outParams[0] = color.colorUI.red;
-        outParams[1] = color.colorUI.green;
-        outParams[2] = color.colorUI.blue;
-        outParams[3] = color.colorUI.alpha;
+        constexpr unsigned int kMinValue = 0;
+
+        outParams[0] = std::max(color.colorUI.red, kMinValue);
+        outParams[1] = std::max(color.colorUI.green, kMinValue);
+        outParams[2] = std::max(color.colorUI.blue, kMinValue);
+        outParams[3] = std::max(color.colorUI.alpha, kMinValue);
     }
     else
     {
@@ -369,6 +369,9 @@ void QueryTexParameterBase(const Context *context,
             *params = CastFromGLintStateValue<ParamType>(
                 pname, texture->getRequiredTextureImageUnits(context));
             break;
+        case GL_TEXTURE_PROTECTED_EXT:
+            *params = CastFromGLintStateValue<ParamType>(pname, texture->hasProtectedContent());
+            break;
         default:
             UNREACHABLE();
             break;
@@ -478,6 +481,9 @@ void SetTexParameterBase(Context *context, Texture *texture, GLenum pname, const
         case GL_RESOURCE_INITIALIZED_ANGLE:
             texture->setInitState(ConvertToBool(params[0]) ? InitState::Initialized
                                                            : InitState::MayNeedInit);
+            break;
+        case GL_TEXTURE_PROTECTED_EXT:
+            texture->setProtectedContent(context, (params[0] == GL_TRUE));
             break;
         default:
             UNREACHABLE();
@@ -2193,6 +2199,10 @@ angle::Result SetMemoryObjectParameteriv(const Context *context,
             ANGLE_TRY(memoryObject->setDedicatedMemory(context, ConvertToBool(params[0])));
             break;
 
+        case GL_PROTECTED_MEMORY_OBJECT_EXT:
+            ANGLE_TRY(memoryObject->setProtectedMemory(context, ConvertToBool(params[0])));
+            break;
+
         default:
             UNREACHABLE();
     }
@@ -2206,6 +2216,10 @@ void QueryMemoryObjectParameteriv(const MemoryObject *memoryObject, GLenum pname
     {
         case GL_DEDICATED_MEMORY_OBJECT_EXT:
             *params = memoryObject->isDedicatedMemory();
+            break;
+
+        case GL_PROTECTED_MEMORY_OBJECT_EXT:
+            *params = memoryObject->isProtectedMemory();
             break;
 
         default:
@@ -3127,7 +3141,7 @@ bool GetQueryParameterInfo(const State &glState,
         }
         case GL_PACK_REVERSE_ROW_ORDER_ANGLE:
         {
-            if (!extensions.packReverseRowOrder)
+            if (!extensions.packReverseRowOrderANGLE)
             {
                 return false;
             }
@@ -3138,7 +3152,7 @@ bool GetQueryParameterInfo(const State &glState,
         case GL_MAX_RECTANGLE_TEXTURE_SIZE_ANGLE:
         case GL_TEXTURE_BINDING_RECTANGLE_ANGLE:
         {
-            if (!extensions.textureRectangle)
+            if (!extensions.textureRectangleANGLE)
             {
                 return false;
             }
@@ -3149,7 +3163,7 @@ bool GetQueryParameterInfo(const State &glState,
         case GL_MAX_DRAW_BUFFERS_EXT:
         case GL_MAX_COLOR_ATTACHMENTS_EXT:
         {
-            if ((clientMajorVersion < 3) && !extensions.drawBuffers)
+            if ((clientMajorVersion < 3) && !extensions.drawBuffersEXT)
             {
                 return false;
             }
@@ -3221,7 +3235,7 @@ bool GetQueryParameterInfo(const State &glState,
             return true;
         }
         case GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT:
-            if (!extensions.textureFilterAnisotropic)
+            if (!extensions.textureFilterAnisotropicEXT)
             {
                 return false;
             }
@@ -3229,7 +3243,7 @@ bool GetQueryParameterInfo(const State &glState,
             *numParams = 1;
             return true;
         case GL_TIMESTAMP_EXT:
-            if (!extensions.disjointTimerQuery)
+            if (!extensions.disjointTimerQueryEXT)
             {
                 return false;
             }
@@ -3237,7 +3251,7 @@ bool GetQueryParameterInfo(const State &glState,
             *numParams = 1;
             return true;
         case GL_GPU_DISJOINT_EXT:
-            if (!extensions.disjointTimerQuery)
+            if (!extensions.disjointTimerQueryEXT)
             {
                 return false;
             }
@@ -3245,7 +3259,7 @@ bool GetQueryParameterInfo(const State &glState,
             *numParams = 1;
             return true;
         case GL_COVERAGE_MODULATION_CHROMIUM:
-            if (!extensions.framebufferMixedSamples)
+            if (!extensions.framebufferMixedSamplesCHROMIUM)
             {
                 return false;
             }
@@ -3253,7 +3267,7 @@ bool GetQueryParameterInfo(const State &glState,
             *numParams = 1;
             return true;
         case GL_TEXTURE_BINDING_EXTERNAL_OES:
-            if (!extensions.eglStreamConsumerExternalNV && !extensions.eglImageExternalOES)
+            if (!extensions.EGLStreamConsumerExternalNV && !extensions.EGLImageExternalOES)
             {
                 return false;
             }
@@ -3292,6 +3306,14 @@ bool GetQueryParameterInfo(const State &glState,
             *type      = GL_INT;
             *numParams = 1;
             return true;
+        case GL_PRIMITIVE_BOUNDING_BOX:
+            if (!extensions.primitiveBoundingBoxEXT)
+            {
+                return false;
+            }
+            *type      = GL_FLOAT;
+            *numParams = 8;
+            return true;
     }
 
     if (glState.getClientType() == EGL_OPENGL_API)
@@ -3308,7 +3330,7 @@ bool GetQueryParameterInfo(const State &glState,
         }
     }
 
-    if (extensions.debug)
+    if (extensions.debugKHR)
     {
         switch (pname)
         {
@@ -3331,7 +3353,7 @@ bool GetQueryParameterInfo(const State &glState,
         }
     }
 
-    if (extensions.multisampleCompatibility)
+    if (extensions.multisampleCompatibilityEXT)
     {
         switch (pname)
         {
@@ -3343,7 +3365,7 @@ bool GetQueryParameterInfo(const State &glState,
         }
     }
 
-    if (extensions.bindGeneratesResource)
+    if (extensions.bindGeneratesResourceCHROMIUM)
     {
         switch (pname)
         {
@@ -3354,7 +3376,7 @@ bool GetQueryParameterInfo(const State &glState,
         }
     }
 
-    if (extensions.clientArrays)
+    if (extensions.clientArraysANGLE)
     {
         switch (pname)
         {
@@ -3365,7 +3387,7 @@ bool GetQueryParameterInfo(const State &glState,
         }
     }
 
-    if (extensions.sRGBWriteControl)
+    if (extensions.sRGBWriteControlEXT)
     {
         switch (pname)
         {
@@ -3376,30 +3398,39 @@ bool GetQueryParameterInfo(const State &glState,
         }
     }
 
-    if (extensions.robustResourceInitialization && pname == GL_ROBUST_RESOURCE_INITIALIZATION_ANGLE)
+    if (extensions.robustResourceInitializationANGLE &&
+        pname == GL_ROBUST_RESOURCE_INITIALIZATION_ANGLE)
     {
         *type      = GL_BOOL;
         *numParams = 1;
         return true;
     }
 
-    if (extensions.programCacheControl && pname == GL_PROGRAM_CACHE_ENABLED_ANGLE)
+    if (extensions.programCacheControlANGLE && pname == GL_PROGRAM_CACHE_ENABLED_ANGLE)
     {
         *type      = GL_BOOL;
         *numParams = 1;
         return true;
     }
 
-    if (extensions.parallelShaderCompile && pname == GL_MAX_SHADER_COMPILER_THREADS_KHR)
+    if (extensions.parallelShaderCompileKHR && pname == GL_MAX_SHADER_COMPILER_THREADS_KHR)
     {
         *type      = GL_INT;
         *numParams = 1;
         return true;
     }
 
-    if (extensions.blendFuncExtended && pname == GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT)
+    if (extensions.blendFuncExtendedEXT && pname == GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT)
     {
         *type      = GL_INT;
+        *numParams = 1;
+        return true;
+    }
+
+    if (extensions.robustFragmentShaderOutputANGLE &&
+        pname == GL_ROBUST_FRAGMENT_SHADER_OUTPUT_ANGLE)
+    {
+        *type      = GL_BOOL;
         *numParams = 1;
         return true;
     }
@@ -3438,7 +3469,7 @@ bool GetQueryParameterInfo(const State &glState,
         case GL_PACK_ROW_LENGTH:
         case GL_PACK_SKIP_ROWS:
         case GL_PACK_SKIP_PIXELS:
-            if ((clientMajorVersion < 3) && !extensions.packSubimage)
+            if ((clientMajorVersion < 3) && !extensions.packSubimageNV)
             {
                 return false;
             }
@@ -3448,7 +3479,7 @@ bool GetQueryParameterInfo(const State &glState,
         case GL_UNPACK_ROW_LENGTH:
         case GL_UNPACK_SKIP_ROWS:
         case GL_UNPACK_SKIP_PIXELS:
-            if ((clientMajorVersion < 3) && !extensions.unpackSubimage)
+            if ((clientMajorVersion < 3) && !extensions.unpackSubimageEXT)
             {
                 return false;
             }
@@ -3476,8 +3507,8 @@ bool GetQueryParameterInfo(const State &glState,
         {
             static_assert(GL_MAX_SAMPLES_ANGLE == GL_MAX_SAMPLES,
                           "GL_MAX_SAMPLES_ANGLE not equal to GL_MAX_SAMPLES");
-            if ((clientMajorVersion < 3) &&
-                !(extensions.framebufferMultisample || extensions.multisampledRenderToTexture))
+            if ((clientMajorVersion < 3) && !(extensions.framebufferMultisampleANGLE ||
+                                              extensions.multisampledRenderToTextureEXT))
             {
                 return false;
             }
@@ -3514,7 +3545,7 @@ bool GetQueryParameterInfo(const State &glState,
 
     if (pname >= GL_DRAW_BUFFER0_EXT && pname <= GL_DRAW_BUFFER15_EXT)
     {
-        if ((glState.getClientVersion() < Version(3, 0)) && !extensions.drawBuffers)
+        if ((glState.getClientVersion() < Version(3, 0)) && !extensions.drawBuffersEXT)
         {
             return false;
         }
@@ -3523,7 +3554,7 @@ bool GetQueryParameterInfo(const State &glState,
         return true;
     }
 
-    if ((extensions.multiview2 || extensions.multiview) && pname == GL_MAX_VIEWS_OVR)
+    if ((extensions.multiview2OVR || extensions.multiviewOVR) && pname == GL_MAX_VIEWS_OVR)
     {
         *type      = GL_INT;
         *numParams = 1;
@@ -3695,7 +3726,7 @@ bool GetQueryParameterInfo(const State &glState,
         }
     }
 
-    if (extensions.requestExtension)
+    if (extensions.requestExtensionANGLE)
     {
         switch (pname)
         {
@@ -3706,7 +3737,7 @@ bool GetQueryParameterInfo(const State &glState,
         }
     }
 
-    if (extensions.textureMultisample)
+    if (extensions.textureMultisampleANGLE)
     {
         switch (pname)
         {
@@ -3820,7 +3851,7 @@ bool GetQueryParameterInfo(const State &glState,
             return true;
     }
 
-    if (extensions.geometryShader)
+    if (extensions.geometryShaderAny())
     {
         switch (pname)
         {
@@ -4118,6 +4149,9 @@ void QueryConfigAttrib(const Config *config, EGLint attribute, EGLint *value)
         case EGL_FRAMEBUFFER_TARGET_ANDROID:
             *value = config->framebufferTarget;
             break;
+        case EGL_MATCH_FORMAT_KHR:
+            *value = config->matchFormat;
+            break;
         default:
             UNREACHABLE();
             break;
@@ -4244,9 +4278,6 @@ egl::Error QuerySurfaceAttrib(const Display *display,
         case EGL_FIXED_SIZE_ANGLE:
             *value = surface->isFixedSize();
             break;
-        case EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE:
-            *value = surface->flexibleSurfaceCompatibilityRequested();
-            break;
         case EGL_SURFACE_ORIENTATION_ANGLE:
             *value = surface->getOrientation();
             break;
@@ -4262,6 +4293,30 @@ egl::Error QuerySurfaceAttrib(const Display *display,
         case EGL_BUFFER_AGE_EXT:
             ANGLE_TRY(surface->getBufferAge(context, value));
             break;
+        case EGL_BITMAP_PITCH_KHR:
+            *value = surface->getBitmapPitch();
+            break;
+        case EGL_BITMAP_ORIGIN_KHR:
+            *value = surface->getBitmapOrigin();
+            break;
+        case EGL_BITMAP_PIXEL_RED_OFFSET_KHR:
+            *value = surface->getRedOffset();
+            break;
+        case EGL_BITMAP_PIXEL_GREEN_OFFSET_KHR:
+            *value = surface->getGreenOffset();
+            break;
+        case EGL_BITMAP_PIXEL_BLUE_OFFSET_KHR:
+            *value = surface->getBlueOffset();
+            break;
+        case EGL_BITMAP_PIXEL_ALPHA_OFFSET_KHR:
+            *value = surface->getAlphaOffset();
+            break;
+        case EGL_BITMAP_PIXEL_LUMINANCE_OFFSET_KHR:
+            *value = surface->getLuminanceOffset();
+            break;
+        case EGL_BITMAP_PIXEL_SIZE_KHR:
+            *value = surface->getBitmapPixelSize();
+            break;
         default:
             UNREACHABLE();
             break;
@@ -4269,7 +4324,49 @@ egl::Error QuerySurfaceAttrib(const Display *display,
     return NoError();
 }
 
-void SetSurfaceAttrib(Surface *surface, EGLint attribute, EGLint value)
+egl::Error QuerySurfaceAttrib64KHR(const Display *display,
+                                   const gl::Context *context,
+                                   const Surface *surface,
+                                   EGLint attribute,
+                                   EGLAttribKHR *value)
+{
+    switch (attribute)
+    {
+        case EGL_BITMAP_PITCH_KHR:
+            *value = static_cast<EGLAttribKHR>(surface->getBitmapPitch());
+            break;
+        case EGL_BITMAP_ORIGIN_KHR:
+            *value = static_cast<EGLAttribKHR>(surface->getBitmapOrigin());
+            break;
+        case EGL_BITMAP_PIXEL_RED_OFFSET_KHR:
+            *value = static_cast<EGLAttribKHR>(surface->getRedOffset());
+            break;
+        case EGL_BITMAP_PIXEL_GREEN_OFFSET_KHR:
+            *value = static_cast<EGLAttribKHR>(surface->getGreenOffset());
+            break;
+        case EGL_BITMAP_PIXEL_BLUE_OFFSET_KHR:
+            *value = static_cast<EGLAttribKHR>(surface->getBlueOffset());
+            break;
+        case EGL_BITMAP_PIXEL_ALPHA_OFFSET_KHR:
+            *value = static_cast<EGLAttribKHR>(surface->getAlphaOffset());
+            break;
+        case EGL_BITMAP_PIXEL_LUMINANCE_OFFSET_KHR:
+            *value = static_cast<EGLAttribKHR>(surface->getLuminanceOffset());
+            break;
+        case EGL_BITMAP_PIXEL_SIZE_KHR:
+            *value = static_cast<EGLAttribKHR>(surface->getBitmapPixelSize());
+            break;
+        case EGL_BITMAP_POINTER_KHR:
+            *value = surface->getBitmapPointer();
+            break;
+        default:
+            UNREACHABLE();
+            break;
+    }
+    return NoError();
+}
+
+egl::Error SetSurfaceAttrib(Surface *surface, EGLint attribute, EGLint value)
 {
     switch (attribute)
     {
@@ -4291,10 +4388,13 @@ void SetSurfaceAttrib(Surface *surface, EGLint attribute, EGLint value)
         case EGL_TIMESTAMPS_ANDROID:
             surface->setTimestampsEnabled(value != EGL_FALSE);
             break;
+        case EGL_RENDER_BUFFER:
+            return surface->setRenderBuffer(value);
         default:
             UNREACHABLE();
             break;
     }
+    return NoError();
 }
 
 Error GetSyncAttrib(Display *display, Sync *sync, EGLint attribute, EGLint *value)

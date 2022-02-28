@@ -6,27 +6,19 @@
 
 'use strict';
 
-// This message sent from a browsertest to the background script to test the API
-// behavior for an extension running in a user session with system token
-// enabled.
-const USER_SESSION_WITH_SYSTEM_TOKEN_ENABLED_MODE =
-    'User session with system token enabled mode.';
-// This message sent from a browsertest to the background script to test the API
-// behavior for an extension running in a user session with system token
-// disabled.
-const USER_SESSION_WITH_SYSTEM_TOKEN_DISABLED_MODE =
-    'User session with system token disabled mode.';
-// This message sent from a browsertest to the background script to test the API
-// behavior for an extension running on the login screen.
-const LOGIN_SCREEN_MODE = 'Login screen mode.';
-
 var assertEq = chrome.test.assertEq;
 var assertTrue = chrome.test.assertTrue;
 var assertThrows = chrome.test.assertThrows;
 var fail = chrome.test.fail;
 var succeed = chrome.test.succeed;
 var callbackPass = chrome.test.callbackPass;
-var callbackFail= chrome.test.callbackFail;
+var callbackFail = chrome.test.callbackFail;
+
+// True if the C++ side of the test has configured the test to run in a user
+// session.
+var isUserSessionTest;
+// True if the C++ side of the test has enabled a system token for testing.
+var systemTokenEnabled;
 
 // openssl req -new -x509 -key privkey.pem \
 //   -outform der -out cert.der -days 36500
@@ -437,13 +429,13 @@ function checkEcKeyPairCommonFormat(keyPair) {
 // Verifies that signing data with RSA |keyPair| works. Error messages will be
 // prefixed with |debugMessage|. Returns an array with the first element as the
 // generated key pair and the second element as the SubjectPublicKeyInfo.
-async function verifyRsaKeySign(token, algorithm, keyPair, spki, debugMessage) {
+async function verifyRsaKeySign(
+    subtleCrypto, algorithm, keyPair, spki, debugMessage) {
   const SIGN_PARAMS = {name: 'RSASSA-PKCS1-v1_5'};
 
   let signature;
   try {
-    signature =
-        await token.subtleCrypto.sign(SIGN_PARAMS, keyPair.privateKey, DATA);
+    signature = await subtleCrypto.sign(SIGN_PARAMS, keyPair.privateKey, DATA);
   } catch (error) {
     fail(debugMessage + ': Sign failed: ' + error);
   }
@@ -486,11 +478,11 @@ async function verifyRsaKeySign(token, algorithm, keyPair, spki, debugMessage) {
 // Verifies that signing data with EC |keyPair| works. Error messages will be
 // prefixed with |debugMessage|. Returns an array with the first element as the
 // generated key pair and the second element as the SubjectPublicKeyInfo.
-async function verifyEcKeySign(token, params, keyPair, spki, debugMessage) {
+async function verifyEcKeySign(
+    subtleCrypto, params, keyPair, spki, debugMessage) {
   let signature;
   try {
-    signature =
-        await token.subtleCrypto.sign(params.sign, keyPair.privateKey, DATA);
+    signature = await subtleCrypto.sign(params.sign, keyPair.privateKey, DATA);
   } catch (error) {
     fail(debugMessage + ': Sign failed: ' + error);
   }
@@ -524,7 +516,7 @@ async function verifyEcKeySign(token, params, keyPair, spki, debugMessage) {
 // the new key and verifies the signature using WebCrypto. Returns an array with
 // the first element as the generated key pair and the second element as the
 // SubjectPublicKeyInfo. Also freezes |algorithm|.
-async function generateRsaKeyAndVerify(token, algorithm) {
+async function generateRsaKeyAndVerify(subtleCrypto, algorithm) {
   // Ensure that this algorithm object is not modified, so that later
   // comparisons really do the right thing.
   Object.freeze(algorithm.hash);
@@ -532,7 +524,7 @@ async function generateRsaKeyAndVerify(token, algorithm) {
 
   let keyPair;
   try {
-    keyPair = await token.subtleCrypto.generateKey(algorithm, false, ['sign']);
+    keyPair = await subtleCrypto.generateKey(algorithm, false, ['sign']);
   } catch (error) {
     fail('GenerateKey failed: ' + error);
   }
@@ -540,8 +532,7 @@ async function generateRsaKeyAndVerify(token, algorithm) {
 
   let publicKeySpki;
   try {
-    publicKeySpki =
-        await token.subtleCrypto.exportKey('spki', keyPair.publicKey);
+    publicKeySpki = await subtleCrypto.exportKey('spki', keyPair.publicKey);
   } catch (error) {
     fail('Export failed: ' + error);
   }
@@ -560,15 +551,15 @@ async function generateRsaKeyAndVerify(token, algorithm) {
   assertEq(algorithm, publicKey.algorithm);
 
   return verifyRsaKeySign(
-      token, algorithm, keyPair, publicKeySpki,
+      subtleCrypto, algorithm, keyPair, publicKeySpki,
       /*debugMessage=*/ 'First signing attempt');
 }
 
-async function generateEcKeyAndVerify(token, params) {
+async function generateEcKeyAndVerify(subtleCrypto, params) {
   let keyPair;
   try {
-    keyPair = await token.subtleCrypto.generateKey(
-        params.generateKey, false, ['sign']);
+    keyPair =
+        await subtleCrypto.generateKey(params.generateKey, false, ['sign']);
   } catch (error) {
     fail('GenerateKey failed: ' + error);
   }
@@ -576,8 +567,7 @@ async function generateEcKeyAndVerify(token, params) {
 
   let publicKeySpki;
   try {
-    publicKeySpki =
-        await token.subtleCrypto.exportKey('spki', keyPair.publicKey);
+    publicKeySpki = await subtleCrypto.exportKey('spki', keyPair.publicKey);
   } catch (error) {
     fail('Export failed: ' + error);
   }
@@ -594,7 +584,7 @@ async function generateEcKeyAndVerify(token, params) {
   assertEq([], publicKey.usages);
 
   return verifyEcKeySign(
-      token, params, keyPair, publicKeySpki,
+      subtleCrypto, params, keyPair, publicKeySpki,
       /*debugMessage=*/ 'First signing attempt');
 }
 
@@ -603,12 +593,21 @@ function testInitiallyNoCerts(token) {
   assertCertsStored(token, []);
 }
 
-function testHasSubtleCryptoMethods(token) {
-  assertTrue(!!token.subtleCrypto.generateKey,
-             "token has no generateKey method");
-  assertTrue(!!token.subtleCrypto.sign, "token has no sign method");
-  assertTrue(!!token.subtleCrypto.exportKey,
-             "token has no exportKey method");
+function testHasSubtleCryptoObjects(token) {
+  assertTrue(!!token.subtleCrypto, 'token has no subtleCrypto object');
+  assertTrue(
+      !!token.softwareBackedSubtleCrypto,
+      'token has no softwareBackedSubtleCrypto object');
+  succeed();
+}
+
+function testHasSubtleCryptoMethods(subtleCrypto) {
+  assertTrue(
+      !!subtleCrypto.generateKey,
+      'subtleCrypto object has no generateKey method');
+  assertTrue(!!subtleCrypto.sign, 'subtleCrypto object has no sign method');
+  assertTrue(
+      !!subtleCrypto.exportKey, 'subtleCrypto object has no exportKey method');
   succeed();
 }
 
@@ -628,8 +627,9 @@ const RSA_ALGORITHM = {
 
 // Generates an RSA key pair and signs some data with it. Verifies the signature
 // using WebCrypto. Verifies also that a second sign operation fails.
-async function testGenerateRsaKeyAndSignAllowedOnce(token) {
-  const [keyPair, spki] = await generateRsaKeyAndVerify(token, RSA_ALGORITHM);
+async function testGenerateRsaKeyAndSignAllowedOnce(subtleCrypto) {
+  const [keyPair, spki] =
+      await generateRsaKeyAndVerify(subtleCrypto, RSA_ALGORITHM);
 
   // Try to sign data with the same key a second time, which
   // must fail.
@@ -637,8 +637,7 @@ async function testGenerateRsaKeyAndSignAllowedOnce(token) {
 
   let signature;
   try {
-    signature =
-        await token.subtleCrypto.sign(signParams, keyPair.privateKey, DATA);
+    signature = await subtleCrypto.sign(signParams, keyPair.privateKey, DATA);
     fail('Second sign call was expected to fail.');
   } catch (error) {
     assertTrue(error instanceof Error);
@@ -650,13 +649,14 @@ async function testGenerateRsaKeyAndSignAllowedOnce(token) {
 
 // Generates an RSA key pair and signs some data with it. Verifies the signature
 // using WebCrypto. Verifies also that a second sign operation succeeds.
-async function testGenerateRsaKeyAndSignAllowedMultipleTimes(token) {
-  const [keyPair, spki] = await generateRsaKeyAndVerify(token, RSA_ALGORITHM);
+async function testGenerateRsaKeyAndSignAllowedMultipleTimes(subtleCrypto) {
+  const [keyPair, spki] =
+      await generateRsaKeyAndVerify(subtleCrypto, RSA_ALGORITHM);
 
   // Try to sign data with the same key a second time, which
   // must succeed.
   await verifyRsaKeySign(
-      token, RSA_ALGORITHM, keyPair, spki,
+      subtleCrypto, RSA_ALGORITHM, keyPair, spki,
       /*debugMessage=*/ 'Second signing attempt');
   succeed();
 }
@@ -689,14 +689,15 @@ const ALL_ECDSA_PARAMS = {
 // Generates an elliptic curve (EC) key pair and signs some data with it.
 // Verifies the signature using WebCrypto. Verifies also that a second sign
 // operation fails.
-async function testGenerateEcKeyAndSignAllowedOnce(token) {
-  const [keyPair, spki] = await generateEcKeyAndVerify(token, ALL_ECDSA_PARAMS);
+async function testGenerateEcKeyAndSignAllowedOnce(subtleCrypto) {
+  const [keyPair, spki] =
+      await generateEcKeyAndVerify(subtleCrypto, ALL_ECDSA_PARAMS);
 
   let signature;
   try {
     // Try to sign data with the same key a second time, which
     // must fail.
-    signature = await token.subtleCrypto.sign(
+    signature = await subtleCrypto.sign(
         ALL_ECDSA_PARAMS.sign, keyPair.privateKey, DATA);
     fail('Second sign call was expected to fail.');
   } catch (error) {
@@ -710,19 +711,20 @@ async function testGenerateEcKeyAndSignAllowedOnce(token) {
 // Generates an elliptic curve (EC) key pair and signs some data with it.
 // Verifies the signature using WebCrypto. Verifies also that a second sign
 // operation succeeds.
-async function testGenerateEcKeyAndSignAllowedMultipleTimes(token) {
-  const [keyPair, spki] = await generateEcKeyAndVerify(token, ALL_ECDSA_PARAMS);
+async function testGenerateEcKeyAndSignAllowedMultipleTimes(subtleCrypto) {
+  const [keyPair, spki] =
+      await generateEcKeyAndVerify(subtleCrypto, ALL_ECDSA_PARAMS);
 
   // Try to sign data with the same key a second time, which must succeed.
   await verifyEcKeySign(
-      token, ALL_ECDSA_PARAMS, keyPair, spki,
+      subtleCrypto, ALL_ECDSA_PARAMS, keyPair, spki,
       /*debugMessage=*/ 'Second signing attempt');
   succeed();
 }
 
 // Generates a key and signs some data with other parameters. Verifies the
 // signature using WebCrypto.
-async function testGenerateKeyAndSignOtherParameters(token) {
+async function testGenerateKeyAndSignOtherParameters(subtleCrypto) {
   var algorithm = {
     name: "RSASSA-PKCS1-v1_5",
     // RsaHashedKeyGenParams
@@ -734,14 +736,14 @@ async function testGenerateKeyAndSignOtherParameters(token) {
     }
   };
 
-  await generateRsaKeyAndVerify(token, algorithm);
+  await generateRsaKeyAndVerify(subtleCrypto, algorithm);
 
   succeed();
 }
 
 // Call generate key with invalid algorithm parameter, missing
 // modulusLength.
-async function testAlgorithmParameterMissingModulusLength(token) {
+async function testAlgorithmParameterMissingModulusLength(subtleCrypto) {
   var algorithm = {
     name: "RSASSA-PKCS1-v1_5",
     // Equivalent to 65537
@@ -752,7 +754,7 @@ async function testAlgorithmParameterMissingModulusLength(token) {
   };
 
   try {
-    await token.subtleCrypto.generateKey(algorithm, false, ['sign']);
+    await subtleCrypto.generateKey(algorithm, false, ['sign']);
     fail('generateKey was expected to fail');
   } catch (error) {
     assertTrue(error instanceof Error);
@@ -762,7 +764,7 @@ async function testAlgorithmParameterMissingModulusLength(token) {
 }
 
 // Call generate key with invalid algorithm parameter, missing hash.
-async function testAlgorithmParameterMissingHash(token) {
+async function testAlgorithmParameterMissingHash(subtleCrypto) {
   var algorithm = {
     name: 'RSASSA-PKCS1-v1_5',
     modulusLength: 512,
@@ -771,7 +773,7 @@ async function testAlgorithmParameterMissingHash(token) {
   };
 
   try {
-    await token.subtleCrypto.generateKey(algorithm, false, ['sign']);
+    await subtleCrypto.generateKey(algorithm, false, ['sign']);
     fail('generateKey was expected to fail');
   } catch (error) {
     assertEq(
@@ -783,7 +785,7 @@ async function testAlgorithmParameterMissingHash(token) {
 
 // Call generate key with invalid algorithm parameter, unsupported public
 // exponent.
-async function testAlgorithmParameterUnsupportedPublicExponent(token) {
+async function testAlgorithmParameterUnsupportedPublicExponent(subtleCrypto) {
   var algorithm = {
     name: 'RSASSA-PKCS1-v1_5',
     modulusLength: 512,
@@ -792,7 +794,7 @@ async function testAlgorithmParameterUnsupportedPublicExponent(token) {
   };
 
   try {
-    await token.subtleCrypto.generateKey(algorithm, false, ['sign']);
+    await subtleCrypto.generateKey(algorithm, false, ['sign']);
     fail('generateKey was expected to fail');
   } catch (error) {
     assertTrue(error instanceof Error);
@@ -822,59 +824,79 @@ function testRemoveInvalidCert(token) {
       callbackFail('Certificate is not a valid X.509 certificate.'));
 }
 
-function bindTestsToToken(tests, token) {
+function bindTestsToObject(tests, object) {
   return tests.map(function(test) {
-    var bound = test.bind(undefined, token);
+    var bound = test.bind(undefined, object);
     bound.generatedName = test.name;
     return bound;
   });
 }
 
-// These tests don't depend on keys being loaded on C++ side. These tests need
-// to be bound to a token.
-const testsIndependentOfKeysWithTokenParameter = [
-  testInitiallyNoCerts,
-  testHasSubtleCryptoMethods,
-  testRemoveUnknownCert,
-  testGenerateKeyAndSignOtherParameters,
-  testAlgorithmParameterMissingModulusLength,
-  testAlgorithmParameterMissingHash,
-  testAlgorithmParameterUnsupportedPublicExponent,
-  testImportInvalidCert,
-  testRemoveInvalidCert,
-];
+function getUserSessionTests(userToken, systemToken) {
+  let tests = getTestsForToken(userToken, /*signMultipleTimes=*/ false);
+  if (systemToken) {
+    tests = tests.concat(
+        getTestsForToken(systemToken, /*signMultipleTimes=*/ false));
+  }
+  return tests;
+}
 
-// These tests verify that generating keys and signing only once with the
-// generated keys succeeds. These tests don't depend on keys being loaded on C++
-// side. These tests need to be bound to a token.
-const keyGenerationAndSigningOnceTestsWithTokenParameter = [
-  testGenerateRsaKeyAndSignAllowedOnce,
-  testGenerateEcKeyAndSignAllowedOnce,
-];
+function getLoginScreenTests(systemToken) {
+  return getTestsForToken(systemToken, /*signMultipleTimes=*/ true);
+}
 
-// // These tests verify that generating keys and signing multiple times with
-// the generated keys succeeds. These tests don't depend on keys being loaded on
-// C++ side. These tests need to be bound to a token.
-const keyGenerationAndSigningMultipleTimesTestsWithTokenParameter = [
-  testGenerateRsaKeyAndSignAllowedMultipleTimes,
-  testGenerateEcKeyAndSignAllowedMultipleTimes,
-];
+function getTestsForToken(token, signMultipleTimes) {
+  const tests = bindTestsToObject(
+      [
+        testHasSubtleCryptoObjects,
+        testInitiallyNoCerts,
+        testRemoveUnknownCert,
+        testImportInvalidCert,
+        testRemoveInvalidCert,
+      ],
+      token);
+
+  const subtleCryptoTests =
+      getTestsForSubtleCrypto(token.subtleCrypto, signMultipleTimes);
+  const softwareBackedSubtleCryptoTests = getTestsForSubtleCrypto(
+      token.softwareBackedSubtleCrypto, signMultipleTimes);
+
+  return tests.concat(subtleCryptoTests, softwareBackedSubtleCryptoTests);
+}
+
+function getTestsForSubtleCrypto(subtleCrypto, signMultipleTimes) {
+  const tests = [
+    testHasSubtleCryptoMethods,
+    testGenerateKeyAndSignOtherParameters,
+    testAlgorithmParameterMissingModulusLength,
+    testAlgorithmParameterMissingHash,
+    testAlgorithmParameterUnsupportedPublicExponent,
+  ];
+
+  const generateAndSignTests = getGenerateAndSignTests(signMultipleTimes);
+
+  return bindTestsToObject(tests.concat(generateAndSignTests), subtleCrypto);
+}
+
+function getGenerateAndSignTests(signMultipleTimes) {
+  if (signMultipleTimes) {
+    return [
+      testGenerateRsaKeyAndSignAllowedMultipleTimes,
+      testGenerateEcKeyAndSignAllowedMultipleTimes,
+    ];
+  }
+  return [
+    testGenerateRsaKeyAndSignAllowedOnce,
+    testGenerateEcKeyAndSignAllowedOnce,
+  ];
+}
 
 function runInUserSessionTests(userToken, systemToken) {
-  const testsIndependentOfKeysWithTokenParameterAndSignOnceAllowed =
-      testsIndependentOfKeysWithTokenParameter.concat(
-          keyGenerationAndSigningOnceTestsWithTokenParameter);
-  var testsIndependentOfKeys = bindTestsToToken(
-      testsIndependentOfKeysWithTokenParameterAndSignOnceAllowed, userToken);
-  if (systemToken) {
-    testsIndependentOfKeys = testsIndependentOfKeys.concat(bindTestsToToken(
-        testsIndependentOfKeysWithTokenParameterAndSignOnceAllowed,
-        systemToken));
-  }
+  const testsIndependentOfKeys = getUserSessionTests(userToken, systemToken);
 
   // These tests are not parameterized and work with the keys loaded by
   // the C++ side and potentially remove these keys from the tokens.
-  var testsNotParameterized = [
+  const testsNotParameterized = [
     // Importing a cert should fail, if the private key is stored in
     // another token. This uses the certs that refers to the
     // privateKeyPkcs8User and privateKeyPkcs8System keys, which were
@@ -1009,33 +1031,21 @@ function runLoginScreenTests(systemToken) {
   // for all features using the command line switch --whitelisted-extension-id.
   // One of these features is key_permissions_in_login_screen, which will allow
   // the extension to sign with the generated corporate keys more than once.
-  const testsIndependentOfKeysWithTokenParameterAndSignMultipleTimesAllowed =
-      testsIndependentOfKeysWithTokenParameter.concat(
-          keyGenerationAndSigningMultipleTimesTestsWithTokenParameter);
-  chrome.test.runTests(bindTestsToToken(
-      testsIndependentOfKeysWithTokenParameterAndSignMultipleTimesAllowed,
-      systemToken));
+  chrome.test.runTests(getLoginScreenTests(systemToken));
 }
 
-// This function is executed when the C++ side of the test sends the
-// test mode. The browser test logic can be found at:
-// c/b/e/api/enterprise_platform_keys/enterprise_platform_keys_apitest_nss.cc
-function testModeListener(message) {
-  switch (message.data) {
-    case USER_SESSION_WITH_SYSTEM_TOKEN_ENABLED_MODE:
-      beforeInUserSessionTests(
-          /*systemTokenEnabled=*/ true, runInUserSessionTests);
-      break;
-    case USER_SESSION_WITH_SYSTEM_TOKEN_DISABLED_MODE:
-      beforeInUserSessionTests(
-          /*systemTokenEnabled=*/ false, runInUserSessionTests);
-      break;
-    case LOGIN_SCREEN_MODE:
-      beforeLoginScreenTests(runLoginScreenTests);
-      break;
-    default:
-      fail('Unknown test mode ${message.data}');
+chrome.test.getConfig(function(config) {
+  const args = JSON.parse(config.customArg);
+  // Keys of the args map are set by the C++ side to the JS side of the test.
+  // NOTE: the keys must stay in sync with the C++ side of the test.
+  isUserSessionTest = args.isUserSessionTest;
+  systemTokenEnabled = args.systemTokenEnabled;
+
+  if (isUserSessionTest) {
+    beforeInUserSessionTests(
+        /*systemTokenEnabled=*/ systemTokenEnabled, runInUserSessionTests);
+    return;
   }
-}
 
-chrome.test.onMessage.addListener(testModeListener);
+  beforeLoginScreenTests(runLoginScreenTests);
+});

@@ -20,6 +20,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.keyboard_accessory.AccessoryAction.AUTOFILL_SUGGESTION;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BAR_ITEMS;
@@ -30,11 +33,15 @@ import static org.chromium.chrome.browser.keyboard_accessory.bar_component.Keybo
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHOW_SWIPING_IPH;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.TAB_LAYOUT_ITEM;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.VISIBLE;
-import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
-import static org.chromium.chrome.test.util.ViewUtils.waitForView;
+import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
+import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
 import android.content.pm.ActivityInfo;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewStub;
 
@@ -50,12 +57,15 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.CriteriaNotSatisfiedException;
+import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -73,6 +83,7 @@ import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.components.feature_engagement.TriggerDetails;
 import org.chromium.components.feature_engagement.TriggerState;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -81,6 +92,9 @@ import org.chromium.ui.DropdownItem;
 import org.chromium.ui.ViewProvider;
 import org.chromium.ui.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.widget.ChipView;
+import org.chromium.ui.widget.ChromeImageView;
+import org.chromium.url.GURL;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -96,11 +110,17 @@ import java.util.concurrent.atomic.AtomicReference;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @EnableFeatures(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
 public class KeyboardAccessoryModernViewTest {
+    private static final String CUSTOM_ICON_URL = "https://www.example.com/image.png";
+    private static final Bitmap TEST_CARD_ART_IMAGE =
+            Bitmap.createBitmap(100, 200, Bitmap.Config.ARGB_8888);
     private PropertyModel mModel;
     private BlockingQueue<KeyboardAccessoryModernView> mKeyboardAccessoryView;
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
+    @Mock
+    PersonalDataManager mMockPersonalDataManager;
 
     private static class TestTracker implements Tracker {
         private boolean mWasDismissed;
@@ -121,6 +141,11 @@ public class KeyboardAccessoryModernViewTest {
         }
 
         @Override
+        public TriggerDetails shouldTriggerHelpUIWithSnooze(String feature) {
+            return null;
+        }
+
+        @Override
         public boolean wouldTriggerHelpUI(String feature) {
             return true;
         }
@@ -137,6 +162,11 @@ public class KeyboardAccessoryModernViewTest {
 
         @Override
         public void dismissed(String feature) {
+            mWasDismissed = true;
+        }
+
+        @Override
+        public void dismissedWithSnooze(String feature, int snoozeAction) {
             mWasDismissed = true;
         }
 
@@ -163,7 +193,9 @@ public class KeyboardAccessoryModernViewTest {
 
     @Before
     public void setUp() throws InterruptedException {
+        MockitoAnnotations.initMocks(this);
         mActivityTestRule.startMainActivityOnBlankPage();
+        PersonalDataManager.setInstanceForTesting(mMockPersonalDataManager);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel =
                     KeyboardAccessoryProperties.defaultModelBuilder()
@@ -233,7 +265,7 @@ public class KeyboardAccessoryModernViewTest {
             mModel.get(BAR_ITEMS).set(new BarItem[] {
                     new AutofillBarItem(
                             new AutofillSuggestion("Johnathan", "Smith", "", DropdownItem.NO_ICON,
-                                    false, 1, false, false, false),
+                                    false, 1, false, false, false, /* featureForIPH= */ ""),
                             new Action("Unused", AUTOFILL_SUGGESTION,
                                     result -> {}, result -> clickRecorded.set(true))),
                     createTabs()});
@@ -274,10 +306,10 @@ public class KeyboardAccessoryModernViewTest {
     @Test
     @MediumTest
     public void testDismissesPasswordEducationBubbleOnFilling() {
-        AutofillBarItem itemWithIPH =
-                new AutofillBarItem(new AutofillSuggestion("Johnathan", "Smith", /*itemTag=*/"",
-                                            DropdownItem.NO_ICON, false, -2, false, false, false),
-                        new KeyboardAccessoryData.Action("", AUTOFILL_SUGGESTION, unused -> {}));
+        AutofillBarItem itemWithIPH = new AutofillBarItem(
+                new AutofillSuggestion("Johnathan", "Smith", /*itemTag=*/"", DropdownItem.NO_ICON,
+                        false, -2, false, false, false, /* featureForIPH= */ ""),
+                new KeyboardAccessoryData.Action("", AUTOFILL_SUGGESTION, unused -> {}));
         itemWithIPH.setFeatureForIPH(FeatureConstants.KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE);
 
         TestTracker tracker = new TestTracker();
@@ -302,10 +334,10 @@ public class KeyboardAccessoryModernViewTest {
     @Test
     @MediumTest
     public void testDismissesAddressEducationBubbleOnFilling() {
-        AutofillBarItem itemWithIPH =
-                new AutofillBarItem(new AutofillSuggestion("Johnathan", "Smith", /*itemTag=*/"",
-                                            DropdownItem.NO_ICON, false, 1, false, false, false),
-                        new KeyboardAccessoryData.Action("", AUTOFILL_SUGGESTION, unused -> {}));
+        AutofillBarItem itemWithIPH = new AutofillBarItem(
+                new AutofillSuggestion("Johnathan", "Smith", /*itemTag=*/"", DropdownItem.NO_ICON,
+                        false, 1, false, false, false, /* featureForIPH= */ ""),
+                new KeyboardAccessoryData.Action("", AUTOFILL_SUGGESTION, unused -> {}));
         itemWithIPH.setFeatureForIPH(FeatureConstants.KEYBOARD_ACCESSORY_ADDRESS_FILL_FEATURE);
 
         TestTracker tracker = new TestTracker();
@@ -330,7 +362,7 @@ public class KeyboardAccessoryModernViewTest {
     public void testDismissesPaymentEducationBubbleOnFilling() {
         AutofillBarItem itemWithIPH = new AutofillBarItem(
                 new AutofillSuggestion("Johnathan", "Smith", /*itemTag=*/"", DropdownItem.NO_ICON,
-                        false, 70000, false, false, false),
+                        false, 70000, false, false, false, /* featureForIPH= */ ""),
                 new KeyboardAccessoryData.Action("", AUTOFILL_SUGGESTION, unused -> {}));
         itemWithIPH.setFeatureForIPH(FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_FILLING_FEATURE);
 
@@ -387,7 +419,7 @@ public class KeyboardAccessoryModernViewTest {
         String itemTag = "Cashback linked";
         AutofillBarItem itemWithIPH = new AutofillBarItem(
                 new AutofillSuggestion("Johnathan", "Smith", itemTag, R.drawable.ic_offer_tag,
-                        false, 70000, false, false, false),
+                        false, 70000, false, false, false, /* featureForIPH= */ ""),
                 new KeyboardAccessoryData.Action("", AUTOFILL_SUGGESTION, unused -> {}));
         itemWithIPH.setFeatureForIPH(FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_OFFER_FEATURE);
 
@@ -435,6 +467,112 @@ public class KeyboardAccessoryModernViewTest {
         CriteriaHelper.pollUiThread(() -> obfuscatedChildAt.get() > -1);
     }
 
+    @Test
+    @MediumTest
+    public void testCustomIconUrlSet_imageReturnedByPersonalDataManager_customIconSetOnChipView()
+            throws InterruptedException {
+        GURL customIconUrl = mock(GURL.class);
+        when(customIconUrl.isValid()).thenReturn(true);
+        when(customIconUrl.getSpec()).thenReturn(CUSTOM_ICON_URL);
+        // Return the cached image when
+        // PersonalDataManager.getCustomImageForAutofillSuggestionIfAvailable is called for the
+        // above url.
+        when(mMockPersonalDataManager.getCustomImageForAutofillSuggestionIfAvailable(any()))
+                .thenReturn(TEST_CARD_ART_IMAGE);
+        // Create an autofill suggestion and set the `customIconUrl`.
+        AutofillBarItem customIconItem = new AutofillBarItem(
+                getDefaultAutofillSuggestionBuilder().setCustomIconUrl(customIconUrl).build(),
+                new KeyboardAccessoryData.Action("", AUTOFILL_SUGGESTION, unused -> {}));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.set(VISIBLE, true);
+            mModel.get(BAR_ITEMS).set(new BarItem[] {customIconItem, createTabs()});
+        });
+        KeyboardAccessoryModernView view = mKeyboardAccessoryView.take();
+
+        CriteriaHelper.pollUiThread(() -> view.mBarItemsView.getChildCount() > 0);
+        CriteriaHelper.pollUiThread(() -> {
+            ChipView chipView = (ChipView) view.mBarItemsView.getChildAt(0);
+            ChromeImageView iconImageView = (ChromeImageView) chipView.getChildAt(0);
+            return ((BitmapDrawable) iconImageView.getDrawable())
+                    .getBitmap()
+                    .equals(TEST_CARD_ART_IMAGE);
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testCustomIconUrlSet_imageNotCachedInPersonalDataManager_defaultIconSetOnChipView()
+            throws InterruptedException {
+        GURL customIconUrl = mock(GURL.class);
+        when(customIconUrl.isValid()).thenReturn(true);
+        when(customIconUrl.getSpec()).thenReturn(CUSTOM_ICON_URL);
+        // Return the response of PersonalDataManager.getCustomImageForAutofillSuggestionIfAvailable
+        // to null to indicate that the image is not present in the cache.
+        when(mMockPersonalDataManager.getCustomImageForAutofillSuggestionIfAvailable(any()))
+                .thenReturn(null);
+        AutofillBarItem customIconItem = new AutofillBarItem(
+                getDefaultAutofillSuggestionBuilder().setCustomIconUrl(customIconUrl).build(),
+                new KeyboardAccessoryData.Action("", AUTOFILL_SUGGESTION, unused -> {}));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.set(VISIBLE, true);
+            mModel.get(BAR_ITEMS).set(new BarItem[] {customIconItem, createTabs()});
+        });
+        KeyboardAccessoryModernView view = mKeyboardAccessoryView.take();
+
+        CriteriaHelper.pollUiThread(() -> view.mBarItemsView.getChildCount() > 0);
+        CriteriaHelper.pollUiThread(() -> {
+            ChipView chipView = (ChipView) view.mBarItemsView.getChildAt(0);
+            ChromeImageView iconImageView = (ChromeImageView) chipView.getChildAt(0);
+            Drawable expectedIcon =
+                    mActivityTestRule.getActivity().getDrawable(R.drawable.visa_card);
+            return getBitmap(expectedIcon).sameAs(getBitmap(iconImageView.getDrawable()));
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testCustomIconUrlNotSet_defaultIconSetOnChipView() throws InterruptedException {
+        // Create an autofill suggestion without setting the `customIconUrl`.
+        AutofillBarItem itemWithoutCustomIconUrl =
+                new AutofillBarItem(getDefaultAutofillSuggestionBuilder().build(),
+                        new KeyboardAccessoryData.Action("", AUTOFILL_SUGGESTION, unused -> {}));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.set(VISIBLE, true);
+            mModel.get(BAR_ITEMS).set(new BarItem[] {itemWithoutCustomIconUrl, createTabs()});
+        });
+        KeyboardAccessoryModernView view = mKeyboardAccessoryView.take();
+
+        CriteriaHelper.pollUiThread(() -> view.mBarItemsView.getChildCount() > 0);
+        CriteriaHelper.pollUiThread(() -> {
+            ChipView chipView = (ChipView) view.mBarItemsView.getChildAt(0);
+            ChromeImageView iconImageView = (ChromeImageView) chipView.getChildAt(0);
+            Drawable expectedIcon =
+                    mActivityTestRule.getActivity().getDrawable(R.drawable.visa_card);
+            return getBitmap(expectedIcon).sameAs(getBitmap(iconImageView.getDrawable()));
+        });
+    }
+
+    private static AutofillSuggestion.Builder getDefaultAutofillSuggestionBuilder() {
+        return new AutofillSuggestion.Builder()
+                .setLabel("Johnathan")
+                .setSubLabel("Smith")
+                .setIconId(R.drawable.visa_card)
+                .setSuggestionId(70000);
+    }
+
+    // Convert a drawable to a Bitmap for comparison.
+    private static Bitmap getBitmap(Drawable drawable) {
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
+                drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
+    }
+
     private ViewInteraction waitForHelpBubble(Matcher<View> matcher) {
         View mainDecorView = mActivityTestRule.getActivity().getWindow().getDecorView();
         return onView(isRoot())
@@ -472,8 +610,9 @@ public class KeyboardAccessoryModernViewTest {
     }
 
     private AutofillBarItem createAutofillBarItem(String label, Callback<Action> chipCallback) {
-        return new AutofillBarItem(new AutofillSuggestion(label, "Smith", /*itemTag=*/"",
-                                           DropdownItem.NO_ICON, false, 1, false, false, false),
+        return new AutofillBarItem(
+                new AutofillSuggestion(label, "Smith", /*itemTag=*/"", DropdownItem.NO_ICON, false,
+                        1, false, false, false, /* featureForIPH= */ ""),
                 new KeyboardAccessoryData.Action("Unused", AUTOFILL_SUGGESTION, chipCallback));
     }
 

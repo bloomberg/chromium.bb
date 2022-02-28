@@ -41,7 +41,7 @@ do
 done
 
 echo "deleting directories we don't care about ..."
-for d in layoutex data/xml test allinone
+for d in layoutex data/xml allinone
 do
   rm -rf "${treeroot}/source/${d}"
 done
@@ -56,9 +56,9 @@ do
   git checkout -- "${treeroot}/source/data/"${line}
 done < "${treeroot}/scripts/data_files_to_preserve.txt"
 
-echo "Patching configure to work without source/{layoutex,test}  ..."
+echo "Patching configure to work without source/{layoutex}  ..."
 sed -i.orig -e '/^ac_config_files=/ s:\ layoutex/Makefile::g' \
-  -e '/^ac_config_files=/ s: test/.* samples/M: samples/M:' \
+  -e '/^ac_config_files=/ s: samples/M: samples/M:' \
   "${treeroot}/source/configure"
 rm -f "${treeroot}/source/configure.orig"
 

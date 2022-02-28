@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
 #include "cc/metrics/event_metrics.h"
@@ -22,7 +23,6 @@
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
-#include "ui/gfx/rendering_pipeline.h"
 
 namespace perfetto {
 namespace protos {
@@ -48,6 +48,7 @@ enum class FrameSkippedReason {
   kRecoverLatency,
   kNoDamage,
   kWaitingOnMain,
+  kDrawThrottled,
 };
 
 class SchedulerClient {
@@ -87,7 +88,7 @@ class SchedulerClient {
   virtual void FrameIntervalUpdated(base::TimeDelta interval) = 0;
 
   // Functions used for reporting animation targeting UMA, crbug.com/758439.
-  virtual bool HasCustomPropertyAnimations() const = 0;
+  virtual bool HasInvalidationAnimation() const = 0;
 
  protected:
   virtual ~SchedulerClient() {}
@@ -101,8 +102,6 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
       int layer_tree_host_id,
       base::SingleThreadTaskRunner* task_runner,
       std::unique_ptr<CompositorTimingHistory> compositor_timing_history,
-      gfx::RenderingPipeline* main_thread_pipeline,
-      gfx::RenderingPipeline* compositor_thread_pipeline,
       CompositorFrameReportingController* compositor_frame_reporting_controller,
       power_scheduler::PowerModeArbiter* power_mode_arbiter);
   Scheduler(const Scheduler&) = delete;
@@ -250,6 +249,7 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   void SetMainThreadWantsBeginMainFrameNotExpected(bool new_state);
 
   void AsProtozeroInto(
+      perfetto::EventContext& ctx,
       perfetto::protos::pbzero::ChromeCompositorSchedulerState* state) const;
 
   void SetVideoNeedsBeginFrames(bool video_needs_begin_frames);
@@ -271,26 +271,28 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
 
   bool IsBeginMainFrameSent() const;
 
+  size_t CommitDurationSampleCountForTesting() const;
+
  protected:
   // Virtual for testing.
   virtual base::TimeTicks Now() const;
 
   const SchedulerSettings settings_;
-  SchedulerClient* const client_;
+  const raw_ptr<SchedulerClient> client_;
   const int layer_tree_host_id_;
-  base::SingleThreadTaskRunner* task_runner_;
+  raw_ptr<base::SingleThreadTaskRunner> task_runner_;
 
-  viz::BeginFrameSource* begin_frame_source_ = nullptr;
+  raw_ptr<viz::BeginFrameSource> begin_frame_source_ = nullptr;
   bool observing_begin_frame_source_ = false;
 
   bool skipped_last_frame_missed_exceeded_deadline_ = false;
-  bool skipped_last_frame_to_reduce_latency_ = false;
 
   std::unique_ptr<CompositorTimingHistory> compositor_timing_history_;
 
   // Owned by LayerTreeHostImpl and is destroyed when LayerTreeHostImpl is
   // destroyed.
-  CompositorFrameReportingController* compositor_frame_reporting_controller_;
+  raw_ptr<CompositorFrameReportingController>
+      compositor_frame_reporting_controller_;
 
   // What the latest deadline was, and when it was scheduled.
   base::TimeTicks deadline_;
@@ -341,14 +343,6 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   // arrive so that |client_| can be informed about changes.
   base::TimeDelta last_frame_interval_;
 
-  gfx::RenderingPipeline* const main_thread_pipeline_;
-  absl::optional<gfx::RenderingPipeline::ScopedPipelineActive>
-      main_thread_pipeline_active_;
-
-  gfx::RenderingPipeline* const compositor_thread_pipeline_;
-  absl::optional<gfx::RenderingPipeline::ScopedPipelineActive>
-      compositor_thread_pipeline_active_;
-
   std::unique_ptr<power_scheduler::PowerModeVoter> power_mode_voter_;
   power_scheduler::PowerMode last_power_mode_vote_ =
       power_scheduler::PowerMode::kIdle;
@@ -384,14 +378,6 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   void DrawForced();
   void ProcessScheduledActions();
   void UpdateCompositorTimingHistoryRecordingEnabled();
-  bool ShouldRecoverMainLatency(const viz::BeginFrameArgs& args,
-                                bool can_activate_before_deadline) const;
-  bool ShouldRecoverImplLatency(const viz::BeginFrameArgs& args,
-                                bool can_activate_before_deadline) const;
-  bool CanBeginMainFrameAndActivateBeforeDeadline(
-      const viz::BeginFrameArgs& args,
-      base::TimeDelta bmf_to_activate_estimate,
-      base::TimeTicks now) const;
   void AdvanceCommitStateIfPossible();
 
   void BeginImplFrameWithDeadline(const viz::BeginFrameArgs& args);
@@ -410,6 +396,10 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   }
 
   void UpdatePowerModeVote();
+
+  // Used only for UMa metric calculations.
+  base::TimeDelta cc_frame_time_available_;
+  base::TimeTicks cc_frame_start_;  // Begin impl frame time.
 };
 
 }  // namespace cc

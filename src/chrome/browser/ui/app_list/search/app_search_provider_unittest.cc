@@ -11,11 +11,11 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/arc/test/fake_app_instance.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
@@ -44,7 +43,6 @@
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/seneschal/seneschal_client.h"
-#include "components/arc/test/fake_app_instance.h"
 #include "components/crx_file/id_util.h"
 #include "components/services/app_service/public/cpp/stub_icon_loader.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -99,13 +97,13 @@ constexpr char kWebAppName[] = "WebApp1";
 void WaitTimeUpdated() {
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromMilliseconds(1));
+      FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(1));
   run_loop.Run();
 }
 
 base::Time MicrosecondsSinceEpoch(int microseconds) {
   return base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMicroseconds(microseconds));
+      base::Microseconds(microseconds));
 }
 
 }  // namespace
@@ -117,8 +115,7 @@ bool MoreRelevant(const ChromeSearchResult* result1,
   return result1->relevance() > result2->relevance();
 }
 
-void UpdateIconKey(apps::AppServiceProxyChromeOs& proxy,
-                   const std::string& app_id) {
+void UpdateIconKey(apps::AppServiceProxy& proxy, const std::string& app_id) {
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_id = app_id;
   proxy.AppRegistryCache().ForOneApp(
@@ -146,13 +143,18 @@ class AppSearchProviderTest : public AppListTestBase {
     scoped_feature_list_.InitWithFeatures(
         {}, {app_list_features::kEnableFuzzyAppSearch});
   }
+
+  AppSearchProviderTest(const AppSearchProviderTest&) = delete;
+  AppSearchProviderTest& operator=(const AppSearchProviderTest&) = delete;
+
   ~AppSearchProviderTest() override {}
 
   // AppListTestBase overrides:
   void SetUp() override {
     AppListTestBase::SetUp();
 
-    model_updater_ = std::make_unique<FakeAppListModelUpdater>();
+    model_updater_ = std::make_unique<FakeAppListModelUpdater>(
+        /*profile=*/nullptr, /*reorder_delegate=*/nullptr);
     controller_ = std::make_unique<::test::TestAppListControllerDelegate>();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
@@ -311,8 +313,6 @@ class AppSearchProviderTest : public AppListTestBase {
       mock_sync_sessions_client_;
   std::unique_ptr<sync_sessions::SyncedSessionTracker> session_tracker_;
   std::unique_ptr<sync_sessions::OpenTabsUIDelegateImpl> open_tabs_ui_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppSearchProviderTest);
 };
 
 TEST_F(AppSearchProviderTest, Basic) {
@@ -347,6 +347,7 @@ TEST_F(AppSearchProviderTest, Basic) {
   result = RunQuery("app1");
   EXPECT_TRUE(result == "Packaged App 1,Fake App 1" ||
               result == "Fake App 1,Packaged App 1");
+  arc_test().TearDown();
 }
 
 TEST_F(AppSearchProviderTest, DisableAndEnable) {
@@ -417,6 +418,8 @@ TEST_F(AppSearchProviderTest, InstallUninstallArc) {
 
   // Let uninstall code to clean up.
   base::RunLoop().RunUntilIdle();
+
+  arc_test().TearDown();
 }
 
 TEST_F(AppSearchProviderTest, FetchRecommendations) {
@@ -440,8 +443,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendations) {
   EXPECT_EQ("Packaged App 2,Packaged App 1,Hosted App", RunQuery(""));
 
   // Times in the future should just be handled as highest priority.
-  prefs->SetLastLaunchTime(kHostedAppId,
-                           kTestCurrentTime + base::TimeDelta::FromSeconds(5));
+  prefs->SetLastLaunchTime(kHostedAppId, kTestCurrentTime + base::Seconds(5));
   prefs->SetLastLaunchTime(kPackagedApp1Id, MicrosecondsSinceEpoch(10));
   prefs->SetLastLaunchTime(kPackagedApp2Id, MicrosecondsSinceEpoch(5));
   // Allow async callbacks to run.
@@ -470,9 +472,9 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     CreateSearchWithContinueReading();
     session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
                                         sync_pb::SyncEnums::TYPE_CROS);
-    const base::Time kTimestamp1 = now - base::TimeDelta::FromMinutes(2);
-    const base::Time kTimestamp2 = now - base::TimeDelta::FromMinutes(1);
-    const base::Time kTimestamp3 = now - base::TimeDelta::FromMinutes(3);
+    const base::Time kTimestamp1 = now - base::Minutes(2);
+    const base::Time kTimestamp2 = now - base::Minutes(1);
+    const base::Time kTimestamp3 = now - base::Minutes(3);
 
     session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
@@ -522,7 +524,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     CreateSearchWithContinueReading();
     session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
                                         sync_pb::SyncEnums::TYPE_CROS);
-    const base::Time kTimestamp1 = now - base::TimeDelta::FromMinutes(1);
+    const base::Time kTimestamp1 = now - base::Minutes(1);
 
     session_tracker()->PutWindowInSession(kLocalSessionTag, kWindowId1);
     session_tracker()->PutTabInWindow(kLocalSessionTag, kWindowId1, kTabId1);
@@ -547,7 +549,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     CreateSearchWithContinueReading();
     session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
                                         sync_pb::SyncEnums::TYPE_CROS);
-    const base::Time kTimestamp1 = now - base::TimeDelta::FromMinutes(121);
+    const base::Time kTimestamp1 = now - base::Minutes(121);
 
     session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
@@ -572,7 +574,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     CreateSearchWithContinueReading();
     session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
                                         sync_pb::SyncEnums::TYPE_CROS);
-    const base::Time kTimestamp1 = now - base::TimeDelta::FromMinutes(1);
+    const base::Time kTimestamp1 = now - base::Minutes(1);
 
     session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
@@ -597,7 +599,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     CreateSearchWithContinueReading();
     session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
                                         sync_pb::SyncEnums::TYPE_CROS);
-    const base::Time kTimestamp1 = now - base::TimeDelta::FromMinutes(1);
+    const base::Time kTimestamp1 = now - base::Minutes(1);
 
     session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
@@ -622,7 +624,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     CreateSearchWithContinueReading();
     session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
                                         sync_pb::SyncEnums::TYPE_CROS);
-    const base::Time kTimestamp1 = now - base::TimeDelta::FromMinutes(1);
+    const base::Time kTimestamp1 = now - base::Minutes(1);
 
     session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
@@ -646,7 +648,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     CreateSearchWithContinueReading();
     session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
                                         sync_pb::SyncEnums::TYPE_CROS);
-    const base::Time kTimestamp1 = now - base::TimeDelta::FromMinutes(1);
+    const base::Time kTimestamp1 = now - base::Minutes(1);
 
     session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
@@ -702,7 +704,7 @@ TEST_F(AppSearchProviderTest, FilterDuplicate) {
 
   extension_prefs->SetLastLaunchTime(
       extension_misc::kGmailAppId,
-      arc_gmail_app_info->last_launch_time - base::TimeDelta::FromSeconds(1));
+      arc_gmail_app_info->last_launch_time - base::Seconds(1));
 
   // Allow async callbacks to run.
   base::RunLoop().RunUntilIdle();
@@ -712,13 +714,14 @@ TEST_F(AppSearchProviderTest, FilterDuplicate) {
 
   extension_prefs->SetLastLaunchTime(
       extension_misc::kGmailAppId,
-      arc_gmail_app_info->last_launch_time + base::TimeDelta::FromSeconds(1));
+      arc_gmail_app_info->last_launch_time + base::Seconds(1));
 
   // Allow async callbacks to run.
   base::RunLoop().RunUntilIdle();
 
   CreateSearch();
   EXPECT_EQ(kGmailExtensionName, RunQuery(kGmailQuery));
+  arc_test().TearDown();
 }
 
 TEST_F(AppSearchProviderTest, FetchInternalApp) {
@@ -830,7 +833,7 @@ TEST_F(AppSearchProviderCrostiniTest, CrostiniApp) {
 }
 
 TEST_F(AppSearchProviderTest, AppServiceIconCache) {
-  apps::AppServiceProxyChromeOs* proxy =
+  apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
   ASSERT_NE(proxy, nullptr);
 
@@ -900,10 +903,13 @@ class AppSearchProviderWithExtensionInstallType
       public ::testing::WithParamInterface<TestExtensionInstallType> {
  public:
   AppSearchProviderWithExtensionInstallType() = default;
-  ~AppSearchProviderWithExtensionInstallType() override = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppSearchProviderWithExtensionInstallType);
+  AppSearchProviderWithExtensionInstallType(
+      const AppSearchProviderWithExtensionInstallType&) = delete;
+  AppSearchProviderWithExtensionInstallType& operator=(
+      const AppSearchProviderWithExtensionInstallType&) = delete;
+
+  ~AppSearchProviderWithExtensionInstallType() override = default;
 };
 
 TEST_P(AppSearchProviderWithExtensionInstallType, InstallInternallyRanking) {
@@ -1030,15 +1036,18 @@ class AppSearchProviderWithArcAppInstallType
       public ::testing::WithParamInterface<TestArcAppInstallType> {
  public:
   AppSearchProviderWithArcAppInstallType() = default;
-  ~AppSearchProviderWithArcAppInstallType() override = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppSearchProviderWithArcAppInstallType);
+  AppSearchProviderWithArcAppInstallType(
+      const AppSearchProviderWithArcAppInstallType&) = delete;
+  AppSearchProviderWithArcAppInstallType& operator=(
+      const AppSearchProviderWithArcAppInstallType&) = delete;
+
+  ~AppSearchProviderWithArcAppInstallType() override = default;
 };
 
 // TODO (879413): Enable this after resolving flakiness.
 TEST_P(AppSearchProviderWithArcAppInstallType,
-       DISABLED_InstallInernallyRanking) {
+       DISABLED_InstallInternallyRanking) {
   const bool default_app =
       GetParam() == TestArcAppInstallType::INSTALLED_BY_DEFAULT;
   if (default_app) {
@@ -1087,7 +1096,7 @@ TEST_P(AppSearchProviderWithArcAppInstallType,
 
   EXPECT_LT(normal_app->install_time, internal_app->install_time);
 
-  // Installed internally app has runking below other apps, even if it's install
+  // Installed internally app has runking below other apps, even if its install
   // time is later.
   CreateSearch();
   EXPECT_EQ(std::string(kRankingNormalAppName) + "," +
@@ -1101,6 +1110,7 @@ TEST_P(AppSearchProviderWithArcAppInstallType,
   EXPECT_EQ(std::string(kRankingInternalAppName) + "," +
                 std::string(kRankingNormalAppName),
             RunQuery(kRankingAppQuery));
+  arc_test().TearDown();
 }
 
 INSTANTIATE_TEST_SUITE_P(

@@ -10,10 +10,11 @@
 #include <memory>
 #include <vector>
 
-#include "core/fxcrt/fx_string.h"
+#include "core/fxcrt/bytestring.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "v8/include/cppgc/persistent.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-forward.h"
+#include "v8/include/v8-persistent-handle.h"
 
 class CFXJSE_Class;
 class CFXJSE_HostObject;
@@ -39,10 +40,10 @@ class CFXJSE_Context {
   CFXJSE_Class* GetClassByName(ByteStringView szName) const;
   void EnableCompatibleMode();
 
-  // Note: `lpNewThisObject` may be empty.
-  bool ExecuteScript(const char* szScript,
-                     CFXJSE_Value* lpRetValue,
-                     v8::Local<v8::Object> lpNewThisObject);
+  // Note: `pNewThisObject` may be empty.
+  bool ExecuteScript(ByteStringView bsScript,
+                     CFXJSE_Value* pRetValue,
+                     v8::Local<v8::Object> pNewThisObject);
 
  private:
   CFXJSE_Context(v8::Isolate* pIsolate, CXFA_ThisProxy* pProxy);
@@ -56,7 +57,7 @@ class CFXJSE_Context {
 };
 
 void FXJSE_UpdateObjectBinding(v8::Local<v8::Object> hObject,
-                               CFXJSE_HostObject* lpNewBinding);
+                               CFXJSE_HostObject* pNewBinding);
 
 void FXJSE_ClearObjectBinding(v8::Local<v8::Object> hJSObject);
 CFXJSE_HostObject* FXJSE_RetrieveObjectBinding(v8::Local<v8::Value> hValue);

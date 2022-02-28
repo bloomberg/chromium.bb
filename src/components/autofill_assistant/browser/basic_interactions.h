@@ -6,7 +6,9 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_BASIC_INTERACTIONS_H_
 
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/generic_ui.pb.h"
 
@@ -19,13 +21,16 @@ class ScriptExecutorDelegate;
 class BasicInteractions {
  public:
   // Constructor. |delegate| must outlive this instance.
-  BasicInteractions(ScriptExecutorDelegate* delegate);
+  BasicInteractions(ScriptExecutorDelegate* delegate, ClientSettings* settings);
   ~BasicInteractions();
 
   BasicInteractions(const BasicInteractions&) = delete;
   BasicInteractions& operator=(const BasicInteractions&) = delete;
 
   base::WeakPtr<BasicInteractions> GetWeakPtr();
+
+  // Returns ClientSettings from the ScriptExecutorDelegate.
+  const ClientSettings& GetClientSettings();
 
   // Performs the computation specified by |proto| and writes the result to
   // |user_model_|. Returns true on success, false on error.
@@ -82,7 +87,8 @@ class BasicInteractions {
                               base::RepeatingCallback<void()> callback);
 
  private:
-  ScriptExecutorDelegate* delegate_;
+  raw_ptr<ScriptExecutorDelegate> delegate_;
+  raw_ptr<ClientSettings> settings_;
   // Only valid during a ShowGenericUiAction.
   base::OnceCallback<void(const ClientStatus&)> end_action_callback_;
   base::OnceCallback<void(const ClientStatus&)>

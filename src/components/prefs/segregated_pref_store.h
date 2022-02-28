@@ -12,7 +12,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "components/prefs/persistent_pref_store.h"
@@ -42,6 +42,9 @@ class COMPONENTS_PREFS_EXPORT SegregatedPrefStore : public PersistentPrefStore {
   SegregatedPrefStore(scoped_refptr<PersistentPrefStore> default_pref_store,
                       scoped_refptr<PersistentPrefStore> selected_pref_store,
                       std::set<std::string> selected_pref_names);
+
+  SegregatedPrefStore(const SegregatedPrefStore&) = delete;
+  SegregatedPrefStore& operator=(const SegregatedPrefStore&) = delete;
 
   // PrefStore implementation
   void AddObserver(Observer* observer) override;
@@ -81,26 +84,34 @@ class COMPONENTS_PREFS_EXPORT SegregatedPrefStore : public PersistentPrefStore {
   ~SegregatedPrefStore() override;
 
  private:
-  // Aggregates events from the underlying stores and synthesizes external
-  // events via |on_initialization|, |read_error_delegate_|, and |observers_|.
-  class AggregatingObserver : public PrefStore::Observer {
+  // Caches event state from the underlying stores and exposes the state to the
+  // provided "outer" SegregatedPrefStore to synthesize external events via
+  // |read_error_delegate_| and |observers_|.
+  class UnderlyingPrefStoreObserver : public PrefStore::Observer {
    public:
-    explicit AggregatingObserver(SegregatedPrefStore* outer);
+    explicit UnderlyingPrefStoreObserver(SegregatedPrefStore* outer);
+
+    UnderlyingPrefStoreObserver(const UnderlyingPrefStoreObserver&) = delete;
+    UnderlyingPrefStoreObserver& operator=(const UnderlyingPrefStoreObserver&) =
+        delete;
 
     // PrefStore::Observer implementation
     void OnPrefValueChanged(const std::string& key) override;
     void OnInitializationCompleted(bool succeeded) override;
 
-   private:
-    SegregatedPrefStore* outer_;
-    int failed_sub_initializations_;
-    int successful_sub_initializations_;
+    bool initialization_succeeded() const { return initialization_succeeded_; }
 
-    DISALLOW_COPY_AND_ASSIGN(AggregatingObserver);
+   private:
+    const raw_ptr<SegregatedPrefStore> outer_;
+    bool initialization_succeeded_ = false;
   };
 
-  // Returns |selected_pref_store| if |key| is selected and |default_pref_store|
-  // otherwise.
+  // Returns true only if all underlying PrefStores have initialized
+  // successfully, otherwise false.
+  bool IsInitializationSuccessful() const;
+
+  // Returns |selected_pref_store| if |key| is selected and
+  // |default_pref_store| otherwise.
   PersistentPrefStore* StoreForKey(const std::string& key);
   const PersistentPrefStore* StoreForKey(const std::string& key) const;
 
@@ -110,9 +121,8 @@ class COMPONENTS_PREFS_EXPORT SegregatedPrefStore : public PersistentPrefStore {
 
   std::unique_ptr<PersistentPrefStore::ReadErrorDelegate> read_error_delegate_;
   base::ObserverList<PrefStore::Observer, true>::Unchecked observers_;
-  AggregatingObserver aggregating_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(SegregatedPrefStore);
+  UnderlyingPrefStoreObserver default_observer_;
+  UnderlyingPrefStoreObserver selected_observer_;
 };
 
 #endif  // COMPONENTS_PREFS_SEGREGATED_PREF_STORE_H_

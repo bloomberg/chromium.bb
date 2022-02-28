@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_HANDWRITING_HANDWRITING_RECOGNIZER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_HANDWRITING_HANDWRITING_RECOGNIZER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/handwriting/handwriting.mojom-blink.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
@@ -27,6 +26,10 @@ class HandwritingRecognizer final : public ScriptWrappable {
       ExecutionContext* context,
       mojo::PendingRemote<handwriting::mojom::blink::HandwritingRecognizer>
           pending_remote);
+
+  HandwritingRecognizer(const HandwritingRecognizer&) = delete;
+  HandwritingRecognizer& operator=(const HandwritingRecognizer&) = delete;
+
   ~HandwritingRecognizer() override;
 
   // Used by the drawing to see if the recognizer is valid.
@@ -53,8 +56,6 @@ class HandwritingRecognizer final : public ScriptWrappable {
 
   HeapMojoRemote<handwriting::mojom::blink::HandwritingRecognizer>
       remote_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(HandwritingRecognizer);
 };
 
 }  // namespace blink

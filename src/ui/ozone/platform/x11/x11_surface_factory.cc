@@ -30,6 +30,10 @@ namespace {
 class GLOzoneEGLX11 : public GLOzoneEGL {
  public:
   GLOzoneEGLX11() = default;
+
+  GLOzoneEGLX11(const GLOzoneEGLX11&) = delete;
+  GLOzoneEGLX11& operator=(const GLOzoneEGLX11&) = delete;
+
   ~GLOzoneEGLX11() override = default;
 
   // GLOzone:
@@ -85,8 +89,6 @@ class GLOzoneEGLX11 : public GLOzoneEGL {
 
  private:
   bool is_swiftshader_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLX11);
 };
 
 }  // namespace
@@ -99,11 +101,13 @@ X11SurfaceFactory::X11SurfaceFactory(
 
 X11SurfaceFactory::~X11SurfaceFactory() = default;
 
-std::vector<gl::GLImplementation>
+std::vector<gl::GLImplementationParts>
 X11SurfaceFactory::GetAllowedGLImplementations() {
-  return std::vector<gl::GLImplementation>{
-      gl::kGLImplementationDesktopGL, gl::kGLImplementationEGLGLES2,
-      gl::kGLImplementationEGLANGLE, gl::kGLImplementationSwiftShaderGL};
+  return std::vector<gl::GLImplementationParts>{
+      gl::GLImplementationParts(gl::kGLImplementationDesktopGL),
+      gl::GLImplementationParts(gl::kGLImplementationEGLGLES2),
+      gl::GLImplementationParts(gl::kGLImplementationEGLANGLE),
+      gl::GLImplementationParts(gl::kGLImplementationSwiftShaderGL)};
 }
 
 GLOzone* X11SurfaceFactory::GetGLOzone(

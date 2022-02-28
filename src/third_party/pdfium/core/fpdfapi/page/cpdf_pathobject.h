@@ -7,10 +7,11 @@
 #ifndef CORE_FPDFAPI_PAGE_CPDF_PATHOBJECT_H_
 #define CORE_FPDFAPI_PAGE_CPDF_PATHOBJECT_H_
 
+#include <stdint.h>
+
 #include "core/fpdfapi/page/cpdf_pageobject.h"
 #include "core/fpdfapi/page/cpdf_path.h"
 #include "core/fxcrt/fx_coordinates.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
 
 class CPDF_PathObject final : public CPDF_PageObject {
@@ -60,7 +61,7 @@ class CPDF_PathObject final : public CPDF_PageObject {
   const CPDF_Path& path() const { return m_Path; }
 
   const CFX_Matrix& matrix() const { return m_Matrix; }
-  void set_matrix(const CFX_Matrix& matrix) { m_Matrix = matrix; }
+  void SetPathMatrix(const CFX_Matrix& matrix);
 
  private:
   bool m_bStroke = false;

@@ -14,20 +14,20 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_utils.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
-#include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
-#include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
+#include "chrome/browser/web_applications/test/fake_web_app_database_factory.h"
+#include "chrome/browser/web_applications/test/fake_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_proto_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/share_target.h"
@@ -44,9 +44,9 @@ class WebAppDatabaseTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    test_registry_controller_ =
-        std::make_unique<TestWebAppRegistryController>();
-    test_registry_controller_->SetUp(profile());
+    fake_registry_controller_ =
+        std::make_unique<FakeWebAppRegistryController>();
+    fake_registry_controller_->SetUp(profile());
   }
 
   bool IsDatabaseRegistryEqualToRegistrar() {
@@ -92,11 +92,11 @@ class WebAppDatabaseTest : public WebAppTest {
   }
 
  protected:
-  TestWebAppRegistryController& controller() {
-    return *test_registry_controller_;
+  FakeWebAppRegistryController& controller() {
+    return *fake_registry_controller_;
   }
 
-  TestWebAppDatabaseFactory& database_factory() {
+  FakeWebAppDatabaseFactory& database_factory() {
     return controller().database_factory();
   }
 
@@ -109,7 +109,7 @@ class WebAppDatabaseTest : public WebAppTest {
   WebAppSyncBridge& sync_bridge() { return controller().sync_bridge(); }
 
  private:
-  std::unique_ptr<TestWebAppRegistryController> test_registry_controller_;
+  std::unique_ptr<FakeWebAppRegistryController> fake_registry_controller_;
 };
 
 TEST_F(WebAppDatabaseTest, WriteAndReadRegistry) {
@@ -208,7 +208,7 @@ TEST_F(WebAppDatabaseTest, OpenDatabaseAndReadRegistry) {
 
 TEST_F(WebAppDatabaseTest, BackwardCompatibility_WebAppWithOnlyRequiredFields) {
   const GURL start_url{"https://example.com/"};
-  const AppId app_id = GenerateAppIdFromURL(start_url);
+  const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
   const std::string name = "App Name";
   const auto user_display_mode = DisplayMode::kBrowser;
   const bool is_locally_installed = true;
@@ -235,7 +235,7 @@ TEST_F(WebAppDatabaseTest, BackwardCompatibility_WebAppWithOnlyRequiredFields) {
   proto->mutable_sources()->set_sync(true);
   proto->mutable_sources()->set_default_(false);
 
-  if (IsChromeOs()) {
+  if (IsChromeOsDataMandatory()) {
     proto->mutable_chromeos_data()->set_show_in_launcher(false);
     proto->mutable_chromeos_data()->set_show_in_search(false);
     proto->mutable_chromeos_data()->set_show_in_management(false);
@@ -258,7 +258,7 @@ TEST_F(WebAppDatabaseTest, BackwardCompatibility_WebAppWithOnlyRequiredFields) {
   EXPECT_TRUE(app->IsSynced());
   EXPECT_FALSE(app->IsPreinstalledApp());
 
-  if (IsChromeOs()) {
+  if (IsChromeOsDataMandatory()) {
     EXPECT_FALSE(app->chromeos_data()->show_in_launcher);
     EXPECT_FALSE(app->chromeos_data()->show_in_search);
     EXPECT_FALSE(app->chromeos_data()->show_in_management);
@@ -272,7 +272,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   controller().Init();
 
   const auto start_url = GURL("https://example.com/");
-  const AppId app_id = GenerateAppIdFromURL(GURL(start_url));
+  const AppId app_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(start_url));
   const std::string name = "Name";
   const auto user_display_mode = DisplayMode::kBrowser;
 
@@ -284,7 +285,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   app->SetUserDisplayMode(user_display_mode);
   app->SetIsLocallyInstalled(false);
   // chromeos_data should always be set on ChromeOS.
-  if (IsChromeOs())
+  if (IsChromeOsDataMandatory())
     app->SetWebAppChromeOsData(absl::make_optional<WebAppChromeOsData>());
 
   EXPECT_FALSE(app->HasAnySources());
@@ -299,13 +300,15 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->description().empty());
   EXPECT_TRUE(app->scope().is_empty());
   EXPECT_FALSE(app->theme_color().has_value());
+  EXPECT_FALSE(app->dark_mode_theme_color().has_value());
   EXPECT_FALSE(app->background_color().has_value());
-  EXPECT_TRUE(app->icon_infos().empty());
+  EXPECT_FALSE(app->dark_mode_background_color().has_value());
+  EXPECT_TRUE(app->manifest_icons().empty());
   EXPECT_TRUE(app->downloaded_icon_sizes(IconPurpose::ANY).empty());
   EXPECT_TRUE(app->downloaded_icon_sizes(IconPurpose::MASKABLE).empty());
   EXPECT_TRUE(app->downloaded_icon_sizes(IconPurpose::MONOCHROME).empty());
   EXPECT_FALSE(app->is_generated_icon());
-  EXPECT_FALSE(app->is_in_sync_install());
+  EXPECT_FALSE(app->is_from_sync_and_pending_installation());
   EXPECT_TRUE(app->sync_fallback_data().name.empty());
   EXPECT_FALSE(app->sync_fallback_data().theme_color.has_value());
   EXPECT_FALSE(app->sync_fallback_data().scope.is_valid());
@@ -314,6 +317,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_FALSE(app->share_target().has_value());
   EXPECT_TRUE(app->additional_search_terms().empty());
   EXPECT_TRUE(app->protocol_handlers().empty());
+  EXPECT_TRUE(app->allowed_launch_protocols().empty());
+  EXPECT_TRUE(app->disallowed_launch_protocols().empty());
   EXPECT_TRUE(app->url_handlers().empty());
   EXPECT_TRUE(app->last_badging_time().is_null());
   EXPECT_TRUE(app->last_launch_time().is_null());
@@ -323,6 +328,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_EQ(app->run_on_os_login_mode(), RunOnOsLoginMode::kNotRun);
   EXPECT_TRUE(app->manifest_url().is_empty());
   EXPECT_FALSE(app->manifest_id().has_value());
+  EXPECT_FALSE(app->IsStorageIsolated());
   controller().RegisterApp(std::move(app));
 
   Registry registry = database_factory().ReadRegistry();
@@ -338,7 +344,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_FALSE(app_copy->is_locally_installed());
 
   auto& chromeos_data = app_copy->chromeos_data();
-  if (IsChromeOs()) {
+  if (IsChromeOsDataMandatory()) {
     EXPECT_TRUE(chromeos_data->show_in_launcher);
     EXPECT_TRUE(chromeos_data->show_in_search);
     EXPECT_TRUE(chromeos_data->show_in_management);
@@ -360,16 +366,18 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->description().empty());
   EXPECT_TRUE(app_copy->scope().is_empty());
   EXPECT_FALSE(app_copy->theme_color().has_value());
+  EXPECT_FALSE(app_copy->dark_mode_theme_color().has_value());
   EXPECT_FALSE(app_copy->background_color().has_value());
+  EXPECT_FALSE(app_copy->dark_mode_background_color().has_value());
   EXPECT_TRUE(app_copy->last_badging_time().is_null());
   EXPECT_TRUE(app_copy->last_launch_time().is_null());
   EXPECT_TRUE(app_copy->install_time().is_null());
-  EXPECT_TRUE(app_copy->icon_infos().empty());
+  EXPECT_TRUE(app_copy->manifest_icons().empty());
   EXPECT_TRUE(app_copy->downloaded_icon_sizes(IconPurpose::ANY).empty());
   EXPECT_TRUE(app_copy->downloaded_icon_sizes(IconPurpose::MASKABLE).empty());
   EXPECT_TRUE(app_copy->downloaded_icon_sizes(IconPurpose::MONOCHROME).empty());
   EXPECT_FALSE(app_copy->is_generated_icon());
-  EXPECT_FALSE(app_copy->is_in_sync_install());
+  EXPECT_FALSE(app_copy->is_from_sync_and_pending_installation());
   EXPECT_TRUE(app_copy->sync_fallback_data().name.empty());
   EXPECT_FALSE(app_copy->sync_fallback_data().theme_color.has_value());
   EXPECT_FALSE(app_copy->sync_fallback_data().scope.is_valid());
@@ -377,20 +385,19 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->file_handlers().empty());
   EXPECT_FALSE(app_copy->share_target().has_value());
   EXPECT_TRUE(app_copy->additional_search_terms().empty());
+  EXPECT_TRUE(app_copy->allowed_launch_protocols().empty());
+  EXPECT_TRUE(app_copy->disallowed_launch_protocols().empty());
   EXPECT_TRUE(app_copy->url_handlers().empty());
   EXPECT_TRUE(app_copy->shortcuts_menu_item_infos().empty());
   EXPECT_TRUE(app_copy->downloaded_shortcuts_menu_icons_sizes().empty());
   EXPECT_EQ(app_copy->run_on_os_login_mode(), RunOnOsLoginMode::kNotRun);
   EXPECT_TRUE(app_copy->manifest_url().is_empty());
   EXPECT_FALSE(app_copy->manifest_id().has_value());
+  EXPECT_FALSE(app_copy->IsStorageIsolated());
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
   controller().Init();
-
-  const int min_purpose_type = static_cast<int>(IconPurpose::kMinValue);
-  const int max_purpose_type = static_cast<int>(IconPurpose::kMaxValue);
-  const int num_icon_purpose_types = max_purpose_type - min_purpose_type + 1;
 
   const GURL base_url("https://example.com/path");
   // A number of icons of each IconPurpose.
@@ -399,29 +406,25 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
   std::unique_ptr<WebApp> app = test::CreateRandomWebApp(base_url, /*seed=*/0);
   AppId app_id = app->app_id();
 
-  std::vector<WebApplicationIconInfo> icons;
+  std::vector<apps::IconInfo> icons;
 
-  std::vector<SquareSizePx> sizes[num_icon_purpose_types];
-
-  // Iterates over each icon purpose.
-  for (int p = min_purpose_type; p <= max_purpose_type; ++p) {
-    auto purpose = static_cast<IconPurpose>(p);
-
+  for (IconPurpose purpose : kIconPurposes) {
+    std::vector<SquareSizePx> sizes;
     for (int i = 1; i <= num_icons; ++i) {
-      WebApplicationIconInfo icon;
+      apps::IconInfo icon;
       icon.url = base_url.Resolve("icon" + base::NumberToString(num_icons));
       // Let size equals the icon's number squared.
       icon.square_size_px = i * i;
 
-      icon.purpose = purpose;
-      sizes[p].push_back(*icon.square_size_px);
+      icon.purpose = ManifestPurposeToIconInfoPurpose(purpose);
+      sizes.push_back(*icon.square_size_px);
       icons.push_back(std::move(icon));
     }
 
-    app->SetDownloadedIconSizes(purpose, std::move(sizes[p]));
+    app->SetDownloadedIconSizes(purpose, std::move(sizes));
   }
 
-  app->SetIconInfos(std::move(icons));
+  app->SetManifestIcons(std::move(icons));
   app->SetIsGeneratedIcon(false);
 
   controller().RegisterApp(std::move(app));
@@ -430,11 +433,12 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
   EXPECT_EQ(1UL, registry.size());
 
   std::unique_ptr<WebApp>& app_copy = registry.at(app_id);
-  EXPECT_EQ(static_cast<unsigned>(num_icons * num_icon_purpose_types),
-            app_copy->icon_infos().size());
+  EXPECT_EQ(static_cast<unsigned>(num_icons * kIconPurposes.size()),
+            app_copy->manifest_icons().size());
   for (int i = 1; i <= num_icons; ++i) {
     const int icon_size_in_px = i * i;
-    EXPECT_EQ(icon_size_in_px, app_copy->icon_infos()[i - 1].square_size_px);
+    EXPECT_EQ(icon_size_in_px,
+              app_copy->manifest_icons()[i - 1].square_size_px);
   }
   EXPECT_FALSE(app_copy->is_generated_icon());
 }

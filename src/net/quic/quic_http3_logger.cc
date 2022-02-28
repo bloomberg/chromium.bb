@@ -145,15 +145,6 @@ void QuicHttp3Logger::OnPeerQpackDecoderStreamCreated(
       stream_id);
 }
 
-void QuicHttp3Logger::OnCancelPushFrameReceived(
-    const quic::CancelPushFrame& frame) {
-  if (!net_log_.IsCapturing()) {
-    return;
-  }
-  net_log_.AddEventWithIntParams(NetLogEventType::HTTP3_CANCEL_PUSH_RECEIVED,
-                                 "push_id", frame.push_id);
-}
-
 void QuicHttp3Logger::OnSettingsFrameReceived(
     const quic::SettingsFrame& frame) {
   // Increment value by one because empty SETTINGS frames are allowed,
@@ -262,42 +253,6 @@ void QuicHttp3Logger::OnHeadersDecoded(quic::QuicStreamId stream_id,
       });
 }
 
-void QuicHttp3Logger::OnPushPromiseFrameReceived(
-    quic::QuicStreamId stream_id,
-    quic::QuicStreamId push_id,
-    quic::QuicByteCount compressed_headers_length) {
-  if (!net_log_.IsCapturing()) {
-    return;
-  }
-  net_log_.AddEvent(NetLogEventType::HTTP3_PUSH_PROMISE_RECEIVED,
-                    [stream_id, push_id, compressed_headers_length] {
-                      return NetLogThreeIntParams("stream_id", stream_id,
-                                                  "push_id", push_id,
-                                                  "compressed_headers_length",
-                                                  compressed_headers_length);
-                    });
-}
-
-void QuicHttp3Logger::OnPushPromiseDecoded(quic::QuicStreamId stream_id,
-                                           quic::QuicStreamId push_id,
-                                           quic::QuicHeaderList headers) {
-  if (!net_log_.IsCapturing()) {
-    return;
-  }
-  net_log_.AddEvent(
-      NetLogEventType::HTTP3_PUSH_PROMISE_DECODED,
-      [stream_id, push_id, &headers](NetLogCaptureMode capture_mode) {
-        base::Value dict(base::Value::Type::DICTIONARY);
-        dict.SetKey("stream_id",
-                    NetLogNumberValue(static_cast<uint64_t>(stream_id)));
-        dict.SetKey("push_id",
-                    NetLogNumberValue(static_cast<uint64_t>(push_id)));
-        dict.SetKey("headers",
-                    ElideQuicHeaderListForNetLog(headers, capture_mode));
-        return dict;
-      });
-}
-
 void QuicHttp3Logger::OnUnknownFrameReceived(
     quic::QuicStreamId stream_id,
     uint64_t frame_type,
@@ -376,27 +331,6 @@ void QuicHttp3Logger::OnHeadersFrameSent(
         base::Value dict(base::Value::Type::DICTIONARY);
         dict.SetKey("stream_id",
                     NetLogNumberValue(static_cast<uint64_t>(stream_id)));
-        dict.SetKey("headers",
-                    ElideHttp2HeaderBlockForNetLog(header_block, capture_mode));
-        return dict;
-      });
-}
-
-void QuicHttp3Logger::OnPushPromiseFrameSent(
-    quic::QuicStreamId stream_id,
-    quic::QuicStreamId push_id,
-    const spdy::Http2HeaderBlock& header_block) {
-  if (!net_log_.IsCapturing()) {
-    return;
-  }
-  net_log_.AddEvent(
-      NetLogEventType::HTTP3_PUSH_PROMISE_SENT,
-      [stream_id, push_id, &header_block](NetLogCaptureMode capture_mode) {
-        base::Value dict(base::Value::Type::DICTIONARY);
-        dict.SetKey("stream_id",
-                    NetLogNumberValue(static_cast<uint64_t>(stream_id)));
-        dict.SetKey("push_id",
-                    NetLogNumberValue(static_cast<uint64_t>(push_id)));
         dict.SetKey("headers",
                     ElideHttp2HeaderBlockForNetLog(header_block, capture_mode));
         return dict;

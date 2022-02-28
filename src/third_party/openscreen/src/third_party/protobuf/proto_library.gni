@@ -58,6 +58,12 @@ template("proto_library") {
       rel_cc_out_dir,
     ]
 
+    if (defined(invoker.cc_generator_options)) {
+      args += [
+        "--cc-options",
+        invoker.cc_generator_options,
+      ]
+    }
     inputs = [ protoc_path ]
     deps = [ protoc_label ]
   }

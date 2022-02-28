@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
+#include "base/memory/raw_ptr.h"
 
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
@@ -20,13 +21,8 @@ class PictureInPictureWindowManager::ContentsObserver final
 
   ~ContentsObserver() final = default;
 
-  void DidFinishNavigation(content::NavigationHandle* navigation_handle) final {
+  void PrimaryPageChanged(content::Page& page) final {
     // Closes the active Picture-in-Picture window if user navigates away.
-    if (!navigation_handle->IsInMainFrame() ||
-        !navigation_handle->HasCommitted() ||
-        navigation_handle->IsSameDocument()) {
-      return;
-    }
     owner_->CloseWindowInternal();
   }
 
@@ -34,7 +30,7 @@ class PictureInPictureWindowManager::ContentsObserver final
 
  private:
   // Owns |this|.
-  PictureInPictureWindowManager* owner_ = nullptr;
+  raw_ptr<PictureInPictureWindowManager> owner_ = nullptr;
 };
 
 PictureInPictureWindowManager* PictureInPictureWindowManager::GetInstance() {

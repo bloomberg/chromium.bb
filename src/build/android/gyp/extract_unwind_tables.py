@@ -255,12 +255,6 @@ def _WriteCfiData(cfi_data, out_file):
     _Write2Bytes(out_file, data)
 
 
-def _ParseCfiData(sym_stream, output_path):
-  cfi_data = _GetAllCfiRows(sym_stream)
-  with open(output_path, 'wb') as out_file:
-    _WriteCfiData(cfi_data, out_file)
-
-
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument(
@@ -274,12 +268,16 @@ def main():
       help='The path of the dump_syms binary')
 
   args = parser.parse_args()
-  cmd = ['./' + args.dump_syms_path, args.input_path]
-  proc = subprocess.Popen(cmd, bufsize=-1, stdout=subprocess.PIPE)
-  _ParseCfiData(proc.stdout, args.output_path)
-  assert proc.wait() == 0
+  cmd = ['./' + args.dump_syms_path, args.input_path, '-v']
+  proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+  cfi_data = _GetAllCfiRows(proc.stdout)
+  if proc.wait():
+    sys.stderr.write('dump_syms exited with code {} after {} symbols\n'.format(
+        proc.returncode, len(cfi_data)))
+    sys.exit(proc.returncode)
+  with open(args.output_path, 'wb') as out_file:
+    _WriteCfiData(cfi_data, out_file)
 
-  return 0
 
 if __name__ == '__main__':
-  sys.exit(main())
+  main()

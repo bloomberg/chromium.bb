@@ -7,7 +7,6 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-// eslint-disable-next-line rulesdir/es_modules_import
 import type * as Elements from './elements.js';
 
 import * as i18n from '../../core/i18n/i18n.js';
@@ -128,6 +127,11 @@ const UIStrings = {
   * the HTML element.
   */
   copyStyles: 'Copy styles',
+  /**
+   * @description Title of a setting under the Elements category. Whether to show/hide hide
+   * the shadow DOM nodes of HTML elements that are built into the browser (e.g. the <input> element).
+   */
+  showUserAgentShadowDOM: 'Show user agent shadow `DOM`',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/elements-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -135,8 +139,6 @@ let loadedElementsModule: (typeof Elements|undefined);
 
 async function loadElementsModule(): Promise<typeof Elements> {
   if (!loadedElementsModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('panels/elements');
     loadedElementsModule = await import('./elements.js');
   }
   return loadedElementsModule;
@@ -374,8 +376,9 @@ UI.ActionRegistration.registerActionExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.ELEMENTS,
+  storageType: Common.Settings.SettingStorageType.Synced,
   order: 1,
-  title: i18nLazyString('Show user agent shadow DOM'),
+  title: i18nLazyString(UIStrings.showUserAgentShadowDOM),
   settingName: 'showUAShadowDOM',
   settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false,
@@ -383,6 +386,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.ELEMENTS,
+  storageType: Common.Settings.SettingStorageType.Synced,
   order: 2,
   title: i18nLazyString(UIStrings.wordWrap),
   settingName: 'domWordWrap',
@@ -402,6 +406,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.ELEMENTS,
+  storageType: Common.Settings.SettingStorageType.Synced,
   order: 3,
   title: i18nLazyString(UIStrings.showHtmlComments),
   settingName: 'showHTMLComments',
@@ -421,6 +426,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.ELEMENTS,
+  storageType: Common.Settings.SettingStorageType.Synced,
   order: 4,
   title: i18nLazyString(UIStrings.revealDomNodeOnHover),
   settingName: 'highlightNodeOnHoverInOverlay',
@@ -430,6 +436,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.ELEMENTS,
+  storageType: Common.Settings.SettingStorageType.Synced,
   order: 5,
   title: i18nLazyString(UIStrings.showDetailedInspectTooltip),
   settingName: 'showDetailedInspectTooltip',
@@ -445,6 +452,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.ADORNER,
+  storageType: Common.Settings.SettingStorageType.Synced,
   settingName: 'adornerSettings',
   settingType: Common.Settings.SettingType.ARRAY,
   defaultValue: [],

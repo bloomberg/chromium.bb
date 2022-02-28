@@ -57,6 +57,10 @@ const char* kNoLuciAuth = "no-luci-auth";
 const char* kBypassSkiaGoldFunctionality = "bypass-skia-gold-functionality";
 const char* kDryRun = "dryrun";
 
+// The switch key for saving png file locally for debugging. This will allow
+// the framework to save the screenshot png file to this path.
+const char* kPngFilePathDebugging = "skia-gold-local-png-write-directory";
+
 namespace {
 
 base::FilePath GetAbsoluteSrcRelativePath(base::FilePath::StringType path) {
@@ -118,6 +122,14 @@ bool BotModeEnabled(const base::CommandLine* command_line) {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   return command_line->HasSwitch(switches::kTestLauncherBotMode) ||
          env->HasVar("CHROMIUM_TEST_LAUNCHER_BOT_MODE");
+}
+
+// Returns true if it's running on CQ under 'without patch'. Otherwise
+// returns false.
+// The implementation is a bit hacky because there's no good indicator.
+bool IsTryjobWithoutPatch(const base::CommandLine* command_line) {
+  return BotModeEnabled(command_line) &&
+         command_line->HasSwitch(switches::kTestLauncherBatchLimit);
 }
 
 }  // namespace
@@ -246,6 +258,27 @@ bool SkiaGoldPixelDiff::UploadToSkiaGoldServer(
     return true;
   }
 
+  // Copy the png file to another place for local debugging.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kPngFilePathDebugging)) {
+    base::FilePath path =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+            kPngFilePathDebugging);
+    if (!base::PathExists(path)) {
+      base::CreateDirectory(path);
+    }
+    base::FilePath filepath;
+    if (remote_golden_image_name.length() <= 4 ||
+        (remote_golden_image_name.length() > 4 &&
+         remote_golden_image_name.substr(remote_golden_image_name.length() -
+                                         4) != ".png")) {
+      filepath = path.AppendASCII(remote_golden_image_name + ".png");
+    } else {
+      filepath = path.AppendASCII(remote_golden_image_name);
+    }
+    base::CopyFile(local_file_path, filepath);
+  }
+
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::CommandLine cmd(GetAbsoluteSrcRelativePath(kSkiaGoldCtl));
   cmd.AppendSwitchASCII("test-name", remote_golden_image_name);
@@ -254,6 +287,13 @@ bool SkiaGoldPixelDiff::UploadToSkiaGoldServer(
   cmd.AppendSwitchPath("work-dir", working_dir_);
 
   if (!BotModeEnabled(base::CommandLine::ForCurrentProcess())) {
+    cmd.AppendSwitch(kDryRun);
+  }
+  // For CQ, if a Skia Gold gtest fails, then swarming runs the suite
+  // without patch, and the test succeed. The success job will override
+  // the failed job, and the failed test will not show on the triage dashboard.
+  // To resolve this, we use dryrun mode for 'run without patch'.
+  if (IsTryjobWithoutPatch(base::CommandLine::ForCurrentProcess())) {
     cmd.AppendSwitch(kDryRun);
   }
 

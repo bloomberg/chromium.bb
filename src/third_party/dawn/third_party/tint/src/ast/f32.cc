@@ -21,23 +21,18 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::F32);
 namespace tint {
 namespace ast {
 
-F32::F32(ProgramID program_id, const Source& source)
-    : Base(program_id, source) {}
+F32::F32(ProgramID pid, const Source& src) : Base(pid, src) {}
 
 F32::F32(F32&&) = default;
 
 F32::~F32() = default;
 
-std::string F32::type_name() const {
-  return "__f32";
-}
-
 std::string F32::FriendlyName(const SymbolTable&) const {
   return "f32";
 }
 
-F32* F32::Clone(CloneContext* ctx) const {
-  auto src = ctx->Clone(source());
+const F32* F32::Clone(CloneContext* ctx) const {
+  auto src = ctx->Clone(source);
   return ctx->dst->create<F32>(src);
 }
 

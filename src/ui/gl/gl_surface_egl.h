@@ -5,6 +5,8 @@
 #ifndef UI_GL_GL_SURFACE_EGL_H_
 #define UI_GL_GL_SURFACE_EGL_H_
 
+#include "build/build_config.h"
+
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
@@ -13,15 +15,11 @@
 #include <EGL/eglext.h>
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/containers/queue.h"
-#include "base/macros.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/egl_timestamps.h"
@@ -92,6 +90,9 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
  public:
   GLSurfaceEGL();
 
+  GLSurfaceEGL(const GLSurfaceEGL&) = delete;
+  GLSurfaceEGL& operator=(const GLSurfaceEGL&) = delete;
+
   // Implement GLSurface.
   EGLDisplay GetDisplay() override;
   EGLConfig GetConfig() override;
@@ -119,7 +120,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   static bool IsCreateContextWebGLCompatabilitySupported();
   static bool IsEGLSurfacelessContextSupported();
   static bool IsEGLContextPrioritySupported();
-  static bool IsEGLFlexibleSurfaceCompatibilitySupported();
+  static bool IsEGLNoConfigContextSupported();
   static bool IsRobustResourceInitSupported();
   static bool IsDisplayTextureShareGroupSupported();
   static bool IsDisplaySemaphoreShareGroupSupported();
@@ -128,7 +129,12 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   static bool IsPixelFormatFloatSupported();
   static bool IsANGLEFeatureControlSupported();
   static bool IsANGLEPowerPreferenceSupported();
+  static bool IsANGLEDisplayPowerPreferenceSupported();
   static bool IsANGLEExternalContextAndSurfaceSupported();
+  static bool IsANGLEContextVirtualizationSupported();
+  static bool IsANGLEVulkanImageClientBufferSupported();
+
+  static bool IsEGLQueryDeviceSupported();
 
  protected:
   ~GLSurfaceEGL() override;
@@ -137,7 +143,6 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   GLSurfaceFormat format_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(GLSurfaceEGL);
   static bool InitializeOneOffCommon();
   static bool initialized_;
 };
@@ -148,6 +153,9 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
  public:
   NativeViewGLSurfaceEGL(EGLNativeWindowType window,
                          std::unique_ptr<gfx::VSyncProvider> vsync_provider);
+
+  NativeViewGLSurfaceEGL(const NativeViewGLSurfaceEGL&) = delete;
+  NativeViewGLSurfaceEGL& operator=(const NativeViewGLSurfaceEGL&) = delete;
 
   // Implement GLSurface.
   bool Initialize(GLSurfaceFormat format) override;
@@ -174,13 +182,10 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
   bool OnMakeCurrent(GLContext* context) override;
   gfx::VSyncProvider* GetVSyncProvider() override;
   void SetVSyncEnabled(bool enabled) override;
-  bool ScheduleOverlayPlane(int z_order,
-                            gfx::OverlayTransform transform,
-                            GLImage* image,
-                            const gfx::Rect& bounds_rect,
-                            const gfx::RectF& crop_rect,
-                            bool enable_blend,
-                            std::unique_ptr<gfx::GpuFence> gpu_fence) override;
+  bool ScheduleOverlayPlane(
+      GLImage* image,
+      std::unique_ptr<gfx::GpuFence> gpu_fence,
+      const gfx::OverlayPlaneData& overlay_plane_data) override;
   gfx::SurfaceOrigin GetOrigin() const override;
   EGLTimestampClient* GetEGLTimestampClient() override;
 
@@ -203,6 +208,10 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
   gfx::Size size_ = gfx::Size(1, 1);
   bool enable_fixed_size_angle_ = true;
 
+  GLSurfacePresentationHelper* presentation_helper() const {
+    return presentation_helper_.get();
+  }
+
   gfx::SwapResult SwapBuffersWithDamage(const std::vector<int>& rects,
                                         PresentationCallback callback);
 
@@ -212,9 +221,6 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
     EGLuint64KHR frame_id;
   };
 
-  // Commit the |pending_overlays_| and clear the vector. Returns false if any
-  // fail to be committed.
-  bool CommitAndClearPendingOverlays();
   void UpdateSwapEvents(EGLuint64KHR newFrameId, bool newFrameIdIsValid);
   void TraceSwapEvents(EGLuint64KHR oldFrameId);
 
@@ -228,8 +234,6 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
 
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_external_;
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_internal_;
-
-  std::vector<GLSurfaceOverlay> pending_overlays_;
 
   // Stored in separate vectors so we can pass the egl timestamps
   // directly to the EGL functions.
@@ -247,14 +251,15 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
 
   bool vsync_enabled_ = true;
   std::unique_ptr<GLSurfacePresentationHelper> presentation_helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceEGL);
 };
 
 // Encapsulates a pbuffer EGL surface.
 class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
  public:
   explicit PbufferGLSurfaceEGL(const gfx::Size& size);
+
+  PbufferGLSurfaceEGL(const PbufferGLSurfaceEGL&) = delete;
+  PbufferGLSurfaceEGL& operator=(const PbufferGLSurfaceEGL&) = delete;
 
   // Implement GLSurface.
   bool Initialize(GLSurfaceFormat format) override;
@@ -275,8 +280,6 @@ class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
  private:
   gfx::Size size_;
   EGLSurface surface_;
-
-  DISALLOW_COPY_AND_ASSIGN(PbufferGLSurfaceEGL);
 };
 
 // SurfacelessEGL is used as Offscreen surface when platform supports
@@ -285,6 +288,9 @@ class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
 class GL_EXPORT SurfacelessEGL : public GLSurfaceEGL {
  public:
   explicit SurfacelessEGL(const gfx::Size& size);
+
+  SurfacelessEGL(const SurfacelessEGL&) = delete;
+  SurfacelessEGL& operator=(const SurfacelessEGL&) = delete;
 
   // Implement GLSurface.
   bool Initialize(GLSurfaceFormat format) override;
@@ -305,7 +311,6 @@ class GL_EXPORT SurfacelessEGL : public GLSurfaceEGL {
 
  private:
   gfx::Size size_;
-  DISALLOW_COPY_AND_ASSIGN(SurfacelessEGL);
 };
 
 }  // namespace gl

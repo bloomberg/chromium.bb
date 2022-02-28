@@ -56,11 +56,12 @@ ScopedJavaLocalRef<jobject> WebContentsDelegateAndroid::GetJavaDelegate(
 // WebContentsDelegate methods
 // ----------------------------------------------------------------------------
 
-ColorChooser* WebContentsDelegateAndroid::OpenColorChooser(
+std::unique_ptr<content::ColorChooser>
+WebContentsDelegateAndroid::OpenColorChooser(
     WebContents* source,
     SkColor color,
     const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
-  return new ColorChooserAndroid(source, color, suggestions);
+  return std::make_unique<ColorChooserAndroid>(source, color, suggestions);
 }
 
 // OpenURLFromTab() will be called when we're performing a browser-intiated
@@ -137,11 +138,11 @@ void WebContentsDelegateAndroid::ActivateContents(WebContents* contents) {
 
 void WebContentsDelegateAndroid::LoadingStateChanged(
     WebContents* source,
-    bool to_different_document) {
+    bool should_show_loading_ui) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   Java_WebContentsDelegateAndroid_loadingStateChanged(env, obj,
-                                                      to_different_document);
+                                                      should_show_loading_ui);
 }
 
 void WebContentsDelegateAndroid::RendererUnresponsive(

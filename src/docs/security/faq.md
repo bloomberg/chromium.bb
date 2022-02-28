@@ -571,7 +571,7 @@ users to have unique and more complex passwords for websites. As it was
 originally implemented, autocomplete='off' for password fields took control away
 from the user and gave control to the web site developer, which was also a
 violation of the [priority of
-constituencies](http://www.schemehostport.com/2011/10/priority-of-constituencies.html).
+constituencies](https://www.schemehostport.com/2011/10/priority-of-constituencies.html).
 For a longer discussion on this, see the [mailing list
 announcement](https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/zhhj7hCip5c).
 
@@ -637,6 +637,20 @@ specific:
      strong guarantees about only Chrome being able to access its storage. See
      [Issue 520437](https://crbug.com/520437) to follow this migration.
 
+<a name="TOC-If-theres-a-way-to-see-stored-passwords-without-entering-a-password--is-this-a-security-bug-"></a>
+## If there's a way to see stored passwords without entering a password, is this a security bug?
+
+No. If an attacker has control of your login on your device, they can get to
+your passwords by inspecting Chrome disk files or memory. (See
+[why aren't physically-local attacks in Chrome's threat
+model](#TOC-Why-aren-t-physically-local-attacks-in-Chrome-s-threat-model-)).
+
+On some platforms we ask for a password before revealing stored passwords,
+but this is not considered a robust defense. It’s historically to stop
+users inadvertently revealing their passwords on screen, for example if
+they’re screen sharing. We don’t do this on all platforms because we consider
+such risks greater on some than on others.
+
 <a name="TOC-I-found-a-phishing-or-malware-site-not-blocked-by-Safe-Browsing.-Is-this-a-security-vulnerability-"></a>
 ## I found a phishing or malware site not blocked by Safe Browsing. Is this a security vulnerability?
 
@@ -663,6 +677,11 @@ vulnerability in the relevant feature, not Safe Browsing itself.
 See our dedicated [Service Worker Security
 FAQ](https://chromium.googlesource.com/chromium/src/+/main/docs/security/service-worker-security-faq.md).
 
+<a name="TOC-What-is-the-security-story-for-Extensions-"></a>
+## What is the security story for Extensions?
+
+See our dedicated [Extensions Security FAQ](https://chromium.googlesource.com/chromium/src/+/main/extensions/docs/security_faq.md).
+
 <a name="TOC-What-about-URL-spoofs-using-Internationalized-Domain-Names-IDN-"></a>
 ## What about URL spoofs using Internationalized Domain Names (IDN)?
 
@@ -678,30 +697,7 @@ describes Chrome's IDN policy in detail.
 <a name="TOC-Chrome-silently-syncs-extensions-across-devices.-Is-this-a-security-vulnerability-"></a>
 ## Chrome silently syncs extensions across devices. Is this a security vulnerability?
 
-If an attacker has access to one of a victim's devices, the attacker can install
-an extension which will be synced to the victim's other sync-enabled
-devices. Similarly, an attacker who phishes a victim's Google credentials can
-sign in to Chrome as the victim and install an extension, which will be synced
-to the victim's other sync-enabled devices. Sync thereby enables an attacker to
-elevate phished credentials or physical access to persistent access on all of a
-victim's sync-enabled devices.
-
-To mitigate this issue, Chrome only syncs extensions that have been installed
-from the Chrome Web Store. Extensions in the Chrome Web Store are monitored for
-abusive behavior.
-
-In the future, we may pursue further mitigations. However, because an attacker
-must already have the victim's Google credentials and/or [physical access to a
-device](#TOC-Why-aren-t-physically-local-attacks-in-Chrome-s-threat-model-), we
-don't consider this attack a security vulnerability.
-
-We **do** consider it a vulnerability if an attacker can get an extension to
-sync to a victim's device without either of the above preconditions. For
-example, we consider it a vulnerability if an attacker could craft a request to
-Google's sync servers that causes an extension to be installed to a user's
-device, or if an attacker could entice a victim to visit a webpage that causes
-an extension to be installed on their device(s). Please report such bugs via
-https://bugs.chromium.org/p/chromium/issues/entry?template=Security+Bug.
+This topic has been moved to the [Extensions Security FAQ](https://chromium.googlesource.com/chromium/src/+/main/extensions/docs/security_faq.md).
 
 <a name="TOC-Are-PDF-files-static-content-in-Chromium-"></a>
 ## Are PDF files static content in Chromium?
@@ -718,6 +714,18 @@ Null pointer dereferences with consistent, small, fixed offsets are not consider
 security bugs. A read or write to the NULL page results in a non-exploitable crash.
 If the offset is larger than a page, or if there's uncertainty about whether the
 offset is controllable, it is considered a security bug.
+
+<a name="TOC-Are-stack-overflows-considered-security-bugs-"></a>
+## Are stack overflows considered security bugs?
+
+No. Guard pages mean that stack overflows are considered unexploitable, and
+are regarded as [denial of service bugs](#TOC-Are-denial-of-service-issues-considered-security-bugs-).
+The only exception is if an attacker can jump over the guard pages allocated by
+the operating system and avoid accessing them, e.g.:
+
+*    A frame with a very large stack allocation.
+*    C variable length array with an attacker-controlled size.
+*    A call to `alloca()` with an attacker-controlled size.
 
 <a name="TOC-Are-enterprise-admins-considered-privileged-"></a>
 ## Are enterprise admins considered privileged?
@@ -753,3 +761,8 @@ recognize that there may exist policies or policy combinations that can provide
 capabilities outside of the guidance provided here. In cases of clear violation
 of user expectations, we will attempt to remedy these policies and we will apply
 the guidance laid out in this document to any newly added policies.
+
+<a name="TOC-Which-bugs-are-valid-for-rewards-under-the-Chrome-Vulnerability-Rewards-program-"></a>
+## Which bugs are valid for rewards under the Chrome Vulnerability Rewards program?
+
+Please see [the VRP FAQ page](vrp-faq.md).

@@ -10,9 +10,9 @@
 #include "base/task/post_task.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_routing_id.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 
 namespace content {
@@ -37,8 +37,7 @@ void ServiceWorkerMainResourceHandle::OnCreatedContainerHost(
 }
 
 void ServiceWorkerMainResourceHandle::OnBeginNavigationCommit(
-    int render_process_id,
-    int render_frame_id,
+    const GlobalRenderFrameHostId& rfh_id,
     const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
         coep_reporter,
@@ -52,8 +51,8 @@ void ServiceWorkerMainResourceHandle::OnBeginNavigationCommit(
 
   if (container_host_) {
     container_host_->OnBeginNavigationCommit(
-        render_process_id, render_frame_id, cross_origin_embedder_policy,
-        std::move(coep_reporter), document_ukm_source_id);
+        rfh_id, cross_origin_embedder_policy, std::move(coep_reporter),
+        document_ukm_source_id);
   }
 }
 

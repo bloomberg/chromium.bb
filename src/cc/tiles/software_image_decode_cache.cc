@@ -13,7 +13,9 @@
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
 #include "base/format_macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ostream_operators.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -21,7 +23,7 @@
 #include "cc/base/histograms.h"
 #include "cc/raster/tile_task.h"
 #include "cc/tiles/mipmap_util.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 
 using base::trace_event::MemoryAllocatorDump;
 using base::trace_event::MemoryDumpLevelOfDetail;
@@ -47,9 +49,10 @@ class AutoRemoveKeyFromTaskMap {
   ~AutoRemoveKeyFromTaskMap() { task_map_->erase(key_); }
 
  private:
-  std::unordered_map<SoftwareImageDecodeCache::CacheKey,
-                     scoped_refptr<TileTask>,
-                     SoftwareImageDecodeCache::CacheKeyHash>* task_map_;
+  raw_ptr<std::unordered_map<SoftwareImageDecodeCache::CacheKey,
+                             scoped_refptr<TileTask>,
+                             SoftwareImageDecodeCache::CacheKeyHash>>
+      task_map_;
   const SoftwareImageDecodeCache::CacheKey& key_;
 };
 
@@ -104,7 +107,7 @@ class SoftwareImageDecodeTaskImpl : public TileTask {
   ~SoftwareImageDecodeTaskImpl() override = default;
 
  private:
-  SoftwareImageDecodeCache* cache_;
+  raw_ptr<SoftwareImageDecodeCache> cache_;
   SoftwareImageDecodeCache::CacheKey image_key_;
   PaintImage paint_image_;
   SoftwareImageDecodeCache::DecodeTaskType task_type_;
@@ -129,10 +132,10 @@ SkSize GetScaleAdjustment(const SoftwareImageDecodeCache::CacheKey& key) {
 // to do a bilinear interpolation. The exception to this is if the developer
 // specified a pixelated effect, which results in a None filter quality (nearest
 // neighbor).
-SkFilterQuality GetDecodedFilterQuality(
+PaintFlags::FilterQuality GetDecodedFilterQuality(
     const SoftwareImageDecodeCache::CacheKey& key) {
-  return key.is_nearest_neighbor() ? kNone_SkFilterQuality
-                                   : kLow_SkFilterQuality;
+  return key.is_nearest_neighbor() ? PaintFlags::FilterQuality::kNone
+                                   : PaintFlags::FilterQuality::kLow;
 }
 
 }  // namespace
@@ -141,7 +144,7 @@ SoftwareImageDecodeCache::SoftwareImageDecodeCache(
     SkColorType color_type,
     size_t locked_memory_limit_bytes,
     PaintImage::GeneratorClientId generator_client_id)
-    : decoded_images_(ImageMRUCache::NO_AUTO_EVICT),
+    : decoded_images_(ImageLRUCache::NO_AUTO_EVICT),
       locked_images_budget_(locked_memory_limit_bytes),
       color_type_(color_type),
       generator_client_id_(generator_client_id),
@@ -415,8 +418,8 @@ SoftwareImageDecodeCache::DecodeImageIfNecessary(const CacheKey& key,
               ? SkIRect::MakeWH(paint_image.width(), paint_image.height())
               : gfx::RectToSkIRect(key.src_rect());
       DrawImage candidate_draw_image(
-          paint_image, false, src_rect, kNone_SkFilterQuality, SkM44(),
-          key.frame_key().frame_index(), key.target_color_space());
+          paint_image, false, src_rect, PaintFlags::FilterQuality::kNone,
+          SkM44(), key.frame_key().frame_index(), key.target_color_space());
       candidate_key.emplace(CacheKey::FromDrawImage(
           candidate_draw_image,
           GetColorTypeForPaintImage(key.target_color_space(), paint_image)));

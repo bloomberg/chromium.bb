@@ -8,15 +8,16 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -28,6 +29,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "storage/browser/blob/blob_data_builder.h"
@@ -40,11 +42,15 @@
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation_context.h"
 #include "storage/browser/file_system/file_system_url.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/fake_blob_data_handle.h"
 #include "storage/browser/test/mock_blob_registry_delegate.h"
+#include "storage/browser/test/mock_quota_manager.h"
+#include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -107,16 +113,23 @@ class BlobURLTest : public testing::Test {
   }
 
   void SetUpFileSystem() {
+    quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
+        /*is_incognito=*/false, temp_dir_.GetPath(),
+        base::ThreadTaskRunnerHandle::Get(),
+        /*special_storage_policy=*/nullptr);
+    quota_manager_proxy_ = base::MakeRefCounted<storage::MockQuotaManagerProxy>(
+        quota_manager_.get(), base::ThreadTaskRunnerHandle::Get().get());
     // Prepare file system.
     file_system_context_ = storage::CreateFileSystemContextForTesting(
-        nullptr, temp_dir_.GetPath());
+        quota_manager_proxy_.get(), temp_dir_.GetPath());
 
+    base::RunLoop run_loop;
     file_system_context_->OpenFileSystem(
-        url::Origin::Create(GURL(kFileSystemURLOrigin)), kFileSystemType,
-        storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        blink::StorageKey::CreateFromStringForTesting(kFileSystemURLOrigin),
+        kFileSystemType, storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::BindOnce(&BlobURLTest::OnValidateFileSystem,
-                       base::Unretained(this)));
-    base::RunLoop().RunUntilIdle();
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
     ASSERT_TRUE(file_system_root_url_.is_valid());
 
     // Prepare files on file system.
@@ -142,8 +155,8 @@ class BlobURLTest : public testing::Test {
                            base::Time* modification_time) {
     storage::FileSystemURL url =
         file_system_context_->CreateCrackedFileSystemURL(
-            url::Origin::Create(GURL(kFileSystemURLOrigin)), kFileSystemType,
-            base::FilePath().AppendASCII(filename));
+            blink::StorageKey::CreateFromStringForTesting(kFileSystemURLOrigin),
+            kFileSystemType, base::FilePath().AppendASCII(filename));
 
     ASSERT_EQ(base::File::FILE_OK,
               storage::AsyncFileTestHelper::CreateFileWithData(
@@ -157,12 +170,14 @@ class BlobURLTest : public testing::Test {
       *modification_time = file_info.last_modified;
   }
 
-  void OnValidateFileSystem(const GURL& root,
+  void OnValidateFileSystem(base::OnceClosure quit_closure,
+                            const GURL& root,
                             const std::string& name,
                             base::File::Error result) {
     ASSERT_EQ(base::File::FILE_OK, result);
     ASSERT_TRUE(root.is_valid());
     file_system_root_url_ = root;
+    std::move(quit_closure).Run();
   }
 
   void TestSuccessNonrangeRequest(const std::string& expected_response,
@@ -183,28 +198,40 @@ class BlobURLTest : public testing::Test {
 
   void TestRequest(const std::string& method,
                    const net::HttpRequestHeaders& extra_headers) {
-    GURL url("blob:blah");
+    auto origin = url::Origin::Create(GURL("https://example.com"));
+    auto url = GURL("blob:" + origin.Serialize() + "/id1");
     network::ResourceRequest request;
     request.url = url;
     request.method = method;
     request.headers = extra_headers;
 
-    storage::MockBlobRegistryDelegate delegate;
-    storage::BlobURLStoreImpl url_store(blob_url_registry_.AsWeakPtr(),
-                                        &delegate);
+    storage::BlobURLStoreImpl url_store(origin, blob_url_registry_.AsWeakPtr());
 
     mojo::PendingRemote<blink::mojom::Blob> blob_remote;
     storage::BlobImpl::Create(
         std::make_unique<storage::BlobDataHandle>(*GetHandleFromBuilder()),
         blob_remote.InitWithNewPipeAndPassReceiver());
 
-    base::RunLoop loop;
-    url_store.Register(std::move(blob_remote), url, loop.QuitClosure());
-    loop.Run();
+    base::RunLoop register_loop;
+    base::UnguessableToken agent = base::UnguessableToken::Create();
+    url_store.Register(std::move(blob_remote), url, agent,
+                       register_loop.QuitClosure());
+    register_loop.Run();
 
+    base::RunLoop resolve_loop;
     mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory;
     url_store.ResolveAsURLLoaderFactory(
-        url, url_loader_factory.BindNewPipeAndPassReceiver());
+        url, url_loader_factory.BindNewPipeAndPassReceiver(),
+        base::BindOnce(
+            [](base::OnceClosure done,
+               const base::UnguessableToken& agent_registered,
+               const absl::optional<base::UnguessableToken>&
+                   unsafe_agent_cluster_id) {
+              EXPECT_EQ(agent_registered, unsafe_agent_cluster_id);
+              std::move(done).Run();
+            },
+            resolve_loop.QuitClosure(), agent));
+    resolve_loop.Run();
 
     mojo::PendingRemote<network::mojom::URLLoader> url_loader;
     network::TestURLLoaderClient url_loader_client;
@@ -247,8 +274,9 @@ class BlobURLTest : public testing::Test {
     *expected_result += std::string(kTestDataHandleData1);
 
     blob_data_->AppendFileSystemFile(
-        file_system_context_->CrackURL(temp_file_system_file1_), 3, 4,
-        temp_file_system_file_modification_time1_, file_system_context_);
+        file_system_context_->CrackURLInFirstPartyContext(
+            temp_file_system_file1_),
+        3, 4, temp_file_system_file_modification_time1_, file_system_context_);
     *expected_result += std::string(kTestFileSystemFileData1 + 3, 4);
 
     auto str2 = std::string(kTestData2 + 4, 5);
@@ -259,8 +287,9 @@ class BlobURLTest : public testing::Test {
     *expected_result += std::string(kTestFileData2 + 5, 6);
 
     blob_data_->AppendFileSystemFile(
-        file_system_context_->CrackURL(temp_file_system_file2_), 6, 7,
-        temp_file_system_file_modification_time2_, file_system_context_);
+        file_system_context_->CrackURLInFirstPartyContext(
+            temp_file_system_file2_),
+        6, 7, temp_file_system_file_modification_time2_, file_system_context_);
     *expected_result += std::string(kTestFileSystemFileData2 + 6, 7);
   }
 
@@ -304,6 +333,8 @@ class BlobURLTest : public testing::Test {
 
   BrowserTaskEnvironment task_environment_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
+  scoped_refptr<storage::MockQuotaManager> quota_manager_;
+  scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
 
   storage::BlobStorageContext blob_context_;
   storage::BlobUrlRegistry blob_url_registry_;
@@ -353,8 +384,7 @@ TEST_F(BlobURLTest, TestGetNonExistentFileRequest) {
 }
 
 TEST_F(BlobURLTest, TestGetChangedFileRequest) {
-  base::Time old_time =
-      temp_file_modification_time1_ - base::TimeDelta::FromSeconds(10);
+  base::Time old_time = temp_file_modification_time1_ - base::Seconds(10);
   blob_data_->AppendFile(temp_file1_, 0, 3, old_time);
   TestErrorRequest(net::ERR_UPLOAD_FILE_CHANGED);
 }
@@ -368,8 +398,10 @@ TEST_F(BlobURLTest, TestGetSlicedFileRequest) {
 TEST_F(BlobURLTest, TestGetSimpleFileSystemFileRequest) {
   SetUpFileSystem();
   blob_data_->AppendFileSystemFile(
-      file_system_context_->CrackURL(temp_file_system_file1_), 0,
-      std::numeric_limits<uint64_t>::max(), base::Time(), file_system_context_);
+      file_system_context_->CrackURLInFirstPartyContext(
+          temp_file_system_file1_),
+      0, std::numeric_limits<uint64_t>::max(), base::Time(),
+      file_system_context_);
   TestSuccessNonrangeRequest(kTestFileSystemFileData1,
                              base::size(kTestFileSystemFileData1) - 1);
 }
@@ -385,8 +417,10 @@ TEST_F(BlobURLTest, TestGetLargeFileSystemFileRequest) {
   WriteFileSystemFile(kFilename, large_data.data(), large_data.size(), nullptr);
 
   blob_data_->AppendFileSystemFile(
-      file_system_context_->CrackURL(GetFileSystemURL(kFilename)), 0,
-      std::numeric_limits<uint64_t>::max(), base::Time(), file_system_context_);
+      file_system_context_->CrackURLInFirstPartyContext(
+          GetFileSystemURL(kFilename)),
+      0, std::numeric_limits<uint64_t>::max(), base::Time(),
+      file_system_context_);
   TestSuccessNonrangeRequest(large_data, large_data.size());
 }
 
@@ -394,7 +428,7 @@ TEST_F(BlobURLTest, TestGetNonExistentFileSystemFileRequest) {
   SetUpFileSystem();
   GURL non_existent_file = GetFileSystemURL("non-existent.dat");
   blob_data_->AppendFileSystemFile(
-      file_system_context_->CrackURL(non_existent_file), 0,
+      file_system_context_->CrackURLInFirstPartyContext(non_existent_file), 0,
       std::numeric_limits<uint64_t>::max(), base::Time(), file_system_context_);
   TestErrorRequest(net::ERR_FILE_NOT_FOUND);
 }
@@ -402,27 +436,29 @@ TEST_F(BlobURLTest, TestGetNonExistentFileSystemFileRequest) {
 TEST_F(BlobURLTest, TestGetInvalidFileSystemFileRequest) {
   SetUpFileSystem();
   GURL invalid_file;
-  blob_data_->AppendFileSystemFile(file_system_context_->CrackURL(invalid_file),
-                                   0, std::numeric_limits<uint64_t>::max(),
-                                   base::Time(), file_system_context_);
+  blob_data_->AppendFileSystemFile(
+      file_system_context_->CrackURLInFirstPartyContext(invalid_file), 0,
+      std::numeric_limits<uint64_t>::max(), base::Time(), file_system_context_);
   TestErrorRequest(net::ERR_FILE_NOT_FOUND);
 }
 
 TEST_F(BlobURLTest, TestGetChangedFileSystemFileRequest) {
   SetUpFileSystem();
-  base::Time old_time = temp_file_system_file_modification_time1_ -
-                        base::TimeDelta::FromSeconds(10);
+  base::Time old_time =
+      temp_file_system_file_modification_time1_ - base::Seconds(10);
   blob_data_->AppendFileSystemFile(
-      file_system_context_->CrackURL(temp_file_system_file1_), 0, 3, old_time,
-      file_system_context_);
+      file_system_context_->CrackURLInFirstPartyContext(
+          temp_file_system_file1_),
+      0, 3, old_time, file_system_context_);
   TestErrorRequest(net::ERR_UPLOAD_FILE_CHANGED);
 }
 
 TEST_F(BlobURLTest, TestGetSlicedFileSystemFileRequest) {
   SetUpFileSystem();
   blob_data_->AppendFileSystemFile(
-      file_system_context_->CrackURL(temp_file_system_file1_), 2, 4,
-      temp_file_system_file_modification_time1_, file_system_context_);
+      file_system_context_->CrackURLInFirstPartyContext(
+          temp_file_system_file1_),
+      2, 4, temp_file_system_file_modification_time1_, file_system_context_);
   std::string result(kTestFileSystemFileData1 + 2, 4);
   TestSuccessNonrangeRequest(result, 4);
 }

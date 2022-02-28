@@ -7,7 +7,6 @@
 
 #include <iosfwd>
 
-#include "base/containers/flat_map.h"
 #include "base/strings/string_piece_forward.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/enums.h"
@@ -62,8 +61,11 @@ class WebFeedIndex {
     return subscribed_feeds_update_time_;
   }
   bool HasSubscriptions() const;
+  int SubscriptionCount() const;
+  int RecommendedWebFeedCount() const;
 
   std::vector<Entry> GetRecommendedEntriesForTesting() const;
+  void DumpStateForDebugging(std::ostream& os);
 
  private:
   using EntrySet = web_feed_index_internal::EntrySet;

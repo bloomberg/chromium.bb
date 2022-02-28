@@ -19,6 +19,11 @@
 #include "gpu/ipc/webgpu_in_process_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MAC)
+#include "gpu/command_buffer/tests/gl_manager.h"
+#include "ui/gl/gl_context.h"
+#endif
+
 namespace gpu {
 
 namespace {
@@ -108,7 +113,7 @@ void WebGPUTest::Initialize(const Options& options) {
 
   bool done = false;
   webgpu()->RequestAdapterAsync(
-      webgpu::PowerPreference::kDefault,
+      webgpu::PowerPreference::kDefault, false,
       base::BindOnce(
           [](WebGPUTest* test, bool* done, int32_t adapter_id,
              const WGPUDeviceProperties& properties, const char*) {
@@ -123,7 +128,7 @@ void WebGPUTest::Initialize(const Options& options) {
     RunPendingTasks();
   }
 
-  DawnProcTable procs = webgpu()->GetProcs();
+  DawnProcTable procs = webgpu()->GetAPIChannel()->GetProcs();
   dawnProcSetProcs(&procs);
 }
 
@@ -181,7 +186,8 @@ wgpu::Device WebGPUTest::GetNewDevice() {
   webgpu()->RequestDeviceAsync(
       adapter_id_, device_properties_,
       base::BindOnce(
-          [](WGPUDevice* result, bool* done, WGPUDevice device) {
+          [](WGPUDevice* result, bool* done, WGPUDevice device,
+             const WGPUSupportedLimits*, const char*) {
             *result = device;
             *done = true;
           },
@@ -257,7 +263,7 @@ TEST_F(WebGPUTest, RequestAdapterAfterContextLost) {
 
   bool called = false;
   webgpu()->RequestAdapterAsync(
-      webgpu::PowerPreference::kDefault,
+      webgpu::PowerPreference::kDefault, false,
       base::BindOnce(
           [](bool* called, int32_t adapter_id, const WGPUDeviceProperties&,
              const char*) {
@@ -282,13 +288,102 @@ TEST_F(WebGPUTest, RequestDeviceAfterContextLost) {
   bool called = false;
   webgpu()->RequestDeviceAsync(GetAdapterId(), GetDeviceProperties(),
                                base::BindOnce(
-                                   [](bool* called, WGPUDevice device) {
+                                   [](bool* called, WGPUDevice device,
+                                      const WGPUSupportedLimits*, const char*) {
                                      EXPECT_EQ(device, nullptr);
                                      *called = true;
                                    },
                                    &called));
   RunPendingTasks();
   EXPECT_TRUE(called);
+}
+
+TEST_F(WebGPUTest, RequestDeviceWitUnsupportedFeature) {
+  if (!WebGPUSupported()) {
+    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
+    return;
+  }
+
+#if defined(OS_MAC)
+  // Crashing on Mac M1. Currently missing stack trace. crbug.com/1271926
+  // This must be checked before WebGPUTest::Initialize otherwise context
+  // switched is locked and we cannot temporarily have this GLContext.
+  GLManager gl_manager;
+  gl_manager.Initialize(GLManager::Options());
+  std::string renderer(gl_manager.context()->GetGLRenderer());
+  if (renderer.find("Apple M1") != std::string::npos) {
+    gl_manager.Destroy();
+    return;
+  }
+  gl_manager.Destroy();
+#endif
+
+  Initialize(WebGPUTest::Options());
+
+  // Create device with unsupported features, expect to fail to create and
+  // return nullptr
+  WGPUDeviceProperties unsupported_device_properties = {};
+  unsupported_device_properties.invalidFeature = true;
+  WGPUDevice device = nullptr;
+  bool done = false;
+
+  webgpu()->RequestDeviceAsync(
+      GetAdapterId(), unsupported_device_properties,
+      base::BindOnce(
+          [](WGPUDevice* result, bool* done, WGPUDevice device,
+             const WGPUSupportedLimits*, const char*) {
+            *result = device;
+            *done = true;
+          },
+          &device, &done));
+
+  while (!done) {
+    RunPendingTasks();
+  }
+  EXPECT_EQ(device, nullptr);
+
+  // Create device again with supported features, expect success and not
+  // blocked by the last failure
+  GetNewDevice();
+}
+
+TEST_F(WebGPUTest, SPIRVIsDisallowed) {
+  if (!WebGPUSupported()) {
+    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
+    return;
+  }
+
+  auto ExpectSPIRVDisallowedError = [](WGPUErrorType type, const char* message,
+                                       void* userdata) {
+    // We match on this string to make sure the shader module creation fails
+    // because SPIR-V is disallowed and not because codeSize=0.
+    EXPECT_NE(std::string(message).find("SPIR-V is disallowed"),
+              std::string::npos);
+    EXPECT_EQ(type, WGPUErrorType_Validation);
+    *static_cast<bool*>(userdata) = true;
+  };
+
+  // The initialization code doesn't set GpuPreferences::enable_webgpu_spirv so
+  // it stays at the default value of "false".
+  Initialize(WebGPUTest::Options());
+  wgpu::Device device = GetNewDevice();
+
+  // Make a invalid ShaderModuleDescriptor because it contains SPIR-V.
+  wgpu::ShaderModuleSPIRVDescriptor spirvDesc;
+  spirvDesc.codeSize = 0;
+  spirvDesc.code = nullptr;
+
+  wgpu::ShaderModuleDescriptor desc;
+  desc.nextInChain = &spirvDesc;
+
+  // Make sure creation fails, and for the correct reason.
+  device.PushErrorScope(wgpu::ErrorFilter::Validation);
+  device.CreateShaderModule(&desc);
+  bool got_error = false;
+  device.PopErrorScope(ExpectSPIRVDisallowedError, &got_error);
+
+  WaitForCompletion(device);
+  EXPECT_TRUE(got_error);
 }
 
 }  // namespace gpu

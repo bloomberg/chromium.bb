@@ -17,20 +17,29 @@ void MakeTransferFunctionHLG01(skcms_TransferFunction* tf) {
       tf, 1 / 12.0f, 2.0f, 2.0f, 1 / 0.17883277f, 0.28466892f, 0.55991073f);
 }
 
-// Computes whether the transfer function from the parsed ICC profile
-// approximately matches the given parametric transfer function. Returns a
-// ColorProfile if it matches, or nullptr if not.
+// Computes whether the transfer function from the ColorProfile, that was
+// created from a parsed ICC profile, approximately matches the given parametric
+// transfer function. Returns a ColorProfile if it matches, or nullptr if not.
 std::unique_ptr<ColorProfile> ApproximatelyMatchesTF(
-    const skcms_ICCProfile* parsed,
+    const ColorProfile& profile,
     const skcms_TransferFunction* tf) {
-  skcms_ICCProfile parsed_test = *parsed;
-  parsed_test.has_trc = true;
+  skcms_ICCProfile parsed_copy = *profile.GetProfile();
+  // Override the transfer function with a known parametric curve.
+  parsed_copy.has_trc = true;
   for (int c = 0; c < 3; c++) {
-    parsed_test.trc[c].table_entries = 0;
-    parsed_test.trc[c].parametric = *tf;
+    parsed_copy.trc[c].table_entries = 0;
+    parsed_copy.trc[c].parametric = *tf;
   }
-  if (skcms_ApproximatelyEqualProfiles(parsed, &parsed_test)) {
-    return std::make_unique<ColorProfile>(parsed_test);
+  if (skcms_ApproximatelyEqualProfiles(profile.GetProfile(), &parsed_copy)) {
+    // The input ColorProfile owns the buffer memory, make a new copy for
+    // the newly created one and pass the ownership of the new copy to the new
+    // color profile.
+    std::unique_ptr<uint8_t[]> owned_buffer(
+        new uint8_t[profile.GetProfile()->size]);
+    memcpy(owned_buffer.get(), profile.GetProfile()->buffer,
+           profile.GetProfile()->size);
+    parsed_copy.buffer = owned_buffer.get();
+    return std::make_unique<ColorProfile>(parsed_copy, std::move(owned_buffer));
   }
   return nullptr;
 }
@@ -40,7 +49,7 @@ JXLImageDecoder::JXLImageDecoder(
     AlphaOption alpha_option,
     HighBitDepthDecodingOption high_bit_depth_decoding_option,
     const ColorBehavior& color_behavior,
-    size_t max_decoded_bytes)
+    wtf_size_t max_decoded_bytes)
     : ImageDecoder(alpha_option,
                    high_bit_depth_decoding_option,
                    color_behavior,
@@ -49,7 +58,7 @@ JXLImageDecoder::JXLImageDecoder(
 }
 
 bool JXLImageDecoder::ReadBytes(size_t remaining,
-                                size_t* offset,
+                                wtf_size_t* offset,
                                 WTF::Vector<uint8_t>* segment,
                                 FastSharedBufferReader* reader,
                                 const uint8_t** jxl_data,
@@ -101,7 +110,7 @@ bool JXLImageDecoder::ReadBytes(size_t remaining,
     for (;;) {
       if (read) {
         *offset += read;
-        segment->Append(buffer, read);
+        segment->Append(buffer, base::checked_cast<wtf_size_t>(read));
       }
       if (segment->size() > remaining) {
         *jxl_data = segment->data();
@@ -123,7 +132,7 @@ bool JXLImageDecoder::ReadBytes(size_t remaining,
   return true;
 }
 
-void JXLImageDecoder::DecodeImpl(size_t index, bool only_size) {
+void JXLImageDecoder::DecodeImpl(wtf_size_t index, bool only_size) {
   if (Failed())
     return;
 
@@ -134,10 +143,27 @@ void JXLImageDecoder::DecodeImpl(size_t index, bool only_size) {
 
   DCHECK_LE(num_decoded_frames_, frame_buffer_cache_.size());
 
-  if (finished_ ||
-      (num_decoded_frames_ > index &&
-       frame_buffer_cache_[index].GetStatus() == ImageFrame::kFrameComplete)) {
+  if (num_decoded_frames_ > index &&
+      frame_buffer_cache_[index].GetStatus() == ImageFrame::kFrameComplete) {
+    // Frame already complete
     return;
+  }
+
+  if ((index < num_decoded_frames_) && dec_) {
+    // An animation frame that already has been decoded, but does not have
+    // status ImageFrame::kFrameComplete, was requested. This means an earlier
+    // animation frame was purged but is to be re-decoded now. Rewind the
+    // decoder and skip to the requested frame.
+    JxlDecoderRewind(dec_.get());
+    offset_ = 0;
+    // No longer subscribe to JXL_DEC_BASIC_INFO or JXL_DEC_COLOR_ENCODING.
+    if (JXL_DEC_SUCCESS !=
+        JxlDecoderSubscribeEvents(dec_.get(), JXL_DEC_FULL_IMAGE)) {
+      SetFailed();
+      return;
+    }
+    JxlDecoderSkipFrames(dec_.get(), index);
+    num_decoded_frames_ = index;
   }
 
   if (!dec_) {
@@ -311,8 +337,6 @@ void JXLImageDecoder::DecodeImpl(size_t index, bool only_size) {
             // and set the profile to one that indicates this transfer function
             // more clearly than a raw ICC profile does, so Chrome considers
             // the profile as HDR.
-            const skcms_ICCProfile* parsed = profile->GetProfile();
-
             skcms_TransferFunction tf_pq;
             skcms_TransferFunction tf_hlg01;
             skcms_TransferFunction tf_hlg12;
@@ -321,7 +345,7 @@ void JXLImageDecoder::DecodeImpl(size_t index, bool only_size) {
             skcms_TransferFunction_makeHLG(&tf_hlg12);
 
             for (skcms_TransferFunction tf : {tf_pq, tf_hlg01, tf_hlg12}) {
-              auto match = ApproximatelyMatchesTF(parsed, &tf);
+              auto match = ApproximatelyMatchesTF(*profile, &tf);
               if (match) {
                 is_hdr_ = true;
                 profile.swap(match);
@@ -345,7 +369,7 @@ void JXLImageDecoder::DecodeImpl(size_t index, bool only_size) {
         break;
       }
       case JXL_DEC_NEED_IMAGE_OUT_BUFFER: {
-        const size_t frame_index = num_decoded_frames_++;
+        const wtf_size_t frame_index = num_decoded_frames_++;
         ImageFrame& frame = frame_buffer_cache_[frame_index];
         // This is guaranteed to occur after JXL_DEC_BASIC_INFO so the size
         // is correct.
@@ -378,8 +402,10 @@ void JXLImageDecoder::DecodeImpl(size_t index, bool only_size) {
           ImageFrame& frame =
               self->frame_buffer_cache_[self->num_decoded_frames_ - 1];
           void* row_dst = self->decode_to_half_float_
-                              ? reinterpret_cast<void*>(frame.GetAddrF16(x, y))
-                              : reinterpret_cast<void*>(frame.GetAddr(x, y));
+                              ? reinterpret_cast<void*>(frame.GetAddrF16(
+                                    static_cast<int>(x), static_cast<int>(y)))
+                              : reinterpret_cast<void*>(frame.GetAddr(
+                                    static_cast<int>(x), static_cast<int>(y)));
 
           bool dst_premultiply = frame.PremultiplyAlpha();
 
@@ -424,8 +450,9 @@ void JXLImageDecoder::DecodeImpl(size_t index, bool only_size) {
         break;
       }
       case JXL_DEC_SUCCESS: {
-        dec_ = nullptr;
-        finished_ = true;
+        // Finished decoding entire image, with all frames in case of animation.
+        // Don't reset dec_, since we may want to rewind it if an earlier
+        // animation frame has to be decoded again.
         segment_.clear();
         return;
       }
@@ -454,7 +481,7 @@ bool JXLImageDecoder::MatchesJXLSignature(
   return false;
 }
 
-void JXLImageDecoder::InitializeNewFrame(size_t index) {
+void JXLImageDecoder::InitializeNewFrame(wtf_size_t index) {
   auto& buffer = frame_buffer_cache_[index];
   if (decode_to_half_float_)
     buffer.SetPixelFormat(ImageFrame::PixelFormat::kRGBA_F16);
@@ -462,7 +489,7 @@ void JXLImageDecoder::InitializeNewFrame(size_t index) {
   buffer.SetPremultiplyAlpha(premultiply_alpha_);
 }
 
-bool JXLImageDecoder::FrameIsReceivedAtIndex(size_t index) const {
+bool JXLImageDecoder::FrameIsReceivedAtIndex(wtf_size_t index) const {
   return IsAllDataReceived() ||
          (index < num_decoded_frames_ &&
           frame_buffer_cache_[index].GetStatus() == ImageFrame::kFrameComplete);
@@ -481,14 +508,14 @@ int JXLImageDecoder::RepetitionCount() const {
   return info_.animation.num_loops;
 }
 
-base::TimeDelta JXLImageDecoder::FrameDurationAtIndex(size_t index) const {
+base::TimeDelta JXLImageDecoder::FrameDurationAtIndex(wtf_size_t index) const {
   if (index < frame_durations_.size())
-    return base::TimeDelta::FromSecondsD(frame_durations_[index]);
+    return base::Seconds(frame_durations_[index]);
 
   return base::TimeDelta();
 }
 
-size_t JXLImageDecoder::DecodeFrameCount() {
+wtf_size_t JXLImageDecoder::DecodeFrameCount() {
   DecodeSize();
   if (!info_.have_animation) {
     frame_durations_.resize(1);
@@ -497,8 +524,7 @@ size_t JXLImageDecoder::DecodeFrameCount() {
   }
 
   FastSharedBufferReader reader(data_.get());
-  if (finished_ || size_at_last_frame_count_ == reader.size() ||
-      has_full_frame_count_) {
+  if (has_full_frame_count_ || size_at_last_frame_count_ == reader.size()) {
     return frame_buffer_cache_.size();
   }
   size_at_last_frame_count_ = reader.size();

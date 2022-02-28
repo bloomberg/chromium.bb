@@ -21,15 +21,15 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninPreferencesManager;
 import org.chromium.chrome.browser.sync.AndroidSyncSettings;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.signin.AccountUtils;
+import org.chromium.components.signin.base.CoreAccountId;
 import org.chromium.components.signin.base.CoreAccountInfo;
-import org.chromium.components.signin.identitymanager.AccountInfoService;
+import org.chromium.components.signin.identitymanager.AccountInfoServiceProvider;
 import org.chromium.components.signin.identitymanager.AccountTrackerService;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
@@ -54,8 +54,7 @@ import java.util.List;
  * <p/>
  * See chrome/browser/android/signin/signin_manager_android.h for more details.
  */
-class SigninManagerImpl
-        implements IdentityManager.Observer, AccountTrackerService.Observer, SigninManager {
+class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
     private static final String TAG = "SigninManager";
 
     /**
@@ -68,9 +67,7 @@ class SigninManagerImpl
     private final IdentityMutator mIdentityMutator;
     private final AndroidSyncSettings mAndroidSyncSettings;
     private final ObserverList<SignInStateObserver> mSignInStateObservers = new ObserverList<>();
-    private final ObserverList<SignInAllowedObserver> mSignInAllowedObservers =
-            new ObserverList<>();
-    private List<Runnable> mCallbacksWaitingForPendingOperation = new ArrayList<>();
+    private final List<Runnable> mCallbacksWaitingForPendingOperation = new ArrayList<>();
     private boolean mSigninAllowedByPolicy;
 
     /**
@@ -111,10 +108,9 @@ class SigninManagerImpl
                 accountTrackerService, identityManager, identityMutator, AndroidSyncSettings.get());
 
         identityManager.addObserver(signinManager);
-        AccountInfoService.init(identityManager, accountTrackerService);
-        accountTrackerService.addObserver(signinManager);
+        AccountInfoServiceProvider.init(identityManager, accountTrackerService);
 
-        identityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(CoreAccountInfo.getIdFrom(
+        signinManager.reloadAllAccountsFromSystem(CoreAccountInfo.getIdFrom(
                 identityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN)));
         return signinManager;
     }
@@ -141,20 +137,9 @@ class SigninManagerImpl
     @VisibleForTesting
     @CalledByNative
     void destroy() {
-        mAccountTrackerService.removeObserver(this);
-        AccountInfoService.get().destroy();
+        AccountInfoServiceProvider.get().destroy();
         mIdentityManager.removeObserver(this);
         mNativeSigninManagerAndroid = 0;
-    }
-
-    /**
-     * Implements {@link AccountTrackerService.Observer}.
-     */
-    @Override
-    public void onAccountsSeeded(List<CoreAccountInfo> accountInfos) {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DEPRECATE_MENAGERIE_API)) {
-            mIdentityManager.forceRefreshOfExtendedAccountInfo(accountInfos);
-        }
     }
 
     /**
@@ -238,19 +223,9 @@ class SigninManagerImpl
         mSignInStateObservers.removeObserver(observer);
     }
 
-    @Override
-    public void addSignInAllowedObserver(SignInAllowedObserver observer) {
-        mSignInAllowedObservers.addObserver(observer);
-    }
-
-    @Override
-    public void removeSignInAllowedObserver(SignInAllowedObserver observer) {
-        mSignInAllowedObservers.removeObserver(observer);
-    }
-
     private void notifySignInAllowedChanged() {
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-            for (SignInAllowedObserver observer : mSignInAllowedObservers) {
+            for (SignInStateObserver observer : mSignInStateObservers) {
                 observer.onSignInAllowedChanged();
             }
         });
@@ -265,37 +240,13 @@ class SigninManagerImpl
      *   - Complete sign-in with the native IdentityManager.
      *   - Call the callback if provided.
      *
-     * @param accountInfo The account to sign in to.
+     * @param account The account to sign in to.
      * @param callback Optional callback for when the sign-in process is finished.
      */
     @Override
-    public void signin(CoreAccountInfo accountInfo, @Nullable SignInCallback callback) {
-        mAccountTrackerService.seedAccountsIfNeeded(
-                () -> { signinInternal(SignInState.createForSignin(accountInfo, callback)); });
-    }
-
-    /**
-     * Starts the sign-in flow, enables sync and executes the callback when finished.
-     *
-     * The sign-in flow goes through the following steps:
-     *
-     *   - Wait for AccountTrackerService to be seeded.
-     *   - Wait for policy to be checked for the account.
-     *   - If managed, wait for the policy to be fetched.
-     *   - Complete sign-in with the native IdentityManager.
-     *   - Enable sync.
-     *   - Call the callback if provided.
-     *
-     * @param accessPoint {@link SigninAccessPoint} that initiated the sign-in flow.
-     * @param accountInfo The account to sign in to.
-     * @param callback Optional callback for when the sign-in process is finished.
-     */
-    @Override
-    public void signinAndEnableSync(@SigninAccessPoint int accessPoint, CoreAccountInfo accountInfo,
-            @Nullable SignInCallback callback) {
-        mAccountTrackerService.seedAccountsIfNeeded(() -> {
-            signinInternal(
-                    SignInState.createForSigninAndEnableSync(accessPoint, accountInfo, callback));
+    public void signin(Account account, @Nullable SignInCallback callback) {
+        AccountInfoServiceProvider.get().getAccountInfoByEmail(account.name).then(accountInfo -> {
+            signinInternal(SignInState.createForSignin(accountInfo, callback));
         });
     }
 
@@ -317,11 +268,7 @@ class SigninManagerImpl
     @Override
     public void signinAndEnableSync(@SigninAccessPoint int accessPoint, Account account,
             @Nullable SignInCallback callback) {
-        mAccountTrackerService.seedAccountsIfNeeded(() -> {
-            final CoreAccountInfo accountInfo =
-                    mIdentityManager
-                            .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-                                    account.name);
+        AccountInfoServiceProvider.get().getAccountInfoByEmail(account.name).then(accountInfo -> {
             signinInternal(
                     SignInState.createForSigninAndEnableSync(accessPoint, accountInfo, callback));
         });
@@ -363,12 +310,12 @@ class SigninManagerImpl
     @VisibleForTesting
     void finishSignInAfterPolicyEnforced() {
         assert mSignInState != null : "SigninState shouldn't be null!";
-        assert !mIdentityManager.hasPrimaryAccount() : "The user should not be already signed in";
+        assert !mIdentityManager.hasPrimaryAccount(ConsentLevel.SYNC)
+            : "The user should not be already signed in";
 
         // Setting the primary account triggers observers which query accounts from IdentityManager.
         // Reloading before setting the primary ensures they don't get an empty list of accounts.
-        mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(
-                mSignInState.mCoreAccountInfo.getId());
+        reloadAllAccountsFromSystem(mSignInState.mCoreAccountInfo.getId());
 
         @ConsentLevel
         int consentLevel =
@@ -390,8 +337,7 @@ class SigninManagerImpl
             // sync tries to start without being signed in the native code and crashes.
             mAndroidSyncSettings.updateAccount(
                     AccountUtils.createAccountFromName(mSignInState.mCoreAccountInfo.getEmail()));
-            boolean atLeastOneDataTypeSynced =
-                    !ProfileSyncService.get().getChosenDataTypes().isEmpty();
+            boolean atLeastOneDataTypeSynced = !SyncService.get().getChosenDataTypes().isEmpty();
             if (atLeastOneDataTypeSynced) {
                 // Turn on sync only when user has at least one data type to sync, this is
                 // consistent with {@link ManageSyncSettings#updataSyncStateFromSelectedModelTypes},
@@ -442,8 +388,8 @@ class SigninManagerImpl
                 //   If the account is managed then the data should be wiped.
                 //
                 //   TODO(https://crbug.com/1173016): It might be too late to get management status
-                //       here. ProfileSyncService should call RevokeSyncConsent/ClearPrimaryAccount
-                //       in SigninManager instead.
+                //       here. SyncService should call RevokeSyncConsent/ClearPrimaryAccount in
+                //       SigninManager instead.
                 if (mSignOutState == null) {
                     mSignOutState = new SignOutState(null, getManagementDomain() != null);
                 }
@@ -507,7 +453,7 @@ class SigninManagerImpl
         // Only one signOut at a time!
         assert mSignOutState == null;
         // User data should not be wiped if the user is not syncing.
-        assert mIdentityManager.hasPrimaryAccount() || !forceWipeUserData;
+        assert mIdentityManager.hasPrimaryAccount(ConsentLevel.SYNC) || !forceWipeUserData;
 
         // Grab the management domain before nativeSignOut() potentially clears it.
         String managementDomain = getManagementDomain();
@@ -600,11 +546,14 @@ class SigninManagerImpl
     @Override
     public void isAccountManaged(String email, final Callback<Boolean> callback) {
         assert email != null;
-        CoreAccountInfo account =
-                mIdentityManager.findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-                        email);
+        CoreAccountInfo account = mIdentityManager.findExtendedAccountInfoByEmailAddress(email);
         assert account != null;
         SigninManagerImplJni.get().isAccountManaged(mNativeSigninManagerAndroid, account, callback);
+    }
+
+    @Override
+    public void reloadAllAccountsFromSystem(@Nullable CoreAccountId primaryAccountId) {
+        mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(primaryAccountId);
     }
 
     private boolean isGooglePlayServicesPresent() {

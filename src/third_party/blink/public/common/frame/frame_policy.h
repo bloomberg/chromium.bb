@@ -27,8 +27,7 @@ struct BLINK_COMMON_EXPORT FramePolicy {
   FramePolicy();
   FramePolicy(network::mojom::WebSandboxFlags sandbox_flags,
               const ParsedPermissionsPolicy& container_policy,
-              const DocumentPolicyFeatureState& required_document_policy,
-              bool disallow_document_access = false);
+              const DocumentPolicyFeatureState& required_document_policy);
   FramePolicy(const FramePolicy& lhs);
   ~FramePolicy();
 
@@ -40,10 +39,28 @@ struct BLINK_COMMON_EXPORT FramePolicy {
   // - |required_document_policy| of parent frame
   DocumentPolicyFeatureState required_document_policy;
 
-  // Whether or not a frame allows direct script access across frame
-  // boundaries.
-  bool disallow_document_access = false;
+  // This signals to a frame whether or not it is hosted in a <fencedframe>
+  // element, and therefore should restrict some sensitive Window APIs that
+  // would otherwise grant access to the parent frame, or information about it.
+  //
+  // IMPORTANT NOTE: This is a temporary member that does not align with the
+  // long-term architecture, and will be removed after the <fencedframe>
+  // ShadowDOM-based origin trial, please do not use this for anything else. See
+  // https://docs.google.com/document/d/1ijTZJT3DHQ1ljp4QQe4E4XCCRaYAxmInNzN1SzeJM8s/edit
+  // and crbug.com/1123606. Note that this bit is immutable and cannot
+  // experience transitions, therefore `FramePolicy` is not actually a good
+  // place for this bit to live, and would be best suited to be manually plumbed
+  // through like `TreeScopeType`. However since this bit is temporary, any
+  // plumbing we introduce for it will be thrown away once we migrate to the
+  // long-term MPArch architecture, so we're using `FramePolicy` to avoid
+  // temporarily investing in the manual plumbing that will not stick around.
+  bool is_fenced = false;
 };
+
+bool BLINK_COMMON_EXPORT operator==(const FramePolicy& lhs,
+                                    const FramePolicy& rhs);
+bool BLINK_COMMON_EXPORT operator!=(const FramePolicy& lhs,
+                                    const FramePolicy& rhs);
 
 }  // namespace blink
 

@@ -17,7 +17,6 @@
 #include "config/av1_rtcd.h"
 
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 
@@ -45,7 +44,7 @@ class AV1SelfguidedFilterTest
   virtual ~AV1SelfguidedFilterTest() {}
   virtual void SetUp() {}
 
-  virtual void TearDown() { libaom_test::ClearSystemState(); }
+  virtual void TearDown() {}
 
  protected:
   void RunSpeedTest() {
@@ -231,7 +230,7 @@ class AV1HighbdSelfguidedFilterTest
   virtual ~AV1HighbdSelfguidedFilterTest() {}
   virtual void SetUp() {}
 
-  virtual void TearDown() { libaom_test::ClearSystemState(); }
+  virtual void TearDown() {}
 
  protected:
   void RunSpeedTest() {

@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/components/arc/test/fake_app_instance.h"
 #include "base/containers/flat_map.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
@@ -35,7 +36,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/arc/test/fake_app_instance.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -46,8 +46,8 @@ namespace ash {
 
 namespace {
 
-constexpr base::TimeDelta kOneHour = base::TimeDelta::FromHours(1);
-constexpr base::TimeDelta kOneDay = base::TimeDelta::FromDays(1);
+constexpr base::TimeDelta kOneHour = base::Hours(1);
+constexpr base::TimeDelta kOneDay = base::Days(1);
 constexpr char kStartTime[] = "1 Jan 2020 21:15";
 
 constexpr char kExampleHost0[] = "http://www.example0.com";
@@ -101,11 +101,11 @@ class FamilyUserParentalControlMetricsTest : public testing::Test {
     profile_builder.SetSupervisedUserId(supervised_users::kChildAccountSUID);
     profile_ = profile_builder.Build();
     EXPECT_TRUE(profile_->IsChild());
-    parental_control_metrics_ =
-        std::make_unique<FamilyUserParentalControlMetrics>(profile_.get());
     supervised_user_service_ =
         SupervisedUserServiceFactory::GetForProfile(profile_.get());
     supervised_user_service_->Init();
+    parental_control_metrics_ =
+        std::make_unique<FamilyUserParentalControlMetrics>(profile_.get());
   }
 
   void TearDown() override {
@@ -118,7 +118,7 @@ class FamilyUserParentalControlMetricsTest : public testing::Test {
     ChildUserService* service =
         ChildUserServiceFactory::GetForBrowserContext(profile_.get());
     ChildUserService::TestApi test_api = ChildUserService::TestApi(service);
-    DCHECK(test_api.app_time_controller());
+    EXPECT_TRUE(test_api.app_time_controller());
     return test_api.app_time_controller()->app_registry();
   }
 
@@ -130,6 +130,8 @@ class FamilyUserParentalControlMetricsTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
+  base::HistogramTester histogram_tester_;
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<FamilyUserParentalControlMetrics> parental_control_metrics_;
@@ -137,7 +139,7 @@ class FamilyUserParentalControlMetricsTest : public testing::Test {
 };
 
 TEST_F(FamilyUserParentalControlMetricsTest, BedAndScreenTimeLimitMetrics) {
-  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(ChildUserServiceFactory::GetForBrowserContext(profile_.get()));
 
   base::Value policy_content =
       utils::CreateTimeLimitPolicy(utils::CreateTime(6, 0));
@@ -155,30 +157,43 @@ TEST_F(FamilyUserParentalControlMetricsTest, BedAndScreenTimeLimitMetrics) {
       /*last_updated=*/base::Time::Now());
 
   GetPrefs()->Set(prefs::kUsageTimeLimit, policy_content);
-  // Triggers report:
+
+  histogram_tester_.ExpectBucketCount(
+      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
+      /*sample=*/
+      ChildUserService::TimeLimitPolicyType::kBedTimeLimit,
+      /*expected_count=*/1);
+  histogram_tester_.ExpectBucketCount(
+      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
+      /*sample=*/
+      ChildUserService::TimeLimitPolicyType::kScreenTimeLimit,
+      /*expected_count=*/1);
+
+  histogram_tester_.ExpectTotalCount(
+      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
+      /*expected_count=*/2);
+
+  // Tests daily report.
   OnNewDay();
 
-  histogram_tester.ExpectBucketCount(
-      FamilyUserParentalControlMetrics::
-          GetTimeLimitPolicyTypesHistogramNameForTest(),
+  histogram_tester_.ExpectBucketCount(
+      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
       /*sample=*/
-      FamilyUserParentalControlMetrics::TimeLimitPolicyType::kBedTimeLimit,
-      /*expected_count=*/1);
-  histogram_tester.ExpectBucketCount(
-      FamilyUserParentalControlMetrics::
-          GetTimeLimitPolicyTypesHistogramNameForTest(),
-      /*sample=*/
-      FamilyUserParentalControlMetrics::TimeLimitPolicyType::kScreenTimeLimit,
-      /*expected_count=*/1);
-
-  histogram_tester.ExpectTotalCount(
-      FamilyUserParentalControlMetrics::
-          GetTimeLimitPolicyTypesHistogramNameForTest(),
+      ChildUserService::TimeLimitPolicyType::kBedTimeLimit,
       /*expected_count=*/2);
+  histogram_tester_.ExpectBucketCount(
+      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
+      /*sample=*/
+      ChildUserService::TimeLimitPolicyType::kScreenTimeLimit,
+      /*expected_count=*/2);
+
+  histogram_tester_.ExpectTotalCount(
+      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
+      /*expected_count=*/4);
 }
 
 TEST_F(FamilyUserParentalControlMetricsTest, OverrideTimeLimitMetrics) {
-  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(ChildUserServiceFactory::GetForBrowserContext(profile_.get()));
 
   // Adds override time policy created at 1 day ago.
   base::Value policy_content =
@@ -188,55 +203,52 @@ TEST_F(FamilyUserParentalControlMetricsTest, OverrideTimeLimitMetrics) {
       /*policy=*/&policy_content,
       /*action=*/usage_time_limit::TimeLimitOverride::Action::kLock,
       /*created_at=*/base::Time::Now() - kOneDay,
-      /*duration=*/base::TimeDelta::FromHours(2));
+      /*duration=*/base::Hours(2));
   GetPrefs()->Set(prefs::kUsageTimeLimit, policy_content);
-
-  // Triggers report.
-  OnNewDay();
 
   // The override time limit policy would not get reported since the difference
   // between reported and created time are greater than 1 day.
-  histogram_tester.ExpectBucketCount(
-      FamilyUserParentalControlMetrics::
-          GetTimeLimitPolicyTypesHistogramNameForTest(),
+  histogram_tester_.ExpectBucketCount(
+      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
       /*sample=*/
-      FamilyUserParentalControlMetrics::TimeLimitPolicyType::kOverrideTimeLimit,
+      ChildUserService::TimeLimitPolicyType::kOverrideTimeLimit,
       /*expected_count=*/0);
-  histogram_tester.ExpectUniqueSample(
-      FamilyUserParentalControlMetrics::
-          GetTimeLimitPolicyTypesHistogramNameForTest(),
+  histogram_tester_.ExpectUniqueSample(
+      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
       /*sample=*/
-      FamilyUserParentalControlMetrics::TimeLimitPolicyType::kNoTimeLimit,
+      ChildUserService::TimeLimitPolicyType::kNoTimeLimit,
       /*expected_count=*/1);
 
   // Adds override time policy. Created and reported within 1 day.
   utils::AddOverrideWithDuration(
       /*policy=*/&policy_content,
       /*action=*/usage_time_limit::TimeLimitOverride::Action::kLock,
-      /*created_at=*/base::Time::Now() - base::TimeDelta::FromHours(23),
-      /*duration=*/base::TimeDelta::FromHours(2));
+      /*created_at=*/base::Time::Now() - base::Hours(23),
+      /*duration=*/base::Hours(2));
   GetPrefs()->Set(prefs::kUsageTimeLimit, policy_content);
-
-  // Triggers report.
-  OnNewDay();
 
   // The override time limit policy would get reported since the created
   // time and reported time are within 1 day.
-  histogram_tester.ExpectBucketCount(
-      FamilyUserParentalControlMetrics::
-          GetTimeLimitPolicyTypesHistogramNameForTest(),
+  histogram_tester_.ExpectBucketCount(
+      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
       /*sample=*/
-      FamilyUserParentalControlMetrics::TimeLimitPolicyType::kOverrideTimeLimit,
+      ChildUserService::TimeLimitPolicyType::kOverrideTimeLimit,
       /*expected_count=*/1);
 
-  histogram_tester.ExpectTotalCount(
-      FamilyUserParentalControlMetrics::
-          GetTimeLimitPolicyTypesHistogramNameForTest(),
+  // Tests daily report.
+  OnNewDay();
+
+  histogram_tester_.ExpectBucketCount(
+      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
+      /*sample=*/
+      ChildUserService::TimeLimitPolicyType::kOverrideTimeLimit,
       /*expected_count=*/2);
+  histogram_tester_.ExpectTotalCount(
+      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
+      /*expected_count=*/3);
 }
 
 TEST_F(FamilyUserParentalControlMetricsTest, AppAndWebTimeLimitMetrics) {
-  base::HistogramTester histogram_tester;
   apps::AppServiceTest app_service_test_;
   ArcAppTest arc_test_;
 
@@ -259,14 +271,12 @@ TEST_F(FamilyUserParentalControlMetricsTest, AppAndWebTimeLimitMetrics) {
   // Add limit policy to the Chrome and the Arc app.
   {
     app_time::AppTimeLimitsPolicyBuilder builder;
-    builder.AddAppLimit(
-        kArcApp,
-        app_time::AppLimit(app_time::AppRestriction::kTimeLimit,
-                           base::TimeDelta::FromHours(1), base::Time::Now()));
-    builder.AddAppLimit(
-        app_time::GetChromeAppId(),
-        app_time::AppLimit(app_time::AppRestriction::kTimeLimit,
-                           base::TimeDelta::FromHours(1), base::Time::Now()));
+    builder.AddAppLimit(kArcApp,
+                        app_time::AppLimit(app_time::AppRestriction::kTimeLimit,
+                                           base::Hours(1), base::Time::Now()));
+    builder.AddAppLimit(app_time::GetChromeAppId(),
+                        app_time::AppLimit(app_time::AppRestriction::kTimeLimit,
+                                           base::Hours(1), base::Time::Now()));
 
     builder.SetResetTime(6, 0);
     DictionaryPrefUpdate update(GetPrefs(), prefs::kPerAppTimeLimitsPolicy);
@@ -274,45 +284,59 @@ TEST_F(FamilyUserParentalControlMetricsTest, AppAndWebTimeLimitMetrics) {
     *value = builder.value().Clone();
   }
 
+  histogram_tester_.ExpectBucketCount(
+      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
+      /*sample=*/
+      ChildUserService::TimeLimitPolicyType::kWebTimeLimit,
+      /*expected_count=*/1);
+  histogram_tester_.ExpectBucketCount(
+      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
+      /*sample=*/
+      ChildUserService::TimeLimitPolicyType::kAppTimeLimit,
+      /*expected_count=*/1);
+
+  // Tests daily report.
   OnNewDay();
 
-  histogram_tester.ExpectBucketCount(
-      FamilyUserParentalControlMetrics::
-          GetTimeLimitPolicyTypesHistogramNameForTest(),
+  histogram_tester_.ExpectBucketCount(
+      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
       /*sample=*/
-      FamilyUserParentalControlMetrics::TimeLimitPolicyType::kWebTimeLimit,
-      /*expected_count=*/1);
-  histogram_tester.ExpectBucketCount(
-      FamilyUserParentalControlMetrics::
-          GetTimeLimitPolicyTypesHistogramNameForTest(),
-      /*sample=*/
-      FamilyUserParentalControlMetrics::TimeLimitPolicyType::kAppTimeLimit,
-      /*expected_count=*/1);
-  histogram_tester.ExpectTotalCount(
-      FamilyUserParentalControlMetrics::
-          GetTimeLimitPolicyTypesHistogramNameForTest(),
+      ChildUserService::TimeLimitPolicyType::kWebTimeLimit,
       /*expected_count=*/2);
+  histogram_tester_.ExpectBucketCount(
+      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
+      /*sample=*/
+      ChildUserService::TimeLimitPolicyType::kAppTimeLimit,
+      /*expected_count=*/2);
+
+  histogram_tester_.ExpectTotalCount(
+      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
+      /*expected_count=*/4);
 }
 
 TEST_F(FamilyUserParentalControlMetricsTest, WebFilterTypeMetric) {
-  base::HistogramTester histogram_tester;
-
+  // Overriding the value of prefs::kSupervisedUserSafeSites and
+  // prefs::kDefaultSupervisedUserFilteringBehavior in default storage is
+  // needed, otherwise no report could be triggered policies change or
+  // OnNewDay(). Since the default values are the same of override values, the
+  // WebFilterType doesn't change and no report here.
   GetPrefs()->SetInteger(prefs::kDefaultSupervisedUserFilteringBehavior,
                          SupervisedUserURLFilter::ALLOW);
   GetPrefs()->SetBoolean(prefs::kSupervisedUserSafeSites, true);
+
+  // Tests daily report.
   OnNewDay();
-  histogram_tester.ExpectUniqueSample(
-      FamilyUserParentalControlMetrics::FamilyUserParentalControlMetrics::
-          GetWebFilterTypeHistogramNameForTest(),
+  histogram_tester_.ExpectUniqueSample(
+      SupervisedUserURLFilter::GetWebFilterTypeHistogramNameForTest(),
       /*sample=*/
       SupervisedUserURLFilter::WebFilterType::kTryToBlockMatureSites,
       /*expected_count=*/1);
 
   // Tests filter "allow all sites".
   GetPrefs()->SetBoolean(prefs::kSupervisedUserSafeSites, false);
-  OnNewDay();
-  histogram_tester.ExpectBucketCount(
-      FamilyUserParentalControlMetrics::GetWebFilterTypeHistogramNameForTest(),
+
+  histogram_tester_.ExpectBucketCount(
+      SupervisedUserURLFilter::GetWebFilterTypeHistogramNameForTest(),
       /*sample=*/
       SupervisedUserURLFilter::WebFilterType::kAllowAllSites,
       /*expected_count=*/1);
@@ -320,33 +344,41 @@ TEST_F(FamilyUserParentalControlMetricsTest, WebFilterTypeMetric) {
   // Tests filter "only allow certain sites" on Family Link app.
   GetPrefs()->SetInteger(prefs::kDefaultSupervisedUserFilteringBehavior,
                          SupervisedUserURLFilter::BLOCK);
-  OnNewDay();
-  histogram_tester.ExpectBucketCount(
-      FamilyUserParentalControlMetrics::GetWebFilterTypeHistogramNameForTest(),
+
+  histogram_tester_.ExpectBucketCount(
+      SupervisedUserURLFilter::GetWebFilterTypeHistogramNameForTest(),
       /*sample=*/
       SupervisedUserURLFilter::WebFilterType::kCertainSites,
       /*expected_count=*/1);
 
-  histogram_tester.ExpectTotalCount(
-      FamilyUserParentalControlMetrics::GetWebFilterTypeHistogramNameForTest(),
+  histogram_tester_.ExpectTotalCount(
+      SupervisedUserURLFilter::GetWebFilterTypeHistogramNameForTest(),
       /*expected_count=*/3);
 }
 
 TEST_F(FamilyUserParentalControlMetricsTest, ManagedSiteListTypeMetric) {
-  base::HistogramTester histogram_tester;
-
+  // Overriding the value of prefs::kSupervisedUserSafeSites and
+  // prefs::kDefaultSupervisedUserFilteringBehavior in default storage is
+  // needed, otherwise no report could be triggered by policies change or
+  // OnNewDay(). Since the default values are the same of override values, the
+  // WebFilterType doesn't change and no report here.
   GetPrefs()->SetInteger(prefs::kDefaultSupervisedUserFilteringBehavior,
                          SupervisedUserURLFilter::ALLOW);
-  GetPrefs()->Set(prefs::kSupervisedUserManualHosts, base::DictionaryValue());
-  GetPrefs()->Set(prefs::kSupervisedUserManualURLs, base::DictionaryValue());
+  GetPrefs()->SetBoolean(prefs::kSupervisedUserSafeSites, true);
 
+  // Tests daily report.
   OnNewDay();
-  histogram_tester.ExpectBucketCount(
-      FamilyUserParentalControlMetrics::
-          GetManagedSiteListHistogramNameForTest(),
+  histogram_tester_.ExpectUniqueSample(
+      SupervisedUserURLFilter::GetManagedSiteListHistogramNameForTest(),
       /*sample=*/
       SupervisedUserURLFilter::ManagedSiteList::kEmpty,
       /*expected_count=*/1);
+  histogram_tester_.ExpectUniqueSample(
+      SupervisedUserURLFilter::GetApprovedSitesCountHistogramNameForTest(),
+      /*sample=*/0, /*expected_count=*/1);
+  histogram_tester_.ExpectUniqueSample(
+      SupervisedUserURLFilter::GetBlockedSitesCountHistogramNameForTest(),
+      /*sample=*/0, /*expected_count=*/1);
 
   // Blocks `kExampleHost0`.
   {
@@ -355,13 +387,18 @@ TEST_F(FamilyUserParentalControlMetricsTest, ManagedSiteListTypeMetric) {
     base::DictionaryValue* hosts = hosts_update.Get();
     hosts->SetKey(kExampleHost0, base::Value(false));
   }
-  OnNewDay();
-  histogram_tester.ExpectBucketCount(
-      FamilyUserParentalControlMetrics::
-          GetManagedSiteListHistogramNameForTest(),
+
+  histogram_tester_.ExpectBucketCount(
+      SupervisedUserURLFilter::GetManagedSiteListHistogramNameForTest(),
       /*sample=*/
       SupervisedUserURLFilter::ManagedSiteList::kBlockedListOnly,
       /*expected_count=*/1);
+  histogram_tester_.ExpectBucketCount(
+      SupervisedUserURLFilter::GetApprovedSitesCountHistogramNameForTest(),
+      /*sample=*/0, /*expected_count=*/2);
+  histogram_tester_.ExpectBucketCount(
+      SupervisedUserURLFilter::GetBlockedSitesCountHistogramNameForTest(),
+      /*sample=*/1, /*expected_count=*/1);
 
   // Approves `kExampleHost0`.
   {
@@ -370,13 +407,18 @@ TEST_F(FamilyUserParentalControlMetricsTest, ManagedSiteListTypeMetric) {
     base::DictionaryValue* hosts = hosts_update.Get();
     hosts->SetKey(kExampleHost0, base::Value(true));
   }
-  OnNewDay();
-  histogram_tester.ExpectBucketCount(
-      FamilyUserParentalControlMetrics::
-          GetManagedSiteListHistogramNameForTest(),
+
+  histogram_tester_.ExpectBucketCount(
+      SupervisedUserURLFilter::GetManagedSiteListHistogramNameForTest(),
       /*sample=*/
       SupervisedUserURLFilter::ManagedSiteList::kApprovedListOnly,
       /*expected_count=*/1);
+  histogram_tester_.ExpectBucketCount(
+      SupervisedUserURLFilter::GetApprovedSitesCountHistogramNameForTest(),
+      /*sample=*/1, /*expected_count=*/1);
+  histogram_tester_.ExpectBucketCount(
+      SupervisedUserURLFilter::GetBlockedSitesCountHistogramNameForTest(),
+      /*sample=*/0, /*expected_count=*/2);
 
   // Blocks `kExampleURL1`.
   {
@@ -385,17 +427,27 @@ TEST_F(FamilyUserParentalControlMetricsTest, ManagedSiteListTypeMetric) {
     base::DictionaryValue* urls = urls_update.Get();
     urls->SetKey(kExampleURL1, base::Value(false));
   }
-  OnNewDay();
-  histogram_tester.ExpectBucketCount(
-      FamilyUserParentalControlMetrics::
-          GetManagedSiteListHistogramNameForTest(),
+
+  histogram_tester_.ExpectBucketCount(
+      SupervisedUserURLFilter::GetManagedSiteListHistogramNameForTest(),
       /*sample=*/
       SupervisedUserURLFilter::ManagedSiteList::kBoth,
       /*expected_count=*/1);
+  histogram_tester_.ExpectBucketCount(
+      SupervisedUserURLFilter::GetApprovedSitesCountHistogramNameForTest(),
+      /*sample=*/1, /*expected_count=*/2);
+  histogram_tester_.ExpectBucketCount(
+      SupervisedUserURLFilter::GetBlockedSitesCountHistogramNameForTest(),
+      /*sample=*/1, /*expected_count=*/2);
 
-  histogram_tester.ExpectTotalCount(
-      FamilyUserParentalControlMetrics::
-          GetManagedSiteListHistogramNameForTest(),
+  histogram_tester_.ExpectTotalCount(
+      SupervisedUserURLFilter::GetManagedSiteListHistogramNameForTest(),
+      /*expected_count=*/4);
+  histogram_tester_.ExpectTotalCount(
+      SupervisedUserURLFilter::GetApprovedSitesCountHistogramNameForTest(),
+      /*expected_count=*/4);
+  histogram_tester_.ExpectTotalCount(
+      SupervisedUserURLFilter::GetBlockedSitesCountHistogramNameForTest(),
       /*expected_count=*/4);
 }
 

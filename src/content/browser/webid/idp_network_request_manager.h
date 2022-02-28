@@ -17,6 +17,10 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace net {
+enum class ReferrerPolicy;
+}
+
 namespace network {
 class SimpleURLLoader;
 }
@@ -87,10 +91,26 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
     kError,
   };
 
-  struct Endpoints {
+  enum class RevokeResponse {
+    kSuccess,
+    kError,
+  };
+
+  struct CONTENT_EXPORT Endpoints {
+    Endpoints();
+    ~Endpoints();
+    Endpoints(const Endpoints&);
+
     std::string idp;
     std::string token;
     std::string accounts;
+    std::string client_id_metadata;
+    std::string revoke;
+  };
+
+  struct ClientIdMetadata {
+    std::string privacy_policy_url;
+    std::string terms_of_service_url;
   };
 
   static constexpr char kWellKnownFilePath[] = ".well-known/webid";
@@ -98,13 +118,16 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
   using AccountList = std::vector<content::IdentityRequestAccount>;
   using FetchWellKnownCallback =
       base::OnceCallback<void(FetchStatus, Endpoints)>;
+  using FetchClientIdMetadataCallback =
+      base::OnceCallback<void(FetchStatus, ClientIdMetadata)>;
   using SigninRequestCallback =
       base::OnceCallback<void(SigninResponse, const std::string&)>;
-  using AccountsRequestCallback =
-      base::OnceCallback<void(AccountsResponse, const AccountList&)>;
+  using AccountsRequestCallback = base::OnceCallback<
+      void(AccountsResponse, AccountList, IdentityProviderMetadata)>;
   using TokenRequestCallback =
       base::OnceCallback<void(TokenResponse, const std::string&)>;
-  using LogoutCallback = base::OnceCallback<void(LogoutResponse)>;
+  using RevokeCallback = base::OnceCallback<void(RevokeResponse)>;
+  using LogoutCallback = base::OnceCallback<void()>;
 
   static std::unique_ptr<IdpNetworkRequestManager> Create(
       const GURL& provider,
@@ -123,6 +146,10 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
   // Attempt to fetch the IDP's WebID parameters from the its .well-known file.
   virtual void FetchIdpWellKnown(FetchWellKnownCallback);
 
+  virtual void FetchClientIdMetadata(const GURL& endpoint,
+                                     const std::string& client_id,
+                                     FetchClientIdMetadataCallback);
+
   // Transmit the OAuth request to the IDP.
   virtual void SendSigninRequest(const GURL& signin_url,
                                  const std::string& request,
@@ -138,19 +165,35 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
                                 const std::string& request,
                                 TokenRequestCallback callback);
 
+  // Send a revoke token request to the IDP.
+  virtual void SendRevokeRequest(const GURL& revoke_url,
+                                 const std::string& client_id,
+                                 const std::string& account_id,
+                                 RevokeCallback callback);
+
   // Send logout request to a single target.
   virtual void SendLogout(const GURL& logout_url, LogoutCallback);
 
  private:
   void OnWellKnownLoaded(std::unique_ptr<std::string> response_body);
   void OnWellKnownParsed(data_decoder::DataDecoder::ValueOrError result);
+  void OnClientIdMetadataLoaded(std::unique_ptr<std::string> response_body);
+  void OnClientIdMetadataParsed(data_decoder::DataDecoder::ValueOrError result);
   void OnSigninRequestResponse(std::unique_ptr<std::string> response_body);
   void OnSigninRequestParsed(data_decoder::DataDecoder::ValueOrError result);
   void OnAccountsRequestResponse(std::unique_ptr<std::string> response_body);
   void OnAccountsRequestParsed(data_decoder::DataDecoder::ValueOrError result);
   void OnTokenRequestResponse(std::unique_ptr<std::string> response_body);
   void OnTokenRequestParsed(data_decoder::DataDecoder::ValueOrError result);
+  void OnRevokeResponse(std::unique_ptr<std::string> response_body);
   void OnLogoutCompleted(std::unique_ptr<std::string> response_body);
+
+  std::unique_ptr<network::SimpleURLLoader> CreateUncredentialedUrlLoader(
+      const GURL& url) const;
+  std::unique_ptr<network::SimpleURLLoader> CreateCredentialedUrlLoader(
+      const GURL& url,
+      absl::optional<std::string> request_body = absl::nullopt,
+      absl::optional<net::ReferrerPolicy> policy = absl::nullopt) const;
 
   // URL of the Identity Provider.
   GURL provider_;
@@ -160,9 +203,11 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 
   FetchWellKnownCallback idp_well_known_callback_;
+  FetchClientIdMetadataCallback client_metadata_callback_;
   SigninRequestCallback signin_request_callback_;
   AccountsRequestCallback accounts_request_callback_;
   TokenRequestCallback token_request_callback_;
+  RevokeCallback revoke_callback_;
   LogoutCallback logout_callback_;
 
   std::unique_ptr<network::SimpleURLLoader> url_loader_;

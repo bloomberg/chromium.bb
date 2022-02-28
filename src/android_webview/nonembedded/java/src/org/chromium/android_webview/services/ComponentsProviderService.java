@@ -10,6 +10,7 @@ import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -59,23 +60,41 @@ public class ComponentsProviderService extends Service {
     private static final String TAG = "AW_CPS";
 
     // This should be greater than or equal to the native component updater service interval.
-    private static final long UPDATE_INTERVAL_MS = TimeUnit.HOURS.toMillis(5);
+    @VisibleForTesting
+    public static final long UPDATE_INTERVAL_MS = TimeUnit.HOURS.toMillis(5);
     private static final int JOB_ID = TaskIds.WEBVIEW_COMPONENT_UPDATE_JOB_ID;
+    private static final int JOB_BACKOFF_POLICY = JobInfo.BACKOFF_POLICY_EXPONENTIAL;
+    private static final long JOB_INITIAL_BACKOFF_TIME_IN_MS = TimeUnit.MINUTES.toMillis(5);
+
+    private static final String SHARED_PREFERENCES_NAME = "ComponentsProviderServicePreferences";
+    private static final String LAST_SCHEDULED_UPDATE_JOB_TIME = "last_scheduled_update_job_time";
 
     // UMA constants. These values are persisted to logs. Entries can't be reordered and numbers
     // can't be reused.
     @IntDef({GetFilesResultCode.SUCCESS, GetFilesResultCode.FAILED_NOT_INSTALLED,
             GetFilesResultCode.FAILED_NO_VERSIONS, GetFilesResultCode.FAILED_NO_FDS,
-            GetFilesResultCode.FAILED_OPENING_FDS})
+            GetFilesResultCode.FAILED_OPENING_FDS,
+            GetFilesResultCode.FAILED_COMPONENT_UPDATER_SAFEMODE_ENABLED})
     private @interface GetFilesResultCode {
         int SUCCESS = 0;
         int FAILED_NOT_INSTALLED = 1;
         int FAILED_NO_VERSIONS = 2;
         int FAILED_NO_FDS = 3;
         int FAILED_OPENING_FDS = 4;
+        int FAILED_COMPONENT_UPDATER_SAFEMODE_ENABLED = 5;
         // Keep this one at the end and increment appropriately when adding new entries.
-        int COUNT = 5;
+        int COUNT = 6;
     }
+
+    /**
+     * A mockable clock. Returns the current time in ms since the unix epoch. For reference, the
+     * default implementation is {@code System.currentTimeMillis()}.
+     */
+    @VisibleForTesting
+    public static interface Clock {
+        long currentTimeMillis();
+    }
+    private static Clock sClock = System::currentTimeMillis;
 
     private File mDirectory;
     private FutureTask<Void> mDeleteTask;
@@ -84,6 +103,16 @@ public class ComponentsProviderService extends Service {
         @Override
         public void getFilesForComponent(String componentId, ResultReceiver resultReceiver) {
             final long startTime = System.currentTimeMillis();
+
+            if (ComponentUpdaterSafeModeUtils.executeSafeModeIfEnabled(mDirectory)) {
+                Log.w(TAG,
+                        "Component Updater Reset Mode enabled. Not handing out configs. "
+                                + componentId);
+                resultReceiver.send(RESULT_FAILED, /* resultData = */ null);
+                recordGetFilesResultAndDuration(
+                        GetFilesResultCode.FAILED_COMPONENT_UPDATER_SAFEMODE_ENABLED, startTime);
+                return;
+            }
 
             // Note that there's no need to sanitize input because this method will check if there
             // is an existing folder under `mDirectory` with a name that equals the received
@@ -144,6 +173,14 @@ public class ComponentsProviderService extends Service {
     @Override
     public void onCreate() {
         mDirectory = new File(ComponentsProviderPathUtil.getComponentsServingDirectoryPath());
+        if (ComponentUpdaterSafeModeUtils.executeSafeModeIfEnabled(mDirectory)) {
+            JobScheduler jobScheduler =
+                    (JobScheduler) ContextUtils.getApplicationContext().getSystemService(
+                            Context.JOB_SCHEDULER_SERVICE);
+            jobScheduler.cancel(JOB_ID);
+            return;
+        }
+
         if (!mDirectory.exists() && !mDirectory.mkdirs()) {
             Log.e(TAG, "Failed to create directory " + mDirectory.getAbsolutePath());
             return;
@@ -217,29 +254,43 @@ public class ComponentsProviderService extends Service {
         }
     }
 
-    private void maybeScheduleComponentUpdateService() {
+    /**
+     * Schedule an update job if no job is currently scheduled, and the last time the job was
+     * scheduled was more than UPDATE_INTERVAL_MS ago.
+     */
+    @VisibleForTesting
+    public static void maybeScheduleComponentUpdateService() {
         Context context = ContextUtils.getApplicationContext();
         JobScheduler jobScheduler =
                 (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
 
-        try {
-            if (isJobScheduled(jobScheduler, JOB_ID)) {
-                return;
-            }
+        if (isJobScheduled(jobScheduler, JOB_ID)) {
+            return;
+        }
 
-            ComponentName componentName =
-                    new ComponentName(context, ServiceNames.AW_COMPONENT_UPDATE_SERVICE);
+        // TODO(crbug.com/1256948): schedule it as a periodic job.
+        final SharedPreferences sharedPreferences =
+                ContextUtils.getApplicationContext().getSharedPreferences(
+                        SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
+        long currentTime = sClock.currentTimeMillis();
+        long lastJobScheduleTime = sharedPreferences.getLong(LAST_SCHEDULED_UPDATE_JOB_TIME, 0L);
+        if (lastJobScheduleTime + UPDATE_INTERVAL_MS > currentTime) {
+            return;
+        }
 
-            JobInfo job = new JobInfo.Builder(JOB_ID, componentName)
-                                  .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                                  .setPeriodic(UPDATE_INTERVAL_MS)
-                                  .build();
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putLong(LAST_SCHEDULED_UPDATE_JOB_TIME, currentTime);
+        editor.apply();
 
-            if (jobScheduler.schedule(job) != JobScheduler.RESULT_SUCCESS) {
-                Log.e(TAG, "Failed to schedule job for AwComponentUpdateService");
-            }
-        } catch (Exception exception) {
-            Log.e(TAG, "Error scheduling job for AwComponentUpdateService", exception);
+        ComponentName componentName =
+                new ComponentName(context, ServiceNames.AW_COMPONENT_UPDATE_SERVICE);
+        JobInfo.Builder jobBuilder =
+                new JobInfo.Builder(JOB_ID, componentName)
+                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                        .setBackoffCriteria(JOB_INITIAL_BACKOFF_TIME_IN_MS, JOB_BACKOFF_POLICY);
+
+        if (jobScheduler.schedule(jobBuilder.build()) != JobScheduler.RESULT_SUCCESS) {
+            Log.e(TAG, "Failed to schedule job for AwComponentUpdateService");
         }
     }
 
@@ -255,6 +306,20 @@ public class ComponentsProviderService extends Service {
             return false;
         }
         return ApiHelperForN.getPendingJob(scheduler, jobId) != null;
+    }
+
+    @VisibleForTesting
+    public static void setClockForTesting(Clock clock) {
+        sClock = clock;
+    }
+
+    @VisibleForTesting
+    public static void clearSharedPrefsForTesting() {
+        ContextUtils.getApplicationContext()
+                .getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .clear()
+                .apply();
     }
 
     private void recordGetFilesResultAndDuration(@GetFilesResultCode int result, long startTime) {

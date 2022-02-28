@@ -2,7 +2,6 @@
   "android-angle-arm64-builder": {
     "gn_args": {
       "build_angle_deqp_tests": true,
-      "build_angle_gles1_conform_tests": true,
       "dcheck_always_on": true,
       "is_component_build": true,
       "is_debug": false,
@@ -14,6 +13,7 @@
   },
   "android-angle-chromium-arm64-builder": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "disable_android_lint": true,
       "ffmpeg_branding": "Chrome",
@@ -28,60 +28,9 @@
       "use_static_angle": true
     }
   },
-  "android-angle-perf-arm64-builder": {
-    "gn_args": {
-      "android32_ndk_api_level": 29,
-      "android64_ndk_api_level": 29,
-      "build_angle_deqp_tests": true,
-      "build_angle_gles1_conform_tests": true,
-      "build_angle_trace_perf_tests": true,
-      "dcheck_always_on": false,
-      "enable_nacl": false,
-      "is_component_build": true,
-      "is_debug": false,
-      "symbol_level": 1,
-      "target_cpu": "arm64",
-      "target_os": "android",
-      "use_goma": true
-    }
-  },
-  "android-angle-vk-arm-builder": {
-    "gn_args": {
-      "android32_ndk_api_level": 29,
-      "android64_ndk_api_level": 29,
-      "build_angle_deqp_tests": true,
-      "build_angle_gles1_conform_tests": true,
-      "build_angle_trace_perf_tests": true,
-      "dcheck_always_on": true,
-      "enable_nacl": false,
-      "is_component_build": true,
-      "is_debug": false,
-      "symbol_level": 1,
-      "target_os": "android",
-      "use_goma": true
-    }
-  },
-  "android-angle-vk-arm64-builder": {
-    "gn_args": {
-      "android32_ndk_api_level": 29,
-      "android64_ndk_api_level": 29,
-      "build_angle_deqp_tests": true,
-      "build_angle_gles1_conform_tests": true,
-      "build_angle_trace_perf_tests": true,
-      "dcheck_always_on": true,
-      "enable_nacl": false,
-      "is_component_build": true,
-      "is_debug": false,
-      "symbol_level": 1,
-      "target_cpu": "arm64",
-      "target_os": "android",
-      "use_goma": true
-    }
-  },
   "fuchsia-angle-builder": {
     "gn_args": {
       "build_angle_deqp_tests": true,
-      "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
       "enable_nacl": false,
@@ -94,8 +43,8 @@
   },
   "ios-angle-builder": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "build_angle_deqp_tests": true,
-      "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
       "enable_nacl": false,
@@ -113,7 +62,6 @@
   "linux-angle-builder": {
     "gn_args": {
       "build_angle_deqp_tests": true,
-      "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
       "enable_nacl": false,
@@ -125,6 +73,7 @@
   },
   "linux-angle-chromium-builder": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
@@ -134,26 +83,13 @@
       "use_goma": true
     }
   },
-  "mac-angle-builder": {
-    "gn_args": {
-      "build_angle_deqp_tests": true,
-      "build_angle_gles1_conform_tests": true,
-      "build_angle_trace_perf_tests": true,
-      "dcheck_always_on": true,
-      "enable_nacl": false,
-      "is_component_build": true,
-      "is_debug": false,
-      "symbol_level": 1,
-      "use_goma": true
-    }
-  },
   "mac-angle-chromium-builder": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
-      "mac_deterministic_build": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "use_goma": true
@@ -161,6 +97,7 @@
   },
   "win-angle-chromium-x64-builder": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
@@ -172,6 +109,7 @@
   },
   "win-angle-chromium-x86-builder": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
@@ -185,27 +123,12 @@
   "win-angle-x64-builder": {
     "gn_args": {
       "build_angle_deqp_tests": true,
-      "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
       "enable_nacl": false,
       "is_component_build": true,
       "is_debug": false,
       "symbol_level": 1,
-      "use_goma": true
-    }
-  },
-  "win-angle-x86-builder": {
-    "gn_args": {
-      "build_angle_deqp_tests": true,
-      "build_angle_gles1_conform_tests": true,
-      "build_angle_trace_perf_tests": true,
-      "dcheck_always_on": true,
-      "enable_nacl": false,
-      "is_component_build": true,
-      "is_debug": false,
-      "symbol_level": 1,
-      "target_cpu": "x86",
       "use_goma": true
     }
   }

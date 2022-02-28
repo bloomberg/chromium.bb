@@ -12,14 +12,14 @@
 namespace {
 
 const CXFA_Node::PropertyData kCommonPropertyData[] = {
-    {XFA_Element::SuppressBanner, 1, 0},
-    {XFA_Element::VersionControl, 1, 0},
-    {XFA_Element::LocaleSet, 1, 0},
-    {XFA_Element::Template, 1, 0},
-    {XFA_Element::ValidationMessaging, 1, 0},
-    {XFA_Element::Locale, 1, 0},
-    {XFA_Element::Data, 1, 0},
-    {XFA_Element::Messaging, 1, 0},
+    {XFA_Element::SuppressBanner, 1, {}},
+    {XFA_Element::VersionControl, 1, {}},
+    {XFA_Element::LocaleSet, 1, {}},
+    {XFA_Element::Template, 1, {}},
+    {XFA_Element::ValidationMessaging, 1, {}},
+    {XFA_Element::Locale, 1, {}},
+    {XFA_Element::Data, 1, {}},
+    {XFA_Element::Messaging, 1, {}},
 };
 
 const CXFA_Node::AttributeData kCommonAttributeData[] = {
@@ -32,7 +32,7 @@ const CXFA_Node::AttributeData kCommonAttributeData[] = {
 CXFA_Common::CXFA_Common(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_Config,
+                XFA_XDPPACKET::kConfig,
                 XFA_ObjectType::Node,
                 XFA_Element::Common,
                 kCommonPropertyData,

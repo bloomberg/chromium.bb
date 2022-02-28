@@ -86,10 +86,10 @@ namespace dawn_native { namespace vulkan {
 
     namespace {
 
-        ResultOrError<VkSurfaceKHR> CreateVulkanSurface(Backend* backend, Surface* surface) {
-            const VulkanGlobalInfo& info = backend->GetGlobalInfo();
-            const VulkanFunctions& fn = backend->GetFunctions();
-            VkInstance instance = backend->GetVkInstance();
+        ResultOrError<VkSurfaceKHR> CreateVulkanSurface(Adapter* adapter, Surface* surface) {
+            const VulkanGlobalInfo& info = adapter->GetVulkanInstance()->GetGlobalInfo();
+            const VulkanFunctions& fn = adapter->GetVulkanInstance()->GetFunctions();
+            VkInstance instance = adapter->GetVulkanInstance()->GetVkInstance();
 
             // May not be used in the platform-specific switches below.
             DAWN_UNUSED(info);
@@ -155,7 +155,7 @@ namespace dawn_native { namespace vulkan {
                     // See https://xcb.freedesktop.org/MixingCalls/ for more information about
                     // interoperability between Xlib and XCB
                     const XlibXcbFunctions* xlibXcb =
-                        backend->GetInstance()->GetOrCreateXlibXcbFunctions();
+                        adapter->GetInstance()->GetOrCreateXlibXcbFunctions();
                     ASSERT(xlibXcb != nullptr);
 
                     if (info.HasExt(InstanceExt::XcbSurface) && xlibXcb->IsLoaded()) {
@@ -182,7 +182,8 @@ namespace dawn_native { namespace vulkan {
                     break;
             }
 
-            return DAWN_VALIDATION_ERROR("Unsupported surface type for Vulkan");
+            return DAWN_FORMAT_VALIDATION_ERROR("Unsupported surface type (%s) for Vulkan.",
+                                                surface->GetType());
         }
 
         VkPresentModeKHR ToVulkanPresentMode(wgpu::PresentMode mode) {
@@ -194,6 +195,7 @@ namespace dawn_native { namespace vulkan {
                 case wgpu::PresentMode::Mailbox:
                     return VK_PRESENT_MODE_MAILBOX_KHR;
             }
+            UNREACHABLE();
         }
 
         uint32_t MinImageCountForPresentMode(VkPresentModeKHR mode) {
@@ -204,8 +206,9 @@ namespace dawn_native { namespace vulkan {
                 case VK_PRESENT_MODE_MAILBOX_KHR:
                     return 3;
                 default:
-                    UNREACHABLE();
+                    break;
             }
+            UNREACHABLE();
         }
 
     }  // anonymous namespace
@@ -220,7 +223,10 @@ namespace dawn_native { namespace vulkan {
         return swapchain;
     }
 
-    SwapChain::~SwapChain() {
+    SwapChain::~SwapChain() = default;
+
+    void SwapChain::DestroyImpl() {
+        SwapChainBase::DestroyImpl();
         DetachFromSurface();
     }
 
@@ -233,25 +239,25 @@ namespace dawn_native { namespace vulkan {
         VkSwapchainKHR previousVkSwapChain = VK_NULL_HANDLE;
 
         if (previousSwapChain != nullptr) {
-            // TODO(cwallez@chromium.org): The first time a surface is used with a Device, check
+            // TODO(crbug.com/dawn/269): The first time a surface is used with a Device, check
             // it is supported with vkGetPhysicalDeviceSurfaceSupportKHR.
 
-            // TODO(cwallez@chromium.org): figure out what should happen when surfaces are used by
+            // TODO(crbug.com/dawn/269): figure out what should happen when surfaces are used by
             // multiple backends one after the other. It probably needs to block until the backend
             // and GPU are completely finished with the previous swapchain.
-            if (previousSwapChain->GetBackendType() != wgpu::BackendType::Vulkan) {
-                return DAWN_VALIDATION_ERROR("vulkan::SwapChain cannot switch between APIs");
-            }
-            // TODO(cwallez@chromium.org): use ToBackend once OldSwapChainBase is removed.
+            DAWN_INVALID_IF(previousSwapChain->GetBackendType() != wgpu::BackendType::Vulkan,
+                            "Vulkan SwapChain cannot switch backend types from %s to %s.",
+                            previousSwapChain->GetBackendType(), wgpu::BackendType::Vulkan);
+
+            // TODO(crbug.com/dawn/269): use ToBackend once OldSwapChainBase is removed.
             SwapChain* previousVulkanSwapChain = static_cast<SwapChain*>(previousSwapChain);
 
-            // TODO(cwallez@chromium.org): Figure out switching a single surface between multiple
+            // TODO(crbug.com/dawn/269): Figure out switching a single surface between multiple
             // Vulkan devices on different VkInstances. Probably needs to block too!
             VkInstance previousInstance =
                 ToBackend(previousSwapChain->GetDevice())->GetVkInstance();
-            if (previousInstance != ToBackend(GetDevice())->GetVkInstance()) {
-                return DAWN_VALIDATION_ERROR("vulkan::SwapChain cannot switch between instances");
-            }
+            DAWN_INVALID_IF(previousInstance != ToBackend(GetDevice())->GetVkInstance(),
+                            "Vulkan SwapChain cannot switch between Vulkan instances.");
 
             // The previous swapchain is a dawn_native::vulkan::SwapChain so we can reuse its
             // VkSurfaceKHR provided since they are on the same instance.
@@ -269,7 +275,7 @@ namespace dawn_native { namespace vulkan {
         }
 
         if (mVkSurface == VK_NULL_HANDLE) {
-            DAWN_TRY_ASSIGN(mVkSurface, CreateVulkanSurface(adapter->GetBackend(), GetSurface()));
+            DAWN_TRY_ASSIGN(mVkSurface, CreateVulkanSurface(adapter, GetSurface()));
         }
 
         VulkanSurfaceInfo surfaceInfo;
@@ -387,23 +393,23 @@ namespace dawn_native { namespace vulkan {
         }
         if (!hasBGRA8Unorm) {
             return DAWN_INTERNAL_ERROR(
-                "Vulkan swapchain must support BGRA8Unorm with SRGB colorspace");
+                "Vulkan SwapChain must support BGRA8Unorm with sRGB colorspace.");
         }
         config.format = VK_FORMAT_B8G8R8A8_UNORM;
         config.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
         config.wgpuFormat = wgpu::TextureFormat::BGRA8Unorm;
 
         // Only the identity transform with opaque alpha is supported for now.
-        if ((surfaceInfo.capabilities.supportedTransforms &
-             VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) == 0) {
-            return DAWN_VALIDATION_ERROR("Vulkan swapchain must support the identity transform");
-        }
+        DAWN_INVALID_IF((surfaceInfo.capabilities.supportedTransforms &
+                         VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) == 0,
+                        "Vulkan SwapChain must support the identity transform.");
+
         config.transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 
-        if ((surfaceInfo.capabilities.supportedCompositeAlpha &
-             VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR) == 0) {
-            return DAWN_VALIDATION_ERROR("Vulkan swapchain must support opaque alpha");
-        }
+        DAWN_INVALID_IF((surfaceInfo.capabilities.supportedCompositeAlpha &
+                         VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR) == 0,
+                        "Vulkan SwapChain must support opaque alpha.");
+
         config.alphaMode = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 
         // Choose the number of images for the swapchain= and clamp it to the min and max from the
@@ -447,11 +453,11 @@ namespace dawn_native { namespace vulkan {
                 config.extent = surfaceInfo.capabilities.currentExtent;
             }
 
-            // TODO(cwallez@chromium.org): If the swapchain image doesn't support TRANSFER_DST
+            // TODO(crbug.com/dawn/269): If the swapchain image doesn't support TRANSFER_DST
             // then we'll need to have a second fallback that uses a blit shader :(
             if ((supportedUsages & VK_IMAGE_USAGE_TRANSFER_DST_BIT) == 0) {
                 return DAWN_INTERNAL_ERROR(
-                    "Swapchain cannot fallback to a blit because of a missing "
+                    "SwapChain cannot fallback to a blit because of a missing "
                     "VK_IMAGE_USAGE_TRANSFER_DST_BIT");
             }
             config.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
@@ -492,14 +498,14 @@ namespace dawn_native { namespace vulkan {
                                     mTexture->GetHandle(), mTexture->GetCurrentLayoutForSwapChain(),
                                     1, &region, VK_FILTER_LINEAR);
 
-            // TODO(cwallez@chromium.org): Find a way to reuse the blit texture between frames
+            // TODO(crbug.com/dawn/269): Find a way to reuse the blit texture between frames
             // instead of creating a new one every time. This will involve "un-destroying" the
             // texture or making the blit texture "external".
             mBlitTexture->APIDestroy();
             mBlitTexture = nullptr;
         }
 
-        // TODO(cwallez@chromium.org): Remove the need for this by eagerly transitioning the
+        // TODO(crbug.com/dawn/269): Remove the need for this by eagerly transitioning the
         // presentable texture to present at the end of submits that use them and ideally even
         // folding that in the free layout transition at the end of render passes.
         mTexture->TransitionUsageNow(recordingContext, kPresentTextureUsage,
@@ -510,7 +516,7 @@ namespace dawn_native { namespace vulkan {
         // Assuming that the present queue is the same as the graphics queue, the proper
         // synchronization has already been done on the queue so we don't need to wait on any
         // semaphores.
-        // TODO(cwallez@chromium.org): Support the present queue not being the main queue.
+        // TODO(crbug.com/dawn/269): Support the present queue not being the main queue.
         VkPresentInfoKHR presentInfo;
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         presentInfo.pNext = nullptr;
@@ -541,7 +547,7 @@ namespace dawn_native { namespace vulkan {
             case VK_ERROR_OUT_OF_DATE_KHR:
                 return Initialize(this);
 
-            // TODO(cwallez@chromium.org): Allow losing the surface at Dawn's API level?
+            // TODO(crbug.com/dawn/269): Allow losing the surface at Dawn's API level?
             case VK_ERROR_SURFACE_LOST_KHR:
             default:
                 return CheckVkSuccess(::VkResult(result), "QueuePresent");
@@ -572,7 +578,7 @@ namespace dawn_native { namespace vulkan {
             VkFence{}, &mLastImageIndex));
 
         if (result == VK_SUCCESS) {
-            // TODO(cwallez@chromium.org) put the semaphore on the texture so it is waited on when
+            // TODO(crbug.com/dawn/269) put the semaphore on the texture so it is waited on when
             // used instead of directly on the recording context?
             device->GetPendingRecordingContext()->waitSemaphores.push_back(semaphore);
         } else {
@@ -582,7 +588,7 @@ namespace dawn_native { namespace vulkan {
         }
 
         switch (result) {
-            // TODO(cwallez@chromium.org): Introduce a mechanism to notify the application that
+            // TODO(crbug.com/dawn/269): Introduce a mechanism to notify the application that
             // the swapchain is in a suboptimal state?
             case VK_SUBOPTIMAL_KHR:
             case VK_SUCCESS:
@@ -592,7 +598,7 @@ namespace dawn_native { namespace vulkan {
                 // Prevent infinite recursive calls to GetCurrentTextureViewInternal when the
                 // swapchains always return that they are out of date.
                 if (isReentrant) {
-                    // TODO(cwallez@chromium.org): Allow losing the surface instead?
+                    // TODO(crbug.com/dawn/269): Allow losing the surface instead?
                     return DAWN_INTERNAL_ERROR(
                         "Wasn't able to recuperate the surface after a VK_ERROR_OUT_OF_DATE_KHR");
                 }
@@ -602,7 +608,7 @@ namespace dawn_native { namespace vulkan {
                 return GetCurrentTextureViewInternal(true);
             }
 
-            // TODO(cwallez@chromium.org): Allow losing the surface at Dawn's API level?
+            // TODO(crbug.com/dawn/269): Allow losing the surface at Dawn's API level?
             case VK_ERROR_SURFACE_LOST_KHR:
             default:
                 DAWN_TRY(CheckVkSuccess(::VkResult(result), "AcquireNextImage"));

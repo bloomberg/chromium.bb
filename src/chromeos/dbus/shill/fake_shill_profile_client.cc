@@ -12,7 +12,7 @@
 #include "base/containers/adapters.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill/shill_property_changed_observer.h"
@@ -56,7 +56,7 @@ void FakeShillProfileClient::GetProperties(
   }
 
   base::Value entry_paths(base::Value::Type::LIST);
-  for (const auto& it : profile->entries.DictItems()) {
+  for (const auto it : profile->entries.DictItems()) {
     entry_paths.Append(it.first);
   }
 

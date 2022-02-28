@@ -9,18 +9,16 @@
 #include <string>
 #include <vector>
 
-#include "base/sequenced_task_runner.h"
+#include "base/memory/raw_ptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/scoped_profile_keep_alive.h"
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "components/domain_reliability/clear_mode.h"
 #include "content/public/browser/content_browser_client.h"
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "content/public/browser/host_zoom_map.h"
-#endif
 
 namespace sync_preferences {
 class PrefServiceSyncable;
@@ -54,7 +52,6 @@ class OffTheRecordProfileImpl : public Profile {
   bool HasAnyOffTheRecordProfile() override;
   Profile* GetOriginalProfile() override;
   const Profile* GetOriginalProfile() const override;
-  bool IsSupervised() const override;
   bool IsChild() const override;
   bool AllowsBrowserWindows() const override;
   ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() override;
@@ -62,8 +59,7 @@ class OffTheRecordProfileImpl : public Profile {
   const PrefService* GetPrefs() const override;
   policy::SchemaRegistryService* GetPolicySchemaRegistryService() override;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  policy::UserCloudPolicyManagerChromeOS* GetUserCloudPolicyManagerChromeOS()
-      override;
+  policy::UserCloudPolicyManagerAsh* GetUserCloudPolicyManagerAsh() override;
   policy::ActiveDirectoryPolicyManager* GetActiveDirectoryPolicyManager()
       override;
 #else
@@ -79,8 +75,6 @@ class OffTheRecordProfileImpl : public Profile {
   base::FilePath last_selected_directory() override;
   void set_last_selected_directory(const base::FilePath& path) override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;
-  void SetExitType(ExitType exit_type) override;
-  ExitType GetLastSessionExitType() const override;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia) override;
@@ -98,10 +92,8 @@ class OffTheRecordProfileImpl : public Profile {
   base::FilePath GetPath() override;
   base::FilePath GetPath() const override;
   base::Time GetCreationTime() const override;
-#if !defined(OS_ANDROID)
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
-#endif  // !defined(OS_ANDROID)
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
   bool IsOffTheRecord() override;
   bool IsOffTheRecord() const override;
@@ -112,6 +104,8 @@ class OffTheRecordProfileImpl : public Profile {
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;
   storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
+  content::PlatformNotificationService* GetPlatformNotificationService()
+      override;
   content::PushMessagingService* GetPushMessagingService() override;
   content::StorageNotificationService* GetStorageNotificationService() override;
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
@@ -127,27 +121,23 @@ class OffTheRecordProfileImpl : public Profile {
       override;
   content::FileSystemAccessPermissionContext*
   GetFileSystemAccessPermissionContext() override;
-  void RecordMainFrameNavigation() override;
+  void RecordPrimaryMainFrameNavigation() override;
 
  protected:
   // Profile implementation.
   bool IsSignedIn() override;
 
  private:
-#if !defined(OS_ANDROID)
   // Allows a profile to track changes in zoom levels in its parent profile.
   void TrackZoomLevelsFromParent();
-#endif  // !defined(OS_ANDROID)
 
-#if !defined(OS_ANDROID)
   // Callback function for tracking parent's zoom level changes.
   void OnParentZoomLevelChanged(
       const content::HostZoomMap::ZoomLevelChange& change);
   void UpdateDefaultZoomLevel();
-#endif  // !defined(OS_ANDROID)
 
   // The real underlying profile.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   // Prevent |profile_| from being destroyed first.
   ScopedProfileKeepAlive profile_keep_alive_;
 
@@ -155,10 +145,8 @@ class OffTheRecordProfileImpl : public Profile {
 
   std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_;
 
-#if !defined(OS_ANDROID)
   base::CallbackListSubscription track_zoom_subscription_;
   base::CallbackListSubscription parent_default_zoom_level_subscription_;
-#endif  // !defined(OS_ANDROID)
 
   // Time we were started.
   base::Time start_time_;

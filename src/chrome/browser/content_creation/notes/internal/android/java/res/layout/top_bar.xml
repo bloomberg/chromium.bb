@@ -9,7 +9,7 @@
     android:id="@+id/top_bar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/default_bg_color">
+    android:background="@macro/default_bg_color">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -33,7 +33,27 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
                 android:contentDescription="@string/close"
-                android:gravity="center_vertical|start"/>
+                android:gravity="center_vertical|start"
+                app:tint="@color/default_icon_color_tint_list"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <org.chromium.ui.widget.ButtonCompat
+                android:id="@+id/publish"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="24dp"
+                android:ellipsize="end"
+                android:gravity="center_vertical|center_horizontal"
+                android:text="@string/save"
+                style="@style/TextButton"
+                android:visibility="invisible"/>
         </LinearLayout>
 
         <LinearLayout
@@ -47,6 +67,9 @@
                 android:id="@+id/next"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:minWidth="0dp"
+                android:paddingEnd="10dp"
+                android:paddingStart="10dp"
                 android:layout_marginEnd="24dp"
                 android:ellipsize="end"
                 android:gravity="center_vertical|end"

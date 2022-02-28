@@ -25,7 +25,7 @@ constexpr size_t kMaxInt = static_cast<size_t>(std::numeric_limits<int>::max());
 
 template <class T>
 bool IsValidNumericDictionaryValue(const CPDF_Dictionary* pDict,
-                                   const char* key,
+                                   const ByteString& key,
                                    T min_value,
                                    bool must_exist = true) {
   if (!pDict->KeyExist(key))
@@ -72,7 +72,7 @@ std::unique_ptr<CPDF_LinearizedHeader> CPDF_LinearizedHeader::Parse(
   }
   // Move parser to the start of the xref table for the documents first page.
   // (skpping endobj keyword)
-  if (parser->GetNextWord(nullptr) != "endobj")
+  if (parser->GetNextWord().word != "endobj")
     return nullptr;
 
   auto result = pdfium::WrapUnique(

@@ -4,10 +4,10 @@
 
 #include "weblayer/browser/persistence/browser_persister_file_utils.h"
 
+#include "base/cxx17_backports.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/stl_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "components/base32/base32.h"
@@ -22,7 +22,7 @@ namespace weblayer {
 namespace {
 
 bool RemoveBrowserPersistenceStorageOnBackgroundThread(
-    const base::FilePath& path,
+    const base::FilePath& database_dir,
     base::flat_set<std::string> ids) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   bool all_succeeded = true;
@@ -30,7 +30,7 @@ bool RemoveBrowserPersistenceStorageOnBackgroundThread(
     DCHECK(!id.empty());
     // Original persistence path.
     const base::FilePath persistence_path =
-        BuildBasePathForBrowserPersister(path, id);
+        BuildBasePathForBrowserPersister(database_dir, id);
     if (!base::DeleteFile(persistence_path))
       all_succeeded = false;
 

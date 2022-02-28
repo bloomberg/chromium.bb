@@ -19,7 +19,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.SmallTest;
 import java.util.Arrays;
 import java.util.List;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
@@ -145,7 +145,7 @@ public class PeerConnectionTest {
   // TODO(fischman) MOAR test ideas:
   // - Test that PC.removeStream() works; requires a second
   //   createOffer/createAnswer dance.
-  // - audit each place that uses |constraints| for specifying non-trivial
+  // - audit each place that uses `constraints` for specifying non-trivial
   //   constraints (and ensure they're honored).
   // - test error cases
   // - ensure reasonable coverage of jni code is achieved.  Coverage is

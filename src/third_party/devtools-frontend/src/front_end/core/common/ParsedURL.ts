@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 
@@ -45,9 +43,9 @@ export class ParsedURL {
   fragment: string;
   folderPathComponents: string;
   lastPathComponent: string;
-  _blobInnerScheme: string|undefined;
-  _displayName?: string;
-  _dataURLDisplayName?: string;
+  readonly blobInnerScheme: string|undefined;
+  #displayNameInternal?: string;
+  #dataURLDisplayNameInternal?: string;
 
   constructor(url: string) {
     this.isValid = false;
@@ -64,11 +62,11 @@ export class ParsedURL {
 
     const isBlobUrl = this.url.startsWith('blob:');
     const urlToMatch = isBlobUrl ? url.substring(5) : url;
-    const match = urlToMatch.match(ParsedURL._urlRegex());
+    const match = urlToMatch.match(ParsedURL.urlRegex());
     if (match) {
       this.isValid = true;
       if (isBlobUrl) {
-        this._blobInnerScheme = match[2].toLowerCase();
+        this.blobInnerScheme = match[2].toLowerCase();
         this.scheme = 'blob';
       } else {
         this.scheme = match[2].toLowerCase();
@@ -112,24 +110,26 @@ export class ParsedURL {
     return null;
   }
 
-  static platformPathToURL(fileSystemPath: string): string {
-    fileSystemPath = fileSystemPath.replace(/\\/g, '/');
-    if (!fileSystemPath.startsWith('file://')) {
-      if (fileSystemPath.startsWith('/')) {
-        fileSystemPath = 'file://' + fileSystemPath;
+  static rawPathToUrlString(fileSystemPath: Platform.DevToolsPath.RawPathString): Platform.DevToolsPath.UrlString {
+    let rawPath: string = fileSystemPath;
+    rawPath = rawPath.replace(/\\/g, '/');
+    if (!rawPath.startsWith('file://')) {
+      if (rawPath.startsWith('/')) {
+        rawPath = 'file://' + rawPath;
       } else {
-        fileSystemPath = 'file:///' + fileSystemPath;
+        rawPath = 'file:///' + rawPath;
       }
     }
-    return fileSystemPath;
+    return rawPath as Platform.DevToolsPath.UrlString;
   }
 
-  static urlToPlatformPath(fileURL: string, isWindows?: boolean): string {
+  static capFilePrefix(fileURL: Platform.DevToolsPath.UrlString, isWindows?: boolean):
+      Platform.DevToolsPath.RawPathString {
     console.assert(fileURL.startsWith('file://'), 'This must be a file URL.');
     if (isWindows) {
-      return fileURL.substr('file:///'.length).replace(/\//g, '\\');
+      return fileURL.substr('file:///'.length).replace(/\//g, '\\') as Platform.DevToolsPath.RawPathString;
     }
-    return fileURL.substr('file://'.length);
+    return fileURL.substr('file://'.length) as Platform.DevToolsPath.RawPathString;
   }
 
   static urlWithoutHash(url: string): string {
@@ -140,9 +140,9 @@ export class ParsedURL {
     return url;
   }
 
-  static _urlRegex(): RegExp {
-    if (ParsedURL._urlRegexInstance) {
-      return ParsedURL._urlRegexInstance;
+  static urlRegex(): RegExp {
+    if (ParsedURL.urlRegexInstance) {
+      return ParsedURL.urlRegexInstance;
     }
     // RegExp groups:
     // 1 - scheme, hostname, ?port
@@ -161,10 +161,10 @@ export class ParsedURL {
     const queryRegex = /(?:\?([^#]*))?/;
     const fragmentRegex = /(?:#(.*))?/;
 
-    ParsedURL._urlRegexInstance = new RegExp(
+    ParsedURL.urlRegexInstance = new RegExp(
         '^(' + schemeRegex.source + userRegex.source + hostRegex.source + portRegex.source + ')' + pathRegex.source +
         queryRegex.source + fragmentRegex.source + '$');
-    return ParsedURL._urlRegexInstance;
+    return ParsedURL.urlRegexInstance;
   }
 
   static extractPath(url: string): string {
@@ -269,7 +269,7 @@ export class ParsedURL {
     columnNumber: (number|undefined),
   } {
     // Only look for line and column numbers in the path to avoid matching port numbers.
-    const beforePathMatch = string.match(ParsedURL._urlRegex());
+    const beforePathMatch = string.match(ParsedURL.urlRegex());
     let beforePath = '';
     let pathAndAfter: string = string;
     if (beforePathMatch) {
@@ -324,8 +324,8 @@ export class ParsedURL {
   }
 
   get displayName(): string {
-    if (this._displayName) {
-      return this._displayName;
+    if (this.#displayNameInternal) {
+      return this.#displayNameInternal;
     }
 
     if (this.isDataURL()) {
@@ -338,25 +338,25 @@ export class ParsedURL {
       return this.url;
     }
 
-    this._displayName = this.lastPathComponent;
-    if (!this._displayName) {
-      this._displayName = (this.host || '') + '/';
+    this.#displayNameInternal = this.lastPathComponent;
+    if (!this.#displayNameInternal) {
+      this.#displayNameInternal = (this.host || '') + '/';
     }
-    if (this._displayName === '/') {
-      this._displayName = this.url;
+    if (this.#displayNameInternal === '/') {
+      this.#displayNameInternal = this.url;
     }
-    return this._displayName;
+    return this.#displayNameInternal;
   }
 
   dataURLDisplayName(): string {
-    if (this._dataURLDisplayName) {
-      return this._dataURLDisplayName;
+    if (this.#dataURLDisplayNameInternal) {
+      return this.#dataURLDisplayNameInternal;
     }
     if (!this.isDataURL()) {
       return '';
     }
-    this._dataURLDisplayName = Platform.StringUtilities.trimEndWithMaxLength(this.url, 20);
-    return this._dataURLDisplayName;
+    this.#dataURLDisplayNameInternal = Platform.StringUtilities.trimEndWithMaxLength(this.url, 20);
+    return this.#dataURLDisplayNameInternal;
   }
 
   isAboutBlank(): boolean {
@@ -390,7 +390,7 @@ export class ParsedURL {
     if (this.isDataURL()) {
       return 'data:';
     }
-    const scheme = this.isBlobURL() ? this._blobInnerScheme : this.scheme;
+    const scheme = this.isBlobURL() ? this.blobInnerScheme : this.scheme;
     return scheme + '://' + this.domain();
   }
 
@@ -401,5 +401,5 @@ export class ParsedURL {
     return this.url;
   }
 
-  static _urlRegexInstance: RegExp|null = null;
+  static urlRegexInstance: RegExp|null = null;
 }

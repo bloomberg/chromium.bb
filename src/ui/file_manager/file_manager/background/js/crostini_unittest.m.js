@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import { assertFalse,assertTrue} from 'chrome://test/chai_assert.js';
 
-import { MockDirectoryEntry, MockEntry,MockFileSystem} from '../../common/js/mock_entry.m.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
-import {Crostini} from '../../externs/background/crostini.m.js';
-import {EntryLocation} from '../../externs/entry_location.m.js';
-import {VolumeManager} from '../../externs/volume_manager.m.js';
+import {installMockChrome} from '../../common/js/mock_chrome.js';
+import {MockDirectoryEntry, MockEntry, MockFileSystem} from '../../common/js/mock_entry.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {Crostini} from '../../externs/background/crostini.js';
+import {EntryLocation} from '../../externs/entry_location.js';
+import {VolumeManager} from '../../externs/volume_manager.js';
 
-import {createCrostiniForTest} from './mock_crostini.m.js';
-// clang-format on
+import {createCrostiniForTest} from './mock_crostini.js';
 
 /**
  * Mock metrics.
@@ -35,11 +34,21 @@ let crostini;
 // Set up the test components.
 export function setUp() {
   // Mock LoadTimeData strings.
-  loadTimeData.resetForTesting();
+  loadTimeData.resetForTesting({});
   loadTimeData.getBoolean = function(key) {
     return loadTimeData.data_[key];
   };
   loadTimeData.getString = id => id;
+
+  // Mock fileManagerPrivate.onCrostiniChanged.
+  const mockChrome = {
+    fileManagerPrivate: {
+      onCrostiniChanged: {
+        addListener: (callback) => {},
+      },
+    },
+  };
+  installMockChrome(mockChrome);
 
   // Create a fake volume manager that provides entry location info.
   volumeManager = /** @type {!VolumeManager} */ ({
@@ -167,13 +176,14 @@ export function testCanSharePath() {
 
   const allowed = [
     'downloads', 'removable', 'android_files', 'drive',
-    'shared_drives_grand_root', 'team_drive'
+    'shared_drives_grand_root', 'team_drive', 'drive_shared_with_me'
   ];
   for (const type of allowed) {
     volumeManagerRootType = type;
     // TODO(crbug.com/958840): Sharing Play files root is disallowed until
     // we can ensure it will not also share Downloads.
-    if (type === 'android_files') {
+    // We don't share 'Shared with me' root since it is fake.
+    if (['android_files', 'drive_shared_with_me'].includes(type)) {
       assertFalse(crostini.canSharePath('vm', root, true));
       assertFalse(crostini.canSharePath('vm', root, false));
     } else {

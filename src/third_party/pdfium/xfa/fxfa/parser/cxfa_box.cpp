@@ -6,8 +6,9 @@
 
 #include "xfa/fxfa/parser/cxfa_box.h"
 
+#include <math.h>
+
 #include <algorithm>
-#include <cmath>
 #include <utility>
 
 #include "fxjs/xfa/cjx_object.h"
@@ -61,7 +62,7 @@ CXFA_Rectangle* ToRectangle(CXFA_Box* box) {
 
 CXFA_Box::CXFA_Box(CXFA_Document* pDoc,
                    XFA_PacketType ePacket,
-                   uint32_t validPackets,
+                   Mask<XFA_XDPPACKET> validPackets,
                    XFA_ObjectType oType,
                    XFA_Element eType,
                    pdfium::span<const PropertyData> properties,
@@ -107,11 +108,11 @@ bool CXFA_Box::IsCircular() {
   return JSObject()->GetBoolean(XFA_Attribute::Circular);
 }
 
-Optional<int32_t> CXFA_Box::GetStartAngle() {
+absl::optional<int32_t> CXFA_Box::GetStartAngle() {
   return JSObject()->TryInteger(XFA_Attribute::StartAngle, false);
 }
 
-Optional<int32_t> CXFA_Box::GetSweepAngle() {
+absl::optional<int32_t> CXFA_Box::GetSweepAngle() {
   return JSObject()->TryInteger(XFA_Attribute::SweepAngle, false);
 }
 
@@ -222,7 +223,7 @@ void CXFA_Box::DrawFill(const std::vector<CXFA_Stroke*>& strokes,
   XFA_Element type = GetElementType();
   if (type == XFA_Element::Arc || forceRound) {
     CXFA_Edge* edge = GetEdgeIfExists(0);
-    float fThickness = std::fmax(0.0, edge ? edge->GetThickness() : 0);
+    float fThickness = fmax(0.0, edge ? edge->GetThickness() : 0);
     float fHalf = fThickness / 2;
     XFA_AttributeValue iHand = GetHand();
     if (iHand == XFA_AttributeValue::Left)
@@ -255,16 +256,16 @@ void CXFA_Box::GetPathArcOrRounded(CFX_RectF rtDraw,
   rtDraw.top = center.y - b;
   rtDraw.width = a + a;
   rtDraw.height = b + b;
-  Optional<int32_t> startAngle = GetStartAngle();
-  Optional<int32_t> sweepAngle = GetSweepAngle();
-  if (!startAngle && !sweepAngle) {
+  absl::optional<int32_t> startAngle = GetStartAngle();
+  absl::optional<int32_t> sweepAngle = GetSweepAngle();
+  if (!startAngle.has_value() && !sweepAngle.has_value()) {
     fillPath->AddEllipse(rtDraw);
     return;
   }
 
   fillPath->AddArc(rtDraw.TopLeft(), rtDraw.Size(),
-                   -startAngle.value_or(0) * FX_PI / 180.0f,
-                   -sweepAngle.value_or(360) * FX_PI / 180.0f);
+                   -startAngle.value_or(0) * FXSYS_PI / 180.0f,
+                   -sweepAngle.value_or(360) * FXSYS_PI / 180.0f);
 }
 
 void CXFA_Box::StrokeArcOrRounded(CFGAS_GEGraphics* pGS,
@@ -323,27 +324,27 @@ void CXFA_Box::StrokeArcOrRounded(CFGAS_GEGraphics* pGS,
   rtWidget.height = b + b;
 
   CFGAS_GEPath arcPath;
-  arcPath.AddArc(rtWidget.TopLeft(), rtWidget.Size(), 3.0f * FX_PI / 4.0f,
-                 FX_PI);
+  arcPath.AddArc(rtWidget.TopLeft(), rtWidget.Size(), 3.0f * FXSYS_PI / 4.0f,
+                 FXSYS_PI);
 
   pGS->SetStrokeColor(CFGAS_GEColor(0xFF808080));
   pGS->StrokePath(arcPath, matrix);
   arcPath.Clear();
-  arcPath.AddArc(rtWidget.TopLeft(), rtWidget.Size(), -1.0f * FX_PI / 4.0f,
-                 FX_PI);
+  arcPath.AddArc(rtWidget.TopLeft(), rtWidget.Size(), -1.0f * FXSYS_PI / 4.0f,
+                 FXSYS_PI);
 
   pGS->SetStrokeColor(CFGAS_GEColor(0xFFFFFFFF));
   pGS->StrokePath(arcPath, matrix);
   rtWidget.Deflate(fHalf, fHalf);
   arcPath.Clear();
-  arcPath.AddArc(rtWidget.TopLeft(), rtWidget.Size(), 3.0f * FX_PI / 4.0f,
-                 FX_PI);
+  arcPath.AddArc(rtWidget.TopLeft(), rtWidget.Size(), 3.0f * FXSYS_PI / 4.0f,
+                 FXSYS_PI);
 
   pGS->SetStrokeColor(CFGAS_GEColor(0xFF404040));
   pGS->StrokePath(arcPath, matrix);
   arcPath.Clear();
-  arcPath.AddArc(rtWidget.TopLeft(), rtWidget.Size(), -1.0f * FX_PI / 4.0f,
-                 FX_PI);
+  arcPath.AddArc(rtWidget.TopLeft(), rtWidget.Size(), -1.0f * FXSYS_PI / 4.0f,
+                 FXSYS_PI);
 
   pGS->SetStrokeColor(CFGAS_GEColor(0xFFC0C0C0));
   pGS->StrokePath(arcPath, matrix);

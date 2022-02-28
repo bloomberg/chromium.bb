@@ -24,7 +24,7 @@ const wchar_t kGreaterEqual[] = L" >= ";
 const wchar_t kPlusEqual[] = L" += ";
 const wchar_t kMinusEqual[] = L" -= ";
 
-const wchar_t* const g_BuiltInFuncs[] = {
+const wchar_t* const kBuiltInFuncs[] = {
     L"Abs",          L"Apr",       L"At",       L"Avg",
     L"Ceil",         L"Choose",    L"Concat",   L"Count",
     L"Cterm",        L"Date",      L"Date2Num", L"DateFmt",
@@ -44,14 +44,14 @@ const wchar_t* const g_BuiltInFuncs[] = {
     L"Within",       L"WordNum",
 };
 
-const size_t g_BuiltInFuncsMaxLen = 12;
+const size_t kBuiltInFuncsMaxLen = 12;
 
 struct XFA_FMSOMMethod {
   const wchar_t* m_wsSomMethodName;  // Ok, POD struct.
   uint32_t m_dParameters;
 };
 
-const XFA_FMSOMMethod gs_FMSomMethods[] = {
+const XFA_FMSOMMethod kFMSomMethods[] = {
     {L"absPage", 0x01},
     {L"absPageInBatch", 0x01},
     {L"absPageSpan", 0x01},
@@ -228,7 +228,7 @@ bool CXFA_FMAssignExpression::ToJavaScript(CFX_WideTextBuf* js,
 
   CFX_WideTextBuf tempExp1;
   const CXFA_FMSimpleExpression* exp1 = GetFirstExpression();
-  if (!exp1->ToJavaScript(&tempExp1, ReturnType::kInfered))
+  if (!exp1->ToJavaScript(&tempExp1, ReturnType::kInferred))
     return false;
 
   *js << "if (pfm_rt.is_obj(" << tempExp1 << "))\n{\n";
@@ -237,7 +237,7 @@ bool CXFA_FMAssignExpression::ToJavaScript(CFX_WideTextBuf* js,
 
   CFX_WideTextBuf tempExp2;
   const CXFA_FMSimpleExpression* exp2 = GetSecondExpression();
-  if (!exp2->ToJavaScript(&tempExp2, ReturnType::kInfered))
+  if (!exp2->ToJavaScript(&tempExp2, ReturnType::kInferred))
     return false;
 
   *js << "pfm_rt.asgn_val_op(" << tempExp1 << ", " << tempExp2 << ");\n}\n";
@@ -270,10 +270,10 @@ bool CXFA_FMBinExpression::ToJavaScript(CFX_WideTextBuf* js,
     return false;
 
   *js << "pfm_rt." << m_OpName << "(";
-  if (!GetFirstExpression()->ToJavaScript(js, ReturnType::kInfered))
+  if (!GetFirstExpression()->ToJavaScript(js, ReturnType::kInferred))
     return false;
   *js << ", ";
-  if (!GetSecondExpression()->ToJavaScript(js, ReturnType::kInfered))
+  if (!GetSecondExpression()->ToJavaScript(js, ReturnType::kInferred))
     return false;
   *js << ")";
   return !CXFA_IsTooBig(*js);
@@ -384,8 +384,8 @@ bool CXFA_FMUnaryExpression::ToJavaScript(CFX_WideTextBuf* js,
   if (CXFA_IsTooBig(*js) || !depthManager.IsWithinMaxDepth())
     return false;
 
-  *js << "pfm_rt." << m_OpName.c_str() << "(";
-  if (!m_pExp->ToJavaScript(js, ReturnType::kInfered))
+  *js << "pfm_rt." << m_OpName << "(";
+  if (!m_pExp->ToJavaScript(js, ReturnType::kInferred))
     return false;
   *js << ")";
   return !CXFA_IsTooBig(*js);
@@ -424,16 +424,16 @@ void CXFA_FMCallExpression::Trace(cppgc::Visitor* visitor) const {
 }
 
 bool CXFA_FMCallExpression::IsBuiltInFunc(CFX_WideTextBuf* funcName) const {
-  if (funcName->GetLength() > g_BuiltInFuncsMaxLen)
+  if (funcName->GetLength() > kBuiltInFuncsMaxLen)
     return false;
 
   WideString str = funcName->MakeString();
-  const wchar_t* const* pMatchResult = std::lower_bound(
-      std::begin(g_BuiltInFuncs), std::end(g_BuiltInFuncs), str,
-      [](const wchar_t* iter, const WideString& val) -> bool {
-        return val.CompareNoCase(iter) > 0;
-      });
-  if (pMatchResult != std::end(g_BuiltInFuncs) &&
+  const wchar_t* const* pMatchResult =
+      std::lower_bound(std::begin(kBuiltInFuncs), std::end(kBuiltInFuncs), str,
+                       [](const wchar_t* iter, const WideString& val) -> bool {
+                         return val.CompareNoCase(iter) > 0;
+                       });
+  if (pMatchResult != std::end(kBuiltInFuncs) &&
       !str.CompareNoCase(*pMatchResult)) {
     funcName->Clear();
     *funcName << *pMatchResult;
@@ -445,11 +445,11 @@ bool CXFA_FMCallExpression::IsBuiltInFunc(CFX_WideTextBuf* funcName) const {
 uint32_t CXFA_FMCallExpression::IsMethodWithObjParam(
     const WideString& methodName) const {
   const XFA_FMSOMMethod* result = std::lower_bound(
-      std::begin(gs_FMSomMethods), std::end(gs_FMSomMethods), methodName,
+      std::begin(kFMSomMethods), std::end(kFMSomMethods), methodName,
       [](const XFA_FMSOMMethod iter, const WideString& val) {
         return val.Compare(iter.m_wsSomMethodName) > 0;
       });
-  if (result != std::end(gs_FMSomMethods) &&
+  if (result != std::end(kFMSomMethods) &&
       methodName == result->m_wsSomMethodName) {
     return result->m_dParameters;
   }
@@ -463,7 +463,7 @@ bool CXFA_FMCallExpression::ToJavaScript(CFX_WideTextBuf* js,
     return false;
 
   CFX_WideTextBuf funcName;
-  if (!m_pExp->ToJavaScript(&funcName, ReturnType::kInfered))
+  if (!m_pExp->ToJavaScript(&funcName, ReturnType::kInferred))
     return false;
 
   if (m_bIsSomMethod) {
@@ -481,7 +481,7 @@ bool CXFA_FMCallExpression::ToJavaScript(CFX_WideTextBuf* js,
           *js << "val";
 
         *js << "(";
-        if (!m_Arguments[i]->ToJavaScript(js, ReturnType::kInfered))
+        if (!m_Arguments[i]->ToJavaScript(js, ReturnType::kInferred))
           return false;
         *js << ")";
         if (i + 1 < m_Arguments.size())
@@ -490,7 +490,7 @@ bool CXFA_FMCallExpression::ToJavaScript(CFX_WideTextBuf* js,
     } else {
       for (const auto& expr : m_Arguments) {
         *js << "pfm_rt.get_val(";
-        if (!expr->ToJavaScript(js, ReturnType::kInfered))
+        if (!expr->ToJavaScript(js, ReturnType::kInferred))
           return false;
         *js << ")";
         if (expr != m_Arguments.back())
@@ -526,7 +526,7 @@ bool CXFA_FMCallExpression::ToJavaScript(CFX_WideTextBuf* js,
     *js << "\n(\nfunction ()\n{\ntry\n{\n";
     if (!m_Arguments.empty()) {
       *js << "return ";
-      if (!m_Arguments[0]->ToJavaScript(js, ReturnType::kInfered))
+      if (!m_Arguments[0]->ToJavaScript(js, ReturnType::kInferred))
         return false;
       *js << ";\n}\n";
     } else {
@@ -536,7 +536,7 @@ bool CXFA_FMCallExpression::ToJavaScript(CFX_WideTextBuf* js,
     *js << "{\nreturn 0;\n}\n}\n).call(this)\n";
   } else {
     for (const auto& expr : m_Arguments) {
-      if (!expr->ToJavaScript(js, ReturnType::kInfered))
+      if (!expr->ToJavaScript(js, ReturnType::kInferred))
         return false;
       if (expr != m_Arguments.back())
         *js << ", ";
@@ -567,21 +567,22 @@ bool CXFA_FMDotAccessorExpression::ToJavaScript(CFX_WideTextBuf* js,
 
   *js << "pfm_rt.dot_acc(";
 
-  CFX_WideTextBuf tempExp1;
   CXFA_FMSimpleExpression* exp1 = GetFirstExpression();
   if (exp1) {
-    if (!exp1->ToJavaScript(&tempExp1, ReturnType::kInfered))
+    // Write directly to the buffer with each recursion. Creating
+    // and copying temporaries here becomes expensive when there
+    // is deep recursion, even though we may need to re-create the
+    // same thing again below. See https://crbug.com/1274018.
+    if (!exp1->ToJavaScript(js, ReturnType::kInferred))
       return false;
-
-    *js << tempExp1;
   } else {
     *js << "null";
   }
   *js << ", \"";
-
-  if (exp1 && exp1->GetOperatorToken() == TOKidentifier)
-    *js << tempExp1;
-
+  if (exp1 && exp1->GetOperatorToken() == TOKidentifier) {
+    if (!exp1->ToJavaScript(js, ReturnType::kInferred))
+      return false;
+  }
   *js << "\", ";
   if (GetOperatorToken() == TOKdotscream)
     *js << "\"#" << m_wsIdentifier << "\", ";
@@ -593,7 +594,7 @@ bool CXFA_FMDotAccessorExpression::ToJavaScript(CFX_WideTextBuf* js,
     *js << "\"" << m_wsIdentifier << "\", ";
 
   CXFA_FMSimpleExpression* exp2 = GetSecondExpression();
-  if (!exp2->ToJavaScript(js, ReturnType::kInfered))
+  if (!exp2->ToJavaScript(js, ReturnType::kInferred))
     return false;
 
   *js << ")";
@@ -601,7 +602,7 @@ bool CXFA_FMDotAccessorExpression::ToJavaScript(CFX_WideTextBuf* js,
 }
 
 CXFA_FMIndexExpression::CXFA_FMIndexExpression(
-    XFA_FM_AccessorIndex accessorIndex,
+    AccessorIndex accessorIndex,
     CXFA_FMSimpleExpression* pIndexExp,
     bool bIsStarIndex)
     : CXFA_FMSimpleExpression(TOKlbracket),
@@ -623,27 +624,25 @@ bool CXFA_FMIndexExpression::ToJavaScript(CFX_WideTextBuf* js,
     return false;
 
   switch (m_accessorIndex) {
-    case ACCESSOR_NO_INDEX:
+    case AccessorIndex::kNoIndex:
       *js << "0";
       break;
-    case ACCESSOR_NO_RELATIVEINDEX:
+    case AccessorIndex::kNoRelativeIndex:
       *js << "1";
       break;
-    case ACCESSOR_POSITIVE_INDEX:
+    case AccessorIndex::kPositiveIndex:
       *js << "2";
       break;
-    case ACCESSOR_NEGATIVE_INDEX:
+    case AccessorIndex::kNegativeIndex:
       *js << "3";
       break;
-    default:
-      *js << "0";
   }
   if (m_bIsStarIndex)
     return !CXFA_IsTooBig(*js);
 
   *js << ", ";
   if (m_pExp) {
-    if (!m_pExp->ToJavaScript(js, ReturnType::kInfered))
+    if (!m_pExp->ToJavaScript(js, ReturnType::kInferred))
       return false;
   } else {
     *js << "0";
@@ -669,18 +668,18 @@ bool CXFA_FMDotDotAccessorExpression::ToJavaScript(CFX_WideTextBuf* js,
 
   CXFA_FMSimpleExpression* exp1 = GetFirstExpression();
   *js << "pfm_rt.dotdot_acc(";
-  if (!exp1->ToJavaScript(js, ReturnType::kInfered))
+  if (!exp1->ToJavaScript(js, ReturnType::kInferred))
     return false;
   *js << ", "
       << "\"";
   if (exp1->GetOperatorToken() == TOKidentifier) {
-    if (!exp1->ToJavaScript(js, ReturnType::kInfered))
+    if (!exp1->ToJavaScript(js, ReturnType::kInferred))
       return false;
   }
 
   CXFA_FMSimpleExpression* exp2 = GetSecondExpression();
   *js << "\", \"" << m_wsIdentifier << "\", ";
-  if (!exp2->ToJavaScript(js, ReturnType::kInfered))
+  if (!exp2->ToJavaScript(js, ReturnType::kInferred))
     return false;
   *js << ")";
   return !CXFA_IsTooBig(*js);
@@ -699,15 +698,16 @@ bool CXFA_FMMethodCallExpression::ToJavaScript(CFX_WideTextBuf* js,
   if (CXFA_IsTooBig(*js) || !depthManager.IsWithinMaxDepth())
     return false;
 
-  CFX_WideTextBuf buf;
-  if (!GetFirstExpression()->ToJavaScript(&buf, ReturnType::kInfered))
+  *js << "(function() {\n";
+  *js << "  return pfm_method_runner(";
+  if (!GetFirstExpression()->ToJavaScript(js, ReturnType::kInferred))
     return false;
 
-  *js << "(function() {\n";
-  *js << "  return pfm_method_runner(" << buf << ", function(obj) {\n";
+  *js << ", function(obj) {\n";
   *js << "    return obj.";
-  if (!GetSecondExpression()->ToJavaScript(js, ReturnType::kInfered))
+  if (!GetSecondExpression()->ToJavaScript(js, ReturnType::kInferred))
     return false;
+
   *js << ";\n";
   *js << "  });\n";
   *js << "}).call(this)";
@@ -752,7 +752,7 @@ bool CXFA_FMFunctionDefinition::ToJavaScript(CFX_WideTextBuf* js,
   *js << "var pfm_ret = null;\n";
   for (const auto& expr : m_pExpressions) {
     ReturnType ret_type = expr == m_pExpressions.back() ? ReturnType::kImplied
-                                                        : ReturnType::kInfered;
+                                                        : ReturnType::kInferred;
     if (!expr->ToJavaScript(js, ret_type))
       return false;
   }
@@ -773,7 +773,7 @@ void CXFA_FMAST::Trace(cppgc::Visitor* visitor) const {
   ContainerTrace(visitor, expressions_);
 }
 
-Optional<CFX_WideTextBuf> CXFA_FMAST::ToJavaScript() const {
+absl::optional<CFX_WideTextBuf> CXFA_FMAST::ToJavaScript() const {
   CFX_WideTextBuf js;
   if (expressions_.empty()) {
     js << "// comments only";
@@ -793,16 +793,18 @@ Optional<CFX_WideTextBuf> CXFA_FMAST::ToJavaScript() const {
   js << "};\n";
   js << "var pfm_ret = null;\n";
   for (const auto& expr : expressions_) {
-    ReturnType ret_type = expr == expressions_.back() ? ReturnType::kImplied
-                                                      : ReturnType::kInfered;
+    CXFA_FMAssignExpression::ReturnType ret_type =
+        expr == expressions_.back()
+            ? CXFA_FMAssignExpression::ReturnType::kImplied
+            : CXFA_FMAssignExpression::ReturnType::kInferred;
     if (!expr->ToJavaScript(&js, ret_type))
-      return pdfium::nullopt;
+      return absl::nullopt;
   }
   js << "return pfm_rt.get_val(pfm_ret);\n";
   js << "}).call(this);";
 
   if (CXFA_IsTooBig(js))
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   return js;
 }
@@ -827,7 +829,7 @@ bool CXFA_FMVarExpression::ToJavaScript(CFX_WideTextBuf* js,
   WideString tempName = IdentifierToName(m_wsName);
   *js << "var " << tempName << " = ";
   if (m_pInit) {
-    if (!m_pInit->ToJavaScript(js, ReturnType::kInfered))
+    if (!m_pInit->ToJavaScript(js, ReturnType::kInferred))
       return false;
 
     *js << ";\n";
@@ -858,8 +860,8 @@ bool CXFA_FMExpExpression::ToJavaScript(CFX_WideTextBuf* js,
   if (CXFA_IsTooBig(*js) || !depthManager.IsWithinMaxDepth())
     return false;
 
-  if (type == ReturnType::kInfered) {
-    bool ret = m_pExpression->ToJavaScript(js, ReturnType::kInfered);
+  if (type == ReturnType::kInferred) {
+    bool ret = m_pExpression->ToJavaScript(js, ReturnType::kInferred);
     if (m_pExpression->GetOperatorToken() != TOKassign)
       *js << ";\n";
 
@@ -875,7 +877,7 @@ bool CXFA_FMExpExpression::ToJavaScript(CFX_WideTextBuf* js,
       m_pExpression->GetOperatorToken() == TOKdotdot ||
       m_pExpression->GetOperatorToken() == TOKdot) {
     *js << "pfm_ret = pfm_rt.get_val(";
-    if (!m_pExpression->ToJavaScript(js, ReturnType::kInfered))
+    if (!m_pExpression->ToJavaScript(js, ReturnType::kInferred))
       return false;
 
     *js << ");\n";
@@ -883,7 +885,7 @@ bool CXFA_FMExpExpression::ToJavaScript(CFX_WideTextBuf* js,
   }
 
   *js << "pfm_ret = ";
-  if (!m_pExpression->ToJavaScript(js, ReturnType::kInfered))
+  if (!m_pExpression->ToJavaScript(js, ReturnType::kInferred))
     return false;
 
   *js << ";\n";
@@ -909,13 +911,13 @@ bool CXFA_FMBlockExpression::ToJavaScript(CFX_WideTextBuf* js,
 
   *js << "{\n";
   for (const auto& expr : m_ExpressionList) {
-    if (type == ReturnType::kInfered) {
-      if (!expr->ToJavaScript(js, ReturnType::kInfered))
+    if (type == ReturnType::kInferred) {
+      if (!expr->ToJavaScript(js, ReturnType::kInferred))
         return false;
     } else {
       ReturnType ret_type = expr == m_ExpressionList.back()
                                 ? ReturnType::kImplied
-                                : ReturnType::kInfered;
+                                : ReturnType::kInferred;
       if (!expr->ToJavaScript(js, ret_type))
         return false;
     }
@@ -976,7 +978,7 @@ bool CXFA_FMIfExpression::ToJavaScript(CFX_WideTextBuf* js,
     *js << "pfm_ret = 0;\n";
 
   *js << "if (pfm_rt.get_val(";
-  if (!m_pExpression->ToJavaScript(js, ReturnType::kInfered))
+  if (!m_pExpression->ToJavaScript(js, ReturnType::kInferred))
     return false;
   *js << "))\n";
 
@@ -992,7 +994,7 @@ bool CXFA_FMIfExpression::ToJavaScript(CFX_WideTextBuf* js,
 
   for (auto& expr : m_pElseIfExpressions) {
     *js << "else ";
-    if (!expr->ToJavaScript(js, ReturnType::kInfered))
+    if (!expr->ToJavaScript(js, ReturnType::kInferred))
       return false;
   }
 
@@ -1027,7 +1029,7 @@ bool CXFA_FMWhileExpression::ToJavaScript(CFX_WideTextBuf* js,
     *js << "pfm_ret = 0;\n";
 
   *js << "while (";
-  if (!m_pCondition->ToJavaScript(js, ReturnType::kInfered))
+  if (!m_pCondition->ToJavaScript(js, ReturnType::kInferred))
     return false;
 
   *js << ")\n";
@@ -1106,20 +1108,20 @@ bool CXFA_FMForExpression::ToJavaScript(CFX_WideTextBuf* js,
   *js << "var " << tmpName << " = null;\n";
 
   *js << "for (" << tmpName << " = pfm_rt.get_val(";
-  if (!m_pAssignment->ToJavaScript(js, ReturnType::kInfered))
+  if (!m_pAssignment->ToJavaScript(js, ReturnType::kInferred))
     return false;
   *js << "); ";
 
   *js << tmpName << (m_bDirection ? kLessEqual : kGreaterEqual);
   *js << "pfm_rt.get_val(";
-  if (!m_pAccessor->ToJavaScript(js, ReturnType::kInfered))
+  if (!m_pAccessor->ToJavaScript(js, ReturnType::kInferred))
     return false;
   *js << "); ";
 
   *js << tmpName << (m_bDirection ? kPlusEqual : kMinusEqual);
   if (m_pStep) {
     *js << "pfm_rt.get_val(";
-    if (!m_pStep->ToJavaScript(js, ReturnType::kInfered))
+    if (!m_pStep->ToJavaScript(js, ReturnType::kInferred))
       return false;
     *js << ")";
   } else {
@@ -1167,7 +1169,7 @@ bool CXFA_FMForeachExpression::ToJavaScript(CFX_WideTextBuf* js,
   *js << "var " << tmpName << " = null;\n";
   *js << "var pfm_ary = pfm_rt.concat_obj(";
   for (const auto& expr : m_pAccessors) {
-    if (!expr->ToJavaScript(js, ReturnType::kInfered))
+    if (!expr->ToJavaScript(js, ReturnType::kInferred))
       return false;
     if (expr != m_pAccessors.back())
       *js << ", ";

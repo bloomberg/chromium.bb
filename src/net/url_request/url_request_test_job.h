@@ -7,9 +7,9 @@
 
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/load_timing_info.h"
-#include "net/base/net_export.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 
@@ -37,7 +37,7 @@ namespace net {
 //
 // Optionally, you can also construct test jobs that advance automatically
 // without having to call ProcessOnePendingMessage.
-class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
+class URLRequestTestJob : public URLRequestJob {
  public:
   // Constructs a job to return one of the canned responses depending on the
   // request url.
@@ -173,7 +173,7 @@ class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
   int offset_;
 
   // Holds the buffer for an asynchronous ReadRawData call
-  IOBuffer* async_buf_;
+  raw_ptr<IOBuffer> async_buf_;
   int async_buf_size_;
 
   LoadTimingInfo load_timing_info_;

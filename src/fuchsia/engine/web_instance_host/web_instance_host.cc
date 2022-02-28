@@ -5,6 +5,7 @@
 #include "fuchsia/engine/web_instance_host/web_instance_host.h"
 
 #include <fuchsia/sys/cpp/fidl.h>
+#include <fuchsia/ui/scenic/cpp/fidl.h>
 #include <lib/async/default.h>
 #include <lib/fdio/directory.h>
 #include <lib/fdio/fd.h>
@@ -21,7 +22,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/base_paths_fuchsia.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -29,11 +29,11 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/process/process.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -43,6 +43,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "components/embedder_support/switches.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
 #include "content/public/common/content_switches.h"
@@ -61,6 +62,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
+#include "ui/display/display_switches.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/ozone/public/ozone_switches.h"
@@ -89,14 +91,11 @@ constexpr char kDisableMixedContentAutoupgradeOrigin[] =
 // is available - see crbug.com/1211174). This should only be called once per
 // process, and the calling thread must have an async_dispatcher.
 void RegisterWebInstanceProductData() {
-  // TODO(fxbug.dev/51490): Use a programmatic mechanism to obtain this.
-  constexpr char kComponentUrl[] =
-      "fuchsia-pkg://fuchsia.com/web_engine#meta/web_instance.cmx";
   constexpr char kCrashProductName[] = "FuchsiaWebEngine";
   constexpr char kFeedbackAnnotationsNamespace[] = "web-engine";
 
-  cr_fuchsia::RegisterProductDataForCrashReporting(kComponentUrl,
-                                                   kCrashProductName);
+  cr_fuchsia::RegisterProductDataForCrashReporting(
+      WebInstanceHost::kComponentUrl, kCrashProductName);
 
   cr_fuchsia::RegisterProductDataForFeedback(kFeedbackAnnotationsNamespace);
 }
@@ -123,20 +122,22 @@ zx::channel ValidateDirectoryAndTakeChannel(
   return directory.Unbind().TakeChannel();
 }
 
-void AppendFeature(base::StringPiece features_flag,
-                   base::StringPiece feature_string,
-                   base::CommandLine* command_line) {
-  if (!command_line->HasSwitch(features_flag)) {
-    command_line->AppendSwitchNative(std::string(features_flag),
-                                     feature_string);
+// Appends |value| to the value of |switch_name| in the |command_line|.
+// The switch is assumed to consist of comma-separated values. If |switch_name|
+// is already set in |command_line| then a comma will be appended, followed by
+// |value|, otherwise the switch will be set to |value|.
+void AppendToSwitch(base::StringPiece switch_name,
+                    base::StringPiece value,
+                    base::CommandLine* command_line) {
+  if (!command_line->HasSwitch(switch_name)) {
+    command_line->AppendSwitchNative(switch_name, value);
     return;
   }
 
-  std::string new_feature_string = base::StrCat(
-      {command_line->GetSwitchValueASCII(features_flag), ",", feature_string});
-  command_line->RemoveSwitch(features_flag);
-  command_line->AppendSwitchNative(std::string(features_flag),
-                                   new_feature_string);
+  std::string new_value = base::StrCat(
+      {command_line->GetSwitchValueASCII(switch_name), ",", value});
+  command_line->RemoveSwitch(switch_name);
+  command_line->AppendSwitchNative(switch_name, new_value);
 }
 
 // File names must not contain directory separators, nor match the special
@@ -170,9 +171,8 @@ bool HandleDataDirectoryParam(fuchsia::web::CreateContextParams* params,
     return false;
   }
 
-  base::FilePath data_path;
-  CHECK(base::PathService::Get(base::DIR_APP_DATA, &data_path));
-  launch_info->flat_namespace->paths.push_back(data_path.value());
+  launch_info->flat_namespace->paths.push_back(
+      base::kPersistedDataDirectoryPath);
   launch_info->flat_namespace->directories.push_back(
       std::move(data_directory_channel));
   if (params->has_data_quota_bytes()) {
@@ -253,12 +253,12 @@ void HandleUnsafelyTreatInsecureOriginsAsSecureParam(
     if (origin == switches::kAllowRunningInsecureContent) {
       launch_args->AppendSwitch(switches::kAllowRunningInsecureContent);
     } else if (origin == kDisableMixedContentAutoupgradeOrigin) {
-      AppendFeature(switches::kDisableFeatures,
-                    kMixedContentAutoupgradeFeatureName, launch_args);
+      AppendToSwitch(switches::kDisableFeatures,
+                     kMixedContentAutoupgradeFeatureName, launch_args);
     } else {
       // Pass the rest of the list to the Context process.
-      AppendFeature(network::switches::kUnsafelyTreatInsecureOriginAsSecure,
-                    origin, launch_args);
+      AppendToSwitch(network::switches::kUnsafelyTreatInsecureOriginAsSecure,
+                     origin, launch_args);
     }
   }
 }
@@ -316,6 +316,49 @@ bool HandleContentDirectoriesParam(fuchsia::web::CreateContextParams* params,
   return true;
 }
 
+bool HandleKeyboardFeatureFlags(fuchsia::web::ContextFeatureFlags features,
+                                base::CommandLine* launch_args) {
+  const bool enable_keyboard =
+      (features & fuchsia::web::ContextFeatureFlags::KEYBOARD) ==
+      fuchsia::web::ContextFeatureFlags::KEYBOARD;
+  const bool enable_virtual_keyboard =
+      (features & fuchsia::web::ContextFeatureFlags::VIRTUAL_KEYBOARD) ==
+      fuchsia::web::ContextFeatureFlags::VIRTUAL_KEYBOARD;
+
+  if (enable_keyboard) {
+    AppendToSwitch(switches::kEnableFeatures, features::kKeyboardInput.name,
+                   launch_args);
+
+    if (enable_virtual_keyboard) {
+      AppendToSwitch(switches::kEnableFeatures, features::kVirtualKeyboard.name,
+                     launch_args);
+    }
+  } else if (enable_virtual_keyboard) {
+    LOG(ERROR) << "VIRTUAL_KEYBOARD feature requires KEYBOARD.";
+    return false;
+  }
+
+  return true;
+}
+
+// Checks the supported ozone platform with Scenic if no arg is specified.
+void HandleOzonePlatformArgs(base::CommandLine* launch_args) {
+  if (launch_args->HasSwitch(switches::kOzonePlatform))
+    return;
+  fuchsia::ui::scenic::ScenicSyncPtr scenic;
+  zx_status_t status =
+      base::ComponentContextForProcess()->svc()->Connect(scenic.NewRequest());
+  if (status != ZX_OK) {
+    ZX_LOG(ERROR, status) << "Couldn't connect to Scenic.";
+    return;
+  }
+
+  bool scenic_uses_flatland = false;
+  scenic->UsesFlatland(&scenic_uses_flatland);
+  launch_args->AppendSwitchNative(switches::kOzonePlatform,
+                                  scenic_uses_flatland ? "flatland" : "scenic");
+}
+
 // Returns false if the config is present but has invalid contents.
 bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
                                        base::CommandLine* command_line) {
@@ -324,10 +367,14 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
     return true;
 
   static const base::StringPiece kAllowedArgs[] = {
+      blink::switches::kSharedArrayBufferAllowedOrigins,
       blink::switches::kGpuRasterizationMSAASampleCount,
       blink::switches::kMinHeightForGpuRasterTile,
       cc::switches::kEnableClippedImageScaling,
       cc::switches::kEnableGpuBenchmarking,
+      embedder_support::kOriginTrialPublicKey,
+      embedder_support::kOriginTrialDisabledFeatures,
+      embedder_support::kOriginTrialDisabledTokens,
       switches::kDisableFeatures,
       switches::kDisableGpuWatchdog,
       switches::kDisableMipmapGeneration,
@@ -335,11 +382,13 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
       switches::kEnableCastStreamingReceiver,
       switches::kEnableFeatures,
       switches::kEnableLowEndDeviceMode,
+      switches::kForceDeviceScaleFactor,
       switches::kForceGpuMemAvailableMb,
       switches::kForceGpuMemDiscardableLimitMb,
       switches::kForceMaxTextureSize,
       switches::kGoogleApiKey,
       switches::kMaxDecodedImageSizeMb,
+      switches::kOzonePlatform,
       switches::kRendererProcessLimit,
       switches::kUseCmdDecoder,
       switches::kV,
@@ -350,7 +399,7 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
       switches::kWebglMSAASampleCount,
   };
 
-  for (const auto& arg : args->DictItems()) {
+  for (const auto arg : args->DictItems()) {
     if (!base::Contains(kAllowedArgs, arg.first)) {
       // TODO(https://crbug.com/1032439): Increase severity and return false
       // once we have a mechanism for soft transitions of supported arguments.
@@ -408,6 +457,7 @@ std::vector<std::string> LoadWebInstanceSandboxServices() {
 }  // namespace
 
 // Production URL for web hosting Component instances.
+// TODO(fxbug.dev/51490): Use a programmatic mechanism to obtain this.
 const char WebInstanceHost::kComponentUrl[] =
     "fuchsia-pkg://fuchsia.com/web_engine#meta/web_instance.cmx";
 
@@ -548,10 +598,11 @@ zx_status_t WebInstanceHost::CreateInstanceForContext(
 
   if (use_overlays_for_video) {
     // Overlays are only available if OutputPresenterFuchsia is in use.
-    AppendFeature(switches::kEnableFeatures,
-                  features::kUseSkiaOutputDeviceBufferQueue.name, &launch_args);
-    AppendFeature(switches::kEnableFeatures,
-                  features::kUseRealBuffersForPageFlipTest.name, &launch_args);
+    AppendToSwitch(switches::kEnableFeatures,
+                   features::kUseSkiaOutputDeviceBufferQueue.name,
+                   &launch_args);
+    AppendToSwitch(switches::kEnableFeatures,
+                   features::kUseRealBuffersForPageFlipTest.name, &launch_args);
     launch_args.AppendSwitchASCII(switches::kEnableHardwareOverlays,
                                   "underlay");
     launch_args.AppendSwitch(switches::kUseOverlaysForVideo);
@@ -566,14 +617,8 @@ zx_status_t WebInstanceHost::CreateInstanceForContext(
     VLOG(1) << "Enabling Vulkan GPU acceleration.";
     // Vulkan requires use of SkiaRenderer, configured to a use Vulkan context.
     launch_args.AppendSwitch(switches::kUseVulkan);
-    const std::vector<base::StringPiece> enabled_features = {
-        features::kUseSkiaRenderer.name, features::kVulkan.name};
-    AppendFeature(switches::kEnableFeatures,
-                  base::JoinString(enabled_features, ","), &launch_args);
-
-    // SkiaRenderer requires out-of-process rasterization be enabled.
-    launch_args.AppendSwitch(switches::kEnableOopRasterization);
-
+    AppendToSwitch(switches::kEnableFeatures, features::kVulkan.name,
+                   &launch_args);
     launch_args.AppendSwitchASCII(switches::kUseGL,
                                   gl::kGLImplementationANGLEName);
   } else {
@@ -630,8 +675,8 @@ zx_status_t WebInstanceHost::CreateInstanceForContext(
       return ZX_ERR_INVALID_ARGS;
     }
 
-    AppendFeature(switches::kDisableFeatures,
-                  features::kEnableSoftwareOnlyVideoCodecs.name, &launch_args);
+    AppendToSwitch(switches::kDisableFeatures,
+                   features::kEnableSoftwareOnlyVideoCodecs.name, &launch_args);
   }
 
   if (!HandleCdmDataDirectoryParam(&params, &launch_args, &launch_info)) {
@@ -646,8 +691,13 @@ zx_status_t WebInstanceHost::CreateInstanceForContext(
   if (!HandleUserAgentParams(&params, &launch_args)) {
     return ZX_ERR_INVALID_ARGS;
   }
+  if (!HandleKeyboardFeatureFlags(features, &launch_args)) {
+    return ZX_ERR_INVALID_ARGS;
+  }
+
   HandleUnsafelyTreatInsecureOriginsAsSecureParam(&params, &launch_args);
   HandleCorsExemptHeadersParam(&params, &launch_args);
+  HandleOzonePlatformArgs(&launch_args);
 
   // Set the command-line flag to enable DevTools, if requested.
   if (enable_remote_debug_mode_)

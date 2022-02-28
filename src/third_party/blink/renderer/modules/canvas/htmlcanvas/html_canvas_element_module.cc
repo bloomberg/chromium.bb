@@ -13,13 +13,12 @@
 
 namespace blink {
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 V8RenderingContext* HTMLCanvasElementModule::getContext(
     HTMLCanvasElement& canvas,
     const String& context_id,
     const CanvasContextCreationAttributesModule* attributes,
     ExceptionState& exception_state) {
-  if (canvas.SurfaceLayerBridge() && !canvas.LowLatencyEnabled()) {
+  if (canvas.IsOffscreenCanvasRegistered() && !canvas.LowLatencyEnabled()) {
     // The existence of canvas surfaceLayerBridge indicates that
     // HTMLCanvasElement.transferControlToOffscreen() has been called.
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -40,41 +39,20 @@ V8RenderingContext* HTMLCanvasElementModule::getContext(
     return nullptr;
   return context->AsV8RenderingContext();
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-void HTMLCanvasElementModule::getContext(
-    HTMLCanvasElement& canvas,
-    const String& type,
-    const CanvasContextCreationAttributesModule* attributes,
-    RenderingContext& result,
-    ExceptionState& exception_state) {
-  if (canvas.SurfaceLayerBridge() && !canvas.LowLatencyEnabled()) {
-    // The existence of canvas surfaceLayerBridge indicates that
-    // HTMLCanvasElement.transferControlToOffscreen() has been called.
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Cannot get context from a canvas that "
-                                      "has transferred its control to "
-                                      "offscreen.");
-    return;
-  }
-
-  CanvasContextCreationAttributesCore canvas_context_creation_attributes;
-  if (!ToCanvasContextCreationAttributes(
-          attributes, canvas_context_creation_attributes, exception_state)) {
-    return;
-  }
-  CanvasRenderingContext* context = canvas.GetCanvasRenderingContext(
-      type, canvas_context_creation_attributes);
-  if (context)
-    context->SetCanvasGetContextResult(result);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreen(
     ExecutionContext* execution_context,
     HTMLCanvasElement& canvas,
     ExceptionState& exception_state) {
+  if (canvas.RenderingContext()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Cannot transfer control from a canvas that has a rendering context.");
+    return nullptr;
+  }
+
   OffscreenCanvas* offscreen_canvas = nullptr;
-  if (canvas.SurfaceLayerBridge()) {
+  if (canvas.IsOffscreenCanvasRegistered()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "Cannot transfer control from a canvas for more than one time.");
@@ -93,12 +71,6 @@ OffscreenCanvas* HTMLCanvasElementModule::TransferControlToOffscreenInternal(
     ExecutionContext* execution_context,
     HTMLCanvasElement& canvas,
     ExceptionState& exception_state) {
-  if (canvas.RenderingContext()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Cannot transfer control from a canvas that has a rendering context.");
-    return nullptr;
-  }
   OffscreenCanvas* offscreen_canvas = OffscreenCanvas::Create(
       execution_context, canvas.width(), canvas.height());
   offscreen_canvas->SetFilterQuality(canvas.FilterQuality());
@@ -114,4 +86,5 @@ OffscreenCanvas* HTMLCanvasElementModule::TransferControlToOffscreenInternal(
   }
   return offscreen_canvas;
 }
+
 }  // namespace blink

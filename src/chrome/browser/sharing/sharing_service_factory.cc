@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharing/click_to_call/phone_number_regex.h"
 #include "chrome/browser/sharing/sharing_constants.h"
@@ -26,7 +27,7 @@
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "chrome/browser/sharing/web_push/web_push_sender.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "components/gcm_driver/gcm_driver.h"
@@ -77,7 +78,8 @@ SharingServiceFactory::SharingServiceFactory()
   DependsOn(gcm::GCMProfileServiceFactory::GetInstance());
   DependsOn(instance_id::InstanceIDProfileServiceFactory::GetInstance());
   DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
-  DependsOn(ProfileSyncServiceFactory::GetInstance());
+  DependsOn(OptimizationGuideKeyedServiceFactory::GetInstance());
+  DependsOn(SyncServiceFactory::GetInstance());
   DependsOn(SharingMessageBridgeFactory::GetInstance());
 }
 
@@ -87,13 +89,12 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
+      SyncServiceFactory::GetForProfile(profile);
 
   if (!sync_service)
     return nullptr;
 
 #if BUILDFLAG(ENABLE_CLICK_TO_CALL)
-  // TODO(knollr): Find a better place for this.
   PrecompilePhoneNumberRegexesAsync();
 #endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
 

@@ -9,10 +9,25 @@
  * NOTE: This module depends on I18nBehavior which depends on loadTimeData.
  */
 
+import '../../../cr_elements/cr_button/cr_button.m.js';
+import '../../../cr_elements/cr_dialog/cr_dialog.m.js';
+import '../../../cr_elements/cr_input/cr_input.m.js';
+import '../../../cr_elements/hidden_style_css.m.js';
+import '../../../js/cr.m.js';
+import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '//resources/polymer/v3_0/iron-list/iron-list.js';
+
+import {html, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {assert} from '../../../js/assert.m.js';
+import {I18nBehavior} from '../../../js/i18n_behavior.m.js';
+
 const PairingEventType = chrome.bluetoothPrivate.PairingEventType;
 
 Polymer({
   is: 'bluetooth-dialog',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [I18nBehavior],
 
@@ -200,8 +215,8 @@ Polymer({
     let id = 'bluetooth_connect_' + error;
     if (!this.i18nExists(id)) {
       console.error(
-          'Unexpected error connecting to:', name, 'error:', error,
-          'result:', result);
+          'Unexpected error connecting to bluetooth device. Error:', error,
+          ' result:', result);
       id = 'bluetooth_connect_failed';
     }
     this.errorMessage_ = this.i18n(id, name);

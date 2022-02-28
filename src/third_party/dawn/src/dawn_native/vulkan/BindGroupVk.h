@@ -26,9 +26,6 @@ namespace dawn_native { namespace vulkan {
 
     class Device;
 
-    // The Vulkan BindGroup is dependent on UseTintGenerator or not.
-    // When UseTintGenerator is on, VkWriteDescriptorSet::dstBinding is set to BindingIndex,
-    // otherwise it is set to BindingNumber.
     class BindGroup final : public BindGroupBase, public PlacementAllocated {
       public:
         static ResultOrError<Ref<BindGroup>> Create(Device* device,
@@ -42,6 +39,11 @@ namespace dawn_native { namespace vulkan {
 
       private:
         ~BindGroup() override;
+
+        void DestroyImpl() override;
+
+        // Dawn API
+        void SetLabelImpl() override;
 
         // The descriptor set in this allocation outlives the BindGroup because it is owned by
         // the BindGroupLayout which is referenced by the BindGroup.
