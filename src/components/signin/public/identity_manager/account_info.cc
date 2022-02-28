@@ -42,6 +42,16 @@ bool UpdateField(bool* field, bool new_value) {
   return true;
 }
 
+// Updates |field| with |new_value| if true. Returns whether |field| was
+// changed.
+bool UpdateField(signin::Tribool* field, signin::Tribool new_value) {
+  if (*field == new_value || new_value == signin::Tribool::kUnknown)
+    return false;
+
+  *field = new_value;
+  return true;
+}
+
 }  // namespace
 
 // This must be a string which can never be a valid domain.
@@ -110,6 +120,7 @@ bool AccountInfo::UpdateWith(const AccountInfo& other) {
   modified |= UpdateField(&is_child_account, other.is_child_account);
   modified |= UpdateField(&is_under_advanced_protection,
                           other.is_under_advanced_protection);
+  modified |= capabilities.UpdateWith(other.capabilities);
 
   return modified;
 }

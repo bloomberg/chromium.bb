@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.view.View;
 import android.view.Window;
 
 import androidx.annotation.Nullable;
@@ -14,6 +15,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -27,7 +29,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
-import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
@@ -58,9 +59,13 @@ public class AutofillAssistantUiController {
 
     private final ChromeActivity mActivity;
     private final AssistantCoordinator mCoordinator;
+    private final AssistantDependencies mDependencies;
     private final ActivityTabProvider.ActivityTabTabObserver mActivityTabObserver;
     private WebContents mWebContents;
-    private SnackbarController mSnackbarController;
+
+    private final AssistantSnackbarFactory mSnackbarFactory;
+    @Nullable
+    private AssistantSnackbar mSnackbar;
 
     /**
      * Getter for the current profile while assistant is running. Since autofill assistant is only
@@ -109,7 +114,7 @@ public class AutofillAssistantUiController {
 
     @CalledByNative
     private static AutofillAssistantUiController create(ChromeActivity activity,
-            boolean allowTabSwitching, long nativeUiController,
+            boolean allowTabSwitching, long nativeUiController, AssistantDependencies dependencies,
             @Nullable AssistantOverlayCoordinator overlayCoordinator) {
         BottomSheetController sheetController =
                 BottomSheetControllerProvider.from(activity.getWindowAndroid());
@@ -125,101 +130,119 @@ public class AutofillAssistantUiController {
         //         than obtaining them from ChromeActivity getters.
         return new AutofillAssistantUiController(activity, sheetController,
                 activity.getTabObscuringHandler(), allowTabSwitching, nativeUiController,
-                overlayCoordinator);
+                dependencies, overlayCoordinator);
     }
 
     private AutofillAssistantUiController(ChromeActivity activity, BottomSheetController controller,
             TabObscuringHandler tabObscuringHandler, boolean allowTabSwitching,
-            long nativeUiController, @Nullable AssistantOverlayCoordinator overlayCoordinator) {
+            long nativeUiController, AssistantDependencies dependencies,
+            @Nullable AssistantOverlayCoordinator overlayCoordinator) {
         mNativeUiController = nativeUiController;
         mActivity = activity;
+        mDependencies = dependencies;
+        Supplier<View> rootView = activity.getCompositorViewHolderSupplier();
+        mSnackbarFactory = dependencies.getSnackbarFactory();
+
         mCoordinator = new AssistantCoordinator(activity, controller, tabObscuringHandler,
-                overlayCoordinator, this::safeNativeOnKeyboardVisibilityChanged);
-        mActivityTabObserver =
-                new ActivityTabProvider.ActivityTabTabObserver(
-                        activity.getActivityTabProvider(), /* shouldTrigger = */ true) {
-                    @Override
-                    protected void onObservingDifferentTab(Tab tab, boolean hint) {
-                        if (mWebContents == null) {
-                            if (!hint) {
-                                // This particular scenario would happen only if we're switching
-                                // from a tab with no Autofill Assistant running to a tab with AA
-                                // running with no tab switching hinting (i.e. a first notification
-                                // with |hint| set to true).
-                                // In this case the native side is not yet fully initialized, so we
-                                // need to wait for the web contents to be set from native before
-                                // notifying native that the tab was selected.
-                                setWebContentObserver(tab);
-                            }
-                            return;
-                        }
+                overlayCoordinator, this::safeNativeOnKeyboardVisibilityChanged,
+                activity.getWindowAndroid().getKeyboardDelegate(), rootView.get(),
+                activity.getActivityTabProvider(), activity.getBrowserControlsManager(),
+                activity.getWindowAndroid().getApplicationBottomInsetProvider(),
+                dependencies.getAccessibilityUtil());
+        mActivityTabObserver = new ActivityTabProvider.ActivityTabTabObserver(
+                activity.getActivityTabProvider(), /* shouldTrigger = */ true) {
+            @Override
+            protected void onObservingDifferentTab(Tab tab, boolean hint) {
+                if (mWebContents == null) {
+                    if (!hint) {
+                        // This particular scenario would happen only if we're switching
+                        // from a tab with no Autofill Assistant running to a tab with AA
+                        // running with no tab switching hinting (i.e. a first notification
+                        // with |hint| set to true).
+                        // In this case the native side is not yet fully initialized, so we
+                        // need to wait for the web contents to be set from native before
+                        // notifying native that the tab was selected.
+                        setWebContentObserver(tab);
+                    }
+                    return;
+                }
 
-                        if (!allowTabSwitching) {
-                            if (tab == null || tab.getWebContents() != mWebContents) {
-                                safeNativeOnFatalError(
-                                        activity.getString(R.string.autofill_assistant_give_up),
-                                        DropOutReason.TAB_CHANGED);
-                            }
-                            return;
-                        }
+                if (!allowTabSwitching) {
+                    if (tab == null || tab.getWebContents() != mWebContents) {
+                        safeNativeOnFatalError(
+                                activity.getString(R.string.autofill_assistant_give_up),
+                                DropOutReason.TAB_CHANGED);
+                    }
+                    return;
+                }
 
-                        // Get rid of any undo snackbars right away before switching tabs, to avoid
-                        // confusion.
-                        dismissSnackbar();
+                // Get rid of any undo snackbars right away before switching tabs, to avoid
+                // confusion.
+                dismissSnackbar();
 
-                        if (tab == null) {
-                            safeOnTabSwitched(getModel().getBottomSheetState(),
-                                    /* activityChanged = */ false);
-                            // A null tab indicates that there's no selected tab; Most likely, we're
-                            // in the process of selecting a new tab. Hide the UI for possible reuse
-                            // later.
-                            safeNativeSetVisible(false);
-                        } else if (tab.getWebContents() == mWebContents) {
-                            // The original tab was re-selected. Show it again and force an
-                            // expansion on the bottom sheet.
-                            if (!hint) {
-                                // Here and below, we're only interested in restoring the UI for the
-                                // case where hint is false, meaning that the tab is shown. This is
-                                // the only way to be sure that the bottomsheet is unsuppressed when
-                                // we try to restore the status to what it was prior to switching.
-                                safeOnTabSelected();
-                            }
-                        } else {
-                            //
-                            safeOnTabSwitched(getModel().getBottomSheetState(),
-                                    /* activityChanged = */ false);
-                            // A new tab was selected. If Autofill Assistant is running on it,
-                            // attach the UI to that other instance, otherwise destroy the UI.
-                            AutofillAssistantClient.fromWebContents(mWebContents)
-                                    .transferUiTo(tab.getWebContents());
-                            if (!hint) {
-                                safeOnTabSelected();
-                            }
-                        }
+                if (tab == null) {
+                    safeOnTabSwitched(getModel().getBottomSheetState(),
+                            /* activityChanged = */ false);
+                    // A null tab indicates that there's no selected tab; Most likely, we're
+                    // in the process of selecting a new tab. Hide the UI for possible reuse
+                    // later.
+                    safeNativeSetVisible(false);
+                } else if (tab.getWebContents() == mWebContents) {
+                    // The original tab was re-selected. Show it again and force an
+                    // expansion on the bottom sheet.
+                    if (!hint) {
+                        // Here and below, we're only interested in restoring the UI for the
+                        // case where hint is false, meaning that the tab is shown. This is
+                        // the only way to be sure that the bottomsheet is unsuppressed when
+                        // we try to restore the status to what it was prior to switching.
+                        safeOnTabSelected();
+                    }
+                } else {
+                    //
+                    safeOnTabSwitched(getModel().getBottomSheetState(),
+                            /* activityChanged = */ false);
+                    // A new tab was selected. If Autofill Assistant is running on it,
+                    // attach the UI to that other instance, otherwise destroy the UI.
+                    @Nullable
+                    AutofillAssistantClient client =
+                            AutofillAssistantClient.fromWebContents(mWebContents);
+                    if (client != null) {
+                        client.transferUiTo(tab.getWebContents());
                     }
 
-                    @Override
-                    public void onActivityAttachmentChanged(
-                            Tab tab, @Nullable WindowAndroid window) {
-                        if (mWebContents == null) return;
-
-                        if (window == null && tab.getWebContents() == mWebContents) {
-                            if (!allowTabSwitching) {
-                                safeNativeStop(DropOutReason.TAB_DETACHED);
-                                return;
-                            }
-
-                            safeOnTabSwitched(
-                                    getModel().getBottomSheetState(), /* activityChanged = */ true);
-                            // If we have an open snackbar, execute the callback immediately. This
-                            // may shut down the Autofill Assistant.
-                            if (mSnackbarController != null) {
-                                mSnackbarController.onDismissNoAction(/* actionData= */ null);
-                            }
-                            AutofillAssistantClient.fromWebContents(mWebContents).destroyUi();
-                        }
+                    if (!hint) {
+                        safeOnTabSelected();
                     }
-                };
+                }
+            }
+
+            @Override
+            public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+                if (mWebContents == null) return;
+
+                if (window == null && tab.getWebContents() == mWebContents) {
+                    if (!allowTabSwitching) {
+                        safeNativeStop(DropOutReason.TAB_DETACHED);
+                        return;
+                    }
+
+                    safeOnTabSwitched(
+                            getModel().getBottomSheetState(), /* activityChanged = */ true);
+                    // If we have an open snackbar, execute the callback immediately. This
+                    // may shut down the Autofill Assistant.
+                    if (mSnackbar != null) {
+                        safeSnackbarResult(false);
+                    }
+
+                    @Nullable
+                    AutofillAssistantClient client =
+                            AutofillAssistantClient.fromWebContents(mWebContents);
+                    if (client != null) {
+                        client.destroyUi();
+                    }
+                }
+            }
+        };
     }
 
     private void setWebContentObserver(Tab tab) {
@@ -255,6 +278,11 @@ public class AutofillAssistantUiController {
     @CalledByNative
     private AssistantModel getModel() {
         return mCoordinator.getModel();
+    }
+
+    @CalledByNative
+    private AssistantDependencies getDependencies() {
+        return mDependencies;
     }
 
     @CalledByNative
@@ -318,15 +346,16 @@ public class AutofillAssistantUiController {
     }
 
     @CalledByNative
-    private void showSnackbar(int delayMs, String message) {
-        mSnackbarController = AssistantSnackbar.show(mActivity, mActivity.getSnackbarManager(),
-                delayMs, message, this::safeSnackbarResult);
+    private void showSnackbar(int delayMs, String message, String undoString) {
+        mSnackbar = mSnackbarFactory.createSnackbar(
+                delayMs, message, undoString, this::safeSnackbarResult);
+        mSnackbar.show();
     }
 
     private void dismissSnackbar() {
-        if (mSnackbarController != null) {
-            mActivity.getSnackbarManager().dismissSnackbars(mSnackbarController);
-            mSnackbarController = null;
+        if (mSnackbar != null) {
+            mSnackbar.dismiss();
+            mSnackbar = null;
         }
     }
 
@@ -460,11 +489,11 @@ public class AutofillAssistantUiController {
 
     // Native methods.
     private void safeSnackbarResult(boolean undo) {
-        if (mSnackbarController != null && mNativeUiController != 0) {
+        if (mSnackbar != null && mNativeUiController != 0) {
             AutofillAssistantUiControllerJni.get().snackbarResult(
                     mNativeUiController, AutofillAssistantUiController.this, undo);
-            mSnackbarController = null;
         }
+        mSnackbar = null;
     }
 
     private void safeNativeStop(@DropOutReason int reason) {

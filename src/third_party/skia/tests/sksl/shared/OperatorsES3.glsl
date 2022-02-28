@@ -2,6 +2,7 @@
 out vec4 sk_FragColor;
 uniform vec4 colorGreen;
 uniform vec4 colorRed;
+uniform float unknownInput;
 vec4 main() {
     float x = 1.0;
     float y = 2.0;
@@ -21,5 +22,7 @@ vec4 main() {
     x = 6.0;
     y = 6.0;
     z = 6;
-    return (x == 6.0 && y == 6.0) && z == 6 ? colorGreen : colorRed;
+    ivec2 w = ivec2(~5);
+    w = ~w;
+    return (((w.x == 5 && w.y == 5) && x == 6.0) && y == 6.0) && z == 6 ? colorGreen : colorRed;
 }

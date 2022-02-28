@@ -17,12 +17,12 @@
 #include "base/callback_helpers.h"
 #include "base/containers/stack.h"
 #include "base/json/json_reader.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/browser/prerender/prerender_host_registry.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -155,7 +155,7 @@ RenderFrameHost* CreateSubframe(WebContentsImpl* web_contents,
   subframe_created_observer.Wait();
   if (wait_for_navigation)
     subframe_nav_observer.Wait();
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
   return root->child_at(root->child_count() - 1)->current_frame_host();
 }
 
@@ -195,18 +195,25 @@ CollectAllRenderFrameHostsIncludingSpeculative(WebContentsImpl* web_contents) {
 }
 
 Shell* OpenBlankWindow(WebContentsImpl* web_contents) {
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
   ShellAddedObserver new_shell_observer;
   EXPECT_TRUE(ExecJs(root, "last_opened_window = window.open()"));
   Shell* new_shell = new_shell_observer.GetShell();
   EXPECT_NE(new_shell->web_contents(), web_contents);
-  EXPECT_FALSE(
-      new_shell->web_contents()->GetController().GetLastCommittedEntry());
+  if (blink::features::IsInitialNavigationEntryEnabled()) {
+    EXPECT_TRUE(new_shell->web_contents()
+                    ->GetController()
+                    .GetLastCommittedEntry()
+                    ->IsInitialEntry());
+    EXPECT_EQ(1, new_shell->web_contents()->GetController().GetEntryCount());
+  } else {
+    EXPECT_EQ(0, new_shell->web_contents()->GetController().GetEntryCount());
+  }
   return new_shell;
 }
 
 Shell* OpenWindow(WebContentsImpl* web_contents, const GURL& url) {
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
   ShellAddedObserver new_shell_observer;
   EXPECT_TRUE(
       ExecJs(root, JsReplace("last_opened_window = window.open($1)", url)));
@@ -306,9 +313,11 @@ std::string FrameTreeVisualizer::DepictFrameTree(FrameTreeNode* root) {
         line = "  |--";
       else
         line = "  +--";
-      for (FrameTreeNode* up = node->parent()->frame_tree_node(); up != root;
-           up = FrameTreeNode::From(up->parent())) {
-        if (up->parent()->child_at(up->parent()->child_count() - 1) != up)
+      for (RenderFrameHostImpl* up = node->parent();
+           up != root->current_frame_host(); up = up->GetParent()) {
+        if (up->GetParent()
+                ->child_at(up->GetParent()->child_count() - 1)
+                ->current_frame_host() != up)
           line = "  |  " + line;
         else
           line = "     " + line;
@@ -474,12 +483,10 @@ bool FrameTestNavigationManager::ShouldMonitorNavigation(
 
 UrlCommitObserver::UrlCommitObserver(FrameTreeNode* frame_tree_node,
                                      const GURL& url)
-    : content::WebContentsObserver(frame_tree_node->current_frame_host()
-                                       ->delegate()
-                                       ->GetAsWebContents()),
+    : content::WebContentsObserver(WebContents::FromRenderFrameHost(
+          frame_tree_node->current_frame_host())),
       frame_tree_node_id_(frame_tree_node->frame_tree_node_id()),
-      url_(url) {
-}
+      url_(url) {}
 
 UrlCommitObserver::~UrlCommitObserver() {}
 
@@ -548,8 +555,10 @@ blink::mojom::PopupWidgetHost* ShowPopupWidgetWaiter::GetForwardingInterface() {
 }
 
 void ShowPopupWidgetWaiter::ShowPopup(const gfx::Rect& initial_rect,
+                                      const gfx::Rect& initial_anchor_rect,
                                       ShowPopupCallback callback) {
-  GetForwardingInterface()->ShowPopup(initial_rect, std::move(callback));
+  GetForwardingInterface()->ShowPopup(initial_rect, initial_anchor_rect,
+                                      std::move(callback));
   initial_rect_ = initial_rect;
   run_loop_.Quit();
 }
@@ -747,7 +756,7 @@ void DevToolsInspectorLogWatcher::FlushAndStopWatching() {
 
 FrameNavigateParamsCapturer::FrameNavigateParamsCapturer(FrameTreeNode* node)
     : WebContentsObserver(
-          node->current_frame_host()->delegate()->GetAsWebContents()),
+          WebContents::FromRenderFrameHost(node->current_frame_host())),
       frame_tree_node_id_(node->frame_tree_node_id()) {}
 
 FrameNavigateParamsCapturer::~FrameNavigateParamsCapturer() = default;
@@ -829,13 +838,13 @@ BackForwardCache::DisabledReason RenderFrameHostDisabledForTestingReason() {
   return reason;
 }
 
-void DisableForRenderFrameHostForTesting(
+void DisableBFCacheForRFHForTesting(
     content::RenderFrameHost* render_frame_host) {
   content::BackForwardCache::DisableForRenderFrameHost(
       render_frame_host, RenderFrameHostDisabledForTestingReason());
 }
 
-void DisableForRenderFrameHostForTesting(content::GlobalFrameRoutingId id) {
+void DisableBFCacheForRFHForTesting(content::GlobalRenderFrameHostId id) {
   content::BackForwardCache::DisableForRenderFrameHost(
       id, RenderFrameHostDisabledForTestingReason());
 }
@@ -844,6 +853,67 @@ void UserAgentInjector::DidStartNavigation(
     NavigationHandle* navigation_handle) {
   web_contents()->SetUserAgentOverride(user_agent_override_, false);
   navigation_handle->SetIsOverridingUserAgent(is_overriding_user_agent_);
+}
+
+RenderFrameHostImplWrapper::RenderFrameHostImplWrapper(RenderFrameHost* rfh)
+    : RenderFrameHostWrapper(rfh) {}
+
+RenderFrameHostImpl* RenderFrameHostImplWrapper::get() const {
+  return static_cast<RenderFrameHostImpl*>(RenderFrameHostWrapper::get());
+}
+
+RenderFrameHostImpl& RenderFrameHostImplWrapper::operator*() const {
+  DCHECK(get());
+  return *get();
+}
+
+RenderFrameHostImpl* RenderFrameHostImplWrapper::operator->() const {
+  DCHECK(get());
+  return get();
+}
+
+InactiveRenderFrameHostDeletionObserver::
+    InactiveRenderFrameHostDeletionObserver(WebContents* content)
+    : WebContentsObserver(content) {}
+
+InactiveRenderFrameHostDeletionObserver::
+    ~InactiveRenderFrameHostDeletionObserver() = default;
+
+void InactiveRenderFrameHostDeletionObserver::Wait() {
+  // Some RenderFrameHost may remain in the BackForwardCache and or as
+  // prerendered pages. Trigger deletion for them asynchronously.
+  static_cast<WebContentsImpl*>(web_contents())
+      ->GetController()
+      .GetBackForwardCache()
+      .Flush();
+  if (blink::features::IsPrerender2Enabled()) {
+    static_cast<WebContentsImpl*>(web_contents())
+        ->GetPrerenderHostRegistry()
+        ->CancelAllHostsForTesting();
+  }
+
+  for (RenderFrameHost* rfh : CollectAllRenderFrameHosts(web_contents())) {
+    // Keep track of all currently inactive RenderFrameHosts so that we can wait
+    // for all of them to be deleted.
+    if (!rfh->IsActive() && rfh->IsRenderFrameLive())
+      inactive_rfhs_.insert(rfh);
+  }
+  loop_ = std::make_unique<base::RunLoop>();
+  CheckCondition();
+  loop_->Run();
+}
+
+void InactiveRenderFrameHostDeletionObserver::RenderFrameDeleted(
+    RenderFrameHost* rfh) {
+  if (inactive_rfhs_.count(rfh) == 0)
+    return;
+  inactive_rfhs_.erase(rfh);
+  CheckCondition();
+}
+
+void InactiveRenderFrameHostDeletionObserver::CheckCondition() {
+  if (loop_ && inactive_rfhs_.empty())
+    loop_->Quit();
 }
 
 }  // namespace content

@@ -33,11 +33,14 @@ std::string GetCtorLogString(media::AudioManager* audio_manager,
 OutputStream::OutputStream(
     CreatedCallback created_callback,
     DeleteCallback delete_callback,
+    ManagedDeviceOutputStreamCreateCallback
+        managed_device_output_stream_create_callback,
     mojo::PendingReceiver<media::mojom::AudioOutputStream> stream_receiver,
     mojo::PendingAssociatedRemote<media::mojom::AudioOutputStreamObserver>
         observer,
     mojo::PendingRemote<media::mojom::AudioLog> log,
     media::AudioManager* audio_manager,
+    OutputStreamActivityMonitor* activity_monitor,
     const std::string& output_device_id,
     const media::AudioParameters& params,
     LoopbackCoordinator* coordinator,
@@ -54,7 +57,13 @@ OutputStream::OutputStream(
                    : base::DoNothing(),
               params,
               &foreign_socket_),
-      controller_(audio_manager, this, params, output_device_id, &reader_),
+      controller_(audio_manager,
+                  this,
+                  activity_monitor,
+                  params,
+                  output_device_id,
+                  &reader_,
+                  std::move(managed_device_output_stream_create_callback)),
       loopback_group_id_(loopback_group_id) {
   DCHECK(receiver_.is_bound());
   DCHECK(created_callback);
@@ -148,7 +157,7 @@ void OutputStream::SetVolume(double volume) {
                                       volume);
 
   if (volume < 0 || volume > 1) {
-    mojo::ReportBadMessage("Invalid volume");
+    receiver_.ReportBadMessage("Invalid volume");
     OnControllerError();
     return;
   }
@@ -191,11 +200,9 @@ void OutputStream::OnControllerPlaying() {
   if (OutputController::will_monitor_audio_levels()) {
     DCHECK(!poll_timer_.IsRunning());
     // base::Unretained is safe because |this| owns |poll_timer_|.
-    poll_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromSeconds(1) / kPowerMeasurementsPerSecond,
-        base::BindRepeating(&OutputStream::PollAudioLevel,
-                            base::Unretained(this)));
+    poll_timer_.Start(FROM_HERE, base::Seconds(1) / kPowerMeasurementsPerSecond,
+                      base::BindRepeating(&OutputStream::PollAudioLevel,
+                                          base::Unretained(this)));
     return;
   }
 

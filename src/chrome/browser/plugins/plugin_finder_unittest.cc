@@ -6,17 +6,19 @@
 
 #include "base/values.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::DictionaryValue;
-using base::ListValue;
+using ::base::DictionaryValue;
+using ::base::ListValue;
+using ::testing::Optional;
 
 TEST(PluginFinderTest, JsonSyntax) {
   std::unique_ptr<base::DictionaryValue> plugin_list =
       PluginFinder::LoadBuiltInPluginList();
   ASSERT_TRUE(plugin_list);
-  std::unique_ptr<base::Value> version;
-  ASSERT_TRUE(plugin_list->Remove("x-version", &version));
+  absl::optional<base::Value> version = plugin_list->ExtractKey("x-version");
+  ASSERT_TRUE(version.has_value());
   EXPECT_EQ(base::Value::Type::INTEGER, version->type());
 
   for (base::DictionaryValue::Iterator plugin_it(*plugin_list);
@@ -24,7 +26,6 @@ TEST(PluginFinderTest, JsonSyntax) {
     const base::DictionaryValue* plugin = NULL;
     ASSERT_TRUE(plugin_it.value().GetAsDictionary(&plugin));
     std::string dummy_str;
-    bool dummy_bool;
     if (plugin->HasKey("lang"))
       EXPECT_TRUE(plugin->GetString("lang", &dummy_str));
     if (plugin->HasKey("url"))
@@ -32,13 +33,11 @@ TEST(PluginFinderTest, JsonSyntax) {
     EXPECT_TRUE(plugin->GetString("name", &dummy_str));
     if (plugin->HasKey("help_url"))
       EXPECT_TRUE(plugin->GetString("help_url", &dummy_str));
-    bool display_url = false;
     if (plugin->HasKey("displayurl")) {
-      EXPECT_TRUE(plugin->GetBoolean("displayurl", &display_url));
-      EXPECT_TRUE(display_url);
+      EXPECT_THAT(plugin->FindBoolKey("displayurl"), Optional(true));
     }
     if (plugin->HasKey("requires_authorization"))
-      EXPECT_TRUE(plugin->GetBoolean("requires_authorization", &dummy_bool));
+      EXPECT_TRUE(plugin->FindBoolKey("requires_authorization").has_value());
     const base::ListValue* mime_types = NULL;
     if (plugin->GetList("mime_types", &mime_types)) {
       for (const auto& mime_type : mime_types->GetList()) {
@@ -57,9 +56,9 @@ TEST(PluginFinderTest, JsonSyntax) {
     if (!plugin->GetList("versions", &versions))
       continue;
 
-    for (const auto& version : versions->GetList()) {
+    for (const auto& version_value : versions->GetList()) {
       const base::DictionaryValue* version_dict = nullptr;
-      ASSERT_TRUE(version.GetAsDictionary(&version_dict));
+      ASSERT_TRUE(version_value.GetAsDictionary(&version_dict));
       EXPECT_TRUE(version_dict->GetString("version", &dummy_str));
       std::string status_str;
       EXPECT_TRUE(version_dict->GetString("status", &status_str));

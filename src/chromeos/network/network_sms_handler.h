@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -41,11 +40,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkSmsHandler
     virtual void MessageReceived(const base::Value& message) = 0;
   };
 
+  NetworkSmsHandler(const NetworkSmsHandler&) = delete;
+  NetworkSmsHandler& operator=(const NetworkSmsHandler&) = delete;
+
   ~NetworkSmsHandler() override;
 
-  // Requests an immediate check for new messages. If |request_existing| is
-  // true then also requests to be notified for any already received messages.
-  void RequestUpdate(bool request_existing);
+  // Requests an immediate check for new messages.
+  void RequestUpdate();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -90,12 +91,16 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkSmsHandler
   void DevicePropertiesCallback(const std::string& device_path,
                                 absl::optional<base::Value> properties);
 
-  base::ObserverList<Observer, true>::Unchecked observers_;
-  std::vector<std::unique_ptr<NetworkSmsDeviceHandler>> device_handlers_;
-  std::vector<base::Value> received_messages_;
-  base::WeakPtrFactory<NetworkSmsHandler> weak_ptr_factory_{this};
+  // Called when the cellular device's object path changes. This means that
+  // there has been an update to the device's SIM (removed or inserted) and that
+  // a new handler should be created for the device's new object path.
+  void OnObjectPathChanged(const base::Value& object_path);
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkSmsHandler);
+  base::ObserverList<Observer, true>::Unchecked observers_;
+  std::unique_ptr<NetworkSmsDeviceHandler> device_handler_;
+  std::vector<base::Value> received_messages_;
+  std::string cellular_device_path_;
+  base::WeakPtrFactory<NetworkSmsHandler> weak_ptr_factory_{this};
 };
 
 }  // namespace chromeos

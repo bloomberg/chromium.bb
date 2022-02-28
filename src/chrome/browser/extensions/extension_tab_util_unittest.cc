@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_tab_util.h"
 
-#include "base/macros.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/common/extensions/api/tabs.h"
 #include "extensions/common/extension.h"
@@ -18,6 +17,11 @@ namespace {
 class ExtensionTabUtilTestDelegate : public ExtensionTabUtil::Delegate {
  public:
   ExtensionTabUtilTestDelegate() {}
+
+  ExtensionTabUtilTestDelegate(const ExtensionTabUtilTestDelegate&) = delete;
+  ExtensionTabUtilTestDelegate& operator=(const ExtensionTabUtilTestDelegate&) =
+      delete;
+
   ~ExtensionTabUtilTestDelegate() override {}
 
   // ExtensionTabUtil::Delegate
@@ -25,9 +29,6 @@ class ExtensionTabUtilTestDelegate : public ExtensionTabUtil::Delegate {
       const Extension* extension) override {
     return ExtensionTabUtil::kScrubTabUrlToOrigin;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ExtensionTabUtilTestDelegate);
 };
 
 }  // namespace
@@ -200,6 +201,16 @@ TEST(ExtensionTabUtilTest, PrepareURLForNavigationOnDevtools) {
     EXPECT_EQ(kDevtoolsURL, url);
     EXPECT_TRUE(error.empty());
   }
+}
+
+TEST(ExtensionTabUtilTest, PrepareURLForNavigationOnChromeUntrusted) {
+  const std::string kChromeUntrustedURL("chrome-untrusted://terminal/");
+  auto extension = ExtensionBuilder("none").Build();
+  std::string error;
+  GURL url;
+  EXPECT_FALSE(ExtensionTabUtil::PrepareURLForNavigation(
+      kChromeUntrustedURL, extension.get(), &url, &error));
+  EXPECT_EQ(tabs_constants::kCannotNavigateToChromeUntrusted, error);
 }
 
 }  // namespace extensions

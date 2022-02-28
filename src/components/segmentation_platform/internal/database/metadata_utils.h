@@ -6,11 +6,14 @@
 #define COMPONENTS_SEGMENTATION_PLATFORM_INTERNAL_DATABASE_METADATA_UTILS_H_
 
 #include "base/time/time.h"
+#include "components/optimization_guide/proto/models.pb.h"
 #include "components/segmentation_platform/internal/database/signal_key.h"
 #include "components/segmentation_platform/internal/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/internal/proto/model_prediction.pb.h"
 #include "components/segmentation_platform/internal/proto/types.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+using optimization_guide::proto::OptimizationTarget;
 
 namespace segmentation_platform {
 namespace metadata_utils {
@@ -61,11 +64,13 @@ void SetFeatureNameHashesFromName(
 
 // Whether a segment has expired results or no result. Called to determine
 // whether the model should be rerun.
-bool HasExpiredOrUnavailableResult(const proto::SegmentInfo& segment_info);
+bool HasExpiredOrUnavailableResult(const proto::SegmentInfo& segment_info,
+                                   const base::Time& now);
 
 // Whether the results were computed too recently for a given segment. If
 // true, the model execution should be skipped for the time being.
-bool HasFreshResults(const proto::SegmentInfo& segment_info);
+bool HasFreshResults(const proto::SegmentInfo& segment_info,
+                     const base::Time& now);
 
 // Helper method to read the time unit from the proto.
 base::TimeDelta GetTimeUnit(
@@ -73,6 +78,11 @@ base::TimeDelta GetTimeUnit(
 
 // Conversion methods between SignalKey::Kind and proto::SignalType.
 SignalKey::Kind SignalTypeToSignalKind(proto::SignalType signal_type);
+
+// Helper method to convert continuous to discrete score.
+int ConvertToDiscreteScore(const std::string& mapping_key,
+                           float input_score,
+                           const proto::SegmentationModelMetadata& metadata);
 
 }  // namespace metadata_utils
 }  // namespace segmentation_platform

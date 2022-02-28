@@ -25,7 +25,7 @@ class FakeClock {
   // tasks see the correct "now time" when they are executed.
   void Advance(Clock::duration delta);
 
-  static Clock::time_point now() noexcept;
+  static Clock::time_point now();
 
  protected:
   friend class FakeTaskRunner;

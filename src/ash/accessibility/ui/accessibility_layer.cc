@@ -5,11 +5,8 @@
 #include "ash/accessibility/ui/accessibility_layer.h"
 
 #include "ui/aura/window.h"
-#include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 
 namespace ui {
@@ -23,10 +20,7 @@ AccessibilityLayer::AccessibilityLayer(AccessibilityLayerDelegate* delegate)
   DCHECK(delegate);
 }
 
-AccessibilityLayer::~AccessibilityLayer() {
-  if (compositor_ && compositor_->HasAnimationObserver(this))
-    compositor_->RemoveAnimationObserver(this);
-}
+AccessibilityLayer::~AccessibilityLayer() = default;
 
 void AccessibilityLayer::Set(aura::Window* root_window,
                              const gfx::Rect& bounds,
@@ -79,20 +73,6 @@ void AccessibilityLayer::CreateOrUpdateLayer(aura::Window* root_window,
   layer_->SetBounds(bounds);
   gfx::Rect layer_bounds(0, 0, bounds.width(), bounds.height());
   layer_->SchedulePaint(layer_bounds);
-
-  if (NeedToAnimate()) {
-    // Update the animation observer.
-    display::Display display =
-        display::Screen::GetScreen()->GetDisplayMatching(bounds);
-    ui::Compositor* compositor = root_window->layer()->GetCompositor();
-    if (compositor != compositor_) {
-      if (compositor_ && compositor_->HasAnimationObserver(this))
-        compositor_->RemoveAnimationObserver(this);
-      compositor_ = compositor;
-      if (compositor_ && !compositor_->HasAnimationObserver(this))
-        compositor_->AddAnimationObserver(this);
-    }
-  }
 }
 
 void AccessibilityLayer::OnDeviceScaleFactorChanged(
@@ -100,17 +80,6 @@ void AccessibilityLayer::OnDeviceScaleFactorChanged(
     float new_device_scale_factor) {
   if (delegate_)
     delegate_->OnDeviceScaleFactorChanged();
-}
-
-void AccessibilityLayer::OnAnimationStep(base::TimeTicks timestamp) {
-  delegate_->OnAnimationStep(timestamp);
-}
-
-void AccessibilityLayer::OnCompositingShuttingDown(ui::Compositor* compositor) {
-  if (compositor == compositor_) {
-    compositor->RemoveAnimationObserver(this);
-    compositor_ = nullptr;
-  }
 }
 
 }  // namespace ash

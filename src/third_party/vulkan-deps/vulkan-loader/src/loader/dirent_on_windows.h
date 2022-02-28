@@ -1,5 +1,4 @@
-#ifndef DIRENT_INCLUDED
-#define DIRENT_INCLUDED
+#pragma once
 
 /*
 
@@ -11,6 +10,8 @@
 
 */
 
+#include "loader_common.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -21,17 +22,18 @@ struct dirent {
     char *d_name;
 };
 
-DIR *opendir(const char *);
-int closedir(DIR *);
+// pass in loader_instance to allow allocation callback usage
+DIR *opendir(const struct loader_instance *instance, const char *);
+int closedir(const struct loader_instance *instance, DIR *);
 struct dirent *readdir(DIR *);
 void rewinddir(DIR *);
 
 /*
 
     Copyright Kevlin Henney, 1997, 2003. All rights reserved.
-    Copyright (c) 2015 The Khronos Group Inc.
-    Copyright (c) 2015 Valve Corporation
-    Copyright (c) 2015 LunarG, Inc.
+    Copyright (c) 2015-2021 The Khronos Group Inc.
+    Copyright (c) 2015-2021 Valve Corporation
+    Copyright (c) 2015-2021 LunarG, Inc.
 
     Permission to use, copy, modify, and distribute this software and its
     documentation for any purpose is hereby granted without fee, provided
@@ -46,6 +48,4 @@ void rewinddir(DIR *);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

@@ -8,8 +8,10 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 
@@ -85,7 +87,7 @@ class BrowserContext::Impl {
   // TODO(https://crbug.com/1179776): Remove the `self_` field.  In the future
   // BrowserContext::Impl should become BrowserContextImpl that inherits from
   // BrowserContext, making the `self_` member obsolete.
-  BrowserContext* self_;
+  raw_ptr<BrowserContext> self_;
 
   const std::string unique_id_ = base::UnguessableToken::Create().ToString();
   bool will_be_destroyed_soon_ = false;

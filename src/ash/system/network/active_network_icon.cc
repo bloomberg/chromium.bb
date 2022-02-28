@@ -12,7 +12,7 @@
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/tray/tray_constants.h"
-#include "base/stl_util.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -319,8 +319,7 @@ void ActiveNetworkIcon::ActiveNetworkStateChanged() {
 void ActiveNetworkIcon::NetworkListChanged() {
   if (purge_timer_.IsRunning())
     return;
-  purge_timer_.Start(FROM_HERE,
-                     base::TimeDelta::FromMilliseconds(kPurgeDelayMs),
+  purge_timer_.Start(FROM_HERE, base::Milliseconds(kPurgeDelayMs),
                      base::BindOnce(&ActiveNetworkIcon::PurgeNetworkIconCache,
                                     weak_ptr_factory_.GetWeakPtr()));
 }

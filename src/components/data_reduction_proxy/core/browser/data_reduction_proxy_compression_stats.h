@@ -13,7 +13,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -77,6 +77,12 @@ class DataReductionProxyCompressionStats {
   DataReductionProxyCompressionStats(DataReductionProxyService* service,
                                      PrefService* pref_service,
                                      const base::TimeDelta& delay);
+
+  DataReductionProxyCompressionStats(
+      const DataReductionProxyCompressionStats&) = delete;
+  DataReductionProxyCompressionStats& operator=(
+      const DataReductionProxyCompressionStats&) = delete;
+
   ~DataReductionProxyCompressionStats();
 
   // Records detailed data usage broken down by |mime_type|. Also records daily
@@ -86,7 +92,6 @@ class DataReductionProxyCompressionStats {
       int64_t compressed_size,
       int64_t original_size,
       bool data_reduction_proxy_enabled,
-      DataReductionProxyRequestType request_type,
       const std::string& mime_type,
       bool is_user_traffic,
       data_use_measurement::DataUseUserData::DataUseContentType content_type,
@@ -214,7 +219,6 @@ class DataReductionProxyCompressionStats {
   void RecordRequestSizePrefs(int64_t compressed_size,
                               int64_t original_size,
                               bool with_data_reduction_proxy_enabled,
-                              DataReductionProxyRequestType request_type,
                               const std::string& mime_type,
                               const base::Time& now);
 
@@ -268,8 +272,8 @@ class DataReductionProxyCompressionStats {
   // Example: "http://www.finance.google.com" -> "www.finance.google.com"
   static std::string NormalizeHostname(const std::string& host);
 
-  DataReductionProxyService* service_;
-  PrefService* pref_service_;
+  raw_ptr<DataReductionProxyService> service_;
+  raw_ptr<PrefService> pref_service_;
   const base::TimeDelta delay_;
   DataReductionProxyPrefMap pref_map_;
   DataReductionProxyListPrefMap list_pref_map_;
@@ -295,8 +299,6 @@ class DataReductionProxyCompressionStats {
   base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<DataReductionProxyCompressionStats> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DataReductionProxyCompressionStats);
 };
 
 }  // namespace data_reduction_proxy

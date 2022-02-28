@@ -46,12 +46,6 @@ ruleTester.run('es_modules_import', rule, {
       code: 'import * as Issue from \'./Issue.js\';',
       filename: 'front_end/sdk/IssuesModel.js',
     },
-    // We allow the ui/utils/utils.js to do this because it's a special case entry point
-    // that really needs to be removed and folded into UI directly.
-    {
-      code: 'import {appendStyle} from \'./append-style.js\';',
-      filename: 'front_end/ui/legacy/utils/utils.js',
-    },
     {
       code: 'import * as UI from \'../../legacy.js\';',
       filename: 'front_end/ui/legacy/components/data_grid/DataGrid.ts',
@@ -63,7 +57,7 @@ ruleTester.run('es_modules_import', rule, {
     },
     // the `assertNotNull` helper from Platform is an exception
     {
-      code: 'import {assertNotNull} from \'../platform/platform.js\';',
+      code: 'import {assertNotNullOrUndefined} from \'../platform/platform.js\';',
       filename: 'front_end/elements/ElementsBreadcrumbs.ts',
     },
     // Importing test helpers directly is allowed in the test setup
@@ -111,6 +105,14 @@ ruleTester.run('es_modules_import', rule, {
     {
       code: 'import * as ConsoleCounters from \'../console_counters/console_counters.js\';',
       filename: 'front_end/panels/console/ConsoleView.ts',
+    },
+    {
+      code: 'import * as Elements from \'./elements.js\';',
+      filename: 'front_end/panels/elements/elements-meta.ts',
+    },
+    {
+      code: 'import * as Elements from \'./elements.js\';',
+      filename: 'front_end/panels/elements/elements-entrypoint.ts',
     },
     // Tests are allowed to import from front_end
     {
@@ -161,7 +163,8 @@ ruleTester.run('es_modules_import', rule, {
       code: 'import { Exporting } from \'./Exporting.js\';',
       filename: 'front_end/common/common.js',
       errors: [{
-        message: 'Incorrect same-namespace import: "Exporting.js". Use "import * as File from \'./File.js\';" instead.'
+        message:
+            'Incorrect same-namespace import: "./Exporting.js". Use "import * as File from \'./File.js\';" instead.'
       }],
     },
     {
@@ -226,7 +229,7 @@ ruleTester.run('es_modules_import', rule, {
       filename: 'front_end/some_folder/nested_entrypoint/nested_entrypoint.js',
       errors: [{
         message:
-            'Incorrect same-namespace import: "append-style.js". Use "import * as File from \'./File.js\';" instead.'
+            'Incorrect same-namespace import: "./append-style.js". Use "import * as File from \'./File.js\';" instead.'
       }]
     },
     {
@@ -245,21 +248,5 @@ ruleTester.run('es_modules_import', rule, {
             'Incorrect cross-namespace import: "../third_party/marked/package/lib/marked.esm.js". Use "import * as Namespace from \'../namespace/namespace.js\';" instead. If the third_party dependency does not expose a single entrypoint, update es_modules_import.js to make it exempt.'
       }],
     },
-    {
-      code: 'import * as Marked from \'../../front_end/third_party/marked/package/lib/marked.esm.js\';',
-      filename: 'front_end/marked/marked.js',
-      errors: [{
-        message:
-            'Invalid relative import: an import should not include the "front_end" directory. If you are in a unit test, you should import from the module entrypoint.'
-      }],
-    },
-    {
-      code: 'import * as SDK from \'../../front_end/sdk/sdk.js\';',
-      filename: 'front_end/marked/marked.js',
-      errors: [{
-        message:
-            'Invalid relative import: an import should not include the "front_end" directory. If you are in a unit test, you should import from the module entrypoint.'
-      }],
-    }
   ]
 });

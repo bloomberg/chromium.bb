@@ -9,7 +9,7 @@
 
 #include "base/atomicops.h"
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/proto/control.pb.h"
@@ -123,6 +123,10 @@ class MessageCounter {
   MessageCounter(const char* name, const char* unit);
   explicit MessageCounter(const char* name);
 
+  // Copy or assign the start_time_ of a MessageCounter is senseless.
+  MessageCounter(const MessageCounter&) = delete;
+  MessageCounter& operator=(const MessageCounter&) = delete;
+
   int message_count() const { return *count_; }
   int64_t message_size() const { return *size_; }
   int last_message_size() const { return last_size_; }
@@ -141,9 +145,6 @@ class MessageCounter {
   NoBarrierAtomicInt64 size_;
   int last_size_ = 0;
   base::Time start_time_;
-
-  // Copy or assign the start_time_ of a MessageCounter is senseless.
-  DISALLOW_COPY_AND_ASSIGN(MessageCounter);
 };
 
 MessageCounter::MessageCounter(const char* name, const char* unit)
@@ -282,7 +283,7 @@ class FakeConnectionEventLogger::CounterVideoStub
   void ProcessVideoPacket(std::unique_ptr<VideoPacket> video_packet,
                           base::OnceClosure done) override;
 
-  protocol::FakeConnectionToClient* connection_ = nullptr;
+  raw_ptr<protocol::FakeConnectionToClient> connection_ = nullptr;
   MessageCounter video_data_;
   MessageCounter capture_time_;
   MessageCounter encode_time_;

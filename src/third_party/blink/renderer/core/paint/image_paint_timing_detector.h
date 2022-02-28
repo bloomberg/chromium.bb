@@ -9,13 +9,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_IMAGE_PAINT_TIMING_DETECTOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_IMAGE_PAINT_TIMING_DETECTOR_H_
 
-#include "base/memory/weak_ptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace blink {
 
@@ -31,8 +31,8 @@ class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
   ImageRecord(DOMNodeId new_node_id,
               const ImageResourceContent* new_cached_image,
               uint64_t new_first_size,
-              const IntRect& frame_visual_rect,
-              const FloatRect& root_visual_rect)
+              const gfx::Rect& frame_visual_rect,
+              const gfx::RectF& root_visual_rect)
       : node_id(new_node_id),
         cached_image(new_cached_image),
         first_size(new_first_size) {
@@ -40,11 +40,11 @@ class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
     insertion_index = next_insertion_index_++;
     if (PaintTimingVisualizer::IsTracingEnabled()) {
       lcp_rect_info_ = std::make_unique<LCPRectInfo>(
-          frame_visual_rect, RoundedIntRect(root_visual_rect));
+          frame_visual_rect, gfx::ToRoundedRect(root_visual_rect));
     }
   }
 
-  ImageRecord() {}
+  ImageRecord() = default;
 
   DOMNodeId node_id = kInvalidDOMNodeId;
   WeakPersistent<const ImageResourceContent> cached_image;
@@ -56,16 +56,19 @@ class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
   // The time of the first paint after fully loaded. 0 means not painted yet.
   base::TimeTicks paint_time = base::TimeTicks();
   base::TimeTicks load_time = base::TimeTicks();
+  base::TimeTicks first_animated_frame_time = base::TimeTicks();
   bool loaded = false;
+  // An animated frame is queued for paint timing.
+  bool queue_animated_paint = false;
   // LCP rect information, only populated when tracing is enabled.
   std::unique_ptr<LCPRectInfo> lcp_rect_info_;
 };
 
 typedef std::pair<const LayoutObject*, const ImageResourceContent*> RecordId;
 
-// |ImageRecordsManager| is the manager of all of the images that Largest Image
-// Paint cares about. Note that an image does not necessarily correspond to a
-// node; it can also be one of the background images attached to a node.
+// |ImageRecordsManager| is the manager of all of the images that Largest
+// Image Paint cares about. Note that an image does not necessarily correspond
+// to a node; it can also be one of the background images attached to a node.
 // |ImageRecordsManager| encapsulates the logic of |ImageRecord| handling,
 // providing interface for the external world to handle it in the language of
 // Node, LayoutObject, etc.
@@ -82,49 +85,27 @@ class CORE_EXPORT ImageRecordsManager {
   explicit ImageRecordsManager(LocalFrameView*);
   ImageRecordsManager(const ImageRecordsManager&) = delete;
   ImageRecordsManager& operator=(const ImageRecordsManager&) = delete;
-  ImageRecord* FindLargestPaintCandidate() const;
+  ImageRecord* LargestImage() const;
 
-  inline void RemoveInvisibleRecordIfNeeded(const RecordId& record_id) {
-    invisible_images_.erase(record_id);
-  }
-
-  inline void RemoveImageFinishedRecord(const RecordId& record_id) {
+  inline void RemoveRecord(const RecordId& record_id) {
+    recorded_images_.erase(record_id);
     image_finished_times_.erase(record_id);
-  }
-
-  inline void RemoveVisibleRecord(const RecordId& record_id) {
-    base::WeakPtr<ImageRecord> record =
-        visible_images_.find(record_id)->value->AsWeakPtr();
-    if (!record->paint_time.is_null()) {
-      DCHECK_GT(record->first_size, 0u);
-      if (record->first_size > largest_removed_image_size_) {
-        largest_removed_image_size_ = record->first_size;
-        largest_removed_image_paint_time_ = record->paint_time;
-      } else if (record->first_size == largest_removed_image_size_) {
-        // Ensure we use the lower timestamp in the case of a tie.
-        DCHECK(!largest_removed_image_paint_time_.is_null());
-        largest_removed_image_paint_time_ =
-            std::min(largest_removed_image_paint_time_, record->paint_time);
-      }
+    auto it = pending_images_.find(record_id);
+    if (it != pending_images_.end()) {
+      size_ordered_set_.erase(it->value->AsWeakPtr());
+      pending_images_.erase(it);
+      // Leave out |images_queued_for_paint_time_| intentionally because the
+      // null record can be removed in
+      // |AssignPaintTimeToRegisteredQueuedRecords|.
     }
-    size_ordered_set_.erase(record);
-    visible_images_.erase(record_id);
-    // Leave out |images_queued_for_paint_time_| intentionally because the null
-    // record will be removed in |AssignPaintTimeToRegisteredQueuedRecords|.
   }
-
-  inline void RecordInvisible(const RecordId& record_id) {
-    invisible_images_.insert(record_id);
-  }
-  void RecordVisible(const RecordId& record_id,
-                     const uint64_t& visual_size,
-                     const IntRect& frame_visual_rect,
-                     const FloatRect& root_visual_rect);
-  bool IsRecordedVisibleImage(const RecordId& record_id) const {
-    return visible_images_.Contains(record_id);
-  }
-  bool IsRecordedInvisibleImage(const RecordId& record_id) const {
-    return invisible_images_.Contains(record_id);
+  // Returns whether an image was added to |pending_images_|.
+  bool RecordFirstPaintAndReturnIsPending(const RecordId& record_id,
+                                          const uint64_t& visual_size,
+                                          const gfx::Rect& frame_visual_rect,
+                                          const gfx::RectF& root_visual_rect);
+  bool IsRecordedImage(const RecordId& record_id) const {
+    return recorded_images_.Contains(record_id);
   }
 
   void NotifyImageFinished(const RecordId& record_id) {
@@ -133,98 +114,86 @@ class CORE_EXPORT ImageRecordsManager {
     // not currently the case. If we plumb some information from
     // ImageResourceContent we may be able to ensure that this call does not
     // require the Contains() check, which would save time.
-    if (!image_finished_times_.Contains(record_id))
+    if (!image_finished_times_.Contains(record_id)) {
       image_finished_times_.insert(record_id, base::TimeTicks::Now());
+    }
   }
 
-  inline bool IsVisibleImageLoaded(const RecordId& record_id) const {
-    DCHECK(visible_images_.Contains(record_id));
-    return visible_images_.at(record_id)->loaded;
+  inline base::WeakPtr<ImageRecord> GetPendingImage(const RecordId& record_id) {
+    auto it = pending_images_.find(record_id);
+    return it == pending_images_.end() ? nullptr : it->value->AsWeakPtr();
   }
+  bool OnFirstAnimatedFramePainted(const RecordId&,
+                                   unsigned current_frame_index);
   void OnImageLoaded(const RecordId&,
                      unsigned current_frame_index,
                      const StyleFetchedImage*);
-  void OnImageLoadedInternal(base::WeakPtr<ImageRecord>&,
-                             unsigned current_frame_index);
 
   // Receives a candidate image painted under opacity 0 but without nested
   // opacity. May update |largest_ignored_image_| if the new candidate has a
   // larger size.
   void MaybeUpdateLargestIgnoredImage(const RecordId&,
                                       const uint64_t& visual_size,
-                                      const IntRect& frame_visual_rect,
-                                      const FloatRect& root_visual_rect);
+                                      const gfx::Rect& frame_visual_rect,
+                                      const gfx::RectF& root_visual_rect);
   void ReportLargestIgnoredImage(unsigned current_frame_index);
 
-  // Compare the last frame index in queue with the last frame index that has
-  // registered for assigning paint time.
-  inline bool HasUnregisteredRecordsInQueue(
-      unsigned last_registered_frame_index) {
-    while (!images_queued_for_paint_time_.IsEmpty() &&
-           !images_queued_for_paint_time_.back()) {
-      images_queued_for_paint_time_.pop_back();
-    }
-    if (images_queued_for_paint_time_.IsEmpty())
-      return false;
-    return last_registered_frame_index < LastQueuedFrameIndex();
-  }
   void AssignPaintTimeToRegisteredQueuedRecords(
       const base::TimeTicks&,
       unsigned last_queued_frame_index);
-  inline unsigned LastQueuedFrameIndex() const {
-    DCHECK(images_queued_for_paint_time_.back());
-    return images_queued_for_paint_time_.back()->frame_index;
-  }
 
-  uint64_t LargestRemovedImageSize() const {
-    return largest_removed_image_size_;
-  }
-  base::TimeTicks LargestRemovedImagePaintTime() const {
-    return largest_removed_image_paint_time_;
-  }
+  void ClearImagesQueuedForPaintTime();
 
   void Trace(Visitor* visitor) const;
 
  private:
-  // Find the image record of an visible image.
-  inline base::WeakPtr<ImageRecord> FindVisibleRecord(
-      const RecordId& record_id) const {
-    DCHECK(visible_images_.Contains(record_id));
-    return visible_images_.find(record_id)->value->AsWeakPtr();
-  }
   std::unique_ptr<ImageRecord> CreateImageRecord(
       const LayoutObject& object,
       const ImageResourceContent* cached_image,
       const uint64_t& visual_size,
-      const IntRect& frame_visual_rect,
-      const FloatRect& root_visual_rect);
-  inline void QueueToMeasurePaintTime(base::WeakPtr<ImageRecord>& record,
+      const gfx::Rect& frame_visual_rect,
+      const gfx::RectF& root_visual_rect);
+  inline void QueueToMeasurePaintTime(const RecordId& record_id,
+                                      base::WeakPtr<ImageRecord>& record,
                                       unsigned current_frame_index) {
-    images_queued_for_paint_time_.push_back(record);
     record->frame_index = current_frame_index;
+    images_queued_for_paint_time_.push_back(std::make_pair(record, record_id));
   }
   inline void SetLoaded(base::WeakPtr<ImageRecord>& record) {
     record->loaded = true;
   }
+  void OnImageLoadedInternal(const RecordId&,
+                             base::WeakPtr<ImageRecord>&,
+                             unsigned current_frame_index);
 
-  HashMap<RecordId, std::unique_ptr<ImageRecord>> visible_images_;
-  HashSet<RecordId> invisible_images_;
+  // The ImageRecord corresponding to the largest image that has been loaded and
+  // painted.
+  std::unique_ptr<ImageRecord> largest_painted_image_;
 
-  // This stores the image records, which are ordered by size.
+  // This stores the image records which are pending to load and receive a paint
+  // timestamp, ordered by size.
   ImageRecordSet size_ordered_set_;
-  // |ImageRecord|s waiting for paint time are stored in this queue
+
+  // RecordId for images for which we have seen a first paint. A RecordId is
+  // added to this set regardless of whether the image could be an LCP
+  // candidate.
+  HashSet<RecordId> recorded_images_;
+
+  // Map of RecordId to ImageRecord for images for which the first paint has
+  // been seen but which do not have the paint time set yet. This may contain
+  // only images which are potential LCP candidates.
+  HashMap<RecordId, std::unique_ptr<ImageRecord>> pending_images_;
+
+  // |ImageRecord|s waiting for paint time are stored in this map
   // until they get a presentation time.
-  Deque<base::WeakPtr<ImageRecord>> images_queued_for_paint_time_;
+  Deque<std::pair<base::WeakPtr<ImageRecord>, RecordId>>
+      images_queued_for_paint_time_;
+
   // Map containing timestamps of when LayoutObject::ImageNotifyFinished is
   // first called.
   HashMap<RecordId, base::TimeTicks> image_finished_times_;
 
   Member<LocalFrameView> frame_view_;
-
-  // We store the size and paint time of the largest removed image in order to
-  // compute experimental LCP correctly.
-  uint64_t largest_removed_image_size_ = 0u;
-  base::TimeTicks largest_removed_image_paint_time_;
 
   // Image paints are ignored when they (or an ancestor) have opacity 0. This
   // can be a problem later on if the opacity changes to nonzero but this change
@@ -266,24 +235,21 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // parameter is needed only for the purposes of plumbing the correct loadTime
   // value to the ImageRecord.
   void RecordImage(const LayoutObject&,
-                   const IntSize& intrinsic_size,
+                   const gfx::Size& intrinsic_size,
                    const ImageResourceContent&,
                    const PropertyTreeStateOrAlias& current_paint_properties,
                    const StyleFetchedImage*,
-                   const IntRect& image_border);
+                   const gfx::Rect& image_border);
   void NotifyImageFinished(const LayoutObject&, const ImageResourceContent*);
   void OnPaintFinished();
   void NotifyImageRemoved(const LayoutObject&, const ImageResourceContent*);
-  // After the method being called, the detector stops to record new entries and
-  // node removal. But it still observe the loading status. In other words, if
-  // an image is recorded before stopping recording, and finish loading after
-  // stopping recording, the detector can still observe the loading being
-  // finished.
+  // After the method being called, the detector stops to recording new entries.
+  // We manually clean up the |images_queued_for_paint_time_| since those may be
+  // used in the presentation callbacks, and we do not want any new paint times
+  // to be assigned after this method is called. Essentially, this class should
+  // do nothing after this method is called, and is now just waiting to be
+  // GarbageCollected.
   void StopRecordEntries();
-  inline bool IsRecording() const { return is_recording_; }
-  inline bool FinishedReportingImages() const {
-    return !is_recording_ && num_pending_presentation_callbacks_ == 0;
-  }
   void ResetCallbackManager(PaintTimingCallbackManager* manager) {
     callback_manager_ = manager;
   }
@@ -311,9 +277,9 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // downsizing the size of images with low intrinsic size. Images that occupy
   // the full viewport are special-cased and this method returns 0 for them so
   // that they are not considered valid candidates.
-  uint64_t ComputeImageRectSize(const IntRect& image_border,
-                                const FloatRect& mapped_visual_rect,
-                                const IntSize&,
+  uint64_t ComputeImageRectSize(const gfx::Rect& image_border,
+                                const gfx::RectF& mapped_visual_rect,
+                                const gfx::Size&,
                                 const PropertyTreeStateOrAlias&,
                                 const LayoutObject&,
                                 const ImageResourceContent&);
@@ -324,19 +290,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // Used to decide which frame a record belongs to, monotonically increasing.
   unsigned frame_index_ = 1;
   unsigned last_registered_frame_index_ = 0;
-
-  // Used to control if we record new image entries and image removal, but has
-  // no effect on recording the loading status.
-  bool is_recording_ = true;
-
-  // Used to determine how many presentation callbacks are pending. In
-  // combination with |is_recording|, helps determine whether this detector can
-  // be destroyed.
-  int num_pending_presentation_callbacks_ = 0;
-
-  // This need to be set whenever changes that can affect the output of
-  // |FindLargestPaintCandidate| occur during the paint tree walk.
-  bool need_update_timing_at_frame_end_ = false;
+  bool added_entry_in_latest_frame_ = false;
 
   bool contains_full_viewport_image_ = false;
 
@@ -344,6 +298,8 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // image. This value is reset when paint is finished and is computed if unset
   // when needed. 0 means that the size has not been computed.
   absl::optional<uint64_t> viewport_size_;
+  // Whether the viewport size used is the page viewport.
+  bool uses_page_viewport_;
 
   ImageRecordsManager records_manager_;
   Member<LocalFrameView> frame_view_;

@@ -10,20 +10,16 @@
 #include <vector>
 
 #include "ash/public/cpp/shelf_types.h"
-#include "base/macros.h"
 #include "base/scoped_multi_source_observation.h"
-#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
 #include "chrome/browser/ui/ash/shelf/app_service/app_service_instance_registry_helper.h"
 #include "chrome/browser/ui/ash/shelf/app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/arc_app_window_delegate.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
+#include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-
-namespace apps {
-class InstanceUpdate;
-}  // namespace apps
 
 class AppServiceAppWindowCrostiniTracker;
 class AppServiceAppWindowArcTracker;
@@ -45,6 +41,12 @@ class AppServiceAppWindowShelfController
   using ProfileList = std::vector<Profile*>;
 
   explicit AppServiceAppWindowShelfController(ChromeShelfController* owner);
+
+  AppServiceAppWindowShelfController(
+      const AppServiceAppWindowShelfController&) = delete;
+  AppServiceAppWindowShelfController& operator=(
+      const AppServiceAppWindowShelfController&) = delete;
+
   ~AppServiceAppWindowShelfController() override;
 
   // AppWindowShelfController:
@@ -76,6 +78,7 @@ class AppServiceAppWindowShelfController
 
   // ArcAppWindowDelegate:
   int GetActiveTaskId() const override;
+  int GetActiveSessionId() const override;
 
   // Removes an AppWindowBase from its AppWindowShelfItemController by
   // |window|.
@@ -97,9 +100,6 @@ class AppServiceAppWindowShelfController
   }
 
   AppWindowBase* GetAppWindow(aura::Window* window);
-
-  void ObserveWindow(aura::Window* window);
-  bool IsObservingWindow(aura::Window* window);
 
   std::vector<aura::Window*> GetArcWindows();
 
@@ -139,11 +139,15 @@ class AppServiceAppWindowShelfController
                                  const ash::ShelfID& shelf_id,
                                  content::BrowserContext* browser_context);
 
+  // Stop handling browser windows, because BrowserAppShelfController is used to
+  // handle browser windows.
+  void StopHandleWindow(aura::Window* window);
+
   AuraWindowToAppWindow aura_window_to_app_window_;
   base::ScopedMultiSourceObservation<aura::Window, aura::WindowObserver>
       observed_windows_{this};
 
-  apps::AppServiceProxyChromeOs* proxy_ = nullptr;
+  apps::AppServiceProxy* proxy_ = nullptr;
   std::unique_ptr<AppServiceInstanceRegistryHelper>
       app_service_instance_helper_;
   std::unique_ptr<AppServiceAppWindowArcTracker> arc_tracker_;
@@ -154,8 +158,6 @@ class AppServiceAppWindowShelfController
 
   // A list of windows added for users.
   WindowList window_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppServiceAppWindowShelfController);
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_SHELF_APP_SERVICE_APP_SERVICE_APP_WINDOW_SHELF_CONTROLLER_H_

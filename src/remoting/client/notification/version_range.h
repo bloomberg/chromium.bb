@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/version.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -32,6 +31,10 @@ class VersionRange final {
   //
   // Min version must be less than or equal to max version.
   explicit VersionRange(const std::string& range_spec);
+
+  VersionRange(const VersionRange&) = delete;
+  VersionRange& operator=(const VersionRange&) = delete;
+
   ~VersionRange();
 
   bool IsValid() const;
@@ -43,8 +46,6 @@ class VersionRange final {
 
   bool is_min_version_inclusive_ = false;
   bool is_max_version_inclusive_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(VersionRange);
 };
 
 }  // namespace remoting

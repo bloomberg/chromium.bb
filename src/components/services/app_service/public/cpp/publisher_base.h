@@ -34,7 +34,7 @@ class PublisherBase : public apps::mojom::Publisher {
                                      std::string app_id,
                                      apps::mojom::Readiness readiness,
                                      const std::string& name,
-                                     apps::mojom::InstallSource install_source);
+                                     apps::mojom::InstallReason install_reason);
 
   void FlushMojoCallsForTesting();
 
@@ -59,8 +59,10 @@ class PublisherBase : public apps::mojom::Publisher {
 
  private:
   // apps::mojom::Publisher overrides.
+  // DEPRECATED. Prefer passing the files in an Intent through
+  // LaunchAppWithIntent.
+  // TODO(crbug.com/1264164): Remove this method.
   void LaunchAppWithFiles(const std::string& app_id,
-                          apps::mojom::LaunchContainer container,
                           int32_t event_flags,
                           apps::mojom::LaunchSource launch_source,
                           apps::mojom::FilePathsPtr file_paths) override;
@@ -68,7 +70,8 @@ class PublisherBase : public apps::mojom::Publisher {
                            int32_t event_flags,
                            apps::mojom::IntentPtr intent,
                            apps::mojom::LaunchSource launch_source,
-                           apps::mojom::WindowInfoPtr window_info) override;
+                           apps::mojom::WindowInfoPtr window_info,
+                           LaunchAppWithIntentCallback callback) override;
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission) override;
   void Uninstall(const std::string& app_id,
@@ -76,7 +79,7 @@ class PublisherBase : public apps::mojom::Publisher {
                  bool clear_site_data,
                  bool report_abuse) override;
   void PauseApp(const std::string& app_id) override;
-  void UnpauseApps(const std::string& app_id) override;
+  void UnpauseApp(const std::string& app_id) override;
   void StopApp(const std::string& app_id) override;
   void GetMenuModel(const std::string& app_id,
                     apps::mojom::MenuType menu_type,
@@ -92,8 +95,12 @@ class PublisherBase : public apps::mojom::Publisher {
       apps::mojom::IntentFilterPtr intent_filter,
       apps::mojom::IntentPtr intent,
       apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) override;
+  void OnSupportedLinksPreferenceChanged(const std::string& app_id,
+                                         bool open_in_app) override;
   void SetResizeLocked(const std::string& app_id,
                        apps::mojom::OptionalBool locked) override;
+  void SetWindowMode(const std::string& app_id,
+                     apps::mojom::WindowMode window_mode) override;
 
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
 };

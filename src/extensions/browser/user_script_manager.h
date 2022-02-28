@@ -9,8 +9,10 @@
 #include <memory>
 #include <set>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/values.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_user_script_loader.h"
@@ -49,22 +51,24 @@ class UserScriptManager : public ExtensionRegistryObserver {
 
  private:
   // ExtensionRegistryObserver implementation.
+  void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
+                                  const Extension* extension,
+                                  bool is_update,
+                                  const std::string& old_name) override;
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const Extension* extension) override;
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
 
-  // Called when the |loader| has finished loading its initial set of scripts.
-  // This is only fired for extension script loaders.
+  // Called when `loader` has finished loading its initial set of scripts. This
+  // is only fired for extension script loaders.
   void OnInitialExtensionLoadComplete(UserScriptLoader* loader,
                                       const absl::optional<std::string>& error);
 
-  // Gets an extension's manifest scripts' metadata; i.e., gets a list of
-  // UserScript objects that contains script info, but not the contents of the
-  // scripts.
-  std::unique_ptr<UserScriptList> GetManifestScriptsMetadata(
-      const Extension* extension);
+  // Removes the given ID from `pending_initial_extension_loads_` and if there
+  // are no more pending initial loads, signal to the UserScriptListener.
+  void RemovePendingExtensionLoadAndSignal(const ExtensionId& extension_id);
 
   // Creates a ExtensionUserScriptLoader object.
   ExtensionUserScriptLoader* CreateExtensionUserScriptLoader(
@@ -84,10 +88,11 @@ class UserScriptManager : public ExtensionRegistryObserver {
   // initialized.
   std::map<GURL, std::unique_ptr<WebUIUserScriptLoader>> webui_script_loaders_;
 
-  // Tracks the number of manifest script loads currently in progress.
-  int pending_manifest_load_count_ = 0;
+  // Tracks the IDs of extensions with initial script loads (consisting of
+  // manifest and persistent dynamic scripts) in progress.
+  std::set<ExtensionId> pending_initial_extension_loads_;
 
-  content::BrowserContext* const browser_context_;
+  const raw_ptr<content::BrowserContext> browser_context_;
 
   base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observation_{this};

@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "extensions/common/mojom/event_dispatcher.mojom-forward.h"
 #include "extensions/renderer/bindings/api_binding.h"
 #include "extensions/renderer/bindings/api_binding_types.h"
 #include "extensions/renderer/bindings/api_event_handler.h"
@@ -56,6 +56,10 @@ class APIBindingsSystem {
       APIBinding::OnSilentRequest on_silent_request,
       binding::AddConsoleError add_console_error,
       APILastError last_error);
+
+  APIBindingsSystem(const APIBindingsSystem&) = delete;
+  APIBindingsSystem& operator=(const APIBindingsSystem&) = delete;
+
   ~APIBindingsSystem();
 
   // Returns a new v8::Object representing the api specified by |api_name|.
@@ -75,7 +79,7 @@ class APIBindingsSystem {
   void FireEventInContext(const std::string& event_name,
                           v8::Local<v8::Context> context,
                           const base::ListValue& response,
-                          const EventFilteringInfo* filter);
+                          mojom::EventFilteringInfoPtr filter);
 
   // Returns the APIBindingHooks object for the given api to allow for
   // registering custom hooks. These must be registered *before* the
@@ -154,8 +158,6 @@ class APIBindingsSystem {
   // The method to call when the system silently handles an API request without
   // notifying the browser.
   APIBinding::OnSilentRequest on_silent_request_;
-
-  DISALLOW_COPY_AND_ASSIGN(APIBindingsSystem);
 };
 
 }  // namespace

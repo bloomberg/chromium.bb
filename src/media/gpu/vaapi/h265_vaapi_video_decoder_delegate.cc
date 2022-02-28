@@ -4,7 +4,7 @@
 
 #include "media/gpu/vaapi/h265_vaapi_video_decoder_delegate.h"
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "build/chromeos_buildflags.h"
 #include "media/base/cdm_context.h"
 #include "media/gpu/decode_surface_handler.h"
@@ -57,15 +57,7 @@ scoped_refptr<H265Picture> H265VaapiVideoDecoderDelegate::CreateH265Picture() {
   if (!va_surface)
     return nullptr;
 
-  scoped_refptr<H265Picture> pic = new VaapiH265Picture(std::move(va_surface));
-  if (!vaapi_dec_->IsScalingDecode())
-    return pic;
-
-  // Setup the scaling buffer.
-  scoped_refptr<VASurface> scaled_surface = vaapi_dec_->CreateDecodeSurface();
-  CHECK(scaled_surface);
-  pic->AsVaapiH265Picture()->SetDecodeSurface(std::move(scaled_surface));
-  return pic;
+  return new VaapiH265Picture(std::move(va_surface));
 }
 
 DecodeStatus H265VaapiVideoDecoderDelegate::SubmitFrameMetadata(
@@ -444,6 +436,14 @@ DecodeStatus H265VaapiVideoDecoderDelegate::SubmitSlice(
       slice_hdr->header_emulation_prevention_bytes;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+  if (IsTranscrypted()) {
+    // We use the encrypted region of the data as the actual slice data.
+    CHECK_EQ(subsamples.size(), 1u);
+    last_slice_data_ = data + subsamples[0].clear_bytes;
+    last_slice_size_ = subsamples[0].cypher_bytes;
+    last_transcrypt_params_ = GetDecryptKeyId();
+    return DecodeStatus::kOk;
+  }
   last_slice_data_ = data;
   last_slice_size_ = size;
   return DecodeStatus::kOk;
@@ -467,20 +467,11 @@ DecodeStatus H265VaapiVideoDecoderDelegate::SubmitDecode(
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   const VaapiH265Picture* vaapi_pic = pic->AsVaapiH265Picture();
-  CHECK(gfx::Rect(vaapi_pic->GetDecodeSize()).Contains(pic->visible_rect()));
-  VAProcPipelineParameterBuffer proc_buffer;
-  if (FillDecodeScalingIfNeeded(pic->visible_rect(),
-                                vaapi_pic->GetVADecodeSurfaceID(),
-                                vaapi_pic->va_surface(), &proc_buffer)) {
-    if (!vaapi_wrapper_->SubmitBuffer(VAProcPipelineParameterBufferType,
-                                      sizeof(proc_buffer), &proc_buffer)) {
-      DLOG(ERROR) << "Failed submitting proc buffer";
-      return DecodeStatus::kFail;
-    }
-  }
+  CHECK(
+      gfx::Rect(vaapi_pic->va_surface()->size()).Contains(pic->visible_rect()));
 
   const bool success = vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(
-      vaapi_pic->GetVADecodeSurfaceID());
+      vaapi_pic->GetVASurfaceID());
   ref_pic_list_pocs_.clear();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   encryption_segment_info_.clear();
@@ -499,11 +490,9 @@ bool H265VaapiVideoDecoderDelegate::OutputPicture(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const VaapiH265Picture* vaapi_pic = pic->AsVaapiH265Picture();
-  vaapi_dec_->SurfaceReady(
-      vaapi_pic->va_surface(), vaapi_pic->bitstream_id(),
-      vaapi_dec_->GetOutputVisibleRect(vaapi_pic->visible_rect(),
-                                       vaapi_pic->va_surface()->size()),
-      vaapi_pic->get_colorspace());
+  vaapi_dec_->SurfaceReady(vaapi_pic->va_surface(), vaapi_pic->bitstream_id(),
+                           vaapi_pic->visible_rect(),
+                           vaapi_pic->get_colorspace());
   return true;
 }
 
@@ -515,6 +504,8 @@ void H265VaapiVideoDecoderDelegate::Reset() {
   encryption_segment_info_.clear();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   last_slice_data_ = nullptr;
+  last_slice_size_ = 0;
+  last_transcrypt_params_.clear();
 }
 
 DecodeStatus H265VaapiVideoDecoderDelegate::SetStream(
@@ -531,7 +522,7 @@ void H265VaapiVideoDecoderDelegate::FillVAPicture(
     VAPictureHEVC* va_pic,
     scoped_refptr<H265Picture> pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  va_pic->picture_id = pic->AsVaapiH265Picture()->GetVADecodeSurfaceID();
+  va_pic->picture_id = pic->AsVaapiH265Picture()->GetVASurfaceID();
   va_pic->pic_order_cnt = pic->pic_order_cnt_val_;
   va_pic->flags = 0;
 
@@ -585,10 +576,21 @@ bool H265VaapiVideoDecoderDelegate::SubmitPriorSliceDataIfPresent(
   if (last_slice)
     slice_param_.LongSliceFlags.fields.LastSliceOfPic = 1;
 
-  const bool success = vaapi_wrapper_->SubmitBuffers(
-      {{VASliceParameterBufferType, sizeof(slice_param_), &slice_param_},
-       {VASliceDataBufferType, last_slice_size_, last_slice_data_}});
+  bool success;
+  if (IsTranscrypted()) {
+    success = vaapi_wrapper_->SubmitBuffers(
+        {{VAProtectedSliceDataBufferType, last_transcrypt_params_.length(),
+          last_transcrypt_params_.data()},
+         {VASliceParameterBufferType, sizeof(slice_param_), &slice_param_},
+         {VASliceDataBufferType, last_slice_size_, last_slice_data_}});
+  } else {
+    success = vaapi_wrapper_->SubmitBuffers(
+        {{VASliceParameterBufferType, sizeof(slice_param_), &slice_param_},
+         {VASliceDataBufferType, last_slice_size_, last_slice_data_}});
+  }
   last_slice_data_ = nullptr;
+  last_slice_size_ = 0;
+  last_transcrypt_params_.clear();
   return success;
 }
 

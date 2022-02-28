@@ -10,7 +10,6 @@
 
 #include "base/callback_forward.h"
 #include "base/check.h"
-#include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
 #include "ui/gfx/geometry/size.h"
@@ -59,6 +58,7 @@ class MEDIA_EXPORT VideoDecodeStatsDB {
                      uint64_t frames_dropped,
                      uint64_t frames_power_efficient);
     DecodeStatsEntry(const DecodeStatsEntry& entry);
+    DecodeStatsEntry& operator=(const DecodeStatsEntry& entry);
 
     // Add stats from |right| to |this| entry.
     DecodeStatsEntry& operator+=(const DecodeStatsEntry& right);

@@ -13,8 +13,9 @@
 #include "base/check.h"
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/sys_byteorder.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
@@ -166,7 +167,15 @@ DnsResourceRecord BuildTestHttpsServiceRecord(
   rdata.append(num_buffer, 2);
 
   std::string service_domain;
-  CHECK(DNSDomainFromDot(service_name, &service_domain));
+  if (service_name == ".") {
+    // HTTPS records have special behavior for `service_name == "."` (that it
+    // will be treated as if the service name is the same as the record owner
+    // name), so allow such inputs despite normally being disallowed for
+    // Chrome-encoded DNS names.
+    service_domain = '\x00';
+  } else {
+    CHECK(DNSDomainFromDot(service_name, &service_domain));
+  }
   rdata.append(service_domain);
 
   for (auto& param : params) {
@@ -297,26 +306,28 @@ DnsResponse BuildTestDnsServiceResponse(
     rdata += dns_name;
 
     answers.push_back(BuildTestDnsRecord(answer_name, dns_protocol::kTypeSRV,
-                                         std::move(rdata),
-                                         base::TimeDelta::FromHours(5)));
+                                         std::move(rdata), base::Hours(5)));
   }
 
   return BuildTestDnsResponse(std::move(name), dns_protocol::kTypeSRV, answers);
 }
 
 MockDnsClientRule::Result::Result(ResultType type,
-                                  absl::optional<DnsResponse> response)
-    : type(type), response(std::move(response)) {}
+                                  absl::optional<DnsResponse> response,
+                                  absl::optional<int> net_error)
+    : type(type), response(std::move(response)), net_error(net_error) {}
 
 MockDnsClientRule::Result::Result(DnsResponse response)
-    : type(OK), response(std::move(response)) {}
+    : type(ResultType::kOk),
+      response(std::move(response)),
+      net_error(absl::nullopt) {}
 
-MockDnsClientRule::Result::Result(Result&& result) = default;
+MockDnsClientRule::Result::Result(Result&&) = default;
+
+MockDnsClientRule::Result& MockDnsClientRule::Result::operator=(Result&&) =
+    default;
 
 MockDnsClientRule::Result::~Result() = default;
-
-MockDnsClientRule::Result& MockDnsClientRule::Result::operator=(
-    Result&& result) = default;
 
 MockDnsClientRule::MockDnsClientRule(const std::string& prefix,
                                      uint16_t qtype,
@@ -339,7 +350,7 @@ class MockDnsTransactionFactory::MockTransaction
       public base::SupportsWeakPtr<MockTransaction> {
  public:
   MockTransaction(const MockDnsClientRuleList& rules,
-                  const std::string& hostname,
+                  std::string hostname,
                   uint16_t qtype,
                   bool secure,
                   bool force_doh_server_available,
@@ -347,8 +358,8 @@ class MockDnsTransactionFactory::MockTransaction
                   ResolveContext* resolve_context,
                   bool fast_timeout,
                   DnsTransactionFactory::CallbackType callback)
-      : result_(MockDnsClientRule::FAIL),
-        hostname_(hostname),
+      : result_(MockDnsClientRule::ResultType::kFail),
+        hostname_(std::move(hostname)),
         qtype_(qtype),
         callback_(std::move(callback)),
         started_(false),
@@ -359,17 +370,18 @@ class MockDnsTransactionFactory::MockTransaction
         resolve_context->NumAvailableDohServers(
             resolve_context->current_session_for_testing()) > 0) {
       // Find the relevant rule which matches |qtype|, |secure|, prefix of
-      // |hostname|, and |url_request_context| (iff the rule context is not
+      // |hostname_|, and |url_request_context| (iff the rule context is not
       // null).
       for (size_t i = 0; i < rules.size(); ++i) {
         const std::string& prefix = rules[i].prefix;
         if ((rules[i].qtype == qtype) && (rules[i].secure == secure) &&
-            (hostname.size() >= prefix.size()) &&
-            (hostname.compare(0, prefix.size(), prefix) == 0) &&
+            (hostname_.size() >= prefix.size()) &&
+            (hostname_.compare(0, prefix.size(), prefix) == 0) &&
             (!rules[i].context ||
              rules[i].context == resolve_context->url_request_context())) {
           const MockDnsClientRule::Result* result = &rules[i].result;
           result_ = MockDnsClientRule::Result(result->type);
+          result_.net_error = result->net_error;
           delayed_ = rules[i].delay;
 
           // Generate a DnsResponse when not provided with the rule.
@@ -379,8 +391,8 @@ class MockDnsTransactionFactory::MockTransaction
           absl::optional<DnsQuery> query(absl::in_place, 22 /* id */, dns_name,
                                          qtype_);
           switch (result->type) {
-            case MockDnsClientRule::NODOMAIN:
-            case MockDnsClientRule::EMPTY:
+            case MockDnsClientRule::ResultType::kNoDomain:
+            case MockDnsClientRule::ResultType::kEmpty:
               DCHECK(!result->response);  // Not expected to be provided.
               authority_records = {BuildTestDnsRecord(
                   hostname_, dns_protocol::kTypeSOA, "fake rdata")};
@@ -390,24 +402,32 @@ class MockDnsTransactionFactory::MockTransaction
                   authority_records,
                   std::vector<DnsResourceRecord>() /* additional_records */,
                   query,
-                  result->type == MockDnsClientRule::NODOMAIN
+                  result->type == MockDnsClientRule::ResultType::kNoDomain
                       ? dns_protocol::kRcodeNXDOMAIN
                       : 0);
               break;
-            case MockDnsClientRule::FAIL:
-            case MockDnsClientRule::TIMEOUT:
+            case MockDnsClientRule::ResultType::kFail:
+              if (result->response)
+                SetResponse(result);
+              break;
+            case MockDnsClientRule::ResultType::kTimeout:
               DCHECK(!result->response);  // Not expected to be provided.
               break;
-            case MockDnsClientRule::SLOW:
+            case MockDnsClientRule::ResultType::kSlow:
               if (!fast_timeout)
                 SetResponse(result);
               break;
-            case MockDnsClientRule::OK:
+            case MockDnsClientRule::ResultType::kOk:
               SetResponse(result);
               break;
-            case MockDnsClientRule::MALFORMED:
+            case MockDnsClientRule::ResultType::kMalformed:
               DCHECK(!result->response);  // Not expected to be provided.
               result_.response = CreateMalformedResponse(hostname_, qtype_);
+              break;
+            case MockDnsClientRule::ResultType::kUnexpected:
+              ADD_FAILURE()
+                  << "Unexpected DNS transaction created for hostname "
+                  << hostname_;
               break;
           }
 
@@ -465,33 +485,43 @@ class MockDnsTransactionFactory::MockTransaction
 
   void Finish() {
     switch (result_.type) {
-      case MockDnsClientRule::NODOMAIN:
-      case MockDnsClientRule::FAIL:
-        std::move(callback_).Run(
-            this, ERR_NAME_NOT_RESOLVED,
-            result_.response ? &result_.response.value() : nullptr,
-            absl::nullopt);
+      case MockDnsClientRule::ResultType::kNoDomain:
+      case MockDnsClientRule::ResultType::kFail: {
+        int error = result_.net_error.value_or(ERR_NAME_NOT_RESOLVED);
+        DCHECK_NE(error, OK);
+        std::move(callback_).Run(this, error,
+                                 base::OptionalOrNullptr(result_.response),
+                                 absl::nullopt);
         break;
-      case MockDnsClientRule::EMPTY:
-      case MockDnsClientRule::OK:
-      case MockDnsClientRule::MALFORMED:
+      }
+      case MockDnsClientRule::ResultType::kEmpty:
+      case MockDnsClientRule::ResultType::kOk:
+      case MockDnsClientRule::ResultType::kMalformed:
+        DCHECK(!result_.net_error.has_value());
         std::move(callback_).Run(
-            this, OK, result_.response ? &result_.response.value() : nullptr,
-            absl::nullopt);
+            this, OK, base::OptionalOrNullptr(result_.response), absl::nullopt);
         break;
-      case MockDnsClientRule::TIMEOUT:
+      case MockDnsClientRule::ResultType::kTimeout:
+        DCHECK(!result_.net_error.has_value());
         std::move(callback_).Run(this, ERR_DNS_TIMED_OUT, nullptr,
                                  absl::nullopt);
         break;
-      case MockDnsClientRule::SLOW:
+      case MockDnsClientRule::ResultType::kSlow:
         if (result_.response) {
           std::move(callback_).Run(
-              this, OK, result_.response ? &result_.response.value() : nullptr,
+              this, result_.net_error.value_or(OK),
+              result_.response ? &result_.response.value() : nullptr,
               absl::nullopt);
         } else {
+          DCHECK(!result_.net_error.has_value());
           std::move(callback_).Run(this, ERR_DNS_TIMED_OUT, nullptr,
                                    absl::nullopt);
         }
+        break;
+      case MockDnsClientRule::ResultType::kUnexpected:
+        ADD_FAILURE() << "Unexpected DNS transaction completed for hostname "
+                      << hostname_;
+        break;
     }
   }
 
@@ -537,7 +567,7 @@ MockDnsTransactionFactory::MockDnsTransactionFactory(
 MockDnsTransactionFactory::~MockDnsTransactionFactory() = default;
 
 std::unique_ptr<DnsTransaction> MockDnsTransactionFactory::CreateTransaction(
-    const std::string& hostname,
+    std::string hostname,
     uint16_t qtype,
     DnsTransactionFactory::CallbackType callback,
     const NetLogWithSource&,
@@ -546,9 +576,10 @@ std::unique_ptr<DnsTransaction> MockDnsTransactionFactory::CreateTransaction(
     ResolveContext* resolve_context,
     bool fast_timeout) {
   std::unique_ptr<MockTransaction> transaction =
-      std::make_unique<MockTransaction>(
-          rules_, hostname, qtype, secure, force_doh_server_available_,
-          secure_dns_mode, resolve_context, fast_timeout, std::move(callback));
+      std::make_unique<MockTransaction>(rules_, std::move(hostname), qtype,
+                                        secure, force_doh_server_available_,
+                                        secure_dns_mode, resolve_context,
+                                        fast_timeout, std::move(callback));
   if (transaction->delayed())
     delayed_transactions_.push_back(transaction->AsWeakPtr());
   return transaction;

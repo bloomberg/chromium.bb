@@ -30,16 +30,29 @@
 
 #include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
 
+#include "build/os_buildflags.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_string_stringsequence.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_constrain_boolean_parameters.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_constrain_dom_string_parameters.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_constrain_double_range.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_constrain_long_range.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_constraints.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_boolean_constrainbooleanparameters.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_boolean_constraindoublerange_double.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_constraindomstringparameters_string_stringsequence.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_constraindoublerange_double.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_constrainlongrange_long.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -47,7 +60,6 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
-
 namespace media_constraints_impl {
 
 // A naked value is treated as an "ideal" value in the basic constraints,
@@ -359,13 +371,17 @@ static void ParseOldStyleNames(
     } else if (constraint.name_.Equals(kEnableDtlsSrtp)) {
       bool value = ToBoolean(constraint.value_);
       if (value) {
-        UseCounter::Count(context,
-                          WebFeature::kRTCConstraintEnableDtlsSrtpTrue);
+        Deprecation::CountDeprecation(
+            context, WebFeature::kRTCConstraintEnableDtlsSrtpTrue);
       } else {
-        UseCounter::Count(context,
-                          WebFeature::kRTCConstraintEnableDtlsSrtpFalse);
+        Deprecation::CountDeprecation(
+            context, WebFeature::kRTCConstraintEnableDtlsSrtpFalse);
       }
+#if BUILDFLAG(IS_FUCHSIA)
+      // Special dispensation for Fuchsia to run SDES in 2002
+      // TODO(crbug.com/804275): Delete when Fuchsia no longer depends on it.
       result.enable_dtls_srtp.SetExact(ToBoolean(constraint.value_));
+#endif
     } else if (constraint.name_.Equals(kEnableRtpDataChannels)) {
       // This constraint does not turn on RTP data channels, but we do not
       // want it to cause an error, so we parse it and ignore it.
@@ -493,159 +509,264 @@ MediaConstraints Create(ExecutionContext* context,
   return CreateFromNamedConstraints(context, mandatory, optional, error_state);
 }
 
-void CopyLongConstraint(const LongOrConstrainLongRange& blink_union_form,
+void CopyLongConstraint(const V8ConstrainLong* blink_union_form,
                         NakedValueDisposition naked_treatment,
                         LongConstraint& web_form) {
   web_form.SetIsPresent(true);
-  if (blink_union_form.IsLong()) {
-    switch (naked_treatment) {
-      case NakedValueDisposition::kTreatAsIdeal:
-        web_form.SetIdeal(blink_union_form.GetAsLong());
-        break;
-      case NakedValueDisposition::kTreatAsExact:
-        web_form.SetExact(blink_union_form.GetAsLong());
-        break;
+  switch (blink_union_form->GetContentType()) {
+    case V8ConstrainLong::ContentType::kConstrainLongRange: {
+      const auto* blink_form = blink_union_form->GetAsConstrainLongRange();
+      if (blink_form->hasMin()) {
+        web_form.SetMin(blink_form->min());
+      }
+      if (blink_form->hasMax()) {
+        web_form.SetMax(blink_form->max());
+      }
+      if (blink_form->hasIdeal()) {
+        web_form.SetIdeal(blink_form->ideal());
+      }
+      if (blink_form->hasExact()) {
+        web_form.SetExact(blink_form->exact());
+      }
+      break;
     }
-    return;
-  }
-  const auto* blink_form = blink_union_form.GetAsConstrainLongRange();
-  if (blink_form->hasMin()) {
-    web_form.SetMin(blink_form->min());
-  }
-  if (blink_form->hasMax()) {
-    web_form.SetMax(blink_form->max());
-  }
-  if (blink_form->hasIdeal()) {
-    web_form.SetIdeal(blink_form->ideal());
-  }
-  if (blink_form->hasExact()) {
-    web_form.SetExact(blink_form->exact());
+    case V8ConstrainLong::ContentType::kLong:
+      switch (naked_treatment) {
+        case NakedValueDisposition::kTreatAsIdeal:
+          web_form.SetIdeal(blink_union_form->GetAsLong());
+          break;
+        case NakedValueDisposition::kTreatAsExact:
+          web_form.SetExact(blink_union_form->GetAsLong());
+          break;
+      }
+      break;
   }
 }
 
-void CopyDoubleConstraint(const DoubleOrConstrainDoubleRange& blink_union_form,
+void CopyDoubleConstraint(const V8ConstrainDouble* blink_union_form,
                           NakedValueDisposition naked_treatment,
                           DoubleConstraint& web_form) {
   web_form.SetIsPresent(true);
-  if (blink_union_form.IsDouble()) {
-    switch (naked_treatment) {
-      case NakedValueDisposition::kTreatAsIdeal:
-        web_form.SetIdeal(blink_union_form.GetAsDouble());
-        break;
-      case NakedValueDisposition::kTreatAsExact:
-        web_form.SetExact(blink_union_form.GetAsDouble());
-        break;
+  switch (blink_union_form->GetContentType()) {
+    case V8ConstrainDouble::ContentType::kConstrainDoubleRange: {
+      const auto* blink_form = blink_union_form->GetAsConstrainDoubleRange();
+      if (blink_form->hasMin()) {
+        web_form.SetMin(blink_form->min());
+      }
+      if (blink_form->hasMax()) {
+        web_form.SetMax(blink_form->max());
+      }
+      if (blink_form->hasIdeal()) {
+        web_form.SetIdeal(blink_form->ideal());
+      }
+      if (blink_form->hasExact()) {
+        web_form.SetExact(blink_form->exact());
+      }
+      break;
     }
-    return;
-  }
-  auto* blink_form = blink_union_form.GetAsConstrainDoubleRange();
-  if (blink_form->hasMin()) {
-    web_form.SetMin(blink_form->min());
-  }
-  if (blink_form->hasMax()) {
-    web_form.SetMax(blink_form->max());
-  }
-  if (blink_form->hasIdeal()) {
-    web_form.SetIdeal(blink_form->ideal());
-  }
-  if (blink_form->hasExact()) {
-    web_form.SetExact(blink_form->exact());
+    case V8ConstrainDouble::ContentType::kDouble:
+      switch (naked_treatment) {
+        case NakedValueDisposition::kTreatAsIdeal:
+          web_form.SetIdeal(blink_union_form->GetAsDouble());
+          break;
+        case NakedValueDisposition::kTreatAsExact:
+          web_form.SetExact(blink_union_form->GetAsDouble());
+          break;
+      }
+      break;
   }
 }
 
 void CopyBooleanOrDoubleConstraint(
-    const BooleanOrDoubleOrConstrainDoubleRange& blink_union_form,
+    const V8UnionBooleanOrConstrainDouble* blink_union_form,
     NakedValueDisposition naked_treatment,
     DoubleConstraint& web_form) {
-  if (blink_union_form.IsBoolean()) {
-    web_form.SetIsPresent(blink_union_form.GetAsBoolean());
-    return;
+  switch (blink_union_form->GetContentType()) {
+    case V8UnionBooleanOrConstrainDouble::ContentType::kBoolean:
+      web_form.SetIsPresent(blink_union_form->GetAsBoolean());
+      break;
+    case V8UnionBooleanOrConstrainDouble::ContentType::kConstrainDoubleRange:
+    case V8UnionBooleanOrConstrainDouble::ContentType::kDouble:
+      CopyDoubleConstraint(blink_union_form->GetAsV8ConstrainDouble(),
+                           naked_treatment, web_form);
+      break;
   }
-  DoubleOrConstrainDoubleRange double_constraint;
-  if (blink_union_form.IsDouble()) {
-    double_constraint.SetDouble(blink_union_form.GetAsDouble());
-  } else {
-    DCHECK(blink_union_form.IsConstrainDoubleRange());
-    double_constraint.SetConstrainDoubleRange(
-        blink_union_form.GetAsConstrainDoubleRange());
-  }
-  CopyDoubleConstraint(double_constraint, naked_treatment, web_form);
 }
 
-void CopyStringConstraint(
-    const StringOrStringSequenceOrConstrainDOMStringParameters&
-        blink_union_form,
+bool ValidateString(const String& str, MediaErrorState& error_state) {
+  DCHECK(!error_state.HadException());
+
+  if (str.length() > kMaxConstraintStringLength) {
+    error_state.ThrowTypeError("Constraint string too long.");
+    return false;
+  }
+  return true;
+}
+
+bool ValidateStringSeq(const Vector<String>& strs,
+                       MediaErrorState& error_state) {
+  DCHECK(!error_state.HadException());
+
+  if (strs.size() > kMaxConstraintStringSeqLength) {
+    error_state.ThrowTypeError("Constraint string sequence too long.");
+    return false;
+  }
+
+  for (const String& str : strs) {
+    if (!ValidateString(str, error_state)) {
+      DCHECK(error_state.HadException());
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool ValidateStringConstraint(
+    V8UnionStringOrStringSequence* string_or_string_seq,
+    MediaErrorState& error_state) {
+  DCHECK(!error_state.HadException());
+
+  switch (string_or_string_seq->GetContentType()) {
+    case V8UnionStringOrStringSequence::ContentType::kString: {
+      return ValidateString(string_or_string_seq->GetAsString(), error_state);
+    }
+    case V8UnionStringOrStringSequence::ContentType::kStringSequence: {
+      return ValidateStringSeq(string_or_string_seq->GetAsStringSequence(),
+                               error_state);
+    }
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool ValidateStringConstraint(const V8ConstrainDOMString* blink_union_form,
+                              MediaErrorState& error_state) {
+  DCHECK(!error_state.HadException());
+
+  switch (blink_union_form->GetContentType()) {
+    case V8ConstrainDOMString::ContentType::kConstrainDOMStringParameters: {
+      const auto* blink_form =
+          blink_union_form->GetAsConstrainDOMStringParameters();
+      if (blink_form->hasIdeal() &&
+          !ValidateStringConstraint(blink_form->ideal(), error_state)) {
+        return false;
+      }
+      if (blink_form->hasExact() &&
+          !ValidateStringConstraint(blink_form->exact(), error_state)) {
+        return false;
+      }
+      return true;
+    }
+    case V8ConstrainDOMString::ContentType::kString:
+      return ValidateString(blink_union_form->GetAsString(), error_state);
+    case V8ConstrainDOMString::ContentType::kStringSequence:
+      return ValidateStringSeq(blink_union_form->GetAsStringSequence(),
+                               error_state);
+  }
+  NOTREACHED();
+  return false;
+}
+
+WARN_UNUSED_RESULT bool ValidateAndCopyStringConstraint(
+    const V8ConstrainDOMString* blink_union_form,
     NakedValueDisposition naked_treatment,
-    StringConstraint& web_form) {
-  web_form.SetIsPresent(true);
-  if (blink_union_form.IsString()) {
-    switch (naked_treatment) {
-      case NakedValueDisposition::kTreatAsIdeal:
-        web_form.SetIdeal(Vector<String>(1, blink_union_form.GetAsString()));
-        break;
-      case NakedValueDisposition::kTreatAsExact:
-        web_form.SetExact(Vector<String>(1, blink_union_form.GetAsString()));
+    StringConstraint& web_form,
+    MediaErrorState& error_state) {
+  DCHECK(!error_state.HadException());
 
-        break;
-    }
-    return;
+  if (!ValidateStringConstraint(blink_union_form, error_state)) {
+    return false;
   }
-  if (blink_union_form.IsStringSequence()) {
-    switch (naked_treatment) {
-      case NakedValueDisposition::kTreatAsIdeal:
-        web_form.SetIdeal(blink_union_form.GetAsStringSequence());
-        break;
-      case NakedValueDisposition::kTreatAsExact:
-        web_form.SetExact(blink_union_form.GetAsStringSequence());
-        break;
+  web_form.SetIsPresent(true);
+  switch (blink_union_form->GetContentType()) {
+    case V8ConstrainDOMString::ContentType::kConstrainDOMStringParameters: {
+      const auto* blink_form =
+          blink_union_form->GetAsConstrainDOMStringParameters();
+      if (blink_form->hasIdeal()) {
+        switch (blink_form->ideal()->GetContentType()) {
+          case V8UnionStringOrStringSequence::ContentType::kString:
+            web_form.SetIdeal(
+                Vector<String>(1, blink_form->ideal()->GetAsString()));
+            break;
+          case V8UnionStringOrStringSequence::ContentType::kStringSequence:
+            web_form.SetIdeal(blink_form->ideal()->GetAsStringSequence());
+            break;
+        }
+      }
+      if (blink_form->hasExact()) {
+        switch (blink_form->exact()->GetContentType()) {
+          case V8UnionStringOrStringSequence::ContentType::kString:
+            web_form.SetExact(
+                Vector<String>(1, blink_form->exact()->GetAsString()));
+            break;
+          case V8UnionStringOrStringSequence::ContentType::kStringSequence:
+            web_form.SetExact(blink_form->exact()->GetAsStringSequence());
+            break;
+        }
+      }
+      break;
     }
-    return;
+    case V8ConstrainDOMString::ContentType::kString:
+      switch (naked_treatment) {
+        case NakedValueDisposition::kTreatAsIdeal:
+          web_form.SetIdeal(Vector<String>(1, blink_union_form->GetAsString()));
+          break;
+        case NakedValueDisposition::kTreatAsExact:
+          web_form.SetExact(Vector<String>(1, blink_union_form->GetAsString()));
+          break;
+      }
+      break;
+    case V8ConstrainDOMString::ContentType::kStringSequence:
+      switch (naked_treatment) {
+        case NakedValueDisposition::kTreatAsIdeal:
+          web_form.SetIdeal(blink_union_form->GetAsStringSequence());
+          break;
+        case NakedValueDisposition::kTreatAsExact:
+          web_form.SetExact(blink_union_form->GetAsStringSequence());
+          break;
+      }
+      break;
   }
-  auto* blink_form = blink_union_form.GetAsConstrainDOMStringParameters();
-  if (blink_form->hasIdeal()) {
-    if (blink_form->ideal().IsStringSequence()) {
-      web_form.SetIdeal(blink_form->ideal().GetAsStringSequence());
-    } else if (blink_form->ideal().IsString()) {
-      web_form.SetIdeal(Vector<String>(1, blink_form->ideal().GetAsString()));
-    }
-  }
-  if (blink_form->hasExact()) {
-    if (blink_form->exact().IsStringSequence()) {
-      web_form.SetExact(blink_form->exact().GetAsStringSequence());
-    } else if (blink_form->exact().IsString()) {
-      web_form.SetExact(Vector<String>(1, blink_form->exact().GetAsString()));
+  return true;
+}
+
+void CopyBooleanConstraint(const V8ConstrainBoolean* blink_union_form,
+                           NakedValueDisposition naked_treatment,
+                           BooleanConstraint& web_form) {
+  web_form.SetIsPresent(true);
+  switch (blink_union_form->GetContentType()) {
+    case V8ConstrainBoolean::ContentType::kBoolean:
+      switch (naked_treatment) {
+        case NakedValueDisposition::kTreatAsIdeal:
+          web_form.SetIdeal(blink_union_form->GetAsBoolean());
+          break;
+        case NakedValueDisposition::kTreatAsExact:
+          web_form.SetExact(blink_union_form->GetAsBoolean());
+          break;
+      }
+      break;
+    case V8ConstrainBoolean::ContentType::kConstrainBooleanParameters: {
+      const auto* blink_form =
+          blink_union_form->GetAsConstrainBooleanParameters();
+      if (blink_form->hasIdeal()) {
+        web_form.SetIdeal(blink_form->ideal());
+      }
+      if (blink_form->hasExact()) {
+        web_form.SetExact(blink_form->exact());
+      }
+      break;
     }
   }
 }
 
-void CopyBooleanConstraint(
-    const BooleanOrConstrainBooleanParameters& blink_union_form,
+bool ValidateAndCopyConstraintSet(
+    const MediaTrackConstraintSet* constraints_in,
     NakedValueDisposition naked_treatment,
-    BooleanConstraint& web_form) {
-  web_form.SetIsPresent(true);
-  if (blink_union_form.IsBoolean()) {
-    switch (naked_treatment) {
-      case NakedValueDisposition::kTreatAsIdeal:
-        web_form.SetIdeal(blink_union_form.GetAsBoolean());
-        break;
-      case NakedValueDisposition::kTreatAsExact:
-        web_form.SetExact(blink_union_form.GetAsBoolean());
-        break;
-    }
-    return;
-  }
-  auto* blink_form = blink_union_form.GetAsConstrainBooleanParameters();
-  if (blink_form->hasIdeal()) {
-    web_form.SetIdeal(blink_form->ideal());
-  }
-  if (blink_form->hasExact()) {
-    web_form.SetExact(blink_form->exact());
-  }
-}
+    MediaTrackConstraintSetPlatform& constraint_buffer,
+    MediaErrorState& error_state) {
+  DCHECK(!error_state.HadException());
 
-void CopyConstraintSet(const MediaTrackConstraintSet* constraints_in,
-                       NakedValueDisposition naked_treatment,
-                       MediaTrackConstraintSetPlatform& constraint_buffer) {
   if (constraints_in->hasWidth()) {
     CopyLongConstraint(constraints_in->width(), naked_treatment,
                        constraint_buffer.width);
@@ -663,12 +784,20 @@ void CopyConstraintSet(const MediaTrackConstraintSet* constraints_in,
                          constraint_buffer.frame_rate);
   }
   if (constraints_in->hasFacingMode()) {
-    CopyStringConstraint(constraints_in->facingMode(), naked_treatment,
-                         constraint_buffer.facing_mode);
+    if (!ValidateAndCopyStringConstraint(
+            constraints_in->facingMode(), naked_treatment,
+            constraint_buffer.facing_mode, error_state)) {
+      DCHECK(error_state.HadException());
+      return false;
+    }
   }
   if (constraints_in->hasResizeMode()) {
-    CopyStringConstraint(constraints_in->resizeMode(), naked_treatment,
-                         constraint_buffer.resize_mode);
+    if (!ValidateAndCopyStringConstraint(
+            constraints_in->resizeMode(), naked_treatment,
+            constraint_buffer.resize_mode, error_state)) {
+      DCHECK(error_state.HadException());
+      return false;
+    }
   }
   if (constraints_in->hasSampleRate()) {
     CopyLongConstraint(constraints_in->sampleRate(), naked_treatment,
@@ -699,16 +828,28 @@ void CopyConstraintSet(const MediaTrackConstraintSet* constraints_in,
                        constraint_buffer.channel_count);
   }
   if (constraints_in->hasDeviceId()) {
-    CopyStringConstraint(constraints_in->deviceId(), naked_treatment,
-                         constraint_buffer.device_id);
+    if (!ValidateAndCopyStringConstraint(
+            constraints_in->deviceId(), naked_treatment,
+            constraint_buffer.device_id, error_state)) {
+      DCHECK(error_state.HadException());
+      return false;
+    }
   }
   if (constraints_in->hasGroupId()) {
-    CopyStringConstraint(constraints_in->groupId(), naked_treatment,
-                         constraint_buffer.group_id);
+    if (!ValidateAndCopyStringConstraint(
+            constraints_in->groupId(), naked_treatment,
+            constraint_buffer.group_id, error_state)) {
+      DCHECK(error_state.HadException());
+      return false;
+    }
   }
   if (constraints_in->hasVideoKind()) {
-    CopyStringConstraint(constraints_in->videoKind(), naked_treatment,
-                         constraint_buffer.video_kind);
+    if (!ValidateAndCopyStringConstraint(
+            constraints_in->videoKind(), naked_treatment,
+            constraint_buffer.video_kind, error_state)) {
+      DCHECK(error_state.HadException());
+      return false;
+    }
   }
   if (constraints_in->hasPan()) {
     CopyBooleanOrDoubleConstraint(constraints_in->pan(), naked_treatment,
@@ -722,20 +863,30 @@ void CopyConstraintSet(const MediaTrackConstraintSet* constraints_in,
     CopyBooleanOrDoubleConstraint(constraints_in->zoom(), naked_treatment,
                                   constraint_buffer.zoom);
   }
+  return true;
 }
 
 MediaConstraints ConvertTrackConstraintsToMediaConstraints(
-    const MediaTrackConstraints* constraints_in) {
+    const MediaTrackConstraints* constraints_in,
+    MediaErrorState& error_state) {
   MediaConstraints constraints;
   MediaTrackConstraintSetPlatform constraint_buffer;
   Vector<MediaTrackConstraintSetPlatform> advanced_buffer;
-  CopyConstraintSet(constraints_in, NakedValueDisposition::kTreatAsIdeal,
-                    constraint_buffer);
+  if (!ValidateAndCopyConstraintSet(constraints_in,
+                                    NakedValueDisposition::kTreatAsIdeal,
+                                    constraint_buffer, error_state)) {
+    DCHECK(error_state.HadException());
+    return constraints;
+  }
   if (constraints_in->hasAdvanced()) {
     for (const auto& element : constraints_in->advanced()) {
       MediaTrackConstraintSetPlatform advanced_element;
-      CopyConstraintSet(element, NakedValueDisposition::kTreatAsExact,
-                        advanced_element);
+      if (!ValidateAndCopyConstraintSet(element,
+                                        NakedValueDisposition::kTreatAsExact,
+                                        advanced_element, error_state)) {
+        DCHECK(error_state.HadException());
+        return constraints;
+      }
       advanced_buffer.push_back(advanced_element);
     }
   }
@@ -747,7 +898,10 @@ MediaConstraints Create(ExecutionContext* context,
                         const MediaTrackConstraints* constraints_in,
                         MediaErrorState& error_state) {
   MediaConstraints standard_form =
-      ConvertTrackConstraintsToMediaConstraints(constraints_in);
+      ConvertTrackConstraintsToMediaConstraints(constraints_in, error_state);
+  if (error_state.HadException()) {
+    return standard_form;
+  }
   if (constraints_in->hasOptional() || constraints_in->hasMandatory()) {
     if (!standard_form.IsUnconstrained()) {
       UseCounter::Count(context, WebFeature::kMediaStreamConstraintsOldAndNew);
@@ -820,11 +974,11 @@ U GetNakedValue(T input, NakedValueDisposition which) {
   return input.Exact();
 }
 
-LongOrConstrainLongRange ConvertLong(const LongConstraint& input,
-                                     NakedValueDisposition naked_treatment) {
-  LongOrConstrainLongRange output_union;
+V8ConstrainLong* ConvertLong(const LongConstraint& input,
+                             NakedValueDisposition naked_treatment) {
   if (UseNakedNumeric(input, naked_treatment)) {
-    output_union.SetLong(GetNakedValue<uint32_t>(input, naked_treatment));
+    return MakeGarbageCollected<V8ConstrainLong>(
+        GetNakedValue<uint32_t>(input, naked_treatment));
   } else if (!input.IsUnconstrained()) {
     ConstrainLongRange* output = ConstrainLongRange::Create();
     if (input.HasExact())
@@ -835,17 +989,16 @@ LongOrConstrainLongRange ConvertLong(const LongConstraint& input,
       output->setMax(input.Max());
     if (input.HasIdeal())
       output->setIdeal(input.Ideal());
-    output_union.SetConstrainLongRange(output);
+    return MakeGarbageCollected<V8ConstrainLong>(output);
   }
-  return output_union;
+  return nullptr;
 }
 
-DoubleOrConstrainDoubleRange ConvertDouble(
-    const DoubleConstraint& input,
-    NakedValueDisposition naked_treatment) {
-  DoubleOrConstrainDoubleRange output_union;
+V8ConstrainDouble* ConvertDouble(const DoubleConstraint& input,
+                                 NakedValueDisposition naked_treatment) {
   if (UseNakedNumeric(input, naked_treatment)) {
-    output_union.SetDouble(GetNakedValue<double>(input, naked_treatment));
+    return MakeGarbageCollected<V8ConstrainDouble>(
+        GetNakedValue<double>(input, naked_treatment));
   } else if (!input.IsUnconstrained()) {
     ConstrainDoubleRange* output = ConstrainDoubleRange::Create();
     if (input.HasExact())
@@ -856,17 +1009,17 @@ DoubleOrConstrainDoubleRange ConvertDouble(
       output->setMin(input.Min());
     if (input.HasMax())
       output->setMax(input.Max());
-    output_union.SetConstrainDoubleRange(output);
+    return MakeGarbageCollected<V8ConstrainDouble>(output);
   }
-  return output_union;
+  return nullptr;
 }
 
-BooleanOrDoubleOrConstrainDoubleRange ConvertBooleanOrDouble(
+V8UnionBooleanOrConstrainDouble* ConvertBooleanOrDouble(
     const DoubleConstraint& input,
     NakedValueDisposition naked_treatment) {
-  BooleanOrDoubleOrConstrainDoubleRange output_union;
   if (UseNakedNumeric(input, naked_treatment)) {
-    output_union.SetDouble(GetNakedValue<double>(input, naked_treatment));
+    return MakeGarbageCollected<V8UnionBooleanOrConstrainDouble>(
+        GetNakedValue<double>(input, naked_treatment));
   } else if (!input.IsUnconstrained()) {
     ConstrainDoubleRange* output = ConstrainDoubleRange::Create();
     if (input.HasExact())
@@ -877,29 +1030,27 @@ BooleanOrDoubleOrConstrainDoubleRange ConvertBooleanOrDouble(
       output->setMin(input.Min());
     if (input.HasMax())
       output->setMax(input.Max());
-    output_union.SetConstrainDoubleRange(output);
+    return MakeGarbageCollected<V8UnionBooleanOrConstrainDouble>(output);
   }
-  return output_union;
+  return nullptr;
 }
 
-StringOrStringSequence ConvertStringSequence(
+V8UnionStringOrStringSequence* ConvertStringSequence(
     const WebVector<WebString>& input) {
-  StringOrStringSequence the_strings;
   if (input.size() > 1) {
     Vector<String> buffer;
     for (const auto& scanner : input)
       buffer.push_back(scanner);
-    the_strings.SetStringSequence(buffer);
+    return MakeGarbageCollected<V8UnionStringOrStringSequence>(
+        std::move(buffer));
   } else if (!input.empty()) {
-    the_strings.SetString(input[0]);
+    return MakeGarbageCollected<V8UnionStringOrStringSequence>(input[0]);
   }
-  return the_strings;
+  return nullptr;
 }
 
-StringOrStringSequenceOrConstrainDOMStringParameters ConvertString(
-    const StringConstraint& input,
-    NakedValueDisposition naked_treatment) {
-  StringOrStringSequenceOrConstrainDOMStringParameters output_union;
+V8ConstrainDOMString* ConvertString(const StringConstraint& input,
+                                    NakedValueDisposition naked_treatment) {
   if (UseNakedNonNumeric(input, naked_treatment)) {
     WebVector<WebString> input_buffer(
         GetNakedValue<WebVector<WebString>>(input, naked_treatment));
@@ -907,10 +1058,11 @@ StringOrStringSequenceOrConstrainDOMStringParameters ConvertString(
       Vector<String> buffer;
       for (const auto& scanner : input_buffer)
         buffer.push_back(scanner);
-      output_union.SetStringSequence(buffer);
+      return MakeGarbageCollected<V8ConstrainDOMString>(std::move(buffer));
     } else if (!input_buffer.empty()) {
-      output_union.SetString(input_buffer[0]);
+      return MakeGarbageCollected<V8ConstrainDOMString>(input_buffer[0]);
     }
+    return nullptr;
   } else if (!input.IsUnconstrained()) {
     ConstrainDOMStringParameters* output =
         ConstrainDOMStringParameters::Create();
@@ -918,26 +1070,25 @@ StringOrStringSequenceOrConstrainDOMStringParameters ConvertString(
       output->setExact(ConvertStringSequence(input.Exact()));
     if (input.HasIdeal())
       output->setIdeal(ConvertStringSequence(input.Ideal()));
-    output_union.SetConstrainDOMStringParameters(output);
+    return MakeGarbageCollected<V8ConstrainDOMString>(output);
   }
-  return output_union;
+  return nullptr;
 }
 
-BooleanOrConstrainBooleanParameters ConvertBoolean(
-    const BooleanConstraint& input,
-    NakedValueDisposition naked_treatment) {
-  BooleanOrConstrainBooleanParameters output_union;
+V8ConstrainBoolean* ConvertBoolean(const BooleanConstraint& input,
+                                   NakedValueDisposition naked_treatment) {
   if (UseNakedNonNumeric(input, naked_treatment)) {
-    output_union.SetBoolean(GetNakedValue<bool>(input, naked_treatment));
+    return MakeGarbageCollected<V8ConstrainBoolean>(
+        GetNakedValue<bool>(input, naked_treatment));
   } else if (!input.IsUnconstrained()) {
     ConstrainBooleanParameters* output = ConstrainBooleanParameters::Create();
     if (input.HasExact())
       output->setExact(input.Exact());
     if (input.HasIdeal())
       output->setIdeal(input.Ideal());
-    output_union.SetConstrainBooleanParameters(output);
+    return MakeGarbageCollected<V8ConstrainBoolean>(output);
   }
-  return output_union;
+  return nullptr;
 }
 
 void ConvertConstraintSet(const MediaTrackConstraintSetPlatform& input,

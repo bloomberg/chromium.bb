@@ -8,31 +8,34 @@ import {ListSelectionModel} from 'chrome://resources/js/cr/ui/list_selection_mod
 import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://test/chai_assert.js';
 
-import {MockVolumeManager} from '../../background/js/mock_volume_manager.m.js';
-import {installMockChrome} from '../../common/js/mock_chrome.m.js';
-import {MockDirectoryEntry, MockFileEntry, MockFileSystem} from '../../common/js/mock_entry.m.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
-import {FileOperationManager} from '../../externs/background/file_operation_manager.m.js';
-import {importerHistoryInterfaces} from '../../externs/background/import_history.m.js';
-import {ProgressCenter} from '../../externs/background/progress_center.m.js';
-import {VolumeManager} from '../../externs/volume_manager.m.js';
+import {MockVolumeManager} from '../../background/js/mock_volume_manager.js';
+import {DialogType} from '../../common/js/dialog_type.js';
+import {installMockChrome} from '../../common/js/mock_chrome.js';
+import {MockDirectoryEntry, MockFileEntry, MockFileSystem} from '../../common/js/mock_entry.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {FileOperationManager} from '../../externs/background/file_operation_manager.js';
+import {importerHistoryInterfaces} from '../../externs/background/import_history.js';
+import {ProgressCenter} from '../../externs/background/progress_center.js';
+import {VolumeManager} from '../../externs/volume_manager.js';
+import {FilesToast} from '../elements/files_toast.js';
 
-import {DialogType} from './dialog_type.m.js';
-import {FakeFileSelectionHandler} from './fake_file_selection_handler.m.js';
-import {FileListModel} from './file_list_model.m.js';
-import {FileSelectionHandler} from './file_selection.m.js';
-import {FileTransferController} from './file_transfer_controller.m.js';
-import {MockMetadataModel} from './metadata/mock_metadata.m.js';
-import {ThumbnailModel} from './metadata/thumbnail_model.m.js';
-import {createFakeDirectoryModel} from './mock_directory_model.m.js';
-import {A11yAnnounce} from './ui/a11y_announce.m.js';
-import {DirectoryTree} from './ui/directory_tree.m.js';
-import {FileGrid} from './ui/file_grid.m.js';
-import {FileTable} from './ui/file_table.m.js';
-import {ListContainer} from './ui/list_container.m.js';
+import {FakeFileSelectionHandler} from './fake_file_selection_handler.js';
+import {FileListModel} from './file_list_model.js';
+import {FileSelectionHandler} from './file_selection.js';
+import {FileTransferController} from './file_transfer_controller.js';
+import {MockMetadataModel} from './metadata/mock_metadata.js';
+import {createFakeDirectoryModel} from './mock_directory_model.js';
+import {A11yAnnounce} from './ui/a11y_announce.js';
+import {DirectoryTree} from './ui/directory_tree.js';
+import {FileGrid} from './ui/file_grid.js';
+import {FileTable} from './ui/file_table.js';
+import {ListContainer} from './ui/list_container.js';
 
 /** @type {!ListContainer} */
 let listContainer;
+
+/** @type {!FileOperationManager} */
+let fileOperationManager;
 
 /** @type {!FileTransferController} */
 let fileTransferController;
@@ -87,7 +90,7 @@ export function setUp() {
   // Mock LoadTimeData strings.
   window.loadTimeData.getString = id => id;
   window.loadTimeData.getBoolean = id => false;
-  window.loadTimeData.resetForTesting();
+  window.loadTimeData.resetForTesting({});
 
   // Mock chome APIs.
   mockChrome = {
@@ -113,13 +116,10 @@ export function setUp() {
   const progressCenter = /** @type {!ProgressCenter} */ ({});
 
   // Fake FileOperationManager.
-  const fileOperationManager = /** @type {!FileOperationManager} */ ({});
+  fileOperationManager = /** @type {!FileOperationManager} */ ({});
 
   // Fake MetadataModel.
   const metadataModel = new MockMetadataModel({});
-
-  // Fake ThumbnailModel.
-  const thumbnailModel = /** @type {!ThumbnailModel} */ ({});
 
   // Fake DirectoryModel.
   const directoryModel = createFakeDirectoryModel();
@@ -174,6 +174,9 @@ export function setUp() {
   directoryTree =
       /** @type {!DirectoryTree} */ (queryRequiredElement('#directory-tree'));
 
+  const filesToast =
+      /** @type {!FilesToast} */ (document.querySelector('files-toast'));
+
   // Initialize FileTransferController.
   fileTransferController = new FileTransferController(
       document,
@@ -183,10 +186,10 @@ export function setUp() {
       progressCenter,
       fileOperationManager,
       metadataModel,
-      thumbnailModel,
       directoryModel,
       volumeManager,
       selectionHandler,
+      filesToast,
   );
 }
 
@@ -316,6 +319,26 @@ export async function testPreparePaste(done) {
   assertEquals(otherPastePlan.sourceURLs.length, 0);
   assertEquals(otherPastePlan.sourceEntries.length, 1);
   assertEquals(otherPastePlan.sourceEntries[0], otherFile);
+
+  // Drag and drop browser file will use DataTransfer.item with
+  // item.kind === 'file', but webkitGetAsEntry() will not resolve the file.
+  fileOperationManager.writeFile = async (file, dir) => {
+    return MockFileEntry.create(
+        myFilesMockFs, `${dir.fullPath}/${file.name}`, null, file);
+  };
+
+  const browserFileDataTransfer = new DataTransfer();
+  browserFileDataTransfer.items.add(
+      new File(['content'], 'browserfile', {type: 'text/plain'}));
+  const browserFilePastePlan =
+      fileTransferController.preparePaste(browserFileDataTransfer, testDir);
+  // sourceURLs and sourceEntries should not be populated from File instances.
+  assertEquals(browserFilePastePlan.sourceURLs.length, 0);
+  assertEquals(browserFilePastePlan.sourceEntries.length, 0);
+
+  // File instances should still be copied to target folder.
+  const writtenEntry = myFilesMockFs.entries['/testdir/browserfile'];
+  assertEquals('content', await writtenEntry.content.text());
 
   done();
 }

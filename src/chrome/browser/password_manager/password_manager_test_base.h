@@ -7,7 +7,8 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -25,6 +26,10 @@ struct PasswordForm;
 class NavigationObserver : public content::WebContentsObserver {
  public:
   explicit NavigationObserver(content::WebContents* web_contents);
+
+  NavigationObserver(const NavigationObserver&) = delete;
+  NavigationObserver& operator=(const NavigationObserver&) = delete;
+
   ~NavigationObserver() override;
 
   // Normally Wait() will not return until a main frame navigation occurs.
@@ -52,11 +57,9 @@ class NavigationObserver : public content::WebContentsObserver {
 
  private:
   std::string wait_for_path_;
-  content::RenderFrameHost* render_frame_host_;
+  raw_ptr<content::RenderFrameHost> render_frame_host_;
   bool quit_on_entry_committed_ = false;
   base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(NavigationObserver);
 };
 
 // Checks the save password prompt for a specified WebContents and allows
@@ -66,6 +69,9 @@ class BubbleObserver {
   // The constructor doesn't start tracking |web_contents|. To check the status
   // of the prompt one can even construct a temporary BubbleObserver.
   explicit BubbleObserver(content::WebContents* web_contents);
+
+  BubbleObserver(const BubbleObserver&) = delete;
+  BubbleObserver& operator=(const BubbleObserver&) = delete;
 
   // Checks if the save prompt is being currently available due to either manual
   // fallback or successful login.
@@ -133,9 +139,7 @@ class BubbleObserver {
   void WaitForSaveUnsyncedCredentialsPrompt() const;
 
  private:
-  ManagePasswordsUIController* const passwords_ui_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(BubbleObserver);
+  const raw_ptr<ManagePasswordsUIController> passwords_ui_controller_;
 };
 
 // A helper class that synchronously waits until the password store handles a
@@ -144,10 +148,17 @@ class PasswordStoreResultsObserver
     : public password_manager::PasswordStoreConsumer {
  public:
   PasswordStoreResultsObserver();
+
+  PasswordStoreResultsObserver(const PasswordStoreResultsObserver&) = delete;
+  PasswordStoreResultsObserver& operator=(const PasswordStoreResultsObserver&) =
+      delete;
+
   ~PasswordStoreResultsObserver() override;
 
   // Waits for OnGetPasswordStoreResults() and returns the result.
   std::vector<std::unique_ptr<password_manager::PasswordForm>> WaitForResults();
+
+  base::WeakPtr<PasswordStoreConsumer> GetWeakPtr();
 
  private:
   void OnGetPasswordStoreResults(
@@ -156,13 +167,18 @@ class PasswordStoreResultsObserver
 
   base::RunLoop run_loop_;
   std::vector<std::unique_ptr<password_manager::PasswordForm>> results_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordStoreResultsObserver);
+  base::WeakPtrFactory<PasswordStoreResultsObserver> weak_ptr_factory_{this};
 };
 
 class PasswordManagerBrowserTestBase : public CertVerifierBrowserTest {
  public:
   PasswordManagerBrowserTestBase();
+
+  PasswordManagerBrowserTestBase(const PasswordManagerBrowserTestBase&) =
+      delete;
+  PasswordManagerBrowserTestBase& operator=(
+      const PasswordManagerBrowserTestBase&) = delete;
+
   ~PasswordManagerBrowserTestBase() override;
 
   // InProcessBrowserTest:
@@ -247,8 +263,6 @@ class PasswordManagerBrowserTestBase : public CertVerifierBrowserTest {
   content::WebContents* web_contents_;
 
   base::CallbackListSubscription create_services_subscription_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordManagerBrowserTestBase);
 };
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_TEST_BASE_H_

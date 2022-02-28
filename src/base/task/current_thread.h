@@ -8,13 +8,14 @@
 #include <ostream>
 
 #include "base/base_export.h"
+#include "base/callback_forward.h"
 #include "base/check.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_for_ui.h"
 #include "base/pending_task.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/task_time_observer.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_observer.h"
 #include "build/build_config.h"
 
@@ -119,13 +120,15 @@ class BASE_EXPORT CurrentThread {
   void AddTaskObserver(TaskObserver* task_observer);
   void RemoveTaskObserver(TaskObserver* task_observer);
 
-  void AddTaskTimeObserver(sequence_manager::TaskTimeObserver* task_observer);
-  void RemoveTaskTimeObserver(
-      sequence_manager::TaskTimeObserver* task_observer);
-
   // When this functionality is enabled, the queue time will be recorded for
   // posted tasks.
   void SetAddQueueTimeToTasks(bool enable);
+
+  // Registers a OnceClosure to be called on this thread the next time it goes
+  // idle. This is meant for internal usage; callers should use BEST_EFFORT
+  // tasks instead of this for generic work that needs to wait until quiescence
+  // to run. There can only be one OnNextIdleCallback at a time.
+  void RegisterOnNextIdleCallback(OnceClosure on_next_idle_callback);
 
   // Enables nested task processing in scope of an upcoming native message loop.
   // Some unwanted message loops may occur when using common controls or printer

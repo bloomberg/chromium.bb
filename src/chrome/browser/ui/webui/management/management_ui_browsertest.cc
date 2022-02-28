@@ -25,13 +25,16 @@
 class ManagementUITest : public InProcessBrowserTest {
  public:
   ManagementUITest() = default;
+
+  ManagementUITest(const ManagementUITest&) = delete;
+  ManagementUITest& operator=(const ManagementUITest&) = delete;
+
   ~ManagementUITest() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {
-    ON_CALL(provider_, IsInitializationComplete(testing::_))
-        .WillByDefault(testing::Return(true));
-    ON_CALL(provider_, IsFirstPolicyLoadComplete(testing::_))
-        .WillByDefault(testing::Return(true));
+    provider_.SetDefaultReturns(
+        true /* is_initialization_complete_return */,
+        true /* is_first_policy_load_complete_return */);
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
   }
 
@@ -54,14 +57,13 @@ class ManagementUITest : public InProcessBrowserTest {
  private:
   testing::NiceMock<policy::MockConfigurationPolicyProvider> provider_;
   policy::FakeBrowserDMTokenStorage fake_dm_token_storage_;
-
-  DISALLOW_COPY_AND_ASSIGN(ManagementUITest);
 };
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(ManagementUITest, ManagementStateChange) {
   profile_policy_connector()->OverrideIsManagedForTesting(false);
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://management"));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL("chrome://management")));
 
   // The browser is not managed.
   const std::string javascript =

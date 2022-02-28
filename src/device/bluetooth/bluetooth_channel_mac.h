@@ -10,8 +10,6 @@
 
 #include <string>
 
-#include "base/macros.h"
-
 @class IOBluetoothDevice;
 
 namespace device {
@@ -22,6 +20,10 @@ class BluetoothSocketMac;
 class BluetoothChannelMac {
  public:
   BluetoothChannelMac();
+
+  BluetoothChannelMac(const BluetoothChannelMac&) = delete;
+  BluetoothChannelMac& operator=(const BluetoothChannelMac&) = delete;
+
   virtual ~BluetoothChannelMac();
 
   // Sets the channel's owning socket to |socket|. Should only be called if the
@@ -56,8 +58,6 @@ class BluetoothChannelMac {
  private:
   // The socket that owns |this|.
   BluetoothSocketMac* socket_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothChannelMac);
 };
 
 }  // namespace device

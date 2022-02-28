@@ -5,6 +5,7 @@
 #ifndef CONTENT_SERVICES_AUCTION_WORKLET_AUCTION_WORKLET_SERVICE_IMPL_H_
 #define CONTENT_SERVICES_AUCTION_WORKLET_AUCTION_WORKLET_SERVICE_IMPL_H_
 
+#include "base/memory/scoped_refptr.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -30,21 +31,20 @@ class AuctionWorkletServiceImpl : public mojom::AuctionWorkletService {
       delete;
   ~AuctionWorkletServiceImpl() override;
 
+  const scoped_refptr<AuctionV8Helper>& AuctionV8HelperForTesting() {
+    return auction_v8_helper_;
+  }
+
   // mojom::AuctionWorkletService implementation:
-  void LoadBidderWorkletAndGenerateBid(
+  void LoadBidderWorklet(
       mojo::PendingReceiver<mojom::BidderWorklet> bidder_worklet_receiver,
+      bool pause_for_debugger_on_start,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_url_loader_factory,
-      mojom::BiddingInterestGroupPtr bidding_interest_group,
-      const absl::optional<std::string>& auction_signals_json,
-      const absl::optional<std::string>& per_buyer_signals_json,
-      const url::Origin& top_window_origin,
-      const url::Origin& seller_origin,
-      base::Time auction_start_time,
-      LoadBidderWorkletAndGenerateBidCallback
-          load_bidder_worklet_and_generate_bid_callback) override;
+      mojom::BiddingInterestGroupPtr bidding_interest_group) override;
   void LoadSellerWorklet(
       mojo::PendingReceiver<mojom::SellerWorklet> seller_worklet_receiver,
+      bool pause_for_debugger_on_start,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_url_loader_factory,
       const GURL& script_source_url,
@@ -53,9 +53,7 @@ class AuctionWorkletServiceImpl : public mojom::AuctionWorkletService {
  private:
   mojo::Receiver<mojom::AuctionWorkletService> receiver_;
 
-  // `auction_v8_helper_` needs to be before the worklets, since they refer to
-  // it, so need to be torn down before it is.
-  AuctionV8Helper auction_v8_helper_;
+  scoped_refptr<AuctionV8Helper> auction_v8_helper_;
 
   mojo::UniqueReceiverSet<mojom::BidderWorklet> bidder_worklets_;
   mojo::UniqueReceiverSet<mojom::SellerWorklet> seller_worklets_;

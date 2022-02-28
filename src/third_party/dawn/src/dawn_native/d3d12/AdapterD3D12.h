@@ -30,19 +30,26 @@ namespace dawn_native { namespace d3d12 {
         Adapter(Backend* backend, ComPtr<IDXGIAdapter3> hardwareAdapter);
         ~Adapter() override;
 
+        // AdapterBase Implementation
+        bool SupportsExternalImages() const override;
+
         const D3D12DeviceInfo& GetDeviceInfo() const;
         IDXGIAdapter3* GetHardwareAdapter() const;
         Backend* GetBackend() const;
         ComPtr<ID3D12Device> GetDevice() const;
         const gpu_info::D3DDriverVersion& GetDriverVersion() const;
 
-        MaybeError Initialize();
-
       private:
-        ResultOrError<DeviceBase*> CreateDeviceImpl(const DeviceDescriptor* descriptor) override;
+        ResultOrError<DeviceBase*> CreateDeviceImpl(
+            const DawnDeviceDescriptor* descriptor) override;
         MaybeError ResetInternalDeviceForTestingImpl() override;
 
-        void InitializeSupportedExtensions();
+        bool AreTimestampQueriesSupported() const;
+
+        MaybeError InitializeImpl() override;
+        MaybeError InitializeSupportedFeaturesImpl() override;
+        MaybeError InitializeSupportedLimitsImpl(CombinedLimits* limits) override;
+
         MaybeError InitializeDebugLayerFilters();
         void CleanUpDebugLayerFilters();
 

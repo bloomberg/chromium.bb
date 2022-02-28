@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
@@ -21,10 +20,12 @@
 #include "storage/browser/file_system/file_system_operation_context.h"
 #include "storage/browser/file_system/local_file_util.h"
 #include "storage/browser/file_system/native_file_util.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -40,10 +41,13 @@ class LocalFileUtilTest : public testing::Test {
  public:
   LocalFileUtilTest() = default;
 
+  LocalFileUtilTest(const LocalFileUtilTest&) = delete;
+  LocalFileUtilTest& operator=(const LocalFileUtilTest&) = delete;
+
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    file_system_context_ =
-        CreateFileSystemContextForTesting(nullptr, data_dir_.GetPath());
+    file_system_context_ = CreateFileSystemContextForTesting(
+        /*quota_manager_proxy=*/nullptr, data_dir_.GetPath());
   }
 
   void TearDown() override {
@@ -68,8 +72,8 @@ class LocalFileUtilTest : public testing::Test {
 
   FileSystemURL CreateURL(const std::string& file_name) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        url::Origin::Create(GURL("http://foo/")), kFileSystemType,
-        base::FilePath().FromUTF8Unsafe(file_name));
+        blink::StorageKey::CreateFromStringForTesting("http://foo/"),
+        kFileSystemType, base::FilePath().FromUTF8Unsafe(file_name));
   }
 
   base::FilePath LocalPath(const char* file_name) {
@@ -117,8 +121,6 @@ class LocalFileUtilTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::ScopedTempDir data_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(LocalFileUtilTest);
 };
 
 TEST_F(LocalFileUtilTest, CreateAndClose) {
@@ -182,10 +184,8 @@ TEST_F(LocalFileUtilTest, TouchFile) {
 
   base::File::Info info;
   ASSERT_TRUE(base::GetFileInfo(LocalPath(file_name), &info));
-  const base::Time new_accessed =
-      info.last_accessed + base::TimeDelta::FromHours(10);
-  const base::Time new_modified =
-      info.last_modified + base::TimeDelta::FromHours(5);
+  const base::Time new_accessed = info.last_accessed + base::Hours(10);
+  const base::Time new_modified = info.last_modified + base::Hours(5);
 
   EXPECT_EQ(base::File::FILE_OK,
             file_util()->Touch(context.get(), CreateURL(file_name),
@@ -206,10 +206,8 @@ TEST_F(LocalFileUtilTest, TouchDirectory) {
 
   base::File::Info info;
   ASSERT_TRUE(base::GetFileInfo(LocalPath(dir_name), &info));
-  const base::Time new_accessed =
-      info.last_accessed + base::TimeDelta::FromHours(10);
-  const base::Time new_modified =
-      info.last_modified + base::TimeDelta::FromHours(5);
+  const base::Time new_accessed = info.last_accessed + base::Hours(10);
+  const base::Time new_modified = info.last_modified + base::Hours(5);
 
   EXPECT_EQ(base::File::FILE_OK,
             file_util()->Touch(context.get(), CreateURL(dir_name), new_accessed,

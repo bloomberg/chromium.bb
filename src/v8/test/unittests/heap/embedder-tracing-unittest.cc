@@ -153,7 +153,7 @@ TEST_F(LocalEmbedderHeapTracerWithIsolate,
     EmbedderStackStateScope scope(
         &local_tracer, EmbedderHeapTracer::EmbedderStackState::kNoHeapPointers);
     {
-      EmbedderStackStateScope scope(
+      EmbedderStackStateScope nested_scope(
           &local_tracer,
           EmbedderHeapTracer::EmbedderStackState::kMayContainHeapPointers);
       EXPECT_CALL(
@@ -169,7 +169,7 @@ TEST_F(LocalEmbedderHeapTracerWithIsolate,
   }
 }
 
-TEST_F(LocalEmbedderHeapTracerWithIsolate, EnterFinalPauseStackStateResets) {
+TEST_F(LocalEmbedderHeapTracerWithIsolate, TraceEpilogueStackStateResets) {
   StrictMock<MockEmbedderHeapTracer> remote_tracer;
   LocalEmbedderHeapTracer local_tracer(isolate());
   local_tracer.SetRemoteTracer(&remote_tracer);
@@ -179,6 +179,8 @@ TEST_F(LocalEmbedderHeapTracerWithIsolate, EnterFinalPauseStackStateResets) {
       remote_tracer,
       EnterFinalPause(EmbedderHeapTracer::EmbedderStackState::kNoHeapPointers));
   local_tracer.EnterFinalPause();
+  EXPECT_CALL(remote_tracer, TraceEpilogue(_));
+  local_tracer.TraceEpilogue();
   EXPECT_CALL(
       remote_tracer,
       EnterFinalPause(

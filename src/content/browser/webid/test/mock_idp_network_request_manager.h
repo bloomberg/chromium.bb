@@ -22,6 +22,10 @@ class MockIdpNetworkRequestManager : public IdpNetworkRequestManager {
       delete;
 
   MOCK_METHOD1(FetchIdpWellKnown, void(FetchWellKnownCallback));
+  MOCK_METHOD3(FetchClientIdMetadata,
+               void(const GURL&,
+                    const std::string&,
+                    FetchClientIdMetadataCallback));
   MOCK_METHOD3(SendSigninRequest,
                void(const GURL&, const std::string&, SigninRequestCallback));
   MOCK_METHOD2(SendAccountsRequest, void(const GURL&, AccountsRequestCallback));
@@ -31,6 +35,11 @@ class MockIdpNetworkRequestManager : public IdpNetworkRequestManager {
                     const std::string&,
                     TokenRequestCallback));
   MOCK_METHOD2(SendLogout, void(const GURL& logout_url, LogoutCallback));
+  MOCK_METHOD4(SendRevokeRequest,
+               void(const GURL&,
+                    const std::string&,
+                    const std::string&,
+                    RevokeCallback));
 };
 
 }  // namespace content

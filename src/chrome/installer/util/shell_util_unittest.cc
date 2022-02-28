@@ -14,11 +14,11 @@
 #include "base/base_paths.h"
 #include "base/base_paths_win.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/test/scoped_path_override.h"
@@ -39,12 +39,15 @@ const wchar_t kIronExe[] = L"iron.exe";
 const wchar_t kOtherIco[] = L"other.ico";
 
 // For registry tests.
-const wchar_t kTestProgid[] = L"TestApp";
+const wchar_t kTestProgId[] = L"TestApp";
+const wchar_t kFileHandler1ProgId[] = L"FileHandler1";
+const wchar_t kFileHandler2ProgId[] = L"FileHandler2";
 const wchar_t kTestOpenCommand[] = L"C:\\test.exe";
 const wchar_t kTestApplicationName[] = L"Test Application";
 const wchar_t kTestApplicationDescription[] = L"Application Description";
 const wchar_t kTestFileTypeName[] = L"Test File Type";
 const wchar_t kTestIconPath[] = L"D:\\test.ico";
+const wchar_t kTestFileTypeIconPath[] = L"D:\\test_file_type.ico";
 const wchar_t* kTestFileExtensions[] = {
     L"test1",
     L"test2",
@@ -149,7 +152,7 @@ class ShellUtilShortcutTest : public testing::Test {
     std::wstring shortcut_name = properties.has_shortcut_name()
                                      ? properties.shortcut_name
                                      : InstallUtil::GetShortcutName();
-    shortcut_name.append(installer::kLnkExt);
+    shortcut_name += installer::kLnkExt;
     return expected_path.Append(shortcut_name);
   }
 
@@ -1065,7 +1068,9 @@ TEST_F(ShellUtilShortcutTest, DontRemoveChromeShortcutIfPointsToAnotherChrome) {
 
 class ShellUtilRegistryTest : public testing::Test {
  public:
-  ShellUtilRegistryTest() {}
+  ShellUtilRegistryTest() = default;
+  ShellUtilRegistryTest(const ShellUtilRegistryTest&) = delete;
+  ShellUtilRegistryTest& operator=(const ShellUtilRegistryTest&) = delete;
 
  protected:
   void SetUp() override {
@@ -1089,28 +1094,27 @@ class ShellUtilRegistryTest : public testing::Test {
     return open_command;
   }
 
-  static std::set<std::wstring> FileExtensions() {
+  static const std::set<std::wstring> FileExtensions() {
     std::set<std::wstring> file_extensions;
     for (size_t i = 0; i < base::size(kTestFileExtensions); ++i)
       file_extensions.insert(kTestFileExtensions[i]);
     return file_extensions;
   }
 
-  base::FilePath& chrome_exe() { return chrome_exe_; }
+  const base::FilePath& chrome_exe() const { return chrome_exe_; }
 
  private:
   registry_util::RegistryOverrideManager registry_overrides_;
   base::ScopedTempDir temp_dir_;
   base::FilePath chrome_exe_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellUtilRegistryTest);
 };
 
 TEST_F(ShellUtilRegistryTest, AddFileAssociations) {
   // Create file associations.
   EXPECT_TRUE(ShellUtil::AddFileAssociations(
-      kTestProgid, OpenCommand(), kTestApplicationName, kTestFileTypeName,
-      base::FilePath(kTestIconPath), FileExtensions()));
+      kTestProgId, OpenCommand(), kTestApplicationName, kTestFileTypeName,
+      base::FilePath(kTestIconPath), base::FilePath(kTestFileTypeIconPath),
+      FileExtensions()));
 
   // Ensure that the registry keys have been correctly set.
   base::win::RegKey key;
@@ -1125,7 +1129,7 @@ TEST_F(ShellUtilRegistryTest, AddFileAssociations) {
             key.Open(HKEY_CURRENT_USER,
                      L"Software\\Classes\\TestApp\\DefaultIcon", KEY_READ));
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
-  EXPECT_EQ(L"D:\\test.ico,0", value);
+  EXPECT_EQ(L"D:\\test_file_type.ico,0", value);
   ASSERT_EQ(
       ERROR_SUCCESS,
       key.Open(HKEY_CURRENT_USER,
@@ -1144,11 +1148,15 @@ TEST_F(ShellUtilRegistryTest, AddFileAssociations) {
     EXPECT_EQ(L"D:\\test.ico,0", value);
   }
 
-  // .test1 should be default-associated with our test app.
+  // .test1 should not be default-associated with our test app. Programmatically
+  // becoming the default handler can be surprising to users, and risks
+  // overwriting affected file types' implicit default handlers, which are
+  // cached by Windows.
   ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER,
                                     L"Software\\Classes\\.test1", KEY_READ));
-  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
-  EXPECT_EQ(L"TestApp", value);
+
+  // .test 1 should have our app in its Open With list.
+  EXPECT_NE(ERROR_SUCCESS, key.ReadValue(L"", &value));
   ASSERT_EQ(ERROR_SUCCESS,
             key.Open(HKEY_CURRENT_USER,
                      L"Software\\Classes\\.test1\\OpenWithProgids", KEY_READ));
@@ -1173,11 +1181,12 @@ TEST_F(ShellUtilRegistryTest, AddFileAssociations) {
 TEST_F(ShellUtilRegistryTest, DeleteFileAssociations) {
   // Create file associations.
   ASSERT_TRUE(ShellUtil::AddFileAssociations(
-      kTestProgid, OpenCommand(), kTestApplicationName, kTestFileTypeName,
-      base::FilePath(kTestIconPath), FileExtensions()));
+      kTestProgId, OpenCommand(), kTestApplicationName, kTestFileTypeName,
+      base::FilePath(kTestIconPath), base::FilePath(kTestFileTypeIconPath),
+      FileExtensions()));
 
   // Delete them.
-  EXPECT_TRUE(ShellUtil::DeleteFileAssociations(kTestProgid));
+  EXPECT_TRUE(ShellUtil::DeleteFileAssociations(kTestProgId));
 
   // The class key should have been completely deleted.
   base::win::RegKey key;
@@ -1195,11 +1204,6 @@ TEST_F(ShellUtilRegistryTest, DeleteFileAssociations) {
                      L"Software\\Classes\\.test2\\OpenWithProgids", KEY_READ));
   EXPECT_FALSE(key.HasValue(L"TestApp"));
 
-  // .test1 should no longer have a default handler.
-  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER,
-                                    L"Software\\Classes\\.test1", KEY_READ));
-  EXPECT_FALSE(key.HasValue(L""));
-
   // .test2 should still have the other app as its default handler.
   ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER,
                                     L"Software\\Classes\\.test2", KEY_READ));
@@ -1207,10 +1211,21 @@ TEST_F(ShellUtilRegistryTest, DeleteFileAssociations) {
   EXPECT_EQ(L"SomeOtherApp", value);
 }
 
+TEST_F(ShellUtilRegistryTest, RegisterFileHandlerProgIds) {
+  const std::vector<std::wstring> file_handler_prog_ids(
+      {std::wstring(kFileHandler1ProgId), std::wstring(kFileHandler2ProgId)});
+  ShellUtil::RegisterFileHandlerProgIdsForAppId(std::wstring(kTestProgId),
+                                                file_handler_prog_ids);
+  // Test that the registry contains the file handler prog ids.
+  const std::vector<std::wstring> retrieved_file_handler_prog_ids =
+      ShellUtil::GetFileHandlerProgIdsForAppId(std::wstring(kTestProgId));
+  EXPECT_EQ(file_handler_prog_ids, retrieved_file_handler_prog_ids);
+}
+
 TEST_F(ShellUtilRegistryTest, AddApplicationClass) {
   // Add TestApp application class and verify registry entries.
   EXPECT_TRUE(ShellUtil::AddApplicationClass(
-      std::wstring(kTestProgid), OpenCommand(), kTestApplicationName,
+      std::wstring(kTestProgId), OpenCommand(), kTestApplicationName,
       kTestFileTypeName, base::FilePath(kTestIconPath)));
 
   base::win::RegKey key;
@@ -1245,7 +1260,7 @@ TEST_F(ShellUtilRegistryTest, AddApplicationClass) {
 
 TEST_F(ShellUtilRegistryTest, DeleteApplicationClass) {
   ASSERT_TRUE(ShellUtil::AddApplicationClass(
-      kTestProgid, OpenCommand(), kTestApplicationName, kTestFileTypeName,
+      kTestProgId, OpenCommand(), kTestApplicationName, kTestFileTypeName,
       base::FilePath(kTestIconPath)));
 
   base::win::RegKey key;
@@ -1253,44 +1268,41 @@ TEST_F(ShellUtilRegistryTest, DeleteApplicationClass) {
   ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER,
                                     L"Software\\Classes\\TestApp", KEY_READ));
 
-  EXPECT_TRUE(ShellUtil::DeleteApplicationClass(kTestProgid));
+  EXPECT_TRUE(ShellUtil::DeleteApplicationClass(kTestProgId));
   EXPECT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER,
                                     L"Software\\Classes\\TestApp", KEY_READ));
 }
 
-TEST_F(ShellUtilRegistryTest, GetFileAssociationsAndAppName) {
-  ShellUtil::FileAssociationsAndAppName empty_file_associations_and_app_name(
-      ShellUtil::GetFileAssociationsAndAppName(kTestProgid));
-  EXPECT_TRUE(empty_file_associations_and_app_name.app_name.empty());
+TEST_F(ShellUtilRegistryTest, GetAppName) {
+  const std::wstring empty_app_name(ShellUtil::GetAppName(kTestProgId));
+  EXPECT_TRUE(empty_app_name.empty());
 
-  // Add file associations and test that GetFileAssociationsAndAppName returns
-  // the registered file associations and app name. Pass kTestApplicationName
-  // for the open command, to handle the win7 case, which returns the open
-  // command executable name as the app_name.
+  // Add file associations and test that GetAppName returns the registered app
+  // name. Pass kTestApplicationName for the open command, to handle the Win 7
+  // case, which returns the open command executable name as the app_name.
   ASSERT_TRUE(ShellUtil::AddFileAssociations(
-      kTestProgid, OpenCommand(), kTestApplicationName, kTestFileTypeName,
-      base::FilePath(kTestIconPath), FileExtensions()));
-  ShellUtil::FileAssociationsAndAppName file_associations_and_app_name(
-      ShellUtil::GetFileAssociationsAndAppName(kTestProgid));
-  EXPECT_EQ(file_associations_and_app_name.app_name, kTestApplicationName);
-  EXPECT_EQ(file_associations_and_app_name.file_associations, FileExtensions());
+      kTestProgId, OpenCommand(), kTestApplicationName, kTestFileTypeName,
+      base::FilePath(kTestIconPath), base::FilePath(kTestFileTypeIconPath),
+      FileExtensions()));
+  const std::wstring app_name(ShellUtil::GetAppName(kTestProgId));
+  EXPECT_EQ(app_name, kTestApplicationName);
 }
 
 TEST_F(ShellUtilRegistryTest, GetApplicationInfoForProgId) {
   ShellUtil::ApplicationInfo empty_application_info(
-      ShellUtil::GetApplicationInfoForProgId(kTestProgid));
+      ShellUtil::GetApplicationInfoForProgId(kTestProgId));
   EXPECT_TRUE(empty_application_info.application_name.empty());
 
   // Add application class and test that GetApplicationInfoForProgId returns
   // the registered application properties.
   EXPECT_TRUE(ShellUtil::AddApplicationClass(
-      std::wstring(kTestProgid), OpenCommand(), kTestApplicationName,
+      std::wstring(kTestProgId), OpenCommand(), kTestApplicationName,
       kTestApplicationDescription, base::FilePath(kTestIconPath)));
 
   ShellUtil::ApplicationInfo app_info(
-      ShellUtil::GetApplicationInfoForProgId(kTestProgid));
+      ShellUtil::GetApplicationInfoForProgId(kTestProgId));
 
-  EXPECT_EQ(kTestProgid, app_info.prog_id);
+  EXPECT_EQ(kTestProgId, app_info.prog_id);
 
   EXPECT_EQ(app_info.application_description, app_info.file_type_name);
   EXPECT_EQ(base::FilePath(kTestIconPath), app_info.file_type_icon_path);
@@ -1310,6 +1322,10 @@ TEST_F(ShellUtilRegistryTest, GetApplicationInfoForProgId) {
 }
 
 TEST_F(ShellUtilRegistryTest, AddAppProtocolAssociations) {
+  // App protocol handlers are not supported on Windows 7.
+  if (base::win::GetVersion() <= base::win::Version::WIN7)
+    return;
+
   // Create test protocol associations.
   const std::wstring app_progid = L"app_progid1";
   const std::vector<std::wstring> app_protocols = {L"web+test", L"mailto"};
@@ -1328,7 +1344,7 @@ TEST_F(ShellUtilRegistryTest, AddAppProtocolAssociations) {
   EXPECT_TRUE(key.HasValue(L"URL Protocol"));
 
   // Ensure that URLAssociations entries were created for each protocol.
-  // "<root_hkey>\Software\[CompanyPathName\]ProductPathName[install_suffix]\AppProtocolHandlers\|prog_id|\Capabilities\URLAssociations\<protocol>".
+  // "HKEY_CURRENT_USER\Software\[CompanyPathName\]ProductPathName[install_suffix]\AppProtocolHandlers\|prog_id|\Capabilities\URLAssociations\<protocol>".
   std::wstring capabilities_path(install_static::GetRegistryPath());
   capabilities_path.append(ShellUtil::kRegAppProtocolHandlers);
   capabilities_path.push_back(base::FilePath::kSeparators[0]);
@@ -1338,11 +1354,9 @@ TEST_F(ShellUtilRegistryTest, AddAppProtocolAssociations) {
   const std::wstring url_associations_key_name =
       capabilities_path + L"\\URLAssociations";
 
-  HKEY root = base::win::GetVersion() == base::win::Version::WIN7
-                  ? HKEY_LOCAL_MACHINE
-                  : HKEY_CURRENT_USER;
-  ASSERT_EQ(ERROR_SUCCESS,
-            key.Open(root, url_associations_key_name.c_str(), KEY_READ));
+  ASSERT_EQ(
+      ERROR_SUCCESS,
+      key.Open(HKEY_CURRENT_USER, url_associations_key_name.c_str(), KEY_READ));
 
   ASSERT_EQ(ERROR_SUCCESS, key.ReadValue(L"web+test", &value));
   EXPECT_EQ(app_progid, std::wstring(value));
@@ -1351,10 +1365,10 @@ TEST_F(ShellUtilRegistryTest, AddAppProtocolAssociations) {
   EXPECT_EQ(app_progid, std::wstring(value));
 
   // Ensure that app was registered correctly under RegisteredApplications.
-  // <root hkey>\RegisteredApplications\<prog_id>
+  // "HKEY_CURRENT_USER\RegisteredApplications\<prog_id>".
   ASSERT_EQ(
       ERROR_SUCCESS,
-      key.Open(root,
+      key.Open(HKEY_CURRENT_USER,
                std::wstring(ShellUtil::kRegRegisteredApplications).c_str(),
                KEY_READ));
 
@@ -1387,6 +1401,10 @@ TEST_F(ShellUtilRegistryTest, ToAndFromCommandLineArgument) {
 }
 
 TEST_F(ShellUtilRegistryTest, RemoveAppProtocolAssociations) {
+  // App protocol handlers are not supported on Windows 7.
+  if (base::win::GetVersion() <= base::win::Version::WIN7)
+    return;
+
   // Create test protocol associations.
   const std::wstring app_progid = L"app_progid1";
   const std::vector<std::wstring> app_protocols = {L"web+test"};
@@ -1394,28 +1412,25 @@ TEST_F(ShellUtilRegistryTest, RemoveAppProtocolAssociations) {
   ASSERT_TRUE(ShellUtil::AddAppProtocolAssociations(app_protocols, app_progid));
 
   // Delete associations and ensure that the protocol entry does not exist.
-  EXPECT_TRUE(ShellUtil::RemoveAppProtocolAssociations(app_progid, false));
+  EXPECT_TRUE(ShellUtil::RemoveAppProtocolAssociations(app_progid));
 
   // Ensure that the software registration key was removed.
-  // "<root_hkey>\Software\[CompanyPathName\]ProductPathName[install_suffix]\AppProtocolHandlers\|prog_id|".
+  // "HKEY_CURRENT_USER\Software\[CompanyPathName\]ProductPathName[install_suffix]\AppProtocolHandlers\|prog_id|".
   std::wstring capabilities_path(install_static::GetRegistryPath());
   capabilities_path.append(ShellUtil::kRegAppProtocolHandlers);
   capabilities_path.push_back(base::FilePath::kSeparators[0]);
   capabilities_path.append(app_progid);
 
-  HKEY root = base::win::GetVersion() == base::win::Version::WIN7
-                  ? HKEY_LOCAL_MACHINE
-                  : HKEY_CURRENT_USER;
   base::win::RegKey key;
 
   ASSERT_EQ(ERROR_FILE_NOT_FOUND,
-            key.Open(root, capabilities_path.c_str(), KEY_READ));
+            key.Open(HKEY_CURRENT_USER, capabilities_path.c_str(), KEY_READ));
 
   // Ensure that the RegisteredApplications entry was removed.
-  // <root hkey>\RegisteredApplications\<prog_id>
+  // "HKEY_CURRENT_USER\RegisteredApplications\<prog_id>".
   ASSERT_EQ(
       ERROR_SUCCESS,
-      key.Open(root,
+      key.Open(HKEY_CURRENT_USER,
                std::wstring(ShellUtil::kRegRegisteredApplications).c_str(),
                KEY_READ));
   EXPECT_FALSE(key.HasValue(app_progid.c_str()));
@@ -1430,9 +1445,10 @@ TEST_F(ShellUtilRegistryTest, RemoveAppProtocolAssociations) {
 TEST_F(ShellUtilRegistryTest, GetApplicationForProgId) {
   // Create file associations.
   ASSERT_TRUE(ShellUtil::AddFileAssociations(
-      kTestProgid, OpenCommand(), kTestApplicationName, kTestFileTypeName,
-      base::FilePath(kTestIconPath), FileExtensions()));
-  base::FilePath exe_path = ShellUtil::GetApplicationPathForProgId(kTestProgid);
+      kTestProgId, OpenCommand(), kTestApplicationName, kTestFileTypeName,
+      base::FilePath(kTestIconPath), base::FilePath(kTestFileTypeIconPath),
+      FileExtensions()));
+  base::FilePath exe_path = ShellUtil::GetApplicationPathForProgId(kTestProgId);
   EXPECT_EQ(exe_path, base::FilePath(kTestOpenCommand));
 }
 

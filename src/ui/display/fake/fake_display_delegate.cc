@@ -31,8 +31,7 @@ constexpr uint16_t kReservedManufacturerID = 1 << 15;
 constexpr uint32_t kProductCodeHash = 3692486807;
 
 // Delay for Configure().
-constexpr base::TimeDelta kConfigureDisplayDelay =
-    base::TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kConfigureDisplayDelay = base::Milliseconds(200);
 
 bool AreModesEqual(const display::DisplayMode& lhs,
                    const display::DisplayMode& rhs) {
@@ -197,7 +196,11 @@ bool FakeDisplayDelegate::SetGammaCorrection(
   return false;
 }
 
-void FakeDisplayDelegate::SetPrivacyScreen(int64_t display_id, bool enabled) {}
+void FakeDisplayDelegate::SetPrivacyScreen(int64_t display_id,
+                                           bool enabled,
+                                           SetPrivacyScreenCallback callback) {
+  std::move(callback).Run(false);
+}
 
 void FakeDisplayDelegate::AddObserver(NativeDisplayObserver* observer) {
   observers_.AddObserver(observer);

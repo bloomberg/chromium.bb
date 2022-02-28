@@ -9,21 +9,19 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/browser/db/database_manager.h"
+#include "components/safe_browsing/core/browser/db/metadata.pb.h"
+#include "components/safe_browsing/core/browser/db/util.h"
+#include "components/safe_browsing/core/browser/db/v4_database.h"
+#include "components/safe_browsing/core/browser/db/v4_get_hash_protocol_manager.h"
+#include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/browser/db/v4_test_util.h"
 #include "components/safe_browsing/core/browser/safe_browsing_url_checker_impl.h"
+#include "components/safe_browsing/core/browser/verdict_cache_manager.h"
+#include "components/safe_browsing/core/common/proto/realtimeapi.pb.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
-#include "components/safe_browsing/core/db/database_manager.h"
-#include "components/safe_browsing/core/db/metadata.pb.h"
-#include "components/safe_browsing/core/db/util.h"
-#include "components/safe_browsing/core/db/v4_database.h"
-#include "components/safe_browsing/core/db/v4_get_hash_protocol_manager.h"
-#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
-#include "components/safe_browsing/core/db/v4_test_util.h"
-#include "components/safe_browsing/core/features.h"
-#include "components/safe_browsing/core/proto/realtimeapi.pb.h"
-#include "components/safe_browsing/core/verdict_cache_manager.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -157,6 +155,9 @@ class SafeBrowsingServiceTest : public PlatformTest {
     base::RunLoop().RunUntilIdle();
   }
 
+  SafeBrowsingServiceTest(const SafeBrowsingServiceTest&) = delete;
+  SafeBrowsingServiceTest& operator=(const SafeBrowsingServiceTest&) = delete;
+
   ~SafeBrowsingServiceTest() override {
     safe_browsing_service_->ShutDown();
 
@@ -195,8 +196,7 @@ class SafeBrowsingServiceTest : public PlatformTest {
     threat_info->set_cache_expression_match_type(
         safe_browsing::RTLookupResponse::ThreatInfo::COVERING_MATCH);
     VerdictCacheManagerFactory::GetForBrowserState(browser_state_.get())
-        ->CacheRealTimeUrlVerdict(bad_url, response, base::Time::Now(),
-                                  /*store_old_cache=*/false);
+        ->CacheRealTimeUrlVerdict(bad_url, response, base::Time::Now());
   }
 
  protected:
@@ -234,8 +234,6 @@ class SafeBrowsingServiceTest : public PlatformTest {
   safe_browsing::TestV4GetHashProtocolManagerFactory* v4_get_hash_factory_;
   // Owned by V4Database.
   safe_browsing::TestV4StoreFactory* store_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceTest);
 };
 
 TEST_F(SafeBrowsingServiceTest, SafeAndUnsafePages) {
@@ -271,18 +269,21 @@ TEST_F(SafeBrowsingServiceTest, SafeAndUnsafePages) {
 // lookups are enabled, and that opting out of real-time checks works as
 // expected.
 TEST_F(SafeBrowsingServiceTest, RealTimeSafeAndUnsafePages) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({safe_browsing::kRealTimeUrlLookupEnabled}, {});
-  TestingApplicationContext::GetGlobal();
+  TestUrlCheckerClient client(safe_browsing_service_.get(),
+                              browser_state_.get());
+
+  // Wait for an initial result to make sure the Safe Browsing database has
+  // been initialized, before calling into functions that mark URLs as safe
+  // or unsafe in the database.
+  GURL safe_url(kSafePage);
+  client.CheckUrl(safe_url);
+  client.WaitForResult();
 
   // Opt into real-time checks.
   browser_state_->GetPrefs()->SetBoolean(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled, true);
 
-  GURL safe_url(kSafePage);
   MarkUrlAsRealTimeSafe(safe_url);
-  TestUrlCheckerClient client(safe_browsing_service_.get(),
-                              browser_state_.get());
   client.CheckUrl(safe_url);
   EXPECT_TRUE(client.result_pending());
   client.WaitForResult();

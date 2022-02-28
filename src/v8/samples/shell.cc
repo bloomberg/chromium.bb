@@ -25,15 +25,20 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <include/v8.h>
-
-#include <include/libplatform/libplatform.h>
-
 #include <assert.h>
 #include <fcntl.h>
+#include <include/libplatform/libplatform.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "include/v8-context.h"
+#include "include/v8-exception.h"
+#include "include/v8-initialization.h"
+#include "include/v8-isolate.h"
+#include "include/v8-local-handle.h"
+#include "include/v8-script.h"
+#include "include/v8-template.h"
 
 /**
  * This sample program shows how to implement a simple javascript shell
@@ -90,7 +95,7 @@ int main(int argc, char* argv[]) {
   }
   isolate->Dispose();
   v8::V8::Dispose();
-  v8::V8::ShutdownPlatform();
+  v8::V8::DisposePlatform();
   delete create_params.array_buffer_allocator;
   return result;
 }
@@ -376,8 +381,8 @@ void ReportException(v8::Isolate* isolate, v8::TryCatch* try_catch) {
         stack_trace_string->IsString() &&
         stack_trace_string.As<v8::String>()->Length() > 0) {
       v8::String::Utf8Value stack_trace(isolate, stack_trace_string);
-      const char* stack_trace_string = ToCString(stack_trace);
-      fprintf(stderr, "%s\n", stack_trace_string);
+      const char* err = ToCString(stack_trace);
+      fprintf(stderr, "%s\n", err);
     }
   }
 }

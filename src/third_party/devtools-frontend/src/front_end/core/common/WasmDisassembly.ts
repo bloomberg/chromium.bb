@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
+import * as Platform from '../platform/platform.js';
 
 /**
- * Metadata to map between bytecode offsets and line numbers in the
+ * Metadata to map between bytecode #offsets and line numbers in the
  * disassembly for WebAssembly modules.
  */
 
@@ -14,36 +14,26 @@ interface FunctionBodyOffset {
   end: number;
 }
 export class WasmDisassembly {
-  _offsets: number[];
-  _functionBodyOffsets: FunctionBodyOffset[];
+  readonly #offsets: number[];
+  #functionBodyOffsets: FunctionBodyOffset[];
 
   constructor(offsets: number[], functionBodyOffsets: FunctionBodyOffset[]) {
-    this._offsets = offsets;
-    this._functionBodyOffsets = functionBodyOffsets;
+    this.#offsets = offsets;
+    this.#functionBodyOffsets = functionBodyOffsets;
   }
 
   get lineNumbers(): number {
-    return this._offsets.length;
+    return this.#offsets.length;
   }
 
   bytecodeOffsetToLineNumber(bytecodeOffset: number): number {
-    let l = 0, r: number = this._offsets.length - 1;
-    while (l <= r) {
-      const m = Math.floor((l + r) / 2);
-      const offset = this._offsets[m];
-      if (offset < bytecodeOffset) {
-        l = m + 1;
-      } else if (offset > bytecodeOffset) {
-        r = m - 1;
-      } else {
-        return m;
-      }
-    }
-    return l;
+    return Platform.ArrayUtilities.upperBound(
+               this.#offsets, bytecodeOffset, Platform.ArrayUtilities.DEFAULT_COMPARATOR) -
+        1;
   }
 
   lineNumberToBytecodeOffset(lineNumber: number): number {
-    return this._offsets[lineNumber];
+    return this.#offsets[lineNumber];
   }
 
   /**
@@ -53,10 +43,10 @@ export class WasmDisassembly {
     let lineNumber = 0;
     let functionIndex = 0;
     while (lineNumber < this.lineNumbers) {
-      if (functionIndex < this._functionBodyOffsets.length) {
+      if (functionIndex < this.#functionBodyOffsets.length) {
         const offset = this.lineNumberToBytecodeOffset(lineNumber);
-        if (offset >= this._functionBodyOffsets[functionIndex].start) {
-          lineNumber = this.bytecodeOffsetToLineNumber(this._functionBodyOffsets[functionIndex++].end);
+        if (offset >= this.#functionBodyOffsets[functionIndex].start) {
+          lineNumber = this.bytecodeOffsetToLineNumber(this.#functionBodyOffsets[functionIndex++].end) + 1;
           continue;
         }
       }

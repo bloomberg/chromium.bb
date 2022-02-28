@@ -429,7 +429,7 @@ static int vaapi_encode_issue(AVCodecContext *avctx,
     if (pic->nb_slices == 0)
         pic->nb_slices = ctx->nb_slices;
     if (pic->nb_slices > 0) {
-        pic->slices = av_mallocz_array(pic->nb_slices, sizeof(*pic->slices));
+        pic->slices = av_calloc(pic->nb_slices, sizeof(*pic->slices));
         if (!pic->slices) {
             err = AVERROR(ENOMEM);
             goto fail;
@@ -511,7 +511,7 @@ static int vaapi_encode_issue(AVCodecContext *avctx,
             nb_roi = ctx->roi_max_regions;
         }
 
-        pic->roi = av_mallocz_array(nb_roi, sizeof(*pic->roi));
+        pic->roi = av_calloc(nb_roi, sizeof(*pic->roi));
         if (!pic->roi) {
             err = AVERROR(ENOMEM);
             goto fail;
@@ -650,7 +650,7 @@ static int vaapi_encode_output(AVCodecContext *avctx,
     for (buf = buf_list; buf; buf = buf->next)
         total_size += buf->size;
 
-    err = av_new_packet(pkt, total_size);
+    err = ff_get_encode_buffer(avctx, pkt, total_size, 0);
     ptr = pkt->data;
 
     if (err < 0)
@@ -2235,7 +2235,7 @@ static void vaapi_encode_free_output_buffer(void *opaque,
 }
 
 static AVBufferRef *vaapi_encode_alloc_output_buffer(void *opaque,
-                                                     buffer_size_t size)
+                                                     size_t size)
 {
     AVCodecContext   *avctx = opaque;
     VAAPIEncodeContext *ctx = avctx->priv_data;

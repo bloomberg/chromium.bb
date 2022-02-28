@@ -90,6 +90,47 @@ breakpad_getcontext:
 
 #elif defined(__aarch64__)
 
+#if defined(__ARM_FEATURE_PAC_DEFAULT) && __ARM_FEATURE_PAC_DEFAULT
+    // ENABLE_PAUTH must be defined to 1 since this value will be used in
+    // bitwise-shift later!
+    #define ENABLE_PAUTH 1
+
+    #if ((__ARM_FEATURE_PAC_DEFAULT&((1<<0)|(1<<1)))==0)
+        #error Pointer authentication defines no valid key!
+    #endif
+#else
+    #define ENABLE_PAUTH 0
+#endif
+
+#if defined(__ARM_FEATURE_BTI_DEFAULT) && (__ARM_FEATURE_BTI_DEFAULT==1)
+    // ENABLE_BTI must be defined to 1 since this value will be used in
+    // bitwise-shift later!
+    #define ENABLE_BTI 1
+#else
+    #define ENABLE_BTI 0
+#endif
+
+
+// Although Pointer Authentication and Branch Target Instructions are technically
+// seperate features they work together, i.e. the paciasp and pacibsp instructions
+// serve as BTI landing pads.
+// Therefore PA-instructions are enabled when PA _or_ BTI is enabled!
+#if ENABLE_PAUTH || ENABLE_BTI
+    // See section "Pointer Authentication" of
+    // https://developer.arm.com/documentation/101028/0012/5--Feature-test-macros
+    // for details how to interpret __ARM_FEATURE_PAC_DEFAULT
+    #if (__ARM_FEATURE_PAC_DEFAULT & (1<<0))
+        #define PAUTH_SIGN_SP paciasp
+        #define PAUTH_AUTH_SP autiasp
+    #else
+        #define PAUTH_SIGN_SP pacibsp
+        #define PAUTH_AUTH_SP autibsp
+    #endif
+#else
+    #define PAUTH_SIGN_SP
+    #define PAUTH_AUTH_SP
+#endif
+
 #define  _NSIG                       64
 #define  __NR_rt_sigprocmask         135
 
@@ -100,6 +141,8 @@ breakpad_getcontext:
   .align 4
   .cfi_startproc
 breakpad_getcontext:
+
+  PAUTH_SIGN_SP
 
   /* The saved context will return to the getcontext() call point
      with a return value of 0 */
@@ -170,6 +213,9 @@ breakpad_getcontext:
 
   /* Return x0 for success */
   mov     x0, 0
+
+  PAUTH_AUTH_SP
+
   ret
 
   .cfi_endproc
@@ -483,4 +529,24 @@ breakpad_getcontext:
 
 #else
 #error "This file has not been ported for your CPU!"
+#endif
+
+#if defined(__aarch64__)
+// ENABLE_PAUTH and ENABLE_BTI would be enabled at the definition
+//  of AArch64 specific breakpad_getcontext function
+#if ENABLE_PAUTH || ENABLE_BTI
+// for further information on the .note.gnu.property section see
+// https://github.com/ARM-software/abi-aa/blob/main/aaelf64/aaelf64.rst#program-property
+.pushsection .note.gnu.property, "a";
+    .balign 8
+    .long 4
+    .long 0x10
+    .long 0x5
+    .asciz "GNU"
+    .long 0xc0000000 /* GNU_PROPERTY_AARCH64_FEATURE_1_AND */
+    .long 4
+    .long ((ENABLE_PAUTH)<<1) | ((ENABLE_BTI)<<0) /* PAuth and BTI */
+    .long 0
+.popsection
+#endif
 #endif

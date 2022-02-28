@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/files/file.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
 #include "ui/gfx/geometry/size.h"
@@ -24,10 +25,10 @@ class FilePath;
 
 namespace ash {
 
-// Loader for file-backed holding space items' thumbnails. It opens a native
-// connection to the image loader extension (also used to generate thumbnails
-// for the file manager), and sends it an image request for a file path.
-// It decodes data returned by the extension into a bitmap.
+// Loader for file-backed thumbnails. It opens a native connection to the image
+// loader extension (also used to generate thumbnails for the file manager), and
+// sends it an image request for a file path. It decodes data returned by the
+// extension into a bitmap.
 class ThumbnailLoader {
  public:
   explicit ThumbnailLoader(Profile* profile);
@@ -84,7 +85,7 @@ class ThumbnailLoader {
                         const SkBitmap* bitmap,
                         base::File::Error error);
 
-  Profile* const profile_;
+  const raw_ptr<Profile> profile_;
 
   // Maps pending thumbnail requests to their registered callbacks.
   std::map<base::UnguessableToken, ImageCallback> requests_;

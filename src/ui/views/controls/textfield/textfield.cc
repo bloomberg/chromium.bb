@@ -8,17 +8,13 @@
 #include <set>
 #include <string>
 #include <utility>
-#include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
-#include "ui/events/gesture_event_details.h"
-
-#if defined(OS_WIN)
-#include <vector>
-#endif
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -27,6 +23,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 #include "ui/base/default_style.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
@@ -36,18 +33,21 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/canvas_painter.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
+#include "ui/events/gesture_event_details.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/selection_bound.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
@@ -55,7 +55,6 @@
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/controls/views_text_services_context_menu.h"
 #include "ui/views/drag_utils.h"
@@ -79,10 +78,6 @@
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #endif
 
-#if defined(USE_X11)
-#include "ui/base/x/x11_util.h"  // nogncheck
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/aura/window.h"
 #include "ui/wm/core/ime_util_chromeos.h"
@@ -100,8 +95,8 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/extension_ime_util.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 #endif
 
 namespace views {
@@ -161,7 +156,7 @@ base::TimeDelta GetPasswordRevealDuration(const ui::KeyEvent& event) {
     uint8_t is_mirroring =
         fromVKPropertyArray[ui::kPropertyFromVKIsMirroringIndex];
     if (!is_mirroring)
-      return base::TimeDelta::FromSeconds(1);
+      return base::Seconds(1);
   }
   return base::TimeDelta();
 }
@@ -185,16 +180,10 @@ bool IsValidCharToInsert(const char16_t& ch) {
 
 bool CanUseTransparentBackgroundForDragImage() {
 #if defined(USE_OZONE)
-  if (::features::IsUsingOzonePlatform()) {
     const auto* const egl_utility =
         ui::OzonePlatform::GetInstance()->GetPlatformGLEGLUtility();
     return egl_utility ? egl_utility->IsTransparentBackgroundSupported()
                        : false;
-  }
-#endif
-#if defined(USE_X11)
-  // Fallback on the background color if the system doesn't support compositing.
-  return ui::XVisualManager::GetInstance()->ArgbVisualAvailable();
 #else
   // Other platforms allow this.
   return true;
@@ -208,16 +197,15 @@ base::TimeDelta Textfield::GetCaretBlinkInterval() {
 #if defined(OS_WIN)
   static const size_t system_value = ::GetCaretBlinkTime();
   if (system_value != 0) {
-    return (system_value == INFINITE)
-               ? base::TimeDelta()
-               : base::TimeDelta::FromMilliseconds(system_value);
+    return (system_value == INFINITE) ? base::TimeDelta()
+                                      : base::Milliseconds(system_value);
   }
 #elif defined(OS_MAC)
   base::TimeDelta system_value;
   if (ui::TextInsertionCaretBlinkPeriod(&system_value))
     return system_value;
 #endif
-  return base::TimeDelta::FromMilliseconds(500);
+  return base::Milliseconds(500);
 }
 
 // static
@@ -240,8 +228,7 @@ Textfield::Textfield()
   UpdateBorder();
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
-  if (use_focus_ring_)
-    focus_ring_ = FocusRing::Install(this);
+  FocusRing::Install(this);
 
 #if !defined(OS_MAC)
   // Do not map accelerators on Mac. E.g. They might not reflect custom
@@ -408,10 +395,9 @@ void Textfield::SetTextColor(SkColor color) {
 }
 
 SkColor Textfield::GetBackgroundColor() const {
-  return background_color_.value_or(GetNativeTheme()->GetSystemColor(
-      GetReadOnly() || !GetEnabled()
-          ? ui::NativeTheme::kColorId_TextfieldReadOnlyBackground
-          : ui::NativeTheme::kColorId_TextfieldDefaultBackground));
+  return background_color_.value_or(GetColorProvider()->GetColor(
+      GetReadOnly() || !GetEnabled() ? ui::kColorTextfieldBackgroundDisabled
+                                     : ui::kColorTextfieldBackground));
 }
 
 void Textfield::SetBackgroundColor(SkColor color) {
@@ -421,8 +407,8 @@ void Textfield::SetBackgroundColor(SkColor color) {
 }
 
 SkColor Textfield::GetSelectionTextColor() const {
-  return selection_text_color_.value_or(GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldSelectionColor));
+  return selection_text_color_.value_or(
+      GetColorProvider()->GetColor(ui::kColorTextfieldSelectionForeground));
 }
 
 void Textfield::SetSelectionTextColor(SkColor color) {
@@ -431,8 +417,8 @@ void Textfield::SetSelectionTextColor(SkColor color) {
 }
 
 SkColor Textfield::GetSelectionBackgroundColor() const {
-  return selection_background_color_.value_or(GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused));
+  return selection_background_color_.value_or(
+      GetColorProvider()->GetColor(ui::kColorTextfieldSelectionBackground));
 }
 
 void Textfield::SetSelectionBackgroundColor(SkColor color) {
@@ -566,8 +552,8 @@ void Textfield::SetInvalid(bool invalid) {
     return;
   invalid_ = invalid;
   UpdateBorder();
-  if (focus_ring_)
-    focus_ring_->SetInvalid(invalid);
+  if (FocusRing::Get(this))
+    FocusRing::Get(this)->SetInvalid(invalid);
   OnPropertyChanged(&invalid_, kPropertyEffectsNone);
 }
 
@@ -643,11 +629,7 @@ gfx::Size Textfield::GetMinimumSize() const {
 }
 
 void Textfield::SetBorder(std::unique_ptr<Border> b) {
-  use_focus_ring_ = false;
-  if (focus_ring_) {
-    RemoveChildViewT(focus_ring_);
-    focus_ring_ = nullptr;
-  }
+  FocusRing::Remove(this);
   View::SetBorder(std::move(b));
 }
 
@@ -949,43 +931,29 @@ void Textfield::OnDragExited() {
 }
 
 DragOperation Textfield::OnPerformDrop(const ui::DropTargetEvent& event) {
+  auto cb = Textfield::GetDropCallback(event);
+  ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
+  std::move(cb).Run(event, output_drag_op);
+  return output_drag_op;
+}
+
+views::View::DropCallback Textfield::GetDropCallback(
+    const ui::DropTargetEvent& event) {
   DCHECK(CanDrop(event.data()));
+
   drop_cursor_visible_ = false;
 
   if (controller_) {
-    DragOperation drag_operation = controller_->OnDrop(event.data());
-    if (drag_operation != DragOperation::kNone)
-      return drag_operation;
+    auto cb = controller_->CreateDropCallback(event);
+    if (!cb.is_null())
+      return cb;
   }
 
-  gfx::RenderText* render_text = GetRenderText();
   DCHECK(!initiating_drag_ ||
-         !render_text->IsPointInSelection(event.location()));
-  OnBeforeUserAction();
-  skip_input_method_cancel_composition_ = true;
+         !GetRenderText()->IsPointInSelection(event.location()));
 
-  gfx::SelectionModel drop_destination_model =
-      render_text->FindCursorPosition(event.location());
-  std::u16string new_text;
-  event.data().GetString(&new_text);
-
-  // Delete the current selection for a drag and drop within this view.
-  const bool move = initiating_drag_ && !event.IsControlDown() &&
-                    event.source_operations() & ui::DragDropTypes::DRAG_MOVE;
-  if (move) {
-    // Adjust the drop destination if it is on or after the current selection.
-    size_t pos = drop_destination_model.caret_pos();
-    pos -= render_text->selection().Intersect(gfx::Range(0, pos)).length();
-    model_->DeletePrimarySelectionAndInsertTextAt(new_text, pos);
-  } else {
-    model_->MoveCursorTo(drop_destination_model);
-    // Drop always inserts text even if the textfield is not in insert mode.
-    model_->InsertText(new_text);
-  }
-  skip_input_method_cancel_composition_ = false;
-  UpdateAfterChange(TextChangeType::kUserTriggered, true);
-  OnAfterUserAction();
-  return move ? DragOperation::kMove : DragOperation::kCopy;
+  return base::BindOnce(&Textfield::DropDraggedText,
+                        drop_weak_ptr_factory_.GetWeakPtr());
 }
 
 void Textfield::OnDragDone() {
@@ -1134,6 +1102,7 @@ void Textfield::OnCompositionTextConfirmedOrCleared() {
 
 void Textfield::OnTextChanged() {
   OnPropertyChanged(&model_ + kTextfieldText, kPropertyEffectsPaint);
+  drop_weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1753,7 +1722,7 @@ bool Textfield::ShouldDoLearning() {
   return false;
 }
 
-#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 // TODO(https://crbug.com/952355): Implement this method to support Korean IME
 // reconversion feature on native text fields (e.g. find bar).
 bool Textfield::SetCompositionFromExistingText(
@@ -1794,10 +1763,9 @@ bool Textfield::SetAutocorrectRange(const gfx::Range& range) {
                                   TextInputClient::SubClass::kTextField);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    auto* input_method_manager =
-        chromeos::input_method::InputMethodManager::Get();
+    auto* input_method_manager = ash::input_method::InputMethodManager::Get();
     if (input_method_manager &&
-        chromeos::extension_ime_util::IsExperimentalMultilingual(
+        ash::extension_ime_util::IsExperimentalMultilingual(
             input_method_manager->GetActiveIMEState()
                 ->GetCurrentInputMethod()
                 .id())) {
@@ -1811,7 +1779,7 @@ bool Textfield::SetAutocorrectRange(const gfx::Range& range) {
 }
 #endif
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 void Textfield::GetActiveTextInputControlLayoutBounds(
     absl::optional<gfx::Rect>* control_bounds,
     absl::optional<gfx::Rect>* selection_bounds) {
@@ -1819,7 +1787,9 @@ void Textfield::GetActiveTextInputControlLayoutBounds(
   ConvertRectToScreen(this, &origin);
   *control_bounds = origin;
 }
+#endif
 
+#if defined(OS_WIN)
 // TODO(https://crbug.com/952355): Implement this method once TSF supports
 // reconversion features on native text fields.
 void Textfield::SetActiveCompositionForAccessibility(
@@ -2386,7 +2356,7 @@ void Textfield::UpdateBorder() {
       extra_insets_.right() + provider->GetDistanceMetric(
                                   DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING));
   if (invalid_)
-    border->SetColorId(ui::NativeTheme::kColorId_AlertSeverityHigh);
+    border->SetColorId(ui::kColorAlertHighSeverity);
   View::SetBorder(std::move(border));
 }
 
@@ -2570,6 +2540,12 @@ void Textfield::UpdateContextMenu() {
       MenuRunner::HAS_MNEMONICS | MenuRunner::CONTEXT_MENU);
 }
 
+void Textfield::InvalidateContextMenu() {
+  // Ensure that the Runner doesn't outlive the Model.
+  context_menu_runner_.reset();
+  context_menu_contents_.reset();
+}
+
 bool Textfield::ImeEditingAllowed() const {
   // Disallow input method editing of password fields.
   ui::TextInputType t = GetTextInputType();
@@ -2645,6 +2621,39 @@ void Textfield::OnCursorBlinkTimerFired() {
 void Textfield::OnEnabledChanged() {
   if (GetInputMethod())
     GetInputMethod()->OnTextInputTypeChanged(this);
+}
+
+void Textfield::DropDraggedText(const ui::DropTargetEvent& event,
+                                ui::mojom::DragOperation& output_drag_op) {
+  DCHECK(CanDrop(event.data()));
+
+  gfx::RenderText* render_text = GetRenderText();
+
+  OnBeforeUserAction();
+  skip_input_method_cancel_composition_ = true;
+
+  gfx::SelectionModel drop_destination_model =
+      render_text->FindCursorPosition(event.location());
+  std::u16string new_text;
+  event.data().GetString(&new_text);
+
+  // Delete the current selection for a drag and drop within this view.
+  const bool move = initiating_drag_ && !event.IsControlDown() &&
+                    event.source_operations() & ui::DragDropTypes::DRAG_MOVE;
+  if (move) {
+    // Adjust the drop destination if it is on or after the current selection.
+    size_t pos = drop_destination_model.caret_pos();
+    pos -= render_text->selection().Intersect(gfx::Range(0, pos)).length();
+    model_->DeletePrimarySelectionAndInsertTextAt(new_text, pos);
+  } else {
+    model_->MoveCursorTo(drop_destination_model);
+    // Drop always inserts text even if the textfield is not in insert mode.
+    model_->InsertText(new_text);
+  }
+  skip_input_method_cancel_composition_ = false;
+  UpdateAfterChange(TextChangeType::kUserTriggered, true);
+  OnAfterUserAction();
+  output_drag_op = move ? DragOperation::kMove : DragOperation::kCopy;
 }
 
 BEGIN_METADATA(Textfield, View)

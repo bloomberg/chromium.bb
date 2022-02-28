@@ -25,6 +25,7 @@
 #import "base/RTCVideoDecoderFactory.h"
 #import "base/RTCVideoEncoderFactory.h"
 #import "helpers/NSString+StdString.h"
+#include "rtc_base/checks.h"
 #include "sdk/objc/native/api/network_monitor_factory.h"
 #include "system_wrappers/include/field_trial.h"
 
@@ -118,17 +119,17 @@
     _networkThread = rtc::Thread::CreateWithSocketServer();
     _networkThread->SetName("network_thread", _networkThread.get());
     BOOL result = _networkThread->Start();
-    NSAssert(result, @"Failed to start network thread.");
+    RTC_DCHECK(result) << "Failed to start network thread.";
 
     _workerThread = rtc::Thread::Create();
     _workerThread->SetName("worker_thread", _workerThread.get());
     result = _workerThread->Start();
-    NSAssert(result, @"Failed to start worker thread.");
+    RTC_DCHECK(result) << "Failed to start worker thread.";
 
     _signalingThread = rtc::Thread::Create();
     _signalingThread->SetName("signaling_thread", _signalingThread.get());
     result = _signalingThread->Start();
-    NSAssert(result, @"Failed to start signaling thread.");
+    RTC_DCHECK(result) << "Failed to start signaling thread.";
   }
   return self;
 }
@@ -245,6 +246,13 @@
   return [[RTC_OBJC_TYPE(RTCVideoSource) alloc] initWithFactory:self
                                                 signalingThread:_signalingThread.get()
                                                    workerThread:_workerThread.get()];
+}
+
+- (RTC_OBJC_TYPE(RTCVideoSource) *)videoSourceForScreenCast:(BOOL)forScreenCast {
+  return [[RTC_OBJC_TYPE(RTCVideoSource) alloc] initWithFactory:self
+                                                signalingThread:_signalingThread.get()
+                                                   workerThread:_workerThread.get()
+                                                   isScreenCast:forScreenCast];
 }
 
 - (RTC_OBJC_TYPE(RTCVideoTrack) *)videoTrackWithSource:(RTC_OBJC_TYPE(RTCVideoSource) *)source

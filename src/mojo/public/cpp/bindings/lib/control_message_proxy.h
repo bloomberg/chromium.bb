@@ -9,7 +9,11 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
+
+namespace base {
+class TimeDelta;
+}
 
 namespace mojo {
 
@@ -22,6 +26,10 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) ControlMessageProxy {
  public:
   // Doesn't take ownership of |owner|. It must outlive this object.
   explicit ControlMessageProxy(InterfaceEndpointClient* owner);
+
+  ControlMessageProxy(const ControlMessageProxy&) = delete;
+  ControlMessageProxy& operator=(const ControlMessageProxy&) = delete;
+
   ~ControlMessageProxy();
 
   void QueryVersion(base::OnceCallback<void(uint32_t)> callback);
@@ -40,12 +48,10 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) ControlMessageProxy {
   void RunFlushForTestingClosure();
 
   // Not owned.
-  InterfaceEndpointClient* const owner_;
+  const raw_ptr<InterfaceEndpointClient> owner_;
   bool encountered_error_ = false;
 
   base::OnceClosure pending_flush_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(ControlMessageProxy);
 };
 
 }  // namespace internal
