@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
 #include "base/win/scoped_handle.h"
 #include "sandbox/win/src/restricted_token_utils.h"
 
@@ -21,6 +20,9 @@ namespace sandbox {
 class Job {
  public:
   Job();
+
+  Job(const Job&) = delete;
+  Job& operator=(const Job&) = delete;
 
   ~Job();
 
@@ -61,8 +63,6 @@ class Job {
  private:
   // Handle to the job referenced by the object.
   base::win::ScopedHandle job_handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
 }  // namespace sandbox

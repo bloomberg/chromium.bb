@@ -15,11 +15,13 @@
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/version.h"
 #include "components/captive_portal/core/captive_portal_detector.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/version_info/version_info.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
@@ -82,6 +84,9 @@ class ChromeWebClientTest : public PlatformTest {
     browser_state_ = TestChromeBrowserState::Builder().Build();
   }
 
+  ChromeWebClientTest(const ChromeWebClientTest&) = delete;
+  ChromeWebClientTest& operator=(const ChromeWebClientTest&) = delete;
+
   ~ChromeWebClientTest() override = default;
 
   ChromeBrowserState* browser_state() { return browser_state_.get(); }
@@ -89,8 +94,6 @@ class ChromeWebClientTest : public PlatformTest {
  private:
   base::test::TaskEnvironment environment_;
   std::unique_ptr<ChromeBrowserState> browser_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeWebClientTest);
 };
 
 TEST_F(ChromeWebClientTest, UserAgent) {
@@ -133,6 +136,62 @@ TEST_F(ChromeWebClientTest, UserAgent) {
   EXPECT_FALSE(safari_version_str.empty());
 
   EXPECT_EQ(0u, product_str.find("CriOS/"));
+}
+
+// Tests that the mobile user agent has a correct Chrome version number when
+// the major version is forced to be 100.
+TEST_F(ChromeWebClientTest, Version100MobileUserAgent) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({web::kForceMajorVersion100InUserAgent},
+                                       {});
+
+  ChromeWebClient web_client;
+  std::string buffer = web_client.GetUserAgent(web::UserAgentType::MOBILE);
+
+  std::vector<std::string> pieces = base::SplitStringUsingSubstr(
+      buffer, " CriOS/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  ASSERT_EQ(2u, pieces.size());
+  buffer = pieces[1];
+
+  pieces = base::SplitStringUsingSubstr(
+      buffer, " Mobile", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  ASSERT_EQ(2u, pieces.size());
+
+  base::Version version(pieces[0]);
+  ASSERT_TRUE(version.IsValid());
+
+  // Verify that the first component is 100, but the remaining components are
+  // unchanged.
+  EXPECT_EQ(100u, version.components()[0]);
+  base::Version current_version = version_info::GetVersion();
+  ASSERT_EQ(version.components().size(), current_version.components().size());
+  for (size_t i = 1; i < version.components().size(); ++i) {
+    EXPECT_EQ(version.components()[i], current_version.components()[i]);
+  }
+}
+
+// Tests that the desktop user agent has a correct Chrome version number when
+// the major version is forced to be 100.
+TEST_F(ChromeWebClientTest, Version100DesktopUserAgent) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({web::kForceMajorVersion100InUserAgent},
+                                       {});
+
+  ChromeWebClient web_client;
+  std::string buffer = web_client.GetUserAgent(web::UserAgentType::DESKTOP);
+
+  std::vector<std::string> pieces = base::SplitStringUsingSubstr(
+      buffer, " CriOS/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  ASSERT_EQ(2u, pieces.size());
+  buffer = pieces[1];
+
+  pieces = base::SplitStringUsingSubstr(
+      buffer, " Version", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  ASSERT_EQ(2u, pieces.size());
+
+  // The desktop user agent string only contains the major version number.
+  std::string version_number = pieces[0];
+  EXPECT_EQ("100", version_number);
 }
 
 // Tests PrepareErrorPage wth non-post, not Off The Record error.
@@ -425,84 +484,8 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageForLookalikeUrlErrorNoSuggestion) {
       << base::SysNSStringToUTF8(page);
 }
 
-// Tests PrepareErrorPage for a legacy TLS error, which results in a
-// committed legacy TLS interstitial.
-TEST_F(ChromeWebClientTest, PrepareErrorPageForLegacyTLSError) {
-  web::FakeWebState web_state;
-  web_state.SetBrowserState(browser_state());
-  security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
-      &web_state);
-  auto navigation_manager = std::make_unique<web::FakeNavigationManager>();
-  web_state.SetNavigationManager(std::move(navigation_manager));
-
-  NSError* error = [NSError errorWithDomain:net::kNSErrorDomain
-                                       code:net::ERR_SSL_OBSOLETE_VERSION
-                                   userInfo:nil];
-  __block bool callback_called = false;
-  __block NSString* page = nil;
-  base::OnceCallback<void(NSString*)> callback =
-      base::BindOnce(^(NSString* error_html) {
-        callback_called = true;
-        page = error_html;
-      });
-
-  ChromeWebClient web_client;
-  web_client.PrepareErrorPage(&web_state, GURL(kTestUrl), error,
-                              /*is_post=*/false,
-                              /*is_off_the_record=*/false,
-                              /*info=*/absl::optional<net::SSLInfo>(),
-                              /*navigation_id=*/0, std::move(callback));
-
-  EXPECT_TRUE(callback_called);
-  NSString* error_string =
-      l10n_util::GetNSString(IDS_LEGACY_TLS_PRIMARY_PARAGRAPH);
-  EXPECT_TRUE([page containsString:error_string])
-      << base::SysNSStringToUTF8(page);
-}
-
-// Tests PrepareErrorPage for a legacy TLS error in a WebState that doesn't
-// have an IOSBlockingPageTabHelper, ensuring that there is no crash.
-TEST_F(ChromeWebClientTest,
-       PrepareErrorPageForLegacyTLSErrorNotInWebStateList) {
-  web::FakeWebState web_state;
-  web_state.SetBrowserState(browser_state());
-  auto navigation_manager = std::make_unique<web::FakeNavigationManager>();
-  web_state.SetNavigationManager(std::move(navigation_manager));
-
-  NSError* error = [NSError errorWithDomain:net::kNSErrorDomain
-                                       code:net::ERR_SSL_OBSOLETE_VERSION
-                                   userInfo:nil];
-  __block bool callback_called = false;
-  __block NSString* page = nil;
-  base::OnceCallback<void(NSString*)> callback =
-      base::BindOnce(^(NSString* error_html) {
-        callback_called = true;
-        page = error_html;
-      });
-
-  ChromeWebClient web_client;
-  web_client.PrepareErrorPage(&web_state, GURL(kTestUrl), error,
-                              /*is_post=*/false,
-                              /*is_off_the_record=*/false,
-                              /*info=*/absl::optional<net::SSLInfo>(),
-                              /*navigation_id=*/0, std::move(callback));
-
-  EXPECT_TRUE(callback_called);
-  EXPECT_EQ(page.length, 0u);
-}
-
 // Tests the default user agent for different views.
 TEST_F(ChromeWebClientTest, DefaultUserAgent) {
-  if (@available(iOS 13, *)) {
-  } else {
-    // The feature is only available on iOS 13.
-    return;
-  }
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {web::features::kUseDefaultUserAgentInWebClient, web::kMobileGoogleSRP},
-      {});
-
   ChromeWebClient web_client;
   const GURL google_url = GURL("https://www.google.com/search?q=test");
   const GURL non_google_url = GURL("http://wikipedia.org");
@@ -544,7 +527,7 @@ TEST_F(ChromeWebClientTest, DefaultUserAgent) {
   id mock_regular_regular_view = OCMClassMock([UIView class]);
   OCMStub([mock_regular_regular_view traitCollection])
       .andReturn(regular_regular);
-  EXPECT_EQ(web::UserAgentType::DESKTOP,
+  EXPECT_EQ(web::UserAgentType::MOBILE,
             web_client.GetDefaultUserAgent(mock_regular_regular_view,
                                            non_google_url));
 

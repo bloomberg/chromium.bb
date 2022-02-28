@@ -7,9 +7,10 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/ui_base_types.h"
@@ -21,6 +22,10 @@ namespace gfx {
 class ImageSkia;
 class Rect;
 }  // namespace gfx
+
+namespace ui {
+class ImageModel;
+}  // namespace ui
 
 namespace views {
 class BubbleDialogDelegate;
@@ -138,10 +143,6 @@ class VIEWS_EXPORT WidgetDelegate {
   // menu bars, etc.) changes in size.
   virtual void OnWorkAreaChanged();
 
-  // Called when the widget's initialization is beginning, right after the
-  // ViewsDelegate decides to use this WidgetDelegate for a Widget.
-  virtual void OnWidgetInitializing() {}
-
   // Called when the widget's initialization is complete.
   virtual void OnWidgetInitialized() {}
 
@@ -163,7 +164,7 @@ class VIEWS_EXPORT WidgetDelegate {
   virtual DialogDelegate* AsDialogDelegate();
 
   // Returns true if the window can be resized.
-  virtual bool CanResize() const;
+  bool CanResize() const;
 
   // Returns true if the window can be maximized.
   virtual bool CanMaximize() const;
@@ -194,10 +195,10 @@ class VIEWS_EXPORT WidgetDelegate {
 
   // Returns the app icon for the window. On Windows, this is the ICON_BIG used
   // in Alt-Tab list and Win7's taskbar.
-  virtual gfx::ImageSkia GetWindowAppIcon();
+  virtual ui::ImageModel GetWindowAppIcon();
 
   // Returns the icon to be displayed in the window.
-  virtual gfx::ImageSkia GetWindowIcon();
+  virtual ui::ImageModel GetWindowIcon();
 
   // Returns true if a window icon should be shown.
   bool ShouldShowWindowIcon() const;
@@ -242,11 +243,15 @@ class VIEWS_EXPORT WidgetDelegate {
   // of these methods.
   virtual void WindowClosing();
 
-  // It should not be necessary to override this method in new code; instead,
-  // consider using either SetOwnedByWidget() if you need that ownership
-  // behavior, or RegisterDeleteDelegateCallback() if you need to attach
-  // behavior before deletion but want the default deletion behavior.
-  virtual void DeleteDelegate();
+  // Called when removed from a Widget. This first runs callbacks registered
+  // through RegisterDeleteDelegateCallback() and then either deletes `this` or
+  // not depending on SetOwnedByWidget(). If `this` is owned by Widget then the
+  // delegate is destructed at the end.
+  //
+  // WARNING: Use SetOwnedByWidget(true) and use delete-delegate callbacks to do
+  // pre-destruction cleanup instead of using self-deleting callbacks. The
+  // latter may become a DCHECK in the future.
+  void DeleteDelegate();
 
   // Called when the user begins/ends to change the bounds of the window.
   virtual void OnWindowBeginUserBoundsChange() {}
@@ -348,24 +353,15 @@ class VIEWS_EXPORT WidgetDelegate {
 
   template <typename T>
   T* SetContentsView(std::unique_ptr<T> contents) {
-    DCHECK(!contents->owned_by_client());
     T* raw_contents = contents.get();
-    SetContentsViewImpl(contents.release());
+    SetContentsViewImpl(std::move(contents));
     return raw_contents;
-  }
-
-  template <typename T>
-  T* SetContentsView(T* contents) {
-    DCHECK(contents->owned_by_client());
-    SetContentsViewImpl(contents);
-    return contents;
   }
 
   // A convenience wrapper that does all three of SetCanMaximize,
   // SetCanMinimize, and SetCanResize.
   void SetHasWindowSizeControls(bool has_controls);
 
-  void RegisterWidgetInitializingCallback(base::OnceClosure callback);
   void RegisterWidgetInitializedCallback(base::OnceClosure callback);
   void RegisterWindowWillCloseCallback(base::OnceClosure callback);
   void RegisterWindowClosingCallback(base::OnceClosure callback);
@@ -402,18 +398,18 @@ class VIEWS_EXPORT WidgetDelegate {
 
   friend class Widget;
 
-  void SetContentsViewImpl(View* contents);
+  void SetContentsViewImpl(std::unique_ptr<View> contents);
 
   // The Widget that was initialized with this instance as its WidgetDelegate,
   // if any.
-  Widget* widget_ = nullptr;
+  raw_ptr<Widget> widget_ = nullptr;
   Params params_;
 
-  View* default_contents_view_ = nullptr;
+  raw_ptr<View> default_contents_view_ = nullptr;
   bool contents_view_taken_ = false;
   bool can_activate_ = true;
 
-  View* unowned_contents_view_ = nullptr;
+  raw_ptr<View> unowned_contents_view_ = nullptr;
   std::unique_ptr<View> owned_contents_view_;
 
   // Managed by Widget. Ensures |this| outlives its Widget.
@@ -421,12 +417,11 @@ class VIEWS_EXPORT WidgetDelegate {
 
   // Used to ensure that a client Delete callback doesn't actually destruct the
   // WidgetDelegate if the client has given ownership to the Widget.
-  bool* destructor_ran_ = nullptr;
+  raw_ptr<bool> destructor_ran_ = nullptr;
 
-  // The first two are stored as unique_ptrs to make it easier to check in the
+  // This is stored as a unique_ptr to make it easier to check in the
   // registration methods whether a callback is being registered too late in the
   // WidgetDelegate's lifecycle.
-  std::unique_ptr<ClosureVector> widget_initializing_callbacks_;
   std::unique_ptr<ClosureVector> widget_initialized_callbacks_;
   ClosureVector window_will_close_callbacks_;
   ClosureVector window_closing_callbacks_;

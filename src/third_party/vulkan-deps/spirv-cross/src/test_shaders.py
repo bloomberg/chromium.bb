@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 # Copyright 2015-2021 Arm Limited
+# SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -131,6 +132,8 @@ def path_to_msl_standard(shader):
             return '-std=ios-metal2.2'
         elif '.msl23.' in shader:
             return '-std=ios-metal2.3'
+        elif '.msl24.' in shader:
+            return '-std=ios-metal2.4'
         elif '.msl11.' in shader:
             return '-std=ios-metal1.1'
         elif '.msl10.' in shader:
@@ -146,6 +149,8 @@ def path_to_msl_standard(shader):
             return '-std=macos-metal2.2'
         elif '.msl23.' in shader:
             return '-std=macos-metal2.3'
+        elif '.msl24.' in shader:
+            return '-std=macos-metal2.4'
         elif '.msl11.' in shader:
             return '-std=macos-metal1.1'
         else:
@@ -160,6 +165,8 @@ def path_to_msl_standard_cli(shader):
         return '20200'
     elif '.msl23.' in shader:
         return '20300'
+    elif '.msl24.' in shader:
+        return '20400'
     elif '.msl11.' in shader:
         return '10100'
     else:
@@ -185,7 +192,8 @@ def cross_compile_msl(shader, spirv, opt, iterations, paths):
     spirv_path = create_temporary()
     msl_path = create_temporary(os.path.basename(shader))
 
-    spirv_env = 'vulkan1.1spv1.4' if ('.spv14.' in shader) else 'vulkan1.1'
+    spirv_14 = '.spv14.' in shader
+    spirv_env = 'vulkan1.1spv1.4' if spirv_14 else 'vulkan1.1'
 
     spirv_cmd = [paths.spirv_as, '--target-env', spirv_env, '-o', spirv_path, shader]
     if '.preserve.' in shader:
@@ -194,7 +202,8 @@ def cross_compile_msl(shader, spirv, opt, iterations, paths):
     if spirv:
         subprocess.check_call(spirv_cmd)
     else:
-        subprocess.check_call([paths.glslang, '--amb' ,'--target-env', 'vulkan1.1', '-V', '-o', spirv_path, shader])
+        glslang_env = 'spirv1.4' if spirv_14 else 'vulkan1.1'
+        subprocess.check_call([paths.glslang, '--amb' ,'--target-env', glslang_env, '-V', '-o', spirv_path, shader])
 
     if opt and (not shader_is_invalid_spirv(shader)):
         if '.graphics-robust-access.' in shader:
@@ -431,7 +440,8 @@ def cross_compile_hlsl(shader, spirv, opt, force_no_external_validation, iterati
     spirv_path = create_temporary()
     hlsl_path = create_temporary(os.path.basename(shader))
 
-    spirv_env = 'vulkan1.1spv1.4' if '.spv14.' in shader else 'vulkan1.1'
+    spirv_14 = '.spv14.' in shader
+    spirv_env = 'vulkan1.1spv1.4' if spirv_14 else 'vulkan1.1'
     spirv_cmd = [paths.spirv_as, '--target-env', spirv_env, '-o', spirv_path, shader]
     if '.preserve.' in shader:
         spirv_cmd.append('--preserve-numeric-ids')
@@ -439,7 +449,8 @@ def cross_compile_hlsl(shader, spirv, opt, force_no_external_validation, iterati
     if spirv:
         subprocess.check_call(spirv_cmd)
     else:
-        subprocess.check_call([paths.glslang, '--amb', '--target-env', 'vulkan1.1', '-V', '-o', spirv_path, shader])
+        glslang_env = 'spirv1.4' if spirv_14 else 'vulkan1.1'
+        subprocess.check_call([paths.glslang, '--amb', '--target-env', glslang_env, '-V', '-o', spirv_path, shader])
 
     if opt and (not shader_is_invalid_spirv(hlsl_path)):
         subprocess.check_call([paths.spirv_opt, '--skip-validation', '-O', '-o', spirv_path, spirv_path])
@@ -551,6 +562,8 @@ def cross_compile(shader, vulkan, spirv, invalid_spirv, eliminate, is_legacy, fl
         extra_args += ['--glsl-remap-ext-framebuffer-fetch', '1', '1']
         extra_args += ['--glsl-remap-ext-framebuffer-fetch', '2', '2']
         extra_args += ['--glsl-remap-ext-framebuffer-fetch', '3', '3']
+    if '.framebuffer-fetch-noncoherent.' in shader:
+        extra_args += ['--glsl-ext-framebuffer-fetch-noncoherent']
     if '.zero-initialize.' in shader:
         extra_args += ['--force-zero-initialized-variables']
     if '.force-flattened-io.' in shader:
@@ -761,7 +774,8 @@ def test_shader_msl(stats, shader, args, paths):
 
     shader_is_msl22 = 'msl22' in joined_path
     shader_is_msl23 = 'msl23' in joined_path
-    skip_validation = (shader_is_msl22 and (not args.msl22)) or (shader_is_msl23 and (not args.msl23))
+    shader_is_msl24 = 'msl24' in joined_path
+    skip_validation = (shader_is_msl22 and (not args.msl22)) or (shader_is_msl23 and (not args.msl23)) or (shader_is_msl24 and (not args.msl24))
     if '.invalid.' in joined_path:
         skip_validation = True
 
@@ -910,10 +924,12 @@ def main():
 
     args.msl22 = False
     args.msl23 = False
+    args.msl24 = False
     if args.msl:
         print_msl_compiler_version()
         args.msl22 = msl_compiler_supports_version('2.2')
         args.msl23 = msl_compiler_supports_version('2.3')
+        args.msl24 = msl_compiler_supports_version('2.4')
 
     backend = 'glsl'
     if (args.msl or args.metal):

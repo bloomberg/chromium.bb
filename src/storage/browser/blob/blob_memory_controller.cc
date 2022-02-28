@@ -18,19 +18,20 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
-#include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/task_runner.h"
-#include "base/task_runner_util.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/task/task_runner.h"
+#include "base/task/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_item.h"
@@ -64,7 +65,8 @@ File::Error CreateBlobDirectory(const FilePath& blob_storage_dir) {
   UMA_HISTOGRAM_ENUMERATION("Storage.Blob.CreateDirectoryResult", -error,
                             -File::FILE_ERROR_MAX);
   DLOG_IF(ERROR, error != File::FILE_OK)
-      << "Error creating blob storage directory: " << error;
+      << "Error creating blob storage directory '"
+      << blob_storage_dir.LossyDisplayName() << "': " << error;
   return error;
 }
 
@@ -335,6 +337,10 @@ class BlobMemoryController::MemoryQuotaAllocationTask
         done_callback_(std::move(done_callback)),
         allocation_size_(quota_request_size) {}
 
+  MemoryQuotaAllocationTask(const MemoryQuotaAllocationTask&) = delete;
+  MemoryQuotaAllocationTask& operator=(const MemoryQuotaAllocationTask&) =
+      delete;
+
   ~MemoryQuotaAllocationTask() override = default;
 
   void RunDoneCallback(bool success) {
@@ -366,7 +372,7 @@ class BlobMemoryController::MemoryQuotaAllocationTask
   size_t allocation_size() const { return allocation_size_; }
 
  private:
-  BlobMemoryController* controller_;
+  raw_ptr<BlobMemoryController> controller_;
   std::vector<scoped_refptr<ShareableBlobDataItem>> pending_items_;
   MemoryQuotaRequestCallback done_callback_;
 
@@ -374,7 +380,6 @@ class BlobMemoryController::MemoryQuotaAllocationTask
   PendingMemoryQuotaTaskList::iterator my_list_position_;
 
   base::WeakPtrFactory<MemoryQuotaAllocationTask> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(MemoryQuotaAllocationTask);
 };
 
 class BlobMemoryController::FileQuotaAllocationTask
@@ -435,6 +440,10 @@ class BlobMemoryController::FileQuotaAllocationTask
                        allocation_size_));
     controller_->RecordTracingCounters();
   }
+
+  FileQuotaAllocationTask(const FileQuotaAllocationTask&) = delete;
+  FileQuotaAllocationTask& operator=(const FileQuotaAllocationTask&) = delete;
+
   ~FileQuotaAllocationTask() override = default;
 
   void RunDoneCallback(std::vector<FileCreationInfo> file_info, bool success) {
@@ -522,7 +531,7 @@ class BlobMemoryController::FileQuotaAllocationTask
   size_t allocation_size() const { return allocation_size_; }
 
  private:
-  BlobMemoryController* controller_;
+  raw_ptr<BlobMemoryController> controller_;
   std::vector<uint64_t> file_sizes_;
   std::vector<scoped_refptr<ShareableBlobDataItem>> pending_items_;
   FileQuotaRequestCallback done_callback_;
@@ -531,7 +540,6 @@ class BlobMemoryController::FileQuotaAllocationTask
   PendingFileQuotaTaskList::iterator my_list_position_;
 
   base::WeakPtrFactory<FileQuotaAllocationTask> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(FileQuotaAllocationTask);
 };
 
 BlobMemoryController::BlobMemoryController(
@@ -542,7 +550,7 @@ BlobMemoryController::BlobMemoryController(
       file_runner_(std::move(file_runner)),
       disk_space_function_(&base::SysInfo::AmountOfFreeDiskSpace),
       populated_memory_items_(
-          base::MRUCache<uint64_t, ShareableBlobDataItem*>::NO_AUTO_EVICT),
+          base::LRUCache<uint64_t, ShareableBlobDataItem*>::NO_AUTO_EVICT),
       memory_pressure_listener_(
           FROM_HERE,
           base::BindRepeating(&BlobMemoryController::OnMemoryPressure,

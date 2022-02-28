@@ -7,7 +7,7 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/public/cpp/ash_features.h"
+#include "ash/constants/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
@@ -15,6 +15,7 @@
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/scoped_observation.h"
 #include "ui/gfx/color_analysis.h"
@@ -157,7 +158,7 @@ void ShelfConfig::Init() {
   Shell* const shell = Shell::Get();
 
   shell->app_list_controller()->AddObserver(this);
-  display::Screen::GetScreen()->AddObserver(this);
+  display_observer_.emplace(this);
   shell->system_tray_model()->virtual_keyboard()->AddObserver(this);
   shell->overview_controller()->AddObserver(this);
   shell->session_controller()->AddObserver(this);
@@ -174,7 +175,7 @@ void ShelfConfig::Shutdown() {
   shell->session_controller()->RemoveObserver(this);
   shell->overview_controller()->RemoveObserver(this);
   shell->system_tray_model()->virtual_keyboard()->RemoveObserver(this);
-  display::Screen::GetScreen()->RemoveObserver(this);
+  display_observer_.reset();
   shell->app_list_controller()->RemoveObserver(this);
 }
 
@@ -330,7 +331,7 @@ int ShelfConfig::control_button_edge_spacing(bool is_primary_axis_edge) const {
 
 base::TimeDelta ShelfConfig::hotseat_background_animation_duration() const {
   // This matches the duration of the maximize/minimize animation.
-  return base::TimeDelta::FromMilliseconds(300);
+  return base::Milliseconds(300);
 }
 
 base::TimeDelta ShelfConfig::shelf_animation_duration() const {
@@ -470,7 +471,7 @@ int ShelfConfig::GetAppIconGroupMargin() const {
 }
 
 base::TimeDelta ShelfConfig::DimAnimationDuration() const {
-  return base::TimeDelta::FromMilliseconds(1000);
+  return base::Milliseconds(1000);
 }
 
 gfx::Tween::Type ShelfConfig::DimAnimationTween() const {

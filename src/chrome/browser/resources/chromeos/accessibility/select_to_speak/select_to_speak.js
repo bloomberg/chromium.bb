@@ -70,15 +70,16 @@ export class SelectToSpeak {
     /** @private {number|undefined} */
     this.intervalRef_;
 
-    chrome.automation.getDesktop(function(desktop) {
+    chrome.automation.getDesktop((desktop) => {
       this.desktop_ = desktop;
 
       // After the user selects a region of the screen, we do a hit test at
       // the center of that box using the automation API. The result of the
       // hit test is a MOUSE_RELEASED accessibility event.
       desktop.addEventListener(
-          EventType.MOUSE_RELEASED, this.onAutomationHitTest_.bind(this), true);
-    }.bind(this));
+          EventType.MOUSE_RELEASED, evt => this.onAutomationHitTest_(evt),
+          true);
+    });
 
     /**
      * The node groups to be spoken. We process content into node groups and
@@ -183,13 +184,13 @@ export class SelectToSpeak {
         });
 
     /**
-     * Feature flag controlling STS navigation control.
+     * Feature flag controlling availability of enhanced network voices
      * @type {boolean}
      */
-    this.navigationControlFlag_ = false;
+    this.enhancedVoicesFlag_ = false;
     chrome.accessibilityPrivate.isFeatureEnabled(
-        AccessibilityFeature.SELECT_TO_SPEAK_NAVIGATION_CONTROL, (result) => {
-          this.navigationControlFlag_ = result;
+        AccessibilityFeature.ENHANCED_NETWORK_VOICES, (result) => {
+          this.enhancedVoicesFlag_ = result;
         });
 
     /** @private {number} Default speech rate set in system settings. */
@@ -234,8 +235,7 @@ export class SelectToSpeak {
    * @private
    */
   shouldShowNavigationControls_() {
-    return this.navigationControlFlag_ &&
-        this.prefsManager_.navigationControlsEnabled() &&
+    return this.prefsManager_.navigationControlsEnabled() &&
         this.supportsNavigationPanel_;
   }
 
@@ -263,7 +263,7 @@ export class SelectToSpeak {
 
     var rect = this.inputHandler_.getMouseRect();
     var nodes = [];
-    chrome.automation.getFocus(function(focusedNode) {
+    chrome.automation.getFocus((focusedNode) => {
       // In some cases, e.g. ARC++, the window received in the hit test request,
       // which is computed based on which window is the event handler for the
       // hit point, isn't the part of the tree that contains the actual
@@ -290,8 +290,9 @@ export class SelectToSpeak {
       }
       this.startSpeechQueue_(nodes, {clearFocusRing: true});
       MetricsUtils.recordStartEvent(
-          MetricsUtils.StartSpeechMethod.MOUSE, this.prefsManager_);
-    }.bind(this));
+          MetricsUtils.StartSpeechMethod.MOUSE, this.prefsManager_,
+          this.enhancedVoicesFlag_);
+    });
   }
 
   /**
@@ -442,7 +443,8 @@ export class SelectToSpeak {
       }
       if (userRequested) {
         MetricsUtils.recordStartEvent(
-            MetricsUtils.StartSpeechMethod.KEYSTROKE, this.prefsManager_);
+            MetricsUtils.StartSpeechMethod.KEYSTROKE, this.prefsManager_,
+            this.enhancedVoicesFlag_);
       }
     } else {
       // Gsuite apps include webapps beyond Docs, see getGSuiteAppRoot and
@@ -468,7 +470,8 @@ export class SelectToSpeak {
         });
         if (userRequested) {
           MetricsUtils.recordStartEvent(
-              MetricsUtils.StartSpeechMethod.KEYSTROKE, this.prefsManager_);
+              MetricsUtils.StartSpeechMethod.KEYSTROKE, this.prefsManager_,
+              this.enhancedVoicesFlag_);
         }
       });
     }
@@ -731,7 +734,8 @@ export class SelectToSpeak {
       },
       // onKeystrokeSelection: Keys pressed for reading highlighted text.
       onKeystrokeSelection: () => {
-        chrome.automation.getFocus(this.requestSpeakSelectedText_.bind(this));
+        chrome.automation.getFocus(
+            focusedNode => this.requestSpeakSelectedText_(focusedNode));
       },
       // onRequestCancel: User requested canceling input/speech.
       onRequestCancel: () => {
@@ -740,12 +744,12 @@ export class SelectToSpeak {
         this.cancelIfSpeaking_(true /* clear the focus ring */);
       },
       // onTextReceived: Text received from a 'paste' event to read aloud.
-      onTextReceived: this.startSpeech_.bind(this)
+      onTextReceived: text => this.startSpeech_(text)
     });
     this.inputHandler_.setUpEventListeners();
 
     chrome.settingsPrivate.onPrefsChanged.addListener(
-        this.onPrefsChanged_.bind(this));
+        prefs => this.onPrefsChanged_(prefs));
     // Initialize the state to SelectToSpeakState.INACTIVE.
     chrome.accessibilityPrivate.setSelectToSpeakState(this.state_);
   }
@@ -922,21 +926,30 @@ export class SelectToSpeak {
    */
   startSpeech_(text) {
     this.prepareForSpeech_(true /* clearFocusRing */);
-    const options = this.prefsManager_.speechOptions();
-    // Without nodes to anchor on, navigate is not supported.
-    this.supportsNavigationPanel_ = false;
-    options.onEvent = (event) => {
-      if (event.type === 'start') {
-        this.onStateChanged_(SelectToSpeakState.SPEAKING);
-        this.updateUi_();
-      } else if (
-          event.type === 'end' || event.type === 'interrupted' ||
-          event.type === 'cancelled') {
-        // Automatically dismiss when we're at the end.
-        this.onStateChanged_(SelectToSpeakState.INACTIVE);
-      }
-    };
-    this.ttsManager_.speak(text, options);
+    this.maybeShowEnhancedVoicesDialog_(() => {
+      const options =
+          this.prefsManager_.getSpeechOptions(this.enhancedVoicesFlag_);
+      const fallbackVoiceName = this.prefsManager_.getLocalVoice();
+
+      // Without nodes to anchor on, navigate is not supported.
+      this.supportsNavigationPanel_ = false;
+      options.onEvent = (event) => {
+        if (event.type === 'start') {
+          this.onStateChanged_(SelectToSpeakState.SPEAKING);
+          this.updateUi_();
+        } else if (
+            event.type === 'end' || event.type === 'interrupted' ||
+            event.type === 'cancelled') {
+          // Automatically dismiss when we're at the end.
+          this.onStateChanged_(SelectToSpeakState.INACTIVE);
+        }
+      };
+      const voiceName = options['voiceName'] || '';
+      MetricsUtils.recordTtsEngineUsed(voiceName || '', this.prefsManager_);
+      this.ttsManager_.speak(
+          text, options, this.prefsManager_.isNetworkVoice(voiceName),
+          fallbackVoiceName);
+    });
   }
 
   /**
@@ -958,37 +971,39 @@ export class SelectToSpeak {
    * @private
    */
   startSpeechQueue_(nodes, opt_params) {
-    const params = opt_params || {};
-    const clearFocusRing = params.clearFocusRing || false;
-    let startCharIndex = params.startCharIndex;
-    let endCharIndex = params.endCharIndex;
+    this.maybeShowEnhancedVoicesDialog_(() => {
+      const params = opt_params || {};
+      const clearFocusRing = params.clearFocusRing || false;
+      let startCharIndex = params.startCharIndex;
+      let endCharIndex = params.endCharIndex;
 
-    this.prepareForSpeech_(clearFocusRing /* clear the focus ring */);
+      this.prepareForSpeech_(clearFocusRing /* clear the focus ring */);
 
-    if (nodes.length === 0) {
-      return;
-    }
+      if (nodes.length === 0) {
+        return;
+      }
 
-    // Remember the original first and last node in the given list, as
-    // |startCharIndex| and |endCharIndex| pertain to them. If, after SVG
-    // resorting, the first or last nodes are re-ordered, do not clip them.
-    const originalFirstNode = nodes[0];
-    const originalLastNode = nodes[nodes.length - 1];
-    // Sort any SVG child nodes, if present, by visual reading order.
-    NodeUtils.sortSvgNodesByReadingOrder(nodes);
-    // Override start or end index if original nodes were sorted.
-    if (originalFirstNode !== nodes[0]) {
-      startCharIndex = undefined;
-    }
-    if (originalLastNode !== nodes[nodes.length - 1]) {
-      endCharIndex = undefined;
-    }
+      // Remember the original first and last node in the given list, as
+      // |startCharIndex| and |endCharIndex| pertain to them. If, after SVG
+      // resorting, the first or last nodes are re-ordered, do not clip them.
+      const originalFirstNode = nodes[0];
+      const originalLastNode = nodes[nodes.length - 1];
+      // Sort any SVG child nodes, if present, by visual reading order.
+      NodeUtils.sortSvgNodesByReadingOrder(nodes);
+      // Override start or end index if original nodes were sorted.
+      if (originalFirstNode !== nodes[0]) {
+        startCharIndex = undefined;
+      }
+      if (originalLastNode !== nodes[nodes.length - 1]) {
+        endCharIndex = undefined;
+      }
 
-    this.supportsNavigationPanel_ = this.isNavigationPanelSupported_(nodes);
-    this.updateNodeGroups_(nodes, startCharIndex, endCharIndex);
+      this.supportsNavigationPanel_ = this.isNavigationPanelSupported_(nodes);
+      this.updateNodeGroups_(nodes, startCharIndex, endCharIndex);
 
-    // Play TTS according to the current state variables.
-    this.startCurrentNodeGroup_();
+      // Play TTS according to the current state variables.
+      this.startCurrentNodeGroup_();
+    });
   }
 
   /**
@@ -1080,8 +1095,14 @@ export class SelectToSpeak {
       return;
     }
 
+    const options = this.getTtsOptionsForCurrentNodeGroup_();
+    const voiceName = options['voiceName'] || '';
+    const fallbackVoiceName = this.prefsManager_.getLocalVoice();
+
+    MetricsUtils.recordTtsEngineUsed(voiceName, this.prefsManager_);
     this.ttsManager_.speak(
-        nodeGroup.text, this.getTtsOptionsForCurrentNodeGroup_());
+        nodeGroup.text, options, this.prefsManager_.isNetworkVoice(voiceName),
+        fallbackVoiceName);
   }
 
   getTtsOptionsForCurrentNodeGroup_() {
@@ -1091,7 +1112,8 @@ export class SelectToSpeak {
     }
     const options = /** @type {!chrome.tts.TtsOptions} */ ({});
     // Copy options so we can add lang below
-    Object.assign(options, this.prefsManager_.speechOptions());
+    Object.assign(
+        options, this.prefsManager_.getSpeechOptions(this.enhancedVoicesFlag_));
     if (this.enableLanguageDetectionIntegration_ &&
         nodeGroup.detectedLanguage) {
       options.lang = nodeGroup.detectedLanguage;
@@ -1304,7 +1326,7 @@ export class SelectToSpeak {
       clearInterval(this.intervalRef_);
     }
     this.intervalRef_ = setInterval(
-        this.updateUi_.bind(this),
+        () => this.updateUi_(),
         SelectToSpeakConstants.NODE_STATE_TEST_INTERVAL_MS);
   }
 
@@ -1538,6 +1560,39 @@ export class SelectToSpeak {
       paused: this.isPaused_(),
       speechRateMultiplier: this.speechRateMultiplier_,
     });
+  }
+
+  /**
+   * Shows a dialog to the user on first-run after enhanced voices update,
+   * showing privacy disclaimer and asking if the user wants to turn on enhanced
+   * network voices.
+   *
+   * @param {function()} callback Called back after user has confirmed or
+   *     canceled in the dialog.
+   */
+  maybeShowEnhancedVoicesDialog_(callback) {
+    if (this.enhancedVoicesFlag_ &&
+        !this.prefsManager_.enhancedVoicesDialogShown() &&
+        this.prefsManager_.enhancedNetworkVoicesAllowed()) {
+      // TODO(crbug.com/1230227): Style this dialog to match UX mocks.
+      const title =
+          chrome.i18n.getMessage('select_to_speak_natural_voice_dialog_title');
+      const description = chrome.i18n.getMessage(
+          'select_to_speak_natural_voice_dialog_description');
+      chrome.accessibilityPrivate.showConfirmationDialog(
+          title, description, (confirm) => {
+            this.prefsManager_.setEnhancedNetworkVoicesFromDialog(confirm);
+            if (callback !== undefined) {
+              callback();
+            }
+          });
+    } else {
+      // Flag not set or already shown, so we can continue the control flow
+      // synchronously.
+      if (callback !== undefined) {
+        callback();
+      }
+    }
   }
 
   /**

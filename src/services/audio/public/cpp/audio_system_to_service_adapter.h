@@ -16,7 +16,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/system_info.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace audio {
 
@@ -36,6 +35,11 @@ class AudioSystemToServiceAdapter : public media::AudioSystem {
   AudioSystemToServiceAdapter(SystemInfoBinder system_info_binder,
                               base::TimeDelta disconnect_timeout);
   explicit AudioSystemToServiceAdapter(SystemInfoBinder system_info_binder);
+
+  AudioSystemToServiceAdapter(const AudioSystemToServiceAdapter&) = delete;
+  AudioSystemToServiceAdapter& operator=(const AudioSystemToServiceAdapter&) =
+      delete;
+
   ~AudioSystemToServiceAdapter() override;
 
   // AudioSystem implementation.
@@ -69,7 +73,6 @@ class AudioSystemToServiceAdapter : public media::AudioSystem {
   const base::TimeDelta disconnect_timeout_;
 
   THREAD_CHECKER(thread_checker_);
-  DISALLOW_COPY_AND_ASSIGN(AudioSystemToServiceAdapter);
 };
 
 }  // namespace audio

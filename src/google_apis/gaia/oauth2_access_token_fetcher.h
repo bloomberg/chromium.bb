@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 
 // Interface of a OAuth2 access token fetcher.
@@ -24,6 +24,10 @@
 class OAuth2AccessTokenFetcher {
  public:
   explicit OAuth2AccessTokenFetcher(OAuth2AccessTokenConsumer* consumer);
+
+  OAuth2AccessTokenFetcher(const OAuth2AccessTokenFetcher&) = delete;
+  OAuth2AccessTokenFetcher& operator=(const OAuth2AccessTokenFetcher&) = delete;
+
   virtual ~OAuth2AccessTokenFetcher();
 
   // Starts the flow with the given parameters.
@@ -48,9 +52,7 @@ class OAuth2AccessTokenFetcher {
   void FireOnGetTokenFailure(const GoogleServiceAuthError& error);
 
  private:
-  OAuth2AccessTokenConsumer* const consumer_;
-
-  DISALLOW_COPY_AND_ASSIGN(OAuth2AccessTokenFetcher);
+  const raw_ptr<OAuth2AccessTokenConsumer> consumer_;
 };
 
 #endif  // GOOGLE_APIS_GAIA_OAUTH2_ACCESS_TOKEN_FETCHER_H_

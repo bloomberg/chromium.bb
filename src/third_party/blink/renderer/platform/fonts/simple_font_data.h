@@ -38,11 +38,11 @@
 #include "third_party/blink/renderer/platform/fonts/font_vertical_position_type.h"
 #include "third_party/blink/renderer/platform/fonts/glyph.h"
 #include "third_party/blink/renderer/platform/fonts/typesetting_features.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/skia/include/core/SkFont.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 #if defined(OS_MAC)
 #include "third_party/blink/renderer/platform/fonts/glyph_metrics_map.h"
@@ -118,9 +118,9 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
     avg_char_width_ = avg_char_width;
   }
 
-  FloatRect BoundsForGlyph(Glyph) const;
+  gfx::RectF BoundsForGlyph(Glyph) const;
   void BoundsForGlyphs(const Vector<Glyph, 256>&, Vector<SkRect, 256>*) const;
-  FloatRect PlatformBoundsForGlyph(Glyph) const;
+  gfx::RectF PlatformBoundsForGlyph(Glyph) const;
   float WidthForGlyph(Glyph) const;
   float PlatformWidthForGlyph(Glyph) const;
 
@@ -143,6 +143,9 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   bool IsLoadingFallback() const override {
     return custom_font_data_ ? custom_font_data_->IsLoadingFallback() : false;
   }
+  bool IsPendingDataUrlCustomFont() const {
+    return custom_font_data_ ? custom_font_data_->IsPendingDataUrl() : false;
+  }
   bool IsSegmented() const override;
   bool ShouldSkipDrawing() const override {
     return custom_font_data_ && custom_font_data_->ShouldSkipDrawing();
@@ -155,15 +158,6 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   }
   unsigned VisualOverflowInflationForDescent() const {
     return visual_overflow_inflation_for_descent_;
-  }
-
-  bool HasAdvanceOverride() const override {
-    return advance_override_.has_value();
-  }
-
-  float GetAdvanceOverride() const { return advance_override_.value_or(1); }
-  float GetAdvanceOverrideVerticalUpright() const {
-    return advance_override_vertical_upright_.value_or(1);
   }
 
  protected:
@@ -199,11 +193,11 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
 
    public:
     DerivedFontData() = default;
+    DerivedFontData(const DerivedFontData&) = delete;
+    DerivedFontData& operator=(const DerivedFontData&) = delete;
 
     scoped_refptr<SimpleFontData> small_caps;
     scoped_refptr<SimpleFontData> emphasis_mark;
-
-    DISALLOW_COPY_AND_ASSIGN(DerivedFontData);
   };
 
   mutable std::unique_ptr<DerivedFontData> derived_font_data_;
@@ -216,37 +210,32 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   unsigned visual_overflow_inflation_for_ascent_;
   unsigned visual_overflow_inflation_for_descent_;
 
-  // The multiplier to the advance of each letter as defined by the
-  // advance-override value in @font-face.
-  absl::optional<float> advance_override_;
-  absl::optional<float> advance_override_vertical_upright_;
-
   mutable FontHeight normalized_typo_ascent_descent_;
 
-// See discussion on crbug.com/631032 and Skiaissue
+// See discussion on crbug.com/631032 and Skia issue
 // https://bugs.chromium.org/p/skia/issues/detail?id=5328 :
 // On Mac we're still using path based glyph metrics, and they seem to be
 // too slow to be able to remove the caching layer we have here.
 #if defined(OS_MAC)
-  mutable std::unique_ptr<GlyphMetricsMap<FloatRect>> glyph_to_bounds_map_;
+  mutable std::unique_ptr<GlyphMetricsMap<gfx::RectF>> glyph_to_bounds_map_;
   mutable GlyphMetricsMap<float> glyph_to_width_map_;
 #endif
 };
 
-ALWAYS_INLINE FloatRect SimpleFontData::BoundsForGlyph(Glyph glyph) const {
+ALWAYS_INLINE gfx::RectF SimpleFontData::BoundsForGlyph(Glyph glyph) const {
 #if !defined(OS_MAC)
   return PlatformBoundsForGlyph(glyph);
 #else
-  FloatRect bounds_result;
   if (glyph_to_bounds_map_) {
-    bounds_result = glyph_to_bounds_map_->MetricsForGlyph(glyph);
-    if (bounds_result.Width() != kCGlyphSizeUnknown)
-      return bounds_result;
+    if (absl::optional<gfx::RectF> glyph_bounds =
+            glyph_to_bounds_map_->MetricsForGlyph(glyph)) {
+      return *glyph_bounds;
+    }
   }
 
-  bounds_result = PlatformBoundsForGlyph(glyph);
+  gfx::RectF bounds_result = PlatformBoundsForGlyph(glyph);
   if (!glyph_to_bounds_map_)
-    glyph_to_bounds_map_ = std::make_unique<GlyphMetricsMap<FloatRect>>();
+    glyph_to_bounds_map_ = std::make_unique<GlyphMetricsMap<gfx::RectF>>();
   glyph_to_bounds_map_->SetMetricsForGlyph(glyph, bounds_result);
 
   return bounds_result;
@@ -257,11 +246,10 @@ ALWAYS_INLINE float SimpleFontData::WidthForGlyph(Glyph glyph) const {
 #if !defined(OS_MAC)
   return PlatformWidthForGlyph(glyph);
 #else
-  float width = glyph_to_width_map_.MetricsForGlyph(glyph);
-  if (width != kCGlyphSizeUnknown)
-    return width;
+  if (absl::optional<float> width = glyph_to_width_map_.MetricsForGlyph(glyph))
+    return *width;
 
-  width = PlatformWidthForGlyph(glyph);
+  float width = PlatformWidthForGlyph(glyph);
 
   glyph_to_width_map_.SetMetricsForGlyph(glyph, width);
   return width;

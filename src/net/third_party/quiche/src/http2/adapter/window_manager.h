@@ -1,7 +1,11 @@
 #ifndef QUICHE_HTTP2_ADAPTER_WINDOW_MANAGER_H_
 #define QUICHE_HTTP2_ADAPTER_WINDOW_MANAGER_H_
 
+#include <stddef.h>
+
 #include <functional>
+
+#include "common/platform/api/quiche_export.h"
 
 namespace http2 {
 namespace adapter {
@@ -12,7 +16,7 @@ class WindowManagerPeer;
 
 // This class keeps track of a HTTP/2 flow control window, notifying a listener
 // when a window update needs to be sent. This class is not thread-safe.
-class WindowManager {
+class QUICHE_EXPORT_PRIVATE WindowManager {
  public:
   // A WindowUpdateListener is invoked when it is time to send a window update.
   typedef std::function<void(size_t)> WindowUpdateListener;

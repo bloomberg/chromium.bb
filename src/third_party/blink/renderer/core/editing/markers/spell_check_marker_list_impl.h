@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_SPELL_CHECK_MARKER_LIST_IMPL_H_
 
 #include "third_party/blink/renderer/core/editing/markers/document_marker_list.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -17,6 +18,9 @@ namespace blink {
 // to do this efficiently.
 class CORE_EXPORT SpellCheckMarkerListImpl : public DocumentMarkerList {
  public:
+  SpellCheckMarkerListImpl(const SpellCheckMarkerListImpl&) = delete;
+  SpellCheckMarkerListImpl& operator=(const SpellCheckMarkerListImpl&) = delete;
+
   // DocumentMarkerList implementations
   bool IsEmpty() const final;
 
@@ -49,8 +53,6 @@ class CORE_EXPORT SpellCheckMarkerListImpl : public DocumentMarkerList {
 
  private:
   HeapVector<Member<DocumentMarker>> markers_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpellCheckMarkerListImpl);
 };
 
 template <>

@@ -5,13 +5,15 @@
 import {assert} from 'chai';
 import type * as puppeteer from 'puppeteer';
 
-import {$$, click, hasClass, waitFor, waitForClass, waitForFunction} from '../../shared/helper.js';
+import {$$, click, hasClass, matchStringTable, waitFor, waitForClass, waitForFunction} from '../../shared/helper.js';
 import {openPanelViaMoreTools} from './settings-helpers.js';
 
-export const CATEGORY = '.issue-category';
+export const CATEGORY = '.issue-category:not(.hidden-issues)';
+export const KIND = '.issue-kind';
 export const CATEGORY_NAME = '.issue-category .title';
 export const CATEGORY_CHECKBOX = 'input[aria-label="Group by category"]';
-export const ISSUE = '.issue';
+export const KIND_CHECKBOX = 'input[aria-label="Group by kind"]';
+export const ISSUE = '.issue:not(.hidden-issue)';
 export const ISSUE_TITLE = '.issue .title';
 export const AFFECTED_ELEMENT_ICON = '.affected-resource-csp-info-node';
 export const ELEMENT_REVEAL_ICON = '.element-reveal-icon';
@@ -20,9 +22,43 @@ export const SOURCES_LINK = '.affected-source-location > span';
 export const BLOCKED_STATUS = '.affected-resource-blocked-status';
 export const REPORT_ONLY_STATUS = '.affected-resource-report-only-status';
 export const RESOURCES_LABEL = '.affected-resource-label';
+export const HIDE_ISSUES_MENU = 'devtools-hide-issues-menu';
+export const HIDE_THIS_ISSUE = 'Hide issues like this';
+export const UNHIDE_THIS_ISSUE = 'Unhide issues like this';
+export const UNHIDE_ALL_ISSUES = '.unhide-all-issues-button';
+
+export async function getHideIssuesMenu() {
+  const menu = await waitFor(HIDE_ISSUES_MENU);
+  return menu;
+}
 
 export async function navigateToIssuesTab() {
   await openPanelViaMoreTools('Issues');
+}
+
+export async function getUnhideAllIssuesBtn() {
+  const btn = await waitFor(UNHIDE_ALL_ISSUES);
+  return btn;
+}
+
+export async function getHideIssuesMenuItem(): Promise<puppeteer.ElementHandle<HTMLElement>|null> {
+  const menuItem = await waitFor(`[aria-label="${HIDE_THIS_ISSUE}"]`);
+  if (menuItem) {
+    return menuItem;
+  }
+  return null;
+}
+
+export async function getUnhideIssuesMenuItem(): Promise<puppeteer.ElementHandle<HTMLElement>|null> {
+  return await waitFor(`[aria-label="${UNHIDE_THIS_ISSUE}"]`);
+}
+
+export async function getHiddenIssuesRow(): Promise<puppeteer.ElementHandle<HTMLElement>|null> {
+  return await waitFor('.hidden-issues');
+}
+
+export async function getHiddenIssuesRowBody(): Promise<puppeteer.ElementHandle<HTMLElement>|null> {
+  return await waitFor('.hidden-issues-body');
 }
 
 export async function assertCategoryName(categoryName: string) {
@@ -37,11 +73,10 @@ export async function assertIssueTitle(issueMessage: string) {
   assert.strictEqual(selectedIssueMessage, issueMessage);
 }
 
-export async function getIssueByTitle(issueMessage: string): Promise<puppeteer.ElementHandle<HTMLElement>|undefined> {
-  const issueMessageElement = await waitFor(ISSUE_TITLE);
-  const selectedIssueMessage = await issueMessageElement.evaluate(node => node.textContent);
-  assert.strictEqual(selectedIssueMessage, issueMessage);
-  const header = await issueMessageElement.evaluateHandle(el => el.parentElement);
+async function getIssueByTitleElement(issueMessageElement: puppeteer.ElementHandle<Element>):
+    Promise<puppeteer.ElementHandle<HTMLElement>|undefined> {
+  const header =
+      await issueMessageElement.evaluateHandle(el => el.parentElement) as puppeteer.ElementHandle<HTMLElement>;
   if (header) {
     const headerClassList = await header.evaluate(el => el.classList.toString());
     assert.include(headerClassList, 'header');
@@ -49,6 +84,45 @@ export async function getIssueByTitle(issueMessage: string): Promise<puppeteer.E
     if (issue) {
       return issue as puppeteer.ElementHandle<HTMLElement>;
     }
+  }
+  return undefined;
+}
+
+// Only works if there is just a single issue.
+export async function getIssueByTitle(issueMessage: string): Promise<puppeteer.ElementHandle<HTMLElement>|undefined> {
+  const issueMessageElement = await waitFor(ISSUE_TITLE);
+  const selectedIssueMessage = await issueMessageElement.evaluate(node => node.textContent);
+  assert.strictEqual(selectedIssueMessage, issueMessage);
+  return getIssueByTitleElement(issueMessageElement);
+}
+
+// Works also if there are multiple issues.
+export async function getAndExpandSpecificIssueByTitle(issueMessage: string):
+    Promise<puppeteer.ElementHandle<HTMLElement>|undefined> {
+  const issueMessageElement = await waitForFunction(async () => {
+    const issueElements = await $$(ISSUE_TITLE);
+    for (const issueElement of issueElements) {
+      const message = await issueElement.evaluate(issueElement => issueElement.textContent);
+      if (message === issueMessage) {
+        return issueElement;
+      }
+    }
+    return undefined;
+  });
+  await click(issueMessageElement);
+  await waitFor('.message');
+  return getIssueByTitleElement(issueMessageElement);
+}
+
+export async function getIssueHeaderByTitle(issueMessage: string):
+    Promise<puppeteer.ElementHandle<HTMLElement>|undefined> {
+  const issueMessageElement = await waitFor(ISSUE_TITLE);
+  const selectedIssueMessage = await issueMessageElement.evaluate(node => node.textContent);
+  assert.strictEqual(selectedIssueMessage, issueMessage);
+  const header =
+      await issueMessageElement.evaluateHandle(el => el.parentElement) as puppeteer.ElementHandle<HTMLElement>;
+  if (header) {
+    return header;
   }
   return undefined;
 }
@@ -68,6 +142,15 @@ export async function expandCategory() {
     await click(CATEGORY);
   }
 
+  await waitFor(ISSUE);
+}
+
+export async function expandKind(classSelector: string) {
+  const kindElement = await waitFor(`${KIND}${classSelector}`);
+  const isKindExpanded = await kindElement.evaluate(node => node.classList.contains('expanded'));
+  if (!isKindExpanded) {
+    await kindElement.click();
+  }
   await waitFor(ISSUE);
 }
 
@@ -113,7 +196,8 @@ export async function ensureResourceSectionIsExpanded(section: IssueResourceSect
   await waitForClass(section.content, 'expanded');
 }
 
-export async function extractTableFromResourceSection(resourceContentElement: puppeteer.ElementHandle<Element>) {
+async function extractTableFromResourceSection(resourceContentElement: puppeteer.ElementHandle<Element>):
+    Promise<string[][]|undefined> {
   const table = await resourceContentElement.$('.affected-resource-list');
   if (table) {
     return await table.evaluate(table => {
@@ -121,18 +205,47 @@ export async function extractTableFromResourceSection(resourceContentElement: pu
       for (const tableRow of table.childNodes) {
         const row = [];
         for (const cell of tableRow.childNodes) {
-          row.push(cell.textContent);
+          const requestLinkIcon = cell instanceof HTMLElement && cell.querySelector('devtools-request-link-icon');
+          if (requestLinkIcon) {
+            const label = requestLinkIcon.shadowRoot?.querySelector('[aria-label="Shortened URL"]');
+            row.push(label?.textContent || '');
+          } else {
+            row.push(cell.textContent || '');
+          }
         }
         rows.push(row);
       }
       return rows;
     });
   }
-  return null;
+  return undefined;
+}
+
+export async function waitForTableFromResourceSection(
+    resourceContentElement: puppeteer.ElementHandle<Element>,
+    predicate: (table: string[][]) => true | undefined): Promise<string[][]> {
+  return await waitForFunction(async () => {
+    const table = await extractTableFromResourceSection(resourceContentElement);
+    if (!table || predicate(table) !== true) {
+      return undefined;
+    }
+    return table;
+  });
+}
+
+export function waitForTableFromResourceSectionContents(
+    resourceContentElement: puppeteer.ElementHandle<Element>, expected: (string|RegExp)[][]): Promise<string[][]> {
+  return waitForTableFromResourceSection(
+      resourceContentElement, table => matchStringTable(table, expected) === true ? true : undefined);
 }
 
 export async function getGroupByCategoryChecked() {
   const categoryCheckbox = await waitFor(CATEGORY_CHECKBOX);
+  return await categoryCheckbox.evaluate(node => (node as HTMLInputElement).checked);
+}
+
+export async function getGroupByKindChecked() {
+  const categoryCheckbox = await waitFor(KIND_CHECKBOX);
   return await categoryCheckbox.evaluate(node => (node as HTMLInputElement).checked);
 }
 
@@ -157,5 +270,19 @@ export async function toggleGroupByCategory() {
     await waitFor(ISSUE);
   } else {
     await waitFor(CATEGORY);
+  }
+}
+
+export async function toggleGroupByKind() {
+  const wasChecked = await getGroupByKindChecked();
+  const kindCheckbox = await waitFor(KIND_CHECKBOX);
+
+  // Invoke `click()` directly on the checkbox to toggle while hidden.
+  await kindCheckbox.evaluate(checkbox => (checkbox as HTMLInputElement).click());
+
+  if (wasChecked) {
+    await waitFor(ISSUE);
+  } else {
+    await waitFor(KIND);
   }
 }

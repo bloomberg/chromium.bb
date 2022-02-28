@@ -83,6 +83,32 @@ limitations under the License.
     }                                                                 \
   };
 
+#if defined(MLIR_GENERATED_GPU_KERNELS_ENABLED)
+// If MLIR kernels are enabled, we don't need the specialized cast from float to
+// double or from Eigen::half to double. We still need the specialized cast from
+// Eigen::half to float, because it is used in depthwise_conv_grad_op.cc. We
+// still need the specialized cast from float to double because it is used in
+// resize_bilinear_op.cc.
+#define CAST_FUNCTORS_SUBSET(devname)                                 \
+  SPECIALIZE_CAST(devname, float, double)                             \
+  SPECIALIZE_CAST(devname, float, std::complex<double>)               \
+  SPECIALIZE_CAST(devname, std::complex<float>, std::complex<double>) \
+  SPECIALIZE_CAST(devname, std::complex<float>, double)               \
+  SPECIALIZE_CAST(devname, Eigen::half, float)                        \
+  SPECIALIZE_CAST(devname, Eigen::half, std::complex<double>)         \
+  SPECIALIZE_CAST(devname, Eigen::half, std::complex<float>)          \
+  SPECIALIZE_CAST(devname, bfloat16, float)                           \
+  template <typename OUT_TYPE, typename IN_OUT>                       \
+  struct CastFunctor<devname, OUT_TYPE, IN_OUT> {                     \
+    void operator()(const devname& d,                                 \
+                    typename TTypes<OUT_TYPE>::Flat out_tensor,       \
+                    typename TTypes<IN_OUT>::ConstFlat in_tensor,     \
+                    bool truncate = false) {                          \
+      out_tensor.device(d) = in_tensor.template cast<OUT_TYPE>();     \
+    }                                                                 \
+  };
+#endif
+
 namespace tensorflow {
 
 typedef std::function<void(OpKernelContext*, const Tensor&, Tensor*,
@@ -277,48 +303,6 @@ struct functor_traits<scalar_cast_op<From, std::complex<To>>>
 template <typename From, typename To>
 struct functor_traits<scalar_cast_op<std::complex<From>, std::complex<To>>>
     : functor_traits_complex_impl<std::complex<From>, std::complex<To>> {};
-
-// Specialized cast op impls for bfloat16.
-template <>
-struct scalar_cast_op<::tensorflow::bfloat16, float> {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_cast_op)
-  typedef float result_type;
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE float operator()(
-      const ::tensorflow::bfloat16& a) const {
-    float ret;
-    uint16_t* p = reinterpret_cast<uint16_t*>(&ret);
-#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-    p[0] = a.value;
-    p[1] = 0;
-#else
-    static_assert(::tensorflow::port::kLittleEndian,
-                  "Not a little endian system!");
-    p[0] = 0;
-    p[1] = a.value;
-#endif
-    return ret;
-  }
-};
-
-template <>
-struct functor_traits<scalar_cast_op<::tensorflow::bfloat16, float>> {
-  enum { Cost = NumTraits<float>::AddCost, PacketAccess = false };
-};
-
-template <>
-struct scalar_cast_op<float, ::tensorflow::bfloat16> {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_cast_op)
-  typedef ::tensorflow::bfloat16 result_type;
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const ::tensorflow::bfloat16 operator()(
-      const float a) const {
-    return ::tensorflow::bfloat16(a);
-  }
-};
-
-template <>
-struct functor_traits<scalar_cast_op<float, ::tensorflow::bfloat16>> {
-  enum { Cost = NumTraits<float>::AddCost, PacketAccess = false };
-};
 
 }  // namespace internal
 }  // namespace Eigen

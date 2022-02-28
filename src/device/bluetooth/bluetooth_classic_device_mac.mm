@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "base/hash/hash.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
 #include "device/bluetooth/public/cpp/bluetooth_address.h"
@@ -76,7 +76,7 @@ uint32_t BluetoothClassicDeviceMac::GetBluetoothClass() const {
 void BluetoothClassicDeviceMac::CreateGattConnectionImpl(
     absl::optional<BluetoothUUID> service_uuid) {
   // Classic devices do not support GATT connection.
-  DidFailToConnectGatt(ERROR_UNSUPPORTED_DEVICE);
+  DidConnectGatt(ERROR_UNSUPPORTED_DEVICE);
 }
 
 void BluetoothClassicDeviceMac::DisconnectGatt() {}
@@ -209,8 +209,7 @@ void BluetoothClassicDeviceMac::SetConnectionLatency(
 }
 
 void BluetoothClassicDeviceMac::Connect(PairingDelegate* pairing_delegate,
-                                        base::OnceClosure callback,
-                                        ConnectErrorCallback error_callback) {
+                                        ConnectCallback callback) {
   NOTIMPLEMENTED();
 }
 

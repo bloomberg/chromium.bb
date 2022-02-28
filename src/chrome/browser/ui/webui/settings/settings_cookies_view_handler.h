@@ -10,8 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
@@ -23,6 +22,10 @@ class CookiesViewHandler : public SettingsPageUIHandler,
                            public CookiesTreeModel::Observer {
  public:
   CookiesViewHandler();
+
+  CookiesViewHandler(const CookiesViewHandler&) = delete;
+  CookiesViewHandler& operator=(const CookiesViewHandler&) = delete;
+
   ~CookiesViewHandler() override;
 
   // SettingsPageUIHandler:
@@ -180,8 +183,6 @@ class CookiesViewHandler : public SettingsPageUIHandler,
 
   // Used to cancel callbacks when JavaScript becomes disallowed.
   base::WeakPtrFactory<CookiesViewHandler> callback_weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CookiesViewHandler);
 };
 
 }  // namespace settings

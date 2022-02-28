@@ -15,9 +15,12 @@ int SampleFormatToBytesPerChannel(SampleFormat sample_format) {
     case kUnknownSampleFormat:
       return 0;
     case kSampleFormatU8:
+    case kSampleFormatPlanarU8:
     case kSampleFormatAc3:
     case kSampleFormatEac3:
     case kSampleFormatMpegHAudio:
+    case kSampleFormatDts:
+    case kSampleFormatDtsxP2:
       return 1;
     case kSampleFormatS16:
     case kSampleFormatPlanarS16:
@@ -52,6 +55,8 @@ const char* SampleFormatToString(SampleFormat sample_format) {
       return "Signed 32-bit";
     case kSampleFormatF32:
       return "Float 32-bit";
+    case kSampleFormatPlanarU8:
+      return "Unsigned 8-bit with bias of 128 planar";
     case kSampleFormatPlanarS16:
       return "Signed 16-bit planar";
     case kSampleFormatPlanarF32:
@@ -64,6 +69,10 @@ const char* SampleFormatToString(SampleFormat sample_format) {
       return "Compressed E-AC3 bitstream";
     case kSampleFormatMpegHAudio:
       return "Compressed MPEG-H audio bitstream";
+    case kSampleFormatDts:
+      return "Compressed DTS bitstream";
+    case kSampleFormatDtsxP2:
+      return "Compressed DTSXP2 bitstream";
   }
   NOTREACHED() << "Invalid sample format provided: " << sample_format;
   return "";
@@ -71,6 +80,7 @@ const char* SampleFormatToString(SampleFormat sample_format) {
 
 bool IsPlanar(SampleFormat sample_format) {
   switch (sample_format) {
+    case kSampleFormatPlanarU8:
     case kSampleFormatPlanarS16:
     case kSampleFormatPlanarF32:
     case kSampleFormatPlanarS32:
@@ -84,6 +94,8 @@ bool IsPlanar(SampleFormat sample_format) {
     case kSampleFormatAc3:
     case kSampleFormatEac3:
     case kSampleFormatMpegHAudio:
+    case kSampleFormatDts:
+    case kSampleFormatDtsxP2:
       return false;
   }
 
@@ -101,8 +113,11 @@ bool IsInterleaved(SampleFormat sample_format) {
     case kSampleFormatAc3:
     case kSampleFormatEac3:
     case kSampleFormatMpegHAudio:
+    case kSampleFormatDts:
+    case kSampleFormatDtsxP2:
       return true;
     case kUnknownSampleFormat:
+    case kSampleFormatPlanarU8:
     case kSampleFormatPlanarS16:
     case kSampleFormatPlanarF32:
     case kSampleFormatPlanarS32:
@@ -118,6 +133,12 @@ bool IsBitstream(SampleFormat sample_format) {
     case kSampleFormatAc3:
     case kSampleFormatEac3:
     case kSampleFormatMpegHAudio:
+    case kSampleFormatDts:
+    case kSampleFormatDtsxP2:
+      // If on-device decoding is required, the sample format will be
+      // kSampleFormatS16, so it will return false. If bit-stream passthrough
+      // is required, the sample format would already be
+      // kSampleFormatDts/DtsxP2. In this case, it should return true as below.
       return true;
     case kUnknownSampleFormat:
     case kSampleFormatU8:
@@ -125,6 +146,7 @@ bool IsBitstream(SampleFormat sample_format) {
     case kSampleFormatS24:
     case kSampleFormatS32:
     case kSampleFormatF32:
+    case kSampleFormatPlanarU8:
     case kSampleFormatPlanarS16:
     case kSampleFormatPlanarF32:
     case kSampleFormatPlanarS32:

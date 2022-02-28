@@ -11,16 +11,23 @@ import sys
 import tempfile
 import shutil
 import io
+import hashlib
 
 from subset_test_suite import SubsetTestSuite
 
 try:
 	from fontTools.ttLib import TTFont
 except ImportError:
-	print ("fonttools is not present, skipping test.")
-	sys.exit (77)
+    TTFont = None
 
 ots_sanitize = shutil.which ("ots-sanitize")
+
+def subset_cmd (command):
+	global hb_subset, process
+	print (hb_subset + ' ' + " ".join(command))
+	process.stdin.write ((';'.join (command) + '\n').encode ("utf-8"))
+	process.stdin.flush ()
+	return process.stdout.readline().decode ("utf-8").strip ()
 
 def cmd (command):
 	p = subprocess.Popen (
@@ -43,57 +50,61 @@ def fail_test (test, cli_args, message):
 
 def run_test (test, should_check_ots):
 	out_file = os.path.join (tempfile.mkdtemp (), test.get_font_name () + '-subset' + test.get_font_extension ())
-	cli_args = [hb_subset,
-		    "--font-file=" + test.font_path,
+	cli_args = ["--font-file=" + test.font_path,
 		    "--output-file=" + out_file,
 		    "--unicodes=%s" % test.unicodes (),
 		    "--drop-tables+=DSIG",
 		    "--drop-tables-=sbix"]
 	cli_args.extend (test.get_profile_flags ())
-	print (' '.join (cli_args))
-	_, return_code = cmd (cli_args)
+	ret = subset_cmd (cli_args)
 
-	if return_code:
-		return fail_test (test, cli_args, "%s returned %d" % (' '.join (cli_args), return_code))
+	if ret != "success":
+		return fail_test (test, cli_args, "%s failed" % ' '.join (cli_args))
 
-	expected_ttx = io.StringIO ()
-	try:
-		with TTFont (os.path.join (test_suite.get_output_directory (), test.get_font_name ())) as font:
-			font.saveXML (expected_ttx)
-	except Exception as e:
-		print (e)
-		return fail_test (test, cli_args, "ttx failed to parse the expected result")
+	expected_file = os.path.join (test_suite.get_output_directory (), test.get_font_name ())
+	with open (expected_file, "rb") as fp:
+		expected_hash = hashlib.sha224(fp.read()).hexdigest()
+	with open (out_file, "rb") as fp:
+		actual_hash = hashlib.sha224(fp.read()).hexdigest()
 
-	actual_ttx = io.StringIO ()
-	try:
-		with TTFont (out_file) as font:
-			font.saveXML (actual_ttx)
-	except Exception as e:
-		print (e)
-		return fail_test (test, cli_args, "ttx failed to parse the actual result")
+	if expected_hash == actual_hash:
+		if should_check_ots:
+			print ("Checking output with ots-sanitize.")
+			if not check_ots (out_file):
+				return fail_test (test, cli_args, 'ots for subsetted file fails.')
+		return 0
 
-	expected_ttx_text = strip_check_sum (expected_ttx.getvalue ())
-	expected_ttx.close ()
-	actual_ttx_text = strip_check_sum (actual_ttx.getvalue ())
-	actual_ttx.close ()
+	if TTFont is None:
+		print ("fonttools is not present, skipping TTX diff.")
+		return fail_test (test, cli_args, "hash for expected and actual does not match.")
 
-	if not actual_ttx_text == expected_ttx_text:
-		for line in unified_diff (expected_ttx_text.splitlines (1), actual_ttx_text.splitlines (1)):
+	with io.StringIO () as fp:
+		try:
+			with TTFont (expected_file) as font:
+				font.saveXML (fp)
+		except Exception as e:
+			print (e)
+			return fail_test (test, cli_args, "ttx failed to parse the expected result")
+		expected_ttx = fp.getvalue ()
+
+	with io.StringIO () as fp:
+		try:
+			with TTFont (out_file) as font:
+				font.saveXML (fp)
+		except Exception as e:
+			print (e)
+			return fail_test (test, cli_args, "ttx failed to parse the actual result")
+		actual_ttx = fp.getvalue ()
+
+	if actual_ttx != expected_ttx:
+		for line in unified_diff (expected_ttx.splitlines (1), actual_ttx.splitlines (1)):
 			sys.stdout.write (line)
 		sys.stdout.flush ()
 		return fail_test (test, cli_args, 'ttx for expected and actual does not match.')
 
-	if should_check_ots:
-		print ("Checking output with ots-sanitize.")
-		if not check_ots (out_file):
-			return fail_test (test, cli_args, 'ots for subsetted file fails.')
+	return fail_test (test, cli_args, 'hash for expected and actual does not match, '
+	                                  'but the ttx matches. Expected file needs to be updated?')
 
-	return 0
-
-def strip_check_sum (ttx_string):
-	return re.sub ('checkSumAdjustment value=["]0x([0-9a-fA-F])+["]',
-		       'checkSumAdjustment value="0x00000000"',
-		       ttx_string, count=1)
 
 def has_ots ():
 	if not ots_sanitize:
@@ -117,6 +128,11 @@ if not len (args):
 	sys.exit ("No tests supplied.")
 
 has_ots = has_ots()
+
+process = subprocess.Popen ([hb_subset, '--batch'],
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=sys.stdout)
 
 fails = 0
 for path in args:

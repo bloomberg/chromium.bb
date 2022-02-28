@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -33,6 +34,7 @@
 #include "components/variations/variations_ids_provider.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
@@ -51,10 +53,6 @@
 #include "chrome/browser/profiles/android/jni_headers/OTRProfileID_jni.h"
 #endif
 
-#if !defined(OS_ANDROID)
-#include "content/public/browser/host_zoom_map.h"
-#endif
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_pref_store.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
@@ -62,7 +60,8 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "chrome/common/chrome_constants.h"
+#include "chromeos/lacros/lacros_service.h"
 #endif
 
 #if DCHECK_IS_ON()
@@ -264,11 +263,9 @@ TestingProfile* Profile::AsTestingProfile() {
   return nullptr;
 }
 
-#if !defined(OS_ANDROID)
 ChromeZoomLevelPrefs* Profile::GetZoomLevelPrefs() {
   return nullptr;
 }
-#endif  // !defined(OS_ANDROID)
 
 Profile::Delegate::~Delegate() {
 }
@@ -287,6 +284,10 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kContextualSearchEnabled,
       std::string(),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kContextualSearchWasFullyPrivacyEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kContextualSearchPromoCardShownCount, 0);
 #endif  // defined(OS_ANDROID)
   registry->RegisterStringPref(prefs::kSessionExitType, std::string());
   registry->RegisterBooleanPref(prefs::kDisableExtensions, false);
@@ -311,10 +312,8 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                std::string());
   registry->RegisterStringPref(prefs::kAccessibilityCaptionsTextShadow,
                                std::string());
-#if !defined(OS_ANDROID)
   registry->RegisterDictionaryPref(prefs::kPartitionDefaultZoomLevel);
   registry->RegisterDictionaryPref(prefs::kPartitionPerHostZoomLevels);
-#endif  // !defined(OS_ANDROID)
   registry->RegisterStringPref(prefs::kPreinstalledApps, "install");
   registry->RegisterBooleanPref(prefs::kSpeechRecognitionFilterProfanities,
                                 true);
@@ -344,6 +343,11 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kClickedUpdateMenuItem, false);
   registry->RegisterStringPref(prefs::kLatestVersionWhenClickedUpdateMenuItem,
+                               std::string());
+#endif
+
+#if defined(OS_ANDROID)
+  registry->RegisterStringPref(prefs::kCommerceMerchantViewerMessagesShownTime,
                                std::string());
 #endif
 
@@ -381,19 +385,6 @@ bool Profile::IsIncognitoProfile() const {
          profile_metrics::BrowserProfileType::kIncognito;
 }
 
-// static
-bool Profile::IsEphemeralGuestProfileEnabled() {
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
-    defined(OS_MAC)
-  return base::FeatureList::IsEnabled(
-      features::kEnableEphemeralGuestProfilesOnDesktop);
-#else
-  return false;
-#endif
-}
-
 bool Profile::IsGuestSession() const {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   static bool is_guest_session =
@@ -402,8 +393,8 @@ bool Profile::IsGuestSession() const {
   return is_guest_session;
 #else
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  DCHECK(chromeos::LacrosChromeServiceImpl::Get());
-  if (chromeos::LacrosChromeServiceImpl::Get()->init_params()->session_type ==
+  DCHECK(chromeos::LacrosService::Get());
+  if (chromeos::LacrosService::Get()->init_params()->session_type ==
       crosapi::mojom::SessionType::kGuestSession) {
     return true;
   }
@@ -417,15 +408,18 @@ PrefService* Profile::GetReadOnlyOffTheRecordPrefs() {
   return nullptr;
 }
 
-bool Profile::IsEphemeralGuestProfile() const {
-  return profile_metrics::GetBrowserProfileType(this) ==
-         profile_metrics::BrowserProfileType::kEphemeralGuest;
-}
-
 bool Profile::IsSystemProfile() const {
   return profile_metrics::GetBrowserProfileType(this) ==
          profile_metrics::BrowserProfileType::kSystem;
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// static
+bool Profile::IsMainProfilePath(base::FilePath profile_path) {
+  // The main profile is the one with the "Default" path.
+  return profile_path.BaseName().value() == chrome::kInitialProfile;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 bool Profile::IsPrimaryOTRProfile() const {
   return IsOffTheRecord() && GetOTRProfileID() == OTRProfileID::PrimaryID();
@@ -442,7 +436,7 @@ bool Profile::CanUseDiskWhenOffTheRecord() {
 #endif
 }
 
-bool Profile::ShouldRestoreOldSessionCookies() const {
+bool Profile::ShouldRestoreOldSessionCookies() {
   return false;
 }
 
@@ -483,11 +477,9 @@ bool ProfileCompare::operator()(Profile* a, Profile* b) const {
   return a->GetOriginalProfile() < b->GetOriginalProfile();
 }
 
-#if !defined(OS_ANDROID)
 double Profile::GetDefaultZoomLevelForProfile() {
   return GetDefaultStoragePartition()->GetHostZoomMap()->GetDefaultZoomLevel();
 }
-#endif  // !defined(OS_ANDROID)
 
 void Profile::Wipe() {
   GetBrowsingDataRemover()->Remove(
@@ -526,7 +518,7 @@ class Profile::ChromeVariationsClient : public variations::VariationsClient {
   }
 
  private:
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 };
 
 variations::VariationsClient* Profile::GetVariationsClient() {

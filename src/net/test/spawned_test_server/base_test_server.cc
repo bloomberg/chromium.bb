@@ -54,55 +54,6 @@ std::string GetHostname(BaseTestServer::Type type,
   return "127.0.0.1";
 }
 
-std::string GetClientCertType(SSLClientCertType type) {
-  switch (type) {
-    case CLIENT_CERT_RSA_SIGN:
-      return "rsa_sign";
-    case CLIENT_CERT_ECDSA_SIGN:
-      return "ecdsa_sign";
-    default:
-      NOTREACHED();
-      return "";
-  }
-}
-
-void GetKeyExchangesList(int key_exchange, std::vector<base::Value>* values) {
-  if (key_exchange & BaseTestServer::SSLOptions::KEY_EXCHANGE_RSA)
-    values->emplace_back("rsa");
-  if (key_exchange & BaseTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA)
-    values->emplace_back("dhe_rsa");
-  if (key_exchange & BaseTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA)
-    values->emplace_back("ecdhe_rsa");
-}
-
-void GetCiphersList(int cipher, std::vector<base::Value>* values) {
-  if (cipher & BaseTestServer::SSLOptions::BULK_CIPHER_RC4)
-    values->emplace_back("rc4");
-  if (cipher & BaseTestServer::SSLOptions::BULK_CIPHER_AES128)
-    values->emplace_back("aes128");
-  if (cipher & BaseTestServer::SSLOptions::BULK_CIPHER_AES256)
-    values->emplace_back("aes256");
-  if (cipher & BaseTestServer::SSLOptions::BULK_CIPHER_3DES)
-    values->emplace_back("3des");
-  if (cipher & BaseTestServer::SSLOptions::BULK_CIPHER_AES128GCM)
-    values->emplace_back("aes128gcm");
-}
-
-base::Value GetTLSIntoleranceType(
-    BaseTestServer::SSLOptions::TLSIntoleranceType type) {
-  switch (type) {
-    case BaseTestServer::SSLOptions::TLS_INTOLERANCE_ALERT:
-      return base::Value("alert");
-    case BaseTestServer::SSLOptions::TLS_INTOLERANCE_CLOSE:
-      return base::Value("close");
-    case BaseTestServer::SSLOptions::TLS_INTOLERANCE_RESET:
-      return base::Value("reset");
-    default:
-      NOTREACHED();
-      return base::Value("");
-  }
-}
-
 bool GetLocalCertificatesDir(const base::FilePath& certificates_dir,
                              base::FilePath* local_certificates_dir) {
   if (certificates_dir.IsAbsolute()) {
@@ -129,11 +80,16 @@ bool RegisterRootCertsInternal(const base::FilePath& file_path) {
 BaseTestServer::SSLOptions::SSLOptions() = default;
 BaseTestServer::SSLOptions::SSLOptions(ServerCertificate cert)
     : server_certificate(cert) {}
+BaseTestServer::SSLOptions::SSLOptions(base::FilePath cert)
+    : custom_certificate(std::move(cert)) {}
 BaseTestServer::SSLOptions::SSLOptions(const SSLOptions& other) = default;
 
 BaseTestServer::SSLOptions::~SSLOptions() = default;
 
 base::FilePath BaseTestServer::SSLOptions::GetCertificateFile() const {
+  if (!custom_certificate.empty())
+    return custom_certificate;
+
   switch (server_certificate) {
     case CERT_OK:
     case CERT_MISMATCHED_NAME:
@@ -154,8 +110,8 @@ base::FilePath BaseTestServer::SSLOptions::GetCertificateFile() const {
     case CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE:
       return base::FilePath(
           FILE_PATH_LITERAL("key_usage_rsa_digitalsignature.pem"));
-    case CERT_AUTO:
-      return base::FilePath();
+    case CERT_TEST_NAMES:
+      return base::FilePath(FILE_PATH_LITERAL("test_names.pem"));
     default:
       NOTREACHED();
   }
@@ -190,12 +146,8 @@ const base::Value& BaseTestServer::server_data() const {
 
 std::string BaseTestServer::GetScheme() const {
   switch (type_) {
-    case TYPE_FTP:
-      return "ftp";
     case TYPE_HTTP:
       return "http";
-    case TYPE_HTTPS:
-      return "https";
     case TYPE_WS:
       return "ws";
     case TYPE_WSS:
@@ -247,6 +199,14 @@ void BaseTestServer::SetPort(uint16_t port) {
 
 GURL BaseTestServer::GetURL(const std::string& path) const {
   return GURL(GetScheme() + "://" + host_port_pair_.ToString() + "/" + path);
+}
+
+GURL BaseTestServer::GetURL(const std::string& hostname,
+                            const std::string& relative_url) const {
+  GURL local_url = GetURL(relative_url);
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr(hostname);
+  return local_url.ReplaceComponents(replace_host);
 }
 
 GURL BaseTestServer::GetURLWithUser(const std::string& path,
@@ -336,7 +296,7 @@ scoped_refptr<X509Certificate> BaseTestServer::GetCertificate() const {
 
   CertificateList certs_in_file =
       X509Certificate::CreateCertificateListFromBytes(
-          cert_data.data(), cert_data.size(),
+          base::as_bytes(base::make_span(cert_data)),
           X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
   if (certs_in_file.empty())
     return nullptr;
@@ -429,11 +389,6 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
     arguments->SetKey("ws-basic-auth", base::Value());
   }
 
-  if (no_anonymous_ftp_user_) {
-    DCHECK_EQ(TYPE_FTP, type_);
-    arguments->SetKey("no-anonymous-ftp-user", base::Value());
-  }
-
   if (redirect_connect_to_localhost_) {
     DCHECK(type_ == TYPE_BASIC_AUTH_PROXY || type_ == TYPE_PROXY);
     arguments->SetKey("redirect-connect-to-localhost", base::Value());
@@ -475,84 +430,6 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
     if (ssl_client_certs.size()) {
       arguments->SetKey("ssl-client-ca",
                         base::Value(std::move(ssl_client_certs)));
-    }
-
-    std::vector<base::Value> client_cert_types;
-    for (size_t i = 0; i < ssl_options_.client_cert_types.size(); i++) {
-      client_cert_types.emplace_back(
-          GetClientCertType(ssl_options_.client_cert_types[i]));
-    }
-    if (client_cert_types.size()) {
-      arguments->SetKey("ssl-client-cert-type",
-                        base::Value(std::move(client_cert_types)));
-    }
-  }
-
-  if (type_ == TYPE_HTTPS) {
-    arguments->SetKey("https", base::Value());
-
-    // Check key exchange argument.
-    std::vector<base::Value> key_exchange_values;
-    GetKeyExchangesList(ssl_options_.key_exchanges, &key_exchange_values);
-    if (key_exchange_values.size()) {
-      arguments->SetKey("ssl-key-exchange",
-                        base::Value(std::move(key_exchange_values)));
-    }
-    // Check bulk cipher argument.
-    std::vector<base::Value> bulk_cipher_values;
-    GetCiphersList(ssl_options_.bulk_ciphers, &bulk_cipher_values);
-    if (bulk_cipher_values.size()) {
-      arguments->SetKey("ssl-bulk-cipher",
-                        base::Value(std::move(bulk_cipher_values)));
-    }
-    if (ssl_options_.record_resume)
-      arguments->SetKey("https-record-resume", base::Value());
-    if (ssl_options_.tls_intolerant != SSLOptions::TLS_INTOLERANT_NONE) {
-      arguments->SetIntKey("tls-intolerant", ssl_options_.tls_intolerant);
-      arguments->SetKey(
-          "tls-intolerance-type",
-          GetTLSIntoleranceType(ssl_options_.tls_intolerance_type));
-    }
-    if (ssl_options_.tls_max_version != SSLOptions::TLS_MAX_VERSION_DEFAULT) {
-      arguments->SetIntKey("tls-max-version", ssl_options_.tls_max_version);
-    }
-    if (ssl_options_.fallback_scsv_enabled)
-      arguments->SetKey("fallback-scsv", base::Value());
-    if (!ssl_options_.signed_cert_timestamps_tls_ext.empty()) {
-      std::string b64_scts_tls_ext;
-      base::Base64Encode(ssl_options_.signed_cert_timestamps_tls_ext,
-                         &b64_scts_tls_ext);
-      arguments->SetStringKey("signed-cert-timestamps-tls-ext",
-                              b64_scts_tls_ext);
-    }
-    if (!ssl_options_.alpn_protocols.empty()) {
-      std::vector<base::Value> alpn_protocols;
-      for (const std::string& proto : ssl_options_.alpn_protocols) {
-        alpn_protocols.emplace_back(proto);
-      }
-      arguments->SetKey("alpn-protocols",
-                        base::Value(std::move(alpn_protocols)));
-    }
-    if (!ssl_options_.npn_protocols.empty()) {
-      std::vector<base::Value> npn_protocols;
-      for (const std::string& proto : ssl_options_.npn_protocols) {
-        npn_protocols.emplace_back(proto);
-      }
-      arguments->SetKey("npn-protocols", base::Value(std::move(npn_protocols)));
-    }
-    if (ssl_options_.alert_after_handshake)
-      arguments->SetKey("alert-after-handshake", base::Value());
-
-    if (ssl_options_.disable_channel_id)
-      arguments->SetKey("disable-channel-id", base::Value());
-    if (ssl_options_.disable_extended_master_secret) {
-      arguments->SetKey("disable-extended-master-secret", base::Value());
-    }
-    if (ssl_options_.simulate_tls13_downgrade) {
-      arguments->SetKey("simulate-tls13-downgrade", base::Value());
-    }
-    if (ssl_options_.simulate_tls12_downgrade) {
-      arguments->SetKey("simulate-tls12-downgrade", base::Value());
     }
   }
 

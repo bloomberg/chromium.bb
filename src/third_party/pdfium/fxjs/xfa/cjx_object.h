@@ -16,14 +16,14 @@
 #include "fxjs/gc/heap.h"
 #include "fxjs/xfa/fxjse.h"
 #include "fxjs/xfa/jse_define.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/span.h"
 #include "v8/include/cppgc/garbage-collected.h"
 #include "v8/include/cppgc/member.h"
+#include "v8/include/v8-forward.h"
 #include "xfa/fxfa/fxfa_basic.h"
 
 class CFXJSE_MapModule;
-class CFXJSE_Value;
 class CFX_V8;
 class CFX_XMLElement;
 class CJX_Object;
@@ -33,20 +33,14 @@ class CXFA_Measurement;
 class CXFA_Node;
 class CXFA_Object;
 
-typedef CJS_Result (*CJX_MethodCall)(
-    CJX_Object* obj,
-    CFX_V8* runtime,
-    const std::vector<v8::Local<v8::Value>>& params);
+using CJX_MethodCall =
+    CJS_Result (*)(CJX_Object* obj,
+                   CFX_V8* runtime,
+                   const std::vector<v8::Local<v8::Value>>& params);
 
 struct CJX_MethodSpec {
   const char* pName;
   CJX_MethodCall pMethodCall;
-};
-
-enum XFA_SOM_MESSAGETYPE {
-  XFA_SOM_ValidationMessage,
-  XFA_SOM_FormatMessage,
-  XFA_SOM_MandatoryMessage
 };
 
 class CJX_Object : public cppgc::GarbageCollected<CJX_Object>,
@@ -132,8 +126,8 @@ class CJX_Object : public cppgc::GarbageCollected<CJX_Object>,
   bool HasAttribute(XFA_Attribute eAttr) const;
   WideString GetAttributeByString(WideStringView attr) const;
   WideString GetAttributeByEnum(XFA_Attribute attr) const;
-  Optional<WideString> TryAttribute(XFA_Attribute eAttr,
-                                    bool bUseDefault) const;
+  absl::optional<WideString> TryAttribute(XFA_Attribute eAttr,
+                                          bool bUseDefault) const;
   void SetAttributeByEnum(XFA_Attribute eAttr,
                           const WideString& wsValue,
                           bool bNotify);
@@ -141,7 +135,7 @@ class CJX_Object : public cppgc::GarbageCollected<CJX_Object>,
   void RemoveAttribute(WideStringView wsAttr);
 
   WideString GetContent(bool bScriptModify) const;
-  Optional<WideString> TryContent(bool bScriptModify, bool bProto) const;
+  absl::optional<WideString> TryContent(bool bScriptModify, bool bProto) const;
   void SetContent(const WideString& wsContent,
                   const WideString& wsXMLValue,
                   bool bNotify,
@@ -181,35 +175,32 @@ class CJX_Object : public cppgc::GarbageCollected<CJX_Object>,
   JSE_PROP(ScriptSomInstanceIndex);
   JSE_PROP(ScriptSubmitFormatMode);
 
-  void ScriptSomMessage(v8::Isolate* pIsolate,
-                        v8::Local<v8::Value>* pValue,
-                        bool bSetting,
-                        XFA_SOM_MESSAGETYPE iMessageType);
-
-  Optional<WideString> TryNamespace() const;
+  absl::optional<WideString> TryNamespace() const;
 
   int32_t GetInteger(XFA_Attribute eAttr) const;
-  Optional<int32_t> TryInteger(XFA_Attribute eAttr, bool bUseDefault) const;
+  absl::optional<int32_t> TryInteger(XFA_Attribute eAttr,
+                                     bool bUseDefault) const;
   void SetInteger(XFA_Attribute eAttr, int32_t iValue, bool bNotify);
 
   WideString GetCData(XFA_Attribute eAttr) const;
-  Optional<WideString> TryCData(XFA_Attribute eAttr, bool bUseDefault) const;
+  absl::optional<WideString> TryCData(XFA_Attribute eAttr,
+                                      bool bUseDefault) const;
   void SetCData(XFA_Attribute eAttr, const WideString& wsValue);
 
   XFA_AttributeValue GetEnum(XFA_Attribute eAttr) const;
-  Optional<XFA_AttributeValue> TryEnum(XFA_Attribute eAttr,
-                                       bool bUseDefault) const;
+  absl::optional<XFA_AttributeValue> TryEnum(XFA_Attribute eAttr,
+                                             bool bUseDefault) const;
   void SetEnum(XFA_Attribute eAttr, XFA_AttributeValue eValue, bool bNotify);
 
   bool GetBoolean(XFA_Attribute eAttr) const;
-  Optional<bool> TryBoolean(XFA_Attribute eAttr, bool bUseDefault) const;
+  absl::optional<bool> TryBoolean(XFA_Attribute eAttr, bool bUseDefault) const;
   void SetBoolean(XFA_Attribute eAttr, bool bValue, bool bNotify);
 
   CXFA_Measurement GetMeasure(XFA_Attribute eAttr) const;
   float GetMeasureInUnit(XFA_Attribute eAttr, XFA_Unit unit) const;
-  Optional<CXFA_Measurement> TryMeasure(XFA_Attribute eAttr,
-                                        bool bUseDefault) const;
-  Optional<float> TryMeasureAsFloat(XFA_Attribute attr) const;
+  absl::optional<CXFA_Measurement> TryMeasure(XFA_Attribute eAttr,
+                                              bool bUseDefault) const;
+  absl::optional<float> TryMeasureAsFloat(XFA_Attribute attr) const;
   void SetMeasure(XFA_Attribute eAttr,
                   const CXFA_Measurement& mValue,
                   bool bNotify);
@@ -220,15 +211,27 @@ class CJX_Object : public cppgc::GarbageCollected<CJX_Object>,
   CalcData* GetOrCreateCalcData(cppgc::Heap* heap);
   void TakeCalcDataFrom(CJX_Object* that);
 
-  void ThrowInvalidPropertyException() const;
-  void ThrowArgumentMismatchException() const;
-  void ThrowIndexOutOfBoundsException() const;
-  void ThrowParamCountMismatchException(const WideString& method) const;
-  void ThrowTooManyOccurancesException(const WideString& obj) const;
+  void ThrowInvalidPropertyException(v8::Isolate* pIsolate) const;
+  void ThrowArgumentMismatchException(v8::Isolate* pIsolate) const;
+  void ThrowIndexOutOfBoundsException(v8::Isolate* pIsolate) const;
+  void ThrowParamCountMismatchException(v8::Isolate* pIsolate,
+                                        const WideString& method) const;
+  void ThrowTooManyOccurrencesException(v8::Isolate* pIsolate,
+                                        const WideString& obj) const;
 
  protected:
+  enum class SOMMessageType {
+    kValidationMessage,
+    kFormatMessage,
+    kMandatoryMessage
+  };
+
   explicit CJX_Object(CXFA_Object* obj);
 
+  void ScriptSomMessage(v8::Isolate* pIsolate,
+                        v8::Local<v8::Value>* pValue,
+                        bool bSetting,
+                        SOMMessageType iMessageType);
   void SetAttributeValueImpl(const WideString& wsValue,
                              const WideString& wsXMLValue,
                              bool bNotify,
@@ -239,7 +242,7 @@ class CJX_Object : public cppgc::GarbageCollected<CJX_Object>,
                     bool bScriptModify);
   void DefineMethods(pdfium::span<const CJX_MethodSpec> methods);
   void MoveBufferMapData(CXFA_Object* pSrcObj, CXFA_Object* pDstObj);
-  void ThrowException(const WideString& str) const;
+  void ThrowException(v8::Isolate* pIsolate, const WideString& str) const;
 
  private:
   using Type__ = CJX_Object;
@@ -262,12 +265,13 @@ class CJX_Object : public cppgc::GarbageCollected<CJX_Object>,
   void SetMapModuleValue(uint32_t key, int32_t value);
   void SetMapModuleString(uint32_t key, const WideString& wsValue);
   void SetMapModuleMeasurement(uint32_t key, const CXFA_Measurement& value);
-  Optional<int32_t> GetMapModuleValue(uint32_t key) const;
-  Optional<WideString> GetMapModuleString(uint32_t key) const;
-  Optional<CXFA_Measurement> GetMapModuleMeasurement(uint32_t key) const;
-  Optional<int32_t> GetMapModuleValueFollowingChain(uint32_t key) const;
-  Optional<WideString> GetMapModuleStringFollowingChain(uint32_t key) const;
-  Optional<CXFA_Measurement> GetMapModuleMeasurementFollowingChain(
+  absl::optional<int32_t> GetMapModuleValue(uint32_t key) const;
+  absl::optional<WideString> GetMapModuleString(uint32_t key) const;
+  absl::optional<CXFA_Measurement> GetMapModuleMeasurement(uint32_t key) const;
+  absl::optional<int32_t> GetMapModuleValueFollowingChain(uint32_t key) const;
+  absl::optional<WideString> GetMapModuleStringFollowingChain(
+      uint32_t key) const;
+  absl::optional<CXFA_Measurement> GetMapModuleMeasurementFollowingChain(
       uint32_t key) const;
   bool HasMapModuleKey(uint32_t key) const;
   void RemoveMapModuleKey(uint32_t key);

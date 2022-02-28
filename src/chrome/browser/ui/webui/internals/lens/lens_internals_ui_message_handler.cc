@@ -22,18 +22,18 @@ LensInternalsUIMessageHandler::LensInternalsUIMessageHandler(Profile* profile) {
 LensInternalsUIMessageHandler::~LensInternalsUIMessageHandler() = default;
 
 void LensInternalsUIMessageHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "startDebugMode",
       base::BindRepeating(&LensInternalsUIMessageHandler::HandleStartDebugMode,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "refreshDebugData",
       base::BindRepeating(
           &LensInternalsUIMessageHandler::HandleRefreshDebugData,
           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "stopDebugMode",
       base::BindRepeating(&LensInternalsUIMessageHandler::HandleStopDebugMode,
                           base::Unretained(this)));
@@ -45,11 +45,8 @@ void LensInternalsUIMessageHandler::HandleStartDebugMode(
 
   Java_LensDebugBridge_startProactiveDebugMode(env);
 
-  const base::Value* callback_id;
-  auto result = args->Get(0, &callback_id);
-  DCHECK(result);
-
-  ResolveJavascriptCallback(*callback_id, base::Value());
+  const base::Value& callback_id = args->GetList()[0];
+  ResolveJavascriptCallback(callback_id, base::Value());
 }
 
 void LensInternalsUIMessageHandler::HandleRefreshDebugData(
@@ -75,11 +72,8 @@ void LensInternalsUIMessageHandler::HandleRefreshDebugData(
         base::Value(row_as_list_storage));
   }
 
-  const base::Value* callback_id;
-  auto result = args->Get(0, &callback_id);
-  DCHECK(result);
-
-  ResolveJavascriptCallback(*callback_id,
+  const base::Value& callback_id = args->GetList()[0];
+  ResolveJavascriptCallback(callback_id,
                             base::Value(debug_data_as_vector_of_values));
 }
 
@@ -89,9 +83,6 @@ void LensInternalsUIMessageHandler::HandleStopDebugMode(
 
   Java_LensDebugBridge_stopProactiveDebugMode(env);
 
-  const base::Value* callback_id;
-  auto result = args->Get(0, &callback_id);
-  DCHECK(result);
-
-  ResolveJavascriptCallback(*callback_id, base::Value());
+  const base::Value& callback_id = args->GetList()[0];
+  ResolveJavascriptCallback(callback_id, base::Value());
 }

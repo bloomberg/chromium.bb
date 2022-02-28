@@ -11,7 +11,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread.h"
 #include "net/base/cache_type.h"
 #include "net/disk_cache/disk_cache.h"
@@ -75,6 +75,10 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   };
 
   DiskCacheTestWithCache();
+
+  DiskCacheTestWithCache(const DiskCacheTestWithCache&) = delete;
+  DiskCacheTestWithCache& operator=(const DiskCacheTestWithCache&) = delete;
+
   ~DiskCacheTestWithCache() override;
 
   void CreateBackend(uint32_t flags);
@@ -168,6 +172,7 @@ class DiskCacheTestWithCache : public DiskCacheTest {
                       int64_t offset,
                       net::IOBuffer* buf,
                       int len);
+  // TODO(morlovich): Port all the tests using this to RangeResult.
   int GetAvailableRange(disk_cache::Entry* entry,
                         int64_t offset,
                         int len,
@@ -192,10 +197,10 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   // cache_ will always have a valid object, regardless of how the cache was
   // initialized. The implementation pointers can be NULL.
   std::unique_ptr<disk_cache::Backend> cache_;
-  disk_cache::BackendImpl* cache_impl_;
+  raw_ptr<disk_cache::BackendImpl> cache_impl_;
   std::unique_ptr<disk_cache::SimpleFileTracker> simple_file_tracker_;
-  disk_cache::SimpleBackendImpl* simple_cache_impl_;
-  disk_cache::MemBackendImpl* mem_cache_;
+  raw_ptr<disk_cache::SimpleBackendImpl> simple_cache_impl_;
+  raw_ptr<disk_cache::MemBackendImpl> mem_cache_;
 
   uint32_t mask_;
   int64_t size_;
@@ -214,8 +219,6 @@ class DiskCacheTestWithCache : public DiskCacheTest {
  private:
   void InitMemoryCache();
   void InitDiskCache();
-
-  DISALLOW_COPY_AND_ASSIGN(DiskCacheTestWithCache);
 };
 
 #endif  // NET_DISK_CACHE_DISK_CACHE_TEST_BASE_H_

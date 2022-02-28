@@ -19,7 +19,7 @@ angle_source_set("angle_spirv_base") {
     "${angle_spirv_tools_dir}:spvtools_headers",
   ]
 
-  if (dcheck_always_on || is_debug) {
+  if (angle_debug_layers_enabled) {
     deps += [ "$angle_spirv_tools_dir:spvtools_val" ]
   }
 }

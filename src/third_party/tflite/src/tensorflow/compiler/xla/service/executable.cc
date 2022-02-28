@@ -59,11 +59,10 @@ void ExecutionInput::SetUnownedBuffer(const ShapeIndex& index,
   unowned_indices_.insert(index);
 }
 
-xla::StatusOr<xla::ShapedBuffer> ExecutionInput::ToShapedBuffer(
+StatusOr<ShapedBuffer> ExecutionInput::ToShapedBuffer(
     se::DeviceMemoryAllocator* allocator, int device_ordinal) const {
   const Shape& input_shape = shape();
-  xla::ShapedBuffer shaped_buffer(input_shape, input_shape,
-                                  allocator->platform(), device_ordinal);
+  ShapedBuffer shaped_buffer(input_shape, device_ordinal);
   for (const auto& index_buffer : Buffers()) {
     const tensorflow::se::OwningDeviceMemory* mem =
         index_buffer.second.AsOwningDeviceMemory();
@@ -105,10 +104,10 @@ StatusOr<ScopedShapedBuffer> Executable::ExecuteAsyncOnStream(
     const ServiceExecutableRunOptions* run_options,
     absl::Span<const ShapedBuffer* const> arguments,
     HloExecutionProfile* hlo_execution_profile) {
-  std::vector<ExecutionInput> args(arguments.size());
-  auto out_it = args.begin();
+  std::vector<ExecutionInput> args;
+  args.reserve(arguments.size());
   for (const ShapedBuffer* arg : arguments) {
-    *out_it++ = MakeMaybeOwningDeviceMemoryTree(*arg);
+    args.emplace_back(MakeMaybeOwningDeviceMemoryTree(*arg));
   }
   TF_ASSIGN_OR_RETURN(ExecutionOutput out,
                       ExecuteAsyncOnStream(run_options, std::move(args),
@@ -236,7 +235,7 @@ Status ExecuteWrapperAfterExecution(
     // value may call back into the driver on GPU, which is not allowed.
     TF_RETURN_IF_ERROR(stream->BlockHostUntilDone());
 
-    const int64 executable_size_in_bytes =
+    const int64_t executable_size_in_bytes =
         executable->SizeOfGeneratedCodeInBytes();
     // Merge in run-time profile information from execution_profile.
 
@@ -257,16 +256,11 @@ Status ExecuteWrapperAfterExecution(
     }
   }
 
-  const auto& dump_path =
-      executable->module_config().debug_options().xla_dump_to();
   if (executable->module_config().debug_options().xla_hlo_profile() &&
-      state.profile_ptr != nullptr && !dump_path.empty()) {
-    const std::string full_path =
-        tensorflow::io::JoinPath(dump_path, "hlo_execution_profile_data");
-    TF_CHECK_OK(tensorflow::WriteStringToFile(
-        tensorflow::Env::Default(), full_path,
-        state.profile_ptr->ToProto().SerializeAsString()))
-        << "Error saving HloExecutionProfileData to " << full_path;
+      state.profile_ptr != nullptr) {
+    DumpToFileInDir(executable->module(), /*file_prefix=*/"",
+                    /*file_suffix=*/"hlo_execution_profile_data",
+                    state.profile_ptr->ToProto().SerializeAsString());
   }
 
   if (state.profile_ptr != nullptr) {
@@ -274,7 +268,8 @@ Status ExecuteWrapperAfterExecution(
         &stream->parent()->GetDeviceDescription();
     std::shared_ptr<HloExecutionProfile> profile = state.profile_ptr;
     stream->ThenDoHostCallback([profile, device_description]() {
-      XLA_LOG_LINES(tensorflow::INFO, profile->ToString(*device_description));
+      XLA_LOG_LINES(tensorflow::INFO,
+                    profile->ToString(device_description->clock_rate_ghz()));
     });
   }
 
@@ -303,7 +298,7 @@ StatusOr<ExecutionOutput> Executable::ExecuteAsyncOnStreamWrapper(
   return return_value;
 }
 
-int64 Executable::SizeOfGeneratedCodeInBytes() const { return -1; }
+int64_t Executable::SizeOfGeneratedCodeInBytes() const { return -1; }
 
 void Executable::MarkToBeReleasedArguments(absl::Span<ExecutionInput> arguments,
                                            ExecutionOutput& result) {

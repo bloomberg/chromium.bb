@@ -5,19 +5,19 @@
 #include "ui/gfx/android/android_surface_control_compat.h"
 
 #include <android/data_space.h>
+#include <android/hdr_metadata.h>
 #include <dlfcn.h>
 
 #include "base/android/build_info.h"
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
-#include "base/bind_post_task.h"
 #include "base/debug/crash_logging.h"
 #include "base/hash/md5_constexpr.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/task/bind_post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/color_space.h"
 
@@ -73,6 +73,18 @@ using pASurfaceTransaction_setGeometry =
              const ARect& src,
              const ARect& dst,
              int32_t transform);
+using pASurfaceTransaction_setPosition =
+    void (*)(ASurfaceTransaction* transaction,
+             ASurfaceControl* surface,
+             int32_t x,
+             int32_t y);
+using pASurfaceTransaction_setScale = void (*)(ASurfaceTransaction* transaction,
+                                               ASurfaceControl* surface,
+                                               float x_scale,
+                                               float y_scale);
+using pASurfaceTransaction_setCrop = void (*)(ASurfaceTransaction* transaction,
+                                              ASurfaceControl* surface,
+                                              const ARect& src);
 using pASurfaceTransaction_setBufferTransparency =
     void (*)(ASurfaceTransaction* transaction,
              ASurfaceControl* surface,
@@ -86,6 +98,14 @@ using pASurfaceTransaction_setBufferDataSpace =
     void (*)(ASurfaceTransaction* transaction,
              ASurfaceControl* surface,
              uint64_t data_space);
+using pASurfaceTransaction_setHdrMetadata_cta861_3 =
+    void (*)(ASurfaceTransaction* transaction,
+             ASurfaceControl* surface,
+             struct AHdrMetadata_cta861_3* metadata);
+using pASurfaceTransaction_setHdrMetadata_smpte2086 =
+    void (*)(ASurfaceTransaction* transaction,
+             ASurfaceControl* surface,
+             struct AHdrMetadata_smpte2086* metadata);
 using pASurfaceTransaction_setFrameRate =
     void (*)(ASurfaceTransaction* transaction,
              ASurfaceControl* surface_control,
@@ -132,12 +152,66 @@ uint64_t g_agb_required_usage_bits = AHARDWAREBUFFER_USAGE_COMPOSER_OVERLAY;
 
 struct SurfaceControlMethods {
  public:
-  static const SurfaceControlMethods& Get() {
-    static const base::NoDestructor<SurfaceControlMethods> instance;
-    return *instance;
+  static SurfaceControlMethods& GetImpl(bool load_functions) {
+    static SurfaceControlMethods instance(load_functions);
+    return instance;
   }
 
-  SurfaceControlMethods() {
+  static const SurfaceControlMethods& Get() {
+    return GetImpl(/*load_functions=*/true);
+  }
+
+  void InitWithStubs() {
+    struct TransactionStub {
+      ASurfaceTransaction_OnComplete on_complete = nullptr;
+      void* on_complete_ctx = nullptr;
+      ASurfaceTransaction_OnCommit on_commit = nullptr;
+      void* on_commit_ctx = nullptr;
+    };
+
+    ASurfaceTransaction_createFn = []() {
+      return reinterpret_cast<ASurfaceTransaction*>(new TransactionStub);
+    };
+    ASurfaceTransaction_deleteFn = [](ASurfaceTransaction* transaction) {
+      delete reinterpret_cast<TransactionStub*>(transaction);
+    };
+    ASurfaceTransaction_applyFn = [](ASurfaceTransaction* transaction) {
+      auto* stub = reinterpret_cast<TransactionStub*>(transaction);
+
+      if (stub->on_commit)
+        stub->on_commit(stub->on_commit_ctx, nullptr);
+      stub->on_commit = nullptr;
+      stub->on_commit_ctx = nullptr;
+
+      if (stub->on_complete)
+        stub->on_complete(stub->on_complete_ctx, nullptr);
+      stub->on_complete = nullptr;
+      stub->on_complete_ctx = nullptr;
+
+      return static_cast<int64_t>(0);
+    };
+
+    ASurfaceTransaction_setOnCompleteFn =
+        [](ASurfaceTransaction* transaction, void* ctx,
+           ASurfaceTransaction_OnComplete callback) {
+          auto* stub = reinterpret_cast<TransactionStub*>(transaction);
+          stub->on_complete = callback;
+          stub->on_complete_ctx = ctx;
+        };
+
+    ASurfaceTransaction_setOnCommitFn =
+        [](ASurfaceTransaction* transaction, void* ctx,
+           ASurfaceTransaction_OnCommit callback) {
+          auto* stub = reinterpret_cast<TransactionStub*>(transaction);
+          stub->on_commit = callback;
+          stub->on_commit_ctx = ctx;
+        };
+  }
+
+  SurfaceControlMethods(bool load_functions) {
+    if (!load_functions)
+      return;
+
     void* main_dl_handle = dlopen("libandroid.so", RTLD_NOW);
     if (!main_dl_handle) {
       LOG(ERROR) << "Couldnt load android so";
@@ -159,9 +233,14 @@ struct SurfaceControlMethods {
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setZOrder);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setBuffer);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setGeometry);
+    LOAD_FUNCTION_MAYBE(main_dl_handle, ASurfaceTransaction_setPosition);
+    LOAD_FUNCTION_MAYBE(main_dl_handle, ASurfaceTransaction_setScale);
+    LOAD_FUNCTION_MAYBE(main_dl_handle, ASurfaceTransaction_setCrop);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setBufferTransparency);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setDamageRegion);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setBufferDataSpace);
+    LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setHdrMetadata_cta861_3);
+    LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setHdrMetadata_smpte2086);
     LOAD_FUNCTION_MAYBE(main_dl_handle, ASurfaceTransaction_setFrameRate);
 
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransactionStats_getPresentFenceFd);
@@ -192,11 +271,18 @@ struct SurfaceControlMethods {
   pASurfaceTransaction_setZOrder ASurfaceTransaction_setZOrderFn;
   pASurfaceTransaction_setBuffer ASurfaceTransaction_setBufferFn;
   pASurfaceTransaction_setGeometry ASurfaceTransaction_setGeometryFn;
+  pASurfaceTransaction_setPosition ASurfaceTransaction_setPositionFn;
+  pASurfaceTransaction_setScale ASurfaceTransaction_setScaleFn;
+  pASurfaceTransaction_setCrop ASurfaceTransaction_setCropFn;
   pASurfaceTransaction_setBufferTransparency
       ASurfaceTransaction_setBufferTransparencyFn;
   pASurfaceTransaction_setDamageRegion ASurfaceTransaction_setDamageRegionFn;
   pASurfaceTransaction_setBufferDataSpace
       ASurfaceTransaction_setBufferDataSpaceFn;
+  pASurfaceTransaction_setHdrMetadata_cta861_3
+      ASurfaceTransaction_setHdrMetadata_cta861_3Fn;
+  pASurfaceTransaction_setHdrMetadata_smpte2086
+      ASurfaceTransaction_setHdrMetadata_smpte2086Fn;
   pASurfaceTransaction_setFrameRate ASurfaceTransaction_setFrameRateFn;
 
   // TransactionStats methods.
@@ -240,6 +326,75 @@ int32_t OverlayTransformToWindowTransform(gfx::OverlayTransform transform) {
   return ANATIVEWINDOW_TRANSFORM_IDENTITY;
 }
 
+// Remove this and use ADataSpace when SDK will roll. Note, this doesn't define
+// any new data spaces, just defines a primary(standard)/transfer/range
+// separately.
+enum DataSpace : uint64_t {
+  // Primaries
+  STANDARD_BT709 = 1 << 16,
+  STANDARD_BT601_625 = 2 << 16,
+  STANDARD_BT601_525 = 4 << 16,
+  STANDARD_BT2020 = 6 << 16,
+  // Transfer functions
+  TRANSFER_LINEAR = 1 << 22,
+  TRANSFER_SRGB = 2 << 22,
+  TRANSFER_SMPTE_170M = 3 << 22,
+  TRANSFER_ST2084 = 7 << 22,
+  TRANSFER_HLG = 8 << 22,
+  // Ranges;
+  RANGE_FULL = 1 << 27,
+  RANGE_LIMITED = 2 << 27,
+
+  ADATASPACE_DCI_P3 = 155844608
+};
+
+absl::optional<uint64_t> GetDataSpaceStandard(
+    const gfx::ColorSpace& color_space) {
+  switch (color_space.GetPrimaryID()) {
+    case gfx::ColorSpace::PrimaryID::BT709:
+      return DataSpace::STANDARD_BT709;
+    case gfx::ColorSpace::PrimaryID::BT470BG:
+      return DataSpace::STANDARD_BT601_625;
+    case gfx::ColorSpace::PrimaryID::SMPTE170M:
+      return DataSpace::STANDARD_BT601_525;
+    case gfx::ColorSpace::PrimaryID::BT2020:
+      return DataSpace::STANDARD_BT2020;
+    default:
+      return absl::nullopt;
+  }
+}
+
+absl::optional<uint64_t> GetDataSpaceTransfer(
+    const gfx::ColorSpace& color_space) {
+  switch (color_space.GetTransferID()) {
+    case gfx::ColorSpace::TransferID::SMPTE170M:
+      return DataSpace::TRANSFER_SMPTE_170M;
+    case gfx::ColorSpace::TransferID::LINEAR_HDR:
+      return DataSpace::TRANSFER_LINEAR;
+    case gfx::ColorSpace::TransferID::SMPTEST2084:
+      return DataSpace::TRANSFER_ST2084;
+    case gfx::ColorSpace::TransferID::ARIB_STD_B67:
+      return DataSpace::TRANSFER_HLG;
+    // We use SRGB for BT709. See |ColorSpace::GetTransferFunction()| for
+    // details.
+    case gfx::ColorSpace::TransferID::BT709:
+      return DataSpace::TRANSFER_SRGB;
+    default:
+      return absl::nullopt;
+  }
+}
+
+absl::optional<uint64_t> GetDataSpaceRange(const gfx::ColorSpace& color_space) {
+  switch (color_space.GetRangeID()) {
+    case gfx::ColorSpace::RangeID::FULL:
+      return DataSpace::RANGE_FULL;
+    case gfx::ColorSpace::RangeID::LIMITED:
+      return DataSpace::RANGE_LIMITED;
+    default:
+      return absl::nullopt;
+  };
+}
+
 uint64_t ColorSpaceToADataSpace(const gfx::ColorSpace& color_space) {
   if (!color_space.IsValid() || color_space == gfx::ColorSpace::CreateSRGB())
     return ADATASPACE_SRGB;
@@ -250,20 +405,34 @@ uint64_t ColorSpaceToADataSpace(const gfx::ColorSpace& color_space) {
   if (color_space == gfx::ColorSpace::CreateDisplayP3D65())
     return ADATASPACE_DISPLAY_P3;
 
-  // TODO(khushalsagar): Check if we can support BT2020 using
-  // ADATASPACE_BT2020_PQ.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_S) {
+    auto standard = GetDataSpaceStandard(color_space);
+    auto transfer = GetDataSpaceTransfer(color_space);
+    auto range = GetDataSpaceRange(color_space);
+
+    // Data space is set of the flags, so check if all components are valid.
+    if (standard && transfer && range)
+      return standard.value() | transfer.value() | range.value();
+  }
+
   return ADATASPACE_UNKNOWN;
 }
 
 SurfaceControl::TransactionStats ToTransactionStats(
     ASurfaceTransactionStats* stats) {
   SurfaceControl::TransactionStats transaction_stats;
+
+  // In unit tests we don't have stats.
+  if (!stats)
+    return transaction_stats;
+
   transaction_stats.present_fence = base::ScopedFD(
       SurfaceControlMethods::Get().ASurfaceTransactionStats_getPresentFenceFdFn(
           stats));
   transaction_stats.latch_time =
       base::TimeTicks() +
-      base::TimeDelta::FromNanoseconds(
+      base::Nanoseconds(
           SurfaceControlMethods::Get().ASurfaceTransactionStats_getLatchTimeFn(
               stats));
   if (transaction_stats.latch_time == base::TimeTicks())
@@ -372,6 +541,10 @@ bool SurfaceControl::SupportsOnCommit() {
   return IsSupported() &&
          SurfaceControlMethods::Get().ASurfaceTransaction_setOnCommitFn !=
              nullptr;
+}
+
+void SurfaceControl::SetStubImplementationForTesting() {
+  SurfaceControlMethods::GetImpl(/*load_functions=*/false).InitWithStubs();
 }
 
 void SurfaceControl::ApplyTransaction(ASurfaceTransaction* transaction) {
@@ -488,6 +661,28 @@ void SurfaceControl::Transaction::SetGeometry(const Surface& surface,
       OverlayTransformToWindowTransform(transform));
 }
 
+void SurfaceControl::Transaction::SetPosition(const Surface& surface,
+                                              const gfx::Point& position) {
+  CHECK(SurfaceControlMethods::Get().ASurfaceTransaction_setPositionFn);
+  SurfaceControlMethods::Get().ASurfaceTransaction_setPositionFn(
+      transaction_, surface.surface(), position.x(), position.y());
+}
+
+void SurfaceControl::Transaction::SetScale(const Surface& surface,
+                                           const float sx,
+                                           float sy) {
+  CHECK(SurfaceControlMethods::Get().ASurfaceTransaction_setScaleFn);
+  SurfaceControlMethods::Get().ASurfaceTransaction_setScaleFn(
+      transaction_, surface.surface(), sx, sy);
+}
+
+void SurfaceControl::Transaction::SetCrop(const Surface& surface,
+                                          const gfx::Rect& rect) {
+  CHECK(SurfaceControlMethods::Get().ASurfaceTransaction_setCropFn);
+  SurfaceControlMethods::Get().ASurfaceTransaction_setCropFn(
+      transaction_, surface.surface(), RectToARect(rect));
+}
+
 void SurfaceControl::Transaction::SetOpaque(const Surface& surface,
                                             bool opaque) {
   int8_t transparency = opaque ? ASURFACE_TRANSACTION_TRANSPARENCY_OPAQUE
@@ -517,6 +712,44 @@ void SurfaceControl::Transaction::SetColorSpace(
 
   SurfaceControlMethods::Get().ASurfaceTransaction_setBufferDataSpaceFn(
       transaction_, surface.surface(), data_space);
+}
+
+void SurfaceControl::Transaction::SetHDRMetadata(
+
+    const Surface& surface,
+    const absl::optional<HDRMetadata>& metadata) {
+  if (metadata) {
+    AHdrMetadata_cta861_3 cta861_3 = {
+        .maxContentLightLevel =
+            static_cast<float>(metadata->max_content_light_level),
+        .maxFrameAverageLightLevel =
+            static_cast<float>(metadata->max_frame_average_light_level)};
+
+    AHdrMetadata_smpte2086 smpte2086 = {
+        .displayPrimaryRed =
+            {.x = metadata->color_volume_metadata.primary_r.x(),
+             .y = metadata->color_volume_metadata.primary_r.y()},
+        .displayPrimaryGreen =
+            {.x = metadata->color_volume_metadata.primary_g.x(),
+             .y = metadata->color_volume_metadata.primary_g.y()},
+        .displayPrimaryBlue =
+            {.x = metadata->color_volume_metadata.primary_b.x(),
+             .y = metadata->color_volume_metadata.primary_b.y()},
+        .whitePoint = {.x = metadata->color_volume_metadata.white_point.x(),
+                       .y = metadata->color_volume_metadata.white_point.y()},
+        .maxLuminance = metadata->color_volume_metadata.luminance_max,
+        .minLuminance = metadata->color_volume_metadata.luminance_min};
+
+    SurfaceControlMethods::Get().ASurfaceTransaction_setHdrMetadata_cta861_3Fn(
+        transaction_, surface.surface(), &cta861_3);
+    SurfaceControlMethods::Get().ASurfaceTransaction_setHdrMetadata_smpte2086Fn(
+        transaction_, surface.surface(), &smpte2086);
+  } else {
+    SurfaceControlMethods::Get().ASurfaceTransaction_setHdrMetadata_cta861_3Fn(
+        transaction_, surface.surface(), nullptr);
+    SurfaceControlMethods::Get().ASurfaceTransaction_setHdrMetadata_smpte2086Fn(
+        transaction_, surface.surface(), nullptr);
+  }
 }
 
 void SurfaceControl::Transaction::SetFrameRate(const Surface& surface,
@@ -558,6 +791,17 @@ void SurfaceControl::Transaction::SetOnCommitCb(
 void SurfaceControl::Transaction::Apply() {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("gpu,benchmark",
                                     "SurfaceControlTransaction", id_);
+
+  PrepareCallbacks();
+  SurfaceControlMethods::Get().ASurfaceTransaction_applyFn(transaction_);
+}
+
+ASurfaceTransaction* SurfaceControl::Transaction::GetTransaction() {
+  PrepareCallbacks();
+  return transaction_;
+}
+
+void SurfaceControl::Transaction::PrepareCallbacks() {
   if (on_commit_cb_) {
     TransactionAckCtx* ack_ctx = new TransactionAckCtx;
     ack_ctx->latch_callback = std::move(on_commit_cb_);
@@ -575,8 +819,6 @@ void SurfaceControl::Transaction::Apply() {
     SurfaceControlMethods::Get().ASurfaceTransaction_setOnCompleteFn(
         transaction_, ack_ctx, &OnTransactionCompletedOnAnyThread);
   }
-
-  SurfaceControlMethods::Get().ASurfaceTransaction_applyFn(transaction_);
 }
 
 }  // namespace gfx

@@ -12,15 +12,15 @@
 #include <memory>
 #include <string>
 
+#include "ash/components/arc/mojom/file_system.mojom-forward.h"
+#include "ash/components/arc/session/connection_observer.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ash/arc/fileapi/arc_select_files_handler.h"
 #include "chrome/browser/ash/arc/fileapi/file_stream_forwarder.h"
-#include "components/arc/mojom/file_system.mojom-forward.h"
-#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "storage/browser/file_system/file_system_operation.h"
 #include "storage/browser/file_system/watcher_manager.h"
 
 class BrowserContextKeyedServiceFactory;
@@ -53,6 +53,10 @@ class ArcFileSystemBridge
 
   ArcFileSystemBridge(content::BrowserContext* context,
                       ArcBridgeService* bridge_service);
+
+  ArcFileSystemBridge(const ArcFileSystemBridge&) = delete;
+  ArcFileSystemBridge& operator=(const ArcFileSystemBridge&) = delete;
+
   ~ArcFileSystemBridge() override;
 
   // Returns the factory instance for this class.
@@ -85,6 +89,8 @@ class ArcFileSystemBridge
                    GetFileNameCallback callback) override;
   void GetFileSize(const std::string& url,
                    GetFileSizeCallback callback) override;
+  void GetLastModified(const GURL& url,
+                       GetLastModifiedCallback callback) override;
   void GetFileType(const std::string& url,
                    GetFileTypeCallback callback) override;
   void OnDocumentChanged(int64_t watcher_id,
@@ -119,6 +125,11 @@ class ArcFileSystemBridge
   // Used to implement GetFileSize().
   void GetFileSizeInternal(const GURL& url_decoded,
                            GetFileSizeCallback callback);
+
+  // Used to implement GetFileSize() and GetLastModified().
+  void GetMetadata(const GURL& url_decoded,
+                   int flags,
+                   storage::FileSystemOperation::GetMetadataCallback callback);
 
   // Used to implement GetVirtualFileId().
   void GetVirtualFileIdInternal(const GURL& url_decoded,
@@ -169,6 +180,7 @@ class ArcFileSystemBridge
   // Called when FileStreamForwarder completes read request.
   void OnReadRequestCompleted(const std::string& id,
                               std::list<FileStreamForwarderPtr>::iterator it,
+                              const std::string& file_system_id,
                               bool result);
 
   Profile* const profile_;
@@ -183,8 +195,6 @@ class ArcFileSystemBridge
   std::unique_ptr<ArcSelectFilesHandlersManager> select_files_handlers_manager_;
 
   base::WeakPtrFactory<ArcFileSystemBridge> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ArcFileSystemBridge);
 };
 
 }  // namespace arc

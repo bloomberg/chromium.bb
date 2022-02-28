@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
 #include "components/autofill/core/browser/pattern_provider/pattern_provider.h"
@@ -24,6 +24,10 @@ class LogManager;
 class CreditCardField : public FormField {
  public:
   explicit CreditCardField(LogManager* log_manager);
+
+  CreditCardField(const CreditCardField&) = delete;
+  CreditCardField& operator=(const CreditCardField&) = delete;
+
   ~CreditCardField() override;
   static std::unique_ptr<FormField> Parse(AutofillScanner* scanner,
                                           const LanguageCode& page_language,
@@ -74,7 +78,7 @@ class CreditCardField : public FormField {
   // It can be either a date or both the month and the year.
   bool HasExpiration() const;
 
-  LogManager* log_manager_;  // Optional.
+  raw_ptr<LogManager> log_manager_;  // Optional.
 
   AutofillField* cardholder_;  // Optional.
 
@@ -87,7 +91,7 @@ class CreditCardField : public FormField {
   // middle names or suffixes.)
   AutofillField* cardholder_last_;
 
-  AutofillField* type_;                  // Optional.
+  raw_ptr<AutofillField> type_;          // Optional.
   std::vector<AutofillField*> numbers_;  // Required.
 
   // The 3-digit card verification number; we don't currently fill this.
@@ -103,8 +107,6 @@ class CreditCardField : public FormField {
   // |CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR|; otherwise we store
   // |CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR|.
   ServerFieldType exp_year_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(CreditCardField);
 };
 
 }  // namespace autofill

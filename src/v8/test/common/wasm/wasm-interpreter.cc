@@ -12,6 +12,7 @@
 #include "src/codegen/assembler-inl.h"
 #include "src/common/globals.h"
 #include "src/compiler/wasm-compiler.h"
+#include "src/handles/global-handles-inl.h"
 #include "src/numbers/conversions.h"
 #include "src/objects/objects-inl.h"
 #include "src/utils/boxed-float.h"
@@ -416,7 +417,13 @@ float ExecuteF32Floor(float a, TrapReason* trap) { return floorf(a); }
 
 float ExecuteF32Trunc(float a, TrapReason* trap) { return truncf(a); }
 
-float ExecuteF32NearestInt(float a, TrapReason* trap) { return nearbyintf(a); }
+float ExecuteF32NearestInt(float a, TrapReason* trap) {
+  float value = nearbyintf(a);
+#if V8_OS_AIX
+  value = FpOpWorkaround<float>(a, value);
+#endif
+  return value;
+}
 
 float ExecuteF32Sqrt(float a, TrapReason* trap) {
   float result = sqrtf(a);
@@ -437,7 +444,13 @@ double ExecuteF64Floor(double a, TrapReason* trap) { return floor(a); }
 
 double ExecuteF64Trunc(double a, TrapReason* trap) { return trunc(a); }
 
-double ExecuteF64NearestInt(double a, TrapReason* trap) { return nearbyint(a); }
+double ExecuteF64NearestInt(double a, TrapReason* trap) {
+  double value = nearbyint(a);
+#if V8_OS_AIX
+  value = FpOpWorkaround<double>(a, value);
+#endif
+  return value;
+}
 
 double ExecuteF64Sqrt(double a, TrapReason* trap) { return sqrt(a); }
 
@@ -607,7 +620,7 @@ class SideTable : public ZoneObject {
         const int32_t stack_height;
       };
       struct CatchTarget {
-        int exception_index;
+        int tag_index;
         int target_control_index;
         const byte* pc;
       };
@@ -628,8 +641,8 @@ class SideTable : public ZoneObject {
         target = pc;
       }
 
-      void Bind(const byte* pc, int exception_index, int target_control_index) {
-        catch_targets.push_back({exception_index, target_control_index, pc});
+      void Bind(const byte* pc, int tag_index, int target_control_index) {
+        catch_targets.push_back({tag_index, target_control_index, pc});
       }
 
       // Reference this label from the given location.
@@ -659,19 +672,20 @@ class SideTable : public ZoneObject {
             auto p = map->catch_map.emplace(
                 offset, ZoneVector<CatchControlTransferEntry>(zone));
             auto& catch_entries = p.first->second;
-            for (auto& p : catch_targets) {
-              auto pcdiff = static_cast<pcdiff_t>(p.pc - ref.from_pc);
+            for (auto& catch_target : catch_targets) {
+              auto pcdiff =
+                  static_cast<pcdiff_t>(catch_target.pc - ref.from_pc);
               TRACE(
                   "control transfer @%zu: Δpc %d, stack %u->%u, exn: %d = "
                   "-%u\n",
                   offset, pcdiff, ref.stack_height, target_stack_height,
-                  p.exception_index, spdiff);
+                  catch_target.tag_index, spdiff);
               CatchControlTransferEntry entry;
               entry.pc_diff = pcdiff;
               entry.sp_diff = spdiff;
               entry.target_arity = arity;
-              entry.exception_index = p.exception_index;
-              entry.target_control_index = p.target_control_index;
+              entry.tag_index = catch_target.tag_index;
+              entry.target_control_index = catch_target.target_control_index;
               catch_entries.emplace_back(entry);
             }
           }
@@ -690,9 +704,6 @@ class SideTable : public ZoneObject {
       // Track whether this block was already left, i.e. all further
       // instructions are unreachable.
       bool unreachable = false;
-      // Whether this is a try...unwind...end block. Needed to handle the
-      // implicit rethrow when we reach the end of the block.
-      bool unwind = false;
 
       Control(const byte* pc, CLabel* end_label, CLabel* else_label,
               uint32_t exit_arity)
@@ -734,10 +745,9 @@ class SideTable : public ZoneObject {
     };
     int max_exception_arity = 0;
     if (module) {
-      for (auto& exception : module->exceptions) {
-        max_exception_arity =
-            std::max(max_exception_arity,
-                     static_cast<int>(exception.sig->parameter_count()));
+      for (auto& tag : module->tags) {
+        max_exception_arity = std::max(
+            max_exception_arity, static_cast<int>(tag.sig->parameter_count()));
       }
     }
     for (BytecodeIterator i(code->start, code->end, &code->locals);
@@ -865,27 +875,6 @@ class SideTable : public ZoneObject {
           stack_height = c->end_label->target_stack_height;
           break;
         }
-        case kExprUnwind: {
-          TRACE("control @%u: Unwind\n", i.pc_offset());
-          Control* c = &control_stack.back();
-          DCHECK_EQ(*c->pc, kExprTry);
-          DCHECK(!exception_stack.empty());
-          DCHECK_EQ(exception_stack.back(), control_stack.size() - 1);
-          exception_stack.pop_back();
-          copy_unreachable();
-          if (!unreachable) c->end_label->Ref(i.pc(), stack_height);
-          DCHECK_NOT_NULL(c->else_label);
-          int control_index = static_cast<int>(control_stack.size()) - 1;
-          c->else_label->Bind(i.pc() + 1, kCatchAllExceptionIndex,
-                              control_index);
-          c->else_label->Finish(&map_, code->start);
-          c->else_label = nullptr;
-          c->unwind = true;
-          DCHECK_IMPLIES(!unreachable,
-                         stack_height >= c->end_label->target_stack_height);
-          stack_height = c->end_label->target_stack_height;
-          break;
-        }
         case kExprTry: {
           BlockTypeImmediate<Decoder::kNoValidation> imm(
               WasmFeatures::All(), &i, i.pc() + 1, module);
@@ -922,7 +911,7 @@ class SideTable : public ZoneObject {
             // Only pop the exception stack once when we enter the first catch.
             exception_stack.pop_back();
           }
-          ExceptionIndexImmediate<Decoder::kNoValidation> imm(&i, i.pc() + 1);
+          TagIndexImmediate<Decoder::kNoValidation> imm(&i, i.pc() + 1);
           Control* c = &control_stack.back();
           copy_unreachable();
           TRACE("control @%u: Catch\n", i.pc_offset());
@@ -935,9 +924,8 @@ class SideTable : public ZoneObject {
 
           DCHECK_IMPLIES(!unreachable,
                          stack_height >= c->end_label->target_stack_height);
-          const FunctionSig* exception_sig = module->exceptions[imm.index].sig;
-          int catch_in_arity =
-              static_cast<int>(exception_sig->parameter_count());
+          const FunctionSig* tag_sig = module->tags[imm.index].sig;
+          int catch_in_arity = static_cast<int>(tag_sig->parameter_count());
           stack_height = c->end_label->target_stack_height + catch_in_arity;
           break;
         }
@@ -953,23 +941,22 @@ class SideTable : public ZoneObject {
                 // Bind else label for one-armed if.
                 c->else_label->Bind(i.pc());
               } else if (!exception_stack.empty()) {
+                DCHECK_IMPLIES(
+                    !unreachable,
+                    stack_height >= c->else_label->target_stack_height);
                 // No catch_all block, prepare for implicit rethrow.
+                if (exception_stack.back() == control_stack.size() - 1) {
+                  // Close try scope for catch-less try.
+                  exception_stack.pop_back();
+                  copy_unreachable();
+                  unreachable = control_stack.back().unreachable;
+                }
                 DCHECK_EQ(*c->pc, kExprTry);
                 constexpr int kUnusedControlIndex = -1;
                 c->else_label->Bind(i.pc(), kRethrowOrDelegateExceptionIndex,
                                     kUnusedControlIndex);
-                DCHECK_IMPLIES(
-                    !unreachable,
-                    stack_height >= c->else_label->target_stack_height);
                 stack_height = c->else_label->target_stack_height;
-                rethrow = !unreachable;
-              }
-            } else if (c->unwind) {
-              DCHECK_EQ(*c->pc, kExprTry);
-              rethrow_map_.emplace(i.pc() - i.start(),
-                                   static_cast<int>(control_stack.size()) - 1);
-              if (!exception_stack.empty()) {
-                rethrow = !unreachable;
+                rethrow = !unreachable && !exception_stack.empty();
               }
             }
             c->end_label->Bind(i.pc() + 1);
@@ -997,15 +984,23 @@ class SideTable : public ZoneObject {
           Control* c = &control_stack.back();
           const size_t new_stack_size = control_stack.size() - 1;
           const size_t max_depth = new_stack_size - 1;
-          if (imm.depth < max_depth) {
+          // Find the first try block that is equal to or encloses the target
+          // block, i.e. has a lower than or equal index in the control stack.
+          int try_index = static_cast<int>(exception_stack.size()) - 1;
+          while (try_index >= 0 &&
+                 exception_stack[try_index] > max_depth - imm.depth) {
+            try_index--;
+          }
+          if (try_index >= 0) {
+            size_t target_depth = exception_stack[try_index];
             constexpr int kUnusedControlIndex = -1;
             c->else_label->Bind(i.pc(), kRethrowOrDelegateExceptionIndex,
                                 kUnusedControlIndex);
             c->else_label->Finish(&map_, code->start);
-            Control* target = &control_stack[max_depth - imm.depth];
+            Control* target = &control_stack[target_depth];
             DCHECK_EQ(*target->pc, kExprTry);
             DCHECK_NOT_NULL(target->else_label);
-            if (!unreachable) {
+            if (!control_parent().unreachable) {
               target->else_label->Ref(i.pc(),
                                       c->end_label->target_stack_height);
             }
@@ -1453,7 +1448,6 @@ class WasmInterpreterInternals {
         case kI8:
         case kI16:
           UNREACHABLE();
-          break;
       }
       Push(val);
     }
@@ -1487,24 +1481,22 @@ class WasmInterpreterInternals {
     }
     CatchControlTransferEntry* handler = nullptr;
     for (auto& entry : it->second) {
-      if (entry.exception_index < 0) {
+      if (entry.tag_index < 0) {
         ResetStack(StackHeight() - entry.sp_diff);
         *pc += entry.pc_diff;
-        if (entry.exception_index == kRethrowOrDelegateExceptionIndex) {
+        if (entry.tag_index == kRethrowOrDelegateExceptionIndex) {
           // Recursively try to find a handler in the next enclosing try block
           // (for the implicit rethrow) or in the delegate target.
           return JumpToHandlerDelta(code, exception_object, pc);
         }
         handler = &entry;
         break;
-      } else if (MatchingExceptionTag(exception_object,
-                                      entry.exception_index)) {
+      } else if (MatchingExceptionTag(exception_object, entry.tag_index)) {
         handler = &entry;
-        const WasmException* exception =
-            &module()->exceptions[entry.exception_index];
-        const FunctionSig* sig = exception->sig;
+        const WasmTag* tag = &module()->tags[entry.tag_index];
+        const FunctionSig* sig = tag->sig;
         int catch_in_arity = static_cast<int>(sig->parameter_count());
-        DoUnpackException(exception, exception_object);
+        DoUnpackException(tag, exception_object);
         DoStackTransfer(entry.sp_diff + catch_in_arity, catch_in_arity);
         *pc += handler->pc_diff;
         break;
@@ -1540,8 +1532,8 @@ class WasmInterpreterInternals {
         return pc + 1 + imm.length;
       }
       case kExprCallIndirect: {
-        CallIndirectImmediate<Decoder::kNoValidation> imm(
-            WasmFeatures::All(), decoder, code->at(pc + 1));
+        CallIndirectImmediate<Decoder::kNoValidation> imm(decoder,
+                                                          code->at(pc + 1));
         return pc + 1 + imm.length;
       }
       default:
@@ -1653,8 +1645,7 @@ class WasmInterpreterInternals {
     DCHECK_GE(instance_object_->memory_size(), index);
     // Compute the effective address of the access, making sure to condition
     // the index even in the in-bounds case.
-    return reinterpret_cast<Address>(instance_object_->memory_start()) +
-           (index & instance_object_->memory_mask());
+    return reinterpret_cast<Address>(instance_object_->memory_start()) + index;
   }
 
   template <typename mtype>
@@ -1835,29 +1826,29 @@ class WasmInterpreterInternals {
                                                         code->at(pc + *len));
         // The data segment index must be in bounds since it is required by
         // validation.
-        DCHECK_LT(imm.data_segment_index, module()->num_declared_data_segments);
+        DCHECK_LT(imm.data_segment.index, module()->num_declared_data_segments);
         *len += imm.length;
         uint64_t size = ToMemType(Pop());
         uint64_t src = ToMemType(Pop());
         uint64_t dst = ToMemType(Pop());
         Address dst_addr;
         uint64_t src_max =
-            instance_object_->data_segment_sizes()[imm.data_segment_index];
+            instance_object_->data_segment_sizes()[imm.data_segment.index];
         if (!BoundsCheckMemRange(dst, &size, &dst_addr) ||
             !base::IsInBounds(src, size, src_max)) {
           DoTrap(kTrapMemOutOfBounds, pc);
           return false;
         }
         Address src_addr =
-            instance_object_->data_segment_starts()[imm.data_segment_index] +
+            instance_object_->data_segment_starts()[imm.data_segment.index] +
             src;
         std::memmove(reinterpret_cast<void*>(dst_addr),
                      reinterpret_cast<void*>(src_addr), size);
         return true;
       }
       case kExprDataDrop: {
-        DataDropImmediate<Decoder::kNoValidation> imm(decoder,
-                                                      code->at(pc + *len));
+        IndexImmediate<Decoder::kNoValidation> imm(decoder, code->at(pc + *len),
+                                                   "data segment index");
         // The data segment index must be in bounds since it is required by
         // validation.
         DCHECK_LT(imm.index, module()->num_declared_data_segments);
@@ -1909,13 +1900,13 @@ class WasmInterpreterInternals {
         HandleScope scope(isolate_);  // Avoid leaking handles.
         bool ok = WasmInstanceObject::InitTableEntries(
             instance_object_->GetIsolate(), instance_object_, imm.table.index,
-            imm.elem_segment_index, dst, src, size);
+            imm.element_segment.index, dst, src, size);
         if (!ok) DoTrap(kTrapTableOutOfBounds, pc);
         return ok;
       }
       case kExprElemDrop: {
-        ElemDropImmediate<Decoder::kNoValidation> imm(decoder,
-                                                      code->at(pc + *len));
+        IndexImmediate<Decoder::kNoValidation> imm(decoder, code->at(pc + *len),
+                                                   "element segment index");
         *len += imm.length;
         instance_object_->dropped_elem_segments()[imm.index] = 1;
         return true;
@@ -1935,8 +1926,8 @@ class WasmInterpreterInternals {
         return ok;
       }
       case kExprTableGrow: {
-        TableIndexImmediate<Decoder::kNoValidation> imm(decoder,
-                                                        code->at(pc + *len));
+        IndexImmediate<Decoder::kNoValidation> imm(decoder, code->at(pc + *len),
+                                                   "table index");
         HandleScope handle_scope(isolate_);
         auto table = handle(
             WasmTableObject::cast(instance_object_->tables().get(imm.index)),
@@ -1949,8 +1940,8 @@ class WasmInterpreterInternals {
         return true;
       }
       case kExprTableSize: {
-        TableIndexImmediate<Decoder::kNoValidation> imm(decoder,
-                                                        code->at(pc + *len));
+        IndexImmediate<Decoder::kNoValidation> imm(decoder, code->at(pc + *len),
+                                                   "table index");
         HandleScope handle_scope(isolate_);
         auto table = handle(
             WasmTableObject::cast(instance_object_->tables().get(imm.index)),
@@ -1961,8 +1952,8 @@ class WasmInterpreterInternals {
         return true;
       }
       case kExprTableFill: {
-        TableIndexImmediate<Decoder::kNoValidation> imm(decoder,
-                                                        code->at(pc + *len));
+        IndexImmediate<Decoder::kNoValidation> imm(decoder, code->at(pc + *len),
+                                                   "table index");
         HandleScope handle_scope(isolate_);
         auto count = Pop().to<uint32_t>();
         auto value = Pop().to_ref();
@@ -1995,7 +1986,6 @@ class WasmInterpreterInternals {
             WasmOpcodes::OpcodeName(static_cast<WasmOpcode>(code->start[pc])));
         UNREACHABLE();
     }
-    return false;
   }
 
   template <typename type, typename op_type, typename func>
@@ -2027,7 +2017,6 @@ class WasmInterpreterInternals {
 #else
     constexpr bool kBigEndian = false;
 #endif
-    WasmValue result;
     switch (opcode) {
 #define ATOMIC_BINOP_CASE(name, type, op_type, operation, op)                \
   case kExpr##name: {                                                        \
@@ -2147,20 +2136,20 @@ class WasmInterpreterInternals {
       ATOMIC_COMPARE_EXCHANGE_CASE(I64AtomicCompareExchange32U, uint32_t,
                                    uint64_t);
 #undef ATOMIC_COMPARE_EXCHANGE_CASE
-#define ATOMIC_LOAD_CASE(name, type, op_type, operation)                \
-  case kExpr##name: {                                                   \
-    Address addr;                                                       \
-    if (!ExtractAtomicOpParams<type, op_type>(decoder, code, &addr, pc, \
-                                              len)) {                   \
-      return false;                                                     \
-    }                                                                   \
-    static_assert(sizeof(std::atomic<type>) == sizeof(type),            \
-                  "Size mismatch for types std::atomic<" #type          \
-                  ">, and " #type);                                     \
-    result = WasmValue(static_cast<op_type>(AdjustByteOrder<type>(      \
-        std::operation(reinterpret_cast<std::atomic<type>*>(addr)))));  \
-    Push(result);                                                       \
-    break;                                                              \
+#define ATOMIC_LOAD_CASE(name, type, op_type, operation)                     \
+  case kExpr##name: {                                                        \
+    Address addr;                                                            \
+    if (!ExtractAtomicOpParams<type, op_type>(decoder, code, &addr, pc,      \
+                                              len)) {                        \
+      return false;                                                          \
+    }                                                                        \
+    static_assert(sizeof(std::atomic<type>) == sizeof(type),                 \
+                  "Size mismatch for types std::atomic<" #type               \
+                  ">, and " #type);                                          \
+    WasmValue result = WasmValue(static_cast<op_type>(AdjustByteOrder<type>( \
+        std::operation(reinterpret_cast<std::atomic<type>*>(addr)))));       \
+    Push(result);                                                            \
+    break;                                                                   \
   }
       ATOMIC_LOAD_CASE(I32AtomicLoad, uint32_t, uint32_t, atomic_load);
       ATOMIC_LOAD_CASE(I32AtomicLoad8U, uint8_t, uint32_t, atomic_load);
@@ -2198,7 +2187,7 @@ class WasmInterpreterInternals {
         *len += 1;
         break;
       case kExprI32AtomicWait: {
-        if (!module()->has_shared_memory) {
+        if (!module()->has_shared_memory || !isolate_->allow_atomics_wait()) {
           DoTrap(kTrapUnreachable, pc);
           return false;
         }
@@ -2218,7 +2207,7 @@ class WasmInterpreterInternals {
         break;
       }
       case kExprI64AtomicWait: {
-        if (!module()->has_shared_memory) {
+        if (!module()->has_shared_memory || !isolate_->allow_atomics_wait()) {
           DoTrap(kTrapUnreachable, pc);
           return false;
         }
@@ -2257,7 +2246,6 @@ class WasmInterpreterInternals {
       }
       default:
         UNREACHABLE();
-        return false;
     }
     return true;
   }
@@ -2362,6 +2350,10 @@ class WasmInterpreterInternals {
       BINOP_CASE(F64x2Max, f64x2, float2, 2, JSMax(a, b))
       BINOP_CASE(F64x2Pmin, f64x2, float2, 2, std::min(a, b))
       BINOP_CASE(F64x2Pmax, f64x2, float2, 2, std::max(a, b))
+      BINOP_CASE(F32x4RelaxedMin, f32x4, float4, 4, std::min(a, b))
+      BINOP_CASE(F32x4RelaxedMax, f32x4, float4, 4, std::max(a, b))
+      BINOP_CASE(F64x2RelaxedMin, f64x2, float2, 2, std::min(a, b))
+      BINOP_CASE(F64x2RelaxedMax, f64x2, float2, 2, std::max(a, b))
       BINOP_CASE(F32x4Add, f32x4, float4, 4, a + b)
       BINOP_CASE(F32x4Sub, f32x4, float4, 4, a - b)
       BINOP_CASE(F32x4Mul, f32x4, float4, 4, a * b)
@@ -2684,16 +2676,14 @@ class WasmInterpreterInternals {
                      static_cast<float>(a))
         CONVERT_CASE(F32x4UConvertI32x4, int4, i32x4, float4, 4, 0, uint32_t,
                      static_cast<float>(a))
-        CONVERT_CASE(I32x4SConvertF32x4, float4, f32x4, int4, 4, 0, double,
-                     std::isnan(a) ? 0
-                                   : a<kMinInt ? kMinInt : a> kMaxInt
-                                         ? kMaxInt
-                                         : static_cast<int32_t>(a))
-        CONVERT_CASE(I32x4UConvertF32x4, float4, f32x4, int4, 4, 0, double,
-                     std::isnan(a)
-                         ? 0
-                         : a<0 ? 0 : a> kMaxUInt32 ? kMaxUInt32
-                                                   : static_cast<uint32_t>(a))
+        CONVERT_CASE(I32x4SConvertF32x4, float4, f32x4, int4, 4, 0, float,
+                     base::saturated_cast<int32_t>(a))
+        CONVERT_CASE(I32x4UConvertF32x4, float4, f32x4, int4, 4, 0, float,
+                     base::saturated_cast<uint32_t>(a))
+        CONVERT_CASE(I32x4RelaxedTruncF32x4S, float4, f32x4, int4, 4, 0, float,
+                     base::saturated_cast<int32_t>(a))
+        CONVERT_CASE(I32x4RelaxedTruncF32x4U, float4, f32x4, int4, 4, 0, float,
+                     base::saturated_cast<uint32_t>(a))
         CONVERT_CASE(I64x2SConvertI32x4Low, int4, i32x4, int2, 2, 0, int32_t, a)
         CONVERT_CASE(I64x2SConvertI32x4High, int4, i32x4, int2, 2, 2, int32_t,
                      a)
@@ -2723,6 +2713,10 @@ class WasmInterpreterInternals {
                      base::saturated_cast<int32_t>(a))
         CONVERT_CASE(I32x4TruncSatF64x2UZero, float2, f64x2, int4, 2, 0, double,
                      base::saturated_cast<uint32_t>(a))
+        CONVERT_CASE(I32x4RelaxedTruncF64x2SZero, float2, f64x2, int4, 2, 0,
+                     double, base::saturated_cast<int32_t>(a))
+        CONVERT_CASE(I32x4RelaxedTruncF64x2UZero, float2, f64x2, int4, 2, 0,
+                     double, base::saturated_cast<uint32_t>(a))
         CONVERT_CASE(F32x4DemoteF64x2Zero, float2, f64x2, float4, 2, 0, float,
                      DoubleToFloat32(a))
         CONVERT_CASE(F64x2PromoteLowF32x4, float4, f32x4, float2, 2, 0, float,
@@ -2748,6 +2742,10 @@ class WasmInterpreterInternals {
         PACK_CASE(I8x16SConvertI16x8, int8, i16x8, int16, 16, int8_t)
         PACK_CASE(I8x16UConvertI16x8, int8, i16x8, int16, 16, uint8_t)
 #undef PACK_CASE
+      case kExprI8x16RelaxedLaneSelect:
+      case kExprI16x8RelaxedLaneSelect:
+      case kExprI32x4RelaxedLaneSelect:
+      case kExprI64x2RelaxedLaneSelect:
       case kExprS128Select: {
         int4 bool_val = Pop().to_s128().to_i32x4();
         int4 v2 = Pop().to_s128().to_i32x4();
@@ -2785,6 +2783,7 @@ class WasmInterpreterInternals {
         *len += 16;
         return true;
       }
+      case kExprI8x16RelaxedSwizzle:
       case kExprI8x16Swizzle: {
         int16 v2 = Pop().to_s128().to_i8x16();
         int16 v1 = Pop().to_s128().to_i8x16();
@@ -3113,30 +3112,16 @@ class WasmInterpreterInternals {
     return false;
   }
 
-  void EncodeI32ExceptionValue(Handle<FixedArray> encoded_values,
-                               uint32_t* encoded_index, uint32_t value) {
-    encoded_values->set((*encoded_index)++, Smi::FromInt(value >> 16));
-    encoded_values->set((*encoded_index)++, Smi::FromInt(value & 0xffff));
-  }
-
-  void EncodeI64ExceptionValue(Handle<FixedArray> encoded_values,
-                               uint32_t* encoded_index, uint64_t value) {
-    EncodeI32ExceptionValue(encoded_values, encoded_index,
-                            static_cast<uint32_t>(value >> 32));
-    EncodeI32ExceptionValue(encoded_values, encoded_index,
-                            static_cast<uint32_t>(value));
-  }
-
   // Allocate, initialize and throw a new exception. The exception values are
   // being popped off the operand stack. Returns true if the exception is being
   // handled locally by the interpreter, false otherwise (interpreter exits).
-  bool DoThrowException(const WasmException* exception,
+  bool DoThrowException(const WasmTag* tag,
                         uint32_t index) V8_WARN_UNUSED_RESULT {
     HandleScope handle_scope(isolate_);  // Avoid leaking handles.
     Handle<WasmExceptionTag> exception_tag(
-        WasmExceptionTag::cast(instance_object_->exceptions_table().get(index)),
+        WasmExceptionTag::cast(instance_object_->tags_table().get(index)),
         isolate_);
-    uint32_t encoded_size = WasmExceptionPackage::GetEncodedSize(exception);
+    uint32_t encoded_size = WasmExceptionPackage::GetEncodedSize(tag);
     Handle<WasmExceptionPackage> exception_object =
         WasmExceptionPackage::New(isolate_, exception_tag, encoded_size);
     Handle<FixedArray> encoded_values = Handle<FixedArray>::cast(
@@ -3144,7 +3129,7 @@ class WasmInterpreterInternals {
     // Encode the exception values on the operand stack into the exception
     // package allocated above. This encoding has to be in sync with other
     // backends so that exceptions can be passed between them.
-    const WasmExceptionSig* sig = exception->sig;
+    const WasmTagSig* sig = tag->sig;
     uint32_t encoded_index = 0;
     sp_t base_index = StackHeight() - sig->parameter_count();
     for (size_t i = 0; i < sig->parameter_count(); ++i) {
@@ -3183,6 +3168,9 @@ class WasmInterpreterInternals {
           switch (sig->GetParam(i).heap_representation()) {
             case HeapType::kExtern:
             case HeapType::kFunc:
+            case HeapType::kEq:
+            case HeapType::kData:
+            case HeapType::kI31:
             case HeapType::kAny: {
               Handle<Object> ref = value.to_ref();
               encoded_values->set(encoded_index++, *ref);
@@ -3190,13 +3178,9 @@ class WasmInterpreterInternals {
             }
             case HeapType::kBottom:
               UNREACHABLE();
-            case HeapType::kEq:
-            case HeapType::kData:
-            case HeapType::kI31:
             default:
               // TODO(7748): Implement these.
               UNIMPLEMENTED();
-              break;
           }
           break;
         }
@@ -3230,38 +3214,22 @@ class WasmInterpreterInternals {
     Handle<Object> caught_tag = WasmExceptionPackage::GetExceptionTag(
         isolate_, Handle<WasmExceptionPackage>::cast(exception_object));
     Handle<Object> expected_tag =
-        handle(instance_object_->exceptions_table().get(index), isolate_);
+        handle(instance_object_->tags_table().get(index), isolate_);
     DCHECK(expected_tag->IsWasmExceptionTag());
     return expected_tag.is_identical_to(caught_tag);
-  }
-
-  void DecodeI32ExceptionValue(Handle<FixedArray> encoded_values,
-                               uint32_t* encoded_index, uint32_t* value) {
-    uint32_t msb = Smi::cast(encoded_values->get((*encoded_index)++)).value();
-    uint32_t lsb = Smi::cast(encoded_values->get((*encoded_index)++)).value();
-    *value = (msb << 16) | (lsb & 0xffff);
-  }
-
-  void DecodeI64ExceptionValue(Handle<FixedArray> encoded_values,
-                               uint32_t* encoded_index, uint64_t* value) {
-    uint32_t lsb = 0, msb = 0;
-    DecodeI32ExceptionValue(encoded_values, encoded_index, &msb);
-    DecodeI32ExceptionValue(encoded_values, encoded_index, &lsb);
-    *value = (static_cast<uint64_t>(msb) << 32) | static_cast<uint64_t>(lsb);
   }
 
   // Unpack the values encoded in the given exception. The exception values are
   // pushed onto the operand stack. Callers must perform a tag check to ensure
   // the encoded values match the expected signature of the exception.
-  void DoUnpackException(const WasmException* exception,
-                         Handle<Object> exception_object) {
+  void DoUnpackException(const WasmTag* tag, Handle<Object> exception_object) {
     Handle<FixedArray> encoded_values =
         Handle<FixedArray>::cast(WasmExceptionPackage::GetExceptionValues(
             isolate_, Handle<WasmExceptionPackage>::cast(exception_object)));
     // Decode the exception values from the given exception package and push
     // them onto the operand stack. This encoding has to be in sync with other
     // backends so that exceptions can be passed between them.
-    const WasmExceptionSig* sig = exception->sig;
+    const WasmTagSig* sig = tag->sig;
     uint32_t encoded_index = 0;
     for (size_t i = 0; i < sig->parameter_count(); ++i) {
       WasmValue value;
@@ -3305,6 +3273,9 @@ class WasmInterpreterInternals {
           switch (sig->GetParam(i).heap_representation()) {
             case HeapType::kExtern:
             case HeapType::kFunc:
+            case HeapType::kEq:
+            case HeapType::kData:
+            case HeapType::kI31:
             case HeapType::kAny: {
               Handle<Object> ref(encoded_values->get(encoded_index++),
                                  isolate_);
@@ -3314,7 +3285,6 @@ class WasmInterpreterInternals {
             default:
               // TODO(7748): Implement these.
               UNIMPLEMENTED();
-              break;
           }
           break;
         }
@@ -3328,7 +3298,7 @@ class WasmInterpreterInternals {
       }
       Push(value);
     }
-    DCHECK_EQ(WasmExceptionPackage::GetEncodedSize(exception), encoded_index);
+    DCHECK_EQ(WasmExceptionPackage::GetEncodedSize(tag), encoded_index);
   }
 
   void Execute(InterpreterCode* code, pc_t pc, int max) {
@@ -3411,7 +3381,6 @@ class WasmInterpreterInternals {
           break;
         }
         case kExprElse:
-        case kExprUnwind:
         case kExprCatch:
         case kExprCatchAll: {
           len = LookupTargetDelta(code, pc);
@@ -3419,11 +3388,11 @@ class WasmInterpreterInternals {
           break;
         }
         case kExprThrow: {
-          ExceptionIndexImmediate<Decoder::kNoValidation> imm(&decoder,
-                                                              code->at(pc + 1));
+          TagIndexImmediate<Decoder::kNoValidation> imm(&decoder,
+                                                        code->at(pc + 1));
           CommitPc(pc);  // Needed for local unwinding.
-          const WasmException* exception = &module()->exceptions[imm.index];
-          if (!DoThrowException(exception, imm.index)) return;
+          const WasmTag* tag = &module()->tags[imm.index];
+          if (!DoThrowException(tag, imm.index)) return;
           ReloadFromFrameOnException(&decoder, &code, &pc, &limit);
           continue;  // Do not bump pc.
         }
@@ -3508,19 +3477,6 @@ class WasmInterpreterInternals {
           break;
         }
         case kExprEnd: {
-          if (code->side_table->rethrow_map_.count(pc)) {
-            // Implicit rethrow after unwind.
-            HandleScope scope(isolate_);
-            DCHECK(!frames_.back().caught_exception_stack.is_null());
-            int index = code->side_table->rethrow_map_[pc];
-            Handle<Object> exception = handle(
-                frames_.back().caught_exception_stack->get(index), isolate_);
-            DCHECK(!exception->IsTheHole());
-            CommitPc(pc);  // Needed for local unwinding.
-            if (!DoRethrowException(exception)) return;
-            ReloadFromFrameOnException(&decoder, &code, &pc, &limit);
-            continue;  // Do not bump pc.
-          }
           break;
         }
         case kExprI32Const: {
@@ -3560,28 +3516,28 @@ class WasmInterpreterInternals {
           break;
         }
         case kExprRefFunc: {
-          FunctionIndexImmediate<Decoder::kNoValidation> imm(&decoder,
-                                                             code->at(pc + 1));
+          IndexImmediate<Decoder::kNoValidation> imm(&decoder, code->at(pc + 1),
+                                                     "function index");
           HandleScope handle_scope(isolate_);  // Avoid leaking handles.
 
-          Handle<WasmExternalFunction> function =
-              WasmInstanceObject::GetOrCreateWasmExternalFunction(
+          Handle<WasmInternalFunction> function =
+              WasmInstanceObject::GetOrCreateWasmInternalFunction(
                   isolate_, instance_object_, imm.index);
           Push(WasmValue(function, kWasmFuncRef));
           len = 1 + imm.length;
           break;
         }
         case kExprLocalGet: {
-          LocalIndexImmediate<Decoder::kNoValidation> imm(&decoder,
-                                                          code->at(pc + 1));
+          IndexImmediate<Decoder::kNoValidation> imm(&decoder, code->at(pc + 1),
+                                                     "local index");
           HandleScope handle_scope(isolate_);  // Avoid leaking handles.
           Push(GetStackValue(frames_.back().sp + imm.index));
           len = 1 + imm.length;
           break;
         }
         case kExprLocalSet: {
-          LocalIndexImmediate<Decoder::kNoValidation> imm(&decoder,
-                                                          code->at(pc + 1));
+          IndexImmediate<Decoder::kNoValidation> imm(&decoder, code->at(pc + 1),
+                                                     "local index");
           HandleScope handle_scope(isolate_);  // Avoid leaking handles.
           WasmValue val = Pop();
           SetStackValue(frames_.back().sp + imm.index, val);
@@ -3589,8 +3545,8 @@ class WasmInterpreterInternals {
           break;
         }
         case kExprLocalTee: {
-          LocalIndexImmediate<Decoder::kNoValidation> imm(&decoder,
-                                                          code->at(pc + 1));
+          IndexImmediate<Decoder::kNoValidation> imm(&decoder, code->at(pc + 1),
+                                                     "local index");
           HandleScope handle_scope(isolate_);  // Avoid leaking handles.
           WasmValue val = Pop();
           SetStackValue(frames_.back().sp + imm.index, val);
@@ -3611,15 +3567,15 @@ class WasmInterpreterInternals {
           if (!DoCall(&decoder, &target, &pc, &limit)) return;
           code = target;
           continue;  // Do not bump pc.
-        } break;
+        }
 
         case kExprCallIndirect: {
-          CallIndirectImmediate<Decoder::kNoValidation> imm(
-              WasmFeatures::All(), &decoder, code->at(pc + 1));
+          CallIndirectImmediate<Decoder::kNoValidation> imm(&decoder,
+                                                            code->at(pc + 1));
           uint32_t entry_index = Pop().to<uint32_t>();
           CommitPc(pc);  // TODO(wasm): Be more disciplined about committing PC.
-          CallResult result =
-              CallIndirectFunction(imm.table_index, entry_index, imm.sig_index);
+          CallResult result = CallIndirectFunction(
+              imm.table_imm.index, entry_index, imm.sig_imm.index);
           switch (result.type) {
             case CallResult::INTERNAL:
               // The import is a function of this instance. Call it directly.
@@ -3647,21 +3603,21 @@ class WasmInterpreterInternals {
           if (!DoReturnCall(&decoder, target, &pc, &limit)) return;
           code = target;
           continue;  // Do not bump pc.
-        } break;
+        }
 
         case kExprReturnCallIndirect: {
           // Make return calls more expensive, so that return call recursions
           // don't cause a timeout.
           if (max > 0) max = std::max(0, max - 100);
-          CallIndirectImmediate<Decoder::kNoValidation> imm(
-              WasmFeatures::All(), &decoder, code->at(pc + 1));
+          CallIndirectImmediate<Decoder::kNoValidation> imm(&decoder,
+                                                            code->at(pc + 1));
           uint32_t entry_index = Pop().to<uint32_t>();
           CommitPc(pc);  // TODO(wasm): Be more disciplined about committing PC.
 
           // TODO(wasm): Calling functions needs some refactoring to avoid
           // multi-exit code like this.
-          CallResult result =
-              CallIndirectFunction(imm.table_index, entry_index, imm.sig_index);
+          CallResult result = CallIndirectFunction(
+              imm.table_imm.index, entry_index, imm.sig_imm.index);
           switch (result.type) {
             case CallResult::INTERNAL: {
               InterpreterCode* target = result.interpreter_code;
@@ -3698,8 +3654,7 @@ class WasmInterpreterInternals {
   case valuetype: {                                                     \
     uint8_t* ptr =                                                      \
         WasmInstanceObject::GetGlobalStorage(instance_object_, global); \
-    WriteLittleEndianValue<ctype>(reinterpret_cast<Address>(ptr),       \
-                                  Pop().to<ctype>());                   \
+    *reinterpret_cast<ctype*>(ptr) = Pop().to<ctype>();                 \
     break;                                                              \
   }
             FOREACH_WASMVALUE_CTYPES(CASE_TYPE)
@@ -3729,8 +3684,8 @@ class WasmInterpreterInternals {
           break;
         }
         case kExprTableGet: {
-          TableIndexImmediate<Decoder::kNoValidation> imm(&decoder,
-                                                          code->at(pc + 1));
+          IndexImmediate<Decoder::kNoValidation> imm(&decoder, code->at(pc + 1),
+                                                     "table index");
           HandleScope handle_scope(isolate_);
           auto table = handle(
               WasmTableObject::cast(instance_object_->tables().get(imm.index)),
@@ -3747,8 +3702,8 @@ class WasmInterpreterInternals {
           break;
         }
         case kExprTableSet: {
-          TableIndexImmediate<Decoder::kNoValidation> imm(&decoder,
-                                                          code->at(pc + 1));
+          IndexImmediate<Decoder::kNoValidation> imm(&decoder, code->at(pc + 1),
+                                                     "table index");
           HandleScope handle_scope(isolate_);
           auto table = handle(
               WasmTableObject::cast(instance_object_->tables().get(imm.index)),
@@ -4140,7 +4095,6 @@ class WasmInterpreterInternals {
         case kI16:
         case kBottom:
           UNREACHABLE();
-          break;
       }
     }
 #endif  // DEBUG
@@ -4152,21 +4106,20 @@ class WasmInterpreterInternals {
     uint32_t expected_sig_id = module()->canonicalized_type_ids[sig_index];
     DCHECK_EQ(expected_sig_id,
               module()->signature_map.Find(*module()->signature(sig_index)));
-    // Bounds check against table size.
-    if (entry_index >=
-        static_cast<uint32_t>(WasmInstanceObject::IndirectFunctionTableSize(
-            isolate_, instance_object_, table_index))) {
-      return {CallResult::INVALID_FUNC};
-    }
 
-    IndirectFunctionTableEntry entry(instance_object_, table_index,
-                                     entry_index);
+    Handle<WasmIndirectFunctionTable> table =
+        instance_object_->GetIndirectFunctionTable(isolate_, table_index);
+
+    // Bounds check against table size.
+    if (entry_index >= table->size()) return {CallResult::INVALID_FUNC};
+
     // Signature check.
-    if (entry.sig_id() != static_cast<int32_t>(expected_sig_id)) {
+    if (table->sig_ids()[entry_index] != expected_sig_id) {
       return {CallResult::SIGNATURE_MISMATCH};
     }
 
-    Handle<Object> object_ref = handle(entry.object_ref(), isolate_);
+    Handle<Object> object_ref =
+        handle(table->refs().get(entry_index), isolate_);
     // Check that this is an internal call (within the same instance).
     CHECK(object_ref->IsWasmInstanceObject() &&
           instance_object_.is_identical_to(object_ref));
@@ -4176,13 +4129,14 @@ class WasmInterpreterInternals {
 #ifdef DEBUG
     {
       WasmCodeRefScope code_ref_scope;
-      WasmCode* wasm_code = native_module->Lookup(entry.target());
+      WasmCode* wasm_code =
+          native_module->Lookup(table->targets()[entry_index]);
       DCHECK_EQ(native_module, wasm_code->native_module());
       DCHECK_EQ(WasmCode::kJumpTable, wasm_code->kind());
     }
 #endif
-    uint32_t func_index =
-        native_module->GetFunctionIndexFromJumpTableSlot(entry.target());
+    uint32_t func_index = native_module->GetFunctionIndexFromJumpTableSlot(
+        table->targets()[entry_index]);
 
     return {CallResult::INTERNAL, codemap_.GetCode(func_index)};
   }
@@ -4288,6 +4242,7 @@ ControlTransferMap WasmInterpreter::ComputeControlTransfersForTesting(
                         0,       // func_index
                         0,       // sig_index
                         {0, 0},  // code
+                        0,       // feedback slots
                         false,   // imported
                         false,   // exported
                         false};  // declared

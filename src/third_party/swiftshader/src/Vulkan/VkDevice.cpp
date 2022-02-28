@@ -119,9 +119,8 @@ Device::Device(const VkDeviceCreateInfo *pCreateInfo, void *mem, PhysicalDevice 
     : physicalDevice(physicalDevice)
     , queues(reinterpret_cast<Queue *>(mem))
     , enabledExtensionCount(pCreateInfo->enabledExtensionCount)
-    , enabledFeatures(enabledFeatures ? *enabledFeatures : VkPhysicalDeviceFeatures{})
-    ,  // "Setting pEnabledFeatures to NULL and not including a VkPhysicalDeviceFeatures2 in the pNext member of VkDeviceCreateInfo is equivalent to setting all members of the structure to VK_FALSE."
-    scheduler(scheduler)
+    , enabledFeatures(enabledFeatures ? *enabledFeatures : VkPhysicalDeviceFeatures{})  // "Setting pEnabledFeatures to NULL and not including a VkPhysicalDeviceFeatures2 in the pNext member of VkDeviceCreateInfo is equivalent to setting all members of the structure to VK_FALSE."
+    , scheduler(scheduler)
 {
 	for(uint32_t i = 0; i < pCreateInfo->queueCreateInfoCount; i++)
 	{
@@ -193,7 +192,7 @@ void Device::destroy(const VkAllocationCallbacks *pAllocator)
 		queues[i].~Queue();
 	}
 
-	vk::deallocate(queues, pAllocator);
+	vk::freeHostMemory(queues, pAllocator);
 }
 
 size_t Device::ComputeRequiredAllocationSize(const VkDeviceCreateInfo *pCreateInfo)
@@ -458,7 +457,7 @@ void Device::prepareForSampling(ImageView *imageView)
 	}
 }
 
-void Device::contentsChanged(ImageView *imageView)
+void Device::contentsChanged(ImageView *imageView, Image::ContentsChangedContext context)
 {
 	if(imageView != nullptr)
 	{
@@ -467,7 +466,7 @@ void Device::contentsChanged(ImageView *imageView)
 		auto it = imageViewSet.find(imageView);
 		if(it != imageViewSet.end())
 		{
-			imageView->contentsChanged();
+			imageView->contentsChanged(context);
 		}
 	}
 }

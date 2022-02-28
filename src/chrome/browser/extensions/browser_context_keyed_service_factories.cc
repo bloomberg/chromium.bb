@@ -31,7 +31,6 @@
 #include "chrome/browser/extensions/api/settings_overrides/settings_overrides_api.h"
 #include "chrome/browser/extensions/api/settings_private/settings_private_event_router_factory.h"
 #include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_manager.h"
-#include "chrome/browser/extensions/api/system_indicator/system_indicator_manager_factory.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/extensions/api/tab_groups/tab_groups_event_router_factory.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
@@ -54,21 +53,22 @@
 #include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 #include "ppapi/buildflags/buildflags.h"
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
-#include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
+#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_WIN)
+#include "chrome/browser/extensions/api/system_indicator/system_indicator_manager_factory.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
 #include "chrome/browser/extensions/api/terminal/terminal_private_api.h"
 #endif
 
-#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-#include "chrome/browser/extensions/api/mdns/mdns_api.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/login_screen/login_state/session_state_changed_event_dispatcher.h"
 #endif
 
-#if BUILDFLAG(ENABLE_AUTOFILL_ASSISTANT_API)
-#include "chrome/browser/extensions/api/autofill_assistant_private/autofill_assistant_private_api.h"
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
+#include "chrome/browser/extensions/api/mdns/mdns_api.h"
 #endif
 
 namespace chrome_extensions {
@@ -76,9 +76,6 @@ namespace chrome_extensions {
 void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::ActivityLog::GetFactoryInstance();
   extensions::ActivityLogAPI::GetFactoryInstance();
-#if BUILDFLAG(ENABLE_AUTOFILL_ASSISTANT_API)
-  extensions::AutofillAssistantPrivateAPI::GetFactoryInstance();
-#endif
   extensions::AutofillPrivateEventRouterFactory::GetInstance();
   extensions::BluetoothLowEnergyAPI::GetFactoryInstance();
   extensions::BookmarksAPI::GetFactoryInstance();
@@ -123,10 +120,15 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::ProcessesAPI::GetFactoryInstance();
   extensions::SafeBrowsingPrivateEventRouterFactory::GetInstance();
   extensions::SessionsAPI::GetFactoryInstance();
+#if defined(OS_CHROMEOS)
+  extensions::SessionStateChangedEventDispatcher::GetFactoryInstance();
+#endif
   extensions::SettingsPrivateEventRouterFactory::GetInstance();
   extensions::SettingsOverridesAPI::GetFactoryInstance();
   extensions::SignedInDevicesManager::GetFactoryInstance();
+#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_WIN)
   extensions::SystemIndicatorManagerFactory::GetInstance();
+#endif
   extensions::TabGroupsEventRouterFactory::GetInstance();
   extensions::TabCaptureRegistry::GetFactoryInstance();
   extensions::TabsWindowsAPI::GetFactoryInstance();

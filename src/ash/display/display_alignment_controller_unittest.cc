@@ -4,8 +4,8 @@
 
 #include "ash/display/display_alignment_controller.h"
 
+#include "ash/constants/ash_features.h"
 #include "ash/display/display_alignment_indicator.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
@@ -444,7 +444,7 @@ TEST_F(DisplayAlignmentControllerTest, DragDisplayHideOldNeighbors) {
 }
 
 TEST_F(DisplayAlignmentControllerTest, DragDisplayNewNeighbor) {
-  UpdateDisplay("1000x1000,1000x1000,1000x100");
+  UpdateDisplay("1000x900,1000x900,1000x100");
   const auto& display_1 = display_manager()->GetDisplayAt(0);
   const auto& display_2 = display_manager()->GetDisplayAt(1);
   const auto& display_3 = display_manager()->GetDisplayAt(2);

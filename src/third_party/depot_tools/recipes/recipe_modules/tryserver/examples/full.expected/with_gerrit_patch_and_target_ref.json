@@ -22,6 +22,18 @@
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:linux"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "gerrit fetch current CL info",
     "timeout": 60,
     "~followup_annotations": [
@@ -65,6 +77,18 @@
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:linux"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "gerrit changes",
     "timeout": 60,
     "~followup_annotations": [
@@ -99,6 +123,18 @@
       "--json",
       "/path/to/tmp/json"
     ],
+    "luci_context": {
+      "realm": {
+        "name": "chromium:linux"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "parse description",
     "stdin": "Change commit message",
     "~followup_annotations": [
@@ -130,6 +166,18 @@
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:linux"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "gerrit changes (2)",
     "timeout": 60,
     "~followup_annotations": [
@@ -164,6 +212,18 @@
       "--json",
       "/path/to/tmp/json"
     ],
+    "luci_context": {
+      "realm": {
+        "name": "chromium:linux"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "parse description (2)",
     "stdin": "Change commit message",
     "~followup_annotations": [
@@ -182,6 +242,18 @@
       "--name-only"
     ],
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:linux"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "git diff to analyze patch",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@files@None/foo.cc@@@",
@@ -274,6 +346,18 @@
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:linux"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "gerrit fetch current CL info (2)",
     "timeout": 60,
     "~followup_annotations": [

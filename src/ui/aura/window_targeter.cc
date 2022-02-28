@@ -4,6 +4,7 @@
 
 #include "ui/aura/window_targeter.h"
 
+#include "base/ignore_result.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/event_client.h"
@@ -139,7 +140,7 @@ Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
       return root_window;
 #else
     // If the initial touch is outside the root window, target the root.
-    // TODO: this code is likely not necessarily and will be removed.
+    // TODO(lanwei): this code is likely not necessarily and will be removed.
     if (!root_window->bounds().Contains(event.location()))
       return root_window;
 #endif
@@ -274,10 +275,7 @@ bool WindowTargeter::SubtreeCanAcceptEvent(
 bool WindowTargeter::EventLocationInsideBounds(
     Window* window,
     const ui::LocatedEvent& event) const {
-
-  gfx::Point point = event.location();
-  if (window->parent())
-    Window::ConvertPointToTarget(window->parent(), window, &point);
+  gfx::Point point = ConvertEventLocationToWindowCoordinates(window, event);
 
   BoundsType bounds_type = BoundsType::kMouse;
   if (event.IsTouchEvent())
@@ -301,6 +299,16 @@ bool WindowTargeter::ShouldUseExtendedBounds(const aura::Window* w) const {
   // Insets should only apply to the window. Subclasses may enforce other
   // policies.
   return window() == w;
+}
+
+// static
+gfx::Point WindowTargeter::ConvertEventLocationToWindowCoordinates(
+    Window* window,
+    const ui::LocatedEvent& event) {
+  gfx::Point point = event.location();
+  if (window->parent())
+    Window::ConvertPointToTarget(window->parent(), window, &point);
+  return point;
 }
 
 Window* WindowTargeter::FindTargetForNonKeyEvent(Window* root_window,

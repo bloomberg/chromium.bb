@@ -10,7 +10,8 @@
 #include <vector>
 
 #include "components/sync/engine/nigori/key_derivation_params.h"
-#include "components/sync/nigori/nigori.h"
+#include "components/sync/engine/nigori/nigori.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace sync_pb {
 
@@ -31,8 +32,23 @@ struct KeyParamsForTesting {
 
 // Creates KeyParamsForTesting, where |derivation_params| is Pbkdf2
 // KeyDerivationParams and |password| is base64 encoded |raw_key|.
-KeyParamsForTesting Pbkdf2KeyParamsForTesting(
+KeyParamsForTesting KeystoreKeyParamsForTesting(
     const std::vector<uint8_t>& raw_key);
+
+// Creates KeyParamsForTesting, where |derivation_params| is Pbkdf2
+// KeyDerivationParams and |password| is base64 encoded |raw_key|.
+KeyParamsForTesting TrustedVaultKeyParamsForTesting(
+    const std::vector<uint8_t>& raw_key);
+
+// Creates KeyParamsForTesting, where |derivation_params| is Pbdf2
+// KeyDerivationParams and |password| is |passphrase|.
+KeyParamsForTesting Pbkdf2PassphraseKeyParamsForTesting(
+    const std::string& passphrase);
+
+// Creates KeyParamsForTesting, where |derivation_params| is Scrypt
+// KeyDerivationParams with constant salt and |password| is |passphrase|.
+KeyParamsForTesting ScryptPassphraseKeyParamsForTesting(
+    const std::string& passphrase);
 
 // Builds NigoriSpecifics with following fields:
 // 1. encryption_keybag contains all keys derived from |keybag_keys_params|
@@ -59,7 +75,7 @@ sync_pb::NigoriSpecifics BuildTrustedVaultNigoriSpecifics(
 // Creates a NigoriSpecifics that describes encryption using a custom
 // passphrase with the given |passphrase_key_params|. If |old_key_params| is
 // presented, |encryption_keybag| will also contain keys derived from it.
-sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(
+sync_pb::NigoriSpecifics BuildCustomPassphraseNigoriSpecifics(
     const KeyParamsForTesting& passphrase_key_params,
     const absl::optional<KeyParamsForTesting>& old_key_params = absl::nullopt);
 

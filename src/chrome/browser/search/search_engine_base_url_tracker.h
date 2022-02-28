@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
@@ -35,6 +35,11 @@ class SearchEngineBaseURLTracker : public TemplateURLServiceObserver {
       TemplateURLService* template_url_service,
       std::unique_ptr<SearchTermsData> search_terms_data,
       const BaseURLChangedCallback& base_url_changed_callback);
+
+  SearchEngineBaseURLTracker(const SearchEngineBaseURLTracker&) = delete;
+  SearchEngineBaseURLTracker& operator=(const SearchEngineBaseURLTracker&) =
+      delete;
+
   ~SearchEngineBaseURLTracker() override;
 
  private:
@@ -44,7 +49,7 @@ class SearchEngineBaseURLTracker : public TemplateURLServiceObserver {
   // Returns true if the base URL of the current search engine is Google.
   bool HasGoogleBaseURL();
 
-  TemplateURLService* template_url_service_;
+  raw_ptr<TemplateURLService> template_url_service_;
   std::unique_ptr<SearchTermsData> search_terms_data_;
   BaseURLChangedCallback base_url_changed_callback_;
 
@@ -55,8 +60,6 @@ class SearchEngineBaseURLTracker : public TemplateURLServiceObserver {
   // change that affects the default search provider.
   GURL previous_google_base_url_;
   absl::optional<TemplateURLData> previous_default_search_provider_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(SearchEngineBaseURLTracker);
 };
 
 #endif  // CHROME_BROWSER_SEARCH_SEARCH_ENGINE_BASE_URL_TRACKER_H_

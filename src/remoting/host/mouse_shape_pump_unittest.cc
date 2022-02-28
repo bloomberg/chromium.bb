@@ -7,10 +7,10 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/proto/video.pb.h"
@@ -36,6 +36,10 @@ static const int kHotspotY = 12;
 class TestMouseCursorMonitor : public webrtc::MouseCursorMonitor  {
  public:
   TestMouseCursorMonitor() : callback_(nullptr) {}
+
+  TestMouseCursorMonitor(const TestMouseCursorMonitor&) = delete;
+  TestMouseCursorMonitor& operator=(const TestMouseCursorMonitor&) = delete;
+
   ~TestMouseCursorMonitor() override = default;
 
   void Init(Callback* callback, Mode mode) override {
@@ -57,9 +61,7 @@ class TestMouseCursorMonitor : public webrtc::MouseCursorMonitor  {
   }
 
  private:
-  Callback* callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestMouseCursorMonitor);
+  raw_ptr<Callback> callback_;
 };
 
 class MouseShapePumpTest : public testing::Test {

@@ -32,11 +32,27 @@
 #ifndef COMMON_SYMBOL_DATA_H_
 #define COMMON_SYMBOL_DATA_H_
 
+#include<type_traits>
+
 // Control what data is used from the symbol file.
 enum SymbolData {
-  ALL_SYMBOL_DATA,
-  NO_CFI,
-  ONLY_CFI
+  NO_DATA = 0,
+  SYMBOLS_AND_FILES = 1,
+  CFI = 1 << 1,
+  INLINES = 1 << 2,
+  ALL_SYMBOL_DATA = INLINES | CFI | SYMBOLS_AND_FILES
 };
+
+inline SymbolData operator&(SymbolData data1, SymbolData data2) {
+  return static_cast<SymbolData>(
+      static_cast<std::underlying_type<SymbolData>::type>(data1) &
+      static_cast<std::underlying_type<SymbolData>::type>(data2));
+}
+
+inline SymbolData operator|(SymbolData data1, SymbolData data2) {
+  return static_cast<SymbolData>(
+      static_cast<std::underlying_type<SymbolData>::type>(data1) |
+      static_cast<std::underlying_type<SymbolData>::type>(data2));
+}
 
 #endif  // COMMON_SYMBOL_DATA_H_

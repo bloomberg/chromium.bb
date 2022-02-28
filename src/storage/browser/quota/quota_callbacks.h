@@ -15,11 +15,12 @@
 
 #include "base/callback.h"
 #include "base/containers/contains.h"
+#include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom-forward.h"
 
-namespace url {
-class Origin;
+namespace blink {
+class StorageKey;
 }
 
 namespace storage {
@@ -41,12 +42,14 @@ using UsageWithBreakdownCallback =
 using AvailableSpaceCallback =
     base::OnceCallback<void(blink::mojom::QuotaStatusCode, int64_t)>;
 using StatusCallback = base::OnceCallback<void(blink::mojom::QuotaStatusCode)>;
-using GetOriginsCallback =
-    base::OnceCallback<void(const std::set<url::Origin>& origins,
+using GetBucketsCallback =
+    base::OnceCallback<void(const std::set<BucketLocator>& buckets,
                             blink::mojom::StorageType type)>;
+using GetStorageKeysCallback =
+    base::OnceCallback<void(const std::set<blink::StorageKey>& storage_keys)>;
 using GetUsageInfoCallback = base::OnceCallback<void(UsageInfoEntries)>;
-using GetOriginCallback =
-    base::OnceCallback<void(const absl::optional<url::Origin>&)>;
+using GetBucketCallback =
+    base::OnceCallback<void(const absl::optional<BucketLocator>& bucket_info)>;
 
 // Simple template wrapper for a callback queue.
 template <typename CallbackType, typename... Args>

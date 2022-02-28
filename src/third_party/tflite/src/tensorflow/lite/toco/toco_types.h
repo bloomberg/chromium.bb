@@ -21,15 +21,11 @@ limitations under the License.
 #include "tensorflow/core/platform/types.h"
 
 namespace toco {
-#ifdef PLATFORM_GOOGLE
-using ::string;
-#else
-using std::string;
-#endif
 
+using ::int64_t;
+using std::string;
 using tensorflow::int16;
 using tensorflow::int32;
-using tensorflow::int64;
 using tensorflow::int8;
 using tensorflow::uint16;
 using tensorflow::uint32;

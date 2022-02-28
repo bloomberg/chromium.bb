@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/values.h"
@@ -91,6 +92,9 @@ class DnsClientImpl : public DnsClient {
       : net_log_(net_log),
         socket_factory_(socket_factory),
         rand_int_callback_(rand_int_callback) {}
+
+  DnsClientImpl(const DnsClientImpl&) = delete;
+  DnsClientImpl& operator=(const DnsClientImpl&) = delete;
 
   ~DnsClientImpl() override = default;
 
@@ -277,12 +281,10 @@ class DnsClientImpl : public DnsClient {
   std::unique_ptr<AddressSorter> address_sorter_ =
       AddressSorter::CreateAddressSorter();
 
-  NetLog* net_log_;
+  raw_ptr<NetLog> net_log_;
 
-  ClientSocketFactory* socket_factory_;
+  raw_ptr<ClientSocketFactory> socket_factory_;
   const RandIntCallback rand_int_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(DnsClientImpl);
 };
 
 }  // namespace

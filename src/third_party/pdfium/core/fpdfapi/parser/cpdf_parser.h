@@ -7,6 +7,9 @@
 #ifndef CORE_FPDFAPI_PARSER_CPDF_PARSER_H_
 #define CORE_FPDFAPI_PARSER_CPDF_PARSER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 #include <map>
 #include <memory>
@@ -15,13 +18,12 @@
 
 #include "core/fpdfapi/parser/cpdf_cross_ref_table.h"
 #include "core/fpdfapi/parser/cpdf_indirect_object_holder.h"
-#include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/bytestring.h"
+#include "core/fxcrt/fx_types.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 
 class CPDF_Array;
-class CPDF_CryptoHandler;
 class CPDF_Dictionary;
 class CPDF_LinearizedHeader;
 class CPDF_Object;
@@ -33,6 +35,9 @@ class IFX_SeekableReadStream;
 
 class CPDF_Parser {
  public:
+  using ObjectType = CPDF_CrossRefTable::ObjectType;
+  using ObjectInfo = CPDF_CrossRefTable::ObjectInfo;
+
   class ParsedObjectsHolder : public CPDF_IndirectObjectHolder {
    public:
     virtual bool TryInit() = 0;
@@ -60,11 +65,11 @@ class CPDF_Parser {
   ~CPDF_Parser();
 
   Error StartParse(const RetainPtr<IFX_SeekableReadStream>& pFile,
-                   const char* password);
+                   const ByteString& password);
   Error StartLinearizedParse(const RetainPtr<CPDF_ReadValidator>& validator,
-                             const char* password);
+                             const ByteString& password);
 
-  void SetPassword(const char* password) { m_Password = password; }
+  void SetPassword(const ByteString& password) { m_Password = password; }
   ByteString GetPassword() const { return m_Password; }
 
   // Take the GetPassword() value and encode it, if necessary, based on the
@@ -122,19 +127,15 @@ class CPDF_Parser {
       std::unique_ptr<CPDF_LinearizedHeader> pLinearized);
 
  protected:
-  using ObjectType = CPDF_CrossRefTable::ObjectType;
-  using ObjectInfo = CPDF_CrossRefTable::ObjectInfo;
-
   bool LoadCrossRefV4(FX_FILESIZE pos, bool bSkip);
   bool RebuildCrossRef();
+  Error StartParseInternal();
+  FX_FILESIZE ParseStartXRef();
+  std::unique_ptr<CPDF_LinearizedHeader> ParseLinearizedHeader();
 
-  std::unique_ptr<CPDF_SyntaxParser> m_pSyntax;
+  void SetSyntaxParserForTesting(std::unique_ptr<CPDF_SyntaxParser> parser);
 
  private:
-  friend class cpdf_parser_BadStartXrefShouldNotBuildCrossRefTable_Test;
-  friend class cpdf_parser_ParseStartXRefWithHeaderOffset_Test;
-  friend class cpdf_parser_ParseStartXRef_Test;
-  friend class cpdf_parser_ParseLinearizedWithHeaderOffset_Test;
   friend class CPDF_DataAvail;
 
   struct CrossRefObjData {
@@ -142,11 +143,12 @@ class CPDF_Parser {
     ObjectInfo info;
   };
 
-  Error StartParseInternal();
-  FX_FILESIZE ParseStartXRef();
   bool LoadAllCrossRefV4(FX_FILESIZE xref_offset);
   bool LoadAllCrossRefV5(FX_FILESIZE xref_offset);
   bool LoadCrossRefV5(FX_FILESIZE* pos, bool bMainXRef);
+  void ProcessCrossRefV5Entry(pdfium::span<const uint8_t> entry_span,
+                              pdfium::span<const uint32_t> field_widths,
+                              uint32_t obj_num);
   RetainPtr<CPDF_Dictionary> LoadTrailerV4();
   Error SetEncryptHandler();
   void ReleaseEncryptHandler();
@@ -154,7 +156,6 @@ class CPDF_Parser {
   bool LoadLinearizedAllCrossRefV5(FX_FILESIZE main_xref_offset);
   Error LoadLinearizedMainXRefTable();
   const CPDF_ObjectStream* GetObjectStream(uint32_t object_number);
-  std::unique_ptr<CPDF_LinearizedHeader> ParseLinearizedHeader();
   void ShrinkObjectMap(uint32_t size);
   // A simple check whether the cross reference table matches with
   // the objects.
@@ -173,9 +174,8 @@ class CPDF_Parser {
   bool ParseFileVersion();
 
   ObjectType GetObjectType(uint32_t objnum) const;
-  ObjectType GetObjectTypeFromCrossRefStreamType(
-      uint32_t cross_ref_stream_type) const;
 
+  std::unique_ptr<CPDF_SyntaxParser> m_pSyntax;
   std::unique_ptr<ParsedObjectsHolder> m_pOwnedObjectsHolder;
   UnownedPtr<ParsedObjectsHolder> m_pObjectsHolder;
 

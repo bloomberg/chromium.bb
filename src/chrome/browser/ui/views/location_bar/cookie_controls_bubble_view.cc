@@ -17,8 +17,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/link.h"
@@ -144,8 +146,9 @@ void CookieControlsBubbleView::UpdateUi() {
         l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_BLOCKED_MESSAGE));
     auto link = std::make_unique<views::Link>(
         l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_NOT_WORKING_TITLE));
+    link->SetID(VIEW_ID_COOKIE_CONTROLS_NOT_WORKING_LINK);
     link->SetCallback(
-        base::BindRepeating(&CookieControlsBubbleView::NotWorkingLinkClicked,
+        base::BindRepeating(&CookieControlsBubbleView::OnNotWorkingLinkClicked,
                             base::Unretained(this)));
     extra_view_ = SetExtraView(std::move(link));
     blocked_cookies_.reset();
@@ -206,7 +209,7 @@ void CookieControlsBubbleView::Init() {
       l10n_util::GetStringUTF16(IDS_BLOCKED_COOKIES_INFO));
   cookie_link->SetMultiLine(true);
   cookie_link->SetCallback(
-      base::BindRepeating(&CookieControlsBubbleView::ShowCookiesLinkClicked,
+      base::BindRepeating(&CookieControlsBubbleView::OnShowCookiesLinkClicked,
                           base::Unretained(this)));
   cookie_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   show_cookies_link_ = AddChildView(std::move(cookie_link));
@@ -222,7 +225,7 @@ void CookieControlsBubbleView::AddedToWidget() {
   auto header_view = std::make_unique<NonAccessibleImageView>();
   header_view_ = header_view.get();
   header_view_->SetBackground(views::CreateThemedSolidBackground(
-      header_view_, ui::NativeTheme::kColorId_BubbleFooterBackground));
+      header_view_, ui::kColorBubbleFooterBackground));
   GetBubbleFrameView()->SetHeaderView(std::move(header_view));
 }
 
@@ -280,13 +283,13 @@ void CookieControlsBubbleView::OnDialogAccepted() {
   }
 }
 
-void CookieControlsBubbleView::ShowCookiesLinkClicked() {
+void CookieControlsBubbleView::OnShowCookiesLinkClicked() {
   base::RecordAction(UserMetricsAction("CookieControls.Bubble.CookiesInUse"));
   TabDialogs::FromWebContents(web_contents())->ShowCollectedCookies();
   GetWidget()->Close();
 }
 
-void CookieControlsBubbleView::NotWorkingLinkClicked() {
+void CookieControlsBubbleView::OnNotWorkingLinkClicked() {
   DCHECK_EQ(status_, CookieControlsStatus::kEnabled);
   base::RecordAction(UserMetricsAction("CookieControls.Bubble.NotWorking"));
   // Don't go through the controller as this is an intermediary state that

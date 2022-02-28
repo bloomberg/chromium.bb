@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
@@ -96,7 +97,7 @@ class MockSyncWebSocket : public SyncWebSocket {
       std::string* message,
       const Timeout& timeout) override {
     if (timeout.IsExpired())
-      return SyncWebSocket::kTimeout;
+      return SyncWebSocket::StatusCode::kTimeout;
     if (ReceiveHelper(message)) {
       base::DictionaryValue response;
       response.SetInteger("id", id_);
@@ -106,7 +107,7 @@ class MockSyncWebSocket : public SyncWebSocket {
       base::JSONWriter::Write(response, message);
     }
     --queued_messages_;
-    return SyncWebSocket::kOk;
+    return SyncWebSocket::StatusCode::kOk;
   }
 
   /** Completes standard Receive processing for ConnectIfNecessary. Returns true
@@ -146,7 +147,7 @@ std::unique_ptr<SyncWebSocket> CreateMockSyncWebSocket() {
 
 class DevToolsClientImplTest : public testing::Test {
  protected:
-  DevToolsClientImplTest() : long_timeout_(base::TimeDelta::FromMinutes(5)) {}
+  DevToolsClientImplTest() : long_timeout_(base::Minutes(5)) {}
 
   const base::TimeDelta long_timeout_;
 };
@@ -200,7 +201,7 @@ class MockSyncWebSocket2 : public SyncWebSocket {
       std::string* message,
       const Timeout& timeout) override {
     EXPECT_TRUE(false);
-    return SyncWebSocket::kDisconnected;
+    return SyncWebSocket::StatusCode::kDisconnected;
   }
 
   bool HasNextMessage() override { return true; }
@@ -245,9 +246,9 @@ class MockSyncWebSocket3 : public MockSyncWebSocket {
       std::string* message,
       const Timeout& timeout) override {
     if (ReceiveHelper(message)) {
-      return SyncWebSocket::kDisconnected;
+      return SyncWebSocket::StatusCode::kDisconnected;
     } else {
-      return SyncWebSocket::kOk;
+      return SyncWebSocket::StatusCode::kOk;
     }
   }
 
@@ -311,7 +312,7 @@ class FakeSyncWebSocket : public MockSyncWebSocket {
       std::string* message,
       const Timeout& timeout) override {
     ReceiveHelper(message);
-    return SyncWebSocket::kOk;
+    return SyncWebSocket::StatusCode::kOk;
   }
 
   bool HasNextMessage() override { return true; }
@@ -682,6 +683,13 @@ TEST(ParseInspectorError, UnknownError) {
             status.message());
 }
 
+TEST(ParseInspectorError, CdpNotImplementedError) {
+  const std::string error("{\"code\":-32601,\"message\":\"SOME MESSAGE\"}");
+  Status status = internal::ParseInspectorError(error);
+  ASSERT_EQ(kUnknownCommand, status.code());
+  ASSERT_EQ("unknown command: SOME MESSAGE", status.message());
+}
+
 TEST_F(DevToolsClientImplTest, HandleEventsUntil) {
   MockListener listener;
   SyncWebSocketFactory factory =
@@ -803,7 +811,7 @@ class OnConnectedListener : public DevToolsEventListener {
 
  private:
   std::string method_;
-  DevToolsClient* client_;
+  raw_ptr<DevToolsClient> client_;
   bool on_connected_called_;
   bool on_event_called_;
 };
@@ -827,7 +835,7 @@ class OnConnectedSyncWebSocket : public MockSyncWebSocket {
     if (SendHelper(message, &dict, &method)) {
       base::DictionaryValue response;
       response.SetInteger("id", id_);
-      response.Set("result", std::make_unique<base::DictionaryValue>());
+      response.SetKey("result", base::DictionaryValue());
       std::string json_response;
       base::JSONWriter::Write(response, &json_response);
       queued_response_.push_back(json_response);
@@ -835,7 +843,7 @@ class OnConnectedSyncWebSocket : public MockSyncWebSocket {
       // Push one event.
       base::DictionaryValue event;
       event.SetString("method", "updateEvent");
-      event.Set("params", std::make_unique<base::DictionaryValue>());
+      event.SetKey("params", base::DictionaryValue());
       std::string json_event;
       base::JSONWriter::Write(event, &json_event);
       queued_response_.push_back(json_event);
@@ -848,11 +856,11 @@ class OnConnectedSyncWebSocket : public MockSyncWebSocket {
       const Timeout& timeout) override {
     if (ReceiveHelper(message)) {
       if (queued_response_.empty())
-        return SyncWebSocket::kDisconnected;
+        return SyncWebSocket::StatusCode::kDisconnected;
       *message = queued_response_.front();
       queued_response_.pop_front();
     }
-    return SyncWebSocket::kOk;
+    return SyncWebSocket::StatusCode::kOk;
   }
 
   bool HasNextMessage() override { return !queued_response_.empty(); }
@@ -918,7 +926,7 @@ class MockSyncWebSocket5 : public SyncWebSocket {
           "{\"result\": {}, \"id\": %d}", request_no_);
     }
     request_no_++;
-    return SyncWebSocket::kOk;
+    return SyncWebSocket::StatusCode::kOk;
   }
 
   bool HasNextMessage() override { return false; }
@@ -966,8 +974,8 @@ class OnEventListener : public DevToolsEventListener {
   }
 
  private:
-  DevToolsClient* client_;
-  OtherEventListener* other_listener_;
+  raw_ptr<DevToolsClient> client_;
+  raw_ptr<OtherEventListener> other_listener_;
 };
 
 }  // namespace
@@ -1069,16 +1077,16 @@ class MockSyncWebSocket6 : public MockSyncWebSocket {
       std::string* message,
       const Timeout& timeout) override {
     if (messages_->empty())
-      return SyncWebSocket::kDisconnected;
+      return SyncWebSocket::StatusCode::kDisconnected;
     *message = messages_->front();
     messages_->pop_front();
-    return SyncWebSocket::kOk;
+    return SyncWebSocket::StatusCode::kOk;
   }
 
   bool HasNextMessage() override { return messages_->size(); }
 
  private:
-  std::list<std::string>* messages_;
+  raw_ptr<std::list<std::string>> messages_;
 };
 
 class MockDevToolsEventListener : public DevToolsEventListener {
@@ -1265,7 +1273,7 @@ class MockSyncWebSocket7 : public SyncWebSocket {
     response.SetKey("result", result.Clone());
     base::JSONWriter::Write(response, message);
     sent_responses_++;
-    return SyncWebSocket::kOk;
+    return SyncWebSocket::StatusCode::kOk;
   }
 
   bool HasNextMessage() override { return sent_messages_ > sent_responses_; }

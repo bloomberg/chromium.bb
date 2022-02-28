@@ -38,6 +38,9 @@ class ActiveMapTest
                                   ::libaom_test::Encoder *encoder) {
     if (video->frame() == 0) {
       encoder->Control(AOME_SET_CPUUSED, cpu_used_);
+      encoder->Control(AV1E_SET_ALLOW_WARPED_MOTION, 0);
+      encoder->Control(AV1E_SET_ENABLE_GLOBAL_MOTION, 0);
+      encoder->Control(AV1E_SET_ENABLE_OBMC, 0);
     } else if (video->frame() == 3) {
       aom_active_map_t map = aom_active_map_t();
       /* clang-format off */

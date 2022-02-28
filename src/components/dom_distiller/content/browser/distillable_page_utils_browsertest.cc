@@ -61,13 +61,15 @@ class DomDistillerDistillablePageUtilsTest : public content::ContentBrowserTest,
 #if defined(OS_ANDROID)
     CHECK(base::PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_dir));
     pak_dir = pak_dir.Append(FILE_PATH_LITERAL("paks"));
-#else
+#elif defined(OS_MAC)
     base::PathService::Get(base::DIR_MODULE, &pak_dir);
+#else
+    base::PathService::Get(base::DIR_ASSETS, &pak_dir);
 #endif  // OS_ANDROID
     pak_file =
         pak_dir.Append(FILE_PATH_LITERAL("components_tests_resources.pak"));
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-        pak_file, ui::SCALE_FACTOR_NONE);
+        pak_file, ui::kScaleFactorNone);
   }
 
   void SetUpTestServer() {

@@ -20,7 +20,7 @@
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/apps/app_service/web_contents_app_id_utils.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -122,7 +122,7 @@ void TabContentsSyncedTabDelegate::GetSerializedNavigationAtIndex(
 
 bool TabContentsSyncedTabDelegate::ProfileIsSupervised() const {
   return Profile::FromBrowserContext(web_contents_->GetBrowserContext())
-      ->IsSupervised();
+      ->IsChild();
 }
 
 const std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>*

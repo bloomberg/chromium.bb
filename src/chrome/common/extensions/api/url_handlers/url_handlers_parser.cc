@@ -17,7 +17,6 @@
 #include "net/base/network_change_notifier.h"
 #include "url/gurl.h"
 
-using base::ASCIIToUTF16;
 using net::NetworkChangeNotifier;
 
 // TODO(sergeygs): Use the same strategy that externally_connectable does for
@@ -119,21 +118,21 @@ bool ParseUrlHandler(const std::string& handler_id,
   handler.id = handler_id;
 
   if (!handler_info.GetString(mkeys::kUrlHandlerTitle, &handler.title)) {
-    *error = base::ASCIIToUTF16(merrors::kInvalidURLHandlerTitle);
+    *error = merrors::kInvalidURLHandlerTitle;
     return false;
   }
 
   const base::ListValue* manif_patterns = NULL;
   if (!handler_info.GetList(mkeys::kMatches, &manif_patterns) ||
-      manif_patterns->GetSize() == 0) {
+      manif_patterns->GetList().size() == 0) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         merrors::kInvalidURLHandlerPattern, handler_id);
     return false;
   }
 
   for (const auto& entry : manif_patterns->GetList()) {
-    std::string str_pattern;
-    entry.GetAsString(&str_pattern);
+    std::string str_pattern =
+        entry.is_string() ? entry.GetString() : std::string();
     // TODO(sergeygs): Limit this to non-top-level domains.
     // TODO(sergeygs): Also add a verification to the CWS installer that the
     // URL patterns claimed here belong to the app's author verified sites.
@@ -159,27 +158,22 @@ bool ParseUrlHandler(const std::string& handler_id,
 }
 
 bool UrlHandlersParser::Parse(Extension* extension, std::u16string* error) {
-  if (extension->GetType() == Manifest::TYPE_HOSTED_APP &&
-      !extension->from_bookmark()) {
-    *error = base::ASCIIToUTF16(merrors::kUrlHandlersInHostedApps);
-    return false;
-  }
   std::unique_ptr<UrlHandlers> info(new UrlHandlers);
   const base::DictionaryValue* all_handlers = NULL;
   if (!extension->manifest()->GetDictionary(
         mkeys::kUrlHandlers, &all_handlers)) {
-    *error = base::ASCIIToUTF16(merrors::kInvalidURLHandlers);
+    *error = merrors::kInvalidURLHandlers;
     return false;
   }
 
-  DCHECK(extension->is_platform_app() || extension->from_bookmark());
+  DCHECK(extension->is_platform_app());
 
   for (base::DictionaryValue::Iterator iter(*all_handlers); !iter.IsAtEnd();
        iter.Advance()) {
     // A URL handler entry is a title and a list of URL patterns to handle.
     const base::DictionaryValue* handler = NULL;
     if (!iter.value().GetAsDictionary(&handler)) {
-      *error = base::ASCIIToUTF16(merrors::kInvalidURLHandlerPatternElement);
+      *error = merrors::kInvalidURLHandlerPatternElement16;
       return false;
     }
 

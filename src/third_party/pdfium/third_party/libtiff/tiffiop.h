@@ -57,7 +57,8 @@ extern void *lfind(const void *, const void *, size_t *, size_t,
 
 #if !defined(HAVE_SNPRINTF) && !defined(HAVE__SNPRINTF)
 #undef snprintf
-#define snprintf FXSYS_snprintf
+#define snprintf _TIFF_snprintf_f
+extern int snprintf(char* str, size_t size, const char* format, ...);
 #endif
 
 #include "tiffio.h"
@@ -365,6 +366,9 @@ extern int TIFFSetDefaultCompressionState(TIFF* tif);
 extern uint32 _TIFFDefaultStripSize(TIFF* tif, uint32 s);
 extern void _TIFFDefaultTileSize(TIFF* tif, uint32* tw, uint32* th);
 extern int _TIFFDataSize(TIFFDataType type);
+
+/*--: Rational2Double: Return size of TIFFSetGetFieldType in bytes. */
+extern int _TIFFSetGetFieldSize(TIFFSetGetFieldType setgettype);
 
 extern void _TIFFsetByteArray(void**, void*, uint32);
 extern void _TIFFsetString(char**, char*);

@@ -18,6 +18,7 @@ from telemetry.internal.backends.chrome_inspector import devtools_http
 from telemetry.internal.backends.chrome_inspector import inspector_backend
 from telemetry.internal.backends.chrome_inspector import inspector_websocket
 from telemetry.internal.backends.chrome_inspector import memory_backend
+from telemetry.internal.backends.chrome_inspector import native_profiling_backend
 from telemetry.internal.backends.chrome_inspector import system_info_backend
 from telemetry.internal.backends.chrome_inspector import tracing_backend
 from telemetry.internal.backends.chrome_inspector import window_manager_backend
@@ -51,10 +52,13 @@ _DEVTOOLS_CONNECTION_ERRORS = (
     socket.error)
 
 
-def GetDevToolsBackEndIfReady(devtools_port, app_backend, browser_target=None):
+def GetDevToolsBackEndIfReady(devtools_port,
+                              app_backend,
+                              browser_target=None,
+                              enable_tracing=True):
   client = _DevToolsClientBackend(app_backend)
   try:
-    client.Connect(devtools_port, browser_target)
+    client.Connect(devtools_port, browser_target, enable_tracing)
     logging.info('DevTools agent ready at %s', client)
   except _DEVTOOLS_CONNECTION_ERRORS as exc:
     logging.info('DevTools agent at %s not ready yet: %s', client, exc)
@@ -89,6 +93,7 @@ class _DevToolsClientBackend(object):
     # Other backends.
     self._tracing_backend = None
     self._memory_backend = None
+    self._native_profiling_backend = None
     self._system_info_backend = None
     self._wm_backend = None
     self._devtools_context_map_backend = _DevToolsContextMapBackend(self)
@@ -114,9 +119,8 @@ class _DevToolsClientBackend(object):
       resp = self.GetVersion()
       if 'webSocketDebuggerUrl' in resp:
         return resp['webSocketDebuggerUrl']
-      else:
-        raise FuchsiaBrowserTargetNotFoundException(
-            'Could not get the browser target.')
+      raise FuchsiaBrowserTargetNotFoundException(
+          'Could not get the browser target.')
     return 'ws://127.0.0.1:%i%s' % (self._local_port, self._browser_target)
 
   @property
@@ -137,9 +141,13 @@ class _DevToolsClientBackend(object):
   def is_tracing_running(self):
     return self._tracing_backend.is_tracing_running
 
-  def Connect(self, devtools_port, browser_target):
+  @property
+  def has_tracing_client(self):
+    return self._tracing_backend != None
+
+  def Connect(self, devtools_port, browser_target, enable_tracing=True):
     try:
-      self._Connect(devtools_port, browser_target)
+      self._Connect(devtools_port, browser_target, enable_tracing)
     except:
       self.Close()  # Close any connections made if failed to connect to all.
       raise
@@ -161,13 +169,14 @@ class _DevToolsClientBackend(object):
     if self.platform_backend.GetOSName() == 'fuchsia':
       self._WaitForConnection()
 
-  def _Connect(self, devtools_port, browser_target):
+  def _Connect(self, devtools_port, browser_target, enable_tracing):
     """Attempt to connect to the DevTools client.
 
     Args:
       devtools_port: The devtools_port uniquely identifies the DevTools agent.
       browser_target: An optional string to override the default path used to
         establish a websocket connection with the browser inspector.
+      enable_tracing: Defines if a tracing_client is created.
 
     Raises:
       Any of _DEVTOOLS_CONNECTION_ERRORS if failed to establish the connection.
@@ -192,10 +201,11 @@ class _DevToolsClientBackend(object):
     # If there is a trace_config it means that Telemetry has already started
     # Chrome tracing via a startup config. The TracingBackend also needs needs
     # this config to initialize itself correctly.
-    trace_config = (
-        self.platform_backend.tracing_controller_backend.GetChromeTraceConfig())
-    self._tracing_backend = tracing_backend.TracingBackend(
-        self._browser_websocket, trace_config)
+    if enable_tracing:
+      trace_config = (
+          self.platform_backend.tracing_controller_backend.GetChromeTraceConfig())
+      self._tracing_backend = tracing_backend.TracingBackend(
+          self._browser_websocket, trace_config)
 
   @exc_util.BestEffort
   def Close(self):
@@ -205,6 +215,9 @@ class _DevToolsClientBackend(object):
     if self._memory_backend is not None:
       self._memory_backend.Close()
       self._memory_backend = None
+    if self._native_profiling_backend is not None:
+      self._native_profiling_backend.Close()
+      self._native_profiling_backend = None
     if self._system_info_backend is not None:
       self._system_info_backend.Close()
       self._system_info_backend = None
@@ -363,6 +376,12 @@ class _DevToolsClientBackend(object):
       self._memory_backend = memory_backend.MemoryBackend(
           self._browser_websocket)
 
+  def _CreateNativeProfilingBackendIfNeeded(self):
+    if not self._native_profiling_backend:
+      self._native_profiling_backend = (
+          native_profiling_backend.NativeProfilingBackend(
+              self._browser_websocket))
+
   def _CreateSystemInfoBackendIfNeeded(self):
     if not self._system_info_backend:
       self._system_info_backend = system_info_backend.SystemInfoBackend(
@@ -376,6 +395,9 @@ class _DevToolsClientBackend(object):
           for Chrome tracing. Can be set to 'ReportEvents'.
         timeout: Time waited for websocket to receive a response.
     """
+    if not self._tracing_backend:
+      return
+
     assert trace_config and trace_config.enable_chrome_trace
     return self._tracing_backend.StartTracing(
         trace_config.chrome_trace_config, transfer_mode, timeout)
@@ -385,6 +407,9 @@ class _DevToolsClientBackend(object):
     self._tracing_backend.RecordClockSyncMarker(sync_id)
 
   def StopChromeTracing(self):
+    if not self._tracing_backend:
+      return
+
     assert self.is_tracing_running
     try:
       backend = self.FirstTabBackend()
@@ -415,6 +440,9 @@ class _DevToolsClientBackend(object):
     return next(self._IterInspectorBackends(['page']), None)
 
   def CollectChromeTracingData(self, trace_data_builder, timeout=120):
+    if not self._tracing_backend:
+      return
+
     self._tracing_backend.CollectTraceData(trace_data_builder, timeout)
 
   # This call may be made early during browser bringup and may cause the
@@ -444,6 +472,9 @@ class _DevToolsClientBackend(object):
       TracingUnexpectedResponseException: If the response contains an error
       or does not contain the expected result.
     """
+    if not self._tracing_backend:
+      return None
+
     return self._tracing_backend.DumpMemory(
         timeout=timeout,
         detail_level=detail_level)
@@ -484,6 +515,15 @@ class _DevToolsClientBackend(object):
     self._CreateMemoryBackendIfNeeded()
     return self._memory_backend.SimulateMemoryPressureNotification(
         pressure_level, timeout)
+
+  def DumpProfilingDataOfAllProcesses(self, timeout):
+    """Causes all profiling data of all Chrome processes to be dumped to disk.
+
+    This should only be called by an Android backend.
+    """
+    self._CreateNativeProfilingBackendIfNeeded()
+    return self._native_profiling_backend.DumpProfilingDataOfAllProcesses(
+        timeout)
 
   @property
   def window_manager_backend(self):
@@ -573,7 +613,7 @@ class _DevToolsContextMapBackend(object):
     # Remove InspectorBackend that is not in the current inspectable
     # contexts list.
     context_ids = [context['id'] for context in contexts]
-    for context_id in self._inspector_backends_dict.keys():
+    for context_id in list(self._inspector_backends_dict.keys()):
       if context_id not in context_ids:
         backend = self._inspector_backends_dict[context_id]
         backend.Disconnect()

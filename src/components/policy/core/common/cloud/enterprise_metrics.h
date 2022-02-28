@@ -240,26 +240,15 @@ POLICY_EXPORT extern const char
     kMetricRemoteCommandInvalidationsRegistrationResult[];
 
 POLICY_EXPORT extern const char kMetricUserRemoteCommandReceived[];
-POLICY_EXPORT extern const char kMetricUserUnsignedRemoteCommandReceived[];
 POLICY_EXPORT extern const char kMetricUserRemoteCommandExecutedTemplate[];
-POLICY_EXPORT extern const char
-    kMetricUserUnsignedRemoteCommandExecutedTemplate[];
 
 POLICY_EXPORT extern const char kMetricDeviceRemoteCommandReceived[];
-POLICY_EXPORT extern const char kMetricDeviceUnsignedRemoteCommandReceived[];
 POLICY_EXPORT extern const char kMetricDeviceRemoteCommandExecutedTemplate[];
-POLICY_EXPORT extern const char
-    kMetricDeviceUnsignedRemoteCommandExecutedTemplate[];
 
 POLICY_EXPORT extern const char kMetricCBCMRemoteCommandReceived[];
-POLICY_EXPORT extern const char kMetricCBCMUnsignedRemoteCommandReceived[];
 POLICY_EXPORT extern const char kMetricCBCMRemoteCommandExecutedTemplate[];
-POLICY_EXPORT extern const char
-    kMetricCBCMUnsignedRemoteCommandExecutedTemplate[];
 
 // Private set membership UMA histogram names.
-POLICY_EXPORT extern const char kUMAPsmHashDanceComparison[];
-POLICY_EXPORT extern const char kUMAPsmHashDanceDifferentResultsComparison[];
 POLICY_EXPORT extern const char kUMAPsmSuccessTime[];
 POLICY_EXPORT extern const char kUMAPsmResult[];
 POLICY_EXPORT extern const char kUMAPsmNetworkErrorCode[];
@@ -274,10 +263,12 @@ POLICY_EXPORT extern const char kUMAHashDanceBucketDownloadTime[];
 POLICY_EXPORT extern const char kUMAHashDanceExtraTime[];
 POLICY_EXPORT extern const char kUMAHashDanceRequestStatus[];
 POLICY_EXPORT extern const char kUMAHashDanceNetworkErrorCode[];
+
+// The following UMA suffixes are used by Hash dance and PSM protocols.
 // Suffix for initial enrollment.
-POLICY_EXPORT extern const char kUMAHashDanceSuffixInitialEnrollment[];
+POLICY_EXPORT extern const char kUMASuffixInitialEnrollment[];
 // Suffix for Forced Re-Enrollment.
-POLICY_EXPORT extern const char kUMAHashDanceSuffixFRE[];
+POLICY_EXPORT extern const char kUMASuffixFRE[];
 
 }  // namespace policy
 

@@ -9,7 +9,8 @@
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/media_engagement_preloaded_list.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/media/media_engagement_session.h"
@@ -47,7 +48,7 @@ const gfx::Size MediaEngagementContentsObserver::kSignificantSize =
     gfx::Size(200, 140);
 
 const base::TimeDelta MediaEngagementContentsObserver::kMaxShortPlaybackTime =
-    base::TimeDelta::FromSeconds(3);
+    base::Seconds(3);
 
 const char* const
     MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName =
@@ -71,7 +72,7 @@ const int MediaEngagementContentsObserver::kMaxInsignificantPlaybackReason =
 
 const base::TimeDelta
     MediaEngagementContentsObserver::kSignificantMediaPlaybackTime =
-        base::TimeDelta::FromSeconds(7);
+        base::Seconds(7);
 
 MediaEngagementContentsObserver::MediaEngagementContentsObserver(
     content::WebContents* web_contents,
@@ -85,6 +86,8 @@ MediaEngagementContentsObserver::~MediaEngagementContentsObserver() = default;
 MediaEngagementContentsObserver::PlaybackTimer::PlaybackTimer(
     base::Clock* clock)
     : clock_(clock) {}
+
+MediaEngagementContentsObserver::PlaybackTimer::~PlaybackTimer() = default;
 
 void MediaEngagementContentsObserver::PlaybackTimer::Start() {
   start_time_ = clock_->Now();
@@ -154,7 +157,10 @@ void MediaEngagementContentsObserver::RegisterAudiblePlayersWithSession() {
 
 void MediaEngagementContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       !navigation_handle->HasCommitted() ||
       navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage()) {
     return;
@@ -581,8 +587,11 @@ void MediaEngagementContentsObserver::ReadyToCommitNavigation(
   // If the navigation is occuring in the main frame we should use the URL
   // provided by |handle| as the navigation has not committed yet. If the
   // navigation is in a sub frame then use the URL from the main frame.
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
   url::Origin origin = url::Origin::Create(
-      handle->IsInMainFrame()
+      handle->IsInPrimaryMainFrame()
           ? handle->GetURL()
           : handle->GetWebContents()->GetLastCommittedURL());
   MediaEngagementScore score = service_->CreateEngagementScore(origin);

@@ -8,7 +8,8 @@
 
 #include <algorithm>
 
-#include "base/numerics/ranges.h"
+#include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -38,10 +39,10 @@ enum TimeoutEvent {
 // versions found in Android's ViewConfiguration. Do not change these default
 // values without explicitly consulting an OWNER.
 GestureDetector::Config::Config()
-    : longpress_timeout(base::TimeDelta::FromMilliseconds(500)),
-      showpress_timeout(base::TimeDelta::FromMilliseconds(180)),
-      double_tap_timeout(base::TimeDelta::FromMilliseconds(300)),
-      double_tap_min_time(base::TimeDelta::FromMilliseconds(40)),
+    : longpress_timeout(base::Milliseconds(500)),
+      showpress_timeout(base::Milliseconds(180)),
+      double_tap_timeout(base::Milliseconds(300)),
+      double_tap_min_time(base::Milliseconds(40)),
       touch_slop(8),
       double_tap_slop(100),
       minimum_fling_velocity(50),
@@ -51,7 +52,7 @@ GestureDetector::Config::Config()
       maximum_swipe_deviation_angle(20.f),
       two_finger_tap_enabled(false),
       two_finger_tap_max_separation(300),
-      two_finger_tap_timeout(base::TimeDelta::FromMilliseconds(700)),
+      two_finger_tap_timeout(base::Milliseconds(700)),
       single_tap_repeat_interval(1),
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       stylus_button_accelerated_longpress_enabled(true),
@@ -85,6 +86,12 @@ class GestureDetector::TimeoutGestureHandler {
 
     timeout_callbacks_[TAP] = &GestureDetector::OnTapTimeout;
     timeout_delays_[TAP] = config.double_tap_timeout;
+
+    if (config.task_runner) {
+      timeout_timers_[SHOW_PRESS].SetTaskRunner(config.task_runner);
+      timeout_timers_[LONG_PRESS].SetTaskRunner(config.task_runner);
+      timeout_timers_[TAP].SetTaskRunner(config.task_runner);
+    }
   }
 
   ~TimeoutGestureHandler() {
@@ -92,9 +99,8 @@ class GestureDetector::TimeoutGestureHandler {
   }
 
   void StartTimeout(TimeoutEvent event) {
-    timeout_timers_[event].Start(FROM_HERE,
-                                 timeout_delays_[event],
-                                 gesture_detector_,
+    timeout_timers_[event].Start(FROM_HERE, timeout_delays_[event],
+                                 gesture_detector_.get(),
                                  timeout_callbacks_[event]);
   }
 
@@ -112,7 +118,7 @@ class GestureDetector::TimeoutGestureHandler {
  private:
   typedef void (GestureDetector::*ReceiverMethod)();
 
-  GestureDetector* const gesture_detector_;
+  const raw_ptr<GestureDetector> gesture_detector_;
   base::OneShotTimer timeout_timers_[TIMEOUT_EVENT_COUNT];
   ReceiverMethod timeout_callbacks_[TIMEOUT_EVENT_COUNT];
   base::TimeDelta timeout_delays_[TIMEOUT_EVENT_COUNT];
@@ -281,7 +287,7 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev,
           handled |= double_tap_listener_->OnDoubleTapEvent(ev);
         } else {
           // This is a first tap.
-          DCHECK(double_tap_timeout_ > base::TimeDelta());
+          DCHECK(double_tap_timeout_.is_positive());
           timeout_handler_->StartTimeout(TAP);
         }
       } else {
@@ -484,7 +490,7 @@ void GestureDetector::Init(const Config& config) {
   DCHECK_GT(config.maximum_swipe_deviation_angle, 0);
   DCHECK_LE(config.maximum_swipe_deviation_angle, 45);
   const float maximum_swipe_deviation_angle =
-      base::ClampToRange(config.maximum_swipe_deviation_angle, 0.001f, 45.0f);
+      base::clamp(config.maximum_swipe_deviation_angle, 0.001f, 45.0f);
   min_swipe_direction_component_ratio_ =
       1.f / tan(gfx::DegToRad(maximum_swipe_deviation_angle));
 

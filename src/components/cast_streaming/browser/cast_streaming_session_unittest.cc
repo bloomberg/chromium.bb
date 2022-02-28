@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cast_streaming/browser/public/cast_streaming_session.h"
+#include "components/cast_streaming/browser/cast_streaming_session.h"
 
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/cast/message_port/platform_message_port.h"
 #include "components/cast_streaming/browser/test/cast_streaming_test_receiver.h"
 #include "components/cast_streaming/browser/test/cast_streaming_test_sender.h"
 #include "media/base/media_util.h"
@@ -18,7 +19,7 @@ namespace {
 
 media::AudioDecoderConfig GetDefaultAudioConfig() {
   return media::AudioDecoderConfig(
-      media::AudioCodec::kCodecOpus, media::SampleFormat::kSampleFormatF32,
+      media::AudioCodec::kOpus, media::SampleFormat::kSampleFormatF32,
       media::ChannelLayout::CHANNEL_LAYOUT_STEREO,
       48000 /* samples_per_second */, media::EmptyExtraData(),
       media::EncryptionScheme::kUnencrypted);
@@ -29,7 +30,7 @@ media::VideoDecoderConfig GetDefaultVideoConfig() {
   const gfx::Rect kVideoRect(kVideoSize);
 
   return media::VideoDecoderConfig(
-      media::VideoCodec::kCodecVP8, media::VideoCodecProfile::VP8PROFILE_MIN,
+      media::VideoCodec::kVP8, media::VideoCodecProfile::VP8PROFILE_MIN,
       media::VideoDecoderConfig::AlphaMode::kIsOpaque, media::VideoColorSpace(),
       media::VideoTransformation(), kVideoSize, kVideoRect, kVideoSize,
       media::EmptyExtraData(), media::EncryptionScheme::kUnencrypted);
@@ -68,8 +69,8 @@ class CastStreamingSessionTest : public testing::Test {
   void StartSession() {
     std::unique_ptr<cast_api_bindings::MessagePort> sender_message_port;
     std::unique_ptr<cast_api_bindings::MessagePort> receiver_message_port;
-    cast_api_bindings::MessagePort::CreatePair(&sender_message_port,
-                                               &receiver_message_port);
+    cast_api_bindings::CreatePlatformMessagePortPair(&sender_message_port,
+                                                     &receiver_message_port);
 
     receiver_.Start(std::move(receiver_message_port));
     EXPECT_TRUE(sender_.Start(
@@ -118,12 +119,12 @@ TEST_F(CastStreamingSessionTest, SendAndReceiveBuffers) {
   const uint8_t kAudioData[] = {42};
   scoped_refptr<media::DataBuffer> audio_buffer =
       media::DataBuffer::CopyFrom(kAudioData, sizeof(kAudioData));
-  audio_buffer->set_timestamp(base::TimeDelta::FromSeconds(0));
+  audio_buffer->set_timestamp(base::Seconds(0));
 
   const uint8_t kVideoData[] = {42, 84};
   scoped_refptr<media::DataBuffer> video_buffer =
       media::DataBuffer::CopyFrom(kVideoData, sizeof(kVideoData));
-  video_buffer->set_timestamp(base::TimeDelta::FromSeconds(0));
+  video_buffer->set_timestamp(base::Seconds(0));
 
   sender_.SendAudioBuffer(audio_buffer);
   sender_.SendVideoBuffer(video_buffer, true);

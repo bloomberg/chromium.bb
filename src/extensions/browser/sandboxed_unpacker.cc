@@ -20,17 +20,19 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/crx_file/crx_verifier.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/api/declarative_net_request/index_helper.h"
+#include "extensions/browser/api/declarative_net_request/file_backed_ruleset_source.h"
+#include "extensions/browser/api/declarative_net_request/install_index_helper.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/computed_hashes.h"
 #include "extensions/browser/content_verifier/content_verifier_key.h"
 #include "extensions/browser/extension_file_task_runner.h"
@@ -169,14 +171,22 @@ void SandboxedUnpackerClient::ShouldComputeHashesForOffWebstoreExtension(
   std::move(callback).Run(false);
 }
 
+void SandboxedUnpackerClient::GetContentVerifierKey(
+    base::OnceCallback<void(ContentVerifierKey)> callback) {
+  std::move(callback).Run(ContentVerifierKey(kWebstoreSignaturesPublicKey,
+                                             kWebstoreSignaturesPublicKeySize));
+}
+
 SandboxedUnpacker::ScopedVerifierFormatOverrideForTest::
     ScopedVerifierFormatOverrideForTest(crx_file::VerifierFormat format) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!g_verifier_format_override_for_test.has_value());
   g_verifier_format_override_for_test = format;
 }
 
 SandboxedUnpacker::ScopedVerifierFormatOverrideForTest::
     ~ScopedVerifierFormatOverrideForTest() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   g_verifier_format_override_for_test.reset();
 }
 
@@ -190,6 +200,7 @@ SandboxedUnpacker::SandboxedUnpacker(
       extensions_dir_(extensions_dir),
       location_(location),
       creation_flags_(creation_flags),
+      format_verifier_override_(g_verifier_format_override_for_test),
       unpacker_io_task_runner_(unpacker_io_task_runner) {
   // Tracking for crbug.com/692069. The location must be valid. If it's invalid,
   // the utility process kills itself for a bad IPC.
@@ -239,10 +250,11 @@ void SandboxedUnpacker::StartWithCrx(const CRXFileInfo& crx_info) {
   extension_root_ = temp_dir_.GetPath().AppendASCII(kTempExtensionName);
 
   // Extract the public key and validate the package.
-  if (!ValidateSignature(crx_info.path, expected_hash,
-                         g_verifier_format_override_for_test.value_or(
-                             crx_info.required_format)))
+  if (!ValidateSignature(
+          crx_info.path, expected_hash,
+          format_verifier_override_.value_or(crx_info.required_format))) {
     return;  // ValidateSignature() already reported the error.
+  }
 
   client_->OnStageChanged(InstallationStage::kCopying);
   // Copy the crx file into our working directory.
@@ -388,25 +400,27 @@ void SandboxedUnpacker::OnVerifiedContentsUncompressed(
   std::vector<uint8_t> verified_contents(
       result.value.value().data(),
       result.value.value().data() + result.value.value().size());
-  if (!StoreVerifiedContentsInExtensionDir(std::move(verified_contents)))
-    return;
-  Unpack(unzip_dir);
+
+  client_->GetContentVerifierKey(
+      base::BindOnce(&SandboxedUnpacker::StoreVerifiedContentsInExtensionDir,
+                     this, unzip_dir, std::move(verified_contents)));
 }
 
-bool SandboxedUnpacker::StoreVerifiedContentsInExtensionDir(
-    base::span<const uint8_t> verified_contents) {
+void SandboxedUnpacker::StoreVerifiedContentsInExtensionDir(
+    const base::FilePath& unzip_dir,
+    base::span<const uint8_t> verified_contents,
+    ContentVerifierKey content_verifier_key) {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
   if (!VerifiedContents::Create(
-          ContentVerifierKey(kWebstoreSignaturesPublicKey,
-                             kWebstoreSignaturesPublicKeySize),
+          content_verifier_key,
           {reinterpret_cast<const char*>(verified_contents.data()),
            verified_contents.size()})) {
     ReportFailure(
         SandboxedUnpackerFailureReason::MALFORMED_VERIFIED_CONTENTS,
         l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
                                    u"MALFORMED_VERIFIED_CONTENTS"));
-    return false;
+    return;
   }
 
   base::FilePath metadata_path = extension_root_.Append(kMetadataFolder);
@@ -415,7 +429,7 @@ bool SandboxedUnpacker::StoreVerifiedContentsInExtensionDir(
         SandboxedUnpackerFailureReason::COULD_NOT_CREATE_METADATA_DIRECTORY,
         l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
                                    u"COULD_NOT_CREATE_METADATA_DIRECTORY"));
-    return false;
+    return;
   }
 
   base::FilePath verified_contents_path =
@@ -428,10 +442,10 @@ bool SandboxedUnpacker::StoreVerifiedContentsInExtensionDir(
                   l10n_util::GetStringFUTF16(
                       IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
                       u"COULD_NOT_WRITE_VERIFIED_CONTENTS_INTO_FILE"));
-    return false;
+    return;
   }
 
-  return true;
+  Unpack(unzip_dir);
 }
 
 void SandboxedUnpacker::Unpack(const base::FilePath& directory) {
@@ -544,19 +558,20 @@ void SandboxedUnpacker::UnpackExtensionSucceeded(base::Value manifest) {
   std::set<base::FilePath> image_paths =
       ExtensionsClient::Get()->GetBrowserImagePaths(extension_.get());
   image_sanitizer_ = ImageSanitizer::CreateAndStart(
-      &data_decoder_, extension_root_, image_paths,
-      base::BindRepeating(&SandboxedUnpacker::ImageSanitizerDecodedImage, this),
-      base::BindOnce(&SandboxedUnpacker::ImageSanitizationDone, this),
-      unpacker_io_task_runner_);
+      this, extension_root_, image_paths, unpacker_io_task_runner_);
 }
 
-void SandboxedUnpacker::ImageSanitizerDecodedImage(const base::FilePath& path,
-                                                   SkBitmap image) {
+data_decoder::DataDecoder* SandboxedUnpacker::GetDataDecoder() {
+  return &data_decoder_;
+}
+
+void SandboxedUnpacker::OnImageDecoded(const base::FilePath& path,
+                                       SkBitmap image) {
   if (path == install_icon_path_)
     install_icon_ = image;
 }
 
-void SandboxedUnpacker::ImageSanitizationDone(
+void SandboxedUnpacker::OnImageSanitizationDone(
     ImageSanitizer::Status status,
     const base::FilePath& file_path_for_error) {
   if (status == ImageSanitizer::Status::kSuccess) {
@@ -598,12 +613,6 @@ void SandboxedUnpacker::ImageSanitizationDone(
       failure_reason = SandboxedUnpackerFailureReason::ERROR_SAVING_THEME_IMAGE;
       error = l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
                                          u"ERROR_SAVING_THEME_IMAGE");
-      break;
-    case ImageSanitizer::Status::kServiceError:
-      failure_reason = SandboxedUnpackerFailureReason::
-          UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL;
-      error = l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-                                         u"ERROR_UTILITY_PROCESS_CRASH");
       break;
     default:
       NOTREACHED();
@@ -683,13 +692,22 @@ void SandboxedUnpacker::IndexAndPersistJSONRulesetsIfNeeded() {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(extension_);
 
-  declarative_net_request::IndexHelper::IndexStaticRulesets(
-      *extension_,
+  // Defer ruleset indexing for disabled rulesets to speed up extension
+  // installation.
+  auto ruleset_filter = declarative_net_request::FileBackedRulesetSource::
+      RulesetFilter::kIncludeManifestEnabled;
+
+  // Ignore rule parsing errors since ruleset indexing (and therefore rule
+  // parsing) is deferred until the ruleset is enabled for packed extensions.
+  auto parse_flags = declarative_net_request::RulesetSource::kNone;
+
+  declarative_net_request::InstallIndexHelper::IndexStaticRulesets(
+      *extension_, ruleset_filter, parse_flags,
       base::BindOnce(&SandboxedUnpacker::OnJSONRulesetsIndexed, this));
 }
 
 void SandboxedUnpacker::OnJSONRulesetsIndexed(
-    declarative_net_request::IndexHelper::Result result) {
+    declarative_net_request::InstallIndexHelper::Result result) {
   if (result.error) {
     ReportFailure(
         SandboxedUnpackerFailureReason::ERROR_INDEXING_DNR_RULESET,

@@ -8,15 +8,12 @@
 #include <string>
 
 #include "ash/assistant/assistant_controller_impl.h"
-#include "ash/assistant/test/test_assistant_client.h"
 #include "ash/assistant/test/test_assistant_service.h"
 #include "ash/assistant/util/assistant_util.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/highlighter/highlighter_controller_test_api.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "ash/root_window_controller.h"
@@ -35,11 +32,14 @@
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/services/assistant/test_support/scoped_assistant_browser_delegate.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/stylus_state.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
@@ -49,6 +49,10 @@ namespace ash {
 class PaletteTrayTest : public AshTestBase {
  public:
   PaletteTrayTest() = default;
+
+  PaletteTrayTest(const PaletteTrayTest&) = delete;
+  PaletteTrayTest& operator=(const PaletteTrayTest&) = delete;
+
   ~PaletteTrayTest() override = default;
 
   // Performs a tap on the palette tray button.
@@ -80,6 +84,9 @@ class PaletteTrayTest : public AshTestBase {
     palette_tray_ =
         StatusAreaWidgetTestHelper::GetStatusAreaWidget()->palette_tray();
     test_api_ = std::make_unique<PaletteTrayTestApi>(palette_tray_);
+
+    display::test::DisplayManagerTestApi(display_manager())
+        .SetFirstDisplayAsInternalDisplay();
   }
 
   PrefService* prefs() {
@@ -94,9 +101,6 @@ class PaletteTrayTest : public AshTestBase {
   PaletteTray* palette_tray_ = nullptr;  // not owned
 
   std::unique_ptr<PaletteTrayTestApi> test_api_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PaletteTrayTest);
 };
 
 // Verify the palette tray button exists and but is not visible initially.
@@ -192,9 +196,7 @@ TEST_F(PaletteTrayTest, PaletteTrayWorkflow) {
   // the palette tray button is will not be active.
   PerformTap();
   ASSERT_TRUE(test_api_->tray_bubble_wrapper());
-  const auto capture_tool_id = features::IsCaptureModeEnabled()
-                                   ? PaletteToolId::ENTER_CAPTURE_MODE
-                                   : PaletteToolId::CAPTURE_SCREEN;
+  const auto capture_tool_id = PaletteToolId::ENTER_CAPTURE_MODE;
   test_api_->palette_tool_manager()->ActivateTool(capture_tool_id);
   EXPECT_FALSE(
       test_api_->palette_tool_manager()->IsToolActive(capture_tool_id));
@@ -282,6 +284,11 @@ TEST_F(PaletteTrayTest, WelcomeBubbleVisibility) {
 class PaletteTrayTestWithAssistant : public PaletteTrayTest {
  public:
   PaletteTrayTestWithAssistant() = default;
+
+  PaletteTrayTestWithAssistant(const PaletteTrayTestWithAssistant&) = delete;
+  PaletteTrayTestWithAssistant& operator=(const PaletteTrayTestWithAssistant&) =
+      delete;
+
   ~PaletteTrayTestWithAssistant() override = default;
 
   // PaletteTrayTest:
@@ -295,7 +302,7 @@ class PaletteTrayTestWithAssistant : public PaletteTrayTest {
     GetEventGenerator();
 
     // Tests fail if event time is ever 0.
-    simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
+    simulated_clock_.Advance(base::Milliseconds(10));
     ui::SetEventTickClockForTesting(&simulated_clock_);
 
     highlighter_test_api_ = std::make_unique<HighlighterControllerTestApi>(
@@ -364,7 +371,7 @@ class PaletteTrayTestWithAssistant : public PaletteTrayTest {
                                   bool expected,
                                   bool expected_on_press) {
     const int kStrokeGap = 1000;
-    simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(kStrokeGap));
+    simulated_clock_.Advance(base::Milliseconds(kStrokeGap));
     DragAndAssertMetalayer(context, origin, event_flags, expected,
                            expected_on_press);
   }
@@ -373,9 +380,7 @@ class PaletteTrayTestWithAssistant : public PaletteTrayTest {
 
  private:
   base::SimpleTestTickClock simulated_clock_;
-  TestAssistantClient assistant_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaletteTrayTestWithAssistant);
+  chromeos::assistant::ScopedAssistantBrowserDelegate delegate_;
 };
 
 TEST_F(PaletteTrayTestWithAssistant, MetalayerToolViewCreated) {
@@ -589,10 +594,19 @@ class PaletteTrayTestWithInternalStylus : public PaletteTrayTest {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kHasInternalStylus);
   }
+
+  PaletteTrayTestWithInternalStylus(const PaletteTrayTestWithInternalStylus&) =
+      delete;
+  PaletteTrayTestWithInternalStylus& operator=(
+      const PaletteTrayTestWithInternalStylus&) = delete;
+
   ~PaletteTrayTestWithInternalStylus() override = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(PaletteTrayTestWithInternalStylus);
+  // PaletteTrayTest:
+  void SetUp() override {
+    PaletteTrayTest::SetUp();
+    test_api_->SetDisplayHasStylus();
+  }
 };
 
 // Verify the palette tray button exists and is visible if the device has an
@@ -716,7 +730,7 @@ TEST_F(PaletteTrayTestWithInternalStylus,
 TEST_F(PaletteTrayTestWithInternalStylus, PaletteBubbleShownOnEject) {
   active_user_pref_service()->SetBoolean(prefs::kEnableStylusTools, true);
 
-  // kLaunchPaletteOnEjectEvent is true by default
+  // kLaunchPaletteOnEjectEvent is true by default.
   ASSERT_TRUE(active_user_pref_service()->GetBoolean(
       prefs::kLaunchPaletteOnEjectEvent));
 
@@ -766,15 +780,18 @@ class PaletteTrayNoSessionTestWithInternalStylus : public PaletteTrayTest {
         switches::kHasInternalStylus);
     stylus_utils::SetHasStylusInputForTesting();
   }
+
+  PaletteTrayNoSessionTestWithInternalStylus(
+      const PaletteTrayNoSessionTestWithInternalStylus&) = delete;
+  PaletteTrayNoSessionTestWithInternalStylus& operator=(
+      const PaletteTrayNoSessionTestWithInternalStylus&) = delete;
+
   ~PaletteTrayNoSessionTestWithInternalStylus() override = default;
 
  protected:
   PrefService* active_user_pref_service() {
     return Shell::Get()->session_controller()->GetActivePrefService();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PaletteTrayNoSessionTestWithInternalStylus);
 };
 
 // Verify that the palette tray is created on an external display, but it is not
@@ -794,7 +811,7 @@ TEST_F(PaletteTrayNoSessionTestWithInternalStylus,
   };
 
   // Add a external display, then sign in.
-  UpdateDisplay("200x200,200x200");
+  UpdateDisplay("300x200,300x200");
   display::test::DisplayManagerTestApi(display_manager())
       .SetFirstDisplayAsInternalDisplay();
   Shell::RootWindowControllerList controllers =
@@ -810,6 +827,8 @@ TEST_F(PaletteTrayNoSessionTestWithInternalStylus,
       controllers[0]->GetStatusAreaWidget()->palette_tray();
   PaletteTray* external_tray =
       controllers[1]->GetStatusAreaWidget()->palette_tray();
+
+  test_api_->SetDisplayHasStylus();
 
   // The palette tray on the external monitor is not visible.
   EXPECT_TRUE(main_tray->GetVisible());
@@ -847,6 +866,188 @@ TEST_F(PaletteTrayTestWithOOBE, StylusEventsSafeDuringOOBE) {
   generator->EnterPenPointerMode();
   generator->PressTouch();
   generator->ReleaseTouch();
+}
+
+// Base class for tests that need to simulate multiple pen
+// capable displays.
+class PaletteTrayTestMultiDisplay : public PaletteTrayTest {
+ public:
+  PaletteTrayTestMultiDisplay() = default;
+  ~PaletteTrayTestMultiDisplay() override = default;
+  PaletteTrayTestMultiDisplay(const PaletteTrayTestMultiDisplay&) = delete;
+  PaletteTrayTestMultiDisplay& operator=(const PaletteTrayTestMultiDisplay&) =
+      delete;
+
+  // Performs a tap on the palette tray button.
+  void PerformTap(PaletteTray* tray) {
+    ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
+                         ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+    tray->PerformAction(tap);
+  }
+
+  // Fake a stylus ejection.
+  void EjectStylus() {
+    test_api_->OnStylusStateChanged(ui::StylusState::REMOVED);
+    test_api_external_->OnStylusStateChanged(ui::StylusState::REMOVED);
+  }
+
+  // Fake a stylus insertion.
+  void InsertStylus() {
+    test_api_->OnStylusStateChanged(ui::StylusState::INSERTED);
+    test_api_external_->OnStylusStateChanged(ui::StylusState::INSERTED);
+  }
+
+  // PaletteTrayTest:
+  void SetUp() override {
+    PaletteTrayTest::SetUp();
+
+    base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+        switches::kAshEnablePaletteOnAllDisplays);
+
+    // Add a external display, then sign in.
+    UpdateDisplay("300x200,300x200");
+    display::test::DisplayManagerTestApi(display_manager())
+        .SetFirstDisplayAsInternalDisplay();
+    Shell::RootWindowControllerList controllers =
+        Shell::GetAllRootWindowControllers();
+    ASSERT_EQ(2u, controllers.size());
+    SimulateUserLogin("test@test.com");
+
+    palette_tray_ = controllers[0]->GetStatusAreaWidget()->palette_tray();
+    palette_tray_external_ =
+        controllers[1]->GetStatusAreaWidget()->palette_tray();
+
+    ASSERT_TRUE(palette_tray_);
+    ASSERT_TRUE(palette_tray_external_);
+
+    test_api_external_ =
+        std::make_unique<PaletteTrayTestApi>(palette_tray_external_);
+  }
+
+ protected:
+  PaletteTray* palette_tray_external_ = nullptr;
+
+  std::unique_ptr<PaletteTrayTestApi> test_api_external_;
+};
+
+// Verify the palette welcome bubble is shown only on the internal display
+// the first time the stylus is removed.
+TEST_F(PaletteTrayTestMultiDisplay, WelcomeBubbleShownOnEject) {
+  test_api_->SetDisplayHasStylus();
+  test_api_external_->SetDisplayHasStylus();
+
+  active_user_pref_service()->SetBoolean(prefs::kEnableStylusTools, true);
+  active_user_pref_service()->SetBoolean(prefs::kLaunchPaletteOnEjectEvent,
+                                         false);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kHasInternalStylus);
+  ASSERT_FALSE(active_user_pref_service()->GetBoolean(
+      prefs::kShownPaletteWelcomeBubble));
+
+  EXPECT_FALSE(test_api_->welcome_bubble()->GetBubbleViewForTesting());
+  EXPECT_FALSE(test_api_external_->welcome_bubble()->GetBubbleViewForTesting());
+
+  EjectStylus();
+  EXPECT_TRUE(test_api_->welcome_bubble()->GetBubbleViewForTesting());
+  EXPECT_FALSE(test_api_external_->welcome_bubble()->GetBubbleViewForTesting());
+}
+
+// Verify that palette bubble does not open on the external display
+// on stylus eject/insert.
+TEST_F(PaletteTrayTestMultiDisplay, PaletteBubbleShownOnEject) {
+  test_api_->SetDisplayHasStylus();
+  test_api_external_->SetDisplayHasStylus();
+
+  active_user_pref_service()->SetBoolean(prefs::kEnableStylusTools, true);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kHasInternalStylus);
+
+  // kLaunchPaletteOnEjectEvent is true by default.
+  ASSERT_TRUE(active_user_pref_service()->GetBoolean(
+      prefs::kLaunchPaletteOnEjectEvent));
+
+  // Removing the stylus shows the bubble on the internal display.
+  EjectStylus();
+  EXPECT_TRUE(palette_tray_->GetBubbleView());
+  EXPECT_FALSE(palette_tray_external_->GetBubbleView());
+
+  // Inserting the stylus hides the bubble.
+  InsertStylus();
+  EXPECT_FALSE(palette_tray_->GetBubbleView());
+  EXPECT_FALSE(palette_tray_external_->GetBubbleView());
+
+  // Inserting the stylus should disable a currently selected tool
+  // even if it is on an external display.
+  test_api_external_->palette_tool_manager()->ActivateTool(
+      PaletteToolId::LASER_POINTER);
+  EXPECT_TRUE(test_api_external_->palette_tool_manager()->IsToolActive(
+      PaletteToolId::LASER_POINTER));
+  InsertStylus();
+  EXPECT_FALSE(test_api_external_->palette_tool_manager()->IsToolActive(
+      PaletteToolId::LASER_POINTER));
+}
+
+void addStylusToDisplay(int64_t display_id) {
+  ui::DeviceDataManager* device_data_manager =
+      ui::DeviceDataManager::GetInstance();
+  int stylus_device_id = 10;
+
+  base::RunLoop().RunUntilIdle();
+
+  if (device_data_manager->GetTouchscreenDevices().size() == 0) {
+    ui::TouchscreenDevice stylus_device = ui::TouchscreenDevice(
+        stylus_device_id, ui::InputDeviceType::INPUT_DEVICE_USB,
+        std::string("Stylus"), gfx::Size(1, 1), 1, true);
+
+    std::vector<ui::TouchscreenDevice> devices;
+    devices.push_back(stylus_device);
+
+    static_cast<ui::DeviceHotplugEventObserver*>(device_data_manager)
+        ->OnTouchscreenDevicesUpdated(devices);
+  }
+
+  std::vector<ui::TouchDeviceTransform> device_transforms(1);
+  device_transforms[0].display_id = display_id;
+  device_transforms[0].device_id = stylus_device_id;
+  device_data_manager->ConfigureTouchDevices(device_transforms);
+
+  ASSERT_EQ(1U, device_data_manager->GetTouchscreenDevices().size());
+  ASSERT_EQ(display_id,
+            device_data_manager->GetTouchscreenDevices()[0].target_display_id);
+  ASSERT_TRUE(device_data_manager->AreTouchscreenTargetDisplaysValid());
+}
+
+// Verify that palette state is refreshed when the display
+// layout changes.
+TEST_F(PaletteTrayTestMultiDisplay, MirrorModeEnable) {
+  active_user_pref_service()->SetBoolean(prefs::kEnableStylusTools, true);
+
+  // We should already by in extended mode with two displays
+  ASSERT_EQ(2U, Shell::Get()->display_manager()->GetNumDisplays());
+
+  const int64_t external_display_id =
+      display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+          .GetSecondaryDisplay()
+          .id();
+
+  addStylusToDisplay(external_display_id);
+
+  // The palette tray on the internal monitor is not visible.
+  EXPECT_FALSE(palette_tray_->GetVisible());
+  EXPECT_TRUE(palette_tray_external_->GetVisible());
+
+  // Enable mirror mode
+  Shell::Get()->display_manager()->SetMultiDisplayMode(
+      display::DisplayManager::MIRRORING);
+  Shell::Get()->display_manager()->UpdateDisplays();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1U, Shell::Get()->display_manager()->GetNumDisplays());
+
+  addStylusToDisplay(external_display_id);
+
+  // The external tray will have been deleted, so only check if
+  // we're visible on the internal display now.
+  EXPECT_TRUE(palette_tray_->GetVisible());
 }
 
 }  // namespace ash

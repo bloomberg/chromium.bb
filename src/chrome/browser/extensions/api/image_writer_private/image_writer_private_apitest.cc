@@ -71,7 +71,6 @@ class ImageWriterPrivateApiTest : public ExtensionApiTest {
     ExtensionApiTest::TearDownInProcessBrowserTestFixture();
     test_utils_.TearDown();
     RemovableStorageProvider::ClearDeviceListForTesting();
-    FileSystemChooseEntryFunction::StopSkippingPickerForTest();
   }
 
 
@@ -89,8 +88,8 @@ IN_PROC_BROWSER_TEST_F(ImageWriterPrivateApiTest, TestWriteFromFile) {
       "test_temp", test_utils_.GetTempDir());
 
   base::FilePath selected_image(test_utils_.GetImagePath());
-  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
-      &selected_image);
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest picker(
+      selected_image);
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   auto set_up_utility_client_callbacks = [](FakeImageWriterClient* client) {
@@ -105,8 +104,8 @@ IN_PROC_BROWSER_TEST_F(ImageWriterPrivateApiTest, TestWriteFromFile) {
       base::BindOnce(set_up_utility_client_callbacks));
 #endif
 
-  ASSERT_TRUE(RunExtensionTest({.name = "image_writer_private/write_from_file",
-                                .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("image_writer_private/write_from_file",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 }  // namespace extensions

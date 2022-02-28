@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -57,10 +58,10 @@ const struct {
 
 // Adds a |StringValue| to |list| for each platform where |bitmask| indicates
 // whether the entry is available on that platform.
-void AddOsStrings(unsigned bitmask, base::ListValue* list) {
-  for (size_t i = 0; i < base::size(kBitsToOs); ++i) {
-    if (bitmask & kBitsToOs[i].bit)
-      list->AppendString(kBitsToOs[i].name);
+void AddOsStrings(unsigned bitmask, base::Value* list) {
+  for (const auto& entry : kBitsToOs) {
+    if (bitmask & entry.bit)
+      list->Append(entry.name);
   }
 }
 
@@ -119,47 +120,46 @@ bool IsDefaultValue(const FeatureEntry& entry,
 }
 
 // Returns the Value representing the choice data in the specified entry.
-std::unique_ptr<base::Value> CreateOptionsData(
-    const FeatureEntry& entry,
-    const std::set<std::string>& enabled_entries) {
+base::Value CreateOptionsData(const FeatureEntry& entry,
+                              const std::set<std::string>& enabled_entries) {
   DCHECK(entry.type == FeatureEntry::MULTI_VALUE ||
          entry.type == FeatureEntry::ENABLE_DISABLE_VALUE ||
          entry.type == FeatureEntry::FEATURE_VALUE ||
          entry.type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE);
-  auto result = std::make_unique<base::ListValue>();
+  base::Value result(base::Value::Type::LIST);
   for (int i = 0; i < entry.NumOptions(); ++i) {
-    auto value = std::make_unique<base::DictionaryValue>();
+    base::Value value(base::Value::Type::DICTIONARY);
     const std::string name = entry.NameForOption(i);
-    value->SetString("internal_name", name);
-    value->SetString("description", entry.DescriptionForOption(i));
-    value->SetBoolean("selected", enabled_entries.count(name) > 0);
-    result->Append(std::move(value));
+    value.SetStringKey("internal_name", name);
+    value.SetStringKey("description", entry.DescriptionForOption(i));
+    value.SetBoolKey("selected", enabled_entries.count(name) > 0);
+    result.Append(std::move(value));
   }
-  return std::move(result);
+  return result;
 }
 
 // Registers variation parameters specified by |feature_variation_params| for
 // the field trial named |feature_trial_name|, unless a group for this trial has
 // already been created (e.g. via command-line switches that take precedence
 // over about:flags). In the trial, the function creates a new constant group
-// called |kTrialGroupAboutFlags|.
+// with the given |trail_group| name.
 base::FieldTrial* RegisterFeatureVariationParameters(
     const std::string& feature_trial_name,
-    const std::map<std::string, std::string>& feature_variation_params) {
+    const std::map<std::string, std::string>& feature_variation_params,
+    const std::string& trial_group) {
   bool success = variations::AssociateVariationParams(
-      feature_trial_name, internal::kTrialGroupAboutFlags,
-      feature_variation_params);
+      feature_trial_name, trial_group, feature_variation_params);
   if (!success)
     return nullptr;
   // Successful association also means that no group is created and selected
   // for the trial, yet. Thus, create the trial to select the group. This way,
   // the parameters cannot get overwritten in later phases (such as from the
   // server).
-  base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
-      feature_trial_name, internal::kTrialGroupAboutFlags);
+  base::FieldTrial* trial =
+      base::FieldTrialList::CreateFieldTrial(feature_trial_name, trial_group);
   if (!trial) {
     DLOG(WARNING) << "Could not create the trial " << feature_trial_name
-                  << " with group " << internal::kTrialGroupAboutFlags;
+                  << " with group " << trial_group;
   }
   return trial;
 }
@@ -179,16 +179,17 @@ bool IsSafeValue(const std::string& value) {
 }
 
 // Sanitizes |value| which contains a list of origins separated by whitespace
-// and/or comma. The sanitized set of origins is intended to be added to the
+// and/or comma. The sanitized vector of origins is intended to be added to the
 // command line, so this is a security critical operation: The sanitized value
 // must have no whitespaces, each individual origin must be separated by a
-// comma, and each origin must represent a url::Origin().
-std::set<std::string> TokenizeOriginList(const std::string& value) {
+// comma, and each origin must represent a url::Origin(). The list is not
+// reordered.
+std::vector<std::string> TokenizeOriginList(const std::string& value) {
   const std::string input = base::CollapseWhitespaceASCII(value, false);
   // Allow both space and comma as separators.
   const std::string delimiters = " ,";
   base::StringTokenizer tokenizer(input, delimiters);
-  std::set<std::string> origin_strings;
+  std::vector<std::string> origin_strings;
   while (tokenizer.GetNext()) {
     base::StringPiece token = tokenizer.token_piece();
     DCHECK(!token.empty());
@@ -201,19 +202,26 @@ std::set<std::string> TokenizeOriginList(const std::string& value) {
     if (!IsSafeValue(origin)) {
       continue;
     }
-    origin_strings.insert(origin);
+    origin_strings.push_back(origin);
   }
   return origin_strings;
 }
 
 // Combines the origin lists contained in |value1| and |value2| separated by
-// commas. Invalid or duplicate origins are dropped.
+// commas. The lists are concatenated, with invalid or duplicate origins
+// removed.
 std::string CombineAndSanitizeOriginLists(const std::string& value1,
                                           const std::string& value2) {
-  const std::set<std::string> origins =
-      base::STLSetUnion<std::set<std::string>>(TokenizeOriginList(value1),
-                                               TokenizeOriginList(value2));
-  const std::vector<std::string> origin_vector(origins.begin(), origins.end());
+  std::set<std::string> seen_origins;
+  std::vector<std::string> origin_vector;
+  for (const std::string& list : {value1, value2}) {
+    for (const std::string& origin : TokenizeOriginList(list)) {
+      if (!base::Contains(seen_origins, origin)) {
+        origin_vector.push_back(origin);
+        seen_origins.insert(origin);
+      }
+    }
+  }
   const std::string result =
       base::JoinString(origin_vector, kOriginListValueSeparator);
   CHECK(IsSafeValue(result));
@@ -223,11 +231,11 @@ std::string CombineAndSanitizeOriginLists(const std::string& value1,
 // Returns the sanitized combined origin list by concatenating the command line
 // and the pref values. Invalid or duplicate origins are dropped.
 std::string GetCombinedOriginListValue(const FlagsStorage& flags_storage,
+                                       const base::CommandLine& command_line,
                                        const std::string& internal_entry_name,
                                        const std::string& command_line_switch) {
   const std::string existing_value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          command_line_switch);
+      command_line.GetSwitchValueASCII(command_line_switch);
   const std::string new_value =
       flags_storage.GetOriginListFlag(internal_entry_name);
   return CombineAndSanitizeOriginLists(existing_value, new_value);
@@ -240,11 +248,12 @@ std::string GetCombinedOriginListValue(const FlagsStorage& flags_storage,
 // modifies it on the fly when the user makes a change.
 void DidModifyOriginListFlag(const FlagsStorage& flags_storage,
                              const FeatureEntry& entry) {
+  base::CommandLine* current_cl = base::CommandLine::ForCurrentProcess();
   const std::string new_value = GetCombinedOriginListValue(
-      flags_storage, entry.internal_name, entry.switches.command_line_switch);
+      flags_storage, *current_cl, entry.internal_name,
+      entry.switches.command_line_switch);
 
   // Remove the switch if it exists.
-  base::CommandLine* current_cl = base::CommandLine::ForCurrentProcess();
   base::CommandLine new_cl(current_cl->GetProgram());
   const base::CommandLine::SwitchMap switches = current_cl->GetSwitches();
   for (const auto& it : switches) {
@@ -308,7 +317,7 @@ void FlagsState::ConvertFlagsToSwitches(
     const char* disable_features_flag_name) {
   std::set<std::string> enabled_entries;
   std::map<std::string, SwitchEntry> name_to_switch_map;
-  GenerateFlagsToSwitchesMapping(flags_storage, &enabled_entries,
+  GenerateFlagsToSwitchesMapping(flags_storage, *command_line, &enabled_entries,
                                  &name_to_switch_map);
   AddSwitchesToCommandLine(enabled_entries, name_to_switch_map, sentinels,
                            command_line, enable_features_flag_name,
@@ -321,8 +330,9 @@ void FlagsState::GetSwitchesAndFeaturesFromFlags(
     std::set<std::string>* features) const {
   std::set<std::string> enabled_entries;
   std::map<std::string, SwitchEntry> name_to_switch_map;
-  GenerateFlagsToSwitchesMapping(flags_storage, &enabled_entries,
-                                 &name_to_switch_map);
+  GenerateFlagsToSwitchesMapping(flags_storage,
+                                 *base::CommandLine::ForCurrentProcess(),
+                                 &enabled_entries, &name_to_switch_map);
 
   for (const std::string& entry_name : enabled_entries) {
     const auto& entry_it = name_to_switch_map.find(entry_name);
@@ -493,13 +503,24 @@ std::vector<std::string> FlagsState::RegisterAllFeatureVariationParameters(
     base::FeatureList* feature_list) {
   std::set<std::string> enabled_entries;
   GetSanitizedEnabledFlagsForCurrentPlatform(flags_storage, &enabled_entries);
+  return RegisterEnabledFeatureVariationParameters(
+      feature_entries_, enabled_entries, internal::kTrialGroupAboutFlags,
+      feature_list);
+}
+
+// static
+std::vector<std::string> FlagsState::RegisterEnabledFeatureVariationParameters(
+    const base::span<const FeatureEntry>& feature_entries,
+    const std::set<std::string>& enabled_entries,
+    const std::string& trial_group,
+    base::FeatureList* feature_list) {
   std::vector<std::string> variation_ids;
   std::map<std::string, std::set<std::string>> enabled_features_by_trial_name;
   std::map<std::string, std::map<std::string, std::string>>
       params_by_trial_name;
 
   // First collect all the data for each trial.
-  for (const FeatureEntry& entry : feature_entries_) {
+  for (const FeatureEntry& entry : feature_entries) {
     if (entry.type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE) {
       for (int j = 0; j < entry.NumOptions(); ++j) {
         if (entry.StateForOption(j) == FeatureEntry::FeatureState::ENABLED &&
@@ -538,7 +559,7 @@ std::vector<std::string> FlagsState::RegisterAllFeatureVariationParameters(
     const std::set<std::string>& trial_features = kv.second;
 
     base::FieldTrial* field_trial = RegisterFeatureVariationParameters(
-        trial_name, params_by_trial_name[trial_name]);
+        trial_name, params_by_trial_name[trial_name], trial_group);
     if (!field_trial)
       continue;
 
@@ -556,8 +577,8 @@ std::vector<std::string> FlagsState::RegisterAllFeatureVariationParameters(
 void FlagsState::GetFlagFeatureEntries(
     FlagsStorage* flags_storage,
     FlagAccess access,
-    base::ListValue* supported_entries,
-    base::ListValue* unsupported_entries,
+    base::Value::ListStorage& supported_entries,
+    base::Value::ListStorage& unsupported_entries,
     base::RepeatingCallback<bool(const FeatureEntry&)> skip_feature_entry) {
   DCHECK(flags_storage);
   std::set<std::string> enabled_entries;
@@ -569,40 +590,41 @@ void FlagsState::GetFlagFeatureEntries(
     if (skip_feature_entry.Run(entry))
       continue;
 
-    std::unique_ptr<base::DictionaryValue> data(new base::DictionaryValue());
-    data->SetString("internal_name", entry.internal_name);
-    data->SetString("name", base::StringPiece(entry.visible_name));
-    data->SetString("description",
-                    base::StringPiece(entry.visible_description));
+    base::Value data(base::Value::Type::DICTIONARY);
+    data.SetStringKey("internal_name", entry.internal_name);
+    data.SetStringKey("name", base::StringPiece(entry.visible_name));
+    data.SetStringKey("description",
+                      base::StringPiece(entry.visible_description));
 
-    auto supported_platforms = std::make_unique<base::ListValue>();
-    AddOsStrings(entry.supported_platforms, supported_platforms.get());
-    data->Set("supported_platforms", std::move(supported_platforms));
+    base::Value supported_platforms(base::Value::Type::LIST);
+    AddOsStrings(entry.supported_platforms, &supported_platforms);
+    data.SetKey("supported_platforms", std::move(supported_platforms));
     // True if the switch is not currently passed.
     bool is_default_value = IsDefaultValue(entry, enabled_entries);
-    data->SetBoolean("is_default", is_default_value);
+    data.SetBoolKey("is_default", is_default_value);
 
     switch (entry.type) {
       case FeatureEntry::SINGLE_VALUE:
       case FeatureEntry::SINGLE_DISABLE_VALUE:
-        data->SetBoolean(
+        data.SetBoolKey(
             "enabled",
             (!is_default_value && entry.type == FeatureEntry::SINGLE_VALUE) ||
                 (is_default_value &&
                  entry.type == FeatureEntry::SINGLE_DISABLE_VALUE));
         break;
       case FeatureEntry::ORIGIN_LIST_VALUE:
-        data->SetBoolean("enabled", !is_default_value);
-        data->SetString(
+        data.SetBoolKey("enabled", !is_default_value);
+        data.SetStringKey(
             "origin_list_value",
-            GetCombinedOriginListValue(*flags_storage, entry.internal_name,
-                                       entry.switches.command_line_switch));
+            GetCombinedOriginListValue(
+                *flags_storage, *base::CommandLine::ForCurrentProcess(),
+                entry.internal_name, entry.switches.command_line_switch));
         break;
       case FeatureEntry::MULTI_VALUE:
       case FeatureEntry::ENABLE_DISABLE_VALUE:
       case FeatureEntry::FEATURE_VALUE:
       case FeatureEntry::FEATURE_WITH_PARAMS_VALUE:
-        data->Set("options", CreateOptionsData(entry, enabled_entries));
+        data.SetKey("options", CreateOptionsData(entry, enabled_entries));
         break;
     }
 
@@ -615,14 +637,14 @@ void FlagsState::GetFlagFeatureEntries(
 #endif
 
     if (supported)
-      supported_entries->Append(std::move(data));
+      supported_entries.push_back(std::move(data));
     else
-      unsupported_entries->Append(std::move(data));
+      unsupported_entries.push_back(std::move(data));
   }
 }
 
 // static
-int FlagsState::GetCurrentPlatform() {
+unsigned short FlagsState::GetCurrentPlatform() {
 #if defined(OS_IOS)
   return kOsIos;
 #elif defined(OS_MAC)
@@ -785,9 +807,13 @@ void FlagsState::GetSanitizedEnabledFlagsForCurrentPlatform(
 
 void FlagsState::GenerateFlagsToSwitchesMapping(
     FlagsStorage* flags_storage,
+    const base::CommandLine& command_line,
     std::set<std::string>* enabled_entries,
     std::map<std::string, SwitchEntry>* name_to_switch_map) const {
   GetSanitizedEnabledFlagsForCurrentPlatform(flags_storage, enabled_entries);
+
+  if (enabled_entries->empty())
+    return;
 
   for (const FeatureEntry& entry : feature_entries_) {
     switch (entry.type) {
@@ -803,9 +829,9 @@ void FlagsState::GenerateFlagsToSwitchesMapping(
         // This is done to retain the existing list from the command line when
         // the browser is restarted. Otherwise, the user provided list would
         // overwrite the list provided from the command line.
-        const std::string origin_list_value =
-            GetCombinedOriginListValue(*flags_storage, entry.internal_name,
-                                       entry.switches.command_line_switch);
+        const std::string origin_list_value = GetCombinedOriginListValue(
+            *flags_storage, command_line, entry.internal_name,
+            entry.switches.command_line_switch);
         AddSwitchMapping(entry.internal_name,
                          entry.switches.command_line_switch, origin_list_value,
                          name_to_switch_map);

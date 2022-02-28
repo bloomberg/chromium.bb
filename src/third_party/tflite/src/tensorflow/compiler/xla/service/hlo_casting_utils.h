@@ -19,11 +19,11 @@ limitations under the License.
 #define TENSORFLOW_COMPILER_XLA_SERVICE_HLO_CASTING_UTILS_H_
 
 #include <type_traits>
+
+#include "tensorflow/compiler/xla/service/hlo_instruction.h"
 #include "tensorflow/core/platform/logging.h"
 
 namespace xla {
-
-class HloInstruction;
 
 template <class T>
 using EnableIfDerivedFromHlo =
@@ -39,7 +39,9 @@ template <class T, EnableIfDerivedFromHlo<T>* = nullptr>
 const T* Cast(const HloInstruction* instruction) {
   CHECK(instruction != nullptr);
   const T* casted = dynamic_cast<const T*>(instruction);
-  CHECK(casted != nullptr);
+  CHECK(casted != nullptr)
+      << "Invalid HloInstruction casting. Destination type: "
+      << typeid(T).name() << ". Instruction: " << instruction->name();
   return casted;
 }
 

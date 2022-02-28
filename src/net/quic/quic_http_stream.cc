@@ -30,6 +30,7 @@
 #include "net/third_party/quiche/src/spdy/core/spdy_frame_builder.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
 #include "url/origin.h"
+#include "url/scheme_host_port.h"
 
 namespace net {
 
@@ -108,8 +109,6 @@ HttpResponseInfo::ConnectionInfo QuicHttpStream::ConnectionInfoFromQuicVersion(
       return HttpResponseInfo::CONNECTION_INFO_QUIC_RFC_V1;
     case quic::QUIC_VERSION_RESERVED_FOR_NEGOTIATION:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_999;
-    case quic::QUIC_VERSION_51:
-      return HttpResponseInfo::CONNECTION_INFO_QUIC_T051;
   }
   NOTREACHED();
   return HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION;
@@ -252,7 +251,12 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   // Store the response info.
   response_info_ = response;
 
-  int rv;
+  // Put the peer's IP address and port into the response.
+  IPEndPoint address;
+  int rv = quic_session()->GetPeerAddress(&address);
+  if (rv != OK)
+    return rv;
+  response_info_->remote_endpoint = address;
 
   if (!found_promise_) {
     next_state_ = STATE_SET_REQUEST_PRIORITY;
@@ -403,7 +407,7 @@ bool QuicHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
 bool QuicHttpStream::GetAlternativeService(
     AlternativeService* alternative_service) const {
   alternative_service->protocol = kProtoQUIC;
-  const HostPortPair& destination = quic_session()->destination();
+  const url::SchemeHostPort& destination = quic_session()->destination();
   alternative_service->host = destination.host();
   alternative_service->port = destination.port();
   return true;
@@ -443,8 +447,7 @@ base::StringPiece QuicHttpStream::GetAcceptChViaAlps() const {
     return {};
   }
 
-  const url::Origin origin = url::Origin::Create(request_info_->url);
-  return session()->GetAcceptChViaAlpsForOrigin(origin);
+  return session()->GetAcceptChViaAlps(url::SchemeHostPort(request_info_->url));
 }
 
 void QuicHttpStream::ReadTrailingHeaders() {
@@ -707,13 +710,6 @@ int QuicHttpStream::ProcessResponseHeaders(
     return OK;
   }
 
-  // Put the peer's IP address and port into the response.
-  IPEndPoint address;
-  int rv = quic_session()->GetPeerAddress(&address);
-  if (rv != OK)
-    return rv;
-
-  response_info_->remote_endpoint = address;
   response_info_->connection_info =
       ConnectionInfoFromQuicVersion(quic_session()->GetQuicVersion());
   response_info_->vary_data.Init(*request_info_,

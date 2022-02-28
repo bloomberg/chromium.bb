@@ -22,11 +22,16 @@
 
 namespace dawn_native { namespace vulkan { namespace external_memory {
 
-    Service::Service(Device* device) : mDevice(device) {
-        mSupported = device->GetDeviceInfo().HasExt(DeviceExt::ExternalMemoryZirconHandle);
+    Service::Service(Device* device)
+        : mDevice(device), mSupported(CheckSupport(device->GetDeviceInfo())) {
     }
 
     Service::~Service() = default;
+
+    // static
+    bool Service::CheckSupport(const VulkanDeviceInfo& deviceInfo) {
+        return deviceInfo.HasExt(DeviceExt::ExternalMemoryZirconHandle);
+    }
 
     bool Service::SupportsImportMemory(VkFormat format,
                                        VkImageType type,
@@ -41,7 +46,7 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
         VkPhysicalDeviceExternalImageFormatInfo externalFormatInfo;
         externalFormatInfo.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO_KHR;
         externalFormatInfo.pNext = nullptr;
-        externalFormatInfo.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
+        externalFormatInfo.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ZIRCON_VMO_BIT_FUCHSIA;
 
         VkPhysicalDeviceImageFormatInfo2 formatInfo;
         formatInfo.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2_KHR;
@@ -83,9 +88,9 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
     ResultOrError<MemoryImportParams> Service::GetMemoryImportParams(
         const ExternalImageDescriptor* descriptor,
         VkImage image) {
-        if (descriptor->type != ExternalImageType::OpaqueFD) {
-            return DAWN_VALIDATION_ERROR("ExternalImageDescriptor is not an OpaqueFD descriptor");
-        }
+        DAWN_INVALID_IF(descriptor->type != ExternalImageType::OpaqueFD,
+                        "ExternalImageDescriptor is not an OpaqueFD descriptor.");
+
         const ExternalImageDescriptorOpaqueFD* opaqueFDDescriptor =
             static_cast<const ExternalImageDescriptorOpaqueFD*>(descriptor);
 
@@ -97,22 +102,19 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
     ResultOrError<VkDeviceMemory> Service::ImportMemory(ExternalMemoryHandle handle,
                                                         const MemoryImportParams& importParams,
                                                         VkImage image) {
-        if (handle == ZX_HANDLE_INVALID) {
-            return DAWN_VALIDATION_ERROR("Trying to import memory with invalid handle");
-        }
+        DAWN_INVALID_IF(handle == ZX_HANDLE_INVALID, "Importing memory with an invalid handle.");
 
         VkMemoryRequirements requirements;
         mDevice->fn.GetImageMemoryRequirements(mDevice->GetVkDevice(), image, &requirements);
-        if (requirements.size > importParams.allocationSize) {
-            return DAWN_VALIDATION_ERROR("Requested allocation size is too small for image");
-        }
+        DAWN_INVALID_IF(
+            requirements.size > importParams.allocationSize,
+            "Requested allocation size (%u) is smaller than the required image size (%u).",
+            importParams.allocationSize, requirements.size);
 
         VkImportMemoryZirconHandleInfoFUCHSIA importMemoryHandleInfo;
-        importMemoryHandleInfo.sType =
-            VK_STRUCTURE_TYPE_TEMP_MEMORY_ZIRCON_HANDLE_PROPERTIES_FUCHSIA;
+        importMemoryHandleInfo.sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_ZIRCON_HANDLE_INFO_FUCHSIA;
         importMemoryHandleInfo.pNext = nullptr;
-        importMemoryHandleInfo.handleType =
-            VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
+        importMemoryHandleInfo.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ZIRCON_VMO_BIT_FUCHSIA;
         importMemoryHandleInfo.handle = handle;
 
         VkMemoryAllocateInfo allocateInfo;
@@ -134,7 +136,7 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
         externalMemoryImageCreateInfo.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO;
         externalMemoryImageCreateInfo.pNext = nullptr;
         externalMemoryImageCreateInfo.handleTypes =
-            VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
+            VK_EXTERNAL_MEMORY_HANDLE_TYPE_ZIRCON_VMO_BIT_FUCHSIA;
 
         VkImageCreateInfo createInfo = baseCreateInfo;
         createInfo.pNext = &externalMemoryImageCreateInfo;

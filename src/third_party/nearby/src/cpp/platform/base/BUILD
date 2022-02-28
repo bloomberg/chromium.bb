@@ -11,14 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 load("//ads/util/non_compile:non_compile.bzl", "cc_with_non_compile_test")
+
+licenses(["notice"])
 
 cc_library(
     name = "base",
     srcs = [
         "base64_utils.cc",
         "bluetooth_utils.cc",
+        "input_stream.cc",
+        "nsd_service_info.cc",
         "prng.cc",
     ],
     hdrs = [
@@ -38,11 +41,16 @@ cc_library(
         "socket.h",
         "types.h",
     ],
+    compatible_with = ["//buildenv/target:non_prod"],
+    copts = ["-DCORE_ADAPTER_DLL"],
     visibility = [
         "//googlemac/iPhone/Shared/Nearby/Connections:__subpackages__",
+        "//analytics:__subpackages__",
+        "//third_party/nearby_connections/cpp/cal:__subpackages__",
         "//core:__subpackages__",
         "//platform:__subpackages__",
         "//platform/api:__subpackages__",
+        "//proto/analytics:__subpackages__",
     ],
     deps = [
         "//absl/container:flat_hash_map",
@@ -67,6 +75,7 @@ cc_library(
         "base_pipe.h",
         "byte_utils.h",
     ],
+    compatible_with = ["//buildenv/target:non_prod"],
     visibility = [
         "//core:__subpackages__",
         "//platform/impl:__subpackages__",
@@ -74,9 +83,9 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//platform/api:types",
         "//absl/base:core_headers",
         "//absl/strings:str_format",
+        "//platform/api:types",
     ],
 )
 
@@ -85,6 +94,7 @@ cc_library(
     hdrs = [
         "logging.h",
     ],
+    compatible_with = ["//buildenv/target:non_prod"],
     visibility = [
         "//googlemac/iPhone/Shared/Nearby/Connections:__subpackages__",
         "//platform:__subpackages__",
@@ -105,6 +115,7 @@ cc_library(
         "cancellation_flag.h",
         "cancellation_flag_listener.h",
     ],
+    compatible_with = ["//buildenv/target:non_prod"],
     visibility = [
         "//core/internal:__subpackages__",
         "//platform/api:__subpackages__",
@@ -116,6 +127,28 @@ cc_library(
         ":util",
         "//absl/container:flat_hash_set",
         "//absl/synchronization",
+    ],
+)
+
+cc_library(
+    name = "error_code_recorder",
+    srcs = [
+        "error_code_recorder.cc",
+    ],
+    hdrs = [
+        "error_code_params.h",
+        "error_code_recorder.h",
+    ],
+    compatible_with = ["//buildenv/target:non_prod"],
+    visibility = [
+        "//analytics:__subpackages__",
+        "//core/internal:__subpackages__",
+        "//platform/impl:__subpackages__",
+    ],
+    deps = [
+        ":logging",
+        "//proto:connections_enums_portable_proto",
+        "//proto/errorcode:error_code_enums_portable_proto",
     ],
 )
 
@@ -136,10 +169,10 @@ cc_library(
     deps = [
         ":base",
         ":logging",
-        "//platform/api:comm",
-        "//platform/public:types",
         "//absl/container:flat_hash_map",
         "//absl/strings",
+        "//platform/api:comm",
+        "//platform/public:types",
     ],
 )
 
@@ -154,8 +187,8 @@ cc_test(
     deps = [
         ":base",
         ":test_util",
-        "//platform/impl/g3",  # build_cleaner: keep
         "//testing/base/public:gunit_main",
+        "//platform/impl/g3",  # build_cleaner: keep
     ],
 )
 
@@ -180,8 +213,21 @@ cc_test(
         ":base",
         ":cancellation_flag",
         ":test_util",
-        "//platform/impl/g3",  # build_cleaner: keep
         "//testing/base/public:gunit_main",
+        "//platform/impl/g3",  # build_cleaner: keep
+    ],
+)
+
+cc_test(
+    name = "error_code_recorder_test",
+    srcs = [
+        "error_code_recorder_test.cc",
+    ],
+    deps = [
+        ":error_code_recorder",
+        ":test_util",
+        "//testing/base/public:gunit_main",
+        "//platform/impl/g3",  # build_cleaner: keep
     ],
 )
 

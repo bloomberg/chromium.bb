@@ -441,7 +441,9 @@ options in MSVS and Xcode. To enable the test rules in IDEs the
 
 The fastest and easiest way to obtain the test data is to use CMake to generate
 a build using the Unix Makefiles generator, and then to build only the testdata
-rule:
+rule. By default the test files will be downloaded to the current directory. The
+`LIBAOM_TEST_DATA_PATH` environment variable can be used to set a
+custom one.
 
 ~~~
     $ cmake path/to/aom -G "Unix Makefiles"
