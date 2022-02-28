@@ -8,7 +8,6 @@
 #include <set>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -29,6 +28,10 @@ namespace responsiveness {
 class CONTENT_EXPORT Calculator {
  public:
   Calculator();
+
+  Calculator(const Calculator&) = delete;
+  Calculator& operator=(const Calculator&) = delete;
+
   virtual ~Calculator();
 
   // Must be called from the UI thread.
@@ -77,8 +80,11 @@ class CONTENT_EXPORT Calculator {
 
   // Stages of startup used by this Calculator. Public for testing.
   enum class StartupStage {
-    // From this Calculator's creation until OnFirstIdle().
-    kMessageLoopStarted,
+    // Initial value.
+    kMessageLoopJustStarted,
+    // First kMeasurementInterval completed but haven't reached OnFirstIdle()
+    // yet.
+    kFirstIntervalDoneWithoutFirstIdle,
     // From OnFirstIdle() to the end of the kMeasurementInterval including it.
     kPastFirstIdle,
     // From the first kMeasurementInterval after OnFirstIdle() onward.
@@ -173,7 +179,7 @@ class CONTENT_EXPORT Calculator {
   bool is_application_visible_ = false;
 #endif
 
-  StartupStage startup_stage_ = StartupStage::kMessageLoopStarted;
+  StartupStage startup_stage_ = StartupStage::kMessageLoopJustStarted;
 
   // We expect there to be low contention and this lock to cause minimal
   // overhead. If performance of this lock proves to be a problem, we can move
@@ -207,8 +213,6 @@ class CONTENT_EXPORT Calculator {
   const std::unique_ptr<base::android::ApplicationStatusListener>
       application_status_listener_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(Calculator);
 };
 
 }  // namespace responsiveness

@@ -12,9 +12,9 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/nonscannable_memory.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/process_handle.h"
 #include "base/trace_event/typed_macros.h"
@@ -84,6 +84,10 @@ struct ComplexMessage : public Channel::Message {
                  size_t max_handles,
                  size_t payload_size,
                  MessageType message_type);
+
+  ComplexMessage(const ComplexMessage&) = delete;
+  ComplexMessage& operator=(const ComplexMessage&) = delete;
+
   ~ComplexMessage() override = default;
 
   // Message impl:
@@ -115,15 +119,17 @@ struct ComplexMessage : public Channel::Message {
 
 #if defined(OS_WIN)
   // On Windows, handles are serialised into the extra header section.
-  HandleEntry* handles_ = nullptr;
+  raw_ptr<HandleEntry> handles_ = nullptr;
 #elif defined(OS_MAC)
   // On OSX, handles are serialised into the extra header section.
   MachPortsExtraHeader* mach_ports_header_ = nullptr;
 #endif
-  DISALLOW_COPY_AND_ASSIGN(ComplexMessage);
 };
 
 struct TrivialMessage : public Channel::Message {
+  TrivialMessage(const TrivialMessage&) = delete;
+  TrivialMessage& operator=(const TrivialMessage&) = delete;
+
   ~TrivialMessage() override = default;
 
   // TryConstruct should be used to build a TrivialMessage.
@@ -153,7 +159,6 @@ struct TrivialMessage : public Channel::Message {
   alignas(sizeof(void*)) uint8_t data_[256 - sizeof(Channel::Message)];
 
   static constexpr size_t kInternalCapacity = sizeof(data_);
-  DISALLOW_COPY_AND_ASSIGN(TrivialMessage);
 };
 
 static_assert(sizeof(TrivialMessage) == 256,
@@ -229,6 +234,7 @@ Channel::MessagePtr Channel::Message::CreateRawForFuzzing(
 Channel::MessagePtr Channel::Message::Deserialize(
     const void* data,
     size_t data_num_bytes,
+    HandlePolicy handle_policy,
     base::ProcessHandle from_process) {
   if (data_num_bytes < sizeof(LegacyHeader))
     return nullptr;
@@ -302,6 +308,11 @@ Channel::MessagePtr Channel::Message::Deserialize(
   if (num_handles > max_handles || max_handles > kMaxAttachedHandles) {
     DLOG(ERROR) << "Decoding invalid message: " << num_handles << " > "
                 << max_handles;
+    return nullptr;
+  }
+
+  if (num_handles > 0 && handle_policy == HandlePolicy::kRejectHandles) {
+    DLOG(ERROR) << "Rejecting message with unexpected handle attachments.";
     return nullptr;
   }
 
@@ -693,6 +704,9 @@ class Channel::ReadBuffer {
     data_ = MakeAlignedBuffer(size_);
   }
 
+  ReadBuffer(const ReadBuffer&) = delete;
+  ReadBuffer& operator=(const ReadBuffer&) = delete;
+
   ~ReadBuffer() { DCHECK(data_); }
 
   const char* occupied_bytes() const {
@@ -776,8 +790,6 @@ class Channel::ReadBuffer {
 
   // The total number of occupied bytes, including discarded bytes.
   size_t num_occupied_bytes_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(ReadBuffer);
 };
 
 Channel::Channel(Delegate* delegate,
@@ -842,8 +854,6 @@ Channel::DispatchResult Channel::TryDispatchMessage(
     size_t* size_hint) {
   TRACE_EVENT(TRACE_DISABLED_BY_DEFAULT("toplevel.ipc"),
               "Mojo dispatch message");
-
-  bool did_consume_message = false;
 
   // We have at least enough data available for a LegacyHeader.
   const Message::LegacyHeader* legacy_header =
@@ -919,12 +929,8 @@ Channel::DispatchResult Channel::TryDispatchMessage(
                           std::move(handles))) {
       return DispatchResult::kError;
     }
-    did_consume_message = true;
-  } else if (deferred) {
-    did_consume_message = true;
-  } else if (delegate_) {
+  } else if (!deferred && delegate_) {
     delegate_->OnChannelMessage(payload, payload_size, std::move(handles));
-    did_consume_message = true;
   }
 
   *size_hint = legacy_header->num_bytes;

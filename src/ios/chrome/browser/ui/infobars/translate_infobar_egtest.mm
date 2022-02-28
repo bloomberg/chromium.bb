@@ -266,6 +266,12 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Tests that different language signals are detected correctly.
 - (void)testLanguageDetection {
+// TODO(crbug.com/1235979): test failing on ipad device
+#if !TARGET_IPHONE_SIMULATOR
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"This test doesn't pass on iPad device.");
+  }
+#endif
   const GURL URL =
       web::test::HttpServer::MakeUrl("http://scenarioLanguageDetection");
   std::map<GURL, std::string> responses;
@@ -300,8 +306,8 @@ void TestResponseProvider::GetLanguageResponse(
                                   translate::kUnknownLanguageCode)];
 }
 
-// Tests that language detection is not performed when the page specifies that
-// it should not be translated.
+// Tests that language detection is still performed when the page specifies the
+// notranslate meta tag.
 - (void)testLanguageDetectionNoTranslate {
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
@@ -315,16 +321,16 @@ void TestResponseProvider::GetLanguageResponse(
   // Load some french page with |content="notranslate"| meta tag.
   [ChromeEarlGrey loadURL:noTranslateContentURL];
 
-  // Check that no language has been detected.
-  GREYAssertFalse([self waitForLanguageDetection],
-                  @"A language has been detected");
+  // Check that the language has been detected.
+  GREYAssertTrue([self waitForLanguageDetection],
+                 @"A language has been detected");
 
   // Load some french page with |value="notranslate"| meta tag.
   [ChromeEarlGrey loadURL:noTranslateValueURL];
 
-  // Check that no language has been detected.
-  GREYAssertFalse([self waitForLanguageDetection],
-                  @"A language has been detected");
+  // Check that the language has been detected.
+  GREYAssertTrue([self waitForLanguageDetection],
+                 @"A language has been detected");
 }
 
 // Tests that history.pushState triggers a new detection.
@@ -487,7 +493,8 @@ void TestResponseProvider::GetLanguageResponse(
   // Disable translate.
   [ChromeEarlGreyAppInterface
       setBoolValue:NO
-       forUserPref:base::SysUTF8ToNSString(prefs::kOfferTranslateEnabled)];
+       forUserPref:base::SysUTF8ToNSString(
+                       translate::prefs::kOfferTranslateEnabled)];
 
   // Open some webpage.
   [ChromeEarlGrey loadURL:URL];
@@ -498,7 +505,8 @@ void TestResponseProvider::GetLanguageResponse(
   // Enable translate.
   [ChromeEarlGreyAppInterface
       setBoolValue:YES
-       forUserPref:base::SysUTF8ToNSString(prefs::kOfferTranslateEnabled)];
+       forUserPref:base::SysUTF8ToNSString(
+                       translate::prefs::kOfferTranslateEnabled)];
 }
 
 // Tests that the infobar banner persists as the page scrolls mode and that the
@@ -719,12 +727,8 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Tests that the target language can be changed. TODO(crbug.com/1046629):
 // implement test for changing source language.
-- (void)testInfobarChangeTargetLanguage {
-  // TODO(crbug.com/1116012): This test is failing flaky on iOS14.
-  if (@available(iOS 14, *)) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS14.");
-  }
-
+// TODO(crbug.com/1116012): This test is failing flaky on iOS14.
+- (void)DISABLED_testInfobarChangeTargetLanguage {
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));

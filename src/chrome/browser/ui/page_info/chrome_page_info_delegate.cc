@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/page_info/chrome_page_info_delegate.h"
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
@@ -35,6 +36,13 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
+#endif
+
 #if !defined(OS_ANDROID)
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
@@ -44,6 +52,8 @@
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/hats/trust_safety_sentiment_service.h"
+#include "chrome/browser/ui/hats/trust_safety_sentiment_service_factory.h"
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "ui/events/event.h"
@@ -54,7 +64,12 @@
 
 ChromePageInfoDelegate::ChromePageInfoDelegate(
     content::WebContents* web_contents)
-    : web_contents_(web_contents) {}
+    : web_contents_(web_contents) {
+#if !defined(OS_ANDROID)
+  sentiment_service_ =
+      TrustSafetySentimentServiceFactory::GetForProfile(GetProfile());
+#endif
+}
 
 Profile* ChromePageInfoDelegate::GetProfile() const {
   return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
@@ -119,7 +134,6 @@ void ChromePageInfoDelegate::OnUserActionOnPasswordUi(
 }
 
 std::u16string ChromePageInfoDelegate::GetWarningDetailText() {
-  std::vector<size_t> placeholder_offsets;
   auto* chrome_password_protection_service =
       GetChromePasswordProtectionService();
 
@@ -127,8 +141,7 @@ std::u16string ChromePageInfoDelegate::GetWarningDetailText() {
   return chrome_password_protection_service
              ? chrome_password_protection_service->GetWarningDetailText(
                    chrome_password_protection_service
-                       ->reused_password_account_type_for_last_shown_warning(),
-                   &placeholder_offsets)
+                       ->reused_password_account_type_for_last_shown_warning())
              : std::u16string();
 }
 #endif
@@ -154,8 +167,17 @@ bool ChromePageInfoDelegate::CreateInfoBarDelegate() {
 }
 
 void ChromePageInfoDelegate::ShowSiteSettings(const GURL& site_url) {
-  chrome::ShowSiteSettings(chrome::FindBrowserWithWebContents(web_contents_),
-                           site_url);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (web_app::AppBrowserController::IsWebApp(browser)) {
+    web_app::AppId app_id = browser->app_controller()->app_id();
+    chrome::ShowAppManagementPage(GetProfile(), app_id,
+                                  AppManagementEntryPoint::kPageInfoView);
+    return;
+  }
+#endif
+
+  chrome::ShowSiteSettings(browser, site_url);
 }
 
 void ChromePageInfoDelegate::OpenCookiesDialog() {
@@ -182,6 +204,27 @@ void ChromePageInfoDelegate::OpenConnectionHelpCenterPage(
 
 void ChromePageInfoDelegate::OpenSafetyTipHelpCenterPage() {
   OpenHelpCenterFromSafetyTip(web_contents_);
+}
+
+void ChromePageInfoDelegate::OpenContentSettingsExceptions(
+    ContentSettingsType content_settings_type) {
+  chrome::ShowContentSettingsExceptionsForProfile(GetProfile(),
+                                                  content_settings_type);
+}
+
+void ChromePageInfoDelegate::OnPageInfoActionOccurred(
+    PageInfo::PageInfoAction action) {
+  if (sentiment_service_) {
+    if (action == PageInfo::PAGE_INFO_OPENED)
+      sentiment_service_->PageInfoOpened();
+    else
+      sentiment_service_->InteractedWithPageInfo();
+  }
+}
+
+void ChromePageInfoDelegate::OnUIClosing() {
+  if (sentiment_service_)
+    sentiment_service_->PageInfoClosed();
 }
 #endif
 

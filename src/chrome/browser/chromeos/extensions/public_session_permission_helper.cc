@@ -13,7 +13,6 @@
 #include "base/callback_helpers.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_management_policy_provider.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -53,6 +52,11 @@ class PublicSessionPermissionHelper {
  public:
   PublicSessionPermissionHelper();
   PublicSessionPermissionHelper(PublicSessionPermissionHelper&& other);
+
+  PublicSessionPermissionHelper(const PublicSessionPermissionHelper&) = delete;
+  PublicSessionPermissionHelper& operator=(
+      const PublicSessionPermissionHelper&) = delete;
+
   ~PublicSessionPermissionHelper();
 
   bool HandlePermissionRequestImpl(const Extension& extension,
@@ -65,9 +69,10 @@ class PublicSessionPermissionHelper {
                              APIPermissionID permission);
 
  private:
-  void ResolvePermissionPrompt(const ExtensionInstallPrompt* prompt,
-                               const PermissionIDSet& unprompted_permissions,
-                               ExtensionInstallPrompt::Result prompt_result);
+  void ResolvePermissionPrompt(
+      const ExtensionInstallPrompt* prompt,
+      const PermissionIDSet& unprompted_permissions,
+      ExtensionInstallPrompt::DoneCallbackPayload payload);
 
   PermissionIDSet FilterAllowedPermissions(const PermissionIDSet& permissions);
 
@@ -88,8 +93,6 @@ class PublicSessionPermissionHelper {
   PermissionIDSet allowed_permission_set_;
   PermissionIDSet denied_permission_set_;
   RequestCallbackList callbacks_;
-
-  DISALLOW_COPY_AND_ASSIGN(PublicSessionPermissionHelper);
 };
 
 PublicSessionPermissionHelper::PublicSessionPermissionHelper() {}
@@ -185,10 +188,11 @@ bool PublicSessionPermissionHelper::PermissionAllowedImpl(
 void PublicSessionPermissionHelper::ResolvePermissionPrompt(
     const ExtensionInstallPrompt* prompt,
     const PermissionIDSet& unprompted_permissions,
-    ExtensionInstallPrompt::Result prompt_result) {
+    ExtensionInstallPrompt::DoneCallbackPayload payload) {
   PermissionIDSet& add_to_set =
-      prompt_result == ExtensionInstallPrompt::Result::ACCEPTED ?
-          allowed_permission_set_ : denied_permission_set_;
+      payload.result == ExtensionInstallPrompt::Result::ACCEPTED
+          ? allowed_permission_set_
+          : denied_permission_set_;
   for (const auto& permission : unprompted_permissions) {
     prompted_permission_set_.erase(permission.id());
     add_to_set.insert(permission.id());

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_impl_io_data.h"
 
@@ -29,6 +28,9 @@ class PrefProxyConfigTracker;
 // non-incognito browsing.
 class ChromeBrowserStateImpl final : public ChromeBrowserState {
  public:
+  ChromeBrowserStateImpl(const ChromeBrowserStateImpl&) = delete;
+  ChromeBrowserStateImpl& operator=(const ChromeBrowserStateImpl&) = delete;
+
   ~ChromeBrowserStateImpl() override;
 
   // ChromeBrowserState:
@@ -101,8 +103,6 @@ class ChromeBrowserStateImpl final : public ChromeBrowserState {
   // components/keyed_service/ios/browser_state_dependency_manager.*
   // components/keyed_service/core/keyed_service.h
   // components/keyed_service/ios/browser_state_keyed_service_factory.*
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserStateImpl);
 };
 
 #endif  // IOS_CHROME_BROWSER_BROWSER_STATE_CHROME_BROWSER_STATE_IMPL_H_

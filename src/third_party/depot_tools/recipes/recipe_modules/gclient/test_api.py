@@ -8,7 +8,7 @@ from recipe_engine import recipe_test_api
 
 class GclientTestApi(recipe_test_api.RecipeTestApi):
   def diff_deps_test_data(self, files):
-    return self.m.raw_io.stream_output(
+    return self.m.raw_io.stream_output_text(
         '\n'.join(['10>%s' % fname for fname in files]))
 
   def output_json(self, projects):
@@ -32,5 +32,5 @@ class GclientTestApi(recipe_test_api.RecipeTestApi):
   @staticmethod
   def gen_revision(project):
     """Hash project to bogus deterministic revision values."""
-    h = hashlib.sha1(project)
+    h = hashlib.sha1(project.encode('utf-8'))
     return h.hexdigest()

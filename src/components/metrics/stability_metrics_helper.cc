@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include <string>
-#include <vector>
 
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
@@ -15,7 +14,6 @@
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
-#include "build/chromeos_buildflags.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -27,7 +25,7 @@
 #include <windows.h>  // Needed for STATUS_* codes
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
 #include "components/metrics/system_memory_stats_recorder.h"
 #endif
 
@@ -252,7 +250,7 @@ void StabilityMetricsHelper::LogRendererCrash(bool was_extension_process,
       // TODO(wfh): Check if this should be a Kill or a Crash on Android.
       break;
 #endif
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
       RecordChildKills(histogram_type);
       base::UmaHistogramExactLinear("BrowserRenderProcessHost.ChildKills.OOM",
@@ -311,6 +309,11 @@ void StabilityMetricsHelper::LogRendererLaunchFailed(
                    : prefs::kStabilityRendererFailedLaunchCount;
   RecordStabilityEvent(metric);
   IncrementPrefValue(pref);
+  // TODO(crbug/1278145): Remove the scheduled write if it doesn't help resolve
+  // the discrepancy.
+  // Schedule a Local State write to help diagnose a discrepancy with
+  // Stability.Counts.
+  local_state_->CommitPendingWrite();
 }
 
 void StabilityMetricsHelper::IncrementPrefValue(const char* path) {
@@ -340,16 +343,6 @@ void StabilityMetricsHelper::RecordStabilityEvent(
     StabilityEventType stability_event_type) {
   UMA_STABILITY_HISTOGRAM_ENUMERATION("Stability.Counts2",
                                       stability_event_type);
-  // TODO(crbug.com/1176977): Remove temporary debugging histograms below.
-  // Like UmaHistogramSparse(), but with kUmaStabilityHistogramFlag.
-  base::SparseHistogram::FactoryGet(
-      "Stability.Experimental.Counts2",
-      base::HistogramBase::kUmaStabilityHistogramFlag)
-      ->Add(static_cast<int>(stability_event_type));
-  if (stability_event_type == StabilityEventType::kBrowserCrash) {
-    UMA_STABILITY_HISTOGRAM_BOOLEAN("Stability.Experimental.BrowserCrash",
-                                    true);
-  }
 }
 
 }  // namespace metrics

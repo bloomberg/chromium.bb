@@ -12,10 +12,10 @@
 namespace {
 
 const CXFA_Node::PropertyData kPdfaPropertyData[] = {
-    {XFA_Element::Amd, 1, 0},
-    {XFA_Element::Part, 1, 0},
-    {XFA_Element::IncludeXDPContent, 1, 0},
-    {XFA_Element::Conformance, 1, 0},
+    {XFA_Element::Amd, 1, {}},
+    {XFA_Element::Part, 1, {}},
+    {XFA_Element::IncludeXDPContent, 1, {}},
+    {XFA_Element::Conformance, 1, {}},
 };
 
 const CXFA_Node::AttributeData kPdfaAttributeData[] = {
@@ -28,7 +28,7 @@ const CXFA_Node::AttributeData kPdfaAttributeData[] = {
 CXFA_Pdfa::CXFA_Pdfa(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_Config,
+                XFA_XDPPACKET::kConfig,
                 XFA_ObjectType::Node,
                 XFA_Element::Pdfa,
                 kPdfaPropertyData,

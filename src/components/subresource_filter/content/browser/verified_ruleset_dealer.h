@@ -9,10 +9,10 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/subresource_filter/content/common/ruleset_dealer.h"
 
 namespace base {
@@ -53,6 +53,10 @@ class VerifiedRulesetDealer : public RulesetDealer {
   class Handle;
 
   VerifiedRulesetDealer();
+
+  VerifiedRulesetDealer(const VerifiedRulesetDealer&) = delete;
+  VerifiedRulesetDealer& operator=(const VerifiedRulesetDealer&) = delete;
+
   ~VerifiedRulesetDealer() override;
 
   // RulesetDealer:
@@ -74,8 +78,6 @@ class VerifiedRulesetDealer : public RulesetDealer {
   RulesetVerificationStatus status_ = RulesetVerificationStatus::kNotVerified;
   // Associated with the current |ruleset_file_|;
   int expected_checksum_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(VerifiedRulesetDealer);
 };
 
 // The UI-thread handle that owns a VerifiedRulesetDealer living on a dedicated
@@ -86,6 +88,10 @@ class VerifiedRulesetDealer::Handle {
   // Creates a VerifiedRulesetDealer that is owned by this handle, accessed
   // through this handle, but lives on |task_runner|.
   explicit Handle(scoped_refptr<base::SequencedTaskRunner> task_runner);
+
+  Handle(const Handle&) = delete;
+  Handle& operator=(const Handle&) = delete;
+
   ~Handle();
 
   // Returns the |task_runner| on which the VerifiedRulesetDealer, as well as
@@ -110,11 +116,9 @@ class VerifiedRulesetDealer::Handle {
 
  private:
   // Note: Raw pointer, |dealer_| already holds a reference to |task_runner_|.
-  base::SequencedTaskRunner* task_runner_;
+  raw_ptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<VerifiedRulesetDealer, base::OnTaskRunnerDeleter> dealer_;
   base::SequenceChecker sequence_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(Handle);
 };
 
 // Holds a strong reference to MemoryMappedRuleset, and provides acceess to it.
@@ -128,6 +132,10 @@ class VerifiedRuleset {
   class Handle;
 
   VerifiedRuleset();
+
+  VerifiedRuleset(const VerifiedRuleset&) = delete;
+  VerifiedRuleset& operator=(const VerifiedRuleset&) = delete;
+
   ~VerifiedRuleset();
 
   // Can return nullptr even after initialization in case no ruleset is
@@ -143,8 +151,6 @@ class VerifiedRuleset {
 
   scoped_refptr<const MemoryMappedRuleset> ruleset_;
   base::SequenceChecker sequence_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(VerifiedRuleset);
 };
 
 // The UI-thread handle that owns a VerifiedRuleset living on a dedicated
@@ -156,6 +162,10 @@ class VerifiedRuleset::Handle {
   // |task_runner| using |dealer_handle|. The instance remains owned by this
   // handle, but living and accessed on the |task_runner|.
   explicit Handle(VerifiedRulesetDealer::Handle* dealer_handle);
+
+  Handle(const Handle&) = delete;
+  Handle& operator=(const Handle&) = delete;
+
   ~Handle();
 
   // Returns the |task_runner| on which the VerifiedRuleset, as well as the
@@ -172,11 +182,9 @@ class VerifiedRuleset::Handle {
   friend class AsyncDocumentSubresourceFilter;
 
   // Note: Raw pointer, |ruleset_| already holds a reference to |task_runner_|.
-  base::SequencedTaskRunner* task_runner_;
+  raw_ptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<VerifiedRuleset, base::OnTaskRunnerDeleter> ruleset_;
   base::SequenceChecker sequence_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(Handle);
 };
 
 }  // namespace subresource_filter

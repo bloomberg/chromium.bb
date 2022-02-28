@@ -46,6 +46,22 @@ class CastOpModel : public SingleOpModel {
   int output_;
 };
 
+TEST(CastOpModel, CastInt16ToFloat) {
+  CastOpModel m({TensorType_INT16, {2, 3}}, {TensorType_FLOAT32, {2, 3}});
+  m.PopulateTensor<int16_t>(m.input(), {100, 200, 300, 400, 500, 600});
+  m.Invoke();
+  EXPECT_THAT(m.ExtractVector<float>(m.output()),
+              ElementsAreArray({100.f, 200.f, 300.f, 400.f, 500.f, 600.f}));
+}
+
+TEST(CastOpModel, CastInt16ToInt32) {
+  CastOpModel m({TensorType_INT16, {2, 3}}, {TensorType_INT32, {2, 3}});
+  m.PopulateTensor<int16_t>(m.input(), {100, 200, 300, 400, 500, 600});
+  m.Invoke();
+  EXPECT_THAT(m.ExtractVector<int32_t>(m.output()),
+              ElementsAreArray({100, 200, 300, 400, 500, 600}));
+}
+
 TEST(CastOpModel, CastInt32ToFloat) {
   CastOpModel m({TensorType_INT32, {2, 3}}, {TensorType_FLOAT32, {2, 3}});
   m.PopulateTensor<int32_t>(m.input(), {100, 200, 300, 400, 500, 600});
@@ -59,6 +75,14 @@ TEST(CastOpModel, CastFloatToInt32) {
   m.PopulateTensor<float>(m.input(), {100.f, 20.f, 3.f, 0.4f, 0.999f, 1.1f});
   m.Invoke();
   EXPECT_THAT(m.ExtractVector<int32_t>(m.output()),
+              ElementsAreArray({100, 20, 3, 0, 0, 1}));
+}
+
+TEST(CastOpModel, CastFloatToInt16) {
+  CastOpModel m({TensorType_FLOAT32, {3, 2}}, {TensorType_INT16, {3, 2}});
+  m.PopulateTensor<float>(m.input(), {100.f, 20.f, 3.f, 0.4f, 0.999f, 1.1f});
+  m.Invoke();
+  EXPECT_THAT(m.ExtractVector<int16_t>(m.output()),
               ElementsAreArray({100, 20, 3, 0, 0, 1}));
 }
 
@@ -189,6 +213,38 @@ TEST(CastOpModel, CastComplex64ToComplex64) {
            std::complex<float>(3.0f, 13.0f), std::complex<float>(4.0f, 14.0f),
            std::complex<float>(5.0f, 15.0f),
            std::complex<float>(6.0f, 16.0f)}));
+}
+
+TEST(CastOpModel, CastUInt32ToInt32) {
+  CastOpModel m({TensorType_UINT32, {2, 3}}, {TensorType_INT32, {2, 3}});
+  m.PopulateTensor<uint32_t>(m.input(), {100, 200, 300, 400, 500, 600});
+  m.Invoke();
+  EXPECT_THAT(m.ExtractVector<int32_t>(m.output()),
+              ElementsAreArray({100, 200, 300, 400, 500, 600}));
+}
+
+TEST(CastOpModel, CastInt32ToUInt32) {
+  CastOpModel m({TensorType_INT32, {2, 3}}, {TensorType_UINT32, {2, 3}});
+  m.PopulateTensor<int32_t>(m.input(), {100, 200, 300, 400, 500, 600});
+  m.Invoke();
+  EXPECT_THAT(m.ExtractVector<uint32_t>(m.output()),
+              ElementsAreArray({100, 200, 300, 400, 500, 600}));
+}
+
+TEST(CastOpModel, CastUInt8ToInt8) {
+  CastOpModel m({TensorType_UINT8, {2, 3}}, {TensorType_INT8, {2, 3}});
+  m.PopulateTensor<uint8_t>(m.input(), {10, 20, 30, 40, 50, 60});
+  m.Invoke();
+  EXPECT_THAT(m.ExtractVector<int8_t>(m.output()),
+              ElementsAreArray({10, 20, 30, 40, 50, 60}));
+}
+
+TEST(CastOpModel, CastInt8ToUInt8) {
+  CastOpModel m({TensorType_INT8, {2, 3}}, {TensorType_UINT8, {2, 3}});
+  m.PopulateTensor<int8_t>(m.input(), {10, 20, 30, 40, 50, 60});
+  m.Invoke();
+  EXPECT_THAT(m.ExtractVector<uint8_t>(m.output()),
+              ElementsAreArray({10, 20, 30, 40, 50, 60}));
 }
 
 }  // namespace

@@ -23,7 +23,7 @@ PresentationNavigationPolicy::~PresentationNavigationPolicy() = default;
 bool PresentationNavigationPolicy::AllowNavigation(
     content::NavigationHandle* navigation_handle) {
   // We only care about top-level navigations that are cross-document.
-  if (!navigation_handle->IsInMainFrame() ||
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return true;
   }

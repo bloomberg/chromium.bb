@@ -16,6 +16,7 @@
 
 #include "base/check.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "cc/base/region.h"
 #include "cc/base/synced_property.h"
 #include "cc/cc_export.h"
@@ -31,13 +32,15 @@
 #include "cc/tiles/tile_priority.h"
 #include "cc/trees/target_property.h"
 #include "components/viz/common/quads/shared_quad_state.h"
+#include "components/viz/common/surfaces/region_capture_bounds.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/geometry/scroll_offset.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace viz {
 class ClientResourceProvider;
@@ -243,7 +246,7 @@ class CC_EXPORT LayerImpl {
     is_inner_viewport_scroll_layer_ = true;
   }
 
-  void SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset);
+  void SetCurrentScrollOffset(const gfx::PointF& scroll_offset);
 
   // Returns the delta of the scroll that was outside of the bounds of the
   // initial scroll
@@ -268,6 +271,11 @@ class CC_EXPORT LayerImpl {
   const Region& GetAllTouchActionRegions() const;
   bool has_touch_action_regions() const {
     return !touch_action_region_.IsEmpty();
+  }
+
+  void SetCaptureBounds(std::unique_ptr<viz::RegionCaptureBounds> bounds);
+  const viz::RegionCaptureBounds* capture_bounds() const {
+    return capture_bounds_.get();
   }
 
   // Set or get the region that contains wheel event handler.
@@ -456,7 +464,7 @@ class CC_EXPORT LayerImpl {
   virtual const char* LayerTypeAsString() const;
 
   const int layer_id_;
-  LayerTreeImpl* const layer_tree_impl_;
+  const raw_ptr<LayerTreeImpl> layer_tree_impl_;
   const bool will_always_push_properties_ : 1;
 
   // Properties synchronized from the associated Layer.
@@ -500,6 +508,10 @@ class CC_EXPORT LayerImpl {
 
   Region non_fast_scrollable_region_;
   TouchActionRegion touch_action_region_;
+
+  // The bounds of elements marked for potential region capture, stored in
+  // the coordinate space of this layer.
+  std::unique_ptr<viz::RegionCaptureBounds> capture_bounds_;
   Region wheel_event_handler_region_;
   SkColor background_color_;
   SkColor safe_opaque_background_color_;

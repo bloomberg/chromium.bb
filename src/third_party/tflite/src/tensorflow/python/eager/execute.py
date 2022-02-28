@@ -14,10 +14,6 @@
 # ==============================================================================
 """Functions called by the generated code to execute an eager-mode op."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import six
 
 from google.protobuf import text_format
@@ -36,9 +32,8 @@ def quick_execute(op_name, num_outputs, inputs, attrs, ctx, name=None):
   Args:
     op_name: Name of the TensorFlow operation (see REGISTER_OP in C++ code) to
       execute.
-    num_outputs: The number of outputs of the operation to fetch.
-                 (Explicitly provided instead of being inferred for performance
-                 reasons).
+    num_outputs: The number of outputs of the operation to fetch. (Explicitly
+      provided instead of being inferred for performance reasons).
     inputs: A list of inputs to the operation. Each entry should be a Tensor, or
       a value which can be passed to the Tensor constructor to create one.
     attrs: A tuple with alternating string attr names and attr values for this
@@ -60,10 +55,8 @@ def quick_execute(op_name, num_outputs, inputs, attrs, ctx, name=None):
                                         inputs, attrs, num_outputs)
   except core._NotOkStatusException as e:
     if name is not None:
-      message = e.message + " name: " + name
-    else:
-      message = e.message
-    six.raise_from(core._status_to_exception(e.code, message), None)
+      e.message += " name: " + name
+    raise core._status_to_exception(e) from None
   except TypeError as e:
     keras_symbolic_tensors = [
         x for x in inputs if ops._is_keras_symbolic_tensor(x)
@@ -116,10 +109,8 @@ def execute_with_cancellation(op_name,
                                                   num_outputs)
   except core._NotOkStatusException as e:
     if name is not None:
-      message = e.message + " name: " + name
-    else:
-      message = e.message
-    six.raise_from(core._status_to_exception(e.code, message), None)
+      e.message += " name: " + name
+    raise core._status_to_exception(e) from None
   except TypeError as e:
     keras_symbolic_tensors = [
         x for x in inputs if ops._is_keras_symbolic_tensor(x)
@@ -151,7 +142,7 @@ def must_record_gradient():
 
 
 def record_gradient(unused_op_name, unused_inputs, unused_attrs,
-                    unused_results):
+                    unused_outputs):
   """Import backprop if you want gradients recorded."""
   pass
 
@@ -212,8 +203,8 @@ def make_shape(v, arg_name):
   except TypeError as e:
     raise TypeError("Error converting %s to a TensorShape: %s." % (arg_name, e))
   except ValueError as e:
-    raise ValueError("Error converting %s to a TensorShape: %s." % (arg_name,
-                                                                    e))
+    raise ValueError("Error converting %s to a TensorShape: %s." %
+                     (arg_name, e))
   if shape.ndims is None:
     return None
   else:
@@ -233,7 +224,7 @@ def make_tensor(v, arg_name):
       (repr(v), arg_name))
 
 
-def args_to_matching_eager(l, ctx, default_dtype=None):
+def args_to_matching_eager(l, ctx, allowed_dtypes, default_dtype=None):
   """Convert sequence `l` to eager same-type Tensors."""
   if (not l) and (default_dtype is not None):
     return default_dtype, []  # List is empty; assume default dtype.
@@ -243,8 +234,6 @@ def args_to_matching_eager(l, ctx, default_dtype=None):
       break
   else:  # note: intentional for-else
     return l[0]._datatype_enum(), l  # pylint: disable=protected-access
-  # TODO(josh11b): Could we do a better job if we also passed in the
-  # allowed dtypes when that was known?
 
   # Is some input already a Tensor with a dtype?
   dtype = None
@@ -256,20 +245,34 @@ def args_to_matching_eager(l, ctx, default_dtype=None):
   if dtype is None:
     # Infer a dtype based on the first value, and use that dtype for the
     # remaining values.
+
     ret = []
     for t in l:
-      ret.append(
-          ops.convert_to_tensor(
-              t, dtype, preferred_dtype=default_dtype, ctx=ctx))
+      tensor = None
+      # First see if we can get a valid dtype with the default conversion
+      # and see if it matches an allowed dtypes. Some ops like ConcatV2 may
+      # not list allowed dtypes, in which case we should skip this.
+      if dtype is None and allowed_dtypes:
+        tensor = ops.convert_to_tensor(t, ctx=ctx)
+        # If we did not match an allowed dtype, try again with the default
+        # dtype. This could be because we have an empty tensor and thus we
+        # picked the wrong type.
+        if tensor.dtype not in allowed_dtypes:
+          tensor = None
+
+      if tensor is None:
+        tensor = ops.convert_to_tensor(
+            t, dtype, preferred_dtype=default_dtype, ctx=ctx)
+
+      ret.append(tensor)
       if dtype is None:
-        dtype = ret[-1].dtype
+        dtype = tensor.dtype
   else:
     ret = [ops.convert_to_tensor(t, dtype, ctx=ctx) for t in l]
 
   # TODO(slebedev): consider removing this as it leaks a Keras concept.
   # pylint: disable=protected-access
-  keras_symbolic_tensors = [x for x in ret if
-                            ops._is_keras_symbolic_tensor(x)]
+  keras_symbolic_tensors = [x for x in ret if ops._is_keras_symbolic_tensor(x)]
   if keras_symbolic_tensors:
     raise core._SymbolicException(
         "Using symbolic output of a Keras layer during eager execution "
@@ -289,7 +292,7 @@ def args_to_mixed_eager_tensors(lists, ctx):
   assert len(lists) > 1
 
   # Generate an error if len(lists[i]) is not the same for all i.
-  lists_ret = []
+  lists_ret = [[]]
   for l in lists[1:]:
     if len(l) != len(lists[0]):
       raise ValueError(

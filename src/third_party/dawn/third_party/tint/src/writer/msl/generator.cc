@@ -14,29 +14,50 @@
 
 #include "src/writer/msl/generator.h"
 
+#include <utility>
+
+#include "src/writer/msl/generator_impl.h"
+
 namespace tint {
 namespace writer {
 namespace msl {
 
-Generator::Generator(const Program* program)
-    : impl_(std::make_unique<GeneratorImpl>(program)) {}
+Options::Options() = default;
+Options::~Options() = default;
+Options::Options(const Options&) = default;
+Options& Options::operator=(const Options&) = default;
 
-Generator::~Generator() = default;
+Result::Result() = default;
+Result::~Result() = default;
+Result::Result(const Result&) = default;
 
-bool Generator::Generate() {
-  auto ret = impl_->Generate();
-  if (!ret) {
-    error_ = impl_->error();
+Result Generate(const Program* program, const Options& options) {
+  Result result;
+
+  // Sanitize the program.
+  auto sanitized_result = Sanitize(
+      program, options.buffer_size_ubo_index, options.fixed_sample_mask,
+      options.emit_vertex_point_size, options.disable_workgroup_init,
+      options.array_length_from_uniform);
+  if (!sanitized_result.program.IsValid()) {
+    result.success = false;
+    result.error = sanitized_result.program.Diagnostics().str();
+    return result;
   }
-  return ret;
-}
+  result.needs_storage_buffer_sizes =
+      sanitized_result.needs_storage_buffer_sizes;
+  result.used_array_length_from_uniform_indices =
+      std::move(sanitized_result.used_array_length_from_uniform_indices);
 
-std::string Generator::result() const {
-  return impl_->result();
-}
+  // Generate the MSL code.
+  auto impl = std::make_unique<GeneratorImpl>(&sanitized_result.program);
+  result.success = impl->Generate();
+  result.error = impl->error();
+  result.msl = impl->result();
+  result.has_invariant_attribute = impl->HasInvariant();
+  result.workgroup_allocations = impl->DynamicWorkgroupAllocations();
 
-std::string Generator::error() const {
-  return impl_->error();
+  return result;
 }
 
 }  // namespace msl

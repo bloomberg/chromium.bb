@@ -61,10 +61,14 @@ class TsLibraryTest(unittest.TestCase):
         'tsconfig_definitions.json',
         'tsconfig.json',
         'tsconfig.manifest',
-        'tsconfig.tsbuildinfo',
     ]
     for f in files:
       self.assertTrue(os.path.exists(os.path.join(gen_dir, f)), f)
+
+    # Check that the generated .tsbuildinfo file is deleted.
+    tsbuildinfo = 'tsconfig.tsbuildinfo'
+    self.assertFalse(os.path.exists(os.path.join(gen_dir, tsbuildinfo)),
+                     tsbuildinfo)
 
   # Builds project2 which depends on files from project1 and project3, both via
   # relative URLs, as well as via absolute chrome:// URLs.
@@ -98,13 +102,16 @@ class TsLibraryTest(unittest.TestCase):
         'bar.js',
         'tsconfig.json',
         'tsconfig.manifest',
-        'tsconfig.tsbuildinfo',
     ]
     for f in files:
       self.assertTrue(os.path.exists(os.path.join(gen_dir, f)), f)
 
-    dts_file = 'bar.d.ts'
-    self.assertFalse(os.path.exists(os.path.join(gen_dir, dts_file)), dts_file)
+    non_existing_files = [
+        'bar.d.ts',
+        'tsconfig.tsbuildinfo',
+    ]
+    for f in non_existing_files:
+      self.assertFalse(os.path.exists(os.path.join(gen_dir, f)), f)
 
   # Builds project3, which includes only definition files.
   def _build_project3(self):
@@ -125,7 +132,7 @@ class TsLibraryTest(unittest.TestCase):
 
   def _assert_project3_output(self, gen_dir):
     self.assertTrue(os.path.exists(os.path.join(gen_dir, 'tsconfig.json')))
-    self.assertTrue(
+    self.assertFalse(
         os.path.exists(os.path.join(gen_dir, 'tsconfig.tsbuildinfo')))
     self.assertFalse(os.path.exists(os.path.join(gen_dir, 'tsconfig.manifest')))
 

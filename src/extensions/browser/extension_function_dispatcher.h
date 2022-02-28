@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/mojom/frame.mojom.h"
@@ -134,6 +135,7 @@ class ExtensionFunctionDispatcher
       const mojom::RequestParams& params,
       const Extension* extension,
       int requesting_process_id,
+      bool is_worker_request,
       const GURL* rfh_url,
       const ProcessMap& process_map,
       ExtensionAPI* api,
@@ -148,9 +150,9 @@ class ExtensionFunctionDispatcher
 
   void RemoveWorkerCallbacksForProcess(int render_process_id);
 
-  content::BrowserContext* browser_context_;
+  raw_ptr<content::BrowserContext> browser_context_;
 
-  Delegate* delegate_;
+  raw_ptr<Delegate> delegate_;
 
   // This map doesn't own either the keys or the values. When a RenderFrameHost
   // instance goes away, the corresponding entry in this map (if exists) will be

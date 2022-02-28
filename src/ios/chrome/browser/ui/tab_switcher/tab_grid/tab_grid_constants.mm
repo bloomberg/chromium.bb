@@ -16,14 +16,14 @@ NSString* const kTabGridRegularTabsPageButtonIdentifier =
 NSString* const kTabGridRemoteTabsPageButtonIdentifier =
     @"TabGridRemoteTabsPageButtonIdentifier";
 NSString* const kTabGridDoneButtonIdentifier = @"TabGridDoneButtonIdentifier";
+NSString* const kTabGridCancelButtonIdentifier =
+    @"TabGridCancelButtonIdentifier";
+NSString* const kTabGridSearchButtonIdentifier =
+    @"TabGridSearchButtonIdentifier";
 NSString* const kTabGridCloseAllButtonIdentifier =
     @"TabGridCloseAllButtonIdentifier";
 NSString* const kTabGridUndoCloseAllButtonIdentifier =
     @"TabGridUndoCloseAllButtonIdentifier";
-NSString* const kTabGridCloseButtonIdentifier =
-    @"TabGridUndoCloseButtonIdentifier";
-NSString* const kTabGridAddToButtonIdentifier = @"TabGridAddToButtonIdentifier";
-NSString* const kTabGridShareButtonIdentifier = @"TabGridShareButtonIdentifier";
 NSString* const kTabGridIncognitoTabsEmptyStateIdentifier =
     @"TabGridIncognitoTabsEmptyStateIdentifier";
 NSString* const kTabGridRegularTabsEmptyStateIdentifier =
@@ -31,6 +31,16 @@ NSString* const kTabGridRegularTabsEmptyStateIdentifier =
 NSString* const kTabGridScrollViewIdentifier = @"kTabGridScrollViewIdentifier";
 NSString* const kRegularTabGridIdentifier = @"kRegularTabGridIdentifier";
 NSString* const kIncognitoTabGridIdentifier = @"kIncognitoTabGridIdentifier";
+
+NSString* const kTabGridEditButtonIdentifier = @"kTabGridEditButtonIdentifier";
+NSString* const kTabGridEditCloseTabsButtonIdentifier =
+    @"kTabGridEditCloseTabsButtonIdentifier";
+NSString* const kTabGridEditSelectAllButtonIdentifier =
+    @"kTabGridEditSelectAllButtonIdentifier";
+NSString* const kTabGridEditAddToButtonIdentifier =
+    @"kTabGridEditAddToButtonIdentifier";
+NSString* const kTabGridEditShareButtonIdentifier =
+    @"kTabGridEditShareButtonIdentifier";
 
 // The color of the text buttons in the toolbars.
 const int kTabGridToolbarTextButtonColor = 0xFFFFFF;
@@ -52,6 +62,14 @@ extern const CGFloat kTabGridEmptyStateHorizontalInset = 80.0f;
 // The insets from the edges for the floating button.
 const CGFloat kTabGridFloatingButtonVerticalInset = 28.0f;
 const CGFloat kTabGridFloatingButtonHorizontalInset = 20.0f;
+
+// The Search bar original width ratio of the available space from the
+// containing toolbar before any width modifiers.
+const CGFloat kTabGridSearchBarWidthRatio = 0.9f;
+// The tab grid Search bar height.
+const CGFloat kTabGridSearchBarHeight = 44.0f;
+// The Search bar width ratio modifier for non-compact orientation.
+const CGFloat kTabGridSearchBarNonCompactWidthRatioModifier = 0.5f;
 
 // Intrinsic heights of the tab grid toolbars.
 const CGFloat kTabGridTopToolbarHeight = 52.0f;

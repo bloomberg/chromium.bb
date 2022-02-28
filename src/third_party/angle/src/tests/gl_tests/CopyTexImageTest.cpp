@@ -409,9 +409,6 @@ TEST_P(CopyTexImageTest, CopyTexSubImageFromCubeMap)
 // Calling CopyTexSubImage to a non-cube-complete texture.
 TEST_P(CopyTexImageTest, CopyTexSubImageToNonCubeCompleteDestination)
 {
-    // TODO(hqle): Find what wrong with NVIDIA GPU. http://anglebug.com/4137
-    ANGLE_SKIP_TEST_IF(IsNVIDIA() && IsMetal());
-
     constexpr GLsizei kCubeMapFaceCount = 6;
 
     // The framebuffer will be a 1x6 image with 6 different colors.  Each glCopyTexSubImage2D will
@@ -518,7 +515,7 @@ TEST_P(CopyTexImageTest, CopyTexSubImageFrom3DTexureOES)
     ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_3D"));
     // TODO(anglebug.com/3801)
     // Seems to fail on D3D11 Windows.
-    ANGLE_SKIP_TEST_IF(IsD3D11() & IsWindows());
+    ANGLE_SKIP_TEST_IF(IsD3D11() && IsWindows());
 
     // http://anglebug.com/4927
     ANGLE_SKIP_TEST_IF((IsPixel2() || IsNexus5X()) && IsOpenGLES());
@@ -640,7 +637,7 @@ TEST_P(CopyTexImageTestES3, ReadBufferIsNone)
 TEST_P(CopyTexImageTestES3, 2DArraySubImage)
 {
     // Seems to fail on AMD OpenGL Windows.
-    ANGLE_SKIP_TEST_IF(IsAMD() && IsOpenGL() & IsWindows());
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsOpenGL() && IsWindows());
 
     GLTexture tex;
     glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
@@ -682,7 +679,7 @@ TEST_P(CopyTexImageTestES3, CopyTexSubImageFromTexture3D)
 {
     // TODO(anglebug.com/3801)
     // Seems to fail on D3D11 Windows.
-    ANGLE_SKIP_TEST_IF(IsD3D11() & IsWindows());
+    ANGLE_SKIP_TEST_IF(IsD3D11() && IsWindows());
 
     constexpr GLsizei kTexSize = 4;
     constexpr GLsizei kLayers  = 2;

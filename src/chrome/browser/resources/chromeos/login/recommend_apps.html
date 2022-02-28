@@ -6,43 +6,35 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 
-<link rel="import" href="/components/oobe_adaptive_dialog.html">
-<link rel="import" href="/components/oobe_i18n_behavior.html">
-<link rel="import" href="/components/throbber_notice.html">
-<link rel="import" href="/components/oobe_dialog_host_behavior.html">
-<link rel="import" href="/components/login_screen_behavior.html">
-<link rel="import" href="/components/multi_step_behavior.html">
+<link rel="import" href="/components/behaviors/login_screen_behavior.html">
+<link rel="import" href="/components/behaviors/multi_step_behavior.html">
+<link rel="import" href="/components/behaviors/oobe_dialog_host_behavior.html">
+<link rel="import" href="/components/behaviors/oobe_i18n_behavior.html">
+<link rel="import" href="/components/buttons/oobe_text_button.html">
+<link rel="import" href="/components/common_styles/oobe_dialog_host_styles.html">
+<link rel="import" href="/components/dialogs/oobe_adaptive_dialog.html">
 
 <dom-module id="recommend-apps-element">
   <template>
-    <style include="oobe-dialog-host action-link">
+    <style include="oobe-dialog-host-styles action-link">
       #skipButton {
         color: rgba(0, 0, 0, 0.54);
         padding-inline-end: 6px;
       }
 
-      :host-context(html:not([new-layout])) #app-list-view-container {
-        height: 308px;
-        margin-top: 23px;
-      }
-
-      :host-context(html[new-layout]) #app-list-view-container {
+      #app-list-view-container {
         display: flex;
         flex-direction: column;
       }
 
       #selectAllButton {
-        display: none;
-      }
-
-      :host-context(html[new-layout]) #selectAllButton {
         display: flex;
         justify-content: flex-end;
         margin-bottom: 16px;
       }
     </style>
     <oobe-loading-dialog id="loadingDialog" for-step="loading"
-        text-key="recommendAppsLoading">
+        title-key="recommendAppsLoading">
       <iron-icon slot="icon" icon="oobe-32:googleg"></iron-icon>
     </oobe-loading-dialog>
     <oobe-adaptive-dialog id="appsDialog" role="dialog"

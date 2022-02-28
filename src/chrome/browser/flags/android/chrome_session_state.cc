@@ -9,10 +9,12 @@
 #include "services/metrics/public/cpp/ukm_source.h"
 
 using chrome::android::ActivityType;
+using chrome::android::DarkModeState;
 
 namespace {
 ActivityType activity_type = ActivityType::kTabbed;
 bool is_in_multi_window_mode = false;
+DarkModeState dark_mode_state = DarkModeState::kUnknown;
 }  // namespace
 
 namespace chrome {
@@ -37,6 +39,10 @@ ActivityType GetActivityType() {
   return activity_type;
 }
 
+DarkModeState GetDarkModeState() {
+  return dark_mode_state;
+}
+
 bool GetIsInMultiWindowModeValue() {
   return is_in_multi_window_mode;
 }
@@ -46,10 +52,15 @@ bool GetIsInMultiWindowModeValue() {
 
 static void JNI_ChromeSessionState_SetActivityType(JNIEnv* env, jint type) {
   activity_type = static_cast<ActivityType>(type);
-  // TODO(peconn): Look into adding this for UKM as well.
+  // TODO(crbug/1228735): deprecate custom tab field.
   ukm::UkmSource::SetCustomTabVisible(
       GetCustomTabsVisibleValue(activity_type) ==
       chrome::android::VISIBLE_CUSTOM_TAB);
+  ukm::UkmSource::SetAndroidActivityTypeState(type);
+}
+
+static void JNI_ChromeSessionState_SetDarkModeState(JNIEnv* env, jint state) {
+  dark_mode_state = static_cast<DarkModeState>(state);
 }
 
 static void JNI_ChromeSessionState_SetIsInMultiWindowMode(

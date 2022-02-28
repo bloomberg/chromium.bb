@@ -12,7 +12,7 @@
 #include <set>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -26,19 +26,19 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/allow_service_worker_result.h"
+#include "content/public/browser/document_user_data.h"
 #include "content/public/browser/navigation_handle_user_data.h"
-#include "content/public/browser/render_document_host_user_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+namespace blink {
+class StorageKey;
+}  // namespace blink
+
 namespace content {
 class NavigationHandle;
 }
-
-namespace storage {
-class StorageKey;
-}  // namespace storage
 
 namespace url {
 class Origin;
@@ -71,7 +71,7 @@ namespace content_settings {
 // loaded page once the navigation commits or discarded if it does not.
 class PageSpecificContentSettings
     : public content_settings::Observer,
-      public content::RenderDocumentHostUserData<PageSpecificContentSettings> {
+      public content::DocumentUserData<PageSpecificContentSettings> {
  public:
   // Fields describing the current mic/camera state. If a page has attempted to
   // access a device, the XXX_ACCESSED bit will be set. If access was blocked,
@@ -172,6 +172,10 @@ class PageSpecificContentSettings
   class SiteDataObserver {
    public:
     explicit SiteDataObserver(content::WebContents* web_contents);
+
+    SiteDataObserver(const SiteDataObserver&) = delete;
+    SiteDataObserver& operator=(const SiteDataObserver&) = delete;
+
     virtual ~SiteDataObserver();
 
     // Called whenever site data is accessed.
@@ -184,10 +188,12 @@ class PageSpecificContentSettings
     void WebContentsDestroyed();
 
    private:
-    content::WebContents* web_contents_;
-
-    DISALLOW_COPY_AND_ASSIGN(SiteDataObserver);
+    raw_ptr<content::WebContents> web_contents_;
   };
+
+  PageSpecificContentSettings(const PageSpecificContentSettings&) = delete;
+  PageSpecificContentSettings& operator=(const PageSpecificContentSettings&) =
+      delete;
 
   ~PageSpecificContentSettings() override;
 
@@ -253,7 +259,7 @@ class PageSpecificContentSettings
                                    int render_frame_id,
                                    const GURL& worker_url,
                                    const std::string& name,
-                                   const storage::StorageKey& storage_key,
+                                   const blink::StorageKey& storage_key,
                                    bool blocked_by_policy);
 
   static content::WebContentsObserver* GetWebContentsObserverForTest(
@@ -356,10 +362,10 @@ class PageSpecificContentSettings
   void OnCacheStorageAccessed(const GURL& url, bool blocked_by_policy);
   void OnSharedWorkerAccessed(const GURL& worker_url,
                               const std::string& name,
-                              const storage::StorageKey& storage_key,
+                              const blink::StorageKey& storage_key,
                               bool blocked_by_policy);
   void OnWebDatabaseAccessed(const GURL& url, bool blocked_by_policy);
-#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN)
   void OnProtectedMediaIdentifierPermissionSet(const GURL& requesting_frame,
                                                bool allowed);
 #endif
@@ -389,7 +395,7 @@ class PageSpecificContentSettings
   bool HasContentSettingChangedViaPageInfo(ContentSettingsType type) const;
 
  private:
-  friend class content::RenderDocumentHostUserData<PageSpecificContentSettings>;
+  friend class content::DocumentUserData<PageSpecificContentSettings>;
 
   // Keeps track of cookie and service worker access during a navigation.
   // These types of access can happen for the current page or for a new
@@ -453,9 +459,6 @@ class PageSpecificContentSettings
         content::NavigationHandle* navigation_handle) override;
     void DidFinishNavigation(
         content::NavigationHandle* navigation_handle) override;
-    // TODO(carlscab): Change interface to pass target RenderFrameHost
-    void AppCacheAccessed(const GURL& manifest_url,
-                          bool blocked_by_policy) override;
     void OnCookiesAccessed(
         content::NavigationHandle* navigation,
         const content::CookieAccessDetails& details) override;
@@ -478,7 +481,7 @@ class PageSpecificContentSettings
 
     std::unique_ptr<Delegate> delegate_;
 
-    HostContentSettingsMap* map_;
+    raw_ptr<HostContentSettingsMap> map_;
 
     // All currently registered |SiteDataObserver|s.
     base::ObserverList<SiteDataObserver>::Unchecked observer_list_;
@@ -486,12 +489,18 @@ class PageSpecificContentSettings
     WEB_CONTENTS_USER_DATA_KEY_DECL();
   };
 
+  struct PendingUpdates {
+    PendingUpdates();
+    ~PendingUpdates();
+
+    std::vector<base::OnceClosure> delegate_updates;
+    bool site_data_accessed = false;
+  };
+
   explicit PageSpecificContentSettings(
       content::RenderFrameHost* rfh,
       PageSpecificContentSettings::WebContentsHandler& handler,
       Delegate* delegate);
-
-  void AppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
 
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
@@ -501,12 +510,33 @@ class PageSpecificContentSettings
   // Clears settings changed by the user via PageInfo since the last navigation.
   void ClearContentSettingsChangedViaPageInfo();
 
+  bool IsPagePrerendering() const;
+  void OnPrerenderingPageActivation();
+
+  // Delays the call of the delegate method if the page is currently
+  // prerendering until the page is activated; directly calls the method
+  // otherwise.
+  template <typename DelegateMethod, typename... Args>
+  void NotifyDelegate(DelegateMethod method, Args... args) {
+    if (IsPagePrerendering()) {
+      DCHECK(updates_queued_during_prerender_);
+      updates_queued_during_prerender_->delegate_updates.emplace_back(
+          base::BindOnce(method, base::Unretained(delegate_), args...));
+      return;
+    }
+    (*delegate_.*method)(args...);
+  }
+  // Notifies observers. Like |NotifyDelegate|, the notification is delayed for
+  // prerendering pages until the page is activated.
+  void NotifySiteDataObservers();
+
+  // Tells the delegate to update the location bar. This method is a no-op if
+  // the page is currently prerendering.
+  void MaybeUpdateLocationBar();
+
   WebContentsHandler& handler_;
-  content::RenderFrameHost* main_frame_;
 
-  Delegate* delegate_;
-
-  GURL visible_url_;
+  raw_ptr<Delegate> delegate_;
 
   struct ContentSettingsStatus {
     bool blocked;
@@ -516,7 +546,7 @@ class PageSpecificContentSettings
   std::map<ContentSettingsType, ContentSettingsStatus> content_settings_status_;
 
   // Profile-bound, this will outlive this class (which is WebContents bound).
-  HostContentSettingsMap* map_;
+  raw_ptr<HostContentSettingsMap> map_;
 
   // Stores the blocked/allowed cookies.
   browsing_data::LocalSharedObjectsContainer allowed_local_shared_objects_;
@@ -553,11 +583,13 @@ class PageSpecificContentSettings
   // navigation. Used to determine whether to display the settings in page info.
   std::set<ContentSettingsType> content_settings_changed_via_page_info_;
 
-  RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL();
+  // Calls to |delegate_| and SiteDataObservers that have been queued up while
+  // the page is prerendering. These calls are run when the page is activated.
+  std::unique_ptr<PendingUpdates> updates_queued_during_prerender_;
+
+  DOCUMENT_USER_DATA_KEY_DECL();
 
   base::WeakPtrFactory<PageSpecificContentSettings> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PageSpecificContentSettings);
 };
 
 }  // namespace content_settings

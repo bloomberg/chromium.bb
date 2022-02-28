@@ -28,6 +28,7 @@
 #include "libavutil/intreadwrite.h"
 #include "libavutil/mem.h"
 #include "bytestream.h"
+#include "internal.h"
 
 #define STYLE_FLAG_BOLD         (1<<0)
 #define STYLE_FLAG_ITALIC       (1<<1)
@@ -582,7 +583,7 @@ static const AVClass mov_text_decoder_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_movtext_decoder = {
+const AVCodec ff_movtext_decoder = {
     .name         = "mov_text",
     .long_name    = NULL_IF_CONFIG_SMALL("3GPP Timed Text subtitle"),
     .type         = AVMEDIA_TYPE_SUBTITLE,
@@ -593,4 +594,5 @@ AVCodec ff_movtext_decoder = {
     .decode       = mov_text_decode_frame,
     .close        = mov_text_decode_close,
     .flush        = mov_text_flush,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

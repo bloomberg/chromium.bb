@@ -64,10 +64,11 @@ WebStatePolicyDecider::~WebStatePolicyDecider() {
   }
 }
 
-WebStatePolicyDecider::PolicyDecision WebStatePolicyDecider::ShouldAllowRequest(
+void WebStatePolicyDecider::ShouldAllowRequest(
     NSURLRequest* request,
-    const WebStatePolicyDecider::RequestInfo& request_info) {
-  return WebStatePolicyDecider::PolicyDecision::Allow();
+    RequestInfo request_info,
+    PolicyDecisionCallback callback) {
+  std::move(callback).Run(PolicyDecision::Allow());
 }
 
 bool WebStatePolicyDecider::ShouldAllowErrorPageToBeDisplayed(
@@ -78,8 +79,8 @@ bool WebStatePolicyDecider::ShouldAllowErrorPageToBeDisplayed(
 
 void WebStatePolicyDecider::ShouldAllowResponse(
     NSURLResponse* response,
-    bool for_main_frame,
-    base::OnceCallback<void(PolicyDecision)> callback) {
+    ResponseInfo response_info,
+    PolicyDecisionCallback callback) {
   std::move(callback).Run(PolicyDecision::Allow());
 }
 

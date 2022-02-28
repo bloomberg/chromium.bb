@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for MixedPrecisionLossScaleOptimizer."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os
 
 from absl.testing import parameterized
@@ -310,7 +306,7 @@ class MixedPrecisionLossScaleOptimizerTest(test.TestCase,
 
   def testPassingNoneToLossScale(self):
     opt = gradient_descent.GradientDescentOptimizer(1.0)
-    with self.assertRaisesRegexp(ValueError, r'loss_scale cannot be None'):
+    with self.assertRaisesRegex(ValueError, r'loss_scale cannot be None'):
       loss_scale_optimizer.MixedPrecisionLossScaleOptimizer(opt, None)
 
 

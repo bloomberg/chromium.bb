@@ -52,6 +52,7 @@
 /test/benchmarks/data
 /test/fuzzer/wasm_corpus
 /test/fuzzer/wasm_corpus.tar.gz
+!/test/mjsunit/tools/*.log
 /test/mozilla/data
 /test/test262/data
 /test/test262/harness
@@ -80,7 +81,6 @@
 /tools/luci-go
 /tools/oom_dump/oom_dump
 /tools/oom_dump/oom_dump.o
-/tools/swarming_client
 /tools/turbolizer/build
 /tools/turbolizer/.rpt2_cache
 /tools/turbolizer/deploy
@@ -105,4 +105,7 @@ turbo*.cfg
 turbo*.dot
 turbo*.json
 v8.ignition_dispatches_table.json
-
+bazel-bin
+bazel-out
+bazel-testlogs
+bazel-v8

@@ -10,9 +10,9 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -31,7 +31,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
@@ -60,11 +59,21 @@
 
 namespace {
 
+constexpr base::FilePath::CharType kLiteVideoOptOutDBFilename[] =
+    FILE_PATH_LITERAL("lite_video_opt_out.db");
+
 // Deletes Previews opt-out database file. Opt-out database is no longer needed
 // since Previews has been turned down.
 void DeletePreviewsOptOutDatabaseOnDBThread(
     const base::FilePath& previews_optout_database_file) {
   sql::Database::Delete(previews_optout_database_file);
+}
+
+// Deletes LiteVideos opt-out database file. Opt-out database is no longer
+// needed since LiteVideos has been turned down.
+void DeleteLiteVideosOptOutDatabaseOnDBThread(
+    const base::FilePath& optout_database_file) {
+  sql::Database::Delete(optout_database_file);
 }
 
 // Assume that any proxy host ending with this suffix is a Data Reduction Proxy.
@@ -228,6 +237,11 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
       base::BindOnce(DeletePreviewsOptOutDatabaseOnDBThread,
                      profile_path.Append(chrome::kPreviewsOptOutDBFilename)));
 
+  db_task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(DeleteLiteVideosOptOutDatabaseOnDBThread,
+                     profile_path.Append(kLiteVideoOptOutDBFilename)));
+
 #if defined(OS_ANDROID)
   // On mobile we write Data Reduction Proxy prefs directly to the pref service.
   // On desktop we store Data Reduction Proxy prefs in memory, writing to disk
@@ -236,7 +250,7 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
   // (http://crbug.com/408264)
   base::TimeDelta commit_delay = base::TimeDelta();
 #else
-  base::TimeDelta commit_delay = base::TimeDelta::FromMinutes(60);
+  base::TimeDelta commit_delay = base::Minutes(60);
 #endif
 
   PrefService* profile_prefs = profile->GetPrefs();
@@ -247,9 +261,7 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
       std::make_unique<data_reduction_proxy::DataReductionProxyService>(
           this, profile_prefs, std::move(store),
           data_use_measurement::ChromeDataUseMeasurement::GetInstance(),
-          db_task_runner, commit_delay, GetClient(),
-          version_info::GetChannelString(chrome::GetChannel()),
-          embedder_support::GetUserAgent());
+          db_task_runner, commit_delay);
   data_reduction_proxy::DataReductionProxySettings::
       InitDataReductionProxySettings(profile_prefs, std::move(service));
 
@@ -280,52 +292,4 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
         std::make_unique<subresource_redirect::OriginRobotsRulesCache>(
             url_loader_factory, litepages_service_bypass_decider_->AsWeakPtr());
   }
-}
-
-std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
-DataReductionProxyChromeSettings::CreateDataFromNavigationHandle(
-    content::NavigationHandle* handle,
-    const net::HttpResponseHeaders* headers) {
-  if (!data_reduction_proxy_service())
-    return nullptr;
-  // TODO(721403): Need to fill in:
-  //  - request_info_
-  auto data = std::make_unique<data_reduction_proxy::DataReductionProxyData>();
-  data->set_request_url(handle->GetURL());
-  data->set_used_data_reduction_proxy(false);
-
-  if (!headers || headers->IsRedirect(nullptr))
-    return data;
-
-  const auto session_key =
-      data_reduction_proxy::DataReductionProxyRequestOptions::
-          GetSessionKeyFromRequestHeaders(GetProxyRequestHeaders());
-  if (session_key)
-    data->set_session_key(session_key.value());
-  return data;
-}
-
-// static
-data_reduction_proxy::Client DataReductionProxyChromeSettings::GetClient() {
-#if defined(OS_ANDROID)
-  return data_reduction_proxy::Client::CHROME_ANDROID;
-#elif defined(OS_MAC)
-  return data_reduction_proxy::Client::CHROME_MAC;
-#elif BUILDFLAG(IS_CHROMEOS_ASH)
-  return data_reduction_proxy::Client::CHROME_CHROMEOS;
-#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
-  return data_reduction_proxy::Client::CHROME_LINUX;
-#elif defined(OS_WIN)
-  return data_reduction_proxy::Client::CHROME_WINDOWS;
-#elif defined(OS_FREEBSD)
-  return data_reduction_proxy::Client::CHROME_FREEBSD;
-#elif defined(OS_OPENBSD)
-  return data_reduction_proxy::Client::CHROME_OPENBSD;
-#elif defined(OS_SOLARIS)
-  return data_reduction_proxy::Client::CHROME_SOLARIS;
-#elif defined(OS_QNX)
-  return data_reduction_proxy::Client::CHROME_QNX;
-#else
-  return data_reduction_proxy::Client::UNKNOWN;
-#endif
 }

@@ -26,11 +26,12 @@ class SpeechRecognitionRecognizerImpl
     : public media::mojom::SpeechRecognitionRecognizer {
  public:
   using OnRecognitionEventCallback =
-      base::RepeatingCallback<void(const std::string& result,
-                                   const bool is_final)>;
+      base::RepeatingCallback<void(media::SpeechRecognitionResult event)>;
+
   using OnLanguageIdentificationEventCallback = base::RepeatingCallback<void(
       const std::string& language,
       const media::mojom::ConfidenceLevel confidence_level)>;
+
   SpeechRecognitionRecognizerImpl(
       mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient>
           remote,
@@ -39,6 +40,12 @@ class SpeechRecognitionRecognizerImpl
       media::mojom::SpeechRecognitionOptionsPtr options,
       const base::FilePath& binary_path,
       const base::FilePath& config_path);
+
+  SpeechRecognitionRecognizerImpl(const SpeechRecognitionRecognizerImpl&) =
+      delete;
+  SpeechRecognitionRecognizerImpl& operator=(
+      const SpeechRecognitionRecognizerImpl&) = delete;
+
   ~SpeechRecognitionRecognizerImpl() override;
 
   static const char kCaptionBubbleVisibleHistogramName[];
@@ -78,12 +85,14 @@ class SpeechRecognitionRecognizerImpl
 
   // Return the transcribed audio from the recognition event back to the caller
   // via the recognition event client.
-  void OnRecognitionEvent(const std::string& result, const bool is_final);
+  void OnRecognitionEvent(media::SpeechRecognitionResult event);
+
   void OnLanguageIdentificationEvent(
       const std::string& language,
       const media::mojom::ConfidenceLevel confidence_level);
 
   const bool enable_soda_;
+  media::mojom::SpeechRecognitionOptionsPtr options_;
 
  private:
   void OnLanguageChanged(const std::string& language) final;
@@ -120,7 +129,6 @@ class SpeechRecognitionRecognizerImpl
   int sample_rate_ = 0;
   int channel_count_ = 0;
   LanguageCode language_ = LanguageCode::kNone;
-  media::mojom::SpeechRecognitionOptionsPtr options_;
 
   base::TimeDelta caption_bubble_visible_duration_;
   base::TimeDelta caption_bubble_hidden_duration_;
@@ -129,8 +137,6 @@ class SpeechRecognitionRecognizerImpl
   bool is_client_requesting_speech_recognition_ = true;
 
   base::WeakPtrFactory<SpeechRecognitionRecognizerImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SpeechRecognitionRecognizerImpl);
 };
 
 }  // namespace speech

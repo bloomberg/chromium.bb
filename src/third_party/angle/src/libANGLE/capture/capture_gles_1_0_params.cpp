@@ -20,7 +20,7 @@ void CaptureClipPlanef_eqn(const State &glState,
                            const GLfloat *eqn,
                            ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureMemory(eqn, 4 * sizeof(GLfloat), paramCapture);
 }
 
 void CaptureClipPlanex_equation(const State &glState,
@@ -49,7 +49,8 @@ void CaptureFogfv_params(const State &glState,
                          const GLfloat *params,
                          ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    int count = (pname == GL_FOG_COLOR) ? 4 : 1;
+    CaptureMemory(params, count * sizeof(GLfloat), paramCapture);
 }
 
 void CaptureFogxv_param(const State &glState,
@@ -67,7 +68,7 @@ void CaptureGetClipPlanef_equation(const State &glState,
                                    GLfloat *equation,
                                    ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureMemory(equation, 4 * sizeof(GLfloat), paramCapture);
 }
 
 void CaptureGetClipPlanex_equation(const State &glState,
@@ -95,7 +96,8 @@ void CaptureGetLightfv_params(const State &glState,
                               GLfloat *params,
                               ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    int count = GetLightParameterCount(pnamePacked);
+    CaptureMemory(params, count * sizeof(GLfloat), paramCapture);
 }
 
 void CaptureGetLightxv_params(const State &glState,
@@ -115,7 +117,8 @@ void CaptureGetMaterialfv_params(const State &glState,
                                  GLfloat *params,
                                  ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    unsigned int size = GetMaterialParameterCount(pnamePacked);
+    CaptureMemory(params, sizeof(GLfloat) * size, paramCapture);
 }
 
 void CaptureGetMaterialxv_params(const State &glState,
@@ -135,7 +138,8 @@ void CaptureGetTexEnvfv_params(const State &glState,
                                GLfloat *params,
                                ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    int count = GetTextureEnvParameterCount(pnamePacked);
+    CaptureMemory(params, count * sizeof(GLfloat), paramCapture);
 }
 
 void CaptureGetTexEnviv_params(const State &glState,
@@ -165,7 +169,8 @@ void CaptureGetTexParameterxv_params(const State &glState,
                                      GLfixed *params,
                                      ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    unsigned int size = GetTexParameterCount(pname);
+    CaptureMemory(params, sizeof(GLfloat) * size, paramCapture);
 }
 
 void CaptureLightModelfv_params(const State &glState,
@@ -280,7 +285,7 @@ void CapturePointParameterfv_params(const State &glState,
                                     const GLfloat *params,
                                     ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureMemory(params, sizeof(GLfloat), paramCapture);
 }
 
 void CapturePointParameterxv_params(const State &glState,
@@ -310,7 +315,8 @@ void CaptureTexEnvfv_params(const State &glState,
                             const GLfloat *params,
                             ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    int count = GetTextureEnvParameterCount(pnamePacked);
+    CaptureMemory(params, count * sizeof(GLfloat), paramCapture);
 }
 
 void CaptureTexEnviv_params(const State &glState,
@@ -340,7 +346,8 @@ void CaptureTexParameterxv_params(const State &glState,
                                   const GLfixed *params,
                                   ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    unsigned int size = GetTexParameterCount(pname);
+    CaptureMemory(params, sizeof(GLfloat) * size, paramCapture);
 }
 
 void CaptureVertexPointer_pointer(const State &glState,

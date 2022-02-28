@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "dbus/bus.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -48,6 +47,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLEAdvertisementServiceProvider {
     virtual void Released() = 0;
   };
 
+  BluetoothLEAdvertisementServiceProvider(
+      const BluetoothLEAdvertisementServiceProvider&) = delete;
+  BluetoothLEAdvertisementServiceProvider& operator=(
+      const BluetoothLEAdvertisementServiceProvider&) = delete;
+
   virtual ~BluetoothLEAdvertisementServiceProvider();
 
   const dbus::ObjectPath& object_path() { return object_path_; }
@@ -73,9 +77,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLEAdvertisementServiceProvider {
   // D-Bus object path of object we are exporting, kept so we can unregister
   // again in our destructor.
   dbus::ObjectPath object_path_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothLEAdvertisementServiceProvider);
 };
 
 }  // namespace bluez

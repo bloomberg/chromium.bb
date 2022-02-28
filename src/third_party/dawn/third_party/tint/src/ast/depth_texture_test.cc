@@ -13,22 +13,8 @@
 // limitations under the License.
 
 #include "src/ast/depth_texture.h"
-#include "src/ast/access_control.h"
-#include "src/ast/alias.h"
-#include "src/ast/array.h"
-#include "src/ast/bool.h"
-#include "src/ast/f32.h"
-#include "src/ast/i32.h"
-#include "src/ast/matrix.h"
-#include "src/ast/pointer.h"
-#include "src/ast/sampled_texture.h"
-#include "src/ast/sampler.h"
-#include "src/ast/storage_texture.h"
-#include "src/ast/struct.h"
+
 #include "src/ast/test_helper.h"
-#include "src/ast/texture.h"
-#include "src/ast/u32.h"
-#include "src/ast/vector.h"
 
 namespace tint {
 namespace ast {
@@ -45,12 +31,7 @@ TEST_F(AstDepthTextureTest, IsTexture) {
 
 TEST_F(AstDepthTextureTest, Dim) {
   auto* d = create<DepthTexture>(TextureDimension::kCube);
-  EXPECT_EQ(d->dim(), TextureDimension::kCube);
-}
-
-TEST_F(AstDepthTextureTest, TypeName) {
-  auto* d = create<DepthTexture>(TextureDimension::kCube);
-  EXPECT_EQ(d->type_name(), "__depth_texture_cube");
+  EXPECT_EQ(d->dim, TextureDimension::kCube);
 }
 
 TEST_F(AstDepthTextureTest, FriendlyName) {

@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/jxl/headers.h"
 
@@ -72,15 +63,15 @@ Status SizeHeader::Set(size_t xsize64, size_t ysize64) {
   const uint32_t xsize32 = static_cast<uint32_t>(xsize64);
   const uint32_t ysize32 = static_cast<uint32_t>(ysize64);
   if (xsize64 == 0 || ysize64 == 0) return JXL_FAILURE("Empty image");
-  small_ = xsize64 <= 256 && ysize64 <= 256 && (xsize64 % kBlockDim) == 0 &&
-           (ysize64 % kBlockDim) == 0;
+  ratio_ = FindAspectRatio(xsize32, ysize32);
+  small_ = ysize64 <= 256 && (ysize64 % kBlockDim) == 0 &&
+           (ratio_ != 0 || (xsize64 <= 256 && (xsize64 % kBlockDim) == 0));
   if (small_) {
     ysize_div8_minus_1_ = ysize32 / 8 - 1;
   } else {
     ysize_ = ysize32;
   }
 
-  ratio_ = FindAspectRatio(xsize32, ysize32);
   if (ratio_ == 0) {
     if (small_) {
       xsize_div8_minus_1_ = xsize32 / 8 - 1;

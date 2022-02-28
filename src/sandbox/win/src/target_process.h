@@ -5,23 +5,23 @@
 #ifndef SANDBOX_WIN_SRC_TARGET_PROCESS_H_
 #define SANDBOX_WIN_SRC_TARGET_PROCESS_H_
 
-#include <windows.h>
-
 #include <stddef.h>
 #include <stdint.h>
 
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/free_deleter.h"
+#include "base/memory/raw_ptr.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
-#include "sandbox/win/src/crosscall_server.h"
+#include "base/win/sid.h"
+#include "base/win/windows_types.h"
 #include "sandbox/win/src/sandbox_types.h"
 
 namespace sandbox {
 
+class Dispatcher;
 class SharedMemIPCServer;
 class Sid;
 class ThreadPool;
@@ -31,12 +31,18 @@ class StartupInformationHelper;
 // class are owned by the Policy used to create them.
 class TargetProcess {
  public:
+  TargetProcess() = delete;
+
   // The constructor takes ownership of |initial_token| and |lockdown_token|
   TargetProcess(base::win::ScopedHandle initial_token,
                 base::win::ScopedHandle lockdown_token,
                 HANDLE job,
                 ThreadPool* thread_pool,
-                const std::vector<Sid>& impersonation_capabilities);
+                const std::vector<base::win::Sid>& impersonation_capabilities);
+
+  TargetProcess(const TargetProcess&) = delete;
+  TargetProcess& operator=(const TargetProcess&) = delete;
+
   ~TargetProcess();
 
   // Creates the new target process. The process is created suspended.
@@ -104,20 +110,22 @@ class TargetProcess {
   // Reference to the IPC subsystem.
   std::unique_ptr<SharedMemIPCServer> ipc_server_;
   // Provides the threads used by the IPC. This class does not own this pointer.
-  ThreadPool* thread_pool_;
+  raw_ptr<ThreadPool> thread_pool_;
   // Base address of the main executable
+  //
+  // `base_address_` is not a raw_ptr<void>, because pointer to address in
+  // another process could be confused as a pointer to PartitionMalloc memory,
+  // causing ref-counting mismatch.  See also https://crbug.com/1173374.
   void* base_address_;
   // Full name of the target executable.
   std::unique_ptr<wchar_t, base::FreeDeleter> exe_name_;
   /// List of capability sids for use when impersonating in an AC process.
-  std::vector<Sid> impersonation_capabilities_;
+  std::vector<base::win::Sid> impersonation_capabilities_;
 
   // Function used for testing.
   friend std::unique_ptr<TargetProcess> MakeTestTargetProcess(
       HANDLE process,
       HMODULE base_address);
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(TargetProcess);
 };
 
 // Creates a mock TargetProcess used for testing interceptions.

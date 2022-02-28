@@ -273,7 +273,7 @@ CFStringRef ExtractProfile(const webrtc::H264ProfileLevelId &profile_level_id) {
 }
 
 // The function returns the max allowed sample rate (pixels per second) that
-// can be processed by given encoder with |profile_level_id|.
+// can be processed by given encoder with `profile_level_id`.
 // See https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-H.264-201610-S!!PDF-E&type=items
 // for details.
 NSUInteger GetMaxSampleRate(const webrtc::H264ProfileLevelId &profile_level_id) {
@@ -529,6 +529,18 @@ NSUInteger GetMaxSampleRate(const webrtc::H264ProfileLevelId &profile_level_id) 
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
+- (NSInteger)resolutionAlignment {
+  return 1;
+}
+
+- (BOOL)applyAlignmentToAllSimulcastLayers {
+  return NO;
+}
+
+- (BOOL)supportsNativeHandle {
+  return YES;
+}
+
 #pragma mark - Private
 
 - (NSInteger)releaseEncoder {
@@ -594,14 +606,15 @@ NSUInteger GetMaxSampleRate(const webrtc::H264ProfileLevelId &profile_level_id) 
   // buffers retrieved from the encoder's pixel buffer pool.
   const size_t attributesSize = 3;
   CFTypeRef keys[attributesSize] = {
-#if defined(WEBRTC_IOS)
-    kCVPixelBufferOpenGLESCompatibilityKey,
+#if defined(WEBRTC_IOS) && TARGET_OS_MACCATALYST
+      kCVPixelBufferMetalCompatibilityKey,
+#elif defined(WEBRTC_IOS)
+      kCVPixelBufferOpenGLESCompatibilityKey,
 #elif defined(WEBRTC_MAC)
-    kCVPixelBufferOpenGLCompatibilityKey,
+      kCVPixelBufferOpenGLCompatibilityKey,
 #endif
-    kCVPixelBufferIOSurfacePropertiesKey,
-    kCVPixelBufferPixelFormatTypeKey
-  };
+      kCVPixelBufferIOSurfacePropertiesKey,
+      kCVPixelBufferPixelFormatTypeKey};
   CFDictionaryRef ioSurfaceValue = CreateCFTypeDictionary(nullptr, nullptr, 0);
   int64_t pixelFormatType = framePixelFormat;
   CFNumberRef pixelFormat = CFNumberCreate(nullptr, kCFNumberLongType, &pixelFormatType);
@@ -714,7 +727,7 @@ NSUInteger GetMaxSampleRate(const webrtc::H264ProfileLevelId &profile_level_id) 
   if (_compressionSession) {
     SetVTSessionProperty(_compressionSession, kVTCompressionPropertyKey_AverageBitRate, bitrateBps);
 
-    // With zero |_maxAllowedFrameRate|, we fall back to automatic frame rate detection.
+    // With zero `_maxAllowedFrameRate`, we fall back to automatic frame rate detection.
     if (_maxAllowedFrameRate > 0) {
       SetVTSessionProperty(
           _compressionSession, kVTCompressionPropertyKey_ExpectedFrameRate, frameRate);
@@ -759,6 +772,10 @@ NSUInteger GetMaxSampleRate(const webrtc::H264ProfileLevelId &profile_level_id) 
            renderTimeMs:(int64_t)renderTimeMs
               timestamp:(uint32_t)timestamp
                rotation:(RTCVideoRotation)rotation {
+  RTCVideoEncoderCallback callback = _callback;
+  if (!callback) {
+    return;
+  }
   if (status != noErr) {
     RTC_LOG(LS_ERROR) << "H264 encode failed with code: " << status;
     return;
@@ -805,7 +822,7 @@ NSUInteger GetMaxSampleRate(const webrtc::H264ProfileLevelId &profile_level_id) 
   _h264BitstreamParser.ParseBitstream(*buffer);
   frame.qp = @(_h264BitstreamParser.GetLastSliceQp().value_or(-1));
 
-  BOOL res = _callback(frame, codecSpecificInfo);
+  BOOL res = callback(frame, codecSpecificInfo);
   if (!res) {
     RTC_LOG(LS_ERROR) << "Encode callback failed";
     return;

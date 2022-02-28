@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.autofill.mojom.FocusedFieldType;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
@@ -112,8 +113,9 @@ public class AutofillKeyboardAccessoryIntegrationTest {
      * being the upper half in multi-window mode.
      */
     private static class MultiWindowKeyboard extends FakeKeyboard {
-        public MultiWindowKeyboard(WeakReference<Activity> activity) {
-            super(activity);
+        public MultiWindowKeyboard(WeakReference<Activity> activity,
+                Supplier<ManualFillingComponent> manualFillingComponentSupplier) {
+            super(activity, manualFillingComponentSupplier);
         }
 
         @Override
@@ -132,7 +134,9 @@ public class AutofillKeyboardAccessoryIntegrationTest {
         if (enabledFeature == EnabledFeature.PORTALS) {
             mHelper.loadTestPage(PORTAL_TEST_PAGE, false, false, keyboardDelegate);
             SwapWebContentsObserver observer = new SwapWebContentsObserver();
-            mActivityTestRule.getActivity().getActivityTab().addObserver(observer);
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                mActivityTestRule.getActivity().getActivityTab().addObserver(observer);
+            });
             DOMUtils.clickNode(mHelper.getWebContents(), "ACTIVATE");
             CriteriaHelper.pollUiThread(
                     () -> { return observer.mCallbackHelper.getCallCount() == 1; });
@@ -232,8 +236,12 @@ public class AutofillKeyboardAccessoryIntegrationTest {
 
     @Test
     @SmallTest
+    // clang-format off
+    @DisableIf.Build(hardware_is = "bullhead", sdk_is_greater_than = VERSION_CODES.LOLLIPOP_MR1,
+        sdk_is_less_than = VERSION_CODES.N, message = "https://crbug.com/1216008")
     public void testPressingBackButtonHidesAccessoryWithAutofillSuggestions()
             throws TimeoutException, ExecutionException {
+        // clang-format on
         loadTestPage(MultiWindowKeyboard::new);
         mHelper.clickNodeAndShowKeyboard("NAME_FIRST", 1);
         mHelper.waitForKeyboardAccessoryToBeShown(true);
@@ -252,7 +260,11 @@ public class AutofillKeyboardAccessoryIntegrationTest {
 
     @Test
     @MediumTest
+    // clang-format off
+    @DisableIf.Build(hardware_is = "bullhead", sdk_is_greater_than = VERSION_CODES.LOLLIPOP_MR1,
+        sdk_is_less_than = VERSION_CODES.N, message = "https://crbug.com/1216008")
     public void testSheetHasMinimumSizeWhenTriggeredBySuggestion() throws TimeoutException {
+        // clang-format on
         MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(true);
         loadTestPage(MultiWindowKeyboard::new);
         mHelper.clickNode("NAME_FIRST", 1, FocusedFieldType.FILLABLE_NON_SEARCH_FIELD);

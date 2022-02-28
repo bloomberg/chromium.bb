@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../../core/common/common.js';
+import * as i18n from '../../core/i18n/i18n.js';
 import type * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as SDK from '../../core/sdk/sdk.js';
 
@@ -10,14 +10,14 @@ import type * as ReportRenderer from './LighthouseReporterTypes.js';
 
 let lastId = 1;
 
-export class ProtocolService extends Common.ObjectWrapper.ObjectWrapper {
+export class ProtocolService {
   private rawConnection?: ProtocolClient.InspectorBackend.Connection;
   private lighthouseWorkerPromise?: Promise<Worker>;
   private lighthouseMessageUpdateCallback?: ((arg0: string) => void);
 
   async attach(): Promise<void> {
-    await SDK.SDKModel.TargetManager.instance().suspendAllTargets();
-    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
+    await SDK.TargetManager.TargetManager.instance().suspendAllTargets();
+    const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
     if (!mainTarget) {
       throw new Error('Unable to find main target required for LightHouse');
     }
@@ -34,7 +34,7 @@ export class ProtocolService extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   getLocales(): readonly string[] {
-    return navigator.languages;
+    return [i18n.DevToolsLocale.DevToolsLocale.instance().locale];
   }
 
   startLighthouse(auditURL: string, categoryIDs: string[], flags: Object): Promise<ReportRenderer.RunnerResult> {
@@ -58,7 +58,7 @@ export class ProtocolService extends Common.ObjectWrapper.ObjectWrapper {
     if (oldRawConnection) {
       await oldRawConnection.disconnect();
     }
-    await SDK.SDKModel.TargetManager.instance().resumeAllTargets();
+    await SDK.TargetManager.TargetManager.instance().resumeAllTargets();
   }
 
   registerStatusCallback(callback: (arg0: string) => void): void {
@@ -86,8 +86,13 @@ export class ProtocolService extends Common.ObjectWrapper.ObjectWrapper {
 
   private initWorker(): Promise<Worker> {
     this.lighthouseWorkerPromise = new Promise<Worker>(resolve => {
-      const worker = new Worker(
-          new URL('../../entrypoints/lighthouse_worker/lighthouse_worker.js', import.meta.url), {type: 'module'});
+      const workerUrl = new URL('../../entrypoints/lighthouse_worker/lighthouse_worker.js', import.meta.url);
+      const remoteBaseSearchParam = new URL(self.location.href).searchParams.get('remoteBase');
+      if (remoteBaseSearchParam) {
+        // Allows Lighthouse worker to fetch remote locale files.
+        workerUrl.searchParams.set('remoteBase', remoteBaseSearchParam);
+      }
+      const worker = new Worker(workerUrl, {type: 'module'});
 
       worker.addEventListener('message', event => {
         if (event.data === 'workerReady') {

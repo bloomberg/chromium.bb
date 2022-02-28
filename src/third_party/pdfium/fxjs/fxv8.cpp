@@ -6,6 +6,14 @@
 
 #include "fxjs/fxv8.h"
 
+#include "third_party/base/numerics/safe_conversions.h"
+#include "v8/include/v8-container.h"
+#include "v8/include/v8-date.h"
+#include "v8/include/v8-exception.h"
+#include "v8/include/v8-isolate.h"
+#include "v8/include/v8-primitive.h"
+#include "v8/include/v8-value.h"
+
 namespace fxv8 {
 
 bool IsUndefined(v8::Local<v8::Value> value) {
@@ -74,8 +82,9 @@ v8::Local<v8::Boolean> NewBooleanHelper(v8::Isolate* pIsolate, bool b) {
 
 v8::Local<v8::String> NewStringHelper(v8::Isolate* pIsolate,
                                       ByteStringView str) {
-  return v8::String::NewFromUtf8(pIsolate, str.unterminated_c_str(),
-                                 v8::NewStringType::kNormal, str.GetLength())
+  return v8::String::NewFromUtf8(
+             pIsolate, str.unterminated_c_str(), v8::NewStringType::kNormal,
+             pdfium::base::checked_cast<int>(str.GetLength()))
       .ToLocalChecked();
 }
 
@@ -234,8 +243,7 @@ std::vector<WideString> ReentrantGetObjectPropertyNamesHelper(
 
 bool ReentrantHasObjectOwnPropertyHelper(v8::Isolate* pIsolate,
                                          v8::Local<v8::Object> pObj,
-                                         ByteStringView bsUTF8PropertyName,
-                                         bool bUseTypeGetter) {
+                                         ByteStringView bsUTF8PropertyName) {
   if (pObj.IsEmpty())
     return false;
 
@@ -243,9 +251,7 @@ bool ReentrantHasObjectOwnPropertyHelper(v8::Isolate* pIsolate,
   v8::Local<v8::Context> pContext = pIsolate->GetCurrentContext();
   v8::Local<v8::String> hKey =
       fxv8::NewStringHelper(pIsolate, bsUTF8PropertyName);
-  return pObj->HasRealNamedProperty(pContext, hKey).FromJust() ||
-         (bUseTypeGetter &&
-          pObj->HasOwnProperty(pContext, hKey).FromMaybe(false));
+  return pObj->HasRealNamedProperty(pContext, hKey).FromJust();
 }
 
 bool ReentrantSetObjectOwnPropertyHelper(v8::Isolate* pIsolate,
@@ -285,31 +291,36 @@ void ReentrantDeleteObjectPropertyHelper(v8::Isolate* pIsolate,
 
 bool ReentrantPutArrayElementHelper(v8::Isolate* pIsolate,
                                     v8::Local<v8::Array> pArray,
-                                    unsigned index,
+                                    size_t index,
                                     v8::Local<v8::Value> pValue) {
   if (pArray.IsEmpty())
     return false;
 
   v8::TryCatch squash_exceptions(pIsolate);
   v8::Maybe<bool> result =
-      pArray->Set(pIsolate->GetCurrentContext(), index, pValue);
+      pArray->Set(pIsolate->GetCurrentContext(),
+                  pdfium::base::checked_cast<uint32_t>(index), pValue);
   return result.IsJust() && result.FromJust();
 }
 
 v8::Local<v8::Value> ReentrantGetArrayElementHelper(v8::Isolate* pIsolate,
                                                     v8::Local<v8::Array> pArray,
-                                                    unsigned index) {
+                                                    size_t index) {
   if (pArray.IsEmpty())
     return v8::Local<v8::Value>();
 
   v8::TryCatch squash_exceptions(pIsolate);
   v8::Local<v8::Value> val;
-  if (!pArray->Get(pIsolate->GetCurrentContext(), index).ToLocal(&val))
+  if (!pArray
+           ->Get(pIsolate->GetCurrentContext(),
+                 pdfium::base::checked_cast<uint32_t>(index))
+           .ToLocal(&val)) {
     return v8::Local<v8::Value>();
+  }
   return val;
 }
 
-unsigned GetArrayLengthHelper(v8::Local<v8::Array> pArray) {
+size_t GetArrayLengthHelper(v8::Local<v8::Array> pArray) {
   if (pArray.IsEmpty())
     return 0;
   return pArray->Length();

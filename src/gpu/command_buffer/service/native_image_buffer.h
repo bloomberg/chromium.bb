@@ -5,7 +5,6 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_NATIVE_IMAGE_BUFFER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_NATIVE_IMAGE_BUFFER_H_
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 
@@ -20,6 +19,9 @@ class NativeImageBuffer : public base::RefCountedThreadSafe<NativeImageBuffer> {
  public:
   static scoped_refptr<NativeImageBuffer> Create(GLuint texture_id);
 
+  NativeImageBuffer(const NativeImageBuffer&) = delete;
+  NativeImageBuffer& operator=(const NativeImageBuffer&) = delete;
+
   virtual void AddClient(gl::GLImage* client) = 0;
   virtual void RemoveClient(gl::GLImage* client) = 0;
   virtual bool IsClient(gl::GLImage* client) = 0;
@@ -29,8 +31,6 @@ class NativeImageBuffer : public base::RefCountedThreadSafe<NativeImageBuffer> {
   friend class base::RefCountedThreadSafe<NativeImageBuffer>;
   NativeImageBuffer() = default;
   virtual ~NativeImageBuffer() = default;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeImageBuffer);
 };
 
 }  // namespace gles2

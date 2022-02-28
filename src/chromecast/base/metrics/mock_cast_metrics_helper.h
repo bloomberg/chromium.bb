@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -17,6 +16,10 @@ namespace metrics {
 class MockCastMetricsHelper : public CastMetricsHelper {
  public:
   MockCastMetricsHelper();
+
+  MockCastMetricsHelper(const MockCastMetricsHelper&) = delete;
+  MockCastMetricsHelper& operator=(const MockCastMetricsHelper&) = delete;
+
   ~MockCastMetricsHelper() override;
 
   MOCK_METHOD2(UpdateCurrentAppInfo,
@@ -39,9 +42,6 @@ class MockCastMetricsHelper : public CastMetricsHelper {
                                  const std::string& suffix));
   MOCK_METHOD1(SetMetricsSink, void(MetricsSink* delegate));
   MOCK_METHOD1(SetRecordActionCallback, void(RecordActionCallback callback));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockCastMetricsHelper);
 };
 
 }  // namespace metrics

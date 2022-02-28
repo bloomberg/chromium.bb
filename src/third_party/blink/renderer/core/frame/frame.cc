@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_remote_frame_client.h"
@@ -42,6 +43,7 @@
 #include "third_party/blink/renderer/core/dom/increment_load_event_delay_count.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
+#include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/page_dismissal_scope.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_owner.h"
@@ -280,8 +282,8 @@ void Frame::NotifyUserActivationInFrameTree(
     const SecurityOrigin* security_origin =
         local_frame->GetSecurityContext()->GetSecurityOrigin();
 
-    Frame& root = Tree().Top();
-    for (Frame* node = &root; node; node = node->Tree().TraverseNext(&root)) {
+    for (Frame* node = &Tree().Top(); node;
+         node = node->Tree().TraverseNext()) {
       auto* local_frame_node = DynamicTo<LocalFrame>(node);
       if (local_frame_node &&
           security_origin->CanAccess(
@@ -301,7 +303,7 @@ bool Frame::ConsumeTransientUserActivationInFrameTree() {
   if (IsA<LocalFrame>(root))
     root.user_activation_state_.RecordPreconsumptionUma();
 
-  for (Frame* node = &root; node; node = node->Tree().TraverseNext(&root))
+  for (Frame* node = &root; node; node = node->Tree().TraverseNext())
     node->user_activation_state_.ConsumeIfActive();
 
   return was_active;
@@ -331,25 +333,32 @@ void Frame::RenderFallbackContentWithResourceTiming(
   RenderFallbackContent();
 }
 
+bool Frame::IsInFencedFrameTree() const {
+  if (!blink::features::IsFencedFramesEnabled())
+    return false;
+
+  switch (blink::features::kFencedFramesImplementationTypeParam.Get()) {
+    case blink::features::FencedFramesImplementationType::kMPArch:
+      return GetPage()->IsMainFrameFencedFrameRoot();
+    case blink::features::FencedFramesImplementationType::kShadowDOM:
+      return Tree().Top(FrameTreeBoundary::kFenced) !=
+             Tree().Top(FrameTreeBoundary::kIgnoreFence);
+    default:
+      return false;
+  }
+}
+
 void Frame::SetOwner(FrameOwner* owner) {
   owner_ = owner;
   UpdateInertIfPossible();
   UpdateInheritedEffectiveTouchActionIfPossible();
 }
 
-bool Frame::IsAdSubframe() const {
-  return ad_frame_type_ != mojom::blink::AdFrameType::kNonAd;
-}
-
-bool Frame::IsAdRoot() const {
-  return ad_frame_type_ == mojom::blink::AdFrameType::kRootAd;
-}
-
 void Frame::UpdateInertIfPossible() {
   if (auto* frame_owner_element =
           DynamicTo<HTMLFrameOwnerElement>(owner_.Get())) {
-    if (frame_owner_element->IsInert())
-      SetIsInert(true);
+    const ComputedStyle* style = frame_owner_element->GetComputedStyle();
+    SetIsInert(style && style->IsInert());
   }
 }
 
@@ -415,7 +424,6 @@ Frame::Frame(FrameClient* client,
     : tree_node_(this),
       page_(&page),
       owner_(owner),
-      ad_frame_type_(mojom::blink::AdFrameType::kNonAd),
       client_(client),
       window_proxy_manager_(window_proxy_manager),
       parent_(parent),
@@ -538,9 +546,29 @@ void Frame::SetOpenerDoNotNotify(Frame* opener) {
   opener_ = opener;
 }
 
-Frame* Frame::Top() {
-  Frame* parent;
-  for (parent = this; parent->Parent(); parent = parent->Parent()) {
+Frame* Frame::Parent(FrameTreeBoundary frame_tree_boundary) const {
+  // TODO(crbug.com/1123606): Remove this once we use MPArch as the underlying
+  // fenced frames implementation, instead of the
+  // `FencedFrameShadowDOMDelegate`.
+  if (frame_tree_boundary == FrameTreeBoundary::kFenced &&
+      RuntimeEnabledFeatures::FencedFramesEnabled(
+          DomWindow()->GetExecutionContext()) &&
+      features::kFencedFramesImplementationTypeParam.Get() ==
+          features::FencedFramesImplementationType::kShadowDOM &&
+      Owner() && Owner()->GetFramePolicy().is_fenced) {
+    return nullptr;
+  }
+
+  return parent_;
+}
+
+Frame* Frame::Top(FrameTreeBoundary frame_tree_boundary) {
+  Frame* parent = this;
+  while (true) {
+    Frame* next_parent = parent->Parent(frame_tree_boundary);
+    if (!next_parent)
+      break;
+    parent = next_parent;
   }
   return parent;
 }

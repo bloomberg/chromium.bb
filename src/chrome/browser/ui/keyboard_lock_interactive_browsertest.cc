@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -81,6 +80,12 @@ class KeyboardLockInteractiveBrowserTest
     : public FullscreenKeyboardBrowserTestBase {
  public:
   KeyboardLockInteractiveBrowserTest();
+
+  KeyboardLockInteractiveBrowserTest(
+      const KeyboardLockInteractiveBrowserTest&) = delete;
+  KeyboardLockInteractiveBrowserTest& operator=(
+      const KeyboardLockInteractiveBrowserTest&) = delete;
+
   ~KeyboardLockInteractiveBrowserTest() override;
 
   // FullscreenKeyboardBrowserTestBase implementation.
@@ -114,8 +119,6 @@ class KeyboardLockInteractiveBrowserTest
 #if defined(OS_MAC)
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(KeyboardLockInteractiveBrowserTest);
 };
 
 KeyboardLockInteractiveBrowserTest::KeyboardLockInteractiveBrowserTest()
@@ -266,8 +269,9 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
 }
 
 // https://crbug.com/1108391 Flakey on ChromeOS.
-// https://crbug.com/1121172 Also flaky on Lacros.
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+// https://crbug.com/1121172 Also flaky on Lacros and Mac
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS) || \
+    defined(OS_MAC)
 #define MAYBE_SubsequentLockCallSupersedesPreviousCall \
   DISABLED_SubsequentLockCallSupersedesPreviousCall
 #else

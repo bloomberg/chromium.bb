@@ -9,4 +9,4 @@ setlocal
 set PATH=%PATH%;%~dp0
 
 :: Defer control.
-python "%~dp0\clang_format_merge_driver.py" %*
+python3 "%~dp0\clang_format_merge_driver.py" %*

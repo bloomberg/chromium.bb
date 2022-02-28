@@ -5,6 +5,7 @@
 #include "ui/views/animation/ink_drop.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -14,9 +15,13 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_observer.h"
 
+DEFINE_UI_CLASS_PROPERTY_TYPE(views::InkDropHost*)
+
 namespace views {
 
 namespace {
+
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(InkDropHost, kInkDropKey, nullptr)
 
 // TODO(pbos): Remove this by changing the constructor parameters to
 // InkDropImpl.
@@ -35,6 +40,18 @@ std::unique_ptr<InkDrop> CreateInkDropImpl(
 }  // namespace
 
 InkDrop::~InkDrop() = default;
+
+void InkDrop::Install(View* host, std::unique_ptr<InkDropHost> ink_drop) {
+  host->SetProperty(kInkDropKey, std::move(ink_drop));
+}
+
+void InkDrop::Remove(View* host) {
+  host->ClearProperty(kInkDropKey);
+}
+
+const InkDropHost* InkDrop::Get(const View* host) {
+  return host->GetProperty(kInkDropKey);
+}
 
 std::unique_ptr<InkDrop> InkDrop::CreateInkDropForSquareRipple(
     InkDropHost* host,

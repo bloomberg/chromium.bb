@@ -9,7 +9,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
@@ -20,12 +19,12 @@
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
 #include "chrome/browser/extensions/content_verifier_test_utils.h"
+#include "chrome/browser/extensions/corrupted_extension_reinstaller.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/policy_extension_reinstaller.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/crx_file/id_util.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -215,27 +214,30 @@ class ContentVerifierTest : public ExtensionBrowserTest {
   }
 
   // Creates a CRX in a temporary directory under |temp_dir| using contents from
-  // |unpacked_path|. Compresses the contents in |verified_contents_path| and
-  // injects these contents into the the header of the CRX. Creates a random
-  // signing key and sets |extension_id| using it.
-  base::FilePath CreateCrxWithVerifiedContentsInHeader(
+  // |unpacked_path|. Compresses the |verified_contents| and injects these
+  // contents into the the header of the CRX. Creates a random signing key
+  // and sets |extension_id| using it. Returns path to new CRX in |crx_path|.
+  testing::AssertionResult CreateCrxWithVerifiedContentsInHeader(
       base::ScopedTempDir* temp_dir,
       const base::FilePath& unpacked_path,
-      const base::FilePath& verified_contents_path,
-      std::string* extension_id) {
-    std::string contents;
-    EXPECT_TRUE(base::ReadFileToString(verified_contents_path, &contents));
+      const std::string& verified_contents,
+      std::string* extension_id,
+      base::FilePath* crx_path) {
     std::string compressed_verified_contents;
-    EXPECT_TRUE(
-        compression::GzipCompress(contents, &compressed_verified_contents));
+    if (!compression::GzipCompress(verified_contents,
+                                   &compressed_verified_contents)) {
+      return testing::AssertionFailure();
+    }
 
-    EXPECT_TRUE(temp_dir->CreateUniqueTempDir());
-    base::FilePath crx_path = temp_dir->GetPath().AppendASCII("temp.crx");
+    if (!temp_dir->CreateUniqueTempDir()) {
+      return testing::AssertionFailure();
+    }
+    *crx_path = temp_dir->GetPath().AppendASCII("temp.crx");
 
     ExtensionCreator creator;
     creator.CreateCrxWithVerifiedContentsInHeaderForTesting(
-        unpacked_path, crx_path, compressed_verified_contents, extension_id);
-    return crx_path;
+        unpacked_path, *crx_path, compressed_verified_contents, extension_id);
+    return testing::AssertionSuccess();
   }
 
  protected:
@@ -521,8 +523,9 @@ IN_PROC_BROWSER_TEST_F(UserInstalledContentVerifierTest,
 }
 
 // Now actually test what happens on the next startup after the PRE test above.
+// TODO(https://crbug.com/1226260): Test is flaky.
 IN_PROC_BROWSER_TEST_F(UserInstalledContentVerifierTest,
-                       UserInstalledCorruptedResourceOnStartup) {
+                       DISABLED_UserInstalledCorruptedResourceOnStartup) {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   int disable_reasons = prefs->GetDisableReasons(kStoragePermissionExtensionId);
@@ -590,19 +593,39 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, VerificationFailureOnNavigate) {
 // successfully installed and verified.
 IN_PROC_BROWSER_TEST_F(
     ContentVerifierTest,
-    VerificationSuccessfullForCrxWithVerifiedContentsInjectedInHeader) {
+    VerificationSuccessfulForCrxWithVerifiedContentsInjectedInHeader) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   base::ScopedTempDir temp_dir;
-  base::FilePath test_dir =
-      test_data_dir_.AppendASCII("content_verifier/missing_verified_contents");
-  std::string extension_id;
-  base::FilePath crx_path = CreateCrxWithVerifiedContentsInHeader(
-      &temp_dir, test_dir.AppendASCII("source"),
-      test_dir.AppendASCII("verified_contents.json"), &extension_id);
+  base::FilePath extension_dir =
+      test_data_dir_.AppendASCII("content_verifier/storage_permission");
+  base::FilePath resource_path = base::FilePath().AppendASCII("background.js");
 
-  TestContentVerifySingleJobObserver observer(
-      extension_id, base::FilePath().AppendASCII("script.js"));
+  extensions::content_verifier_test_utils::TestExtensionBuilder
+      verified_contents_builder;
+
+  std::string resource_contents;
+  base::ReadFileToString(extension_dir.Append(resource_path),
+                         &resource_contents);
+  verified_contents_builder.AddResource(resource_path.value(),
+                                        resource_contents);
+  std::string verified_contents =
+      verified_contents_builder.CreateVerifiedContents();
+
+  auto mock_content_verifier_delegate =
+      std::make_unique<MockContentVerifierDelegate>();
+  mock_content_verifier_delegate->SetVerifierKey(
+      verified_contents_builder.GetTestContentVerifierPublicKey());
+  ExtensionSystem::Get(profile())
+      ->content_verifier()
+      ->OverrideDelegateForTesting(std::move(mock_content_verifier_delegate));
+
+  std::string extension_id;
+  base::FilePath crx_path;
+  ASSERT_TRUE(CreateCrxWithVerifiedContentsInHeader(
+      &temp_dir, extension_dir, verified_contents, &extension_id, &crx_path));
+
+  TestContentVerifySingleJobObserver observer(extension_id, resource_path);
 
   const Extension* extension = InstallExtensionFromWebstore(crx_path, 1);
   ASSERT_TRUE(extension);
@@ -619,15 +642,16 @@ IN_PROC_BROWSER_TEST_F(
     InstallationFailureForCrxWithMalformedVerifiedContentsInjectedInHeader) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
-  base::FilePath test_dir =
-      test_data_dir_.AppendASCII("content_verifier/missing_verified_contents");
+  base::FilePath test_dir = test_data_dir_.AppendASCII("content_verifier/v1");
   std::string extension_id;
-  base::FilePath crx_path = CreateCrxWithVerifiedContentsInHeader(
-      &temp_dir, test_dir.AppendASCII("source"),
-      test_dir.AppendASCII("invalid_verified_contents.json"), &extension_id);
+  std::string verified_contents =
+      "Not a valid verified contents, not even a valid JSON.";
+  base::FilePath crx_path;
+  ASSERT_TRUE(CreateCrxWithVerifiedContentsInHeader(
+      &temp_dir, test_dir, verified_contents, &extension_id, &crx_path));
 
   const Extension* extension = InstallExtensionFromWebstore(crx_path, 0);
-  ASSERT_FALSE(extension);
+  EXPECT_FALSE(extension);
 }
 
 // Verifies that CRX with missing verified contents is successfully installed
@@ -635,15 +659,15 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(ContentVerifierTest,
                        VerificationFailureForMissingVerifiedContents) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  base::FilePath unpacked_path = test_data_dir_.AppendASCII(
-      "content_verifier/missing_verified_contents/source");
+  base::FilePath unpacked_path =
+      test_data_dir_.AppendASCII("content_verifier/storage_permission");
   base::FilePath crx_path = PackExtension(unpacked_path);
   ASSERT_TRUE(base::PathExists(crx_path.DirName().AppendASCII("temp.pem")));
   const std::string extension_id = GetExtensionIdFromPrivateKeyFile(
       crx_path.DirName().AppendASCII("temp.pem"));
 
   TestContentVerifySingleJobObserver observer(
-      extension_id, base::FilePath().AppendASCII("script.js"));
+      extension_id, base::FilePath().AppendASCII("background.js"));
 
   const Extension* extension = InstallExtensionFromWebstore(crx_path, 1);
   ASSERT_TRUE(extension);
@@ -804,10 +828,9 @@ class ContentVerifierPolicyTest : public ContentVerifierTest {
   void SetUpInProcessBrowserTestFixture() override {
     ContentVerifierTest::SetUpInProcessBrowserTestFixture();
 
-    ON_CALL(policy_provider_, IsInitializationComplete(testing::_))
-        .WillByDefault(testing::Return(true));
-    ON_CALL(policy_provider_, IsFirstPolicyLoadComplete(testing::_))
-        .WillByDefault(testing::Return(true));
+    policy_provider_.SetDefaultReturns(
+        /*is_initialization_complete_return=*/true,
+        /*is_first_policy_load_complete_return=*/true);
 
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
@@ -856,7 +879,14 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest,
 }
 
 // Now actually test what happens on the next startup after the PRE test above.
-IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, PolicyCorruptedOnStartup) {
+// TODO(crbug.com/1271946): Flaky on mac arm64 and CrOS (M98 only).
+#if (defined(OS_MAC) && defined(ARCH_CPU_ARM64)) || defined(OS_CHROMEOS)
+#define MAYBE_PolicyCorruptedOnStartup DISABLED_PolicyCorruptedOnStartup
+#else
+#define MAYBE_PolicyCorruptedOnStartup PolicyCorruptedOnStartup
+#endif
+IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest,
+                       MAYBE_PolicyCorruptedOnStartup) {
   // Depdending on timing, the extension may have already been reinstalled
   // between SetUpInProcessBrowserTestFixture and now (usually not during local
   // testing on a developer machine, but sometimes on a heavily loaded system
@@ -947,7 +977,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, FailedUpdateRetries) {
 
     delay_tracker.Proceed();
 
-    PolicyExtensionReinstaller::set_policy_reinstall_action_for_test(nullptr);
+    CorruptedExtensionReinstaller::set_reinstall_action_for_test(nullptr);
   }
   // Update ExtensionService again without disabling external updates.
   // The extension should now get installed.

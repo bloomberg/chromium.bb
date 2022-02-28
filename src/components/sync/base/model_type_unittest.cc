@@ -10,7 +10,7 @@
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -30,12 +30,13 @@ TEST_F(ModelTypeTest, ModelTypeSetToValue) {
   const ModelTypeSet model_types(BOOKMARKS, APPS);
 
   std::unique_ptr<base::ListValue> value(ModelTypeSetToValue(model_types));
-  EXPECT_EQ(2u, value->GetSize());
-  std::string types[2];
-  EXPECT_TRUE(value->GetString(0, &types[0]));
-  EXPECT_TRUE(value->GetString(1, &types[1]));
-  EXPECT_EQ("Bookmarks", types[0]);
-  EXPECT_EQ("Apps", types[1]);
+  ASSERT_TRUE(value->is_list());
+  base::Value::ConstListView value_list = value->GetList();
+  ASSERT_EQ(2u, value_list.size());
+  ASSERT_TRUE(value_list[0].is_string());
+  EXPECT_EQ("Bookmarks", value_list[0].GetString());
+  ASSERT_TRUE(value_list[1].is_string());
+  EXPECT_EQ("Apps", value_list[1].GetString());
 }
 
 TEST_F(ModelTypeTest, IsRealDataType) {
@@ -47,13 +48,6 @@ TEST_F(ModelTypeTest, IsRealDataType) {
   EXPECT_TRUE(IsRealDataType(ARC_PACKAGE));
   EXPECT_TRUE(IsRealDataType(PRINTERS));
   EXPECT_TRUE(IsRealDataType(READING_LIST));
-}
-
-TEST_F(ModelTypeTest, IsProxyType) {
-  EXPECT_FALSE(IsProxyType(BOOKMARKS));
-  EXPECT_TRUE(IsProxyType(PROXY_TABS));
-  EXPECT_TRUE(IsProxyType(FIRST_PROXY_TYPE));
-  EXPECT_TRUE(IsProxyType(LAST_PROXY_TYPE));
 }
 
 // Make sure we can convert ModelTypes to and from specifics field
@@ -134,12 +128,9 @@ TEST_F(ModelTypeTest, DefaultFieldValues) {
 }
 
 TEST_F(ModelTypeTest, ModelTypeToRootTagValues) {
-  ModelTypeSet all_types = ModelTypeSet::All();
-  for (ModelType model_type : all_types) {
+  for (ModelType model_type : ProtocolTypes()) {
     std::string root_tag = ModelTypeToRootTag(model_type);
-    if (IsProxyType(model_type)) {
-      EXPECT_EQ(root_tag, std::string());
-    } else if (IsRealDataType(model_type)) {
+    if (IsRealDataType(model_type)) {
       EXPECT_TRUE(base::StartsWith(root_tag, "google_chrome_",
                                    base::CompareCase::INSENSITIVE_ASCII));
     } else {

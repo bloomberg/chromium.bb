@@ -242,3 +242,95 @@ void av1_nn_predict_sse3(const float *input_nodes,
   }
   if (reduce_prec) av1_nn_output_prec_reduce(output, nn_config->num_outputs);
 }
+
+// Based on N. N. Schraudolph. A Fast, Compact Approximation of the Exponential
+// Function. Neural Computation, 11(4):853–862, 1999.
+static AOM_INLINE __m128 approx_exp(__m128 y) {
+#define A ((1 << 23) / 0.69314718056f)  // (1 << 23) / ln(2)
+#define B \
+  127  // Offset for the exponent according to IEEE floating point standard.
+#define C 60801  // Magic number controls the accuracy of approximation
+  const __m128 multiplier = _mm_set1_ps(A);
+  const __m128i offset = _mm_set1_epi32(B * (1 << 23) - C);
+
+  y = _mm_mul_ps(y, multiplier);
+  y = _mm_castsi128_ps(_mm_add_epi32(_mm_cvtps_epi32(y), offset));
+  return y;
+#undef A
+#undef B
+#undef C
+}
+
+static AOM_INLINE __m128 reduce_max(__m128 reg) {
+  __m128 tmp_reg;
+
+  tmp_reg = _mm_shuffle_ps(reg, reg, 0x4e);  // 01 00 11 10
+  reg = _mm_max_ps(reg, tmp_reg);
+
+  tmp_reg = _mm_shuffle_ps(reg, reg, 0xb1);  // 10 11 00 01
+  reg = _mm_max_ps(reg, tmp_reg);
+
+  return reg;
+}
+
+static AOM_INLINE __m128 reduce_sum(__m128 reg) {
+  __m128 tmp_reg;
+
+  tmp_reg = _mm_shuffle_ps(reg, reg, 0x4e);  // 01 00 11 10
+  reg = _mm_add_ps(reg, tmp_reg);
+
+  tmp_reg = _mm_shuffle_ps(reg, reg, 0xb1);  // 10 11 00 01
+  reg = _mm_add_ps(reg, tmp_reg);
+
+  return reg;
+}
+
+void av1_nn_fast_softmax_16_sse3(const float *input, float *output) {
+  // Clips at -10 to avoid underflowing
+  const __m128 clipper = _mm_set1_ps(-10.0f);
+
+  // Load in 16 values
+  __m128 in_0 = _mm_loadu_ps(&input[0]);
+  __m128 in_1 = _mm_loadu_ps(&input[4]);
+  __m128 in_2 = _mm_loadu_ps(&input[8]);
+  __m128 in_3 = _mm_loadu_ps(&input[12]);
+
+  // Get the max
+  __m128 max_0 = _mm_max_ps(in_0, in_1);
+  __m128 max_1 = _mm_max_ps(in_2, in_3);
+
+  max_0 = _mm_max_ps(max_0, max_1);
+  max_0 = reduce_max(max_0);
+
+  // Subtract the max off and clip
+  in_0 = _mm_sub_ps(in_0, max_0);
+  in_1 = _mm_sub_ps(in_1, max_0);
+  in_2 = _mm_sub_ps(in_2, max_0);
+  in_3 = _mm_sub_ps(in_3, max_0);
+
+  in_0 = _mm_max_ps(in_0, clipper);
+  in_1 = _mm_max_ps(in_1, clipper);
+  in_2 = _mm_max_ps(in_2, clipper);
+  in_3 = _mm_max_ps(in_3, clipper);
+
+  // Exponentiate and compute the denominator
+  __m128 sum = in_0 = approx_exp(in_0);
+  in_1 = approx_exp(in_1);
+  sum = _mm_add_ps(sum, in_1);
+  in_2 = approx_exp(in_2);
+  sum = _mm_add_ps(sum, in_2);
+  in_3 = approx_exp(in_3);
+  sum = _mm_add_ps(sum, in_3);
+  sum = reduce_sum(sum);
+
+  // Divide to get the probability
+  in_0 = _mm_div_ps(in_0, sum);
+  in_1 = _mm_div_ps(in_1, sum);
+  in_2 = _mm_div_ps(in_2, sum);
+  in_3 = _mm_div_ps(in_3, sum);
+
+  _mm_storeu_ps(&output[0], in_0);
+  _mm_storeu_ps(&output[4], in_1);
+  _mm_storeu_ps(&output[8], in_2);
+  _mm_storeu_ps(&output[12], in_3);
+}

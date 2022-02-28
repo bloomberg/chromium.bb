@@ -14,11 +14,15 @@ feedstore::Image ConvertToStore(feedwire::webfeed::Image value) {
 
 feedstore::WebFeedInfo::State ConvertToStore(
     feedwire::webfeed::WebFeed::State value) {
+  // TODO(harringtond): Add SUSPENDED state.
   switch (value) {
     case feedwire::webfeed::WebFeed::State::WebFeed_State_ACTIVE:
       return feedstore::WebFeedInfo::State::WebFeedInfo_State_ACTIVE;
     case feedwire::webfeed::WebFeed::State::WebFeed_State_INACTIVE:
       return feedstore::WebFeedInfo::State::WebFeedInfo_State_INACTIVE;
+    case feedwire::webfeed::WebFeed::State::WebFeed_State_WAITING_FOR_CONTENT:
+      return feedstore::WebFeedInfo::State::
+          WebFeedInfo_State_WAITING_FOR_CONTENT;
     default:
       return feedstore::WebFeedInfo::State::WebFeedInfo_State_STATE_UNSPECIFIED;
   }

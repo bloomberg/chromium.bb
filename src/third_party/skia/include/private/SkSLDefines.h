@@ -13,13 +13,6 @@
 #include "include/core/SkTypes.h"
 #include "include/private/SkTArray.h"
 
-#if defined(SK_BUILD_FOR_IOS) && \
-        (!defined(__IPHONE_9_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_9_0)
-#define SKSL_USE_THREAD_LOCAL 0
-#else
-#define SKSL_USE_THREAD_LOCAL 1
-#endif
-
 using SKSL_INT = int64_t;
 using SKSL_FLOAT = float;
 
@@ -38,14 +31,21 @@ using StatementArray = SkSTArray<2, std::unique_ptr<Statement>>;
 // default threshold value is arbitrary, but tends to work well in practice.
 static constexpr int kDefaultInlineThreshold = 50;
 
+// A hard upper limit on the number of variable slots allowed in a function/global scope.
+// This is an arbitrary limit, but is needed to prevent code generation from taking unbounded
+// amounts of time or space.
+static constexpr int kVariableSlotLimit = 100000;
+
 // The SwizzleComponent namespace is used both by the SkSL::Swizzle expression, and the DSL swizzle.
 // This namespace is injected into SkSL::dsl so that `using namespace SkSL::dsl` enables DSL code
 // like `Swizzle(var, X, Y, ONE)` to compile without any extra qualifications.
 namespace SwizzleComponent {
 
 enum Type : int8_t {
-    X = 0, Y = 1, Z = 2, W = 3,
-    R = 0, G = 1, B = 2, A = 3,
+    X  =  0,  Y =  1,  Z =  2,  W =  3,
+    R  =  4,  G =  5,  B =  6,  A =  7,
+    S  =  8,  T =  9,  P = 10,  Q = 11,
+    UL = 12, UT = 13, UR = 14, UB = 15,
     ZERO,
     ONE
 };

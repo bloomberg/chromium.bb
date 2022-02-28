@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/service/display/output_surface_client.h"
@@ -26,6 +25,8 @@ namespace viz {
 OutputSurface::Capabilities::Capabilities() = default;
 OutputSurface::Capabilities::Capabilities(const Capabilities& capabilities) =
     default;
+OutputSurface::Capabilities& OutputSurface::Capabilities::operator=(
+    const Capabilities& capabilities) = default;
 
 OutputSurface::OutputSurface(Type type) : type_(type) {}
 

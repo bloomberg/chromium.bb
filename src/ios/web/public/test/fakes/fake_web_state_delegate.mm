@@ -90,11 +90,6 @@ JavaScriptDialogPresenter* FakeWebStateDelegate::GetJavaScriptDialogPresenter(
   return &java_script_dialog_presenter_;
 }
 
-void FakeWebStateDelegate::HandleContextMenu(WebState*,
-                                             const ContextMenuParams&) {
-  handle_context_menu_called_ = true;
-}
-
 void FakeWebStateDelegate::ShowRepostFormWarningDialog(
     WebState* source,
     base::OnceCallback<void(bool)> callback) {
@@ -118,25 +113,6 @@ void FakeWebStateDelegate::OnAuthRequired(
   last_authentication_request_->protection_space = protection_space;
   last_authentication_request_->credential = credential;
   last_authentication_request_->auth_callback = std::move(callback);
-}
-
-bool FakeWebStateDelegate::ShouldPreviewLink(WebState* source,
-                                             const GURL& link_url) {
-  last_link_url_ = link_url;
-  return should_preview_link_;
-}
-
-UIViewController* FakeWebStateDelegate::GetPreviewingViewController(
-    WebState* source,
-    const GURL& link_url) {
-  last_link_url_ = link_url;
-  return previewing_view_controller_;
-}
-
-void FakeWebStateDelegate::CommitPreviewingViewController(
-    WebState* source,
-    UIViewController* previewing_view_controller) {
-  last_previewing_view_controller_ = previewing_view_controller;
 }
 
 }  // namespace web

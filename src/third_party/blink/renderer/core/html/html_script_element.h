@@ -35,36 +35,29 @@
 
 namespace blink {
 
-class StringOrTrustedScript;
 class ExceptionState;
+class ScriptState;
 
 class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
                                             public ScriptElementBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static bool supports(ScriptState*, const AtomicString&);
+
   HTMLScriptElement(Document&, const CreateElementFlags);
 
   // Returns attributes that should be checked against Trusted Types
   const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
-  void text(StringOrTrustedScript& result);
   String text() { return TextFromChildren(); }
   void setText(const String&);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void setInnerTextForBinding(
       const V8UnionStringTreatNullAsEmptyStringOrTrustedScript*
           string_or_trusted_script,
       ExceptionState& exception_state) override;
   void setTextContentForBinding(const V8UnionStringOrTrustedScript* value,
                                 ExceptionState& exception_state) override;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void setInnerTextForBinding(
-      const StringTreatNullAsEmptyStringOrTrustedScript&,
-      ExceptionState&) override;
-  void setTextContentForBinding(const StringOrTrustedScript&,
-                                ExceptionState&) override;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void setTextContent(const String&) override;
 
   void setAsync(bool);
@@ -76,12 +69,8 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   Document& GetDocument() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   V8HTMLOrSVGScriptElement* AsV8HTMLOrSVGScriptElement() override;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void SetScriptElementForBinding(
-      HTMLScriptElementOrSVGScriptElement&) override;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  DOMNodeId GetDOMNodeId() override;
 
   void Trace(Visitor*) const override;
 
@@ -90,6 +79,8 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
  private:
   void ParseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
+  void RemovedFrom(ContainerNode& insertion_point) override;
+
   void DidNotifySubtreeInsertionsToDocument() override;
   void ChildrenChanged(const ChildrenChange&) override;
   void DidMoveToNewDocument(Document& old_document) override;

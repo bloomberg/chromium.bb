@@ -50,7 +50,7 @@ class MockProgressIndicator implements Common.Progress.Progress {
     this.title = title;
   }
 
-  worked(worked: number) {
+  incrementWorked(worked: number) {
     this.totalWork += worked;
   }
 
@@ -193,14 +193,14 @@ describe('Composite Progress Bar', () => {
     assert.strictEqual(indicator.getTitle, undefined);
     assert.strictEqual(indicator.getWorkCompleted, 0);
     assert.strictEqual(indicator.getTotalWork, 1);
-    assert.strictEqual(subProgress._worked, 0);
+    assert.strictEqual(subProgress.getWorked(), 0);
 
-    subProgress.worked();
+    subProgress.incrementWorked();
 
     assert.strictEqual(indicator.getTitle, undefined);
     assert.strictEqual(indicator.getWorkCompleted, 0);
     assert.strictEqual(indicator.getTotalWork, 1);
-    assert.strictEqual(subProgress._worked, 1);
+    assert.strictEqual(subProgress.getWorked(), 1);
   });
 
   it('returns the correct cancellation status for a progress proxy with no delegate', () => {
@@ -245,7 +245,7 @@ describe('Composite Progress Bar', () => {
 
     progressProxy.setTotalWork(1);
     progressProxy.done();
-    assert.strictEqual(subProgress._worked, 1);
+    assert.strictEqual(subProgress.getWorked(), 1);
   });
 
   it('able to set worked with title for a progress proxy', () => {
@@ -255,7 +255,7 @@ describe('Composite Progress Bar', () => {
     const progressProxy = new ProgressProxy(subProgress);
 
     progressProxy.setWorked(1, 'test proxy');
-    assert.strictEqual(subProgress._worked, 1);
+    assert.strictEqual(subProgress.getWorked(), 1);
     assert.strictEqual(indicator.getTitle, 'test proxy');
   });
 
@@ -265,7 +265,7 @@ describe('Composite Progress Bar', () => {
     const subProgress = composite.createSubProgress();
     const progressProxy = new ProgressProxy(subProgress);
 
-    progressProxy.worked(1);
-    assert.strictEqual(subProgress._worked, 1);
+    progressProxy.incrementWorked(1);
+    assert.strictEqual(subProgress.getWorked(), 1);
   });
 });

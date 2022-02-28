@@ -14,7 +14,12 @@
 
 #include "src/reader/wgsl/lexer.h"
 
+#include <cmath>
+#include <cstring>
 #include <limits>
+#include <utility>
+
+#include "src/debug.h"
 
 namespace tint {
 namespace reader {
@@ -23,6 +28,26 @@ namespace {
 
 bool is_whitespace(char c) {
   return std::isspace(c);
+}
+
+uint32_t dec_value(char c) {
+  if (c >= '0' && c <= '9') {
+    return static_cast<uint32_t>(c - '0');
+  }
+  return 0;
+}
+
+uint32_t hex_value(char c) {
+  if (c >= '0' && c <= '9') {
+    return static_cast<uint32_t>(c - '0');
+  }
+  if (c >= 'a' && c <= 'f') {
+    return 0xA + static_cast<uint32_t>(c - 'a');
+  }
+  if (c >= 'A' && c <= 'F') {
+    return 0xA + static_cast<uint32_t>(c - 'A');
+  }
+  return 0;
 }
 
 }  // namespace
@@ -36,14 +61,17 @@ Lexer::Lexer(const std::string& file_path, const Source::FileContent* content)
 Lexer::~Lexer() = default;
 
 Token Lexer::next() {
-  skip_whitespace();
-  skip_comments();
-
-  if (is_eof()) {
-    return {Token::Type::kEOF, begin_source()};
+  auto t = skip_whitespace_and_comments();
+  if (!t.IsUninitialized()) {
+    return t;
   }
 
-  auto t = try_hex_integer();
+  t = try_hex_float();
+  if (!t.IsUninitialized()) {
+    return t;
+  }
+
+  t = try_hex_integer();
   if (!t.IsUninitialized()) {
     return t;
   }
@@ -58,12 +86,12 @@ Token Lexer::next() {
     return t;
   }
 
-  t = try_punctuation();
+  t = try_ident();
   if (!t.IsUninitialized()) {
     return t;
   }
 
-  t = try_ident();
+  t = try_punctuation();
   if (!t.IsUninitialized()) {
     return t;
   }
@@ -89,15 +117,15 @@ bool Lexer::is_eof() const {
 }
 
 bool Lexer::is_alpha(char ch) const {
-  return std::isalpha(ch) || ch == '_';
+  return std::isalpha(ch);
 }
 
 bool Lexer::is_digit(char ch) const {
   return std::isdigit(ch);
 }
 
-bool Lexer::is_alphanum(char ch) const {
-  return is_alpha(ch) || is_digit(ch);
+bool Lexer::is_alphanum_underscore(char ch) const {
+  return is_alpha(ch) || is_digit(ch) || ch == '_';
 }
 
 bool Lexer::is_hex(char ch) const {
@@ -110,7 +138,7 @@ bool Lexer::matches(size_t pos, const std::string& substr) {
   return content_->data.substr(pos, substr.size()) == substr;
 }
 
-void Lexer::skip_whitespace() {
+Token Lexer::skip_whitespace_and_comments() {
   for (;;) {
     auto pos = pos_;
     while (!is_eof() && is_whitespace(content_->data[pos_])) {
@@ -125,24 +153,72 @@ void Lexer::skip_whitespace() {
       location_.column++;
     }
 
-    skip_comments();
+    auto t = skip_comment();
+    if (!t.IsUninitialized()) {
+      return t;
+    }
 
     // If the cursor didn't advance we didn't remove any whitespace
     // so we're done.
     if (pos == pos_)
       break;
   }
+  if (is_eof()) {
+    return {Token::Type::kEOF, begin_source()};
+  }
+
+  return {};
 }
 
-void Lexer::skip_comments() {
-  if (!matches(pos_, "//")) {
-    return;
+Token Lexer::skip_comment() {
+  if (matches(pos_, "//")) {
+    // Line comment: ignore everything until the end of line
+    // or end of input.
+    while (!is_eof() && !matches(pos_, "\n")) {
+      pos_++;
+      location_.column++;
+    }
+    return {};
   }
 
-  while (!is_eof() && !matches(pos_, "\n")) {
-    pos_++;
-    location_.column++;
+  if (matches(pos_, "/*")) {
+    // Block comment: ignore everything until the closing '*/' token.
+
+    // Record source location of the initial '/*'
+    auto source = begin_source();
+    source.range.end.column += 1;
+
+    pos_ += 2;
+    location_.column += 2;
+
+    int depth = 1;
+    while (!is_eof() && depth > 0) {
+      if (matches(pos_, "/*")) {
+        // Start of block comment: increase nesting depth.
+        pos_ += 2;
+        location_.column += 2;
+        depth++;
+      } else if (matches(pos_, "*/")) {
+        // End of block comment: decrease nesting depth.
+        pos_ += 2;
+        location_.column += 2;
+        depth--;
+      } else if (matches(pos_, "\n")) {
+        // Newline: skip and update source location.
+        pos_++;
+        location_.line++;
+        location_.column = 1;
+      } else {
+        // Anything else: skip and update source location.
+        pos_++;
+        location_.column++;
+      }
+    }
+    if (depth > 0) {
+      return {Token::Type::kError, source, "unterminated block comment"};
+    }
   }
+  return {};
 }
 
 Token Lexer::try_float() {
@@ -150,43 +226,65 @@ Token Lexer::try_float() {
   auto end = pos_;
 
   auto source = begin_source();
+  bool has_mantissa_digits = false;
 
   if (matches(end, "-")) {
     end++;
   }
   while (end < len_ && is_digit(content_->data[end])) {
+    has_mantissa_digits = true;
     end++;
   }
 
-  if (end >= len_ || !matches(end, ".")) {
-    return {};
+  bool has_point = false;
+  if (end < len_ && matches(end, ".")) {
+    has_point = true;
+    end++;
   }
-  end++;
 
   while (end < len_ && is_digit(content_->data[end])) {
+    has_mantissa_digits = true;
     end++;
+  }
+
+  if (!has_mantissa_digits) {
+    return {};
   }
 
   // Parse the exponent if one exists
-  if (end < len_ && matches(end, "e")) {
+  bool has_exponent = false;
+  if (end < len_ && (matches(end, "e") || matches(end, "E"))) {
     end++;
     if (end < len_ && (matches(end, "+") || matches(end, "-"))) {
       end++;
     }
 
-    auto exp_start = end;
     while (end < len_ && isdigit(content_->data[end])) {
+      has_exponent = true;
       end++;
     }
 
-    // Must have an exponent
-    if (exp_start == end)
-      return {};
+    // If an 'e' or 'E' was present, then the number part must also be present.
+    if (!has_exponent) {
+      const auto str = content_->data.substr(start, end - start);
+      return {Token::Type::kError, source,
+              "incomplete exponent for floating point literal: " + str};
+    }
   }
 
-  auto str = content_->data.substr(start, end - start);
-  if (str == "." || str == "-.")
+  bool has_f_suffix = false;
+  if (end < len_ && matches(end, "f")) {
+    end++;
+    has_f_suffix = true;
+  }
+
+  if (!has_point && !has_exponent && !has_f_suffix) {
+    // If it only has digits then it's an integer.
     return {};
+  }
+
+  // Save the error string, for use by diagnostics.
+  const auto str = content_->data.substr(start, end - start);
 
   pos_ = end;
   location_.column += (end - start);
@@ -194,19 +292,322 @@ Token Lexer::try_float() {
   end_source(source);
 
   auto res = strtod(content_->data.c_str() + start, nullptr);
-  // This handles if the number is a really small in the exponent
-  if (res > 0 && res < static_cast<double>(std::numeric_limits<float>::min())) {
-    return {Token::Type::kError, source, "f32 (" + str + " too small"};
+  // This errors out if a non-zero magnitude is too small to represent in a
+  // float. It can't be represented faithfully in an f32.
+  const auto magnitude = std::fabs(res);
+  if (0.0 < magnitude &&
+      magnitude < static_cast<double>(std::numeric_limits<float>::min())) {
+    return {Token::Type::kError, source,
+            "f32 (" + str + ") magnitude too small, not representable"};
   }
   // This handles if the number is really large negative number
   if (res < static_cast<double>(std::numeric_limits<float>::lowest())) {
-    return {Token::Type::kError, source, "f32 (" + str + ") too small"};
+    return {Token::Type::kError, source,
+            "f32 (" + str + ") too large (negative)"};
   }
   if (res > static_cast<double>(std::numeric_limits<float>::max())) {
-    return {Token::Type::kError, source, "f32 (" + str + ") too large"};
+    return {Token::Type::kError, source,
+            "f32 (" + str + ") too large (positive)"};
   }
 
   return {source, static_cast<float>(res)};
+}
+
+Token Lexer::try_hex_float() {
+  constexpr uint32_t kTotalBits = 32;
+  constexpr uint32_t kTotalMsb = kTotalBits - 1;
+  constexpr uint32_t kMantissaBits = 23;
+  constexpr uint32_t kMantissaMsb = kMantissaBits - 1;
+  constexpr uint32_t kMantissaShiftRight = kTotalBits - kMantissaBits;
+  constexpr int32_t kExponentBias = 127;
+  constexpr int32_t kExponentMax = 255;
+  constexpr uint32_t kExponentBits = 8;
+  constexpr uint32_t kExponentMask = (1 << kExponentBits) - 1;
+  constexpr uint32_t kExponentLeftShift = kMantissaBits;
+  constexpr uint32_t kSignBit = 31;
+
+  auto start = pos_;
+  auto end = pos_;
+
+  auto source = begin_source();
+
+  // clang-format off
+  // -?0x([0-9a-fA-F]*.?[0-9a-fA-F]+ | [0-9a-fA-F]+.[0-9a-fA-F]*)(p|P)(+|-)?[0-9]+  // NOLINT
+  // clang-format on
+
+  // -?
+  int32_t sign_bit = 0;
+  if (matches(end, "-")) {
+    sign_bit = 1;
+    end++;
+  }
+  // 0x
+  if (matches(end, "0x")) {
+    end += 2;
+  } else {
+    return {};
+  }
+
+  uint32_t mantissa = 0;
+  uint32_t exponent = 0;
+
+  // TODO(dneto): Values in the normal range for the format do not explicitly
+  // store the most significant bit.  The algorithm here works hard to eliminate
+  // that bit in the representation during parsing, and then it backtracks
+  // when it sees it may have to explicitly represent it, and backtracks again
+  // when it sees the number is sub-normal (i.e. the exponent underflows).
+  // I suspect the logic can be clarified by storing it during parsing, and
+  // then removing it later only when needed.
+
+  // `set_next_mantissa_bit_to` sets next `mantissa` bit starting from msb to
+  // lsb to value 1 if `set` is true, 0 otherwise. Returns true on success, i.e.
+  // when the bit can be accommodated in the available space.
+  uint32_t mantissa_next_bit = kTotalMsb;
+  auto set_next_mantissa_bit_to = [&](bool set, bool integer_part) -> bool {
+    // If adding bits for the integer part, we can overflow whether we set the
+    // bit or not. For the fractional part, we can only overflow when setting
+    // the bit.
+    const bool check_overflow = integer_part || set;
+    // Note: mantissa_next_bit actually decrements, so comparing it as
+    // larger than a positive number relies on wraparound.
+    if (check_overflow && (mantissa_next_bit > kTotalMsb)) {
+      return false;  // Overflowed mantissa
+    }
+    if (set) {
+      mantissa |= (1 << mantissa_next_bit);
+    }
+    --mantissa_next_bit;
+    return true;
+  };
+
+  // Collect integer range (if any)
+  auto integer_range = std::make_pair(end, end);
+  while (end < len_ && is_hex(content_->data[end])) {
+    integer_range.second = ++end;
+  }
+
+  // .?
+  bool hex_point = false;
+  if (matches(end, ".")) {
+    hex_point = true;
+    end++;
+  }
+
+  // Collect fractional range (if any)
+  auto fractional_range = std::make_pair(end, end);
+  while (end < len_ && is_hex(content_->data[end])) {
+    fractional_range.second = ++end;
+  }
+
+  // Must have at least an integer or fractional part
+  if ((integer_range.first == integer_range.second) &&
+      (fractional_range.first == fractional_range.second)) {
+    return {};
+  }
+
+  // Is the binary exponent present?  It's optional.
+  const bool has_exponent = (matches(end, "p") || matches(end, "P"));
+  if (has_exponent) {
+    end++;
+  }
+  if (!has_exponent && !hex_point) {
+    // It's not a hex float. At best it's a hex integer.
+    return {};
+  }
+
+  // At this point, we know for sure our token is a hex float value,
+  // or an invalid token.
+
+  // Parse integer part
+  // [0-9a-fA-F]*
+
+  bool has_zero_integer = true;
+  // The magnitude is zero if and only if seen_prior_one_bits is false.
+  bool seen_prior_one_bits = false;
+  for (auto i = integer_range.first; i < integer_range.second; ++i) {
+    const auto nibble = hex_value(content_->data[i]);
+    if (nibble != 0) {
+      has_zero_integer = false;
+    }
+
+    for (int32_t bit = 3; bit >= 0; --bit) {
+      auto v = 1 & (nibble >> bit);
+
+      // Skip leading 0s and the first 1
+      if (seen_prior_one_bits) {
+        if (!set_next_mantissa_bit_to(v != 0, true)) {
+          return {Token::Type::kError, source,
+                  "mantissa is too large for hex float"};
+        }
+        ++exponent;
+      } else {
+        if (v == 1) {
+          seen_prior_one_bits = true;
+        }
+      }
+    }
+  }
+
+  // Parse fractional part
+  // [0-9a-fA-F]*
+  for (auto i = fractional_range.first; i < fractional_range.second; ++i) {
+    auto nibble = hex_value(content_->data[i]);
+    for (int32_t bit = 3; bit >= 0; --bit) {
+      auto v = 1 & (nibble >> bit);
+
+      if (v == 1) {
+        seen_prior_one_bits = true;
+      }
+
+      // If integer part is 0, we only start writing bits to the
+      // mantissa once we have a non-zero fractional bit. While the fractional
+      // values are 0, we adjust the exponent to avoid overflowing `mantissa`.
+      if (!seen_prior_one_bits) {
+        --exponent;
+      } else {
+        if (!set_next_mantissa_bit_to(v != 0, false)) {
+          return {Token::Type::kError, source,
+                  "mantissa is too large for hex float"};
+        }
+      }
+    }
+  }
+
+  // Determine if the value of the mantissa is zero.
+  // Note: it's not enough to check mantissa == 0 as we drop the initial bit,
+  // whether it's in the integer part or the fractional part.
+  const bool is_zero = !seen_prior_one_bits;
+  TINT_ASSERT(Reader, !is_zero || mantissa == 0);
+
+  // Parse the optional exponent.
+  // ((p|P)(\+|-)?[0-9]+)?
+  uint32_t input_exponent = 0;  // Defaults to 0 if not present
+  int32_t exponent_sign = 1;
+  // If the 'p' part is present, the rest of the exponent must exist.
+  if (has_exponent) {
+    // Parse the rest of the exponent.
+    // (+|-)?
+    if (matches(end, "+")) {
+      end++;
+    } else if (matches(end, "-")) {
+      exponent_sign = -1;
+      end++;
+    }
+
+    // Parse exponent from input
+    // [0-9]+
+    // Allow overflow (in uint32_t) when the floating point value magnitude is
+    // zero.
+    bool has_exponent_digits = false;
+    while (end < len_ && isdigit(content_->data[end])) {
+      has_exponent_digits = true;
+      auto prev_exponent = input_exponent;
+      input_exponent = (input_exponent * 10) + dec_value(content_->data[end]);
+      // Check if we've overflowed input_exponent. This only matters when
+      // the mantissa is non-zero.
+      if (!is_zero && (prev_exponent > input_exponent)) {
+        return {Token::Type::kError, source,
+                "exponent is too large for hex float"};
+      }
+      end++;
+    }
+
+    // Parse optional 'f' suffix.  For a hex float, it can only exist
+    // when the exponent is present. Otherwise it will look like
+    // one of the mantissa digits.
+    if (end < len_ && matches(end, "f")) {
+      end++;
+    }
+
+    if (!has_exponent_digits) {
+      return {Token::Type::kError, source,
+              "expected an exponent value for hex float"};
+    }
+  }
+
+  pos_ = end;
+  location_.column += (end - start);
+  end_source(source);
+
+  if (is_zero) {
+    // If value is zero, then ignore the exponent and produce a zero
+    exponent = 0;
+  } else {
+    // Ensure input exponent is not too large; i.e. that it won't overflow when
+    // adding the exponent bias.
+    const uint32_t kIntMax =
+        static_cast<uint32_t>(std::numeric_limits<int32_t>::max());
+    const uint32_t kMaxInputExponent = kIntMax - kExponentBias;
+    if (input_exponent > kMaxInputExponent) {
+      return {Token::Type::kError, source,
+              "exponent is too large for hex float"};
+    }
+
+    // Compute exponent so far
+    exponent += static_cast<uint32_t>(static_cast<int32_t>(input_exponent) *
+                                      exponent_sign);
+
+    // Bias exponent if non-zero
+    // After this, if exponent is <= 0, our value is a denormal
+    exponent += kExponentBias;
+
+    // We know the number is not zero.  The MSB is 1 (by construction), and
+    // should be eliminated because it becomes the implicit 1 that isn't
+    // explicitly represented in the binary32 format.  We'll bring it back
+    // later if we find the exponent actually underflowed, i.e. the number
+    // is sub-normal.
+    if (has_zero_integer) {
+      mantissa <<= 1;
+      --exponent;
+    }
+  }
+
+  // We can now safely work with exponent as a signed quantity, as there's no
+  // chance to overflow
+  int32_t signed_exponent = static_cast<int32_t>(exponent);
+
+  // Shift mantissa to occupy the low 23 bits
+  mantissa >>= kMantissaShiftRight;
+
+  // If denormal, shift mantissa until our exponent is zero
+  if (!is_zero) {
+    // Denorm has exponent 0 and non-zero mantissa. We set the top bit here,
+    // then shift the mantissa to make exponent zero.
+    if (signed_exponent <= 0) {
+      mantissa >>= 1;
+      mantissa |= (1 << kMantissaMsb);
+    }
+
+    while (signed_exponent < 0) {
+      mantissa >>= 1;
+      ++signed_exponent;
+
+      // If underflow, clamp to zero
+      if (mantissa == 0) {
+        signed_exponent = 0;
+      }
+    }
+  }
+
+  if (signed_exponent > kExponentMax) {
+    // Overflow: set to infinity
+    signed_exponent = kExponentMax;
+    mantissa = 0;
+  } else if (signed_exponent == kExponentMax && mantissa != 0) {
+    // NaN: set to infinity
+    mantissa = 0;
+  }
+
+  // Combine sign, mantissa, and exponent
+  uint32_t result_u32 = sign_bit << kSignBit;
+  result_u32 |= mantissa;
+  result_u32 |= (static_cast<uint32_t>(signed_exponent) & kExponentMask)
+                << kExponentLeftShift;
+
+  // Reinterpret as float and return
+  float result;
+  std::memcpy(&result, &result_u32, sizeof(result));
+  return {source, static_cast<float>(result)};
 }
 
 Token Lexer::build_token_from_int_if_possible(Source source,
@@ -242,6 +643,7 @@ Token Lexer::build_token_from_int_if_possible(Source source,
 }
 
 Token Lexer::try_hex_integer() {
+  constexpr size_t kMaxDigits = 8;  // Valid for both 32-bit integer types
   auto start = pos_;
   auto end = pos_;
 
@@ -250,13 +652,23 @@ Token Lexer::try_hex_integer() {
   if (matches(end, "-")) {
     end++;
   }
+
   if (!matches(end, "0x")) {
-    return Token();
+    return {};
   }
   end += 2;
 
+  auto first = end;
   while (!is_eof() && is_hex(content_->data[end])) {
-    end += 1;
+    end++;
+
+    auto digits = end - first;
+    if (digits > kMaxDigits) {
+      return {Token::Type::kError, source,
+              "integer literal (" +
+                  content_->data.substr(start, end - 1 - start) +
+                  "...) has too many digits"};
+    }
   }
 
   pos_ = end;
@@ -266,6 +678,7 @@ Token Lexer::try_hex_integer() {
 }
 
 Token Lexer::try_integer() {
+  constexpr size_t kMaxDigits = 10;  // Valid for both 32-bit integer types
   auto start = pos_;
   auto end = start;
 
@@ -274,19 +687,35 @@ Token Lexer::try_integer() {
   if (matches(end, "-")) {
     end++;
   }
+
   if (end >= len_ || !is_digit(content_->data[end])) {
     return {};
   }
 
   auto first = end;
-  while (end < len_ && is_digit(content_->data[end])) {
-    end++;
-  }
-
   // If the first digit is a zero this must only be zero as leading zeros
   // are not allowed.
-  if (content_->data[first] == '0' && (end - first != 1))
-    return {};
+  auto next = first + 1;
+  if (next < len_) {
+    if (content_->data[first] == '0' && is_digit(content_->data[next])) {
+      return {Token::Type::kError, source,
+              "integer literal (" +
+                  content_->data.substr(start, end - 1 - start) +
+                  "...) has leading 0s"};
+    }
+  }
+
+  while (end < len_ && is_digit(content_->data[end])) {
+    auto digits = end - first;
+    if (digits > kMaxDigits) {
+      return {Token::Type::kError, source,
+              "integer literal (" +
+                  content_->data.substr(start, end - 1 - start) +
+                  "...) has too many digits"};
+    }
+
+    end++;
+  }
 
   pos_ = end;
   location_.column += (end - start);
@@ -296,27 +725,32 @@ Token Lexer::try_integer() {
 
 Token Lexer::try_ident() {
   // Must begin with an a-zA-Z_
-  if (!is_alpha(content_->data[pos_])) {
+  if (!(is_alpha(content_->data[pos_]) || content_->data[pos_] == '_')) {
     return {};
   }
 
   auto source = begin_source();
 
   auto s = pos_;
-  while (!is_eof() && is_alphanum(content_->data[pos_])) {
+  while (!is_eof() && is_alphanum_underscore(content_->data[pos_])) {
     pos_++;
     location_.column++;
   }
 
-  auto str = content_->data.substr(s, pos_ - s);
-  auto t = check_reserved(source, str);
-  if (!t.IsUninitialized()) {
-    return t;
+  if (content_->data[s] == '_') {
+    // Check for an underscore on its own (special token), or a
+    // double-underscore (not allowed).
+    if ((pos_ == s + 1) || (content_->data[s + 1] == '_')) {
+      location_.column -= (pos_ - s);
+      pos_ = s;
+      return {};
+    }
   }
 
+  auto str = content_->data.substr(s, pos_ - s);
   end_source(source);
 
-  t = check_keyword(source, str);
+  auto t = check_keyword(source, str);
   if (!t.IsUninitialized()) {
     return t;
   }
@@ -428,6 +862,10 @@ Token Lexer::try_punctuation() {
     type = Token::Type::kArrow;
     pos_ += 2;
     location_.column += 2;
+  } else if (matches(pos_, "--")) {
+    type = Token::Type::kMinusMinus;
+    pos_ += 2;
+    location_.column += 2;
   } else if (matches(pos_, "-")) {
     type = Token::Type::kMinus;
     pos_ += 1;
@@ -436,6 +874,10 @@ Token Lexer::try_punctuation() {
     type = Token::Type::kPeriod;
     pos_ += 1;
     location_.column += 1;
+  } else if (matches(pos_, "++")) {
+    type = Token::Type::kPlusPlus;
+    pos_ += 2;
+    location_.column += 2;
   } else if (matches(pos_, "+")) {
     type = Token::Type::kPlus;
     pos_ += 1;
@@ -456,6 +898,14 @@ Token Lexer::try_punctuation() {
     type = Token::Type::kStar;
     pos_ += 1;
     location_.column += 1;
+  } else if (matches(pos_, "~")) {
+    type = Token::Type::kTilde;
+    pos_ += 1;
+    location_.column += 1;
+  } else if (matches(pos_, "_")) {
+    type = Token::Type::kUnderscore;
+    pos_ += 1;
+    location_.column += 1;
   } else if (matches(pos_, "^")) {
     type = Token::Type::kXor;
     pos_ += 1;
@@ -470,6 +920,8 @@ Token Lexer::try_punctuation() {
 Token Lexer::check_keyword(const Source& source, const std::string& str) {
   if (str == "array")
     return {Token::Type::kArray, source, "array"};
+  if (str == "atomic")
+    return {Token::Type::kAtomic, source, "atomic"};
   if (str == "bitcast")
     return {Token::Type::kBitcast, source, "bitcast"};
   if (str == "bool")
@@ -478,8 +930,6 @@ Token Lexer::check_keyword(const Source& source, const std::string& str) {
     return {Token::Type::kBreak, source, "break"};
   if (str == "case")
     return {Token::Type::kCase, source, "case"};
-  if (str == "const")
-    return {Token::Type::kConst, source, "const"};
   if (str == "continue")
     return {Token::Type::kContinue, source, "continue"};
   if (str == "continuing")
@@ -582,8 +1032,6 @@ Token Lexer::check_keyword(const Source& source, const std::string& str) {
     return {Token::Type::kImage, source, "image"};
   if (str == "import")
     return {Token::Type::kImport, source, "import"};
-  if (str == "in")
-    return {Token::Type::kIn, source, "in"};
   if (str == "let")
     return {Token::Type::kLet, source, "let"};
   if (str == "loop")
@@ -606,8 +1054,6 @@ Token Lexer::check_keyword(const Source& source, const std::string& str) {
     return {Token::Type::kMat4x3, source, "mat4x3"};
   if (str == "mat4x4")
     return {Token::Type::kMat4x4, source, "mat4x4"};
-  if (str == "out")
-    return {Token::Type::kOut, source, "out"};
   if (str == "private")
     return {Token::Type::kPrivate, source, "private"};
   if (str == "ptr")
@@ -650,6 +1096,10 @@ Token Lexer::check_keyword(const Source& source, const std::string& str) {
     return {Token::Type::kTextureDepthCubeArray, source,
             "texture_depth_cube_array"};
   }
+  if (str == "texture_depth_multisampled_2d") {
+    return {Token::Type::kTextureDepthMultisampled2d, source,
+            "texture_depth_multisampled_2d"};
+  }
   if (str == "texture_external") {
     return {Token::Type::kTextureExternal, source, "texture_external"};
   }
@@ -686,48 +1136,8 @@ Token Lexer::check_keyword(const Source& source, const std::string& str) {
     return {Token::Type::kVec3, source, "vec3"};
   if (str == "vec4")
     return {Token::Type::kVec4, source, "vec4"};
-  if (str == "void")
-    return {Token::Type::kVoid, source, "void"};
   if (str == "workgroup")
     return {Token::Type::kWorkgroup, source, "workgroup"};
-  return {};
-}
-
-Token Lexer::check_reserved(const Source& source, const std::string& str) {
-  if (str == "asm")
-    return {Token::Type::kReservedKeyword, source, "asm"};
-  if (str == "bf16")
-    return {Token::Type::kReservedKeyword, source, "bf16"};
-  if (str == "do")
-    return {Token::Type::kReservedKeyword, source, "do"};
-  if (str == "enum")
-    return {Token::Type::kReservedKeyword, source, "enum"};
-  if (str == "f16")
-    return {Token::Type::kReservedKeyword, source, "f16"};
-  if (str == "f64")
-    return {Token::Type::kReservedKeyword, source, "f64"};
-  if (str == "handle")
-    return {Token::Type::kReservedKeyword, source, "handle"};
-  if (str == "i8")
-    return {Token::Type::kReservedKeyword, source, "i8"};
-  if (str == "i16")
-    return {Token::Type::kReservedKeyword, source, "i16"};
-  if (str == "i64")
-    return {Token::Type::kReservedKeyword, source, "i64"};
-  if (str == "premerge")
-    return {Token::Type::kReservedKeyword, source, "premerge"};
-  if (str == "regardless")
-    return {Token::Type::kReservedKeyword, source, "regardless"};
-  if (str == "typedef")
-    return {Token::Type::kReservedKeyword, source, "typedef"};
-  if (str == "u8")
-    return {Token::Type::kReservedKeyword, source, "u8"};
-  if (str == "u16")
-    return {Token::Type::kReservedKeyword, source, "u16"};
-  if (str == "u64")
-    return {Token::Type::kReservedKeyword, source, "u64"};
-  if (str == "unless")
-    return {Token::Type::kReservedKeyword, source, "unless"};
   return {};
 }
 
