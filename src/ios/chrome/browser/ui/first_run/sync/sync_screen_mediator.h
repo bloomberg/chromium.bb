@@ -7,7 +7,11 @@
 
 #import <Foundation/Foundation.h>
 
+@class AuthenticationFlow;
 class AuthenticationService;
+class ChromeAccountManagerService;
+@protocol SyncScreenConsumer;
+@protocol SyncScreenMediatorDelegate;
 class SyncSetupService;
 
 namespace consent_auditor {
@@ -20,6 +24,10 @@ class IdentityManager;
 
 namespace unified_consent {
 class UnifiedConsentService;
+}
+
+namespace syncer {
+class SyncService;
 }
 
 // Mediator that handles the sync operation.
@@ -35,15 +43,36 @@ class UnifiedConsentService;
 - (instancetype)
     initWithAuthenticationService:(AuthenticationService*)authenticationService
                   identityManager:(signin::IdentityManager*)identityManager
+            accountManagerService:
+                (ChromeAccountManagerService*)accountManagerService
                    consentAuditor:
                        (consent_auditor::ConsentAuditor*)consentAuditor
+                 syncSetupService:(SyncSetupService*)syncSetupService
             unifiedConsentService:
                 (unified_consent::UnifiedConsentService*)unifiedConsentService
-                 syncSetupService:(SyncSetupService*)syncSetupService
+                      syncService:(syncer::SyncService*)syncService
+
     NS_DESIGNATED_INITIALIZER;
 
+// Disconnect the mediator.
+- (void)disconnect;
+
+// Delegate.
+@property(nonatomic, weak) id<SyncScreenMediatorDelegate> delegate;
+
+// Consumer for this mediator.
+@property(nonatomic, weak) id<SyncScreenConsumer> consumer;
+
 // Starts the sync engine.
-- (void)startSync;
+// @param confirmationID: The confirmation string ID of sync.
+// @param consentIDs: The consent string IDs of sync screen.
+// @param authenticationFlow: the object used to manage the authentication flow.
+// @param advancedSyncSettingsLinkWasTapped: whether the link to show the
+// advance settings was used to start the sync.
+- (void)startSyncWithConfirmationID:(const int)confirmationID
+                           consentIDs:(NSArray<NSNumber*>*)consentIDs
+                   authenticationFlow:(AuthenticationFlow*)authenticationFlow
+    advancedSyncSettingsLinkWasTapped:(BOOL)advancedSyncSettingsLinkWasTapped;
 
 @end
 

@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/unguessable_token.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -41,7 +40,11 @@ class CONTENT_EXPORT RenderFrameHostFactory {
       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
       const blink::LocalFrameToken& frame_token,
       bool renderer_initiated_creation,
-      RenderFrameHostImpl::LifecycleStateImpl lifecycle_state);
+      RenderFrameHostImpl::LifecycleStateImpl lifecycle_state,
+      scoped_refptr<BrowsingContextState> browsing_context_state);
+
+  RenderFrameHostFactory(const RenderFrameHostFactory&) = delete;
+  RenderFrameHostFactory& operator=(const RenderFrameHostFactory&) = delete;
 
   // Returns true if there is currently a globally-registered factory.
   static bool has_factory() { return !!factory_; }
@@ -62,7 +65,8 @@ class CONTENT_EXPORT RenderFrameHostFactory {
       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
       const blink::LocalFrameToken& frame_token,
       bool renderer_initiated_creation,
-      RenderFrameHostImpl::LifecycleStateImpl lifecycle_state) = 0;
+      RenderFrameHostImpl::LifecycleStateImpl lifecycle_state,
+      scoped_refptr<BrowsingContextState> browsing_context_state) = 0;
 
   // Registers a factory to be called when new RenderFrameHostImpls are created.
   // We have only one global factory, so there must be no factory registered
@@ -77,8 +81,6 @@ class CONTENT_EXPORT RenderFrameHostFactory {
   // The current globally registered factory. This is null when we should create
   // regular RenderFrameHostImpls.
   static RenderFrameHostFactory* factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostFactory);
 };
 
 }  // namespace content

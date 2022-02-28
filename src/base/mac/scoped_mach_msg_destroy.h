@@ -7,8 +7,6 @@
 
 #include <mach/message.h>
 
-#include "base/macros.h"
-
 namespace base {
 
 // Calls mach_msg_destroy on the specified message when the object goes out
@@ -16,6 +14,9 @@ namespace base {
 class ScopedMachMsgDestroy {
  public:
   explicit ScopedMachMsgDestroy(mach_msg_header_t* header) : header_(header) {}
+
+  ScopedMachMsgDestroy(const ScopedMachMsgDestroy&) = delete;
+  ScopedMachMsgDestroy& operator=(const ScopedMachMsgDestroy&) = delete;
 
   ~ScopedMachMsgDestroy() {
     if (header_) {
@@ -28,8 +29,6 @@ class ScopedMachMsgDestroy {
 
  private:
   mach_msg_header_t* header_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedMachMsgDestroy);
 };
 
 }  // namespace base

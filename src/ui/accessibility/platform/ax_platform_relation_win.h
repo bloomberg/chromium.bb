@@ -10,9 +10,7 @@
 #include <set>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/observer_list.h"
 #include "base/win/atl.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/accessibility/ax_export.h"

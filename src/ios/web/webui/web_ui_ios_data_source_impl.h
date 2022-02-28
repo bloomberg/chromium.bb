@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/values.h"
 #include "ios/web/public/webui/url_data_source_ios.h"
 #include "ios/web/public/webui/web_ui_ios_data_source.h"
@@ -23,6 +22,9 @@ namespace web {
 class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
                                public WebUIIOSDataSource {
  public:
+  WebUIIOSDataSourceImpl(const WebUIIOSDataSourceImpl&) = delete;
+  WebUIIOSDataSourceImpl& operator=(const WebUIIOSDataSourceImpl&) = delete;
+
   // WebUIIOSDataSource implementation:
   void AddString(const std::string& name, const std::u16string& value) override;
   void AddString(const std::string& name, const std::string& value) override;
@@ -81,8 +83,6 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
   bool deny_xframe_options_;
   bool load_time_data_defaults_added_;
   bool replace_existing_source_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebUIIOSDataSourceImpl);
 };
 
 }  // web

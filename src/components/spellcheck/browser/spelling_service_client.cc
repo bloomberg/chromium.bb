@@ -15,10 +15,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/prefs/pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
@@ -32,6 +32,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace {
@@ -70,8 +71,12 @@ bool SpellingServiceClient::RequestTextCheck(
   DCHECK(pref);
 
   std::string dictionary;
-  pref->GetList(spellcheck::prefs::kSpellCheckDictionaries)
-      ->GetString(0, &dictionary);
+  const base::Value* dicts_list =
+      pref->GetList(spellcheck::prefs::kSpellCheckDictionaries);
+  DCHECK(dicts_list->is_list());
+  base::Value::ConstListView dicts_lists_view = dicts_list->GetList();
+  if (0u < dicts_lists_view.size() && dicts_lists_view[0].is_string())
+    dictionary = dicts_lists_view[0].GetString();
 
   std::string language_code;
   std::string country_code;
@@ -86,7 +91,6 @@ bool SpellingServiceClient::RequestTextCheck(
   std::replace(text_copy.begin(), text_copy.end(), kRightSingleQuotationMark,
                kApostrophe);
 
-  std::string api_key = google_apis::GetAPIKey();
   std::string encoded_text = base::GetQuotedJSONString(text_copy);
 
   static const char kSpellingRequestRestBodyTemplate[] =
@@ -176,8 +180,13 @@ bool SpellingServiceClient::IsAvailable(content::BrowserContext* context,
   // If the locale for spelling has not been set, the user has not decided to
   // use spellcheck so we don't do anything remote (suggest or spelling).
   std::string locale;
-  pref->GetList(spellcheck::prefs::kSpellCheckDictionaries)
-      ->GetString(0, &locale);
+  const base::Value* dicts_list =
+      pref->GetList(spellcheck::prefs::kSpellCheckDictionaries);
+  DCHECK(dicts_list->is_list());
+  base::Value::ConstListView dicts_lists_view = dicts_list->GetList();
+  if (0u < dicts_lists_view.size() && dicts_lists_view[0].is_string())
+    locale = dicts_lists_view[0].GetString();
+
   if (locale.empty())
     return false;
 
@@ -264,27 +273,32 @@ bool SpellingServiceClient::ParseResponse(
   if (!value->GetList(kMisspellingsRestPath, &misspellings))
     return true;
 
-  for (size_t i = 0; i < misspellings->GetSize(); ++i) {
+  for (const base::Value& misspelling_value : misspellings->GetList()) {
     // Retrieve the i-th misspelling region and put it to the given vector. When
     // the Spelling service sends two or more suggestions, we read only the
     // first one because SpellCheckResult can store only one suggestion.
-    base::DictionaryValue* misspelling = nullptr;
-    if (!misspellings->GetDictionary(i, &misspelling))
+    if (!misspelling_value.is_dict())
       return false;
+
+    const base::DictionaryValue& misspelling =
+        base::Value::AsDictionaryValue(misspelling_value);
 
     int start = 0;
     int length = 0;
-    base::ListValue* suggestions = nullptr;
-    if (!misspelling->GetInteger("charStart", &start) ||
-        !misspelling->GetInteger("charLength", &length) ||
-        !misspelling->GetList("suggestions", &suggestions)) {
+    const base::ListValue* suggestions = nullptr;
+    if (!misspelling.GetInteger("charStart", &start) ||
+        !misspelling.GetInteger("charLength", &length) ||
+        !misspelling.GetList("suggestions", &suggestions)) {
       return false;
     }
 
-    base::DictionaryValue* suggestion = nullptr;
+    const base::Value& suggestion_value = suggestions->GetList()[0];
+    const base::DictionaryValue* suggestion = nullptr;
+    if (suggestion_value.is_dict())
+      suggestion = &base::Value::AsDictionaryValue(suggestion_value);
+
     std::u16string replacement;
-    if (!suggestions->GetDictionary(0, &suggestion) ||
-        !suggestion->GetString("suggestion", &replacement)) {
+    if (!suggestion || !suggestion->GetString("suggestion", &replacement)) {
       return false;
     }
     SpellCheckResult result(SpellCheckResult::SPELLING, start, length,

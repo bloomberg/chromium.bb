@@ -27,10 +27,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITING_REQUIREMENTS_UPDATER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITING_REQUIREMENTS_UPDATER_H_
 
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 
@@ -54,7 +55,7 @@ class CompositingRequirementsUpdater {
   //      child.  This implies that its positive z-index children must also be
   //      compositing.
   //
-  void Update(PaintLayer* root, CompositingReasonsStats&);
+  void Update(PaintLayer* root);
 
  private:
   class OverlapMap;
@@ -65,9 +66,8 @@ class CompositingRequirementsUpdater {
                        OverlapMap&,
                        RecursionData&,
                        bool& descendant_has3d_transform,
-                       Vector<PaintLayer*>& unclipped_descendants,
-                       IntRect& absolute_descendant_bounding_box,
-                       CompositingReasonsStats&);
+                       HeapVector<Member<PaintLayer>>& unclipped_descendants,
+                       gfx::Rect& absolute_descendant_bounding_box);
 
   LayoutView& layout_view_;
 };

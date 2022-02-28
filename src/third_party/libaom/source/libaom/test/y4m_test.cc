@@ -40,7 +40,7 @@ const Y4mTestParam kY4mTestVectors[] = {
   { "park_joy_90p_8_420_monochrome.y4m", 8, AOM_IMG_FMT_I420,
     "95ef5bf6218580588be24a5271bb6a7f" },
   { "park_joy_90p_8_420_vertical_csp.y4m", 8, AOM_IMG_FMT_I420,
-    "f53a40fec15254ac312527339d9c686b" },
+    "e5406275b9fc6bb3436c31d4a05c1cab" },
   { "park_joy_90p_8_422.y4m", 8, AOM_IMG_FMT_I422,
     "284a47a47133b12884ec3a14e959a0b6" },
   { "park_joy_90p_8_444.y4m", 8, AOM_IMG_FMT_I444,

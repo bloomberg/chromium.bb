@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_ABORT_PAYMENT_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_ABORT_PAYMENT_EVENT_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/service_worker/extendable_event.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -36,6 +35,10 @@ class MODULES_EXPORT AbortPaymentEvent final : public ExtendableEvent {
                     const ExtendableEventInit*,
                     RespondWithObserver*,
                     WaitUntilObserver*);
+
+  AbortPaymentEvent(const AbortPaymentEvent&) = delete;
+  AbortPaymentEvent& operator=(const AbortPaymentEvent&) = delete;
+
   ~AbortPaymentEvent() override;
 
   const AtomicString& InterfaceName() const override;
@@ -46,8 +49,6 @@ class MODULES_EXPORT AbortPaymentEvent final : public ExtendableEvent {
 
  private:
   Member<RespondWithObserver> observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(AbortPaymentEvent);
 };
 
 }  // namespace blink

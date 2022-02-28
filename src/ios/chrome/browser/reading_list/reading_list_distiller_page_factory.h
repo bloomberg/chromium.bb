@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "url/gurl.h"
 
 namespace web {
@@ -27,6 +26,12 @@ class ReadingListDistillerPageDelegate;
 class ReadingListDistillerPageFactory {
  public:
   explicit ReadingListDistillerPageFactory(web::BrowserState* browser_state);
+
+  ReadingListDistillerPageFactory(const ReadingListDistillerPageFactory&) =
+      delete;
+  ReadingListDistillerPageFactory& operator=(
+      const ReadingListDistillerPageFactory&) = delete;
+
   virtual ~ReadingListDistillerPageFactory();
 
   // Creates a ReadingListDistillerPage to distill |url|.
@@ -41,8 +46,6 @@ class ReadingListDistillerPageFactory {
  private:
   web::BrowserState* browser_state_;
   std::unique_ptr<FaviconWebStateDispatcher> web_state_dispatcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(ReadingListDistillerPageFactory);
 };
 
 }  // namespace reading_list

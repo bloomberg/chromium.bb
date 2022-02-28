@@ -13,9 +13,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
-#include "base/observer_list.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
@@ -37,6 +35,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin
       const BluetoothTaskManagerWin::DeviceState& device_state,
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
       scoped_refptr<BluetoothSocketThread> socket_thread);
+
+  BluetoothDeviceWin(const BluetoothDeviceWin&) = delete;
+  BluetoothDeviceWin& operator=(const BluetoothDeviceWin&) = delete;
+
   ~BluetoothDeviceWin() override;
 
   // BluetoothDevice override
@@ -65,8 +67,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin
                             base::OnceClosure callback,
                             ErrorCallback error_callback) override;
   void Connect(PairingDelegate* pairing_delegate,
-               base::OnceClosure callback,
-               ConnectErrorCallback error_callback) override;
+               ConnectCallback callback) override;
   void SetPinCode(const std::string& pincode) override;
   void SetPasskey(uint32_t passkey) override;
   void ConfirmPairing() override;
@@ -168,8 +169,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin
   // BluetoothRemoteGattServiceWin instance.
   std::set<std::pair<BluetoothUUID, uint16_t>>
       discovery_completed_included_services_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceWin);
 };
 
 }  // namespace device

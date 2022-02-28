@@ -36,11 +36,7 @@ const char kMOVPath[] = "/video_sample.mov";
 
 // Matcher for the Cancel button.
 id<GREYMatcher> ShareMenuDismissButton() {
-  if (@available(iOS 13, *)) {
-    return chrome_test_util::CloseButton();
-  } else {
-    return chrome_test_util::CancelButton();
-  }
+  return chrome_test_util::CloseButton();
 }
 
 }  // namespace
@@ -71,11 +67,6 @@ using base::test::ios::WaitUntilConditionOrTimeout;
   // iPad.
   if ([ChromeEarlGrey isIPadIdiom])
     EARL_GREY_TEST_SKIPPED(@"Test skipped on iPad.");
-
-  // UIActivityViewController doesn't display the filename on iOS 12.
-  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
-  }
 
   // Open the activity menu.
   [ChromeEarlGrey loadURL:self.testServer->GetURL(kPDFPath)];
@@ -112,11 +103,6 @@ using base::test::ios::WaitUntilConditionOrTimeout;
   // iPad.
   if ([ChromeEarlGrey isIPadIdiom])
     EARL_GREY_TEST_SKIPPED(@"Test skipped on iPad.");
-
-  // UIActivityViewController doesn't display the filename on iOS 12.
-  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
-  }
 
   // Open the activity menu.
   [ChromeEarlGrey loadURL:self.testServer->GetURL(kPNGPath)];

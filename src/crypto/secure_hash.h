@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "crypto/crypto_export.h"
 
 namespace crypto {
@@ -22,6 +21,10 @@ class CRYPTO_EXPORT SecureHash {
   enum Algorithm {
     SHA256,
   };
+
+  SecureHash(const SecureHash&) = delete;
+  SecureHash& operator=(const SecureHash&) = delete;
+
   virtual ~SecureHash() {}
 
   static std::unique_ptr<SecureHash> Create(Algorithm type);
@@ -37,9 +40,6 @@ class CRYPTO_EXPORT SecureHash {
 
  protected:
   SecureHash() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SecureHash);
 };
 
 }  // namespace crypto

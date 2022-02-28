@@ -2,15 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import 'chrome://resources/js/load_time_data.m.js';
+import 'chrome://resources/js/load_time_data.m.js';
 
 suite('LoadTimeDataModuleTest', function() {
   const loadTimeData = window.loadTimeData;
 
+  /** @override */
+  setup(function() {
+    loadTimeData.resetForTesting();
+  });
+
   test('getStringPieces', function() {
-    const assertSubstitutedPieces = function(expected, var_args) {
-      var var_args = Array.prototype.slice.call(arguments, 1);
-      var pieces =
+    const assertSubstitutedPieces = function(expected, ...var_args) {
+      const pieces =
           loadTimeData.getSubstitutedStringPieces.apply(loadTimeData, var_args);
       assertDeepEquals(expected, pieces);
 
@@ -88,5 +92,27 @@ suite('LoadTimeDataModuleTest', function() {
     assertSubstitutionThrows('$$$');
     assertSubstitutionThrows('a$');
     assertSubstitutionThrows('a$\n');
+  });
+
+  test('isInitialized_and_resetForTesting', function() {
+    // Should start as un-initialized.
+    assertFalse(loadTimeData.isInitialized());
+
+    // Setting the data should change the state to initialized.
+    loadTimeData.data = {TEST_KEY: 'test value'};
+    assertTrue(loadTimeData.isInitialized());
+
+    // resetForTesting() should restore the un-initialized state.
+    loadTimeData.resetForTesting();
+    assertFalse(loadTimeData.isInitialized());
+
+    // resetForTesting() to empty state which is considered initialized.
+    loadTimeData.resetForTesting({});
+    assertTrue(loadTimeData.isInitialized());
+
+    // resetForTesting() to a specific state which is considered initialized.
+    loadTimeData.resetForTesting({SOMETHING: 'ANYTHING'});
+    assertTrue(loadTimeData.isInitialized());
+    assertTrue(loadTimeData.valueExists('SOMETHING'));
   });
 });

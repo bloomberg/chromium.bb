@@ -5,9 +5,9 @@
 #include "ash/system/overview/overview_button_tray.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/constants/ash_features.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/login_status.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/root_window_controller.h"
@@ -258,7 +258,7 @@ TEST_F(OverviewButtonTrayTest, TrayOverviewUserAction) {
 // when TabletMode has been enabled,  when we are using multiple displays.
 // By default the DisplayManger is in extended mode.
 TEST_F(OverviewButtonTrayTest, DisplaysOnBothDisplays) {
-  UpdateDisplay("400x400,200x200");
+  UpdateDisplay("500x400,300x200");
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetTray()->GetVisible());
   EXPECT_FALSE(GetSecondaryTray()->GetVisible());
@@ -279,7 +279,7 @@ TEST_F(OverviewButtonTrayTest, DisplaysOnBothDisplays) {
 // https://crbug.com/798857.
 TEST_F(OverviewButtonTrayTest, DISABLED_SecondaryTrayCreatedVisible) {
   TabletModeControllerTestApi().EnterTabletMode();
-  UpdateDisplay("400x400,200x200");
+  UpdateDisplay("500x400,300x200");
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(GetSecondaryTray()->GetVisible());
 }
@@ -312,11 +312,11 @@ TEST_F(OverviewButtonTrayTest, ActiveStateOnlyDuringOverviewMode) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
 
-  EXPECT_TRUE(Shell::Get()->overview_controller()->StartOverview());
+  EXPECT_TRUE(EnterOverview());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_TRUE(GetTray()->is_active());
 
-  EXPECT_TRUE(Shell::Get()->overview_controller()->EndOverview());
+  EXPECT_TRUE(ExitOverview());
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_FALSE(GetTray()->is_active());
 }
@@ -399,7 +399,7 @@ TEST_F(OverviewButtonTrayTest, SplitviewModeQuickSwitch) {
 
   // Enter splitview mode. Snap |window1| to the left, this will be the default
   // splitview window.
-  Shell::Get()->overview_controller()->StartOverview();
+  EnterOverview();
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller()->SnapWindow(window2.get(),
                                       SplitViewController::RIGHT);
@@ -615,7 +615,7 @@ TEST_P(OverviewButtonTrayWithShelfControlsHiddenTest,
   // Create a window to show in overview.
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  Shell::Get()->overview_controller()->StartOverview();
+  EnterOverview();
   ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_FALSE(GetTray()->GetVisible());
 

@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/disconnect_reason.h"
@@ -36,6 +35,10 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) ScopedInterfaceEndpointHandle {
   ScopedInterfaceEndpointHandle();
 
   ScopedInterfaceEndpointHandle(ScopedInterfaceEndpointHandle&& other);
+
+  ScopedInterfaceEndpointHandle(const ScopedInterfaceEndpointHandle&) = delete;
+  ScopedInterfaceEndpointHandle& operator=(
+      const ScopedInterfaceEndpointHandle&) = delete;
 
   ~ScopedInterfaceEndpointHandle();
 
@@ -113,8 +116,6 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) ScopedInterfaceEndpointHandle {
   CreateGroupControllerGetter() const;
 
   scoped_refptr<State> state_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedInterfaceEndpointHandle);
 };
 
 }  // namespace mojo

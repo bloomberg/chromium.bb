@@ -23,15 +23,17 @@ bool ShowPageInfoDialog(content::WebContents* web_contents,
 
   content::NavigationEntry* entry =
       web_contents->GetController().GetVisibleEntry();
-  if (!entry)
+  if (!entry || entry->IsInitialEntry())
     return false;
 
+  auto initialized_callback =
+      GetPageInfoDialogCreatedCallbackForTesting()
+          ? std::move(GetPageInfoDialogCreatedCallbackForTesting())
+          : base::DoNothing();
+
   ShowPageInfoDialogImpl(browser, web_contents, entry->GetVirtualURL(), anchor,
+                         std::move(initialized_callback),
                          std::move(closing_callback));
-
-  if (GetPageInfoDialogCreatedCallbackForTesting())
-    std::move(GetPageInfoDialogCreatedCallbackForTesting()).Run();
-
   return true;
 }
 

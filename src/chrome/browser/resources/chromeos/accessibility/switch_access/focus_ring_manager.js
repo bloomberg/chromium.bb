@@ -20,6 +20,11 @@ export class FocusRingManager {
      */
     this.rings_ = this.createMap_();
 
+    /** @private {!Map<SAConstants.Focus.ID, SAChildNode>} */
+    this.ringNodesForTesting_ = new Map([
+      [SAConstants.Focus.ID.PRIMARY, null], [SAConstants.Focus.ID.PREVIEW, null]
+    ]);
+
     /**
      * Regex pattern to verify valid colors. Checks that the first character
      * is '#', followed by 3, 4, 6, or 8 valid hex characters, and no other
@@ -51,6 +56,43 @@ export class FocusRingManager {
       return;
     }
     manager.rings_.forEach((ring) => ring.color = color);
+  }
+
+  /**
+   * Set state of recording macro and switch colors of the focus rings.
+   * @param {boolean} isRecording
+   */
+  static setIsRecording(isRecording) {
+    // If the feature flag is not enabled, escape.
+    if (!SwitchAccess.instance.multistepAutomationFeaturesEnabled()) {
+      return;
+    }
+
+    const manager = FocusRingManager.instance;
+
+    if (isRecording) {
+      manager.rings_.get(SAConstants.Focus.ID.PRIMARY).color =
+          SAConstants.Focus.PRIMARY_COLOR_RECORDING_MACRO;
+      manager.rings_.get(SAConstants.Focus.ID.PRIMARY).secondaryColor =
+          SAConstants.Focus.OUTER_COLOR_RECORDING_MACRO;
+
+      manager.rings_.get(SAConstants.Focus.ID.PREVIEW).color =
+          SAConstants.Focus.PREVIEW_COLOR_RECORDING_MACRO;
+      manager.rings_.get(SAConstants.Focus.ID.PREVIEW).secondaryColor =
+          SAConstants.Focus.OUTER_COLOR_RECORDING_MACRO;
+    } else {
+      manager.rings_.get(SAConstants.Focus.ID.PRIMARY).color =
+          SAConstants.Focus.PRIMARY_COLOR;
+      manager.rings_.get(SAConstants.Focus.ID.PRIMARY).secondaryColor =
+          SAConstants.Focus.OUTER_COLOR;
+
+      manager.rings_.get(SAConstants.Focus.ID.PREVIEW).color =
+          SAConstants.Focus.PREVIEW_COLOR;
+      manager.rings_.get(SAConstants.Focus.ID.PREVIEW).secondaryColor =
+          SAConstants.Focus.OUTER_COLOR;
+    }
+
+    manager.updateFocusRings_(null, null);
   }
 
   /**
@@ -169,6 +211,8 @@ export class FocusRingManager {
   /**
    * Updates all focus rings to reflect new location, color, style, or other
    * changes. Enables observers to monitor what's focused.
+   * @param {SAChildNode} primaryRingNode
+   * @param {SAChildNode} previewRingNode
    * @private
    */
   updateFocusRings_(primaryRingNode, previewRingNode) {
@@ -180,6 +224,14 @@ export class FocusRingManager {
     const focusRings = [];
     this.rings_.forEach((ring) => focusRings.push(ring));
     chrome.accessibilityPrivate.setFocusRings(focusRings);
+
+    // Keep track of the nodes associated with each focus ring for testing
+    // purposes, since focus ring locations are not guaranteed to exactly match
+    // node locations.
+    this.ringNodesForTesting_.set(
+        SAConstants.Focus.ID.PRIMARY, primaryRingNode);
+    this.ringNodesForTesting_.set(
+        SAConstants.Focus.ID.PREVIEW, previewRingNode);
 
     const observer = FocusRingManager.instance.observer_;
     if (observer) {

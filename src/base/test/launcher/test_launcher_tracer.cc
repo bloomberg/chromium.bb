@@ -15,39 +15,41 @@ TestLauncherTracer::TestLauncherTracer()
 
 TestLauncherTracer::~TestLauncherTracer() = default;
 
-void TestLauncherTracer::RecordProcessExecution(TimeTicks start_time,
-                                                TimeDelta duration) {
+int TestLauncherTracer::RecordProcessExecution(TimeTicks start_time,
+                                               TimeDelta duration) {
   AutoLock lock(lock_);
 
+  int process_num = events_.size();
   Event event;
-  event.name = StringPrintf("process #%zu", events_.size());
+  event.name = StringPrintf("process #%d", process_num);
   event.timestamp = start_time;
   event.duration = duration;
   event.thread_id = PlatformThread::CurrentId();
   events_.push_back(event);
+  return process_num;
 }
 
 bool TestLauncherTracer::Dump(const FilePath& path) {
   AutoLock lock(lock_);
 
-  std::unique_ptr<ListValue> json_events(new ListValue);
+  Value::ListStorage json_events_storage;
   for (const Event& event : events_) {
-    std::unique_ptr<DictionaryValue> json_event(new DictionaryValue);
-    json_event->SetString("name", event.name);
-    json_event->SetString("ph", "X");
-    json_event->SetInteger(
+    Value json_event(Value::Type::DICTIONARY);
+    json_event.SetStringKey("name", event.name);
+    json_event.SetStringKey("ph", "X");
+    json_event.SetIntKey(
         "ts", (event.timestamp - trace_start_time_).InMicroseconds());
-    json_event->SetIntKey("dur", event.duration.InMicroseconds());
-    json_event->SetIntKey("tid", event.thread_id);
+    json_event.SetIntKey("dur", event.duration.InMicroseconds());
+    json_event.SetIntKey("tid", event.thread_id);
 
     // Add fake values required by the trace viewer.
-    json_event->SetIntKey("pid", 0);
+    json_event.SetIntKey("pid", 0);
 
-    json_events->Append(std::move(json_event));
+    json_events_storage.push_back(std::move(json_event));
   }
 
   JSONFileValueSerializer serializer(path);
-  return serializer.Serialize(*json_events);
+  return serializer.Serialize(Value(std::move(json_events_storage)));
 }
 
 }  // namespace base

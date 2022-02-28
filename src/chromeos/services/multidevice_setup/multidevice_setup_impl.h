@@ -8,13 +8,12 @@
 #include <memory>
 #include <string>
 
-#include "base/containers/flat_map.h"
 #include "chromeos/services/multidevice_setup/feature_state_manager.h"
+#include "chromeos/services/multidevice_setup/global_state_feature_manager.h"
 #include "chromeos/services/multidevice_setup/host_status_provider.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_base.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "chromeos/services/multidevice_setup/wifi_sync_feature_manager.h"
-#include "chromeos/services/multidevice_setup/wifi_sync_feature_manager_impl.h"
+#include "chromeos/services/multidevice_setup/wifi_sync_notification_controller.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "url/gurl.h"
@@ -76,6 +75,9 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
    private:
     static Factory* test_factory_;
   };
+
+  MultiDeviceSetupImpl(const MultiDeviceSetupImpl&) = delete;
+  MultiDeviceSetupImpl& operator=(const MultiDeviceSetupImpl&) = delete;
 
   ~MultiDeviceSetupImpl() override;
 
@@ -148,7 +150,10 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
       grandfathered_easy_unlock_host_disabler_;
   std::unique_ptr<HostDeviceTimestampManager> host_device_timestamp_manager_;
   std::unique_ptr<AccountStatusChangeDelegateNotifier> delegate_notifier_;
-  std::unique_ptr<WifiSyncFeatureManager> wifi_sync_feature_manager_;
+  std::unique_ptr<GlobalStateFeatureManager> camera_roll_feature_manager_;
+  std::unique_ptr<GlobalStateFeatureManager> wifi_sync_feature_manager_;
+  std::unique_ptr<WifiSyncNotificationController>
+      wifi_sync_notification_controller_;
   std::unique_ptr<FeatureStateManager> feature_state_manager_;
   std::unique_ptr<AndroidSmsAppInstallingStatusObserver>
       android_sms_app_installing_host_observer_;
@@ -156,8 +161,6 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
 
   mojo::RemoteSet<mojom::HostStatusObserver> host_status_observers_;
   mojo::RemoteSet<mojom::FeatureStateObserver> feature_state_observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupImpl);
 };
 
 }  // namespace multidevice_setup

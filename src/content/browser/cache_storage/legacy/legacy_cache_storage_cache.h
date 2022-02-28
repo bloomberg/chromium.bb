@@ -14,7 +14,7 @@
 #include "base/callback.h"
 #include "base/containers/id_map.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/services/storage/public/mojom/cache_storage_control.mojom.h"
 #include "content/browser/cache_storage/blob_storage_context_wrapper.h"
@@ -22,13 +22,14 @@
 #include "content/browser/cache_storage/cache_storage_handle.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/scoped_writable_entry.h"
+#include "content/common/content_export.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/disk_cache/disk_cache.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
-#include "url/origin.h"
 
 namespace storage {
 class QuotaManagerProxy;
@@ -59,7 +60,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
   using SizePaddingCallback = base::OnceCallback<void(int64_t, int64_t)>;
 
   static std::unique_ptr<LegacyCacheStorageCache> CreateMemoryCache(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       storage::mojom::CacheStorageOwner owner,
       const std::string& cache_name,
       LegacyCacheStorage* cache_storage,
@@ -67,7 +68,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       scoped_refptr<BlobStorageContextWrapper> blob_storage_context);
   static std::unique_ptr<LegacyCacheStorageCache> CreatePersistentCache(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       storage::mojom::CacheStorageOwner owner,
       const std::string& cache_name,
       LegacyCacheStorage* cache_storage,
@@ -114,19 +115,6 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
       blink::mojom::QuotaStatusCode status_code,
       int64_t usage,
       int64_t quota);
-  // Callback passed to operations. If |error| is a real error, invokes
-  // |error_callback|. Always invokes |completion_closure| to signal
-  // completion.
-  void BatchDidOneOperation(base::OnceClosure completion_closure,
-                            VerboseErrorCallback error_callback,
-                            absl::optional<std::string> message,
-                            int64_t trace_id,
-                            blink::mojom::CacheStorageError error);
-  // Callback invoked once all BatchDidOneOperation() calls have run.
-  // Invokes |error_callback|.
-  void BatchDidAllOperations(VerboseErrorCallback error_callback,
-                             absl::optional<std::string> message,
-                             int64_t trace_id);
 
   void Keys(blink::mojom::FetchAPIRequestPtr request,
             blink::mojom::CacheQueryOptionsPtr options,
@@ -159,6 +147,9 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
                             CacheEntriesCallback callback) override;
 
   InitState GetInitState() const override;
+
+  LegacyCacheStorageCache(const LegacyCacheStorageCache&) = delete;
+  LegacyCacheStorageCache& operator=(const LegacyCacheStorageCache&) = delete;
 
   // Async operations in progress will cancel and not run their callbacks.
   ~LegacyCacheStorageCache() override;
@@ -221,6 +212,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
 
   struct QueryCacheContext;
   struct QueryCacheResult;
+  struct BatchInfo;
 
   using QueryTypes = int32_t;
   using QueryCacheResults = std::vector<QueryCacheResult>;
@@ -233,7 +225,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
       base::IDMap<std::unique_ptr<CacheStorageBlobToDiskCache>>;
 
   LegacyCacheStorageCache(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       storage::mojom::CacheStorageOwner owner,
       const std::string& cache_name,
       const base::FilePath& path,
@@ -243,6 +235,12 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
       scoped_refptr<BlobStorageContextWrapper> blob_storage_context,
       int64_t cache_size,
       int64_t cache_padding);
+
+  // Callback passed to operations. If |error| is a real error, invokes
+  // |error_callback|. Always invokes |completion_closure| to signal
+  // completion.
+  void BatchDidOneOperation(BatchInfo& batch_status,
+                            blink::mojom::CacheStorageError error);
 
   // Runs |callback| with matching requests/response data. The data provided
   // in the QueryCacheResults depends on the |query_type|. If |query_type| is
@@ -518,14 +516,14 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
   // Be sure to check |backend_state_| before use.
   std::unique_ptr<disk_cache::Backend> backend_;
 
-  url::Origin origin_;
+  blink::StorageKey storage_key_;
   storage::mojom::CacheStorageOwner owner_;
   const std::string cache_name_;
   base::FilePath path_;
 
   // Raw pointer is safe because the CacheStorage instance owns this
   // CacheStorageCache object.
-  LegacyCacheStorage* cache_storage_;
+  raw_ptr<LegacyCacheStorage> cache_storage_;
 
   // A handle that is used to keep the owning CacheStorage instance referenced
   // as long this cache object is also referenced.
@@ -543,7 +541,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
   size_t max_query_size_bytes_;
   size_t handle_ref_count_ = 0;
   int query_cache_recursive_depth_ = 0;
-  CacheStorageCacheObserver* cache_observer_;
+  raw_ptr<CacheStorageCacheObserver> cache_observer_;
   std::unique_ptr<CacheStorageCacheEntryHandler> cache_entry_handler_;
 
   // Owns the elements of the list
@@ -558,8 +556,6 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<LegacyCacheStorageCache> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LegacyCacheStorageCache);
 };
 
 }  // namespace content

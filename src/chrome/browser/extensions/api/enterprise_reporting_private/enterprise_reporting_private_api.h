@@ -30,16 +30,22 @@ class EnterpriseReportingPrivateGetDeviceIdFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("enterprise.reportingPrivate.getDeviceId",
                              ENTERPRISEREPORTINGPRIVATE_GETDEVICEID)
+
   EnterpriseReportingPrivateGetDeviceIdFunction();
+
+  EnterpriseReportingPrivateGetDeviceIdFunction(
+      const EnterpriseReportingPrivateGetDeviceIdFunction&) = delete;
+  EnterpriseReportingPrivateGetDeviceIdFunction& operator=(
+      const EnterpriseReportingPrivateGetDeviceIdFunction&) = delete;
 
   // ExtensionFunction
   ExtensionFunction::ResponseAction Run() override;
 
  private:
   ~EnterpriseReportingPrivateGetDeviceIdFunction() override;
-
-  DISALLOW_COPY_AND_ASSIGN(EnterpriseReportingPrivateGetDeviceIdFunction);
 };
+
+#if !defined(OS_LINUX)
 
 class EnterpriseReportingPrivateGetPersistentSecretFunction
     : public ExtensionFunction {
@@ -66,6 +72,8 @@ class EnterpriseReportingPrivateGetPersistentSecretFunction
 
   void SendResponse(const std::string& data, long int status);
 };
+
+#endif  // !defined(OS_LINUX)
 
 class EnterpriseReportingPrivateGetDeviceDataFunction
     : public ExtensionFunction {
@@ -132,7 +140,7 @@ class EnterpriseReportingPrivateGetDeviceInfoFunction
 
   // Conversion function for this class to use a DeviceInfoFetcher result.
   static api::enterprise_reporting_private::DeviceInfo ToDeviceInfo(
-      enterprise_signals::DeviceInfo device_signals);
+      enterprise_signals::DeviceInfo&& device_signals);
 
  private:
   ~EnterpriseReportingPrivateGetDeviceInfoFunction() override;

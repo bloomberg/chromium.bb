@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for SharedVariableCreator."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.distribute import shared_variable_creator
 from tensorflow.python.eager import test
 from tensorflow.python.framework import test_util
@@ -30,18 +26,18 @@ class CanonicalizeVariableNameTest(test.TestCase):
     return shared_variable_creator._canonicalize_variable_name(name)
 
   def testNoName(self):
-    self.assertEquals("Variable", self._canonicalize(None))
+    self.assertEqual("Variable", self._canonicalize(None))
 
   def testPatternInMiddle(self):
-    self.assertEquals("foo/bar/baz", self._canonicalize("foo_1/bar_1/baz"))
+    self.assertEqual("foo/bar/baz", self._canonicalize("foo_1/bar_1/baz"))
 
   def testPatternAtEnd(self):
-    self.assertEquals("foo", self._canonicalize("foo_1"))
+    self.assertEqual("foo", self._canonicalize("foo_1"))
 
   def testWrongPatterns(self):
-    self.assertEquals("foo_1:0", self._canonicalize("foo_1:0"))
-    self.assertEquals("foo1", self._canonicalize("foo1"))
-    self.assertEquals("foo_a", self._canonicalize("foo_a"))
+    self.assertEqual("foo_1:0", self._canonicalize("foo_1:0"))
+    self.assertEqual("foo1", self._canonicalize("foo1"))
+    self.assertEqual("foo_a", self._canonicalize("foo_a"))
 
 
 class SharedVariableCreatorTest(test.TestCase):

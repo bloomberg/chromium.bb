@@ -12,8 +12,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_backgrounds.h"
-#include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/instant_service_factory.h"
+#include "chrome/browser/search/background/ntp_custom_background_service.h"
+#include "chrome/browser/search/background/ntp_custom_background_service_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/welcome_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -35,33 +35,32 @@ NtpBackgroundHandler::NtpBackgroundHandler() {}
 NtpBackgroundHandler::~NtpBackgroundHandler() {}
 
 void NtpBackgroundHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "clearBackground",
       base::BindRepeating(&NtpBackgroundHandler::HandleClearBackground,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getBackgrounds",
       base::BindRepeating(&NtpBackgroundHandler::HandleGetBackgrounds,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setBackground",
       base::BindRepeating(&NtpBackgroundHandler::HandleSetBackground,
                           base::Unretained(this)));
 }
 
 void NtpBackgroundHandler::HandleClearBackground(const base::ListValue* args) {
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
-  instant_service->ResetCustomBackgroundInfo();
+  auto* service = NtpCustomBackgroundServiceFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()));
+  service->ResetCustomBackgroundInfo();
 }
 
 void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(1U, args->GetSize());
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
+  CHECK_EQ(1U, args->GetList().size());
+  const base::Value& callback_id = args->GetList()[0];
 
   base::ListValue list_value;
   std::array<GURL, kNtpBackgroundsCount> NtpBackgrounds = GetNtpBackgrounds();
@@ -113,28 +112,28 @@ void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
   element->SetString("thumbnailClass", "geometric-shapes");
   list_value.Append(std::move(element));
 
-  ResolveJavascriptCallback(*callback_id, list_value);
+  ResolveJavascriptCallback(callback_id, list_value);
 }
 
 void NtpBackgroundHandler::HandleSetBackground(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
-  int backgroundIndex;
-  args->GetInteger(0, &backgroundIndex);
+  const auto& list = args->GetList();
+  CHECK_EQ(1U, list.size());
+  int background_index = list[0].GetInt();
 
   std::array<GURL, kNtpBackgroundsCount> NtpBackgrounds = GetNtpBackgrounds();
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  auto* service = NtpCustomBackgroundServiceFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()));
 
-  switch (backgroundIndex) {
+  switch (background_index) {
     case static_cast<int>(NtpBackgrounds::kArt):
-      instant_service->SetCustomBackgroundInfo(
-          NtpBackgrounds[backgroundIndex], "Universe Cosmic Vacum",
+      service->SetCustomBackgroundInfo(
+          NtpBackgrounds[background_index], "Universe Cosmic Vacum",
           "Philipp Rietz — Walli",
           GURL("https://walli.shanga.co/image/view/?id=370"), "");
       break;
     case static_cast<int>(NtpBackgrounds::kCityscape):
-      instant_service->SetCustomBackgroundInfo(
-          NtpBackgrounds[backgroundIndex],
+      service->SetCustomBackgroundInfo(
+          NtpBackgrounds[background_index],
           l10n_util::GetStringFUTF8(IDS_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL,
                                     u"Ev Tchebotarev"),
           "",
@@ -143,21 +142,21 @@ void NtpBackgroundHandler::HandleSetBackground(const base::ListValue* args) {
           "");
       break;
     case static_cast<int>(NtpBackgrounds::kEarth):
-      instant_service->SetCustomBackgroundInfo(
-          NtpBackgrounds[backgroundIndex],
+      service->SetCustomBackgroundInfo(
+          NtpBackgrounds[background_index],
           l10n_util::GetStringFUTF8(IDS_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL,
                                     u"NASA Image Library"),
           "", GURL("https://www.google.com/sky/"), "");
       break;
     case static_cast<int>(NtpBackgrounds::kGeometricShapes):
-      instant_service->SetCustomBackgroundInfo(
-          NtpBackgrounds[backgroundIndex], "Tessellation 15",
+      service->SetCustomBackgroundInfo(
+          NtpBackgrounds[background_index], "Tessellation 15",
           "Justin Prno — Walli",
           GURL("https://walli.shanga.co/image/view/?id=1375"), "");
       break;
     case static_cast<int>(NtpBackgrounds::kLandscape):
-      instant_service->SetCustomBackgroundInfo(
-          NtpBackgrounds[backgroundIndex],
+      service->SetCustomBackgroundInfo(
+          NtpBackgrounds[background_index],
           l10n_util::GetStringFUTF8(IDS_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL,
                                     u"Giulio Rosso Chioso"),
           "",

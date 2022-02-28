@@ -27,7 +27,8 @@
 #include "fxbarcode/BC_Writer.h"
 #include "fxbarcode/common/BC_CommonBitMatrix.h"
 #include "fxbarcode/oned/BC_OneDimWriter.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -74,12 +75,8 @@ void CBC_OnedCodaBarWriter::SetDataLength(int32_t length) {
   m_iDataLenth = length + 2;
 }
 
-bool CBC_OnedCodaBarWriter::SetTextLocation(BC_TEXT_LOC location) {
-  if (location < BC_TEXT_LOC_NONE || location > BC_TEXT_LOC_BELOWEMBED) {
-    return false;
-  }
+void CBC_OnedCodaBarWriter::SetTextLocation(BC_TEXT_LOC location) {
   m_locTextLoc = location;
-  return true;
 }
 
 bool CBC_OnedCodaBarWriter::SetWideNarrowRatio(int8_t ratio) {
@@ -124,12 +121,13 @@ WideString CBC_OnedCodaBarWriter::FilterContents(WideStringView contents) {
 }
 
 uint8_t* CBC_OnedCodaBarWriter::EncodeWithHint(const ByteString& contents,
-                                               BCFORMAT format,
+                                               BC_TYPE format,
                                                int32_t& outWidth,
                                                int32_t& outHeight,
                                                int32_t hints) {
-  if (format != BCFORMAT_CODABAR)
+  if (format != BC_TYPE::kCodabar)
     return nullptr;
+
   return CBC_OneDimWriter::EncodeWithHint(contents, format, outWidth, outHeight,
                                           hints);
 }

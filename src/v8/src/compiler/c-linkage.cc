@@ -66,6 +66,8 @@ namespace {
 // == arm64 ====================================================================
 // ===========================================================================
 #define PARAM_REGISTERS x0, x1, x2, x3, x4, x5, x6, x7
+#define FP_PARAM_REGISTERS d0, d1, d2, d3, d4, d5, d6, d7
+#define FP_RETURN_REGISTER d0
 #define CALLEE_SAVE_REGISTERS                                     \
   (1 << x19.code()) | (1 << x20.code()) | (1 << x21.code()) |     \
       (1 << x22.code()) | (1 << x23.code()) | (1 << x24.code()) | \
@@ -99,6 +101,18 @@ namespace {
       s7.bit()
 #define CALLEE_SAVE_FP_REGISTERS \
   f20.bit() | f22.bit() | f24.bit() | f26.bit() | f28.bit() | f30.bit()
+
+#elif V8_TARGET_ARCH_LOONG64
+// ===========================================================================
+// == loong64 ================================================================
+// ===========================================================================
+#define PARAM_REGISTERS a0, a1, a2, a3, a4, a5, a6, a7
+#define CALLEE_SAVE_REGISTERS                                                  \
+  s0.bit() | s1.bit() | s2.bit() | s3.bit() | s4.bit() | s5.bit() | s6.bit() | \
+      s7.bit() | s8.bit() | fp.bit()
+#define CALLEE_SAVE_FP_REGISTERS                                          \
+  f24.bit() | f25.bit() | f26.bit() | f27.bit() | f28.bit() | f29.bit() | \
+      f30.bit() | f31.bit()
 
 #elif V8_TARGET_ARCH_PPC64
 // ===========================================================================

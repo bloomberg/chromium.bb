@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/proximity_auth/screenlock_bridge.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -23,7 +24,6 @@
 #include "chrome/browser/ash/login/reauth_stats.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -31,7 +31,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 
-namespace chromeos {
+namespace ash {
 
 void OfflineSigninLimiter::SignedIn(UserContext::AuthFlow auth_flow) {
   PrefService* prefs = profile_->GetPrefs();
@@ -75,19 +75,19 @@ void OfflineSigninLimiter::SignedIn(UserContext::AuthFlow auth_flow) {
   // Start listening for pref changes.
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
-      prefs::kSAMLOfflineSigninTimeLimit,
-      base::BindRepeating(&OfflineSigninLimiter::UpdateLimit,
-                          base::Unretained(this)));
-  pref_change_registrar_.Add(
       prefs::kGaiaOfflineSigninTimeLimitDays,
       base::BindRepeating(&OfflineSigninLimiter::UpdateLimit,
                           base::Unretained(this)));
   pref_change_registrar_.Add(
-      prefs::kSamlLockScreenOfflineSigninTimeLimitDays,
-      base::BindRepeating(&OfflineSigninLimiter::UpdateLockScreenLimit,
+      prefs::kSAMLOfflineSigninTimeLimit,
+      base::BindRepeating(&OfflineSigninLimiter::UpdateLimit,
                           base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kGaiaLockScreenOfflineSigninTimeLimitDays,
+      base::BindRepeating(&OfflineSigninLimiter::UpdateLockScreenLimit,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kSamlLockScreenOfflineSigninTimeLimitDays,
       base::BindRepeating(&OfflineSigninLimiter::UpdateLockScreenLimit,
                           base::Unretained(this)));
   // Start listening to power state.
@@ -106,7 +106,7 @@ void OfflineSigninLimiter::SignedIn(UserContext::AuthFlow auth_flow) {
   UpdateLockScreenLimit();
 }
 
-util::WallClockTimer* OfflineSigninLimiter::GetTimerForTesting() {
+base::WallClockTimer* OfflineSigninLimiter::GetTimerForTesting() {
   return offline_signin_limit_timer_.get();
 }
 
@@ -127,9 +127,9 @@ OfflineSigninLimiter::OfflineSigninLimiter(Profile* profile,
                                            const base::Clock* clock)
     : profile_(profile),
       clock_(clock ? clock : base::DefaultClock::GetInstance()),
-      offline_signin_limit_timer_(std::make_unique<util::WallClockTimer>()),
+      offline_signin_limit_timer_(std::make_unique<base::WallClockTimer>()),
       offline_lock_screen_signin_limit_timer_(
-          std::make_unique<util::WallClockTimer>()) {}
+          std::make_unique<base::WallClockTimer>()) {}
 
 OfflineSigninLimiter::~OfflineSigninLimiter() {
   base::PowerMonitor::RemovePowerSuspendObserver(this);
@@ -273,7 +273,7 @@ absl::optional<base::TimeDelta> OfflineSigninLimiter::GetGaiaNoSamlTimeLimit() {
     return absl::nullopt;
 
   return absl::make_optional<base::TimeDelta>(
-      base::TimeDelta::FromDays(no_saml_offline_limit));
+      base::Days(no_saml_offline_limit));
 }
 
 absl::optional<base::TimeDelta> OfflineSigninLimiter::GetGaiaSamlTimeLimit() {
@@ -288,7 +288,7 @@ absl::optional<base::TimeDelta> OfflineSigninLimiter::GetGaiaSamlTimeLimit() {
     return absl::nullopt;
 
   return absl::make_optional<base::TimeDelta>(
-      base::TimeDelta::FromSeconds(saml_offline_limit));
+      base::Seconds(saml_offline_limit));
 }
 
 absl::optional<base::TimeDelta>
@@ -313,7 +313,7 @@ OfflineSigninLimiter::GetGaiaNoSamlLockScreenTimeLimit() {
   }
 
   return absl::make_optional<base::TimeDelta>(
-      base::TimeDelta::FromDays(no_saml_lock_screen_offline_limit));
+      base::Days(no_saml_lock_screen_offline_limit));
 }
 
 absl::optional<base::TimeDelta>
@@ -338,7 +338,7 @@ OfflineSigninLimiter::GetGaiaSamlLockScreenTimeLimit() {
   }
 
   return absl::make_optional<base::TimeDelta>(
-      base::TimeDelta::FromDays(saml_lock_screen_offline_limit));
+      base::Days(saml_lock_screen_offline_limit));
 }
 
 absl::optional<base::TimeDelta>
@@ -350,8 +350,7 @@ OfflineSigninLimiter::GetTimeLimitOverrideForTesting() {
             switches::kOfflineSignInTimeLimitInSecondsOverrideForTesting);
     int numeric_val = 0;
     if (base::StringToInt(ascii_value, &numeric_val) && numeric_val >= 0) {
-      return absl::make_optional<base::TimeDelta>(
-          base::TimeDelta::FromSeconds(numeric_val));
+      return absl::make_optional<base::TimeDelta>(base::Seconds(numeric_val));
     }
     LOG(WARNING)
         << "Manual offline signin time limit override requested but failed.";
@@ -415,4 +414,4 @@ void OfflineSigninLimiter::UpdateOnlineSigninData(
   user_manager::known_user::SetOfflineSigninLimit(user->GetAccountId(), limit);
 }
 
-}  // namespace chromeos
+}  // namespace ash

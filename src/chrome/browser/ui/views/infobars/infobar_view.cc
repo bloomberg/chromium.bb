@@ -64,6 +64,8 @@ DEFINE_UI_CLASS_PROPERTY_KEY(LabelType, kLabelType, LabelType::kNone)
 constexpr int kInfoBarLabelBackgroundColor = ThemeProperties::COLOR_INFOBAR;
 constexpr int kInfoBarLabelTextColor = ThemeProperties::COLOR_BOOKMARK_TEXT;
 
+constexpr int kSeparatorHeightDip = 1;
+
 bool SortViewsByDecreasingWidth(views::View* view_1, views::View* view_2) {
   return view_1->GetPreferredSize().width() >
          view_2->GetPreferredSize().width();
@@ -114,7 +116,7 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
         gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
                         DISTANCE_TOAST_LABEL_VERTICAL),
                     0));
-    AddChildView(icon_);
+    AddChildView(icon_.get());
   }
 
   if (this->delegate()->IsCloseable()) {
@@ -125,8 +127,7 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
     views::SetImageFromVectorIcon(close_button.get(),
                                   vector_icons::kCloseRoundedIcon,
                                   gfx::kPlaceholderColor);
-    close_button->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
+    close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
     gfx::Insets close_button_spacing = GetCloseButtonSpacing();
     close_button->SetProperty(views::kMarginsKey,
                               gfx::Insets(close_button_spacing.top(), 0,
@@ -150,7 +151,7 @@ void InfoBarView::RecalculateHeight() {
     const int margin_height = margins ? margins->height() : 0;
     height = std::max(height, child->height() + margin_height);
   }
-  SetTargetHeight(height + GetSeparatorHeight());
+  SetTargetHeight(height + kSeparatorHeightDip);
 }
 
 void InfoBarView::Layout() {
@@ -218,13 +219,12 @@ void InfoBarView::ViewHierarchyChanged(
 void InfoBarView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
-  if (GetDrawSeparator()) {
-    const SkColor color =
-        GetColor(ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR);
-    const gfx::Rect local_bounds = GetLocalBounds();
-    canvas->DrawSharpLine({local_bounds.x(), local_bounds.y()},
-                          {local_bounds.right(), local_bounds.y()}, color);
-  }
+  const SkColor color =
+      GetColor(ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR);
+  const gfx::RectF local_bounds(GetLocalBounds());
+  const gfx::Vector2d separator_offset(0, kSeparatorHeightDip);
+  canvas->DrawSharpLine(local_bounds.bottom_left() - separator_offset,
+                        local_bounds.bottom_right() - separator_offset, color);
 }
 
 void InfoBarView::OnThemeChanged() {
@@ -306,8 +306,7 @@ int InfoBarView::GetEndX() const {
 }
 
 int InfoBarView::OffsetY(views::View* view) const {
-  return GetSeparatorHeight() +
-         std::max((target_height() - view->height()) / 2, 0) -
+  return std::max((target_height() - view->height()) / 2, 0) -
          (target_height() - height());
 }
 
@@ -360,23 +359,6 @@ void InfoBarView::AssignWidthsSorted(Views* views, int available_width) {
   AssignWidthsSorted(views, available_width - back_view_size.width());
 }
 
-bool InfoBarView::GetDrawSeparator() const {
-  // There will be no parent when this infobar is not in a container, e.g. if
-  // it's in a background tab.  It's still possible to reach here in that case,
-  // e.g. if ElevationIconSetter triggers a Layout().
-  return parent() && parent()->children().front() != this;
-}
-
-int InfoBarView::GetSeparatorHeight() const {
-  // We only need a separator for infobars after the first; the topmost infobar
-  // uses the toolbar as its top separator.
-  //
-  // This only works because all infobars have padding at the top; if we
-  // actually draw all the way to the top, we'd risk drawing a separator atop
-  // some infobar content.
-  return GetDrawSeparator() ? 1 : 0;
-}
-
 SkColor InfoBarView::GetColor(int id) const {
   const auto* theme_provider = GetThemeProvider();
   // When there's no theme provider, this color will never be used; it will be
@@ -412,6 +394,4 @@ BEGIN_METADATA(InfoBarView, views::View)
 ADD_READONLY_PROPERTY_METADATA(int, ContentMinimumWidth)
 ADD_READONLY_PROPERTY_METADATA(int, StartX)
 ADD_READONLY_PROPERTY_METADATA(int, EndX)
-ADD_READONLY_PROPERTY_METADATA(bool, DrawSeparator)
-ADD_READONLY_PROPERTY_METADATA(int, SeparatorHeight)
 END_METADATA

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/test_shared_image_backing.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -29,7 +30,7 @@ class TestSharedImageRepresentationGLTexture
   }
 
  private:
-  gles2::Texture* const texture_;
+  const raw_ptr<gles2::Texture> texture_;
 };
 
 class TestSharedImageRepresentationGLTexturePassthrough
@@ -252,7 +253,8 @@ TestSharedImageBacking::ProduceSkia(
 std::unique_ptr<SharedImageRepresentationDawn>
 TestSharedImageBacking::ProduceDawn(SharedImageManager* manager,
                                     MemoryTypeTracker* tracker,
-                                    WGPUDevice device) {
+                                    WGPUDevice device,
+                                    WGPUBackendType backend_type) {
   return std::make_unique<TestSharedImageRepresentationDawn>(manager, this,
                                                              tracker);
 }

@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/events/drag_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_inner_elements.h"
@@ -55,7 +56,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -65,6 +66,8 @@ namespace blink {
 
 static const unsigned kDefaultRows = 2;
 static const unsigned kDefaultCols = 20;
+
+static bool is_default_font_prewarmed_ = false;
 
 static inline unsigned ComputeLengthForAPIValue(const String& text) {
   unsigned length = text.length();
@@ -89,6 +92,17 @@ HTMLTextAreaElement::HTMLTextAreaElement(Document& document)
       is_dirty_(false),
       is_placeholder_visible_(false) {
   EnsureUserAgentShadowRoot();
+
+  if (!is_default_font_prewarmed_) {
+    if (Settings* settings = document.GetSettings()) {
+      // Prewarm 'monospace', the default font family for `<textarea>`. The
+      // default language should be fine for this purpose because most users set
+      // the same family for all languages.
+      FontCache::PrewarmFamily(settings->GetGenericFontFamilySettings().Fixed(
+          LayoutLocale::GetDefault().GetScript()));
+      is_default_font_prewarmed_ = true;
+    }
+  }
 }
 
 void HTMLTextAreaElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {

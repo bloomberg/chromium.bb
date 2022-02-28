@@ -47,10 +47,10 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_version_change_event.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction_impl.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -331,30 +331,13 @@ void IDBDatabase::deleteObjectStore(const String& name,
 
 IDBTransaction* IDBDatabase::transaction(
     ScriptState* script_state,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const V8UnionStringOrStringSequence* store_names,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const StringOrStringSequence& store_names,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const String& mode,
-    ExceptionState& exception_state) {
-  return transaction(script_state, store_names, mode, nullptr, exception_state);
-}
-
-IDBTransaction* IDBDatabase::transaction(
-    ScriptState* script_state,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const V8UnionStringOrStringSequence* store_names,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const StringOrStringSequence& store_names,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const String& mode_string,
     const IDBTransactionOptions* options,
     ExceptionState& exception_state) {
   IDB_TRACE("IDBDatabase::transaction");
 
   HashSet<String> scope;
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   DCHECK(store_names);
   switch (store_names->GetContentType()) {
     case V8UnionStringOrStringSequence::ContentType::kString:
@@ -365,16 +348,6 @@ IDBTransaction* IDBDatabase::transaction(
         scope.insert(name);
       break;
   }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  if (store_names.IsString()) {
-    scope.insert(store_names.GetAsString());
-  } else if (store_names.IsStringSequence()) {
-    for (const String& name : store_names.GetAsStringSequence())
-      scope.insert(name);
-  } else {
-    NOTREACHED();
-  }
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   if (version_change_transaction_) {
     exception_state.ThrowDOMException(
@@ -424,20 +397,18 @@ IDBTransaction* IDBDatabase::transaction(
 
   // TODO(cmp): Delete |transaction_id| once all users are removed.
   int64_t transaction_id = NextTransactionId();
-  auto transaction_backend = std::make_unique<WebIDBTransactionImpl>(
+  auto transaction_backend = std::make_unique<WebIDBTransaction>(
       ExecutionContext::From(script_state)
           ->GetTaskRunner(TaskType::kDatabaseAccess),
       transaction_id);
 
-  mojom::IDBTransactionDurability durability =
-      mojom::IDBTransactionDurability::Default;
-  if (options) {
-    DCHECK(RuntimeEnabledFeatures::IDBRelaxedDurabilityEnabled());
-    if (options->durability() == indexed_db_names::kRelaxed) {
-      durability = mojom::IDBTransactionDurability::Relaxed;
-    } else if (options->durability() == indexed_db_names::kStrict) {
-      durability = mojom::IDBTransactionDurability::Strict;
-    }
+  mojom::blink::IDBTransactionDurability durability =
+      mojom::blink::IDBTransactionDurability::Default;
+  DCHECK(options);
+  if (options->durability() == indexed_db_names::kRelaxed) {
+    durability = mojom::blink::IDBTransactionDurability::Relaxed;
+  } else if (options->durability() == indexed_db_names::kStrict) {
+    durability = mojom::blink::IDBTransactionDurability::Strict;
   }
 
   backend_->CreateTransaction(transaction_backend->CreateReceiver(),

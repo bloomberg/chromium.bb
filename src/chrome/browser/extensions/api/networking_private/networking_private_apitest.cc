@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -44,6 +43,10 @@ class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
  public:
   explicit TestNetworkingPrivateDelegate(bool test_failure)
       : fail_(test_failure) {}
+
+  TestNetworkingPrivateDelegate(const TestNetworkingPrivateDelegate&) = delete;
+  TestNetworkingPrivateDelegate& operator=(
+      const TestNetworkingPrivateDelegate&) = delete;
 
   ~TestNetworkingPrivateDelegate() override {}
 
@@ -158,11 +161,10 @@ class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
   }
 
   // Synchronous methods
-  std::unique_ptr<base::ListValue> GetEnabledNetworkTypes() override {
-    std::unique_ptr<base::ListValue> result;
+  base::Value GetEnabledNetworkTypes() override {
+    base::Value result(base::Value::Type::LIST);
     if (!fail_) {
-      result = std::make_unique<base::ListValue>();
-      result->AppendString(::onc::network_config::kEthernet);
+      result.Append(::onc::network_config::kEthernet);
     }
     return result;
   }
@@ -267,13 +269,15 @@ class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
   std::map<std::string, bool> enabled_;
   std::map<std::string, bool> disabled_;
   std::vector<std::string> scan_requested_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestNetworkingPrivateDelegate);
 };
 
 class NetworkingPrivateApiTest : public ExtensionApiTest {
  public:
   NetworkingPrivateApiTest() = default;
+
+  NetworkingPrivateApiTest(const NetworkingPrivateApiTest&) = delete;
+  NetworkingPrivateApiTest& operator=(const NetworkingPrivateApiTest&) = delete;
+
   ~NetworkingPrivateApiTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -308,9 +312,9 @@ class NetworkingPrivateApiTest : public ExtensionApiTest {
  protected:
   bool RunNetworkingSubtest(const std::string& subtest) {
     const std::string page_url = "main.html?" + subtest;
-    return RunExtensionTest(
-        {.name = "networking_private", .page_url = page_url.c_str()},
-        {.load_as_component = true});
+    return RunExtensionTest("networking_private",
+                            {.page_url = page_url.c_str()},
+                            {.load_as_component = true});
   }
 
  private:
@@ -330,8 +334,6 @@ class NetworkingPrivateApiTest : public ExtensionApiTest {
 
  protected:
   bool test_failure_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateApiTest);
 };
 
 }  // namespace
@@ -438,10 +440,13 @@ class NetworkingPrivateApiTestFail : public NetworkingPrivateApiTest {
  public:
   NetworkingPrivateApiTestFail() { test_failure_ = true; }
 
+  NetworkingPrivateApiTestFail(const NetworkingPrivateApiTestFail&) = delete;
+  NetworkingPrivateApiTestFail& operator=(const NetworkingPrivateApiTestFail&) =
+      delete;
+
   ~NetworkingPrivateApiTestFail() override = default;
 
  protected:
-  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateApiTestFail);
 };
 
 }  // namespace

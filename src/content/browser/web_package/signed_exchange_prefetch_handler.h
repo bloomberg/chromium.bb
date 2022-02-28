@@ -8,18 +8,18 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 class NetworkIsolationKey;
 class SharedURLLoaderFactory;
+struct ResourceRequest;
 }
 
 namespace blink {
@@ -59,6 +59,10 @@ class SignedExchangePrefetchHandler final
       const std::string& accept_langs,
       bool keep_entry_for_prefetch_cache);
 
+  SignedExchangePrefetchHandler(const SignedExchangePrefetchHandler&) = delete;
+  SignedExchangePrefetchHandler& operator=(
+      const SignedExchangePrefetchHandler&) = delete;
+
   ~SignedExchangePrefetchHandler() override;
 
   // This connects |loader_receiver| to the SignedExchangeLoader, and returns
@@ -94,9 +98,7 @@ class SignedExchangePrefetchHandler final
 
   std::unique_ptr<SignedExchangeLoader> signed_exchange_loader_;
 
-  network::mojom::URLLoaderClient* forwarding_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(SignedExchangePrefetchHandler);
+  raw_ptr<network::mojom::URLLoaderClient> forwarding_client_;
 };
 
 }  // namespace content

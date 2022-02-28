@@ -8,6 +8,7 @@ import android.accounts.Account;
 import android.app.Activity;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
@@ -19,7 +20,7 @@ import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
@@ -70,26 +71,31 @@ public final class FirstRunSignInProcessor {
             return;
         }
 
-        // TODO(https://crbug.com/795292): Move this to SigninFirstRunFragment.
-        Account account = AccountUtils.findAccountByName(
-                AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(), accountName);
-        if (account == null) {
-            setFirstRunFlowSignInComplete(true);
-            return;
-        }
+        // TODO(https://crbug.com/795292): Move this to SyncConsentFirstRunFragment.
+        AccountManagerFacadeProvider.getInstance().getAccounts().then(accounts -> {
+            Account account = AccountUtils.findAccountByName(accounts, accountName);
+            if (account == null) {
+                setFirstRunFlowSignInComplete(true);
+            } else {
+                signinAndEnableSync(account, activity);
+            }
+        });
+    }
 
-        final boolean setUp = getFirstRunFlowSignInSetup();
-        signinManager.signinAndEnableSync(
-                SigninAccessPoint.START_PAGE, account, new SignInCallback() {
+    private static void signinAndEnableSync(@NonNull Account account, Activity activity) {
+        final boolean showAdvancedSyncSettings = getFirstRunFlowSignInSetup();
+        IdentityServicesProvider.get()
+                .getSigninManager(Profile.getLastUsedRegularProfile())
+                .signinAndEnableSync(SigninAccessPoint.START_PAGE, account, new SignInCallback() {
                     @Override
                     public void onSignInComplete() {
                         UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
                                 Profile.getLastUsedRegularProfile(), true);
                         // Show sync settings if user pressed the "Settings" button.
-                        if (setUp) {
-                            openSignInSettings(activity);
+                        if (showAdvancedSyncSettings) {
+                            openAdvancedSyncSettings(activity);
                         } else {
-                            ProfileSyncService.get().setFirstSetupComplete(
+                            SyncService.get().setFirstSetupComplete(
                                     SyncFirstSetupCompleteSource.BASIC_FLOW);
                         }
                         setFirstRunFlowSignInComplete(true);
@@ -105,9 +111,9 @@ public final class FirstRunSignInProcessor {
     }
 
     /**
-     * Opens sign in settings as requested in the FRE sign-in dialog.
+     * Opens advanced sync settings as requested in the FRE sync consent page.
      */
-    private static void openSignInSettings(Activity activity) {
+    private static void openAdvancedSyncSettings(Activity activity) {
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
         settingsLauncher.launchSettingsActivity(
                 activity, ManageSyncSettings.class, ManageSyncSettings.createArguments(true));
@@ -168,14 +174,14 @@ public final class FirstRunSignInProcessor {
 
     /**
      * Finalize the state of the FRE flow (mark is as "complete" and finalize parameters).
-     * @param signInAccountName The account name for the pending sign-in request. (Or null)
-     * @param showSignInSettings Whether the user selected to see the settings once signed in.
+     * @param syncConsentAccountName The account name for the pending sign-in request. (Or null)
+     * @param showAdvancedSyncSettings Whether the user selected to see the settings once signed in.
      */
     public static void finalizeFirstRunFlowState(
-            String signInAccountName, boolean showSignInSettings) {
+            String syncConsentAccountName, boolean showAdvancedSyncSettings) {
         FirstRunStatus.setFirstRunFlowComplete(true);
-        setFirstRunFlowSignInAccountName(signInAccountName);
-        setFirstRunFlowSignInSetup(showSignInSettings);
+        setFirstRunFlowSignInAccountName(syncConsentAccountName);
+        setFirstRunFlowSignInSetup(showAdvancedSyncSettings);
     }
 
     /**

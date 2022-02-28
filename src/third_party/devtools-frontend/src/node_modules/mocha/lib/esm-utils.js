@@ -30,14 +30,73 @@ const formattedImport = async file => {
   return import(file);
 };
 
-exports.requireOrImport = async file => {
+const hasStableEsmImplementation = (() => {
+  const [major, minor] = process.version.split('.');
+  // ESM is stable from v12.22.0 onward
+  // https://nodejs.org/api/esm.html#esm_modules_ecmascript_modules
+  const majorNumber = parseInt(major.slice(1), 10);
+  const minorNumber = parseInt(minor, 10);
+  return majorNumber > 12 || (majorNumber === 12 && minorNumber >= 22);
+})();
+
+exports.requireOrImport = hasStableEsmImplementation
+  ? async file => {
+      if (path.extname(file) === '.mjs') {
+        return formattedImport(file);
+      }
+      try {
+        return dealWithExports(await formattedImport(file));
+      } catch (err) {
+        if (
+          err.code === 'ERR_MODULE_NOT_FOUND' ||
+          err.code === 'ERR_UNKNOWN_FILE_EXTENSION' ||
+          err.code === 'ERR_UNSUPPORTED_DIR_IMPORT'
+        ) {
+          try {
+            return require(file);
+          } catch (requireErr) {
+            if (requireErr.code === 'ERR_REQUIRE_ESM') {
+              // This happens when the test file is a JS file, but via type:module is actually ESM,
+              // AND has an import to a file that doesn't exist.
+              // This throws an `ERR_MODULE_NOT_FOUND` // error above,
+              // and when we try to `require` it here, it throws an `ERR_REQUIRE_ESM`.
+              // What we want to do is throw the original error (the `ERR_MODULE_NOT_FOUND`),
+              // and not the `ERR_REQUIRE_ESM` error, which is a red herring.
+              throw err;
+            } else {
+              throw requireErr;
+            }
+          }
+        } else {
+          throw err;
+        }
+      }
+    }
+  : implementationOfRequireOrImportForUnstableEsm;
+
+function dealWithExports(module) {
+  if (module.default) {
+    return module.default;
+  } else {
+    return {...module, default: undefined};
+  }
+}
+
+exports.loadFilesAsync = async (files, preLoadFunc, postLoadFunc) => {
+  for (const file of files) {
+    preLoadFunc(file);
+    const result = await exports.requireOrImport(path.resolve(file));
+    postLoadFunc(file, result);
+  }
+};
+
+/* istanbul ignore next */
+async function implementationOfRequireOrImportForUnstableEsm(file) {
   if (path.extname(file) === '.mjs') {
     return formattedImport(file);
   }
-  // This is currently the only known way of figuring out whether a file is CJS or ESM.
-  // If Node.js or the community establish a better procedure for that, we can fix this code.
-  // Another option here would be to always use `import()`, as this also supports CJS, but I would be
-  // wary of using it for _all_ existing test files, till ESM is fully stable.
+  // This is currently the only known way of figuring out whether a file is CJS or ESM in
+  // Node.js that doesn't necessitate calling `import` first.
   try {
     return require(file);
   } catch (err) {
@@ -47,12 +106,4 @@ exports.requireOrImport = async file => {
       throw err;
     }
   }
-};
-
-exports.loadFilesAsync = async (files, preLoadFunc, postLoadFunc) => {
-  for (const file of files) {
-    preLoadFunc(file);
-    const result = await exports.requireOrImport(path.resolve(file));
-    postLoadFunc(file, result);
-  }
-};
+}

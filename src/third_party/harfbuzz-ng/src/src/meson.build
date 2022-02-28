@@ -25,6 +25,7 @@ hb_base_sources = files(
   'hb-array.hh',
   'hb-atomic.hh',
   'hb-bimap.hh',
+  'hb-bit-page.hh',
   'hb-blob.cc',
   'hb-blob.hh',
   'hb-buffer-serialize.cc',
@@ -53,6 +54,8 @@ hb_base_sources = files(
   'hb-map.cc',
   'hb-map.hh',
   'hb-meta.hh',
+  'hb-ms-feature-ranges.cc',
+  'hb-ms-feature-ranges.hh',
   'hb-mutex.hh',
   'hb-null.hh',
   'hb-number.cc',
@@ -144,6 +147,7 @@ hb_base_sources = files(
   'hb-ot-tag-table.hh',
   'hb-ot-tag.cc',
   'hb-ot-var-avar-table.hh',
+  'hb-ot-var-common.hh',
   'hb-ot-var-fvar-table.hh',
   'hb-ot-var-gvar-table.hh',
   'hb-ot-var-hvar-table.hh',
@@ -287,8 +291,13 @@ hb_gobject_headers = files(
   'hb-gobject-structs.h',
 )
 
-ragel = find_program('ragel', required: false)
-if not ragel.found()
+ragel = find_program('ragel', version: '6.10', required: false)
+has_ragel = ragel.found()
+if not has_ragel and get_option('ragel_subproject')
+    ragel = subproject('ragel').get_variable('ragel')
+    has_ragel = true
+endif
+if not has_ragel
   warning('You have to install ragel if you are going to develop HarfBuzz itself')
 else
   ragel_helper = find_program('gen-ragel-artifacts.py')
@@ -298,7 +307,7 @@ else
       build_by_default: true,
       input: rl,
       output: hh,
-      command: [ragel_helper, '@OUTPUT@', meson.current_source_dir(), '@INPUT@'],
+      command: [ragel_helper, ragel, '@OUTPUT@', meson.current_source_dir(), '@INPUT@'],
     )
   endforeach
 endif
@@ -337,7 +346,7 @@ endif
 if conf.get('HAVE_GRAPHITE2', 0) == 1
   hb_sources += hb_graphite2_sources
   hb_headers += hb_graphite2_headers
-  harfbuzz_deps += [graphite2_dep]
+  harfbuzz_deps += [graphite2_dep, graphite_dep]
 endif
 
 if conf.get('HAVE_GLIB', 0) == 1
@@ -354,7 +363,6 @@ endif
 if conf.get('HAVE_DIRECTWRITE', 0) == 1
   hb_sources += hb_directwrite_sources
   hb_headers += hb_directwrite_headers
-  harfbuzz_deps += directwrite_dep
   # hb-directwrite needs a C++ linker
   libharfbuzz_link_language = 'cpp'
 endif
@@ -480,10 +488,12 @@ if get_option('tests').enabled()
     'test-repacker': ['test-repacker.cc', 'hb-static.cc'],
     'test-priority-queue': ['test-priority-queue.cc', 'hb-static.cc'],
     'test-iter': ['test-iter.cc', 'hb-static.cc'],
-    'test-meta': ['test-meta.cc', 'hb-static.cc'],
+    'test-map': ['test-map.cc', 'hb-static.cc'],
     'test-number': ['test-number.cc', 'hb-number.cc'],
     'test-ot-tag': ['hb-ot-tag.cc'],
+    'test-set': ['test-set.cc', 'hb-static.cc'],
     'test-unicode-ranges': ['test-unicode-ranges.cc'],
+    'test-vector': ['test-vector.cc', 'hb-static.cc'],
     'test-bimap': ['test-bimap.cc', 'hb-static.cc'],
   }
   foreach name, source : compiled_tests

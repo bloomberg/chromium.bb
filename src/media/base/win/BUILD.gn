@@ -24,11 +24,7 @@ component("media_foundation_util") {
     "mf_initializer.h",
     "mf_initializer_export.h",
   ]
-  configs += [
-    # TODO(crbug.com/167187): Fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
-    "//media:media_config",
-  ]
+  configs += [ "//media:media_config" ]
   deps = [
     "//base",
     "//media:shared_memory_support",
@@ -55,6 +51,11 @@ source_set("hresult_status_helper") {
 
 source_set("mf_cdm_proxy") {
   sources = [ "media_foundation_cdm_proxy.h" ]
+  deps = [ "//base" ]
+}
+
+source_set("dcomp_texture_wrapper") {
+  sources = [ "dcomp_texture_wrapper.h" ]
   deps = [ "//base" ]
 }
 

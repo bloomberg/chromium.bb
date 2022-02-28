@@ -213,6 +213,7 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   void DataAlign(int m);
   // Aligns code to something that's optimal for a jump target for the platform.
   void CodeTargetAlign();
+  void LoopHeaderAlign() { CodeTargetAlign(); }
 
   inline void Unreachable();
 
@@ -339,8 +340,8 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
 
   // Record a deoptimization reason that can be used by a log or cpu profiler.
   // Use --trace-deopt to enable.
-  void RecordDeoptReason(DeoptimizeReason reason, SourcePosition position,
-                         int id);
+  void RecordDeoptReason(DeoptimizeReason reason, uint32_t node_id,
+                         SourcePosition position, int id);
 
   int buffer_space() const;
 
@@ -2064,26 +2065,29 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
 
   // Required by V8.
   void db(uint8_t data) { dc8(data); }
-  void dd(uint32_t data, RelocInfo::Mode rmode = RelocInfo::NONE) {
+  void dd(uint32_t data, RelocInfo::Mode rmode = RelocInfo::NO_INFO) {
     BlockPoolsScope no_pool_scope(this);
-    if (!RelocInfo::IsNone(rmode)) {
-      DCHECK(RelocInfo::IsDataEmbeddedObject(rmode));
+    if (!RelocInfo::IsNoInfo(rmode)) {
+      DCHECK(RelocInfo::IsDataEmbeddedObject(rmode) ||
+             RelocInfo::IsLiteralConstant(rmode));
       RecordRelocInfo(rmode);
     }
     dc32(data);
   }
-  void dq(uint64_t data, RelocInfo::Mode rmode = RelocInfo::NONE) {
+  void dq(uint64_t data, RelocInfo::Mode rmode = RelocInfo::NO_INFO) {
     BlockPoolsScope no_pool_scope(this);
-    if (!RelocInfo::IsNone(rmode)) {
-      DCHECK(RelocInfo::IsDataEmbeddedObject(rmode));
+    if (!RelocInfo::IsNoInfo(rmode)) {
+      DCHECK(RelocInfo::IsDataEmbeddedObject(rmode) ||
+             RelocInfo::IsLiteralConstant(rmode));
       RecordRelocInfo(rmode);
     }
     dc64(data);
   }
-  void dp(uintptr_t data, RelocInfo::Mode rmode = RelocInfo::NONE) {
+  void dp(uintptr_t data, RelocInfo::Mode rmode = RelocInfo::NO_INFO) {
     BlockPoolsScope no_pool_scope(this);
-    if (!RelocInfo::IsNone(rmode)) {
-      DCHECK(RelocInfo::IsDataEmbeddedObject(rmode));
+    if (!RelocInfo::IsNoInfo(rmode)) {
+      DCHECK(RelocInfo::IsDataEmbeddedObject(rmode) ||
+             RelocInfo::IsLiteralConstant(rmode));
       RecordRelocInfo(rmode);
     }
     dc64(data);
@@ -2616,7 +2620,7 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
     STATIC_ASSERT(sizeof(instruction) == kInstrSize);
     DCHECK_LE(pc_ + sizeof(instruction), buffer_start_ + buffer_->size());
 
-    base::Memcpy(pc_, &instruction, sizeof(instruction));
+    memcpy(pc_, &instruction, sizeof(instruction));
     pc_ += sizeof(instruction);
     CheckBuffer();
   }
@@ -2628,7 +2632,7 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
 
     // TODO(all): Somehow register we have some data here. Then we can
     // disassemble it correctly.
-    base::Memcpy(pc_, data, size);
+    memcpy(pc_, data, size);
     pc_ += size;
     CheckBuffer();
   }

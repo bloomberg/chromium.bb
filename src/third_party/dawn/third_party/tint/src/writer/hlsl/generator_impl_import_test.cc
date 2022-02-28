@@ -40,8 +40,9 @@ TEST_P(HlslImportData_SingleParamTest, FloatScalar) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
-  EXPECT_EQ(result(), std::string(param.hlsl_name) + "(1.0f)");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitCall(out, expr)) << gen.error();
+  EXPECT_EQ(out.str(), std::string(param.hlsl_name) + "(1.0f)");
 }
 INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
                          HlslImportData_SingleParamTest,
@@ -78,8 +79,9 @@ TEST_P(HlslImportData_SingleIntParamTest, IntScalar) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
-  EXPECT_EQ(result(), std::string(param.hlsl_name) + "(1)");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitCall(out, expr)) << gen.error();
+  EXPECT_EQ(out.str(), std::string(param.hlsl_name) + "(1)");
 }
 INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
                          HlslImportData_SingleIntParamTest,
@@ -95,8 +97,9 @@ TEST_P(HlslImportData_SingleVectorParamTest, FloatVector) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
-  EXPECT_EQ(result(),
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitCall(out, expr)) << gen.error();
+  EXPECT_EQ(out.str(),
             std::string(param.hlsl_name) + "(float3(1.0f, 2.0f, 3.0f))");
 }
 INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
@@ -127,8 +130,8 @@ INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
                                          HlslImportData{"tanh", "tanh"},
                                          HlslImportData{"trunc", "trunc"}));
 
-using HlslImportData_DualParamTest = TestParamHelper<HlslImportData>;
-TEST_P(HlslImportData_DualParamTest, FloatScalar) {
+using HlslImportData_DualParam_ScalarTest = TestParamHelper<HlslImportData>;
+TEST_P(HlslImportData_DualParam_ScalarTest, Float) {
   auto param = GetParam();
 
   auto* expr = Call(param.name, 1.f, 2.f);
@@ -136,21 +139,21 @@ TEST_P(HlslImportData_DualParamTest, FloatScalar) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
-  EXPECT_EQ(result(), std::string(param.hlsl_name) + "(1.0f, 2.0f)");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitCall(out, expr)) << gen.error();
+  EXPECT_EQ(out.str(), std::string(param.hlsl_name) + "(1.0f, 2.0f)");
 }
 INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
-                         HlslImportData_DualParamTest,
+                         HlslImportData_DualParam_ScalarTest,
                          testing::Values(HlslImportData{"atan2", "atan2"},
                                          HlslImportData{"distance", "distance"},
                                          HlslImportData{"max", "max"},
                                          HlslImportData{"min", "min"},
                                          HlslImportData{"pow", "pow"},
-                                         HlslImportData{"reflect", "reflect"},
                                          HlslImportData{"step", "step"}));
 
 using HlslImportData_DualParam_VectorTest = TestParamHelper<HlslImportData>;
-TEST_P(HlslImportData_DualParam_VectorTest, FloatVector) {
+TEST_P(HlslImportData_DualParam_VectorTest, Float) {
   auto param = GetParam();
 
   auto* expr =
@@ -159,14 +162,22 @@ TEST_P(HlslImportData_DualParam_VectorTest, FloatVector) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
-  EXPECT_EQ(result(),
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitCall(out, expr)) << gen.error();
+  EXPECT_EQ(out.str(),
             std::string(param.hlsl_name) +
                 "(float3(1.0f, 2.0f, 3.0f), float3(4.0f, 5.0f, 6.0f))");
 }
 INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
                          HlslImportData_DualParam_VectorTest,
-                         testing::Values(HlslImportData{"cross", "cross"}));
+                         testing::Values(HlslImportData{"atan2", "atan2"},
+                                         HlslImportData{"cross", "cross"},
+                                         HlslImportData{"distance", "distance"},
+                                         HlslImportData{"max", "max"},
+                                         HlslImportData{"min", "min"},
+                                         HlslImportData{"pow", "pow"},
+                                         HlslImportData{"reflect", "reflect"},
+                                         HlslImportData{"step", "step"}));
 
 using HlslImportData_DualParam_Int_Test = TestParamHelper<HlslImportData>;
 TEST_P(HlslImportData_DualParam_Int_Test, IntScalar) {
@@ -177,16 +188,17 @@ TEST_P(HlslImportData_DualParam_Int_Test, IntScalar) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
-  EXPECT_EQ(result(), std::string(param.hlsl_name) + "(1, 2)");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitCall(out, expr)) << gen.error();
+  EXPECT_EQ(out.str(), std::string(param.hlsl_name) + "(1, 2)");
 }
 INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
                          HlslImportData_DualParam_Int_Test,
                          testing::Values(HlslImportData{"max", "max"},
                                          HlslImportData{"min", "min"}));
 
-using HlslImportData_TripleParamTest = TestParamHelper<HlslImportData>;
-TEST_P(HlslImportData_TripleParamTest, FloatScalar) {
+using HlslImportData_TripleParam_ScalarTest = TestParamHelper<HlslImportData>;
+TEST_P(HlslImportData_TripleParam_ScalarTest, Float) {
   auto param = GetParam();
 
   auto* expr = Call(param.name, 1.f, 2.f, 3.f);
@@ -194,14 +206,40 @@ TEST_P(HlslImportData_TripleParamTest, FloatScalar) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
-  EXPECT_EQ(result(), std::string(param.hlsl_name) + "(1.0f, 2.0f, 3.0f)");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitCall(out, expr)) << gen.error();
+  EXPECT_EQ(out.str(), std::string(param.hlsl_name) + "(1.0f, 2.0f, 3.0f)");
+}
+INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
+                         HlslImportData_TripleParam_ScalarTest,
+                         testing::Values(HlslImportData{"fma", "mad"},
+                                         HlslImportData{"mix", "lerp"},
+                                         HlslImportData{"clamp", "clamp"},
+                                         HlslImportData{"smoothStep",
+                                                        "smoothstep"}));
+
+using HlslImportData_TripleParam_VectorTest = TestParamHelper<HlslImportData>;
+TEST_P(HlslImportData_TripleParam_VectorTest, Float) {
+  auto param = GetParam();
+
+  auto* expr = Call(param.name, vec3<f32>(1.f, 2.f, 3.f),
+                    vec3<f32>(4.f, 5.f, 6.f), vec3<f32>(7.f, 8.f, 9.f));
+  WrapInFunction(expr);
+
+  GeneratorImpl& gen = Build();
+
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitCall(out, expr)) << gen.error();
+  EXPECT_EQ(
+      out.str(),
+      std::string(param.hlsl_name) +
+          R"((float3(1.0f, 2.0f, 3.0f), float3(4.0f, 5.0f, 6.0f), float3(7.0f, 8.0f, 9.0f)))");
 }
 INSTANTIATE_TEST_SUITE_P(
     HlslGeneratorImplTest_Import,
-    HlslImportData_TripleParamTest,
+    HlslImportData_TripleParam_VectorTest,
     testing::Values(HlslImportData{"faceForward", "faceforward"},
-                    HlslImportData{"fma", "fma"},
+                    HlslImportData{"fma", "mad"},
                     HlslImportData{"clamp", "clamp"},
                     HlslImportData{"smoothStep", "smoothstep"}));
 
@@ -218,8 +256,9 @@ TEST_P(HlslImportData_TripleParam_Int_Test, IntScalar) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
-  EXPECT_EQ(result(), std::string(param.hlsl_name) + "(1, 2, 3)");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitCall(out, expr)) << gen.error();
+  EXPECT_EQ(out.str(), std::string(param.hlsl_name) + "(1, 2, 3)");
 }
 INSTANTIATE_TEST_SUITE_P(HlslGeneratorImplTest_Import,
                          HlslImportData_TripleParam_Int_Test,
@@ -233,8 +272,9 @@ TEST_F(HlslGeneratorImplTest_Import, HlslImportData_Determinant) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitCall(pre, out, expr)) << gen.error();
-  EXPECT_EQ(result(), std::string("determinant(var)"));
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitCall(out, expr)) << gen.error();
+  EXPECT_EQ(out.str(), std::string("determinant(var)"));
 }
 
 }  // namespace

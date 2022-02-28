@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "components/reporting/proto/record.pb.h"
+#include "components/reporting/proto/synced/record.pb.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/statusor.h"
 
@@ -24,12 +24,12 @@ class EncryptionModuleInterface
   using PublicKeyId = int32_t;
 
   // Feature to enable/disable encryption.
-  // By default encryption is disabled.
+  // By default encryption is enabled and supported by server.
+  // Disabled only for testing/stress purposes.
   static const char kEncryptedReporting[];
 
   explicit EncryptionModuleInterface(
-      base::TimeDelta renew_encryption_key_period =
-          base::TimeDelta::FromDays(1));
+      base::TimeDelta renew_encryption_key_period = base::Days(1));
   EncryptionModuleInterface(const EncryptionModuleInterface& other) = delete;
   EncryptionModuleInterface& operator=(const EncryptionModuleInterface& other) =
       delete;

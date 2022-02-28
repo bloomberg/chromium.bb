@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "gtest/gtest.h"
 #include "lib/extras/codec.h"
@@ -40,7 +31,7 @@ TEST(PatchDictionaryTest, GrayscaleModular) {
 
   CodecInOut io2;
   // Without patches: ~25k
-  EXPECT_LE(Roundtrip(&io, cparams, dparams, pool, &io2), 8000);
+  EXPECT_LE(Roundtrip(&io, cparams, dparams, pool, &io2), 8000u);
   VerifyRelativeError(*io.Main().color(), *io2.Main().color(), 1e-7f, 0);
 }
 
@@ -56,7 +47,7 @@ TEST(PatchDictionaryTest, GrayscaleVarDCT) {
 
   CodecInOut io2;
   // Without patches: ~47k
-  EXPECT_LE(Roundtrip(&io, cparams, dparams, pool, &io2), 14000);
+  EXPECT_LE(Roundtrip(&io, cparams, dparams, pool, &io2), 14000u);
   // Without patches: ~1.2
   EXPECT_LE(ButteraugliDistance(io, io2, cparams.ba_params,
                                 /*distmap=*/nullptr, pool),

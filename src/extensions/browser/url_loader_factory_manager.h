@@ -5,8 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_URL_LOADER_FACTORY_MANAGER_H_
 #define EXTENSIONS_BROWSER_URL_LOADER_FACTORY_MANAGER_H_
 
-#include "base/macros.h"
-#include "base/no_destructor.h"
 #include "base/types/pass_key.h"
 #include "content/public/browser/navigation_handle.h"
 #include "extensions/common/extension.h"
@@ -36,6 +34,8 @@ class URLLoaderFactoryManager {
  public:
   // Only static methods.
   URLLoaderFactoryManager() = delete;
+  URLLoaderFactoryManager(const URLLoaderFactoryManager&) = delete;
+  URLLoaderFactoryManager& operator=(const URLLoaderFactoryManager&) = delete;
 
   // Invoked when `navigation` is ready to commit with the set of `extensions`
   // asked to inject content script into the target frame using
@@ -97,9 +97,6 @@ class URLLoaderFactoryManager {
       const url::Origin& origin,
       bool is_for_isolated_world,
       network::mojom::URLLoaderFactoryParams* factory_params);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryManager);
 };
 
 }  // namespace extensions

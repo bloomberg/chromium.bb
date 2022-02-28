@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/cbor/diagnostic_writer.h"
@@ -70,6 +69,9 @@ class Ctap2DeviceOperation : public DeviceOperation<Request, Response> {
                                            std::move(callback)),
         device_response_parser_(std::move(device_response_parser)),
         string_fixup_predicate_(string_fixup_predicate) {}
+
+  Ctap2DeviceOperation(const Ctap2DeviceOperation&) = delete;
+  Ctap2DeviceOperation& operator=(const Ctap2DeviceOperation&) = delete;
 
   ~Ctap2DeviceOperation() override = default;
 
@@ -205,8 +207,6 @@ class Ctap2DeviceOperation : public DeviceOperation<Request, Response> {
   DeviceResponseParser device_response_parser_;
   const CBORPathPredicate string_fixup_predicate_;
   base::WeakPtrFactory<Ctap2DeviceOperation> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Ctap2DeviceOperation);
 };
 
 }  // namespace device

@@ -7,7 +7,6 @@
 #include <map>
 
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
@@ -70,6 +69,10 @@ void RecordContentActionCreated(
 class ShowExtensionAction : public ContentAction {
  public:
   ShowExtensionAction() {}
+
+  ShowExtensionAction(const ShowExtensionAction&) = delete;
+  ShowExtensionAction& operator=(const ShowExtensionAction&) = delete;
+
   ~ShowExtensionAction() override {}
 
   static std::unique_ptr<ContentAction> Create(
@@ -115,14 +118,16 @@ class ShowExtensionAction : public ContentAction {
     return ExtensionActionManager::Get(browser_context)
         ->GetExtensionAction(*extension);
   }
-
-  DISALLOW_COPY_AND_ASSIGN(ShowExtensionAction);
 };
 
 // Action that sets an extension's action icon.
 class SetIcon : public ContentAction {
  public:
   explicit SetIcon(const gfx::Image& icon) : icon_(icon) {}
+
+  SetIcon(const SetIcon&) = delete;
+  SetIcon& operator=(const SetIcon&) = delete;
+
   ~SetIcon() override {}
 
   static std::unique_ptr<ContentAction> Create(
@@ -168,17 +173,14 @@ class SetIcon : public ContentAction {
   }
 
   gfx::Image icon_;
-
-  DISALLOW_COPY_AND_ASSIGN(SetIcon);
 };
 
 // Helper for getting JS collections into C++.
 static bool AppendJSStringsToCPPStrings(const base::ListValue& append_strings,
                                         std::vector<std::string>* append_to) {
   for (const auto& entry : append_strings.GetList()) {
-    std::string value;
-    if (entry.GetAsString(&value)) {
-      append_to->push_back(value);
+    if (entry.is_string()) {
+      append_to->push_back(entry.GetString());
     } else {
       return false;
     }
@@ -275,15 +277,20 @@ bool RequestContentScript::InitScriptData(const base::DictionaryValue* dict,
     }
   }
   if (dict->HasKey(declarative_content_constants::kAllFrames)) {
-    if (!dict->GetBoolean(declarative_content_constants::kAllFrames,
-                          &script_data->all_frames))
+    absl::optional<bool> all_frames =
+        dict->FindBoolKey(declarative_content_constants::kAllFrames);
+    if (!all_frames.has_value())
       return false;
+
+    script_data->all_frames = all_frames.value();
   }
   if (dict->HasKey(declarative_content_constants::kMatchAboutBlank)) {
-    if (!dict->GetBoolean(declarative_content_constants::kMatchAboutBlank,
-                          &script_data->match_about_blank)) {
+    absl::optional<bool> match_about_blank =
+        dict->FindBoolKey(declarative_content_constants::kMatchAboutBlank);
+    if (!match_about_blank.has_value())
       return false;
-    }
+
+    script_data->match_about_blank = match_about_blank.value();
   }
 
   return true;
@@ -299,7 +306,7 @@ RequestContentScript::RequestContentScript(
   script_loader_ = ExtensionSystem::Get(browser_context)
                        ->user_script_manager()
                        ->GetUserScriptLoaderForExtension(extension->id());
-  scoped_observation_.Observe(script_loader_);
+  scoped_observation_.Observe(script_loader_.get());
   AddScript();
 }
 

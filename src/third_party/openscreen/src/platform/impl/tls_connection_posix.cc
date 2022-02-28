@@ -102,14 +102,6 @@ bool TlsConnectionPosix::Send(const void* data, size_t len) {
   return buffer_.Push(data, len);
 }
 
-IPEndpoint TlsConnectionPosix::GetLocalEndpoint() const {
-  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-
-  absl::optional<IPEndpoint> endpoint = socket_->local_address();
-  OSP_DCHECK(endpoint.has_value());
-  return endpoint.value();
-}
-
 IPEndpoint TlsConnectionPosix::GetRemoteEndpoint() const {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 

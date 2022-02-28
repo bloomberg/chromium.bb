@@ -51,8 +51,6 @@ NavigationItemImpl::NavigationItemImpl()
     : unique_id_(GetUniqueIDInConstructor()),
       transition_type_(ui::PAGE_TRANSITION_LINK),
       user_agent_type_(UserAgentType::NONE),
-      is_created_from_push_state_(false),
-      has_state_been_replaced_(false),
       is_created_from_hash_change_(false),
       should_skip_repost_form_confirmation_(false),
       should_skip_serialization_(false),
@@ -78,14 +76,11 @@ NavigationItemImpl::NavigationItemImpl(const NavigationItemImpl& item)
       user_agent_type_(item.user_agent_type_),
       http_request_headers_([item.http_request_headers_ mutableCopy]),
       serialized_state_object_([item.serialized_state_object_ copy]),
-      is_created_from_push_state_(item.is_created_from_push_state_),
-      has_state_been_replaced_(item.has_state_been_replaced_),
       is_created_from_hash_change_(item.is_created_from_hash_change_),
       should_skip_repost_form_confirmation_(
           item.should_skip_repost_form_confirmation_),
       should_skip_serialization_(item.should_skip_serialization_),
       post_data_([item.post_data_ copy]),
-      error_retry_state_machine_(item.error_retry_state_machine_),
       navigation_initiation_type_(item.navigation_initiation_type_),
       is_untrusted_(item.is_untrusted_),
       cached_display_title_(item.cached_display_title_),
@@ -106,7 +101,6 @@ const GURL& NavigationItemImpl::GetOriginalRequestURL() const {
 void NavigationItemImpl::SetURL(const GURL& url) {
   url_ = url;
   cached_display_title_.clear();
-  error_retry_state_machine_.SetURL(url);
 }
 
 const GURL& NavigationItemImpl::GetURL() const {
@@ -258,14 +252,6 @@ NSString* NavigationItemImpl::GetSerializedStateObject() const {
   return serialized_state_object_;
 }
 
-void NavigationItemImpl::SetIsCreatedFromPushState(bool push_state) {
-  is_created_from_push_state_ = push_state;
-}
-
-bool NavigationItemImpl::IsCreatedFromPushState() const {
-  return is_created_from_push_state_;
-}
-
 void NavigationItemImpl::SetNavigationInitiationType(
     web::NavigationInitiationType navigation_initiation_type) {
   navigation_initiation_type_ = navigation_initiation_type;
@@ -274,14 +260,6 @@ void NavigationItemImpl::SetNavigationInitiationType(
 web::NavigationInitiationType NavigationItemImpl::NavigationInitiationType()
     const {
   return navigation_initiation_type_;
-}
-
-void NavigationItemImpl::SetHasStateBeenReplaced(bool replace_state) {
-  has_state_been_replaced_ = replace_state;
-}
-
-bool NavigationItemImpl::HasStateBeenReplaced() const {
-  return has_state_been_replaced_;
 }
 
 void NavigationItemImpl::SetIsCreatedFromHashChange(bool hash_change) {
@@ -347,11 +325,6 @@ void NavigationItemImpl::RestoreStateFromItem(NavigationItem* other) {
   }
 }
 
-ErrorRetryStateMachine& NavigationItemImpl::error_retry_state_machine() {
-  DCHECK(!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage));
-  return error_retry_state_machine_;
-}
-
 // static
 std::u16string NavigationItemImpl::GetDisplayTitleForURL(const GURL& url) {
   if (url.is_empty())
@@ -378,8 +351,7 @@ NSString* NavigationItemImpl::GetDescription() const {
           @"url:%s virtual_url_:%s originalurl:%s referrer: %s title:%s "
           @"transition:%d "
            "displayState:%@ userAgent:%s "
-           "is_create_from_push_state: %@ "
-           "has_state_been_replaced: %@ is_created_from_hash_change: %@ "
+           "is_created_from_hash_change: %@ "
            "navigation_initiation_type: %d "
            "is_upgraded_to_https: %@",
           url_.spec().c_str(), virtual_url_.spec().c_str(),
@@ -387,8 +359,6 @@ NSString* NavigationItemImpl::GetDescription() const {
           base::UTF16ToUTF8(title_).c_str(), transition_type_,
           page_display_state_.GetDescription(),
           GetUserAgentTypeDescription(user_agent_type_).c_str(),
-          is_created_from_push_state_ ? @"true" : @"false",
-          has_state_been_replaced_ ? @"true" : @"false",
           is_created_from_hash_change_ ? @"true" : @"false",
           navigation_initiation_type_,
           is_upgraded_to_https_ ? @"true" : @"false"];

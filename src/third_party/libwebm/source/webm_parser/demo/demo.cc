@@ -1141,8 +1141,8 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  FILE* file = (argc == 2) ? std::fopen(argv[1], "rb") :
-                             std::freopen(nullptr, "rb", stdin);
+  FILE* file = (argc == 2) ? std::fopen(argv[1], "rb")
+                           : std::freopen(nullptr, "rb", stdin);
   if (!file) {
     std::cerr << "File cannot be opened\n";
     return EXIT_FAILURE;

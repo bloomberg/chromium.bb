@@ -18,9 +18,10 @@ exports.CDPSession = exports.CDPSessionEmittedEvents = exports.Connection = expo
  */
 const assert_js_1 = require("./assert.js");
 const Debug_js_1 = require("./Debug.js");
-const debugProtocolSend = Debug_js_1.debug('puppeteer:protocol:SEND ►');
-const debugProtocolReceive = Debug_js_1.debug('puppeteer:protocol:RECV ◀');
+const debugProtocolSend = (0, Debug_js_1.debug)('puppeteer:protocol:SEND ►');
+const debugProtocolReceive = (0, Debug_js_1.debug)('puppeteer:protocol:RECV ◀');
 const EventEmitter_js_1 = require("./EventEmitter.js");
+const Errors_js_1 = require("./Errors.js");
 /**
  * Internal events that the Connection class emits.
  *
@@ -30,7 +31,7 @@ exports.ConnectionEmittedEvents = {
     Disconnected: Symbol('Connection.Disconnected'),
 };
 /**
- * @internal
+ * @public
  */
 class Connection extends EventEmitter_js_1.EventEmitter {
     constructor(url, transport, delay = 0) {
@@ -68,7 +69,12 @@ class Connection extends EventEmitter_js_1.EventEmitter {
         const params = paramArgs.length ? paramArgs[0] : undefined;
         const id = this._rawSend({ method, params });
         return new Promise((resolve, reject) => {
-            this._callbacks.set(id, { resolve, reject, error: new Error(), method });
+            this._callbacks.set(id, {
+                resolve,
+                reject,
+                error: new Errors_js_1.ProtocolError(),
+                method,
+            });
         });
     }
     _rawSend(message) {
@@ -87,12 +93,22 @@ class Connection extends EventEmitter_js_1.EventEmitter {
             const sessionId = object.params.sessionId;
             const session = new CDPSession(this, object.params.targetInfo.type, sessionId);
             this._sessions.set(sessionId, session);
+            this.emit('sessionattached', session);
+            const parentSession = this._sessions.get(object.sessionId);
+            if (parentSession) {
+                parentSession.emit('sessionattached', session);
+            }
         }
         else if (object.method === 'Target.detachedFromTarget') {
             const session = this._sessions.get(object.params.sessionId);
             if (session) {
                 session._onClosed();
                 this._sessions.delete(object.params.sessionId);
+                this.emit('sessiondetached', session);
+                const parentSession = this._sessions.get(object.sessionId);
+                if (parentSession) {
+                    parentSession.emit('sessiondetached', session);
+                }
             }
         }
         if (object.sessionId) {
@@ -163,7 +179,7 @@ exports.CDPSessionEmittedEvents = {
  * events can be subscribed to with `CDPSession.on` method.
  *
  * Useful links: {@link https://chromedevtools.github.io/devtools-protocol/ | DevTools Protocol Viewer}
- * and {@link https://github.com/aslushnikov/getting-started-with-cdp/blob/master/README.md | Getting Started with DevTools Protocol}.
+ * and {@link https://github.com/aslushnikov/getting-started-with-cdp/blob/HEAD/README.md | Getting Started with DevTools Protocol}.
  *
  * @example
  * ```js
@@ -190,6 +206,9 @@ class CDPSession extends EventEmitter_js_1.EventEmitter {
         this._targetType = targetType;
         this._sessionId = sessionId;
     }
+    connection() {
+        return this._connection;
+    }
     send(method, ...paramArgs) {
         if (!this._connection)
             return Promise.reject(new Error(`Protocol error (${method}): Session closed. Most likely the ${this._targetType} has been closed.`));
@@ -198,14 +217,15 @@ class CDPSession extends EventEmitter_js_1.EventEmitter {
         const id = this._connection._rawSend({
             sessionId: this._sessionId,
             method,
-            /* TODO(jacktfranklin@): once this Firefox bug is solved
-             * we no longer need the `|| {}` check
-             * https://bugzilla.mozilla.org/show_bug.cgi?id=1631570
-             */
-            params: params || {},
+            params,
         });
         return new Promise((resolve, reject) => {
-            this._callbacks.set(id, { resolve, reject, error: new Error(), method });
+            this._callbacks.set(id, {
+                resolve,
+                reject,
+                error: new Errors_js_1.ProtocolError(),
+                method,
+            });
         });
     }
     /**
@@ -221,7 +241,7 @@ class CDPSession extends EventEmitter_js_1.EventEmitter {
                 callback.resolve(object.result);
         }
         else {
-            assert_js_1.assert(!object.id);
+            (0, assert_js_1.assert)(!object.id);
             this.emit(object.method, object.params);
         }
     }
@@ -246,6 +266,12 @@ class CDPSession extends EventEmitter_js_1.EventEmitter {
         this._connection = null;
         this.emit(exports.CDPSessionEmittedEvents.Disconnected);
     }
+    /**
+     * @internal
+     */
+    id() {
+        return this._sessionId;
+    }
 }
 exports.CDPSession = CDPSession;
 /**
@@ -258,15 +284,16 @@ function createProtocolError(error, method, object) {
     let message = `Protocol error (${method}): ${object.error.message}`;
     if ('data' in object.error)
         message += ` ${object.error.data}`;
-    return rewriteError(error, message);
+    return rewriteError(error, message, object.error.message);
 }
 /**
  * @param {!Error} error
  * @param {string} message
  * @returns {!Error}
  */
-function rewriteError(error, message) {
+function rewriteError(error, message, originalMessage) {
     error.message = message;
+    error.originalMessage = originalMessage;
     return error;
 }
 //# sourceMappingURL=Connection.js.map

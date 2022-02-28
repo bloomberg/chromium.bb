@@ -30,10 +30,17 @@ class CastHandler : public protocol::Cast::Backend,
  public:
   CastHandler(content::WebContents* web_contents,
               protocol::UberDispatcher* dispatcher);
+
+  CastHandler(const CastHandler&) = delete;
+  CastHandler& operator=(const CastHandler&) = delete;
+
   ~CastHandler() override;
 
   // protocol::Cast::Backend:
   protocol::Response SetSinkToUse(const std::string& in_sink_name) override;
+  void StartDesktopMirroring(
+      const std::string& in_sink_name,
+      std::unique_ptr<StartDesktopMirroringCallback> callback) override;
   void StartTabMirroring(
       const std::string& in_sink_name,
       std::unique_ptr<StartTabMirroringCallback> callback) override;
@@ -77,6 +84,10 @@ class CastHandler : public protocol::Cast::Backend,
   // updated.
   void SendSinkUpdate();
 
+  void OnDesktopMirroringStarted(
+      std::unique_ptr<StartDesktopMirroringCallback> callback,
+      media_router::mojom::RoutePresentationConnectionPtr connection,
+      const media_router::RouteRequestResult& result);
   void OnTabMirroringStarted(
       std::unique_ptr<StartTabMirroringCallback> callback,
       media_router::mojom::RoutePresentationConnectionPtr connection,
@@ -103,8 +114,6 @@ class CastHandler : public protocol::Cast::Backend,
   std::unique_ptr<protocol::Cast::Frontend> frontend_;
 
   base::WeakPtrFactory<CastHandler> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CastHandler);
 };
 
 #endif  // CHROME_BROWSER_DEVTOOLS_PROTOCOL_CAST_HANDLER_H_

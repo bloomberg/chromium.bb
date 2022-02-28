@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_BACKING_GL_COMMON_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_BACKING_GL_COMMON_H_
 
+#include "base/memory/raw_ptr.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_bindings.h"
@@ -40,10 +41,16 @@ class GPU_GLES2_EXPORT SharedImageBackingGLCommon {
     ScopedResetAndRestoreUnpackState(gl::GLApi* api,
                                      const UnpackStateAttribs& attribs,
                                      bool uploading_data);
+
+    ScopedResetAndRestoreUnpackState(const ScopedResetAndRestoreUnpackState&) =
+        delete;
+    ScopedResetAndRestoreUnpackState& operator=(
+        const ScopedResetAndRestoreUnpackState&) = delete;
+
     ~ScopedResetAndRestoreUnpackState();
 
    private:
-    gl::GLApi* const api_;
+    const raw_ptr<gl::GLApi> api_;
 
     // Always used if |es3_capable|.
     GLint unpack_buffer_ = 0;
@@ -64,21 +71,22 @@ class GPU_GLES2_EXPORT SharedImageBackingGLCommon {
     // Used when |desktop_gl|.
     GLboolean unpack_swap_bytes_ = GL_FALSE;
     GLboolean unpack_lsb_first_ = GL_FALSE;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedResetAndRestoreUnpackState);
   };
 
   // Object used to restore texture bindings.
   class ScopedRestoreTexture {
    public:
     ScopedRestoreTexture(gl::GLApi* api, GLenum target);
+
+    ScopedRestoreTexture(const ScopedRestoreTexture&) = delete;
+    ScopedRestoreTexture& operator=(const ScopedRestoreTexture&) = delete;
+
     ~ScopedRestoreTexture();
 
    private:
-    gl::GLApi* api_;
+    raw_ptr<gl::GLApi> api_;
     GLenum target_;
     GLuint old_binding_ = 0;
-    DISALLOW_COPY_AND_ASSIGN(ScopedRestoreTexture);
   };
 
   // Helper function to create a GL texture.
@@ -97,6 +105,7 @@ class GPU_GLES2_EXPORT SharedImageBackingGLCommon {
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       WGPUDevice device,
+      WGPUBackendType backend_type,
       SharedImageBacking* backing,
       bool use_passthrough);
 };

@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/sequence_checker.h"
 
 namespace remoting {
@@ -25,6 +24,9 @@ class StreamChannelFactory {
       ChannelCreatedCallback;
 
   StreamChannelFactory() {}
+
+  StreamChannelFactory(const StreamChannelFactory&) = delete;
+  StreamChannelFactory& operator=(const StreamChannelFactory&) = delete;
 
   // Creates new channels and calls the |callback| when then new channel is
   // created and connected. The |callback| is called with nullptr if connection
@@ -43,9 +45,6 @@ class StreamChannelFactory {
   virtual ~StreamChannelFactory() {}
 
   SEQUENCE_CHECKER(sequence_checker_);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StreamChannelFactory);
 };
 
 }  // namespace protocol

@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -45,6 +45,10 @@ class Me2MeNativeMessagingHost : public extensions::NativeMessageHost {
       scoped_refptr<DaemonController> daemon_controller,
       scoped_refptr<protocol::PairingRegistry> pairing_registry,
       std::unique_ptr<OAuthClient> oauth_client);
+
+  Me2MeNativeMessagingHost(const Me2MeNativeMessagingHost&) = delete;
+  Me2MeNativeMessagingHost& operator=(const Me2MeNativeMessagingHost&) = delete;
+
   ~Me2MeNativeMessagingHost() override;
 
   // extensions::NativeMessageHost implementation.
@@ -139,7 +143,7 @@ class Me2MeNativeMessagingHost : public extensions::NativeMessageHost {
   intptr_t parent_window_handle_;
 #endif  // defined(OS_WIN)
 
-  extensions::NativeMessageHost::Client* client_;
+  raw_ptr<extensions::NativeMessageHost::Client> client_;
   std::unique_ptr<ChromotingHostContext> host_context_;
 
   std::unique_ptr<LogMessageHandler> log_message_handler_;
@@ -154,8 +158,6 @@ class Me2MeNativeMessagingHost : public extensions::NativeMessageHost {
 
   base::WeakPtr<Me2MeNativeMessagingHost> weak_ptr_;
   base::WeakPtrFactory<Me2MeNativeMessagingHost> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Me2MeNativeMessagingHost);
 };
 
 }  // namespace remoting

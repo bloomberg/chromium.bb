@@ -31,7 +31,7 @@ include_rules = [
   "+base/profiler/sample_metadata.h",
   "+base/run_loop.h",
   "+base/sequence_checker.h",
-  "+base/single_thread_task_runner.h",
+  "+base/task/single_thread_task_runner.h",
   "+base/strings/string_number_conversions.h",
   "+base/synchronization/atomic_flag.h",
   "+base/synchronization/cancellation_flag.h",
@@ -53,7 +53,6 @@ include_rules = [
   "+components/scheduling_metrics",
   "+services/metrics",
 
-  "+third_party/abseil-cpp/absl/types/optional.h",
   "+third_party/blink/renderer/platform/back_forward_cache_utils.h",
   "+third_party/blink/renderer/platform/bindings/parkable_string_manager.h",
   "+third_party/blink/renderer/platform/instrumentation",

@@ -6,7 +6,7 @@
 
 #include "base/check.h"
 #include "base/notreached.h"
-#include "components/safe_browsing/core/password_protection/metrics_util.h"
+#include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -49,9 +49,7 @@
   self.viewController.subtitleString = self.warningText;
   self.viewController.actionHandler = self;
   self.viewController.modalPresentationStyle = UIModalPresentationFormSheet;
-  if (@available(iOS 13, *)) {
-    self.viewController.modalInPresentation = YES;
-  }
+  self.viewController.modalInPresentation = YES;
   [self.baseViewController presentViewController:self.viewController
                                         animated:YES
                                       completion:nil];
@@ -75,14 +73,6 @@
   self.completion(safe_browsing::WarningAction::CHANGE_PASSWORD);
   // Opening Password page will stop the presentation. No need to send |stop|.
   [self startPasswordCheck];
-}
-
-- (void)confirmationAlertSecondaryAction {
-  NOTREACHED();
-}
-
-- (void)confirmationAlertLearnMoreAction {
-  NOTREACHED();
 }
 
 #pragma mark - Private

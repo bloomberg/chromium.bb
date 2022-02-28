@@ -9,6 +9,7 @@
 #include <map>
 #include <vector>
 
+#include "src/base/platform/condition-variable.h"
 #include "src/base/platform/semaphore.h"
 #include "src/common/globals.h"
 #include "src/tasks/cancelable-task.h"
@@ -94,6 +95,8 @@ class Sweeper {
       FreeSpaceMayContainInvalidatedSlots invalidated_slots_in_free_space =
           FreeSpaceMayContainInvalidatedSlots::kNo);
 
+  void EnsurePageIsSwept(Page* page);
+
   void ScheduleIncrementalSweepingTask();
 
   int RawSweep(
@@ -108,7 +111,6 @@ class Sweeper {
   void StartSweeping();
   V8_EXPORT_PRIVATE void StartSweeperTasks();
   void EnsureCompleted();
-  void DrainSweepingWorklists();
   void DrainSweepingWorklistForSpace(AllocationSpace space);
   bool AreSweeperTasksRunning();
 
@@ -185,6 +187,7 @@ class Sweeper {
   bool IncrementalSweepSpace(AllocationSpace identity);
 
   Page* GetSweepingPageSafe(AllocationSpace space);
+  bool TryRemoveSweepingPageSafe(AllocationSpace space, Page* page);
 
   void PrepareToBeSweptPage(AllocationSpace space, Page* page);
 
@@ -208,6 +211,7 @@ class Sweeper {
   MajorNonAtomicMarkingState* marking_state_;
   std::unique_ptr<JobHandle> job_handle_;
   base::Mutex mutex_;
+  base::ConditionVariable cv_page_swept_;
   SweptList swept_list_[kNumberOfSweepingSpaces];
   SweepingList sweeping_list_[kNumberOfSweepingSpaces];
   bool incremental_sweeper_pending_;

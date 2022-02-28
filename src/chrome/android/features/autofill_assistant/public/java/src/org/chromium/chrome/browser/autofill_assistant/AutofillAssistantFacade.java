@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 
@@ -21,14 +22,11 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.directactions.DirectActionHandler;
 import org.chromium.chrome.browser.flags.ActivityType;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
-import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.components.external_intents.ExternalNavigationDelegate.IntentToAutofillAllowingAppResult;
 
 /** Facade for starting Autofill Assistant on a tab. */
@@ -107,7 +105,7 @@ public class AutofillAssistantFacade {
             }
         }
 
-        String intent = triggerContext.getParameters().get("INTENT");
+        String intent = triggerContext.getIntent();
         // Have an "attempted starts" baseline for the drop out histogram.
         AutofillAssistantMetrics.recordDropOut(DropOutReason.AA_START, intent);
         waitForTab((ChromeActivity) activity,
@@ -123,14 +121,9 @@ public class AutofillAssistantFacade {
             Activity activity, AutofillAssistantModuleEntry module) {
         assert activity instanceof ChromeActivity;
         ChromeActivity chromeActivity = (ChromeActivity) activity;
-        return module.createDependencies(
-                BottomSheetControllerProvider.from(chromeActivity.getWindowAndroid()),
-                chromeActivity.getBrowserControlsManager(),
-                chromeActivity.getCompositorViewHolder(), chromeActivity,
-                chromeActivity.getCurrentWebContents(),
-                chromeActivity.getWindowAndroid().getKeyboardDelegate(),
-                chromeActivity.getWindowAndroid().getApplicationBottomInsetProvider(),
-                chromeActivity.getActivityTabProvider());
+
+        return module.createDependenciesFactory().createDependencies(
+                chromeActivity.getCurrentWebContents());
     }
 
     /**
@@ -140,8 +133,8 @@ public class AutofillAssistantFacade {
     public static boolean areDirectActionsAvailable(@ActivityType int activityType) {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
                 && (activityType == ActivityType.CUSTOM_TAB || activityType == ActivityType.TABBED)
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT_DIRECT_ACTIONS)
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT);
+                && AssistantFeatures.AUTOFILL_ASSISTANT.isEnabled()
+                && AssistantFeatures.AUTOFILL_ASSISTANT_DIRECT_ACTIONS.isEnabled();
     }
 
     /**
@@ -152,10 +145,10 @@ public class AutofillAssistantFacade {
      */
     public static DirectActionHandler createDirectActionHandler(Context context,
             BottomSheetController bottomSheetController,
-            BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
+            BrowserControlsStateProvider browserControls, View rootView,
             ActivityTabProvider activityTabProvider) {
         return new AutofillAssistantDirectActionHandler(context, bottomSheetController,
-                browserControls, compositorViewHolder, activityTabProvider,
+                browserControls, rootView, activityTabProvider,
                 AutofillAssistantModuleEntryProvider.INSTANCE);
     }
 
@@ -179,13 +172,13 @@ public class AutofillAssistantFacade {
     }
 
     public static boolean isAutofillAssistantEnabled(Intent intent) {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)
+        return AssistantFeatures.AUTOFILL_ASSISTANT.isEnabled()
                 && AutofillAssistantFacade.isConfigured(
                         TriggerContext.newBuilder().fromBundle(intent.getExtras()).build());
     }
 
     public static boolean isAutofillAssistantByIntentTriggeringEnabled(Intent intent) {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY)
+        return AssistantFeatures.AUTOFILL_ASSISTANT_CHROME_ENTRY.isEnabled()
                 && AutofillAssistantFacade.isAutofillAssistantEnabled(intent);
     }
 

@@ -122,12 +122,8 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetMinimumFontSize(int) override;
   void SetMinimumLogicalFontSize(int) override;
   void SetHideScrollbars(bool) override;
-  void SetOfflineWebApplicationCacheEnabled(bool) override;
-  void SetPassiveEventListenerDefault(PassiveEventListenerDefault) override;
   void SetPasswordEchoDurationInSeconds(double) override;
   void SetPasswordEchoEnabled(bool) override;
-  void SetPictographFontFamily(const WebString&,
-                               UScriptCode = USCRIPT_COMMON) override;
   void SetPluginsEnabled(bool) override;
   void SetAvailablePointerTypes(int) override;
   void SetPrimaryPointerType(mojom::blink::PointerType) override;
@@ -233,6 +229,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetSelectionClipboardBufferAvailable(bool) override;
   void SetAccessibilityIncludeSvgGElement(bool) override;
   void SetWebXRImmersiveArAllowed(bool webxr_immersive_ar_allowed) override;
+  void SetLitePageSubresourceRedirectOrigin(const WebString&) override;
 
   bool RenderVSyncNotificationEnabled() const {
     return render_v_sync_notification_enabled_;

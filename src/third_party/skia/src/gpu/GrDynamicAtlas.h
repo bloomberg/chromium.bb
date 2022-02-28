@@ -12,7 +12,6 @@
 #include "src/gpu/GrTextureProxy.h"
 
 class GrOnFlushResourceProvider;
-class GrSurfaceDrawContext;
 class GrResourceProvider;
 struct SkIPoint16;
 struct SkIRect;
@@ -25,8 +24,9 @@ struct SkIRect;
 class GrDynamicAtlas {
 public:
     // As long as GrSurfaceOrigin exists, we just have to decide on one for the atlas texture.
-    static constexpr GrSurfaceOrigin kTextureOrigin = kTopLeft_GrSurfaceOrigin;
-    static constexpr int kPadding = 1;  // Amount of padding below and to the right of each path.
+    inline static constexpr GrSurfaceOrigin kTextureOrigin = kTopLeft_GrSurfaceOrigin;
+    inline static constexpr int kPadding = 1;  // Amount of padding below and to the right of each
+                                               // path.
 
     using LazyAtlasDesc = GrSurfaceProxy::LazySurfaceDesc;
     using LazyInstantiateAtlasCallback = GrSurfaceProxy::LazyInstantiateCallback;
@@ -54,26 +54,25 @@ public:
 
     void reset(SkISize initialSize, const GrCaps& desc);
 
+    GrColorType colorType() const { return fColorType; }
     int maxAtlasSize() const { return fMaxAtlasSize; }
     GrTextureProxy* textureProxy() const { return fTextureProxy.get(); }
+    GrSurfaceProxyView readView(const GrCaps&) const;
+    GrSurfaceProxyView writeView(const GrCaps&) const;
     bool isInstantiated() const { return fTextureProxy->isInstantiated(); }
-    int currentWidth() const { return fWidth; }
-    int currentHeight() const { return fHeight; }
 
     // Attempts to add a rect to the atlas. Returns true if successful, along with the rect's
     // top-left location in the atlas.
     bool addRect(int width, int height, SkIPoint16* location);
     const SkISize& drawBounds() { return fDrawBounds; }
 
-    // Instantiates our texture proxy for the atlas and returns a pre-cleared GrSurfaceDrawContext
-    // that the caller may use to render the content. After this call, it is no longer valid to call
+    // Instantiates our texture proxy for the atlas. After this call, it is no longer valid to call
     // addRect(), setUserBatchID(), or this method again.
     //
     // 'backingTexture', if provided, is a renderable texture with which to instantiate our proxy.
     // If null then we will create a texture using the resource provider. The purpose of this param
-    // is to provide a guaranteed way to recycle a stashed atlas texture from a previous flush.
-    std::unique_ptr<GrSurfaceDrawContext> instantiate(
-            GrOnFlushResourceProvider*, sk_sp<GrTexture> backingTexture = nullptr);
+    // is to provide a guaranteed way to recycle textures from previous atlases.
+    void instantiate(GrOnFlushResourceProvider*, sk_sp<GrTexture> backingTexture = nullptr);
 
 private:
     class Node;

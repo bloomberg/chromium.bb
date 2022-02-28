@@ -9,8 +9,8 @@
 #include <string>
 #include <utility>
 
-#include "base/macros.h"
-#include "base/numerics/ranges.h"
+#include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -42,6 +42,9 @@ class TableViewTestHelper {
  public:
   explicit TableViewTestHelper(TableView* table) : table_(table) {}
 
+  TableViewTestHelper(const TableViewTestHelper&) = delete;
+  TableViewTestHelper& operator=(const TableViewTestHelper&) = delete;
+
   std::string GetPaintRegion(const gfx::Rect& bounds) {
     TableView::PaintRegion region(table_->GetPaintRegion(bounds));
     return "rows=" + base::NumberToString(region.min_row) + " " +
@@ -64,8 +67,17 @@ class TableViewTestHelper {
 
   const gfx::FontList& font_list() { return table_->font_list_; }
 
-  AXVirtualView* GetVirtualAccessibilityRow(int row) {
-    return table_->GetVirtualAccessibilityRow(row);
+  AXVirtualView* GetVirtualAccessibilityBodyRow(int row) {
+    return table_->GetVirtualAccessibilityBodyRow(row);
+  }
+
+  AXVirtualView* GetVirtualAccessibilityHeaderRow() {
+    return table_->GetVirtualAccessibilityHeaderRow();
+  }
+
+  AXVirtualView* GetVirtualAccessibilityHeaderCell(int visible_column_index) {
+    return table_->GetVirtualAccessibilityCellImpl(
+        GetVirtualAccessibilityHeaderRow(), visible_column_index);
   }
 
   AXVirtualView* GetVirtualAccessibilityCell(int row,
@@ -125,9 +137,7 @@ class TableViewTestHelper {
   }
 
  private:
-  TableView* table_;
-
-  DISALLOW_COPY_AND_ASSIGN(TableViewTestHelper);
+  raw_ptr<TableView> table_;
 };
 
 namespace {
@@ -152,6 +162,9 @@ constexpr int kCtrlOrCmdMask = ui::EF_CONTROL_DOWN;
 class TestTableModel2 : public ui::TableModel {
  public:
   TestTableModel2();
+
+  TestTableModel2(const TestTableModel2&) = delete;
+  TestTableModel2& operator=(const TestTableModel2&) = delete;
 
   // Adds a new row at index |row| with values |c1_value| and |c2_value|.
   void AddRow(int row, int c1_value, int c2_value);
@@ -184,14 +197,12 @@ class TestTableModel2 : public ui::TableModel {
   int CompareValues(int row1, int row2, int column_id) override;
 
  private:
-  ui::TableModelObserver* observer_ = nullptr;
+  raw_ptr<ui::TableModelObserver> observer_ = nullptr;
 
   absl::optional<std::u16string> tooltip_;
 
   // The data.
   std::vector<std::vector<int>> rows_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTableModel2);
 };
 
 TestTableModel2::TestTableModel2() {
@@ -237,10 +248,9 @@ void TestTableModel2::RemoveRow(int row) {
 void TestTableModel2::RemoveRows(int row, int length) {
   DCHECK(row >= 0 && length >= 0);
   if (row >= 0 && row <= static_cast<int>(rows_.size())) {
-    rows_.erase(
-        rows_.begin() + row,
-        rows_.begin() + base::ClampToRange(row + length, 0,
-                                           static_cast<int>(rows_.size())));
+    rows_.erase(rows_.begin() + row,
+                rows_.begin() + base::clamp(row + length, 0,
+                                            static_cast<int>(rows_.size())));
   }
 
   if (observer_ && length > 0)
@@ -417,6 +427,9 @@ class TableViewTest : public ViewsTestBase,
  public:
   TableViewTest() = default;
 
+  TableViewTest(const TableViewTest&) = delete;
+  TableViewTest& operator=(const TableViewTest&) = delete;
+
   void SetUp() override {
     ViewsTestBase::SetUp();
 
@@ -523,7 +536,7 @@ class TableViewTest : public ViewsTestBase,
     // Makes sure the virtual row count factors in the presence of the header.
     const int first_row_index = helper_->header() ? 1 : 0;
     const int virtual_row_count = table_->GetRowCount() + first_row_index;
-    EXPECT_EQ(virtual_row_count, int{virtual_children.size()});
+    EXPECT_EQ(virtual_row_count, static_cast<int>(virtual_children.size()));
 
     // Make sure every virtual row is valid.
     for (int index = first_row_index; index < virtual_row_count; index++) {
@@ -595,7 +608,7 @@ class TableViewTest : public ViewsTestBase,
   std::unique_ptr<TestTableModel2> model_;
 
   // Owned by |parent_|.
-  TableView* table_ = nullptr;
+  raw_ptr<TableView> table_ = nullptr;
 
   std::unique_ptr<TableViewTestHelper> helper_;
 
@@ -606,8 +619,6 @@ class TableViewTest : public ViewsTestBase,
     const int y = (row + 0.5) * table_->GetRowHeight();
     return table_->GetBoundsInScreen().origin() + gfx::Vector2d(5, y);
   }
-
-  DISALLOW_COPY_AND_ASSIGN(TableViewTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(All, TableViewTest, testing::Values(false, true));
@@ -637,7 +648,7 @@ TEST_P(TableViewTest, RebuildVirtualAccessibilityChildren) {
                 ax::mojom::IntAttribute::kTableColumnCount)));
 
   // The header takes up another row.
-  ASSERT_EQ(size_t{table_->GetRowCount() + 1},
+  ASSERT_EQ(static_cast<size_t>(table_->GetRowCount() + 1),
             view_accessibility.virtual_children().size());
   const auto& header = view_accessibility.virtual_children().front();
   ASSERT_TRUE(header);
@@ -711,9 +722,9 @@ TEST_P(TableViewTest, UpdateVirtualAccessibilityChildrenBoundsHideColumn) {
                                expected_bounds_after_hiding);
 }
 
-TEST_P(TableViewTest, GetVirtualAccessibilityRow) {
+TEST_P(TableViewTest, GetVirtualAccessibilityBodyRow) {
   for (int i = 0; i < table_->GetRowCount(); ++i) {
-    const AXVirtualView* row = helper_->GetVirtualAccessibilityRow(i);
+    const AXVirtualView* row = helper_->GetVirtualAccessibilityBodyRow(i);
     ASSERT_TRUE(row);
     const ui::AXNodeData& row_data = row->GetData();
     EXPECT_EQ(ax::mojom::Role::kRow, row_data.role);
@@ -791,6 +802,19 @@ TEST_P(TableViewTest, ColumnVisibility) {
   EXPECT_EQ(1, table_->GetVisibleColumn(0).column.id);
   EXPECT_EQ(0, table_->GetVisibleColumn(1).column.id);
   EXPECT_EQ("rows=0 4 cols=0 2", helper_->GetPaintRegion(table_->bounds()));
+}
+
+// Regression tests for https://crbug.com/1283805, and
+// https://crbug.com/1283807.
+TEST_P(TableViewTest, NoCrashesWithAllColumnsHidden) {
+  // Set both initially visible columns hidden.
+  table_->SetColumnVisibility(0, false);
+  table_->SetColumnVisibility(1, false);
+  EXPECT_EQ(0u, helper_->visible_col_count());
+
+  // Remove and add rows in this state, there should be no crashes.
+  model_->RemoveRow(0);
+  model_->AddRows(1, 2, /*value_multiplier=*/10);
 }
 
 // Verifies resizing a column using the mouse works.
@@ -1134,6 +1158,9 @@ class TableGrouperImpl : public TableGrouper {
  public:
   TableGrouperImpl() = default;
 
+  TableGrouperImpl(const TableGrouperImpl&) = delete;
+  TableGrouperImpl& operator=(const TableGrouperImpl&) = delete;
+
   void SetRanges(const std::vector<int>& ranges) { ranges_ = ranges; }
 
   // TableGrouper overrides:
@@ -1154,8 +1181,6 @@ class TableGrouperImpl : public TableGrouper {
 
  private:
   std::vector<int> ranges_;
-
-  DISALLOW_COPY_AND_ASSIGN(TableGrouperImpl);
 };
 
 }  // namespace
@@ -1240,6 +1265,9 @@ class TableViewObserverImpl : public TableViewObserver {
  public:
   TableViewObserverImpl() = default;
 
+  TableViewObserverImpl(const TableViewObserverImpl&) = delete;
+  TableViewObserverImpl& operator=(const TableViewObserverImpl&) = delete;
+
   int GetChangedCountAndClear() {
     const int count = selection_changed_count_;
     selection_changed_count_ = 0;
@@ -1251,8 +1279,6 @@ class TableViewObserverImpl : public TableViewObserver {
 
  private:
   int selection_changed_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TableViewObserverImpl);
 };
 
 }  // namespace
@@ -1548,8 +1574,15 @@ TEST_P(TableViewTest, KeyUpDown) {
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=0 anchor=0 selection=0 1", SelectionStateAsString());
 
+  // Key up at this point will clear selection and navigate into the header.
+  EXPECT_FALSE(table_->header_row_is_active());
   PressKey(ui::VKEY_UP);
-  EXPECT_EQ(0, observer.GetChangedCountAndClear());
+  EXPECT_TRUE(table_->header_row_is_active());
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
+
+  PressKey(ui::VKEY_DOWN);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=0 anchor=0 selection=0 1", SelectionStateAsString());
 
   // Sort the table descending by column 1, view now looks like:
@@ -1567,8 +1600,15 @@ TEST_P(TableViewTest, KeyUpDown) {
   EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
 
   observer.GetChangedCountAndClear();
-  // Up with nothing selected selects the first row.
+
+  // Up with nothing selected moves selection into the table's header.
+  EXPECT_FALSE(table_->header_row_is_active());
   PressKey(ui::VKEY_UP);
+  EXPECT_TRUE(table_->header_row_is_active());
+  EXPECT_EQ(0, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
+
+  PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=2 anchor=2 selection=2", SelectionStateAsString());
 
@@ -1608,9 +1648,12 @@ TEST_P(TableViewTest, KeyUpDown) {
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=2 anchor=2 selection=2", SelectionStateAsString());
 
+  // Key up at this point will clear selection and navigate into the header.
+  EXPECT_FALSE(table_->header_row_is_active());
   PressKey(ui::VKEY_UP);
-  EXPECT_EQ(0, observer.GetChangedCountAndClear());
-  EXPECT_EQ("active=2 anchor=2 selection=2", SelectionStateAsString());
+  EXPECT_TRUE(table_->header_row_is_active());
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
 
   table_->set_observer(nullptr);
 }
@@ -2007,6 +2050,76 @@ TEST_P(TableViewTest, RemovingSortedRowsDoesNotCauseOverflow) {
   model_->RemoveRow(0);
 }
 
+// Ensure that the TableView's header row is keyboard accessible.
+// Tests for crbug.com/1189851.
+TEST_P(TableViewTest, TableHeaderRowAccessibleViewFocusable) {
+  ASSERT_NE(nullptr, helper_->header());
+  table_->RequestFocus();
+  RunPendingMessages();
+
+  // If no table body row has selection the TableView itself is focused and
+  // there is no focused virtual view.
+  EXPECT_TRUE(table_->HasFocus());
+  EXPECT_FALSE(table_->header_row_is_active());
+  EXPECT_EQ(nullptr, table_->GetViewAccessibility().FocusedVirtualChild());
+
+  // Hitting the up arrow key should give the header focus and make it active.
+  PressKey(ui::VKEY_UP);
+  RunPendingMessages();
+  EXPECT_TRUE(table_->HasFocus());
+  EXPECT_TRUE(table_->header_row_is_active());
+  EXPECT_EQ(helper_->GetVirtualAccessibilityHeaderRow(),
+            table_->GetViewAccessibility().FocusedVirtualChild());
+
+  // Hitting the down arrow key should move focus back into the body.
+  PressKey(ui::VKEY_DOWN);
+  RunPendingMessages();
+  EXPECT_TRUE(table_->HasFocus());
+  EXPECT_FALSE(table_->header_row_is_active());
+  EXPECT_NE(helper_->GetVirtualAccessibilityHeaderRow(),
+            table_->GetViewAccessibility().FocusedVirtualChild());
+}
+
+// Ensure that the TableView's header columns are keyboard accessible.
+// Tests for crbug.com/1189851.
+TEST_P(TableViewTest, TableHeaderColumnAccessibleViewsFocusable) {
+  if (!PlatformStyle::kTableViewSupportsKeyboardNavigationByCell)
+    return;
+
+  ASSERT_NE(nullptr, helper_->header());
+  table_->RequestFocus();
+  RunPendingMessages();
+
+  // Hitting the up arrow key should give the header focus and make it active.
+  auto& view_accessibility = table_->GetViewAccessibility();
+  PressKey(ui::VKEY_UP);
+  RunPendingMessages();
+  EXPECT_TRUE(table_->HasFocus());
+  EXPECT_TRUE(table_->header_row_is_active());
+  EXPECT_EQ(helper_->GetVirtualAccessibilityHeaderRow(),
+            view_accessibility.FocusedVirtualChild());
+
+  // Navigating with arrow keys should move focus between TableView header
+  // columns.
+  PressKey(ui::VKEY_RIGHT);
+  RunPendingMessages();
+  ASSERT_EQ(0, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(helper_->GetVirtualAccessibilityHeaderCell(0),
+            view_accessibility.FocusedVirtualChild());
+
+  PressKey(ui::VKEY_RIGHT);
+  RunPendingMessages();
+  ASSERT_EQ(1, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(helper_->GetVirtualAccessibilityHeaderCell(1),
+            view_accessibility.FocusedVirtualChild());
+
+  PressKey(ui::VKEY_LEFT);
+  RunPendingMessages();
+  ASSERT_EQ(0, helper_->GetActiveVisibleColumnIndex());
+  EXPECT_EQ(helper_->GetVirtualAccessibilityHeaderCell(0),
+            view_accessibility.FocusedVirtualChild());
+}
+
 namespace {
 
 class RemoveFocusChangeListenerDelegate : public WidgetDelegate {
@@ -2020,14 +2133,18 @@ class RemoveFocusChangeListenerDelegate : public WidgetDelegate {
         },
         base::Unretained(widget), base::Unretained(this)));
   }
+
+  RemoveFocusChangeListenerDelegate(const RemoveFocusChangeListenerDelegate&) =
+      delete;
+  RemoveFocusChangeListenerDelegate& operator=(
+      const RemoveFocusChangeListenerDelegate&) = delete;
+
   ~RemoveFocusChangeListenerDelegate() override = default;
 
   void SetFocusChangeListener(FocusChangeListener* listener);
 
  private:
-  FocusChangeListener* listener_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoveFocusChangeListenerDelegate);
+  raw_ptr<FocusChangeListener> listener_;
 };
 
 void RemoveFocusChangeListenerDelegate::SetFocusChangeListener(
@@ -2041,6 +2158,9 @@ class TableViewFocusTest : public TableViewTest {
  public:
   TableViewFocusTest() = default;
 
+  TableViewFocusTest(const TableViewFocusTest&) = delete;
+  TableViewFocusTest& operator=(const TableViewFocusTest&) = delete;
+
  protected:
   WidgetDelegate* GetWidgetDelegate(Widget* widget) override;
 
@@ -2050,8 +2170,6 @@ class TableViewFocusTest : public TableViewTest {
 
  private:
   std::unique_ptr<RemoveFocusChangeListenerDelegate> delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(TableViewFocusTest);
 };
 
 WidgetDelegate* TableViewFocusTest::GetWidgetDelegate(Widget* widget) {

@@ -10,12 +10,16 @@ class TestSimpleTableWithEnum(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAsTestSimpleTableWithEnum(cls, buf, offset):
+    def GetRootAs(cls, buf, offset=0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = TestSimpleTableWithEnum()
         x.Init(buf, n + offset)
         return x
 
+    @classmethod
+    def GetRootAsTestSimpleTableWithEnum(cls, buf, offset=0):
+        """This method is deprecated. Please switch to GetRootAs."""
+        return cls.GetRootAs(buf, offset)
     @classmethod
     def TestSimpleTableWithEnumBufferHasIdentifier(cls, buf, offset, size_prefixed=False):
         return flatbuffers.util.BufferHasIdentifier(buf, offset, b"\x4D\x4F\x4E\x53", size_prefixed=size_prefixed)
@@ -32,9 +36,14 @@ class TestSimpleTableWithEnum(object):
         return 2
 
 def TestSimpleTableWithEnumStart(builder): builder.StartObject(1)
+def Start(builder):
+    return TestSimpleTableWithEnumStart(builder)
 def TestSimpleTableWithEnumAddColor(builder, color): builder.PrependUint8Slot(0, color, 2)
+def AddColor(builder, color):
+    return TestSimpleTableWithEnumAddColor(builder, color)
 def TestSimpleTableWithEnumEnd(builder): return builder.EndObject()
-
+def End(builder):
+    return TestSimpleTableWithEnumEnd(builder)
 
 class TestSimpleTableWithEnumT(object):
 

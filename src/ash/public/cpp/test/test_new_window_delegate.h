@@ -22,8 +22,12 @@ class ASH_PUBLIC_EXPORT TestNewWindowDelegate : public NewWindowDelegate {
  private:
   // NewWindowDelegate:
   void NewTab() override;
-  void NewTabWithUrl(const GURL& url, bool from_user_interaction) override;
-  void NewWindow(bool incognito) override;
+  void NewWindow(bool incognito, bool should_trigger_session_restore) override;
+  void NewWindowForDetachingTab(
+      aura::Window* source_window,
+      const ui::OSExchangeData& drop_data,
+      NewWindowForDetachingTabCallback closure) override;
+  void OpenUrl(const GURL& url, bool from_user_interaction) override;
   void OpenCalculator() override;
   void OpenFileManager() override;
   void OpenDownloadsFolder() override;
@@ -33,7 +37,8 @@ class ASH_PUBLIC_EXPORT TestNewWindowDelegate : public NewWindowDelegate {
   void RestoreTab() override;
   void ShowKeyboardShortcutViewer() override;
   void ShowTaskManager() override;
-  void OpenFeedbackPage(bool from_assistant) override;
+  void OpenFeedbackPage(FeedbackSource source,
+                        const std::string& description_template) override;
 };
 
 // NewWindowDelegateProvider implementation to provide TestNewWindowDelegate.

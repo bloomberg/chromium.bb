@@ -1,21 +1,24 @@
 #include <metal_stdlib>
 #include <simd/simd.h>
 using namespace metal;
+struct Uniforms {
+    float unknownInput;
+};
 struct Inputs {
 };
 struct Outputs {
-    float4 sk_FragColor [[color(0)]];
+    half4 sk_FragColor [[color(0)]];
 };
-fragment Outputs fragmentMain(Inputs _in [[stage_in]], bool _frontFacing [[front_facing]], float4 _fragCoord [[position]]) {
+fragment Outputs fragmentMain(Inputs _in [[stage_in]], constant Uniforms& _uniforms [[buffer(0)]], bool _frontFacing [[front_facing]], float4 _fragCoord [[position]]) {
     Outputs _out;
     (void)_out;
     bool b = true;
-    short s = short(sqrt(1.0));
-    int i = int(sqrt(1.0));
-    ushort us = ushort(sqrt(1.0));
-    uint ui = uint(sqrt(1.0));
-    float h = sqrt(1.0);
-    float f = sqrt(1.0);
+    short s = short(_uniforms.unknownInput);
+    int i = int(_uniforms.unknownInput);
+    ushort us = ushort(_uniforms.unknownInput);
+    uint ui = uint(_uniforms.unknownInput);
+    half h = half(_uniforms.unknownInput);
+    float f = _uniforms.unknownInput;
     short s2s = s;
     short i2s = short(i);
     short us2s = short(us);
@@ -48,10 +51,10 @@ fragment Outputs fragmentMain(Inputs _in [[stage_in]], bool _frontFacing [[front
     float i2f = float(i);
     float us2f = float(us);
     float ui2f = float(ui);
-    float h2f = h;
+    float h2f = float(h);
     float f2f = f;
     float b2f = float(b);
-    _out.sk_FragColor.x = (((((((((((((((((((((float(s) + float(i)) + float(us)) + float(ui)) + h) + f) + float(s2s)) + float(i2s)) + float(us2s)) + float(ui2s)) + float(h2s)) + float(f2s)) + float(b2s)) + float(s2i)) + float(i2i)) + float(us2i)) + float(ui2i)) + float(h2i)) + float(f2i)) + float(b2i)) + float(s2us)) + float(i2us)) + float(us2us);
-    _out.sk_FragColor.x = _out.sk_FragColor.x + ((((((((((((((((float(ui2us) + float(h2us)) + float(f2us)) + float(b2us)) + float(s2ui)) + float(i2ui)) + float(us2ui)) + float(ui2ui)) + float(h2ui)) + float(f2ui)) + float(b2ui)) + s2f) + i2f) + us2f) + ui2f) + h2f) + f2f) + b2f;
+    _out.sk_FragColor.x = (((((((((((((((((((((half(s) + half(i)) + half(us)) + half(ui)) + h) + half(f)) + half(s2s)) + half(i2s)) + half(us2s)) + half(ui2s)) + half(h2s)) + half(f2s)) + half(b2s)) + half(s2i)) + half(i2i)) + half(us2i)) + half(ui2i)) + half(h2i)) + half(f2i)) + half(b2i)) + half(s2us)) + half(i2us)) + half(us2us);
+    _out.sk_FragColor.x = _out.sk_FragColor.x + ((((((((((((((((half(ui2us) + half(h2us)) + half(f2us)) + half(b2us)) + half(s2ui)) + half(i2ui)) + half(us2ui)) + half(ui2ui)) + half(h2ui)) + half(f2ui)) + half(b2ui)) + half(s2f)) + half(i2f)) + half(us2f)) + half(ui2f)) + half(h2f)) + half(f2f)) + half(b2f);
     return _out;
 }

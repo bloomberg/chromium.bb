@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 #
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -36,6 +36,7 @@ sys.path = prev_sys_path
 
 _R8_PATH = os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party', 'r8', 'lib',
                         'r8.jar')
+_SHARD_PREFIX = 'shard'
 
 
 def _DeviceCachePath(device):
@@ -91,7 +92,11 @@ def _AllocateDexShards(dex_files):
           os.sep, '.')
       shards[name].append(src_path)
     else:
-      name = 'shard{}.dex.jar'.format(hash(src_path) % NUM_CORE_SHARDS)
+      # TODO(wnwen): hash(string) is not stable across python3 invocations.
+      #     Switch this to a stable hash that consistently shards the same file
+      #     to the same shard across runs.
+      name = '{}{}.dex.jar'.format(_SHARD_PREFIX,
+                                   hash(src_path) % NUM_CORE_SHARDS)
       shards[name].append(src_path)
   logging.info('Sharding %d dex files into %d buckets', len(dex_files),
                len(shards))
@@ -101,9 +106,11 @@ def _AllocateDexShards(dex_files):
 def _CreateDexFiles(shards, dex_staging_dir, min_api, use_concurrency):
   """Creates dex files within |dex_staging_dir| defined by |shards|."""
   tasks = []
-  for name, src_paths in shards.iteritems():
+  for name, src_paths in shards.items():
     dest_path = os.path.join(dex_staging_dir, name)
-    if _IsStale(src_paths, dest_path):
+    # TODO(wnwen): _IsStale() also needs to check if src_paths has changed for
+    #     shards comprised of multiple inputs. https://crbug.com/1269298
+    if name.startswith(_SHARD_PREFIX) or _IsStale(src_paths, dest_path):
       tasks.append(
           functools.partial(dex.MergeDexForIncrementalInstall, _R8_PATH,
                             src_paths, dest_path, min_api))
@@ -146,7 +153,7 @@ def Install(device, install_json, apk=None, enable_device_cache=False,
     permissions: A list of the permissions to grant, or None to grant all
                  non-denylisted permissions in the manifest.
   """
-  if isinstance(install_json, basestring):
+  if isinstance(install_json, str):
     with open(install_json) as f:
       install_dict = json.load(f)
   else:
@@ -228,7 +235,11 @@ def Install(device, install_json, apk=None, enable_device_cache=False,
     do_push_dex()
 
   def check_device_configured():
-    target_sdk_version = int(apk.GetTargetSdkVersion())
+    if apk.GetTargetSdkVersion().isalpha():
+      # Assume pre-release SDK is always really new.
+      target_sdk_version = 99
+    else:
+      target_sdk_version = int(apk.GetTargetSdkVersion())
     # Beta Q builds apply allowlist to targetSdk=28 as well.
     if target_sdk_version >= 28 and device.build_version_sdk >= 28:
       # In P, there are two settings:

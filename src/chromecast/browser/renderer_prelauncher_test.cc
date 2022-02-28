@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
@@ -25,6 +24,10 @@ namespace chromecast {
 class RendererPrelauncherTest : public content::BrowserTestBase {
  public:
   RendererPrelauncherTest() {}
+
+  RendererPrelauncherTest(const RendererPrelauncherTest&) = delete;
+  RendererPrelauncherTest& operator=(const RendererPrelauncherTest&) = delete;
+
   ~RendererPrelauncherTest() override {}
 
  protected:
@@ -32,9 +35,6 @@ class RendererPrelauncherTest : public content::BrowserTestBase {
   void SetUp() override;
   void PreRunTestOnMainThread() override;
   void PostRunTestOnMainThread() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RendererPrelauncherTest);
 };
 
 void RendererPrelauncherTest::SetUp() {

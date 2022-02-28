@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_ITEM_RESULT_H_
 
 #include "base/dcheck_is_on.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
@@ -42,6 +43,8 @@ struct CORE_EXPORT NGInlineItemResult {
     return hyphen_shape_result->SnappedWidth().ClampNegativeToZero();
   }
 
+  // Compute/clear |hyphen_string| and |hyphen_shape_result|.
+  void ShapeHyphen();
   void ClearHyphen() {
     hyphen_string = String();
     hyphen_shape_result = nullptr;
@@ -59,6 +62,10 @@ struct CORE_EXPORT NGInlineItemResult {
 
   // Inline size of this item.
   LayoutUnit inline_size;
+
+  // Non-zero if text-combine after non-ideographic character
+  // See "text-combine-justify.html".
+  LayoutUnit spacing_before;
 
   // Pending inline-end overhang amount for RubyRun.
   // This is committed if a following item meets conditions.

@@ -160,18 +160,22 @@ TEST_F(MslGeneratorImplTest, EmitConstructor_Type_Struct) {
                                  Member("c", ty.vec3<i32>()),
                              });
 
-  WrapInFunction(Construct(str, 1, 2.0f, vec3<i32>(3, 4, 5)));
+  WrapInFunction(Construct(ty.Of(str), 1, 2.0f, vec3<i32>(3, 4, 5)));
 
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
-  EXPECT_THAT(gen.result(), HasSubstr("{1, 2.0f, int3(3, 4, 5)}"));
+  EXPECT_THAT(gen.result(), HasSubstr("{.a=1, .b=2.0f, .c=int3(3, 4, 5)}"));
 }
 
 TEST_F(MslGeneratorImplTest, EmitConstructor_Type_Struct_Empty) {
-  auto* str = Structure("S", {});
+  auto* str = Structure("S", {
+                                 Member("a", ty.i32()),
+                                 Member("b", ty.f32()),
+                                 Member("c", ty.vec3<i32>()),
+                             });
 
-  WrapInFunction(Construct(str));
+  WrapInFunction(Construct(ty.Of(str)));
 
   GeneratorImpl& gen = Build();
 

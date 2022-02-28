@@ -26,6 +26,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.crash.PureJavaExceptionReporter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -162,8 +163,15 @@ public class WarmupManager {
             }
             return mainView;
         } catch (InflateException e) {
-            // See https://crbug.com/606715.
+            // Warmup manager is only a performance improvement. If inflation failed, it will be
+            // redone when the CCT is actually launched using an activity context. So, swallow
+            // exceptions here to improve resilience. See https://crbug.com/606715.
             Log.e(TAG, "Inflation exception.", e);
+            // An exception caught here may indicate a real bug in production code. We report the
+            // exceptions to monitor any spikes or stacks that point to Chrome code.
+            Throwable throwable = new Throwable(
+                    "This is not a crash. See https://crbug.com/1259276 for details.", e);
+            PureJavaExceptionReporter.postReportJavaException(throwable);
             return null;
         }
     }
@@ -302,25 +310,6 @@ public class WarmupManager {
     }
 
     /**
-     * Warms up a spare, empty RenderProcessHost that may be used for subsequent navigations.
-     *
-     * The spare RenderProcessHost will be used automatically in subsequent navigations.
-     * There is nothing further the WarmupManager needs to do to enable that use.
-     *
-     * This uses a different mechanism than createSpareWebContents, below, and is subject
-     * to fewer restrictions.
-     *
-     * This must be called from the UI thread.
-     */
-    public void createSpareRenderProcessHost(Profile profile) {
-        ThreadUtils.assertOnUiThread();
-        if (!LibraryLoader.getInstance().isInitialized()) return;
-
-        destroySpareWebContents();
-        WarmupManagerJni.get().warmupSpareRenderer(profile);
-    }
-
-    /**
      * Creates and initializes a spare WebContents, to be used in a subsequent navigation.
      *
      * This creates a renderer that is suitable for any navigation. It can be picked up by any tab.
@@ -398,6 +387,5 @@ public class WarmupManager {
     interface Natives {
         void startPreconnectPredictorInitialization(Profile profile);
         void preconnectUrlAndSubresources(Profile profile, String url);
-        void warmupSpareRenderer(Profile profile);
     }
 }
