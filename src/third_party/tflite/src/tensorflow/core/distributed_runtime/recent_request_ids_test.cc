@@ -26,7 +26,7 @@ limitations under the License.
 
 namespace tensorflow {
 
-Status TrackUnique(int64 request_id, RecentRequestIds* recent_request_ids) {
+Status TrackUnique(int64_t request_id, RecentRequestIds* recent_request_ids) {
   RecvTensorRequest request;
   request.set_request_id(request_id);
   return recent_request_ids->TrackUnique(request_id, "recent_request_ids_test",
@@ -46,8 +46,8 @@ TEST(RecentRequestIds, Unordered) {
   RecentRequestIds recent_request_ids(6);
 
   // Some unordered numbers to insert into request_id_set.
-  std::vector<int64> numbers = {53754,  23351,  164101, 7476,
-                                162432, 130761, 164102};
+  std::vector<int64_t> numbers = {53754,  23351,  164101, 7476,
+                                  162432, 130761, 164102};
 
   // Insert numbers[0..6) and check that all previously inserted numbers remain
   // in the set.
@@ -95,10 +95,10 @@ TEST(RecentRequestIds, Ordered3) { TestOrdered(3); }
 TEST(RecentRequestIds, Ordered4) { TestOrdered(4); }
 TEST(RecentRequestIds, Ordered5) { TestOrdered(5); }
 
-void BM_TrackUnique(int iters) {
+static void BM_TrackUnique(::testing::benchmark::State& state) {
   RecentRequestIds recent_request_ids(100000);
   RecvTensorRequest request;
-  for (int i = 0; i < iters; ++i) {
+  for (auto s : state) {
     TF_CHECK_OK(recent_request_ids.TrackUnique(GetUniqueRequestId(),
                                                "BM_TrackUnique", request));
   }

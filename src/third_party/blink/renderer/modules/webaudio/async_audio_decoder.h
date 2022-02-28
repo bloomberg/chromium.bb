@@ -26,7 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_ASYNC_AUDIO_DECODER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_ASYNC_AUDIO_DECODER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_decode_error_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_decode_success_callback.h"
 
@@ -52,6 +51,10 @@ class AsyncAudioDecoder {
 
  public:
   AsyncAudioDecoder() = default;
+
+  AsyncAudioDecoder(const AsyncAudioDecoder&) = delete;
+  AsyncAudioDecoder& operator=(const AsyncAudioDecoder&) = delete;
+
   ~AsyncAudioDecoder() = default;
 
   // Must be called on the main thread.  |decodeAsync| and callees must not
@@ -81,8 +84,6 @@ class AsyncAudioDecoder {
                              AudioBus*,
                              ScriptPromiseResolver*,
                              BaseAudioContext*);
-
-  DISALLOW_COPY_AND_ASSIGN(AsyncAudioDecoder);
 };
 
 }  // namespace blink

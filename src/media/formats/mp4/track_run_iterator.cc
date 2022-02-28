@@ -9,10 +9,11 @@
 #include <limits>
 #include <memory>
 
+#include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "build/chromecast_buildflags.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/demuxer.h"
@@ -44,9 +45,9 @@ struct TrackRunInfo {
   int64_t sample_start_offset;
 
   bool is_audio;
-  const AudioSampleEntry* audio_description;
-  const VideoSampleEntry* video_description;
-  const SampleGroupDescription* track_sample_encryption_group;
+  raw_ptr<const AudioSampleEntry> audio_description;
+  raw_ptr<const VideoSampleEntry> video_description;
+  raw_ptr<const SampleGroupDescription> track_sample_encryption_group;
 
   // Stores sample encryption entries, which is populated from 'senc' box if it
   // is available, otherwise will try to load from cenc auxiliary information.
@@ -115,7 +116,7 @@ base::TimeDelta TimeDeltaFromRational(int64_t numer, int64_t denom) {
 
   const int64_t total_microseconds =
       base::Time::kMicrosecondsPerSecond * result_seconds + result_microseconds;
-  return base::TimeDelta::FromMicroseconds(total_microseconds);
+  return base::Microseconds(total_microseconds);
 }
 
 DecodeTimestamp DecodeTimestampFromRational(int64_t numer, int64_t denom) {

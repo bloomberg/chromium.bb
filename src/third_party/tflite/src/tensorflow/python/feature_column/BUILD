@@ -2,28 +2,26 @@ load("//tensorflow:tensorflow.bzl", "py_test", "tf_py_test")
 
 package(
     default_visibility = ["//tensorflow:internal"],
-    licenses = ["notice"],  # Apache 2.0
+    licenses = ["notice"],
 )
 
 py_library(
     name = "feature_column_py",
     srcs = ["feature_column_lib.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":feature_column",
         ":feature_column_v2",
         "//tensorflow/python:util",
-        "//tensorflow/python/keras/feature_column",
     ],
 )
 
 py_library(
     name = "feature_column",
     srcs = ["feature_column.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":utils",
-        "@six_archive//:six",
         "//tensorflow/python:array_ops",
         "//tensorflow/python:check_ops",
         "//tensorflow/python:control_flow_ops",
@@ -48,13 +46,7 @@ py_library(
         "//tensorflow/python:variable_scope",
         "//tensorflow/python:variables",
         "//tensorflow/python/eager:context",
-        # TODO(scottzhu): Remove metrics after we cleanup the keras internal cyclar dependency.
-        #     //third_party/tensorflow/python/feature_column:feature_column
-        #     //third_party/tensorflow/python/keras/engine:engine
-        # .-> //third_party/tensorflow/python/keras/distribute:distribute
-        # |   //third_party/tensorflow/python/keras:metrics
-        # `-- //third_party/tensorflow/python/keras/distribute:distribute
-        "//tensorflow/python/keras:metrics",
+        "@six_archive//:six",
     ],
 )
 
@@ -65,7 +57,7 @@ py_library(
         "sequence_feature_column.py",
         "serialization.py",
     ],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":feature_column",
         ":utils",
@@ -84,7 +76,6 @@ py_library(
         "//tensorflow/python:sparse_tensor",
         "//tensorflow/python:string_ops",
         "//tensorflow/python:tensor_shape",
-        "//tensorflow/python:tf_export",
         "//tensorflow/python:training",
         "//tensorflow/python:util",
         "//tensorflow/python:variable_scope",
@@ -92,6 +83,7 @@ py_library(
         "//tensorflow/python/eager:context",
         "//tensorflow/python/training/tracking",
         "//tensorflow/python/training/tracking:data_structures",
+        "//tensorflow/python/util:tf_export",
         "//third_party/py/numpy",
         "@six_archive//:six",
     ],
@@ -104,7 +96,10 @@ filegroup(
         "testdata/embedding.ckpt.index",
         "testdata/embedding.ckpt.meta",
         "testdata/unicode_vocabulary",
+        "testdata/unicode_vocabulary.tfrecord.gz",
+        "testdata/warriors_vocabulary.tfrecord.gz",
         "testdata/warriors_vocabulary.txt",
+        "testdata/wire_vocabulary.tfrecord.gz",
         "testdata/wire_vocabulary.txt",
     ],
 )
@@ -114,6 +109,7 @@ tf_py_test(
     srcs = ["feature_column_test.py"],
     tags = [
         "no_cuda_on_cpu_tap",
+        "no_oss",  # TODO(b/206860622): Broken with numpy 1.20+
         "no_pip",
         "no_rocm",
         "no_windows",
@@ -127,6 +123,7 @@ py_library(
     name = "feature_column_test_main_lib",
     srcs = ["feature_column_test.py"],
     data = [":vocabulary_testdata"],
+    srcs_version = "PY3",
     deps = [
         ":feature_column",
         ":feature_column_py",
@@ -158,6 +155,7 @@ tf_py_test(
     shard_count = 5,
     tags = [
         "no_cuda_on_cpu_tap",
+        "no_oss",  # TODO(b/206860622): Broken with numpy 1.20+
         "no_pip",
         "no_rocm",
         "no_windows",
@@ -169,6 +167,7 @@ py_library(
     name = "feature_column_v2_test_main_lib",
     srcs = ["feature_column_v2_test.py"],
     data = [":vocabulary_testdata"],
+    srcs_version = "PY3",
     deps = [
         ":feature_column_py",
         ":feature_column_v2",
@@ -197,7 +196,7 @@ py_library(
 py_library(
     name = "utils",
     srcs = ["utils.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorflow/python:array_ops",
         "//tensorflow/python:dtypes",
@@ -210,6 +209,7 @@ py_library(
 tf_py_test(
     name = "sequence_feature_column_test",
     srcs = ["sequence_feature_column_test.py"],
+    tags = ["no_oss"],  # Due to the usage of keras component.
     deps = [
         ":feature_column_v2",
         "//tensorflow/python:client_testlib",
@@ -230,7 +230,7 @@ py_test(
     name = "sequence_feature_column_integration_test",
     srcs = ["sequence_feature_column_integration_test.py"],
     python_version = "PY3",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["no_pip"],
     deps = [
         ":feature_column_v2",

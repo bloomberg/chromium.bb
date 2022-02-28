@@ -5,11 +5,16 @@
 #ifndef CHROME_BROWSER_AUTOFILL_AUTOFILL_UITEST_H_
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_UITEST_H_
 
+#include <list>
+#include <memory>
+
+#include "base/memory/raw_ptr.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/browser_autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/test_event_waiter.h"
+#include "components/autofill/core/common/dense_set.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
@@ -26,13 +31,26 @@ enum class ObservedUiEvents {
   kFormDataFilled,
   kSuggestionShown,
   kNoEvent,
+  kMaxValue = kNoEvent
 };
 
 class BrowserAutofillManagerTestDelegateImpl
     : public autofill::BrowserAutofillManagerTestDelegate {
  public:
   BrowserAutofillManagerTestDelegateImpl();
+
+  BrowserAutofillManagerTestDelegateImpl(
+      const BrowserAutofillManagerTestDelegateImpl&) = delete;
+  BrowserAutofillManagerTestDelegateImpl& operator=(
+      const BrowserAutofillManagerTestDelegateImpl&) = delete;
+
   ~BrowserAutofillManagerTestDelegateImpl() override;
+
+  // Controls whether back-to-back events of |type|, except for the first one,
+  // are ignored. This is useful for cross-iframe forms, where events such as
+  // ObservedUiEvents::kFormDataFilled are triggered by each filled renderer
+  // form.
+  void SetIgnoreBackToBackMessages(ObservedUiEvents type, bool ignore);
 
   // autofill::BrowserAutofillManagerTestDelegate:
   void DidPreviewFormData() override;
@@ -40,9 +58,8 @@ class BrowserAutofillManagerTestDelegateImpl
   void DidShowSuggestions() override;
   void OnTextFieldChanged() override;
 
-  void SetExpectations(
-      std::list<ObservedUiEvents> expected_events,
-      base::TimeDelta timeout = base::TimeDelta::FromSeconds(0));
+  void SetExpectations(std::list<ObservedUiEvents> expected_events,
+                       base::TimeDelta timeout = base::Seconds(0));
   bool Wait();
 
   void SetIsExpectingDynamicRefill(bool expect_refill) {
@@ -50,14 +67,20 @@ class BrowserAutofillManagerTestDelegateImpl
   }
 
  private:
-  bool is_expecting_dynamic_refill_;
-  std::unique_ptr<EventWaiter<ObservedUiEvents>> event_waiter_;
+  void FireEvent(ObservedUiEvents event);
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserAutofillManagerTestDelegateImpl);
+  bool is_expecting_dynamic_refill_ = false;
+  std::unique_ptr<EventWaiter<ObservedUiEvents>> event_waiter_;
+  DenseSet<ObservedUiEvents> ignore_back_to_back_event_types_;
+  ObservedUiEvents last_event_ = ObservedUiEvents::kNoEvent;
 };
 
 class AutofillUiTest : public InProcessBrowserTest,
                        public content::WebContentsObserver {
+ public:
+  AutofillUiTest(const AutofillUiTest&) = delete;
+  AutofillUiTest& operator=(const AutofillUiTest&) = delete;
+
  protected:
   AutofillUiTest();
   ~AutofillUiTest() override;
@@ -104,7 +127,7 @@ class AutofillUiTest : public InProcessBrowserTest,
   // WebContentsObserver override:
   void RenderFrameHostChanged(content::RenderFrameHost* old_host,
                               content::RenderFrameHost* new_host) override;
-  content::RenderFrameHost* current_main_rfh_ = nullptr;
+  raw_ptr<content::RenderFrameHost> current_main_rfh_ = nullptr;
   BrowserAutofillManagerTestDelegateImpl test_delegate_;
 
   // KeyPressEventCallback that serves as a sink to ensure that every key press
@@ -116,8 +139,6 @@ class AutofillUiTest : public InProcessBrowserTest,
   content::RenderWidgetHost::KeyPressEventCallback key_press_event_sink_;
 
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> disable_animation_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillUiTest);
 };
 
 }  // namespace autofill

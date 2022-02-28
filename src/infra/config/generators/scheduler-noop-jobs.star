@@ -21,29 +21,17 @@ _NON_BRANCHED_TESTERS = {
     # This tester is triggered by 'Mac Builder', but it is an FYI builder and
     # not mirrored by any branched try builders, so we do not need to run it on
     # the branches
-    "mac-osxbeta-rel": branches.STANDARD_MILESTONE,
-
-    # This tester is also triggered by 'Mac Builder', but we don't have enough
-    # capacity on Mac 11 to run this on the branches yet.
-    # TODO(crbug.com/1206401): Restore this when we do have capacity.
-    "Mac11 Tests": branches.STANDARD_MILESTONE,
-
-    # This tester is triggered by 'mac-arm64-rel', but it is an FYI builder and
-    # not mirrored by any branched try builders and we have limited test
-    # capacity, so we do not need to run it on the branches
-    "mac-arm64-rel-tests": branches.STANDARD_MILESTONE,
+    "mac-osxbeta-rel": branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
 
     # This tester is triggered by 'Win x64 Builder', but it is an FYI builder
     # and not mirrored by any branched try builders, so we do not need to run it
     # on the branches
     "Win10 Tests x64 20h2": branches.STANDARD_MILESTONE,
+    "Win11 Tests x64": branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
 
     # These Android testers are triggered by 'Android arm Builder (dbg)', but we
     # don't have sufficient capacity of devices with older Android versions, so
     # we do not run them on the branches
-    "Android WebView L (dbg)": branches.STANDARD_MILESTONE,
-    "Lollipop Phone Tester": branches.STANDARD_MILESTONE,
-    "Lollipop Tablet Tester": branches.STANDARD_MILESTONE,
     "Marshmallow Tablet Tester": branches.STANDARD_MILESTONE,
 }
 
@@ -61,7 +49,7 @@ _TESTER_NOOP_JOBS = [scheduler_pb.Job(
 def _add_noop_jobs(ctx):
     if settings.is_main:
         return
-    cfg = ctx.output["luci-scheduler.cfg"]
+    cfg = ctx.output["luci/luci-scheduler.cfg"]
     for j in _TESTER_NOOP_JOBS:
         cfg.job.append(j)
 

@@ -5,8 +5,6 @@
 #ifndef SANDBOX_WIN_SRC_SANDBOX_POLICY_BASE_H_
 #define SANDBOX_WIN_SRC_SANDBOX_POLICY_BASE_H_
 
-#include <windows.h>
-
 #include <stddef.h>
 #include <stdint.h>
 
@@ -16,21 +14,22 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/process/launch.h"
+#include "base/synchronization/lock.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_types.h"
 #include "sandbox/win/src/app_container_base.h"
-#include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/handle_closer.h"
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/policy_engine_opcodes.h"
 #include "sandbox/win/src/policy_engine_params.h"
 #include "sandbox/win/src/sandbox_policy.h"
-#include "sandbox/win/src/win_utils.h"
 
 namespace sandbox {
 
+class Dispatcher;
 class LowLevelPolicy;
 class PolicyDiagnostic;
 class PolicyInfo;
@@ -40,6 +39,9 @@ struct PolicyGlobal;
 class PolicyBase final : public TargetPolicy {
  public:
   PolicyBase();
+
+  PolicyBase(const PolicyBase&) = delete;
+  PolicyBase& operator=(const PolicyBase&) = delete;
 
   // TargetPolicy:
   void AddRef() override;
@@ -80,6 +82,8 @@ class PolicyBase final : public TargetPolicy {
   scoped_refptr<AppContainer> GetAppContainer() override;
   void SetEffectiveToken(HANDLE token) override;
   std::unique_ptr<PolicyInfo> GetPolicyInfo() override;
+  void SetAllowNoSandboxJob() override;
+  bool GetAllowNoSandboxJob() override;
 
   // Get the AppContainer profile as its internal type.
   scoped_refptr<AppContainerBase> GetAppContainerBase();
@@ -98,8 +102,6 @@ class PolicyBase final : public TargetPolicy {
   ResultCode MakeTokens(base::win::ScopedHandle* initial,
                         base::win::ScopedHandle* lockdown,
                         base::win::ScopedHandle* lowbox);
-
-  PSID GetLowBoxSid() const;
 
   // Adds a target process to the internal list of targets. Internally a
   // call to TargetProcess::Init() is issued.
@@ -138,7 +140,7 @@ class PolicyBase final : public TargetPolicy {
                              const wchar_t* pattern);
 
   // This lock synchronizes operations on the targets_ collection.
-  CRITICAL_SECTION lock_;
+  base::Lock lock_;
   // Maintains the list of target process associated with this policy.
   // The policy takes ownership of them.
   typedef std::list<std::unique_ptr<TargetProcess>> TargetSet;
@@ -164,9 +166,9 @@ class PolicyBase final : public TargetPolicy {
   MitigationFlags delayed_mitigations_;
   bool is_csrss_connected_;
   // Object in charge of generating the low level policy.
-  LowLevelPolicy* policy_maker_;
+  raw_ptr<LowLevelPolicy> policy_maker_;
   // Memory structure that stores the low level policy.
-  PolicyGlobal* policy_;
+  raw_ptr<PolicyGlobal> policy_;
   // The list of dlls to unload in the target process.
   std::vector<std::wstring> blocklisted_dlls_;
   // This is a map of handle-types to names that we need to close in the
@@ -192,8 +194,7 @@ class PolicyBase final : public TargetPolicy {
   scoped_refptr<AppContainerBase> app_container_;
 
   HANDLE effective_token_;
-
-  DISALLOW_COPY_AND_ASSIGN(PolicyBase);
+  bool allow_no_sandbox_job_;
 };
 
 }  // namespace sandbox

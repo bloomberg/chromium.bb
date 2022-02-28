@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
@@ -69,11 +69,23 @@ FakeLayerTreeHost::~FakeLayerTreeHost() {
 
 void FakeLayerTreeHost::SetNeedsCommit() { needs_commit_ = true; }
 
-std::unique_ptr<LayerTreeHostImpl> FakeLayerTreeHost::CreateLayerTreeHostImpl(
-    LayerTreeHostImplClient* client) {
+std::unique_ptr<LayerTreeHostImpl>
+FakeLayerTreeHost::CreateLayerTreeHostImplInternal(
+    LayerTreeHostImplClient* client,
+    MutatorHost*,
+    const LayerTreeSettings& settings,
+    TaskRunnerProvider* task_runner_provider,
+    raw_ptr<RasterDarkModeFilter>&,
+    int,
+    raw_ptr<TaskGraphRunner>& task_graph_runner,
+    scoped_refptr<base::SequencedTaskRunner>,
+    LayerTreeHostSchedulingClient*,
+    RenderingStatsInstrumentation*,
+    std::unique_ptr<UkmRecorderFactory>&,
+    base::WeakPtr<CompositorDelegateForInput>&) {
   DCHECK(!host_impl_);
   auto host_impl = std::make_unique<FakeLayerTreeHostImpl>(
-      GetSettings(), &task_runner_provider(), task_graph_runner());
+      settings, task_runner_provider, task_graph_runner);
   host_impl_ = host_impl.get();
   return host_impl;
 }
@@ -88,11 +100,18 @@ void FakeLayerTreeHost::CreateFakeLayerTreeHostImpl() {
 LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
   // TODO(pdr): Update the LayerTreeImpl lifecycle states here so lifecycle
   // violations can be caught.
-  TreeSynchronizer::SynchronizeTrees(root_layer(), active_tree());
-  active_tree()->SetPropertyTrees(property_trees());
-  TreeSynchronizer::PushLayerProperties(root_layer()->layer_tree_host(),
-                                        active_tree());
-  mutator_host()->PushPropertiesTo(host_impl_->mutator_host());
+  // When doing a full commit, we would call
+  // layer_tree_host_->ActivateCommitState() and the second argument would come
+  // from layer_tree_host_->active_commit_state(); we use pending_commit_state()
+  // just to keep the test code simple.
+  host_impl_->BeginCommit(pending_commit_state()->source_frame_number);
+  TreeSynchronizer::SynchronizeTrees(thread_unsafe_commit_state(),
+                                     active_tree());
+  active_tree()->SetPropertyTrees(*property_trees());
+  TreeSynchronizer::PushLayerProperties(
+      *pending_commit_state(), thread_unsafe_commit_state(), active_tree());
+  mutator_host()->PushPropertiesTo(host_impl_->mutator_host(),
+                                   *property_trees());
 
   active_tree()->property_trees()->scroll_tree.PushScrollUpdatesFromMainThread(
       property_trees(), active_tree(),
@@ -102,11 +121,16 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
 }
 
 LayerImpl* FakeLayerTreeHost::CommitAndCreatePendingTree() {
-  TreeSynchronizer::SynchronizeTrees(root_layer(), pending_tree());
-  pending_tree()->SetPropertyTrees(property_trees());
-  TreeSynchronizer::PushLayerProperties(root_layer()->layer_tree_host(),
-                                        pending_tree());
-  mutator_host()->PushPropertiesTo(host_impl_->mutator_host());
+  // pending_commit_state() is used here because this is a phony commit that
+  // doesn't actually call WillCommit() or ActivateCommitState().
+  pending_tree()->set_source_frame_number(SourceFrameNumber());
+  TreeSynchronizer::SynchronizeTrees(thread_unsafe_commit_state(),
+                                     pending_tree());
+  pending_tree()->SetPropertyTrees(*property_trees());
+  TreeSynchronizer::PushLayerProperties(
+      *pending_commit_state(), thread_unsafe_commit_state(), pending_tree());
+  mutator_host()->PushPropertiesTo(host_impl_->mutator_host(),
+                                   *property_trees());
 
   pending_tree()->property_trees()->scroll_tree.PushScrollUpdatesFromMainThread(
       property_trees(), pending_tree(),

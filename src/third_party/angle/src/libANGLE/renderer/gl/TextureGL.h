@@ -162,7 +162,8 @@ class TextureGL : public TextureImpl
                                            gl::MemoryObject *memoryObject,
                                            GLuint64 offset,
                                            GLbitfield createFlags,
-                                           GLbitfield usageFlags) override;
+                                           GLbitfield usageFlags,
+                                           const void *imageCreateInfoPNext) override;
 
     angle::Result setImageExternal(const gl::Context *context,
                                    const gl::ImageIndex &index,
@@ -215,6 +216,8 @@ class TextureGL : public TextureImpl
     bool hasEmulatedAlphaChannel(const gl::ImageIndex &index) const;
 
   private:
+    angle::Result recreateTexture(const gl::Context *context);
+
     angle::Result setImageHelper(const gl::Context *context,
                                  gl::TextureTarget target,
                                  size_t level,
@@ -239,6 +242,7 @@ class TextureGL : public TextureImpl
                                                 GLenum type,
                                                 const gl::PixelUnpackState &unpack,
                                                 const gl::Buffer *unpackBuffer,
+                                                size_t maxBytesUploadedPerChunk,
                                                 const uint8_t *pixels);
 
     angle::Result setSubImagePaddingWorkaround(const gl::Context *context,
@@ -272,6 +276,11 @@ class TextureGL : public TextureImpl
 
     std::vector<LevelInfoGL> mLevelInfo;
     gl::Texture::DirtyBits mLocalDirtyBits;
+
+    // All dirty bits ever sychronized by this texture OR'd together. Used to know what state needs
+    // to be resynced if the texture is ever recreated without needing extension checks or state
+    // comparisons.
+    gl::Texture::DirtyBits mAllModifiedDirtyBits;
 
     gl::SwizzleState mAppliedSwizzle;
     gl::SamplerState mAppliedSampler;

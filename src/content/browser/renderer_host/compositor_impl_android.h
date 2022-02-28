@@ -10,14 +10,13 @@
 #include <memory>
 
 #include "base/cancelable_callback.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "cc/paint/element_id.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
+#include "cc/trees/paint_holding_reason.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
@@ -45,6 +44,8 @@ namespace cc {
 class AnimationHost;
 class Layer;
 class LayerTreeHost;
+
+struct CommitState;
 }
 
 namespace viz {
@@ -69,6 +70,10 @@ class CONTENT_EXPORT CompositorImpl
       public display::DisplayObserver {
  public:
   CompositorImpl(CompositorClient* client, gfx::NativeWindow root_window);
+
+  CompositorImpl(const CompositorImpl&) = delete;
+  CompositorImpl& operator=(const CompositorImpl&) = delete;
+
   ~CompositorImpl() override;
 
   static bool IsInitialized();
@@ -108,6 +113,7 @@ class CONTENT_EXPORT CompositorImpl
   void PreserveChildSurfaceControls() override;
   void RequestPresentationTimeForNextFrame(
       PresentationTimeCallback callback) override;
+  void SetDidSwapBuffersCallbackEnabled(bool enable) override;
 
   // LayerTreeHostClient implementation.
   void WillBeginMainFrame() override {}
@@ -116,7 +122,7 @@ class CONTENT_EXPORT CompositorImpl
   void DidUpdateLayers() override;
   void BeginMainFrame(const viz::BeginFrameArgs& args) override;
   void OnDeferMainFrameUpdatesChanged(bool) override {}
-  void OnDeferCommitsChanged(bool) override {}
+  void OnDeferCommitsChanged(bool, cc::PaintHoldingReason) override {}
   void BeginMainFrameNotExpectedSoon() override {}
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override {}
   void UpdateLayerTreeHost() override;
@@ -127,8 +133,8 @@ class CONTENT_EXPORT CompositorImpl
   void RequestNewLayerTreeFrameSink() override;
   void DidInitializeLayerTreeFrameSink() override;
   void DidFailToInitializeLayerTreeFrameSink() override;
-  void WillCommit() override {}
-  void DidCommit(base::TimeTicks) override;
+  void WillCommit(const cc::CommitState&) override {}
+  void DidCommit(base::TimeTicks, base::TimeTicks) override;
   void DidCommitAndDrawFrame() override {}
   void DidReceiveCompositorFrameAck() override;
   void DidCompletePageScaleAnimation() override {}
@@ -165,6 +171,8 @@ class CONTENT_EXPORT CompositorImpl
   void OnUpdateRefreshRate(float refresh_rate) override;
   void OnUpdateSupportedRefreshRates(
       const std::vector<float>& supported_refresh_rates) override;
+  std::unique_ptr<ui::CompositorLock> GetCompositorLock(
+      base::TimeDelta timeout) override;
 
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
@@ -231,11 +239,11 @@ class CONTENT_EXPORT CompositorImpl
   gfx::Size size_;
   bool requires_alpha_channel_ = false;
 
-  ANativeWindow* window_;
+  raw_ptr<ANativeWindow> window_;
   gpu::SurfaceHandle surface_handle_;
   std::unique_ptr<ScopedCachedBackBuffer> cached_back_buffer_;
 
-  CompositorClient* client_;
+  raw_ptr<CompositorClient> client_;
 
   gfx::NativeWindow root_window_ = nullptr;
 
@@ -274,9 +282,15 @@ class CONTENT_EXPORT CompositorImpl
 
   uint32_t pending_readbacks_ = 0u;
 
-  base::WeakPtrFactory<CompositorImpl> weak_factory_{this};
+  bool enable_swap_completion_callbacks_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(CompositorImpl);
+  // Listen to display density change events and update painted device scale
+  // factor accordingly.
+  display::ScopedDisplayObserver display_observer_{this};
+
+  ui::CompositorLockManager lock_manager_;
+
+  base::WeakPtrFactory<CompositorImpl> weak_factory_{this};
 };
 
 }  // namespace content

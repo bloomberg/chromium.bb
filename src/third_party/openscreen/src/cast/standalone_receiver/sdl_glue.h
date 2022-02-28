@@ -7,13 +7,15 @@
 
 #include <stdint.h>
 
-#include <functional>
-#include <memory>
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
 #include <SDL2/SDL.h>
 #pragma GCC diagnostic pop
+
+#include <functional>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "util/alarm.h"
 
@@ -66,11 +68,15 @@ class SDLEventLoopProcessor {
                         std::function<void()> quit_callback);
   ~SDLEventLoopProcessor();
 
+  using KeyboardEventCallback = std::function<void(const SDL_KeyboardEvent&)>;
+  void RegisterForKeyboardEvent(KeyboardEventCallback cb);
+
  private:
   void ProcessPendingEvents();
 
   Alarm alarm_;
   std::function<void()> quit_callback_;
+  std::vector<KeyboardEventCallback> keyboard_callbacks_;
 };
 
 }  // namespace cast

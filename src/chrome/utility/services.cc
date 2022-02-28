@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -31,6 +30,7 @@
 #include "printing/buildflags/buildflags.h"
 
 #if defined(OS_WIN)
+#include "chrome/services/util_win/processor_metrics.h"
 #include "chrome/services/util_win/public/mojom/util_read_icon.mojom.h"
 #include "chrome/services/util_win/public/mojom/util_win.mojom.h"
 #include "chrome/services/util_win/util_read_icon.h"
@@ -38,6 +38,8 @@
 #include "components/services/quarantine/public/cpp/quarantine_features_win.h"  // nogncheck
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"  // nogncheck
 #include "components/services/quarantine/quarantine_impl.h"  // nogncheck
+#include "services/proxy_resolver_win/public/mojom/proxy_resolver_win.mojom.h"
+#include "services/proxy_resolver_win/windows_system_proxy_resolver_impl.h"
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MAC)
@@ -63,6 +65,10 @@
 #include "chrome/services/file_util/file_util_service.h"  // nogncheck
 #endif
 
+#if BUILDFLAG(FULL_SAFE_BROWSING) && (defined(OS_LINUX) || defined(OS_WIN))
+#include "chrome/services/file_util/document_analysis_service.h"  // nogncheck
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/services/removable_storage_writer/public/mojom/removable_storage_writer.mojom.h"
 #include "chrome/services/removable_storage_writer/removable_storage_writer.h"
@@ -79,13 +85,12 @@
 #include "chrome/services/printing/public/mojom/printing_service.mojom.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PRINTING)
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
 #include "chrome/services/printing/print_backend_service_impl.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
 #endif
 
+#if BUILDFLAG(ENABLE_PRINTING)
 #include "components/services/print_compositor/print_compositor_impl.h"  // nogncheck
 #include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"  // nogncheck
 #endif  // BUILDFLAG(ENABLE_PRINTING)
@@ -94,23 +99,21 @@
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/services/ime/ime_service.h"
+#include "ash/services/ime/public/mojom/input_engine.mojom.h"
+#include "ash/services/quick_pair/quick_pair_service.h"
 #include "ash/services/recording/recording_service.h"
 #include "chrome/services/sharing/sharing_impl.h"
 #include "chromeos/assistant/buildflags.h"  // nogncheck
 #include "chromeos/components/local_search_service/local_search_service.h"
 #include "chromeos/components/local_search_service/public/mojom/local_search_service.mojom.h"
-#include "chromeos/services/ime/ime_service.h"
-#include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "chromeos/services/nearby/public/mojom/sharing.mojom.h"  // nogncheck
 #include "chromeos/services/tts/public/mojom/tts_service.mojom.h"
 #include "chromeos/services/tts/tts_service.h"
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #include "chromeos/services/assistant/audio_decoder/assistant_audio_decoder_factory.h"  // nogncheck
-
-#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
 #include "chromeos/services/libassistant/libassistant_service.h"  // nogncheck
-#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -146,6 +149,11 @@ auto RunWebAppOriginAssociationParser(
 }
 
 #if defined(OS_WIN)
+auto RunProcessorMetrics(
+    mojo::PendingReceiver<chrome::mojom::ProcessorMetrics> receiver) {
+  return std::make_unique<ProcessorMetricsImpl>(std::move(receiver));
+}
+
 auto RunQuarantineService(
     mojo::PendingReceiver<quarantine::mojom::Quarantine> receiver) {
   DCHECK(base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine));
@@ -159,6 +167,13 @@ auto RunWindowsUtility(mojo::PendingReceiver<chrome::mojom::UtilWin> receiver) {
 auto RunWindowsIconReader(
     mojo::PendingReceiver<chrome::mojom::UtilReadIcon> receiver) {
   return std::make_unique<UtilReadIcon>(std::move(receiver));
+}
+
+auto RunWindowsSystemProxyResolver(
+    mojo::PendingReceiver<proxy_resolver_win::mojom::WindowsSystemProxyResolver>
+        receiver) {
+  return std::make_unique<proxy_resolver_win::WindowsSystemProxyResolverImpl>(
+      std::move(receiver));
 }
 #endif  // defined(OS_WIN)
 
@@ -204,6 +219,13 @@ auto RunCupsIppParser(
 }
 #endif
 
+#if BUILDFLAG(FULL_SAFE_BROWSING) && (defined(OS_LINUX) || defined(OS_WIN))
+auto RunDocumentAnalysis(
+    mojo::PendingReceiver<chrome::mojom::DocumentAnalysisService> receiver) {
+  return std::make_unique<DocumentAnalysisService>(std::move(receiver));
+}
+#endif
+
 #if BUILDFLAG(FULL_SAFE_BROWSING) || BUILDFLAG(IS_CHROMEOS_ASH)
 auto RunFileUtil(
     mojo::PendingReceiver<chrome::mojom::FileUtilService> receiver) {
@@ -243,16 +265,22 @@ auto RunPaintPreviewCompositor(
 }
 #endif  // BUILDFLAG(ENABLE_PAINT_PREVIEW)
 
-#if BUILDFLAG(ENABLE_PRINTING)
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
-auto RunPrintBackendService(
-    mojo::PendingReceiver<printing::mojom::PrintBackendService> receiver) {
-  return std::make_unique<printing::PrintBackendServiceImpl>(
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+auto RunPrintingSandboxedPrintBackendHost(
+    mojo::PendingReceiver<printing::mojom::SandboxedPrintBackendHost>
+        receiver) {
+  return std::make_unique<printing::SandboxedPrintBackendHostImpl>(
       std::move(receiver));
 }
-#endif
+auto RunPrintingUnsandboxedPrintBackendHost(
+    mojo::PendingReceiver<printing::mojom::UnsandboxedPrintBackendHost>
+        receiver) {
+  return std::make_unique<printing::UnsandboxedPrintBackendHostImpl>(
+      std::move(receiver));
+}
+#endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
 
+#if BUILDFLAG(ENABLE_PRINTING)
 auto RunPrintCompositor(
     mojo::PendingReceiver<printing::mojom::PrintCompositor> receiver) {
   return std::make_unique<printing::PrintCompositorImpl>(
@@ -289,6 +317,12 @@ auto RunLocalSearchService(
       std::move(receiver));
 }
 
+auto RunQuickPairService(
+    mojo::PendingReceiver<ash::quick_pair::mojom::QuickPairService> receiver) {
+  return std::make_unique<ash::quick_pair::QuickPairService>(
+      std::move(receiver));
+}
+
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 auto RunAssistantAudioDecoder(
     mojo::PendingReceiver<
@@ -297,14 +331,12 @@ auto RunAssistantAudioDecoder(
       std::move(receiver));
 }
 
-#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
 auto RunLibassistantService(
     mojo::PendingReceiver<chromeos::libassistant::mojom::LibassistantService>
         receiver) {
   return std::make_unique<chromeos::libassistant::LibassistantService>(
       std::move(receiver));
 }
-#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -333,6 +365,7 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
 #endif
 
 #if defined(OS_WIN)
+  services.Add(RunProcessorMetrics);
   services.Add(RunQuarantineService);
   services.Add(RunWindowsUtility);
   services.Add(RunWindowsIconReader);
@@ -350,6 +383,10 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
   services.Add(RunFileUtil);
 #endif
 
+#if BUILDFLAG(FULL_SAFE_BROWSING) && (defined(OS_LINUX) || defined(OS_WIN))
+  services.Add(RunDocumentAnalysis);
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS) && !defined(OS_WIN)
   // On Windows, this service runs in an elevated utility process.
   services.Add(RunRemovableStorageWriter);
@@ -364,11 +401,12 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
   services.Add(RunPrintingService);
 #endif
 
-#if BUILDFLAG(ENABLE_PRINTING)
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
-  services.Add(RunPrintBackendService);
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+  services.Add(RunPrintingSandboxedPrintBackendHost);
+  services.Add(RunPrintingUnsandboxedPrintBackendHost);
 #endif
+
+#if BUILDFLAG(ENABLE_PRINTING)
   services.Add(RunPrintCompositor);
 #endif
 
@@ -382,11 +420,10 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
   services.Add(RunSharing);
   services.Add(RunTtsService);
   services.Add(RunLocalSearchService);
+  services.Add(RunQuickPairService);
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   services.Add(RunAssistantAudioDecoder);
-#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
   services.Add(RunLibassistantService);
-#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
@@ -395,4 +432,7 @@ void RegisterIOThreadServices(mojo::ServiceFactory& services) {
 #if !defined(OS_ANDROID)
   services.Add(RunProxyResolver);
 #endif
+#if defined(OS_WIN)
+  services.Add(RunWindowsSystemProxyResolver);
+#endif  // defined(OS_WIN)
 }

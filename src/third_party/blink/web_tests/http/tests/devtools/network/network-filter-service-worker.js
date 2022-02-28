@@ -4,20 +4,20 @@
 
 (async function() {
   TestRunner.addResult('Tests service worker filters in network log.');
-  await TestRunner.loadModule('console'); await TestRunner.loadTestModule('application_test_runner');
+  await TestRunner.loadLegacyModule('console'); await TestRunner.loadTestModule('application_test_runner');
   await TestRunner.loadTestModule('network_test_runner');
   await ApplicationTestRunner.resetState();
   await TestRunner.showPanel('network');
 
   const swActivatedPromise = new Promise(resolve => {
     TestRunner.mainTarget.registerServiceWorkerDispatcher({
-      workerRegistrationUpdated: function(registrations) {},
-      workerErrorReported: function(errorMessage) {},
+      workerRegistrationUpdated: function(event) {},
+      workerErrorReported: function(event) {},
       /**
        * @param {!Array<!Protocol.ServiceWorker.ServiceWorkerVersion>} versions
        */
-      workerVersionUpdated: function(versions) {
-        if (versions.length && versions[0].status === 'activated')
+      workerVersionUpdated: function(event) {
+        if (event.versions.length && event.versions[0].status === 'activated')
           resolve();
       }
     });
@@ -46,10 +46,10 @@
 
   for (const filterText of filterChecks) {
     TestRunner.addResult(`filter text: '${filterText}'`);
-    UI.panels.network._networkLogView._textFilterUI.setValue(filterText);
-    UI.panels.network._networkLogView._filterChanged(/* event */ null);
+    UI.panels.network.networkLogView.textFilterUI.setValue(filterText);
+    UI.panels.network.networkLogView.filterChanged(/* event */ null);
 
-    for (const node of UI.panels.network._networkLogView.flatNodesList()) {
+    for (const node of UI.panels.network.networkLogView.flatNodesList()) {
       if (Network.NetworkLogView.isRequestFilteredOut(node))
         continue;
 

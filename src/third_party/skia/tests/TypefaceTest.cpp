@@ -133,6 +133,10 @@ DEF_TEST(TypefaceRoundTrip, reporter) {
 
 DEF_TEST(FontDescriptorNegativeVariationSerialize, reporter) {
     SkFontDescriptor desc;
+    SkFontStyle style(2, 9, SkFontStyle::kOblique_Slant);
+    desc.setStyle(style);
+    const char postscriptName[] = "postscript";
+    desc.setPostscriptName(postscriptName);
     SkFontArguments::VariationPosition::Coordinate* variation = desc.setVariationCoordinates(1);
     variation[0] = { 0, -1.0f };
 
@@ -141,34 +145,14 @@ DEF_TEST(FontDescriptorNegativeVariationSerialize, reporter) {
     SkFontDescriptor descD;
     SkFontDescriptor::Deserialize(stream.detachAsStream().get(), &descD);
 
+    REPORTER_ASSERT(reporter, descD.getStyle() == style);
+    REPORTER_ASSERT(reporter, 0 == strcmp(desc.getPostscriptName(), postscriptName));
     if (descD.getVariationCoordinateCount() != 1) {
         REPORT_FAILURE(reporter, "descD.getVariationCoordinateCount() != 1", SkString());
         return;
     }
 
     REPORTER_ASSERT(reporter, descD.getVariation()[0].value == -1.0f);
-};
-
-DEF_TEST(FontDescriptorDeserializeOldFormat, reporter) {
-    // From ossfuzz:26254
-    const uint8_t old_serialized_desc[] = {
-        0x0, //style
-        0xff, 0xfb, 0x0, 0x0, 0x0, // kFontAxes
-        0x0, // coordinateCount
-        0xff, 0xff, 0x0, 0x0, 0x0, // kSentinel
-        0x0, // data length
-    };
-
-    SkMemoryStream stream(old_serialized_desc, sizeof(old_serialized_desc), false);
-    SkFontDescriptor desc;
-    if (!SkFontDescriptor::Deserialize(&stream, &desc)) {
-        REPORT_FAILURE(reporter, "!SkFontDescriptor::Deserialize(&stream, &desc)",
-                       SkString("bytes should be recognized unless removing support"));
-        return;
-    }
-    // This call should not crash and should not return a valid SkFontData.
-    std::unique_ptr<SkFontData> data = desc.maybeAsSkFontData();
-    REPORTER_ASSERT(reporter, !data);
 };
 
 DEF_TEST(TypefaceAxes, reporter) {

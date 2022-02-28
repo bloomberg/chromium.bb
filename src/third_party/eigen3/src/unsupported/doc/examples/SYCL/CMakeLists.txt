@@ -3,8 +3,7 @@ FILE(GLOB examples_SRCS "*.cpp")
 set(EIGEN_SYCL ON)
 list(APPEND CMAKE_EXE_LINKER_FLAGS -pthread)
 if(EIGEN_SYCL_TRISYCL)
-  set(CMAKE_CXX_STANDARD 14)
-  set(STD_CXX_FLAG "-std=c++1z")
+  set(CMAKE_CXX_STANDARD 17)
 else(EIGEN_SYCL_TRISYCL)
   if(MSVC)
     # Set the host and device compilers C++ standard to C++14. On Windows setting this to C++11
@@ -21,7 +20,6 @@ else(EIGEN_SYCL_TRISYCL)
     set(CMAKE_CXX_COMPILER ${ComputeCpp_DEVICE_COMPILER_EXECUTABLE})
     string(REPLACE "-Wlogical-op" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
     string(REPLACE "-Wno-psabi" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
-    string(REPLACE "-ansi" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
   endif()
   list(APPEND COMPUTECPP_USER_FLAGS
       -DEIGEN_NO_ASSERTION_CHECKING=1

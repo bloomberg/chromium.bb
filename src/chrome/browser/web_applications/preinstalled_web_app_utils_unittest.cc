@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -14,9 +15,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
-#include "components/arc/arc_util.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace web_app {
@@ -45,9 +46,9 @@ class PreinstalledWebAppUtilsTest : public testing::Test {
     absl::optional<base::Value> app_config =
         base::JSONReader::Read(app_config_string);
     DCHECK(app_config);
-    FileUtilsWrapper file_utils;
+    auto file_utils = base::MakeRefCounted<FileUtilsWrapper>();
     OptionsOrError result =
-        ::web_app::ParseConfig(file_utils, /*dir=*/base::FilePath(),
+        ::web_app::ParseConfig(*file_utils, /*dir=*/base::FilePath(),
                                /*file=*/base::FilePath(), app_config.value());
     if (ExternalInstallOptions* options =
             absl::get_if<ExternalInstallOptions>(&result)) {
@@ -73,7 +74,7 @@ class PreinstalledWebAppUtilsTest : public testing::Test {
   }
 
  protected:
-  std::unique_ptr<TestFileUtils> file_utils_;
+  scoped_refptr<TestFileUtils> file_utils_;
 };
 
 // ParseConfig() is also tested by PreinstalledWebAppManagerTest.
@@ -520,6 +521,40 @@ TEST_F(PreinstalledWebAppUtilsTest, OemInstalled) {
         }
     )");
   EXPECT_TRUE(oem_set->oem_installed);
+}
+
+TEST_F(PreinstalledWebAppUtilsTest,
+       DisableIfTouchscreenWithStylusNotSupported) {
+  absl::optional<ExternalInstallOptions> non_bool = ParseConfig(R"(
+        {
+          "app_url": "https://www.test.org",
+          "launch_container": "window",
+          "disable_if_touchscreen_with_stylus_not_supported": "some string",
+          "user_type": ["test"]
+        }
+    )");
+  EXPECT_FALSE(non_bool.has_value());
+
+  absl::optional<ExternalInstallOptions> default_setting = ParseConfig(R"(
+        {
+          "app_url": "https://www.test.org",
+          "launch_container": "window",
+          "user_type": ["test"]
+        }
+    )");
+  EXPECT_FALSE(
+      default_setting->disable_if_touchscreen_with_stylus_not_supported);
+
+  absl::optional<ExternalInstallOptions> touchscreen_set = ParseConfig(R"(
+        {
+          "app_url": "https://www.test.org",
+          "launch_container": "window",
+          "disable_if_touchscreen_with_stylus_not_supported": true,
+          "user_type": ["test"]
+        }
+    )");
+  EXPECT_TRUE(
+      touchscreen_set->disable_if_touchscreen_with_stylus_not_supported);
 }
 
 }  // namespace web_app

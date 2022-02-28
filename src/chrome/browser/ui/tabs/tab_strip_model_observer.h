@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_OBSERVER_H_
 
 #include <memory>
+#include <set>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/tabs/tab_change_type.h"
+#include "components/sessions/core/session_id.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -38,6 +41,21 @@ class TabStripModelChange {
  public:
   enum Type { kSelectionOnly, kInserted, kRemoved, kMoved, kReplaced };
 
+  // Used to specify what will happen with the WebContents after it is removed.
+  enum class RemoveReason {
+    // WebContents will be deleted.
+    kDeleted,
+
+    // WebContents will be stored in ClosedTabCache. After some amount of time,
+    // the WebContents will either be deleted, or inserted back into another
+    // TabStripModel.
+    kCached,
+
+    // WebContents got detached from a TabStrip and inserted into another
+    // TabStrip.
+    kInsertedIntoOtherTabStrip
+  };
+
   // Base class for all changes.
   // TODO(dfried): would love to change this whole thing into a std::variant,
   // but C++17 features are not yet approved for use in chromium.
@@ -47,16 +65,20 @@ class TabStripModelChange {
     virtual void WriteIntoTrace(perfetto::TracedValue context) const = 0;
   };
 
-  struct ContentsWithIndexAndWillBeDeleted {
-    content::WebContents* contents;
-    int index;
-
-    // The specified WebContents are being closed (and eventually destroyed).
-    // TODO(https://crbug.com/1149549): Make will_be_deleted into enum to
-    // consider the case for ClosedTabCache feature separtely.
-    bool will_be_deleted;
+  struct RemovedTab {
+    RemovedTab(content::WebContents* contents,
+               int index,
+               RemoveReason remove_reason,
+               absl::optional<SessionID> session_id);
+    virtual ~RemovedTab();
+    RemovedTab(RemovedTab&& other);
 
     void WriteIntoTrace(perfetto::TracedValue context) const;
+
+    content::WebContents* contents;
+    int index;
+    RemoveReason remove_reason;
+    absl::optional<SessionID> session_id;
   };
 
   struct ContentsWithIndex {
@@ -110,7 +132,7 @@ class TabStripModelChange {
     Remove& operator=(Remove&& other);
 
     // Contains the list of web contents removed with their indexes at
-    // the time of removal along with flag |will_be_deleted| that indicates if
+    // the time of removal along with flag |remove_reason| that indicates if
     // the web contents will be deleted or not after removing. For example, if
     // we removed elements:
     //
@@ -133,7 +155,7 @@ class TabStripModelChange {
     // them in the order the web contents appear in |contents|. Observers should
     // not do index-based queries based on their own internally-stored indices
     // until after processing all of |contents|.
-    std::vector<ContentsWithIndexAndWillBeDeleted> contents;
+    std::vector<RemovedTab> contents;
 
     void WriteIntoTrace(perfetto::TracedValue context) const override;
   };
@@ -205,8 +227,8 @@ struct TabStripSelectionChange {
     return selected_tabs_were_removed || old_model != new_model;
   }
 
-  content::WebContents* old_contents = nullptr;
-  content::WebContents* new_contents = nullptr;
+  raw_ptr<content::WebContents> old_contents = nullptr;
+  raw_ptr<content::WebContents> new_contents = nullptr;
 
   ui::ListSelectionModel old_model;
   ui::ListSelectionModel new_model;
@@ -352,7 +374,8 @@ class TabStripModelObserver {
   // CloseAllTabsStopped() is sent with reason 'CANCELED'. On the other hand if
   // the close does finish then CloseAllTabsStopped() is sent with reason
   // 'COMPLETED'. Also note that if the last tab is detached
-  // (DetachWebContentsAt()) then this is not sent.
+  // (DetachAndDeleteWebContentsAt()/DetachWebContentsAtForInsertion()) then
+  // this is not sent.
   virtual void WillCloseAllTabs(TabStripModel* tab_strip_model);
   virtual void CloseAllTabsStopped(TabStripModel* tab_strip_model,
                                    CloseAllStoppedReason reason);

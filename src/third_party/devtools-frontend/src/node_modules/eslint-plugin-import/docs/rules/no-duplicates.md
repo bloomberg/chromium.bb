@@ -3,11 +3,11 @@
 Reports if a resolved path is imported more than once.
 +(fixable) The `--fix` option on the [command line] automatically fixes some problems reported by this rule.
 
-ESLint core has a similar rule ([`no-duplicate-imports`](http://eslint.org/docs/rules/no-duplicate-imports)), but this version
+ESLint core has a similar rule ([`no-duplicate-imports`](https://eslint.org/docs/rules/no-duplicate-imports)), but this version
 is different in two key ways:
 
 1. the paths in the source code don't have to exactly match, they just have to point to the same module on the filesystem. (i.e. `./foo` and `./foo.js`)
-2. this version distinguishes Flow `type` imports from standard imports. ([#334](https://github.com/benmosher/eslint-plugin-import/pull/334))
+2. this version distinguishes Flow `type` imports from standard imports. ([#334](https://github.com/import-js/eslint-plugin-import/pull/334))
 
 ## Rule Details
 

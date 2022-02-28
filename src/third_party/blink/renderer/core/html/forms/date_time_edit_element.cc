@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/text/date_time_format.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -292,7 +292,12 @@ void DateTimeEditBuilder::VisitField(DateTimeFormat::FieldType field_type,
       return;
     }
 
-    case DateTimeFormat::kFieldTypePeriod: {
+    // TODO(crbug.com/1261272): We don't support UI for
+    // kFieldTypePeriodAmPmNoonMidnight and kFieldTypePeriodFlexible. Apply
+    // the normal am/pm UI instead.
+    case DateTimeFormat::kFieldTypePeriod:
+    case DateTimeFormat::kFieldTypePeriodAmPmNoonMidnight:
+    case DateTimeFormat::kFieldTypePeriodFlexible: {
       DateTimeFieldElement* field =
           MakeGarbageCollected<DateTimeAMPMFieldElement>(
               document, EditElement(), parameters_.locale.TimeAMPMLabels());
@@ -486,9 +491,10 @@ void DateTimeEditBuilder::VisitLiteral(const String& text) {
     WTF::unicode::CharDirection dir = WTF::unicode::Direction(text[0]);
     if (dir == WTF::unicode::kSegmentSeparator ||
         dir == WTF::unicode::kWhiteSpaceNeutral ||
-        dir == WTF::unicode::kOtherNeutral)
-      element->AppendChild(Text::Create(EditElement().GetDocument(),
-                                        String(&kRightToLeftMarkCharacter, 1)));
+        dir == WTF::unicode::kOtherNeutral) {
+      element->AppendChild(Text::Create(
+          EditElement().GetDocument(), String(&kRightToLeftMarkCharacter, 1u)));
+    }
   }
   element->AppendChild(Text::Create(EditElement().GetDocument(), text));
   EditElement().FieldsWrapperElement()->AppendChild(element);

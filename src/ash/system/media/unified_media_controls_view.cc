@@ -7,19 +7,19 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/style_util.h"
 #include "ash/system/media/unified_media_controls_controller.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_popup_utils.h"
+#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "components/media_message_center/media_notification_util.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
-#include "ui/views/animation/ink_drop_highlight.h"
-#include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/background.h"
-#include "ui/views/border.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -34,7 +34,6 @@ namespace {
 constexpr int kMediaControlsCornerRadius = 8;
 constexpr int kMediaControlsViewPadding = 8;
 constexpr int kMediaButtonsPadding = 8;
-constexpr int kMediaButtonIconSize = 20;
 constexpr int kArtworkCornerRadius = 4;
 constexpr int kTitleRowHeight = 20;
 constexpr int kTrackTitleFontSizeIncrease = 1;
@@ -44,7 +43,6 @@ constexpr gfx::Insets kMediaControlsViewInsets = gfx::Insets(8, 8, 8, 12);
 
 constexpr gfx::Size kEmptyArtworkIconSize = gfx::Size(20, 20);
 constexpr gfx::Size kArtworkSize = gfx::Size(40, 40);
-constexpr gfx::Size kMediaButtonSize = gfx::Size(32, 32);
 
 gfx::Size ScaleSizeToFitView(const gfx::Size& size,
                              const gfx::Size& view_size) {
@@ -88,6 +86,7 @@ const gfx::VectorIcon& GetVectorIconForMediaAction(MediaSessionAction action) {
     case MediaSessionAction::kToggleCamera:
     case MediaSessionAction::kHangUp:
     case MediaSessionAction::kRaise:
+    case MediaSessionAction::kSetMute:
       NOTREACHED();
       break;
   }
@@ -106,25 +105,25 @@ SkColor GetBackgroundColor() {
 UnifiedMediaControlsView::MediaActionButton::MediaActionButton(
     UnifiedMediaControlsController* controller,
     MediaSessionAction action,
-    const std::u16string& accessible_name)
-    : views::ImageButton(base::BindRepeating(
-          // Handle dynamically-updated button tags without rebinding.
-          [](UnifiedMediaControlsController* controller,
-             MediaActionButton* button) {
-            controller->PerformAction(
-                media_message_center::GetActionFromButtonTag(*button));
-          },
-          controller,
-          this)),
+    int accessible_name_id)
+    : IconButton(
+          base::BindRepeating(
+              // Handle dynamically-updated button tags without rebinding.
+              [](UnifiedMediaControlsController* controller,
+                 MediaActionButton* button) {
+                controller->PerformAction(
+                    media_message_center::GetActionFromButtonTag(*button));
+              },
+              controller,
+              this),
+          IconButton::Type::kSmall,
+          &GetVectorIconForMediaAction(action),
+          accessible_name_id),
       action_(action) {
-  SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
-  SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
-  SetPreferredSize(kMediaButtonSize);
-  SetAction(action, accessible_name);
-
-  TrayPopupUtils::ConfigureTrayPopupButton(
-      this, TrayPopupInkDropStyle::FILL_BOUNDS, /*highlight_on_hover=*/true);
-  views::InstallCircleHighlightPathGenerator(this);
+  set_tag(static_cast<int>(action));
+  StyleUtil::SetUpInkDropForButton(this, gfx::Insets(),
+                                   /*highlight_on_hover=*/true,
+                                   /*highlight_on_focus=*/false);
 }
 
 void UnifiedMediaControlsView::MediaActionButton::SetAction(
@@ -136,19 +135,6 @@ void UnifiedMediaControlsView::MediaActionButton::SetAction(
   UpdateVectorIcon();
 }
 
-void UnifiedMediaControlsView::MediaActionButton::OnThemeChanged() {
-  views::ImageButton::OnThemeChanged();
-  UpdateVectorIcon();
-  focus_ring()->SetColor(AshColorProvider::Get()->GetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kFocusRingColor));
-}
-
-void UnifiedMediaControlsView::MediaActionButton::UpdateVectorIcon() {
-  AshColorProvider::Get()->DecorateIconButton(
-      this, GetVectorIconForMediaAction(action_), /*toggled=*/false,
-      kMediaButtonIconSize);
-}
-
 UnifiedMediaControlsView::UnifiedMediaControlsView(
     UnifiedMediaControlsController* controller)
     : views::Button(base::BindRepeating(
@@ -158,6 +144,10 @@ UnifiedMediaControlsView::UnifiedMediaControlsView(
           },
           this)),
       controller_(controller) {
+  // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
+  // able to submit accessibility checks. This crashes if fetching a11y node
+  // data during paint because message_view_ is null.
+  SetProperty(views::kSkipAccessibilityPaintChecks, true);
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   SetBackground(views::CreateRoundedRectBackground(GetBackgroundColor(),
                                                    kMediaControlsCornerRadius));
@@ -217,17 +207,16 @@ UnifiedMediaControlsView::UnifiedMediaControlsView(
 
   button_row->AddChildView(std::make_unique<MediaActionButton>(
       controller_, MediaSessionAction::kPreviousTrack,
-      l10n_util::GetStringUTF16(
-          IDS_ASH_MEDIA_NOTIFICATION_ACTION_PREVIOUS_TRACK)));
+      IDS_ASH_MEDIA_NOTIFICATION_ACTION_PREVIOUS_TRACK));
 
   play_pause_button_ =
       button_row->AddChildView(std::make_unique<MediaActionButton>(
           controller_, MediaSessionAction::kPause,
-          l10n_util::GetStringUTF16(IDS_ASH_MEDIA_NOTIFICATION_ACTION_PAUSE)));
+          IDS_ASH_MEDIA_NOTIFICATION_ACTION_PAUSE));
 
   button_row->AddChildView(std::make_unique<MediaActionButton>(
       controller_, MediaSessionAction::kNextTrack,
-      l10n_util::GetStringUTF16(IDS_ASH_MEDIA_NOTIFICATION_ACTION_NEXT_TRACK)));
+      IDS_ASH_MEDIA_NOTIFICATION_ACTION_NEXT_TRACK));
 
   button_row_ = AddChildView(std::move(button_row));
 }
@@ -301,7 +290,7 @@ void UnifiedMediaControlsView::UpdateActionButtonAvailability(
 void UnifiedMediaControlsView::OnThemeChanged() {
   views::Button::OnThemeChanged();
   auto* color_provider = AshColorProvider::Get();
-  focus_ring()->SetColor(color_provider->GetControlsLayerColor(
+  views::FocusRing::Get(this)->SetColor(color_provider->GetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kFocusRingColor));
   background()->SetNativeControlColor(GetBackgroundColor());
   title_label_->SetEnabledColor(color_provider->GetContentLayerColor(

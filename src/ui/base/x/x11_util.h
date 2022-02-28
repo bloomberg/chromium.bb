@@ -16,23 +16,17 @@
 
 #include "base/component_export.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
-#include "base/values.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/x/x11_cursor.h"
-#include "ui/events/event_constants.h"
-#include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/events/platform_event.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/x/connection.h"
-#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/future.h"
 #include "ui/gfx/x/xproto.h"
-#include "ui/gfx/x/xproto_types.h"
 
 typedef unsigned long Cursor;
 class SkPixmap;
@@ -43,9 +37,7 @@ struct DefaultSingletonTraits;
 }
 
 namespace gfx {
-class Insets;
 class Point;
-class Rect;
 }  // namespace gfx
 
 namespace ui {
@@ -210,21 +202,6 @@ void SetHideTitlebarWhenMaximizedProperty(x11::Window window,
 // Returns true if |window| is visible.
 COMPONENT_EXPORT(UI_BASE_X) bool IsWindowVisible(x11::Window window);
 
-// Returns the inner bounds of |window| (excluding the non-client area).
-COMPONENT_EXPORT(UI_BASE_X)
-bool GetInnerWindowBounds(x11::Window window, gfx::Rect* rect);
-
-// Returns the non-client area extents of |window|. This is a negative inset; it
-// represents the negative size of the window border on all sides.
-// InnerWindowBounds.Inset(WindowExtents) = OuterWindowBounds.
-// Returns false if the window manager does not provide extents information.
-COMPONENT_EXPORT(UI_BASE_X)
-bool GetWindowExtents(x11::Window window, gfx::Insets* extents);
-
-// Returns the outer bounds of |window| (including the non-client area).
-COMPONENT_EXPORT(UI_BASE_X)
-bool GetOuterWindowBounds(x11::Window window, gfx::Rect* rect);
-
 // Returns true if |window| contains the point |screen_loc|.
 COMPONENT_EXPORT(UI_BASE_X)
 bool WindowContainsPoint(x11::Window window, gfx::Point screen_loc);
@@ -286,11 +263,6 @@ static const int32_t kAllDesktops = -1;
 // property not found.
 COMPONENT_EXPORT(UI_BASE_X)
 bool GetWindowDesktop(x11::Window window, int32_t* desktop);
-
-// Returns all children windows of a given window in top-to-bottom stacking
-// order.
-COMPONENT_EXPORT(UI_BASE_X)
-bool GetXWindowStack(x11::Window window, std::vector<x11::Window>* windows);
 
 enum WindowManagerName {
   WM_OTHER,    // We were able to obtain the WM's name, but there is
@@ -374,8 +346,9 @@ COMPONENT_EXPORT(UI_BASE_X) bool IsCompositingManagerPresent();
 // Returns true if a given window is in full-screen mode.
 COMPONENT_EXPORT(UI_BASE_X) bool IsX11WindowFullScreen(x11::Window window);
 
-// Suspends or resumes the X screen saver.  Must be called on the UI thread.
-COMPONENT_EXPORT(UI_BASE_X) void SuspendX11ScreenSaver(bool suspend);
+// Suspends or resumes the X screen saver, and returns whether the operation was
+// successful.  Must be called on the UI thread.
+COMPONENT_EXPORT(UI_BASE_X) bool SuspendX11ScreenSaver(bool suspend);
 
 // Returns true if the window manager supports the given hint.
 COMPONENT_EXPORT(UI_BASE_X) bool WmSupportsHint(x11::Atom atom);
@@ -434,6 +407,9 @@ class COMPONENT_EXPORT(UI_BASE_X) XVisualManager {
   // Are all of the system requirements met for using transparent visuals?
   bool ArgbVisualAvailable() const;
 
+  XVisualManager(const XVisualManager&) = delete;
+  XVisualManager& operator=(const XVisualManager&) = delete;
+
   ~XVisualManager();
 
  private:
@@ -461,18 +437,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XVisualManager {
 
   x11::VisualId opaque_visual_id_{};
   x11::VisualId transparent_visual_id_{};
-
-  DISALLOW_COPY_AND_ASSIGN(XVisualManager);
-};
-
-class COMPONENT_EXPORT(UI_BASE_X) ScopedUnsetDisplay {
- public:
-  ScopedUnsetDisplay();
-  ~ScopedUnsetDisplay();
-
- private:
-  absl::optional<std::string> display_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedUnsetDisplay);
 };
 
 }  // namespace ui

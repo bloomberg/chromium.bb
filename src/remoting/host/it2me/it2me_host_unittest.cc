@@ -11,12 +11,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/policy/policy_constants.h"
 #include "net/base/network_change_notifier.h"
@@ -31,6 +32,7 @@
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "remoting/signaling/xmpp_log_to_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "base/linux_util.h"
@@ -67,6 +69,11 @@ class FakeIt2MeConfirmationDialog : public It2MeConfirmationDialog {
  public:
   FakeIt2MeConfirmationDialog(const std::string& remote_user_email,
                               DialogResult dialog_result);
+
+  FakeIt2MeConfirmationDialog(const FakeIt2MeConfirmationDialog&) = delete;
+  FakeIt2MeConfirmationDialog& operator=(const FakeIt2MeConfirmationDialog&) =
+      delete;
+
   ~FakeIt2MeConfirmationDialog() override;
 
   // It2MeConfirmationDialog implementation.
@@ -78,8 +85,6 @@ class FakeIt2MeConfirmationDialog : public It2MeConfirmationDialog {
 
   std::string remote_user_email_;
   DialogResult dialog_result_ = DialogResult::OK;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeIt2MeConfirmationDialog);
 };
 
 FakeIt2MeConfirmationDialog::FakeIt2MeConfirmationDialog() = default;
@@ -102,6 +107,10 @@ void FakeIt2MeConfirmationDialog::Show(const std::string& remote_user_email,
 class FakeIt2MeDialogFactory : public It2MeConfirmationDialogFactory {
  public:
   FakeIt2MeDialogFactory();
+
+  FakeIt2MeDialogFactory(const FakeIt2MeDialogFactory&) = delete;
+  FakeIt2MeDialogFactory& operator=(const FakeIt2MeDialogFactory&) = delete;
+
   ~FakeIt2MeDialogFactory() override;
 
   std::unique_ptr<It2MeConfirmationDialog> Create() override;
@@ -120,12 +129,12 @@ class FakeIt2MeDialogFactory : public It2MeConfirmationDialogFactory {
   std::string remote_user_email_;
   DialogResult dialog_result_ = DialogResult::OK;
   bool dialog_created_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeIt2MeDialogFactory);
 };
 
 FakeIt2MeDialogFactory::FakeIt2MeDialogFactory()
-    : remote_user_email_(kTestUserName) {}
+    : It2MeConfirmationDialogFactory(
+          It2MeConfirmationDialog::DialogStyle::kConsumer),
+      remote_user_email_(kTestUserName) {}
 
 FakeIt2MeDialogFactory::~FakeIt2MeDialogFactory() = default;
 
@@ -139,6 +148,10 @@ std::unique_ptr<It2MeConfirmationDialog> FakeIt2MeDialogFactory::Create() {
 class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
  public:
   It2MeHostTest();
+
+  It2MeHostTest(const It2MeHostTest&) = delete;
+  It2MeHostTest& operator=(const It2MeHostTest&) = delete;
+
   ~It2MeHostTest() override;
 
   // testing::Test interface.
@@ -165,13 +178,18 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
 
   void RunValidationCallback(const std::string& remote_jid);
 
-  void StartHost(bool enable_dialogs = true, bool enable_notifications = true);
+  void StartHost();
   void ShutdownHost();
 
   static base::ListValue MakeList(
       std::initializer_list<base::StringPiece> values);
 
   ChromotingHost* GetHost() { return it2me_host_->host_.get(); }
+
+  // Configuration values used by StartHost();
+  absl::optional<bool> enable_dialogs_;
+  absl::optional<bool> enable_notifications_;
+  absl::optional<bool> is_enterprise_session_;
 
   // Stores the last nat traversal policy value received.
   bool last_nat_traversal_enabled_value_ = false;
@@ -184,9 +202,10 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   base::OnceClosure state_change_callback_;
 
   It2MeHostState last_host_state_ = It2MeHostState::kDisconnected;
+  ErrorCode last_error_code_ = ErrorCode::OK;
 
   // Used to set ConfirmationDialog behavior.
-  FakeIt2MeDialogFactory* dialog_factory_ = nullptr;
+  raw_ptr<FakeIt2MeDialogFactory> dialog_factory_ = nullptr;
 
   std::unique_ptr<base::DictionaryValue> policies_;
 
@@ -207,8 +226,6 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
 
   base::WeakPtrFactory<It2MeHostTest> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(It2MeHostTest);
 };
 
 It2MeHostTest::It2MeHostTest() {}
@@ -278,7 +295,7 @@ void It2MeHostTest::StartupHostStateHelper(
                      base::Unretained(this), quit_closure);
 }
 
-void It2MeHostTest::StartHost(bool enable_dialogs, bool enable_notifications) {
+void It2MeHostTest::StartHost() {
   if (!policies_) {
     policies_ = PolicyWatcher::GetDefaultPolicies();
   }
@@ -289,23 +306,27 @@ void It2MeHostTest::StartHost(bool enable_dialogs, bool enable_notifications) {
 
   protocol::IceConfig ice_config;
   ice_config.stun_servers.push_back(rtc::SocketAddress(kTestStunServer, 100));
-  ice_config.expiration_time =
-      base::Time::Now() + base::TimeDelta::FromHours(2);
+  ice_config.expiration_time = base::Time::Now() + base::Hours(2);
 
   auto fake_signal_strategy =
       std::make_unique<FakeSignalStrategy>(SignalingAddress("fake_local_jid"));
   fake_bot_signal_strategy_->ConnectTo(fake_signal_strategy.get());
 
   it2me_host_ = new It2MeHost();
-  if (!enable_dialogs) {
-    // Only ChromeOS supports this method, so tests setting enable_dialogs to
-    // false should only be run on ChromeOS.
-    it2me_host_->set_enable_dialogs(enable_dialogs);
+  if (enable_dialogs_.has_value()) {
+    // Only ChromeOS supports this method, so tests setting enable_dialogs
+    // should only be run on ChromeOS.
+    it2me_host_->set_enable_dialogs(enable_dialogs_.value());
   }
-  if (!enable_notifications) {
-    // Only ChromeOS supports this method, so tests setting enable_dialogs to
-    // false should only be run on ChromeOS.
-    it2me_host_->set_enable_notifications(enable_notifications);
+  if (enable_notifications_.has_value()) {
+    // Only ChromeOS supports this method, so tests setting enable_notifications
+    // should only be run on ChromeOS.
+    it2me_host_->set_enable_notifications(enable_notifications_.value());
+  }
+  if (is_enterprise_session_.has_value()) {
+    // Only ChromeOS supports this method, so tests setting
+    // is_enterprise_session should only be run on ChromeOS.
+    it2me_host_->set_is_enterprise_session(is_enterprise_session_.value());
   }
   auto create_connection_context = base::BindOnce(
       [](std::unique_ptr<SignalStrategy> signal_strategy,
@@ -369,6 +390,7 @@ void It2MeHostTest::OnNatPoliciesChanged(bool nat_traversal_enabled,
 
 void It2MeHostTest::OnStateChanged(It2MeHostState state, ErrorCode error_code) {
   last_host_state_ = state;
+  last_error_code_ = error_code;
 
   if (state_change_callback_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -387,7 +409,7 @@ base::ListValue It2MeHostTest::MakeList(
     std::initializer_list<base::StringPiece> values) {
   base::ListValue result;
   for (const auto& value : values) {
-    result.AppendString(value);
+    result.Append(value);
   }
   return result;
 }
@@ -404,6 +426,7 @@ TEST_F(It2MeHostTest, StartAndStop) {
 
   ShutdownHost();
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+  ASSERT_EQ(ErrorCode::OK, last_error_code_);
 }
 
 // Verify that IceConfig is passed to the TransportContext.
@@ -715,6 +738,7 @@ TEST_F(It2MeHostTest, ConnectionValidationConfirmationDialogAccept) {
   ASSERT_EQ(It2MeHostState::kConnecting, last_host_state_);
   ShutdownHost();
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+  ASSERT_EQ(ErrorCode::OK, last_error_code_);
 }
 
 TEST_F(It2MeHostTest, ConnectionValidationConfirmationDialogReject) {
@@ -724,6 +748,7 @@ TEST_F(It2MeHostTest, ConnectionValidationConfirmationDialogReject) {
   ASSERT_EQ(ValidationResult::ERROR_REJECTED_BY_USER, validation_result_);
   RunUntilStateChanged(It2MeHostState::kDisconnected);
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+  ASSERT_EQ(ErrorCode::SESSION_REJECTED, last_error_code_);
 }
 
 TEST_F(It2MeHostTest, MultipleConnectionsTriggerDisconnect) {
@@ -738,18 +763,54 @@ TEST_F(It2MeHostTest, MultipleConnectionsTriggerDisconnect) {
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
 }
 
+TEST_F(It2MeHostTest, AllowSupportHostConnectionsPolicyEnabled) {
+  SetPolicies({{policy::key::kRemoteAccessHostAllowRemoteSupportConnections,
+                base::Value(true)}});
+
+  StartHost();
+  ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
+
+  ShutdownHost();
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+}
+
+TEST_F(It2MeHostTest, AllowSupportHostConnectionsPolicyDisabled) {
+  SetPolicies({{policy::key::kRemoteAccessHostAllowRemoteSupportConnections,
+                base::Value(false)}});
+
+  StartHost();
+  ASSERT_EQ(It2MeHostState::kError, last_host_state_);
+  ASSERT_EQ(ErrorCode::DISALLOWED_BY_POLICY, last_error_code_);
+}
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(It2MeHostTest, ConnectRespectsSuppressDialogsParameter) {
-  StartHost(false);
+  enable_dialogs_ = false;
+  StartHost();
   EXPECT_FALSE(dialog_factory_->dialog_created());
   EXPECT_FALSE(
       GetHost()->desktop_environment_options().enable_user_interface());
 }
 
 TEST_F(It2MeHostTest, ConnectRespectsSuppressNotificationsParameter) {
-  StartHost(true, false);
+  enable_notifications_ = false;
+  StartHost();
   EXPECT_FALSE(dialog_factory_->dialog_created());
   EXPECT_FALSE(GetHost()->desktop_environment_options().enable_notifications());
+}
+
+TEST_F(It2MeHostTest,
+       EnterpriseSessionsSucceedWhenRemoteSupportConnectionsPolicyDisabled) {
+  SetPolicies({{policy::key::kRemoteAccessHostAllowRemoteSupportConnections,
+                base::Value(false)}});
+
+  is_enterprise_session_ = true;
+  StartHost();
+  ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
+
+  ShutdownHost();
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+  ASSERT_EQ(ErrorCode::OK, last_error_code_);
 }
 #endif
 

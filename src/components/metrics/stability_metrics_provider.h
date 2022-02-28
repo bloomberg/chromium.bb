@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_METRICS_STABILITY_METRICS_PROVIDER_H_
 #define COMPONENTS_METRICS_STABILITY_METRICS_PROVIDER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/metrics/metrics_provider.h"
@@ -20,12 +21,13 @@ class SystemProfileProto;
 class StabilityMetricsProvider : public MetricsProvider {
  public:
   explicit StabilityMetricsProvider(PrefService* local_state);
+
+  StabilityMetricsProvider(const StabilityMetricsProvider&) = delete;
+  StabilityMetricsProvider& operator=(const StabilityMetricsProvider&) = delete;
+
   ~StabilityMetricsProvider() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  void CheckLastSessionEndCompleted();
-  void MarkSessionEndCompleted(bool end_completed);
 
   void LogCrash(base::Time last_live_timestamp);
   void LogLaunch();
@@ -51,9 +53,7 @@ class StabilityMetricsProvider : public MetricsProvider {
   void ProvideStabilityMetrics(
       SystemProfileProto* system_profile_proto) override;
 
-  PrefService* local_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(StabilityMetricsProvider);
+  raw_ptr<PrefService> local_state_;
 };
 
 }  // namespace metrics

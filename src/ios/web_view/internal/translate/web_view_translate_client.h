@@ -36,6 +36,10 @@ class WebViewTranslateClient : public translate::TranslateClient {
       language::LanguageModel* language_model,
       web::WebState* web_state,
       translate::TranslateAcceptLanguages* accept_languages);
+
+  WebViewTranslateClient(const WebViewTranslateClient&) = delete;
+  WebViewTranslateClient& operator=(const WebViewTranslateClient&) = delete;
+
   ~WebViewTranslateClient() override;
 
   // This |controller| is assumed to outlive this WebViewTranslateClient.
@@ -74,7 +78,6 @@ class WebViewTranslateClient : public translate::TranslateClient {
                        translate::TranslateErrors::Type error_type,
                        bool triggered_from_menu) override;
   bool IsTranslatableURL(const GURL& url) override;
-  void ShowReportLanguageDetectionErrorUI(const GURL& report_url) override;
   bool IsAutofillAssistantRunning() const override;
 
  private:
@@ -85,8 +88,6 @@ class WebViewTranslateClient : public translate::TranslateClient {
 
   // ObjC class that wraps this class.
   __weak CWVTranslationController* translation_controller_ = nil;
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewTranslateClient);
 };
 
 }  // namespace ios_web_view

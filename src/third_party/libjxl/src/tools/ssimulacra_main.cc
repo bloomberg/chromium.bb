@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include <stdio.h>
 
@@ -39,8 +30,8 @@ int Run(int argc, char** argv) {
 
   jxl::CodecInOut io1;
   jxl::CodecInOut io2;
-  JXL_CHECK(SetFromFile(argv[input_arg], &io1));
-  JXL_CHECK(SetFromFile(argv[input_arg + 1], &io2));
+  JXL_CHECK(SetFromFile(argv[input_arg], jxl::ColorHints(), &io1));
+  JXL_CHECK(SetFromFile(argv[input_arg + 1], jxl::ColorHints(), &io2));
   JXL_CHECK(
       io1.TransformTo(jxl::ColorEncoding::LinearSRGB(io1.Main().IsGray())));
   JXL_CHECK(

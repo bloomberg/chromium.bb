@@ -39,12 +39,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -191,6 +192,9 @@ class PamHandle {
     }
   }
 
+  PamHandle(const PamHandle&) = delete;
+  PamHandle& operator=(const PamHandle&) = delete;
+
   // Terminates PAM transaction
   ~PamHandle() {
     if (pam_handle_ != nullptr) {
@@ -280,8 +284,6 @@ class PamHandle {
  private:
   pam_handle_t* pam_handle_ = nullptr;
   int last_return_code_ = PAM_SUCCESS;
-
-  DISALLOW_COPY_AND_ASSIGN(PamHandle);
 };
 
 // Initializes the gExecutablePath global to the location of the running

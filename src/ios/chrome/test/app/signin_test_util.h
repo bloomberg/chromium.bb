@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_TEST_APP_SIGNIN_TEST_UTIL_H_
 #define IOS_CHROME_TEST_APP_SIGNIN_TEST_UTIL_H_
 
+@class ChromeIdentity;
+
 namespace chrome_test_util {
 
 // Sets up mock authentication that will bypass the real ChromeIdentityService
@@ -28,9 +30,12 @@ void ResetMockAuthentication();
 // and resets kIosBookmarkPromoAlreadySeen flag for bookmarks.
 void ResetSigninPromoPreferences();
 
+// Resets UserApprovedAccountListManager preferences.
+void ResetUserApprovedAccountListManager();
+
 // Revokes the Sync consent of the primary account. The user will be in the
 // signed-in state.
-void RevokeSyncConsent();
+void SignInWithoutSync(ChromeIdentity* identity);
 
 }  // namespace chrome_test_util
 

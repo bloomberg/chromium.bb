@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/renderer_host/media/in_process_launched_video_capture_device.h"
@@ -25,6 +26,7 @@
 #include "media/capture/video/fake_video_capture_device.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
+#include "media/capture/video/video_capture_buffer_pool_util.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video/video_frame_receiver.h"
@@ -76,11 +78,11 @@ std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
 // The maximum number of video frame buffers in-flight at any one time. This
 // value should be based on the logical capacity of the capture pipeline, and
 // not on hardware performance.
-const int kMaxNumberOfBuffers = 3;
+const int kMaxNumberOfBuffers = media::kVideoCaptureDefaultMaxBufferPoolSize;
 
 #if defined(OS_MAC)
 const base::Feature kDesktopCaptureMacV2{"DesktopCaptureMacV2",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 #endif
 
@@ -207,6 +209,12 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
 
 #if defined(USE_AURA) || defined(OS_MAC)
       if (desktop_id.window_id != DesktopMediaID::kNullId) {
+        // For the other capturers, when a bug reports the type of capture it's
+        // easy enough to determine which capturer was used, but it's a little
+        // fuzzier with window capture.
+        TRACE_EVENT_INSTANT0(
+            TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+            "UsingVizFrameSinkCapturer", TRACE_EVENT_SCOPE_THREAD);
         start_capture_closure = base::BindOnce(
             &InProcessVideoCaptureDeviceLauncher::
                 DoStartVizFrameSinkWindowCaptureOnDeviceThread,
@@ -217,6 +225,8 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
 #endif  // defined(USE_AURA) || defined(OS_MAC)
 
       // All cases other than tab capture or Aura desktop/window capture.
+      TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                           "UsingDesktopCapturer", TRACE_EVENT_SCOPE_THREAD);
       start_capture_closure = base::BindOnce(
           &InProcessVideoCaptureDeviceLauncher::
               DoStartDesktopCaptureOnDeviceThread,
@@ -255,8 +265,8 @@ InProcessVideoCaptureDeviceLauncher::CreateDeviceClient(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool =
-      new media::VideoCaptureBufferPoolImpl(
-          requested_buffer_type, buffer_pool_max_buffer_count);
+      new media::VideoCaptureBufferPoolImpl(requested_buffer_type,
+                                            buffer_pool_max_buffer_count);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   return std::make_unique<media::VideoCaptureDeviceClient>(
@@ -326,12 +336,16 @@ void InProcessVideoCaptureDeviceLauncher::DoStartDeviceCaptureOnDeviceThread(
   DCHECK(device_task_runner_->BelongsToCurrentThread());
   DCHECK(video_capture_system_);
 
-  std::unique_ptr<media::VideoCaptureDevice> video_capture_device =
-      video_capture_system_->CreateDevice(device_id);
+  auto device_status = video_capture_system_->CreateDevice(device_id);
 
-  if (video_capture_device)
+  if (device_status.ok()) {
+    std::unique_ptr<media::VideoCaptureDevice> video_capture_device =
+        device_status.ReleaseDevice();
     video_capture_device->AllocateAndStart(params, std::move(device_client));
-  std::move(result_callback).Run(std::move(video_capture_device));
+    std::move(result_callback).Run(std::move(video_capture_device));
+  } else {
+    std::move(result_callback).Run(nullptr);
+  }
 }
 
 #if BUILDFLAG(ENABLE_SCREEN_CAPTURE)
@@ -466,7 +480,8 @@ void InProcessVideoCaptureDeviceLauncher::OnFakeDevicesEnumerated(
     return;
   }
   auto video_capture_device =
-      fake_device_factory_->CreateDevice(devices_info.front().descriptor);
+      fake_device_factory_->CreateDevice(devices_info.front().descriptor)
+          .ReleaseDevice();
   video_capture_device->AllocateAndStart(params, std::move(device_client));
   std::move(result_callback).Run(std::move(video_capture_device));
 }

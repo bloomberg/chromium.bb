@@ -26,6 +26,7 @@
 #include "include/effects/SkGradientShader.h"
 #include "include/effects/SkLumaColorFilter.h"
 #include "include/effects/SkRuntimeEffect.h"
+#include "src/core/SkColorFilterPriv.h"
 #include "tools/Resources.h"
 #include "tools/ToolUtils.h"
 
@@ -184,18 +185,18 @@ DEF_SIMPLE_GM(AlternateLuma, canvas, 384,128) {
     canvas->drawImage(img, 0,0);
     canvas->translate(128,0);
 
-    // Splatting the Y channel of XYZ on the right should result in (near) greyscale.
+    // Here, RGB holds CIE XYZ. Splatting the G (Y) channel should result in (near) greyscale.
     auto [effect, err] = SkRuntimeEffect::MakeForColorFilter(SkString{
-            "half4 main(half4 inColor) { return inColor.yyya; }"});
+            "half4 main(half4 inColor) { return inColor.ggga; }"});
     SkASSERT(effect && err.isEmpty());
 
     sk_sp<SkColorFilter> filter = effect->makeColorFilter(SkData::MakeEmpty());
     SkASSERT(filter);
 
     SkAlphaType unpremul = kUnpremul_SkAlphaType;
-    paint.setColorFilter(SkColorFilters::WithWorkingFormat(std::move(filter),
-                                                           &SkNamedTransferFn::kLinear,
-                                                           &SkNamedGamut::kXYZ,
-                                                           &unpremul));
+    paint.setColorFilter(SkColorFilterPriv::WithWorkingFormat(std::move(filter),
+                                                              &SkNamedTransferFn::kLinear,
+                                                              &SkNamedGamut::kXYZ,
+                                                              &unpremul));
     canvas->drawImage(img, 0,0, SkSamplingOptions{}, &paint);
 }

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "media/audio/audio_input_ipc.h"
@@ -49,6 +48,10 @@ class MODULES_EXPORT MojoAudioInputIPC
   MojoAudioInputIPC(const media::AudioSourceParameters& source_params,
                     StreamCreatorCB stream_creator,
                     StreamAssociatorCB stream_associator);
+
+  MojoAudioInputIPC(const MojoAudioInputIPC&) = delete;
+  MojoAudioInputIPC& operator=(const MojoAudioInputIPC&) = delete;
+
   ~MojoAudioInputIPC() override;
 
   // AudioInputIPC implementation
@@ -91,8 +94,6 @@ class MODULES_EXPORT MojoAudioInputIPC
   media::AudioInputIPCDelegate* delegate_ = nullptr;
 
   base::WeakPtrFactory<MojoAudioInputIPC> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MojoAudioInputIPC);
 };
 
 }  // namespace blink

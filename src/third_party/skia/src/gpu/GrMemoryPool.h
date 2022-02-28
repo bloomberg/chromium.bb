@@ -8,7 +8,7 @@
 #ifndef GrMemoryPool_DEFINED
 #define GrMemoryPool_DEFINED
 
-#include "src/gpu/GrBlockAllocator.h"
+#include "src/core/SkBlockAllocator.h"
 
 #ifdef SK_DEBUG
 #include "include/private/SkTHash.h"
@@ -28,21 +28,21 @@ public:
     // https://github.com/emscripten-core/emscripten/issues/10072
     // Since Skia does not use "long double" (16 bytes), we should be ok to force it back to 8 bytes
     // until emscripten is fixed.
-    static constexpr size_t kAlignment = 8;
+    inline static constexpr size_t kAlignment = 8;
 #else
     // Guaranteed alignment of pointer returned by allocate().
-    static constexpr size_t kAlignment = alignof(std::max_align_t);
+    inline static constexpr size_t kAlignment = alignof(std::max_align_t);
 #endif
 
     // Smallest block size allocated on the heap (not the smallest reservation via allocate()).
-    static constexpr size_t kMinAllocationSize = 1 << 10;
+    inline static constexpr size_t kMinAllocationSize = 1 << 10;
 
     /**
      * Prealloc size is the amount of space to allocate at pool creation
      * time and keep around until pool destruction. The min alloc size is
      * the smallest allowed size of additional allocations. Both sizes are
      * adjusted to ensure that they are at least as large as kMinAllocationSize
-     * and less than GrBlockAllocator::kMaxAllocationSize.
+     * and less than SkBlockAllocator::kMaxAllocationSize.
      *
      * Both sizes are what the pool will end up allocating from the system, and
      * portions of the allocated memory is used for internal bookkeeping.
@@ -123,6 +123,6 @@ private:
     int              fAllocationCount;
 #endif
 
-    GrBlockAllocator fAllocator; // Must be the last field, in order to use extra allocated space
+    SkBlockAllocator fAllocator; // Must be the last field, in order to use extra allocated space
 };
 #endif

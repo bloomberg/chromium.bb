@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/webrtc/api/packet_socket_factory.h"
 
@@ -21,13 +20,18 @@ class ChromiumPacketSocketFactory : public rtc::PacketSocketFactory {
  public:
   explicit ChromiumPacketSocketFactory(
       base::WeakPtr<SessionOptionsProvider> session_options_provider);
+
+  ChromiumPacketSocketFactory(const ChromiumPacketSocketFactory&) = delete;
+  ChromiumPacketSocketFactory& operator=(const ChromiumPacketSocketFactory&) =
+      delete;
+
   ~ChromiumPacketSocketFactory() override;
 
   rtc::AsyncPacketSocket* CreateUdpSocket(
       const rtc::SocketAddress& local_address,
       uint16_t min_port,
       uint16_t max_port) override;
-  rtc::AsyncPacketSocket* CreateServerTcpSocket(
+  rtc::AsyncListenSocket* CreateServerTcpSocket(
       const rtc::SocketAddress& local_address,
       uint16_t min_port,
       uint16_t max_port,
@@ -42,8 +46,6 @@ class ChromiumPacketSocketFactory : public rtc::PacketSocketFactory {
 
  private:
   base::WeakPtr<SessionOptionsProvider> session_options_provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromiumPacketSocketFactory);
 };
 
 }  // namespace protocol

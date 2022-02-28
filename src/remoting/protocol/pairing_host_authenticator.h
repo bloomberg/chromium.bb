@@ -5,7 +5,6 @@
 #ifndef REMOTING_PROTOCOL_PAIRING_HOST_AUTHENTICATOR_H_
 #define REMOTING_PROTOCOL_PAIRING_HOST_AUTHENTICATOR_H_
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/protocol/pairing_authenticator_base.h"
 #include "remoting/protocol/pairing_registry.h"
@@ -21,6 +20,10 @@ class PairingHostAuthenticator : public PairingAuthenticatorBase {
       scoped_refptr<PairingRegistry> pairing_registry,
       const CreateBaseAuthenticatorCallback& create_base_authenticator_callback,
       const std::string& pin);
+
+  PairingHostAuthenticator(const PairingHostAuthenticator&) = delete;
+  PairingHostAuthenticator& operator=(const PairingHostAuthenticator&) = delete;
+
   ~PairingHostAuthenticator() override;
 
   // Initialize the authenticator with the given |client_id| in
@@ -53,8 +56,6 @@ class PairingHostAuthenticator : public PairingAuthenticatorBase {
   bool waiting_for_paired_secret_ = false;
 
   base::WeakPtrFactory<PairingHostAuthenticator> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PairingHostAuthenticator);
 };
 
 }  // namespace protocol

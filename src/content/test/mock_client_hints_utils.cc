@@ -9,16 +9,13 @@
 namespace content {
 
 bool PersistClientHintsHelper(const GURL& url,
-                              const blink::WebEnabledClientHints& client_hints,
-                              base::TimeDelta expiration_duration,
+                              const blink::EnabledClientHints& client_hints,
                               ClientHintsContainer* container) {
   DCHECK(container);
-  if (!network::IsUrlPotentiallyTrustworthy(url) ||
-      expiration_duration <= base::TimeDelta()) {
+  if (!network::IsUrlPotentiallyTrustworthy(url)) {
     return false;
   }
   ClientHintsPersistencyData data;
-  data.expiration = base::Time::Now() + expiration_duration;
   data.client_hints = client_hints;
   const url::Origin origin = url::Origin::Create(url);
   (*container)[origin] = data;
@@ -28,11 +25,11 @@ bool PersistClientHintsHelper(const GURL& url,
 void GetAllowedClientHintsFromSourceHelper(
     const GURL& url,
     const ClientHintsContainer& container,
-    blink::WebEnabledClientHints* client_hints) {
+    blink::EnabledClientHints* client_hints) {
   const url::Origin origin = url::Origin::Create(url);
   const auto& it = container.find(origin);
   DCHECK(client_hints);
-  if (it != container.end() && it->second.expiration >= base::Time::Now()) {
+  if (it != container.end()) {
     *client_hints = it->second.client_hints;
   }
 }

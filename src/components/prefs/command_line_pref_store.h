@@ -6,7 +6,7 @@
 #define COMPONENTS_PREFS_COMMAND_LINE_PREF_STORE_H_
 
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/prefs/value_map_pref_store.h"
 
 // Base class for a PrefStore that maps command line switches to preferences.
@@ -26,6 +26,9 @@ class COMPONENTS_PREFS_EXPORT CommandLinePrefStore : public ValueMapPrefStore {
     const char* preference_path;
     bool set_value;
   };
+
+  CommandLinePrefStore(const CommandLinePrefStore&) = delete;
+  CommandLinePrefStore& operator=(const CommandLinePrefStore&) = delete;
 
   // Apply command-line switches to the corresponding preferences of the switch
   // map, where the value associated with the switch is a string.
@@ -57,9 +60,7 @@ class COMPONENTS_PREFS_EXPORT CommandLinePrefStore : public ValueMapPrefStore {
 
  private:
   // Weak reference.
-  const base::CommandLine* command_line_;
-
-  DISALLOW_COPY_AND_ASSIGN(CommandLinePrefStore);
+  raw_ptr<const base::CommandLine> command_line_;
 };
 
 #endif  // COMPONENTS_PREFS_COMMAND_LINE_PREF_STORE_H_

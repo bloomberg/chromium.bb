@@ -8,10 +8,9 @@
 #define FXJS_XFA_CFXJSE_RESOLVEPROCESSOR_H_
 
 #include <memory>
-#include <vector>
 
-#include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/unowned_ptr.h"
+#include "core/fxcrt/widestring.h"
 #include "fxjs/xfa/cfxjse_engine.h"
 #include "v8/include/cppgc/macros.h"
 #include "xfa/fxfa/fxfa_basic.h"
@@ -32,7 +31,7 @@ class CFXJSE_ResolveNodeData {
   WideString m_wsCondition;
   XFA_HashCode m_uHashName = XFA_HASHCODE_None;
   int32_t m_nLevel = 0;
-  uint32_t m_dwStyles = XFA_RESOLVENODE_Children;
+  Mask<XFA_ResolveFlag> m_dwStyles = XFA_ResolveFlag::kChildren;
   CFXJSE_Engine::ResolveResult m_Result;
 };
 
@@ -60,7 +59,8 @@ class CFXJSE_ResolveProcessor {
   bool ResolveNumberSign(v8::Isolate* pIsolate, CFXJSE_ResolveNodeData& rnd);
   bool ResolveAsterisk(CFXJSE_ResolveNodeData& rnd);
   bool ResolveNormal(v8::Isolate* pIsolate, CFXJSE_ResolveNodeData& rnd);
-  void SetStylesForChild(uint32_t dwParentStyles, CFXJSE_ResolveNodeData& rnd);
+  void SetStylesForChild(Mask<XFA_ResolveFlag> dwParentStyles,
+                         CFXJSE_ResolveNodeData& rnd);
 
   void ConditionArray(size_t iCurIndex,
                       WideString wsCondition,

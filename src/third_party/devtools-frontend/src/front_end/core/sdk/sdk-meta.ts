@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 import * as Common from '../common/common.js';
-
 import * as i18n from '../i18n/i18n.js';
+
 const UIStrings = {
   /**
   *@description Title of a setting under the Console category that can be invoked through the Command Menu
@@ -43,9 +43,13 @@ const UIStrings = {
   */
   captureAsyncStackTraces: 'Capture async stack traces',
   /**
-  *@description Text to show the measuring rulers on the target
+  *@description Text of a setting that  turn on the measuring rulers when hover over a target
   */
-  showRulers: 'Show rulers',
+  showRulersOnHover: 'Show rulers on hover',
+  /**
+  *@description Text of a setting that do turn off the measuring rulers when hover over a target
+  */
+  doNotShowRulersOnHover: 'Do not show rulers on hover',
   /**
   *@description Title of a setting that turns on grid area name labels
   */
@@ -150,14 +154,6 @@ const UIStrings = {
   *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
   */
   hideScrollPerformanceBottlenecks: 'Hide scroll performance bottlenecks',
-  /**
-  *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
-  */
-  showHittestBorders: 'Show hit-test borders',
-  /**
-  *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
-  */
-  hideHittestBorders: 'Hide hit-test borders',
   /**
   *@description Title of a Rendering setting that can be invoked through the Command Menu
   */
@@ -309,17 +305,48 @@ const UIStrings = {
   *@description Title of a setting under the Network category that can be invoked through the Command Menu
   */
   enableCache: 'Enable cache',
+  /**
+  * @description Title of a setting under the Network category that can be invoked through the Command Menu
+  */
+  disableCache: 'Disable cache (while DevTools is open)',
+  /**
+  * @description The name of a checkbox setting in the Rendering tool. This setting
+  * emulates that the webpage is in auto dark mode.
+  */
+  emulateAutoDarkMode: 'Emulate auto dark mode',
+  /**
+  * @description Title of a setting for enabling auto dark mode.
+  */
+  enableEmulateAutoDarkMode: 'Enable auto dark mode',
+  /**
+  * @description Text to emulate enabled auto dark mode.
+  */
+  enabledDarkMode: 'Enable',
+  /**
+  * @description Title of a setting for disabling auto dark mode.
+  */
+  disableEmulateAutoDarkMode: 'Disable auto dark mode',
+  /**
+  * @description Text to emulate disabled auto dark mode.
+  */
+  disabledDarkMode: 'Disable',
+  /**
+  * @description Title of a setting for disabling dark mode emulation.
+  */
+  doNotEmulateDarkMode: 'Do not emulate auto dark mode',
 };
 const str_ = i18n.i18n.registerUIStrings('core/sdk/sdk-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 
 Common.Settings.registerSettingExtension({
+  storageType: Common.Settings.SettingStorageType.Synced,
   settingName: 'skipStackFramesPattern',
   settingType: Common.Settings.SettingType.REGEX,
   defaultValue: '',
 });
 
 Common.Settings.registerSettingExtension({
+  storageType: Common.Settings.SettingStorageType.Synced,
   settingName: 'skipContentScripts',
   settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false,
@@ -327,6 +354,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.CONSOLE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.preserveLogUponNavigation),
   settingName: 'preserveConsoleLog',
   settingType: Common.Settings.SettingType.BOOLEAN,
@@ -415,14 +443,26 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.ELEMENTS,
-  title: i18nLazyString(UIStrings.showRulers),
+  storageType: Common.Settings.SettingStorageType.Synced,
+  title: i18nLazyString(UIStrings.showRulersOnHover),
   settingName: 'showMetricsRulers',
   settingType: Common.Settings.SettingType.BOOLEAN,
+  options: [
+    {
+      value: true,
+      title: i18nLazyString(UIStrings.showRulersOnHover),
+    },
+    {
+      value: false,
+      title: i18nLazyString(UIStrings.doNotShowRulersOnHover),
+    },
+  ],
   defaultValue: false,
 });
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.GRID,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.showAreaNames),
   settingName: 'showGridAreas',
   settingType: Common.Settings.SettingType.BOOLEAN,
@@ -441,6 +481,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.GRID,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.showTrackSizes),
   settingName: 'showGridTrackSizes',
   settingType: Common.Settings.SettingType.BOOLEAN,
@@ -459,6 +500,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.GRID,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.extendGridLines),
   settingName: 'extendGridLines',
   settingType: Common.Settings.SettingType.BOOLEAN,
@@ -477,6 +519,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.GRID,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.showLineLabels),
   settingName: 'showGridLineLabels',
   settingType: Common.Settings.SettingType.ENUM,
@@ -628,24 +671,6 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.RENDERING,
-  settingName: 'showHitTestBorders',
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  storageType: Common.Settings.SettingStorageType.Session,
-  options: [
-    {
-      value: true,
-      title: i18nLazyString(UIStrings.showHittestBorders),
-    },
-    {
-      value: false,
-      title: i18nLazyString(UIStrings.hideHittestBorders),
-    },
-  ],
-  defaultValue: false,
-});
-
-Common.Settings.registerSettingExtension({
-  category: Common.Settings.SettingCategory.RENDERING,
   title: i18nLazyString(UIStrings.emulateAFocusedPage),
   settingName: 'emulatePageFocus',
   settingType: Common.Settings.SettingType.BOOLEAN,
@@ -723,6 +748,35 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.RENDERING,
+  settingName: 'emulatedCSSMediaFeatureForcedColors',
+  settingType: Common.Settings.SettingType.ENUM,
+  storageType: Common.Settings.SettingStorageType.Session,
+  defaultValue: '',
+  options: [
+    {
+      title: i18nLazyString(UIStrings.doNotEmulateCss, {PH1: 'forced-colors'}),
+      text: i18nLazyString(UIStrings.noEmulation),
+      value: '',
+    },
+    {
+      title: i18nLazyString(UIStrings.emulateCss, {PH1: 'forced-colors: active'}),
+      text: i18n.i18n.lockedLazyString('forced-colors: active'),
+      value: 'active',
+    },
+    {
+      title: i18nLazyString(UIStrings.emulateCss, {PH1: 'forced-colors: none'}),
+      text: i18n.i18n.lockedLazyString('forced-colors: none'),
+      value: 'none',
+    },
+  ],
+  tags: [
+    i18nLazyString(UIStrings.query),
+  ],
+  title: i18nLazyString(UIStrings.emulateCssMediaFeature, {PH1: 'forced-colors'}),
+});
+
+Common.Settings.registerSettingExtension({
+  category: Common.Settings.SettingCategory.RENDERING,
   settingName: 'emulatedCSSMediaFeaturePrefersReducedMotion',
   settingType: Common.Settings.SettingType.ENUM,
   storageType: Common.Settings.SettingStorageType.Session,
@@ -743,6 +797,39 @@ Common.Settings.registerSettingExtension({
     i18nLazyString(UIStrings.query),
   ],
   title: i18nLazyString(UIStrings.emulateCssMediaFeature, {PH1: 'prefers-reduced-motion'}),
+});
+
+Common.Settings.registerSettingExtension({
+  settingName: 'emulatedCSSMediaFeaturePrefersContrast',
+  settingType: Common.Settings.SettingType.ENUM,
+  storageType: Common.Settings.SettingStorageType.Session,
+  defaultValue: '',
+  options: [
+    {
+      title: i18nLazyString(UIStrings.doNotEmulateCss, {PH1: 'prefers-contrast'}),
+      text: i18nLazyString(UIStrings.noEmulation),
+      value: '',
+    },
+    {
+      title: i18nLazyString(UIStrings.emulateCss, {PH1: 'prefers-contrast: more'}),
+      text: i18n.i18n.lockedLazyString('prefers-contrast: more'),
+      value: 'more',
+    },
+    {
+      title: i18nLazyString(UIStrings.emulateCss, {PH1: 'prefers-contrast: less'}),
+      text: i18n.i18n.lockedLazyString('prefers-contrast: less'),
+      value: 'less',
+    },
+    {
+      title: i18nLazyString(UIStrings.emulateCss, {PH1: 'prefers-contrast: custom'}),
+      text: i18n.i18n.lockedLazyString('prefers-contrast: custom'),
+      value: 'custom',
+    },
+  ],
+  tags: [
+    i18nLazyString(UIStrings.query),
+  ],
+  title: i18nLazyString(UIStrings.emulateCssMediaFeature, {PH1: 'prefers-contrast'}),
 });
 
 Common.Settings.registerSettingExtension({
@@ -940,7 +1027,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.NETWORK,
-  title: i18nLazyString('Disable cache (while DevTools is open)'),
+  title: i18nLazyString(UIStrings.disableCache),
   settingName: 'cacheDisabled',
   settingType: Common.Settings.SettingType.BOOLEAN,
   order: 0,
@@ -949,11 +1036,37 @@ Common.Settings.registerSettingExtension({
   options: [
     {
       value: true,
-      title: i18nLazyString('Disable cache (while DevTools is open)'),
+      title: i18nLazyString(UIStrings.disableCache),
     },
     {
       value: false,
       title: i18nLazyString(UIStrings.enableCache),
+    },
+  ],
+});
+
+Common.Settings.registerSettingExtension({
+  category: Common.Settings.SettingCategory.RENDERING,
+  title: i18nLazyString(UIStrings.emulateAutoDarkMode),
+  settingName: 'emulateAutoDarkMode',
+  settingType: Common.Settings.SettingType.ENUM,
+  storageType: Common.Settings.SettingStorageType.Session,
+  defaultValue: 'default',
+  options: [
+    {
+      title: i18nLazyString(UIStrings.doNotEmulateDarkMode),
+      text: i18nLazyString(UIStrings.noEmulation),
+      value: 'default',
+    },
+    {
+      title: i18nLazyString(UIStrings.enableEmulateAutoDarkMode),
+      text: i18nLazyString(UIStrings.enabledDarkMode),
+      value: 'enabled',
+    },
+    {
+      title: i18nLazyString(UIStrings.disableEmulateAutoDarkMode),
+      text: i18nLazyString(UIStrings.disabledDarkMode),
+      value: 'disabled',
     },
   ],
 });

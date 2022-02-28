@@ -7,6 +7,7 @@
 
 #include "content/public/browser/identity_request_dialog_controller.h"
 
+#include "base/containers/span.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
@@ -23,8 +24,11 @@ class MockIdentityRequestDialogController
   MockIdentityRequestDialogController& operator=(
       const MockIdentityRequestDialogController&) = delete;
 
-  MOCK_METHOD3(ShowInitialPermissionDialog,
-               void(WebContents*, const GURL&, InitialApprovalCallback));
+  MOCK_METHOD4(ShowInitialPermissionDialog,
+               void(WebContents*,
+                    const GURL&,
+                    PermissionDialogMode,
+                    InitialApprovalCallback));
   MOCK_METHOD4(ShowIdProviderWindow,
                void(WebContents*,
                     WebContents*,
@@ -35,11 +39,14 @@ class MockIdentityRequestDialogController
                void(content::WebContents*,
                     const GURL&,
                     TokenExchangeApprovalCallback));
-  MOCK_METHOD5(ShowAccountsDialog,
+  MOCK_METHOD8(ShowAccountsDialog,
                void(WebContents*,
                     WebContents*,
                     const GURL&,
-                    AccountList,
+                    base::span<const content::IdentityRequestAccount> accounts,
+                    const IdentityProviderMetadata&,
+                    const ClientIdData&,
+                    IdentityRequestAccount::SignInMode,
                     AccountSelectionCallback));
 };
 

@@ -20,16 +20,15 @@
 namespace tint {
 
 namespace ast {
+class CallExpression;
 class Expression;
-class TypeConstructorExpression;
 }  // namespace ast
 
 namespace writer {
 
 /// A helper function used to append a vector with an additional scalar.
-/// AppendVector is used to generate texture intrinsic function calls for
-/// backends that expect the texture coordinates to be packed with an additional
-/// mip-level or array-index parameter.
+/// If the scalar's type does not match the target vector element type,
+/// then it is value-converted (via TypeConstructor) before being added.
 /// All types must have been assigned to the expressions and their child nodes
 /// before calling.
 /// @param builder the program builder.
@@ -37,9 +36,9 @@ namespace writer {
 /// @param scalar the scalar to append to the vector. Must be a scalar.
 /// @returns a vector expression containing the elements of `vector` followed by
 /// the single element of `scalar` cast to the `vector` element type.
-ast::TypeConstructorExpression* AppendVector(ProgramBuilder* builder,
-                                             ast::Expression* vector,
-                                             ast::Expression* scalar);
+const sem::Call* AppendVector(ProgramBuilder* builder,
+                              const ast::Expression* vector,
+                              const ast::Expression* scalar);
 
 }  // namespace writer
 }  // namespace tint

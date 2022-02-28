@@ -5,12 +5,10 @@
 #ifndef CONTENT_PUBLIC_COMMON_URL_CONSTANTS_H_
 #define CONTENT_PUBLIC_COMMON_URL_CONSTANTS_H_
 
-#include "base/check_op.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/common/content_export.h"
 #include "url/url_constants.h"
-
-#include "build/chromeos_buildflags.h"
 
 // Contains constants for known URLs and portions thereof.
 
@@ -28,16 +26,18 @@ CONTENT_EXPORT extern const char kViewSourceScheme[];
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 CONTENT_EXPORT extern const char kExternalFileScheme[];
 #endif
+#if defined(OS_ANDROID)
+CONTENT_EXPORT extern const char kAndroidAppScheme[];
+#endif
 
 // The `googlechrome:` scheme is registered on several platforms, and is
 // both interesting and dangerous.
 CONTENT_EXPORT extern const char kGoogleChromeScheme[];
 
 CONTENT_EXPORT extern const char kChromeUIAccessibilityHost[];
-CONTENT_EXPORT extern const char kChromeUIAppCacheInternalsHost[];
+CONTENT_EXPORT extern const char kChromeUIAttributionInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIBlobInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIBrowserCrashHost[];
-CONTENT_EXPORT extern const char kChromeUIConversionInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIDinoHost[];
 CONTENT_EXPORT extern const char kChromeUIGpuHost[];
 CONTENT_EXPORT extern const char kChromeUIHistogramHost[];
@@ -46,11 +46,13 @@ CONTENT_EXPORT extern const char kChromeUIMediaInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIMemoryExhaustHost[];
 CONTENT_EXPORT extern const char kChromeUINetworkErrorHost[];
 CONTENT_EXPORT extern const char kChromeUINetworkErrorsListingHost[];
+CONTENT_EXPORT extern const char kChromeUIPrerenderInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIProcessInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIResourcesHost[];
 CONTENT_EXPORT extern const char kChromeUIServiceWorkerInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUITracingHost[];
 CONTENT_EXPORT extern const char kChromeUIUkmHost[];
+CONTENT_EXPORT extern const char kChromeUIUntrustedResourcesURL[];
 CONTENT_EXPORT extern const char kChromeUIWebRTCInternalsHost[];
 
 // Special URL used to start a navigation to an error page.

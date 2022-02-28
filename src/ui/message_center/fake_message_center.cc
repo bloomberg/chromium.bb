@@ -44,6 +44,23 @@ bool FakeMessageCenter::IsSpokenFeedbackEnabled() const {
   return false;
 }
 
+Notification* FakeMessageCenter::FindNotificationById(const std::string& id) {
+  // stub
+  return nullptr;
+}
+
+Notification* FakeMessageCenter::FindParentNotificationForOriginUrl(
+    const GURL& notifier_id) {
+  // stub
+  return nullptr;
+}
+
+Notification* FakeMessageCenter::FindPopupNotificationById(
+    const std::string& id) {
+  // stub
+  return nullptr;
+}
+
 Notification* FakeMessageCenter::FindVisibleNotificationById(
     const std::string& id) {
   const auto& notifications = GetVisibleNotifications();
@@ -142,6 +159,8 @@ void FakeMessageCenter::DisableNotification(const std::string& id) {}
 void FakeMessageCenter::MarkSinglePopupAsShown(const std::string& id,
                                                bool mark_notification_as_read) {
 }
+
+void FakeMessageCenter::ResetSinglePopup(const std::string& id) {}
 
 void FakeMessageCenter::DisplayedNotification(const std::string& id,
                                               const DisplaySource source) {}

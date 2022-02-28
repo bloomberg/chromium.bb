@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -80,6 +79,10 @@ class PermissionsData {
                   Manifest::Type manifest_type,
                   mojom::ManifestLocation location,
                   std::unique_ptr<const PermissionSet> initial_permissions);
+
+  PermissionsData(const PermissionsData&) = delete;
+  PermissionsData& operator=(const PermissionsData&) = delete;
+
   virtual ~PermissionsData();
 
   // Returns true if the extension is a COMPONENT extension or is on the
@@ -350,8 +353,6 @@ class PermissionsData {
   mutable TabPermissionsMap tab_specific_permissions_;
 
   mutable std::unique_ptr<base::ThreadChecker> thread_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(PermissionsData);
 };
 
 }  // namespace extensions

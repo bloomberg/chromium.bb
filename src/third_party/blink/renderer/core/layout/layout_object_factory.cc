@@ -4,11 +4,13 @@
 
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_button.h"
+#include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_deprecated_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
@@ -34,6 +36,7 @@
 #include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_br.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_counter.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_word_break.h"
@@ -55,7 +58,6 @@
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_caption.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell_legacy.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_column.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section.h"
@@ -95,9 +97,9 @@ inline BaseType* CreateObject(Node& node,
     force_legacy = legacy == LegacyLayout::kForce;
 
     if (!force_legacy)
-      return new NGType(element);
+      return MakeGarbageCollected<NGType>(element);
   }
-  BaseType* new_object = new LegacyType(element);
+  BaseType* new_object = MakeGarbageCollected<LegacyType>(element);
   if (force_legacy)
     new_object->SetForceLegacyLayout();
   return new_object;
@@ -186,11 +188,7 @@ LayoutObject* LayoutObjectFactory::CreateListMarker(Node& node,
 LayoutBlock* LayoutObjectFactory::CreateTable(Node& node,
                                               const ComputedStyle& style,
                                               LegacyLayout legacy) {
-  bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGTableEnabled();
-  if (disable_ng_for_type)
-    UseCounter::Count(node.GetDocument(), WebFeature::kLegacyLayoutByTable);
-  return CreateObject<LayoutBlock, LayoutNGTable, LayoutTable>(
-      node, legacy, disable_ng_for_type);
+  return CreateObject<LayoutBlock, LayoutNGTable, LayoutTable>(node, legacy);
 }
 
 LayoutTableCaption* LayoutObjectFactory::CreateTableCaption(
@@ -204,49 +202,51 @@ LayoutBlockFlow* LayoutObjectFactory::CreateTableCell(
     Node& node,
     const ComputedStyle& style,
     LegacyLayout legacy) {
-  if (RuntimeEnabledFeatures::LayoutNGTableEnabled()) {
-    return CreateObject<LayoutBlockFlow, LayoutNGTableCell, LayoutTableCell>(
-        node, legacy);
-  } else {
-    return CreateObject<LayoutBlockFlow, LayoutNGTableCellLegacy,
-                        LayoutTableCell>(node, legacy);
-  }
+  return CreateObject<LayoutBlockFlow, LayoutNGTableCell, LayoutTableCell>(
+      node, legacy);
 }
 
 LayoutBox* LayoutObjectFactory::CreateTableColumn(Node& node,
                                                   const ComputedStyle& style,
                                                   LegacyLayout legacy) {
-  bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGTableEnabled();
-  if (disable_ng_for_type)
-    UseCounter::Count(node.GetDocument(), WebFeature::kLegacyLayoutByTable);
-  return CreateObject<LayoutBox, LayoutNGTableColumn, LayoutTableCol>(
-      node, legacy, disable_ng_for_type);
+  return CreateObject<LayoutBox, LayoutNGTableColumn, LayoutTableCol>(node,
+                                                                      legacy);
 }
 
 LayoutBox* LayoutObjectFactory::CreateTableRow(Node& node,
                                                const ComputedStyle& style,
                                                LegacyLayout legacy) {
-  bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGTableEnabled();
-  if (disable_ng_for_type)
-    UseCounter::Count(node.GetDocument(), WebFeature::kLegacyLayoutByTable);
-  return CreateObject<LayoutBox, LayoutNGTableRow, LayoutTableRow>(
-      node, legacy, disable_ng_for_type);
+  return CreateObject<LayoutBox, LayoutNGTableRow, LayoutTableRow>(node,
+                                                                   legacy);
 }
 
 LayoutBox* LayoutObjectFactory::CreateTableSection(Node& node,
                                                    const ComputedStyle& style,
                                                    LegacyLayout legacy) {
-  bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGTableEnabled();
-  if (disable_ng_for_type)
-    UseCounter::Count(node.GetDocument(), WebFeature::kLegacyLayoutByTable);
   return CreateObject<LayoutBox, LayoutNGTableSection, LayoutTableSection>(
-      node, legacy, disable_ng_for_type);
+      node, legacy);
 }
 
 LayoutObject* LayoutObjectFactory::CreateButton(Node& node,
                                                 const ComputedStyle& style,
                                                 LegacyLayout legacy) {
   return CreateObject<LayoutBlock, LayoutNGButton, LayoutButton>(node, legacy);
+}
+
+LayoutObject* LayoutObjectFactory::CreateCounter(
+    PseudoElement& pseduo,
+    const CounterContentData& counter,
+    LegacyLayout legacy) {
+  bool force_legacy = false;
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    force_legacy = legacy == LegacyLayout::kForce;
+    if (!force_legacy)
+      return MakeGarbageCollected<LayoutNGCounter>(pseduo, counter);
+  }
+  auto* const new_object = MakeGarbageCollected<LayoutCounter>(pseduo, counter);
+  if (force_legacy)
+    new_object->SetForceLegacyLayout();
+  return new_object;
 }
 
 LayoutBlock* LayoutObjectFactory::CreateFieldset(Node& node,
@@ -302,9 +302,9 @@ LayoutText* LayoutObjectFactory::CreateText(Node* node,
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
     force_legacy = legacy == LegacyLayout::kForce;
     if (!force_legacy)
-      return new LayoutNGText(node, str);
+      return MakeGarbageCollected<LayoutNGText>(node, str);
   }
-  LayoutText* layout_text = new LayoutText(node, str);
+  LayoutText* layout_text = MakeGarbageCollected<LayoutText>(node, str);
   if (force_legacy)
     layout_text->SetForceLegacyLayout();
   return layout_text;
@@ -314,7 +314,17 @@ LayoutText* LayoutObjectFactory::CreateTextCombine(
     Node* node,
     scoped_refptr<StringImpl> str,
     LegacyLayout legacy) {
-  return new LayoutTextCombine(node, str);
+  bool force_legacy = false;
+  if (RuntimeEnabledFeatures::LayoutNGTextCombineEnabled()) {
+    force_legacy = legacy == LegacyLayout::kForce;
+    if (!force_legacy)
+      return MakeGarbageCollected<LayoutNGText>(node, str);
+  }
+  LayoutText* const layout_text =
+      MakeGarbageCollected<LayoutTextCombine>(node, str);
+  if (force_legacy)
+    layout_text->SetForceLegacyLayout();
+  return layout_text;
 }
 
 LayoutTextFragment* LayoutObjectFactory::CreateTextFragment(
@@ -326,11 +336,13 @@ LayoutTextFragment* LayoutObjectFactory::CreateTextFragment(
   bool force_legacy = false;
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
     force_legacy = legacy == LegacyLayout::kForce;
-    if (!force_legacy)
-      return new LayoutNGTextFragment(node, str, start_offset, length);
+    if (!force_legacy) {
+      return MakeGarbageCollected<LayoutNGTextFragment>(node, str, start_offset,
+                                                        length);
+    }
   }
   LayoutTextFragment* layout_text_fragment =
-      new LayoutTextFragment(node, str, start_offset, length);
+      MakeGarbageCollected<LayoutTextFragment>(node, str, start_offset, length);
   if (force_legacy)
     layout_text_fragment->SetForceLegacyLayout();
   return layout_text_fragment;

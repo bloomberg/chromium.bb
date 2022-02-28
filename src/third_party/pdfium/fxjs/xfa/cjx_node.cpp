@@ -19,6 +19,7 @@
 #include "fxjs/fxv8.h"
 #include "fxjs/js_resources.h"
 #include "fxjs/xfa/cfxjse_engine.h"
+#include "v8/include/v8-object.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
 #include "xfa/fxfa/cxfa_ffdoc.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
@@ -76,7 +77,7 @@ const ExecEventParaInfo* GetExecEventParaInfoByName(
   if (wsEventName.IsEmpty())
     return nullptr;
 
-  uint32_t uHash = FX_HashCode_GetW(wsEventName, false);
+  uint32_t uHash = FX_HashCode_GetW(wsEventName);
   auto* result = std::lower_bound(
       std::begin(kExecEventParaInfoTable), std::end(kExecEventParaInfoTable),
       uHash, [](const ExecEventParaInfo& iter, const uint16_t& hash) {
@@ -180,7 +181,7 @@ CJS_Result CJX_Node::isPropertySpecified(
     return CJS_Result::Failure(JSMessage::kParamError);
 
   WideString expression = runtime->ToWideString(params[0]);
-  Optional<XFA_ATTRIBUTEINFO> attr =
+  absl::optional<XFA_ATTRIBUTEINFO> attr =
       XFA_GetAttributeByName(expression.AsStringView());
   if (attr.has_value() && HasAttribute(attr.value().attribute))
     return CJS_Result::Success(runtime->NewBoolean(true));
@@ -284,7 +285,7 @@ CJS_Result CJX_Node::loadXML(CFX_V8* runtime,
       CXFA_Node* pItem = pNewChild->GetNextSibling();
       pFakeRoot->RemoveChildAndNotify(pNewChild, true);
       GetXFANode()->InsertChildAndNotify(index++, pNewChild);
-      pNewChild->SetFlagAndNotify(XFA_NodeFlag_Initialized);
+      pNewChild->SetInitializedFlagAndNotify();
       pNewChild = pItem;
     }
 
@@ -312,7 +313,7 @@ CJS_Result CJX_Node::loadXML(CFX_V8* runtime,
       CXFA_Node* pItem = pChild->GetNextSibling();
       pFakeRoot->RemoveChildAndNotify(pChild, true);
       GetXFANode()->InsertChildAndNotify(pChild, nullptr);
-      pChild->SetFlagAndNotify(XFA_NodeFlag_Initialized);
+      pChild->SetInitializedFlagAndNotify();
       pChild = pItem;
     }
   }
@@ -320,7 +321,7 @@ CJS_Result CJX_Node::loadXML(CFX_V8* runtime,
   if (pFakeXMLRoot) {
     pFakeRoot->SetXMLMappingNode(std::move(pFakeXMLRoot));
   }
-  pFakeRoot->SetFlag(XFA_NodeFlag_HasRemovedChildren);
+  pFakeRoot->SetFlag(XFA_NodeFlag::kHasRemovedChildren);
 
   return CJS_Result::Success();
 }
@@ -405,7 +406,7 @@ void CJX_Node::ns(v8::Isolate* pIsolate,
                   bool bSetting,
                   XFA_Attribute eAttribute) {
   if (bSetting) {
-    ThrowInvalidPropertyException();
+    ThrowInvalidPropertyException(pIsolate);
     return;
   }
   *pValue = fxv8::NewStringHelper(
@@ -417,7 +418,7 @@ void CJX_Node::model(v8::Isolate* pIsolate,
                      bool bSetting,
                      XFA_Attribute eAttribute) {
   if (bSetting) {
-    ThrowInvalidPropertyException();
+    ThrowInvalidPropertyException(pIsolate);
     return;
   }
   *pValue = GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(
@@ -429,7 +430,7 @@ void CJX_Node::isContainer(v8::Isolate* pIsolate,
                            bool bSetting,
                            XFA_Attribute eAttribute) {
   if (bSetting) {
-    ThrowInvalidPropertyException();
+    ThrowInvalidPropertyException(pIsolate);
     return;
   }
   *pValue = fxv8::NewBooleanHelper(pIsolate, GetXFANode()->IsContainerNode());
@@ -440,7 +441,7 @@ void CJX_Node::isNull(v8::Isolate* pIsolate,
                       bool bSetting,
                       XFA_Attribute eAttribute) {
   if (bSetting) {
-    ThrowInvalidPropertyException();
+    ThrowInvalidPropertyException(pIsolate);
     return;
   }
   if (GetXFANode()->GetElementType() == XFA_Element::Subform) {
@@ -455,12 +456,12 @@ void CJX_Node::oneOfChild(v8::Isolate* pIsolate,
                           bool bSetting,
                           XFA_Attribute eAttribute) {
   if (bSetting) {
-    ThrowInvalidPropertyException();
+    ThrowInvalidPropertyException(pIsolate);
     return;
   }
 
   std::vector<CXFA_Node*> properties =
-      GetXFANode()->GetNodeListWithFilter(XFA_NODEFILTER_OneOfProperty);
+      GetXFANode()->GetNodeListWithFilter(XFA_NodeFilter::kOneOfProperty);
   if (!properties.empty()) {
     *pValue = GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(
         properties.front());

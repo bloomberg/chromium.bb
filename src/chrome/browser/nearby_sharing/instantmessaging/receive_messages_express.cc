@@ -25,8 +25,7 @@
 
 namespace {
 
-const base::TimeDelta kFastPathReadyTimeout =
-    base::TimeDelta::FromMilliseconds(2500);
+const base::TimeDelta kFastPathReadyTimeout = base::Milliseconds(2500);
 
 // Timeout for the receive messages stream, from when the stream first opens.
 // This timeout applies to the Tachyon signaling process, so once we establish
@@ -34,7 +33,7 @@ const base::TimeDelta kFastPathReadyTimeout =
 // are other timeouts in the WebRTC medium that will cancel the signaling
 // process sooner than 60s, so this is just a failsafe to make sure we clean up
 // the ReceiveMessagesExpress if something goes wrong.
-const base::TimeDelta kStreamTimeout = base::TimeDelta::FromSeconds(60);
+const base::TimeDelta kStreamTimeout = base::Seconds(60);
 
 // TODO(crbug.com/1123164) - Add nearby sharing policy when available.
 const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
@@ -140,12 +139,7 @@ ReceiveMessagesExpress::ReceiveMessagesExpress(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : incoming_messages_listener_(std::move(incoming_messages_listener)),
       token_fetcher_(identity_manager),
-      url_loader_factory_(std::move(url_loader_factory)),
-      stream_parser_(
-          base::BindRepeating(&ReceiveMessagesExpress::OnMessageReceived,
-                              base::Unretained(this)),
-          base::BindOnce(&ReceiveMessagesExpress::OnFastPathReady,
-                         base::Unretained(this))) {}
+      url_loader_factory_(std::move(url_loader_factory)) {}
 
 ReceiveMessagesExpress::~ReceiveMessagesExpress() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -263,8 +257,34 @@ void ReceiveMessagesExpress::OnDataReceived(base::StringPiece data,
                                             base::OnceClosure resume) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  stream_parser_.Append(data);
+  for (auto response : stream_parser_.Append(data)) {
+    DelegateMessage(response);
+  }
   std::move(resume).Run();
+}
+
+void ReceiveMessagesExpress::DelegateMessage(
+    const chrome_browser_nearby_sharing_instantmessaging::
+        ReceiveMessagesResponse& response) {
+  // Security Note - The ReceiveMessagesResponse proto is coming from a trusted
+  // Google server (Tachyon) from the signaling channel for webrtc messages for
+  // sharing messages and hence can be parsed on the browser process.
+  // The message contained within the proto is untrusted and should be parsed
+  // within a sandbox process.
+  switch (response.body_case()) {
+    case chrome_browser_nearby_sharing_instantmessaging::
+        ReceiveMessagesResponse::kFastPathReady:
+      OnFastPathReady();
+      break;
+    case chrome_browser_nearby_sharing_instantmessaging::
+        ReceiveMessagesResponse::kInboxMessage:
+      OnMessageReceived(response.inbox_message().message());
+      break;
+    default:
+      NS_LOG(ERROR) << __func__ << ": message body case was unexpected: "
+                    << response.body_case();
+      NOTREACHED();
+  }
 }
 
 void ReceiveMessagesExpress::OnComplete(bool success) {

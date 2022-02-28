@@ -14,11 +14,12 @@
 #include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/install_finalizer.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/externally_managed_app_registration_task.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_install_utils.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -194,8 +195,8 @@ void ExternallyManagedAppManagerImpl::MaybeStartNext() {
       // Otherwise no need to do anything.
       std::move(front->callback)
           .Run(install_options.install_url,
-               {.code = InstallResultCode::kSuccessAlreadyInstalled,
-                .did_uninstall_and_replace = false});
+               ExternallyManagedAppManager::InstallResult(
+                   InstallResultCode::kSuccessAlreadyInstalled, app_id));
       continue;
     }
 
@@ -206,8 +207,8 @@ void ExternallyManagedAppManagerImpl::MaybeStartNext() {
         !install_options.override_previous_user_uninstall) {
       std::move(front->callback)
           .Run(install_options.install_url,
-               {.code = InstallResultCode::kPreviouslyUninstalled,
-                .did_uninstall_and_replace = false});
+               ExternallyManagedAppManager::InstallResult(
+                   InstallResultCode::kPreviouslyUninstalled, app_id));
       continue;
     }
 
@@ -261,13 +262,12 @@ void ExternallyManagedAppManagerImpl::CreateWebContentsIfNecessary() {
 
   web_contents_ = content::WebContents::Create(
       content::WebContents::CreateParams(profile_));
-  ExternallyManagedAppInstallTask::CreateTabHelpers(web_contents_.get());
+  CreateWebAppInstallTabHelpers(web_contents_.get());
 }
 
 void ExternallyManagedAppManagerImpl::OnInstalled(
-    absl::optional<AppId> app_id,
     ExternallyManagedAppManager::InstallResult result) {
-  if (app_id && IsSuccess(result.code)) {
+  if (result.app_id && IsSuccess(result.code)) {
     MaybeEnqueueServiceWorkerRegistration(
         current_install_->task->install_options());
   }

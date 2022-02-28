@@ -7,11 +7,7 @@
 
 #include <windows.h>
 
-#include <string>
-
-#include "base/compiler_specific.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/win/imm32_manager.h"
 
@@ -23,6 +19,10 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) InputMethodWinBase
  public:
   InputMethodWinBase(internal::InputMethodDelegate* delegate,
                      HWND toplevel_window_handle);
+
+  InputMethodWinBase(const InputMethodWinBase&) = delete;
+  InputMethodWinBase& operator=(const InputMethodWinBase&) = delete;
+
   ~InputMethodWinBase() override;
 
  protected:
@@ -39,7 +39,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) InputMethodWinBase
                  UINT message,
                  WPARAM wparam,
                  LPARAM lparam,
-                 const MSG& event,
+                 const CHROME_MSG& event,
                  BOOL* handled);
 
   // Some IMEs rely on WM_IME_REQUEST message even when TSF is enabled. So
@@ -55,12 +55,12 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) InputMethodWinBase
 
   // Callback function for IMEEngineHandlerInterface::ProcessKeyEvent.
   void ProcessKeyEventDone(ui::KeyEvent* event,
-                           const std::vector<MSG>* char_msgs,
+                           const std::vector<CHROME_MSG>* char_msgs,
                            bool is_handled);
 
   ui::EventDispatchDetails ProcessUnhandledKeyEvent(
       ui::KeyEvent* event,
-      const std::vector<MSG>* char_msgs);
+      const std::vector<CHROME_MSG>* char_msgs);
 
   // The toplevel window handle.
   const HWND toplevel_window_handle_;
@@ -84,9 +84,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) InputMethodWinBase
   bool HandlePeekMessage(HWND hwnd,
                          UINT msg_filter_min,
                          UINT msg_filter_max,
-                         std::vector<MSG>* char_msgs);
-
-  DISALLOW_COPY_AND_ASSIGN(InputMethodWinBase);
+                         std::vector<CHROME_MSG>* char_msgs);
 };
 
 }  // namespace ui
