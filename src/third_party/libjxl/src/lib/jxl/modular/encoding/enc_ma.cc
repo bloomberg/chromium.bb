@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/jxl/modular/encoding/enc_ma.h"
 
@@ -542,13 +533,13 @@ constexpr int TreeSamples::kPropertyRange;
 constexpr uint32_t TreeSamples::kDedupEntryUnused;
 
 Status TreeSamples::SetPredictor(Predictor predictor,
-                                 ModularOptions::WPTreeMode wp_tree_mode) {
-  if (wp_tree_mode == ModularOptions::WPTreeMode::kWPOnly) {
+                                 ModularOptions::TreeMode wp_tree_mode) {
+  if (wp_tree_mode == ModularOptions::TreeMode::kWPOnly) {
     predictors = {Predictor::Weighted};
     residuals.resize(1);
     return true;
   }
-  if (wp_tree_mode == ModularOptions::WPTreeMode::kNoWP &&
+  if (wp_tree_mode == ModularOptions::TreeMode::kNoWP &&
       predictor == Predictor::Weighted) {
     return JXL_FAILURE("Invalid predictor settings");
   }
@@ -563,7 +554,7 @@ Status TreeSamples::SetPredictor(Predictor predictor,
   } else {
     predictors = {predictor};
   }
-  if (wp_tree_mode == ModularOptions::WPTreeMode::kNoWP) {
+  if (wp_tree_mode == ModularOptions::TreeMode::kNoWP) {
     auto wp_it =
         std::find(predictors.begin(), predictors.end(), Predictor::Weighted);
     if (wp_it != predictors.end()) {
@@ -575,12 +566,15 @@ Status TreeSamples::SetPredictor(Predictor predictor,
 }
 
 Status TreeSamples::SetProperties(const std::vector<uint32_t> &properties,
-                                  ModularOptions::WPTreeMode wp_tree_mode) {
+                                  ModularOptions::TreeMode wp_tree_mode) {
   props_to_use = properties;
-  if (wp_tree_mode == ModularOptions::WPTreeMode::kWPOnly) {
-    props_to_use = {kWPProp};
+  if (wp_tree_mode == ModularOptions::TreeMode::kWPOnly) {
+    props_to_use = {static_cast<uint32_t>(kWPProp)};
   }
-  if (wp_tree_mode == ModularOptions::WPTreeMode::kNoWP) {
+  if (wp_tree_mode == ModularOptions::TreeMode::kGradientOnly) {
+    props_to_use = {static_cast<uint32_t>(kGradientProp)};
+  }
+  if (wp_tree_mode == ModularOptions::TreeMode::kNoWP) {
     auto it = std::find(props_to_use.begin(), props_to_use.end(), kWPProp);
     if (it != props_to_use.end()) {
       props_to_use.erase(it);
@@ -949,6 +943,7 @@ void CollectPixelSamples(const Image &image, const ModularOptions &options,
                          std::vector<uint32_t> &channel_pixel_count,
                          std::vector<pixel_type> &pixel_samples,
                          std::vector<pixel_type> &diff_samples) {
+  if (options.nb_repeats == 0) return;
   if (group_pixel_count.size() <= group_id) {
     group_pixel_count.resize(group_id + 1);
   }

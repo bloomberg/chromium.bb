@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "media/base/audio_parameters.h"
@@ -30,6 +29,9 @@ class FakeLoopbackGroupMember : public LoopbackGroupMember {
  public:
   explicit FakeLoopbackGroupMember(const media::AudioParameters& params);
 
+  FakeLoopbackGroupMember(const FakeLoopbackGroupMember&) = delete;
+  FakeLoopbackGroupMember& operator=(const FakeLoopbackGroupMember&) = delete;
+
   ~FakeLoopbackGroupMember() override;
 
   // Sets the sine wave |frequency| rendered into channel |ch|. Note that
@@ -49,7 +51,6 @@ class FakeLoopbackGroupMember : public LoopbackGroupMember {
 
   // LoopbackGroupMember implementation.
   const media::AudioParameters& GetAudioParameters() const override;
-  std::string GetDeviceId() const override;
   void StartSnooping(Snooper* snooper) override;
   void StopSnooping(Snooper* snooper) override;
   void StartMuting() override;
@@ -67,8 +68,6 @@ class FakeLoopbackGroupMember : public LoopbackGroupMember {
   int64_t at_frame_ = 0;
 
   Snooper* snooper_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeLoopbackGroupMember);
 };
 
 }  // namespace audio

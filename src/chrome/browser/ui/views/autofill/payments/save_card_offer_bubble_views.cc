@@ -11,7 +11,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/hats/hats_service.h"
+#include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/views/accessibility/theme_tracking_non_accessible_image_view.h"
 #include "chrome/browser/ui/views/autofill/payments/dialog_view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -19,8 +22,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -62,6 +65,14 @@ SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
                             base::Unretained(this))));
     InitFootnoteView(legal_message_view_);
   }
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  HatsService* hats_service =
+      HatsServiceFactory::GetForProfile(profile, /*create_if_necessary=*/true);
+  CHECK(hats_service);
+  hats_service->LaunchDelayedSurveyForWebContents(
+      kHatsSurveyTriggerAutofillCard, web_contents, 10000);
 }
 
 void SaveCardOfferBubbleViews::Init() {
@@ -125,16 +136,13 @@ bool SaveCardOfferBubbleViews::IsDialogButtonEnabled(
 void SaveCardOfferBubbleViews::AddedToWidget() {
   SaveCardBubbleViews::AddedToWidget();
   // Set the header image.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillUseNewHeaderForSaveCardBubble)) {
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    auto image_view = std::make_unique<ThemeTrackingNonAccessibleImageView>(
-        *bundle.GetImageSkiaNamed(IDR_SAVE_CARD),
-        *bundle.GetImageSkiaNamed(IDR_SAVE_CARD_DARK),
-        base::BindRepeating(&views::BubbleFrameView::GetBackgroundColor,
-                            base::Unretained(GetBubbleFrameView())));
-    GetBubbleFrameView()->SetHeaderView(std::move(image_view));
-  }
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  auto image_view = std::make_unique<ThemeTrackingNonAccessibleImageView>(
+      *bundle.GetImageSkiaNamed(IDR_SAVE_CARD),
+      *bundle.GetImageSkiaNamed(IDR_SAVE_CARD_DARK),
+      base::BindRepeating(&views::BubbleFrameView::GetBackgroundColor,
+                          base::Unretained(GetBubbleFrameView())));
+  GetBubbleFrameView()->SetHeaderView(std::move(image_view));
 }
 
 void SaveCardOfferBubbleViews::ContentsChanged(
@@ -222,7 +230,7 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
         views::BoxLayout::Orientation::kVertical, gfx::Insets(),
         provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
     cardholder_name_view->AddChildView(cardholder_name_label_row.release());
-    cardholder_name_view->AddChildView(cardholder_name_textfield_);
+    cardholder_name_view->AddChildView(cardholder_name_textfield_.get());
     view->AddChildView(cardholder_name_view.release());
   }
 
@@ -276,8 +284,8 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
   input_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
-  input_row->AddChildView(month_input_dropdown_);
-  input_row->AddChildView(year_input_dropdown_);
+  input_row->AddChildView(month_input_dropdown_.get());
+  input_row->AddChildView(year_input_dropdown_.get());
 
   // Set up expiration date label.
   auto expiration_date_label = std::make_unique<views::Label>(

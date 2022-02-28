@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SHARING_SHARING_SERVICE_PROXY_ANDROID_H_
 
 #include "base/android/jni_android.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 
 class SharingService;
 
@@ -14,6 +14,11 @@ class SharingService;
 class SharingServiceProxyAndroid {
  public:
   explicit SharingServiceProxyAndroid(SharingService* sharing_service);
+
+  SharingServiceProxyAndroid(const SharingServiceProxyAndroid&) = delete;
+  SharingServiceProxyAndroid& operator=(const SharingServiceProxyAndroid&) =
+      delete;
+
   ~SharingServiceProxyAndroid();
 
   void SendSharedClipboardMessage(
@@ -32,9 +37,7 @@ class SharingServiceProxyAndroid {
       const base::android::JavaParamRef<jobject>& j_runnable);
 
  private:
-  SharingService* sharing_service_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(SharingServiceProxyAndroid);
+  raw_ptr<SharingService> sharing_service_ = nullptr;
 };
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_SERVICE_PROXY_ANDROID_H_

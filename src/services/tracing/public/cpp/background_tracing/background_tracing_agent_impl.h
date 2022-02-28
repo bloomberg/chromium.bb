@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/time/time.h"
@@ -24,6 +23,11 @@ class COMPONENT_EXPORT(BACKGROUND_TRACING_CPP) BackgroundTracingAgentImpl
  public:
   explicit BackgroundTracingAgentImpl(
       mojo::PendingRemote<mojom::BackgroundTracingAgentClient> client);
+
+  BackgroundTracingAgentImpl(const BackgroundTracingAgentImpl&) = delete;
+  BackgroundTracingAgentImpl& operator=(const BackgroundTracingAgentImpl&) =
+      delete;
+
   ~BackgroundTracingAgentImpl() override;
 
   // mojom::BackgroundTracingAgent methods:
@@ -54,8 +58,6 @@ class COMPONENT_EXPORT(BACKGROUND_TRACING_CPP) BackgroundTracingAgentImpl
       histogram_callback_map_;
 
   base::WeakPtrFactory<BackgroundTracingAgentImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundTracingAgentImpl);
 };
 
 }  // namespace tracing

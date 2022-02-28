@@ -8,7 +8,7 @@
 #ifndef GrBicubicTextureEffect_DEFINED
 #define GrBicubicTextureEffect_DEFINED
 
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
+#include "src/gpu/GrFragmentProcessor.h"
 
 class GrInvariantOutput;
 
@@ -19,8 +19,8 @@ public:
                              // surrounding texels are needed by the kernel in x and y.
     };
 
-    static constexpr SkImage::CubicResampler gMitchell = { 1.0f/3, 1.0f/3 };
-    static constexpr SkImage::CubicResampler gCatmullRom = {    0, 1.0f/2 };
+    inline static constexpr SkImage::CubicResampler gMitchell = { 1.0f/3, 1.0f/3 };
+    inline static constexpr SkImage::CubicResampler gCatmullRom = {    0, 1.0f/2 };
 
     enum class Direction {
         /** Apply bicubic kernel in local coord x, nearest neighbor in y. */
@@ -112,9 +112,9 @@ private:
 
     explicit GrBicubicEffect(const GrBicubicEffect&);
 
-    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
+    std::unique_ptr<ProgramImpl> onMakeProgramImpl() const override;
 
-    void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
+    void onAddToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
 
     bool onIsEqual(const GrFragmentProcessor&) const override;
 

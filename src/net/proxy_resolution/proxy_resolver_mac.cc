@@ -16,9 +16,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/base/proxy_server.h"
+#include "net/base/proxy_string_util.h"
 #include "net/proxy_resolution/proxy_info.h"
+#include "net/proxy_resolution/proxy_list.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "url/gurl.h"
 
@@ -99,6 +102,11 @@ class SynchronizedRunLoopObserver final {
   // Creates the instance of an observer that will synchronize the sources
   // using a given |lock|.
   SynchronizedRunLoopObserver(base::Lock& lock);
+
+  SynchronizedRunLoopObserver(const SynchronizedRunLoopObserver&) = delete;
+  SynchronizedRunLoopObserver& operator=(const SynchronizedRunLoopObserver&) =
+      delete;
+
   // Destructor.
   ~SynchronizedRunLoopObserver();
   // Adds the observer to the current run loop for a given run loop mode.
@@ -121,7 +129,6 @@ class SynchronizedRunLoopObserver final {
   base::ScopedCFTypeRef<CFRunLoopObserverRef> observer_;
   // Validates that all methods of this class are executed on the same thread.
   base::ThreadChecker thread_checker_;
-  DISALLOW_COPY_AND_ASSIGN(SynchronizedRunLoopObserver);
 };
 
 SynchronizedRunLoopObserver::SynchronizedRunLoopObserver(base::Lock& lock)
@@ -308,11 +315,7 @@ int ProxyResolverMac::GetProxyForURL(
       base::mac::CFCastStrict<CFArrayRef>(result));
   DCHECK(proxy_array_ref != NULL);
 
-  // This string will be an ordered list of <proxy-uri> entries, separated by
-  // semi-colons. It is the format that ProxyInfo::UseNamedProxy() expects.
-  //    proxy-uri = [<proxy-scheme>"://"]<proxy-host>":"<proxy-port>
-  // (This also includes entries for direct connection, as "direct://").
-  std::string proxy_uri_list;
+  ProxyList proxy_list;
 
   CFIndex proxy_array_count = CFArrayGetCount(proxy_array_ref.get());
   for (CFIndex i = 0; i < proxy_array_count; ++i) {
@@ -336,21 +339,17 @@ int ProxyResolverMac::GetProxyForURL(
 
     CFStringRef proxy_type = base::mac::GetValueFromDictionary<CFStringRef>(
         proxy_dictionary, kCFProxyTypeKey);
-    ProxyServer proxy_server = ProxyServer::FromDictionary(
-        GetProxyServerScheme(proxy_type),
-        proxy_dictionary,
-        kCFProxyHostNameKey,
+    ProxyServer proxy_server = ProxyDictionaryToProxyServer(
+        GetProxyServerScheme(proxy_type), proxy_dictionary, kCFProxyHostNameKey,
         kCFProxyPortNumberKey);
     if (!proxy_server.is_valid())
       continue;
 
-    if (!proxy_uri_list.empty())
-      proxy_uri_list += ";";
-    proxy_uri_list += proxy_server.ToURI();
+    proxy_list.AddProxyServer(proxy_server);
   }
 
-  if (!proxy_uri_list.empty())
-    results->UseNamedProxy(proxy_uri_list);
+  if (!proxy_list.IsEmpty())
+    results->UseProxyList(proxy_list);
   // Else do nothing (results is already guaranteed to be in the default state).
 
   return OK;

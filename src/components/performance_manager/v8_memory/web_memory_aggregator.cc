@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/containers/stack.h"
-#include "base/stl_util.h"
+#include "base/memory/raw_ptr.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/page_node.h"
 #include "components/performance_manager/public/graph/worker_node.h"
@@ -68,10 +68,10 @@ class AggregationPointVisitor {
  private:
   struct Enclosing {
     url::Origin origin;
-    mojom::WebMemoryBreakdownEntry* aggregation_point;
+    raw_ptr<mojom::WebMemoryBreakdownEntry> aggregation_point;
   };
   const url::Origin requesting_origin_;
-  const ProcessNode* requesting_process_node_;
+  raw_ptr<const ProcessNode> requesting_process_node_;
   const url::Origin main_origin_;
   mojom::WebMemoryMeasurementPtr aggregation_result_ =
       mojom::WebMemoryMeasurement::New();
@@ -191,6 +191,16 @@ void AddMemoryBytes(mojom::WebMemoryBreakdownEntry* aggregation_point,
   // (https://github.com/WICG/performance-measure-memory/issues/20).
   uint64_t bytes_used = is_same_process ? data->v8_bytes_used() : 0;
   aggregation_point->memory->bytes += bytes_used;
+
+  // Add canvas memory similar to V8 memory above.
+  if (data->canvas_bytes_used()) {
+    uint64_t canvas_bytes_used =
+        is_same_process ? *data->canvas_bytes_used() : 0;
+    if (!aggregation_point->canvas_memory) {
+      aggregation_point->canvas_memory = mojom::WebMemoryUsage::New();
+    }
+    aggregation_point->canvas_memory->bytes += canvas_bytes_used;
+  }
 }
 
 const FrameNode* GetTopFrame(const FrameNode* frame) {
@@ -420,13 +430,15 @@ namespace {
 //   |browsing_instance_id| in the given |process_node|.
 // - v8_process_memory is the total V8 memory usage of all frames in the given
 //   |process_node|.
-double GetBrowsingInstanceV8BytesFraction(const ProcessNode* process_node,
-                                          int32_t browsing_instance_id) {
+double GetBrowsingInstanceV8BytesFraction(
+    const ProcessNode* process_node,
+    content::BrowsingInstanceId browsing_instance_id) {
   uint64_t bytes_used = 0;
   uint64_t total_bytes_used = 0;
   process_node->VisitFrameNodes(base::BindRepeating(
-      [](absl::optional<int32_t> browsing_instance_id, uint64_t* bytes_used,
-         uint64_t* total_bytes_used, const FrameNode* frame_node) {
+      [](absl::optional<content::BrowsingInstanceId> browsing_instance_id,
+         uint64_t* bytes_used, uint64_t* total_bytes_used,
+         const FrameNode* frame_node) {
         const auto* data =
             V8DetailedMemoryExecutionContextData::ForFrameNode(frame_node);
         if (data) {
@@ -453,7 +465,8 @@ WebMemoryAggregator::AggregateMeasureMemoryResult() {
   std::vector<const FrameNode*> top_frames;
   main_process_node_->VisitFrameNodes(base::BindRepeating(
       [](std::vector<const FrameNode*>* top_frames,
-         int32_t browsing_instance_id, const FrameNode* node) {
+         content::BrowsingInstanceId browsing_instance_id,
+         const FrameNode* node) {
         if (node->GetBrowsingInstanceId() == browsing_instance_id &&
             !node->GetParentFrameNode() && !GetOrigin(node).opaque()) {
           top_frames->push_back(node);

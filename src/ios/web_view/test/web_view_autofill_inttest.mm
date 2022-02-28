@@ -7,6 +7,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "components/variations/variations_ids_provider.h"
 #import "ios/web_view/public/cwv_navigation_delegate.h"
 #import "ios/web_view/test/web_view_inttest_base.h"
 #import "ios/web_view/test/web_view_test_util.h"
@@ -168,6 +169,7 @@ class WebViewAutofillTest : public WebViewInttestBase {
 
 // Tests that CWVAutofillControllerDelegate receives callbacks.
 TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
+  ASSERT_TRUE(variations::VariationsIdsProvider::GetInstance());
   ASSERT_TRUE(test_server_->Start());
   ASSERT_TRUE(LoadTestPage());
   ASSERT_TRUE(SetFormFieldValue(kTestAddressFieldID, kTestAddressFieldValue));
@@ -244,7 +246,8 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
 }
 
 // Tests that CWVAutofillController can fetch, fill, and clear suggestions.
-TEST_F(WebViewAutofillTest, TestSuggestionFetchFillClear) {
+// TODO(crbug.com/1259114): Figure out why this is test is flaky.
+TEST_F(WebViewAutofillTest, DISABLED_TestSuggestionFetchFillClear) {
   ASSERT_TRUE(test_server_->Start());
   ASSERT_TRUE(LoadTestPage());
   ASSERT_TRUE(SetFormFieldValue(kTestNameFieldID, kTestNameFieldValue));

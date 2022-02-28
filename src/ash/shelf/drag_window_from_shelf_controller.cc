@@ -32,9 +32,10 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
+#include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/numerics/ranges.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
@@ -42,7 +43,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point_f.h"
-#include "ui/gfx/transform_util.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 
@@ -60,7 +61,7 @@ constexpr float kMinYDisplayHeightRatio = 0.125f;
 // Amount of time to wait to show overview after the user slows down or stops
 // window dragging.
 constexpr base::TimeDelta kShowOverviewTimeWhenDragSuspend =
-    base::TimeDelta::FromMilliseconds(40);
+    base::Milliseconds(40);
 
 // The scroll update threshold to restart the show overview timer.
 constexpr float kScrollUpdateOverviewThreshold = 2.f;
@@ -98,6 +99,9 @@ class DragWindowFromShelfController::WindowsHider
     }
     window_util::MinimizeAndHideWithoutAnimation(hidden_windows_);
   }
+
+  WindowsHider(const WindowsHider&) = delete;
+  WindowsHider& operator=(const WindowsHider&) = delete;
 
   ~WindowsHider() override {
     for (auto* window : hidden_windows_) {
@@ -137,8 +141,6 @@ class DragWindowFromShelfController::WindowsHider
  private:
   aura::Window* dragged_window_;
   std::vector<aura::Window*> hidden_windows_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowsHider);
 };
 
 // static
@@ -188,7 +190,9 @@ void DragWindowFromShelfController::Drag(const gfx::PointF& location_in_screen,
   if (std::abs(scroll_y) <= kOpenOverviewThreshold &&
       !overview_controller->InOverviewSession() &&
       windows_hider_->WindowsMinimized()) {
-    overview_controller->StartOverview(OverviewEnterExitType::kImmediateEnter);
+    overview_controller->StartOverview(
+        OverviewStartAction::kDragWindowFromShelf,
+        OverviewEnterExitType::kImmediateEnter);
     OnWindowDragStartedInOverview();
   }
 
@@ -256,8 +260,10 @@ absl::optional<ShelfWindowDragResult> DragWindowFromShelfController::EndDrag(
   window_drag_result_ = absl::nullopt;
   if (ShouldGoToHomeScreen(location_in_screen, velocity_y)) {
     DCHECK(!in_splitview);
-    if (in_overview)
-      overview_controller->EndOverview(OverviewEnterExitType::kFadeOutExit);
+    if (in_overview) {
+      overview_controller->EndOverview(OverviewEndAction::kDragWindowFromShelf,
+                                       OverviewEnterExitType::kFadeOutExit);
+    }
     window_drag_result_ = ShelfWindowDragResult::kGoToHomeScreen;
   } else if (ShouldRestoreToOriginalBounds(location_in_screen, velocity_y)) {
     window_drag_result_ = ShelfWindowDragResult::kRestoreToOriginalBounds;
@@ -298,8 +304,10 @@ void DragWindowFromShelfController::CancelDrag() {
 
   // End overview if it was opened during dragging.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  if (overview_controller->InOverviewSession())
-    overview_controller->EndOverview(OverviewEnterExitType::kImmediateExit);
+  if (overview_controller->InOverviewSession()) {
+    overview_controller->EndOverview(OverviewEndAction::kDragWindowFromShelf,
+                                     OverviewEnterExitType::kImmediateExit);
+  }
   ReshowHiddenWindowsOnDragEnd();
 
   window_drag_result_ = ShelfWindowDragResult::kDragCanceled;
@@ -470,8 +478,8 @@ void DragWindowFromShelfController::UpdateDraggedWindow(
   float y_diff = location_in_screen.y() - min_y;
   float scale = (1.0f - kMinimumWindowScaleDuringDragging) * y_diff / y_full +
                 kMinimumWindowScaleDuringDragging;
-  scale = base::ClampToRange(scale, /*min=*/kMinimumWindowScaleDuringDragging,
-                             /*max=*/1.f);
+  scale = base::clamp(scale, /*min=*/kMinimumWindowScaleDuringDragging,
+                      /*max=*/1.f);
 
   // Calculate the desired translation so that the dragged window stays under
   // the finger during the dragging.
@@ -678,17 +686,12 @@ void DragWindowFromShelfController::ScaleDownWindowAfterDrag() {
       /*percent_shown=*/100,
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
 
-  // Do the scale-down transform for the entire transient tree.
-  for (auto* window : GetTransientTreeIterator(window_)) {
-    // self-destructed when window transform animation is done.
-    new WindowScaleAnimation(
-        window, WindowScaleAnimation::WindowScaleType::kScaleDownToShelf,
-        window == window_
-            ? base::BindOnce(
-                  &DragWindowFromShelfController::OnWindowScaledDownAfterDrag,
-                  weak_ptr_factory_.GetWeakPtr())
-            : base::NullCallback());
-  }
+  (new WindowScaleAnimation(
+       window_, WindowScaleAnimation::WindowScaleType::kScaleDownToShelf,
+       base::BindOnce(
+           &DragWindowFromShelfController::OnWindowScaledDownAfterDrag,
+           weak_ptr_factory_.GetWeakPtr())))
+      ->Start();
 }
 
 void DragWindowFromShelfController::OnWindowScaledDownAfterDrag() {
@@ -702,15 +705,13 @@ void DragWindowFromShelfController::OnWindowScaledDownAfterDrag() {
 }
 
 void DragWindowFromShelfController::ScaleUpToRestoreWindowAfterDrag() {
-  // Do the scale up transform for the entire transient tee.
-  for (auto* window : GetTransientTreeIterator(window_)) {
-    new WindowScaleAnimation(
-        window, WindowScaleAnimation::WindowScaleType::kScaleUpToRestore,
-        base::BindOnce(
-            &DragWindowFromShelfController::OnWindowRestoredToOrignalBounds,
-            weak_ptr_factory_.GetWeakPtr(),
-            /*should_end_overview=*/!started_in_overview_));
-  }
+  (new WindowScaleAnimation(
+       window_, WindowScaleAnimation::WindowScaleType::kScaleUpToRestore,
+       base::BindOnce(
+           &DragWindowFromShelfController::OnWindowRestoredToOrignalBounds,
+           weak_ptr_factory_.GetWeakPtr(),
+           /*should_end_overview=*/!started_in_overview_)))
+      ->Start();
 }
 
 void DragWindowFromShelfController::OnWindowRestoredToOrignalBounds(
@@ -718,6 +719,7 @@ void DragWindowFromShelfController::OnWindowRestoredToOrignalBounds(
   base::AutoReset<bool> auto_reset(&during_window_restoration_callback_, true);
   if (end_overview) {
     Shell::Get()->overview_controller()->EndOverview(
+        OverviewEndAction::kDragWindowFromShelf,
         OverviewEnterExitType::kImmediateExit);
   }
   ReshowHiddenWindowsOnDragEnd();

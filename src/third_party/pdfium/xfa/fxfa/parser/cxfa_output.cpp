@@ -12,9 +12,9 @@
 namespace {
 
 const CXFA_Node::PropertyData kOutputPropertyData[] = {
-    {XFA_Element::To, 1, 0},
-    {XFA_Element::Uri, 1, 0},
-    {XFA_Element::Type, 1, 0},
+    {XFA_Element::To, 1, {}},
+    {XFA_Element::Uri, 1, {}},
+    {XFA_Element::Type, 1, {}},
 };
 
 const CXFA_Node::AttributeData kOutputAttributeData[] = {
@@ -27,7 +27,7 @@ const CXFA_Node::AttributeData kOutputAttributeData[] = {
 CXFA_Output::CXFA_Output(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_Config,
+                XFA_XDPPACKET::kConfig,
                 XFA_ObjectType::Node,
                 XFA_Element::Output,
                 kOutputPropertyData,

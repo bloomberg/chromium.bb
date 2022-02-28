@@ -10,18 +10,21 @@
 
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
+#include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
+#include "chrome/browser/ash/platform_keys/platform_keys_service_factory.h"
+#include "chrome/browser/ash/platform_keys/platform_keys_service_test_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
-#include "chrome/browser/chromeos/scoped_test_system_nss_key_slot_mixin.h"
+#include "chrome/browser/ash/scoped_test_system_nss_key_slot_mixin.h"
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_test_base.h"
-#include "chrome/browser/net/nss_context.h"
+#include "chrome/browser/net/nss_service.h"
+#include "chrome/browser/net/nss_service_factory.h"
 #include "chrome/browser/policy/extension_force_install_mixin.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -32,6 +35,7 @@
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_test_system_nss_key_slot.h"
+#include "extensions/browser/api/test/test_api.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_registry.h"
@@ -52,6 +56,14 @@ namespace {
 // of the extension is:
 // chrome/test/data/extensions/api_test/enterprise_platform_keys/
 constexpr char kExtensionId[] = "aecpbnckhoppanpmefllkdkohionpmig";
+
+// Keys of configuration options sent by the C++ side to the JS side of the
+// test.
+// NOTE: the strings must stay in sync with the JS code.
+// * whether the test is running in a user session:
+constexpr char kIsUserSessionTestConfig[] = "isUserSessionTest";
+// * whether the system token is enabled or not:
+constexpr char kSystemTokenEnabledConfig[] = "systemTokenEnabled";
 
 // The test extension has a certificate referencing this private key which will
 // be stored in the user's token in the test setup.
@@ -141,46 +153,14 @@ Profile* GetOriginalSigninProfile() {
   return chromeos::ProfileHelper::GetSigninProfile()->GetOriginalProfile();
 }
 
-enum class TestingMode {
-  kUserSessionWithSystemTokenEnabledMode,
-  kUserSessionWithSystemTokenDisabledMode,
-  kLoginScreenMode
-};
-
-// Note: The strings returned by this function must match the strings defined in
-// the .js test file (c/t/d/e/api_test/enterprise_platform_keys/background.js)
-std::string TestingModeToString(TestingMode mode) {
-  switch (mode) {
-    case TestingMode::kUserSessionWithSystemTokenEnabledMode:
-      return "User session with system token enabled mode.";
-    case TestingMode::kUserSessionWithSystemTokenDisabledMode:
-      return "User session with system token disabled mode.";
-    case TestingMode::kLoginScreenMode:
-      return "Login screen mode.";
-  }
-}
-
-// Sends a message to the test extension to specify the type of the tests to
-// run.
-void RunTests(Profile* profile, TestingMode mode) {
-  api::test::OnMessage::Info info;
-  info.data = TestingModeToString(mode);
-
-  auto event = std::make_unique<extensions::Event>(
-      extensions::events::FOR_TEST,
-      extensions::api::test::OnMessage::kEventName,
-      api::test::OnMessage::Create(info), profile);
-  extensions::EventRouter::Get(profile)->DispatchEventToExtension(
-      kExtensionId, std::move(event));
-}
-
 void ImportPrivateKeyPKCS8ToSlot(const unsigned char* pkcs8_der,
                                  size_t pkcs8_der_size,
                                  PK11SlotInfo* slot) {
   SECItem pki_der_user = {
       siBuffer,
       // NSS requires non-const data even though it is just for input.
-      const_cast<unsigned char*>(pkcs8_der), pkcs8_der_size};
+      const_cast<unsigned char*>(pkcs8_der),
+      static_cast<unsigned int>(pkcs8_der_size)};
 
   SECKEYPrivateKey* seckey_raw = nullptr;
   ASSERT_EQ(SECSuccess, PK11_ImportDERPrivateKeyInfoAndReturnKey(
@@ -193,6 +173,19 @@ void ImportPrivateKeyPKCS8ToSlot(const unsigned char* pkcs8_der,
 
   // Make sure that the memory allocated for the key gets freed.
   crypto::ScopedSECKEYPrivateKey seckey(seckey_raw);
+}
+
+// Builds the tests configuration dictionary and serializes it.
+std::string BuildCustomArg(bool user_session_test, bool system_token_enabled) {
+  base::Value custom_arg_value(base::Value::Type::DICTIONARY);
+  custom_arg_value.SetBoolKey(kIsUserSessionTestConfig, user_session_test);
+  custom_arg_value.SetBoolKey(kSystemTokenEnabledConfig, system_token_enabled);
+
+  std::string custom_arg;
+  if (!base::JSONWriter::Write(custom_arg_value, &custom_arg)) {
+    ADD_FAILURE();
+  }
+  return custom_arg;
 }
 
 struct Params {
@@ -216,6 +209,10 @@ class EnterprisePlatformKeysTest
       : PlatformKeysTestBase(GetParam().system_token_status_,
                              GetParam().enrollment_status_,
                              GetParam().user_status_) {}
+
+  EnterprisePlatformKeysTest(const EnterprisePlatformKeysTest&) = delete;
+  EnterprisePlatformKeysTest& operator=(const EnterprisePlatformKeysTest&) =
+      delete;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformKeysTestBase::SetUpCommandLine(command_line);
@@ -243,17 +240,10 @@ class EnterprisePlatformKeysTest
   }
 
  protected:
-  TestingMode GetTestingMode() {
-    // Only if the system token exists, and the current user is of the same
-    // domain as the device is enrolled to, the system token is available to the
-    // extension.
-    if (system_token_status() == SystemTokenStatus::EXISTS &&
-        enrollment_status() == EnrollmentStatus::ENROLLED &&
-        user_status() == UserStatus::MANAGED_AFFILIATED_DOMAIN) {
-      return TestingMode::kUserSessionWithSystemTokenEnabledMode;
-    }
-
-    return TestingMode::kUserSessionWithSystemTokenDisabledMode;
+  bool IsSystemTokenEnabled() const {
+    return system_token_status() == SystemTokenStatus::EXISTS &&
+           enrollment_status() == EnrollmentStatus::ENROLLED &&
+           user_status() == UserStatus::MANAGED_AFFILIATED_DOMAIN;
   }
 
   ExtensionForceInstallMixin extension_force_install_mixin_{&mixin_host_};
@@ -268,7 +258,11 @@ class EnterprisePlatformKeysTest
                                 system_slot->slot());
   }
 
-  DISALLOW_COPY_AND_ASSIGN(EnterprisePlatformKeysTest);
+  // Allows tests to generate software-backed keys by configuring fake ChapsUtil
+  // instances to be created in its constructor (and undoing the change in its
+  // destructor).
+  ash::platform_keys::test_util::ScopedChapsUtilOverride
+      scoped_chaps_util_override_;
 };
 
 }  // namespace
@@ -280,12 +274,17 @@ IN_PROC_BROWSER_TEST_P(EnterprisePlatformKeysTest, PRE_Basic) {
 IN_PROC_BROWSER_TEST_P(EnterprisePlatformKeysTest, Basic) {
   {
     base::RunLoop loop;
-    GetNSSCertDatabaseForProfile(
-        profile(),
-        base::BindOnce(&EnterprisePlatformKeysTest::DidGetCertDatabase,
-                       base::Unretained(this), loop.QuitClosure()));
+    NssServiceFactory::GetForContext(profile())
+        ->UnsafelyGetNSSCertDatabaseForTesting(
+            base::BindOnce(&EnterprisePlatformKeysTest::DidGetCertDatabase,
+                           base::Unretained(this), loop.QuitClosure()));
     loop.Run();
   }
+
+  SetCustomArg(BuildCustomArg(/*user_session_test=*/true,
+                              /*system_token_enabled=*/IsSystemTokenEnabled()));
+
+  extensions::ResultCatcher catcher;
 
   extensions::ExtensionId extension_id;
   ASSERT_TRUE(extension_force_install_mixin_.ForceInstallFromSourceDir(
@@ -294,8 +293,6 @@ IN_PROC_BROWSER_TEST_P(EnterprisePlatformKeysTest, Basic) {
       &extension_id));
   ASSERT_EQ(kExtensionId, extension_id);
 
-  extensions::ResultCatcher catcher;
-  RunTests(profile(), GetTestingMode());
   ASSERT_TRUE(catcher.GetNextResult());
 }
 
@@ -322,8 +319,8 @@ INSTANTIATE_TEST_SUITE_P(
 // chrome.enterprise.platformKeys namespace.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        EnterprisePlatformKeysIsRestrictedToPolicyExtension) {
-  ASSERT_TRUE(RunExtensionTest({.name = "enterprise_platform_keys",
-                                .page_url = "api_not_available.html"},
+  ASSERT_TRUE(RunExtensionTest("enterprise_platform_keys",
+                               {.page_url = "api_not_available.html"},
                                {.ignore_manifest_warnings = true}));
 
   base::FilePath extension_path =
@@ -355,7 +352,7 @@ class EnterprisePlatformKeysLoginScreenTest
 
  private:
   void SetUp() override {
-    chromeos::platform_keys::PlatformKeysServiceFactory::GetInstance()
+    ash::platform_keys::PlatformKeysServiceFactory::GetInstance()
         ->SetTestingMode(true);
 
     MixinBasedInProcessBrowserTest::SetUp();
@@ -376,15 +373,28 @@ class EnterprisePlatformKeysLoginScreenTest
                                     kExtensionId);
   }
 
-  chromeos::DeviceStateMixin device_state_mixin_{
+  ash::DeviceStateMixin device_state_mixin_{
       &mixin_host_,
-      chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
-  chromeos::ScopedTestSystemNSSKeySlotMixin system_nss_key_slot_mixin_{
-      &mixin_host_};
+      ash::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
+  ash::ScopedTestSystemNSSKeySlotMixin system_nss_key_slot_mixin_{&mixin_host_};
   ExtensionForceInstallMixin extension_force_install_mixin_{&mixin_host_};
+
+  // Allows tests to generate software-backed keys by configuring fake ChapsUtil
+  // instances to be created in its constructor (and undoing the change in its
+  // destructor).
+  ash::platform_keys::test_util::ScopedChapsUtilOverride
+      scoped_chaps_util_override_;
 };
 
 IN_PROC_BROWSER_TEST_F(EnterprisePlatformKeysLoginScreenTest, Basic) {
+  base::DictionaryValue config;
+  config.SetStringKey("customArg",
+                      BuildCustomArg(/*user_session_test=*/false,
+                                     /*system_token_enabled=*/true));
+  extensions::TestGetConfigFunction::set_test_config_state(&config);
+
+  extensions::ResultCatcher catcher;
+
   extensions::ExtensionId extension_id;
   ASSERT_TRUE(extension_force_install_mixin()->ForceInstallFromSourceDir(
       GetExtensionDirName(), GetExtensionPemFileName(),
@@ -392,8 +402,6 @@ IN_PROC_BROWSER_TEST_F(EnterprisePlatformKeysLoginScreenTest, Basic) {
       &extension_id));
   ASSERT_EQ(kExtensionId, extension_id);
 
-  extensions::ResultCatcher catcher;
-  RunTests(GetOriginalSigninProfile(), TestingMode::kLoginScreenMode);
   ASSERT_TRUE(catcher.GetNextResult());
 }
 

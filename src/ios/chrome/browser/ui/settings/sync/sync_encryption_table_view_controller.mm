@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -18,8 +20,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/main/browser.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
+#include "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/settings/settings_controller_protocol.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_create_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
@@ -31,7 +33,7 @@
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
@@ -77,7 +79,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     ChromeBrowserState* browserState = self.browser->GetBrowserState();
     self.title = l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_TITLE);
     syncer::SyncService* syncService =
-        ProfileSyncServiceFactory::GetForBrowserState(browserState);
+        SyncServiceFactory::GetForBrowserState(browserState);
     _isUsingExplicitPassphrase =
         syncService->IsEngineInitialized() &&
         syncService->GetUserSettings()->IsUsingExplicitPassphrase();
@@ -175,7 +177,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       DCHECK(switches::IsSyncAllowedByFlag());
       ChromeBrowserState* browserState = self.browser->GetBrowserState();
       syncer::SyncService* service =
-          ProfileSyncServiceFactory::GetForBrowserState(browserState);
+          SyncServiceFactory::GetForBrowserState(browserState);
       if (service->IsEngineInitialized() &&
           !service->GetUserSettings()->IsUsingExplicitPassphrase()) {
         SyncCreatePassphraseTableViewController* controller =
@@ -201,7 +203,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - SettingsControllerProtocol callbacks
 
 - (void)reportDismissalUserAction {
-  NOTREACHED();
+  base::RecordAction(
+      base::UserMetricsAction("MobileSyncEncryptionSettingsClose"));
 }
 
 - (void)reportBackUserAction {
@@ -220,7 +223,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       << "onSyncStateChanged called after -settingsWillBeDismissed";
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
   syncer::SyncService* service =
-      ProfileSyncServiceFactory::GetForBrowserState(browserState);
+      SyncServiceFactory::GetForBrowserState(browserState);
   BOOL isNowUsingExplicitPassphrase =
       service->IsEngineInitialized() &&
       service->GetUserSettings()->IsUsingExplicitPassphrase();
@@ -241,8 +244,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.text = text;
   item.accessoryType = checked ? UITableViewCellAccessoryCheckmark
                                : UITableViewCellAccessoryNone;
-  item.textColor =
-      enabled ? UIColor.cr_labelColor : UIColor.cr_secondaryLabelColor;
+  item.textColor = enabled ? [UIColor colorNamed:kTextPrimaryColor]
+                           : [UIColor colorNamed:kTextSecondaryColor];
   item.enabled = enabled;
   return item;
 }

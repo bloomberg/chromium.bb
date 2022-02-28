@@ -5,6 +5,7 @@
 #ifndef SANDBOX_WIN_SRC_SANDBOX_TYPES_H_
 #define SANDBOX_WIN_SRC_SANDBOX_TYPES_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 
@@ -143,6 +144,8 @@ enum ResultCode : int {
   SBOX_ERROR_CANNOT_UPDATE_JOB_PROCESS_LIMIT = 60,
   // Cannot create an impersonation lowbox token
   SBOX_ERROR_CANNOT_CREATE_LOWBOX_IMPERSONATION_TOKEN = 61,
+  // Cannot create a sandbox policy for an unsandboxed process.
+  SBOX_ERROR_UNSANDBOXED_PROCESS = 62,
   // Placeholder for last item of the enum.
   SBOX_ERROR_LAST
 };
@@ -172,8 +175,8 @@ class TargetServices;
 
 // Contains the pointer to a target or broker service.
 struct SandboxInterfaceInfo {
-  BrokerServices* broker_services;
-  TargetServices* target_services;
+  raw_ptr<BrokerServices> broker_services;
+  raw_ptr<TargetServices> target_services;
 };
 
 #define SANDBOX_INTERCEPT extern "C"

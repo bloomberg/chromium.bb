@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/proto/autofill_sync.pb.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -128,6 +129,9 @@ AutofillEntry CreateAutofillEntry(const AutofillSpecifics& autofill_specifics) {
 class SyncDifferenceTracker {
  public:
   explicit SyncDifferenceTracker(AutofillTable* table) : table_(table) {}
+
+  SyncDifferenceTracker(const SyncDifferenceTracker&) = delete;
+  SyncDifferenceTracker& operator=(const SyncDifferenceTracker&) = delete;
 
   optional<ModelError> IncorporateRemoteSpecifics(
       const std::string& storage_key,
@@ -252,7 +256,7 @@ class SyncDifferenceTracker {
     return true;
   }
 
-  AutofillTable* table_;
+  raw_ptr<AutofillTable> table_;
 
   // This class attempts to lazily load data from |table_|. This field tracks
   // if that has happened or not yet. To facilitate this, the first usage of
@@ -273,8 +277,6 @@ class SyncDifferenceTracker {
   // Contains merged data for entries that existed on both sync and local sides
   // and need to be saved back to sync.
   std::vector<AutofillEntry> save_to_sync_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncDifferenceTracker);
 };
 
 }  // namespace
@@ -306,7 +308,7 @@ AutocompleteSyncBridge::AutocompleteSyncBridge(
       web_data_backend_(backend) {
   DCHECK(web_data_backend_);
 
-  scoped_observation_.Observe(web_data_backend_);
+  scoped_observation_.Observe(web_data_backend_.get());
 
   LoadMetadata();
 }
@@ -336,7 +338,7 @@ optional<syncer::ModelError> AutocompleteSyncBridge::MergeSyncData(
 
   RETURN_IF_ERROR(tracker.FlushToLocal(web_data_backend_));
   RETURN_IF_ERROR(tracker.FlushToSync(true, std::move(metadata_change_list),
-                                change_processor()));
+                                      change_processor()));
 
   web_data_backend_->CommitChanges();
   web_data_backend_->NotifyThatSyncHasStarted(syncer::AUTOFILL);

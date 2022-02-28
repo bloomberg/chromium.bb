@@ -11,7 +11,6 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
@@ -34,6 +33,9 @@ class NET_EXPORT SSLPrivateKey
       base::OnceCallback<void(Error, const std::vector<uint8_t>&)>;
 
   SSLPrivateKey() {}
+
+  SSLPrivateKey(const SSLPrivateKey&) = delete;
+  SSLPrivateKey& operator=(const SSLPrivateKey&) = delete;
 
   // Returns a human-readable name of the provider that backs this
   // SSLPrivateKey, for debugging. If not applicable or available, return the
@@ -69,7 +71,6 @@ class NET_EXPORT SSLPrivateKey
 
  private:
   friend class base::RefCountedThreadSafe<SSLPrivateKey>;
-  DISALLOW_COPY_AND_ASSIGN(SSLPrivateKey);
 };
 
 }  // namespace net

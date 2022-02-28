@@ -6,7 +6,6 @@
 #define SERVICES_MEDIA_SESSION_AUDIO_FOCUS_REQUEST_H_
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -33,6 +32,9 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
       const std::string& source_name,
       const base::UnguessableToken& group_id,
       const base::UnguessableToken& identity);
+
+  AudioFocusRequest(const AudioFocusRequest&) = delete;
+  AudioFocusRequest& operator=(const AudioFocusRequest&) = delete;
 
   ~AudioFocusRequest() override;
 
@@ -119,8 +121,6 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
 
   // Weak pointer to the owning |AudioFocusManager| instance.
   const base::WeakPtr<AudioFocusManager> owner_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioFocusRequest);
 };
 
 }  // namespace media_session

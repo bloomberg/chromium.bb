@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for clustering_ops."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 
 from tensorflow.python.framework import test_util
@@ -92,7 +88,7 @@ class KMC2InitializationLargeTest(test.TestCase):
         sample = self.evaluate(
             clustering_ops.kmc2_chain_initialization(self._distances, seed + i))
         counts[sample] = counts.get(sample, 0) + 1
-      self.assertEquals(len(counts), 2)
+      self.assertEqual(len(counts), 2)
       self.assertTrue(500 in counts)
       self.assertTrue(1000 in counts)
       self.assertGreaterEqual(counts[500], 5)

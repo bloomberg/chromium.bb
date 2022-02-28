@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/ash/file_system_provider/notification_manager.h"
@@ -43,33 +42,8 @@ namespace net {
 class IOBuffer;
 }  // namespace net
 
-namespace chromeos {
+namespace ash {
 namespace file_system_provider {
-
-// TODO(https://crbug.com/1164001): remove when moved to ash.
-namespace {
-namespace operations {
-using ::ash::file_system_provider::operations::Abort;
-using ::ash::file_system_provider::operations::AddWatcher;
-using ::ash::file_system_provider::operations::CloseFile;
-using ::ash::file_system_provider::operations::Configure;
-using ::ash::file_system_provider::operations::CopyEntry;
-using ::ash::file_system_provider::operations::CreateDirectory;
-using ::ash::file_system_provider::operations::CreateFile;
-using ::ash::file_system_provider::operations::DeleteEntry;
-using ::ash::file_system_provider::operations::ExecuteAction;
-using ::ash::file_system_provider::operations::GetActions;
-using ::ash::file_system_provider::operations::GetMetadata;
-using ::ash::file_system_provider::operations::MoveEntry;
-using ::ash::file_system_provider::operations::OpenFile;
-using ::ash::file_system_provider::operations::ReadDirectory;
-using ::ash::file_system_provider::operations::ReadFile;
-using ::ash::file_system_provider::operations::RemoveWatcher;
-using ::ash::file_system_provider::operations::Truncate;
-using ::ash::file_system_provider::operations::Unmount;
-using ::ash::file_system_provider::operations::WriteFile;
-}  // namespace operations
-}  // namespace
 
 AutoUpdater::AutoUpdater(base::OnceClosure update_callback)
     : update_callback_(std::move(update_callback)),
@@ -141,6 +115,10 @@ struct ProvidedFileSystem::NotifyInQueueArgs {
         changes(std::move(changes)),
         tag(tag),
         callback(std::move(callback)) {}
+
+  NotifyInQueueArgs(const NotifyInQueueArgs&) = delete;
+  NotifyInQueueArgs& operator=(const NotifyInQueueArgs&) = delete;
+
   ~NotifyInQueueArgs() {}
 
   const size_t token;
@@ -150,9 +128,6 @@ struct ProvidedFileSystem::NotifyInQueueArgs {
   const std::unique_ptr<ProvidedFileSystemObserver::Changes> changes;
   const std::string tag;
   storage::AsyncFileUtil::StatusCallback callback;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NotifyInQueueArgs);
 };
 
 ProvidedFileSystem::ProvidedFileSystem(
@@ -863,4 +838,4 @@ void ProvidedFileSystem::OnCloseFileCompleted(
 }
 
 }  // namespace file_system_provider
-}  // namespace chromeos
+}  // namespace ash

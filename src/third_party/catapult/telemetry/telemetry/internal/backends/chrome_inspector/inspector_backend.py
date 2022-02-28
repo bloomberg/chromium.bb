@@ -90,11 +90,19 @@ class InspectorBackend(six.with_metaclass(trace_event.TracedMetaClass, object)):
     This method intentionally leaves the self._websocket object around, so that
     future calls it to it will fail with a relevant error.
     """
+    self._DisconnectWithoutTracing()
+
+  def _DisconnectWithoutTracing(self):
+    # All methods in this class are automatically traced unless they start with
+    # _ due to using TracedMetaClass as a meta class. This causes issues with
+    # the destructor, as we can deadlock when trying to acquire the tracing lock
+    # if another test has already started and is starting tracing up when the
+    # destructor is called. So, make all code called from __del__ untraced.
     if self._websocket:
       self._websocket.Disconnect()
 
   def __del__(self):
-    self.Disconnect()
+    self._DisconnectWithoutTracing()
 
   @property
   def app(self):
@@ -314,7 +322,7 @@ class InspectorBackend(six.with_metaclass(trace_event.TracedMetaClass, object)):
 
     try:
       return py_utils.WaitFor(IsJavaScriptExpressionTrue, timeout)
-    except py_utils.TimeoutException as e:
+    except py_utils.TimeoutException as toe:
       # Try to make timeouts a little more actionable by dumping console output.
       debug_message = None
       try:
@@ -330,7 +338,7 @@ class InspectorBackend(six.with_metaclass(trace_event.TracedMetaClass, object)):
           py_utils.TimeoutException,
           py_utils.TimeoutException(
               'Timeout after %ss while waiting for JavaScript:'
-              % timeout + condition + '\n' +  e.message + '\n' + debug_message
+              % timeout + condition + '\n' + repr(toe) + '\n' + debug_message
           ),
           sys.exc_info()[2]
       )
@@ -702,7 +710,7 @@ class InspectorBackend(six.with_metaclass(trace_event.TracedMetaClass, object)):
     new_error.AddDebuggingMessage(original_error_msg)
     self._AddDebuggingInformation(new_error)
 
-    six.reraise(new_error, None, sys.exc_info()[2])
+    six.reraise(type(new_error), new_error, sys.exc_info()[2])
 
   def _AddDebuggingInformation(self, error):
     """Adds debugging information to error.

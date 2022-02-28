@@ -14,15 +14,15 @@
 #include "include/gpu/GrRecordingContext.h"
 #include "include/gpu/GrYUVABackendTextures.h"
 #include "src/core/SkBitmapCache.h"
-#include "src/core/SkTLList.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrImageContextPriv.h"
 #include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
+#include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/GrYUVATextureProxies.h"
+#include "src/gpu/SurfaceContext.h"
 #include "src/gpu/effects/GrYUVtoRGBEffect.h"
 #include "src/image/SkImage_Gpu.h"
 #include "src/image/SkReadPixelsRec.h"
@@ -113,7 +113,7 @@ bool SkImage_GpuBase::getROPixels(GrDirectContext* dContext,
     }
 
     GrColorInfo colorInfo(ct, this->alphaType(), this->refColorSpace());
-    auto sContext = GrSurfaceContext::Make(dContext, std::move(view), std::move(colorInfo));
+    auto sContext = dContext->priv().makeSC(std::move(view), std::move(colorInfo));
     if (!sContext) {
         return false;
     }
@@ -173,7 +173,7 @@ bool SkImage_GpuBase::onReadPixels(GrDirectContext* dContext,
     SkASSERT(view);
 
     GrColorInfo colorInfo(ct, this->alphaType(), this->refColorSpace());
-    auto sContext = GrSurfaceContext::Make(dContext, std::move(view), colorInfo);
+    auto sContext = dContext->priv().makeSC(std::move(view), colorInfo);
     if (!sContext) {
         return false;
     }
@@ -297,10 +297,10 @@ sk_sp<GrTextureProxy> SkImage_GpuBase::MakePromiseImageLazyProxy(
                 return {};
             }
 
-            sk_sp<GrTexture> tex= resourceProvider->wrapBackendTexture(backendTexture,
-                                                                       kBorrow_GrWrapOwnership,
-                                                                       GrWrapCacheable::kNo,
-                                                                       kRead_GrIOType);
+            sk_sp<GrTexture> tex = resourceProvider->wrapBackendTexture(backendTexture,
+                                                                        kBorrow_GrWrapOwnership,
+                                                                        GrWrapCacheable::kNo,
+                                                                        kRead_GrIOType);
             if (!tex) {
                 return {};
             }

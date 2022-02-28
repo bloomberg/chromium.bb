@@ -11,9 +11,9 @@
 #include "base/callback_list.h"
 #include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/extensions/api/identity/identity_clear_all_cached_auth_tokens_function.h"
@@ -118,10 +118,10 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   void FireOnAccountSignInChanged(const std::string& gaia_id,
                                   bool is_signed_in);
 
-  Profile* const profile_;
-  signin::IdentityManager* const identity_manager_;
-  ExtensionPrefs* const extension_prefs_;
-  EventRouter* const event_router_;
+  const raw_ptr<Profile> profile_;
+  const raw_ptr<signin::IdentityManager> identity_manager_;
+  const raw_ptr<ExtensionPrefs> extension_prefs_;
+  const raw_ptr<EventRouter> event_router_;
 
   IdentityMintRequestQueue mint_queue_;
   IdentityTokenCache token_cache_;

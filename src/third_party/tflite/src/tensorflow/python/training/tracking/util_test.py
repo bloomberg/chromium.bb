@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
+import copy
 import os
 import weakref
 
@@ -26,6 +23,7 @@ from tensorflow.python.eager import context
 from tensorflow.python.eager import def_function
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
+from tensorflow.python.framework import errors_impl
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import control_flow_ops
@@ -37,6 +35,7 @@ from tensorflow.python.ops import variable_scope
 from tensorflow.python.ops import variables as variables_lib
 from tensorflow.python.platform import test
 from tensorflow.python.platform import tf_logging as logging
+from tensorflow.python.saved_model import save as saved_model_save
 from tensorflow.python.training import checkpoint_management
 from tensorflow.python.training import saver as saver_lib
 from tensorflow.python.training.saving import checkpoint_options
@@ -59,7 +58,7 @@ class InterfaceTests(test.TestCase):
   @test_util.run_in_graph_and_eager_modes(assert_no_eager_garbage=True)
   def testAddVariable(self):
     obj = NonLayerTrackable()
-    with self.assertRaisesRegexp(ValueError, "do not specify shape"):
+    with self.assertRaisesRegex(ValueError, "do not specify shape"):
       trackable_utils.add_variable(
           obj, name="shape_specified_twice", shape=[], initializer=1)
     constant_initializer = trackable_utils.add_variable(
@@ -83,7 +82,7 @@ class InterfaceTests(test.TestCase):
         name="duplicate", initial_value=1.)
     duplicate = trackable_utils.add_variable(
         obj, name="duplicate", shape=[])
-    with self.assertRaisesRegexp(ValueError, "'duplicate'.*already declared"):
+    with self.assertRaisesRegex(ValueError, "'duplicate'.*already declared"):
       trackable_utils.add_variable(obj, name="duplicate", shape=[])
 
     self.evaluate(trackable_utils.gather_initializers(obj))
@@ -139,27 +138,6 @@ class InterfaceTests(test.TestCase):
         dtype=dtypes.float64)
     self.assertEqual(dtypes.float64, v2.dtype)
     self.assertAllEqual([1., 1., 1.], self.evaluate(v2))
-
-  def testNotTrackable(self):
-
-    class CallsFunctionalStuff(
-        tracking.NotTrackable, tracking.AutoTrackable):
-      pass
-
-    test_dir = self.get_temp_dir()
-    prefix = os.path.join(test_dir, "ckpt")
-    checkpoint = trackable_utils.Checkpoint(x=CallsFunctionalStuff())
-    with self.assertRaises(NotImplementedError):
-      checkpoint.save(prefix)
-
-    class CallsFunctionalStuffOtherMRO(
-        tracking.AutoTrackable, tracking.NotTrackable):
-      pass
-
-    checkpoint_reversed = trackable_utils.Checkpoint(
-        x=CallsFunctionalStuffOtherMRO())
-    with self.assertRaises(NotImplementedError):
-      checkpoint_reversed.save(prefix)
 
 
 class _MirroringSaveable(saver_lib.BaseSaverBuilder.SaveableObject):
@@ -255,6 +233,17 @@ class CheckpointingTests(parameterized.TestCase, test.TestCase):
     status = ckpt.restore(save_path=save_path)
     del ckpt
     status.assert_consumed()
+
+  def testDeepCopyCheckpoint(self):
+    prefix = os.path.join(self.get_temp_dir(), "ckpt")
+    v = variables_lib.Variable(1.)
+    original_ckpt = trackable_utils.Checkpoint(v=v)
+    copied_ckpt = copy.deepcopy(original_ckpt)
+    copied_ckpt.v.assign(2.)
+    self.assertAllClose(1., v)
+    save_path = copied_ckpt.save(file_prefix=prefix)
+    original_ckpt.restore(save_path=save_path).assert_consumed()
+    self.assertAllClose(2., v)
 
   @test_util.run_in_graph_and_eager_modes
   def testPassingCheckpointOptions(self):
@@ -365,9 +354,8 @@ class CheckpointingTests(parameterized.TestCase, test.TestCase):
       partial_root = trackable_utils.Checkpoint(v1=base.Trackable(),
                                                 v2=variables_lib.Variable(0.))
       status = partial_root.restore(save_path)
-      with self.assertRaisesRegexp(
-          AssertionError,
-          r"Unused attributes(.|\n)*\(root\).v1"):
+      with self.assertRaisesRegex(AssertionError,
+                                  r"Unused attributes(.|\n)*\(root\).v1"):
         status.assert_consumed()
 
   def testSilencePartialWarning(self):
@@ -753,7 +741,8 @@ class CheckpointingTests(parameterized.TestCase, test.TestCase):
     load_status.assert_existing_objects_matched().run_restore_ops()
 
   @test_util.run_in_graph_and_eager_modes
-  def test_write_checkpoint_from_function(self):
+  def test_write_checkpoint_path_str_from_function(self):
+
     checkpoint_prefix = os.path.join(self.get_temp_dir(), "ckpt")
     save_checkpoint = trackable_utils.Checkpoint(v=variables_lib.Variable(1.))
 
@@ -781,6 +770,58 @@ class CheckpointingTests(parameterized.TestCase, test.TestCase):
     status.run_restore_ops()
     self.assertEqual(3., self.evaluate(load_checkpoint.v))
 
+  @test_util.run_in_graph_and_eager_modes
+  def test_write_checkpoint_path_tensor_from_function(self):
+    # Same as the previous test, but the path is a tensor not a python string.
+    checkpoint_prefix = os.path.join(self.get_temp_dir(), "ckpt")
+
+    checkpoint_prefix_tensor = constant_op.constant(checkpoint_prefix)
+
+    save_checkpoint = trackable_utils.Checkpoint(v=variables_lib.Variable(1.))
+
+    @def_function.function
+    def _write_checkpoint(prefix):
+      save_path = save_checkpoint.write(prefix)
+      return save_path
+
+    self.evaluate([save_checkpoint.v.initializer])
+    self.evaluate(_write_checkpoint(checkpoint_prefix_tensor))
+    load_checkpoint = trackable_utils.Checkpoint(v=variables_lib.Variable(0.))
+    # Use read() instead of restore() which allows us to check that all
+    # existing objects were loaded.
+    status = load_checkpoint.read(checkpoint_prefix)
+    status.assert_existing_objects_matched()
+    status.assert_consumed()
+    status.run_restore_ops()
+    self.assertEqual(1., self.evaluate(load_checkpoint.v))
+    self.evaluate(save_checkpoint.v.assign(3.))
+    self.evaluate(_write_checkpoint(checkpoint_prefix_tensor))
+    self.evaluate(save_checkpoint.v.assign(0.))
+    status = load_checkpoint.read(checkpoint_prefix)
+    status.assert_existing_objects_matched()
+    status.assert_consumed()
+    status.run_restore_ops()
+    self.assertEqual(3., self.evaluate(load_checkpoint.v))
+
+  @test_util.run_in_graph_and_eager_modes
+  def test_write_checkpoint_path_tensor_does_not_exist_from_function(self):
+    # Same as the previous test, but the path is a tensor not a python string.
+    checkpoint_prefix = os.path.join(
+        self.get_temp_dir(), "DOES_NOT_EXIST", "ckpt")
+
+    checkpoint_prefix_tensor = constant_op.constant(checkpoint_prefix)
+
+    save_checkpoint = trackable_utils.Checkpoint(v=variables_lib.Variable(1.))
+
+    @def_function.function
+    def _write_checkpoint(prefix):
+      save_path = save_checkpoint.write(prefix)
+      return save_path
+
+    self.evaluate([save_checkpoint.v.initializer])
+    with self.assertRaises(errors_impl.NotFoundError):
+      self.evaluate(_write_checkpoint(checkpoint_prefix_tensor))
+
   def test_inititialize_with_data_structures(self):
     checkpoint = trackable_utils.Checkpoint(
         a=[variables_lib.Variable(0.), variables_lib.Variable(1.)],
@@ -794,6 +835,168 @@ class CheckpointingTests(parameterized.TestCase, test.TestCase):
     load_checkpoint.restore(save_path)
     self.assertAllClose(self.evaluate(load_checkpoint.a), [0, 1])
     self.assertAllClose(self.evaluate(load_checkpoint.b), {"a": 2, "b": 3})
+
+  def _create_trackable(self):
+    class Model(tracking.AutoTrackable):
+
+      def __init__(self):
+        self.v = variables_lib.Variable(2.)
+
+      def __call__(self, x):
+        return self.v * x
+    return Model()
+
+  def test_initialize_with_root_object(self):
+    model = self._create_trackable()
+    input_value = constant_op.constant([[3.]])
+    expected_output = self.evaluate(model(input_value))
+    model.deferred_variable = variables_lib.Variable(5.)
+
+    checkpoint = trackable_utils.Checkpoint(model)
+    checkpoint_directory = self.get_temp_dir()
+    checkpoint_prefix = os.path.join(checkpoint_directory, "ckpt")
+    save_path = checkpoint.save(checkpoint_prefix)
+
+    new_model = self._create_trackable()
+    load_checkpoint = trackable_utils.Checkpoint(new_model)
+    load_checkpoint.restore(save_path)
+    self.assertAllClose(expected_output, new_model(input_value))
+
+    new_model.deferred_variable = variables_lib.Variable(1.)
+    self.assertEqual(self.evaluate(new_model.deferred_variable), 5)
+
+  def test_initialize_with_root_object_and_kwargs(self):
+    model = self._create_trackable()
+    model.v.assign(3.)
+    separate_variable = variables_lib.Variable(5.)
+
+    with self.assertRaisesRegex(ValueError, "root.v already exists"):
+      trackable_utils.Checkpoint(model, v=separate_variable)
+
+    checkpoint = trackable_utils.Checkpoint(
+        model, separate_variable=separate_variable)
+    checkpoint_directory = self.get_temp_dir()
+    checkpoint_prefix = os.path.join(checkpoint_directory, "ckpt")
+    save_path = checkpoint.save(checkpoint_prefix)
+
+    # Case 1: Loading checkpoint with same configuration.
+    new_model = self._create_trackable()
+    separate_variable = variables_lib.Variable(1.)
+    load_checkpoint = trackable_utils.Checkpoint(
+        new_model, separate_variable=separate_variable)
+    load_checkpoint.restore(save_path).assert_consumed()
+    self.assertEqual(self.evaluate(new_model.v), 3)
+    self.assertEqual(self.evaluate(separate_variable), 5)
+    self.assertEqual(self.evaluate(load_checkpoint.save_counter), 1)
+
+    # Case 2: Loading checkpoint where v and separate_variable are swapped:
+    # v is not attached to the root, while separate variable is attached to root
+    new_model = tracking.AutoTrackable()
+    new_model.separate_variable = variables_lib.Variable(200.)
+    v = variables_lib.Variable(100.)
+    load_checkpoint = trackable_utils.Checkpoint(new_model, v=v)
+    load_checkpoint.restore(save_path).assert_consumed()
+    self.assertEqual(self.evaluate(v), 3)
+    self.assertEqual(self.evaluate(new_model.separate_variable), 5)
+    self.assertEqual(self.evaluate(load_checkpoint.save_counter), 1)
+
+    # Case 3: Loading checkpoint where no root object is specified
+    separate_variable = variables_lib.Variable(200.)
+    v = variables_lib.Variable(100.)
+    load_checkpoint = trackable_utils.Checkpoint(
+        v=v, separate_variable=separate_variable)
+    load_checkpoint.restore(save_path).assert_consumed()
+    self.assertEqual(self.evaluate(v), 3)
+    self.assertEqual(self.evaluate(new_model.separate_variable), 5)
+    self.assertEqual(self.evaluate(load_checkpoint.save_counter), 1)
+
+  def test_checkpoint_saved_model_compatibility(self):
+    model = self._create_trackable()
+    input_value = constant_op.constant([[3.]])
+    expected_output = self.evaluate(model(input_value))
+    model.deferred_variable = variables_lib.Variable(5.)
+    saved_model_dir = os.path.join(self.get_temp_dir(), "saved_model")
+    saved_model_save.save(model, saved_model_dir)
+
+    new_model = self._create_trackable()
+    load_checkpoint = trackable_utils.Checkpoint(new_model)
+
+    with self.assertRaisesRegex(
+        errors_impl.NotFoundError,
+        "Error when restoring from checkpoint or SavedModel"):
+      load_checkpoint.restore(saved_model_dir + "no").expect_partial()
+
+    load_checkpoint.restore(saved_model_dir).expect_partial()
+    self.assertAllClose(expected_output, new_model(input_value))
+
+    new_model.deferred_variable = variables_lib.Variable(1.)
+    self.assertEqual(self.evaluate(new_model.deferred_variable), 5)
+
+  def test_deferred_dependency_avoids_reference_cycles(self):
+    # Tests that there are no reference cycles when running garbage collection.
+    # Python uses reference counts as the primary garbage collector, which will
+    # not delete and finalize (__del__) objects in a cycle. The deletion is
+    # eventually triggered by gc, which only runs when the garbage has reached
+    # a certain threshold.
+
+    delete_counter = 0
+
+    class TrackableWithDel(tracking.AutoTrackable):
+
+      def __del__(self):
+        nonlocal delete_counter
+        delete_counter += 1
+
+    x = tracking.AutoTrackable()
+    x.v = variables_lib.Variable(100.)
+    x.has_del = TrackableWithDel()
+
+    checkpoint = trackable_utils.Checkpoint(x)
+    checkpoint_prefix = os.path.join(self.get_temp_dir(), "ckpt")
+    save_path = checkpoint.save(checkpoint_prefix)
+
+    self.assertEqual(delete_counter, 0)
+    del checkpoint
+    del x
+    self.assertEqual(delete_counter, 1)
+
+    no_v = tracking.AutoTrackable()
+    no_v.has_del = TrackableWithDel()
+    checkpoint = trackable_utils.Checkpoint(no_v)
+    checkpoint.restore(save_path).expect_partial()
+    del checkpoint
+    del no_v
+    self.assertEqual(delete_counter, 2)
+
+  def test_defer_objects_with_values_only(self):
+    # Tests that deferred dependencies are only added if the node in the
+    # object graph has children or checkpointed values.
+    root = tracking.AutoTrackable()
+    root.branch_with_value = tracking.AutoTrackable()
+    root.branch_with_value.v = variables_lib.Variable(5.0)
+    root.branch_no_value = tracking.AutoTrackable()
+    root.branch_no_value.child = tracking.AutoTrackable()
+    root.v = variables_lib.Variable(1.0)
+
+    checkpoint = trackable_utils.Checkpoint(model=root)
+    checkpoint_prefix = os.path.join(self.get_temp_dir(), "ckpt")
+    save_path = checkpoint.save(checkpoint_prefix)
+
+    new_root = tracking.AutoTrackable()
+    checkpoint = trackable_utils.Checkpoint(model=new_root)
+    checkpoint.restore(save_path)
+
+    # root should have two nodes with values/children (`branch-with_value`/`v`).
+    self.assertLen(new_root._deferred_dependencies, 2)
+
+    new_root.branch_no_value = tracking.AutoTrackable()
+    self.assertLen(new_root._deferred_dependencies, 2)
+
+    new_root.branch_with_value = tracking.AutoTrackable()
+    self.assertLen(new_root._deferred_dependencies, 1)
+
+    new_root.v = variables_lib.Variable(1.0)
+    self.assertEmpty(new_root._deferred_dependencies, 1)
 
 
 class TemplateTests(parameterized.TestCase, test.TestCase):

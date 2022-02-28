@@ -4,10 +4,8 @@
 
 #include <iostream>
 
-#include "base/test/scoped_feature_list.h"
-#include "content/browser/conversions/conversion_manager_impl.h"
+#include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/devtools/protocol/devtools_protocol_test_support.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -23,8 +21,7 @@ namespace content {
 class DevToolsConversionBrowserTest : public DevToolsProtocolTest {
  public:
   DevToolsConversionBrowserTest() {
-    ConversionManagerImpl::RunInMemoryForTesting();
-    feature_list_.InitAndEnableFeature(features::kConversionMeasurement);
+    AttributionManagerImpl::RunInMemoryForTesting();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -36,7 +33,7 @@ class DevToolsConversionBrowserTest : public DevToolsProtocolTest {
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     embedded_test_server()->ServeFilesFromSourceDirectory(
-        "content/test/data/conversions");
+        "content/test/data/attribution_reporting");
     SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -45,16 +42,13 @@ class DevToolsConversionBrowserTest : public DevToolsProtocolTest {
     https_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
     net::test_server::RegisterDefaultHandlers(https_server_.get());
     https_server_->ServeFilesFromSourceDirectory(
-        "content/test/data/conversions");
+        "content/test/data/attribution_reporting");
     SetupCrossSiteRedirector(https_server_.get());
     ASSERT_TRUE(https_server_->Start());
   }
 
   WebContents* web_contents() { return shell()->web_contents(); }
   net::EmbeddedTestServer* https_server() { return https_server_.get(); }
-
- protected:
-  base::test::ScopedFeatureList feature_list_;
 
  private:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
@@ -75,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsConversionBrowserTest,
   EXPECT_EQ(notifications_.size(), 0ul);
 
   // 3) Trigger the conversion redirect.
-  EXPECT_TRUE(ExecJs(web_contents(), "registerConversion(123)"));
+  EXPECT_TRUE(ExecJs(web_contents(), "registerConversion({data: 123})"));
 
   // 4) Verify the request is marked as successful and not as failed.
   WaitForNotification("Network.loadingFinished", true);

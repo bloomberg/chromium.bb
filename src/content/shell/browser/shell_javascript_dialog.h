@@ -6,7 +6,7 @@
 #define CONTENT_SHELL_BROWSER_SHELL_JAVASCRIPT_DIALOG_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 
@@ -30,6 +30,10 @@ class ShellJavaScriptDialog {
                         const std::u16string& message_text,
                         const std::u16string& default_prompt_text,
                         JavaScriptDialogManager::DialogClosedCallback callback);
+
+  ShellJavaScriptDialog(const ShellJavaScriptDialog&) = delete;
+  ShellJavaScriptDialog& operator=(const ShellJavaScriptDialog&) = delete;
+
   ~ShellJavaScriptDialog();
 
   // Called to cancel a dialog mid-flight.
@@ -40,7 +44,7 @@ class ShellJavaScriptDialog {
   ShellJavaScriptDialogHelper* helper_;  // owned
 #elif defined(OS_WIN)
   JavaScriptDialogManager::DialogClosedCallback callback_;
-  ShellJavaScriptDialogManager* manager_;
+  raw_ptr<ShellJavaScriptDialogManager> manager_;
   JavaScriptDialogType dialog_type_;
   HWND dialog_win_;
   std::u16string message_text_;
@@ -48,8 +52,6 @@ class ShellJavaScriptDialog {
   static INT_PTR CALLBACK DialogProc(HWND dialog, UINT message, WPARAM wparam,
                                      LPARAM lparam);
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(ShellJavaScriptDialog);
 };
 
 }  // namespace content

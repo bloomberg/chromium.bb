@@ -275,7 +275,13 @@ class BluetoothGattBlueZTest : public testing::Test {
     }
   }
 
-  void GattConnectionCallback(std::unique_ptr<BluetoothGattConnection> conn) {
+  void GattConnectionCallback(
+      std::unique_ptr<BluetoothGattConnection> conn,
+      absl::optional<BluetoothDevice::ConnectErrorCode> error) {
+    if (error.has_value()) {
+      ++error_callback_count_;
+      return;
+    }
     ++success_callback_count_;
     gatt_conn_ = std::move(conn);
   }
@@ -296,10 +302,6 @@ class BluetoothGattBlueZTest : public testing::Test {
 
   void DBusErrorCallback(const std::string& error_name,
                          const std::string& error_message) {
-    ++error_callback_count_;
-  }
-
-  void ConnectErrorCallback(BluetoothDevice::ConnectErrorCode error) {
     ++error_callback_count_;
   }
 
@@ -447,8 +449,6 @@ TEST_F(BluetoothGattBlueZTest, GattConnection) {
 
   device->CreateGattConnection(
       base::BindOnce(&BluetoothGattBlueZTest::GattConnectionCallback,
-                     base::Unretained(this)),
-      base::BindOnce(&BluetoothGattBlueZTest::ConnectErrorCallback,
                      base::Unretained(this)));
 
   EXPECT_EQ(1, success_callback_count_);
@@ -467,8 +467,6 @@ TEST_F(BluetoothGattBlueZTest, GattConnection) {
 
   device->CreateGattConnection(
       base::BindOnce(&BluetoothGattBlueZTest::GattConnectionCallback,
-                     base::Unretained(this)),
-      base::BindOnce(&BluetoothGattBlueZTest::ConnectErrorCallback,
                      base::Unretained(this)));
 
   EXPECT_EQ(2, success_callback_count_);
@@ -492,8 +490,6 @@ TEST_F(BluetoothGattBlueZTest, GattConnection) {
 
   device->CreateGattConnection(
       base::BindOnce(&BluetoothGattBlueZTest::GattConnectionCallback,
-                     base::Unretained(this)),
-      base::BindOnce(&BluetoothGattBlueZTest::ConnectErrorCallback,
                      base::Unretained(this)));
 
   EXPECT_EQ(4, success_callback_count_);
@@ -679,8 +675,6 @@ TEST_F(BluetoothGattBlueZTest, ServicesDiscoveredAfterAdapterIsCreated) {
   // Verify that the device can be connected to again:
   device->CreateGattConnection(
       base::BindOnce(&BluetoothGattBlueZTest::GattConnectionCallback,
-                     base::Unretained(this)),
-      base::BindOnce(&BluetoothGattBlueZTest::ConnectErrorCallback,
                      base::Unretained(this)));
   properties->connected.ReplaceValue(true);
   EXPECT_TRUE(device->IsConnected());
@@ -2232,7 +2226,7 @@ TEST_F(BluetoothGattBlueZTest, NotifySessionsMadeInactive) {
   EXPECT_TRUE(update_sessions_[0]->IsActive());
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 TEST_F(BluetoothGattBlueZTest, ReliableWrite) {
   fake_bluetooth_device_client_->CreateDevice(
       dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
@@ -2379,7 +2373,7 @@ TEST_F(BluetoothGattBlueZTest, NotificationType) {
   base::RunLoop().Run();
   EXPECT_EQ(2, observer.gatt_characteristic_value_changed_count());
 }
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 TEST_F(BluetoothGattBlueZTest, MultipleDevices) {
   fake_bluetooth_device_client_->CreateDevice(

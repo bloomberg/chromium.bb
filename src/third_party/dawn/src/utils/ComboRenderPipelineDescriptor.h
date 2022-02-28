@@ -23,46 +23,29 @@
 
 namespace utils {
 
-    // For creating deprecated render pipeline descriptors
-    class ComboVertexStateDescriptor : public wgpu::VertexStateDescriptor {
+    // Primarily used by tests to easily set up the vertex buffer state portion of a RenderPipeline.
+    class ComboVertexState {
       public:
-        ComboVertexStateDescriptor();
+        ComboVertexState();
 
-        ComboVertexStateDescriptor(const ComboVertexStateDescriptor&) = delete;
-        ComboVertexStateDescriptor& operator=(const ComboVertexStateDescriptor&) = delete;
-        ComboVertexStateDescriptor(ComboVertexStateDescriptor&&) = delete;
-        ComboVertexStateDescriptor& operator=(ComboVertexStateDescriptor&&) = delete;
+        ComboVertexState(const ComboVertexState&) = delete;
+        ComboVertexState& operator=(const ComboVertexState&) = delete;
+        ComboVertexState(ComboVertexState&&) = delete;
+        ComboVertexState& operator=(ComboVertexState&&) = delete;
 
-        std::array<wgpu::VertexBufferLayoutDescriptor, kMaxVertexBuffers> cVertexBuffers;
-        std::array<wgpu::VertexAttributeDescriptor, kMaxVertexAttributes> cAttributes;
+        uint32_t vertexBufferCount;
+        std::array<wgpu::VertexBufferLayout, kMaxVertexBuffers> cVertexBuffers;
+        std::array<wgpu::VertexAttribute, kMaxVertexAttributes> cAttributes;
     };
 
     class ComboRenderPipelineDescriptor : public wgpu::RenderPipelineDescriptor {
       public:
-        ComboRenderPipelineDescriptor(const wgpu::Device& device);
+        ComboRenderPipelineDescriptor();
 
         ComboRenderPipelineDescriptor(const ComboRenderPipelineDescriptor&) = delete;
         ComboRenderPipelineDescriptor& operator=(const ComboRenderPipelineDescriptor&) = delete;
         ComboRenderPipelineDescriptor(ComboRenderPipelineDescriptor&&) = delete;
         ComboRenderPipelineDescriptor& operator=(ComboRenderPipelineDescriptor&&) = delete;
-
-        wgpu::ProgrammableStageDescriptor cFragmentStage;
-
-        ComboVertexStateDescriptor cVertexState;
-        wgpu::RasterizationStateDescriptor cRasterizationState;
-        std::array<wgpu::ColorStateDescriptor, kMaxColorAttachments> cColorStates;
-        wgpu::DepthStencilStateDescriptor cDepthStencilState;
-    };
-
-    // For creating the new style of render pipeline descriptors
-    class ComboRenderPipelineDescriptor2 : public wgpu::RenderPipelineDescriptor2 {
-      public:
-        ComboRenderPipelineDescriptor2();
-
-        ComboRenderPipelineDescriptor2(const ComboRenderPipelineDescriptor2&) = delete;
-        ComboRenderPipelineDescriptor2& operator=(const ComboRenderPipelineDescriptor2&) = delete;
-        ComboRenderPipelineDescriptor2(ComboRenderPipelineDescriptor2&&) = delete;
-        ComboRenderPipelineDescriptor2& operator=(ComboRenderPipelineDescriptor2&&) = delete;
 
         wgpu::DepthStencilState* EnableDepthStencil(
             wgpu::TextureFormat format = wgpu::TextureFormat::Depth24PlusStencil8);

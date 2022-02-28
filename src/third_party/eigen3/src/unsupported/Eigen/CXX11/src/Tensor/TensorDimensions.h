@@ -11,6 +11,8 @@
 #define EIGEN_CXX11_TENSOR_TENSOR_DIMENSIONS_H
 
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \internal
@@ -466,7 +468,7 @@ struct sizes_match_below_dim {
 template <typename Dims1, typename Dims2, ptrdiff_t n>
 struct sizes_match_below_dim<Dims1, Dims2, n, n> {
   static EIGEN_DEVICE_FUNC  EIGEN_STRONG_INLINE bool run(Dims1& dims1, Dims2& dims2) {
-    return (array_get<n-1>(dims1) == array_get<n-1>(dims2)) &
+    return (array_get<n-1>(dims1) == array_get<n-1>(dims2)) &&
         sizes_match_below_dim<Dims1, Dims2, n-1, n-1>::run(dims1, dims2);
   }
 };

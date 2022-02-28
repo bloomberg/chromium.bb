@@ -26,9 +26,11 @@
 
 namespace dawn_native {
 
-    class CommandEncoder final : public ObjectBase {
+    class CommandEncoder final : public ApiObjectBase {
       public:
         CommandEncoder(DeviceBase* device, const CommandEncoderDescriptor* descriptor);
+
+        ObjectType GetType() const override;
 
         CommandIterator AcquireCommands();
         CommandBufferResourceUsage AcquireResourceUsages();
@@ -54,6 +56,10 @@ namespace dawn_native {
         void APICopyTextureToTexture(const ImageCopyTexture* source,
                                      const ImageCopyTexture* destination,
                                      const Extent3D* copySize);
+        void APICopyTextureToTextureInternal(const ImageCopyTexture* source,
+                                             const ImageCopyTexture* destination,
+                                             const Extent3D* copySize);
+        void APIClearBuffer(BufferBase* destination, uint64_t destinationOffset, uint64_t size);
 
         void APIInjectValidationError(const char* message);
         void APIInsertDebugMarker(const char* groupLabel);
@@ -65,13 +71,26 @@ namespace dawn_native {
                                 uint32_t queryCount,
                                 BufferBase* destination,
                                 uint64_t destinationOffset);
+        void APIWriteBuffer(BufferBase* buffer,
+                            uint64_t bufferOffset,
+                            const uint8_t* data,
+                            uint64_t size);
         void APIWriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex);
 
         CommandBufferBase* APIFinish(const CommandBufferDescriptor* descriptor = nullptr);
 
       private:
+        void DestroyImpl() override;
         ResultOrError<Ref<CommandBufferBase>> FinishInternal(
             const CommandBufferDescriptor* descriptor);
+
+        // Helper to be able to implement both APICopyTextureToTexture and
+        // APICopyTextureToTextureInternal. The only difference between both
+        // copies, is that the Internal one will also check internal usage.
+        template <bool Internal>
+        void APICopyTextureToTextureHelper(const ImageCopyTexture* source,
+                                           const ImageCopyTexture* destination,
+                                           const Extent3D* copySize);
 
         MaybeError ValidateFinish() const;
 

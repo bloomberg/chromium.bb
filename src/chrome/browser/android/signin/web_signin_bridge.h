@@ -7,7 +7,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -23,6 +23,10 @@ class WebSigninBridge : public signin::IdentityManager::Observer,
                            AccountReconcilor* account_reconcilor,
                            CoreAccountInfo signin_account,
                            OnSigninCompletedCallback on_signin_completed);
+
+  WebSigninBridge(const WebSigninBridge&) = delete;
+  WebSigninBridge& operator=(const WebSigninBridge&) = delete;
+
   ~WebSigninBridge() override;
 
   void OnAccountsInCookieUpdated(
@@ -34,12 +38,10 @@ class WebSigninBridge : public signin::IdentityManager::Observer,
  private:
   void OnSigninCompleted(const GoogleServiceAuthError& error);
 
-  signin::IdentityManager* identity_manager_;
-  AccountReconcilor* account_reconcilor_;
+  raw_ptr<signin::IdentityManager> identity_manager_;
+  raw_ptr<AccountReconcilor> account_reconcilor_;
   CoreAccountInfo signin_account_;
   OnSigninCompletedCallback on_signin_completed_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebSigninBridge);
 };
 
 #endif  // CHROME_BROWSER_ANDROID_SIGNIN_WEB_SIGNIN_BRIDGE_H_

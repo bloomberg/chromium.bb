@@ -6,6 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SLOT_ASSIGNMENT_H_
 
 #include "third_party/blink/renderer/core/dom/tree_ordered_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -41,13 +43,6 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
                                   const AtomicString& new_value);
 
   bool FindHostChildBySlotName(const AtomicString& slot_name) const;
-  void CallSlotChangeAfterRemovedFromAssignFunction(HTMLSlotElement& slot);
-  void CallSlotChangeAfterAdditionFromAssignFunction(
-      HTMLSlotElement& slot,
-      const HeapVector<Member<Node>>& added_assign_nodes);
-  void CallSlotChangeAfterAddition(HTMLSlotElement& slot);
-  void CallSlotChangeAfterRemoved(HTMLSlotElement& slot);
-  void CallSlotChangeIfNeeded(HTMLSlotElement& slot, Node& child);
 
   void Trace(Visitor*) const;
 
@@ -65,7 +60,6 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
   };
 
   HTMLSlotElement* FindSlotInManualSlotting(Node&);
-  HTMLSlotElement* FindSlotInUserAgentShadow(const Node&) const;
 
   void CollectSlots();
   HTMLSlotElement* GetCachedFirstSlotWithoutAccessingNodeTree(

@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/lib/task_runner_helper.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -46,6 +46,12 @@ void AssociatedReceiverBase::set_disconnect_with_reason_handler(
       std::move(error_handler));
 }
 
+void AssociatedReceiverBase::reset_on_disconnect() {
+  DCHECK(is_bound());
+  set_disconnect_handler(
+      base::BindOnce(&AssociatedReceiverBase::reset, base::Unretained(this)));
+}
+
 void AssociatedReceiverBase::FlushForTesting() {
   endpoint_client_->FlushForTesting();  // IN-TEST
 }
@@ -74,7 +80,7 @@ void AssociatedReceiverBase::BindImpl(
 void AssociateWithDisconnectedPipe(ScopedInterfaceEndpointHandle handle) {
   MessagePipe pipe;
   scoped_refptr<internal::MultiplexRouter> router =
-      internal::MultiplexRouter::Create(
+      internal::MultiplexRouter::CreateAndStartReceiving(
           std::move(pipe.handle0), internal::MultiplexRouter::MULTI_INTERFACE,
           false, base::SequencedTaskRunnerHandle::Get());
   router->AssociateInterface(std::move(handle));

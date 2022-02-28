@@ -9,24 +9,27 @@
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
+#include "chrome/browser/optimization_guide/chrome_hints_manager.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
-#include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
-#include "chrome/browser/optimization_guide/optimization_guide_top_host_provider.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/optimization_guide/core/command_line_top_host_provider.h"
 #include "components/optimization_guide/core/hints_processing_util.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_guide_navigation_data.h"
+#include "components/optimization_guide/core/optimization_guide_permissions_util.h"
 #include "components/optimization_guide/core/optimization_guide_store.h"
+#include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/core/tab_url_provider.h"
 #include "components/optimization_guide/core/top_host_provider.h"
@@ -34,73 +37,20 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/commerce/price_tracking/android/price_tracking_notification_bridge.h"
+#include "chrome/browser/optimization_guide/android/android_push_notification_manager.h"
 #include "chrome/browser/optimization_guide/android/optimization_guide_tab_url_provider_android.h"
 #else
 #include "chrome/browser/optimization_guide/optimization_guide_tab_url_provider.h"
 #endif
 
 namespace {
-
-// Returns the top host provider to be used with this keyed service. Can return
-// nullptr if the user or browser is not permitted to call the remote
-// Optimization Guide Service.
-std::unique_ptr<optimization_guide::TopHostProvider>
-GetTopHostProviderIfUserPermitted(content::BrowserContext* browser_context) {
-  // First check whether the command-line flag should be used.
-  std::unique_ptr<optimization_guide::TopHostProvider> top_host_provider =
-      optimization_guide::CommandLineTopHostProvider::CreateIfEnabled();
-  if (top_host_provider)
-    return top_host_provider;
-
-  // If not enabled by flag, see if the user is allowed to fetch from the remote
-  // Optimization Guide Service.
-  return OptimizationGuideTopHostProvider::CreateIfAllowed(browser_context);
-}
-
-// Returns the OptimizationGuideDecision from |optimization_target_decision|.
-optimization_guide::OptimizationGuideDecision
-GetOptimizationGuideDecisionFromOptimizationTargetDecision(
-    optimization_guide::OptimizationTargetDecision
-        optimization_target_decision) {
-  switch (optimization_target_decision) {
-    case optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch:
-    case optimization_guide::OptimizationTargetDecision::
-        kModelPredictionHoldback:
-      return optimization_guide::OptimizationGuideDecision::kFalse;
-    case optimization_guide::OptimizationTargetDecision::kPageLoadMatches:
-      return optimization_guide::OptimizationGuideDecision::kTrue;
-    case optimization_guide::OptimizationTargetDecision::
-        kModelNotAvailableOnClient:
-    case optimization_guide::OptimizationTargetDecision::kUnknown:
-    case optimization_guide::OptimizationTargetDecision::kDeciderNotInitialized:
-      return optimization_guide::OptimizationGuideDecision::kUnknown;
-  }
-}
-
-// Logs |optimization_target_decision| for |optimization_target| in a histogram
-// and passes the corresponding OptimizationGuideDecision to |callback|.
-void LogOptimizationTargetDecisionAndPassOptimizationGuideDecision(
-    optimization_guide::proto::OptimizationTarget optimization_target,
-    optimization_guide::OptimizationGuideTargetDecisionCallback callback,
-    optimization_guide::OptimizationTargetDecision
-        optimization_target_decision) {
-  base::UmaHistogramExactLinear(
-      "OptimizationGuide.TargetDecision." +
-          optimization_guide::GetStringNameForOptimizationTarget(
-              optimization_target),
-      static_cast<int>(optimization_target_decision),
-      static_cast<int>(
-          optimization_guide::OptimizationTargetDecision::kMaxValue));
-
-  std::move(callback).Run(
-      GetOptimizationGuideDecisionFromOptimizationTargetDecision(
-          optimization_target_decision));
-}
 
 const char kOldOptimizationGuideHintStore[] = "previews_hint_cache_store";
 
@@ -120,7 +70,46 @@ void DeleteOldStorePaths(const base::FilePath& profile_path) {
                   kOptimizationGuidePredictionModelAndFeaturesStore)));
 }
 
+// Returns the profile to use for when setting up the keyed service when the
+// profile is Off-The-Record. For guest profiles, returns a loaded profile if
+// one exists, otherwise just the original profile of the OTR profile. Note:
+// guest profiles are off-the-record and "original" profiles.
+Profile* GetProfileForOTROptimizationGuide(Profile* profile) {
+  DCHECK(profile);
+  DCHECK(profile->IsOffTheRecord());
+
+  if (profile->IsGuestSession()) {
+    // Guest sessions need to rely on the stores from real profiles
+    // as guest profiles cannot fetch or store new models. Note: only
+    // loaded profiles should be used as we do not want to force load
+    // another profile as that can lead to start up regressions.
+    std::vector<Profile*> profiles =
+        g_browser_process->profile_manager()->GetLoadedProfiles();
+    if (!profiles.empty()) {
+      return profiles[0];
+    }
+  }
+  return profile->GetOriginalProfile();
+}
+
 }  // namespace
+
+// static
+std::unique_ptr<optimization_guide::PushNotificationManager>
+OptimizationGuideKeyedService::MaybeCreatePushNotificationManager(
+    Profile* profile) {
+#if defined(OS_ANDROID)
+  if (optimization_guide::features::IsPushNotificationsEnabled()) {
+    auto push_notification_manager = std::make_unique<
+        optimization_guide::android::AndroidPushNotificationManager>(
+        profile->GetPrefs());
+    push_notification_manager->AddObserver(
+        PriceTrackingNotificationBridge::GetForBrowserContext(profile));
+    return push_notification_manager;
+  }
+#endif
+  return nullptr;
+}
 
 OptimizationGuideKeyedService::OptimizationGuideKeyedService(
     content::BrowserContext* browser_context)
@@ -150,13 +139,13 @@ void OptimizationGuideKeyedService::Initialize() {
   // For incognito profiles, we act in "read-only" mode of the original
   // profile's store and do not fetch any new hints or models.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
-  optimization_guide::OptimizationGuideStore* hint_store;
-  optimization_guide::OptimizationGuideStore*
+  base::WeakPtr<optimization_guide::OptimizationGuideStore> hint_store;
+  base::WeakPtr<optimization_guide::OptimizationGuideStore>
       prediction_model_and_features_store;
   if (profile->IsOffTheRecord()) {
     OptimizationGuideKeyedService* original_ogks =
         OptimizationGuideKeyedServiceFactory::GetForProfile(
-            profile->GetOriginalProfile());
+            GetProfileForOTROptimizationGuide(profile));
     DCHECK(original_ogks);
     hint_store = original_ogks->GetHintsManager()->hint_store();
     prediction_model_and_features_store =
@@ -165,8 +154,13 @@ void OptimizationGuideKeyedService::Initialize() {
     url_loader_factory = profile->GetDefaultStoragePartition()
                              ->GetURLLoaderFactoryForBrowserProcess();
 
-    top_host_provider_ = GetTopHostProviderIfUserPermitted(browser_context_);
-    bool optimization_guide_fetching_enabled = top_host_provider_ != nullptr;
+    // Only create a top host provider from the command line if provided.
+    top_host_provider_ =
+        optimization_guide::CommandLineTopHostProvider::CreateIfEnabled();
+
+    bool optimization_guide_fetching_enabled =
+        optimization_guide::IsUserPermittedToFetchFromRemoteOptimizationGuide(
+            profile->IsOffTheRecord(), profile->GetPrefs());
     UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.RemoteFetchingEnabled",
                           optimization_guide_fetching_enabled);
     ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
@@ -191,7 +185,7 @@ void OptimizationGuideKeyedService::Initialize() {
                   base::ThreadPool::CreateSequencedTaskRunner(
                       {base::MayBlock(), base::TaskPriority::BEST_EFFORT}))
             : nullptr;
-    hint_store = hint_store_.get();
+    hint_store = hint_store_ ? hint_store_->AsWeakPtr() : nullptr;
 
     prediction_model_and_features_store_ =
         std::make_unique<optimization_guide::OptimizationGuideStore>(
@@ -202,12 +196,14 @@ void OptimizationGuideKeyedService::Initialize() {
             base::ThreadPool::CreateSequencedTaskRunner(
                 {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
     prediction_model_and_features_store =
-        prediction_model_and_features_store_.get();
+        prediction_model_and_features_store_->AsWeakPtr();
   }
 
-  hints_manager_ = std::make_unique<OptimizationGuideHintsManager>(
+  hints_manager_ = std::make_unique<optimization_guide::ChromeHintsManager>(
       profile, profile->GetPrefs(), hint_store, top_host_provider_.get(),
-      tab_url_provider_.get(), url_loader_factory);
+      tab_url_provider_.get(), url_loader_factory,
+      content::GetNetworkConnectionTracker(),
+      MaybeCreatePushNotificationManager(profile));
   prediction_manager_ = std::make_unique<optimization_guide::PredictionManager>(
       prediction_model_and_features_store, url_loader_factory,
       profile->GetPrefs(), profile);
@@ -216,25 +212,25 @@ void OptimizationGuideKeyedService::Initialize() {
   // old paths. Remove this code in 04/2022 since it should be assumed that all
   // clients that had the previous path have had their previous stores deleted.
   DeleteOldStorePaths(profile_path);
+  if (optimization_guide::switches::IsDebugLogsEnabled()) {
+    DVLOG(0) << "OptimizationGuide: KeyedService is initalized";
+  }
 }
 
-OptimizationGuideHintsManager*
+optimization_guide::ChromeHintsManager*
 OptimizationGuideKeyedService::GetHintsManager() {
   return hints_manager_.get();
 }
 
 void OptimizationGuideKeyedService::OnNavigationStartOrRedirect(
-    content::NavigationHandle* navigation_handle) {
+    OptimizationGuideNavigationData* navigation_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle);
   base::flat_set<optimization_guide::proto::OptimizationType>
       registered_optimization_types =
           hints_manager_->registered_optimization_types();
   if (!registered_optimization_types.empty()) {
-    hints_manager_->OnNavigationStartOrRedirect(navigation_handle,
+    hints_manager_->OnNavigationStartOrRedirect(navigation_data,
                                                 base::DoNothing());
   }
 
@@ -253,35 +249,6 @@ void OptimizationGuideKeyedService::OnNavigationFinish(
   hints_manager_->OnNavigationFinish(navigation_redirect_chain);
 }
 
-void OptimizationGuideKeyedService::RegisterOptimizationTargets(
-    const std::vector<optimization_guide::proto::OptimizationTarget>&
-        optimization_targets) {
-  std::vector<std::pair<optimization_guide::proto::OptimizationTarget,
-                        absl::optional<optimization_guide::proto::Any>>>
-      optimization_targets_and_metadata;
-  for (optimization_guide::proto::OptimizationTarget optimization_target :
-       optimization_targets) {
-    optimization_targets_and_metadata.emplace_back(
-        std::make_pair(optimization_target, absl::nullopt));
-  }
-  prediction_manager_->RegisterOptimizationTargets(
-      optimization_targets_and_metadata);
-}
-
-void OptimizationGuideKeyedService::ShouldTargetNavigationAsync(
-    content::NavigationHandle* navigation_handle,
-    optimization_guide::proto::OptimizationTarget optimization_target,
-    optimization_guide::OptimizationGuideTargetDecisionCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(navigation_handle->IsInMainFrame());
-
-  optimization_guide::OptimizationTargetDecision target_decision =
-      prediction_manager_->ShouldTargetNavigation(navigation_handle,
-                                                  optimization_target);
-  LogOptimizationTargetDecisionAndPassOptimizationGuideDecision(
-      optimization_target, std::move(callback), target_decision);
-}
-
 void OptimizationGuideKeyedService::AddObserverForOptimizationTargetModel(
     optimization_guide::proto::OptimizationTarget optimization_target,
     const absl::optional<optimization_guide::proto::Any>& model_metadata,
@@ -293,14 +260,14 @@ void OptimizationGuideKeyedService::AddObserverForOptimizationTargetModel(
 void OptimizationGuideKeyedService::RemoveObserverForOptimizationTargetModel(
     optimization_guide::proto::OptimizationTarget optimization_target,
     optimization_guide::OptimizationTargetModelObserver* observer) {
-    prediction_manager_->RemoveObserverForOptimizationTargetModel(
-        optimization_target, observer);
+  prediction_manager_->RemoveObserverForOptimizationTargetModel(
+      optimization_target, observer);
 }
 
 void OptimizationGuideKeyedService::RegisterOptimizationTypes(
     const std::vector<optimization_guide::proto::OptimizationType>&
         optimization_types) {
-    hints_manager_->RegisterOptimizationTypes(optimization_types);
+  hints_manager_->RegisterOptimizationTypes(optimization_types);
 }
 
 optimization_guide::OptimizationGuideDecision
@@ -311,15 +278,14 @@ OptimizationGuideKeyedService::CanApplyOptimization(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   optimization_guide::OptimizationTypeDecision optimization_type_decision =
-      hints_manager_->CanApplyOptimization(url, /*navigation_id=*/absl::nullopt,
-                                           optimization_type,
+      hints_manager_->CanApplyOptimization(url, optimization_type,
                                            optimization_metadata);
   base::UmaHistogramEnumeration(
       "OptimizationGuide.ApplyDecision." +
           optimization_guide::GetStringNameForOptimizationType(
               optimization_type),
       optimization_type_decision);
-  return OptimizationGuideHintsManager::
+  return optimization_guide::ChromeHintsManager::
       GetOptimizationGuideDecisionFromOptimizationTypeDecision(
           optimization_type_decision);
 }
@@ -332,8 +298,22 @@ void OptimizationGuideKeyedService::CanApplyOptimizationAsync(
   DCHECK(navigation_handle->IsInMainFrame());
 
   hints_manager_->CanApplyOptimizationAsync(
-      navigation_handle->GetURL(), navigation_handle->GetNavigationId(),
-      optimization_type, std::move(callback));
+      navigation_handle->GetURL(), optimization_type, std::move(callback));
+}
+
+void OptimizationGuideKeyedService::CanApplyOptimizationOnDemand(
+    const std::vector<GURL>& urls,
+    const base::flat_set<optimization_guide::proto::OptimizationType>&
+        optimization_types,
+    optimization_guide::proto::RequestContext request_context,
+    optimization_guide::OnDemandOptimizationGuideDecisionRepeatingCallback
+        callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(request_context !=
+         optimization_guide::proto::RequestContext::CONTEXT_UNSPECIFIED);
+
+  hints_manager_->CanApplyOptimizationOnDemand(urls, optimization_types,
+                                               request_context, callback);
 }
 
 void OptimizationGuideKeyedService::AddHintForTesting(
@@ -352,10 +332,9 @@ void OptimizationGuideKeyedService::Shutdown() {
   hints_manager_->Shutdown();
 }
 
-void OptimizationGuideKeyedService::OverrideTargetModelFileForTesting(
+void OptimizationGuideKeyedService::OverrideTargetModelForTesting(
     optimization_guide::proto::OptimizationTarget optimization_target,
-    const absl::optional<optimization_guide::proto::Any>& model_metadata,
-    const base::FilePath& file_path) {
-  prediction_manager_->OverrideTargetModelFileForTesting(
-      optimization_target, model_metadata, file_path);
+    std::unique_ptr<optimization_guide::ModelInfo> model_info) {
+  prediction_manager_->OverrideTargetModelForTesting(  // IN-TEST
+      optimization_target, std::move(model_info));
 }

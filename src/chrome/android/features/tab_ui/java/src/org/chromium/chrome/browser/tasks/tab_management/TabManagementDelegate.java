@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 
+import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.OneshotSupplierImpl;
@@ -28,6 +29,7 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.omnibox.OmniboxStub;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -35,7 +37,7 @@ import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.TasksSurfaceProperties;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestions;
-import org.chromium.chrome.browser.theme.ThemeColorProvider;
+import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -95,7 +97,7 @@ public interface TabManagementDelegate {
     TasksSurface createTasksSurface(@NonNull Activity activity,
             @NonNull ScrimCoordinator scrimCoordinator, @NonNull PropertyModel propertyModel,
             @TabSwitcherType int tabSwitcherType, @NonNull Supplier<Tab> parentTabSupplier,
-            boolean hasMVTiles, @NonNull WindowAndroid windowAndroid,
+            boolean hasMVTiles, boolean hasQueryTiles, @NonNull WindowAndroid windowAndroid,
             @NonNull ActivityLifecycleDispatcher activityLifecycleDispatcher,
             @NonNull TabModelSelector tabModelSelector, @NonNull SnackbarManager snackbarManager,
             @NonNull Supplier<DynamicResourceLoader> dynamicResourceLoaderSupplier,
@@ -168,8 +170,8 @@ public interface TabManagementDelegate {
      * Create the {@link TabGroupUi}.
      * @param activity The {@link Activity} that creates this surface.
      * @param parentView The parent view of this UI.
-     * @param themeColorProvider The {@link ThemeColorProvider} for this UI.
-     * @param scrimCoordinator   The {@link ScrimCoordinator} to control scrim view.
+     * @param incognitoStateProvider Observable provider of incognito state.
+     * @param scrimCoordinator The {@link ScrimCoordinator} to control scrim view.
      * @param omniboxFocusStateSupplier Supplier to access the focus state of the omnibox.
      * @param bottomSheetController Controls the state of the bottom sheet.
      * @param activityLifecycleDispatcher Allows observation of the activity lifecycle.
@@ -178,14 +180,14 @@ public interface TabManagementDelegate {
      * @param tabContentManager Gives access to the tab content.
      * @param rootView The root view of the app.
      * @param dynamicResourceLoaderSupplier Supplies the current {@link DynamicResourceLoader}.
-     * @param tabCreatorManger Manages creation of tabs.
+     * @param tabCreatorManager Manages creation of tabs.
      * @param shareDelegateSupplier Supplies the current {@link ShareDelegate}.
      * @param overviewModeBehaviorSupplier Suppolies the current {@link OverviewModeBehavior}.
      * @param snackbarManager Manages the display of snackbars.
      * @return The {@link TabGroupUi}.
      */
     TabGroupUi createTabGroupUi(@NonNull Activity activity, @NonNull ViewGroup parentView,
-            @NonNull ThemeColorProvider themeColorProvider,
+            @NonNull IncognitoStateProvider incognitoStateProvider,
             @NonNull ScrimCoordinator scrimCoordinator,
             @NonNull ObservableSupplier<Boolean> omniboxFocusStateSupplier,
             @NonNull BottomSheetController bottomSheetController,
@@ -208,7 +210,7 @@ public interface TabManagementDelegate {
      * @return The {@link StartSurfaceLayout}.
      */
     Layout createStartSurfaceLayout(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, StartSurface startSurface);
+            LayoutRenderHost renderHost, StartSurface startSurface, JankTracker jankTracker);
 
     /**
      * Create the {@link StartSurface}
@@ -234,9 +236,11 @@ public interface TabManagementDelegate {
      * @param modalDialogManager Manages the display of modal dialogs.
      * @param chromeActivityNativeDelegate Delegate for native initialization.
      * @param activityLifecycleDispatcher Allows observation of the activity lifecycle.
-     * @param tabCreatorManger Manages creation of tabs.
+     * @param tabCreatorManager Manages creation of tabs.
      * @param menuOrKeyboardActionController allows access to menu or keyboard actions.
      * @param multiWindowModeStateDispatcher Gives access to the multi window mode state.
+     * @param jankTracker Measures jank while tab switcher is visible.
+     * @param toolbarSupplier Supplies the {@link Toolbar}.
      * @return the {@link StartSurface}
      */
     StartSurface createStartSurface(@NonNull Activity activity,
@@ -257,7 +261,8 @@ public interface TabManagementDelegate {
             @NonNull ActivityLifecycleDispatcher activityLifecycleDispatcher,
             @NonNull TabCreatorManager tabCreatorManager,
             @NonNull MenuOrKeyboardActionController menuOrKeyboardActionController,
-            @NonNull MultiWindowModeStateDispatcher multiWindowModeStateDispatcher);
+            @NonNull MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
+            @NonNull JankTracker jankTracker, @NonNull Supplier<Toolbar> toolbarSupplier);
 
     /**
      * Create a {@link TabGroupModelFilter} for the given {@link TabModel}.
@@ -275,4 +280,11 @@ public interface TabManagementDelegate {
     TabSuggestions createTabSuggestions(@NonNull Context context,
             @NonNull TabModelSelector tabModelSelector,
             @NonNull ActivityLifecycleDispatcher activityLifecycleDispatcher);
+
+    /**
+     * Apply the theme overlay for the target activity used for Tab management components. This
+     * theme needs to be applied once before creating any of the tab related component.
+     * @param activity The target {@link Activity} that used Tab theme.
+     */
+    void applyThemeOverlays(@NonNull Activity activity);
 }

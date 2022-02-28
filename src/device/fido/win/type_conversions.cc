@@ -11,6 +11,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/cbor/reader.h"
@@ -71,13 +72,21 @@ ToAuthenticatorMakeCredentialResponse(
     }
   }
 
-  return AuthenticatorMakeCredentialResponse(
+  AuthenticatorMakeCredentialResponse ret(
       transport_used,
       AttestationObject(
           std::move(*authenticator_data),
           std::make_unique<OpaqueAttestationStatement>(
               base::WideToUTF8(credential_attestation.pwszFormatType),
               std::move(*cbor_attestation_statement))));
+
+  if (credential_attestation.dwVersion >=
+      WEBAUTHN_CREDENTIAL_ATTESTATION_VERSION_4) {
+    ret.enterprise_attestation_returned = credential_attestation.bEpAtt;
+    ret.is_resident_key = credential_attestation.bResidentKey;
+  }
+
+  return ret;
 }
 
 absl::optional<AuthenticatorGetAssertionResponse>
@@ -167,13 +176,13 @@ std::vector<WEBAUTHN_CREDENTIAL> ToWinCredentialVector(
     const std::vector<PublicKeyCredentialDescriptor>* credentials) {
   std::vector<WEBAUTHN_CREDENTIAL> result;
   for (const auto& credential : *credentials) {
-    if (credential.credential_type() != CredentialType::kPublicKey) {
+    if (credential.credential_type != CredentialType::kPublicKey) {
       continue;
     }
     result.push_back(WEBAUTHN_CREDENTIAL{
         WEBAUTHN_CREDENTIAL_CURRENT_VERSION,
-        credential.id().size(),
-        const_cast<unsigned char*>(credential.id().data()),
+        base::checked_cast<DWORD>(credential.id.size()),
+        const_cast<unsigned char*>(credential.id.data()),
         WEBAUTHN_CREDENTIAL_TYPE_PUBLIC_KEY,
     });
   }
@@ -184,14 +193,15 @@ std::vector<WEBAUTHN_CREDENTIAL_EX> ToWinCredentialExVector(
     const std::vector<PublicKeyCredentialDescriptor>* credentials) {
   std::vector<WEBAUTHN_CREDENTIAL_EX> result;
   for (const auto& credential : *credentials) {
-    if (credential.credential_type() != CredentialType::kPublicKey) {
+    if (credential.credential_type != CredentialType::kPublicKey) {
       continue;
     }
-    result.push_back(WEBAUTHN_CREDENTIAL_EX{
-        WEBAUTHN_CREDENTIAL_EX_CURRENT_VERSION, credential.id().size(),
-        const_cast<unsigned char*>(credential.id().data()),
-        WEBAUTHN_CREDENTIAL_TYPE_PUBLIC_KEY,
-        ToWinTransportsMask(credential.transports())});
+    result.push_back(
+        WEBAUTHN_CREDENTIAL_EX{WEBAUTHN_CREDENTIAL_EX_CURRENT_VERSION,
+                               base::checked_cast<DWORD>(credential.id.size()),
+                               const_cast<unsigned char*>(credential.id.data()),
+                               WEBAUTHN_CREDENTIAL_TYPE_PUBLIC_KEY,
+                               ToWinTransportsMask(credential.transports)});
   }
   return result;
 }
@@ -212,7 +222,7 @@ CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
           {u"InvalidStateError",
            CtapDeviceResponseCode::kCtap2ErrCredentialExcluded},
           {u"ConstraintError",
-           CtapDeviceResponseCode::kCtap2ErrOperationDenied},
+           CtapDeviceResponseCode ::kCtap2ErrOperationDenied},
           {u"NotSupportedError",
            CtapDeviceResponseCode::kCtap2ErrOperationDenied},
           {u"NotAllowedError",
@@ -268,7 +278,8 @@ GetAssertionStatus WinCtapDeviceResponseCodeToGetAssertionStatus(
 }
 
 uint32_t ToWinAttestationConveyancePreference(
-    const AttestationConveyancePreference& value) {
+    const AttestationConveyancePreference& value,
+    int api_version) {
   switch (value) {
     case AttestationConveyancePreference::kNone:
       return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_NONE;
@@ -278,8 +289,10 @@ uint32_t ToWinAttestationConveyancePreference(
       return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT;
     case AttestationConveyancePreference::kEnterpriseIfRPListedOnAuthenticator:
     case AttestationConveyancePreference::kEnterpriseApprovedByBrowser:
-      // Windows does not support enterprise attestation.
-      return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_NONE;
+      // Enterprise attestation is supported in API version 3.
+      return api_version >= 3
+                 ? WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT
+                 : WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_NONE;
   }
   NOTREACHED();
   return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_NONE;

@@ -19,7 +19,6 @@
 #include "cc/paint/paint_record.h"
 #include "cc/paint/render_surface_filters.h"
 #include "cc/paint/skia_paint_canvas.h"
-#include "cc/test/geometry_test_utils.h"
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_skcanvas.h"
@@ -28,9 +27,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 
 namespace cc {
 
@@ -74,18 +74,13 @@ class DisplayItemListTest : public testing::Test {
   }
 };
 
-#define EXPECT_TRACED_RECT(x, y, width, height, rect_list) \
-  do {                                                     \
-    ASSERT_EQ(4u, rect_list->GetSize());                   \
-    double d;                                              \
-    EXPECT_TRUE((rect_list)->GetDouble(0, &d));            \
-    EXPECT_EQ(x, d);                                       \
-    EXPECT_TRUE((rect_list)->GetDouble(1, &d));            \
-    EXPECT_EQ(y, d);                                       \
-    EXPECT_TRUE((rect_list)->GetDouble(2, &d));            \
-    EXPECT_EQ(width, d);                                   \
-    EXPECT_TRUE((rect_list)->GetDouble(3, &d));            \
-    EXPECT_EQ(height, d);                                  \
+#define EXPECT_TRACED_RECT(x, y, width, height, rect_list)    \
+  do {                                                        \
+    ASSERT_EQ(4u, rect_list->GetList().size());               \
+    EXPECT_EQ(x, rect_list->GetList()[0].GetIfDouble());      \
+    EXPECT_EQ(y, rect_list->GetList()[1].GetIfDouble());      \
+    EXPECT_EQ(width, rect_list->GetList()[2].GetIfDouble());  \
+    EXPECT_EQ(height, rect_list->GetList()[3].GetIfDouble()); \
   } while (false)
 
 // AddToValue should not crash if there are different numbers of visual_rect
@@ -116,19 +111,24 @@ TEST_F(DisplayItemListTest, TraceEmptyVisualRect) {
   ASSERT_TRUE(root_dict->GetDictionary("params", &params_dict));
   const base::ListValue* items;
   ASSERT_TRUE(params_dict->GetList("items", &items));
-  ASSERT_EQ(2u, items->GetSize());
+  ASSERT_EQ(2u, items->GetList().size());
 
+  const base::Value* item_value;
   const base::DictionaryValue* item_dict;
   const base::ListValue* visual_rect;
   std::string name;
 
-  ASSERT_TRUE(items->GetDictionary(0, &item_dict));
+  item_value = &items->GetList()[0];
+  ASSERT_TRUE(item_value->is_dict());
+  item_dict = &base::Value::AsDictionaryValue(*item_value);
   ASSERT_TRUE(item_dict->GetList("visual_rect", &visual_rect));
   EXPECT_TRACED_RECT(0, 0, 0, 0, visual_rect);
   EXPECT_TRUE(item_dict->GetString("name", &name));
   EXPECT_EQ("DrawRect", name);
 
-  ASSERT_TRUE(items->GetDictionary(1, &item_dict));
+  item_value = &items->GetList()[1];
+  ASSERT_TRUE(item_value->is_dict());
+  item_dict = &base::Value::AsDictionaryValue(*item_value);
   ASSERT_TRUE(item_dict->GetList("visual_rect", &visual_rect));
   EXPECT_TRACED_RECT(8, 9, 10, 10, visual_rect);
   EXPECT_TRUE(item_dict->GetString("name", &name));
@@ -371,7 +371,7 @@ TEST_F(DisplayItemListTest, FilterPairedRange) {
   // below.
   SkRect rect = SkRect::MakeWH(source_image.width(), source_image.height());
   sk_sp<PaintFilter> image_filter = sk_make_sp<ImagePaintFilter>(
-      source_image, rect, rect, kHigh_SkFilterQuality);
+      source_image, rect, rect, PaintFlags::FilterQuality::kHigh);
   filters.Append(FilterOperation::CreateReferenceFilter(image_filter));
   filters.Append(FilterOperation::CreateBrightnessFilter(0.5f));
   gfx::RectF filter_bounds(10.f, 10.f, 50.f, 50.f);
@@ -476,7 +476,7 @@ TEST_F(DisplayItemListTest, AsValueWithNoOps) {
 
       // The items list is there but empty.
       ASSERT_TRUE(params_dict->GetList("items", &params_list));
-      EXPECT_EQ(0u, params_list->GetSize());
+      EXPECT_EQ(0u, params_list->GetList().size());
     }
   }
 
@@ -558,7 +558,7 @@ TEST_F(DisplayItemListTest, AsValueWithOps) {
       // The items list has 3 things in it since we built 3 visual rects.
       const base::ListValue* items;
       ASSERT_TRUE(params_dict->GetList("items", &items));
-      ASSERT_EQ(7u, items->GetSize());
+      ASSERT_EQ(7u, items->GetList().size());
 
       const char* expected_names[] = {"Save",      "Concat",   "SaveLayer",
                                       "Translate", "DrawRect", "Restore",
@@ -566,20 +566,22 @@ TEST_F(DisplayItemListTest, AsValueWithOps) {
       bool expected_has_skp[] = {false, true, true, true, true, false, false};
 
       for (int i = 0; i < 7; ++i) {
-        const base::DictionaryValue* item_dict;
-        ASSERT_TRUE(items->GetDictionary(i, &item_dict));
+        const base::Value& item_value = items->GetList()[i];
+        ASSERT_TRUE(item_value.is_dict());
+        const base::DictionaryValue& item_dict =
+            base::Value::AsDictionaryValue(item_value);
 
         const base::ListValue* visual_rect;
-        ASSERT_TRUE(item_dict->GetList("visual_rect", &visual_rect));
+        ASSERT_TRUE(item_dict.GetList("visual_rect", &visual_rect));
         EXPECT_TRACED_RECT(2, 3, 8, 9, visual_rect);
 
         std::string name;
-        EXPECT_TRUE(item_dict->GetString("name", &name));
+        EXPECT_TRUE(item_dict.GetString("name", &name));
         EXPECT_EQ(expected_names[i], name);
 
         EXPECT_EQ(
             expected_has_skp[i],
-            item_dict->GetString("skp64", static_cast<std::string*>(nullptr)));
+            item_dict.GetString("skp64", static_cast<std::string*>(nullptr)));
       }
     }
   }
@@ -652,7 +654,7 @@ TEST_F(DisplayItemListTest, AppendVisualRectSimple) {
   }
 
   EXPECT_EQ(1u, list->TotalOpCount());
-  EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(0));
+  EXPECT_EQ(drawing_bounds, list->VisualRectForTesting(0));
 }
 
 TEST_F(DisplayItemListTest, AppendVisualRectEmptyBlock) {
@@ -675,9 +677,9 @@ TEST_F(DisplayItemListTest, AppendVisualRectEmptyBlock) {
   }
 
   EXPECT_EQ(3u, list->TotalOpCount());
-  EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(0));
-  EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(1));
-  EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(2));
+  EXPECT_EQ(gfx::Rect(), list->VisualRectForTesting(0));
+  EXPECT_EQ(gfx::Rect(), list->VisualRectForTesting(1));
+  EXPECT_EQ(gfx::Rect(), list->VisualRectForTesting(2));
 }
 
 TEST_F(DisplayItemListTest, AppendVisualRectEmptyBlockContainingEmptyBlock) {
@@ -712,11 +714,11 @@ TEST_F(DisplayItemListTest, AppendVisualRectEmptyBlockContainingEmptyBlock) {
   }
 
   EXPECT_EQ(5u, list->TotalOpCount());
-  EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(0));
-  EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(1));
-  EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(2));
-  EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(3));
-  EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(4));
+  EXPECT_EQ(gfx::Rect(), list->VisualRectForTesting(0));
+  EXPECT_EQ(gfx::Rect(), list->VisualRectForTesting(1));
+  EXPECT_EQ(gfx::Rect(), list->VisualRectForTesting(2));
+  EXPECT_EQ(gfx::Rect(), list->VisualRectForTesting(3));
+  EXPECT_EQ(gfx::Rect(), list->VisualRectForTesting(4));
 }
 
 TEST_F(DisplayItemListTest, AppendVisualRectBlockContainingDrawing) {
@@ -747,10 +749,10 @@ TEST_F(DisplayItemListTest, AppendVisualRectBlockContainingDrawing) {
   }
 
   EXPECT_EQ(4u, list->TotalOpCount());
-  EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(0));
-  EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(1));
-  EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(2));
-  EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(3));
+  EXPECT_EQ(drawing_bounds, list->VisualRectForTesting(0));
+  EXPECT_EQ(drawing_bounds, list->VisualRectForTesting(1));
+  EXPECT_EQ(drawing_bounds, list->VisualRectForTesting(2));
+  EXPECT_EQ(drawing_bounds, list->VisualRectForTesting(3));
 }
 
 TEST_F(DisplayItemListTest, AppendVisualRectBlockContainingEscapedDrawing) {
@@ -781,10 +783,10 @@ TEST_F(DisplayItemListTest, AppendVisualRectBlockContainingEscapedDrawing) {
   }
 
   EXPECT_EQ(4u, list->TotalOpCount());
-  EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(0));
-  EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(1));
-  EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(2));
-  EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(3));
+  EXPECT_EQ(drawing_bounds, list->VisualRectForTesting(0));
+  EXPECT_EQ(drawing_bounds, list->VisualRectForTesting(1));
+  EXPECT_EQ(drawing_bounds, list->VisualRectForTesting(2));
+  EXPECT_EQ(drawing_bounds, list->VisualRectForTesting(3));
 }
 
 TEST_F(DisplayItemListTest,
@@ -824,11 +826,11 @@ TEST_F(DisplayItemListTest,
   }
 
   EXPECT_EQ(5u, list->TotalOpCount());
-  EXPECT_RECT_EQ(drawing_a_bounds, list->VisualRectForTesting(0));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(1));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(2));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(3));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(4));
+  EXPECT_EQ(drawing_a_bounds, list->VisualRectForTesting(0));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(1));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(2));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(3));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(4));
 }
 
 TEST_F(DisplayItemListTest, AppendVisualRectTwoBlocksTwoDrawings) {
@@ -882,14 +884,14 @@ TEST_F(DisplayItemListTest, AppendVisualRectTwoBlocksTwoDrawings) {
   EXPECT_EQ(8u, list->TotalOpCount());
   gfx::Rect merged_drawing_bounds = gfx::Rect(drawing_a_bounds);
   merged_drawing_bounds.Union(drawing_b_bounds);
-  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(0));
-  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(1));
-  EXPECT_RECT_EQ(drawing_a_bounds, list->VisualRectForTesting(2));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(3));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(4));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(5));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(6));
-  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(7));
+  EXPECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(0));
+  EXPECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(1));
+  EXPECT_EQ(drawing_a_bounds, list->VisualRectForTesting(2));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(3));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(4));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(5));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(6));
+  EXPECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(7));
 }
 
 TEST_F(DisplayItemListTest,
@@ -945,14 +947,14 @@ TEST_F(DisplayItemListTest,
   EXPECT_EQ(8u, list->TotalOpCount());
   gfx::Rect merged_drawing_bounds = gfx::Rect(drawing_a_bounds);
   merged_drawing_bounds.Union(drawing_b_bounds);
-  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(0));
-  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(1));
-  EXPECT_RECT_EQ(drawing_a_bounds, list->VisualRectForTesting(2));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(3));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(4));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(5));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(6));
-  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(7));
+  EXPECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(0));
+  EXPECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(1));
+  EXPECT_EQ(drawing_a_bounds, list->VisualRectForTesting(2));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(3));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(4));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(5));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(6));
+  EXPECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(7));
 }
 
 TEST_F(DisplayItemListTest,
@@ -1008,14 +1010,14 @@ TEST_F(DisplayItemListTest,
   EXPECT_EQ(8u, list->TotalOpCount());
   gfx::Rect merged_drawing_bounds = gfx::Rect(drawing_a_bounds);
   merged_drawing_bounds.Union(drawing_b_bounds);
-  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(0));
-  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(1));
-  EXPECT_RECT_EQ(drawing_a_bounds, list->VisualRectForTesting(2));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(3));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(4));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(5));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(6));
-  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(7));
+  EXPECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(0));
+  EXPECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(1));
+  EXPECT_EQ(drawing_a_bounds, list->VisualRectForTesting(2));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(3));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(4));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(5));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(6));
+  EXPECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(7));
 }
 
 TEST_F(DisplayItemListTest,
@@ -1071,14 +1073,14 @@ TEST_F(DisplayItemListTest,
   EXPECT_EQ(8u, list->TotalOpCount());
   gfx::Rect merged_drawing_bounds = gfx::Rect(drawing_a_bounds);
   merged_drawing_bounds.Union(drawing_b_bounds);
-  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(0));
-  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(1));
-  EXPECT_RECT_EQ(drawing_a_bounds, list->VisualRectForTesting(2));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(3));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(4));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(5));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(6));
-  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(7));
+  EXPECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(0));
+  EXPECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(1));
+  EXPECT_EQ(drawing_a_bounds, list->VisualRectForTesting(2));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(3));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(4));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(5));
+  EXPECT_EQ(drawing_b_bounds, list->VisualRectForTesting(6));
+  EXPECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(7));
 }
 
 TEST_F(DisplayItemListTest, VisualRectForPairsEnclosingEmptyPainting) {
@@ -1107,9 +1109,9 @@ TEST_F(DisplayItemListTest, VisualRectForPairsEnclosingEmptyPainting) {
   }
 
   EXPECT_EQ(3u, list->TotalOpCount());
-  EXPECT_RECT_EQ(visual_rect, list->VisualRectForTesting(0));
-  EXPECT_RECT_EQ(visual_rect, list->VisualRectForTesting(1));
-  EXPECT_RECT_EQ(visual_rect, list->VisualRectForTesting(2));
+  EXPECT_EQ(visual_rect, list->VisualRectForTesting(0));
+  EXPECT_EQ(visual_rect, list->VisualRectForTesting(1));
+  EXPECT_EQ(visual_rect, list->VisualRectForTesting(2));
 }
 
 TEST_F(DisplayItemListTest, TotalOpCount) {
@@ -1147,30 +1149,30 @@ TEST_F(DisplayItemListTest, AreaOfDrawText) {
   auto text_blob2_area = text_blob2_size.width() * text_blob2_size.height();
 
   sub_list->StartPaint();
-  sub_list->push<DrawTextBlobOp>(text_blob1, 0, 0, PaintFlags());
+  sub_list->push<DrawTextBlobOp>(text_blob1, 0.0f, 0.0f, PaintFlags());
   sub_list->EndPaintOfUnpaired(gfx::Rect());
   auto record = sub_list->ReleaseAsRecord();
 
   list->StartPaint();
   list->push<SaveOp>();
-  list->push<TranslateOp>(100, 100);
+  list->push<TranslateOp>(100.0f, 100.0f);
   list->push<DrawRecordOp>(record);
   list->push<RestoreOp>();
   list->EndPaintOfUnpaired(gfx::Rect(gfx::Point(100, 100), text_blob1_size));
 
   list->StartPaint();
   list->push<SaveOp>();
-  list->push<TranslateOp>(100, 400);
+  list->push<TranslateOp>(100.0f, 400.0f);
   list->push<DrawRecordOp>(record);
   list->push<RestoreOp>();
   list->EndPaintOfUnpaired(gfx::Rect(gfx::Point(100, 400), text_blob1_size));
 
   list->StartPaint();
-  list->push<DrawTextBlobOp>(text_blob2, 10, 20, PaintFlags());
+  list->push<DrawTextBlobOp>(text_blob2, 10.0f, 20.0f, PaintFlags());
   list->EndPaintOfUnpaired(gfx::Rect(text_blob2_size));
 
   list->StartPaint();
-  list->push<DrawTextBlobOp>(text_blob2, 400, 100, PaintFlags());
+  list->push<DrawTextBlobOp>(text_blob2, 400.0f, 100.0f, PaintFlags());
   list->EndPaintOfUnpaired(gfx::Rect(gfx::Point(400, 100), text_blob2_size));
 
   list->StartPaint();

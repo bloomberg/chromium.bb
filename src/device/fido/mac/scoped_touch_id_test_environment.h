@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 
 namespace device {
 namespace fido {
@@ -32,6 +31,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO)
     API_AVAILABLE(macosx(10.12.2)) ScopedTouchIdTestEnvironment {
  public:
   ScopedTouchIdTestEnvironment();
+
+  ScopedTouchIdTestEnvironment(const ScopedTouchIdTestEnvironment&) = delete;
+  ScopedTouchIdTestEnvironment& operator=(const ScopedTouchIdTestEnvironment&) =
+      delete;
+
   ~ScopedTouchIdTestEnvironment();
 
   // ForgeNextTouchIdContext sets up the FakeTouchIdContext returned by the
@@ -61,8 +65,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO)
   std::unique_ptr<FakeTouchIdContext> next_touch_id_context_;
   std::unique_ptr<FakeKeychain> keychain_;
   bool touch_id_available_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedTouchIdTestEnvironment);
 };
 
 }  // namespace mac

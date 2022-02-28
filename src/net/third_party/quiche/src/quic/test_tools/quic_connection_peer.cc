@@ -398,11 +398,7 @@ QuicIdleNetworkDetector& QuicConnectionPeer::GetIdleNetworkDetector(
 void QuicConnectionPeer::SetServerConnectionId(
     QuicConnection* connection,
     const QuicConnectionId& server_connection_id) {
-  if (connection->use_connection_id_on_default_path_) {
-    connection->default_path_.server_connection_id = server_connection_id;
-  } else {
-    connection->server_connection_id_ = server_connection_id;
-  }
+  connection->default_path_.server_connection_id = server_connection_id;
   connection->InstallInitialCrypters(server_connection_id);
 }
 
@@ -430,7 +426,7 @@ void QuicConnectionPeer::SendPing(QuicConnection* connection) {
 void QuicConnectionPeer::SetLastPacketDestinationAddress(
     QuicConnection* connection,
     const QuicSocketAddress& address) {
-  connection->last_packet_destination_address_ = address;
+  connection->last_received_packet_info_.destination_address = address;
 }
 
 // static
@@ -484,12 +480,6 @@ QuicByteCount QuicConnectionPeer::BytesReceivedBeforeAddressValidation(
 }
 
 // static
-void QuicConnectionPeer::EnableMultipleConnectionIdSupport(
-    QuicConnection* connection) {
-  connection->support_multiple_connection_ids_ = true;
-}
-
-// static
 void QuicConnectionPeer::ResetPeerIssuedConnectionIdManager(
     QuicConnection* connection) {
   connection->peer_issued_cid_manager_ = nullptr;
@@ -523,6 +513,26 @@ bool QuicConnectionPeer::HasUnusedPeerIssuedConnectionId(
 bool QuicConnectionPeer::HasSelfIssuedConnectionIdToConsume(
     const QuicConnection* connection) {
   return connection->self_issued_cid_manager_->HasConnectionIdToConsume();
+}
+
+// static
+QuicSelfIssuedConnectionIdManager*
+QuicConnectionPeer::GetSelfIssuedConnectionIdManager(
+    QuicConnection* connection) {
+  return connection->self_issued_cid_manager_.get();
+}
+
+// static
+std::unique_ptr<QuicSelfIssuedConnectionIdManager>
+QuicConnectionPeer::MakeSelfIssuedConnectionIdManager(
+    QuicConnection* connection) {
+  return connection->MakeSelfIssuedConnectionIdManager();
+}
+
+// static
+void QuicConnectionPeer::SetLastDecryptedLevel(QuicConnection* connection,
+                                               EncryptionLevel level) {
+  connection->last_decrypted_packet_level_ = level;
 }
 
 }  // namespace test

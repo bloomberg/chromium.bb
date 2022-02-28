@@ -19,8 +19,7 @@
 
 #include "dawn_wire/WireClient.h"
 #include "dawn_wire/client/ObjectBase.h"
-
-#include <map>
+#include "dawn_wire/client/RequestTracker.h"
 
 namespace dawn_wire { namespace client {
 
@@ -35,7 +34,6 @@ namespace dawn_wire { namespace client {
         void OnSubmittedWorkDone(uint64_t signalValue,
                                  WGPUQueueWorkDoneCallback callback,
                                  void* userdata);
-        WGPUFence CreateFence(const WGPUFenceDescriptor* descriptor);
         void WriteBuffer(WGPUBuffer cBuffer, uint64_t bufferOffset, const void* data, size_t size);
         void WriteTexture(const WGPUImageCopyTexture* destination,
                           const void* data,
@@ -45,15 +43,13 @@ namespace dawn_wire { namespace client {
 
       private:
         void CancelCallbacksForDisconnect() override;
-
         void ClearAllCallbacks(WGPUQueueWorkDoneStatus status);
 
         struct OnWorkDoneData {
             WGPUQueueWorkDoneCallback callback = nullptr;
             void* userdata = nullptr;
         };
-        uint64_t mOnWorkDoneSerial = 0;
-        std::map<uint64_t, OnWorkDoneData> mOnWorkDoneRequests;
+        RequestTracker<OnWorkDoneData> mOnWorkDoneRequests;
     };
 
 }}  // namespace dawn_wire::client

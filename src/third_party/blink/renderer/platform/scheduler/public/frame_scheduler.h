@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
@@ -17,7 +17,6 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
-#include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_priority.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -32,28 +31,18 @@ class WebAgentGroupScheduler;
 }  // namespace scheduler
 
 class PageScheduler;
-class WebSchedulingTaskQueue;
 
 class FrameScheduler : public FrameOrWorkerScheduler {
  public:
-  class PLATFORM_EXPORT Delegate {
+  class PLATFORM_EXPORT Delegate : public FrameOrWorkerScheduler::Delegate {
    public:
-    virtual ~Delegate() = default;
+    ~Delegate() override = default;
 
     virtual ukm::UkmRecorder* GetUkmRecorder() = 0;
     virtual ukm::SourceId GetUkmSourceId() = 0;
 
     // Called when a frame has exceeded a total task time threshold (100ms).
     virtual void UpdateTaskTime(base::TimeDelta time) = 0;
-
-    // Notify that the list of active features for this frame has changed.
-    // See SchedulingPolicy::Feature for the list of features and the meaning
-    // of individual features.
-    // Note that this method is not called when the frame navigates — it is
-    // the responsibility of the observer to detect this and act reset features
-    // accordingly.
-    virtual void UpdateActiveSchedulerTrackedFeatures(
-        uint64_t features_mask) = 0;
 
     virtual const base::UnguessableToken& GetAgentClusterId() const = 0;
   };
@@ -130,9 +119,6 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   virtual std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>
   CreateResourceLoadingMaybeUnfreezableTaskRunnerHandle() = 0;
 
-  virtual std::unique_ptr<WebSchedulingTaskQueue> CreateWebSchedulingTaskQueue(
-      WebSchedulingPriority) = 0;
-
   // Returns the parent PageScheduler.
   virtual PageScheduler* GetPageScheduler() const = 0;
 
@@ -159,6 +145,10 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   // the main thread.
   virtual void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
                                         NavigationType navigation_type) = 0;
+
+  // Tells the scheduler that the "DOMContentLoaded" event has occurred for this
+  // frame.
+  virtual void OnDomContentLoaded() = 0;
 
   // Tells the scheduler that the first contentful paint has occurred for this
   // frame. Only for main frames.

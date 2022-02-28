@@ -1,16 +1,7 @@
-/* Copyright (c) the JPEG XL Project
+/* Copyright (c) the JPEG XL Project Authors. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Use of this source code is governed by a BSD-style
+ * license that can be found in the LICENSE file.
  */
 
 /** @file color_encoding.h
@@ -136,7 +127,7 @@ typedef struct {
   /** Numerical blue primary values in CIE xy space. */
   double primaries_blue_xy[2];
 
-  /** Transfer function is have_gamma is 0 */
+  /** Transfer function if have_gamma is 0 */
   JxlTransferFunction transfer_function;
 
   /** Gamma value used when transfer_function is JXL_TRANSFER_FUNCTION_GAMMA
@@ -146,25 +137,6 @@ typedef struct {
   /** Rendering intent defined for the color profile. */
   JxlRenderingIntent rendering_intent;
 } JxlColorEncoding;
-
-/** Color transform used for the XYB encoding. This affects how the internal
- * XYB color format is converted, and is not needed unless XYB color is used.
- */
-typedef struct {
-  /** Inverse opsin matrix.
-   */
-  float opsin_inv_matrix[3][3];
-
-  /** Opsin bias for opsin matrix. This affects how the internal XYB color
-   * format is converted, and is not needed unless XYB color is used.
-   */
-  float opsin_biases[3];
-
-  /** Quantization bias for opsin matrix. This affects how the internal XYB
-   * color format is converted, and is not needed unless XYB color is used.
-   */
-  float quant_biases[3];
-} JxlInverseOpsinMatrix;
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

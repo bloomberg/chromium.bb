@@ -25,6 +25,7 @@ limitations under the License.
 #include "absl/strings/str_format.h"
 #include "tensorflow/compiler/xla/client/xla_builder.h"
 #include "tensorflow/compiler/xla/literal.h"
+#include "tensorflow/compiler/xla/permutation_util.h"
 #include "tensorflow/compiler/xla/reference_util.h"
 #include "tensorflow/compiler/xla/service/hlo_computation.h"
 #include "tensorflow/compiler/xla/service/hlo_element_type_converter.h"
@@ -239,14 +240,14 @@ TEST_P(HloEvaluatorBf16Test, DoesClamp) {
   EXPECT_TRUE(LiteralTestUtil::Equal(expected, result));
 }
 
-// Verifies that clamping of int64 does not cause loss of precision
+// Verifies that clamping of int64_t does not cause loss of precision
 TEST_P(HloEvaluatorBf16Test, DoesClampInt64) {
-  auto ones = [](int bits) { return (int64{1} << bits) - 1; };
+  auto ones = [](int bits) { return (int64_t{1} << bits) - 1; };
 
   auto low =
-      LiteralUtil::CreateR2<int64>({{0, ones(54)}, {ones(54), ones(58)}});
-  auto value = LiteralUtil::CreateR2<int64>({{0, ones(56)}, {0, ones(58)}});
-  auto high = LiteralUtil::CreateR2<int64>(
+      LiteralUtil::CreateR2<int64_t>({{0, ones(54)}, {ones(54), ones(58)}});
+  auto value = LiteralUtil::CreateR2<int64_t>({{0, ones(56)}, {0, ones(58)}});
+  auto high = LiteralUtil::CreateR2<int64_t>(
       {{ones(54), ones(55)}, {ones(56), ones(58)}});
 
   Shape shape = low.shape();
@@ -261,7 +262,7 @@ TEST_P(HloEvaluatorBf16Test, DoesClampInt64) {
   TF_ASSERT_OK_AND_ASSIGN(Literal result, Evaluate());
 
   auto expected =
-      LiteralUtil::CreateR2<int64>({{0, ones(55)}, {ones(54), ones(58)}});
+      LiteralUtil::CreateR2<int64_t>({{0, ones(55)}, {ones(54), ones(58)}});
 
   EXPECT_TRUE(LiteralTestUtil::Equal(expected, result));
 }
@@ -315,36 +316,36 @@ TEST_P(HloEvaluatorBf16Test, DoesSelect) {
 // Verifies that HloEvaluator evaluates a HLO instruction that performs
 // element-wise addition with 2 operands.
 TEST_F(HloEvaluatorTest, DoesAdd) {
-  auto lhs = LiteralUtil::CreateR2<int64>({{1, 0}, {-100, 4}});
-  auto rhs = LiteralUtil::CreateR2<int64>({{2, 4}, {4, 4}});
-  auto expected = LiteralUtil::CreateR2<int64>({{3, 4}, {-96, 8}});
+  auto lhs = LiteralUtil::CreateR2<int64_t>({{1, 0}, {-100, 4}});
+  auto rhs = LiteralUtil::CreateR2<int64_t>({{2, 4}, {4, 4}});
+  auto expected = LiteralUtil::CreateR2<int64_t>({{3, 4}, {-96, 8}});
   TestBinaryOp(HloOpcode::kAdd, std::move(expected), std::move(lhs),
                std::move(rhs));
 }
 // Verifies that HloEvaluator evaluates a HLO instruction that performs
 // element-wise and with 2 operands.
 TEST_P(HloEvaluatorBf16Test, DoesAnd) {
-  auto lhs = LiteralUtil::CreateR2<int64>({{1, 0}, {-100, 4}});
-  auto rhs = LiteralUtil::CreateR2<int64>({{2, 4}, {4, 4}});
-  auto expected = LiteralUtil::CreateR2<int64>({{0, 0}, {4, 4}});
+  auto lhs = LiteralUtil::CreateR2<int64_t>({{1, 0}, {-100, 4}});
+  auto rhs = LiteralUtil::CreateR2<int64_t>({{2, 4}, {4, 4}});
+  auto expected = LiteralUtil::CreateR2<int64_t>({{0, 0}, {4, 4}});
   TestBinaryOp(HloOpcode::kAnd, std::move(expected), std::move(lhs),
                std::move(rhs));
 }
 // Verifies that HloEvaluator evaluates a HLO instruction that performs
 // element-wise or with 2 operands.
 TEST_F(HloEvaluatorTest, DoesOr) {
-  auto lhs = LiteralUtil::CreateR2<int64>({{1, 0}, {-100, 4}});
-  auto rhs = LiteralUtil::CreateR2<int64>({{2, 4}, {4, 4}});
-  auto expected = LiteralUtil::CreateR2<int64>({{3, 4}, {-100, 4}});
+  auto lhs = LiteralUtil::CreateR2<int64_t>({{1, 0}, {-100, 4}});
+  auto rhs = LiteralUtil::CreateR2<int64_t>({{2, 4}, {4, 4}});
+  auto expected = LiteralUtil::CreateR2<int64_t>({{3, 4}, {-100, 4}});
   TestBinaryOp(HloOpcode::kOr, std::move(expected), std::move(lhs),
                std::move(rhs));
 }
 // Verifies that HloEvaluator evaluates a HLO instruction that performs
 // element-wise or with 2 operands.
 TEST_F(HloEvaluatorTest, DoesXor) {
-  auto lhs = LiteralUtil::CreateR2<int64>({{1, 0}, {-100, 4}});
-  auto rhs = LiteralUtil::CreateR2<int64>({{2, 4}, {4, 4}});
-  auto expected = LiteralUtil::CreateR2<int64>({{3, 4}, {-104, 0}});
+  auto lhs = LiteralUtil::CreateR2<int64_t>({{1, 0}, {-100, 4}});
+  auto rhs = LiteralUtil::CreateR2<int64_t>({{2, 4}, {4, 4}});
+  auto expected = LiteralUtil::CreateR2<int64_t>({{3, 4}, {-104, 0}});
   TestBinaryOp(HloOpcode::kXor, std::move(expected), std::move(lhs),
                std::move(rhs));
 }
@@ -362,21 +363,21 @@ TEST_F(HloEvaluatorTest, DoesMultiply) {
 // Verifies that HloEvaluator evaluates a HLO instruction that performs
 // element-wise divide with 2 operands.
 TEST_F(HloEvaluatorTest, DoesDivideInt64) {
-  auto lhs = LiteralUtil::CreateR2<int64>({{1, 0}, {-100, 4}});
-  auto rhs = LiteralUtil::CreateR2<int64>({{2, 4}, {4, 4}});
-  auto expected = LiteralUtil::CreateR2<int64>({{0, 0}, {-25, 1}});
+  auto lhs = LiteralUtil::CreateR2<int64_t>({{1, 0}, {-100, 4}});
+  auto rhs = LiteralUtil::CreateR2<int64_t>({{2, 4}, {4, 4}});
+  auto expected = LiteralUtil::CreateR2<int64_t>({{0, 0}, {-25, 1}});
   TestBinaryOp(HloOpcode::kDivide, std::move(expected), std::move(lhs),
                std::move(rhs));
 }
 
 TEST_F(HloEvaluatorTest, DoesClampS64) {
-  auto low = LiteralUtil::CreateR1<int64>(
+  auto low = LiteralUtil::CreateR1<int64_t>(
       {-8616761059752331528LL, 6780561065411491190LL, -8616761059752331528LL});
-  auto value = LiteralUtil::CreateR1<int64>(
+  auto value = LiteralUtil::CreateR1<int64_t>(
       {-6780561065411491190LL, 6780561065411491180LL, 4241131823772864090LL});
-  auto high = LiteralUtil::CreateR1<int64>(
+  auto high = LiteralUtil::CreateR1<int64_t>(
       {-6780561065411491180LL, 8616761059752331528LL, 3832151243857508051LL});
-  auto expected = LiteralUtil::CreateR1<int64>(
+  auto expected = LiteralUtil::CreateR1<int64_t>(
       {-6780561065411491190LL, 6780561065411491190LL, 3832151243857508051LL});
   TestTernaryOp(HloOpcode::kClamp, std::move(expected), std::move(low),
                 std::move(value), std::move(high));
@@ -394,8 +395,8 @@ TEST_P(HloEvaluatorBf16Test, DoesDivideDouble) {
 // Verifies that HloEvaluator evaluates a HLO instruction that performs
 // element-wise abs op with 1 operand.
 TEST_F(HloEvaluatorTest, DoesAbsR2) {
-  auto operand = LiteralUtil::CreateR2<int64>({{1, -20}, {-100, 4}});
-  auto expected = LiteralUtil::CreateR2<int64>({{1, 20}, {100, 4}});
+  auto operand = LiteralUtil::CreateR2<int64_t>({{1, -20}, {-100, 4}});
+  auto expected = LiteralUtil::CreateR2<int64_t>({{1, 20}, {100, 4}});
   TestUnaryOp(HloOpcode::kAbs, std::move(expected), std::move(operand));
 }
 TEST_P(HloEvaluatorBf16Test, DoesAbsR0) {
@@ -459,9 +460,9 @@ TEST_F(HloEvaluatorTest, DoesImagC128) {
 // Verifies that HloEvaluator evaluates a HLO Computation with non-parameter nor
 // constant operands.
 TEST_F(HloEvaluatorTest, DoesTraverseInstructions) {
-  auto lhs = LiteralUtil::CreateR2<int64>({{1, 0}, {-100, 4}});
-  auto rhs = LiteralUtil::CreateR2<int64>({{2, 4}, {4, 4}});
-  auto rhs2 = LiteralUtil::CreateR2<int64>({{1, -20}, {-100, 4}});
+  auto lhs = LiteralUtil::CreateR2<int64_t>({{1, 0}, {-100, 4}});
+  auto rhs = LiteralUtil::CreateR2<int64_t>({{2, 4}, {4, 4}});
+  auto rhs2 = LiteralUtil::CreateR2<int64_t>({{1, -20}, {-100, 4}});
   std::vector<const Literal*> args = {&lhs, &rhs, &rhs2};
 
   Shape shape = ShapeUtil::MakeShape(S64, {2, 2});
@@ -482,7 +483,7 @@ TEST_F(HloEvaluatorTest, DoesTraverseInstructions) {
 
   TF_ASSERT_OK_AND_ASSIGN(Literal result, Evaluate(args));
 
-  auto expected = LiteralUtil::CreateR2<int64>({{4, -16}, {-196, 12}});
+  auto expected = LiteralUtil::CreateR2<int64_t>({{4, -16}, {-196, 12}});
 
   EXPECT_TRUE(LiteralTestUtil::Equal(expected, result));
 }
@@ -490,7 +491,7 @@ TEST_F(HloEvaluatorTest, DoesTraverseInstructions) {
 // Verifies Reshape operation is correctly evaluated.
 TEST_F(HloEvaluatorTest, DoesReshape) {
   HloComputation::Builder b(TestName());
-  const int64 dimensions[] = {11, 8, 7, 5, 9};
+  const int64_t dimensions[] = {11, 8, 7, 5, 9};
   TF_ASSERT_OK_AND_ASSIGN(auto literal,
                           LiteralUtil::CreateRandomLiteral<F32>(
                               ShapeUtil::MakeShape(F32, dimensions), 0.0, 1.0));
@@ -499,7 +500,7 @@ TEST_F(HloEvaluatorTest, DoesReshape) {
       b.AddInstruction(HloInstruction::CreateConstant(std::move(literal)));
 
   Shape shape = ShapeUtil::MakeShape(F32, {8, 7, 11, 9, 5});
-  const int64 permutation[] = {1, 2, 0, 4, 3};
+  const int64_t permutation[] = {1, 2, 0, 4, 3};
   b.AddInstruction(
       HloInstruction::CreateTranspose(shape, literal_instruction, permutation));
   m_->AddEntryComputation(b.Build());
@@ -507,10 +508,11 @@ TEST_F(HloEvaluatorTest, DoesReshape) {
   TF_ASSERT_OK_AND_ASSIGN(Literal result, Evaluate({}));
 
   using NativeT = typename primitive_util::PrimitiveTypeToNative<F32>::type;
-  result.EachCell<NativeT>([&](absl::Span<const int64> indices, NativeT value) {
-    std::vector<int64> rindexes = Permute(permutation, indices);
-    EXPECT_NEAR(value, literal_clone.Get<NativeT>(rindexes), 0.031250);
-  });
+  result.EachCell<NativeT>(
+      [&](absl::Span<const int64_t> indices, NativeT value) {
+        std::vector<int64_t> rindexes = PermuteInverse(indices, permutation);
+        EXPECT_NEAR(value, literal_clone.Get<NativeT>(rindexes), 0.031250);
+      });
 }
 
 // Verifies Broadcast operation is correctly evaluated.
@@ -553,9 +555,9 @@ TEST_F(HloEvaluatorTest, DoesConcatenateSimple) {
   HloComputation::Builder b(TestName());
 
   HloInstruction* operand1 = b.AddInstruction(HloInstruction::CreateConstant(
-      LiteralUtil::CreateR2<int64>({{-1, -2}, {100, 200}})));
+      LiteralUtil::CreateR2<int64_t>({{-1, -2}, {100, 200}})));
   HloInstruction* operand2 = b.AddInstruction(HloInstruction::CreateConstant(
-      LiteralUtil::CreateR2<int64>({{-2, -3}, {-100, -200}})));
+      LiteralUtil::CreateR2<int64_t>({{-2, -3}, {-100, -200}})));
 
   std::vector<HloInstruction*> operands = {operand1, operand2};
 
@@ -566,7 +568,7 @@ TEST_F(HloEvaluatorTest, DoesConcatenateSimple) {
 
   TF_ASSERT_OK_AND_ASSIGN(Literal result, Evaluate());
 
-  auto expected = LiteralUtil::CreateR2<int64>(
+  auto expected = LiteralUtil::CreateR2<int64_t>(
       {{-1, -2}, {100, 200}, {-2, -3}, {-100, -200}});
   EXPECT_TRUE(LiteralTestUtil::Equal(expected, result));
 }
@@ -574,10 +576,10 @@ TEST_F(HloEvaluatorTest, DoesConcatenateSimple) {
 TEST_F(HloEvaluatorTest, ConcatenateHandlesShapeWithZeroElement) {
   HloComputation::Builder b(TestName());
 
-  HloInstruction* operand1 = b.AddInstruction(
-      HloInstruction::CreateConstant(LiteralUtil::CreateR1<int64>({100, 200})));
+  HloInstruction* operand1 = b.AddInstruction(HloInstruction::CreateConstant(
+      LiteralUtil::CreateR1<int64_t>({100, 200})));
   HloInstruction* operand2 = b.AddInstruction(
-      HloInstruction::CreateConstant(LiteralUtil::CreateR1<int64>({})));
+      HloInstruction::CreateConstant(LiteralUtil::CreateR1<int64_t>({})));
 
   std::vector<HloInstruction*> operands = {operand1, operand2};
 
@@ -588,7 +590,7 @@ TEST_F(HloEvaluatorTest, ConcatenateHandlesShapeWithZeroElement) {
 
   TF_ASSERT_OK_AND_ASSIGN(Literal result, Evaluate());
 
-  auto expected = LiteralUtil::CreateR1<int64>({100, 200});
+  auto expected = LiteralUtil::CreateR1<int64_t>({100, 200});
   EXPECT_TRUE(LiteralTestUtil::Equal(expected, result));
 }
 
@@ -632,7 +634,7 @@ TEST_P(HloEvaluatorBf16Test, ConvertWithDifferentLayout) {
 }
 
 PaddingConfig CreatePaddingConfig(
-    std::initializer_list<std::array<int64, 3>> padding_dimensions) {
+    std::initializer_list<std::array<int64_t, 3>> padding_dimensions) {
   PaddingConfig padding_config;
 
   for (auto& paddings_per_dim : padding_dimensions) {
@@ -650,7 +652,7 @@ TEST_F(HloEvaluatorTest, Pad2DIntegerArrayWithZeroDimension) {
   auto operand_instruction =
       b.AddInstruction(HloInstruction::CreateConstant(std::move(operand)));
 
-  constexpr int32 kPadValue = 10;
+  constexpr int32_t kPadValue = 10;
   auto pad_value = LiteralUtil::CreateR0<int32>(kPadValue);
   auto padding_value_instruction =
       b.AddInstruction(HloInstruction::CreateConstant(std::move(pad_value)));
@@ -1439,8 +1441,8 @@ TEST_P(HloEvaluatorBf16Test,
 
 TEST_P(HloEvaluatorBf16Test, Conv2DGroupedConvolution) {
   HloComputation::Builder b(TestName());
-  std::vector<int64> input_dims = {1, 2, 2, 4};
-  std::vector<int64> filter_dims = {2, 2, 2, 8};
+  std::vector<int64_t> input_dims = {1, 2, 2, 4};
+  std::vector<int64_t> filter_dims = {2, 2, 2, 8};
   Shape input_shape = ShapeUtil::MakeShapeWithType<float>(input_dims);
   Shape filter_shape = ShapeUtil::MakeShapeWithType<float>(filter_dims);
   // Tensorflow dimension numbers for 2D convolution.
@@ -2545,8 +2547,7 @@ TEST_F(HloEvaluatorPreciseReduceTest, AddReductionPrecisionTest) {
 
 // Reducing many numbers should be fast because it doesn't create
 // intermediate Literals; the microbenchmark should finish in < 1 msec.
-void BM_ReducePrecisely(int num_iters) {
-  tensorflow::testing::StopTiming();
+void BM_ReducePrecisely(::testing::benchmark::State& state) {
   HloComputation::Builder b("BM_ReducePrecisely");
   HloModuleConfig config;
   config.set_debug_options(GetDebugOptionsFromFlags());
@@ -2574,10 +2575,11 @@ void BM_ReducePrecisely(int num_iters) {
                                    /*dimensions_to_reduce=*/{0}, add_func));
   module.AddEntryComputation(b.Build());
 
-  HloEvaluator hlo_eval;
-  tensorflow::testing::StartTiming();
-  hlo_eval.Evaluate(reduce_instruction).ConsumeValueOrDie();
-  tensorflow::testing::StopTiming();
+  // Benchmark loop
+  for (auto s : state) {
+    HloEvaluator hlo_eval;
+    hlo_eval.Evaluate(reduce_instruction).ConsumeValueOrDie();
+  }
 }
 
 BENCHMARK(BM_ReducePrecisely);
@@ -2802,7 +2804,7 @@ TEST_P(HloEvaluatorBf16Test, ReduceWindowAdd6D) {
   HloComputation::Builder b(TestName());
 
   // arg: f32[4,4,4,4,4,4] full of ones. Using small dims to limit run-time.
-  std::vector<int64> input_dims(6, 4);
+  std::vector<int64_t> input_dims(6, 4);
   Literal arg_literal =
       LiteralUtil::CreateFullWithDescendingLayout<float>(input_dims, 1.0f);
 
@@ -2855,10 +2857,113 @@ TEST_P(HloEvaluatorBf16Test, ReduceWindowAdd6D) {
 
   TF_ASSERT_OK_AND_ASSIGN(Literal result, Evaluate());
 
-  std::vector<int64> output_dims = {4, 3, 3, 3, 4, 4};
+  std::vector<int64_t> output_dims = {4, 3, 3, 3, 4, 4};
   Literal result_literal =
       LiteralUtil::CreateFullWithDescendingLayout<float>(output_dims, 8.0f);
   EXPECT_TRUE(LiteralTestUtil::Equal(result_literal, result));
+}
+
+TEST_P(HloEvaluatorBf16Test, Min3In5Stride2Tuple) {
+  HloComputation::Builder builder("main");
+  auto input1 = builder.AddInstruction(HloInstruction::CreateConstant(
+      LiteralUtil::CreateR1<float>({10000, 1000, 100, 10, 1})));
+  auto input2 = builder.AddInstruction(HloInstruction::CreateConstant(
+      LiteralUtil::CreateR1<float>({10000, 1000, 100, 10, 1})));
+  HloComputation::Builder bcompute("ComputeFunction");
+  auto shape1 = ShapeUtil::MakeShape(F32, {});
+  auto shape2 = ShapeUtil::MakeShape(F32, {});
+  auto p2 =
+      bcompute.AddInstruction(HloInstruction::CreateParameter(0, shape1, "x0"));
+  auto p3 =
+      bcompute.AddInstruction(HloInstruction::CreateParameter(1, shape2, "x1"));
+  auto p4 =
+      bcompute.AddInstruction(HloInstruction::CreateParameter(2, shape1, "y0"));
+  auto p5 =
+      bcompute.AddInstruction(HloInstruction::CreateParameter(3, shape2, "y1"));
+  std::vector<HloInstruction*> compute_vec = {
+      bcompute.AddInstruction(
+          HloInstruction::CreateBinary(shape1, HloOpcode::kMinimum, p2, p4)),
+      bcompute.AddInstruction(
+          HloInstruction::CreateBinary(shape2, HloOpcode::kMinimum, p3, p5))};
+  bcompute.AddInstruction(HloInstruction::CreateTuple(compute_vec));
+  auto compute_tuple = m_->AddEmbeddedComputation(bcompute.Build());
+  std::vector<HloInstruction*> input_vec = {input1, input2};
+  auto init1 = builder.AddInstruction(
+      HloInstruction::CreateConstant(LiteralUtil::MaxValue(F32)));
+  auto init2 = builder.AddInstruction(
+      HloInstruction::CreateConstant(LiteralUtil::MaxValue(F32)));
+  std::vector<HloInstruction*> init_vec = {init1, init2};
+  auto padding = std::pair<int64_t, int64_t>(0, 0);
+  TF_ASSERT_OK_AND_ASSIGN(auto window,
+                          ShapeInference::InferWindowFromDimensions(
+                              {3}, {2}, absl::MakeSpan(&padding, 1),
+                              /*lhs_dilation=*/{},
+                              /*rhs_dilation=*/{}));
+  std::vector<const Shape*> input_shapes = {&input1->shape(), &input2->shape()};
+  std::vector<const Shape*> init_shapes = {&init1->shape(), &init2->shape()};
+  TF_ASSERT_OK_AND_ASSIGN(Shape shape,
+                          ShapeInference::InferReduceWindowShape(
+                              input_shapes, init_shapes, window,
+                              compute_tuple->ComputeProgramShape()));
+  builder.AddInstruction(HloInstruction::CreateReduceWindow(
+      shape, input_vec, init_vec, window, compute_tuple));
+  auto r1 = LiteralUtil::CreateR1<float>({100, 1});
+  auto expected = LiteralUtil::MakeTuple({&r1, &r1});
+  m_->AddEntryComputation(builder.Build());
+  TF_ASSERT_OK_AND_ASSIGN(Literal result, Evaluate());
+  EXPECT_TRUE(LiteralTestUtil::Equal(expected, result));
+}
+
+TEST_P(HloEvaluatorBf16Test, Min3In5Stride2TupleDiffInput) {
+  HloComputation::Builder builder("main");
+  auto input1 = builder.AddInstruction(HloInstruction::CreateConstant(
+      LiteralUtil::CreateR1<float>({10000, 1000, 100, 10, 1})));
+  auto input2 = builder.AddInstruction(HloInstruction::CreateConstant(
+      LiteralUtil::CreateR1<int>({15, 28, 300, 107, 12})));
+  HloComputation::Builder bcompute("ComputeFunction");
+  auto shape1 = ShapeUtil::MakeShape(F32, {});
+  auto shape2 = ShapeUtil::MakeShape(S32, {});
+  auto p2 =
+      bcompute.AddInstruction(HloInstruction::CreateParameter(0, shape1, "x0"));
+  auto p3 =
+      bcompute.AddInstruction(HloInstruction::CreateParameter(1, shape2, "x1"));
+  auto p4 =
+      bcompute.AddInstruction(HloInstruction::CreateParameter(2, shape1, "y0"));
+  auto p5 =
+      bcompute.AddInstruction(HloInstruction::CreateParameter(3, shape2, "y1"));
+  std::vector<HloInstruction*> compute_vec = {
+      bcompute.AddInstruction(
+          HloInstruction::CreateBinary(shape1, HloOpcode::kMinimum, p2, p4)),
+      bcompute.AddInstruction(
+          HloInstruction::CreateBinary(shape2, HloOpcode::kMinimum, p3, p5))};
+  bcompute.AddInstruction(HloInstruction::CreateTuple(compute_vec));
+  auto compute_tuple = m_->AddEmbeddedComputation(bcompute.Build());
+  std::vector<HloInstruction*> input_vec = {input1, input2};
+  auto init1 = builder.AddInstruction(
+      HloInstruction::CreateConstant(LiteralUtil::MaxValue(F32)));
+  auto init2 = builder.AddInstruction(
+      HloInstruction::CreateConstant(LiteralUtil::MaxValue(S32)));
+  std::vector<HloInstruction*> init_vec = {init1, init2};
+  auto padding = std::pair<int64_t, int64_t>(0, 0);
+  TF_ASSERT_OK_AND_ASSIGN(auto window,
+                          ShapeInference::InferWindowFromDimensions(
+                              {3}, {2}, absl::MakeSpan(&padding, 1),
+                              /*lhs_dilation=*/{},
+                              /*rhs_dilation=*/{}));
+  std::vector<const Shape*> input_shapes = {&input1->shape(), &input2->shape()};
+  std::vector<const Shape*> init_shapes = {&init1->shape(), &init2->shape()};
+  TF_ASSERT_OK_AND_ASSIGN(Shape shape,
+                          ShapeInference::InferReduceWindowShape(
+                              input_shapes, init_shapes, window,
+                              compute_tuple->ComputeProgramShape()));
+  builder.AddInstruction(HloInstruction::CreateReduceWindow(
+      shape, input_vec, init_vec, window, compute_tuple));
+  auto r1 = LiteralUtil::CreateR1<float>({100, 1});
+  auto r2 = LiteralUtil::CreateR1<int>({15, 12});
+  auto expected = LiteralUtil::MakeTuple({&r1, &r2});
+  m_->AddEntryComputation(builder.Build());
+  TF_ASSERT_OK_AND_ASSIGN(Literal result, Evaluate());
+  EXPECT_TRUE(LiteralTestUtil::Equal(expected, result));
 }
 
 TEST_P(HloEvaluatorBf16Test, StridedSlice) {
@@ -3024,7 +3129,7 @@ TEST_P(HloEvaluatorBf16Test, SetAndGetTuples) {
   HloInstruction* operand2 = b.AddInstruction(
       HloInstruction::CreateConstant(std::move(operand_literal2)));
   HloInstruction* operand1 = b.AddInstruction(
-      HloInstruction::CreateConstant(LiteralUtil::CreateR1<int64>({0, 1})));
+      HloInstruction::CreateConstant(LiteralUtil::CreateR1<int64_t>({0, 1})));
 
   auto tuple =
       b.AddInstruction(HloInstruction::CreateTuple({operand1, operand2}));
@@ -3058,7 +3163,7 @@ TEST_P(HloEvaluatorBf16Test, SetAndGetNestedTuples) {
   HloInstruction* operand2 = b.AddInstruction(HloInstruction::CreateConstant(
       LiteralUtil::CreateR2FromArray2D<double>(*operand_array)));
   HloInstruction* operand1 = b.AddInstruction(
-      HloInstruction::CreateConstant(LiteralUtil::CreateR1<int64>({0, 1})));
+      HloInstruction::CreateConstant(LiteralUtil::CreateR1<int64_t>({0, 1})));
 
   auto tuple1 =
       b.AddInstruction(HloInstruction::CreateTuple({operand1, operand2}));
@@ -4459,6 +4564,116 @@ TEST_F(HloEvaluatorTest, MapBF16) {
   )";
   TF_ASSERT_OK_AND_ASSIGN(m_, ParseAndReturnVerifiedModule(hlo_text));
   Literal expected = LiteralUtil::CreateR1<float>({2.f, 4.f, 6.f});
+  TF_ASSERT_OK_AND_ASSIGN(
+      Literal result, HloEvaluator().Evaluate(*m_->entry_computation(), {}));
+  EXPECT_TRUE(LiteralTestUtil::Equal(expected, result));
+}
+
+TEST_F(HloEvaluatorTest, MapS16) {
+  const absl::string_view hlo_text = R"(
+  HloModule test
+
+  map_computation {
+    p = s16[] parameter(0)
+    add = s16[] add(p, p)
+    ROOT conv = f32[] convert(add)
+  }
+
+  ENTRY CopyStartCopyDone {
+    c = s16[3] constant({1, 2, 3})
+    ROOT map = f32[3] map(c), to_apply=map_computation
+  }
+  )";
+  TF_ASSERT_OK_AND_ASSIGN(m_, ParseAndReturnVerifiedModule(hlo_text));
+  Literal expected = LiteralUtil::CreateR1<float>({2.f, 4.f, 6.f});
+  TF_ASSERT_OK_AND_ASSIGN(
+      Literal result, HloEvaluator().Evaluate(*m_->entry_computation(), {}));
+  EXPECT_TRUE(LiteralTestUtil::Equal(expected, result));
+}
+
+TEST_F(HloEvaluatorTest, MapU16) {
+  const absl::string_view hlo_text = R"(
+  HloModule test
+
+  map_computation {
+    p = u16[] parameter(0)
+    add = u16[] add(p, p)
+    ROOT conv = f32[] convert(add)
+  }
+
+  ENTRY CopyStartCopyDone {
+    c = u16[3] constant({1, 2, 3})
+    ROOT map = f32[3] map(c), to_apply=map_computation
+  }
+  )";
+  TF_ASSERT_OK_AND_ASSIGN(m_, ParseAndReturnVerifiedModule(hlo_text));
+  Literal expected = LiteralUtil::CreateR1<float>({2.f, 4.f, 6.f});
+  TF_ASSERT_OK_AND_ASSIGN(
+      Literal result, HloEvaluator().Evaluate(*m_->entry_computation(), {}));
+  EXPECT_TRUE(LiteralTestUtil::Equal(expected, result));
+}
+
+TEST_F(HloEvaluatorTest, DotUpcast) {
+  const absl::string_view hlo_text = R"(
+  HloModule test
+  ENTRY DotUpcast {
+    l = s16[4,3]{1,0} parameter(0)
+    r = s8[3,2]{1,0} parameter(1)
+    ROOT result = s32[4,2] dot(l, r), lhs_contracting_dims={1},
+                                      rhs_contracting_dims={0}
+  }
+  )";
+  // lhs:
+  // s16[4,3] {
+  //  { 1, 2, 3 },
+  //  { 5, 6, 7 },
+  //  { 9, 10, 11 },
+  //  { 13, 14, 15 },
+  // }
+  auto lhs_array = absl::make_unique<Array2D<int16>>(4, 3);
+  lhs_array->FillUnique(1);
+  auto lhs_literal = LiteralUtil::CreateR2FromArray2D<int16>(*lhs_array);
+
+  // rhs:
+  // s8[3,2] {
+  //  { 1, 2 },
+  //  { 3, 4 },
+  //  { 5, 6 },
+  // }
+  auto rhs_array = absl::make_unique<Array2D<int8>>(3, 2);
+  rhs_array->FillUnique(1);
+  auto rhs_literal = LiteralUtil::CreateR2FromArray2D<int8>(*rhs_array);
+  TF_ASSERT_OK_AND_ASSIGN(m_, ParseAndReturnVerifiedModule(hlo_text));
+  TF_ASSERT_OK_AND_ASSIGN(Literal result,
+                          Evaluate({&lhs_literal, &rhs_literal}));
+
+  auto expected_array =
+      Array2D<int32>({{22, 28}, {58, 76}, {94, 124}, {130, 172}});
+  auto expected = LiteralUtil::CreateR2FromArray2D<int32>(expected_array);
+
+  EXPECT_TRUE(LiteralTestUtil::Equal(expected, result));
+}
+
+TEST_F(HloEvaluatorTest, SortC64) {
+  const absl::string_view hlo_text = R"(
+  HloModule m
+
+  sort_lt_comparator {
+    parameter.0 = c64[] parameter(0)
+    real.0 = f32[] real(parameter.0)
+    parameter.1 = c64[] parameter(1)
+    real.1 = f32[] real(parameter.1)
+    ROOT compare = pred[] compare(real.0, real.1), direction=LT
+  }
+
+  ENTRY main {
+    c = c64[3] constant({(2, 0), (4, 0), (6, 0)})
+    ROOT sort = c64[3]{0} sort(c), dimensions={0}, to_apply=sort_lt_comparator
+  }
+  )";
+  TF_ASSERT_OK_AND_ASSIGN(m_, ParseAndReturnVerifiedModule(hlo_text));
+  Literal expected =
+      LiteralUtil::CreateR1<std::complex<float>>({2.f, 4.f, 6.f});
   TF_ASSERT_OK_AND_ASSIGN(
       Literal result, HloEvaluator().Evaluate(*m_->entry_computation(), {}));
   EXPECT_TRUE(LiteralTestUtil::Equal(expected, result));

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
@@ -40,6 +40,10 @@ const int kCaptionButtonHeight = 18;
 class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
  public:
   TestLayoutDelegate() : show_caption_buttons_(true), maximized_(false) {}
+
+  TestLayoutDelegate(const TestLayoutDelegate&) = delete;
+  TestLayoutDelegate& operator=(const TestLayoutDelegate&) = delete;
+
   ~TestLayoutDelegate() override {}
 
   void set_window_title(const std::u16string& title) { window_title_ = title; }
@@ -77,13 +81,15 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
     return !show_caption_buttons_ || maximized_;
   }
   bool EverHasVisibleBackgroundTabShapes() const override { return false; }
+  void UpdateWindowControlsOverlay(
+      const gfx::Rect& bounding_rect) const override {}
+  bool IsTranslucentWindowOpacitySupported() const override { return true; }
+  bool ShouldDrawRestoredFrameShadow() const override { return true; }
 
  private:
   std::u16string window_title_;
   bool show_caption_buttons_;
   bool maximized_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestLayoutDelegate);
 };
 
 }  // namespace
@@ -93,6 +99,12 @@ class OpaqueBrowserFrameViewLayoutTest
       public testing::WithParamInterface<bool> {
  public:
   OpaqueBrowserFrameViewLayoutTest() {}
+
+  OpaqueBrowserFrameViewLayoutTest(const OpaqueBrowserFrameViewLayoutTest&) =
+      delete;
+  OpaqueBrowserFrameViewLayoutTest& operator=(
+      const OpaqueBrowserFrameViewLayoutTest&) = delete;
+
   ~OpaqueBrowserFrameViewLayoutTest() override {}
 
   void SetUp() override {
@@ -162,7 +174,7 @@ class OpaqueBrowserFrameViewLayoutTest
     window_title_->SetSubpixelRenderingEnabled(false);
     window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     window_title_->SetID(VIEW_ID_WINDOW_TITLE);
-    root_view_->AddChildView(window_title_);
+    root_view_->AddChildView(window_title_.get());
   }
 
   int CaptionY() const {
@@ -339,20 +351,18 @@ class OpaqueBrowserFrameViewLayoutTest
   }
 
   std::unique_ptr<views::Widget> widget_;
-  views::View* root_view_ = nullptr;
-  OpaqueBrowserFrameViewLayout* layout_manager_ = nullptr;
+  raw_ptr<views::View> root_view_ = nullptr;
+  raw_ptr<OpaqueBrowserFrameViewLayout> layout_manager_ = nullptr;
   std::unique_ptr<TestLayoutDelegate> delegate_;
 
   // Widgets:
-  views::ImageButton* minimize_button_ = nullptr;
-  views::ImageButton* maximize_button_ = nullptr;
-  views::ImageButton* restore_button_ = nullptr;
-  views::ImageButton* close_button_ = nullptr;
+  raw_ptr<views::ImageButton> minimize_button_ = nullptr;
+  raw_ptr<views::ImageButton> maximize_button_ = nullptr;
+  raw_ptr<views::ImageButton> restore_button_ = nullptr;
+  raw_ptr<views::ImageButton> close_button_ = nullptr;
 
   TabIconView* tab_icon_view_ = nullptr;
-  views::Label* window_title_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameViewLayoutTest);
+  raw_ptr<views::Label> window_title_ = nullptr;
 };
 
 TEST_P(OpaqueBrowserFrameViewLayoutTest, BasicWindow) {

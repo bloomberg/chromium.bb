@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_KEYBOARD_NAVIGATOR_KEYBOARD_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_KEYBOARD_NAVIGATOR_KEYBOARD_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -24,12 +23,13 @@ class NavigatorKeyboard final : public GarbageCollected<NavigatorKeyboard>,
 
   explicit NavigatorKeyboard(Navigator&);
 
+  NavigatorKeyboard(const NavigatorKeyboard&) = delete;
+  NavigatorKeyboard& operator=(const NavigatorKeyboard&) = delete;
+
   void Trace(Visitor*) const override;
 
  private:
   Member<Keyboard> keyboard_;
-
-  DISALLOW_COPY_AND_ASSIGN(NavigatorKeyboard);
 };
 
 }  // namespace blink

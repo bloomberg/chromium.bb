@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/network/public/cpp/content_security_policy/csp_source_list.h"
+#include "base/memory/raw_ptr.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
@@ -107,10 +108,10 @@ TEST(CSPSourceList, AllowStar) {
 
   {
     // With a protocol of 'file', '*' allow 'file:'
-    auto self = network::mojom::CSPSource::New(
+    auto file = network::mojom::CSPSource::New(
         "file", "example.com", url::PORT_UNSPECIFIED, "", false, false);
-    EXPECT_TRUE(Allow(source_list, GURL("file://not-example.com"), *self));
-    EXPECT_FALSE(Allow(source_list, GURL("applewebdata://a.test"), *self));
+    EXPECT_TRUE(Allow(source_list, GURL("file://not-example.com"), *file));
+    EXPECT_FALSE(Allow(source_list, GURL("applewebdata://a.test"), *file));
   }
 }
 
@@ -1061,7 +1062,7 @@ TEST(CSPSourceList, SubsumeListNoScheme) {
   struct TestCase {
     std::string required;
     std::vector<std::string> response_csp;
-    mojom::CSPSource* origin;
+    raw_ptr<mojom::CSPSource> origin;
     bool expected;
   } cases[] = {
       {"http://a.com", {"a.com"}, origin_https.get(), true},

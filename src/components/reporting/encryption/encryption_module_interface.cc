@@ -10,7 +10,7 @@
 #include "base/feature_list.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "components/reporting/proto/record.pb.h"
+#include "components/reporting/proto/synced/record.pb.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/statusor.h"
 
@@ -21,7 +21,7 @@ namespace {
 // Temporary: enable/disable encryption.
 const base::Feature kEncryptedReportingFeature{
     EncryptionModuleInterface::kEncryptedReporting,
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace
 

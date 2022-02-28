@@ -5,9 +5,11 @@
 #include "components/prefs/overlay_user_pref_store.h"
 
 #include <memory>
+#include <ostream>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/values.h"
 #include "components/prefs/in_memory_pref_store.h"
 
@@ -30,7 +32,7 @@ class OverlayUserPrefStore::ObserverAdapter : public PrefStore::Observer {
  private:
   // Is the update for the ephemeral?
   const bool ephemeral_user_pref_store_;
-  OverlayUserPrefStore* const parent_;
+  const raw_ptr<OverlayUserPrefStore> parent_;
 };
 
 OverlayUserPrefStore::OverlayUserPrefStore(PersistentPrefStore* persistent)
@@ -92,10 +94,9 @@ std::unique_ptr<base::DictionaryValue> OverlayUserPrefStore::GetValues() const {
   // overwritten by the content of |persistent_user_pref_store_| (the persistent
   // store).
   for (const auto& key : persistent_names_set_) {
-    std::unique_ptr<base::Value> out_value;
-    persistent_values->Remove(key, &out_value);
-    if (out_value) {
-      values->Set(key, std::move(out_value));
+    absl::optional<base::Value> out_value = persistent_values->ExtractPath(key);
+    if (out_value.has_value()) {
+      values->SetPath(key, std::move(*out_value));
     }
   }
   return values;

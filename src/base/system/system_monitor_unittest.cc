@@ -6,7 +6,6 @@
 
 #include "base/system/system_monitor.h"
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/mock_devices_changed_observer.h"
 #include "base/test/task_environment.h"
@@ -18,14 +17,15 @@ namespace base {
 namespace {
 
 class SystemMonitorTest : public testing::Test {
+ public:
+  SystemMonitorTest(const SystemMonitorTest&) = delete;
+  SystemMonitorTest& operator=(const SystemMonitorTest&) = delete;
+
  protected:
   SystemMonitorTest() { system_monitor_ = std::make_unique<SystemMonitor>(); }
 
   test::TaskEnvironment task_environment_;
   std::unique_ptr<SystemMonitor> system_monitor_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SystemMonitorTest);
 };
 
 TEST_F(SystemMonitorTest, DeviceChangeNotifications) {

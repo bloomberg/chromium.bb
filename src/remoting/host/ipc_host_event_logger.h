@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "remoting/host/host_event_logger.h"
@@ -28,6 +28,10 @@ class IpcHostEventLogger : public HostEventLogger, public HostStatusObserver {
   // Initializes the logger. |daemon_channel| must outlive this object.
   IpcHostEventLogger(scoped_refptr<HostStatusMonitor> monitor,
                      IPC::Sender* daemon_channel);
+
+  IpcHostEventLogger(const IpcHostEventLogger&) = delete;
+  IpcHostEventLogger& operator=(const IpcHostEventLogger&) = delete;
+
   ~IpcHostEventLogger() override;
 
   // HostStatusObserver interface.
@@ -43,13 +47,11 @@ class IpcHostEventLogger : public HostEventLogger, public HostStatusObserver {
 
  private:
   // Used to report host status events to the daemon.
-  IPC::Sender* daemon_channel_;
+  raw_ptr<IPC::Sender> daemon_channel_;
 
   scoped_refptr<HostStatusMonitor> monitor_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(IpcHostEventLogger);
 };
 
 }

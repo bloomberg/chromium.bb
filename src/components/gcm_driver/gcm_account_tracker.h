@@ -10,9 +10,8 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/gcm_driver/account_tracker.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_connection_observer.h"
@@ -78,6 +77,10 @@ class GCMAccountTracker : public AccountTracker::Observer,
   GCMAccountTracker(std::unique_ptr<AccountTracker> account_tracker,
                     signin::IdentityManager* identity_manager,
                     GCMDriver* driver);
+
+  GCMAccountTracker(const GCMAccountTracker&) = delete;
+  GCMAccountTracker& operator=(const GCMAccountTracker&) = delete;
+
   ~GCMAccountTracker() override;
 
   // Shuts down the tracker ensuring a proper clean up. After Shutdown() is
@@ -142,9 +145,9 @@ class GCMAccountTracker : public AccountTracker::Observer,
   // Account tracker.
   std::unique_ptr<AccountTracker> account_tracker_;
 
-  signin::IdentityManager* identity_manager_;
+  raw_ptr<signin::IdentityManager> identity_manager_;
 
-  GCMDriver* driver_;
+  raw_ptr<GCMDriver> driver_;
 
   // State of the account.
   AccountInfos account_infos_;
@@ -162,8 +165,6 @@ class GCMAccountTracker : public AccountTracker::Observer,
   // Creates weak pointers used to postpone reporting tokens. See
   // ScheduleReportTokens.
   base::WeakPtrFactory<GCMAccountTracker> reporting_weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(GCMAccountTracker);
 };
 
 }  // namespace gcm

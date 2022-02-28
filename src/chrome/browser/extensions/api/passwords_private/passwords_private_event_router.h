@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -28,6 +28,11 @@ class PasswordsPrivateEventRouter : public KeyedService {
  public:
   static PasswordsPrivateEventRouter* Create(
       content::BrowserContext* browser_context);
+
+  PasswordsPrivateEventRouter(const PasswordsPrivateEventRouter&) = delete;
+  PasswordsPrivateEventRouter& operator=(const PasswordsPrivateEventRouter&) =
+      delete;
+
   ~PasswordsPrivateEventRouter() override;
 
   // Notifies listeners of updated passwords.
@@ -80,17 +85,15 @@ class PasswordsPrivateEventRouter : public KeyedService {
   void SendSavedPasswordListToListeners();
   void SendPasswordExceptionListToListeners();
 
-  content::BrowserContext* context_;
+  raw_ptr<content::BrowserContext> context_;
 
-  EventRouter* event_router_;
+  raw_ptr<EventRouter> event_router_;
 
   // Cached parameters which are saved so that when new listeners are added, the
   // most up-to-date lists can be sent to them immediately.
   absl::optional<std::vector<base::Value>> cached_saved_password_parameters_;
   absl::optional<std::vector<base::Value>>
       cached_password_exception_parameters_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateEventRouter);
 };
 
 }  // namespace extensions

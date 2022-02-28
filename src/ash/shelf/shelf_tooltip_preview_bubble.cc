@@ -8,6 +8,8 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/window_preview_view.h"
+#include "base/bind.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/screen.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -52,10 +54,8 @@ ShelfTooltipPreviewBubble::ShelfTooltipPreviewBubble(
                   kTooltipPaddingBottom, kTooltipPaddingLeftRight),
       kPreviewPadding));
 
-  const ui::NativeTheme* theme = anchor_widget()->GetNativeTheme();
-
   for (auto* window : windows) {
-    WindowPreview* preview = new WindowPreview(window, this, theme);
+    WindowPreview* preview = new WindowPreview(window, this);
     AddChildView(preview);
     previews_.push_back(preview);
   }
@@ -102,10 +102,10 @@ float ShelfTooltipPreviewBubble::GetMaxPreviewRatio() const {
 }
 
 void ShelfTooltipPreviewBubble::DismissAfterDelay() {
-  dismiss_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(kPreviewBubbleDismissDelay),
-      base::BindOnce(&ShelfTooltipPreviewBubble::Dismiss,
-                     base::Unretained(this)));
+  dismiss_timer_.Start(FROM_HERE,
+                       base::Milliseconds(kPreviewBubbleDismissDelay),
+                       base::BindOnce(&ShelfTooltipPreviewBubble::Dismiss,
+                                      base::Unretained(this)));
 }
 
 void ShelfTooltipPreviewBubble::Dismiss() {

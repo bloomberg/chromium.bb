@@ -14,6 +14,7 @@ typedef CwiseUnaryOp<internal::scalar_expm1_op<Scalar>, const Derived> Expm1Retu
 typedef CwiseUnaryOp<internal::scalar_log_op<Scalar>, const Derived> LogReturnType;
 typedef CwiseUnaryOp<internal::scalar_log1p_op<Scalar>, const Derived> Log1pReturnType;
 typedef CwiseUnaryOp<internal::scalar_log10_op<Scalar>, const Derived> Log10ReturnType;
+typedef CwiseUnaryOp<internal::scalar_log2_op<Scalar>, const Derived> Log2ReturnType;
 typedef CwiseUnaryOp<internal::scalar_cos_op<Scalar>, const Derived> CosReturnType;
 typedef CwiseUnaryOp<internal::scalar_sin_op<Scalar>, const Derived> SinReturnType;
 typedef CwiseUnaryOp<internal::scalar_tan_op<Scalar>, const Derived> TanReturnType;
@@ -157,6 +158,18 @@ inline const Log10ReturnType
 log10() const
 {
   return Log10ReturnType(derived());
+}
+
+/** \returns an expression of the coefficient-wise base-2 logarithm of *this.
+  *
+  * This function computes the coefficient-wise base-2 logarithm.
+  *
+  */
+EIGEN_DEVICE_FUNC
+inline const Log2ReturnType
+log2() const
+{
+  return Log2ReturnType(derived());
 }
 
 /** \returns an expression of the coefficient-wise square root of *this.
@@ -482,6 +495,45 @@ inline const CeilReturnType
 ceil() const
 {
   return CeilReturnType(derived());
+}
+
+template<int N> struct ShiftRightXpr {
+  typedef CwiseUnaryOp<internal::scalar_shift_right_op<Scalar, N>, const Derived> Type;
+};
+
+/** \returns an expression of \c *this with the \a Scalar type arithmetically
+  * shifted right by \a N bit positions.
+  *
+  * The template parameter \a N specifies the number of bit positions to shift.
+  * 
+  * \sa shiftLeft()
+  */
+template<int N>
+EIGEN_DEVICE_FUNC
+typename ShiftRightXpr<N>::Type
+shiftRight() const
+{
+  return typename ShiftRightXpr<N>::Type(derived());
+}
+
+
+template<int N> struct ShiftLeftXpr {
+  typedef CwiseUnaryOp<internal::scalar_shift_left_op<Scalar, N>, const Derived> Type;
+};
+
+/** \returns an expression of \c *this with the \a Scalar type logically
+  * shifted left by \a N bit positions.
+  *
+  * The template parameter \a N specifies the number of bit positions to shift.
+  *
+  * \sa shiftRight()
+  */
+template<int N>
+EIGEN_DEVICE_FUNC
+typename ShiftLeftXpr<N>::Type
+shiftLeft() const
+{
+  return typename ShiftLeftXpr<N>::Type(derived());
 }
 
 /** \returns an expression of the coefficient-wise isnan of *this.

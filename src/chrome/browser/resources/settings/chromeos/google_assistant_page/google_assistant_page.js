@@ -50,9 +50,10 @@ import {WebUIListenerBehavior} from '//resources/js/web_ui_listener_behavior.m.j
 import '../../controls/controlled_button.js';
 import '../../controls/settings_toggle_button.js';
 import '../../prefs/prefs.js';
-import {PrefsBehavior} from '../../prefs/prefs_behavior.js';
+import {PrefsBehavior} from '../prefs_behavior.js';
 import '../../prefs/pref_util.js';
-import {Router, Route, RouteObserverBehavior} from '../../router.js';
+import {Router, Route} from '../../router.js';
+import {RouteObserverBehavior} from '../route_observer_behavior.js';
 import '../../settings_shared_css.js';
 import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
 import {recordSettingChange, recordSearch, setUserActionRecorderForTesting, recordPageFocus, recordPageBlur, recordClick, recordNavigation} from '../metrics_recorder.m.js';
@@ -109,6 +110,12 @@ Polymer({
 
     /** @private */
     hotwordEnforced_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    hotwordEnforcedForChild_: {
       type: Boolean,
       value: false,
     },
@@ -252,6 +259,10 @@ Polymer({
 
     this.hotwordEnforced_ = hotwordEnabled.enforcement ===
         chrome.settingsPrivate.Enforcement.ENFORCED;
+
+    this.hotwordEnforcedForChild_ = this.hotwordEnforced_ &&
+        hotwordEnabled.controlledBy ===
+            chrome.settingsPrivate.ControlledBy.CHILD_RESTRICTION;
   },
 
   /** @private */

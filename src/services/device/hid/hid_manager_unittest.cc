@@ -4,7 +4,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -64,8 +64,8 @@ class MockHidManagerClient : public mojom::HidManagerClient {
 class HidManagerTest : public DeviceServiceTestBase {
  public:
   HidManagerTest() = default;
-  HidManagerTest(const HidManagerTest& entry) = delete;
-  HidManagerTest& operator=(const HidManagerTest& entry) = delete;
+  HidManagerTest(const HidManagerTest&) = delete;
+  HidManagerTest& operator=(const HidManagerTest&) = delete;
 
   void SetUp() override {
     DeviceServiceTestBase::SetUp();
@@ -134,7 +134,7 @@ class HidManagerTest : public DeviceServiceTestBase {
   }
 
   mojo::Remote<mojom::HidManager> hid_manager_;
-  MockHidService* mock_hid_service_;
+  raw_ptr<MockHidService> mock_hid_service_;
 };
 
 // Test the GetDevices.
@@ -408,6 +408,7 @@ TEST_F(HidManagerTest, TestHidConnectionInterface) {
         /*connection_client=*/mojo::NullRemote(),
         /*watcher=*/mojo::NullRemote(),
         /*allow_protected_reports=*/false,
+        /*allow_fido_reports=*/false,
         base::BindLambdaForTesting(
             [&](mojo::PendingRemote<mojom::HidConnection> connection) {
               EXPECT_TRUE(connection);

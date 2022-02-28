@@ -101,7 +101,7 @@ base::Value ConvertDiscoveredSinksToValues(
 // Helper function to convert |available_sinks| to a dictionary of availability
 // strings in JSON format represented by base::Value.
 base::Value ConvertAvailableSinksToValues(
-    const base::MRUCache<std::string, std::vector<MediaSinkInternal>>&
+    const base::LRUCache<std::string, std::vector<MediaSinkInternal>>&
         available_sinks) {
   base::Value dict(base::Value::Type::DICTIONARY);
   for (const auto& sinks_it : available_sinks) {
@@ -128,9 +128,11 @@ void MediaSinkServiceStatus::UpdateDiscoveredSinks(
 }
 
 void MediaSinkServiceStatus::UpdateAvailableSinks(
-    MediaRouteProviderId provider_id,
+    mojom::MediaRouteProviderId provider_id,
     const std::string& media_source,
     const std::vector<MediaSinkInternal>& available_sinks) {
+  // TODO(takumif): It'd be safer and more efficient to make use
+  // pair<MediaRouteProviderId, string> than a serialized "id:name" string.
   std::string key =
       base::StrCat({ProviderIdToString(provider_id), ":", media_source});
   available_sinks_.Put(key, available_sinks);

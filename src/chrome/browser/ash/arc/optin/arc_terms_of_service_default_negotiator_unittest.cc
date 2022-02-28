@@ -8,9 +8,9 @@
 #include <ostream>
 #include <vector>
 
+#include "ash/components/arc/arc_prefs.h"
 #include "base/bind.h"
 #include "base/hash/sha1.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/ash/arc/arc_support_host.h"
@@ -24,7 +24,6 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/arc/arc_prefs.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_store.h"
@@ -58,6 +57,12 @@ class ArcTermsOfServiceDefaultNegotiatorTest
     : public BrowserWithTestWindowTest {
  public:
   ArcTermsOfServiceDefaultNegotiatorTest() = default;
+
+  ArcTermsOfServiceDefaultNegotiatorTest(
+      const ArcTermsOfServiceDefaultNegotiatorTest&) = delete;
+  ArcTermsOfServiceDefaultNegotiatorTest& operator=(
+      const ArcTermsOfServiceDefaultNegotiatorTest&) = delete;
+
   ~ArcTermsOfServiceDefaultNegotiatorTest() override = default;
 
   void SetUp() override {
@@ -115,8 +120,6 @@ class ArcTermsOfServiceDefaultNegotiatorTest
   std::unique_ptr<ArcSupportHost> support_host_;
   std::unique_ptr<FakeArcSupport> fake_arc_support_;
   std::unique_ptr<ArcTermsOfServiceNegotiator> negotiator_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcTermsOfServiceDefaultNegotiatorTest);
 };
 
 namespace {
@@ -458,7 +461,8 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Retry) {
   // Switch to error page.
   support_host()->ShowError(
       ArcSupportHost::ErrorInfo(ArcSupportHost::Error::SIGN_IN_NETWORK_ERROR),
-      false /* should_show_send_feedback */);
+      false /* should_show_send_feedback */,
+      true /* should_show_run_network_tests */);
 
   // The callback should not be called yet.
   EXPECT_EQ(status, Status::PENDING);

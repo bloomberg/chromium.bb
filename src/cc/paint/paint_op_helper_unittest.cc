@@ -6,6 +6,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 
 namespace cc {
 namespace {
@@ -19,9 +20,12 @@ TEST(PaintOpHelper, AnnotateToString) {
 }
 
 TEST(PaintOpHelper, ClipPathToString) {
-  ClipPathOp op(SkPath(), SkClipOp::kDifference, true);
+  ClipPathOp op(SkPath(), SkClipOp::kDifference, true,
+                UsePaintCache::kDisabled);
   std::string str = PaintOpHelper::ToString(&op);
-  EXPECT_EQ(str, "ClipPathOp(path=<SkPath>, op=kDifference, antialias=true)");
+  EXPECT_EQ(str,
+            "ClipPathOp(path=<SkPath>, op=kDifference, antialias=true, "
+            "use_cache=false)");
 }
 
 TEST(PaintOpHelper, ClipRectToString) {
@@ -156,7 +160,7 @@ TEST(PaintOpHelper, DrawOvalToString) {
 
 TEST(PaintOpHelper, DrawPathToString) {
   SkPath path;
-  DrawPathOp op(path, PaintFlags());
+  DrawPathOp op(path, PaintFlags(), UsePaintCache::kDisabled);
   std::string str = PaintOpHelper::ToString(&op);
   EXPECT_EQ(str,
             "DrawPathOp(path=<SkPath>, flags=[color=rgba(0, 0, 0, 255), "
@@ -167,7 +171,7 @@ TEST(PaintOpHelper, DrawPathToString) {
             "shader=(nil), hasShader=false, shaderIsOpaque=false, "
             "pathEffect=(nil), imageFilter=(nil), drawLooper=(nil), "
             "isSimpleOpacity=true, supportsFoldingAlpha=true, isValid=true, "
-            "hasDiscardableImages=false])");
+            "hasDiscardableImages=false], use_cache=false)");
 }
 
 TEST(PaintOpHelper, DrawRecordToString) {

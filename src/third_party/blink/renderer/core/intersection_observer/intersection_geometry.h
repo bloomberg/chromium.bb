@@ -42,7 +42,8 @@ class CORE_EXPORT IntersectionGeometry {
 
     // These flags will be computed
     kRootIsImplicit = 1 << 7,
-    kIsVisible = 1 << 8
+    kDidComputeGeometry = 1 << 8,
+    kIsVisible = 1 << 9
   };
 
   struct RootGeometry {
@@ -115,16 +116,17 @@ class CORE_EXPORT IntersectionGeometry {
 
   PhysicalRect RootRect() const { return root_rect_; }
 
-  IntRect IntersectionIntRect() const {
-    return PixelSnappedIntRect(intersection_rect_);
+  gfx::Rect IntersectionIntRect() const {
+    return ToPixelSnappedRect(intersection_rect_);
   }
-  IntRect TargetIntRect() const { return PixelSnappedIntRect(target_rect_); }
-  IntRect RootIntRect() const { return PixelSnappedIntRect(root_rect_); }
+  gfx::Rect TargetIntRect() const { return ToPixelSnappedRect(target_rect_); }
+  gfx::Rect RootIntRect() const { return ToPixelSnappedRect(root_rect_); }
 
   double IntersectionRatio() const { return intersection_ratio_; }
   unsigned ThresholdIndex() const { return threshold_index_; }
 
   bool RootIsImplicit() const { return flags_ & kRootIsImplicit; }
+  bool DidComputeGeometry() const { return flags_ & kDidComputeGeometry; }
   bool IsIntersecting() const { return threshold_index_ > 0; }
   bool IsVisible() const { return flags_ & kIsVisible; }
 

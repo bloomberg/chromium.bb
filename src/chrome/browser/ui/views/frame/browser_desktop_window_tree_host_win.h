@@ -11,10 +11,10 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/win/scoped_gdi_object.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host.h"
@@ -91,8 +91,8 @@ class BrowserDesktopWindowTreeHostWin
 
   void SetWindowIcon(bool badged);
 
-  BrowserView* browser_view_;
-  BrowserFrame* browser_frame_;
+  raw_ptr<BrowserView> browser_view_;
+  raw_ptr<BrowserFrame> browser_frame_;
 
   MinimizeButtonMetrics minimize_button_metrics_;
 
