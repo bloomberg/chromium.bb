@@ -28,11 +28,11 @@
 
 #include <math.h>
 #include <limits>
-#include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace blink {
 
@@ -41,11 +41,11 @@ float FloatSize::DiagonalLength() const {
 }
 
 bool FloatSize::IsExpressibleAsIntSize() const {
-  return isWithinIntRange(width_) && isWithinIntRange(height_);
+  return IsWithinIntRange(width_) && IsWithinIntRange(height_);
 }
 
 FloatSize FloatSize::NarrowPrecision(double width, double height) {
-  return FloatSize(clampTo<float>(width), clampTo<float>(height));
+  return FloatSize(ClampTo<float>(width), ClampTo<float>(height));
 }
 
 std::ostream& operator<<(std::ostream& ostream, const FloatSize& size) {
@@ -53,13 +53,13 @@ std::ostream& operator<<(std::ostream& ostream, const FloatSize& size) {
 }
 
 String FloatSize::ToString() const {
-  return String::Format("%lgx%lg", Width(), Height());
+  return String::Format("%lgx%lg", width(), height());
 }
 
 WTF::TextStream& operator<<(WTF::TextStream& ts, const FloatSize& s) {
-  ts << "width=" << WTF::TextStream::FormatNumberRespectingIntegers(s.Width());
+  ts << "width=" << WTF::TextStream::FormatNumberRespectingIntegers(s.width());
   ts << " height="
-     << WTF::TextStream::FormatNumberRespectingIntegers(s.Height());
+     << WTF::TextStream::FormatNumberRespectingIntegers(s.height());
   return ts;
 }
 

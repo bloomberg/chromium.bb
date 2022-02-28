@@ -24,12 +24,28 @@ limitations under the License.
 namespace xla {
 namespace gpu {
 
-constexpr int64 kMaxOperandsAndOutputsPerFusion = 64;
+// Fusion passes frequently do checks across all pairs of "interesting" nodes.
+// Computing e.g. FusionWouldBeTooLarge(a, b) requires computing expensive
+// properties of `a` and `b` individually.  This cache lets us avoid recomputing
+// those properties n^2 times.
+//
+// Invariant: After modifying or removing a fusion node, call Invalidate(node).
+struct FusionInfoCache {
+ public:
+  // Must be called after modifying or removing a fusion node (or other node
+  // that's part of this cache).
+  void Invalidate(const HloInstruction* instr) {
+    shared_memory_usage.erase(instr);
+    num_unnested_reductions.erase(instr);
+  }
 
-// Whether 'instr' can occur inside fusions, i.e. whether it is a candidate
-// for being fused. Note that further restrictions apply, e.g. Scatter must
-// be the root of an input fusion.
-bool IsFusible(const HloInstruction& instr);
+  // The rest of the members of this this class are for internal use within
+  // gpu_fusible. You shouldn't need to use them yourself.
+  absl::flat_hash_map<const HloInstruction*, int64_t> shared_memory_usage;
+  absl::flat_hash_map<const HloInstruction*, int64_t> num_unnested_reductions;
+};
+
+constexpr int64_t kMaxOperandsAndOutputsPerFusion = 64;
 
 bool IsInputFusible(const HloInstruction& instr);
 
@@ -64,13 +80,23 @@ bool IsInputFusibleScatter(const HloInstruction& instr);
 // Determines whether the combination of `instr1` and `instr2` into a (possibly
 // multi-output) fusion would be "too large" -- i.e., have more operands and
 // outputs than is allowed or occupy too much shared memory.
+// If the fusion is a producer/consumer fusion and instr1 is the
+// consumer and instr2 is the producer, set consumer_producer_fusion
+// to true to enable more fusion.
 bool FusionWouldBeTooLarge(const HloInstruction& instr1,
-                           const HloInstruction& instr2);
+                           const HloInstruction& instr2,
+                           bool is_consumer_producer_fusion = false,
+                           FusionInfoCache* cache = nullptr);
 
 // Check if fusing producer and consumer will generate a nested loop, e.g. both
 // producer and consumer are `reduce-window` HLO instructions.
 bool CreatesNestedLoop(const HloInstruction& producer,
                        const HloInstruction& consumer);
+
+// Returns the instruction that determines the emitter used for lowering,
+// sometimes referred to as "the real hero".
+const HloInstruction* GetRealHeroForMultiOutputFusion(
+    const HloInstruction& instr);
 
 // Whether instruction shapes are compatible for multi-output fusion, i.e.
 // whether the emitters support lowering the resulting fusion.
@@ -100,6 +126,21 @@ bool IsFusibleAsMultiOutputFusionRoot(const HloInstruction& instr);
 // Determines the fusion kind to be used when fusing `producer` and `consumer`.
 HloInstruction::FusionKind ChooseFusionKind(const HloInstruction& producer,
                                             const HloInstruction& consumer);
+
+// Returns whether `consumer` is the only non-root user of `instr`.
+bool IsConsumerTheOnlyNonRootUser(const HloInstruction& instr,
+                                  const HloInstruction& consumer);
+
+// Returns number of instructions in the fusible `instr`. If `instr` is not a
+// fusion instruction, 1 is returned.
+size_t GetInstrCountOfFusible(const HloInstruction& instr);
+
+// Returns the outputs of the fusible `instr`.
+absl::InlinedVector<const HloInstruction*, 2> GetOutputsOfFusible(
+    const HloInstruction& instr);
+
+// Returns the output size of the fusible `instr`.
+size_t GetOutputSizeOfFusible(const HloInstruction& instr);
 
 }  // namespace gpu
 }  // namespace xla

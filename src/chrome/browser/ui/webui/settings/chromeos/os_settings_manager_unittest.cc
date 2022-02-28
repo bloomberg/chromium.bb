@@ -9,15 +9,16 @@
 #include "base/no_destructor.h"
 #include "base/test/metrics/histogram_enum_reader.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/android_sms/android_sms_service_factory.h"
+#include "chrome/browser/ash/eche_app/eche_app_manager_factory.h"
 #include "chrome/browser/ash/kerberos/kerberos_credentials_manager_factory.h"
+#include "chrome/browser/ash/multidevice_setup/multidevice_setup_client_factory.h"
+#include "chrome/browser/ash/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
-#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
-#include "chrome/browser/chromeos/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/constants_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
@@ -63,14 +64,15 @@ class OsSettingsManagerTest : public testing::Test {
         multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(
             profile),
         phonehub::PhoneHubManagerFactory::GetForProfile(profile),
-        ProfileSyncServiceFactory::GetForProfile(profile),
+        SyncServiceFactory::GetForProfile(profile),
         SupervisedUserServiceFactory::GetForProfile(profile),
         kerberos_credentials_manager,
         ArcAppListPrefsFactory::GetForBrowserContext(profile),
         IdentityManagerFactory::GetForProfile(profile),
         android_sms::AndroidSmsServiceFactory::GetForBrowserContext(profile),
         CupsPrintersManagerFactory::GetForBrowserContext(profile),
-        apps::AppServiceProxyFactory::GetForProfile(profile));
+        apps::AppServiceProxyFactory::GetForProfile(profile),
+        eche_app::EcheAppManagerFactory::GetForProfile(profile));
   }
 
   content::BrowserTaskEnvironment task_environment_;

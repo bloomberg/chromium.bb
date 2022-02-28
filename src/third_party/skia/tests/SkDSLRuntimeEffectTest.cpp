@@ -14,6 +14,7 @@
 #include "include/effects/SkRuntimeEffect.h"
 #include "include/gpu/GrDirectContext.h"
 #include "include/sksl/DSLRuntimeEffects.h"
+#include "src/core/SkRuntimeEffectPriv.h"
 #include "src/core/SkTLazy.h"
 #include "src/gpu/GrColor.h"
 #include "src/sksl/SkSLCompiler.h"
@@ -36,17 +37,22 @@ public:
         StartRuntimeShader(fCompiler.get());
     }
 
-    void end() {
-        sk_sp<SkRuntimeEffect> effect = EndRuntimeShader();
-        SkASSERT(effect);
-        fBuilder.init(std::move(effect));
+    void end(bool expectSuccess = true) {
+        SkRuntimeEffect::Options options;
+        SkRuntimeEffectPriv::EnableFragCoord(&options);
+        sk_sp<SkRuntimeEffect> effect = EndRuntimeShader(options);
+        REPORTER_ASSERT(fReporter, effect ? expectSuccess : !expectSuccess);
+        if (effect) {
+            fBuilder.init(std::move(effect));
+        }
     }
 
-    SkRuntimeShaderBuilder::BuilderUniform uniform(const char* name) {
-        return fBuilder->uniform(name);
+    SkRuntimeShaderBuilder::BuilderUniform uniform(skstd::string_view name) {
+        return fBuilder->uniform(SkString(name).c_str());
     }
-    SkRuntimeShaderBuilder::BuilderChild child(const char* name) {
-        return fBuilder->child(name);
+
+    SkRuntimeShaderBuilder::BuilderChild child(skstd::string_view name) {
+        return fBuilder->child(SkString(name).c_str());
     }
 
     using PreTestFn = std::function<void(SkCanvas*, SkPaint*)>;
@@ -95,11 +101,11 @@ public:
     }
 
 private:
-    skiatest::Reporter*             fReporter;
-    SkSL::ShaderCapsPointer         fCaps;
-    std::unique_ptr<SkSL::Compiler> fCompiler;
-    sk_sp<SkSurface>                fSurface;
-    SkTLazy<SkRuntimeShaderBuilder> fBuilder;
+    skiatest::Reporter*               fReporter;
+    std::unique_ptr<SkSL::ShaderCaps> fCaps;
+    std::unique_ptr<SkSL::Compiler>   fCompiler;
+    sk_sp<SkSurface>                  fSurface;
+    SkTLazy<SkRuntimeShaderBuilder>   fBuilder;
 };
 
 static void test_RuntimeEffect_Shaders(skiatest::Reporter* r, GrRecordingContext* rContext) {
@@ -115,7 +121,7 @@ static void test_RuntimeEffect_Shaders(skiatest::Reporter* r, GrRecordingContext
     // Local coords
     {
         effect.start();
-        Var p(kFloat2_Type, "p");
+        Parameter p(kFloat2_Type, "p");
         Function(kHalf4_Type, "main", p).define(
             Return(Half4(Half2(p - 0.5), 0, 1))
         );
@@ -126,33 +132,33 @@ static void test_RuntimeEffect_Shaders(skiatest::Reporter* r, GrRecordingContext
     // Use of a simple uniform. (Draw twice with two values to ensure it's updated).
     {
         effect.start();
-        Var gColor(kUniform_Modifier, kFloat4_Type);
-        DeclareGlobal(gColor);
-        Var p(kFloat2_Type, "p");
+        GlobalVar gColor(kUniform_Modifier, kFloat4_Type);
+        Declare(gColor);
+        Parameter p(kFloat2_Type, "p");
         Function(kHalf4_Type, "main", p).define(
             Return(Half4(gColor))
         );
         effect.end();
-        effect.uniform(gColor.name()) = float4{ 0.0f, 0.25f, 0.75f, 1.0f };
+        effect.uniform(SkString(gColor.name()).c_str()) = float4{ 0.0f, 0.25f, 0.75f, 1.0f };
         effect.test(0xFFBF4000);
-        effect.uniform(gColor.name()) = float4{ 1.0f, 0.0f, 0.0f, 0.498f };
-        effect.test(0x7F00007F);  // Tests that we clamp to valid premul
+        effect.uniform(SkString(gColor.name()).c_str()) = float4{ 1.0f, 0.0f, 0.0f, 0.498f };
+        effect.test(0x7F0000FF);  // Tests that we don't clamp to valid premul
     }
 
     // Same, with integer uniforms
     {
         effect.start();
-        Var gColor(kUniform_Modifier, kInt4_Type);
-        DeclareGlobal(gColor);
-        Var p(kFloat2_Type, "p");
+        GlobalVar gColor(kUniform_Modifier, kInt4_Type);
+        Declare(gColor);
+        Parameter p(kFloat2_Type, "p");
         Function(kHalf4_Type, "main", p).define(
             Return(Half4(gColor) / 255)
         );
         effect.end();
-        effect.uniform(gColor.name()) = int4{ 0x00, 0x40, 0xBF, 0xFF };
+        effect.uniform(SkString(gColor.name()).c_str()) = int4{ 0x00, 0x40, 0xBF, 0xFF };
         effect.test(0xFFBF4000);
-        effect.uniform(gColor.name()) = int4{ 0xFF, 0x00, 0x00, 0x7F };
-        effect.test(0x7F00007F);  // Tests that we clamp to valid premul
+        effect.uniform(SkString(gColor.name()).c_str()) = int4{ 0xFF, 0x00, 0x00, 0x7F };
+        effect.test(0x7F0000FF);  // Tests that we don't clamp to valid premul
     }
 
     // Test sk_FragCoord (device coords). Rotate the canvas to be sure we're seeing device coords.
@@ -160,7 +166,7 @@ static void test_RuntimeEffect_Shaders(skiatest::Reporter* r, GrRecordingContext
     // make sure we're not saturating unexpectedly.
     {
         effect.start();
-        Var p(kFloat2_Type, "p");
+        Parameter p(kFloat2_Type, "p");
         Function(kHalf4_Type, "main", p).define(
             Return(Half4(0.498 * (Half2(Swizzle(sk_FragCoord(), X, Y)) - 0.5), 0, 1))
         );
@@ -172,7 +178,7 @@ static void test_RuntimeEffect_Shaders(skiatest::Reporter* r, GrRecordingContext
     // Runtime effects should use relaxed precision rules by default
     {
         effect.start();
-        Var p(kFloat2_Type, "p");
+        Parameter p(kFloat2_Type, "p");
         Function(kHalf4_Type, "main", p).define(
             Return(Float4(p - 0.5, 0, 1))
         );
@@ -183,7 +189,7 @@ static void test_RuntimeEffect_Shaders(skiatest::Reporter* r, GrRecordingContext
     // ... and support *returning* float4, not just half4
     {
         effect.start();
-        Var p(kFloat2_Type, "p");
+        Parameter p(kFloat2_Type, "p");
         Function(kFloat4_Type, "main", p).define(
             Return(Float4(p - 0.5, 0, 1))
         );
@@ -191,10 +197,31 @@ static void test_RuntimeEffect_Shaders(skiatest::Reporter* r, GrRecordingContext
         effect.test(0xFF000000, 0xFF0000FF, 0xFF00FF00, 0xFF00FFFF);
     }
 
+    // Test error reporting. We put this before a couple of successful tests to ensure that a
+    // failure doesn't leave us in a broken state.
+    {
+        class SimpleErrorReporter : public SkSL::ErrorReporter {
+        public:
+            void handleError(skstd::string_view msg, SkSL::PositionInfo pos) override {
+                fMsg += msg;
+            }
+
+            SkSL::String fMsg;
+        } errorReporter;
+        effect.start();
+        SetErrorReporter(&errorReporter);
+        Parameter p(kFloat2_Type, "p");
+        Function(kHalf4_Type, "main", p).define(
+            Return(1) // Error, type mismatch
+        );
+        effect.end(false);
+        REPORTER_ASSERT(r, errorReporter.fMsg == "expected 'half4', but found 'int'");
+    }
+
     // Mutating coords should work. (skbug.com/10918)
     {
         effect.start();
-        Var p(kFloat2_Type, "p");
+        Parameter p(kFloat2_Type, "p");
         Function(kFloat4_Type, "main", p).define(
             p -= 0.5,
             Return(Float4(p, 0, 1))
@@ -204,12 +231,12 @@ static void test_RuntimeEffect_Shaders(skiatest::Reporter* r, GrRecordingContext
     }
     {
         effect.start();
-        Var p1(kInOut_Modifier, kFloat2_Type, "p");
+        Parameter p1(kInOut_Modifier, kFloat2_Type, "p");
         Function moveCoords(kVoid_Type, "moveCoords", p1);
         moveCoords.define(
             p1 -= 0.5
         );
-        Var p2(kFloat2_Type, "p");
+        Parameter p2(kFloat2_Type, "p");
         Function(kFloat4_Type, "main", p2).define(
             moveCoords(p2),
             Return(Float4(p2, 0, 1))
@@ -225,14 +252,14 @@ static void test_RuntimeEffect_Shaders(skiatest::Reporter* r, GrRecordingContext
     // Sampling a null child should return the paint color
     {
         effect.start();
-        Var child(kUniform_Modifier, kShader_Type, "child");
-        DeclareGlobal(child);
-        Var p2(kFloat2_Type, "p");
+        GlobalVar child(kUniform_Modifier, kShader_Type, "child");
+        Declare(child);
+        Parameter p2(kFloat2_Type, "p");
         Function(kFloat4_Type, "main", p2).define(
-            Return(Sample(child, p2))
+            Return(child.eval(p2))
         );
         effect.end();
-        effect.child("child") = nullptr;
+        effect.child(child.name()) = nullptr;
         effect.test(0xFF00FFFF,
                     [](SkCanvas*, SkPaint* paint) { paint->setColor4f({1.0f, 1.0f, 0.0f, 1.0f}); });
     }

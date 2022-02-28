@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "gpu/vulkan/buildflags.h"
 #include "ui/gfx/x/connection.h"
 #include "ui/gl/gl_surface.h"
@@ -21,10 +20,14 @@ namespace ui {
 class X11SurfaceFactory : public SurfaceFactoryOzone {
  public:
   explicit X11SurfaceFactory(std::unique_ptr<x11::Connection> connection);
+
+  X11SurfaceFactory(const X11SurfaceFactory&) = delete;
+  X11SurfaceFactory& operator=(const X11SurfaceFactory&) = delete;
+
   ~X11SurfaceFactory() override;
 
   // SurfaceFactoryOzone:
-  std::vector<gl::GLImplementation> GetAllowedGLImplementations() override;
+  std::vector<gl::GLImplementationParts> GetAllowedGLImplementations() override;
   GLOzone* GetGLOzone(const gl::GLImplementationParts& implementation) override;
 #if BUILDFLAG(ENABLE_VULKAN)
   std::unique_ptr<gpu::VulkanImplementation> CreateVulkanImplementation(
@@ -52,8 +55,6 @@ class X11SurfaceFactory : public SurfaceFactoryOzone {
   std::unique_ptr<GLOzone> egl_implementation_;
 
   std::unique_ptr<x11::Connection> connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(X11SurfaceFactory);
 };
 
 }  // namespace ui

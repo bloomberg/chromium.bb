@@ -1167,7 +1167,7 @@ public:
 	virtual			~FuncBase				(void)					{}
 	virtual string	getName					(void)					const = 0;
 	//! Name of extension that this function requires, or empty.
-	virtual string	getRequiredExtension	(void)					const { return ""; }
+	virtual string	getRequiredExtension	(const RenderContext &)			const { return ""; }
 	virtual void	print					(ostream&,
 											 const BaseArgExprs&)	const = 0;
 	//! Index of output parameter, or -1 if none of the parameters is output.
@@ -1927,7 +1927,7 @@ public:
 							 const IArgs&		iargs) const
 	{
 		// Fast-path for common case
-		if (iargs.a.isOrdinary() && iargs.b.isOrdinary())
+		if (iargs.a.isOrdinary(ctx.format.getMaxValue()) && iargs.b.isOrdinary(ctx.format.getMaxValue()))
 		{
 			Interval ret;
 			TCU_SET_INTERVAL_BOUNDS(ret, sum,
@@ -1954,7 +1954,7 @@ public:
 		Interval b = iargs.b;
 
 		// Fast-path for common case
-		if (a.isOrdinary() && b.isOrdinary())
+		if (a.isOrdinary(ctx.format.getMaxValue()) && b.isOrdinary(ctx.format.getMaxValue()))
 		{
 			Interval ret;
 			if (a.hi() < 0)
@@ -2002,7 +2002,7 @@ public:
 	Interval	doApply		(const EvalContext&	ctx, const IArgs& iargs) const
 	{
 		// Fast-path for common case
-		if (iargs.a.isOrdinary() && iargs.b.isOrdinary())
+		if (iargs.a.isOrdinary(ctx.format.getMaxValue()) && iargs.b.isOrdinary(ctx.format.getMaxValue()))
 		{
 			Interval ret;
 
@@ -2276,10 +2276,10 @@ ExprP<TRET> NAME (const ExprP<T0>& arg0, const ExprP<T1>& arg1,			\
 	return app<CLASS>(arg0, arg1, arg2, arg3);							\
 }
 
-DEFINE_DERIVED_FLOAT1(Sqrt,		sqrt,		x,		constant(1.0f) / app<InverseSqrt>(x));
-DEFINE_DERIVED_FLOAT2(Pow,		pow,		x,	y,	exp2(y * log2(x)));
-DEFINE_DERIVED_FLOAT1(Radians,	radians,	d,		(constant(DE_PI) / constant(180.0f)) * d);
-DEFINE_DERIVED_FLOAT1(Degrees,	degrees,	r,		(constant(180.0f) / constant(DE_PI)) * r);
+DEFINE_DERIVED_FLOAT1(Sqrt,		sqrt,		x,		constant(1.0f) / app<InverseSqrt>(x))
+DEFINE_DERIVED_FLOAT2(Pow,		pow,		x,	y,	exp2(y * log2(x)))
+DEFINE_DERIVED_FLOAT1(Radians,	radians,	d,		(constant(DE_PI) / constant(180.0f)) * d)
+DEFINE_DERIVED_FLOAT1(Degrees,	degrees,	r,		(constant(180.0f) / constant(DE_PI)) * r)
 
 class TrigFunc : public CFloatFunc1
 {
@@ -2399,7 +2399,7 @@ protected:
 
 ExprP<float> cos (const ExprP<float>& x) { return app<Cos>(x); }
 
-DEFINE_DERIVED_FLOAT1(Tan, tan, x, sin(x) * (constant(1.0f) / cos(x)));
+DEFINE_DERIVED_FLOAT1(Tan, tan, x, sin(x) * (constant(1.0f) / cos(x)))
 
 class ASin : public CFloatFunc1
 {
@@ -2501,7 +2501,7 @@ protected:
 				ret |= Interval(-DE_PI_DOUBLE, DE_PI_DOUBLE);
 		}
 
-		if (ctx.format.hasInf() != YES && (!yi.isFinite() || !xi.isFinite()))
+		if (!yi.isFinite(ctx.format.getMaxValue()) || !xi.isFinite(ctx.format.getMaxValue()))
 		{
 			// Infinities may not be supported, allow anything, including NaN
 			ret |= TCU_NAN;
@@ -2521,17 +2521,17 @@ protected:
 	// Codomain could be [-pi, pi], but that would probably be too strict.
 };
 
-DEFINE_DERIVED_FLOAT1(Sinh, sinh, x, (exp(x) - exp(-x)) / constant(2.0f));
-DEFINE_DERIVED_FLOAT1(Cosh, cosh, x, (exp(x) + exp(-x)) / constant(2.0f));
-DEFINE_DERIVED_FLOAT1(Tanh, tanh, x, sinh(x) / cosh(x));
+DEFINE_DERIVED_FLOAT1(Sinh, sinh, x, (exp(x) - exp(-x)) / constant(2.0f))
+DEFINE_DERIVED_FLOAT1(Cosh, cosh, x, (exp(x) + exp(-x)) / constant(2.0f))
+DEFINE_DERIVED_FLOAT1(Tanh, tanh, x, sinh(x) / cosh(x))
 
 // These are not defined as derived forms in the GLSL ES spec, but
 // that gives us a reasonable precision.
-DEFINE_DERIVED_FLOAT1(ASinh, asinh, x, log(x + sqrt(x * x + constant(1.0f))));
+DEFINE_DERIVED_FLOAT1(ASinh, asinh, x, log(x + sqrt(x * x + constant(1.0f))))
 DEFINE_DERIVED_FLOAT1(ACosh, acosh, x, log(x + sqrt(alternatives((x + constant(1.0f)) * (x - constant(1.0f)),
-																 (x*x - constant(1.0f))))));
+																 (x*x - constant(1.0f))))))
 DEFINE_DERIVED_FLOAT1(ATanh, atanh, x, constant(0.5f) * log((constant(1.0f) + x) /
-															(constant(1.0f) - x)));
+															(constant(1.0f) - x)))
 
 template <typename T>
 class GetComponent : public PrimitiveFunc<Signature<typename T::Element, T, int> >
@@ -3150,7 +3150,7 @@ struct ApplyReflect
 
 		return i - alternatives((n * dotNI) * constant(2.0f),
 								n * (dotNI * constant(2.0f)));
-	};
+	}
 };
 
 template<typename Ret, typename Arg0, typename Arg1>
@@ -3163,7 +3163,7 @@ struct ApplyReflect<1, Ret, Arg0, Arg1>
 		return i - alternatives(alternatives((n * (n*i)) * constant(2.0f),
 											n * ((n*i) * constant(2.0f))),
 											(n * n) * (i * constant(2.0f)));
-	};
+	}
 };
 
 template <int Size>
@@ -3299,7 +3299,7 @@ public:
 	Ceil (void) : PreciseFunc1("ceil", deCeil) {}
 };
 
-DEFINE_DERIVED_FLOAT1(Fract, fract, x, x - app<Floor>(x));
+DEFINE_DERIVED_FLOAT1(Fract, fract, x, x - app<Floor>(x))
 
 class PreciseFunc2 : public CFloatFunc2
 {
@@ -3309,7 +3309,7 @@ protected:
 	double	precision		(const EvalContext&, double, double, double) const { return 0.0; }
 };
 
-DEFINE_DERIVED_FLOAT2(Mod, mod, x, y, x - y * app<Floor>(x / y));
+DEFINE_DERIVED_FLOAT2(Mod, mod, x, y, x - y * app<Floor>(x / y))
 
 class Modf : public PrimitiveFunc<Signature<float, float, float> >
 {
@@ -3320,7 +3320,7 @@ public:
 	}
 
 protected:
-	IRet	doApply				(const EvalContext&, const IArgs& iargs) const
+	IRet	doApply				(const EvalContext& ctx, const IArgs& iargs) const
 	{
 		Interval	fracIV;
 		Interval&	wholeIV		= const_cast<Interval&>(iargs.b);
@@ -3330,7 +3330,7 @@ protected:
 		TCU_INTERVAL_APPLY_MONOTONE1(wholeIV, x, iargs.a, whole,
 									 deModf(x, &intPart); whole = intPart);
 
-		if (!iargs.a.isFinite())
+		if (!iargs.a.isFinite(ctx.format.getMaxValue()))
 		{
 			// Behavior on modf(Inf) not well-defined, allow anything as a fractional part
 			// See Khronos bug 13907
@@ -3456,7 +3456,7 @@ ExprP<float> clamp(const ExprP<float>& x, const ExprP<float>& minVal, const Expr
 }
 
 DEFINE_DERIVED_FLOAT3(Mix, mix, x, y, a, alternatives((x * (constant(1.0f) - a)) + y * a,
-													  x + (y - x) * a));
+													  x + (y - x) * a))
 
 static double step (double edge, double x)
 {
@@ -3560,7 +3560,7 @@ protected:
 		// Khronos bug 11180 consensus: if exp2(exponent) cannot be represented,
 		// the result is undefined.
 
-		if (ret.contains(TCU_INFINITY) | ret.contains(-TCU_INFINITY))
+		if (ret.contains(TCU_INFINITY) || ret.contains(-TCU_INFINITY))
 			ret |= TCU_NAN;
 
 		return call<Mul>(ctx, iargs.a, ret);
@@ -3925,9 +3925,9 @@ public:
 		return "fma";
 	}
 
-	string			getRequiredExtension	(void) const
+	string			getRequiredExtension	(const RenderContext&   context) const
 	{
-		return "GL_EXT_gpu_shader5";
+		return (glu::contextSupports(context.getType(), glu::ApiType::core(4, 5))) ? "" : "GL_EXT_gpu_shader5";
 	}
 
 protected:
@@ -3996,9 +3996,9 @@ public:
 		return m_func.getOutParamIndex();
 	}
 
-	string	getRequiredExtension	(void) const
+	string	getRequiredExtension	(const RenderContext &context) const
 	{
-		return m_func.getRequiredExtension();
+		return m_func.getRequiredExtension(context);
 	}
 
 protected:
@@ -4315,7 +4315,7 @@ float DefaultSampling<float>::genRandom (const FloatFormat& format,
 			break;
 		default: // Random (evenly distributed) significand.
 		{
-			deUint64 intFraction = rnd.getUint64() & ((1 << fractionBits) - 1);
+			deUint64 intFraction = rnd.getUint64() & ((1ull << fractionBits) - 1);
 			significand = float(intFraction) * quantum;
 		}
 	}
@@ -4985,7 +4985,7 @@ struct InputLess<InTuple<In> >
 		if (inputLess(in1.d, in2.d))
 			return true;
 		return false;
-	};
+	}
 };
 
 template<typename In>
@@ -5057,7 +5057,7 @@ protected:
 					FuncCaseBase	(const Context&		context,
 									 const string&		name,
 									 const FuncBase&	func)
-						: PrecisionCase	(context, name, func.getRequiredExtension()) {}
+						: PrecisionCase	(context, name, func.getRequiredExtension(context.renderContext)) {}
 };
 
 IterateResult FuncCaseBase::iterate (void)

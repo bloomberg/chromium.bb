@@ -9,6 +9,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/onboarding_result.h"
@@ -74,23 +75,18 @@ class StarterAndroid : public StarterPlatformDelegate,
   void SetProactiveHelpSettingEnabled(bool enabled) override;
   bool GetMakeSearchesAndBrowsingBetterEnabled() const override;
   bool GetIsCustomTab() const override;
+  bool GetIsTabCreatedByGSA() const override;
 
   // Called by Java to start an autofill-assistant flow for an incoming intent.
-  void Start(JNIEnv* env,
-             const base::android::JavaParamRef<jobject>& jcaller,
-             const base::android::JavaRef<jstring>& jexperiment_ids,
-             const base::android::JavaRef<jobjectArray>& jparameter_names,
-             const base::android::JavaRef<jobjectArray>& jparameter_values,
-             const base::android::JavaRef<jstring>& jinitial_url);
-
-  // Called by Java to start an autofill-assistant flow for an incoming intent.
-  void Start(JNIEnv* env,
-             const base::android::JavaParamRef<jobject>& jcaller,
-             const base::android::JavaRef<jstring>& jexperiment_ids,
-             const base::android::JavaRef<jobjectArray>& jparameter_names,
-             const base::android::JavaRef<jobjectArray>& jparameter_values,
-             jboolean is_cct,
-             const base::android::JavaRef<jstring>& jinitial_url);
+  void Start(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaRef<jstring>& jexperiment_ids,
+      const base::android::JavaRef<jobjectArray>& jparameter_names,
+      const base::android::JavaRef<jobjectArray>& jparameter_values,
+      const base::android::JavaRef<jobjectArray>& jdevice_only_parameter_names,
+      const base::android::JavaRef<jobjectArray>& jdevice_only_parameter_values,
+      const base::android::JavaRef<jstring>& jinitial_url);
 
   // Called by Java when the feature module installation has finished.
   void OnFeatureModuleInstalled(
@@ -123,10 +119,10 @@ class StarterAndroid : public StarterPlatformDelegate,
   void CreateJavaDependenciesIfNecessary();
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-  content::WebContents* web_contents_;
   std::unique_ptr<Starter> starter_;
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
   base::android::ScopedJavaGlobalRef<jobject> java_dependencies_;
+  base::android::ScopedJavaGlobalRef<jobject> java_onboarding_helper_;
   std::unique_ptr<WebsiteLoginManager> website_login_manager_;
   base::OnceCallback<void(Metrics::FeatureModuleInstallation result)>
       feature_module_installation_finished_callback_;

@@ -7,7 +7,6 @@
 
 #include <Security/Security.h>
 
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "crypto/crypto_export.h"
 
@@ -30,6 +29,10 @@ using AppleSecKeychainItemRef = SecKeychainItemRef;
 class CRYPTO_EXPORT AppleKeychain {
  public:
   AppleKeychain();
+
+  AppleKeychain(const AppleKeychain&) = delete;
+  AppleKeychain& operator=(const AppleKeychain&) = delete;
+
   virtual ~AppleKeychain();
 
   virtual OSStatus FindGenericPassword(UInt32 serviceNameLength,
@@ -53,9 +56,6 @@ class CRYPTO_EXPORT AppleKeychain {
 #if !defined(OS_IOS)
   virtual OSStatus ItemDelete(AppleSecKeychainItemRef itemRef) const;
 #endif  // !defined(OS_IOS)
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppleKeychain);
 };
 
 }  // namespace crypto

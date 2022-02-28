@@ -19,6 +19,7 @@
 #include "dawn_native/vulkan/FencedDeleter.h"
 #include "dawn_native/vulkan/ResourceHeapVk.h"
 #include "dawn_native/vulkan/ResourceMemoryAllocatorVk.h"
+#include "dawn_native/vulkan/UtilsVulkan.h"
 #include "dawn_native/vulkan/VulkanError.h"
 
 #include <cstring>
@@ -45,17 +46,15 @@ namespace dawn_native { namespace vulkan {
             if (usage & wgpu::BufferUsage::Uniform) {
                 flags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
             }
-            if (usage & (wgpu::BufferUsage::Storage | kReadOnlyStorageBuffer)) {
+            if (usage &
+                (wgpu::BufferUsage::Storage | kInternalStorageBuffer | kReadOnlyStorageBuffer)) {
                 flags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
             }
             if (usage & wgpu::BufferUsage::Indirect) {
                 flags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
             }
             if (usage & wgpu::BufferUsage::QueryResolve) {
-                // VK_BUFFER_USAGE_TRANSFER_DST_BIT is required by vkCmdCopyQueryPoolResults
-                // but we also add VK_BUFFER_USAGE_STORAGE_BUFFER_BIT because the queries will
-                // be post-processed by a compute shader and written to this buffer.
-                flags |= (VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+                flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
             }
 
             return flags;
@@ -64,7 +63,7 @@ namespace dawn_native { namespace vulkan {
         VkPipelineStageFlags VulkanPipelineStage(wgpu::BufferUsage usage) {
             VkPipelineStageFlags flags = 0;
 
-            if (usage & (wgpu::BufferUsage::MapRead | wgpu::BufferUsage::MapWrite)) {
+            if (usage & kMappableBufferUsages) {
                 flags |= VK_PIPELINE_STAGE_HOST_BIT;
             }
             if (usage & (wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst)) {
@@ -74,7 +73,7 @@ namespace dawn_native { namespace vulkan {
                 flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
             }
             if (usage & (wgpu::BufferUsage::Uniform | wgpu::BufferUsage::Storage |
-                         kReadOnlyStorageBuffer)) {
+                         kInternalStorageBuffer | kReadOnlyStorageBuffer)) {
                 flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
                          VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
                          VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
@@ -113,7 +112,7 @@ namespace dawn_native { namespace vulkan {
             if (usage & wgpu::BufferUsage::Uniform) {
                 flags |= VK_ACCESS_UNIFORM_READ_BIT;
             }
-            if (usage & wgpu::BufferUsage::Storage) {
+            if (usage & (wgpu::BufferUsage::Storage | kInternalStorageBuffer)) {
                 flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
             }
             if (usage & kReadOnlyStorageBuffer) {
@@ -139,13 +138,42 @@ namespace dawn_native { namespace vulkan {
     }
 
     MaybeError Buffer::Initialize(bool mappedAtCreation) {
+        // vkCmdFillBuffer requires the size to be a multiple of 4.
+        constexpr size_t kAlignment = 4u;
+
+        uint32_t extraBytes = 0u;
+        if (GetUsage() & (wgpu::BufferUsage::Vertex | wgpu::BufferUsage::Index)) {
+            // vkCmdSetIndexBuffer and vkCmdSetVertexBuffer are invalid if the offset
+            // is equal to the whole buffer size. Allocate at least one more byte so it
+            // is valid to setVertex/IndexBuffer with a zero-sized range at the end
+            // of the buffer with (offset=buffer.size, size=0).
+            extraBytes = 1u;
+        }
+
+        uint64_t size = GetSize();
+        if (size > std::numeric_limits<uint64_t>::max() - extraBytes) {
+            return DAWN_OUT_OF_MEMORY_ERROR("Buffer allocation is too large");
+        }
+
+        size += extraBytes;
+
+        // Allocate at least 4 bytes so clamped accesses are always in bounds.
+        // Also, Vulkan requires the size to be non-zero.
+        size = std::max(size, uint64_t(4u));
+
+        if (size > std::numeric_limits<uint64_t>::max() - kAlignment) {
+            // Alignment would overlow.
+            return DAWN_OUT_OF_MEMORY_ERROR("Buffer allocation is too large");
+        }
+        mAllocatedSize = Align(size, kAlignment);
+
         // Avoid passing ludicrously large sizes to drivers because it causes issues: drivers add
         // some constants to the size passed and align it, but for values close to the maximum
         // VkDeviceSize this can cause overflows and makes drivers crash or return bad sizes in the
         // VkmemoryRequirements. See https://gitlab.khronos.org/vulkan/vulkan/issues/1904
         // Any size with one of two top bits of VkDeviceSize set is a HUGE allocation and we can
         // safely return an OOM error.
-        if (GetSize() & (uint64_t(3) << uint64_t(62))) {
+        if (mAllocatedSize & (uint64_t(3) << uint64_t(62))) {
             return DAWN_OUT_OF_MEMORY_ERROR("Buffer size is HUGE and could cause overflows");
         }
 
@@ -153,9 +181,7 @@ namespace dawn_native { namespace vulkan {
         createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         createInfo.pNext = nullptr;
         createInfo.flags = 0;
-        // TODO(cwallez@chromium.org): Have a global "zero" buffer that can do everything instead
-        // of creating a new 4-byte buffer?
-        createInfo.size = std::max(GetSize(), uint64_t(4u));
+        createInfo.size = mAllocatedSize;
         // Add CopyDst for non-mappable buffer initialization with mappedAtCreation
         // and robust resource initialization.
         createInfo.usage = VulkanBufferUsage(GetUsage() | wgpu::BufferUsage::CopyDst);
@@ -168,13 +194,18 @@ namespace dawn_native { namespace vulkan {
             device->fn.CreateBuffer(device->GetVkDevice(), &createInfo, nullptr, &*mHandle),
             "vkCreateBuffer"));
 
+        // Gather requirements for the buffer's memory and allocate it.
         VkMemoryRequirements requirements;
         device->fn.GetBufferMemoryRequirements(device->GetVkDevice(), mHandle, &requirements);
 
-        bool requestMappable =
-            (GetUsage() & (wgpu::BufferUsage::MapRead | wgpu::BufferUsage::MapWrite)) != 0;
-        DAWN_TRY_ASSIGN(mMemoryAllocation, device->AllocateMemory(requirements, requestMappable));
+        MemoryKind requestKind = MemoryKind::Linear;
+        if (GetUsage() & kMappableBufferUsages) {
+            requestKind = MemoryKind::LinearMappable;
+        }
+        DAWN_TRY_ASSIGN(mMemoryAllocation,
+                        device->GetResourceMemoryAllocator()->Allocate(requirements, requestKind));
 
+        // Finally associate it with the buffer.
         DAWN_TRY(CheckVkSuccess(
             device->fn.BindBufferMemory(device->GetVkDevice(), mHandle,
                                         ToBackend(mMemoryAllocation.GetResourceHeap())->GetMemory(),
@@ -188,12 +219,24 @@ namespace dawn_native { namespace vulkan {
             ClearBuffer(device->GetPendingRecordingContext(), 0x01010101);
         }
 
+        // Initialize the padding bytes to zero.
+        if (device->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse) && !mappedAtCreation) {
+            uint32_t paddingBytes = GetAllocatedSize() - GetSize();
+            if (paddingBytes > 0) {
+                uint32_t clearSize = Align(paddingBytes, 4);
+                uint64_t clearOffset = GetAllocatedSize() - clearSize;
+
+                CommandRecordingContext* recordingContext = device->GetPendingRecordingContext();
+                ClearBuffer(recordingContext, 0, clearOffset, clearSize);
+            }
+        }
+
+        SetLabelImpl();
+
         return {};
     }
 
-    Buffer::~Buffer() {
-        DestroyInternal();
-    }
+    Buffer::~Buffer() = default;
 
     VkBuffer Buffer::GetHandle() const {
         return mHandle;
@@ -242,7 +285,8 @@ namespace dawn_native { namespace vulkan {
         barrier->dstQueueFamilyIndex = 0;
         barrier->buffer = mHandle;
         barrier->offset = 0;
-        barrier->size = GetSize();
+        // VK_WHOLE_SIZE doesn't work on old Windows Intel Vulkan drivers, so we don't use it.
+        barrier->size = GetAllocatedSize();
 
         mLastUsage = usage;
 
@@ -263,7 +307,7 @@ namespace dawn_native { namespace vulkan {
 
         CommandRecordingContext* recordingContext = device->GetPendingRecordingContext();
 
-        // TODO(jiawei.shao@intel.com): initialize mapped buffer in CPU side.
+        // TODO(crbug.com/dawn/852): initialize mapped buffer in CPU side.
         EnsureDataInitialized(recordingContext);
 
         if (mode & wgpu::MapMode::Read) {
@@ -286,7 +330,9 @@ namespace dawn_native { namespace vulkan {
     }
 
     void Buffer::DestroyImpl() {
-        ToBackend(GetDevice())->DeallocateMemory(&mMemoryAllocation);
+        BufferBase::DestroyImpl();
+
+        ToBackend(GetDevice())->GetResourceMemoryAllocator()->Deallocate(&mMemoryAllocation);
 
         if (mHandle != VK_NULL_HANDLE) {
             ToBackend(GetDevice())->GetFencedDeleter()->DeleteWhenUnused(mHandle);
@@ -294,67 +340,74 @@ namespace dawn_native { namespace vulkan {
         }
     }
 
-    void Buffer::EnsureDataInitialized(CommandRecordingContext* recordingContext) {
-        if (IsDataInitialized() ||
-            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
-            return;
+    bool Buffer::EnsureDataInitialized(CommandRecordingContext* recordingContext) {
+        if (!NeedsInitialization()) {
+            return false;
         }
 
         InitializeToZero(recordingContext);
+        return true;
     }
 
-    void Buffer::EnsureDataInitializedAsDestination(CommandRecordingContext* recordingContext,
+    bool Buffer::EnsureDataInitializedAsDestination(CommandRecordingContext* recordingContext,
                                                     uint64_t offset,
                                                     uint64_t size) {
-        if (IsDataInitialized() ||
-            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
-            return;
+        if (!NeedsInitialization()) {
+            return false;
         }
 
         if (IsFullBufferRange(offset, size)) {
             SetIsDataInitialized();
-        } else {
-            InitializeToZero(recordingContext);
+            return false;
         }
+
+        InitializeToZero(recordingContext);
+        return true;
     }
 
-    void Buffer::EnsureDataInitializedAsDestination(CommandRecordingContext* recordingContext,
+    bool Buffer::EnsureDataInitializedAsDestination(CommandRecordingContext* recordingContext,
                                                     const CopyTextureToBufferCmd* copy) {
-        if (IsDataInitialized() ||
-            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
-            return;
+        if (!NeedsInitialization()) {
+            return false;
         }
 
         if (IsFullBufferOverwrittenInTextureToBufferCopy(copy)) {
             SetIsDataInitialized();
-        } else {
-            InitializeToZero(recordingContext);
+            return false;
         }
+
+        InitializeToZero(recordingContext);
+        return true;
+    }
+
+    void Buffer::SetLabelImpl() {
+        SetDebugName(ToBackend(GetDevice()), VK_OBJECT_TYPE_BUFFER,
+                     reinterpret_cast<uint64_t&>(mHandle), "Dawn_Buffer", GetLabel());
     }
 
     void Buffer::InitializeToZero(CommandRecordingContext* recordingContext) {
-        ASSERT(GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse));
-        ASSERT(!IsDataInitialized());
+        ASSERT(NeedsInitialization());
 
         ClearBuffer(recordingContext, 0u);
         GetDevice()->IncrementLazyClearCountForTesting();
         SetIsDataInitialized();
     }
 
-    void Buffer::ClearBuffer(CommandRecordingContext* recordingContext, uint32_t clearValue) {
+    void Buffer::ClearBuffer(CommandRecordingContext* recordingContext,
+                             uint32_t clearValue,
+                             uint64_t offset,
+                             uint64_t size) {
         ASSERT(recordingContext != nullptr);
-
-        // Vulkan validation layer doesn't allow the `size` in vkCmdFillBuffer() to be 0.
-        if (GetSize() == 0u) {
-            return;
-        }
+        size = size > 0 ? size : GetAllocatedSize();
+        ASSERT(size > 0);
 
         TransitionUsageNow(recordingContext, wgpu::BufferUsage::CopyDst);
 
         Device* device = ToBackend(GetDevice());
-        // TODO(jiawei.shao@intel.com): find out why VK_WHOLE_SIZE doesn't work on old Windows Intel
-        // Vulkan drivers.
-        device->fn.CmdFillBuffer(recordingContext->commandBuffer, mHandle, 0, GetSize(),
+        // VK_WHOLE_SIZE doesn't work on old Windows Intel Vulkan drivers, so we don't use it.
+        // Note: Allocated size must be a multiple of 4.
+        ASSERT(size % 4 == 0);
+        device->fn.CmdFillBuffer(recordingContext->commandBuffer, mHandle, offset, size,
                                  clearValue);
     }
 }}  // namespace dawn_native::vulkan

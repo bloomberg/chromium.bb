@@ -17,7 +17,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
+#include "base/ignore_result.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -28,9 +28,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
@@ -50,6 +50,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
+
+// Needed for QueryUnbiasedInterruptTime and other Windows functions.
+#include <windows.h>
 
 using content::BrowserThread;
 
@@ -218,9 +221,12 @@ class UMAHistogramReporter {
 
   // Reports the SwReporter run time with UMA both as reported by the tool via
   // the registry and as measured by |ReporterRunner|.
-  void ReportRuntime(const base::TimeDelta& reporter_running_time) const {
+  void ReportRuntime(const base::TimeDelta& reporter_running_time,
+                     const base::TimeDelta& running_time_without_sleep) const {
     RecordLongTimesHistogram("SoftwareReporter.RunningTimeAccordingToChrome",
                              reporter_running_time);
+    RecordLongTimesHistogram("SoftwareReporter.RunningTimeWithoutSleep",
+                             running_time_without_sleep);
 
     // TODO(b/641081): This should only have KEY_QUERY_VALUE and KEY_SET_VALUE.
     base::win::RegKey reporter_key;
@@ -313,9 +319,9 @@ class UMAHistogramReporter {
   void RecordLongTimesHistogram(const std::string& name,
                                 const base::TimeDelta& sample) const {
     // See UMA_HISTOGRAM_LONG_TIMES for the parameters to |FactoryTimeGet|.
-    auto* histogram = base::Histogram::FactoryTimeGet(
-        FullName(name), base::TimeDelta::FromMilliseconds(1),
-        base::TimeDelta::FromHours(1), 100, kUmaHistogramFlag);
+    auto* histogram =
+        base::Histogram::FactoryTimeGet(FullName(name), base::Milliseconds(1),
+                                        base::Hours(1), 100, kUmaHistogramFlag);
     if (histogram)
       histogram->AddTime(sample);
   }
@@ -468,6 +474,10 @@ class ReporterRunner {
   }
 
  private:
+  // The type returned by QueryUnbiasedInterruptTime, which does not include
+  // time spent in sleep or hibernation.
+  using TimestampWithoutSleep = ULONGLONG;
+
   // Keeps track of last and upcoming reporter runs and logs uploading.
   //
   // Periodic runs are allowed to start if the last time the reporter ran was
@@ -489,12 +499,11 @@ class ReporterRunner {
       base::Time now = Now();
       if (local_state->HasPrefPath(prefs::kSwReporterLastTimeTriggered)) {
         base::Time last_time_triggered =
-            base::Time() +
-            base::TimeDelta::FromMicroseconds(
-                local_state->GetInt64(prefs::kSwReporterLastTimeTriggered));
+            base::Time() + base::Microseconds(local_state->GetInt64(
+                               prefs::kSwReporterLastTimeTriggered));
         base::Time next_trigger =
             last_time_triggered +
-            base::TimeDelta::FromDays(kDaysBetweenSuccessfulSwReporterRuns);
+            base::Days(kDaysBetweenSuccessfulSwReporterRuns);
         should_run_ = next_trigger <= now || last_time_triggered > now;
       } else {
         should_run_ = true;
@@ -502,12 +511,10 @@ class ReporterRunner {
 
       if (local_state->HasPrefPath(prefs::kSwReporterLastTimeSentReport)) {
         base::Time last_time_sent_logs =
-            base::Time() +
-            base::TimeDelta::FromMicroseconds(
-                local_state->GetInt64(prefs::kSwReporterLastTimeSentReport));
+            base::Time() + base::Microseconds(local_state->GetInt64(
+                               prefs::kSwReporterLastTimeSentReport));
         base::Time next_time_send_logs =
-            last_time_sent_logs +
-            base::TimeDelta::FromDays(kDaysBetweenReporterLogsSent);
+            last_time_sent_logs + base::Days(kDaysBetweenReporterLogsSent);
         in_logs_upload_period_ =
             next_time_send_logs <= now || last_time_sent_logs > now;
       } else {
@@ -533,6 +540,9 @@ class ReporterRunner {
                            base::Unretained(GetCleanerController()))),
         time_info_(std::move(time_info)) {}
 
+  ReporterRunner(const ReporterRunner&) = delete;
+  ReporterRunner& operator=(const ReporterRunner&) = delete;
+
   ~ReporterRunner() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK_EQ(instance_, this);
@@ -554,11 +564,15 @@ class ReporterRunner {
     base::TaskRunner* task_runner =
         g_testing_delegate_ ? g_testing_delegate_->BlockingTaskRunner()
                             : blocking_task_runner_.get();
+
+    TimestampWithoutSleep now_without_sleep;
+    ::QueryUnbiasedInterruptTime(&now_without_sleep);
+
     auto launch_and_wait =
         base::BindOnce(&LaunchAndWaitForExit, next_invocation);
     auto reporter_done =
         base::BindOnce(&ReporterRunner::ReporterDone, base::Unretained(this),
-                       Now(), next_invocation);
+                       Now(), now_without_sleep, next_invocation);
     base::PostTaskAndReplyWithResult(task_runner, FROM_HERE,
                                      std::move(launch_and_wait),
                                      std::move(reporter_done));
@@ -568,6 +582,7 @@ class ReporterRunner {
   // has completed. This is run as a task posted from an interruptible worker
   // thread so should be resilient to unexpected shutdown.
   void ReporterDone(const base::Time& reporter_start_time,
+                    TimestampWithoutSleep start_time_without_sleep,
                     SwReporterInvocation finished_invocation,
                     int exit_code) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -590,8 +605,16 @@ class ReporterRunner {
       return;
     }
 
+    TimestampWithoutSleep now_without_sleep;
+    ::QueryUnbiasedInterruptTime(&now_without_sleep);
+
     base::Time now = Now();
     base::TimeDelta reporter_running_time = now - reporter_start_time;
+
+    // QueryUnbiasedInterruptTime returns units of 100 nanoseconds. See
+    // https://docs.microsoft.com/en-us/windows/win32/api/realtimeapiset/nf-realtimeapiset-queryunbiasedinterrupttime
+    base::TimeDelta running_time_without_sleep =
+        base::Nanoseconds(100 * (now_without_sleep - start_time_without_sleep));
 
     // Tries to run the next invocation in the queue.
     if (!invocations_.container().empty()) {
@@ -616,7 +639,7 @@ class ReporterRunner {
       local_state->SetInt64(prefs::kSwReporterLastTimeTriggered,
                             now.ToInternalValue());
     }
-    uma.ReportRuntime(reporter_running_time);
+    uma.ReportRuntime(reporter_running_time, running_time_without_sleep);
     uma.ReportMemoryUsage();
     if (finished_invocation.reporter_logs_upload_enabled())
       uma.RecordLogsUploadResult();
@@ -826,8 +849,6 @@ class ReporterRunner {
   ReporterRunTimeInfo time_info_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(ReporterRunner);
 };
 
 // static

@@ -31,6 +31,10 @@ const char kTestAccountEmail[] = "test@test.com";
 class MultiUserUtilTest : public ChromeAshTestBase {
  public:
   MultiUserUtilTest() {}
+
+  MultiUserUtilTest(const MultiUserUtilTest&) = delete;
+  MultiUserUtilTest& operator=(const MultiUserUtilTest&) = delete;
+
   ~MultiUserUtilTest() override {}
 
   void SetUp() override {
@@ -56,8 +60,8 @@ class MultiUserUtilTest : public ChromeAshTestBase {
 
   // Add a user to the identity manager with given gaia_id and email.
   CoreAccountId AddUserAndSignIn(const std::string& email) {
-    AccountInfo account_info =
-        identity_test_env()->MakePrimaryAccountAvailable(email);
+    AccountInfo account_info = identity_test_env()->MakePrimaryAccountAvailable(
+        email, signin::ConsentLevel::kSync);
     fake_user_manager_->AddUser(
         multi_user_util::GetAccountIdFromEmail(account_info.email));
     fake_user_manager_->UserLoggedIn(
@@ -86,8 +90,6 @@ class MultiUserUtilTest : public ChromeAshTestBase {
   // |fake_user_manager_| is owned by |user_manager_enabler_|.
   FakeChromeUserManager* fake_user_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
-
-  DISALLOW_COPY_AND_ASSIGN(MultiUserUtilTest);
 };
 
 // Test that during the session it will always return a valid account id if a

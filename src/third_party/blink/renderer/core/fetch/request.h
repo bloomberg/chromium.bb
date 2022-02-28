@@ -10,7 +10,6 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
-#include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/fetch/body.h"
@@ -28,8 +27,6 @@ class BodyStreamBuffer;
 class ExceptionState;
 class RequestInit;
 
-using RequestInfo = RequestOrUSVString;
-
 class CORE_EXPORT Request final : public ScriptWrappable,
                                   public ActiveScriptWrappable<Request>,
                                   public Body {
@@ -42,17 +39,10 @@ class CORE_EXPORT Request final : public ScriptWrappable,
   // These "create" function must be called with entering an appropriate
   // V8 context.
   // From Request.idl:
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   static Request* Create(ScriptState* script_state,
                          const V8RequestInfo* input,
                          const RequestInit* init,
                          ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  static Request* Create(ScriptState*,
-                         const RequestInfo&,
-                         const RequestInit*,
-                         ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   static Request* Create(ScriptState*, const String&, ExceptionState&);
   static Request* Create(ScriptState*,
@@ -71,6 +61,8 @@ class CORE_EXPORT Request final : public ScriptWrappable,
 
   Request(ScriptState*, FetchRequestData*, Headers*, AbortSignal*);
   Request(ScriptState*, FetchRequestData*);
+  Request(const Request&) = delete;
+  Request& operator=(const Request&) = delete;
 
   static absl::optional<network::mojom::CredentialsMode> ParseCredentialsMode(
       const String& credentials_mode);
@@ -126,7 +118,6 @@ class CORE_EXPORT Request final : public ScriptWrappable,
   const Member<FetchRequestData> request_;
   const Member<Headers> headers_;
   const Member<AbortSignal> signal_;
-  DISALLOW_COPY_AND_ASSIGN(Request);
 };
 
 }  // namespace blink

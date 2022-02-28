@@ -30,17 +30,6 @@
 #include "snappy-sinksource.h"
 #include "snappy.h"
 
-#if !defined(SNAPPY_HAVE_SSSE3)
-// __SSSE3__ is defined by GCC and Clang. Visual Studio doesn't target SIMD
-// support between SSE2 and AVX (so SSSE3 instructions require AVX support), and
-// defines __AVX__ when AVX support is available.
-#if defined(__SSSE3__) || defined(__AVX__)
-#define SNAPPY_HAVE_SSSE3 1
-#else
-#define SNAPPY_HAVE_SSSE3 0
-#endif
-#endif  // !defined(SNAPPY_HAVE_SSSE3)
-
 #if !defined(SNAPPY_HAVE_BMI2)
 // __BMI2__ is defined by GCC and Clang. Visual Studio doesn't target BMI2
 // specifically, but it does define __AVX2__ when AVX2 support is available.
@@ -55,12 +44,6 @@
 #define SNAPPY_HAVE_BMI2 0
 #endif
 #endif  // !defined(SNAPPY_HAVE_BMI2)
-
-#if SNAPPY_HAVE_SSSE3
-// Please do not replace with <x86intrin.h>. or with headers that assume more
-// advanced SSE versions without checking with all the OWNERS.
-#include <tmmintrin.h>
-#endif
 
 #if SNAPPY_HAVE_BMI2
 // Please do not replace with <x86intrin.h>. or with headers that assume more
@@ -91,6 +74,14 @@ using internal::COPY_2_BYTE_OFFSET;
 using internal::COPY_4_BYTE_OFFSET;
 using internal::kMaximumTagLength;
 using internal::LITERAL;
+#if SNAPPY_HAVE_VECTOR_BYTE_SHUFFLE
+using internal::V128;
+using internal::V128_Load;
+using internal::V128_LoadU;
+using internal::V128_Shuffle;
+using internal::V128_StoreU;
+using internal::V128_DupChar;
+#endif
 
 // We translate the information encoded in a tag through a lookup table to a
 // format that requires fewer instructions to decode. Effectively we store
@@ -133,12 +124,8 @@ constexpr std::array<int16_t, 256> MakeTable(index_sequence<seq...>) {
   return std::array<int16_t, 256>{LengthMinusOffset(seq)...};
 }
 
-// We maximally co-locate the two tables so that only one register needs to be
-// reserved for the table address.
-struct {
-  alignas(64) const std::array<int16_t, 256> length_minus_offset;
-  uint32_t extract_masks[4];  // Used for extracting offset based on tag type.
-} table = {MakeTable(make_index_sequence<256>{}), {0, 0xFF, 0xFFFF, 0}};
+alignas(64) const std::array<int16_t, 256> kLengthMinusOffset =
+    MakeTable(make_index_sequence<256>{});
 
 // Any hash function will produce a valid compressed bitstream, but a good
 // hash function reduces the number of collisions and thus yields better
@@ -228,7 +215,7 @@ inline char* IncrementalCopySlow(const char* src, char* op,
   return op_limit;
 }
 
-#if SNAPPY_HAVE_SSSE3
+#if SNAPPY_HAVE_VECTOR_BYTE_SHUFFLE
 
 // Computes the bytes for shuffle control mask (please read comments on
 // 'pattern_generation_masks' as well) for the given index_offset and
@@ -248,19 +235,19 @@ inline constexpr std::array<char, sizeof...(indexes)> MakePatternMaskBytes(
 // Computes the shuffle control mask bytes array for given pattern-sizes and
 // returns an array.
 template <size_t... pattern_sizes_minus_one>
-inline constexpr std::array<std::array<char, sizeof(__m128i)>,
+inline constexpr std::array<std::array<char, sizeof(V128)>,
                             sizeof...(pattern_sizes_minus_one)>
 MakePatternMaskBytesTable(int index_offset,
                           index_sequence<pattern_sizes_minus_one...>) {
-  return {MakePatternMaskBytes(
-      index_offset, pattern_sizes_minus_one + 1,
-      make_index_sequence</*indexes=*/sizeof(__m128i)>())...};
+  return {
+      MakePatternMaskBytes(index_offset, pattern_sizes_minus_one + 1,
+                           make_index_sequence</*indexes=*/sizeof(V128)>())...};
 }
 
 // This is an array of shuffle control masks that can be used as the source
 // operand for PSHUFB to permute the contents of the destination XMM register
 // into a repeating byte pattern.
-alignas(16) constexpr std::array<std::array<char, sizeof(__m128i)>,
+alignas(16) constexpr std::array<std::array<char, sizeof(V128)>,
                                  16> pattern_generation_masks =
     MakePatternMaskBytesTable(
         /*index_offset=*/0,
@@ -271,40 +258,40 @@ alignas(16) constexpr std::array<std::array<char, sizeof(__m128i)>,
 // Basically, pattern_reshuffle_masks is a continuation of
 // pattern_generation_masks. It follows that, pattern_reshuffle_masks is same as
 // pattern_generation_masks for offsets 1, 2, 4, 8 and 16.
-alignas(16) constexpr std::array<std::array<char, sizeof(__m128i)>,
+alignas(16) constexpr std::array<std::array<char, sizeof(V128)>,
                                  16> pattern_reshuffle_masks =
     MakePatternMaskBytesTable(
         /*index_offset=*/16,
         /*pattern_sizes_minus_one=*/make_index_sequence<16>());
 
 SNAPPY_ATTRIBUTE_ALWAYS_INLINE
-static inline __m128i LoadPattern(const char* src, const size_t pattern_size) {
-  __m128i generation_mask = _mm_load_si128(reinterpret_cast<const __m128i*>(
+static inline V128 LoadPattern(const char* src, const size_t pattern_size) {
+  V128 generation_mask = V128_Load(reinterpret_cast<const V128*>(
       pattern_generation_masks[pattern_size - 1].data()));
   // Uninitialized bytes are masked out by the shuffle mask.
   // TODO: remove annotation and macro defs once MSan is fixed.
   SNAPPY_ANNOTATE_MEMORY_IS_INITIALIZED(src + pattern_size, 16 - pattern_size);
-  return _mm_shuffle_epi8(
-      _mm_loadu_si128(reinterpret_cast<const __m128i*>(src)), generation_mask);
+  return V128_Shuffle(V128_LoadU(reinterpret_cast<const V128*>(src)),
+                      generation_mask);
 }
 
 SNAPPY_ATTRIBUTE_ALWAYS_INLINE
-static inline std::pair<__m128i /* pattern */, __m128i /* reshuffle_mask */>
+static inline std::pair<V128 /* pattern */, V128 /* reshuffle_mask */>
 LoadPatternAndReshuffleMask(const char* src, const size_t pattern_size) {
-  __m128i pattern = LoadPattern(src, pattern_size);
+  V128 pattern = LoadPattern(src, pattern_size);
 
   // This mask will generate the next 16 bytes in-place. Doing so enables us to
-  // write data by at most 4 _mm_storeu_si128.
+  // write data by at most 4 V128_StoreU.
   //
   // For example, suppose pattern is:        abcdefabcdefabcd
   // Shuffling with this mask will generate: efabcdefabcdefab
   // Shuffling again will generate:          cdefabcdefabcdef
-  __m128i reshuffle_mask = _mm_load_si128(reinterpret_cast<const __m128i*>(
+  V128 reshuffle_mask = V128_Load(reinterpret_cast<const V128*>(
       pattern_reshuffle_masks[pattern_size - 1].data()));
   return {pattern, reshuffle_mask};
 }
 
-#endif  // SNAPPY_HAVE_SSSE3
+#endif  // SNAPPY_HAVE_VECTOR_BYTE_SHUFFLE
 
 // Fallback for when we need to copy while extending the pattern, for example
 // copying 10 bytes from 3 positions back abc -> abcabcabcabca.
@@ -312,33 +299,38 @@ LoadPatternAndReshuffleMask(const char* src, const size_t pattern_size) {
 // REQUIRES: [dst - offset, dst + 64) is a valid address range.
 SNAPPY_ATTRIBUTE_ALWAYS_INLINE
 static inline bool Copy64BytesWithPatternExtension(char* dst, size_t offset) {
-#if SNAPPY_HAVE_SSSE3
+#if SNAPPY_HAVE_VECTOR_BYTE_SHUFFLE
   if (SNAPPY_PREDICT_TRUE(offset <= 16)) {
     switch (offset) {
       case 0:
         return false;
       case 1: {
-        std::memset(dst, dst[-1], 64);
+        // TODO: Ideally we should memset, move back once the
+        // codegen issues are fixed.
+        V128 pattern = V128_DupChar(dst[-1]);
+        for (int i = 0; i < 4; i++) {
+          V128_StoreU(reinterpret_cast<V128*>(dst + 16 * i), pattern);
+        }
         return true;
       }
       case 2:
       case 4:
       case 8:
       case 16: {
-        __m128i pattern = LoadPattern(dst - offset, offset);
+        V128 pattern = LoadPattern(dst - offset, offset);
         for (int i = 0; i < 4; i++) {
-          _mm_storeu_si128(reinterpret_cast<__m128i*>(dst + 16 * i), pattern);
+          V128_StoreU(reinterpret_cast<V128*>(dst + 16 * i), pattern);
         }
         return true;
       }
       default: {
         auto pattern_and_reshuffle_mask =
             LoadPatternAndReshuffleMask(dst - offset, offset);
-        __m128i pattern = pattern_and_reshuffle_mask.first;
-        __m128i reshuffle_mask = pattern_and_reshuffle_mask.second;
+        V128 pattern = pattern_and_reshuffle_mask.first;
+        V128 reshuffle_mask = pattern_and_reshuffle_mask.second;
         for (int i = 0; i < 4; i++) {
-          _mm_storeu_si128(reinterpret_cast<__m128i*>(dst + 16 * i), pattern);
-          pattern = _mm_shuffle_epi8(pattern, reshuffle_mask);
+          V128_StoreU(reinterpret_cast<V128*>(dst + 16 * i), pattern);
+          pattern = V128_Shuffle(pattern, reshuffle_mask);
         }
         return true;
       }
@@ -361,7 +353,7 @@ static inline bool Copy64BytesWithPatternExtension(char* dst, size_t offset) {
     }
     return true;
   }
-#endif  // SNAPPY_HAVE_SSSE3
+#endif  // SNAPPY_HAVE_VECTOR_BYTE_SHUFFLE
 
   // Very rare.
   for (int i = 0; i < 4; i++) {
@@ -375,7 +367,7 @@ static inline bool Copy64BytesWithPatternExtension(char* dst, size_t offset) {
 // region of the buffer.
 inline char* IncrementalCopy(const char* src, char* op, char* const op_limit,
                              char* const buf_limit) {
-#if SNAPPY_HAVE_SSSE3
+#if SNAPPY_HAVE_VECTOR_BYTE_SHUFFLE
   constexpr int big_pattern_size_lower_bound = 16;
 #else
   constexpr int big_pattern_size_lower_bound = 8;
@@ -425,14 +417,14 @@ inline char* IncrementalCopy(const char* src, char* op, char* const op_limit,
   // Handle the uncommon case where pattern is less than 16 (or 8 in non-SSE)
   // bytes.
   if (pattern_size < big_pattern_size_lower_bound) {
-#if SNAPPY_HAVE_SSSE3
+#if SNAPPY_HAVE_VECTOR_BYTE_SHUFFLE
     // Load the first eight bytes into an 128-bit XMM register, then use PSHUFB
     // to permute the register's contents in-place into a repeating sequence of
     // the first "pattern_size" bytes.
     // For example, suppose:
     //    src       == "abc"
     //    op        == op + 3
-    // After _mm_shuffle_epi8(), "pattern" will have five copies of "abc"
+    // After V128_Shuffle(), "pattern" will have five copies of "abc"
     // followed by one byte of slop: abcabcabcabcabca.
     //
     // The non-SSE fallback implementation suffers from store-forwarding stalls
@@ -444,26 +436,26 @@ inline char* IncrementalCopy(const char* src, char* op, char* const op_limit,
     if (SNAPPY_PREDICT_TRUE(op_limit <= buf_limit - 15)) {
       auto pattern_and_reshuffle_mask =
           LoadPatternAndReshuffleMask(src, pattern_size);
-      __m128i pattern = pattern_and_reshuffle_mask.first;
-      __m128i reshuffle_mask = pattern_and_reshuffle_mask.second;
+      V128 pattern = pattern_and_reshuffle_mask.first;
+      V128 reshuffle_mask = pattern_and_reshuffle_mask.second;
 
       // There is at least one, and at most four 16-byte blocks. Writing four
       // conditionals instead of a loop allows FDO to layout the code with
       // respect to the actual probabilities of each length.
       // TODO: Replace with loop with trip count hint.
-      _mm_storeu_si128(reinterpret_cast<__m128i*>(op), pattern);
+      V128_StoreU(reinterpret_cast<V128*>(op), pattern);
 
       if (op + 16 < op_limit) {
-        pattern = _mm_shuffle_epi8(pattern, reshuffle_mask);
-        _mm_storeu_si128(reinterpret_cast<__m128i*>(op + 16), pattern);
+        pattern = V128_Shuffle(pattern, reshuffle_mask);
+        V128_StoreU(reinterpret_cast<V128*>(op + 16), pattern);
       }
       if (op + 32 < op_limit) {
-        pattern = _mm_shuffle_epi8(pattern, reshuffle_mask);
-        _mm_storeu_si128(reinterpret_cast<__m128i*>(op + 32), pattern);
+        pattern = V128_Shuffle(pattern, reshuffle_mask);
+        V128_StoreU(reinterpret_cast<V128*>(op + 32), pattern);
       }
       if (op + 48 < op_limit) {
-        pattern = _mm_shuffle_epi8(pattern, reshuffle_mask);
-        _mm_storeu_si128(reinterpret_cast<__m128i*>(op + 48), pattern);
+        pattern = V128_Shuffle(pattern, reshuffle_mask);
+        V128_StoreU(reinterpret_cast<V128*>(op + 48), pattern);
       }
       return op_limit;
     }
@@ -471,8 +463,8 @@ inline char* IncrementalCopy(const char* src, char* op, char* const op_limit,
     if (SNAPPY_PREDICT_TRUE(op < op_end)) {
       auto pattern_and_reshuffle_mask =
           LoadPatternAndReshuffleMask(src, pattern_size);
-      __m128i pattern = pattern_and_reshuffle_mask.first;
-      __m128i reshuffle_mask = pattern_and_reshuffle_mask.second;
+      V128 pattern = pattern_and_reshuffle_mask.first;
+      V128 reshuffle_mask = pattern_and_reshuffle_mask.second;
 
       // This code path is relatively cold however so we save code size
       // by avoiding unrolling and vectorizing.
@@ -483,13 +475,13 @@ inline char* IncrementalCopy(const char* src, char* op, char* const op_limit,
 #pragma clang loop unroll(disable)
 #endif
       do {
-        _mm_storeu_si128(reinterpret_cast<__m128i*>(op), pattern);
-        pattern = _mm_shuffle_epi8(pattern, reshuffle_mask);
+        V128_StoreU(reinterpret_cast<V128*>(op), pattern);
+        pattern = V128_Shuffle(pattern, reshuffle_mask);
         op += 16;
       } while (SNAPPY_PREDICT_TRUE(op < op_end));
     }
     return IncrementalCopySlow(op - pattern_size, op, op_limit);
-#else   // !SNAPPY_HAVE_SSSE3
+#else   // !SNAPPY_HAVE_VECTOR_BYTE_SHUFFLE
     // If plenty of buffer space remains, expand the pattern to at least 8
     // bytes. The way the following loop is written, we need 8 bytes of buffer
     // space if pattern_size >= 4, 11 bytes if pattern_size is 1 or 3, and 10
@@ -506,7 +498,7 @@ inline char* IncrementalCopy(const char* src, char* op, char* const op_limit,
     } else {
       return IncrementalCopySlow(src, op, op_limit);
     }
-#endif  // SNAPPY_HAVE_SSSE3
+#endif  // SNAPPY_HAVE_VECTOR_BYTE_SHUFFLE
   }
   assert(pattern_size >= big_pattern_size_lower_bound);
   constexpr bool use_16bytes_chunk = big_pattern_size_lower_bound == 16;
@@ -962,7 +954,7 @@ static inline void Report(const char *algorithm, size_t compressed_size,
 //   bool TryFastAppend(const char* ip, size_t available, size_t length, T* op);
 // };
 
-static inline uint32_t ExtractLowBytes(uint32_t v, int n) {
+static inline uint32_t ExtractLowBytes(const uint32_t& v, int n) {
   assert(n >= 0);
   assert(n <= 4);
 #if SNAPPY_HAVE_BMI2
@@ -1014,7 +1006,30 @@ void MemMove(ptrdiff_t dst, const void* src, size_t size) {
 }
 
 SNAPPY_ATTRIBUTE_ALWAYS_INLINE
-size_t AdvanceToNextTag(const uint8_t** ip_p, size_t* tag) {
+size_t AdvanceToNextTagARMOptimized(const uint8_t** ip_p, size_t* tag) {
+  const uint8_t*& ip = *ip_p;
+  // This section is crucial for the throughput of the decompression loop.
+  // The latency of an iteration is fundamentally constrained by the
+  // following data chain on ip.
+  // ip -> c = Load(ip) -> delta1 = (c & 3)        -> ip += delta1 or delta2
+  //                       delta2 = ((c >> 2) + 1)    ip++
+  // This is different from X86 optimizations because ARM has conditional add
+  // instruction (csinc) and it removes several register moves.
+  const size_t tag_type = *tag & 3;
+  const bool is_literal = (tag_type == 0);
+  if (is_literal) {
+    size_t next_literal_tag = (*tag >> 2) + 1;
+    *tag = ip[next_literal_tag];
+    ip += next_literal_tag + 1;
+  } else {
+    *tag = ip[tag_type];
+    ip += tag_type + 1;
+  }
+  return tag_type;
+}
+
+SNAPPY_ATTRIBUTE_ALWAYS_INLINE
+size_t AdvanceToNextTagX86Optimized(const uint8_t** ip_p, size_t* tag) {
   const uint8_t*& ip = *ip_p;
   // This section is crucial for the throughput of the decompression loop.
   // The latency of an iteration is fundamentally constrained by the
@@ -1060,7 +1075,24 @@ size_t AdvanceToNextTag(const uint8_t** ip_p, size_t* tag) {
 
 // Extract the offset for copy-1 and copy-2 returns 0 for literals or copy-4.
 inline uint32_t ExtractOffset(uint32_t val, size_t tag_type) {
-  return val & table.extract_masks[tag_type];
+  // For x86 non-static storage works better. For ARM static storage is better.
+  // TODO: Once the array is recognized as a register, improve the
+  // readability for x86.
+#if defined(__x86_64__)
+  constexpr uint64_t kExtractMasksCombined = 0x0000FFFF00FF0000ull;
+  uint16_t result;
+  memcpy(&result,
+         reinterpret_cast<const char*>(&kExtractMasksCombined) + 2 * tag_type,
+         sizeof(result));
+  return val & result;
+#elif defined(__aarch64__)
+  constexpr uint64_t kExtractMasksCombined = 0x0000FFFF00FF0000ull;
+  return val & static_cast<uint32_t>(
+      (kExtractMasksCombined >> (tag_type * 16)) & 0xFFFF);
+#else
+  static constexpr uint32_t kExtractMasks[4] = {0, 0xFF, 0xFFFF, 0};
+  return val & kExtractMasks[tag_type];
+#endif
 };
 
 // Core decompression loop, when there is enough data available.
@@ -1084,6 +1116,15 @@ std::pair<const uint8_t*, ptrdiff_t> DecompressBranchless(
     // ip points just past the tag and we are touching at maximum kSlopBytes
     // in an iteration.
     size_t tag = ip[-1];
+#if defined(__clang__) && defined(__aarch64__)
+    // Workaround for https://bugs.llvm.org/show_bug.cgi?id=51317
+    // when loading 1 byte, clang for aarch64 doesn't realize that it(ldrb)
+    // comes with free zero-extension, so clang generates another
+    // 'and xn, xm, 0xff' before it use that as the offset. This 'and' is
+    // redundant and can be removed by adding this dummy asm, which gives
+    // clang a hint that we're doing the zero-extension at the load.
+    asm("" ::"r"(tag));
+#endif
     do {
       // The throughput is limited by instructions, unrolling the inner loop
       // twice reduces the amount of instructions checking limits and also
@@ -1093,8 +1134,12 @@ std::pair<const uint8_t*, ptrdiff_t> DecompressBranchless(
         assert(tag == ip[-1]);
         // For literals tag_type = 0, hence we will always obtain 0 from
         // ExtractLowBytes. For literals offset will thus be kLiteralOffset.
-        ptrdiff_t len_min_offset = table.length_minus_offset[tag];
-        size_t tag_type = AdvanceToNextTag(&ip, &tag);
+        ptrdiff_t len_min_offset = kLengthMinusOffset[tag];
+#if defined(__aarch64__)
+        size_t tag_type = AdvanceToNextTagARMOptimized(&ip, &tag);
+#else
+        size_t tag_type = AdvanceToNextTagX86Optimized(&ip, &tag);
+#endif
         uint32_t next = LittleEndian::Load32(old_ip);
         size_t len = len_min_offset & 0xFF;
         len_min_offset -= ExtractOffset(next, tag_type);
@@ -1122,22 +1167,6 @@ std::pair<const uint8_t*, ptrdiff_t> DecompressBranchless(
         }
         std::ptrdiff_t delta = op + len_min_offset - len;
         if (SNAPPY_PREDICT_FALSE(delta < 0)) {
-#if defined(__GNUC__) && defined(__x86_64__)
-          // TODO
-          // When validating, both code path reduced to `op += len`. Ie. this
-          // becomes effectively
-          //
-          // if (delta < 0) if (tag_type != 0) goto break_loop;
-          // op += len;
-          //
-          // The compiler interchanges the predictable and almost always false
-          // first if-statement with the completely unpredictable second
-          // if-statement, putting an unpredictable branch on every iteration.
-          // This empty asm is worth almost 2x, which I think qualifies for an
-          // award for the most load-bearing empty statement.
-          asm("");
-#endif
-
           // Due to the spurious offset in literals have this will trigger
           // at the start of a block when op is still smaller than 256.
           if (tag_type != 0) goto break_loop;
@@ -1325,7 +1354,7 @@ class SnappyDecompressor {
 
           if (!writer->AppendFromSelf(copy_offset, length, &op)) goto exit;
         } else {
-          const ptrdiff_t entry = table.length_minus_offset[c];
+          const ptrdiff_t entry = kLengthMinusOffset[c];
           preload = LittleEndian::Load32(ip);
           const uint32_t trailer = ExtractLowBytes(preload, c & 3);
           const uint32_t length = entry & 0xff;

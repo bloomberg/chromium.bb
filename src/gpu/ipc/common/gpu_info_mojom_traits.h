@@ -11,8 +11,13 @@
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/dx_diag_node_mojom_traits.h"
 #include "gpu/ipc/common/gpu_info.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_types.h"
+#endif
 
 namespace mojo {
 
@@ -40,7 +45,7 @@ struct GPU_EXPORT
     return input.sub_sys_id;
   }
 
-  static const LUID luid(const gpu::GPUInfo::GPUDevice& input) {
+  static const CHROME_LUID luid(const gpu::GPUInfo::GPUDevice& input) {
     return input.luid;
   }
 #endif  // OS_WIN
@@ -382,6 +387,11 @@ struct GPU_EXPORT StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
     return input.video_decode_accelerator_capabilities;
   }
 
+  static const gpu::VideoDecodeAcceleratorSupportedProfiles&
+  video_decoder_capabilities(const gpu::GPUInfo& input) {
+    return input.video_decoder_capabilities;
+  }
+
   static std::vector<gpu::VideoEncodeAcceleratorSupportedProfile>
   video_encode_accelerator_supported_profiles(const gpu::GPUInfo& input) {
     return input.video_encode_accelerator_supported_profiles;
@@ -402,6 +412,10 @@ struct GPU_EXPORT StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
 
   static bool subpixel_font_rendering(const gpu::GPUInfo& input) {
     return input.subpixel_font_rendering;
+  }
+
+  static uint32_t visibility_callback_call_count(const gpu::GPUInfo& input) {
+    return input.visibility_callback_call_count;
   }
 
 #if BUILDFLAG(ENABLE_VULKAN)

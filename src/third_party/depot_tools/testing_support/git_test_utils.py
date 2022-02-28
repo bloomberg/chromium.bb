@@ -18,7 +18,7 @@ import unittest
 import gclient_utils
 
 
-DEFAULT_BRANCH = 'master'
+DEFAULT_BRANCH = 'main'
 
 if sys.version_info.major == 3:
   # pylint: disable=redefined-builtin
@@ -138,7 +138,7 @@ class GitRepoSchema(object):
 
   Every commit gets a tag 'tag_%(commit)s'
   Every unique terminal commit gets a branch 'branch_%(commit)s'
-  Last commit in First line is the branch 'master'
+  Last commit in First line is the branch 'main'
   Root commits get a ref 'root_%(commit)s'
 
   Timestamps are in topo order, earlier commits (as indicated by their presence
@@ -160,7 +160,7 @@ class GitRepoSchema(object):
         commit_name). See the docstring on the GitRepo class for the format of
         the data returned by this function.
     """
-    self.master = None
+    self.main = None
     self.par_map = {}
     self.data_cache = {}
     self.content_fn = content_fn
@@ -207,8 +207,8 @@ class GitRepoSchema(object):
       for commit in commits:
         self.add_partial(commit, parent)
         parent = commit
-      if parent and not self.master:
-        self.master = parent
+      if parent and not self.main:
+        self.main = parent
     for _ in self.walk():  # This will throw if there are any cycles.
       pass
 
@@ -308,8 +308,8 @@ class GitRepo(object):
     for commit in schema.walk():
       self._add_schema_commit(commit, schema.data_for(commit.name))
       self.last_commit = self[commit.name]
-    if schema.master:
-      self.git('update-ref', 'refs/heads/master', self[schema.master])
+    if schema.main:
+      self.git('update-ref', 'refs/heads/main', self[schema.main])
 
   def __getitem__(self, commit_name):
     """Gets the hash of a commit by its schema name.

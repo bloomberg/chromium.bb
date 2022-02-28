@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/menu_button_controller.h"
@@ -22,8 +23,19 @@ class ExtensionsToolbarButton : public ToolbarButton,
                                 public views::WidgetObserver {
  public:
   METADATA_HEADER(ExtensionsToolbarButton);
+
+  enum class ButtonType {
+    // Indicates that at least one extension is enabled, and opens the installed
+    // extensions tab in the menu.
+    kExtensions,
+    // Indicates that at least one extension has access to the current page, and
+    // opens the permissions tab in the menu.
+    kSiteAccess
+  };
+
   ExtensionsToolbarButton(Browser* browser,
-                          ExtensionsToolbarContainer* extensions_container);
+                          ExtensionsToolbarContainer* extensions_container,
+                          ButtonType button_type);
   ExtensionsToolbarButton(const ExtensionsToolbarButton&) = delete;
   ExtensionsToolbarButton& operator=(const ExtensionsToolbarButton&) = delete;
   ~ExtensionsToolbarButton() override;
@@ -49,9 +61,10 @@ class ExtensionsToolbarButton : public ToolbarButton,
   // A lock to keep the button pressed when a popup is visible.
   std::unique_ptr<views::MenuButtonController::PressedLock> pressed_lock_;
 
-  Browser* const browser_;
-  views::MenuButtonController* menu_button_controller_;
-  ExtensionsToolbarContainer* const extensions_container_;
+  const raw_ptr<Browser> browser_;
+  const ButtonType button_type_;
+  raw_ptr<views::MenuButtonController> menu_button_controller_;
+  const raw_ptr<ExtensionsToolbarContainer> extensions_container_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_TOOLBAR_BUTTON_H_

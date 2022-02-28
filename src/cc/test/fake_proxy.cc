@@ -21,6 +21,15 @@ bool FakeProxy::RequestedAnimatePending() {
 
 bool FakeProxy::IsStarted() const { return true; }
 
+bool FakeProxy::StartDeferringCommits(base::TimeDelta timeout,
+                                      PaintHoldingReason reason) {
+  return false;
+}
+
+bool FakeProxy::IsDeferringCommits() const {
+  return false;
+}
+
 bool FakeProxy::CommitRequested() const { return false; }
 
 void FakeProxy::SetMutator(std::unique_ptr<LayerTreeMutator> mutator) {}
@@ -30,6 +39,10 @@ void FakeProxy::SetPaintWorkletLayerPainter(
 
 bool FakeProxy::MainFrameWillHappenForTesting() {
   return false;
+}
+
+uint32_t FakeProxy::GetAverageThroughput() const {
+  return 0u;
 }
 
 }  // namespace cc

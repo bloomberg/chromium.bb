@@ -8,12 +8,15 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "content/browser/devtools/devtools_throttle_handle.h"
+#include "content/browser/devtools/worker_devtools_manager.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/worker_host/dedicated_worker_host.h"
 #include "content/browser/worker_host/dedicated_worker_service_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace content {
 
@@ -37,10 +40,10 @@ DedicatedWorkerServiceImpl* GetDedicatedWorkerServiceImplForRenderProcessHost(
 
 DedicatedWorkerHostFactoryImpl::DedicatedWorkerHostFactoryImpl(
     int worker_process_id,
-    absl::optional<GlobalFrameRoutingId> creator_render_frame_host_id,
+    absl::optional<GlobalRenderFrameHostId> creator_render_frame_host_id,
     absl::optional<blink::DedicatedWorkerToken> creator_worker_token,
-    GlobalFrameRoutingId ancestor_render_frame_host_id,
-    const url::Origin& creator_origin,
+    GlobalRenderFrameHostId ancestor_render_frame_host_id,
+    const blink::StorageKey& creator_storage_key,
     const net::IsolationInfo& isolation_info,
     const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
     base::WeakPtr<CrossOriginEmbedderPolicyReporter> creator_coep_reporter,
@@ -49,7 +52,7 @@ DedicatedWorkerHostFactoryImpl::DedicatedWorkerHostFactoryImpl(
       creator_render_frame_host_id_(creator_render_frame_host_id),
       creator_worker_token_(creator_worker_token),
       ancestor_render_frame_host_id_(ancestor_render_frame_host_id),
-      creator_origin_(creator_origin),
+      creator_storage_key_(creator_storage_key),
       isolation_info_(isolation_info),
       cross_origin_embedder_policy_(cross_origin_embedder_policy),
       creator_coep_reporter_(std::move(creator_coep_reporter)),
@@ -95,8 +98,8 @@ void DedicatedWorkerHostFactoryImpl::CreateWorkerHost(
 
   auto* host = new DedicatedWorkerHost(
       service, token, worker_process_host, creator_render_frame_host_id_,
-      creator_worker_token_, ancestor_render_frame_host_id_, creator_origin_,
-      isolation_info_, cross_origin_embedder_policy_,
+      creator_worker_token_, ancestor_render_frame_host_id_,
+      creator_storage_key_, isolation_info_, cross_origin_embedder_policy_,
       std::move(creator_coep_reporter_), std::move(ancestor_coep_reporter_),
       std::move(host_receiver));
   host->BindBrowserInterfaceBrokerReceiver(std::move(broker_receiver));
@@ -131,14 +134,14 @@ void DedicatedWorkerHostFactoryImpl::CreateWorkerHostAndStartScriptLoad(
     return;
   }
 
-  // TODO(https://crbug.com/1058759): Compare |creator_origin_| to
-  // |script_url|, and report as bad message if that fails.
+  // TODO(https://crbug.com/1058759): Compare `creator_storage_key_.origin()` to
+  // `script_url`, and report as bad message if that fails.
 
   mojo::PendingRemote<blink::mojom::DedicatedWorkerHost> pending_remote_host;
   auto* host = new DedicatedWorkerHost(
       service, token, worker_process_host, creator_render_frame_host_id_,
-      creator_worker_token_, ancestor_render_frame_host_id_, creator_origin_,
-      isolation_info_, cross_origin_embedder_policy_,
+      creator_worker_token_, ancestor_render_frame_host_id_,
+      creator_storage_key_, isolation_info_, cross_origin_embedder_policy_,
       std::move(creator_coep_reporter_), std::move(ancestor_coep_reporter_),
       pending_remote_host.InitWithNewPipeAndPassReceiver());
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> broker;
@@ -148,9 +151,19 @@ void DedicatedWorkerHostFactoryImpl::CreateWorkerHostAndStartScriptLoad(
       std::move(client));
   remote_client->OnWorkerHostCreated(std::move(broker),
                                      std::move(pending_remote_host));
-  host->StartScriptLoad(script_url, credentials_mode,
-                        std::move(outside_fetch_client_settings_object),
-                        std::move(blob_url_token), std::move(remote_client));
+
+  auto devtools_throttle_handle =
+      base::MakeRefCounted<DevToolsThrottleHandle>(base::BindOnce(
+          &DedicatedWorkerHost::StartScriptLoad, host->GetWeakPtr(), script_url,
+          credentials_mode, std::move(outside_fetch_client_settings_object),
+          std::move(blob_url_token), std::move(remote_client)));
+
+  // We are about to start fetching from the browser process and we want
+  // devtools to be able to instrument the URLLoaderFactory. This call will
+  // create a DevtoolsAgentHost.
+  WorkerDevToolsManager::GetInstance().WorkerCreated(
+      host, worker_process_host->GetID(), ancestor_render_frame_host_id_,
+      std::move(devtools_throttle_handle));
 }
 
 }  // namespace content

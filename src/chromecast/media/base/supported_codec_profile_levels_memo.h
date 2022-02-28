@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "chromecast/public/media/decoder_config.h"
 
@@ -20,6 +19,12 @@ namespace media {
 class SupportedCodecProfileLevelsMemo {
  public:
   SupportedCodecProfileLevelsMemo();
+
+  SupportedCodecProfileLevelsMemo(const SupportedCodecProfileLevelsMemo&) =
+      delete;
+  SupportedCodecProfileLevelsMemo& operator=(
+      const SupportedCodecProfileLevelsMemo&) = delete;
+
   ~SupportedCodecProfileLevelsMemo();
   void AddSupportedCodecProfileLevel(CodecProfileLevel codec_profile_level);
   bool IsSupportedVideoConfig(VideoCodec codec,
@@ -29,8 +34,6 @@ class SupportedCodecProfileLevelsMemo {
  private:
   mutable base::Lock lock_;
   std::vector<CodecProfileLevel> codec_profile_levels_;
-
-  DISALLOW_COPY_AND_ASSIGN(SupportedCodecProfileLevelsMemo);
 };
 
 }  // namespace media

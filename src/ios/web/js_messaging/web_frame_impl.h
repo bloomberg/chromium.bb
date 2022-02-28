@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/cancelable_callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "crypto/symmetric_key.h"
@@ -38,6 +37,10 @@ class WebFrameImpl : public WebFrame,
                bool is_main_frame,
                GURL security_origin,
                web::WebState* web_state);
+
+  WebFrameImpl(const WebFrameImpl&) = delete;
+  WebFrameImpl& operator=(const WebFrameImpl&) = delete;
+
   ~WebFrameImpl() override;
 
   // Sets the value to use for the next message ID.
@@ -155,7 +158,7 @@ class WebFrameImpl : public WebFrame,
   // Handles message from JavaScript with result of executing the function
   // specified in CallJavaScriptFunction.
   void OnJavaScriptReply(web::WebState* web_state,
-                         const base::DictionaryValue& command,
+                         const base::Value& command,
                          const GURL& page_url,
                          bool interacting,
                          WebFrame* sender_frame);
@@ -184,8 +187,6 @@ class WebFrameImpl : public WebFrame,
   base::CallbackListSubscription subscription_;
 
   base::WeakPtrFactory<WebFrameImpl> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebFrameImpl);
 };
 
 }  // namespace web

@@ -24,7 +24,7 @@ namespace
 
 // Options supported by any output
 constexpr ShCompileOptions kCommonOptions =
-    SH_VALIDATE | SH_VALIDATE_LOOP_INDEXING | SH_INTERMEDIATE_TREE | SH_OBJECT_CODE | SH_VARIABLES |
+    SH_VALIDATE_LOOP_INDEXING | SH_INTERMEDIATE_TREE | SH_OBJECT_CODE | SH_VARIABLES |
     SH_LINE_DIRECTIVES | SH_SOURCE_PATH | SH_REMOVE_INVARIANT_AND_CENTROID_FOR_ESSL3 |
     SH_EMULATE_ABS_INT_FUNCTION | SH_ENFORCE_PACKING_RESTRICTIONS | SH_CLAMP_INDIRECT_ARRAY_BOUNDS |
     SH_LIMIT_EXPRESSION_COMPLEXITY | SH_LIMIT_CALL_STACK_DEPTH | SH_INIT_GL_POSITION |
@@ -43,7 +43,7 @@ constexpr ShCompileOptions kCommonOptions =
 constexpr ShCompileOptions kGLSLOrESSLOnlyOptions =
     SH_EMULATE_ATAN2_FLOAT_FUNCTION | SH_CLAMP_FRAG_DEPTH | SH_REGENERATE_STRUCT_NAMES |
     SH_REWRITE_REPEATED_ASSIGN_TO_SWIZZLED | SH_USE_UNUSED_STANDARD_SHARED_BLOCKS |
-    SH_REWRITE_VECTOR_SCALAR_ARITHMETIC | SH_SELECT_VIEW_IN_NV_GLSL_VERTEX_SHADER;
+    SH_SELECT_VIEW_IN_NV_GLSL_VERTEX_SHADER;
 
 #if defined(ANGLE_PLATFORM_APPLE)
 // Options supported by GLSL only on mac
@@ -220,7 +220,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         resources.EXT_draw_buffers                = 1;
         resources.EXT_frag_depth                  = 1;
         resources.EXT_shader_texture_lod          = 1;
-        resources.WEBGL_debug_shader_precision    = 1;
         resources.EXT_shader_framebuffer_fetch    = 1;
         resources.NV_shader_framebuffer_fetch     = 1;
         resources.ARM_shader_framebuffer_fetch    = 1;
@@ -231,6 +230,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         resources.MaxClipDistances                = 1;
         resources.EXT_shadow_samplers             = 1;
         resources.EXT_clip_cull_distance          = 1;
+        resources.EXT_primitive_bounding_box      = 1;
 
         if (!translator->Init(resources))
         {

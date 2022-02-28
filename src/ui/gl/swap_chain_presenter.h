@@ -11,6 +11,7 @@
 #include <wrl/client.h>
 
 #include "base/containers/circular_deque.h"
+#include "base/memory/raw_ptr.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/time/time.h"
 #include "base/win/scoped_handle.h"
@@ -30,10 +31,14 @@ class SwapChainPresenter : public base::PowerStateObserver {
                      HWND window,
                      Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
                      Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device);
+
+  SwapChainPresenter(const SwapChainPresenter&) = delete;
+  SwapChainPresenter& operator=(const SwapChainPresenter&) = delete;
+
   ~SwapChainPresenter() override;
 
   // Present the given overlay to swap chain.  Returns true on success.
-  bool PresentToSwapChain(const ui::DCRendererLayerParams& overlay);
+  bool PresentToSwapChain(ui::DCRendererLayerParams& overlay);
 
   const Microsoft::WRL::ComPtr<IDXGISwapChain1>& swap_chain() const {
     return swap_chain_;
@@ -83,6 +88,10 @@ class SwapChainPresenter : public base::PowerStateObserver {
     static const int kPresentsToStore = 30;
 
     PresentationHistory();
+
+    PresentationHistory(const PresentationHistory&) = delete;
+    PresentationHistory& operator=(const PresentationHistory&) = delete;
+
     ~PresentationHistory();
 
     void AddSample(DXGI_FRAME_PRESENTATION_MODE mode);
@@ -94,8 +103,6 @@ class SwapChainPresenter : public base::PowerStateObserver {
    private:
     base::circular_deque<DXGI_FRAME_PRESENTATION_MODE> presents_;
     int composed_count_ = 0;
-
-    DISALLOW_COPY_AND_ASSIGN(PresentationHistory);
   };
 
   // Upload given YUV buffers to an NV12 texture that can be used to create
@@ -197,8 +204,17 @@ class SwapChainPresenter : public base::PowerStateObserver {
   // whichever is currently used.
   Microsoft::WRL::ComPtr<IDXGISwapChainMedia> GetSwapChainMedia() const;
 
+  // Present the Direct Compositon surface from MediaFoundationRenderer.
+  bool PresentDCOMPSurface(const ui::DCRendererLayerParams& overlay);
+
+  // Release resources related to `PresentDCOMPSurface()`.
+  void ReleaseDCOMPSurfaceResourcesIfNeeded();
+
+  // The Direct Composition surface handle from MediaFoundationRenderer.
+  HANDLE dcomp_surface_handle_ = INVALID_HANDLE_VALUE;
+
   // Layer tree instance that owns this swap chain presenter.
-  DCLayerTree* layer_tree_ = nullptr;
+  raw_ptr<DCLayerTree> layer_tree_ = nullptr;
 
   const HWND window_;
 
@@ -229,10 +245,6 @@ class SwapChainPresenter : public base::PowerStateObserver {
   // Set to true when PresentToDecodeSwapChain fails for the first time after
   // which we won't attempt to use decode swap chain again.
   bool failed_to_present_decode_swapchain_ = false;
-
-  // Number of frames since we switched from YUV to BGRA swap chain, or
-  // vice-versa.
-  int frames_since_color_space_change_ = 0;
 
   // This struct is used to cache information about what visuals are currently
   // being presented so that properties that aren't changed aren't sent to
@@ -284,8 +296,6 @@ class SwapChainPresenter : public base::PowerStateObserver {
 
   // Number of frames per second.
   float frame_rate_ = 0.f;
-
-  DISALLOW_COPY_AND_ASSIGN(SwapChainPresenter);
 };
 
 }  // namespace gl

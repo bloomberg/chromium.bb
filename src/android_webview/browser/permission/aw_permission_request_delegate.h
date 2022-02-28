@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "url/gurl.h"
 
 namespace android_webview {
@@ -16,6 +15,11 @@ namespace android_webview {
 class AwPermissionRequestDelegate {
  public:
   AwPermissionRequestDelegate();
+
+  AwPermissionRequestDelegate(const AwPermissionRequestDelegate&) = delete;
+  AwPermissionRequestDelegate& operator=(const AwPermissionRequestDelegate&) =
+      delete;
+
   virtual ~AwPermissionRequestDelegate();
 
   // Get the origin which initiated the permission request.
@@ -26,8 +30,6 @@ class AwPermissionRequestDelegate {
 
   // Notify the permission request is allowed or not.
   virtual void NotifyRequestResult(bool allowed) = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(AwPermissionRequestDelegate);
 };
 
 }  // namespace android_webview

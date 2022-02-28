@@ -7,9 +7,10 @@
 #ifndef CORE_FPDFAPI_FONT_CPDF_TYPE1FONT_H_
 #define CORE_FPDFAPI_FONT_CPDF_TYPE1FONT_H_
 
+#include <stdint.h>
+
 #include "build/build_config.h"
 #include "core/fpdfapi/font/cpdf_simplefont.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/cfx_fontmapper.h"
 
@@ -44,10 +45,10 @@ class CPDF_Type1Font final : public CPDF_SimpleFont {
   void SetExtGID(const char* name, uint32_t charcode);
   void CalcExtGID(uint32_t charcode);
 
-  uint16_t m_ExtGID[256];
+  uint16_t m_ExtGID[kInternalTableSize];
 #endif
 
-  Optional<CFX_FontMapper::StandardFont> m_Base14Font;
+  absl::optional<CFX_FontMapper::StandardFont> m_Base14Font;
 };
 
 #endif  // CORE_FPDFAPI_FONT_CPDF_TYPE1FONT_H_

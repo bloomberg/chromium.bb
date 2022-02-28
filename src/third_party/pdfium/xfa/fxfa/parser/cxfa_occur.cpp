@@ -12,7 +12,7 @@
 namespace {
 
 const CXFA_Node::PropertyData kOccurPropertyData[] = {
-    {XFA_Element::Extras, 1, 0},
+    {XFA_Element::Extras, 1, {}},
 };
 
 const CXFA_Node::AttributeData kOccurAttributeData[] = {
@@ -29,7 +29,7 @@ const CXFA_Node::AttributeData kOccurAttributeData[] = {
 CXFA_Occur::CXFA_Occur(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
+                {XFA_XDPPACKET::kTemplate, XFA_XDPPACKET::kForm},
                 XFA_ObjectType::Node,
                 XFA_Element::Occur,
                 kOccurPropertyData,
@@ -41,22 +41,25 @@ CXFA_Occur::CXFA_Occur(CXFA_Document* doc, XFA_PacketType packet)
 CXFA_Occur::~CXFA_Occur() = default;
 
 int32_t CXFA_Occur::GetMax() {
-  Optional<int32_t> max = JSObject()->TryInteger(XFA_Attribute::Max, true);
-  return max ? *max : GetMin();
+  absl::optional<int32_t> max =
+      JSObject()->TryInteger(XFA_Attribute::Max, true);
+  return max.has_value() ? max.value() : GetMin();
 }
 
 int32_t CXFA_Occur::GetMin() {
-  Optional<int32_t> min = JSObject()->TryInteger(XFA_Attribute::Min, true);
-  return min && *min >= 0 ? *min : 1;
+  absl::optional<int32_t> min =
+      JSObject()->TryInteger(XFA_Attribute::Min, true);
+  return min.has_value() && min.value() >= 0 ? min.value() : 1;
 }
 
 std::tuple<int32_t, int32_t, int32_t> CXFA_Occur::GetOccurInfo() {
   int32_t iMin = GetMin();
   int32_t iMax = GetMax();
 
-  Optional<int32_t> init =
+  absl::optional<int32_t> init =
       JSObject()->TryInteger(XFA_Attribute::Initial, false);
-  return {iMin, iMax, init && *init >= iMin ? *init : iMin};
+  return {iMin, iMax,
+          init.has_value() && init.value() >= iMin ? init.value() : iMin};
 }
 
 void CXFA_Occur::SetMax(int32_t iMax) {

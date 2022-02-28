@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/attestation/tpm_challenge_key_with_timeout.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 
@@ -56,8 +57,7 @@ class SamlChallengeKeyHandler final {
   CallbackType callback_;
 
   // Timeout for `tpm_key_challenger_` to response.
-  const base::TimeDelta default_tpm_response_timeout_ =
-      base::TimeDelta::FromSeconds(15);
+  const base::TimeDelta default_tpm_response_timeout_ = base::Seconds(15);
   absl::optional<base::TimeDelta> tpm_response_timeout_for_testing_;
 
   // Performs attestation flow.
@@ -67,5 +67,12 @@ class SamlChallengeKeyHandler final {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::kSamlChallengeKeyHandlerResultMetric;
+using ::chromeos::SamlChallengeKeyHandler;
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SAML_CHALLENGE_KEY_HANDLER_H_

@@ -16,7 +16,6 @@
 #include "src/codec/SkCodecPriv.h"
 #include "src/codec/SkJpegDecoderMgr.h"
 #include "src/codec/SkParseEncodedOrigin.h"
-#include "src/pdf/SkJpegInfo.h"
 
 // stdio is needed for libjpeg-turbo
 #include <stdio.h>
@@ -921,12 +920,12 @@ SkCodec::Result SkJpegCodec::onGetYUVAPlanes(const SkYUVAPixmaps& yuvaPixmaps) {
         }
 
         // Update rowptrs.
-        for (int i = 0; i < numYRowsPerBlock; i++) {
-            rowptrs[i] += blockIncrementY;
+        for (int j = 0; j < numYRowsPerBlock; j++) {
+            rowptrs[j] += blockIncrementY;
         }
-        for (int i = 0; i < DCTSIZE; i++) {
-            rowptrs[i + 2 * DCTSIZE] += blockIncrementU;
-            rowptrs[i + 3 * DCTSIZE] += blockIncrementV;
+        for (int j = 0; j < DCTSIZE; j++) {
+            rowptrs[j + 2 * DCTSIZE] += blockIncrementU;
+            rowptrs[j + 3 * DCTSIZE] += blockIncrementV;
         }
     }
 

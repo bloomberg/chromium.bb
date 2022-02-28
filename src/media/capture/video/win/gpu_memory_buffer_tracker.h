@@ -24,6 +24,10 @@ class CAPTURE_EXPORT GpuMemoryBufferTracker final
  public:
   explicit GpuMemoryBufferTracker(
       scoped_refptr<DXGIDeviceManager> dxgi_device_manager);
+
+  GpuMemoryBufferTracker(const GpuMemoryBufferTracker&) = delete;
+  GpuMemoryBufferTracker& operator=(const GpuMemoryBufferTracker&) = delete;
+
   ~GpuMemoryBufferTracker() override;
 
   // Implementation of VideoCaptureBufferTracker:
@@ -47,9 +51,7 @@ class CAPTURE_EXPORT GpuMemoryBufferTracker final
   Microsoft::WRL::ComPtr<ID3D11Texture2D> staging_texture_;
   gfx::Size buffer_size_;
   bool CreateBufferInternal();
-  bool EnsureD3DDevice();
-
-  DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferTracker);
+  bool IsD3DDeviceChanged();
 };
 
 }  // namespace media

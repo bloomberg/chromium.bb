@@ -35,9 +35,6 @@ const char kCL[] = "cl";
 const char kCommandLine[] = "command_line";
 const char kCommandLineName[] = "command_line_name";
 const char kCompany[] = "company";
-#if defined(OS_IOS)
-const char kCompiler[] = "compiler";
-#endif
 #if defined(OS_WIN)
 const char kUpdateCohortName[] = "update_cohort_name";
 #endif
@@ -73,6 +70,11 @@ const char kPlatform[] = "platform";
 #if !defined(OS_IOS)
 const char kProfilePath[] = "profile_path";
 const char kProfilePathName[] = "profile_path_name";
+#endif
+#if defined(OS_CHROMEOS)
+const char kOsVersionHeaderText1[] = "os-version-text1";
+const char kOsVersionHeaderText2[] = "os-version-text2";
+const char kOsVersionHeaderLink[] = "os-version-link";
 #endif
 const char kRevision[] = "revision";
 const char kSanitizer[] = "sanitizer";

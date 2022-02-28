@@ -35,6 +35,7 @@
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -48,7 +49,7 @@ namespace {
 
 // Timeout after which the History.ClearBrowsingData.Duration.SlowTasks180s
 // histogram is recorded.
-const base::TimeDelta kSlowTaskTimeout = base::TimeDelta::FromSeconds(180);
+const base::TimeDelta kSlowTaskTimeout = base::Seconds(180);
 
 base::OnceClosure RunsOrPostOnCurrentTaskRunner(base::OnceClosure closure) {
   return base::BindOnce(
@@ -283,6 +284,16 @@ void BrowsingDataRemoverImpl::RemoveImpl(
 
   TRACE_EVENT0("browsing_data", "BrowsingDataRemoverImpl::RemoveImpl");
 
+  // Asynchronous removal tasks might end up finishing after an arbitrary
+  // delay - this can postpone when OnTaskComplete runs.  Therefore we need to
+  // check if destruction of our `browser_context_` might have started in the
+  // meantime.  See also https://crbug.com/1216406.
+  if (browser_context_->ShutdownStarted()) {
+    // Conservatively mark *all* data types as failures.
+    failed_data_types_ |= remove_mask_;
+    return;
+  }
+
   // crbug.com/140910: Many places were calling this with base::Time() as
   // delete_end, even though they should've used base::Time::Max().
   DCHECK_NE(base::Time(), delete_end);
@@ -364,10 +375,6 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   }
   if (remove_mask & DATA_TYPE_WEB_SQL) {
     storage_partition_remove_mask |= StoragePartition::REMOVE_DATA_MASK_WEBSQL;
-  }
-  if (remove_mask & DATA_TYPE_APP_CACHE) {
-    storage_partition_remove_mask |=
-        StoragePartition::REMOVE_DATA_MASK_APPCACHE;
   }
   if (remove_mask & DATA_TYPE_SERVICE_WORKERS) {
     storage_partition_remove_mask |=
@@ -624,8 +631,9 @@ bool BrowsingDataRemoverImpl::RemovalTask::IsSameDeletion(
 }
 
 StoragePartition* BrowsingDataRemoverImpl::GetStoragePartition() {
+  DCHECK(!browser_context_->ShutdownStarted());
   return storage_partition_for_testing_
-             ? storage_partition_for_testing_
+             ? storage_partition_for_testing_.get()
              : browser_context_->GetDefaultStoragePartition();
 }
 
@@ -702,9 +710,11 @@ void BrowsingDataRemoverImpl::OnTaskComplete(TracingDataType data_type) {
   size_t num_erased = pending_sub_tasks_.erase(data_type);
   DCHECK_EQ(num_erased, 1U);
 
-  TRACE_EVENT_ASYNC_END1("browsing_data", "BrowsingDataRemoverImpl",
-                         static_cast<int>(data_type), "data_type",
-                         static_cast<int>(data_type));
+  TRACE_EVENT_NESTABLE_ASYNC_END1(
+      "browsing_data", "BrowsingDataRemoverImpl",
+      TRACE_ID_WITH_SCOPE("BrowsingDataRemoverImpl",
+                          static_cast<int>(data_type)),
+      "data_type", static_cast<int>(data_type));
   if (!pending_sub_tasks_.empty())
     return;
 
@@ -717,13 +727,25 @@ void BrowsingDataRemoverImpl::OnTaskComplete(TracingDataType data_type) {
         std::move(domains_for_deferred_cookie_deletion_);
     // Moving a vector is defined to empty this vector.
     DCHECK(domains_for_deferred_cookie_deletion_.empty());
-    GetStoragePartition()->ClearData(
-        StoragePartition::REMOVE_DATA_MASK_COOKIES,
-        /*quota_storage_remove_mask=*/0,
-        /*origin_matcher=*/base::NullCallback(), std::move(deletion_filter),
-        /*perform_storage_cleanup=*/false, delete_begin_, delete_end_,
-        CreateTaskCompletionClosure(TracingDataType::kDeferredCookies));
-    return;
+
+    // Asynchronous removal tasks might end up finishing after an arbitrary
+    // delay - this can postpone when OnTaskComplete runs.  Therefore we need to
+    // check if destruction of our `browser_context_` might have started in the
+    // meantime.  See also https://crbug.com/1216406.
+    if (browser_context_->ShutdownStarted()) {
+      // The tasks related to `domains_for_deferred_cookie_deletion_` and
+      // `deletion_filter` are implicitly dropped if we can't clear the data
+      // because the StoragePartition's destructor has already started running.
+      failed_data_types_ |= StoragePartition::REMOVE_DATA_MASK_COOKIES;
+    } else {
+      GetStoragePartition()->ClearData(
+          StoragePartition::REMOVE_DATA_MASK_COOKIES,
+          /*quota_storage_remove_mask=*/0,
+          /*origin_matcher=*/base::NullCallback(), std::move(deletion_filter),
+          /*perform_storage_cleanup=*/false, delete_begin_, delete_end_,
+          CreateTaskCompletionClosure(TracingDataType::kDeferredCookies));
+      return;
+    }
   }
 
   slow_pending_tasks_closure_.Cancel();
@@ -743,9 +765,11 @@ base::OnceClosure BrowsingDataRemoverImpl::CreateTaskCompletionClosure(
   auto result = pending_sub_tasks_.insert(data_type);
   DCHECK(result.second) << "Task already started: "
                         << static_cast<int>(data_type);
-  TRACE_EVENT_ASYNC_BEGIN1("browsing_data", "BrowsingDataRemoverImpl",
-                           static_cast<int>(data_type), "data_type",
-                           static_cast<int>(data_type));
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+      "browsing_data", "BrowsingDataRemoverImpl",
+      TRACE_ID_WITH_SCOPE("BrowsingDataRemoverImpl",
+                          static_cast<int>(data_type)),
+      "data_type", static_cast<int>(data_type));
   return base::BindOnce(&BrowsingDataRemoverImpl::OnTaskComplete, GetWeakPtr(),
                         data_type);
 }

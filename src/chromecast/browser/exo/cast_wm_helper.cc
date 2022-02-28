@@ -11,10 +11,10 @@
 #include "chromecast/graphics/cast_window_manager_aura.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
-#include "ui/display/manager/display_configurator.h"
-#include "ui/display/manager/display_manager.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -213,15 +213,6 @@ double CastWMHelper::GetDeviceScaleFactorForWindow(aura::Window* window) const {
 void CastWMHelper::SetDefaultScaleCancellation(
     bool default_scale_cancellation) {
   NOTIMPLEMENTED();
-}
-
-void CastWMHelper::SetImeBlocked(aura::Window* window, bool ime_blocked) {
-  NOTIMPLEMENTED();
-}
-
-bool CastWMHelper::IsImeBlocked(aura::Window* window) const {
-  NOTIMPLEMENTED();
-  return false;
 }
 
 WMHelper::LifetimeManager* CastWMHelper::GetLifetimeManager() {

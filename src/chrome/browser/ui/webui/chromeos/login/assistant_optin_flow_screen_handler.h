@@ -11,9 +11,10 @@
 
 #include "ash/public/cpp/assistant/assistant_setup.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
-#include "base/macros.h"
+#include "base/containers/circular_deque.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chromeos/services/assistant/public/cpp/assistant_settings.h"
+#include "components/sync/protocol/user_consent_types.pb.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -29,6 +30,10 @@ class AssistantOptInFlowScreenView {
  public:
   constexpr static StaticOobeScreenId kScreenId{"assistant-optin-flow"};
 
+  AssistantOptInFlowScreenView(const AssistantOptInFlowScreenView&) = delete;
+  AssistantOptInFlowScreenView& operator=(const AssistantOptInFlowScreenView&) =
+      delete;
+
   virtual ~AssistantOptInFlowScreenView() = default;
 
   virtual void Bind(ash::AssistantOptInFlowScreen* screen) = 0;
@@ -38,9 +43,6 @@ class AssistantOptInFlowScreenView {
 
  protected:
   AssistantOptInFlowScreenView() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AssistantOptInFlowScreenView);
 };
 
 class AssistantOptInFlowScreenHandler
@@ -49,10 +51,28 @@ class AssistantOptInFlowScreenHandler
       public ash::AssistantStateObserver,
       public chromeos::assistant::SpeakerIdEnrollmentClient {
  public:
+  struct ConsentData {
+    // Consent token used to complete the opt-in.
+    std::string consent_token;
+
+    // An opaque token for audit record.
+    std::string ui_audit_key;
+
+    // An enum denoting the Assistant activity control setting type.
+    sync_pb::UserConsentTypes::AssistantActivityControlConsent::SettingType
+        setting_type;
+  };
+
   using TView = AssistantOptInFlowScreenView;
 
   explicit AssistantOptInFlowScreenHandler(
       JSCallsContainer* js_calls_container);
+
+  AssistantOptInFlowScreenHandler(const AssistantOptInFlowScreenHandler&) =
+      delete;
+  AssistantOptInFlowScreenHandler& operator=(
+      const AssistantOptInFlowScreenHandler&) = delete;
+
   ~AssistantOptInFlowScreenHandler() override;
 
   // Set an optional callback that will run when the screen has been
@@ -89,7 +109,6 @@ class AssistantOptInFlowScreenHandler
   // Handle user opt-in result.
   void OnActivityControlOptInResult(bool opted_in);
   void OnScreenContextOptInResult(bool opted_in);
-  void OnEmailOptInResult(bool opted_in);
 
   // Called when the UI dialog is closed.
   void OnDialogClosed();
@@ -113,6 +132,9 @@ class AssistantOptInFlowScreenHandler
   void ReloadContent(const base::Value& dict);
   void AddSettingZippy(const std::string& type, const base::Value& data);
 
+  // Update value prop screen to show the next settings.
+  void UpdateValuePropScreen();
+
   // Handle response from the settings manager.
   void OnGetSettingsResponse(const std::string& settings);
   void OnUpdateSettingsResponse(const std::string& settings);
@@ -120,15 +142,10 @@ class AssistantOptInFlowScreenHandler
   // Handler for JS WebUI message.
   void HandleValuePropScreenUserAction(const std::string& action);
   void HandleRelatedInfoScreenUserAction(const std::string& action);
-  void HandleThirdPartyScreenUserAction(const std::string& action);
   void HandleVoiceMatchScreenUserAction(const std::string& action);
-  void HandleGetMoreScreenUserAction(const bool screen_context,
-                                     const bool email_opted_in);
   void HandleValuePropScreenShown();
   void HandleRelatedInfoScreenShown();
-  void HandleThirdPartyScreenShown();
   void HandleVoiceMatchScreenShown();
-  void HandleGetMoreScreenShown();
   void HandleLoadingTimeout();
   void HandleFlowFinished();
   void HandleFlowInitialized(const int flow_type);
@@ -143,23 +160,17 @@ class AssistantOptInFlowScreenHandler
   // Whether the screen should be shown right after initialization.
   bool show_on_init_ = false;
 
-  // Consent token used to complete the opt-in.
-  std::string consent_token_;
-
-  // An opaque token for audit record.
-  std::string ui_audit_key_;
-
   // Whether activity control is needed for user.
   bool activity_control_needed_ = true;
-
-  // Whether email optin is needed for user.
-  bool email_optin_needed_ = false;
 
   // Whether the user has started voice match enrollment.
   bool voice_match_enrollment_started_ = false;
 
   // Whether the use has completed voice match enrollment.
   bool voice_match_enrollment_done_ = false;
+
+  // Whether error occurs during voice match enrollment.
+  bool voice_match_enrollment_error_ = false;
 
   // Assistant optin flow type.
   ash::FlowType flow_type_ = ash::FlowType::kConsentFlow;
@@ -173,9 +184,15 @@ class AssistantOptInFlowScreenHandler
   // Whether the screen has been initialized.
   bool initialized_ = false;
 
-  base::WeakPtrFactory<AssistantOptInFlowScreenHandler> weak_factory_{this};
+  // Whether the user has opted in/out any activity control consent.
+  bool has_opted_out_any_consent_ = false;
+  bool has_opted_in_any_consent_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(AssistantOptInFlowScreenHandler);
+  // Used to record related information of activity control consents which are
+  // pending for user action.
+  base::circular_deque<ConsentData> pending_consent_data_;
+
+  base::WeakPtrFactory<AssistantOptInFlowScreenHandler> weak_factory_{this};
 };
 
 }  // namespace chromeos
@@ -183,6 +200,7 @@ class AssistantOptInFlowScreenHandler
 // TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
 // source migration is finished.
 namespace ash {
+using ::chromeos::AssistantOptInFlowScreenHandler;
 using ::chromeos::AssistantOptInFlowScreenView;
 }
 

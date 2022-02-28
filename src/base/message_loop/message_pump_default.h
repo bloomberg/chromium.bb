@@ -6,7 +6,6 @@
 #define BASE_MESSAGE_LOOP_MESSAGE_PUMP_DEFAULT_H_
 
 #include "base/base_export.h"
-#include "base/macros.h"
 #include "base/message_loop/message_pump.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
@@ -17,6 +16,10 @@ namespace base {
 class BASE_EXPORT MessagePumpDefault : public MessagePump {
  public:
   MessagePumpDefault();
+
+  MessagePumpDefault(const MessagePumpDefault&) = delete;
+  MessagePumpDefault& operator=(const MessagePumpDefault&) = delete;
+
   ~MessagePumpDefault() override;
 
   // MessagePump methods:
@@ -34,8 +37,6 @@ class BASE_EXPORT MessagePumpDefault : public MessagePump {
 
   // Used to sleep until there is more work to do.
   WaitableEvent event_;
-
-  DISALLOW_COPY_AND_ASSIGN(MessagePumpDefault);
 };
 
 }  // namespace base

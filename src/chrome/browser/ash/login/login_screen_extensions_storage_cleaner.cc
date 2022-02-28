@@ -15,8 +15,7 @@
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/pref_names.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 const char kPersistentDataKeyPrefix[] = "persistent_data_";
@@ -48,7 +47,7 @@ void LoginScreenExtensionsStorageCleaner::
   if (pref && pref->IsManaged() &&
       pref->GetType() == base::Value::Type::DICTIONARY) {
     // Each `item` contains a pair of extension ID and update URL.
-    for (const auto& item : pref->GetValue()->DictItems())
+    for (const auto item : pref->GetValue()->DictItems())
       installed_extension_ids.push_back(item.first);
   }
   SessionManagerClient::Get()->LoginScreenStorageListKeys(base::BindOnce(
@@ -84,4 +83,4 @@ void LoginScreenExtensionsStorageCleaner::
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

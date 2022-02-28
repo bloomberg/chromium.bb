@@ -40,7 +40,8 @@ enum class HighlighterEnabledState {
   kDisabledBySessionAbort,
 };
 
-// Controller for the highlighter functionality.
+// Controller for the highlighter functionality, which can be enabled/disabled
+// by switching "Assistant" tool under Stylus panel on/off.
 // Enables/disables highlighter as well as receives points
 // and passes them off to be rendered.
 class ASH_EXPORT HighlighterController
@@ -60,6 +61,10 @@ class ASH_EXPORT HighlighterController
   };
 
   HighlighterController();
+
+  HighlighterController(const HighlighterController&) = delete;
+  HighlighterController& operator=(const HighlighterController&) = delete;
+
   ~HighlighterController() override;
 
   HighlighterEnabledState enabled_state() { return enabled_state_; }
@@ -91,6 +96,7 @@ class ASH_EXPORT HighlighterController
   void UpdatePointerView(ui::TouchEvent* event) override;
   void DestroyPointerView() override;
   bool CanStartNewGesture(ui::LocatedEvent* event) override;
+  bool ShouldProcessEvent(ui::LocatedEvent* event) override;
 
   // Performs gesture recognition, initiates appropriate visual effects,
   // notifies the observer if necessary.
@@ -148,8 +154,6 @@ class ASH_EXPORT HighlighterController
   base::ObserverList<Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<HighlighterController> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(HighlighterController);
 };
 
 }  // namespace ash

@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for Student t distribution."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import importlib
 import math
 
@@ -58,13 +54,13 @@ class StudentTTest(test.TestCase):
     mu_v = 7.
     sigma_v = 8.
     t = np.array([-2.5, 2.5, 8., 0., -1., 2.], dtype=np.float32)
-    student = student_t.StudentT(df, loc=mu, scale=-sigma)
+    student = student_t.StudentT(df, loc=mu, scale=-sigma)  # pylint: disable=invalid-unary-operand-type
 
     log_pdf = student.log_prob(t)
-    self.assertEquals(log_pdf.get_shape(), (6,))
+    self.assertEqual(log_pdf.get_shape(), (6,))
     log_pdf_values = self.evaluate(log_pdf)
     pdf = student.prob(t)
-    self.assertEquals(pdf.get_shape(), (6,))
+    self.assertEqual(pdf.get_shape(), (6,))
     pdf_values = self.evaluate(pdf)
 
     if not stats:
@@ -116,10 +112,10 @@ class StudentTTest(test.TestCase):
     student = student_t.StudentT(df, loc=mu, scale=sigma)
 
     log_cdf = student.log_cdf(t)
-    self.assertEquals(log_cdf.get_shape(), (6,))
+    self.assertEqual(log_cdf.get_shape(), (6,))
     log_cdf_values = self.evaluate(log_cdf)
     cdf = student.cdf(t)
-    self.assertEquals(cdf.get_shape(), (6,))
+    self.assertEqual(cdf.get_shape(), (6,))
     cdf_values = self.evaluate(cdf)
 
     if not stats:

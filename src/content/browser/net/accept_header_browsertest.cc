@@ -11,6 +11,7 @@
 #include "base/test/bind.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/page.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -22,6 +23,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/blink/public/common/buildflags.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/test/ppapi/ppapi_test.h"
@@ -33,6 +35,9 @@ namespace {
 class AcceptHeaderTest : public ContentBrowserTest {
  public:
   AcceptHeaderTest() {}
+
+  AcceptHeaderTest(const AcceptHeaderTest&) = delete;
+  AcceptHeaderTest& operator=(const AcceptHeaderTest&) = delete;
 
   void SetUpOnMainThread() override {
     embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
@@ -106,8 +111,6 @@ class AcceptHeaderTest : public ContentBrowserTest {
   base::Lock waiting_lock_;
   std::unique_ptr<base::RunLoop> waiting_run_loop_;
   std::string waiting_for_path_;
-
-  DISALLOW_COPY_AND_ASSIGN(AcceptHeaderTest);
 };
 
 IN_PROC_BROWSER_TEST_F(AcceptHeaderTest, Check) {
@@ -173,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(AcceptHeaderTest, Check) {
 #endif
 
   // ResourceType::kPrefetch
-  EXPECT_EQ("application/signed-exchange;v=b3;q=0.9,*/*;q=0.8",
+  EXPECT_EQ("application/signed-exchange;v=b3;q=0.7,*/*;q=0.8",
             GetFor("/prefetch"));
 
   // ResourceType::kXhr
@@ -191,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(AcceptHeaderTest, Check) {
   // Ensure that if an Accept header is already set, it is not overwritten.
   EXPECT_EQ("custom/type", GetFor("/xhr_with_accept_header"));
 
-  shell()->web_contents()->GetManifest(base::DoNothing());
+  shell()->web_contents()->GetPrimaryPage().GetManifest(base::DoNothing());
 
   // ResourceType::kSubResource
   EXPECT_EQ("*/*", GetFor("/manifest"));

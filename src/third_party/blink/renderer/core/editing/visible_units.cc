@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -398,7 +399,11 @@ bool IsEndOfEditableOrNonEditableContent(
 // the text node. It seems weird to return false in this case.
 bool HasRenderedNonAnonymousDescendantsWithHeight(
     const LayoutObject* layout_object) {
-  if (DisplayLockUtilities::NearestLockedInclusiveAncestor(*layout_object))
+  // If we're not painting the element then we conceptually don't have children
+  // with height. We should treat this as if we didn't have layout objects (i.e.
+  // we were display: none).
+  if (DisplayLockUtilities::LockedInclusiveAncestorPreventingPaint(
+          *layout_object))
     return false;
   if (auto* block_flow = DynamicTo<LayoutBlockFlow>(layout_object)) {
     // Returns false for empty content editable, e.g.
@@ -417,7 +422,12 @@ bool HasRenderedNonAnonymousDescendantsWithHeight(
   const LayoutObject* stop = layout_object->NextInPreOrderAfterChildren();
   // TODO(editing-dev): Avoid single-character parameter names.
   for (LayoutObject* o = layout_object->SlowFirstChild(); o && o != stop;
-       o = o->NextInPreOrder()) {
+       o = o->ChildPaintBlockedByDisplayLock()
+               ? o->NextInPreOrderAfterChildren()
+               : o->NextInPreOrder()) {
+    if (o->ChildPaintBlockedByDisplayLock())
+      continue;
+
     if (o->NonPseudoNode()) {
       if ((o->IsText() && To<LayoutText>(o)->HasNonCollapsedText()) ||
           (o->IsBox() && To<LayoutBox>(o)->PixelSnappedLogicalHeight()) ||
@@ -432,12 +442,11 @@ bool HasRenderedNonAnonymousDescendantsWithHeight(
 }
 
 PositionWithAffinity PositionForContentsPointRespectingEditingBoundary(
-    const IntPoint& contents_point,
+    const gfx::Point& contents_point,
     LocalFrame* frame) {
   HitTestRequest request = HitTestRequest::kMove | HitTestRequest::kReadOnly |
                            HitTestRequest::kActive |
-                           HitTestRequest::kIgnoreClipping |
-                           HitTestRequest::kRetargetForInert;
+                           HitTestRequest::kIgnoreClipping;
   HitTestLocation location(contents_point);
   HitTestResult result(request, location);
   frame->GetDocument()->GetLayoutView()->HitTest(location, result);
@@ -638,11 +647,19 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
   // iterate backward from there, looking for a qualified position
   Node* const boundary = EnclosingVisualBoundary<Strategy>(start_node);
   // FIXME: PositionIterator should respect Before and After positions.
-  PositionIteratorAlgorithm<Strategy> last_visible(
-      AdjustPositionForBackwardIteration<Strategy>(position));
+  const PositionTemplate<Strategy>& adjusted_position =
+      AdjustPositionForBackwardIteration<Strategy>(position);
+#if DCHECK_IS_ON()
+  // Debug what causes bug 1248744
+  if (adjusted_position.IsNull())
+    position.ShowTreeForThis();
+  DCHECK(adjusted_position.IsNotNull()) << position;
+#endif
+  PositionIteratorAlgorithm<Strategy> last_visible(adjusted_position);
   const bool start_editable = HasEditableStyle(*start_node);
   Node* last_node = start_node;
   bool boundary_crossed = false;
+  absl::optional<WritingMode> writing_mode;
   for (PositionIteratorAlgorithm<Strategy> current_pos = last_visible;
        !current_pos.AtStart(); current_pos.Decrement()) {
     Node* current_node = current_pos.GetNode();
@@ -678,8 +695,14 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
         layout_object->Style()->Visibility() != EVisibility::kVisible)
       continue;
 
-    if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*layout_object))
+    if (DisplayLockUtilities::LockedAncestorPreventingPaint(*layout_object))
       continue;
+
+    if (!writing_mode.has_value()) {
+      writing_mode.emplace(layout_object->Style()->GetWritingMode());
+    } else if (*writing_mode != layout_object->Style()->GetWritingMode()) {
+      return last_visible.ComputePosition();
+    }
 
     if (rule == kCanCrossEditingBoundary && boundary_crossed) {
       last_visible = current_pos;
@@ -759,7 +782,7 @@ bool HasInvisibleFirstLetter(const Node* node) {
   if (!first_letter || first_letter == remaining_text)
     return false;
   return first_letter->StyleRef().Visibility() != EVisibility::kVisible ||
-         DisplayLockUtilities::NearestLockedExclusiveAncestor(*first_letter);
+         DisplayLockUtilities::LockedAncestorPreventingPaint(*first_letter);
 }
 }  // namespace
 
@@ -786,6 +809,7 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
   const bool start_editable = HasEditableStyle(*start_node);
   Node* last_node = start_node;
   bool boundary_crossed = false;
+  absl::optional<WritingMode> writing_mode;
   for (PositionIteratorAlgorithm<Strategy> current_pos = last_visible;
        !current_pos.AtEnd(); current_pos.Increment()) {
     Node* current_node = current_pos.GetNode();
@@ -830,8 +854,14 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
         layout_object->Style()->Visibility() != EVisibility::kVisible)
       continue;
 
-    if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*layout_object))
+    if (DisplayLockUtilities::LockedAncestorPreventingPaint(*layout_object))
       continue;
+
+    if (!writing_mode.has_value()) {
+      writing_mode.emplace(layout_object->Style()->GetWritingMode());
+    } else if (*writing_mode != layout_object->Style()->GetWritingMode()) {
+      return last_visible.ComputePosition();
+    }
 
     if (rule == kCanCrossEditingBoundary && boundary_crossed)
       return current_pos.DeprecatedComputePosition();
@@ -928,7 +958,7 @@ static bool IsVisuallyEquivalentCandidateAlgorithm(
   if (layout_object->Style()->Visibility() != EVisibility::kVisible)
     return false;
 
-  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*layout_object))
+  if (DisplayLockUtilities::LockedAncestorPreventingPaint(*layout_object))
     return false;
 
   if (layout_object->IsBR()) {
@@ -1090,6 +1120,13 @@ static VisiblePositionTemplate<Strategy> NextPositionOfAlgorithm(
   }
   NOTREACHED();
   return next;
+}
+
+VisiblePosition NextPositionOf(const Position& position,
+                               EditingBoundaryCrossingRule rule) {
+  DCHECK(position.IsValidFor(*position.GetDocument())) << position;
+  return NextPositionOfAlgorithm<EditingStrategy>(
+      PositionWithAffinityTemplate<EditingStrategy>(position), rule);
 }
 
 VisiblePosition NextPositionOf(const VisiblePosition& visible_position,
@@ -1270,23 +1307,23 @@ static FloatRect ComputeTextRectTemplate(
     const EphemeralRangeTemplate<Strategy>& range) {
   FloatRect result;
   for (auto rect : ComputeTextBounds<Strategy>(range))
-    result.Unite(rect.BoundingBox());
+    result.Union(rect.BoundingBox());
   return result;
 }
 
-IntRect ComputeTextRect(const EphemeralRange& range) {
-  return EnclosingIntRect(ComputeTextRectTemplate(range));
+gfx::Rect ComputeTextRect(const EphemeralRange& range) {
+  return ToEnclosingRect(ComputeTextRectTemplate(range));
 }
 
-IntRect ComputeTextRect(const EphemeralRangeInFlatTree& range) {
-  return EnclosingIntRect(ComputeTextRectTemplate(range));
+gfx::Rect ComputeTextRect(const EphemeralRangeInFlatTree& range) {
+  return ToEnclosingRect(ComputeTextRectTemplate(range));
 }
 
 FloatRect ComputeTextFloatRect(const EphemeralRange& range) {
   return ComputeTextRectTemplate(range);
 }
 
-IntRect FirstRectForRange(const EphemeralRange& range) {
+gfx::Rect FirstRectForRange(const EphemeralRange& range) {
   DCHECK(!range.GetDocument().NeedsLayoutTreeUpdate());
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       range.GetDocument().Lifecycle());
@@ -1297,32 +1334,32 @@ IntRect FirstRectForRange(const EphemeralRange& range) {
   const PositionWithAffinity start_position(
       CreateVisiblePosition(range.StartPosition()).DeepEquivalent(),
       TextAffinity::kDownstream);
-  const IntRect start_caret_rect =
+  const gfx::Rect start_caret_rect =
       AbsoluteCaretBoundsOf(start_position, &extra_width_to_end_of_line);
   if (start_caret_rect.IsEmpty())
-    return IntRect();
+    return gfx::Rect();
 
   const PositionWithAffinity end_position(
       CreateVisiblePosition(range.EndPosition()).DeepEquivalent(),
       TextAffinity::kUpstream);
-  const IntRect end_caret_rect = AbsoluteCaretBoundsOf(end_position);
+  const gfx::Rect end_caret_rect = AbsoluteCaretBoundsOf(end_position);
   if (end_caret_rect.IsEmpty())
-    return IntRect();
+    return gfx::Rect();
 
-  if (start_caret_rect.Y() == end_caret_rect.Y()) {
+  if (start_caret_rect.y() == end_caret_rect.y()) {
     // start and end are on the same line
-    return IntRect(
-        std::min(start_caret_rect.X(), end_caret_rect.X()),
-        start_caret_rect.Y(), abs(end_caret_rect.X() - start_caret_rect.X()),
-        std::max(start_caret_rect.Height(), end_caret_rect.Height()));
+    return gfx::Rect(
+        std::min(start_caret_rect.x(), end_caret_rect.x()),
+        start_caret_rect.y(), abs(end_caret_rect.x() - start_caret_rect.x()),
+        std::max(start_caret_rect.height(), end_caret_rect.height()));
   }
 
   // start and end aren't on the same line, so go from start to the end of its
   // line
-  return IntRect(
-      start_caret_rect.X(), start_caret_rect.Y(),
-      (start_caret_rect.Width() + extra_width_to_end_of_line).ToInt(),
-      start_caret_rect.Height());
+  return gfx::Rect(
+      start_caret_rect.x(), start_caret_rect.y(),
+      (start_caret_rect.width() + extra_width_to_end_of_line).ToInt(),
+      start_caret_rect.height());
 }
 
 }  // namespace blink

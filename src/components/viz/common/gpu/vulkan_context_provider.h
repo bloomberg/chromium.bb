@@ -14,7 +14,12 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
+#endif
+
+#if !defined(VK_VERSION_1_1)
+// Workaround compiling issue when vulkan is disabled.
+typedef void* VkSemaphore;
 #endif
 
 struct GrContextOptions;

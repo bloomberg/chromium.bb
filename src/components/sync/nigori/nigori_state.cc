@@ -4,12 +4,13 @@
 
 #include "components/sync/nigori/nigori_state.h"
 
+#include <vector>
+
 #include "base/base64.h"
 #include "base/notreached.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/sync_encryption_handler.h"
-#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/nigori/cryptographer_impl.h"
 #include "components/sync/nigori/keystore_keys_cryptographer.h"
 #include "components/sync/protocol/nigori_local_data.pb.h"
@@ -63,7 +64,7 @@ bool EncryptKeyBag(const CryptographerImpl& cryptographer,
 void UpdateNigoriSpecificsFromEncryptedTypes(
     ModelTypeSet encrypted_types,
     sync_pb::NigoriSpecifics* specifics) {
-  static_assert(37 == GetNumModelTypes(),
+  static_assert(38 == GetNumModelTypes(),
                 "If adding an encryptable type, update handling below.");
   specifics->set_encrypt_bookmarks(encrypted_types.Has(BOOKMARKS));
   specifics->set_encrypt_preferences(encrypted_types.Has(PREFERENCES));
@@ -90,6 +91,7 @@ void UpdateNigoriSpecificsFromEncryptedTypes(
       encrypted_types.Has(SEND_TAB_TO_SELF));
   specifics->set_encrypt_web_apps(encrypted_types.Has(WEB_APPS));
   specifics->set_encrypt_os_preferences(encrypted_types.Has(OS_PREFERENCES));
+  specifics->set_encrypt_workspace_desk(encrypted_types.Has(WORKSPACE_DESK));
 }
 
 void UpdateSpecificsFromKeyDerivationParams(
@@ -304,14 +306,10 @@ bool NigoriState::NeedsKeystoreReencryption() const {
           keystore_keys_cryptographer->GetLastKeystoreKeyName()) {
     return false;
   }
-  if (!cryptographer->HasKey(
-          keystore_keys_cryptographer->GetLastKeystoreKeyName())) {
-    // Keystore key rotation.
-    return true;
-  }
-  // Migration from backward compatible to full keystore mode.
-  return base::FeatureList::IsEnabled(
-      switches::kSyncTriggerFullKeystoreMigration);
+  // Either keystore key rotation or full keystore migration should be
+  // triggered, since default encryption key is not the last keystore key, while
+  // it should be.
+  return true;
 }
 
 ModelTypeSet NigoriState::GetEncryptedTypes() const {

@@ -11,6 +11,8 @@
 #ifndef EIGEN_CXX11_TENSOR_TENSOR_H
 #define EIGEN_CXX11_TENSOR_TENSOR_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \class Tensor
@@ -42,7 +44,8 @@ namespace Eigen {
   * \endcode
   *
   * This class can be extended with the help of the plugin mechanism described on the page
-  * \ref TopicCustomizing_Plugins by defining the preprocessor symbol \c EIGEN_TENSOR_PLUGIN.
+  * \ref TopicCustomizing_Plugins by defining the preprocessor symbol \c EIGEN_TENSOR_PLUGIN,
+  * \c EIGEN_TENSORBASE_PLUGIN, and \c EIGEN_READONLY_TENSORBASE_PLUGIN.
   *
   * <i><b>Some notes:</b></i>
   *
@@ -388,6 +391,7 @@ class Tensor : public TensorBase<Tensor<Scalar_, NumIndices_, Options_, IndexTyp
       resize(TensorEvaluator<const Assign, DefaultDevice>(assign, DefaultDevice()).dimensions());
       internal::TensorExecutor<const Assign, DefaultDevice>::run(assign, DefaultDevice());
     }
+
     template<typename OtherDerived>
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE Tensor(const TensorBase<OtherDerived, WriteAccessors>& other)
@@ -401,14 +405,13 @@ class Tensor : public TensorBase<Tensor<Scalar_, NumIndices_, Options_, IndexTyp
     #if EIGEN_HAS_RVALUE_REFERENCES
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE Tensor(Self&& other)
-      : Tensor()
+      : m_storage(std::move(other.m_storage))
     {
-      m_storage.swap(other.m_storage);
     }
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE Tensor& operator=(Self&& other)
     {
-      m_storage.swap(other.m_storage);
+      m_storage = std::move(other.m_storage);
       return *this;
     }
     #endif
@@ -521,6 +524,10 @@ class Tensor : public TensorBase<Tensor<Scalar_, NumIndices_, Options_, IndexTyp
       resize(dims);
     }
 #endif
+
+    #ifdef EIGEN_TENSOR_PLUGIN
+    #include EIGEN_TENSOR_PLUGIN
+    #endif
 
   protected:
 

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
@@ -25,6 +24,10 @@ class PrerenderServiceImplTest : public PlatformTest {
     browser_state_ = builder.Build();
     service_ = std::make_unique<PrerenderServiceImpl>(browser_state_.get());
   }
+
+  PrerenderServiceImplTest(const PrerenderServiceImplTest&) = delete;
+  PrerenderServiceImplTest& operator=(const PrerenderServiceImplTest&) = delete;
+
   ~PrerenderServiceImplTest() override = default;
 
  protected:
@@ -32,9 +35,6 @@ class PrerenderServiceImplTest : public PlatformTest {
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<PrerenderService> service_;
   web::FakeWebState web_state_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PrerenderServiceImplTest);
 };
 
 }  // namespace

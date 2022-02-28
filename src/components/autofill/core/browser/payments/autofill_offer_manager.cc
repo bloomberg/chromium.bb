@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/ranges/algorithm.h"
 #include "base/ranges/ranges.h"
 #include "base/strings/utf_string_conversions.h"
@@ -16,7 +17,6 @@
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
-#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -24,19 +24,11 @@
 
 namespace autofill {
 
-namespace {
-// Ensure the offer is not expired and is valid for the current page.
-bool IsOfferEligible(const AutofillOfferData& offer,
-                     const GURL& last_committed_url_origin) {
-  bool is_eligible = (offer.expiry > AutofillClock::Now());
-  is_eligible &=
-      base::ranges::count(offer.merchant_domain, last_committed_url_origin);
-  return is_eligible;
-}
-}  // namespace
-
-AutofillOfferManager::AutofillOfferManager(PersonalDataManager* personal_data)
-    : personal_data_(personal_data) {
+AutofillOfferManager::AutofillOfferManager(
+    PersonalDataManager* personal_data,
+    CouponServiceDelegate* coupon_service_delegate)
+    : personal_data_(personal_data),
+      coupon_service_delegate_(coupon_service_delegate) {
   personal_data_->AddObserver(this);
   UpdateEligibleMerchantDomains();
 }
@@ -52,7 +44,8 @@ void AutofillOfferManager::OnPersonalDataChanged() {
 void AutofillOfferManager::UpdateSuggestionsWithOffers(
     const GURL& last_committed_url,
     std::vector<Suggestion>& suggestions) {
-  GURL last_committed_url_origin = last_committed_url.GetOrigin();
+  GURL last_committed_url_origin =
+      last_committed_url.DeprecatedGetOriginAsURL();
   if (eligible_merchant_domains_.count(last_committed_url_origin) == 0) {
     return;
   }
@@ -83,18 +76,30 @@ void AutofillOfferManager::UpdateSuggestionsWithOffers(
 }
 
 bool AutofillOfferManager::IsUrlEligible(const GURL& last_committed_url) {
-  // Checking set::empty and using set::count to prevent possible crashes (see
-  // crbug.com/1195949).
-  // For most cases this vector will be empty, so add the empty check to avoid
-  // unnecessary calls.
-  return !eligible_merchant_domains_.empty() &&
-         eligible_merchant_domains_.count(last_committed_url.GetOrigin());
+  if (coupon_service_delegate_ &&
+      coupon_service_delegate_->IsUrlEligible(last_committed_url)) {
+    return true;
+  }
+  return base::Contains(eligible_merchant_domains_,
+                        last_committed_url.DeprecatedGetOriginAsURL());
 }
 
 AutofillOfferData* AutofillOfferManager::GetOfferForUrl(
     const GURL& last_committed_url) {
+  if (coupon_service_delegate_) {
+    for (AutofillOfferData* offer :
+         coupon_service_delegate_->GetFreeListingCouponsForUrl(
+             last_committed_url)) {
+      if (offer->IsActiveAndEligibleForOrigin(
+              last_committed_url.DeprecatedGetOriginAsURL())) {
+        return offer;
+      }
+    }
+  }
+
   for (AutofillOfferData* offer : personal_data_->GetAutofillOffers()) {
-    if (IsOfferEligible(*offer, last_committed_url.GetOrigin())) {
+    if (offer->IsActiveAndEligibleForOrigin(
+            last_committed_url.DeprecatedGetOriginAsURL())) {
       return offer;
     }
   }
@@ -106,9 +111,8 @@ void AutofillOfferManager::UpdateEligibleMerchantDomains() {
   std::vector<AutofillOfferData*> offers = personal_data_->GetAutofillOffers();
 
   for (auto* offer : offers) {
-    for (auto& domain : offer->merchant_domain) {
-      eligible_merchant_domains_.emplace(domain);
-    }
+    eligible_merchant_domains_.insert(offer->merchant_origins.begin(),
+                                      offer->merchant_origins.end());
   }
 }
 
@@ -121,7 +125,7 @@ AutofillOfferManager::OffersMap AutofillOfferManager::CreateCardLinkedOffersMap(
 
   for (auto* offer : offers) {
     // Ensure the offer is valid.
-    if (!IsOfferEligible(*offer, last_committed_url_origin)) {
+    if (!offer->IsActiveAndEligibleForOrigin(last_committed_url_origin)) {
       continue;
     }
     // Ensure the offer is a card-linked offer.

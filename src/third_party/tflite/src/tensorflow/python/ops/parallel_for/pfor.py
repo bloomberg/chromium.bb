@@ -15,10 +15,6 @@
 """Compiled parallel-for loop."""
 # pylint: disable=missing-docstring,g-direct-tensorflow-import
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import collections
 import string
 import sys
@@ -28,6 +24,7 @@ import numpy as np
 import six
 
 from tensorflow.compiler.tf2xla.python import xla
+from tensorflow.core.framework import full_type_pb2
 from tensorflow.python.eager import context
 from tensorflow.python.eager import def_function
 from tensorflow.python.eager import execute
@@ -35,29 +32,34 @@ from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import func_graph
 from tensorflow.python.framework import ops
+from tensorflow.python.framework import smart_cond
 from tensorflow.python.framework import sparse_tensor
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.framework import tensor_spec
 from tensorflow.python.framework import tensor_util
 from tensorflow.python.ops import array_ops
-from tensorflow.python.ops import bitwise_ops
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops import data_flow_ops
 from tensorflow.python.ops import gen_array_ops
+from tensorflow.python.ops import gen_dataset_ops
 from tensorflow.python.ops import gen_image_ops
 from tensorflow.python.ops import gen_linalg_ops
+from tensorflow.python.ops import gen_list_ops
 from tensorflow.python.ops import gen_math_ops
 from tensorflow.python.ops import gen_nn_ops
 from tensorflow.python.ops import gen_parsing_ops
 from tensorflow.python.ops import gen_random_ops
 from tensorflow.python.ops import gen_sparse_ops
 from tensorflow.python.ops import gen_spectral_ops
+from tensorflow.python.ops import handle_data_util
 from tensorflow.python.ops import linalg_ops
 from tensorflow.python.ops import list_ops
+from tensorflow.python.ops import manip_ops
 from tensorflow.python.ops import map_fn
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import nn_ops
 from tensorflow.python.ops import parsing_ops
+from tensorflow.python.ops import resource_variable_ops
 from tensorflow.python.ops import sparse_ops
 from tensorflow.python.ops import special_math_ops
 from tensorflow.python.ops import tensor_array_ops
@@ -74,6 +76,62 @@ flags.DEFINE_bool(
     "DEPRECATED: Flag is ignored.")
 
 
+def _variant_handle_data(t):
+  """Fetches handle data for a variant tensor `t`, or None if unavailable."""
+  handle_data = resource_variable_ops.get_eager_safe_handle_data(t)
+  if not handle_data.is_set:
+    return None
+  return handle_data.shape_and_type
+
+
+def _variant_type_id(t):
+  """Returns the full_type_pb2 type of `t`, or None if it is not available."""
+  if t.dtype != dtypes.variant:
+    return None
+  shapes_and_types = _variant_handle_data(t)
+  if shapes_and_types is None or not shapes_and_types:
+    # TODO(b/169968286): Identify all variant tensors (e.g. maps) and we can
+    # make this an error instead of assuming TensorLists have handle data.
+    return None  # Presumed not a TensorList/Optional
+  return shapes_and_types[0].type.type_id
+
+
+_INTERNAL_STACKING_TYPE_IDS = (
+    full_type_pb2.TFT_ARRAY,
+    full_type_pb2.TFT_OPTIONAL)
+
+
+def _is_variant_with_internal_stacking(t):
+  """Identifies variant tensors which pfor always maintains as scalars.
+
+  For these, the pfor tensor is recorded as "stacked" if the content of the
+  variant tensor (e.g. the elements of a TensorList) are all stacked.
+
+  Args:
+    t: A tensor to identify.
+  Returns:
+    True if `t` is a TensorList/Optional, False not, None if unknown.
+  """
+  type_id = _variant_type_id(t)
+  return type_id in _INTERNAL_STACKING_TYPE_IDS
+
+
+def _parse_variant_shapes_and_types(t):
+  """Extracts shape and dtype information from a variant tensor `t`."""
+  shapes_and_types = _variant_handle_data(t)
+  if shapes_and_types is None or not shapes_and_types:
+    raise ValueError("Required handle data not set for {!r}".format(t))
+  if shapes_and_types[0].type.type_id == full_type_pb2.TFT_ARRAY:
+    return shapes_and_types
+  else:
+    if shapes_and_types[0].type.type_id == full_type_pb2.TFT_UNSET:
+      return shapes_and_types
+    else:
+      raise ValueError(
+          "Attempted to stack a variant-dtype tensor with no type set ({!r})"
+          .format(t))
+
+
 def _stack(t, length):
   """stacks `t` `length` times."""
   # Note that this stacking may currently be triggered, for example, when a
@@ -81,14 +139,20 @@ def _stack(t, length):
   # produces a loop dependent output. Simply stacking the variants may not be
   # suitable since operations on stacked handles may expect a vectorized version
   # of the variant.
-  # Given that variant types are generic, we are currently unable to figure out
-  # which particular variant type is being considered here and hence it may not
-  # be safe to allow stacking it.
   if t.dtype == dtypes.variant:
-    raise NotImplementedError(
-        "Vectorization tried to stack variant tensor %s. "
-        "This is likely because vectorization of that variant "
-        "is not fully supported yet." % t)
+    shapes_and_types = _parse_variant_shapes_and_types(t)
+    if shapes_and_types[0].type.type_id == full_type_pb2.TFT_ARRAY:
+      if len(shapes_and_types) != 1:
+        raise ValueError(
+            f"Expected handle data of length 1, got {shapes_and_types!r} of "
+            f"length {len(shapes_and_types)}.")
+      return wrap(
+          _stack_tensor_list(t, shapes_and_types[0].dtype, length),
+          True)
+    else:
+      raise ValueError(
+          "Attempted to stack an unhandled variant-dtype tensor of "
+          f"type {shapes_and_types[0].type!r} ({t!r}).")
   ones = array_ops.ones_like(array_ops.shape(t))
   ones = array_ops.reshape(ones, [-1])
   length = array_ops.reshape(length, [-1])
@@ -387,7 +451,7 @@ class WhileOp(object):
     return inp, stacked
 
   def _maybe_stacked(self, cache, inp):
-    """Heuristic to figue out if the converting inp leads to a stacked value.
+    """Heuristic to figure out if the converting inp leads to a stacked value.
 
 
     Args:
@@ -719,6 +783,8 @@ class ConversionNotImplementedError(Exception):
 class _PforInput(object):
   """Input object passed to registered pfor converters."""
 
+  __slots__ = ["pfor", "_op", "_inputs"]
+
   def __init__(self, pfor, op, inputs):
     """Creates a _PforInput object.
 
@@ -732,20 +798,30 @@ class _PforInput(object):
     self._op = op
     self._inputs = inputs
 
-  def stack_inputs(self, stack_indices=None):
+  def stack_inputs(self, stack_indices=None, tile_variants=False):
     """Stacks unstacked inputs at `stack_indices`.
 
     Args:
       stack_indices: indices of inputs at which stacking is done. If None,
         stacking is done at all indices.
+      tile_variants: If True, affected indices which have a variant dtype will
+        be tiled after this operation to match the expected shape of a
+        vectorized tensor. Variants generally need to be un-tiled when they are
+        inputs to operations and tiled when returned.
     """
     if stack_indices is None:
       stack_indices = range(len(self._inputs))
     length = self.pfor.loop_len_vector
     for i in stack_indices:
       inp = self._inputs[i]
+      is_variant = inp.t.dtype == dtypes.variant
       if not inp.is_stacked:
         self._inputs[i] = _stack(inp.t, length)
+        if tile_variants and is_variant:
+          self._inputs[i] = wrap(
+              _tile_variant_with_length(self._inputs[i].t, length), True)
+      elif not tile_variants and is_variant:
+        self._inputs[i] = wrap(_untile_variant(self._inputs[i].t), True)
 
   def expanddim_inputs_for_broadcast(self):
     """Reshapes stacked inputs to prepare them for broadcast.
@@ -800,8 +876,8 @@ class _PforInput(object):
       else:
         input_name = "\"%s\"" % op_def.input_arg[index].name
       raise ConversionNotImplementedError(
-          "Input %s of op \"%s\" expected to be not loop invariant" %
-          (input_name, op_type))
+          f"Input {input_name} of op '{op_type}' expected to be not loop "
+          "invariant.")
     return t
 
   def unstacked_input(self, index):
@@ -814,8 +890,8 @@ class _PforInput(object):
       else:
         input_name = "\"%s\"" % op_def.input_arg[index].name
       raise ConversionNotImplementedError(
-          "Input %s of op \"%s\" expected to be loop invariant" %
-          (input_name, op_type))
+          f"Input {input_name} of op '{op_type}' expected to be loop "
+          "invariant.")
     return t
 
   @property
@@ -952,7 +1028,11 @@ def _create_op(op_type, inputs, op_dtypes, attrs=None):
   """Utility to create an op."""
   op = ops.get_default_graph().create_op(
       op_type, inputs, op_dtypes, attrs=attrs, compute_device=True)
-  flat_attrs = nest.flatten([(str(a), op.get_attr(str(a))) for a in attrs])
+  flat_attrs = []
+  # The tape expects an alternating flat list of names and attribute values.
+  for a in attrs:
+    flat_attrs.append(str(a))
+    flat_attrs.append(op.get_attr(str(a)))
   execute.record_gradient(op_type, op.inputs, tuple(flat_attrs), op.outputs[:])
   return op
 
@@ -991,9 +1071,15 @@ def wrap(tensor, is_stacked=True, is_sparse_stacked=False):
   return WrappedTensor(tensor, is_stacked, is_sparse_stacked)
 
 
+def _wrap_and_tile_variants(tensor, length):
+  if tensor.dtype == dtypes.variant:
+    tensor = _tile_variant_with_length(tensor, length)
+  return wrap(tensor)
+
+
 def _fallback_converter(pfor_input, warn=True):
   if warn:
-    logging.warn("Using a while_loop for converting %s", pfor_input.op_type)
+    logging.warning("Using a while_loop for converting %s", pfor_input.op_type)
   output_dtypes = [x.dtype for x in pfor_input.outputs]
   iters = pfor_input.pfor.loop_len_vector[0]
 
@@ -1039,6 +1125,8 @@ class PForConfig(object):
 
   def _set_iters(self, iters):
     """Set number of pfor iterations."""
+    if isinstance(iters, ops.Tensor):
+      iters = tensor_util.constant_value(iters)
     self._maybe_iters = iters
 
   def reduce(self, fn, *args):
@@ -1065,7 +1153,7 @@ class PForConfig(object):
     tensor_specs = []
     for arg in args:
       if not isinstance(arg, ops.Tensor):
-        raise ValueError("Got a non-Tensor argument %s in reduce" % arg)
+        raise ValueError(f"Got a non-Tensor argument {arg} in reduce.")
       batched_shape = tensor_shape.TensorShape([self._maybe_iters
                                                ]).concatenate(arg.shape)
       tensor_specs.append(
@@ -1073,14 +1161,14 @@ class PForConfig(object):
     concrete_function = def_function.function(fn).get_concrete_function(
         *tensor_specs)
 
-    # Creates PlaceholderWithDefault and IdentityN nodes corresponding the the
+    # Creates PlaceholderWithDefault and IdentityN nodes corresponding the
     # reduction.
     pl_outputs = []
     with ops.control_dependencies(args):
       for output in concrete_function.outputs:
         if not isinstance(output, ops.Tensor):
-          raise ValueError("Got a non-Tensor output %s while running reduce" %
-                           output)
+          raise ValueError(f"Got a non-Tensor output {output} while running "
+                           "reduce.")
         # Note that we use placeholder_with_default just to make XLA happy since
         # it does not like placeholder ops.
         if output.shape.is_fully_defined():
@@ -1348,7 +1436,7 @@ class PFor(object):
 
   def _convert_reduction(self, y):
     # Handle reductions.
-    if self._pfor_config is None:
+    if self._pfor_config is None or isinstance(y, ops.Operation):
       return None
     reduction = self._pfor_config._lookup_reduction(y)
     if reduction is None:
@@ -1374,13 +1462,13 @@ class PFor(object):
     return [wrap(output, False) for output in nest.flatten(outputs)]
 
   def _convert_helper(self, op_or_tensor):
-    stack = [op_or_tensor]
+    stack = collections.deque([op_or_tensor])
     while stack:
       y = stack[0]
       if y in self._conversion_map:
         assert isinstance(self._conversion_map[y],
                           (WrappedTensor, ops.Operation))
-        stack.pop(0)
+        stack.popleft()
         continue
       if isinstance(y, ops.Operation):
         assert not y.outputs, (
@@ -1417,7 +1505,7 @@ class PFor(object):
 
       def _add_to_stack(x):
         if x not in self._conversion_map:
-          stack.insert(0, x)
+          stack.appendleft(x)
           return True
         else:
           return False
@@ -1493,7 +1581,10 @@ class PFor(object):
           if y is y_op:
             new_outputs = new_op
           else:
-            new_outputs = [wrap(x, False) for x in new_op.outputs]
+            new_outputs = []
+            for old_output, new_output in zip(y_op.outputs, new_op.outputs):
+              handle_data_util.copy_handle_data(old_output, new_output)
+              new_outputs.append(wrap(new_output, False))
         else:
           # Either some inputs are not loop invariant or op is stateful.
           if hasattr(y_op, "pfor_converter"):
@@ -1503,13 +1594,15 @@ class PFor(object):
           if converter is None:
             has_variant_outputs = any(x.dtype == dtypes.variant for x in
                                       y_op.outputs)
-            if self._fallback_to_while_loop and not has_variant_outputs:
+            has_vectorized_variant_inputs = any(
+                _is_variant_with_internal_stacking(x) for x in
+                y_op.inputs)
+            if (self._fallback_to_while_loop and not has_variant_outputs
+                and not has_vectorized_variant_inputs):
               converter = _fallback_converter
             else:
-              message = ("No pfor vectorization defined for %s\n"
-                         "%s\n"
-                         "inputs: %s. " %
-                         (y_op.type, y_op, converted_inputs))
+              message = (f"No pfor vectorization defined for {y_op.type}\n"
+                         f"{y_op}\n inputs: {converted_inputs}.")
               if not self._fallback_to_while_loop:
                 message += ("Consider enabling the fallback_to_while_loop "
                             "option to pfor, which may run slower.")
@@ -1522,17 +1615,19 @@ class PFor(object):
             try:
               new_outputs = converter(pfor_inputs)
             except ConversionNotImplementedError as e:
-              if self._fallback_to_while_loop:
+              has_vectorized_variant_inputs = any(
+                  _is_variant_with_internal_stacking(x) for x in
+                  y_op.inputs)
+              if (self._fallback_to_while_loop
+                  and not has_vectorized_variant_inputs):
                 new_outputs = _fallback_converter(pfor_inputs)
               else:
                 six.reraise(ValueError, ValueError(str(e)), sys.exc_info()[2])
           except Exception as e:  # pylint: disable=broad-except
             logging.error(
-                "Got error while pfor was converting op %s"
-                "with inputs %s\n, converted inputs %s\n"
-                "%s\n"
-                "Here are the pfor conversion stack traces:", y_op,
-                y_op.inputs[:], pfor_inputs.inputs, str(e))
+                f"Got error while pfor was converting op {y_op} with inputs "
+                f"{y_op.inputs[:]}\n, converted inputs {pfor_inputs.inputs}\n"
+                f"Here are the pfor conversion stack traces: {e}")
             original_op = y_op
             while isinstance(original_op, ops.Operation):
               logging.error(
@@ -1545,7 +1640,7 @@ class PFor(object):
             new_outputs = [new_outputs]
           assert isinstance(new_outputs,
                             (list, tuple, ops.Operation)), new_outputs
-        logging.vlog(2, "converted %s %s", y_op, new_outputs)
+        logging.vlog(2, f"converted {y_op} {new_outputs}")
 
         # Insert into self._conversion_map
         if y is y_op:
@@ -1567,9 +1662,12 @@ class PFor(object):
                 else:
                   batch_dim = tensor_shape.TensorShape(loop_len)
                 output_shape = batch_dim.concatenate(output_shape)
-              new_output.t.set_shape(output_shape)
+              if _is_variant_with_internal_stacking(new_output.t):
+                new_output.t.set_shape([])
+              else:
+                new_output.t.set_shape(output_shape)
             self._add_conversion(old_output, new_output)
-        stack.pop(0)
+        stack.popleft()
 
     return self._conversion_map[op_or_tensor]
 
@@ -1751,7 +1849,7 @@ def _channel_flatten_input(x, data_format):
   If S is pfor's stacking dimension, then,
     - for SNCHW, we transpose to NSCHW. If N dimension has size 1, the transpose
       should be cheap.
-    - for SNHWC, we transpose to NHWCS.
+    - for SNHWC, we transpose to NHWSC.
   We then merge the S and C dimension.
 
   Args:
@@ -1907,7 +2005,7 @@ def _convert_conv2d_backprop_filter(pfor_input):
   dilations = pfor_input.get_attr("dilations")
   if inputs_stacked:
     # TODO(agarwal): Implement this efficiently.
-    logging.warn("Conv2DBackpropFilter uses a while_loop. Fix that!")
+    logging.warning("Conv2DBackpropFilter uses a while_loop. Fix that!")
 
     def while_body(i, ta):
       inp_i = inputs[i, ...]
@@ -1953,6 +2051,95 @@ def _convert_conv2d_backprop_filter(pfor_input):
     return wrap(output, True)
 
 
+def _flatten_with_inner_dim(x, dim, x_rank):
+  """Merges the first dim with the specified dim."""
+  shape = array_ops.shape(x)
+  x = array_ops.transpose(x,
+                          list(range(1, dim)) + [0] + list(range(dim, x_rank)))
+
+  if dim < x_rank - 1:
+    new_shape_pieces = [shape[1:dim], [-1], shape[dim + 1:]]
+  else:
+    new_shape_pieces = [shape[1:dim], [-1]]
+  new_shape = array_ops.concat(new_shape_pieces, axis=0)
+  return array_ops.reshape(x, new_shape)
+
+
+def _unflatten_with_inner_dim(x, dim, x_rank, stack_size):
+  """Undoes _flatten_with_inner_dim."""
+  shape = array_ops.shape(x)
+  if dim < x_rank - 1:
+    new_shape_pieces = [shape[:dim], [stack_size], [-1], shape[dim + 1:]]
+  else:
+    new_shape_pieces = [shape[:dim], [stack_size], [-1]]
+  new_shape = array_ops.concat(new_shape_pieces, axis=0)
+  x = array_ops.reshape(x, new_shape)
+  dims_permutation = [dim] + list(range(dim)) + list(range(dim + 1, x_rank + 1))
+  return array_ops.transpose(x, dims_permutation)
+
+
+@RegisterPFor("DepthwiseConv2dNative")
+def _convert_depthwise_conv2d_native(pfor_input):
+  # Kernel can be vectorized, so folding to batch dimension does not work. We
+  # instead fold into the channel dimension because it is parallel.
+  stack_size = pfor_input.pfor.loop_len_vector[0]
+  data_format = pfor_input.get_attr("data_format")
+  c_dim = 1 if data_format == b"NCHW" else 3
+  t = _flatten_with_inner_dim(pfor_input.stacked_input(0), c_dim + 1, 5)
+  kernel = _flatten_with_inner_dim(pfor_input.stacked_input(1), 3, 5)
+  conv = _create_op(
+      "DepthwiseConv2dNative", [t, kernel],
+      [x.dtype for x in pfor_input.outputs],
+      attrs=pfor_input.op.node_def.attr).outputs[0]
+  return wrap(_unflatten_with_inner_dim(conv, c_dim, 4, stack_size), True)
+
+
+@RegisterPFor("DepthwiseConv2dNativeBackpropInput")
+def _convert_depthwise_conv2d_native_backprop_input(pfor_input):
+  stack_size = pfor_input.pfor.loop_len_vector[0]
+  input_sizes = pfor_input.unstacked_input(0)
+  data_format = pfor_input.get_attr("data_format")
+  c_dim = 1 if data_format == b"NCHW" else 3
+  input_sizes_mutipliers = [
+      constant_op.constant([1] * c_dim, dtype=dtypes.int32), [stack_size]
+  ]
+  if c_dim < 3:
+    input_sizes_mutipliers += [
+        constant_op.constant([1] * (3 - c_dim), dtype=dtypes.int32)
+    ]
+  input_sizes *= array_ops.concat(input_sizes_mutipliers, axis=0)
+  kernel = _flatten_with_inner_dim(pfor_input.stacked_input(1), 3, 5)
+  out_backprop = _flatten_with_inner_dim(
+      pfor_input.stacked_input(2), c_dim + 1, 5)
+  result = _create_op(
+      "DepthwiseConv2dNativeBackpropInput", [input_sizes, kernel, out_backprop],
+      [x.dtype for x in pfor_input.outputs],
+      attrs=pfor_input.op.node_def.attr).outputs[0]
+  return wrap(_unflatten_with_inner_dim(result, c_dim, 4, stack_size), True)
+
+
+@RegisterPFor("DepthwiseConv2dNativeBackpropFilter")
+def _convert_depthwise_conv2d_native_backprop_filter(pfor_input):
+  stack_size = pfor_input.pfor.loop_len_vector[0]
+  data_format = pfor_input.get_attr("data_format")
+  c_dim = 1 if data_format == b"NCHW" else 3
+  inputs = _flatten_with_inner_dim(pfor_input.stacked_input(0), c_dim + 1, 5)
+  filter_sizes = pfor_input.unstacked_input(1)
+  filter_sizes_multipliers = [
+      constant_op.constant([1, 1], dtype=dtypes.int32), [stack_size],
+      constant_op.constant([1], dtype=dtypes.int32)
+  ]
+  filter_sizes *= array_ops.concat(filter_sizes_multipliers, axis=0)
+  out_backprop = _flatten_with_inner_dim(
+      pfor_input.stacked_input(2), c_dim + 1, 5)
+  result = _create_op(
+      "DepthwiseConv2dNativeBackpropFilter",
+      [inputs, filter_sizes, out_backprop],
+      [x.dtype for x in pfor_input.outputs],
+      attrs=pfor_input.op.node_def.attr).outputs[0]
+  return wrap(_unflatten_with_inner_dim(result, 2, 4, stack_size), True)
+
+
 @RegisterPForWithArgs("LogSoftmax", gen_nn_ops.log_softmax)
 @RegisterPForWithArgs("Softmax", gen_nn_ops.softmax)
 def _convert_softmax(pfor_input, op_type, op_func):
@@ -1967,6 +2154,7 @@ def _convert_softmax(pfor_input, op_type, op_func):
 @RegisterPForWithArgs("StopGradient", array_ops.stop_gradient)
 @RegisterPForWithArgs("MatrixDiag", array_ops.matrix_diag)
 @RegisterPForWithArgs("MatrixDiagPart", array_ops.matrix_diag_part)
+@RegisterPForWithArgs("_EagerConst", array_ops.identity)
 def _convert_identity(pfor_input, op_type, op_func):
   del op_type
   return wrap(op_func(*[x.t for x in pfor_input.inputs]), True)
@@ -2027,7 +2215,7 @@ def _convert_broadcast_to(pfor_input):
 def _convert_expanddims(pfor_input):
   t = pfor_input.stacked_input(0)
   dim = pfor_input.unstacked_input(1)
-  dim += math_ops.cast(dim >= 0, dtypes.int32)
+  dim += math_ops.cast(dim >= 0, dim.dtype)
   return wrap(array_ops.expand_dims(t, axis=dim), True)
 
 
@@ -2152,11 +2340,47 @@ def _convert_one_hot(pfor_input):
 @RegisterPFor("Slice")
 def _convert_slice(pfor_input):
   t = pfor_input.stacked_input(0)
-  begin = pfor_input.unstacked_input(1)
+  begin, begin_stacked, _ = pfor_input.input(1)
   size = pfor_input.unstacked_input(2)
-  begin = array_ops.concat([[0], begin], axis=0)
-  size = array_ops.concat([[-1], size], axis=0)
-  return wrap(array_ops.slice(t, begin, size), True)
+  if not begin_stacked:
+    begin = array_ops.concat([[0], begin], axis=0)
+    size = array_ops.concat([[-1], size], axis=0)
+    return wrap(array_ops.slice(t, begin, size), True)
+  else:
+    # Handle negative sizes.
+    #
+    # If the `begin` entry corresponding to a negative `size` is loop-variant,
+    # the output would be ragged. This case is not supported. But `size` having
+    # some negative values and some loop-variant `begin`s is OK (and it's hard
+    # to tell the difference statically).
+    original_unstacked_shape = _stack(
+        array_ops.shape(t)[1:], pfor_input.pfor.loop_len_vector).t
+    broadcast_size = _stack(size, pfor_input.pfor.loop_len_vector).t
+    result_shape = array_ops.where(
+        math_ops.less(broadcast_size, 0),
+        original_unstacked_shape - begin + broadcast_size + 1, broadcast_size)
+    result_shape = math_ops.cast(math_ops.reduce_max(result_shape, axis=0),
+                                 dtypes.int64)
+
+    # Now we enumerate points in the sliced region for each pfor iteration and
+    # gather them.
+    cumsize = math_ops.cumprod(result_shape, exclusive=True, reverse=True)
+    result_num_elements = math_ops.reduce_prod(result_shape)
+    # Offsets are loop-variant. We first compute loop-invariant gather
+    # coordinates, then broadcast-add the loop-variant `begin` offsets.
+    result_base_coordinates = (
+        math_ops.range(result_num_elements, dtype=dtypes.int64)[:, None]
+        // cumsize[None, :]) % result_shape[None, :]
+    result_coordinates = (
+        begin[:, None, :]
+        + math_ops.cast(result_base_coordinates, begin.dtype)[None, :, :])
+    result_flat = array_ops.gather_nd(params=t, indices=result_coordinates,
+                                      batch_dims=1)
+    result_stacked_shape = array_ops.concat(
+        [math_ops.cast(pfor_input.pfor.loop_len_vector, result_shape.dtype),
+         result_shape],
+        axis=0)
+    return wrap(array_ops.reshape(result_flat, result_stacked_shape), True)
 
 
 @RegisterPFor("Tile")
@@ -2273,7 +2497,11 @@ def _convert_gather(pfor_input):
         # it must be picking up all the rows of param.
         return wrap(param, True)
 
-    if batch_dims > 0:
+    if batch_dims != 0:
+      # Convert `batch_dims` to its positive equivalent if necessary.
+      batch_dims_pos = batch_dims
+      if batch_dims < 0:
+        batch_dims_pos += array_ops.rank(indices)
       # In order to maintain
       #   indices.shape[:batch_dims] == params.shape[:batch_dims]
       # with stacked indices, we move the first dimension of `indices` to the
@@ -2281,23 +2509,24 @@ def _convert_gather(pfor_input):
       # inserted into the shape of `output` at the `axis` dimension, which is
       # then transposed to the front (below).
       order = array_ops.concat([
-          (list(range(1, batch_dims + 1)) + [0]),
-          math_ops.range(batch_dims + 1, array_ops.rank(indices))], axis=0)
+          math_ops.range(1, batch_dims_pos + 1),
+          [0],
+          math_ops.range(batch_dims_pos + 1, array_ops.rank(indices))], axis=0)
       indices = array_ops.transpose(indices, order)
 
     output = array_ops.gather(
         param, indices, validate_indices=validate_indices, axis=axis,
         batch_dims=batch_dims)
     if axis != 0:
-      axis = control_flow_ops.cond(axis < 0,
+      axis = smart_cond.smart_cond(axis < 0,
                                    lambda: axis + array_ops.rank(param),
-                                   lambda: axis)
+                                   lambda: ops.convert_to_tensor(axis))
       order = array_ops.concat(
           [[axis],
            math_ops.range(axis),
            math_ops.range(axis + 1, array_ops.rank(output))],
           axis=0)
-      output = control_flow_ops.cond(
+      output = smart_cond.smart_cond(
           math_ops.equal(axis, 0), lambda: output,
           lambda: array_ops.transpose(output, order))
     return wrap(output, True)
@@ -2308,7 +2537,7 @@ def _convert_gather(pfor_input):
     output = array_ops.gather(
         param, indices,
         axis=array_ops.where(axis >= 0, axis + 1, axis),
-        batch_dims=batch_dims + 1)
+        batch_dims=(batch_dims + 1 if batch_dims >= 0 else batch_dims))
     return wrap(output, True)
 
 
@@ -2379,7 +2608,9 @@ def _convert_strided_slice_grad(pfor_input):
   new_axis_mask = pfor_input.get_attr("new_axis_mask")
   shrink_axis_mask = pfor_input.get_attr("shrink_axis_mask")
 
-  shape = array_ops.concat([pfor_input.pfor.loop_len_vector, shape], axis=0)
+  shape = array_ops.concat(
+      [math_ops.cast(pfor_input.pfor.loop_len_vector, shape.dtype), shape],
+      axis=0)
   begin = array_ops.concat([[0], begin], axis=0)
   end = array_ops.concat([[0], end], axis=0)
   strides = array_ops.concat([[1], strides], axis=0)
@@ -2408,6 +2639,56 @@ def _convert_check_numerics(pfor_input):
   message = pfor_input.get_attr("message")
   return wrap(gen_array_ops.check_numerics(t, message), True)
 
+
+@RegisterPFor("EnsureShape")
+def _convert_ensure_shape(pfor_input):
+  t = pfor_input.stacked_input(0)
+  shape = tensor_shape.TensorShape(pfor_input.get_attr("shape"))
+  return wrap(gen_array_ops.ensure_shape(t, [None] + shape), True)
+
+
+# manip_ops
+
+
+@RegisterPFor("Roll")
+def _convert_roll(pfor_input):
+  t = pfor_input.stacked_input(0)
+  shift, shift_stacked, _ = pfor_input.input(1)
+  axis = pfor_input.unstacked_input(2)
+  if not shift_stacked:
+    return wrap(manip_ops.roll(t, shift, axis + 1), True)
+  else:
+    # `axis` and `shift` may both be vectors, with repeated axes summing the
+    # corresponding `shift`s. We scatter shifts into a dense array of shape
+    # [loop_len, num_unstacked_axes] indicating the offset for each axis.
+    num_unstacked_axes = math_ops.cast(array_ops.rank(t), dtypes.int64) - 1
+    axis = math_ops.cast(array_ops.reshape(axis, [-1]), dtypes.int64)
+    loop_len = math_ops.cast(pfor_input.pfor.loop_len_vector[0], dtypes.int64)
+    shift = math_ops.cast(array_ops.reshape(shift, [loop_len, -1]),
+                          dtypes.int64)
+    axis_segment_ids = (
+        math_ops.range(loop_len, dtype=dtypes.int64)[:, None]
+        * num_unstacked_axes + axis[None, :])
+    axis_offsets = array_ops.reshape(
+        math_ops.unsorted_segment_sum(
+            data=shift, segment_ids=axis_segment_ids,
+            num_segments=loop_len * num_unstacked_axes),
+        [loop_len, num_unstacked_axes])
+
+    # Determine the coordinates in the input array of each result and gather
+    # them.
+    unstacked_shape = array_ops.shape(t, out_type=dtypes.int64)[1:]
+    cumsize = math_ops.cumprod(unstacked_shape, exclusive=True, reverse=True)
+    num_unstacked_elements = math_ops.reduce_prod(unstacked_shape)
+    result_coordinates = (
+        (math_ops.range(num_unstacked_elements,
+                        dtype=dtypes.int64)[None, :, None]
+         // cumsize[None, None, :] - axis_offsets[:, None, :])
+        % unstacked_shape[None, None, :])
+    result_flat = array_ops.gather_nd(params=t, indices=result_coordinates,
+                                      batch_dims=1)
+    return wrap(array_ops.reshape(result_flat, array_ops.shape(t)),
+                True)
 
 # math_ops
 
@@ -2446,8 +2727,8 @@ def _convert_matmul(pfor_input):
       # TODO(agarwal): This check can be done inside Transpose kernel.
       b_shape = array_ops.shape(b)
       min_dim = math_ops.minimum(b_shape[0], b_shape[1])
-      perm = control_flow_ops.cond(
-          math_ops.equal(min_dim, 1), lambda: [0, 1, 2], lambda: [1, 0, 2])
+      perm = array_ops.where(
+          math_ops.equal(min_dim, 1), [0, 1, 2], [1, 0, 2])
       new_shape = array_ops.stack([b_shape[1], b_shape[0], b_shape[2]])
       b = array_ops.transpose(b, perm)
       b = array_ops.reshape(b, new_shape)
@@ -2508,7 +2789,7 @@ def _convert_reduction(pfor_input, _, op_func):
   t = pfor_input.stacked_input(0)
   indices = pfor_input.unstacked_input(1)
   # Shift positive indices by one to account for the extra dimension.
-  indices += math_ops.cast(indices >= 0, dtypes.int32)
+  indices += math_ops.cast(indices >= 0, indices.dtype)
   keep_dims = pfor_input.get_attr("keep_dims")
   return wrap(op_func(t, indices, keepdims=keep_dims), True)
 
@@ -2545,7 +2826,7 @@ def _convert_cumfoo(pfor_input, _, op_func):
   t = pfor_input.stacked_input(0)
   axis = pfor_input.unstacked_input(1)
   # Shift positive indices by one to account for the extra dimension.
-  axis += math_ops.cast(axis >= 0, dtypes.int32)
+  axis += math_ops.cast(axis >= 0, axis.dtype)
   exclusive = pfor_input.get_attr("exclusive")
   reverse = pfor_input.get_attr("reverse")
   return wrap(op_func(t, axis, exclusive=exclusive, reverse=reverse), True)
@@ -2664,6 +2945,7 @@ def _convert_sparse_segment(pfor_input, _, op_func):
   return wrap(output, True)
 
 
+@RegisterPForWithArgs("SparseSegmentSumGrad", math_ops.sparse_segment_sum_grad)
 @RegisterPForWithArgs("SparseSegmentMeanGrad",
                       math_ops.sparse_segment_mean_grad)
 @RegisterPForWithArgs("SparseSegmentSqrtNGrad",
@@ -2692,121 +2974,133 @@ def _convert_cast(pfor_input):
   return wrap(math_ops.cast(inp, dtype), True)
 
 
-@RegisterPForWithArgs("Abs", math_ops.abs)
-@RegisterPForWithArgs("Acos", math_ops.acos)
-@RegisterPForWithArgs("Acosh", math_ops.acosh)
-@RegisterPForWithArgs("Add", math_ops.add)
-@RegisterPForWithArgs("AddV2", math_ops.add_v2)
-@RegisterPForWithArgs("Angle", math_ops.angle)
-@RegisterPForWithArgs("Asin", math_ops.asin)
-@RegisterPForWithArgs("Asinh", math_ops.asinh)
-@RegisterPForWithArgs("Atan", math_ops.atan)
-@RegisterPForWithArgs("Atan2", math_ops.atan2)
-@RegisterPForWithArgs("Atanh", math_ops.atanh)
-@RegisterPForWithArgs("BesselI0", special_math_ops.bessel_i0)
-@RegisterPForWithArgs("BesselI1", special_math_ops.bessel_i1)
-@RegisterPForWithArgs("BesselI0e", special_math_ops.bessel_i0e)
-@RegisterPForWithArgs("BesselI1e", special_math_ops.bessel_i1e)
-@RegisterPForWithArgs("BesselK0", special_math_ops.bessel_k0)
-@RegisterPForWithArgs("BesselK1", special_math_ops.bessel_k1)
-@RegisterPForWithArgs("BesselK0e", special_math_ops.bessel_k0e)
-@RegisterPForWithArgs("BesselK1e", special_math_ops.bessel_k1e)
-@RegisterPForWithArgs("BesselJ0", special_math_ops.bessel_j0)
-@RegisterPForWithArgs("BesselJ1", special_math_ops.bessel_j1)
-@RegisterPForWithArgs("BesselY0", special_math_ops.bessel_y0)
-@RegisterPForWithArgs("BesselY1", special_math_ops.bessel_y1)
-@RegisterPForWithArgs("BitwiseAnd", bitwise_ops.bitwise_and)
-@RegisterPForWithArgs("BitwiseOr", bitwise_ops.bitwise_or)
-@RegisterPForWithArgs("BitwiseXor", bitwise_ops.bitwise_xor)
-@RegisterPForWithArgs("Ceil", math_ops.ceil)
-@RegisterPForWithArgs("Complex", math_ops.complex)
-@RegisterPForWithArgs("ComplexAbs", math_ops.complex_abs)
-@RegisterPForWithArgs("Conj", math_ops.conj)
-@RegisterPForWithArgs("Cos", math_ops.cos)
-@RegisterPForWithArgs("Cosh", math_ops.cosh)
-@RegisterPForWithArgs("Dawsn", special_math_ops.dawsn)
-@RegisterPForWithArgs("Digamma", math_ops.digamma)
-@RegisterPForWithArgs("Div", math_ops.div)
-@RegisterPForWithArgs("DivNoNan", math_ops.div_no_nan)
-@RegisterPForWithArgs("Elu", nn_ops.elu)
-@RegisterPForWithArgs("Erf", math_ops.erf)
-@RegisterPForWithArgs("Erfc", math_ops.erfc)
-@RegisterPForWithArgs("Erfinv", math_ops.erfinv)
-@RegisterPForWithArgs("Exp", math_ops.exp)
-@RegisterPForWithArgs("Expint", special_math_ops.expint)
-@RegisterPForWithArgs("Expm1", math_ops.expm1)
-@RegisterPForWithArgs("Floor", math_ops.floor)
-@RegisterPForWithArgs("FloorDiv", math_ops.floor_div)
-@RegisterPForWithArgs("FloorMod", math_ops.floor_mod)
-@RegisterPForWithArgs("FresnelCos", special_math_ops.fresnel_cos)
-@RegisterPForWithArgs("FresnelSin", special_math_ops.fresnel_sin)
-@RegisterPForWithArgs("Greater", math_ops.greater)
-@RegisterPForWithArgs("GreaterEqual", math_ops.greater_equal)
-@RegisterPForWithArgs("Igamma", math_ops.igamma)
-@RegisterPForWithArgs("IgammaGradA", math_ops.igamma_grad_a)
-@RegisterPForWithArgs("Igammac", math_ops.igammac)
-@RegisterPForWithArgs("Imag", math_ops.imag)
-@RegisterPForWithArgs("Inv", math_ops.inv)
-@RegisterPForWithArgs("Invert", bitwise_ops.invert)
-@RegisterPForWithArgs("IsFinite", math_ops.is_finite)
-@RegisterPForWithArgs("IsInf", math_ops.is_inf)
-@RegisterPForWithArgs("IsNan", math_ops.is_nan)
-@RegisterPForWithArgs("LeftShift", bitwise_ops.left_shift)
-@RegisterPForWithArgs("Less", math_ops.less)
-@RegisterPForWithArgs("LessEqual", math_ops.less_equal)
-@RegisterPForWithArgs("Lgamma", math_ops.lgamma)
-@RegisterPForWithArgs("Log", math_ops.log)
-@RegisterPForWithArgs("Log1p", math_ops.log1p)
-@RegisterPForWithArgs("LogicalAnd", math_ops.logical_and)
-@RegisterPForWithArgs("LogicalNot", math_ops.logical_not)
-@RegisterPForWithArgs("LogicalOr", math_ops.logical_or)
-@RegisterPForWithArgs("LogicalXor", math_ops.logical_xor)
-@RegisterPForWithArgs("Maximum", math_ops.maximum)
-@RegisterPForWithArgs("Minimum", math_ops.minimum)
-@RegisterPForWithArgs("Mod", math_ops.mod)
-@RegisterPForWithArgs("Mul", math_ops.multiply)
-@RegisterPForWithArgs("MulNoNan", math_ops.mul_no_nan)
-@RegisterPForWithArgs("Ndtri", math_ops.ndtri)
-@RegisterPForWithArgs("Neg", math_ops.negative)
-@RegisterPForWithArgs("Polygamma", math_ops.polygamma)
-@RegisterPForWithArgs("Pow", math_ops.pow)
-@RegisterPForWithArgs("Real", math_ops.real)
-@RegisterPForWithArgs("RealDiv", math_ops.divide)
-@RegisterPForWithArgs("Reciprocal", math_ops.reciprocal)
-@RegisterPForWithArgs("Relu", nn_ops.relu)
-@RegisterPForWithArgs("Relu6", nn_ops.relu6)
-@RegisterPForWithArgs("RightShift", bitwise_ops.right_shift)
-@RegisterPForWithArgs("Rint", math_ops.rint)
-@RegisterPForWithArgs("Round", math_ops.round)
-@RegisterPForWithArgs("Rsqrt", math_ops.rsqrt)
-@RegisterPForWithArgs("Selu", nn_ops.selu)
-@RegisterPForWithArgs("Sigmoid", math_ops.sigmoid)
-@RegisterPForWithArgs("Sign", math_ops.sign)
-@RegisterPForWithArgs("Sin", math_ops.sin)
-@RegisterPForWithArgs("Sinh", math_ops.sinh)
-@RegisterPForWithArgs("Softplus", nn_ops.softplus)
-@RegisterPForWithArgs("Softsign", nn_ops.softsign)
-@RegisterPForWithArgs("Spence", special_math_ops.spence)
-@RegisterPForWithArgs("Sqrt", math_ops.sqrt)
-@RegisterPForWithArgs("Square", math_ops.square)
-@RegisterPForWithArgs("SquaredDifference", math_ops.squared_difference)
-@RegisterPForWithArgs("Sub", math_ops.subtract)
-@RegisterPForWithArgs("Tan", math_ops.tan)
-@RegisterPForWithArgs("Tanh", math_ops.tanh)
-@RegisterPForWithArgs("TruncateDiv", math_ops.truncate_div)
-@RegisterPForWithArgs("TruncateMod", math_ops.truncate_mod)
-@RegisterPForWithArgs("Xdivy", math_ops.xdivy)
-@RegisterPForWithArgs("Xlogy", math_ops.xlogy)
-@RegisterPForWithArgs("Xlog1py", math_ops.xlog1py)
-@RegisterPForWithArgs("Zeta", math_ops.zeta)
-def _convert_cwise(pfor_input, op_type, op_func):
-  # Note that ops handled here do not have attributes except those listed below
-  # and hence don't need extra arguments passed to the cwise_op call below.
-  for attr in pfor_input.op.node_def.attr.keys():
-    assert attr in [u"T", u"Tout", u"_xla_compile_id"], (op_type, attr)
+@RegisterPFor("Abs")
+@RegisterPFor("Acos")
+@RegisterPFor("Acosh")
+@RegisterPFor("Add")
+@RegisterPFor("AddV2")
+@RegisterPFor("Angle")
+@RegisterPFor("Asin")
+@RegisterPFor("Asinh")
+@RegisterPFor("Atan")
+@RegisterPFor("Atan2")
+@RegisterPFor("Atanh")
+@RegisterPFor("BesselI0")
+@RegisterPFor("BesselI1")
+@RegisterPFor("BesselI0e")
+@RegisterPFor("BesselI1e")
+@RegisterPFor("BesselK0")
+@RegisterPFor("BesselK1")
+@RegisterPFor("BesselK0e")
+@RegisterPFor("BesselK1e")
+@RegisterPFor("BesselJ0")
+@RegisterPFor("BesselJ1")
+@RegisterPFor("BesselY0")
+@RegisterPFor("BesselY1")
+@RegisterPFor("BitwiseAnd")
+@RegisterPFor("BitwiseOr")
+@RegisterPFor("BitwiseXor")
+@RegisterPFor("Ceil")
+@RegisterPFor("Complex")
+@RegisterPFor("ComplexAbs")
+@RegisterPFor("Conj")
+@RegisterPFor("Cos")
+@RegisterPFor("Cosh")
+@RegisterPFor("Dawsn")
+@RegisterPFor("Digamma")
+@RegisterPFor("Div")
+@RegisterPFor("DivNoNan")
+@RegisterPFor("Elu")
+@RegisterPFor("Erf")
+@RegisterPFor("Erfc")
+@RegisterPFor("Erfinv")
+@RegisterPFor("Exp")
+@RegisterPFor("Expint")
+@RegisterPFor("Expm1")
+@RegisterPFor("Floor")
+@RegisterPFor("FloorDiv")
+@RegisterPFor("FloorMod")
+@RegisterPFor("FresnelCos")
+@RegisterPFor("FresnelSin")
+@RegisterPFor("Greater")
+@RegisterPFor("GreaterEqual")
+@RegisterPFor("Igamma")
+@RegisterPFor("IgammaGradA")
+@RegisterPFor("Igammac")
+@RegisterPFor("Imag")
+@RegisterPFor("Inv")
+@RegisterPFor("Invert")
+@RegisterPFor("IsFinite")
+@RegisterPFor("IsInf")
+@RegisterPFor("IsNan")
+@RegisterPFor("LeftShift")
+@RegisterPFor("Less")
+@RegisterPFor("LessEqual")
+@RegisterPFor("Lgamma")
+@RegisterPFor("Log")
+@RegisterPFor("Log1p")
+@RegisterPFor("LogicalAnd")
+@RegisterPFor("LogicalNot")
+@RegisterPFor("LogicalOr")
+@RegisterPFor("LogicalXor")
+@RegisterPFor("Maximum")
+@RegisterPFor("Minimum")
+@RegisterPFor("Mod")
+@RegisterPFor("Mul")
+@RegisterPFor("MulNoNan")
+@RegisterPFor("Ndtri")
+@RegisterPFor("Neg")
+@RegisterPFor("Polygamma")
+@RegisterPFor("Pow")
+@RegisterPFor("Real")
+@RegisterPFor("RealDiv")
+@RegisterPFor("Reciprocal")
+@RegisterPFor("Relu")
+@RegisterPFor("Relu6")
+@RegisterPFor("RightShift")
+@RegisterPFor("Rint")
+@RegisterPFor("Round")
+@RegisterPFor("Rsqrt")
+@RegisterPFor("Selu")
+@RegisterPFor("Sigmoid")
+@RegisterPFor("Sign")
+@RegisterPFor("Sin")
+@RegisterPFor("Sinh")
+@RegisterPFor("Softplus")
+@RegisterPFor("Softsign")
+@RegisterPFor("Spence")
+@RegisterPFor("Sqrt")
+@RegisterPFor("Square")
+@RegisterPFor("SquaredDifference")
+@RegisterPFor("Sub")
+@RegisterPFor("Tan")
+@RegisterPFor("Tanh")
+@RegisterPFor("TruncateDiv")
+@RegisterPFor("TruncateMod")
+@RegisterPFor("Xdivy")
+@RegisterPFor("Xlogy")
+@RegisterPFor("Xlog1py")
+@RegisterPFor("Zeta")
+def _convert_cwise(pfor_input):
   if pfor_input.num_inputs > 1:
     pfor_input.expanddim_inputs_for_broadcast()
-  return wrap(op_func(*[x.t for x in pfor_input.inputs]), True)
+
+  out = _create_op(
+      pfor_input.op_type, [x.t for x in pfor_input.inputs],
+      [x.dtype for x in pfor_input.outputs],
+      attrs=pfor_input.op.node_def.attr).outputs
+  assert len(out) == 1
+  out = out[0]
+
+  op_output = wrap(out, True)
+  return op_output
+
+
+@RegisterPFor("XlaSharding")
+def _convert_xla_sharding(pfor_input):
+  t = pfor_input.stacked_input(0)
+  sharding = pfor_input.get_attr("sharding")
+  return wrap(xla.sharding(t, sharding=sharding), True)
 
 
 @RegisterPFor("LeakyRelu")
@@ -2880,8 +3174,10 @@ def _convert_rank(pfor_input):
 @RegisterPFor("AddN")
 def _convert_addn(pfor_input):
   # AddN does not support broadcasting.
-  pfor_input.stack_inputs()
-  return wrap(math_ops.add_n([x.t for x in pfor_input.inputs]), True)
+  pfor_input.stack_inputs(tile_variants=False)
+  return _wrap_and_tile_variants(
+      math_ops.add_n([x.t for x in pfor_input.inputs]),
+      pfor_input.pfor.loop_len_vector)
 
 
 @RegisterPFor("Cross")
@@ -2941,14 +3237,14 @@ def _convert_select(pfor_input):
   t = pfor_input.stacked_input(1)
   e = pfor_input.stacked_input(2)
   cond_rank = array_ops.rank(cond)
-  cond, t, e = control_flow_ops.cond(
+  cond, t, e = smart_cond.smart_cond(
       cond_rank > 1, lambda: _inputs_with_flattening(pfor_input, [0, 1, 2]),
       lambda: [cond, t, e])
   outputs = _create_op(
       pfor_input.op_type, [cond, t, e], [x.dtype for x in pfor_input.outputs],
       attrs=pfor_input.op.node_def.attr).outputs
   n = pfor_input.pfor.loop_len_vector
-  out = control_flow_ops.cond(cond_rank > 1,
+  out = smart_cond.smart_cond(cond_rank > 1,
                               lambda: _unflatten_first_dim(outputs[0], n),
                               lambda: outputs[0])
   return [wrap(out, True) for x in outputs]
@@ -3062,6 +3358,7 @@ def _convert_multinomial(pfor_input):
 
 
 @RegisterPFor("StatelessMultinomial")
+@RegisterPFor("StatelessParameterizedTruncatedNormal")
 @RegisterPFor("StatelessRandomBinomial")
 @RegisterPFor("StatelessRandomGammaV2")
 @RegisterPFor("StatelessRandomNormal")
@@ -3086,15 +3383,17 @@ def _convert_stateless_multinomial(pfor_input):
 @RegisterPForWithArgs("XlaEinsum")
 @RegisterPForWithArgs("Einsum")
 def _convert_einsum(pfor_input, op_type):
-  first_input, first_input_stacked, _ = pfor_input.input(0)
-  second_input, second_input_stacked, _ = pfor_input.input(1)
+  # Einsum may have either 1 or 2 inputs.
+  inputs, input_stacked, _ = zip(*[
+      pfor_input.input(i)
+      for i in range(pfor_input.num_inputs)])
 
   # Parse the einsum equation.
   equation = pfor_input.get_attr("equation").decode("utf-8")
   input_expr, output_expr = equation.split("->")
-  input_a_expr, input_b_expr = input_expr.split(",")
+  input_exprs = input_expr.split(",")
 
-  # pick a placeholder symbol to use for the new axis
+  # Pick a placeholder symbol to use for the new axis.
   chosen_symbol = None
   for s in string.ascii_letters:
     if s in equation:
@@ -3106,19 +3405,22 @@ def _convert_einsum(pfor_input, op_type):
   if chosen_symbol is None:
     raise ValueError("Could not figure out what symbol to use for new axis.")
 
-  assert first_input_stacked or second_input_stacked
-  if first_input_stacked:
-    input_a_expr = "{}{}".format(chosen_symbol, input_a_expr)
-  if second_input_stacked:
-    input_b_expr = "{}{}".format(chosen_symbol, input_b_expr)
+  assert any(input_stacked)
+  for i in range(len(inputs)):
+    if input_stacked[i]:
+      input_exprs[i] = "{}{}".format(chosen_symbol, input_exprs[i])
   output_expr = "{}{}".format(chosen_symbol, output_expr)
 
-  new_equation = "{},{}->{}".format(input_a_expr, input_b_expr, output_expr)
+  new_equation = "{}->{}".format(",".join(input_exprs), output_expr)
+
   if op_type == "XlaEinsum":
-    result = xla.einsum(equation=new_equation, a=first_input, b=second_input)
+    if len(inputs) == 1:
+      result = xla.einsum(equation=new_equation, a=inputs[0])
+    else:
+      result = xla.einsum(equation=new_equation, a=inputs[0], b=inputs[1])
   else:
     assert op_type == "Einsum"
-    result = special_math_ops.einsum(new_equation, first_input, second_input)
+    result = special_math_ops.einsum(new_equation, *inputs)
 
   return wrap(result, True)
 
@@ -3198,6 +3500,26 @@ def _convert_print(pfor_input):
       [x.dtype for x in pfor_input.outputs],
       attrs=pfor_input.op.node_def.attr).outputs
   return [wrap(x, True) for x in outputs]
+
+
+@RegisterPFor("PrintV2")
+def _convert_print_v2(pfor_input):
+  # Print the full input Tensor(s), including the batch dimension if stacked.
+  return _create_op(
+      "PrintV2", [x.t for x in pfor_input.inputs],
+      [x.dtype for x in pfor_input.outputs],
+      attrs=pfor_input.op.node_def.attr)
+
+
+@RegisterPFor("StringFormat")
+def _convert_string_format(pfor_input):
+  # Format using the full input Tensor(s), including the batch dimension if
+  # stacked.
+  op = _create_op(
+      "StringFormat", [x.t for x in pfor_input.inputs],
+      [x.dtype for x in pfor_input.outputs],
+      attrs=pfor_input.op.node_def.attr)
+  return [wrap(output, False) for output in op.outputs]
 
 
 # data_flow_ops
@@ -3285,7 +3607,7 @@ def _handle_inside_pfor(pfor_input, handle):
   if handle.op.type not in [
       "TensorArrayV3", "TensorArrayGradV3", "TensorArrayGradWithShape"
   ]:
-    raise ValueError("Unable to find source for handle %s" % handle)
+    raise ValueError(f"Unable to find source for handle {handle}.")
   else:
     return pfor_input.pfor.op_is_inside_loop(handle.op)
 
@@ -3360,7 +3682,7 @@ def _convert_tensor_array_write_v3(pfor_input):
   is_inside = _handle_inside_pfor(pfor_input, pfor_input.op.inputs[0])
   if is_inside:
     if index_stacked:
-      raise ValueError("Need indices for %s to be loop invariant" % handle)
+      raise ValueError(f"Need indices for {handle} to be loop invariant.")
     if not flow_stacked and not value_stacked:
       flow_out = data_flow_ops.tensor_array_write_v3(handle, index, value, flow)
       return wrap(flow_out, False)
@@ -3380,7 +3702,7 @@ def _convert_tensor_array_write_v3(pfor_input):
       return _stack(flow_out, pfor_input.pfor.loop_len_vector)
   else:
     if not index_stacked:
-      raise ValueError("Need indices for %s to be not loop invariant" % handle)
+      raise ValueError(f"Need indices for {handle} to be not loop invariant.")
     # Note that even when index_stacked is true, actual values in index may
     # still not be unique. However that will cause runtime error when executing
     # the scatter operation below.
@@ -3457,7 +3779,7 @@ def _convert_tensor_array_scatter_v3(pfor_input):
   is_inside = _handle_inside_pfor(pfor_input, pfor_input.op.inputs[0])
   if is_inside:
     if indices_stacked:
-      raise ValueError("Need indices for %s to be loop invariant" % handle)
+      raise ValueError(f"Need indices for {handle} to be loop invariant.")
     # Note that flow_stacked indicates if existing values in the array are
     # stacked or not.
     if not flow_stacked and not value_stacked:
@@ -3478,7 +3800,7 @@ def _convert_tensor_array_scatter_v3(pfor_input):
                                                      flow)
     return _stack(flow_out, pfor_input.pfor.loop_len_vector)
   if not indices_stacked:
-    raise ValueError("Need indices for %s to be not loop invariant" % handle)
+    raise ValueError(f"Need indices for {handle} to be not loop invariant.")
   if not value_stacked:
     value = _stack(value, pfor_input.pfor.loop_len_vector).t
   value = _flatten_first_two_dims(value)
@@ -3509,8 +3831,7 @@ def _convert_tensor_array_grad_v3(pfor_input):
   return [wrap(grad_handle, False), wrap(flow_out, True)]
 
 
-def _stack_tensor_list_shape(shape, pfor_input):
-  first_dim = pfor_input.pfor.loop_len_vector
+def _stack_tensor_list_shape(shape, first_dim):
   shape_value = tensor_util.constant_value(shape)
   # Note that negative values in the shape are used to signify unknown shapes
   # and are handled in a special way.
@@ -3528,16 +3849,61 @@ def _stack_tensor_list_shape(shape, pfor_input):
         lambda: array_ops.concat([first_dim, shape], axis=0))
 
 
-def _tile_variant(t, pfor_input):
+def _tile_variant_with_length(t, length):
   """stacks `t` `length` times."""
+  if _is_variant_with_internal_stacking(t):
+    # The content of TensorLists is vectorized, not the variant itself.
+    return t
+  original_tensor = t
   t.set_shape([])
   t = array_ops.reshape(t, [-1])
   with ops.device("CPU:0"):
-    return array_ops.tile(t, pfor_input.pfor.loop_len_vector)
+    result = array_ops.tile(t, length)
+    # TODO(b/169968286): Should regular shape functions do handle data
+    # propagation here?
+    handle_data_util.copy_handle_data(original_tensor, result)
+    return result
+
+
+def _tile_variant(t, pfor_input):
+  """stacks `t` according to its loop context."""
+  return _tile_variant_with_length(t, pfor_input.pfor.loop_len_vector)
 
 
 def _untile_variant(t):
+  if _is_variant_with_internal_stacking(t):
+    # The content of TensorLists is vectorized, not the variant itself.
+    if not t.shape.is_compatible_with([]):
+      raise AssertionError(
+          ("Unexpectedly saw a vectorized variant (e.g. TensorList) with "
+           f"non-scalar shape: {t!r}"))
+    return t
   return array_ops.gather(t, 0)
+
+
+@RegisterPFor("OptionalFromValue")
+def _convert_optional_from_value(pfor_input):
+  pfor_input.stack_inputs()
+  return wrap(
+      gen_dataset_ops.optional_from_value([x.t for x in pfor_input.inputs]),
+      True)
+
+
+@RegisterPFor("OptionalGetValue")
+def _convert_optional_get_value(pfor_input):
+  handle = pfor_input.stacked_input(0)
+  output_types = pfor_input.get_attr("output_types")
+  original_output_shapes = pfor_input.get_attr("output_shapes")
+  output_shapes = []
+  for shape in original_output_shapes:
+    shape = tensor_shape.TensorShape(shape)
+    loop_len_shape = tensor_shape.TensorShape(
+        [tensor_util.constant_value(pfor_input.pfor.loop_len_vector)])
+    shape = loop_len_shape.concatenate(shape)
+    output_shapes.append(shape.as_proto())
+  results = gen_dataset_ops.optional_get_value(handle, output_types,
+                                               output_shapes)
+  return [wrap(t, True) for t in results]
 
 
 @RegisterPFor("TensorListReserve")
@@ -3547,7 +3913,8 @@ def _convert_tensor_list_reserve(pfor_input):
   element_dtype = pfor_input.get_attr("element_dtype")
 
   # Prepend a dimension to element_shape.
-  element_shape = _stack_tensor_list_shape(element_shape, pfor_input)
+  element_shape = _stack_tensor_list_shape(element_shape,
+                                           pfor_input.pfor.loop_len_vector)
   handle = list_ops.tensor_list_reserve(
       element_shape, num_elements, element_dtype=element_dtype)
 
@@ -3570,16 +3937,16 @@ def _convert_tensor_list_length(pfor_input):
   return wrap(list_ops.tensor_list_length(handle), False)
 
 
-def _stack_tensor_list(handle, dtype, pfor_input, element_shape=None):
+def _stack_tensor_list(handle, dtype, loop_len_vector, element_shape=None):
   if element_shape is None:
     element_shape = list_ops.tensor_list_element_shape(handle, dtypes.int32)
   length = list_ops.tensor_list_length(handle)
   new_handle = list_ops.tensor_list_reserve(
-      _stack_tensor_list_shape(element_shape, pfor_input), length, dtype)
+      _stack_tensor_list_shape(element_shape, loop_len_vector), length, dtype)
 
   def _body_fn(i, h):
     elem = list_ops.tensor_list_get_item(handle, i, dtype, element_shape)
-    elem = _stack(elem, pfor_input.pfor.loop_len_vector).t
+    elem = _stack(elem, loop_len_vector).t
     return i + 1, list_ops.tensor_list_set_item(h, i, elem)
 
   return control_flow_ops.while_loop(lambda i, _: i < length, _body_fn,
@@ -3595,7 +3962,8 @@ def _convert_tensor_list_get_item(pfor_input):
 
   if handle_stacked:
     handle = _untile_variant(handle)
-    element_shape = _stack_tensor_list_shape(element_shape, pfor_input)
+    element_shape = _stack_tensor_list_shape(element_shape,
+                                             pfor_input.pfor.loop_len_vector)
     if index_stacked:
       # We use a sequential loop since that may be more efficient than first
       # gathering and concatenating all the element corresponding to `index`,
@@ -3641,7 +4009,8 @@ def _convert_tensor_array_set_item(pfor_input):
       return wrap(
           list_ops.tensor_list_scatter(item, index, input_handle=handle), False)
     else:
-      handle = _stack_tensor_list(handle, item.dtype, pfor_input)
+      handle = _stack_tensor_list(handle, item.dtype,
+                                  pfor_input.pfor.loop_len_vector)
   else:
     handle = _untile_variant(handle)
 
@@ -3657,6 +4026,82 @@ def _convert_tensor_array_set_item(pfor_input):
     return wrap(_tile_variant(handle, pfor_input), True)
 
 
+@RegisterPFor("TensorListPushBack")
+def _convert_tensor_list_push_back(pfor_input):
+  handle, handle_stacked, _ = pfor_input.input(0)
+  tensor, tensor_stacked, _ = pfor_input.input(1)
+  if handle_stacked:
+    handle = _untile_variant(handle)
+  else:
+    handle = _stack_tensor_list(handle, tensor.dtype,
+                                pfor_input.pfor.loop_len_vector)
+  if not tensor_stacked:
+    tensor = _stack(tensor, pfor_input.pfor.loop_len_vector).t
+  handle = list_ops.tensor_list_push_back(handle, tensor)
+  return wrap(_tile_variant(handle, pfor_input), True)
+
+
+@RegisterPFor("TensorListPopBack")
+def _convert_tensor_array_push_back(pfor_input):
+  handle = pfor_input.stacked_input(0)
+  element_shape = pfor_input.unstacked_input(1)
+  handle = _untile_variant(handle)
+
+  if element_shape.shape.ndims == 0:
+    # Default / unspecified
+    vectorized_shape = -1
+  else:
+    # PopBack has an element shape set when it's the gradient of PushBack, only
+    # used when the list is uninitialized.
+    vectorized_shape = array_ops.concat(
+        [pfor_input.pfor.loop_len_vector, element_shape], axis=0)
+
+  output_handle, tensor = gen_list_ops.tensor_list_pop_back(
+      input_handle=handle, element_dtype=pfor_input.get_attr("element_dtype"),
+      element_shape=vectorized_shape)
+  return wrap(output_handle, True), wrap(tensor, True)
+
+
+@RegisterPFor("TensorListConcatV2")
+def _convert_tensor_list_concat_v2(pfor_input):
+  input_handle = pfor_input.stacked_input(0)
+  element_shape = pfor_input.unstacked_input(1)
+  leading_dims = pfor_input.unstacked_input(2)
+  element_dtype = pfor_input.get_attr("element_dtype")
+
+  handle = _untile_variant(input_handle)
+  length = list_ops.tensor_list_length(handle)
+  # Note that element_shape attribute can have incomplete shapes. This doesn't
+  # seem to work well when creating another list and then doing a concat on it.
+  # Hence we try to find the dynamic shape here.
+  element_shape = control_flow_ops.cond(
+      length > 0, lambda: array_ops.shape(
+          list_ops.tensor_list_get_item(handle, 0, element_dtype, None)),
+      lambda: constant_op.constant([0, 0], dtype=dtypes.int32))
+  # The code below creates a copy of the list with each elements' first two
+  # dimensions transposed.
+  new_element_shape = array_ops.concat(
+      [element_shape[1:2], element_shape[0:1], element_shape[2:]], axis=0)
+
+  # Create a new TensorList with elements transposed.
+  def _transpose_elem(i, h):
+    elem = list_ops.tensor_list_get_item(handle, i, element_dtype, None)
+    elem = _transpose_first_two_dims(elem)
+    return i + 1, list_ops.tensor_list_set_item(h, i, elem)
+
+  new_handle = list_ops.tensor_list_reserve(new_element_shape, length,
+                                            element_dtype)
+  new_handle = control_flow_ops.while_loop(lambda i, _: i < length,
+                                           _transpose_elem, [0, new_handle])[1]
+  output, lengths = gen_list_ops.tensor_list_concat_v2(
+      input_handle=new_handle,
+      element_dtype=element_dtype,
+      element_shape=new_element_shape,
+      leading_dims=leading_dims)
+  output = _transpose_first_two_dims(output)
+  return wrap(output, True), wrap(lengths, False)
+
+
 @RegisterPFor("TensorListStack")
 def _convert_tensor_list_stack(pfor_input):
   handle = pfor_input.stacked_input(0)
@@ -3665,7 +4110,8 @@ def _convert_tensor_list_stack(pfor_input):
   num_elements = pfor_input.get_attr("num_elements")
 
   handle = _untile_variant(handle)
-  input_shape = _stack_tensor_list_shape(input_shape, pfor_input)
+  input_shape = _stack_tensor_list_shape(input_shape,
+                                         pfor_input.pfor.loop_len_vector)
   output = list_ops.tensor_list_stack(
       handle,
       element_dtype,
@@ -3684,7 +4130,8 @@ def _convert_tensor_list_gather(pfor_input):
 
   if handle_stacked:
     handle = _untile_variant(handle)
-    element_shape = _stack_tensor_list_shape(element_shape, pfor_input)
+    element_shape = _stack_tensor_list_shape(element_shape,
+                                             pfor_input.pfor.loop_len_vector)
     if index_stacked:
       # We use a sequential loop since that may be more efficient than first
       # gathering and concatenating all the element corresponding to `index`,
@@ -3722,15 +4169,55 @@ def _convert_tensor_list_scatter(pfor_input):
   pfor_input.stack_inputs([1])
   handle, handle_stacked, _ = pfor_input.input(0)
   item = pfor_input.stacked_input(1)
-  # TODO(agarwal): handle stacked indices.
-  indices = pfor_input.unstacked_input(2)
+  indices, indices_stacked, _ = pfor_input.input(2)
   if handle_stacked:
     handle = _untile_variant(handle)
   else:
-    handle = _stack_tensor_list(handle, item.dtype, pfor_input)
+    handle = _stack_tensor_list(handle, item.dtype,
+                                pfor_input.pfor.loop_len_vector)
 
   item = _transpose_first_two_dims(item)
-  handle = list_ops.tensor_list_scatter(item, indices, input_handle=handle)
+  if indices_stacked:
+    # Pretend the list is a dense tensor:
+    #   list_as_dense: Tensor[list_len, loop_len, ...]
+    # And indices are a tensor with shape (before transpose):
+    #   indices: Tensor[loop_len, num_scatters]
+    # The item to scatter has shape (before transpose):
+    #   item: Tensor[loop_len, num_scatters, ...]
+    #
+    # We want list_as_dense[indices[i, j], i] = item[i, j]
+    #
+    # Since we're not just indexing along the first axis of `list_as_dense`, we
+    # need to first extract the relevant list entries based on `indices`,
+    # scatter into them according to the loop index, and re-scatter the chunks
+    # we updated back into the list.
+    indices = _transpose_first_two_dims(indices)
+    indices_flat = array_ops.reshape(indices, [-1])
+    # In many cases `indices` will be unique across pfor iterations, but this is
+    # not guaranteed. If there are duplicates, we need to map multiple updates
+    # to a single chunk extracted from the list. The last update should win.
+    unique_indices = array_ops.unique(indices_flat)
+    gathered_items = list_ops.tensor_list_gather(
+        handle, unique_indices.y, element_dtype=item.dtype,
+        element_shape=array_ops.shape(item)[1:])
+    loop_idx = math_ops.range(pfor_input.pfor.loop_len_vector[0])
+    scatters_per_op = array_ops.shape(indices)[0]
+
+    unique_indices_loop_idx = array_ops.reshape(array_ops.tile(
+        loop_idx[None, :], [scatters_per_op, 1]), [-1])
+    scatter_indices = array_ops.stack(
+        [unique_indices.idx, unique_indices_loop_idx],
+        axis=1)
+    # This op does *not* guarantee last-update-wins on GPU, so semantics may not
+    # be exactly preserved for duplicate updates there.
+    scattered = array_ops.tensor_scatter_nd_update(
+        tensor=gathered_items,
+        indices=scatter_indices,
+        updates=_flatten_first_two_dims(item))
+    handle = list_ops.tensor_list_scatter(
+        scattered, unique_indices.y, input_handle=handle)
+  else:
+    handle = list_ops.tensor_list_scatter(item, indices, input_handle=handle)
   return wrap(_tile_variant(handle, pfor_input), True)
 
 
@@ -3739,10 +4226,40 @@ def _convert_tensor_list_from_tensor(pfor_input):
   tensor = pfor_input.stacked_input(0)
   element_shape = pfor_input.unstacked_input(1)
   tensor = _transpose_first_two_dims(tensor)
-  element_shape = _stack_tensor_list_shape(element_shape, pfor_input)
+  element_shape = _stack_tensor_list_shape(element_shape,
+                                           pfor_input.pfor.loop_len_vector)
   handle = list_ops.tensor_list_from_tensor(tensor, element_shape)
   return wrap(_tile_variant(handle, pfor_input), True)
 
+
+@RegisterPFor("TensorScatterUpdate")
+def _convert_tensor_scatter_update(pfor_input):
+  pfor_input.stack_inputs([0, 1, 2])
+  tensor = pfor_input.stacked_input(0)
+  indices = pfor_input.stacked_input(1)
+  updates = pfor_input.stacked_input(2)
+
+  indices_shape = array_ops.shape(indices)
+  indices_rank = array_ops.rank(indices)
+  loop_length = indices_shape[0]
+
+  # Create a loop count range and extend its dimensions to match `indices`.
+  loop_count_shape = array_ops.tensor_scatter_nd_update(
+      array_ops.ones([indices_rank], dtype=dtypes.int32), [[0]], [loop_length])
+  loop_count = array_ops.reshape(math_ops.range(loop_length), loop_count_shape)
+
+  # Tile the loop count range for the batch dimensions (all except the first and
+  # last dimensions of indices).
+  # Rank(indices) >= 3 always for this function so we always have atleast 1.
+  tile_multiplier = array_ops.tensor_scatter_nd_update(
+      indices_shape, [[0], [indices_rank - 1]], [1, 1])
+  meta_index = array_ops.tile(loop_count, tile_multiplier)
+
+  # Insert the loop-identifying index.
+  indices = array_ops.concat([meta_index, indices], axis=-1)
+
+  result = array_ops.tensor_scatter_nd_update(tensor, indices, updates)
+  return wrap(result, True)
 
 # StackV2 conversion is tricky since we don't have arrays of StackV2. So similar
 # to TensorArrays, we convert them by changing the dimension of the elements
@@ -3807,7 +4324,7 @@ def _convert_stack_push_v2(pfor_input):
   swap_memory = pfor_input.get_attr("swap_memory")
 
   if not _stack_handle_inside_pfor(pfor_input.op.inputs[0], pfor_input):
-    raise ValueError("StackPushV2 not allowed on stacks created outside pfor")
+    raise ValueError("StackPushV2 not allowed on stacks created outside pfor.")
   stack_cache_key = _stack_cache_key(pfor_input)
   stacked = _stack_cache.get(stack_cache_key, None)
   if stacked is None:
@@ -3817,9 +4334,9 @@ def _convert_stack_push_v2(pfor_input):
     # If we previously made it unstacked then we can't revert to being stacked.
     if not stacked and elem_stacked:
       raise ValueError(
-          "It looks like the stack was previously determined to be loop"
-          " invariant, but we are now trying to push a loop dependent value"
-          " to it. This is currently unsupported.")
+          "It looks like the stack was previously determined to be loop "
+          "invariant, but we are now trying to push a loop dependent value "
+          "to it. This is currently unsupported.")
     if stacked and not elem_stacked:
       elem = _stack(elem, pfor_input.pfor.loop_len_vector).t
   out = data_flow_ops.stack_push_v2(handle, elem, swap_memory=swap_memory)
@@ -3905,7 +4422,7 @@ def _convert_parse_example_v2(pfor_input):
   dense_shapes = pfor_input.get_attr("dense_shapes")
   if serialized.shape.ndims not in (None, 1):
     raise ValueError("ParseExampleV2 can only be converted if `serialized` "
-                     "is scalar.")
+                     f"is scalar. Received shape: {serialized.shape}.")
   output = gen_parsing_ops.parse_example_v2(
       serialized=serialized,
       names=[],
@@ -3999,7 +4516,7 @@ def _outputs_for_branch(func_name, indices, pfor_input, inputs):
   stacked_outputs = []
   for out in outputs:
     if not out.is_stacked:
-      stacked_outputs.append(_stack(out.t, array_ops.size(indices)).t)
+      stacked_outputs.append(_stack(out.t, [array_ops.size(indices)]).t)
     else:
       stacked_outputs.append(out.t)
   return stacked_outputs
@@ -4075,8 +4592,8 @@ class WhileV2(object):
     self._body_func = pfor_input.op.graph._get_function(compat.as_bytes(
         body_func_name))
     if self._cond_func is None or self._body_func is None:
-      raise ValueError("Error extracting cond and body functions for op %s." % (
-          self._pfor_input.op))
+      raise ValueError("Error extracting cond and body functions for op "
+                       f"{self._pfor_input.op}.")
     # Indices of inputs that are passed unchanged through the while loop body.
     # Typically these are tensors captured from outside the body context.
     self._body_pass_through_indices = set()
@@ -4098,8 +4615,12 @@ class WhileV2(object):
       shapes = [tensor_shape.TensorShape(shape) for shape in shapes]
     for i, shape in enumerate(shapes):
       shape = shape.merge_with(output_shapes[i])
-      if self._pfor_input.input(i).is_stacked:
-        shape = tensor_shape.TensorShape([None]).concatenate(shape)
+      pfor_input = self._pfor_input.input(i)
+      if pfor_input.is_stacked:
+        if _is_variant_with_internal_stacking(pfor_input.t):
+          shape = tensor_shape.TensorShape([]).concatenate(shape)
+        else:
+          shape = tensor_shape.TensorShape([None]).concatenate(shape)
       output_shapes[i] = shape
     assert len(output_shapes) == self._pfor_input.num_inputs
     return output_shapes
@@ -4114,11 +4635,67 @@ class WhileV2(object):
     with ops.name_scope("while_init"):
       for inp in self._pfor_input.inputs:
         inputs.append(inp.t)
-        output_tas.append(tensor_array_ops.TensorArray(
+        variant_type_id = _variant_type_id(inp.t)
+        if variant_type_id in _INTERNAL_STACKING_TYPE_IDS:
+          if variant_type_id != full_type_pb2.TFT_ARRAY:
+            raise NotImplementedError(
+                "While loop conversion is only supported for TensorLists. Got "
+                f"another variant {inp.t}, probably an optional. Please file "
+                "a bug.")
+          # For TensorLists, the input format is:
+          #
+          #   List[user_list_len, Tensor[loop_len, ...]]
+          #
+          # rather than the usual
+          #
+          #   Tensor[loop_len, ...]
+          #
+          # The body of the loop will take and return lists in this "internal
+          # vectorization" format, so we want to keep it that way as much as
+          # possible. We'll accumulate finished iterations (only relevant for
+          # pfor-loop-variant while_loop conditions) in an accumulator with
+          # type:
+          #
+          #   List[user_list_len, List[loop_len, Tensor[...]]]
+          #
+          # This means that each while_loop iteration, we'll iterate over the
+          # length of the TensorList, dividing done/remaining pfor loop indices
+          # and scattering the done indices into the inner nested list of the
+          # accumulator.
+          element_shape = list_ops.tensor_list_element_shape(
+              inp.t, dtypes.int32)
+          if inp.is_stacked:
+            # Shapes may be tf.constant(-1) for fully dynamic, in which case
+            # slicing is an error.
+            element_shape = control_flow_ops.cond(
+                math_ops.equal(array_ops.rank(element_shape), 0),
+                lambda: element_shape,
+                lambda: element_shape[1:])
+          dtype = _parse_variant_shapes_and_types(inp.t)[0].dtype
+
+          def _init_loop_body(index, output_ta):
+            output_ta = output_ta.write(
+                index,
+                list_ops.tensor_list_reserve(element_shape, loop_len, dtype))
+            return index + 1, output_ta
+
+          length = list_ops.tensor_list_length(inp.t)
+          output_ta = tensor_array_ops.TensorArray(
+            inp.t.dtype,  # Variant; this is a nested TensorList
+            size=length,
+            dynamic_size=True,
+            infer_shape=False)
+          _, output_ta = control_flow_ops.while_loop(
+              lambda index, _: index < length,
+              _init_loop_body,
+              [0, output_ta])
+        else:
+          output_ta = tensor_array_ops.TensorArray(
             inp.t.dtype,
             size=loop_len,
             dynamic_size=False,
-            infer_shape=True))
+            infer_shape=True)
+        output_tas.append(output_ta)
     # See documentation for __call__ for the structure of init_values.
     indices = (
         math_ops.range(self._pfor.loop_len_vector[0])
@@ -4146,21 +4723,51 @@ class WhileV2(object):
     new_output_tas = []
     for i, (inp, stacked) in enumerate(zip(inputs, inputs_stacked)):
       pass_through = i in self._body_pass_through_indices
-      # Partition the inputs.
-      if stacked:
-        done_inp, new_inp = data_flow_ops.dynamic_partition(
-            inp, conditions_int, 2)
-      else:
-        if not pass_through:
-          done_inp = _stack(inp, [array_ops.size(done_indices)]).t
-        new_inp = inp
+      if not pass_through and  _variant_type_id(inp) == full_type_pb2.TFT_ARRAY:
+        shape_and_type = _parse_variant_shapes_and_types(inp)[0]
+        element_shape = list_ops.tensor_list_element_shape(inp, dtypes.int32)
+        user_list_len = list_ops.tensor_list_length(inp)
 
+        def _split_vectorized_ta_element(index, new_inp, new_out_ta):
+          elem = list_ops.tensor_list_get_item(inp, index, shape_and_type.dtype,
+                                               element_shape)
+          if stacked:
+            done_elem, new_elem = data_flow_ops.dynamic_partition(
+                elem, conditions_int, 2)
+            new_inp = list_ops.tensor_list_set_item(new_inp, index, new_elem)
+          else:
+            done_elem = _stack(elem, [array_ops.size(done_indices)]).t
+          done_accum = new_out_ta.read(index)
+          done_accum = list_ops.tensor_list_scatter(
+              tensor=done_elem, indices=done_indices, input_handle=done_accum)
+          new_out_ta = new_out_ta.write(index, done_accum)
+          return index + 1, new_inp, new_out_ta
+
+        length = list_ops.tensor_list_length(inp)
+        new_inp = list_ops.tensor_list_reserve(
+            tensor_shape.TensorShape([None])
+            + tensor_shape.TensorShape(shape_and_type.shape)[1:],
+            user_list_len, shape_and_type.dtype)
+        _, new_inp, out_ta = control_flow_ops.while_loop(
+            lambda index, unused_new_inp, unused_new_out_ta: index < length,
+            _split_vectorized_ta_element,
+            [0, new_inp, output_tas[i]])
+      else:
+        # Partition the inputs.
+        if stacked:
+          done_inp, new_inp = data_flow_ops.dynamic_partition(
+              inp, conditions_int, 2)
+        else:
+          if not pass_through:
+            done_inp = _stack(inp, [array_ops.size(done_indices)]).t
+          new_inp = inp
+
+        out_ta = output_tas[i]
+        if not pass_through:
+          # Note that done_indices can be empty. done_inp should also be empty
+          # in that case.
+          out_ta = out_ta.scatter(done_indices, done_inp)
       new_inputs.append(new_inp)
-      out_ta = output_tas[i]
-      if not pass_through:
-        # Note that done_indices can be empty. done_inp should also be empty
-        # in that case.
-        out_ta = out_ta.scatter(done_indices, done_inp)
       new_output_tas.append(out_ta)
 
     assert len(new_output_tas) == len(output_tas)
@@ -4209,7 +4816,12 @@ class WhileV2(object):
           if out.is_stacked != inp.is_stacked:
             stacking_mismatch = True
             mismatching_stacked_indices.append(i)
-            wrapped_inputs[i] = _stack(inp.t, [array_ops.size(new_indices)])
+            stacked = _stack(inp.t, [array_ops.size(new_indices)])
+            if inp.t.dtype == dtypes.variant:
+              stacked = wrap(
+                  _tile_variant_with_length(stacked.t,
+                                            [array_ops.size(new_indices)]))
+            wrapped_inputs[i] = stacked
         if not stacking_mismatch:
           if mismatching_stacked_indices:
             # We needed to stack some inputs. This code will be abandoned and
@@ -4356,7 +4968,37 @@ class WhileV2(object):
               outputs.append(init_values[i + 2])
             else:
               ta = output_tas[i]
-              outputs.append(ta.stack())
+              if _variant_type_id(inp) == full_type_pb2.TFT_ARRAY:
+                shape_and_type = _parse_variant_shapes_and_types(inp)[0]
+                length = list_ops.tensor_list_length(inp)
+
+                # We have been accumulating values in a:
+                #
+                #   List[user_list_len, List[loop_len, Tensor[...]]]
+                #
+                # We want to return an output in the same format as the input:
+                #
+                #   List[user_list_len, Tensor[loop_len, ...]]
+                #
+                # So we need to loop over the list and stack its contents.
+                def _stack_loop_body(index, output_list):
+                  current_value = ta.read(index)
+                  output_list = list_ops.tensor_list_set_item(
+                      output_list, index,
+                      list_ops.tensor_list_stack(
+                          current_value, shape_and_type.dtype))
+                  return index + 1, output_list
+
+                output_list = list_ops.tensor_list_reserve(
+                    tensor_shape.TensorShape(shape_and_type.shape), length,
+                    shape_and_type.dtype)
+                _, output_list = control_flow_ops.while_loop(
+                    lambda index, _: index < length,
+                    _stack_loop_body,
+                    [0, output_list])
+                outputs.append(output_list)
+              else:
+                outputs.append(ta.stack())
           else:
             outputs.append(inp)
         return outputs
@@ -4364,7 +5006,8 @@ class WhileV2(object):
     _ = while_fn.get_concrete_function()
     if indices_to_stack:
       # Need to abandon the current conversion, stack some inputs and restart.
-      self._pfor_input.stack_inputs(stack_indices=indices_to_stack)
+      self._pfor_input.stack_inputs(
+          stack_indices=indices_to_stack, tile_variants=True)
       # Note that this call will recurse at most one time. The first call will
       # do the required stacking, based on the iterative procedure in
       # _process_body, and the next invocation to __call__ should not need to do

@@ -41,7 +41,7 @@ namespace blink {
 namespace {
 
 // Constants to specify the type of audio data used.
-constexpr media::AudioCodec kCodec = media::kCodecVorbis;
+constexpr media::AudioCodec kCodec = media::AudioCodec::kVorbis;
 constexpr media::SampleFormat kSampleFormat = media::kSampleFormatPlanarF32;
 constexpr media::ChannelLayout kChannelLayout = media::CHANNEL_LAYOUT_STEREO;
 constexpr int kChannels = 2;
@@ -137,13 +137,13 @@ class FakeInterfaceFactory : public media::mojom::InterfaceFactory {
           client_extension,
       mojo::PendingReceiver<media::mojom::Renderer> receiver) override {}
 #endif  // defined(OS_ANDROID
-  void CreateCdm(const std::string& key_system,
-                 const media::CdmConfig& cdm_config,
+  void CreateCdm(const media::CdmConfig& cdm_config,
                  CreateCdmCallback callback) override {
     std::move(callback).Run(mojo::NullRemote(), nullptr, "CDM not supported");
   }
 #if defined(OS_WIN)
   void CreateMediaFoundationRenderer(
+      mojo::PendingRemote<media::mojom::MediaLog> media_log_remote,
       mojo::PendingReceiver<media::mojom::Renderer> receiver,
       mojo::PendingReceiver<media::mojom::MediaFoundationRendererExtension>
           renderer_extension_receiver) override {}
@@ -328,8 +328,9 @@ TEST_F(AudioDecoderBrokerTest, Decode_WithMojoDecoder) {
 
   // Use an MpegH config to prevent FFmpeg from being selected.
   InitializeDecoder(media::AudioDecoderConfig(
-      media::kCodecMpegHAudio, kSampleFormat, kChannelLayout, kSamplesPerSecond,
-      media::EmptyExtraData(), media::EncryptionScheme::kUnencrypted));
+      media::AudioCodec::kMpegHAudio, kSampleFormat, kChannelLayout,
+      kSamplesPerSecond, media::EmptyExtraData(),
+      media::EncryptionScheme::kUnencrypted));
   EXPECT_EQ(GetDecoderType(), media::AudioDecoderType::kTesting);
 
   // Using vorbis buffer here because its easy and the fake decoder generates

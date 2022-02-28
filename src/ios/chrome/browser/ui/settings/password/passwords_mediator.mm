@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/saved_passwords_presenter_observer.h"
+#import "ios/chrome/browser/ui/settings/utils/password_auto_fill_status_manager.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -31,17 +32,13 @@
 
 namespace {
 // Amount of time after which timestamp is shown instead of "just now".
-constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes =
-    base::TimeDelta::FromMinutes(1);
+constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes = base::Minutes(1);
 }  // namespace
 
 @interface PasswordsMediator () <PasswordCheckObserver,
                                  SavedPasswordsPresenterObserver> {
   // The service responsible for password check feature.
   scoped_refptr<IOSChromePasswordCheckManager> _passwordCheckManager;
-
-  // Service used to check if user is signed in.
-  AuthenticationService* _authService;
 
   // Service to check if passwords are synced.
   SyncSetupService* _syncService;
@@ -74,11 +71,9 @@ constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes =
 - (instancetype)initWithPasswordCheckManager:
                     (scoped_refptr<IOSChromePasswordCheckManager>)
                         passwordCheckManager
-                                 authService:(AuthenticationService*)authService
                                  syncService:(SyncSetupService*)syncService {
   self = [super init];
   if (self) {
-    _authService = authService;
     _syncService = syncService;
 
     _passwordCheckManager = passwordCheckManager;
@@ -91,6 +86,9 @@ constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes =
     _passwordsPresenterObserver =
         std::make_unique<SavedPasswordsPresenterObserverBridge>(
             self, _savedPasswordsPresenter);
+    if (base::FeatureList::IsEnabled(kCredentialProviderExtensionPromo)) {
+      [[PasswordAutoFillStatusManager sharedManager] addObserver:self];
+    }
   }
   return self;
 }
@@ -101,6 +99,9 @@ constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes =
   }
   if (_passwordCheckObserver) {
     _passwordCheckManager->RemoveObserver(_passwordCheckObserver.get());
+  }
+  if (base::FeatureList::IsEnabled(kCredentialProviderExtensionPromo)) {
+    [[PasswordAutoFillStatusManager sharedManager] removeObserver:self];
   }
 }
 
@@ -237,6 +238,15 @@ constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes =
                compromisedPasswordsCount:credentials.size()];
 }
 
+#pragma mark - PasswordAutoFillStatusObserver
+
+- (void)passwordAutoFillStatusDidChange {
+  // Since this action is appended to the main queue, at this stage,
+  // self.consumer should have already been setup.
+  DCHECK(self.consumer);
+  [self.consumer updatePasswordsInOtherAppsDetailedText];
+}
+
 #pragma mark - Private Methods
 
 // Provides passwords and blocked forms to the '_consumer'.
@@ -291,7 +301,7 @@ constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes =
 
 // Compute whether user is capable to run password check in Google Account.
 - (BOOL)canUseAccountPasswordCheckup {
-  return _authService->IsAuthenticated() && _syncService->IsSyncEnabled() &&
+  return _syncService->CanSyncFeatureStart() &&
          !_syncService->IsEncryptEverythingEnabled();
 }
 

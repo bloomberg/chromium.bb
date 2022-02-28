@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -307,7 +307,7 @@ CSSStyleValueVector StyleValueFactory::FromString(
 CSSStyleValue* StyleValueFactory::CssValueToStyleValue(
     const CSSPropertyName& name,
     const CSSValue& css_value) {
-  DCHECK(!CSSProperty::Get(name.Id()).IsRepeated());
+  DCHECK(!CSSProperty::IsRepeated(name));
   CSSStyleValue* style_value =
       CreateStyleValueWithProperty(name.Id(), css_value);
   if (!style_value)
@@ -315,7 +315,6 @@ CSSStyleValue* StyleValueFactory::CssValueToStyleValue(
   return style_value;
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 CSSStyleValueVector StyleValueFactory::CoerceStyleValuesOrStrings(
     const CSSProperty& property,
     const AtomicString& custom_property_name,
@@ -350,40 +349,6 @@ CSSStyleValueVector StyleValueFactory::CoerceStyleValuesOrStrings(
   }
   return style_values;
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-CSSStyleValueVector StyleValueFactory::CoerceStyleValuesOrStrings(
-    const CSSProperty& property,
-    const AtomicString& custom_property_name,
-    const HeapVector<CSSStyleValueOrString>& values,
-    const ExecutionContext& execution_context) {
-  const CSSParserContext* parser_context = nullptr;
-
-  CSSStyleValueVector style_values;
-  for (const auto& value : values) {
-    if (value.IsCSSStyleValue()) {
-      if (!value.GetAsCSSStyleValue())
-        return CSSStyleValueVector();
-      style_values.push_back(*value.GetAsCSSStyleValue());
-    } else {
-      DCHECK(value.IsString());
-      if (!parser_context) {
-        parser_context =
-            MakeGarbageCollected<CSSParserContext>(execution_context);
-      }
-
-      const auto subvalues = StyleValueFactory::FromString(
-          property.PropertyID(), custom_property_name, value.GetAsString(),
-          parser_context);
-      if (subvalues.IsEmpty())
-        return CSSStyleValueVector();
-
-      DCHECK(!subvalues.Contains(nullptr));
-      style_values.AppendVector(subvalues);
-    }
-  }
-  return style_values;
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
     const CSSPropertyName& name,
@@ -404,8 +369,8 @@ CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
       // TODO(andruud): Custom properties claim to not be repeated, even though
       // they may be. Therefore we must ignore "IsRepeated" for custom
       // properties.
-      (!CSSProperty::Get(property_id).IsRepeated() &&
-       property_id != CSSPropertyID::kVariable) ||
+      (property_id != CSSPropertyID::kVariable &&
+       !CSSProperty::Get(property_id).IsRepeated()) ||
       // Note: CSSTransformComponent is parsed as CSSFunctionValue, which is a
       // CSSValueList. We do not yet support such CSSFunctionValues, however.
       // TODO(andruud): Make CSSTransformComponent a subclass of CSSStyleValue,

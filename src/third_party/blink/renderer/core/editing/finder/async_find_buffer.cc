@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "third_party/blink/renderer/core/editing/finder/async_find_buffer.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/finder/find_buffer.h"
 
@@ -10,8 +11,7 @@ namespace blink {
 
 namespace {
 // Indicates how long FindBuffer task should run before pausing the work.
-constexpr base::TimeDelta kFindBufferTaskTimeoutMs =
-    base::TimeDelta::FromMilliseconds(100);
+constexpr base::TimeDelta kFindBufferTaskTimeoutMs = base::Milliseconds(100);
 }  // namespace
 
 void AsyncFindBuffer::FindMatchInRange(RangeInFlatTree* search_range,

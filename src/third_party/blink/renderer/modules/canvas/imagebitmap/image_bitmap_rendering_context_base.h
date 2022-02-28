@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace cc {
 class Layer;
@@ -17,7 +17,6 @@ class Layer;
 
 namespace blink {
 
-class HTMLCanvasElementOrOffscreenCanvas;
 class ImageBitmap;
 class ImageLayerBridge;
 class V8UnionHTMLCanvasElementOrOffscreenCanvas;
@@ -39,11 +38,7 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
   }
 
   bool CanCreateCanvas2dResourceProvider() const;
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   V8UnionHTMLCanvasElementOrOffscreenCanvas* getHTMLOrOffscreenCanvas() const;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void getHTMLOrOffscreenCanvas(HTMLCanvasElementOrOffscreenCanvas&) const;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   void SetIsInHiddenPage(bool) override {}
   void SetIsBeingDisplayed(bool) override {}
@@ -53,7 +48,7 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
   void SetImage(ImageBitmap*);
   scoped_refptr<StaticBitmapImage> GetImage() final;
 
-  void SetUV(const FloatPoint& left_top, const FloatPoint& right_bottom);
+  void SetUV(const gfx::PointF& left_top, const gfx::PointF& right_bottom);
   bool IsComposited() const final { return true; }
   bool IsAccelerated() const final;
   bool PushFrame() override;

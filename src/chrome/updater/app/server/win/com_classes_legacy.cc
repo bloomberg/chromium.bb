@@ -5,27 +5,87 @@
 #include "chrome/updater/app/server/win/com_classes_legacy.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
+#include "base/check.h"
 #include "base/check_op.h"
-#include "base/sequenced_task_runner.h"
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/win/registry.h"
 #include "base/win/scoped_bstr.h"
+#include "base/win/scoped_handle.h"
+#include "base/win/scoped_process_information.h"
 #include "chrome/updater/app/server/win/server.h"
 #include "chrome/updater/constants.h"
+#include "chrome/updater/update_service.h"
+#include "chrome/updater/win/win_constants.h"
+#include "chrome/updater/win/win_util.h"
 
 namespace {
 
-// Constants from Google Update.
-// TODO(crbug/1094024): once group policy manager code is available, the
-// server must respond with the following errors:
-// const HRESULT GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY = 0x80040813;
-// const HRESULT GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL = 0x8004081f;
+HRESULT OpenCallerProcessHandle(DWORD proc_id,
+                                base::win::ScopedHandle& proc_handle) {
+  proc_handle.Set(::OpenProcess(PROCESS_DUP_HANDLE, false, proc_id));
+  return proc_handle.IsValid() ? S_OK : updater::HRESULTFromLastError();
+}
 
-// This is a GoogleUpdate error code, which must be retained by this
-// implementation in order to be backward compatible with the existing
-// update client code in Chrome.
-const HRESULT GOOPDATEINSTALL_E_INSTALLER_FAILED = 0x80040902;
+std::wstring GetCommandToLaunch(const WCHAR* app_guid, const WCHAR* cmd_id) {
+  if (!app_guid || !cmd_id)
+    return std::wstring();
+
+  base::win::RegKey key(HKEY_LOCAL_MACHINE, CLIENTS_KEY,
+                        updater::Wow6432(KEY_READ));
+  if (key.OpenKey(app_guid, updater::Wow6432(KEY_READ)) != ERROR_SUCCESS)
+    return std::wstring();
+
+  std::wstring cmd_line;
+  key.ReadValue(cmd_id, &cmd_line);
+  return cmd_line;
+}
+
+HRESULT LaunchCmd(const std::wstring& cmd,
+                  const base::win::ScopedHandle& caller_proc_handle,
+                  ULONG_PTR* proc_handle) {
+  if (cmd.empty() || !caller_proc_handle.IsValid() || !proc_handle)
+    return E_INVALIDARG;
+
+  *proc_handle = NULL;
+
+  STARTUPINFOW startup_info = {sizeof(startup_info)};
+  PROCESS_INFORMATION process_information = {0};
+  std::wstring cmd_line(cmd);
+  if (!::CreateProcess(nullptr, &cmd_line[0], nullptr, nullptr, FALSE,
+                       CREATE_NO_WINDOW, nullptr, nullptr, &startup_info,
+                       &process_information)) {
+    return updater::HRESULTFromLastError();
+  }
+
+  base::win::ScopedProcessInformation pi(process_information);
+  DCHECK(pi.IsValid());
+
+  HANDLE duplicate_proc_handle = NULL;
+
+  bool res = ::DuplicateHandle(
+                 ::GetCurrentProcess(),     // Current process.
+                 pi.process_handle(),       // Process handle to duplicate.
+                 caller_proc_handle.Get(),  // Process receiving the handle.
+                 &duplicate_proc_handle,    // Duplicated handle.
+                 PROCESS_QUERY_INFORMATION |
+                     SYNCHRONIZE,  // Access requested for the new handle.
+                 FALSE,            // Don't inherit the new handle.
+                 0) != 0;          // Flags.
+  if (!res) {
+    HRESULT hr = updater::HRESULTFromLastError();
+    VLOG(1) << "Failed to duplicate the handle " << hr;
+    return hr;
+  }
+
+  // The caller must close this handle.
+  *proc_handle = reinterpret_cast<ULONG_PTR>(duplicate_proc_handle);
+  return S_OK;
+}
 
 }  // namespace
 
@@ -102,9 +162,10 @@ STDMETHODIMP LegacyOnDemandImpl::checkForUpdate() {
              LegacyOnDemandImplPtr obj) {
             update_service->Update(
                 obj->app_id(), UpdateService::Priority::kForeground,
+                UpdateService::PolicySameVersionUpdate::kNotAllowed,
                 base::BindRepeating(
                     [](LegacyOnDemandImplPtr obj,
-                       UpdateService::UpdateState state_update) {
+                       const UpdateService::UpdateState& state_update) {
                       obj->task_runner_->PostTask(
                           FROM_HERE,
                           base::BindOnce(
@@ -414,6 +475,57 @@ void LegacyOnDemandImpl::UpdateStateCallback(
 void LegacyOnDemandImpl::UpdateResultCallback(UpdateService::Result result) {
   base::AutoLock lock{lock_};
   result_ = result;
+}
+
+LegacyProcessLauncherImpl::LegacyProcessLauncherImpl() = default;
+LegacyProcessLauncherImpl::~LegacyProcessLauncherImpl() = default;
+
+STDMETHODIMP LegacyProcessLauncherImpl::LaunchCmdLine(const WCHAR* cmd_line) {
+  return LaunchCmdLineEx(cmd_line, nullptr, nullptr, nullptr);
+}
+
+STDMETHODIMP LegacyProcessLauncherImpl::LaunchBrowser(DWORD browser_type,
+                                                      const WCHAR* url) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP LegacyProcessLauncherImpl::LaunchCmdElevated(
+    const WCHAR* app_guid,
+    const WCHAR* cmd_id,
+    DWORD caller_proc_id,
+    ULONG_PTR* proc_handle) {
+  VLOG(2) << "LegacyProcessLauncherImpl::LaunchCmdElevated: app " << app_guid
+          << ", cmd_id " << cmd_id << ", pid " << caller_proc_id;
+
+  if (!cmd_id || !wcslen(cmd_id) || !proc_handle) {
+    VLOG(1) << "Invalid arguments";
+    return E_INVALIDARG;
+  }
+
+  base::win::ScopedHandle caller_proc_handle;
+  HRESULT hr = OpenCallerProcessHandle(caller_proc_id, caller_proc_handle);
+  if (FAILED(hr)) {
+    VLOG(1) << "failed to open caller's handle " << hr;
+    return hr;
+  }
+
+  std::wstring cmd = GetCommandToLaunch(app_guid, cmd_id);
+  if (cmd.empty()) {
+    VLOG(1) << "cmd not found";
+    return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
+  }
+
+  VLOG(2) << "[LegacyProcessLauncherImpl::LaunchCmdElevated][cmd " << cmd
+          << "]";
+  return LaunchCmd(cmd, caller_proc_handle, proc_handle);
+}
+
+STDMETHODIMP LegacyProcessLauncherImpl::LaunchCmdLineEx(
+    const WCHAR* cmd_line,
+    DWORD* server_proc_id,
+    ULONG_PTR* proc_handle,
+    ULONG_PTR* stdout_handle) {
+  return E_NOTIMPL;
 }
 
 }  // namespace updater

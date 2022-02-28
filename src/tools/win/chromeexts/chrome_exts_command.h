@@ -13,7 +13,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 
 namespace tools {
@@ -42,6 +41,9 @@ class ChromeExtsCommand {
     }
     return hr;
   }
+
+  ChromeExtsCommand(const ChromeExtsCommand&) = delete;
+  ChromeExtsCommand& operator=(const ChromeExtsCommand&) = delete;
 
   virtual ~ChromeExtsCommand();
 
@@ -72,8 +74,6 @@ class ChromeExtsCommand {
   base::CommandLine command_line_{base::CommandLine::NO_PROGRAM};
   ComPtr<IDebugClient> debug_client_;
   ComPtr<IDebugControl> debug_control_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeExtsCommand);
 };
 
 }  // namespace chromeexts

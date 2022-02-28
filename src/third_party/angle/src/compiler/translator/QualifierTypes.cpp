@@ -511,8 +511,8 @@ bool JoinParameterStorageQualifier(TQualifier *joinedQualifier, TQualifier stora
         {
             switch (storageQualifier)
             {
-                case EvqIn:
-                    *joinedQualifier = EvqConstReadOnly;
+                case EvqParamIn:
+                    *joinedQualifier = EvqParamConst;
                     break;
                 default:
                     return false;
@@ -641,7 +641,6 @@ TTypeQualifier GetParameterTypeQualifierFromSortedSequence(
         switch (qualifier->getType())
         {
             case QtInvariant:
-            case QtPrecise:
             case QtInterpolation:
             case QtLayout:
                 break;
@@ -661,6 +660,10 @@ TTypeQualifier GetParameterTypeQualifierFromSortedSequence(
                     static_cast<const TPrecisionQualifierWrapper *>(qualifier)->getQualifier();
                 ASSERT(typeQualifier.precision != EbpUndefined);
                 break;
+            case QtPrecise:
+                isQualifierValid      = true;
+                typeQualifier.precise = true;
+                break;
             default:
                 UNREACHABLE();
         }
@@ -675,17 +678,17 @@ TTypeQualifier GetParameterTypeQualifierFromSortedSequence(
 
     switch (typeQualifier.qualifier)
     {
-        case EvqIn:
-        case EvqConstReadOnly:  // const in
-        case EvqOut:
-        case EvqInOut:
+        case EvqParamIn:
+        case EvqParamConst:  // const in
+        case EvqParamOut:
+        case EvqParamInOut:
             break;
         case EvqConst:
-            typeQualifier.qualifier = EvqConstReadOnly;
+            typeQualifier.qualifier = EvqParamConst;
             break;
         case EvqTemporary:
-            // no qualifier has been specified, set it to EvqIn which is the default
-            typeQualifier.qualifier = EvqIn;
+            // no qualifier has been specified, set it to EvqParamIn which is the default
+            typeQualifier.qualifier = EvqParamIn;
             break;
         default:
             diagnostics->error(sortedSequence[0]->getLine(), "Invalid parameter qualifier ",

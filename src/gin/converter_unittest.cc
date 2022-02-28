@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/utf_string_conversions.h"
 #include "gin/function_template.h"
 #include "gin/handle.h"
@@ -20,7 +20,12 @@
 #include "gin/wrappable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-container.h"
+#include "v8/include/v8-forward.h"
+#include "v8/include/v8-function.h"
+#include "v8/include/v8-isolate.h"
+#include "v8/include/v8-primitive.h"
+#include "v8/include/v8-template.h"
 
 namespace gin {
 

@@ -21,9 +21,9 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.vr.rules.ArPlaybackFile;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.ArTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -66,7 +66,10 @@ public class WebXrArViewportScaleTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testViewportScaleSameFrame() {
+    @ArPlaybackFile(
+            "chrome/test/data/xr/ar_playback_datasets/floor_session_with_tracking_loss_37s_30fps.mp4")
+    public void
+    testViewportScaleSameFrame() {
         mWebXrArTestFramework.loadFileAndAwaitInitialization(
                 "webxr_test_basic_viewport_scale", PAGE_LOAD_TIMEOUT_S);
         mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
@@ -80,7 +83,10 @@ public class WebXrArViewportScaleTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testViewportScaleNextFrame() {
+    @ArPlaybackFile(
+            "chrome/test/data/xr/ar_playback_datasets/floor_session_with_tracking_loss_37s_30fps.mp4")
+    public void
+    testViewportScaleNextFrame() {
         mWebXrArTestFramework.loadFileAndAwaitInitialization(
                 "webxr_test_basic_viewport_scale", PAGE_LOAD_TIMEOUT_S);
         mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
@@ -94,8 +100,10 @@ public class WebXrArViewportScaleTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    @DisabledTest(message = "see https://crbug.com/1207984")
-    public void testRecommendedViewportScale() {
+    @ArPlaybackFile(
+            "chrome/test/data/xr/ar_playback_datasets/floor_session_with_tracking_loss_37s_30fps.mp4")
+    public void
+    testRecommendedViewportScale() {
         mWebXrArTestFramework.loadFileAndAwaitInitialization(
                 "webxr_test_basic_viewport_scale", PAGE_LOAD_TIMEOUT_S);
         mWebXrArTestFramework.enterSessionWithUserGestureOrFail();

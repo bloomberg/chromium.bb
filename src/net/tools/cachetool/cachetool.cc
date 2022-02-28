@@ -8,13 +8,13 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/hash/md5.h"
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -26,6 +26,7 @@
 #include "net/disk_cache/disk_cache_test_util.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
 
 using disk_cache::Backend;
