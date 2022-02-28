@@ -275,8 +275,8 @@ XLA_TEST_F(CpuGpuFusionTest, RandomizedParallelPartition) {
   LOG(INFO) << "RandomizedParallelPartition seed: " << seed;
   std::mt19937 generator(seed);
   std::uniform_int_distribution<int> distribution(128, 1024);
-  const int64 rand_dim0_size = distribution(generator);
-  const int64 dim1_size = 1024;
+  const int64_t rand_dim0_size = distribution(generator);
+  const int64_t dim1_size = 1024;
   Shape shape =
       ShapeUtil::MakeShapeWithLayout(F32, {rand_dim0_size, dim1_size}, {1, 0});
   // Build simple fusion computation: y = x^2 (elementwise).
@@ -824,15 +824,14 @@ XLA_TEST_F(FusionClientLibraryTest, ManyLayoutTransformations) {
   ComputeAndCompare(&b, {});
 }
 
-void BM_ParallelFusion(int num_iters) {
+void BM_ParallelFusion(::testing::benchmark::State& state) {
   // Simple element-wise computation to benchmark parallel task partitioning.
-  tensorflow::testing::StopTiming();
 
   se::Platform* platform = PlatformUtil::GetDefaultPlatform().ValueOrDie();
   auto executors = PlatformUtil::GetStreamExecutors(platform).ValueOrDie();
   se::StreamExecutorMemoryAllocator allocator(platform, executors);
 
-  const int64 intra_op_parallelism_threads = 24;
+  const int64_t intra_op_parallelism_threads = 24;
   xla::LocalClientOptions client_options;
   client_options.set_platform(platform);
   client_options.set_intra_op_parallelism_threads(intra_op_parallelism_threads);
@@ -842,12 +841,12 @@ void BM_ParallelFusion(int num_iters) {
   int device_ordinal = client->default_device_ordinal();
 
   // Computation shape parameters.
-  const int64 param0_dim0 = 1024;
-  const int64 param0_dim1 = 1024;
-  const int64 param1_dim0 = 1024;
-  const int64 param1_dim1 = 1024;
-  const int64 param2_dim0 = 1024;
-  const int64 param2_dim1 = 1024;
+  const int64_t param0_dim0 = 1024;
+  const int64_t param0_dim1 = 1024;
+  const int64_t param1_dim0 = 1024;
+  const int64_t param1_dim1 = 1024;
+  const int64_t param2_dim0 = 1024;
+  const int64_t param2_dim1 = 1024;
 
   // Create computation.
   XlaBuilder builder("ParallelFusion");
@@ -912,20 +911,19 @@ void BM_ParallelFusion(int num_iters) {
   }
 
   // Run benchmark.
-  const int64 total_bytes = param0_dim0 * param0_dim0 +
-                            param1_dim0 * param1_dim0 +
-                            param2_dim0 * param2_dim0;
-  tensorflow::testing::BytesProcessed(static_cast<int64>(num_iters) *
-                                      total_bytes * sizeof(float));
-  tensorflow::testing::UseRealTime();
-  tensorflow::testing::StartTiming();
-  for (int i = 0; i < num_iters; ++i) {
+  const int64_t total_bytes = param0_dim0 * param0_dim0 +
+                              param1_dim0 * param1_dim0 +
+                              param2_dim0 * param2_dim0;
+
+  for (auto s : state) {
     auto result = executable->Run({&buffer0, &buffer1, &buffer2}, options);
     ASSERT_TRUE(result.ok());
   }
+  state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) *
+                          total_bytes * sizeof(float));
 }
 
-BENCHMARK(BM_ParallelFusion);
+BENCHMARK(BM_ParallelFusion)->UseRealTime();
 
 }  // namespace
 }  // namespace xla

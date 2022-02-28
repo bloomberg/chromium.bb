@@ -30,16 +30,15 @@ devtools_module("text_utils") {
 devtools_entrypoint("bundle") {
   entrypoint = "text_utils.ts"
 
-  deps = [
-    ":text_utils",
-    "../../third_party/codemirror:bundle",
-  ]
+  deps = [ ":text_utils" ]
 
   visibility = [
     ":*",
     "../*",
     "../../../test/unittests/front_end/models/text_utils/*",
+    "../../../test/unittests/front_end/panels/coverage/*",
     "../../entrypoints/*",
+    "../../legacy_test_runner/test_runner/*",
     "../../panels/*",
 
     # TODO(crbug.com/1202788): Remove invalid dependents
@@ -60,6 +59,6 @@ devtools_entrypoint("legacy") {
 
   visibility = [
     "../..:legacy_entrypoints",
-    "../../entrypoints/shell/*",
+    "../../legacy_test_runner/*",
   ]
 }

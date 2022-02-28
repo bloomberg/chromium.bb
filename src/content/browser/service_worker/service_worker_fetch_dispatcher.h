@@ -9,15 +9,14 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
@@ -30,7 +29,6 @@ namespace content {
 
 class ServiceWorkerContextWrapper;
 class ServiceWorkerVersion;
-class URLLoaderFactoryGetter;
 
 // A helper class to dispatch fetch event to a service worker.
 class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
@@ -59,13 +57,17 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
                                base::OnceClosure prepare_callback,
                                FetchCallback fetch_callback,
                                bool is_offline_capability_check);
+
+  ServiceWorkerFetchDispatcher(const ServiceWorkerFetchDispatcher&) = delete;
+  ServiceWorkerFetchDispatcher& operator=(const ServiceWorkerFetchDispatcher&) =
+      delete;
+
   ~ServiceWorkerFetchDispatcher();
 
   // If appropriate, starts the navigation preload request and creates
   // |preload_handle_|. Returns true if it started navigation preload.
   bool MaybeStartNavigationPreload(
       const network::ResourceRequest& original_request,
-      URLLoaderFactoryGetter* url_loader_factory_getter,
       scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
       int frame_tree_node_id);
 
@@ -123,17 +125,18 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
 
   scoped_refptr<URLLoaderAssets> url_loader_assets_;
 
-  // |preload_handle_| holds the URLLoader and URLLoaderClient for the service
-  // worker to receive the navigation preload response. It's passed to the
-  // service worker along with the fetch event.
-  blink::mojom::FetchEventPreloadHandlePtr preload_handle_;
+  // Holds the URLLoaderClient for the service worker to receive the navigation
+  // preload response. It's passed to the service worker along with the fetch
+  // event.
+  mojo::PendingReceiver<network::mojom::URLLoaderClient>
+      preload_url_loader_client_receiver_;
 
   // Whether to dispatch an offline-capability-check fetch event.
   const bool is_offline_capability_check_ = false;
 
-  base::WeakPtrFactory<ServiceWorkerFetchDispatcher> weak_factory_{this};
+  SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerFetchDispatcher);
+  base::WeakPtrFactory<ServiceWorkerFetchDispatcher> weak_factory_{this};
 };
 
 }  // namespace content

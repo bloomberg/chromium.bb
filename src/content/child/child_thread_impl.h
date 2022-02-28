@@ -11,16 +11,15 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/variations/child_process_field_trial_syncer.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/child_process.mojom.h"
-#include "content/common/content_export.h"
 #include "content/public/child/child_thread.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_buildflags.h"  // For BUILDFLAG(IPC_MESSAGE_LOG_ENABLED).
@@ -63,16 +62,19 @@ namespace content {
 class InProcessChildThreadParams;
 
 // The main thread of a child process derives from this class.
-class CONTENT_EXPORT ChildThreadImpl : public IPC::Listener,
-                                       virtual public ChildThread {
+class ChildThreadImpl : public IPC::Listener, virtual public ChildThread {
  public:
-  struct CONTENT_EXPORT Options;
+  struct Options;
 
   // Creates the thread.
   explicit ChildThreadImpl(base::RepeatingClosure quit_closure);
   // Allow to be used for single-process mode and for in process gpu mode via
   // options.
   ChildThreadImpl(base::RepeatingClosure quit_closure, const Options& options);
+
+  ChildThreadImpl(const ChildThreadImpl&) = delete;
+  ChildThreadImpl& operator=(const ChildThreadImpl&) = delete;
+
   // ChildProcess::main_thread() is reset after Shutdown(), and before the
   // destructor, so any subsystem that relies on ChildProcess::main_thread()
   // must be terminated before Shutdown returns. In particular, if a subsystem
@@ -124,6 +126,11 @@ class CONTENT_EXPORT ChildThreadImpl : public IPC::Listener,
     return child_process_host_;
   }
 
+  // Explicitly closes the ChildProcessHost connection. This will cause the
+  // host-side object to be torn down and clean up resources tied to this
+  // process (or this thread object, in single-process mode).
+  void DisconnectChildProcessHost();
+
   virtual void RunServiceDeprecated(const std::string& service_name,
                                     mojo::ScopedMessagePipeHandle service_pipe);
 
@@ -174,7 +181,7 @@ class CONTENT_EXPORT ChildThreadImpl : public IPC::Listener,
     bool RouteMessage(const IPC::Message& msg) override;
 
    private:
-    IPC::Sender* const sender_;
+    const raw_ptr<IPC::Sender> sender_;
   };
 
   void Init(const Options& options);
@@ -218,7 +225,8 @@ class CONTENT_EXPORT ChildThreadImpl : public IPC::Listener,
   scoped_refptr<base::SingleThreadTaskRunner> browser_process_io_runner_;
 
   // Pointer to a global object which is never deleted.
-  variations::ChildProcessFieldTrialSyncer* field_trial_syncer_ = nullptr;
+  raw_ptr<variations::ChildProcessFieldTrialSyncer> field_trial_syncer_ =
+      nullptr;
 
   std::unique_ptr<base::WeakPtrFactory<ChildThreadImpl>>
       channel_connected_factory_;
@@ -233,8 +241,6 @@ class CONTENT_EXPORT ChildThreadImpl : public IPC::Listener,
   scoped_refptr<IOThreadState> io_thread_state_;
 
   base::WeakPtrFactory<ChildThreadImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ChildThreadImpl);
 };
 
 struct ChildThreadImpl::Options {
@@ -243,10 +249,11 @@ struct ChildThreadImpl::Options {
 
   class Builder;
 
-  bool connect_to_browser;
+  bool with_legacy_ipc_channel = true;
+  bool connect_to_browser = false;
   scoped_refptr<base::SingleThreadTaskRunner> browser_process_io_runner;
   std::vector<IPC::MessageFilter*> startup_filters;
-  mojo::OutgoingInvitation* mojo_invitation;
+  raw_ptr<mojo::OutgoingInvitation> mojo_invitation = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner;
 
   // Indicates that this child process exposes one or more Mojo interfaces to
@@ -267,8 +274,12 @@ class ChildThreadImpl::Options::Builder {
  public:
   Builder();
 
+  Builder(const Builder&) = delete;
+  Builder& operator=(const Builder&) = delete;
+
   Builder& InBrowserProcess(const InProcessChildThreadParams& params);
   Builder& ConnectToBrowser(bool connect_to_browser);
+  Builder& WithLegacyIPCChannel(bool with_legacy_ipc_channel);
   Builder& AddStartupFilter(IPC::MessageFilter* filter);
   Builder& IPCTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner);
@@ -279,8 +290,6 @@ class ChildThreadImpl::Options::Builder {
 
  private:
   struct Options options_;
-
-  DISALLOW_COPY_AND_ASSIGN(Builder);
 };
 
 }  // namespace content

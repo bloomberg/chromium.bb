@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "net/base/address_list.h"
@@ -91,8 +92,8 @@ class TransportClientSocketTest
  protected:
   base::RunLoop connect_loop_;
   uint16_t listen_port_;
-  RecordingTestNetLog net_log_;
-  ClientSocketFactory* const socket_factory_;
+  RecordingNetLogObserver net_log_observer_;
+  const raw_ptr<ClientSocketFactory> socket_factory_;
   std::unique_ptr<StreamSocket> sock_;
   std::unique_ptr<StreamSocket> connected_sock_;
 
@@ -119,7 +120,7 @@ void TransportClientSocketTest::SetUp() {
   AddressList addr = AddressList::CreateFromIPAddress(
       IPAddress::IPv4Localhost(), listen_port_);
   sock_ = socket_factory_->CreateTransportClientSocket(
-      addr, nullptr, nullptr, &net_log_, NetLogSource());
+      addr, nullptr, nullptr, NetLog::Get(), NetLogSource());
 }
 
 int TransportClientSocketTest::DrainClientSocket(
@@ -236,7 +237,7 @@ TEST_P(TransportClientSocketTest, Connect) {
   // Wait for |listen_sock_| to accept a connection.
   connect_loop_.Run();
 
-  auto net_log_entries = net_log_.GetEntries();
+  auto net_log_entries = net_log_observer_.GetEntries();
   EXPECT_TRUE(
       LogContainsBeginEvent(net_log_entries, 0, NetLogEventType::SOCKET_ALIVE));
   EXPECT_TRUE(
@@ -249,7 +250,7 @@ TEST_P(TransportClientSocketTest, Connect) {
   }
 
   EXPECT_TRUE(sock_->IsConnected());
-  net_log_entries = net_log_.GetEntries();
+  net_log_entries = net_log_observer_.GetEntries();
   EXPECT_TRUE(
       LogContainsEndEvent(net_log_entries, -1, NetLogEventType::TCP_CONNECT));
 

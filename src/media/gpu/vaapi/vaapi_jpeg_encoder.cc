@@ -11,9 +11,8 @@
 #include <string.h>
 
 #include "base/check_op.h"
-#include "base/numerics/ranges.h"
+#include "base/cxx17_backports.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/parsers/jpeg_parser.h"
@@ -215,7 +214,7 @@ size_t FillJpegHeader(const gfx::Size& input_size,
           VaapiWrapper::GetImplementationType() == VAImplementation::kIntelIHD ? 50 : 0;
       uint32_t scaled_quant_value =
           (quant_table.value[kZigZag8x8[j]] * quality_normalized + shift) / 100;
-      scaled_quant_value = base::ClampToRange(scaled_quant_value, 1u, 255u);
+      scaled_quant_value = base::clamp(scaled_quant_value, 1u, 255u);
       header[idx++] = static_cast<uint8_t>(scaled_quant_value);
     }
   }

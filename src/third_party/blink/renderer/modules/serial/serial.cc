@@ -22,7 +22,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
 #include "third_party/blink/renderer/modules/serial/serial_port.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -246,11 +246,13 @@ void Serial::OnServiceConnectionError() {
 }
 
 SerialPort* Serial::GetOrCreatePort(mojom::blink::SerialPortInfoPtr info) {
-  SerialPort* port = port_cache_.at(TokenToString(info->token));
-  if (!port) {
-    port = MakeGarbageCollected<SerialPort>(this, std::move(info));
-    port_cache_.insert(TokenToString(port->token()), port);
+  auto it = port_cache_.find(TokenToString(info->token));
+  if (it != port_cache_.end()) {
+    return it->value;
   }
+
+  SerialPort* port = MakeGarbageCollected<SerialPort>(this, std::move(info));
+  port_cache_.insert(TokenToString(port->token()), port);
   return port;
 }
 

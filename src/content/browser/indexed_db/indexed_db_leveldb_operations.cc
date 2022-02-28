@@ -9,7 +9,6 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "build/chromeos_buildflags.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes.h"
 #include "components/services/storage/indexed_db/scopes/varint_coding.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
@@ -21,6 +20,7 @@
 #include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "storage/common/database/database_identifier.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 using base::StringPiece;
@@ -53,26 +53,32 @@ const base::FilePath::CharType kLevelDBExtension[] =
     FILE_PATH_LITERAL(".leveldb");
 
 // static
-base::FilePath GetBlobStoreFileName(const url::Origin& origin) {
-  std::string origin_id = storage::GetIdentifierFromOrigin(origin);
+base::FilePath GetBlobStoreFileName(const blink::StorageKey& storage_key) {
+  // TODO(crbug.com/1199077): This will be replaced when the new storage is
+  // implemented.
+  std::string storage_key_id =
+      storage::GetIdentifierFromOrigin(storage_key.origin());
   return base::FilePath()
-      .AppendASCII(origin_id)
+      .AppendASCII(storage_key_id)
       .AddExtension(kIndexedDBExtension)
       .AddExtension(kBlobExtension);
 }
 
 // static
-base::FilePath GetLevelDBFileName(const url::Origin& origin) {
-  std::string origin_id = storage::GetIdentifierFromOrigin(origin);
+base::FilePath GetLevelDBFileName(const blink::StorageKey& storage_key) {
+  // TODO(crbug.com/1199077): This will be replaced when the new storage is
+  // implemented.
+  std::string storage_key_id =
+      storage::GetIdentifierFromOrigin(storage_key.origin());
   return base::FilePath()
-      .AppendASCII(origin_id)
+      .AppendASCII(storage_key_id)
       .AddExtension(kIndexedDBExtension)
       .AddExtension(kLevelDBExtension);
 }
 
-base::FilePath ComputeCorruptionFileName(const url::Origin& origin) {
-  return GetLevelDBFileName(origin).Append(
-      FILE_PATH_LITERAL("corruption_info.json"));
+base::FilePath ComputeCorruptionFileName(const blink::StorageKey& storage_key) {
+  return GetLevelDBFileName(storage_key)
+      .Append(FILE_PATH_LITERAL("corruption_info.json"));
 }
 
 bool IsPathTooLong(storage::FilesystemProxy* filesystem,
@@ -82,7 +88,7 @@ bool IsPathTooLong(storage::FilesystemProxy* filesystem,
   if (!limit.has_value()) {
     DLOG(WARNING) << "GetMaximumPathComponentLength returned -1";
 // In limited testing, ChromeOS returns 143, other OSes 255.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
     limit = 143;
 #else
     limit = 255;
@@ -106,9 +112,9 @@ bool IsPathTooLong(storage::FilesystemProxy* filesystem,
 
 std::string ReadCorruptionInfo(storage::FilesystemProxy* filesystem_proxy,
                                const base::FilePath& path_base,
-                               const url::Origin& origin) {
+                               const blink::StorageKey& storage_key) {
   const base::FilePath info_path =
-      path_base.Append(indexed_db::ComputeCorruptionFileName(origin));
+      path_base.Append(indexed_db::ComputeCorruptionFileName(storage_key));
   std::string message;
   if (IsPathTooLong(filesystem_proxy, info_path))
     return message;
@@ -124,7 +130,7 @@ std::string ReadCorruptionInfo(storage::FilesystemProxy* filesystem_proxy,
     return message;
   }
 
-  storage::FileErrorOr<base::File> file_or_error = filesystem_proxy->OpenFile(
+  base::FileErrorOr<base::File> file_or_error = filesystem_proxy->OpenFile(
       info_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file_or_error.is_error()) {
     auto& file = file_or_error.value();
@@ -574,7 +580,7 @@ Status GetEarliestSweepTime(TransactionalLevelDBDatabase* db,
     time_micros = 0;
 
   DCHECK_GE(time_micros, 0);
-  *earliest_sweep += base::TimeDelta::FromMicroseconds(time_micros);
+  *earliest_sweep += base::Microseconds(time_micros);
 
   return s;
 }
@@ -609,7 +615,7 @@ Status GetEarliestCompactionTime(TransactionalLevelDBDatabase* db,
     time_micros = 0;
 
   DCHECK_GE(time_micros, 0);
-  *earliest_compaction += base::TimeDelta::FromMicroseconds(time_micros);
+  *earliest_compaction += base::Microseconds(time_micros);
 
   return s;
 }

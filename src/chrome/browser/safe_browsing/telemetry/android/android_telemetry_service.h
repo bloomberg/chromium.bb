@@ -7,11 +7,12 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/safe_browsing/telemetry/telemetry_service.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_manager.h"
 
@@ -67,6 +68,10 @@ class AndroidTelemetryService
       public TelemetryService {
  public:
   AndroidTelemetryService(SafeBrowsingService* sb_service, Profile* profile);
+
+  AndroidTelemetryService(const AndroidTelemetryService&) = delete;
+  AndroidTelemetryService& operator=(const AndroidTelemetryService&) = delete;
+
   ~AndroidTelemetryService() override;
 
   // download::SimpleDownloadManagerCoordinator::Observer.
@@ -104,14 +109,12 @@ class AndroidTelemetryService
   const PrefService* GetPrefs();
 
   // Profile associated with this instance. Unowned.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   // Unowned.
-  SafeBrowsingService* sb_service_;
+  raw_ptr<SafeBrowsingService> sb_service_;
 
   base::WeakPtrFactory<AndroidTelemetryService> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AndroidTelemetryService);
 };
 
 }  // namespace safe_browsing

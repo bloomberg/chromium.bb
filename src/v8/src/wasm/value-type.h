@@ -50,6 +50,8 @@ class Simd128;
   V(OptRef, kTaggedSizeLog2, OptRef, AnyTagged, 'n', "ref null")            \
   V(Bottom, -1, Void, None, '*', "<bot>")
 
+constexpr int kMaxValueTypeSize = 16;  // bytes
+
 // Represents a WebAssembly heap type, as per the typed-funcref and gc
 // proposals.
 // The underlying Representation enumeration encodes heap types as follows:
@@ -184,6 +186,18 @@ enum ValueKind : uint8_t {
 #undef DEF_ENUM
 };
 
+constexpr bool is_numeric(ValueKind kind) {
+  switch (kind) {
+#define NUMERIC_CASE(kind, ...) \
+  case k##kind:                 \
+    return true;
+    FOREACH_NUMERIC_VALUE_TYPE(NUMERIC_CASE)
+#undef NUMERIC_CASE
+    default:
+      return false;
+  }
+}
+
 constexpr bool is_reference(ValueKind kind) {
   return kind == kRef || kind == kOptRef || kind == kRtt ||
          kind == kRttWithDepth;
@@ -270,8 +284,8 @@ constexpr bool is_defaultable(ValueKind kind) {
 // representation (for reference types), and an inheritance depth (for rtts
 // only). Those are encoded into 32 bits using base::BitField. The underlying
 // ValueKind enumeration includes four elements which do not strictly correspond
-// to value types: the two packed types i8 and i16, the type of void blocks
-// (stmt), and a bottom value (for internal use).
+// to value types: the two packed types i8 and i16, the void type (for control
+// structures), and a bottom value (for internal use).
 class ValueType {
  public:
   /******************************* Constructors *******************************/
@@ -310,6 +324,8 @@ class ValueType {
   }
 
   /******************************** Type checks *******************************/
+  constexpr bool is_numeric() const { return wasm::is_numeric(kind()); }
+
   constexpr bool is_reference() const { return wasm::is_reference(kind()); }
 
   constexpr bool is_object_reference() const {

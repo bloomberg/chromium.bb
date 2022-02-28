@@ -93,8 +93,28 @@ GURL GetFileSystemAccessDownloadUrl(const GURL& frame_url) {
   // "blob:https://my-origin.com/def07373-cbd8-49d2-9ef7-20b071d34a1a". To make
   // these URLs distinguishable from those we use a fixed string rather than a
   // random UUID.
-  return GURL("blob:" + frame_url.GetOrigin().spec() +
+  return GURL("blob:" + frame_url.DeprecatedGetOriginAsURL().spec() +
               "file-system-access-write");
+}
+
+ClientDownloadResponse::Verdict DownloadDangerTypeToDownloadResponseVerdict(
+    download::DownloadDangerType download_danger_type) {
+  switch (download_danger_type) {
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+      return ClientDownloadResponse::DANGEROUS;
+    case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+      return ClientDownloadResponse::UNCOMMON;
+    case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
+      return ClientDownloadResponse::POTENTIALLY_UNWANTED;
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+      return ClientDownloadResponse::DANGEROUS_HOST;
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_ACCOUNT_COMPROMISE:
+      return ClientDownloadResponse::DANGEROUS_ACCOUNT_COMPROMISE;
+    default:
+      // Return SAFE for any other danger types.
+      return ClientDownloadResponse::SAFE;
+  }
 }
 
 }  // namespace safe_browsing

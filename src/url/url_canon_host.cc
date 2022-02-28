@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <unordered_set>
+
 #include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "url/url_canon.h"
 #include "url/url_canon_internal.h"
-#include "url/url_canon_ip.h"
 
 namespace url {
 
@@ -131,6 +132,8 @@ bool DoSimpleHost(const INCHAR* host,
                   bool* has_non_ascii) {
   *has_non_ascii = false;
 
+  std::unordered_set<char> escaped_chars_to_measure;
+
   bool success = true;
   for (int i = 0; i < host_len; ++i) {
     unsigned int source = host[i];
@@ -158,6 +161,7 @@ bool DoSimpleHost(const INCHAR* host,
       } else if (replacement == kEsc) {
         // This character is valid but should be escaped.
         AppendEscapedChar(source, output);
+        escaped_chars_to_measure.insert(source);
       } else {
         // Common case, the given character is valid in a hostname, the lookup
         // table tells us the canonical representation of that character (lower
@@ -170,6 +174,16 @@ bool DoSimpleHost(const INCHAR* host,
       // cast char16->char only if input string was converted to ASCII.
       output->push_back(static_cast<OUTCHAR>(source));
       *has_non_ascii = true;
+    }
+  }
+  if (success) {
+    bool did_escape = !escaped_chars_to_measure.empty();
+    UMA_HISTOGRAM_BOOLEAN("URL.Host.DidEscape", did_escape);
+    if (did_escape) {
+      for (char c : escaped_chars_to_measure) {
+        UMA_HISTOGRAM_ENUMERATION("URL.Host.EscapeChar",
+                                  EscapedHostCharToEnum(c));
+      }
     }
   }
   return success;
@@ -379,16 +393,6 @@ void DoHost(const CHAR* spec,
     if (host_info->IsIPAddress()) {
       output->set_length(output_begin);
       output->Append(canon_ip.data(), canon_ip.length());
-    } else if (host_info->family == CanonHostInfo::NEUTRAL) {
-      // Only need to call CheckHostnameSafety() for valid hosts that aren't IP
-      // addresses and aren't broken.
-      HostSafetyStatus host_safety_status = CheckHostnameSafety(spec, host);
-      // Don't record kOK.  Ratio of OK to not-OK statuses is not meaningful at
-      // this layer, and hostnames are canonicalized a lot.
-      if (host_safety_status != HostSafetyStatus::kOk) {
-        UMA_HISTOGRAM_ENUMERATION("Net.Url.HostSafetyStatus",
-                                  host_safety_status);
-      }
     }
   } else {
     // Canonicalization failed. Set BROKEN to notify the caller.

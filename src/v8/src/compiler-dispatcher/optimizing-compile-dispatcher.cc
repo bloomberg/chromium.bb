@@ -14,6 +14,7 @@
 #include "src/init/v8.h"
 #include "src/logging/counters.h"
 #include "src/logging/log.h"
+#include "src/logging/runtime-call-stats-scope.h"
 #include "src/objects/objects-inl.h"
 #include "src/tasks/cancelable-task.h"
 #include "src/tracing/trace-event.h"
@@ -130,7 +131,7 @@ void OptimizingCompileDispatcher::CompileNext(OptimizedCompilationJob* job,
     output_queue_.push(job);
   }
 
-  isolate_->stack_guard()->RequestInstallCode();
+  if (finalize()) isolate_->stack_guard()->RequestInstallCode();
 }
 
 void OptimizingCompileDispatcher::FlushOutputQueue(bool restore_function_code) {
@@ -158,9 +159,20 @@ void OptimizingCompileDispatcher::FlushInputQueue() {
   }
 }
 
+void OptimizingCompileDispatcher::AwaitCompileTasks() {
+  {
+    base::MutexGuard lock_guard(&ref_count_mutex_);
+    while (ref_count_ > 0) ref_count_zero_.Wait(&ref_count_mutex_);
+  }
+
+#ifdef DEBUG
+  base::MutexGuard access_input_queue(&input_queue_mutex_);
+  CHECK_EQ(input_queue_length_, 0);
+#endif  // DEBUG
+}
+
 void OptimizingCompileDispatcher::FlushQueues(
     BlockingBehavior blocking_behavior, bool restore_function_code) {
-  if (FLAG_block_concurrent_recompilation) Unblock();
   FlushInputQueue();
   if (blocking_behavior == BlockingBehavior::kBlock) {
     base::MutexGuard lock_guard(&ref_count_mutex_);
@@ -218,7 +230,7 @@ bool OptimizingCompileDispatcher::HasJobs() {
   // Note: This relies on {output_queue_} being mutated by a background thread
   // only when {ref_count_} is not zero. Also, {ref_count_} is never incremented
   // by a background thread.
-  return !(ref_count_ == 0 && output_queue_.empty());
+  return ref_count_ != 0 || !output_queue_.empty();
 }
 
 void OptimizingCompileDispatcher::QueueForOptimization(
@@ -231,20 +243,8 @@ void OptimizingCompileDispatcher::QueueForOptimization(
     input_queue_[InputQueueIndex(input_queue_length_)] = job;
     input_queue_length_++;
   }
-  if (FLAG_block_concurrent_recompilation) {
-    blocked_jobs_++;
-  } else {
-    V8::GetCurrentPlatform()->CallOnWorkerThread(
-        std::make_unique<CompileTask>(isolate_, this));
-  }
-}
-
-void OptimizingCompileDispatcher::Unblock() {
-  while (blocked_jobs_ > 0) {
-    V8::GetCurrentPlatform()->CallOnWorkerThread(
-        std::make_unique<CompileTask>(isolate_, this));
-    blocked_jobs_--;
-  }
+  V8::GetCurrentPlatform()->CallOnWorkerThread(
+      std::make_unique<CompileTask>(isolate_, this));
 }
 
 }  // namespace internal

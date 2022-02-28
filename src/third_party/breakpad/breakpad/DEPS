@@ -36,7 +36,7 @@ deps = {
   # Testing libraries and utilities.
   "src/src/testing":
     "https://github.com/google/googletest.git" +
-      "@4fe018038f87675c083d0cfb6a6b57c274fb1753",
+      "@release-1.11.0",
 
   # Protobuf.
   "src/src/third_party/protobuf/protobuf":
@@ -51,7 +51,7 @@ deps = {
   # Linux syscall support.
   "src/src/third_party/lss":
     "https://chromium.googlesource.com/linux-syscall-support/" +
-      "@fd00dbbd0c06a309c657d89e9430143b179ff6db",
+      "@e1e7b0ad8ee99a875b272c8e33e308472e897660",
 }
 
 hooks = [

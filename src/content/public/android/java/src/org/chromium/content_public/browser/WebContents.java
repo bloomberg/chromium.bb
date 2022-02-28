@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.blink_public.input.SelectionGranularity;
 import org.chromium.ui.OverscrollRefreshHandler;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -171,7 +172,7 @@ public interface WebContents extends Parcelable {
      *         live RenderFrameHost.
      */
     @Nullable
-    RenderFrameHost getRenderFrameHostFromId(GlobalFrameRoutingId id);
+    RenderFrameHost getRenderFrameHostFromId(GlobalRenderFrameHostId id);
 
     /**
      * @return The root level view from the renderer, or {@code null} in some cases where there is
@@ -212,10 +213,10 @@ public interface WebContents extends Parcelable {
     boolean isLoading();
 
     /**
-     * @return Whether this WebContents is loading and and the load is to a different top-level
-     *         document (rather than being a navigation within the same document).
+     * @return Whether this WebContents is loading and expects any loading UI to
+     * be displayed.
      */
-    boolean isLoadingToDifferentDocument();
+    boolean shouldShowLoadingUI();
 
     /**
      * Runs the beforeunload handler, if any. The tab will be closed if there's no beforeunload
@@ -242,10 +243,11 @@ public interface WebContents extends Parcelable {
 
     /**
      * ChildProcessImportance on Android allows controls of the renderer process bindings
-     * independent of visibility. Note this does not affect importance of subframe processes.
-     * @param mainFrameImportance importance of the main frame process.
+     * independent of visibility. Note this does not affect importance of subframe processes
+     * or main frames processeses for non-primary pages.
+     * @param primaryMainFrameImportance importance of the primary page's main frame process.
      */
-    void setImportance(@ChildProcessImportance int mainFrameImportance);
+    void setImportance(@ChildProcessImportance int primaryMainFrameImportance);
 
     /**
      * Suspends all media players for this WebContents.  Note: There may still
@@ -288,10 +290,15 @@ public interface WebContents extends Parcelable {
     void scrollFocusedEditableNodeIntoView();
 
     /**
-     * Selects the word around the caret, if any.
-     * The caller can check if selection actually occurred by listening to OnSelectionChanged.
+     * Selects at the specified granularity around the caret and potentially shows the selection
+     * handles and context menu. The caller can check if selection actually occurred by listening to
+     * OnSelectionChanged.
+     * @param granularity The granularity at which the selection should happen.
+     * @param shouldShowHandle Whether the selection handles should be shown after selection.
+     * @param shouldShowContextMenu Whether the context menu should be shown after selection.
      */
-    void selectWordAroundCaret();
+    void selectAroundCaret(@SelectionGranularity int granularity, boolean shouldShowHandle,
+            boolean shouldShowContextMenu);
 
     /**
      * Adjusts the selection starting and ending points by the given amount.
@@ -410,14 +417,6 @@ public interface WebContents extends Parcelable {
      * Register a handler to handle smart clip data once extraction is done.
      */
     void setSmartClipResultHandler(final Handler smartClipHandler);
-
-    /**
-     * Requests a snapshop of accessibility tree. The result is provided asynchronously
-     * using the callback
-     * @param callback The callback to be called when the snapshot is ready. The callback
-     *                 cannot be null.
-     */
-    void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback);
 
     /**
      * Returns {@link EventForwarder} which is used to forward input/view events

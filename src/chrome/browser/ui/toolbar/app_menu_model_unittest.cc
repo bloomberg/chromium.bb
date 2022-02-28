@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "build/branding_buildflags.h"
 #include "build/chromeos_buildflags.h"
@@ -26,10 +25,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_palette.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
 #include "components/policy/core/common/policy_pref_names.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -40,6 +39,9 @@ class MenuError : public GlobalError {
       : command_id_(command_id),
         execute_count_(0) {
   }
+
+  MenuError(const MenuError&) = delete;
+  MenuError& operator=(const MenuError&) = delete;
 
   int execute_count() { return execute_count_; }
 
@@ -56,8 +58,6 @@ class MenuError : public GlobalError {
  private:
   int command_id_;
   int execute_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(MenuError);
 };
 
 class FakeIconDelegate : public AppMenuIconController::Delegate {
@@ -79,6 +79,10 @@ class AppMenuModelTest : public BrowserWithTestWindowTest,
                          public ui::AcceleratorProvider {
  public:
   AppMenuModelTest() = default;
+
+  AppMenuModelTest(const AppMenuModelTest&) = delete;
+  AppMenuModelTest& operator=(const AppMenuModelTest&) = delete;
+
   ~AppMenuModelTest() override = default;
 
   // Don't handle accelerators.
@@ -86,9 +90,6 @@ class AppMenuModelTest : public BrowserWithTestWindowTest,
                                   ui::Accelerator* accelerator) const override {
     return false;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppMenuModelTest);
 };
 
 // Copies parts of MenuModelTest::Delegate and combines them with the
@@ -225,7 +226,7 @@ TEST_F(AppMenuModelTest, GlobalError) {
   EXPECT_EQ(1, error1->execute_count());
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 // Tests settings menu items is disabled in the app menu when
 // kSystemFeaturesDisableList is set.
 TEST_F(AppMenuModelTest, DisableSettingsItem) {
@@ -263,7 +264,7 @@ TEST_F(AppMenuModelTest, DisableSettingsItem) {
     ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
                           policy::policy_prefs::kSystemFeaturesDisableList);
     base::ListValue* list = update.Get();
-    list->Clear();
+    list->ClearList();
   }
   EXPECT_TRUE(model.IsEnabledAt(options_index));
 
@@ -274,4 +275,4 @@ TEST_F(AppMenuModelTest, DisableSettingsItem) {
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)

@@ -64,15 +64,15 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
     // paints the background.
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       auto paint_location = layout_block_.GetBackgroundPaintLocation();
-      if (!(paint_location & kBackgroundPaintInGraphicsLayer))
+      if (!(paint_location & kBackgroundPaintInBorderBoxSpace))
         local_paint_info.SetSkipsBackground(true);
       layout_block_.PaintObject(local_paint_info, paint_offset);
       local_paint_info.SetSkipsBackground(false);
 
-      if (paint_location & kBackgroundPaintInScrollingContents) {
-        local_paint_info.SetIsPaintingScrollingBackground(true);
+      if (paint_location & kBackgroundPaintInContentsSpace) {
+        local_paint_info.SetIsPaintingBackgroundInContentsSpace(true);
         layout_block_.PaintObject(local_paint_info, paint_offset);
-        local_paint_info.SetIsPaintingScrollingBackground(false);
+        local_paint_info.SetIsPaintingBackgroundInContentsSpace(false);
       }
     } else {
       layout_block_.PaintObject(local_paint_info, paint_offset);
@@ -127,7 +127,8 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
   local_paint_info.phase = original_phase;
   if (auto* scrollable_area = layout_block_.GetScrollableArea()) {
     ScrollableAreaPainter(*scrollable_area)
-        .PaintOverflowControls(local_paint_info, RoundedIntPoint(paint_offset));
+        .PaintOverflowControls(local_paint_info,
+                               ToRoundedPoint(paint_offset).OffsetFromOrigin());
   }
 }
 
@@ -135,17 +136,8 @@ void BlockPainter::PaintChildren(const PaintInfo& paint_info) {
   if (paint_info.DescendantPaintingBlocked())
     return;
 
-  // We may use legacy paint to paint the anonymous fieldset child. The layout
-  // object for the rendered legend will be a child of that one, and has to be
-  // skipped here, since it's handled by a special NG fieldset painter.
-  bool may_contain_rendered_legend =
-      layout_block_.IsAnonymousNGFieldsetContentWrapper();
   for (LayoutBox* child = layout_block_.FirstChildBox(); child;
        child = child->NextSiblingBox()) {
-    if (may_contain_rendered_legend && child->IsRenderedLegend()) {
-      may_contain_rendered_legend = false;
-      continue;
-    }
     PaintChild(*child, paint_info);
   }
 }

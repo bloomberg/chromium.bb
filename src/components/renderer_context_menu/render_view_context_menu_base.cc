@@ -25,7 +25,7 @@
 #include "url/origin.h"
 
 using content::BrowserContext;
-using content::GlobalFrameRoutingId;
+using content::GlobalRenderFrameHostId;
 using content::OpenURLParams;
 using content::RenderFrameHost;
 using content::RenderViewHost;
@@ -160,16 +160,17 @@ bool RenderViewContextMenuBase::IsContentCustomCommandId(int id) {
 }
 
 RenderViewContextMenuBase::RenderViewContextMenuBase(
-    content::RenderFrameHost* render_frame_host,
+    content::RenderFrameHost& render_frame_host,
     const content::ContextMenuParams& params)
     : params_(params),
-      source_web_contents_(WebContents::FromRenderFrameHost(render_frame_host)),
+      source_web_contents_(
+          WebContents::FromRenderFrameHost(&render_frame_host)),
       browser_context_(source_web_contents_->GetBrowserContext()),
       menu_model_(this),
-      render_frame_id_(render_frame_host->GetRoutingID()),
-      render_frame_token_(render_frame_host->GetFrameToken()),
-      render_process_id_(render_frame_host->GetProcess()->GetID()),
-      site_instance_(render_frame_host->GetSiteInstance()),
+      render_frame_id_(render_frame_host.GetRoutingID()),
+      render_frame_token_(render_frame_host.GetFrameToken()),
+      render_process_id_(render_frame_host.GetProcess()->GetID()),
+      site_instance_(render_frame_host.GetSiteInstance()),
       command_executed_(false) {}
 
 RenderViewContextMenuBase::~RenderViewContextMenuBase() {
@@ -457,9 +458,14 @@ void RenderViewContextMenuBase::OpenURLWithExtraHeaders(
     ui::PageTransition transition,
     const std::string& extra_headers,
     bool started_from_context_menu) {
+  // Do not send the referrer url to OTR windows. We still need the
+  // |referring_url| to populate the |initiator_origin| below for browser UI.
+  GURL referrer_url;
+  if (disposition != WindowOpenDisposition::OFF_THE_RECORD)
+    referrer_url = referring_url.GetAsReferrer();
+
   content::Referrer referrer = content::Referrer::SanitizeForRequest(
-      url, content::Referrer(referring_url.GetAsReferrer(),
-                             params_.referrer_policy));
+      url, content::Referrer(referrer_url, params_.referrer_policy));
 
   if (params_.link_url == url &&
       disposition != WindowOpenDisposition::OFF_THE_RECORD)

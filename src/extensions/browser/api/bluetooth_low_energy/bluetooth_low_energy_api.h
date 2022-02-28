@@ -9,7 +9,7 @@
 #include <string>
 #include <unordered_set>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_context.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -63,6 +63,10 @@ class BluetoothLowEnergyAPI : public BrowserContextKeyedAPI {
   static BluetoothLowEnergyAPI* Get(content::BrowserContext* context);
 
   explicit BluetoothLowEnergyAPI(content::BrowserContext* context);
+
+  BluetoothLowEnergyAPI(const BluetoothLowEnergyAPI&) = delete;
+  BluetoothLowEnergyAPI& operator=(const BluetoothLowEnergyAPI&) = delete;
+
   ~BluetoothLowEnergyAPI() override;
 
   // KeyedService implementation..
@@ -81,8 +85,6 @@ class BluetoothLowEnergyAPI : public BrowserContextKeyedAPI {
   friend class BrowserContextKeyedAPIFactory<BluetoothLowEnergyAPI>;
 
   std::unique_ptr<BluetoothLowEnergyEventRouter> event_router_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyAPI);
 };
 
 namespace api {
@@ -93,6 +95,11 @@ namespace api {
 class BluetoothLowEnergyExtensionFunction : public ExtensionFunction {
  public:
   BluetoothLowEnergyExtensionFunction();
+
+  BluetoothLowEnergyExtensionFunction(
+      const BluetoothLowEnergyExtensionFunction&) = delete;
+  BluetoothLowEnergyExtensionFunction& operator=(
+      const BluetoothLowEnergyExtensionFunction&) = delete;
 
  protected:
   ~BluetoothLowEnergyExtensionFunction() override;
@@ -112,13 +119,11 @@ class BluetoothLowEnergyExtensionFunction : public ExtensionFunction {
   // in the case of invalid params.
   virtual bool ParseParams() = 0;
 
-  BluetoothLowEnergyEventRouter* event_router_;
+  raw_ptr<BluetoothLowEnergyEventRouter> event_router_;
 
  private:
   // Internal method to do common setup before actual DoWork is called.
   void PreDoWork();
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyExtensionFunction);
 };
 
 // Base class for bluetoothLowEnergy API peripheral mode functions. This class
@@ -130,14 +135,16 @@ class BLEPeripheralExtensionFunction
  public:
   BLEPeripheralExtensionFunction();
 
+  BLEPeripheralExtensionFunction(const BLEPeripheralExtensionFunction&) =
+      delete;
+  BLEPeripheralExtensionFunction& operator=(
+      const BLEPeripheralExtensionFunction&) = delete;
+
  protected:
   ~BLEPeripheralExtensionFunction() override;
 
   // ExtensionFunction override.
   ResponseAction Run() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BLEPeripheralExtensionFunction);
 };
 
 class BluetoothLowEnergyConnectFunction
@@ -158,10 +165,7 @@ class BluetoothLowEnergyConnectFunction
   std::unique_ptr<bluetooth_low_energy::Connect::Params> params_;
 
  private:
-  // Success and error callbacks, called by
-  // BluetoothLowEnergyEventRouter::Connect.
-  void SuccessCallback();
-  void ErrorCallback(BluetoothLowEnergyEventRouter::Status status);
+  void ConnectCallback(BluetoothLowEnergyEventRouter::Status status);
 };
 
 class BluetoothLowEnergyDisconnectFunction
@@ -482,6 +486,11 @@ class BluetoothLowEnergyAdvertisementFunction
  public:
   BluetoothLowEnergyAdvertisementFunction();
 
+  BluetoothLowEnergyAdvertisementFunction(
+      const BluetoothLowEnergyAdvertisementFunction&) = delete;
+  BluetoothLowEnergyAdvertisementFunction& operator=(
+      const BluetoothLowEnergyAdvertisementFunction&) = delete;
+
  protected:
   ~BluetoothLowEnergyAdvertisementFunction() override;
 
@@ -497,9 +506,8 @@ class BluetoothLowEnergyAdvertisementFunction
  private:
   void Initialize();
 
-  ApiResourceManager<BluetoothApiAdvertisement>* advertisements_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyAdvertisementFunction);
+  raw_ptr<ApiResourceManager<BluetoothApiAdvertisement>>
+      advertisements_manager_;
 };
 
 class BluetoothLowEnergyRegisterAdvertisementFunction

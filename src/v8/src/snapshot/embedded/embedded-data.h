@@ -19,7 +19,7 @@ class Isolate;
 
 // Wraps an off-heap instruction stream.
 // TODO(jgruber,v8:6666): Remove this class.
-class InstructionStream final : public AllStatic {
+class OffHeapInstructionStream final : public AllStatic {
  public:
   // Returns true, iff the given pc points into an off-heap instruction stream.
   static bool PcIsOffHeap(Isolate* isolate, Address pc);
@@ -32,18 +32,21 @@ class InstructionStream final : public AllStatic {
 
   // Returns the corresponding builtin ID if lookup succeeds, and kNoBuiltinId
   // otherwise.
-  static Builtins::Name TryLookupCode(Isolate* isolate, Address address);
+  static Builtin TryLookupCode(Isolate* isolate, Address address);
 
   // During snapshot creation, we first create an executable off-heap area
   // containing all off-heap code. The area is guaranteed to be contiguous.
   // Note that this only applies when building the snapshot, e.g. for
   // mksnapshot. Otherwise, off-heap code is embedded directly into the binary.
-  static void CreateOffHeapInstructionStream(Isolate* isolate, uint8_t** code,
-                                             uint32_t* code_size,
-                                             uint8_t** data,
-                                             uint32_t* data_size);
-  static void FreeOffHeapInstructionStream(uint8_t* code, uint32_t code_size,
-                                           uint8_t* data, uint32_t data_size);
+  static void CreateOffHeapOffHeapInstructionStream(Isolate* isolate,
+                                                    uint8_t** code,
+                                                    uint32_t* code_size,
+                                                    uint8_t** data,
+                                                    uint32_t* data_size);
+  static void FreeOffHeapOffHeapInstructionStream(uint8_t* code,
+                                                  uint32_t code_size,
+                                                  uint8_t* data,
+                                                  uint32_t data_size);
 };
 
 class EmbeddedData final {
@@ -98,6 +101,22 @@ class EmbeddedData final {
       // the un-embedded one.
       if (global_d.IsInCodeRange(maybe_builtin_pc)) return global_d;
     }
+#ifdef V8_COMPRESS_POINTERS_IN_SHARED_CAGE
+    if (V8_SHORT_BUILTIN_CALLS_BOOL && !d.IsInCodeRange(maybe_builtin_pc)) {
+      // When shared pointer compression cage is enabled and it has the embedded
+      // code blob copy then it could have been used regardless of whether the
+      // isolate uses it or knows about it or not (see
+      // Code::OffHeapInstructionStart()).
+      // So, this blob has to be checked too.
+      CodeRange* code_range = CodeRange::GetProcessWideCodeRange().get();
+      if (code_range && code_range->embedded_blob_code_copy() != nullptr) {
+        EmbeddedData remapped_d = EmbeddedData::FromBlob(code_range);
+        // If the pc does not belong to the embedded code blob we should be
+        // using the un-embedded one.
+        if (remapped_d.IsInCodeRange(maybe_builtin_pc)) return remapped_d;
+      }
+    }
+#endif
     return d;
   }
 
@@ -108,14 +127,14 @@ class EmbeddedData final {
     data_ = nullptr;
   }
 
-  Address InstructionStartOfBuiltin(int i) const;
-  uint32_t InstructionSizeOfBuiltin(int i) const;
+  Address InstructionStartOfBuiltin(Builtin builtin) const;
+  uint32_t InstructionSizeOfBuiltin(Builtin builtin) const;
 
   Address InstructionStartOfBytecodeHandlers() const;
   Address InstructionEndOfBytecodeHandlers() const;
 
-  Address MetadataStartOfBuiltin(int i) const;
-  uint32_t MetadataSizeOfBuiltin(int i) const;
+  Address MetadataStartOfBuiltin(Builtin builtin) const;
+  uint32_t MetadataSizeOfBuiltin(Builtin builtin) const;
 
   uint32_t AddressForHashing(Address addr) {
     DCHECK(IsInCodeRange(addr));
@@ -125,8 +144,8 @@ class EmbeddedData final {
 
   // Padded with kCodeAlignment.
   // TODO(v8:11045): Consider removing code alignment.
-  uint32_t PaddedInstructionSizeOfBuiltin(int i) const {
-    uint32_t size = InstructionSizeOfBuiltin(i);
+  uint32_t PaddedInstructionSizeOfBuiltin(Builtin builtin) const {
+    uint32_t size = InstructionSizeOfBuiltin(builtin);
     CHECK_NE(size, 0);
     return PadAndAlignCode(size);
   }
@@ -183,7 +202,7 @@ class EmbeddedData final {
   // [0] instruction section of builtin 0
   // ... instruction sections
 
-  static constexpr uint32_t kTableSize = Builtins::builtin_count;
+  static constexpr uint32_t kTableSize = Builtins::kBuiltinCount;
   static constexpr uint32_t EmbeddedBlobDataHashOffset() { return 0; }
   static constexpr uint32_t EmbeddedBlobDataHashSize() { return kSizetSize; }
   static constexpr uint32_t EmbeddedBlobCodeHashOffset() {

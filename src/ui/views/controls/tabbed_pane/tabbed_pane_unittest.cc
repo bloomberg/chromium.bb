@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -108,6 +108,9 @@ class TabbedPaneWithWidgetTest : public ViewsTestBase {
  public:
   TabbedPaneWithWidgetTest() = default;
 
+  TabbedPaneWithWidgetTest(const TabbedPaneWithWidgetTest&) = delete;
+  TabbedPaneWithWidgetTest& operator=(const TabbedPaneWithWidgetTest&) = delete;
+
   void SetUp() override {
     ViewsTestBase::SetUp();
     auto tabbed_pane = std::make_unique<TabbedPane>();
@@ -145,10 +148,7 @@ class TabbedPaneWithWidgetTest : public ViewsTestBase {
   }
 
   std::unique_ptr<Widget> widget_;
-  TabbedPane* tabbed_pane_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TabbedPaneWithWidgetTest);
+  raw_ptr<TabbedPane> tabbed_pane_;
 };
 
 // Tests the preferred size and layout when tabs are aligned horizontally.

@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/web/public/navigation/navigation_manager.h"
+#import "ios/web/public/test/fakes/fake_navigation_context.h"
 #include "ios/web/public/test/fakes/fake_web_frame.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
@@ -156,6 +157,10 @@ class FormSuggestionControllerTest : public PlatformTest {
   FormSuggestionControllerTest()
       : test_form_activity_tab_helper_(&fake_web_state_) {}
 
+  FormSuggestionControllerTest(const FormSuggestionControllerTest&) = delete;
+  FormSuggestionControllerTest& operator=(const FormSuggestionControllerTest&) =
+      delete;
+
   void SetUp() override {
     PlatformTest::SetUp();
 
@@ -187,12 +192,6 @@ class FormSuggestionControllerTest : public PlatformTest {
     [[[mock_consumer stub] andDo:mockShow]
         showAccessorySuggestions:[OCMArg any]];
 
-    // Mock restore keyboard to verify cleanup.
-    void (^mockRestore)(NSInvocation*) = ^(NSInvocation* invocation) {
-      received_suggestions_ = nil;
-    };
-    [[[mock_consumer stub] andDo:mockRestore] restoreOriginalKeyboardView];
-
     id mock_window = OCMClassMock([UIWindow class]);
 
     id mock_web_state_view = OCMClassMock([UIView class]);
@@ -200,16 +199,12 @@ class FormSuggestionControllerTest : public PlatformTest {
 
     fake_web_state_.SetView(mock_web_state_view);
 
-    id mock_app_state = OCMClassMock([AppState class]);
-    OCMStub([mock_app_state lastTappedWindow]).andReturn(mock_window);
-
     accessory_mediator_ =
         [[FormInputAccessoryMediator alloc] initWithConsumer:mock_consumer
-                                                    delegate:nil
+                                                     handler:nil
                                                 webStateList:NULL
                                          personalDataManager:NULL
                                                passwordStore:nullptr
-                                                    appState:mock_app_state
                                         securityAlertHandler:nil
                                       reauthenticationModule:nil];
 
@@ -237,8 +232,6 @@ class FormSuggestionControllerTest : public PlatformTest {
 
   // The fake form tracker to simulate form events.
   autofill::TestFormActivityTabHelper test_form_activity_tab_helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(FormSuggestionControllerTest);
 };
 
 // Tests that pages whose URLs don't have a web scheme aren't processed.
@@ -258,8 +251,7 @@ TEST_F(FormSuggestionControllerTest, PageLoadShouldBeIgnoredWhenNotHtml) {
   EXPECT_FALSE(received_suggestions_.count);
 }
 
-// Tests that the suggestions are reset and JavaScript is injected when a page
-// is loaded.
+// Tests that the suggestions are reset when a navigation is finished.
 TEST_F(FormSuggestionControllerTest,
        PageLoadShouldRestoreKeyboardAccessoryViewAndInjectJavaScript) {
   SetUpController(@[ [TestSuggestionProvider providerWithSuggestions] ]);
@@ -279,8 +271,9 @@ TEST_F(FormSuggestionControllerTest,
                                                         params);
   EXPECT_TRUE(received_suggestions_.count);
 
-  // Trigger another page load. The suggestions should not be present.
-  fake_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
+  // Trigger another navigation. The suggestions should not be present.
+  web::FakeNavigationContext navigation_context;
+  fake_web_state_.OnNavigationFinished(&navigation_context);
   EXPECT_FALSE(received_suggestions_.count);
 }
 

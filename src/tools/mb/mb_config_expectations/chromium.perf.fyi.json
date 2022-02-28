@@ -31,6 +31,7 @@
   "chromeos-kevin-builder-perf-fyi": {
     "args_file": "//build/args/chromeos/kevin.gni",
     "gn_args": {
+      "dcheck_always_on": false,
       "exclude_unwind_tables": false,
       "is_chrome_branded": true,
       "is_chromeos_device": true,
@@ -43,7 +44,8 @@
     "gn_args": {
       "ffmpeg_branding": "Chrome",
       "fuchsia_additional_boot_images": [
-        "//third_party/fuchsia-sdk/images-internal/astro-release/"
+        "//third_party/fuchsia-sdk/images-internal/astro-release/",
+        "//third_party/fuchsia-sdk/images-internal/sherlock-release/"
       ],
       "is_chrome_branded": true,
       "is_official_build": true,
@@ -51,6 +53,7 @@
       "symbol_level": 1,
       "target_cpu": "arm64",
       "target_os": "fuchsia",
+      "test_isolate_uses_emulator": false,
       "use_goma": true
     }
   }

@@ -60,6 +60,7 @@ DETERMINISTIC_DEVICE_SETTINGS = [
     (
         'settings/global',
         [
+            ('animator_duration_scale', 0),
             ('assisted_gps_enabled', 0),
 
             # Disable "auto time" and "auto time zone" to avoid network-provided
@@ -69,12 +70,18 @@ DETERMINISTIC_DEVICE_SETTINGS = [
             ('auto_time_zone', 0),
             ('development_settings_enabled', 1),
 
+            # Flag for hiding system error dialogs such as crash and ANR
+            # dialogs.
+            # Type: int ( 0 = show, 1 = hide )
+            ('hide_error_dialogs', 1),
+
             # Flag for allowing ActivityManagerService to send ACTION_APP_ERROR
             # intens on application crashes and ANRs. If this is disabled, the
             # crash/ANR dialog will never display the "Report" button.
             # Type: int ( 0 = disallow, 1 = allow )
             ('send_action_app_error', 0),
             ('stay_on_while_plugged_in', 3),
+            ('transition_animation_scale', 0),
             ('verifier_verify_adb_installs', 0),
             ('window_animation_scale', 0),
         ]),

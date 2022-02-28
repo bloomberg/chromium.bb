@@ -38,6 +38,7 @@ import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.protocol.AutofillWalletSpecifics;
 import org.chromium.components.sync.protocol.EntitySpecifics;
@@ -79,18 +80,38 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
     };
 
     /**
+     * Simple activity that mimics a trusted vault degraded recoverability fix flow that succeeds
+     * immediately.
+     */
+    public static class DummyRecoverabilityDegradedFixActivity extends Activity {
+        @Override
+        protected void onCreate(@Nullable Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setResult(RESULT_OK);
+            FakeTrustedVaultClientBackend.get().setRecoverabilityDegraded(false);
+            finish();
+        }
+    };
+
+    /**
      * A fake implementation of TrustedVaultClient.Backend. Allows to specify keys to be fetched.
      * Keys aren't populated through fetchKeys() unless startPopulateKeys() is called.
      * startPopulateKeys() is called by DummyKeyRetrievalActivity before its completion to mimic
      * real TrustedVaultClient.Backend implementation.
+     *
+     * Similarly, recoverability-degraded logic is implemented with a dummy activity. Tests can
+     * choose to enter this state via invoking setRecoverabilityDegraded(true), and the state can be
+     * resolved with DummyRecoverabilityDegradedFixActivity.
      */
     public static class FakeTrustedVaultClientBackend implements TrustedVaultClient.Backend {
         private static FakeTrustedVaultClientBackend sInstance;
         private boolean mPopulateKeys;
+        private boolean mRecoverabilityDegraded;
         private @Nullable List<byte[]> mKeys;
 
         public FakeTrustedVaultClientBackend() {
             mPopulateKeys = false;
+            mRecoverabilityDegraded = false;
         }
 
         public static FakeTrustedVaultClientBackend get() {
@@ -117,7 +138,26 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
         }
 
         @Override
-        public Promise<Boolean> markKeysAsStale(CoreAccountInfo accountInfo) {
+        public Promise<Boolean> markLocalKeysAsStale(CoreAccountInfo accountInfo) {
+            return Promise.rejected();
+        }
+
+        @Override
+        public Promise<Boolean> getIsRecoverabilityDegraded(CoreAccountInfo accountInfo) {
+            return Promise.fulfilled(mRecoverabilityDegraded);
+        }
+
+        @Override
+        public Promise<PendingIntent> createRecoverabilityDegradedIntent(
+                CoreAccountInfo accountInfo) {
+            Context context = InstrumentationRegistry.getContext();
+            Intent intent = new Intent(context, DummyRecoverabilityDegradedFixActivity.class);
+            return Promise.fulfilled(PendingIntent.getActivity(context, 0 /* requestCode */, intent,
+                    IntentUtils.getPendingIntentMutabilityFlag(false)));
+        }
+
+        @Override
+        public Promise<PendingIntent> createOptInIntent(CoreAccountInfo accountInfo) {
             return Promise.rejected();
         }
 
@@ -128,20 +168,25 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
         public void startPopulateKeys() {
             mPopulateKeys = true;
         }
+
+        public void setRecoverabilityDegraded(boolean degraded) {
+            mRecoverabilityDegraded = degraded;
+        }
     }
 
     private Context mContext;
     private FakeServerHelper mFakeServerHelper;
-    private ProfileSyncService mProfileSyncService;
+    private SyncService mSyncService;
     private MockSyncContentResolverDelegate mSyncContentResolver;
     private final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
     private void ruleTearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mProfileSyncService.setSyncRequested(false);
-            FakeServerHelper.deleteFakeServer();
+            mSyncService.setSyncRequested(false);
+            mFakeServerHelper = null;
+            FakeServerHelper.destroyInstance();
         });
-        ProfileSyncService.resetForTests();
+        SyncService.resetForTests();
     }
 
     public SyncTestRule() {}
@@ -155,8 +200,8 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
         return mFakeServerHelper;
     }
 
-    public ProfileSyncService getProfileSyncService() {
-        return mProfileSyncService;
+    public SyncService getSyncService() {
+        return mSyncService;
     }
 
     MockSyncContentResolverDelegate getSyncContentResolver() {
@@ -187,10 +232,10 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
     }
 
     /**
-     * Returns the currently signed in account.
+     * @return The primary account of the requested {@link ConsentLevel}.
      */
-    public CoreAccountInfo getCurrentSignedInAccount() {
-        return mAccountManagerTestRule.getCurrentSignedInAccount();
+    public CoreAccountInfo getPrimaryAccount(@ConsentLevel int consentLevel) {
+        return mAccountManagerTestRule.getPrimaryAccount(consentLevel);
     }
 
     /**
@@ -200,7 +245,7 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
      */
     public CoreAccountInfo setUpAccountAndEnableSyncForTesting() {
         CoreAccountInfo accountInfo =
-                mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync(mProfileSyncService);
+                mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync(mSyncService);
         // Enable UKM when enabling sync as it is done by the sync confirmation UI.
         enableUKM();
         SyncTestUtil.waitForSyncFeatureActive();
@@ -222,7 +267,7 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
      */
     public CoreAccountInfo setUpTestAccountAndSignInWithSyncSetupAsIncomplete() {
         CoreAccountInfo accountInfo = mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync(
-                /* profileSyncService= */ null);
+                /* syncService= */ null);
         // Enable UKM when enabling sync as it is done by the sync confirmation UI.
         enableUKM();
         SyncTestUtil.waitForSyncTransportActive();
@@ -230,8 +275,7 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
     }
 
     public void startSync() {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mProfileSyncService.setSyncRequested(true); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mSyncService.setSyncRequested(true); });
     }
 
     public void startSyncAndWait() {
@@ -240,13 +284,12 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
     }
 
     public void stopSync() {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mProfileSyncService.setSyncRequested(false); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mSyncService.setSyncRequested(false); });
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     public void signinAndEnableSync(final CoreAccountInfo accountInfo) {
-        SigninTestUtil.signinAndEnableSync(accountInfo, mProfileSyncService);
+        SigninTestUtil.signinAndEnableSync(accountInfo, mSyncService);
         // Enable UKM when enabling sync as it is done by the sync confirmation UI.
         enableUKM();
         SyncTestUtil.waitForSyncFeatureActive();
@@ -255,7 +298,7 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
 
     public void signOut() {
         mAccountManagerTestRule.signOut();
-        Assert.assertNull(mAccountManagerTestRule.getCurrentSignedInAccount());
+        Assert.assertNull(mAccountManagerTestRule.getPrimaryAccount(ConsentLevel.SYNC));
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
     }
 
@@ -263,7 +306,7 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
         mFakeServerHelper.clearServerData();
         SyncTestUtil.triggerSync();
         CriteriaHelper.pollUiThread(() -> {
-            return !ProfileSyncService.get().isSyncRequested();
+            return !SyncService.get().isSyncRequested();
         }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 
@@ -272,9 +315,9 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
      */
     public void enableDataType(final int modelType) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Set<Integer> chosenTypes = mProfileSyncService.getChosenDataTypes();
+            Set<Integer> chosenTypes = mSyncService.getChosenDataTypes();
             chosenTypes.add(modelType);
-            mProfileSyncService.setChosenDataTypes(false, chosenTypes);
+            mSyncService.setChosenDataTypes(false, chosenTypes);
         });
     }
 
@@ -283,7 +326,7 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
      */
     public void setChosenDataTypes(boolean syncEverything, Set<Integer> chosenDataTypes) {
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mProfileSyncService.setChosenDataTypes(syncEverything, chosenDataTypes); });
+                () -> { mSyncService.setChosenDataTypes(syncEverything, chosenDataTypes); });
     }
 
     /*
@@ -299,9 +342,9 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
      */
     public void disableDataType(final int modelType) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Set<Integer> chosenTypes = mProfileSyncService.getChosenDataTypes();
+            Set<Integer> chosenTypes = mSyncService.getChosenDataTypes();
             chosenTypes.remove(modelType);
-            mProfileSyncService.setChosenDataTypes(false, chosenTypes);
+            mSyncService.setChosenDataTypes(false, chosenTypes);
         });
     }
 
@@ -328,20 +371,19 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
                 TrustedVaultClient.setInstanceForTesting(
                         new TrustedVaultClient(FakeTrustedVaultClientBackend.get()));
 
-                // Load native since the FakeServer needs it and possibly ProfileSyncService as well
-                // (depends on what fake is provided by |createProfileSyncService()|).
+                // Load native since the FakeServer needs it and possibly SyncService as well
+                // (depends on what fake is provided by |createSyncServiceImpl()|).
                 NativeLibraryTestUtils.loadNativeLibraryAndInitBrowserProcess();
 
                 TestThreadUtils.runOnUiThreadBlocking(() -> {
-                    ProfileSyncService profileSyncService = createProfileSyncService();
-                    if (profileSyncService != null) {
-                        ProfileSyncService.overrideForTests(profileSyncService);
+                    SyncServiceImpl syncService = createSyncServiceImpl();
+                    if (syncService != null) {
+                        SyncService.overrideForTests(syncService);
                     }
-                    mProfileSyncService = ProfileSyncService.get();
+                    mSyncService = SyncService.get();
 
                     mContext = InstrumentationRegistry.getTargetContext();
-                    FakeServerHelper.useFakeServer(mContext);
-                    mFakeServerHelper = FakeServerHelper.get();
+                    mFakeServerHelper = FakeServerHelper.createInstanceAndGet();
                 });
 
                 startMainActivityForSyncTest();
@@ -413,9 +455,9 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
     }
 
     /**
-     * Returns an instance of ProfileSyncService that can be overridden by subclasses.
+     * Returns an instance of SyncServiceImpl that can be overridden by subclasses.
      */
-    protected ProfileSyncService createProfileSyncService() {
+    protected SyncServiceImpl createSyncServiceImpl() {
         return null;
     }
 

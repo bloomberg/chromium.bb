@@ -36,17 +36,17 @@ _BASE_EXTRA_ARGS = [
 _BROWSING_EXTRA_ARGS = [
     '--install-bundle-module', 'vr', '--remove-system-vrcore',
     '--shared-prefs-file', run_vr_telemetry_test.DAYDREAM_PREFS,
-    '--profile-dir', run_vr_telemetry_test.ASSET_PROFILE_PATH, '--benchmarks',
-    'xr.browsing.static'
+    '--profile-dir', run_vr_telemetry_test.ASSET_PROFILE_PATH, '-d',
+    '--benchmarks', 'xr.browsing.static'
 ] + _BASE_EXTRA_ARGS
 _CARDBOARD_EXTRA_ARGS = [
     '--install-bundle-module', 'vr', '--remove-system-vrcore',
-    '--shared-prefs-file', run_vr_telemetry_test.CARDBOARD_PREFS,
+    '--shared-prefs-file', run_vr_telemetry_test.CARDBOARD_PREFS, '-d',
     '--benchmarks', 'xr.webxr.static'
 ] + _BASE_EXTRA_ARGS
 
 _TELEMETRY_COMMAND = [
-    'luci-auth', 'context', '--', 'vpython', '../../testing/test_env.py',
+    'luci-auth', 'context', '--', 'vpython3', '../../testing/test_env.py',
     '../../testing/scripts/run_performance_tests.py',
     '../../tools/perf/run_benchmark'
 ]
@@ -89,6 +89,7 @@ _BASE_WINDOWS_ARGUMENTS = {
     'benchmark': 'xr.webxr.static',
 }
 _WINDOWS_EXTRA_ARGS = [
+    '-d',
     '--benchmarks',
     'xr.webxr.static',
     '--pageset-repeat',

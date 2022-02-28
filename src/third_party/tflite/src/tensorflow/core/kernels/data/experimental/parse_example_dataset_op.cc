@@ -15,14 +15,17 @@ limitations under the License.
 #include <deque>
 
 #include "tensorflow/core/common_runtime/device.h"
-#include "tensorflow/core/common_runtime/metrics.h"
+#include "tensorflow/core/data/dataset_utils.h"
+#include "tensorflow/core/data/name_utils.h"
+#include "tensorflow/core/data/stats_utils.h"
+#include "tensorflow/core/framework/metrics.h"
 #include "tensorflow/core/framework/stats_aggregator.h"
-#include "tensorflow/core/kernels/data/dataset_utils.h"
-#include "tensorflow/core/kernels/data/name_utils.h"
 #include "tensorflow/core/kernels/data/parallel_map_dataset_op.h"
-#include "tensorflow/core/kernels/data/stats_utils.h"
+#include "tensorflow/core/kernels/ragged_tensor_variant.h"
 #include "tensorflow/core/platform/errors.h"
 #include "tensorflow/core/platform/stringprintf.h"
+#include "tensorflow/core/profiler/lib/traceme.h"
+#include "tensorflow/core/profiler/lib/traceme_encode.h"
 #include "tensorflow/core/util/example_proto_fast_parsing.h"
 
 namespace tensorflow {
@@ -115,7 +118,7 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
  protected:
   void MakeDataset(OpKernelContext* ctx, DatasetBase* input,
                    DatasetBase** output) override {
-    int64 num_parallel_calls = 0;
+    int64_t num_parallel_calls = 0;
     OP_REQUIRES_OK(ctx, ParseScalarArgument(ctx, "num_parallel_calls",
                                             &num_parallel_calls));
     OP_REQUIRES(
@@ -210,7 +213,7 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
             std::vector<Tensor> dense_defaults, std::vector<string> sparse_keys,
             std::vector<string> dense_keys,
             std::map<string, int> key_to_output_index,
-            example::FastParseExampleConfig config, int32 num_parallel_calls,
+            example::FastParseExampleConfig config, int32_t num_parallel_calls,
             const DataTypeVector& sparse_types,
             const DataTypeVector& dense_types,
             const std::vector<PartialTensorShape>& dense_shapes,
@@ -266,7 +269,15 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
       return name_utils::DatasetDebugString(kDatasetType, params);
     }
 
-    int64 Cardinality() const override { return input_->Cardinality(); }
+    int64_t CardinalityInternal() const override {
+      return input_->Cardinality();
+    }
+
+    Status InputDatasets(
+        std::vector<const DatasetBase*>* inputs) const override {
+      inputs->push_back(input_);
+      return Status::OK();
+    }
 
     Status CheckExternalState() const override {
       return input_->CheckExternalState();
@@ -399,6 +410,10 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
         RecordStop(ctx);
         result->notification.WaitForNotification();
         RecordStart(ctx);
+        profiler::TraceMe traceme([&] {
+          return profiler::TraceMeEncode("ParseExampleConsume",
+                                         {{"element_id", result->id}});
+        });
         return ProcessResult(ctx, result, out_tensors, end_of_sequence);
       }
 
@@ -454,7 +469,7 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
                              IteratorStateReader* reader) override {
         mutex_lock l(*mu_);
         TF_RETURN_IF_ERROR(RestoreInput(ctx, reader, input_impl_));
-        int64 invocation_results_size;
+        int64_t invocation_results_size;
         TF_RETURN_IF_ERROR(reader->ReadScalar(
             full_name(strings::StrCat(kInvocationResults, kSizeSuffix)),
             &invocation_results_size));
@@ -465,7 +480,7 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
           TF_RETURN_IF_ERROR(ReadStatusLocked(reader, i, &result.status));
           size_t num_return_values;
           {
-            int64 size;
+            int64_t size;
             TF_RETURN_IF_ERROR(reader->ReadScalar(
                 full_name(strings::StrCat(kInvocationResults, "[", i, "]",
                                           kSizeSuffix)),
@@ -482,19 +497,21 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
           for (size_t j = 0; j < num_return_values; j++) {
             result.return_values.emplace_back();
             TF_RETURN_IF_ERROR(reader->ReadTensor(
+                ctx->flr(),
                 full_name(
                     strings::StrCat(kInvocationResults, "[", i, "][", j, "]")),
                 &result.return_values.back()));
           }
           result.end_of_input = reader->Contains(full_name(strings::StrCat(
               kInvocationResults, "[", i, "]", kEndOfInputSuffix)));
+          RecordBufferEnqueue(ctx, result.return_values);
           result.notification.Notify();
         }
         return Status::OK();
       }
 
       TraceMeMetadata GetTraceMeMetadata() const override {
-        int64 parallelism = -1;
+        int64_t parallelism = -1;
         // NOTE: We only set the parallelism value if the lock can be acquired
         // right away to avoid introducing tracing overhead.
         if (mu_->try_lock()) {
@@ -507,17 +524,23 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
         result.push_back(
             std::make_pair("deterministic", deterministic_ ? "true" : "false"));
         result.push_back(std::make_pair(
-            "parallelism",
-            strings::Printf("%lld", static_cast<long long>(parallelism))));
+            "parallelism", parallelism == -1
+                               ? kTraceInfoUnavailable
+                               : strings::Printf("%lld", static_cast<long long>(
+                                                             parallelism))));
         return result;
       }
 
      private:
       struct InvocationResult {
+        InvocationResult() = default;
+        explicit InvocationResult(int64_t id) : id(id) {}
+
         Notification notification;
         Status status;
         std::vector<Tensor> return_values;
-        bool end_of_input;
+        bool end_of_input = false;
+        int64_t id = -1;
       };
 
       void CancelThreads(bool wait) TF_LOCKS_EXCLUDED(mu_) {
@@ -558,6 +581,10 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
       void CallFunction(const std::shared_ptr<IteratorContext>& ctx,
                         const std::shared_ptr<InvocationResult>& result)
           TF_LOCKS_EXCLUDED(*mu_) {
+        profiler::TraceMe traceme([&] {
+          return profiler::TraceMeEncode("ParseExampleProduce",
+                                         {{"element_id", result->id}});
+        });
         // Get the next input element.
         std::vector<Tensor> input_element;
         result->status = input_impl_->GetNext(ctx.get(), &input_element,
@@ -580,17 +607,22 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
                                   &result->return_values);
             },
             std::move(input_element));
+        auto node = model_node();
+        const bool collect_usage = node && ctx->model();
         // `ctx->runner()` may execute its logic synchronous so we wrap it in
         // `RecordStop` and `RecordStart` to prevent invalid nesting of
         // `RecordStart` calls.
         RecordStop(ctx.get());
-        (*ctx->runner())(
-            [this, ctx, fn = std::move(fn), done = std::move(done)]() {
-              RecordStart(ctx.get());
-              auto cleanup =
-                  gtl::MakeCleanup([this, ctx] { RecordStop(ctx.get()); });
-              done(fn());
-            });
+        (*ctx->runner())([node, collect_usage, fn = std::move(fn),
+                          done = std::move(done)]() {
+          if (collect_usage) {
+            node->record_start(EnvTime::NowNanos());
+          }
+          done(fn());
+          if (collect_usage) {
+            node->record_stop(EnvTime::NowNanos());
+          }
+        });
         RecordStart(ctx.get());
       }
 
@@ -658,12 +690,9 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
         for (int d = 0; d < dataset()->ragged_keys_.size(); ++d) {
           int output_index =
               dataset()->key_to_output_index_.at(dataset()->ragged_keys_[d]);
-          (*output)[output_index] = Tensor(ctx->allocator({}), DT_VARIANT, {});
-          Tensor serialized_ragged =
-              Tensor(ctx->allocator({}), DT_VARIANT, {2});
-          auto serialized_ragged_t = serialized_ragged.vec<Variant>();
-          serialized_ragged_t(0) = example_result.ragged_splits[d];
-          serialized_ragged_t(1) = example_result.ragged_values[d];
+          RaggedTensorVariant serialized_ragged;
+          serialized_ragged.append_splits(example_result.ragged_splits[d]);
+          serialized_ragged.set_values(example_result.ragged_values[d]);
           (*output)[output_index] = Tensor(ctx->allocator({}), DT_VARIANT, {});
           Tensor& ragged_wrapper = (*output)[output_index];
           ragged_wrapper.scalar<Variant>()() = serialized_ragged;
@@ -682,7 +711,7 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
             stats_aggregator->IncrementCounter(
                 stats_utils::kFeatureValuesCount, "trainer",
                 feature_stats.feature_values_count);
-            int64 steps = model_node() ? model_node()->num_elements() : 0;
+            int64_t steps = model_node() ? model_node()->num_elements() : 0;
             stats_aggregator->AddToHistogram(
                 stats_utils::FeatureHistogramName(dataset()->node_name()),
                 {static_cast<double>(feature_stats.features_count)}, steps);
@@ -728,10 +757,12 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
           new_calls.reserve(num_parallel_calls_->value);
         }
         auto busy = [this]() TF_EXCLUSIVE_LOCKS_REQUIRED(*mu_) -> bool {
-          int64 num_parallel_calls = num_parallel_calls_->value;
+          int64_t num_parallel_calls = num_parallel_calls_->value;
           return num_calls_ >= num_parallel_calls ||
                  invocation_results_.size() >= num_parallel_calls;
         };
+        // Counts the total number of calls to use as an id of InvocationResult.
+        int64_t num_total_calls = 0;
         while (true) {
           {
             mutex_lock l(*mu_);
@@ -745,7 +776,7 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
             }
             while (!busy()) {
               invocation_results_.push_back(
-                  std::make_shared<InvocationResult>());
+                  std::make_shared<InvocationResult>(num_total_calls++));
               new_calls.push_back(invocation_results_.back());
               num_calls_++;
             }
@@ -791,7 +822,7 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
       }
 
       void StatsThread(const std::shared_ptr<IteratorContext>& ctx) {
-        for (int64 step = 0;; ++step) {
+        for (int64_t step = 0;; ++step) {
           int num_calls;
           int num_parallel_calls;
           {
@@ -822,7 +853,7 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
                                const Status& status)
           TF_EXCLUSIVE_LOCKS_REQUIRED(*mu_) {
         TF_RETURN_IF_ERROR(writer->WriteScalar(
-            CodeKey(index), static_cast<int64>(status.code())));
+            CodeKey(index), static_cast<int64_t>(status.code())));
         if (!status.ok()) {
           TF_RETURN_IF_ERROR(writer->WriteScalar(ErrorMessageKey(index),
                                                  status.error_message()));
@@ -833,7 +864,7 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
       Status ReadStatusLocked(IteratorStateReader* reader, size_t index,
                               Status* status)
           TF_EXCLUSIVE_LOCKS_REQUIRED(*mu_) {
-        int64 code_int;
+        int64_t code_int;
         TF_RETURN_IF_ERROR(reader->ReadScalar(CodeKey(index), &code_int));
         error::Code code = static_cast<error::Code>(code_int);
 
@@ -871,7 +902,7 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
       const bool deterministic_;
       const bool autotune_;
       // Counts the number of outstanding calls.
-      int64 num_calls_ TF_GUARDED_BY(*mu_) = 0;
+      int64_t num_calls_ TF_GUARDED_BY(*mu_) = 0;
       std::unique_ptr<IteratorBase> input_impl_;
       // Buffer for storing the invocation results.
       std::deque<std::shared_ptr<InvocationResult>> invocation_results_
@@ -892,7 +923,7 @@ class ParseExampleDatasetOp : public UnaryDatasetOpKernel {
     const std::vector<string> ragged_keys_;
     const std::map<string, int> key_to_output_index_;
     const example::FastParseExampleConfig config_;
-    const int64 num_parallel_calls_;
+    const int64_t num_parallel_calls_;
     const DataTypeVector sparse_types_;
     const DataTypeVector dense_types_;
     const DataTypeVector ragged_value_types_;

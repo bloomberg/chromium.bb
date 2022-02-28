@@ -7,8 +7,6 @@
 #include <string>
 #include <tuple>
 
-#include "quic/platform/api/quic_estimate_memory_usage.h"
-
 namespace quic {
 
 QuicServerId::QuicServerId() : QuicServerId("", 0, false) {}
@@ -33,8 +31,8 @@ bool QuicServerId::operator==(const QuicServerId& other) const {
          host_ == other.host_ && port_ == other.port_;
 }
 
-size_t QuicServerId::EstimateMemoryUsage() const {
-  return QuicEstimateMemoryUsage(host_);
+bool QuicServerId::operator!=(const QuicServerId& other) const {
+  return !(*this == other);
 }
 
 }  // namespace quic

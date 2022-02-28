@@ -278,8 +278,8 @@ enum aom_dec_control_id {
    * The caller should ensure that AOM_CODEC_OK is returned before attempting
    * to dereference the Accounting pointer.
    *
-   * \attention When compiled without --enable-accounting, this returns
-   * AOM_CODEC_INCAPABLE.
+   * \attention When configured with -DCONFIG_ACCOUNTING=0, the default, this
+   * returns AOM_CODEC_INCAPABLE.
    */
   AV1_GET_ACCOUNTING,
 
@@ -369,7 +369,7 @@ enum aom_dec_control_id {
   /*!\brief Codec control function to set an aom_inspect_cb callback that is
    * invoked each time a frame is decoded, aom_inspect_init* parameter
    *
-   * \attention When compiled without --enable-inspection, this
+   * \attention When configured with -DCONFIG_INSPECTION=0, the default, this
    * returns AOM_CODEC_INCAPABLE.
    */
   AV1_SET_INSPECTION_CALLBACK,
@@ -425,6 +425,28 @@ enum aom_dec_control_id {
   /*!\brief Codec control function to get the S_FRAME coding information
    */
   AOMD_GET_S_FRAME_INFO,
+
+  /*!\brief Codec control function to get the show frame flag, int parameter
+   */
+  AOMD_GET_SHOW_FRAME_FLAG,
+
+  /*!\brief Codec control function to get the base q index of a frame, int
+   * parameter
+   */
+  AOMD_GET_BASE_Q_IDX,
+
+  /*!\brief Codec control function to get the order hint of a frame, unsigned
+   * int parameter
+   */
+  AOMD_GET_ORDER_HINT,
+
+  /*!\brief Codec control function to get the info of a 4x4 block.
+   * Parameters: int mi_row, int mi_col, and MB_MODE_INFO*.
+   *
+   * \note This only returns a shallow copy, so all pointer members should not
+   * be used.
+   */
+  AV1D_GET_MI_INFO,
 };
 
 /*!\cond */

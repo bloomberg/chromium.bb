@@ -9,7 +9,7 @@
 
 #include "android_webview/browser/aw_browser_process.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_executor.h"
 #include "content/public/browser/browser_main_parts.h"
 
@@ -25,6 +25,10 @@ class AwContentBrowserClient;
 class AwBrowserMainParts : public content::BrowserMainParts {
  public:
   explicit AwBrowserMainParts(AwContentBrowserClient* browser_client);
+
+  AwBrowserMainParts(const AwBrowserMainParts&) = delete;
+  AwBrowserMainParts& operator=(const AwBrowserMainParts&) = delete;
+
   ~AwBrowserMainParts() override;
 
   // Overriding methods from content::BrowserMainParts.
@@ -41,13 +45,11 @@ class AwBrowserMainParts : public content::BrowserMainParts {
   // Android specific UI SingleThreadTaskExecutor.
   std::unique_ptr<base::SingleThreadTaskExecutor> main_task_executor_;
 
-  AwContentBrowserClient* browser_client_;
+  raw_ptr<AwContentBrowserClient> browser_client_;
 
   std::unique_ptr<metrics::MemoryMetricsLogger> metrics_logger_;
 
   std::unique_ptr<AwBrowserProcess> browser_process_;
-
-  DISALLOW_COPY_AND_ASSIGN(AwBrowserMainParts);
 };
 
 }  // namespace android_webview

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/border.h"
 #include "ui/views/test/test_views.h"
@@ -24,6 +25,9 @@ class FillLayoutTest : public testing::Test {
     layout_ = host_->SetLayoutManager(std::make_unique<FillLayout>());
     SetHostSize(kDefaultHostWidth, kDefaultHostHeight);
   }
+
+  FillLayoutTest(const FillLayoutTest&) = delete;
+  FillLayoutTest& operator=(const FillLayoutTest&) = delete;
 
  protected:
   // Convenience function to get the preferred size from |layout_|.
@@ -53,12 +57,9 @@ class FillLayoutTest : public testing::Test {
   }
 
   // The test target.
-  FillLayout* layout_ = nullptr;
+  raw_ptr<FillLayout> layout_ = nullptr;
 
   std::unique_ptr<View> host_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FillLayoutTest);
 };
 
 }  // namespace

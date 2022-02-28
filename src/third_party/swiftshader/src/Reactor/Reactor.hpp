@@ -16,6 +16,7 @@
 #define rr_Reactor_hpp
 
 #include "Nucleus.hpp"
+#include "Pragma.hpp"
 #include "Routine.hpp"
 #include "Traits.hpp"
 
@@ -213,6 +214,7 @@ public:
 	using reference_underlying_type = T;
 
 	explicit Reference(Value *pointer, int alignment = 1);
+	Reference(const Reference<T> &ref) = default;
 
 	RValue<T> operator=(RValue<T> rhs) const;
 	RValue<T> operator=(const Reference<T> &ref) const;
@@ -226,7 +228,7 @@ public:
 	int getAlignment() const;
 
 private:
-	Value *address;
+	Value *const address;
 
 	const int alignment;
 };
@@ -2475,11 +2477,11 @@ public:
 	RValue<Pointer<T>> operator=(const Reference<Pointer<T>> &rhs);
 	RValue<Pointer<T>> operator=(std::nullptr_t);
 
-	Reference<T> operator*();
-	Reference<T> operator[](int index);
-	Reference<T> operator[](unsigned int index);
-	Reference<T> operator[](RValue<Int> index);
-	Reference<T> operator[](RValue<UInt> index);
+	Reference<T> operator*() const;
+	Reference<T> operator[](int index) const;
+	Reference<T> operator[](unsigned int index) const;
+	Reference<T> operator[](RValue<Int> index) const;
+	Reference<T> operator[](RValue<UInt> index) const;
 
 	static Type *type();
 
@@ -2526,10 +2528,11 @@ RValue<T> Load(Pointer<T> pointer, unsigned int alignment, bool atomic, std::mem
 }
 
 // TODO: Use SIMD to template these.
-RValue<Float4> MaskedLoad(RValue<Pointer<Float4>> base, RValue<Int4> mask, unsigned int alignment, bool zeroMaskedLanes = false);
-RValue<Int4> MaskedLoad(RValue<Pointer<Int4>> base, RValue<Int4> mask, unsigned int alignment, bool zeroMaskedLanes = false);
-void MaskedStore(RValue<Pointer<Float4>> base, RValue<Float4> val, RValue<Int4> mask, unsigned int alignment);
-void MaskedStore(RValue<Pointer<Int4>> base, RValue<Int4> val, RValue<Int4> mask, unsigned int alignment);
+// TODO(b/155867273): These can be undeprecated if implemented for Subzero.
+[[deprecated]] RValue<Float4> MaskedLoad(RValue<Pointer<Float4>> base, RValue<Int4> mask, unsigned int alignment, bool zeroMaskedLanes = false);
+[[deprecated]] RValue<Int4> MaskedLoad(RValue<Pointer<Int4>> base, RValue<Int4> mask, unsigned int alignment, bool zeroMaskedLanes = false);
+[[deprecated]] void MaskedStore(RValue<Pointer<Float4>> base, RValue<Float4> val, RValue<Int4> mask, unsigned int alignment);
+[[deprecated]] void MaskedStore(RValue<Pointer<Int4>> base, RValue<Int4> val, RValue<Int4> mask, unsigned int alignment);
 
 RValue<Float4> Gather(RValue<Pointer<Float>> base, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment, bool zeroMaskedLanes = false);
 RValue<Int4> Gather(RValue<Pointer<Int>> base, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment, bool zeroMaskedLanes = false);
@@ -2696,9 +2699,9 @@ RValue<Pointer<T>> LValue<T>::operator&()
 
 template<class T>
 Reference<T>::Reference(Value *pointer, int alignment)
-    : alignment(alignment)
+    : address(pointer)
+    , alignment(alignment)
 {
-	address = pointer;
 }
 
 template<class T>
@@ -3031,13 +3034,13 @@ RValue<Pointer<T>> Pointer<T>::operator=(std::nullptr_t)
 }
 
 template<class T>
-Reference<T> Pointer<T>::operator*()
+Reference<T> Pointer<T>::operator*() const
 {
 	return Reference<T>(this->loadValue(), alignment);
 }
 
 template<class T>
-Reference<T> Pointer<T>::operator[](int index)
+Reference<T> Pointer<T>::operator[](int index) const
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
 	Value *element = Nucleus::createGEP(this->loadValue(), T::type(), Nucleus::createConstantInt(index), false);
@@ -3046,7 +3049,7 @@ Reference<T> Pointer<T>::operator[](int index)
 }
 
 template<class T>
-Reference<T> Pointer<T>::operator[](unsigned int index)
+Reference<T> Pointer<T>::operator[](unsigned int index) const
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
 	Value *element = Nucleus::createGEP(this->loadValue(), T::type(), Nucleus::createConstantInt(index), true);
@@ -3055,7 +3058,7 @@ Reference<T> Pointer<T>::operator[](unsigned int index)
 }
 
 template<class T>
-Reference<T> Pointer<T>::operator[](RValue<Int> index)
+Reference<T> Pointer<T>::operator[](RValue<Int> index) const
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
 	Value *element = Nucleus::createGEP(this->loadValue(), T::type(), index.value(), false);
@@ -3064,7 +3067,7 @@ Reference<T> Pointer<T>::operator[](RValue<Int> index)
 }
 
 template<class T>
-Reference<T> Pointer<T>::operator[](RValue<UInt> index)
+Reference<T> Pointer<T>::operator[](RValue<UInt> index) const
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
 	Value *element = Nucleus::createGEP(this->loadValue(), T::type(), index.value(), true);
@@ -3203,7 +3206,7 @@ std::shared_ptr<Routine> Function<Return(Arguments...)>::operator()(const char *
 	vsnprintf(fullName, 1024, name, vararg);
 	va_end(vararg);
 
-	auto routine = core->acquireRoutine(fullName, Config::Edit::None);
+	auto routine = core->acquireRoutine(fullName, nullptr);
 	core.reset(nullptr);
 
 	return routine;
@@ -3219,7 +3222,7 @@ std::shared_ptr<Routine> Function<Return(Arguments...)>::operator()(const Config
 	vsnprintf(fullName, 1024, name, vararg);
 	va_end(vararg);
 
-	auto routine = core->acquireRoutine(fullName, cfg);
+	auto routine = core->acquireRoutine(fullName, &cfg);
 	core.reset(nullptr);
 
 	return routine;

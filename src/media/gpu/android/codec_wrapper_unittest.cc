@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/mock_callback.h"
@@ -67,7 +68,7 @@ class CodecWrapperTest : public testing::Test {
   // So that we can get the thread's task runner.
   base::test::TaskEnvironment task_environment_;
 
-  NiceMock<MockMediaCodecBridge>* codec_;
+  raw_ptr<NiceMock<MockMediaCodecBridge>> codec_;
   std::unique_ptr<CodecWrapper> wrapper_;
   scoped_refptr<CodecSurfaceBundle> surface_bundle_;
   NiceMock<base::MockCallback<CodecWrapper::OutputReleasedCB>>
@@ -221,13 +222,13 @@ TEST_F(CodecWrapperTest, CodecOutputBuffersHaveTheCorrectSize) {
 
 TEST_F(CodecWrapperTest, OutputBufferReleaseCbIsCalledWhenRendering) {
   auto codec_buffer = DequeueCodecOutputBuffer();
-  EXPECT_CALL(output_buffer_release_cb_, Run(false)).Times(1);
+  EXPECT_CALL(output_buffer_release_cb_, Run(true)).Times(1);
   codec_buffer->ReleaseToSurface();
 }
 
 TEST_F(CodecWrapperTest, OutputBufferReleaseCbIsCalledWhenDestructing) {
   auto codec_buffer = DequeueCodecOutputBuffer();
-  EXPECT_CALL(output_buffer_release_cb_, Run(false)).Times(1);
+  EXPECT_CALL(output_buffer_release_cb_, Run(true)).Times(1);
 }
 
 TEST_F(CodecWrapperTest, OutputBufferReflectsDrainingOrDrainedStatus) {
@@ -371,6 +372,31 @@ TEST_F(CodecWrapperTest, RenderCallbackIsNotCalledIfNotRendered) {
                                              base::Unretained(&flag)));
   codec_buffer.reset();
   EXPECT_FALSE(flag);
+}
+
+TEST_F(CodecWrapperTest, CodecWrapperGetsColorSpaceFromCodec) {
+  // CodecWrapper should provide the color space that's reported by the bridge.
+  EXPECT_CALL(*codec_, DequeueOutputBuffer(_, _, _, _, _, _, _))
+      .WillOnce(Return(MEDIA_CODEC_OUTPUT_FORMAT_CHANGED))
+      .WillOnce(Return(MEDIA_CODEC_OK));
+  gfx::ColorSpace color_space{gfx::ColorSpace::CreateHDR10()};
+  EXPECT_CALL(*codec_, GetOutputColorSpace(_))
+      .WillOnce(DoAll(SetArgPointee<0>(color_space), Return(MEDIA_CODEC_OK)));
+  auto codec_buffer = DequeueCodecOutputBuffer();
+  ASSERT_EQ(codec_buffer->color_space(), color_space);
+}
+
+TEST_F(CodecWrapperTest, CodecWrapperDefaultsToSRGB) {
+  // If MediaCodec doesn't provide a color space, then CodecWrapper should
+  // default to sRGB for sanity.
+  // CodecWrapper should provide the color space that's reported by the bridge.
+  EXPECT_CALL(*codec_, DequeueOutputBuffer(_, _, _, _, _, _, _))
+      .WillOnce(Return(MEDIA_CODEC_OUTPUT_FORMAT_CHANGED))
+      .WillOnce(Return(MEDIA_CODEC_OK));
+  EXPECT_CALL(*codec_, GetOutputColorSpace(_))
+      .WillOnce(Return(MEDIA_CODEC_ERROR));
+  auto codec_buffer = DequeueCodecOutputBuffer();
+  ASSERT_EQ(codec_buffer->color_space(), gfx::ColorSpace::CreateSRGB());
 }
 
 }  // namespace media

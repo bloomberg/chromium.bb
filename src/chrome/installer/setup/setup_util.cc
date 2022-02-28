@@ -18,12 +18,14 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -32,7 +34,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
@@ -41,6 +42,7 @@
 #include "base/win/windows_version.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/installer/key_rotation_manager.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
@@ -85,16 +87,8 @@ void RemoveLegacyIExecuteCommandKey(const InstallerState& installer_state) {
   delegate_execute_path.append(handler_class_uuid);
 
   // Delete both 64 and 32 keys to handle 32->64 or 64->32 migration.
-  for (REGSAM bitness : {KEY_WOW64_32KEY, KEY_WOW64_64KEY}) {
-    if (base::win::RegKey(root, delegate_execute_path.c_str(),
-                          KEY_QUERY_VALUE | bitness)
-            .Valid()) {
-      const bool success =
-          InstallUtil::DeleteRegistryKey(root, delegate_execute_path, bitness);
-      UMA_HISTOGRAM_BOOLEAN("Setup.Install.DeleteIExecuteCommandClassKey",
-                            success);
-    }
-  }
+  for (REGSAM bitness : {KEY_WOW64_32KEY, KEY_WOW64_64KEY})
+    InstallUtil::DeleteRegistryKey(root, delegate_execute_path, bitness);
 }
 
 // Remove the registration of profile statistics. This used to be reported to
@@ -145,13 +139,8 @@ void RemoveBinariesVersionKey(const InstallerState& installer_state) {
   // Assume that non-Google is Chromium branding.
   std::wstring path(L"Software\\Chromium Binaries");
 #endif
-  if (base::win::RegKey(installer_state.root_key(), path.c_str(),
-                        KEY_QUERY_VALUE | KEY_WOW64_32KEY)
-          .Valid()) {
-    const bool success = InstallUtil::DeleteRegistryKey(
-        installer_state.root_key(), path, KEY_WOW64_32KEY);
-    UMA_HISTOGRAM_BOOLEAN("Setup.Install.DeleteBinariesClientsKey", success);
-  }
+  InstallUtil::DeleteRegistryKey(installer_state.root_key(), path,
+                                 KEY_WOW64_32KEY);
 }
 
 void RemoveAppLauncherVersionKey(const InstallerState& installer_state) {
@@ -160,31 +149,18 @@ void RemoveAppLauncherVersionKey(const InstallerState& installer_state) {
   static constexpr wchar_t kLauncherGuid[] =
       L"{FDA71E6F-AC4C-4a00-8B70-9958A68906BF}";
 
-  std::wstring path = install_static::GetClientsKeyPath(kLauncherGuid);
-  if (base::win::RegKey(installer_state.root_key(), path.c_str(),
-                        KEY_QUERY_VALUE | KEY_WOW64_32KEY)
-          .Valid()) {
-    const bool succeeded = InstallUtil::DeleteRegistryKey(
-        installer_state.root_key(), path, KEY_WOW64_32KEY);
-    UMA_HISTOGRAM_BOOLEAN("Setup.Install.DeleteAppLauncherClientsKey",
-                          succeeded);
-  }
+  InstallUtil::DeleteRegistryKey(
+      installer_state.root_key(),
+      install_static::GetClientsKeyPath(kLauncherGuid), KEY_WOW64_32KEY);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 void RemoveLegacyChromeAppCommands(const InstallerState& installer_state) {
 // These app commands were only registered for Google Chrome.
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  std::wstring path(GetCommandKey(L"install-extension"));
-
-  if (base::win::RegKey(installer_state.root_key(), path.c_str(),
-                        KEY_QUERY_VALUE | KEY_WOW64_32KEY)
-          .Valid()) {
-    const bool succeeded = InstallUtil::DeleteRegistryKey(
-        installer_state.root_key(), path, KEY_WOW64_32KEY);
-    UMA_HISTOGRAM_BOOLEAN("Setup.Install.DeleteInstallExtensionCommand",
-                          succeeded);
-  }
+  InstallUtil::DeleteRegistryKey(installer_state.root_key(),
+                                 GetCommandKey(L"install-extension"),
+                                 KEY_WOW64_32KEY);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
@@ -726,7 +702,7 @@ base::Time GetConsoleSessionStartTime() {
 
   wts_info = reinterpret_cast<WTSINFO*>(buffer);
   FILETIME filetime = {wts_info->LogonTime.u.LowPart,
-                       wts_info->LogonTime.u.HighPart};
+                       static_cast<DWORD>(wts_info->LogonTime.u.HighPart)};
   return base::Time::FromFileTime(filetime);
 }
 
@@ -747,6 +723,24 @@ absl::optional<std::string> DecodeDMTokenSwitchValue(
   }
 
   return token;
+}
+
+absl::optional<std::string> DecodeNonceSwitchValue(
+    const std::string& encoded_nonce) {
+  if (encoded_nonce.empty()) {
+    // The nonce command line argument is optional.  If none is specified use
+    // an empty string.
+    return std::string();
+  }
+
+  // The nonce passed on the command line is base64-encoded.
+  std::string nonce;
+  if (!base::Base64Decode(encoded_nonce, &nonce)) {
+    LOG(ERROR) << "Nonce passed on the command line is not correctly encoded";
+    return absl::nullopt;
+  }
+
+  return nonce;
 }
 
 bool StoreDMToken(const std::string& token) {
@@ -789,6 +783,24 @@ bool StoreDMToken(const std::string& token) {
 
   VLOG(1) << "Successfully stored specified DMToken in the registry.";
   return true;
+}
+
+bool RotateDeviceTrustKey(
+    std::unique_ptr<enterprise_connectors::KeyRotationManager>
+        key_rotation_manager,
+    const GURL& dm_server_url,
+    const std::string& dm_token,
+    const std::string& nonce) {
+  DCHECK(install_static::IsSystemInstall());
+  DCHECK(key_rotation_manager);
+
+  if (dm_token.size() > kMaxDMTokenLength) {
+    LOG(ERROR) << "DMToken length out of bounds";
+    return false;
+  }
+
+  return key_rotation_manager->RotateWithAdminRights(dm_server_url, dm_token,
+                                                     nonce);
 }
 
 base::FilePath GetNotificationHelperPath(const base::FilePath& target_path,

@@ -11,6 +11,7 @@
 #include "chrome/common/net/safe_search_util.h"
 #include "components/google/core/common/google_util.h"
 #include "net/base/url_util.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/public/mojom/x_frame_options.mojom.h"
 
@@ -170,6 +171,7 @@ void GoogleURLLoaderThrottle::WillProcessResponse(
     CHECK(response_head->parsed_headers);
     if (response_head->parsed_headers->xfo !=
         network::mojom::XFrameOptionsValue::kDeny) {
+      response_head->headers->SetHeader("X-Frame-Options", "SAMEORIGIN");
       response_head->parsed_headers->xfo =
           network::mojom::XFrameOptionsValue::kSameOrigin;
     }

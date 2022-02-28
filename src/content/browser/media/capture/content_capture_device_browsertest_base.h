@@ -6,9 +6,7 @@
 #define CONTENT_BROWSER_MEDIA_CAPTURE_CONTENT_CAPTURE_DEVICE_BROWSERTEST_BASE_H_
 
 #include <memory>
-#include <string>
 
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/media/capture/fake_video_capture_stack.h"
@@ -35,6 +33,12 @@ class FrameSinkVideoCaptureDevice;
 class ContentCaptureDeviceBrowserTestBase : public ContentBrowserTest {
  public:
   ContentCaptureDeviceBrowserTestBase();
+
+  ContentCaptureDeviceBrowserTestBase(
+      const ContentCaptureDeviceBrowserTestBase&) = delete;
+  ContentCaptureDeviceBrowserTestBase& operator=(
+      const ContentCaptureDeviceBrowserTestBase&) = delete;
+
   ~ContentCaptureDeviceBrowserTestBase() override;
 
   FakeVideoCaptureStack* capture_stack() { return &capture_stack_; }
@@ -133,8 +137,6 @@ class ContentCaptureDeviceBrowserTestBase : public ContentBrowserTest {
   static constexpr char kSingleFramePath[] = "/single.html";
   static constexpr char kAlternateHostname[] = "alternate.com";
   static constexpr char kAlternatePath[] = "/alternate.html";
-
-  DISALLOW_COPY_AND_ASSIGN(ContentCaptureDeviceBrowserTestBase);
 };
 
 }  // namespace content

@@ -8,6 +8,7 @@
 #include "base/component_export.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -32,6 +33,13 @@ enum class PlatformWindowState {
   kMinimized,
   kNormal,
   kFullScreen,
+};
+
+enum class PlatformWindowOcclusionState {
+  kUnknown,
+  kVisible,
+  kOccluded,
+  kHidden,
 };
 
 class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowDelegate {
@@ -76,7 +84,8 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowDelegate {
   virtual void OnCloseRequest() = 0;
   virtual void OnClosed() = 0;
 
-  virtual void OnWindowStateChanged(PlatformWindowState new_state) = 0;
+  virtual void OnWindowStateChanged(PlatformWindowState old_state,
+                                    PlatformWindowState new_state) = 0;
 
   virtual void OnLostCapture() = 0;
 
@@ -108,10 +117,24 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowDelegate {
   // with lacros-chrome.
   virtual void OnSurfaceFrameLockingChanged(bool lock);
 
+  // Returns a menu type of the window. Valid only for the menu windows.
+  virtual absl::optional<MenuType> GetMenuType();
+
   // Called when the location of mouse pointer entered the window.  This is
   // different from ui::ET_MOUSE_ENTERED which may not be generated when mouse
   // is captured either by implicitly or explicitly.
   virtual void OnMouseEnter() = 0;
+
+  // Called when the occlusion state changes, if the underlying platform
+  // is providing us with occlusion information.
+  virtual void OnOcclusionStateChanged(
+      PlatformWindowOcclusionState occlusion_state);
+
+  // Returns optional information for owned windows that require anchor for
+  // positioning. Useful for such backends as Wayland as it provides flexibility
+  // in positioning child windows, which must be repositioned if the originally
+  // intended position caused the surface to be constrained.
+  virtual absl::optional<OwnedWindowAnchor> GetOwnedWindowAnchorAndRectInPx();
 };
 
 }  // namespace ui

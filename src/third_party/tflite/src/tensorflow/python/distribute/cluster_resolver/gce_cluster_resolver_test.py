@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for GCEClusterResolver."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.distribute.cluster_resolver.cluster_resolver import UnionClusterResolver
 from tensorflow.python.distribute.cluster_resolver.gce_cluster_resolver import GCEClusterResolver
 from tensorflow.python.platform import test
@@ -335,7 +331,7 @@ class GCEClusterResolverTest(test.TestCase):
         credentials=None,
         service=self.gen_standard_mock_service_client(name_to_ip))
 
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         RuntimeError, 'You cannot reset the task_type '
         'of the GCEClusterResolver after it has '
         'been created.'):

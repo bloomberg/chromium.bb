@@ -2,6 +2,7 @@
 // Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
 // Copyright (C) 2013-2016 LunarG, Inc.
 // Copyright (C) 2016-2020 Google, Inc.
+// Modifications Copyright(C) 2021 Advanced Micro Devices, Inc.All rights reserved.
 //
 // All rights reserved.
 //
@@ -64,6 +65,8 @@
 
 // Build-time generated includes
 #include "glslang/build_info.h"
+
+#include "glslang/glsl_intrinsic_header.h"
 
 extern "C" {
     GLSLANG_EXPORT void ShOutputHtml();
@@ -174,6 +177,7 @@ const char* shaderStageName = nullptr;
 const char* variableName = nullptr;
 bool HlslEnable16BitTypes = false;
 bool HlslDX9compatible = false;
+bool HlslDxPositionW = false;
 bool DumpBuiltinSymbols = false;
 std::vector<std::string> IncludeDirectoryList;
 
@@ -263,6 +267,7 @@ protected:
 
 // Track the user's #define and #undef from the command line.
 TPreamble UserPreamble;
+std::string PreambleString;
 
 //
 // Create the default name for saving a binary if -o is not provided.
@@ -347,13 +352,13 @@ void ProcessBindingBase(int& argc, char**& argv, glslang::TResourceType res)
         lang = FindLanguage(argv[arg++], false);
     }
 
-    if ((argc - arg) > 2 && isdigit(argv[arg+0][0]) && isdigit(argv[arg+1][0])) {
+    if ((argc - arg) >= 2 && isdigit(argv[arg+0][0]) && isdigit(argv[arg+1][0])) {
         // Parse a per-set binding base
-        while ((argc - arg) > 2 && isdigit(argv[arg+0][0]) && isdigit(argv[arg+1][0])) {
+        do {
             const int baseNum = atoi(argv[arg++]);
             const int setNum = atoi(argv[arg++]);
             perSetBase[setNum] = baseNum;
-        }
+        } while ((argc - arg) >= 2 && isdigit(argv[arg + 0][0]) && isdigit(argv[arg + 1][0]));
     } else {
         // Parse single binding base
         singleBase = atoi(argv[arg++]);
@@ -658,6 +663,8 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
                         HlslEnable16BitTypes = true;
                     } else if (lowerword == "hlsl-dx9-compatible") {
                         HlslDX9compatible = true;
+                    } else if (lowerword == "hlsl-dx-position-w") {
+                        HlslDxPositionW = true;
                     } else if (lowerword == "auto-sampled-textures") { 
                         autoSampledTextures = true;
                     } else if (lowerword == "invert-y" ||  // synonyms
@@ -1204,8 +1211,17 @@ void CompileAndLinkShaderUnits(std::vector<ShaderCompUnit> compUnits)
                        "Use '-e <name>'.\n");
             shader->setSourceEntryPoint(sourceEntryPointName);
         }
+
+        std::string intrinsicString = getIntrinsic(compUnit.text, compUnit.count);
+
+        PreambleString = "";
         if (UserPreamble.isSet())
-            shader->setPreamble(UserPreamble.get());
+            PreambleString.append(UserPreamble.get());
+
+        if (!intrinsicString.empty())
+            PreambleString.append(intrinsicString);
+
+        shader->setPreamble(PreambleString.c_str());
         shader->addProcesses(Processes);
 
 #ifndef GLSLANG_WEB
@@ -1270,6 +1286,9 @@ void CompileAndLinkShaderUnits(std::vector<ShaderCompUnit> compUnits)
 
         if (Options & EOptionInvertY)
             shader->setInvertY(true);
+
+        if (HlslDxPositionW)
+            shader->setDxPositionW(true);
 
         // Set up the environment, some subsettings take precedence over earlier
         // ways of setting things.
@@ -1834,6 +1853,8 @@ void usage()
            "  --hlsl-dx9-compatible             interprets sampler declarations as a\n"
            "                                    texture/sampler combo like DirectX9 would,\n"
            "                                    and recognizes DirectX9-specific semantics\n"
+           "  --hlsl-dx-position-w              W component of SV_Position in HLSL fragment\n"
+           "                                    shaders compatible with DirectX\n"
            "  --invert-y | --iy                 invert position.Y output in vertex shader\n"
            "  --keep-uncalled | --ku            don't eliminate uncalled functions\n"
            "  --nan-clamp                       favor non-NaN operand in min, max, and clamp\n"

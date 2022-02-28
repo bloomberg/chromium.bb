@@ -74,7 +74,6 @@ base::CallbackListSubscription AddVerifierToElementWithPrefix(
 
   bool success = base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^{
-        bool verifier_added = false;
         std::unique_ptr<base::Value> value =
             web::test::ExecuteJavaScript(web_state, kAddVerifierScript);
         if (value) {
@@ -82,7 +81,7 @@ base::CallbackListSubscription AddVerifierToElementWithPrefix(
           if (value->GetAsString(&error)) {
             DLOG(ERROR) << "Verifier injection failed: " << error
                         << ", retrying.";
-          } else if (value->GetAsBoolean(&verifier_added)) {
+          } else if (value->is_bool()) {
             return true;
           }
         }
@@ -95,7 +94,7 @@ base::CallbackListSubscription AddVerifierToElementWithPrefix(
   // The callback doesn't care about any of the parameters, just whether it is
   // called or not.
   auto callback = base::BindRepeating(
-      ^(const base::DictionaryValue& /* json */, const GURL& /* origin_url */,
+      ^(const base::Value& /* json */, const GURL& /* origin_url */,
         bool /* user_is_interacting */, web::WebFrame* /* sender_frame */) {
         *verified = true;
       });

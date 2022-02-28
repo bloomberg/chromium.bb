@@ -20,10 +20,11 @@ aggregate_vector_icons("chrome_vector_icons") {
     "account_circle.icon",
     "add.icon",
     "apps.icon",
-    "autofill/gpay_offer.icon",
+    "autofill/local_offer_flipped.icon",
     "autofill/webauthn_dialog_header.icon",
     "autofill/webauthn_dialog_header_dark.icon",
     "back_arrow_touch.icon",
+    "backspace.icon",
     "blocked_redirect.icon",
     "bookmarkbar_touch_overflow.icon",
     "browser_tools.icon",
@@ -35,7 +36,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "chrome_labs_touch.icon",
     "click_to_call_illustration.icon",
     "click_to_call_illustration_dark.icon",
-    "close_all.icon",
+    "close_group.icon",
     "computer_with_circle_background.icon",
     "copy.icon",
     "crashed_tab.icon",
@@ -66,14 +67,19 @@ aggregate_vector_icons("chrome_vector_icons") {
     "keyboard_arrow_right.icon",
     "keyboard_arrow_up.icon",
     "laptop.icon",
+    "media_controls_arrow_drop_down.icon",
+    "media_controls_arrow_drop_up.icon",
     "media_toolbar_button.icon",
     "media_toolbar_button_touch.icon",
     "mixed_content.icon",
+    "mono_color_product.icon",
+    "move_group_to_new_window.icon",
     "my_location.icon",
     "navigate_home.icon",
     "navigate_home_touch.icon",
     "navigate_stop.icon",
     "navigate_stop_touch.icon",
+    "new_tab_in_group.icon",
     "nfc.icon",
     "overflow_chevron.icon",
     "paintbrush.icon",
@@ -92,11 +98,14 @@ aggregate_vector_icons("chrome_vector_icons") {
     "remove_box.icon",
     "resize_handle.icon",
     "sad_tab.icon",
+    "safety_check.icon",
+    "save_group.icon",
     "save_page.icon",
     "scrolling_tabstrip_leading.icon",
     "scrolling_tabstrip_trailing.icon",
     "security.icon",
     "send_tab_to_self.icon",
+    "sharing_hub_screenshot.icon",
     "side_panel.icon",
     "side_panel_touch.icon",
     "sign_out.icon",
@@ -104,6 +113,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "smartphone.icon",
     "speaker.icon",
     "speaker_group.icon",
+    "submit_feedback.icon",
     "supervisor_account.icon",
     "supervisor_account_circle.icon",
     "sync_circle.icon",
@@ -130,6 +140,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "translate.icon",
     "trash_can.icon",
     "tv.icon",
+    "ungroup.icon",
     "usb_cable.icon",
     "user_account_avatar.icon",
     "user_menu_guest.icon",
@@ -183,6 +194,10 @@ aggregate_vector_icons("chrome_vector_icons") {
     ]
   }
 
+  if (is_chromeos) {
+    sources += [ "notification_download.icon" ]
+  }
+
   if (is_chromeos_ash) {
     sources += [
       "autocorrect_undo.icon",
@@ -190,7 +205,6 @@ aggregate_vector_icons("chrome_vector_icons") {
       "notification_battery.icon",
       "notification_captive_portal.icon",
       "notification_cellular_alert.icon",
-      "notification_download.icon",
       "notification_end_of_support.icon",
       "notification_family_link.icon",
       "notification_google.icon",
@@ -210,6 +224,7 @@ aggregate_vector_icons("chrome_vector_icons") {
       "notification_wifi_off.icon",
       "person_add.icon",
       "sharesheet_link.icon",
+      "sharesheet_share_with_others.icon",
       "sharesheet_text.icon",
       "shutdown_guest_os.icon",
     ]
@@ -230,8 +245,15 @@ aggregate_vector_icons("chrome_vector_icons") {
 
   if (is_chrome_branded) {
     sources += [
+      "google_chrome/google_calendar.icon",
       "google_chrome/google_g_logo.icon",
+      "google_chrome/google_g_logo_monochrome.icon",
+      "google_chrome/google_keep_note.icon",
+      "google_chrome/google_lens_full_logo.icon",
+      "google_chrome/google_lens_full_logo_dark.icon",
       "google_chrome/google_pay_logo.icon",
+      "google_chrome/google_sites.icon",
+      "google_chrome/google_super_g.icon",
     ]
   }
 

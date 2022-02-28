@@ -59,8 +59,8 @@ DoubleSize ContentsScrollOffset(AbstractView* abstract_view) {
   if (!scrollable_area)
     return DoubleSize();
   float scale_factor = frame->PageZoomFactor();
-  return DoubleSize(scrollable_area->ScrollOffsetInt().Width() / scale_factor,
-                    scrollable_area->ScrollOffsetInt().Height() / scale_factor);
+  return DoubleSize(scrollable_area->ScrollOffsetInt().x() / scale_factor,
+                    scrollable_area->ScrollOffsetInt().y() / scale_factor);
 }
 
 float PageZoomFactor(const UIEvent* event) {
@@ -153,7 +153,6 @@ MouseEvent::MouseEvent(const AtomicString& event_type,
       buttons_(initializer->buttons()),
       related_target_(initializer->relatedTarget()),
       synthetic_event_type_(synthetic_event_type),
-      region_(initializer->region()),
       menu_source_type_(menu_source_type) {
   InitCoordinates(initializer->clientX(), initializer->clientY());
   modifiers_ |= ButtonsToWebInputEventModifiers(buttons_);
@@ -176,12 +175,12 @@ void MouseEvent::SetCoordinatesFromWebPointerProperties(
     const WebPointerProperties& web_pointer_properties,
     const LocalDOMWindow* dom_window,
     MouseEventInit* initializer) {
-  FloatPoint client_point;
-  FloatPoint screen_point(web_pointer_properties.PositionInScreen());
+  gfx::PointF client_point;
+  gfx::PointF screen_point = web_pointer_properties.PositionInScreen();
   float scale_factor = 1.0f;
   if (dom_window && dom_window->GetFrame() && dom_window->GetFrame()->View()) {
     LocalFrame* frame = dom_window->GetFrame();
-    FloatPoint root_frame_point(web_pointer_properties.PositionInWidget());
+    gfx::PointF root_frame_point = web_pointer_properties.PositionInWidget();
     if (Page* p = frame->GetPage()) {
       if (p->GetPointerLockController().GetElement() &&
           !p->GetPointerLockController().LockPending()) {
@@ -189,16 +188,16 @@ void MouseEvent::SetCoordinatesFromWebPointerProperties(
                                                              &screen_point);
       }
     }
-    FloatPoint frame_point =
+    gfx::PointF frame_point =
         frame->View()->ConvertFromRootFrame(root_frame_point);
     scale_factor = 1.0f / frame->PageZoomFactor();
-    client_point = frame_point.ScaledBy(scale_factor);
+    client_point = gfx::ScalePoint(frame_point, scale_factor);
   }
 
-  initializer->setScreenX(screen_point.X());
-  initializer->setScreenY(screen_point.Y());
-  initializer->setClientX(client_point.X());
-  initializer->setClientY(client_point.Y());
+  initializer->setScreenX(screen_point.x());
+  initializer->setScreenY(screen_point.y());
+  initializer->setClientX(client_point.x());
+  initializer->setClientY(client_point.y());
 
   // TODO(crbug.com/982379): We need to merge the code path of raw movement
   // events and regular events so that we can remove the block below.
@@ -440,8 +439,8 @@ void MouseEvent::ComputeRelativePosition() {
 
   // Adjust offsetLocation to be relative to the target's padding box.
   if (const LayoutObject* layout_object = FindTargetLayoutObject(target_node)) {
-    FloatPoint local_pos = layout_object->AbsoluteToLocalFloatPoint(
-        FloatPoint(AbsoluteLocation()));
+    gfx::PointF local_pos =
+        layout_object->AbsoluteToLocalPoint(gfx::PointF(AbsoluteLocation()));
 
     if (layout_object->IsInline()) {
       UseCounter::Count(
@@ -454,7 +453,7 @@ void MouseEvent::ComputeRelativePosition() {
     // box.
     if (layout_object->IsBoxModelObject()) {
       const auto* layout_box = To<LayoutBoxModelObject>(layout_object);
-      local_pos.Move(-layout_box->BorderLeft(), -layout_box->BorderTop());
+      local_pos.Offset(-layout_box->BorderLeft(), -layout_box->BorderTop());
     }
 
     offset_location_ = DoublePoint(local_pos);
@@ -494,14 +493,14 @@ int MouseEvent::layerX() {
   if (!has_cached_relative_position_)
     ComputeRelativePosition();
 
-  return clampTo<int, double>(std::floor(layer_location_.X()));
+  return ClampTo<int, double>(std::floor(layer_location_.X()));
 }
 
 int MouseEvent::layerY() {
   if (!has_cached_relative_position_)
     ComputeRelativePosition();
 
-  return clampTo<int, double>(std::floor(layer_location_.Y()));
+  return ClampTo<int, double>(std::floor(layer_location_.Y()));
 }
 
 double MouseEvent::offsetX() const {

@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "components/query_tiles/internal/tile_config.h"
 #include "components/query_tiles/internal/tile_store.h"
@@ -55,10 +55,8 @@ class TileManagerTest : public testing::Test {
   void SetUp() override {
     auto tile_store = std::make_unique<StrictMock<MockTileStore>>();
     tile_store_ = tile_store.get();
-    base::Time fake_now;
-    EXPECT_TRUE(base::Time::FromString("03/18/20 01:00:00 AM", &fake_now));
-    clock_.SetNow(fake_now);
-    manager_ = TileManager::Create(std::move(tile_store), &clock_, "en-US");
+    current_time_ = base::Time::Now();
+    manager_ = TileManager::Create(std::move(tile_store), "en-US");
   }
 
   // Initialize the store, compare the |expected_status| to the
@@ -101,7 +99,7 @@ class TileManagerTest : public testing::Test {
   TileGroup CreateValidGroup(const std::string& group_id,
                              const std::string& tile_id) {
     TileGroup group;
-    group.last_updated_ts = clock()->Now();
+    group.last_updated_ts = current_time();
     group.id = group_id;
     group.locale = "en-US";
     Tile tile;
@@ -139,9 +137,10 @@ class TileManagerTest : public testing::Test {
   // returned tiles.
   void GetTiles(std::vector<Tile> expected) {
     base::RunLoop loop;
-    manager()->GetTiles(base::BindOnce(
-        &TileManagerTest::OnTilesReturned, base::Unretained(this),
-        loop.QuitClosure(), std::move(expected)));
+    manager()->GetTiles(
+        true, base::BindOnce(&TileManagerTest::OnTilesReturned,
+                             base::Unretained(this), loop.QuitClosure(),
+                             std::move(expected)));
     loop.Run();
   }
 
@@ -155,8 +154,9 @@ class TileManagerTest : public testing::Test {
   void GetSingleTile(const std::string& id, absl::optional<Tile> expected) {
     base::RunLoop loop;
     manager()->GetTile(
-        id, base::BindOnce(&TileManagerTest::OnGetTile, base::Unretained(this),
-                           loop.QuitClosure(), std::move(expected)));
+        id, true,
+        base::BindOnce(&TileManagerTest::OnGetTile, base::Unretained(this),
+                       loop.QuitClosure(), std::move(expected)));
     loop.Run();
   }
 
@@ -181,13 +181,13 @@ class TileManagerTest : public testing::Test {
  protected:
   TileManager* manager() { return manager_.get(); }
   MockTileStore* tile_store() { return tile_store_; }
-  const base::SimpleTestClock* clock() const { return &clock_; }
+  const base::Time current_time() const { return current_time_; }
 
  private:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TileManager> manager_;
-  MockTileStore* tile_store_;
-  base::SimpleTestClock clock_;
+  raw_ptr<MockTileStore> tile_store_;
+  base::Time current_time_;
 };
 
 TEST_F(TileManagerTest, InitAndLoadWithDbOperationFailed) {
@@ -204,7 +204,7 @@ TEST_F(TileManagerTest, InitWithEmptyDb) {
 TEST_F(TileManagerTest, InitAndLoadWithInvalidGroup) {
   // Create an expired group.
   auto expired_group = CreateValidGroup("expired_group_id", "tile_id");
-  expired_group.last_updated_ts = clock()->Now() - base::TimeDelta::FromDays(3);
+  expired_group.last_updated_ts = current_time() - base::Days(3);
 
   // Locale mismatch group.
   auto locale_mismatch_group =
@@ -220,7 +220,7 @@ TEST_F(TileManagerTest, InitAndLoadWithInvalidGroup) {
 TEST_F(TileManagerTest, InitAndLoadSuccess) {
   // Two valid groups are loaded, the most recent one will be selected.
   auto group1 = CreateValidGroup("group_id_1", "tile_id_1");
-  group1.last_updated_ts -= base::TimeDelta::FromMinutes(5);
+  group1.last_updated_ts -= base::Minutes(5);
   auto group2 = CreateValidGroup("group_id_2", "tile_id_2");
   const Tile expected = *group2.tiles[0];
 
@@ -311,7 +311,7 @@ TEST_F(TileManagerTest, SaveTilesStillReturnOldTiles) {
 // Verifies GetTile(tile_id) API can return the right thing.
 TEST_F(TileManagerTest, GetTileById) {
   TileGroup group;
-  test::ResetTestGroup(&group);
+  test::ResetTestGroup(&group, current_time());
   InitWithData(TileGroupStatus::kSuccess, {group});
   GetSingleTile("guid-1-1", *group.tiles[0]);
   GetSingleTile("id_not_exist", absl::nullopt);
@@ -322,7 +322,7 @@ TEST_F(TileManagerTest, GetTileById) {
 TEST_F(TileManagerTest, GetTilesWithoutMatchingAcceptLanguages) {
   manager()->SetAcceptLanguagesForTesting("zh");
   TileGroup group;
-  test::ResetTestGroup(&group);
+  test::ResetTestGroup(&group, current_time());
 
   EXPECT_CALL(*tile_store(), Delete("group_guid", _));
   InitWithData(TileGroupStatus::kNoTiles, {group});
@@ -342,7 +342,7 @@ TEST_F(TileManagerTest, GetTilesWithMatchingAcceptLanguages) {
 
 TEST_F(TileManagerTest, PurgeDb) {
   TileGroup group;
-  test::ResetTestGroup(&group);
+  test::ResetTestGroup(&group, current_time());
   InitWithData(TileGroupStatus::kSuccess, {group});
   EXPECT_CALL(*tile_store(), Delete(group.id, _));
   manager()->PurgeDb();
@@ -351,7 +351,7 @@ TEST_F(TileManagerTest, PurgeDb) {
 
 TEST_F(TileManagerTest, GetTileGroup) {
   TileGroup expected;
-  test::ResetTestGroup(&expected);
+  test::ResetTestGroup(&expected, current_time());
   InitWithData(TileGroupStatus::kSuccess, {expected});
 
   TileGroup* actual = manager()->GetTileGroup();
@@ -430,10 +430,8 @@ TEST_F(TileManagerTest, GetSingleTileWithTrendingSubTiles) {
 }
 
 // Check that trending tiles get removed after inactivity.
-TEST_F(TileManagerTest, TrendingTopTilesRemovedAfterInactivity) {
+TEST_F(TileManagerTest, TrendingTopTilesRemovedAfterShown) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kQueryTilesRemoveTrendingTilesAfterInactivity);
   EXPECT_CALL(*tile_store(), Update(_, _, _))
       .WillOnce(Invoke([](const std::string& id, const TileGroup& group,
                           MockTileStore::UpdateCallback callback) {
@@ -457,9 +455,8 @@ TEST_F(TileManagerTest, TrendingTopTilesRemovedAfterInactivity) {
   OnTileClicked("trending_2");
   GetTiles(expected);
 
-  // The first tile will be removed due to inactivity and the third tile
-  // will be returned.
-  expected.erase(expected.begin());
+  // Both the first and the second tile will be removed.
+  expected.erase(expected.begin(), expected.begin() + 2);
   expected.emplace_back(std::move(trending_3));
   EXPECT_CALL(*tile_store(), Update(_, _, _))
       .WillOnce(Invoke([](const std::string& id, const TileGroup& group,
@@ -467,8 +464,9 @@ TEST_F(TileManagerTest, TrendingTopTilesRemovedAfterInactivity) {
         std::move(callback).Run(true);
       }));
   GetTiles(expected);
+  GetTiles(expected);
 
-  // The 2nd tile will be removed due to inactivity.
+  // The 3rd tile will be removed due to max impression threshold.
   expected.erase(expected.begin());
   EXPECT_CALL(*tile_store(), Update(_, _, _))
       .WillOnce(Invoke([](const std::string& id, const TileGroup& group,
@@ -481,8 +479,6 @@ TEST_F(TileManagerTest, TrendingTopTilesRemovedAfterInactivity) {
 // Check that trending subtiles will not be removed if they are not displayed.
 TEST_F(TileManagerTest, UnshownTrendingSubTilesNotRemoved) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kQueryTilesRemoveTrendingTilesAfterInactivity);
   EXPECT_CALL(*tile_store(), Update(_, _, _))
       .WillOnce(Invoke([](const std::string& id, const TileGroup& group,
                           MockTileStore::UpdateCallback callback) {
@@ -519,8 +515,6 @@ TEST_F(TileManagerTest, UnshownTrendingSubTilesNotRemoved) {
 // correctly counted.
 TEST_F(TileManagerTest, GetSingleTileAfterOnTileClicked) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kQueryTilesRemoveTrendingTilesAfterInactivity);
   EXPECT_CALL(*tile_store(), Update(_, _, _))
       .WillOnce(Invoke([](const std::string& id, const TileGroup& group,
                           MockTileStore::UpdateCallback callback) {
@@ -556,11 +550,12 @@ TEST_F(TileManagerTest, GetSingleTileAfterOnTileClicked) {
   OnTileClicked("parent");
   GetSingleTile("parent", get_single_tile_expected);
 
-  // Click a trending tile to reset its impression.
+  // Click a trending tile will not reset its impression.
   OnTileClicked("trending_1");
 
-  // The 2nd tile will get removed.
-  expected[0].sub_tiles.erase(expected[0].sub_tiles.begin() + 1);
+  // The first two tiles will get removed.
+  expected[0].sub_tiles.erase(expected[0].sub_tiles.begin(),
+                              expected[0].sub_tiles.begin() + 2);
   EXPECT_CALL(*tile_store(), Update(_, _, _))
       .WillOnce(Invoke([](const std::string& id, const TileGroup& group,
                           MockTileStore::UpdateCallback callback) {
@@ -568,7 +563,7 @@ TEST_F(TileManagerTest, GetSingleTileAfterOnTileClicked) {
       }));
   GetTiles(expected);
 
-  get_single_tile_expected->sub_tiles.pop_back();
+  get_single_tile_expected->sub_tiles.clear();
   get_single_tile_expected->sub_tiles.emplace_back(
       std::make_unique<Tile>(std::move(trending_3)));
   OnTileClicked("parent");

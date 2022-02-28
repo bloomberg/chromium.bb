@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM debian:bullseye
-  
+
 # Install Git and basic packages.
 RUN apt-get update && apt-get install -y \
   autoconf \
@@ -49,7 +49,7 @@ RUN apt-get update && apt-get install -y time && apt-get clean
 # Install Python 3.7 from source (and installed as a default python3)
 # (Bullseye comes with Python 3.9 which isn't supported by pytype yet)
 RUN apt update && apt install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev \
-                                 libnss3-dev libssl-dev libreadline-dev libffi-dev
+                                 libnss3-dev libssl-dev libreadline-dev libffi-dev libbz2-dev
 RUN curl -O https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tar.xz && \
     tar -xf Python-3.7.9.tar.xz && \
     cd Python-3.7.9 && \
@@ -61,7 +61,7 @@ RUN curl https://bootstrap.pypa.io/get-pip.py | python3
 # Install Python 2.7
 RUN apt-get update && apt-get install -y python2 python2-dev
 RUN ln -s /usr/bin/python2 /usr/bin/python
-RUN curl https://bootstrap.pypa.io/2.7/get-pip.py | python2
+RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py | python2
 
 # Google Cloud platform API libraries
 RUN pip install --upgrade google-auth==1.24.0 google-api-python-client==1.12.8 oauth2client==4.1.0
@@ -101,7 +101,7 @@ ENV CLANG_TIDY=clang-tidy-11
 # Bazel installation
 
 # Must be in sync with tools/bazel
-ENV BAZEL_VERSION 3.7.1
+ENV BAZEL_VERSION 4.2.1
 
 # The correct bazel version is already preinstalled, no need to use //tools/bazel wrapper.
 ENV DISABLE_BAZEL_WRAPPER 1

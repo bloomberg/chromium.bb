@@ -17,12 +17,14 @@ devtools_module("formatter_worker") {
     "HTMLFormatter.ts",
     "HTMLOutline.ts",
     "IdentityFormatter.ts",
+    "JSONFormatter.ts",
     "JavaScriptFormatter.ts",
     "JavaScriptOutline.ts",
   ]
 
   deps = [
     "../../core/platform:bundle",
+    "../../core/root:bundle",
     "../../models/formatter:bundle",
     "../../models/text_utils:bundle",
     "../../third_party/acorn:bundle",

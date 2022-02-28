@@ -30,7 +30,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_IMAGE_DATA_H_
 
 #include "base/numerics/checked_math.h"
-#include "third_party/blink/renderer/bindings/core/v8/uint8_clamped_array_or_uint16_array_or_float32_array.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_data_settings.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -39,20 +38,17 @@
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace blink {
 
 class ExceptionState;
 class ImageBitmapOptions;
-
-typedef Uint8ClampedArrayOrUint16ArrayOrFloat32Array ImageDataArray;
 
 constexpr const char* kUint8ClampedArrayStorageFormatName = "uint8";
 constexpr const char* kUint16ArrayStorageFormatName = "uint16";
@@ -70,16 +66,24 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // Constructor that takes width, height, and an optional ImageDataSettings.
+  // Constructors that take width, height, and an optional ImageDataSettings.
+  static ImageData* Create(unsigned width,
+                           unsigned height,
+                           ExceptionState& exception_state) {
+    return ValidateAndCreate(width, height, absl::nullopt, /*settings=*/nullptr,
+                             ValidateAndCreateParams(), exception_state);
+  }
   static ImageData* Create(unsigned width,
                            unsigned height,
                            const ImageDataSettings* settings,
                            ExceptionState& exception_state) {
-    return ValidateAndCreate(width, height, absl::nullopt, settings,
-                             ValidateAndCreateParams(), exception_state);
+    ValidateAndCreateParams params;
+    params.require_canvas_color_management = true;
+    return ValidateAndCreate(width, height, absl::nullopt, settings, params,
+                             exception_state);
   }
 
-  // Constructor that takes Uint8ClampedArray, width, optional height, and
+  // Constructors that take Uint8ClampedArray, width, optional height, and
   // optional ImageDataSettings.
   static ImageData* Create(NotShared<DOMUint8ClampedArray> data,
                            unsigned width,
@@ -90,23 +94,11 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   static ImageData* Create(NotShared<DOMUint8ClampedArray> data,
                            unsigned width,
                            unsigned height,
-                           const ImageDataSettings* settings,
                            ExceptionState& exception_state) {
-    return ValidateAndCreate(width, height, data, settings,
+    return ValidateAndCreate(width, height, data, /*settings=*/nullptr,
                              ValidateAndCreateParams(), exception_state);
   }
-
-  // Constructor that takes DOMUint16Array, width, optional height, and optional
-  // ImageDataSettings.
-  static ImageData* Create(NotShared<DOMUint16Array> data,
-                           unsigned width,
-                           ExceptionState& exception_state) {
-    ValidateAndCreateParams params;
-    params.require_canvas_color_management = true;
-    return ValidateAndCreate(width, absl::nullopt, data, nullptr, params,
-                             exception_state);
-  }
-  static ImageData* Create(NotShared<DOMUint16Array> data,
+  static ImageData* Create(NotShared<DOMUint8ClampedArray> data,
                            unsigned width,
                            unsigned height,
                            const ImageDataSettings* settings,
@@ -117,13 +109,34 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
                              exception_state);
   }
 
+  // Constructor that takes DOMUint16Array, width, optional height, and optional
+  // ImageDataSettings.
+  static ImageData* Create(NotShared<DOMUint16Array> data,
+                           unsigned width,
+                           ExceptionState& exception_state) {
+    ValidateAndCreateParams params;
+    params.require_canvas_color_management_v2 = true;
+    return ValidateAndCreate(width, absl::nullopt, data, nullptr, params,
+                             exception_state);
+  }
+  static ImageData* Create(NotShared<DOMUint16Array> data,
+                           unsigned width,
+                           unsigned height,
+                           const ImageDataSettings* settings,
+                           ExceptionState& exception_state) {
+    ValidateAndCreateParams params;
+    params.require_canvas_color_management_v2 = true;
+    return ValidateAndCreate(width, height, data, settings, params,
+                             exception_state);
+  }
+
   // Constructor that takes DOMFloat32Array, width, optional height, and
   // optional ImageDataSettings.
   static ImageData* Create(NotShared<DOMFloat32Array> data,
                            unsigned width,
                            ExceptionState& exception_state) {
     ValidateAndCreateParams params;
-    params.require_canvas_color_management = true;
+    params.require_canvas_color_management_v2 = true;
     return ValidateAndCreate(width, absl::nullopt, data, nullptr, params,
                              exception_state);
   }
@@ -133,7 +146,7 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
                            const ImageDataSettings* settings,
                            ExceptionState& exception_state) {
     ValidateAndCreateParams params;
-    params.require_canvas_color_management = true;
+    params.require_canvas_color_management_v2 = true;
     return ValidateAndCreate(width, height, data, settings, params,
                              exception_state);
   }
@@ -151,6 +164,10 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
     // This argument is passed by Create functions that should require that the
     // CanvasColorManagement feature be enabled.
     bool require_canvas_color_management = false;
+    // Constructors in IDL files cannot specify RuntimeEnabled restrictions.
+    // This argument is passed by Create functions that should require that the
+    // CanvasColorManagementV2 feature be enabled.
+    bool require_canvas_color_management_v2 = false;
     // If the caller is guaranteed to write over the result in its entirety,
     // then this flag may be used to skip initialization of the result's
     // data.
@@ -169,13 +186,13 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   // TODO(https://crbug.com/1198606): Remove this.
   ImageDataSettings* getSettings() { return settings_; }
 
-  static ImageData* CreateForTest(const IntSize&);
-  static ImageData* CreateForTest(const IntSize&,
+  static ImageData* CreateForTest(const gfx::Size&);
+  static ImageData* CreateForTest(const gfx::Size&,
                                   NotShared<DOMArrayBufferView>,
                                   CanvasColorSpace,
                                   ImageDataStorageFormat);
 
-  ImageData(const IntSize&,
+  ImageData(const gfx::Size&,
             NotShared<DOMArrayBufferView>,
             CanvasColorSpace,
             ImageDataStorageFormat);
@@ -185,22 +202,16 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   static unsigned StorageFormatBytesPerPixel(const String&);
   static unsigned StorageFormatBytesPerPixel(ImageDataStorageFormat);
 
-  IntSize Size() const { return size_; }
-  int width() const { return size_.Width(); }
-  int height() const { return size_.Height(); }
+  gfx::Size Size() const { return size_; }
+  int width() const { return size_.width(); }
+  int height() const { return size_.height(); }
   String colorSpace() const;
   String storageFormat() const;
 
   // TODO(https://crbug.com/1198606): Remove this.
   ImageDataSettings* getSettings() const;
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   const V8ImageDataArray* data() const { return data_; }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  ImageDataArray& data() { return data_; }
-  const ImageDataArray& data() const { return data_; }
-  void data(ImageDataArray& result) { result = data_; }
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   bool IsBufferBaseDetached() const;
   CanvasColorSpace GetCanvasColorSpace() const;
@@ -210,9 +221,9 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   SkPixmap GetSkPixmap() const;
 
   // ImageBitmapSource implementation
-  IntSize BitmapSourceSize() const override { return size_; }
+  gfx::Size BitmapSourceSize() const override { return size_; }
   ScriptPromise CreateImageBitmap(ScriptState*,
-                                  absl::optional<IntRect> crop_rect,
+                                  absl::optional<gfx::Rect> crop_rect,
                                   const ImageBitmapOptions*,
                                   ExceptionState&) override;
 
@@ -224,14 +235,10 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
       v8::Local<v8::Object> wrapper) override;
 
  private:
-  IntSize size_;
+  gfx::Size size_;
   // TODO(https://crbug.com/1198606): Remove this.
   Member<ImageDataSettings> settings_;
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   Member<V8ImageDataArray> data_;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  ImageDataArray data_;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   NotShared<DOMUint8ClampedArray> data_u8_;
   NotShared<DOMUint16Array> data_u16_;
   NotShared<DOMFloat32Array> data_f32_;

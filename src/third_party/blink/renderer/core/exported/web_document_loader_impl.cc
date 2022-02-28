@@ -44,7 +44,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
@@ -54,10 +54,6 @@ namespace blink {
 // static
 bool WebDocumentLoader::WillLoadUrlAsEmpty(const WebURL& url) {
   return DocumentLoader::WillLoadUrlAsEmpty(url);
-}
-
-WebURL WebDocumentLoaderImpl::OriginalUrl() const {
-  return DocumentLoader::OriginalUrl();
 }
 
 WebString WebDocumentLoaderImpl::OriginalReferrer() const {
@@ -91,10 +87,6 @@ bool WebDocumentLoaderImpl::HasUnreachableURL() const {
 
 WebURL WebDocumentLoaderImpl::UnreachableURL() const {
   return DocumentLoader::UnreachableURL();
-}
-
-void WebDocumentLoaderImpl::RedirectChain(WebVector<WebURL>& result) const {
-  result.Assign(redirect_chain_);
 }
 
 bool WebDocumentLoaderImpl::IsClientRedirect() const {
@@ -201,8 +193,9 @@ bool WebDocumentLoaderImpl::LastNavigationHadTransientUserActivation() const {
   return DocumentLoader::LastNavigationHadTransientUserActivation();
 }
 
-bool WebDocumentLoaderImpl::IsListingFtpDirectory() const {
-  return DocumentLoader::IsListingFtpDirectory();
+void WebDocumentLoaderImpl::SetCodeCacheHost(
+    mojo::PendingRemote<mojom::CodeCacheHost> code_cache_host) {
+  DocumentLoader::SetCodeCacheHost(std::move(code_cache_host));
 }
 
 void WebDocumentLoaderImpl::Trace(Visitor* visitor) const {

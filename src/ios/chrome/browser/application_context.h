@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 
 namespace breadcrumbs {
@@ -75,6 +74,10 @@ ApplicationContext* GetApplicationContext();
 class ApplicationContext {
  public:
   ApplicationContext();
+
+  ApplicationContext(const ApplicationContext&) = delete;
+  ApplicationContext& operator=(const ApplicationContext&) = delete;
+
   virtual ~ApplicationContext();
 
   // Invoked when application enters foreground. Cancels the effect of
@@ -160,9 +163,6 @@ class ApplicationContext {
  protected:
   // Sets the global ApplicationContext instance.
   static void SetApplicationContext(ApplicationContext* context);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ApplicationContext);
 };
 
 #endif  // IOS_CHROME_BROWSER_APPLICATION_CONTEXT_H_

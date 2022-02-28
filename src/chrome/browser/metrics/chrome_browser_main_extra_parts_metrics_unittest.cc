@@ -6,16 +6,16 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/test_screen.h"
 #include "ui/gfx/geometry/size.h"
 
-#if defined(USE_OZONE) || defined(USE_X11)
+#if defined(USE_OZONE)
 #include "ui/events/devices/device_data_manager_test_api.h"
 #endif
 
@@ -27,12 +27,19 @@ namespace {
 
 const char kTouchEventFeatureDetectionEnabledHistogramName[] =
     "Touchscreen.TouchEventsEnabled";
+const char kSupportsHDRHistogramName[] = "Hardware.Display.SupportsHDR";
 
 }  // namespace
 
 class ChromeBrowserMainExtraPartsMetricsTest : public testing::Test {
  public:
   ChromeBrowserMainExtraPartsMetricsTest();
+
+  ChromeBrowserMainExtraPartsMetricsTest(
+      const ChromeBrowserMainExtraPartsMetricsTest&) = delete;
+  ChromeBrowserMainExtraPartsMetricsTest& operator=(
+      const ChromeBrowserMainExtraPartsMetricsTest&) = delete;
+
   ~ChromeBrowserMainExtraPartsMetricsTest() override;
 
  protected:
@@ -51,7 +58,7 @@ class ChromeBrowserMainExtraPartsMetricsTest : public testing::Test {
 #endif
   }
 
-#if defined(USE_OZONE) || defined(USE_X11)
+#if defined(USE_OZONE)
   ui::DeviceDataManagerTestApi device_data_manager_test_api_;
 #endif
 
@@ -61,8 +68,6 @@ class ChromeBrowserMainExtraPartsMetricsTest : public testing::Test {
 
   // Dummy screen required by a ChromeBrowserMainExtraPartsMetrics test target.
   display::test::TestScreen test_screen_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsMetricsTest);
 };
 
 ChromeBrowserMainExtraPartsMetricsTest::
@@ -84,7 +89,7 @@ TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
       kTouchEventFeatureDetectionEnabledHistogramName, 0);
 }
 
-#if defined(USE_OZONE) || defined(USE_X11)
+#if defined(USE_OZONE)
 
 // Verify a TouchEventsEnabled value isn't recorded during PostBrowserStart if
 // the device scan hasn't completed yet.
@@ -163,4 +168,15 @@ TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
       kTouchEventFeatureDetectionEnabledHistogramName, 1);
 }
 
-#endif  // defined(USE_OZONE) || defined(USE_X11)
+#endif  // defined(USE_OZONE)
+
+// Verify a Hardware.Display.SupportsHDR value is recorded during
+// PostBrowserStart.
+TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
+       VerifySupportsHDRIsRecordedAfterPostBrowserStart) {
+  base::HistogramTester histogram_tester;
+  ChromeBrowserMainExtraPartsMetrics test_target;
+
+  test_target.PostBrowserStart();
+  histogram_tester.ExpectTotalCount(kSupportsHDRHistogramName, 1);
+}

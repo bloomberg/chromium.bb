@@ -24,6 +24,10 @@ class TestInfoBarDelegate : public infobars::InfoBarDelegate {
 class InfoBarViewTest : public BrowserWithTestWindowTest {
  public:
   InfoBarViewTest() : infobar_container_view_(nullptr) {}
+
+  InfoBarViewTest(const InfoBarViewTest&) = delete;
+  InfoBarViewTest& operator=(const InfoBarViewTest&) = delete;
+
   ~InfoBarViewTest() override = default;
 
   // ChromeViewsTestBase:
@@ -53,19 +57,7 @@ class InfoBarViewTest : public BrowserWithTestWindowTest {
 
  private:
   InfoBarContainerView infobar_container_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(InfoBarViewTest);
 };
-
-TEST_F(InfoBarViewTest, GetDrawSeparator) {
-  // Add multiple infobars.  The top infobar should not draw a separator; the
-  // others should.
-  for (int i = 0; i < 3; ++i) {
-    InfoBarView* infobar = TestInfoBarDelegate::Create(infobar_manager());
-    ASSERT_TRUE(infobar);
-    EXPECT_EQ(i > 0, infobar->GetDrawSeparator());
-  }
-}
 
 // Regression test for crbug.com/834728 .
 TEST_F(InfoBarViewTest, LayoutOnHiddenInfoBar) {

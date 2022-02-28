@@ -20,6 +20,7 @@
 
 #if SK_SUPPORT_GPU
 #include "src/gpu/GrFragmentProcessor.h"
+#include "src/gpu/GrSurfaceProxyView.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/text/GrSDFMaskFilter.h"
 #endif
@@ -167,24 +168,24 @@ static void draw_nine_clipped(const SkMask& mask, const SkIRect& outerR,
     // left
     r.setLTRB(outerR.left(), innerR.top(), innerR.left(), innerR.bottom());
     if (r.intersect(clipR)) {
-        SkMask m;
-        m.fImage = mask.getAddr8(mask.fBounds.left() + r.left() - outerR.left(),
-                                 mask.fBounds.top() + cy);
-        m.fBounds = r;
-        m.fRowBytes = 0;    // so we repeat the scanline for our height
-        m.fFormat = SkMask::kA8_Format;
-        blitter->blitMask(m, r);
+        SkMask leftMask;
+        leftMask.fImage = mask.getAddr8(mask.fBounds.left() + r.left() - outerR.left(),
+                                        mask.fBounds.top() + cy);
+        leftMask.fBounds = r;
+        leftMask.fRowBytes = 0;    // so we repeat the scanline for our height
+        leftMask.fFormat = SkMask::kA8_Format;
+        blitter->blitMask(leftMask, r);
     }
     // right
     r.setLTRB(innerR.right(), innerR.top(), outerR.right(), innerR.bottom());
     if (r.intersect(clipR)) {
-        SkMask m;
-        m.fImage = mask.getAddr8(mask.fBounds.right() - outerR.right() + r.left(),
-                                 mask.fBounds.top() + cy);
-        m.fBounds = r;
-        m.fRowBytes = 0;    // so we repeat the scanline for our height
-        m.fFormat = SkMask::kA8_Format;
-        blitter->blitMask(m, r);
+        SkMask rightMask;
+        rightMask.fImage = mask.getAddr8(mask.fBounds.right() - outerR.right() + r.left(),
+                                         mask.fBounds.top() + cy);
+        rightMask.fBounds = r;
+        rightMask.fRowBytes = 0;    // so we repeat the scanline for our height
+        rightMask.fFormat = SkMask::kA8_Format;
+        blitter->blitMask(rightMask, r);
     }
 }
 
@@ -335,7 +336,7 @@ bool SkMaskFilterBase::canFilterMaskGPU(const GrStyledShape& shape,
 }
 
 bool SkMaskFilterBase::directFilterMaskGPU(GrRecordingContext*,
-                                           GrSurfaceDrawContext*,
+                                           skgpu::v1::SurfaceDrawContext*,
                                            GrPaint&&,
                                            const GrClip*,
                                            const SkMatrix& viewMatrix,
@@ -368,9 +369,22 @@ void SkMaskFilterBase::computeFastBounds(const SkRect& src, SkRect* dst) const {
     }
 }
 
+SkRect SkMaskFilter::approximateFilteredBounds(const SkRect& src) const {
+    SkRect dst;
+    as_MFB(this)->computeFastBounds(src, &dst);
+    return dst;
+}
+
 void SkMaskFilter::RegisterFlattenables() {
     sk_register_blur_maskfilter_createproc();
 #if SK_SUPPORT_GPU
     gr_register_sdf_maskfilter_createproc();
 #endif
+}
+
+sk_sp<SkMaskFilter> SkMaskFilter::Deserialize(const void* data, size_t size,
+                                              const SkDeserialProcs* procs) {
+    return sk_sp<SkMaskFilter>(static_cast<SkMaskFilter*>(
+                               SkFlattenable::Deserialize(
+                               kSkMaskFilter_Type, data, size, procs).release()));
 }

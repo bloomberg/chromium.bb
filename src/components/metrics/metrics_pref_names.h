@@ -24,6 +24,11 @@ extern const char kMetricsOngoingLogs[];
 extern const char kMetricsOngoingLogsMetadata[];
 extern const char kMetricsResetIds[];
 
+// Preferences for cloned installs.
+extern const char kClonedResetCount[];
+extern const char kFirstClonedResetTimestamp[];
+extern const char kLastClonedResetTimestamp[];
+
 // For finding out whether metrics and crash reporting is enabled use the
 // relevant embedder-specific subclass of MetricsServiceAccessor instead of
 // reading this pref directly; see the comments on metrics_service_accessor.h.
@@ -47,7 +52,6 @@ extern const char kStabilityFileMetricsUnsentSamplesCount[];
 extern const char kStabilityFileMetricsUnsentFilesCount[];
 extern const char kStabilityGmsCoreVersion[];
 extern const char kStabilityGpuCrashCount[];
-extern const char kStabilityIncompleteSessionEndCount[];
 extern const char kStabilityLaunchCount[];
 extern const char kStabilityPageLoadCount[];
 extern const char kStabilityRendererCrashCount[];
@@ -56,7 +60,6 @@ extern const char kStabilityRendererHangCount[];
 extern const char kStabilityRendererLaunchCount[];
 extern const char kStabilitySavedSystemProfile[];
 extern const char kStabilitySavedSystemProfileHash[];
-extern const char kStabilitySessionEndCompleted[];
 extern const char kStabilityStatsBuildTime[];
 extern const char kStabilityStatsVersion[];
 extern const char kStabilitySystemCrashCount[];
@@ -65,6 +68,9 @@ extern const char kStabilitySystemCrashCount[];
 extern const char kUkmCellDataUse[];
 extern const char kUmaCellDataUse[];
 extern const char kUserCellDataUse[];
+
+// For supporting per-user collection on Chrome OS.
+extern const char kMetricsCurrentUserId[];
 
 }  // namespace prefs
 }  // namespace metrics

@@ -9,6 +9,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/no_destructor.h"
+#include "third_party/skia/include/third_party/skcms/skcms.h"
 
 namespace media {
 
@@ -304,7 +305,7 @@ CFDataRef GenerateMasteringDisplayColorVolume(
                 "Must be 24 bytes");
 
   // Make a copy which we can manipulate.
-  auto md = hdr_metadata.mastering_metadata;
+  auto md = hdr_metadata.color_volume_metadata;
 
   constexpr float kColorCoordinateUpperBound = 50000.0f;
   md.primary_r.Scale(kColorCoordinateUpperBound);

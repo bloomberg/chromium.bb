@@ -29,7 +29,6 @@
 #include <memory>
 
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "gin/public/gin_embedders.h"
 #include "gin/public/isolate_holder.h"
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_manager.h"
@@ -111,7 +110,9 @@ class PLATFORM_EXPORT V8PerIsolateData final {
   };
 
   static v8::Isolate* Initialize(scoped_refptr<base::SingleThreadTaskRunner>,
-                                 V8ContextSnapshotMode);
+                                 V8ContextSnapshotMode,
+                                 v8::CreateHistogramCallback,
+                                 v8::AddHistogramSampleCallback);
 
   static V8PerIsolateData* From(v8::Isolate* isolate) {
     DCHECK(isolate);
@@ -119,6 +120,9 @@ class PLATFORM_EXPORT V8PerIsolateData final {
     return static_cast<V8PerIsolateData*>(
         isolate->GetData(gin::kEmbedderBlink));
   }
+
+  V8PerIsolateData(const V8PerIsolateData&) = delete;
+  V8PerIsolateData& operator=(const V8PerIsolateData&) = delete;
 
   static void WillBeDestroyed(v8::Isolate*);
   static void Destroy(v8::Isolate*);
@@ -193,6 +197,9 @@ class PLATFORM_EXPORT V8PerIsolateData final {
   void SetProfilerGroup(V8PerIsolateData::GarbageCollectedData*);
   V8PerIsolateData::GarbageCollectedData* ProfilerGroup();
 
+  void SetCanvasResourceTracker(V8PerIsolateData::GarbageCollectedData*);
+  V8PerIsolateData::GarbageCollectedData* CanvasResourceTracker();
+
   ActiveScriptWrappableManager* GetActiveScriptWrappableManager() const {
     return active_script_wrappable_manager_;
   }
@@ -212,7 +219,9 @@ class PLATFORM_EXPORT V8PerIsolateData final {
 
  private:
   V8PerIsolateData(scoped_refptr<base::SingleThreadTaskRunner>,
-                   V8ContextSnapshotMode);
+                   V8ContextSnapshotMode,
+                   v8::CreateHistogramCallback,
+                   v8::AddHistogramSampleCallback);
   explicit V8PerIsolateData(V8ContextSnapshotMode);
   ~V8PerIsolateData();
 
@@ -264,6 +273,7 @@ class PLATFORM_EXPORT V8PerIsolateData final {
   Vector<base::OnceClosure> end_of_scope_tasks_;
   std::unique_ptr<Data> thread_debugger_;
   Persistent<GarbageCollectedData> profiler_group_;
+  Persistent<GarbageCollectedData> canvas_resource_tracker_;
 
   Persistent<ActiveScriptWrappableManager> active_script_wrappable_manager_;
 
@@ -272,9 +282,18 @@ class PLATFORM_EXPORT V8PerIsolateData final {
   v8::Isolate::GCCallback prologue_callback_;
   v8::Isolate::GCCallback epilogue_callback_;
   size_t gc_callback_depth_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(V8PerIsolateData);
 };
+
+// Creates a histogram for V8. The returned value is a base::Histogram, but
+// typed to void* for v8.
+PLATFORM_EXPORT void* CreateHistogram(const char* name,
+                                      int min,
+                                      int max,
+                                      size_t buckets);
+
+// Adds an entry to the supplied histogram. `hist` was previously returned from
+// CreateHistogram().
+PLATFORM_EXPORT void AddHistogramSample(void* hist, int sample);
 
 }  // namespace blink
 

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/viz_service_export.h"
 
@@ -54,7 +55,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProviderGL
     }
 
    private:
-    DisplayResourceProviderGL* const resource_provider_;
+    const raw_ptr<DisplayResourceProviderGL> resource_provider_;
     const ResourceId resource_id_;
 
     GLuint texture_id_ = 0;
@@ -104,8 +105,15 @@ class VIZ_SERVICE_EXPORT DisplayResourceProviderGL
 
     GLuint texture_id() const { return texture_id_; }
 
+    // Sets the given |release_fence| onto this resource.
+    // This is propagated to ReturnedResource when the resource is freed.
+    void SetReleaseFence(gfx::GpuFenceHandle release_fence);
+
+    // Returns true iff this resource has a read lock fence set.
+    bool HasReadLockFence() const;
+
    private:
-    DisplayResourceProviderGL* const resource_provider_;
+    const raw_ptr<DisplayResourceProviderGL> resource_provider_;
     const ResourceId resource_id_;
     GLuint texture_id_ = 0;
   };
@@ -129,7 +137,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProviderGL
 
     void Synchronize();
 
-    gpu::gles2::GLES2Interface* gl_;
+    raw_ptr<gpu::gles2::GLES2Interface> gl_;
     bool has_synchronized_;
   };
 
@@ -148,7 +156,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProviderGL
   GLenum BindForSampling(ResourceId resource_id, GLenum unit, GLenum filter);
   void WaitSyncTokenInternal(ChildResource* resource);
 
-  ContextProvider* const compositor_context_provider_;
+  const raw_ptr<ContextProvider> compositor_context_provider_;
   const bool enable_shared_images_;
 };
 

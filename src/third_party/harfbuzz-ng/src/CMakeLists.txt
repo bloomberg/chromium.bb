@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.1)
 project(harfbuzz)
 
 message(WARN "HarfBuzz has a Meson port and tries to migrate all the other build systems to it, please consider using it as we might remove our cmake port soon.")
@@ -102,9 +102,13 @@ if (${HAVE_STDBOOL_H})
   add_definitions(-DHAVE_STDBOOL_H)
 endif ()
 
-# https://github.com/harfbuzz/harfbuzz/pull/2874#issuecomment-782859099
-if (NOT WIN32)
-  add_definitions("-DHAVE_PTHREAD")
+if (NOT MSVC)
+  set(THREADS_PREFER_PTHREAD_FLAG ON)
+  find_package(Threads)
+  if (CMAKE_USE_PTHREADS_INIT)
+    add_definitions("-DHAVE_PTHREAD")
+    list(APPEND THIRD_PARTY_LIBS Threads::Threads)
+  endif ()
 endif ()
 
 if (MSVC)
@@ -433,6 +437,7 @@ endif ()
 ## Define harfbuzz-subset library
 if (HB_BUILD_SUBSET)
   add_library(harfbuzz-subset ${subset_project_sources} ${subset_project_headers})
+  list(APPEND project_headers ${PROJECT_SOURCE_DIR}/src/hb-subset.h)
   add_dependencies(harfbuzz-subset harfbuzz)
   target_link_libraries(harfbuzz-subset harfbuzz ${THIRD_PARTY_LIBS})
 
@@ -697,6 +702,11 @@ if (NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
       RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
       FRAMEWORK DESTINATION Library/Frameworks
     )
+  endif ()
+  if (HB_BUILD_SUBSET)
+    install(TARGETS harfbuzz-subset
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  )
   endif ()
   if (HB_BUILD_UTILS)
     if (WIN32 AND BUILD_SHARED_LIBS)
