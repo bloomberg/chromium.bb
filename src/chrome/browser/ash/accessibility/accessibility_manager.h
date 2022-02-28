@@ -14,7 +14,6 @@
 #include "ash/components/audio/cras_audio_handler.h"
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
@@ -24,6 +23,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/session_manager/core/session_manager.h"
+#include "components/session_manager/core/session_manager_observer.h"
+#include "components/soda/soda_installer.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -34,7 +36,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 
 class Browser;
 
@@ -59,6 +61,7 @@ enum class AccessibilityNotificationType {
   kManagerShutdown,
   kToggleHighContrastMode,
   kToggleLargeCursor,
+  kToggleLiveCaption,
   kToggleStickyKeys,
   kToggleScreenMagnifier,
   kToggleSpokenFeedback,
@@ -103,13 +106,18 @@ enum class PlaySoundOption {
 // TODO(yoshiki): merge MagnificationManager with AccessibilityManager.
 class AccessibilityManager
     : public content::NotificationObserver,
+      public session_manager::SessionManagerObserver,
       public extensions::api::braille_display_private::BrailleObserver,
       public extensions::ExtensionRegistryObserver,
       public user_manager::UserManager::UserSessionStateObserver,
-      public chromeos::input_method::InputMethodManager::Observer,
+      public input_method::InputMethodManager::Observer,
       public CrasAudioHandler::AudioObserver,
-      public ProfileObserver {
+      public ProfileObserver,
+      public speech::SodaInstaller::Observer {
  public:
+  AccessibilityManager(const AccessibilityManager&) = delete;
+  AccessibilityManager& operator=(const AccessibilityManager&) = delete;
+
   // Creates an instance of AccessibilityManager, this should be called once,
   // because only one instance should exist at the same time.
   static void Initialize();
@@ -132,6 +140,12 @@ class AccessibilityManager
   // Returns true if the large cursor is enabled, or false if not.
   bool IsLargeCursorEnabled() const;
 
+  // Enables or disables Live Caption.
+  void EnableLiveCaption(bool enabled);
+
+  // Returns true if Live Caption is enabled, or false if not.
+  bool IsLiveCaptionEnabled() const;
+
   // Enables or disable Sticky Keys.
   void EnableStickyKeys(bool enabled);
 
@@ -141,6 +155,10 @@ class AccessibilityManager
   // Enables or disables spoken feedback. Enabling spoken feedback installs the
   // ChromeVox component extension.
   void EnableSpokenFeedback(bool enabled);
+
+  // Enables spoken feedback. Automatically opens the tutorial once ChromeVox
+  // loads.
+  void EnableSpokenFeedbackWithTutorial();
 
   // Returns true if spoken feedback is enabled, or false if not.
   bool IsSpokenFeedbackEnabled() const;
@@ -264,7 +282,7 @@ class AccessibilityManager
   bool PlaySpokenFeedbackToggleCountdown(int tick_count);
 
   // Update when a view is focused in ARC++.
-  void OnViewFocusedInArc(const gfx::Rect& bounds_in_screen, bool is_editable);
+  void OnViewFocusedInArc(const gfx::Rect& bounds_in_screen);
 
   // Plays an earcon. Earcons are brief and distinctive sounds that indicate
   // the their mapped event has occurred. The |sound_key| enums can be found in
@@ -346,6 +364,15 @@ class AccessibilityManager
   void OnSelectToSpeakPanelAction(SelectToSpeakPanelAction action,
                                   double value);
 
+  // SodaInstaller::Observer:
+  void OnSodaInstalled() override;
+  void OnSodaLanguagePackInstalled(speech::LanguageCode language_code) override;
+  void OnSodaError() override;
+  void OnSodaLanguagePackError(speech::LanguageCode language_code) override;
+  void OnSodaProgress(int combined_progress) override {}
+  void OnSodaLanguagePackProgress(int language_progress,
+                                  speech::LanguageCode language_code) override;
+
   // Test helpers:
   void SetProfileForTest(Profile* profile);
   static void SetBrailleControllerForTest(
@@ -380,8 +407,12 @@ class AccessibilityManager
   void PostLoadAccessibilityCommon();
   void PostUnloadAccessibilityCommon();
 
+  void LoadEnhancedNetworkTts();
+  void UnloadEnhancedNetworkTts();
+
   void UpdateAlwaysShowMenuFromPref();
   void OnLargeCursorChanged();
+  void OnLiveCaptionChanged();
   void OnStickyKeysChanged();
   void OnSpokenFeedbackChanged();
   void OnHighContrastChanged();
@@ -395,7 +426,17 @@ class AccessibilityManager
   void OnAccessibilityCommonChanged(const std::string& pref_name);
   void OnSwitchAccessChanged();
   void OnFocusChangedInPage(const content::FocusedNodeDetails& details);
-  void OnDictationChanged();
+  // |triggered_by_user| is false when Dictation pref is changed at startup,
+  // and true if Dictation enabled changed because the user changed their
+  // Dictation enabled setting in Chrome OS settings or in the tray quick
+  // settings menu.
+  void OnDictationChanged(bool triggered_by_user);
+  // Called after the Dictation locale pref is changed.
+  void OnDictationLocaleChanged();
+  // Called after Dictation is enabled by the user to ensure the correct
+  // dialogs/downloads occur.
+  void MaybeShowNetworkDictationDialogOrInstallSoda(
+      const std::string& dictation_locale);
 
   void CheckBrailleState();
   void ReceiveBrailleDisplayState(
@@ -411,10 +452,13 @@ class AccessibilityManager
 
   void PlayVolumeAdjustSound();
 
-  // content::NotificationObserver
+  // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // session_manager::SessionManagerObserver:
+  void OnLoginOrLockScreenVisible() override;
 
   // extensions::api::braille_display_private::BrailleObserver implementation.
   // Enables spoken feedback if a braille display becomes available.
@@ -431,7 +475,7 @@ class AccessibilityManager
   void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
   // InputMethodManager::Observer
-  void InputMethodChanged(chromeos::input_method::InputMethodManager* manager,
+  void InputMethodChanged(input_method::InputMethodManager* manager,
                           Profile* profile,
                           bool show_message) override;
 
@@ -441,9 +485,33 @@ class AccessibilityManager
   // ProfileObserver:
   void OnProfileWillBeDestroyed(Profile* profile) override;
 
+  // Dictation dialog methods.
+  bool ShouldShowNetworkDictationDialog(const std::string& locale);
+  void ShowNetworkDictationDialog();
+  void OnNetworkDictationDialogAccepted();
+  void OnNetworkDictationDialogDismissed();
+
+  // SODA-related methods.
+  void MaybeInstallSoda(const std::string& locale);
+  void OnSodaInstallSucceeded();
+  void OnSodaInstallError(speech::LanguageCode language_code);
+  void OnSodaInstallUpdated(int progress);
+  bool ShouldShowSodaSucceededNotificationForDictation();
+  bool ShouldShowSodaFailedNotificationForDictation(
+      speech::LanguageCode language_code);
+  void ShowSodaDownloadNotificationForDictation(bool succeeded);
+
+  void ShowDictationLanguageUpgradedNudge(const std::string& locale);
+
+  void CreateChromeVoxPanel();
+
   // Profile which has the current a11y context.
   Profile* profile_ = nullptr;
   base::ScopedObservation<Profile, ProfileObserver> profile_observation_{this};
+
+  base::ScopedObservation<session_manager::SessionManager,
+                          session_manager::SessionManagerObserver>
+      session_observation_{this};
 
   content::NotificationRegistrar notification_registrar_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
@@ -452,6 +520,8 @@ class AccessibilityManager
   bool spoken_feedback_enabled_ = false;
   bool select_to_speak_enabled_ = false;
   bool switch_access_enabled_ = false;
+
+  bool start_chromevox_with_tutorial_ = false;
 
   // A set of pref names of enabled accessibility features using the
   // accessibility common extension.
@@ -464,6 +534,10 @@ class AccessibilityManager
       extensions::api::braille_display_private::BrailleController,
       extensions::api::braille_display_private::BrailleObserver>
       scoped_braille_observation_{this};
+
+  base::ScopedObservation<speech::SodaInstaller,
+                          speech::SodaInstaller::Observer>
+      soda_observation_{this};
 
   bool braille_ime_current_ = false;
 
@@ -497,6 +571,14 @@ class AccessibilityManager
   bool app_terminating_ = false;
 
   std::unique_ptr<Dictation> dictation_;
+  bool dictation_active_ = false;
+  bool network_dictation_dialog_is_showing_ = false;
+  // Whether a SODA download failed notification has been shown. This is
+  // reset each time download is initialized because each download attempt
+  // could fail separately.
+  bool soda_failed_notification_shown_ = false;
+  bool dictation_triggered_by_user_ = false;
+  bool ignore_dictation_locale_pref_change_ = false;
 
   base::RepeatingCallback<void()> focus_ring_observer_for_test_;
   base::RepeatingCallback<void()> select_to_speak_state_observer_for_test_;
@@ -515,8 +597,10 @@ class AccessibilityManager
 
   friend class DictationTest;
   friend class SwitchAccessTest;
-
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityManager);
+  friend class AccessibilityManagerTest;
+  friend class AccessibilityManagerSodaTest;
+  friend class AccessibilityManagerDictationDialogTest;
+  friend class AccessibilityManagerNoOnDeviceSpeechRecognitionTest;
 };
 
 }  // namespace ash

@@ -60,21 +60,19 @@ TEST_F(BuilderTest, Switch_WithCase) {
   auto* v = Global("v", ty.i32(), ast::StorageClass::kPrivate);
   auto* a = Global("a", ty.i32(), ast::StorageClass::kPrivate);
 
-  auto* expr = Switch("a", /**/
-                      Case(Literal(1), Block(Assign("v", 1))),
-                      Case(Literal(2), Block(Assign("v", 2))), DefaultCase());
-  WrapInFunction(expr);
-
-  auto* func = Func("a_func", {}, ty.void_(), ast::StatementList{},
-                    ast::DecorationList{});
+  auto* func = Func("a_func", {}, ty.void_(),
+                    {
+                        Switch("a",                                   //
+                               Case(Expr(1), Block(Assign("v", 1))),  //
+                               Case(Expr(2), Block(Assign("v", 2))),  //
+                               DefaultCase()),
+                    });
 
   spirv::Builder& b = Build();
 
   ASSERT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
   ASSERT_TRUE(b.GenerateGlobalVariable(a)) << b.error();
   ASSERT_TRUE(b.GenerateFunction(func)) << b.error();
-
-  EXPECT_TRUE(b.GenerateSwitchStatement(expr)) << b.error();
 
   EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "v"
 OpName %5 "a"
@@ -119,21 +117,19 @@ TEST_F(BuilderTest, Switch_WithCase_Unsigned) {
   auto* v = Global("v", ty.i32(), ast::StorageClass::kPrivate);
   auto* a = Global("a", ty.u32(), ast::StorageClass::kPrivate);
 
-  auto* expr = Switch("a", Case(Literal(1u), Block(Assign("v", 1))),
-                      Case(Literal(2u), Block(Assign("v", 2))), DefaultCase());
-
-  WrapInFunction(expr);
-
-  auto* func = Func("a_func", {}, ty.void_(), ast::StatementList{},
-                    ast::DecorationList{});
+  auto* func = Func("a_func", {}, ty.void_(),
+                    {
+                        Switch("a",                                    //
+                               Case(Expr(1u), Block(Assign("v", 1))),  //
+                               Case(Expr(2u), Block(Assign("v", 2))),  //
+                               DefaultCase()),
+                    });
 
   spirv::Builder& b = Build();
 
   ASSERT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
   ASSERT_TRUE(b.GenerateGlobalVariable(a)) << b.error();
   ASSERT_TRUE(b.GenerateFunction(func)) << b.error();
-
-  EXPECT_TRUE(b.GenerateSwitchStatement(expr)) << b.error();
 
   EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "v"
 OpName %5 "a"
@@ -178,26 +174,17 @@ TEST_F(BuilderTest, Switch_WithDefault) {
   auto* v = Global("v", ty.i32(), ast::StorageClass::kPrivate);
   auto* a = Global("a", ty.i32(), ast::StorageClass::kPrivate);
 
-  auto* default_body = Block(Assign("v", 1));
-
-  ast::CaseStatementList cases;
-  cases.push_back(
-      create<ast::CaseStatement>(ast::CaseSelectorList{}, default_body));
-
-  auto* expr = create<ast::SwitchStatement>(Expr("a"), cases);
-
-  WrapInFunction(expr);
-
-  auto* func = Func("a_func", {}, ty.void_(), ast::StatementList{},
-                    ast::DecorationList{});
+  auto* func = Func("a_func", {}, ty.void_(),
+                    {
+                        Switch("a",                                  //
+                               DefaultCase(Block(Assign("v", 1)))),  //
+                    });
 
   spirv::Builder& b = Build();
 
   ASSERT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
   ASSERT_TRUE(b.GenerateGlobalVariable(a)) << b.error();
   ASSERT_TRUE(b.GenerateFunction(func)) << b.error();
-
-  EXPECT_TRUE(b.GenerateSwitchStatement(expr)) << b.error();
 
   EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "v"
 OpName %5 "a"
@@ -237,39 +224,21 @@ TEST_F(BuilderTest, Switch_WithCaseAndDefault) {
   auto* v = Global("v", ty.i32(), ast::StorageClass::kPrivate);
   auto* a = Global("a", ty.i32(), ast::StorageClass::kPrivate);
 
-  auto* case_1_body = Block(Assign("v", Expr(1)));
-
-  auto* case_2_body = Block(Assign("v", Expr(2)));
-
-  auto* default_body = Block(Assign("v", Expr(3)));
-
-  ast::CaseSelectorList selector_1;
-  selector_1.push_back(Literal(1));
-
-  ast::CaseSelectorList selector_2;
-  selector_2.push_back(Literal(2));
-  selector_2.push_back(Literal(3));
-
-  ast::CaseStatementList cases;
-  cases.push_back(create<ast::CaseStatement>(selector_1, case_1_body));
-  cases.push_back(create<ast::CaseStatement>(selector_2, case_2_body));
-  cases.push_back(
-      create<ast::CaseStatement>(ast::CaseSelectorList{}, default_body));
-
-  auto* expr = create<ast::SwitchStatement>(Expr("a"), cases);
-
-  WrapInFunction(expr);
-
-  auto* func = Func("a_func", {}, ty.void_(), ast::StatementList{},
-                    ast::DecorationList{});
+  auto* func = Func("a_func", {}, ty.void_(),
+                    {
+                        Switch(Expr("a"),                    //
+                               Case(Expr(1),                 //
+                                    Block(Assign("v", 1))),  //
+                               Case({Expr(2), Expr(3)},      //
+                                    Block(Assign("v", 2))),  //
+                               DefaultCase(Block(Assign("v", 3)))),
+                    });
 
   spirv::Builder& b = Build();
 
   ASSERT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
   ASSERT_TRUE(b.GenerateGlobalVariable(a)) << b.error();
   ASSERT_TRUE(b.GenerateFunction(func)) << b.error();
-
-  EXPECT_TRUE(b.GenerateSwitchStatement(expr)) << b.error();
 
   EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "v"
 OpName %5 "a"
@@ -318,39 +287,21 @@ TEST_F(BuilderTest, Switch_CaseWithFallthrough) {
   auto* v = Global("v", ty.i32(), ast::StorageClass::kPrivate);
   auto* a = Global("a", ty.i32(), ast::StorageClass::kPrivate);
 
-  auto* case_1_body =
-      Block(Assign("v", Expr(1)), create<ast::FallthroughStatement>());
-
-  auto* case_2_body = Block(Assign("v", Expr(2)));
-
-  auto* default_body = Block(Assign("v", Expr(3)));
-
-  ast::CaseSelectorList selector_1;
-  selector_1.push_back(Literal(1));
-
-  ast::CaseSelectorList selector_2;
-  selector_2.push_back(Literal(2));
-
-  ast::CaseStatementList cases;
-  cases.push_back(create<ast::CaseStatement>(selector_1, case_1_body));
-  cases.push_back(create<ast::CaseStatement>(selector_2, case_2_body));
-  cases.push_back(
-      create<ast::CaseStatement>(ast::CaseSelectorList{}, default_body));
-
-  auto* expr = create<ast::SwitchStatement>(Expr("a"), cases);
-
-  WrapInFunction(expr);
-
-  auto* func = Func("a_func", {}, ty.void_(), ast::StatementList{},
-                    ast::DecorationList{});
+  auto* func = Func("a_func", {}, ty.void_(),
+                    {
+                        Switch(Expr("a"),                                   //
+                               Case(Expr(1),                                //
+                                    Block(Assign("v", 1), Fallthrough())),  //
+                               Case(Expr(2),                                //
+                                    Block(Assign("v", 2))),                 //
+                               DefaultCase(Block(Assign("v", 3)))),
+                    });
 
   spirv::Builder& b = Build();
 
   ASSERT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
   ASSERT_TRUE(b.GenerateGlobalVariable(a)) << b.error();
   ASSERT_TRUE(b.GenerateFunction(func)) << b.error();
-
-  EXPECT_TRUE(b.GenerateSwitchStatement(expr)) << b.error();
 
   EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "v"
 OpName %5 "a"
@@ -398,26 +349,22 @@ TEST_F(BuilderTest, Switch_WithNestedBreak) {
   auto* v = Global("v", ty.i32(), ast::StorageClass::kPrivate);
   auto* a = Global("a", ty.i32(), ast::StorageClass::kPrivate);
 
-  auto* expr =
-      Switch("a", /**/
-             Case(Literal(1),
-                  Block(/**/
-                        If(Expr(true), Block(create<ast::BreakStatement>())),
-                        Assign("v", 1))),
-             DefaultCase());
-
-  WrapInFunction(expr);
-
-  auto* func = Func("a_func", {}, ty.void_(), ast::StatementList{},
-                    ast::DecorationList{});
+  auto* func = Func(
+      "a_func", {}, ty.void_(),
+      {
+          Switch("a",           //
+                 Case(Expr(1),  //
+                      Block(    //
+                          If(Expr(true), Block(create<ast::BreakStatement>())),
+                          Assign("v", 1))),
+                 DefaultCase()),
+      });
 
   spirv::Builder& b = Build();
 
   ASSERT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
   ASSERT_TRUE(b.GenerateGlobalVariable(a)) << b.error();
   ASSERT_TRUE(b.GenerateFunction(func)) << b.error();
-
-  EXPECT_TRUE(b.GenerateSwitchStatement(expr)) << b.error();
 
   EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "v"
 OpName %5 "a"
@@ -449,6 +396,52 @@ OpBranch %10
 OpBranch %10
 %10 = OpLabel
 OpReturn
+OpFunctionEnd
+)");
+}
+
+TEST_F(BuilderTest, Switch_AllReturn) {
+  // switch (1) {
+  //   case 1: {
+  //     return 1;
+  //   }
+  //   case 2: {
+  //     fallthrough;
+  //   }
+  //   default: {
+  //     return 3;
+  //   }
+  // }
+
+  auto* fn = Func("f", {}, ty.i32(),
+                  {
+                      Switch(1,                                    //
+                             Case(Expr(1), Block(Return(1))),      //
+                             Case(Expr(2), Block(Fallthrough())),  //
+                             DefaultCase(Block(Return(3)))),
+                  });
+
+  spirv::Builder& b = Build();
+
+  EXPECT_TRUE(b.GenerateFunction(fn)) << b.error();
+  EXPECT_EQ(DumpBuilder(b), R"(OpName %3 "f"
+%2 = OpTypeInt 32 1
+%1 = OpTypeFunction %2
+%6 = OpConstant %2 1
+%10 = OpConstant %2 3
+%11 = OpConstantNull %2
+%3 = OpFunction %2 None %1
+%4 = OpLabel
+OpSelectionMerge %5 None
+OpSwitch %6 %7 1 %8 2 %9
+%8 = OpLabel
+OpReturnValue %6
+%9 = OpLabel
+OpBranch %7
+%7 = OpLabel
+OpReturnValue %10
+%5 = OpLabel
+OpReturnValue %11
 OpFunctionEnd
 )");
 }

@@ -15,12 +15,25 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/synchronization/lock.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/engine/net/server_connection_manager.h"
-#include "components/sync/protocol/sync.pb.h"
+#include "third_party/protobuf/src/google/protobuf/repeated_field.h"
+
+namespace sync_pb {
+class EntitySpecifics;
+class SyncEntity;
+class ClientCommand;
+class CommitMessage;
+class CommitResponse;
+class ClientToServerMessage;
+class ClientToServerResponse;
+class DataTypeProgressMarker;
+class GetUpdatesResponse;
+class ClientCommand;
+}  // namespace sync_pb
 
 namespace syncer {
 
@@ -36,6 +49,10 @@ class MockConnectionManager : public ServerConnectionManager {
   };
 
   MockConnectionManager();
+
+  MockConnectionManager(const MockConnectionManager&) = delete;
+  MockConnectionManager& operator=(const MockConnectionManager&) = delete;
+
   ~MockConnectionManager() override;
 
   // Overridden ServerConnectionManager functions.
@@ -312,7 +329,7 @@ class MockConnectionManager : public ServerConnectionManager {
   // The updates we'll return to the next request.
   std::list<sync_pb::GetUpdatesResponse> update_queue_;
   base::OnceClosure mid_commit_callback_;
-  MidCommitObserver* mid_commit_observer_;
+  raw_ptr<MidCommitObserver> mid_commit_observer_;
 
   // The keystore key we return for a GetUpdates with need_encryption_key set.
   std::string keystore_key_;
@@ -346,8 +363,6 @@ class MockConnectionManager : public ServerConnectionManager {
   std::string next_token_;
 
   std::vector<sync_pb::ClientToServerMessage> requests_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockConnectionManager);
 };
 
 }  // namespace syncer

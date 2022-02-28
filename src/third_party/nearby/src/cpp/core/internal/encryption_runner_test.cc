@@ -14,6 +14,9 @@
 
 #include "core/internal/encryption_runner.h"
 
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
+#include "absl/time/clock.h"
 #include "core/internal/client_proxy.h"
 #include "core/internal/endpoint_channel.h"
 #include "platform/base/byte_array.h"
@@ -21,9 +24,6 @@
 #include "platform/public/pipe.h"
 #include "platform/public/system_clock.h"
 #include "proto/connections_enums.pb.h"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
-#include "absl/time/clock.h"
 
 namespace location {
 namespace nearby {
@@ -42,6 +42,7 @@ class FakeEndpointChannel : public EndpointChannel {
                : ExceptionOr<ByteArray>{Exception::kIo};
   }
   Exception Write(const ByteArray& data) override {
+    write_timestamp_ = SystemClock::ElapsedRealtime();
     return out_ ? out_->Write(data) : Exception{Exception::kIo};
   }
   void Close() override {
@@ -61,11 +62,15 @@ class FakeEndpointChannel : public EndpointChannel {
   void Pause() override {}
   void Resume() override {}
   absl::Time GetLastReadTimestamp() const override { return read_timestamp_; }
+  absl::Time GetLastWriteTimestamp() const override { return write_timestamp_; }
+  void SetAnalyticsRecorder(analytics::AnalyticsRecorder* analytics_recorder,
+                            const std::string& endpoint_id) override {}
 
  private:
   InputStream* in_ = nullptr;
   OutputStream* out_ = nullptr;
   absl::Time read_timestamp_ = absl::InfinitePast();
+  absl::Time write_timestamp_ = absl::InfinitePast();
 };
 
 struct User {

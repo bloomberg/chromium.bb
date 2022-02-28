@@ -1,15 +1,19 @@
-const STORE_URL = '/wpt_internal/prerender/resources/key-value-store.py';
+// TODO(https://crbug.com/1253158): Remove this file and instead use
+// /speculation-rules/prerender/resources/utils.js.
+
+const STORE_URL = '/speculation-rules/prerender/resources/key-value-store.py';
 
 // Starts prerendering for `url`.
 function startPrerendering(url) {
-  // Adds <link rel=prerender> for the URL.
-  // TODO(https://crbug.com/1174978): <link rel=prerender> may not start
-  // prerendering for some reason (e.g., resource limit). Implement a WebDriver
-  // API to force prerendering.
-  const link = document.createElement('link');
-  link.rel = 'prerender';
-  link.href = url;
-  document.head.appendChild(link);
+  // Adds <script type="speculationrules"> and specifies a prerender candidate
+  // for the given URL.
+  // TODO(https://crbug.com/1174978): <script type="speculationrules"> may not
+  // start prerendering for some reason (e.g., resource limit). Implement a
+  // WebDriver API to force prerendering.
+  const script = document.createElement('script');
+  script.type = 'speculationrules';
+  script.text = `{"prerender": [{"source": "list", "urls": ["${url}"] }] }`;
+  document.head.appendChild(script);
 }
 
 // Reads the value specified by `key` from the key-value store on the server.
@@ -86,4 +90,50 @@ function loadInitiatorPage() {
     testChannel.close();
     window.close();
   });
+}
+
+// Returns messages received from the given BroadcastChannel
+// so that callers do not need to add their own event listeners.
+// nextMessage() returns a promise which resolves with the next message.
+//
+// Usage:
+//   const channel = new BroadcastChannel('channel-name');
+//   const messageQueue = new BroadcastMessageQueue(channel);
+//   const message1 = await messageQueue.nextMessage();
+//   const message2 = await messageQueue.nextMessage();
+//   message1 and message2 are the messages received.
+class BroadcastMessageQueue {
+  constructor(broadcastChannel) {
+    this.messages = [];
+    this.resolveFunctions = [];
+    this.channel = broadcastChannel;
+    this.channel.addEventListener('message', e => {
+      if (this.resolveFunctions.length > 0) {
+        const fn = this.resolveFunctions.shift();
+        fn(e.data);
+      } else {
+        this.messages.push(e.data);
+      }
+    });
+  }
+
+  // Returns a promise that resolves with the next message from this queue.
+  nextMessage() {
+    return new Promise(resolve => {
+      if (this.messages.length > 0)
+        resolve(this.messages.shift())
+      else
+        this.resolveFunctions.push(resolve);
+    });
+  }
+}
+
+// Returns <iframe> element upon load.
+function createFrame(url) {
+  return new Promise(resolve => {
+      const frame = document.createElement('iframe');
+      frame.src = url;
+      frame.onload = () => resolve(frame);
+      document.body.appendChild(frame);
+    });
 }

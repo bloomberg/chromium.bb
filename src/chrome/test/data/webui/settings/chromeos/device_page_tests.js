@@ -11,10 +11,10 @@
 // #import {assert} from 'chrome://resources/js/assert.m.js';
 // #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {waitAfterNextRender} from 'chrome://test/test_util.js';
 // #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-// #import {flushTasks} from 'chrome://test/test_util.m.js';
+// #import {flushTasks} from 'chrome://test/test_util.js';
 // clang-format on
 
 cr.define('device_page_tests', function() {
@@ -58,6 +58,7 @@ cr.define('device_page_tests', function() {
       cr.webUIListenerCallback('has-mouse-changed', true);
       cr.webUIListenerCallback('has-pointing-stick-changed', true);
       cr.webUIListenerCallback('has-touchpad-changed', true);
+      cr.webUIListenerCallback('has-haptic-touchpad-changed', true);
     },
 
     /** override */
@@ -336,6 +337,16 @@ cr.define('device_page_tests', function() {
           },
           scroll_sensitivity: {
             key: 'settings.touchpad.scroll_sensitivity',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 3,
+          },
+          haptic_feedback: {
+            key: 'settings.touchpad.haptic_feedback',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: true,
+          },
+          haptic_click_sensitivity: {
+            key: 'settings.touchpad.haptic_click_sensitivity',
             type: chrome.settingsPrivate.PrefType.NUMBER,
             value: 3,
           },
@@ -644,9 +655,6 @@ cr.define('device_page_tests', function() {
      */
     async function checkDeepLink(
         route, settingId, deepLinkElement, elementDesc) {
-      loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-      assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
-
       const params = new URLSearchParams;
       params.append('settingId', settingId);
       settings.Router.getInstance().navigateTo(route, params);
@@ -752,7 +760,7 @@ cr.define('device_page_tests', function() {
         const slider = assert(pointersPage.$$('#mouse settings-slider'));
         expectEquals(4, slider.pref.value);
         MockInteractions.pressAndReleaseKeyOn(
-            slider.$$('cr-slider'), 37, [], 'ArrowLeft');
+            slider.shadowRoot.querySelector('cr-slider'), 37, [], 'ArrowLeft');
         expectEquals(3, devicePage.prefs.settings.mouse.sensitivity2.value);
 
         pointersPage.set('prefs.settings.mouse.sensitivity2.value', 5);
@@ -768,11 +776,30 @@ cr.define('device_page_tests', function() {
         const slider = assert(pointersPage.$$('#touchpad settings-slider'));
         expectEquals(3, slider.pref.value);
         MockInteractions.pressAndReleaseKeyOn(
-            slider.$$('cr-slider'), 39 /* right */, [], 'ArrowRight');
+            slider.shadowRoot.querySelector('cr-slider'), 39 /* right */, [],
+            'ArrowRight');
         expectEquals(4, devicePage.prefs.settings.touchpad.sensitivity2.value);
 
         pointersPage.set('prefs.settings.touchpad.sensitivity2.value', 2);
         expectEquals(2, slider.pref.value);
+      });
+
+      test('haptic touchpad', function() {
+        expectTrue(pointersPage.$$('#touchpadHapticFeedbackToggle').checked);
+
+        const slider =
+            assert(pointersPage.$$('#touchpadHapticClickSensitivity'));
+        expectEquals(3, slider.pref.value);
+        MockInteractions.pressAndReleaseKeyOn(
+            slider.shadowRoot.querySelector('cr-slider'), 39 /* right */, [],
+            'ArrowRight');
+        expectEquals(
+            5,
+            devicePage.prefs.settings.touchpad.haptic_click_sensitivity.value);
+
+        pointersPage.set(
+            'prefs.settings.touchpad.haptic_click_sensitivity.value', 1);
+        expectEquals(1, slider.pref.value);
       });
 
       test('link doesn\'t activate control', function() {
@@ -821,7 +848,7 @@ cr.define('device_page_tests', function() {
             assert(pointersPage.$$('#pointingStick settings-slider'));
         expectEquals(4, slider.pref.value);
         MockInteractions.pressAndReleaseKeyOn(
-            slider.$$('cr-slider'), 37, [], 'ArrowLeft');
+            slider.shadowRoot.querySelector('cr-slider'), 37, [], 'ArrowLeft');
         expectEquals(
             3, devicePage.prefs.settings.pointing_stick.sensitivity.value);
 
@@ -832,28 +859,32 @@ cr.define('device_page_tests', function() {
       test('Deep link to pointing stick primary button setting', async () => {
         return checkDeepLink(
             settings.routes.POINTERS, '437',
-            pointersPage.$$('#pointingStickSwapButtonDropdown').$$('select'),
+            pointersPage.$$('#pointingStickSwapButtonDropdown')
+                .shadowRoot.querySelector('select'),
             'Pointing stick primary button dropdown');
       });
 
       test('Deep link to pointing stick acceleration setting', async () => {
         return checkDeepLink(
             settings.routes.POINTERS, '436',
-            pointersPage.$$('#pointingStickAcceleration').$$('cr-toggle'),
+            pointersPage.$$('#pointingStickAcceleration')
+                .shadowRoot.querySelector('cr-toggle'),
             'Pointing stick acceleration slider');
       });
 
       test('Deep link to pointing stick speed setting', async () => {
         return checkDeepLink(
             settings.routes.POINTERS, '435',
-            pointersPage.$$('#pointingStickSpeedSlider').$$('cr-slider'),
+            pointersPage.$$('#pointingStickSpeedSlider')
+                .shadowRoot.querySelector('cr-slider'),
             'Pointing stick speed slider');
       });
 
       test('Deep link to touchpad speed', async () => {
         return checkDeepLink(
             settings.routes.POINTERS, '405',
-            pointersPage.$$('#touchpadSensitivity').$$('cr-slider'),
+            pointersPage.$$('#touchpadSensitivity')
+                .shadowRoot.querySelector('cr-slider'),
             'Touchpad speed slider');
       });
     });
@@ -948,11 +979,13 @@ cr.define('device_page_tests', function() {
 
         // Test interaction with the settings-slider's underlying cr-slider.
         MockInteractions.pressAndReleaseKeyOn(
-            keyboardPage.$$('#delaySlider').$$('cr-slider'), 37 /* left */, [],
-            'ArrowLeft');
+            keyboardPage.$$('#delaySlider')
+                .shadowRoot.querySelector('cr-slider'),
+            37 /* left */, [], 'ArrowLeft');
         MockInteractions.pressAndReleaseKeyOn(
-            keyboardPage.$$('#repeatRateSlider').$$('cr-slider'), 39, [],
-            'ArrowRight');
+            keyboardPage.$$('#repeatRateSlider')
+                .shadowRoot.querySelector('cr-slider'),
+            39, [], 'ArrowRight');
         await test_util.flushTasks();
         expectEquals(1000, get('xkb_auto_repeat_delay_r2'));
         expectEquals(300, get('xkb_auto_repeat_interval_r2'));
@@ -987,7 +1020,8 @@ cr.define('device_page_tests', function() {
       test('Deep link to keyboard shortcuts', async () => {
         return checkDeepLink(
             settings.routes.KEYBOARD, '413',
-            keyboardPage.$$('#keyboardShortcutViewer').$$('cr-icon-button'),
+            keyboardPage.$$('#keyboardShortcutViewer')
+                .shadowRoot.querySelector('cr-icon-button'),
             'Keyboard shortcuts button');
       });
     });
@@ -1215,9 +1249,6 @@ cr.define('device_page_tests', function() {
       });
 
       test('Deep link to display mirroring', async () => {
-        loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-        assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
-
         const params = new URLSearchParams;
         params.append('settingId', '428');
         settings.Router.getInstance().navigateTo(
@@ -1653,7 +1684,7 @@ cr.define('device_page_tests', function() {
           sendLid(settings.LidClosedBehavior.SUSPEND);
           assertTrue(lidClosedToggle.checked);
 
-          lidClosedToggle.$$('#control').click();
+          lidClosedToggle.shadowRoot.querySelector('#control').click();
           expectEquals(
               settings.LidClosedBehavior.DO_NOTHING,
               settings.DevicePageBrowserProxyImpl.getInstance()
@@ -1661,7 +1692,7 @@ cr.define('device_page_tests', function() {
           sendLid(settings.LidClosedBehavior.DO_NOTHING);
           expectFalse(lidClosedToggle.checked);
 
-          lidClosedToggle.$$('#control').click();
+          lidClosedToggle.shadowRoot.querySelector('#control').click();
           expectEquals(
               settings.LidClosedBehavior.SUSPEND,
               settings.DevicePageBrowserProxyImpl.getInstance()
@@ -2007,7 +2038,8 @@ cr.define('device_page_tests', function() {
             });
         test('Deep link to sleep when laptop lid closed', async () => {
           return checkDeepLink(
-              settings.routes.POWER, '424', lidClosedToggle.$$('cr-toggle'),
+              settings.routes.POWER, '424',
+              lidClosedToggle.shadowRoot.querySelector('cr-toggle'),
               'Sleep when closed toggle');
         });
       });
@@ -2170,9 +2202,6 @@ cr.define('device_page_tests', function() {
       });
 
       test('Deep link to preferred app', async () => {
-        loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-        assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
-
         browserProxy.setNoteTakingApps([
           entry('n1', 'v1', false, LockScreenSupport.NOT_SUPPORTED),
           entry('n2', 'v2', false, LockScreenSupport.NOT_SUPPORTED)
@@ -2543,7 +2572,9 @@ cr.define('device_page_tests', function() {
               expectTrue(keepLastNoteOnLockScreenToggle().checked);
 
               // Clicking the toggle updates the pref value.
-              keepLastNoteOnLockScreenToggle().$$('#control').click();
+              keepLastNoteOnLockScreenToggle()
+                  .shadowRoot.querySelector('#control')
+                  .click();
               expectFalse(keepLastNoteOnLockScreenToggle().checked);
 
               expectFalse(devicePage.prefs.settings

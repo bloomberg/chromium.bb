@@ -4,6 +4,7 @@
 
 #include "ash/utility/layer_util.h"
 
+#include "base/bind.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -17,17 +18,26 @@ void CopyCopyOutputResultToLayer(
     std::unique_ptr<viz::CopyOutputResult> copy_result,
     ui::Layer* target_layer) {
   DCHECK(!copy_result->IsEmpty());
-  DCHECK_EQ(copy_result->format(), viz::CopyOutputResult::Format::RGBA_TEXTURE);
+  DCHECK_EQ(copy_result->format(), viz::CopyOutputResult::Format::RGBA);
+  DCHECK_EQ(copy_result->destination(),
+            viz::CopyOutputResult::Destination::kNativeTextures);
 
-  const gfx::Size layer_size = target_layer->size();
+  const gpu::MailboxHolder& plane = copy_result->GetTextureResult()->planes[0];
   viz::TransferableResource transferable_resource =
-      viz::TransferableResource::MakeGL(
-          copy_result->GetTextureResult()->mailbox, GL_LINEAR, GL_TEXTURE_2D,
-          copy_result->GetTextureResult()->sync_token, layer_size,
-          /*is_overlay_candidate=*/false);
-  viz::ReleaseCallback release_callback = copy_result->TakeTextureOwnership();
+      viz::TransferableResource::MakeGL(plane.mailbox, GL_LINEAR,
+                                        plane.texture_target, plane.sync_token,
+                                        copy_result->size(),
+                                        /*is_overlay_candidate=*/false);
+  viz::CopyOutputResult::ReleaseCallbacks release_callbacks =
+      copy_result->TakeTextureOwnership();
+
+  // CopyOutputResults carrying RGBA format contain a single texture, there
+  // should be only one release callback when a result is not empty:
+  DCHECK_EQ(1u, release_callbacks.size());
+  viz::ReleaseCallback release_callback = std::move(release_callbacks[0]);
+
   target_layer->SetTransferableResource(
-      transferable_resource, std::move(release_callback), layer_size);
+      transferable_resource, std::move(release_callback), target_layer->size());
 }
 
 void CopyToNewLayerOnCopyRequestFinished(
@@ -78,7 +88,8 @@ void CopyLayerContentToNewLayer(ui::Layer* layer, LayerCopyCallback callback) {
   auto new_callback = base::BindOnce(&CopyToNewLayerOnCopyRequestFinished,
                                      std::move(callback), layer->size());
   auto copy_request = std::make_unique<viz::CopyOutputRequest>(
-      viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
+      viz::CopyOutputRequest::ResultFormat::RGBA,
+      viz::CopyOutputRequest::ResultDestination::kNativeTextures,
       std::move(new_callback));
   gfx::Rect bounds(layer->size());
   copy_request->set_area(bounds);
@@ -91,7 +102,8 @@ void CopyLayerContentToLayer(ui::Layer* layer,
   auto new_callback =
       base::BindOnce(&CopyToLayerOnCopyRequestFinished, std::move(callback));
   auto copy_request = std::make_unique<viz::CopyOutputRequest>(
-      viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
+      viz::CopyOutputRequest::ResultFormat::RGBA,
+      viz::CopyOutputRequest::ResultDestination::kNativeTextures,
       std::move(new_callback));
   gfx::Rect bounds(layer->size());
   copy_request->set_area(bounds);

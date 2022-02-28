@@ -45,6 +45,12 @@ option(BUILD_ICD "Build icd" ON)
 # Require the user to ask that it be installed if they really want it.
 option(INSTALL_ICD "Install icd" OFF)
 
+if(WIN32)
+    # Optional: Allow specify the exact version used in the vulkaninfo executable
+    # Format is major.minor.patch.build
+    set(VULKANINFO_BUILD_DLL_VERSIONINFO "" CACHE STRING "Set the version to be used in the vulkaninfo.rc file. Default value is 1.0.1111.2222")
+endif()
+
 # Enable IDE GUI folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # "Helper" targets that don't have interesting source code should set their FOLDER property to this
@@ -125,9 +131,21 @@ if(APPLE)
     set(CMAKE_MACOSX_RPATH 1)
 endif()
 
+option(BUILD_WERROR "Treat compiler warnings as errors" ON)
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     set(COMMON_COMPILE_FLAGS "-Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers")
     set(COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} -fno-strict-aliasing -fno-builtin-memcmp")
+
+    if(MAKE_C_COMPILER_ID MATCHES "Clang")
+        set(COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} -Wno-sign-conversion -Wno-shorten-64-to-32 -Wno-string-conversion -Wno-implicit-in-conversion -Wno-enum-enum-conversion")
+    endif()
+
+    if(BUILD_WERROR)
+        if((CMAKE_COMPILER_IS_GNUCXX AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.3.0)) OR
+          (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 6.0.0)))
+          set(COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} -Werror")
+        endif()
+    endif()
 
     # For GCC version 7.1 or greater, we need to disable the implicit fallthrough warning since there's no consistent way to satisfy
     # all compilers until they all accept the C++17 standard
@@ -145,6 +163,19 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
     endif()
+elseif(MSVC)
+    if(BUILD_WERROR)
+        add_compile_options("/WX")
+    endif()
+    # Warn about nested declarations
+    add_compile_options("/w34456")
+    # Warn about potentially uninitialized variables
+    add_compile_options("/w34701")
+    add_compile_options("/w34703")
+    # Warn about different indirection types.
+    add_compile_options("/w34057")
+    # Warn about signed/unsigned mismatch.
+    add_compile_options("/w34245")
 endif()
 
 # Optional codegen target

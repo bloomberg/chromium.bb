@@ -13,9 +13,9 @@
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "pdf/page_orientation.h"
 #include "pdf/pdf_engine.h"
-#include "ppapi/cpp/private/pdf.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_doc.h"
@@ -33,12 +33,11 @@ namespace chrome_pdf {
 
 class PDFiumEngine;
 class Thumbnail;
-struct AccessibilityLinkInfo;
 struct AccessibilityHighlightInfo;
 struct AccessibilityImageInfo;
+struct AccessibilityLinkInfo;
 struct AccessibilityTextFieldInfo;
 struct AccessibilityTextRunInfo;
-struct AccessibilityTextStyleInfo;
 
 // Wrapper around a page from the document.
 class PDFiumPage {
@@ -59,22 +58,32 @@ class PDFiumPage {
 
   // Log overlaps between annotations in the page.
   void LogOverlappingAnnotations();
+
   // See definition of PDFEngine::GetTextRunInfo().
   absl::optional<AccessibilityTextRunInfo> GetTextRunInfo(int start_char_index);
+
   // Get a unicode character from the page.
   uint32_t GetCharUnicode(int char_index);
+
   // Get the bounds of a character in page pixels.
   gfx::RectF GetCharBounds(int char_index);
+
+  // Get the bounds of the page with the crop box applied, in page pixels.
+  gfx::RectF GetCroppedRect();
+
   // For all the links on the page, get their urls, underlying text ranges and
   // bounding boxes.
   std::vector<AccessibilityLinkInfo> GetLinkInfo(
       const std::vector<AccessibilityTextRunInfo>& text_runs);
+
   // For all the images on the page, get their alt texts and bounding boxes.
   std::vector<AccessibilityImageInfo> GetImageInfo(uint32_t text_run_count);
+
   // For all the highlights on the page, get their underlying text ranges and
   // bounding boxes.
   std::vector<AccessibilityHighlightInfo> GetHighlightInfo(
       const std::vector<AccessibilityTextRunInfo>& text_runs);
+
   // For all the text fields on the page, get their properties like name,
   // value, bounding boxes, etc.
   std::vector<AccessibilityTextFieldInfo> GetTextFieldInfo(
@@ -206,16 +215,17 @@ class PDFiumPage {
   friend class PDFiumPageLinkTest;
   friend class PDFiumTestBase;
 
-  FRIEND_TEST_ALL_PREFIXES(PDFiumPageImageTest, TestCalculateImages);
-  FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, TestAnnotLinkGeneration);
-  FRIEND_TEST_ALL_PREFIXES(PDFiumPageImageTest, TestImageAltText);
-  FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, TestLinkGeneration);
-  FRIEND_TEST_ALL_PREFIXES(PDFiumPageHighlightTest, TestPopulateHighlights);
-  FRIEND_TEST_ALL_PREFIXES(PDFiumPageTextFieldTest, TestPopulateTextFields);
-  FRIEND_TEST_ALL_PREFIXES(PDFiumPageChoiceFieldTest, TestPopulateChoiceFields);
-  FRIEND_TEST_ALL_PREFIXES(PDFiumPageButtonTest, TestPopulateButtons);
-  FRIEND_TEST_ALL_PREFIXES(PDFiumPageOverlappingTest, CountPartialOverlaps);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageButtonTest, PopulateButtons);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageChoiceFieldTest, PopulateChoiceFields);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageHighlightTest, PopulateHighlights);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageImageTest, CalculateImages);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageImageTest, ImageAltText);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, AnnotLinkGeneration);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, GetLinkTarget);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, LinkGeneration);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageOverlappingTest, CountCompleteOverlaps);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageOverlappingTest, CountPartialOverlaps);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageTextFieldTest, PopulateTextFields);
 
   class ScopedUnloadPreventer {
    public:
@@ -223,7 +233,7 @@ class PDFiumPage {
     ~ScopedUnloadPreventer();
 
    private:
-    PDFiumPage* const page_;
+    const raw_ptr<PDFiumPage> page_;
   };
 
   struct Link {
@@ -367,13 +377,6 @@ class PDFiumPage {
   // Calculates the set of character indices on which text runs need to be
   // broken for page objects such as links and images.
   void CalculatePageObjectTextRunBreaks();
-  // Set text run style information based on a character of the text run.
-  void CalculateTextRunStyleInfo(int char_index,
-                                 AccessibilityTextStyleInfo& style_info);
-  // Returns a boolean indicating if the character at index `char_index` has the
-  // same text style as the text run.
-  bool AreTextStyleEqual(int char_index,
-                         const AccessibilityTextStyleInfo& style);
 
   // Key    :  Marked content id for the image element as specified in the
   //           struct tree.
@@ -401,7 +404,7 @@ class PDFiumPage {
   void GenerateAndSendThumbnail(float device_pixel_ratio,
                                 SendThumbnailCallback send_callback);
 
-  PDFiumEngine* engine_;
+  raw_ptr<PDFiumEngine> engine_;
   ScopedFPDFPage page_;
   ScopedFPDFTextPage text_page_;
   int index_;

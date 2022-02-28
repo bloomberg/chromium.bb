@@ -17,6 +17,7 @@
 namespace password_manager {
 namespace {
 constexpr char kAccessToken[] = "access_token";
+constexpr char kApiKey[] = "api_key";
 constexpr char kUsernameHash[] = "ABC";
 constexpr char kEncryptedPayload[] = "dfughidsgfr56";
 
@@ -48,6 +49,7 @@ TEST_F(LeakDetectionRequestTest, ServerError) {
 
   base::MockCallback<LeakDetectionRequest::LookupSingleLeakCallback> callback;
   request().LookupSingleLeak(test_url_loader_factory(), kAccessToken,
+                             /*api_key=*/absl::nullopt,
                              {kUsernameHash, kEncryptedPayload},
                              callback.Get());
   EXPECT_CALL(callback,
@@ -69,6 +71,7 @@ TEST_F(LeakDetectionRequestTest, QuotaLimit) {
 
   base::MockCallback<LeakDetectionRequest::LookupSingleLeakCallback> callback;
   request().LookupSingleLeak(test_url_loader_factory(), kAccessToken,
+                             /*api_key=*/absl::nullopt,
                              {kUsernameHash, kEncryptedPayload},
                              callback.Get());
   EXPECT_CALL(callback, Run(IsNull(), Eq(LeakDetectionError::kQuotaLimit)));
@@ -90,6 +93,7 @@ TEST_F(LeakDetectionRequestTest, MalformedServerResponse) {
 
   base::MockCallback<LeakDetectionRequest::LookupSingleLeakCallback> callback;
   request().LookupSingleLeak(test_url_loader_factory(), kAccessToken,
+                             /*api_key=*/absl::nullopt,
                              {kUsernameHash, kEncryptedPayload},
                              callback.Get());
   EXPECT_CALL(callback,
@@ -113,8 +117,36 @@ TEST_F(LeakDetectionRequestTest, WellformedServerResponse) {
 
   base::MockCallback<LeakDetectionRequest::LookupSingleLeakCallback> callback;
   request().LookupSingleLeak(test_url_loader_factory(), kAccessToken,
+                             /*api_key=*/absl::nullopt,
                              {kUsernameHash, kEncryptedPayload},
                              callback.Get());
+  EXPECT_CALL(callback,
+              Run(testing::Pointee(SingleLookupResponse()), Eq(absl::nullopt)));
+  task_env().RunUntilIdle();
+
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.LookupSingleLeakResponseResult",
+      LeakDetectionRequest::LeakLookupResponseResult::kSuccess, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.SingleLeakResponseSize",
+      response_string.size(), 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.SingleLeakResponsePrefixes",
+      response.encrypted_leak_match_prefix().size(), 1);
+}
+
+TEST_F(LeakDetectionRequestTest,
+       ReturnsSuccesfulResponseForUnauthenticatedRequest) {
+  google::internal::identity::passwords::leak::check::v1::
+      LookupSingleLeakResponse response;
+  std::string response_string = response.SerializeAsString();
+  test_url_loader_factory()->AddResponse(
+      LeakDetectionRequest::kLookupSingleLeakEndpoint, response_string);
+
+  base::MockCallback<LeakDetectionRequest::LookupSingleLeakCallback> callback;
+  request().LookupSingleLeak(
+      test_url_loader_factory(), /*access_token=*/absl::nullopt, kApiKey,
+      {kUsernameHash, kEncryptedPayload}, callback.Get());
   EXPECT_CALL(callback,
               Run(testing::Pointee(SingleLookupResponse()), Eq(absl::nullopt)));
   task_env().RunUntilIdle();

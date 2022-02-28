@@ -19,11 +19,19 @@
 #include "base/sequence_checker.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace base {
+class TimeTicks;
+}
+
+namespace component_updater {
+struct ComponentRegistration;
+}
 
 namespace android_webview {
-
-using RegisterComponentsCallback =
-    base::RepeatingCallback<bool(const update_client::CrxComponent&)>;
+using RegisterComponentsCallback = base::RepeatingCallback<bool(
+    const component_updater::ComponentRegistration&)>;
 
 class TestAwComponentUpdateService;
 
@@ -33,13 +41,15 @@ class AwComponentUpdateService {
  public:
   static AwComponentUpdateService* GetInstance();
 
-  // Callback used for updating components, with an int that represents how many
-  // components were actually updated.
+  // Callback used for updating components, with an int that represents how
+  // many components were actually updated.
   using UpdateCallback = base::OnceCallback<void(int)>;
 
-  void StartComponentUpdateService(UpdateCallback finished_callback);
-  bool RegisterComponent(const update_client::CrxComponent& component);
-  void CheckForUpdates(UpdateCallback on_finished);
+  void StartComponentUpdateService(UpdateCallback finished_callback,
+                                   bool on_demand_update);
+  bool RegisterComponent(
+      const component_updater::ComponentRegistration& component);
+  void CheckForUpdates(UpdateCallback on_finished, bool on_demand_update);
 
   void IncrementComponentsUpdatedCount();
 
@@ -63,12 +73,14 @@ class AwComponentUpdateService {
   void OnUpdateComplete(update_client::Callback callback,
                         const base::TimeTicks& start_time,
                         update_client::Error error);
-  absl::optional<update_client::CrxComponent> GetComponent(
+  update_client::CrxComponent ToCrxComponent(
+      const component_updater::ComponentRegistration& component) const;
+  absl::optional<component_updater::ComponentRegistration> GetComponent(
       const std::string& id) const;
   std::vector<absl::optional<update_client::CrxComponent>> GetCrxComponents(
       const std::vector<std::string>& ids);
-  void ScheduleUpdatesOfRegisteredComponents(
-      UpdateCallback on_finished_updates);
+  void ScheduleUpdatesOfRegisteredComponents(UpdateCallback on_finished_updates,
+                                             bool on_demand_update);
 
   // Virtual for testing.
   virtual void RegisterComponents(RegisterComponentsCallback register_callback,
@@ -77,12 +89,14 @@ class AwComponentUpdateService {
   scoped_refptr<update_client::UpdateClient> update_client_;
 
   // A collection of every registered component.
-  base::flat_map<std::string, update_client::CrxComponent> components_;
+  base::flat_map<std::string, component_updater::ComponentRegistration>
+      components_;
 
-  // Maintains the order in which components have been registered. The position
-  // of a component id in this sequence indicates the priority of the component.
-  // The sooner the component gets registered, the higher its priority, and
-  // the closer this component is to the beginning of the vector.
+  // Maintains the order in which components have been registered. The
+  // position of a component id in this sequence indicates the priority of the
+  // component. The sooner the component gets registered, the higher its
+  // priority, and the closer this component is to the beginning of the
+  // vector.
   std::vector<std::string> components_order_;
 
   void RecordComponentsUpdated(UpdateCallback on_finished,

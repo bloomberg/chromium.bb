@@ -21,16 +21,17 @@ WebUIBrowserAsyncGenTest::AsyncWebUIMessageHandler::
 
 void WebUIBrowserAsyncGenTest::AsyncWebUIMessageHandler::HandleCallJS(
     const base::ListValue* list_value) {
-  std::string call_js;
-  ASSERT_TRUE(list_value->GetString(0, &call_js));
+  base::Value::ConstListView list_view = list_value->GetList();
+  ASSERT_TRUE(0u < list_view.size() && list_view[0].is_string());
+  std::string call_js = list_view[0].GetString();
   web_ui()->CallJavascriptFunctionUnsafe(call_js);
 }
 
 void WebUIBrowserAsyncGenTest::AsyncWebUIMessageHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "callJS", base::BindRepeating(&AsyncWebUIMessageHandler::HandleCallJS,
                                     base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "tearDown", base::BindRepeating(&AsyncWebUIMessageHandler::HandleTearDown,
                                       base::Unretained(this)));
 }

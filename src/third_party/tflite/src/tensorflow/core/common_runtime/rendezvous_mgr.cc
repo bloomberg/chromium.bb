@@ -21,6 +21,7 @@ limitations under the License.
 #include "tensorflow/core/common_runtime/device.h"
 #include "tensorflow/core/common_runtime/device_mgr.h"
 #include "tensorflow/core/framework/allocator.h"
+#include "tensorflow/core/framework/device_factory.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/lib/core/errors.h"
 #include "tensorflow/core/lib/core/notification.h"
@@ -29,6 +30,7 @@ limitations under the License.
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/platform/mutex.h"
 #include "tensorflow/core/platform/types.h"
+#include "tensorflow/core/profiler/lib/scoped_memory_debug_annotation.h"
 
 namespace tensorflow {
 
@@ -74,8 +76,9 @@ void SameWorkerRecvDone(const DeviceMgr* device_mgr,
     return;
   }
 
-  ScopedMemoryDebugAnnotation op_annotation("SameWorkerRecvDone", 0, "dynamic",
-                                            in.dtype(), &in.shape());
+  profiler::ScopedMemoryDebugAnnotation op_annotation(
+      "SameWorkerRecvDone", 0, "dynamic", in.dtype(),
+      [&in]() { return in.shape().DebugString(); });
   AllocatorAttributes attr = recv_args.alloc_attrs;
   attr.set_gpu_compatible(send_args.alloc_attrs.gpu_compatible() ||
                           recv_args.alloc_attrs.gpu_compatible());
@@ -90,7 +93,9 @@ void SameWorkerRecvDone(const DeviceMgr* device_mgr,
       safe_alloc_frontier = dst_device->SafeAllocFrontier(safe_alloc_frontier);
       return safe_alloc_frontier;
     };
-    if (parsed.dst.type == "GPU" && safe_alloc_frontier > 0) {
+    if ((parsed.dst.type == "GPU" ||
+         DeviceFactory::IsPluggableDevice(parsed.dst.type)) &&
+        safe_alloc_frontier > 0) {
       // There's a timestamped allocator at work, so use it instead
       // of sync_dst_compute.
       aa.freed_by_func = &freed_by_func;
@@ -98,6 +103,12 @@ void SameWorkerRecvDone(const DeviceMgr* device_mgr,
     }
     Tensor copy(out_allocator, in.dtype(), in.shape(), aa);
     *out = copy;
+    if (in.shape().num_elements() > 0 && out->data() == nullptr) {
+      done(tensorflow::errors::ResourceExhausted(
+          "SameWorkerRecvDone unable to allocate output tensor. Key: ",
+          parsed.FullKey()));
+      return;
+    }
   }
 
   CopyTensor::ViaDMA(
@@ -113,7 +124,7 @@ void IntraProcessRecvAsyncImpl(const DeviceMgr* device_mgr,
                                RendezvousInterface::DoneCallback done) {
   VLOG(1) << "IntraProcessRendezvous Recv " << local << " " << parsed.FullKey();
 
-  ScopedMemoryDebugAnnotation op_annotation("RecvAsync");
+  profiler::ScopedMemoryDebugAnnotation op_annotation("RecvAsync");
   // Recv the tensor from local_.
   local->RecvAsync(
       parsed, recv_args,
@@ -145,7 +156,7 @@ void IntraProcessRecvAsyncImpl(const DeviceMgr* device_mgr,
 
 RefCountedIntraProcessRendezvous::RefCountedIntraProcessRendezvous(
     const DeviceMgr* device_mgr)
-    : device_mgr_(device_mgr) {}
+    : device_mgr_(device_mgr), local_(this) {}
 
 RefCountedIntraProcessRendezvous::~RefCountedIntraProcessRendezvous() {}
 
@@ -168,9 +179,13 @@ void RefCountedIntraProcessRendezvous::StartAbort(const Status& s) {
   local_.StartAbort(s);
 }
 
+Status RefCountedIntraProcessRendezvous::GetLocalRendezvousStatus() {
+  return local_.status();
+}
+
 PrivateIntraProcessRendezvous::PrivateIntraProcessRendezvous(
     const DeviceMgr* device_mgr)
-    : device_mgr_(device_mgr) {}
+    : device_mgr_(device_mgr), local_(nullptr) {}
 
 PrivateIntraProcessRendezvous::~PrivateIntraProcessRendezvous() {}
 

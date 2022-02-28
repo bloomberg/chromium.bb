@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import '../module_header.js';
+import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
 import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -31,7 +32,7 @@ class DriveModuleElement extends mixinBehaviors
 
   static get properties() {
     return {
-      /** @type {Array<!drive.mojom.File>} */
+      /** @type {!Array<!drive.mojom.File>} */
       files: Array,
     };
   }
@@ -44,7 +45,7 @@ class DriveModuleElement extends mixinBehaviors
 
   /** @private */
   onDismissButtonClick_() {
-    DriveProxy.getInstance().handler.dismissModule();
+    DriveProxy.getHandler().dismissModule();
     this.dispatchEvent(new CustomEvent('dismiss-module', {
       bubbles: true,
       composed: true,
@@ -52,7 +53,7 @@ class DriveModuleElement extends mixinBehaviors
         message: loadTimeData.getStringF(
             'dismissModuleToastMessage',
             loadTimeData.getString('modulesDriveFilesSentence')),
-        restoreCallback: () => DriveProxy.getInstance().handler.restoreModule(),
+        restoreCallback: () => DriveProxy.getHandler().restoreModule(),
       },
     }));
   }
@@ -97,7 +98,7 @@ customElements.define(DriveModuleElement.is, DriveModuleElement);
  * @return {!Promise<DriveModuleElement>}
  */
 async function createDriveElement() {
-  const {files} = await DriveProxy.getInstance().handler.getFiles();
+  const {files} = await DriveProxy.getHandler().getFiles();
   if (files.length === 0) {
     return null;
   }

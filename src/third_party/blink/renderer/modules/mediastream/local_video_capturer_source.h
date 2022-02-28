@@ -9,15 +9,16 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/token.h"
 #include "base/unguessable_token.h"
+#include "media/capture/mojom/video_capture_types.mojom-blink.h"
 #include "media/capture/video_capture_types.h"
-#include "media/capture/video_capturer_source.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/video_capture/video_capturer_source.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace base {
@@ -34,10 +35,9 @@ class WebVideoCaptureImplManager;
 // WebVideoCaptureImplManager to start / stop and receive I420 frames from
 // Chrome's video capture implementation. This is a main Render thread only
 // object.
-class MODULES_EXPORT LocalVideoCapturerSource
-    : public media::VideoCapturerSource {
+class MODULES_EXPORT LocalVideoCapturerSource : public VideoCapturerSource {
  public:
-  static std::unique_ptr<media::VideoCapturerSource> Create(
+  static std::unique_ptr<VideoCapturerSource> Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       LocalFrame* frame,
       const base::UnguessableToken& session_id);
@@ -45,6 +45,10 @@ class MODULES_EXPORT LocalVideoCapturerSource
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       LocalFrame* frame,
       const base::UnguessableToken& session_id);
+
+  LocalVideoCapturerSource(const LocalVideoCapturerSource&) = delete;
+  LocalVideoCapturerSource& operator=(const LocalVideoCapturerSource&) = delete;
+
   ~LocalVideoCapturerSource() override;
 
   // VideoCaptureSource Implementation.
@@ -83,8 +87,6 @@ class MODULES_EXPORT LocalVideoCapturerSource
   THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<LocalVideoCapturerSource> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LocalVideoCapturerSource);
 };
 
 }  // namespace blink

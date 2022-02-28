@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "include/v8-script.h"
 #include "src/base/export-template.h"
 #include "src/objects/fixed-array.h"
 #include "src/objects/objects.h"
@@ -21,6 +22,11 @@ namespace v8 {
 namespace internal {
 
 class FunctionLiteral;
+class StructBodyDescriptor;
+
+namespace wasm {
+class NativeModule;
+}  // namespace wasm
 
 #include "torque-generated/src/objects/script-tq.inc"
 
@@ -142,6 +148,14 @@ class Script : public TorqueGeneratedScript<Script, Struct> {
   // resource is accessible. Otherwise, always return true.
   inline bool HasValidSource();
 
+  // If the script has a non-empty sourceURL comment.
+  inline bool HasSourceURLComment() const;
+
+  // Streaming compilation only attaches the source to the Script upon
+  // finalization. This predicate returns true, if this script may still be
+  // unfinalized.
+  inline bool IsMaybeUnfinalized(Isolate* isolate) const;
+
   Object GetNameOrSourceURL();
 
   // Retrieve source position from where eval was called.
@@ -216,6 +230,8 @@ class Script : public TorqueGeneratedScript<Script, Struct> {
   // Dispatched behavior.
   DECL_PRINTER(Script)
   DECL_VERIFIER(Script)
+
+  using BodyDescriptor = StructBodyDescriptor;
 
  private:
   // Bit positions in the flags field.

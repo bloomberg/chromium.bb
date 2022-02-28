@@ -9,6 +9,12 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_service_manager.h"
+#include "ash/components/arc/test/arc_util_test_support.h"
+#include "ash/components/arc/test/connection_holder_util.h"
+#include "ash/components/arc/test/fake_backup_settings_instance.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -16,7 +22,7 @@
 #include "base/run_loop.h"
 #include "base/task/current_thread.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
+#include "chrome/browser/ash/policy/handlers/configuration_policy_handler_ash.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
@@ -29,12 +35,6 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
-#include "components/arc/arc_prefs.h"
-#include "components/arc/arc_service_manager.h"
-#include "components/arc/arc_util.h"
-#include "components/arc/session/arc_bridge_service.h"
-#include "components/arc/test/connection_holder_util.h"
-#include "components/arc/test/fake_backup_settings_instance.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -46,6 +46,7 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "content/public/test/browser_test.h"
+#include "net/proxy_resolution/proxy_bypass_rules.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -229,9 +230,9 @@ class ArcSettingsServiceTest : public InProcessBrowserTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    ON_CALL(provider_, IsInitializationComplete(_)).WillByDefault(Return(true));
-    ON_CALL(provider_, IsFirstPolicyLoadComplete(_))
-        .WillByDefault(Return(true));
+    provider_.SetDefaultReturns(
+        /*is_initialization_complete_return=*/true,
+        /*is_first_policy_load_complete_return=*/true);
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
   }
 
@@ -711,7 +712,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, DefaultNetworkDisconnectedTest) {
   base::Value default_proxy_config(base::Value::Type::DICTIONARY);
   default_proxy_config.SetKey(
       "mode", base::Value(ProxyPrefs::kFixedServersProxyModeName));
-  default_proxy_config.SetKey("server", base::Value("default/proxy:8080"));
+  default_proxy_config.SetKey("server", base::Value("default.proxy.test:8080"));
   SetProxyConfigForNetworkService(kDefaultServicePath,
                                   std::move(default_proxy_config));
   RunUntilIdle();
@@ -720,7 +721,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, DefaultNetworkDisconnectedTest) {
   base::Value wifi_proxy_config(base::Value::Type::DICTIONARY);
   wifi_proxy_config.SetKey("mode",
                            base::Value(ProxyPrefs::kFixedServersProxyModeName));
-  wifi_proxy_config.SetKey("server", base::Value("wifi/proxy:8080"));
+  wifi_proxy_config.SetKey("server", base::Value("wifi.proxy.test:8080"));
   SetProxyConfigForNetworkService(kWifi0ServicePath,
                                   std::move(wifi_proxy_config));
   RunUntilIdle();
@@ -729,7 +730,8 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, DefaultNetworkDisconnectedTest) {
   base::Value expected_default_proxy_config(base::Value::Type::DICTIONARY);
   expected_default_proxy_config.SetKey(
       "mode", base::Value(ProxyPrefs::kFixedServersProxyModeName));
-  expected_default_proxy_config.SetKey("host", base::Value("default/proxy"));
+  expected_default_proxy_config.SetKey("host",
+                                       base::Value("default.proxy.test"));
   expected_default_proxy_config.SetKey("port", base::Value(8080));
   EXPECT_EQ(CountProxyBroadcasts(fake_intent_helper_instance_->broadcasts(),
                                  {&expected_default_proxy_config}),
@@ -743,7 +745,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, DefaultNetworkDisconnectedTest) {
   base::Value expected_wifi_proxy_config(base::Value::Type::DICTIONARY);
   expected_wifi_proxy_config.SetKey(
       "mode", base::Value(ProxyPrefs::kFixedServersProxyModeName));
-  expected_wifi_proxy_config.SetKey("host", base::Value("wifi/proxy"));
+  expected_wifi_proxy_config.SetKey("host", base::Value("wifi.proxy.test"));
   expected_wifi_proxy_config.SetKey("port", base::Value(8080));
 
   EXPECT_EQ(CountProxyBroadcasts(fake_intent_helper_instance_->broadcasts(),

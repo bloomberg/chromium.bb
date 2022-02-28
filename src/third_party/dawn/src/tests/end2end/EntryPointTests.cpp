@@ -22,7 +22,7 @@ class EntryPointTests : public DawnTest {};
 // Test creating a render pipeline from two entryPoints in the same module.
 TEST_P(EntryPointTests, FragAndVertexSameModule) {
     // TODO(crbug.com/dawn/658): Crashes on bots
-    DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
+    DAWN_SUPPRESS_TEST_IF(IsOpenGL() || IsOpenGLES());
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
         [[stage(vertex)]] fn vertex_main() -> [[builtin(position)]] vec4<f32> {
             return vec4<f32>(0.0, 0.0, 0.0, 1.0);
@@ -34,14 +34,14 @@ TEST_P(EntryPointTests, FragAndVertexSameModule) {
     )");
 
     // Create a point pipeline from the module.
-    utils::ComboRenderPipelineDescriptor2 desc;
+    utils::ComboRenderPipelineDescriptor desc;
     desc.vertex.module = module;
     desc.vertex.entryPoint = "vertex_main";
     desc.cFragment.module = module;
     desc.cFragment.entryPoint = "fragment_main";
     desc.cTargets[0].format = wgpu::TextureFormat::RGBA8Unorm;
     desc.primitive.topology = wgpu::PrimitiveTopology::PointList;
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&desc);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&desc);
 
     // Render the point and check that it was rendered.
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
@@ -60,18 +60,35 @@ TEST_P(EntryPointTests, FragAndVertexSameModule) {
 
 // Test creating two compute pipelines from the same module.
 TEST_P(EntryPointTests, TwoComputeInModule) {
+    wgpu::BindGroupLayoutEntry binding = {};
+    binding.binding = 0;
+    binding.buffer.type = wgpu::BufferBindingType::Storage;
+    binding.visibility = wgpu::ShaderStage::Compute;
+
+    wgpu::BindGroupLayoutDescriptor desc = {};
+    desc.entryCount = 1;
+    desc.entries = &binding;
+
+    wgpu::BindGroupLayout bindGroupLayout = device.CreateBindGroupLayout(&desc);
+
+    wgpu::PipelineLayoutDescriptor pipelineLayoutDesc = {};
+    pipelineLayoutDesc.bindGroupLayoutCount = 1;
+    pipelineLayoutDesc.bindGroupLayouts = &bindGroupLayout;
+
+    wgpu::PipelineLayout pipelineLayout = device.CreatePipelineLayout(&pipelineLayoutDesc);
+
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
         [[block]] struct Data {
             data : u32;
         };
-        [[binding(0), group(0)]] var<storage> data : [[access(read_write)]] Data;
+        [[binding(0), group(0)]] var<storage, read_write> data : Data;
 
-        [[stage(compute)]] fn write1() {
+        [[stage(compute), workgroup_size(1)]] fn write1() {
             data.data = 1u;
             return;
         }
 
-        [[stage(compute)]] fn write42() {
+        [[stage(compute), workgroup_size(1)]] fn write42() {
             data.data = 42u;
             return;
         }
@@ -79,12 +96,13 @@ TEST_P(EntryPointTests, TwoComputeInModule) {
 
     // Create both pipelines from the module.
     wgpu::ComputePipelineDescriptor pipelineDesc;
-    pipelineDesc.computeStage.module = module;
+    pipelineDesc.layout = pipelineLayout;
+    pipelineDesc.compute.module = module;
 
-    pipelineDesc.computeStage.entryPoint = "write1";
+    pipelineDesc.compute.entryPoint = "write1";
     wgpu::ComputePipeline write1 = device.CreateComputePipeline(&pipelineDesc);
 
-    pipelineDesc.computeStage.entryPoint = "write42";
+    pipelineDesc.compute.entryPoint = "write42";
     wgpu::ComputePipeline write42 = device.CreateComputePipeline(&pipelineDesc);
 
     // Create the bindGroup.
@@ -93,8 +111,7 @@ TEST_P(EntryPointTests, TwoComputeInModule) {
     bufferDesc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc;
     wgpu::Buffer buffer = device.CreateBuffer(&bufferDesc);
 
-    wgpu::BindGroup group =
-        utils::MakeBindGroup(device, write1.GetBindGroupLayout(0), {{0, buffer}});
+    wgpu::BindGroup group = utils::MakeBindGroup(device, bindGroupLayout, {{0, buffer}});
 
     // Use the first pipeline and check it wrote 1.
     {

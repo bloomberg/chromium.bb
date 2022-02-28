@@ -10,7 +10,6 @@ import {Issue, IssueCategory, IssueKind} from './Issue.js';
 import type {LazyMarkdownIssueDescription, MarkdownIssueDescription} from './MarkdownIssueDescription.js';
 import {resolveLazyDescription} from './MarkdownIssueDescription.js';
 
-
 const UIStrings = {
   /**
   *@description Label for the link for Trusted Web Activity issue
@@ -54,10 +53,9 @@ export class TrustedWebActivityIssue extends Issue {
     return IssueKind.PageError;
   }
 
-  static fromInspectorIssue(
-      issuesModel: SDK.IssuesModel.IssuesModel,
-      inspectorDetails: Protocol.Audits.InspectorIssueDetails): TrustedWebActivityIssue[] {
-    const twaQualityEnforcementDetails = inspectorDetails.twaQualityEnforcementDetails;
+  static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue):
+      TrustedWebActivityIssue[] {
+    const twaQualityEnforcementDetails = inspectorIssue.details.twaQualityEnforcementDetails;
     if (!twaQualityEnforcementDetails) {
       console.warn('TWA Quality Enforcement issue without details received.');
       return [];
@@ -104,7 +102,6 @@ export const assetlinkViolationCode: string = [
   Protocol.Audits.InspectorIssueCode.TrustedWebActivityIssue,
   Protocol.Audits.TwaQualityEnforcementViolationType.KDigitalAssetLinks,
 ].join('::');
-
 
 const issueDescriptions: Map<Protocol.Audits.TwaQualityEnforcementViolationType, LazyMarkdownIssueDescription> =
     new Map([

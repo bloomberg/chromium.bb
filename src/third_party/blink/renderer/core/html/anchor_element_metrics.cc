@@ -20,10 +20,10 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace blink {
 
@@ -31,17 +31,17 @@ namespace {
 
 // Accumulated scroll offset of all frames up to the local root frame.
 int AccumulatedScrollOffset(const HTMLAnchorElement& anchor_element) {
-  IntSize offset;
+  int offset = 0;
   Frame* frame = anchor_element.GetDocument().GetFrame();
   while (frame && frame->View()) {
     auto* local_frame = DynamicTo<LocalFrame>(frame);
     if (!local_frame)
       break;
 
-    offset += local_frame->View()->LayoutViewport()->ScrollOffsetInt();
+    offset += local_frame->View()->LayoutViewport()->ScrollOffsetInt().y();
     frame = frame->Tree().Parent();
   }
-  return offset.Height();
+  return offset;
 }
 
 // Whether the element is inside an iframe.
@@ -126,10 +126,10 @@ bool IsUrlIncrementedByOne(const HTMLAnchorElement& anchor_element) {
 
 // Returns the bounding box rect of a layout object, including visual
 // overflows.
-IntRect AbsoluteElementBoundingBoxRect(const LayoutObject& layout_object) {
+gfx::Rect AbsoluteElementBoundingBoxRect(const LayoutObject& layout_object) {
   Vector<PhysicalRect> rects = layout_object.OutlineRects(
       PhysicalOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
-  return EnclosingIntRect(layout_object.LocalToAbsoluteRect(UnionRect(rects)));
+  return ToEnclosingRect(layout_object.LocalToAbsoluteRect(UnionRect(rects)));
 }
 
 bool IsNonEmptyTextNode(Node* node) {
@@ -187,36 +187,36 @@ mojom::blink::AnchorElementMetricsPtr CreateAnchorElementMetrics(
   if (!local_frame_view || !root_frame_view)
     return metrics;
 
-  IntRect viewport = root_frame_view->LayoutViewport()->VisibleContentRect();
-  if (viewport.Size().IsEmpty())
+  gfx::Rect viewport = root_frame_view->LayoutViewport()->VisibleContentRect();
+  if (viewport.IsEmpty())
     return metrics;
-  metrics->viewport_size = gfx::Size(viewport.Size());
+  metrics->viewport_size = viewport.size();
 
   // Use the viewport size to normalize anchor element metrics.
-  float base_height = static_cast<float>(viewport.Height());
-  float base_width = static_cast<float>(viewport.Width());
+  float base_height = static_cast<float>(viewport.height());
+  float base_width = static_cast<float>(viewport.width());
 
   // The anchor element rect in the root frame.
-  IntRect target = local_frame_view->ConvertToRootFrame(
+  gfx::Rect target = local_frame_view->ConvertToRootFrame(
       AbsoluteElementBoundingBoxRect(*layout_object));
 
   // Limit the element size to the viewport size.
-  float ratio_area = std::min(1.0f, target.Height() / base_height) *
-                     std::min(1.0f, target.Width() / base_width);
+  float ratio_area = std::min(1.0f, target.height() / base_height) *
+                     std::min(1.0f, target.width() / base_width);
   DCHECK_GE(1.0, ratio_area);
   metrics->ratio_area = ratio_area;
 
-  float ratio_distance_top_to_visible_top = target.Y() / base_height;
+  float ratio_distance_top_to_visible_top = target.y() / base_height;
   metrics->ratio_distance_top_to_visible_top =
       ratio_distance_top_to_visible_top;
 
   float ratio_distance_center_to_visible_top =
-      (target.Y() + target.Height() / 2.0) / base_height;
+      (target.y() + target.height() / 2.0) / base_height;
   metrics->ratio_distance_center_to_visible_top =
       ratio_distance_center_to_visible_top;
 
   float ratio_distance_root_top =
-      (target.Y() + AccumulatedScrollOffset(anchor_element)) / base_height;
+      (target.y() + AccumulatedScrollOffset(anchor_element)) / base_height;
   metrics->ratio_distance_root_top = ratio_distance_root_top;
 
   // Distance to the bottom is tricky if the element is inside sub/iframes.
@@ -226,22 +226,21 @@ mojom::blink::AnchorElementMetricsPtr CreateAnchorElementMetrics(
                         ->GetLayoutView()
                         ->GetScrollableArea()
                         ->ContentsSize()
-                        .Height();
+                        .height();
 
-  int root_scrolled =
-      root_frame_view->LayoutViewport()->ScrollOffsetInt().Height();
+  int root_scrolled = root_frame_view->LayoutViewport()->ScrollOffsetInt().y();
   float ratio_distance_root_bottom =
-      (root_height - root_scrolled - target.Y() - target.Height()) /
+      (root_height - root_scrolled - target.y() - target.height()) /
       base_height;
   metrics->ratio_distance_root_bottom = ratio_distance_root_bottom;
 
   // Get the anchor element rect that intersects with the viewport.
-  IntRect target_visible(target);
-  target_visible.Intersect(IntRect(IntPoint(), viewport.Size()));
+  gfx::Rect target_visible = target;
+  target_visible.Intersect(gfx::Rect(viewport.size()));
 
   // It guarantees to be less or equal to 1.
-  float ratio_visible_area = (target_visible.Height() / base_height) *
-                             (target_visible.Width() / base_width);
+  float ratio_visible_area = (target_visible.height() / base_height) *
+                             (target_visible.width() / base_width);
   DCHECK_GE(1.0, ratio_visible_area);
   metrics->ratio_visible_area = ratio_visible_area;
 

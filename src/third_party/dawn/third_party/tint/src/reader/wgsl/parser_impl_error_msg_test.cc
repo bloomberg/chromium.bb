@@ -51,16 +51,23 @@ TEST_F(ParserImplErrorTest, AndInvalidExpr) {
          "                    ^\n");
 }
 
-TEST_F(ParserImplErrorTest, ArrayIndexExprInvalidExpr) {
+TEST_F(ParserImplErrorTest, AliasDeclInvalidDeco) {
+  EXPECT("[[block]]type e=u32;",
+         "test.wgsl:1:3 error: unexpected decorations\n"
+         "[[block]]type e=u32;\n"
+         "  ^^^^^\n");
+}
+
+TEST_F(ParserImplErrorTest, IndexExprInvalidExpr) {
   EXPECT("fn f() { x = y[^]; }",
          "test.wgsl:1:16 error: unable to parse expression inside []\n"
          "fn f() { x = y[^]; }\n"
          "               ^\n");
 }
 
-TEST_F(ParserImplErrorTest, ArrayIndexExprMissingRBracket) {
+TEST_F(ParserImplErrorTest, IndexExprMissingRBracket) {
   EXPECT("fn f() { x = y[1; }",
-         "test.wgsl:1:17 error: expected ']' for array accessor\n"
+         "test.wgsl:1:17 error: expected ']' for index accessor\n"
          "fn f() { x = y[1; }\n"
          "                ^\n");
 }
@@ -84,6 +91,13 @@ TEST_F(ParserImplErrorTest, AssignmentStmtMissingSemicolon) {
          "test.wgsl:1:16 error: expected ';' for assignment statement\n"
          "fn f() { a = 1 }\n"
          "               ^\n");
+}
+
+TEST_F(ParserImplErrorTest, AssignmentStmtInvalidLHS_IntrinsicFunctionName) {
+  EXPECT("normalize = 5;",
+         "test.wgsl:1:1 error: statement found outside of function body\n"
+         "normalize = 5;\n"
+         "^^^^^^^^^\n");
 }
 
 TEST_F(ParserImplErrorTest, AssignmentStmtInvalidRHS) {
@@ -212,13 +226,6 @@ TEST_F(ParserImplErrorTest, EqualityInvalidExpr) {
          "                     ^\n");
 }
 
-TEST_F(ParserImplErrorTest, FloatLiteralSuffixedWithF) {
-  EXPECT("var f : f32 = 1.23f;",
-         "test.wgsl:1:19 error: float literals must not be suffixed with 'f'\n"
-         "var f : f32 = 1.23f;\n"
-         "                  ^\n");
-}
-
 TEST_F(ParserImplErrorTest, ForLoopInitializerMissingSemicolon) {
   EXPECT("fn f() { for (var i : i32 = 0 i < 8; i=i+1) {} }",
          "test.wgsl:1:31 error: expected ';' for initializer in for loop\n"
@@ -266,13 +273,6 @@ TEST_F(ParserImplErrorTest, ForLoopMissingRBrace) {
          "test.wgsl:1:47 error: expected '}' for for loop\n"
          "fn f() { for (var i : i32 = 0; i < 8; i=i+1) {\n"
          "                                              ^\n");
-}
-
-TEST_F(ParserImplErrorTest, FunctionDeclInvalid) {
-  EXPECT("[[stage(vertex)]] x;",
-         "test.wgsl:1:19 error: expected declaration after decorations\n"
-         "[[stage(vertex)]] x;\n"
-         "                  ^\n");
 }
 
 TEST_F(ParserImplErrorTest, FunctionDeclDecoMissingEnd) {
@@ -325,23 +325,23 @@ TEST_F(ParserImplErrorTest, FunctionDeclDecoWorkgroupSizeMissingRParen) {
 }
 
 TEST_F(ParserImplErrorTest, FunctionDeclDecoWorkgroupSizeXInvalid) {
-  EXPECT("[[workgroup_size(@)]] fn f() {}",
+  EXPECT("[[workgroup_size()]] fn f() {}",
          "test.wgsl:1:18 error: expected workgroup_size x parameter\n"
-         "[[workgroup_size(@)]] fn f() {}\n"
+         "[[workgroup_size()]] fn f() {}\n"
          "                 ^\n");
 }
 
 TEST_F(ParserImplErrorTest, FunctionDeclDecoWorkgroupSizeYInvalid) {
-  EXPECT("[[workgroup_size(1, @)]] fn f() {}",
+  EXPECT("[[workgroup_size(1, )]] fn f() {}",
          "test.wgsl:1:21 error: expected workgroup_size y parameter\n"
-         "[[workgroup_size(1, @)]] fn f() {}\n"
+         "[[workgroup_size(1, )]] fn f() {}\n"
          "                    ^\n");
 }
 
 TEST_F(ParserImplErrorTest, FunctionDeclDecoWorkgroupSizeZInvalid) {
-  EXPECT("[[workgroup_size(1, 2, @)]] fn f() {}",
+  EXPECT("[[workgroup_size(1, 2, )]] fn f() {}",
          "test.wgsl:1:24 error: expected workgroup_size z parameter\n"
-         "[[workgroup_size(1, 2, @)]] fn f() {}\n"
+         "[[workgroup_size(1, 2, )]] fn f() {}\n"
          "                       ^\n");
 }
 
@@ -367,10 +367,10 @@ TEST_F(ParserImplErrorTest, FunctionDeclMissingRParen) {
 }
 
 TEST_F(ParserImplErrorTest, FunctionDeclMissingArrow) {
-  EXPECT("fn f() void {}",
+  EXPECT("fn f() f32 {}",
          "test.wgsl:1:8 error: expected '{'\n"
-         "fn f() void {}\n"
-         "       ^^^^\n");
+         "fn f() f32 {}\n"
+         "       ^^^\n");
 }
 
 TEST_F(ParserImplErrorTest, FunctionDeclInvalidReturnType) {
@@ -415,12 +415,19 @@ TEST_F(ParserImplErrorTest, FunctionDeclMissingRBrace) {
          "        ^\n");
 }
 
+TEST_F(ParserImplErrorTest, FunctionScopeUnusedDecl) {
+  EXPECT("fn f(a:i32)->i32{return a;[[size(1)]]}",
+         "test.wgsl:1:29 error: unexpected decorations\n"
+         "fn f(a:i32)->i32{return a;[[size(1)]]}\n"
+         "                            ^^^^\n");
+}
+
 TEST_F(ParserImplErrorTest, FunctionMissingOpenLine) {
   EXPECT(R"(let bar : vec2<f32> = vec2<f32>(1., 2.);
   var a : f32 = bar[0];
   return;
 })",
-         "test.wgsl:2:17 error: unknown constructed type 'bar'\n"
+         "test.wgsl:2:17 error: unable to parse const_expr\n"
          "  var a : f32 = bar[0];\n"
          "                ^^^\n"
          "\n"
@@ -459,9 +466,25 @@ TEST_F(ParserImplErrorTest, GlobalDeclConstMissingRParen) {
 
 TEST_F(ParserImplErrorTest, GlobalDeclConstBadConstLiteral) {
   EXPECT("let i : vec2<i32> = vec2<i32>(!);",
-         "test.wgsl:1:31 error: unable to parse constant literal\n"
+         "test.wgsl:1:31 error: unable to parse const_expr\n"
          "let i : vec2<i32> = vec2<i32>(!);\n"
          "                              ^\n");
+}
+
+TEST_F(ParserImplErrorTest, GlobalDeclConstBadConstLiteralSpaceLessThan) {
+  EXPECT("let i = 1 < 2;",
+         "test.wgsl:1:11 error: expected \';\' for let declaration\n"
+         "let i = 1 < 2;\n"
+         "          ^\n");
+}
+
+TEST_F(ParserImplErrorTest, GlobalDeclConstNotConstExpr) {
+  EXPECT(
+      "let a = 1;\n"
+      "let b = a;",
+      "test.wgsl:2:9 error: unable to parse const_expr\n"
+      "let b = a;\n"
+      "        ^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclConstExprMaxDepth) {
@@ -503,6 +526,13 @@ TEST_F(ParserImplErrorTest, GlobalDeclConstExprMissingRParen) {
          "test.wgsl:1:35 error: expected ')' for type constructor\n"
          "let i : vec2<i32> = vec2<i32>(1, 2;\n"
          "                                  ^\n");
+}
+
+TEST_F(ParserImplErrorTest, GlobalDeclInvalidDeco) {
+  EXPECT("[[stage(vertex)]] x;",
+         "test.wgsl:1:19 error: expected declaration after decorations\n"
+         "[[stage(vertex)]] x;\n"
+         "                  ^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclSampledTextureMissingLessThan) {
@@ -548,31 +578,31 @@ TEST_F(ParserImplErrorTest, GlobalDeclMultisampledTextureInvalidSubtype) {
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclStorageTextureMissingLessThan) {
-  EXPECT("var x : [[access(read)]] texture_storage_2d;",
-         "test.wgsl:1:44 error: expected '<' for storage texture type\n"
-         "var x : [[access(read)]] texture_storage_2d;\n"
-         "                                           ^\n");
+  EXPECT("var x : texture_storage_2d;",
+         "test.wgsl:1:27 error: expected '<' for storage texture type\n"
+         "var x : texture_storage_2d;\n"
+         "                          ^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclStorageTextureMissingGreaterThan) {
-  EXPECT("var x : [[access(read)]] texture_storage_2d<r8uint;",
-         "test.wgsl:1:51 error: expected '>' for storage texture type\n"
-         "var x : [[access(read)]] texture_storage_2d<r8uint;\n"
-         "                                                  ^\n");
+  EXPECT("var x : texture_storage_2d<r8uint, read;",
+         "test.wgsl:1:40 error: expected '>' for storage texture type\n"
+         "var x : texture_storage_2d<r8uint, read;\n"
+         "                                       ^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclStorageTextureMissingSubtype) {
-  EXPECT("var x : [[access(read)]] texture_storage_2d<>;",
-         "test.wgsl:1:45 error: invalid format for storage texture type\n"
-         "var x : [[access(read)]] texture_storage_2d<>;\n"
-         "                                            ^\n");
+  EXPECT("var x : texture_storage_2d<>;",
+         "test.wgsl:1:28 error: invalid format for storage texture type\n"
+         "var x : texture_storage_2d<>;\n"
+         "                           ^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclStorageTextureMissingInvalidSubtype) {
-  EXPECT("var x : [[access(read)]] texture_storage_2d<1>;",
-         "test.wgsl:1:45 error: invalid format for storage texture type\n"
-         "var x : [[access(read)]] texture_storage_2d<1>;\n"
-         "                                            ^\n");
+  EXPECT("var x : texture_storage_2d<1>;",
+         "test.wgsl:1:28 error: invalid format for storage texture type\n"
+         "var x : texture_storage_2d<1>;\n"
+         "                           ^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclStructDecoMissingStruct) {
@@ -731,13 +761,6 @@ TEST_F(ParserImplErrorTest, GlobalDeclTypeAliasMissingSemicolon) {
          "               ^\n");
 }
 
-TEST_F(ParserImplErrorTest, GlobalDeclTypeInvalid) {
-  EXPECT("var x : fish;",
-         "test.wgsl:1:9 error: unknown constructed type 'fish'\n"
-         "var x : fish;\n"
-         "        ^^^^\n");
-}
-
 TEST_F(ParserImplErrorTest, GlobalDeclTypeDecoInvalid) {
   EXPECT("var x : [[]] i32;",
          "test.wgsl:1:11 error: empty decoration list\n"
@@ -809,19 +832,18 @@ TEST_F(ParserImplErrorTest, GlobalDeclVarArrayMissingType) {
          "              ^\n");
 }
 
-TEST_F(ParserImplErrorTest, GlobalDeclVarArrayInvalidSize) {
-  EXPECT(
-      "var i : array<u32, x>;",
-      "test.wgsl:1:20 error: expected signed integer literal for array size\n"
-      "var i : array<u32, x>;\n"
-      "                   ^\n");
+TEST_F(ParserImplErrorTest, GlobalDeclVarArrayMissingSize) {
+  EXPECT("var i : array<u32, >;",
+         "test.wgsl:1:20 error: expected array size expression\n"
+         "var i : array<u32, >;\n"
+         "                   ^\n");
 }
 
-TEST_F(ParserImplErrorTest, GlobalDeclVarArrayNegativeSize) {
-  EXPECT("var i : array<u32, -3>;",
-         "test.wgsl:1:20 error: array size must be greater than 0\n"
-         "var i : array<u32, -3>;\n"
-         "                   ^^\n");
+TEST_F(ParserImplErrorTest, GlobalDeclVarArrayInvalidSize) {
+  EXPECT("var i : array<u32, !>;",
+         "test.wgsl:1:20 error: expected array size expression\n"
+         "var i : array<u32, !>;\n"
+         "                   ^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclVarDecoListEmpty) {
@@ -989,17 +1011,17 @@ TEST_F(ParserImplErrorTest, GlobalDeclVarPtrMissingLessThan) {
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclVarPtrMissingGreaterThan) {
-  EXPECT("var i : ptr<in, u32;",
-         "test.wgsl:1:20 error: expected '>' for ptr declaration\n"
-         "var i : ptr<in, u32;\n"
-         "                   ^\n");
+  EXPECT("var i : ptr<private, u32;",
+         "test.wgsl:1:25 error: expected '>' for ptr declaration\n"
+         "var i : ptr<private, u32;\n"
+         "                        ^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclVarPtrMissingComma) {
-  EXPECT("var i : ptr<in u32>;",
-         "test.wgsl:1:16 error: expected ',' for ptr declaration\n"
-         "var i : ptr<in u32>;\n"
-         "               ^^^\n");
+  EXPECT("var i : ptr<private u32>;",
+         "test.wgsl:1:21 error: expected ',' for ptr declaration\n"
+         "var i : ptr<private u32>;\n"
+         "                    ^^^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclVarPtrMissingStorageClass) {
@@ -1010,24 +1032,38 @@ TEST_F(ParserImplErrorTest, GlobalDeclVarPtrMissingStorageClass) {
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclVarPtrMissingType) {
-  EXPECT("var i : ptr<in, 1>;",
-         "test.wgsl:1:17 error: invalid type for ptr declaration\n"
-         "var i : ptr<in, 1>;\n"
-         "                ^\n");
+  EXPECT("var i : ptr<private, 1>;",
+         "test.wgsl:1:22 error: invalid type for ptr declaration\n"
+         "var i : ptr<private, 1>;\n"
+         "                     ^\n");
+}
+
+TEST_F(ParserImplErrorTest, GlobalDeclVarAtomicMissingLessThan) {
+  EXPECT("var i : atomic;",
+         "test.wgsl:1:15 error: expected '<' for atomic declaration\n"
+         "var i : atomic;\n"
+         "              ^\n");
+}
+
+TEST_F(ParserImplErrorTest, GlobalDeclVarAtomicMissingGreaterThan) {
+  EXPECT("var i : atomic<u32 x;",
+         "test.wgsl:1:20 error: expected '>' for atomic declaration\n"
+         "var i : atomic<u32 x;\n"
+         "                   ^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclVarStorageDeclInvalidClass) {
   EXPECT("var<fish> i : i32",
-         "test.wgsl:1:5 error: invalid storage class for variable decoration\n"
+         "test.wgsl:1:5 error: invalid storage class for variable declaration\n"
          "var<fish> i : i32\n"
          "    ^^^^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclVarStorageDeclMissingGThan) {
-  EXPECT("var<in i : i32",
-         "test.wgsl:1:8 error: expected '>' for variable decoration\n"
-         "var<in i : i32\n"
-         "       ^\n");
+  EXPECT("var<private i : i32",
+         "test.wgsl:1:13 error: expected '>' for variable declaration\n"
+         "var<private i : i32\n"
+         "            ^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclVarVectorMissingLessThan) {

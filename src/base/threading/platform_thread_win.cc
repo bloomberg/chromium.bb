@@ -12,6 +12,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/profiler.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/memory.h"
 #include "base/strings/string_number_conversions.h"
@@ -79,7 +80,7 @@ void SetNameInternal(PlatformThreadId thread_id, const char* name) {
 }
 
 struct ThreadParams {
-  PlatformThread::Delegate* delegate;
+  raw_ptr<PlatformThread::Delegate> delegate;
   bool joinable;
   ThreadPriority priority;
 };
@@ -88,7 +89,7 @@ DWORD __stdcall ThreadFunc(void* params) {
   ThreadParams* thread_params = static_cast<ThreadParams*>(params);
   PlatformThread::Delegate* delegate = thread_params->delegate;
   if (!thread_params->joinable)
-    base::ThreadRestrictions::SetSingletonAllowed(false);
+    base::DisallowSingleton();
 
   if (thread_params->priority != ThreadPriority::NORMAL)
     PlatformThread::SetCurrentThreadPriority(thread_params->priority);
@@ -354,7 +355,8 @@ void PlatformThread::Detach(PlatformThreadHandle thread_handle) {
 }
 
 // static
-bool PlatformThread::CanIncreaseThreadPriority(ThreadPriority priority) {
+bool PlatformThread::CanChangeThreadPriority(ThreadPriority from,
+                                             ThreadPriority to) {
   return true;
 }
 

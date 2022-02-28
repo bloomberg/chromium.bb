@@ -6,8 +6,13 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_deque.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_counted_set.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_hash_set.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_objects.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -238,33 +243,6 @@ TEST_F(ConcurrentMarkingTest, ClearLinkedHashSet) {
 }
 TEST_F(ConcurrentMarkingTest, SwapLinkedHashSet) {
   SwapCollections<HeapLinkedHashSet<Member<IntegerObject>>>();
-}
-
-// HeapListHashSet
-
-template <typename T>
-struct MethodAdapter<HeapListHashSet<T>>
-    : public MethodAdapterBase<HeapListHashSet<T>> {
-  static void Swap(HeapListHashSet<T>& a, HeapListHashSet<T>& b) { a.Swap(b); }
-};
-
-TEST_F(ConcurrentMarkingTest, AddToListHashSet) {
-  AddToCollection<HeapListHashSet<Member<IntegerObject>>>();
-}
-TEST_F(ConcurrentMarkingTest, RemoveFromBeginningOfListHashSet) {
-  RemoveFromBeginningOfCollection<HeapListHashSet<Member<IntegerObject>>>();
-}
-TEST_F(ConcurrentMarkingTest, RemoveFromMiddleOfListHashSet) {
-  RemoveFromMiddleOfCollection<HeapListHashSet<Member<IntegerObject>>>();
-}
-TEST_F(ConcurrentMarkingTest, RemoveFromEndOfListHashSet) {
-  RemoveFromEndOfCollection<HeapListHashSet<Member<IntegerObject>>>();
-}
-TEST_F(ConcurrentMarkingTest, ClearListHashSet) {
-  ClearCollection<HeapListHashSet<Member<IntegerObject>>>();
-}
-TEST_F(ConcurrentMarkingTest, SwapListHashSet) {
-  SwapCollections<HeapListHashSet<Member<IntegerObject>>>();
 }
 
 // HeapHashCountedSet

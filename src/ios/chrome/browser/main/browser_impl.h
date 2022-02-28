@@ -5,15 +5,14 @@
 #ifndef IOS_CHROME_BROWSER_MAIN_BROWSER_IMPL_H_
 #define IOS_CHROME_BROWSER_MAIN_BROWSER_IMPL_H_
 
-#import "ios/chrome/browser/main/browser.h"
+#include <CoreFoundation/CoreFoundation.h>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
+#import "ios/chrome/browser/main/browser.h"
 
 class ChromeBrowserState;
 @class SceneState;
-@class TabModel;
 class WebStateList;
 class WebStateListDelegate;
 
@@ -26,15 +25,14 @@ class BrowserImpl : public Browser {
  public:
   // Constructs a BrowserImpl attached to |browser_state|.
   BrowserImpl(ChromeBrowserState* browser_state);
-  // Creates a The tab Model, this method has to be called for the tabmodel to
-  // exist. Tab Model can't be created on the constructor as it depends on
-  // browser agents.
-  void CreateTabModel();
+
+  BrowserImpl(const BrowserImpl&) = delete;
+  BrowserImpl& operator=(const BrowserImpl&) = delete;
+
   ~BrowserImpl() override;
 
   // Browser.
   ChromeBrowserState* GetBrowserState() const override;
-  TabModel* GetTabModel() const override;
   WebStateList* GetWebStateList() const override;
   CommandDispatcher* GetCommandDispatcher() const override;
   void AddObserver(BrowserObserver* observer) override;
@@ -47,13 +45,10 @@ class BrowserImpl : public Browser {
               std::unique_ptr<WebStateList> web_state_list);
 
   ChromeBrowserState* browser_state_;
-  __strong TabModel* tab_model_ = nil;
   std::unique_ptr<WebStateListDelegate> web_state_list_delegate_;
   std::unique_ptr<WebStateList> web_state_list_;
   __strong CommandDispatcher* command_dispatcher_;
   base::ObserverList<BrowserObserver, /* check_empty= */ true> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserImpl);
 };
 
 #endif  // IOS_CHROME_BROWSER_MAIN_BROWSER_IMPL_H_

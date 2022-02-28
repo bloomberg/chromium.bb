@@ -5,12 +5,12 @@
 #ifndef DEVICE_BLUETOOTH_TEST_BLUETOOTH_TEST_WIN_H_
 #define DEVICE_BLUETOOTH_TEST_BLUETOOTH_TEST_WIN_H_
 
+#include "base/memory/raw_ptr.h"
 #include "device/bluetooth/test/bluetooth_test.h"
 
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_pending_task.h"
@@ -90,7 +90,7 @@ class BluetoothTestWin : public BluetoothTestBase,
   scoped_refptr<base::TestSimpleTaskRunner> ui_task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> bluetooth_task_runner_;
 
-  win::BluetoothLowEnergyWrapperFake* fake_bt_le_wrapper_;
+  raw_ptr<win::BluetoothLowEnergyWrapperFake> fake_bt_le_wrapper_;
 
   // This is used for retaining access to a single deleted device.
   std::string remembered_device_address_;
@@ -163,6 +163,10 @@ class BluetoothTestWinrt
       public ::testing::WithParamInterface<BluetoothTestWinrtParam> {
  public:
   BluetoothTestWinrt();
+
+  BluetoothTestWinrt(const BluetoothTestWinrt&) = delete;
+  BluetoothTestWinrt& operator=(const BluetoothTestWinrt&) = delete;
+
   ~BluetoothTestWinrt() override;
 
   bool UsesNewBleImplementation() const;
@@ -263,8 +267,6 @@ class BluetoothTestWinrt
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   absl::optional<base::win::ScopedWinrtInitializer> scoped_winrt_initializer_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothTestWinrt);
 };
 
 using BluetoothTestWinrtOnly = BluetoothTestWinrt;

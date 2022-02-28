@@ -52,8 +52,7 @@ constexpr size_t kMaxImageDownloadSize = 5 * 1024 * 1024;
 
 // The initial delay for the timer that detects clipboard writes. An exponential
 // backoff will double this value whenever the OneShotTimer reschedules.
-constexpr base::TimeDelta kInitialDetectionTimerDelay =
-    base::TimeDelta::FromMilliseconds(1);
+constexpr base::TimeDelta kInitialDetectionTimerDelay = base::Milliseconds(1);
 
 const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("remote_copy_message_handler",
@@ -140,7 +139,7 @@ void RemoteCopyMessageHandler::HandleText(const std::string& text) {
 
   LogRemoteCopyReceivedTextSize(text.size());
 
-  uint64_t old_sequence_number =
+  ui::ClipboardSequenceNumberToken old_sequence_number =
       ui::Clipboard::GetForCurrentThread()->GetSequenceNumber(
           ui::ClipboardBuffer::kCopyPaste);
   base::ElapsedTimer write_timer;
@@ -227,7 +226,7 @@ void RemoteCopyMessageHandler::OnURLLoadComplete(
   LogRemoteCopyReceivedImageSizeBeforeDecode(content->size());
 
   timer_ = base::ElapsedTimer();
-  ImageDecoder::Start(this, *content);
+  ImageDecoder::Start(this, std::move(*content));
 }
 
 void RemoteCopyMessageHandler::OnImageDecoded(const SkBitmap& image) {
@@ -254,7 +253,7 @@ void RemoteCopyMessageHandler::WriteImageAndShowNotification(
                "RemoteCopyMessageHandler::WriteImageAndShowNotification",
                "bytes", image.computeByteSize());
 
-  uint64_t old_sequence_number =
+  ui::ClipboardSequenceNumberToken old_sequence_number =
       ui::Clipboard::GetForCurrentThread()->GetSequenceNumber(
           ui::ClipboardBuffer::kCopyPaste);
   base::ElapsedTimer write_timer;
@@ -300,12 +299,13 @@ void RemoteCopyMessageHandler::ShowNotification(const std::u16string& title,
       NotificationHandler::Type::SHARING, notification, /*metadata=*/nullptr);
 }
 
-void RemoteCopyMessageHandler::DetectWrite(uint64_t old_sequence_number,
-                                           base::TimeTicks start_ticks,
-                                           bool is_image) {
+void RemoteCopyMessageHandler::DetectWrite(
+    const ui::ClipboardSequenceNumberToken& old_sequence_number,
+    base::TimeTicks start_ticks,
+    bool is_image) {
   TRACE_EVENT0("sharing", "RemoteCopyMessageHandler::DetectWrite");
 
-  uint64_t current_sequence_number =
+  ui::ClipboardSequenceNumberToken current_sequence_number =
       ui::Clipboard::GetForCurrentThread()->GetSequenceNumber(
           ui::ClipboardBuffer::kCopyPaste);
   base::TimeDelta elapsed = base::TimeTicks::Now() - start_ticks;
@@ -314,7 +314,7 @@ void RemoteCopyMessageHandler::DetectWrite(uint64_t old_sequence_number,
     return;
   }
 
-  if (elapsed > base::TimeDelta::FromSeconds(10))
+  if (elapsed > base::Seconds(10))
     return;
 
   // Unretained(this) is safe here because |this| owns |write_detection_timer_|.

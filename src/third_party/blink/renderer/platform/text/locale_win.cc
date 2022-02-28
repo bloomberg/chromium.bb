@@ -33,8 +33,8 @@
 #include <limits>
 #include <memory>
 
+#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/text/date_components.h"
@@ -45,12 +45,13 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "ui/base/ui_base_features.h"
 
 namespace blink {
 
 static String ExtractLanguageCode(const String& locale) {
-  size_t dash_position = locale.find('-');
+  wtf_size_t dash_position = locale.find('-');
   if (dash_position == kNotFound)
     return locale;
   return locale.Left(dash_position);
@@ -293,24 +294,14 @@ void LocaleWin::EnsureMonthLabels() {
 void LocaleWin::EnsureWeekDayShortLabels() {
   if (!week_day_short_labels_.IsEmpty())
     return;
-  const LCTYPE kTypes[7] = {LOCALE_SABBREVDAYNAME7,  // Sunday
-                            LOCALE_SABBREVDAYNAME1,  // Monday
-                            LOCALE_SABBREVDAYNAME2, LOCALE_SABBREVDAYNAME3,
-                            LOCALE_SABBREVDAYNAME4, LOCALE_SABBREVDAYNAME5,
-                            LOCALE_SABBREVDAYNAME6};
-  const LCTYPE kTypesRefresh[7] = {
-      LOCALE_SSHORTESTDAYNAME7,  // Sunday
-      LOCALE_SSHORTESTDAYNAME1,  // Monday
-      LOCALE_SSHORTESTDAYNAME2, LOCALE_SSHORTESTDAYNAME3,
-      LOCALE_SSHORTESTDAYNAME4, LOCALE_SSHORTESTDAYNAME5,
-      LOCALE_SSHORTESTDAYNAME6};
+  const LCTYPE kTypes[7] = {LOCALE_SSHORTESTDAYNAME7,  // Sunday
+                            LOCALE_SSHORTESTDAYNAME1,  // Monday
+                            LOCALE_SSHORTESTDAYNAME2, LOCALE_SSHORTESTDAYNAME3,
+                            LOCALE_SSHORTESTDAYNAME4, LOCALE_SSHORTESTDAYNAME5,
+                            LOCALE_SSHORTESTDAYNAME6};
   week_day_short_labels_.ReserveCapacity(base::size(kTypes));
   for (unsigned i = 0; i < base::size(kTypes); ++i) {
-    if (features::IsFormControlsRefreshEnabled()) {
-      week_day_short_labels_.push_back(GetLocaleInfoString(kTypesRefresh[i]));
-    } else {
-      week_day_short_labels_.push_back(GetLocaleInfoString(kTypes[i]));
-    }
+    week_day_short_labels_.push_back(GetLocaleInfoString(kTypes[i]));
     if (week_day_short_labels_.back().IsEmpty()) {
       week_day_short_labels_.Shrink(0);
       week_day_short_labels_.ReserveCapacity(base::size(WTF::kWeekdayName));
@@ -387,7 +378,7 @@ String LocaleWin::ShortTimeFormat() {
     StringBuilder builder;
     builder.Append(GetLocaleInfoString(LOCALE_STIME));
     builder.Append("ss");
-    size_t pos = format.ReverseFind(builder.ToString());
+    wtf_size_t pos = format.ReverseFind(builder.ToString());
     if (pos != kNotFound)
       format.Remove(pos, builder.length());
   }

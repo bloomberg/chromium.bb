@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/values.h"
 #include "chromeos/network/managed_state.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
@@ -45,6 +44,10 @@ class DeviceState;
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
  public:
   explicit NetworkState(const std::string& path);
+
+  NetworkState(const NetworkState&) = delete;
+  NetworkState& operator=(const NetworkState&) = delete;
+
   ~NetworkState() override;
 
   struct VpnProviderInfo {
@@ -148,6 +151,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   const std::string& network_technology() const { return network_technology_; }
   const std::string& activation_type() const { return activation_type_; }
   const std::string& activation_state() const { return activation_state_; }
+  bool allow_roaming() const { return allow_roaming_; }
   const std::string& payment_url() const { return payment_url_; }
   const std::string& payment_post_data() const { return payment_post_data_; }
   bool cellular_out_of_credits() const { return cellular_out_of_credits_; }
@@ -186,7 +190,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   // |onc_source_|).
   bool IsManagedByPolicy() const;
 
-  // Returns true if the network is romaing and the provider does not require
+  // Returns true if the network is roaming and the provider does not require
   // roaming.
   bool IndicateRoaming() const;
 
@@ -347,6 +351,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   std::string activation_type_;
   std::string activation_state_;
   std::string roaming_;
+  bool allow_roaming_ = false;
   bool provider_requires_roaming_ = false;
   std::string payment_url_;
   std::string payment_post_data_;
@@ -383,8 +388,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   // Set by NetworkStateHandler if Chrome detects a captive portal state.
   // See IsCaptivePortal() for details.
   bool is_chrome_captive_portal_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkState);
 };
 
 }  // namespace chromeos

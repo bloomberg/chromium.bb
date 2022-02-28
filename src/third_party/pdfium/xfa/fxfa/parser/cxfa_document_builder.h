@@ -7,7 +7,6 @@
 #ifndef XFA_FXFA_PARSER_CXFA_DOCUMENT_BUILDER_H_
 #define XFA_FXFA_PARSER_CXFA_DOCUMENT_BUILDER_H_
 
-#include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "v8/include/cppgc/macros.h"
 #include "xfa/fxfa/fxfa_basic.h"
@@ -44,13 +43,11 @@ class CXFA_DocumentBuilder {
       XFA_Element element);
   CXFA_Node* ParseAsXDPPacket_Xdc(CFX_XMLNode* pXMLDocumentNode);
   CXFA_Node* ParseAsXDPPacket_User(CFX_XMLNode* pXMLDocumentNode);
+  CXFA_Node* DataLoader(CXFA_Node* pXFANode, CFX_XMLNode* pXMLDoc);
   CXFA_Node* NormalLoader(CXFA_Node* pXFANode,
                           CFX_XMLNode* pXMLDoc,
                           XFA_PacketType ePacketID,
                           bool bUseAttribute);
-  CXFA_Node* DataLoader(CXFA_Node* pXFANode,
-                        CFX_XMLNode* pXMLDoc,
-                        bool bDoTransform);
   void ParseContentNode(CXFA_Node* pXFANode,
                         CFX_XMLNode* pXMLNode,
                         XFA_PacketType ePacketID);

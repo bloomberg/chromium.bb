@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/elements/text.h"
 
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/vr/elements/render_text_wrapper.h"
@@ -149,6 +150,9 @@ class TextTexture : public UiTexture {
  public:
   explicit TextTexture(Text* element) : element_(element) {}
 
+  TextTexture(const TextTexture&) = delete;
+  TextTexture& operator=(const TextTexture&) = delete;
+
   ~TextTexture() override {}
 
   void SetFontHeightInDmm(float font_height_dmms) {
@@ -249,15 +253,13 @@ class TextTexture : public UiTexture {
   gfx::Rect cursor_bounds_;
   bool shadows_enabled_ = false;
   std::vector<std::unique_ptr<gfx::RenderText>> lines_;
-  Text* element_ = nullptr;
+  raw_ptr<Text> element_ = nullptr;
 
   base::RepeatingCallback<void(gfx::RenderText*)> render_text_created_callback_;
   base::RepeatingCallback<void(const gfx::RenderText&, SkCanvas*)>
       render_text_rendered_callback_;
 
   bool unsupported_code_point_for_test_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TextTexture);
 };
 
 Text::Text(float font_height_dmms)

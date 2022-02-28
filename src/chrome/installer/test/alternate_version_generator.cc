@@ -36,6 +36,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -45,7 +46,6 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -82,6 +82,10 @@ const wchar_t kTempDirPrefix[] = L"mini_installer_test_temp";
 class ScopedTempDirectory {
  public:
   ScopedTempDirectory() {}
+
+  ScopedTempDirectory(const ScopedTempDirectory&) = delete;
+  ScopedTempDirectory& operator=(const ScopedTempDirectory&) = delete;
+
   ~ScopedTempDirectory() {
     if (!directory_.empty() && !base::DeletePathRecursively(directory_)) {
       LOG(DFATAL) << "Failed deleting temporary directory \""
@@ -104,7 +108,6 @@ class ScopedTempDirectory {
 
  private:
   base::FilePath directory_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedTempDirectory);
 };  // class ScopedTempDirectory
 
 // A helper class for manipulating a Chrome product version.
@@ -358,8 +361,9 @@ bool UpdateVersionIfMatch(const base::FilePath& image_file,
   }
 
   uint32_t flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
-                   base::File::FLAG_WRITE | base::File::FLAG_EXCLUSIVE_READ |
-                   base::File::FLAG_EXCLUSIVE_WRITE;
+                   base::File::FLAG_WRITE |
+                   base::File::FLAG_WIN_EXCLUSIVE_READ |
+                   base::File::FLAG_WIN_EXCLUSIVE_WRITE;
   base::File file(image_file, flags);
   // It turns out that the underlying CreateFile can fail due to unhelpful
   // security software locking the newly created DLL. So add a few brief

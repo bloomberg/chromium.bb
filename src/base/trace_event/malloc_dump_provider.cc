@@ -10,6 +10,8 @@
 
 #include "base/allocator/allocator_extension.h"
 #include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
+#include "base/allocator/partition_allocator/partition_bucket_lookup.h"
 #include "base/debug/profiler.h"
 #include "base/format_macros.h"
 #include "base/memory/nonscannable_memory.h"
@@ -28,8 +30,16 @@
 #include <windows.h>
 #endif
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#include <features.h>
+#endif
+
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 #include "base/allocator/allocator_shim_default_dispatch_to_partition_alloc.h"
+#endif
+
+#if defined(PA_THREAD_CACHE_ALLOC_STATS)
+#include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #endif
 
 namespace base {
@@ -123,9 +133,13 @@ void ReportPartitionAllocStats(ProcessMemoryDump* pmd,
   auto& nonscannable_allocator = internal::NonScannableAllocator::Instance();
   if (auto* root = nonscannable_allocator.root())
     root->DumpStats("nonscannable", is_light_dump, &partition_stats_dumper);
+  auto& nonquarantinable_allocator =
+      internal::NonQuarantinableAllocator::Instance();
+  if (auto* root = nonquarantinable_allocator.root())
+    root->DumpStats("nonquarantinable", is_light_dump, &partition_stats_dumper);
 
   *total_virtual_size += partition_stats_dumper.total_resident_bytes();
-  *resident_size += partition_stats_dumper.total_active_bytes();
+  *resident_size += partition_stats_dumper.total_resident_bytes();
   *allocated_objects_size += partition_stats_dumper.total_active_bytes();
 }
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
@@ -204,7 +218,16 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
 #elif defined(OS_FUCHSIA)
 // TODO(fuchsia): Port, see https://crbug.com/706592.
 #else
+#if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
+#if __GLIBC_PREREQ(2, 33)
+#define MALLINFO2_FOUND_IN_LIBC
+  struct mallinfo2 info = mallinfo2();
+#endif
+#endif  // defined(__GLIBC__) && defined(__GLIBC_PREREQ)
+#if !defined(MALLINFO2_FOUND_IN_LIBC)
   struct mallinfo info = mallinfo();
+#endif
+#undef MALLINFO2_FOUND_IN_LIBC
   // In case of Android's jemalloc |arena| is 0 and the outer pages size is
   // reported by |hblkhd|. In case of dlmalloc the total is given by
   // |arena| + |hblkhd|. For more details see link: http://goo.gl/fMR8lF.
@@ -275,6 +298,14 @@ void MemoryDumpPartitionStatsDumper::PartitionDumpTotals(
   std::string dump_name = GetPartitionDumpName(root_name_, partition_name);
   MemoryAllocatorDump* allocator_dump =
       memory_dump_->CreateAllocatorDump(dump_name);
+
+  auto total_committed_bytes = memory_stats->total_committed_bytes;
+  auto total_active_bytes = memory_stats->total_active_bytes;
+  size_t wasted = total_committed_bytes - total_active_bytes;
+  DCHECK_GE(total_committed_bytes, total_active_bytes);
+  size_t fragmentation =
+      total_committed_bytes == 0 ? 0 : 100 * wasted / total_committed_bytes;
+
   allocator_dump->AddScalar("size", "bytes",
                             memory_stats->total_resident_bytes);
   allocator_dump->AddScalar("allocated_objects_size", "bytes",
@@ -283,10 +314,29 @@ void MemoryDumpPartitionStatsDumper::PartitionDumpTotals(
                             memory_stats->total_mmapped_bytes);
   allocator_dump->AddScalar("virtual_committed_size", "bytes",
                             memory_stats->total_committed_bytes);
+  allocator_dump->AddScalar("max_committed_size", "bytes",
+                            memory_stats->max_committed_bytes);
+  allocator_dump->AddScalar("allocated_size", "bytes",
+                            memory_stats->total_allocated_bytes);
+  allocator_dump->AddScalar("max_allocated_size", "bytes",
+                            memory_stats->max_allocated_bytes);
   allocator_dump->AddScalar("decommittable_size", "bytes",
                             memory_stats->total_decommittable_bytes);
   allocator_dump->AddScalar("discardable_size", "bytes",
                             memory_stats->total_discardable_bytes);
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+  allocator_dump->AddScalar("brp_quarantined_size", "bytes",
+                            memory_stats->total_brp_quarantined_bytes);
+  allocator_dump->AddScalar("brp_quarantined_count", "count",
+                            memory_stats->total_brp_quarantined_count);
+#endif
+  allocator_dump->AddScalar("syscall_count", "count",
+                            memory_stats->syscall_count);
+  allocator_dump->AddScalar("syscall_total_time_ms", "ms",
+                            memory_stats->syscall_total_time_ns / 1e6);
+  allocator_dump->AddScalar("fragmentation", "percent", fragmentation);
+  allocator_dump->AddScalar("wasted", "bytes", wasted);
+
   if (memory_stats->has_thread_cache) {
     const auto& thread_cache_stats = memory_stats->current_thread_cache_stats;
     auto* thread_cache_dump = memory_dump_->CreateAllocatorDump(
@@ -312,7 +362,8 @@ void MemoryDumpPartitionStatsDumper::PartitionsDumpBucketStats(
   if (memory_stats->is_direct_map) {
     dump_name.append(base::StringPrintf("/buckets/directMap_%" PRIu64, ++uid_));
   } else {
-    dump_name.append(base::StringPrintf("/buckets/bucket_%" PRIu32,
+    // Normal buckets go up to ~1MiB, 7 digits.
+    dump_name.append(base::StringPrintf("/buckets/bucket_%07" PRIu32,
                                         memory_stats->bucket_slot_size));
   }
 
@@ -375,11 +426,16 @@ void ReportPartitionAllocThreadCacheStats(ProcessMemoryDump* pmd,
 
 #if defined(PA_THREAD_CACHE_ALLOC_STATS)
     if (detailed) {
+      base::internal::BucketIndexLookup lookup{};
       std::string name = dump->absolute_name();
       for (size_t i = 0; i < kNumBuckets; i++) {
+        size_t bucket_size = lookup.bucket_sizes()[i];
+        if (bucket_size == kInvalidBucketSize)
+          continue;
+        // Covers all normal buckets, that is up to ~1MiB, so 7 digits.
         std::string dump_name =
-            base::StringPrintf("%s/buckets_alloc/%d", name.c_str(),
-                               static_cast<int>(stats.bucket_size_[i]));
+            base::StringPrintf("%s/buckets_alloc/%07d", name.c_str(),
+                               static_cast<int>(bucket_size));
         auto* buckets_alloc_dump = pmd->CreateAllocatorDump(dump_name);
         buckets_alloc_dump->AddScalar("count", "objects",
                                       stats.allocs_per_bucket_[i]);

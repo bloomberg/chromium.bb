@@ -33,6 +33,7 @@ if (is_posix && !build_with_chromium) {
 
     deps = [
       "../../platform",
+      "../../platform:standalone_impl",
       "../../testing/util",
       "../../third_party/abseil",
       "../../third_party/boringssl",

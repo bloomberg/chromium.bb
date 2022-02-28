@@ -15,10 +15,12 @@
 #include "src/core/SkAdvancedTypefaceMetrics.h"
 #include "src/core/SkEndian.h"
 #include "src/core/SkFontDescriptor.h"
+#include "src/core/SkFontPriv.h"
 #include "src/core/SkScalerContext.h"
 #include "src/core/SkSurfacePriv.h"
 #include "src/core/SkTypefaceCache.h"
 #include "src/sfnt/SkOTTable_OS_2.h"
+#include "src/utils/SkUTF.h"
 
 SkTypeface::SkTypeface(const SkFontStyle& style, bool isFixedPitch)
     : fUniqueID(SkTypefaceCache::NewFontID()), fStyle(style), fIsFixedPitch(isFixedPitch) { }
@@ -69,6 +71,9 @@ protected:
     }
     SkTypeface::LocalizedStrings* onCreateFamilyNameIterator() const override {
         return new EmptyLocalizedStrings;
+    }
+    bool onGlyphMaskNeedsCurrentColor() const override {
+        return false;
     }
     int onGetVariationDesignPosition(SkFontArguments::VariationPosition::Coordinate coordinates[],
                                      int coordinateCount) const override
@@ -213,17 +218,6 @@ sk_sp<SkTypeface> SkTypeface::MakeDeserialize(SkStream* stream) {
         }
     }
 
-    // Have to check for old data format first.
-    std::unique_ptr<SkFontData> data = desc.maybeAsSkFontData();
-    if (data) {
-        // Should only get here with old skps.
-        sk_sp<SkFontMgr> defaultFm = SkFontMgr::RefDefault();
-        sk_sp<SkTypeface> typeface(defaultFm->makeFromFontData(std::move(data)));
-        if (typeface) {
-            return typeface;
-        }
-    }
-
     if (desc.hasStream()) {
         SkFontArguments args;
         args.setCollectionIndex(desc.getCollectionIndex());
@@ -239,6 +233,10 @@ sk_sp<SkTypeface> SkTypeface::MakeDeserialize(SkStream* stream) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+bool SkTypeface::glyphMaskNeedsCurrentColor() const {
+    return this->onGlyphMaskNeedsCurrentColor();
+}
 
 int SkTypeface::getVariationDesignPosition(
         SkFontArguments::VariationPosition::Coordinate coordinates[], int coordinateCount) const
@@ -309,6 +307,69 @@ SkGlyphID SkTypeface::unicharToGlyph(SkUnichar uni) const {
     SkGlyphID glyphs[1] = { 0 };
     this->onCharsToGlyphs(&uni, 1, glyphs);
     return glyphs[0];
+}
+
+namespace {
+class SkConvertToUTF32 {
+public:
+    SkConvertToUTF32() {}
+
+    const SkUnichar* convert(const void* text, size_t byteLength, SkTextEncoding encoding) {
+        const SkUnichar* uni;
+        switch (encoding) {
+            case SkTextEncoding::kUTF8: {
+                uni = fStorage.reset(byteLength);
+                const char* ptr = (const char*)text;
+                const char* end = ptr + byteLength;
+                for (int i = 0; ptr < end; ++i) {
+                    fStorage[i] = SkUTF::NextUTF8(&ptr, end);
+                }
+            } break;
+            case SkTextEncoding::kUTF16: {
+                uni = fStorage.reset(byteLength);
+                const uint16_t* ptr = (const uint16_t*)text;
+                const uint16_t* end = ptr + (byteLength >> 1);
+                for (int i = 0; ptr < end; ++i) {
+                    fStorage[i] = SkUTF::NextUTF16(&ptr, end);
+                }
+            } break;
+            case SkTextEncoding::kUTF32:
+                uni = (const SkUnichar*)text;
+                break;
+            default:
+                SK_ABORT("unexpected enum");
+        }
+        return uni;
+    }
+
+private:
+    SkAutoSTMalloc<256, SkUnichar> fStorage;
+};
+}
+
+int SkTypeface::textToGlyphs(const void* text, size_t byteLength, SkTextEncoding encoding,
+                             SkGlyphID glyphs[], int maxGlyphCount) const {
+    if (0 == byteLength) {
+        return 0;
+    }
+
+    SkASSERT(text);
+
+    int count = SkFontPriv::CountTextElements(text, byteLength, encoding);
+    if (!glyphs || count > maxGlyphCount) {
+        return count;
+    }
+
+    if (encoding == SkTextEncoding::kGlyphID) {
+        memcpy(glyphs, text, count << 1);
+        return count;
+    }
+
+    SkConvertToUTF32 storage;
+    const SkUnichar* uni = storage.convert(text, byteLength, encoding);
+
+    this->unicharsToGlyphs(uni, count, glyphs);
+    return count;
 }
 
 int SkTypeface::countGlyphs() const {

@@ -20,8 +20,9 @@ public interface FirstRunPageDelegate {
     /**
      * Advances the First Run Experience to the next page.
      * Successfully finishes FRE if the current page is the last page.
+     * @return Whether advancing to the next page succeeded.
      */
-    void advanceToNextPage();
+    boolean advanceToNextPage();
 
     /**
      * Unsuccessfully aborts the First Run Experience.
@@ -46,17 +47,16 @@ public interface FirstRunPageDelegate {
     void exitFirstRun();
 
     /**
-     * Notifies that the user refused to sign in (e.g. "NO, THANKS").
+     * Notifies that the user refused to sync (e.g. "NO, THANKS").
      */
-    void refuseSignIn();
+    void refuseSync();
 
     /**
-     * Notifies that the user accepted to be signed in.
-     * @param accountName An account to be signed in to.
-     * @param isDefaultAccount Whether this account is the default choice for the user.
-     * @param openSettings Whether the settings page should be opened after signing in.
+     * Notifies that the user consented to sync.
+     * @param accountName An account to sync.
+     * @param openSettings Whether the settings page should be opened after sync is enabled.
      */
-    void acceptSignIn(String accountName, boolean isDefaultAccount, boolean openSettings);
+    void acceptSync(String accountName, boolean openSettings);
 
     /**
      * @return Whether the user has accepted Chrome Terms of Service.
@@ -64,8 +64,13 @@ public interface FirstRunPageDelegate {
     boolean didAcceptTermsOfService();
 
     /**
+     * Returns whether chrome is launched as a custom tab.
+     */
+    boolean isLaunchedFromCct();
+
+    /**
      * Notifies all interested parties that the user has accepted Chrome Terms of Service.
-     * Must be called only after native has been initialized.
+     * Must be called only after the delegate has fully initialized.
      * @param allowCrashUpload True if the user allows to upload crash dumps and collect stats.
      */
     void acceptTermsOfService(boolean allowCrashUpload);
@@ -75,6 +80,12 @@ public interface FirstRunPageDelegate {
      * @param url Resource id for the URL of the web page.
      */
     void showInfoPage(int url);
+
+    /**
+     * Records the FRE progress histogram MobileFre.Progress.*.
+     * @param state FRE state to record.
+     */
+    void recordFreProgressHistogram(@MobileFreProgress int state);
 
     /**
      * The supplier that supplies whether reading policy value is necessary.

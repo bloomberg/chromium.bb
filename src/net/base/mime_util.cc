@@ -13,7 +13,6 @@
 #include "base/containers/span.h"
 #include "base/lazy_instance.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -167,6 +166,7 @@ static const MimeInfo kPrimaryMappings[] = {
     {"image/jxl", "jxl"},
     {"image/png", "png"},
     {"image/apng", "png"},
+    {"image/svg+xml", "svg,svgz"},
     {"image/webp", "webp"},
     {"multipart/related", "mht,mhtml"},
     {"text/css", "css"},
@@ -194,6 +194,7 @@ static const MimeInfo kSecondaryMappings[] = {
     {"application/postscript", "ps,eps,ai"},
     {"application/rdf+xml", "rdf"},
     {"application/rss+xml", "rss"},
+    {"application/rtf", "rtf"},
     {"application/vnd.android.package-archive", "apk"},
     {"application/vnd.mozilla.xul+xml", "xul"},
     {"application/vnd.ms-excel", "xls"},
@@ -209,13 +210,13 @@ static const MimeInfo kSecondaryMappings[] = {
     {"audio/webm", "weba"},
     {"image/bmp", "bmp"},
     {"image/jpeg", "jfif,pjpeg,pjp"},
-    {"image/svg+xml", "svg,svgz"},
     {"image/tiff", "tiff,tif"},
     {"image/vnd.microsoft.icon", "ico"},
     {"image/x-png", "png"},
     {"image/x-xbitmap", "xbm"},
     {"message/rfc822", "eml"},
     {"text/calendar", "ics"},
+    {"text/csv", "csv"},
     {"text/html", "ehtml"},
     {"text/plain", "txt,text"},
     {"text/x-sh", "sh"},

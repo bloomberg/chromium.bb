@@ -15,8 +15,9 @@
 
 namespace optimization_guide {
 
-HintCache::HintCache(OptimizationGuideStore* optimization_guide_store,
-                     int max_memory_cache_host_keyed_hints)
+HintCache::HintCache(
+    base::WeakPtr<OptimizationGuideStore> optimization_guide_store,
+    int max_memory_cache_host_keyed_hints)
     : optimization_guide_store_(optimization_guide_store),
       host_keyed_cache_(max_memory_cache_host_keyed_hints),
       url_keyed_hint_cache_(features::MaxURLKeyedHintCacheSize()),
@@ -344,13 +345,12 @@ bool HintCache::ProcessAndCacheHints(
     if (hint_key.empty())
       continue;
 
-    if (hint.page_hints().empty() && hint.whitelisted_optimizations().empty())
+    if (hint.page_hints().empty() && hint.allowlisted_optimizations().empty())
       continue;
 
     base::Time expiry_time =
         hint.has_max_cache_duration()
-            ? clock_->Now() + base::TimeDelta().FromSeconds(
-                                  hint.max_cache_duration().seconds())
+            ? clock_->Now() + base::Seconds(hint.max_cache_duration().seconds())
             : clock_->Now() + features::URLKeyedHintValidCacheDuration();
 
     switch (hint.key_representation()) {
@@ -388,9 +388,8 @@ void HintCache::AddHintForTesting(const GURL& url,
                                   std::unique_ptr<proto::Hint> hint) {
   if (IsValidURLForURLKeyedHint(url)) {
     url_keyed_hint_cache_.Put(
-        url.spec(),
-        std::make_unique<MemoryHint>(
-            base::Time::Now() + base::TimeDelta::FromDays(7), std::move(hint)));
+        url.spec(), std::make_unique<MemoryHint>(
+                        base::Time::Now() + base::Days(7), std::move(hint)));
   }
 }
 

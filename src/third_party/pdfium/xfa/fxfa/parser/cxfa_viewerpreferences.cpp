@@ -12,15 +12,15 @@
 namespace {
 
 const CXFA_Node::PropertyData kViewerPreferencesPropertyData[] = {
-    {XFA_Element::PrintScaling, 1, 0},
-    {XFA_Element::Enforce, 1, 0},
-    {XFA_Element::NumberOfCopies, 1, 0},
-    {XFA_Element::PageRange, 1, 0},
-    {XFA_Element::AddViewerPreferences, 1, 0},
-    {XFA_Element::ADBE_JSConsole, 1, 0},
-    {XFA_Element::DuplexOption, 1, 0},
-    {XFA_Element::ADBE_JSDebugger, 1, 0},
-    {XFA_Element::PickTrayByPDFSize, 1, 0},
+    {XFA_Element::PrintScaling, 1, {}},
+    {XFA_Element::Enforce, 1, {}},
+    {XFA_Element::NumberOfCopies, 1, {}},
+    {XFA_Element::PageRange, 1, {}},
+    {XFA_Element::AddViewerPreferences, 1, {}},
+    {XFA_Element::ADBE_JSConsole, 1, {}},
+    {XFA_Element::DuplexOption, 1, {}},
+    {XFA_Element::ADBE_JSDebugger, 1, {}},
+    {XFA_Element::PickTrayByPDFSize, 1, {}},
 };
 
 const CXFA_Node::AttributeData kViewerPreferencesAttributeData[] = {
@@ -34,7 +34,7 @@ CXFA_ViewerPreferences::CXFA_ViewerPreferences(CXFA_Document* doc,
                                                XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_Config,
+                XFA_XDPPACKET::kConfig,
                 XFA_ObjectType::Node,
                 XFA_Element::ViewerPreferences,
                 kViewerPreferencesPropertyData,

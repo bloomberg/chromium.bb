@@ -9,13 +9,12 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/policy/off_hours/device_off_hours_controller.h"
+#include "chrome/browser/ash/policy/off_hours/off_hours_policy_applier.h"
 #include "chrome/browser/ash/settings/session_manager_operation.h"
-#include "chrome/browser/chromeos/policy/off_hours/device_off_hours_controller.h"
-#include "chrome/browser/chromeos/policy/off_hours/off_hours_policy_applier.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -319,6 +318,7 @@ void DeviceSettingsService::HandleCompletedOperation(
     Status status) {
   store_status_ = status;
   if (status == STORE_SUCCESS) {
+    policy_fetch_response_ = std::move(operation->policy_fetch_response());
     policy_data_ = std::move(operation->policy_data());
     device_settings_ = std::move(operation->device_settings());
     // Update "OffHours" policy state and apply "OffHours" policy to current

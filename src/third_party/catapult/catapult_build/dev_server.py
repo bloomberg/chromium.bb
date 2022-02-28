@@ -4,11 +4,13 @@
 
 from __future__ import print_function
 
+from __future__ import absolute_import
 import argparse
 import json
 import os
 import sys
-import urlparse
+import six
+import six.moves.urllib.parse # pylint: disable=import-error
 
 from hooks import install
 
@@ -69,7 +71,7 @@ def _RelPathToUnixPath(p):
 
 class TestResultHandler(webapp2.RequestHandler):
   def post(self, *args, **kwargs):  # pylint: disable=unused-argument
-    msg = self.request.body
+    msg = six.ensure_str(self.request.body)
     ostream = sys.stdout if 'PASSED' in msg else sys.stderr
     ostream.write(msg + '\n')
     return self.response.write('')
@@ -77,7 +79,7 @@ class TestResultHandler(webapp2.RequestHandler):
 
 class TestsCompletedHandler(webapp2.RequestHandler):
   def post(self, *args, **kwargs):  # pylint: disable=unused-argument
-    msg = self.request.body
+    msg = six.ensure_str(self.request.body)
     sys.stdout.write(msg + '\n')
     exit_code = 0 if 'ALL_PASSED' in msg else 1
     if hasattr(self.app.server, 'please_exit'):
@@ -87,7 +89,7 @@ class TestsCompletedHandler(webapp2.RequestHandler):
 class TestsErrorHandler(webapp2.RequestHandler):
   def post(self, *args, **kwargs):
     del args, kwargs
-    msg = self.request.body
+    msg = six.ensure_str(self.request.body)
     sys.stderr.write(msg + '\n')
     exit_code = 1
     if hasattr(self.app.server, 'please_exit'):
@@ -135,6 +137,7 @@ class SourcePathsHandler(webapp2.RequestHandler):
         app.cache_control(no_cache=True)
         return app
     self.abort(404)
+    return None
 
   @staticmethod
   def GetServingPathForAbsFilename(source_paths, filename):
@@ -160,7 +163,7 @@ class SimpleDirectoryHandler(webapp2.RequestHandler):
         os.path.join(top_path, kwargs.pop('rest_of_path')))
     if not joined_path.startswith(top_path):
       self.response.set_status(403)
-      return
+      return None
     app = FileAppWithGZipHandling(joined_path)
     app.cache_control(no_cache=True)
     return app
@@ -169,7 +172,7 @@ class SimpleDirectoryHandler(webapp2.RequestHandler):
 class TestOverviewHandler(webapp2.RequestHandler):
   def get(self, *args, **kwargs):  # pylint: disable=unused-argument
     test_links = []
-    for name, path in kwargs.pop('pds').iteritems():
+    for name, path in kwargs.pop('pds').items():
       test_links.append(_LINK_ITEM % (path, name))
     quick_links = []
     for name, path in _QUICK_LINKS:
@@ -259,14 +262,14 @@ class DevServerApp(webapp2.WSGIApplication):
         continue
       rel = os.path.relpath(filename, source_path)
       unix_rel = _RelPathToUnixPath(rel)
-      url = urlparse.urljoin(mapped_path, unix_rel)
+      url = six.moves.urllib.parse.urljoin(mapped_path, unix_rel)
       return url
 
     path = SourcePathsHandler.GetServingPathForAbsFilename(
         self._all_source_paths, filename)
     if path is None:
       return None
-    return urlparse.urljoin('/', path)
+    return six.moves.urllib.parse.urljoin('/', path)
 
 
 def _AddPleaseExitMixinToServer(server):

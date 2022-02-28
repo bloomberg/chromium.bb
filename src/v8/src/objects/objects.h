@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "include/v8-internal.h"
-#include "include/v8.h"
 #include "include/v8config.h"
 #include "src/base/bits.h"
 #include "src/base/build_config.h"
@@ -66,6 +65,16 @@
 //         - JSRegExp
 //         - JSSetIterator
 //         - JSStringIterator
+//         - JSTemporalCalendar
+//         - JSTemporalDuration
+//         - JSTemporalInstant
+//         - JSTemporalPlainDate
+//         - JSTemporalPlainDateTime
+//         - JSTemporalPlainMonthDay
+//         - JSTemporalPlainTime
+//         - JSTemporalPlainYearMonth
+//         - JSTemporalTimeZone
+//         - JSTemporalZonedDateTime
 //         - JSWeakCollection
 //           - JSWeakMap
 //           - JSWeakSet
@@ -81,12 +90,13 @@
 //         - JSSegments            // If V8_INTL_SUPPORT enabled.
 //         - JSSegmentIterator     // If V8_INTL_SUPPORT enabled.
 //         - JSV8BreakIterator     // If V8_INTL_SUPPORT enabled.
-//         - WasmExceptionObject
+//         - WasmTagObject
 //         - WasmGlobalObject
 //         - WasmInstanceObject
 //         - WasmMemoryObject
 //         - WasmModuleObject
 //         - WasmTableObject
+//         - WasmSuspenderObject
 //       - JSProxy
 //     - FixedArrayBase
 //       - ByteArray
@@ -277,6 +287,12 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
 
   V8_INLINE bool IsTaggedIndex() const;
 
+  // Whether the object is in the RO heap and the RO heap is shared, or in the
+  // writable shared heap.
+  V8_INLINE bool InSharedHeap() const;
+
+  V8_INLINE bool InSharedWritableHeap() const;
+
 #define IS_TYPE_FUNCTION_DECL(Type) \
   V8_INLINE bool Is##Type() const;  \
   V8_INLINE bool Is##Type(PtrComprCageBase cage_base) const;
@@ -284,6 +300,7 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
   HEAP_OBJECT_TYPE_LIST(IS_TYPE_FUNCTION_DECL)
   IS_TYPE_FUNCTION_DECL(HashTableBase)
   IS_TYPE_FUNCTION_DECL(SmallOrderedHashTable)
+  IS_TYPE_FUNCTION_DECL(CodeT)
 #undef IS_TYPE_FUNCTION_DECL
   V8_INLINE bool IsNumber(ReadOnlyRoots roots) const;
 
@@ -326,7 +343,11 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
 
   inline ElementsKind OptimalElementsKind(PtrComprCageBase cage_base) const;
 
-  inline bool FitsRepresentation(Representation representation);
+  // If {allow_coercion} is true, then a Smi will be considered to fit
+  // a Double representation, since it can be converted to a HeapNumber
+  // and stored.
+  inline bool FitsRepresentation(Representation representation,
+                                 bool allow_coercion = true) const;
 
   inline bool FilterKey(PropertyFilter filter);
 
@@ -336,7 +357,9 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
   V8_EXPORT_PRIVATE static Handle<Object> NewStorageFor(
       Isolate* isolate, Handle<Object> object, Representation representation);
 
-  static Handle<Object> WrapForRead(Isolate* isolate, Handle<Object> object,
+  template <AllocationType allocation_type = AllocationType::kYoung,
+            typename IsolateT>
+  static Handle<Object> WrapForRead(IsolateT* isolate, Handle<Object> object,
                                     Representation representation);
 
   // Returns true if the object is of the correct type to be used as a
@@ -405,6 +428,9 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
 
   // ES6 section 7.1.12 ToString
   V8_WARN_UNUSED_RESULT static inline MaybeHandle<String> ToString(
+      Isolate* isolate, Handle<Object> input);
+
+  V8_EXPORT_PRIVATE static MaybeHandle<String> NoSideEffectsToMaybeString(
       Isolate* isolate, Handle<Object> input);
 
   V8_EXPORT_PRIVATE static Handle<String> NoSideEffectsToString(
@@ -582,7 +608,7 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
   // Returns true if the result of iterating over the object is the same
   // (including observable effects) as simply accessing the properties between 0
   // and length.
-  bool IterationHasObservableEffects();
+  V8_EXPORT_PRIVATE bool IterationHasObservableEffects();
 
   // TC39 "Dynamic Code Brand Checks"
   bool IsCodeLike(Isolate* isolate) const;
@@ -590,8 +616,12 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
   EXPORT_DECL_VERIFIER(Object)
 
 #ifdef VERIFY_HEAP
-  // Verify a pointer is a valid object pointer.
+  // Verify a pointer is a valid (non-Code) object pointer.
+  // When V8_EXTERNAL_CODE_SPACE is enabled Code objects are not allowed.
   static void VerifyPointer(Isolate* isolate, Object p);
+  // Verify a pointer is a valid object pointer.
+  // Code objects are allowed regardless of the V8_EXTERNAL_CODE_SPACE mode.
+  static void VerifyAnyTagged(Isolate* isolate, Object p);
 #endif
 
   inline void VerifyApiCallResultType();
@@ -633,7 +663,8 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
     bool operator()(const Object a, const Object b) const { return a < b; }
   };
 
-  template <class T, typename std::enable_if<std::is_arithmetic<T>::value,
+  template <class T, typename std::enable_if<std::is_arithmetic<T>::value ||
+                                                 std::is_enum<T>::value,
                                              int>::type = 0>
   inline T ReadField(size_t offset) const {
     // Pointer compression causes types larger than kTaggedSize to be unaligned.
@@ -650,7 +681,17 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
     }
   }
 
-  template <class T, typename std::enable_if<std::is_arithmetic<T>::value,
+  // Atomically reads a field using relaxed memory ordering. Can only be used
+  // with integral types whose size is <= kTaggedSize (to guarantee alignment).
+  template <class T,
+            typename std::enable_if<(std::is_arithmetic<T>::value ||
+                                     std::is_enum<T>::value) &&
+                                        !std::is_floating_point<T>::value,
+                                    int>::type = 0>
+  inline T Relaxed_ReadField(size_t offset) const;
+
+  template <class T, typename std::enable_if<std::is_arithmetic<T>::value ||
+                                                 std::is_enum<T>::value,
                                              int>::type = 0>
   inline void WriteField(size_t offset, T value) const {
     // Pointer compression causes types larger than kTaggedSize to be unaligned.
@@ -668,6 +709,16 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
   }
 
   //
+  // CagedPointer_t field accessors.
+  //
+  inline Address ReadCagedPointerField(size_t offset,
+                                       PtrComprCageBase cage_base) const;
+  inline void WriteCagedPointerField(size_t offset, PtrComprCageBase cage_base,
+                                     Address value);
+  inline void WriteCagedPointerField(size_t offset, Isolate* isolate,
+                                     Address value);
+
+  //
   // ExternalPointer_t field accessors.
   //
   inline void InitExternalPointerField(size_t offset, Isolate* isolate);
@@ -677,6 +728,13 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
                                           ExternalPointerTag tag) const;
   inline void WriteExternalPointerField(size_t offset, Isolate* isolate,
                                         Address value, ExternalPointerTag tag);
+
+  // If the receiver is the JSGlobalObject, the store was contextual. In case
+  // the property did not exist yet on the global object itself, we have to
+  // throw a reference error in strict mode.  In sloppy mode, we continue.
+  // Returns false if the exception was thrown, otherwise true.
+  static bool CheckContextualStoreToJSGlobalObject(
+      LookupIterator* it, Maybe<ShouldThrow> should_throw);
 
  protected:
   inline Address field_address(size_t offset) const {
@@ -772,8 +830,14 @@ class MapWord {
   // Create a map word from a forwarding address.
   static inline MapWord FromForwardingAddress(HeapObject object);
 
-  // View this map word as a forwarding address.
+  // View this map word as a forwarding address. The parameterless version
+  // is allowed to be used for objects allocated in the main pointer compression
+  // cage, while the second variant uses the value of the cage base explicitly
+  // and thus can be used in situations where one has to deal with both cases.
+  // Note, that the parameterless version is preferred because it avoids
+  // unnecessary recompressions.
   inline HeapObject ToForwardingAddress();
+  inline HeapObject ToForwardingAddress(PtrComprCageBase host_cage_base);
 
   inline Address ptr() { return value_; }
 
@@ -825,18 +889,6 @@ enum EnsureElementsMode {
 
 // Indicator for one component of an AccessorPair.
 enum AccessorComponent { ACCESSOR_GETTER, ACCESSOR_SETTER };
-
-enum class GetKeysConversion {
-  kKeepNumbers = static_cast<int>(v8::KeyConversionMode::kKeepNumbers),
-  kConvertToString = static_cast<int>(v8::KeyConversionMode::kConvertToString),
-  kNoNumbers = static_cast<int>(v8::KeyConversionMode::kNoNumbers)
-};
-
-enum class KeyCollectionMode {
-  kOwnOnly = static_cast<int>(v8::KeyCollectionMode::kOwnOnly),
-  kIncludePrototypes =
-      static_cast<int>(v8::KeyCollectionMode::kIncludePrototypes)
-};
 
 // Utility superclass for stack-allocated objects that must be updated
 // on gc.  It provides two ways for the gc to update instances, either

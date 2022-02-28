@@ -5,8 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -109,13 +108,14 @@ TEST(NotificationDatabaseConversionsTest, SerializeAndDeserializeData) {
   database_data.num_action_button_clicks = kNumActionButtonClicks;
   database_data.creation_time_millis = base::Time::FromDoubleT(kInitTimeMillis);
   database_data.time_until_first_click_millis =
-      base::TimeDelta::FromMilliseconds(kTimeUntilFirstClickMillis);
+      base::Milliseconds(kTimeUntilFirstClickMillis);
   database_data.time_until_last_click_millis =
-      base::TimeDelta::FromMilliseconds(kTimeUntilLastClickMillis);
+      base::Milliseconds(kTimeUntilLastClickMillis);
   database_data.time_until_close_millis =
-      base::TimeDelta::FromMilliseconds(kTimeUntilCloseMillis);
+      base::Milliseconds(kTimeUntilCloseMillis);
   database_data.closed_reason = NotificationDatabaseData::ClosedReason::USER;
   database_data.has_triggered = kHasTriggered;
+  database_data.is_shown_by_browser = true;
   std::string serialized_data;
 
   // Serialize the data in |notification_data| to the string |serialized_data|.
@@ -147,6 +147,7 @@ TEST(NotificationDatabaseConversionsTest, SerializeAndDeserializeData) {
             copied_data.time_until_close_millis);
   EXPECT_EQ(database_data.closed_reason, copied_data.closed_reason);
   EXPECT_EQ(database_data.has_triggered, copied_data.has_triggered);
+  EXPECT_EQ(database_data.is_shown_by_browser, copied_data.is_shown_by_browser);
 
   const blink::PlatformNotificationData& copied_notification_data =
       copied_data.notification_data;
@@ -346,11 +347,9 @@ TEST(NotificationDatabaseConversionsTest, OptionalFieldsGetCleared) {
   NotificationDatabaseData data_without_fields;
   NotificationDatabaseData data_with_fields;
 
-  data_with_fields.time_until_close_millis = base::TimeDelta::FromSeconds(1);
-  data_with_fields.time_until_first_click_millis =
-      base::TimeDelta::FromSeconds(2);
-  data_with_fields.time_until_last_click_millis =
-      base::TimeDelta::FromSeconds(3);
+  data_with_fields.time_until_close_millis = base::Seconds(1);
+  data_with_fields.time_until_first_click_millis = base::Seconds(2);
+  data_with_fields.time_until_last_click_millis = base::Seconds(3);
   data_with_fields.notification_resources = blink::NotificationResources();
 
   std::string serialized_data;
@@ -363,11 +362,10 @@ TEST(NotificationDatabaseConversionsTest, OptionalFieldsGetCleared) {
   ASSERT_TRUE(DeserializeNotificationDatabaseData(serialized_data,
                                                   &copied_database_data));
 
-  EXPECT_EQ(base::TimeDelta::FromSeconds(1),
-            copied_database_data.time_until_close_millis);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(2),
+  EXPECT_EQ(base::Seconds(1), copied_database_data.time_until_close_millis);
+  EXPECT_EQ(base::Seconds(2),
             copied_database_data.time_until_first_click_millis);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(3),
+  EXPECT_EQ(base::Seconds(3),
             copied_database_data.time_until_last_click_millis);
   EXPECT_FALSE(copied_database_data.notification_resources.has_value());
 

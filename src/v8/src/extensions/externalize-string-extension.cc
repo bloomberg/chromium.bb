@@ -4,7 +4,9 @@
 
 #include "src/extensions/externalize-string-extension.h"
 
+#include "include/v8-template.h"
 #include "src/api/api-inl.h"
+#include "src/base/strings.h"
 #include "src/execution/isolate.h"
 #include "src/handles/handles.h"
 #include "src/objects/objects-inl.h"
@@ -34,7 +36,7 @@ class SimpleStringResource : public Base {
 using SimpleOneByteStringResource =
     SimpleStringResource<char, v8::String::ExternalOneByteStringResource>;
 using SimpleTwoByteStringResource =
-    SimpleStringResource<uc16, v8::String::ExternalStringResource>;
+    SimpleStringResource<base::uc16, v8::String::ExternalStringResource>;
 
 const char* const ExternalizeStringExtension::kSource =
     "native function externalizeString();"
@@ -87,7 +89,7 @@ void ExternalizeStringExtension::Externalize(
     result = Utils::ToLocal(string)->MakeExternal(resource);
     if (!result) delete resource;
   } else {
-    uc16* data = new uc16[string->length()];
+    base::uc16* data = new base::uc16[string->length()];
     String::WriteToFlat(*string, data, 0, string->length());
     SimpleTwoByteStringResource* resource = new SimpleTwoByteStringResource(
         data, string->length());

@@ -195,6 +195,14 @@ void av1_decoder_model_process_frame(const struct AV1_COMP *const cpi,
                                      size_t coded_bits,
                                      DECODER_MODEL *const decoder_model);
 
+// This function uses the decoder model to check whether there could be
+// SMOOTHING_BUFFER_UNDERFLOW or SMOOTHING_BUFFER_OVERFLOW. It does not
+// update the content of decoder_model, and can be used to target certain
+// encoding level in the recode loop.
+DECODER_MODEL_STATUS av1_decoder_model_try_smooth_buf(
+    const struct AV1_COMP *const cpi, size_t coded_bits,
+    const DECODER_MODEL *const decoder_model);
+
 // Return max bitrate(bps) for given level.
 double av1_get_max_bitrate_for_level(AV1_LEVEL level_index, int tier,
                                      BITSTREAM_PROFILE profile);

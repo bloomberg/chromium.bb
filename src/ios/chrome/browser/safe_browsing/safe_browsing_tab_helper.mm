@@ -12,8 +12,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "components/safe_browsing/core/browser/safe_browsing_url_checker_impl.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
-#include "components/safe_browsing/core/features.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -132,16 +132,18 @@ void SafeBrowsingTabHelper::PolicyDecider::UpdateForMainFrameServerRedirect() {
 
 #pragma mark web::WebStatePolicyDecider
 
-web::WebStatePolicyDecider::PolicyDecision
-SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
+void SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
     NSURLRequest* request,
-    const web::WebStatePolicyDecider::RequestInfo& request_info) {
+    web::WebStatePolicyDecider::RequestInfo request_info,
+    web::WebStatePolicyDecider::PolicyDecisionCallback callback) {
   // Allow navigations for URLs that cannot be checked by the service.
   GURL request_url = GetCanonicalizedUrl(net::GURLWithNSURL(request.URL));
   SafeBrowsingService* safe_browsing_service =
       GetApplicationContext()->GetSafeBrowsingService();
-  if (!safe_browsing_service->CanCheckUrl(request_url))
-    return web::WebStatePolicyDecider::PolicyDecision::Allow();
+  if (!safe_browsing_service->CanCheckUrl(request_url)) {
+    return std::move(callback).Run(
+        web::WebStatePolicyDecider::PolicyDecision::Allow());
+  }
 
   // Track all pending URL queries.
   bool is_main_frame = request_info.target_frame_is_main;
@@ -170,7 +172,8 @@ SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
       // error decision once error pages for cancelled requests are supported.
       // For now, only cancelled response errors are displayed properly.
       pending_main_frame_query_->decision = CreateSafeBrowsingErrorDecision();
-      return web::WebStatePolicyDecider::PolicyDecision::Allow();
+      return std::move(callback).Run(
+          web::WebStatePolicyDecider::PolicyDecision::Allow());
     }
 
     // Error pages for unsafe subframes are triggered by associating an
@@ -190,7 +193,8 @@ SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
       // error decision once error pages for cancelled requests are supported.
       // For now, only cancelled response errors are displayed properly.
       pending_main_frame_query_->decision = CreateSafeBrowsingErrorDecision();
-      return web::WebStatePolicyDecider::PolicyDecision::Allow();
+      return std::move(callback).Run(
+          web::WebStatePolicyDecider::PolicyDecision::Allow());
     }
   }
 
@@ -201,7 +205,8 @@ SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
             web_state()->GetNavigationManager()->GetLastCommittedItem()) {
       main_frame_item_id = item->GetUniqueID();
     } else {
-      return web::WebStatePolicyDecider::PolicyDecision::Allow();
+      return std::move(callback).Run(
+          web::WebStatePolicyDecider::PolicyDecision::Allow());
     }
   }
 
@@ -211,25 +216,23 @@ SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
 
   // Allow all requests to continue.  If a safe browsing error is detected, the
   // navigation will be cancelled for using the response policy decision.
-  return web::WebStatePolicyDecider::PolicyDecision::Allow();
+  std::move(callback).Run(web::WebStatePolicyDecider::PolicyDecision::Allow());
 }
 
 void SafeBrowsingTabHelper::PolicyDecider::ShouldAllowResponse(
     NSURLResponse* response,
-    bool for_main_frame,
-    base::OnceCallback<void(web::WebStatePolicyDecider::PolicyDecision)>
-        callback) {
+    web::WebStatePolicyDecider::ResponseInfo response_info,
+    web::WebStatePolicyDecider::PolicyDecisionCallback callback) {
   // Allow navigations for URLs that cannot be checked by the service.
   SafeBrowsingService* safe_browsing_service =
       GetApplicationContext()->GetSafeBrowsingService();
   GURL response_url = GetCanonicalizedUrl(net::GURLWithNSURL(response.URL));
   if (!safe_browsing_service->CanCheckUrl(response_url)) {
-    std::move(callback).Run(
+    return std::move(callback).Run(
         web::WebStatePolicyDecider::PolicyDecision::Allow());
-    return;
   }
 
-  if (for_main_frame) {
+  if (response_info.for_main_frame) {
     HandleMainFrameResponsePolicy(response_url, std::move(callback));
   } else {
     HandleSubFrameResponsePolicy(response_url, std::move(callback));
@@ -279,11 +282,25 @@ void SafeBrowsingTabHelper::PolicyDecider::HandleSubFrameResponsePolicy(
     const GURL& url,
     web::WebStatePolicyDecider::PolicyDecisionCallback callback) {
   // Sub frame response policy decisions are expected to always be requested
-  // after a request policy decision for |url|.
-  DCHECK(pending_sub_frame_queries_.find(url) !=
-         pending_sub_frame_queries_.end());
+  // after a request policy decision for |url|. However, in some cases, WebKit
+  // changes the URL in between the request and response policy callbacks,
+  // without triggering a new request policy callback. One such case is when the
+  // URL's query string changes. If |url| isn't found in any pending query,
+  // start a new query for it now.
+  auto it = pending_sub_frame_queries_.find(url);
+  if (it == pending_sub_frame_queries_.end()) {
+    int main_frame_item_id = web_state()
+                                 ->GetNavigationManager()
+                                 ->GetLastCommittedItem()
+                                 ->GetUniqueID();
+    query_manager_->StartQuery(
+        SafeBrowsingQueryManager::Query(url, "GET", main_frame_item_id));
+    pending_sub_frame_queries_[url].response_callbacks.push_back(
+        std::move(callback));
+    return;
+  }
 
-  SubFrameUrlQuery& sub_frame_query = pending_sub_frame_queries_[url];
+  SubFrameUrlQuery& sub_frame_query = it->second;
   if (sub_frame_query.decision) {
     std::move(callback).Run(*(sub_frame_query.decision));
   } else {

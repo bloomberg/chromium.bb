@@ -12,14 +12,13 @@ TODO:
   - mode= {draw, drawIndexed}
 `;
 
-import { params, pbool, poptions } from '../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
-import { assert } from '../../../../common/framework/util/util.js';
 import {
-  GPUTest,
+  assert,
   TypedArrayBufferView,
   TypedArrayBufferViewConstructor,
-} from '../../../gpu_test.js';
+} from '../../../../common/util/util.js';
+import { GPUTest } from '../../../gpu_test.js';
 
 export const g = makeTestGroup(GPUTest);
 
@@ -46,19 +45,24 @@ Params:
   - base_vertex= {0, 9} - only for indexed draws
   `
   )
-  .cases(
-    params()
-      .combine(poptions('first', [0, 3] as const))
-      .combine(poptions('count', [0, 3, 6] as const))
-      .combine(poptions('first_instance', [0, 2] as const))
-      .combine(poptions('instance_count', [0, 1, 4] as const))
-      .combine(pbool('indexed'))
-      .combine(pbool('indirect'))
-      .combine(poptions('vertex_buffer_offset', [0, 32] as const))
-      .expand(p => poptions('index_buffer_offset', p.indexed ? ([0, 16] as const) : [undefined]))
-      .expand(p => poptions('base_vertex', p.indexed ? ([0, 9] as const) : [undefined]))
+  .params(u =>
+    u
+      .combine('first', [0, 3] as const)
+      .combine('count', [0, 3, 6] as const)
+      .combine('first_instance', [0, 2] as const)
+      .combine('instance_count', [0, 1, 4] as const)
+      .combine('indexed', [false, true])
+      .combine('indirect', [false, true])
+      .combine('vertex_buffer_offset', [0, 32] as const)
+      .expand('index_buffer_offset', p => (p.indexed ? ([0, 16] as const) : [undefined]))
+      .expand('base_vertex', p => (p.indexed ? ([0, 9] as const) : [undefined]))
   )
-  .fn(t => {
+  .fn(async t => {
+    if (t.params.first_instance > 0 && t.params.indirect) {
+      // TODO: 'as' cast because types don't have this feature name yet
+      await t.selectDeviceOrSkipTestCase('indirect-first-instance' as GPUFeatureName);
+    }
+
     const renderTargetSize = [72, 36];
 
     // The test will split up the render target into a grid where triangles of
@@ -117,7 +121,7 @@ struct Inputs {
   value : u32;
 };
 
-[[group(0), binding(0)]] var<storage> output : [[access(read_write)]] Output;
+[[group(0), binding(0)]] var<storage, read_write> output : Output;
 
 [[stage(fragment)]] fn frag_main() -> [[location(0)]] vec4<f32> {
   output.value = 1u;
@@ -288,7 +292,7 @@ struct Inputs {
 
     const didDraw = t.params.count && t.params.instance_count;
 
-    t.expectContents(resultBuffer, new Uint32Array([didDraw ? 1 : 0]));
+    t.expectGPUBufferValuesEqual(resultBuffer, new Uint32Array([didDraw ? 1 : 0]));
 
     const baseVertex = t.params.base_vertex ?? 0;
     for (let primitiveId = 0; primitiveId < numX; ++primitiveId) {
@@ -337,12 +341,12 @@ g.test('vertex_attributes,basic')
   - step_mode= {undefined, vertex, instance, mixed} - where mixed only applies for vertex_buffer_count > 1
   `
   )
-  .cases(
-    params()
-      .combine(poptions('vertex_attribute_count', [1, 4, 8, 16]))
-      .combine(poptions('vertex_buffer_count', [1, 4, 8]))
-      .combine(poptions('vertex_format', ['uint32', 'float32'] as const))
-      .combine(poptions('step_mode', [undefined, 'vertex', 'instance', 'mixed'] as const))
+  .params(u =>
+    u
+      .combine('vertex_attribute_count', [1, 4, 8, 16])
+      .combine('vertex_buffer_count', [1, 4, 8])
+      .combine('vertex_format', ['uint32', 'float32'] as const)
+      .combine('step_mode', [undefined, 'vertex', 'instance', 'mixed'] as const)
       .unless(p => p.vertex_attribute_count < p.vertex_buffer_count)
       .unless(p => p.step_mode === 'mixed' && p.vertex_buffer_count <= 1)
   )
@@ -428,11 +432,11 @@ g.test('vertex_attributes,basic')
     }
 
     // Create an array of shader locations [0, 1, 2, 3, ...] for easy iteration.
-    const shaderLocations = new Array(shaderLocation).fill(0).map((_, i) => i);
+    const vertexInputShaderLocations = new Array(shaderLocation).fill(0).map((_, i) => i);
 
     // Create the expected data buffer.
     const expectedData = new ExpectedDataConstructor(
-      vertexCount * instanceCount * shaderLocations.length
+      vertexCount * instanceCount * vertexInputShaderLocations.length
     );
 
     // Populate the expected data. This is a CPU-side version of what we expect the shader
@@ -442,7 +446,8 @@ g.test('vertex_attributes,basic')
         bufferLayouts.forEach((bufferLayout, b) => {
           for (const attribute of bufferLayout.attributes) {
             const primitiveId = vertexCount * instanceIndex + vertexIndex;
-            const outputIndex = primitiveId * shaderLocations.length + attribute.shaderLocation;
+            const outputIndex =
+              primitiveId * vertexInputShaderLocations.length + attribute.shaderLocation;
 
             let vertexOrInstanceIndex: number;
             switch (bufferLayout.stepMode) {
@@ -476,6 +481,38 @@ g.test('vertex_attributes,basic')
         break;
     }
 
+    // Maximum inter-stage shader location is 14, and we need to consume one for primitiveId, 12 for
+    // location 0 to 11,  and combine the remaining vertex inputs into one location (one
+    // vec4<wgslFormat> when vertex_attribute_count === 16).
+    const interStageScalarShaderLocation = Math.min(shaderLocation, 12);
+    const interStageScalarShaderLocations = new Array(interStageScalarShaderLocation)
+      .fill(0)
+      .map((_, i) => i);
+
+    let accumulateVariableDeclarationsInVertexShader = '';
+    let accumulateVariableAssignmentsInVertexShader = '';
+    let accumulateVariableDeclarationsInFragmentShader = '';
+    let accumulateVariableAssignmentsInFragmentShader = '';
+    // The remaining 3 vertex attributes
+    if (t.params.vertex_attribute_count === 16) {
+      accumulateVariableDeclarationsInVertexShader = `
+        [[location(13)]] outAttrib13 : vec4<${wgslFormat}>;
+      `;
+      accumulateVariableAssignmentsInVertexShader = `
+      output.outAttrib13 =
+          vec4<${wgslFormat}>(input.attrib12, input.attrib13, input.attrib14, input.attrib15);
+      `;
+      accumulateVariableDeclarationsInFragmentShader = `
+      [[location(13)]] attrib13 : vec4<${wgslFormat}>;
+      `;
+      accumulateVariableAssignmentsInFragmentShader = `
+      outBuffer.primitives[input.primitiveId].attrib12 = input.attrib13.x;
+      outBuffer.primitives[input.primitiveId].attrib13 = input.attrib13.y;
+      outBuffer.primitives[input.primitiveId].attrib14 = input.attrib13.z;
+      outBuffer.primitives[input.primitiveId].attrib15 = input.attrib13.w;
+      `;
+    }
+
     const pipeline = t.device.createRenderPipeline({
       vertex: {
         module: t.device.createShaderModule({
@@ -483,18 +520,25 @@ g.test('vertex_attributes,basic')
 struct Inputs {
   [[builtin(vertex_index)]] vertexIndex : u32;
   [[builtin(instance_index)]] instanceIndex : u32;
-${shaderLocations.map(i => `  [[location(${i})]] attrib${i} : ${wgslFormat};`).join('\n')}
+${vertexInputShaderLocations
+  .map(i => `  [[location(${i})]] attrib${i} : ${wgslFormat};`)
+  .join('\n')}
 };
 
 struct Outputs {
   [[builtin(position)]] Position : vec4<f32>;
-${shaderLocations.map(i => `  [[location(${i})]] outAttrib${i} : ${wgslFormat};`).join('\n')}
-  [[location(${shaderLocations.length})]] primitiveId : u32;
+${interStageScalarShaderLocations
+  .map(i => `  [[location(${i})]] outAttrib${i} : ${wgslFormat};`)
+  .join('\n')}
+  [[location(${interStageScalarShaderLocations.length})]] primitiveId : u32;
+${accumulateVariableDeclarationsInVertexShader}
 };
 
 [[stage(vertex)]] fn main(input : Inputs) -> Outputs {
   var output : Outputs;
-${shaderLocations.map(i => `  output.outAttrib${i} = input.attrib${i};`).join('\n')}
+${interStageScalarShaderLocations.map(i => `  output.outAttrib${i} = input.attrib${i};`).join('\n')}
+${accumulateVariableAssignmentsInVertexShader}
+
   output.primitiveId = input.instanceIndex * ${instanceCount}u + input.vertexIndex;
   output.Position = vec4<f32>(0.0, 0.0, 0.5, 1.0);
   return output;
@@ -508,22 +552,26 @@ ${shaderLocations.map(i => `  output.outAttrib${i} = input.attrib${i};`).join('\
         module: t.device.createShaderModule({
           code: `
 struct Inputs {
-${shaderLocations.map(i => `  [[location(${i})]] attrib${i} : ${wgslFormat};`).join('\n')}
-  [[location(${shaderLocations.length})]] primitiveId : u32;
+${interStageScalarShaderLocations
+  .map(i => `  [[location(${i})]] attrib${i} : ${wgslFormat};`)
+  .join('\n')}
+  [[location(${interStageScalarShaderLocations.length})]] primitiveId : u32;
+${accumulateVariableDeclarationsInFragmentShader}
 };
 
 struct OutPrimitive {
-${shaderLocations.map(i => `  attrib${i} : ${wgslFormat};`).join('\n')}
+${vertexInputShaderLocations.map(i => `  attrib${i} : ${wgslFormat};`).join('\n')}
 };
 [[block]] struct OutBuffer {
-  primitives : [[stride(${shaderLocations.length * 4})]] array<OutPrimitive>;
+  primitives : [[stride(${vertexInputShaderLocations.length * 4})]] array<OutPrimitive>;
 };
-[[group(0), binding(0)]] var<storage> outBuffer : [[access(read_write)]] OutBuffer;
+[[group(0), binding(0)]] var<storage, read_write> outBuffer : OutBuffer;
 
 [[stage(fragment)]] fn main(input : Inputs) {
-${shaderLocations
+${interStageScalarShaderLocations
   .map(i => `  outBuffer.primitives[input.primitiveId].attrib${i} = input.attrib${i};`)
   .join('\n')}
+${accumulateVariableAssignmentsInFragmentShader}
 }
           `,
         }),
@@ -531,6 +579,7 @@ ${shaderLocations
         targets: [
           {
             format: 'rgba8unorm',
+            writeMask: 0,
           },
         ],
       },
@@ -541,7 +590,7 @@ ${shaderLocations
 
     const resultBuffer = t.device.createBuffer({
       usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
-      size: vertexCount * instanceCount * shaderLocations.length * 4,
+      size: vertexCount * instanceCount * vertexInputShaderLocations.length * 4,
     });
 
     const resultBindGroup = t.device.createBindGroup({
@@ -560,7 +609,8 @@ ${shaderLocations
     const renderPass = commandEncoder.beginRenderPass({
       colorAttachments: [
         {
-          // Dummy render attachment - not used.
+          // Dummy render attachment - not used (WebGPU doesn't allow using a render pass with no
+          // attachments)
           view: t.device
             .createTexture({
               usage: GPUTextureUsage.RENDER_ATTACHMENT,
@@ -583,7 +633,7 @@ ${shaderLocations
     renderPass.endPass();
     t.device.queue.submit([commandEncoder.finish()]);
 
-    t.expectContents(resultBuffer, expectedData);
+    t.expectGPUBufferValuesEqual(resultBuffer, expectedData);
   });
 
 g.test('vertex_attributes,formats')
@@ -598,5 +648,23 @@ g.test('vertex_attributes,formats')
       - vertex_format_1={...all_vertex_formats}
       - vertex_format_2={...all_vertex_formats}
   `
+  )
+  .unimplemented();
+
+g.test(`largeish_buffer`)
+  .desc(
+    `
+    Test a very large range of buffer is bound.
+    For a render pipeline that use a vertex step mode and a instance step mode vertex buffer, test
+    that :
+    - For draw, drawIndirect, drawIndexed and drawIndexedIndirect:
+        - The bound range of vertex step mode vertex buffer is significantly larger than necessary
+        - The bound range of instance step mode vertex buffer is significantly larger than necessary
+        - A large buffer is bound to an unused slot
+    - For drawIndexed and drawIndexedIndirect:
+        - The bound range of index buffer is significantly larger than necessary
+    - For drawIndirect and drawIndexedIndirect:
+        - The indirect buffer is significantly larger than necessary
+`
   )
   .unimplemented();

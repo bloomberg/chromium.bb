@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import argparse
+import codecs
 import contextlib
 import io
 import json
@@ -14,6 +15,8 @@ import sys
 import tempfile
 import time
 import traceback
+
+logging.basicConfig(level=logging.INFO)
 
 # Add src/testing/ into sys.path for importing xvfb and test_env.
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -32,6 +35,18 @@ SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
 SRC_DIR = os.path.abspath(
     os.path.join(SCRIPT_DIR, os.path.pardir, os.path.pardir))
 
+# Use result_sink.py in //build/util/lib/results/ for uploading the
+# results of non-isolated script tests.
+BUILD_UTIL_DIR = os.path.join(SRC_DIR, 'build', 'util')
+sys.path.insert(0, BUILD_UTIL_DIR)
+try:
+  from lib.results import result_sink
+  from lib.results import result_types
+except ImportError:
+  # Some build-time scripts import this file and run into issues with
+  # result_sink's dependency on requests since we can't depend on vpython
+  # during build-time. So silently swallow the error in that case.
+  result_sink = None
 
 # run_web_tests.py returns the number of failures as the return
 # code, but caps the return code at 101 to avoid overflow or colliding
@@ -46,13 +61,13 @@ INFRA_FAILURE_EXIT_CODE = 87
 # ACL might be explicitly set or inherited.
 CORRECT_ACL_VARIANTS = [
     'APPLICATION PACKAGE AUTHORITY' \
-    '\ALL RESTRICTED APPLICATION PACKAGES:(OI)(CI)(RX)', \
+    '\\ALL RESTRICTED APPLICATION PACKAGES:(OI)(CI)(RX)', \
     'APPLICATION PACKAGE AUTHORITY' \
-    '\ALL RESTRICTED APPLICATION PACKAGES:(I)(OI)(CI)(RX)'
+    '\\ALL RESTRICTED APPLICATION PACKAGES:(I)(OI)(CI)(RX)'
 ]
 
 
-def set_lpac_acls(acl_dir):
+def set_lpac_acls(acl_dir, is_test_script=False):
   """Sets LPAC ACLs on a directory. Windows 10 only."""
   if platform.release() != '10':
     return
@@ -64,17 +79,46 @@ def set_lpac_acls(acl_dir):
     logging.error('Failed to retrieve existing ACLs for directory %s', acl_dir)
     logging.error('Command output: %s', e.output)
     sys.exit(e.returncode)
+  acls_correct = False
   for acl in CORRECT_ACL_VARIANTS:
     if acl in existing_acls:
-      return
-  try:
-    existing_acls = subprocess.check_output(
-        ['icacls', acl_dir, "/grant", "*S-1-15-2-2:(OI)(CI)(RX)"],
+      acls_correct = True
+  if not acls_correct:
+    try:
+      existing_acls = subprocess.check_output(
+          ['icacls', acl_dir, '/grant', '*S-1-15-2-2:(OI)(CI)(RX)'],
+          stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+      logging.error(
+          'Failed to retrieve existing ACLs for directory %s', acl_dir)
+      logging.error('Command output: %s', e.output)
+      sys.exit(e.returncode)
+  if not is_test_script:
+    return
+  # Bots running on luci use hardlinks that do not have correct ACLs so these
+  # must be manually overridden here.
+  with temporary_file() as tempfile_path:
+    subprocess.check_output(
+        ['icacls', acl_dir, '/save', tempfile_path, '/t', '/q', '/c'],
         stderr=subprocess.STDOUT)
-  except subprocess.CalledProcessError as e:
-    logging.error('Failed to retrieve existing ACLs for directory %s', acl_dir)
-    logging.error('Command output: %s', e.output)
-    sys.exit(e.returncode)
+    # ACL files look like this, e.g. for c:\a\b\c\d\Release_x64
+    #
+    # Release_x64
+    # D:AI(A;OICI;0x1200a9;;;S-1-15-2-2)(A;OICIID;FA;;;BA)
+    # Release_x64\icudtl_extra.dat
+    # D:AI(A;ID;0x1200a9;;;S-1-15-2-2)(A;ID;FA;;;BA)(A;ID;0x1301bf;;;BU)
+    with codecs.open(tempfile_path, encoding='utf_16_le') as aclfile:
+      for filename in aclfile:
+        acl = next(aclfile).strip()
+        full_filename = os.path.abspath(
+            os.path.join(acl_dir, os.pardir, filename.strip()))
+        if 'S-1-15-2-2' in acl:
+          continue
+        if os.path.isdir(full_filename):
+          continue
+        subprocess.check_output(
+            ['icacls', full_filename, '/grant', '*S-1-15-2-2:(RX)'],
+            stderr=subprocess.STDOUT)
 
 
 def run_script(argv, funcs):
@@ -124,6 +168,40 @@ def temporary_file():
     yield path
   finally:
     os.remove(path)
+
+
+def record_local_script_results(name, output_fd, failures, valid):
+  """Records to a local json file and to RDB the results of the script test.
+
+  For legacy reasons, local script tests (ie: script tests that run
+  locally and that don't conform to the isolated-test API) are expected to
+  record their results using a specific format. This method encapsulates
+  that format and also uploads those results to Result DB.
+
+  Args:
+    name: Name of the script test.
+    output_fd: A .write()-supporting file descriptor to write results to.
+    failures: List of strings representing test failures.
+    valid: Whether the results are valid.
+  """
+  local_script_results = {
+      'valid': valid,
+      'failures': failures
+  }
+  json.dump(local_script_results, output_fd)
+
+  if not result_sink:
+    return
+  result_sink_client = result_sink.TryInitClient()
+  if not result_sink_client:
+    return
+  status = result_types.PASS
+  if not valid:
+    status = result_types.UNKNOWN
+  elif failures:
+    status = result_types.FAIL
+  test_log = '\n'.join(failures)
+  result_sink_client.Post(name, status, None, test_log, None)
 
 
 def parse_common_test_results(json_results, test_separator='/'):
@@ -319,11 +397,15 @@ class BaseIsolatedScriptArgsAdapter(object):
     del total_shard, shard_index  # unused
     raise RuntimeError('this method is not yet implemented')
 
-  def generate_isolated_script_cmd(self):
-    isolated_script_cmd = [sys.executable] + self.rest_args
+  def select_python_executable(self):
+    return sys.executable
 
-    isolated_script_cmd += self.generate_test_output_args(
-        self.options.isolated_script_test_output)
+  def generate_isolated_script_cmd(self):
+    isolated_script_cmd = [ self.select_python_executable() ] + self.rest_args
+
+    if self.options.isolated_script_test_output:
+      isolated_script_cmd += self.generate_test_output_args(
+          self.options.isolated_script_test_output)
 
     # Augment test filter args if needed
     if self.options.isolated_script_test_filter:
@@ -384,13 +466,13 @@ class BaseIsolatedScriptArgsAdapter(object):
     valid = True
     try:
       env['CHROME_HEADLESS'] = '1'
-      print('Running command: %s\nwith env: %r' % (
+      logging.info('Running command: %s\nwith env: %r' % (
           ' '.join(cmd), env))
       if self.options.xvfb and sys.platform.startswith('linux'):
         exit_code = xvfb.run_executable(cmd, env)
       else:
-        exit_code = test_env.run_command(cmd, env=env)
-      print('Command returned exit code %d' % exit_code)
+        exit_code = test_env.run_command(cmd, env=env, log=False)
+      logging.info('Command returned exit code %d' % exit_code)
       self.do_post_test_run_tasks()
       return exit_code
     except Exception:

@@ -344,6 +344,8 @@ private:
 
 NumberParsingCase::NumberParsingCase(deqp::Context& context, const string& name, const TestParams& params, const string& vertexShader, const string& fragmentShader)
 	: TestCase(context, name.c_str(), params.description.c_str())
+	, m_fboId(0)
+	, m_rboId(0)
 	, m_params(params)
 	, m_vertexShader(vertexShader)
 	, m_fragmentShader(fragmentShader)
@@ -368,7 +370,6 @@ NumberParsingCase::IterateResult NumberParsingCase::iterate(void)
 			return STOP;
 		default:
 			TCU_FAIL("Shader compilation failed:\nVertex shader:\n" + m_vertexShader + "\nFragment shader:\n" + m_fragmentShader);
-			break;
 		}
 
 	const std::vector<glu::VertexArrayBinding> vertexArrays =

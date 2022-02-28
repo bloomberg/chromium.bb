@@ -11,11 +11,9 @@
 #include "base/check.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
+#include "ui/base/ime/text_input_client.h"
 
 namespace ui {
-namespace {
-
-}  // namespace
 
 VirtualKeyboardControllerFuchsia::VirtualKeyboardControllerFuchsia(
     fuchsia::ui::views::ViewRef view_ref,
@@ -92,7 +90,12 @@ void VirtualKeyboardControllerFuchsia::OnVisibilityChange(bool is_visible) {
 // Returns the FIDL enum representation of the current InputMode.
 fuchsia::input::virtualkeyboard::TextType
 VirtualKeyboardControllerFuchsia::GetFocusedTextType() const {
-  switch (input_method_->GetTextInputMode()) {
+  TextInputClient* client = input_method_->GetTextInputClient();
+  // This function should only be called when there's focus, so there should
+  // always be a TextInputClient.
+  DCHECK(client);
+
+  switch (client->GetTextInputMode()) {
     case TEXT_INPUT_MODE_NUMERIC:
     case TEXT_INPUT_MODE_DECIMAL:
       return fuchsia::input::virtualkeyboard::TextType::NUMERIC;
@@ -100,12 +103,30 @@ VirtualKeyboardControllerFuchsia::GetFocusedTextType() const {
     case TEXT_INPUT_MODE_TEL:
       return fuchsia::input::virtualkeyboard::TextType::PHONE;
 
-    case TEXT_INPUT_MODE_DEFAULT:
-    case TEXT_INPUT_MODE_NONE:
     case TEXT_INPUT_MODE_TEXT:
     case TEXT_INPUT_MODE_URL:
     case TEXT_INPUT_MODE_EMAIL:
     case TEXT_INPUT_MODE_SEARCH:
+      return fuchsia::input::virtualkeyboard::TextType::ALPHANUMERIC;
+
+    // Should be handled in InputMethodFuchsia.
+    case TEXT_INPUT_MODE_NONE:
+      NOTREACHED();
+      return fuchsia::input::virtualkeyboard::TextType::ALPHANUMERIC;
+
+    case TEXT_INPUT_MODE_DEFAULT:
+      // Fall-through to using TextInputType.
+      break;
+  }
+
+  switch (client->GetTextInputType()) {
+    case TEXT_INPUT_TYPE_NUMBER:
+      return fuchsia::input::virtualkeyboard::TextType::NUMERIC;
+
+    case TEXT_INPUT_TYPE_TELEPHONE:
+      return fuchsia::input::virtualkeyboard::TextType::PHONE;
+
+    default:
       return fuchsia::input::virtualkeyboard::TextType::ALPHANUMERIC;
   }
 }
@@ -113,8 +134,9 @@ VirtualKeyboardControllerFuchsia::GetFocusedTextType() const {
 void VirtualKeyboardControllerFuchsia::UpdateTextType() {
   // Only send updates if the type has changed.
   auto new_type = GetFocusedTextType();
+  DVLOG(1) << "UpdateTextType() called (current: " << requested_type_
+           << ", new: " << new_type << ")";
   if (new_type != requested_type_) {
-    DVLOG(1) << "SetTextType " << static_cast<int>(new_type);
     controller_service_->SetTextType(new_type);
     requested_type_ = new_type;
   }

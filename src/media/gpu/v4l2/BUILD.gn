@@ -37,16 +37,13 @@ source_set("v4l2") {
     "v4l2_device_poller.h",
     "v4l2_framerate_control.cc",
     "v4l2_framerate_control.h",
-    "v4l2_h264_accelerator.cc",
-    "v4l2_h264_accelerator.h",
-    "v4l2_h264_accelerator_legacy.cc",
-    "v4l2_h264_accelerator_legacy.h",
     "v4l2_image_processor_backend.cc",
     "v4l2_image_processor_backend.h",
     "v4l2_slice_video_decode_accelerator.cc",
     "v4l2_slice_video_decode_accelerator.h",
     "v4l2_stateful_workaround.cc",
     "v4l2_stateful_workaround.h",
+    "v4l2_status.h",
     "v4l2_utils.cc",
     "v4l2_utils.h",
     "v4l2_vda_helpers.cc",
@@ -61,16 +58,20 @@ source_set("v4l2") {
     "v4l2_video_decoder_backend_stateful.h",
     "v4l2_video_decoder_backend_stateless.cc",
     "v4l2_video_decoder_backend_stateless.h",
+    "v4l2_video_decoder_delegate_h264.cc",
+    "v4l2_video_decoder_delegate_h264.h",
+    "v4l2_video_decoder_delegate_h264_legacy.cc",
+    "v4l2_video_decoder_delegate_h264_legacy.h",
+    "v4l2_video_decoder_delegate_vp8.cc",
+    "v4l2_video_decoder_delegate_vp8.h",
+    "v4l2_video_decoder_delegate_vp8_legacy.cc",
+    "v4l2_video_decoder_delegate_vp8_legacy.h",
+    "v4l2_video_decoder_delegate_vp9_chromium.cc",
+    "v4l2_video_decoder_delegate_vp9_chromium.h",
+    "v4l2_video_decoder_delegate_vp9_legacy.cc",
+    "v4l2_video_decoder_delegate_vp9_legacy.h",
     "v4l2_video_encode_accelerator.cc",
     "v4l2_video_encode_accelerator.h",
-    "v4l2_vp8_accelerator.cc",
-    "v4l2_vp8_accelerator.h",
-    "v4l2_vp8_accelerator_legacy.cc",
-    "v4l2_vp8_accelerator_legacy.h",
-    "v4l2_vp9_accelerator_chromium.cc",
-    "v4l2_vp9_accelerator_chromium.h",
-    "v4l2_vp9_accelerator_legacy.cc",
-    "v4l2_vp9_accelerator_legacy.h",
   ]
 
   libs = [
@@ -126,12 +127,35 @@ source_set("v4l2") {
 
 source_set("unit_test") {
   testonly = true
-  sources = [ "v4l2_device_unittest.cc" ]
+  sources = [
+    "v4l2_device_unittest.cc",
+    "v4l2_stateful_workaround_unittest.cc",
+  ]
   deps = [
     ":v4l2",
+    "//base",
+    "//media",
     "//media:test_support",
     "//testing/gtest",
     "//ui/gfx:test_support",
     "//ui/gl",
+  ]
+}
+
+executable("v4l2_stateless_decoder") {
+  testonly = true
+  sources = [
+    "test/v4l2_ioctl_shim.cc",
+    "test/v4l2_ioctl_shim.h",
+    "test/v4l2_stateless_decoder.cc",
+    "test/vp9_decoder.cc",
+    "test/vp9_decoder.h",
+  ]
+
+  deps = [
+    "//base",
+    "//media",
+    "//media:test_support",
+    "//media/gpu:common",
   ]
 }

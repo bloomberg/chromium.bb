@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 
 from tensorflow.core.protobuf import config_pb2
@@ -55,9 +51,9 @@ class DefunCollectionTest(test.TestCase, parameterized.TestCase):
           return z
 
         self.assertEqual(7, int(self.evaluate(fn())))
-        self.assertEquals(ops.get_collection('x'), [2])
-        self.assertEquals(ops.get_collection('y'), [5])
-        self.assertEquals(ops.get_collection('z'), [])
+        self.assertEqual(ops.get_collection('x'), [2])
+        self.assertEqual(ops.get_collection('y'), [5])
+        self.assertEqual(ops.get_collection('z'), [])
 
   @parameterized.named_parameters(
       dict(testcase_name='Defun', function_decorator=function.defun),
@@ -76,8 +72,7 @@ class DefunCollectionTest(test.TestCase, parameterized.TestCase):
 
         self.evaluate(variables.global_variables_initializer())
         self.assertEqual(1.0, float(self.evaluate(f())))
-        self.assertEquals(
-            len(ops.get_collection(ops.GraphKeys.GLOBAL_VARIABLES)), 1)
+        self.assertLen(ops.get_collection(ops.GraphKeys.GLOBAL_VARIABLES), 1)
 
   def testCollectionVariableValueWrite(self):
     """Write variable value inside defun."""
@@ -92,8 +87,7 @@ class DefunCollectionTest(test.TestCase, parameterized.TestCase):
         _ = f.get_concrete_function()
         self.evaluate(variables.global_variables_initializer())
         self.assertEqual(2.0, float(self.evaluate(f())))
-        self.assertEquals(
-            len(ops.get_collection(ops.GraphKeys.GLOBAL_VARIABLES)), 1)
+        self.assertLen(ops.get_collection(ops.GraphKeys.GLOBAL_VARIABLES), 1)
 
 
 if __name__ == '__main__':

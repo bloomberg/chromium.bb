@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/process/kill.h"
 #include "headless/public/headless_devtools_channel.h"
 #include "headless/public/headless_export.h"
@@ -28,10 +28,16 @@ class HEADLESS_EXPORT HeadlessWebContents {
  public:
   class HEADLESS_EXPORT Builder;
 
+  HeadlessWebContents(const HeadlessWebContents&) = delete;
+  HeadlessWebContents& operator=(const HeadlessWebContents&) = delete;
+
   virtual ~HeadlessWebContents() {}
 
   class HEADLESS_EXPORT Observer {
    public:
+    Observer(const Observer&) = delete;
+    Observer& operator=(const Observer&) = delete;
+
     // All the following notifications will be called on browser main thread.
 
     // Indicates that this HeadlessWebContents instance is now ready to be
@@ -64,9 +70,6 @@ class HEADLESS_EXPORT HeadlessWebContents {
    protected:
     Observer() {}
     virtual ~Observer() {}
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
   // Add or remove an observer to receive events from this WebContents.
@@ -98,12 +101,13 @@ class HEADLESS_EXPORT HeadlessWebContents {
 
  protected:
   HeadlessWebContents() {}
-
-  DISALLOW_COPY_AND_ASSIGN(HeadlessWebContents);
 };
 
 class HEADLESS_EXPORT HeadlessWebContents::Builder {
  public:
+  Builder(const Builder&) = delete;
+  Builder& operator=(const Builder&) = delete;
+
   ~Builder();
   Builder(Builder&&);
 
@@ -130,13 +134,11 @@ class HEADLESS_EXPORT HeadlessWebContents::Builder {
 
   explicit Builder(HeadlessBrowserContextImpl* browser_context);
 
-  HeadlessBrowserContextImpl* browser_context_;
+  raw_ptr<HeadlessBrowserContextImpl> browser_context_;
 
   GURL initial_url_ = GURL("about:blank");
   gfx::Size window_size_;
   bool enable_begin_frame_control_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(Builder);
 };
 
 }  // namespace headless

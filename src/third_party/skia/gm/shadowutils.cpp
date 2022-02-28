@@ -91,9 +91,7 @@ void draw_paths(SkCanvas* canvas, ShadowMode mode) {
     SkScalar dy = 0;
     SkTDArray<SkMatrix> matrices;
     matrices.push()->reset();
-    SkMatrix* m = matrices.push();
-    m->setRotate(33.f, 25.f, 25.f);
-    m->postScale(1.2f, 0.8f, 25.f, 25.f);
+    matrices.push()->setRotate(33.f, 25.f, 25.f).postScale(1.2f, 0.8f, 25.f, 25.f);
     for (auto& m : matrices) {
         for (int flags : { kNone_ShadowFlag, kTransparentOccluder_ShadowFlag }) {
             int pathCounter = 0;
@@ -266,7 +264,7 @@ DEF_SIMPLE_GM(shadow_utils_directional, canvas, 256, 384) {
     static constexpr SkScalar kHeight = 12.f;
 
     SkPath rrect(SkPath::RRect(SkRect::MakeLTRB(-25, -25, 25, 25), 10, 10));
-    SkPoint3 lightPos = { -45, -45, 45 };
+    SkPoint3 lightPos = { -45, -45, 77.9422863406f };
 
     SkColor ambientColor = SkColorSetARGB(0.02f * 255, 0, 0, 0);
     SkColor spotColor = SkColorSetARGB(0.35f * 255, 0, 0, 0);

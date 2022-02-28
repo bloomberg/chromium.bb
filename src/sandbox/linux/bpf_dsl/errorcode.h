@@ -5,7 +5,6 @@
 #ifndef SANDBOX_LINUX_BPF_DSL_ERRORCODE_H__
 #define SANDBOX_LINUX_BPF_DSL_ERRORCODE_H__
 
-#include "base/macros.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
@@ -27,8 +26,9 @@ class SANDBOX_EXPORT ErrorCode {
 #endif
   };
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ErrorCode);
+  ErrorCode() = delete;
+  ErrorCode(const ErrorCode&) = delete;
+  ErrorCode& operator=(const ErrorCode&) = delete;
 };
 
 }  // namespace bpf_dsl

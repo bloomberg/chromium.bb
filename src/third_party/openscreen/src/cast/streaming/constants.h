@@ -17,12 +17,6 @@
 namespace openscreen {
 namespace cast {
 
-// Mirroring App identifier.
-constexpr char kMirroringAppId[] = "0F5096E8";
-
-// Mirroring App identifier for audio-only mirroring.
-constexpr char kMirroringAudioOnlyAppId[] = "85CDB22F";
-
 // Default target playout delay. The playout delay is the window of time between
 // capture from the source until presentation at the receiver.
 constexpr std::chrono::milliseconds kDefaultTargetPlayoutDelay(400);
@@ -109,7 +103,9 @@ constexpr int kSupportedRemotingVersion = 2;
 // remoted and is not specified as part of the OFFER message (indicated as
 // "REMOTE_AUDIO" or "REMOTE_VIDEO").
 enum class AudioCodec { kAac, kOpus, kNotSpecified };
-enum class VideoCodec { kH264, kVp8, kHevc, kVp9, kNotSpecified };
+enum class VideoCodec { kH264, kVp8, kHevc, kNotSpecified, kVp9, kAv1 };
+
+enum class CastMode : uint8_t { kMirroring, kRemoting };
 
 }  // namespace cast
 }  // namespace openscreen

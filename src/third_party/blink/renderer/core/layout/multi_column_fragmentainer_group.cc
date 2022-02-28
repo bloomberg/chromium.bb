@@ -329,9 +329,24 @@ unsigned MultiColumnFragmentainerGroup::ActualColumnCount() const {
 
 void MultiColumnFragmentainerGroup::SetColumnBlockSizeFromNG(
     LayoutUnit block_size) {
-  DCHECK(!is_logical_height_known_ || logical_height_ == block_size);
+  // We clamp the fragmentainer block size up to 1 for legacy write-back if
+  // there is content that overflows the less-than-1px-height (or even
+  // zero-height) fragmentainer. However, if one fragmentainer contains no
+  // overflow, while others fragmentainers do, the known height may be different
+  // than the |block_size| passed in. Don't override the stored height if this
+  // is the case.
+  DCHECK(!is_logical_height_known_ || logical_height_ == block_size ||
+         block_size <= LayoutUnit(1));
+  if (is_logical_height_known_)
+    return;
   logical_height_ = block_size;
   is_logical_height_known_ = true;
+}
+
+void MultiColumnFragmentainerGroup::ExtendColumnBlockSizeFromNG(
+    LayoutUnit block_size) {
+  DCHECK(is_logical_height_known_);
+  logical_height_ += block_size;
 }
 
 LayoutUnit MultiColumnFragmentainerGroup::HeightAdjustedForRowOffset(
@@ -474,8 +489,8 @@ LayoutRect MultiColumnFragmentainerGroup::FlowThreadPortionOverflowRectAt(
   // be clipped in the middle of adjacent column gaps. Care is taken here to
   // avoid rounding errors.
   LayoutRect overflow_rect(
-      IntRect(-kMulticolMaxClipPixels, -kMulticolMaxClipPixels,
-              2 * kMulticolMaxClipPixels, 2 * kMulticolMaxClipPixels));
+      gfx::Rect(-kMulticolMaxClipPixels, -kMulticolMaxClipPixels,
+                2 * kMulticolMaxClipPixels, 2 * kMulticolMaxClipPixels));
   if (column_set_->IsHorizontalWritingMode()) {
     if (!is_first_column_in_multicol_container)
       overflow_rect.ShiftYEdgeTo(portion_rect.Y());
@@ -613,10 +628,14 @@ unsigned MultiColumnFragmentainerGroup::UnclampedActualColumnCount() const {
   return count;
 }
 
+void MultiColumnFragmentainerGroup::Trace(Visitor* visitor) const {
+  visitor->Trace(column_set_);
+}
+
 MultiColumnFragmentainerGroupList::MultiColumnFragmentainerGroupList(
     LayoutMultiColumnSet& column_set)
-    : column_set_(column_set) {
-  Append(MultiColumnFragmentainerGroup(column_set_));
+    : column_set_(&column_set) {
+  Append(MultiColumnFragmentainerGroup(*column_set_));
 }
 
 // An explicit empty destructor of MultiColumnFragmentainerGroupList should be
@@ -631,12 +650,17 @@ MultiColumnFragmentainerGroupList::~MultiColumnFragmentainerGroupList() =
 
 MultiColumnFragmentainerGroup&
 MultiColumnFragmentainerGroupList::AddExtraGroup() {
-  Append(MultiColumnFragmentainerGroup(column_set_));
+  Append(MultiColumnFragmentainerGroup(*column_set_));
   return Last();
 }
 
 void MultiColumnFragmentainerGroupList::DeleteExtraGroups() {
   Shrink(1);
+}
+
+void MultiColumnFragmentainerGroupList::Trace(Visitor* visitor) const {
+  visitor->Trace(column_set_);
+  visitor->Trace(groups_);
 }
 
 }  // namespace blink

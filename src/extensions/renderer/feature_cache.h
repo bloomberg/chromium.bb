@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/features/feature.h"
 #include "url/gurl.h"
@@ -29,6 +28,10 @@ class FeatureCache {
   using FeatureNameVector = std::vector<std::string>;
 
   FeatureCache();
+
+  FeatureCache(const FeatureCache&) = delete;
+  FeatureCache& operator=(const FeatureCache&) = delete;
+
   ~FeatureCache();
 
   // Returns the names of features available to the given set of |context_type|,
@@ -74,8 +77,6 @@ class FeatureCache {
   // invalidated (since WebUI permissions don't change), and are cached by
   // origin. These covers chrome:// and chrome-untrusted:// URLs.
   WebUICacheMap webui_cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(FeatureCache);
 };
 
 }  // namespace extensions

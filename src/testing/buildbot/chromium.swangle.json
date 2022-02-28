@@ -31,7 +31,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -68,7 +68,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -99,7 +99,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -129,7 +129,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -159,7 +159,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -189,7 +189,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -219,7 +219,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -249,7 +249,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -280,7 +280,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -310,7 +310,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -340,7 +340,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -370,7 +370,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -401,7 +401,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -431,7 +431,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -461,7 +461,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -491,7 +491,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -525,7 +525,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -555,7 +555,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -585,7 +585,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -615,7 +615,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -645,7 +645,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -675,7 +675,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -706,7 +706,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -736,7 +736,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -766,7 +766,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -796,7 +796,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -827,7 +827,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -857,7 +857,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -887,7 +887,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -917,7 +917,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -951,7 +951,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -981,7 +981,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1011,7 +1011,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1041,7 +1041,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1071,7 +1071,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1101,7 +1101,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1132,7 +1132,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1162,7 +1162,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1192,7 +1192,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1222,7 +1222,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1253,7 +1253,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1283,7 +1283,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1313,7 +1313,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1343,7 +1343,7 @@
             {
               "cpu": "x86-64",
               "gpu": "none",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1386,10 +1386,8 @@
             {
               "cpu": "x86-64",
               "display_attached": "1",
-              "gpu": "1002:6821",
-              "hidpi": "1",
-              "os": "Mac-10.14.6",
-              "pool": "chromium.tests.gpu"
+              "gpu": "8086:3e9b",
+              "os": "Mac-11.5.2"
             }
           ],
           "idempotent": false,
@@ -1424,10 +1422,8 @@
             {
               "cpu": "x86-64",
               "display_attached": "1",
-              "gpu": "1002:6821",
-              "hidpi": "1",
-              "os": "Mac-10.14.6",
-              "pool": "chromium.tests.gpu"
+              "gpu": "8086:3e9b",
+              "os": "Mac-11.5.2"
             }
           ],
           "idempotent": false,

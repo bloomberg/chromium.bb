@@ -33,8 +33,10 @@
 
 namespace blink {
 
+class CascadeLayer;
 class CSSRule;
 class CSSStyleSheet;
+class ExecutionContext;
 
 class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
  public:
@@ -48,6 +50,8 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
     kProperty,
     kKeyframes,
     kKeyframe,
+    kLayerBlock,
+    kLayerStatement,
     kNamespace,
     kContainer,
     kCounterStyle,
@@ -55,6 +59,12 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
     kSupports,
     kViewport,
   };
+
+  // Name of a cascade layer as given by an @layer rule, split at '.' into a
+  // vector. Note that this may not be the full layer name if the rule is nested
+  // in another @layer rule or in a layered @import.
+  using LayerName = Vector<AtomicString, 1>;
+  static String LayerNameAsString(const LayerName&);
 
   RuleType GetType() const { return static_cast<RuleType>(type_); }
 
@@ -64,6 +74,8 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
   bool IsFontFaceRule() const { return GetType() == kFontFace; }
   bool IsKeyframesRule() const { return GetType() == kKeyframes; }
   bool IsKeyframeRule() const { return GetType() == kKeyframe; }
+  bool IsLayerBlockRule() const { return GetType() == kLayerBlock; }
+  bool IsLayerStatementRule() const { return GetType() == kLayerStatement; }
   bool IsNamespaceRule() const { return GetType() == kNamespace; }
   bool IsMediaRule() const { return GetType() == kMedia; }
   bool IsPageRule() const { return GetType() == kPage; }
@@ -162,10 +174,14 @@ class CORE_EXPORT StyleRuleFontFace : public StyleRuleBase {
     return MakeGarbageCollected<StyleRuleFontFace>(*this);
   }
 
+  void SetCascadeLayer(const CascadeLayer* layer) { layer_ = layer; }
+  const CascadeLayer* GetCascadeLayer() const { return layer_; }
+
   void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
   Member<CSSPropertyValueSet> properties_;  // Cannot be null.
+  Member<const CascadeLayer> layer_;
 };
 
 class StyleRulePage : public StyleRuleBase {
@@ -186,10 +202,14 @@ class StyleRulePage : public StyleRuleBase {
     return MakeGarbageCollected<StyleRulePage>(*this);
   }
 
+  void SetCascadeLayer(const CascadeLayer* layer) { layer_ = layer; }
+  const CascadeLayer* GetCascadeLayer() const { return layer_; }
+
   void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
   Member<CSSPropertyValueSet> properties_;  // Cannot be null.
+  Member<const CascadeLayer> layer_;
   CSSSelectorList selector_list_;
 };
 
@@ -206,6 +226,9 @@ class CORE_EXPORT StyleRuleProperty : public StyleRuleBase {
   const CSSValue* Inherits() const;
   const CSSValue* GetInitialValue() const;
 
+  void SetCascadeLayer(const CascadeLayer* layer) { layer_ = layer; }
+  const CascadeLayer* GetCascadeLayer() const { return layer_; }
+
   StyleRuleProperty* Copy() const {
     return MakeGarbageCollected<StyleRuleProperty>(*this);
   }
@@ -215,6 +238,7 @@ class CORE_EXPORT StyleRuleProperty : public StyleRuleBase {
  private:
   String name_;
   Member<CSSPropertyValueSet> properties_;
+  Member<const CascadeLayer> layer_;
 };
 
 class CORE_EXPORT StyleRuleScrollTimeline : public StyleRuleBase {
@@ -234,7 +258,9 @@ class CORE_EXPORT StyleRuleScrollTimeline : public StyleRuleBase {
   const CSSValue* GetOrientation() const { return orientation_; }
   const CSSValue* GetStart() const { return start_; }
   const CSSValue* GetEnd() const { return end_; }
-  const CSSValue* GetTimeRange() const { return time_range_; }
+
+  void SetCascadeLayer(const CascadeLayer* layer) { layer_ = layer; }
+  const CascadeLayer* GetCascadeLayer() const { return layer_; }
 
  private:
   AtomicString name_;
@@ -242,7 +268,7 @@ class CORE_EXPORT StyleRuleScrollTimeline : public StyleRuleBase {
   Member<const CSSValue> orientation_;
   Member<const CSSValue> start_;
   Member<const CSSValue> end_;
-  Member<const CSSValue> time_range_;
+  Member<const CascadeLayer> layer_;
 };
 
 class CORE_EXPORT StyleRuleGroup : public StyleRuleBase {
@@ -262,6 +288,47 @@ class CORE_EXPORT StyleRuleGroup : public StyleRuleBase {
 
  private:
   HeapVector<Member<StyleRuleBase>> child_rules_;
+};
+
+// https://www.w3.org/TR/css-cascade-5/#layer-block
+class CORE_EXPORT StyleRuleLayerBlock : public StyleRuleGroup {
+ public:
+  StyleRuleLayerBlock(LayerName&& name,
+                      HeapVector<Member<StyleRuleBase>>& adopt_rule);
+  StyleRuleLayerBlock(const StyleRuleLayerBlock&);
+  ~StyleRuleLayerBlock();
+
+  const LayerName& GetName() const { return name_; }
+  String GetNameAsString() const;
+
+  StyleRuleLayerBlock* Copy() const {
+    return MakeGarbageCollected<StyleRuleLayerBlock>(*this);
+  }
+
+  void TraceAfterDispatch(blink::Visitor*) const;
+
+ private:
+  LayerName name_;
+};
+
+// https://www.w3.org/TR/css-cascade-5/#layer-empty
+class CORE_EXPORT StyleRuleLayerStatement : public StyleRuleBase {
+ public:
+  explicit StyleRuleLayerStatement(Vector<LayerName>&& names);
+  StyleRuleLayerStatement(const StyleRuleLayerStatement& other);
+  ~StyleRuleLayerStatement();
+
+  const Vector<LayerName>& GetNames() const { return names_; }
+  Vector<String> GetNamesAsStrings() const;
+
+  StyleRuleLayerStatement* copy() const {
+    return MakeGarbageCollected<StyleRuleLayerStatement>(*this);
+  }
+
+  void TraceAfterDispatch(blink::Visitor*) const;
+
+ private:
+  Vector<LayerName> names_;
 };
 
 class CORE_EXPORT StyleRuleCondition : public StyleRuleGroup {
@@ -331,6 +398,8 @@ class CORE_EXPORT StyleRuleContainer : public StyleRuleCondition {
   StyleRuleContainer* Copy() const {
     return MakeGarbageCollected<StyleRuleContainer>(*this);
   }
+
+  void SetConditionText(const ExecutionContext*, String);
 
   void TraceAfterDispatch(blink::Visitor*) const;
 
@@ -404,7 +473,21 @@ template <>
 struct DowncastTraits<StyleRuleGroup> {
   static bool AllowFrom(const StyleRuleBase& rule) {
     return rule.IsMediaRule() || rule.IsSupportsRule() ||
-           rule.IsContainerRule();
+           rule.IsContainerRule() || rule.IsLayerBlockRule();
+  }
+};
+
+template <>
+struct DowncastTraits<StyleRuleLayerBlock> {
+  static bool AllowFrom(const StyleRuleBase& rule) {
+    return rule.IsLayerBlockRule();
+  }
+};
+
+template <>
+struct DowncastTraits<StyleRuleLayerStatement> {
+  static bool AllowFrom(const StyleRuleBase& rule) {
+    return rule.IsLayerStatementRule();
   }
 };
 

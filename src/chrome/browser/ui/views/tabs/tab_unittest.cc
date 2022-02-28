@@ -9,9 +9,11 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/views/tabs/alert_indicator.h"
@@ -53,8 +55,6 @@ class FakeTabController : public TabController {
   const ui::ListSelectionModel& GetSelectionModel() const override {
     return selection_model_;
   }
-  bool SupportsMultipleSelection() override { return false; }
-  bool ShouldHideCloseButtonForTab(Tab* tab) const override { return false; }
   void SelectTab(Tab* tab, const ui::Event& event) override {}
   void ExtendSelectionTo(Tab* tab) override {}
   void ToggleSelected(Tab* tab) override {}
@@ -163,7 +163,7 @@ class TabTest : public ChromeViewsTestBase {
  public:
   TabTest() {
     // Prevent the fake clock from starting at 0 which is the null time.
-    fake_clock_.Advance(base::TimeDelta::FromMilliseconds(2000));
+    fake_clock_.Advance(base::Milliseconds(2000));
   }
   ~TabTest() override {}
 
@@ -364,7 +364,7 @@ class AlertIndicatorTest : public ChromeViewsTestBase {
             views::kFlexBehaviorKey,
             views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                      views::MaximumFlexSizeRule::kUnbounded));
-    parent->AddChildView(tab_strip_);
+    parent->AddChildView(tab_strip_.get());
 
     widget_ = CreateTestWidget();
     widget_->SetContentsView(std::move(parent));
@@ -392,8 +392,8 @@ class AlertIndicatorTest : public ChromeViewsTestBase {
   }
 
   // Owned by TabStrip.
-  FakeBaseTabStripController* controller_ = nullptr;
-  TabStrip* tab_strip_ = nullptr;
+  raw_ptr<FakeBaseTabStripController> controller_ = nullptr;
+  raw_ptr<TabStrip> tab_strip_ = nullptr;
   std::unique_ptr<views::Widget> widget_;
 };
 
@@ -595,11 +595,11 @@ TEST_F(TabTest, LayeredThrobber) {
   EXPECT_TRUE(icon->GetShowingLoadingAnimation());
   EXPECT_TRUE(icon->layer());
   tab_controller->set_paint_throbber_to_layer(false);
-  tab->StepLoadingAnimation(base::TimeDelta::FromMilliseconds(100));
+  tab->StepLoadingAnimation(base::Milliseconds(100));
   EXPECT_TRUE(icon->GetShowingLoadingAnimation());
   EXPECT_FALSE(icon->layer());
   tab_controller->set_paint_throbber_to_layer(true);
-  tab->StepLoadingAnimation(base::TimeDelta::FromMilliseconds(100));
+  tab->StepLoadingAnimation(base::Milliseconds(100));
   EXPECT_TRUE(icon->GetShowingLoadingAnimation());
   EXPECT_TRUE(icon->layer());
   data.network_state = TabNetworkState::kNone;

@@ -11,9 +11,9 @@ drover_c() {
   tick 1000
 }
 
-silent git push origin refs/remotes/origin/master:refs/branch-heads/9999
+silent git push origin refs/remotes/origin/main:refs/branch-heads/9999
 silent git config --add remote.origin.fetch \
   +refs/branch-heads/*:refs/remotes/branch-heads/*
 silent git fetch origin
 
-silent git checkout -B master origin/master
+silent git checkout -B main origin/main

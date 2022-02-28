@@ -983,6 +983,8 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
 
         decoded_payload_size = frame_header_size;
         pbi->frame_header_size = frame_header_size;
+        cm->cur_frame->temporal_id = obu_header.temporal_layer_id;
+        cm->cur_frame->spatial_id = obu_header.spatial_layer_id;
 
         if (cm->show_existing_frame) {
           if (obu_header.type == OBU_FRAME) {
