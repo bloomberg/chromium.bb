@@ -10,10 +10,10 @@ import * as Protocol from '../../generated/protocol.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-import {ApplicationCacheModel} from './ApplicationCacheModel.js';
 import {DatabaseModel} from './DatabaseModel.js';
 import {DOMStorageModel} from './DOMStorageModel.js';
 import {IndexedDBModel} from './IndexedDBModel.js';
+import storageViewStyles from './storageView.css.js';
 
 const UIStrings = {
   /**
@@ -88,10 +88,6 @@ const UIStrings = {
   /**
    * @description Checkbox label in the Clear Storage section of the Storage View of the Application panel
    */
-  applicationCache: 'Application cache',
-  /**
-   * @description Checkbox label in the Clear Storage section of the Storage View of the Application panel
-   */
   includingThirdPartyCookies: 'including third-party cookies',
   /**
    * @description Text for error message in Application Quota Override
@@ -134,17 +130,22 @@ const UIStrings = {
    * @description Text in Application Panel Sidebar of the Application panel
    */
   serviceWorkers: 'Service Workers',
+  /**
+   * @description Checkbox label in Application Panel Sidebar of the Application panel.
+   * Storage quota refers to the amount of disk available for the website or app.
+   */
+  simulateCustomStorage: 'Simulate custom storage quota',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/StorageView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 /**
- * @implements {SDK.SDKModel.Observer}
+ * @implements {SDK.TargetManager.Observer}
  */
 export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
   private pieColors: Map<Protocol.Storage.StorageType, string>;
   private reportView: UI.ReportView.ReportView;
-  private target: SDK.SDKModel.Target|null;
+  private target: SDK.Target.Target|null;
   private securityOrigin: string|null;
   private settings: Map<Protocol.Storage.StorageType, Common.Settings.Setting<boolean>>;
   private includeThirdPartyCookiesSetting: Common.Settings.Setting<boolean>;
@@ -160,7 +161,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
 
   constructor() {
     super(true, 1000);
-    this.registerRequiredCSS('panels/application/storageView.css', {enableLegacyPatching: false});
+
     this.contentElement.classList.add('clear-storage-container');
     this.pieColors = new Map([
       [Protocol.Storage.StorageType.Appcache, 'rgb(110, 161, 226)'],        // blue
@@ -174,10 +175,10 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
 
     // TODO(crbug.com/1156978): Replace UI.ReportView.ReportView with ReportView.ts web component.
     this.reportView = new UI.ReportView.ReportView(i18nString(UIStrings.storageTitle));
-    this.reportView.registerRequiredCSS('panels/application/storageView.css', {enableLegacyPatching: false});
+
     this.reportView.element.classList.add('clear-storage-header');
     this.reportView.show(this.contentElement);
-    /** @type {?SDK.SDKModel.Target} */
+    /** @type {?SDK.Target.Target} */
     this.target = null;
     /** @type {?string} */
     this.securityOrigin = null;
@@ -207,7 +208,8 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
 
     this.previousOverrideFieldValue = '';
     const quotaOverrideCheckboxRow = quota.appendRow();
-    this.quotaOverrideCheckbox = UI.UIUtils.CheckboxLabel.create('Simulate custom storage quota', false, '');
+    this.quotaOverrideCheckbox =
+        UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.simulateCustomStorage), false, '');
     quotaOverrideCheckboxRow.appendChild(this.quotaOverrideCheckbox);
     this.quotaOverrideCheckbox.checkboxElement.addEventListener('click', this.onClickCheckbox.bind(this), false);
     this.quotaOverrideControlRow = quota.appendRow();
@@ -254,10 +256,9 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
 
     const caches = this.reportView.appendSection(i18nString(UIStrings.cache));
     this.appendItem(caches, i18nString(UIStrings.cacheStorage), Protocol.Storage.StorageType.Cache_storage);
-    this.appendItem(caches, i18nString(UIStrings.applicationCache), Protocol.Storage.StorageType.Appcache);
     caches.markFieldListAsGroup();
 
-    SDK.SDKModel.TargetManager.instance().observeTargets(this);
+    SDK.TargetManager.TargetManager.instance().observeTargets(this);
   }
 
   private appendItem(section: UI.ReportView.Section, title: string, settingName: Protocol.Storage.StorageType): void {
@@ -268,7 +269,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
     }
   }
 
-  targetAdded(target: SDK.SDKModel.Target): void {
+  targetAdded(target: SDK.Target.Target): void {
     if (this.target) {
       return;
     }
@@ -281,7 +282,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         SDK.SecurityOriginManager.Events.MainSecurityOriginChanged, this.originChanged, this);
   }
 
-  targetRemoved(target: SDK.SDKModel.Target): void {
+  targetRemoved(target: SDK.Target.Target): void {
     if (this.target !== target) {
       return;
     }
@@ -291,10 +292,10 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         SDK.SecurityOriginManager.Events.MainSecurityOriginChanged, this.originChanged, this);
   }
 
-  private originChanged(event: Common.EventTarget.EventTargetEvent): void {
-    const mainOrigin = /** *@type {string} */ (event.data.mainSecurityOrigin);
-    const unreachableMainOrigin = /** @type {string} */ (event.data.unreachableMainSecurityOrigin);
-    this.updateOrigin(mainOrigin, unreachableMainOrigin);
+  private originChanged(
+      event: Common.EventTarget.EventTargetEvent<SDK.SecurityOriginManager.MainSecurityOriginChangedEvent>): void {
+    const {mainSecurityOrigin, unreachableMainSecurityOrigin} = event.data;
+    this.updateOrigin(mainSecurityOrigin, unreachableMainSecurityOrigin);
   }
 
   private updateOrigin(mainOrigin: string, unreachableMainOrigin: string|null): void {
@@ -345,7 +346,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         {origin: this.securityOrigin, quotaSize: quotaInBytes});
   }
 
-  private async clearQuotaForOrigin(target: SDK.SDKModel.Target, origin: string): Promise<void> {
+  private async clearQuotaForOrigin(target: SDK.Target.Target, origin: string): Promise<void> {
     await target.storageAgent().invoke_overrideQuotaForOrigin({origin});
   }
 
@@ -391,7 +392,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
   }
 
   static clear(
-      target: SDK.SDKModel.Target, securityOrigin: string, selectedStorageTypes: string[],
+      target: SDK.Target.Target, securityOrigin: string, selectedStorageTypes: string[],
       includeThirdPartyCookies: boolean): void {
     target.storageAgent().invoke_clearDataForOrigin(
         {origin: securityOrigin, storageTypes: selectedStorageTypes.join(',')});
@@ -406,7 +407,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
     }
 
     if (set.has(Protocol.Storage.StorageType.Indexeddb) || hasAll) {
-      for (const target of SDK.SDKModel.TargetManager.instance().targets()) {
+      for (const target of SDK.TargetManager.TargetManager.instance().targets()) {
         const indexedDBModel = target.model(IndexedDBModel);
         if (indexedDBModel) {
           indexedDBModel.clearForOrigin(securityOrigin);
@@ -430,17 +431,10 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
     }
 
     if (set.has(Protocol.Storage.StorageType.Cache_storage) || hasAll) {
-      const target = SDK.SDKModel.TargetManager.instance().mainTarget();
+      const target = SDK.TargetManager.TargetManager.instance().mainTarget();
       const model = target && target.model(SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel);
       if (model) {
         model.clearForOrigin(securityOrigin);
-      }
-    }
-
-    if (set.has(Protocol.Storage.StorageType.Appcache) || hasAll) {
-      const appcacheModel = target.model(ApplicationCacheModel);
-      if (appcacheModel) {
-        appcacheModel.reset();
       }
     }
   }
@@ -527,6 +521,11 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         return i18nString(UIStrings.other);
     }
   }
+  wasShown(): void {
+    super.wasShown();
+    this.reportView.registerCSSFiles([storageViewStyles]);
+    this.registerCSSFiles([storageViewStyles]);
+  }
 }
 
 export const AllStorageTypes = [
@@ -562,7 +561,7 @@ export class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
   }
 
   private handleClear(includeThirdPartyCookies: boolean): boolean {
-    const target = SDK.SDKModel.TargetManager.instance().mainTarget();
+    const target = SDK.TargetManager.TargetManager.instance().mainTarget();
     if (!target) {
       return false;
     }

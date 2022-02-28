@@ -265,7 +265,7 @@ const Instr kLwSwOffsetMask = kImm16Mask;
 Assembler::Assembler(const AssemblerOptions& options,
                      std::unique_ptr<AssemblerBuffer> buffer)
     : AssemblerBase(options, std::move(buffer)),
-      scratch_register_list_(at.bit()) {
+      scratch_register_list_(at.bit() | s0.bit()) {
   if (CpuFeatures::IsSupported(MIPS_SIMD)) {
     EnableCpuFeature(MIPS_SIMD);
   }
@@ -1061,7 +1061,7 @@ int Assembler::BranchOffset(Instr instr) {
 // space.  There is no guarantee that the relocated location can be similarly
 // encoded.
 bool Assembler::MustUseReg(RelocInfo::Mode rmode) {
-  return !RelocInfo::IsNone(rmode);
+  return !RelocInfo::IsNoInfo(rmode);
 }
 
 void Assembler::GenInstrRegister(Opcode opcode, Register rs, Register rt,
@@ -3764,19 +3764,21 @@ void Assembler::GrowBuffer() {
   buffer_ = std::move(new_buffer);
   buffer_start_ = new_start;
   pc_ += pc_delta;
-  last_call_pc_ += pc_delta;
+  pc_for_safepoint_ += pc_delta;
   reloc_info_writer.Reposition(reloc_info_writer.pos() + rc_delta,
                                reloc_info_writer.last_pc() + pc_delta);
 
   // Relocate runtime entries.
-  Vector<byte> instructions{buffer_start_, pc_offset()};
-  Vector<const byte> reloc_info{reloc_info_writer.pos(), reloc_size};
+  base::Vector<byte> instructions{buffer_start_,
+                                  static_cast<size_t>(pc_offset())};
+  base::Vector<const byte> reloc_info{reloc_info_writer.pos(), reloc_size};
   for (RelocIterator it(instructions, reloc_info, 0); !it.done(); it.next()) {
     RelocInfo::Mode rmode = it.rinfo()->rmode();
     if (rmode == RelocInfo::INTERNAL_REFERENCE) {
       RelocateInternalReference(rmode, it.rinfo()->pc(), pc_delta);
     }
   }
+
   DCHECK(!overflow());
 }
 
@@ -3788,8 +3790,9 @@ void Assembler::db(uint8_t data) {
 
 void Assembler::dd(uint32_t data, RelocInfo::Mode rmode) {
   CheckForEmitInForbiddenSlot();
-  if (!RelocInfo::IsNone(rmode)) {
-    DCHECK(RelocInfo::IsDataEmbeddedObject(rmode));
+  if (!RelocInfo::IsNoInfo(rmode)) {
+    DCHECK(RelocInfo::IsDataEmbeddedObject(rmode) ||
+           RelocInfo::IsLiteralConstant(rmode));
     RecordRelocInfo(rmode);
   }
   *reinterpret_cast<uint32_t*>(pc_) = data;
@@ -3798,8 +3801,9 @@ void Assembler::dd(uint32_t data, RelocInfo::Mode rmode) {
 
 void Assembler::dq(uint64_t data, RelocInfo::Mode rmode) {
   CheckForEmitInForbiddenSlot();
-  if (!RelocInfo::IsNone(rmode)) {
-    DCHECK(RelocInfo::IsDataEmbeddedObject(rmode));
+  if (!RelocInfo::IsNoInfo(rmode)) {
+    DCHECK(RelocInfo::IsDataEmbeddedObject(rmode) ||
+           RelocInfo::IsLiteralConstant(rmode));
     RecordRelocInfo(rmode);
   }
   *reinterpret_cast<uint64_t*>(pc_) = data;

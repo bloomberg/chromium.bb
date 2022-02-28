@@ -1,10 +1,8 @@
 jgruber@chromium.org
 mslekova@chromium.org
 mvstanton@chromium.org
-neis@chromium.org
 nicohartmann@chromium.org
 sigurds@chromium.org
-solanes@chromium.org
 
 per-file wasm-*=ahaas@chromium.org
 per-file wasm-*=bbudge@chromium.org

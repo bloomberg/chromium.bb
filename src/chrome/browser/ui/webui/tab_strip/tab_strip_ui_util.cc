@@ -64,7 +64,8 @@ void MoveTabAcrossWindows(Browser* source_browser,
   bool was_pinned = source_browser->tab_strip_model()->IsTabPinned(from_index);
 
   std::unique_ptr<content::WebContents> detached_contents =
-      source_browser->tab_strip_model()->DetachWebContentsAt(from_index);
+      source_browser->tab_strip_model()->DetachWebContentsAtForInsertion(
+          from_index);
 
   int add_types = TabStripModel::ADD_NONE;
   if (was_active) {
@@ -80,7 +81,7 @@ void MoveTabAcrossWindows(Browser* source_browser,
 
 bool IsDraggedTab(const ui::OSExchangeData& drop_data) {
   base::Pickle pickle;
-  drop_data.GetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
+  drop_data.GetPickledData(ui::ClipboardFormatType::WebCustomDataType(),
                            &pickle);
   base::PickleIterator iter(pickle);
 
@@ -104,21 +105,15 @@ bool IsDraggedTab(const ui::OSExchangeData& drop_data) {
 
 bool DropTabsInNewBrowser(Browser* new_browser,
                           const ui::OSExchangeData& drop_data) {
-  base::Pickle pickle;
-  drop_data.GetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
-                           &pickle);
-
   std::u16string tab_id_str;
   std::u16string group_id_str;
-  ui::ReadCustomDataForType(pickle.data(), pickle.size(),
-                            base::ASCIIToUTF16(kWebUITabIdDataType),
-                            &tab_id_str);
-  if (tab_id_str.empty()) {
-    ui::ReadCustomDataForType(pickle.data(), pickle.size(),
-                              base::ASCIIToUTF16(kWebUITabGroupIdDataType),
-                              &group_id_str);
-  }
+  return ExtractTabData(drop_data, &tab_id_str, &group_id_str) &&
+         DropTabsInNewBrowser(new_browser, tab_id_str, group_id_str);
+}
 
+bool DropTabsInNewBrowser(Browser* new_browser,
+                          const std::u16string& tab_id_str,
+                          const std::u16string& group_id_str) {
   if (tab_id_str.empty() && group_id_str.empty())
     return false;
 
@@ -170,6 +165,28 @@ bool DropTabsInNewBrowser(Browser* new_browser,
   }
   new_browser->tab_strip_model()->ActivateTabAt(0);
   return true;
+}
+
+bool ExtractTabData(const ui::OSExchangeData& drop_data,
+                    std::u16string* tab_id_str,
+                    std::u16string* group_id_str) {
+  DCHECK(tab_id_str);
+  DCHECK(group_id_str);
+
+  base::Pickle pickle;
+  drop_data.GetPickledData(ui::ClipboardFormatType::WebCustomDataType(),
+                           &pickle);
+
+  ui::ReadCustomDataForType(pickle.data(), pickle.size(),
+                            base::ASCIIToUTF16(kWebUITabIdDataType),
+                            tab_id_str);
+  if (tab_id_str->empty()) {
+    ui::ReadCustomDataForType(pickle.data(), pickle.size(),
+                              base::ASCIIToUTF16(kWebUITabGroupIdDataType),
+                              group_id_str);
+  }
+
+  return !tab_id_str->empty() || !group_id_str->empty();
 }
 
 }  // namespace tab_strip_ui

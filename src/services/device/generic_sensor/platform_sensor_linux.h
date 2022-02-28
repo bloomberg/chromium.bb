@@ -19,6 +19,9 @@ class PlatformSensorLinux : public PlatformSensor {
                       PlatformSensorProvider* provider,
                       const SensorInfoLinux* sensor_device);
 
+  PlatformSensorLinux(const PlatformSensorLinux&) = delete;
+  PlatformSensorLinux& operator=(const PlatformSensorLinux&) = delete;
+
   mojom::ReportingMode GetReportingMode() override;
 
   // Called by a sensor reader. Takes new readings.
@@ -43,14 +46,7 @@ class PlatformSensorLinux : public PlatformSensor {
   // and stores them to a SensorReading structure.
   std::unique_ptr<SensorReader> sensor_reader_;
 
-  // Stores previously read values that are used to
-  // determine whether the recent values are changed
-  // and IPC can be notified that updates are available.
-  SensorReading old_values_;
-
   base::WeakPtrFactory<PlatformSensorLinux> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformSensorLinux);
 };
 
 }  // namespace device

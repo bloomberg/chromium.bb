@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -22,11 +22,11 @@
 #include "remoting/protocol/session_options_provider.h"
 #include "remoting/protocol/transport.h"
 #include "remoting/protocol/webrtc_data_stream_adapter.h"
-#include "remoting/protocol/webrtc_dummy_video_encoder.h"
 #include "remoting/protocol/webrtc_event_log_data.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/api/video_codecs/video_encoder_factory.h"
 
 namespace base {
 
@@ -83,16 +83,21 @@ class WebrtcTransport : public Transport,
     virtual void OnWebrtcTransportRouteChanged(const TransportRoute& route) = 0;
   };
 
-  WebrtcTransport(rtc::Thread* worker_thread,
-                  scoped_refptr<TransportContext> transport_context,
-                  EventHandler* event_handler);
+  // |video_encoder_factory| can be nullptr if the connection is not used for
+  // sending video.
+  WebrtcTransport(
+      rtc::Thread* worker_thread,
+      scoped_refptr<TransportContext> transport_context,
+      std::unique_ptr<webrtc::VideoEncoderFactory> video_encoder_factory,
+      EventHandler* event_handler);
+
+  WebrtcTransport(const WebrtcTransport&) = delete;
+  WebrtcTransport& operator=(const WebrtcTransport&) = delete;
+
   ~WebrtcTransport() override;
 
   webrtc::PeerConnectionInterface* peer_connection();
   webrtc::PeerConnectionFactoryInterface* peer_connection_factory();
-  WebrtcDummyVideoEncoderFactory* video_encoder_factory() {
-    return video_encoder_factory_;
-  }
   WebrtcAudioModule* audio_module();
   WebrtcEventLogData* rtc_event_log() { return &rtc_event_log_; }
 
@@ -187,7 +192,7 @@ class WebrtcTransport : public Transport,
 
   // Returns the min (first element) and max (second element) bitrate for this
   // connection, taking into account any relay bitrate cap and client overrides.
-  // The default range is [0, default max bixrate]. Client overrides that go
+  // The default range is [0, default max bitrate]. Client overrides that go
   // beyond this bound or exceed the relay server's max bitrate will be ignored.
   std::tuple<int, int> BitratesForConnection();
 
@@ -226,14 +231,12 @@ class WebrtcTransport : public Transport,
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<TransportContext> transport_context_;
-  EventHandler* event_handler_ = nullptr;
+  raw_ptr<EventHandler> event_handler_ = nullptr;
   SendTransportInfoCallback send_transport_info_callback_;
 
   crypto::HMAC handshake_hmac_;
 
   std::unique_ptr<PeerConnectionWrapper> peer_connection_wrapper_;
-
-  WebrtcDummyVideoEncoderFactory* video_encoder_factory_;
 
   bool negotiation_pending_ = false;
 
@@ -272,8 +275,6 @@ class WebrtcTransport : public Transport,
   WebrtcEventLogData rtc_event_log_;
 
   base::WeakPtrFactory<WebrtcTransport> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebrtcTransport);
 };
 
 }  // namespace protocol

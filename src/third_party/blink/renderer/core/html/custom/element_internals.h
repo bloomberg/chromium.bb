@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_ELEMENT_INTERNALS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_ELEMENT_INTERNALS_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/file_or_usv_string_or_form_data.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/html/forms/labels_node_list.h"
@@ -26,25 +25,18 @@ class CORE_EXPORT ElementInternals : public ScriptWrappable,
 
  public:
   ElementInternals(HTMLElement& target);
+  ElementInternals(const ElementInternals&) = delete;
+  ElementInternals& operator=(const ElementInternals&) = delete;
   void Trace(Visitor* visitor) const override;
 
   HTMLElement& Target() const { return *target_; }
   void DidUpgrade();
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void setFormValue(const V8ControlValue* value,
                     ExceptionState& exception_state);
   void setFormValue(const V8ControlValue* value,
                     const V8ControlValue* state,
                     ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  using ControlValue = FileOrUSVStringOrFormData;
-  // IDL attributes/operations
-  void setFormValue(const ControlValue& value, ExceptionState& exception_state);
-  void setFormValue(const ControlValue& value,
-                    const ControlValue& state,
-                    ExceptionState& exception_state);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   HTMLFormElement* form(ExceptionState& exception_state) const;
   void setValidity(ValidityStateFlags* flags, ExceptionState& exception_state);
   void setValidity(ValidityStateFlags* flags,
@@ -73,11 +65,10 @@ class CORE_EXPORT ElementInternals : public ScriptWrappable,
 
   void SetElementAttribute(const QualifiedName& name, Element* element);
   Element* GetElementAttribute(const QualifiedName& name);
-  absl::optional<HeapVector<Member<Element>>> GetElementArrayAttribute(
+  HeapVector<Member<Element>>* GetElementArrayAttribute(
       const QualifiedName& name) const;
-  void SetElementArrayAttribute(
-      const QualifiedName& name,
-      const absl::optional<HeapVector<Member<Element>>>& elements);
+  void SetElementArrayAttribute(const QualifiedName& name,
+                                const HeapVector<Member<Element>>* elements);
   bool HasAttribute(const QualifiedName& attribute) const;
   const HashMap<QualifiedName, AtomicString>& GetAttributes() const;
 
@@ -111,13 +102,8 @@ class CORE_EXPORT ElementInternals : public ScriptWrappable,
 
   Member<HTMLElement> target_;
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   Member<const V8ControlValue> value_;
   Member<const V8ControlValue> state_;
-#else
-  ControlValue value_;
-  ControlValue state_;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   bool is_disabled_ = false;
   Member<ValidityStateFlags> validity_flags_;
   Member<Element> validation_anchor_;
@@ -130,8 +116,6 @@ class CORE_EXPORT ElementInternals : public ScriptWrappable,
   // https://whatpr.org/html/3917/common-dom-interfaces.html#reflecting-content-attributes-in-idl-attributes:element
   HeapHashMap<QualifiedName, Member<HeapLinkedHashSet<WeakMember<Element>>>>
       explicitly_set_attr_elements_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(ElementInternals);
 };
 
 template <>

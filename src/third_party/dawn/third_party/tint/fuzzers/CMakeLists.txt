@@ -15,15 +15,26 @@
 function(add_tint_fuzzer NAME)
   add_executable(${NAME}
     ${NAME}.cc
-    tint_common_fuzzer.cc)
+    cli.cc
+    cli.h
+    data_builder.h
+    fuzzer_init.cc
+    fuzzer_init.h
+    mersenne_twister_engine.cc
+    mersenne_twister_engine.h
+    random_generator.cc
+    random_generator.h
+    random_generator_engine.cc
+    random_generator_engine.h
+    tint_common_fuzzer.cc
+    tint_common_fuzzer.h
+    tint_reader_writer_fuzzer.h
+    transform_builder.h
+    )
   target_link_libraries(${NAME} libtint-fuzz)
   tint_default_compile_options(${NAME})
   target_compile_options(${NAME} PRIVATE -Wno-missing-prototypes)
 endfunction()
-
-if (${TINT_BUILD_WGSL_READER})
-  add_tint_fuzzer(tint_wgsl_reader_fuzzer)
-endif()
 
 if (${TINT_BUILD_WGSL_READER} AND ${TINT_BUILD_WGSL_WRITER})
   add_tint_fuzzer(tint_wgsl_reader_wgsl_writer_fuzzer)
@@ -32,28 +43,20 @@ endif()
 if (${TINT_BUILD_WGSL_READER} AND ${TINT_BUILD_SPV_WRITER})
   add_tint_fuzzer(tint_all_transforms_fuzzer)
   add_tint_fuzzer(tint_binding_remapper_fuzzer)
-  add_tint_fuzzer(tint_bound_array_accessors_fuzzer)
   add_tint_fuzzer(tint_first_index_offset_fuzzer)
-  add_tint_fuzzer(tint_inspector_fuzzer)
   add_tint_fuzzer(tint_renamer_fuzzer)
+  add_tint_fuzzer(tint_robustness_fuzzer)
   add_tint_fuzzer(tint_single_entry_point_fuzzer)
-  add_tint_fuzzer(tint_spirv_transform_fuzzer)
   add_tint_fuzzer(tint_vertex_pulling_fuzzer)
   add_tint_fuzzer(tint_wgsl_reader_spv_writer_fuzzer)
 endif()
 
 if (${TINT_BUILD_WGSL_READER} AND ${TINT_BUILD_HLSL_WRITER})
   add_tint_fuzzer(tint_wgsl_reader_hlsl_writer_fuzzer)
-  add_tint_fuzzer(tint_hlsl_transform_fuzzer)
 endif()
 
 if (${TINT_BUILD_WGSL_READER} AND ${TINT_BUILD_MSL_WRITER})
   add_tint_fuzzer(tint_wgsl_reader_msl_writer_fuzzer)
-  add_tint_fuzzer(tint_msl_transform_fuzzer)
-endif()
-
-if (${TINT_BUILD_SPV_READER})
-  add_tint_fuzzer(tint_spv_reader_fuzzer)
 endif()
 
 if (${TINT_BUILD_SPV_READER} AND ${TINT_BUILD_WGSL_WRITER})
@@ -72,7 +75,38 @@ if (${TINT_BUILD_SPV_READER} AND ${TINT_BUILD_MSL_WRITER})
   add_tint_fuzzer(tint_spv_reader_msl_writer_fuzzer)
 endif()
 
-
 if (${TINT_BUILD_WGSL_READER} AND ${TINT_BUILD_WGSL_WRITER})
   add_tint_fuzzer(tint_ast_clone_fuzzer)
+endif()
+
+if (${TINT_BUILD_SPIRV_TOOLS_FUZZER})
+  add_subdirectory(tint_spirv_tools_fuzzer)
+endif()
+
+if (${TINT_BUILD_AST_FUZZER})
+  add_subdirectory(tint_ast_fuzzer)
+endif()
+
+if (${TINT_BUILD_REGEX_FUZZER})
+  add_subdirectory(tint_regex_fuzzer)
+endif()
+
+if (${TINT_BUILD_WGSL_READER}
+    AND ${TINT_BUILD_HLSL_WRITER}
+    AND ${TINT_BUILD_MSL_WRITER}
+    AND ${TINT_BUILD_SPV_WRITER}
+    AND ${TINT_BUILD_WGSL_WRITER})
+  add_executable(tint_black_box_fuzz_target
+    mersenne_twister_engine.cc
+    mersenne_twister_engine.h
+    random_generator.cc
+    random_generator.h
+    random_generator_engine.cc
+    random_generator_engine.h
+    tint_black_box_fuzz_target.cc
+    tint_common_fuzzer.cc
+    tint_common_fuzzer.h
+    )
+  target_link_libraries(tint_black_box_fuzz_target libtint)
+  tint_default_compile_options(tint_black_box_fuzz_target)
 endif()

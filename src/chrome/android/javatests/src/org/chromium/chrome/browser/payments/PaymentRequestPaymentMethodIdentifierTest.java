@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -64,6 +65,7 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
 
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testCanPayWithBasicCard() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
@@ -76,8 +78,8 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
 
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
-    @CommandLineFlags.Add("disable-features=StrictHasEnrolledAutofillInstrument")
     public void testCannotMakeActivePaymentWithBasicMasterCard() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
                 "checkBasicMasterCard", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
@@ -89,6 +91,7 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
 
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testSupportedNetworksMustMatchForCanMakePayment() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
@@ -111,6 +114,7 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testPayWithBasicCard() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
@@ -135,6 +139,7 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testAddMasterCard() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
@@ -167,6 +172,7 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testAddBasicCard() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());

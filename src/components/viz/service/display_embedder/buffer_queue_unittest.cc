@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
@@ -77,7 +78,7 @@ class StubGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
       uint64_t tracing_process_id,
       int importance) const override {}
 
-  size_t* set_color_space_count_;
+  raw_ptr<size_t> set_color_space_count_;
 };
 
 class StubGpuMemoryBufferManager : public TestGpuMemoryBufferManager {
@@ -195,10 +196,12 @@ class BufferQueueTest : public ::testing::Test,
     // We don't care about the GL-level implementation here, just how it uses
     // damage rects.
     gpu::SyncToken creation_sync_token;
-    EXPECT_FALSE(
-        output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+    EXPECT_FALSE(output_surface_
+                     ->GetCurrentBuffer(&creation_sync_token,
+                                        /*release_fence=*/nullptr)
+                     .IsZero());
     SwapBuffers(damage);
-    output_surface_->PageFlipComplete();
+    output_surface_->PageFlipComplete(/*release_fence=*/gfx::GpuFenceHandle());
   }
 
   void SendFullFrame() { SendDamagedFrame(gfx::Rect(output_surface_->size_)); }
@@ -263,11 +266,11 @@ class BufferQueueMockedSharedImageInterfaceTest : public BufferQueueTest {
   void SetUp() override {
     sii_ = new MockedSharedImageInterface();
     InitWithSharedImageInterface(
-        base::WrapUnique<TestSharedImageInterface>(sii_));
+        base::WrapUnique<TestSharedImageInterface>(sii_.get()));
   }
 
  protected:
-  MockedSharedImageInterface* sii_;
+  raw_ptr<MockedSharedImageInterface> sii_;
 };
 
 scoped_refptr<TestContextProvider> CreateMockedSharedImageInterfaceProvider(
@@ -315,7 +318,8 @@ TEST(BufferQueueStandaloneTest, BufferCreationAndDestruction) {
   }
   gpu::SyncToken creation_sync_token;
   EXPECT_EQ(expected_mailbox,
-            output_surface->GetCurrentBuffer(&creation_sync_token));
+            output_surface->GetCurrentBuffer(&creation_sync_token,
+                                             /*release_fence=*/nullptr));
 }
 
 TEST_F(BufferQueueTest, PartialSwapReuse) {
@@ -349,10 +353,14 @@ TEST_F(BufferQueueTest, PartialSwapWithTripleBuffering) {
   // Let's triple buffer.
   gpu::SyncToken creation_sync_token;
   EXPECT_FALSE(
-      output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+      output_surface_
+          ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+          .IsZero());
   SwapBuffers(small_damage);
   EXPECT_FALSE(
-      output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+      output_surface_
+          ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+          .IsZero());
   EXPECT_EQ(3, CountBuffers());
   // The whole buffer needs to be redrawn since it's a newly allocated buffer
   EXPECT_EQ(output_surface_->CurrentBufferDamage(), screen_rect);
@@ -361,7 +369,9 @@ TEST_F(BufferQueueTest, PartialSwapWithTripleBuffering) {
   // The next buffer should include damage from |overlapping_damage| and
   // |small_damage|.
   EXPECT_FALSE(
-      output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+      output_surface_
+          ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+          .IsZero());
   const auto current_buffer_damage = output_surface_->CurrentBufferDamage();
   EXPECT_TRUE(current_buffer_damage.Contains(overlapping_damage));
   EXPECT_TRUE(current_buffer_damage.Contains(small_damage));
@@ -388,11 +398,15 @@ TEST_F(BufferQueueTest, MultipleGetCurrentBufferCalls) {
   // Check that multiple bind calls do not create or change surfaces.
   gpu::SyncToken creation_sync_token;
   EXPECT_FALSE(
-      output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+      output_surface_
+          ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+          .IsZero());
   EXPECT_EQ(1, CountBuffers());
   gpu::Mailbox fb = current_surface();
   EXPECT_FALSE(
-      output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+      output_surface_
+          ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+          .IsZero());
   EXPECT_EQ(1, CountBuffers());
   EXPECT_EQ(fb, current_surface());
 }
@@ -404,17 +418,21 @@ TEST_F(BufferQueueTest, CheckDoubleBuffering) {
   EXPECT_EQ(0, CountBuffers());
   gpu::SyncToken creation_sync_token;
   EXPECT_FALSE(
-      output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+      output_surface_
+          ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+          .IsZero());
   EXPECT_EQ(1, CountBuffers());
   EXPECT_FALSE(current_surface().IsZero());
   EXPECT_FALSE(displayed_frame());
   SwapBuffers();
   EXPECT_EQ(1U, in_flight_surfaces().size());
-  output_surface_->PageFlipComplete();
+  output_surface_->PageFlipComplete(/*release_fence=*/gfx::GpuFenceHandle());
   EXPECT_EQ(0U, in_flight_surfaces().size());
   EXPECT_FALSE(displayed_frame()->mailbox.IsZero());
   EXPECT_FALSE(
-      output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+      output_surface_
+          ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+          .IsZero());
   EXPECT_EQ(2, CountBuffers());
   CheckUnique();
   EXPECT_FALSE(current_surface().IsZero());
@@ -424,13 +442,15 @@ TEST_F(BufferQueueTest, CheckDoubleBuffering) {
   CheckUnique();
   EXPECT_EQ(1U, in_flight_surfaces().size());
   EXPECT_FALSE(displayed_frame()->mailbox.IsZero());
-  output_surface_->PageFlipComplete();
+  output_surface_->PageFlipComplete(/*release_fence=*/gfx::GpuFenceHandle());
   CheckUnique();
   EXPECT_EQ(0U, in_flight_surfaces().size());
   EXPECT_EQ(1U, available_surfaces().size());
   EXPECT_FALSE(displayed_frame()->mailbox.IsZero());
   EXPECT_FALSE(
-      output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+      output_surface_
+          ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+          .IsZero());
   EXPECT_EQ(2, CountBuffers());
   CheckUnique();
   EXPECT_TRUE(available_surfaces().empty());
@@ -444,12 +464,16 @@ TEST_F(BufferQueueTest, CheckTripleBuffering) {
   // This bit is the same sequence tested in the doublebuffering case.
   gpu::SyncToken creation_sync_token;
   EXPECT_FALSE(
-      output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+      output_surface_
+          ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+          .IsZero());
   EXPECT_FALSE(displayed_frame());
   SwapBuffers();
-  output_surface_->PageFlipComplete();
+  output_surface_->PageFlipComplete(/*release_fence=*/gfx::GpuFenceHandle());
   EXPECT_FALSE(
-      output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+      output_surface_
+          ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+          .IsZero());
   SwapBuffers();
 
   EXPECT_EQ(2, CountBuffers());
@@ -457,13 +481,15 @@ TEST_F(BufferQueueTest, CheckTripleBuffering) {
   EXPECT_EQ(1U, in_flight_surfaces().size());
   EXPECT_FALSE(displayed_frame()->mailbox.IsZero());
   EXPECT_FALSE(
-      output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+      output_surface_
+          ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+          .IsZero());
   EXPECT_EQ(3, CountBuffers());
   CheckUnique();
   EXPECT_FALSE(current_surface().IsZero());
   EXPECT_EQ(1U, in_flight_surfaces().size());
   EXPECT_FALSE(displayed_frame()->mailbox.IsZero());
-  output_surface_->PageFlipComplete();
+  output_surface_->PageFlipComplete(/*release_fence=*/gfx::GpuFenceHandle());
   EXPECT_EQ(3, CountBuffers());
   CheckUnique();
   EXPECT_FALSE(current_surface().IsZero());
@@ -481,8 +507,8 @@ TEST_F(BufferQueueTest, CheckEmptySwap) {
   // might not be called.
   EXPECT_EQ(0, CountBuffers());
   gpu::SyncToken creation_sync_token;
-  gpu::Mailbox mailbox =
-      output_surface_->GetCurrentBuffer(&creation_sync_token);
+  gpu::Mailbox mailbox = output_surface_->GetCurrentBuffer(
+      &creation_sync_token, /*release_fence=*/nullptr);
   EXPECT_FALSE(mailbox.IsZero());
   EXPECT_EQ(1, CountBuffers());
   EXPECT_FALSE(current_surface().IsZero());
@@ -491,13 +517,13 @@ TEST_F(BufferQueueTest, CheckEmptySwap) {
   SwapBuffers();
   // Make sure we won't be drawing to the buffer we just sent for scanout.
   gpu::SyncToken new_creation_sync_token;
-  gpu::Mailbox new_mailbox =
-      output_surface_->GetCurrentBuffer(&new_creation_sync_token);
+  gpu::Mailbox new_mailbox = output_surface_->GetCurrentBuffer(
+      &new_creation_sync_token, /*release_fence=*/nullptr);
   EXPECT_FALSE(new_mailbox.IsZero());
   EXPECT_NE(mailbox, new_mailbox);
 
   EXPECT_EQ(1U, in_flight_surfaces().size());
-  output_surface_->PageFlipComplete();
+  output_surface_->PageFlipComplete(/*release_fence=*/gfx::GpuFenceHandle());
 
   // Test swapbuffers without calling BindFramebuffer. DirectRenderer skips
   // BindFramebuffer if not necessary.
@@ -505,10 +531,10 @@ TEST_F(BufferQueueTest, CheckEmptySwap) {
   SwapBuffers();
   EXPECT_EQ(2U, in_flight_surfaces().size());
 
-  output_surface_->PageFlipComplete();
+  output_surface_->PageFlipComplete(/*release_fence=*/gfx::GpuFenceHandle());
   EXPECT_EQ(1U, in_flight_surfaces().size());
 
-  output_surface_->PageFlipComplete();
+  output_surface_->PageFlipComplete(/*release_fence=*/gfx::GpuFenceHandle());
   EXPECT_EQ(0U, in_flight_surfaces().size());
 }
 
@@ -519,14 +545,16 @@ TEST_F(BufferQueueTest, CheckCorrectBufferOrdering) {
   for (size_t i = 0; i < kSwapCount; ++i) {
     gpu::SyncToken creation_sync_token;
     EXPECT_FALSE(
-        output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+        output_surface_
+            ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+            .IsZero());
     SwapBuffers();
   }
 
   EXPECT_EQ(kSwapCount, in_flight_surfaces().size());
   for (size_t i = 0; i < kSwapCount; ++i) {
     gpu::Mailbox next_mailbox = in_flight_surfaces().front()->mailbox;
-    output_surface_->PageFlipComplete();
+    output_surface_->PageFlipComplete(/*release_fence=*/gfx::GpuFenceHandle());
     EXPECT_EQ(displayed_frame()->mailbox, next_mailbox);
   }
 }
@@ -538,7 +566,9 @@ TEST_F(BufferQueueTest, ReshapeWithInFlightSurfaces) {
   for (size_t i = 0; i < kSwapCount; ++i) {
     gpu::SyncToken creation_sync_token;
     EXPECT_FALSE(
-        output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+        output_surface_
+            ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+            .IsZero());
     SwapBuffers();
   }
 
@@ -547,7 +577,7 @@ TEST_F(BufferQueueTest, ReshapeWithInFlightSurfaces) {
   EXPECT_EQ(3u, in_flight_surfaces().size());
 
   for (size_t i = 0; i < kSwapCount; ++i) {
-    output_surface_->PageFlipComplete();
+    output_surface_->PageFlipComplete(/*release_fence=*/gfx::GpuFenceHandle());
     EXPECT_FALSE(displayed_frame());
   }
 
@@ -562,7 +592,9 @@ TEST_F(BufferQueueTest, SwapAfterReshape) {
   for (size_t i = 0; i < kSwapCount; ++i) {
     gpu::SyncToken creation_sync_token;
     EXPECT_FALSE(
-        output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+        output_surface_
+            ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+            .IsZero());
     SwapBuffers();
   }
 
@@ -572,13 +604,15 @@ TEST_F(BufferQueueTest, SwapAfterReshape) {
   for (size_t i = 0; i < kSwapCount; ++i) {
     gpu::SyncToken creation_sync_token;
     EXPECT_FALSE(
-        output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+        output_surface_
+            ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+            .IsZero());
     SwapBuffers();
   }
   EXPECT_EQ(2 * kSwapCount, in_flight_surfaces().size());
 
   for (size_t i = 0; i < kSwapCount; ++i) {
-    output_surface_->PageFlipComplete();
+    output_surface_->PageFlipComplete(/*release_fence=*/gfx::GpuFenceHandle());
     EXPECT_FALSE(displayed_frame());
   }
 
@@ -586,7 +620,7 @@ TEST_F(BufferQueueTest, SwapAfterReshape) {
 
   for (size_t i = 0; i < kSwapCount; ++i) {
     gpu::Mailbox next_mailbox = in_flight_surfaces().front()->mailbox;
-    output_surface_->PageFlipComplete();
+    output_surface_->PageFlipComplete(/*release_fence=*/gfx::GpuFenceHandle());
     EXPECT_EQ(displayed_frame()->mailbox, next_mailbox);
     EXPECT_TRUE(displayed_frame());
   }
@@ -594,9 +628,11 @@ TEST_F(BufferQueueTest, SwapAfterReshape) {
   for (size_t i = 0; i < kSwapCount; ++i) {
     gpu::SyncToken creation_sync_token;
     EXPECT_FALSE(
-        output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+        output_surface_
+            ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+            .IsZero());
     SwapBuffers();
-    output_surface_->PageFlipComplete();
+    output_surface_->PageFlipComplete(/*release_fence=*/gfx::GpuFenceHandle());
   }
 }
 
@@ -617,31 +653,38 @@ TEST_F(BufferQueueMockedSharedImageInterfaceTest, AllocateFails) {
 
   // Succeed in the two swaps.
   gpu::SyncToken creation_sync_token;
-  const gpu::Mailbox result_mailbox =
-      output_surface_->GetCurrentBuffer(&creation_sync_token);
+  const gpu::Mailbox result_mailbox = output_surface_->GetCurrentBuffer(
+      &creation_sync_token, /*release_fence=*/nullptr);
   EXPECT_FALSE(result_mailbox.IsZero());
   EXPECT_EQ(result_mailbox, expected_mailbox);
   EXPECT_TRUE(current_frame());
   SwapBuffers(screen_rect);
 
-  EXPECT_TRUE(output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+  EXPECT_TRUE(
+      output_surface_
+          ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+          .IsZero());
   EXPECT_FALSE(current_frame());
   SwapBuffers(screen_rect);
   EXPECT_FALSE(current_frame());
 
   EXPECT_FALSE(
-      output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+      output_surface_
+          ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+          .IsZero());
   SwapBuffers(small_damage);
 
   // Destroy the just-created buffer, and try another swap.
-  output_surface_->PageFlipComplete();
+  output_surface_->PageFlipComplete(/*release_fence=*/gfx::GpuFenceHandle());
   output_surface_->FreeSurface(
       std::move(output_surface_->in_flight_surfaces_.back()), gpu::SyncToken());
   EXPECT_EQ(2u, in_flight_surfaces().size());
   for (auto& surface : in_flight_surfaces())
     EXPECT_FALSE(surface);
   EXPECT_FALSE(
-      output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+      output_surface_
+          ->GetCurrentBuffer(&creation_sync_token, /*release_fence=*/nullptr)
+          .IsZero());
   EXPECT_TRUE(current_frame());
   EXPECT_TRUE(displayed_frame());
   SwapBuffers(small_damage);

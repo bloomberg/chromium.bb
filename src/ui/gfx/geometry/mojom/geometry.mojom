@@ -41,6 +41,7 @@ struct Rect {
   int32 height;
 };
 
+[Stable]
 struct RectF {
   float x;
   float y;
@@ -77,11 +78,6 @@ struct Vector3dF {
   float x;
   float y;
   float z;
-};
-
-struct ScrollOffset {
-  float x;
-  float y;
 };
 
 struct Quaternion {

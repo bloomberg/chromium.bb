@@ -7,9 +7,9 @@
 #include <stddef.h>
 
 #include "base/callback.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -72,7 +72,8 @@ const struct NetErrorMapping {
 
 bool CanReportFullBeaconURLToCollector(const GURL& beacon_url,
                                        const GURL& collector_url) {
-  return beacon_url.GetOrigin() == collector_url.GetOrigin();
+  return beacon_url.DeprecatedGetOriginAsURL() ==
+         collector_url.DeprecatedGetOriginAsURL();
 }
 
 }  // namespace

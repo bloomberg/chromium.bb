@@ -17,7 +17,9 @@ from git_common import get_or_create_merge_base, root, manual_merge_base
 from git_common import get_branch_tree, topo_iter
 
 import git_rebase_update
+import metrics
 
+@metrics.collector.collect_metrics('git reparent-branch')
 def main(args):
   root_ref = root()
 
@@ -95,7 +97,8 @@ def main(args):
 
 if __name__ == '__main__':  # pragma: no cover
   try:
-    sys.exit(main(sys.argv[1:]))
+    with metrics.collector.print_notice_and_exit():
+      sys.exit(main(sys.argv[1:]))
   except KeyboardInterrupt:
     sys.stderr.write('interrupted\n')
     sys.exit(1)

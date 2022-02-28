@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -37,35 +38,26 @@ class PermissionRequestManagerTest
       public ::testing::WithParamInterface<bool> {
  public:
   PermissionRequestManagerTest()
-      : request1_(u"test1",
-                  RequestType::kDiskQuota,
+      : request1_(RequestType::kGeolocation,
                   PermissionRequestGestureType::GESTURE),
-        request2_(u"test2",
-                  RequestType::kMultipleDownloads,
+        request2_(RequestType::kMultipleDownloads,
                   PermissionRequestGestureType::NO_GESTURE),
-        request_mic_(u"mic",
-                     RequestType::kMicStream,
+        request_mic_(RequestType::kMicStream,
                      PermissionRequestGestureType::NO_GESTURE),
-        request_camera_(u"cam",
-                        RequestType::kCameraStream,
+        request_camera_(RequestType::kCameraStream,
                         PermissionRequestGestureType::NO_GESTURE),
 #if !defined(OS_ANDROID)
-        request_ptz_(u"ptz",
-                     RequestType::kCameraPanTiltZoom,
+        request_ptz_(RequestType::kCameraPanTiltZoom,
                      PermissionRequestGestureType::NO_GESTURE),
 #endif
-        iframe_request_same_domain_(u"iframe",
-                                    RequestType::kNotifications,
-                                    GURL("http://www.google.com/some/url")),
-        iframe_request_other_domain_(u"iframe",
-                                     RequestType::kGeolocation,
-                                     GURL("http://www.youtube.com")),
-        iframe_request_camera_other_domain_(u"iframe",
-                                            RequestType::kCameraStream,
-                                            GURL("http://www.youtube.com")),
-        iframe_request_mic_other_domain_(u"iframe",
-                                         RequestType::kMicStream,
-                                         GURL("http://www.youtube.com")) {
+        iframe_request_same_domain_(GURL("https://www.google.com/some/url"),
+                                    RequestType::kMidiSysex),
+        iframe_request_other_domain_(GURL("https://www.youtube.com"),
+                                     RequestType::kGeolocation),
+        iframe_request_camera_other_domain_(GURL("https://www.youtube.com"),
+                                            RequestType::kStorageAccess),
+        iframe_request_mic_other_domain_(GURL("https://www.youtube.com"),
+                                         RequestType::kMicStream) {
     feature_list_.InitWithFeatureState(permissions::features::kPermissionChip,
                                        GetParam());
   }
@@ -73,8 +65,7 @@ class PermissionRequestManagerTest
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
     SetContents(CreateTestWebContents());
-    url_ = GURL("http://www.google.com");
-    NavigateAndCommit(url_);
+    NavigateAndCommit(GURL(permissions::MockPermissionRequest::kDefaultOrigin));
 
     PermissionRequestManager::CreateForWebContents(web_contents());
     manager_ = PermissionRequestManager::FromWebContents(web_contents());
@@ -97,7 +88,7 @@ class PermissionRequestManagerTest
   }
 
   void Closing() {
-    manager_->Closing();
+    manager_->Dismiss();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -125,8 +116,37 @@ class PermissionRequestManagerTest
     manager_->NavigationEntryCommitted(details);
   }
 
+  std::unique_ptr<MockPermissionRequest> CreateAndAddRequest(
+      RequestType type,
+      bool should_be_seen,
+      int expected_request_count) {
+    std::unique_ptr<MockPermissionRequest> request =
+        std::make_unique<MockPermissionRequest>(
+            type, PermissionRequestGestureType::GESTURE);
+    manager_->AddRequest(web_contents()->GetMainFrame(), request.get());
+    WaitForBubbleToBeShown();
+    if (should_be_seen) {
+      EXPECT_TRUE(prompt_factory_->RequestTypeSeen(type));
+    } else {
+      EXPECT_FALSE(prompt_factory_->RequestTypeSeen(type));
+    }
+    EXPECT_EQ(prompt_factory_->TotalRequestCount(), expected_request_count);
+
+    return request;
+  }
+
+  void WaitAndAcceptPromptForRequest(MockPermissionRequest* request) {
+    WaitForBubbleToBeShown();
+
+    EXPECT_FALSE(request->finished());
+    EXPECT_TRUE(prompt_factory_->is_visible());
+    ASSERT_EQ(prompt_factory_->request_count(), 1);
+
+    Accept();
+    EXPECT_TRUE(request->granted());
+  }
+
  protected:
-  GURL url_;
   MockPermissionRequest request1_;
   MockPermissionRequest request2_;
   MockPermissionRequest request_mic_;
@@ -138,7 +158,7 @@ class PermissionRequestManagerTest
   MockPermissionRequest iframe_request_other_domain_;
   MockPermissionRequest iframe_request_camera_other_domain_;
   MockPermissionRequest iframe_request_mic_other_domain_;
-  PermissionRequestManager* manager_;
+  raw_ptr<PermissionRequestManager> manager_;
   std::unique_ptr<MockPermissionPromptFactory> prompt_factory_;
   TestPermissionsClient client_;
   base::test::ScopedFeatureList feature_list_;
@@ -330,8 +350,11 @@ TEST_P(PermissionRequestManagerTest, MicCameraGrouped) {
   Accept();
   EXPECT_TRUE(request_mic_.granted());
   EXPECT_TRUE(request_camera_.granted());
+}
 
-  // If the requests come from different origins, they should not be grouped.
+// If mic/camera requests come from different origins, they should not be
+// grouped.
+TEST_P(PermissionRequestManagerTest, MicCameraDifferentOrigins) {
   manager_->AddRequest(web_contents()->GetMainFrame(),
                        &iframe_request_mic_other_domain_);
   manager_->AddRequest(web_contents()->GetMainFrame(), &request_camera_);
@@ -354,8 +377,11 @@ TEST_P(PermissionRequestManagerTest, CameraPtzGrouped) {
   Accept();
   EXPECT_TRUE(request_camera_.granted());
   EXPECT_TRUE(request_ptz_.granted());
+}
 
-  // If the requests come from different origins, they should not be grouped.
+TEST_P(PermissionRequestManagerTest, CameraPtzDifferentOrigins) {
+  // If camera/ptz requests come from different origins, they should not be
+  // grouped.
   manager_->AddRequest(web_contents()->GetMainFrame(),
                        &iframe_request_camera_other_domain_);
   manager_->AddRequest(web_contents()->GetMainFrame(), &request_ptz_);
@@ -379,8 +405,11 @@ TEST_P(PermissionRequestManagerTest, MicCameraPtzGrouped) {
   EXPECT_TRUE(request_mic_.granted());
   EXPECT_TRUE(request_camera_.granted());
   EXPECT_TRUE(request_ptz_.granted());
+}
 
-  // If the requests come from different origins, they should not be grouped.
+// If mic/camera/ptz requests come from different origins, they should not be
+// grouped.
+TEST_P(PermissionRequestManagerTest, MicCameraPtzDifferentOrigins) {
   manager_->AddRequest(web_contents()->GetMainFrame(),
                        &iframe_request_mic_other_domain_);
   manager_->AddRequest(web_contents()->GetMainFrame(), &request_camera_);
@@ -654,9 +683,10 @@ TEST_P(PermissionRequestManagerTest, UMAForSimpleDeniedBubbleAlternatePath) {
   // UMAForSimpleAcceptedBubble.
 
   Deny();
-  histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptDenied,
-      static_cast<base::HistogramBase::Sample>(RequestTypeForUma::QUOTA), 1);
+  histograms.ExpectUniqueSample(PermissionUmaUtil::kPermissionsPromptDenied,
+                                static_cast<base::HistogramBase::Sample>(
+                                    RequestTypeForUma::PERMISSION_GEOLOCATION),
+                                1);
 }
 
 TEST_P(PermissionRequestManagerTest, UMAForTabSwitching) {
@@ -664,15 +694,17 @@ TEST_P(PermissionRequestManagerTest, UMAForTabSwitching) {
 
   manager_->AddRequest(web_contents()->GetMainFrame(), &request1_);
   WaitForBubbleToBeShown();
-  histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptShown,
-      static_cast<base::HistogramBase::Sample>(RequestTypeForUma::QUOTA), 1);
+  histograms.ExpectUniqueSample(PermissionUmaUtil::kPermissionsPromptShown,
+                                static_cast<base::HistogramBase::Sample>(
+                                    RequestTypeForUma::PERMISSION_GEOLOCATION),
+                                1);
 
   MockTabSwitchAway();
   MockTabSwitchBack();
-  histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptShown,
-      static_cast<base::HistogramBase::Sample>(RequestTypeForUma::QUOTA), 1);
+  histograms.ExpectUniqueSample(PermissionUmaUtil::kPermissionsPromptShown,
+                                static_cast<base::HistogramBase::Sample>(
+                                    RequestTypeForUma::PERMISSION_GEOLOCATION),
+                                1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -772,8 +804,7 @@ TEST_P(PermissionRequestManagerTest,
   WaitForBubbleToBeShown();
 
   ASSERT_TRUE(prompt_factory_->is_visible());
-  ASSERT_TRUE(
-      prompt_factory_->RequestTypeSeen(request_camera_.GetRequestType()));
+  ASSERT_TRUE(prompt_factory_->RequestTypeSeen(request_camera_.request_type()));
   EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
   Accept();
 
@@ -796,14 +827,14 @@ TEST_P(PermissionRequestManagerTest, UiSelectorUsedForNotifications) {
     MockNotificationPermissionUiSelector::CreateForManager(
         manager_, test.quiet_ui_reason, test.async);
 
-    MockPermissionRequest request(u"foo", RequestType::kNotifications,
+    MockPermissionRequest request(RequestType::kNotifications,
                                   PermissionRequestGestureType::GESTURE);
 
     manager_->AddRequest(web_contents()->GetMainFrame(), &request);
     WaitForBubbleToBeShown();
 
     EXPECT_TRUE(prompt_factory_->is_visible());
-    EXPECT_TRUE(prompt_factory_->RequestTypeSeen(request.GetRequestType()));
+    EXPECT_TRUE(prompt_factory_->RequestTypeSeen(request.request_type()));
     EXPECT_EQ(!!test.quiet_ui_reason,
               manager_->ShouldCurrentRequestUseQuietUI());
     Accept();
@@ -817,14 +848,14 @@ TEST_P(PermissionRequestManagerTest,
   manager_->clear_permission_ui_selector_for_testing();
   MockNotificationPermissionUiSelector::CreateForManager(
       manager_, QuietUiReason::kEnabledInPrefs, true);
-  MockPermissionRequest request1(u"request1", RequestType::kNotifications,
+  MockPermissionRequest request1(RequestType::kNotifications,
                                  PermissionRequestGestureType::GESTURE);
   manager_->AddRequest(web_contents()->GetMainFrame(), &request1);
   WaitForBubbleToBeShown();
   EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
   Accept();
 
-  MockPermissionRequest request2(u"request2", RequestType::kNotifications,
+  MockPermissionRequest request2(RequestType::kNotifications,
                                  PermissionRequestGestureType::GESTURE);
   manager_->clear_permission_ui_selector_for_testing();
   MockNotificationPermissionUiSelector::CreateForManager(
@@ -888,14 +919,14 @@ TEST_P(PermissionRequestManagerTest, MultipleUiSelectors) {
           test.simulate_delayed_decision[i]);
     }
 
-    MockPermissionRequest request(u"foo", RequestType::kNotifications,
+    MockPermissionRequest request(RequestType::kNotifications,
                                   PermissionRequestGestureType::GESTURE);
 
     manager_->AddRequest(web_contents()->GetMainFrame(), &request);
     WaitForBubbleToBeShown();
 
     EXPECT_TRUE(prompt_factory_->is_visible());
-    EXPECT_TRUE(prompt_factory_->RequestTypeSeen(request.GetRequestType()));
+    EXPECT_TRUE(prompt_factory_->RequestTypeSeen(request.request_type()));
     if (test.expected_reason.has_value()) {
       EXPECT_EQ(test.expected_reason, manager_->ReasonForUsingQuietUi());
     } else {
@@ -945,14 +976,14 @@ TEST_P(PermissionRequestManagerTest, SelectorsPredictionLikelihood) {
           false /* async */, test.prediction_likelihoods[i]);
     }
 
-    MockPermissionRequest request(u"foo", RequestType::kNotifications,
+    MockPermissionRequest request(RequestType::kNotifications,
                                   PermissionRequestGestureType::GESTURE);
 
     manager_->AddRequest(web_contents()->GetMainFrame(), &request);
     WaitForBubbleToBeShown();
 
     EXPECT_TRUE(prompt_factory_->is_visible());
-    EXPECT_TRUE(prompt_factory_->RequestTypeSeen(request.GetRequestType()));
+    EXPECT_TRUE(prompt_factory_->RequestTypeSeen(request.request_type()));
     EXPECT_EQ(test.expected_prediction_likelihood,
               manager_->prediction_grant_likelihood_for_testing());
 
@@ -974,7 +1005,7 @@ TEST_P(PermissionRequestManagerTest, SelectorRequestTypes) {
   MockNotificationPermissionUiSelector::CreateForManager(
       manager_, QuietUiReason::kEnabledInPrefs, true);
   for (const auto& test : kTests) {
-    MockPermissionRequest request(u"request", test.request_type,
+    MockPermissionRequest request(test.request_type,
                                   PermissionRequestGestureType::GESTURE);
     manager_->AddRequest(web_contents()->GetMainFrame(), &request);
     WaitForBubbleToBeShown();
@@ -986,7 +1017,7 @@ TEST_P(PermissionRequestManagerTest, SelectorRequestTypes) {
   MockCameraStreamPermissionUiSelector::CreateForManager(
       manager_, QuietUiReason::kEnabledInPrefs, true);
   // Now the RequestType::kCameraStream should show a quiet UI as well
-  MockPermissionRequest request2(u"request2", RequestType::kCameraStream,
+  MockPermissionRequest request2(RequestType::kCameraStream,
                                  PermissionRequestGestureType::GESTURE);
   manager_->AddRequest(web_contents()->GetMainFrame(), &request2);
   WaitForBubbleToBeShown();
@@ -994,8 +1025,458 @@ TEST_P(PermissionRequestManagerTest, SelectorRequestTypes) {
   Accept();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Quiet UI chip. Low priority for Notifications & Geolocation.
+////////////////////////////////////////////////////////////////////////////////
+
+TEST_P(PermissionRequestManagerTest, NotificationsSingleBubbleAndChipRequest) {
+  MockPermissionRequest request(RequestType::kNotifications,
+                                PermissionRequestGestureType::GESTURE);
+
+  manager_->AddRequest(web_contents()->GetMainFrame(), &request);
+  WaitForBubbleToBeShown();
+
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 1);
+
+  Accept();
+  EXPECT_TRUE(request.granted());
+  EXPECT_EQ(prompt_factory_->show_count(), 1);
+}
+
+// Quiet UI feature is disabled. Chip is disabled. No low priority requests, the
+// first request is always shown.
+//
+// Permissions requested in order:
+// 1. Notification (non abusive)
+// 2. Geolocation
+// 3. Camera
+//
+// Prompt display order:
+// 1. Notification request shown
+// 2. Geolocation request shown
+// 3. Camera request shown
+TEST_P(PermissionRequestManagerTest,
+       NotificationsGeolocationCameraBubbleRequest) {
+  // permissions::features::kPermissionChip is enabled based on `GetParam()`.
+  // That test is only for the default bubble.
+  if (GetParam())
+    return;
+
+  std::unique_ptr<MockPermissionRequest> request_notifications =
+      CreateAndAddRequest(RequestType::kNotifications, /*should_be_seen=*/true,
+                          1);
+  std::unique_ptr<MockPermissionRequest> request_geolocation =
+      CreateAndAddRequest(RequestType::kGeolocation, /*should_be_seen=*/false,
+                          1);
+  std::unique_ptr<MockPermissionRequest> request_camera = CreateAndAddRequest(
+      RequestType::kCameraStream, /*should_be_seen=*/false, 1);
+
+  for (auto* kRequest : {request_notifications.get(), request_geolocation.get(),
+                         request_camera.get()}) {
+    WaitAndAcceptPromptForRequest(kRequest);
+  }
+
+  EXPECT_EQ(prompt_factory_->show_count(), 3);
+}
+
+// Quiet UI feature is disabled, no low priority requests, the last request is
+// always shown.
+//
+// Permissions requested in order:
+// 1. Notification (non abusive)
+// 2. Geolocation
+// 3. Camera
+//
+// Prompt display order:
+// 1. Notifications request shown but is preempted
+// 2. Geolocation request shown but is preempted
+// 3. Camera request shown
+// 4. Geolocation request shown again
+// 5. Notifications request shown again
+TEST_P(PermissionRequestManagerTest,
+       NotificationsGeolocationCameraChipRequest) {
+  // permissions::features::kPermissionChip is enabled based on `GetParam()`.
+  // That test is only for the chip UI.
+  if (!GetParam())
+    return;
+
+  std::unique_ptr<MockPermissionRequest> request_notifications =
+      CreateAndAddRequest(RequestType::kNotifications, /*should_be_seen=*/true,
+                          1);
+  std::unique_ptr<MockPermissionRequest> request_geolocation =
+      CreateAndAddRequest(RequestType::kGeolocation, /*should_be_seen=*/true,
+                          2);
+  std::unique_ptr<MockPermissionRequest> request_camera = CreateAndAddRequest(
+      RequestType::kCameraStream, /*should_be_seen=*/true, 3);
+
+  for (auto* kRequest : {request_camera.get(), request_geolocation.get(),
+                         request_notifications.get()}) {
+    WaitAndAcceptPromptForRequest(kRequest);
+  }
+
+  EXPECT_EQ(prompt_factory_->show_count(), 5);
+}
+
+// Quiet UI feature is disabled, no low priority requests, the last request is
+// always shown.
+//
+// Permissions requested in order:
+// 1. Camera
+// 2. Notification (non abusive)
+// 3. Geolocation
+//
+// Prompt display order:
+// 1. Camera request shown but is preempted
+// 2. Notifications request shown but is preempted
+// 3. Geolocation request shown
+// 4. Notifications request shown again
+// 5. Camera request shown again
+TEST_P(PermissionRequestManagerTest,
+       CameraNotificationsGeolocationChipRequest) {
+  // permissions::features::kPermissionChip is enabled based on `GetParam()`.
+  // That test is only for the chip.
+  if (!GetParam())
+    return;
+
+  std::unique_ptr<MockPermissionRequest> request_camera = CreateAndAddRequest(
+      RequestType::kCameraStream, /*should_be_seen=*/true, 1);
+  std::unique_ptr<MockPermissionRequest> request_notifications =
+      CreateAndAddRequest(RequestType::kNotifications, /*should_be_seen=*/true,
+                          2);
+  std::unique_ptr<MockPermissionRequest> request_geolocation =
+      CreateAndAddRequest(RequestType::kGeolocation, /*should_be_seen=*/true,
+                          3);
+
+  for (auto* kRequest : {request_geolocation.get(), request_notifications.get(),
+                         request_camera.get()}) {
+    WaitAndAcceptPromptForRequest(kRequest);
+  }
+
+  EXPECT_EQ(prompt_factory_->show_count(), 5);
+}
+
+class PermissionRequestManagerTestQuietChip
+    : public PermissionRequestManagerTest {
+ public:
+  PermissionRequestManagerTestQuietChip() {
+    feature_list_.InitWithFeatureState(
+        permissions::features::kPermissionQuietChip, true);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Verifies that the quiet UI chip is not ignored if another request came in
+// less than 8.5 seconds after.
+// Permissions requested in order:
+// 1. Notification (abusive)
+// 2. After less than 8.5 seconds Geolocation
+//
+// Prompt display order:
+// 1. Notifications request shown but is preempted because of quiet UI.
+// 2. Geolocation request shown
+// 3. Notifications request shown again
+TEST_P(PermissionRequestManagerTestQuietChip,
+       AbusiveNotificationsGeolocationQuietUIChipRequest) {
+  MockNotificationPermissionUiSelector::CreateForManager(
+      manager_,
+      PermissionUiSelector::QuietUiReason::kTriggeredDueToAbusiveRequests,
+      false /* async */);
+
+  std::unique_ptr<MockPermissionRequest> request_notifications =
+      CreateAndAddRequest(RequestType::kNotifications, /*should_be_seen=*/true,
+                          1);
+
+  // Less then 8.5 seconds.
+  manager_->set_current_request_first_display_time_for_testing(
+      base::Time::Now() - base::Milliseconds(5000));
+
+  std::unique_ptr<MockPermissionRequest> request_geolocation =
+      CreateAndAddRequest(RequestType::kGeolocation, /*should_be_seen=*/true,
+                          2);
+
+  WaitAndAcceptPromptForRequest(request_geolocation.get());
+  WaitAndAcceptPromptForRequest(request_notifications.get());
+
+  EXPECT_EQ(prompt_factory_->show_count(), 3);
+}
+
+// Verifies that the quiet UI chip is ignored if another request came in more
+// than 8.5 seconds after.
+//
+// Permissions requested in order:
+// 1. Notification (abusive)
+// 2. After more than 8.5 seconds Geolocation
+//
+// Prompt display order:
+// 1. Notifications request shown but is preempted because of quiet UI.
+// 2. Geolocation request shown
+TEST_P(PermissionRequestManagerTestQuietChip,
+       AbusiveNotificationsShownLongEnough) {
+  MockNotificationPermissionUiSelector::CreateForManager(
+      manager_,
+      PermissionUiSelector::QuietUiReason::kTriggeredDueToAbusiveRequests,
+      false /* async */);
+
+  std::unique_ptr<MockPermissionRequest> request_notifications =
+      CreateAndAddRequest(RequestType::kNotifications, /*should_be_seen=*/true,
+                          1);
+
+  // More then 8.5 seconds.
+  manager_->set_current_request_first_display_time_for_testing(
+      base::Time::Now() - base::Milliseconds(9000));
+
+  std::unique_ptr<MockPermissionRequest> request_geolocation =
+      CreateAndAddRequest(RequestType::kGeolocation, /*should_be_seen=*/true,
+                          2);
+
+  // The second permission was requested after 8.5 second window, the quiet UI
+  // Notifiations request for an abusive origin is automatically ignored.
+  EXPECT_FALSE(request_notifications->granted());
+  EXPECT_TRUE(request_notifications->finished());
+
+  WaitAndAcceptPromptForRequest(request_geolocation.get());
+
+  EXPECT_EQ(prompt_factory_->show_count(), 2);
+}
+
+// Verifies that the quiet UI chip is not ignored if another request came in
+// more than 8.5 seconds after. Verify different requests priority. Camera
+// request is shown despite being requested last.
+//
+// Permissions requested in order:
+// 1. Notification (abusive)
+// 2. After less than 8.5 seconds Geolocation
+// 3. Camera
+//
+// Prompt display order:
+// 1. Notifications request shown but is preempted because of quiet UI.
+// 2. Geolocation request shown but is preempted because of low priority.
+// 3. Camera request shown
+// 4. Geolocation request shown again
+// 5. Notifications quiet UI request shown again
+TEST_P(PermissionRequestManagerTestQuietChip,
+       AbusiveNotificationsShownLongEnoughCamera) {
+  MockNotificationPermissionUiSelector::CreateForManager(
+      manager_,
+      PermissionUiSelector::QuietUiReason::kTriggeredDueToAbusiveRequests,
+      false /* async */);
+
+  std::unique_ptr<MockPermissionRequest> request_notifications =
+      CreateAndAddRequest(RequestType::kNotifications, /*should_be_seen=*/true,
+                          1);
+  // Less then 8.5 seconds.
+  manager_->set_current_request_first_display_time_for_testing(
+      base::Time::Now() - base::Milliseconds(5000));
+
+  std::unique_ptr<MockPermissionRequest> request_geolocation =
+      CreateAndAddRequest(RequestType::kGeolocation, /*should_be_seen=*/true,
+                          2);
+  std::unique_ptr<MockPermissionRequest> request_camera = CreateAndAddRequest(
+      RequestType::kCameraStream, /*should_be_seen=*/true, 3);
+
+  // The second permission was requested in 8.5 second window, the quiet UI
+  // Notifiations request for an abusive origin is not automatically ignored.
+  EXPECT_FALSE(request_notifications->granted());
+  EXPECT_FALSE(request_notifications->finished());
+
+  for (auto* kRequest : {request_camera.get(), request_geolocation.get(),
+                         request_notifications.get()}) {
+    WaitAndAcceptPromptForRequest(kRequest);
+  }
+
+  EXPECT_EQ(prompt_factory_->show_count(), 5);
+}
+
+// Verifies that the quiet UI chip is not ignored if another request came in
+// more than 8.5 seconds after. Verify different requests priority. Camera
+// request is not preemted.
+//
+// Permissions requested in order:
+// 1. Camera
+// 2. Notification (abusive)
+// 3. After less than 8.5 seconds Geolocation
+//
+// Prompt display order:
+// 1. Camera request shown
+// 2. Geolocation request shown
+// 3. Camera request shown
+TEST_P(PermissionRequestManagerTestQuietChip,
+       CameraAbusiveNotificationsGeolocation) {
+  MockNotificationPermissionUiSelector::CreateForManager(
+      manager_,
+      PermissionUiSelector::QuietUiReason::kTriggeredDueToAbusiveRequests,
+      false /* async */);
+
+  std::unique_ptr<MockPermissionRequest> request_camera = CreateAndAddRequest(
+      RequestType::kCameraStream, /*should_be_seen=*/true, 1);
+
+  // Quiet UI is not shown because Camera has higher priority.
+  std::unique_ptr<MockPermissionRequest> request_notifications =
+      CreateAndAddRequest(RequestType::kNotifications, /*should_be_seen=*/false,
+                          1);
+  // Less then 8.5 seconds.
+  manager_->set_current_request_first_display_time_for_testing(
+      base::Time::Now() - base::Milliseconds(5000));
+
+  // Geolocation is not shown because Camera has higher priority.
+  std::unique_ptr<MockPermissionRequest> request_geolocation =
+      CreateAndAddRequest(RequestType::kGeolocation, /*should_be_seen=*/false,
+                          1);
+
+  // The second permission after quiet UI was requested in 8.5 second window,
+  // the quiet UI Notifiations request for an abusive origin is not
+  // automatically ignored.
+  EXPECT_FALSE(request_notifications->granted());
+  EXPECT_FALSE(request_notifications->finished());
+
+  for (auto* kRequest : {request_camera.get(), request_geolocation.get(),
+                         request_notifications.get()}) {
+    WaitAndAcceptPromptForRequest(kRequest);
+  }
+
+  EXPECT_EQ(prompt_factory_->show_count(), 3);
+}
+
+// Verifies that the quiet UI chip is not ignored if another request came in
+// more than 8.5 seconds after. Verify different requests priority. Camera
+// request is not preemted.
+//
+// Permissions requested in order:
+// 1. Camera
+// 2. Notification (abusive)
+// 3. After less than 8.5 seconds Geolocation
+// 4. MIDI
+//
+// Prompt display order:
+// 1. Camera request shown
+// 2. MIDI request shown (or MIDI and then Camera, the order depends on
+// `GetParam()`)
+// 3. Geolocation request shown
+// 4. Notifications request shown
+// If Chip is enabled MIDI will replace Camera, hence 5 prompts will be
+// shown. Otherwise 4.
+TEST_P(PermissionRequestManagerTestQuietChip,
+       CameraAbusiveNotificationsGeolocationMIDI) {
+  MockNotificationPermissionUiSelector::CreateForManager(
+      manager_,
+      PermissionUiSelector::QuietUiReason::kTriggeredDueToAbusiveRequests,
+      false /* async */);
+
+  std::unique_ptr<MockPermissionRequest> request_camera = CreateAndAddRequest(
+      RequestType::kCameraStream, /*should_be_seen=*/true, 1);
+
+  // Quiet UI is not shown because Camera has higher priority.
+  std::unique_ptr<MockPermissionRequest> request_notifications =
+      CreateAndAddRequest(RequestType::kNotifications, /*should_be_seen=*/false,
+                          1);
+  // Less then 8.5 seconds.
+  manager_->set_current_request_first_display_time_for_testing(
+      base::Time::Now() - base::Milliseconds(5000));
+
+  // Geolocation is not shown because Camera has higher priority.
+  std::unique_ptr<MockPermissionRequest> request_geolocation =
+      CreateAndAddRequest(RequestType::kGeolocation, /*should_be_seen=*/false,
+                          1);
+
+  std::unique_ptr<MockPermissionRequest> request_midi;
+
+  // If Chip is enabled, MIDI should be shown, otherwise MIDI should not be
+  // shown.
+  if (GetParam()) {
+    request_midi = CreateAndAddRequest(RequestType::kMidiSysex,
+                                       /*should_be_seen=*/true, 2);
+  } else {
+    request_midi = CreateAndAddRequest(RequestType::kMidiSysex,
+                                       /*should_be_seen=*/false, 1);
+  }
+
+  // The second permission after quiet UI was requested in 8.5 second window,
+  // the quiet UI Notifiations request for an abusive origin is not
+  // automatically ignored.
+  EXPECT_FALSE(request_notifications->granted());
+  EXPECT_FALSE(request_notifications->finished());
+
+  WaitAndAcceptPromptForRequest(GetParam() ? request_midi.get()
+                                           : request_camera.get());
+  WaitAndAcceptPromptForRequest(GetParam() ? request_camera.get()
+                                           : request_midi.get());
+  WaitAndAcceptPromptForRequest(request_geolocation.get());
+  WaitAndAcceptPromptForRequest(request_notifications.get());
+
+  EXPECT_EQ(prompt_factory_->show_count(), GetParam() ? 5 : 4);
+}
+
+// Verifies that non abusive chip behaves similar to others when Quiet UI Chip
+// is enabled.
+//
+// Permissions requested in order:
+// 1. Camera
+// 2. Notification (non abusive)
+// 3. After less than 8.5 seconds Geolocation
+// 4. MIDI
+//
+// Prompt display order:
+// 1. Camera request shown
+// 2. MIDI request shown (or MIDI and then Camera, the order depends on
+// `GetParam()`)
+// 3. Geolocation request shown
+// 4. Notifications request shown
+// If Chip is enabled MIDI will replace Camera, hence 5 prompts will be
+// shown. Otherwise 4.
+TEST_P(PermissionRequestManagerTestQuietChip,
+       CameraNonAbusiveNotificationsGeolocationMIDI) {
+  std::unique_ptr<MockPermissionRequest> request_camera = CreateAndAddRequest(
+      RequestType::kCameraStream, /*should_be_seen=*/true, 1);
+
+  // Quiet UI is not shown because Camera has higher priority.
+  std::unique_ptr<MockPermissionRequest> request_notifications =
+      CreateAndAddRequest(RequestType::kNotifications, /*should_be_seen=*/false,
+                          1);
+  // Less then 8.5 seconds.
+  manager_->set_current_request_first_display_time_for_testing(
+      base::Time::Now() - base::Milliseconds(5000));
+
+  // Geolocation is not shown because Camera has higher priority.
+  std::unique_ptr<MockPermissionRequest> request_geolocation =
+      CreateAndAddRequest(RequestType::kGeolocation, /*should_be_seen=*/false,
+                          1);
+
+  std::unique_ptr<MockPermissionRequest> request_midi;
+
+  // If Chip is enabled, MIDI should be shown, otherwise MIDI should not be
+  // shown.
+  if (GetParam()) {
+    request_midi = CreateAndAddRequest(RequestType::kMidiSysex,
+                                       /*should_be_seen=*/true, 2);
+  } else {
+    request_midi = CreateAndAddRequest(RequestType::kMidiSysex,
+                                       /*should_be_seen=*/false, 1);
+  }
+
+  // The second permission after quiet UI was requested in 8.5 second window,
+  // the quiet UI Notifiations request for an abusive origin is not
+  // automatically ignored.
+  EXPECT_FALSE(request_notifications->granted());
+  EXPECT_FALSE(request_notifications->finished());
+
+  WaitAndAcceptPromptForRequest(GetParam() ? request_midi.get()
+                                           : request_camera.get());
+  WaitAndAcceptPromptForRequest(GetParam() ? request_camera.get()
+                                           : request_midi.get());
+  WaitAndAcceptPromptForRequest(request_geolocation.get());
+  WaitAndAcceptPromptForRequest(request_notifications.get());
+
+  EXPECT_EQ(prompt_factory_->show_count(), GetParam() ? 5 : 4);
+}
+
 INSTANTIATE_TEST_SUITE_P(All,
                          PermissionRequestManagerTest,
+                         ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(All,
+                         PermissionRequestManagerTestQuietChip,
                          ::testing::Values(false, true));
 
 }  // namespace permissions

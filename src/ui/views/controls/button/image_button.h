@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
@@ -27,6 +26,10 @@ class VIEWS_EXPORT ImageButton : public Button {
   enum VerticalAlignment { ALIGN_TOP = 0, ALIGN_MIDDLE, ALIGN_BOTTOM };
 
   explicit ImageButton(PressedCallback callback = PressedCallback());
+
+  ImageButton(const ImageButton&) = delete;
+  ImageButton& operator=(const ImageButton&) = delete;
+
   ~ImageButton() override;
 
   // Returns the image for a given |state|.
@@ -74,7 +77,7 @@ class VIEWS_EXPORT ImageButton : public Button {
   virtual gfx::ImageSkia GetImageToPaint();
 
   // Updates button background for |scale_factor|.
-  void UpdateButtonBackground(ui::ScaleFactor scale_factor);
+  void UpdateButtonBackground(ui::ResourceScaleFactor scale_factor);
 
   // The images used to render the different states of this button.
   gfx::ImageSkia images_[STATE_COUNT];
@@ -103,8 +106,6 @@ class VIEWS_EXPORT ImageButton : public Button {
   // small curved corner in the close button designed to fit into the frame
   // resources.
   bool draw_image_mirrored_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageButton);
 };
 
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, ImageButton, Button)
@@ -127,6 +128,10 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
   METADATA_HEADER(ToggleImageButton);
 
   explicit ToggleImageButton(PressedCallback callback = PressedCallback());
+
+  ToggleImageButton(const ToggleImageButton&) = delete;
+  ToggleImageButton& operator=(const ToggleImageButton&) = delete;
+
   ~ToggleImageButton() override;
 
   // Change the toggled state.
@@ -178,8 +183,6 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
   // The parent class's accessibility data is used when not toggled, and this
   // one is used when toggled.
   std::u16string toggled_accessible_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToggleImageButton);
 };
 
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, ToggleImageButton, ImageButton)

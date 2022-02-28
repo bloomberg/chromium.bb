@@ -74,6 +74,13 @@ def GetFeatureProtect(interface):
         protect = platform_dict[platform]
     return protect
 
+# Return the _EXTENSION_NAME define for the given extension block
+def GetNameDefine(interface):
+    for enum in interface.findall('require/enum'):
+        if enum.get('name', '').endswith('_EXTENSION_NAME'):
+            return enum.get('name')
+    raise Exception(f'Could find name define for {extension.get("name")}')
+
 # Return a dict containing the dispatchable/non-dispatchable type of every handle
 def GetHandleTypes(tree):
     # Extend OrderedDict with common handle operations
@@ -138,6 +145,16 @@ def GetTypeCategories(tree):
             type_categories[name] = elem.get('category')
     return type_categories
 
+# Return a dict containing platform guard for every type
+def GetTypeGuards(tree):
+    type_guards = OrderedDict()
+    for ext_elem in tree.findall('extensions/extension'):
+        ext_guard = platform_dict.get(ext_elem.get('platform'))
+        if ext_guard:
+            for type_elem in ext_elem.findall('require/type'):
+                type_guards[type_elem.get('name')] = ext_guard
+    return type_guards
+
 # Treats outdents a multiline string by the leading whitespace on the first line
 # Optionally indenting by the given prefix
 def Outdent(string_in, indent=''):
@@ -152,6 +169,19 @@ def Outdent(string_in, indent=''):
     string_out = string_out.rstrip() + '\n' # remove trailing whitespace except for a newline
     outdent = re.sub(fake_indent, indent, string_out)
     return outdent[1:]
+
+# Wrap a statement with the supplied guard, preserving the newline-ness of the input statement
+def Guarded(ifdef, value):
+    if ifdef is not None:
+        if value.endswith('\n'):
+            value, trailing_newline = value[:-1], value[-1:]
+        else:
+            trailing_newline = ''
+        return f'#ifdef {ifdef}\n' \
+               f'{value}\n' \
+               f'#endif{trailing_newline}'
+    else:
+        return value
 
 
 # helper to define paths relative to the repo root

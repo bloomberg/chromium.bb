@@ -4,7 +4,6 @@
 
 import * as Marked from '../../third_party/marked/marked.js';
 
-
 /**
  * The description that subclasses of `Issue` use define the issue appearance:
  * `file` specifies the markdown file, substitutions can be used to replace
@@ -143,4 +142,11 @@ export function findTitleFromMarkdownAst(markdownAst: Marked.Marked.Token[]): st
     return null;
   }
   return markdownAst[0].text;
+}
+
+export async function getIssueTitleFromMarkdownDescription(description: MarkdownIssueDescription):
+    Promise<string|null> {
+  const rawMarkdown = await getMarkdownFileContent(description.file);
+  const markdownAst = Marked.Marked.lexer(rawMarkdown);
+  return findTitleFromMarkdownAst(markdownAst);
 }

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/common/content_export.h"
 
@@ -21,6 +21,10 @@ class WebContentsImpl;
 class CONTENT_EXPORT GestureNavSimple : public OverscrollControllerDelegate {
  public:
   explicit GestureNavSimple(WebContentsImpl* web_contents);
+
+  GestureNavSimple(const GestureNavSimple&) = delete;
+  GestureNavSimple& operator=(const GestureNavSimple&) = delete;
+
   ~GestureNavSimple() override;
 
   // Called by the affordance when its complete/abort animation is finished so
@@ -40,7 +44,7 @@ class CONTENT_EXPORT GestureNavSimple : public OverscrollControllerDelegate {
                               cc::OverscrollBehavior behavior) override;
   absl::optional<float> GetMaxOverscrollDelta() const override;
 
-  WebContentsImpl* web_contents_ = nullptr;
+  raw_ptr<WebContentsImpl> web_contents_ = nullptr;
 
   OverscrollMode mode_ = OVERSCROLL_NONE;
   OverscrollSource source_ = OverscrollSource::NONE;
@@ -50,8 +54,6 @@ class CONTENT_EXPORT GestureNavSimple : public OverscrollControllerDelegate {
   // When an overscroll is active, represents the maximum overscroll delta we
   // expect in OnOverscrollUpdate().
   float max_delta_ = 0.f;
-
-  DISALLOW_COPY_AND_ASSIGN(GestureNavSimple);
 };
 
 }  // namespace content

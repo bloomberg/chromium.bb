@@ -18,10 +18,13 @@
 #include "src/gpu/GrPixmap.h"
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/GrSurfaceContext.h"
 #include "src/gpu/SkGr.h"
-#include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
+#include "src/gpu/SurfaceContext.h"
 #include "src/image/SkImage_Base.h"
+
+#if SK_GPU_V1
+#include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
+#endif
 
 namespace sk_gpu_test {
 
@@ -78,7 +81,7 @@ GrSurfaceProxyView MakeTextureProxyViewFromData(GrDirectContext* dContext,
         return {};
     }
     GrSurfaceProxyView view(proxy, origin, swizzle);
-    auto sContext = GrSurfaceContext::Make(dContext, std::move(view), pixmap.colorInfo());
+    auto sContext = dContext->priv().makeSC(std::move(view), pixmap.colorInfo());
     if (!sContext) {
         return {};
     }
@@ -88,11 +91,13 @@ GrSurfaceProxyView MakeTextureProxyViewFromData(GrDirectContext* dContext,
     return sContext->readSurfaceView();
 }
 
+#if SK_GPU_V1
 GrProgramInfo* CreateProgramInfo(const GrCaps* caps,
                                  SkArenaAlloc* arena,
                                  const GrSurfaceProxyView& writeView,
+                                 bool usesMSAASurface,
                                  GrAppliedClip&& appliedClip,
-                                 const GrXferProcessor::DstProxyView& dstProxyView,
+                                 const GrDstProxyView& dstProxyView,
                                  GrGeometryProcessor* geomProc,
                                  SkBlendMode blendMode,
                                  GrPrimitiveType primitiveType,
@@ -111,12 +116,12 @@ GrProgramInfo* CreateProgramInfo(const GrCaps* caps,
                                                      GrClampType::kAuto, &analysisColor);
     SkASSERT(!analysis.requiresDstTexture());
 
-    return GrSimpleMeshDrawOpHelper::CreateProgramInfo(caps, arena, writeView,
+    return GrSimpleMeshDrawOpHelper::CreateProgramInfo(caps, arena, writeView, usesMSAASurface,
                                                        std::move(appliedClip), dstProxyView,
                                                        geomProc, std::move(processors),
                                                        primitiveType, renderPassXferBarriers,
                                                        colorLoadOp, flags, stencilSettings);
 }
-
+#endif // SK_GPU_V1
 
 }  // namespace sk_gpu_test

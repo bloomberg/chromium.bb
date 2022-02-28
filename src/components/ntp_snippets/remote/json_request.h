@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/language/core/browser/url_language_histogram.h"
@@ -70,6 +71,8 @@ class JsonRequest {
     Builder();
     Builder(Builder&&);
     ~Builder();
+    Builder(const Builder&) = delete;
+    Builder& operator=(const Builder&) = delete;
 
     // Builds a Request object that contains all data to fetch new snippets.
     std::unique_ptr<JsonRequest> Build() const;
@@ -119,7 +122,7 @@ class JsonRequest {
 
     // Only required, if the request needs to be sent.
     std::string auth_header_;
-    const base::Clock* clock_;
+    raw_ptr<const base::Clock> clock_;
     RequestParams params_;
     ParseJSONCallback parse_json_callback_;
     GURL url_;
@@ -128,15 +131,15 @@ class JsonRequest {
     // Optional properties.
     std::string user_class_;
     std::string display_capability_;
-    const language::UrlLanguageHistogram* language_histogram_;
-
-    DISALLOW_COPY_AND_ASSIGN(Builder);
+    raw_ptr<const language::UrlLanguageHistogram> language_histogram_;
   };
 
   JsonRequest(absl::optional<Category> exclusive_category,
               const base::Clock* clock,
               const ParseJSONCallback& callback);
   JsonRequest(JsonRequest&&);
+  JsonRequest(const JsonRequest&) = delete;
+  JsonRequest& operator=(const JsonRequest&) = delete;
   ~JsonRequest();
 
   void Start(CompletedCallback callback);
@@ -170,7 +173,7 @@ class JsonRequest {
   // Use the Clock from the Fetcher to measure the fetch time. It will be
   // used on creation and after the fetch returned. It has to be alive until the
   // request is destroyed.
-  const base::Clock* clock_;
+  raw_ptr<const base::Clock> clock_;
   base::Time creation_time_;
 
   // This callback is called to parse a json string. It contains callbacks for
@@ -184,8 +187,6 @@ class JsonRequest {
   std::string last_response_string_;
 
   base::WeakPtrFactory<JsonRequest> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(JsonRequest);
 };
 
 }  // namespace internal

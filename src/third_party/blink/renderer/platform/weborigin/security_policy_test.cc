@@ -147,6 +147,10 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
        kInsecureURLB, kInsecureOriginA},
       {network::mojom::ReferrerPolicy::kSameOrigin, kInsecureURLA,
        kInsecureURLB, nullptr},
+      {network::mojom::ReferrerPolicy::kSameOrigin, kInsecureURLB,
+       kFilesystemURL, nullptr},
+      {network::mojom::ReferrerPolicy::kSameOrigin, kInsecureURLB, kBlobURL,
+       nullptr},
       {network::mojom::ReferrerPolicy::kStrictOrigin, kInsecureURLA,
        kInsecureURLB, kInsecureOriginA},
       {network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
@@ -234,11 +238,11 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
 
       // blob, filesystem, and invalid URL handling
       {network::mojom::ReferrerPolicy::kAlways, kInsecureURLA, kBlobURL,
-       nullptr},
+       kInsecureURLA},
       {network::mojom::ReferrerPolicy::kAlways, kBlobURL, kInsecureURLA,
        nullptr},
       {network::mojom::ReferrerPolicy::kAlways, kInsecureURLA, kFilesystemURL,
-       nullptr},
+       kInsecureURLA},
       {network::mojom::ReferrerPolicy::kAlways, kFilesystemURL, kInsecureURLA,
        nullptr},
       {network::mojom::ReferrerPolicy::kAlways, kInsecureURLA, kInvalidURL,
@@ -413,6 +417,8 @@ TEST(SecurityPolicyTest, TrustworthySafelist) {
 class SecurityPolicyAccessTest : public testing::Test {
  public:
   SecurityPolicyAccessTest() = default;
+  SecurityPolicyAccessTest(const SecurityPolicyAccessTest&) = delete;
+  SecurityPolicyAccessTest& operator=(const SecurityPolicyAccessTest&) = delete;
   ~SecurityPolicyAccessTest() override = default;
 
   void SetUp() override {
@@ -452,8 +458,6 @@ class SecurityPolicyAccessTest : public testing::Test {
   scoped_refptr<const SecurityOrigin> http_example_origin_;
   scoped_refptr<const SecurityOrigin> https_chromium_origin_;
   scoped_refptr<const SecurityOrigin> https_google_origin_;
-
-  DISALLOW_COPY_AND_ASSIGN(SecurityPolicyAccessTest);
 };
 
 // TODO(toyoshim): Simplify origin access related tests since all we need here

@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "ash/components/audio/cras_audio_handler.h"
-#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
@@ -33,7 +32,7 @@ class VmCameraMicManager : public media::CameraActiveClientObserver,
                            public media::CameraPrivacySwitchObserver,
                            public CrasAudioHandler::AudioObserver {
  public:
-  enum class VmType { kCrostiniVm, kPluginVm };
+  enum class VmType { kCrostiniVm, kPluginVm, kBorealis };
 
   enum class DeviceType {
     kMic,
@@ -51,8 +50,7 @@ class VmCameraMicManager : public media::CameraActiveClientObserver,
       (1 << static_cast<size_t>(DeviceType::kMic)) |
       (1 << static_cast<size_t>(DeviceType::kCamera))};
 
-  static constexpr base::TimeDelta kDebounceTime =
-      base::TimeDelta::FromMilliseconds(300);
+  static constexpr base::TimeDelta kDebounceTime = base::Milliseconds(300);
 
   class Observer : public base::CheckedObserver {
    public:

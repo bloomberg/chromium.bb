@@ -6,15 +6,17 @@
  */
 
 #include "src/sksl/SkSLConstantFolder.h"
+#include "src/sksl/SkSLProgramSettings.h"
 #include "src/sksl/ir/SkSLConstructorSplat.h"
 
 namespace SkSL {
 
 std::unique_ptr<Expression> ConstructorSplat::Make(const Context& context,
-                                                   int offset,
+                                                   int line,
                                                    const Type& type,
                                                    std::unique_ptr<Expression> arg) {
-    SkASSERT(arg->type() == type.componentType());
+    SkASSERT(type.isAllowedInES2(context));
+    SkASSERT(arg->type().scalarTypeForLiteral() == type.componentType().scalarTypeForLiteral());
     SkASSERT(arg->type().isScalar());
 
     // A "splat" to a scalar type is a no-op and can be eliminated.
@@ -22,14 +24,12 @@ std::unique_ptr<Expression> ConstructorSplat::Make(const Context& context,
         return arg;
     }
 
-    if (context.fConfig->fSettings.fOptimize) {
-        // Replace constant variables with their corresponding values, so `float3(five)` can
-        // compile down to `float3(5.0)` (the latter is a compile-time constant).
-        arg = ConstantFolder::MakeConstantValueForVariable(std::move(arg));
-    }
+    // Replace constant variables with their corresponding values, so `float3(five)` can compile
+    // down to `float3(5.0)` (the latter is a compile-time constant).
+    arg = ConstantFolder::MakeConstantValueForVariable(std::move(arg));
 
     SkASSERT(type.isVector());
-    return std::make_unique<ConstructorSplat>(offset, type, std::move(arg));
+    return std::make_unique<ConstructorSplat>(line, type, std::move(arg));
 }
 
 }  // namespace SkSL

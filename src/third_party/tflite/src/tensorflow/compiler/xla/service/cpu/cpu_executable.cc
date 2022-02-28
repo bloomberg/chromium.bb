@@ -34,6 +34,7 @@ limitations under the License.
 #include "tensorflow/compiler/xla/service/logical_buffer.h"
 #include "tensorflow/compiler/xla/service/maybe_owning_device_memory.h"
 #include "tensorflow/compiler/xla/service/shaped_buffer.h"
+#include "tensorflow/compiler/xla/service/xla_debug_info_manager.h"
 #include "tensorflow/compiler/xla/shape_tree.h"
 #include "tensorflow/compiler/xla/shape_util.h"
 #include "tensorflow/compiler/xla/status_macros.h"
@@ -51,6 +52,15 @@ limitations under the License.
 namespace xla {
 namespace cpu {
 
+static std::string ModuleUniqueName(absl::string_view module_name,
+                                    const HloModule* module) {
+  std::string unique_id;
+  if (module != nullptr) {
+    unique_id = absl::StrCat("module.", module->unique_id(), ".");
+  }
+  return absl::StrCat(unique_id, module_name);
+}
+
 CpuExecutable::CpuExecutable(
     std::unique_ptr<SimpleOrcJIT> jit,
     std::unique_ptr<const BufferAssignment> assignment,
@@ -60,19 +70,34 @@ CpuExecutable::CpuExecutable(
     : Executable(std::move(hlo_module), std::move(hlo_profile_printer_data),
                  std::move(hlo_profile_index_map)),
       jit_(std::move(jit)),
-      assignment_(std::move(assignment)) {
+      assignment_(std::move(assignment)),
+      module_name_(entry_function_name) {
+  if (assignment_) {
+    buffer_assignment_.reset(new BufferAssignmentProto(assignment_->ToProto()));
+  }
+  XlaDebugInfoManager::Get()->RegisterModule(
+      ModuleUniqueName(module_name_, shared_module().get()), shared_module(),
+      buffer_assignment_);
+
   // Resolve symbols in the constructor rather than at execution time to avoid
   // races because FindSymbol is not thread safe.
-  llvm::JITSymbol sym = jit_->FindCompiledSymbol(entry_function_name);
+  llvm::Expected<llvm::JITEvaluatedSymbol> sym =
+      jit_->FindCompiledSymbol(entry_function_name);
   // We expect to find the symbol provided with entry_function_name; otherwise
   // this is an internal error.
-  CHECK(sym) << "Symbol " << entry_function_name << " not found.";
+  CHECK(*sym) << "Symbol " << entry_function_name << " not found.";
   // getAddress can do work under the hood in the jit, so it needs to be
   // guarded by the mutex.
-  compute_function_ =
-      reinterpret_cast<ComputeFunctionType>(cantFail(sym.getAddress()));
+  compute_function_ = reinterpret_cast<ComputeFunctionType>(sym->getAddress());
   VLOG(1) << "compute_function_ at address "
           << reinterpret_cast<void*>(compute_function_);
+  jit_->DoneCompiling();
+}
+
+CpuExecutable::~CpuExecutable() {
+  XlaDebugInfoManager::Get()->UnregisterModule(
+      ModuleUniqueName(module_name_, shared_module().get()), shared_module(),
+      buffer_assignment_);
 }
 
 static StatusOr<MaybeOwningDeviceMemory> MemoryForAllocation(
@@ -84,7 +109,7 @@ static StatusOr<MaybeOwningDeviceMemory> MemoryForAllocation(
     se::DeviceMemoryBase out = arguments[allocation.parameter_number()]
                                    .Buffer(allocation.param_shape_index())
                                    .AsDeviceMemoryBase();
-    CHECK_EQ(allocation.size(), out.size())
+    CHECK_LE(allocation.size(), out.size())
         << "Size mismatch on param " << allocation.parameter_number()
         << " at shape index " << allocation.param_shape_index().ToString();
     VLOG(3) << "allocation is a parameter";
@@ -97,7 +122,7 @@ static StatusOr<MaybeOwningDeviceMemory> MemoryForAllocation(
     return MaybeOwningDeviceMemory{se::DeviceMemoryBase{}};
   }
 
-  int64 buffer_size = allocation.size();
+  int64_t buffer_size = allocation.size();
   TF_ASSIGN_OR_RETURN(se::OwningDeviceMemory out,
                       memory_allocator->Allocate(device_ordinal, buffer_size));
   VLOG(3) << "buffer allocated " << buffer_size << " bytes [" << out->opaque()
@@ -126,9 +151,11 @@ StatusOr<std::vector<MaybeOwningDeviceMemory>> CpuExecutable::CreateBufferTable(
                                         device_ordinal));
   }
 
-  TF_ASSIGN_OR_RETURN(const BufferAllocation::Slice result_slice,
-                      assignment_->GetUniqueTopLevelOutputSlice());
-  VLOG(3) << "result index: " << result_slice.index();
+  if (VLOG_IS_ON(3)) {
+    TF_ASSIGN_OR_RETURN(const BufferAllocation::Slice result_slice,
+                        assignment_->GetUniqueTopLevelOutputSlice());
+    VLOG(3) << "result index: " << result_slice.index();
+  }
   return std::move(buffers);
 }
 
@@ -136,57 +163,47 @@ Status CpuExecutable::ExecuteComputeFunction(
     const ExecutableRunOptions* run_options,
     absl::Span<MaybeOwningDeviceMemory const> buffers,
     HloExecutionProfile* hlo_execution_profile) {
-  // The calling convention for JITed functions is:
-  //
-  //  void function(void* result, const void* run_options, void** args_array,
-  //                void** buffer_table)
-  //
-  // result: Points at the result.
-  // run_options: the ExecutableRunOptions object.
-  // args_array: null
-  // buffer_table: An array of pointers, containing pointers to temporary
-  //   buffers required by the executable adn pointers to entry computation
-  //   parameters.
-  //
-
   uint64 start_micros = tensorflow::Env::Default()->NowMicros();
+
+  XlaDebugInfoManager::Get()->OnModuleStart(module_name_);
+  auto cleanup = MakeCleanup(
+      [&]() { XlaDebugInfoManager::Get()->OnModuleStop(module_name_); });
 
   size_t profile_counters_size =
       hlo_execution_profile ? hlo_execution_profile->profile_counters().size()
                             : 0;
-  int64* profile_counters =
+  int64_t* profile_counters =
       hlo_execution_profile
           ? hlo_execution_profile->mutable_profile_counters()->data()
           : nullptr;
 
-  // Call the computation function following the calling convention.
+  // Call the computation function following the calling convention. See the
+  // definition of 'ComputeFunctionType' for the details of the calling
+  // convention of JITed functions.
   std::vector<void*> buffer_pointers;
   for (auto& buffer : buffers) {
     buffer_pointers.push_back(
         const_cast<void*>(buffer.AsDeviceMemoryBase().opaque()));
   }
-  TF_ASSIGN_OR_RETURN(const BufferAllocation::Slice result_slice,
-                      assignment_->GetUniqueTopLevelOutputSlice());
-  void* result_buffer = buffer_pointers[result_slice.index()];
-  if (VLOG_IS_ON(3)) {
-    VLOG(3) << "Executing compute function:";
-    VLOG(3) << absl::StrFormat(
-        "  func(void* result, void* params[null], void* buffer_table[%u], "
-        "uint64 profile_counters[%u])",
-        buffer_pointers.size(), profile_counters_size);
-    VLOG(3) << absl::StrFormat("    result = %p", result_buffer);
-    auto ptr_printer = [](string* out, const void* p) {
-      absl::StrAppend(out, absl::StrFormat("%p", p));
-    };
-    VLOG(3) << "    params = nullptr";
-    VLOG(3) << absl::StrFormat(
-        "    buffer_table = [%s]",
-        absl::StrJoin(buffer_pointers, ", ", ptr_printer));
-    VLOG(3) << absl::StrFormat("    profile_counters = %p", profile_counters);
-  }
 
-  compute_function_(result_buffer, run_options, nullptr, buffer_pointers.data(),
-                    profile_counters);
+  VLOG(3) << "Executing compute function:";
+  VLOG(3) << absl::StrFormat("  Number of buffer table entries: %u",
+                             buffer_pointers.size());
+  auto ptr_printer = [](string* out, const void* p) {
+    absl::StrAppend(out, absl::StrFormat("%p", p));
+  };
+  VLOG(3) << absl::StrFormat("  Buffer table: [%s]",
+                             absl::StrJoin(buffer_pointers, ", ", ptr_printer));
+  VLOG(3) << absl::StrFormat("  Number of profile counters: %u",
+                             profile_counters_size);
+  VLOG(3) << absl::StrFormat("  Profile counters: %p", profile_counters);
+
+  XlaCustomCallStatus status;
+  // For the entry computation (like all global computations), all inputs and
+  // outputs are in the buffer table, and both the result pointer and args array
+  // pointers are unused (so we set them to 'nullptr').
+  compute_function_(nullptr, run_options, nullptr, buffer_pointers.data(),
+                    &status, profile_counters);
 
   uint64 end_micros = tensorflow::Env::Default()->NowMicros();
 
@@ -202,6 +219,12 @@ Status CpuExecutable::ExecuteComputeFunction(
     }
   }
 
+  absl::optional<absl::string_view> error_message =
+      CustomCallStatusGetMessage(&status);
+  if (error_message) {
+    return InternalError("CustomCall failed: %s", *error_message);
+  }
+
   return Status::OK();
 }
 
@@ -210,12 +233,13 @@ StatusOr<ExecutionOutput> CpuExecutable::CreateResultShapedBuffer(
     absl::Span<MaybeOwningDeviceMemory> buffers,
     absl::Span<ExecutionInput> arguments) {
   se::Stream* stream = run_options->stream();
-  ExecutionOutput result(/*on_host_shape=*/result_shape(),
-                         /*on_device_shape=*/result_shape(),
+  ExecutionOutput result(/*on_device_shape=*/result_shape(),
                          run_options->allocator(),
                          stream->parent()->device_ordinal());
   const HloInputOutputAliasConfig& input_output_alias =
       module().input_output_alias_config();
+  HloInstruction* root = hlo_module_->entry_computation()->root_instruction();
+  const Shape& root_shape = root->shape();
 
   // Move se::OwningDeviceMemory values which contain the array(s) of the result
   // into the respective location in ScopedShapedBuffer which is returned to the
@@ -230,6 +254,13 @@ StatusOr<ExecutionOutput> CpuExecutable::CreateResultShapedBuffer(
     const HloValue* value_source = sources.values()[0];
     HloInstruction* src = value_source->instruction();
 
+    // The source for this result buffer can be a nested buffer such as
+    // a tuple element.
+    TF_ASSIGN_OR_RETURN(
+        const BufferAllocation::Slice slice,
+        this->assignment_->GetUniqueSlice(src, value_source->index()));
+    const BufferAllocation::Index buffer_index = slice.index();
+
     // TODO(cheshire): duplication with other backends.
     absl::optional<HloInputOutputAliasConfig::Alias> alias =
         input_output_alias.GetAliasedParameter(index);
@@ -238,6 +269,12 @@ StatusOr<ExecutionOutput> CpuExecutable::CreateResultShapedBuffer(
       ExecutionInput& input = arguments[alias->parameter_number];
       MaybeOwningDeviceMemory* maybe_owning_memory =
           input.MutableBuffer(alias->parameter_index);
+      if (alias->must_alias() && !maybe_owning_memory->HasOwnership()) {
+        return InvalidArgument(
+            "An input was configured to be must-alias at "
+            "compile time but not donated at runtime: %s",
+            alias->ToString());
+      }
       if (absl::optional<se::OwningDeviceMemory> owning =
               maybe_owning_memory->Release()) {
         // If the caller passes the ownership of the device memory, reuse it
@@ -247,28 +284,36 @@ StatusOr<ExecutionOutput> CpuExecutable::CreateResultShapedBuffer(
         se::DeviceMemoryBase argument_buffer = owning->Release();
         *maybe_owning_memory = argument_buffer;
         result_buffer = argument_buffer;
-        if (alias->kind == HloInputOutputAliasConfig::kUserAlias) {
-          // This is a user alias, so a must alias. The caller is giving us the
-          // input buffer, but in case of error of the execute call, we should
-          // not be releasing it as it contains valid data (for example, it is a
-          // parameter which the user wants us to alias, in a gradient update
-          // computation). So we store the index into the result in the aliased
-          // vactor, which will be fed to the ExecutionOutput, which will be
-          // using the indices to drop the addresses from its own
-          // ScopedShapedBuffer result, if the ExecutionOutput is not committed.
-          result.AddAliasedIndex(index);
-        }
+        // The caller is giving us the
+        // input buffer, but in case of error of the execute call, we should
+        // not be releasing it as it contains valid data (for example, it is a
+        // parameter which the user wants us to alias, in a gradient update
+        // computation). So we store the index into the result in the aliased
+        // vactor, which will be fed to the ExecutionOutput, which will be
+        // using the indices to drop the addresses from its own
+        // ScopedShapedBuffer result, if the ExecutionOutput is not committed.
+        result.AddAliasedIndex(index);
+      } else {
+        VLOG(3) << "Using copy-protection: aliasing is specified, but the "
+                   "buffer is not donated; allocating a fresh buffer";
+        int64_t allocation_size =
+            ShapeUtil::ByteSizeOf(ShapeUtil::GetSubshape(root_shape, index));
+        TF_ASSIGN_OR_RETURN(
+            se::OwningDeviceMemory allocated_buffer,
+            run_options->allocator()->Allocate(
+                stream->parent()->device_ordinal(), allocation_size));
+        result_buffer = allocated_buffer.Release();
+        MaybeOwningDeviceMemory& registered_buffer = buffers[buffer_index];
+        CHECK_EQ(result_buffer.size(),
+                 registered_buffer.AsDeviceMemoryBase().size());
+        std::memcpy(/*dest=*/result_buffer.opaque(),
+                    /*src=*/registered_buffer.AsDeviceMemoryBase().opaque(),
+                    /*n=*/result_buffer.size());
+        registered_buffer = result_buffer;
       }
     }
 
     if (result_buffer.is_null()) {
-      // The source for this result buffer can be a nested buffer such as
-      // a tuple element. The source instruction should have a
-      // non-parameter buffer assigned.
-      TF_ASSIGN_OR_RETURN(
-          const BufferAllocation::Slice slice,
-          this->assignment_->GetUniqueSlice(src, value_source->index()));
-      const BufferAllocation::Index buffer_index = slice.index();
       MaybeOwningDeviceMemory& buffer = buffers[buffer_index];
       if (absl::optional<se::OwningDeviceMemory> owned_buffer =
               buffer.Release()) {
@@ -295,7 +340,7 @@ StatusOr<ExecutionOutput> CpuExecutable::ExecuteAsyncOnStream(
     const HloComputation* entry_comp = hlo_module_->entry_computation();
     CHECK_EQ(entry_comp->num_parameters(), arguments.size())
         << "Wrong number of arguments passed when running executable";
-    for (int64 i = 0; i < entry_comp->num_parameters(); ++i) {
+    for (int64_t i = 0; i < entry_comp->num_parameters(); ++i) {
       const Shape& expected_shape =
           entry_comp->parameter_instruction(i)->shape();
       const Shape& actual_shape = arguments[i].Buffers().shape();
@@ -336,14 +381,12 @@ StatusOr<ExecutionOutput> CpuExecutable::ExecuteAsyncOnStream(
     std::shared_ptr<std::vector<MaybeOwningDeviceMemory>> task_buffers;
     HloExecutionProfile* hlo_execution_profile;
 
-    void operator()() {
-      // Failing a CHECK here is not great, but I don't see an obvious way to
-      // return a failed Status asynchronously.
-      TF_CHECK_OK(executable->ExecuteComputeFunction(
-          &run_options.run_options(), *task_buffers, hlo_execution_profile));
+    Status operator()() {
+      return executable->ExecuteComputeFunction(
+          &run_options.run_options(), *task_buffers, hlo_execution_profile);
     }
   };
-  host_stream->EnqueueTask(
+  host_stream->EnqueueTaskWithStatus(
       AsyncRunTask{this, *run_options,
                    std::make_shared<std::vector<MaybeOwningDeviceMemory>>(
                        std::move(buffers)),
@@ -353,7 +396,7 @@ StatusOr<ExecutionOutput> CpuExecutable::ExecuteAsyncOnStream(
   return std::move(result);
 }
 
-/*static*/ int64 CpuExecutable::ShapeSizeBytes(const Shape& shape) {
+/*static*/ int64_t CpuExecutable::ShapeSizeBytes(const Shape& shape) {
   // On the cpu, opaques are pointers.
   if (shape.IsOpaque()) {
     return sizeof(void*);
@@ -362,7 +405,7 @@ StatusOr<ExecutionOutput> CpuExecutable::ExecuteAsyncOnStream(
     return ShapeUtil::ByteSizeOf(shape, sizeof(void*));
   }
   // Each dynamic dimension size is represented as a S32.
-  int64 metadata_size = sizeof(int32) * shape.dimensions_size();
+  int64_t metadata_size = sizeof(int32) * shape.dimensions_size();
   return ShapeUtil::ByteSizeOf(shape, sizeof(void*)) + metadata_size;
 }
 
@@ -371,7 +414,7 @@ const InstructionValueSet& CpuExecutable::GetRootValueSet() const {
       module().entry_computation()->root_instruction());
 }
 
-int64 CpuExecutable::SizeOfGeneratedCodeInBytes() const {
+int64_t CpuExecutable::SizeOfGeneratedCodeInBytes() const {
   return jit_->SizeOfGeneratedCodeInBytes();
 }
 

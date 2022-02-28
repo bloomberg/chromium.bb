@@ -20,6 +20,7 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.Restriction;
@@ -241,7 +242,7 @@ public class ContextualSearchTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // It only makes sense to send dummy data here because we can't easily control
             // what's in the native context.
-            mContextualSearchClient.selectWordAroundCaretAck(true, 0, 0);
+            mContextualSearchClient.selectAroundCaretAck(null);
         });
     }
 
@@ -259,8 +260,8 @@ public class ContextualSearchTest {
             mPanelManager.setDynamicResourceLoader(new DynamicResourceLoader(0, null));
 
             mContextualSearchManager = new ContextualSearchManagerWrapper(activity);
-            mPanel = new ContextualSearchPanelWrapper(
-                    activity, activity.getCompositorViewHolder().getLayoutManager(), mPanelManager);
+            mPanel = new ContextualSearchPanelWrapper(activity,
+                    activity.getCompositorViewHolderForTesting().getLayoutManager(), mPanelManager);
             mPanel.setManagementDelegate(mContextualSearchManager);
             mContextualSearchManager.setContextualSearchPanel(mPanel);
 
@@ -304,6 +305,7 @@ public class ContextualSearchTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @DisabledTest(message = "https://crbug.com/1279770")
     public void testTextTapFollowedByNonTextTap() {
         Assert.assertEquals(mPanelManager.getRequestPanelShowCount(), 0);
 

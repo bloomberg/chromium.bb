@@ -17,11 +17,11 @@
 #include "perfetto/ext/trace_processor/export_json.h"
 #include "src/trace_processor/export_json.h"
 
-#include <inttypes.h>
 #include <stdio.h>
 #include <sstream>
 
 #include <algorithm>
+#include <cinttypes>
 #include <cmath>
 #include <cstring>
 #include <deque>
@@ -85,8 +85,11 @@ const char kLegacyEventLocalIdKey[] = "local_id";
 const char kLegacyEventIdScopeKey[] = "id_scope";
 const char kStrippedArgument[] = "__stripped__";
 
-const char* GetNonNullString(const TraceStorage* storage, StringId id) {
-  return id == kNullStringId ? "" : storage->GetString(id).c_str();
+const char* GetNonNullString(const TraceStorage* storage,
+                             base::Optional<StringId> id) {
+  return id == base::nullopt || *id == kNullStringId
+             ? ""
+             : storage->GetString(*id).c_str();
 }
 
 class JsonExporter {
@@ -561,6 +564,8 @@ class JsonExporter {
           return base::Uint64ToHexString(variadic.pointer_value);
         case Variadic::kBool:
           return variadic.bool_value;
+        case Variadic::kNull:
+          return base::Uint64ToHexString(0);
         case Variadic::kJson:
           Json::CharReaderBuilder b;
           auto reader = std::unique_ptr<Json::CharReader>(b.newCharReader());
@@ -1111,8 +1116,10 @@ class JsonExporter {
       } else {
         auto opt_slice_out_idx = slice_table.id().IndexOf(slice_out);
         PERFETTO_DCHECK(opt_slice_out_idx.has_value());
-        StringId cat_id = slice_table.category()[opt_slice_out_idx.value()];
-        StringId name_id = slice_table.name()[opt_slice_out_idx.value()];
+        base::Optional<StringId> cat_id =
+            slice_table.category()[opt_slice_out_idx.value()];
+        base::Optional<StringId> name_id =
+            slice_table.name()[opt_slice_out_idx.value()];
         cat = GetNonNullString(storage_, cat_id);
         name = GetNonNullString(storage_, name_id);
       }
@@ -1409,17 +1416,17 @@ class JsonExporter {
               storage_->symbol_table().name()[*opt_symbol_set_id]);
         }
 
-        char frame_entry[1024];
-        snprintf(frame_entry, sizeof(frame_entry), "%s - %s [%s]\n",
-                 (symbol_name.empty()
-                      ? base::Uint64ToHexString(
-                            static_cast<uint64_t>(frames.rel_pc()[frame_row]))
-                            .c_str()
-                      : symbol_name.c_str()),
-                 GetNonNullString(storage_, mappings.name()[mapping_row]),
-                 GetNonNullString(storage_, mappings.build_id()[mapping_row]));
+        base::StackString<1024> frame_entry(
+            "%s - %s [%s]\n",
+            (symbol_name.empty()
+                 ? base::Uint64ToHexString(
+                       static_cast<uint64_t>(frames.rel_pc()[frame_row]))
+                       .c_str()
+                 : symbol_name.c_str()),
+            GetNonNullString(storage_, mappings.name()[mapping_row]),
+            GetNonNullString(storage_, mappings.build_id()[mapping_row]));
 
-        callstack.emplace_back(frame_entry);
+        callstack.emplace_back(frame_entry.ToStdString());
 
         opt_callsite_id = callsites.parent_id()[callsite_row];
       }
@@ -1929,4 +1936,3 @@ util::Status ExportJson(const TraceStorage* storage, FILE* output) {
 }  // namespace json
 }  // namespace trace_processor
 }  // namespace perfetto
-

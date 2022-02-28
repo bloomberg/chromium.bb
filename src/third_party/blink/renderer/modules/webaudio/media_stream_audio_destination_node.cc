@@ -29,11 +29,12 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_node_options.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_utils.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
@@ -67,7 +68,7 @@ MediaStreamAudioDestinationHandler::MediaStreamAudioDestinationHandler(
           AudioBus::Create(number_of_channels,
                            GetDeferredTaskHandler().RenderQuantumFrames())) {
   SendLogMessage(String::Format("%s", __func__));
-  source_.Lock()->SetAudioFormat(number_of_channels,
+  source_.Lock()->SetAudioFormat(static_cast<int>(number_of_channels),
                                  node.context()->sampleRate());
   SetInternalChannelCountMode(kExplicit);
   Initialize();
@@ -107,7 +108,7 @@ void MediaStreamAudioDestinationHandler::Process(uint32_t number_of_frames) {
           count, GetDeferredTaskHandler().RenderQuantumFrames());
       // setAudioFormat has an internal lock.  This can cause audio to
       // glitch.  This is outside of our control.
-      source->SetAudioFormat(count, Context()->sampleRate());
+      source->SetAudioFormat(static_cast<int>(count), Context()->sampleRate());
     }
   }
 
@@ -115,7 +116,7 @@ void MediaStreamAudioDestinationHandler::Process(uint32_t number_of_frames) {
 
   // consumeAudio has an internal lock (also used by setAudioFormat).
   // This can cause audio to glitch.  This is outside of our control.
-  source->ConsumeAudio(mix_bus_.get(), number_of_frames);
+  source->ConsumeAudio(mix_bus_.get(), static_cast<int>(number_of_frames));
 }
 
 void MediaStreamAudioDestinationHandler::SetChannelCount(

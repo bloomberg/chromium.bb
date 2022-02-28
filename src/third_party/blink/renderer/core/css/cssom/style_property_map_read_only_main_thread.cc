@@ -24,7 +24,10 @@ namespace blink {
 namespace {
 
 class StylePropertyMapIterationSource final
-    : public PairIterable<String, CSSStyleValueVector>::IterationSource {
+    : public PairIterable<String,
+                          IDLString,
+                          CSSStyleValueVector,
+                          IDLSequence<CSSStyleValue>>::IterationSource {
  public:
   explicit StylePropertyMapIterationSource(
       HeapVector<StylePropertyMapReadOnlyMainThread::StylePropertyMapEntry>
@@ -47,7 +50,8 @@ class StylePropertyMapIterationSource final
 
   void Trace(Visitor* visitor) const override {
     visitor->Trace(values_);
-    PairIterable<String, CSSStyleValueVector>::IterationSource::Trace(visitor);
+    PairIterable<String, IDLString, CSSStyleValueVector,
+                 IDLSequence<CSSStyleValue>>::IterationSource::Trace(visitor);
   }
 
  private:
@@ -70,9 +74,8 @@ CSSStyleValue* StylePropertyMapReadOnlyMainThread::get(
     return nullptr;
   }
 
-  const CSSProperty& property = CSSProperty::Get(name->Id());
-  if (property.IsShorthand())
-    return GetShorthandProperty(property);
+  if (CSSProperty::IsShorthand(*name))
+    return GetShorthandProperty(*name);
 
   const CSSValue* value = (name->IsCustomProperty())
                               ? GetCustomProperty(name->ToAtomicString())
@@ -81,7 +84,7 @@ CSSStyleValue* StylePropertyMapReadOnlyMainThread::get(
     return nullptr;
 
   // Custom properties count as repeated whenever we have a CSSValueList.
-  if (property.IsRepeated() ||
+  if (CSSProperty::IsRepeated(*name) ||
       (name->IsCustomProperty() && value->IsValueList())) {
     CSSStyleValueVector values =
         StyleValueFactory::CssValueToStyleValueVector(*name, *value);
@@ -103,10 +106,9 @@ CSSStyleValueVector StylePropertyMapReadOnlyMainThread::getAll(
     return CSSStyleValueVector();
   }
 
-  const CSSProperty& property = CSSProperty::Get(name->Id());
-  if (property.IsShorthand()) {
+  if (CSSProperty::IsShorthand(*name)) {
     CSSStyleValueVector values;
-    if (CSSStyleValue* value = GetShorthandProperty(property))
+    if (CSSStyleValue* value = GetShorthandProperty(*name))
       values.push_back(value);
     return values;
   }
@@ -142,8 +144,9 @@ StylePropertyMapReadOnlyMainThread::StartIteration(ScriptState* script_state,
 }
 
 CSSStyleValue* StylePropertyMapReadOnlyMainThread::GetShorthandProperty(
-    const CSSProperty& property) const {
-  DCHECK(property.IsShorthand());
+    const CSSPropertyName& name) const {
+  DCHECK(CSSProperty::IsShorthand(name));
+  const CSSProperty& property = CSSProperty::Get(name.Id());
   const auto serialization = SerializationForShorthand(property);
   if (serialization.IsEmpty())
     return nullptr;

@@ -47,6 +47,9 @@ class LinkageTailCall : public TestWithZone {
         0,                         // callee-saved fp
         CallDescriptor::kNoFlags,  // flags,
         "", StackArgumentOrder::kDefault,
+#if V8_ENABLE_WEBASSEMBLY
+        nullptr,  // wasm function sig
+#endif
         0,  // allocatable_registers
         stack_returns);
   }
@@ -205,7 +208,7 @@ TEST_F(LinkageTailCall, MatchingStackParameters) {
   LocationSignature locations1(1, 3, location_array);
   CallDescriptor* desc1 = NewStandardCallDescriptor(&locations1);
 
-  // Caller
+  // Callee
   LocationSignature locations2(1, 3, location_array);
   CallDescriptor* desc2 = NewStandardCallDescriptor(&locations1);
 
@@ -231,7 +234,7 @@ TEST_F(LinkageTailCall, NonMatchingStackParameters) {
   LocationSignature locations1(1, 3, location_array);
   CallDescriptor* desc1 = NewStandardCallDescriptor(&locations1);
 
-  // Caller
+  // Callee
   LocationSignature locations2(1, 3, location_array);
   CallDescriptor* desc2 = NewStandardCallDescriptor(&locations1);
 
@@ -258,7 +261,7 @@ TEST_F(LinkageTailCall, MatchingStackParametersExtraCallerRegisters) {
   LocationSignature locations1(1, 5, location_array);
   CallDescriptor* desc1 = NewStandardCallDescriptor(&locations1);
 
-  // Caller
+  // Callee
   LocationSignature locations2(1, 3, location_array);
   CallDescriptor* desc2 = NewStandardCallDescriptor(&locations1);
 
@@ -285,7 +288,7 @@ TEST_F(LinkageTailCall, MatchingStackParametersExtraCalleeRegisters) {
   LocationSignature locations1(1, 3, location_array);
   CallDescriptor* desc1 = NewStandardCallDescriptor(&locations1);
 
-  // Caller
+  // Callee
   LocationSignature locations2(1, 5, location_array);
   CallDescriptor* desc2 = NewStandardCallDescriptor(&locations1);
 
@@ -313,7 +316,7 @@ TEST_F(LinkageTailCall, MatchingStackParametersExtraCallerRegistersAndStack) {
   LocationSignature locations1(1, 5, location_array);
   CallDescriptor* desc1 = NewStandardCallDescriptor(&locations1);
 
-  // Caller
+  // Callee
   LocationSignature locations2(1, 3, location_array);
   CallDescriptor* desc2 = NewStandardCallDescriptor(&locations2);
 
@@ -343,7 +346,7 @@ TEST_F(LinkageTailCall, MatchingStackParametersExtraCalleeRegistersAndStack) {
   LocationSignature locations1(1, 3, location_array);
   CallDescriptor* desc1 = NewStandardCallDescriptor(&locations1);
 
-  // Caller
+  // Callee
   LocationSignature locations2(1, 5, location_array);
   CallDescriptor* desc2 = NewStandardCallDescriptor(&locations2);
 

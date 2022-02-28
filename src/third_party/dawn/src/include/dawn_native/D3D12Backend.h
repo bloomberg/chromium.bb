@@ -29,6 +29,9 @@ struct ID3D12Device;
 struct ID3D12Resource;
 
 namespace dawn_native { namespace d3d12 {
+
+    class D3D11on12ResourceCache;
+
     DAWN_NATIVE_EXPORT Microsoft::WRL::ComPtr<ID3D12Device> GetD3D12Device(WGPUDevice device);
     DAWN_NATIVE_EXPORT DawnSwapChainImplementation CreateNativeSwapChainImpl(WGPUDevice device,
                                                                              HWND window);
@@ -56,13 +59,14 @@ namespace dawn_native { namespace d3d12 {
         : ExternalImageAccessDescriptor {
       public:
         uint64_t acquireMutexKey;
-        // Release key will be set to acquireMutexKey + 1 if set to sentinel value UINT64_MAX.
-        uint64_t releaseMutexKey = UINT64_MAX;
+        uint64_t releaseMutexKey;
         bool isSwapChainTexture = false;
     };
 
     class DAWN_NATIVE_EXPORT ExternalImageDXGI {
       public:
+        ~ExternalImageDXGI();
+
         // Note: SharedHandle must be a handle to a texture object.
         static std::unique_ptr<ExternalImageDXGI> Create(
             WGPUDevice device,
@@ -80,14 +84,18 @@ namespace dawn_native { namespace d3d12 {
         // Contents of WGPUTextureDescriptor are stored individually since the descriptor
         // could outlive this image.
         WGPUTextureUsageFlags mUsage;
+        WGPUTextureUsageFlags mUsageInternal = WGPUTextureUsage_None;
         WGPUTextureDimension mDimension;
         WGPUExtent3D mSize;
         WGPUTextureFormat mFormat;
         uint32_t mMipLevelCount;
         uint32_t mSampleCount;
+
+        std::unique_ptr<D3D11on12ResourceCache> mD3D11on12ResourceCache;
     };
 
     struct DAWN_NATIVE_EXPORT AdapterDiscoveryOptions : public AdapterDiscoveryOptionsBase {
+        AdapterDiscoveryOptions();
         AdapterDiscoveryOptions(Microsoft::WRL::ComPtr<IDXGIAdapter> adapter);
 
         Microsoft::WRL::ComPtr<IDXGIAdapter> dxgiAdapter;

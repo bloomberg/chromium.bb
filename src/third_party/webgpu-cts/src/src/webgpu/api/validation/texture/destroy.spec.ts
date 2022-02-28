@@ -26,7 +26,7 @@ g.test('submit_a_destroyed_texture')
   .desc(
     `Test that it is invalid to submit with a texture that was destroyed {before, after} encoding finishes.`
   )
-  .params([
+  .paramsSimple([
     { destroyBeforeEncode: false, destroyAfterEncode: false, _success: true },
     { destroyBeforeEncode: true, destroyAfterEncode: false, _success: false },
     { destroyBeforeEncode: false, destroyAfterEncode: true, _success: false },

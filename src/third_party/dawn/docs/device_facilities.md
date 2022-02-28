@@ -43,7 +43,7 @@ After this the device is set in the `Disconnected` state.
 If an `Alive` device is destroyed, then a similar flow to `LoseForTesting happens`.
 
 All this ensures that during destruction or forceful disconnect of the device, it properly gets to the `Disconnected` state with no commands executing on the GPU.
-After disconnecting, frontend will call `backend::Device::ShutDownImpl` so that it can properly free driver objects.
+After disconnecting, frontend will call `backend::Device::DestroyImpl` so that it can properly free driver objects.
 
 ### Toggles
 
@@ -94,7 +94,7 @@ This is also useful to be able to compare objects by pointers like `BindGroupLay
 
 ### Format Tables
 
-The frontend has a `Format` structure that represent all the information that are known about a particular WebGPU format for this Device based on the enabled extensions.
+The frontend has a `Format` structure that represent all the information that are known about a particular WebGPU format for this Device based on the enabled features.
 Formats are precomputed at device initialization and can be queried from a WebGPU format either assuming the format is a valid enum, or in a safe manner that doesn't do this assumption.
 A reference to these formats can be stored persistently as they have the same lifetime as the `Device`.
 

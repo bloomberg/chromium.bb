@@ -6,7 +6,6 @@
 
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -16,6 +15,7 @@
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
@@ -38,19 +38,27 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
   String global_scope_name =
       StringView("LayoutWorklet #") + String::Number(global_scope_number);
 
+  LocalFrameClient* frame_client = frame->Client();
+  const String user_agent =
+      RuntimeEnabledFeatures::UserAgentReductionEnabled(window)
+          ? frame_client->ReducedUserAgent()
+          : frame_client->UserAgent();
+
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       window->Url(), mojom::blink::ScriptType::kModule, global_scope_name,
-      window->UserAgent(), frame->Client()->UserAgentMetadata(),
-      frame->Client()->CreateWorkerFetchContext(),
+      user_agent, frame_client->UserAgentMetadata(),
+      frame_client->CreateWorkerFetchContext(),
       mojo::Clone(window->GetContentSecurityPolicy()->GetParsedPolicies()),
+      Vector<network::mojom::blink::ContentSecurityPolicyPtr>(),
       window->GetReferrerPolicy(), window->GetSecurityOrigin(),
       window->IsSecureContext(), window->GetHttpsState(),
       nullptr /* worker_clients */,
-      frame->Client()->CreateWorkerContentSettingsClient(),
-      window->AddressSpace(), OriginTrialContext::GetTokens(window).get(),
+      frame_client->CreateWorkerContentSettingsClient(), window->AddressSpace(),
+      OriginTrialContext::GetTokens(window).get(),
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
       mojom::blink::V8CacheOptions::kDefault, module_responses_map,
       mojo::NullRemote() /* browser_interface_broker */,
+      mojo::NullRemote() /* code_cache_host_interface */,
       BeginFrameProviderParams(), nullptr /* parent_permissions_policy */,
       window->GetAgentClusterID(), ukm::kInvalidSourceId,
       window->GetExecutionContextToken(),

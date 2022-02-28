@@ -4,7 +4,9 @@
 
 #include "content/browser/background_sync/one_shot_background_sync_service_impl.h"
 
+#include "base/memory/raw_ptr.h"
 #include "content/browser/background_sync/background_sync_service_impl_test_harness.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -26,7 +28,8 @@ class OneShotBackgroundSyncServiceImplTest
     mojo::PendingReceiver<blink::mojom::OneShotBackgroundSyncService> receiver =
         one_shot_sync_service_remote_.BindNewPipeAndPassReceiver();
     // Create a new OneShotBackgroundSyncServiceImpl bound to the dummy channel.
-    background_sync_context_->CreateOneShotSyncService(std::move(receiver));
+    background_sync_context_->CreateOneShotSyncService(
+        url::Origin::Create(GURL(kServiceWorkerOrigin)), std::move(receiver));
     base::RunLoop().RunUntilIdle();
 
     // Since |background_sync_context_| is deleted after
@@ -57,7 +60,7 @@ class OneShotBackgroundSyncServiceImplTest
       one_shot_sync_service_remote_;
 
   // Owned by |background_sync_context_|
-  OneShotBackgroundSyncServiceImpl* one_shot_sync_service_impl_;
+  raw_ptr<OneShotBackgroundSyncServiceImpl> one_shot_sync_service_impl_;
 };
 
 // Tests
@@ -81,7 +84,7 @@ TEST_F(OneShotBackgroundSyncServiceImplTest, RegisterWithInvalidOptions) {
   auto to_register = default_sync_registration_.Clone();
   to_register->min_interval = 3600;
 
-  FakeMojoMessageDispatchContext fake_dispatch_context;
+  mojo::FakeMessageDispatchContext fake_dispatch_context;
   RegisterOneShotSync(
       std::move(to_register),
       base::BindOnce(&ErrorAndRegistrationCallback, &called, &error, &reg));

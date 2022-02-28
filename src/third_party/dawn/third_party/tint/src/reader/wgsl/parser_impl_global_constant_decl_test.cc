@@ -31,34 +31,48 @@ TEST_F(ParserImplTest, GlobalConstantDecl) {
   EXPECT_FALSE(e.errored);
   ASSERT_NE(e.value, nullptr);
 
-  EXPECT_TRUE(e->is_const());
-  EXPECT_EQ(e->symbol(), p->builder().Symbols().Get("a"));
-  ASSERT_NE(e->type(), nullptr);
-  EXPECT_TRUE(e->type()->Is<ast::F32>());
+  EXPECT_TRUE(e->is_const);
+  EXPECT_EQ(e->symbol, p->builder().Symbols().Get("a"));
+  ASSERT_NE(e->type, nullptr);
+  EXPECT_TRUE(e->type->Is<ast::F32>());
 
-  EXPECT_EQ(e->source().range.begin.line, 1u);
-  EXPECT_EQ(e->source().range.begin.column, 5u);
-  EXPECT_EQ(e->source().range.end.line, 1u);
-  EXPECT_EQ(e->source().range.end.column, 6u);
+  EXPECT_EQ(e->source.range.begin.line, 1u);
+  EXPECT_EQ(e->source.range.begin.column, 5u);
+  EXPECT_EQ(e->source.range.end.line, 1u);
+  EXPECT_EQ(e->source.range.end.column, 6u);
 
-  ASSERT_NE(e->constructor(), nullptr);
-  EXPECT_TRUE(e->constructor()->Is<ast::ConstructorExpression>());
+  ASSERT_NE(e->constructor, nullptr);
+  EXPECT_TRUE(e->constructor->Is<ast::LiteralExpression>());
 
   EXPECT_FALSE(
-      ast::HasDecoration<ast::OverrideDecoration>(e.value->decorations()));
+      ast::HasDecoration<ast::OverrideDecoration>(e.value->decorations));
 }
 
-TEST_F(ParserImplTest, GlobalConstantDecl_InvalidVariable) {
-  auto p = parser("let a : invalid = 1.");
+TEST_F(ParserImplTest, GlobalConstantDecl_Inferred) {
+  auto p = parser("let a = 1.");
   auto decos = p->decoration_list();
   EXPECT_FALSE(decos.errored);
   EXPECT_FALSE(decos.matched);
   auto e = p->global_constant_decl(decos.value);
-  EXPECT_TRUE(p->has_error());
-  EXPECT_TRUE(e.errored);
-  EXPECT_FALSE(e.matched);
-  EXPECT_EQ(e.value, nullptr);
-  EXPECT_EQ(p->error(), "1:9: unknown constructed type 'invalid'");
+  EXPECT_FALSE(p->has_error()) << p->error();
+  EXPECT_TRUE(e.matched);
+  EXPECT_FALSE(e.errored);
+  ASSERT_NE(e.value, nullptr);
+
+  EXPECT_TRUE(e->is_const);
+  EXPECT_EQ(e->symbol, p->builder().Symbols().Get("a"));
+  EXPECT_EQ(e->type, nullptr);
+
+  EXPECT_EQ(e->source.range.begin.line, 1u);
+  EXPECT_EQ(e->source.range.begin.column, 5u);
+  EXPECT_EQ(e->source.range.end.line, 1u);
+  EXPECT_EQ(e->source.range.end.column, 6u);
+
+  ASSERT_NE(e->constructor, nullptr);
+  EXPECT_TRUE(e->constructor->Is<ast::LiteralExpression>());
+
+  EXPECT_FALSE(
+      ast::HasDecoration<ast::OverrideDecoration>(e.value->decorations));
 }
 
 TEST_F(ParserImplTest, GlobalConstantDecl_InvalidExpression) {
@@ -71,7 +85,7 @@ TEST_F(ParserImplTest, GlobalConstantDecl_InvalidExpression) {
   EXPECT_TRUE(e.errored);
   EXPECT_FALSE(e.matched);
   EXPECT_EQ(e.value, nullptr);
-  EXPECT_EQ(p->error(), "1:15: unable to parse constant literal");
+  EXPECT_EQ(p->error(), "1:15: invalid type for const_expr");
 }
 
 TEST_F(ParserImplTest, GlobalConstantDecl_MissingExpression) {
@@ -84,7 +98,7 @@ TEST_F(ParserImplTest, GlobalConstantDecl_MissingExpression) {
   EXPECT_TRUE(e.errored);
   EXPECT_FALSE(e.matched);
   EXPECT_EQ(e.value, nullptr);
-  EXPECT_EQ(p->error(), "1:14: unable to parse constant literal");
+  EXPECT_EQ(p->error(), "1:14: unable to parse const_expr");
 }
 
 TEST_F(ParserImplTest, GlobalConstantDec_Override_WithId) {
@@ -99,24 +113,24 @@ TEST_F(ParserImplTest, GlobalConstantDec_Override_WithId) {
   EXPECT_FALSE(e.errored);
   ASSERT_NE(e.value, nullptr);
 
-  EXPECT_TRUE(e->is_const());
-  EXPECT_EQ(e->symbol(), p->builder().Symbols().Get("a"));
-  ASSERT_NE(e->type(), nullptr);
-  EXPECT_TRUE(e->type()->Is<ast::F32>());
+  EXPECT_TRUE(e->is_const);
+  EXPECT_EQ(e->symbol, p->builder().Symbols().Get("a"));
+  ASSERT_NE(e->type, nullptr);
+  EXPECT_TRUE(e->type->Is<ast::F32>());
 
-  EXPECT_EQ(e->source().range.begin.line, 1u);
-  EXPECT_EQ(e->source().range.begin.column, 21u);
-  EXPECT_EQ(e->source().range.end.line, 1u);
-  EXPECT_EQ(e->source().range.end.column, 22u);
+  EXPECT_EQ(e->source.range.begin.line, 1u);
+  EXPECT_EQ(e->source.range.begin.column, 21u);
+  EXPECT_EQ(e->source.range.end.line, 1u);
+  EXPECT_EQ(e->source.range.end.column, 22u);
 
-  ASSERT_NE(e->constructor(), nullptr);
-  EXPECT_TRUE(e->constructor()->Is<ast::ConstructorExpression>());
+  ASSERT_NE(e->constructor, nullptr);
+  EXPECT_TRUE(e->constructor->Is<ast::LiteralExpression>());
 
   auto* override_deco =
-      ast::GetDecoration<ast::OverrideDecoration>(e.value->decorations());
+      ast::GetDecoration<ast::OverrideDecoration>(e.value->decorations);
   ASSERT_NE(override_deco, nullptr);
-  EXPECT_TRUE(override_deco->HasValue());
-  EXPECT_EQ(override_deco->value(), 7u);
+  EXPECT_TRUE(override_deco->has_value);
+  EXPECT_EQ(override_deco->value, 7u);
 }
 
 TEST_F(ParserImplTest, GlobalConstantDec_Override_WithoutId) {
@@ -131,23 +145,23 @@ TEST_F(ParserImplTest, GlobalConstantDec_Override_WithoutId) {
   EXPECT_FALSE(e.errored);
   ASSERT_NE(e.value, nullptr);
 
-  EXPECT_TRUE(e->is_const());
-  EXPECT_EQ(e->symbol(), p->builder().Symbols().Get("a"));
-  ASSERT_NE(e->type(), nullptr);
-  EXPECT_TRUE(e->type()->Is<ast::F32>());
+  EXPECT_TRUE(e->is_const);
+  EXPECT_EQ(e->symbol, p->builder().Symbols().Get("a"));
+  ASSERT_NE(e->type, nullptr);
+  EXPECT_TRUE(e->type->Is<ast::F32>());
 
-  EXPECT_EQ(e->source().range.begin.line, 1u);
-  EXPECT_EQ(e->source().range.begin.column, 18u);
-  EXPECT_EQ(e->source().range.end.line, 1u);
-  EXPECT_EQ(e->source().range.end.column, 19u);
+  EXPECT_EQ(e->source.range.begin.line, 1u);
+  EXPECT_EQ(e->source.range.begin.column, 18u);
+  EXPECT_EQ(e->source.range.end.line, 1u);
+  EXPECT_EQ(e->source.range.end.column, 19u);
 
-  ASSERT_NE(e->constructor(), nullptr);
-  EXPECT_TRUE(e->constructor()->Is<ast::ConstructorExpression>());
+  ASSERT_NE(e->constructor, nullptr);
+  EXPECT_TRUE(e->constructor->Is<ast::LiteralExpression>());
 
   auto* override_deco =
-      ast::GetDecoration<ast::OverrideDecoration>(e.value->decorations());
+      ast::GetDecoration<ast::OverrideDecoration>(e.value->decorations);
   ASSERT_NE(override_deco, nullptr);
-  EXPECT_FALSE(override_deco->HasValue());
+  EXPECT_FALSE(override_deco->has_value);
 }
 
 TEST_F(ParserImplTest, GlobalConstantDec_Override_MissingId) {
@@ -179,23 +193,6 @@ TEST_F(ParserImplTest, GlobalConstantDec_Override_InvalidId) {
 
   EXPECT_TRUE(p->has_error());
   EXPECT_EQ(p->error(), "1:12: override decoration must be positive");
-}
-
-TEST_F(ParserImplTest, GlobalConstantDec_Const) {
-  auto p = parser("const a : i32 = 1");
-  auto decos = p->decoration_list();
-  EXPECT_FALSE(decos.errored);
-  EXPECT_FALSE(decos.matched);
-
-  auto e = p->global_constant_decl(decos.value);
-  EXPECT_TRUE(e.matched);
-  EXPECT_FALSE(e.errored);
-  EXPECT_EQ(
-      p->builder().Diagnostics().str(),
-      R"(test.wgsl:1:1 warning: use of deprecated language feature: use 'let' instead of 'const'
-const a : i32 = 1
-^^^^^
-)");
 }
 
 }  // namespace

@@ -3,30 +3,37 @@
 // found in the LICENSE file.
 
 import * as Common from '../../core/common/common.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 
+import {AttributionReportingIssue} from './AttributionReportingIssue.js';
 import {ContentSecurityPolicyIssue} from './ContentSecurityPolicyIssue.js';
 import {CorsIssue} from './CorsIssue.js';
 import {CrossOriginEmbedderPolicyIssue, isCrossOriginEmbedderPolicyIssue} from './CrossOriginEmbedderPolicyIssue.js';
 import {DeprecationIssue} from './DeprecationIssue.js';
+import {GenericIssue} from './GenericIssue.js';
 import {HeavyAdIssue} from './HeavyAdIssue.js';
 import type {Issue, IssueKind} from './Issue.js';
+import {Events} from './IssuesManagerEvents.js';
 import {LowTextContrastIssue} from './LowTextContrastIssue.js';
 import {MixedContentIssue} from './MixedContentIssue.js';
+import {NavigatorUserAgentIssue} from './NavigatorUserAgentIssue.js';
 import {QuirksModeIssue} from './QuirksModeIssue.js';
 import {SameSiteCookieIssue} from './SameSiteCookieIssue.js';
 import {SharedArrayBufferIssue} from './SharedArrayBufferIssue.js';
 import {SourceFrameIssuesManager} from './SourceFrameIssuesManager.js';
 import {TrustedWebActivityIssue} from './TrustedWebActivityIssue.js';
+import {WasmCrossOriginModuleSharingIssue} from './WasmCrossOriginModuleSharingIssue.js';
+
+export {Events} from './IssuesManagerEvents.js';
 
 let issuesManagerInstance: IssuesManager|null = null;
 
-
 function createIssuesForBlockedByResponseIssue(
     issuesModel: SDK.IssuesModel.IssuesModel,
-    inspectorDetails: Protocol.Audits.InspectorIssueDetails): CrossOriginEmbedderPolicyIssue[] {
-  const blockedByResponseIssueDetails = inspectorDetails.blockedByResponseIssueDetails;
+    inspectorIssue: Protocol.Audits.InspectorIssue): CrossOriginEmbedderPolicyIssue[] {
+  const blockedByResponseIssueDetails = inspectorIssue.details.blockedByResponseIssueDetails;
   if (!blockedByResponseIssueDetails) {
     console.warn('BlockedByResponse issue without details received.');
     return [];
@@ -39,7 +46,7 @@ function createIssuesForBlockedByResponseIssue(
 
 const issueCodeHandlers = new Map<
     Protocol.Audits.InspectorIssueCode,
-    (model: SDK.IssuesModel.IssuesModel, details: Protocol.Audits.InspectorIssueDetails) => Issue[]>([
+    (model: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue) => Issue[]>([
   [
     Protocol.Audits.InspectorIssueCode.SameSiteCookieIssue,
     SameSiteCookieIssue.fromInspectorIssue,
@@ -54,7 +61,7 @@ const issueCodeHandlers = new Map<
   ],
   [
     Protocol.Audits.InspectorIssueCode.ContentSecurityPolicyIssue,
-    ContentSecurityPolicyIssue.fromInsectorIssue,
+    ContentSecurityPolicyIssue.fromInspectorIssue,
   ],
   [Protocol.Audits.InspectorIssueCode.BlockedByResponseIssue, createIssuesForBlockedByResponseIssue],
   [
@@ -78,24 +85,37 @@ const issueCodeHandlers = new Map<
     QuirksModeIssue.fromInspectorIssue,
   ],
   [
-    // TODO(crbug.com/1072335) Update types once protocol rolls
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    'NavigatorUserAgentIssue' as Protocol.Audits.InspectorIssueCode,
+    Protocol.Audits.InspectorIssueCode.NavigatorUserAgentIssue,
+    NavigatorUserAgentIssue.fromInspectorIssue,
+  ],
+  [
+    Protocol.Audits.InspectorIssueCode.AttributionReportingIssue,
+    AttributionReportingIssue.fromInspectorIssue,
+  ],
+  [
+    Protocol.Audits.InspectorIssueCode.WasmCrossOriginModuleSharingIssue,
+    WasmCrossOriginModuleSharingIssue.fromInspectorIssue,
+  ],
+  [
+    Protocol.Audits.InspectorIssueCode.GenericIssue,
+    GenericIssue.fromInspectorIssue,
+  ],
+  [
+    Protocol.Audits.InspectorIssueCode.DeprecationIssue,
     DeprecationIssue.fromInspectorIssue,
   ],
 ]);
 
 /**
-   * Each issue reported by the backend can result in multiple {!Issue} instances.
-   * Handlers are simple functions hard-coded into a map.
-   */
+ * Each issue reported by the backend can result in multiple `Issue` instances.
+ * Handlers are simple functions hard-coded into a map.
+ */
 function createIssuesFromProtocolIssue(
     issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): Issue[] {
   const handler = issueCodeHandlers.get(inspectorIssue.code);
   if (handler) {
-    return handler(issuesModel, inspectorIssue.details);
+    return handler(issuesModel, inspectorIssue);
   }
-
   console.warn(`No handler registered for issue code ${inspectorIssue.code}`);
   return [];
 }
@@ -105,6 +125,26 @@ export interface IssuesManagerCreationOptions {
   /** Throw an error if this is not the first instance created */
   ensureFirst: boolean;
   showThirdPartyIssuesSetting?: Common.Settings.Setting<boolean>;
+  hideIssueSetting?: Common.Settings.Setting<HideIssueMenuSetting>;
+}
+
+export type HideIssueMenuSetting = {
+  [x: string]: IssueStatus,
+};
+
+export const enum IssueStatus {
+  Hidden = 'Hidden',
+  Unhidden = 'Unhidden',
+}
+
+export function defaultHideIssueByCodeSetting(): HideIssueMenuSetting {
+  const setting: HideIssueMenuSetting = {};
+  return setting;
+}
+
+export function getHideIssueByCodeSetting(): Common.Settings.Setting<HideIssueMenuSetting> {
+  return Common.Settings.Settings.instance().createSetting(
+      'HideIssueByCodeSetting-Experiment-2021', defaultHideIssueByCodeSetting());
 }
 
 /**
@@ -118,35 +158,33 @@ export interface IssuesManagerCreationOptions {
  * Issues that are accepted by the filter cause events to be fired or are returned by
  * `IssuesManager#issues()`.
  */
-export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper implements
-    SDK.SDKModel.SDKModelObserver<SDK.IssuesModel.IssuesModel> {
-  private eventListeners: WeakMap<SDK.IssuesModel.IssuesModel, Common.EventTarget.EventDescriptor>;
-  private allIssues: Map<string, Issue>;
-  private filteredIssues: Map<string, Issue>;
-  private issueCounts: Map<IssueKind, number>;
-  private hasSeenTopFrameNavigated: boolean;
-  private sourceFrameIssuesManager: SourceFrameIssuesManager;
-  private showThirdPartyIssuesSetting?: Common.Settings.Setting<boolean>;
+export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements
+    SDK.TargetManager.SDKModelObserver<SDK.IssuesModel.IssuesModel> {
+  private eventListeners = new WeakMap<SDK.IssuesModel.IssuesModel, Common.EventTarget.EventDescriptor>();
+  private allIssues = new Map<string, Issue>();
+  private filteredIssues = new Map<string, Issue>();
+  private issueCounts = new Map<IssueKind, number>();
+  private hiddenIssueCount = new Map<IssueKind, number>();
+  private hasSeenTopFrameNavigated = false;
+  private sourceFrameIssuesManager = new SourceFrameIssuesManager(this);
+  private issuesById: Map<string, Issue> = new Map();
 
-  constructor(showThirdPartyIssuesSetting?: Common.Settings.Setting<boolean>) {
+  constructor(
+      private readonly showThirdPartyIssuesSetting?: Common.Settings.Setting<boolean>,
+      private readonly hideIssueSetting?: Common.Settings.Setting<HideIssueMenuSetting>) {
     super();
-    this.eventListeners = new WeakMap();
-    SDK.SDKModel.TargetManager.instance().observeModels(SDK.IssuesModel.IssuesModel, this);
-    this.allIssues = new Map();
-    this.filteredIssues = new Map();
-    this.issueCounts = new Map();
-    this.hasSeenTopFrameNavigated = false;
+    SDK.TargetManager.TargetManager.instance().observeModels(SDK.IssuesModel.IssuesModel, this);
     SDK.FrameManager.FrameManager.instance().addEventListener(
         SDK.FrameManager.Events.TopFrameNavigated, this.onTopFrameNavigated, this);
     SDK.FrameManager.FrameManager.instance().addEventListener(
         SDK.FrameManager.Events.FrameAddedToTarget, this.onFrameAddedToTarget, this);
 
-    this.showThirdPartyIssuesSetting = showThirdPartyIssuesSetting;
     // issueFilter uses the 'showThirdPartyIssues' setting. Clients of IssuesManager need
     // a full update when the setting changes to get an up-to-date issues list.
     this.showThirdPartyIssuesSetting?.addChangeListener(() => this.updateFilteredIssues());
-
-    this.sourceFrameIssuesManager = new SourceFrameIssuesManager(this);
+    if (Root.Runtime.experiments.isEnabled('hideIssuesFeature')) {
+      this.hideIssueSetting?.addChangeListener(() => this.updateFilteredIssues());
+    }
   }
 
   static instance(opts: IssuesManagerCreationOptions = {
@@ -159,7 +197,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper implements
     }
 
     if (!issuesManagerInstance || opts.forceNew) {
-      issuesManagerInstance = new IssuesManager(opts.showThirdPartyIssuesSetting);
+      issuesManagerInstance = new IssuesManager(opts.showThirdPartyIssuesSetting, opts.hideIssueSetting);
     }
 
     return issuesManagerInstance;
@@ -175,10 +213,9 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper implements
     return !this.hasSeenTopFrameNavigated;
   }
 
-  private onTopFrameNavigated(event: Common.EventTarget.EventTargetEvent): void {
-    const {frame} = event.data as {
-      frame: SDK.ResourceTreeModel.ResourceTreeFrame,
-    };
+  private onTopFrameNavigated(
+      event: Common.EventTarget.EventTargetEvent<{frame: SDK.ResourceTreeModel.ResourceTreeFrame}>): void {
+    const {frame} = event.data;
     const keptIssues = new Map<string, Issue>();
     for (const [key, issue] of this.allIssues.entries()) {
       if (issue.isAssociatedWithRequestId(frame.loaderId)) {
@@ -190,10 +227,9 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper implements
     this.updateFilteredIssues();
   }
 
-  private onFrameAddedToTarget(event: Common.EventTarget.EventTargetEvent): void {
-    const {frame} = event.data as {
-      frame: SDK.ResourceTreeModel.ResourceTreeFrame,
-    };
+  private onFrameAddedToTarget(
+      event: Common.EventTarget.EventTargetEvent<{frame: SDK.ResourceTreeModel.ResourceTreeFrame}>): void {
+    const {frame} = event.data;
     // Determining third-party status usually requires the registered domain of the top frame.
     // When DevTools is opened after navigation has completed, issues may be received
     // before the top frame is available. Thus, we trigger a recalcuation of third-party-ness
@@ -211,15 +247,12 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper implements
   modelRemoved(issuesModel: SDK.IssuesModel.IssuesModel): void {
     const listener = this.eventListeners.get(issuesModel);
     if (listener) {
-      Common.EventTarget.EventTarget.removeEventListeners([listener]);
+      Common.EventTarget.removeEventListeners([listener]);
     }
   }
 
-  private onIssueAddedEvent(event: Common.EventTarget.EventTargetEvent): void {
-    const {issuesModel, inspectorIssue} = event.data as {
-      issuesModel: SDK.IssuesModel.IssuesModel,
-      inspectorIssue: Protocol.Audits.InspectorIssue,
-    };
+  private onIssueAddedEvent(event: Common.EventTarget.EventTargetEvent<SDK.IssuesModel.IssueAddedEvent>): void {
+    const {issuesModel, inspectorIssue} = event.data;
     const issues = createIssuesFromProtocolIssue(issuesModel, inspectorIssue);
     for (const issue of issues) {
       this.addIssue(issuesModel, issue);
@@ -240,6 +273,18 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper implements
     if (this.issueFilter(issue)) {
       this.filteredIssues.set(primaryKey, issue);
       this.issueCounts.set(issue.getKind(), 1 + (this.issueCounts.get(issue.getKind()) || 0));
+      const issueId = issue.getIssueId();
+      if (issueId) {
+        this.issuesById.set(issueId, issue);
+      }
+      const values = this.hideIssueSetting?.get();
+      const hideIssuesFeature = Root.Runtime.experiments.isEnabled('hideIssuesFeature');
+      if (hideIssuesFeature) {
+        this.updateIssueHiddenStatus(issue, values);
+      }
+      if (issue.isHidden()) {
+        this.hiddenIssueCount.set(issue.getKind(), 1 + (this.hiddenIssueCount.get(issue.getKind()) || 0));
+      }
       this.dispatchEventToListeners(Events.IssueAdded, {issuesModel, issue});
     }
     // Always fire the "count" event even if the issue was filtered out.
@@ -253,9 +298,20 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper implements
 
   numberOfIssues(kind?: IssueKind): number {
     if (kind) {
-      return this.issueCounts.get(kind) ?? 0;
+      return (this.issueCounts.get(kind) ?? 0) - this.numberOfHiddenIssues(kind);
     }
-    return this.filteredIssues.size;
+    return this.filteredIssues.size - this.numberOfHiddenIssues();
+  }
+
+  numberOfHiddenIssues(kind?: IssueKind): number {
+    if (kind) {
+      return this.hiddenIssueCount.get(kind) ?? 0;
+    }
+    let count = 0;
+    for (const num of this.hiddenIssueCount.values()) {
+      count += num;
+    }
+    return count;
   }
 
   numberOfAllStoredIssues(): number {
@@ -266,32 +322,77 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper implements
     return this.showThirdPartyIssuesSetting?.get() || !issue.isCausedByThirdParty();
   }
 
+  private updateIssueHiddenStatus(issue: Issue, values: HideIssueMenuSetting|undefined): void {
+    const code = issue.code();
+    // All issues are hidden via their code.
+    // For hiding we check whether the issue code is present and has a value of IssueStatus.Hidden
+    // assosciated with it. If all these conditions are met the issue is hidden.
+    // IssueStatus is set in hidden issues menu.
+    // In case a user wants to hide a specific issue, the issue code is added to "code" section
+    // of our setting and its value is set to IssueStatus.Hidden. Then issue then gets hidden.
+    if (values && values[code]) {
+      if (values[code] === IssueStatus.Hidden) {
+        issue.setHidden(true);
+        return;
+      }
+      issue.setHidden(false);
+      return;
+    }
+  }
+
   private updateFilteredIssues(): void {
     this.filteredIssues.clear();
     this.issueCounts.clear();
+    this.issuesById.clear();
+    this.hiddenIssueCount.clear();
+    const values = this.hideIssueSetting?.get();
+    const hideIssuesFeature = Root.Runtime.experiments.isEnabled('hideIssuesFeature');
     for (const [key, issue] of this.allIssues) {
       if (this.issueFilter(issue)) {
+        if (hideIssuesFeature) {
+          this.updateIssueHiddenStatus(issue, values);
+        }
         this.filteredIssues.set(key, issue);
         this.issueCounts.set(issue.getKind(), 1 + (this.issueCounts.get(issue.getKind()) ?? 0));
+        if (issue.isHidden()) {
+          this.hiddenIssueCount.set(issue.getKind(), 1 + (this.hiddenIssueCount.get(issue.getKind()) || 0));
+        }
+        const issueId = issue.getIssueId();
+        if (issueId) {
+          this.issuesById.set(issueId, issue);
+        }
       }
     }
-
     this.dispatchEventToListeners(Events.FullUpdateRequired);
     this.dispatchEventToListeners(Events.IssuesCountUpdated);
   }
+
+  unhideAllIssues(): void {
+    for (const issue of this.allIssues.values()) {
+      issue.setHidden(false);
+    }
+    this.hideIssueSetting?.set(defaultHideIssueByCodeSetting());
+  }
+
+  getIssueById(id: string): Issue|undefined {
+    return this.issuesById.get(id);
+  }
 }
 
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export enum Events {
-  IssuesCountUpdated = 'IssuesCountUpdated',
-  IssueAdded = 'IssueAdded',
-  FullUpdateRequired = 'FullUpdateRequired',
+export interface IssueAddedEvent {
+  issuesModel: SDK.IssuesModel.IssuesModel;
+  issue: Issue;
 }
+
+export type EventTypes = {
+  [Events.IssuesCountUpdated]: void,
+  [Events.FullUpdateRequired]: void,
+  [Events.IssueAdded]: IssueAddedEvent,
+};
 
 // @ts-ignore
 globalThis.addIssueForTest = (issue: Protocol.Audits.InspectorIssue): void => {
-  const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
+  const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
   const issuesModel = mainTarget?.model(SDK.IssuesModel.IssuesModel);
   issuesModel?.issueAdded({issue});
 };

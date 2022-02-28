@@ -16,11 +16,10 @@
 #include "base/callback.h"
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/process/process.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "mojo/core/atomic_flag.h"
 #include "mojo/core/node_channel.h"
@@ -38,6 +37,26 @@ namespace core {
 class Broker;
 class Core;
 
+// A set of NodeNames that is bounded by a maximum size.
+// If the max size is reached, it will delete the older half of stored names.
+class BoundedPeerSet {
+ public:
+  BoundedPeerSet();
+  BoundedPeerSet(const BoundedPeerSet&) = delete;
+  BoundedPeerSet& operator=(const BoundedPeerSet&) = delete;
+
+  ~BoundedPeerSet();
+
+  void Insert(const ports::NodeName& name);
+  bool Contains(const ports::NodeName& name);
+
+ private:
+  static constexpr int kHalfSize = 50000;
+
+  std::unordered_set<ports::NodeName> old_set_;
+  std::unordered_set<ports::NodeName> new_set_;
+};
+
 // The owner of ports::Node which facilitates core EDK implementation. All
 // public interface methods are safe to call from any thread.
 class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
@@ -53,6 +72,10 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
 
   // |core| owns and out-lives us.
   NodeController();
+
+  NodeController(const NodeController&) = delete;
+  NodeController& operator=(const NodeController&) = delete;
+
   ~NodeController() override;
 
   const ports::NodeName& name() const { return name_; }
@@ -180,7 +203,8 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
 
   void AddPeer(const ports::NodeName& name,
                scoped_refptr<NodeChannel> channel,
-               bool start_channel);
+               bool start_channel,
+               bool allow_name_reuse = false);
   void DropPeer(const ports::NodeName& name, NodeChannel* channel);
   void SendPeerEvent(const ports::NodeName& name, ports::ScopedEvent event);
   void DropAllPeers();
@@ -265,6 +289,7 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
 
   // Channels to known peers, including inviter and invitees, if any.
   NodeMap peers_;
+  BoundedPeerSet dropped_peers_;
 
   // Outgoing message queues for peers we've heard of but can't yet talk to.
   std::unordered_map<ports::NodeName, OutgoingMessageQueue>
@@ -336,8 +361,6 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   // Broker for sync shared buffer creation on behalf of broker clients.
   std::unique_ptr<Broker> broker_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(NodeController);
 };
 
 }  // namespace core

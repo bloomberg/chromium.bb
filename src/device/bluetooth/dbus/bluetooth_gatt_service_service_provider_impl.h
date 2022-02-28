@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/platform_thread.h"
@@ -32,6 +31,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattServiceServiceProviderImpl
       const std::string& uuid,
       bool is_primary,
       const std::vector<dbus::ObjectPath>& includes);
+
+  BluetoothGattServiceServiceProviderImpl(
+      const BluetoothGattServiceServiceProviderImpl&) = delete;
+  BluetoothGattServiceServiceProviderImpl& operator=(
+      const BluetoothGattServiceServiceProviderImpl&) = delete;
 
   ~BluetoothGattServiceServiceProviderImpl() override;
 
@@ -93,8 +97,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattServiceServiceProviderImpl
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothGattServiceServiceProviderImpl>
       weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothGattServiceServiceProviderImpl);
 };
 
 }  // namespace bluez

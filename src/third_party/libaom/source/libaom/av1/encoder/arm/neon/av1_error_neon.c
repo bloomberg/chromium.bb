@@ -11,8 +11,8 @@
 #include <arm_neon.h>
 #include <assert.h>
 
-#include "av1/common/arm/mem_neon.h"
 #include "aom_dsp/aom_dsp_common.h"
+#include "aom_dsp/arm/mem_neon.h"
 
 int64_t av1_block_error_neon(const tran_low_t *coeff, const tran_low_t *dqcoeff,
                              intptr_t block_size, int64_t *ssz) {

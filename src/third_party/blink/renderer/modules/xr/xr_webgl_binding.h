@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
-#include "third_party/blink/renderer/modules/xr/xr_webgl_rendering_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
@@ -28,15 +27,9 @@ class XRWebGLBinding final : public ScriptWrappable {
   XRWebGLBinding(XRSession*, WebGLRenderingContextBase*, bool webgl2);
   ~XRWebGLBinding() override = default;
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   static XRWebGLBinding* Create(XRSession* session,
                                 const V8XRWebGLRenderingContext* context,
                                 ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  static XRWebGLBinding* Create(XRSession*,
-                                const XRWebGLRenderingContext&,
-                                ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   XRSession* session() const { return session_; }
 

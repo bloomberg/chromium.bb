@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -40,6 +40,9 @@ class TestUnwindFunctions : public Win32StackFrameUnwinder::UnwindFunctions {
  public:
   TestUnwindFunctions();
 
+  TestUnwindFunctions(const TestUnwindFunctions&) = delete;
+  TestUnwindFunctions& operator=(const TestUnwindFunctions&) = delete;
+
   PRUNTIME_FUNCTION LookupFunctionEntry(DWORD64 program_counter,
                                         PDWORD64 image_base) override;
   void VirtualUnwind(DWORD64 image_base,
@@ -57,10 +60,8 @@ class TestUnwindFunctions : public Win32StackFrameUnwinder::UnwindFunctions {
   DWORD64 expected_program_counter_;
   DWORD64 next_image_base_;
   DWORD64 expected_image_base_;
-  RUNTIME_FUNCTION* next_runtime_function_;
+  raw_ptr<RUNTIME_FUNCTION> next_runtime_function_;
   std::vector<RUNTIME_FUNCTION> runtime_functions_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestUnwindFunctions);
 };
 
 RUNTIME_FUNCTION* const TestUnwindFunctions::kInvalidRuntimeFunction =
@@ -132,6 +133,11 @@ void TestUnwindFunctions::SetNoRuntimeFunction(CONTEXT* context) {
 }  // namespace
 
 class Win32StackFrameUnwinderTest : public testing::Test {
+ public:
+  Win32StackFrameUnwinderTest(const Win32StackFrameUnwinderTest&) = delete;
+  Win32StackFrameUnwinderTest& operator=(const Win32StackFrameUnwinderTest&) =
+      delete;
+
  protected:
   Win32StackFrameUnwinderTest() {}
 
@@ -140,10 +146,7 @@ class Win32StackFrameUnwinderTest : public testing::Test {
   std::unique_ptr<Win32StackFrameUnwinder> CreateUnwinder();
 
   // Weak pointer to the unwind functions used by last created unwinder.
-  TestUnwindFunctions* unwind_functions_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Win32StackFrameUnwinderTest);
+  raw_ptr<TestUnwindFunctions> unwind_functions_;
 };
 
 std::unique_ptr<Win32StackFrameUnwinder>

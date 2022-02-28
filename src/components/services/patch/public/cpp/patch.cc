@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/update_client/component_patcher_operation.h"  // nogncheck
 #include "mojo/public/cpp/bindings/remote.h"
@@ -29,6 +29,9 @@ class PatchParams : public base::RefCounted<PatchParams> {
       : file_patcher_(std::move(file_patcher)),
         callback_(std::move(callback)) {}
 
+  PatchParams(const PatchParams&) = delete;
+  PatchParams& operator=(const PatchParams&) = delete;
+
   mojo::Remote<mojom::FilePatcher>& file_patcher() { return file_patcher_; }
 
   PatchCallback TakeCallback() { return std::move(callback_); }
@@ -43,8 +46,6 @@ class PatchParams : public base::RefCounted<PatchParams> {
   mojo::Remote<mojom::FilePatcher> file_patcher_;
 
   PatchCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(PatchParams);
 };
 
 void PatchDone(scoped_refptr<PatchParams> params, int result) {
@@ -70,7 +71,7 @@ void Patch(mojo::PendingRemote<mojom::FilePatcher> file_patcher,
                         base::File::FLAG_OPEN | base::File::FLAG_READ);
   base::File output_file(output_path, base::File::FLAG_CREATE |
                                           base::File::FLAG_WRITE |
-                                          base::File::FLAG_EXCLUSIVE_WRITE);
+                                          base::File::FLAG_WIN_EXCLUSIVE_WRITE);
 
   if (!input_file.IsValid() || !patch_file.IsValid() ||
       !output_file.IsValid()) {

@@ -40,7 +40,7 @@ bool CXFA_FFPasswordEdit::LoadWidget() {
 
   {
     CFWL_Widget::ScopedUpdateLock update_lock(pWidget);
-    pWidget->SetText(m_pNode->GetValue(XFA_VALUEPICTURE_Display));
+    pWidget->SetText(m_pNode->GetValue(XFA_ValuePicture::kDisplay));
     UpdateWidgetProperty();
   }
 
@@ -66,5 +66,5 @@ void CXFA_FFPasswordEdit::UpdateWidgetProperty() {
     dwExtendedStyle |= FWL_STYLEEXT_EDT_ReadOnly;
 
   dwExtendedStyle |= GetAlignment();
-  GetNormalWidget()->ModifyStylesEx(dwExtendedStyle, 0xFFFFFFFF);
+  GetNormalWidget()->ModifyStyleExts(dwExtendedStyle, 0xFFFFFFFF);
 }

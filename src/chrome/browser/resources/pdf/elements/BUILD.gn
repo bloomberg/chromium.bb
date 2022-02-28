@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chrome/browser/resources/pdf/ink/ink.gni")
+import("//pdf/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/html_to_js.gni")
 
@@ -51,7 +51,7 @@ js_library("viewer-download-controls") {
   deps = [
     "..:constants",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
   ]
 }
 
@@ -131,7 +131,6 @@ js_library("viewer-thumbnail") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js/cr/ui:focus_outline_manager.m",
   ]
 }
 
@@ -155,7 +154,6 @@ js_library("viewer-toolbar") {
     ":viewer-page-selector",
     "..:metrics",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:assert.m",
   ]
 }
 

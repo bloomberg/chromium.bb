@@ -14,6 +14,7 @@
 #ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_TIME_MEASUREMENTS_H_
 #define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_TIME_MEASUREMENTS_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
@@ -64,10 +65,9 @@ namespace subresource_filter {
 // the histogram stores times in microseconds, up to 1 second, in 50 buckets.
 //
 // WARNING: The generated code is not thread-safe.
-#define UMA_HISTOGRAM_MICRO_TIMES(name, sample)                          \
-  UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(name, sample,                         \
-                                   base::TimeDelta::FromMicroseconds(1), \
-                                   base::TimeDelta::FromSeconds(1), 50)
+#define UMA_HISTOGRAM_MICRO_TIMES(name, sample)                         \
+  UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(name, sample, base::Microseconds(1), \
+                                   base::Seconds(1), 50)
 
 // This can be used when the default ranges are not sufficient. This macro lets
 // the metric developer customize the min and max of the sampled range, as well
@@ -137,7 +137,7 @@ class ExportTimeDeltaToHistogram {
   }
 
  private:
-  base::HistogramBase* histogram_;
+  raw_ptr<base::HistogramBase> histogram_;
 };
 
 using ExportMillisecondsToHistogram = ExportTimeDeltaToHistogram<false>;

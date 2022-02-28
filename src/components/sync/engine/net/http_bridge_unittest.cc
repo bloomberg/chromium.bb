@@ -9,16 +9,19 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/sync/engine/cancelation_signal.h"
+#include "components/variations/scoped_variations_ids_provider.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -48,8 +51,7 @@ const char kUserAgent[] = "user-agent";
 #endif  // defined(OS_ANDROID)
 class MAYBE_SyncHttpBridgeTest : public testing::Test {
  public:
-  MAYBE_SyncHttpBridgeTest()
-      : bridge_for_race_test_(nullptr), io_thread_("IO thread") {
+  MAYBE_SyncHttpBridgeTest() : io_thread_("IO thread") {
     test_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
   }
 
@@ -61,9 +63,7 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
     HttpBridge::SetIOCapableTaskRunnerForTest(io_thread_.task_runner());
   }
 
-  void TearDown() override {
-    io_thread_.Stop();
-  }
+  void TearDown() override { io_thread_.Stop(); }
 
   HttpBridge* BuildBridge() { return new CustomHttpBridge(); }
 
@@ -90,12 +90,10 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
   class CustomHttpBridge : public HttpBridge {
    public:
     CustomHttpBridge()
-        : HttpBridge(kUserAgent,
-                     nullptr /*PendingSharedURLLoaderFactory*/,
-                     NetworkTimeUpdateCallback()) {}
+        : HttpBridge(kUserAgent, nullptr /*PendingSharedURLLoaderFactory*/) {}
 
    protected:
-    ~CustomHttpBridge() override {}
+    ~CustomHttpBridge() override = default;
 
     void MakeAsynchronousPost() override {
       set_url_loader_factory_for_testing(
@@ -108,9 +106,11 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
     }
   };
 
-  HttpBridge* bridge_for_race_test_;
+  raw_ptr<HttpBridge> bridge_for_race_test_ = nullptr;
 
   base::test::TaskEnvironment task_environment_;
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
   // Separate thread for IO used by the HttpBridge.
   base::Thread io_thread_;
 };
@@ -124,11 +124,7 @@ class ShuntedHttpBridge : public HttpBridge {
   // If |never_finishes| is true, the simulated request never actually
   // returns.
   ShuntedHttpBridge(MAYBE_SyncHttpBridgeTest* test, bool never_finishes)
-      : HttpBridge(
-            kUserAgent,
-            nullptr /*PendingSharedURLLoaderFactory, unneeded as we mock stuff*/
-            ,
-            NetworkTimeUpdateCallback()),
+      : HttpBridge(kUserAgent, /*pending_url_loader_factory=*/nullptr),
         test_(test),
         never_finishes_(never_finishes) {}
 
@@ -146,7 +142,7 @@ class ShuntedHttpBridge : public HttpBridge {
   }
 
  private:
-  ~ShuntedHttpBridge() override {}
+  ~ShuntedHttpBridge() override = default;
 
   void CallOnURLFetchComplete() {
     ASSERT_TRUE(test_->GetIOThreadTaskRunner()->BelongsToCurrentThread());

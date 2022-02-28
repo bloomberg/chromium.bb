@@ -114,12 +114,12 @@ UserSelectableTypeSet SyncUserSettingsImpl::GetRegisteredSelectableTypes()
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 bool SyncUserSettingsImpl::IsSyncAllOsTypesEnabled() const {
-  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+  DCHECK(chromeos::features::IsSyncSettingsCategorizationEnabled());
   return prefs_->IsSyncAllOsTypesEnabled();
 }
 
 UserSelectableOsTypeSet SyncUserSettingsImpl::GetSelectedOsTypes() const {
-  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+  DCHECK(chromeos::features::IsSyncSettingsCategorizationEnabled());
   UserSelectableOsTypeSet types = prefs_->GetSelectedOsTypes();
   types.RetainAll(GetRegisteredSelectableOsTypes());
   return types;
@@ -127,7 +127,7 @@ UserSelectableOsTypeSet SyncUserSettingsImpl::GetSelectedOsTypes() const {
 
 void SyncUserSettingsImpl::SetSelectedOsTypes(bool sync_all_os_types,
                                               UserSelectableOsTypeSet types) {
-  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+  DCHECK(chromeos::features::IsSyncSettingsCategorizationEnabled());
   UserSelectableOsTypeSet registered_types = GetRegisteredSelectableOsTypes();
   DCHECK(registered_types.HasAll(types));
   prefs_->SetSelectedOsTypes(sync_all_os_types, registered_types, types);
@@ -135,7 +135,7 @@ void SyncUserSettingsImpl::SetSelectedOsTypes(bool sync_all_os_types,
 
 UserSelectableOsTypeSet SyncUserSettingsImpl::GetRegisteredSelectableOsTypes()
     const {
-  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+  DCHECK(chromeos::features::IsSyncSettingsCategorizationEnabled());
   UserSelectableOsTypeSet registered_types;
   for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
     if (registered_model_types_.Has(
@@ -147,12 +147,14 @@ UserSelectableOsTypeSet SyncUserSettingsImpl::GetRegisteredSelectableOsTypes()
 }
 
 bool SyncUserSettingsImpl::IsOsSyncFeatureEnabled() const {
-  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+  DCHECK(chromeos::features::IsSyncSettingsCategorizationEnabled());
   return prefs_->IsOsSyncFeatureEnabled();
 }
 
 void SyncUserSettingsImpl::SetOsSyncFeatureEnabled(bool enabled) {
-  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+  DCHECK(chromeos::features::IsSyncSettingsCategorizationEnabled());
+  // OsSyncFeature can't be disabled unless SyncConsentOptional is on.
+  DCHECK(enabled || chromeos::features::IsSyncConsentOptionalEnabled());
   prefs_->SetOsSyncFeatureEnabled(enabled);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -198,8 +200,6 @@ bool SyncUserSettingsImpl::IsTrustedVaultKeyRequiredForPreferredDataTypes()
 }
 
 bool SyncUserSettingsImpl::IsTrustedVaultRecoverabilityDegraded() const {
-  // TODO(crbug.com/1081649): This should verify that at least one sync entity
-  // is affected.
   return IsEncryptedDatatypeEnabled() &&
          crypto_->IsTrustedVaultRecoverabilityDegraded();
 }
@@ -240,12 +240,13 @@ ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
   ModelTypeSet types = ResolvePreferredTypes(GetSelectedTypes());
   types.PutAll(AlwaysPreferredUserTypes());
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (chromeos::features::IsSplitSettingsSyncEnabled())
+  if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
     types.PutAll(ResolvePreferredOsTypes(GetSelectedOsTypes()));
+  }
 #endif
   types.RetainAll(registered_model_types_);
 
-  static_assert(37 == GetNumModelTypes(),
+  static_assert(38 == GetNumModelTypes(),
                 "If adding a new sync data type, update the list below below if"
                 " you want to disable the new data type for local sync.");
   types.PutAll(ControlTypes());
@@ -257,6 +258,7 @@ ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
     types.Remove(SHARING_MESSAGE);
     types.Remove(USER_CONSENTS);
     types.Remove(USER_EVENTS);
+    types.Remove(WORKSPACE_DESK);
   }
   return types;
 }
@@ -266,8 +268,6 @@ ModelTypeSet SyncUserSettingsImpl::GetEncryptedDataTypes() const {
 }
 
 bool SyncUserSettingsImpl::IsEncryptedDatatypeEnabled() const {
-  if (crypto_->encryption_pending())
-    return true;
   const ModelTypeSet preferred_types = GetPreferredDataTypes();
   const ModelTypeSet encrypted_types = GetEncryptedDataTypes();
   DCHECK(encrypted_types.HasAll(AlwaysEncryptedUserTypes()));

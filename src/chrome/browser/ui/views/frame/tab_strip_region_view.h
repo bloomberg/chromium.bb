@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_TAB_STRIP_REGION_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_TAB_STRIP_REGION_VIEW_H_
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/pointer/touch_ui_controller.h"
@@ -19,9 +20,9 @@ class TabSearchButton;
 class TabStrip;
 class TipMarqueeView;
 
-// Container for the tabstrip, new tab button, and reserved grab handle space.
-class TabStripRegionView final : public views::AccessiblePaneView,
-                                 views::ViewObserver {
+// Container for the tabstrip and the other views sharing space with it -
+// with the exception of the caption buttons.
+class TabStripRegionView final : public views::AccessiblePaneView {
  public:
   METADATA_HEADER(TabStripRegionView);
   explicit TabStripRegionView(std::unique_ptr<TabStrip> tab_strip);
@@ -59,43 +60,20 @@ class TabStripRegionView final : public views::AccessiblePaneView,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   views::View* GetDefaultFocusableChild() override;
 
-  // views::ViewObserver:
-  void OnViewPreferredSizeChanged(View* view) override;
-
   views::FlexLayout* layout_manager_for_testing() { return layout_manager_; }
 
-  // TODO(958173): Override OnBoundsChanged to cancel tabstrip animations.
-
  private:
-  int GetTabStripAvailableWidth() const;
-
-  // Scrolls the tabstrip towards the first tab in the tabstrip.
-  void ScrollTowardsLeadingTab();
-
-  // Scrolls the tabstrip towards the last tab in the tabstrip.
-  void ScrollTowardsTrailingTab();
-
   // Updates the border padding for |new_tab_button_|.  This should be called
   // whenever any input of the computation of the border's sizing changes.
   void UpdateNewTabButtonBorder();
 
-  // Changes the visibility of the scroll buttons, so they're hidden if they
-  // aren't needed to control tabstrip scrolling.
-  void UpdateScrollButtonVisibility();
-
-  views::FlexLayout* layout_manager_ = nullptr;
-  views::View* tab_strip_container_;
-  views::View* reserved_grab_handle_space_;
-  TabStrip* tab_strip_;
-  NewTabButton* new_tab_button_ = nullptr;
-  TabSearchButton* tab_search_button_ = nullptr;
-  views::ImageButton* leading_scroll_button_;
-  views::ImageButton* trailing_scroll_button_;
-  // The views, owned by |scroll_container_|, that indicate that there are more
-  // tabs overflowing to the left or right.
-  views::View* left_overflow_indicator_;
-  views::View* right_overflow_indicator_;
-  TipMarqueeView* tip_marquee_view_ = nullptr;
+  raw_ptr<views::FlexLayout> layout_manager_ = nullptr;
+  raw_ptr<views::View> tab_strip_container_;
+  raw_ptr<views::View> reserved_grab_handle_space_;
+  raw_ptr<TabStrip> tab_strip_;
+  raw_ptr<NewTabButton> new_tab_button_ = nullptr;
+  raw_ptr<TabSearchButton> tab_search_button_ = nullptr;
+  raw_ptr<TipMarqueeView> tip_marquee_view_ = nullptr;
 
   const base::CallbackListSubscription subscription_ =
       ui::TouchUiController::Get()->RegisterCallback(

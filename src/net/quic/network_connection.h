@@ -5,7 +5,6 @@
 #ifndef NET_QUIC_NETWORK_CONNECTION_H_
 #define NET_QUIC_NETWORK_CONNECTION_H_
 
-#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 
@@ -18,6 +17,10 @@ class NET_EXPORT NetworkConnection
       public NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   NetworkConnection();
+
+  NetworkConnection(const NetworkConnection&) = delete;
+  NetworkConnection& operator=(const NetworkConnection&) = delete;
+
   ~NetworkConnection() override;
 
   // Returns the underlying connection type.
@@ -50,8 +53,6 @@ class NET_EXPORT NetworkConnection
   // Cache the connection description string to avoid calling the expensive
   // GetWifiPHYLayerProtocol() function.
   const char* connection_description_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkConnection);
 };
 
 }  // namespace net

@@ -43,11 +43,11 @@ public class LoadProgressMediator {
         mTabObserver = new CurrentTabObserver(tabSupplier, new EmptyTabObserver() {
             @Override
             public void onDidStartNavigation(Tab tab, NavigationHandle navigation) {
-                if (navigation.isSameDocument() || !navigation.isInMainFrame()) {
+                if (navigation.isSameDocument() || !navigation.isInPrimaryMainFrame()) {
                     return;
                 }
 
-                if (NativePage.isNativePageUrl(navigation.getUrl().getSpec(), tab.isIncognito())) {
+                if (NativePage.isNativePageUrl(navigation.getUrl(), tab.isIncognito())) {
                     finishLoadProgress(false);
                     return;
                 }
@@ -71,8 +71,8 @@ public class LoadProgressMediator {
 
             @Override
             public void onLoadProgressChanged(Tab tab, float progress) {
-                if (UrlUtilities.isNTPUrl(tab.getUrlString())
-                        || NativePage.isNativePageUrl(tab.getUrlString(), tab.isIncognito())) {
+                if (tab.getUrl() == null || UrlUtilities.isNTPUrl(tab.getUrl())
+                        || NativePage.isNativePageUrl(tab.getUrl(), tab.isIncognito())) {
                     return;
                 }
 
@@ -123,7 +123,7 @@ public class LoadProgressMediator {
         }
 
         if (tab.isLoading()) {
-            if (NativePage.isNativePageUrl(tab.getUrlString(), tab.isIncognito())) {
+            if (NativePage.isNativePageUrl(tab.getUrl(), tab.isIncognito())) {
                 finishLoadProgress(false);
             } else {
                 startLoadProgress();

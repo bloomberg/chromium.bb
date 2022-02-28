@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
@@ -26,16 +25,17 @@ class CreateWindowParams;
 class NativeWidgetNSWindow;
 class ValidateUserInterfaceItemResult;
 }  // namespace mojom
+
 class ApplicationHost;
 class NativeWidgetNSWindowBridge;
 }  // namespace remote_cocoa
 
 namespace views {
 namespace test {
-class HitTestNativeWidgetMac;
 class MockNativeWidgetMac;
-class WidgetTest;
+class NativeWidgetMacTest;
 }  // namespace test
+
 class NativeWidgetMacNSWindowHost;
 
 class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate,
@@ -43,6 +43,8 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate,
                                      public ui::internal::InputMethodDelegate {
  public:
   explicit NativeWidgetMac(internal::NativeWidgetDelegate* delegate);
+  NativeWidgetMac(const NativeWidgetMac&) = delete;
+  NativeWidgetMac& operator=(const NativeWidgetMac&) = delete;
   ~NativeWidgetMac() override;
 
   // Informs |delegate_| that the native widget is about to be destroyed.
@@ -128,6 +130,8 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate,
   bool SetWindowTitle(const std::u16string& title) override;
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon) override;
+  const gfx::ImageSkia* GetWindowIcon() override;
+  const gfx::ImageSkia* GetWindowAppIcon() override;
   void InitModalType(ui::ModalType modal_type) override;
   gfx::Rect GetWindowBoundsInScreen() const override;
   gfx::Rect GetClientAreaBoundsInScreen() const override;
@@ -157,7 +161,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate,
   bool IsMaximized() const override;
   bool IsMinimized() const override;
   void Restore() override;
-  void SetFullscreen(bool fullscreen) override;
+  void SetFullscreen(bool fullscreen, const base::TimeDelta& delay) override;
   bool IsFullscreen() const override;
   void SetCanAppearInExistingFullscreenSpaces(
       bool can_appear_in_existing_fullscreen_spaces) override;
@@ -256,8 +260,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate,
 
  private:
   friend class test::MockNativeWidgetMac;
-  friend class test::HitTestNativeWidgetMac;
-  friend class views::test::WidgetTest;
+  friend class views::test::NativeWidgetMacTest;
   class ZoomFocusMonitor;
 
   internal::NativeWidgetDelegate* delegate_;
@@ -279,8 +282,6 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate,
   std::unique_ptr<ZoomFocusMonitor> zoom_focus_monitor_;
   // Held while this widget is active if it's a child.
   std::unique_ptr<Widget::PaintAsActiveLock> parent_key_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeWidgetMac);
 };
 
 }  // namespace views

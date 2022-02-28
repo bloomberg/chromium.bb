@@ -19,10 +19,13 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/storage/session_storage_manager.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
-#include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/common/api/storage.h"
+#include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_channel.h"
+
+using value_store::ValueStore;
 
 namespace extensions {
 
@@ -30,8 +33,9 @@ namespace extensions {
 
 namespace {
 
-constexpr char kSessionStorageManagerKeyName[] =
-    "StorageAPI SessionStorageManager";
+constexpr PrefMap kPrefSessionStorageAccessLevel = {
+    "storage_session_access_level", PrefType::kInteger,
+    PrefScope::kExtensionSpecific};
 
 // Returns a vector of any strings within the given list.
 std::vector<std::string> GetKeysFromList(const base::Value& list) {
@@ -51,7 +55,7 @@ std::vector<std::string> GetKeysFromDict(const base::Value& dict) {
   DCHECK(dict.is_dict());
   std::vector<std::string> keys;
   keys.reserve(dict.DictSize());
-  for (const auto& value : dict.DictItems()) {
+  for (auto value : dict.DictItems()) {
     keys.push_back(value.first);
   }
   return keys;
@@ -70,11 +74,9 @@ base::Value MapAsValueDict(
 void GetModificationQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) {
   // See storage.json for the current value of these limits.
   QuotaLimitHeuristic::Config short_limit_config = {
-      api::storage::sync::MAX_WRITE_OPERATIONS_PER_MINUTE,
-      base::TimeDelta::FromMinutes(1)};
+      api::storage::sync::MAX_WRITE_OPERATIONS_PER_MINUTE, base::Minutes(1)};
   QuotaLimitHeuristic::Config long_limit_config = {
-      api::storage::sync::MAX_WRITE_OPERATIONS_PER_HOUR,
-      base::TimeDelta::FromHours(1)};
+      api::storage::sync::MAX_WRITE_OPERATIONS_PER_HOUR, base::Hours(1)};
   heuristics->push_back(std::make_unique<QuotaService::TimedLimit>(
       short_limit_config,
       std::make_unique<QuotaLimitHeuristic::SingletonBucketMapper>(),
@@ -85,25 +87,19 @@ void GetModificationQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) {
       "MAX_WRITE_OPERATIONS_PER_HOUR"));
 }
 
-// Creates the SessionStorageManager if it doesn't exist and returns it.
-SessionStorageManager* GetOrCreateSessionStorage(
-    content::BrowserContext* context) {
-  // Share storage between incognito and on-the-record profiles by using the
-  // original context of an incognito window.
-  content::BrowserContext* original_context =
-      ExtensionsBrowserClient::Get()->GetOriginalContext(context);
-
-  SessionStorageManager* storage = static_cast<SessionStorageManager*>(
-      original_context->GetUserData(kSessionStorageManagerKeyName));
-  if (storage)
-    return storage;
-
-  auto session_manager_ptr = std::make_unique<SessionStorageManager>(
-      api::storage::session::QUOTA_BYTES);
-  auto* session_manager = session_manager_ptr.get();
-  original_context->SetUserData(kSessionStorageManagerKeyName,
-                                std::move(session_manager_ptr));
-  return session_manager;
+// Returns a nested dictionary Value converted from a ValueChange.
+base::Value ValueChangeToValue(
+    std::vector<SessionStorageManager::ValueChange> changes) {
+  base::Value changes_value(base::Value::Type::DICTIONARY);
+  for (auto& change : changes) {
+    base::Value change_value(base::Value::Type::DICTIONARY);
+    if (change.old_value.has_value())
+      change_value.SetKey("oldValue", std::move(change.old_value.value()));
+    if (change.new_value)
+      change_value.SetKey("newValue", change.new_value->Clone());
+    changes_value.SetKey(change.key, std::move(change_value));
+  }
+  return changes_value;
 }
 
 }  // namespace
@@ -116,28 +112,36 @@ SettingsFunction::~SettingsFunction() = default;
 
 bool SettingsFunction::ShouldSkipQuotaLimiting() const {
   // Only apply quota if this is for sync storage.
-  std::string storage_area_string;
-  if (!args_->GetString(0, &storage_area_string)) {
+  if (args().empty() || !args()[0].is_string()) {
     // This should be EXTENSION_FUNCTION_VALIDATE(false) but there is no way
     // to signify that from this function. It will be caught in Run().
     return false;
   }
+  const std::string& storage_area_string = args()[0].GetString();
   return StorageAreaFromString(storage_area_string) !=
          StorageAreaNamespace::kSync;
 }
 
 ExtensionFunction::ResponseAction SettingsFunction::Run() {
-  std::string storage_area_string;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &storage_area_string));
-  args_->Remove(0, nullptr);
+  EXTENSION_FUNCTION_VALIDATE(args().size() >= 1);
+  EXTENSION_FUNCTION_VALIDATE(args()[0].is_string());
+
+  // Not a ref since we remove the underlying value after.
+  std::string storage_area_string = args()[0].GetString();
+
+  mutable_args().erase(args().begin());
   storage_area_ = StorageAreaFromString(storage_area_string);
   EXTENSION_FUNCTION_VALIDATE(storage_area_ != StorageAreaNamespace::kInvalid);
 
   // Session is the only storage area that does not use ValueStore, and will
   // return synchronously.
   if (storage_area_ == StorageAreaNamespace::kSession) {
-    // TODO(crbug.com/1185226): Get observers to dispatch OnChanged event after
-    // creating OnChangedEventSession in the observer.
+    // Currently only `session` can restrict the storage access. This call will
+    // be moved after the other storage areas allow it.
+    if (!IsAccessToStorageAllowed()) {
+      return RespondNow(
+          Error("Access to storage is not allowed from this context."));
+    }
     return RespondNow(RunInSession());
   }
 
@@ -197,39 +201,68 @@ ExtensionFunction::ResponseValue SettingsFunction::UseWriteResult(
     return Error(result.status().message);
 
   if (!result.changes().empty()) {
-    observers_->Notify(FROM_HERE, &SettingsObserver::OnSettingsChanged,
-                       extension_id(), storage_area_,
-                       ValueStoreChange::ToValue(result.PassChanges()));
+    observers_->Notify(
+        FROM_HERE, &SettingsObserver::OnSettingsChanged, extension_id(),
+        storage_area_,
+        value_store::ValueStoreChange::ToValue(result.PassChanges()));
   }
 
   return NoArguments();
+}
+
+void SettingsFunction::OnSessionSettingsChanged(
+    std::vector<SessionStorageManager::ValueChange> changes) {
+  if (!changes.empty()) {
+    scoped_refptr<SettingsObserverList> observers =
+        StorageFrontend::Get(browser_context())->GetObservers();
+    observers->Notify(FROM_HERE, &SettingsObserver::OnSettingsChanged,
+                      extension_id(), storage_area_,
+                      ValueChangeToValue(std::move(changes)));
+  }
+}
+
+bool SettingsFunction::IsAccessToStorageAllowed() {
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context());
+  // Default access level is only secure contexts.
+  int access_level = api::storage::ACCESS_LEVEL_TRUSTED_CONTEXTS;
+  prefs->ReadPrefAsInteger(extension()->id(), kPrefSessionStorageAccessLevel,
+                           &access_level);
+
+  // Only a blessed extension context is considered trusted.
+  if (access_level == api::storage::ACCESS_LEVEL_TRUSTED_CONTEXTS)
+    return source_context_type() == Feature::BLESSED_EXTENSION_CONTEXT;
+
+  // All contexts are allowed.
+  DCHECK_EQ(api::storage::ACCESS_LEVEL_TRUSTED_AND_UNTRUSTED_CONTEXTS,
+            access_level);
+  return true;
 }
 
 ExtensionFunction::ResponseValue StorageStorageAreaGetFunction::RunWithStorage(
     ValueStore* storage) {
   TRACE_EVENT1("browser", "StorageStorageAreaGetFunction::RunWithStorage",
                "extension_id", extension_id());
-  base::Value* input = nullptr;
-  if (!args_->Get(0, &input))
+  if (args().empty())
     return BadMessage();
+  const base::Value& input = args()[0];
 
-  switch (input->type()) {
+  switch (input.type()) {
     case base::Value::Type::NONE:
       return UseReadResult(storage->Get());
 
     case base::Value::Type::STRING:
-      return UseReadResult(storage->Get(input->GetString()));
+      return UseReadResult(storage->Get(input.GetString()));
 
     case base::Value::Type::LIST:
-      return UseReadResult(storage->Get(GetKeysFromList(*input)));
+      return UseReadResult(storage->Get(GetKeysFromList(input)));
 
     case base::Value::Type::DICTIONARY: {
-      ValueStore::ReadResult result = storage->Get(GetKeysFromDict(*input));
+      ValueStore::ReadResult result = storage->Get(GetKeysFromDict(input));
       if (!result.status().ok()) {
         return UseReadResult(std::move(result));
       }
       std::unique_ptr<base::DictionaryValue> with_default_values =
-          static_cast<base::DictionaryValue*>(input)->CreateDeepCopy();
+          base::Value::AsDictionaryValue(input).CreateDeepCopy();
       with_default_values->MergeDictionary(&result.settings());
       return UseReadResult(ValueStore::ReadResult(
           std::move(with_default_values), result.PassStatus()));
@@ -241,34 +274,34 @@ ExtensionFunction::ResponseValue StorageStorageAreaGetFunction::RunWithStorage(
 }
 
 ExtensionFunction::ResponseValue StorageStorageAreaGetFunction::RunInSession() {
-  base::Value* input = nullptr;
-  if (!args_->Get(0, &input))
+  if (args().empty())
     return BadMessage();
+  base::Value& input = mutable_args()[0];
 
   base::Value value_dict(base::Value::Type::DICTIONARY);
   SessionStorageManager* session_manager =
-      GetOrCreateSessionStorage(browser_context());
+      SessionStorageManager::GetForBrowserContext(browser_context());
 
-  switch (input->type()) {
+  switch (input.type()) {
     case base::Value::Type::NONE:
       value_dict = MapAsValueDict(session_manager->GetAll(extension_id()));
       break;
 
     case base::Value::Type::STRING:
       value_dict = MapAsValueDict(session_manager->Get(
-          extension_id(), std::vector<std::string>(1, input->GetString())));
+          extension_id(), std::vector<std::string>(1, input.GetString())));
       break;
 
     case base::Value::Type::LIST:
       value_dict = MapAsValueDict(
-          session_manager->Get(extension_id(), GetKeysFromList(*input)));
+          session_manager->Get(extension_id(), GetKeysFromList(input)));
       break;
 
     case base::Value::Type::DICTIONARY: {
       std::map<std::string, const base::Value*> values =
-          session_manager->Get(extension_id(), GetKeysFromDict(*input));
+          session_manager->Get(extension_id(), GetKeysFromDict(input));
 
-      for (auto default_value : input->DictItems()) {
+      for (auto default_value : input.DictItems()) {
         auto value_it = values.find(default_value.first);
         value_dict.SetKey(default_value.first,
                           value_it != values.end()
@@ -290,23 +323,23 @@ StorageStorageAreaGetBytesInUseFunction::RunWithStorage(ValueStore* storage) {
                "StorageStorageAreaGetBytesInUseFunction::RunWithStorage",
                "extension_id", extension_id());
 
-  base::Value* input = nullptr;
-  if (!args_->Get(0, &input))
+  if (args().empty())
     return BadMessage();
+  const base::Value& input = args()[0];
 
   size_t bytes_in_use = 0;
 
-  switch (input->type()) {
+  switch (input.type()) {
     case base::Value::Type::NONE:
       bytes_in_use = storage->GetBytesInUse();
       break;
 
     case base::Value::Type::STRING:
-      bytes_in_use = storage->GetBytesInUse(input->GetString());
+      bytes_in_use = storage->GetBytesInUse(input.GetString());
       break;
 
     case base::Value::Type::LIST:
-      bytes_in_use = storage->GetBytesInUse(GetKeysFromList(*input));
+      bytes_in_use = storage->GetBytesInUse(GetKeysFromList(input));
       break;
 
     default:
@@ -318,28 +351,56 @@ StorageStorageAreaGetBytesInUseFunction::RunWithStorage(ValueStore* storage) {
 
 ExtensionFunction::ResponseValue
 StorageStorageAreaGetBytesInUseFunction::RunInSession() {
-  // TODO(crbug.com/1185226): Implement RunInSession for
-  // chrome.storage.session.getBytesInUse .
-  return NoArguments();
+  if (args().empty())
+    return BadMessage();
+  const base::Value& input = args()[0];
+
+  size_t bytes_in_use = 0;
+  SessionStorageManager* session_manager =
+      SessionStorageManager::GetForBrowserContext(browser_context());
+
+  switch (input.type()) {
+    case base::Value::Type::NONE:
+      bytes_in_use = session_manager->GetTotalBytesInUse(extension_id());
+      break;
+
+    case base::Value::Type::STRING:
+      bytes_in_use = session_manager->GetBytesInUse(
+          extension_id(), std::vector<std::string>(1, input.GetString()));
+      break;
+
+    case base::Value::Type::LIST:
+      bytes_in_use = session_manager->GetBytesInUse(extension_id(),
+                                                    GetKeysFromList(input));
+      break;
+
+    default:
+      return BadMessage();
+  }
+
+  // Checked cast should not overflow since `bytes_in_use` is guaranteed to be a
+  // small number, due to the quota limits we have in place for in-memory
+  // storage
+  return OneArgument(base::Value(base::checked_cast<int>(bytes_in_use)));
 }
 
 ExtensionFunction::ResponseValue StorageStorageAreaSetFunction::RunWithStorage(
     ValueStore* storage) {
   TRACE_EVENT1("browser", "StorageStorageAreaSetFunction::RunWithStorage",
                "extension_id", extension_id());
-  base::DictionaryValue* input = nullptr;
-  if (!args_->GetDictionary(0, &input))
+  if (args().empty() || !args()[0].is_dict())
     return BadMessage();
-  return UseWriteResult(storage->Set(ValueStore::DEFAULTS, *input));
+  const base::DictionaryValue& input =
+      base::Value::AsDictionaryValue(args()[0]);
+  return UseWriteResult(storage->Set(ValueStore::DEFAULTS, input));
 }
 
 ExtensionFunction::ResponseValue StorageStorageAreaSetFunction::RunInSession() {
   // Retrieve and delete input from `args_` since they will be moved to storage.
-  auto list = args_->GetList();
-  if (list.empty() || !list[0].is_dict())
+  if (args().empty() || !args()[0].is_dict())
     return BadMessage();
-  base::Value input = std::move(list[0]);
-  args_->EraseListIter(list.begin());
+  base::Value input = std::move(mutable_args()[0]);
+  mutable_args().erase(args().begin());
 
   std::map<std::string, base::Value> values;
   for (auto item : input.DictItems()) {
@@ -347,7 +408,7 @@ ExtensionFunction::ResponseValue StorageStorageAreaSetFunction::RunInSession() {
   }
 
   std::vector<SessionStorageManager::ValueChange> changes;
-  bool result = GetOrCreateSessionStorage(browser_context())
+  bool result = SessionStorageManager::GetForBrowserContext(browser_context())
                     ->Set(extension_id(), std::move(values), changes);
 
   if (!result) {
@@ -356,11 +417,7 @@ ExtensionFunction::ResponseValue StorageStorageAreaSetFunction::RunInSession() {
         "Session storage quota bytes exceeded. Values were not stored.");
   }
 
-  if (!changes.empty()) {
-    // TODO(crbug.com/1185226): Notify changes after creating
-    // OnChangedEventSession in the observer.
-  }
-
+  OnSessionSettingsChanged(std::move(changes));
   return NoArguments();
 }
 
@@ -373,16 +430,16 @@ ExtensionFunction::ResponseValue
 StorageStorageAreaRemoveFunction::RunWithStorage(ValueStore* storage) {
   TRACE_EVENT1("browser", "StorageStorageAreaRemoveFunction::RunWithStorage",
                "extension_id", extension_id());
-  base::Value* input = nullptr;
-  if (!args_->Get(0, &input))
+  if (args().empty())
     return BadMessage();
+  const base::Value& input = args()[0];
 
-  switch (input->type()) {
+  switch (input.type()) {
     case base::Value::Type::STRING:
-      return UseWriteResult(storage->Remove(input->GetString()));
+      return UseWriteResult(storage->Remove(input.GetString()));
 
     case base::Value::Type::LIST:
-      return UseWriteResult(storage->Remove(GetKeysFromList(*input)));
+      return UseWriteResult(storage->Remove(GetKeysFromList(input)));
 
     default:
       return BadMessage();
@@ -391,8 +448,28 @@ StorageStorageAreaRemoveFunction::RunWithStorage(ValueStore* storage) {
 
 ExtensionFunction::ResponseValue
 StorageStorageAreaRemoveFunction::RunInSession() {
-  // TODO(crbug.com/1185226): Implement RunInSession for
-  // chrome.storage.session.remove .
+  if (args().empty())
+    return BadMessage();
+  const base::Value& input = args()[0];
+
+  SessionStorageManager* session_manager =
+      SessionStorageManager::GetForBrowserContext(browser_context());
+  std::vector<SessionStorageManager::ValueChange> changes;
+
+  switch (input.type()) {
+    case base::Value::Type::STRING:
+      session_manager->Remove(extension_id(), input.GetString(), changes);
+      break;
+
+    case base::Value::Type::LIST:
+      session_manager->Remove(extension_id(), GetKeysFromList(input), changes);
+      break;
+
+    default:
+      return BadMessage();
+  }
+
+  OnSessionSettingsChanged(std::move(changes));
   return NoArguments();
 }
 
@@ -410,14 +487,47 @@ StorageStorageAreaClearFunction::RunWithStorage(ValueStore* storage) {
 
 ExtensionFunction::ResponseValue
 StorageStorageAreaClearFunction::RunInSession() {
-  // TODO(crbug.com/1185226): Implement RunInSession for
-  // chrome.storage.session.clear .
+  std::vector<SessionStorageManager::ValueChange> changes;
+  SessionStorageManager::GetForBrowserContext(browser_context())
+      ->Clear(extension_id(), changes);
+
+  OnSessionSettingsChanged(std::move(changes));
   return NoArguments();
 }
 
 void StorageStorageAreaClearFunction::GetQuotaLimitHeuristics(
     QuotaLimitHeuristics* heuristics) const {
   GetModificationQuotaLimitHeuristics(heuristics);
+}
+
+ExtensionFunction::ResponseValue
+StorageStorageAreaSetAccessLevelFunction::RunWithStorage(ValueStore* storage) {
+  // Not supported. Should return error.
+  return Error("This StorageArea is not available for setting access level");
+}
+
+ExtensionFunction::ResponseValue
+StorageStorageAreaSetAccessLevelFunction::RunInSession() {
+  if (source_context_type() != Feature::BLESSED_EXTENSION_CONTEXT)
+    return Error("Context cannot set the storage access level");
+
+  std::unique_ptr<api::storage::StorageArea::SetAccessLevel::Params> params(
+      api::storage::StorageArea::SetAccessLevel::Params::Create(args()));
+
+  if (!params)
+    return BadMessage();
+
+  // The parsing code ensures `access_level` is sane.
+  DCHECK(params->access_options.access_level ==
+             api::storage::ACCESS_LEVEL_TRUSTED_CONTEXTS ||
+         params->access_options.access_level ==
+             api::storage::ACCESS_LEVEL_TRUSTED_AND_UNTRUSTED_CONTEXTS);
+
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context());
+  prefs->SetIntegerPref(extension_id(), kPrefSessionStorageAccessLevel,
+                        params->access_options.access_level);
+
+  return NoArguments();
 }
 
 }  // namespace extensions

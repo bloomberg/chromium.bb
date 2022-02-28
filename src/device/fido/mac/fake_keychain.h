@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/mac/scoped_cftyperef.h"
-#include "base/macros.h"
 #include "device/fido/mac/keychain.h"
 
 namespace device {
@@ -22,18 +21,23 @@ class API_AVAILABLE(macos(10.12.2)) FakeKeychain : public Keychain {
     Item();
     Item(Item&&);
     Item& operator=(Item&&);
+
+    Item(const Item&) = delete;
+    Item& operator=(const Item&) = delete;
+
     ~Item();
 
     std::string label;
     std::string application_label;
     std::string application_tag;
     base::ScopedCFTypeRef<SecKeyRef> private_key;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Item);
   };
 
   FakeKeychain();
+
+  FakeKeychain(const FakeKeychain&) = delete;
+  FakeKeychain& operator=(const FakeKeychain&) = delete;
+
   ~FakeKeychain() override;
 
  protected:
@@ -46,8 +50,6 @@ class API_AVAILABLE(macos(10.12.2)) FakeKeychain : public Keychain {
 
  private:
   std::vector<Item> items_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeKeychain);
 };
 
 }  // namespace mac

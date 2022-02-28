@@ -14,7 +14,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
-#include "components/performance_manager/embedder/graph_features_helper.h"
+#include "components/performance_manager/embedder/graph_features.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
@@ -167,8 +167,8 @@ V8MemoryPerformanceManagerTestHarness::V8MemoryPerformanceManagerTestHarness()
     : PerformanceManagerTestHarness(
           // Use MOCK_TIME so that ExpectQueryAndDelayReply can be used.
           base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
-  GetGraphFeaturesHelper().EnableExecutionContextRegistry();
-  GetGraphFeaturesHelper().EnableV8ContextTracker();
+  GetGraphFeatures().EnableExecutionContextRegistry();
+  GetGraphFeatures().EnableV8ContextTracker();
 }
 
 V8MemoryPerformanceManagerTestHarness::
@@ -229,7 +229,7 @@ WebMemoryTestHarness::WebMemoryTestHarness() = default;
 WebMemoryTestHarness::~WebMemoryTestHarness() = default;
 
 void WebMemoryTestHarness::SetUp() {
-  GetGraphFeaturesHelper().EnableV8ContextTracker();
+  GetGraphFeatures().EnableV8ContextTracker();
   Super::SetUp();
   process_ = CreateNode<ProcessNodeImpl>();
   other_process_ = CreateNode<ProcessNodeImpl>();
@@ -248,7 +248,8 @@ FrameNodeImpl* WebMemoryTestHarness::AddFrameNodeImpl(
     FrameNodeImpl* opener,
     ProcessNodeImpl* process,
     absl::optional<std::string> id_attribute,
-    absl::optional<std::string> src_attribute) {
+    absl::optional<std::string> src_attribute,
+    Bytes canvas_memory_usage) {
   // If there's an opener, the new frame is also a new page.
   auto* page = pages_.front().get();
   if (opener) {
@@ -257,18 +258,21 @@ FrameNodeImpl* WebMemoryTestHarness::AddFrameNodeImpl(
     page->SetOpenerFrameNode(opener);
   }
 
-  int frame_tree_node_id = GetNextUniqueId();
   int frame_routing_id = GetNextUniqueId();
   auto frame_token = blink::LocalFrameToken();
-  auto frame = CreateNode<FrameNodeImpl>(process, page, parent,
-                                         frame_tree_node_id, frame_routing_id,
-                                         frame_token, browsing_instance_id);
+  auto frame = CreateNode<FrameNodeImpl>(
+      process, page, parent, frame_routing_id, frame_token,
+      content::BrowsingInstanceId(browsing_instance_id));
   if (url) {
     frame->OnNavigationCommitted(GURL(*url), /*same document*/ true);
   }
-  if (memory_usage) {
-    V8DetailedMemoryExecutionContextData::CreateForTesting(frame.get())
-        ->set_v8_bytes_used(memory_usage.value());
+  if (memory_usage || canvas_memory_usage) {
+    auto* data =
+        V8DetailedMemoryExecutionContextData::CreateForTesting(frame.get());
+    if (memory_usage)
+      data->set_v8_bytes_used(memory_usage.value());
+    if (canvas_memory_usage)
+      data->set_canvas_bytes_used(canvas_memory_usage.value());
   }
   frames_.push_back(std::move(frame));
   FrameNodeImpl* frame_impl = frames_.back().get();
@@ -386,6 +390,23 @@ void AddIsolateMemoryUsage(blink::ExecutionContextToken token,
   context->token = token;
   context->bytes_used = bytes_used;
   isolate->contexts.push_back(std::move(context));
+}
+
+void AddIsolateCanvasMemoryUsage(
+    blink::ExecutionContextToken token,
+    uint64_t bytes_used,
+    blink::mojom::PerIsolateV8MemoryUsage* isolate) {
+  for (auto& entry : isolate->canvas_contexts) {
+    if (entry->token == token) {
+      entry->bytes_used = bytes_used;
+      return;
+    }
+  }
+
+  auto context = blink::mojom::PerContextCanvasMemoryUsage::New();
+  context->token = token;
+  context->bytes_used = bytes_used;
+  isolate->canvas_contexts.push_back(std::move(context));
 }
 
 }  // namespace v8_memory

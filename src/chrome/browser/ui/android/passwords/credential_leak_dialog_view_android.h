@@ -8,6 +8,7 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 
 namespace ui {
@@ -23,6 +24,12 @@ class CredentialLeakDialogViewAndroid {
  public:
   explicit CredentialLeakDialogViewAndroid(
       CredentialLeakControllerAndroid* controller);
+
+  CredentialLeakDialogViewAndroid(const CredentialLeakDialogViewAndroid&) =
+      delete;
+  CredentialLeakDialogViewAndroid& operator=(
+      const CredentialLeakDialogViewAndroid&) = delete;
+
   ~CredentialLeakDialogViewAndroid();
 
   // Called to create and show the dialog.
@@ -39,12 +46,10 @@ class CredentialLeakDialogViewAndroid {
 
  private:
   // The controller which owns this dialog and handles the dialog events.
-  CredentialLeakControllerAndroid* controller_;
+  raw_ptr<CredentialLeakControllerAndroid> controller_;
 
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
-
-  DISALLOW_COPY_AND_ASSIGN(CredentialLeakDialogViewAndroid);
 };
 
 #endif  // CHROME_BROWSER_UI_ANDROID_PASSWORDS_CREDENTIAL_LEAK_DIALOG_VIEW_ANDROID_H_

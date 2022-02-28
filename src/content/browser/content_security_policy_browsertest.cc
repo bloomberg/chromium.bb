@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
+#include "base/ignore_result.h"
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -95,6 +96,46 @@ IN_PROC_BROWSER_TEST_F(ContentSecurityPolicyBrowserTest,
   GURL url(page);
   WebContentsConsoleObserver console_observer(web_contents());
   console_observer.SetPattern("*violates*the following*directive*");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  console_observer.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSecurityPolicyBrowserTest,
+                       WildcardNotMatchingNonNetworkSchemeBrowserSide) {
+  const char* page = R"(
+    data:text/html,
+    <meta http-equiv="Content-Security-Policy" content="frame-src *">
+    <iframe src="mailto:arthursonzogni@chromium.org"></iframe>
+  )";
+
+  GURL url(page);
+  WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(
+      "Refused to frame '' because it violates the following Content Security "
+      "Policy directive: \"frame-src *\". Note that '*' matches only URLs with "
+      "network schemes ('http', 'https', 'ws', 'wss'), or URLs whose scheme "
+      "matches `self`'s scheme. mailto:' must be added explicitely.\n");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  console_observer.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSecurityPolicyBrowserTest,
+                       WildcardNotMatchingNonNetworkSchemeRendererSide) {
+  const char* page = R"(
+    data:text/html,
+    <meta http-equiv="Content-Security-Policy" content="script-src *">
+    <script src="mailto:arthursonzogni@chromium.org"></script>
+  )";
+
+  GURL url(page);
+  WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(
+      "Refused to load the script 'mailto:arthursonzogni@chromium.org' because "
+      "it violates the following Content Security Policy directive: "
+      "\"script-src *\". Note that 'script-src-elem' was not explicitly set, "
+      "so 'script-src' is used as a fallback. Note that '*' matches only URLs "
+      "with network schemes ('http', 'https', 'ws', 'wss'), or URLs whose "
+      "scheme matches `self`'s scheme. mailto:' must be added explicitely.\n");
   EXPECT_TRUE(NavigateToURL(shell(), url));
   console_observer.Wait();
 }
@@ -223,6 +264,23 @@ IN_PROC_BROWSER_TEST_F(ContentSecurityPolicyBrowserTest, FileURLs) {
       EXPECT_EQ("got violation", EvalJs(current_frame_host(), "violation"));
     }
   }
+}
+
+// Test that a 'csp' attribute longer than 4096 bytes is ignored.
+IN_PROC_BROWSER_TEST_F(ContentSecurityPolicyBrowserTest, CSPAttributeTooLong) {
+  std::string long_csp_attribute = "script-src 'none' ";
+  long_csp_attribute.resize(4097, 'a');
+  std::string page = "data:text/html,<body><iframe csp=\"" +
+                     long_csp_attribute + "\"></iframe></body>";
+
+  GURL url(page);
+  WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern("'csp' attribute too long*");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  console_observer.Wait();
+
+  EXPECT_EQ(current_frame_host()->child_count(), 1u);
+  EXPECT_FALSE(current_frame_host()->child_at(0)->csp_attribute());
 }
 
 }  // namespace content

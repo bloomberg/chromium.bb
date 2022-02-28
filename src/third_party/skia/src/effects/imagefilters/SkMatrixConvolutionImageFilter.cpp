@@ -16,11 +16,11 @@
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkSpecialImage.h"
 #include "src/core/SkWriteBuffer.h"
-#include "src/gpu/SkGr.h"
 
 #if SK_SUPPORT_GPU
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrTextureProxy.h"
+#include "src/gpu/SkGr.h"
 #include "src/gpu/effects/GrMatrixConvolutionEffect.h"
 #endif
 
@@ -58,7 +58,7 @@ protected:
     sk_sp<SkSpecialImage> onFilterImage(const Context&, SkIPoint* offset) const override;
     SkIRect onFilterNodeBounds(const SkIRect&, const SkMatrix& ctm,
                                MapDirection, const SkIRect* inputRect) const override;
-    bool affectsTransparentBlack() const override;
+    bool onAffectsTransparentBlack() const override;
 
 private:
     friend void ::SkRegisterMatrixConvolutionImageFilterFlattenable();
@@ -76,7 +76,7 @@ private:
     void filterPixels(const SkBitmap& src,
                       SkBitmap* result,
                       SkIVector& offset,
-                      const SkIRect& rect,
+                      SkIRect rect,
                       const SkIRect& bounds) const;
     template <class PixelFetcher>
     void filterPixels(const SkBitmap& src,
@@ -235,9 +235,8 @@ template<class PixelFetcher, bool convolveAlpha>
 void SkMatrixConvolutionImageFilter::filterPixels(const SkBitmap& src,
                                                   SkBitmap* result,
                                                   SkIVector& offset,
-                                                  const SkIRect& r,
+                                                  SkIRect rect,
                                                   const SkIRect& bounds) const {
-    SkIRect rect(r);
     if (!rect.intersect(bounds)) {
         return;
     }
@@ -494,7 +493,7 @@ SkIRect SkMatrixConvolutionImageFilter::onFilterNodeBounds(
     return dst;
 }
 
-bool SkMatrixConvolutionImageFilter::affectsTransparentBlack() const {
+bool SkMatrixConvolutionImageFilter::onAffectsTransparentBlack() const {
     // It seems that the only rational way for repeat sample mode to work is if the caller
     // explicitly restricts the input in which case the input range is explicitly known and
     // specified.

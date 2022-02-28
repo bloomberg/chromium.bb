@@ -6,18 +6,15 @@
 
 #include <utility>
 
-#include "ash/constants/ash_features.h"
-#include "base/containers/contains.h"
+#include "chromeos/components/quick_answers/public/cpp/quick_answers_state.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_metrics.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_utils.h"
-#include "third_party/icu/source/common/unicode/locid.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 namespace {
-
-using network::mojom::URLLoaderFactory;
 
 QuickAnswersClient::ResultLoaderFactoryCallback*
     g_testing_result_factory_callback = nullptr;
@@ -38,55 +35,12 @@ void QuickAnswersClient::SetIntentGeneratorFactoryForTesting(
   g_testing_intent_generator_factory_callback = factory;
 }
 
-bool QuickAnswersClient::IsQuickAnswersAllowedForLocale(
-    const std::string& locale,
-    const std::string& runtime_locale) {
-  // String literals used in some cases in the array because their
-  // constant equivalents don't exist in:
-  // third_party/icu/source/common/unicode/uloc.h
-  const std::string kAllowedLocales[] = {ULOC_CANADA, ULOC_UK, ULOC_US,
-                                         "en_AU",     "en_IN", "en_NZ"};
-  return base::Contains(kAllowedLocales, locale) ||
-         base::Contains(kAllowedLocales, runtime_locale);
-}
+QuickAnswersClient::QuickAnswersClient(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    QuickAnswersDelegate* delegate)
+    : url_loader_factory_(url_loader_factory), delegate_(delegate) {}
 
-QuickAnswersClient::QuickAnswersClient(URLLoaderFactory* url_loader_factory,
-                                       QuickAnswersDelegate* delegate)
-    : url_loader_factory_(url_loader_factory),
-      delegate_(delegate) {
-  if (ash::AssistantState::Get()) {
-    // We observe Assistant state to detect enabling/disabling of Assistant in
-    // settings as well as enabling/disabling of screen context.
-    ash::AssistantState::Get()->AddObserver(this);
-  }
-}
-
-QuickAnswersClient::~QuickAnswersClient() {
-  if (ash::AssistantState::Get())
-    ash::AssistantState::Get()->RemoveObserver(this);
-}
-
-void QuickAnswersClient::OnAssistantFeatureAllowedChanged(
-    chromeos::assistant::AssistantAllowedState state) {
-  assistant_allowed_state_ = state;
-  NotifyEligibilityChanged();
-}
-
-void QuickAnswersClient::OnAssistantSettingsEnabled(bool enabled) {
-  assistant_enabled_ = enabled;
-  NotifyEligibilityChanged();
-}
-
-void QuickAnswersClient::OnAssistantContextEnabled(bool enabled) {
-  assistant_context_enabled_ = enabled;
-  NotifyEligibilityChanged();
-}
-
-void QuickAnswersClient::OnLocaleChanged(const std::string& locale) {
-  locale_supported_ = IsQuickAnswersAllowedForLocale(
-      locale, icu::Locale::getDefault().getName());
-  NotifyEligibilityChanged();
-}
+QuickAnswersClient::~QuickAnswersClient() = default;
 
 void QuickAnswersClient::SendRequestForPreprocessing(
     const QuickAnswersRequest& quick_answers_request) {
@@ -118,21 +72,6 @@ void QuickAnswersClient::OnQuickAnswersDismissed(ResultType result_type,
     RecordActiveImpression(result_type, GetImpressionDuration());
 }
 
-void QuickAnswersClient::NotifyEligibilityChanged() {
-  DCHECK(delegate_);
-
-  bool is_eligible =
-      (chromeos::features::IsQuickAnswersEnabled() && assistant_enabled_ &&
-       locale_supported_ && assistant_context_enabled_ &&
-       assistant_allowed_state_ ==
-           chromeos::assistant::AssistantAllowedState::ALLOWED);
-
-  if (is_eligible_ != is_eligible) {
-    is_eligible_ = is_eligible;
-    delegate_->OnEligibilityChanged(is_eligible);
-  }
-}
-
 std::unique_ptr<ResultLoader> QuickAnswersClient::CreateResultLoader(
     IntentType intent_type) {
   if (g_testing_result_factory_callback)
@@ -153,6 +92,11 @@ std::unique_ptr<IntentGenerator> QuickAnswersClient::CreateIntentGenerator(
 void QuickAnswersClient::OnNetworkError() {
   DCHECK(delegate_);
   delegate_->OnNetworkError();
+}
+
+void QuickAnswersClient::RequestAccessToken(AccessTokenCallback callback) {
+  DCHECK(delegate_);
+  delegate_->RequestAccessToken(std::move(callback));
 }
 
 void QuickAnswersClient::OnQuickAnswerReceived(
@@ -184,7 +128,7 @@ void QuickAnswersClient::IntentGeneratorCallback(
 
   delegate_->OnRequestPreprocessFinished(processed_request);
 
-  if (features::ShouldUseQuickAnswersTextAnnotator()) {
+  if (ash::QuickAnswersState::Get()->ShouldUseQuickAnswersTextAnnotator()) {
     RecordIntentType(intent_info.intent_type);
     if (intent_info.intent_type == IntentType::kUnknown) {
       // Don't fetch answer if no intent is generated.
@@ -210,4 +154,4 @@ base::TimeDelta QuickAnswersClient::GetImpressionDuration() const {
 }
 
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash

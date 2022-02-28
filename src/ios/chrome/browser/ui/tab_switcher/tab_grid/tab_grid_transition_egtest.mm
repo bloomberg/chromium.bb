@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -18,12 +17,12 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
+#import "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::TabGridCloseAllButton;
 using chrome_test_util::TabGridDoneButton;
 using chrome_test_util::TabGridIncognitoTabsPanelButton;
 using chrome_test_util::TabGridNewIncognitoTabButton;
@@ -72,12 +71,6 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 // covered by other tests.  A single programming error may cause multiple tests
 // to fail.
 @implementation TabSwitcherTransitionTestCase
-
-- (AppLaunchConfiguration)appConfigurationForTestCase {
-  AppLaunchConfiguration config;
-  config.features_enabled.push_back(kEnableCloseAllTabsConfirmation);
-  return config;
-}
 
 // Rotate the device back to portrait if needed, since some tests attempt to run
 // in landscape.
@@ -360,47 +353,6 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   SelectTab(tab_title);
   [ChromeEarlGrey
       waitForWebStateContainingText:base::SysNSStringToUTF8(tab_title)];
-}
-
-// Tests navigating through the switcher displays correctly the Done button.
-- (void)testNavigateSwitcherDoneButton {
-  // Rotate the iPhone in lanscape mode in order to see the Done button when the
-  // confirmation action sheet is presented.
-  if (!IsIPadIdiom()) {
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
-                                  error:nil];
-  }
-
-  // Check that the Done button is not greyed out when the tab grid is not
-  // empty.
-  [ChromeEarlGrey showTabSwitcher];
-  [[EarlGrey selectElementWithMatcher:TabGridDoneButton()]
-      assertWithMatcher:grey_accessibilityTrait(UIAccessibilityTraitButton)];
-
-  // Check that the Done button is greyed out when the close all tabs
-  // confirmation is displayed.
-  [[EarlGrey selectElementWithMatcher:TabGridCloseAllButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:TabGridDoneButton()]
-      assertWithMatcher:grey_accessibilityTrait(
-                            UIAccessibilityTraitNotEnabled)];
-
-  // Cancel the close all tabs confirmation & check that the Done button is not
-  // greyed out.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:TabGridDoneButton()]
-      assertWithMatcher:grey_accessibilityTrait(UIAccessibilityTraitButton)];
-
-  // Close all tabs & check that the Done button is greyed out.
-  [ChromeEarlGrey closeAllNormalTabs];
-  [[EarlGrey selectElementWithMatcher:TabGridDoneButton()]
-      assertWithMatcher:grey_accessibilityTrait(
-                            UIAccessibilityTraitNotEnabled)];
-
-  if (!IsIPadIdiom()) {
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait error:nil];
-  }
 }
 
 @end

@@ -15,13 +15,13 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/compiler_specific.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "components/favicon/core/favicon_database.h"
 #include "components/history/core/browser/history_backend_client.h"
@@ -83,8 +83,8 @@ class AutoSubframeVisitsReader : public ExpiringVisitsReader {
 
     base::Time begin_time = db->GetEarlyExpirationThreshold();
     // Advance `end_time` to expire early.
-    base::Time early_end_time = end_time +
-        base::TimeDelta::FromDays(kEarlyExpirationAdvanceDays);
+    base::Time early_end_time =
+        end_time + base::Days(kEarlyExpirationAdvanceDays);
 
     // We don't want to set the early expiration threshold to a time in the
     // future.
@@ -122,8 +122,7 @@ const int kExpirationEmptyDelayMin = 5;
 
 // If the expiration timer is delayed by over an hour, then assume that the
 // machine went to sleep.
-constexpr base::TimeDelta kExpirationSleepWakeupThreshold =
-    base::TimeDelta::FromHours(1);
+constexpr base::TimeDelta kExpirationSleepWakeupThreshold = base::Hours(1);
 
 // The minimum number of hours between checking for old on-demand favicons that
 // should be cleared.
@@ -339,7 +338,7 @@ void ExpireHistoryBackend::ClearOldOnDemandFaviconsIfPossible(
   // in time, since it can be fairly expensive.
   if (expiration_threshold <
       last_on_demand_expiration_threshold_ +
-          base::TimeDelta::FromHours(kClearOnDemandFaviconsIntervalHours)) {
+          base::Hours(kClearOnDemandFaviconsIntervalHours)) {
     return;
   }
 
@@ -429,10 +428,9 @@ void ExpireHistoryBackend::BroadcastNotifications(
     const DeletionTimeRange& time_range,
     absl::optional<std::set<GURL>> restrict_urls) {
   if (!effects->modified_urls.empty()) {
-    notifier_->NotifyURLsModified(effects->modified_urls,
-                                  type == DELETION_EXPIRED
-                                      ? UrlsModifiedReason::kExpired
-                                      : UrlsModifiedReason::kUserDeleted);
+    notifier_->NotifyURLsModified(
+        effects->modified_urls,
+        /*is_from_expiration=*/type == DELETION_EXPIRED);
   }
   if (!effects->deleted_urls.empty() || time_range.IsValid()) {
     notifier_->NotifyURLsDeleted(DeletionInfo(
@@ -475,6 +473,8 @@ void ExpireHistoryBackend::DeleteVisitRelatedInfo(const VisitVector& visits,
 
     // Delete content & context annotations associated with visit.
     main_db_->DeleteAnnotationsForVisit(visit.visit_id);
+
+    notifier_->NotifyVisitDeleted(visit);
   }
 }
 
@@ -575,9 +575,9 @@ void ExpireHistoryBackend::ScheduleExpire() {
     // If work queue is empty, reset the work queue to contain all tasks and
     // schedule next iteration after a longer delay.
     InitWorkQueue();
-    delay = base::TimeDelta::FromMinutes(kExpirationEmptyDelayMin);
+    delay = base::Minutes(kExpirationEmptyDelayMin);
   } else {
-    delay = base::TimeDelta::FromSeconds(kExpirationDelaySec);
+    delay = base::Seconds(kExpirationDelaySec);
   }
 
   expected_expiration_time_ = base::Time::Now() + delay;
@@ -602,7 +602,7 @@ void ExpireHistoryBackend::DoExpireIteration() {
         FROM_HERE,
         base::BindOnce(&ExpireHistoryBackend::ScheduleExpire,
                        weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMinutes(kExpirationEmptyDelayMin));
+        base::Minutes(kExpirationEmptyDelayMin));
     return;
   }
 
@@ -619,7 +619,7 @@ void ExpireHistoryBackend::DoExpireIteration() {
     // Otherwise do a final clean-up - remove old favicons not bound to visits.
     ClearOldOnDemandFaviconsIfPossible(
         base::Time::Now() -
-        base::TimeDelta::FromDays(internal::kOnDemandFaviconIsOldAfterDays));
+        base::Days(internal::kOnDemandFaviconIsOldAfterDays));
   }
 
   ScheduleExpire();

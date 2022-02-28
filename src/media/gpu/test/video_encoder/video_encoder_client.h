@@ -11,10 +11,10 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/threading/thread.h"
+#include "media/base/video_bitrate_allocation.h"
 #include "media/gpu/test/bitstream_helpers.h"
 #include "media/gpu/test/video_encoder/video_encoder.h"
 #include "media/video/video_encode_accelerator.h"
@@ -35,23 +35,30 @@ class AlignedDataHelper;
 // TODO(dstaessens): Add extra parameters (e.g. h264 output level)
 struct VideoEncoderClientConfig {
   static constexpr uint32_t kDefaultBitrate = 200000;
-  VideoEncoderClientConfig(const Video* video,
-                           VideoCodecProfile output_profile,
-                           size_t num_temporal_layers,
-                           uint32_t bitrate);
+  VideoEncoderClientConfig(
+      const Video* video,
+      VideoCodecProfile output_profile,
+      const std::vector<VideoEncodeAccelerator::Config::SpatialLayer>&
+          spatial_layers,
+      const media::VideoBitrateAllocation& bitrate,
+      bool reverse);
   VideoEncoderClientConfig(const VideoEncoderClientConfig&);
+  ~VideoEncoderClientConfig();
 
   // The output profile to be used.
   VideoCodecProfile output_profile = VideoCodecProfile::H264PROFILE_MAIN;
   // The resolution output by VideoEncoderClient.
   gfx::Size output_resolution;
-  // The number of temporal layers of the output stream.
+  // The number of temporal/spatial layers of the output stream.
   size_t num_temporal_layers = 1u;
+  size_t num_spatial_layers = 1u;
+  // The spatial layers for SVC stream, it's empty for simple stream.
+  std::vector<VideoEncodeAccelerator::Config::SpatialLayer> spatial_layers;
   // The maximum number of bitstream buffer encodes that can be requested
   // without waiting for the result of the previous encodes requests.
   size_t max_outstanding_encode_requests = 1;
   // The desired bitrate in bits/second.
-  uint32_t bitrate = kDefaultBitrate;
+  media::VideoBitrateAllocation bitrate;
   // The desired framerate in frames/second.
   uint32_t framerate = 30.0;
   // The interval of calling VideoEncodeAccelerator::Encode(). If this is
@@ -65,22 +72,29 @@ struct VideoEncoderClientConfig {
   // The storage type of the input VideoFrames.
   VideoEncodeAccelerator::Config::StorageType input_storage_type =
       VideoEncodeAccelerator::Config::StorageType::kShmem;
+  // True if the video should play backwards at reaching the end of video.
+  // Otherwise the video loops. See the comment in AlignedDataHelper for detail.
+  const bool reverse = false;
 };
 
 struct VideoEncoderStats {
   VideoEncoderStats();
   VideoEncoderStats(const VideoEncoderStats&);
   ~VideoEncoderStats();
-  VideoEncoderStats(uint32_t framerate, size_t num_temporal_layers);
+  VideoEncoderStats(uint32_t framerate,
+                    size_t num_temporal_layers,
+                    size_t num_spatial_layers);
   uint32_t Bitrate() const;
   void Reset();
 
   uint32_t framerate = 0;
   size_t total_num_encoded_frames = 0;
   size_t total_encoded_frames_size = 0;
-  // Filled in temporal layer encoding and codec is vp9.
-  std::vector<size_t> num_encoded_frames_per_layer;
-  std::vector<size_t> encoded_frames_size_per_layer;
+  // Filled in spatial/temporal layer encoding and codec is vp9.
+  std::vector<std::vector<size_t>> num_encoded_frames_per_layer;
+  std::vector<std::vector<size_t>> encoded_frames_size_per_layer;
+  size_t num_spatial_layers = 0;
+  size_t num_temporal_layers = 0;
 };
 
 // The video encoder client is responsible for the communication between the
@@ -248,6 +262,9 @@ class VideoEncoderClient : public VideoEncodeAccelerator::Client {
   // A counter to track what frame is represented by a bitstream returned on
   // BitstreamBufferReady().
   size_t frame_index_ = 0;
+
+  // The current top spatial layer index.
+  uint8_t current_top_spatial_index_ = 0;
 
   // Force a key frame on next Encode(), only accessed on the
   // |encoder_client_thread_|.

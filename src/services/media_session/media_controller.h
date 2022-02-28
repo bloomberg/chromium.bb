@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -31,6 +32,10 @@ class MediaController : public mojom::MediaController,
                         public mojom::MediaSessionObserver {
  public:
   MediaController();
+
+  MediaController(const MediaController&) = delete;
+  MediaController& operator=(const MediaController&) = delete;
+
   ~MediaController() override;
 
   // mojom::MediaController overrides.
@@ -57,6 +62,7 @@ class MediaController : public mojom::MediaController,
   void ToggleCamera() override;
   void HangUp() override;
   void Raise() override;
+  void SetMute(bool mute) override;
 
   // mojom::MediaSessionObserver overrides.
   void MediaSessionInfoChanged(
@@ -107,7 +113,7 @@ class MediaController : public mojom::MediaController,
       session_images_;
 
   // Raw pointer to the media session we are controlling.
-  AudioFocusRequest* session_ = nullptr;
+  raw_ptr<AudioFocusRequest> session_ = nullptr;
 
   // Observers that are observing |this|.
   mojo::RemoteSet<mojom::MediaControllerObserver> observers_;
@@ -120,8 +126,6 @@ class MediaController : public mojom::MediaController,
 
   // Protects |session_| as it is not thread safe.
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(MediaController);
 };
 
 }  // namespace media_session

@@ -13,7 +13,7 @@
 
 #include "base/at_exit.h"
 #include "base/check.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/tracing_buildflags.h"
 #include "build/build_config.h"
 
@@ -45,6 +45,10 @@ class TestSuite {
 #if defined(OS_WIN)
   TestSuite(int argc, wchar_t** argv);
 #endif  // defined(OS_WIN)
+
+  TestSuite(const TestSuite&) = delete;
+  TestSuite& operator=(const TestSuite&) = delete;
+
   virtual ~TestSuite();
 
   int Run();
@@ -95,15 +99,13 @@ class TestSuite {
 
   bool initialized_command_line_ = false;
 
-  XmlUnitTestResultPrinter* printer_ = nullptr;
+  raw_ptr<XmlUnitTestResultPrinter> printer_ = nullptr;
 
   std::unique_ptr<logging::ScopedLogAssertHandler> assert_handler_;
 
   bool check_for_leaked_globals_ = true;
   bool check_for_thread_and_process_priority_ = true;
   bool is_initialized_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestSuite);
 };
 
 }  // namespace base

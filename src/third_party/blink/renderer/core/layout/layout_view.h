@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_cache.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_quote.h"
 #include "third_party/blink/renderer/core/layout/layout_state.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/graphics/overlay_scrollbar_clip_behavior.h"
@@ -64,6 +65,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
  public:
   explicit LayoutView(Document*);
   ~LayoutView() override;
+  void Trace(Visitor*) const override;
 
   void WillBeDestroyed() override;
 
@@ -116,25 +118,23 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   // - checks for null LocalFrameView
   // - Replaces logical height with PageLogicalHeight() if using printing layout
   // - scrollbar exclusion is compatible with root layer scrolling
-  IntSize GetLayoutSize(IncludeScrollbarsInRect = kExcludeScrollbars) const;
+  gfx::Size GetLayoutSize(IncludeScrollbarsInRect = kExcludeScrollbars) const;
 
   int ViewHeight(
       IncludeScrollbarsInRect scrollbar_inclusion = kExcludeScrollbars) const {
     NOT_DESTROYED();
-    return GetLayoutSize(scrollbar_inclusion).Height();
+    return GetLayoutSize(scrollbar_inclusion).height();
   }
   int ViewWidth(
       IncludeScrollbarsInRect scrollbar_inclusion = kExcludeScrollbars) const {
     NOT_DESTROYED();
-    return GetLayoutSize(scrollbar_inclusion).Width();
+    return GetLayoutSize(scrollbar_inclusion).width();
   }
 
   int ViewLogicalWidth(IncludeScrollbarsInRect = kExcludeScrollbars) const;
   int ViewLogicalHeight(IncludeScrollbarsInRect = kExcludeScrollbars) const;
 
   LayoutUnit ViewLogicalHeightForPercentages() const;
-
-  float ZoomFactor() const;
 
   LocalFrameView* GetFrameView() const {
     NOT_DESTROYED();
@@ -212,7 +212,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   ViewFragmentationContext* FragmentationContext() const {
     NOT_DESTROYED();
-    return fragmentation_context_.get();
+    return fragmentation_context_;
   }
 
   LayoutUnit PageLogicalHeight() const {
@@ -318,7 +318,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   // Returns the coordinates of find-in-page scrollbar tickmarks.  These come
   // from DocumentMarkerController.
-  Vector<IntRect> GetTickmarks() const;
+  Vector<gfx::Rect> GetTickmarks() const;
   bool HasTickmarks() const;
 
   RecalcLayoutOverflowResult RecalcLayoutOverflow() final;
@@ -377,7 +377,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   bool UpdateLogicalWidthAndColumnWidth() override;
 
-  UntracedMember<LocalFrameView> frame_view_;
+  Member<LocalFrameView> frame_view_;
 
   // The page logical height.
   // This is only used during printing to split the content into pages.
@@ -390,19 +390,19 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   // See the class comment for more details.
   LayoutState* layout_state_;
 
-  std::unique_ptr<ViewFragmentationContext> fragmentation_context_;
+  Member<ViewFragmentationContext> fragmentation_context_;
   std::unique_ptr<NamedPagesMapper> named_pages_mapper_;
-  std::unique_ptr<PaintLayerCompositor> compositor_;
+  Member<PaintLayerCompositor> compositor_;
   scoped_refptr<IntervalArena> interval_arena_;
 
-  LayoutQuote* layout_quote_head_;
+  Member<LayoutQuote> layout_quote_head_;
   unsigned layout_counter_count_ = 0;
   unsigned layout_list_item_count_ = 0;
   bool needs_marker_counter_update_ = false;
 
   unsigned hit_test_count_;
   unsigned hit_test_cache_hits_;
-  Persistent<HitTestCache> hit_test_cache_;
+  Member<HitTestCache> hit_test_cache_;
 
   // FrameViewAutoSizeInfo controls scrollbar appearance manually rather than
   // relying on layout. These members are used to override the ScrollbarModes

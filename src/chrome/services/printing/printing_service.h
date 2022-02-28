@@ -5,7 +5,6 @@
 #ifndef CHROME_SERVICES_PRINTING_PRINTING_SERVICE_H_
 #define CHROME_SERVICES_PRINTING_PRINTING_SERVICE_H_
 
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/services/printing/public/mojom/printing_service.mojom.h"
@@ -18,6 +17,10 @@ class PrintingService : public mojom::PrintingService {
  public:
   explicit PrintingService(
       mojo::PendingReceiver<mojom::PrintingService> receiver);
+
+  PrintingService(const PrintingService&) = delete;
+  PrintingService& operator=(const PrintingService&) = delete;
+
   ~PrintingService() override;
 
  private:
@@ -26,9 +29,11 @@ class PrintingService : public mojom::PrintingService {
       mojo::PendingReceiver<mojom::PdfNupConverter> receiver) override;
   void BindPdfToPwgRasterConverter(
       mojo::PendingReceiver<mojom::PdfToPwgRasterConverter> receiver) override;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   void BindPdfFlattener(
       mojo::PendingReceiver<mojom::PdfFlattener> receiver) override;
+#endif
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void BindPdfThumbnailer(
       mojo::PendingReceiver<mojom::PdfThumbnailer> receiver) override;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -38,8 +43,6 @@ class PrintingService : public mojom::PrintingService {
 #endif
 
   mojo::Receiver<mojom::PrintingService> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintingService);
 };
 
 }  // namespace printing

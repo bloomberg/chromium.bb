@@ -4,6 +4,7 @@
 
 #include "src/execution/stack-guard.h"
 
+#include "src/baseline/baseline-batch-compiler.h"
 #include "src/compiler-dispatcher/optimizing-compile-dispatcher.h"
 #include "src/execution/interrupts-scope.h"
 #include "src/execution/isolate.h"
@@ -297,12 +298,12 @@ Object StackGuard::HandleInterrupts() {
 
   if (TestAndClear(&interrupt_flags, LOG_WASM_CODE)) {
     TRACE_EVENT0("v8.wasm", "V8.LogCode");
-    isolate_->wasm_engine()->LogOutstandingCodesForIsolate(isolate_);
+    wasm::GetWasmEngine()->LogOutstandingCodesForIsolate(isolate_);
   }
 
   if (TestAndClear(&interrupt_flags, WASM_CODE_GC)) {
     TRACE_EVENT0("v8.wasm", "V8.WasmCodeGC");
-    isolate_->wasm_engine()->ReportLiveCodeFromStackForGC(isolate_);
+    wasm::GetWasmEngine()->ReportLiveCodeFromStackForGC(isolate_);
   }
 #endif  // V8_ENABLE_WEBASSEMBLY
 
@@ -317,6 +318,12 @@ Object StackGuard::HandleInterrupts() {
                  "V8.InstallOptimizedFunctions");
     DCHECK(isolate_->concurrent_recompilation_enabled());
     isolate_->optimizing_compile_dispatcher()->InstallOptimizedFunctions();
+  }
+
+  if (TestAndClear(&interrupt_flags, INSTALL_BASELINE_CODE)) {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("v8.compile"),
+                 "V8.FinalizeBaselineConcurrentCompilation");
+    isolate_->baseline_batch_compiler()->InstallBatch();
   }
 
   if (TestAndClear(&interrupt_flags, API_INTERRUPT)) {

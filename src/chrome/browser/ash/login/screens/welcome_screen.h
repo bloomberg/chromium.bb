@@ -10,7 +10,6 @@
 
 #include "ash/public/cpp/locale_update_controller.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -25,7 +24,7 @@
 #include "chrome/browser/ash/login/wizard_context.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 
 namespace ash {
 
@@ -60,17 +59,27 @@ class WelcomeScreen : public BaseScreen,
 
   class Observer {
    public:
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
 
     // Called when language list is reloaded.
     virtual void OnLanguageListReloaded() = 0;
   };
 
-  enum class Result { NEXT, SETUP_DEMO, ENABLE_DEBUGGING, START_OS_INSTALL };
+  enum class Result {
+    NEXT,
+    NEXT_OS_INSTALL,
+    SETUP_DEMO,
+    ENABLE_DEBUGGING,
+    QUICK_START
+  };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
 
   WelcomeScreen(WelcomeView* view, const ScreenExitCallback& exit_callback);
+
+  WelcomeScreen(const WelcomeScreen&) = delete;
+  WelcomeScreen& operator=(const WelcomeScreen&) = delete;
+
   ~WelcomeScreen() override;
 
   static std::string GetResultString(Result result);
@@ -82,7 +91,7 @@ class WelcomeScreen : public BaseScreen,
   const std::string& language_list_locale() const {
     return language_list_locale_;
   }
-  const base::ListValue* language_list() const { return language_list_.get(); }
+  const base::Value& language_list() const { return language_list_; }
 
   void UpdateLanguageList();
 
@@ -138,8 +147,6 @@ class WelcomeScreen : public BaseScreen,
   void OnSetupDemoMode();
   // Proceed with Enable debugging features flow.
   void OnEnableDebugging();
-  // Proceed with OS installation flow.
-  void OnStartOsInstall();
 
   // Async callback after ReloadResourceBundle(locale) completed.
   void OnLanguageChangedCallback(
@@ -178,7 +185,7 @@ class WelcomeScreen : public BaseScreen,
   // Creation of language list happens on Blocking Pool, so we cache
   // resolved data.
   std::string language_list_locale_;
-  std::unique_ptr<base::ListValue> language_list_;
+  base::Value language_list_{base::Value::Type::LIST};
 
   // The exact language code selected by user in the menu.
   std::string selected_language_code_;
@@ -186,8 +193,6 @@ class WelcomeScreen : public BaseScreen,
   base::ObserverList<Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<WelcomeScreen> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WelcomeScreen);
 };
 
 }  // namespace ash
@@ -196,6 +201,12 @@ class WelcomeScreen : public BaseScreen,
 // source migration is finished.
 namespace chromeos {
 using ::ash::WelcomeScreen;
+}
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::WelcomeScreen;
 }
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_WELCOME_SCREEN_H_

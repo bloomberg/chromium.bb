@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
@@ -80,7 +81,7 @@ class CC_EXPORT PictureLayerImpl
   const PaintWorkletRecordMap& GetPaintWorkletRecords() const override;
   bool IsDirectlyCompositedImage() const override;
   bool ScrollInteractionInProgress() const override;
-  bool DidCheckerboardQuad() const override;
+  bool CurrentScrollCheckerboardsDueToNoRecording() const override;
 
   // ImageAnimationController::AnimationDriver overrides.
   bool ShouldAnimate(PaintImage::Id paint_image_id) const override;
@@ -106,10 +107,6 @@ class CC_EXPORT PictureLayerImpl
                              gfx::SizeF* resource_uv_size) const override;
 
   void SetNearestNeighbor(bool nearest_neighbor);
-
-  void SetDidCheckerboardQuad(bool did_checkerboard_quad) {
-    did_checkerboard_quad_ = did_checkerboard_quad;
-  }
 
   void SetDirectlyCompositedImageSize(absl::optional<gfx::Size>);
 
@@ -180,10 +177,12 @@ class CC_EXPORT PictureLayerImpl
   }
 
  protected:
+  friend class RasterizeAndRecordBenchmarkImpl;
+
   PictureLayerImpl(LayerTreeImpl* tree_impl, int id);
   PictureLayerTiling* AddTiling(const gfx::AxisTransform2d& contents_transform);
   void RemoveAllTilings();
-  bool CanRecreateHighResTilingForLCDTextAndRasterTranslation(
+  bool CanRecreateHighResTilingForLCDTextAndRasterTransform(
       const PictureLayerTiling& high_res) const;
   void UpdateTilingsForRasterScaleAndTranslation(bool adjusted_raster_scale);
   void AddLowResolutionTilingIfNeeded();
@@ -244,7 +243,7 @@ class CC_EXPORT PictureLayerImpl
   // will change transform.
   bool HasWillChangeTransformHint() const;
 
-  PictureLayerImpl* twin_layer_ = nullptr;
+  raw_ptr<PictureLayerImpl> twin_layer_ = nullptr;
 
   std::unique_ptr<PictureLayerTilingSet> tilings_ =
       CreatePictureLayerTilingSet();
@@ -290,9 +289,6 @@ class CC_EXPORT PictureLayerImpl
   bool only_used_low_res_last_append_quads_ : 1;
 
   bool nearest_neighbor_ : 1;
-
-  // Whether the layer did not have a draw quad during last AppendQuads call.
-  bool did_checkerboard_quad_ : 1;
 
   // This is set by UpdateRasterSource() on change of raster source size. It's
   // used to recalculate raster scale for will-chagne:transform. It's reset to
