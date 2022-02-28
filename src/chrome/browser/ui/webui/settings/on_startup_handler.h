@@ -7,7 +7,8 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "extensions/browser/extension_registry.h"
@@ -27,6 +28,10 @@ class OnStartupHandler : public SettingsPageUIHandler,
   static const char kOnStartupNtpExtensionEventName[];
 
   explicit OnStartupHandler(Profile* profile);
+
+  OnStartupHandler(const OnStartupHandler&) = delete;
+  OnStartupHandler& operator=(const OnStartupHandler&) = delete;
+
   ~OnStartupHandler() override;
 
   // SettingsPageUIHandler:
@@ -63,9 +68,7 @@ class OnStartupHandler : public SettingsPageUIHandler,
                           extensions::ExtensionRegistryObserver>
       extension_registry_observation_{this};
 
-  Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(OnStartupHandler);
+  raw_ptr<Profile> profile_;
 };
 
 }  // namespace settings

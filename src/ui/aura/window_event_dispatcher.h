@@ -10,8 +10,9 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_multi_source_observation.h"
@@ -59,6 +60,10 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
                                           public EnvObserver {
  public:
   explicit WindowEventDispatcher(WindowTreeHost* host);
+
+  WindowEventDispatcher(const WindowEventDispatcher&) = delete;
+  WindowEventDispatcher& operator=(const WindowEventDispatcher&) = delete;
+
   ~WindowEventDispatcher() override;
 
   // Stops dispatching/synthesizing mouse events.
@@ -153,12 +158,14 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   class ObserverNotifier {
    public:
     ObserverNotifier(WindowEventDispatcher* dispatcher, const ui::Event& event);
+
+    ObserverNotifier(const ObserverNotifier&) = delete;
+    ObserverNotifier& operator=(const ObserverNotifier&) = delete;
+
     ~ObserverNotifier();
 
    private:
-    WindowEventDispatcher* dispatcher_;
-
-    DISALLOW_COPY_AND_ASSIGN(ObserverNotifier);
+    raw_ptr<WindowEventDispatcher> dispatcher_;
   };
 
   // The parameter for OnWindowHidden() to specify why window is hidden.
@@ -284,13 +291,13 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   ui::EventDispatchDetails PreDispatchKeyEvent(Window* target,
                                                ui::KeyEvent* event);
 
-  WindowTreeHost* host_;
+  raw_ptr<WindowTreeHost> host_;
 
-  Window* mouse_pressed_handler_ = nullptr;
-  Window* mouse_moved_handler_ = nullptr;
-  Window* touchpad_pinch_handler_ = nullptr;
-  Window* event_dispatch_target_ = nullptr;
-  Window* old_dispatch_target_ = nullptr;
+  raw_ptr<Window> mouse_pressed_handler_ = nullptr;
+  raw_ptr<Window> mouse_moved_handler_ = nullptr;
+  raw_ptr<Window> touchpad_pinch_handler_ = nullptr;
+  raw_ptr<Window> event_dispatch_target_ = nullptr;
+  raw_ptr<Window> old_dispatch_target_ = nullptr;
 
   ui::FractionOfTimeWithoutUserInputRecorder
       fraction_of_time_without_user_input_recorder_;
@@ -311,7 +318,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   std::unique_ptr<ui::LocatedEvent> held_repostable_event_;
 
   // Set when dispatching a held event.
-  ui::LocatedEvent* dispatching_held_event_ = nullptr;
+  raw_ptr<ui::LocatedEvent> dispatching_held_event_ = nullptr;
 
   base::ScopedMultiSourceObservation<aura::Window, aura::WindowObserver>
       observation_manager_{this};
@@ -336,8 +343,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
 
   // Used to schedule DispatchHeldEvents() when |move_hold_count_| goes to 0.
   base::WeakPtrFactory<WindowEventDispatcher> held_event_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WindowEventDispatcher);
 };
 
 }  // namespace aura

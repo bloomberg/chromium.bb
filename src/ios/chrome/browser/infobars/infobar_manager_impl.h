@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_INFOBARS_INFOBAR_MANAGER_IMPL_H_
 #define IOS_CHROME_BROWSER_INFOBARS_INFOBAR_MANAGER_IMPL_H_
 
-#include "base/macros.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
@@ -20,6 +19,9 @@ class InfoBarManagerImpl : public infobars::InfoBarManager,
                            public web::WebStateObserver,
                            public web::WebStateUserData<InfoBarManagerImpl> {
  public:
+  InfoBarManagerImpl(const InfoBarManagerImpl&) = delete;
+  InfoBarManagerImpl& operator=(const InfoBarManagerImpl&) = delete;
+
   ~InfoBarManagerImpl() override;
 
   // Returns the |web_state_| tied to this InfobarManager.
@@ -46,8 +48,6 @@ class InfoBarManagerImpl : public infobars::InfoBarManager,
   web::WebState* web_state_ = nullptr;
 
   WEB_STATE_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(InfoBarManagerImpl);
 };
 
 #endif  // IOS_CHROME_BROWSER_INFOBARS_INFOBAR_MANAGER_IMPL_H_

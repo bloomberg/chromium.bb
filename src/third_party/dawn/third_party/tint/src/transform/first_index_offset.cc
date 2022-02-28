@@ -25,6 +25,7 @@
 #include "src/sem/struct.h"
 #include "src/sem/variable.h"
 
+TINT_INSTANTIATE_TYPEINFO(tint::transform::FirstIndexOffset);
 TINT_INSTANTIATE_TYPEINFO(tint::transform::FirstIndexOffset::BindingPoint);
 TINT_INSTANTIATE_TYPEINFO(tint::transform::FirstIndexOffset::Data);
 
@@ -57,17 +58,16 @@ FirstIndexOffset::Data::~Data() = default;
 FirstIndexOffset::FirstIndexOffset() = default;
 FirstIndexOffset::~FirstIndexOffset() = default;
 
-Output FirstIndexOffset::Run(const Program* in, const DataMap& data) {
+void FirstIndexOffset::Run(CloneContext& ctx,
+                           const DataMap& inputs,
+                           DataMap& outputs) {
   // Get the uniform buffer binding point
   uint32_t ub_binding = binding_;
   uint32_t ub_group = group_;
-  if (auto* binding_point = data.Get<BindingPoint>()) {
+  if (auto* binding_point = inputs.Get<BindingPoint>()) {
     ub_binding = binding_point->binding;
     ub_group = binding_point->group;
   }
-
-  ProgramBuilder out;
-  CloneContext ctx(&out, in);
 
   // Map of builtin usages
   std::unordered_map<const sem::Variable*, const char*> builtin_vars;
@@ -78,11 +78,11 @@ Output FirstIndexOffset::Run(const Program* in, const DataMap& data) {
 
   // Traverse the AST scanning for builtin accesses via variables (includes
   // parameters) or structure member accesses.
-  for (auto* node : in->ASTNodes().Objects()) {
+  for (auto* node : ctx.src->ASTNodes().Objects()) {
     if (auto* var = node->As<ast::Variable>()) {
-      for (ast::Decoration* dec : var->decorations()) {
+      for (auto* dec : var->decorations) {
         if (auto* builtin_dec = dec->As<ast::BuiltinDecoration>()) {
-          ast::Builtin builtin = builtin_dec->value();
+          ast::Builtin builtin = builtin_dec->builtin;
           if (builtin == ast::Builtin::kVertexIndex) {
             auto* sem_var = ctx.src->Sem().Get(var);
             builtin_vars.emplace(sem_var, kFirstVertexName);
@@ -97,9 +97,9 @@ Output FirstIndexOffset::Run(const Program* in, const DataMap& data) {
       }
     }
     if (auto* member = node->As<ast::StructMember>()) {
-      for (ast::Decoration* dec : member->decorations()) {
+      for (auto* dec : member->decorations) {
         if (auto* builtin_dec = dec->As<ast::BuiltinDecoration>()) {
-          ast::Builtin builtin = builtin_dec->value();
+          ast::Builtin builtin = builtin_dec->builtin;
           if (builtin == ast::Builtin::kVertexIndex) {
             auto* sem_mem = ctx.src->Sem().Get(member);
             builtin_members.emplace(sem_mem, kFirstVertexName);
@@ -133,50 +133,49 @@ Output FirstIndexOffset::Run(const Program* in, const DataMap& data) {
       instance_index_offset = offset;
       offset += 4;
     }
-    auto* struct_type =
+    auto* struct_ =
         ctx.dst->Structure(ctx.dst->Sym(), std::move(members),
                            {ctx.dst->create<ast::StructBlockDecoration>()});
 
     // Create a global to hold the uniform buffer
     Symbol buffer_name = ctx.dst->Sym();
-    ctx.dst->Global(buffer_name, struct_type, ast::StorageClass::kUniform,
-                    nullptr,
+    ctx.dst->Global(buffer_name, ctx.dst->ty.Of(struct_),
+                    ast::StorageClass::kUniform, nullptr,
                     ast::DecorationList{
                         ctx.dst->create<ast::BindingDecoration>(ub_binding),
                         ctx.dst->create<ast::GroupDecoration>(ub_group),
                     });
 
     // Fix up all references to the builtins with the offsets
-    ctx.ReplaceAll([=, &ctx](ast::Expression* expr) -> ast::Expression* {
-      if (auto* sem = ctx.src->Sem().Get(expr)) {
-        if (auto* user = sem->As<sem::VariableUser>()) {
-          auto it = builtin_vars.find(user->Variable());
-          if (it != builtin_vars.end()) {
-            return ctx.dst->Add(
-                ctx.CloneWithoutTransform(expr),
-                ctx.dst->MemberAccessor(buffer_name, it->second));
+    ctx.ReplaceAll(
+        [=, &ctx](const ast::Expression* expr) -> const ast::Expression* {
+          if (auto* sem = ctx.src->Sem().Get(expr)) {
+            if (auto* user = sem->As<sem::VariableUser>()) {
+              auto it = builtin_vars.find(user->Variable());
+              if (it != builtin_vars.end()) {
+                return ctx.dst->Add(
+                    ctx.CloneWithoutTransform(expr),
+                    ctx.dst->MemberAccessor(buffer_name, it->second));
+              }
+            }
+            if (auto* access = sem->As<sem::StructMemberAccess>()) {
+              auto it = builtin_members.find(access->Member());
+              if (it != builtin_members.end()) {
+                return ctx.dst->Add(
+                    ctx.CloneWithoutTransform(expr),
+                    ctx.dst->MemberAccessor(buffer_name, it->second));
+              }
+            }
           }
-        }
-        if (auto* access = sem->As<sem::StructMemberAccess>()) {
-          auto it = builtin_members.find(access->Member());
-          if (it != builtin_members.end()) {
-            return ctx.dst->Add(
-                ctx.CloneWithoutTransform(expr),
-                ctx.dst->MemberAccessor(buffer_name, it->second));
-          }
-        }
-      }
-      // Not interested in this experssion. Just clone.
-      return nullptr;
-    });
+          // Not interested in this experssion. Just clone.
+          return nullptr;
+        });
   }
 
   ctx.Clone();
 
-  return Output(
-      Program(std::move(out)),
-      std::make_unique<Data>(has_vertex_index, has_instance_index,
-                             vertex_index_offset, instance_index_offset));
+  outputs.Add<Data>(has_vertex_index, has_instance_index, vertex_index_offset,
+                    instance_index_offset);
 }
 
 }  // namespace transform

@@ -31,10 +31,11 @@ n * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_FETCH_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_FETCH_CONTEXT_H_
 
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-blink-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/mojom/conversions/conversions.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/content_security_notifier.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink-forward.h"
@@ -65,6 +66,17 @@ class WebContentSettingsClient;
 class CORE_EXPORT FrameFetchContext final : public BaseFetchContext,
                                             public LoadingBehaviorObserver {
  public:
+  // Returns true if execution of scripts from the url are allowed. Compared to
+  // AllowScriptFromSource(), this method does not generate any
+  // notification to the `WebContentSettingsClient` that the execution of the
+  // script was blocked. This method should be called only when there is a need
+  // to check the settings, and where blocked setting doesn't really imply that
+  // JavaScript was blocked from being executed.
+  static bool AllowScriptFromSourceWithoutNotifying(
+      const KURL& url,
+      WebContentSettingsClient* settings_client,
+      Settings* settings);
+
   static ResourceFetcher* CreateFetcherForCommittedDocument(DocumentLoader&,
                                                             Document&);
   FrameFetchContext(DocumentLoader& document_loader,
@@ -134,6 +146,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext,
 
   mojom::blink::ContentSecurityNotifier& GetContentSecurityNotifier() const;
 
+  ExecutionContext* GetExecutionContext() const override;
+
  private:
   friend class FrameFetchContextTest;
 
@@ -175,13 +189,13 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext,
                                                  const KURL&) const override;
 
   const KURL& Url() const override;
-  const SecurityOrigin* GetParentSecurityOrigin() const override;
   ContentSecurityPolicy* GetContentSecurityPolicy() const override;
   void AddConsoleMessage(ConsoleMessage*) const override;
 
   WebContentSettingsClient* GetContentSettingsClient() const;
   Settings* GetSettings() const;
   String GetUserAgent() const;
+  String GetReducedUserAgent() const;
   absl::optional<UserAgentMetadata> GetUserAgentMetadata() const;
   const PermissionsPolicy* GetPermissionsPolicy() const override;
   const ClientHintsPreferences GetClientHintsPreferences() const;
@@ -196,17 +210,11 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext,
                             const ClientHintsPreferences&) const;
   void SetFirstPartyCookie(ResourceRequest&);
 
-  // Returns true if execution of scripts from the url are allowed. Compared to
-  // AllowScriptFromSource(), this method does not generate any
-  // notification to the |WebContentSettingsClient| that the execution of the
-  // script was blocked. This method should be called only when there is a need
-  // to check the settings, and where blocked setting doesn't really imply that
-  // JavaScript was blocked from being executed.
-  bool AllowScriptFromSourceWithoutNotifying(const KURL&) const;
-
   // Returns true if the origin of |url| is same as the origin of the top level
   // frame's main resource.
   bool IsFirstPartyOrigin(const KURL& url) const;
+
+  void RegisterConversion(mojom::blink::ConversionPtr conversion) const;
 
   CoreProbeSink* Probe() const;
 

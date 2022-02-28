@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -45,6 +45,11 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
  public:
   explicit ShellContentBrowserClient(
       ShellBrowserMainDelegate* browser_main_delegate);
+
+  ShellContentBrowserClient(const ShellContentBrowserClient&) = delete;
+  ShellContentBrowserClient& operator=(const ShellContentBrowserClient&) =
+      delete;
+
   ~ShellContentBrowserClient() override;
 
   // Returns the single instance.
@@ -55,7 +60,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
 
   // content::ContentBrowserClient overrides.
   std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
-      const content::MainFunctionParams& parameters) override;
+      content::MainFunctionParams parameters) override;
   void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
   bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
                                const GURL& site_url) override;
@@ -76,6 +81,10 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       service_manager::BinderRegistry* registry,
       blink::AssociatedInterfaceRegistry* associated_registry,
       content::RenderProcessHost* render_process_host) override;
+  bool BindAssociatedReceiverFromFrame(
+      content::RenderFrameHost* render_frame_host,
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle* handle) override;
   std::vector<std::unique_ptr<content::NavigationThrottle>>
   CreateThrottlesForNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -111,11 +120,12 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       network::mojom::URLLoaderFactoryOverridePtr* factory_override) override;
   bool HandleExternalProtocol(
       const GURL& url,
-      content::WebContents::OnceGetter web_contents_getter,
+      content::WebContents::Getter web_contents_getter,
       int child_id,
       int frame_tree_node_id,
       content::NavigationUIData* navigation_data,
       bool is_main_frame,
+      network::mojom::WebSandboxFlags sandbox_flags,
       ui::PageTransition page_transition,
       bool has_user_gesture,
       const absl::optional<url::Origin>& initiating_origin,
@@ -132,7 +142,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
  protected:
   // Subclasses may wish to provide their own ShellBrowserMainParts.
   virtual std::unique_ptr<ShellBrowserMainParts> CreateShellBrowserMainParts(
-      const content::MainFunctionParams& parameters,
+      content::MainFunctionParams parameters,
       ShellBrowserMainDelegate* browser_main_delegate);
 
  private:
@@ -143,12 +153,10 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
   const Extension* GetExtension(content::SiteInstance* site_instance);
 
   // Owned by content::BrowserMainLoop.
-  ShellBrowserMainParts* browser_main_parts_;
+  raw_ptr<ShellBrowserMainParts> browser_main_parts_;
 
   // Owned by ShellBrowserMainParts.
-  ShellBrowserMainDelegate* browser_main_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellContentBrowserClient);
+  raw_ptr<ShellBrowserMainDelegate> browser_main_delegate_;
 };
 
 }  // namespace extensions

@@ -10,6 +10,8 @@ Example usage:
     -u https://chromium.googlesource.com/chromium/src/+log
 """
 
+from __future__ import print_function
+
 import argparse
 import json
 import logging
@@ -17,8 +19,13 @@ import os
 import sys
 import tarfile
 import time
-import urllib
-import urlparse
+
+try:
+  from urllib import urlencode
+  import urlparse
+except ImportError:  # pragma: no cover
+  from urllib.parse import urlencode
+  import urllib.parse as urlparse
 
 DEPOT_TOOLS = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
@@ -35,7 +42,7 @@ def reparse_url(parsed_url, query_params):
       path=parsed_url.path,
       params=parsed_url.params,
       fragment=parsed_url.fragment,
-      query=urllib.urlencode(query_params, doseq=True))
+      query=urlencode(query_params, doseq=True))
 
 
 def gitiles_get(parsed_url, handler, attempts):

@@ -14,10 +14,6 @@
 # ==============================================================================
 """Library for controlling the Tensorflow/XLA JIT compiler."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import contextlib
 
 from tensorflow.core.framework import attr_value_pb2
@@ -68,6 +64,34 @@ def experimental_jit_scope(compile_ops=True, separate_compiled_gradients=False):
       f = tf.matmul(a, b)
     g = tf.gradients([f], [a, b], name='mygrads1')
     h = tf.gradients([f], [a, b], name='mygrads2')
+    ```
+
+  Ops that are not in the scope may be clustered and compiled with ops in
+  the scope with `compile_ops=True`, while the ops in the scope with
+  `compile_ops=False` will never be compiled.
+
+  For example:
+
+    ```python
+    # In the example below, x and loss may be clustered and compiled together,
+    # while y will not be compiled.
+    with tf.xla.experimental.jit_scope():
+      x = tf.matmul(a, b)
+    with tf.xla.experimental.jit_scope(compile_ops=False):
+      y = tf.matmul(c, d)
+    loss = x + y
+    ```
+
+  If you want to only compile the ops in the scope with `compile_ops=True`,
+  consider adding an outer `jit_scope(compile_ops=False)`:
+
+    ```python
+    # In the example below, only x will be compiled.
+    with tf.xla.experimental.jit_scope(compile_ops=False):
+      with tf.xla.experimental.jit_scope():
+        x = tf.matmul(a, b)
+      y = tf.matmul(c, d)
+      loss = x + y
     ```
 
   Args:

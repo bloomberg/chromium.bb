@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
@@ -42,6 +41,9 @@ typedef libusb_transfer* PlatformUsbTransferHandle;
 // UsbDeviceHandle class provides basic I/O related functionalities.
 class UsbDeviceHandleImpl : public UsbDeviceHandle {
  public:
+  UsbDeviceHandleImpl(const UsbDeviceHandleImpl&) = delete;
+  UsbDeviceHandleImpl& operator=(const UsbDeviceHandleImpl&) = delete;
+
   scoped_refptr<UsbDevice> GetDevice() const override;
   void Close() override;
   void SetConfiguration(int configuration_value,
@@ -159,8 +161,6 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(UsbDeviceHandleImpl);
 };
 
 }  // namespace device

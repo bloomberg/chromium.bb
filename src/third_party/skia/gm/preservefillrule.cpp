@@ -10,10 +10,11 @@
 #include "include/core/SkPath.h"
 #include "include/gpu/GrContextOptions.h"
 #include "include/gpu/GrRecordingContext.h"
+#include "src/core/SkCanvasPriv.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrDrawingManager.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 #include "tools/ToolUtils.h"
 
 namespace skiagm {
@@ -45,25 +46,13 @@ private:
     SkISize onISize() override { return SkISize::Make(fStarSize * 2, fStarSize * 2); }
 
     void modifyGrContextOptions(GrContextOptions* ctxOptions) override {
-        ctxOptions->fGpuPathRenderers = GpuPathRenderers::kCoverageCounting;
         ctxOptions->fAllowPathMaskCaching = true;
     }
 
-    DrawResult onDraw(GrRecordingContext* rContext, GrSurfaceDrawContext* rtc, SkCanvas* canvas,
-                      SkString* errorMsg) override {
-        if (rtc->numSamples() > 1) {
-            errorMsg->set("ccpr is currently only used for coverage AA");
-            return DrawResult::kSkip;
-        }
-
-        auto* ccpr = rContext->priv().drawingManager()->getCoverageCountingPathRenderer();
-        if (!ccpr) {
-            errorMsg->set("ccpr only");
-            return DrawResult::kSkip;
-        }
-
+    DrawResult onDraw(GrRecordingContext* rContext, SkCanvas* canvas, SkString* errorMsg) override {
         auto dContext = GrAsDirectContext(rContext);
-        if (!dContext) {
+        auto sfc = SkCanvasPriv::TopDeviceSurfaceFillContext(canvas);
+        if (!dContext || !sfc) {
             *errorMsg = "Requires a direct context.";
             return skiagm::DrawResult::kSkip;
         }
@@ -93,7 +82,7 @@ private:
         canvas->drawPath(star7_evenOdd, paint);
         canvas->drawPath(star5_winding, paint);
         canvas->drawPath(star5_evenOdd, paint);
-        dContext->priv().flushSurface(rtc->asSurfaceProxy());
+        dContext->priv().flushSurface(sfc->asSurfaceProxy());
 
         return DrawResult::kOk;
     }

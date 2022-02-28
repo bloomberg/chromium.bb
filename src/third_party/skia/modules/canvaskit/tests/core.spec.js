@@ -172,24 +172,29 @@ describe('Core canvas behavior', () => {
         expect(aImg.width()).toEqual(320);
         expect(aImg.height()).toEqual(240);
         expect(aImg.getFrameCount()).toEqual(60);
+        expect(aImg.currentFrameDuration()).toEqual(60);
 
-        let img = aImg.makeImageAtCurrentFrame();
-        canvas.drawImage(img, 0, 0, null);
-        img.delete(); // This is annoying, so we added drawImageAtCurrentFrame
+        const drawCurrentFrame = function(x, y) {
+            let img = aImg.makeImageAtCurrentFrame();
+            canvas.drawImage(img, x, y, null);
+            img.delete();
+        }
+
+        drawCurrentFrame(0, 0);
 
         let c = aImg.decodeNextFrame();
         expect(c).not.toEqual(-1);
-        canvas.drawImageAtCurrentFrame(aImg, 300, 0, null);
+        drawCurrentFrame(300, 0);
         for(let i = 0; i < 10; i++) {
             c = aImg.decodeNextFrame();
             expect(c).not.toEqual(-1);
         }
-        canvas.drawImageAtCurrentFrame(aImg, 0, 300, null);
+        drawCurrentFrame(0, 300);
         for(let i = 0; i < 10; i++) {
             c = aImg.decodeNextFrame();
             expect(c).not.toEqual(-1);
         }
-        canvas.drawImageAtCurrentFrame(aImg, 300, 300, null);
+        drawCurrentFrame(300, 300);
 
         aImg.delete();
     }, '/assets/flightAnim.gif');
@@ -256,32 +261,39 @@ describe('Core canvas behavior', () => {
         const paint = new CanvasKit.Paint();
         paint.setColor(CanvasKit.Color(0, 0, 0, 0.8));
 
-        const srcs = new CanvasKit.RectBuilder();
-        // left top right bottom
-        srcs.push(  0,   0, 256, 256);
-        srcs.push(256,   0, 512, 256);
-        srcs.push(  0, 256, 256, 512);
-        srcs.push(256, 256, 512, 512);
+        // Allocate space for 4 rectangles.
+        const srcs = CanvasKit.Malloc(Float32Array, 16);
+        srcs.toTypedArray().set([
+            0,   0, 256, 256, // LTRB
+          256,   0, 512, 256,
+            0, 256, 256, 512,
+          256, 256, 512, 512
+        ]);
 
-        const dsts = new CanvasKit.RSXFormBuilder();
-        // scos, ssin, tx, ty
-        dsts.push(0.5, 0,  20,  20);
-        dsts.push(0.5, 0, 300,  20);
-        dsts.push(0.5, 0,  20, 300);
-        dsts.push(0.5, 0, 300, 300);
+        // Allocate space for 4 RSXForms.
+        const dsts = CanvasKit.Malloc(Float32Array, 16);
+        dsts.toTypedArray().set([
+            0.5, 0,  20,  20, // scos, ssin, tx, ty
+            0.5, 0, 300,  20,
+            0.5, 0,  20, 300,
+            0.5, 0, 300, 300
+        ]);
 
-        const colors = new CanvasKit.ColorBuilder();
-        // note that the ColorBuilder expects int colors to be pushed.
-        // pushing float colors to it only causes weird problems way downstream.
-        // It does no type checking.
-        colors.push(CanvasKit.ColorAsInt( 85, 170,  10, 128)); // light green
-        colors.push(CanvasKit.ColorAsInt( 51,  51, 191, 128)); // light blue
-        colors.push(CanvasKit.ColorAsInt(  0,   0,   0, 128));
-        colors.push(CanvasKit.ColorAsInt(256, 256, 256, 128));
+        // Allocate space for 4 colors.
+        const colors = new CanvasKit.Malloc(Uint32Array, 4);
+        colors.toTypedArray().set([
+          CanvasKit.ColorAsInt( 85, 170,  10, 128), // light green
+          CanvasKit.ColorAsInt( 51,  51, 191, 128), // light blue
+          CanvasKit.ColorAsInt(  0,   0,   0, 128),
+          CanvasKit.ColorAsInt(256, 256, 256, 128),
+        ]);
 
         canvas.drawAtlas(atlas, srcs, dsts, paint, CanvasKit.BlendMode.Modulate, colors);
 
         atlas.delete();
+        CanvasKit.Free(srcs);
+        CanvasKit.Free(dsts);
+        CanvasKit.Free(colors);
         paint.delete();
     }, '/assets/mandrill_512.png');
 
@@ -358,7 +370,7 @@ describe('Core canvas behavior', () => {
          const texs = [0,0, 16,0, 16,16, 0,16];
 
          const params = [
-             [  0,   0, colors, null, null,   null],
+             [  0,   0, colors, null, null,   CanvasKit.BlendMode.Dst],
              [256,   0, null,   texs, shader, null],
              [  0, 256, colors, texs, shader, null],
              [256, 256, colors, texs, shader, CanvasKit.BlendMode.Screen],
@@ -753,7 +765,8 @@ describe('Core canvas behavior', () => {
 
         // rotate 10 degrees centered on 200, 200
         const m = CanvasKit.Matrix.rotated(Math.PI/18, 200, 200);
-        const rotated = CanvasKit.ImageFilter.MakeMatrixTransform(m, CanvasKit.FilterQuality.Medium, combined);
+        const filtering = { filter: CanvasKit.FilterMode.Linear };
+        const rotated = CanvasKit.ImageFilter.MakeMatrixTransform(m, filtering, combined);
         paint.setImageFilter(rotated);
 
         //canvas.rotate(10, 200, 200);
@@ -854,10 +867,10 @@ describe('Core canvas behavior', () => {
 
     gm('drawImage_skp', (canvas, fetchedByteBuffers) => {
         const pic = CanvasKit.MakePicture(fetchedByteBuffers[0]);
-        expect(pic).toBeTruthy();
-
         canvas.clear(CanvasKit.TRANSPARENT);
         canvas.drawPicture(pic);
+        // The asset below can be re-downloaded from
+        // https://fiddle.skia.org/c/cbb8dee39e9f1576cd97c2d504db8eee
     }, '/assets/red_line.skp');
 
     it('can draw once using drawOnce utility method', (done) => {
@@ -937,7 +950,6 @@ describe('Core canvas behavior', () => {
     gm('combined_shaders', (canvas) => {
         const rShader = CanvasKit.Shader.Color(CanvasKit.Color(255, 0, 0, 1.0)); // deprecated
         const gShader = CanvasKit.Shader.MakeColor(CanvasKit.Color(0, 255, 0, 0.6));
-        const bShader = CanvasKit.Shader.MakeColor(CanvasKit.Color(0, 0, 255, 1.0));
 
         const rgShader = CanvasKit.Shader.MakeBlend(CanvasKit.BlendMode.SrcOver, rShader, gShader);
 
@@ -945,15 +957,9 @@ describe('Core canvas behavior', () => {
         p.setShader(rgShader);
         canvas.drawPaint(p);
 
-        const gbShader = CanvasKit.Shader.MakeLerp(0.5, gShader, bShader);
-
-        p.setShader(gbShader);
-        canvas.drawRect(CanvasKit.LTRBRect(5, 100, 300, 400), p);
         rShader.delete();
         gShader.delete();
-        bShader.delete();
         rgShader.delete();
-        gbShader.delete();
         p.delete();
     });
 
@@ -1026,7 +1032,7 @@ describe('Core canvas behavior', () => {
             path, mZPlane, mLight, lightRadius,
             CanvasKit.ShadowTransparentOccluder | CanvasKit.ShadowGeometricOnly | CanvasKit.ShadowDirectionalLight,
             outBounds);
-        expectTypedArraysToEqual(outBounds, Float32Array.of(1.52207, -6.35035, 264.03445, 261.83294));
+        expectTypedArraysToEqual(outBounds, Float32Array.of(-31.6630249, -15.24227, 245.5, 252.94101));
 
         CanvasKit.Free(mZPlane);
         CanvasKit.Free(mLight);
@@ -1279,5 +1285,142 @@ describe('Core canvas behavior', () => {
         expect(pixels[3]).toEqual(204); // alpha (0.8 * 255)
         surface.delete();
         CanvasKit.Free(rdsData);
+    });
+
+    gm('makeImageFromTextureSource_TypedArray', (canvas, _, surface) => {
+        if (!CanvasKit.gpu) {
+            return;
+        }
+        // This creates and draws an Unpremul Image that is 1 pixel wide, 4 pixels tall with
+        // the colors listed below.
+        const pixels = Uint8Array.from([
+            255,   0,   0, 255, // opaque red
+              0, 255,   0, 255, // opaque green
+              0,   0, 255, 255, // opaque blue
+            255,   0, 255, 100, // transparent purple
+        ]);
+        const img = surface.makeImageFromTextureSource(pixels, {
+              'width': 1,
+              'height': 4,
+              'alphaType': CanvasKit.AlphaType.Unpremul,
+              'colorType': CanvasKit.ColorType.RGBA_8888,
+            });
+        canvas.drawImage(img, 1, 1, null);
+
+        const info = img.getImageInfo();
+        expect(info).toEqual({
+          'width': 1,
+          'height': 4,
+          'alphaType': CanvasKit.AlphaType.Unpremul,
+          'colorType': CanvasKit.ColorType.RGBA_8888,
+        });
+        const cs = img.getColorSpace();
+        expect(CanvasKit.ColorSpace.Equals(cs, CanvasKit.ColorSpace.SRGB)).toBeTruthy();
+
+        cs.delete();
+        img.delete();
+    });
+
+    gm('makeImageFromTextureSource_PremulTypedArray', (canvas, _, surface) => {
+        if (!CanvasKit.gpu) {
+            return;
+        }
+        // This creates and draws an Unpremul Image that is 1 pixel wide, 4 pixels tall with
+        // the colors listed below.
+        const pixels = Uint8Array.from([
+            255,   0,   0, 255, // opaque red
+              0, 255,   0, 255, // opaque green
+              0,   0, 255, 255, // opaque blue
+            100,   0, 100, 100, // transparent purple
+        ]);
+        const img = surface.makeImageFromTextureSource(pixels, {
+              'width': 1,
+              'height': 4,
+              'alphaType': CanvasKit.AlphaType.Premul,
+              'colorType': CanvasKit.ColorType.RGBA_8888,
+            });
+        canvas.drawImage(img, 1, 1, null);
+
+        const info = img.getImageInfo();
+        expect(info).toEqual({
+          'width': 1,
+          'height': 4,
+          'alphaType': CanvasKit.AlphaType.Premul,
+          'colorType': CanvasKit.ColorType.RGBA_8888,
+        });
+        img.delete();
+    });
+
+    gm('makeImageFromTextureSource_imgElement', (canvas, _, surface) => {
+        if (!CanvasKit.gpu) {
+            return;
+        }
+        // This makes an offscreen <img> with the provided source.
+        const imageEle = new Image();
+        imageEle.src = '/assets/mandrill_512.png';
+
+        // We need to wait until the image is loaded before the texture can use it. For good
+        // measure, we also wait for it to be decoded.
+        return imageEle.decode().then(() => {
+            const img = surface.makeImageFromTextureSource(imageEle);
+            canvas.drawImage(img, 0, 0, null);
+
+            const info = img.getImageInfo();
+            expect(info).toEqual({
+              'width': 512, // width and height should be derived from the image.
+              'height': 512,
+              'alphaType': CanvasKit.AlphaType.Unpremul,
+              'colorType': CanvasKit.ColorType.RGBA_8888,
+            });
+            img.delete();
+        });
+    });
+
+    gm('MakeLazyImageFromTextureSource_imgElement', (canvas) => {
+        if (!CanvasKit.gpu) {
+            return;
+        }
+        // This makes an offscreen <img> with the provided source.
+        const imageEle = new Image();
+        imageEle.src = '/assets/mandrill_512.png';
+
+        // We need to wait until the image is loaded before the texture can use it. For good
+        // measure, we also wait for it to be decoded.
+        return imageEle.decode().then(() => {
+            const img = CanvasKit.MakeLazyImageFromTextureSource(imageEle);
+            canvas.drawImage(img, 5, 5, null);
+
+            const info = img.getImageInfo();
+            expect(info).toEqual({
+              'width': 512, // width and height should be derived from the image.
+              'height': 512,
+              'alphaType': CanvasKit.AlphaType.Unpremul,
+              'colorType': CanvasKit.ColorType.RGBA_8888,
+            });
+            img.delete();
+        });
+    });
+
+    gm('MakeLazyImageFromTextureSource_imageInfo', (canvas) => {
+        if (!CanvasKit.gpu) {
+            return;
+        }
+        // This makes an offscreen <img> with the provided source.
+        const imageEle = new Image();
+        imageEle.src = '/assets/mandrill_512.png';
+
+        // We need to wait until the image is loaded before the texture can use it. For good
+        // measure, we also wait for it to be decoded.
+        return imageEle.decode().then(() => {
+            const img = CanvasKit.MakeLazyImageFromTextureSource(imageEle, {
+              'width': 400,
+              'height': 400,
+              'alphaType': CanvasKit.AlphaType.Premul,
+              'colorType': CanvasKit.ColorType.RGBA_8888,
+            });
+            canvas.drawImage(img, 20, 20, null);
+
+            img.delete();
+        });
     });
 });

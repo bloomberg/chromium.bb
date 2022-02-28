@@ -18,6 +18,8 @@
 #include "common/Log.h"
 #include "dawn_native/ErrorData.h"
 #include "dawn_native/Surface.h"
+#include "dawn_native/ValidationUtils_autogen.h"
+#include "dawn_platform/DawnPlatform.h"
 
 #if defined(DAWN_USE_X11)
 #    include "dawn_native/XlibXcbFunctions.h"
@@ -49,9 +51,37 @@ namespace dawn_native {
 #endif  // defined(DAWN_ENABLE_BACKEND_OPENGL)
 #if defined(DAWN_ENABLE_BACKEND_VULKAN)
     namespace vulkan {
-        BackendConnection* Connect(InstanceBase* instance, bool useSwiftshader);
+        BackendConnection* Connect(InstanceBase* instance);
     }
 #endif  // defined(DAWN_ENABLE_BACKEND_VULKAN)
+
+    namespace {
+
+        BackendsBitset GetEnabledBackends() {
+            BackendsBitset enabledBackends;
+#if defined(DAWN_ENABLE_BACKEND_NULL)
+            enabledBackends.set(wgpu::BackendType::Null);
+#endif  // defined(DAWN_ENABLE_BACKEND_NULL)
+#if defined(DAWN_ENABLE_BACKEND_D3D12)
+            enabledBackends.set(wgpu::BackendType::D3D12);
+#endif  // defined(DAWN_ENABLE_BACKEND_D3D12)
+#if defined(DAWN_ENABLE_BACKEND_METAL)
+            enabledBackends.set(wgpu::BackendType::Metal);
+#endif  // defined(DAWN_ENABLE_BACKEND_METAL)
+#if defined(DAWN_ENABLE_BACKEND_VULKAN)
+            enabledBackends.set(wgpu::BackendType::Vulkan);
+#endif  // defined(DAWN_ENABLE_BACKEND_VULKAN)
+#if defined(DAWN_ENABLE_BACKEND_DESKTOP_GL)
+            enabledBackends.set(wgpu::BackendType::OpenGL);
+#endif  // defined(DAWN_ENABLE_BACKEND_DESKTOP_GL)
+#if defined(DAWN_ENABLE_BACKEND_OPENGLES)
+            enabledBackends.set(wgpu::BackendType::OpenGLES);
+#endif  // defined(DAWN_ENABLE_BACKEND_OPENGLES)
+
+            return enabledBackends;
+        }
+
+    }  // anonymous namespace
 
     // InstanceBase
 
@@ -64,12 +94,15 @@ namespace dawn_native {
         return instance.Detach();
     }
 
+    // TODO(crbug.com/dawn/832): make the platform an initialization parameter of the instance.
     bool InstanceBase::Initialize(const InstanceDescriptor*) {
         return true;
     }
 
     void InstanceBase::DiscoverDefaultAdapters() {
-        EnsureBackendConnections();
+        for (wgpu::BackendType b : IterateBitSet(GetEnabledBackends())) {
+            EnsureBackendConnection(b);
+        }
 
         if (mDiscoveredDefaultAdapters) {
             return;
@@ -103,25 +136,25 @@ namespace dawn_native {
         return mTogglesInfo.ToggleNameToEnum(toggleName);
     }
 
-    const ExtensionInfo* InstanceBase::GetExtensionInfo(const char* extensionName) {
-        return mExtensionsInfo.GetExtensionInfo(extensionName);
+    const FeatureInfo* InstanceBase::GetFeatureInfo(const char* featureName) {
+        return mFeaturesInfo.GetFeatureInfo(featureName);
     }
 
-    Extension InstanceBase::ExtensionNameToEnum(const char* extensionName) {
-        return mExtensionsInfo.ExtensionNameToEnum(extensionName);
+    Feature InstanceBase::FeatureNameToEnum(const char* featureName) {
+        return mFeaturesInfo.FeatureNameToEnum(featureName);
     }
 
-    ExtensionsSet InstanceBase::ExtensionNamesToExtensionsSet(
-        const std::vector<const char*>& requiredExtensions) {
-        return mExtensionsInfo.ExtensionNamesToExtensionsSet(requiredExtensions);
+    FeaturesSet InstanceBase::FeatureNamesToFeaturesSet(
+        const std::vector<const char*>& requiredFeatures) {
+        return mFeaturesInfo.FeatureNamesToFeaturesSet(requiredFeatures);
     }
 
     const std::vector<std::unique_ptr<AdapterBase>>& InstanceBase::GetAdapters() const {
         return mAdapters;
     }
 
-    void InstanceBase::EnsureBackendConnections() {
-        if (mBackendsConnected) {
+    void InstanceBase::EnsureBackendConnection(wgpu::BackendType backendType) {
+        if (mBackendsConnected[backendType]) {
             return;
         }
 
@@ -133,42 +166,65 @@ namespace dawn_native {
             }
         };
 
-#if defined(DAWN_ENABLE_BACKEND_D3D12)
-        Register(d3d12::Connect(this), wgpu::BackendType::D3D12);
-#endif  // defined(DAWN_ENABLE_BACKEND_D3D12)
-#if defined(DAWN_ENABLE_BACKEND_METAL)
-        Register(metal::Connect(this), wgpu::BackendType::Metal);
-#endif  // defined(DAWN_ENABLE_BACKEND_METAL)
-#if defined(DAWN_ENABLE_BACKEND_VULKAN)
-        // TODO(https://github.com/KhronosGroup/Vulkan-Loader/issues/287):
-        // When we can load SwiftShader in parallel with the system driver, we should create the
-        // backend only once and expose SwiftShader as an additional adapter. For now, we create two
-        // VkInstances, one from SwiftShader, and one from the system. Note: If the Vulkan driver
-        // *is* SwiftShader, then this would load SwiftShader twice.
-        Register(vulkan::Connect(this, false), wgpu::BackendType::Vulkan);
-#    if defined(DAWN_ENABLE_SWIFTSHADER)
-        Register(vulkan::Connect(this, true), wgpu::BackendType::Vulkan);
-#    endif  // defined(DAWN_ENABLE_SWIFTSHADER)
-#endif      // defined(DAWN_ENABLE_BACKEND_VULKAN)
-#if defined(DAWN_ENABLE_BACKEND_DESKTOP_GL)
-        Register(opengl::Connect(this, wgpu::BackendType::OpenGL), wgpu::BackendType::OpenGL);
-#endif  // defined(DAWN_ENABLE_BACKEND_DESKTOP_GL)
-#if defined(DAWN_ENABLE_BACKEND_OPENGLES)
-        Register(opengl::Connect(this, wgpu::BackendType::OpenGLES), wgpu::BackendType::OpenGLES);
-#endif  // defined(DAWN_ENABLE_BACKEND_OPENGLES)
+        switch (backendType) {
 #if defined(DAWN_ENABLE_BACKEND_NULL)
-        Register(null::Connect(this), wgpu::BackendType::Null);
+            case wgpu::BackendType::Null:
+                Register(null::Connect(this), wgpu::BackendType::Null);
+                break;
 #endif  // defined(DAWN_ENABLE_BACKEND_NULL)
 
-        mBackendsConnected = true;
+#if defined(DAWN_ENABLE_BACKEND_D3D12)
+            case wgpu::BackendType::D3D12:
+                Register(d3d12::Connect(this), wgpu::BackendType::D3D12);
+                break;
+#endif  // defined(DAWN_ENABLE_BACKEND_D3D12)
+
+#if defined(DAWN_ENABLE_BACKEND_METAL)
+            case wgpu::BackendType::Metal:
+                Register(metal::Connect(this), wgpu::BackendType::Metal);
+                break;
+#endif  // defined(DAWN_ENABLE_BACKEND_METAL)
+
+#if defined(DAWN_ENABLE_BACKEND_VULKAN)
+            case wgpu::BackendType::Vulkan:
+                Register(vulkan::Connect(this), wgpu::BackendType::Vulkan);
+                break;
+#endif      // defined(DAWN_ENABLE_BACKEND_VULKAN)
+
+#if defined(DAWN_ENABLE_BACKEND_DESKTOP_GL)
+            case wgpu::BackendType::OpenGL:
+                Register(opengl::Connect(this, wgpu::BackendType::OpenGL),
+                         wgpu::BackendType::OpenGL);
+                break;
+#endif  // defined(DAWN_ENABLE_BACKEND_DESKTOP_GL)
+
+#if defined(DAWN_ENABLE_BACKEND_OPENGLES)
+            case wgpu::BackendType::OpenGLES:
+                Register(opengl::Connect(this, wgpu::BackendType::OpenGLES),
+                         wgpu::BackendType::OpenGLES);
+                break;
+#endif  // defined(DAWN_ENABLE_BACKEND_OPENGLES)
+
+            default:
+                UNREACHABLE();
+        }
+
+        mBackendsConnected.set(backendType);
     }
 
     MaybeError InstanceBase::DiscoverAdaptersInternal(const AdapterDiscoveryOptionsBase* options) {
-        EnsureBackendConnections();
+        wgpu::BackendType backendType = static_cast<wgpu::BackendType>(options->backendType);
+        DAWN_TRY(ValidateBackendType(backendType));
+
+        if (!GetEnabledBackends()[backendType]) {
+            return DAWN_FORMAT_VALIDATION_ERROR("%s not supported.", backendType);
+        }
+
+        EnsureBackendConnection(backendType);
 
         bool foundBackend = false;
         for (std::unique_ptr<BackendConnection>& backend : mBackends) {
-            if (backend->GetType() != static_cast<wgpu::BackendType>(options->backendType)) {
+            if (backend->GetType() != backendType) {
                 continue;
             }
             foundBackend = true;
@@ -183,9 +239,7 @@ namespace dawn_native {
             }
         }
 
-        if (!foundBackend) {
-            return DAWN_VALIDATION_ERROR("Backend isn't present.");
-        }
+        DAWN_INVALID_IF(!foundBackend, "%s not available.", backendType);
         return {};
     }
 
@@ -194,7 +248,7 @@ namespace dawn_native {
             std::unique_ptr<ErrorData> error = maybeError.AcquireError();
 
             ASSERT(error != nullptr);
-            dawn::InfoLog() << error->GetMessage();
+            dawn::InfoLog() << error->GetFormattedMessage();
 
             return true;
         }
@@ -225,8 +279,15 @@ namespace dawn_native {
         mPlatform = platform;
     }
 
-    dawn_platform::Platform* InstanceBase::GetPlatform() const {
-        return mPlatform;
+    dawn_platform::Platform* InstanceBase::GetPlatform() {
+        if (mPlatform != nullptr) {
+            return mPlatform;
+        }
+
+        if (mDefaultPlatform == nullptr) {
+            mDefaultPlatform = std::make_unique<dawn_platform::Platform>();
+        }
+        return mDefaultPlatform.get();
     }
 
     const XlibXcbFunctions* InstanceBase::GetOrCreateXlibXcbFunctions() {

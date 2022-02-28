@@ -27,13 +27,15 @@
 #include <memory>
 #include "base/auto_reset.h"
 #include "base/callback.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "net/base/schemeful_site.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_counted_set.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
@@ -145,6 +147,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
     kScriptTypeDoesNotMatch,
   };
 
+  Resource(const Resource&) = delete;
+  Resource& operator=(const Resource&) = delete;
   ~Resource() override;
 
   void Trace(Visitor*) const override;
@@ -270,6 +274,10 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
   // The default implementation does nothing. Subclasses interested in the data
   // should implement the resource-specific behavior.
   virtual void SetSerializedCachedMetadata(mojo_base::BigBuffer data);
+
+  // Gets whether the serialized cached metadata must contain a hash of the
+  // source text. For resources other than ScriptResource, this is always false.
+  virtual bool CodeCacheHashRequired() const;
 
   AtomicString HttpContentType() const;
 
@@ -414,6 +422,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
   // Sets the ResourceRequest to be tagged as an ad.
   void SetIsAdResource();
 
+  void DidRemoveClientOrObserver();
+
  protected:
   Resource(const ResourceRequestHead&,
            ResourceType,
@@ -438,7 +448,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
   virtual void DidAddClient(ResourceClient*);
   void WillAddClientOrObserver();
 
-  void DidRemoveClientOrObserver();
   virtual void AllClientsAndObserversRemoved();
 
   bool HasClient(ResourceClient* client) const {
@@ -558,8 +567,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
   // TODO(crbug.com/1127971): Remove this once the decision is made to partition
   // the cache using either Network Isolation Key or scoped to per-document.
   std::set<net::SchemefulSite> existing_top_frame_sites_in_cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(Resource);
 };
 
 class ResourceFactory {

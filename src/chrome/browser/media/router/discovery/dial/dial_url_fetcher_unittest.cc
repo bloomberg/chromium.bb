@@ -7,7 +7,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,6 +19,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,15 +27,18 @@
 
 using testing::_;
 using testing::HasSubstr;
+using testing::NiceMock;
 
 namespace media_router {
 
 class DialURLFetcherTest : public testing::Test {
  public:
   DialURLFetcherTest() : url_("http://127.0.0.1/app/Youtube") {}
+  DialURLFetcherTest(DialURLFetcherTest&) = delete;
+  DialURLFetcherTest& operator=(DialURLFetcherTest&) = delete;
 
   void StartGetRequest() {
-    fetcher_ = std::make_unique<TestDialURLFetcher>(
+    fetcher_ = std::make_unique<NiceMock<TestDialURLFetcher>>(
         base::BindOnce(&DialURLFetcherTest::OnSuccess, base::Unretained(this)),
         base::BindOnce(&DialURLFetcherTest::OnError, base::Unretained(this)),
         &loader_factory_);
@@ -53,9 +56,6 @@ class DialURLFetcherTest : public testing::Test {
   const GURL url_;
   std::unique_ptr<TestDialURLFetcher> fetcher_;
   network::ResourceRequest request_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DialURLFetcherTest);
 };
 
 TEST_F(DialURLFetcherTest, FetchSuccessful) {

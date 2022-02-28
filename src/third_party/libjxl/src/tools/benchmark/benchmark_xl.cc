@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include <math.h>
 #include <stdint.h>
@@ -30,6 +21,8 @@
 #include "jxl/decode.h"
 #include "lib/extras/codec.h"
 #include "lib/extras/codec_png.h"
+#include "lib/extras/color_hints.h"
+#include "lib/extras/time.h"
 #include "lib/jxl/alpha.h"
 #include "lib/jxl/base/cache_aligned.h"
 #include "lib/jxl/base/compiler_specific.h"
@@ -41,7 +34,6 @@
 #include "lib/jxl/base/span.h"
 #include "lib/jxl/base/status.h"
 #include "lib/jxl/base/thread_pool_internal.h"
-#include "lib/jxl/base/time.h"
 #include "lib/jxl/codec_in_out.h"
 #include "lib/jxl/color_encoding_internal.h"
 #include "lib/jxl/color_management.h"
@@ -70,13 +62,14 @@ Status WritePNG(Image3F&& image, ThreadPool* pool,
   io.metadata.m.color_encoding = ColorEncoding::SRGB();
   io.SetFromImage(std::move(image), io.metadata.m.color_encoding);
   PaddedBytes compressed;
-  JXL_CHECK(EncodeImagePNG(&io, io.Main().c_current(), 8, pool, &compressed));
+  JXL_CHECK(
+      extras::EncodeImagePNG(&io, io.Main().c_current(), 8, pool, &compressed));
   return WriteFile(compressed, filename);
 }
 
 Status ReadPNG(const std::string& filename, Image3F* image) {
   CodecInOut io;
-  JXL_CHECK(SetFromFile(filename, &io));
+  JXL_CHECK(SetFromFile(filename, ColorHints(), &io));
   *image = CopyImage(*io.Main().color());
   return true;
 }
@@ -496,7 +489,11 @@ void WriteHtmlReport(const std::string& codec_desc,
     std::string html_height = StringPrintf("%zupx", ysize);
     double bpp = tasks[i]->stats.total_compressed_size * 8.0 /
                  tasks[i]->stats.total_input_pixels;
-    std::string compressed_title = StringPrintf("compressed: %f bpp", bpp);
+    double pnorm =
+        tasks[i]->stats.distance_p_norm / tasks[i]->stats.total_input_pixels;
+    double max_dist = tasks[i]->stats.max_distance;
+    std::string compressed_title = StringPrintf(
+        "compressed. bpp: %f, pnorm: %f, max dist: %f", bpp, pnorm, max_dist);
     out_html += "<div onclick=\"toggle3(" + number +
                 ");\" style=\"display:inline-block;width:" + html_width +
                 ";height:" + html_height +
@@ -607,10 +604,10 @@ struct StatPrinter {
 
     const double rmse =
         std::sqrt(t.stats.distance_2 / t.stats.total_input_pixels);
-    const double psnr =
-        t.stats.total_compressed_size == 0
-            ? 0.0
-            : (t.stats.distance_2 == 0) ? 99.99 : (20 * std::log10(1 / rmse));
+    const double psnr = t.stats.total_compressed_size == 0 ? 0.0
+                        : (t.stats.distance_2 == 0)
+                            ? 99.99
+                            : (20 * std::log10(1 / rmse));
     size_t pixels = t.stats.total_input_pixels;
 
     const double enc_mps =
@@ -672,7 +669,7 @@ struct StatPrinter {
     std::string out;
 
     method_stats.PrintMoreStats();  // not concurrent
-    out += method_stats.PrintLine(method, fnames_->size(), /*num_threads=*/1);
+    out += method_stats.PrintLine(method, fnames_->size());
 
     if (Args()->write_html_report) {
       WriteHtmlReport(method, *fnames_, tasks, images,
@@ -680,7 +677,7 @@ struct StatPrinter {
     }
 
     stats_aggregate_.push_back(
-        method_stats.ComputeColumns(method, fnames_->size(), 1));
+        method_stats.ComputeColumns(method, fnames_->size()));
 
     printf("%s", out.c_str());
     fflush(stdout);
@@ -695,12 +692,14 @@ struct StatPrinter {
       printf("```\n");
     }
     if (fnames_->size() == 1) printf("%s\n", (*fnames_)[0].c_str());
-    printf("%s", PrintHeader().c_str());
+    printf("%s", PrintHeader(*extra_metrics_names_).c_str());
     fflush(stdout);
   }
 
   void PrintStatsFooter() {
-    printf("%s", PrintAggregate(stats_aggregate_).c_str());
+    printf(
+        "%s",
+        PrintAggregate(extra_metrics_names_->size(), stats_aggregate_).c_str());
     if (Args()->markdown) printf("```\n");
     printf("\n");
     fflush(stdout);
@@ -980,12 +979,11 @@ class Benchmark {
           Status ok = true;
 
           loaded_images[i].target_nits = Args()->intensity_target;
-          loaded_images[i].dec_hints = Args()->dec_hints;
           loaded_images[i].dec_target = jpeg_transcoding_requested
                                             ? DecodeTarget::kQuantizedCoeffs
                                             : DecodeTarget::kPixels;
           if (!Args()->decode_only) {
-            ok = SetFromFile(fnames[i], &loaded_images[i]);
+            ok = SetFromFile(fnames[i], Args()->color_hints, &loaded_images[i]);
           }
           if (!ok) {
             if (!Args()->silent_errors) {
@@ -1086,7 +1084,7 @@ class Benchmark {
 };
 
 int BenchmarkMain(int argc, const char** argv) {
-  fprintf(stderr, "benchmark_xl [%s]\n",
+  fprintf(stderr, "benchmark_xl %s\n",
           jpegxl::tools::CodecConfigString(JxlDecoderVersion()).c_str());
 
   JXL_CHECK(Args()->AddCommandLineOptions());

@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "net/base/net_export.h"
@@ -33,6 +32,10 @@ class NET_EXPORT HttpAuthPreferences {
   };
 
   HttpAuthPreferences();
+
+  HttpAuthPreferences(const HttpAuthPreferences&) = delete;
+  HttpAuthPreferences& operator=(const HttpAuthPreferences&) = delete;
+
   virtual ~HttpAuthPreferences();
 
   virtual bool NegotiateDisableCnameLookup() const;
@@ -118,7 +121,6 @@ class NET_EXPORT HttpAuthPreferences {
 #endif
 
   std::unique_ptr<URLSecurityManager> security_manager_;
-  DISALLOW_COPY_AND_ASSIGN(HttpAuthPreferences);
 };
 
 }  // namespace net

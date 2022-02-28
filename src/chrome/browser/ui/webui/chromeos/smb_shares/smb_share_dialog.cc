@@ -6,8 +6,8 @@
 
 #include "base/callback_helpers.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/smb_client/smb_service.h"
-#include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
+#include "chrome/browser/ash/smb_client/smb_service.h"
+#include "chrome/browser/ash/smb_client/smb_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_handler.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h"
@@ -82,8 +82,8 @@ SmbShareDialogUI::SmbShareDialogUI(content::WebUI* web_ui)
   // session, SSO option will not be available/visible.
   // TODO(crbug.com/1040138): subscribe to pref. changes in SmbService and setup
   // Kerberos after it is enabled during a user session.
-  const chromeos::smb_client::SmbService* const smb_service =
-      chromeos::smb_client::SmbServiceFactory::Get(profile);
+  const ash::smb_client::SmbService* const smb_service =
+      ash::smb_client::SmbServiceFactory::Get(profile);
   bool is_kerberos_enabled =
       smb_service && smb_service->IsKerberosEnabledViaPolicy();
   source->AddBoolean("isKerberosEnabled", is_kerberos_enabled);

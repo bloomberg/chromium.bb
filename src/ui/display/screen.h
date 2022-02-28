@@ -8,11 +8,10 @@
 #include <set>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/values.h"
 #include "ui/display/display.h"
 #include "ui/display/display_export.h"
-#include "ui/display/display_list.h"
+#include "ui/display/screen_infos.h"
 #include "ui/gfx/gpu_extra_info.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -40,6 +39,10 @@ class DisplayObserver;
 class DISPLAY_EXPORT Screen {
  public:
   Screen();
+
+  Screen(const Screen&) = delete;
+  Screen& operator=(const Screen&) = delete;
+
   virtual ~Screen();
 
   // Retrieves the single Screen object; this may be null (e.g. in some tests).
@@ -52,6 +55,9 @@ class DISPLAY_EXPORT Screen {
 
   // Returns the current absolute position of the mouse pointer.
   virtual gfx::Point GetCursorScreenPoint() = 0;
+
+  // Allows tests to override the cursor point location on the screen.
+  virtual void SetCursorScreenPointForTesting(const gfx::Point& point);
 
   // Returns true if the cursor is directly over |window|.
   virtual bool IsWindowUnderCursor(gfx::NativeWindow window) = 0;
@@ -67,12 +73,14 @@ class DISPLAY_EXPORT Screen {
       const gfx::Point& point,
       const std::set<gfx::NativeWindow>& ignore) = 0;
 
-  // Returns the number of displays.
-  // Mirrored displays are excluded; this method is intended to return the
-  // number of distinct, usable displays.
+  // Returns the number of displays.  Mirrored displays are excluded; this
+  // method is intended to return the number of distinct, usable displays.
+  // The value returned must be at least 1, as GetAllDisplays returns a fake
+  // display if there are no displays in the system.
   virtual int GetNumDisplays() const = 0;
 
   // Returns the list of displays that are currently available.
+  // Screen subclasses must return at least one Display, even if it is fake.
   virtual const std::vector<Display>& GetAllDisplays() const = 0;
 
   // Returns the display nearest the specified window.
@@ -103,18 +111,16 @@ class DISPLAY_EXPORT Screen {
   // Sets the suggested display to use when creating a new window.
   void SetDisplayForNewWindows(int64_t display_id);
 
-  // Returns a DisplayList with its `current` display set to the display nearest
-  // the specified window or view. These functions perform fallback to ensure
-  // the list is non-empty and has coherent primary and current display ids.
-  // This is useful to cache a sensible multi-display snapshot for clients that
-  // otherwise relied on fallback Displays from Screen::GetDisplayNearestView.
-  DisplayList GetDisplayListNearestViewWithFallbacks(
-      gfx::NativeView view) const;
-  DisplayList GetDisplayListNearestWindowWithFallbacks(
-      gfx::NativeWindow window) const;
+  // Returns ScreenInfos, attempting to set the current ScreenInfo to the
+  // display corresponding to `nearest_id`.  The returned result is guaranteed
+  // to be non-empty.  This function also performs fallback to ensure the result
+  // also has a valid current ScreenInfo and exactly one primary ScreenInfo
+  // (both of which may or may not be `nearest_id`).
+  display::ScreenInfos GetScreenInfosNearestDisplay(int64_t nearest_id) const;
 
-  // Suspends the platform-specific screensaver, if applicable.
-  virtual void SetScreenSaverSuspended(bool suspend);
+  // Suspends or un-suspends the platform-specific screensaver, and returns
+  // whether the operation was successful.
+  virtual bool SetScreenSaverSuspended(bool suspend);
 
   // Returns whether the screensaver is currently running.
   virtual bool IsScreenSaverActive() const;
@@ -155,7 +161,7 @@ class DISPLAY_EXPORT Screen {
 
   // Returns human readable description of the window manager, desktop, and
   // other system properties related to the compositing.
-  virtual base::Value GetGpuExtraInfoAsListValue(
+  virtual std::vector<base::Value> GetGpuExtraInfo(
       const gfx::GpuExtraInfo& gpu_extra_info);
 
  private:
@@ -168,13 +174,8 @@ class DISPLAY_EXPORT Screen {
 
   static gfx::NativeWindow GetWindowForView(gfx::NativeView view);
 
-  // A shared helper for GetDisplayListNearest[Window|View]WithFallbacks().
-  DisplayList GetDisplayListNearestDisplayWithFallbacks(Display nearest) const;
-
   int64_t display_id_for_new_windows_;
   int64_t scoped_display_id_for_new_windows_ = display::kInvalidDisplayId;
-
-  DISALLOW_COPY_AND_ASSIGN(Screen);
 };
 
 Screen* CreateNativeScreen();

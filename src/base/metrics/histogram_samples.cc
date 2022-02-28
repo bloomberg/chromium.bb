@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/compiler_specific.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -39,7 +40,7 @@ class SampleCountPickleIterator : public SampleCountIterator {
            HistogramBase::Count* count) const override;
 
  private:
-  PickleIterator* const iter_;
+  const raw_ptr<PickleIterator> iter_;
 
   HistogramBase::Sample min_;
   int64_t max_;
@@ -264,12 +265,12 @@ void HistogramSamples::RecordNegativeSample(NegativeSampleReason reason,
                      static_cast<int32_t>(id()));
 }
 
-base::DictionaryValue HistogramSamples::ToGraphDict(StringPiece histogram_name,
-                                                    int32_t flags) const {
-  base::DictionaryValue dict;
-  dict.SetString("name", histogram_name);
-  dict.SetString("header", GetAsciiHeader(histogram_name, flags));
-  dict.SetString("body", GetAsciiBody());
+base::Value HistogramSamples::ToGraphDict(StringPiece histogram_name,
+                                          int32_t flags) const {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("name", histogram_name);
+  dict.SetStringKey("header", GetAsciiHeader(histogram_name, flags));
+  dict.SetStringKey("body", GetAsciiBody());
   return dict;
 }
 

@@ -11,7 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
@@ -313,7 +313,7 @@ void DeviceOAuth2TokenService::FlushPendingRequests(
           scoped_request->request.get(),
           scoped_request->request->GetAccountId(), GetURLLoaderFactory(),
           scoped_request->client_id, scoped_request->client_secret,
-          scoped_request->scopes);
+          scoped_request->request->GetConsumerId(), scoped_request->scopes);
     } else {
       FailRequest(scoped_request->request.get(), error);
     }

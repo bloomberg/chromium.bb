@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/cocoa/screentime/screentime_features.h"
 
+#include <Availability.h>
+
 namespace screentime {
 
 const base::Feature kScreenTime{
@@ -12,7 +14,10 @@ const base::Feature kScreenTime{
 };
 
 bool IsScreenTimeEnabled() {
-  return base::FeatureList::IsEnabled(kScreenTime);
+  if (__builtin_available(macOS 12.1, *)) {
+    return base::FeatureList::IsEnabled(kScreenTime);
+  }
+  return false;
 }
 
 }  // namespace screentime

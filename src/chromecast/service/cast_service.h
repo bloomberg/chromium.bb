@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
 
 namespace base {
 class ThreadChecker;
@@ -18,6 +17,9 @@ namespace chromecast {
 
 class CastService {
  public:
+  CastService(const CastService&) = delete;
+  CastService& operator=(const CastService&) = delete;
+
   virtual ~CastService();
 
   // Initializes/finalizes the cast service.
@@ -56,8 +58,6 @@ class CastService {
  private:
   bool stopped_;
   const std::unique_ptr<base::ThreadChecker> thread_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastService);
 };
 
 }  // namespace chromecast

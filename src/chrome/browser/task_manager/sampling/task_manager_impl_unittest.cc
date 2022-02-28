@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/task_manager/providers/task.h"
 #include "chrome/browser/task_manager/sampling/task_manager_impl.h"
@@ -52,7 +53,7 @@ class FakeTask : public Task {
 
  private:
   Type type_;
-  Task* parent_;
+  raw_ptr<Task> parent_;
   SessionID tab_id_;
 };
 
@@ -61,8 +62,7 @@ class FakeTask : public Task {
 class TaskManagerImplTest : public testing::Test, public TaskManagerObserver {
  public:
   TaskManagerImplTest()
-      : TaskManagerObserver(base::TimeDelta::FromSeconds(1),
-                            REFRESH_TYPE_NONE) {
+      : TaskManagerObserver(base::Seconds(1), REFRESH_TYPE_NONE) {
     TaskManagerImpl::GetInstance()->AddObserver(this);
   }
   TaskManagerImplTest(const TaskManagerImplTest&) = delete;

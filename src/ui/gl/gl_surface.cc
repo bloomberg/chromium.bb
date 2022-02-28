@@ -10,11 +10,11 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/swap_result.h"
+#include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
@@ -27,6 +27,9 @@ namespace {
 base::LazyInstance<base::ThreadLocalPointer<GLSurface>>::Leaky
     current_surface_ = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
+
+// static
+GpuPreference GLSurface::forced_gpu_preference_ = GpuPreference::kDefault;
 
 GLSurface::GLSurface() = default;
 
@@ -148,13 +151,10 @@ gfx::VSyncProvider* GLSurface::GetVSyncProvider() {
 
 void GLSurface::SetVSyncEnabled(bool enabled) {}
 
-bool GLSurface::ScheduleOverlayPlane(int z_order,
-                                     gfx::OverlayTransform transform,
-                                     GLImage* image,
-                                     const gfx::Rect& bounds_rect,
-                                     const gfx::RectF& crop_rect,
-                                     bool enable_blend,
-                                     std::unique_ptr<gfx::GpuFence> gpu_fence) {
+bool GLSurface::ScheduleOverlayPlane(
+    GLImage* image,
+    std::unique_ptr<gfx::GpuFence> gpu_fence,
+    const gfx::OverlayPlaneData& overlay_plane_data) {
   NOTIMPLEMENTED();
   return false;
 }
@@ -169,7 +169,8 @@ void GLSurface::ScheduleCALayerInUseQuery(
   NOTIMPLEMENTED();
 }
 
-bool GLSurface::ScheduleDCLayer(const ui::DCRendererLayerParams& params) {
+bool GLSurface::ScheduleDCLayer(
+    std::unique_ptr<ui::DCRendererLayerParams> params) {
   NOTIMPLEMENTED();
   return false;
 }
@@ -269,6 +270,26 @@ GLSurface* GLSurface::GetCurrent() {
 
 bool GLSurface::IsCurrent() {
   return GetCurrent() == this;
+}
+
+// static
+void GLSurface::SetForcedGpuPreference(GpuPreference gpu_preference) {
+  DCHECK_EQ(GpuPreference::kDefault, forced_gpu_preference_);
+  forced_gpu_preference_ = gpu_preference;
+}
+
+// static
+GpuPreference GLSurface::AdjustGpuPreference(GpuPreference gpu_preference) {
+  switch (forced_gpu_preference_) {
+    case GpuPreference::kDefault:
+      return gpu_preference;
+    case GpuPreference::kLowPower:
+    case GpuPreference::kHighPerformance:
+      return forced_gpu_preference_;
+    default:
+      NOTREACHED();
+      return GpuPreference::kDefault;
+  }
 }
 
 GLSurface::~GLSurface() {
@@ -403,6 +424,10 @@ void* GLSurfaceAdapter::GetHandle() {
   return surface_->GetHandle();
 }
 
+void GLSurfaceAdapter::PreserveChildSurfaceControls() {
+  surface_->PreserveChildSurfaceControls();
+}
+
 unsigned int GLSurfaceAdapter::GetBackingFramebufferObject() {
   return surface_->GetBackingFramebufferObject();
 }
@@ -444,21 +469,16 @@ void GLSurfaceAdapter::SetVSyncEnabled(bool enabled) {
 }
 
 bool GLSurfaceAdapter::ScheduleOverlayPlane(
-    int z_order,
-    gfx::OverlayTransform transform,
     GLImage* image,
-    const gfx::Rect& bounds_rect,
-    const gfx::RectF& crop_rect,
-    bool enable_blend,
-    std::unique_ptr<gfx::GpuFence> gpu_fence) {
-  return surface_->ScheduleOverlayPlane(z_order, transform, image, bounds_rect,
-                                        crop_rect, enable_blend,
-                                        std::move(gpu_fence));
+    std::unique_ptr<gfx::GpuFence> gpu_fence,
+    const gfx::OverlayPlaneData& overlay_plane_data) {
+  return surface_->ScheduleOverlayPlane(image, std::move(gpu_fence),
+                                        overlay_plane_data);
 }
 
 bool GLSurfaceAdapter::ScheduleDCLayer(
-    const ui::DCRendererLayerParams& params) {
-  return surface_->ScheduleDCLayer(params);
+    std::unique_ptr<ui::DCRendererLayerParams> params) {
+  return surface_->ScheduleDCLayer(std::move(params));
 }
 
 bool GLSurfaceAdapter::SetEnableDCLayers(bool enable) {

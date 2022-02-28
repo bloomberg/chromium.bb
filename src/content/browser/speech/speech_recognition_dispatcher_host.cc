@@ -92,7 +92,7 @@ void SpeechRecognitionDispatcherHost::StartRequestOnUI(
   // BackForwardCache.
   // TODO(sreejakshetty): Make SpeechRecognition compatible with
   // BackForwardCache.
-  rfh->OnSchedulerTrackedFeatureUsed(
+  rfh->OnBackForwardCacheDisablingStickyFeatureUsed(
       blink::scheduler::WebSchedulerTrackedFeature::kSpeechRecognizer);
 
   // If the speech API request was from an inner WebContents or a guest, save
@@ -263,6 +263,8 @@ void SpeechRecognitionSession::OnRecognitionResults(
 void SpeechRecognitionSession::OnRecognitionError(
     int session_id,
     const blink::mojom::SpeechRecognitionError& error) {
+  if (!client_.is_bound())
+    return;
   client_->ErrorOccurred(blink::mojom::SpeechRecognitionError::New(error));
 }
 

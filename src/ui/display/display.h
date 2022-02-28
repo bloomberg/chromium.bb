@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/compiler_specific.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/display_export.h"
@@ -233,6 +232,9 @@ class DISPLAY_EXPORT Display final {
   void set_color_spaces(const gfx::DisplayColorSpaces& color_spaces) {
     color_spaces_ = color_spaces;
   }
+
+  // Return true if the display orientation is landscape.
+  bool is_landscape() const { return bounds_.width() >= bounds_.height(); }
 
   // Default values for color_depth and depth_per_component.
   static constexpr int kDefaultBitsPerPixel = 24;

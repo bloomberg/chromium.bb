@@ -10,9 +10,16 @@
 #include <iterator>
 #include <utility>
 
+#include "build/build_config.h"
+#include "third_party/base/numerics/safe_math.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace {
 
-const uint16_t g_FX_MSDOSThaiUnicodes[128] = {
+const uint16_t kFX_MSDOSThaiUnicodes[128] = {
     0x20AC, 0x0000, 0x0000, 0x0000, 0x0000, 0x2026, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x2018,
     0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x0000, 0x0000, 0x0000,
@@ -30,7 +37,7 @@ const uint16_t g_FX_MSDOSThaiUnicodes[128] = {
     0x0000, 0x0000,
 };
 
-const uint16_t g_FX_MSWinEasternEuropeanUnicodes[128] = {
+const uint16_t kFX_MSWinEasternEuropeanUnicodes[128] = {
     0x20AC, 0x0000, 0x201A, 0x0000, 0x201E, 0x2026, 0x2020, 0x2021, 0x0000,
     0x2030, 0x0160, 0x2039, 0x015A, 0x0164, 0x017D, 0x0179, 0x0000, 0x2018,
     0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x0000, 0x2122, 0x0161,
@@ -48,7 +55,7 @@ const uint16_t g_FX_MSWinEasternEuropeanUnicodes[128] = {
     0x0163, 0x02D9,
 };
 
-const uint16_t g_FX_MSWinCyrillicUnicodes[128] = {
+const uint16_t kFX_MSWinCyrillicUnicodes[128] = {
     0x0402, 0x0403, 0x201A, 0x0453, 0x201E, 0x2026, 0x2020, 0x2021, 0x20AC,
     0x2030, 0x0409, 0x2039, 0x040A, 0x040C, 0x040B, 0x040F, 0x0452, 0x2018,
     0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x0000, 0x2122, 0x0459,
@@ -66,7 +73,7 @@ const uint16_t g_FX_MSWinCyrillicUnicodes[128] = {
     0x044E, 0x044F,
 };
 
-const uint16_t g_FX_MSWinGreekUnicodes[128] = {
+const uint16_t kFX_MSWinGreekUnicodes[128] = {
     0x20AC, 0x0000, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x0000,
     0x2030, 0x0000, 0x2039, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x2018,
     0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x0000, 0x2122, 0x0000,
@@ -84,7 +91,7 @@ const uint16_t g_FX_MSWinGreekUnicodes[128] = {
     0x03CE, 0x0000,
 };
 
-const uint16_t g_FX_MSWinTurkishUnicodes[128] = {
+const uint16_t kFX_MSWinTurkishUnicodes[128] = {
     0x20AC, 0x0000, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6,
     0x2030, 0x0160, 0x2039, 0x0152, 0x0000, 0x0000, 0x0000, 0x0000, 0x2018,
     0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x02DC, 0x2122, 0x0161,
@@ -102,7 +109,7 @@ const uint16_t g_FX_MSWinTurkishUnicodes[128] = {
     0x015F, 0x00FF,
 };
 
-const uint16_t g_FX_MSWinHebrewUnicodes[128] = {
+const uint16_t kFX_MSWinHebrewUnicodes[128] = {
     0x20AC, 0x0000, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6,
     0x2030, 0x0000, 0x2039, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x2018,
     0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x02DC, 0x2122, 0x0000,
@@ -120,7 +127,7 @@ const uint16_t g_FX_MSWinHebrewUnicodes[128] = {
     0x200F, 0x0000,
 };
 
-const uint16_t g_FX_MSWinArabicUnicodes[128] = {
+const uint16_t kFX_MSWinArabicUnicodes[128] = {
     0x20AC, 0x067E, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6,
     0x2030, 0x0679, 0x2039, 0x0152, 0x0686, 0x0698, 0x0688, 0x06AF, 0x2018,
     0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x06A9, 0x2122, 0x0691,
@@ -138,7 +145,7 @@ const uint16_t g_FX_MSWinArabicUnicodes[128] = {
     0x200F, 0x06D2,
 };
 
-const uint16_t g_FX_MSWinBalticUnicodes[128] = {
+const uint16_t kFX_MSWinBalticUnicodes[128] = {
     0x20AC, 0x0000, 0x201A, 0x0000, 0x201E, 0x2026, 0x2020, 0x2021, 0x0000,
     0x2030, 0x0000, 0x2039, 0x0000, 0x00A8, 0x02C7, 0x00B8, 0x0000, 0x2018,
     0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x0000, 0x2122, 0x0000,
@@ -157,81 +164,170 @@ const uint16_t g_FX_MSWinBalticUnicodes[128] = {
 };
 
 struct FX_CHARSET_MAP {
-  uint16_t charset;
-  uint16_t codepage;
+  FX_Charset charset;
+  FX_CodePage codepage;
 };
 
-const FX_CHARSET_MAP g_FXCharset2CodePageTable[] = {
-    {FX_CHARSET_ANSI, FX_CODEPAGE_MSWin_WesternEuropean},
-    {FX_CHARSET_Default, FX_CODEPAGE_DefANSI},
-    {FX_CHARSET_Symbol, FX_CODEPAGE_Symbol},
-    {FX_CHARSET_MAC_Roman, FX_CODEPAGE_MAC_Roman},
-    {FX_CHARSET_MAC_ShiftJIS, FX_CODEPAGE_MAC_ShiftJIS},
-    {FX_CHARSET_MAC_Korean, FX_CODEPAGE_MAC_Korean},
-    {FX_CHARSET_MAC_ChineseSimplified, FX_CODEPAGE_MAC_ChineseSimplified},
-    {FX_CHARSET_MAC_ChineseTraditional, FX_CODEPAGE_MAC_ChineseTraditional},
-    {FX_CHARSET_MAC_Hebrew, FX_CODEPAGE_MAC_Hebrew},
-    {FX_CHARSET_MAC_Arabic, FX_CODEPAGE_MAC_Arabic},
-    {FX_CHARSET_MAC_Greek, FX_CODEPAGE_MAC_Greek},
-    {FX_CHARSET_MAC_Turkish, FX_CODEPAGE_MAC_Turkish},
-    {FX_CHARSET_MAC_Thai, FX_CODEPAGE_MAC_Thai},
-    {FX_CHARSET_MAC_EasternEuropean, FX_CODEPAGE_MAC_EasternEuropean},
-    {FX_CHARSET_MAC_Cyrillic, FX_CODEPAGE_MAC_Cyrillic},
-    {FX_CHARSET_ShiftJIS, FX_CODEPAGE_ShiftJIS},
-    {FX_CHARSET_Hangul, FX_CODEPAGE_Hangul},
-    {FX_CHARSET_Johab, FX_CODEPAGE_Johab},
-    {FX_CHARSET_ChineseSimplified, FX_CODEPAGE_ChineseSimplified},
-    {FX_CHARSET_ChineseTraditional, FX_CODEPAGE_ChineseTraditional},
-    {FX_CHARSET_MSWin_Greek, FX_CODEPAGE_MSWin_Greek},
-    {FX_CHARSET_MSWin_Turkish, FX_CODEPAGE_MSWin_Turkish},
-    {FX_CHARSET_MSWin_Vietnamese, FX_CODEPAGE_MSWin_Vietnamese},
-    {FX_CHARSET_MSWin_Hebrew, FX_CODEPAGE_MSWin_Hebrew},
-    {FX_CHARSET_MSWin_Arabic, FX_CODEPAGE_MSWin_Arabic},
-    {FX_CHARSET_MSWin_Baltic, FX_CODEPAGE_MSWin_Baltic},
-    {FX_CHARSET_MSWin_Cyrillic, FX_CODEPAGE_MSWin_Cyrillic},
-    {FX_CHARSET_Thai, FX_CODEPAGE_MSDOS_Thai},
-    {FX_CHARSET_MSWin_EasternEuropean, FX_CODEPAGE_MSWin_EasternEuropean},
-    {FX_CHARSET_US, FX_CODEPAGE_MSDOS_US},
-    {FX_CHARSET_OEM, FX_CODEPAGE_MSDOS_WesternEuropean},
+const FX_CHARSET_MAP kFXCharset2CodePageTable[] = {
+    {FX_Charset::kANSI, FX_CodePage::kMSWin_WesternEuropean},
+    {FX_Charset::kDefault, FX_CodePage::kDefANSI},
+    {FX_Charset::kSymbol, FX_CodePage::kSymbol},
+    {FX_Charset::kMAC_Roman, FX_CodePage::kMAC_Roman},
+    {FX_Charset::kMAC_ShiftJIS, FX_CodePage::kMAC_ShiftJIS},
+    {FX_Charset::kMAC_Korean, FX_CodePage::kMAC_Korean},
+    {FX_Charset::kMAC_ChineseSimplified, FX_CodePage::kMAC_ChineseSimplified},
+    {FX_Charset::kMAC_ChineseTraditional, FX_CodePage::kMAC_ChineseTraditional},
+    {FX_Charset::kMAC_Hebrew, FX_CodePage::kMAC_Hebrew},
+    {FX_Charset::kMAC_Arabic, FX_CodePage::kMAC_Arabic},
+    {FX_Charset::kMAC_Greek, FX_CodePage::kMAC_Greek},
+    {FX_Charset::kMAC_Turkish, FX_CodePage::kMAC_Turkish},
+    {FX_Charset::kMAC_Thai, FX_CodePage::kMAC_Thai},
+    {FX_Charset::kMAC_EasternEuropean, FX_CodePage::kMAC_EasternEuropean},
+    {FX_Charset::kMAC_Cyrillic, FX_CodePage::kMAC_Cyrillic},
+    {FX_Charset::kShiftJIS, FX_CodePage::kShiftJIS},
+    {FX_Charset::kHangul, FX_CodePage::kHangul},
+    {FX_Charset::kJohab, FX_CodePage::kJohab},
+    {FX_Charset::kChineseSimplified, FX_CodePage::kChineseSimplified},
+    {FX_Charset::kChineseTraditional, FX_CodePage::kChineseTraditional},
+    {FX_Charset::kMSWin_Greek, FX_CodePage::kMSWin_Greek},
+    {FX_Charset::kMSWin_Turkish, FX_CodePage::kMSWin_Turkish},
+    {FX_Charset::kMSWin_Vietnamese, FX_CodePage::kMSWin_Vietnamese},
+    {FX_Charset::kMSWin_Hebrew, FX_CodePage::kMSWin_Hebrew},
+    {FX_Charset::kMSWin_Arabic, FX_CodePage::kMSWin_Arabic},
+    {FX_Charset::kMSWin_Baltic, FX_CodePage::kMSWin_Baltic},
+    {FX_Charset::kMSWin_Cyrillic, FX_CodePage::kMSWin_Cyrillic},
+    {FX_Charset::kThai, FX_CodePage::kMSDOS_Thai},
+    {FX_Charset::kMSWin_EasternEuropean, FX_CodePage::kMSWin_EasternEuropean},
+    {FX_Charset::kUS, FX_CodePage::kMSDOS_US},
+    {FX_Charset::kOEM, FX_CodePage::kMSDOS_WesternEuropean},
 };
 
 }  // namespace
 
-const FX_CharsetUnicodes g_FX_CharsetUnicodes[8] = {
-    {FX_CHARSET_Thai, g_FX_MSDOSThaiUnicodes},
-    {FX_CHARSET_MSWin_EasternEuropean, g_FX_MSWinEasternEuropeanUnicodes},
-    {FX_CHARSET_MSWin_Cyrillic, g_FX_MSWinCyrillicUnicodes},
-    {FX_CHARSET_MSWin_Greek, g_FX_MSWinGreekUnicodes},
-    {FX_CHARSET_MSWin_Turkish, g_FX_MSWinTurkishUnicodes},
-    {FX_CHARSET_MSWin_Hebrew, g_FX_MSWinHebrewUnicodes},
-    {FX_CHARSET_MSWin_Arabic, g_FX_MSWinArabicUnicodes},
-    {FX_CHARSET_MSWin_Baltic, g_FX_MSWinBalticUnicodes},
+const FX_CharsetUnicodes kFX_CharsetUnicodes[8] = {
+    {FX_Charset::kThai, kFX_MSDOSThaiUnicodes},
+    {FX_Charset::kMSWin_EasternEuropean, kFX_MSWinEasternEuropeanUnicodes},
+    {FX_Charset::kMSWin_Cyrillic, kFX_MSWinCyrillicUnicodes},
+    {FX_Charset::kMSWin_Greek, kFX_MSWinGreekUnicodes},
+    {FX_Charset::kMSWin_Turkish, kFX_MSWinTurkishUnicodes},
+    {FX_Charset::kMSWin_Hebrew, kFX_MSWinHebrewUnicodes},
+    {FX_Charset::kMSWin_Arabic, kFX_MSWinArabicUnicodes},
+    {FX_Charset::kMSWin_Baltic, kFX_MSWinBalticUnicodes},
 };
 
-uint16_t FX_GetCodePageFromCharset(uint8_t charset) {
-  auto* result =
-      std::lower_bound(std::begin(g_FXCharset2CodePageTable),
-                       std::end(g_FXCharset2CodePageTable), charset,
-                       [](const FX_CHARSET_MAP& iter, const uint16_t& charset) {
-                         return iter.charset < charset;
-                       });
-  if (result != std::end(g_FXCharset2CodePageTable) &&
+FX_CodePage FX_GetACP() {
+#if defined(OS_WIN)
+  return static_cast<FX_CodePage>(GetACP());
+#else
+  return FX_CodePage::kDefANSI;
+#endif
+}
+
+FX_CodePage FX_GetCodePageFromCharset(FX_Charset charset) {
+  auto* result = std::lower_bound(
+      std::begin(kFXCharset2CodePageTable), std::end(kFXCharset2CodePageTable),
+      charset, [](const FX_CHARSET_MAP& iter, const FX_Charset& charset) {
+        return iter.charset < charset;
+      });
+  if (result != std::end(kFXCharset2CodePageTable) &&
       result->charset == charset) {
     return result->codepage;
   }
-  return 0xFFFF;
+  return FX_CodePage::kFailure;
 }
 
-uint8_t FX_GetCharsetFromCodePage(uint16_t codepage) {
-  for (const auto& it : g_FXCharset2CodePageTable) {
+FX_Charset FX_GetCharsetFromCodePage(FX_CodePage codepage) {
+  for (const auto& it : kFXCharset2CodePageTable) {
     if (it.codepage == codepage)
       return it.charset;
   }
-  return FX_CHARSET_ANSI;
+  return FX_Charset::kANSI;
 }
 
-bool FX_CharSetIsCJK(uint8_t uCharset) {
-  return (uCharset == FX_CHARSET_ChineseSimplified) ||
-         (uCharset == FX_CHARSET_ChineseTraditional) ||
-         (uCharset == FX_CHARSET_Hangul) || (uCharset == FX_CHARSET_ShiftJIS);
+FX_Charset FX_GetCharsetFromInt(int value) {
+  switch (value) {
+    case static_cast<int>(FX_Charset::kANSI):
+    case static_cast<int>(FX_Charset::kDefault):
+    case static_cast<int>(FX_Charset::kSymbol):
+    case static_cast<int>(FX_Charset::kMAC_Roman):
+    case static_cast<int>(FX_Charset::kMAC_ShiftJIS):
+    case static_cast<int>(FX_Charset::kMAC_Korean):
+    case static_cast<int>(FX_Charset::kMAC_ChineseSimplified):
+    case static_cast<int>(FX_Charset::kMAC_ChineseTraditional):
+    case static_cast<int>(FX_Charset::kMAC_Hebrew):
+    case static_cast<int>(FX_Charset::kMAC_Arabic):
+    case static_cast<int>(FX_Charset::kMAC_Greek):
+    case static_cast<int>(FX_Charset::kMAC_Turkish):
+    case static_cast<int>(FX_Charset::kMAC_Thai):
+    case static_cast<int>(FX_Charset::kMAC_EasternEuropean):
+    case static_cast<int>(FX_Charset::kMAC_Cyrillic):
+    case static_cast<int>(FX_Charset::kShiftJIS):
+    case static_cast<int>(FX_Charset::kHangul):
+    case static_cast<int>(FX_Charset::kJohab):
+    case static_cast<int>(FX_Charset::kChineseSimplified):
+    case static_cast<int>(FX_Charset::kChineseTraditional):
+    case static_cast<int>(FX_Charset::kMSWin_Greek):
+    case static_cast<int>(FX_Charset::kMSWin_Turkish):
+    case static_cast<int>(FX_Charset::kMSWin_Vietnamese):
+    case static_cast<int>(FX_Charset::kMSWin_Hebrew):
+    case static_cast<int>(FX_Charset::kMSWin_Arabic):
+    case static_cast<int>(FX_Charset::kMSWin_Baltic):
+    case static_cast<int>(FX_Charset::kMSWin_Cyrillic):
+    case static_cast<int>(FX_Charset::kThai):
+    case static_cast<int>(FX_Charset::kMSWin_EasternEuropean):
+    case static_cast<int>(FX_Charset::kUS):
+    case static_cast<int>(FX_Charset::kOEM):
+      return static_cast<FX_Charset>(value);
+    default:
+      return FX_Charset::kANSI;
+  }
+}
+
+bool FX_CharSetIsCJK(FX_Charset uCharset) {
+  return (uCharset == FX_Charset::kChineseSimplified) ||
+         (uCharset == FX_Charset::kChineseTraditional) ||
+         (uCharset == FX_Charset::kHangul) ||
+         (uCharset == FX_Charset::kShiftJIS);
+}
+
+size_t FX_WideCharToMultiByte(FX_CodePage codepage,
+                              WideStringView wstr,
+                              pdfium::span<char> buf) {
+#if defined(OS_WIN)
+  int input_len = pdfium::base::checked_cast<int>(wstr.GetLength());
+  int output_len = pdfium::base::checked_cast<int>(buf.size());
+  return WideCharToMultiByte(static_cast<UINT>(codepage), 0,
+                             wstr.unterminated_c_str(), input_len, buf.data(),
+                             output_len, nullptr, nullptr);
+#else
+  size_t len = 0;
+  for (size_t i = 0; i < wstr.GetLength(); i++) {
+    if (wstr[i] < 0x100) {
+      if (len < buf.size())
+        buf[len] = static_cast<char>(wstr[i]);
+      len++;
+    }
+  }
+  return len;
+#endif
+}
+
+size_t FX_MultiByteToWideChar(FX_CodePage codepage,
+                              ByteStringView bstr,
+                              pdfium::span<wchar_t> buf) {
+#if defined(OS_WIN)
+  const int input_len = pdfium::base::checked_cast<int>(bstr.GetLength());
+  const int output_len = pdfium::base::checked_cast<int>(buf.size());
+  return MultiByteToWideChar(static_cast<UINT>(codepage), 0,
+                             bstr.unterminated_c_str(), input_len, buf.data(),
+                             output_len);
+#else
+  size_t wlen = 0;
+  for (size_t i = 0; i < bstr.GetLength(); i++) {
+    if (wlen < buf.size())
+      buf[wlen] = reinterpret_cast<uint8_t>(bstr[i]);
+    wlen++;
+  }
+  return wlen;
+#endif
 }

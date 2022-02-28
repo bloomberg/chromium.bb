@@ -101,7 +101,7 @@ public class TabGroupUtils {
         // explicitly closing the text bubble.
         BottomSheetObserver bottomSheetObserver = new EmptyBottomSheetObserver() {
             @Override
-            public void onSheetStateChanged(int newState) {
+            public void onSheetStateChanged(int newState, int reason) {
                 if (newState == BottomSheetController.SheetState.HIDDEN) {
                     textBubble.show();
                 } else {
@@ -136,7 +136,7 @@ public class TabGroupUtils {
         sTabModelSelectorTabObserver = new TabModelSelectorTabObserver(selector) {
             @Override
             public void onDidFinishNavigation(Tab tab, NavigationHandle navigationHandle) {
-                if (!navigationHandle.isInMainFrame()) return;
+                if (!navigationHandle.isInPrimaryMainFrame()) return;
                 if (tab.isIncognito()) return;
                 Integer transition = navigationHandle.pageTransition();
                 // Searching from omnibox results in PageTransition.GENERATED.

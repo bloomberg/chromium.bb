@@ -18,10 +18,6 @@
 Adapted from Tangent.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import atexit
 import errno
 import importlib
@@ -31,7 +27,6 @@ import tempfile
 
 from tensorflow.python.autograph.pyct import origin_info
 from tensorflow.python.autograph.pyct import parser
-from tensorflow.python.autograph.utils import compat_util
 
 
 def _remove_file(file_name):
@@ -49,9 +44,12 @@ def _remove_file(file_name):
 
 def load_source(source, delete_on_exit):
   """Loads the given source code as a Python module."""
-  # TODO(mdan): Drop the linter verride once the CI stops running Py2.
-  with tempfile.NamedTemporaryFile(  # pylint:disable=unexpected-keyword-arg
-      mode='w', suffix='.py', delete=False, encoding='utf-8') as f:
+  with tempfile.NamedTemporaryFile(
+      mode='w',
+      suffix='.py',
+      prefix='__autograph_generated_file',
+      delete=False,
+      encoding='utf-8') as f:
     module_name = os.path.basename(f.name[:-3])
     file_name = f.name
     f.write(source)
@@ -103,6 +101,3 @@ def load_ast(nodes,
 
   # TODO(mdan): Return a structured object.
   return module, source, source_map
-
-
-compat_util.deprecated_py2_support(__name__)

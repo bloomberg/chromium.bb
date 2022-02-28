@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "net/base/load_states.h"
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
@@ -163,6 +163,9 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
                     const NetLogWithSource& net_log,
                     StreamType stream_type);
 
+  HttpStreamRequest(const HttpStreamRequest&) = delete;
+  HttpStreamRequest& operator=(const HttpStreamRequest&) = delete;
+
   ~HttpStreamRequest();
 
   // When a HttpStream creation process is stalled due to necessity
@@ -217,9 +220,9 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
   const GURL url_;
 
   // Unowned. The helper must outlive this request.
-  Helper* helper_;
+  raw_ptr<Helper> helper_;
 
-  WebSocketHandshakeStreamBase::CreateHelper* const
+  const raw_ptr<WebSocketHandshakeStreamBase::CreateHelper>
       websocket_handshake_stream_create_helper_;
   const NetLogWithSource net_log_;
 
@@ -230,8 +233,6 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
   bool using_spdy_;
   ConnectionAttempts connection_attempts_;
   const StreamType stream_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(HttpStreamRequest);
 };
 
 }  // namespace net

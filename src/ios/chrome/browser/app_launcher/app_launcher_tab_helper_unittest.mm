@@ -81,10 +81,11 @@ class FakeNavigationManager : public web::FakeNavigationManager {
  public:
   FakeNavigationManager() = default;
 
+  FakeNavigationManager(const FakeNavigationManager&) = delete;
+  FakeNavigationManager& operator=(const FakeNavigationManager&) = delete;
+
   // web::NavigationManager implementation.
   void DiscardNonCommittedItems() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(FakeNavigationManager);
 };
 
 std::unique_ptr<KeyedService> BuildReadingListModel(
@@ -123,12 +124,22 @@ class AppLauncherTabHelperTest : public PlatformTest {
                                   ui::PageTransition::PAGE_TRANSITION_LINK)
       WARN_UNUSED_RESULT {
     NSURL* url = [NSURL URLWithString:url_string];
-    web::WebStatePolicyDecider::RequestInfo request_info(
+    const web::WebStatePolicyDecider::RequestInfo request_info(
         transition_type, target_frame_is_main, target_frame_is_cross_origin,
         has_user_gesture);
-    return tab_helper_
-        ->ShouldAllowRequest([NSURLRequest requestWithURL:url], request_info)
-        .ShouldAllowNavigation();
+    __block bool callback_called = false;
+    __block web::WebStatePolicyDecider::PolicyDecision policy_decision =
+        web::WebStatePolicyDecider::PolicyDecision::Allow();
+    auto callback =
+        base::BindOnce(^(web::WebStatePolicyDecider::PolicyDecision decision) {
+          policy_decision = decision;
+          callback_called = true;
+        });
+    tab_helper_->ShouldAllowRequest([NSURLRequest requestWithURL:url],
+                                    request_info, std::move(callback));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(callback_called);
+    return policy_decision.ShouldAllowNavigation();
   }
 
   // Initialize reading list model and its required tab helpers.
@@ -171,14 +182,23 @@ class AppLauncherTabHelperTest : public PlatformTest {
 
     NSURL* url = [NSURL
         URLWithString:@"itms-apps://itunes.apple.com/us/app/appname/id123"];
-    web::WebStatePolicyDecider::RequestInfo request_info(
+    const web::WebStatePolicyDecider::RequestInfo request_info(
         transition_type,
         /*target_frame_is_main=*/true, /*target_frame_is_cross_origin=*/false,
         /*has_user_gesture=*/true);
-    EXPECT_TRUE(tab_helper_
-                    ->ShouldAllowRequest([NSURLRequest requestWithURL:url],
-                                         request_info)
-                    .ShouldCancelNavigation());
+    __block bool callback_called = false;
+    __block web::WebStatePolicyDecider::PolicyDecision policy_decision =
+        web::WebStatePolicyDecider::PolicyDecision::Allow();
+    auto callback =
+        base::BindOnce(^(web::WebStatePolicyDecider::PolicyDecision decision) {
+          policy_decision = decision;
+          callback_called = true;
+        });
+    tab_helper_->ShouldAllowRequest([NSURLRequest requestWithURL:url],
+                                    request_info, std::move(callback));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(callback_called);
+    EXPECT_TRUE(policy_decision.ShouldCancelNavigation());
 
     const ReadingListEntry* entry = model->GetEntryByURL(pending_url);
     return entry->IsRead() == expected_read_status;
@@ -582,8 +602,7 @@ class BlockedUrlPolicyAppLauncherTabHelperTest
 TEST_F(BlockedUrlPolicyAppLauncherTabHelperTest, BlockedUrl) {
   base::test::ScopedFeatureList scoped_features;
   scoped_features.InitWithFeatures(
-      /*enabled_features=*/{kURLBlocklistIOS,
-                            web::features::kUseJSForErrorPage},
+      /*enabled_features=*/{kURLBlocklistIOS},
       /*disabled_features=*/{});
 
   NSString* url_string = @"itms-apps://itunes.apple.com/us/app/appname/id123";
@@ -604,8 +623,7 @@ TEST_F(BlockedUrlPolicyAppLauncherTabHelperTest, BlockedUrl) {
 TEST_F(BlockedUrlPolicyAppLauncherTabHelperTest, MAYBE_AllowedUrl) {
   base::test::ScopedFeatureList scoped_features;
   scoped_features.InitWithFeatures(
-      /*enabled_features=*/{kURLBlocklistIOS,
-                            web::features::kUseJSForErrorPage},
+      /*enabled_features=*/{kURLBlocklistIOS},
       /*disabled_features=*/{});
 
   EXPECT_FALSE(TestShouldAllowRequest(@"valid://1234",

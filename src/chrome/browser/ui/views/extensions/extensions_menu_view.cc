@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/memory/ptr_util.h"
 #include "base/ranges/algorithm.h"
@@ -14,19 +15,24 @@
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/bubble_menu_item_factory.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
+#include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop_host_view.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
@@ -91,7 +97,7 @@ ExtensionsMenuView::ExtensionsMenuView(
   // appropriately.
   SetPaintClientToLayer(true);
 
-  toolbar_model_observation_.Observe(toolbar_model_);
+  toolbar_model_observation_.Observe(toolbar_model_.get());
   browser_->tab_strip_model()->AddObserver(this);
   set_margins(gfx::Insets(0));
 
@@ -151,7 +157,7 @@ void ExtensionsMenuView::Populate() {
   // If so this needs to be created before being added to a widget, constructor
   // would do.
   auto footer = CreateBubbleMenuItem(
-      EXTENSIONS_SETTINGS_ID, l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSION),
+      EXTENSIONS_SETTINGS_ID, l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS),
       base::BindRepeating(&chrome::ShowExtensions, browser_, std::string()));
 
   // Extension icons are larger-than-favicon as they contain internal padding
@@ -164,7 +170,7 @@ void ExtensionsMenuView::Populate() {
       (ExtensionsMenuItemView::kIconSize.width() - kSettingsIconSize) / 2;
 
   footer->SetBorder(views::CreateEmptyBorder(
-      footer->border()->GetInsets() +
+      footer->GetInsets() +
       gfx::Insets(0, kSettingsIconHorizontalPadding, 0, 0)));
   footer->SetImageLabelSpacing(footer->GetImageLabelSpacing() +
                                kSettingsIconHorizontalPadding);
@@ -261,11 +267,6 @@ ExtensionsMenuView::Section* ExtensionsMenuView::GetSectionForStatus(
   return section;
 }
 
-void ExtensionsMenuView::UpdateActionStates() {
-  for (ExtensionsMenuItemView* view : extensions_menu_items_)
-    view->view_controller()->UpdateState();
-}
-
 void ExtensionsMenuView::SortMenuItemsByName() {
   auto sort_section = [](Section* section) {
     if (section->menu_items->children().empty())
@@ -294,8 +295,9 @@ void ExtensionsMenuView::CreateAndInsertNewItem(
 
   // The bare `new` is safe here, because InsertMenuItem is guaranteed to
   // be added to the view hierarchy, which takes ownership.
-  auto* item = new ExtensionsMenuItemView(browser_, std::move(controller),
-                                          allow_pinning_);
+  auto* item = new ExtensionsMenuItemView(
+      ExtensionsMenuItemView::MenuItemType::kExtensions, browser_,
+      std::move(controller), allow_pinning_);
   extensions_menu_items_.insert(item);
   InsertMenuItem(item);
   // Sanity check that the item was added.
@@ -329,7 +331,8 @@ void ExtensionsMenuView::UpdateSectionVisibility() {
 }
 
 void ExtensionsMenuView::Update() {
-  UpdateActionStates();
+  for (ExtensionsMenuItemView* view : extensions_menu_items_)
+    view->view_controller()->UpdateState();
 
   content::WebContents* const web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
@@ -409,11 +412,17 @@ std::u16string ExtensionsMenuView::GetAccessibleWindowTitle() const {
 void ExtensionsMenuView::OnThemeChanged() {
   BubbleDialogDelegateView::OnThemeChanged();
   if (manage_extensions_button_) {
+    const SkColor background_color =
+        GetColorProvider()->GetColor(ui::kColorBubbleBackground);
+    SkColor icon_color = GetColorProvider()->GetColor(ui::kColorMenuIcon);
+    if (background_color != SK_ColorTRANSPARENT) {
+      icon_color =
+          color_utils::BlendForMinContrast(icon_color, background_color).color;
+    }
     manage_extensions_button_->SetImage(
         views::Button::STATE_NORMAL,
         gfx::CreateVectorIcon(vector_icons::kSettingsIcon, kSettingsIconSize,
-                              GetNativeTheme()->GetSystemColor(
-                                  ui::NativeTheme::kColorId_MenuIconColor)));
+                              icon_color));
   }
 }
 
@@ -463,7 +472,7 @@ void ExtensionsMenuView::OnToolbarActionRemoved(
 
 void ExtensionsMenuView::OnToolbarActionUpdated(
     const ToolbarActionsModel::ActionId& action_id) {
-  UpdateActionStates();
+  Update();
 }
 
 void ExtensionsMenuView::OnToolbarModelInitialized() {
@@ -488,6 +497,9 @@ views::Widget* ExtensionsMenuView::ShowBubble(
     ExtensionsContainer* extensions_container,
     bool allow_pinning) {
   DCHECK(!g_extensions_dialog);
+  // Experiment `kExtensionsMenuAccessControl` is introducing a new menu. Check
+  // `ExtensionsMenuView` is only constructed when the experiment is disabled.
+  DCHECK(!base::FeatureList::IsEnabled(features::kExtensionsMenuAccessControl));
   g_extensions_dialog = new ExtensionsMenuView(
       anchor_view, browser, extensions_container, allow_pinning);
   views::Widget* widget =

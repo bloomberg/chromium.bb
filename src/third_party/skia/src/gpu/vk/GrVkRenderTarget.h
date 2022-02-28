@@ -19,7 +19,6 @@
 class GrVkFramebuffer;
 class GrVkGpu;
 class GrVkImageView;
-class GrVkAttachment;
 
 struct GrVkImageInfo;
 
@@ -53,7 +52,7 @@ public:
                                     renderPass.loadFromResolve());
     }
 
-    GrVkAttachment* colorAttachment() const {
+    GrVkImage* colorAttachment() const {
         SkASSERT(!this->wrapsSecondaryCommandBuffer());
         return fColorAttachment.get();
     }
@@ -62,7 +61,7 @@ public:
         return this->colorAttachment()->framebufferView();
     }
 
-    GrVkAttachment* resolveAttachment() const {
+    GrVkImage* resolveAttachment() const {
         SkASSERT(!this->wrapsSecondaryCommandBuffer());
         return fResolveAttachment.get();
     }
@@ -71,18 +70,15 @@ public:
         return fResolveAttachment->framebufferView();
     }
 
-    const GrManagedResource* stencilImageResource() const;
-    const GrVkImageView* stencilAttachmentView() const;
-
-    // Returns the GrVkAttachment of the non-msaa attachment. If the color attachment has 1 sample,
+    // Returns the GrVkImage of the non-msaa attachment. If the color attachment has 1 sample,
     // then the color attachment will be returned. Otherwise, the resolve attachment is returned.
     // Note that in this second case the resolve attachment may be null if this was created by
     // wrapping an msaa VkImage.
-    GrVkAttachment* nonMSAAAttachment() const;
+    GrVkImage* nonMSAAAttachment() const;
 
     // Returns the attachment that is used for all external client facing operations. This will be
     // either a wrapped color attachment or the resolve attachment for created VkImages.
-    GrVkAttachment* externalAttachment() const {
+    GrVkImage* externalAttachment() const {
         return fResolveAttachment ? fResolveAttachment.get() : fColorAttachment.get();
     }
 
@@ -100,12 +96,7 @@ public:
     bool wrapsSecondaryCommandBuffer() const { return SkToBool(fExternalFramebuffer); }
     sk_sp<GrVkFramebuffer> externalFramebuffer() const;
 
-    bool canAttemptStencilAttachment(bool useMSAASurface) const override {
-        SkASSERT(useMSAASurface == (this->numSamples() > 1));
-        // We don't know the status of the stencil attachment for wrapped external secondary command
-        // buffers so we just assume we don't have one.
-        return !this->wrapsSecondaryCommandBuffer();
-    }
+    bool canAttemptStencilAttachment(bool useMSAASurface) const override;
 
     GrBackendRenderTarget getBackendRenderTarget() const override;
 
@@ -130,8 +121,8 @@ protected:
 
     GrVkRenderTarget(GrVkGpu* gpu,
                      SkISize dimensions,
-                     sk_sp<GrVkAttachment> colorAttachment,
-                     sk_sp<GrVkAttachment> resolveAttachment,
+                     sk_sp<GrVkImage> colorAttachment,
+                     sk_sp<GrVkImage> resolveImage,
                      CreateType createType);
 
     void onAbandon() override;
@@ -150,8 +141,8 @@ private:
 
     GrVkGpu* getVkGpu() const;
 
-    GrVkAttachment* dynamicMSAAAttachment();
-    GrVkAttachment* msaaAttachment();
+    GrVkImage* dynamicMSAAAttachment();
+    GrVkImage* msaaAttachment();
 
     std::pair<const GrVkRenderPass*, GrVkResourceProvider::CompatibleRPHandle>
         createSimpleRenderPass(bool withResolve,
@@ -170,16 +161,16 @@ private:
     void onSetRelease(sk_sp<GrRefCntedCallback> releaseHelper) override {
         // Forward the release proc on to the GrVkImage of the release attachment if we have one,
         // otherwise the color attachment.
-        GrVkAttachment* attachment =
+        GrVkImage* attachment =
                 fResolveAttachment ? fResolveAttachment.get() : fColorAttachment.get();
         attachment->setResourceRelease(std::move(releaseHelper));
     }
 
     void releaseInternalObjects();
 
-    sk_sp<GrVkAttachment> fColorAttachment;
-    sk_sp<GrVkAttachment> fResolveAttachment;
-    sk_sp<GrVkAttachment> fDynamicMSAAAttachment;
+    sk_sp<GrVkImage> fColorAttachment;
+    sk_sp<GrVkImage> fResolveAttachment;
+    sk_sp<GrVkImage> fDynamicMSAAAttachment;
 
     // We can have a renderpass with and without resolve attachment, stencil attachment,
     // input attachment dependency, advanced blend dependency, and loading from resolve. All 5 of

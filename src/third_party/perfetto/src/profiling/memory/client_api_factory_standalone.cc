@@ -16,6 +16,7 @@
 
 #include "src/profiling/memory/client_api_factory.h"
 
+#include "perfetto/base/logging.h"
 #include "perfetto/ext/base/scoped_file.h"
 #include "perfetto/ext/base/unix_socket.h"
 #include "perfetto/ext/base/unix_task_runner.h"
@@ -106,6 +107,11 @@ void StartHeapprofdIfStatic() {
   }
 
   daemon(/* nochdir= */ 0, /* noclose= */ 1);
+
+  // On debug builds, we want to turn on crash reporting for heapprofd.
+#if PERFETTO_BUILDFLAG(PERFETTO_STDERR_CRASH_DUMP)
+  base::EnableStacktraceOnCrashForDebug();
+#endif
 
   cli_sock.ReleaseFd();
 

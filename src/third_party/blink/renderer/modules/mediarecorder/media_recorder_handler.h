@@ -7,15 +7,15 @@
 
 #include <memory>
 
-#include "base/macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/web/modules/mediastream/encoded_video_frame.h"
 #include "third_party/blink/renderer/modules/mediarecorder/audio_track_recorder.h"
 #include "third_party/blink/renderer/modules/mediarecorder/video_track_recorder.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -48,6 +48,10 @@ class MODULES_EXPORT MediaRecorderHandler final
  public:
   explicit MediaRecorderHandler(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  MediaRecorderHandler(const MediaRecorderHandler&) = delete;
+  MediaRecorderHandler& operator=(const MediaRecorderHandler&) = delete;
+
   ~MediaRecorderHandler();
 
   // MediaRecorder API isTypeSupported(), which boils down to
@@ -169,8 +173,6 @@ class MODULES_EXPORT MediaRecorderHandler final
   std::unique_ptr<media::WebmMuxer> webm_muxer_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaRecorderHandler);
 };
 
 }  // namespace blink

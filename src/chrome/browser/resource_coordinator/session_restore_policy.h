@@ -11,6 +11,7 @@
 #include "base/cancelable_callback.h"
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -48,6 +49,9 @@ class SessionRestorePolicy {
   class Delegate;
 
   SessionRestorePolicy();
+
+  SessionRestorePolicy(const SessionRestorePolicy&) = delete;
+  SessionRestorePolicy& operator=(const SessionRestorePolicy&) = delete;
 
   // Overridden for testing.
   virtual ~SessionRestorePolicy();
@@ -228,7 +232,7 @@ class SessionRestorePolicy {
 
   // Delegate for interface with the system. This allows easy testing of only
   // the logic in this class.
-  const Delegate* const delegate_;
+  const raw_ptr<const Delegate> delegate_;
 
   // The minimum number of tabs to ever load simultaneously. This can be
   // exceeded by user actions or load timeouts. See TabLoader for details.
@@ -255,8 +259,7 @@ class SessionRestorePolicy {
 
   // The maximum time since last use of a tab in order for it to be restored.
   // Setting to zero means this logic does not apply.
-  base::TimeDelta max_time_since_last_use_to_restore_ =
-      base::TimeDelta::FromDays(30);
+  base::TimeDelta max_time_since_last_use_to_restore_ = base::Days(30);
 
   // The minimum site engagement score in order for a tab to be restored.
   // Setting this to zero means all tabs will be restored regardless of the
@@ -312,8 +315,6 @@ class SessionRestorePolicy {
   // notifications in flight. The messages are bound to a weak pointer so that
   // they are not delivered after the policy object is destroyed.
   base::WeakPtrFactory<SessionRestorePolicy> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SessionRestorePolicy);
 };
 
 // Abstracts away testing seams for the policy engine. In production code the
@@ -322,6 +323,10 @@ class SessionRestorePolicy {
 class SessionRestorePolicy::Delegate {
  public:
   Delegate();
+
+  Delegate(const Delegate&) = delete;
+  Delegate& operator=(const Delegate&) = delete;
+
   virtual ~Delegate();
 
   virtual size_t GetNumberOfCores() const = 0;
@@ -329,9 +334,6 @@ class SessionRestorePolicy::Delegate {
   virtual base::TimeTicks NowTicks() const = 0;
   virtual size_t GetSiteEngagementScore(
       content::WebContents* contents) const = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
 }  // namespace resource_coordinator

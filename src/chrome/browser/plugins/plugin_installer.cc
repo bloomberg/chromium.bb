@@ -28,8 +28,8 @@ void PluginInstaller::RemoveObserver(PluginInstallerObserver* observer) {
   strong_observer_count_--;
   observers_.RemoveObserver(observer);
   if (strong_observer_count_ == 0) {
-    for (WeakPluginInstallerObserver& observer : weak_observers_)
-      observer.OnlyWeakObserversLeft();
+    for (WeakPluginInstallerObserver& weak_observer : weak_observers_)
+      weak_observer.OnlyWeakObserversLeft();
   }
 }
 
@@ -46,7 +46,7 @@ void PluginInstaller::OpenDownloadURL(const GURL& plugin_url,
                                       content::WebContents* web_contents) {
   web_contents->OpenURL(content::OpenURLParams(
       plugin_url,
-      content::Referrer(web_contents->GetURL(),
+      content::Referrer(web_contents->GetLastCommittedURL(),
                         network::mojom::ReferrerPolicy::kDefault),
       WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED,
       false));

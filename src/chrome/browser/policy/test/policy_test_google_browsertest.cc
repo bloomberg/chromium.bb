@@ -10,6 +10,7 @@
 #include "base/test/bind.h"
 #include "base/values.h"
 #include "chrome/browser/policy/policy_test_utils.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/net/safe_search_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -27,6 +28,34 @@
 #include "url/gurl.h"
 
 namespace policy {
+
+void CheckYouTubeRestricted(int youtube_restrict_mode,
+                            const net::HttpRequestHeaders& headers) {
+  std::string header;
+  headers.GetHeader(safe_search_util::kYouTubeRestrictHeaderName, &header);
+  if (youtube_restrict_mode == safe_search_util::YOUTUBE_RESTRICT_OFF) {
+    EXPECT_TRUE(header.empty());
+  } else if (youtube_restrict_mode ==
+             safe_search_util::YOUTUBE_RESTRICT_MODERATE) {
+    EXPECT_EQ(header, safe_search_util::kYouTubeRestrictHeaderValueModerate);
+  } else if (youtube_restrict_mode ==
+             safe_search_util::YOUTUBE_RESTRICT_STRICT) {
+    EXPECT_EQ(header, safe_search_util::kYouTubeRestrictHeaderValueStrict);
+  }
+}
+
+void CheckAllowedDomainsHeader(const std::string& allowed_domain,
+                               const net::HttpRequestHeaders& headers) {
+  if (allowed_domain.empty()) {
+    EXPECT_TRUE(
+        !headers.HasHeader(safe_search_util::kGoogleAppsAllowedDomains));
+    return;
+  }
+
+  std::string header;
+  headers.GetHeader(safe_search_util::kGoogleAppsAllowedDomains, &header);
+  EXPECT_EQ(header, allowed_domain);
+}
 
 class PolicyTestGoogle : public PolicyTest {
  public:
@@ -99,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTestGoogle, ForceYouTubeRestrict) {
     {
       // First check frame requests.
       GURL youtube_url(https_server()->GetURL("youtube.com", "/empty.html"));
-      ui_test_utils::NavigateToURL(browser(), youtube_url);
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), youtube_url));
 
       CheckYouTubeRestricted(youtube_restrict_mode,
                              urls_requested()[youtube_url.path()]);
@@ -131,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTestGoogle, AllowedDomainsForApps) {
     {
       // First check frame requests.
       GURL google_url = https_server()->GetURL("google.com", "/empty.html");
-      ui_test_utils::NavigateToURL(browser(), google_url);
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), google_url));
 
       CheckAllowedDomainsHeader(allowed_domain,
                                 urls_requested()[google_url.path()]);
@@ -152,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTestGoogle, AllowedDomainsForApps) {
     {
       // Double check that a frame to a non-Google url doesn't have the header.
       GURL non_google_url = https_server()->GetURL("/empty.html");
-      ui_test_utils::NavigateToURL(browser(), non_google_url);
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), non_google_url));
 
       CheckAllowedDomainsHeader(std::string(),
                                 urls_requested()[non_google_url.path()]);

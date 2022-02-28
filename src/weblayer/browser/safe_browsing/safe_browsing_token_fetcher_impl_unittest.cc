@@ -5,6 +5,7 @@
 #include "weblayer/browser/safe_browsing/safe_browsing_token_fetcher_impl.h"
 
 #include "content/public/test/browser_task_environment.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "weblayer/public/google_account_access_token_fetch_delegate.h"
 
@@ -38,15 +39,29 @@ class TestAccessTokenFetchDelegate
 
     // All access token requests made by SafeBrowsingTokenFetcherImpl should be
     // for the safe browsing scope.
-    std::set<std::string> expected_scopes = {safe_browsing::kAPIScope};
+    std::set<std::string> expected_scopes = {
+        GaiaConstants::kChromeSafeBrowsingOAuth2Scope};
     EXPECT_EQ(expected_scopes, scopes);
 
     outstanding_callbacks_[most_recent_request_id_] = std::move(callback);
   }
 
+  void OnAccessTokenIdentifiedAsInvalid(const std::set<std::string>& scopes,
+                                        const std::string& token) override {
+    // All invalid token notifications originating from
+    // SafeBrowsingTokenFetcherImpl should be for the safe browsing scope.
+    std::set<std::string> expected_scopes = {
+        GaiaConstants::kChromeSafeBrowsingOAuth2Scope};
+    EXPECT_EQ(expected_scopes, scopes);
+
+    invalid_token_ = token;
+  }
+
   int get_num_outstanding_requests() { return outstanding_callbacks_.size(); }
 
   int get_most_recent_request_id() { return most_recent_request_id_; }
+
+  const std::string& get_most_recent_invalid_token() { return invalid_token_; }
 
   void RespondWithTokenForRequest(int request_id, const std::string& token) {
     ASSERT_TRUE(outstanding_callbacks_.count(request_id));
@@ -60,6 +75,7 @@ class TestAccessTokenFetchDelegate
  private:
   int most_recent_request_id_ = 0;
   std::map<int, OnTokenFetchedCallback> outstanding_callbacks_;
+  std::string invalid_token_;
 };
 
 }  // namespace
@@ -187,7 +203,7 @@ TEST_F(SafeBrowsingTokenFetcherImplTest, TokenFetchTimeout) {
   EXPECT_EQ("dummy", access_token);
 
   // Fast-forward to trigger the token fetch timeout.
-  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(
+  task_environment()->FastForwardBy(base::Milliseconds(
       safe_browsing::kTokenFetchTimeoutDelayFromMilliseconds));
 
   // Even though the delegate has not yet responded,
@@ -264,7 +280,7 @@ TEST_F(SafeBrowsingTokenFetcherImplTest, ConcurrentRequestsAtDifferentTimes) {
   EXPECT_EQ("dummy", access_token2);
 
   task_environment()->FastForwardBy(
-      base::TimeDelta::FromMilliseconds(delay_before_second_request_from_ms));
+      base::Milliseconds(delay_before_second_request_from_ms));
   fetcher.Start(base::BindOnce(&OnAccessTokenFetched, run_loop2.QuitClosure(),
                                &access_token2));
   EXPECT_EQ(2, delegate.get_num_outstanding_requests());
@@ -279,7 +295,7 @@ TEST_F(SafeBrowsingTokenFetcherImplTest, ConcurrentRequestsAtDifferentTimes) {
       safe_browsing::kTokenFetchTimeoutDelayFromMilliseconds -
       delay_before_second_request_from_ms;
   task_environment()->FastForwardBy(
-      base::TimeDelta::FromMilliseconds(time_to_trigger_first_timeout_from_ms));
+      base::Milliseconds(time_to_trigger_first_timeout_from_ms));
 
   // Verify that the first request's timeout was handled by
   // SafeBrowsingTokenFetcherImpl.
@@ -295,6 +311,24 @@ TEST_F(SafeBrowsingTokenFetcherImplTest, ConcurrentRequestsAtDifferentTimes) {
   run_loop2.Run();
   EXPECT_EQ("", access_token1);
   EXPECT_EQ(kTokenFromResponse2, access_token2);
+}
+
+// Tests that the fetcher calls through to GoogleAccountAccessTokenFetchDelegate
+// on being notified of an invalid token.
+TEST_F(SafeBrowsingTokenFetcherImplTest, OnInvalidAccessToken) {
+  TestAccessTokenFetchDelegate delegate;
+  const std::string kInvalidToken = "dummy";
+
+  SafeBrowsingTokenFetcherImpl fetcher(base::BindRepeating(
+      [](TestAccessTokenFetchDelegate* delegate)
+          -> GoogleAccountAccessTokenFetchDelegate* { return delegate; },
+      &delegate));
+
+  EXPECT_EQ("", delegate.get_most_recent_invalid_token());
+
+  fetcher.OnInvalidAccessToken(kInvalidToken);
+
+  EXPECT_EQ(kInvalidToken, delegate.get_most_recent_invalid_token());
 }
 
 }  // namespace weblayer

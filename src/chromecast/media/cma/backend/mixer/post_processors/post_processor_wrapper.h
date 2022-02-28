@@ -16,7 +16,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "chromecast/public/media/audio_post_processor2_shlib.h"
 
 namespace chromecast {
@@ -34,6 +33,10 @@ class AudioPostProcessorWrapper : public AudioPostProcessor2 {
   // for owning the lifetime of |pp|. This should only be used for testing.
   AudioPostProcessorWrapper(AudioPostProcessor* pp, int channels);
 
+  AudioPostProcessorWrapper(const AudioPostProcessorWrapper&) = delete;
+  AudioPostProcessorWrapper& operator=(const AudioPostProcessorWrapper&) =
+      delete;
+
   ~AudioPostProcessorWrapper() override;
 
  private:
@@ -48,8 +51,6 @@ class AudioPostProcessorWrapper : public AudioPostProcessor2 {
   std::unique_ptr<AudioPostProcessor> owned_pp_;
   Status status_;
   AudioPostProcessor* pp_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioPostProcessorWrapper);
 };
 
 }  // namespace media

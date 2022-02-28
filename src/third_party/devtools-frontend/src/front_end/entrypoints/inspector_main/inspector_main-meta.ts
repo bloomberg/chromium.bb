@@ -4,8 +4,9 @@
 
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
+
+import type * as InspectorMain from './inspector_main.js';
 
 const UIStrings = {
   /**
@@ -102,15 +103,10 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('entrypoints/inspector_main/inspector_main-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 
-// eslint-disable-next-line rulesdir/es_modules_import
-import type * as InspectorMain from './inspector_main.js';
-
 let loadedInspectorMainModule: (typeof InspectorMain|undefined);
 
 async function loadInspectorMainModule(): Promise<typeof InspectorMain> {
   if (!loadedInspectorMainModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('entrypoints/inspector_main');
     loadedInspectorMainModule = await import('./inspector_main.js');
   }
   return loadedInspectorMainModule;
@@ -216,6 +212,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.GLOBAL,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.autoOpenDevTools),
   settingName: 'autoAttachToCreatedPages',
   settingType: Common.Settings.SettingType.BOOLEAN,
@@ -235,6 +232,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.APPEARANCE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.disablePaused),
   settingName: 'disablePausedStateOverlay',
   settingType: Common.Settings.SettingType.BOOLEAN,
