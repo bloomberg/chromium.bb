@@ -10,9 +10,11 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/account_manager_core/account_manager_facade.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -25,9 +27,15 @@ class IdentityTestEnvironmentProfileAdaptor;
 class PrefService;
 class TestSigninClient;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+namespace account_manager {
+class AccountManagerFacade;
+}
+
 namespace ash {
 class AccountManagerFactory;
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace sync_preferences {
 class TestingPrefServiceSyncable;
@@ -98,6 +106,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver,
           AccountConsistencyMethod::kDisabled,
       TestSigninClient* test_signin_client = nullptr);
 
+  IdentityTestEnvironment(const IdentityTestEnvironment&) = delete;
+  IdentityTestEnvironment& operator=(const IdentityTestEnvironment&) = delete;
+
   ~IdentityTestEnvironment() override;
 
   // The IdentityManager instance associated with this instance.
@@ -115,11 +126,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver,
   // in the firing of the IdentityManager and PrimaryAccountManager callbacks
   // for signin success. Blocks until the primary account is set. Returns the
   // CoreAccountInfo of the newly-set account.
-  CoreAccountInfo SetPrimaryAccount(const std::string& email);
-
-  // As above, but adds an "unconsented" primary account. See ./README.md for
-  // the distinction between primary and unconsented primary accounts.
-  CoreAccountInfo SetUnconsentedPrimaryAccount(const std::string& email);
+  CoreAccountInfo SetPrimaryAccount(const std::string& email,
+                                    ConsentLevel consent_level);
 
   // Sets a refresh token for the primary account (which must already be set).
   // Before updating the refresh token, blocks until refresh tokens are loaded.
@@ -145,14 +153,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver,
   // IdentityManager and PrimaryAccountManager callbacks for signin success. On
   // all platforms, this method blocks until the primary account is available.
   // Returns the AccountInfo of the newly-available account.
-  AccountInfo MakePrimaryAccountAvailable(const std::string& email);
-
-  // Like MakeAccountAvailable(), but adds an "unconsented" primary account. See
-  // ./README.md for the distinction between primary account and unconsented
-  // primary account.
-  // TODO(crbug.com/1046746): Rename/Refactor |*PrimaryAccount*| functions to
-  // take |ConsentLevel| instead.
-  AccountInfo MakeUnconsentedPrimaryAccountAvailable(const std::string& email);
+  AccountInfo MakePrimaryAccountAvailable(const std::string& email,
+                                          ConsentLevel consent_level);
 
   // Combination of MakeAccountAvailable() and SetCookieAccounts() for a single
   // account. It makes an account available for the given email address, and
@@ -374,30 +376,26 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver,
   void Initialize();
 
   // Create an IdentityManager instance for tests.
+  static std::unique_ptr<IdentityManager> BuildIdentityManagerForTests(
+      SigninClient* signin_client,
+      PrefService* pref_service,
+      base::FilePath user_data_dir,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  static std::unique_ptr<IdentityManager> BuildIdentityManagerForTests(
-      SigninClient* signin_client,
-      PrefService* pref_service,
-      base::FilePath user_data_dir,
       ash::AccountManagerFactory* account_manager_factory,
-      AccountConsistencyMethod account_consistency =
-          AccountConsistencyMethod::kDisabled);
-#else
-  static std::unique_ptr<IdentityManager> BuildIdentityManagerForTests(
-      SigninClient* signin_client,
-      PrefService* pref_service,
-      base::FilePath user_data_dir,
-      AccountConsistencyMethod account_consistency =
-          AccountConsistencyMethod::kDisabled);
+      account_manager::AccountManagerFacade* account_manager_facade,
 #endif
+      AccountConsistencyMethod account_consistency =
+          AccountConsistencyMethod::kDisabled);
 
   static std::unique_ptr<IdentityManager> FinishBuildIdentityManagerForTests(
-      IdentityManager::InitParameters&& init_params,
       std::unique_ptr<AccountTrackerService> account_tracker_service,
       std::unique_ptr<ProfileOAuth2TokenService> token_service,
       SigninClient* signin_client,
       PrefService* pref_service,
       base::FilePath user_data_dir,
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      account_manager::AccountManagerFacade* account_manager_facade,
+#endif
       AccountConsistencyMethod account_consistency =
           AccountConsistencyMethod::kDisabled);
 
@@ -435,17 +433,17 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver,
   std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner_;
 
   // Non-owning pointer to the TestURLLoaderFactory.
-  network::TestURLLoaderFactory* test_url_loader_factory_ = nullptr;
+  raw_ptr<network::TestURLLoaderFactory> test_url_loader_factory_ = nullptr;
 
   // If IdentityTestEnvironment doesn't use TestSigninClient, stores a
   // non-owning pointer to the SigninClient.
-  SigninClient* raw_signin_client_ = nullptr;
+  raw_ptr<SigninClient> raw_signin_client_ = nullptr;
 
   // Depending on which constructor is used, exactly one of these will be
   // non-null. See the documentation on the constructor wherein IdentityManager
   // is passed in for required lifetime invariants in that case.
   std::unique_ptr<IdentityManager> owned_identity_manager_;
-  IdentityManager* raw_identity_manager_ = nullptr;
+  raw_ptr<IdentityManager> raw_identity_manager_ = nullptr;
 
   std::unique_ptr<TestIdentityManagerObserver> test_identity_manager_observer_;
 
@@ -461,8 +459,6 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver,
   std::vector<AccessTokenRequestState> requesters_;
 
   base::WeakPtrFactory<IdentityTestEnvironment> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(IdentityTestEnvironment);
 };
 
 }  // namespace signin

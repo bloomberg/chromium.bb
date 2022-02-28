@@ -51,6 +51,11 @@ void ClickButtonWithFlags(ui::test::EventGenerator* generator,
 class WorkspaceEventHandlerTest : public AshTestBase {
  public:
   WorkspaceEventHandlerTest() = default;
+
+  WorkspaceEventHandlerTest(const WorkspaceEventHandlerTest&) = delete;
+  WorkspaceEventHandlerTest& operator=(const WorkspaceEventHandlerTest&) =
+      delete;
+
   ~WorkspaceEventHandlerTest() override = default;
 
  protected:
@@ -62,11 +67,11 @@ class WorkspaceEventHandlerTest : public AshTestBase {
     ParentWindowInPrimaryRootWindow(window);
     window->SetBounds(bounds);
     window->Show();
+    window->SetProperty(aura::client::kResizeBehaviorKey,
+                        aura::client::kResizeBehaviorCanResize |
+                            aura::client::kResizeBehaviorCanMaximize);
     return window;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WorkspaceEventHandlerTest);
 };
 
 // Keeps track of the properties changed of a particular window.
@@ -75,6 +80,9 @@ class WindowPropertyObserver : public aura::WindowObserver {
   explicit WindowPropertyObserver(aura::Window* window) : window_(window) {
     window->AddObserver(this);
   }
+
+  WindowPropertyObserver(const WindowPropertyObserver&) = delete;
+  WindowPropertyObserver& operator=(const WindowPropertyObserver&) = delete;
 
   ~WindowPropertyObserver() override { window_->RemoveObserver(this); }
 
@@ -91,8 +99,6 @@ class WindowPropertyObserver : public aura::WindowObserver {
 
   aura::Window* window_;
   std::vector<const void*> properties_changed_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowPropertyObserver);
 };
 
 TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
@@ -157,7 +163,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
   EXPECT_EQ(restored_bounds.ToString(), window->GetBoundsInScreen().ToString());
 
   // Verify the double clicking the resize edge works on 2nd display too.
-  UpdateDisplay("200x200,400x300");
+  UpdateDisplay("200x300,400x300");
   gfx::Rect work_area2 = GetSecondaryDisplay().work_area();
   restored_bounds.SetRect(220, 20, 50, 50);
   window->SetBoundsInScreen(restored_bounds, GetSecondaryDisplay());
@@ -215,7 +221,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisWhenSideSnapped) {
                                       .work_area();
 
   WindowState* window_state = WindowState::Get(window.get());
-  const WMEvent snap_event(WM_EVENT_SNAP_LEFT);
+  const WMEvent snap_event(WM_EVENT_SNAP_PRIMARY);
   window_state->OnWMEvent(&snap_event);
 
   gfx::Rect snapped_bounds_in_screen = window->GetBoundsInScreen();
@@ -231,7 +237,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisWhenSideSnapped) {
                                      window.get());
   delegate.set_window_component(HTTOP);
   generator.DoubleClickLeftButton();
-  EXPECT_EQ(WindowStateType::kLeftSnapped, window_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
   EXPECT_EQ(snapped_bounds_in_screen.ToString(),
             window->GetBoundsInScreen().ToString());
 
@@ -364,7 +370,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {
   EXPECT_EQ(restore_bounds.ToString(), window->bounds().ToString());
 
   // 3) Double clicking a snapped window should maximize.
-  const WMEvent snap_event(WM_EVENT_SNAP_LEFT);
+  const WMEvent snap_event(WM_EVENT_SNAP_PRIMARY);
   window_state->OnWMEvent(&snap_event);
   EXPECT_TRUE(window_state->IsSnapped());
   generator.MoveMouseTo(window->GetBoundsInRootWindow().CenterPoint());

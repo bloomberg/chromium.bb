@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
@@ -25,14 +24,17 @@ class ChromeWebUIIOSControllerFactory : public web::WebUIIOSControllerFactory {
 
   static ChromeWebUIIOSControllerFactory* GetInstance();
 
+  ChromeWebUIIOSControllerFactory(const ChromeWebUIIOSControllerFactory&) =
+      delete;
+  ChromeWebUIIOSControllerFactory& operator=(
+      const ChromeWebUIIOSControllerFactory&) = delete;
+
  protected:
   ChromeWebUIIOSControllerFactory();
   ~ChromeWebUIIOSControllerFactory() override;
 
  private:
   friend class base::NoDestructor<ChromeWebUIIOSControllerFactory>;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeWebUIIOSControllerFactory);
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_WEBUI_CHROME_WEB_UI_IOS_CONTROLLER_FACTORY_H_

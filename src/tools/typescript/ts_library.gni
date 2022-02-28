@@ -17,10 +17,7 @@ template("ts_library") {
                            ])
 
     inputs = [ "//tools/typescript/tsconfig_base.json" ]
-    outputs = [
-      "$target_gen_dir/tsconfig.json",
-      "$target_gen_dir/tsconfig.tsbuildinfo",
-    ]
+    outputs = [ "$target_gen_dir/tsconfig.json" ]
 
     assert(defined(in_files) || defined(invoker.definitions))
 
@@ -107,6 +104,9 @@ template("ts_library") {
       "chrome://resources/*|" +
           rebase_path("$root_gen_dir/ui/webui/resources/preprocessed/*",
                       target_gen_dir),
+      "//resources/*|" +
+          rebase_path("$root_gen_dir/ui/webui/resources/preprocessed/*",
+                      target_gen_dir),
       "chrome://resources/polymer/v3_0/*|" +
           rebase_path("//third_party/polymer/v3_0/components-chromium/*",
                       target_gen_dir),
@@ -119,6 +119,8 @@ template("ts_library") {
       "//resources/polymer/v3_0/polymer/polymer_bundled.min.js|" + rebase_path(
               "//third_party/polymer/v3_0/components-chromium/polymer/polymer.d.ts",
               target_gen_dir),
+      "/tools/typescript/definitions/*|" +
+          rebase_path("//tools/typescript/definitions/*", target_gen_dir),
     ]
     args += [ "--path_mappings" ] + path_mappings
     if (defined(invoker.path_mappings)) {

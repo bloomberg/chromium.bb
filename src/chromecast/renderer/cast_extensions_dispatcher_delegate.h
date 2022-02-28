@@ -5,13 +5,18 @@
 #ifndef CHROMECAST_RENDERER_CAST_EXTENSIONS_DISPATCHER_DELEGATE_H_
 #define CHROMECAST_RENDERER_CAST_EXTENSIONS_DISPATCHER_DELEGATE_H_
 
-#include "base/macros.h"
 #include "extensions/renderer/dispatcher_delegate.h"
 
 class CastExtensionsDispatcherDelegate
     : public extensions::DispatcherDelegate {
  public:
   CastExtensionsDispatcherDelegate();
+
+  CastExtensionsDispatcherDelegate(const CastExtensionsDispatcherDelegate&) =
+      delete;
+  CastExtensionsDispatcherDelegate& operator=(
+      const CastExtensionsDispatcherDelegate&) = delete;
+
   ~CastExtensionsDispatcherDelegate() override;
 
  private:
@@ -28,8 +33,6 @@ class CastExtensionsDispatcherDelegate
   void InitializeBindingsSystem(
       extensions::Dispatcher* dispatcher,
       extensions::NativeExtensionBindingsSystem* bindings_system) override;
-
-  DISALLOW_COPY_AND_ASSIGN(CastExtensionsDispatcherDelegate);
 };
 
 #endif  // CHROMECAST_RENDERER_CAST_EXTENSIONS_DISPATCHER_DELEGATE_H_

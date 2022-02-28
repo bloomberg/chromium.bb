@@ -5,15 +5,19 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_view_controller.h"
 
 #include "base/check_op.h"
+#include "base/cxx17_backports.h"
 #include "base/ios/block_types.h"
+#import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/notreached.h"
-#include "base/numerics/ranges.h"
 #import "base/numerics/safe_conversions.h"
+#import "ios/chrome/browser/commerce/price_alert_util.h"
 #include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/commands/thumb_strip_commands.h"
+#import "ios/chrome/browser/ui/commerce/price_card/price_card_data_source.h"
+#import "ios/chrome/browser/ui/commerce/price_card/price_card_item.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_commands.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_view.h"
@@ -25,6 +29,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_empty_view.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_layout.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_shareable_items_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/horizontal_layout.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/plus_sign_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/grid_transition_layout.h"
@@ -32,8 +37,7 @@
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/modals/modals_provider.h"
+#include "ios/public/provider/chrome/browser/modals/modals_api.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -58,6 +62,16 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 }  // namespace
 
+@interface BidirectionalCollectionViewTransitionLayout
+    : UICollectionViewTransitionLayout
+@end
+
+@implementation BidirectionalCollectionViewTransitionLayout
+- (BOOL)flipsHorizontallyInOppositeLayoutDirection {
+  return UseRTLLayout() ? YES : NO;
+}
+@end
+
 @interface GridViewController () <GridCellDelegate,
                                   UICollectionViewDataSource,
                                   UICollectionViewDelegate,
@@ -77,6 +91,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @property(nonatomic, copy) NSString* selectedItemID;
 // Index of the selected item in |items|.
 @property(nonatomic, readonly) NSUInteger selectedIndex;
+// Items selected for editing.
+@property(nonatomic, strong) NSMutableSet<NSString*>* selectedEditingItemIDs;
+// Items selected for editing which are shareable outside of the app.
+@property(nonatomic, strong)
+    NSMutableSet<NSString*>* selectedSharableEditingItemIDs;
 // ID of the last item to be inserted. This is used to track if the active tab
 // was newly created when building the animation layout for transitions.
 @property(nonatomic, copy) NSString* lastInsertedItemID;
@@ -101,10 +120,18 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 // horizontal to grid layout.
 @property(nonatomic, strong)
     UICollectionViewTransitionLayout* gridHorizontalTransitionLayout;
+// YES while |self.gridHorizontalTransitionLayout| is finishing (or cancelling)
+// the transition. Is used to avoid cancelling again during enabling/disabling
+// of the thumbstrip.
+@property(nonatomic, assign) BOOL transitionLayoutIsFinishing;
 
-// Gesture recognizer to dismiss the thumb strip.
+// Tap gesture recognizer to dismiss the thumb strip.
 @property(nonatomic, strong)
     UITapGestureRecognizer* thumbStripDismissRecognizer;
+
+// Swipe up gesture recognizer to dismiss the thumb strip.
+@property(nonatomic, strong)
+    UISwipeGestureRecognizer* thumbStripSwipeUpDismissRecognizer;
 
 // YES while batch updates and the batch update completion are being performed.
 @property(nonatomic) BOOL updating;
@@ -118,7 +145,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (instancetype)init {
   if (self = [super init]) {
     _items = [[NSMutableArray<TabSwitcherItem*> alloc] init];
+    _selectedEditingItemIDs = [[NSMutableSet<NSString*> alloc] init];
+    _selectedSharableEditingItemIDs = [[NSMutableSet<NSString*> alloc] init];
     _showsSelectionUpdates = YES;
+    _notSelectedTabCellOpacity = 1.0;
+    _mode = TabGridModeNormal;
   }
   return self;
 }
@@ -137,6 +168,10 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       forCellWithReuseIdentifier:kCellIdentifier];
   [collectionView registerClass:[PlusSignCell class]
       forCellWithReuseIdentifier:kPlusSignCellIdentifier];
+  // During deletion (in horizontal layout) the backgroundView can resize,
+  // revealing temporarily the collectionView background. This makes sure
+  // both are the same color.
+  collectionView.backgroundColor = [UIColor colorNamed:kGridBackgroundColor];
   // If this stays as the default |YES|, then cells aren't highlighted
   // immediately on touch, but after a short delay.
   collectionView.delaysContentTouches = NO;
@@ -167,10 +202,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   collectionView.dropDelegate = self;
   collectionView.dragInteractionEnabled = YES;
 
-  if (@available(iOS 13.4, *)) {
-      self.pointerInteractionCells =
-          [NSHashTable<UICollectionViewCell*> weakObjectsHashTable];
-  }
+  self.pointerInteractionCells =
+      [NSHashTable<UICollectionViewCell*> weakObjectsHashTable];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -227,6 +260,46 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (BOOL)isGridEmpty {
   return self.items.count == 0;
+}
+
+- (void)setMode:(TabGridMode)mode {
+  if (_mode == mode) {
+    return;
+  }
+
+  _mode = mode;
+
+  // Reloading specific sections in a |performBatchUpdates| fades the changes in
+  // rather than reloads the collection view with a harsh flash.
+  __weak GridViewController* weakSelf = self;
+  [self.collectionView
+      performBatchUpdates:^{
+        GridViewController* strongSelf = weakSelf;
+        if (!strongSelf || !strongSelf.collectionView) {
+          return;
+        }
+
+        NSRange allSectionsRange = NSMakeRange(
+            /*location=*/0, strongSelf.collectionView.numberOfSections);
+        NSIndexSet* allSectionsIndexSet =
+            [NSIndexSet indexSetWithIndexesInRange:allSectionsRange];
+        [strongSelf.collectionView reloadSections:allSectionsIndexSet];
+      }
+               completion:nil];
+
+  // Clear items when exiting selection mode.
+  if (mode == TabGridModeNormal) {
+    [self.selectedEditingItemIDs removeAllObjects];
+    [self.selectedSharableEditingItemIDs removeAllObjects];
+    // After transition from the selection mode to the normal mode, the
+    // selection border doesn't show around the selection item. The collection
+    // view needs to be updated with the selected item again for it to appear
+    // correctly.
+    [self.collectionView
+        selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
+                     animated:NO
+               scrollPosition:UICollectionViewScrollPositionNone];
+  }
 }
 
 - (BOOL)isSelectedCellVisible {
@@ -359,14 +432,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // rows during transitions between grid and horizontal layouts.
   cell.layer.zPosition = self.items.count - itemIndex;
 
-  if (@available(iOS 13.4, *)) {
-      if (![self.pointerInteractionCells containsObject:cell]) {
-        [cell addInteraction:[[UIPointerInteraction alloc]
-                                 initWithDelegate:self]];
-        // |self.pointerInteractionCells| is only expected to get as large as
-        // the number of reusable cells in memory.
-        [self.pointerInteractionCells addObject:cell];
-      }
+  if (![self.pointerInteractionCells containsObject:cell]) {
+    [cell addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
+    // |self.pointerInteractionCells| is only expected to get as large as
+    // the number of reusable cells in memory.
+    [self.pointerInteractionCells addObject:cell];
   }
   return cell;
 }
@@ -404,14 +474,28 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (UIContextMenuConfiguration*)collectionView:(UICollectionView*)collectionView
     contextMenuConfigurationForItemAtIndexPath:(NSIndexPath*)indexPath
-                                         point:(CGPoint)point
-    API_AVAILABLE(ios(13.0)) {
-  if (!IsTabGridContextMenuEnabled()) {
+                                         point:(CGPoint)point {
+  // Context menu shouldn't appear in the selection mode.
+  if (_mode == TabGridModeSelection) {
     return nil;
   }
+  // No context menu on plus sign cell.
+  if ([self isIndexPathForPlusSignCell:indexPath]) {
+    return nil;
+  }
+
   GridCell* cell = base::mac::ObjCCastStrict<GridCell>(
       [self.collectionView cellForItemAtIndexPath:indexPath]);
   return [self.menuProvider contextMenuConfigurationForGridCell:cell];
+}
+
+- (UICollectionViewTransitionLayout*)
+                  collectionView:(UICollectionView*)collectionView
+    transitionLayoutForOldLayout:(UICollectionViewLayout*)fromLayout
+                       newLayout:(UICollectionViewLayout*)toLayout {
+  return [[BidirectionalCollectionViewTransitionLayout alloc]
+      initWithCurrentLayout:fromLayout
+                 nextLayout:toLayout];
 }
 
 #pragma mark - UIPointerInteractionDelegate
@@ -434,6 +518,16 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 #pragma mark - UICollectionViewDragDelegate
 
+- (void)collectionView:(UICollectionView*)collectionView
+    dragSessionWillBegin:(id<UIDragSession>)session {
+  [self.delegate gridViewControllerDragSessionWillBegin:self];
+}
+
+- (void)collectionView:(UICollectionView*)collectionView
+     dragSessionDidEnd:(id<UIDragSession>)session {
+  [self.delegate gridViewControllerDragSessionDidEnd:self];
+}
+
 - (NSArray<UIDragItem*>*)collectionView:(UICollectionView*)collectionView
            itemsForBeginningDragSession:(id<UIDragSession>)session
                             atIndexPath:(NSIndexPath*)indexPath {
@@ -441,8 +535,24 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     // Return an empty array because the plus sign cell should not be dragged.
     return @[];
   }
-  TabSwitcherItem* item = self.items[indexPath.item];
-  return @[ [self.dragDropHandler dragItemForItemWithID:item.identifier] ];
+  if (_mode != TabGridModeSelection) {
+    TabSwitcherItem* item = self.items[indexPath.item];
+    return @[ [self.dragDropHandler dragItemForItemWithID:item.identifier] ];
+  }
+
+  // Make sure that the long pressed cell is selected before initiating a drag
+  // from it.
+  NSUInteger index = base::checked_cast<NSUInteger>(indexPath.item);
+  NSString* itemID = self.items[index].identifier;
+  if (![self isItemWithIDSelectedForEditing:itemID]) {
+    [self tappedItemAtIndexPath:indexPath];
+  }
+
+  NSMutableArray<UIDragItem*>* dragItems = [[NSMutableArray alloc] init];
+  for (NSString* itemID in self.selectedEditingItemIDs) {
+    [dragItems addObject:[self.dragDropHandler dragItemForItemWithID:itemID]];
+  }
+  return dragItems;
 }
 
 - (NSArray<UIDragItem*>*)collectionView:(UICollectionView*)collectionView
@@ -469,7 +579,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
     canHandleDropSession:(id<UIDropSession>)session {
-  return session.items.count == 1U;
+  return YES;
 }
 
 - (UICollectionViewDropProposal*)
@@ -489,66 +599,68 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)collectionView:(UICollectionView*)collectionView
     performDropWithCoordinator:
         (id<UICollectionViewDropCoordinator>)coordinator {
-  id<UICollectionViewDropItem> item = coordinator.items.firstObject;
+  NSArray<id<UICollectionViewDropItem>>* items = coordinator.items;
 
-  // Append to the end of the collection, unless drop index is specified.
-  // The sourceIndexPath is nil if the drop item is not from the same
-  // collection view. Set the destinationIndex to reflect the addition of an
-  // item.
-  NSUInteger destinationIndex =
-      item.sourceIndexPath ? self.items.count - 1 : self.items.count;
-  if (coordinator.destinationIndexPath) {
-    destinationIndex =
-        base::checked_cast<NSUInteger>(coordinator.destinationIndexPath.item);
-  }
-  if (self.thumbStripEnabled) {
+  for (id<UICollectionViewDropItem> item in items) {
+    // Append to the end of the collection, unless drop index is specified.
     // The sourceIndexPath is nil if the drop item is not from the same
-    // collection view.
-    NSUInteger plusSignCellIndex =
-        item.sourceIndexPath ? self.items.count : self.items.count + 1;
-    // Can't use [self isIndexPathForPlusSignCell:] here because the index of
-    // the plus sign cell in this point in code depends on
-    // |item.sourceIndexPath|.
-    // I.e., in this point in code, |collectionView.numberOfItemsInSection| is
-    // equal to |self.items.count + 1|.
-    if (destinationIndex == plusSignCellIndex) {
-      // Prevent the cell from being dropped where the plus sign cell is.
-      destinationIndex = plusSignCellIndex - 1;
+    // collection view. Set the destinationIndex to reflect the addition of an
+    // item.
+    NSUInteger destinationIndex =
+        item.sourceIndexPath ? self.items.count - 1 : self.items.count;
+    if (coordinator.destinationIndexPath) {
+      destinationIndex =
+          base::checked_cast<NSUInteger>(coordinator.destinationIndexPath.item);
+    }
+    if (self.thumbStripEnabled) {
+      // The sourceIndexPath is nil if the drop item is not from the same
+      // collection view.
+      NSUInteger plusSignCellIndex =
+          item.sourceIndexPath ? self.items.count : self.items.count + 1;
+      // Can't use [self isIndexPathForPlusSignCell:] here because the index of
+      // the plus sign cell in this point in code depends on
+      // |item.sourceIndexPath|.
+      // I.e., in this point in code, |collectionView.numberOfItemsInSection| is
+      // equal to |self.items.count + 1|.
+      if (destinationIndex == plusSignCellIndex) {
+        // Prevent the cell from being dropped where the plus sign cell is.
+        destinationIndex = plusSignCellIndex - 1;
+      }
+    }
+    NSIndexPath* dropIndexPath = CreateIndexPath(destinationIndex);
+    // Drop synchronously if local object is available.
+    if (item.dragItem.localObject) {
+      [coordinator dropItem:item.dragItem toItemAtIndexPath:dropIndexPath];
+      // The sourceIndexPath is non-nil if the drop item is from this same
+      // collection view.
+      [self.dragDropHandler dropItem:item.dragItem
+                             toIndex:destinationIndex
+                  fromSameCollection:(item.sourceIndexPath != nil)];
+    } else {
+      // Drop asynchronously if local object is not available.
+      UICollectionViewDropPlaceholder* placeholder =
+          [[UICollectionViewDropPlaceholder alloc]
+              initWithInsertionIndexPath:dropIndexPath
+                         reuseIdentifier:kCellIdentifier];
+      placeholder.cellUpdateHandler = ^(UICollectionViewCell* placeholderCell) {
+        GridCell* gridCell =
+            base::mac::ObjCCastStrict<GridCell>(placeholderCell);
+        gridCell.theme = self.theme;
+      };
+      placeholder.previewParametersProvider =
+          ^UIDragPreviewParameters*(UICollectionViewCell* placeholderCell) {
+        GridCell* gridCell =
+            base::mac::ObjCCastStrict<GridCell>(placeholderCell);
+        return gridCell.dragPreviewParameters;
+      };
+
+      id<UICollectionViewDropPlaceholderContext> context =
+          [coordinator dropItem:item.dragItem toPlaceholder:placeholder];
+      [self.dragDropHandler dropItemFromProvider:item.dragItem.itemProvider
+                                         toIndex:destinationIndex
+                              placeholderContext:context];
     }
   }
-  NSIndexPath* dropIndexPath = CreateIndexPath(destinationIndex);
-
-  // Drop synchronously if local object is available.
-  if (item.dragItem.localObject) {
-    [coordinator dropItem:item.dragItem toItemAtIndexPath:dropIndexPath];
-    // The sourceIndexPath is non-nil if the drop item is from this same
-    // collection view.
-    [self.dragDropHandler dropItem:item.dragItem
-                           toIndex:destinationIndex
-                fromSameCollection:(item.sourceIndexPath != nil)];
-    return;
-  }
-
-  // Drop asynchronously if local object is not available.
-  UICollectionViewDropPlaceholder* placeholder =
-      [[UICollectionViewDropPlaceholder alloc]
-          initWithInsertionIndexPath:dropIndexPath
-                     reuseIdentifier:kCellIdentifier];
-  placeholder.cellUpdateHandler = ^(UICollectionViewCell* placeholderCell) {
-    GridCell* gridCell = base::mac::ObjCCastStrict<GridCell>(placeholderCell);
-    gridCell.theme = self.theme;
-  };
-  placeholder.previewParametersProvider =
-      ^UIDragPreviewParameters*(UICollectionViewCell* placeholderCell) {
-    GridCell* gridCell = base::mac::ObjCCastStrict<GridCell>(placeholderCell);
-    return gridCell.dragPreviewParameters;
-  };
-
-  id<UICollectionViewDropPlaceholderContext> context =
-      [coordinator dropItem:item.dragItem toPlaceholder:placeholder];
-  [self.dragDropHandler dropItemFromProvider:item.dragItem.itemProvider
-                                     toIndex:destinationIndex
-                          placeholderContext:context];
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -633,9 +745,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   self.items = [items mutableCopy];
   self.selectedItemID = selectedItemID;
+  [self.selectedEditingItemIDs removeAllObjects];
+  [self.selectedSharableEditingItemIDs removeAllObjects];
   [self.collectionView reloadData];
   [self.collectionView selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                                    animated:YES
+                                    animated:NO
                               scrollPosition:UICollectionViewScrollPositionTop];
   if (self.items.count > 0) {
     [self removeEmptyStateAnimated:YES];
@@ -658,6 +772,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     self.selectedItemID = selectedItemID;
     self.lastInsertedItemID = item.identifier;
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
+    [self updateVisibleCellsOpacity];
   };
   auto collectionViewUpdates = ^{
     [self removeEmptyStateAnimated:YES];
@@ -668,14 +783,14 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     [self.collectionView
         deselectItemAtIndexPath:CreateIndexPath([self
                                     indexOfItemWithID:previouslySelectedItemID])
-                       animated:YES];
+                       animated:NO];
     UICollectionViewScrollPosition scrollPosition =
         (self.currentLayout == self.horizontalLayout)
             ? UICollectionViewScrollPositionCenteredHorizontally
             : UICollectionViewScrollPositionNone;
     [self.collectionView
         selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                     animated:YES
+                     animated:NO
                scrollPosition:scrollPosition];
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
     [self updateFractionVisibleOfLastItem];
@@ -697,7 +812,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   auto modelUpdates = ^{
     [self.items removeObjectAtIndex:index];
     self.selectedItemID = selectedItemID;
+    [self deselectItemWithIDForEditing:removedItemID];
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
+    [self updateVisibleCellsOpacity];
   };
   auto collectionViewUpdates = ^{
     [self.collectionView deleteItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
@@ -709,7 +826,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     if (self.items.count > 0) {
       [self.collectionView
           selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                       animated:YES
+                       animated:NO
                  scrollPosition:UICollectionViewScrollPositionNone];
     }
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
@@ -730,12 +847,13 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   [self.collectionView
       deselectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                     animated:YES];
+                     animated:NO];
   self.selectedItemID = selectedItemID;
   [self.collectionView
       selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                   animated:YES
+                   animated:NO
              scrollPosition:UICollectionViewScrollPositionNone];
+  [self updateVisibleCellsOpacity];
 }
 
 - (void)replaceItemID:(NSString*)itemID withItem:(TabSwitcherItem*)item {
@@ -768,10 +886,26 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                                  toIndexPath:CreateIndexPath(toIndex)];
   };
   auto completion = ^(BOOL finished) {
-    [self.collectionView
-        selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                     animated:YES
-               scrollPosition:UICollectionViewScrollPositionNone];
+    // Bring back selected halo only for the moved cell, which lost it during
+    // the move (drag & drop).
+    if (self.selectedIndex != toIndex) {
+      return;
+    }
+    // Force reload of the selected cell now to avoid extra delay for the
+    // blue halo to appear. Bring the halo in 100ms.
+    [UIView
+        animateWithDuration:0.1
+                 animations:^{
+                   [self.collectionView reloadItemsAtIndexPaths:@[
+                     CreateIndexPath(self.selectedIndex)
+                   ]];
+                   [self.collectionView
+                       selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
+                                    animated:NO
+                              scrollPosition:
+                                  UICollectionViewScrollPositionNone];
+                 }
+                 completion:nil];
   };
   [self performModelUpdates:modelUpdates
                 collectionViewUpdates:collectionViewUpdates
@@ -783,12 +917,16 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 - (void)dismissModals {
-  ios::GetChromeBrowserProvider()
-      ->GetModalsProvider()
-      ->DismissModalsForCollectionView(self.collectionView);
+  ios::provider::DismissModalsForCollectionView(self.collectionView);
 }
 
 #pragma mark - LayoutSwitcher
+
+- (LayoutSwitcherState)currentLayoutSwitcherState {
+  return self.currentLayout == self.horizontalLayout
+             ? LayoutSwitcherState::Horizontal
+             : LayoutSwitcherState::Grid;
+}
 
 - (void)willTransitionToLayout:(LayoutSwitcherState)nextState
                     completion:
@@ -808,15 +946,23 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   // If the dismiss recognizer needs to be disabled, do it now so the user won't
   // trigger it during the transformation.
-  if (!thumbStripDismissEnabled)
+  if (!thumbStripDismissEnabled) {
     self.thumbStripDismissRecognizer.enabled = NO;
+    self.thumbStripSwipeUpDismissRecognizer.enabled = NO;
+  }
 
   __weak __typeof(self) weakSelf = self;
   auto completionBlock = ^(BOOL completed, BOOL finished) {
     weakSelf.collectionView.scrollEnabled = YES;
-    weakSelf.currentLayout = nextLayout;
-    if (thumbStripDismissEnabled)
-      self.thumbStripDismissRecognizer.enabled = YES;
+    if (finished) {
+      weakSelf.currentLayout = nextLayout;
+    }
+    if (thumbStripDismissEnabled) {
+      weakSelf.thumbStripDismissRecognizer.enabled = YES;
+      weakSelf.thumbStripSwipeUpDismissRecognizer.enabled = YES;
+    }
+    weakSelf.transitionLayoutIsFinishing = NO;
+    weakSelf.gridHorizontalTransitionLayout = nil;
     if (completion) {
       completion(completed, finished);
     }
@@ -835,6 +981,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 - (void)didTransitionToLayoutSuccessfully:(BOOL)success {
+  self.transitionLayoutIsFinishing = YES;
   if (success) {
     [self.collectionView finishInteractiveTransition];
   } else {
@@ -850,23 +997,13 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (CGFloat)offsetPastEndOfScrollView {
   CGFloat offset;
-  if (self.currentLayout == self.horizontalLayout) {
-    if (UseRTLLayout()) {
-      offset = -self.collectionView.contentOffset.x;
-    } else {
-      // Use collectionViewLayout.collectionViwContentSize because it has the
-      // correct size during a batch update.
-      offset = self.collectionView.contentOffset.x +
-               self.collectionView.frame.size.width -
-               self.collectionView.collectionViewLayout
-                   .collectionViewContentSize.width;
-    }
+  if (UseRTLLayout()) {
+    offset = -self.collectionView.contentOffset.x;
   } else {
-    DCHECK_EQ(self.gridLayout, self.currentLayout);
     // Use collectionViewLayout.collectionViwContentSize because it has the
     // correct size during a batch update.
-    offset = self.collectionView.contentOffset.y +
-             self.collectionView.frame.size.height -
+    offset = self.collectionView.contentOffset.x +
+             self.collectionView.frame.size.width -
              self.collectionView.collectionViewLayout.collectionViewContentSize
                  .width;
   }
@@ -878,13 +1015,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     return;
   _fractionVisibleOfLastItem = fractionVisibleOfLastItem;
 
-  if (self.currentLayout == self.horizontalLayout) {
-    [self.delegate didChangeLastItemVisibilityInGridViewController:self];
-  } else {
-    DCHECK_EQ(self.gridLayout, self.currentLayout);
-    // No-op because behaviour of the tab grid's bottom toolbar when the plus
-    // sign cell is visible hasn't been decided yet. TODO(crbug.com/1146130)
-  }
+  // TODO(crbug.com/1146130): Behaviour of the tab grid's bottom toolbar when
+  // the plus sign cell is visible hasn't been decided yet.
+  [self.delegate didChangeLastItemVisibilityInGridViewController:self];
 }
 
 - (void)setCurrentLayout:(FlowLayout*)currentLayout {
@@ -968,6 +1101,15 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   cell.itemIdentifier = item.identifier;
   cell.title = item.title;
   cell.titleHidden = item.hidesTitle;
+  if (self.mode == TabGridModeSelection) {
+    if ([self isItemWithIDSelectedForEditing:item.identifier]) {
+      cell.state = GridCellStateEditingSelected;
+    } else {
+      cell.state = GridCellStateEditingUnselected;
+    }
+  } else {
+    cell.state = GridCellStateNotEditing;
+  }
   NSString* itemIdentifier = item.identifier;
   [self.imageDataSource faviconForIdentifier:itemIdentifier
                                   completion:^(UIImage* icon) {
@@ -980,9 +1122,35 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                                    completion:^(UIImage* snapshot) {
                                      // Only update the icon if the cell is not
                                      // already reused for another item.
-                                     if (cell.itemIdentifier == itemIdentifier)
-                                       cell.snapshot = snapshot;
+                                     if (cell.itemIdentifier ==
+                                         itemIdentifier) {
+                                       if (self.thumbStripEnabled) {
+                                         [cell fadeInSnapshot:snapshot];
+                                       } else {
+                                         cell.snapshot = snapshot;
+                                       }
+                                     }
                                    }];
+  if (IsPriceAlertsEnabled()) {
+    [self.priceCardDataSource
+        priceCardForIdentifier:itemIdentifier
+                    completion:^(PriceCardItem* priceCardItem) {
+                      if (priceCardItem &&
+                          cell.itemIdentifier == itemIdentifier)
+                        [cell setPriceDrop:priceCardItem.price
+                             previousPrice:priceCardItem.previousPrice];
+                    }];
+  }
+  if (self.thumbStripEnabled && item.identifier != self.selectedItemID) {
+    cell.opacity = self.notSelectedTabCellOpacity;
+  } else {
+    cell.opacity = 1.0f;
+  }
+  if (item.showsActivity) {
+    [cell showActivityIndicator];
+  } else {
+    [cell hideActivityIndicator];
+  }
 }
 
 // Tells the delegate that the user tapped the item with identifier
@@ -1009,6 +1177,26 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     return;
 
   NSString* itemID = self.items[index].identifier;
+  if (_mode == TabGridModeSelection) {
+    if ([self isItemWithIDSelectedForEditing:itemID]) {
+      [self deselectItemWithIDForEditing:itemID];
+    } else {
+      [self selectItemWithIDForEditing:itemID];
+    }
+    // Dragging multiple tabs to reorder them is not supported. So there is no
+    // need to enable dragging when multiple items are selected in devices that
+    // don't support multiple windows.
+    if (self.selectedItemIDsForEditing.count > 1 &&
+        !base::ios::IsMultipleScenesSupported()) {
+      self.collectionView.dragInteractionEnabled = NO;
+    } else {
+      self.collectionView.dragInteractionEnabled = YES;
+    }
+    [UIView performWithoutAnimation:^{
+      [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
+    }];
+  }
+
   [self.delegate gridViewController:self didSelectItemWithID:itemID];
 }
 
@@ -1051,7 +1239,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 // Updates the value stored in |fractionVisibleOfLastItem|.
 - (void)updateFractionVisibleOfLastItem {
   CGFloat offset = self.offsetPastEndOfScrollView;
-  self.fractionVisibleOfLastItem = base::ClampToRange<CGFloat>(
+  self.fractionVisibleOfLastItem = base::clamp<CGFloat>(
       1 - offset / kScrollThresholdForPlusSignButtonHide, 0, 1);
 }
 
@@ -1080,17 +1268,106 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   }
 }
 
+// Setter for the not selected tab opacity. This can be used inside an
+// animation block.
+- (void)setNotSelectedTabCellOpacity:(CGFloat)opacity {
+  _notSelectedTabCellOpacity = opacity;
+  [self updateVisibleCellsOpacity];
+}
+
+// Update visible cells opacity. When thumbstrip is not enabled, all are 1.0.
+// Otherwise not selected tab are |self.notSelectedTabCellOpacity|.
+- (void)updateVisibleCellsOpacity {
+  if (!self.thumbStripEnabled) {
+    return;
+  }
+  for (NSIndexPath* indexPath in self.collectionView
+           .indexPathsForVisibleItems) {
+    if ([self isIndexPathForPlusSignCell:indexPath])
+      continue;
+    GridCell* cell = base::mac::ObjCCastStrict<GridCell>(
+        [self.collectionView cellForItemAtIndexPath:indexPath]);
+    if (cell.itemIdentifier != self.selectedItemID) {
+      cell.opacity = self.notSelectedTabCellOpacity;
+    } else {
+      cell.opacity = 1.0f;
+    }
+  }
+}
+
+#pragma mark - Public Editing Mode Selection
+- (void)selectAllItemsForEditing {
+  if (_mode != TabGridModeSelection) {
+    return;
+  }
+
+  for (TabSwitcherItem* item in self.items) {
+    [self selectItemWithIDForEditing:item.identifier];
+  }
+  [self.collectionView reloadData];
+}
+
+- (void)deselectAllItemsForEditing {
+  if (_mode != TabGridModeSelection) {
+    return;
+  }
+
+  for (TabSwitcherItem* item in self.items) {
+    [self deselectItemWithIDForEditing:item.identifier];
+  }
+  [self.collectionView reloadData];
+}
+
+- (NSArray<NSString*>*)selectedItemIDsForEditing {
+  return [self.selectedEditingItemIDs allObjects];
+}
+
+- (NSArray<NSString*>*)selectedShareableItemIDsForEditing {
+  return [self.selectedSharableEditingItemIDs allObjects];
+}
+
+- (BOOL)allItemsSelectedForEditing {
+  return _mode == TabGridModeSelection &&
+         self.items.count == self.selectedEditingItemIDs.count;
+}
+
+#pragma mark - Private Editing Mode Selection
+
+- (BOOL)isItemWithIDSelectedForEditing:(NSString*)identifier {
+  return [self.selectedEditingItemIDs containsObject:identifier];
+}
+
+- (void)selectItemWithIDForEditing:(NSString*)identifier {
+  [self.selectedEditingItemIDs addObject:identifier];
+  if ([self.shareableItemsProvider isItemWithIdentifierSharable:identifier]) {
+    [self.selectedSharableEditingItemIDs addObject:identifier];
+  }
+}
+
+- (void)deselectItemWithIDForEditing:(NSString*)identifier {
+  [self.selectedEditingItemIDs removeObject:identifier];
+  [self.selectedSharableEditingItemIDs removeObject:identifier];
+}
+
 #pragma mark - ThumbStripSupporting
 
 - (void)thumbStripEnabledWithPanHandler:
     (ViewRevealingVerticalPanHandler*)panHandler {
+  // Make sure the collection view isn't in the middle of a transition.
+  if (self.gridHorizontalTransitionLayout) {
+    if (!self.transitionLayoutIsFinishing) {
+      [self didTransitionToLayoutSuccessfully:NO];
+    }
+    __weak GridViewController* weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [weakSelf thumbStripEnabledWithPanHandler:panHandler];
+    });
+    return;
+  }
+
   DCHECK(!self.thumbStripEnabled);
 
   UICollectionView* collectionView = self.collectionView;
-
-  // Make sure the collection view isn't in the middle of a transition.
-  DCHECK(![collectionView.collectionViewLayout
-      isKindOfClass:[UICollectionViewTransitionLayout class]]);
 
   // Install tap gesture recognizer in collection to handle user taps on the
   // thumb strip background, assuming it hasn't already been installed.
@@ -1103,13 +1380,25 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     [collectionView.backgroundView
         addGestureRecognizer:self.thumbStripDismissRecognizer];
   }
+  if (!self.thumbStripSwipeUpDismissRecognizer) {
+    self.thumbStripSwipeUpDismissRecognizer = [[UISwipeGestureRecognizer alloc]
+        initWithTarget:self
+                action:@selector(handleThumbStripBackgroundSwipeUpGesture:)];
+    self.thumbStripSwipeUpDismissRecognizer.direction =
+        UISwipeGestureRecognizerDirectionUp;
+    [collectionView.backgroundView
+        addGestureRecognizer:self.thumbStripSwipeUpDismissRecognizer];
+  }
 
-  if (panHandler.currentState == ViewRevealState::Revealed) {
+  if (panHandler.currentState == ViewRevealState::Revealed ||
+      panHandler.currentState == ViewRevealState::Fullscreen) {
     self.thumbStripDismissRecognizer.enabled = NO;
+    self.thumbStripSwipeUpDismissRecognizer.enabled = NO;
     collectionView.collectionViewLayout = self.gridLayout;
     self.currentLayout = self.gridLayout;
   } else {
     self.thumbStripDismissRecognizer.enabled = YES;
+    self.thumbStripSwipeUpDismissRecognizer.enabled = YES;
     collectionView.collectionViewLayout = self.horizontalLayout;
     self.currentLayout = self.horizontalLayout;
   }
@@ -1120,18 +1409,29 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 - (void)thumbStripDisabled {
+  // Make sure the collection view isn't in the middle of a transition.
+  if (self.gridHorizontalTransitionLayout) {
+    if (!self.transitionLayoutIsFinishing) {
+      [self didTransitionToLayoutSuccessfully:NO];
+    }
+    __weak GridViewController* weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [weakSelf thumbStripDisabled];
+    });
+    return;
+  }
+
   DCHECK(self.thumbStripEnabled);
 
   UICollectionView* collectionView = self.collectionView;
   FlowLayout* gridLayout = self.gridLayout;
 
-  // Make sure the collection view isn't in the middle of a transition.
-  DCHECK(![collectionView.collectionViewLayout
-      isKindOfClass:[UICollectionViewTransitionLayout class]]);
-
   [collectionView.backgroundView
       removeGestureRecognizer:self.thumbStripDismissRecognizer];
+  [collectionView.backgroundView
+      removeGestureRecognizer:self.thumbStripSwipeUpDismissRecognizer];
   self.thumbStripDismissRecognizer = nil;
+  self.thumbStripSwipeUpDismissRecognizer = nil;
 
   collectionView.collectionViewLayout = gridLayout;
   self.currentLayout = gridLayout;
@@ -1166,6 +1466,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   }
 
   // Handle the tap.
+  [self.thumbStripHandler closeThumbStrip];
+}
+
+- (void)handleThumbStripBackgroundSwipeUpGesture:
+    (UIGestureRecognizer*)recognizer {
   [self.thumbStripHandler closeThumbStrip];
 }
 

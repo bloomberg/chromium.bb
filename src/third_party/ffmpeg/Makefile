@@ -23,7 +23,6 @@ FFLIBS-$(CONFIG_AVDEVICE)   += avdevice
 FFLIBS-$(CONFIG_AVFILTER)   += avfilter
 FFLIBS-$(CONFIG_AVFORMAT)   += avformat
 FFLIBS-$(CONFIG_AVCODEC)    += avcodec
-FFLIBS-$(CONFIG_AVRESAMPLE) += avresample
 FFLIBS-$(CONFIG_POSTPROC)   += postproc
 FFLIBS-$(CONFIG_SWRESAMPLE) += swresample
 FFLIBS-$(CONFIG_SWSCALE)    += swscale
@@ -65,6 +64,8 @@ tools/target_io_dem_fuzzer$(EXESUF): tools/target_io_dem_fuzzer.o $(FF_DEP_LIBS)
 
 tools/enum_options$(EXESUF): ELIBS = $(FF_EXTRALIBS)
 tools/enum_options$(EXESUF): $(FF_DEP_LIBS)
+tools/scale_slice_test$(EXESUF): $(FF_DEP_LIBS)
+tools/scale_slice_test$(EXESUF): ELIBS = $(FF_EXTRALIBS)
 tools/sofa2wavs$(EXESUF): ELIBS = $(FF_EXTRALIBS)
 tools/uncoded_frame$(EXESUF): $(FF_DEP_LIBS)
 tools/uncoded_frame$(EXESUF): ELIBS = $(FF_EXTRALIBS)
@@ -110,7 +111,7 @@ include $(SRC_PATH)/fftools/Makefile
 include $(SRC_PATH)/doc/Makefile
 include $(SRC_PATH)/doc/examples/Makefile
 
-libavcodec/utils.o libavformat/utils.o libavdevice/avdevice.o libavfilter/avfilter.o libavutil/utils.o libpostproc/postprocess.o libswresample/swresample.o libswscale/utils.o : libavutil/ffversion.h
+libavcodec/avcodec.o libavformat/utils.o libavdevice/avdevice.o libavfilter/avfilter.o libavutil/utils.o libpostproc/postprocess.o libswresample/swresample.o libswscale/utils.o : libavutil/ffversion.h
 
 $(PROGS): %$(PROGSSUF)$(EXESUF): %$(PROGSSUF)_g$(EXESUF)
 ifeq ($(STRIPTYPE),direct)

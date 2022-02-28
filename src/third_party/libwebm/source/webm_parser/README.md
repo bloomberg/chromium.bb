@@ -205,9 +205,9 @@ stdin:
 #include <webm/webm_parser.h>
 
 int main() {
-  video_webm_parser::Callback callback;
-  video_webm_parser::FileReader reader(std::freopen(nullptr, "rb", stdin));
-  video_webm_parser::WebmParser parser;
+  webm::Callback callback;
+  webm::FileReader reader(std::freopen(nullptr, "rb", stdin));
+  webm::WebmParser parser;
   parser.Feed(&callback, &reader);
 }
 ```
@@ -225,15 +225,15 @@ change it to:
 #include <webm/status.h>
 #include <webm/webm_parser.h>
 
-class MyCallback : public video_webm_parser::Callback {
+class MyCallback : public webm::Callback {
  public:
-  video_webm_parser::Status OnElementBegin(const video_webm_parser::ElementMetadata& metadata,
-                                           video_webm_parser::Action* action) override {
+  webm::Status OnElementBegin(const webm::ElementMetadata& metadata,
+                              webm::Action* action) override {
     std::cout << "Element ID = 0x"
               << std::hex << static_cast<std::uint32_t>(metadata.id);
     std::cout << std::dec;  // Reset to decimal mode.
     std::cout << " at position ";
-    if (metadata.position == video_webm_parser::kUnknownElementPosition) {
+    if (metadata.position == webm::kUnknownElementPosition) {
       // The position will only be unknown if we've done a seek. But since we
       // aren't seeking in this demo, this will never be the case. However, this
       // if-statement is included for completeness.
@@ -242,7 +242,7 @@ class MyCallback : public video_webm_parser::Callback {
       std::cout << metadata.position;
     }
     std::cout << " with header size ";
-    if (metadata.header_size == video_webm_parser::kUnknownHeaderSize) {
+    if (metadata.header_size == webm::kUnknownHeaderSize) {
       // The header size will only be unknown if we've done a seek. But since we
       // aren't seeking in this demo, this will never be the case. However, this
       // if-statement is included for completeness.
@@ -251,7 +251,7 @@ class MyCallback : public video_webm_parser::Callback {
       std::cout << metadata.header_size;
     }
     std::cout << " and body size ";
-    if (metadata.size == video_webm_parser::kUnknownElementSize) {
+    if (metadata.size == webm::kUnknownElementSize) {
       // WebM master elements may have an unknown size, though this is rare.
       std::cout << "<unknown>";
     } else {
@@ -259,16 +259,16 @@ class MyCallback : public video_webm_parser::Callback {
     }
     std::cout << '\n';
 
-    *action = video_webm_parser::Action::kRead;
-    return video_webm_parser::Status(video_webm_parser::Status::kOkCompleted);
+    *action = webm::Action::kRead;
+    return webm::Status(webm::Status::kOkCompleted);
   }
 };
 
 int main() {
   MyCallback callback;
-  video_webm_parser::FileReader reader(std::freopen(nullptr, "rb", stdin));
-  video_webm_parser::WebmParser parser;
-  video_webm_parser::Status status = parser.Feed(&callback, &reader);
+  webm::FileReader reader(std::freopen(nullptr, "rb", stdin));
+  webm::WebmParser parser;
+  webm::Status status = parser.Feed(&callback, &reader);
   if (status.completed_ok()) {
     std::cout << "Parsing successfully completed\n";
   } else {

@@ -11,6 +11,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -86,7 +87,7 @@ class LoginShelfGestureControllerTest : public LoginTestBase {
 
   void SwipeOnShelf(const gfx::Point& start, const gfx::Vector2d& direction) {
     const gfx::Point end(start + direction);
-    const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(500);
+    const base::TimeDelta kTimeDelta = base::Milliseconds(500);
     const int kNumScrollSteps = 4;
     GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
                                                kNumScrollSteps);
@@ -94,7 +95,7 @@ class LoginShelfGestureControllerTest : public LoginTestBase {
 
   void FlingOnShelf(const gfx::Point& start, const gfx::Vector2d& direction) {
     const gfx::Point end(start + direction);
-    const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(10);
+    const base::TimeDelta kTimeDelta = base::Milliseconds(10);
     const int kNumScrollSteps = 4;
     GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
                                                kNumScrollSteps);

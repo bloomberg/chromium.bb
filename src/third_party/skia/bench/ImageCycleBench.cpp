@@ -16,7 +16,7 @@
 
 /**
  * Draws a small set of small images multiple times each with no overlaps so that each image could
- * be batched. This was originally added to detect regressions as GrTextureOp is refactored to
+ * be batched. This was originally added to detect regressions as TextureOp is refactored to
  * use "dynamic state" for texture bindings. Everything is kept small as we're mostly interested in
  * CPU overhead.
  */
@@ -84,8 +84,8 @@ protected:
 private:
     SkIPoint onGetSize() override { return {kDeviceSize.fWidth, kDeviceSize.fHeight}; }
 
-    static constexpr SkISize kImageSize{4, 4};
-    static constexpr SkISize kDeviceSize{64, 64};
+    inline static constexpr SkISize kImageSize{4, 4};
+    inline static constexpr SkISize kDeviceSize{64, 64};
 
     std::unique_ptr<sk_sp<SkImage>[]> fImages;
     SkString fName;

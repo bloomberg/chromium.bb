@@ -43,7 +43,6 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #endif
@@ -64,6 +63,10 @@
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_util.h"
+#endif
+
+#if defined(USE_EGL) && !defined(OS_MAC)
+#include "ui/gl/gl_fence_egl.h"
 #endif
 
 namespace gpu {
@@ -241,9 +244,21 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       InitializeSwitchableGPUs(
           gpu_feature_info_.enabled_gpu_driver_bug_workarounds);
     }
-  } else if (gl::GetGLImplementation() == gl::kGLImplementationSwiftShaderGL &&
+  // If SwiftShader/SwANGLE is in use, set the flag gl_use_swiftshader so GPU
+  // initialization will take a software rendering path. Do not do this if
+  // SwiftShader/SwANGLE are explicitly requested via flags, because the flags
+  // are meant to specify running SwiftShader/SwANGLE on the hardware GPU path.
+  } else if (gl::GetGLImplementationParts() ==
+                 gl::GetLegacySoftwareGLImplementation() &&
              command_line->GetSwitchValueASCII(switches::kUseGL) !=
                  gl::kGLImplementationSwiftShaderName) {
+    gl_use_swiftshader_ = true;
+  } else if (gl::GetGLImplementationParts() ==
+                 gl::GetSoftwareGLImplementation() &&
+             (command_line->GetSwitchValueASCII(switches::kUseGL) !=
+                  gl::kGLImplementationANGLEName ||
+              command_line->GetSwitchValueASCII(switches::kUseANGLE) !=
+                  gl::kANGLEImplementationSwiftShaderName)) {
     gl_use_swiftshader_ = true;
   }
 
@@ -290,7 +305,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // consuming has completed, otherwise the process is liable to be aborted.
   if (enable_watchdog && !delayed_watchdog_enable) {
     watchdog_thread_ = GpuWatchdogThread::Create(
-        gpu_preferences_.watchdog_starts_backgrounded);
+        gpu_preferences_.watchdog_starts_backgrounded, "GpuWatchdog");
     watchdog_init.SetGpuWatchdogPtr(watchdog_thread_.get());
 
 #if defined(OS_WIN)
@@ -326,31 +341,29 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // Initialize Ozone GPU after the watchdog in case it hangs. The sandbox
   // may also have started at this point.
   std::vector<gfx::BufferFormat> supported_buffer_formats_for_texturing;
-  if (features::IsUsingOzonePlatform()) {
-    ui::OzonePlatform::InitParams params;
-    params.single_process = false;
-    params.enable_native_gpu_memory_buffers =
-        gpu_preferences.enable_native_gpu_memory_buffers;
+  ui::OzonePlatform::InitParams params;
+  params.single_process = false;
+  params.enable_native_gpu_memory_buffers =
+      gpu_preferences.enable_native_gpu_memory_buffers;
 
-    // Page flip testing will only happen in ash-chrome, not in lacros-chrome.
-    // Therefore, we only allow or disallow sync and real buffer page flip
-    // testing for ash-chrome.
+  // Page flip testing will only happen in ash-chrome, not in lacros-chrome.
+  // Therefore, we only allow or disallow sync and real buffer page flip
+  // testing for ash-chrome.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-    params.allow_sync_and_real_buffer_page_flip_testing =
-        gpu_preferences_.enable_chromeos_direct_video_decoder;
+  params.allow_sync_and_real_buffer_page_flip_testing =
+      gpu_preferences_.enable_chromeos_direct_video_decoder;
 #else   // !BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-    params.allow_sync_and_real_buffer_page_flip_testing = true;
+  params.allow_sync_and_real_buffer_page_flip_testing = true;
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-    ui::OzonePlatform::InitializeForGPU(params);
-    // We need to get supported formats before sandboxing to avoid an known
-    // issue which breaks the camera preview. (b/166850715)
-    supported_buffer_formats_for_texturing =
-        ui::OzonePlatform::GetInstance()
-            ->GetSurfaceFactoryOzone()
-            ->GetSupportedFormatsForTexturing();
-  }
+  ui::OzonePlatform::InitializeForGPU(params);
+  // We need to get supported formats before sandboxing to avoid an known
+  // issue which breaks the camera preview. (b/166850715)
+  supported_buffer_formats_for_texturing =
+      ui::OzonePlatform::GetInstance()
+          ->GetSurfaceFactoryOzone()
+          ->GetSupportedFormatsForTexturing();
 #endif
 
   if (!gl_use_swiftshader_) {
@@ -359,7 +372,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
         gpu_preferences_.disable_software_rasterizer, needs_more_info);
   }
   if (gl_initialized && gl_use_swiftshader_ &&
-      gl::GetGLImplementation() != gl::kGLImplementationSwiftShaderGL) {
+      !gl::IsSoftwareGLImplementation(gl::GetGLImplementationParts())) {
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
     VLOG(1) << "Quit GPU process launch to fallback to SwiftShader cleanly "
             << "on Linux";
@@ -441,7 +454,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     LOG_IF(ERROR, !gpu_info_.passthrough_cmd_decoder)
 #endif
         << "Passthrough is not supported, GL is "
-        << gl::GetGLImplementationGLName(gl::GetGLImplementationParts());
+        << gl::GetGLImplementationGLName(gl::GetGLImplementationParts())
+        << ", ANGLE is "
+        << gl::GetGLImplementationANGLEName(gl::GetGLImplementationParts());
   } else {
     gpu_info_.passthrough_cmd_decoder = false;
   }
@@ -523,6 +538,16 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     // happens, we will exit_on_context_lost to ensure there are no leaks.
     gpu_feature_info_.enabled_gpu_driver_bug_workarounds.push_back(
         EXIT_ON_CONTEXT_LOST);
+
+    // Disable RGB format because ExternalVkImageBacking doesn't handle it
+    // correctly (see https://crbug.com/1269826). This workaround is not
+    // necessary on Android because it uses SharedImageBackingFactoryAHB.
+    // TODO(https://crbug.com/1269826): Remove once RGBX support is fixed in
+    // ExternalVkImageBacking.
+#if !defined(OS_ANDROID)
+    gpu_feature_info_.enabled_gpu_driver_bug_workarounds.push_back(
+        DISABLE_GL_RGB_FORMAT);
+#endif
   }
 
   // Collect GPU process info
@@ -581,6 +606,12 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     gpu_preferences_.disable_accelerated_video_decode = true;
   }
 
+  if (kGpuFeatureStatusEnabled !=
+      gpu_feature_info_
+          .status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE]) {
+    gpu_preferences_.disable_accelerated_video_encode = true;
+  }
+
   base::TimeDelta initialize_one_off_time =
       base::TimeTicks::Now() - before_initialize_one_off;
   UMA_HISTOGRAM_MEDIUM_TIMES("GPU.InitializeOneOffMediumTime",
@@ -611,7 +642,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     watchdog_init.SetGpuWatchdogPtr(nullptr);
   } else if (enable_watchdog && delayed_watchdog_enable) {
     watchdog_thread_ = GpuWatchdogThread::Create(
-        gpu_preferences_.watchdog_starts_backgrounded);
+        gpu_preferences_.watchdog_starts_backgrounded, "GpuWatchdog");
     watchdog_init.SetGpuWatchdogPtr(watchdog_thread_.get());
   }
 
@@ -626,11 +657,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 
   init_successful_ = true;
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
-    ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
-    gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
-        std::move(supported_buffer_formats_for_texturing);
-  }
+  ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
+  gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
+      std::move(supported_buffer_formats_for_texturing);
 #endif
 
   if (!watchdog_thread_)
@@ -643,6 +672,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
           DISABLE_DIRECT_COMPOSITION_SW_VIDEO_OVERLAYS)) {
     gl::DirectCompositionSurfaceWin::DisableSoftwareOverlays();
   }
+#endif
+
+#if defined(USE_EGL) && !defined(OS_MAC)
+  if (gpu_feature_info_.IsWorkaroundEnabled(CHECK_EGL_FENCE_BEFORE_WAIT))
+    gl::GLFenceEGL::CheckEGLFenceBeforeWait();
 #endif
 
   return true;
@@ -678,23 +712,21 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   gpu_preferences_ = gpu_preferences;
   init_successful_ = true;
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
-    ui::OzonePlatform::InitParams params;
-    params.single_process = true;
+  ui::OzonePlatform::InitParams params;
+  params.single_process = true;
 
-    // Page flip testing will only happen in ash-chrome, not in lacros-chrome.
-    // Therefore, we only allow or disallow sync and real buffer page flip
-    // testing for ash-chrome.
+  // Page flip testing will only happen in ash-chrome, not in lacros-chrome.
+  // Therefore, we only allow or disallow sync and real buffer page flip
+  // testing for ash-chrome.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-    params.allow_sync_and_real_buffer_page_flip_testing =
-        gpu_preferences_.enable_chromeos_direct_video_decoder;
+  params.allow_sync_and_real_buffer_page_flip_testing =
+      gpu_preferences_.enable_chromeos_direct_video_decoder;
 #else   // !BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-    params.allow_sync_and_real_buffer_page_flip_testing = true;
+  params.allow_sync_and_real_buffer_page_flip_testing = true;
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-    ui::OzonePlatform::InitializeForGPU(params);
-  }
+  ui::OzonePlatform::InitializeForGPU(params);
 #endif
   bool needs_more_info = true;
 #if !BUILDFLAG(IS_CHROMECAST)
@@ -716,6 +748,26 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
         gpu_feature_info_.enabled_gpu_driver_bug_workarounds);
   }
 #endif  // !BUILDFLAG(IS_CHROMECAST)
+
+  // On MacOS, the default texture target for native GpuMemoryBuffers is
+  // GL_TEXTURE_RECTANGLE_ARB. This is due to CGL's requirements for creating
+  // a GL surface. However, when ANGLE is used on top of SwiftShader or Metal,
+  // it's necessary to use GL_TEXTURE_2D instead.
+  // TODO(crbug.com/1056312): The proper behavior is to check the config
+  // parameter set by the EGL_ANGLE_iosurface_client_buffer extension
+#if defined(OS_MAC)
+  if (command_line->HasSwitch(switches::kUseGL)) {
+    std::string use_gl = command_line->GetSwitchValueASCII(switches::kUseGL);
+    std::string use_angle =
+        command_line->GetSwitchValueASCII(switches::kUseANGLE);
+    if (use_gl == gl::kGLImplementationANGLEName &&
+        (use_angle == gl::kANGLEImplementationSwiftShaderName ||
+         use_angle == gl::kANGLEImplementationSwiftShaderForWebGLName ||
+         use_angle == gl::kANGLEImplementationMetalName)) {
+      SetMacOSSpecificTextureTarget(GL_TEXTURE_2D);
+    }
+  }
+#endif  // defined(OS_MAC)
 
   gl_use_swiftshader_ = EnableSwiftShaderIfNeeded(
       command_line, gpu_feature_info_,
@@ -789,15 +841,12 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   }
 
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
-    const std::vector<gfx::BufferFormat>
-        supported_buffer_formats_for_texturing =
-            ui::OzonePlatform::GetInstance()
-                ->GetSurfaceFactoryOzone()
-                ->GetSupportedFormatsForTexturing();
-    gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
-        std::move(supported_buffer_formats_for_texturing);
-  }
+  const std::vector<gfx::BufferFormat> supported_buffer_formats_for_texturing =
+      ui::OzonePlatform::GetInstance()
+          ->GetSurfaceFactoryOzone()
+          ->GetSupportedFormatsForTexturing();
+  gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
+      std::move(supported_buffer_formats_for_texturing);
 #endif
 
   DisableInProcessGpuVulkan(&gpu_feature_info_, &gpu_preferences_);
@@ -853,15 +902,6 @@ bool GpuInit::InitializeVulkan() {
   // Histogram GPU.SupportsVulkan and GPU.VulkanVersion were marked as expired.
   // TODO(magchen): Add back these two histograms here and re-enable them in
   // histograms.xml when we start Vulkan finch on Windows.
-  if (!vulkan_use_swiftshader) {
-    const bool supports_vulkan = !!vulkan_implementation_;
-    uint32_t vulkan_version = 0;
-    if (supports_vulkan) {
-      const auto& vulkan_info =
-          vulkan_implementation_->GetVulkanInstance()->vulkan_info();
-      vulkan_version = vulkan_info.used_api_version;
-    }
-  }
 
   if (!vulkan_implementation_)
     return false;

@@ -11,8 +11,9 @@
 
 #include <stddef.h>
 
+#include <iosfwd>
+
 #include "base/base_export.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -56,7 +57,7 @@ class PlatformThreadRef {
 #else  //  OS_POSIX
   typedef pthread_t RefType;
 #endif
-  constexpr PlatformThreadRef() : id_(0) {}
+  constexpr PlatformThreadRef() = default;
 
   explicit constexpr PlatformThreadRef(RefType id) : id_(id) {}
 
@@ -69,9 +70,16 @@ class PlatformThreadRef {
   bool is_null() const {
     return id_ == 0;
   }
+
  private:
-  RefType id_;
+  friend BASE_EXPORT std::ostream& operator<<(std::ostream& os,
+                                              const PlatformThreadRef& ref);
+
+  RefType id_ = 0;
 };
+
+BASE_EXPORT std::ostream& operator<<(std::ostream& os,
+                                     const PlatformThreadRef& ref);
 
 // Used to operate on threads.
 class PlatformThreadHandle {
@@ -136,6 +144,10 @@ class BASE_EXPORT PlatformThread {
     virtual ~Delegate() = default;
   };
 
+  PlatformThread() = delete;
+  PlatformThread(const PlatformThread&) = delete;
+  PlatformThread& operator=(const PlatformThread&) = delete;
+
   // Gets the current thread id, which may be useful for logging purposes.
   static PlatformThreadId CurrentId();
 
@@ -166,10 +178,10 @@ class BASE_EXPORT PlatformThread {
   // Gets the thread name, if previously set by SetName.
   static const char* GetName();
 
-  // Creates a new thread.  The |stack_size| parameter can be 0 to indicate
+  // Creates a new thread.  The `stack_size` parameter can be 0 to indicate
   // that the default stack size should be used.  Upon success,
-  // |*thread_handle| will be assigned a handle to the newly created thread,
-  // and |delegate|'s ThreadMain method will be executed on the newly created
+  // `*thread_handle` will be assigned a handle to the newly created thread,
+  // and `delegate`'s ThreadMain method will be executed on the newly created
   // thread.
   // NOTE: When you are done with the thread handle, you must call Join to
   // release system resources associated with the thread.  You must ensure that
@@ -182,7 +194,7 @@ class BASE_EXPORT PlatformThread {
   }
 
   // CreateWithPriority() does the same thing as Create() except the priority of
-  // the thread is set based on |priority|.
+  // the thread is set based on `priority`.
   static bool CreateWithPriority(size_t stack_size, Delegate* delegate,
                                  PlatformThreadHandle* thread_handle,
                                  ThreadPriority priority);
@@ -193,30 +205,30 @@ class BASE_EXPORT PlatformThread {
   static bool CreateNonJoinable(size_t stack_size, Delegate* delegate);
 
   // CreateNonJoinableWithPriority() does the same thing as CreateNonJoinable()
-  // except the priority of the thread is set based on |priority|.
+  // except the priority of the thread is set based on `priority`.
   static bool CreateNonJoinableWithPriority(size_t stack_size,
                                             Delegate* delegate,
                                             ThreadPriority priority);
 
   // Joins with a thread created via the Create function.  This function blocks
   // the caller until the designated thread exits.  This will invalidate
-  // |thread_handle|.
+  // `thread_handle`.
   static void Join(PlatformThreadHandle thread_handle);
 
   // Detaches and releases the thread handle. The thread is no longer joinable
-  // and |thread_handle| is invalidated after this call.
+  // and `thread_handle` is invalidated after this call.
   static void Detach(PlatformThreadHandle thread_handle);
 
-  // Returns true if SetCurrentThreadPriority() should be able to increase the
-  // priority of a thread to |priority|.
-  static bool CanIncreaseThreadPriority(ThreadPriority priority);
+  // Returns true if SetCurrentThreadPriority() should be able to change the
+  // priority of a thread in current process from `from` to `to`.
+  static bool CanChangeThreadPriority(ThreadPriority from, ThreadPriority to);
 
   // Toggles the current thread's priority at runtime.
   //
   // A thread may not be able to raise its priority back up after lowering it if
   // the process does not have a proper permission, e.g. CAP_SYS_NICE on Linux.
   // A thread may not be able to lower its priority back down after raising it
-  // to REALTIME_AUDIO.
+  // to DISPLAY or REALTIME_AUDIO.
   //
   // This function must not be called from the main thread on Mac. This is to
   // avoid performance regressions (https://crbug.com/601270).
@@ -228,7 +240,7 @@ class BASE_EXPORT PlatformThread {
 
   static ThreadPriority GetCurrentThreadPriority();
 
-  // Returns a realtime period provided by |delegate|.
+  // Returns a realtime period provided by `delegate`.
   static TimeDelta GetRealtimePeriod(Delegate* delegate);
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
@@ -269,8 +281,6 @@ class BASE_EXPORT PlatformThread {
 
  private:
   static void SetCurrentThreadPriorityImpl(ThreadPriority priority);
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(PlatformThread);
 };
 
 namespace internal {

@@ -5,9 +5,7 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_MODEL_STORE_VISUALS_TASK_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_MODEL_STORE_VISUALS_TASK_H_
 
-#include <vector>
-
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/offline_pages/core/offline_page_visuals.h"
 #include "components/offline_pages/task/task.h"
@@ -26,6 +24,9 @@ class StoreVisualsTask : public Task {
   using CompleteCallback = base::OnceCallback<void(bool, std::string)>;
   using RowUpdatedCallback =
       base::OnceCallback<void(bool, std::string, std::string)>;
+
+  StoreVisualsTask(const StoreVisualsTask&) = delete;
+  StoreVisualsTask& operator=(const StoreVisualsTask&) = delete;
 
   ~StoreVisualsTask() override;
 
@@ -51,14 +52,13 @@ class StoreVisualsTask : public Task {
                    RowUpdatedCallback complete_callback);
   void Complete(bool success);
 
-  OfflinePageMetadataStore* store_;
+  raw_ptr<OfflinePageMetadataStore> store_;
   int64_t offline_id_;
   base::Time expiration_;
   std::string thumbnail_;
   std::string favicon_;
   RowUpdatedCallback complete_callback_;
   base::WeakPtrFactory<StoreVisualsTask> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(StoreVisualsTask);
 };
 
 }  // namespace offline_pages

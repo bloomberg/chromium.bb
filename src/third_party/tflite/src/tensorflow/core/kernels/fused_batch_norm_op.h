@@ -30,18 +30,12 @@ namespace functor {
 //   (2) batch norm + side input + activation
 enum class FusedBatchNormActivationMode { kIdentity, kRelu };
 
-string ToString(FusedBatchNormActivationMode activation_mode);
+std::string ToString(FusedBatchNormActivationMode activation_mode);
 
 Status ParseActivationMode(OpKernelConstruction* context,
                            FusedBatchNormActivationMode* activation_mode);
 
 #if GOOGLE_CUDA || TENSORFLOW_USE_ROCM
-
-// This function sets a GPU tensor to NaNs.
-template <class T>
-struct SetNanFunctor {
-  void operator()(const Eigen::GpuDevice& d, typename TTypes<T>::Flat out);
-};
 
 // This is a functor to launch custom CUDA kernel for FusedBatchNorm with side
 // input and activation when 'is_training=False'. In training we rely on cuDNN.

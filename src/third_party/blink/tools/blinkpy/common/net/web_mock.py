@@ -26,7 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import urllib2
+from six.moves.urllib.error import HTTPError
 
 
 class MockWeb(object):
@@ -52,18 +52,27 @@ class MockResponse(object):
         self.status_code = values['status_code']
         self.url = ''
         self.body = values.get('body', '')
-        self._info = MockInfo(values.get('headers', {}))
+        # The name of the headers (keys) are case-insensitive, and values are stripped.
+        headers_raw = values.get('headers', {})
+        self.headers = {
+            key.lower(): value.strip()
+            for key, value in headers_raw.items()
+        }
+        self._info = MockInfo(self.headers)
 
         if int(self.status_code) >= 400:
-            raise urllib2.HTTPError(
-                url=self.url,
-                code=self.status_code,
-                msg='Received error status code: {}'.format(self.status_code),
-                hdrs={},
-                fp=None)
+            raise HTTPError(url=self.url,
+                            code=self.status_code,
+                            msg='Received error status code: {}'.format(
+                                self.status_code),
+                            hdrs={},
+                            fp=None)
 
     def getcode(self):
         return self.status_code
+
+    def getheader(self, header):
+        return self.headers.get(header.lower(), None)
 
     def read(self):
         return self.body
@@ -74,11 +83,7 @@ class MockResponse(object):
 
 class MockInfo(object):
     def __init__(self, headers):
-        # The name of the headers (keys) are case-insensitive, and values are stripped.
-        self._headers = {
-            key.lower(): value.strip()
-            for key, value in headers.iteritems()
-        }
+        self._headers = headers
 
     def getheader(self, header):
         return self._headers.get(header.lower(), None)

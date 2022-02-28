@@ -19,14 +19,15 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/command_line.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
+#include "chromeos/services/assistant/public/cpp/switches.h"
 
 namespace ash {
 
 namespace {
 
 using assistant::ui::kOnboardingMaxSessionsShown;
-using chromeos::assistant::features::IsBetterOnboardingEnabled;
 
 }  // namespace
 
@@ -122,8 +123,11 @@ void AssistantViewDelegateImpl::OnSuggestionPressed(
 }
 
 bool AssistantViewDelegateImpl::ShouldShowOnboarding() const {
-  if (!IsBetterOnboardingEnabled())
-    return false;
+  // UI developers need to be able to force the onboarding flow.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::assistant::switches::kForceAssistantOnboarding)) {
+    return true;
+  }
 
   // Once a user has had an interaction with Assistant, we will no longer show
   // onboarding in that user session.
@@ -151,7 +155,7 @@ bool AssistantViewDelegateImpl::ShouldShowOnboarding() const {
   // The feature will start to show only for new users which we define as users
   // who haven't had an interaction with Assistant in the last 28 days.
   return interaction_controller->GetTimeDeltaSinceLastInteraction() >=
-         base::TimeDelta::FromDays(28);
+         base::Days(28);
 }
 
 }  // namespace ash

@@ -5,7 +5,7 @@
 #ifndef BASE_CONTAINERS_LINKED_LIST_H_
 #define BASE_CONTAINERS_LINKED_LIST_H_
 
-#include "base/check_op.h"
+#include "base/base_export.h"
 
 // Simple LinkedList type. (See the Q&A section to understand how this
 // differs from std::list).
@@ -107,6 +107,9 @@ class BASE_EXPORT LinkNodeBase {
   LinkNodeBase* next_base() const { return next_; }
 
  private:
+  // `previous_` and `next_` are not a raw_ptr<...> for performance reasons:
+  // on-stack pointer + a large number of non-PA pointees through WeakLinkNode +
+  // based on analysis of sampling profiler data and tab_search:top100:2020.
   LinkNodeBase* previous_ = nullptr;
   LinkNodeBase* next_ = nullptr;
 };

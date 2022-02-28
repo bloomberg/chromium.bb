@@ -130,7 +130,7 @@ TEST_F(WebStateTest, OverridingWebKitObject) {
   // Add a script command handler.
   __block bool message_received = false;
   const web::WebState::ScriptCommandCallback callback = base::BindRepeating(
-      ^(const base::DictionaryValue&, const GURL&,
+      ^(const base::Value&, const GURL&,
         /*interacted*/ bool, /*is_main_frame*/ web::WebFrame*) {
         message_received = true;
       });
@@ -187,7 +187,7 @@ TEST_F(WebStateTest, Snapshot) {
   // The subview is added but not immediately painted, so a small delay is
   // necessary.
   CGRect rect = [web_state()->GetView() bounds];
-  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.2));
+  base::test::ios::SpinRunLoopWithMinDelay(base::Seconds(0.2));
   web_state()->TakeSnapshot(
       gfx::RectF(rect), base::BindRepeating(^(const gfx::Image& snapshot) {
         ASSERT_FALSE(snapshot.IsEmpty());
@@ -392,7 +392,7 @@ TEST_F(WebStateTest, MessageFromMainFrame) {
   __block bool message_from_main_frame = false;
   __block base::Value message_value;
   const web::WebState::ScriptCommandCallback callback =
-      base::BindRepeating(^(const base::DictionaryValue& value, const GURL&,
+      base::BindRepeating(^(const base::Value& value, const GURL&,
                             bool user_interacted, WebFrame* sender_frame) {
         message_received = true;
         message_from_main_frame = sender_frame->IsMainFrame();
@@ -425,7 +425,7 @@ TEST_F(WebStateTest, MessageFromIFrame) {
   __block bool message_from_main_frame = false;
   __block base::Value message_value;
   const web::WebState::ScriptCommandCallback callback =
-      base::BindRepeating(^(const base::DictionaryValue& value, const GURL&,
+      base::BindRepeating(^(const base::Value& value, const GURL&,
                             bool user_interacted, WebFrame* sender_frame) {
         message_received = true;
         message_from_main_frame = sender_frame->IsMainFrame();
@@ -560,6 +560,18 @@ TEST_F(WebStateTest, RestoreLargeSession) {
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
       navigation_manager->GetLastCommittedItem()->GetTransitionType(),
       ui::PAGE_TRANSITION_RELOAD));
+
+  // The restoration of www.0.com ends with displaying an error page which may
+  // not be complete at this point.
+  // Queue some javascript to wait for every handler to complete.
+  // TODO(crbug.com/1244067): Remove this workaround.
+  __block BOOL called = false;
+  web_state->ExecuteJavaScript(u"0;", base::BindOnce(^(const base::Value* res) {
+                                 called = true;
+                               }));
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return called;
+  }));
 }
 
 // Verifies that calling WebState::Stop() does not stop the session restoration.
@@ -605,6 +617,10 @@ TEST_F(WebStateTest, CallStopDuringSessionRestore) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return !navigation_manager->GetPendingItem() && !web_state_ptr->IsLoading();
   }));
+
+  // Wait for the error to be displayed.
+  EXPECT_TRUE(web::test::WaitForWebViewContainingText(
+      web_state_ptr, "error", base::test::ios::kWaitForJSCompletionTimeout));
 }
 
 // Verifies that calling NavigationManager::LoadURLWithParams() does not stop
@@ -657,7 +673,7 @@ TEST_F(WebStateTest, CallLoadURLWithParamsDuringSessionRestore) {
   // TODO(crbug.com/996544) On Xcode 11 beta 6 this became very slow.  This
   // appears to only affect simulator, and will hopefully be fixed in a future
   // Xcode release.  Revert this to |kWaitForPageLoadTimeout| alone when fixed.
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout * 5, ^{
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout * 7, ^{
     return web_state_ptr->GetLastCommittedURL() == url;
   }));
 }
@@ -707,6 +723,10 @@ TEST_F(WebStateTest, CallReloadDuringSessionRestore) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return !navigation_manager->GetPendingItem() && !web_state_ptr->IsLoading();
   }));
+
+  // Wait for the error to be displayed.
+  EXPECT_TRUE(web::test::WaitForWebViewContainingText(
+      web_state_ptr, "error", base::test::ios::kWaitForJSCompletionTimeout));
 }
 
 // Verifies that each page title is restored.

@@ -24,11 +24,11 @@
 #include "core/fpdfdoc/cpdf_formfield.h"
 #include "core/fpdfdoc/ipvt_fontmap.h"
 #include "core/fxcrt/fx_codepage.h"
+#include "core/fxcrt/stl_util.h"
 #include "core/fxge/cfx_fontmapper.h"
 #include "core/fxge/cfx_fontmgr.h"
 #include "core/fxge/cfx_gemodule.h"
 #include "core/fxge/cfx_substfont.h"
-#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -42,7 +42,7 @@ bool FindNativeTrueTypeFont(ByteStringView sFontFaceName) {
 
 RetainPtr<CPDF_Font> AddNativeTrueTypeFontToPDF(CPDF_Document* pDoc,
                                                 ByteString sFontFaceName,
-                                                uint8_t nCharset) {
+                                                FX_Charset nCharset) {
   if (!pDoc)
     return nullptr;
 
@@ -64,7 +64,7 @@ CPDF_BAFontMap::CPDF_BAFontMap(CPDF_Document* pDocument,
                                CPDF_Dictionary* pAnnotDict,
                                const ByteString& sAPType)
     : m_pDocument(pDocument), m_pAnnotDict(pAnnotDict), m_sAPType(sAPType) {
-  int32_t nCharset = FX_CHARSET_Default;
+  FX_Charset nCharset = FX_Charset::kDefault;
   m_pDefaultFont = GetAnnotDefaultFont(&m_sDefaultFontName);
   if (m_pDefaultFont) {
     const CFX_SubstFont* pSubstFont = m_pDefaultFont->GetSubstFont();
@@ -74,34 +74,34 @@ CPDF_BAFontMap::CPDF_BAFontMap(CPDF_Document* pDocument,
                m_sDefaultFontName == "Wingdings2" ||
                m_sDefaultFontName == "Wingdings3" ||
                m_sDefaultFontName == "Webdings") {
-      nCharset = FX_CHARSET_Symbol;
+      nCharset = FX_Charset::kSymbol;
     } else {
-      nCharset = FX_CHARSET_ANSI;
+      nCharset = FX_Charset::kANSI;
     }
     AddFontData(m_pDefaultFont, m_sDefaultFontName, nCharset);
     AddFontToAnnotDict(m_pDefaultFont, m_sDefaultFontName);
   }
 
-  if (nCharset != FX_CHARSET_ANSI)
-    GetFontIndex(CFX_Font::kDefaultAnsiFontName, FX_CHARSET_ANSI, false);
+  if (nCharset != FX_Charset::kANSI)
+    GetFontIndex(CFX_Font::kDefaultAnsiFontName, FX_Charset::kANSI, false);
 }
 
 CPDF_BAFontMap::~CPDF_BAFontMap() = default;
 
 RetainPtr<CPDF_Font> CPDF_BAFontMap::GetPDFFont(int32_t nFontIndex) {
-  if (pdfium::IndexInBounds(m_Data, nFontIndex))
+  if (fxcrt::IndexInBounds(m_Data, nFontIndex))
     return m_Data[nFontIndex]->pFont;
   return nullptr;
 }
 
 ByteString CPDF_BAFontMap::GetPDFFontAlias(int32_t nFontIndex) {
-  if (pdfium::IndexInBounds(m_Data, nFontIndex))
+  if (fxcrt::IndexInBounds(m_Data, nFontIndex))
     return m_Data[nFontIndex]->sFontName;
   return ByteString();
 }
 
 int32_t CPDF_BAFontMap::GetWordFontIndex(uint16_t word,
-                                         int32_t nCharset,
+                                         FX_Charset nCharset,
                                          int32_t nFontIndex) {
   if (nFontIndex > 0) {
     if (KnowWord(nFontIndex, word))
@@ -109,8 +109,9 @@ int32_t CPDF_BAFontMap::GetWordFontIndex(uint16_t word,
   } else {
     if (!m_Data.empty()) {
       const Data* pData = m_Data.front().get();
-      if (nCharset == FX_CHARSET_Default ||
-          pData->nCharset == FX_CHARSET_Symbol || nCharset == pData->nCharset) {
+      if (nCharset == FX_Charset::kDefault ||
+          pData->nCharset == FX_Charset::kSymbol ||
+          nCharset == pData->nCharset) {
         if (KnowWord(0, word))
           return 0;
       }
@@ -124,7 +125,7 @@ int32_t CPDF_BAFontMap::GetWordFontIndex(uint16_t word,
       return nNewFontIndex;
   }
   nNewFontIndex = GetFontIndex(CFX_Font::kUniversalDefaultFontName,
-                               FX_CHARSET_Default, false);
+                               FX_Charset::kDefault, false);
   if (nNewFontIndex >= 0) {
     if (KnowWord(nNewFontIndex, word))
       return nNewFontIndex;
@@ -133,7 +134,7 @@ int32_t CPDF_BAFontMap::GetWordFontIndex(uint16_t word,
 }
 
 int32_t CPDF_BAFontMap::CharCodeFromUnicode(int32_t nFontIndex, uint16_t word) {
-  if (!pdfium::IndexInBounds(m_Data, nFontIndex))
+  if (!fxcrt::IndexInBounds(m_Data, nFontIndex))
     return -1;
 
   Data* pData = m_Data[nFontIndex].get();
@@ -146,24 +147,25 @@ int32_t CPDF_BAFontMap::CharCodeFromUnicode(int32_t nFontIndex, uint16_t word) {
   return word < 0xFF ? word : -1;
 }
 
-int32_t CPDF_BAFontMap::CharSetFromUnicode(uint16_t word, int32_t nOldCharset) {
+FX_Charset CPDF_BAFontMap::CharSetFromUnicode(uint16_t word,
+                                              FX_Charset nOldCharset) {
   // to avoid CJK Font to show ASCII
   if (word < 0x7F)
-    return FX_CHARSET_ANSI;
+    return FX_Charset::kANSI;
 
   // follow the old charset
-  if (nOldCharset != FX_CHARSET_Default)
+  if (nOldCharset != FX_Charset::kDefault)
     return nOldCharset;
 
   return CFX_Font::GetCharSetFromUnicode(word);
 }
 
-int32_t CPDF_BAFontMap::GetNativeCharset() {
-  return FX_GetCharsetFromCodePage(FXSYS_GetACP());
+FX_Charset CPDF_BAFontMap::GetNativeCharset() {
+  return FX_GetCharsetFromCodePage(FX_GetACP());
 }
 
 RetainPtr<CPDF_Font> CPDF_BAFontMap::FindFontSameCharset(ByteString* sFontAlias,
-                                                         int32_t nCharset) {
+                                                         FX_Charset nCharset) {
   if (m_pAnnotDict->GetNameFor(pdfium::annotation::kSubtype) != "Widget")
     return nullptr;
 
@@ -185,7 +187,7 @@ RetainPtr<CPDF_Font> CPDF_BAFontMap::FindFontSameCharset(ByteString* sFontAlias,
 RetainPtr<CPDF_Font> CPDF_BAFontMap::FindResFontSameCharset(
     const CPDF_Dictionary* pResDict,
     ByteString* sFontAlias,
-    int32_t nCharset) {
+    FX_Charset nCharset) {
   if (!pResDict)
     return nullptr;
 
@@ -197,11 +199,8 @@ RetainPtr<CPDF_Font> CPDF_BAFontMap::FindResFontSameCharset(
   CPDF_DictionaryLocker locker(pFonts);
   for (const auto& it : locker) {
     const ByteString& csKey = it.first;
-    if (!it.second)
-      continue;
-
     CPDF_Dictionary* pElement = ToDictionary(it.second->GetDirect());
-    if (!pElement || pElement->GetNameFor("Type") != "Font")
+    if (!ValidateDictType(pElement, "Font"))
       continue;
 
     auto* pData = CPDF_DocPageData::FromDocument(m_pDocument.Get());
@@ -248,7 +247,7 @@ RetainPtr<CPDF_Font> CPDF_BAFontMap::GetAnnotDefaultFont(ByteString* sAlias) {
 
   CPDF_DefaultAppearance appearance(sDA);
   float font_size;
-  Optional<ByteString> font = appearance.GetFont(&font_size);
+  absl::optional<ByteString> font = appearance.GetFont(&font_size);
   *sAlias = font.value_or(ByteString());
 
   CPDF_Dictionary* pFontDict = nullptr;
@@ -320,12 +319,12 @@ void CPDF_BAFontMap::AddFontToAnnotDict(const RetainPtr<CPDF_Font>& pFont,
 }
 
 bool CPDF_BAFontMap::KnowWord(int32_t nFontIndex, uint16_t word) {
-  return pdfium::IndexInBounds(m_Data, nFontIndex) &&
+  return fxcrt::IndexInBounds(m_Data, nFontIndex) &&
          CharCodeFromUnicode(nFontIndex, word) >= 0;
 }
 
 int32_t CPDF_BAFontMap::GetFontIndex(const ByteString& sFontName,
-                                     int32_t nCharset,
+                                     FX_Charset nCharset,
                                      bool bFind) {
   int32_t nFontIndex = FindFont(EncodeFontAlias(sFontName, nCharset), nCharset);
   if (nFontIndex >= 0)
@@ -345,17 +344,17 @@ int32_t CPDF_BAFontMap::GetFontIndex(const ByteString& sFontName,
 
 int32_t CPDF_BAFontMap::AddFontData(const RetainPtr<CPDF_Font>& pFont,
                                     const ByteString& sFontAlias,
-                                    int32_t nCharset) {
+                                    FX_Charset nCharset) {
   auto pNewData = std::make_unique<Data>();
   pNewData->pFont = pFont;
   pNewData->sFontName = sFontAlias;
   pNewData->nCharset = nCharset;
   m_Data.push_back(std::move(pNewData));
-  return pdfium::CollectionSize<int32_t>(m_Data) - 1;
+  return fxcrt::CollectionSize<int32_t>(m_Data) - 1;
 }
 
 ByteString CPDF_BAFontMap::EncodeFontAlias(const ByteString& sFontName,
-                                           int32_t nCharset) {
+                                           FX_Charset nCharset) {
   ByteString sRet = sFontName;
   sRet.Remove(' ');
   sRet += ByteString::Format("_%02X", nCharset);
@@ -363,10 +362,10 @@ ByteString CPDF_BAFontMap::EncodeFontAlias(const ByteString& sFontName,
 }
 
 int32_t CPDF_BAFontMap::FindFont(const ByteString& sFontName,
-                                 int32_t nCharset) {
+                                 FX_Charset nCharset) {
   int32_t i = 0;
   for (const auto& pData : m_Data) {
-    if ((nCharset == FX_CHARSET_Default || nCharset == pData->nCharset) &&
+    if ((nCharset == FX_Charset::kDefault || nCharset == pData->nCharset) &&
         (sFontName.IsEmpty() || pData->sFontName == sFontName)) {
       return i;
     }
@@ -375,8 +374,8 @@ int32_t CPDF_BAFontMap::FindFont(const ByteString& sFontName,
   return -1;
 }
 
-ByteString CPDF_BAFontMap::GetNativeFontName(int32_t nCharset) {
-  if (nCharset == FX_CHARSET_Default)
+ByteString CPDF_BAFontMap::GetNativeFontName(FX_Charset nCharset) {
+  if (nCharset == FX_Charset::kDefault)
     nCharset = GetNativeCharset();
 
   ByteString sFontName = CFX_Font::GetDefaultFontNameByCharset(nCharset);
@@ -386,7 +385,7 @@ ByteString CPDF_BAFontMap::GetNativeFontName(int32_t nCharset) {
   return sFontName;
 }
 
-ByteString CPDF_BAFontMap::GetCachedNativeFontName(int32_t nCharset) {
+ByteString CPDF_BAFontMap::GetCachedNativeFontName(FX_Charset nCharset) {
   for (const auto& pData : m_NativeFont) {
     if (pData && pData->nCharset == nCharset)
       return pData->sFontName;
@@ -404,7 +403,7 @@ ByteString CPDF_BAFontMap::GetCachedNativeFontName(int32_t nCharset) {
 }
 
 RetainPtr<CPDF_Font> CPDF_BAFontMap::AddFontToDocument(ByteString sFontName,
-                                                       uint8_t nCharset) {
+                                                       FX_Charset nCharset) {
   if (CFX_FontMapper::IsStandardFontName(sFontName))
     return AddStandardFont(sFontName);
 
@@ -421,11 +420,11 @@ RetainPtr<CPDF_Font> CPDF_BAFontMap::AddStandardFont(ByteString sFontName) {
 }
 
 RetainPtr<CPDF_Font> CPDF_BAFontMap::AddSystemFont(ByteString sFontName,
-                                                   uint8_t nCharset) {
+                                                   FX_Charset nCharset) {
   if (sFontName.IsEmpty())
     sFontName = GetNativeFontName(nCharset);
 
-  if (nCharset == FX_CHARSET_Default)
+  if (nCharset == FX_Charset::kDefault)
     nCharset = GetNativeCharset();
 
   return AddNativeTrueTypeFontToPDF(m_pDocument.Get(), sFontName, nCharset);

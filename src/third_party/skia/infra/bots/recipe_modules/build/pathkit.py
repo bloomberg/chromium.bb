@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-DOCKER_IMAGE = 'gcr.io/skia-public/emsdk-base:2.0.10_v1'
+DOCKER_IMAGE = 'gcr.io/skia-public/emsdk-base:2.0.20_v1'
 INNER_BUILD_SCRIPT = '/SRC/skia/infra/pathkit/build_pathkit.sh'
 
 def compile_fn(api, checkout_root, _ignore):
@@ -81,7 +81,7 @@ for pattern in build_products:
     dst_path = os.path.join(dst, os.path.relpath(f, src))
     if not os.path.isdir(os.path.dirname(dst_path)):
       os.makedirs(os.path.dirname(dst_path))
-    print 'Copying build product %%s to %%s' %% (f, dst_path)
+    print('Copying build product %%s to %%s' %% (f, dst_path))
     # Because Docker usually has some strange permissions (like root
     # ownership), we'd rather not keep those around. copyfile doesn't
     # keep the metadata around, so that helps us.

@@ -13,6 +13,9 @@
 #include <string>
 #include <vector>
 
+#include "base/check.h"
+#include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -26,8 +29,6 @@
 #include "pdf/pdfium/pdfium_page.h"
 #include "pdf/pdfium/pdfium_print.h"
 #include "pdf/pdfium/pdfium_range.h"
-#include "ppapi/c/private/ppp_pdf.h"
-#include "ppapi/cpp/dev/buffer_dev.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
@@ -80,8 +81,15 @@ class PDFiumEngine : public PDFEngine,
   // HandleDocumentLoad().
   void SetDocumentLoaderForTesting(std::unique_ptr<DocumentLoader> loader);
 
+  // Returns the FontMappingMode set during PDFium SDK initialization.
+  static FontMappingMode GetFontMappingMode();
+
+  // Starts loading the document from `loader`. Follow-up requests (such as for
+  // partial loading) will use `original_url`.
+  bool HandleDocumentLoad(std::unique_ptr<UrlLoader> loader,
+                          const std::string& original_url);
+
   // PDFEngine:
-  bool New(const char* url, const char* headers) override;
   void PageOffsetUpdated(const gfx::Vector2d& page_offset) override;
   void PluginSizeUpdated(const gfx::Size& size) override;
   void ScrolledToXPosition(int position) override;
@@ -92,15 +100,11 @@ class PDFiumEngine : public PDFEngine,
              std::vector<gfx::Rect>& ready,
              std::vector<gfx::Rect>& pending) override;
   void PostPaint() override;
-  bool HandleDocumentLoad(std::unique_ptr<UrlLoader> loader) override;
   bool HandleInputEvent(const blink::WebInputEvent& event) override;
-  uint32_t QuerySupportedPrintOutputFormats() override;
   void PrintBegin() override;
-  pp::Resource PrintPages(
-      const PP_PrintPageNumberRange_Dev* page_ranges,
-      uint32_t page_range_count,
-      const PP_PrintSettings_Dev& print_settings,
-      const PP_PdfPrintSettings_Dev& pdf_print_settings) override;
+  std::vector<uint8_t> PrintPages(
+      const std::vector<int>& page_numbers,
+      const blink::WebPrintParams& print_params) override;
   void PrintEnd() override;
   void StartFind(const std::string& text, bool case_sensitive) override;
   bool SelectFindResult(bool forward) override;
@@ -160,7 +164,7 @@ class PDFiumEngine : public PDFEngine,
       uint32_t text_run_count) override;
   bool GetPrintScaling() override;
   int GetCopiesToPrint() override;
-  int GetDuplexType() override;
+  printing::mojom::DuplexMode GetDuplexMode() override;
   absl::optional<gfx::Size> GetUniformPageSizePoints() override;
   void AppendBlankPages(size_t num_pages) override;
   void AppendPage(PDFEngine* engine, int index) override;
@@ -175,7 +179,7 @@ class PDFiumEngine : public PDFEngine,
                     uint32_t* selection_end_char_index) override;
   void KillFormFocus() override;
   void UpdateFocus(bool has_focus) override;
-  PP_PrivateAccessibilityFocusInfo GetFocusInfo() override;
+  AccessibilityFocusInfo GetFocusInfo() override;
   uint32_t GetLoadedByteSize() override;
   bool ReadLoadedBytes(uint32_t length, void* buffer) override;
   void RequestThumbnail(int page_index,
@@ -183,7 +187,6 @@ class PDFiumEngine : public PDFEngine,
                         SendThumbnailCallback send_callback) override;
 
   // DocumentLoader::Client:
-  pp::Instance* GetPluginInstance() override;
   std::unique_ptr<URLLoaderWrapper> CreateURLLoader() override;
   void OnPendingRequestComplete() override;
   void OnNewDataReceived() override;
@@ -199,6 +202,10 @@ class PDFiumEngine : public PDFEngine,
   FPDF_AVAIL fpdf_availability() const;
   FPDF_DOCUMENT doc() const;
   FPDF_FORMHANDLE form() const;
+
+  // Returns the PDFiumPage pointer of a given index. Returns nullptr if `index`
+  // is out of range.
+  PDFiumPage* GetPage(size_t index);
 
   bool IsValidLink(const std::string& url);
 
@@ -221,7 +228,7 @@ class PDFiumEngine : public PDFEngine,
     // compensate for any rounding errors.
     void Invalidate(const gfx::Rect& selection);
 
-    PDFiumEngine* const engine_;
+    const raw_ptr<PDFiumEngine> engine_;
     // The origin at the time this object was constructed.
     const gfx::Point previous_origin_;
     // Screen rectangles that were selected on construction.
@@ -254,6 +261,12 @@ class PDFiumEngine : public PDFEngine,
   friend class PDFiumTestBase;
   friend class SelectionChangeInvalidator;
 
+  gfx::Size plugin_size() const {
+    // TODO(crbug.com/1237952): Just use .value() after fixing call sites.
+    DCHECK(plugin_size_.has_value());
+    return plugin_size_.value_or(gfx::Size());
+  }
+
   // We finished getting the pdf file, so load it. This will complete
   // asynchronously (due to password fetching) and may be run multiple times.
   void LoadDocument();
@@ -281,7 +294,7 @@ class PDFiumEngine : public PDFEngine,
   // This should only be called after `doc_` has been loaded and the document is
   // fully downloaded.
   // If this has been run once, it will not notify the client again.
-  void FinishLoadingDocument();
+  void FinishLoadingDocument(int32_t /*unused_but_required*/);
 
   // Loads information about the pages in the document and performs layout.
   void LoadPageInfo();
@@ -413,19 +426,13 @@ class PDFiumEngine : public PDFEngine,
 
   bool ExtendSelection(int page_index, int char_index);
 
-  pp::Buffer_Dev PrintPagesAsRasterPdf(
-      const PP_PrintPageNumberRange_Dev* page_ranges,
-      uint32_t page_range_count,
-      const PP_PrintSettings_Dev& print_settings,
-      const PP_PdfPrintSettings_Dev& pdf_print_settings);
+  std::vector<uint8_t> PrintPagesAsRasterPdf(
+      const std::vector<int>& page_numbers,
+      const blink::WebPrintParams& print_params);
 
-  pp::Buffer_Dev PrintPagesAsPdf(
-      const PP_PrintPageNumberRange_Dev* page_ranges,
-      uint32_t page_range_count,
-      const PP_PrintSettings_Dev& print_settings,
-      const PP_PdfPrintSettings_Dev& pdf_print_settings);
-
-  pp::Buffer_Dev ConvertPdfToBufferDev(const std::vector<uint8_t>& pdf_data);
+  std::vector<uint8_t> PrintPagesAsPdf(
+      const std::vector<int>& page_numbers,
+      const blink::WebPrintParams& print_params);
 
   // Checks if `page` has selected text in a form element. If so, sets that as
   // the plugin's text selection.
@@ -484,6 +491,7 @@ class PDFiumEngine : public PDFEngine,
 
   // Creates a FPDF_BITMAP from a rectangle in screen coordinates.
   ScopedFPDFBitmap CreateBitmap(const gfx::Rect& rect,
+                                bool has_alpha,
                                 SkBitmap& image_data) const;
 
   // Given a rectangle in screen coordinates, returns the coordinates in the
@@ -549,9 +557,8 @@ class PDFiumEngine : public PDFEngine,
   // within form text fields.
   void SetSelecting(bool selecting);
 
-  // Sets whether or not focus is in form text field or form combobox text
-  // field.
-  void SetInFormTextArea(bool in_form_text_area);
+  // Sets the type of field that has focus.
+  void SetFieldFocus(PDFEngine::FocusFieldType type);
 
   // Sets whether or not left mouse button is currently being held down.
   void SetMouseLeftButtonDown(bool is_mouse_left_button_down);
@@ -633,14 +640,22 @@ class PDFiumEngine : public PDFEngine,
   bool HandleTabForward(int modifiers);
   bool HandleTabBackward(int modifiers);
 
-  // Updates the currently focused object stored in `focus_item_type_`. Notifies
-  // `client_` about document focus change, if any.
-  void UpdateFocusItemType(FocusElementType focus_item_type);
+  // Updates the currently focused object stored in `focus_element_type_`.
+  // Notifies `client_` about document focus change, if any.
+  void UpdateFocusElementType(FocusElementType focus_element_type);
 
   void UpdateLinkUnderCursor(const std::string& target_url);
   void SetLinkUnderCursorForAnnotation(FPDF_ANNOTATION annot, int page_index);
 
-  PDFEngine::Client* const client_;
+  // Checks whether a given `page_index` exists in `pending_thumbnails_`. If so,
+  // requests the thumbnail for that page.
+  void MaybeRequestPendingThumbnail(int page_index);
+
+  // Keeps track of the most recently used plugin instance.
+  // TODO(crbug.com/702993): Remove when PPAPI is gone.
+  void SetLastInstance();
+
+  const raw_ptr<PDFEngine::Client> client_;
 
   // The current document layout.
   DocumentLayout layout_;
@@ -653,13 +668,13 @@ class PDFiumEngine : public PDFEngine,
   // The offset of the page into the viewport.
   gfx::Vector2d page_offset_;
   // The plugin size in screen coordinates.
-  gfx::Size plugin_size_;
+  absl::optional<gfx::Size> plugin_size_;
   double current_zoom_ = 1.0;
+  // The caret position and bound in plugin viewport coordinates.
+  gfx::Rect caret_rect_;
 
   std::unique_ptr<DocumentLoader> doc_loader_;  // Main document's loader.
   bool doc_loader_set_for_testing_ = false;
-  std::string url_;
-  std::string headers_;
 
   // Set to true if the user is being prompted for their password. Will be set
   // to false after the user finishes getting their password.
@@ -671,6 +686,7 @@ class PDFiumEngine : public PDFEngine,
   PDFiumFormFiller form_filler_;
 
   std::unique_ptr<PDFiumDocument> document_;
+  bool document_pending_ = false;
   bool document_loaded_ = false;
 
   // The page(s) of the document.
@@ -699,13 +715,6 @@ class PDFiumEngine : public PDFEngine,
 
   // Text selection within form text fields and form combobox text fields.
   std::string selected_form_text_;
-
-  // True if focus is in form text field or form combobox text field.
-  bool in_form_text_area_ = false;
-
-  // True if the form text area currently in focus is not read only, and is a
-  // form text field or user-editable form combobox text field.
-  bool editable_form_text_area_ = false;
 
   // True if left mouse button is currently being held down.
   bool mouse_left_button_down_ = false;
@@ -745,11 +754,18 @@ class PDFiumEngine : public PDFEngine,
   // Set to true when updating plugin focus.
   bool updating_focus_ = false;
 
-  // The focus item type for the currently focused object.
-  FocusElementType focus_item_type_ = FocusElementType::kNone;
+  // True if `focus_field_type_` is currently set to `FocusFieldType::kText` and
+  // the focused form text area is not read-only.
+  bool editable_form_text_area_ = false;
 
-  // Stores the last focused object's focus item type before PDF loses focus.
-  FocusElementType last_focused_item_type_ = FocusElementType::kNone;
+  // The type of the currently focused form field.
+  FocusFieldType focus_field_type_ = FocusFieldType::kNoFocus;
+
+  // The focus element type for the currently focused object.
+  FocusElementType focus_element_type_ = FocusElementType::kNone;
+
+  // Stores the last focused object's focus element type before PDF loses focus.
+  FocusElementType last_focused_element_type_ = FocusElementType::kNone;
 
   // Stores the last focused annotation's index before PDF loses focus.
   int last_focused_annot_index_ = -1;
@@ -779,9 +795,6 @@ class PDFiumEngine : public PDFEngine,
 
   // Whether to render PDF annotations.
   bool render_annots_ = true;
-
-  // The link currently under the cursor.
-  std::string link_under_cursor_;
 
   // Pending progressive paints.
   class ProgressivePaint {
@@ -819,6 +832,20 @@ class PDFiumEngine : public PDFEngine,
 
   // Shadow matrix for generating the page shadow bitmap.
   std::unique_ptr<draw_utils::ShadowMatrix> page_shadow_;
+
+  // Pending thumbnail requests.
+  struct PendingThumbnail {
+    PendingThumbnail();
+    PendingThumbnail(PendingThumbnail&& that);
+    PendingThumbnail& operator=(PendingThumbnail&& that);
+    ~PendingThumbnail();
+
+    float device_pixel_ratio = 1.0f;
+    SendThumbnailCallback send_callback;
+  };
+
+  // Map of page indices to pending thumbnail requests.
+  base::flat_map<int, PendingThumbnail> pending_thumbnails_;
 
   // A list of information of document attachments.
   std::vector<DocumentAttachmentInfo> doc_attachment_info_list_;

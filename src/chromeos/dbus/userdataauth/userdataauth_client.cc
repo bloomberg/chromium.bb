@@ -122,13 +122,6 @@ class UserDataAuthClientImpl : public UserDataAuthClient {
                     std::move(callback));
   }
 
-  void Rename(const ::user_data_auth::RenameRequest& request,
-              RenameCallback callback) override {
-    CallProtoMethod(::user_data_auth::kRename,
-                    ::user_data_auth::kUserDataAuthInterface, request,
-                    std::move(callback));
-  }
-
   void GetKeyData(const ::user_data_auth::GetKeyDataRequest& request,
                   GetKeyDataCallback callback) override {
     CallProtoMethod(::user_data_auth::kGetKeyData,
@@ -231,6 +224,13 @@ class UserDataAuthClientImpl : public UserDataAuthClient {
       const ::user_data_auth::AuthenticateAuthSessionRequest& request,
       AuthenticateAuthSessionCallback callback) override {
     CallProtoMethod(::user_data_auth::kAuthenticateAuthSession,
+                    ::user_data_auth::kUserDataAuthInterface, request,
+                    std::move(callback));
+  }
+
+  void AddCredentials(const ::user_data_auth::AddCredentialsRequest& request,
+                      AddCredentialsCallback callback) override {
+    CallProtoMethod(::user_data_auth::kAddCredentials,
                     ::user_data_auth::kUserDataAuthInterface, request,
                     std::move(callback));
   }

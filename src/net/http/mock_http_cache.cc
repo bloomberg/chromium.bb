@@ -13,7 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
@@ -38,30 +38,8 @@ const int kMaxMockCacheEntrySize = 100 * 1000 * 1000;
 int g_test_mode = 0;
 
 int GetTestModeForEntry(const std::string& key) {
-  std::string url = key;
-
-  // 'key' is prefixed with an identifier if it corresponds to a cached POST.
-  // Skip past that to locate the actual URL.
-  //
-  // TODO(darin): It breaks the abstraction a bit that we assume 'key' is an
-  // URL corresponding to a registered MockTransaction.  It would be good to
-  // have another way to access the test_mode.
-  if (isdigit(key[0])) {
-    size_t slash = key.find('/');
-    DCHECK(slash != std::string::npos);
-    url = url.substr(slash + 1);
-  }
-
-  // If we split the cache by top frame origin, then the origin is prepended to
-  // the key. Skip to the second url in the key.
-  if (base::StartsWith(url, "_dk_", base::CompareCase::SENSITIVE)) {
-    auto pos = url.find(" http");
-    url = url.substr(pos + 1);
-    pos = url.find(" http");
-    url = url.substr(pos + 1);
-  }
-
-  const MockTransaction* t = FindMockTransaction(GURL(url));
+  GURL url(HttpCache::GetResourceURLFromHttpCacheKey(key));
+  const MockTransaction* t = FindMockTransaction(url);
   DCHECK(t);
   return t->test_mode;
 }
@@ -72,8 +50,7 @@ int GetTestModeForEntry(const std::string& key) {
 
 struct MockDiskEntry::CallbackInfo {
   scoped_refptr<MockDiskEntry> entry;
-  net::CompletionOnceCallback callback;
-  int result;
+  base::OnceClosure callback;
 };
 
 MockDiskEntry::MockDiskEntry(const std::string& key)
@@ -268,44 +245,47 @@ int MockDiskEntry::WriteSparseData(int64_t offset,
   return ERR_IO_PENDING;
 }
 
-int MockDiskEntry::GetAvailableRange(int64_t offset,
-                                     int len,
-                                     int64_t* start,
-                                     CompletionOnceCallback callback) {
+disk_cache::RangeResult MockDiskEntry::GetAvailableRange(
+    int64_t offset,
+    int len,
+    RangeResultCallback callback) {
   DCHECK(!callback.is_null());
   if (!sparse_ || busy_ || cancel_)
-    return ERR_CACHE_OPERATION_NOT_SUPPORTED;
+    return RangeResult(ERR_CACHE_OPERATION_NOT_SUPPORTED);
   if (offset < 0)
-    return ERR_FAILED;
+    return RangeResult(ERR_FAILED);
 
   if (fail_requests_ & FAIL_GET_AVAILABLE_RANGE)
-    return ERR_CACHE_READ_FAILURE;
+    return RangeResult(ERR_CACHE_READ_FAILURE);
 
-  *start = offset;
+  RangeResult result;
+  result.net_error = OK;
+  result.start = offset;
+  result.available_len = 0;
   DCHECK(offset < std::numeric_limits<int32_t>::max());
   int real_offset = static_cast<int>(offset);
   if (static_cast<int>(data_[1].size()) < real_offset)
-    return 0;
+    return result;
 
   int num = std::min(static_cast<int>(data_[1].size()) - real_offset, len);
-  int count = 0;
   for (; num > 0; num--, real_offset++) {
-    if (!count) {
+    if (!result.available_len) {
       if (data_[1][real_offset]) {
-        count++;
-        *start = real_offset;
+        result.available_len++;
+        result.start = real_offset;
       }
     } else {
       if (!data_[1][real_offset])
         break;
-      count++;
+      result.available_len++;
     }
   }
-  if (MockHttpCache::GetTestMode(test_mode_) & TEST_MODE_SYNC_CACHE_WRITE)
-    return count;
+  if (MockHttpCache::GetTestMode(test_mode_) & TEST_MODE_SYNC_CACHE_WRITE) {
+    return result;
+  }
 
-  CallbackLater(std::move(callback), count);
-  return ERR_IO_PENDING;
+  CallbackLater(base::BindOnce(std::move(callback), result));
+  return RangeResult(ERR_IO_PENDING);
 }
 
 bool MockDiskEntry::CouldBeSparse() const {
@@ -348,7 +328,7 @@ void MockDiskEntry::IgnoreCallbacks(bool value) {
     return;
   ignore_callbacks_ = value;
   if (!value)
-    StoreAndDeliverCallbacks(false, nullptr, CompletionOnceCallback(), 0);
+    StoreAndDeliverCallbacks(false, nullptr, base::OnceClosure());
 }
 
 MockDiskEntry::~MockDiskEntry() = default;
@@ -356,15 +336,19 @@ MockDiskEntry::~MockDiskEntry() = default;
 // Unlike the callbacks for MockHttpTransaction, we want this one to run even
 // if the consumer called Close on the MockDiskEntry.  We achieve that by
 // leveraging the fact that this class is reference counted.
-void MockDiskEntry::CallbackLater(CompletionOnceCallback callback, int result) {
+void MockDiskEntry::CallbackLater(base::OnceClosure callback) {
   if (ignore_callbacks_)
-    return StoreAndDeliverCallbacks(true, this, std::move(callback), result);
+    return StoreAndDeliverCallbacks(true, this, std::move(callback));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&MockDiskEntry::RunCallback, this,
-                                std::move(callback), result));
+      FROM_HERE,
+      base::BindOnce(&MockDiskEntry::RunCallback, this, std::move(callback)));
 }
 
-void MockDiskEntry::RunCallback(CompletionOnceCallback callback, int result) {
+void MockDiskEntry::CallbackLater(CompletionOnceCallback callback, int result) {
+  CallbackLater(base::BindOnce(std::move(callback), result));
+}
+
+void MockDiskEntry::RunCallback(base::OnceClosure callback) {
   if (busy_) {
     // This is kind of hacky, but controlling the behavior of just this entry
     // from a test is sort of complicated.  What we really want to do is
@@ -376,11 +360,11 @@ void MockDiskEntry::RunCallback(CompletionOnceCallback callback, int result) {
     // trips through the message loop instead of one).
     if (!delayed_) {
       delayed_ = true;
-      return CallbackLater(std::move(callback), result);
+      return CallbackLater(std::move(callback));
     }
   }
   busy_ = false;
-  std::move(callback).Run(result);
+  std::move(callback).Run();
 }
 
 // When |store| is true, stores the callback to be delivered later; otherwise
@@ -388,16 +372,15 @@ void MockDiskEntry::RunCallback(CompletionOnceCallback callback, int result) {
 // Static.
 void MockDiskEntry::StoreAndDeliverCallbacks(bool store,
                                              MockDiskEntry* entry,
-                                             CompletionOnceCallback callback,
-                                             int result) {
+                                             base::OnceClosure callback) {
   static std::vector<CallbackInfo> callback_list;
   if (store) {
-    CallbackInfo c = {entry, std::move(callback), result};
+    CallbackInfo c = {entry, std::move(callback)};
     callback_list.push_back(std::move(c));
   } else {
     for (size_t i = 0; i < callback_list.size(); i++) {
       CallbackInfo& c = callback_list[i];
-      c.entry->CallbackLater(std::move(c.callback), c.result);
+      c.entry->CallbackLater(std::move(c.callback));
     }
     callback_list.clear();
   }
@@ -629,12 +612,6 @@ void MockDiskCache::GetStats(base::StringPairs* stats) {
 
 void MockDiskCache::OnExternalCacheHit(const std::string& key) {
   external_cache_hits_.push_back(key);
-}
-
-size_t MockDiskCache::DumpMemoryStats(
-    base::trace_event::ProcessMemoryDump* pmd,
-    const std::string& parent_absolute_name) const {
-  return 0u;
 }
 
 uint8_t MockDiskCache::GetEntryInMemoryData(const std::string& key) {

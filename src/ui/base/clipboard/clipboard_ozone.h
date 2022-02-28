@@ -9,14 +9,18 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "ui/base/clipboard/clipboard.h"
 
 namespace ui {
 
-// ClipboardOzone is not yet shipped in production. It is a work in progress
-// for desktop Linux Wayland support.
+// Clipboard implementation for Ozone-based ports. It delegates the platform
+// specifics to the PlatformClipboard instance provided by the Ozone platform.
+// Currently, used on Linux Desktop, i.e: X11 and Wayland, and Lacros platforms.
 class ClipboardOzone : public Clipboard {
+ public:
+  ClipboardOzone(const ClipboardOzone&) = delete;
+  ClipboardOzone& operator=(const ClipboardOzone&) = delete;
+
  private:
   friend class Clipboard;
 
@@ -26,7 +30,11 @@ class ClipboardOzone : public Clipboard {
   // Clipboard overrides:
   void OnPreShutdown() override;
   DataTransferEndpoint* GetSource(ClipboardBuffer buffer) const override;
-  uint64_t GetSequenceNumber(ClipboardBuffer buffer) const override;
+  const ClipboardSequenceNumberToken& GetSequenceNumber(
+      ClipboardBuffer buffer) const override;
+  std::vector<std::u16string> GetStandardFormats(
+      ClipboardBuffer buffer,
+      const DataTransferEndpoint* data_dst) const override;
   bool IsFormatAvailable(const ClipboardFormatType& format,
                          ClipboardBuffer buffer,
                          const DataTransferEndpoint* data_dst) const override;
@@ -34,9 +42,6 @@ class ClipboardOzone : public Clipboard {
   void ReadAvailableTypes(ClipboardBuffer buffer,
                           const DataTransferEndpoint* data_dst,
                           std::vector<std::u16string>* types) const override;
-  std::vector<std::u16string> ReadAvailablePlatformSpecificFormatNames(
-      ClipboardBuffer buffer,
-      const DataTransferEndpoint* data_dst) const override;
   void ReadText(ClipboardBuffer buffer,
                 const DataTransferEndpoint* data_dst,
                 std::u16string* result) const override;
@@ -58,9 +63,6 @@ class ClipboardOzone : public Clipboard {
   void ReadPng(ClipboardBuffer buffer,
                const DataTransferEndpoint* data_dst,
                ReadPngCallback callback) const override;
-  void ReadImage(ClipboardBuffer buffer,
-                 const DataTransferEndpoint* data_dst,
-                 ReadImageCallback callback) const override;
   void ReadCustomData(ClipboardBuffer buffer,
                       const std::u16string& type,
                       const DataTransferEndpoint* data_dst,
@@ -75,12 +77,11 @@ class ClipboardOzone : public Clipboard {
                 const DataTransferEndpoint* data_dst,
                 std::string* result) const override;
   bool IsSelectionBufferAvailable() const override;
-  void WritePortableRepresentations(
+  void WritePortableTextRepresentation(ClipboardBuffer buffer,
+                                       const ObjectMap& objects);
+  void WritePortableAndPlatformRepresentations(
       ClipboardBuffer buffer,
       const ObjectMap& objects,
-      std::unique_ptr<DataTransferEndpoint> data_src) override;
-  void WritePlatformRepresentations(
-      ClipboardBuffer buffer,
       std::vector<Clipboard::PlatformRepresentation> platform_representations,
       std::unique_ptr<DataTransferEndpoint> data_src) override;
   void WriteText(const char* text_data, size_t text_len) override;
@@ -101,15 +102,13 @@ class ClipboardOzone : public Clipboard {
                  const char* data_data,
                  size_t data_len) override;
 
-  SkBitmap ReadImageInternal(ClipboardBuffer buffer) const;
+  base::span<uint8_t> ReadPngInternal(const ClipboardBuffer buffer) const;
 
   class AsyncClipboardOzone;
 
   std::unique_ptr<AsyncClipboardOzone> async_clipboard_ozone_;
   base::flat_map<ClipboardBuffer, std::unique_ptr<DataTransferEndpoint>>
       data_src_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClipboardOzone);
 };
 
 }  // namespace ui

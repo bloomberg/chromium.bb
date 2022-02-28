@@ -56,7 +56,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/boot_times_recorder.h"
+#include "chrome/browser/ash/boot_times_recorder.h"
 #include "chrome/browser/lifetime/termination_notification.h"
 #endif
 
@@ -72,15 +72,9 @@
 #include "components/rlz/rlz_tracker.h"  // nogncheck crbug.com/1125897
 #endif
 
-#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
-#include "content/public/browser/browser_child_process_host_iterator.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/gpu_utils.h"
-#include "content/public/common/profiling_utils.h"
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX) && BUILDFLAG(CLANG_PGO)
+#include "content/public/browser/profiling_utils.h"
 #endif
-
-using base::TimeDelta;
 
 namespace browser_shutdown {
 namespace {
@@ -146,54 +140,7 @@ void OnShutdownStarting(ShutdownType type) {
   // TODO(https://crbug.com/1071664): Check if this should also be enabled for
   // coverage builds.
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX) && BUILDFLAG(CLANG_PGO)
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess)) {
-    content::WaitForProcessesToDumpProfilingInfo wait_for_profiling_data;
-
-    // Ask all the renderer processes to dump their profiling data.
-    for (content::RenderProcessHost::iterator i(
-             content::RenderProcessHost::AllHostsIterator());
-         !i.IsAtEnd(); i.Advance()) {
-      DCHECK(!i.GetCurrentValue()->GetProcess().is_current());
-      if (!i.GetCurrentValue()->IsInitializedAndNotDead())
-        continue;
-      i.GetCurrentValue()->DumpProfilingData(base::BindOnce(
-          &base::WaitableEvent::Signal,
-          base::Unretained(wait_for_profiling_data.GetNewWaitableEvent())));
-    }
-
-    // Ask all the other child processes to dump their profiling data, this has
-    // to be done on the IO thread.
-    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
-        FROM_HERE, base::BindOnce([]() {
-          // Use a nested WaitForProcessesToDumpProfilingInfo object to wait on
-          // the IO thread.
-          content::WaitForProcessesToDumpProfilingInfo
-              nested_wait_for_profiling_data;
-          for (content::BrowserChildProcessHostIterator browser_child_iter;
-               !browser_child_iter.Done(); ++browser_child_iter) {
-            browser_child_iter.GetHost()->DumpProfilingData(base::BindOnce(
-                &base::WaitableEvent::Signal,
-                base::Unretained(
-                    nested_wait_for_profiling_data.GetNewWaitableEvent())));
-          }
-          nested_wait_for_profiling_data.WaitForAll();
-        }),
-        base::BindOnce(
-            &base::WaitableEvent::Signal,
-            base::Unretained(wait_for_profiling_data.GetNewWaitableEvent())));
-
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kInProcessGPU)) {
-      content::DumpGpuProfilingData(base::BindOnce(
-          &base::WaitableEvent::Signal,
-          base::Unretained(wait_for_profiling_data.GetNewWaitableEvent())));
-    }
-
-    // This will block until all the child processes have saved their profiling
-    // data to disk.
-    wait_for_profiling_data.WaitForAll();
-  }
+  content::WaitForAllChildrenToDumpProfilingData();
 #endif  // BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX) && BUILDFLAG(CLANG_PGO)
 
   // Call FastShutdown on all of the RenderProcessHosts.  This will be
@@ -202,7 +149,7 @@ void OnShutdownStarting(ShutdownType type) {
   g_shutdown_num_processes = 0;
   g_shutdown_num_processes_slow = 0;
   for (content::RenderProcessHost::iterator i(
-          content::RenderProcessHost::AllHostsIterator());
+           content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     ++g_shutdown_num_processes;
     if (!i.GetCurrentValue()->FastShutdownIfPossible())
@@ -226,8 +173,8 @@ ShutdownType GetShutdownType() {
 #if !defined(OS_ANDROID)
 bool ShutdownPreThreadsStop() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::BootTimesRecorder::Get()->AddLogoutTimeMarker(
-      "BrowserShutdownStarted", false);
+  ash::BootTimesRecorder::Get()->AddLogoutTimeMarker("BrowserShutdownStarted",
+                                                     false);
 #endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // Shutdown the IPC channel to the service processes.
@@ -287,8 +234,7 @@ void ShutdownPostThreadsStop(RestartMode restart_mode) {
   ProfileManager::NukeDeletedProfilesFromDisk();
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::BootTimesRecorder::Get()->AddLogoutTimeMarker("BrowserDeleted",
-                                                          true);
+  ash::BootTimesRecorder::Get()->AddLogoutTimeMarker("BrowserDeleted", true);
 #endif
 
 #if defined(OS_WIN)
@@ -344,7 +290,7 @@ void ShutdownPostThreadsStop(RestartMode restart_mode) {
     // Measure total shutdown time as late in the process as possible
     // and then write it to a file to be read at startup.
     // We can't use prefs since all services are shutdown at this point.
-    TimeDelta shutdown_delta = base::Time::Now() - *g_shutdown_started;
+    base::TimeDelta shutdown_delta = base::Time::Now() - *g_shutdown_started;
     std::string shutdown_ms =
         base::NumberToString(shutdown_delta.InMilliseconds());
     int len = static_cast<int>(shutdown_ms.length()) + 1;
@@ -407,9 +353,9 @@ void ReadLastShutdownFile(ShutdownType type,
     return;
 
   base::UmaHistogramMediumTimes(time2_metric_name,
-                                TimeDelta::FromMilliseconds(shutdown_ms));
+                                base::Milliseconds(shutdown_ms));
   base::UmaHistogramTimes(per_proc_metric_name,
-                          TimeDelta::FromMilliseconds(shutdown_ms / num_procs));
+                          base::Milliseconds(shutdown_ms / num_procs));
   base::UmaHistogramCounts100("Shutdown.renderers.total", num_procs);
   base::UmaHistogramCounts100("Shutdown.renderers.slow", num_procs_slow);
 }

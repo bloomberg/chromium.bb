@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "content/public/test/url_loader_interceptor.h"
+
 #include "base/command_line.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -26,6 +27,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
 
 namespace content {

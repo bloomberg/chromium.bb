@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_audio_buffer_api.h"
@@ -26,6 +25,9 @@ class PPAPI_PROXY_EXPORT AudioBufferResource
   AudioBufferResource(PP_Instance instance,
                      int32_t index,
                      MediaStreamBuffer* buffer);
+
+  AudioBufferResource(const AudioBufferResource&) = delete;
+  AudioBufferResource& operator=(const AudioBufferResource&) = delete;
 
   ~AudioBufferResource() override;
 
@@ -49,8 +51,6 @@ class PPAPI_PROXY_EXPORT AudioBufferResource
   int32_t index_;
 
   MediaStreamBuffer* buffer_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioBufferResource);
 };
 
 }  // namespace proxy

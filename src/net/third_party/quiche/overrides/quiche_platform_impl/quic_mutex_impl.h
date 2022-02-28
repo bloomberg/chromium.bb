@@ -5,7 +5,6 @@
 #ifndef NET_THIRD_PARTY_QUICHE_OVERRIDES_QUICHE_PLATFORM_IMPL_QUIC_MUTEX_IMPL_H_
 #define NET_THIRD_PARTY_QUICHE_OVERRIDES_QUICHE_PLATFORM_IMPL_QUIC_MUTEX_IMPL_H_
 
-#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
@@ -64,6 +63,9 @@ class QUIC_LOCKABLE_IMPL QUIC_EXPORT_PRIVATE QuicLockImpl {
  public:
   QuicLockImpl() = default;
 
+  QuicLockImpl(const QuicLockImpl&) = delete;
+  QuicLockImpl& operator=(const QuicLockImpl&) = delete;
+
   // Block until lock_ is free, then acquire it exclusively.
   void WriterLock() EXCLUSIVE_LOCK_FUNCTION();
 
@@ -81,8 +83,6 @@ class QUIC_LOCKABLE_IMPL QUIC_EXPORT_PRIVATE QuicLockImpl {
 
  private:
   base::Lock lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicLockImpl);
 };
 
 // A Notification allows threads to receive notification of a single occurrence

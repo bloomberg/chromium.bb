@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEB_ELEMENT_STORE_H_
 
 #include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/web/element.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
@@ -38,6 +39,11 @@ class ElementStore {
   virtual ClientStatus GetElement(const std::string& client_id,
                                   ElementFinder::Result* out_element) const;
 
+  // Restore an element. If the element cannot be reconstructed, this returns
+  // an error status.
+  ClientStatus RestoreElement(const DomObjectFrameStack& object,
+                              ElementFinder::Result* out_element) const;
+
   // Removes an element. Returns true if the element was removed.
   bool RemoveElement(const std::string& client_id);
 
@@ -50,7 +56,7 @@ class ElementStore {
  private:
   friend class FakeElementStore;
 
-  content::WebContents* web_contents_;
+  raw_ptr<content::WebContents> web_contents_;
 
   base::flat_map<std::string, DomObjectFrameStack> object_map_;
 };

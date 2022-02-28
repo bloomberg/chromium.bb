@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -50,6 +50,9 @@ class NET_EXPORT BidirectionalStream : public BidirectionalStreamImpl::Delegate,
   class NET_EXPORT Delegate {
    public:
     Delegate();
+
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
 
     // Called when the stream is ready for writing and reading. This is called
     // at most once for the lifetime of a stream.
@@ -95,9 +98,6 @@ class NET_EXPORT BidirectionalStream : public BidirectionalStreamImpl::Delegate,
 
    protected:
     virtual ~Delegate();
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
   // Constructs a BidirectionalStream. |request_info| contains information about
@@ -122,6 +122,9 @@ class NET_EXPORT BidirectionalStream : public BidirectionalStreamImpl::Delegate,
       bool send_request_headers_automatically,
       Delegate* delegate,
       std::unique_ptr<base::OneShotTimer> timer);
+
+  BidirectionalStream(const BidirectionalStream&) = delete;
+  BidirectionalStream& operator=(const BidirectionalStream&) = delete;
 
   // Cancels |stream_request_| or |stream_impl_| if applicable.
   // |this| should not be destroyed during Delegate::OnHeadersSent or
@@ -226,14 +229,14 @@ class NET_EXPORT BidirectionalStream : public BidirectionalStreamImpl::Delegate,
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info_;
   const NetLogWithSource net_log_;
 
-  HttpNetworkSession* session_;
+  raw_ptr<HttpNetworkSession> session_;
 
   bool send_request_headers_automatically_;
   // Whether request headers have been sent, as indicated in OnStreamReady()
   // callback.
   bool request_headers_sent_;
 
-  Delegate* const delegate_;
+  const raw_ptr<Delegate> delegate_;
 
   // Timer used to buffer data received in short time-spans and send a single
   // read completion notification.
@@ -260,8 +263,6 @@ class NET_EXPORT BidirectionalStream : public BidirectionalStreamImpl::Delegate,
   LoadTimingInfo load_timing_info_;
 
   base::WeakPtrFactory<BidirectionalStream> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BidirectionalStream);
 };
 
 }  // namespace net

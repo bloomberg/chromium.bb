@@ -6,13 +6,17 @@ applications and streaming to Cast-compatible devices.
 ## Using the standalone implementations
 
 To run the standalone sender and receivers together, first you need to install
-the following dependencies: FFMPEG, LibVPX, LibOpus, LibSDL2, as well as their
-headers (frequently in a separate -dev package). From here, you just need a
-video to use with the cast_sender, as the cast_receiver can generate a
-self-signed certificate and private key for each session. You can also generate
-your own RSA private key and either create or have the receiver automatically
-create a self signed certificate with that key. If the receiver generates a root
-certificate, it will print out the location of that certificate to stdout.
+the following dependencies: FFMPEG, LibVPX, LibOpus, LibSDL2, LibAOM as well as
+their headers (frequently in a separate -dev package). Currently, it is advised
+that most Linux users compile LibAOM from source, using the instructions at
+https://aomedia.googlesource.com/aom/. Older versions found in many package
+management systems have blocking performance issues, causing AV1 encoding to be
+completely unusable. From here, you just need a video to use with the
+cast_sender, as the cast_receiver can generate a self-signed certificate and
+private key for each session. You can also generate your own RSA private key and
+either create or have the receiver automatically create a self signed
+certificate with that key. If the receiver generates a root certificate, it will
+print out the location of that certificate to stdout.
 
 Note that we assume that the private key is a PEM-encoded RSA private key,
 and the certificate is X509 PEM-encoded. The certificate must also have
@@ -33,12 +37,12 @@ the cast_receiver with `-g`, and both should be written out to files:
 
 These generated credentials can be passed in to start a session, e.g.
 ```
-./out/Default/cast_receiver -d generated_root_cast_receiver.crt -p generated_root_cast_receiver.key lo0 -x
+./out/Default/cast_receiver -d generated_root_cast_receiver.crt -p generated_root_cast_receiver.key lo0
 ```
 
 And then passed to the cast sender to connect and start a streaming session:
 ```
-  $ ./out/Default/cast_sender -d generated_root_cast_receiver.crt ~/video-1080-mp4.mp4
+  $ ./out/Default/cast_sender -d generated_root_cast_receiver.crt lo0 ~/video-1080-mp4.mp4
 ```
 
 When running on Mac OS X, also pass the `-x` flag to the cast receiver to

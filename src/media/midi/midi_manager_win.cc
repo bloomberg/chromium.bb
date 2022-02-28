@@ -21,12 +21,14 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
+#include "base/ignore_result.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/win/windows_version.h"
 #include "media/midi/message_util.h"
 #include "media/midi/midi_manager_winrt.h"
@@ -392,7 +394,7 @@ class MidiManagerWin::InPort final : public Port {
   }
 
   base::TimeTicks CalculateInEventTime(uint32_t elapsed_ms) const {
-    return start_time_ + base::TimeDelta::FromMilliseconds(elapsed_ms);
+    return start_time_ + base::Milliseconds(elapsed_ms);
   }
 
   void RestoreBuffer() {
@@ -455,7 +457,7 @@ class MidiManagerWin::InPort final : public Port {
   }
 
  private:
-  MidiManagerWin* manager_;
+  raw_ptr<MidiManagerWin> manager_;
   HMIDIIN in_handle_;
   ScopedMIDIHDR hdr_;
   base::TimeTicks start_time_;

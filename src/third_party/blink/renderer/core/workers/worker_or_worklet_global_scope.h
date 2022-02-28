@@ -6,10 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_OR_WORKLET_GLOBAL_SCOPE_H_
 
 #include <bitset>
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/loader/code_cache.mojom-forward.h"
 #include "third_party/blink/public/mojom/v8_cache_options.mojom-blink.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -19,6 +20,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
+#include "third_party/blink/renderer/core/loader/back_forward_cache_loader_helper_impl.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
@@ -42,8 +44,11 @@ class WorkerOrWorkletScriptController;
 class WorkerReportingProxy;
 class WorkerThread;
 
-class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
-                                               public ExecutionContext {
+class CORE_EXPORT WorkerOrWorkletGlobalScope
+    : public EventTargetWithInlineData,
+      public ExecutionContext,
+      public scheduler::WorkerScheduler::Delegate,
+      public BackForwardCacheLoaderHelperImpl::Delegate {
  public:
   WorkerOrWorkletGlobalScope(
       v8::Isolate*,
@@ -75,6 +80,15 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   void DisableEval(const String& error_message) final;
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) final;
 
+  // scheduler::WorkerScheduler::Delegate
+  void UpdateBackForwardCacheDisablingFeatures(
+      uint64_t features_mask) override {}
+
+  // BackForwardCacheLoaderHelperImpl::Delegate
+  void EvictFromBackForwardCache(
+      mojom::blink::RendererEvictionReason reason) override {}
+  void DidBufferLoadWhileInBackForwardCache(size_t num_bytes) override {}
+
   // Returns true when the WorkerOrWorkletGlobalScope is closing (e.g. via
   // WorkerGlobalScope#close() method). If this returns true, the worker is
   // going to be shutdown after the current task execution. Globals that
@@ -89,6 +103,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   // UseCounter
   void CountUse(WebFeature feature) final;
+  void CountDeprecation(WebFeature feature) final;
 
   // May return nullptr if this global scope is not threaded (i.e.,
   // WorkletGlobalScope for the main thread) or after Dispose() is called.
@@ -107,8 +122,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   // Returns the resource fetcher for subresources (a.k.a. inside settings
   // resource fetcher). See core/workers/README.md for details.
-  ResourceFetcher* Fetcher() const override;
-  ResourceFetcher* EnsureFetcher();
+  ResourceFetcher* Fetcher() override;
 
   // ResourceFetcher for off-the-main-thread worker top-level script fetching,
   // corresponding to "outside" fetch client's settings object.
@@ -151,13 +165,19 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   void SetSandboxFlags(network::mojom::blink::WebSandboxFlags mask);
 
-  void SetDefersLoadingForResourceFetchers(WebURLLoader::DeferType defers);
+  void SetDefersLoadingForResourceFetchers(LoaderFreezeMode);
 
   virtual int GetOutstandingThrottledLimit() const;
 
   // TODO(crbug.com/1146824): Remove this once PlzDedicatedWorker and
   // PlzServiceWorker ship.
   virtual bool IsInitialized() const = 0;
+
+  // TODO(crbug/964467): Currently all workers fetch cached code but only
+  // services workers use them. Dedicated / Shared workers don't use the cached
+  // code since we don't create a CachedMetadataHandler. We need to fix this by
+  // creating a cached metadta handler for all workers.
+  virtual CodeCacheHost* GetCodeCacheHost() { return nullptr; }
 
   Deprecation& GetDeprecation() { return deprecation_; }
 

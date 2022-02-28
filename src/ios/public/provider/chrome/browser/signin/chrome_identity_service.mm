@@ -4,7 +4,10 @@
 
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/sys_string_conversions.h"
+#import "components/signin/internal/identity_manager/account_capabilities_constants.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_interaction_manager.h"
@@ -14,6 +17,53 @@
 #endif
 
 namespace ios {
+namespace {
+
+// Helper struct for computing the result of fetching account capabilities.
+struct FetchCapabilitiesResult {
+  FetchCapabilitiesResult() = default;
+  ~FetchCapabilitiesResult() = default;
+
+  ChromeIdentityCapabilityResult capability_value;
+  signin_metrics::FetchAccountCapabilitiesFromSystemLibraryResult fetch_result;
+};
+
+// Computes the value of fetching account capabilities.
+FetchCapabilitiesResult ComputeFetchCapabilitiesResult(
+    NSNumber* capability_value,
+    NSError* error) {
+  FetchCapabilitiesResult result;
+  if (error) {
+    result.capability_value = ChromeIdentityCapabilityResult::kUnknown;
+    result.fetch_result = signin_metrics::
+        FetchAccountCapabilitiesFromSystemLibraryResult::kErrorGeneric;
+  } else if (!capability_value) {
+    result.capability_value = ChromeIdentityCapabilityResult::kUnknown;
+    result.fetch_result =
+        signin_metrics::FetchAccountCapabilitiesFromSystemLibraryResult::
+            kErrorMissingCapability;
+  } else {
+    int capability_value_int = capability_value.intValue;
+    switch (capability_value_int) {
+      case static_cast<int>(ChromeIdentityCapabilityResult::kFalse):
+      case static_cast<int>(ChromeIdentityCapabilityResult::kTrue):
+      case static_cast<int>(ChromeIdentityCapabilityResult::kUnknown):
+        result.capability_value =
+            static_cast<ChromeIdentityCapabilityResult>(capability_value_int);
+        result.fetch_result = signin_metrics::
+            FetchAccountCapabilitiesFromSystemLibraryResult::kSuccess;
+        break;
+      default:
+        result.capability_value = ChromeIdentityCapabilityResult::kUnknown;
+        result.fetch_result =
+            signin_metrics::FetchAccountCapabilitiesFromSystemLibraryResult::
+                kErrorUnexpectedValue;
+    }
+  }
+  return result;
+}
+
+}  // namespace
 
 ChromeIdentityService::ChromeIdentityService() {}
 
@@ -23,12 +73,6 @@ ChromeIdentityService::~ChromeIdentityService() {
 }
 
 void ChromeIdentityService::DismissDialogs() {}
-
-bool ChromeIdentityService::HandleApplicationOpenURL(UIApplication* application,
-                                                     NSURL* url,
-                                                     NSDictionary* options) {
-  return false;
-}
 
 bool ChromeIdentityService::HandleSessionOpenURLContexts(UIScene* scene,
                                                          NSSet* URLContexts) {
@@ -55,32 +99,12 @@ ChromeIdentityService::PresentWebAndAppSettingDetailsController(
 }
 
 ChromeIdentityInteractionManager*
-ChromeIdentityService::CreateChromeIdentityInteractionManager(
-    id<ChromeIdentityInteractionManagerDelegate> delegate) const {
+ChromeIdentityService::CreateChromeIdentityInteractionManager() const {
+  NOTREACHED() << "Subclasses must override this";
   return nil;
 }
 
-bool ChromeIdentityService::IsValidIdentity(ChromeIdentity* identity) {
-  return false;
-}
-
-ChromeIdentity* ChromeIdentityService::GetIdentityWithGaiaID(
-    const std::string& gaia_id) {
-  return nil;
-}
-
-bool ChromeIdentityService::HasIdentities() {
-  return false;
-}
-
-NSArray* ChromeIdentityService::GetAllIdentities(PrefService* pref_service) {
-  return nil;
-}
-
-NSArray* ChromeIdentityService::GetAllIdentitiesSortedForDisplay(
-    PrefService* pref_service) {
-  return nil;
-}
+void ChromeIdentityService::IterateOverIdentities(IdentityIteratorCallback) {}
 
 void ChromeIdentityService::ForgetIdentity(ChromeIdentity* identity,
                                            ForgetIdentityCallback callback) {}
@@ -94,11 +118,13 @@ void ChromeIdentityService::GetAccessToken(ChromeIdentity* identity,
                                            const std::set<std::string>& scopes,
                                            AccessTokenCallback callback) {}
 
-void ChromeIdentityService::GetAvatarForIdentity(ChromeIdentity* identity,
-                                                 GetAvatarCallback callback) {}
+void ChromeIdentityService::GetAvatarForIdentity(ChromeIdentity* identity) {
+  NOTREACHED();
+}
 
 UIImage* ChromeIdentityService::GetCachedAvatarForIdentity(
     ChromeIdentity* identity) {
+  NOTREACHED();
   return nil;
 }
 
@@ -120,9 +146,33 @@ NSString* ChromeIdentityService::GetCachedHostedDomainForIdentity(
   return nil;
 }
 
-absl::optional<bool> ChromeIdentityService::IsSubjectToMinorModeRestrictions(
-    ChromeIdentity* identity) {
-  return absl::nullopt;
+void ChromeIdentityService::CanOfferExtendedSyncPromos(
+    ChromeIdentity* identity,
+    CapabilitiesCallback completion) {
+  NSString* canOfferExtendedChromeSyncPromos = [NSString
+      stringWithUTF8String:kCanOfferExtendedChromeSyncPromosCapabilityName];
+  base::TimeTicks fetch_start = base::TimeTicks::Now();
+  FetchCapabilities(
+      @[ canOfferExtendedChromeSyncPromos ], identity,
+      ^(NSDictionary<NSString*, NSNumber*>* capabilities, NSError* error) {
+        base::UmaHistogramTimes(
+            "Signin.AccountCapabilities.GetFromSystemLibraryDuration",
+            base::TimeTicks::Now() - fetch_start);
+
+        FetchCapabilitiesResult result = ComputeFetchCapabilitiesResult(
+            [capabilities objectForKey:canOfferExtendedChromeSyncPromos],
+            error);
+        base::UmaHistogramEnumeration(
+            "Signin.AccountCapabilities.GetFromSystemLibraryResult",
+            result.fetch_result);
+
+        if (completion)
+          completion(result.capability_value);
+      });
+}
+
+bool ChromeIdentityService::IsServiceSupported() {
+  return false;
 }
 
 MDMDeviceStatus ChromeIdentityService::GetMDMDeviceStatus(
@@ -151,6 +201,13 @@ void ChromeIdentityService::RemoveObserver(Observer* observer) {
 
 bool ChromeIdentityService::IsInvalidGrantError(NSDictionary* user_info) {
   return false;
+}
+
+void ChromeIdentityService::FetchCapabilities(
+    NSArray* capabilities,
+    ChromeIdentity* identity,
+    ChromeIdentityCapabilitiesFetchCompletionBlock completion) {
+  // Implementation provided by subclass.
 }
 
 void ChromeIdentityService::FireIdentityListChanged(bool keychainReload) {

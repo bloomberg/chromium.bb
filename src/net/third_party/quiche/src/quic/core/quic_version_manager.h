@@ -22,6 +22,9 @@ class QUIC_EXPORT_PRIVATE QuicVersionManager {
   // as the versions passed to the constructor.
   const ParsedQuicVersionVector& GetSupportedVersions();
 
+  // Returns currently supported versions using HTTP/3.
+  const ParsedQuicVersionVector& GetSupportedVersionsWithOnlyHttp3();
+
   // Returns currently supported versions using QUIC crypto.
   const ParsedQuicVersionVector& GetSupportedVersionsWithQuicCrypto();
 
@@ -33,41 +36,52 @@ class QUIC_EXPORT_PRIVATE QuicVersionManager {
   // If the value of any reloadable flag is different from the cached value,
   // re-filter |filtered_supported_versions_| and update the cached flag values.
   // Otherwise, does nothing.
+  // TODO(dschinazi): Make private when deprecating
+  // FLAGS_gfe2_restart_flag_quic_disable_old_alt_svc_format.
   void MaybeRefilterSupportedVersions();
 
   // Refilters filtered_supported_versions_.
   virtual void RefilterSupportedVersions();
 
+  // RefilterSupportedVersions() must be called before calling this method.
+  // TODO(dschinazi): Remove when deprecating
+  // FLAGS_gfe2_restart_flag_quic_disable_old_alt_svc_format.
   const QuicTransportVersionVector& filtered_transport_versions() const {
     return filtered_transport_versions_;
   }
 
-  // Mechanism for subclasses to add custom ALPNs to the supported list.
-  // Should be called in constructor and RefilterSupportedVersions.
+  // Subclasses may add custom ALPNs to the supported list by overriding
+  // RefilterSupportedVersions() to first call
+  // QuicVersionManager::RefilterSupportedVersions() then AddCustomAlpn().
+  // Must not be called elsewhere.
   void AddCustomAlpn(const std::string& alpn);
-
-  bool disable_version_q050() const { return disable_version_q050_; }
 
  private:
   // Cached value of reloadable flags.
-  // quic_enable_version_rfcv1 flag
-  bool enable_version_rfcv1_;
+  // quic_disable_version_rfcv1 flag
+  bool disable_version_rfcv1_ = true;
   // quic_disable_version_draft_29 flag
-  bool disable_version_draft_29_;
-  // quic_disable_version_t051 flag
-  bool disable_version_t051_;
+  bool disable_version_draft_29_ = true;
   // quic_disable_version_q050 flag
-  bool disable_version_q050_;
+  bool disable_version_q050_ = true;
   // quic_disable_version_q046 flag
-  bool disable_version_q046_;
+  bool disable_version_q046_ = true;
   // quic_disable_version_q043 flag
-  bool disable_version_q043_;
+  bool disable_version_q043_ = true;
 
   // The list of versions that may be supported.
-  ParsedQuicVersionVector allowed_supported_versions_;
+  const ParsedQuicVersionVector allowed_supported_versions_;
+
+  // The following vectors are calculated from reloadable flags by
+  // RefilterSupportedVersions().  It is performed lazily when first needed, and
+  // after that, since the calculation is relatively expensive, only if the flag
+  // values change.
+
   // This vector contains QUIC versions which are currently supported based on
   // flags.
   ParsedQuicVersionVector filtered_supported_versions_;
+  // Currently supported versions using HTTP/3.
+  ParsedQuicVersionVector filtered_supported_versions_with_http3_;
   // Currently supported versions using QUIC crypto.
   ParsedQuicVersionVector filtered_supported_versions_with_quic_crypto_;
   // This vector contains the transport versions from

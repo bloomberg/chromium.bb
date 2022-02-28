@@ -36,7 +36,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(TextureBindingsResetTest, reporter, ctxInf
     if ((supportRectangle = glGpu->glCaps().rectangleTextureSupport())) {
         targets.push_back({GR_GL_TEXTURE_RECTANGLE, GR_GL_TEXTURE_BINDING_RECTANGLE});
     }
-    GrGLint numUnits;
+    GrGLint numUnits = 0;
     GL(GetIntegerv(GR_GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &numUnits));
     SkTDArray<GrGLuint> claimedIDs;
     claimedIDs.setCount(numUnits * targets.count());
@@ -56,9 +56,9 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(TextureBindingsResetTest, reporter, ctxInf
         for (int u = 0; u < numUnits; ++u) {
             GL(ActiveTexture(GR_GL_TEXTURE0 + u));
             for (auto target : targets) {
-                GrGLuint boundID = ~0;
-                GL(GetIntegerv(target.fQuery, reinterpret_cast<GrGLint*>(&boundID)));
-                if (boundID != claimedIDs[i] && boundID != 0) {
+                GrGLint boundID = -1;
+                GL(GetIntegerv(target.fQuery, &boundID));
+                if (boundID != (int) claimedIDs[i] && boundID != 0) {
                     ERRORF(reporter, "Unit %d, target 0x%04x has ID %d bound. Expected %d or 0.", u,
                            target.fName, boundID, claimedIDs[i]);
                     return;
@@ -75,9 +75,10 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(TextureBindingsResetTest, reporter, ctxInf
 
     // Test creating a texture and then resetting bindings.
     static constexpr SkISize kDims = {10, 10};
-    auto format = gpu->caps()->getDefaultBackendFormat(GrColorType::kRGBA_8888, GrRenderable::kNo);
-    auto tex = gpu->createTexture(kDims, format, GrRenderable::kNo, 1, GrMipmapped::kNo,
-                                  SkBudgeted::kNo, GrProtected::kNo);
+    GrBackendFormat format = gpu->caps()->getDefaultBackendFormat(GrColorType::kRGBA_8888,
+                                                                  GrRenderable::kNo);
+    auto tex = gpu->createTexture(kDims, format, GrTextureType::k2D, GrRenderable::kNo, 1,
+                                  GrMipmapped::kNo, SkBudgeted::kNo, GrProtected::kNo);
     REPORTER_ASSERT(reporter, tex);
     dContext->resetGLTextureBindings();
     checkBindings();
@@ -134,7 +135,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(TextureBindingsResetTest, reporter, ctxInf
     }
 
     if (supportRectangle) {
-        auto format = GrBackendFormat::MakeGL(GR_GL_RGBA8, GR_GL_TEXTURE_RECTANGLE);
+        format = GrBackendFormat::MakeGL(GR_GL_RGBA8, GR_GL_TEXTURE_RECTANGLE);
         GrBackendTexture rectangleTexture =
                 dContext->createBackendTexture(10, 10, format, GrMipmapped::kNo, GrRenderable::kNo);
         if (rectangleTexture.isValid()) {

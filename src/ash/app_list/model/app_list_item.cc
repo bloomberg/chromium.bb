@@ -6,8 +6,21 @@
 
 #include "ash/app_list/model/app_list_item_observer.h"
 #include "ash/public/cpp/app_list/app_list_config_provider.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace ash {
+
+namespace {
+
+// The maximum number of children that a folder is allowed to have. The
+// restriction was a result of UI restrictions for paged folder views, with a
+// goal to reduce size taken by the page switcher within the folder UI. While
+// this is not relevant concern when the folder items grid is scrollabe, the
+// restriction is kept to reduce risk of creating overflown folders via sync on
+// devices that do not yet use scrollable folder UI.
+constexpr int kMaxFolderChildren = 48;
+
+}  // namespace
 
 AppListItem::AppListItem(const std::string& id)
     : metadata_(std::make_unique<AppListItemMetadata>()) {
@@ -22,7 +35,6 @@ AppListItem::~AppListItem() {
 void AppListItem::SetIcon(AppListConfigType config_type,
                           const gfx::ImageSkia& icon) {
   per_config_icons_[config_type] = icon;
-  icon.EnsureRepsForSupportedScales();
 
   for (auto& observer : observers_)
     observer.ItemIconChanged(config_type);
@@ -41,7 +53,6 @@ const gfx::ImageSkia& AppListItem::GetIcon(
 
 void AppListItem::SetDefaultIcon(const gfx::ImageSkia& icon) {
   metadata_->icon = icon;
-  icon.EnsureRepsForSupportedScales();
 
   // If the item does not have a config specific icon, it will be represented by
   // the (possibly scaled) default icon, which means that changing the default
@@ -60,11 +71,29 @@ const gfx::ImageSkia& AppListItem::GetDefaultIcon() const {
   return metadata_->icon;
 }
 
+void AppListItem::SetIconVersion(int icon_version) {
+  if (metadata_->icon_version == icon_version)
+    return;
+
+  // Clears last set icon if any. AppIconLoadHelper use that to decide
+  // whether to trigger an icon load when it is created with UI.
+  metadata_->icon = gfx::ImageSkia();
+
+  metadata_->icon_version = icon_version;
+  for (auto& observer : observers_) {
+    observer.ItemIconVersionChanged();
+  }
+}
+
 void AppListItem::SetNotificationBadgeColor(const SkColor color) {
   metadata_->badge_color = color;
   for (auto& observer : observers_) {
     observer.ItemBadgeColorChanged();
   }
+}
+
+void AppListItem::SetIconColor(const IconColor color) {
+  metadata_->icon_color = color;
 }
 
 void AppListItem::AddObserver(AppListItemObserver* observer) {
@@ -84,8 +113,16 @@ AppListItem* AppListItem::FindChildItem(const std::string& id) {
   return nullptr;
 }
 
+AppListItem* AppListItem::GetChildItemAt(size_t index) {
+  return nullptr;
+}
+
 size_t AppListItem::ChildItemCount() const {
   return 0;
+}
+
+bool AppListItem::IsFolderFull() const {
+  return is_folder() && ChildItemCount() >= kMaxFolderChildren;
 }
 
 std::string AppListItem::ToDebugString() const {
@@ -124,4 +161,13 @@ void AppListItem::UpdateNotificationBadge(bool has_badge) {
   }
 }
 
+void AppListItem::SetIsNewInstall(bool is_new_install) {
+  if (metadata_->is_new_install == is_new_install)
+    return;
+
+  metadata_->is_new_install = is_new_install;
+  for (auto& observer : observers_) {
+    observer.ItemIsNewInstallChanged();
+  }
+}
 }  // namespace ash

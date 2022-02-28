@@ -10,8 +10,10 @@
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/passthrough_touch_event_queue.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom.h"
@@ -71,13 +73,6 @@ class InputRouter {
   // to viewport.
   virtual void SetDeviceScaleFactor(float device_scale_factor) = 0;
 
-  // Sets the frame tree node id of associated frame, used when tracing
-  // input event latencies to relate events to their target frames. Since
-  // input always flows to Local Frame Roots, the |frameTreeNodeId| is
-  // relative to the Frame associated with the Local Frame Root for the
-  // widget owning this InputRouter.
-  virtual void SetFrameTreeNodeId(int frameTreeNodeId) = 0;
-
   // Return the currently allowed touch-action.
   virtual absl::optional<cc::TouchAction> AllowedTouchAction() = 0;
 
@@ -87,8 +82,8 @@ class InputRouter {
   virtual void SetForceEnableZoom(bool enabled) = 0;
 
   // Create and bind a new host channel.
-  virtual mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost>
-  BindNewHost() = 0;
+  virtual mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> BindNewHost(
+      scoped_refptr<base::SequencedTaskRunner> task_runner) = 0;
 
   // Used to stop an active fling if such exists.
   virtual void StopFling() = 0;

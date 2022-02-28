@@ -11,7 +11,6 @@
 
 #include "aom_dsp/quantize.h"
 #include "aom_mem/aom_mem.h"
-#include "av1/encoder/av1_quantize.h"
 
 void aom_quantize_b_adaptive_helper_c(
     const tran_low_t *coeff_ptr, intptr_t n_coeffs, const int16_t *zbin_ptr,

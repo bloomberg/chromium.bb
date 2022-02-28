@@ -14,8 +14,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/large_icon_worker.h"
@@ -67,6 +67,15 @@ GURL GetRequestUrlForGoogleServerV2(
     int desired_size_in_pixel,
     bool may_page_url_be_private,
     const GURL& server_url) {
+  // Server expects a size value from the server-side enum
+  // favicon_service.FaviconSize
+  DCHECK(desired_size_in_pixel == 16 || desired_size_in_pixel == 24 ||
+         desired_size_in_pixel == 32 || desired_size_in_pixel == 48 ||
+         desired_size_in_pixel == 50 || desired_size_in_pixel == 64 ||
+         desired_size_in_pixel == 96 || desired_size_in_pixel == 128 ||
+         desired_size_in_pixel == 180 || desired_size_in_pixel == 256)
+      << "Icon size not supported by the favicon service: "
+      << desired_size_in_pixel;
   desired_size_in_pixel =
       std::max(desired_size_in_pixel, kGoogleServerV2EnforcedMinSizeInPixel);
   int max_size_in_pixel = static_cast<int>(

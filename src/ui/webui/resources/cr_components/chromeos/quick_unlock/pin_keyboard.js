@@ -287,7 +287,7 @@ Polymer({
     // button is tabbed into, it should keep focus, so users can use tab and
     // spacebar/return to enter their PIN.
     if (!receivedEventFromKeyboard(event)) {
-      this.focusInput(selectionStart + 1, selectionStart + 1);
+      this.focusInputSynchronously(selectionStart + 1, selectionStart + 1);
     }
     event.stopImmediatePropagation();
   },
@@ -439,6 +439,11 @@ Polymer({
     // Valid if the key is CTRL+-, CTRL+=, or CTRL+0 to zoom in, zoom out, and
     // zoom reset the screen.
     if (event.ctrlKey && [48, 187, 189].includes(event.keyCode)) {
+      return true;
+    }
+
+    // Valid for the ChromeVox combination.
+    if (event.ctrlKey && event.altKey && event.key === 'z') {
       return true;
     }
 

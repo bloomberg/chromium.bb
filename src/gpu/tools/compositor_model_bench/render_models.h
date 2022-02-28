@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "gpu/tools/compositor_model_bench/render_tree.h"
 
 enum RenderModel {
@@ -21,7 +20,12 @@ const char* ModelToString(RenderModel m);
 
 class RenderModelSimulator {
  public:
+  RenderModelSimulator() = delete;
+  RenderModelSimulator(const RenderModelSimulator&) = delete;
+  RenderModelSimulator& operator=(const RenderModelSimulator&) = delete;
+
   virtual ~RenderModelSimulator();
+
   virtual void Update() = 0;
   virtual void Resize(int width, int height) = 0;
 
@@ -29,9 +33,6 @@ class RenderModelSimulator {
   explicit RenderModelSimulator(std::unique_ptr<RenderNode> root);
 
   std::unique_ptr<RenderNode> root_;
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(RenderModelSimulator);
 };
 
 std::unique_ptr<RenderModelSimulator> ConstructSimulationModel(

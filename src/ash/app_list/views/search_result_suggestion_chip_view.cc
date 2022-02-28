@@ -14,6 +14,7 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -23,9 +24,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
-#include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -56,18 +59,23 @@ SearchResultSuggestionChipView::SearchResultSuggestionChipView(
     AppListViewDelegate* view_delegate)
     : view_delegate_(view_delegate) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
+  // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
+  // able to submit accessibility checks, but this focusable View needs to
+  // add a name so that the screen reader knows what to announce.
+  SetProperty(views::kSkipAccessibilityPaintChecks, true);
   SetCallback(
       base::BindRepeating(&SearchResultSuggestionChipView::OnButtonPressed,
                           base::Unretained(this)));
 
   SetInstallFocusRingOnFocus(true);
-  focus_ring()->SetColor(AppListColorProvider::Get()->GetFocusRingColor());
+  views::FocusRing::Get(this)->SetColor(
+      AppListColorProvider::Get()->GetFocusRingColor());
 
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
   views::InstallPillHighlightPathGenerator(this);
-  views::InkDrop::UseInkDropWithoutAutoHighlight(ink_drop(),
+  views::InkDrop::UseInkDropWithoutAutoHighlight(views::InkDrop::Get(this),
                                                  /*highlight_on_hover=*/false);
-  ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+  views::InkDrop::Get(this)->SetCreateRippleCallback(base::BindRepeating(
       [](Button* host) -> std::unique_ptr<views::InkDropRipple> {
         const gfx::Point center = host->GetLocalBounds().CenterPoint();
         const int ripple_radius = host->width() / 2;
@@ -79,9 +87,9 @@ SearchResultSuggestionChipView::SearchResultSuggestionChipView(
         const SkColor bg_color = color_provider->GetSearchBoxBackgroundColor();
         return std::make_unique<views::FloodFillInkDropRipple>(
             host->size(), host->GetLocalBounds().InsetsFrom(bounds),
-            host->ink_drop()->GetInkDropCenterBasedOnLastEvent(),
-            color_provider->GetRippleAttributesBaseColor(bg_color),
-            color_provider->GetRippleAttributesInkDropOpacity(bg_color));
+            views::InkDrop::Get(host)->GetInkDropCenterBasedOnLastEvent(),
+            color_provider->GetInkDropBaseColor(bg_color),
+            color_provider->GetInkDropOpacity(bg_color));
       },
       this));
 
@@ -144,16 +152,17 @@ void SearchResultSuggestionChipView::OnPaintBackground(gfx::Canvas* canvas) {
   canvas->DrawRoundRect(bounds, height() / 2, flags);
 
   // Focus Ring should only be visible when keyboard traversal is occurring.
-  if (view_delegate_->KeyboardTraversalEngaged())
-    focus_ring()->SetColor(AppListColorProvider::Get()->GetFocusRingColor());
-  else
-    focus_ring()->SetColor(
-        SkColorSetA(AppListColorProvider::Get()->GetFocusRingColor(), 0));
+  const auto focus_ring_color =
+      AppListColorProvider::Get()->GetFocusRingColor();
+  views::FocusRing::Get(this)->SetColor(
+      view_delegate_->KeyboardTraversalEngaged()
+          ? focus_ring_color
+          : SkColorSetA(focus_ring_color, 0));
 }
 
 void SearchResultSuggestionChipView::OnFocus() {
   SchedulePaint();
-  NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
+  SearchResultBaseView::OnFocus();
 }
 
 void SearchResultSuggestionChipView::OnBlur() {
@@ -199,7 +208,8 @@ const std::u16string& SearchResultSuggestionChipView::GetText() const {
 void SearchResultSuggestionChipView::UpdateSuggestionChipView() {
   if (!result()) {
     SetIcon(gfx::ImageSkia());
-    SetText(std::u16string());
+    if (!GetText().empty())
+      SetText(std::u16string());
     SetAccessibleName(std::u16string());
     return;
   }
@@ -246,8 +256,8 @@ void SearchResultSuggestionChipView::InitLayout() {
 void SearchResultSuggestionChipView::OnButtonPressed(const ui::Event& event) {
   DCHECK(result());
   LogAppLaunch(index_in_container());
-  RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
-                               view_delegate_->GetSearchModel());
+  RecordSearchResultOpenSource(result(), view_delegate_->GetAppListViewState(),
+                               view_delegate_->IsInTabletMode());
   view_delegate_->OpenSearchResult(
       result()->id(), result()->result_type(), event.flags(),
       AppListLaunchedFrom::kLaunchedFromSuggestionChip,
@@ -256,7 +266,7 @@ void SearchResultSuggestionChipView::OnButtonPressed(const ui::Event& event) {
 }
 
 void SearchResultSuggestionChipView::SetRoundedCornersForLayer(
-    int corner_radius) {
+    float corner_radius) {
   layer()->SetRoundedCornerRadius(
       {corner_radius, corner_radius, corner_radius, corner_radius});
   layer()->SetIsFastRoundedCorner(true);

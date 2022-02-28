@@ -20,16 +20,20 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.SearchGeolocationDisclosureTabHelper;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.site_settings.PermissionInfo;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.TimeoutException;
@@ -66,6 +70,7 @@ public class SearchGeolocationDisclosureInfoBarTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
+    @DisableFeatures(ChromeFeatureList.REVERT_DSE_AUTOMATIC_PERMISSIONS)
     public void testInfoBarAppears() throws TimeoutException {
         SearchGeolocationDisclosureTabHelper.setIgnoreUrlChecksForTesting();
         Assert.assertEquals(
@@ -73,8 +78,8 @@ public class SearchGeolocationDisclosureInfoBarTest {
 
         // Infobar should appear when doing the first search.
         InfoBarContainer container = mActivityTestRule.getInfoBarContainer();
-        InfoBarTestAnimationListener listener = new InfoBarTestAnimationListener();
-        container.addAnimationListener(listener);
+        InfoBarTestAnimationListener listener1 = new InfoBarTestAnimationListener();
+        TestThreadUtils.runOnUiThreadBlocking(() -> container.addAnimationListener(listener1));
         mActivityTestRule.loadUrl(mTestServer.getURL(SEARCH_PAGE));
         // Note: the number of infobars is checked immediately after the URL is loaded, unlike in
         // other infobar tests where it is checked after animations have completed. This is because
@@ -84,7 +89,7 @@ public class SearchGeolocationDisclosureInfoBarTest {
         // infobars haven't being shown are invalid.
         Assert.assertEquals(
                 "Wrong infobar count after search", 1, mActivityTestRule.getInfoBars().size());
-        listener.addInfoBarAnimationFinished("InfoBar not added.");
+        listener1.addInfoBarAnimationFinished("InfoBar not added.");
 
         // Infobar should not appear again on the same day.
         mActivityTestRule.loadUrl(mTestServer.getURL(SEARCH_PAGE));
@@ -96,12 +101,12 @@ public class SearchGeolocationDisclosureInfoBarTest {
 
         // Infobar should appear again the next day.
         SearchGeolocationDisclosureTabHelper.setDayOffsetForTesting(1);
-        listener = new InfoBarTestAnimationListener();
-        container.addAnimationListener(listener);
+        InfoBarTestAnimationListener listener2 = new InfoBarTestAnimationListener();
+        TestThreadUtils.runOnUiThreadBlocking(() -> container.addAnimationListener(listener2));
         mActivityTestRule.loadUrl(mTestServer.getURL(SEARCH_PAGE));
         Assert.assertEquals(
                 "Wrong infobar count after search", 1, mActivityTestRule.getInfoBars().size());
-        listener.addInfoBarAnimationFinished("InfoBar not added.");
+        listener2.addInfoBarAnimationFinished("InfoBar not added.");
 
         // Infobar should not appear again on the same day.
         mActivityTestRule.loadUrl(mTestServer.getURL(SEARCH_PAGE));
@@ -111,12 +116,12 @@ public class SearchGeolocationDisclosureInfoBarTest {
 
         // Infobar should appear again the next day.
         SearchGeolocationDisclosureTabHelper.setDayOffsetForTesting(2);
-        listener = new InfoBarTestAnimationListener();
-        container.addAnimationListener(listener);
+        InfoBarTestAnimationListener listener3 = new InfoBarTestAnimationListener();
+        TestThreadUtils.runOnUiThreadBlocking(() -> container.addAnimationListener(listener3));
         mActivityTestRule.loadUrl(mTestServer.getURL(SEARCH_PAGE));
         Assert.assertEquals(
                 "Wrong infobar count after search", 1, mActivityTestRule.getInfoBars().size());
-        listener.addInfoBarAnimationFinished("InfoBar not added.");
+        listener3.addInfoBarAnimationFinished("InfoBar not added.");
 
         // Infobar should not appear again on the same day.
         mActivityTestRule.loadUrl(mTestServer.getURL(SEARCH_PAGE));
@@ -142,6 +147,7 @@ public class SearchGeolocationDisclosureInfoBarTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
+    @DisableFeatures(ChromeFeatureList.REVERT_DSE_AUTOMATIC_PERMISSIONS)
     public void testInfoBarDismiss() throws TimeoutException {
         SearchGeolocationDisclosureTabHelper.setIgnoreUrlChecksForTesting();
         Assert.assertEquals(
@@ -150,7 +156,7 @@ public class SearchGeolocationDisclosureInfoBarTest {
         // Infobar should appear when doing the first search.
         InfoBarContainer container = mActivityTestRule.getInfoBarContainer();
         InfoBarTestAnimationListener listener = new InfoBarTestAnimationListener();
-        container.addAnimationListener(listener);
+        TestThreadUtils.runOnUiThreadBlocking(() -> container.addAnimationListener(listener));
         mActivityTestRule.loadUrl(mTestServer.getURL(SEARCH_PAGE));
         Assert.assertEquals(
                 "Wrong infobar count after search", 1, mActivityTestRule.getInfoBars().size());
@@ -190,6 +196,20 @@ public class SearchGeolocationDisclosureInfoBarTest {
     public void testNoInfoBarInIncognito() {
         SearchGeolocationDisclosureTabHelper.setIgnoreUrlChecksForTesting();
         mActivityTestRule.newIncognitoTabFromMenu();
+        Assert.assertEquals(
+                "Wrong starting infobar count", 0, mActivityTestRule.getInfoBars().size());
+
+        mActivityTestRule.loadUrl(mTestServer.getURL(SEARCH_PAGE));
+        Assert.assertEquals(
+                "Wrong infobar count after search", 0, mActivityTestRule.getInfoBars().size());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Browser", "Main", "Geolocation"})
+    @EnableFeatures(ChromeFeatureList.REVERT_DSE_AUTOMATIC_PERMISSIONS)
+    public void testNoInfobarWhenAutograntDisabled() throws TimeoutException {
+        SearchGeolocationDisclosureTabHelper.setIgnoreUrlChecksForTesting();
         Assert.assertEquals(
                 "Wrong starting infobar count", 0, mActivityTestRule.getInfoBars().size());
 

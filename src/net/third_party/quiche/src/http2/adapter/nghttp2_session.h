@@ -1,24 +1,26 @@
 #ifndef QUICHE_HTTP2_ADAPTER_NGHTTP2_SESSION_H_
 #define QUICHE_HTTP2_ADAPTER_NGHTTP2_SESSION_H_
 
+#include <cstdint>
+
 #include "http2/adapter/http2_session.h"
+#include "http2/adapter/nghttp2.h"
 #include "http2/adapter/nghttp2_util.h"
-#include "third_party/nghttp2/src/lib/includes/nghttp2/nghttp2.h"
+#include "common/platform/api/quiche_export.h"
 
 namespace http2 {
 namespace adapter {
 
 // A C++ wrapper around common nghttp2_session operations.
-class NgHttp2Session : public Http2Session {
+class QUICHE_EXPORT_PRIVATE NgHttp2Session : public Http2Session {
  public:
-  // Takes ownership of |options|.
+  // Does not take ownership of |options|.
   NgHttp2Session(Perspective perspective,
                  nghttp2_session_callbacks_unique_ptr callbacks,
-                 nghttp2_option* options,
-                 void* userdata);
+                 const nghttp2_option* options, void* userdata);
   ~NgHttp2Session() override;
 
-  ssize_t ProcessBytes(absl::string_view bytes) override;
+  int64_t ProcessBytes(absl::string_view bytes) override;
 
   int Consume(Http2StreamId stream_id, size_t num_bytes) override;
 
@@ -29,10 +31,7 @@ class NgHttp2Session : public Http2Session {
   nghttp2_session* raw_ptr() const { return session_.get(); }
 
  private:
-  using OptionsDeleter = void (&)(nghttp2_option*);
-
   nghttp2_session_unique_ptr session_;
-  std::unique_ptr<nghttp2_option, OptionsDeleter> options_;
   Perspective perspective_;
 };
 

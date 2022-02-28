@@ -16,7 +16,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/message_window.h"
@@ -58,6 +57,10 @@ class DeviceMonitorMessageWindow {
     }
     return g_message_window;
   }
+
+  DeviceMonitorMessageWindow(const DeviceMonitorMessageWindow&) = delete;
+  DeviceMonitorMessageWindow& operator=(const DeviceMonitorMessageWindow&) =
+      delete;
 
   DeviceMonitorWin* GetForDeviceInterface(const GUID& device_interface) {
     std::unique_ptr<DeviceMonitorWin>& device_monitor =
@@ -150,8 +153,6 @@ class DeviceMonitorMessageWindow {
   DeviceMonitorWin all_device_monitor_;
   std::unique_ptr<base::win::MessageWindow> window_;
   HDEVNOTIFY notify_handle_ = NULL;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceMonitorMessageWindow);
 };
 
 void DeviceMonitorWin::Observer::OnDeviceAdded(

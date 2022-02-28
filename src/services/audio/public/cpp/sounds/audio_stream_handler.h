@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
@@ -47,6 +46,10 @@ class AudioStreamHandler {
   explicit AudioStreamHandler(
       SoundsManager::StreamFactoryBinder stream_factory_binder,
       const base::StringPiece& wav_data);
+
+  AudioStreamHandler(const AudioStreamHandler&) = delete;
+  AudioStreamHandler& operator=(const AudioStreamHandler&) = delete;
+
   virtual ~AudioStreamHandler();
 
   // Returns true iff AudioStreamHandler is correctly initialized;
@@ -77,8 +80,6 @@ class AudioStreamHandler {
   base::TimeDelta duration_;
   std::unique_ptr<AudioStreamContainer> stream_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioStreamHandler);
 };
 
 }  // namespace audio

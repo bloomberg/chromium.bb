@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -60,6 +61,11 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       base::WeakPtr<ServiceWorkerSubresourceLoaderFactory>
           service_worker_subresource_loader_factory);
+
+  ServiceWorkerSubresourceLoader(const ServiceWorkerSubresourceLoader&) =
+      delete;
+  ServiceWorkerSubresourceLoader& operator=(
+      const ServiceWorkerSubresourceLoader&) = delete;
 
   ~ServiceWorkerSubresourceLoader() override;
 
@@ -151,8 +157,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   void TransitionToStatus(Status new_status);
 
-  network::mojom::URLResponseHeadPtr response_head_ =
-      network::mojom::URLResponseHead::New();
+  network::mojom::URLResponseHeadPtr response_head_;
   absl::optional<net::RedirectInfo> redirect_info_;
   int redirect_limit_;
 
@@ -207,8 +212,6 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   network::mojom::FetchResponseSource response_source_;
 
   base::WeakPtrFactory<ServiceWorkerSubresourceLoader> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSubresourceLoader);
 };
 
 // A custom URLLoaderFactory implementation used by Service Worker controllees
@@ -223,7 +226,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
 
   // |controller_connector| is used to get a connection to the controller
   // ServiceWorker.
-  // |network_loader_factory| is used to get the associated loading context's
+  // |fallback_factory| is used to get the associated loading context's
   // default URLLoaderFactory for network fallback. This should be the
   // URLLoaderFactory that directly goes to network without going through
   // any custom URLLoader factories.
@@ -238,6 +241,11 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       scoped_refptr<base::SequencedTaskRunner> parent_task_runner,
       WorkerTimingCallback worker_timing_callback);
+
+  ServiceWorkerSubresourceLoaderFactory(
+      const ServiceWorkerSubresourceLoaderFactory&) = delete;
+  ServiceWorkerSubresourceLoaderFactory& operator=(
+      const ServiceWorkerSubresourceLoaderFactory&) = delete;
 
   ~ServiceWorkerSubresourceLoaderFactory() override;
 
@@ -287,8 +295,6 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
 
   base::WeakPtrFactory<ServiceWorkerSubresourceLoaderFactory> weak_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSubresourceLoaderFactory);
 };
 
 }  // namespace content

@@ -53,44 +53,20 @@ OptimizedCompilationInfo::OptimizedCompilationInfo(
 }
 
 OptimizedCompilationInfo::OptimizedCompilationInfo(
-    Vector<const char> debug_name, Zone* zone, CodeKind code_kind)
+    base::Vector<const char> debug_name, Zone* zone, CodeKind code_kind)
     : code_kind_(code_kind),
       zone_(zone),
       optimization_id_(kNoOptimizationId),
       debug_name_(debug_name) {
   SetTracingFlags(
-      PassesFilter(debug_name, CStrVector(FLAG_trace_turbo_filter)));
+      PassesFilter(debug_name, base::CStrVector(FLAG_trace_turbo_filter)));
   ConfigureFlags();
 }
 
-#ifdef DEBUG
-bool OptimizedCompilationInfo::FlagSetIsValid(Flag flag) const {
-  switch (flag) {
-    case kPoisonRegisterArguments:
-      return untrusted_code_mitigations();
-    default:
-      return true;
-  }
-  UNREACHABLE();
-}
-
-bool OptimizedCompilationInfo::FlagGetIsValid(Flag flag) const {
-  switch (flag) {
-    case kPoisonRegisterArguments:
-      if (!GetFlag(kPoisonRegisterArguments)) return true;
-      return untrusted_code_mitigations() && called_with_code_start_register();
-    default:
-      return true;
-  }
-  UNREACHABLE();
-}
-#endif  // DEBUG
-
 void OptimizedCompilationInfo::ConfigureFlags() {
-  if (FLAG_untrusted_code_mitigations) set_untrusted_code_mitigations();
   if (FLAG_turbo_inline_js_wasm_calls) set_inline_js_wasm_calls();
 
-  if (!is_osr() && (IsTurboprop() || FLAG_concurrent_inlining)) {
+  if (IsTurboprop() || FLAG_concurrent_inlining) {
     set_concurrent_inlining();
   }
 
@@ -104,7 +80,6 @@ void OptimizedCompilationInfo::ConfigureFlags() {
     case CodeKind::TURBOPROP:
       set_called_with_code_start_register();
       set_switch_jump_table();
-      if (FLAG_untrusted_code_mitigations) set_poison_register_arguments();
       // TODO(yangguo): Disable this in case of debugging for crbug.com/826613
       if (FLAG_analyze_environment_liveness) set_analyze_environment_liveness();
       break;
@@ -123,8 +98,15 @@ void OptimizedCompilationInfo::ConfigureFlags() {
     case CodeKind::WASM_TO_CAPI_FUNCTION:
       set_switch_jump_table();
       break;
-    default:
+    case CodeKind::C_WASM_ENTRY:
+    case CodeKind::JS_TO_JS_FUNCTION:
+    case CodeKind::JS_TO_WASM_FUNCTION:
+    case CodeKind::WASM_TO_JS_FUNCTION:
       break;
+    case CodeKind::BASELINE:
+    case CodeKind::INTERPRETED_FUNCTION:
+    case CodeKind::REGEXP:
+      UNREACHABLE();
   }
 }
 
@@ -165,10 +147,10 @@ std::unique_ptr<char[]> OptimizedCompilationInfo::GetDebugName() const {
   if (!shared_info().is_null()) {
     return shared_info()->DebugNameCStr();
   }
-  Vector<const char> name_vec = debug_name_;
-  if (name_vec.empty()) name_vec = ArrayVector("unknown");
+  base::Vector<const char> name_vec = debug_name_;
+  if (name_vec.empty()) name_vec = base::ArrayVector("unknown");
   std::unique_ptr<char[]> name(new char[name_vec.length() + 1]);
-  base::Memcpy(name.get(), name_vec.begin(), name_vec.length());
+  memcpy(name.get(), name_vec.begin(), name_vec.length());
   name[name_vec.length()] = '\0';
   return name;
 }
@@ -193,7 +175,6 @@ StackFrame::Type OptimizedCompilationInfo::GetOutputStackFrameType() const {
 #endif  // V8_ENABLE_WEBASSEMBLY
     default:
       UNIMPLEMENTED();
-      return StackFrame::NONE;
   }
 }
 

@@ -26,13 +26,16 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_TYPES_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_TYPES_H_
 
+#include "cc/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/skia/include/core/SkFilterQuality.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 
 namespace blink {
+
+typedef uintptr_t DisplayItemClientId;
+static const DisplayItemClientId kInvalidDisplayItemClientId = 0u;
 
 enum AlphaDisposition {
   kPremultiplyAlpha,
@@ -67,9 +70,10 @@ enum StrokeStyle {
 };
 
 enum InterpolationQuality {
-  kInterpolationNone = kNone_SkFilterQuality,
-  kInterpolationLow = kLow_SkFilterQuality,
-  kInterpolationMedium = kMedium_SkFilterQuality,
+  kInterpolationNone = static_cast<int>(cc::PaintFlags::FilterQuality::kNone),
+  kInterpolationLow = static_cast<int>(cc::PaintFlags::FilterQuality::kLow),
+  kInterpolationMedium =
+      static_cast<int>(cc::PaintFlags::FilterQuality::kMedium),
 #if defined(WTF_USE_LOW_QUALITY_IMAGE_INTERPOLATION)
   kInterpolationDefault = kInterpolationLow,
 #else
@@ -114,6 +118,12 @@ enum class BlendMode {
 enum OpacityMode {
   kNonOpaque,
   kOpaque,
+};
+
+enum class RasterEffectOutset : uint8_t {
+  kNone,
+  kHalfPixel,
+  kWholePixel,
 };
 
 // Specifies whether the provider should rasterize paint commands on the CPU

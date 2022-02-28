@@ -167,11 +167,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Deletes a custom search engine by swiping and tapping on the "Delete" button.
 - (void)testDeleteCustomSearchEngineSwipeAndTap {
-  if (@available(iOS 13, *)) {
-  } else {
-    EARL_GREY_TEST_SKIPPED(
-        @"Test disabled on iOS 12 as this feature isn't present.");
-  }
   [self enterSettingsWithCustomSearchEngine];
 
   id<GREYMatcher> customSearchEngineCell =
@@ -184,11 +179,30 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       performAction:grey_swipeSlowInDirectionWithStartPoint(kGREYDirectionLeft,
                                                             0.2, 0.5)];
 
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"Delete"),
-                                          grey_kindOfClassName(
-                                              @"UISwipeActionStandardButton"),
-                                          nil)] performAction:grey_tap()];
+  id<GREYMatcher> deleteButtonMatcher =
+      grey_allOf(grey_accessibilityLabel(@"Delete"),
+                 grey_kindOfClassName(@"UISwipeActionStandardButton"), nil);
+  // Depending on the device, the swipe may have deleted the element or just
+  // displayed the "Delete" button. Check if the delete button is still on
+  // screen and tap it if it is the case.
+  GREYCondition* waitForDeleteToDisappear = [GREYCondition
+      conditionWithName:@"Element is already deleted"
+                  block:^{
+                    NSError* error = nil;
+                    [[EarlGrey selectElementWithMatcher:deleteButtonMatcher]
+                        assertWithMatcher:grey_nil()
+                                    error:&error];
+                    return error == nil;
+                  }];
+
+  bool matchedElement = [waitForDeleteToDisappear
+      waitWithTimeout:base::test::ios::kWaitForUIElementTimeout];
+
+  if (!matchedElement) {
+    // Delete button is still on screen, tap it
+    [[EarlGrey selectElementWithMatcher:deleteButtonMatcher]
+        performAction:grey_tap()];
+  }
 
   [[EarlGrey selectElementWithMatcher:customSearchEngineCell]
       assertWithMatcher:grey_nil()];
@@ -216,6 +230,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   id<GREYMatcher> editButton = grey_allOf(
       chrome_test_util::ButtonWithAccessibilityLabelId(
           IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON),
+      grey_not(chrome_test_util::TabGridEditButton()),
       grey_not(grey_accessibilityTrait(UIAccessibilityTraitNotEnabled)), nil);
   [[EarlGrey selectElementWithMatcher:editButton] performAction:grey_tap()];
 

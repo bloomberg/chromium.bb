@@ -11,7 +11,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/stl_util.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
@@ -62,8 +61,7 @@ std::unique_ptr<network::SimpleURLLoader> MakeLoader(
 
   auto simple_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), network_traffic_annotation);
-  simple_loader->SetTimeoutDuration(
-      base::TimeDelta::FromSeconds(kTimeoutDurationSeconds));
+  simple_loader->SetTimeoutDuration(base::Seconds(kTimeoutDurationSeconds));
 
   if (!request_body.empty()) {
     DCHECK(!content_type.empty());

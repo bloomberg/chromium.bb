@@ -26,11 +26,11 @@
 
 using testing::_;
 using testing::AnyNumber;
-using testing::MatchesRegex;
 using testing::Contains;
 using testing::ElementsAreArray;
 using testing::Eq;
 using testing::IsEmpty;
+using testing::MatchesRegex;
 using testing::NiceMock;
 using testing::Not;
 using testing::Return;
@@ -93,6 +93,14 @@ class MockProtoTranslationTable : public ProtoTranslationTable {
 
 class FtraceConfigMuxerTest : public ::testing::Test {
  protected:
+  void SetUp() override {
+    // Don't probe for older SDK levels, that would relax the atrace-related
+    // checks on older versions of Android (But some tests here test those).
+    // We want the unittests to behave consistently (as if we were on a post P
+    // device) regardless of the Android versions they run on.
+    SetIsOldAtraceForTesting(false);
+  }
+  void TearDown() override { ClearIsOldAtraceForTesting(); }
   std::unique_ptr<MockProtoTranslationTable> GetMockTable() {
     std::vector<Field> common_fields;
     std::vector<Event> events;
@@ -737,6 +745,7 @@ TEST_F(FtraceConfigMuxerTest, SetupClockForTesting) {
   FtraceConfig config;
 
   FtraceConfigMuxer model(&ftrace, table_.get(), {});
+  namespace pb0 = protos::pbzero;
 
   EXPECT_CALL(ftrace, ReadFileIntoString("/root/trace_clock"))
       .Times(AnyNumber());
@@ -745,19 +754,25 @@ TEST_F(FtraceConfigMuxerTest, SetupClockForTesting) {
       .WillByDefault(Return("[local] global boot"));
   EXPECT_CALL(ftrace, WriteToFile("/root/trace_clock", "boot"));
   model.SetupClockForTesting(config);
+  // unspecified = boot.
+  EXPECT_EQ(model.ftrace_clock(),
+            static_cast<int>(pb0::FTRACE_CLOCK_UNSPECIFIED));
 
   ON_CALL(ftrace, ReadFileIntoString("/root/trace_clock"))
       .WillByDefault(Return("[local] global"));
   EXPECT_CALL(ftrace, WriteToFile("/root/trace_clock", "global"));
   model.SetupClockForTesting(config);
+  EXPECT_EQ(model.ftrace_clock(), static_cast<int>(pb0::FTRACE_CLOCK_GLOBAL));
 
   ON_CALL(ftrace, ReadFileIntoString("/root/trace_clock"))
       .WillByDefault(Return(""));
   model.SetupClockForTesting(config);
+  EXPECT_EQ(model.ftrace_clock(), static_cast<int>(pb0::FTRACE_CLOCK_UNKNOWN));
 
   ON_CALL(ftrace, ReadFileIntoString("/root/trace_clock"))
       .WillByDefault(Return("local [global]"));
   model.SetupClockForTesting(config);
+  EXPECT_EQ(model.ftrace_clock(), static_cast<int>(pb0::FTRACE_CLOCK_GLOBAL));
 }
 
 TEST_F(FtraceConfigMuxerTest, GetFtraceEvents) {

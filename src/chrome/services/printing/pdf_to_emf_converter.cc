@@ -9,9 +9,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/containers/span.h"
 #include "base/lazy_instance.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "pdf/pdf.h"
@@ -82,12 +82,6 @@ PdfToEmfConverter::PdfToEmfConverter(
 PdfToEmfConverter::~PdfToEmfConverter() = default;
 
 void PdfToEmfConverter::SetPrintMode() {
-  bool use_gdi_printing =
-      pdf_render_settings_.mode == PdfRenderSettings::Mode::GDI_TEXT ||
-      pdf_render_settings_.mode ==
-          PdfRenderSettings::Mode::EMF_WITH_REDUCED_RASTERIZATION_AND_GDI_TEXT;
-  chrome_pdf::SetPDFUseGDIPrinting(use_gdi_printing);
-
   int printing_mode;
   switch (pdf_render_settings_.mode) {
     case PdfRenderSettings::Mode::TEXTONLY:
@@ -99,8 +93,10 @@ void PdfToEmfConverter::SetPrintMode() {
     case PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3:
       printing_mode = chrome_pdf::PrintingMode::kPostScript3;
       break;
+    case PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3_WITH_TYPE42_FONTS:
+      printing_mode = chrome_pdf::PrintingMode::kPostScript3WithType42Fonts;
+      break;
     case PdfRenderSettings::Mode::EMF_WITH_REDUCED_RASTERIZATION:
-    case PdfRenderSettings::Mode::EMF_WITH_REDUCED_RASTERIZATION_AND_GDI_TEXT:
       printing_mode = chrome_pdf::PrintingMode::kEmfWithReducedRasterization;
       break;
     default:
@@ -202,7 +198,9 @@ void PdfToEmfConverter::ConvertPage(uint32_t page_number,
   float scale_factor = 1.0f;
   bool postscript =
       pdf_render_settings_.mode == PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2 ||
-      pdf_render_settings_.mode == PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3;
+      pdf_render_settings_.mode == PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3 ||
+      pdf_render_settings_.mode ==
+          PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3_WITH_TYPE42_FONTS;
   base::ReadOnlySharedMemoryRegion emf_region =
       RenderPdfPageToMetafile(page_number, postscript, &scale_factor);
   std::move(callback).Run(std::move(emf_region), scale_factor);

@@ -14,10 +14,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/contains.h"
+#include "base/cxx17_backports.h"
+#include "base/ignore_result.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -86,6 +87,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
+#include "url/scheme_host_port.h"
+#include "url/url_constants.h"
 
 // This file can be included from net/http even though
 // it is in net/websockets because it doesn't
@@ -219,6 +222,9 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
  public:
   StreamRequestWaiter() : error_status_(OK) {}
 
+  StreamRequestWaiter(const StreamRequestWaiter&) = delete;
+  StreamRequestWaiter& operator=(const StreamRequestWaiter&) = delete;
+
   // HttpStreamRequest::Delegate
 
   void OnStreamReady(const SSLConfig& used_ssl_config,
@@ -316,8 +322,6 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   SSLConfig used_ssl_config_;
   ProxyInfo used_proxy_info_;
   int error_status_;
-
-  DISALLOW_COPY_AND_ASSIGN(StreamRequestWaiter);
 };
 
 class WebSocketBasicHandshakeStream : public MockWebSocketHandshakeStream {
@@ -402,12 +406,12 @@ void PreconnectHelper(const TestCase& test, HttpNetworkSession* session) {
 ClientSocketPool::GroupId GetGroupId(const TestCase& test) {
   if (test.ssl) {
     return ClientSocketPool::GroupId(
-        HostPortPair("www.google.com", 443), ClientSocketPool::SocketType::kSsl,
+        url::SchemeHostPort(url::kHttpsScheme, "www.google.com", 443),
         PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
         SecureDnsPolicy::kAllow);
   }
   return ClientSocketPool::GroupId(
-      HostPortPair("www.google.com", 80), ClientSocketPool::SocketType::kHttp,
+      url::SchemeHostPort(url::kHttpScheme, "www.google.com", 80),
       PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
       SecureDnsPolicy::kAllow);
 }
@@ -434,7 +438,8 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
     last_num_streams_ = -1;
     // Group ID that shouldn't match much.
     last_group_id_ = ClientSocketPool::GroupId(
-        HostPortPair(), ClientSocketPool::SocketType::kSsl,
+        url::SchemeHostPort(url::kHttpsScheme,
+                            "unexpected.to.conflict.with.anything.test", 9999),
         PrivacyMode::PRIVACY_MODE_ENABLED, NetworkIsolationKey(),
         SecureDnsPolicy::kAllow);
   }
@@ -843,10 +848,10 @@ TEST_F(HttpStreamFactoryTest, QuicProxyMarkedAsBad) {
         ConfiguredProxyResolutionService::CreateFixedFromPacResult(
             "QUIC bad:99; DIRECT", TRAFFIC_ANNOTATION_FOR_TESTS);
 
-    HttpNetworkSession::Params session_params;
+    HttpNetworkSessionParams session_params;
     session_params.enable_quic = true;
 
-    HttpNetworkSession::Context session_context;
+    HttpNetworkSessionContext session_context;
     SSLConfigServiceDefaults ssl_config_service;
     HttpServerProperties http_server_properties;
     MockClientSocketFactory socket_factory;
@@ -864,6 +869,9 @@ TEST_F(HttpStreamFactoryTest, QuicProxyMarkedAsBad) {
     session_context.ssl_config_service = &ssl_config_service;
     session_context.http_server_properties = &http_server_properties;
     session_context.quic_context = &quic_context;
+
+    host_resolver.rules()->AddRule("www.google.com", "2.3.4.5");
+    host_resolver.rules()->AddRule("bad", "1.2.3.4");
 
     auto session =
         std::make_unique<HttpNetworkSession>(session_params, session_context);
@@ -987,7 +995,7 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
             "http_proxy", TRAFFIC_ANNOTATION_FOR_TESTS));
 
     // Setup params to disable preconnect, but QUIC doesn't 0RTT.
-    HttpNetworkSession::Params session_params =
+    HttpNetworkSessionParams session_params =
         SpdySessionDependencies::CreateSessionParams(&session_deps);
     session_params.enable_quic = true;
 
@@ -995,7 +1003,7 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
     HttpServerProperties http_server_properties;
     const AlternativeService alternative_service(kProtoQUIC, url.host().c_str(),
                                                  url.IntPort());
-    base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+    base::Time expiration = base::Time::Now() + base::Days(1);
     HostPortPair host_port_pair(alternative_service.host_port_pair());
     url::SchemeHostPort server("https", host_port_pair.host(),
                                host_port_pair.port());
@@ -1003,7 +1011,7 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
         server, NetworkIsolationKey(), alternative_service, expiration,
         DefaultSupportedQuicVersions());
 
-    HttpNetworkSession::Context session_context =
+    HttpNetworkSessionContext session_context =
         SpdySessionDependencies::CreateSessionContext(&session_deps);
     session_context.http_server_properties = &http_server_properties;
 
@@ -1763,7 +1771,7 @@ TEST_F(HttpStreamFactoryTest, NewSpdySessionCloseIdleH2Sockets) {
   std::unique_ptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSession(&session_deps));
 
-  HostPortPair host_port_pair("www.google.com", 443);
+  url::SchemeHostPort destination(url::kHttpsScheme, "www.google.com", 443);
 
   // Create some HTTP/2 sockets.
   std::vector<std::unique_ptr<ClientSocketHandle>> handles;
@@ -1776,8 +1784,7 @@ TEST_F(HttpStreamFactoryTest, NewSpdySessionCloseIdleH2Sockets) {
             std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
             nullptr /* ssl_config_for_proxy */);
     ClientSocketPool::GroupId group_id(
-        host_port_pair, ClientSocketPool::SocketType::kSsl,
-        PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+        destination, PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
         SecureDnsPolicy::kAllow);
     int rv = connection->Init(
         group_id, socket_params, absl::nullopt /* proxy_annotation_tag */,
@@ -2014,7 +2021,7 @@ class HttpStreamFactoryBidirectionalQuicTest
     quic_context_.params()->headers_include_h2_stream_dependency =
         client_headers_include_h2_stream_dependency_;
 
-    HttpNetworkSession::Context session_context;
+    HttpNetworkSessionContext session_context;
     session_context.http_server_properties = &http_server_properties_;
     session_context.quic_context = &quic_context_;
 
@@ -2045,7 +2052,7 @@ class HttpStreamFactoryBidirectionalQuicTest
                                  const std::string& alternative_destination) {
     const AlternativeService alternative_service(kProtoQUIC,
                                                  alternative_destination, 443);
-    base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+    base::Time expiration = base::Time::Now() + base::Days(1);
     http_server_properties_.SetQuicAlternativeService(
         request_url, NetworkIsolationKey(), alternative_service, expiration,
         session_->context().quic_context->params()->supported_versions);
@@ -2093,10 +2100,12 @@ class HttpStreamFactoryBidirectionalQuicTest
   HttpServerProperties http_server_properties_;
   TransportSecurityState transport_security_state_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
-  MockHostResolver host_resolver_;
+  MockHostResolver host_resolver_{
+      /*default_result=*/
+      MockHostResolverBase::RuleResolver::GetLocalhostResult()};
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<SSLConfigServiceDefaults> ssl_config_service_;
-  HttpNetworkSession::Params params_;
+  HttpNetworkSessionParams params_;
 };
 
 INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
@@ -3519,8 +3528,8 @@ class ProcessAlternativeServicesTest : public TestWithTaskEnvironment {
   }
 
  protected:
-  HttpNetworkSession::Params session_params_;
-  HttpNetworkSession::Context session_context_;
+  HttpNetworkSessionParams session_params_;
+  HttpNetworkSessionContext session_context_;
   std::unique_ptr<HttpNetworkSession> session_;
   HttpServerProperties http_server_properties_;
   QuicContext quic_context_;
@@ -3565,8 +3574,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcClear) {
   http_server_properties_.SetAlternativeServices(
       origin, network_isolation_key,
       {AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
-          {kProtoQUIC, "", 443},
-          base::Time::Now() + base::TimeDelta::FromSeconds(30),
+          {kProtoQUIC, "", 443}, base::Time::Now() + base::Seconds(30),
           quic::AllSupportedVersions())});
 
   EXPECT_FALSE(http_server_properties_
@@ -3622,41 +3630,6 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicOldFormat) {
     EXPECT_TRUE(base::Contains(alternatives[0].advertised_versions(), version))
         << version;
   }
-}
-
-// Regression test for https://crbug.com/1044694.
-TEST_F(ProcessAlternativeServicesTest, AltSvcQuicDoesNotSupportTLSHandshake) {
-  // In this example, QUIC v50 is only supported with TLS handshake.
-  // Note that this test only covers the Google-specific AltSvc format
-  // which is now deprecated.
-  quic_context_.params()->supported_versions = {
-      quic::ParsedQuicVersion::Q043(), quic::ParsedQuicVersion::T051()};
-  session_ =
-      std::make_unique<HttpNetworkSession>(session_params_, session_context_);
-  url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
-
-  NetworkIsolationKey network_isolation_key(
-      SchemefulSite(GURL("https://example.com")),
-      SchemefulSite(GURL("https://example.com")));
-
-  scoped_refptr<HttpResponseHeaders> headers(
-      base::MakeRefCounted<HttpResponseHeaders>(""));
-  headers->AddHeader("alt-svc", "quic=\":443\"; v=\"51,43\"");
-
-  session_->http_stream_factory()->ProcessAlternativeServices(
-      session_.get(), network_isolation_key, headers.get(), origin);
-
-  AlternativeServiceInfoVector alternatives =
-      http_server_properties_.GetAlternativeServiceInfos(origin,
-                                                         network_isolation_key);
-  ASSERT_EQ(1u, alternatives.size());
-  EXPECT_EQ(kProtoQUIC, alternatives[0].protocol());
-  EXPECT_EQ(HostPortPair("example.com", 443), alternatives[0].host_port_pair());
-  EXPECT_EQ(1u, alternatives[0].advertised_versions().size());
-  // Q043 and T051 are supported.  Q043 and Q050 are advertised in the Alt-Svc
-  // header.  Therefore only Q043 is parsed.
-  EXPECT_EQ(quic::ParsedQuicVersion::Q043(),
-            alternatives[0].advertised_versions()[0]);
 }
 
 TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {

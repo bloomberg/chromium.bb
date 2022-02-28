@@ -27,7 +27,6 @@ class GrProgramInfo;
 class GrProxyProvider;
 class GrRecordingContextPriv;
 class GrSubRunAllocator;
-class GrSurfaceContext;
 class GrSurfaceProxy;
 class GrTextBlobCache;
 class GrThreadSafeCache;
@@ -197,8 +196,6 @@ protected:
      */
     void addOnFlushCallbackObject(GrOnFlushCallbackObject*);
 
-    GrAuditTrail* auditTrail() { return fAuditTrail.get(); }
-
     GrRecordingContext* asRecordingContext() override { return this; }
 
     class Stats {
@@ -215,8 +212,8 @@ protected:
         void incNumPathMasksCacheHits() { fNumPathMaskCacheHits++; }
 
 #if GR_TEST_UTILS
-        void dump(SkString* out);
-        void dumpKeyValuePairs(SkTArray<SkString>* keys, SkTArray<double>* values);
+        void dump(SkString* out) const;
+        void dumpKeyValuePairs(SkTArray<SkString>* keys, SkTArray<double>* values) const;
 #endif
 
     private:
@@ -228,8 +225,8 @@ protected:
         void incNumPathMasksCacheHits() {}
 
 #if GR_TEST_UTILS
-        void dump(SkString*) {}
-        void dumpKeyValuePairs(SkTArray<SkString>* keys, SkTArray<double>* values) {}
+        void dump(SkString*) const {}
+        void dumpKeyValuePairs(SkTArray<SkString>* keys, SkTArray<double>* values) const {}
 #endif
 #endif // GR_GPU_STATS
     } fStats;
@@ -251,10 +248,11 @@ protected:
     const Stats* stats() const { return &fStats; }
     void dumpJSON(SkJSONWriter*) const;
 
-private:
+protected:
     // Delete last in case other objects call it during destruction.
     std::unique_ptr<GrAuditTrail>     fAuditTrail;
 
+private:
     OwnedArenas                       fArenas;
 
     std::unique_ptr<GrDrawingManager> fDrawingManager;

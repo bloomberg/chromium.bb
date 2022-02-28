@@ -15,7 +15,6 @@
 #include "base/timer/timer.h"
 #include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/dbus/cryptohome/account_identifier_operators.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 
@@ -56,8 +55,6 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
              MountCallback callback) override;
   void Remove(const ::user_data_auth::RemoveRequest& request,
               RemoveCallback callback) override;
-  void Rename(const ::user_data_auth::RenameRequest& request,
-              RenameCallback callback) override;
   void GetKeyData(const ::user_data_auth::GetKeyDataRequest& request,
                   GetKeyDataCallback callback) override;
   void CheckKey(const ::user_data_auth::CheckKeyRequest& request,
@@ -94,6 +91,8 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   void AuthenticateAuthSession(
       const ::user_data_auth::AuthenticateAuthSessionRequest& request,
       AuthenticateAuthSessionCallback callback) override;
+  void AddCredentials(const ::user_data_auth::AddCredentialsRequest& request,
+                      AddCredentialsCallback callback) override;
 
   // Mount() related setter/getters.
 

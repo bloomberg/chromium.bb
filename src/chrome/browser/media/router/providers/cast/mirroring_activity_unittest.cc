@@ -4,8 +4,12 @@
 
 #include "chrome/browser/media/router/providers/cast/mirroring_activity.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
@@ -21,6 +25,7 @@
 
 using base::test::IsJson;
 using testing::_;
+using testing::NiceMock;
 using testing::WithArg;
 
 namespace media_router {
@@ -119,9 +124,9 @@ class MirroringActivityTest
   }
 
   bool route_is_local_ = true;
-  MockCastMessageChannel* channel_to_service_ = nullptr;
-  MockMirroringServiceHost* mirroring_service_ = nullptr;
-  MockMojoMediaRouter media_router_;
+  raw_ptr<MockCastMessageChannel> channel_to_service_ = nullptr;
+  raw_ptr<MockMirroringServiceHost> mirroring_service_ = nullptr;
+  NiceMock<MockMojoMediaRouter> media_router_;
   base::MockCallback<MirroringActivity::OnStopCallback> on_stop_;
   std::unique_ptr<MirroringActivity> activity_;
 };
@@ -168,9 +173,10 @@ TEST_F(MirroringActivityTest, MirrorTab) {
 
 TEST_F(MirroringActivityTest, CreateMojoBindingsForTabWithCastAppUrl) {
   base::HistogramTester uma_recorder;
-  GURL url(kMirroringAppUri);
   EXPECT_CALL(media_router_, GetMirroringServiceHostForTab(kTabId, _));
-  MediaSource source = MediaSource::ForPresentationUrl(url);
+  auto site_initiated_mirroring_source =
+      CastMediaSource::ForSiteInitiatedMirroring();
+  MediaSource source(site_initiated_mirroring_source->source_id());
   ASSERT_TRUE(source.IsCastPresentationUrl());
   MakeActivity(source, kTabId);
 

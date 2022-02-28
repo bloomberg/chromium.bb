@@ -22,7 +22,7 @@ class MetalAutoreleasePoolTests : public DawnTest {
   private:
     void SetUp() override {
         DawnTest::SetUp();
-        DAWN_SKIP_TEST_IF(UsesWire());
+        DAWN_TEST_UNSUPPORTED_IF(UsesWire());
 
         mMtlDevice = reinterpret_cast<Device*>(device.Get());
     }
@@ -41,7 +41,7 @@ TEST_P(MetalAutoreleasePoolTests, CommandBufferOutlivesAutorelease) {
     }
 
     // Submitting the command buffer should succeed.
-    mMtlDevice->SubmitPendingCommandBuffer();
+    ASSERT_TRUE(mMtlDevice->SubmitPendingCommandBuffer().IsSuccess());
 }
 
 // Test that the MTLBlitCommandEncoder owned by the pending command context
@@ -56,7 +56,7 @@ TEST_P(MetalAutoreleasePoolTests, EncoderOutlivesAutorelease) {
 
     // Submitting the command buffer should succeed.
     mMtlDevice->GetPendingCommandContext()->EndBlit();
-    mMtlDevice->SubmitPendingCommandBuffer();
+    ASSERT_TRUE(mMtlDevice->SubmitPendingCommandBuffer().IsSuccess());
 }
 
 DAWN_INSTANTIATE_TEST(MetalAutoreleasePoolTests, MetalBackend());

@@ -47,7 +47,7 @@
 #include "aom_dsp/aom_dsp_common.h"
 
 #if CONFIG_AV1_DECODER
-#include "aom_dsp/grain_synthesis.h"
+#include "av1/decoder/grain_synthesis.h"
 #endif
 
 #include "aom_dsp/grain_table.h"
@@ -316,7 +316,7 @@ int main(int argc, char *argv[]) {
   }
   infile = fopen(args.input, "rb");
   if (!infile) {
-    die("Failed to open input file:", args.input);
+    die("Failed to open input file: %s", args.input);
   }
   fprintf(stderr, "Bit depth: %d  stride:%d\n", args.bit_depth, raw.stride[0]);
 

@@ -4,15 +4,15 @@
 
 import {assertEquals, assertFalse, assertTrue} from 'chrome://test/chai_assert.js';
 
-import {MockVolumeManager} from '../../background/js/mock_volume_manager.m.js';
-import {VolumeInfo} from '../../externs/volume_info.m.js';
+import {MockVolumeManager} from '../../background/js/mock_volume_manager.js';
+import {VolumeInfo} from '../../externs/volume_info.js';
 
-import {importer} from './importer_common.m.js';
-import {MockChromeStorageAPI, MockCommandLinePrivate} from './mock_chrome.m.js';
-import {MockDirectoryEntry, MockFileEntry} from './mock_entry.m.js';
-import {reportPromise} from './test_error_reporting.m.js';
-import {importerTest} from './test_importer_common.m.js';
-import {VolumeManagerCommon} from './volume_manager_types.m.js';
+import {importer} from './importer_common.js';
+import {MockChromeStorageAPI, MockCommandLinePrivate} from './mock_chrome.js';
+import {MockDirectoryEntry, MockFileEntry} from './mock_entry.js';
+import {reportPromise} from './test_error_reporting.js';
+import {importerTest} from './test_importer_common.js';
+import {VolumeManagerCommon} from './volume_manager_types.js';
 
 /** @type {!MockVolumeManager} */
 let volumeManager;
@@ -120,28 +120,6 @@ export function testGetMachineId_Persisted(callback) {
   reportPromise(promise, callback);
 }
 
-export function testPhotosApp_DefaultDisabled(callback) {
-  const promise = importer.isPhotosAppImportEnabled().then(assertFalse);
-
-  reportPromise(promise, callback);
-}
-
-export function testPhotosApp_ImportEnabled(callback) {
-  const promise = importer.handlePhotosAppMessage(true).then(() => {
-    return importer.isPhotosAppImportEnabled().then(assertTrue);
-  });
-
-  reportPromise(promise, callback);
-}
-
-export function testPhotosApp_ImportDisabled(callback) {
-  const promise = importer.handlePhotosAppMessage(false).then(() => {
-    return importer.isPhotosAppImportEnabled().then(assertFalse);
-  });
-
-  reportPromise(promise, callback);
-}
-
 export function testHistoryFilename(callback) {
   const promise = importer.getHistoryFilename().then(firstName => {
     assertTrue(!!firstName && firstName.length > 10);
@@ -246,12 +224,13 @@ export function testDeflateAppUrl() {
       'Deflated then inflated URLs must match original URL.');
 }
 
-export function testHasMediaDirectory(callback) {
+export async function testHasMediaDirectory(done) {
   const dir = createDirectoryEntry(sdVolume, '/DCIM');
-  const promise = importer.hasMediaDirectory(sdVolume.fileSystem.root)
-                      .then(assertTrue.bind(null));
+  const mediaDir = await importer.getMediaDirectory(sdVolume.fileSystem.root);
 
-  reportPromise(promise, callback);
+  assertTrue(!!mediaDir);
+
+  done();
 }
 
 /** @param {string} path */

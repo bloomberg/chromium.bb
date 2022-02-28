@@ -58,6 +58,7 @@ void LoginDetectionTabHelper::MaybeCreateForWebContents(
 LoginDetectionTabHelper::LoginDetectionTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<LoginDetectionTabHelper>(*web_contents),
       oauth_login_detector_(std::make_unique<OAuthLoginDetector>()) {
   DCHECK(IsLoginDetectionFeatureEnabled());
 }
@@ -67,7 +68,7 @@ LoginDetectionTabHelper::~LoginDetectionTabHelper() = default;
 void LoginDetectionTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK(navigation_handle);
-  if (!navigation_handle->IsInMainFrame())
+  if (!navigation_handle->IsInPrimaryMainFrame())
     return;
   if (!navigation_handle->HasCommitted())
     return;
@@ -145,6 +146,6 @@ void LoginDetectionTabHelper::ProcessNewSignedInSite(
       web_contents()->GetBrowserContext(), signedin_site);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(LoginDetectionTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(LoginDetectionTabHelper);
 
 }  // namespace login_detection

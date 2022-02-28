@@ -1,4 +1,4 @@
-import { assert } from '../../../../common/framework/util/util.js';
+import { assert } from '../../../../common/util/util.js';
 import { GPUTest } from '../../../gpu_test.js';
 
 export class MappingTest extends GPUTest {
@@ -18,7 +18,7 @@ export class MappingTest extends GPUTest {
     }
     buffer.unmap();
 
-    this.expectContents(buffer, expected, offset);
+    this.expectGPUBufferValuesEqual(buffer, expected, offset);
   }
 
   checkMapWriteZeroed(arrayBuffer: ArrayBuffer, expectedSize: number): void {

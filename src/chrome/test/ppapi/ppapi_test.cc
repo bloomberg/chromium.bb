@@ -12,9 +12,9 @@
 #include "base/location.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -49,10 +49,6 @@
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/gl/gl_switches.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 using content::RenderViewHost;
 using content::TestMessageHandler;
 
@@ -86,11 +82,8 @@ void PPAPITestMessageHandler::Reset() {
 }
 
 PPAPITestBase::InfoBarObserver::InfoBarObserver(PPAPITestBase* test_base)
-    : test_base_(test_base),
-      expecting_infobar_(false),
-      should_accept_(false),
-      infobar_observer_(this) {
-  infobar_observer_.Add(GetInfoBarManager());
+    : test_base_(test_base), expecting_infobar_(false), should_accept_(false) {
+  infobar_observation_.Observe(GetInfoBarManager());
 }
 
 PPAPITestBase::InfoBarObserver::~InfoBarObserver() {
@@ -116,7 +109,8 @@ void PPAPITestBase::InfoBarObserver::OnInfoBarAdded(
 
 void PPAPITestBase::InfoBarObserver::OnManagerShuttingDown(
     infobars::InfoBarManager* manager) {
-  infobar_observer_.Remove(manager);
+  ASSERT_TRUE(infobar_observation_.IsObservingSource(manager));
+  infobar_observation_.Reset();
 }
 
 void PPAPITestBase::InfoBarObserver::VerifyInfoBarState() {
@@ -204,7 +198,7 @@ GURL PPAPITestBase::GetTestFileUrl(const std::string& test_case) {
 
   GURL::Replacements replacements;
   std::string query = BuildQuery(std::string(), test_case);
-  replacements.SetQuery(query.c_str(), url::Component(0, query.size()));
+  replacements.SetQueryStr(query);
   return test_url.ReplaceComponents(replacements);
 }
 
@@ -265,7 +259,7 @@ void PPAPITestBase::RunTestURL(const GURL& test_url) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       &handler);
 
-  ui_test_utils::NavigateToURL(browser(), test_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_url));
 
   ASSERT_TRUE(observer.Run()) << handler.error_message();
   EXPECT_STREQ("PASS", handler.message().c_str());
@@ -321,12 +315,10 @@ void OutOfProcessPPAPITest::SetUpCommandLine(base::CommandLine* command_line) {
 }
 
 void OutOfProcessPPAPITest::RunTest(const std::string& test_case) {
-  // TODO(crbug.com/1231528): Investigate why this test fails on Win 7 bots.
 #if defined(OS_WIN)
-  if (test_case == "Printing" &&
-      base::win::GetVersion() <= base::win::Version::WIN7) {
+  // See crbug.com/1231528 for context.
+  if (test_case == "Printing")
     return;
-  }
 #endif
 
   PPAPITestBase::RunTest(test_case);
@@ -470,27 +462,6 @@ std::string PPAPINaClPNaClTest::BuildQuery(const std::string& base,
 void PPAPIPrivateNaClPNaClTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   PPAPINaClPNaClTest::SetUpCommandLine(command_line);
-  AddPrivateSwitches(command_line);
-}
-
-void PPAPINaClPNaClNonSfiTest::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  PPAPINaClTest::SetUpCommandLine(command_line);
-#if BUILDFLAG(ENABLE_NACL)
-  command_line->AppendSwitch(switches::kEnableNaClNonSfiMode);
-#endif
-}
-
-std::string PPAPINaClPNaClNonSfiTest::BuildQuery(
-    const std::string& base,
-    const std::string& test_case) {
-  return base::StringPrintf("%smode=nacl_pnacl_nonsfi&testcase=%s",
-                            base.c_str(), test_case.c_str());
-}
-
-void PPAPIPrivateNaClPNaClNonSfiTest::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  PPAPINaClPNaClNonSfiTest::SetUpCommandLine(command_line);
   AddPrivateSwitches(command_line);
 }
 
