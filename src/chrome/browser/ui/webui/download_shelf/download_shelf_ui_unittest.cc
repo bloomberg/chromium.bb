@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/download_shelf/download_shelf_ui.h"
 
+#include "base/memory/raw_ptr.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -23,6 +24,9 @@ namespace {
 class TestDownloadShelfHandler : public DownloadShelfHandler {
  public:
   MOCK_METHOD0(DoClose, void());
+  MOCK_METHOD0(DoShowAll, void());
+  MOCK_METHOD1(DiscardDownload, void(uint32_t));
+  MOCK_METHOD1(KeepDownload, void(uint32_t));
   MOCK_METHOD1(GetDownloads,
                void(download_shelf::mojom::PageHandler::GetDownloadsCallback));
   MOCK_METHOD4(ShowContextMenu,
@@ -31,6 +35,7 @@ class TestDownloadShelfHandler : public DownloadShelfHandler {
                     int32_t client_y,
                     double timestamp));
   MOCK_METHOD1(DoShowDownload, void(DownloadUIModel*));
+  MOCK_METHOD1(OnDownloadOpened, void(uint32_t download_id));
   MOCK_METHOD1(OnDownloadUpdated, void(DownloadUIModel*));
   MOCK_METHOD1(OnDownloadErased, void(uint32_t download_id));
 };
@@ -72,8 +77,8 @@ class DownloadShelfUITest : public BrowserWithTestWindowTest {
   TestDownloadShelfUI* download_shelf_ui() { return download_shelf_ui_.get(); }
 
  protected:
-  TestDownloadShelfHandler* handler_;
-  base::MockRetainingOneShotTimer* mock_timer_;
+  raw_ptr<TestDownloadShelfHandler> handler_;
+  raw_ptr<base::MockRetainingOneShotTimer> mock_timer_;
 
  private:
   std::unique_ptr<content::WebContents> web_contents_;
@@ -115,9 +120,10 @@ TEST_F(DownloadShelfUITest, DownloadLifecycle) {
   EXPECT_CALL(*download_item, GetId()).Times(AtLeast(1));
   DownloadUIModel::DownloadUIModelPtr download_model =
       DownloadItemModel::Wrap(download_item.get());
+  DownloadUIModel* download_model_ptr = download_model.get();
   EXPECT_CALL(*handler_, DoShowDownload(_)).Times(1);
   download_shelf_ui()->DoShowDownload(std::move(download_model),
-                                      base::TimeTicks::Now());
+                                      base::Time::Now());
   ASSERT_EQ(1u, download_shelf_ui()->GetDownloads().size());
 
   // Assert handler OnDownloadUpdated called on item progress and update
@@ -128,7 +134,13 @@ TEST_F(DownloadShelfUITest, DownloadLifecycle) {
   mock_timer_->Fire();
   download_item->NotifyObserversDownloadUpdated();
 
-  // Assert handler onDownloadRemoved called on item removal notification.
+  // Assert handler onDownloadErased called when setting download to not show
+  // on shelf.
+  EXPECT_CALL(*handler_, OnDownloadErased(_)).Times(1);
+  download_model_ptr->SetShouldShowInShelf(false);
+  download_item->NotifyObserversDownloadUpdated();
+
+  // Assert handler onDownloadErased called on item removal notification.
   EXPECT_CALL(*handler_, OnDownloadErased(_)).Times(1);
   download_item->NotifyObserversDownloadRemoved();
 
@@ -145,7 +157,7 @@ TEST_F(DownloadShelfUITest, DownloadProgress) {
       DownloadItemModel::Wrap(download_item.get());
   EXPECT_CALL(*handler_, DoShowDownload(_)).Times(1);
   download_shelf_ui()->DoShowDownload(std::move(download_model),
-                                      base::TimeTicks::Now());
+                                      base::Time::Now());
   ASSERT_EQ(1u, download_shelf_ui()->GetDownloads().size());
   ASSERT_TRUE(mock_timer_->IsRunning());
 

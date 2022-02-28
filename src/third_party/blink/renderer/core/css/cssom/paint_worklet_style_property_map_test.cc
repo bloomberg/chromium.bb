@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_style_property_map.h"
 
 #include <memory>
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
@@ -30,7 +30,7 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
  public:
   PaintWorkletStylePropertyMapTest() = default;
 
-  void SetUp() override { PageTestBase::SetUp(IntSize()); }
+  void SetUp() override { PageTestBase::SetUp(gfx::Size()); }
 
   Node* PageNode() { return GetDocument().documentElement(); }
 
@@ -132,7 +132,7 @@ TEST_F(PaintWorkletStylePropertyMapTest, UnregisteredCustomProperty) {
   std::vector<cc::PaintWorkletInput::PropertyKey> property_keys;
   scoped_refptr<CSSPaintWorkletInput> input =
       base::MakeRefCounted<CSSPaintWorkletInput>(
-          "test", FloatSize(100, 100), 1.0f, 1.0f, 1, std::move(data.value()),
+          "test", gfx::SizeF(100, 100), 1.0f, 1.0f, 1, std::move(data.value()),
           std::move(input_arguments), std::move(property_keys));
   ASSERT_TRUE(input);
 
@@ -180,7 +180,7 @@ TEST_F(PaintWorkletStylePropertyMapTest, SupportedCrossThreadData) {
   std::vector<cc::PaintWorkletInput::PropertyKey> property_keys;
   scoped_refptr<CSSPaintWorkletInput> input =
       base::MakeRefCounted<CSSPaintWorkletInput>(
-          "test", FloatSize(100, 100), 1.0f, 1.0f, 1, std::move(data.value()),
+          "test", gfx::SizeF(100, 100), 1.0f, 1.0f, 1, std::move(data.value()),
           std::move(input_arguments), std::move(property_keys));
   DCHECK(input);
 

@@ -25,10 +25,10 @@
 #include "perfetto/ext/base/optional.h"
 #include "perfetto/ext/base/string_view.h"
 #include "perfetto/protozero/field.h"
+#include "perfetto/trace_processor/trace_blob_view.h"
 #include "src/trace_processor/importers/common/trace_parser.h"
 #include "src/trace_processor/storage/trace_storage.h"
 #include "src/trace_processor/timestamped_trace_piece.h"
-#include "src/trace_processor/util/trace_blob_view.h"
 
 namespace perfetto {
 
@@ -40,7 +40,6 @@ class TracePacket_Decoder;
 
 namespace trace_processor {
 
-class ArgsTracker;
 class PacketSequenceState;
 class TraceProcessorContext;
 
@@ -62,19 +61,9 @@ class ProtoTraceParser : public TraceParser {
                             const protos::pbzero::TracePacket_Decoder&);
 
   void ParseTraceStats(ConstBytes);
-  void ParseProfilePacket(int64_t ts,
-                          PacketSequenceStateGeneration*,
-                          uint32_t seq_id,
-                          ConstBytes);
-  void ParseDeobfuscationMapping(int64_t ts,
-                                 PacketSequenceStateGeneration*,
-                                 uint32_t seq_id,
-                                 ConstBytes);
   void ParseChromeEvents(int64_t ts, ConstBytes);
   void ParseMetatraceEvent(int64_t ts, ConstBytes);
   void ParseTraceConfig(ConstBytes);
-  void ParseModuleSymbols(ConstBytes);
-  void ParseSmapsPacket(int64_t ts, ConstBytes);
 
  private:
   TraceProcessorContext* context_;

@@ -10,6 +10,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/profiler/sample_metadata.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/metrics/tab_stats/tab_stats_observer.h"
@@ -39,6 +40,7 @@ class TabStatsDataStore : public TabStatsObserver {
     // Constructor, initializes everything to zero.
     TabsStats();
     TabsStats(const TabsStats& other);
+    TabsStats& operator=(const TabsStats& other);
 
     // The total number of tabs opened across all the windows.
     size_t total_tab_count;
@@ -83,6 +85,10 @@ class TabStatsDataStore : public TabStatsObserver {
       base::flat_map<TabID, TabStateDuringInterval>;
 
   explicit TabStatsDataStore(PrefService* pref_service);
+
+  TabStatsDataStore(const TabStatsDataStore&) = delete;
+  TabStatsDataStore& operator=(const TabStatsDataStore&) = delete;
+
   ~TabStatsDataStore() override;
 
   // TabStatsObserver:
@@ -149,7 +155,7 @@ class TabStatsDataStore : public TabStatsObserver {
       base::SampleMetadata("NumberOfTabs");
 
   // A raw pointer to the PrefService used to read and write the statistics.
-  PrefService* pref_service_;
+  raw_ptr<PrefService> pref_service_;
 
   // The interval maps, one per period of time that we want to observe.
   std::vector<std::unique_ptr<TabsStateDuringIntervalMap>> interval_maps_;
@@ -158,8 +164,6 @@ class TabStatsDataStore : public TabStatsObserver {
   base::flat_map<content::WebContents*, TabID> existing_tabs_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(TabStatsDataStore);
 };
 
 }  // namespace metrics

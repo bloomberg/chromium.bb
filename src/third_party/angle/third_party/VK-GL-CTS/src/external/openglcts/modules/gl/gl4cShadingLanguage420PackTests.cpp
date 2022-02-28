@@ -262,7 +262,7 @@ const GLchar* Utils::getQualifierString(Utils::QUALIFIERS qualifier)
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-	};
+	}
 
 	return result;
 }
@@ -323,7 +323,7 @@ Utils::qualifierSet Utils::prepareQualifiersSet(const qualifierSet& in_qualifier
 		if (false == doesStageSupportQualifier(stage, storage, qualifier))
 		{
 			continue;
-		};
+		}
 
 		/* Replace wrong storage qualifiers */
 		if ((Utils::INPUT == storage) && ((Utils::QUAL_UNIFORM == qualifier) || (Utils::QUAL_OUT == qualifier)))
@@ -1065,7 +1065,6 @@ std::string Utils::getVariableDefinition(VARIABLE_FLAVOUR flavour, const qualifi
 		break;
 	default:
 		TCU_FAIL("Invliad enum");
-		break;
 	}
 
 	/* Get qualifiers list */
@@ -1137,7 +1136,6 @@ Utils::VARIABLE_FLAVOUR Utils::getVariableFlavour(SHADER_STAGES stage, VARIABLE_
 			break;
 		default:
 			TCU_FAIL("Invliad enum");
-			break;
 		}
 	}
 
@@ -1736,7 +1734,6 @@ int TestBase::maxImageUniforms(Utils::SHADER_STAGES stage) const
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 	return max_image_uniforms;
 }
@@ -2838,7 +2835,7 @@ void LineContinuationTest::prepareShaderSourceForDraw(Utils::SHADER_STAGES stage
 		break;
 	default:
 		break;
-	};
+	}
 	const GLuint store_results_length  = static_cast<GLuint>(strlen(store_results));
 	const GLuint pass_condition_length = static_cast<GLuint>(strlen(pass_condition));
 
@@ -3147,7 +3144,7 @@ bool LineContinuationTest::isShaderMultipart() const
 	case PART_NEXT_TO_TERMINATION_NON_NULL:
 		result = true;
 		break;
-	};
+	}
 
 	return result;
 }
@@ -3280,7 +3277,7 @@ void LineContinuationTest::replaceAllCaseTokens(std::string& source) const
 	case DEBUG_CASE: /* intended fall through */
 	default:
 		break; /* no line continuations */
-	};
+	}
 
 	Utils::replaceAllTokens(token_assignment_after_operator_case, assignment_after_operator_case, source);
 	Utils::replaceAllTokens(token_assignment_before_operator_case, assignment_before_operator_case, source);
@@ -3326,7 +3323,7 @@ bool LineContinuationTest::useSourceLengths() const
 	case PART_NEXT_TO_TERMINATION_NON_NULL:
 		result = true;
 		break;
-	};
+	}
 
 	return result;
 }
@@ -3563,7 +3560,6 @@ void LineNumberingTest::prepareShaderSource(Utils::SHADER_STAGES in_stage, bool 
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -3911,7 +3907,6 @@ void UTF8CharactersTest::prepareShaderSource(Utils::SHADER_STAGES in_stage, bool
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	switch (m_test_case.m_case)
@@ -4266,7 +4261,6 @@ void UTF8InSourceTest::prepareShaderSource(Utils::SHADER_STAGES in_stage, bool i
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -4536,7 +4530,6 @@ void ImplicitConversionsValidTest::prepareShaderSource(Utils::SHADER_STAGES in_s
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -4691,6 +4684,7 @@ std::string ImplicitConversionsValidTest::getValueList(glw::GLuint n_columns, gl
 ImplicitConversionsInvalidTest::ImplicitConversionsInvalidTest(deqp::Context& context)
 	: NegativeTestBase(context, "implicit_conversions_invalid",
 					   "Verifies that implicit conversions from uint to int are forbidden")
+	, m_current_test_case_index(0)
 {
 	/* Nothing to be done here */
 }
@@ -4939,7 +4933,6 @@ void ImplicitConversionsInvalidTest::prepareShaderSource(Utils::SHADER_STAGES in
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -5242,7 +5235,6 @@ void ConstDynamicValueTest::prepareShaderSource(Utils::SHADER_STAGES in_stage, b
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -5282,6 +5274,7 @@ void ConstDynamicValueTest::prepareUniforms(Utils::program& program)
  **/
 ConstAssignmentTest::ConstAssignmentTest(deqp::Context& context)
 	: NegativeTestBase(context, "const_assignment", "Verifies that constants cannot be overwritten")
+	, m_current_test_case_index(0)
 {
 	/* Nothing to be done here */
 }
@@ -5499,7 +5492,6 @@ void ConstAssignmentTest::prepareShaderSource(Utils::SHADER_STAGES in_stage, boo
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	if (0 == m_current_test_case_index)
@@ -5721,7 +5713,6 @@ void ConstDynamicValueAsConstExprTest::prepareShaderSource(Utils::SHADER_STAGES 
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -5742,6 +5733,7 @@ void ConstDynamicValueAsConstExprTest::prepareShaderSource(Utils::SHADER_STAGES 
 QualifierOrderTest::QualifierOrderTest(deqp::Context& context)
 	: GLSLTestBase(context, "qualifier_order",
 				   "Test verifies that valid permutation of input and output qalifiers are accepted")
+	, m_current_test_case_index(0)
 {
 	/* Nothing to be done */
 }
@@ -5758,7 +5750,7 @@ bool QualifierOrderTest::prepareNextTestCase(glw::GLuint test_case_index)
 
 	if ((glw::GLuint)-1 == test_case_index)
 	{
-		/* Nothing to be done here */;
+		/* Nothing to be done here */
 	}
 	else if (m_test_cases.size() <= test_case_index)
 	{
@@ -5940,7 +5932,6 @@ void QualifierOrderTest::prepareShaderSource(Utils::SHADER_STAGES in_stage, bool
 	{
 	case Utils::COMPUTE_SHADER:
 		return;
-		break;
 	case Utils::FRAGMENT_SHADER:
 		shader_template = fragment_shader_template;
 		break;
@@ -5958,7 +5949,6 @@ void QualifierOrderTest::prepareShaderSource(Utils::SHADER_STAGES in_stage, bool
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	const Utils::qualifierSet& test_case = getCurrentTestCase();
@@ -6110,6 +6100,7 @@ const Utils::qualifierSet& QualifierOrderTest::getCurrentTestCase()
 QualifierOrderBlockTest::QualifierOrderBlockTest(deqp::Context& context)
 	: GLSLTestBase(context, "qualifier_order_block",
 				   "Verifies that qualifiers of members of input block can be arranged in any order")
+	, m_current_test_case_index(0)
 {
 	/* Nothing to be done here */
 }
@@ -6126,7 +6117,7 @@ bool QualifierOrderBlockTest::prepareNextTestCase(glw::GLuint test_case_index)
 
 	if ((glw::GLuint)-1 == test_case_index)
 	{
-		/* Nothing to be done here */;
+		/* Nothing to be done here */
 	}
 	else if (m_test_cases.size() <= test_case_index)
 	{
@@ -6324,7 +6315,6 @@ void QualifierOrderBlockTest::prepareShaderSource(Utils::SHADER_STAGES in_stage,
 	{
 	case Utils::COMPUTE_SHADER:
 		return;
-		break;
 	case Utils::FRAGMENT_SHADER:
 		shader_template = fragment_shader_template;
 		break;
@@ -6342,7 +6332,6 @@ void QualifierOrderBlockTest::prepareShaderSource(Utils::SHADER_STAGES in_stage,
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	const Utils::qualifierSet& test_case = getCurrentTestCase();
@@ -6496,6 +6485,7 @@ const Utils::qualifierSet& QualifierOrderBlockTest::getCurrentTestCase()
 QualifierOrderUniformTest::QualifierOrderUniformTest(deqp::Context& context)
 	: GLSLTestBase(context, "qualifier_order_uniform",
 				   "Test verifies that all valid permutation of input qalifiers are accepted")
+	, m_current_test_case_index(0)
 {
 	/* Nothing to be done here */
 }
@@ -6512,7 +6502,7 @@ bool QualifierOrderUniformTest::prepareNextTestCase(glw::GLuint test_case_index)
 
 	if ((glw::GLuint)-1 == test_case_index)
 	{
-		/* Nothing to be done here */;
+		/* Nothing to be done here */
 	}
 	else if (m_test_cases.size() <= test_case_index)
 	{
@@ -6689,7 +6679,6 @@ void QualifierOrderUniformTest::prepareShaderSource(Utils::SHADER_STAGES in_stag
 	{
 	case Utils::COMPUTE_SHADER:
 		return;
-		break;
 	case Utils::FRAGMENT_SHADER:
 		shader_template = fragment_shader_template;
 		location_string = "0";
@@ -6712,7 +6701,6 @@ void QualifierOrderUniformTest::prepareShaderSource(Utils::SHADER_STAGES in_stag
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	const Utils::qualifierSet& test_case = getCurrentTestCase();
@@ -6810,6 +6798,7 @@ const Utils::qualifierSet& QualifierOrderUniformTest::getCurrentTestCase()
  **/
 QualifierOrderFunctionInoutTest::QualifierOrderFunctionInoutTest(deqp::Context& context)
 	: GLSLTestBase(context, "qualifier_order_function_inout", "Verify order of qualifiers of inout function parameters")
+	, m_current_test_case_index(0)
 {
 	/* Nothing to be done here */
 }
@@ -6826,7 +6815,7 @@ bool QualifierOrderFunctionInoutTest::prepareNextTestCase(glw::GLuint test_case_
 
 	if ((glw::GLuint)-1 == test_case_index)
 	{
-		/* Nothing to be done here */;
+		/* Nothing to be done here */
 	}
 	else if (m_test_cases.size() <= test_case_index)
 	{
@@ -7014,7 +7003,6 @@ void QualifierOrderFunctionInoutTest::prepareShaderSource(Utils::SHADER_STAGES i
 	{
 	case Utils::COMPUTE_SHADER:
 		return;
-		break;
 	case Utils::FRAGMENT_SHADER:
 		shader_template = fragment_shader_template;
 		break;
@@ -7032,7 +7020,6 @@ void QualifierOrderFunctionInoutTest::prepareShaderSource(Utils::SHADER_STAGES i
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	const std::string& uni_reference  = Utils::getVariableName(in_stage, Utils::UNIFORM, "test");
@@ -7128,6 +7115,7 @@ const Utils::qualifierSet& QualifierOrderFunctionInoutTest::getCurrentTestCase()
  **/
 QualifierOrderFunctionInputTest::QualifierOrderFunctionInputTest(deqp::Context& context)
 	: GLSLTestBase(context, "qualifier_order_function_input", "Verify order of qualifiers of function input parameters")
+	, m_current_test_case_index(0)
 {
 	/* Nothing to be done here */
 }
@@ -7144,7 +7132,7 @@ bool QualifierOrderFunctionInputTest::prepareNextTestCase(glw::GLuint test_case_
 
 	if ((glw::GLuint)-1 == test_case_index)
 	{
-		/* Nothing to be done here */;
+		/* Nothing to be done here */
 	}
 	else if (m_test_cases.size() <= test_case_index)
 	{
@@ -7330,7 +7318,6 @@ void QualifierOrderFunctionInputTest::prepareShaderSource(Utils::SHADER_STAGES i
 	{
 	case Utils::COMPUTE_SHADER:
 		return;
-		break;
 	case Utils::FRAGMENT_SHADER:
 		shader_template = fragment_shader_template;
 		break;
@@ -7348,7 +7335,6 @@ void QualifierOrderFunctionInputTest::prepareShaderSource(Utils::SHADER_STAGES i
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	const std::string& uni_reference  = Utils::getVariableName(in_stage, Utils::UNIFORM, "test");
@@ -7451,6 +7437,7 @@ const Utils::qualifierSet& QualifierOrderFunctionInputTest::getCurrentTestCase()
 QualifierOrderFunctionOutputTest::QualifierOrderFunctionOutputTest(deqp::Context& context)
 	: GLSLTestBase(context, "qualifier_order_function_output",
 				   "Verify order of qualifiers of output function parameters")
+	, m_current_test_case_index(0)
 {
 	/* Nothing to be done here */
 }
@@ -7467,7 +7454,7 @@ bool QualifierOrderFunctionOutputTest::prepareNextTestCase(glw::GLuint test_case
 
 	if ((glw::GLuint)-1 == test_case_index)
 	{
-		/* Nothing to be done here */;
+		/* Nothing to be done here */
 	}
 	else if (m_test_cases.size() <= test_case_index)
 	{
@@ -7655,7 +7642,6 @@ void QualifierOrderFunctionOutputTest::prepareShaderSource(Utils::SHADER_STAGES 
 	{
 	case Utils::COMPUTE_SHADER:
 		return;
-		break;
 	case Utils::FRAGMENT_SHADER:
 		shader_template = fragment_shader_template;
 		break;
@@ -7673,7 +7659,6 @@ void QualifierOrderFunctionOutputTest::prepareShaderSource(Utils::SHADER_STAGES 
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	const std::string& uni_reference  = Utils::getVariableName(in_stage, Utils::UNIFORM, "test");
@@ -7901,7 +7886,6 @@ void QualifierOverrideLayoutTest::prepareShaderSource(Utils::SHADER_STAGES in_st
 	{
 	case Utils::COMPUTE_SHADER:
 		return;
-		break;
 	case Utils::FRAGMENT_SHADER:
 		shader_template = fragment_shader_template;
 		break;
@@ -7919,7 +7903,6 @@ void QualifierOverrideLayoutTest::prepareShaderSource(Utils::SHADER_STAGES in_st
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -8198,7 +8181,6 @@ void BindingUniformBlocksTest::prepareShaderSource(Utils::SHADER_STAGES in_stage
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -8259,6 +8241,7 @@ void BindingUniformBlocksTest::releaseResource()
 BindingUniformSingleBlockTest::BindingUniformSingleBlockTest(deqp::Context& context)
 	: GLSLTestBase(context, "binding_uniform_single_block", "Test verifies uniform block binding")
 	, m_goku_buffer(context)
+	, m_test_stage(Utils::SHADER_STAGES_MAX)
 {
 	/* Nothing to be done here */
 }
@@ -8291,7 +8274,6 @@ bool BindingUniformSingleBlockTest::prepareNextTestCase(glw::GLuint test_case_in
 		break;
 	default:
 		return false;
-		break;
 	}
 
 	m_context.getTestContext().getLog() << tcu::TestLog::Message << "Tested stage: "
@@ -8497,7 +8479,6 @@ void BindingUniformSingleBlockTest::prepareShaderSource(Utils::SHADER_STAGES in_
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	if (in_stage == m_test_stage)
@@ -8781,7 +8762,6 @@ void BindingUniformBlockArrayTest::prepareShaderSource(Utils::SHADER_STAGES in_s
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -9103,7 +9083,6 @@ void BindingUniformDefaultTest::prepareShaderSource(Utils::SHADER_STAGES in_stag
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -9318,7 +9297,6 @@ void BindingUniformAPIOverirdeTest::prepareShaderSource(Utils::SHADER_STAGES in_
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -9577,7 +9555,6 @@ void BindingUniformGlobalBlockTest::prepareShaderSource(Utils::SHADER_STAGES in_
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -9597,6 +9574,7 @@ void BindingUniformGlobalBlockTest::prepareShaderSource(Utils::SHADER_STAGES in_
  **/
 BindingUniformInvalidTest::BindingUniformInvalidTest(deqp::Context& context)
 	: NegativeTestBase(context, "binding_uniform_invalid", "Test verifies invalid binding values")
+	, m_case(TEST_CASES_MAX)
 {
 	/* Nothing to be done here */
 }
@@ -9815,7 +9793,6 @@ void BindingUniformInvalidTest::prepareShaderSource(Utils::SHADER_STAGES in_stag
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -9870,6 +9847,7 @@ BindingSamplersTest::BindingSamplersTest(deqp::Context& context)
 	, m_vegeta_texture(context)
 	, m_trunks_texture(context)
 	, m_buffer(context)
+	, m_test_case(Utils::TEXTURE_TYPES_MAX)
 {
 	/* Nothing to be done here */
 }
@@ -9911,7 +9889,6 @@ bool BindingSamplersTest::prepareNextTestCase(glw::GLuint test_case_index)
 		break;
 	default:
 		return false;
-		break;
 	}
 
 	m_context.getTestContext().getLog() << tcu::TestLog::Message
@@ -10135,7 +10112,6 @@ void BindingSamplersTest::prepareShaderSource(Utils::SHADER_STAGES in_stage, boo
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	switch (n_coordinates)
@@ -10299,7 +10275,6 @@ bool BindingSamplerSingleTest::prepareNextTestCase(glw::GLuint test_case_index)
 		break;
 	default:
 		return false;
-		break;
 	}
 
 	m_context.getTestContext().getLog() << tcu::TestLog::Message << "Tested stage: "
@@ -10500,7 +10475,6 @@ void BindingSamplerSingleTest::prepareShaderSource(Utils::SHADER_STAGES in_stage
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	if (in_stage == m_test_stage)
@@ -10773,7 +10747,6 @@ void BindingSamplerArrayTest::prepareShaderSource(Utils::SHADER_STAGES in_stage,
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -11066,7 +11039,6 @@ void BindingSamplerDefaultTest::prepareShaderSource(Utils::SHADER_STAGES in_stag
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -11278,7 +11250,6 @@ void BindingSamplerAPIOverrideTest::prepareShaderSource(Utils::SHADER_STAGES in_
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -11572,7 +11543,6 @@ void BindingSamplerInvalidTest::prepareShaderSource(Utils::SHADER_STAGES in_stag
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -11676,7 +11646,6 @@ bool BindingImagesTest::prepareNextTestCase(glw::GLuint test_case_index)
 		break;
 	default:
 		return false;
-		break;
 	}
 
 	m_context.getTestContext().getLog() << tcu::TestLog::Message
@@ -11929,7 +11898,6 @@ void BindingImagesTest::prepareShaderSource(Utils::SHADER_STAGES in_stage, bool 
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	switch (n_coordinates)
@@ -12069,7 +12037,6 @@ bool BindingImageSingleTest::prepareNextTestCase(glw::GLuint test_case_index)
 		break;
 	default:
 		return false;
-		break;
 	}
 
 	m_context.getTestContext().getLog() << tcu::TestLog::Message << "Tested stage: "
@@ -12299,7 +12266,6 @@ void BindingImageSingleTest::prepareShaderSource(Utils::SHADER_STAGES in_stage, 
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	if (in_stage == m_test_stage)
@@ -12589,7 +12555,6 @@ void BindingImageArrayTest::prepareShaderSource(Utils::SHADER_STAGES in_stage, b
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -12891,7 +12856,6 @@ void BindingImageDefaultTest::prepareShaderSource(Utils::SHADER_STAGES in_stage,
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -13129,7 +13093,6 @@ void BindingImageAPIOverrideTest::prepareShaderSource(Utils::SHADER_STAGES in_st
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -13418,7 +13381,6 @@ void BindingImageInvalidTest::prepareShaderSource(Utils::SHADER_STAGES in_stage,
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -13473,6 +13435,7 @@ const GLfloat InitializerListTest::m_value = 0.0625f;
  **/
 InitializerListTest::InitializerListTest(deqp::Context& context)
 	: GLSLTestBase(context, "initializer_list", "Test verifies initializer lists")
+	, m_current_test_case_index(0)
 {
 	/* Nothing to be done here */
 }
@@ -13718,7 +13681,6 @@ void InitializerListTest::prepareShaderSource(Utils::SHADER_STAGES in_stage, boo
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -13861,7 +13823,6 @@ std::string InitializerListTest::getArrayDefinition()
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	return array_definition;
@@ -13921,7 +13882,6 @@ std::string InitializerListTest::getExpectedValue()
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	value *= m_value;
@@ -14243,7 +14203,6 @@ std::string InitializerListTest::getInitialization()
 
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	return initialization;
@@ -14328,7 +14287,6 @@ void InitializerListTest::logTestCaseName()
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	message << tcu::TestLog::EndMessage;
@@ -14442,7 +14400,6 @@ std::string InitializerListTest::getSum()
 
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	return sum;
@@ -14522,7 +14479,6 @@ std::string InitializerListTest::getTypeDefinition()
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	return type_definition;
@@ -14584,7 +14540,6 @@ std::string InitializerListTest::getTypeName()
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	return type_name;
@@ -14792,6 +14747,7 @@ std::string InitializerListTest::getVectorValues(GLuint column, GLuint size)
  **/
 InitializerListNegativeTest::InitializerListNegativeTest(deqp::Context& context)
 	: NegativeTestBase(context, "initializer_list_negative", "Verifies invalid initializers")
+	, m_current_test_case_index(0)
 {
 	/* Nothing to be done here */
 }
@@ -15012,7 +14968,6 @@ void InitializerListNegativeTest::prepareShaderSource(Utils::SHADER_STAGES in_st
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -15135,7 +15090,6 @@ std::string InitializerListNegativeTest::getInitialization()
 
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	return initialization;
@@ -15199,7 +15153,6 @@ void InitializerListNegativeTest::logTestCaseName()
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	message << tcu::TestLog::EndMessage;
@@ -15252,7 +15205,6 @@ std::string InitializerListNegativeTest::getSum()
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	return sum;
@@ -15301,7 +15253,6 @@ std::string InitializerListNegativeTest::getTypeDefinition()
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	return type_definition;
@@ -15343,7 +15294,6 @@ std::string InitializerListNegativeTest::getTypeName()
 	case COMPONENTS_MAT_MORE_COLUMNS:
 		type_name = "mat3";
 		break;
-		break;
 	case LIST_IN_CONSTRUCTOR:
 	case STRUCT_LAYOUT_MEMBER_TYPE:
 	case STRUCT_LAYOUT_MEMBER_COUNT_MORE:
@@ -15353,7 +15303,6 @@ std::string InitializerListNegativeTest::getTypeName()
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	return type_name;
@@ -16072,7 +16021,6 @@ void LengthOfVectorAndMatrixTest::prepareDrawShaderSource(Utils::SHADER_STAGES i
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	if (Utils::VERTEX_SHADER != in_stage)
@@ -16517,7 +16465,6 @@ void LengthOfComputeResultTest::prepareShaderSource(Utils::SHADER_STAGES in_stag
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -16860,7 +16807,6 @@ void ScalarSwizzlersTest::prepareShaderSource(Utils::SHADER_STAGES in_stage, boo
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -17156,7 +17102,6 @@ void ScalarSwizzlersInvalidTest::prepareShaderSource(Utils::SHADER_STAGES in_sta
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	switch (m_case)
@@ -17184,8 +17129,7 @@ void ScalarSwizzlersInvalidTest::prepareShaderSource(Utils::SHADER_STAGES in_sta
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
-	};
+	}
 
 	out_source.m_parts[0].m_code = shader_template;
 
@@ -17395,7 +17339,6 @@ void BuiltInValuesTest::prepareShaderSource(Utils::SHADER_STAGES in_stage, bool 
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	out_source.m_parts[0].m_code = shader_template;
@@ -17680,7 +17623,6 @@ void BuiltInAssignmentTest::prepareShaderSource(Utils::SHADER_STAGES in_stage, b
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	switch (m_case)
@@ -17922,11 +17864,11 @@ Utils::shaderSource::shaderSource()
 {
 }
 
-Utils::shaderSource::shaderSource(const shaderSource& source) : m_parts(source.m_parts)
+Utils::shaderSource::shaderSource(const shaderSource& source) : m_parts(source.m_parts), m_use_lengths(false)
 {
 }
 
-Utils::shaderSource::shaderSource(const glw::GLchar* source_code)
+Utils::shaderSource::shaderSource(const glw::GLchar* source_code) : m_use_lengths(false)
 {
 	if (0 != source_code)
 	{
@@ -18558,7 +18500,7 @@ void Utils::program::printShaderSource(const shaderSource& source, tcu::MessageB
  *
  * @param context CTS context.
  **/
-Utils::texture::texture(deqp::Context& context) : m_id(0), m_context(context), m_texture_type(TEX_2D)
+Utils::texture::texture(deqp::Context& context) : m_id(0), m_buffer_id(0), m_context(context), m_texture_type(TEX_2D)
 {
 	/* Nothing to done here */
 }
@@ -18653,7 +18595,6 @@ void Utils::texture::create(GLuint width, GLuint height, GLuint depth, GLenum in
 		break;
 	default:
 		TCU_FAIL("Invliad enum");
-		break;
 	}
 }
 
@@ -18811,7 +18752,6 @@ void Utils::texture::update(glw::GLuint width, glw::GLuint height, glw::GLuint d
 		break;
 	default:
 		TCU_FAIL("Invliad enum");
-		break;
 	}
 }
 

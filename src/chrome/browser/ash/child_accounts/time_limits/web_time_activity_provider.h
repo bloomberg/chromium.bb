@@ -7,19 +7,15 @@
 
 #include <set>
 
-#include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_service_wrapper.h"
 #include "chrome/browser/ash/child_accounts/time_limits/web_time_navigation_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
-namespace aura {
-class Window;
-}  // namespace aura
-
 namespace base {
 class Time;
+class UnguessableToken;
 }  // namespace base
 
 class Browser;
@@ -62,10 +58,10 @@ class WebTimeActivityProvider : public WebTimeNavigationObserver::EventListener,
 
   // AppServiceWrapper::EventListener:
   void OnAppActive(const AppId& app_id,
-                   aura::Window* window,
+                   const base::UnguessableToken& instance_id,
                    base::Time timestamp) override;
   void OnAppInactive(const AppId& app_id,
-                     aura::Window* window,
+                     const base::UnguessableToken& instance_id,
                      base::Time timestamp) override;
 
   ChromeAppActivityState chrome_app_activty_state() const {

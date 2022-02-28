@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -14,7 +15,8 @@
 #include "components/password_manager/core/browser/leak_detection/mock_leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/leak_detection_delegate.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
-#include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/mock_password_store_interface.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -22,8 +24,9 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/features.h"
+#include "components/version_info/channel.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,7 +64,11 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                const GURL&,
                const std::u16string&),
               (override));
-  MOCK_METHOD(PasswordStore*, GetProfilePasswordStore, (), (const override));
+  MOCK_METHOD(PasswordStoreInterface*,
+              GetProfilePasswordStore,
+              (),
+              (const override));
+  MOCK_METHOD(version_info::Channel, GetChannel, (), (const override));
 };
 
 class MockLeakDetectionCheck : public LeakDetectionCheck {
@@ -77,7 +84,6 @@ class MockLeakDetectionCheck : public LeakDetectionCheck {
 class LeakDetectionDelegateTest : public testing::Test {
  public:
   LeakDetectionDelegateTest() {
-    mock_store_->Init(nullptr);
     auto mock_factory =
         std::make_unique<testing::StrictMock<MockLeakDetectionCheckFactory>>();
     mock_factory_ = mock_factory.get();
@@ -91,27 +97,27 @@ class LeakDetectionDelegateTest : public testing::Test {
     ON_CALL(client_, GetPrefs()).WillByDefault(Return(pref_service()));
   }
 
-  ~LeakDetectionDelegateTest() override { mock_store_->ShutdownOnUIThread(); }
+  ~LeakDetectionDelegateTest() override = default;
 
   MockPasswordManagerClient& client() { return client_; }
   MockLeakDetectionCheckFactory& factory() { return *mock_factory_; }
   LeakDetectionDelegate& delegate() { return delegate_; }
-  MockPasswordStore* store() { return mock_store_.get(); }
+  MockPasswordStoreInterface* store() { return mock_store_.get(); }
   PrefService* pref_service() { return pref_service_.get(); }
 
   void WaitForPasswordStore() { task_environment_.RunUntilIdle(); }
 
   void SetSBState(safe_browsing::SafeBrowsingState state) {
     switch (state) {
-      case safe_browsing::ENHANCED_PROTECTION:
+      case safe_browsing::SafeBrowsingState::ENHANCED_PROTECTION:
         pref_service_->SetBoolean(::prefs::kSafeBrowsingEnhanced, true);
         pref_service_->SetBoolean(::prefs::kSafeBrowsingEnabled, true);
         break;
-      case safe_browsing::STANDARD_PROTECTION:
+      case safe_browsing::SafeBrowsingState::STANDARD_PROTECTION:
         pref_service_->SetBoolean(::prefs::kSafeBrowsingEnhanced, false);
         pref_service_->SetBoolean(::prefs::kSafeBrowsingEnabled, true);
         break;
-      case safe_browsing::NO_SAFE_BROWSING:
+      case safe_browsing::SafeBrowsingState::NO_SAFE_BROWSING:
       default:
         pref_service_->SetBoolean(::prefs::kSafeBrowsingEnhanced, false);
         pref_service_->SetBoolean(::prefs::kSafeBrowsingEnabled, false);
@@ -124,13 +130,30 @@ class LeakDetectionDelegateTest : public testing::Test {
         password_manager::prefs::kPasswordLeakDetectionEnabled, is_on);
   }
 
+  void ExpectPasswords(std::vector<PasswordForm> password_forms) {
+    EXPECT_CALL(*mock_store_, GetAutofillableLogins)
+        .WillOnce(testing::WithArg<0>(
+            [password_forms](base::WeakPtr<PasswordStoreConsumer> consumer) {
+              std::vector<std::unique_ptr<PasswordForm>> results;
+              for (auto& form : password_forms) {
+                results.push_back(
+                    std::make_unique<PasswordForm>(std::move(form)));
+              }
+              base::ThreadTaskRunnerHandle::Get()->PostTask(
+                  FROM_HERE,
+                  base::BindOnce(
+                      &PasswordStoreConsumer::OnGetPasswordStoreResults,
+                      consumer, std::move(results)));
+            }));
+  }
+
  private:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   testing::NiceMock<MockPasswordManagerClient> client_;
-  MockLeakDetectionCheckFactory* mock_factory_ = nullptr;
-  scoped_refptr<MockPasswordStore> mock_store_ =
-      base::MakeRefCounted<testing::StrictMock<MockPasswordStore>>();
+  raw_ptr<MockLeakDetectionCheckFactory> mock_factory_ = nullptr;
+  scoped_refptr<MockPasswordStoreInterface> mock_store_ =
+      base::MakeRefCounted<testing::StrictMock<MockPasswordStoreInterface>>();
   LeakDetectionDelegate delegate_{&client_};
   std::unique_ptr<TestingPrefServiceSimple> pref_service_ =
       std::make_unique<TestingPrefServiceSimple>();
@@ -171,7 +194,7 @@ TEST_F(LeakDetectionDelegateTest, StartCheck) {
   auto check_instance = std::make_unique<MockLeakDetectionCheck>();
   EXPECT_CALL(*check_instance,
               Start(form.url, form.username_value, form.password_value));
-  EXPECT_CALL(factory(), TryCreateLeakCheck(&delegate(), _, _))
+  EXPECT_CALL(factory(), TryCreateLeakCheck(&delegate(), _, _, _))
       .WillOnce(Return(ByMove(std::move(check_instance))));
   delegate().StartLeakCheck(form);
 
@@ -190,14 +213,14 @@ TEST_F(LeakDetectionDelegateTest, DoNotStartCheck) {
 }
 
 TEST_F(LeakDetectionDelegateTest, StartCheckWithStandardProtection) {
-  SetSBState(safe_browsing::STANDARD_PROTECTION);
+  SetSBState(safe_browsing::SafeBrowsingState::STANDARD_PROTECTION);
   SetLeakDetectionEnabled(true);
   const PasswordForm form = CreateTestForm();
   EXPECT_CALL(client(), IsIncognito).WillOnce(Return(false));
   auto check_instance = std::make_unique<MockLeakDetectionCheck>();
   EXPECT_CALL(*check_instance,
               Start(form.url, form.username_value, form.password_value));
-  EXPECT_CALL(factory(), TryCreateLeakCheck(&delegate(), _, _))
+  EXPECT_CALL(factory(), TryCreateLeakCheck(&delegate(), _, _, _))
       .WillOnce(Return(ByMove(std::move(check_instance))));
   delegate().StartLeakCheck(form);
 
@@ -206,14 +229,14 @@ TEST_F(LeakDetectionDelegateTest, StartCheckWithStandardProtection) {
 }
 
 TEST_F(LeakDetectionDelegateTest, StartCheckWithEnhancedProtection) {
-  SetSBState(safe_browsing::ENHANCED_PROTECTION);
+  SetSBState(safe_browsing::SafeBrowsingState::ENHANCED_PROTECTION);
   SetLeakDetectionEnabled(false);
   const PasswordForm form = CreateTestForm();
   EXPECT_CALL(client(), IsIncognito).WillOnce(Return(false));
   auto check_instance = std::make_unique<MockLeakDetectionCheck>();
   EXPECT_CALL(*check_instance,
               Start(form.url, form.username_value, form.password_value));
-  EXPECT_CALL(factory(), TryCreateLeakCheck(&delegate(), _, _))
+  EXPECT_CALL(factory(), TryCreateLeakCheck(&delegate(), _, _, _))
       .WillOnce(Return(ByMove(std::move(check_instance))));
   delegate().StartLeakCheck(form);
 
@@ -222,7 +245,7 @@ TEST_F(LeakDetectionDelegateTest, StartCheckWithEnhancedProtection) {
 }
 
 TEST_F(LeakDetectionDelegateTest, DoNotStartCheckWithoutSafeBrowsing) {
-  SetSBState(safe_browsing::NO_SAFE_BROWSING);
+  SetSBState(safe_browsing::SafeBrowsingState::NO_SAFE_BROWSING);
   SetLeakDetectionEnabled(true);
   const PasswordForm form = CreateTestForm();
   EXPECT_CALL(client(), IsIncognito).WillOnce(Return(false));
@@ -235,7 +258,7 @@ TEST_F(LeakDetectionDelegateTest, DoNotStartCheckWithoutSafeBrowsing) {
 }
 
 TEST_F(LeakDetectionDelegateTest, DoNotStartLeakCheckIfLeakCheckIsOff) {
-  SetSBState(safe_browsing::STANDARD_PROTECTION);
+  SetSBState(safe_browsing::SafeBrowsingState::STANDARD_PROTECTION);
   SetLeakDetectionEnabled(false);
   const PasswordForm form = CreateTestForm();
   EXPECT_CALL(client(), IsIncognito).WillOnce(Return(false));
@@ -283,17 +306,17 @@ TEST_F(LeakDetectionDelegateTest,
 
   EXPECT_CALL(client(), GetProfilePasswordStore())
       .WillRepeatedly(testing::Return(store()));
-  EXPECT_CALL(*store(), FillMatchingLoginsByPassword);
+  ExpectPasswords({});
   EXPECT_CALL(factory(), TryCreateLeakCheck)
       .WillOnce(
           Return(ByMove(std::make_unique<NiceMock<MockLeakDetectionCheck>>())));
   delegate().StartLeakCheck(form);
 
-  EXPECT_CALL(client(),
-              NotifyUserCredentialsWereLeaked(
-                  password_manager::CreateLeakType(
-                      IsSaved(false), IsReused(false), IsSyncing(false)),
-                  form.url, form.username_value));
+  EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked(
+                            password_manager::CreateLeakType(
+                                IsSaved(false), IsReused(false),
+                                IsSyncing(false), HasChangeScript(false)),
+                            form.url, form.username_value));
 
   delegate_interface->OnLeakDetectionDone(
       /*is_leaked=*/false, form.url, form.username_value, form.password_value);
@@ -307,17 +330,17 @@ TEST_F(LeakDetectionDelegateTest, LeakDetectionDoneWithTrueResult) {
 
   EXPECT_CALL(client(), GetProfilePasswordStore())
       .WillRepeatedly(testing::Return(store()));
-  EXPECT_CALL(*store(), FillMatchingLoginsByPassword);
+  ExpectPasswords({});
   EXPECT_CALL(factory(), TryCreateLeakCheck)
       .WillOnce(
           Return(ByMove(std::make_unique<NiceMock<MockLeakDetectionCheck>>())));
   delegate().StartLeakCheck(form);
 
-  EXPECT_CALL(client(),
-              NotifyUserCredentialsWereLeaked(
-                  password_manager::CreateLeakType(
-                      IsSaved(false), IsReused(false), IsSyncing(false)),
-                  form.url, form.username_value));
+  EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked(
+                            password_manager::CreateLeakType(
+                                IsSaved(false), IsReused(false),
+                                IsSyncing(false), HasChangeScript(false)),
+                            form.url, form.username_value));
   delegate_interface->OnLeakDetectionDone(
       /*is_leaked=*/true, form.url, form.username_value, form.password_value);
   WaitForPasswordStore();
@@ -327,14 +350,11 @@ TEST_F(LeakDetectionDelegateTest, LeakDetectionDoneWithTrueResult) {
 
 TEST_F(LeakDetectionDelegateTest, LeakHistoryAddCredentials) {
   LeakDetectionDelegateInterface* delegate_interface = &delegate();
-  const PasswordForm form = CreateTestForm();
+  PasswordForm form = CreateTestForm();
 
   EXPECT_CALL(client(), GetProfilePasswordStore())
       .WillRepeatedly(testing::Return(store()));
-  std::vector<std::unique_ptr<PasswordForm>> forms;
-  forms.push_back(std::make_unique<PasswordForm>(form));
-  EXPECT_CALL(*store(), FillMatchingLoginsByPassword)
-      .WillOnce(Return(ByMove(std::move(forms))));
+  ExpectPasswords({form});
   EXPECT_CALL(factory(), TryCreateLeakCheck)
       .WillOnce(
           Return(ByMove(std::make_unique<NiceMock<MockLeakDetectionCheck>>())));
@@ -345,10 +365,11 @@ TEST_F(LeakDetectionDelegateTest, LeakHistoryAddCredentials) {
   delegate_interface->OnLeakDetectionDone(
       /*is_leaked=*/true, form.url, form.username_value, form.password_value);
 
-  const InsecureCredential compromised_credentials(
-      GetSignonRealm(form.url), form.username_value, base::Time::Now(),
-      InsecureType::kLeaked, IsMuted(false));
-  EXPECT_CALL(*store(), AddInsecureCredentialImpl(compromised_credentials));
+  // The expected form should have a leaked entry.
+  form.password_issues.insert_or_assign(
+      InsecureType::kLeaked,
+      InsecurityMetadata(base::Time::Now(), IsMuted(false)));
+  EXPECT_CALL(*store(), UpdateLogin(form));
   WaitForPasswordStore();
 }
 
@@ -356,10 +377,9 @@ TEST_F(LeakDetectionDelegateTest, LeakHistoryAddCredentials) {
 TEST_F(LeakDetectionDelegateTest, CallStartTwice) {
   EXPECT_CALL(client(), GetProfilePasswordStore())
       .WillRepeatedly(testing::Return(store()));
-  EXPECT_CALL(*store(), FillMatchingLoginsByPassword)
-      .Times(testing::AtLeast(1));
+  ExpectPasswords({});
   auto check_instance = std::make_unique<NiceMock<MockLeakDetectionCheck>>();
-  EXPECT_CALL(factory(), TryCreateLeakCheck(&delegate(), _, _))
+  EXPECT_CALL(factory(), TryCreateLeakCheck(&delegate(), _, _, _))
       .WillOnce(Return(ByMove(std::move(check_instance))));
   PasswordForm form = CreateTestForm();
   delegate().StartLeakCheck(form);
@@ -372,7 +392,8 @@ TEST_F(LeakDetectionDelegateTest, CallStartTwice) {
 
   // Start the check again on another form in the mean time.
   check_instance = std::make_unique<NiceMock<MockLeakDetectionCheck>>();
-  EXPECT_CALL(factory(), TryCreateLeakCheck(&delegate(), _, _))
+  ExpectPasswords({});
+  EXPECT_CALL(factory(), TryCreateLeakCheck(&delegate(), _, _, _))
       .WillOnce(Return(ByMove(std::move(check_instance))));
   form.username_value = u"username";
   form.password_value = u"password";
@@ -387,6 +408,22 @@ TEST_F(LeakDetectionDelegateTest, CallStartTwice) {
   delegate_interface->OnLeakDetectionDone(
       /*is_leaked=*/true, form.url, form.username_value, form.password_value);
   WaitForPasswordStore();
+}
+
+TEST_F(LeakDetectionDelegateTest, PassesChromeChannel) {
+  SetLeakDetectionEnabled(true);
+  EXPECT_CALL(client(), IsIncognito).WillOnce(Return(false));
+  const PasswordForm form = CreateTestForm();
+  auto check_instance = std::make_unique<MockLeakDetectionCheck>();
+  EXPECT_CALL(*check_instance,
+              Start(form.url, form.username_value, form.password_value));
+  const version_info::Channel channel = version_info::Channel::STABLE;
+  EXPECT_CALL(client(), GetChannel).WillOnce(Return(channel));
+  EXPECT_CALL(factory(), TryCreateLeakCheck(&delegate(), _, _, channel))
+      .WillOnce(Return(ByMove(std::move(check_instance))));
+  delegate().StartLeakCheck(form);
+
+  EXPECT_TRUE(delegate().leak_check());
 }
 
 }  // namespace password_manager

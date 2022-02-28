@@ -1,4 +1,4 @@
-// Types ensure every field is specified.
+// Note: Types ensure every field is specified.
 
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 function checkType<T>(x: T) {}
@@ -20,7 +20,9 @@ checkType<Omit<GPUBufferUsage, '__brand'>>(BufferUsage);
 const TextureUsage = {
   COPY_SRC: 0x01,
   COPY_DST: 0x02,
+  TEXTURE_BINDING: 0x04,
   SAMPLED: 0x04,
+  STORAGE_BINDING: 0x08,
   STORAGE: 0x08,
   RENDER_ATTACHMENT: 0x10,
 } as const;
@@ -56,23 +58,73 @@ export const GPUConst = {
   MapMode,
 } as const;
 
-type Limits = Omit<GPUAdapterLimits, '__brand'>;
-export const DefaultLimits: Limits = {
+/** Base limits, per spec. */
+export const DefaultLimits = {
   maxTextureDimension1D: 8192,
   maxTextureDimension2D: 8192,
   maxTextureDimension3D: 2048,
-  maxTextureArrayLayers: 2048,
+  maxTextureArrayLayers: 256,
+
   maxBindGroups: 4,
   maxDynamicUniformBuffersPerPipelineLayout: 8,
   maxDynamicStorageBuffersPerPipelineLayout: 4,
   maxSampledTexturesPerShaderStage: 16,
   maxSamplersPerShaderStage: 16,
-  maxStorageBuffersPerShaderStage: 4,
+  maxStorageBuffersPerShaderStage: 8,
   maxStorageTexturesPerShaderStage: 4,
   maxUniformBuffersPerShaderStage: 12,
-  maxUniformBufferBindingSize: 16384,
+
+  maxUniformBufferBindingSize: 65536,
   maxStorageBufferBindingSize: 134217728,
+  minUniformBufferOffsetAlignment: 256,
+  minStorageBufferOffsetAlignment: 256,
+
   maxVertexBuffers: 8,
   maxVertexAttributes: 16,
   maxVertexBufferArrayStride: 2048,
+  maxInterStageShaderComponents: 60,
+
+  maxComputeWorkgroupStorageSize: 16352,
+  maxComputeInvocationsPerWorkgroup: 256,
+  maxComputeWorkgroupSizeX: 256,
+  maxComputeWorkgroupSizeY: 256,
+  maxComputeWorkgroupSizeZ: 64,
+  maxComputeWorkgroupsPerDimension: 65535,
 };
+checkType<Omit<GPUSupportedLimits, '__brand'>>(DefaultLimits);
+
+const kMaxUnsignedLongValue = 4294967295;
+const kMaxUnsignedLongLongValue = Number.MAX_SAFE_INTEGER;
+export const LimitMaximum = {
+  maxTextureDimension1D: kMaxUnsignedLongValue,
+  maxTextureDimension2D: kMaxUnsignedLongValue,
+  maxTextureDimension3D: kMaxUnsignedLongValue,
+  maxTextureArrayLayers: kMaxUnsignedLongValue,
+
+  maxBindGroups: kMaxUnsignedLongValue,
+  maxDynamicUniformBuffersPerPipelineLayout: kMaxUnsignedLongValue,
+  maxDynamicStorageBuffersPerPipelineLayout: kMaxUnsignedLongValue,
+  maxSampledTexturesPerShaderStage: kMaxUnsignedLongValue,
+  maxSamplersPerShaderStage: kMaxUnsignedLongValue,
+  maxStorageBuffersPerShaderStage: kMaxUnsignedLongValue,
+  maxStorageTexturesPerShaderStage: kMaxUnsignedLongValue,
+  maxUniformBuffersPerShaderStage: kMaxUnsignedLongValue,
+
+  maxUniformBufferBindingSize: kMaxUnsignedLongLongValue,
+  maxStorageBufferBindingSize: kMaxUnsignedLongLongValue,
+  minUniformBufferOffsetAlignment: kMaxUnsignedLongValue,
+  minStorageBufferOffsetAlignment: kMaxUnsignedLongValue,
+
+  maxVertexBuffers: kMaxUnsignedLongValue,
+  maxVertexAttributes: kMaxUnsignedLongValue,
+  maxVertexBufferArrayStride: kMaxUnsignedLongValue,
+  maxInterStageShaderComponents: kMaxUnsignedLongValue,
+
+  maxComputeWorkgroupStorageSize: kMaxUnsignedLongValue,
+  maxComputeInvocationsPerWorkgroup: kMaxUnsignedLongValue,
+  maxComputeWorkgroupSizeX: kMaxUnsignedLongValue,
+  maxComputeWorkgroupSizeY: kMaxUnsignedLongValue,
+  maxComputeWorkgroupSizeZ: kMaxUnsignedLongValue,
+  maxComputeWorkgroupsPerDimension: kMaxUnsignedLongValue,
+};
+checkType<Omit<GPUSupportedLimits, '__brand'>>(LimitMaximum);

@@ -31,14 +31,14 @@ private:
 
     bool onIsUsed(GrSurfaceProxy* proxy) const override { return false; }
     void gatherProxyIntervals(GrResourceAllocator*) const override;
-    ExpectedOutcome onMakeClosed(const GrCaps&, SkIRect* targetUpdateBounds) override;
+    ExpectedOutcome onMakeClosed(GrRecordingContext*, SkIRect* targetUpdateBounds) override;
     bool onExecute(GrOpFlushState*) override;
 
 #if GR_TEST_UTILS
     const char* name() const final { return "WritePixels"; }
 #endif
 #ifdef SK_DEBUG
-    void visitProxies_debugOnly(const GrOp::VisitProxyFunc& fn) const override {}
+    void visitProxies_debugOnly(const GrVisitProxyFunc&) const override {}
 #endif
 
     SkAutoSTArray<16, GrMipLevel> fLevels;

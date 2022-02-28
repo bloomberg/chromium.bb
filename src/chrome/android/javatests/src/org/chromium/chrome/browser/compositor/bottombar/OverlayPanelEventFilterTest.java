@@ -16,6 +16,8 @@ import androidx.test.filters.MediumTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +25,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.UiThreadTest;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
@@ -32,13 +36,16 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.IntentRequestTracker;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
+import org.chromium.ui.test.util.DisableAnimationsTestRule;
+import org.chromium.ui.test.util.DummyUiActivity;
 /**
  * Class responsible for testing the OverlayPanelEventFilter.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-public class OverlayPanelEventFilterTest extends DummyUiActivityTestCase {
+@Batch(Batch.PER_CLASS)
+public class OverlayPanelEventFilterTest {
     private static final float PANEL_ALMOST_MAXIMIZED_OFFSET_Y_DP = 50.f;
     private static final float BAR_HEIGHT_DP = 100.f;
 
@@ -49,6 +56,12 @@ public class OverlayPanelEventFilterTest extends DummyUiActivityTestCase {
     private static final float EPSILON = 1e-04f;
 
     private static final int MOCK_TOOLBAR_HEIGHT = 100;
+
+    @ClassRule
+    public static DisableAnimationsTestRule disableAnimationsRule = new DisableAnimationsTestRule();
+    @ClassRule
+    public static BaseActivityTestRule<DummyUiActivity> activityTestRule =
+            new BaseActivityTestRule<>(DummyUiActivity.class);
 
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
@@ -240,20 +253,26 @@ public class OverlayPanelEventFilterTest extends DummyUiActivityTestCase {
     // Test Suite
     // --------------------------------------------------------------------------------------------
 
+    @BeforeClass
+    public static void setupSuite() {
+        activityTestRule.launchActivity(null);
+    }
+
     @Before
-    public void setUp() {
+    public void setupTest() {
         Context context = InstrumentationRegistry.getTargetContext();
 
         mDpToPx = context.getResources().getDisplayMetrics().density;
         mTouchSlopDp = ViewConfiguration.get(context).getScaledTouchSlop() / mDpToPx;
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mWindowAndroid = new ActivityWindowAndroid(getActivity());
-            mActivity = getActivity();
+            mActivity = activityTestRule.getActivity();
+            mWindowAndroid = new ActivityWindowAndroid(mActivity, /* listenToActivityState= */ true,
+                    IntentRequestTracker.createFromActivity(mActivity));
 
-            mPanel = new MockOverlayPanel(context, mLayoutManager, new OverlayPanelManager(),
+            mPanel = new MockOverlayPanel(mActivity, mLayoutManager, new OverlayPanelManager(),
                     mBrowserControlsStateProvider, mWindowAndroid, mCompositorViewHolder, mTab);
-            mEventFilter = new OverlayPanelEventFilterWrapper(context, mPanel);
+            mEventFilter = new OverlayPanelEventFilterWrapper(mActivity, mPanel);
 
             mPanel.setSearchBarHeightForTesting(BAR_HEIGHT_DP);
             mPanel.setHeightForTesting(LAYOUT_HEIGHT_DP);

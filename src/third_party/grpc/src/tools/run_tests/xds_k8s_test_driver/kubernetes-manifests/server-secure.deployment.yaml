@@ -14,6 +14,8 @@ spec:
       app: ${deployment_name}
   template:
     metadata:
+      annotations:
+        security.cloud.google.com/use-workload-certificates: ""
       labels:
         app: ${deployment_name}
         owner: xds-k8s-interop-test
@@ -40,12 +42,11 @@ spec:
           # TODO(sergiitk): this should be conditional for if version < v1.37.x
           - name: GRPC_XDS_EXPERIMENTAL_NEW_SERVER_API
             value: "true"
+          - name: GRPC_XDS_EXPERIMENTAL_RBAC
+            value: "true"
         volumeMounts:
           - mountPath: /tmp/grpc-xds/
             name: grpc-td-conf
-            readOnly: true
-          - mountPath: /var/run/gke-spiffe/certs
-            name: gke-spiffe-certs-volume
             readOnly: true
         resources:
           limits:
@@ -81,7 +82,4 @@ spec:
         - name: grpc-td-conf
           emptyDir:
             medium: Memory
-        - name: gke-spiffe-certs-volume
-          csi:
-            driver: certs.spiffe.gke.io
 ...

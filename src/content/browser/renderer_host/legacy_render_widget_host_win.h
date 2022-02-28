@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_LEGACY_RENDER_WIDGET_HOST_WIN_H_
 #define CONTENT_BROWSER_RENDERER_HOST_LEGACY_RENDER_WIDGET_HOST_WIN_H_
 
+#include "base/memory/raw_ptr.h"
+
 // Must be included before <atlapp.h>.
 #include "base/win/atl.h"   // NOLINT(build/include_order)
 
@@ -15,7 +17,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "ui/accessibility/platform/ax_fragment_root_delegate_win.h"
@@ -74,6 +75,10 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   // successful creation of a child window parented to the parent window passed
   // in.
   static LegacyRenderWidgetHostHWND* Create(HWND parent);
+
+  LegacyRenderWidgetHostHWND(const LegacyRenderWidgetHostHWND&) = delete;
+  LegacyRenderWidgetHostHWND& operator=(const LegacyRenderWidgetHostHWND&) =
+      delete;
 
   // Destroys the HWND managed by this class.
   void Destroy();
@@ -183,7 +188,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   // Set to true if we turned on mouse tracking.
   bool mouse_tracking_enabled_;
 
-  RenderWidgetHostViewAura* host_;
+  raw_ptr<RenderWidgetHostViewAura> host_;
 
   // Some assistive software need to track the location of the caret.
   std::unique_ptr<ui::AXSystemCaretWin> ax_system_caret_;
@@ -203,8 +208,6 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   std::unique_ptr<DirectManipulationHelper> direct_manipulation_helper_;
 
   base::WeakPtrFactory<LegacyRenderWidgetHostHWND> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LegacyRenderWidgetHostHWND);
 };
 
 }  // namespace content

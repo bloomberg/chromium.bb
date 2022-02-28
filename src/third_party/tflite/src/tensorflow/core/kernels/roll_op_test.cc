@@ -176,8 +176,8 @@ TEST_F(RollOpTest, Simple_TwoD64) {
   // Feed and run
   AddInputFromArray<float>(TensorShape({5, 3}),
                            {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14});
-  AddInputFromArray<int64>(TensorShape({2}), {-1, 4});
-  AddInputFromArray<int64>(TensorShape({2}), {0, 1});
+  AddInputFromArray<int64_t>(TensorShape({2}), {-1, 4});
+  AddInputFromArray<int64_t>(TensorShape({2}), {0, 1});
   TF_ASSERT_OK(RunOpKernel());
 
   // Check the output.
@@ -194,8 +194,8 @@ TEST_F(RollOpTest, Simple_TwoD64_NoMemcpy) {
   AddInputFromArray<tstring>(TensorShape({5, 3}),
                              {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j",
                               "k", "l", "m", "n", "o"});
-  AddInputFromArray<int64>(TensorShape({2}), {-1, 4});
-  AddInputFromArray<int64>(TensorShape({2}), {0, 1});
+  AddInputFromArray<int64_t>(TensorShape({2}), {-1, 4});
+  AddInputFromArray<int64_t>(TensorShape({2}), {0, 1});
   TF_ASSERT_OK(RunOpKernel());
 
   // Check the output.
@@ -211,8 +211,8 @@ TEST_F(RollOpTest, Simple_ThreeD64) {
   // Feed and run
   AddInputFromArray<float>(TensorShape({4, 1, 3}),
                            {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11});
-  AddInputFromArray<int64>(TensorShape({3}), {4, 3, 2});
-  AddInputFromArray<int64>(TensorShape({3}), {0, 1, 2});
+  AddInputFromArray<int64_t>(TensorShape({3}), {4, 3, 2});
+  AddInputFromArray<int64_t>(TensorShape({3}), {0, 1, 2});
   TF_ASSERT_OK(RunOpKernel());
 
   // Check the output.
@@ -228,8 +228,8 @@ TEST_F(RollOpTest, Simple_ThreeD64_NoMemcpy) {
   AddInputFromArray<tstring>(
       TensorShape({4, 1, 3}),
       {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"});
-  AddInputFromArray<int64>(TensorShape({3}), {4, 3, 2});
-  AddInputFromArray<int64>(TensorShape({3}), {0, 1, 2});
+  AddInputFromArray<int64_t>(TensorShape({3}), {4, 3, 2});
+  AddInputFromArray<int64_t>(TensorShape({3}), {0, 1, 2});
   TF_ASSERT_OK(RunOpKernel());
 
   // Check the output.
@@ -450,34 +450,44 @@ static Graph* RollGraph(const TensorShape& shape, int isd) {
   return g;
 }
 
-#define BM_ROLL_OUTER(DEVICE)                                                 \
-  static void BM_##DEVICE##_roll_outer(int iters, int rows, int columns) {    \
-    TensorShape shape{rows, columns};                                         \
-    const int64 num_items = static_cast<int64>(iters) * shape.num_elements(); \
-    testing::ItemsProcessed(num_items);                                       \
-    testing::BytesProcessed(num_items * sizeof(float));                       \
-    testing::UseRealTime();                                                   \
-    test::Benchmark(#DEVICE, RollGraph(shape, 0)).Run(iters);                 \
-  }                                                                           \
-  BENCHMARK(BM_##DEVICE##_roll_outer)                                         \
-      ->ArgPair(256, 256)                                                     \
-      ->ArgPair(512, 512)                                                     \
-      ->ArgPair(1024, 1024)                                                   \
+#define BM_ROLL_OUTER(DEVICE)                                                  \
+  static void BM_##DEVICE##_roll_outer(::testing::benchmark::State& state) {   \
+    const int rows = state.range(0);                                           \
+    const int columns = state.range(1);                                        \
+                                                                               \
+    TensorShape shape{rows, columns};                                          \
+    test::Benchmark(#DEVICE, RollGraph(shape, 0), /*old_benchmark_api*/ false) \
+        .Run(state);                                                           \
+    const int64_t num_items =                                                  \
+        static_cast<int64_t>(state.iterations()) * shape.num_elements();       \
+    state.SetItemsProcessed(num_items);                                        \
+    state.SetBytesProcessed(num_items * sizeof(float));                        \
+  }                                                                            \
+  BENCHMARK(BM_##DEVICE##_roll_outer)                                          \
+      ->UseRealTime()                                                          \
+      ->ArgPair(256, 256)                                                      \
+      ->ArgPair(512, 512)                                                      \
+      ->ArgPair(1024, 1024)                                                    \
       ->ArgPair(2048, 2048)
 
-#define BM_ROLL_ALL(DEVICE)                                                   \
-  static void BM_##DEVICE##_roll_all(int iters, int rows, int columns) {      \
-    TensorShape shape{rows, columns};                                         \
-    const int64 num_items = static_cast<int64>(iters) * shape.num_elements(); \
-    testing::ItemsProcessed(num_items);                                       \
-    testing::BytesProcessed(num_items * sizeof(float));                       \
-    testing::UseRealTime();                                                   \
-    test::Benchmark(#DEVICE, RollGraph(shape, 1)).Run(iters);                 \
-  }                                                                           \
-  BENCHMARK(BM_##DEVICE##_roll_all)                                           \
-      ->ArgPair(256, 256)                                                     \
-      ->ArgPair(512, 512)                                                     \
-      ->ArgPair(1024, 1024)                                                   \
+#define BM_ROLL_ALL(DEVICE)                                                    \
+  static void BM_##DEVICE##_roll_all(::testing::benchmark::State& state) {     \
+    const int rows = state.range(0);                                           \
+    const int columns = state.range(1);                                        \
+                                                                               \
+    TensorShape shape{rows, columns};                                          \
+    test::Benchmark(#DEVICE, RollGraph(shape, 1), /*old_benchmark_api*/ false) \
+        .Run(state);                                                           \
+    const int64_t num_items =                                                  \
+        static_cast<int64_t>(state.iterations()) * shape.num_elements();       \
+    state.SetItemsProcessed(num_items);                                        \
+    state.SetBytesProcessed(num_items * sizeof(float));                        \
+  }                                                                            \
+  BENCHMARK(BM_##DEVICE##_roll_all)                                            \
+      ->UseRealTime()                                                          \
+      ->ArgPair(256, 256)                                                      \
+      ->ArgPair(512, 512)                                                      \
+      ->ArgPair(1024, 1024)                                                    \
       ->ArgPair(2048, 2048)
 
 BM_ROLL_OUTER(cpu);

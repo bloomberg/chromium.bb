@@ -8,6 +8,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "quic/core/quic_error_codes.h"
+#include "common/print_elements.h"
 
 namespace quic {
 
@@ -225,7 +226,6 @@ std::string TransmissionTypeToString(TransmissionType transmission_type) {
         return "INVALID_TRANSMISSION_TYPE";
       }
       return absl::StrCat("Unknown(", static_cast<int>(transmission_type), ")");
-      break;
   }
 }
 
@@ -267,7 +267,6 @@ std::string MessageStatusToString(MessageStatus message_status) {
     RETURN_STRING_LITERAL(MESSAGE_STATUS_INTERNAL_ERROR);
     default:
       return absl::StrCat("Unknown(", static_cast<int>(message_status), ")");
-      break;
   }
 }
 
@@ -292,7 +291,6 @@ std::string PacketNumberSpaceToString(PacketNumberSpace packet_number_space) {
     default:
       return absl::StrCat("Unknown(", static_cast<int>(packet_number_space),
                           ")");
-      break;
   }
 }
 
@@ -320,12 +318,30 @@ std::string EncryptionLevelToString(EncryptionLevel level) {
     RETURN_STRING_LITERAL(ENCRYPTION_FORWARD_SECURE);
     default:
       return absl::StrCat("Unknown(", static_cast<int>(level), ")");
-      break;
   }
 }
 
 std::ostream& operator<<(std::ostream& os, EncryptionLevel level) {
   os << EncryptionLevelToString(level);
+  return os;
+}
+
+absl::string_view ClientCertModeToString(ClientCertMode mode) {
+#define RETURN_REASON_LITERAL(x) \
+  case ClientCertMode::x:        \
+    return #x
+  switch (mode) {
+    RETURN_REASON_LITERAL(kNone);
+    RETURN_REASON_LITERAL(kRequest);
+    RETURN_REASON_LITERAL(kRequire);
+    default:
+      return "<invalid>";
+  }
+#undef RETURN_REASON_LITERAL
+}
+
+std::ostream& operator<<(std::ostream& os, ClientCertMode mode) {
+  os << ClientCertModeToString(mode);
   return os;
 }
 
@@ -336,7 +352,6 @@ std::string QuicConnectionCloseTypeString(QuicConnectionCloseType type) {
     RETURN_STRING_LITERAL(IETF_QUIC_APPLICATION_CONNECTION_CLOSE);
     default:
       return absl::StrCat("Unknown(", static_cast<int>(type), ")");
-      break;
   }
 }
 
@@ -378,13 +393,31 @@ std::string KeyUpdateReasonString(KeyUpdateReason reason) {
     RETURN_REASON_LITERAL(kLocalKeyUpdateLimitOverride);
     default:
       return absl::StrCat("Unknown(", static_cast<int>(reason), ")");
-      break;
   }
 #undef RETURN_REASON_LITERAL
 }
 
 std::ostream& operator<<(std::ostream& os, const KeyUpdateReason reason) {
   os << KeyUpdateReasonString(reason);
+  return os;
+}
+
+bool operator==(const ParsedClientHello& a, const ParsedClientHello& b) {
+  return a.sni == b.sni && a.uaid == b.uaid && a.alpns == b.alpns &&
+         a.legacy_version_encapsulation_inner_packet ==
+             b.legacy_version_encapsulation_inner_packet &&
+         a.retry_token == b.retry_token &&
+         a.resumption_attempted == b.resumption_attempted &&
+         a.early_data_attempted == b.early_data_attempted;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const ParsedClientHello& parsed_chlo) {
+  os << "{ sni:" << parsed_chlo.sni << ", uaid:" << parsed_chlo.uaid
+     << ", alpns:" << quiche::PrintElements(parsed_chlo.alpns)
+     << ", len(retry_token):" << parsed_chlo.retry_token.size()
+     << ", len(inner_packet):"
+     << parsed_chlo.legacy_version_encapsulation_inner_packet.size() << " }";
   return os;
 }
 

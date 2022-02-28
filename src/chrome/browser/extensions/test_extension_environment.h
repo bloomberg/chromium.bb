@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -55,6 +55,9 @@ class TestExtensionEnvironment {
   };
 
   explicit TestExtensionEnvironment(Type type = Type::kWithTaskEnvironment);
+
+  TestExtensionEnvironment(const TestExtensionEnvironment&) = delete;
+  TestExtensionEnvironment& operator=(const TestExtensionEnvironment&) = delete;
 
   ~TestExtensionEnvironment();
 
@@ -111,9 +114,7 @@ class TestExtensionEnvironment {
 #endif
 
   std::unique_ptr<TestingProfile> profile_;
-  ExtensionService* extension_service_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(TestExtensionEnvironment);
+  raw_ptr<ExtensionService> extension_service_ = nullptr;
 };
 
 }  // namespace extensions

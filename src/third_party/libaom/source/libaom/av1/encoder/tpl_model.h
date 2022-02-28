@@ -23,6 +23,7 @@ struct AV1_COMP;
 struct AV1_SEQ_CODING_TOOLS;
 struct EncodeFrameParams;
 struct EncodeFrameInput;
+struct GF_GROUP;
 
 #include "config/aom_config.h"
 
@@ -32,6 +33,7 @@ struct EncodeFrameInput;
 #include "av1/common/scale.h"
 #include "av1/encoder/block.h"
 #include "av1/encoder/lookahead.h"
+#include "av1/encoder/ratectrl.h"
 
 static INLINE BLOCK_SIZE convert_length_to_bsize(int length) {
   switch (length) {
@@ -88,7 +90,6 @@ typedef struct AV1TplRowMultiThreadInfo {
 // The first REF_FRAMES + 1 buffers are reserved.
 // tpl_data->tpl_frame starts after REF_FRAMES + 1
 #define MAX_LENGTH_TPL_FRAME_STATS (MAX_TPL_FRAME_IDX + REF_FRAMES + 1)
-#define MAX_TPL_EXTEND (MAX_LAG_BUFFERS - MAX_GF_INTERVAL)
 #define TPL_DEP_COST_SCALE_LOG2 4
 
 #define TPL_EPSILON 0.0000001
@@ -96,6 +97,7 @@ typedef struct AV1TplRowMultiThreadInfo {
 typedef struct TplTxfmStats {
   double abs_coeff_sum[256];  // Assume we are using 16x16 transform block
   int txfm_block_count;
+  int coeff_num;
 } TplTxfmStats;
 
 typedef struct TplDepStats {
@@ -106,6 +108,7 @@ typedef struct TplDepStats {
   int64_t cmp_recrf_dist[2];
   int64_t srcrf_rate;
   int64_t recrf_rate;
+  int64_t srcrf_sse;
   int64_t cmp_recrf_rate[2];
   int64_t mc_dep_rate;
   int64_t mc_dep_dist;
@@ -127,10 +130,6 @@ typedef struct TplDepFrame {
   int mi_cols;
   int base_rdmult;
   uint32_t frame_display_index;
-  double abs_coeff_sum[256];  // Assume we are using 16x16 transform block
-  double abs_coeff_mean[256];
-  int coeff_num;  // number of coefficients in a transform block
-  int txfm_block_count;
 } TplDepFrame;
 
 /*!\endcond */
@@ -138,6 +137,11 @@ typedef struct TplDepFrame {
  * \brief Params related to temporal dependency model.
  */
 typedef struct TplParams {
+  /*!
+   * Whether the tpl stats is ready.
+   */
+  int ready;
+
   /*!
    * Block granularity of tpl score storage.
    */
@@ -161,6 +165,12 @@ typedef struct TplParams {
    * group.
    */
   TplDepStats *tpl_stats_pool[MAX_LAG_BUFFERS];
+
+  /*!
+   * Buffer to store tpl transform stats per frame.
+   * txfm_stats_list[i] stores the TplTxfmStats of the ith frame in a gf group.
+   */
+  TplTxfmStats txfm_stats_list[MAX_LENGTH_TPL_FRAME_STATS];
 
   /*!
    * Buffer to store tpl reconstructed frame.
@@ -207,7 +217,121 @@ typedef struct TplParams {
    * Frame border for tpl frame.
    */
   int border_in_pixels;
+
 } TplParams;
+
+#if CONFIG_BITRATE_ACCURACY
+/*!
+ * \brief This structure stores information needed for bitrate accuracy
+ * experiment.
+ */
+typedef struct {
+  double keyframe_bitrate;
+  double total_bit_budget;  // The total bit budget of the entire video
+  int show_frame_count;     // Number of show frames in the entire video
+
+  int gop_showframe_count;  // The number of show frames in the current gop
+  double gop_bit_budget;    // The bitbudget for the current gop
+  double scale_factors[FRAME_UPDATE_TYPES];     // Scale factors to improve the
+                                                // budget estimation
+  double mv_scale_factors[FRAME_UPDATE_TYPES];  // Scale factors to improve
+                                                // MV entropy estimation
+
+  // === Below this line are GOP related data that will be updated per GOP ===
+  int base_q_index;  // Stores the base q index.
+  int q_index_list_ready;
+  int q_index_list[MAX_LENGTH_TPL_FRAME_STATS];  // q indices for the current
+                                                 // GOP
+  // Arrays to store frame level bitrate accuracy data.
+  double estimated_bitrate_byframe[MAX_LENGTH_TPL_FRAME_STATS];
+  double estimated_mv_bitrate_byframe[MAX_LENGTH_TPL_FRAME_STATS];
+  int actual_bitrate_byframe[MAX_LENGTH_TPL_FRAME_STATS];
+  int actual_mv_bitrate_byframe[MAX_LENGTH_TPL_FRAME_STATS];
+  int actual_coeff_bitrate_byframe[MAX_LENGTH_TPL_FRAME_STATS];
+
+  // Array to store qstep_ratio for each frame in a GOP
+  double qstep_ratio_list[MAX_LENGTH_TPL_FRAME_STATS];
+} VBR_RATECTRL_INFO;
+
+static INLINE void vbr_rc_reset_gop_data(VBR_RATECTRL_INFO *vbr_rc_info) {
+  vbr_rc_info->q_index_list_ready = 0;
+  av1_zero(vbr_rc_info->q_index_list);
+  av1_zero(vbr_rc_info->estimated_bitrate_byframe);
+  av1_zero(vbr_rc_info->estimated_mv_bitrate_byframe);
+  av1_zero(vbr_rc_info->actual_bitrate_byframe);
+  av1_zero(vbr_rc_info->actual_mv_bitrate_byframe);
+  av1_zero(vbr_rc_info->actual_coeff_bitrate_byframe);
+}
+
+static INLINE void vbr_rc_init(VBR_RATECTRL_INFO *vbr_rc_info,
+                               double total_bit_budget, int show_frame_count) {
+  vbr_rc_info->total_bit_budget = total_bit_budget;
+  vbr_rc_info->show_frame_count = show_frame_count;
+  vbr_rc_info->keyframe_bitrate = 0;
+  const double scale_factors[FRAME_UPDATE_TYPES] = { 0.94559, 0.12040, 1,
+                                                     1.10199, 1,       1,
+                                                     0.16393 };
+  const double mv_scale_factors[FRAME_UPDATE_TYPES] = { 3, 3, 3, 3, 3, 3, 3 };
+  memcpy(vbr_rc_info->scale_factors, scale_factors,
+         sizeof(scale_factors[0]) * FRAME_UPDATE_TYPES);
+  memcpy(vbr_rc_info->mv_scale_factors, mv_scale_factors,
+         sizeof(mv_scale_factors[0]) * FRAME_UPDATE_TYPES);
+
+  vbr_rc_reset_gop_data(vbr_rc_info);
+}
+
+static INLINE void vbr_rc_set_gop_bit_budget(VBR_RATECTRL_INFO *vbr_rc_info,
+                                             int gop_showframe_count) {
+  vbr_rc_info->gop_showframe_count = gop_showframe_count;
+  vbr_rc_info->gop_bit_budget = vbr_rc_info->total_bit_budget *
+                                gop_showframe_count /
+                                vbr_rc_info->show_frame_count;
+}
+
+static INLINE void vbr_rc_set_keyframe_bitrate(VBR_RATECTRL_INFO *vbr_rc_info,
+                                               double keyframe_bitrate) {
+  vbr_rc_info->keyframe_bitrate = keyframe_bitrate;
+}
+
+static INLINE void vbr_rc_info_log(const VBR_RATECTRL_INFO *vbr_rc_info,
+                                   int gf_frame_index, int gf_group_size,
+                                   FRAME_UPDATE_TYPE *update_type) {
+  // Add +2 here because this is the last frame this method is called at.
+  if (gf_frame_index + 2 >= gf_group_size) {
+    printf(
+        "\ni, \test_bitrate, \test_mv_bitrate, \tact_bitrate, "
+        "\tact_mv_bitrate, \tact_coeff_bitrate, \tq, \tupdate_type\n");
+    for (int i = 0; i < gf_group_size; i++) {
+      printf("%d, \t%f, \t%f, \t%d, \t%d, \t%d, \t%d, \t%d\n", i,
+             vbr_rc_info->estimated_bitrate_byframe[i],
+             vbr_rc_info->estimated_mv_bitrate_byframe[i],
+             vbr_rc_info->actual_bitrate_byframe[i],
+             vbr_rc_info->actual_mv_bitrate_byframe[i],
+             vbr_rc_info->actual_coeff_bitrate_byframe[i],
+             vbr_rc_info->q_index_list[i], update_type[i]);
+    }
+  }
+}
+
+#endif  // CONFIG_BITRATE_ACCURACY
+
+#if CONFIG_RD_COMMAND
+typedef enum {
+  RD_OPTION_NONE,
+  RD_OPTION_SET_Q,
+  RD_OPTION_SET_Q_RDMULT
+} RD_OPTION;
+
+typedef struct RD_COMMAND {
+  RD_OPTION option_ls[MAX_LENGTH_TPL_FRAME_STATS];
+  int q_index_ls[MAX_LENGTH_TPL_FRAME_STATS];
+  int rdmult_ls[MAX_LENGTH_TPL_FRAME_STATS];
+  int frame_count;
+  int frame_index;
+} RD_COMMAND;
+
+void av1_read_rd_command(const char *filepath, RD_COMMAND *rd_command);
+#endif  // CONFIG_RD_COMMAND
 
 /*!\brief Allocate buffers used by tpl model
  *
@@ -229,19 +353,22 @@ void av1_setup_tpl_buffers(struct AV1_PRIMARY *const ppi,
  * \param[in]    cpi           Top - level encoder instance structure
  * \param[in]    gop_eval      Flag if it is in the GOP length decision stage
  * \param[in]    frame_params  Per frame encoding parameters
- * \param[in]    frame_input   Input frame buffers
  *
  * \return Indicates whether or not we should use a longer GOP length.
  */
 int av1_tpl_setup_stats(struct AV1_COMP *cpi, int gop_eval,
-                        const struct EncodeFrameParams *const frame_params,
-                        const struct EncodeFrameInput *const frame_input);
+                        const struct EncodeFrameParams *const frame_params);
 
 /*!\cond */
+
+void av1_tpl_preload_rc_estimate(
+    struct AV1_COMP *cpi, const struct EncodeFrameParams *const frame_params);
 
 int av1_tpl_ptr_pos(int mi_row, int mi_col, int stride, uint8_t right_shift);
 
 void av1_init_tpl_stats(TplParams *const tpl_data);
+
+int av1_tpl_stats_ready(const TplParams *tpl_data, int gf_frame_index);
 
 void av1_tpl_rdmult_setup(struct AV1_COMP *cpi);
 
@@ -302,15 +429,53 @@ double av1_laplace_estimate_frame_rate(int q_index, int block_count,
                                        const double *abs_coeff_mean,
                                        int coeff_num);
 
-/*!\brief  Init data structure storing transform stats
+/*
+ *!\brief Compute the number of bits needed to encode a GOP
  *
- *\ingroup tpl_modelling
+ * \param[in]    q_index_list      array of q_index, one per frame
+ * \param[in]    frame_count       number of frames in the GOP
+ * \param[in]    stats             array of transform stats, one per frame
+ * \param[in]    stats_valid_list  List indicates whether transform stats
+ *                                 exists
+ * \param[out]   bitrate_byframe_list    Array to keep track of frame bitrate
  *
- * \param[in]    tpl_frame       pointer of tpl frame data structure
- * \param[in]    tpl_bsize_1d    length of the side of a square transform block
+ * \return The estimated GOP bitrate.
  *
  */
-void av1_tpl_stats_init_txfm_stats(TplDepFrame *tpl_frame, int tpl_bsize_1d);
+double av1_estimate_gop_bitrate(const int *q_index_list, const int frame_count,
+                                const TplTxfmStats *stats,
+                                const int *stats_valid_list,
+                                double *bitrate_byframe_list);
+
+/*
+ *!\brief Init TplTxfmStats
+ *
+ * \param[in]    tpl_txfm_stats  a structure for storing transform stats
+ *
+ */
+void av1_init_tpl_txfm_stats(TplTxfmStats *tpl_txfm_stats);
+
+/*
+ *!\brief Accumulate TplTxfmStats
+ *
+ * \param[in]  sub_stats          a structure for storing sub transform stats
+ * \param[out] accumulated_stats  a structure for storing accumulated transform
+ *stats
+ *
+ */
+void av1_accumulate_tpl_txfm_stats(const TplTxfmStats *sub_stats,
+                                   TplTxfmStats *accumulated_stats);
+
+/*
+ *!\brief Record a transform block into  TplTxfmStats
+ *
+ * \param[in]  tpl_txfm_stats     A structure for storing transform stats
+ * \param[out] coeff              An array of transform coefficients. Its size
+ *                                should equal to tpl_txfm_stats.coeff_num.
+ *
+ */
+void av1_record_tpl_txfm_block(TplTxfmStats *tpl_txfm_stats,
+                               const tran_low_t *coeff);
 
 /*!\brief  Estimate coefficient entropy using Laplace dsitribution
  *
@@ -367,6 +532,131 @@ int64_t av1_delta_rate_cost(int64_t delta_rate, int64_t recrf_dist,
  */
 int av1_get_overlap_area(int row_a, int col_a, int row_b, int col_b, int width,
                          int height);
+
+/*!\brief Estimate the optimal base q index for a GOP.
+ *
+ * This function picks q based on a chosen bit rate. It
+ * estimates the bit rate using the starting base q, then uses
+ * a binary search to find q to achieve the specified bit rate.
+ *
+ * \param[in]       gf_group          GOP structure
+ * \param[in]       txfm_stats_list   Transform stats struct
+ * \param[in]       stats_valid_list  List indicates whether transform stats
+ *                                    exists
+ * \param[in]       bit_budget        The specified bit budget to achieve
+ * \param[in]       bit_depth         bit depth
+ * \param[in]       scale_factor      Scale factor to improve budget estimation
+ * \param[in]       qstep_ratio_list  Stores the qstep_ratio for each frame
+ * \param[out]      q_index_list      array of q_index, one per frame
+ * \param[out]      estimated_bitrate_byframe  bits usage per frame in the GOP
+ *
+ * \return Returns the optimal base q index to use.
+ */
+int av1_q_mode_estimate_base_q(const struct GF_GROUP *gf_group,
+                               const TplTxfmStats *txfm_stats_list,
+                               const int *stats_valid_list, double bit_budget,
+                               aom_bit_depth_t bit_depth, double scale_factor,
+                               const double *qstep_ratio_list,
+                               int *q_index_list,
+                               double *estimated_bitrate_byframe);
+
+/*!\brief Get current frame's q_index from tpl stats and leaf_qindex
+ *
+ * \param[in]       tpl_data          TPL struct
+ * \param[in]       gf_frame_index    current frame index in the GOP
+ * \param[in]       leaf_qindex       q index of leaf frame
+ * \param[in]       bit_depth         bit depth
+ *
+ * \return q_index
+ */
+int av1_tpl_get_q_index(const TplParams *tpl_data, int gf_frame_index,
+                        int leaf_qindex, aom_bit_depth_t bit_depth);
+
+/*!\brief Compute the frame importance from TPL stats
+ *
+ * \param[in]       tpl_data          TPL struct
+ * \param[in]       gf_frame_index    current frame index in the GOP
+ *
+ * \return frame_importance
+ */
+double av1_tpl_get_frame_importance(const TplParams *tpl_data,
+                                    int gf_frame_index);
+
+/*!\brief Compute the ratio between arf q step and the leaf q step based on TPL
+ * stats
+ *
+ * \param[in]       tpl_data          TPL struct
+ * \param[in]       gf_frame_index    current frame index in the GOP
+ * \param[in]       leaf_qindex       q index of leaf frame
+ * \param[in]       bit_depth         bit depth
+ *
+ * \return qstep_ratio
+ */
+double av1_tpl_get_qstep_ratio(const TplParams *tpl_data, int gf_frame_index);
+
+/*!\brief Find a q index whose step size is near qstep_ratio * leaf_qstep
+ *
+ * \param[in]       leaf_qindex       q index of leaf frame
+ * \param[in]       qstep_ratio       step ratio between target q index and leaf
+ *                                    q index
+ * \param[in]       bit_depth         bit depth
+ *
+ * \return q_index
+ */
+int av1_get_q_index_from_qstep_ratio(int leaf_qindex, double qstep_ratio,
+                                     aom_bit_depth_t bit_depth);
+
+#if CONFIG_BITRATE_ACCURACY
+/*!\brief Update q_index_list in vbr_rc_info based on tpl stats
+ *
+ * \param[out]      vbr_rc_info    Rate control info for BITRATE_ACCURACY
+ *                                 experiment
+ * \param[in]       tpl_data       TPL struct
+ * \param[in]       gf_group       GOP struct
+ * \param[in]       bit_depth      bit depth
+ */
+void av1_vbr_rc_update_q_index_list(VBR_RATECTRL_INFO *vbr_rc_info,
+                                    const TplParams *tpl_data,
+                                    const struct GF_GROUP *gf_group,
+                                    aom_bit_depth_t bit_depth);
+
+/*!\brief For a GOP, calculate the bits used by motion vectors.
+ *
+ * \param[in]       tpl_data          TPL struct
+ * \param[in]       gf_group          GOP struct
+ * \param[in]       vbr_rc_info       Rate control info struct
+ *
+ * \return Bits used by the motion vectors for the GOP.
+ */
+double av1_tpl_compute_mv_bits(const TplParams *tpl_data,
+                               const GF_GROUP *gf_group,
+                               VBR_RATECTRL_INFO *vbr_rc_info);
+#endif  // CONFIG_BITRATE_ACCURACY
+
+/*!\brief Improve the motion vector estimation by taking neighbors into account.
+ *
+ * Use the upper and left neighbor block as the reference MVs.
+ * Compute the minimum difference between current MV and reference MV.
+ *
+ * \param[in]       tpl_frame         Tpl frame struct
+ * \param[in]       row               Current row
+ * \param[in]       col               Current column
+ * \param[in]       step              Step parameter for av1_tpl_ptr_pos
+ * \param[in]       tpl_stride        Stride parameter for av1_tpl_ptr_pos
+ * \param[in]       right_shift       Right shift parameter for av1_tpl_ptr_pos
+ */
+int_mv av1_compute_mv_difference(const TplDepFrame *tpl_frame, int row, int col,
+                                 int step, int tpl_stride, int right_shift);
+
+/*!\brief Compute the entropy of motion vectors for a single frame.
+ *
+ * \param[in]       tpl_frame         TPL frame struct
+ * \param[in]       right_shift       right shift value for step
+ *
+ * \return Bits used by the motion vectors for one frame.
+ */
+double av1_tpl_compute_frame_mv_entropy(const TplDepFrame *tpl_frame,
+                                        uint8_t right_shift);
 
 /*!\endcond */
 #ifdef __cplusplus

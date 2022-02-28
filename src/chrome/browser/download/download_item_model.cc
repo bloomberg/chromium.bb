@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -30,15 +31,16 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/download_protection/deep_scanning_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
-#include "components/safe_browsing/core/file_type_policies.h"
-#include "components/safe_browsing/core/proto/download_file_types.pb.h"
+#include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
+#include "components/safe_browsing/content/common/file_type_policies.h"
+#include "components/safe_browsing/content/common/proto/download_file_types.pb.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
@@ -50,7 +52,6 @@
 #include "chrome/browser/ui/browser.h"
 #endif
 
-using base::TimeDelta;
 using download::DownloadItem;
 using MixedContentStatus = download::DownloadItem::MixedContentStatus;
 using safe_browsing::DownloadFileType;
@@ -271,6 +272,10 @@ bool DownloadItemModel::IsMixedContent() const {
   return download_->IsMixedContent();
 }
 
+bool DownloadItemModel::ShouldShowIncognitoWarning() const {
+  return download_->ShouldShowIncognitoWarning();
+}
+
 bool DownloadItemModel::ShouldAllowDownloadFeedback() const {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   if (!IsDangerous())
@@ -406,6 +411,50 @@ download::DownloadItem* DownloadItemModel::download() {
   return download_;
 }
 
+std::u16string DownloadItemModel::GetWebDriveName() const {
+  const auto& reroute_info = download_->GetRerouteInfo();
+  if (!reroute_info.IsInitialized() || !reroute_info.has_service_provider()) {
+    return std::u16string();
+  }
+  using Provider = enterprise_connectors::FileSystemServiceProvider;
+  switch (reroute_info.service_provider()) {
+    case (Provider::BOX):
+      return l10n_util::GetStringUTF16(IDS_FILE_SYSTEM_CONNECTOR_BOX);
+    case (Provider::GOOGLE_DRIVE):
+      return l10n_util::GetStringUTF16(IDS_FILE_SYSTEM_CONNECTOR_GOOGLE_DRIVE);
+  }
+}
+
+std::u16string DownloadItemModel::GetWebDriveMessage(bool verbose) const {
+  const auto& reroute_info = download_->GetRerouteInfo();
+  if (!reroute_info.IsInitialized() || !reroute_info.has_service_provider()) {
+    return std::u16string();
+  }
+  using Provider = enterprise_connectors::FileSystemServiceProvider;
+  switch (reroute_info.service_provider()) {
+    case (Provider::BOX): {
+      DCHECK(reroute_info.has_box());
+      const auto& info = reroute_info.box();
+      std::u16string msg, supp_msg;
+      if (info.has_error_message()) {
+        msg = base::UTF8ToUTF16(info.error_message());
+      }
+      if (msg.size() && verbose && info.has_additional_message()) {
+        supp_msg = base::UTF8ToUTF16(info.additional_message());
+      }
+      if (supp_msg.empty()) {
+        return msg;
+      }
+      // "<WEB_DRIVE_MESSAGE> (<SUPPORT_INFO>)"
+      return l10n_util::GetStringFUTF16(
+          IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_WEB_DRIVE_ERROR, msg, supp_msg);
+    }
+    case (Provider::GOOGLE_DRIVE):
+      break;
+  }
+  return std::u16string();
+}
+
 base::FilePath DownloadItemModel::GetFileNameToReportUser() const {
   return download_->GetFileNameToReportUser();
 }
@@ -534,6 +583,9 @@ bool DownloadItemModel::IsCommandEnabled(
     const DownloadCommands* download_commands,
     DownloadCommands::Command command) const {
   switch (command) {
+    case DownloadCommands::MAX:
+      NOTREACHED();
+      break;
     case DownloadCommands::SHOW_IN_FOLDER:
       return download_->CanShowInFolder();
     case DownloadCommands::OPEN_WHEN_COMPLETE:
@@ -575,6 +627,9 @@ bool DownloadItemModel::IsCommandChecked(
     const DownloadCommands* download_commands,
     DownloadCommands::Command command) const {
   switch (command) {
+    case DownloadCommands::MAX:
+      NOTREACHED();
+      break;
     case DownloadCommands::OPEN_WHEN_COMPLETE:
       return download_->GetOpenWhenComplete() ||
              download_crx_util::IsExtensionDownload(*download_);
@@ -641,6 +696,12 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
 #endif
       FALLTHROUGH;
     case DownloadCommands::KEEP:
+      // Order of these warning validations should be same as the order that
+      // GetDesiredDownloadItemMode() method follows.
+      if (ShouldShowIncognitoWarning()) {
+        download_->AcceptIncognitoWarning();
+        break;
+      }
       if (IsMixedContent()) {
         download_->ValidateMixedContentDownload();
         break;
@@ -710,6 +771,9 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
 #endif
       break;
     }
+    case DownloadCommands::MAX:
+      NOTREACHED();
+      break;
     case DownloadCommands::PLATFORM_OPEN:
     case DownloadCommands::CANCEL:
     case DownloadCommands::DISCARD:
@@ -746,7 +810,7 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
               delegate->GetWeakPtr(), download_->GetId()),
           safe_browsing::DeepScanningRequest::DeepScanTrigger::
               TRIGGER_APP_PROMPT,
-          std::move(settings));
+          safe_browsing::DownloadCheckResult::UNKNOWN, std::move(settings));
       break;
   }
 }
@@ -768,12 +832,18 @@ bool DownloadItemModel::IsExtensionDownload() const {
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 void DownloadItemModel::CompleteSafeBrowsingScan() {
-  ChromeDownloadManagerDelegate::SafeBrowsingState* state =
-      static_cast<ChromeDownloadManagerDelegate::SafeBrowsingState*>(
-          download_->GetUserData(
-              &ChromeDownloadManagerDelegate::SafeBrowsingState::
-                  kSafeBrowsingUserDataKey));
-  state->CompleteDownload();
+  if (download_->IsSavePackageDownload()) {
+    download_->OnAsyncScanningCompleted(
+        download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED);
+    enterprise_connectors::RunSavePackageScanningCallback(download_, true);
+  } else {
+    ChromeDownloadManagerDelegate::SafeBrowsingState* state =
+        static_cast<ChromeDownloadManagerDelegate::SafeBrowsingState*>(
+            download_->GetUserData(
+                &ChromeDownloadManagerDelegate::SafeBrowsingState::
+                    kSafeBrowsingUserDataKey));
+    state->CompleteDownload();
+  }
 }
 #endif
 

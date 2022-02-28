@@ -43,8 +43,8 @@ class FakeProofSource : public ProofSource {
                 std::unique_ptr<ProofSource::Callback> callback) override;
   QuicReferenceCountedPointer<Chain> GetCertChain(
       const QuicSocketAddress& server_address,
-      const QuicSocketAddress& client_address,
-      const std::string& hostname) override;
+      const QuicSocketAddress& client_address, const std::string& hostname,
+      bool* cert_matched_sni) override;
   void ComputeTlsSignature(
       const QuicSocketAddress& server_address,
       const QuicSocketAddress& client_address,
@@ -52,6 +52,8 @@ class FakeProofSource : public ProofSource {
       uint16_t signature_algorithm,
       absl::string_view in,
       std::unique_ptr<ProofSource::SignatureCallback> callback) override;
+  absl::InlinedVector<uint16_t, 8> SupportedTlsSignatureAlgorithms()
+      const override;
   TicketCrypter* GetTicketCrypter() override;
 
   // Sets the TicketCrypter to use. If nullptr, the TicketCrypter from

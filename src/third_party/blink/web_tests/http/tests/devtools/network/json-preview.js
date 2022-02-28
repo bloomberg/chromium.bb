@@ -10,20 +10,22 @@
 
   function createNetworkRequestWithJSONMIMEType(type) {
     TestRunner.addResult('Creating a NetworkRequest with type: ' + type);
-    var request = new SDK.NetworkRequest(0, 'http://localhost');
+    var request = SDK.NetworkRequest.create(0, 'http://localhost');
     request.mimeType = type;
-    request._contentData = Promise.resolve({error: null, content: '{"number": 42}', encoded: false});
+    request.setContentDataProvider(
+        () => Promise.resolve(
+            {error: null, content: '{"number": 42}', encoded: false}));
     return request;
   }
 
   async function testPreviewer(request) {
     var previewView = new Network.RequestPreviewView(request, null);
     previewView.wasShown();
-    var previewer = await previewView._contentViewPromise;
+    var previewer = await previewView.contentViewPromise;
     TestRunner.addResult('Its previewer is searchable: ' + (previewer && previewer instanceof UI.SearchableView));
     TestRunner.addResult(
         'Its previewer is the JSON previewer: ' +
-        (previewer && previewer._searchProvider && previewer._searchProvider instanceof SourceFrame.JSONView));
+        (previewer && previewer.searchProvider && previewer.searchProvider instanceof SourceFrame.JSONView));
   }
 
   function testType(contentType, callback) {

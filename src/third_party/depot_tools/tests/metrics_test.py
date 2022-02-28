@@ -665,7 +665,7 @@ class MetricsUtilsTest(unittest.TestCase):
     """Tests that we extract paths for /changes/."""
     # /changes/<change-id>
     http_metrics = metrics_utils.extract_http_metrics(
-        'https://review.example.com/changes/proj%2Fsrc%7Emaster%7EI1234abcd',
+        'https://review.example.com/changes/proj%2Fsrc%7Emain%7EI1234abcd',
         '', 0, 0)
     self.assertEqual('changes', http_metrics['path'])
 

@@ -23,14 +23,7 @@ using GroupDecorationTest = TestHelper;
 
 TEST_F(GroupDecorationTest, Creation) {
   auto* d = create<GroupDecoration>(2);
-  EXPECT_EQ(2u, d->value());
-}
-
-
-TEST_F(GroupDecorationTest, ToStr) {
-  auto* d = create<GroupDecoration>(2);
-  EXPECT_EQ(str(d), R"(GroupDecoration{2}
-)");
+  EXPECT_EQ(2u, d->value);
 }
 
 }  // namespace

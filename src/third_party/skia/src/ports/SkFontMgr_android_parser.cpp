@@ -126,9 +126,11 @@ static bool memeq(const char* s1, const char* s2, size_t n1, size_t n2) {
 
 #define SK_FONTMGR_ANDROID_PARSER_PREFIX "[SkFontMgr Android Parser] "
 
-#define SK_FONTCONFIGPARSER_WARNING(message, ...)                                                  \
-    SkDebugf(SK_FONTMGR_ANDROID_PARSER_PREFIX "%s:%d:%d: warning: " message "\n", self->fFilename, \
-             XML_GetCurrentLineNumber(self->fParser), XML_GetCurrentColumnNumber(self->fParser),   \
+#define SK_FONTCONFIGPARSER_WARNING(message, ...)                                 \
+    SkDebugf(SK_FONTMGR_ANDROID_PARSER_PREFIX "%s:%d:%d: warning: " message "\n", \
+             self->fFilename,                                                     \
+             (int)XML_GetCurrentLineNumber(self->fParser),                        \
+             (int)XML_GetCurrentColumnNumber(self->fParser),                      \
              ##__VA_ARGS__)
 
 static bool is_whitespace(char c) {
@@ -148,6 +150,21 @@ static void trim_string(SkString* s) {
     size_t len = end - start;
     memmove(str, start, len);
     s->resize(len);
+}
+
+static void parse_space_separated_languages(const char* value, size_t valueLen,
+                                            SkTArray<SkLanguage, true>& languages)
+{
+    size_t i = 0;
+    while (true) {
+        for (; i < valueLen && is_whitespace(value[i]); ++i) { }
+        if (i == valueLen) { break; }
+        size_t j;
+        for (j = i + 1; j < valueLen && !is_whitespace(value[j]); ++j) { }
+        languages.emplace_back(value + i, j - i);
+        i = j;
+        if (i == valueLen) { break; }
+    }
 }
 
 namespace lmpParser {
@@ -284,16 +301,7 @@ static const TagHandler familyHandler = {
                 family->fNames.push_back().set(tolc.lc());
                 family->fIsFallbackFont = false;
             } else if (MEMEQ("lang", name, nameLen)) {
-                size_t i = 0;
-                while (true) {
-                    for (; i < valueLen && is_whitespace(value[i]); ++i) { }
-                    if (i == valueLen) { break; }
-                    size_t j;
-                    for (j = i + 1; j < valueLen && !is_whitespace(value[j]); ++j) { }
-                    family->fLanguages.emplace_back(value + i, j - i);
-                    i = j;
-                    if (i == valueLen) { break; }
-                }
+                parse_space_separated_languages(value, valueLen, family->fLanguages);
             } else if (MEMEQ("variant", name, nameLen)) {
                 if (MEMEQ("elegant", value, valueLen)) {
                     family->fVariant = kElegant_FontVariant;

@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/autofill_parsing_utils.h"
@@ -28,7 +28,7 @@ class LogManager;
 // chrome://autofill-internals explaining which regular expressions
 // were matched by local heuristics.
 struct RegExLogging {
-  LogManager* const log_manager = nullptr;
+  const raw_ptr<LogManager> log_manager = nullptr;
   const char* regex_name = "";
 };
 
@@ -37,12 +37,23 @@ struct RegExLogging {
 // name, phone number, or address field.
 class FormField {
  public:
+  FormField(const FormField&) = delete;
+  FormField& operator=(const FormField&) = delete;
+
   virtual ~FormField() = default;
 
   // Classifies each field in |fields| with its heuristically detected type.
   // Each field has a derived unique name that is used as the key into the
   // returned FieldCandidatesMap.
   static FieldCandidatesMap ParseFormFields(
+      const std::vector<std::unique_ptr<AutofillField>>& fields,
+      const LanguageCode& page_language,
+      bool is_form_tag,
+      LogManager* log_manager = nullptr);
+
+  // Looks for a promo code field in |fields|. Each field has a derived unique
+  // name that is used as the key into the returned FieldCandidatesMap.
+  static FieldCandidatesMap ParseFormFieldsForPromoCodes(
       const std::vector<std::unique_ptr<AutofillField>>& fields,
       const LanguageCode& page_language,
       bool is_form_tag,
@@ -69,7 +80,7 @@ class FormField {
   static const float kBaseSearchParserScore;
 
   // Only derived classes may instantiate.
-  FormField() {}
+  FormField() = default;
 
   // Attempts to parse a form field with the given pattern.  Returns true on
   // success and fills |match| with a pointer to the field.
@@ -162,6 +173,11 @@ class FormField {
       const LanguageCode& page_language,
       LogManager* log_manager);
 
+  // Removes checkable fields and returns fields to be processed for field
+  // detection.
+  static std::vector<AutofillField*> RemoveCheckableFields(
+      const std::vector<std::unique_ptr<AutofillField>>& fields);
+
   // Matches |pattern| to the contents of the field at the head of the
   // |scanner|.
   // Returns |true| if a match is found according to |match_type|, and |false|
@@ -207,8 +223,6 @@ class FormField {
                                   FieldCandidatesMap* field_candidates,
                                   const LanguageCode& page_language,
                                   LogManager* log_manager = nullptr);
-
-  DISALLOW_COPY_AND_ASSIGN(FormField);
 };
 
 }  // namespace autofill

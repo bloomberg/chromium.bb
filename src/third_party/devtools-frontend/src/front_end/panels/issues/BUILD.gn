@@ -4,27 +4,44 @@
 
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../scripts/build/ninja/devtools_module.gni")
+import("../../../scripts/build/ninja/generate_css.gni")
 import("../visibility.gni")
+
+generate_css("css_files") {
+  sources = [
+    "cspViolationsListView.css",
+    "cspViolationsView.css",
+    "issuesPane.css",
+    "issuesTree.css",
+  ]
+}
 
 devtools_module("issues") {
   sources = [
     "AffectedBlockedByResponseView.ts",
     "AffectedCookiesView.ts",
+    "AffectedDirectivesView.ts",
     "AffectedDocumentsInQuirksModeView.ts",
     "AffectedElementsView.ts",
     "AffectedElementsWithLowContrastView.ts",
     "AffectedHeavyAdView.ts",
     "AffectedResourcesView.ts",
     "AffectedSharedArrayBufferIssueDetailsView.ts",
+    "AffectedSourcesView.ts",
     "AffectedTrustedWebActivityIssueDetailsView.ts",
+    "AttributionReportingIssueDetailsView.ts",
     "CSPViolationsListView.ts",
     "CSPViolationsView.ts",
     "ComboBoxOfCheckBoxes.ts",
     "CorsIssueDetailsView.ts",
+    "GenericIssueDetailsView.ts",
+    "HiddenIssuesRow.ts",
     "IssueAggregator.ts",
+    "IssueKindView.ts",
     "IssueRevealer.ts",
     "IssueView.ts",
     "IssuesPane.ts",
+    "WasmCrossOriginModuleSharingAffectedResourcesView.ts",
   ]
 
   deps = [
@@ -35,13 +52,16 @@ devtools_module("issues") {
     "../../models/logs:bundle",
     "../../panels/console_counters:bundle",
     "../../panels/elements/components:bundle",
-    "../../panels/network:bundle",
+    "../../panels/network/forward:bundle",
+    "../../ui/components/adorners:bundle",
     "../../ui/components/data_grid:bundle",
     "../../ui/components/linkifier:bundle",
     "../../ui/components/markdown_view:bundle",
+    "../../ui/components/request_link_icon:bundle",
     "../../ui/legacy:bundle",
     "../../ui/legacy/components/utils:bundle",
     "../../ui/lit-html:bundle",
+    "./components:bundle",
   ]
 
   visibility = [ "../../../test/unittests/front_end/issues" ]
@@ -50,7 +70,10 @@ devtools_module("issues") {
 devtools_entrypoint("bundle") {
   entrypoint = "issues.ts"
 
-  deps = [ ":issues" ]
+  deps = [
+    ":css_files",
+    ":issues",
+  ]
 
   visibility = [
     ":*",

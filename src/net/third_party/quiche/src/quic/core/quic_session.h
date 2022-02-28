@@ -17,9 +17,14 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
+#include "quic/core/crypto/tls_connection.h"
 #include "quic/core/frames/quic_ack_frequency_frame.h"
+#include "quic/core/frames/quic_stop_sending_frame.h"
+#include "quic/core/frames/quic_window_update_frame.h"
 #include "quic/core/handshaker_delegate_interface.h"
 #include "quic/core/legacy_quic_stream_id_manager.h"
+#include "quic/core/proto/cached_network_parameters_proto.h"
 #include "quic/core/quic_connection.h"
 #include "quic/core/quic_control_frame_manager.h"
 #include "quic/core/quic_crypto_stream.h"
@@ -35,10 +40,11 @@
 #include "quic/core/session_notifier_interface.h"
 #include "quic/core/stream_delegate_interface.h"
 #include "quic/core/uber_quic_stream_id_manager.h"
-#include "quic/platform/api/quic_containers.h"
 #include "quic/platform/api/quic_export.h"
 #include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_mem_slice.h"
 #include "quic/platform/api/quic_socket_address.h"
+#include "common/quiche_linked_hash_map.h"
 
 namespace quic {
 
@@ -94,13 +100,11 @@ class QUIC_EXPORT_PRIVATE QuicSession
   };
 
   // Does not take ownership of |connection| or |visitor|.
-  QuicSession(QuicConnection* connection,
-              Visitor* owner,
+  QuicSession(QuicConnection* connection, Visitor* owner,
               const QuicConfig& config,
               const ParsedQuicVersionVector& supported_versions,
               QuicStreamCount num_expected_unidirectional_static_streams);
-  QuicSession(QuicConnection* connection,
-              Visitor* owner,
+  QuicSession(QuicConnection* connection, Visitor* owner,
               const QuicConfig& config,
               const ParsedQuicVersionVector& supported_versions,
               QuicStreamCount num_expected_unidirectional_static_streams,
@@ -168,8 +172,8 @@ class QUIC_EXPORT_PRIVATE QuicSession
       override;
   std::unique_ptr<QuicEncrypter> CreateCurrentOneRttEncrypter() override;
   void BeforeConnectionCloseSent() override {}
-  bool ValidateToken(absl::string_view token) const override;
-  void MaybeSendAddressToken() override;
+  bool ValidateToken(absl::string_view token) override;
+  bool MaybeSendAddressToken() override;
   bool IsKnownServerAddress(
       const QuicSocketAddress& /*address*/) const override {
     return false;
@@ -180,14 +184,12 @@ class QUIC_EXPORT_PRIVATE QuicSession
                                         QuicStreamOffset offset,
                                         QuicByteCount data_length,
                                         QuicDataWriter* writer) override;
-  bool WriteCryptoData(EncryptionLevel level,
-                       QuicStreamOffset offset,
+  bool WriteCryptoData(EncryptionLevel level, QuicStreamOffset offset,
                        QuicByteCount data_length,
                        QuicDataWriter* writer) override;
 
   // SessionNotifierInterface methods:
-  bool OnFrameAcked(const QuicFrame& frame,
-                    QuicTime::Delta ack_delay_time,
+  bool OnFrameAcked(const QuicFrame& frame, QuicTime::Delta ack_delay_time,
                     QuicTime receive_timestamp) override;
   void OnStreamFrameRetransmitted(const QuicStreamFrame& frame) override;
   void OnFrameLost(const QuicFrame& frame) override;
@@ -208,31 +210,39 @@ class QUIC_EXPORT_PRIVATE QuicSession
                                 const QuicSocketAddress& peer_address,
                                 const QuicReceivedPacket& packet);
 
-  // Called by application to send |message|. Data copy can be avoided if
-  // |message| is provided in reference counted memory.
-  // Please note, |message| provided in reference counted memory would be moved
-  // internally when message is successfully sent. Thereafter, it would be
-  // undefined behavior if callers try to access the slices through their own
-  // copy of the span object.
-  // Returns the message result which includes the message status and message ID
-  // (valid if the write succeeds). SendMessage flushes a message packet even it
-  // is not full. If the application wants to bundle other data in the same
-  // packet, please consider adding a packet flusher around the SendMessage
-  // and/or WritevData calls.
+  // Sends |message| as a QUIC DATAGRAM frame (QUIC MESSAGE frame in gQUIC).
+  // See <https://datatracker.ietf.org/doc/html/draft-ietf-quic-datagram> for
+  // more details.
   //
-  // OnMessageAcked and OnMessageLost are called when a particular message gets
-  // acked or lost.
+  // Returns a MessageResult struct which includes the status of the write
+  // operation and a message ID.  The message ID (not sent on the wire) can be
+  // used to track the message; OnMessageAcked and OnMessageLost are called when
+  // a specific message gets acked or lost.
+  //
+  // If the write operation is successful, all of the slices in |message| are
+  // consumed, leaving them empty.  If MESSAGE_STATUS_INTERNAL_ERROR is
+  // returned, the slices in question may or may not be consumed; it is no
+  // longer safe to access those.  For all other status codes, |message| is kept
+  // intact.
   //
   // Note that SendMessage will fail with status = MESSAGE_STATUS_BLOCKED
-  // if connection is congestion control blocked or underlying socket is write
-  // blocked. In this case the caller can retry sending message again when
+  // if the connection is congestion control blocked or the underlying socket is
+  // write blocked. In this case the caller can retry sending message again when
   // connection becomes available, for example after getting OnCanWrite()
   // callback.
-  MessageResult SendMessage(QuicMemSliceSpan message);
+  //
+  // SendMessage flushes the current packet even it is not full; if the
+  // application needs to bundle other data in the same packet, consider using
+  // QuicConnection::ScopedPacketFlusher around the relevant write operations.
+  MessageResult SendMessage(absl::Span<QuicMemSlice> message);
 
   // Same as above SendMessage, except caller can specify if the given |message|
   // should be flushed even if the underlying connection is deemed unwritable.
-  MessageResult SendMessage(QuicMemSliceSpan message, bool flush);
+  MessageResult SendMessage(absl::Span<QuicMemSlice> message, bool flush);
+
+  // Single-slice version of SendMessage().  Unlike the version above, this
+  // version always takes ownership of the slice.
+  MessageResult SendMessage(QuicMemSlice message);
 
   // Called when message with |message_id| gets acked.
   virtual void OnMessageAcked(QuicMessageId message_id,
@@ -288,8 +298,7 @@ class QUIC_EXPORT_PRIVATE QuicSession
                                    bool set_alternative_decrypter,
                                    bool latch_once_used) override;
   void OnNewEncryptionKeyAvailable(
-      EncryptionLevel level,
-      std::unique_ptr<QuicEncrypter> encrypter) override;
+      EncryptionLevel level, std::unique_ptr<QuicEncrypter> encrypter) override;
   void SetDefaultEncryptionLevel(EncryptionLevel level) override;
   void OnTlsHandshakeComplete() override;
   void DiscardOldDecryptionKey(EncryptionLevel level) override;
@@ -312,8 +321,7 @@ class QUIC_EXPORT_PRIVATE QuicSession
                      std::string error_details) override;
   // Sets priority in the write blocked list.
   void RegisterStreamPriority(
-      QuicStreamId id,
-      bool is_static,
+      QuicStreamId id, bool is_static,
       const spdy::SpdyStreamPrecedence& precedence) override;
   // Clears priority from the write blocked list.
   void UnregisterStreamPriority(QuicStreamId id, bool is_static) override;
@@ -327,15 +335,12 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // indicating if the fin bit was consumed.  This does not indicate the data
   // has been sent on the wire: it may have been turned into a packet and queued
   // if the socket was unexpectedly blocked.
-  QuicConsumedData WritevData(QuicStreamId id,
-                              size_t write_length,
-                              QuicStreamOffset offset,
-                              StreamSendingState state,
+  QuicConsumedData WritevData(QuicStreamId id, size_t write_length,
+                              QuicStreamOffset offset, StreamSendingState state,
                               TransmissionType type,
-                              absl::optional<EncryptionLevel> level) override;
+                              EncryptionLevel level) override;
 
-  size_t SendCryptoData(EncryptionLevel level,
-                        size_t write_length,
+  size_t SendCryptoData(EncryptionLevel level, size_t write_length,
                         QuicStreamOffset offset,
                         TransmissionType type) override;
 
@@ -457,8 +462,7 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // Switch to the path described in |context| without validating the path.
   bool MigratePath(const QuicSocketAddress& self_address,
                    const QuicSocketAddress& peer_address,
-                   QuicPacketWriter* writer,
-                   bool owns_writer);
+                   QuicPacketWriter* writer, bool owns_writer);
 
   // Returns the largest payload that will fit into a single MESSAGE frame.
   // Because overhead can vary during a connection, this method should be
@@ -579,12 +583,12 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // Does actual work of sending RESET_STREAM, if the stream type allows.
   // Also informs the connection so that pending stream frames can be flushed.
   virtual void MaybeSendRstStreamFrame(QuicStreamId id,
-                                       QuicRstStreamErrorCode error,
+                                       QuicResetStreamError error,
                                        QuicStreamOffset bytes_written);
 
   // Sends a STOP_SENDING frame if the stream type allows.
   virtual void MaybeSendStopSendingFrame(QuicStreamId id,
-                                         QuicRstStreamErrorCode error);
+                                         QuicResetStreamError error);
 
   // Returns the encryption level to send application data.
   EncryptionLevel GetEncryptionLevelToSendApplicationData() const;
@@ -593,9 +597,10 @@ class QUIC_EXPORT_PRIVATE QuicSession
     return user_agent_id_;
   }
 
+  // TODO(wub): remove saving user-agent to QuicSession.
   void SetUserAgentId(std::string user_agent_id) {
     user_agent_id_ = std::move(user_agent_id);
-    connection()->OnUserAgentIdKnown();
+    connection()->OnUserAgentIdKnown(user_agent_id_.value());
   }
 
   void SetSourceAddressTokenToSend(absl::string_view token) {
@@ -610,13 +615,29 @@ class QUIC_EXPORT_PRIVATE QuicSession
     return liveness_testing_in_progress_;
   }
 
-  bool use_write_or_buffer_data_at_level() const {
-    return use_write_or_buffer_data_at_level_;
+  bool permutes_tls_extensions() const { return permutes_tls_extensions_; }
+
+  virtual QuicSSLConfig GetSSLConfig() const { return QuicSSLConfig(); }
+
+  // Latched value of flag --quic_tls_server_support_client_cert.
+  bool support_client_cert() const { return support_client_cert_; }
+
+  // Get latched flag value.
+  bool add_cached_network_parameters_to_address_token() const {
+    return add_cached_network_parameters_to_address_token_;
   }
 
-  bool use_encryption_level_context() const {
-    return connection_->use_encryption_level_context() &&
-           use_write_or_buffer_data_at_level_;
+  // Try converting all pending streams to normal streams.
+  void ProcessAllPendingStreams();
+
+  const ParsedQuicVersionVector& client_original_supported_versions() const {
+    QUICHE_DCHECK_EQ(perspective_, Perspective::IS_CLIENT);
+    return client_original_supported_versions_;
+  }
+  void set_client_original_supported_versions(
+      const ParsedQuicVersionVector& client_original_supported_versions) {
+    QUICHE_DCHECK_EQ(perspective_, Perspective::IS_CLIENT);
+    client_original_supported_versions_ = client_original_supported_versions;
   }
 
  protected:
@@ -671,11 +692,17 @@ class QUIC_EXPORT_PRIVATE QuicSession
   virtual void OnFinalByteOffsetReceived(QuicStreamId id,
                                          QuicStreamOffset final_byte_offset);
 
-  // Returns true if incoming unidirectional streams should be buffered until
-  // the first byte of the stream arrives.
-  // If a subclass returns true here, it should make sure to implement
-  // ProcessPendingStream().
-  virtual bool UsesPendingStreams() const { return false; }
+  // Returns true if a frame with the given type and id can be prcoessed by a
+  // PendingStream. However, the frame will always be processed by a QuicStream
+  // if one exists with the given stream_id.
+  virtual bool UsesPendingStreamForFrame(QuicFrameType /*type*/,
+                                         QuicStreamId /*stream_id*/) const {
+    return false;
+  }
+
+  // Returns true if a pending stream should be converted to a real stream after
+  // a corresponding STREAM_FRAME is received.
+  virtual bool ShouldProcessPendingStreamImmediately() const { return true; }
 
   spdy::SpdyPriority GetSpdyPriorityofStream(QuicStreamId stream_id) const {
     return write_blocked_streams_.GetSpdyPriorityofStream(stream_id);
@@ -777,6 +804,20 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // streams.
   QuicStream* GetActiveStream(QuicStreamId id) const;
 
+  const UberQuicStreamIdManager& ietf_streamid_manager() const {
+    QUICHE_DCHECK(VersionHasIetfQuicFrames(transport_version()));
+    return ietf_streamid_manager_;
+  }
+
+  // Only called at a server session. Generate a CachedNetworkParameters that
+  // can be sent to the client as part of the address token, based on the latest
+  // bandwidth/rtt information. If return absl::nullopt, address token will not
+  // contain the CachedNetworkParameters.
+  virtual absl::optional<CachedNetworkParameters>
+  GenerateCachedNetworkParameters() const {
+    return absl::nullopt;
+  }
+
  private:
   friend class test::QuicSessionPeer;
 
@@ -821,6 +862,7 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // closed.
   QuicStream* GetStream(QuicStreamId id) const;
 
+  // Can return NULL, e.g., if the stream has been closed before.
   PendingStream* GetOrCreatePendingStream(QuicStreamId stream_id);
 
   // Let streams and control frame managers retransmit lost data, returns true
@@ -833,13 +875,29 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // Closes the pending stream |stream_id| before it has been created.
   void ClosePendingStream(QuicStreamId stream_id);
 
-  // Creates or gets pending stream, feeds it with |frame|, and processes the
-  // pending stream.
-  void PendingStreamOnStreamFrame(const QuicStreamFrame& frame);
+  // Whether the frame with given type and id should be feed to a pending
+  // stream.
+  bool ShouldProcessFrameByPendingStream(QuicFrameType type,
+                                         QuicStreamId id) const;
+
+  // Process the pending stream if possible.
+  void MaybeProcessPendingStream(PendingStream* pending);
+
+  // Creates or gets pending stream, feeds it with |frame|, and returns the
+  // pending stream. Can return NULL, e.g., if the stream ID is invalid.
+  PendingStream* PendingStreamOnStreamFrame(const QuicStreamFrame& frame);
 
   // Creates or gets pending strea, feed it with |frame|, and closes the pending
   // stream.
   void PendingStreamOnRstStream(const QuicRstStreamFrame& frame);
+
+  // Creates or gets pending stream, feeds it with |frame|, and records the
+  // max_data in the pending stream.
+  void PendingStreamOnWindowUpdateFrame(const QuicWindowUpdateFrame& frame);
+
+  // Creates or gets pending stream, feeds it with |frame|, and records the
+  // ietf_error_code in the pending stream.
+  void PendingStreamOnStopSendingFrame(const QuicStopSendingFrame& frame);
 
   // Keep track of highest received byte offset of locally closed streams, while
   // waiting for a definitive final highest offset from the peer.
@@ -925,7 +983,8 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // TODO(fayang): switch to linked_hash_set when chromium supports it. The bool
   // is not used here.
   // List of streams with pending retransmissions.
-  QuicLinkedHashMap<QuicStreamId, bool> streams_with_pending_retransmission_;
+  quiche::QuicheLinkedHashMap<QuicStreamId, bool>
+      streams_with_pending_retransmission_;
 
   // Clean up closed_streams_ when this alarm fires.
   std::unique_ptr<QuicAlarm> closed_streams_clean_up_alarm_;
@@ -933,6 +992,11 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // Supported version list used by the crypto handshake only. Please note, this
   // list may be a superset of the connection framer's supported versions.
   ParsedQuicVersionVector supported_versions_;
+
+  // Only non-empty on the client after receiving a version negotiation packet,
+  // contains the configured versions from the original session before version
+  // negotiation was received.
+  ParsedQuicVersionVector client_original_supported_versions_;
 
   absl::optional<std::string> user_agent_id_;
 
@@ -947,8 +1011,15 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // creation of new outgoing bidirectional streams.
   bool liveness_testing_in_progress_;
 
-  const bool use_write_or_buffer_data_at_level_ =
-      GetQuicReloadableFlag(quic_use_write_or_buffer_data_at_level);
+  const bool add_cached_network_parameters_to_address_token_ =
+      GetQuicReloadableFlag(
+          quic_add_cached_network_parameters_to_address_token2);
+
+  // Whether BoringSSL randomizes the order of TLS extensions.
+  bool permutes_tls_extensions_ = true;
+
+  const bool support_client_cert_ =
+      GetQuicRestartFlag(quic_tls_server_support_client_cert);
 };
 
 }  // namespace quic

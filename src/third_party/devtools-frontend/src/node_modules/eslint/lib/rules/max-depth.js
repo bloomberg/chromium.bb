@@ -15,7 +15,6 @@ module.exports = {
 
         docs: {
             description: "enforce a maximum depth that blocks can be nested",
-            category: "Stylistic Issues",
             recommended: false,
             url: "https://eslint.org/docs/rules/max-depth"
         },
@@ -119,6 +118,7 @@ module.exports = {
             FunctionDeclaration: startFunction,
             FunctionExpression: startFunction,
             ArrowFunctionExpression: startFunction,
+            StaticBlock: startFunction,
 
             IfStatement(node) {
                 if (node.parent.type !== "IfStatement") {
@@ -147,6 +147,7 @@ module.exports = {
             "FunctionDeclaration:exit": endFunction,
             "FunctionExpression:exit": endFunction,
             "ArrowFunctionExpression:exit": endFunction,
+            "StaticBlock:exit": endFunction,
             "Program:exit": endFunction
         };
 

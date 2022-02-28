@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/gtest_util.h"
 #include "base/values.h"
@@ -154,7 +153,7 @@ TEST(ContentSettingsPref, CanonicalizationWhileReadingFromPrefs) {
   const auto* canonical_pref_value =
       prefs.GetUserPref(kTestContentSettingPrefName);
   ASSERT_TRUE(canonical_pref_value->is_dict());
-  for (const auto& key_value : canonical_pref_value->DictItems()) {
+  for (auto key_value : canonical_pref_value->DictItems()) {
     patterns_to_tags_in_prefs.emplace_back(
         key_value.first, GetTagFromDummyContentSettingValue(key_value.second));
   }
@@ -219,7 +218,7 @@ TEST(ContentSettingsPref, ExpirationWhileReadingFromPrefs) {
   const auto* canonical_pref_value =
       prefs.GetUserPref(kTestContentSettingPrefName);
   ASSERT_TRUE(canonical_pref_value->is_dict());
-  for (const auto& key_value : canonical_pref_value->DictItems()) {
+  for (auto key_value : canonical_pref_value->DictItems()) {
     patterns_to_tags_in_prefs.emplace_back(
         key_value.first, GetTagFromDummyContentSettingValue(key_value.second));
   }

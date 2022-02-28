@@ -5,11 +5,10 @@
 #ifndef GPU_VULKAN_SEMAPHORE_HANDLE_H_
 #define GPU_VULKAN_SEMAPHORE_HANDLE_H_
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 #include <utility>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 
 #if defined(OS_POSIX)
@@ -45,6 +44,9 @@ class COMPONENT_EXPORT(VULKAN) SemaphoreHandle {
                   PlatformHandle handle);
   SemaphoreHandle(SemaphoreHandle&&);
 
+  SemaphoreHandle(const SemaphoreHandle&) = delete;
+  SemaphoreHandle& operator=(const SemaphoreHandle&) = delete;
+
   ~SemaphoreHandle();
 
   SemaphoreHandle& operator=(SemaphoreHandle&&);
@@ -68,8 +70,6 @@ class COMPONENT_EXPORT(VULKAN) SemaphoreHandle {
  private:
   VkExternalSemaphoreHandleTypeFlagBits type_;
   PlatformHandle handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(SemaphoreHandle);
 };
 
 }  // namespace gpu

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "extensions/browser/api_unittest.h"
 
 namespace extensions {
@@ -19,6 +18,12 @@ class ExtensionsAPIClient;
 class FeedbackPrivateApiUnittestBase : public ApiUnitTest {
  public:
   FeedbackPrivateApiUnittestBase();
+
+  FeedbackPrivateApiUnittestBase(const FeedbackPrivateApiUnittestBase&) =
+      delete;
+  FeedbackPrivateApiUnittestBase& operator=(
+      const FeedbackPrivateApiUnittestBase&) = delete;
+
   ~FeedbackPrivateApiUnittestBase() override;
 
   void SetUp() override;
@@ -26,8 +31,6 @@ class FeedbackPrivateApiUnittestBase : public ApiUnitTest {
 
  private:
   std::unique_ptr<ExtensionsAPIClient> extensions_api_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(FeedbackPrivateApiUnittestBase);
 };
 
 }  // namespace extensions

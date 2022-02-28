@@ -22,12 +22,14 @@ namespace security_interstitials {
 
 OriginPolicyInterstitialPage::OriginPolicyInterstitialPage(
     content::WebContents* web_contents,
+    content::StoragePartition* storage_partition,
     const GURL& request_url,
     std::unique_ptr<SecurityInterstitialControllerClient> controller,
     network::OriginPolicyState error_reason)
     : SecurityInterstitialPage(web_contents,
                                request_url,
                                std::move(controller)),
+      storage_partition_(storage_partition),
       error_reason_(error_reason) {}
 
 OriginPolicyInterstitialPage::~OriginPolicyInterstitialPage() = default;
@@ -35,11 +37,11 @@ OriginPolicyInterstitialPage::~OriginPolicyInterstitialPage() = default;
 void OriginPolicyInterstitialPage::OnInterstitialClosing() {}
 
 void OriginPolicyInterstitialPage::PopulateInterstitialStrings(
-    base::DictionaryValue* load_time_data) {
-  load_time_data->SetString("type", "ORIGIN_POLICY");
+    base::Value* load_time_data) {
+  load_time_data->SetStringKey("type", "ORIGIN_POLICY");
 
   // User may choose to ignore the warning & proceed to the site.
-  load_time_data->SetBoolean("overridable", true);
+  load_time_data->SetBoolKey("overridable", true);
 
   // Custom messages depending on the OriginPolicyState:
   int explanation_paragraph_id = 0;
@@ -81,18 +83,18 @@ void OriginPolicyInterstitialPage::PopulateInterstitialStrings(
       base::ASCIIToUTF16(url::Origin::Create(request_url()).Serialize()),
   };
   for (const auto& message : messages) {
-    load_time_data->SetString(
+    load_time_data->SetStringKey(
         message.name,
         base::ReplaceStringPlaceholders(l10n_util::GetStringUTF16(message.id),
                                         message_params, nullptr));
   };
 
   // Selectively enable certain UI elements.
-  load_time_data->SetBoolean(
+  load_time_data->SetBoolKey(
       "hide_primary_button",
       !web_contents()->GetController().CanGoBack() ||
           load_time_data->FindStringKey("primaryButtonText")->empty());
-  load_time_data->SetBoolean(
+  load_time_data->SetBoolKey(
       "show_recurrent_error_paragraph",
       !load_time_data->FindStringKey("recurrentErrorParagraph")->empty());
 }
@@ -116,8 +118,7 @@ void OriginPolicyInterstitialPage::CommandReceived(const std::string& command) {
 }
 
 void OriginPolicyInterstitialPage::Proceed() {
-  content::OriginPolicyAddExceptionFor(web_contents()->GetBrowserContext(),
-                                       request_url());
+  content::OriginPolicyAddExceptionFor(storage_partition_, request_url());
   web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
 }
 

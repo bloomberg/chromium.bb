@@ -11,12 +11,12 @@
 #include <vector>
 
 #include "core/fxcrt/fx_memory_wrappers.h"
-#include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/retain_ptr.h"
+#include "core/fxcrt/widestring.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CFX_SeekableStreamProxy;
 class CFX_XMLDocument;
-class CFX_XMLElement;
 class CFX_XMLNode;
 class IFX_SeekableReadStream;
 
@@ -58,7 +58,7 @@ class CFX_XMLParser final {
   RetainPtr<CFX_SeekableStreamProxy> stream_;
   std::vector<wchar_t, FxAllocAllocator<wchar_t>> current_text_;
   size_t xml_plane_size_ = 1024;
-  int32_t entity_start_ = -1;
+  absl::optional<size_t> entity_start_;
 };
 
 #endif  // CORE_FXCRT_XML_CFX_XMLPARSER_H_

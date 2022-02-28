@@ -10,15 +10,16 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/version.h"
+#include "chrome/browser/share/core/share_targets.h"
 #include "components/component_updater/component_updater_paths.h"
 
 using component_updater::ComponentUpdateService;
@@ -37,7 +38,7 @@ const uint8_t kDesktopSharingHubPublicKeySHA256[32] = {
 
 const char kDesktopSharingHubManifestName[] = "Desktop Sharing Hub";
 
-void LoadFileTypesFromDisk(const base::FilePath& pb_path) {
+void LoadShareTargetsFromDisk(const base::FilePath& pb_path) {
   if (pb_path.empty())
     return;
 
@@ -49,8 +50,7 @@ void LoadFileTypesFromDisk(const base::FilePath& pb_path) {
     LOG(ERROR) << "Failed reading from " << pb_path.value();
     return;
   }
-
-  // TODO(crbug/1186831) send binary_pb to desktop sharing hub model.
+  sharing::ShareTargets::GetInstance()->PopulateFromDynamicUpdate(binary_pb);
 }
 
 }  // namespace
@@ -59,7 +59,7 @@ namespace component_updater {
 
 bool DesktopSharingHubComponentInstallerPolicy::
     SupportsGroupPolicyEnabledComponentUpdates() const {
-  return false;
+  return true;
 }
 
 bool DesktopSharingHubComponentInstallerPolicy::RequiresNetworkEncryption()
@@ -69,7 +69,7 @@ bool DesktopSharingHubComponentInstallerPolicy::RequiresNetworkEncryption()
 
 update_client::CrxInstaller::Result
 DesktopSharingHubComponentInstallerPolicy::OnCustomInstall(
-    const base::DictionaryValue& manifest,
+    const base::Value& manifest,
     const base::FilePath& install_dir) {
   return update_client::CrxInstaller::Result(0);  // Nothing custom here.
 }
@@ -84,18 +84,18 @@ base::FilePath DesktopSharingHubComponentInstallerPolicy::GetInstalledPath(
 void DesktopSharingHubComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
-    std::unique_ptr<base::DictionaryValue> manifest) {
+    base::Value manifest) {
   VLOG(1) << "Component ready, version " << version.GetString() << " in "
           << install_dir.value();
 
   base::ThreadPool::PostTask(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&LoadFileTypesFromDisk, GetInstalledPath(install_dir)));
+      base::BindOnce(&LoadShareTargetsFromDisk, GetInstalledPath(install_dir)));
 }
 
 // Called during startup and installation before ComponentReady().
 bool DesktopSharingHubComponentInstallerPolicy::VerifyInstallation(
-    const base::DictionaryValue& manifest,
+    const base::Value& manifest,
     const base::FilePath& install_dir) const {
   // No need to actually validate the proto here, since we'll do the checking
   // in PopulateFromDynamicUpdate().

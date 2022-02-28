@@ -15,7 +15,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.ASSISTANT_VOICE_SEARCH_ENABLED;
 
-import android.support.test.filters.MediumTest;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -107,6 +107,7 @@ public class AssistantVoiceSearchServiceRenderTest {
     @MediumTest
     @CommandLineFlags.Add({"force-fieldtrial-params=Study.Group:colorful_mic/false"})
     @Feature({"RenderTest"})
+    @DisabledTest(message = "crbug.com/1221496")
     public void testAssistantMic() throws IOException {
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
 

@@ -36,7 +36,7 @@ std::vector<StrType> Split(const StrType& that, typename StrType::CharType ch) {
   std::vector<StrType> result;
   StringViewTemplate<typename StrType::CharType> remaining(that.span());
   while (1) {
-    Optional<size_t> index = remaining.Find(ch);
+    absl::optional<size_t> index = remaining.Find(ch);
     if (!index.has_value())
       break;
     result.emplace_back(remaining.First(index.value()));
@@ -45,6 +45,13 @@ std::vector<StrType> Split(const StrType& that, typename StrType::CharType ch) {
   result.emplace_back(remaining);
   return result;
 }
+
+extern template std::vector<ByteString> Split<ByteString>(
+    const ByteString& that,
+    ByteString::CharType ch);
+extern template std::vector<WideString> Split<WideString>(
+    const WideString& that,
+    WideString::CharType ch);
 
 }  // namespace fxcrt
 

@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for cross entropy related functionality in tensorflow.ops.nn."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import math
 
 import numpy as np
@@ -106,7 +102,7 @@ class SigmoidCrossEntropyWithLogitsTest(test.TestCase):
     self.assertAllClose(grads, [0.5, -0.5])
 
   def testShapeError(self):
-    with self.assertRaisesRegexp(ValueError, "must have the same shape"):
+    with self.assertRaisesRegex(ValueError, "must have the same shape"):
       nn_impl.sigmoid_cross_entropy_with_logits(labels=[1, 2, 3],
                                                 logits=[[2, 1]])
 
@@ -174,7 +170,7 @@ class WeightedCrossEntropyTest(test.TestCase):
     self.assertLess(err, 1e-7)
 
   def testShapeError(self):
-    with self.assertRaisesRegexp(ValueError, "must have the same shape"):
+    with self.assertRaisesRegex(ValueError, "must have the same shape"):
       nn_impl.weighted_cross_entropy_with_logits(
           targets=[1, 2, 3], logits=[[2, 1]], pos_weight=2.0)
 

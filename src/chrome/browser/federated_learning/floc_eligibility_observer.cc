@@ -11,6 +11,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom.h"
 
@@ -81,7 +82,8 @@ void FlocEligibilityObserver::OnInterestCohortApiUsed() {
 }
 
 FlocEligibilityObserver::FlocEligibilityObserver(content::RenderFrameHost* rfh)
-    : web_contents_(content::WebContents::FromRenderFrameHost(rfh)) {}
+    : content::DocumentUserData<FlocEligibilityObserver>(rfh),
+      web_contents_(content::WebContents::FromRenderFrameHost(rfh)) {}
 
 void FlocEligibilityObserver::OnOptInSignalObserved() {
   if (!eligible_commit_ || observed_opt_in_signal_)
@@ -97,6 +99,6 @@ void FlocEligibilityObserver::OnOptInSignalObserved() {
   observed_opt_in_signal_ = true;
 }
 
-RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(FlocEligibilityObserver)
+DOCUMENT_USER_DATA_KEY_IMPL(FlocEligibilityObserver);
 
 }  // namespace federated_learning

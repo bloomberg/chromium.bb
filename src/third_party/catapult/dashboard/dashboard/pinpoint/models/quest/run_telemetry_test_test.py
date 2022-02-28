@@ -25,6 +25,7 @@ _COMBINED_DEFAULT_EXTRA_ARGS = (
     run_telemetry_test._DEFAULT_EXTRA_ARGS +
     run_performance_test._DEFAULT_EXTRA_ARGS)
 _BASE_EXTRA_ARGS = [
+    '-d',
     '--benchmarks',
     'speedometer',
     '--pageset-repeat',
@@ -33,59 +34,66 @@ _BASE_EXTRA_ARGS = [
     'release',
 ] + _COMBINED_DEFAULT_EXTRA_ARGS
 _TELEMETRY_COMMAND = [
-    'luci-auth', 'context', '--', 'vpython', '../../testing/test_env.py',
+    'luci-auth', 'context', '--', 'vpython3', '../../testing/test_env.py',
     '../../testing/scripts/run_performance_tests.py',
     '../../tools/perf/run_benchmark'
 ]
 _BASE_SWARMING_TAGS = {}
 
 
+@mock.patch('dashboard.services.crrev_service.GetCommit')
 class StartTest(unittest.TestCase):
 
-  def testStart(self):
+  def testStart(self, get_commit):
+    get_commit.return_value = {'number': 999999}
     quest = run_telemetry_test.RunTelemetryTest('server',
                                                 run_test_test.DIMENSIONS,
                                                 ['arg'], _BASE_SWARMING_TAGS,
                                                 _TELEMETRY_COMMAND,
                                                 'out/Release')
-    execution = quest.Start('change', 'https://isolate.server', 'isolate hash')
+    change = mock.MagicMock(spec=change_module.Change)
+    change.base_commit = mock.MagicMock(spec=commit.Commit)
+    change.base_commit.AsDict = mock.MagicMock(
+        return_value={'commit_position': 999999})
+    execution = quest.Start(change, 'https://isolate.server', 'isolate hash')
     self.assertEqual(execution._extra_args,
-                     ['arg', '--results-label', 'change'])
+                     ['arg', '--results-label', mock.ANY])
+    self.assertIn('vpython3', execution.command)
 
-  def testSwarmingTags(self):
+  def testStartPy2(self, get_commit):
+    get_commit.return_value = {'number': 888888}
+    quest = run_telemetry_test.RunTelemetryTest('server',
+                                                run_test_test.DIMENSIONS,
+                                                ['arg'], _BASE_SWARMING_TAGS,
+                                                _TELEMETRY_COMMAND,
+                                                'out/Release')
+    change = mock.MagicMock(spec=change_module.Change)
+    change.base_commit = mock.MagicMock(spec=commit.Commit)
+    change.base_commit.AsDict = mock.MagicMock(
+        return_value={'commit_position': 888888})
+    execution = quest.Start(change, 'https://isolate.server', 'isolate hash')
+    self.assertEqual(execution._extra_args,
+                     ['arg', '--results-label', mock.ANY])
+    self.assertIn('vpython', execution.command)
+
+  def testSwarmingTags(self, get_commit):
+    get_commit.return_value = {'number': 675460}
     arguments = dict(_BASE_ARGUMENTS)
     arguments['browser'] = 'android-webview'
-    quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
-    execution = quest.Start('change', 'https://isolate.server', 'isolate hash')
-    self.assertEqual(execution._swarming_tags, {
-        'benchmark': 'speedometer',
-        'change': 'change',
-        'hasfilter': '0'
-    })
-
-  def testSwarmingTagsWithStoryFilter_BeforeR675459(self):
-    arguments = dict(_BASE_ARGUMENTS)
-    arguments['browser'] = 'android-webview'
-    arguments['story'] = 'sfilter'
     quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
     change = mock.MagicMock(spec=change_module.Change)
     change.base_commit = mock.MagicMock(spec=commit.Commit)
     change.base_commit.AsDict = mock.MagicMock(
-        return_value={'commit_position': 675458})
-    with mock.patch(
-        'dashboard.pinpoint.models.quest.run_test.RunTest._Start',
-        wraps=quest._Start) as internal_start:
-      execution = quest.Start(change, 'https://isolate.server', 'isolate hash')
-      self.assertNotIn('--run-full-story-set', internal_start.call_args[0][3])
-    self.assertEqual(
-        execution._swarming_tags, {
-            'benchmark': 'speedometer',
-            'change': str(change),
-            'hasfilter': '1',
-            'storyfilter': 'sfilter'
-        })
+        return_value={'commit_position': 675460})
+    execution = quest.Start(change, 'https://isolate.server', 'isolate hash')
+    self.assertEqual(execution._swarming_tags, {
+        'benchmark': 'speedometer',
+        'change': str(change),
+        'hasfilter': '0'
+    })
 
-  def testSwarmingTagsWithStoryFilter_AfterR675459(self):
+  def testSwarmingTagsWithStoryFilter(self, get_commit):
+    get_commit.return_value = {'number': 675460}
     arguments = dict(_BASE_ARGUMENTS)
     arguments['browser'] = 'android-webview'
     arguments['story'] = 'sfilter'
@@ -107,8 +115,38 @@ class StartTest(unittest.TestCase):
             'storyfilter': 'sfilter'
         })
 
-  def testSwarmingTagsWithStoryFilter_RevMissingCommitPosition(self):
+  def testExtraArgsInChange(self, get_commit):
+    get_commit.return_value = {'number': 675460}
+    arguments = dict(_BASE_ARGUMENTS)
+    arguments['browser'] = 'android-webview'
+    arguments['story'] = 'sfilter'
+    quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
+    change = mock.MagicMock(spec=change_module.Change)
+    change.base_commit = mock.MagicMock(spec=commit.Commit)
+    change.base_commit.AsDict = mock.MagicMock(
+        return_value={'commit_position': 675460})
+    change.change_label = mock.MagicMock(return_value='base')
+    type(change).change_args = mock.PropertyMock(
+        return_value=['--extra-browser-args'])
+    with mock.patch(
+        'dashboard.pinpoint.models.quest.run_test.RunTest._Start',
+        wraps=quest._Start) as internal_start:
+      execution = quest.Start(change, 'https://isolate.server', 'isolate hash')
+      call_args = internal_start.call_args[0][3]
+      self.assertIn('--run-full-story-set', call_args)
+      self.assertIn('--extra-browser-args', call_args)
+    self.assertEqual(
+        execution._swarming_tags, {
+            'benchmark': 'speedometer',
+            'change': str(change),
+            'hasfilter': '1',
+            'storyfilter': 'sfilter'
+        })
+
+  def testSwarmingTagsWithStoryFilter_RevMissingCommitPosition(
+      self, get_commit):
     """Reproduce crbug/1051943."""
+    get_commit.return_value = {'number': 675460}
     arguments = dict(_BASE_ARGUMENTS)
     arguments['browser'] = 'android-webview'
     arguments['story'] = 'sfilter'
@@ -123,16 +161,21 @@ class StartTest(unittest.TestCase):
       quest.Start(change, 'https://isolate.server', 'isolate hash')
       self.assertIn('--run-full-story-set', internal_start.call_args[0][3])
 
-  def testSwarmingTagsWithStoryTagFilter(self):
+  def testSwarmingTagsWithStoryTagFilter(self, get_commit):
+    get_commit.return_value = {'number': 675460}
     arguments = dict(_BASE_ARGUMENTS)
     arguments['browser'] = 'android-webview'
     arguments['story_tags'] = 'tfilter'
     quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
-    execution = quest.Start('change', 'https://isolate.server', 'isolate hash')
+    change = mock.MagicMock(spec=change_module.Change)
+    change.base_commit = mock.MagicMock(spec=commit.Commit)
+    change.base_commit.AsDict = mock.MagicMock(
+        return_value={'commit_position': 675460})
+    execution = quest.Start(change, 'https://isolate.server', 'isolate hash')
     self.assertEqual(
         execution._swarming_tags, {
             'benchmark': 'speedometer',
-            'change': 'change',
+            'change': str(change),
             'hasfilter': '1',
             'tagfilter': 'tfilter'
         })
@@ -154,6 +197,7 @@ class FromDictTest(unittest.TestCase):
     quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
 
     extra_args = [
+        '-d',
         '--benchmarks',
         'speedometer',
         '--story-filter',
@@ -188,6 +232,7 @@ class FromDictTest(unittest.TestCase):
     quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
 
     extra_args = [
+        '-d',
         '--benchmarks',
         'start_with_url.warm.startup_pages',
         '--pageset-repeat',
@@ -206,6 +251,7 @@ class FromDictTest(unittest.TestCase):
     quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
 
     extra_args = [
+        '-d',
         '--benchmarks',
         'speedometer',
         '--pageset-repeat',

@@ -9,13 +9,12 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_metrics_logger.h"
@@ -49,6 +48,8 @@ struct TranslateInitDetails;
 
 extern const base::Feature kOverrideLanguagePrefsForHrefTranslate;
 extern const base::Feature kOverrideSitePrefsForHrefTranslate;
+extern const base::Feature kOverrideUnsupportedPageLanguageForHrefTranslate;
+extern const base::Feature kOverrideSimilarLanguagesForHrefTranslate;
 extern const char kForceAutoTranslateKey[];
 
 // The TranslateManager class is responsible for showing an info-bar when a page
@@ -61,6 +62,10 @@ class TranslateManager {
   TranslateManager(TranslateClient* translate_client,
                    TranslateRanker* translate_ranker,
                    language::LanguageModel* language_model);
+
+  TranslateManager(const TranslateManager&) = delete;
+  TranslateManager& operator=(const TranslateManager&) = delete;
+
   virtual ~TranslateManager();
 
   // Returns a weak pointer to this instance.
@@ -131,16 +136,17 @@ class TranslateManager {
   // Maybe initiates translation when Autofill Assistant has finished.
   void OnAutofillAssistantFinished();
 
-  // Initiate a manually triggered translation process for the current page.
-  // Collect source and target languages, and show translation UI. If
-  // |auto_translate| is true the page gets translated to the target language.
-  void InitiateManualTranslation(bool auto_translate = false,
-                                 bool triggered_from_menu = false);
+  // Show the translation UI. If |auto_translate| is true the page gets
+  // translated to the target language.
+  void ShowTranslateUI(bool auto_translate = false,
+                       bool triggered_from_menu = false);
 
   // Returns true iff the current page could be manually translated.
   // Logging should only be performed when this method is called to show the
   // translate menu item.
   bool CanManuallyTranslate(bool menuLogging = false);
+
+  bool IsMimeTypeSupported(const std::string& mime_type);
 
   // Shows the after translate or error infobar depending on the details.
   void PageTranslated(const std::string& source_lang,
@@ -149,11 +155,6 @@ class TranslateManager {
 
   // Reverts the contents of the page to its original language.
   void RevertTranslation();
-
-  // Reports to the Google translate server that a page language was incorrectly
-  // detected.  This call is initiated by the user selecting the "report" menu
-  // under options in the translate infobar.
-  void ReportLanguageDetectionError();
 
   // Global Callbacks
 
@@ -218,11 +219,19 @@ class TranslateManager {
   // and logs the event appropriately.
   bool ShouldOverrideMatchesPreviousLanguageDecision();
 
-  // Returns true if the BubbleUI should be suppressed.
-  bool ShouldSuppressBubbleUI();
+  // Returns true if the BubbleUI should be suppressed, where |target_language|
+  // is the target language that would be shown in the UI.
+  bool ShouldSuppressBubbleUI(const std::string& target_language);
 
-  // Sets target language.
-  void SetPredefinedTargetLanguage(const std::string& language_code);
+  // Sets target language. Note that showing of the translate UI might still not
+  // happen in certain situations, e.g. if the translation is prevented by user
+  // prefs (i.e., blocklists), if |language_code| isn't a valid target language,
+  // if the translate service isn't reachable, etc. Setting
+  // |should_auto_translate| to true specifies both (1) that translation should
+  // be initiated automatically and (2) that translation should occur even when
+  // it would otherwise be prevented by user prefs.
+  void SetPredefinedTargetLanguage(const std::string& language_code,
+                                   bool should_auto_translate = false);
 
   // Returns a reference to |active_translate_metrics_logger_|. In the event
   // that this value is null, a |NullTranslateMetricsLogger| (a null
@@ -341,10 +350,10 @@ class TranslateManager {
   // Preference name for the Accept-Languages HTTP header.
   std::string accept_languages_pref_name_;
 
-  TranslateClient* translate_client_;        // Weak.
-  TranslateDriver* translate_driver_;        // Weak.
-  TranslateRanker* translate_ranker_;        // Weak.
-  language::LanguageModel* language_model_;  // Weak.
+  raw_ptr<TranslateClient> translate_client_;        // Weak.
+  raw_ptr<TranslateDriver> translate_driver_;        // Weak.
+  raw_ptr<TranslateRanker> translate_ranker_;        // Weak.
+  raw_ptr<language::LanguageModel> language_model_;  // Weak.
 
   base::WeakPtr<TranslateMetricsLogger> active_translate_metrics_logger_;
   std::unique_ptr<NullTranslateMetricsLogger> null_translate_metrics_logger_;
@@ -363,8 +372,6 @@ class TranslateManager {
   // By default, don't offer to translate in builds lacking an API key. For
   // testing, set to true to offer anyway.
   static bool ignore_missing_key_for_testing_;
-
-  DISALLOW_COPY_AND_ASSIGN(TranslateManager);
 };
 
 }  // namespace translate

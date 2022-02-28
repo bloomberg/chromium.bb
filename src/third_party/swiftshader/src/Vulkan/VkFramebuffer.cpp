@@ -36,8 +36,11 @@ Framebuffer::Framebuffer(const VkFramebufferCreateInfo *pCreateInfo, void *mem)
 		case VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO:
 			attachmentsCreateInfo = reinterpret_cast<const VkFramebufferAttachmentsCreateInfo *>(curInfo);
 			break;
+		case VK_STRUCTURE_TYPE_MAX_ENUM:
+			// dEQP tests that this value is ignored.
+			break;
 		default:
-			LOG_TRAP("pFramebufferCreateInfo->pNext->sType = %s", vk::Stringify(curInfo->sType).c_str());
+			UNSUPPORTED("pFramebufferCreateInfo->pNext->sType = %s", vk::Stringify(curInfo->sType).c_str());
 			break;
 		}
 		curInfo = curInfo->pNext;
@@ -66,37 +69,67 @@ Framebuffer::Framebuffer(const VkFramebufferCreateInfo *pCreateInfo, void *mem)
 
 void Framebuffer::destroy(const VkAllocationCallbacks *pAllocator)
 {
-	vk::deallocate(attachments, pAllocator);
+	vk::freeHostMemory(attachments, pAllocator);
 }
 
-void Framebuffer::clear(const RenderPass *renderPass, uint32_t clearValueCount, const VkClearValue *pClearValues, const VkRect2D &renderArea)
+void Framebuffer::executeLoadOp(const RenderPass *renderPass, uint32_t clearValueCount, const VkClearValue *pClearValues, const VkRect2D &renderArea)
 {
+	// This gets called at the start of a renderpass. Logically the `loadOp` gets executed at the
+	// subpass where an attachment is first used, but since we don't discard contents between subpasses,
+	// we can execute it sooner. Only clear operations have an effect.
+
 	ASSERT(attachmentCount == renderPass->getAttachmentCount());
 
 	const uint32_t count = std::min(clearValueCount, attachmentCount);
 	for(uint32_t i = 0; i < count; i++)
 	{
 		const VkAttachmentDescription attachment = renderPass->getAttachment(i);
+		VkImageAspectFlags clearMask = 0;
 
-		VkImageAspectFlags aspectMask = Format(attachment.format).getAspects();
-		if(attachment.loadOp != VK_ATTACHMENT_LOAD_OP_CLEAR)
-			aspectMask &= VK_IMAGE_ASPECT_STENCIL_BIT;
-		if(attachment.stencilLoadOp != VK_ATTACHMENT_LOAD_OP_CLEAR)
-			aspectMask &= ~VK_IMAGE_ASPECT_STENCIL_BIT;
+		switch(attachment.loadOp)
+		{
+		case VK_ATTACHMENT_LOAD_OP_CLEAR:
+			clearMask |= VK_IMAGE_ASPECT_COLOR_BIT | VK_IMAGE_ASPECT_DEPTH_BIT;
+			break;
+		case VK_ATTACHMENT_LOAD_OP_LOAD:
+		case VK_ATTACHMENT_LOAD_OP_DONT_CARE:
+		case VK_ATTACHMENT_LOAD_OP_NONE_EXT:
+			// Don't clear the attachment's color or depth aspect.
+			break;
+		default:
+			UNSUPPORTED("attachment.loadOp %d", attachment.loadOp);
+		}
 
-		if(!aspectMask || !renderPass->isAttachmentUsed(i))
+		switch(attachment.stencilLoadOp)
+		{
+		case VK_ATTACHMENT_LOAD_OP_CLEAR:
+			clearMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+			break;
+		case VK_ATTACHMENT_LOAD_OP_LOAD:
+		case VK_ATTACHMENT_LOAD_OP_DONT_CARE:
+		case VK_ATTACHMENT_LOAD_OP_NONE_EXT:
+			// Don't clear the attachment's stencil aspect.
+			break;
+		default:
+			UNSUPPORTED("attachment.stencilLoadOp %d", attachment.stencilLoadOp);
+		}
+
+		// Image::clear() demands that we only specify existing aspects.
+		clearMask &= Format(attachment.format).getAspects();
+
+		if(!clearMask || !renderPass->isAttachmentUsed(i))
 		{
 			continue;
 		}
 
 		if(renderPass->isMultiView())
 		{
-			attachments[i]->clearWithLayerMask(pClearValues[i], aspectMask, renderArea,
+			attachments[i]->clearWithLayerMask(pClearValues[i], clearMask, renderArea,
 			                                   renderPass->getAttachmentViewMask(i));
 		}
 		else
 		{
-			attachments[i]->clear(pClearValues[i], aspectMask, renderArea);
+			attachments[i]->clear(pClearValues[i], clearMask, renderArea);
 		}
 	}
 }
@@ -146,6 +179,8 @@ void Framebuffer::clearAttachment(const RenderPass *renderPass, uint32_t subpass
 			}
 		}
 	}
+	else
+		UNSUPPORTED("attachment.aspectMask %X", attachment.aspectMask);
 }
 
 void Framebuffer::setAttachment(ImageView *imageView, uint32_t index)
@@ -207,8 +242,11 @@ size_t Framebuffer::ComputeRequiredAllocationSize(const VkFramebufferCreateInfo 
 		case VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO:
 			attachmentsInfo = reinterpret_cast<const VkFramebufferAttachmentsCreateInfo *>(curInfo);
 			break;
+		case VK_STRUCTURE_TYPE_MAX_ENUM:
+			// dEQP tests that this value is ignored.
+			break;
 		default:
-			LOG_TRAP("pFramebufferCreateInfo->pNext->sType = %s", vk::Stringify(curInfo->sType).c_str());
+			UNSUPPORTED("pFramebufferCreateInfo->pNext->sType = %s", vk::Stringify(curInfo->sType).c_str());
 			break;
 		}
 

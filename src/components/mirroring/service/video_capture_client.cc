@@ -5,13 +5,13 @@
 #include "components/mirroring/service/video_capture_client.h"
 
 #include "base/bind.h"
-#include "base/no_destructor.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_pool.h"
 #include "media/base/video_util.h"
+#include "media/capture/mojom/video_capture_buffer.mojom.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 
 namespace mirroring {
@@ -20,16 +20,16 @@ namespace {
 
 // Required by mojom::VideoCaptureHost interface. Can be any nonzero value.
 const base::UnguessableToken& DeviceId() {
-  static const base::NoDestructor<base::UnguessableToken> device_id(
+  static const base::UnguessableToken device_id(
       base::UnguessableToken::Deserialize(1, 1));
-  return *device_id;
+  return device_id;
 }
 
 // Required by mojom::VideoCaptureHost interface. Can be any nonzero value.
 const base::UnguessableToken& SessionId() {
-  static const base::NoDestructor<base::UnguessableToken> session_id(
+  static const base::UnguessableToken session_id(
       base::UnguessableToken::Deserialize(1, 1));
-  return *session_id;
+  return session_id;
 }
 
 }  // namespace
@@ -91,30 +91,33 @@ void VideoCaptureClient::RequestRefreshFrame() {
   video_capture_host_->RequestRefreshFrame(DeviceId());
 }
 
-void VideoCaptureClient::OnStateChanged(media::mojom::VideoCaptureState state) {
+void VideoCaptureClient::OnStateChanged(
+    media::mojom::VideoCaptureResultPtr result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DVLOG(2) << __func__ << " state: " << state;
-
-  switch (state) {
-    case media::mojom::VideoCaptureState::STARTED:
-      RequestRefreshFrame();
-      break;
-    case media::mojom::VideoCaptureState::FAILED:
-      if (!error_callback_.is_null())
-        std::move(error_callback_).Run();
-      break;
-    case media::mojom::VideoCaptureState::PAUSED:
-    case media::mojom::VideoCaptureState::RESUMED:
-      break;
-    case media::mojom::VideoCaptureState::STOPPED:
-    case media::mojom::VideoCaptureState::ENDED:
-      client_buffers_.clear();
-      mapped_buffers_.clear();
-      weak_factory_.InvalidateWeakPtrs();
-      error_callback_.Reset();
-      frame_deliver_callback_.Reset();
-      receiver_.reset();
-      break;
+  if (result->which() == media::mojom::VideoCaptureResult::Tag::STATE) {
+    media::mojom::VideoCaptureState state = result->get_state();
+    DVLOG(2) << __func__ << " state: " << state;
+    switch (state) {
+      case media::mojom::VideoCaptureState::STARTED:
+        RequestRefreshFrame();
+        break;
+      case media::mojom::VideoCaptureState::PAUSED:
+      case media::mojom::VideoCaptureState::RESUMED:
+        break;
+      case media::mojom::VideoCaptureState::STOPPED:
+      case media::mojom::VideoCaptureState::ENDED:
+        client_buffers_.clear();
+        mapped_buffers_.clear();
+        weak_factory_.InvalidateWeakPtrs();
+        error_callback_.Reset();
+        frame_deliver_callback_.Reset();
+        receiver_.reset();
+        break;
+    }
+  } else {
+    DVLOG(2) << __func__ << " Failed with an error.";
+    if (!error_callback_.is_null())
+      std::move(error_callback_).Run();
   }
 }
 
@@ -260,7 +263,9 @@ void VideoCaptureClient::OnBufferReady(
     LOG(DFATAL) << "Unable to wrap shared memory mapping.";
     video_capture_host_->ReleaseBuffer(DeviceId(), buffer->buffer_id,
                                        media::VideoCaptureFeedback());
-    OnStateChanged(media::mojom::VideoCaptureState::FAILED);
+
+    OnStateChanged(media::mojom::VideoCaptureResult::NewErrorCode(
+        media::VideoCaptureError::kDeviceClientTooManyFramesDroppedY16));
     return;
   }
   frame->AddDestructionObserver(
@@ -281,7 +286,8 @@ void VideoCaptureClient::OnBufferReady(
         media::ConvertAndScaleFrame(*frame, *new_frame, nv12_to_i420_tmp_buf_);
     if (!status.is_ok()) {
       LOG(DFATAL) << "Unable to convert frame to I420.";
-      OnStateChanged(media::mojom::VideoCaptureState::FAILED);
+      OnStateChanged(media::mojom::VideoCaptureResult::NewErrorCode(
+          media::VideoCaptureError::kDeviceClientTooManyFramesDroppedY16));
       return;
     }
     frame = new_frame;

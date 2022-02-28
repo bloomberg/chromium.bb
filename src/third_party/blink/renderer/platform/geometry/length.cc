@@ -25,11 +25,11 @@
 
 #include "third_party/blink/renderer/platform/geometry/length.h"
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/platform/geometry/blend.h"
 #include "third_party/blink/renderer/platform/geometry/calculation_value.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -38,6 +38,9 @@ class CalculationValueHandleMap {
 
  public:
   CalculationValueHandleMap() = default;
+  CalculationValueHandleMap(const CalculationValueHandleMap&) = delete;
+  CalculationValueHandleMap& operator=(const CalculationValueHandleMap&) =
+      delete;
 
   int insert(scoped_refptr<const CalculationValue> calc_value) {
     DCHECK(index_);
@@ -78,8 +81,6 @@ class CalculationValueHandleMap {
  private:
   int index_ = 1;
   HashMap<int, scoped_refptr<const CalculationValue>> map_;
-
-  DISALLOW_COPY_AND_ASSIGN(CalculationValueHandleMap);
 };
 
 static CalculationValueHandleMap& CalcHandles() {
@@ -109,8 +110,8 @@ Length Length::BlendSameTypes(const Length& from,
     result_type = from.GetType();
 
   float blended_value = blink::Blend(from.Value(), Value(), progress);
-  if (range == kValueRangeNonNegative)
-    blended_value = clampTo<float>(blended_value, 0);
+  if (range == ValueRange::kNonNegative)
+    blended_value = ClampTo<float>(blended_value, 0);
   return Length(blended_value, result_type);
 }
 
@@ -131,7 +132,7 @@ PixelsAndPercent Length::GetPixelsAndPercent() const {
 scoped_refptr<const CalculationValue> Length::AsCalculationValue() const {
   if (IsCalculated())
     return &GetCalculationValue();
-  return CalculationValue::Create(GetPixelsAndPercent(), kValueRangeAll);
+  return CalculationValue::Create(GetPixelsAndPercent(), ValueRange::kAll);
 }
 
 Length Length::SubtractFromOneHundredPercent() const {
@@ -187,6 +188,33 @@ bool Length::IsCalculatedEqual(const Length& o) const {
   return IsCalculated() &&
          (&GetCalculationValue() == &o.GetCalculationValue() ||
           GetCalculationValue() == o.GetCalculationValue());
+}
+
+String Length::ToString() const {
+  StringBuilder builder;
+  builder.Append("Length(");
+  static const char* const kTypeNames[] = {
+      "Auto",       "Percent",      "Fixed",         "MinContent",
+      "MaxContent", "MinIntrinsic", "FillAvailable", "FitContent",
+      "Calculated", "ExtendToZoom", "DeviceWidth",   "DeviceHeight",
+      "None",       "Content"};
+  if (type_ < base::size(kTypeNames))
+    builder.Append(kTypeNames[type_]);
+  else
+    builder.Append("?");
+  builder.Append(", ");
+  if (is_float_)
+    builder.AppendNumber(float_value_);
+  else
+    builder.AppendNumber(int_value_);
+  if (quirk_)
+    builder.Append(", Quirk");
+  builder.Append(")");
+  return builder.ToString();
+}
+
+std::ostream& operator<<(std::ostream& ostream, const Length& value) {
+  return ostream << value.ToString();
 }
 
 struct SameSizeAsLength {

@@ -5,8 +5,6 @@
 #ifndef CHROMECAST_BROWSER_WEBVIEW_PLATFORM_VIEWS_GRPC_SERVICE_H_
 #define CHROMECAST_BROWSER_WEBVIEW_PLATFORM_VIEWS_GRPC_SERVICE_H_
 
-#include <string>
-
 #include "base/memory/weak_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -28,6 +26,11 @@ class PlatformViewsAsyncService : public base::PlatformThread::Delegate {
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       base::WeakPtr<WebContentsProvider> web_contents_provider,
       bool enabled_for_dev);
+
+  PlatformViewsAsyncService(const PlatformViewsAsyncService&) = delete;
+  PlatformViewsAsyncService& operator=(const PlatformViewsAsyncService&) =
+      delete;
+
   ~PlatformViewsAsyncService() override;
 
  private:
@@ -46,8 +49,6 @@ class PlatformViewsAsyncService : public base::PlatformThread::Delegate {
   WebviewWindowManager window_manager_;
   base::WeakPtr<WebContentsProvider> web_contents_provider_;
   bool enabled_for_dev_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformViewsAsyncService);
 };
 
 }  // namespace chromecast

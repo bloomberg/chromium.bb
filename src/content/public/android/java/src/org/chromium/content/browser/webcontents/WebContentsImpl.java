@@ -15,6 +15,7 @@ import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
 import android.view.Surface;
+import android.view.ViewStructure;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -26,6 +27,7 @@ import org.chromium.base.UserDataHost;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.blink_public.input.SelectionGranularity;
 import org.chromium.content.browser.AppWebMessagePort;
 import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content.browser.RenderCoordinatesImpl;
@@ -33,14 +35,13 @@ import org.chromium.content.browser.RenderWidgetHostViewImpl;
 import org.chromium.content.browser.ViewEventSinkImpl;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.WindowEventObserverManager;
+import org.chromium.content.browser.accessibility.ViewStructureBuilder;
 import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
 import org.chromium.content.browser.framehost.RenderFrameHostDelegate;
 import org.chromium.content.browser.framehost.RenderFrameHostImpl;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
-import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
-import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.ChildProcessImportance;
-import org.chromium.content_public.browser.GlobalFrameRoutingId;
+import org.chromium.content_public.browser.GlobalRenderFrameHostId;
 import org.chromium.content_public.browser.ImageDownloadCallback;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.MessagePort;
@@ -404,12 +405,14 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    public RenderFrameHost getRenderFrameHostFromId(GlobalFrameRoutingId id) {
+    public RenderFrameHost getRenderFrameHostFromId(GlobalRenderFrameHostId id) {
         checkNotDestroyed();
         return WebContentsImplJni.get().getRenderFrameHostFromId(
                 mNativeWebContentsAndroid, id.childId(), id.frameRoutingId());
     }
 
+    // The RenderFrameHosts that are every RenderFrameHost in this WebContents.
+    // See C++'s WebContents::ForEachRenderFrameHost for details.
     public List<RenderFrameHost> getAllRenderFrameHosts() {
         checkNotDestroyed();
         RenderFrameHost[] frames = WebContentsImplJni.get().getAllRenderFrameHosts(
@@ -479,9 +482,9 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    public boolean isLoadingToDifferentDocument() {
+    public boolean shouldShowLoadingUI() {
         checkNotDestroyed();
-        return WebContentsImplJni.get().isLoadingToDifferentDocument(
+        return WebContentsImplJni.get().shouldShowLoadingUI(
                 mNativeWebContentsAndroid, WebContentsImpl.this);
     }
 
@@ -580,10 +583,10 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    public void setImportance(@ChildProcessImportance int mainFrameImportance) {
+    public void setImportance(@ChildProcessImportance int primaryMainFrameImportance) {
         checkNotDestroyed();
         WebContentsImplJni.get().setImportance(
-                mNativeWebContentsAndroid, WebContentsImpl.this, mainFrameImportance);
+                mNativeWebContentsAndroid, WebContentsImpl.this, primaryMainFrameImportance);
     }
 
     @Override
@@ -631,10 +634,11 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    public void selectWordAroundCaret() {
+    public void selectAroundCaret(@SelectionGranularity int granularity, boolean shouldShowHandle,
+            boolean shouldShowContextMenu) {
         checkNotDestroyed();
-        WebContentsImplJni.get().selectWordAroundCaret(
-                mNativeWebContentsAndroid, WebContentsImpl.this);
+        WebContentsImplJni.get().selectAroundCaret(mNativeWebContentsAndroid, WebContentsImpl.this,
+                granularity, shouldShowHandle, shouldShowContextMenu);
     }
 
     @Override
@@ -771,11 +775,18 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         callback.onSmartClipDataExtracted(text, html, new Rect(left, top, right, bottom));
     }
 
-    @Override
-    public void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback) {
+    /**
+     * Requests a snapshop of accessibility tree. The result is provided asynchronously
+     * using the callback
+     * @param callback The callback to be called when the snapshot is ready. The callback
+     *                 cannot be null.
+     */
+    public void requestAccessibilitySnapshot(ViewStructure root, Runnable doneCallback) {
         checkNotDestroyed();
+        ViewStructureBuilder builder = ViewStructureBuilder.create(mRenderCoordinates);
+
         WebContentsImplJni.get().requestAccessibilitySnapshot(
-                mNativeWebContentsAndroid, WebContentsImpl.this, callback);
+                mNativeWebContentsAndroid, root, builder, doneCallback);
     }
 
     @VisibleForTesting
@@ -783,42 +794,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         if (mObserverProxy != null) {
             mObserverProxy.renderProcessGone(wasOomProtected);
         }
-    }
-
-    // root node can be null if parsing fails.
-    @CalledByNative
-    private static void onAccessibilitySnapshot(AccessibilitySnapshotNode root,
-            AccessibilitySnapshotCallback callback) {
-        callback.onAccessibilitySnapshot(root);
-    }
-
-    @CalledByNative
-    private static void addAccessibilityNodeAsChild(AccessibilitySnapshotNode parent,
-            AccessibilitySnapshotNode child) {
-        parent.addChild(child);
-    }
-
-    @CalledByNative
-    private static AccessibilitySnapshotNode createAccessibilitySnapshotNode(int parentRelativeLeft,
-            int parentRelativeTop, int width, int height, boolean isRootNode, String text,
-            int color, int bgcolor, float size, boolean bold, boolean italic, boolean underline,
-            boolean lineThrough, String className, String htmlTag, String cssDisplay,
-            String[][] htmlAttributes) {
-        AccessibilitySnapshotNode node = new AccessibilitySnapshotNode(text, className);
-
-        // if size is smaller than 0, then style information does not exist.
-        if (size >= 0.0) {
-            node.setStyle(color, bgcolor, size, bold, italic, underline, lineThrough);
-        }
-        node.setLocationInfo(parentRelativeLeft, parentRelativeTop, width, height, isRootNode);
-        node.setHtmlInfo(htmlTag, cssDisplay, htmlAttributes);
-        return node;
-    }
-
-    @CalledByNative
-    private static void setAccessibilitySnapshotSelection(
-            AccessibilitySnapshotNode node, int start, int end) {
-        node.setSelection(start, end);
     }
 
     @Override
@@ -1107,7 +1082,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         GURL getVisibleURL(long nativeWebContentsAndroid, WebContentsImpl caller);
         String getEncoding(long nativeWebContentsAndroid, WebContentsImpl caller);
         boolean isLoading(long nativeWebContentsAndroid, WebContentsImpl caller);
-        boolean isLoadingToDifferentDocument(long nativeWebContentsAndroid, WebContentsImpl caller);
+        boolean shouldShowLoadingUI(long nativeWebContentsAndroid, WebContentsImpl caller);
         void dispatchBeforeUnload(
                 long nativeWebContentsAndroid, WebContentsImpl caller, boolean autoCancel);
         void stop(long nativeWebContentsAndroid, WebContentsImpl caller);
@@ -1128,7 +1103,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         void exitFullscreen(long nativeWebContentsAndroid, WebContentsImpl caller);
         void scrollFocusedEditableNodeIntoView(
                 long nativeWebContentsAndroid, WebContentsImpl caller);
-        void selectWordAroundCaret(long nativeWebContentsAndroid, WebContentsImpl caller);
+        void selectAroundCaret(long nativeWebContentsAndroid, WebContentsImpl caller,
+                int granularity, boolean shouldShowHandle, boolean shouldShowContextMenu);
         void adjustSelectionByCharacterOffset(long nativeWebContentsAndroid, WebContentsImpl caller,
                 int startAdjust, int endAdjust, boolean showSelectionMenu);
         GURL getLastCommittedURL(long nativeWebContentsAndroid, WebContentsImpl caller);
@@ -1147,8 +1123,9 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         float getLoadProgress(long nativeWebContentsAndroid, WebContentsImpl caller);
         void requestSmartClipExtract(long nativeWebContentsAndroid, WebContentsImpl caller,
                 SmartClipCallback callback, int x, int y, int width, int height);
-        void requestAccessibilitySnapshot(long nativeWebContentsAndroid, WebContentsImpl caller,
-                AccessibilitySnapshotCallback callback);
+        void requestAccessibilitySnapshot(long nativeWebContentsAndroid,
+                ViewStructure viewStructureRoot, ViewStructureBuilder viewStructureBuilder,
+                Runnable doneCallback);
         void setOverscrollRefreshHandler(long nativeWebContentsAndroid, WebContentsImpl caller,
                 OverscrollRefreshHandler nativeOverscrollRefreshHandler);
         void setSpatialNavigationDisabled(

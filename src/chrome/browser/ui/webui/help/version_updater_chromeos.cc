@@ -7,6 +7,7 @@
 #include <cmath>
 #include <string>
 
+#include "ash/components/settings/cros_settings_names.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/strings/string_number_conversions.h"
@@ -24,20 +25,17 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using chromeos::CrosSettings;
-using chromeos::DBusThreadManager;
-using chromeos::OwnerSettingsServiceAsh;
-using chromeos::OwnerSettingsServiceAshFactory;
-using chromeos::UpdateEngineClient;
-using chromeos::WizardController;
-
 namespace {
+
+using ::chromeos::DBusThreadManager;
+using ::chromeos::OwnerSettingsServiceAsh;
+using ::chromeos::OwnerSettingsServiceAshFactory;
+using ::chromeos::UpdateEngineClient;
 
 // Network status in the context of device update.
 enum NetworkStatus {
@@ -71,9 +69,11 @@ bool IsAutoUpdateDisabled() {
   if (!settings)
     return update_disabled;
   const base::Value* update_disabled_value =
-      settings->GetPref(chromeos::kUpdateDisabled);
-  if (update_disabled_value)
-    CHECK(update_disabled_value->GetAsBoolean(&update_disabled));
+      settings->GetPref(ash::kUpdateDisabled);
+  if (update_disabled_value) {
+    CHECK(update_disabled_value->is_bool());
+    update_disabled = update_disabled_value->GetBool();
+  }
   return update_disabled;
 }
 
@@ -173,8 +173,8 @@ void VersionUpdaterCros::CheckForUpdate(StatusCallback callback,
   check_for_update_when_idle_ = false;
 
   // Make sure that libcros is loaded and OOBE is complete.
-  if (!WizardController::default_controller() ||
-      chromeos::StartupUtils::IsDeviceRegistered()) {
+  if (!ash::WizardController::default_controller() ||
+      ash::StartupUtils::IsDeviceRegistered()) {
     update_engine_client->RequestUpdateCheck(base::BindOnce(
         &VersionUpdaterCros::OnUpdateCheck, weak_ptr_factory_.GetWeakPtr()));
   }
@@ -189,7 +189,7 @@ void VersionUpdaterCros::SetChannel(const std::string& channel,
           : nullptr;
   // For local owner set the field in the policy blob.
   if (service)
-    service->SetString(chromeos::kReleaseChannel, channel);
+    service->SetString(ash::kReleaseChannel, channel);
   DBusThreadManager::Get()->GetUpdateEngineClient()->
       SetChannel(channel, is_powerwash_allowed);
 }

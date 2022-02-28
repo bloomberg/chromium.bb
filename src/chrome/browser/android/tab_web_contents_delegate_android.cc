@@ -37,8 +37,8 @@
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
-#include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
@@ -64,13 +64,12 @@
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/paint_preview/buildflags/buildflags.h"
-#include "components/security_state/content/content_utils.h"
+#include "components/safe_browsing/content/browser/safe_browsing_navigation_observer.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
@@ -153,6 +152,9 @@ void TabWebContentsDelegateAndroid::PortalWebContentsCreated(
     content::WebContents* portal_contents) {
   WebContentsDelegateAndroid::PortalWebContentsCreated(portal_contents);
 
+  Profile* profile =
+      Profile::FromBrowserContext(portal_contents->GetBrowserContext());
+
   // This is a subset of the tab helpers that would be attached by
   // TabAndroid::AttachTabHelpers.
   //
@@ -174,7 +176,10 @@ void TabWebContentsDelegateAndroid::PortalWebContentsCreated(
   PrefsTabHelper::CreateForWebContents(portal_contents);
   DataReductionProxyTabHelper::CreateForWebContents(portal_contents);
   safe_browsing::SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
-      portal_contents);
+      portal_contents, HostContentSettingsMapFactory::GetForProfile(profile),
+      safe_browsing::SafeBrowsingNavigationObserverManagerFactory::
+          GetForBrowserContext(profile),
+      profile->GetPrefs(), g_browser_process->safe_browsing_service());
 }
 
 void TabWebContentsDelegateAndroid::RunFileChooser(
@@ -197,6 +202,9 @@ void TabWebContentsDelegateAndroid::CreateSmsPrompt(
     const std::string& one_time_code,
     base::OnceClosure on_confirm,
     base::OnceClosure on_cancel) {
+  DCHECK_EQ(host->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kActive);
+
   auto* web_contents = content::WebContents::FromRenderFrameHost(host);
   sms::SmsInfoBar::Create(
       web_contents,
@@ -349,7 +357,7 @@ WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
     return WebContentsDelegateAndroid::OpenURLFromTab(source, params);
   }
 
-  popup_delegate->nav_params()->created_with_opener = true;
+  popup_delegate->nav_params()->opened_by_another_window = true;
   TabModelList::HandlePopupNavigation(popup_delegate->nav_params());
   return nullptr;
 }
@@ -425,17 +433,6 @@ void TabWebContentsDelegateAndroid::AddNewContents(
     new_contents.release();
 }
 
-blink::SecurityStyle TabWebContentsDelegateAndroid::GetSecurityStyle(
-    WebContents* web_contents,
-    content::SecurityStyleExplanations* security_style_explanations) {
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(web_contents);
-  DCHECK(helper);
-  return security_state::GetSecurityStyle(helper->GetSecurityLevel(),
-                                          *helper->GetVisibleSecurityState(),
-                                          security_style_explanations);
-}
-
 void TabWebContentsDelegateAndroid::OnDidBlockNavigation(
     content::WebContents* web_contents,
     const GURL& blocked_url,
@@ -466,6 +463,10 @@ void TabWebContentsDelegateAndroid::ExitPictureInPicture() {
 }
 
 bool TabWebContentsDelegateAndroid::IsBackForwardCacheSupported() {
+  return true;
+}
+
+bool TabWebContentsDelegateAndroid::IsPrerender2Supported() {
   return true;
 }
 
@@ -571,6 +572,15 @@ bool TabWebContentsDelegateAndroid::IsNightModeEnabled() const {
   if (obj.is_null())
     return false;
   return Java_TabWebContentsDelegateAndroidImpl_isNightModeEnabled(env, obj);
+}
+
+bool TabWebContentsDelegateAndroid::IsForceDarkWebContentEnabled() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return false;
+  return Java_TabWebContentsDelegateAndroidImpl_isForceDarkWebContentEnabled(
+      env, obj);
 }
 
 bool TabWebContentsDelegateAndroid::CanShowAppBanners() const {

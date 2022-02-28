@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
@@ -102,6 +103,11 @@ memory_instrumentation::mojom::GlobalMemoryDumpPtr GenerateMemoryDump(
 }  // namespace
 
 class ProcessMetricsDecoratorTest : public GraphTestHarness {
+ public:
+  ProcessMetricsDecoratorTest(const ProcessMetricsDecoratorTest&) = delete;
+  ProcessMetricsDecoratorTest& operator=(const ProcessMetricsDecoratorTest&) =
+      delete;
+
  protected:
   using Super = GraphTestHarness;
 
@@ -132,14 +138,12 @@ class ProcessMetricsDecoratorTest : public GraphTestHarness {
   void ReleaseMetricsInterestToken() { metrics_interest_token_.reset(); }
 
  private:
-  TestProcessMetricsDecorator* decorator_raw_;
+  raw_ptr<TestProcessMetricsDecorator> decorator_raw_;
 
   std::unique_ptr<MockSinglePageWithMultipleProcessesGraph> mock_graph_;
 
   std::unique_ptr<ProcessMetricsDecorator::ScopedMetricsInterestToken>
       metrics_interest_token_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProcessMetricsDecoratorTest);
 };
 
 TEST_F(ProcessMetricsDecoratorTest, RefreshTimer) {

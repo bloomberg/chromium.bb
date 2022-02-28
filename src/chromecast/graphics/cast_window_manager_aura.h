@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromecast/graphics/cast_window_manager.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -35,6 +34,10 @@ class CastWindowManagerAura : public CastWindowManager,
                               public aura::client::WindowParentingClient {
  public:
   explicit CastWindowManagerAura(bool enable_input);
+
+  CastWindowManagerAura(const CastWindowManagerAura&) = delete;
+  CastWindowManagerAura& operator=(const CastWindowManagerAura&) = delete;
+
   ~CastWindowManagerAura() override;
 
   void Setup();
@@ -86,8 +89,6 @@ class CastWindowManagerAura : public CastWindowManager,
 
   std::vector<WindowId> window_order_;
   base::ObserverList<Observer>::Unchecked observer_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastWindowManagerAura);
 };
 
 }  // namespace chromecast

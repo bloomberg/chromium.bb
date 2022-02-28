@@ -8,6 +8,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/vector_icons.h"
 
@@ -22,7 +23,7 @@ MdTextButtonWithDownArrow::MdTextButtonWithDownArrow(PressedCallback callback,
   SetDropArrowImage();
 
   // Reduce padding between the drop arrow and the right border.
-  const gfx::Insets original_padding = border()->GetInsets();
+  const gfx::Insets original_padding = GetInsets();
   SetBorder(CreateEmptyBorder(original_padding.top(), original_padding.left(),
                               original_padding.bottom(),
                               LayoutProvider::Get()->GetDistanceMetric(

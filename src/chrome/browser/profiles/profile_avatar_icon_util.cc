@@ -9,13 +9,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
-#include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -36,16 +36,16 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/skia_util.h"
-#include "ui/native_theme/native_theme.h"
 #include "url/url_canon.h"
 
 #if defined(OS_WIN)
@@ -137,6 +137,9 @@ class AvatarImageSource : public gfx::CanvasImageSource {
                     AvatarPosition position,
                     AvatarBorder border);
 
+  AvatarImageSource(const AvatarImageSource&) = delete;
+  AvatarImageSource& operator=(const AvatarImageSource&) = delete;
+
   ~AvatarImageSource() override;
 
   // CanvasImageSource override:
@@ -150,8 +153,6 @@ class AvatarImageSource : public gfx::CanvasImageSource {
   const AvatarPosition position_;
   const AvatarBorder border_;
   const profiles::AvatarShape shape_;
-
-  DISALLOW_COPY_AND_ASSIGN(AvatarImageSource);
 };
 
 AvatarImageSource::AvatarImageSource(gfx::ImageSkia avatar,
@@ -297,6 +298,10 @@ class ImageWithBackgroundSource : public gfx::CanvasImageSource {
         image_(image),
         background_(background) {}
 
+  ImageWithBackgroundSource(const ImageWithBackgroundSource&) = delete;
+  ImageWithBackgroundSource& operator=(const ImageWithBackgroundSource&) =
+      delete;
+
   ~ImageWithBackgroundSource() override = default;
 
   // gfx::CanvasImageSource override.
@@ -308,8 +313,6 @@ class ImageWithBackgroundSource : public gfx::CanvasImageSource {
  private:
   const gfx::ImageSkia image_;
   const SkColor background_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageWithBackgroundSource);
 };
 
 }  // namespace
@@ -363,13 +366,8 @@ constexpr size_t kPlaceholderAvatarIndex = 0;
 #endif
 
 ui::ImageModel GetGuestAvatar(int size) {
-  if (base::FeatureList::IsEnabled(features::kNewProfilePicker)) {
-    return ui::ImageModel::FromVectorIcon(
-        kUserAccountAvatarIcon, ui::NativeTheme::kColorId_AvatarIconGuest,
-        size);
-  }
   return ui::ImageModel::FromVectorIcon(kUserAccountAvatarIcon,
-                                        gfx::kGoogleGrey500, size);
+                                        ui::kColorAvatarIconGuest, size);
 }
 
 gfx::Image GetSizedAvatarIcon(const gfx::Image& image,
@@ -438,28 +436,12 @@ gfx::Image GetAvatarIconForNSMenu(const base::FilePath& profile_path) {
     return gfx::Image();
   }
 
-  if (base::FeatureList::IsEnabled(features::kNewProfilePicker)) {
-    // Get a higher res than 16px so it looks good after cropping to a circle.
-    gfx::Image icon =
-        entry->GetAvatarIcon(kAvatarIconSize, /*download_high_res=*/false);
-    return profiles::GetSizedAvatarIcon(
-        icon, /*is_rectangle=*/true, kMenuAvatarIconSize, kMenuAvatarIconSize,
-        profiles::SHAPE_CIRCLE);
-  }
-
-  constexpr int kOldMenuAvatarIconSize = 38;
+  // Get a higher res than 16px so it looks good after cropping to a circle.
   gfx::Image icon =
-      entry->GetAvatarIcon(kOldMenuAvatarIconSize, /*download_high_res=*/false);
-
-  // The image might be too large and need to be resized, e.g. if this is a
-  // signed-in user using the GAIA profile photo.
-  if (icon.Width() > kOldMenuAvatarIconSize ||
-      icon.Height() > kOldMenuAvatarIconSize) {
-    icon = profiles::GetSizedAvatarIcon(icon, /*is_rectangle=*/true,
-                                        kOldMenuAvatarIconSize,
-                                        kOldMenuAvatarIconSize);
-  }
-  return icon;
+      entry->GetAvatarIcon(kAvatarIconSize, /*download_high_res=*/false);
+  return profiles::GetSizedAvatarIcon(icon, /*is_rectangle=*/true,
+                                      kMenuAvatarIconSize, kMenuAvatarIconSize,
+                                      profiles::SHAPE_CIRCLE);
 }
 #endif
 
@@ -793,9 +775,9 @@ SkBitmap GetBadgedWinIconBitmapForAvatar(const SkBitmap& app_icon_bitmap,
 
   // Resize the avatar image down to the desired badge size, maintaining aspect
   // ratio (but prefer more square than rectangular when rounding).
-  const int avatar_badge_height =
-      std::ceilf(avatar_badge_width * (float{source_bitmap.height()} /
-                                       float{source_bitmap.width()}));
+  const int avatar_badge_height = base::ClampCeil(
+      avatar_badge_width *
+      (static_cast<float>(source_bitmap.height()) / source_bitmap.width()));
   SkBitmap sk_icon = skia::ImageOperations::Resize(
       source_bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
       avatar_badge_width, avatar_badge_height);
@@ -819,7 +801,7 @@ SkBitmap GetBadgedWinIconBitmapForAvatar(const SkBitmap& app_icon_bitmap,
   const int cutout_top = app_icon_bitmap.height() - cutout_size;
   const int icon_left = cutout_left;
   const int icon_top =
-      cutout_top + int{std::ceilf((cutout_size - avatar_badge_height) / 2.0f)};
+      cutout_top + base::ClampCeil((cutout_size - avatar_badge_height) / 2.0f);
   const SkRRect clip_circle = SkRRect::MakeOval(
       SkRect::MakeXYWH(cutout_left, cutout_top, cutout_size, cutout_size));
 

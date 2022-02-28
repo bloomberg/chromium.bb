@@ -11,12 +11,12 @@
 #include "include/core/SkImageInfo.h"
 #include "include/core/SkMatrix.h"
 #include "src/gpu/GrFragmentProcessor.h"
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
+#include "src/gpu/GrSurfaceProxyView.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 
 class GrTextureEffect : public GrFragmentProcessor {
 public:
-    static constexpr float kDefaultBorder[4] = {0};
+    inline static constexpr float kDefaultBorder[4] = {0};
 
     /** Make from a filter. The sampler will be configured with clamp mode. */
     static std::unique_ptr<GrFragmentProcessor> Make(
@@ -109,16 +109,17 @@ public:
     // after proxy instantiation with coordination from GrMatrixEffect.
     SkMatrix coordAdjustmentMatrix() const;
 
-    class Impl : public GrGLSLFragmentProcessor {
+    class Impl : public ProgramImpl {
     public:
         void emitCode(EmitArgs&) override;
-        void onSetData(const GrGLSLProgramDataManager&, const GrFragmentProcessor&) override;
 
         void setSamplerHandle(GrGLSLShaderBuilder::SamplerHandle handle) {
             fSamplerHandle = handle;
         }
 
     private:
+        void onSetData(const GrGLSLProgramDataManager&, const GrFragmentProcessor&) override;
+
         UniformHandle fSubsetUni;
         UniformHandle fClampUni;
         UniformHandle fIDimsUni;
@@ -165,9 +166,9 @@ private:
 
     explicit GrTextureEffect(const GrTextureEffect& src);
 
-    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
+    std::unique_ptr<ProgramImpl> onMakeProgramImpl() const override;
 
-    void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
+    void onAddToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
 
     bool onIsEqual(const GrFragmentProcessor&) const override;
 

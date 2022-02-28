@@ -9,7 +9,9 @@
 #include "ash/login/ui/views_utils.h"
 #include "base/bind.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/controls/focus_ring.h"
 
 namespace ash {
 
@@ -28,15 +30,15 @@ LoginButton::LoginButton(PressedCallback callback)
     : views::ImageButton(std::move(callback)) {
   SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
   SetHasInkDropActionOnClick(true);
-  ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
+  views::InkDrop::Get(this)->SetCreateHighlightCallback(base::BindRepeating(
       [](Button* host) {
         return std::make_unique<views::InkDropHighlight>(
             gfx::SizeF(host->size()), kInkDropHighlightColor);
       },
       this));
-  ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+  views::InkDrop::Get(this)->SetCreateRippleCallback(base::BindRepeating(
       [](LoginButton* host) -> std::unique_ptr<views::InkDropRipple> {
         const gfx::Point center = host->GetLocalBounds().CenterPoint();
         const int radius = host->GetInkDropRadius();
@@ -45,14 +47,14 @@ LoginButton::LoginButton(PressedCallback callback)
 
         return std::make_unique<views::FloodFillInkDropRipple>(
             host->size(), host->GetLocalBounds().InsetsFrom(bounds),
-            host->ink_drop()->GetInkDropCenterBasedOnLastEvent(),
+            views::InkDrop::Get(host)->GetInkDropCenterBasedOnLastEvent(),
             kInkDropRippleColor, 1.f /*visible_opacity*/);
       },
       this));
 
   SetInstallFocusRingOnFocus(true);
-  login_views_utils::ConfigureRectFocusRingCircleInkDrop(this, focus_ring(),
-                                                         absl::nullopt);
+  login_views_utils::ConfigureRectFocusRingCircleInkDrop(
+      this, views::FocusRing::Get(this), absl::nullopt);
 }
 
 LoginButton::~LoginButton() = default;

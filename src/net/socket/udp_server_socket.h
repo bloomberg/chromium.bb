@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/socket/datagram_server_socket.h"
@@ -24,6 +23,10 @@ struct NetLogSource;
 class NET_EXPORT UDPServerSocket : public DatagramServerSocket {
  public:
   UDPServerSocket(net::NetLog* net_log, const net::NetLogSource& source);
+
+  UDPServerSocket(const UDPServerSocket&) = delete;
+  UDPServerSocket& operator=(const UDPServerSocket&) = delete;
+
   ~UDPServerSocket() override;
 
   // Implement DatagramServerSocket:
@@ -61,7 +64,6 @@ class NET_EXPORT UDPServerSocket : public DatagramServerSocket {
   bool allow_address_reuse_;
   bool allow_broadcast_;
   bool allow_address_sharing_for_multicast_;
-  DISALLOW_COPY_AND_ASSIGN(UDPServerSocket);
 };
 
 }  // namespace net

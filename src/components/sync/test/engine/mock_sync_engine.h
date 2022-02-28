@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "components/sync/engine/data_type_activation_response.h"
+#include "components/sync/engine/nigori/nigori.h"
 #include "components/sync/engine/sync_engine.h"
 #include "components/sync/engine/sync_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,12 +29,11 @@ class MockSyncEngine : public SyncEngine {
   // ModelTypeConfigurer:
   MOCK_METHOD(void, ConfigureDataTypes, (ConfigureParams), (override));
   MOCK_METHOD(void,
-              ActivateDataType,
+              ConnectDataType,
               (ModelType, std::unique_ptr<DataTypeActivationResponse>),
               (override));
-  MOCK_METHOD(void, DeactivateDataType, (ModelType), (override));
-  MOCK_METHOD(void, ActivateProxyDataType, (ModelType), (override));
-  MOCK_METHOD(void, DeactivateProxyDataType, (ModelType), (override));
+  MOCK_METHOD(void, DisconnectDataType, (ModelType), (override));
+  MOCK_METHOD(void, SetProxyTabsDatatypeEnabled, (bool), (override));
 
   // SyncEngine:
   MOCK_METHOD(void, Initialize, (InitParams), (override));
@@ -47,10 +47,9 @@ class MockSyncEngine : public SyncEngine {
   MOCK_METHOD(void, StartConfiguration, (), (override));
   MOCK_METHOD(void, StartSyncingWithServer, (), (override));
   MOCK_METHOD(void, SetEncryptionPassphrase, (const std::string&), (override));
-  MOCK_METHOD(void, SetDecryptionPassphrase, (const std::string&), (override));
   MOCK_METHOD(void,
-              SetKeystoreEncryptionBootstrapToken,
-              (const std::string&),
+              SetExplicitPassphraseDecryptionKey,
+              (std::unique_ptr<Nigori>),
               (override));
   MOCK_METHOD(void,
               AddTrustedVaultDecryptionKeys,

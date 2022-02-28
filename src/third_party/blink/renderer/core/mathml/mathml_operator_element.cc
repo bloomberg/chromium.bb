@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/mathml/mathml_operator_element.h"
 
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/dom/character_data.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/text/mathml_operator_dictionary.h"
@@ -29,12 +31,12 @@ UChar32 OperatorCodepoint(const String& text_content) {
     return kNonCharacter;
 
   UChar32 character;
-  size_t offset = 0;
+  unsigned offset = 0;
   U16_NEXT(text_content, offset, content_length, character);
   return character;
 }
 
-// https://mathml-refresh.github.io/mathml-core/#operator-dictionary-categories-values
+// https://w3c.github.io/mathml-core/#operator-dictionary-categories-values
 // Leading and trailing spaces are respresented in math units, i.e. 1/18em.
 struct MathMLOperatorDictionaryProperties {
   unsigned leading_space_in_math_unit : 3;
@@ -91,14 +93,28 @@ MathMLOperatorElement::MathMLOperatorElement(Document& doc)
 MathMLOperatorElement::OperatorContent
 MathMLOperatorElement::ParseOperatorContent() {
   MathMLOperatorElement::OperatorContent operator_content;
-  if (HasOneTextChild()) {
-    operator_content.characters = textContent();
-    operator_content.characters.Ensure16Bit();
-    operator_content.code_point =
-        OperatorCodepoint(operator_content.characters);
-    operator_content.is_vertical =
-        Character::IsVerticalMathCharacter(operator_content.code_point);
+  // Build the text content of the <mo> element. If it contains something other
+  // than character data, exit early since no special handling is required.
+  StringBuilder text_content;
+  for (auto* child = firstChild(); child; child = child->nextSibling()) {
+    auto* character_data = DynamicTo<CharacterData>(child);
+    if (!character_data)
+      return operator_content;
+    if (child->getNodeType() == kTextNode) {
+      text_content.Append(character_data->data());
+      // TODO(crbug.com/6606): Is it worth checking the length of text_content
+      // and exiting early here? For example the MathML Operator dictionary only
+      // contains content which (as a UTF-16 string) is of length 1 or 2, and
+      // other things rely on the assumption that OperatorContent::code_point
+      // is not kNonCharacter.
+    }
   }
+  // Parse the operator content.
+  operator_content.characters = text_content.ToString();
+  operator_content.characters.Ensure16Bit();
+  operator_content.code_point = OperatorCodepoint(operator_content.characters);
+  operator_content.is_vertical =
+      Character::IsVerticalMathCharacter(operator_content.code_point);
   return operator_content;
 }
 
@@ -142,9 +158,13 @@ void MathMLOperatorElement::ParseAttribute(
     SetOperatorPropertyDirtyFlagIfNeeded(
         param, MathMLOperatorElement::kMovableLimits, needs_layout);
   } else if (param.name == mathml_names::kLspaceAttr ||
-             param.name == mathml_names::kRspaceAttr) {
+             param.name == mathml_names::kRspaceAttr ||
+             param.name == mathml_names::kMinsizeAttr ||
+             param.name == mathml_names::kMaxsizeAttr) {
     needs_layout = param.new_value != param.old_value;
     if (needs_layout && GetLayoutObject()) {
+      // TODO(crbug.com/1121113): Isn't it enough to set needs style recalc and
+      // let the style system perform proper layout and paint invalidation?
       SetNeedsStyleRecalc(
           kLocalStyleChange,
           StyleChangeReasonForTracing::Create(style_change_reason::kAttribute));
@@ -158,7 +178,7 @@ void MathMLOperatorElement::ParseAttribute(
   MathMLElement::ParseAttribute(param);
 }
 
-// https://mathml-refresh.github.io/mathml-core/#dfn-algorithm-for-determining-the-properties-of-an-embellished-operator
+// https://w3c.github.io/mathml-core/#dfn-algorithm-for-determining-the-properties-of-an-embellished-operator
 void MathMLOperatorElement::ComputeDictionaryCategory() {
   if (properties_.dictionary_category !=
       MathMLOperatorDictionaryCategory::kUndefined)
@@ -170,7 +190,7 @@ void MathMLOperatorElement::ComputeDictionaryCategory() {
 
   // We first determine the form attribute and use the default spacing and
   // properties.
-  // https://mathml-refresh.github.io/mathml-core/#dfn-form
+  // https://w3c.github.io/mathml-core/#dfn-form
   const auto& value = FastGetAttribute(mathml_names::kFormAttr);
   bool explicit_form = true;
   MathMLOperatorDictionaryForm form;
@@ -183,11 +203,13 @@ void MathMLOperatorElement::ComputeDictionaryCategory() {
   } else {
     // TODO(crbug.com/1121113): Implement the remaining rules for determining
     // form.
-    // https://mathml-refresh.github.io/mathml-core/#dfn-algorithm-for-determining-the-form-of-an-embellished-operator
+    // https://w3c.github.io/mathml-core/#dfn-algorithm-for-determining-the-form-of-an-embellished-operator
     explicit_form = false;
-    if (!previousSibling() && nextSibling())
+    bool nextSibling = ElementTraversal::NextSibling(*this);
+    bool prevSibling = ElementTraversal::PreviousSibling(*this);
+    if (!prevSibling && nextSibling)
       form = MathMLOperatorDictionaryForm::kPrefix;
-    else if (previousSibling() && !nextSibling())
+    else if (prevSibling && !nextSibling)
       form = MathMLOperatorDictionaryForm::kPostfix;
     else
       form = MathMLOperatorDictionaryForm::kInfix;
@@ -195,7 +217,7 @@ void MathMLOperatorElement::ComputeDictionaryCategory() {
 
   // We then try and find an entry in the operator dictionary to override the
   // default values.
-  // https://mathml-refresh.github.io/mathml-core/#dfn-algorithm-for-determining-the-properties-of-an-embellished-operator
+  // https://w3c.github.io/mathml-core/#dfn-algorithm-for-determining-the-properties-of-an-embellished-operator
   auto category = FindCategory(GetOperatorContent().characters, form);
   if (category != MathMLOperatorDictionaryCategory::kNone) {
     // Step 2.
@@ -226,7 +248,7 @@ void MathMLOperatorElement::ComputeOperatorProperty(OperatorPropertyFlag flag) {
   DCHECK(properties_.dirty_flags & flag);
   const auto& name = OperatorPropertyFlagToAttributeName(flag);
   if (absl::optional<bool> value = BooleanAttribute(name)) {
-    // https://mathml-refresh.github.io/mathml-core/#dfn-algorithm-for-determining-the-properties-of-an-embellished-operator
+    // https://w3c.github.io/mathml-core/#dfn-algorithm-for-determining-the-properties-of-an-embellished-operator
     // Step 1.
     if (*value) {
       properties_.flags |= flag;

@@ -4,76 +4,96 @@
 
 #import "ios/chrome/browser/ui/first_run/signin/signin_screen_mediator.h"
 
-#include "ios/chrome/browser/chrome_browser_provider_observer_bridge.h"
-#include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
+#import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/first_run_signin_logger.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/user_signin_logger.h"
 #import "ios/chrome/browser/ui/first_run/signin/signin_screen_consumer.h"
-#import "ios/chrome/browser/ui/first_run/signin/signin_screen_mediator_delegate.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
-#include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface SigninScreenMediator () <ChromeIdentityServiceObserver,
-                                    ChromeBrowserProviderObserver> {
-  std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
-  std::unique_ptr<ChromeBrowserProviderObserverBridge> _browserProviderObserver;
+@interface SigninScreenMediator () <ChromeAccountManagerServiceObserver> {
+  std::unique_ptr<ChromeAccountManagerServiceObserverBridge>
+      _accountManagerServiceObserver;
 }
 
-@property(nonatomic, readonly) ios::ChromeIdentityService* identityService;
-// Manager for the authentication flow.
-@property(nonatomic, strong) AuthenticationFlow* authenticationFlow;
 // Logger used to record sign in metrics.
 @property(nonatomic, strong) UserSigninLogger* logger;
-// Pref service to retrieve preference values.
-@property(nonatomic, assign) PrefService* prefService;
+// Account manager service to retrieve Chrome identities.
+@property(nonatomic, assign) ChromeAccountManagerService* accountManagerService;
+// Authentication service for sign in.
+@property(nonatomic, assign) AuthenticationService* authenticationService;
 
 @end
 
 @implementation SigninScreenMediator
 
-- (instancetype)initWithPrefService:(PrefService*)prefService {
+- (instancetype)initWithAccountManagerService:
+                    (ChromeAccountManagerService*)accountManagerService
+                        authenticationService:
+                            (AuthenticationService*)authenticationService {
   self = [super init];
   if (self) {
-    _prefService = prefService;
-    _browserProviderObserver =
-        std::make_unique<ChromeBrowserProviderObserverBridge>(self);
-    _identityServiceObserver =
-        std::make_unique<ChromeIdentityServiceObserverBridge>(self);
+    DCHECK(accountManagerService);
+    DCHECK(authenticationService);
+
+    _accountManagerService = accountManagerService;
+    _authenticationService = authenticationService;
+    _accountManagerServiceObserver =
+        std::make_unique<ChromeAccountManagerServiceObserverBridge>(
+            self, _accountManagerService);
+
+    // Use the forced sign-in access point when the force sign-in policy is
+    // enabled, otherwise infer that the sign-in screen is used in the FRE. If
+    // the forced sign-in screen is presented in the FRE, the forced sign-in
+    // access point will still be used. The forced sign-in screen may also be
+    // presented outside of the FRE when the user has to be prompted to sign-in
+    // because of the policy.
+    signin_metrics::AccessPoint accessPoint =
+        IsForceSignInEnabled()
+            ? signin_metrics::AccessPoint::ACCESS_POINT_FORCED_SIGNIN
+            : signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE;
 
     _logger = [[FirstRunSigninLogger alloc]
-        initWithAccessPoint:signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE
-                promoAction:signin_metrics::PromoAction::
-                                PROMO_ACTION_NO_SIGNIN_PROMO
-                prefService:prefService];
+          initWithAccessPoint:accessPoint
+                  promoAction:signin_metrics::PromoAction::
+                                  PROMO_ACTION_NO_SIGNIN_PROMO
+        accountManagerService:accountManagerService];
+
+    [_logger logSigninStarted];
   }
   return self;
 }
 
 - (void)dealloc {
-  DCHECK(!self.prefService);
+  DCHECK(!self.accountManagerService);
 }
 
 - (void)disconnect {
   [self.logger disconnect];
-  self.prefService = nullptr;
+  self.accountManagerService = nullptr;
+  _accountManagerServiceObserver.reset();
 }
 
 - (void)startSignInWithAuthenticationFlow:
-    (AuthenticationFlow*)authenticationFlow {
-  DCHECK(!self.authenticationFlow);
-
+            (AuthenticationFlow*)authenticationFlow
+                               completion:(ProceduralBlock)completion {
   [self.consumer setUIEnabled:NO];
-
-  self.authenticationFlow = authenticationFlow;
   __weak __typeof(self) weakSelf = self;
-  [self.authenticationFlow startSignInWithCompletion:^(BOOL success) {
-    [weakSelf onAccountSigninCompletionWithSuccess:success];
+  [authenticationFlow startSignInWithCompletion:^(BOOL success) {
+    [weakSelf.consumer setUIEnabled:YES];
+    if (!success)
+      return;
+    [weakSelf.logger logSigninCompletedWithResult:SigninCoordinatorResultSuccess
+                                     addedAccount:weakSelf.addedAccount
+                            advancedSettingsShown:NO];
+    if (completion)
+      completion();
   }];
 }
 
@@ -83,7 +103,7 @@
   if ([self.selectedIdentity isEqual:selectedIdentity])
     return;
   // nil is allowed only if there is no other identity.
-  DCHECK(selectedIdentity || !self.identityService->HasIdentities());
+  DCHECK(selectedIdentity || !self.accountManagerService->HasIdentities());
   _selectedIdentity = selectedIdentity;
 
   [self updateConsumer];
@@ -97,94 +117,40 @@
   [self updateConsumer];
 }
 
-- (ios::ChromeIdentityService*)identityService {
-  return ios::GetChromeBrowserProvider()->GetChromeIdentityService();
-}
-
-#pragma mark - ChromeBrowserProviderObserver
-
-- (void)chromeIdentityServiceDidChange:(ios::ChromeIdentityService*)identity {
-  DCHECK(!_identityServiceObserver.get());
-  _identityServiceObserver =
-      std::make_unique<ChromeIdentityServiceObserverBridge>(self);
-}
-
-- (void)chromeBrowserProviderWillBeDestroyed {
-  _browserProviderObserver.reset();
-}
-
-#pragma mark - ChromeIdentityServiceObserver
+#pragma mark - ChromeAccountManagerServiceObserver
 
 - (void)identityListChanged {
-  if (!self.prefService) {
+  if (!self.accountManagerService) {
     return;
   }
 
   if (!self.selectedIdentity ||
-      !self.identityService->IsValidIdentity(self.selectedIdentity)) {
-    NSArray* identities =
-        self.identityService->GetAllIdentitiesSortedForDisplay(
-            self.prefService);
-    ChromeIdentity* newIdentity = nil;
-    if (identities.count != 0) {
-      newIdentity = identities[0];
-    }
-    self.selectedIdentity = newIdentity;
+      !self.accountManagerService->IsValidIdentity(self.selectedIdentity)) {
+    self.selectedIdentity = self.accountManagerService->GetDefaultIdentity();
   }
 }
 
-- (void)profileUpdate:(ChromeIdentity*)identity {
+- (void)identityChanged:(ChromeIdentity*)identity {
   if ([self.selectedIdentity isEqual:identity]) {
     [self updateConsumer];
   }
 }
 
-- (void)chromeIdentityServiceWillBeDestroyed {
-  _identityServiceObserver.reset();
-}
-
 #pragma mark - Private
 
 - (void)updateConsumer {
-  if (!self.consumer)
-    return;
-
-  // Reset the image to the default image. If an avatar icon is found, the image
-  // will be updated.
-  [self.consumer setUserImage:nil];
-
-  if (self.selectedIdentity) {
+  if (!self.selectedIdentity) {
+    [self.consumer noIdentityAvailable];
+  } else {
+    UIImage* avatar = self.accountManagerService->GetIdentityAvatarWithIdentity(
+        self.selectedIdentity, IdentityAvatarSize::DefaultLarge);
     [self.consumer
         setSelectedIdentityUserName:self.selectedIdentity.userFullName
-                              email:self.selectedIdentity.userEmail];
-
-    ChromeIdentity* selectedIdentity = self.selectedIdentity;
-    __weak __typeof(self) weakSelf = self;
-    self.identityService->GetAvatarForIdentity(
-        selectedIdentity, ^(UIImage* identityAvatar) {
-          if (weakSelf.selectedIdentity != selectedIdentity)
-            return;
-          [weakSelf.consumer setUserImage:identityAvatar];
-        });
-  } else {
-    [self.consumer noIdentityAvailable];
+                              email:self.selectedIdentity.userEmail
+                          givenName:self.selectedIdentity.userGivenName
+                             avatar:avatar];
   }
 }
 
-// Callback used when the sign in flow is complete, with |success|.
-- (void)onAccountSigninCompletionWithSuccess:(BOOL)success {
-  self.authenticationFlow = nil;
-  [self.consumer setUIEnabled:YES];
-
-  if (success) {
-    // Only log if the sign-in is successful.
-    [self.logger logSigninCompletedWithResult:SigninCoordinatorResultSuccess
-                                 addedAccount:self.addedAccount
-                        advancedSettingsShown:NO];
-
-    [self.delegate signinScreenMediator:self
-              didFinishSigninWithResult:SigninCoordinatorResultSuccess];
-  }
-}
 
 @end

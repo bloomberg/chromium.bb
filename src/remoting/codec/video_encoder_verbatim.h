@@ -5,7 +5,6 @@
 #ifndef REMOTING_CODEC_VIDEO_ENCODER_VERBATIM_H_
 #define REMOTING_CODEC_VIDEO_ENCODER_VERBATIM_H_
 
-#include "base/macros.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/codec/video_encoder_helper.h"
 
@@ -16,6 +15,10 @@ namespace remoting {
 class VideoEncoderVerbatim : public VideoEncoder {
  public:
   VideoEncoderVerbatim();
+
+  VideoEncoderVerbatim(const VideoEncoderVerbatim&) = delete;
+  VideoEncoderVerbatim& operator=(const VideoEncoderVerbatim&) = delete;
+
   ~VideoEncoderVerbatim() override;
 
   // VideoEncoder interface.
@@ -24,8 +27,6 @@ class VideoEncoderVerbatim : public VideoEncoder {
 
  private:
   VideoEncoderHelper helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoEncoderVerbatim);
 };
 
 }  // namespace remoting

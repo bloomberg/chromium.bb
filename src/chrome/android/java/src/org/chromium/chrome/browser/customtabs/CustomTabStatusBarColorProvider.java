@@ -44,9 +44,7 @@ public class CustomTabStatusBarColorProvider {
         mStatusBarColorController.updateStatusBarColor();
     }
 
-    int getBaseStatusBarColor(Tab tab, int fallbackStatusBarColor) {
-        if (mIntentDataProvider.isOpenedByChrome()) return fallbackStatusBarColor;
-
+    int getBaseStatusBarColor(Tab tab) {
         @ToolbarColorType
         int toolbarColorType = CustomTabToolbarColorController.computeToolbarColorType(
                 mIntentDataProvider, mUseTabThemeColor, tab);
@@ -56,7 +54,7 @@ public class CustomTabStatusBarColorProvider {
             case ToolbarColorType.DEFAULT_COLOR:
                 return DEFAULT_STATUS_BAR_COLOR;
             case ToolbarColorType.INTENT_TOOLBAR_COLOR:
-                return mIntentDataProvider.getToolbarColor();
+                return mIntentDataProvider.getColorProvider().getToolbarColor();
         }
         return DEFAULT_STATUS_BAR_COLOR;
     }

@@ -14,6 +14,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/hash/hash.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
@@ -24,6 +25,7 @@
 #include "base/thread_annotations.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
 #include "services/tracing/public/cpp/buildflags.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
@@ -205,7 +207,7 @@ class TracingSamplerProfilerDataSource
  private:
   // TODO(eseckler): Use GUARDED_BY annotations for all members below.
   base::Lock lock_;  // Protects subsequent members.
-  tracing::PerfettoProducer* producer_ GUARDED_BY(lock_) = nullptr;
+  raw_ptr<tracing::PerfettoProducer> producer_ GUARDED_BY(lock_) = nullptr;
   std::set<TracingSamplerProfiler*> profilers_;
   bool is_startup_tracing_ = false;
   bool is_started_ = false;
@@ -220,10 +222,8 @@ std::atomic<uint32_t>
 
 base::SequenceLocalStorageSlot<TracingSamplerProfiler>&
 GetSequenceLocalStorageProfilerSlot() {
-  static base::NoDestructor<
-      base::SequenceLocalStorageSlot<TracingSamplerProfiler>>
-      storage;
-  return *storage;
+  static base::SequenceLocalStorageSlot<TracingSamplerProfiler> storage;
+  return storage;
 }
 
 // Stores information about the StackFrame, to emit to the trace.
@@ -345,7 +345,7 @@ TracingSamplerProfiler::TracingProfileBuilder::TracingProfileBuilder(
     const base::RepeatingClosure& sample_callback_for_testing)
     : sampled_thread_id_(sampled_thread_id),
       trace_writer_(std::move(trace_writer)),
-      should_enable_filtering_(should_enable_filtering),
+      stack_profile_writer_(should_enable_filtering),
       sample_callback_for_testing_(sample_callback_for_testing) {}
 
 TracingSamplerProfiler::TracingProfileBuilder::~TracingProfileBuilder() {
@@ -368,6 +368,9 @@ base::ModuleCache*
 TracingSamplerProfiler::TracingProfileBuilder::GetModuleCache() {
   return &module_cache_;
 }
+
+using SampleDebugProto =
+    perfetto::protos::pbzero::ChromeSamplingProfilerSampleCollected;
 
 void TracingSamplerProfiler::TracingProfileBuilder::OnSampleCompleted(
     std::vector<base::Frame> frames,
@@ -405,12 +408,7 @@ void TracingSamplerProfiler::TracingProfileBuilder::WriteSampleToTrace(
   }
 
   if (reset_incremental_state_) {
-    interned_callstacks_.ResetEmittedState();
-    interned_frames_.ResetEmittedState();
-    interned_frame_names_.ResetEmittedState();
-    interned_module_names_.ResetEmittedState();
-    interned_module_ids_.ResetEmittedState();
-    interned_modules_.ResetEmittedState();
+    stack_profile_writer_.ResetEmittedState();
 
     auto trace_packet = trace_writer_->NewTracePacket();
     trace_packet->set_sequence_flags(
@@ -433,7 +431,8 @@ void TracingSamplerProfiler::TracingProfileBuilder::WriteSampleToTrace(
   // Delta encoded timestamps and interned data require incremental state.
   trace_packet->set_sequence_flags(
       perfetto::protos::pbzero::TracePacket::SEQ_NEEDS_INCREMENTAL_STATE);
-  auto callstack_id = GetCallstackIDAndMaybeEmit(frames, &trace_packet);
+  auto callstack_id =
+      stack_profile_writer_.GetCallstackIDAndMaybeEmit(frames, &trace_packet);
   auto* streaming_profile_packet = trace_packet->set_streaming_profile_packet();
   streaming_profile_packet->add_callstack_iid(callstack_id);
 
@@ -453,8 +452,13 @@ void TracingSamplerProfiler::TracingProfileBuilder::SetTraceWriter(
   trace_writer_ = std::move(writer);
 }
 
+TracingSamplerProfiler::StackProfileWriter::StackProfileWriter(
+    bool enable_filtering)
+    : should_enable_filtering_(enable_filtering) {}
+TracingSamplerProfiler::StackProfileWriter::~StackProfileWriter() = default;
+
 InterningID
-TracingSamplerProfiler::TracingProfileBuilder::GetCallstackIDAndMaybeEmit(
+TracingSamplerProfiler::StackProfileWriter::GetCallstackIDAndMaybeEmit(
     const std::vector<base::Frame>& frames,
     perfetto::TraceWriter::TracePacketHandle* trace_packet) {
   size_t ip_hash = 0;
@@ -586,6 +590,15 @@ TracingSamplerProfiler::TracingProfileBuilder::GetCallstackIDAndMaybeEmit(
   return interned_callstack.id;
 }
 
+void TracingSamplerProfiler::StackProfileWriter::ResetEmittedState() {
+  interned_callstacks_.ResetEmittedState();
+  interned_frames_.ResetEmittedState();
+  interned_frame_names_.ResetEmittedState();
+  interned_module_names_.ResetEmittedState();
+  interned_module_ids_.ResetEmittedState();
+  interned_modules_.ResetEmittedState();
+}
+
 // static
 void TracingSamplerProfiler::MangleModuleIDIfNeeded(std::string* module_id) {
 #if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
@@ -594,14 +607,16 @@ void TracingSamplerProfiler::MangleModuleIDIfNeeded(std::string* module_id) {
   // Example on version '66.0.3359.170' x64:
   //   Build-ID: "7f0715c2 86f8 b16c 10e4ad349cda3b9b 56c7a773
   //   Debug-ID  "C215077F F886 6CB1 10E4AD349CDA3B9B 0"
-  if (module_id->size() >= 32) {
-    *module_id =
-        base::StrCat({module_id->substr(6, 2), module_id->substr(4, 2),
-                      module_id->substr(2, 2), module_id->substr(0, 2),
-                      module_id->substr(10, 2), module_id->substr(8, 2),
-                      module_id->substr(14, 2), module_id->substr(12, 2),
-                      module_id->substr(16, 16), "0"});
+  if (module_id->size() < 32) {
+    module_id->resize(32, '0');
   }
+
+  *module_id =
+      base::StrCat({module_id->substr(6, 2), module_id->substr(4, 2),
+                    module_id->substr(2, 2), module_id->substr(0, 2),
+                    module_id->substr(10, 2), module_id->substr(8, 2),
+                    module_id->substr(14, 2), module_id->substr(12, 2),
+                    module_id->substr(16, 16), "0"});
 #endif
 }
 
@@ -730,7 +745,7 @@ void TracingSamplerProfiler::StartTracing(
 
   base::StackSamplingProfiler::SamplingParams params;
   params.samples_per_profile = std::numeric_limits<int>::max();
-  params.sampling_interval = base::TimeDelta::FromMilliseconds(50);
+  params.sampling_interval = base::Milliseconds(50);
 
   auto profile_builder = std::make_unique<TracingProfileBuilder>(
       sampled_thread_token_.id, std::move(trace_writer),

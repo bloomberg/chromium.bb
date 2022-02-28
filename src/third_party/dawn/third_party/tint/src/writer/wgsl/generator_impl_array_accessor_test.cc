@@ -21,15 +21,30 @@ namespace {
 
 using WgslGeneratorImplTest = TestHelper;
 
-TEST_F(WgslGeneratorImplTest, ArrayAccessor) {
+TEST_F(WgslGeneratorImplTest, IndexAccessor) {
   Global("ary", ty.array<i32, 10>(), ast::StorageClass::kPrivate);
   auto* expr = IndexAccessor("ary", 5);
   WrapInFunction(expr);
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitExpression(expr)) << gen.error();
-  EXPECT_EQ(gen.result(), "ary[5]");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, expr)) << gen.error();
+  EXPECT_EQ(out.str(), "ary[5]");
+}
+
+TEST_F(WgslGeneratorImplTest, IndexAccessor_OfDref) {
+  Global("ary", ty.array<i32, 10>(), ast::StorageClass::kPrivate);
+
+  auto* p = Const("p", nullptr, AddressOf("ary"));
+  auto* expr = IndexAccessor(Deref("p"), 5);
+  WrapInFunction(p, expr);
+
+  GeneratorImpl& gen = Build();
+
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, expr)) << gen.error();
+  EXPECT_EQ(out.str(), "(*(p))[5]");
 }
 
 }  // namespace

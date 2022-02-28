@@ -12,26 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # =============================================================================
+# pylint: disable=g-classes-have-attributes
 """Contains the base Layer class, from which all layers inherit."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import copy
+import warnings
 
 from tensorflow.python.eager import context
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
 from tensorflow.python.keras import backend
 from tensorflow.python.keras.engine import base_layer
-from tensorflow.python.keras.mixed_precision.experimental import policy
+from tensorflow.python.keras.engine import base_layer_utils
+from tensorflow.python.keras.legacy_tf_layers import variable_scope_shim
+from tensorflow.python.keras.mixed_precision import policy
+from tensorflow.python.keras.utils import tf_contextlib
 from tensorflow.python.ops import variable_scope as vs
 from tensorflow.python.ops import variables as tf_variables
 from tensorflow.python.training.tracking import base as trackable
-from tensorflow.python.util import deprecation
-from tensorflow.python.util import function_utils
 from tensorflow.python.util import nest
-from tensorflow.python.util import tf_contextlib
+from tensorflow.python.util.tf_export import keras_export
 from tensorflow.python.util.tf_export import tf_export
 
 # Avoid breaking users who directly import this symbol from this file.
@@ -41,6 +40,8 @@ InputSpec = base_layer.InputSpec  # pylint: disable=invalid-name
 _KERAS_STYLE_SCOPE = False
 
 
+@keras_export(
+    v1=['keras.__internal__.legacy.layers.experimental.keras_style_scope'])
 @tf_export(v1=['layers.experimental.keras_style_scope'])
 @tf_contextlib.contextmanager
 def keras_style_scope():
@@ -110,6 +111,8 @@ def keras_style_scope():
     _KERAS_STYLE_SCOPE = stack
 
 
+@keras_export(
+    v1=['keras.__internal__.legacy.layers.experimental.set_keras_style'])
 @tf_export(v1=['layers.experimental.set_keras_style'])
 def set_keras_style():
   """Use Keras-style variable management.
@@ -153,6 +156,7 @@ def _is_in_keras_style_scope():
   return _KERAS_STYLE_SCOPE
 
 
+@keras_export(v1=['keras.__internal__.legacy.layers.Layer'])
 @tf_export(v1=['layers.Layer'])
 class Layer(base_layer.Layer):
   """Base layer class.
@@ -160,7 +164,7 @@ class Layer(base_layer.Layer):
   It is considered legacy, and we recommend the use of `tf.keras.layers.Layer`
   instead.
 
-  Arguments:
+  Args:
     trainable: Boolean, whether the layer's variables should be trainable.
     name: String name of the layer.
     dtype: Default dtype of the layer's weights (default of `None` means use the
@@ -209,6 +213,9 @@ class Layer(base_layer.Layer):
     if 'autocast' not in kwargs:
       kwargs['autocast'] = False
 
+    # Mark that legacy layers should not be instrumented as Keras usage
+    self._disable_keras_instrumentation = True
+
     super(Layer, self).__init__(trainable=trainable, name=name, dtype=dtype,
                                 **kwargs)
 
@@ -236,11 +243,11 @@ class Layer(base_layer.Layer):
   # We no longer track graph in tf.layers layers. This property is only kept to
   # maintain API backward compatibility.
   @property
-  @deprecation.deprecated(
-      date=None,
-      instructions='Stop using this property because tf.layers layers no '
-      'longer track their graph.')
   def graph(self):
+    warnings.warn('`Layer.graph` is deprecated and '
+                  'will be removed in a future version. '
+                  'Please stop using this property because tf.layers layers no '
+                  'longer track their graph.')
     if context.executing_eagerly():
       raise RuntimeError('Layer.graph not supported when executing eagerly.')
     return None
@@ -295,7 +302,7 @@ class Layer(base_layer.Layer):
           new_losses,
           ops.GraphKeys.REGULARIZATION_LOSSES)
 
-  def _name_scope(self):
+  def _name_scope(self):  # pylint: disable=method-hidden
     """Determines op naming for the Layer."""
     if self._keras_style:
       return super(Layer, self)._name_scope()
@@ -328,7 +335,7 @@ class Layer(base_layer.Layer):
                  **kwargs):
     """Adds a new variable to the layer, or gets an existing one; returns it.
 
-    Arguments:
+    Args:
       name: variable name.
       shape: variable shape.
       dtype: The type of the variable. Defaults to `self.dtype` or `float32`.
@@ -405,7 +412,7 @@ class Layer(base_layer.Layer):
       trainable = True
 
     def _should_add_regularizer(variable, existing_variable_set):
-      if isinstance(variable, tf_variables.PartitionedVariable):
+      if base_layer_utils.is_split_variable(variable):
         for var in variable:
           if var in existing_variable_set:
             return False
@@ -439,7 +446,7 @@ class Layer(base_layer.Layer):
     with vs.variable_scope(
         self._scope, reuse=reuse, auxiliary_name_scope=False) as scope:
       self._current_scope = scope
-      with ops.name_scope(self._name_scope(), skip_on_eager=False):
+      with backend.name_scope(self._name_scope()):  # pylint: disable=not-callable
         use_resource = (use_resource or
                         self._use_resource_variables or
                         scope.use_resource)
@@ -463,6 +470,12 @@ class Layer(base_layer.Layer):
           if (ops.executing_eagerly_outside_functions()
               or _should_add_regularizer(variable, existing_variables)):
             self._handle_weight_regularization(name, variable, regularizer)
+            var_store = vs._get_default_variable_store()  # pylint: disable=protected-access
+            # When the shim to get variable scope working in TF2 is used,
+            # We need to explicitly make the shim track the regularization
+            # losses as the collections will not be accessible.
+            if hasattr(var_store, 'add_regularizer'):
+              var_store.add_regularizer(variable, regularizer)
 
         if init_graph is not None:
           # Handle edge case where a custom getter has overridden `trainable`.
@@ -483,7 +496,7 @@ class Layer(base_layer.Layer):
   def __call__(self, inputs, *args, **kwargs):
     """Wraps `call`, applying pre- and post-processing steps.
 
-    Arguments:
+    Args:
       inputs: input tensor(s).
       *args: additional positional arguments to be passed to `self.call`.
       **kwargs: additional keyword arguments to be passed to `self.call`.
@@ -519,14 +532,22 @@ class Layer(base_layer.Layer):
       try:
         # Some classes which inherit from Layer do not use its constructor, so
         # rather than initializing to None we check for an AttributeError.
-        scope_context_manager = self._always_reuse_variable_scope
+        scope_context_manager = self._always_reuse_variable_scope  # pylint: disable=access-member-before-definition
       except AttributeError:
+        scope_context_manager = None
+
+      if scope_context_manager is None:
         # From this point we will always set reuse=True, so create a "final"
         # variable scope with this setting. We avoid re-creating variable scopes
         # after this point as an optimization.
-        self._always_reuse_variable_scope = vs.variable_scope(
+        scope_context_manager = vs.variable_scope(
             self._scope, reuse=True, auxiliary_name_scope=False)
-        scope_context_manager = self._always_reuse_variable_scope
+
+        # Do not cache variable scopes if Eager mode is enabled. If Eager mode
+        # is enabled then we don't want to reuse scopes because the cached scope
+        # might be from a FuncGraph or Eager scope we are no longer in.
+        if not ops.executing_eagerly_outside_functions():
+          self._always_reuse_variable_scope = scope_context_manager
     else:
       scope_context_manager = vs.variable_scope(
           self._scope, reuse=self._reuse, auxiliary_name_scope=False)
@@ -537,7 +558,7 @@ class Layer(base_layer.Layer):
       try:
         call_has_scope_arg = self._call_has_scope_arg
       except AttributeError:
-        self._call_fn_args = function_utils.fn_args(self.call)
+        self._call_fn_args = variable_scope_shim.fn_args(self.call)
         self._call_has_scope_arg = 'scope' in self._call_fn_args
         call_has_scope_arg = self._call_has_scope_arg
       if call_has_scope_arg:
@@ -570,7 +591,7 @@ class Layer(base_layer.Layer):
 
   def __setattr__(self, value, name):
     # By-pass the automatic dependency tracking performed by the parent Layer.
-    super(trackable.Trackable, self).__setattr__(value, name)
+    super(trackable.Trackable, self).__setattr__(value, name)  # pylint: disable=bad-super-call
 
   @property
   def _is_legacy_layer(self):

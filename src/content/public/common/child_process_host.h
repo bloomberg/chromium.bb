@@ -8,19 +8,23 @@
 #include <stdint.h>
 
 #include <memory>
-#include <string>
 
 #include "base/clang_profiling_buildflags.h"
-#include "base/files/scoped_file.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "content/common/content_export.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+#if BUILDFLAG(IS_CHROMECAST)
+#include <string>
+
+#include "mojo/public/cpp/system/message_pipe.h"
+#endif
+
 namespace base {
+class File;
 class FilePath;
 }
 
@@ -41,7 +45,7 @@ class ChildProcessHostDelegate;
 // processes that run independent of the browser process.
 class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
  public:
-  ~ChildProcessHost() override {}
+  ~ChildProcessHost() override;
 
   // This is a value never returned as the unique id of any child processes of
   // any kind, including the values returned by RenderProcessHost::GetID().
@@ -148,11 +152,14 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // null if someone else has taken ownership.
   virtual absl::optional<mojo::OutgoingInvitation>& GetMojoInvitation() = 0;
 
-  // Creates the IPC channel over a Mojo message pipe. The pipe connection is
-  // brokered through the Service Manager like any other service connection.
+  // Creates a legacy IPC channel over a Mojo message pipe. Must be called if
+  // legacy IPC will be used to communicate with the child process, but
+  // otherwise should not be called.
   virtual void CreateChannelMojo() = 0;
 
-  // Returns true iff the IPC channel is currently being opened;
+  // Returns true iff the IPC channel is currently being opened; this means
+  // CreateChannelMojo() has been called, but OnChannelConnected() has not yet
+  // been invoked.
   virtual bool IsChannelOpening() = 0;
 
   // Adds an IPC message filter.  A reference will be kept to the filter.
@@ -170,16 +177,22 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   //   3. Main thread, ChildThreadImpl::BindReceiver (virtual).
   virtual void BindReceiver(mojo::GenericPendingReceiver receiver) = 0;
 
+#if BUILDFLAG(IS_CHROMECAST)
   // Instructs the child process to run an instance of the named service. This
   // is DEPRECATED and should never be used.
   virtual void RunServiceDeprecated(
       const std::string& service_name,
       mojo::ScopedMessagePipeHandle service_pipe) = 0;
+#endif
 
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
   // Write out the accumulated code profiling profile to the configured file.
   // The callback is invoked once the profile has been flushed to disk.
   virtual void DumpProfilingData(base::OnceClosure callback) = 0;
+
+  // Sets the profiling file for the child process.
+  // Used for the coverage builds.
+  virtual void SetProfilingFile(base::File file) = 0;
 #endif
 };
 

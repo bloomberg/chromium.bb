@@ -13,19 +13,19 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/location.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mutable_data_batch.h"
-#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
+#include "components/sync/protocol/user_event_specifics.pb.h"
 
 namespace syncer {
 
-using sync_pb::ModelTypeState;
 using sync_pb::UserEventSpecifics;
 using IdList = ModelTypeStore::IdList;
 using Record = ModelTypeStore::Record;
@@ -46,7 +46,8 @@ std::string GetStorageKeyFromSpecifics(const UserEventSpecifics& specifics) {
 
 int64_t GetEventTimeFromStorageKey(const std::string& storage_key) {
   int64_t event_time;
-  base::ReadBigEndian(&storage_key[0], &event_time);
+  base::ReadBigEndian(reinterpret_cast<const uint8_t*>(&storage_key[0]),
+                      &event_time);
   return event_time;
 }
 

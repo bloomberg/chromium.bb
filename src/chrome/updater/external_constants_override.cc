@@ -12,13 +12,16 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/external_constants.h"
+#include "chrome/updater/external_constants_default.h"
 #include "chrome/updater/external_constants_override.h"
 #include "chrome/updater/updater_branding.h"
+#include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -49,7 +52,7 @@ namespace updater {
 
 ExternalConstantsOverrider::ExternalConstantsOverrider(
     base::flat_map<std::string, base::Value> override_values,
-    std::unique_ptr<ExternalConstants> next_provider)
+    scoped_refptr<ExternalConstants> next_provider)
     : ExternalConstants(std::move(next_provider)),
       override_values_(std::move(override_values)) {}
 
@@ -114,10 +117,11 @@ int ExternalConstantsOverrider::ServerKeepAliveSeconds() const {
 }
 
 // static
-std::unique_ptr<ExternalConstantsOverrider>
+scoped_refptr<ExternalConstantsOverrider>
 ExternalConstantsOverrider::FromDefaultJSONFile(
-    std::unique_ptr<ExternalConstants> next_provider) {
-  absl::optional<base::FilePath> data_dir_path = GetBaseDirectory();
+    scoped_refptr<ExternalConstants> next_provider) {
+  const absl::optional<base::FilePath> data_dir_path =
+      GetBaseDirectory(GetUpdaterScope());
   if (!data_dir_path) {
     LOG(ERROR) << "Cannot find app data path.";
     return nullptr;
@@ -142,8 +146,17 @@ ExternalConstantsOverrider::FromDefaultJSONFile(
     return nullptr;
   }
 
-  return std::make_unique<ExternalConstantsOverrider>(parsed_value->TakeDict(),
-                                                      std::move(next_provider));
+  return base::MakeRefCounted<ExternalConstantsOverrider>(
+      std::move(*parsed_value).TakeDict(), next_provider);
+}
+
+// Declared in external_constants.h. This implementation of the function is
+// used only if external_constants_override is linked into the binary.
+scoped_refptr<ExternalConstants> CreateExternalConstants() {
+  scoped_refptr<ExternalConstants> overrider =
+      ExternalConstantsOverrider::FromDefaultJSONFile(
+          CreateDefaultExternalConstants());
+  return overrider ? overrider : CreateDefaultExternalConstants();
 }
 
 }  // namespace updater

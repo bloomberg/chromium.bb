@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import absolute_import
+
 import copy
 import logging
 import os
@@ -72,15 +72,14 @@ _BUNDLE_DURATION_ID = 'duration_ms'
 
 class MissingSizeAnnotationError(test_exception.TestException):
   def __init__(self, class_name):
-    super(MissingSizeAnnotationError, self).__init__(class_name +
+    super().__init__(
+        class_name +
         ': Test method is missing required size annotation. Add one of: ' +
         ', '.join('@' + a for a in _VALID_ANNOTATIONS))
 
 
 class CommandLineParameterizationException(test_exception.TestException):
-
-  def __init__(self, msg):
-    super(CommandLineParameterizationException, self).__init__(msg)
+  pass
 
 
 class TestListPickleException(test_exception.TestException):
@@ -205,12 +204,31 @@ def GenerateTestResults(result_code, result_bundle, statuses, duration_ms,
 
 def _MaybeSetLog(bundle, current_result, symbolizer, device_abi):
   if _BUNDLE_STACK_ID in bundle:
+    stack = bundle[_BUNDLE_STACK_ID]
     if symbolizer and device_abi:
-      current_result.SetLog('%s\n%s' % (bundle[_BUNDLE_STACK_ID], '\n'.join(
-          symbolizer.ExtractAndResolveNativeStackTraces(
-              bundle[_BUNDLE_STACK_ID], device_abi))))
+      current_result.SetLog('%s\n%s' % (stack, '\n'.join(
+          symbolizer.ExtractAndResolveNativeStackTraces(stack, device_abi))))
     else:
-      current_result.SetLog(bundle[_BUNDLE_STACK_ID])
+      current_result.SetLog(stack)
+
+    current_result.SetFailureReason(_ParseExceptionMessage(stack))
+
+
+def _ParseExceptionMessage(stack):
+  """Extracts the exception message from the given stack trace.
+  """
+  # This interprets stack traces reported via InstrumentationResultPrinter:
+  # https://source.chromium.org/chromium/chromium/src/+/main:third_party/android_support_test_runner/runner/src/main/java/android/support/test/internal/runner/listener/InstrumentationResultPrinter.java;l=181?q=InstrumentationResultPrinter&type=cs
+  # This is a standard Java stack trace, of the form:
+  # <Result of Exception.toString()>
+  #     at SomeClass.SomeMethod(...)
+  #     at ...
+  lines = stack.split('\n')
+  for i, line in enumerate(lines):
+    if line.startswith('\tat'):
+      return '\n'.join(lines[0:i])
+  # No call stack found, so assume everything is the exception message.
+  return stack
 
 
 def FilterTests(tests, filter_str=None, annotations=None,
@@ -223,39 +241,147 @@ def FilterTests(tests, filter_str=None, annotations=None,
            {'annotations": {}, 'class': 'com.example.TestB', 'method':'test2'}]
     filter_str: googletest-style filter string.
     annotations: a dict of wanted annotations for test methods.
-    exclude_annotations: a dict of annotations to exclude.
+    excluded_annotations: a dict of annotations to exclude.
 
   Return:
     A list of filtered tests
   """
-  def gtest_filter(t):
-    if not filter_str:
-      return True
+
+  def test_names_from_pattern(combined_pattern, test_names):
+    patterns = combined_pattern.split(':')
+
+    hashable_patterns = set()
+    filename_patterns = []
+    for pattern in patterns:
+      if ('*' in pattern or '?' in pattern or '[' in pattern):
+        filename_patterns.append(pattern)
+      else:
+        hashable_patterns.add(pattern)
+
+    filter_test_names = set(
+        unittest_util.FilterTestNames(test_names, ':'.join(
+            filename_patterns))) if len(filename_patterns) > 0 else set()
+
+    for test_name in test_names:
+      if test_name in hashable_patterns:
+        filter_test_names.add(test_name)
+
+    return filter_test_names
+
+  def get_test_names(test):
+    test_names = set()
     # Allow fully-qualified name as well as an omitted package.
     unqualified_class_test = {
-      'class': t['class'].split('.')[-1],
-      'method': t['method']
+        'class': test['class'].split('.')[-1],
+        'method': test['method']
     }
-    names = [
-      GetTestName(t, sep='.'),
-      GetTestName(unqualified_class_test, sep='.'),
-      GetUniqueTestName(t, sep='.')
-    ]
 
-    if t['is_junit4']:
-      names += [
-          GetTestNameWithoutParameterPostfix(t, sep='.'),
-          GetTestNameWithoutParameterPostfix(unqualified_class_test, sep='.')
-      ]
+    test_name = GetTestName(test, sep='.')
+    test_names.add(test_name)
+
+    unqualified_class_test_name = GetTestName(unqualified_class_test, sep='.')
+    test_names.add(unqualified_class_test_name)
+
+    unique_test_name = GetUniqueTestName(test, sep='.')
+    test_names.add(unique_test_name)
+
+    if test['is_junit4']:
+      junit4_test_name = GetTestNameWithoutParameterPostfix(test, sep='.')
+      test_names.add(junit4_test_name)
+
+      unqualified_junit4_test_name = \
+        GetTestNameWithoutParameterPostfix(unqualified_class_test, sep='.')
+      test_names.add(unqualified_junit4_test_name)
+    return test_names
+
+  def get_tests_from_names(tests, test_names, tests_to_names):
+    ''' Returns the tests for which the given names apply
+
+    Args:
+      tests: a list of tests. e.g. [
+            {'annotations": {}, 'class': 'com.example.TestA', 'method':'test1'},
+            {'annotations": {}, 'class': 'com.example.TestB', 'method':'test2'}]
+      test_names: a collection of names determining tests to return.
+
+    Return:
+      A list of tests that match the given test names
+    '''
+    filtered_tests = []
+    for t in tests:
+      current_test_names = tests_to_names[id(t)]
+
+      for current_test_name in current_test_names:
+        if current_test_name in test_names:
+          filtered_tests.append(t)
+          break
+
+    return filtered_tests
+
+  def remove_tests_from_names(tests, remove_test_names, tests_to_names):
+    ''' Returns the tests from the given list with given names removed
+
+    Args:
+      tests: a list of tests. e.g. [
+            {'annotations": {}, 'class': 'com.example.TestA', 'method':'test1'},
+            {'annotations": {}, 'class': 'com.example.TestB', 'method':'test2'}]
+      remove_test_names: a collection of names determining tests to remove.
+      tests_to_names: a dcitionary of test ids to a collection of applicable
+            names for that test
+
+    Return:
+      A list of tests that don't match the given test names
+    '''
+    filtered_tests = []
+
+    for t in tests:
+      for name in tests_to_names[id(t)]:
+        if name in remove_test_names:
+          break
+      else:
+        filtered_tests.append(t)
+    return filtered_tests
+
+  def gtests_filter(tests, combined_filter):
+    ''' Returns the tests after the filter_str has been applied
+
+    Args:
+      tests: a list of tests. e.g. [
+            {'annotations": {}, 'class': 'com.example.TestA', 'method':'test1'},
+            {'annotations": {}, 'class': 'com.example.TestB', 'method':'test2'}]
+      combined_filter: the filter string representing tests to exclude
+
+    Return:
+      A list of tests that should still be included after the filter_str is
+      applied to their names
+    '''
+
+    if not combined_filter:
+      return tests
+
+    # Collect all test names
+    all_test_names = set()
+    tests_to_names = {}
+    for t in tests:
+      tests_to_names[id(t)] = get_test_names(t)
+      for name in tests_to_names[id(t)]:
+        all_test_names.add(name)
 
     pattern_groups = filter_str.split('-')
-    if len(pattern_groups) > 1:
-      negative_filter = pattern_groups[1]
-      if unittest_util.FilterTestNames(names, negative_filter):
-        return []
+    negative_pattern = pattern_groups[1] if len(pattern_groups) > 1 else None
+    positive_pattern = pattern_groups[0]
 
-    positive_filter = pattern_groups[0]
-    return unittest_util.FilterTestNames(names, positive_filter)
+    if positive_pattern:
+      # Only use the test names that match the positive pattern
+      positive_test_names = test_names_from_pattern(positive_pattern,
+                                                    all_test_names)
+      tests = get_tests_from_names(tests, positive_test_names, tests_to_names)
+
+    if negative_pattern:
+      # Remove any test the negative filter matches
+      remove_names = test_names_from_pattern(negative_pattern, all_test_names)
+      tests = remove_tests_from_names(tests, remove_names, tests_to_names)
+
+    return tests
 
   def annotation_filter(all_annotations):
     if not annotations:
@@ -277,24 +403,19 @@ def FilterTests(tests, filter_str=None, annotations=None,
   def annotation_value_matches(filter_av, av):
     if filter_av is None:
       return True
-    elif isinstance(av, dict):
+    if isinstance(av, dict):
       tav_from_dict = av['value']
       # If tav_from_dict is an int, the 'in' operator breaks, so convert
       # filter_av and manually compare. See https://crbug.com/1019707
       if isinstance(tav_from_dict, int):
         return int(filter_av) == tav_from_dict
-      else:
-        return filter_av in tav_from_dict
-    elif isinstance(av, list):
+      return filter_av in tav_from_dict
+    if isinstance(av, list):
       return filter_av in av
     return filter_av == av
 
-  filtered_tests = []
-  for t in tests:
-    # Gtest filtering
-    if not gtest_filter(t):
-      continue
-
+  return_tests = []
+  for t in gtests_filter(tests, filter_str):
     # Enforce that all tests declare their size.
     if not any(a in _VALID_ANNOTATIONS for a in t['annotations']):
       raise MissingSizeAnnotationError(GetTestName(t))
@@ -302,11 +423,9 @@ def FilterTests(tests, filter_str=None, annotations=None,
     if (not annotation_filter(t['annotations'])
         or not excluded_annotation_filter(t['annotations'])):
       continue
+    return_tests.append(t)
 
-    filtered_tests.append(t)
-
-  return filtered_tests
-
+  return return_tests
 
 # TODO(yolandyan): remove this once the tests are converted to junit4
 def GetAllTestsFromJar(test_jar):
@@ -338,7 +457,7 @@ def GetTestsFromPickle(pickle_path, test_mtime):
   if os.path.getmtime(pickle_path) <= test_mtime:
     raise TestListPickleException('File is stale: %s' % pickle_path)
 
-  with open(pickle_path, 'r') as f:
+  with open(pickle_path, 'rb') as f:
     pickle_data = pickle.load(f)
   if pickle_data['VERSION'] != _PICKLE_FORMAT_VERSION:
     raise TestListPickleException('PICKLE_FORMAT_VERSION has changed.')
@@ -408,7 +527,7 @@ def SaveTestsToPickle(pickle_path, tests):
     'VERSION': _PICKLE_FORMAT_VERSION,
     'TEST_METHODS': tests,
   }
-  with open(pickle_path, 'w') as pickle_file:
+  with open(pickle_path, 'wb') as pickle_file:
     pickle.dump(pickle_data, pickle_file)
 
 
@@ -416,7 +535,7 @@ class MissingJUnit4RunnerException(test_exception.TestException):
   """Raised when JUnit4 runner is not provided or specified in apk manifest"""
 
   def __init__(self):
-    super(MissingJUnit4RunnerException, self).__init__(
+    super().__init__(
         'JUnit4 runner is not provided or specified in test apk manifest.')
 
 
@@ -488,7 +607,7 @@ def GetUniqueTestName(test, sep='#'):
 class InstrumentationTestInstance(test_instance.TestInstance):
 
   def __init__(self, args, data_deps_delegate, error_func):
-    super(InstrumentationTestInstance, self).__init__()
+    super().__init__()
 
     self._additional_apks = []
     self._apk_under_test = None
@@ -528,12 +647,12 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._initializeTestControlAttributes(args)
 
     self._coverage_directory = None
-    self._jacoco_coverage_type = None
     self._initializeTestCoverageAttributes(args)
 
     self._store_tombstones = False
     self._symbolizer = None
-    self._enable_java_deobfuscation = False
+    self._enable_breakpad_dump = False
+    self._proguard_mapping_path = None
     self._deobfuscator = None
     self._initializeLogAttributes(args)
 
@@ -551,6 +670,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
     self._skia_gold_properties = None
     self._initializeSkiaGoldAttributes(args)
+
+    self._test_launcher_batch_limit = None
+    self._initializeTestLauncherAttributes(args)
 
     self._wpr_enable_record = args.wpr_enable_record
 
@@ -655,10 +777,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
           self._package_info = package_info
           break
     if not self._package_info:
-      logging.warning(("Unable to find package info for %s. " +
-                       "(This may just mean that the test package is " +
-                       "currently being installed.)"),
-                       self._test_package)
+      logging.warning(
+          'Unable to find package info for %s. '
+          '(This may just mean that the test package is '
+          'currently being installed.)', self._test_package)
 
     for apk in args.additional_apks:
       if not os.path.exists(apk):
@@ -724,15 +846,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
   def _initializeTestCoverageAttributes(self, args):
     self._coverage_directory = args.coverage_dir
-    if ("Batch", "UnitTests") in self._annotations and (
-        "Batch", "UnitTests") not in self._excluded_annotations:
-      self._jacoco_coverage_type = "unit_tests_only"
-    elif ("Batch", "UnitTests") not in self._annotations and (
-        "Batch", "UnitTests") in self._excluded_annotations:
-      self._jacoco_coverage_type = "unit_tests_excluded"
 
   def _initializeLogAttributes(self, args):
-    self._enable_java_deobfuscation = args.enable_java_deobfuscation
+    self._enable_breakpad_dump = args.enable_breakpad_dump
+    self._proguard_mapping_path = args.proguard_mapping_path
     self._store_tombstones = args.store_tombstones
     self._symbolizer = stack_symbolizer.Symbolizer(
         self.apk_under_test.path if self.apk_under_test else None)
@@ -767,6 +884,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   def _initializeSkiaGoldAttributes(self, args):
     self._skia_gold_properties = gold_utils.AndroidSkiaGoldProperties(args)
 
+  def _initializeTestLauncherAttributes(self, args):
+    if hasattr(args, 'test_launcher_batch_limit'):
+      self._test_launcher_batch_limit = args.test_launcher_batch_limit
+
   @property
   def additional_apks(self):
     return self._additional_apks
@@ -800,16 +921,16 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     return self._edit_shared_prefs
 
   @property
+  def enable_breakpad_dump(self):
+    return self._enable_breakpad_dump
+
+  @property
   def external_shard_index(self):
     return self._external_shard_index
 
   @property
   def flags(self):
     return self._flags
-
-  @property
-  def jacoco_coverage_type(self):
-    return self._jacoco_coverage_type
 
   @property
   def junit3_runner_class(self):
@@ -868,8 +989,16 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     return self._test_apk_incremental_install_json
 
   @property
+  def test_filter(self):
+    return self._test_filter
+
+  @property
   def test_jar(self):
     return self._test_jar
+
+  @property
+  def test_launcher_batch_limit(self):
+    return self._test_launcher_batch_limit
 
   @property
   def test_support_apk(self):
@@ -923,9 +1052,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   def SetUp(self):
     self._data_deps.extend(
         self._data_deps_delegate(self._runtime_deps_path))
-    if self._enable_java_deobfuscation:
+    if self._proguard_mapping_path:
       self._deobfuscator = deobfuscator.DeobfuscatorPool(
-          self.test_apk.path + '.mapping')
+          self._proguard_mapping_path)
 
   def GetDataDependencies(self):
     return self._data_deps
@@ -991,14 +1120,13 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     def _annotationToSwitches(clazz, methods):
       if clazz == _PARAMETERIZED_COMMAND_LINE_FLAGS_SWITCHES:
         return [methods['value']]
-      elif clazz == _PARAMETERIZED_COMMAND_LINE_FLAGS:
+      if clazz == _PARAMETERIZED_COMMAND_LINE_FLAGS:
         list_of_switches = []
         for annotation in methods['value']:
-          for clazz, methods in six.iteritems(annotation):
-            list_of_switches += _annotationToSwitches(clazz, methods)
+          for c, m in six.iteritems(annotation):
+            list_of_switches += _annotationToSwitches(c, m)
         return list_of_switches
-      else:
-        return []
+      return []
 
     def _setTestFlags(test, flags):
       if flags:

@@ -25,6 +25,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -35,15 +36,21 @@ namespace wayland {
 
 namespace {
 
-constexpr auto kTransitionDuration = base::TimeDelta::FromSeconds(3);
+constexpr auto kTransitionDuration = base::Seconds(3);
 
 class TestAuraSurface : public AuraSurface {
  public:
   explicit TestAuraSurface(Surface* surface)
       : AuraSurface(surface, /*resource=*/nullptr) {}
 
+  TestAuraSurface(const TestAuraSurface&) = delete;
+  TestAuraSurface& operator=(const TestAuraSurface&) = delete;
+
   float last_sent_occlusion_fraction() const {
     return last_sent_occlusion_fraction_;
+  }
+  aura::Window::OcclusionState last_sent_occlusion_state() const {
+    return last_sent_occlusion_state_;
   }
   int num_occlusion_updates() const { return num_occlusion_updates_; }
 
@@ -53,11 +60,16 @@ class TestAuraSurface : public AuraSurface {
     num_occlusion_updates_++;
   }
 
+  void SendOcclusionState(
+      const aura::Window::OcclusionState occlusion_state) override {
+    last_sent_occlusion_state_ = occlusion_state;
+  }
+
  private:
   float last_sent_occlusion_fraction_ = -1.0f;
+  aura::Window::OcclusionState last_sent_occlusion_state_ =
+      aura::Window::OcclusionState::UNKNOWN;
   int num_occlusion_updates_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAuraSurface);
 };
 
 class MockSurfaceDelegate : public SurfaceDelegate {
@@ -83,14 +95,28 @@ class MockSurfaceDelegate : public SurfaceDelegate {
   MOCK_METHOD(void, OnActivationRequested, (), (override));
   MOCK_METHOD(void, OnNewOutputAdded, (), (override));
   MOCK_METHOD(void, OnSetServerStartResize, (), (override));
-  MOCK_METHOD(void, ShowSnapPreviewToLeft, (), (override));
-  MOCK_METHOD(void, ShowSnapPreviewToRight, (), (override));
+  MOCK_METHOD(void, ShowSnapPreviewToPrimary, (), (override));
+  MOCK_METHOD(void, ShowSnapPreviewToSecondary, (), (override));
   MOCK_METHOD(void, HideSnapPreview, (), (override));
-  MOCK_METHOD(void, SetSnappedToRight, (), (override));
-  MOCK_METHOD(void, SetSnappedToLeft, (), (override));
+  MOCK_METHOD(void, SetSnappedToSecondary, (), (override));
+  MOCK_METHOD(void, SetSnappedToPrimary, (), (override));
   MOCK_METHOD(void, UnsetSnap, (), (override));
   MOCK_METHOD(void, SetCanGoBack, (), (override));
   MOCK_METHOD(void, UnsetCanGoBack, (), (override));
+  MOCK_METHOD(void, SetPip, (), (override));
+  MOCK_METHOD(void, UnsetPip, (), (override));
+  MOCK_METHOD(void,
+              SetAspectRatio,
+              (const gfx::SizeF& aspect_ratio),
+              (override));
+  MOCK_METHOD(void, MoveToDesk, (int desk_index), (override));
+  MOCK_METHOD(void, SetVisibleOnAllWorkspaces, (), (override));
+  MOCK_METHOD(void,
+              SetInitialWorkspace,
+              (const char* initial_workspace),
+              (override));
+  MOCK_METHOD(void, Pin, (bool trusted), (override));
+  MOCK_METHOD(void, Unpin, (), (override));
 };
 
 }  // namespace
@@ -99,6 +125,10 @@ class ZAuraSurfaceTest : public test::ExoTestBase,
                          public ::wm::ActivationChangeObserver {
  public:
   ZAuraSurfaceTest() {}
+
+  ZAuraSurfaceTest(const ZAuraSurfaceTest&) = delete;
+  ZAuraSurfaceTest& operator=(const ZAuraSurfaceTest&) = delete;
+
   ~ZAuraSurfaceTest() override {}
 
   // test::ExoTestBase overrides:
@@ -168,14 +198,14 @@ class ZAuraSurfaceTest : public test::ExoTestBase,
   std::unique_ptr<Surface> surface_;
   std::unique_ptr<views::Widget> parent_widget_;
   float occlusion_fraction_on_activation_loss_ = -1.0f;
-
-  DISALLOW_COPY_AND_ASSIGN(ZAuraSurfaceTest);
 };
 
 TEST_F(ZAuraSurfaceTest, OcclusionTrackingStartsAfterCommit) {
   surface().OnWindowOcclusionChanged();
 
   EXPECT_EQ(-1.0f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::UNKNOWN,
+            aura_surface().last_sent_occlusion_state());
   EXPECT_EQ(0, aura_surface().num_occlusion_updates());
   EXPECT_FALSE(surface().IsTrackingOcclusion());
 
@@ -184,6 +214,8 @@ TEST_F(ZAuraSurfaceTest, OcclusionTrackingStartsAfterCommit) {
   surface().Commit();
 
   EXPECT_EQ(0.2f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
   EXPECT_EQ(1, aura_surface().num_occlusion_updates());
   EXPECT_TRUE(surface().IsTrackingOcclusion());
 }
@@ -192,6 +224,8 @@ TEST_F(ZAuraSurfaceTest,
        LosingActivationWithNoAnimatingWindowsSendsCorrectOcclusionFraction) {
   surface().Commit();
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
   EXPECT_EQ(1, aura_surface().num_occlusion_updates());
   ::wm::ActivateWindow(parent_widget().GetNativeWindow());
 
@@ -202,6 +236,8 @@ TEST_F(ZAuraSurfaceTest,
   widget->Show();
   EXPECT_EQ(0.2f, occlusion_fraction_on_activation_loss());
   EXPECT_EQ(0.2f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
   EXPECT_EQ(2, aura_surface().num_occlusion_updates());
 }
 
@@ -209,6 +245,8 @@ TEST_F(ZAuraSurfaceTest,
        LosingActivationWithAnimatingWindowsSendsTargetOcclusionFraction) {
   surface().Commit();
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
   EXPECT_EQ(1, aura_surface().num_occlusion_updates());
   ::wm::ActivateWindow(parent_widget().GetNativeWindow());
 
@@ -238,6 +276,8 @@ TEST_F(ZAuraSurfaceTest,
   widget->Show();
   EXPECT_EQ(0.2f, occlusion_fraction_on_activation_loss());
   EXPECT_EQ(0.2f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
   EXPECT_EQ(2, aura_surface().num_occlusion_updates());
 
   // Explicitly stop animation because threaded animation may have started
@@ -251,6 +291,8 @@ TEST_F(ZAuraSurfaceTest,
   // Expect the occlusion tracker to send an update after the animation
   // finishes.
   EXPECT_EQ(0.2f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
   EXPECT_EQ(3, aura_surface().num_occlusion_updates());
 }
 
@@ -258,6 +300,8 @@ TEST_F(ZAuraSurfaceTest,
        LosingActivationByTriggeringTheLockScreenDoesNotSendOccludedFraction) {
   surface().Commit();
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
   EXPECT_EQ(1, aura_surface().num_occlusion_updates());
   ::wm::ActivateWindow(parent_widget().GetNativeWindow());
 
@@ -286,10 +330,12 @@ TEST_F(ZAuraSurfaceTest,
             ash::window_util::GetActiveWindow());
   EXPECT_EQ(0.0f, occlusion_fraction_on_activation_loss());
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
 }
 
 TEST_F(ZAuraSurfaceTest, OcclusionIncludesOffScreenArea) {
-  UpdateDisplay("150x150");
+  UpdateDisplay("200x150");
 
   gfx::Size buffer_size(80, 100);
   std::unique_ptr<Buffer> buffer(
@@ -303,6 +349,8 @@ TEST_F(ZAuraSurfaceTest, OcclusionIncludesOffScreenArea) {
   surface().OnWindowOcclusionChanged();
 
   EXPECT_EQ(0.75f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
 }
 
 TEST_F(ZAuraSurfaceTest, ZeroSizeWindowSendsZeroOcclusionFraction) {
@@ -311,6 +359,8 @@ TEST_F(ZAuraSurfaceTest, ZeroSizeWindowSendsZeroOcclusionFraction) {
   surface().Commit();
   surface().OnWindowOcclusionChanged();
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
 }
 
 TEST_F(ZAuraSurfaceTest, CanSetFullscreenModeToPlain) {
@@ -321,6 +371,26 @@ TEST_F(ZAuraSurfaceTest, CanSetFullscreenModeToPlain) {
   EXPECT_CALL(delegate, SetUseImmersiveForFullscreen(false));
 
   aura_surface().SetFullscreenMode(ZAURA_SURFACE_FULLSCREEN_MODE_PLAIN);
+}
+
+TEST_F(ZAuraSurfaceTest, CanPin) {
+  MockSurfaceDelegate delegate;
+  wl_resource resource;
+  resource.data = &aura_surface();
+  surface().SetSurfaceDelegate(&delegate);
+  EXPECT_CALL(delegate, Pin(true));
+
+  aura_surface().Pin(true);
+}
+
+TEST_F(ZAuraSurfaceTest, CanUnpin) {
+  MockSurfaceDelegate delegate;
+  wl_resource resource;
+  resource.data = &aura_surface();
+  surface().SetSurfaceDelegate(&delegate);
+  EXPECT_CALL(delegate, Unpin());
+
+  aura_surface().Unpin();
 }
 
 TEST_F(ZAuraSurfaceTest, CanSetFullscreenModeToImmersive) {

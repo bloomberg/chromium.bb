@@ -26,6 +26,7 @@
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -153,6 +154,13 @@ TEST_F(ItemSuggestCacheTest, ConvertJsonSuccess) {
     })");
   ResultsMatch(ItemSuggestCache::ConvertJsonForTest(&empty_items),
                "the suggestion id", {});
+
+  const base::Value no_items = Parse(R"(
+    {
+      "suggestionSessionId": "the suggestion id"
+    })");
+  ResultsMatch(ItemSuggestCache::ConvertJsonForTest(&no_items),
+               "the suggestion id", {});
 }
 
 TEST_F(ItemSuggestCacheTest, ConvertJsonFailure) {
@@ -190,12 +198,6 @@ TEST_F(ItemSuggestCacheTest, ConvertJsonFailure) {
     })");
   EXPECT_FALSE(
       ItemSuggestCache::ConvertJsonForTest(&no_session_id).has_value());
-
-  const base::Value no_items = Parse(R"(
-    {
-      "suggestionSessionId": "the suggestion id"
-    })");
-  EXPECT_FALSE(ItemSuggestCache::ConvertJsonForTest(&no_items).has_value());
 }
 
 TEST_F(ItemSuggestCacheTest, UpdateCacheDisabledByExperiment) {
@@ -254,7 +256,8 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheServerNoAuthToken) {
 TEST_F(ItemSuggestCacheTest, UpdateCacheInsufficientResourcesError) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
       std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
-  identity_test_env_->MakePrimaryAccountAvailable(kEmail);
+  identity_test_env_->MakePrimaryAccountAvailable(kEmail,
+                                                  signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
 
   auto head = network::CreateURLResponseHead(net::HTTP_OK);
@@ -271,7 +274,8 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheInsufficientResourcesError) {
 TEST_F(ItemSuggestCacheTest, UpdateCacheNetError) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
       std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
-  identity_test_env_->MakePrimaryAccountAvailable(kEmail);
+  identity_test_env_->MakePrimaryAccountAvailable(kEmail,
+                                                  signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
 
   auto head = network::CreateURLResponseHead(net::HTTP_OK);
@@ -288,7 +292,8 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheNetError) {
 TEST_F(ItemSuggestCacheTest, UpdateCache5kkError) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
       std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
-  identity_test_env_->MakePrimaryAccountAvailable(kEmail);
+  identity_test_env_->MakePrimaryAccountAvailable(kEmail,
+                                                  signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
 
   auto head = network::mojom::URLResponseHead::New();
@@ -309,7 +314,8 @@ TEST_F(ItemSuggestCacheTest, UpdateCache5kkError) {
 TEST_F(ItemSuggestCacheTest, UpdateCache4kkError) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
       std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
-  identity_test_env_->MakePrimaryAccountAvailable(kEmail);
+  identity_test_env_->MakePrimaryAccountAvailable(kEmail,
+                                                  signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
 
   auto head = network::mojom::URLResponseHead::New();
@@ -330,7 +336,8 @@ TEST_F(ItemSuggestCacheTest, UpdateCache4kkError) {
 TEST_F(ItemSuggestCacheTest, UpdateCache3kkError) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
       std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
-  identity_test_env_->MakePrimaryAccountAvailable(kEmail);
+  identity_test_env_->MakePrimaryAccountAvailable(kEmail,
+                                                  signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
 
   auto head = network::mojom::URLResponseHead::New();
@@ -351,7 +358,8 @@ TEST_F(ItemSuggestCacheTest, UpdateCache3kkError) {
 TEST_F(ItemSuggestCacheTest, UpdateCacheEmptyResponse) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
       std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
-  identity_test_env_->MakePrimaryAccountAvailable(kEmail);
+  identity_test_env_->MakePrimaryAccountAvailable(kEmail,
+                                                  signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
   url_loader_factory_.AddResponse(kRequestUrl,
                                   /* content= */ "", net::HTTP_OK);
@@ -366,7 +374,8 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheEmptyResponse) {
 TEST_F(ItemSuggestCacheTest, UpdateCacheInvalidResponse) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
       std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
-  identity_test_env_->MakePrimaryAccountAvailable(kEmail);
+  identity_test_env_->MakePrimaryAccountAvailable(kEmail,
+                                                  signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
   url_loader_factory_.AddResponse(kRequestUrl, "invalid = json", net::HTTP_OK);
 
@@ -383,7 +392,8 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheInvalidResponse) {
 TEST_F(ItemSuggestCacheTest, UpdateCacheConversionFailure) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
       std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
-  identity_test_env_->MakePrimaryAccountAvailable(kEmail);
+  identity_test_env_->MakePrimaryAccountAvailable(kEmail,
+                                                  signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
   url_loader_factory_.AddResponse(kRequestUrl,
                                   R"(
@@ -405,7 +415,8 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheConversionFailure) {
 TEST_F(ItemSuggestCacheTest, UpdateCacheConversionEmptyResults) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
       std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
-  identity_test_env_->MakePrimaryAccountAvailable(kEmail);
+  identity_test_env_->MakePrimaryAccountAvailable(kEmail,
+                                                  signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
   url_loader_factory_.AddResponse(kRequestUrl,
                                   R"(
@@ -428,7 +439,8 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheConversionEmptyResults) {
 TEST_F(ItemSuggestCacheTest, UpdateCacheSavesResults) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
       std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
-  identity_test_env_->MakePrimaryAccountAvailable(kEmail);
+  identity_test_env_->MakePrimaryAccountAvailable(kEmail,
+                                                  signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
   url_loader_factory_.AddResponse(kRequestUrl, kValidJsonResponse,
                                   net::HTTP_OK);
@@ -450,7 +462,8 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheSavesResults) {
 TEST_F(ItemSuggestCacheTest, UpdateCacheSmallTimeBetweenUpdates) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
       std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
-  identity_test_env_->MakePrimaryAccountAvailable(kEmail);
+  identity_test_env_->MakePrimaryAccountAvailable(kEmail,
+                                                  signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
   url_loader_factory_.AddResponse(kRequestUrl,
                                   R"(
@@ -470,7 +483,7 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheSmallTimeBetweenUpdates) {
   ResultsMatch(itemSuggestCache->GetResults(), "suggestion id 1",
                {{"item id 1", "display text 1"}});
 
-  task_environment_.AdvanceClock(base::TimeDelta::FromMinutes(2));
+  task_environment_.AdvanceClock(base::Minutes(2));
 
   url_loader_factory_.AddResponse(kRequestUrl,
                                   R"(
