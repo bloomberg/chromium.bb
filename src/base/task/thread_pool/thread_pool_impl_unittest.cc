@@ -19,6 +19,7 @@
 #include "base/cfi_buildflags.h"
 #include "base/containers/span.h"
 #include "base/debug/stack_trace.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/system/sys_info.h"
@@ -28,6 +29,7 @@
 #include "base/task/thread_pool/test_task_factory.h"
 #include "base/task/thread_pool/test_utils.h"
 #include "base/task/thread_pool/worker_thread_observer.h"
+#include "base/task/updateable_sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -39,7 +41,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
-#include "base/updateable_sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -76,15 +77,6 @@ struct GroupTypes {
   test::GroupType foreground_type;
   test::GroupType background_type;
 };
-
-#if DCHECK_IS_ON()
-// Returns true if I/O calls are allowed on the current thread.
-bool GetIOAllowed() {
-  const bool previous_value = ThreadRestrictions::SetIOAllowed(true);
-  ThreadRestrictions::SetIOAllowed(previous_value);
-  return previous_value;
-}
-#endif
 
 // Returns true if a task with |traits| could run at background thread priority
 // on this platform. Even if this returns true, it is possible that the task
@@ -129,11 +121,10 @@ void VerifyTaskEnvironment(const TaskTraits& traits, GroupTypes group_types) {
                                               : ThreadPriority::NORMAL,
             PlatformThread::GetCurrentThreadPriority());
 
-#if DCHECK_IS_ON()
-  // The #if above is required because GetIOAllowed() always returns true when
-  // !DCHECK_IS_ON(), even when |traits| don't allow file I/O.
-  EXPECT_EQ(traits.may_block(), GetIOAllowed());
-#endif
+  if (traits.may_block())
+    internal::AssertBlockingAllowed();
+  else
+    internal::AssertBlockingDisallowedForTesting();
 
 #if HAS_NATIVE_THREAD_POOL()
   // Native thread groups do not provide the ability to name threads.
@@ -308,7 +299,7 @@ class ThreadPoolImplTestBase : public testing::Test {
 
   void StartThreadPool(
       int max_num_foreground_threads = kMaxNumForegroundThreads,
-      TimeDelta reclaim_time = TimeDelta::FromSeconds(30)) {
+      TimeDelta reclaim_time = Seconds(30)) {
     SetupFeatures();
 
     ThreadPoolInstance::InitParams init_params(max_num_foreground_threads);
@@ -348,7 +339,7 @@ class ThreadPoolImplTestBase : public testing::Test {
   }
 
   base::test::ScopedFeatureList feature_list_;
-  WorkerThreadObserver* worker_thread_observer_ = nullptr;
+  raw_ptr<WorkerThreadObserver> worker_thread_observer_ = nullptr;
   bool did_tear_down_ = false;
 };
 
@@ -1256,7 +1247,7 @@ class MustBeDestroyed {
   ~MustBeDestroyed() { *was_destroyed_ = true; }
 
  private:
-  bool* const was_destroyed_;
+  const raw_ptr<bool> was_destroyed_;
 };
 
 }  // namespace
@@ -1315,7 +1306,7 @@ struct TaskRunnerAndEvents {
 
   // An event that should be signaled before the task following the priority
   // update runs.
-  TestWaitableEvent* expected_previous_event;
+  raw_ptr<TestWaitableEvent> expected_previous_event;
 };
 
 // Create a series of sample task runners that will post tasks at various
@@ -1410,7 +1401,7 @@ void TestUpdatePrioritySequenceNotScheduled(ThreadPoolImplTest* test,
                     ? nullptr
                     :
 #endif
-                    task_runner_and_events->expected_previous_event),
+                    task_runner_and_events->expected_previous_event.get()),
             Unretained(&task_runner_and_events->task_ran)));
   }
 

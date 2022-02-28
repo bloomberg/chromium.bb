@@ -48,6 +48,9 @@ class MojoCdmBuffer final : public cdm::Buffer {
         std::move(mapping), std::move(mojo_shared_buffer_done_cb));
   }
 
+  MojoCdmBuffer(const MojoCdmBuffer&) = delete;
+  MojoCdmBuffer& operator=(const MojoCdmBuffer&) = delete;
+
   // cdm::Buffer implementation.
   void Destroy() final {
     // Unmap the memory before returning the handle to |allocator_|.
@@ -102,8 +105,6 @@ class MojoCdmBuffer final : public cdm::Buffer {
   mojo::ScopedSharedBufferMapping mapping_;
   const uint32_t capacity_;
   uint32_t size_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoCdmBuffer);
 };
 
 // VideoFrameImpl that is able to create a MojoSharedBufferVideoFrame
@@ -113,6 +114,10 @@ class MojoCdmVideoFrame final : public VideoFrameImpl {
   explicit MojoCdmVideoFrame(MojoSharedBufferVideoFrame::MojoSharedBufferDoneCB
                                  mojo_shared_buffer_done_cb)
       : mojo_shared_buffer_done_cb_(std::move(mojo_shared_buffer_done_cb)) {}
+
+  MojoCdmVideoFrame(const MojoCdmVideoFrame&) = delete;
+  MojoCdmVideoFrame& operator=(const MojoCdmVideoFrame&) = delete;
+
   ~MojoCdmVideoFrame() final = default;
 
   // VideoFrameImpl implementation.
@@ -141,8 +146,10 @@ class MojoCdmVideoFrame final : public VideoFrameImpl {
             natural_size, std::move(handle), buffer_size,
             {PlaneOffset(cdm::kYPlane), PlaneOffset(cdm::kUPlane),
              PlaneOffset(cdm::kVPlane)},
-            {Stride(cdm::kYPlane), Stride(cdm::kUPlane), Stride(cdm::kVPlane)},
-            base::TimeDelta::FromMicroseconds(Timestamp()));
+            {static_cast<int32_t>(Stride(cdm::kYPlane)),
+             static_cast<int32_t>(Stride(cdm::kUPlane)),
+             static_cast<int32_t>(Stride(cdm::kVPlane))},
+            base::Microseconds(Timestamp()));
 
     // |frame| could fail to be created if the memory can't be mapped into
     // this address space.
@@ -156,8 +163,6 @@ class MojoCdmVideoFrame final : public VideoFrameImpl {
  private:
   MojoSharedBufferVideoFrame::MojoSharedBufferDoneCB
       mojo_shared_buffer_done_cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoCdmVideoFrame);
 };
 
 }  // namespace

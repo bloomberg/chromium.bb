@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ash/login/saml/in_session_password_sync_manager.h"
 
+#include <utility>
+
+#include "ash/components/proximity_auth/screenlock_bridge.h"
 #include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/time/default_clock.h"
@@ -16,7 +19,6 @@
 #include "chrome/browser/ash/login/saml/password_sync_token_fetcher.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/prefs/pref_service.h"
@@ -26,7 +28,7 @@
 #include "components/user_manager/user_manager_base.h"
 #include "content/public/browser/storage_partition.h"
 
-namespace chromeos {
+namespace ash {
 
 InSessionPasswordSyncManager::InSessionPasswordSyncManager(
     Profile* primary_profile)
@@ -133,6 +135,7 @@ void InSessionPasswordSyncManager::CreateTokenAsync() {
 }
 
 void InSessionPasswordSyncManager::OnTokenCreated(const std::string& token) {
+  password_sync_token_fetcher_.reset();
   PrefService* prefs = primary_profile_->GetPrefs();
 
   // Set token value in prefs for in-session operations and ephemeral users and
@@ -150,6 +153,7 @@ void InSessionPasswordSyncManager::FetchTokenAsync() {
 }
 
 void InSessionPasswordSyncManager::OnTokenFetched(const std::string& token) {
+  password_sync_token_fetcher_.reset();
   if (!token.empty()) {
     // Set token fetched from the endpoint in prefs and local settings.
     PrefService* prefs = primary_profile_->GetPrefs();
@@ -170,8 +174,16 @@ void InSessionPasswordSyncManager::OnTokenVerified(bool is_valid) {
 
 void InSessionPasswordSyncManager::OnApiCallFailed(
     PasswordSyncTokenFetcher::ErrorType error_type) {
-  // Ignore API errors since they are logged by TokenFetcher and will be
-  // re-tried after the next verify interval.
+  // If error_type == kGetNoList || kGetNoToken the token API is not
+  // initialized yet and we can fix it by creating a new token on lock
+  // screen re-authentication.
+  // All other API errors will be ignored since they are logged by
+  // TokenFetcher and will be re-tried.
+  password_sync_token_fetcher_.reset();
+  if (error_type == PasswordSyncTokenFetcher::ErrorType::kGetNoList ||
+      error_type == PasswordSyncTokenFetcher::ErrorType::kGetNoToken) {
+    CreateTokenAsync();
+  }
 }
 
 void InSessionPasswordSyncManager::CheckCredentials(
@@ -269,4 +281,28 @@ void InSessionPasswordSyncManager::ResetDialog() {
   lock_screen_start_reauth_dialog_.reset();
 }
 
-}  // namespace chromeos
+int InSessionPasswordSyncManager::GetDialogWidth() {
+  if (!lock_screen_start_reauth_dialog_)
+    return 0;
+  return lock_screen_start_reauth_dialog_->GetDialogWidth();
+}
+
+bool InSessionPasswordSyncManager::IsReauthDialogLoadedForTesting(
+    base::OnceClosure callback) {
+  if (is_dialog_loaded_for_testing_)
+    return true;
+  DCHECK(!on_dialog_loaded_callback_for_testing_);
+  on_dialog_loaded_callback_for_testing_ = std::move(callback);
+  return false;
+}
+
+void InSessionPasswordSyncManager::OnReauthDialogReadyForTesting() {
+  if (is_dialog_loaded_for_testing_)
+    return;
+  is_dialog_loaded_for_testing_ = true;
+  if (on_dialog_loaded_callback_for_testing_) {
+    std::move(on_dialog_loaded_callback_for_testing_).Run();
+  }
+}
+
+}  // namespace ash

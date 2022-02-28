@@ -252,11 +252,11 @@ bool BlockIsBackEdge(opt::IRContext* context, uint32_t block_id,
     return false;
   }
 
-  // |block_id| must be reachable and be dominated by |loop_header|.
+  // |block| must be reachable and be dominated by |loop_header|.
   opt::DominatorAnalysis* dominator_analysis =
       context->GetDominatorAnalysis(loop_header->GetParent());
-  return dominator_analysis->IsReachable(block_id) &&
-         dominator_analysis->Dominates(loop_header_id, block_id);
+  return context->IsReachable(*block) &&
+         dominator_analysis->Dominates(loop_header, block);
 }
 
 bool BlockIsInLoopContinueConstruct(opt::IRContext* context, uint32_t block_id,
@@ -284,13 +284,6 @@ opt::BasicBlock::iterator GetIteratorForInstruction(
   return block->end();
 }
 
-bool BlockIsReachableInItsFunction(opt::IRContext* context,
-                                   opt::BasicBlock* bb) {
-  auto enclosing_function = bb->GetParent();
-  return context->GetDominatorAnalysis(enclosing_function)
-      ->Dominates(enclosing_function->entry().get(), bb);
-}
-
 bool CanInsertOpcodeBeforeInstruction(
     SpvOp opcode, const opt::BasicBlock::iterator& instruction_in_block) {
   if (instruction_in_block->PreviousNode() &&
@@ -312,34 +305,34 @@ bool CanInsertOpcodeBeforeInstruction(
 
 bool CanMakeSynonymOf(opt::IRContext* ir_context,
                       const TransformationContext& transformation_context,
-                      opt::Instruction* inst) {
-  if (inst->opcode() == SpvOpSampledImage) {
+                      const opt::Instruction& inst) {
+  if (inst.opcode() == SpvOpSampledImage) {
     // The SPIR-V data rules say that only very specific instructions may
     // may consume the result id of an OpSampledImage, and this excludes the
     // instructions that are used for making synonyms.
     return false;
   }
-  if (!inst->HasResultId()) {
+  if (!inst.HasResultId()) {
     // We can only make a synonym of an instruction that generates an id.
     return false;
   }
   if (transformation_context.GetFactManager()->IdIsIrrelevant(
-          inst->result_id())) {
+          inst.result_id())) {
     // An irrelevant id can't be a synonym of anything.
     return false;
   }
-  if (!inst->type_id()) {
+  if (!inst.type_id()) {
     // We can only make a synonym of an instruction that has a type.
     return false;
   }
-  auto type_inst = ir_context->get_def_use_mgr()->GetDef(inst->type_id());
+  auto type_inst = ir_context->get_def_use_mgr()->GetDef(inst.type_id());
   if (type_inst->opcode() == SpvOpTypeVoid) {
     // We only make synonyms of instructions that define objects, and an object
     // cannot have void type.
     return false;
   }
   if (type_inst->opcode() == SpvOpTypePointer) {
-    switch (inst->opcode()) {
+    switch (inst.opcode()) {
       case SpvOpConstantNull:
       case SpvOpUndef:
         // We disallow making synonyms of null or undefined pointers.  This is
@@ -355,7 +348,7 @@ bool CanMakeSynonymOf(opt::IRContext* ir_context,
   // not decorated analogously, using the original object vs. its synonymous
   // form may not be equivalent.
   return ir_context->get_decoration_mgr()
-      ->GetDecorationsFor(inst->result_id(), true)
+      ->GetDecorationsFor(inst.result_id(), true)
       .empty();
 }
 
@@ -462,6 +455,30 @@ uint32_t GetBoundForCompositeIndex(const opt::Instruction& composite_type_inst,
   }
 }
 
+SpvMemorySemanticsMask GetMemorySemanticsForStorageClass(
+    SpvStorageClass storage_class) {
+  switch (storage_class) {
+    case SpvStorageClassWorkgroup:
+      return SpvMemorySemanticsWorkgroupMemoryMask;
+
+    case SpvStorageClassStorageBuffer:
+    case SpvStorageClassPhysicalStorageBuffer:
+      return SpvMemorySemanticsUniformMemoryMask;
+
+    case SpvStorageClassCrossWorkgroup:
+      return SpvMemorySemanticsCrossWorkgroupMemoryMask;
+
+    case SpvStorageClassAtomicCounter:
+      return SpvMemorySemanticsAtomicCounterMemoryMask;
+
+    case SpvStorageClassImage:
+      return SpvMemorySemanticsImageMemoryMask;
+
+    default:
+      return SpvMemorySemanticsMaskNone;
+  }
+}
+
 bool IsValid(const opt::IRContext* context,
              spv_validator_options validator_options,
              MessageConsumer consumer) {
@@ -509,8 +526,12 @@ bool IsValidAndWellFormed(const opt::IRContext* ir_context,
   // this is a useful aid to debugging.
   std::unordered_map<uint32_t, opt::Instruction*> unique_ids;
   bool found_duplicate = false;
-  ir_context->module()->ForEachInst([&consumer, &found_duplicate,
+  ir_context->module()->ForEachInst([&consumer, &found_duplicate, ir_context,
                                      &unique_ids](opt::Instruction* inst) {
+    (void)ir_context;  // Only used in an assertion; keep release-mode compilers
+                       // happy.
+    assert(inst->context() == ir_context &&
+           "Instruction has wrong IR context.");
     if (unique_ids.count(inst->unique_id()) != 0) {
       consumer(SPV_MSG_INFO, nullptr, {},
                "Two instructions have the same unique id (set a breakpoint to "
@@ -660,13 +681,12 @@ bool IdIsAvailableAtUse(opt::IRContext* context,
     // It is not OK for a definition to use itself.
     return false;
   }
-  auto dominator_analysis = context->GetDominatorAnalysis(enclosing_function);
-  if (!dominator_analysis->IsReachable(
-          context->get_instr_block(use_instruction)) ||
-      !dominator_analysis->IsReachable(context->get_instr_block(id))) {
+  if (!context->IsReachable(*context->get_instr_block(use_instruction)) ||
+      !context->IsReachable(*context->get_instr_block(id))) {
     // Skip unreachable blocks.
     return false;
   }
+  auto dominator_analysis = context->GetDominatorAnalysis(enclosing_function);
   if (use_instruction->opcode() == SpvOpPhi) {
     // In the case where the use is an operand to OpPhi, it is actually the
     // *parent* block associated with the operand that must be dominated by
@@ -704,8 +724,8 @@ bool IdIsAvailableBeforeInstruction(opt::IRContext* context,
   }
   const auto* dominator_analysis =
       context->GetDominatorAnalysis(function_enclosing_instruction);
-  if (dominator_analysis->IsReachable(context->get_instr_block(instruction)) &&
-      dominator_analysis->IsReachable(context->get_instr_block(id)) &&
+  if (context->IsReachable(*context->get_instr_block(instruction)) &&
+      context->IsReachable(*context->get_instr_block(id)) &&
       dominator_analysis->Dominates(id_definition, instruction)) {
     // The id's definition dominates the instruction, and both the definition
     // and the instruction are in reachable blocks, thus the id is available at
@@ -715,8 +735,7 @@ bool IdIsAvailableBeforeInstruction(opt::IRContext* context,
   if (id_definition->opcode() == SpvOpVariable &&
       function_enclosing_instruction ==
           context->get_instr_block(id)->GetParent()) {
-    assert(!dominator_analysis->IsReachable(
-               context->get_instr_block(instruction)) &&
+    assert(!context->IsReachable(*context->get_instr_block(instruction)) &&
            "If the instruction were in a reachable block we should already "
            "have returned true.");
     // The id is a variable and it is in the same function as |instruction|.
@@ -796,11 +815,38 @@ uint32_t InOperandIndexFromOperandIndex(const opt::Instruction& inst,
   return absolute_index - inst.NumOperands() + inst.NumInOperands();
 }
 
-bool IsNullConstantSupported(const opt::analysis::Type& type) {
-  return type.AsBool() || type.AsInteger() || type.AsFloat() ||
-         type.AsMatrix() || type.AsVector() || type.AsArray() ||
-         type.AsStruct() || type.AsPointer() || type.AsEvent() ||
-         type.AsDeviceEvent() || type.AsReserveId() || type.AsQueue();
+bool IsNullConstantSupported(opt::IRContext* ir_context,
+                             const opt::Instruction& type_inst) {
+  switch (type_inst.opcode()) {
+    case SpvOpTypeArray:
+    case SpvOpTypeBool:
+    case SpvOpTypeDeviceEvent:
+    case SpvOpTypeEvent:
+    case SpvOpTypeFloat:
+    case SpvOpTypeInt:
+    case SpvOpTypeMatrix:
+    case SpvOpTypeQueue:
+    case SpvOpTypeReserveId:
+    case SpvOpTypeVector:
+    case SpvOpTypeStruct:
+      return true;
+    case SpvOpTypePointer:
+      // Null pointers are allowed if the VariablePointers capability is
+      // enabled, or if the VariablePointersStorageBuffer capability is enabled
+      // and the pointer type has StorageBuffer as its storage class.
+      if (ir_context->get_feature_mgr()->HasCapability(
+              SpvCapabilityVariablePointers)) {
+        return true;
+      }
+      if (ir_context->get_feature_mgr()->HasCapability(
+              SpvCapabilityVariablePointersStorageBuffer)) {
+        return type_inst.GetSingleWordInOperand(0) ==
+               SpvStorageClassStorageBuffer;
+      }
+      return false;
+    default:
+      return false;
+  }
 }
 
 bool GlobalVariablesMustBeDeclaredInEntryPointInterfaces(
@@ -1625,6 +1671,44 @@ bool IdUseCanBeReplaced(opt::IRContext* ir_context,
     return false;
   }
 
+  if (ir_context->get_feature_mgr()->HasCapability(SpvCapabilityShader)) {
+    // With the Shader capability, memory scope and memory semantics operands
+    // are required to be constants, so they cannot be replaced arbitrarily.
+    switch (use_instruction->opcode()) {
+      case SpvOpAtomicLoad:
+      case SpvOpAtomicStore:
+      case SpvOpAtomicExchange:
+      case SpvOpAtomicIIncrement:
+      case SpvOpAtomicIDecrement:
+      case SpvOpAtomicIAdd:
+      case SpvOpAtomicISub:
+      case SpvOpAtomicSMin:
+      case SpvOpAtomicUMin:
+      case SpvOpAtomicSMax:
+      case SpvOpAtomicUMax:
+      case SpvOpAtomicAnd:
+      case SpvOpAtomicOr:
+      case SpvOpAtomicXor:
+        if (use_in_operand_index == 1 || use_in_operand_index == 2) {
+          return false;
+        }
+        break;
+      case SpvOpAtomicCompareExchange:
+        if (use_in_operand_index == 1 || use_in_operand_index == 2 ||
+            use_in_operand_index == 3) {
+          return false;
+        }
+        break;
+      case SpvOpAtomicCompareExchangeWeak:
+      case SpvOpAtomicFlagTestAndSet:
+      case SpvOpAtomicFlagClear:
+      case SpvOpAtomicFAddEXT:
+        assert(false && "Not allowed with the Shader capability.");
+      default:
+        break;
+    }
+  }
+
   return true;
 }
 
@@ -1883,7 +1967,7 @@ bool NewTerminatorPreservesDominationRules(opt::IRContext* ir_context,
   // all its dependencies satisfy domination rules (i.e. all id operands
   // dominate that instruction).
   for (const auto& block : *mutated_block->GetParent()) {
-    if (!dominator_analysis.IsReachable(&block)) {
+    if (!ir_context->IsReachable(block)) {
       // If some block is not reachable then we don't need to worry about the
       // preservation of domination rules for its instructions.
       continue;
@@ -1932,6 +2016,93 @@ opt::Module::iterator GetFunctionIterator(opt::IRContext* ir_context,
                       [function_id](const opt::Function& f) {
                         return f.result_id() == function_id;
                       });
+}
+
+// TODO(https://github.com/KhronosGroup/SPIRV-Tools/issues/3582): Add all
+//  opcodes that are agnostic to signedness of operands to function.
+//  This is not exhaustive yet.
+bool IsAgnosticToSignednessOfOperand(SpvOp opcode,
+                                     uint32_t use_in_operand_index) {
+  switch (opcode) {
+    case SpvOpSNegate:
+    case SpvOpNot:
+    case SpvOpIAdd:
+    case SpvOpISub:
+    case SpvOpIMul:
+    case SpvOpSDiv:
+    case SpvOpSRem:
+    case SpvOpSMod:
+    case SpvOpShiftRightLogical:
+    case SpvOpShiftRightArithmetic:
+    case SpvOpShiftLeftLogical:
+    case SpvOpBitwiseOr:
+    case SpvOpBitwiseXor:
+    case SpvOpBitwiseAnd:
+    case SpvOpIEqual:
+    case SpvOpINotEqual:
+    case SpvOpULessThan:
+    case SpvOpSLessThan:
+    case SpvOpUGreaterThan:
+    case SpvOpSGreaterThan:
+    case SpvOpULessThanEqual:
+    case SpvOpSLessThanEqual:
+    case SpvOpUGreaterThanEqual:
+    case SpvOpSGreaterThanEqual:
+      return true;
+
+    case SpvOpAtomicStore:
+    case SpvOpAtomicExchange:
+    case SpvOpAtomicIAdd:
+    case SpvOpAtomicISub:
+    case SpvOpAtomicSMin:
+    case SpvOpAtomicUMin:
+    case SpvOpAtomicSMax:
+    case SpvOpAtomicUMax:
+    case SpvOpAtomicAnd:
+    case SpvOpAtomicOr:
+    case SpvOpAtomicXor:
+    case SpvOpAtomicFAddEXT:  // Capability AtomicFloat32AddEXT,
+      // AtomicFloat64AddEXT.
+      assert(use_in_operand_index != 0 &&
+             "Signedness check should not occur on a pointer operand.");
+      return use_in_operand_index == 1 || use_in_operand_index == 2;
+
+    case SpvOpAtomicCompareExchange:
+    case SpvOpAtomicCompareExchangeWeak:  // Capability Kernel.
+      assert(use_in_operand_index != 0 &&
+             "Signedness check should not occur on a pointer operand.");
+      return use_in_operand_index >= 1 && use_in_operand_index <= 3;
+
+    case SpvOpAtomicLoad:
+    case SpvOpAtomicIIncrement:
+    case SpvOpAtomicIDecrement:
+    case SpvOpAtomicFlagTestAndSet:  // Capability Kernel.
+    case SpvOpAtomicFlagClear:       // Capability Kernel.
+      assert(use_in_operand_index != 0 &&
+             "Signedness check should not occur on a pointer operand.");
+      return use_in_operand_index >= 1;
+
+    case SpvOpAccessChain:
+      // The signedness of indices does not matter.
+      return use_in_operand_index > 0;
+
+    default:
+      // Conservatively assume that the id cannot be swapped in other
+      // instructions.
+      return false;
+  }
+}
+
+bool TypesAreCompatible(opt::IRContext* ir_context, SpvOp opcode,
+                        uint32_t use_in_operand_index, uint32_t type_id_1,
+                        uint32_t type_id_2) {
+  assert(ir_context->get_type_mgr()->GetType(type_id_1) &&
+         ir_context->get_type_mgr()->GetType(type_id_2) &&
+         "Type ids are invalid");
+
+  return type_id_1 == type_id_2 ||
+         (IsAgnosticToSignednessOfOperand(opcode, use_in_operand_index) &&
+          fuzzerutil::TypesAreEqualUpToSign(ir_context, type_id_1, type_id_2));
 }
 
 }  // namespace fuzzerutil

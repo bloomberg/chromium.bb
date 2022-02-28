@@ -15,6 +15,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/url_constants.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -27,12 +28,13 @@
 
 SoundContentSettingObserver::SoundContentSettingObserver(
     content::WebContents* contents)
-    : content::WebContentsObserver(contents), logged_site_muted_ukm_(false) {
+    : content::WebContentsObserver(contents),
+      content::WebContentsUserData<SoundContentSettingObserver>(*contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   host_content_settings_map_ =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  observation_.Observe(host_content_settings_map_);
+  observation_.Observe(host_content_settings_map_.get());
 
 #if !defined(OS_ANDROID)
   // Listen to changes of the block autoplay pref.
@@ -53,7 +55,9 @@ void SoundContentSettingObserver::ReadyToCommitNavigation(
 
   GURL url = navigation_handle->IsInMainFrame()
                  ? navigation_handle->GetURL()
-                 : navigation_handle->GetWebContents()->GetLastCommittedURL();
+                 : navigation_handle->GetRenderFrameHost()
+                       ->GetMainFrame()
+                       ->GetLastCommittedURL();
 
   content_settings::SettingInfo setting_info;
   std::unique_ptr<base::Value> setting =
@@ -84,7 +88,8 @@ void SoundContentSettingObserver::ReadyToCommitNavigation(
 
 void SoundContentSettingObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsInMainFrame() && navigation_handle->HasCommitted() &&
+  if (navigation_handle->IsInPrimaryMainFrame() &&
+      navigation_handle->HasCommitted() &&
       !navigation_handle->IsSameDocument()) {
     MuteOrUnmuteIfNecessary();
     logged_site_muted_ukm_ = false;
@@ -98,13 +103,13 @@ void SoundContentSettingObserver::OnAudioStateChanged(bool audible) {
 void SoundContentSettingObserver::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type) {
-  if (content_type != ContentSettingsType::SOUND)
+    ContentSettingsTypeSet content_type_set) {
+  if (!content_type_set.Contains(ContentSettingsType::SOUND))
     return;
 
 #if !defined(OS_ANDROID)
-  if (primary_pattern == ContentSettingsPattern() &&
-      secondary_pattern == ContentSettingsPattern()) {
+  if (primary_pattern.MatchesAllHosts() &&
+      secondary_pattern.MatchesAllHosts()) {
     UpdateAutoplayPolicy();
   }
 #endif
@@ -151,10 +156,12 @@ ContentSetting SoundContentSettingObserver::GetCurrentContentSetting() {
 
 void SoundContentSettingObserver::CheckSoundBlocked(bool is_audible) {
   if (is_audible && GetCurrentContentSetting() == CONTENT_SETTING_BLOCK) {
-    // The tab has tried to play sound, but was muted.
-    // This is a page level event so it is OK to get the main frame here.
-    // TODO(https://crbug.com/1103176): We should figure a way of not having to
-    // use GetMainFrame here. (pass the source frame somehow)
+    // Since this is a page-level event and only primary pages can play audio
+    // in prerendering, we get `settings` from the main frame of the primary
+    // page.
+    // TODO(https://crbug.com/1103176): For other types of FrameTrees(fenced
+    // frames, portals) than prerendering, we should figure a way of not having
+    // to use GetMainFrame here. (pass the source frame somehow)
     content_settings::PageSpecificContentSettings* settings =
         content_settings::PageSpecificContentSettings::GetForFrame(
             web_contents()->GetMainFrame());
@@ -200,4 +207,4 @@ void SoundContentSettingObserver::UpdateAutoplayPolicy() {
 }
 #endif
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(SoundContentSettingObserver)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SoundContentSettingObserver);

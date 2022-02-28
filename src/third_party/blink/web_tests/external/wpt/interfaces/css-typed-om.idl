@@ -158,10 +158,10 @@ interface CSSMathMax : CSSMathValue {
 
 [Exposed=(Window, Worker, PaintWorklet, LayoutWorklet)]
 interface CSSMathClamp : CSSMathValue {
-    constructor(CSSNumberish min, CSSNumberish val, CSSNumberish max);
-    readonly attribute CSSNumericValue min;
-    readonly attribute CSSNumericValue val;
-    readonly attribute CSSNumericValue max;
+    constructor(CSSNumberish lower, CSSNumberish value, CSSNumberish upper);
+    readonly attribute CSSNumericValue lower;
+    readonly attribute CSSNumericValue value;
+    readonly attribute CSSNumericValue upper;
 };
 
 [Exposed=(Window, Worker, PaintWorklet, LayoutWorklet)]
@@ -242,6 +242,8 @@ interface CSSTransformValue : CSSStyleValue {
     DOMMatrix toMatrix();
 };
 
+typedef (CSSNumericValue or CSSKeywordish) CSSPerspectiveValue;
+
 [Exposed=(Window, Worker, PaintWorklet, LayoutWorklet)]
 interface CSSTransformComponent {
     stringifier;
@@ -299,8 +301,8 @@ interface CSSSkewY : CSSTransformComponent {
 
 [Exposed=(Window, Worker, PaintWorklet, LayoutWorklet)]
 interface CSSPerspective : CSSTransformComponent {
-    constructor(CSSNumericValue length);
-    attribute CSSNumericValue length;
+    constructor(CSSPerspectiveValue length);
+    attribute CSSPerspectiveValue length;
 };
 
 [Exposed=(Window, Worker, PaintWorklet, LayoutWorklet)]
@@ -319,14 +321,8 @@ interface CSSImageValue : CSSStyleValue {
 
 [Exposed=(Window, Worker, PaintWorklet, LayoutWorklet)]
 interface CSSColorValue : CSSStyleValue {
-    CSSRGB toRGB();
-    CSSHSL toHSL();
-    CSSHWB toHWB();
-    CSSGray toGray();
-    CSSLCH toLCH();
-    CSSLab toLab();
-    CSSColor toColor(CSSKeywordish colorspace);
-
+    readonly attribute CSSKeywordValue colorSpace;
+    CSSColorValue to(CSSKeywordish colorSpace);
     [Exposed=Window] static CSSColorValue parse(USVString cssText);
 };
 
@@ -358,13 +354,6 @@ interface CSSHWB : CSSColorValue {
 };
 
 [Exposed=(Window, Worker, PaintWorklet, LayoutWorklet)]
-interface CSSGray : CSSColorValue {
-    constructor(CSSNumberish gray, optional CSSNumberish alpha = 1);
-    attribute CSSNumberish gray;
-    attribute CSSNumberish alpha;
-};
-
-[Exposed=(Window, Worker, PaintWorklet, LayoutWorklet)]
 interface CSSLCH : CSSColorValue {
     constructor(CSSNumberish l, CSSNumberish c, CSSNumericValue h, optional CSSNumberish alpha = 1);
     attribute CSSNumberish l;
@@ -387,4 +376,14 @@ interface CSSColor : CSSColorValue {
     constructor(sequence<(DOMString or CSSNumberish)> variant);
     /* CSSColor(["foo", 0, 1, .5], ["bar", "yellow"], 1, fallbackColor) */
     /* or just make the alpha and fallback successive optional args? */
+};
+
+[Exposed=(Window, Worker, PaintWorklet, LayoutWorklet)]
+interface CSSDeviceCMYK : CSSColorValue {
+    constructor(CSSNumberish c, CSSNumberish m, CSSNumberish y, CSSNumberish k, optional CSSNumberish alpha = 1);
+    attribute CSSNumberish c;
+    attribute CSSNumberish m;
+    attribute CSSNumberish y;
+    attribute CSSNumberish k;
+    attribute CSSNumberish alpha;
 };

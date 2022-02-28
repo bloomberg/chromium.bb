@@ -10,11 +10,9 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
-#include "build/buildflag.h"
-#include "chromeos/assistant/internal/buildflags.h"
+#include "base/task/single_thread_task_runner.h"
+#include "chromeos/assistant/internal/libassistant/shared_headers.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
 #include "chromeos/services/libassistant/audio/audio_device_owner.h"
@@ -22,7 +20,6 @@
 #include "chromeos/services/libassistant/audio/volume_control_impl.h"
 #include "chromeos/services/libassistant/public/mojom/audio_output_delegate.mojom.h"
 #include "chromeos/services/libassistant/public/mojom/platform_delegate.mojom-forward.h"
-#include "libassistant/shared/public/platform_audio_output.h"
 #include "media/mojo/mojom/audio_stream_factory.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -34,6 +31,10 @@ namespace libassistant {
 class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
  public:
   explicit AudioOutputProviderImpl(const std::string& device_id);
+
+  AudioOutputProviderImpl(const AudioOutputProviderImpl&) = delete;
+  AudioOutputProviderImpl& operator=(const AudioOutputProviderImpl&) = delete;
+
   ~AudioOutputProviderImpl() override;
 
   void Bind(
@@ -41,28 +42,18 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
       mojom::PlatformDelegate* platform_delegate);
 
   // assistant_client::AudioOutputProvider overrides:
-#if BUILDFLAG(BUILD_LIBASSISTANT_146S)
-  assistant_client::AudioOutput* CreateAudioOutput(
-      assistant_client::OutputStreamType type,
-      const assistant_client::OutputStreamFormat& stream_format) override;
-#endif  // BUILD_LIBASSISTANT_146S
-
-#if BUILDFLAG(BUILD_LIBASSISTANT_152S)
   assistant_client::AudioOutput* CreateAudioOutput(
       assistant_client::OutputStreamMetadata metadata) override;
-#endif  // BUILD_LIBASSISTANT_152S
-
   std::vector<assistant_client::OutputStreamEncoding>
   GetSupportedStreamEncodings() override;
-
   assistant_client::AudioInput* GetReferenceInput() override;
-
   bool SupportsPlaybackTimestamp() const override;
-
   assistant_client::VolumeControl& GetVolumeControl() override;
-
   void RegisterAudioEmittingStateCallback(
       AudioEmittingStateCallback callback) override;
+
+  void BindAudioDecoderFactory();
+  void UnBindAudioDecoderFactory();
 
  private:
   void BindStreamFactory(
@@ -84,8 +75,6 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
       audio_decoder_factory_;
   std::string device_id_;
   base::WeakPtrFactory<AudioOutputProviderImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AudioOutputProviderImpl);
 };
 
 }  // namespace libassistant

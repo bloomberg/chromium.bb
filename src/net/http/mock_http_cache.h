@@ -18,6 +18,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_split.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/request_priority.h"
@@ -79,10 +80,9 @@ class MockDiskEntry : public disk_cache::Entry,
                       IOBuffer* buf,
                       int buf_len,
                       CompletionOnceCallback callback) override;
-  int GetAvailableRange(int64_t offset,
-                        int len,
-                        int64_t* start,
-                        CompletionOnceCallback callback) override;
+  RangeResult GetAvailableRange(int64_t offset,
+                                int len,
+                                RangeResultCallback callback) override;
   bool CouldBeSparse() const override;
   void CancelSparseIO() override;
   net::Error ReadyForSparseIO(
@@ -123,15 +123,15 @@ class MockDiskEntry : public disk_cache::Entry,
   // if the consumer called Close on the MockDiskEntry.  We achieve that by
   // leveraging the fact that this class is reference counted.
   void CallbackLater(CompletionOnceCallback callback, int result);
+  void CallbackLater(base::OnceClosure callback);
 
-  void RunCallback(CompletionOnceCallback callback, int result);
+  void RunCallback(base::OnceClosure callback);
 
   // When |store| is true, stores the callback to be delivered later; otherwise
   // delivers any callback previously stored.
   static void StoreAndDeliverCallbacks(bool store,
                                        MockDiskEntry* entry,
-                                       CompletionOnceCallback callback,
-                                       int result);
+                                       base::OnceClosure callback);
 
   static const int kNumCacheEntryDataIndices = 3;
 
@@ -185,9 +185,6 @@ class MockDiskCache : public disk_cache::Backend {
   std::unique_ptr<Iterator> CreateIterator() override;
   void GetStats(base::StringPairs* stats) override;
   void OnExternalCacheHit(const std::string& key) override;
-  size_t DumpMemoryStats(
-      base::trace_event::ProcessMemoryDump* pmd,
-      const std::string& parent_absolute_name) const override;
   uint8_t GetEntryInMemoryData(const std::string& key) override;
   void SetEntryInMemoryData(const std::string& key, uint8_t data) override;
   int64_t MaxFileSize() const override;
@@ -393,7 +390,7 @@ class MockBlockingBackendFactory : public HttpCache::BackendFactory {
  private:
   int Result() { return fail_ ? ERR_FAILED : OK; }
 
-  std::unique_ptr<disk_cache::Backend>* backend_;
+  raw_ptr<std::unique_ptr<disk_cache::Backend>> backend_;
   CompletionOnceCallback callback_;
   bool block_;
   bool fail_;

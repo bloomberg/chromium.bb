@@ -6,9 +6,9 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEB_CHECK_ON_TOP_WORKER_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
@@ -38,7 +38,7 @@ class CheckOnTopWorker : public WebControllerWorker {
   void OnReply(const DevtoolsClient::ReplyStatus& reply_status,
                std::unique_ptr<runtime::CallFunctionOnResult> result);
 
-  DevtoolsClient* const devtools_client_;
+  const raw_ptr<DevtoolsClient> devtools_client_;
   Callback callback_;
 
   // The number of successful results that are still expected before the check

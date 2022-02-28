@@ -8,8 +8,8 @@
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding_set.h>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/favicon/core/favicon_driver_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "fuchsia/engine/web_engine_export.h"
 
@@ -20,17 +20,24 @@ class WebContents;
 }  // namespace content
 
 // Implementation of fuchsia.web.NavigationController for content::WebContents.
-class NavigationControllerImpl : public fuchsia::web::NavigationController,
-                                 public content::WebContentsObserver {
+class NavigationControllerImpl final
+    : public fuchsia::web::NavigationController,
+      public content::WebContentsObserver,
+      public favicon::FaviconDriverObserver {
  public:
   explicit NavigationControllerImpl(content::WebContents* web_contents);
-  ~NavigationControllerImpl() final;
+
+  NavigationControllerImpl(const NavigationControllerImpl&) = delete;
+  NavigationControllerImpl& operator=(const NavigationControllerImpl&) = delete;
+
+  ~NavigationControllerImpl() override;
 
   void AddBinding(
       fidl::InterfaceRequest<fuchsia::web::NavigationController> controller);
 
   void SetEventListener(
-      fidl::InterfaceHandle<fuchsia::web::NavigationEventListener> listener);
+      fidl::InterfaceHandle<fuchsia::web::NavigationEventListener> listener,
+      fuchsia::web::NavigationEventListenerFlags flags);
 
  private:
   // Returns a NavigationState reflecting the current state of |web_contents_|'s
@@ -49,22 +56,32 @@ class NavigationControllerImpl : public fuchsia::web::NavigationController,
   // fuchsia::web::NavigationController implementation.
   void LoadUrl(std::string url,
                fuchsia::web::LoadUrlParams params,
-               LoadUrlCallback callback) final;
-  void GoBack() final;
-  void GoForward() final;
-  void Stop() final;
-  void Reload(fuchsia::web::ReloadType type) final;
-  void GetVisibleEntry(GetVisibleEntryCallback callback) final;
+               LoadUrlCallback callback) override;
+  void GoBack() override;
+  void GoForward() override;
+  void Stop() override;
+  void Reload(fuchsia::web::ReloadType type) override;
+  void GetVisibleEntry(GetVisibleEntryCallback callback) override;
 
   // content::WebContentsObserver implementation.
-  void TitleWasSet(content::NavigationEntry*) final;
+  void TitleWasSet(content::NavigationEntry*) override;
   void DocumentAvailableInMainFrame(
-      content::RenderFrameHost* render_frame_host) final;
+      content::RenderFrameHost* render_frame_host) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) final;
-  void RenderProcessGone(base::TerminationStatus status) final;
-  void DidStartNavigation(content::NavigationHandle* navigation_handle) final;
-  void DidFinishNavigation(content::NavigationHandle* navigation_handle) final;
+                     const GURL& validated_url) override;
+  void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
+
+  // favicon::FaviconDriverObserver implementation.
+  void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
+                        NotificationIconType notification_icon_type,
+                        const GURL& icon_url,
+                        bool icon_url_changed,
+                        const gfx::Image& image) override;
 
   content::WebContents* const web_contents_;
 
@@ -85,9 +102,12 @@ class NavigationControllerImpl : public fuchsia::web::NavigationController,
   // True if navigation failed due to an error during page load.
   bool uncommitted_load_error_ = false;
 
-  base::WeakPtrFactory<NavigationControllerImpl> weak_factory_;
+  // Set to true  when NavigationEventListenerFlags::FAVICON flag
+  // was passed to the last SetEventListener() call, i.e. favicon reporting is
+  // enabled.
+  bool send_favicon_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(NavigationControllerImpl);
+  base::WeakPtrFactory<NavigationControllerImpl> weak_factory_;
 };
 
 // Computes the differences from old_entry to new_entry and stores the result in

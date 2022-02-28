@@ -4,7 +4,6 @@
 
 #include "ash/system/unified/unified_system_tray_bubble.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/unified_message_center_bubble.h"
@@ -39,6 +38,9 @@ class ContainerView : public views::View {
     AddChildView(unified_view);
   }
 
+  ContainerView(const ContainerView&) = delete;
+  ContainerView& operator=(const ContainerView&) = delete;
+
   ~ContainerView() override = default;
 
   // views::View:
@@ -60,8 +62,6 @@ class ContainerView : public views::View {
 
  private:
   UnifiedSystemTrayView* const unified_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContainerView);
 };
 
 }  // namespace
@@ -120,10 +120,18 @@ UnifiedSystemTrayBubble::~UnifiedSystemTrayBubble() {
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   tray_->tray_event_filter()->RemoveBubble(this);
   tray_->shelf()->RemoveObserver(this);
+
+  // Unified view children depend on `controller_` which is about to go away.
+  // Remove child views synchronously to ensure they don't try to access
+  // `controller_` after `this` goes out of scope.
+  bubble_view_->RemoveAllChildViews();
+  bubble_view_->ResetDelegate();
+
   if (bubble_widget_) {
     bubble_widget_->RemoveObserver(this);
     bubble_widget_->Close();
   }
+
   CHECK(!IsInObserverList());
 }
 
@@ -134,15 +142,6 @@ gfx::Rect UnifiedSystemTrayBubble::GetBoundsInScreen() const {
 
 bool UnifiedSystemTrayBubble::IsBubbleActive() const {
   return bubble_widget_ && bubble_widget_->IsActive();
-}
-
-void UnifiedSystemTrayBubble::CloseNow() {
-  if (!bubble_widget_)
-    return;
-
-  bubble_widget_->RemoveObserver(this);
-  bubble_widget_->CloseNow();
-  bubble_widget_ = nullptr;
 }
 
 void UnifiedSystemTrayBubble::EnsureCollapsed() {
@@ -188,6 +187,15 @@ void UnifiedSystemTrayBubble::ShowAudioDetailedView() {
   DCHECK(unified_view_);
   DCHECK(controller_);
   controller_->ShowAudioDetailedView();
+}
+
+void UnifiedSystemTrayBubble::ShowCalendarView() {
+  if (!bubble_widget_)
+    return;
+
+  DCHECK(unified_view_);
+  DCHECK(controller_);
+  controller_->ShowCalendarView();
 }
 
 void UnifiedSystemTrayBubble::ShowNetworkDetailedView(bool force) {
@@ -260,6 +268,8 @@ void UnifiedSystemTrayBubble::OnWidgetDestroying(views::Widget* widget) {
   CHECK_EQ(bubble_widget_, widget);
   bubble_widget_->RemoveObserver(this);
   bubble_widget_ = nullptr;
+
+  // `tray_->CloseBubble()` will delete `this`.
   tray_->CloseBubble();
 }
 

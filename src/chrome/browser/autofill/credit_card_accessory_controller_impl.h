@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_AUTOFILL_CREDIT_CARD_ACCESSORY_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_AUTOFILL_CREDIT_CARD_ACCESSORY_CONTROLLER_IMPL_H_
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/autofill/credit_card_accessory_controller.h"
 
 #include "base/memory/weak_ptr.h"
@@ -28,7 +29,7 @@ class CreditCardAccessoryControllerImpl
   void RegisterFillingSourceObserver(FillingSourceObserver observer) override;
   absl::optional<autofill::AccessorySheetData> GetSheetData() const override;
   void OnFillingTriggered(FieldGlobalId focused_field_id,
-                          const UserInfo::Field& selection) override;
+                          const AccessorySheetField& selection) override;
   void OnOptionSelected(AccessoryAction selected_action) override;
   void OnToggleChanged(AccessoryAction toggled_action, bool enabled) override;
 
@@ -39,7 +40,7 @@ class CreditCardAccessoryControllerImpl
   void OnPersonalDataChanged() override;
 
   // CreditCardAccessManager::Accessor:
-  void OnCreditCardFetched(bool did_succeed,
+  void OnCreditCardFetched(CreditCardFetchResult result,
                            const CreditCard* credit_card,
                            const std::u16string& cvc) override;
 
@@ -53,6 +54,9 @@ class CreditCardAccessoryControllerImpl
  private:
   friend class content::WebContentsUserData<CreditCardAccessoryControllerImpl>;
 
+  using CardOrVirtualCard =
+      absl::variant<const CreditCard*, std::unique_ptr<CreditCard>>;
+
   // Required for construction via |CreateForWebContents|:
   explicit CreditCardAccessoryControllerImpl(content::WebContents* contents);
 
@@ -64,23 +68,31 @@ class CreditCardAccessoryControllerImpl
       autofill::BrowserAutofillManager* af_manager,
       autofill::AutofillDriver* af_driver);
 
-  void FetchSuggestionsFromPersonalDataManager();
+  // Queries the `personal_data_manager_` for regular and virtual credit cards.
+  // Virtual cards are (re-)created based on the enrollment status of the cards
+  // and only exist temporarily, so in addition to `CreditCard` pointers, the
+  // returned array can contain `unique_ptr<CreditCard>`s for virtual cards.
+  // Recreation works only because CreditCard::CreateVirtualCard is a constant
+  // projection for a card (based only on its GUID and a static suffix).
+  std::vector<CardOrVirtualCard> GetAllCreditCards() const;
+
+  // Cards that are already unmasked by the user. These are shown to the user in
+  // plaintext and won't require any authentication when filling is triggered.
+  std::vector<const CachedServerCardInfo*> GetUnmaskedCreditCards() const;
+
+  // Gets promo code offers from personal data manager.
+  std::vector<const AutofillOfferData*> GetPromoCodeOffers() const;
+
   base::WeakPtr<ManualFillingController> GetManualFillingController();
   autofill::AutofillDriver* GetDriver();
   autofill::BrowserAutofillManager* GetManager() const;
 
-  // Pointers to cards owned by PersonalDataManager.
-  std::vector<CreditCard*> cards_cache_;
-  content::WebContents* web_contents_;
-  base::WeakPtr<ManualFillingController> mf_controller_;
-  PersonalDataManager* const personal_data_manager_;
-  autofill::BrowserAutofillManager* af_manager_for_testing_ = nullptr;
-  autofill::AutofillDriver* af_driver_for_testing_ = nullptr;
+  content::WebContents& GetWebContents() const;
 
-  // Cached cards that are already unmasked by the user. These are shown to the
-  // user in plaintext and won't require any authentication when filling is
-  // triggered.
-  std::vector<const CachedServerCardInfo*> cached_server_cards_;
+  base::WeakPtr<ManualFillingController> mf_controller_;
+  const raw_ptr<PersonalDataManager> personal_data_manager_;
+  raw_ptr<autofill::BrowserAutofillManager> af_manager_for_testing_ = nullptr;
+  raw_ptr<autofill::AutofillDriver> af_driver_for_testing_ = nullptr;
 
   // The observer to notify if available suggestions change.
   FillingSourceObserver source_observer_;

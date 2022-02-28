@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "chromecast/base/chromecast_switches.h"
@@ -115,7 +115,7 @@ constexpr int* kAlsaDirDontCare = nullptr;
 // retried. Below constants define retries params.
 constexpr int kRestoreAfterSuspensionAttempts = 10;
 constexpr base::TimeDelta kRestoreAfterSuspensionAttemptDelay =
-    base::TimeDelta::FromMilliseconds(20);
+    base::Milliseconds(20);
 
 // These sample formats will be tried in order. 32 bit samples is ideal, but
 // some devices do not support 32 bit samples.

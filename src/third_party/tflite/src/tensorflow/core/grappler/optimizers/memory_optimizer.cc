@@ -468,7 +468,8 @@ void RecomputationRewritingPass(RewriterConfig::MemOptType optimization_level,
         // with "gradients/" or contains "/gradients/".
         return absl::StartsWith(node.name(),
                                 recomputation_targets_name_scope) ||
-               node.name().find("/" + recomputation_targets_name_scope) != -1;
+               static_cast<int>(node.name().find(
+                   "/" + recomputation_targets_name_scope)) != -1;
       };
 
   if (optimization_level == RewriterConfig::RECOMPUTATION_HEURISTICS ||
@@ -722,7 +723,7 @@ bool SchedulingPass(Cluster* cluster, std::unique_ptr<GraphMemory>* memory_ptr,
     // Rewrite the AddN node as a DestroyTemporaryVariable ops
     node->set_op("DestroyTemporaryVariable");
     node->clear_input();
-    node->clear_attr();
+    EraseRegularNodeAttributes(node);
     (*node->mutable_attr())["T"].set_type(dtype);
     (*node->mutable_attr())["var_name"].set_s(tmp_var->name());
     *node->add_input() = initialize->name();
@@ -969,7 +970,7 @@ static bool IsSwappable(MutableGraphView::InputPort input) {
 
 struct MemInfo {
   MutableGraphView::OutputPort port;
-  int64 memory_used;
+  int64_t memory_used;
   std::vector<MutableGraphView::InputPort> uses_left;
   double fitness;
 
@@ -1008,7 +1009,7 @@ static bool IdentifySwappingCandidates(
     if (mem_usage.used_memory <= prop.memory_size()) {
       continue;
     }
-    int64 required_savings = mem_usage.used_memory - prop.memory_size();
+    int64_t required_savings = mem_usage.used_memory - prop.memory_size();
 
     std::unordered_map<string, Costs::NanoSeconds> op_completion_times;
     {
@@ -1162,11 +1163,11 @@ bool SwappingPass(RewriterConfig::MemOptType optimization_level,
       SwapInfo& swap_info = nodes_to_swap[&node];
       const AttrValue& val = node.attr().at("_swap_to_host");
       if (val.has_list()) {
-        for (int64 input_id : val.list().i()) {
+        for (int64_t input_id : val.list().i()) {
           swap_info.inputs_to_swap.push_back(input_id);
         }
       } else {
-        int64 input_id = val.i();
+        int64_t input_id = val.i();
         swap_info.inputs_to_swap.push_back(input_id);
       }
     }
@@ -1190,8 +1191,8 @@ bool SwappingPass(RewriterConfig::MemOptType optimization_level,
     const std::vector<OpInfo::TensorProperties>& props =
         properties.GetInputProperties(node->name());
     SwapInfo& swap_info = swap.second;
-    int64 bytes_to_swap = 0;
-    for (int64 input_id : swap_info.inputs_to_swap) {
+    int64_t bytes_to_swap = 0;
+    for (int64_t input_id : swap_info.inputs_to_swap) {
       const OpInfo::TensorProperties& t = props[input_id];
       bytes_to_swap += CalculateTensorSize(t);
     }
@@ -1439,11 +1440,6 @@ Status MemoryOptimizer::Optimize(Cluster* cluster, const GrapplerItem& item,
 
   optimized_graph->Swap(&optimized_item.graph);
   return Status::OK();
-}
-
-void MemoryOptimizer::Feedback(Cluster* cluster, const GrapplerItem& item,
-                               const GraphDef& optimized_graph, double result) {
-  // Nothing to do for MemoryOptimizer.
 }
 
 }  // end namespace grappler

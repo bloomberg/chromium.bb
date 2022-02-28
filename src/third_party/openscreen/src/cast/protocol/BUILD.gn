@@ -63,11 +63,14 @@ source_set("unittests") {
 
   deps = [
     ":castv2",
+    ":castv2_schema_headers",
     ":receiver_examples",
     ":streaming_examples",
+    "../../platform:base",
     "../../third_party/abseil",
     "../../third_party/googletest:gmock",
     "../../third_party/googletest:gtest",
+    "../../util:base",
     "//third_party/valijson",
   ]
 }

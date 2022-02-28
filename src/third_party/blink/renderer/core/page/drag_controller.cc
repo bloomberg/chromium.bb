@@ -31,7 +31,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/common/page/drag_operation.h"
-#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
@@ -80,18 +79,21 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-blink.h"
+#include "ui/display/screen_info.h"
+#include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -240,7 +242,7 @@ void DragController::DragExited(DragData* drag_data, LocalFrame& local_root) {
 void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
   DCHECK(drag_data);
   document_under_mouse_ = local_root.DocumentAtPoint(
-      PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition()));
+      PhysicalOffset::FromPointFRound(drag_data->ClientPosition()));
   LocalFrame::NotifyUserActivation(
       document_under_mouse_ ? document_under_mouse_->GetFrame() : nullptr,
       mojom::blink::UserActivationNotificationType::kInteraction);
@@ -261,7 +263,7 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
         // When drop target is plugin element and it can process drag, we
         // should prevent default behavior.
         const HitTestLocation location(local_root.View()->ConvertFromRootFrame(
-            PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition())));
+            PhysicalOffset::FromPointFRound(drag_data->ClientPosition())));
         const HitTestResult result =
             event_handler.HitTestResultAtLocation(location);
         auto* html_plugin_element =
@@ -339,7 +341,7 @@ DragOperation DragController::DragEnteredOrUpdated(DragData* drag_data,
   DCHECK(drag_data);
 
   MouseMovedIntoDocument(local_root.DocumentAtPoint(
-      PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition())));
+      PhysicalOffset::FromPointFRound(drag_data->ClientPosition())));
 
   // TODO(esprehn): Replace acceptsLoadDrops with a Setting used in core.
   drag_destination_action_ =
@@ -371,8 +373,7 @@ static HTMLInputElement* AsFileInput(Node* node) {
 // This can return null if an empty document is loaded.
 static Element* ElementUnderMouse(Document* document_under_mouse,
                                   const PhysicalOffset& point) {
-  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive |
-                         HitTestRequest::kRetargetForInert);
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
   HitTestLocation location(point);
   HitTestResult result(request, location);
   document_under_mouse->GetLayoutView()->HitTest(location, result);
@@ -395,6 +396,16 @@ bool DragController::TryDocumentDrag(DragData* drag_data,
   if (!document_under_mouse_)
     return false;
 
+  // This is the renderer-side check for https://crbug.com/59081 to prevent
+  // drags between cross-origin frames within the same page. This logic relies
+  // on the browser process to have already filtered out any drags that might
+  // span distinct `blink::Page` objects but still be part of the same logical
+  // page. Otherwise, `drag_initiator_` will be null here and the drag will
+  // incorrectly be allowed to proceed.
+  //
+  // Note: One example where the drag start frame and the drop target frame can
+  // be part of the same logical page, but belong to different `blink::Page`
+  // instances is if the two frames are hosted in different renderer processes.
   auto* under_mouse_origin =
       document_under_mouse_->GetExecutionContext()->GetSecurityOrigin();
   if (drag_initiator_ &&
@@ -428,7 +439,7 @@ bool DragController::TryDocumentDrag(DragData* drag_data,
   if ((action_mask & kDragDestinationActionEdit) &&
       CanProcessDrag(drag_data, local_root)) {
     PhysicalOffset point = frame_view->ConvertFromRootFrame(
-        PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition()));
+        PhysicalOffset::FromPointFRound(drag_data->ClientPosition()));
     Element* element = ElementUnderMouse(document_under_mouse_.Get(), point);
     if (!element)
       return false;
@@ -478,7 +489,7 @@ DragOperation DragController::OperationForLoad(DragData* drag_data,
                                                LocalFrame& local_root) {
   DCHECK(drag_data);
   Document* doc = local_root.DocumentAtPoint(
-      PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition()));
+      PhysicalOffset::FromPointFRound(drag_data->ClientPosition()));
 
   if (doc && (did_initiate_drag_ || IsA<PluginDocument>(doc) ||
               HasEditableStyle(*doc)))
@@ -553,7 +564,7 @@ bool DragController::ConcludeEditDrag(DragData* drag_data) {
     return false;
 
   PhysicalOffset point = document_under_mouse_->View()->ConvertFromRootFrame(
-      PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition()));
+      PhysicalOffset::FromPointFRound(drag_data->ClientPosition()));
   Element* element = ElementUnderMouse(document_under_mouse_.Get(), point);
   if (!element)
     return false;
@@ -721,7 +732,7 @@ bool DragController::CanProcessDrag(DragData* drag_data,
 
   const PhysicalOffset point_in_local_root =
       local_root.View()->ConvertFromRootFrame(
-          PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition()));
+          PhysicalOffset::FromPointFRound(drag_data->ClientPosition()));
 
   const HitTestResult result =
       local_root.GetEventHandler().HitTestResultAtLocation(
@@ -748,8 +759,8 @@ bool DragController::CanProcessDrag(DragData* drag_data,
             ->GetDocument()
             .GetFrame()
             ->View()
-            ->ConvertFromRootFrame(PhysicalOffset::FromFloatPointRound(
-                drag_data->ClientPosition()));
+            ->ConvertFromRootFrame(
+                PhysicalOffset::FromPointFRound(drag_data->ClientPosition()));
     return !result.IsSelected(HitTestLocation(point_in_frame));
   }
 
@@ -831,7 +842,7 @@ bool SelectTextInsteadOfDrag(const Node& node) {
 
 Node* DragController::DraggableNode(const LocalFrame* src,
                                     Node* start_node,
-                                    const IntPoint& drag_origin,
+                                    const gfx::Point& drag_origin,
                                     SelectionDragPolicy selection_drag_policy,
                                     DragSourceAction& drag_type) const {
   if (src->Selection().Contains(PhysicalOffset(drag_origin))) {
@@ -931,7 +942,7 @@ static void PrepareDataTransferForImageDrag(LocalFrame* source,
 
 bool DragController::PopulateDragDataTransfer(LocalFrame* src,
                                               const DragState& state,
-                                              const IntPoint& drag_origin) {
+                                              const gfx::Point& drag_origin) {
 #if DCHECK_IS_ON()
   DCHECK(DragTypeIsValid(state.drag_type_));
 #endif
@@ -990,10 +1001,11 @@ bool DragController::PopulateDragDataTransfer(LocalFrame* src,
       return false;
     }
 
-    IntRect bounding_including_descendants =
+    gfx::Rect bounding_including_descendants =
         layout_object->AbsoluteBoundingBoxRectIncludingDescendants();
-    IntSize delta = drag_origin - bounding_including_descendants.Location();
-    data_transfer->SetDragImageElement(node, IntPoint(delta));
+    gfx::Point drag_element_location =
+        drag_origin - bounding_including_descendants.OffsetFromOrigin();
+    data_transfer->SetDragImageElement(node, drag_element_location);
 
     // FIXME: For DHTML/draggable element drags, write element markup to
     // clipboard.
@@ -1006,50 +1018,49 @@ bool DragController::PopulateDragDataTransfer(LocalFrame* src,
   return true;
 }
 
-static IntPoint DragLocationForDHTMLDrag(const IntPoint& mouse_dragged_point,
-                                         const IntPoint& drag_origin,
-                                         const IntPoint& drag_image_offset,
-                                         bool is_link_image) {
+static gfx::Point DragLocationForDHTMLDrag(
+    const gfx::Point& mouse_dragged_point,
+    const gfx::Point& drag_origin,
+    const gfx::Point& drag_image_offset,
+    bool is_link_image) {
   // dragImageOffset is the cursor position relative to the lower-left corner of
   // the image.
-  const int y_offset = -drag_image_offset.Y();
+  const int y_offset = -drag_image_offset.y();
 
   if (is_link_image) {
-    return IntPoint(mouse_dragged_point.X() - drag_image_offset.X(),
-                    mouse_dragged_point.Y() + y_offset);
+    return gfx::Point(mouse_dragged_point.x() - drag_image_offset.x(),
+                      mouse_dragged_point.y() + y_offset);
   }
 
-  return IntPoint(drag_origin.X() - drag_image_offset.X(),
-                  drag_origin.Y() + y_offset);
+  return gfx::Point(drag_origin.x() - drag_image_offset.x(),
+                    drag_origin.y() + y_offset);
 }
 
-FloatRect DragController::ClippedSelection(const LocalFrame& frame) {
+gfx::RectF DragController::ClippedSelection(const LocalFrame& frame) {
   DCHECK(frame.View());
   return DataTransfer::ClipByVisualViewport(
-      FloatRect(frame.Selection().AbsoluteUnclippedBounds()), frame);
+      gfx::RectF(frame.Selection().AbsoluteUnclippedBounds()), frame);
 }
 
-static IntPoint DragLocationForSelectionDrag(const LocalFrame& frame) {
+static gfx::Point DragLocationForSelectionDrag(const LocalFrame& frame) {
   frame.View()->UpdateLifecycleToLayoutClean(DocumentUpdateReason::kSelection);
-  IntRect dragging_rect =
-      EnclosingIntRect(DragController::ClippedSelection(frame));
-  int xpos = dragging_rect.MaxX();
-  xpos = dragging_rect.X() < xpos ? dragging_rect.X() : xpos;
-  int ypos = dragging_rect.MaxY();
-  ypos = dragging_rect.Y() < ypos ? dragging_rect.Y() : ypos;
-  return IntPoint(xpos, ypos);
+  gfx::Rect dragging_rect =
+      gfx::ToEnclosingRect(DragController::ClippedSelection(frame));
+  int xpos = dragging_rect.right();
+  xpos = dragging_rect.x() < xpos ? dragging_rect.x() : xpos;
+  int ypos = dragging_rect.bottom();
+  ypos = dragging_rect.y() < ypos ? dragging_rect.y() : ypos;
+  return gfx::Point(xpos, ypos);
 }
 
-static const IntSize MaxDragImageSize(float device_scale_factor) {
+static const gfx::Size MaxDragImageSize(float device_scale_factor) {
 #if defined(OS_MAC)
   // Match Safari's drag image size.
-  static const IntSize kMaxDragImageSize(400, 400);
+  static const gfx::Size kMaxDragImageSize(400, 400);
 #else
-  static const IntSize kMaxDragImageSize(200, 200);
+  static const gfx::Size kMaxDragImageSize(200, 200);
 #endif
-  IntSize max_size_in_pixels = kMaxDragImageSize;
-  max_size_in_pixels.Scale(device_scale_factor);
-  return max_size_in_pixels;
+  return gfx::ScaleToFlooredSize(kMaxDragImageSize, device_scale_factor);
 }
 
 static bool CanDragImage(const Element& element) {
@@ -1073,7 +1084,7 @@ static bool CanDragImage(const Element& element) {
 static std::unique_ptr<DragImage> DragImageForImage(
     const Element& element,
     float device_scale_factor,
-    const IntSize& image_element_size_in_pixels) {
+    const gfx::Size& image_element_size_in_pixels) {
   auto* layout_image = To<LayoutImage>(element.GetLayoutObject());
   const LayoutImageResource& image_resource = *layout_image->ImageResource();
   scoped_refptr<Image> image =
@@ -1081,15 +1092,15 @@ static std::unique_ptr<DragImage> DragImageForImage(
   RespectImageOrientationEnum respect_orientation =
       image_resource.ImageOrientation();
 
-  IntSize image_size = image->Size(respect_orientation);
-  if (image_size.Area() > kMaxOriginalImageArea)
+  gfx::Size image_size = image->Size(respect_orientation);
+  if (image_size.Area64() > kMaxOriginalImageArea)
     return nullptr;
 
   InterpolationQuality interpolation_quality = kInterpolationDefault;
   if (layout_image->StyleRef().ImageRendering() == EImageRendering::kPixelated)
     interpolation_quality = kInterpolationNone;
 
-  FloatSize image_scale =
+  gfx::Vector2dF image_scale =
       DragImage::ClampedImageScale(image_size, image_element_size_in_pixels,
                                    MaxDragImageSize(device_scale_factor));
 
@@ -1098,52 +1109,54 @@ static std::unique_ptr<DragImage> DragImageForImage(
                            kDragImageAlpha, image_scale);
 }
 
-static IntPoint DragLocationForImage(
+static gfx::Point DragLocationForImage(
     const DragImage* drag_image,
-    const IntPoint& drag_origin,
-    const IntPoint& image_element_location,
-    const IntSize& image_element_size_in_pixels) {
+    const gfx::Point& drag_origin,
+    const gfx::Point& image_element_location,
+    const gfx::Size& image_element_size_in_pixels) {
   if (!drag_image)
     return drag_origin;
 
-  IntSize original_size = image_element_size_in_pixels;
-  IntSize new_size = drag_image->Size();
+  gfx::Size original_size = image_element_size_in_pixels;
+  gfx::Size new_size = drag_image->Size();
 
   // Properly orient the drag image and orient it differently if it's smaller
   // than the original
-  float scale = new_size.Width() / static_cast<float>(original_size.Width());
-  FloatPoint offset(image_element_location - drag_origin);
-  return drag_origin + RoundedIntPoint(offset.ScaledBy(scale));
+  float scale = new_size.width() / static_cast<float>(original_size.width());
+  gfx::Vector2dF offset = image_element_location - drag_origin;
+  return drag_origin +
+         gfx::ToRoundedVector2d(gfx::ScaleVector2d(offset, scale));
 }
 
 static std::unique_ptr<DragImage> DragImageForLink(const KURL& link_url,
                                                    const String& link_text,
-                                                   float device_scale_factor) {
+                                                   float device_scale_factor,
+                                                   const Document* document) {
   FontDescription font_description;
-  LayoutTheme::GetTheme().SystemFont(blink::CSSValueID::kNone,
-                                     font_description);
+  LayoutTheme::GetTheme().SystemFont(blink::CSSValueID::kNone, font_description,
+                                     document);
   return DragImage::Create(link_url, link_text, font_description,
                            device_scale_factor);
 }
 
-static IntPoint DragLocationForLink(const DragImage* link_image,
-                                    const IntPoint& origin,
-                                    float device_scale_factor,
-                                    float page_scale_factor) {
+static gfx::Point DragLocationForLink(const DragImage* link_image,
+                                      const gfx::Point& origin,
+                                      float device_scale_factor,
+                                      float page_scale_factor) {
   if (!link_image)
     return origin;
 
   // Offset the image so that the cursor is horizontally centered.
-  FloatPoint image_offset(-link_image->Size().Width() / 2.f,
-                          -kLinkDragBorderInset);
+  gfx::PointF image_offset(-link_image->Size().width() / 2.f,
+                           -kLinkDragBorderInset);
   // |origin| is in the coordinate space of the frame's contents whereas the
   // size of |link_image| is in physical pixels. Adjust the image offset to be
   // scaled in the frame's contents.
   // TODO(pdr): Unify this calculation with the DragImageForImage scaling code.
   float scale = 1.f / (device_scale_factor * page_scale_factor);
-  image_offset.Scale(scale, scale);
-  image_offset.MoveBy(origin);
-  return RoundedIntPoint(image_offset);
+  image_offset.Scale(scale);
+  image_offset += origin.OffsetFromOrigin();
+  return gfx::ToRoundedPoint(image_offset);
 }
 
 // static
@@ -1157,14 +1170,14 @@ std::unique_ptr<DragImage> DragController::DragImageForSelection(
       DocumentUpdateReason::kDragImage);
   DCHECK(frame.GetDocument()->IsActive());
 
-  FloatRect painting_rect = ClippedSelection(frame);
+  gfx::RectF painting_rect = ClippedSelection(frame);
   GlobalPaintFlags paint_flags =
       kGlobalPaintSelectionDragImageOnly | kGlobalPaintFlattenCompositingLayers;
 
-  PaintRecordBuilder builder;
+  auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
   frame.View()->PaintContentsOutsideOfLifecycle(
-      builder.Context(), paint_flags,
-      CullRect(EnclosingIntRect(painting_rect)));
+      builder->Context(), paint_flags,
+      CullRect(gfx::ToEnclosingRect(painting_rect)));
 
   auto property_tree_state = frame.View()
                                  ->GetLayoutView()
@@ -1172,14 +1185,14 @@ std::unique_ptr<DragImage> DragController::DragImageForSelection(
                                  .LocalBorderBoxProperties()
                                  .Unalias();
   return DataTransfer::CreateDragImageForFrame(
-      frame, opacity, painting_rect.Size(), painting_rect.Location(), builder,
-      property_tree_state);
+      frame, opacity, painting_rect.size(), painting_rect.OffsetFromOrigin(),
+      *builder, property_tree_state);
 }
 
 bool DragController::StartDrag(LocalFrame* src,
                                const DragState& state,
                                const WebMouseEvent& drag_event,
-                               const IntPoint& drag_origin) {
+                               const gfx::Point& drag_origin) {
 #if DCHECK_IS_ON()
   DCHECK(DragTypeIsValid(state.drag_type_));
 #endif
@@ -1204,11 +1217,11 @@ bool DragController::StartDrag(LocalFrame* src,
 
   // TODO(pdr): This code shouldn't be necessary because drag_origin is already
   // in the coordinate space of the view's contents.
-  IntPoint mouse_dragged_point = src->View()->ConvertFromRootFrame(
-      FlooredIntPoint(drag_event.PositionInRootFrame()));
+  gfx::Point mouse_dragged_point = src->View()->ConvertFromRootFrame(
+      gfx::ToFlooredPoint(drag_event.PositionInRootFrame()));
 
-  IntPoint drag_location;
-  IntPoint drag_offset;
+  gfx::Point drag_location;
+  gfx::Point drag_offset;
 
   DataTransfer* data_transfer = state.drag_data_transfer_.Get();
   // We allow DHTML/JS to set the drag image, even if its a link, image or text
@@ -1234,11 +1247,11 @@ bool DragController::StartDrag(LocalFrame* src,
     if (image_url.IsEmpty() || !element || !CanDragImage(*element))
       return false;
     if (!drag_image) {
-      const IntRect& image_rect = hit_test_result.ImageRect();
-      IntSize image_size_in_pixels = image_rect.Size();
+      const gfx::Rect& image_rect = hit_test_result.ImageRect();
       // TODO(oshima): Remove this scaling and simply pass imageRect to
       // dragImageForImage once all platforms are migrated to use zoom for dsf.
-      image_size_in_pixels.Scale(src->GetPage()->DeviceScaleFactorDeprecated() *
+      gfx::Size image_size_in_pixels = gfx::ScaleToFlooredSize(
+          image_rect.size(), src->GetPage()->DeviceScaleFactorDeprecated() *
                                  src->GetPage()->GetVisualViewport().Scale());
 
       float screen_device_scale_factor =
@@ -1253,7 +1266,7 @@ bool DragController::StartDrag(LocalFrame* src,
                                      image_size_in_pixels);
       drag_location =
           DragLocationForImage(drag_image.get(), drag_origin,
-                               image_rect.Location(), image_size_in_pixels);
+                               image_rect.origin(), image_size_in_pixels);
     }
     DoSystemDrag(drag_image.get(), drag_location, drag_origin, data_transfer,
                  src, false);
@@ -1282,8 +1295,9 @@ bool DragController::StartDrag(LocalFrame* src,
       DCHECK(src->GetPage());
       float screen_device_scale_factor =
           src->GetChromeClient().GetScreenInfo(*src).device_scale_factor;
-      drag_image = DragImageForLink(link_url, hit_test_result.TextContent(),
-                                    screen_device_scale_factor);
+      drag_image =
+          DragImageForLink(link_url, hit_test_result.TextContent(),
+                           screen_device_scale_factor, src->GetDocument());
       drag_location = DragLocationForLink(drag_image.get(), mouse_dragged_point,
                                           screen_device_scale_factor,
                                           src->GetPage()->PageScaleFactor());
@@ -1303,8 +1317,8 @@ bool DragController::StartDrag(LocalFrame* src,
 
 // TODO(esprehn): forLink is dead code, what was it for?
 void DragController::DoSystemDrag(DragImage* image,
-                                  const IntPoint& drag_location,
-                                  const IntPoint& event_pos,
+                                  const gfx::Point& drag_location,
+                                  const gfx::Point& event_pos,
                                   DataTransfer* data_transfer,
                                   LocalFrame* frame,
                                   bool for_link) {
@@ -1315,11 +1329,11 @@ void DragController::DoSystemDrag(DragImage* image,
   // TODO(pdr): |drag_location| and |event_pos| should be passed in as
   // FloatPoints and we should calculate these adjusted values in floating
   // point to avoid unnecessary rounding.
-  IntPoint adjusted_drag_location =
+  gfx::Point adjusted_drag_location =
       frame->View()->FrameToViewport(drag_location);
-  IntPoint adjusted_event_pos = frame->View()->FrameToViewport(event_pos);
-  IntSize offset_size(adjusted_event_pos - adjusted_drag_location);
-  gfx::Point offset_point(offset_size.Width(), offset_size.Height());
+  gfx::Point adjusted_event_pos = frame->View()->FrameToViewport(event_pos);
+  gfx::Point offset_point =
+      adjusted_event_pos - adjusted_drag_location.OffsetFromOrigin();
   WebDragData drag_data = data_transfer->GetDataObject()->ToWebDragData();
   drag_data.SetReferrerPolicy(drag_initiator_->GetReferrerPolicy());
   DragOperationsMask drag_operation_mask = data_transfer->SourceOperation();

@@ -35,8 +35,11 @@
 #ifndef GOOGLE_BREAKPAD_PROCESSOR_STACK_FRAME_SYMBOLIZER_H__
 #define GOOGLE_BREAKPAD_PROCESSOR_STACK_FRAME_SYMBOLIZER_H__
 
+#include <deque>
+#include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "common/using_std_string.h"
 #include "google_breakpad/common/breakpad_types.h"
@@ -79,7 +82,8 @@ class StackFrameSymbolizer {
       const CodeModules* modules,
       const CodeModules* unloaded_modules,
       const SystemInfo* system_info,
-      StackFrame* stack_frame);
+      StackFrame* stack_frame,
+      std::deque<std::unique_ptr<StackFrame>>* inlined_frames);
 
   virtual WindowsFrameInfo* FindWindowsFrameInfo(const StackFrame* frame);
 

@@ -14,7 +14,7 @@ namespace {
 
 // TODO(crbug.com/1076270): Finalize a value for this, and possibly use
 // different values for different UI surfaces.
-constexpr base::TimeDelta kImpressionTimer = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kImpressionTimer = base::Seconds(1);
 
 }  // namespace
 
@@ -23,7 +23,7 @@ AppListNotifierImpl::AppListNotifierImpl(
     : app_list_controller_(app_list_controller) {
   DCHECK(app_list_controller_);
   app_list_controller_->AddObserver(this);
-  OnAppListVisibilityWillChange(app_list_controller_->IsVisible(absl::nullopt),
+  OnAppListVisibilityWillChange(app_list_controller_->IsVisible(),
                                 display::kInvalidDisplayId);
 }
 

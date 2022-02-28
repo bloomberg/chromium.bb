@@ -17,16 +17,16 @@
 #include "include/core/SkSize.h"
 #include "include/core/SkString.h"
 #include "include/core/SkTypes.h"
-#include "include/private/GrSharedEnums.h"
 #include "include/private/GrTypesPriv.h"
+#include "src/core/SkCanvasPriv.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/GrPaint.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/effects/GrPorterDuffXferProcessor.h"
 #include "src/gpu/effects/GrRRectEffect.h"
+#include "src/gpu/ops/FillRectOp.h"
 #include "src/gpu/ops/GrDrawOp.h"
-#include "src/gpu/ops/GrFillRectOp.h"
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 #include "tools/ToolUtils.h"
 
 #include <memory>
@@ -65,9 +65,12 @@ protected:
 
     SkISize onISize() override { return SkISize::Make(fWidth, fHeight); }
 
-    void onDraw(GrRecordingContext* context, GrSurfaceDrawContext* surfaceDrawContext,
-                SkCanvas* canvas) override {
-        SkPaint paint;
+    DrawResult onDraw(GrRecordingContext* rContext, SkCanvas* canvas, SkString* errorMsg) override {
+        auto sdc = SkCanvasPriv::TopDeviceSurfaceDrawContext(canvas);
+        if (!sdc) {
+            *errorMsg = kErrorMsg_DrawSkippedGpuOnly;
+            return DrawResult::kSkip;
+        }
 
         int y = kPad;
         int x = kPad;
@@ -88,7 +91,7 @@ protected:
 
                 SkRRect rrect = fRRect;
                 rrect.offset(SkIntToScalar(x + kGap), SkIntToScalar(y + kGap));
-                const auto& caps = *surfaceDrawContext->caps()->shaderCaps();
+                const auto& caps = *rContext->priv().caps()->shaderCaps();
                 auto [success, fp] = GrRRectEffect::Make(/*inputFP=*/nullptr, edgeType, rrect,
                                                          caps);
                 SkASSERT(success);
@@ -102,19 +105,21 @@ protected:
                     SkRect bounds = testBounds;
                     bounds.offset(SkIntToScalar(x), SkIntToScalar(y));
 
-                    surfaceDrawContext->addDrawOp(GrFillRectOp::MakeNonAARect(
-                            context, std::move(grPaint), SkMatrix::I(), bounds));
+                    sdc->addDrawOp(skgpu::v1::FillRectOp::MakeNonAARect(
+                            rContext, std::move(grPaint), SkMatrix::I(), bounds));
                 }
             canvas->restore();
             x = x + fTestOffsetX;
         }
+
+        return DrawResult::kOk;
     }
 
 private:
     // pad between test cases
-    static constexpr int kPad = 7;
+    inline static constexpr int kPad = 7;
     // gap between rect for each case that is rendered and exterior of rrect
-    static constexpr int kGap = 3;
+    inline static constexpr int kGap = 3;
 
     SkRRect fRRect;
     int fWidth;

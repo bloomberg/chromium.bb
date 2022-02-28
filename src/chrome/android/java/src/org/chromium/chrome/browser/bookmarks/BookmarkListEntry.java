@@ -10,6 +10,8 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
+import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkMeta;
+import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -26,7 +28,7 @@ final class BookmarkListEntry {
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({ViewType.INVALID, ViewType.PERSONALIZED_SIGNIN_PROMO, ViewType.PERSONALIZED_SYNC_PROMO,
             ViewType.SYNC_PROMO, ViewType.FOLDER, ViewType.BOOKMARK, ViewType.DIVIDER,
-            ViewType.SECTION_HEADER})
+            ViewType.SECTION_HEADER, ViewType.SHOPPING_POWER_BOOKMARK, ViewType.TAG_CHIP_LIST})
     @interface ViewType {
         int INVALID = -1;
         int PERSONALIZED_SIGNIN_PROMO = 0;
@@ -36,6 +38,9 @@ final class BookmarkListEntry {
         int BOOKMARK = 4;
         int DIVIDER = 5;
         int SECTION_HEADER = 6;
+        int SHOPPING_POWER_BOOKMARK = 7;
+        int TAG_CHIP_LIST = 8;
+        int SHOPPING_FILTER = 9;
     }
 
     /**
@@ -71,9 +76,15 @@ final class BookmarkListEntry {
      * Create an entry presenting a bookmark folder or bookmark.
      * @param bookmarkItem The data object created from the bookmark backend.
      */
-    static BookmarkListEntry createBookmarkEntry(@Nonnull BookmarkItem bookmarkItem) {
-        return new BookmarkListEntry(bookmarkItem.isFolder() ? ViewType.FOLDER : ViewType.BOOKMARK,
-                bookmarkItem, /*sectionHeaderData=*/null);
+    static BookmarkListEntry createBookmarkEntry(
+            @Nonnull BookmarkItem bookmarkItem, @Nullable PowerBookmarkMeta meta) {
+        @ViewType
+        int viewType = bookmarkItem.isFolder() ? ViewType.FOLDER : ViewType.BOOKMARK;
+        if (meta != null && meta.getType() == PowerBookmarkType.SHOPPING) {
+            viewType = ViewType.SHOPPING_POWER_BOOKMARK;
+        }
+
+        return new BookmarkListEntry(viewType, bookmarkItem, /*sectionHeaderData=*/null);
     }
 
     /**
@@ -95,12 +106,21 @@ final class BookmarkListEntry {
     }
 
     /**
+     * Creates a price-tracking filter.
+     */
+    static BookmarkListEntry createShoppingFilter() {
+        return new BookmarkListEntry(
+                ViewType.SHOPPING_FILTER, /*bookmarkItem=*/null, /*sectionHeaderData=*/null);
+    }
+
+    /**
      * Helper function that returns whether the view type represents a bookmark or bookmark folder.
      * Returns false for other view holder types like divider, promo headers, etc.
      * @param viewType The type of the view in the bookmark list UI.
      */
     static boolean isBookmarkEntry(@ViewType int viewType) {
-        return viewType == ViewType.BOOKMARK || viewType == ViewType.FOLDER;
+        return viewType == ViewType.BOOKMARK || viewType == ViewType.FOLDER
+                || viewType == ViewType.SHOPPING_POWER_BOOKMARK;
     }
 
     /**
@@ -151,5 +171,13 @@ final class BookmarkListEntry {
     @Nullable
     SectionHeaderData getSectionHeaderData() {
         return mSectionHeaderData;
+    }
+
+    /**
+     * Creates a chip list.
+     */
+    static BookmarkListEntry createChipList() {
+        return new BookmarkListEntry(
+                ViewType.TAG_CHIP_LIST, /*bookmarkItem=*/null, /*sectionHeaderData=*/null);
     }
 }

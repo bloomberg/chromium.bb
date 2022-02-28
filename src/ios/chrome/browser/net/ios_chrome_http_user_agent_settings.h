@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "components/prefs/pref_member.h"
 #include "net/base/http_user_agent_settings.h"
 
@@ -20,6 +19,12 @@ class IOSChromeHttpUserAgentSettings : public net::HttpUserAgentSettings {
  public:
   // Must be called on the UI thread.
   explicit IOSChromeHttpUserAgentSettings(PrefService* prefs);
+
+  IOSChromeHttpUserAgentSettings(const IOSChromeHttpUserAgentSettings&) =
+      delete;
+  IOSChromeHttpUserAgentSettings& operator=(
+      const IOSChromeHttpUserAgentSettings&) = delete;
+
   // Must be called on the IO thread.
   ~IOSChromeHttpUserAgentSettings() override;
 
@@ -36,8 +41,6 @@ class IOSChromeHttpUserAgentSettings : public net::HttpUserAgentSettings {
   // last result of processing via net::HttpUtil::GenerateAccept*Header().
   mutable std::string last_pref_accept_language_;
   mutable std::string last_http_accept_language_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOSChromeHttpUserAgentSettings);
 };
 
 #endif  // IOS_CHROME_BROWSER_NET_IOS_CHROME_HTTP_USER_AGENT_SETTINGS_H_

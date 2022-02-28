@@ -26,6 +26,7 @@ namespace dsp {
 // Initializes Dsp::loop_restorations, see the defines below for specifics.
 // This function is not thread-safe.
 void LoopRestorationInit_NEON();
+void LoopRestorationInit10bpp_NEON();
 
 }  // namespace dsp
 }  // namespace libgav1
@@ -34,6 +35,9 @@ void LoopRestorationInit_NEON();
 
 #define LIBGAV1_Dsp8bpp_WienerFilter LIBGAV1_CPU_NEON
 #define LIBGAV1_Dsp8bpp_SelfGuidedFilter LIBGAV1_CPU_NEON
+
+#define LIBGAV1_Dsp10bpp_WienerFilter LIBGAV1_CPU_NEON
+#define LIBGAV1_Dsp10bpp_SelfGuidedFilter LIBGAV1_CPU_NEON
 
 #endif  // LIBGAV1_ENABLE_NEON
 

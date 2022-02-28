@@ -20,12 +20,6 @@ Sources.BreakpointEditDialog._LogpointSuffix = SourcesModule.BreakpointEditDialo
 Sources.BreakpointEditDialog.BreakpointType = SourcesModule.BreakpointEditDialog.BreakpointType;
 
 /** @constructor */
-Sources.CSSPlugin = SourcesModule.CSSPlugin.CSSPlugin;
-
-Sources.CSSPlugin.maxSwatchProcessingLength = SourcesModule.CSSPlugin.maxSwatchProcessingLength;
-Sources.CSSPlugin.SwatchBookmark = SourcesModule.CSSPlugin.SwatchBookmark;
-
-/** @constructor */
 Sources.CallStackSidebarPane = SourcesModule.CallStackSidebarPane.CallStackSidebarPane;
 
 Sources.CallStackSidebarPane._elementSymbol = SourcesModule.CallStackSidebarPane.elementSymbol;
@@ -72,17 +66,6 @@ Sources.FilteredUISourceCodeListProvider =
 
 /** @constructor */
 Sources.GoToLineQuickOpen = SourcesModule.GoToLineQuickOpen.GoToLineQuickOpen;
-
-/** @constructor */
-Sources.GutterDiffPlugin = SourcesModule.GutterDiffPlugin.GutterDiffPlugin;
-
-/** @constructor */
-Sources.GutterDiffPlugin.GutterDecoration = SourcesModule.GutterDiffPlugin.GutterDecoration;
-
-Sources.GutterDiffPlugin.DiffGutterType = SourcesModule.GutterDiffPlugin.DiffGutterType;
-
-/** @constructor */
-Sources.GutterDiffPlugin.ContextMenuProvider = SourcesModule.GutterDiffPlugin.ContextMenuProvider;
 
 /** @constructor */
 Sources.InplaceFormatterEditorAction = SourcesModule.InplaceFormatterEditorAction.InplaceFormatterEditorAction;
@@ -154,10 +137,6 @@ Sources.SearchSourcesView.ActionDelegate = SourcesModule.SearchSourcesView.Actio
 /** @constructor */
 Sources.SnippetsPlugin = SourcesModule.SnippetsPlugin.SnippetsPlugin;
 
-/** @constructor */
-Sources.RecorderPlugin = SourcesModule.RecorderPlugin.RecorderPlugin;
-
-
 Sources.SourceMapNamesResolver = {};
 
 Sources.SourceMapNamesResolver.setScopeResolvedForTest = SourcesModule.SourceMapNamesResolver.setScopeResolvedForTest;
@@ -195,9 +174,6 @@ Sources.ContentScriptsNavigatorView = SourcesModule.SourcesNavigator.ContentScri
 
 /** @constructor */
 Sources.SnippetsNavigatorView = SourcesModule.SourcesNavigator.SnippetsNavigatorView;
-
-/** @constructor */
-Sources.RecordingsNavigatorView = SourcesModule.SourcesNavigator.RecordingsNavigatorView;
 
 /** @constructor */
 Sources.ActionDelegate = SourcesModule.SourcesNavigator.ActionDelegate;

@@ -9,7 +9,7 @@
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/test/ambient_ash_test_base.h"
 #include "ash/ambient/ui/ambient_container_view.h"
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -106,7 +106,7 @@ TEST_F(MediaStringViewTest, HasNoAnimationWithShortText) {
 
   EXPECT_FALSE(
       GetMediaStringViewTextLabel()->layer()->GetAnimator()->is_animating());
-  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  task_environment()->FastForwardBy(base::Milliseconds(100));
   EXPECT_FALSE(
       GetMediaStringViewTextLabel()->layer()->GetAnimator()->is_animating());
 }
@@ -131,7 +131,7 @@ TEST_F(MediaStringViewTest, HasAnimationWithLongText) {
 
   EXPECT_FALSE(
       GetMediaStringViewTextLabel()->layer()->GetAnimator()->is_animating());
-  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  task_environment()->FastForwardBy(base::Milliseconds(100));
   EXPECT_TRUE(
       GetMediaStringViewTextLabel()->layer()->GetAnimator()->is_animating());
 }
@@ -156,7 +156,7 @@ TEST_F(MediaStringViewTest, ShouldStopAndStartAnimationWhenTextChanges) {
 
   EXPECT_FALSE(
       GetMediaStringViewTextLabel()->layer()->GetAnimator()->is_animating());
-  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  task_environment()->FastForwardBy(base::Milliseconds(100));
   EXPECT_TRUE(
       GetMediaStringViewTextLabel()->layer()->GetAnimator()->is_animating());
 
@@ -170,7 +170,7 @@ TEST_F(MediaStringViewTest, ShouldStopAndStartAnimationWhenTextChanges) {
 
   EXPECT_FALSE(
       GetMediaStringViewTextLabel()->layer()->GetAnimator()->is_animating());
-  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  task_environment()->FastForwardBy(base::Milliseconds(100));
   EXPECT_TRUE(
       GetMediaStringViewTextLabel()->layer()->GetAnimator()->is_animating());
 }
@@ -195,7 +195,7 @@ TEST_F(MediaStringViewTest, ShouldStartAndStopAnimationWhenTextChanges) {
 
   EXPECT_FALSE(
       GetMediaStringViewTextLabel()->layer()->GetAnimator()->is_animating());
-  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  task_environment()->FastForwardBy(base::Milliseconds(100));
   EXPECT_FALSE(
       GetMediaStringViewTextLabel()->layer()->GetAnimator()->is_animating());
 
@@ -209,7 +209,7 @@ TEST_F(MediaStringViewTest, ShouldStartAndStopAnimationWhenTextChanges) {
 
   EXPECT_FALSE(
       GetMediaStringViewTextLabel()->layer()->GetAnimator()->is_animating());
-  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  task_environment()->FastForwardBy(base::Milliseconds(100));
   EXPECT_TRUE(
       GetMediaStringViewTextLabel()->layer()->GetAnimator()->is_animating());
 
@@ -223,7 +223,7 @@ TEST_F(MediaStringViewTest, ShouldStartAndStopAnimationWhenTextChanges) {
 
   EXPECT_FALSE(
       GetMediaStringViewTextLabel()->layer()->GetAnimator()->is_animating());
-  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  task_environment()->FastForwardBy(base::Milliseconds(100));
   EXPECT_FALSE(
       GetMediaStringViewTextLabel()->layer()->GetAnimator()->is_animating());
 }
@@ -248,7 +248,7 @@ TEST_F(MediaStringViewTest, PauseMediaWillNotStopAnimationWithLongText) {
 
   EXPECT_FALSE(
       GetMediaStringViewTextLabel()->layer()->GetAnimator()->is_animating());
-  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  task_environment()->FastForwardBy(base::Milliseconds(100));
   EXPECT_TRUE(
       GetMediaStringViewTextLabel()->layer()->GetAnimator()->is_animating());
 

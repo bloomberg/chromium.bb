@@ -2700,7 +2700,7 @@ iftype:
         t = tline = expand_smacro(tline);
 
         while (tok_white(t) ||
-               (needtype == TOK_NUMBER && (tok_is(t, '-') | tok_is(t, '+'))))
+               (needtype == TOK_NUMBER && (tok_is(t, '-') || tok_is(t, '+'))))
             t = t->next;
 
         j = tok_type(t, needtype);

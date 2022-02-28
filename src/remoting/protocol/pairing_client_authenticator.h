@@ -5,7 +5,6 @@
 #ifndef REMOTING_PROTOCOL_PAIRING_CLIENT_AUTHENTICATOR_H_
 #define REMOTING_PROTOCOL_PAIRING_CLIENT_AUTHENTICATOR_H_
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/protocol/client_authentication_config.h"
 #include "remoting/protocol/pairing_authenticator_base.h"
@@ -19,6 +18,11 @@ class PairingClientAuthenticator : public PairingAuthenticatorBase {
       const ClientAuthenticationConfig& client_auth_config,
       const CreateBaseAuthenticatorCallback&
           create_base_authenticator_callback);
+
+  PairingClientAuthenticator(const PairingClientAuthenticator&) = delete;
+  PairingClientAuthenticator& operator=(const PairingClientAuthenticator&) =
+      delete;
+
   ~PairingClientAuthenticator() override;
 
   // Start() or StartPaired() must be called after the authenticator is created.
@@ -26,7 +30,7 @@ class PairingClientAuthenticator : public PairingAuthenticatorBase {
   // StartPaired() can only be used when pairing exists (i.e. client_id and
   // pairing_secret are set in the |client_auth_config|). It is used to
   // initialize the authenticator synchronously in
-  // NegotiatingClientAuthentitcator, while Start() may be executed
+  // NegotiatingClientAuthenticator, while Start() may be executed
   // asynchronously to fetch the PIN.
   void Start(State initial_state, base::OnceClosure resume_callback);
   void StartPaired(State initial_state);
@@ -52,8 +56,6 @@ class PairingClientAuthenticator : public PairingAuthenticatorBase {
   bool waiting_for_pin_ = false;
 
   base::WeakPtrFactory<PairingClientAuthenticator> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PairingClientAuthenticator);
 };
 
 }  // namespace protocol

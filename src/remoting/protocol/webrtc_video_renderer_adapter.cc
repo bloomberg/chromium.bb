@@ -13,8 +13,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "remoting/protocol/client_video_stats_dispatcher.h"
@@ -67,6 +67,14 @@ WebrtcVideoRendererAdapter::WebrtcVideoRendererAdapter(
 
 WebrtcVideoRendererAdapter::~WebrtcVideoRendererAdapter() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // Needed for ConnectionTest unittests which set up a
+  // fake connection without starting any video. This
+  // video adapter is instantiated when the incoming
+  // video-stats data channel is created.
+  if (!media_stream_) {
+    return;
+  }
 
   webrtc::VideoTrackVector video_tracks = media_stream_->GetVideoTracks();
   DCHECK(!video_tracks.empty());

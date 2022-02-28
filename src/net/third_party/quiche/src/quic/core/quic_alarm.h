@@ -6,6 +6,7 @@
 #define QUICHE_QUIC_CORE_QUIC_ALARM_H_
 
 #include "quic/core/quic_arena_scoped_ptr.h"
+#include "quic/core/quic_connection_context.h"
 #include "quic/core/quic_time.h"
 #include "quic/platform/api/quic_export.h"
 
@@ -22,8 +23,37 @@ class QUIC_EXPORT_PRIVATE QuicAlarm {
    public:
     virtual ~Delegate() {}
 
+    // If the alarm belongs to a single QuicConnection, return the corresponding
+    // QuicConnection.context_. Note the context_ is the first member of
+    // QuicConnection, so it should outlive the delegate.
+    // Otherwise return nullptr.
+    // The OnAlarm function will be called under the connection context, if any.
+    virtual QuicConnectionContext* GetConnectionContext() = 0;
+
     // Invoked when the alarm fires.
     virtual void OnAlarm() = 0;
+  };
+
+  // DelegateWithContext is a Delegate with a QuicConnectionContext* stored as a
+  // member variable.
+  class QUIC_EXPORT_PRIVATE DelegateWithContext : public Delegate {
+   public:
+    explicit DelegateWithContext(QuicConnectionContext* context)
+        : context_(context) {}
+    ~DelegateWithContext() override {}
+    QuicConnectionContext* GetConnectionContext() override { return context_; }
+
+   private:
+    QuicConnectionContext* context_;
+  };
+
+  // DelegateWithoutContext is a Delegate that does not have a corresponding
+  // context. Typically this means one object of the child class deals with many
+  // connections.
+  class QUIC_EXPORT_PRIVATE DelegateWithoutContext : public Delegate {
+   public:
+    ~DelegateWithoutContext() override {}
+    QuicConnectionContext* GetConnectionContext() override { return nullptr; }
   };
 
   explicit QuicAlarm(QuicArenaScopedPtr<Delegate> delegate);
@@ -36,11 +66,18 @@ class QUIC_EXPORT_PRIVATE QuicAlarm {
   // then Set().
   void Set(QuicTime new_deadline);
 
-  // Cancels the alarm.  May be called repeatedly.  Does not
-  // guarantee that the underlying scheduling system will remove
-  // the alarm's associated task, but guarantees that the
-  // delegates OnAlarm method will not be called.
-  void Cancel();
+  // Both PermanentCancel() and Cancel() can cancel the alarm. If permanent,
+  // future calls to Set() and Update() will become no-op except emitting an
+  // error log.
+  //
+  // Both may be called repeatedly.  Does not guarantee that the underlying
+  // scheduling system will remove the alarm's associated task, but guarantees
+  // that the delegates OnAlarm method will not be called.
+  void PermanentCancel() { CancelInternal(true); }
+  void Cancel() { CancelInternal(false); }
+
+  // Return true if PermanentCancel() has been called.
+  bool IsPermanentlyCancelled() const;
 
   // Cancels and sets the alarm if the |deadline| is farther from the current
   // deadline than |granularity|, and otherwise does nothing.  If |deadline| is
@@ -77,6 +114,8 @@ class QUIC_EXPORT_PRIVATE QuicAlarm {
   void Fire();
 
  private:
+  void CancelInternal(bool permanent);
+
   QuicArenaScopedPtr<Delegate> delegate_;
   QuicTime deadline_;
 };

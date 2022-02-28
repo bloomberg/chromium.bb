@@ -13,7 +13,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
@@ -23,7 +23,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "printing/buildflags/buildflags.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkStream.h"
@@ -54,6 +53,10 @@ class PrintCompositorImpl : public mojom::PrintCompositor {
       mojo::PendingReceiver<mojom::PrintCompositor> receiver,
       bool initialize_environment,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+
+  PrintCompositorImpl(const PrintCompositorImpl&) = delete;
+  PrintCompositorImpl& operator=(const PrintCompositorImpl&) = delete;
+
   ~PrintCompositorImpl() override;
 
   // mojom::PrintCompositor
@@ -250,8 +253,6 @@ class PrintCompositorImpl : public mojom::PrintCompositor {
   // If present, the accessibility tree for the document needed to
   // export a tagged (accessible) PDF.
   ui::AXTreeUpdate accessibility_tree_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintCompositorImpl);
 };
 
 }  // namespace printing

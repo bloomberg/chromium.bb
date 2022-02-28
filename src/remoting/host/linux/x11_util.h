@@ -12,7 +12,6 @@
 // another header.
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "ui/gfx/x/connection.h"
 
 namespace remoting {
@@ -22,12 +21,14 @@ namespace remoting {
 class ScopedXGrabServer {
  public:
   explicit ScopedXGrabServer(x11::Connection* connection);
+
+  ScopedXGrabServer(const ScopedXGrabServer&) = delete;
+  ScopedXGrabServer& operator=(const ScopedXGrabServer&) = delete;
+
   ~ScopedXGrabServer();
 
  private:
   x11::Connection* connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedXGrabServer);
 };
 
 // Make a connection to the X Server impervious to X Server grabs. Returns

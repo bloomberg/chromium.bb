@@ -6,7 +6,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread.h"
 #include "crypto/openssl_util.h"
@@ -30,6 +29,9 @@ class SSLPlatformKeyTaskRunner {
     worker_thread_.StartWithOptions(std::move(options));
   }
 
+  SSLPlatformKeyTaskRunner(const SSLPlatformKeyTaskRunner&) = delete;
+  SSLPlatformKeyTaskRunner& operator=(const SSLPlatformKeyTaskRunner&) = delete;
+
   ~SSLPlatformKeyTaskRunner() = default;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
@@ -38,8 +40,6 @@ class SSLPlatformKeyTaskRunner {
 
  private:
   base::Thread worker_thread_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLPlatformKeyTaskRunner);
 };
 
 base::LazyInstance<SSLPlatformKeyTaskRunner>::Leaky g_platform_key_task_runner =

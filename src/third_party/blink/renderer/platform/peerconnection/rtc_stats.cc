@@ -9,12 +9,13 @@
 #include <string>
 
 #include "base/check_op.h"
-#include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
+#include "base/containers/cxx20_erase.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_scoped_refptr_cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
 
@@ -301,10 +302,36 @@ Vector<String> RTCStatsMember::ValueSequenceString() const {
   DCHECK(IsDefined());
   const std::vector<std::string>& sequence =
       *member_->cast_to<webrtc::RTCStatsMember<std::vector<std::string>>>();
-  Vector<String> wtf_sequence(sequence.size());
-  for (size_t i = 0; i < sequence.size(); ++i)
+  Vector<String> wtf_sequence(base::checked_cast<wtf_size_t>(sequence.size()));
+  for (wtf_size_t i = 0; i < wtf_sequence.size(); ++i)
     wtf_sequence[i] = String::FromUTF8(sequence[i]);
   return wtf_sequence;
+}
+
+HashMap<String, uint64_t> RTCStatsMember::ValueMapStringUint64() const {
+  DCHECK(IsDefined());
+  const std::map<std::string, uint64_t>& map =
+      *member_
+           ->cast_to<webrtc::RTCStatsMember<std::map<std::string, uint64_t>>>();
+  HashMap<String, uint64_t> wtf_map;
+  wtf_map.ReserveCapacityForSize(SafeCast<unsigned>(map.size()));
+  for (auto& elem : map) {
+    wtf_map.insert(String::FromUTF8(elem.first), elem.second);
+  }
+  return wtf_map;
+}
+
+HashMap<String, double> RTCStatsMember::ValueMapStringDouble() const {
+  DCHECK(IsDefined());
+  const std::map<std::string, double>& map =
+      *member_
+           ->cast_to<webrtc::RTCStatsMember<std::map<std::string, double>>>();
+  HashMap<String, double> wtf_map;
+  wtf_map.ReserveCapacityForSize(SafeCast<unsigned>(map.size()));
+  for (auto& elem : map) {
+    wtf_map.insert(String::FromUTF8(elem.first), elem.second);
+  }
+  return wtf_map;
 }
 
 rtc::scoped_refptr<webrtc::RTCStatsCollectorCallback>

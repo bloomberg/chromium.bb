@@ -5,7 +5,7 @@
 (async function() {
   TestRunner.addResult(`Tests conversion of Inspector's resource representation into HAR format.\n`);
   await TestRunner.loadTestModule('network_test_runner');
-  await TestRunner.loadModule('console'); await TestRunner.loadTestModule('application_test_runner');
+  await TestRunner.loadLegacyModule('console'); await TestRunner.loadTestModule('application_test_runner');
 
   await TestRunner.NetworkAgent.setCacheDisabled(true);
   await TestRunner.reloadPagePromise();
@@ -24,11 +24,16 @@
     const c1 = new SDK.Cookie('a', 'b');
     c1.addAttribute('path', '/path');
     c1.addAttribute('domain', 'example.com');
-    request._includedRequestCookies = [
-      c1,
-      new SDK.Cookie('a1', 'b1'),
-      new SDK.Cookie('c1', 'd1'),
-    ];
+    request.addExtraRequestInfo({
+      includedRequestCookies: [
+        c1,
+        new SDK.Cookie('a1', 'b1'),
+        new SDK.Cookie('c1', 'd1'),
+      ],
+      blockedRequestCookies: [],
+      requestHeaders: [{name: 'version', value: 'HTTP/1.1'}],
+      connectTiming: {}
+    });
 
     request.responseHeaders = [{
       name: 'Set-Cookie',

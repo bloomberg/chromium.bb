@@ -9,6 +9,7 @@
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/largest_draw_quad.h"
 #include "components/viz/common/quads/picture_draw_quad.h"
+#include "components/viz/common/quads/shared_element_draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
@@ -19,20 +20,31 @@
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 
 namespace {
+// This rounding is required because 'LargestDrawQuadSize' and
+// 'LargestDrawQuadAlignment' might not be the largest for the same quad type.
+// For example |TextureDrawQuad| might be the largest quad but only have an
+// alignment requirement of 8 bytes whereas |TileDrawQuad| might not be the
+// largest quad but could have an alignment requirement of 16 bytes.
+constexpr size_t RoundUp(size_t size, size_t align) {
+  return (size + align - 1u) & ~(align - 1u);
+}
+
 const size_t kDefaultNumQuadsToReserve = 128;
 }  // namespace
 
 namespace viz {
 
 QuadList::QuadList()
-    : ListContainer<DrawQuad>(LargestDrawQuadAlignment(),
-                              LargestDrawQuadSize(),
-                              kDefaultNumQuadsToReserve) {}
+    : ListContainer<DrawQuad>(
+          LargestDrawQuadAlignment(),
+          RoundUp(LargestDrawQuadSize(), LargestDrawQuadAlignment()),
+          kDefaultNumQuadsToReserve) {}
 
 QuadList::QuadList(size_t default_size_to_reserve)
-    : ListContainer<DrawQuad>(LargestDrawQuadAlignment(),
-                              LargestDrawQuadSize(),
-                              default_size_to_reserve) {}
+    : ListContainer<DrawQuad>(
+          LargestDrawQuadAlignment(),
+          RoundUp(LargestDrawQuadSize(), LargestDrawQuadAlignment()),
+          default_size_to_reserve) {}
 
 QuadList::Iterator QuadList::InsertCopyBeforeDrawQuad(Iterator at,
                                                       size_t count) {
@@ -82,6 +94,11 @@ QuadList::Iterator QuadList::InsertCopyBeforeDrawQuad(Iterator at,
       const auto copy = *YUVVideoDrawQuad::MaterialCast(*at);
       return InsertBeforeAndInvalidateAllPointers<YUVVideoDrawQuad>(at, count,
                                                                     copy);
+    }
+    case DrawQuad::Material::kSharedElement: {
+      const auto copy = *SharedElementDrawQuad::MaterialCast(*at);
+      return InsertBeforeAndInvalidateAllPointers<SharedElementDrawQuad>(
+          at, count, copy);
     }
     // RenderPass quads should not be copied.
     case DrawQuad::Material::kAggregatedRenderPass:

@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
 namespace metrics {
 
 // Interface for local storage of serialized logs to be reported.
@@ -14,6 +16,8 @@ namespace metrics {
 // at a time by staging and discarding logs, and persist/load the whole set.
 class LogStore {
  public:
+  virtual ~LogStore() = default;
+
   // Returns true if there are any logs waiting to be uploaded.
   virtual bool has_unsent_logs() const = 0;
 
@@ -32,6 +36,12 @@ class LogStore {
   // a log originated from Chrome, and to detect corruption.
   // Will trigger a DCHECK if there is no staged log.
   virtual const std::string& staged_log_signature() const = 0;
+
+  // User id associated with the staged log. Empty if the log was
+  // recorded during no particular user session or during guest session.
+  //
+  // Will trigger a DCHECK if there is no staged log.
+  virtual absl::optional<uint64_t> staged_log_user_id() const = 0;
 
   // Populates staged_log() with the next stored log to send.
   // The order in which logs are staged is up to the implementor.

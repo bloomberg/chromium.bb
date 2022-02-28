@@ -96,9 +96,10 @@ void FakeProofSource::GetProof(
 
 QuicReferenceCountedPointer<ProofSource::Chain> FakeProofSource::GetCertChain(
     const QuicSocketAddress& server_address,
-    const QuicSocketAddress& client_address,
-    const std::string& hostname) {
-  return delegate_->GetCertChain(server_address, client_address, hostname);
+    const QuicSocketAddress& client_address, const std::string& hostname,
+    bool* cert_matched_sni) {
+  return delegate_->GetCertChain(server_address, client_address, hostname,
+                                 cert_matched_sni);
 }
 
 void FakeProofSource::ComputeTlsSignature(
@@ -121,6 +122,11 @@ void FakeProofSource::ComputeTlsSignature(
   pending_ops_.push_back(std::make_unique<ComputeSignatureOp>(
       server_address, client_address, hostname, signature_algorithm, in,
       std::move(callback), delegate_.get()));
+}
+
+absl::InlinedVector<uint16_t, 8>
+FakeProofSource::SupportedTlsSignatureAlgorithms() const {
+  return delegate_->SupportedTlsSignatureAlgorithms();
 }
 
 ProofSource::TicketCrypter* FakeProofSource::GetTicketCrypter() {

@@ -23,7 +23,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ELEMENT_H_
 
 #include "base/dcheck_is_on.h"
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
@@ -154,8 +153,8 @@ class CORE_EXPORT SVGElement : public Element {
   }
 
   const HeapHashSet<WeakMember<SVGElement>>& InstancesForElement() const;
-  void MapInstanceToElement(SVGElement*);
-  void RemoveInstanceMapping(SVGElement*);
+  void AddInstance(SVGElement*);
+  void RemoveInstance(SVGElement*);
 
   SVGElement* CorrespondingElement() const;
   void SetCorrespondingElement(SVGElement*);
@@ -201,11 +200,12 @@ class CORE_EXPORT SVGElement : public Element {
 
    public:
     InvalidationGuard(SVGElement* element) : element_(element) {}
+    InvalidationGuard(const InvalidationGuard&) = delete;
+    InvalidationGuard& operator=(const InvalidationGuard&) = delete;
     ~InvalidationGuard() { element_->InvalidateInstances(); }
 
    private:
     SVGElement* element_;
-    DISALLOW_COPY_AND_ASSIGN(InvalidationGuard);
   };
 
   class InstanceUpdateBlocker {
@@ -213,11 +213,12 @@ class CORE_EXPORT SVGElement : public Element {
 
    public:
     InstanceUpdateBlocker(SVGElement* target_element);
+    InstanceUpdateBlocker(const InstanceUpdateBlocker&) = delete;
+    InstanceUpdateBlocker& operator=(const InstanceUpdateBlocker&) = delete;
     ~InstanceUpdateBlocker();
 
    private:
     SVGElement* target_element_;
-    DISALLOW_COPY_AND_ASSIGN(InstanceUpdateBlocker);
   };
 
   void InvalidateInstances();
@@ -283,6 +284,9 @@ class CORE_EXPORT SVGElement : public Element {
   void AccessKeyAction(SimulatedClickCreationScope creation_scope) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SVGElementTest,
+                           BaseComputedStyleForSMILWithContainerQueries);
+
   bool IsSVGElement() const =
       delete;  // This will catch anyone doing an unnecessary check.
   bool IsStyledElement() const =

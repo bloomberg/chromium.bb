@@ -10,7 +10,6 @@
 #include <stddef.h>
 
 #include "base/files/file.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 
@@ -43,6 +42,9 @@ class NET_EXPORT_PRIVATE File : public base::RefCounted<File> {
   // the Init() call. No asynchronous operations can be performed with this
   // object.
   explicit File(base::File file);
+
+  File(const File&) = delete;
+  File& operator=(const File&) = delete;
 
   // Initializes the object to point to a given file. The file must aready exist
   // on disk, and allow shared read and write.
@@ -94,8 +96,6 @@ class NET_EXPORT_PRIVATE File : public base::RefCounted<File> {
   bool mixed_;
   base::File base_file_;  // Regular, asynchronous IO handle.
   base::File sync_base_file_;  // Synchronous IO handle.
-
-  DISALLOW_COPY_AND_ASSIGN(File);
 };
 
 }  // namespace disk_cache

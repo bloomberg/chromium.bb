@@ -19,12 +19,16 @@
  */
 
 #include "libavutil/avassert.h"
+#include "libavutil/hwcontext.h"
 #include "libavutil/hwcontext_cuda_internal.h"
 #include "libavutil/cuda_check.h"
 #include "internal.h"
 #include "yadif.h"
 
-extern char vf_yadif_cuda_ptx[];
+#include "cuda/load_helper.h"
+
+extern const unsigned char ff_vf_yadif_cuda_ptx_data[];
+extern const unsigned int ff_vf_yadif_cuda_ptx_len;
 
 typedef struct DeintCUDAContext {
     YADIFContext yadif;
@@ -297,10 +301,9 @@ static int config_output(AVFilterLink *link)
         goto exit;
     }
 
-    link->time_base.num = ctx->inputs[0]->time_base.num;
-    link->time_base.den = ctx->inputs[0]->time_base.den * 2;
-    link->w             = ctx->inputs[0]->w;
-    link->h             = ctx->inputs[0]->h;
+    link->time_base = av_mul_q(ctx->inputs[0]->time_base, (AVRational){1, 2});
+    link->w         = ctx->inputs[0]->w;
+    link->h         = ctx->inputs[0]->h;
 
     if(y->mode & 1)
         link->frame_rate = av_mul_q(ctx->inputs[0]->frame_rate,
@@ -319,7 +322,7 @@ static int config_output(AVFilterLink *link)
     if (ret < 0)
         goto exit;
 
-    ret = CHECK_CU(cu->cuModuleLoadData(&s->cu_module, vf_yadif_cuda_ptx));
+    ret = ff_cuda_load_module(ctx, s->hwctx, &s->cu_module, ff_vf_yadif_cuda_ptx_data, ff_vf_yadif_cuda_ptx_len);
     if (ret < 0)
         goto exit;
 
@@ -360,7 +363,6 @@ static const AVFilterPad deint_cuda_inputs[] = {
         .filter_frame  = ff_yadif_filter_frame,
         .config_props  = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad deint_cuda_outputs[] = {
@@ -370,18 +372,17 @@ static const AVFilterPad deint_cuda_outputs[] = {
         .request_frame = ff_yadif_request_frame,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
-AVFilter ff_vf_yadif_cuda = {
+const AVFilter ff_vf_yadif_cuda = {
     .name           = "yadif_cuda",
     .description    = NULL_IF_CONFIG_SMALL("Deinterlace CUDA frames"),
     .priv_size      = sizeof(DeintCUDAContext),
     .priv_class     = &yadif_cuda_class,
     .uninit         = deint_cuda_uninit,
-    .query_formats  = deint_cuda_query_formats,
-    .inputs         = deint_cuda_inputs,
-    .outputs        = deint_cuda_outputs,
+    FILTER_INPUTS(deint_cuda_inputs),
+    FILTER_OUTPUTS(deint_cuda_outputs),
+    FILTER_QUERY_FUNC(deint_cuda_query_formats),
     .flags          = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };

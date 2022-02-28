@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
-import type * as Common from '../../core/common/common.js'; // eslint-disable-line no-unused-vars
+import type * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import type * as SDK from '../../core/sdk/sdk.js'; // eslint-disable-line no-unused-vars
+import * as Platform from '../../core/platform/platform.js';
+import type * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
-import type * as TextUtils from '../../models/text_utils/text_utils.js'; // eslint-disable-line no-unused-vars
-import type * as Search from '../search/search.js';                      // eslint-disable-line no-unused-vars
+import type * as TextUtils from '../../models/text_utils/text_utils.js';
+import type * as Search from '../search/search.js';
+import * as NetworkForward from '../../panels/network/forward/forward.js';
 
 const UIStrings = {
   /**
@@ -35,7 +35,7 @@ export class NetworkSearchScope implements Search.SearchConfig.SearchScope {
         request => searchConfig.filePathMatchesFileQuery(request.url()));
     progress.setTotalWork(requests.length);
     for (const request of requests) {
-      const promise = this._searchRequest(searchConfig, request, progress);
+      const promise = this.searchRequest(searchConfig, request, progress);
       promises.push(promise);
     }
     const resultsWithNull = await Promise.all(promises);
@@ -53,7 +53,7 @@ export class NetworkSearchScope implements Search.SearchConfig.SearchScope {
     searchFinishedCallback(true);
   }
 
-  async _searchRequest(
+  private async searchRequest(
       searchConfig: Search.SearchConfig.SearchConfig, request: SDK.NetworkRequest.NetworkRequest,
       progress: Common.Progress.Progress): Promise<NetworkSearchResult|null> {
     let bodyMatches: TextUtils.ContentProvider.SearchMatch[] = [];
@@ -66,22 +66,22 @@ export class NetworkSearchScope implements Search.SearchConfig.SearchScope {
     }
     const locations = [];
     if (stringMatchesQuery(request.url())) {
-      locations.push(UIRequestLocation.urlMatch(request));
+      locations.push(NetworkForward.UIRequestLocation.UIRequestLocation.urlMatch(request));
     }
     for (const header of request.requestHeaders()) {
       if (headerMatchesQuery(header)) {
-        locations.push(UIRequestLocation.requestHeaderMatch(request, header));
+        locations.push(NetworkForward.UIRequestLocation.UIRequestLocation.requestHeaderMatch(request, header));
       }
     }
     for (const header of request.responseHeaders) {
       if (headerMatchesQuery(header)) {
-        locations.push(UIRequestLocation.responseHeaderMatch(request, header));
+        locations.push(NetworkForward.UIRequestLocation.UIRequestLocation.responseHeaderMatch(request, header));
       }
     }
     for (const match of bodyMatches) {
-      locations.push(UIRequestLocation.bodyMatch(request, match));
+      locations.push(NetworkForward.UIRequestLocation.UIRequestLocation.bodyMatch(request, match));
     }
-    progress.worked();
+    progress.incrementWorked();
     return new NetworkSearchResult(request, locations);
 
     function headerMatchesQuery(header: SDK.NetworkRequest.NameValue): boolean {
@@ -90,7 +90,8 @@ export class NetworkSearchScope implements Search.SearchConfig.SearchScope {
 
     function stringMatchesQuery(string: string): boolean {
       const flags = searchConfig.ignoreCase() ? 'i' : '';
-      const regExps = searchConfig.queries().map(query => new RegExp(query, flags));
+      const regExps =
+          searchConfig.queries().map(query => new RegExp(Platform.StringUtilities.escapeForRegExp(query), flags));
       let pos = 0;
       for (const regExp of regExps) {
         const match = string.substr(pos).match(regExp);
@@ -107,87 +108,36 @@ export class NetworkSearchScope implements Search.SearchConfig.SearchScope {
   }
 }
 
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export enum UIHeaderSection {
-  General = 'General',
-  Request = 'Request',
-  Response = 'Response',
-}
-
-interface UIHeaderLocation {
-  section: UIHeaderSection;
-  header: SDK.NetworkRequest.NameValue|null;
-}
-
-export class UIRequestLocation {
-  request: SDK.NetworkRequest.NetworkRequest;
-  header: UIHeaderLocation|null;
-  searchMatch: TextUtils.ContentProvider.SearchMatch|null;
-  isUrlMatch: boolean;
-
-  private constructor(
-      request: SDK.NetworkRequest.NetworkRequest, header: UIHeaderLocation|null,
-      searchMatch: TextUtils.ContentProvider.SearchMatch|null, urlMatch: boolean) {
-    this.request = request;
-    this.header = header;
-    this.searchMatch = searchMatch;
-    this.isUrlMatch = urlMatch;
-  }
-
-  static requestHeaderMatch(request: SDK.NetworkRequest.NetworkRequest, header: SDK.NetworkRequest.NameValue|null):
-      UIRequestLocation {
-    return new UIRequestLocation(request, {section: UIHeaderSection.Request, header}, null, false);
-  }
-
-  static responseHeaderMatch(request: SDK.NetworkRequest.NetworkRequest, header: SDK.NetworkRequest.NameValue|null):
-      UIRequestLocation {
-    return new UIRequestLocation(request, {section: UIHeaderSection.Response, header}, null, false);
-  }
-
-  static bodyMatch(request: SDK.NetworkRequest.NetworkRequest, searchMatch: TextUtils.ContentProvider.SearchMatch|null):
-      UIRequestLocation {
-    return new UIRequestLocation(request, null, searchMatch, false);
-  }
-
-  static urlMatch(request: SDK.NetworkRequest.NetworkRequest): UIRequestLocation {
-    return new UIRequestLocation(request, null, null, true);
-  }
-
-  static header(request: SDK.NetworkRequest.NetworkRequest, section: UIHeaderSection, name: string): UIRequestLocation {
-    return new UIRequestLocation(request, {section, header: {name, value: ''}}, null, true);
-  }
-}
-
 export class NetworkSearchResult implements Search.SearchConfig.SearchResult {
-  _request: SDK.NetworkRequest.NetworkRequest;
-  _locations: UIRequestLocation[];
+  private readonly request: SDK.NetworkRequest.NetworkRequest;
+  private readonly locations: NetworkForward.UIRequestLocation.UIRequestLocation[];
 
-  constructor(request: SDK.NetworkRequest.NetworkRequest, locations: UIRequestLocation[]) {
-    this._request = request;
-    this._locations = locations;
+  constructor(
+      request: SDK.NetworkRequest.NetworkRequest, locations: NetworkForward.UIRequestLocation.UIRequestLocation[]) {
+    this.request = request;
+    this.locations = locations;
   }
 
   matchesCount(): number {
-    return this._locations.length;
+    return this.locations.length;
   }
 
   label(): string {
-    return this._request.displayName;
+    return this.request.displayName;
   }
 
   description(): string {
-    const parsedUrl = this._request.parsedURL;
+    const parsedUrl = this.request.parsedURL;
     if (!parsedUrl) {
-      return this._request.url();
+      return this.request.url();
     }
     return parsedUrl.urlWithoutScheme();
   }
 
   matchLineContent(index: number): string {
-    const location = this._locations[index];
+    const location = this.locations[index];
     if (location.isUrlMatch) {
-      return this._request.url();
+      return this.request.url();
     }
     const header = location?.header?.header;
     if (header) {
@@ -197,11 +147,11 @@ export class NetworkSearchResult implements Search.SearchConfig.SearchResult {
   }
 
   matchRevealable(index: number): Object {
-    return this._locations[index];
+    return this.locations[index];
   }
 
   matchLabel(index: number): string {
-    const location = this._locations[index];
+    const location = this.locations[index];
     if (location.isUrlMatch) {
       return i18nString(UIStrings.url);
     }

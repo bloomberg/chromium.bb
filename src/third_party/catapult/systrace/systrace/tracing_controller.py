@@ -51,8 +51,8 @@ class TracingControllerAgent(tracing_agents.TracingAgent):
     """
     del config
     if not trace_event.trace_can_enable():
-      raise RuntimeError, ('Cannot enable trace_event;'
-                           ' ensure py_utils is in PYTHONPATH')
+      raise RuntimeError('Cannot enable trace_event;'
+                         ' ensure py_utils is in PYTHONPATH')
 
     controller_log_file = tempfile.NamedTemporaryFile(delete=False)
     self._log_path = controller_log_file.name
@@ -223,6 +223,7 @@ class TracingController(object):
       # of the trace result, which will be dealt with above)
       except:
         print('Warning: Exception getting results from %s:' % str(agent))
+        print('Try checking android device storage permissions for chrome')
         print(sys.exc_info()[0])
         raise
     self.all_results = all_results

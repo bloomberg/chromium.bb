@@ -353,7 +353,7 @@ class XRSession final
   // presentation frames.
   void UpdatePresentationFrameState(
       double timestamp,
-      const device::mojom::blink::VRPosePtr& frame_pose,
+      const device::mojom::blink::VRPosePtr& mojo_from_viewer_pose,
       const device::mojom::blink::XRFrameDataPtr& frame_data,
       int16_t frame_id,
       bool emulated_position);
@@ -509,7 +509,6 @@ class XRSession final
   // |anchor_ids_to_pending_anchor_promises_|, and anchors that got created in
   // phase 3 live in |anchor_ids_to_anchors_|.
 
-  bool is_tracked_anchors_null_ = true;
   HeapHashMap<uint64_t, Member<XRAnchor>> anchor_ids_to_anchors_;
 
   // Set of promises returned from CreateAnchor that are still in-flight to the
@@ -587,9 +586,9 @@ class XRSession final
 
   bool pending_frame_ = false;
   bool resolving_frame_ = false;
-  bool update_views_next_frame_ = false;
-  bool views_dirty_ = true;
   bool frames_throttled_ = false;
+
+  bool views_updated_this_frame_ = false;
 
   // Indicates that we've already logged a metric, so don't need to log it
   // again.

@@ -20,7 +20,7 @@ namespace blink {
 
 namespace {
 
-constexpr base::TimeDelta kFireInterval = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kFireInterval = base::Seconds(1);
 constexpr double kLargeAdSizeToViewportSizeThreshold = 0.1;
 
 // An overlay interstitial element shouldn't move with scrolling and should be
@@ -87,7 +87,7 @@ void OverlayInterstitialAdDetector::MaybeFireDetection(LocalFrame* main_frame) {
   started_detection_ = true;
   last_detection_time_ = current_time;
 
-  IntSize main_frame_size = main_frame->GetMainFrameViewportSize();
+  gfx::Size main_frame_size = main_frame->GetMainFrameViewportSize();
 
   if (main_frame_size != last_detection_main_frame_size_) {
     // Reset the candidate when the the viewport size has changed. Changing
@@ -111,8 +111,8 @@ void OverlayInterstitialAdDetector::MaybeFireDetection(LocalFrame* main_frame) {
   if (main_frame->View()->HasDominantVideoElement())
     return;
 
-  HitTestLocation location(DoublePoint(main_frame_size.Width() / 2.0,
-                                       main_frame_size.Height() / 2.0));
+  HitTestLocation location(DoublePoint(main_frame_size.width() / 2.0,
+                                       main_frame_size.height() / 2.0));
   HitTestResult result;
   main_frame->ContentLayoutObject()->HitTestNoLifecycleUpdate(location, result);
 
@@ -144,7 +144,7 @@ void OverlayInterstitialAdDetector::MaybeFireDetection(LocalFrame* main_frame) {
     // If the main frame scrolling offset hasn't changed since the candidate's
     // appearance, we consider it to be a overlay interstitial; otherwise, we
     // skip that candidate because it could be a parallax/scroller ad.
-    if (main_frame->GetMainFrameScrollOffset().Y() ==
+    if (main_frame->GetMainFrameScrollOffset().y() ==
         candidate_start_main_frame_scroll_offset_) {
       OnPopupDetected(main_frame, candidate_is_ad_);
     }
@@ -173,11 +173,12 @@ void OverlayInterstitialAdDetector::MaybeFireDetection(LocalFrame* main_frame) {
   if (!element->GetLayoutObject())
     return;
 
-  IntRect overlay_rect = element->GetLayoutObject()->AbsoluteBoundingBoxRect();
+  gfx::Rect overlay_rect =
+      element->GetLayoutObject()->AbsoluteBoundingBoxRect();
 
   bool is_large =
-      (overlay_rect.Size().Area() >
-       main_frame_size.Area() * kLargeAdSizeToViewportSizeThreshold);
+      (overlay_rect.size().Area64() >
+       main_frame_size.Area64() * kLargeAdSizeToViewportSizeThreshold);
 
   bool has_gesture = LocalFrame::HasTransientUserActivation(main_frame);
   bool is_ad = element->IsAdRelated();
@@ -197,7 +198,7 @@ void OverlayInterstitialAdDetector::MaybeFireDetection(LocalFrame* main_frame) {
     candidate_id_ = element_id;
     candidate_is_ad_ = is_ad;
     candidate_start_main_frame_scroll_offset_ =
-        main_frame->GetMainFrameScrollOffset().Y();
+        main_frame->GetMainFrameScrollOffset().y();
   } else {
     last_unqualified_element_id_ = element_id;
   }

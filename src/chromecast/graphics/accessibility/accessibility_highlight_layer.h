@@ -12,7 +12,6 @@
 
 #include "chromecast/graphics/accessibility/accessibility_layer.h"
 
-#include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -23,6 +22,11 @@ class AccessibilityHighlightLayer : public AccessibilityLayer {
  public:
   explicit AccessibilityHighlightLayer(aura::Window* root_window,
                                        AccessibilityLayerDelegate* delegate);
+
+  AccessibilityHighlightLayer(const AccessibilityHighlightLayer&) = delete;
+  AccessibilityHighlightLayer& operator=(const AccessibilityHighlightLayer&) =
+      delete;
+
   ~AccessibilityHighlightLayer() override;
 
   // Create the layer and update its bounds and position in the hierarchy.
@@ -41,8 +45,6 @@ class AccessibilityHighlightLayer : public AccessibilityLayer {
 
   // The highlight color.
   SkColor highlight_color_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityHighlightLayer);
 };
 
 }  // namespace chromecast

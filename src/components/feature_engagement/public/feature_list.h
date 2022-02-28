@@ -7,8 +7,8 @@
 
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/flags_ui/feature_entry.h"
@@ -57,6 +57,11 @@ DEFINE_VARIATION_PARAM(kIPHAddToHomescreenMessageFeature,
                        "IPH_AddToHomescreenMessage");
 DEFINE_VARIATION_PARAM(kIPHAddToHomescreenTextBubbleFeature,
                        "IPH_AddToHomescreenTextBubble");
+DEFINE_VARIATION_PARAM(kIPHAutoDarkOptOutFeature, "IPH_AutoDarkOptOut");
+DEFINE_VARIATION_PARAM(kIPHAutoDarkUserEducationMessageFeature,
+                       "IPH_AutoDarkUserEducationMessage");
+DEFINE_VARIATION_PARAM(kIPHAutoDarkUserEducationMessageOptInFeature,
+                       "IPH_AutoDarkUserEducationMessageOptIn");
 DEFINE_VARIATION_PARAM(kIPHDataSaverDetailFeature, "IPH_DataSaverDetail");
 DEFINE_VARIATION_PARAM(kIPHDataSaverMilestonePromoFeature,
                        "IPH_DataSaverMilestonePromo");
@@ -95,9 +100,25 @@ DEFINE_VARIATION_PARAM(kIPHDownloadInfoBarDownloadContinuingFeature,
 DEFINE_VARIATION_PARAM(kIPHDownloadInfoBarDownloadsAreFasterFeature,
                        "IPH_DownloadInfoBarDownloadsAreFaster");
 DEFINE_VARIATION_PARAM(kIPHEphemeralTabFeature, "IPH_EphemeralTab");
+DEFINE_VARIATION_PARAM(
+    kIPHFeatureNotificationGuideDefaultBrowserNotificationShownFeature,
+    "IPH_FeatureNotificationGuideDefaultBrowserNotificationShown");
+DEFINE_VARIATION_PARAM(
+    kIPHFeatureNotificationGuideSignInNotificationShownFeature,
+    "IPH_FeatureNotificationGuideSignInNotificationShown");
+DEFINE_VARIATION_PARAM(
+    kIPHFeatureNotificationGuideIncognitoTabNotificationShownFeature,
+    "IPH_FeatureNotificationGuideIncognitoTabNotificationShown");
+DEFINE_VARIATION_PARAM(
+    kIPHFeatureNotificationGuideNTPSuggestionCardNotificationShownFeature,
+    "IPH_FeatureNotificationGuideNTPSuggestionCardNotificationShown");
+DEFINE_VARIATION_PARAM(
+    kIPHFeatureNotificationGuideVoiceSearchNotificationShownFeature,
+    "IPH_FeatureNotificationGuideVoiceSearchNotificationShown");
 DEFINE_VARIATION_PARAM(kIPHFeedCardMenuFeature, "IPH_FeedCardMenu");
 DEFINE_VARIATION_PARAM(kIPHHomepagePromoCardFeature, "IPH_HomepagePromoCard");
 DEFINE_VARIATION_PARAM(kIPHIdentityDiscFeature, "IPH_IdentityDisc");
+DEFINE_VARIATION_PARAM(kIPHInstanceSwitcherFeature, "IPH_InstanceSwitcher");
 DEFINE_VARIATION_PARAM(kIPHKeyboardAccessoryAddressFillingFeature,
                        "IPH_KeyboardAccessoryAddressFilling");
 DEFINE_VARIATION_PARAM(kIPHKeyboardAccessoryBarSwipingFeature,
@@ -108,9 +129,12 @@ DEFINE_VARIATION_PARAM(kIPHKeyboardAccessoryPaymentFillingFeature,
                        "IPH_KeyboardAccessoryPaymentFilling");
 DEFINE_VARIATION_PARAM(kIPHKeyboardAccessoryPaymentOfferFeature,
                        "IPH_KeyboardAccessoryPaymentOffer");
+DEFINE_VARIATION_PARAM(kIPHKeyboardAccessoryPaymentVirtualCardFeature,
+                       "IPH_KeyboardAccessoryPaymentVirtualCard");
 DEFINE_VARIATION_PARAM(kIPHMicToolbarFeature, "IPH_MicToolbar");
 DEFINE_VARIATION_PARAM(kIPHNewTabPageButtonFeature, "IPH_NewTabPageHomeButton");
 DEFINE_VARIATION_PARAM(kIPHPageInfoFeature, "IPH_PageInfo");
+DEFINE_VARIATION_PARAM(kIPHPageInfoStoreInfoFeature, "IPH_PageInfoStoreInfo");
 DEFINE_VARIATION_PARAM(kIPHPreviewsOmniboxUIFeature, "IPH_PreviewsOmniboxUI");
 DEFINE_VARIATION_PARAM(kIPHPwaInstallAvailableFeature,
                        "IPH_PwaInstallAvailableFeature");
@@ -124,6 +148,10 @@ DEFINE_VARIATION_PARAM(kIPHReadLaterAppMenuBookmarksFeature,
                        "IPH_ReadLaterAppMenuBookmarks");
 DEFINE_VARIATION_PARAM(kIPHReadLaterBottomSheetFeature,
                        "IPH_ReadLaterBottomSheet");
+DEFINE_VARIATION_PARAM(kIPHShoppingListMenuItemFeature,
+                       "IPH_ShoppingListMenuItem");
+DEFINE_VARIATION_PARAM(kIPHShoppingListSaveFlowFeature,
+                       "IPH_ShoppingListSaveFlow");
 DEFINE_VARIATION_PARAM(kIPHTabGroupsQuicklyComparePagesFeature,
                        "IPH_TabGroupsQuicklyComparePages");
 DEFINE_VARIATION_PARAM(kIPHTabGroupsTapToSeeAnotherTabFeature,
@@ -145,14 +173,27 @@ DEFINE_VARIATION_PARAM(kIPHVideoTutorialNTPVoiceSearchFeature,
                        "IPH_VideoTutorial_NTP_VoiceSearch");
 DEFINE_VARIATION_PARAM(kIPHVideoTutorialNTPSummaryFeature,
                        "IPH_VideoTutorial_NTP_Summary");
+DEFINE_VARIATION_PARAM(kIPHVideoTutorialTryNowFeature,
+                       "IPH_VideoTutorial_TryNow");
 DEFINE_VARIATION_PARAM(kIPHExploreSitesTileFeature, "IPH_ExploreSitesTile");
 DEFINE_VARIATION_PARAM(kIPHFeedHeaderMenuFeature, "IPH_FeedHeaderMenu");
+DEFINE_VARIATION_PARAM(kIPHFeedSwipeRefresh, "IPH_FeedSwipeRefresh");
 DEFINE_VARIATION_PARAM(kIPHShareScreenshotFeature, "IPH_ShareScreenshot");
+DEFINE_VARIATION_PARAM(kIPHSharingHubLinkToggleFeature,
+                       "IPH_SharingHubLinkToggle");
 DEFINE_VARIATION_PARAM(kIPHWebFeedFollowFeature, "IPH_WebFeedFollow");
 DEFINE_VARIATION_PARAM(kIPHWebFeedPostFollowDialogFeature,
                        "IPH_WebFeedPostFollowDialog");
 DEFINE_VARIATION_PARAM(kIPHSharedHighlightingBuilder,
                        "IPH_SharedHighlightingBuilder");
+DEFINE_VARIATION_PARAM(kIPHSharedHighlightingReceiverFeature,
+                       "IPH_SharedHighlightingReceiver");
+DEFINE_VARIATION_PARAM(kIPHStartSurfaceTabSwitcherHomeButton,
+                       "IPH_StartSurfaceTabSwitcherHomeButton");
+DEFINE_VARIATION_PARAM(kIPHUpdatedConnectionSecurityIndicatorsFeature,
+                       "IPH_UpdatedConnectionSecurityIndicators");
+DEFINE_VARIATION_PARAM(kIPHSharingHubWebnotesStylizeFeature,
+                       "IPH_SharingHubWebnotesStylize");
 #endif  // defined(OS_ANDROID)
 #if defined(OS_IOS)
 DEFINE_VARIATION_PARAM(kIPHBottomToolbarTipFeature, "IPH_BottomToolbarTip");
@@ -161,6 +202,8 @@ DEFINE_VARIATION_PARAM(kIPHLongPressToolbarTipFeature,
 DEFINE_VARIATION_PARAM(kIPHNewTabTipFeature, "IPH_NewTabTip");
 DEFINE_VARIATION_PARAM(kIPHNewIncognitoTabTipFeature, "IPH_NewIncognitoTabTip");
 DEFINE_VARIATION_PARAM(kIPHBadgedReadingListFeature, "IPH_BadgedReadingList");
+DEFINE_VARIATION_PARAM(kIPHReadingListMessagesFeature,
+                       "IPH_ReadingListMessages");
 DEFINE_VARIATION_PARAM(kIPHBadgedTranslateManualTriggerFeature,
                        "IPH_BadgedTranslateManualTrigger");
 DEFINE_VARIATION_PARAM(kIPHDiscoverFeedHeaderFeature,
@@ -168,11 +211,12 @@ DEFINE_VARIATION_PARAM(kIPHDiscoverFeedHeaderFeature,
 #endif  // defined(OS_IOS)
 
 #if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+    defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 DEFINE_VARIATION_PARAM(kIPHDesktopTabGroupsNewGroupFeature,
                        "IPH_DesktopTabGroupsNewGroup");
 DEFINE_VARIATION_PARAM(kIPHFocusModeFeature, "IPH_FocusMode");
 DEFINE_VARIATION_PARAM(kIPHGlobalMediaControls, "IPH_GlobalMediaControls");
+DEFINE_VARIATION_PARAM(kIPHGMCCastStartStopFeature, "IPH_GMCCastStartStop");
 DEFINE_VARIATION_PARAM(kIPHLiveCaption, "IPH_LiveCaption");
 DEFINE_VARIATION_PARAM(kIPHPasswordsAccountStorageFeature,
                        "IPH_PasswordsAccountStorage");
@@ -180,14 +224,20 @@ DEFINE_VARIATION_PARAM(kIPHReadingListDiscoveryFeature,
                        "IPH_ReadingListDiscovery");
 DEFINE_VARIATION_PARAM(kIPHReadingListEntryPointFeature,
                        "IPH_ReadingListEntryPoint");
+DEFINE_VARIATION_PARAM(kIPHReadingListInSidePanelFeature,
+                       "IPH_ReadingListInSidePanel");
 DEFINE_VARIATION_PARAM(kIPHReopenTabFeature, "IPH_ReopenTab");
+DEFINE_VARIATION_PARAM(kIPHSideSearchFeature, "IPH_SideSearch");
+DEFINE_VARIATION_PARAM(kIPHTabSearchFeature, "IPH_TabSearch");
 DEFINE_VARIATION_PARAM(kIPHWebUITabStripFeature, "IPH_WebUITabStrip");
 DEFINE_VARIATION_PARAM(kIPHDesktopPwaInstallFeature, "IPH_DesktopPwaInstall");
 DEFINE_VARIATION_PARAM(kIPHProfileSwitchFeature, "IPH_ProfileSwitch");
 DEFINE_VARIATION_PARAM(kIPHUpdatedConnectionSecurityIndicatorsFeature,
                        "IPH_UpdatedConnectionSecurityIndicators");
+DEFINE_VARIATION_PARAM(kIPHDesktopSharedHighlightingFeature,
+                       "IPH_DesktopSharedHighlighting");
 #endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
-        // defined(OS_CHROMEOS)
+        // defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 
 }  // namespace
 
@@ -205,6 +255,9 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
             kIPHAdaptiveButtonInTopToolbarCustomizationVoiceSearchFeature),
         VARIATION_ENTRY(kIPHAddToHomescreenMessageFeature),
         VARIATION_ENTRY(kIPHAddToHomescreenTextBubbleFeature),
+        VARIATION_ENTRY(kIPHAutoDarkOptOutFeature),
+        VARIATION_ENTRY(kIPHAutoDarkUserEducationMessageFeature),
+        VARIATION_ENTRY(kIPHAutoDarkUserEducationMessageOptInFeature),
         VARIATION_ENTRY(kIPHDataSaverDetailFeature),
         VARIATION_ENTRY(kIPHDataSaverMilestonePromoFeature),
         VARIATION_ENTRY(kIPHDataSaverPreviewFeature),
@@ -231,14 +284,17 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHFeedCardMenuFeature),
         VARIATION_ENTRY(kIPHHomepagePromoCardFeature),
         VARIATION_ENTRY(kIPHIdentityDiscFeature),
+        VARIATION_ENTRY(kIPHInstanceSwitcherFeature),
         VARIATION_ENTRY(kIPHKeyboardAccessoryAddressFillingFeature),
         VARIATION_ENTRY(kIPHKeyboardAccessoryBarSwipingFeature),
         VARIATION_ENTRY(kIPHKeyboardAccessoryPasswordFillingFeature),
         VARIATION_ENTRY(kIPHKeyboardAccessoryPaymentFillingFeature),
         VARIATION_ENTRY(kIPHKeyboardAccessoryPaymentOfferFeature),
+        VARIATION_ENTRY(kIPHKeyboardAccessoryPaymentVirtualCardFeature),
         VARIATION_ENTRY(kIPHMicToolbarFeature),
         VARIATION_ENTRY(kIPHNewTabPageButtonFeature),
         VARIATION_ENTRY(kIPHPageInfoFeature),
+        VARIATION_ENTRY(kIPHPageInfoStoreInfoFeature),
         VARIATION_ENTRY(kIPHPreviewsOmniboxUIFeature),
         VARIATION_ENTRY(kIPHPwaInstallAvailableFeature),
         VARIATION_ENTRY(kIPHQuietNotificationPromptsFeature),
@@ -246,6 +302,8 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHReadLaterAppMenuBookmarkThisPageFeature),
         VARIATION_ENTRY(kIPHReadLaterAppMenuBookmarksFeature),
         VARIATION_ENTRY(kIPHReadLaterBottomSheetFeature),
+        VARIATION_ENTRY(kIPHShoppingListMenuItemFeature),
+        VARIATION_ENTRY(kIPHShoppingListSaveFlowFeature),
         VARIATION_ENTRY(kIPHTabGroupsQuicklyComparePagesFeature),
         VARIATION_ENTRY(kIPHTabGroupsTapToSeeAnotherTabFeature),
         VARIATION_ENTRY(kIPHTabGroupsYourTabsAreTogetherFeature),
@@ -257,36 +315,47 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHVideoTutorialNTPSearchFeature),
         VARIATION_ENTRY(kIPHVideoTutorialNTPVoiceSearchFeature),
         VARIATION_ENTRY(kIPHVideoTutorialNTPSummaryFeature),
+        VARIATION_ENTRY(kIPHVideoTutorialTryNowFeature),
         VARIATION_ENTRY(kIPHExploreSitesTileFeature),
         VARIATION_ENTRY(kIPHFeedHeaderMenuFeature),
         VARIATION_ENTRY(kIPHShareScreenshotFeature),
+        VARIATION_ENTRY(kIPHSharingHubLinkToggleFeature),
         VARIATION_ENTRY(kIPHWebFeedFollowFeature),
         VARIATION_ENTRY(kIPHWebFeedPostFollowDialogFeature),
         VARIATION_ENTRY(kIPHSharedHighlightingBuilder),
+        VARIATION_ENTRY(kIPHSharedHighlightingReceiverFeature),
+        VARIATION_ENTRY(kIPHUpdatedConnectionSecurityIndicatorsFeature),
+        VARIATION_ENTRY(kIPHSharingHubWebnotesStylizeFeature),
 #elif defined(OS_IOS)
         VARIATION_ENTRY(kIPHBottomToolbarTipFeature),
         VARIATION_ENTRY(kIPHLongPressToolbarTipFeature),
         VARIATION_ENTRY(kIPHNewTabTipFeature),
         VARIATION_ENTRY(kIPHNewIncognitoTabTipFeature),
         VARIATION_ENTRY(kIPHBadgedReadingListFeature),
+        VARIATION_ENTRY(kIPHReadingListMessagesFeature),
         VARIATION_ENTRY(kIPHBadgedTranslateManualTriggerFeature),
         VARIATION_ENTRY(kIPHDiscoverFeedHeaderFeature),
 #elif defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+    defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
         VARIATION_ENTRY(kIPHDesktopTabGroupsNewGroupFeature),
         VARIATION_ENTRY(kIPHFocusModeFeature),
         VARIATION_ENTRY(kIPHGlobalMediaControls),
+        VARIATION_ENTRY(kIPHGMCCastStartStopFeature),
         VARIATION_ENTRY(kIPHLiveCaption),
         VARIATION_ENTRY(kIPHPasswordsAccountStorageFeature),
         VARIATION_ENTRY(kIPHReadingListDiscoveryFeature),
         VARIATION_ENTRY(kIPHReadingListEntryPointFeature),
+        VARIATION_ENTRY(kIPHReadingListInSidePanelFeature),
         VARIATION_ENTRY(kIPHReopenTabFeature),
+        VARIATION_ENTRY(kIPHSideSearchFeature),
+        VARIATION_ENTRY(kIPHTabSearchFeature),
         VARIATION_ENTRY(kIPHWebUITabStripFeature),
         VARIATION_ENTRY(kIPHDesktopPwaInstallFeature),
         VARIATION_ENTRY(kIPHProfileSwitchFeature),
         VARIATION_ENTRY(kIPHUpdatedConnectionSecurityIndicatorsFeature),
+        VARIATION_ENTRY(kIPHDesktopSharedHighlightingFeature),
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
-        // defined(OS_CHROMEOS)
+        // defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 };
 
 #undef DEFINE_VARIATION_PARAM

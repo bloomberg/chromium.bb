@@ -42,13 +42,13 @@ source_set("feature_flags") {
     "//base",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/util",
+    "//ui/base",
   ]
   frameworks = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("eg2_tests") {
-  defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",

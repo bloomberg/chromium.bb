@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SAVE_MANAGER_IMPL_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SAVE_MANAGER_IMPL_H_
 
+#include "base/memory/raw_ptr.h"
 #include "components/password_manager/core/browser/password_save_manager.h"
 
 namespace password_manager {
@@ -21,17 +22,16 @@ enum class PendingCredentialsState {
 
 class PasswordSaveManagerImpl : public PasswordSaveManager {
  public:
-  explicit PasswordSaveManagerImpl(std::unique_ptr<FormSaver> form_saver);
+  PasswordSaveManagerImpl(std::unique_ptr<FormSaver> profile_form_saver,
+                          std::unique_ptr<FormSaver> account_form_saver);
+  // Convenience constructor that builds FormSavers corresponding to the
+  // profile and (if it exists) account store grabbed from |client|.
+  explicit PasswordSaveManagerImpl(const PasswordManagerClient* client);
   ~PasswordSaveManagerImpl() override;
-
-  // Returns a MultiStorePasswordSaveManager if the password account storage
-  // feature is enabled. Returns a PasswordSaveManagerImpl otherwise.
-  static std::unique_ptr<PasswordSaveManagerImpl> CreatePasswordSaveManagerImpl(
-      const PasswordManagerClient* client);
 
   const PasswordForm& GetPendingCredentials() const override;
   const std::u16string& GetGeneratedPassword() const override;
-  FormSaver* GetFormSaver() const override;
+  FormSaver* GetProfileStoreFormSaverForTesting() const override;
 
   // |metrics_recorder| and |votes_uploader| can both be nullptr.
   void Init(PasswordManagerClient* client,
@@ -56,8 +56,8 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
               const autofill::FormData* observed_form,
               const PasswordForm& parsed_submitted_form) override;
 
-  void Blocklist(const PasswordStore::FormDigest& form_digest) override;
-  void Unblocklist(const PasswordStore::FormDigest& form_digest) override;
+  void Blocklist(const PasswordFormDigest& form_digest) override;
+  void Unblocklist(const PasswordFormDigest& form_digest) override;
 
   // Called when generated password is accepted or changed by user.
   void PresaveGeneratedPassword(PasswordForm parsed_form) override;
@@ -76,15 +76,14 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   void BlockMovingToAccountStoreFor(
       const autofill::GaiaIdHash& gaia_id_hash) override;
 
+  void UpdateSubmissionIndicatorEvent(
+      autofill::mojom::SubmissionIndicatorEvent event) override;
+
   bool IsNewLogin() const override;
   bool IsPasswordUpdate() const override;
   bool HasGeneratedPassword() const override;
 
   std::unique_ptr<PasswordSaveManager> Clone() override;
-
-#if defined(UNIT_TEST)
-  FormSaver* GetFormSaver() { return form_saver_.get(); }
-#endif
 
  protected:
   static PendingCredentialsState ComputePendingCredentialsState(
@@ -119,12 +118,14 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   // Clones the current object into |clone|. |clone| must not be null.
   void CloneInto(PasswordSaveManagerImpl* clone);
 
-  // FormSaver instance used by |this| to all tasks related to storing
-  // credentials.
-  const std::unique_ptr<FormSaver> form_saver_;
+  // FormSaver instances for all tasks related to storing credentials - one
+  // for the profile store, one for the account store.
+  const std::unique_ptr<FormSaver> profile_store_form_saver_;
+  // May be null on platforms that don't support the account store.
+  const std::unique_ptr<FormSaver> account_store_form_saver_;
 
   // The client which implements embedder-specific PasswordManager operations.
-  PasswordManagerClient* client_;
+  raw_ptr<PasswordManagerClient> client_;
 
   // Stores updated credentials when the form was submitted but success is still
   // unknown. This variable contains credentials that are ready to be written
@@ -136,9 +137,20 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
       PendingCredentialsState::NONE;
 
   // FormFetcher instance which owns the login data from PasswordStore.
-  const FormFetcher* form_fetcher_;
+  raw_ptr<const FormFetcher> form_fetcher_;
 
  private:
+  struct PendingCredentialsStates {
+    PendingCredentialsState profile_store_state = PendingCredentialsState::NONE;
+    PendingCredentialsState account_store_state = PendingCredentialsState::NONE;
+
+    const PasswordForm* similar_saved_form_from_profile_store = nullptr;
+    const PasswordForm* similar_saved_form_from_account_store = nullptr;
+  };
+  static PendingCredentialsStates ComputePendingCredentialsStates(
+      const PasswordForm& parsed_submitted_form,
+      const std::vector<const PasswordForm*>& matches);
+
   std::u16string GetOldPassword(
       const PasswordForm& parsed_submitted_form) const;
 
@@ -154,6 +166,9 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   void UploadVotesAndMetrics(const autofill::FormData* observed_form,
                              const PasswordForm& parsed_submitted_form);
 
+  bool IsOptedInForAccountStorage() const;
+  bool AccountStoreIsDefault() const;
+
   // Handles the user flows related to the generation.
   std::unique_ptr<PasswordGenerationManager> generation_manager_;
 
@@ -161,7 +176,7 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;
 
   // Can be nullptr.
-  VotesUploader* votes_uploader_;
+  raw_ptr<VotesUploader> votes_uploader_;
 };
 
 }  // namespace password_manager

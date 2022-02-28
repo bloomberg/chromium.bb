@@ -39,7 +39,8 @@ def get_sandbox_env(env):
 def trim_cmd(cmd):
   """Removes internal flags from cmd since they're just used to communicate from
   the host machine to this script running on the swarm slaves."""
-  sanitizers = ['asan', 'lsan', 'msan', 'tsan']
+  sanitizers = ['asan', 'lsan', 'msan', 'tsan', 'coverage-continuous-mode',
+                'skip-set-lpac-acls']
   internal_flags = frozenset('--%s=%d' % (name, value)
                              for name in sanitizers
                              for value in [0, 1])
@@ -56,8 +57,8 @@ def fix_python_path(cmd):
   return out
 
 
-def get_sanitizer_env(cmd, asan, lsan, msan, tsan, cfi_diag):
-  """Returns the envirnoment flags needed for sanitizer tools."""
+def get_sanitizer_env(asan, lsan, msan, tsan, cfi_diag):
+  """Returns the environment flags needed for sanitizer tools."""
 
   extra_env = {}
 
@@ -102,13 +103,6 @@ def get_sanitizer_env(cmd, asan, lsan, msan, tsan, cfi_diag):
     if asan_options:
       extra_env['ASAN_OPTIONS'] = ' '.join(asan_options)
 
-    if sys.platform == 'darwin':
-      isolate_output_dir = os.path.abspath(os.path.dirname(cmd[0]))
-      # This is needed because the test binary has @executable_path embedded in
-      # it that the OS tries to resolve to the cache directory and not the
-      # mapped directory.
-      extra_env['DYLD_LIBRARY_PATH'] = str(isolate_output_dir)
-
   if lsan:
     if asan or msan:
       lsan_options = []
@@ -138,6 +132,18 @@ def get_sanitizer_env(cmd, asan, lsan, msan, tsan, cfi_diag):
 
   return extra_env
 
+def get_coverage_continuous_mode_env(env):
+  """Append %c (clang code coverage continuous mode) flag to LLVM_PROFILE_FILE
+  pattern string."""
+  llvm_profile_file = env.get('LLVM_PROFILE_FILE')
+  if not llvm_profile_file:
+    return {}
+
+  dirname, basename = os.path.split(llvm_profile_file)
+  root, ext = os.path.splitext(basename)
+  return {
+    'LLVM_PROFILE_FILE': os.path.join(dirname, root + "%c" + ext)
+  }
 
 def get_sanitizer_symbolize_command(json_path=None, executable_path=None):
   """Construct the command to invoke offline symbolization script."""
@@ -198,12 +204,12 @@ def run_command_with_output(argv, stdoutfile, env=None, cwd=None):
                      stderr=subprocess.STDOUT)
     forward_signals([process])
     while process.poll() is None:
-      sys.stdout.write(reader.read())
+      sys.stdout.write(reader.read().decode('utf-8'))
       # This sleep is needed for signal propagation. See the
       # wait_with_signals() docstring.
       time.sleep(0.1)
     # Read the remaining.
-    sys.stdout.write(reader.read())
+    sys.stdout.write(reader.read().decode('utf-8'))
     print('Command %r returned exit code %d' % (argv, process.returncode))
     return process.returncode
 
@@ -221,7 +227,10 @@ def run_command(argv, env=None, cwd=None, log=True):
     print('Running %r in %r (env: %r)' % (argv, cwd, env))
   process = _popen(argv, env=env, cwd=cwd, stderr=subprocess.STDOUT)
   forward_signals([process])
-  return wait_with_signals(process)
+  exit_code = wait_with_signals(process)
+  if log:
+    print('Command returned exit code %d' % exit_code)
+  return exit_code
 
 
 def run_command_output_to_handle(argv, file_handle, env=None, cwd=None):
@@ -282,6 +291,7 @@ def forward_signals(procs):
       if sys.platform == 'win32' and sig == signal.SIGBREAK:
         p.send_signal(signal.CTRL_BREAK_EVENT)
       else:
+        print("Forwarding signal(%d) to process %d" % (sig, p.pid))
         p.send_signal(sig)
   if sys.platform == 'win32':
     signal.signal(signal.SIGBREAK, _sig_handler)
@@ -328,11 +338,21 @@ def run_executable(cmd, env, stdoutfile=None):
     use_symbolization_script = (asan or msan or cfi_diag or lsan or tsan)
 
   if asan or lsan or msan or tsan or cfi_diag:
-    extra_env.update(get_sanitizer_env(cmd, asan, lsan, msan, tsan, cfi_diag))
+    extra_env.update(get_sanitizer_env(asan, lsan, msan, tsan, cfi_diag))
 
   if lsan or tsan:
     # LSan and TSan are not sandbox-friendly.
     cmd.append('--no-sandbox')
+
+  # Enable clang code coverage continuous mode.
+  if '--coverage-continuous-mode=1' in cmd:
+    extra_env.update(get_coverage_continuous_mode_env(env))
+
+  if '--skip-set-lpac-acls=1' not in cmd and sys.platform == 'win32':
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+        'scripts'))
+    import common
+    common.set_lpac_acls(ROOT_DIR, is_test_script=True)
 
   cmd = trim_cmd(cmd)
 
@@ -393,9 +413,4 @@ def main():
 
 
 if __name__ == '__main__':
-  if sys.platform == 'win32':
-    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-        'scripts'))
-    import common
-    common.set_lpac_acls(ROOT_DIR)
   sys.exit(main())

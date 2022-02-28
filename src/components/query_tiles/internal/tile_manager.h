@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/time/clock.h"
 #include "components/query_tiles/internal/store.h"
 #include "components/query_tiles/internal/tile_group.h"
 #include "components/query_tiles/internal/tile_types.h"
@@ -30,7 +29,6 @@ class TileManager {
   // Creates the instance.
   static std::unique_ptr<TileManager> Create(
       std::unique_ptr<TileStore> tile_store,
-      base::Clock* clock,
       const std::string& accept_languages);
 
   // Initializes the query tile store, loading them into memory after
@@ -38,10 +36,12 @@ class TileManager {
   virtual void Init(TileGroupStatusCallback callback) = 0;
 
   // Returns tiles to the caller in the given |locale|.
-  virtual void GetTiles(GetTilesCallback callback) = 0;
+  virtual void GetTiles(bool shuffle_tiles, GetTilesCallback callback) = 0;
 
   // Returns the tile associated with |tile_id| to the caller.
-  virtual void GetTile(const std::string& tile_id, TileCallback callback) = 0;
+  virtual void GetTile(const std::string& tile_id,
+                       bool shuffle_tiles,
+                       TileCallback callback) = 0;
 
   // Save the query tiles into database.
   virtual void SaveTiles(std::unique_ptr<TileGroup> tile_group,

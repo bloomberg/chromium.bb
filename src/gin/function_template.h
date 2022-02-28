@@ -10,11 +10,15 @@
 
 #include "base/callback.h"
 #include "base/check.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
 #include "gin/gin_export.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-external.h"
+#include "v8/include/v8-forward.h"
+#include "v8/include/v8-persistent-handle.h"
+#include "v8/include/v8-template.h"
 
 namespace gin {
 
@@ -184,7 +188,7 @@ class Invoker<std::index_sequence<indices...>, ArgTypes...>
     return arg1 && And(args...);
   }
 
-  Arguments* args_;
+  raw_ptr<Arguments> args_;
 };
 
 // DispatchToCallback converts all the JavaScript arguments to C++ types and

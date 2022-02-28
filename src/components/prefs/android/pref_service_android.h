@@ -9,6 +9,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/memory/raw_ptr.h"
 
 class PrefService;
 
@@ -25,6 +26,9 @@ class PrefServiceAndroid {
 
   void ClearPref(JNIEnv* env,
                  const base::android::JavaParamRef<jstring>& j_preference);
+  jboolean HasPrefPath(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jstring>& j_preference);
   jboolean GetBoolean(JNIEnv* env,
                       const base::android::JavaParamRef<jstring>& j_preference);
   void SetBoolean(JNIEnv* env,
@@ -46,7 +50,7 @@ class PrefServiceAndroid {
       const base::android::JavaParamRef<jstring>& j_preference);
 
  private:
-  PrefService* pref_service_;
+  raw_ptr<PrefService> pref_service_;
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 };
 

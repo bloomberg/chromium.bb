@@ -6,7 +6,7 @@
 #define COMPONENTS_SESSIONS_CORE_SESSION_ID_GENERATOR_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/sequence_checker.h"
 #include "components/sessions/core/session_id.h"
@@ -21,6 +21,9 @@ class SESSIONS_EXPORT SessionIdGenerator {
  public:
   // Returns the singleton instance of this class.
   static SessionIdGenerator* GetInstance();
+
+  SessionIdGenerator(const SessionIdGenerator&) = delete;
+  SessionIdGenerator& operator=(const SessionIdGenerator&) = delete;
 
   // Register preferences used by this class.
   static void RegisterPrefs(PrefRegistrySimple* prefs);
@@ -50,13 +53,11 @@ class SESSIONS_EXPORT SessionIdGenerator {
   void IncrementValueBy(int increment);
 
   SEQUENCE_CHECKER(sequence_checker_);
-  PrefService* local_state_;
+  raw_ptr<PrefService> local_state_;
   SessionID::id_type last_value_;
 
   // Used to override the random number generator for tests.
   RandomGenerator rand_generator_;
-
-  DISALLOW_COPY_AND_ASSIGN(SessionIdGenerator);
 };
 
 }  // namespace sessions
