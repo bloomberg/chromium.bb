@@ -15,7 +15,8 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "third_party/blink/public/common/manifest/manifest.h"
+#include "content/public/browser/page.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "ui/gfx/image/image.h"
 
 namespace favicon {
@@ -50,18 +51,22 @@ GURL ContentFaviconDriver::GetActiveURL() {
 GURL ContentFaviconDriver::GetManifestURL(content::RenderFrameHost* rfh) {
   DocumentManifestData* document_data =
       DocumentManifestData::GetOrCreateForCurrentDocument(rfh);
-  return document_data->has_manifest_url ? rfh->ManifestURL() : GURL();
+  return document_data->has_manifest_url
+             ? rfh->GetPage().GetManifestUrl().value_or(GURL())
+             : GURL();
 }
 
 ContentFaviconDriver::ContentFaviconDriver(content::WebContents* web_contents,
                                            CoreFaviconService* favicon_service)
     : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<ContentFaviconDriver>(*web_contents),
       FaviconDriverImpl(favicon_service) {}
 
 ContentFaviconDriver::~ContentFaviconDriver() = default;
 
 ContentFaviconDriver::DocumentManifestData::DocumentManifestData(
-    content::RenderFrameHost* render_frame_host) {}
+    content::RenderFrameHost* rfh)
+    : content::DocumentUserData<DocumentManifestData>(rfh) {}
 ContentFaviconDriver::DocumentManifestData::~DocumentManifestData() = default;
 
 ContentFaviconDriver::NavigationManifestData::NavigationManifestData(
@@ -72,7 +77,7 @@ ContentFaviconDriver::NavigationManifestData::~NavigationManifestData() =
 void ContentFaviconDriver::OnDidDownloadManifest(
     ManifestDownloadCallback callback,
     const GURL& manifest_url,
-    const blink::Manifest& manifest) {
+    blink::mojom::ManifestPtr manifest) {
   // ~WebContentsImpl triggers running any pending callbacks for manifests.
   // As we're about to be destroyed ignore the request. To do otherwise may
   // result in calling back to this and attempting to use the WebContents, which
@@ -81,9 +86,11 @@ void ContentFaviconDriver::OnDidDownloadManifest(
     return;
 
   std::vector<FaviconURL> candidates;
-  for (const auto& icon : manifest.icons) {
-    candidates.emplace_back(icon.src, favicon_base::IconType::kWebManifestIcon,
-                            icon.sizes);
+  if (manifest) {
+    for (const auto& icon : manifest->icons) {
+      candidates.emplace_back(
+          icon.src, favicon_base::IconType::kWebManifestIcon, icon.sizes);
+    }
   }
   std::move(callback).Run(candidates);
 }
@@ -94,14 +101,19 @@ int ContentFaviconDriver::DownloadImage(const GURL& url,
   bool bypass_cache = (bypass_cache_page_url_ == GetActiveURL());
   bypass_cache_page_url_ = GURL();
 
-  return web_contents()->DownloadImage(
-      url, true, /*preferred_size=*/max_image_size,
-      /*max_bitmap_size=*/max_image_size, bypass_cache, std::move(callback));
+  const gfx::Size preferred_size(max_image_size, max_image_size);
+  return web_contents()->DownloadImage(url, true, preferred_size,
+                                       /*max_bitmap_size=*/max_image_size,
+                                       bypass_cache, std::move(callback));
 }
 
 void ContentFaviconDriver::DownloadManifest(const GURL& url,
                                             ManifestDownloadCallback callback) {
-  web_contents()->GetManifest(
+  // TODO(crbug.com/1201237): This appears to be reachable from pages other
+  // than the primary page. This code should likely be refactored so that either
+  // this is unreachable from other pages, or the correct page is plumbed in
+  // here.
+  web_contents()->GetPrimaryPage().GetManifest(
       base::BindOnce(&ContentFaviconDriver::OnDidDownloadManifest,
                      base::Unretained(this), std::move(callback)));
 }
@@ -171,7 +183,7 @@ void ContentFaviconDriver::DidUpdateFaviconURL(
 
 void ContentFaviconDriver::DidUpdateWebManifestURL(
     content::RenderFrameHost* rfh,
-    const absl::optional<GURL>& manifest_url) {
+    const GURL& manifest_url) {
   // Ignore the update if there is no last committed navigation entry. This can
   // occur when loading an initially blank page.
   content::NavigationEntry* entry =
@@ -209,7 +221,9 @@ void ContentFaviconDriver::DidStartNavigation(
     navigation_data->has_manifest_url = false;
   }
 
-  bypass_cache_page_url_ = navigation_handle->GetURL();
+  if (reload_type == content::ReloadType::BYPASSING_CACHE)
+    bypass_cache_page_url_ = navigation_handle->GetURL();
+ 
   SetFaviconOutOfDateForPage(
       navigation_handle->GetURL(),
       reload_type == content::ReloadType::BYPASSING_CACHE);
@@ -247,9 +261,8 @@ void ContentFaviconDriver::DidFinishNavigation(
 }
 
 NAVIGATION_HANDLE_USER_DATA_KEY_IMPL(
-    ContentFaviconDriver::NavigationManifestData)
-RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(
-    ContentFaviconDriver::DocumentManifestData)
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ContentFaviconDriver)
+    ContentFaviconDriver::NavigationManifestData);
+DOCUMENT_USER_DATA_KEY_IMPL(ContentFaviconDriver::DocumentManifestData);
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ContentFaviconDriver);
 
 }  // namespace favicon

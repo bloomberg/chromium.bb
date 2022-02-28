@@ -21,7 +21,7 @@ const char kDisableSpokenFeedbackURLFragment[] = "close";
 const char kFocusURLFragment[] = "focus";
 const char kFullscreenURLFragment[] = "fullscreen";
 const char kWidgetName[] = "ChromeVoxPanel";
-const int kPanelHeight = 35;
+const int kPanelHeight = 44;
 
 }  // namespace
 
@@ -31,6 +31,12 @@ class ChromeVoxPanel::ChromeVoxPanelWebContentsObserver
   ChromeVoxPanelWebContentsObserver(content::WebContents* web_contents,
                                     ChromeVoxPanel* panel)
       : content::WebContentsObserver(web_contents), panel_(panel) {}
+
+  ChromeVoxPanelWebContentsObserver(const ChromeVoxPanelWebContentsObserver&) =
+      delete;
+  ChromeVoxPanelWebContentsObserver& operator=(
+      const ChromeVoxPanelWebContentsObserver&) = delete;
+
   ~ChromeVoxPanelWebContentsObserver() override {}
 
   void DidFinishNavigation(
@@ -50,8 +56,6 @@ class ChromeVoxPanel::ChromeVoxPanelWebContentsObserver
 
  private:
   ChromeVoxPanel* panel_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeVoxPanelWebContentsObserver);
 };
 
 ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context)

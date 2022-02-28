@@ -13,6 +13,7 @@
 #include "ash/ambient/ui/ambient_container_view.h"
 #include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/ambient/util/ambient_util.h"
+#include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/constants/ash_features.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
@@ -22,7 +23,7 @@
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "ash/public/cpp/ambient/fake_ambient_backend_controller_impl.h"
-#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -62,12 +63,6 @@ namespace {
 
 // Used by wake lock APIs.
 constexpr char kWakeLockReason[] = "AmbientMode";
-
-void CloseAssistantUi() {
-  DCHECK(AssistantUiController::Get());
-  AssistantUiController::Get()->CloseUi(
-      chromeos::assistant::AssistantExitPoint::kUnspecified);
-}
 
 std::unique_ptr<AmbientBackendController> CreateAmbientBackendController() {
 #if BUILDFLAG(ENABLE_CROS_AMBIENT_MODE_BACKEND)
@@ -120,7 +115,10 @@ bool IsAmbientModeEnabled() {
 
 class AmbientWidgetDelegate : public views::WidgetDelegate {
  public:
-  AmbientWidgetDelegate() { SetCanMaximize(true); }
+  AmbientWidgetDelegate() {
+    SetCanMaximize(true);
+    SetOwnedByWidget(true);
+  }
 };
 
 }  // namespace
@@ -178,6 +176,7 @@ AmbientController::AmbientController(
 
 AmbientController::~AmbientController() {
   CloseAllWidgets(/*immediately=*/true);
+  CloseUi();
 }
 
 void AmbientController::OnAmbientUiVisibilityChanged(
@@ -208,6 +207,9 @@ void AmbientController::OnAmbientUiVisibilityChanged(
       if (!user_activity_observer_.IsObserving())
         user_activity_observer_.Observe(ui::UserActivityDetector::Get());
 
+      // Add observer for assistant interaction model
+      AssistantInteractionController::Get()->GetModel()->AddObserver(this);
+
       Shell::Get()->AddPreTargetHandler(this);
 
       StartRefreshingImages();
@@ -221,16 +223,14 @@ void AmbientController::OnAmbientUiVisibilityChanged(
       // again.
       StopRefreshingImages();
 
-      // We close the Assistant UI after ambient screen not being shown to sync
-      // states to |AssistantUiController|. This will be a no-op if the
-      // |kAmbientAssistant| feature is disabled, or the Assistant UI has
-      // already been closed.
-      CloseAssistantUi();
-
       // Should do nothing if the wake lock has already been released.
       ReleaseWakeLock();
 
       Shell::Get()->RemovePreTargetHandler(this);
+
+      // Should stop observing AssistantInteractionModel when ambient screen is
+      // not shown.
+      AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
 
       // |start_time_| may be empty in case of |AmbientUiVisibility::kHidden| if
       // ambient mode has just started.
@@ -433,6 +433,14 @@ void AmbientController::OnKeyEvent(ui::KeyEvent* event) {
   DismissUI();
 }
 
+void AmbientController::OnInteractionStateChanged(
+    InteractionState interaction_state) {
+  if (interaction_state == InteractionState::kActive) {
+    // Assistant is active.
+    DismissUI();
+  }
+}
+
 void AmbientController::ShowUi() {
   DVLOG(1) << __func__;
 
@@ -561,7 +569,9 @@ void AmbientController::OnEnabledPrefChanged() {
     OnLockScreenBackgroundTimeoutPrefChanged();
     OnPhotoRefreshIntervalPrefChanged();
 
-    ambient_photo_controller_ = std::make_unique<AmbientPhotoController>();
+    DCHECK(AmbientClient::Get());
+    ambient_photo_controller_ = std::make_unique<AmbientPhotoController>(
+        *AmbientClient::Get(), access_token_controller_);
 
     ambient_ui_model_observer_.Observe(&ambient_ui_model_);
 
@@ -604,7 +614,7 @@ void AmbientController::OnLockScreenInactivityTimeoutPrefChanged() {
     return;
 
   ambient_ui_model_.SetLockScreenInactivityTimeout(
-      base::TimeDelta::FromSeconds(pref_service->GetInteger(
+      base::Seconds(pref_service->GetInteger(
           ambient::prefs::kAmbientModeLockScreenInactivityTimeoutSeconds)));
 }
 
@@ -614,7 +624,7 @@ void AmbientController::OnLockScreenBackgroundTimeoutPrefChanged() {
     return;
 
   ambient_ui_model_.SetBackgroundLockScreenTimeout(
-      base::TimeDelta::FromSeconds(pref_service->GetInteger(
+      base::Seconds(pref_service->GetInteger(
           ambient::prefs::kAmbientModeLockScreenBackgroundTimeoutSeconds)));
 }
 
@@ -624,7 +634,7 @@ void AmbientController::OnPhotoRefreshIntervalPrefChanged() {
     return;
 
   ambient_ui_model_.SetPhotoRefreshInterval(
-      base::TimeDelta::FromSeconds(pref_service->GetInteger(
+      base::Seconds(pref_service->GetInteger(
           ambient::prefs::kAmbientModePhotoRefreshIntervalSeconds)));
 }
 

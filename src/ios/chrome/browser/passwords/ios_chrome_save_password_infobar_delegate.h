@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_infobar_metrics_recorder.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_manager_infobar_delegate.h"
 
@@ -27,9 +26,15 @@ class IOSChromeSavePasswordInfoBarDelegate
     : public IOSChromePasswordManagerInfoBarDelegate {
  public:
   IOSChromeSavePasswordInfoBarDelegate(
+      NSString* user_email,
       bool is_sync_user,
       bool password_update,
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save);
+
+  IOSChromeSavePasswordInfoBarDelegate(
+      const IOSChromeSavePasswordInfoBarDelegate&) = delete;
+  IOSChromeSavePasswordInfoBarDelegate& operator=(
+      const IOSChromeSavePasswordInfoBarDelegate&) = delete;
 
   ~IOSChromeSavePasswordInfoBarDelegate() override;
 
@@ -97,8 +102,6 @@ class IOSChromeSavePasswordInfoBarDelegate
 
   // YES if an Infobar is being presented by this delegate.
   bool infobar_presenting_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(IOSChromeSavePasswordInfoBarDelegate);
 };
 
 #endif  // IOS_CHROME_BROWSER_PASSWORDS_IOS_CHROME_SAVE_PASSWORD_INFOBAR_DELEGATE_H_

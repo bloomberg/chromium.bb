@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/xfixes.h"
@@ -35,6 +34,10 @@ class XServerClipboard {
       ClipboardChangedCallback;
 
   XServerClipboard();
+
+  XServerClipboard(const XServerClipboard&) = delete;
+  XServerClipboard& operator=(const XServerClipboard&) = delete;
+
   ~XServerClipboard();
 
   // Start monitoring |connection|'s selections, and invoke |callback| whenever
@@ -138,8 +141,6 @@ class XServerClipboard {
 
   // |callback| argument supplied to Init().
   ClipboardChangedCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(XServerClipboard);
 };
 
 }  // namespace remoting

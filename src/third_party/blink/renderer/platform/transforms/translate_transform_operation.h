@@ -58,11 +58,11 @@ class PLATFORM_EXPORT TranslateTransformOperation final
         (y_.IsPercentOrCalc() ? kDependsHeight : kDependsNone));
   }
 
-  double X(const FloatSize& border_box_size) const {
-    return FloatValueForLength(x_, border_box_size.Width());
+  double X(const gfx::SizeF& border_box_size) const {
+    return FloatValueForLength(x_, border_box_size.width());
   }
-  double Y(const FloatSize& border_box_size) const {
-    return FloatValueForLength(y_, border_box_size.Height());
+  double Y(const gfx::SizeF& border_box_size) const {
+    return FloatValueForLength(y_, border_box_size.height());
   }
 
   const Length& X() const { return x_; }
@@ -70,7 +70,7 @@ class PLATFORM_EXPORT TranslateTransformOperation final
   double Z() const { return z_; }
 
   void Apply(TransformationMatrix& transform,
-             const FloatSize& border_box_size) const override {
+             const gfx::SizeF& border_box_size) const override {
     transform.Translate3d(X(border_box_size), Y(border_box_size), Z());
   }
 
@@ -113,6 +113,10 @@ class PLATFORM_EXPORT TranslateTransformOperation final
       : x_(tx), y_(ty), z_(tz), type_(type) {
     DCHECK(IsMatchingOperationType(type));
   }
+
+  void CommonPrimitiveForInterpolation(
+      const TransformOperation* from,
+      TransformOperation::OperationType& common_type) const;
 
   bool HasNonTrivial3DComponent() const override { return z_ != 0.0; }
 

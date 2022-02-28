@@ -12,16 +12,17 @@
 #include "core/fpdfapi/page/cpdf_docpagedata.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
+#include "core/fpdfapi/parser/fpdf_parser_utility.h"
 #include "core/fxge/fx_font.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 #include "xfa/fgas/font/cfgas_fontmgr.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
 
 namespace {
 
 // The 5 names per entry are: PsName, Normal, Bold, Italic, BoldItalic.
-const char* const g_XFAPDFFontName[][5] = {
+const char* const kXFAPDFFontName[][5] = {
     {"Adobe PI Std", "AdobePIStd", "AdobePIStd", "AdobePIStd", "AdobePIStd"},
     {"Myriad Pro Light", "MyriadPro-Light", "MyriadPro-Semibold",
      "MyriadPro-LightIt", "MyriadPro-SemiboldIt"},
@@ -61,7 +62,7 @@ RetainPtr<CFGAS_GEFont> CFGAS_PDFFontMgr::FindFont(const ByteString& strPsName,
       continue;
     }
     CPDF_Dictionary* pFontDict = ToDictionary(pObj->GetDirect());
-    if (!pFontDict || pFontDict->GetNameFor("Type") != "Font")
+    if (!ValidateDictType(pFontDict, "Font"))
       return nullptr;
 
     RetainPtr<CPDF_Font> pPDFFont = pData->GetFont(pFontDict);
@@ -76,7 +77,7 @@ RetainPtr<CFGAS_GEFont> CFGAS_PDFFontMgr::FindFont(const ByteString& strPsName,
 RetainPtr<CFGAS_GEFont> CFGAS_PDFFontMgr::GetFont(WideStringView wsFontFamily,
                                                   uint32_t dwFontStyles,
                                                   bool bStrictMatch) {
-  uint32_t dwHashCode = FX_HashCode_GetW(wsFontFamily, false);
+  uint32_t dwHashCode = FX_HashCode_GetW(wsFontFamily);
   ByteString strKey = ByteString::Format("%u%u", dwHashCode, dwFontStyles);
   auto it = m_FontMap.find(strKey);
   if (it != m_FontMap.end())
@@ -97,14 +98,14 @@ RetainPtr<CFGAS_GEFont> CFGAS_PDFFontMgr::GetFont(WideStringView wsFontFamily,
 ByteString CFGAS_PDFFontMgr::PsNameToFontName(const ByteString& strPsName,
                                               bool bBold,
                                               bool bItalic) {
-  for (size_t i = 0; i < pdfium::size(g_XFAPDFFontName); ++i) {
-    if (strPsName == g_XFAPDFFontName[i][0]) {
+  for (size_t i = 0; i < pdfium::size(kXFAPDFFontName); ++i) {
+    if (strPsName == kXFAPDFFontName[i][0]) {
       size_t index = 1;
       if (bBold)
         ++index;
       if (bItalic)
         index += 2;
-      return g_XFAPDFFontName[i][index];
+      return kXFAPDFFontName[i][index];
     }
   }
   return strPsName;

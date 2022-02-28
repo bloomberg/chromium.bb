@@ -11,7 +11,6 @@
 #include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -30,7 +29,6 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "ipc/ipc_security_test_util.h"
-#include "net/base/features.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_util.h"
@@ -66,7 +64,8 @@ void SetCookieDirect(WebContentsImpl* tab,
       net::CookieOptions::SameSiteCookieContext::MakeInclusive());
 
   auto cookie_obj = net::CanonicalCookie::Create(
-      url, cookie_line, base::Time::Now(), absl::nullopt /* server_time */);
+      url, cookie_line, base::Time::Now(), absl::nullopt /* server_time */,
+      absl::nullopt /* cookie_partition_key */);
 
   base::RunLoop run_loop;
   tab->GetBrowserContext()
@@ -90,7 +89,7 @@ std::string GetCookiesDirect(WebContentsImpl* tab, const GURL& url) {
       ->GetDefaultStoragePartition()
       ->GetCookieManagerForBrowserProcess()
       ->GetCookieList(
-          url, options,
+          url, options, net::CookiePartitionKeyCollection(),
           base::BindLambdaForTesting(
               [&](const net::CookieAccessResultList& cookie_list,
                   const net::CookieAccessResultList& excluded_cookies) {
@@ -108,10 +107,6 @@ class CookieBrowserTest : public ContentBrowserTest {
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
-    feature_list_.InitWithFeatures(
-        {net::features::kSameSiteByDefaultCookies,
-         net::features::kCookiesWithoutSameSiteMustBeSecure} /* enabled */,
-        {} /* disabled */);
     ContentBrowserTest::SetUp();
   }
 
@@ -119,9 +114,6 @@ class CookieBrowserTest : public ContentBrowserTest {
     // Support multiple sites on the test server.
     host_resolver()->AddRule("*", "127.0.0.1");
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 // Exercises basic cookie operations via javascript, including an http page
@@ -135,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(CookieBrowserTest, Cookies) {
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
   ASSERT_TRUE(https_server.Start());
 
-  // The server sends a HttpOnly cookie. The RenderFrameMessageFilter should
+  // The server sends a HttpOnly cookie. The RestrictedCookieManager should
   // never allow this to be sent to any renderer process.
   GURL https_url =
       https_server.GetURL("a.test", "/set-cookie?notforjs=1;HttpOnly");
@@ -260,10 +252,14 @@ IN_PROC_BROWSER_TEST_F(CookieBrowserTest, SameSiteCookies) {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHost* main_frame = web_contents->GetMainFrame();
-  RenderFrameHost* a_iframe =
-      web_contents->GetFrameTree()->root()->child_at(0)->current_frame_host();
-  RenderFrameHost* b_iframe =
-      web_contents->GetFrameTree()->root()->child_at(1)->current_frame_host();
+  RenderFrameHost* a_iframe = web_contents->GetPrimaryFrameTree()
+                                  .root()
+                                  ->child_at(0)
+                                  ->current_frame_host();
+  RenderFrameHost* b_iframe = web_contents->GetPrimaryFrameTree()
+                                  .root()
+                                  ->child_at(1)
+                                  ->current_frame_host();
 
   // The top-level frame should get all same-site cookies.
   EXPECT_EQ("none=1; strict=1; unspecified=1; lax=1",
@@ -387,11 +383,11 @@ IN_PROC_BROWSER_TEST_F(CookieBrowserTest, CrossSiteCookieSecurityEnforcement) {
       "   +--Site B ------- proxies for A\n"
       "Where A = http://127.0.0.1/\n"
       "      B = http://baz.com/",
-      v.DepictFrameTree(tab->GetFrameTree()->root()));
+      v.DepictFrameTree(tab->GetPrimaryFrameTree().root()));
 
   RenderFrameHost* main_frame = tab->GetMainFrame();
   RenderFrameHost* iframe =
-      tab->GetFrameTree()->root()->child_at(0)->current_frame_host();
+      tab->GetPrimaryFrameTree().root()->child_at(0)->current_frame_host();
 
   EXPECT_NE(iframe->GetProcess(), main_frame->GetProcess());
 
@@ -418,7 +414,7 @@ IN_PROC_BROWSER_TEST_F(CookieBrowserTest, CrossSiteCookieSecurityEnforcement) {
       "   +--Site B ------- proxies for A\n"
       "Where A = http://127.0.0.1/\n"
       "      B = http://baz.com/",
-      v.DepictFrameTree(tab->GetFrameTree()->root()));
+      v.DepictFrameTree(tab->GetPrimaryFrameTree().root()));
 
   // Now set a cross-site cookie from the main frame's process.
   {
@@ -439,7 +435,7 @@ IN_PROC_BROWSER_TEST_F(CookieBrowserTest, CrossSiteCookieSecurityEnforcement) {
       "   +--Site B ------- proxies for A\n"
       "Where A = http://127.0.0.1/\n"
       "      B = http://baz.com/",
-      v.DepictFrameTree(tab->GetFrameTree()->root()));
+      v.DepictFrameTree(tab->GetPrimaryFrameTree().root()));
 }
 
 class SamePartyEnabledCookieBrowserTest : public CookieBrowserTest {

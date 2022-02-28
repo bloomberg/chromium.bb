@@ -14,6 +14,7 @@
 #include "base/sequence_checker.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "net/base/network_interfaces.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chrome {
 namespace mojom {
@@ -48,6 +49,10 @@ class WebRtcTextLogHandler {
       GenericDoneCallback;
 
   explicit WebRtcTextLogHandler(int render_process_id);
+
+  WebRtcTextLogHandler(const WebRtcTextLogHandler&) = delete;
+  WebRtcTextLogHandler& operator=(const WebRtcTextLogHandler&) = delete;
+
   ~WebRtcTextLogHandler();
 
   // Returns the current state of the log.
@@ -147,8 +152,6 @@ class WebRtcTextLogHandler {
   int web_app_id_ = 0;
 
   base::WeakPtrFactory<WebRtcTextLogHandler> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebRtcTextLogHandler);
 };
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_TEXT_LOG_HANDLER_H_

@@ -21,7 +21,9 @@
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
+#include "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
@@ -86,7 +88,7 @@ void PassphraseTableViewControllerTest::SetUp() {
   SceneStateBrowserAgent::CreateForBrowser(browser_.get(), scene_state_);
 
   fake_sync_service_ = static_cast<syncer::MockSyncService*>(
-      ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      SyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           chrome_browser_state_.get(),
           base::BindRepeating(&CreateNiceMockSyncService)));
 
@@ -99,11 +101,14 @@ void PassphraseTableViewControllerTest::SetUp() {
   ios::FakeChromeIdentityService* identityService =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
   identityService->AddIdentities(@[ @"identity1" ]);
-  ChromeIdentity* identity =
-      [identityService->GetAllIdentitiesSortedForDisplay(nullptr)
-          objectAtIndex:0];
-  AuthenticationServiceFactory::GetForBrowserState(chrome_browser_state_.get())
-      ->SignIn(identity);
+
+  ChromeAccountManagerService* account_manager_service =
+      ChromeAccountManagerServiceFactory::GetForBrowserState(
+          chrome_browser_state_.get());
+  AuthenticationService* auth_service =
+      AuthenticationServiceFactory::GetForBrowserState(
+          chrome_browser_state_.get());
+  auth_service->SignIn(account_manager_service->GetDefaultIdentity());
 }
 
 void PassphraseTableViewControllerTest::SetUpNavigationController(

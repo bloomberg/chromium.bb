@@ -16,9 +16,9 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/message_center/public/cpp/message_center_public_export.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
@@ -274,6 +274,12 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // A display string for the source of the notification.
   const std::u16string& display_source() const { return display_source_; }
 
+  bool allow_group() const { return allow_group_; }
+  void set_allow_group(bool allow_group) { allow_group_ = allow_group; }
+
+  bool group_child() const { return group_child_; }
+  bool group_parent() const { return group_parent_; }
+
   const NotifierId& notifier_id() const { return notifier_id_; }
 
   void set_profile_id(const std::string& profile_id) {
@@ -460,6 +466,23 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // method explicitly, to avoid setting it accidentally.
   void SetSystemPriority();
 
+  // Set the notification as a group child. This means it can only be displayed
+  // inside a group notification.
+  void SetGroupChild();
+
+  // Set the notification as a group parent. This means the message view
+  // associated with this notification will act as a container for all
+  // notifications that are part of its group.
+  void SetGroupParent();
+
+  // Set `group_child_` to false so it's back to it's
+  // default state.
+  void ClearGroupChild();
+
+  // Set `group_parent_` to false so it's back to it's
+  // default state.
+  void ClearGroupParent();
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void set_system_notification_warning_level(
       SystemNotificationWarningLevel warning_level) {
@@ -504,6 +527,18 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // TODO(estade): these book-keeping fields should be moved into
   // NotificationList.
   unsigned serial_number_;
+
+  // If set to true the notification can be displayed inside a group
+  // notification.
+  bool allow_group_ = false;
+
+  // If set to true the notification should not be displayed separately
+  // but inside a group notification.
+  bool group_child_ = false;
+
+  // If set to true the message view associated with this notification will
+  // be responsible to display all notifications that are part of its group.
+  bool group_parent_ = false;
 
   // A proxy object that allows access back to the JavaScript object that
   // represents the notification, for firing events.

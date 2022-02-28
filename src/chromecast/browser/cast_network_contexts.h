@@ -16,8 +16,10 @@
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom-forward.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/proxy_config.mojom.h"
+#include "services/network/public/mojom/proxy_config_with_annotation.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 class PrefProxyConfigTracker;
@@ -51,6 +53,10 @@ class CastNetworkContexts : public net::ProxyConfigService::Observer,
  public:
   explicit CastNetworkContexts(
       std::vector<std::string> cors_exempt_headers_list);
+
+  CastNetworkContexts(const CastNetworkContexts&) = delete;
+  CastNetworkContexts& operator=(const CastNetworkContexts&) = delete;
+
   ~CastNetworkContexts() override;
 
   // Returns the System NetworkContext. Does any initialization of the
@@ -140,8 +146,6 @@ class CastNetworkContexts : public net::ProxyConfigService::Observer,
   mojo::ReceiverSet<network::mojom::ProxyConfigPollerClient>
       poller_receiver_set_;
   mojo::RemoteSet<network::mojom::ProxyConfigClient> proxy_config_client_set_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastNetworkContexts);
 };
 
 }  // namespace shell

@@ -11,9 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
-#include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/login/auth/auth_attempt_state.h"
 #include "chromeos/login/auth/authenticator.h"
@@ -37,7 +36,7 @@ class AuthStatusConsumer;
 //
 // At a high, level, here's what happens:
 // AuthenticateToLogin() calls a Cryptohome's method to perform offline login.
-// Resultes are stored in a AuthAttemptState owned by CryptohomeAuthenticator
+// Results are stored in a AuthAttemptState owned by CryptohomeAuthenticator
 // and then call Resolve().  Resolve() will attempt to
 // determine which AuthState we're in, based on the info at hand.
 // It then triggers further action based on the calculated AuthState; this
@@ -104,8 +103,11 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) CryptohomeAuthenticator
                           std::unique_ptr<SafeModeDelegate> safe_mode_delegate,
                           AuthStatusConsumer* consumer);
 
+  CryptohomeAuthenticator(const CryptohomeAuthenticator&) = delete;
+  CryptohomeAuthenticator& operator=(const CryptohomeAuthenticator&) = delete;
+
   // Authenticator overrides.
-  void CompleteLogin(const UserContext& user_context) override;
+  void CompleteLogin(std::unique_ptr<UserContext> user_context) override;
 
   // Given |user_context|, this method attempts to authenticate to your
   // Chrome OS device. As soon as we have successfully mounted the encrypted
@@ -113,7 +115,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) CryptohomeAuthenticator
   // with the username.
   // Upon failure to login consumer_->OnAuthFailure() is called
   // with an error message.
-  void AuthenticateToLogin(const UserContext& user_context) override;
+  void AuthenticateToLogin(std::unique_ptr<UserContext> user_context) override;
 
   // Initiates incognito ("browse without signing in") login.
   // Mounts tmpfs and notifies consumer on the success/failure.
@@ -124,13 +126,10 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) CryptohomeAuthenticator
   // success/failure.
   void LoginAsPublicSession(const UserContext& user_context) override;
 
-  // Initiates login into the kiosk mode account identified by |app_account_id|.
-  // Mounts an ephemeral guest cryptohome if |use_guest_mount| is |true|.
-  // Otherwise, mounts a public cryptohome, which will be ephemeral if the
-  // |DeviceEphemeralUsersEnabled| policy is enabled and non-ephemeral
-  // otherwise.
-  void LoginAsKioskAccount(const AccountId& app_account_id,
-                           bool use_guest_mount) override;
+  // Initiates login into kiosk mode account identified by |app_account_id|.
+  // The |app_account_id| is a generated account id for the account.
+  // So called Public mount is used to mount cryptohome.
+  void LoginAsKioskAccount(const AccountId& app_account_id) override;
 
   // Initiates login into the ARC kiosk mode account identified by
   // |app_account_id|.
@@ -261,8 +260,6 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) CryptohomeAuthenticator
   // When |remove_user_data_on_failure_| is set, we delay calling
   // consumer_->OnAuthFailure() until we removed the user cryptohome.
   AuthFailure delayed_login_failure_;
-
-  DISALLOW_COPY_AND_ASSIGN(CryptohomeAuthenticator);
 };
 
 }  // namespace chromeos

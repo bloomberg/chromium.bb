@@ -12,13 +12,15 @@
 #include <limits.h>
 
 #include "config/aom_config.h"
+
+#include "aom_dsp/mathutils.h"
+#include "aom_mem/aom_mem.h"
+
 #include "av1/common/av1_common_int.h"
 #include "av1/encoder/encoder.h"
-#include "av1/encoder/mathutils.h"
 #include "av1/encoder/optical_flow.h"
 #include "av1/encoder/sparse_linear_solver.h"
 #include "av1/encoder/reconinter_enc.h"
-#include "aom_mem/aom_mem.h"
 
 #if CONFIG_OPTICAL_FLOW_API
 
@@ -232,6 +234,12 @@ static void gradients_over_window(const YV12_BUFFER_CONFIG *frame,
   // with normalization, gradients may be double values
   double *fullpel_dx = aom_malloc((ye - ys) * (xe - xs) * sizeof(deriv_x));
   double *fullpel_dy = aom_malloc((ye - ys) * (xe - xs) * sizeof(deriv_y));
+  if (!fullpel_dx || !fullpel_dy) {
+    aom_free(fullpel_dx);
+    aom_free(fullpel_dy);
+    return;
+  }
+
   // TODO(any): This could be more efficient in the case that x_coord
   // and y_coord are integers.. but it may look more messy.
 
@@ -512,9 +520,11 @@ static void lucas_kanade(const YV12_BUFFER_CONFIG *from_frame,
   double *i_x = (double *)aom_malloc(n * n * sizeof(*i_x));
   double *i_y = (double *)aom_malloc(n * n * sizeof(*i_y));
   double *i_t = (double *)aom_malloc(n * n * sizeof(*i_t));
+  double *weights = (double *)aom_malloc(n * n * sizeof(*weights));
+  if (!i_x || !i_y || !i_t || !weights) goto free_lk_buf;
+
   const int expand_multiplier = (int)pow(2, level);
   double sigma = 0.2 * n;
-  double *weights = (double *)aom_malloc(n * n * sizeof(*weights));
   // normalizing doesn't really affect anything since it's applied
   // to every component of M and b
   gaussian(sigma, n, 0, weights);
@@ -564,6 +574,7 @@ static void lucas_kanade(const YV12_BUFFER_CONFIG *from_frame,
       mvs[mv_idx] = mv;
     }
   }
+free_lk_buf:
   aom_free(weights);
   aom_free(i_t);
   aom_free(i_x);
@@ -722,12 +733,16 @@ static void solve_horn_schunck(const double *ix, const double *iy,
   double *mv_init_vec = aom_calloc(width * height * 2, sizeof(*mv_init_vec));
   double *temp_b = aom_calloc(width * height * 2, sizeof(*temp_b));
   double *b = aom_calloc(width * height * 2, sizeof(*b));
+  if (!row_pos || !col_pos || !values || !mv_vec || !mv_init_vec || !temp_b ||
+      !b) {
+    goto free_hs_solver_buf;
+  }
 
   // the location idx for neighboring pixels, k < 4 are the 4 direct neighbors
   const int check_locs_y[12] = { 0, 0, -1, 1, -1, -1, 1, 1, 0, 0, -2, 2 };
   const int check_locs_x[12] = { -1, 1, 0, 0, -1, 1, -1, 1, -2, 2, 0, 0 };
 
-  int h, w, checkh, checkw, k;
+  int h, w, checkh, checkw, k, ret;
   const int offset = height * width;
   SPARSE_MTX A;
   int c = 0;
@@ -817,8 +832,9 @@ static void solve_horn_schunck(const double *ix, const double *iy,
       }
     }
   }
-  av1_init_sparse_mtx(row_pos, col_pos, values, c, 2 * width * height,
-                      2 * width * height, &A);
+  ret = av1_init_sparse_mtx(row_pos, col_pos, values, c, 2 * width * height,
+                            2 * width * height, &A);
+  if (ret < 0) goto free_hs_solver_buf;
   // subtract init mv part from b
   av1_mtx_vect_multi_left(&A, mv_init_vec, temp_b, 2 * width * height);
   for (int i = 0; i < 2 * width * height; i++) {
@@ -859,11 +875,14 @@ static void solve_horn_schunck(const double *ix, const double *iy,
     }
   }
 
-  av1_init_sparse_mtx(row_pos, col_pos, values, c, 2 * width * height,
-                      2 * width * height, &A);
+  ret = av1_init_sparse_mtx(row_pos, col_pos, values, c, 2 * width * height,
+                            2 * width * height, &A);
+  if (ret < 0) goto free_hs_solver_buf;
 
   // solve for the mvs
-  av1_conjugate_gradient_sparse(&A, b, 2 * width * height, mv_vec);
+  ret = av1_conjugate_gradient_sparse(&A, b, 2 * width * height, mv_vec);
+  if (ret < 0) goto free_hs_solver_buf;
+
   // copy mvs
   for (w = 0; w < width; w++) {
     for (h = 0; h < height; h++) {
@@ -871,6 +890,7 @@ static void solve_horn_schunck(const double *ix, const double *iy,
       mvs[h * mv_stride + w].row = mv_vec[w * height + h + offset];
     }
   }
+free_hs_solver_buf:
   aom_free(row_pos);
   aom_free(col_pos);
   aom_free(values);
@@ -893,12 +913,16 @@ static void horn_schunck(const YV12_BUFFER_CONFIG *from_frame,
   const int fh = from_frame->y_crop_height;
   const int factor = (int)pow(2, level);
   int w, h, k, init_mv_stride;
-  LOCALMV *init_mvs;
+  LOCALMV *init_mvs = NULL, *refine_mvs = NULL;
+  double *ix = NULL, *iy = NULL, *it = NULL;
+  YV12_BUFFER_CONFIG temp_frame;
+  temp_frame.y_buffer = NULL;
   if (level == 0) {
     init_mvs = mvs;
     init_mv_stride = mv_stride;
   } else {
     init_mvs = aom_calloc(fw * fh, sizeof(*mvs));
+    if (!init_mvs) goto free_hs_buf;
     init_mv_stride = fw;
     for (h = 0; h < fh; h++) {
       for (w = 0; w < fw; w++) {
@@ -909,18 +933,20 @@ static void horn_schunck(const YV12_BUFFER_CONFIG *from_frame,
       }
     }
   }
-  LOCALMV *refine_mvs = aom_calloc(fw * fh, sizeof(*mvs));
+  refine_mvs = aom_calloc(fw * fh, sizeof(*mvs));
+  if (!refine_mvs) goto free_hs_buf;
   // temp frame for warping
-  YV12_BUFFER_CONFIG temp_frame;
   temp_frame.y_buffer =
       (uint8_t *)aom_calloc(fh * fw, sizeof(*temp_frame.y_buffer));
+  if (!temp_frame.y_buffer) goto free_hs_buf;
   temp_frame.y_crop_height = fh;
   temp_frame.y_crop_width = fw;
   temp_frame.y_stride = fw;
   // gradient buffers
-  double *ix = aom_calloc(fw * fh, sizeof(*ix));
-  double *iy = aom_calloc(fw * fh, sizeof(*iy));
-  double *it = aom_calloc(fw * fh, sizeof(*it));
+  ix = aom_calloc(fw * fh, sizeof(*ix));
+  iy = aom_calloc(fw * fh, sizeof(*iy));
+  it = aom_calloc(fw * fh, sizeof(*it));
+  if (!ix || !iy || !it) goto free_hs_buf;
   // For each warping step
   for (k = 0; k < opfl_params->warping_steps; k++) {
     // warp from_frame with init_mv
@@ -955,6 +981,7 @@ static void horn_schunck(const YV12_BUFFER_CONFIG *from_frame,
       }
     }
   }
+free_hs_buf:
   if (level != 0) aom_free(init_mvs);
   aom_free(refine_mvs);
   aom_free(temp_frame.y_buffer);
@@ -978,12 +1005,15 @@ static void pyramid_optical_flow(const YV12_BUFFER_CONFIG *from_frame,
        frame_height / pow(2.0, levels - 1) < 50) &&
       levels > 1)
     levels = levels - 1;
-  uint8_t *images1[MAX_PYRAMID_LEVELS];
-  uint8_t *images2[MAX_PYRAMID_LEVELS];
+  uint8_t *images1[MAX_PYRAMID_LEVELS] = { NULL };
+  uint8_t *images2[MAX_PYRAMID_LEVELS] = { NULL };
+  int *ref_corners = NULL;
+
   images1[0] = from_frame->y_buffer;
   images2[0] = to_frame->y_buffer;
   YV12_BUFFER_CONFIG *buffers1 = aom_malloc(levels * sizeof(*buffers1));
   YV12_BUFFER_CONFIG *buffers2 = aom_malloc(levels * sizeof(*buffers2));
+  if (!buffers1 || !buffers2) goto free_pyramid_buf;
   buffers1[0] = *from_frame;
   buffers2[0] = *to_frame;
   int fw = frame_width;
@@ -992,6 +1022,7 @@ static void pyramid_optical_flow(const YV12_BUFFER_CONFIG *from_frame,
     // TODO(bohanli): may need to extend buffers for better interpolation SIMD
     images1[i] = (uint8_t *)aom_calloc(fh / 2 * fw / 2, sizeof(*images1[i]));
     images2[i] = (uint8_t *)aom_calloc(fh / 2 * fw / 2, sizeof(*images2[i]));
+    if (!images1[i] || !images2[i]) goto free_pyramid_buf;
     int stride;
     if (i == 1)
       stride = from_frame->y_stride;
@@ -1013,11 +1044,11 @@ static void pyramid_optical_flow(const YV12_BUFFER_CONFIG *from_frame,
     buffers2[i] = b;
   }
   // Compute corners for specific frame
-  int *ref_corners = NULL;
   int num_ref_corners = 0;
   if (is_sparse(opfl_params)) {
     int maxcorners = from_frame->y_crop_width * from_frame->y_crop_height;
     ref_corners = aom_malloc(maxcorners * 2 * sizeof(*ref_corners));
+    if (!ref_corners) goto free_pyramid_buf;
     num_ref_corners = detect_corners(from_frame, to_frame, maxcorners,
                                      ref_corners, bit_depth);
   }
@@ -1035,6 +1066,7 @@ static void pyramid_optical_flow(const YV12_BUFFER_CONFIG *from_frame,
                    opfl_params, mvs);
     }
   }
+free_pyramid_buf:
   for (int i = 1; i < levels; i++) {
     aom_free(images1[i]);
     aom_free(images2[i]);
@@ -1083,6 +1115,7 @@ void av1_optical_flow(const YV12_BUFFER_CONFIG *from_frame,
   // Initialize double mvs based on input parameter mvs array
   LOCALMV *localmvs =
       aom_malloc(frame_height * frame_width * sizeof(*localmvs));
+  if (!localmvs) return;
 
   filter_mvs(MV_FILTER_SMOOTH, frame_height, frame_width, localmvs, mvs);
 

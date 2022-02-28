@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
@@ -28,6 +27,9 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   // determining repeat failures.
   static void CreateForWebState(web::WebState* web_state,
                                 double repeat_failure_interval);
+
+  SadTabTabHelper(const SadTabTabHelper&) = delete;
+  SadTabTabHelper& operator=(const SadTabTabHelper&) = delete;
 
   ~SadTabTabHelper() override;
 
@@ -125,8 +127,6 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   __strong id<NSObject> application_did_become_active_observer_ = nil;
 
   WEB_STATE_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(SadTabTabHelper);
 };
 
 #endif  // IOS_CHROME_BROWSER_WEB_SAD_TAB_TAB_HELPER_H_

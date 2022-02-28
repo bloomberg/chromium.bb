@@ -21,9 +21,10 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -125,7 +126,7 @@ class GLHelperBenchmark : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<GLInProcessContext> context_;
-  gles2::GLES2Interface* gl_;
+  raw_ptr<gles2::GLES2Interface> gl_;
   std::unique_ptr<GLHelper> helper_;
   std::unique_ptr<GLHelperScaling> helper_scaling_;
   base::circular_deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
@@ -192,7 +193,7 @@ TEST_F(GLHelperBenchmark, ScaleBenchmark) {
           if (iterations > 2000) {
             break;
           }
-          if ((end_time - start_time) > base::TimeDelta::FromSeconds(1)) {
+          if ((end_time - start_time) > base::Seconds(1)) {
             break;
           }
         }

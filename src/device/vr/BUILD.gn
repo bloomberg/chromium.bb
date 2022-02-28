@@ -82,6 +82,8 @@ if (enable_vr) {
       "util/fps_meter.h",
       "util/gamepad_builder.cc",
       "util/gamepad_builder.h",
+      "util/hit_test_subscription_data.cc",
+      "util/hit_test_subscription_data.h",
       "util/sample_queue.cc",
       "util/sample_queue.h",
       "util/sliding_average.cc",
@@ -99,6 +101,21 @@ if (enable_vr) {
       "//device/vr/public/mojom:isolated_xr_service",
       "//ui/gfx",
     ]
+  }
+
+  if (enable_openxr) {
+    source_set("openxr_data") {
+      sources = [
+        "openxr/openxr_defs.h",
+        "openxr/openxr_interaction_profile_type.h",
+      ]
+
+      deps = [
+        "//base",
+        "//device/gamepad/public/cpp:shared_with_blink",
+        "//third_party/openxr:openxr_headers",
+      ]
+    }
   }
 
   # TODO(alcooper): Ultimately, this component should be either deleted entirely
@@ -180,18 +197,31 @@ if (enable_vr) {
         "openxr/openxr_api_wrapper.h",
         "openxr/openxr_controller.cc",
         "openxr/openxr_controller.h",
-        "openxr/openxr_defs.h",
         "openxr/openxr_device.cc",
         "openxr/openxr_device.h",
+        "openxr/openxr_extension_handle.h",
         "openxr/openxr_extension_helper.cc",
         "openxr/openxr_extension_helper.h",
         "openxr/openxr_input_helper.cc",
         "openxr/openxr_input_helper.h",
+        "openxr/openxr_interaction_profiles.cc",
         "openxr/openxr_interaction_profiles.h",
         "openxr/openxr_path_helper.cc",
         "openxr/openxr_path_helper.h",
         "openxr/openxr_render_loop.cc",
         "openxr/openxr_render_loop.h",
+        "openxr/openxr_scene.cc",
+        "openxr/openxr_scene.h",
+        "openxr/openxr_scene_bounds.cc",
+        "openxr/openxr_scene_bounds.h",
+        "openxr/openxr_scene_object.cc",
+        "openxr/openxr_scene_object.h",
+        "openxr/openxr_scene_observer.cc",
+        "openxr/openxr_scene_observer.h",
+        "openxr/openxr_scene_plane.cc",
+        "openxr/openxr_scene_plane.h",
+        "openxr/openxr_scene_understanding_manager.cc",
+        "openxr/openxr_scene_understanding_manager.h",
         "openxr/openxr_statics.cc",
         "openxr/openxr_statics.h",
         "openxr/openxr_util.cc",
@@ -202,7 +232,9 @@ if (enable_vr) {
       ]
 
       deps += [
+        ":openxr_data",
         "//components/version_info",
+        "//device/base",
         "//third_party/openxr",
       ]
     }
@@ -282,7 +314,6 @@ if (enable_openxr) {
     include_dirs = [ "//third_party/openxr/src/include" ]
 
     sources = [
-      "openxr/openxr_defs.h",
       "openxr/openxr_extension_helper.cc",
       "openxr/openxr_extension_helper.h",
       "openxr/openxr_util.cc",
@@ -306,6 +337,8 @@ if (enable_openxr) {
       "//device/vr/public/mojom:test_mojom",
       "//third_party/openxr:openxr_headers",
     ]
+
+    public_deps = [ ":openxr_data" ]
 
     data_deps = [ "//device/vr:json_mock" ]
   }

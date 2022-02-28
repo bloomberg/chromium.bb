@@ -15,10 +15,6 @@
 
 """Utilities for V2 control flow."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.core.framework import attr_value_pb2
 from tensorflow.python.distribute import distribution_strategy_context
 from tensorflow.python.eager import context
@@ -28,11 +24,12 @@ from tensorflow.python.framework import ops
 from tensorflow.python.framework.func_graph import FuncGraph
 from tensorflow.python.ops import control_flow_util
 from tensorflow.python.ops import control_flow_v2_func_graphs
+from tensorflow.python.ops import gradients_util
+from tensorflow.python.util import keras_deps
 from tensorflow.python.util import tf_contextlib
 
 
 _EXPERIMENTAL_OUTPUT_ALL_INTERMEDIATES_OVERRIDE = None
-_KERAS_LAYER_CONTEXT_FUNCTION = None
 _DISABLE_LOWER_USING_SWITCH_MERGE = False
 
 
@@ -188,31 +185,43 @@ def resource_input_index(tensor_name, input_names, node_defs, functions):
     output_idx = int(output_idx)
     node_def = node_defs[op_name]
 
-    if node_def.op == "While":
+    def _extract_input_index(function_attribute_name):
+      func_name = node_def.attr[function_attribute_name].func.name
+      fdef = functions[func_name].definition
+      output_arg_name = fdef.signature.output_arg[output_idx].name
+      output_tensor_name = fdef.ret[output_arg_name]
+      return resource_input_index(
+          output_tensor_name, [arg.name for arg in fdef.signature.input_arg],
+          {ndef.name: ndef for ndef in fdef.node_def}, functions)
+
+    if node_def.op in ("Identity", "While"):
       # Captured resources occur at the same index in the lists of inputs and
-      # outputs of a while op. So we lookup the input of `tensor.op` at the
-      # same index as the index of `tensor` in the `tensor.op.outputs`.
+      # outputs of a while or identity op. So we lookup the input of `tensor.op`
+      # at the same index as the index of `tensor` in the `tensor.op.outputs`.
       tensor_name = node_def.input[output_idx]
     elif node_def.op in ("PartitionedCall", "StatefulPartitionedCall"):
       # Functions output any captured resource tensors used by their
       # gradients.  `tensor_name` is one of these outputs from a nested
       # function call, so recursively find the corresponding input in the
       # nested FunctionDef.
-      func_name = node_def.attr["f"].func.name
-      fdef = functions[func_name].definition
-      output_arg_name = fdef.signature.output_arg[output_idx].name
-      output_tensor_name = fdef.ret[output_arg_name]
-      input_index = resource_input_index(
-          output_tensor_name, [arg.name for arg in fdef.signature.input_arg],
-          {ndef.name: ndef for ndef in fdef.node_def}, functions)
-      tensor_name = node_def.input[input_index]
+      tensor_name = node_def.input[_extract_input_index("f")]
+    elif node_def.op in ("If", "StatelessIf"):
+      input_index = _extract_input_index("then_branch")
+      if input_index != _extract_input_index("else_branch"):
+        raise AssertionError(
+            ("Expected cond branches ({} op) to each have the same "
+             "input->output mapping of resources.").format(node_def.op))
+      tensor_name = node_def.input[
+          # Ignore the `cond` input; the function inputs come after.
+          input_index + 1]
     else:
       # We assume there are no other ops types that will "forward" resource
       # handles like this, so all other handles must have been created by the
       # op. (Note that cond_v2 wraps resource handle outputs in optionals,
       # which we'll end up accumulating).
       raise ValueError("Taking gradient of a while loop which creates "
-                       "a resource in its body is not supported: %s" % op_name)
+                       "a resource in its body is not supported: %s (%s)"
+                       % (op_name, node_def.op))
 
   return input_names.index(tensor_name)
 
@@ -242,17 +251,11 @@ def _is_tpu_strategy(strategy):
           strategy.__class__.__name__.startswith("TPUStrategy"))
 
 
-def _register_keras_layer_context_function(func):
-  global _KERAS_LAYER_CONTEXT_FUNCTION
-  if _KERAS_LAYER_CONTEXT_FUNCTION is None:
-    _KERAS_LAYER_CONTEXT_FUNCTION = func
-
-
 def _is_building_keras_layer():
   # TODO(srbs): Remove this function when we no long support session with Keras.
-  global _KERAS_LAYER_CONTEXT_FUNCTION
-  if _KERAS_LAYER_CONTEXT_FUNCTION is not None:
-    return _KERAS_LAYER_CONTEXT_FUNCTION().layer is not None
+  keras_call_context_function = keras_deps.get_call_context_function()
+  if keras_call_context_function:
+    return keras_call_context_function().layer is not None
   else:
     return False
 
@@ -318,3 +321,56 @@ def get_func_graph(op, input_shapes, func_name):
     func_graph = function_def_to_graph.function_def_to_graph(
         fdef, input_shapes)
   return func_graph
+
+
+def get_op_and_outputs(op_or_outputs):
+  if isinstance(op_or_outputs, ops.Operation):
+    return op_or_outputs, []
+  elif not op_or_outputs:  # Empty list.
+    return None, []
+  else:
+    return op_or_outputs[0].op, op_or_outputs
+
+
+def graph_wrapped_for_higher_order_tape_gradients(graph):
+  """Check if `graph` is wrapped by `run_as_function_for_tape_gradients`."""
+  while graph is not None:
+    if "cflow_gradient_wrapper" in getattr(graph, "name", ""):
+      return True
+    graph = getattr(graph, "outer_graph", None)
+  return False
+
+
+def run_as_function_for_tape_gradients(make_op, inputs):
+  """Fix higher-order tape gradients by wrapping `make_op` in a function.
+
+  Args:
+    make_op: A function that takes a list of inputs and returns a list of output
+      tensors. This function should set any handle data relevant to its outputs
+      before returning.
+    inputs: A list of tensors to check for tape gradients and pass to
+      `make_op`. These should include all tensors used in `make_op`.
+
+  Returns:
+    Tensors corresponding to `make_op`'s output.
+  """
+  # GradientTapes created inside a function currently don't work well with
+  # un-wrapped control flow ops in that same function. Wrapping in an extra
+  # layer of intermediate function means we run extra logic in the function
+  # gradient code to record the correct intermediates on the tape.
+  #
+  # The function attribute inputs to control flow ops are not hashable, so we
+  # pass everything as a capture to bypass defun's caching.
+  if (gradients_util.PossibleTapeGradientTypes(inputs)
+      == gradients_util.POSSIBLE_GRADIENT_TYPES_HIGHER_ORDER
+      # We only need one function between the tape and the op; if we've already
+      # wrapped once, we stop wrapping to avoid infinite recursion.
+      and not (ops.get_default_graph().building_function
+               and "cflow_gradient_wrapper" in ops.get_default_graph().name)):
+    results = function.defun_with_attributes(
+        make_op,
+        autograph=False,
+        attributes=dict(func_name="cflow_gradient_wrapper"))(inputs)
+    return results
+  else:
+    return make_op(inputs)

@@ -29,6 +29,7 @@ extern "C" {
 #define AOM_INTERP_EXTEND 4
 #define AOM_BORDER_IN_PIXELS 288
 #define AOM_ENC_NO_SCALE_BORDER 160
+#define AOM_ENC_ALLINTRA_BORDER 64
 #define AOM_DEC_BORDER_IN_PIXELS 64
 
 /*!\endcond */
@@ -165,6 +166,18 @@ void aom_remove_metadata_from_frame_buffer(YV12_BUFFER_CONFIG *ybf);
  */
 int aom_copy_metadata_to_frame_buffer(YV12_BUFFER_CONFIG *ybf,
                                       const aom_metadata_array_t *arr);
+
+/*!\brief Calculate the stride required for the image.
+ *
+ * Calculates the stride value for an image from aligned width and border.
+ * Returns the y stride value.
+ *
+ * \param[in]    aligned_width       Aligned width of the image
+ * \param[in]    border              Border in pixels
+ */
+static AOM_INLINE int aom_calc_y_stride(int aligned_width, int border) {
+  return ((aligned_width + 2 * border) + 31) & ~31;
+}
 
 #ifdef __cplusplus
 }

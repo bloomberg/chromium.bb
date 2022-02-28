@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -27,8 +28,10 @@
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace {
@@ -56,6 +59,17 @@ const char kReplaceDownloadedImagesScript[] =
     "    }"
     "}, false);"
     "</script>";
+
+// The maximum size for the distilled page.
+// Note that the sum of the size of the resources will be used for this check,
+// so the total size of the page after processing can be slightly more than
+// this.
+const int kMaximumTotalPageSize = 10 * 1024 * 1024;
+
+// The maximum size for a single raw image. If a bigger image is found, the
+// page distillation is canceled (page will only be available online).
+const int kMaximumImageSize = 1024 * 1024;
+
 }  // namespace
 
 // URLDownloader
@@ -300,12 +314,10 @@ void URLDownloader::DistillerCallback(
     return;
   }
 
-  std::vector<dom_distiller::DistillerViewer::ImageInfo> images_block = images;
-  std::string block_html = html;
   task_tracker_.PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
       base::BindOnce(&URLDownloader::SaveDistilledHTML, base::Unretained(this),
-                     page_url, images_block, block_html),
+                     page_url, images, html),
       base::BindOnce(&URLDownloader::DownloadCompletionHandler,
                      base::Unretained(this), page_url, title,
                      reading_list::OfflinePagePath(
@@ -317,6 +329,22 @@ URLDownloader::SuccessState URLDownloader::SaveDistilledHTML(
     const std::vector<dom_distiller::DistillerViewerInterface::ImageInfo>&
         images,
     const std::string& html) {
+  int total_size = html.size();
+  for (size_t i = 0; i < images.size(); i++) {
+    if (images[i].data.size() > kMaximumImageSize) {
+      UMA_HISTOGRAM_MEMORY_KB("IOS.ReadingList.ImageTooLargeFailure",
+                              images[i].data.size() / 1024);
+      return PERMANENT_ERROR;
+    }
+    // Image will be base64 encoded.
+    total_size += 4 * images[i].data.size() / 3;
+  }
+  if (total_size > kMaximumTotalPageSize) {
+    UMA_HISTOGRAM_MEMORY_KB("IOS.ReadingList.PageTooLargeFailure",
+                            total_size / 1024);
+    return PERMANENT_ERROR;
+  }
+
   if (CreateOfflineURLDirectory(url)) {
     return SaveHTMLForURL(ReplaceImagesInHTML(url, html, images), url)
                ? DOWNLOAD_SUCCESS

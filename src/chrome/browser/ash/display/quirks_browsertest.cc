@@ -20,8 +20,8 @@ namespace quirks {
 namespace {
 
 const char kFakeIccJson[] = "{\n  \"icc\": \"AAAIkCAgICACEAAA\"\n}";
-const char kFakeIccData[] = {0x00, 0x00, 0x08, 0x90, 0x20, 0x20,
-                             0x20, 0x20, 0x02, 0x10, 0x00, 0x00};
+const uint8_t kFakeIccData[] = {0x00, 0x00, 0x08, 0x90, 0x20, 0x20,
+                                0x20, 0x20, 0x02, 0x10, 0x00, 0x00};
 
 // Full path to fake icc file in <tmp test directory>/display_profiles/.
 base::FilePath GetPathForIccFile(int64_t product_id) {
@@ -45,6 +45,9 @@ class QuirksBrowserTest : public InProcessBrowserTest {
           }
         }));
   }
+
+  QuirksBrowserTest(const QuirksBrowserTest&) = delete;
+  QuirksBrowserTest& operator=(const QuirksBrowserTest&) = delete;
 
  protected:
   ~QuirksBrowserTest() override = default;
@@ -78,7 +81,7 @@ class QuirksBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     // NOTE: QuirksManager::Initialize() isn't necessary here, since it'll be
-    // called in ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun().
+    // called in `ChromeBrowserMainPartsAsh::PreMainMessageLoopRun()`.
 
     // Create display_profiles subdirectory under temp profile directory.
     const base::FilePath path =
@@ -103,9 +106,6 @@ class QuirksBrowserTest : public InProcessBrowserTest {
                                     // request.
 
   network::TestURLLoaderFactory test_url_loader_factory_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuirksBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(QuirksBrowserTest, DownloadIccFile) {

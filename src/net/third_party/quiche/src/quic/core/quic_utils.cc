@@ -14,6 +14,7 @@
 #include "absl/base/optimization.h"
 #include "absl/numeric/int128.h"
 #include "absl/strings/string_view.h"
+#include "third_party/boringssl/src/include/openssl/sha.h"
 #include "quic/core/quic_connection_id.h"
 #include "quic/core/quic_constants.h"
 #include "quic/core/quic_types.h"
@@ -21,6 +22,7 @@
 #include "quic/platform/api/quic_bug_tracker.h"
 #include "quic/platform/api/quic_flag_utils.h"
 #include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_mem_slice.h"
 #include "common/platform/api/quiche_logging.h"
 #include "common/platform/api/quiche_prefetch.h"
 #include "common/quiche_endian.h"
@@ -693,12 +695,54 @@ bool QuicUtils::IsProbingFrame(QuicFrameType type) {
   }
 }
 
+// static
+bool QuicUtils::IsAckElicitingFrame(QuicFrameType type) {
+  switch (type) {
+    case PADDING_FRAME:
+    case STOP_WAITING_FRAME:
+    case ACK_FRAME:
+    case CONNECTION_CLOSE_FRAME:
+      return false;
+    default:
+      return true;
+  }
+}
+
+// static
+bool QuicUtils::AreStatelessResetTokensEqual(
+    const StatelessResetToken& token1,
+    const StatelessResetToken& token2) {
+  char byte = 0;
+  for (size_t i = 0; i < kStatelessResetTokenLength; i++) {
+    // This avoids compiler optimizations that could make us stop comparing
+    // after we find a byte that doesn't match.
+    byte |= (token1[i] ^ token2[i]);
+  }
+  return byte == 0;
+}
+
 bool IsValidWebTransportSessionId(WebTransportSessionId id,
                                   ParsedQuicVersion version) {
   QUICHE_DCHECK(version.UsesHttp3());
   return (id <= std::numeric_limits<QuicStreamId>::max()) &&
          QuicUtils::IsBidirectionalStreamId(id, version) &&
          QuicUtils::IsClientInitiatedStreamId(version.transport_version, id);
+}
+
+QuicByteCount MemSliceSpanTotalSize(absl::Span<QuicMemSlice> span) {
+  QuicByteCount total = 0;
+  for (const QuicMemSlice& slice : span) {
+    total += slice.length();
+  }
+  return total;
+}
+
+std::string RawSha256(absl::string_view input) {
+  std::string raw_hash;
+  raw_hash.resize(SHA256_DIGEST_LENGTH);
+  SHA256(reinterpret_cast<const uint8_t*>(input.data()), input.size(),
+         reinterpret_cast<uint8_t*>(&raw_hash[0]));
+  return raw_hash;
 }
 
 #undef RETURN_STRING_LITERAL  // undef for jumbo builds

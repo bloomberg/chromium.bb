@@ -11,13 +11,13 @@
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 
 namespace {
 
 constexpr char kUnitConversionQueryRewriteTemplate[] = "Convert:%s";
-constexpr char kDictionaryQueryRewriteTemplate[] = "Define:%s";
+constexpr char kDictionaryQueryRewriteTemplate[] = "Define %s";
 constexpr char kTranslationQueryRewriteTemplate[] = "Translate:%s";
 
 }  // namespace
@@ -95,4 +95,4 @@ absl::optional<double> GetRatio(const double value1, const double value2) {
 }
 
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash

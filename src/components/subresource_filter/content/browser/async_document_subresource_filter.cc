@@ -10,7 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/location.h"
-#include "base/task_runner_util.h"
+#include "base/task/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
@@ -88,7 +88,7 @@ AsyncDocumentSubresourceFilter::AsyncDocumentSubresourceFilter(
     InitializationParams params,
     base::OnceCallback<void(mojom::ActivationState)> activation_state_callback)
     : task_runner_(ruleset_handle->task_runner()),
-      core_(new Core(), base::OnTaskRunnerDeleter(task_runner_)) {
+      core_(new Core(), base::OnTaskRunnerDeleter(task_runner_.get())) {
   DCHECK_NE(mojom::ActivationLevel::kDisabled,
             params.parent_activation_state.activation_level);
 
@@ -110,7 +110,7 @@ AsyncDocumentSubresourceFilter::AsyncDocumentSubresourceFilter(
     const url::Origin& inherited_document_origin,
     const mojom::ActivationState& activation_state)
     : task_runner_(ruleset_handle->task_runner()),
-      core_(new Core(), base::OnTaskRunnerDeleter(task_runner_)) {
+      core_(new Core(), base::OnTaskRunnerDeleter(task_runner_.get())) {
   DCHECK_NE(mojom::ActivationLevel::kDisabled,
             activation_state.activation_level);
 

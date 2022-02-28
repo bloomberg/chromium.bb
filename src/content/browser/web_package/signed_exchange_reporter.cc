@@ -17,7 +17,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/web_contents.h"
 #include "net/base/ip_endpoint.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -42,6 +41,7 @@ constexpr char kSXGResultCertFetchError[] = "sxg.cert_fetch_error";
 constexpr char kSXGResultCertParseError[] = "sxg.cert_parse_error";
 constexpr char kSXGResultVariantMismatch[] = "sxg.variant_mismatch";
 constexpr char kSXGHeaderIntegrityMismatch[] = "sxg.header_integrity_mismatch";
+constexpr char kSXGResultHadCookie[] = "sxg.had_cookie";
 
 const char* GetResultTypeString(SignedExchangeLoadResult result) {
   switch (result) {
@@ -81,6 +81,10 @@ const char* GetResultTypeString(SignedExchangeLoadResult result) {
       // TODO(crbug/910516): Need to update the spec to send the report in this
       // case.
       return kSXGResultVariantMismatch;
+    case SignedExchangeLoadResult::kHadCookieForCookielessOnlySXG:
+      // TODO(crbug/910516): Need to update the spec to send the report in this
+      // case.
+      return kSXGResultHadCookie;
   }
   NOTREACHED();
   return kSXGResultFailed;
@@ -130,11 +134,8 @@ void ReportResult(int frame_tree_node_id,
     return;
   SiteInstance* site_instance = frame_host->GetSiteInstance();
   DCHECK(site_instance);
-  WebContents* web_contents = WebContents::FromRenderFrameHost(frame_host);
-  if (!web_contents)
-    return;
   StoragePartition* partition =
-      web_contents->GetBrowserContext()->GetStoragePartition(site_instance);
+      frame_host->GetBrowserContext()->GetStoragePartition(site_instance);
   DCHECK(partition);
   partition->GetNetworkContext()->QueueSignedExchangeReport(
       std::move(report), network_isolation_key);

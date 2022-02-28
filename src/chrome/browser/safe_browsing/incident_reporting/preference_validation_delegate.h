@@ -7,8 +7,7 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/values.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -28,6 +27,11 @@ class PreferenceValidationDelegate
   PreferenceValidationDelegate(
       Profile* profile,
       std::unique_ptr<IncidentReceiver> incident_receiver);
+
+  PreferenceValidationDelegate(const PreferenceValidationDelegate&) = delete;
+  PreferenceValidationDelegate& operator=(const PreferenceValidationDelegate&) =
+      delete;
+
   ~PreferenceValidationDelegate() override;
 
  private:
@@ -48,10 +52,8 @@ class PreferenceValidationDelegate
           external_validation_value_state,
       bool is_personal) override;
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   std::unique_ptr<IncidentReceiver> incident_receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(PreferenceValidationDelegate);
 };
 
 }  // namespace safe_browsing

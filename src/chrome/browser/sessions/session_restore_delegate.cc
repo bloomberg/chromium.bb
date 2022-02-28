@@ -7,8 +7,8 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/cxx17_backports.h"
 #include "base/metrics/field_trial.h"
-#include "base/stl_util.h"
 #include "chrome/browser/sessions/session_restore_stats_collector.h"
 #include "chrome/browser/sessions/tab_loader.h"
 #include "chrome/common/url_constants.h"
@@ -55,8 +55,12 @@ SessionRestoreDelegate::RestoredTab::RestoredTab(
       is_pinned_(is_pinned),
       group_(group) {}
 
-SessionRestoreDelegate::RestoredTab::RestoredTab(const RestoredTab& other) =
-    default;
+SessionRestoreDelegate::RestoredTab::RestoredTab(const RestoredTab&) = default;
+
+SessionRestoreDelegate::RestoredTab&
+SessionRestoreDelegate::RestoredTab::operator=(const RestoredTab&) = default;
+
+SessionRestoreDelegate::RestoredTab::~RestoredTab() = default;
 
 bool SessionRestoreDelegate::RestoredTab::operator<(
     const RestoredTab& right) const {

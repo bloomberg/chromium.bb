@@ -15,6 +15,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/image_view.h"
@@ -152,6 +153,7 @@ WindowMiniView::WindowMiniView(aura::Window* source_window)
 }
 
 void WindowMiniView::UpdateIconView() {
+  DCHECK(source_window_);
   aura::Window* transient_root = wm::GetTransientRoot(source_window_);
   // Prefer kAppIconKey over kWindowIconKey as the app icon is typically larger.
   gfx::ImageSkia* icon = transient_root->GetProperty(aura::client::kAppIconKey);
@@ -190,6 +192,13 @@ void WindowMiniView::Layout() {
 }
 
 void WindowMiniView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  // This may be called after `OnWindowDestroying`. `this` should be destroyed
+  // shortly by the owner (OverviewItem/WindowCycleView) but there may be a
+  // small window where `source_window_` is null. Speculative fix for
+  // https://crbug.com/1274775.
+  if (!source_window_)
+    return;
+
   node_data->role = ax::mojom::Role::kWindow;
   node_data->SetName(wm::GetTransientRoot(source_window_)->GetTitle());
 }
@@ -223,5 +232,8 @@ void WindowMiniView::OnWindowDestroying(aura::Window* window) {
 void WindowMiniView::OnWindowTitleChanged(aura::Window* window) {
   title_label_->SetText(GetWindowTitle(window));
 }
+
+BEGIN_METADATA(WindowMiniView, views::View)
+END_METADATA
 
 }  // namespace ash

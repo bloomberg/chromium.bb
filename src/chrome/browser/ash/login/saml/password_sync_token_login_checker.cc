@@ -12,10 +12,10 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/storage_partition.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
-const base::TimeDelta kPollingInterval = base::TimeDelta::FromMinutes(5);
+
+const base::TimeDelta kPollingInterval = base::Minutes(5);
 }
 
 PasswordSyncTokenLoginChecker::PasswordSyncTokenLoginChecker(
@@ -117,4 +117,4 @@ void PasswordSyncTokenLoginChecker::NotifyObservers() {
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

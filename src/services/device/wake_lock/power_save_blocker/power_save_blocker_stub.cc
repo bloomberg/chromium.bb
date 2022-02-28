@@ -4,7 +4,6 @@
 
 #include "services/device/wake_lock/power_save_blocker/power_save_blocker.h"
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 namespace device {
@@ -14,11 +13,12 @@ class PowerSaveBlocker::Delegate
  public:
   Delegate() {}
 
+  Delegate(const Delegate&) = delete;
+  Delegate& operator=(const Delegate&) = delete;
+
  private:
   friend class base::RefCountedThreadSafe<Delegate>;
   virtual ~Delegate() {}
-
-  DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
 PowerSaveBlocker::PowerSaveBlocker(

@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/observer_list.h"
 #include "extensions/common/mojom/host_id.mojom-forward.h"
@@ -44,6 +43,10 @@ class UserScriptSet {
   };
 
   explicit UserScriptSet(mojom::HostID host_id);
+
+  UserScriptSet(const UserScriptSet&) = delete;
+  UserScriptSet& operator=(const UserScriptSet&) = delete;
+
   ~UserScriptSet();
 
   // Adds or removes observers.
@@ -109,8 +112,6 @@ class UserScriptSet {
 
   // The associated observers.
   base::ObserverList<Observer>::Unchecked observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserScriptSet);
 };
 
 }  // namespace extensions

@@ -126,7 +126,7 @@ include::_aliases.txt[]
 
 ----
 [alias]
-  git reup = rebase-update
+  reup = rebase-update
 ----
 
 

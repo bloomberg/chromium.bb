@@ -18,6 +18,7 @@
 <translation id="1774152462503052664">Нека Chromium да се изпълнява на заден план</translation>
 <translation id="1779356040007214683">За да направим Chromium по-безопасен, деактивирахме някои разширения, които не са посочени в <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да са били добавени без ваше знание.</translation>
 <translation id="1808667845054772817">Повторно инсталиране на Chromium</translation>
+<translation id="185970820835152459">Можете да управлявате профилите си в Google, в които сте влезли. Те се използват за браузъра Chromium, Google Play Магазин, Gmail и др. Ако искате да добавите профил за друго лице, като например член на семейството, вместо това добавете нов човек към вашия <ph name="DEVICE_TYPE" />. <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" /></translation>
 <translation id="1881322772814446296">Влизате с управляван профил и давате на администратора му контрол над потребителския си профил в Chromium. Данните ви там, като например приложения, отметки, история, пароли и други настройки, ще се свържат за постоянно с/ъс <ph name="USER_NAME" />. Ще можете да ги изтриете чрез таблото за управление на Google Профили, но не и да ги свържете с друг профил. По избор можете да създадете нов потребителски профил, за да отделите съществуващите си данни в Chromium. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">С изключването на тази функция можете да влизате в сайтовете на Google, като например Gmail, без да влизате в Chromium</translation>
 <translation id="1929939181775079593">Chromium блокира. Да се стартира ли отново сега?</translation>
@@ -25,34 +26,39 @@
 <translation id="1981611865800294956">Повторно стартиране за актуализиране на &amp;Chromium OS</translation>
 <translation id="2008474315282236005">1 елемент ще се изтрие от това устройство. За да извлечете данните си по-късно, влезте в Chromium като <ph name="USER_EMAIL" />.</translation>
 <translation id="2020032459870799438">За да проверите дали другите ви пароли не са компрометирани при нарушения на сигурността на данните и други проблеми със сигурността, <ph name="BEGIN_LINK" />влезте в Chromium<ph name="END_LINK" />.</translation>
+<translation id="2049376729098081731">Изберете дали да включите историята в Chromium за по-персонализирана практическа работа с услугите на Google</translation>
 <translation id="2174178932569897599">Персонализиране на Chromium</translation>
 <translation id="2185166961232948079">Chromium – Вход в мрежата – <ph name="PAGE_TITLE" /></translation>
 <translation id="2241627712206172106">Ако споделяте компютър, близките и приятелите ви могат да сърфират отделно и да настроят Chromium точно така, както искат.</translation>
 <translation id="2294245788148774212">По избор: Помогнете за подобряването на функциите и ефективността на Chromium OS, като автоматично изпращате до Google данни за диагностиката и употребата.</translation>
+<translation id="2313870531055795960">Проверка на URL адресите в съхраняван в Chromium списък с опасни сайтове. Ако сайт се опита да открадне паролата ви или изтеглите опасен файл от сайт, Chromium може също така да изпрати до „Безопасно сърфиране“ URL адресите и част от съдържанието на страницата.</translation>
 <translation id="2343156876103232566">За да изпратите номер от тук до телефона си с Android, влезте в Chromium и на двете устройства.</translation>
 <translation id="2347108572062610441">Това разширение промени страницата, която се показва при стартиране на Chromium.</translation>
+<translation id="2359808026110333948">Напред</translation>
 <translation id="2396765026452590966">Разширението „<ph name="EXTENSION_NAME" />“ промени страницата, която се показва при стартиране на Chromium.</translation>
+<translation id="2401032172288869980">За този сайт Chromium се нуждае от разрешения за достъп до камерата и микрофона</translation>
 <translation id="2483889755041906834">В Chromium</translation>
 <translation id="2485422356828889247">Деинсталиране</translation>
+<translation id="251127392410688874">Вижте как Chromium ще ви предпазва от проследяване в различни сайтове, без да нарушава баланса на отворената мрежа</translation>
 <translation id="2535480412977113886">Chromium OS не можа да синхронизира данните ви, защото потребителското име и паролата за вход в профила ви не са актуални.</translation>
 <translation id="2560420686485554789">Chromium се нуждае от достъп до хранилището, за да изтегля файлове</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
-<translation id="2577788541081224677">За да имате достъп до нещата си в Chromium на всичките си устройства, влезте в профила си, така че да можете да включите синхронизирането.</translation>
-<translation id="2580426763510374355">Инсталиране на Chromium OS</translation>
 <translation id="2583187216237139145">Данните в Chromium, които са генерирани при използването на този служебен потребителски профил (напр. създаването на отметки, историята, паролите и други настройки), могат да бъдат премахнати от администратора му. <ph name="LEARN_MORE" /></translation>
 <translation id="2587578672395088481">Chromium OS трябва да се рестартира, за да приложи актуализацията.</translation>
+<translation id="2614883797045469742">Настройките по подразбиране са подходящи за повечето хора, но можете да ги персонализирате според това, как искате да използвате Chromium</translation>
 <translation id="2648074677641340862">По време на инсталирането възникна грешка в операционната система. Моля, изтеглете отново Chromium.</translation>
 <translation id="2661879430930417727">Ако споделяте устройство, близките и приятелите ви могат да сърфират отделно и да настроят Chromium точно така, както искат</translation>
 <translation id="2711502716910134313">Раздел в Chromium</translation>
 <translation id="2718390899429598676">За повишаване на сигурността Chromium ще шифрова данните ви.</translation>
 <translation id="2770231113462710648">Промяна на браузъра по подразбиране с/ъс:</translation>
 <translation id="2799223571221894425">Стартиране отново</translation>
-<translation id="2816712596130903444">Да се създаде ли отделен потребителски профил в Chromium?</translation>
 <translation id="2837693172913560447">Това ще създаде нов потребителски профил в Chromium за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="2847479871509788944">Премахване от Chromium...</translation>
+<translation id="2850691299438350830">Осигурява безопасността ви в Chromium и може да се използва с цел подобряване на сигурността ви в други приложения на Google, докато сте в профила си.</translation>
 <translation id="2885378588091291677">Диспечер на задачите</translation>
 <translation id="2910007522516064972">Всичко за &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium е актуален</translation>
+<translation id="2977506796191543575">Ако сайт се опита да открадне паролата ви или изтеглите опасен файл, Chromium може също да изпрати до Безопасно сърфиране URL адресите и част от съдържанието на страницата</translation>
 <translation id="2983934633046890458">Chromium се опитва да редактира паролите.</translation>
 <translation id="3032706164202344641">Chromium не може да провери паролите ви. Опитайте пак по-късно.</translation>
 <translation id="3032787606318309379">Добавя се към Chromium...</translation>
@@ -69,6 +75,7 @@
 <translation id="328888136576916638">Ключовете на приложния програмен интерфейс (API) на Google липсват. Някои функции на Chromium ще бъдат деактивирани.</translation>
 <translation id="3296368748942286671">Да продължават да се изпълняват приложения на заден план, когато Chromium е затворен</translation>
 <translation id="331951419404882060">Chromium OS не можа да синхронизира данните ви поради грешка при влизане в профила.</translation>
+<translation id="3349211344363550267">Chromium препоръчва да не изтегляте, нито да отваряте този файл</translation>
 <translation id="3350761136195634146">Вече съществува потребителски профил в Chromium за този профил</translation>
 <translation id="3406848076815591792">Искате ли да превключите към съществуващ потребителски профил в Chromium?</translation>
 <translation id="3430503420100763906">С помощта на потребителските профили в Chromium можете да разделите данните си в браузъра. Създайте потребителски профили за близки и приятели или за разделяне на работата от забавленията.</translation>
@@ -82,7 +89,6 @@
 <translation id="3651803019964686660">За да изпратите номер от <ph name="ORIGIN" /> до телефона си с Android, влезте в Chromium и на двете устройства.</translation>
 <translation id="3685209450716071127">Chromium не може да провери паролите ви. Проверете връзката си с интернет.</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Администраторът ви моли да рестартирате Chromium, за да се приложи тази актуализация}=1{Администраторът ви моли да рестартирате Chromium, за да се приложи тази актуализация. Прозорецът ви в режим „инкогнито“ няма да бъде отворен отново.}other{Администраторът ви моли да рестартирате Chromium, за да се приложи тази актуализация. Вашите # прозореца в режим „инкогнито“ няма да бъдат отворени отново.}}</translation>
-<translation id="371088601698879021">Chromium OS може да възстановява приложенията и страниците ви след рестартиране, без да ви пита всеки път.</translation>
 <translation id="3713809861844741608">Отваряне на връзката в нов &amp;раздел на Chromium</translation>
 <translation id="3728336900324680424">Chromium ще осъществява достъп до хранилището ви в Диск, за да извежда предложения в адресната лента</translation>
 <translation id="378917192836375108">Chromium ви позволява да кликнете върху телефонен номер в мрежата и да се обадите до него със Skype!</translation>
@@ -103,7 +109,7 @@
 <translation id="4407044323746248786">Искате ли да излезете от Chromium въпреки това?</translation>
 <translation id="4415566066719264597">Разрешаване на Chromium да се изпълнява на заден план</translation>
 <translation id="4423735387467980091">Персонализиране и контролиране на Chromium</translation>
-<translation id="4491398312037323794">От тази страница можете да управлявате профилите си в Google, в които сте влезли. Тези профили ще бъдат налични в браузъра Chromium, в приложенията от Google Play Магазин и в други услуги, като например Gmail, Диск и YouTube. <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" /></translation>
+<translation id="4427306783828095590">Режимът за подобрена защита предприема повече действия за блокиране на фишинг атаки и злонамерен софтуер</translation>
 <translation id="452711251841752011">Добре дошли в Chromium. Отворен е нов прозорец на браузъра</translation>
 <translation id="4544142686420020088">Chromium не се актуализира, защото нещо се обърка. <ph name="BEGIN_LINK" />Отстранете проблеми с актуализирането на Chromium и неуспешни актуализации<ph name="END_LINK" />.</translation>
 <translation id="454579500955453258">Искате ли да продължите с нов потребителски профил в Chromium?</translation>
@@ -130,12 +136,10 @@
 <translation id="5386450000063123300">Chromium се актуализира (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Разрешаване на влизането в Chromium</translation>
 <translation id="5398878173008909840">Налице е нова версия на Chromium.</translation>
-<translation id="5416696090975899932">Chromium не може да покаже визуализацията за печат, когато вграденият визуализатор на PDF файлове липсва.</translation>
 <translation id="5427571867875391349">Задаване на Chromium като браузър по подразбиране</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium бета</translation>
 <translation id="5479196819031988440">Chromium OS не може да отвори тази страница.</translation>
 <translation id="5480860683791598150">Chromium се нуждае от достъп до данните за местоположението ви, за да ги сподели с този сайт</translation>
-<translation id="5481338274774984070">Chromium препоръчва да не изтегляте, нито да отваряте този файл.</translation>
 <translation id="549669000822060376">Моля, изчакайте, докато Chromium инсталира най-новите системни актуализации.</translation>
 <translation id="5496810170689441661">Chromium опитва да редактира паролите. За да разрешите това, въведете паролата си за Windows.</translation>
 <translation id="5527463683072221100">Отваряне на PDF файловете в Chromium</translation>
@@ -146,6 +150,7 @@
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5854740544000584380">Chromium OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS" />софтуер с отворен код<ph name="END_LINK_CROS_OSS" />. Това се отнася и за <ph name="BEGIN_LINK_LINUX_OSS" />базираната на Linux среда на програмиране<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="5862307444128926510">Добре дошли в Chromium</translation>
+<translation id="5883558403894052917">Chromium установи, че следните елементи съдържат злонамерен софтуер:</translation>
 <translation id="5895138241574237353">Рестартиране</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Вход в мрежата</translation>
 <translation id="5987687638152509985">Актуализирайте Chromium, за да стартира синхронизирането</translation>
@@ -163,6 +168,8 @@
 <translation id="6183079672144801177">Проверете дали сте влезли в Chromium на устройството си <ph name="TARGET_DEVICE_NAME" /> и опитайте да изпратите отново.</translation>
 <translation id="6212496753309875659">На този компютър вече има по-скорошна версия на Chromium. Ако софтуерът не работи, моля, деинсталирайте Chromium и опитайте отново.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium ще се стартира отново сега}=1{Chromium ще се стартира отново след 1 секунда}other{Chromium ще се стартира отново след # секунди}}</translation>
+<translation id="6241367896540709610">Chromium се нуждае от разрешение за достъп до хранилището, за да изтегля файлове</translation>
+<translation id="6245734527075554892">URL адресите се проверяват в съхраняван в Chromium списък с опасни сайтове</translation>
 <translation id="6248213926982192922">Нека Chromium да е браузърът по подразбиране</translation>
 <translation id="6266342355635466082">Chromium не може да провери за актуализации. Проверете връзката си с интернет.</translation>
 <translation id="6268381023930128611">Искате ли да излезете от Chromium?</translation>
@@ -183,15 +190,17 @@
 <translation id="6570579332384693436">С цел поправка на правописни грешки Chromium изпраща до Google текста, който въвеждате в текстовите полета</translation>
 <translation id="6598877126913850652">Към настройките за известия в Chromium</translation>
 <translation id="6613594504749178791">Промените ви ще влязат в сила следващия път, когато стартирате отново Chromium.</translation>
+<translation id="665732753414869868">Chromium се нуждае от разрешение за достъп до камерата, за да създаде триизмерна карта на заобикалящата ви среда</translation>
 <translation id="6676384891291319759">Достъп до интернет</translation>
+<translation id="6709350901466051922">За този сайт Chromium се нуждае от разрешение за достъп до микрофона</translation>
 <translation id="6717134281241384636">Потребителският ви профил не може да се използва, защото е от по-нова версия на Chromium. Някои функции може да не са налице. Моля, посочете друга директория в потребителския профил или използвайте по-нова версия на Chromium.</translation>
-<translation id="6734080038664603509">Актуализиране на &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium вече е инсталиран за всички потребители на компютъра ви.</translation>
 <translation id="673636774878526923">За да имате достъп до нещата си в Chromium на всичките си устройства, влезте в профила си и включете синхронизирането.</translation>
 <translation id="6774082503108938489">Някой от родителите ви е изключил разрешенията за сайтове, приложения и разширения за Chromium. Активирането на <ph name="EXTENSION_TYPE_PARAMETER" /> не е разрешено.</translation>
 <translation id="6847869444787758381">Chromium ви уведомява, ако паролите ви бъдат компрометирани</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (копирано в Chromium)</translation>
+<translation id="6873893289264747459">Chromium установи, че „<ph name="EXTENSION_NAME" />“ съдържа злонамерен софтуер</translation>
 <translation id="6893813176749746474">Chromium е актуализиран, но не сте го използвали от поне 30 дни.</translation>
 <translation id="691026815377248078">Chromium се нуждае от достъп до Bluetooth, за да продължи
 сдвояването. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
@@ -200,16 +209,19 @@
 <translation id="6990124437352146030">Chromium се нуждае от разрешение за достъп до микрофона ви за този сайт</translation>
 <translation id="705851970750939768">Актуализиране на Chromium</translation>
 <translation id="7067091210845072982">Ако няма полезно описание за дадено изображение, Chromium ще се опита да предостави такова. За да бъдат създадени описания, съответните изображения се изпращат до Google.</translation>
+<translation id="7147279922647361552">Персонализирайте някои от най-важните настройки за поверителност на Chromium</translation>
+<translation id="718435575166326686">За този сайт Chromium се нуждае от разрешение за достъп до камерата</translation>
 <translation id="7196312274710523067">Chromium не можа да се стартира. Опитайте отново.</translation>
 <translation id="7197677400338048821">Chromium не може да провери паролите ви. Опитайте отново след 24 часа.</translation>
+<translation id="7218568399872925918">Сайтовете, които посещавате, помнят информацията ви, докато затворите Chromium</translation>
 <translation id="7223968959479464213">Диспечер на задачите – Chromium</translation>
-<translation id="731644333568559921">Актуализиране на &amp;Chromium OS</translation>
 <translation id="731795002583552498">Chromium се актуализира</translation>
 <translation id="7318036098707714271">Файлът с предпочитанията ви е повреден или невалиден. Chromium не може да възстанови настройките ви.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Нов прозорец</translation>
 <translation id="734373864078049451">Тук ще намерите посещаваните от вас места в мрежата, отметките и другите си неща в Chromium.</translation>
 <translation id="7349591376906416160">Системният ви администратор е конфигурирал Chromium да отваря <ph name="ALTERNATIVE_BROWSER_NAME" /> за достъп до <ph name="TARGET_URL_HOSTNAME" />.</translation>
+<translation id="7398989605938454041">С помощта на потребителските профили в Chromium можете да разделите нещата си в браузъра. Това улеснява разграничаването на работата и забавленията.</translation>
 <translation id="7448255348454382571">Рестартиране на Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium Dev</translation>
 <translation id="7451052299415159299">Chromium се нуждае от разрешение за достъп до камерата ви за този сайт</translation>
@@ -218,6 +230,7 @@
 <translation id="7549178288319965365">Всичко за Chromium OS</translation>
 <translation id="7561906087460245826">Да се изчистят и данните от Chromium (<ph name="URL" />)</translation>
 <translation id="7585853947355360626">Ако дадена настройка не се показва на тази страница, потърсете в <ph name="LINK_BEGIN" />настройките на Chromium OS<ph name="LINK_END" /></translation>
+<translation id="7597596667193879455">Включихте подобрената защита от Безопасно сърфиране в профила си. Сега можете да я активирате и за Chromium.</translation>
 <translation id="761356813943268536">Chromium използва камерата и микрофона ви.</translation>
 <translation id="7617377681829253106">Chromium се подобри</translation>
 <translation id="7686590090926151193">Chromium не е браузърът ви по подразбиране</translation>
@@ -229,11 +242,12 @@
 <translation id="7828947555739565424">На това устройство вече съществува потребителски профил в Chromium за този профил</translation>
 <translation id="7857220146454061152">За да получавате бъдещи актуализации на Chromium, трябва да използвате OS X 10.11 или по-нова версия. Компютърът ви работи с OS X 10.10.</translation>
 <translation id="7867198900892795913">Chromium не можа да се актуализира до най-новата версия. Това означава, че пропускате нови функции и корекции за сигурност.</translation>
+<translation id="788352880609666695">Следните профили са налице за този потребителски профил в Chromium</translation>
 <translation id="7898472181347242998">За да разберете дали устройството ви е актуално, отворете <ph name="LINK_BEGIN" />настройките на Chromium OS<ph name="LINK_END" /></translation>
-<translation id="7907774600618164274">Chromium OS не се изключи правилно.</translation>
 <translation id="7937630085815544518">Бяхте влезли в Chromium като <ph name="USER_EMAIL_ADDRESS" />. Моля, използвайте същия профил, за да влезете отново.</translation>
 <translation id="7975919845073681630">Тази инсталация на Chromium е алтернативна и не може да се зададе като браузър по подразбиране.</translation>
 <translation id="8013436988911883588">След като Chromium получи достъп, уебсайтовете ще могат да искат достъп от вас.</translation>
+<translation id="8105840573057009683">За този сайт Chromium се нуждае от разрешение за достъп до местоположението</translation>
 <translation id="81770708095080097">Chromium блокира този файл, тъй като е опасен.</translation>
 <translation id="8248265253516264921">Ако няма полезно описание за дадено изображение, Chromium ще се опита да предостави такова. За да бъдат създадени описания, съответните изображения се изпращат до Google. По всяко време можете да изключите тази функция от настройките.</translation>
 <translation id="8266560134891435528">Chromium не може да провери паролите ви, защото не сте влезли в профила си</translation>
@@ -241,6 +255,7 @@
 <translation id="8290862415967981663">Chromium блокира този файл, тъй като може да е опасен.</translation>
 <translation id="8330519371938183845">Влезте в профила си, за да синхронизирате и персонализирате Chromium на всичките си устройства</translation>
 <translation id="8340674089072921962">По-рано <ph name="USER_EMAIL_ADDRESS" /> използва Chromium</translation>
+<translation id="8357820681460164151">За да имате достъп до нещата си в браузъра Chromium на всичките си устройства, влезте в профила си и включете синхронизирането</translation>
 <translation id="8417404458978023919">{0,plural, =1{Повторно стартиране на Chromium до 1 ден}other{Повторно стартиране на Chromium до # дни}}</translation>
 <translation id="8453117565092476964">Архивът на инсталационната програма е повреден или невалиден. Моля, изтеглете отново Chromium.</translation>
 <translation id="8493179195440786826">Chromium не е актуален</translation>
@@ -252,6 +267,8 @@
 <translation id="8621669128220841554">Инсталирането не бе успешно поради неизвестна грешка. Моля, изтеглете отново Chromium.</translation>
 <translation id="8697124171261953979">То също контролира коя страница се показва при стартиране на Chromium или при търсене от полето за всичко.</translation>
 <translation id="8704119203788522458">Това е вашият Chromium</translation>
+<translation id="8713679423359107094">Когато затворите прозорците на Chromium, „бисквитките“ и данните за сайтовете автоматично се изчистват</translation>
+<translation id="8796443464227412154">Когато затворите Chromium, <ph name="BEGIN_BOLD" />ще излезете от повечето сайтове<ph name="END_BOLD" />. Ако синхронизирането е изключено, <ph name="BEGIN_BOLD" />ще излезете и от услугите на Google и Chromium<ph name="END_BOLD" />.</translation>
 <translation id="8796602469536043152">Chromium се нуждае от разрешение за достъп до камерата и микрофона ви за този сайт</translation>
 <translation id="8803635938069941624">Общи условия на Chromium OS</translation>
 <translation id="8821041990367117597">Chromium не можа да синхронизира данните ви, защото потребителското име и паролата за вход в профила ви не са актуални.</translation>
@@ -263,7 +280,6 @@
 <translation id="8974095189086268230">Chrome OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS" />софтуер с отворен код<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="8986207147630327271">Добавяте служебен потребителски профил към този браузър и предоставяте на администратора си контрол само над него.</translation>
 <translation id="9019929317751753759">За да направим Chromium по-безопасен, деактивирахме следното разширение, което липсва от <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да е било добавено без ваше знание.</translation>
-<translation id="9047197236183657400">Искате ли да преместите профила в нов потребителски профил в Chromium?</translation>
 <translation id="9089354809943900324">Chromium не е актуален</translation>
 <translation id="9093206154853821181">{0,plural, =1{Chromium ще се стартира отново след 1 час}other{Chromium ще се стартира отново след # часа}}</translation>
 <translation id="91086099826398415">Отваряне на връзката в нов &amp;раздел на Chromium</translation>
@@ -274,5 +290,6 @@
 <translation id="9214764063801632699">Система Chromium OS</translation>
 <translation id="93478295209880648">Chromium може да не функционира правилно, тъй като вече не се поддържа под Windows XP и Windows Vista</translation>
 <translation id="965162752251293939">Кой използва Chromium?</translation>
+<translation id="967427899662692980">Получете най-високото ниво на сигурност на Chromium</translation>
 <translation id="985602178874221306">Авторите на Chromium</translation>
 </translationbundle>

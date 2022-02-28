@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 
 namespace chromecast {
 
@@ -18,6 +17,10 @@ namespace chromecast {
 class ScopedTempFile {
  public:
   ScopedTempFile();
+
+  ScopedTempFile(const ScopedTempFile&) = delete;
+  ScopedTempFile& operator=(const ScopedTempFile&) = delete;
+
   ~ScopedTempFile();
 
   // Return the path to the temporary file. Note that if the underlying file has
@@ -38,8 +41,6 @@ class ScopedTempFile {
 
  private:
   base::FilePath path_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedTempFile);
 };
 
 }  // namespace chromecast

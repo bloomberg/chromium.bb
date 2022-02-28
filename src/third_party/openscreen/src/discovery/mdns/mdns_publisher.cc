@@ -305,8 +305,8 @@ void MdnsPublisher::QueueRecord(MdnsRecord record) {
   auto goodbye = CreateGoodbyeRecord(record);
   auto existing_record_it =
       std::find_if(records_to_send_.begin(), records_to_send_.end(),
-                   [&goodbye](const MdnsRecord& record) {
-                     return goodbye == CreateGoodbyeRecord(record);
+                   [&goodbye](const MdnsRecord& r) {
+                     return goodbye == CreateGoodbyeRecord(r);
                    });
 
   // If we didn't find it, simply add it to the queue. Else, only send the

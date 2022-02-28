@@ -5,6 +5,7 @@
 #include "media/capture/video/create_video_capture_device_factory.h"
 
 #include "base/command_line.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "media/base/media_switches.h"
@@ -16,6 +17,7 @@
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
 #include "media/capture/video/chromeos/public/cros_features.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
+#include "media/capture/video/linux/video_capture_device_factory_linux.h"
 #elif defined(OS_WIN)
 #include "media/capture/video/win/video_capture_device_factory_win.h"
 #elif defined(OS_MAC)
@@ -30,28 +32,23 @@ namespace media {
 
 namespace {
 
-// Returns null if the corresponding switch is off.
 std::unique_ptr<VideoCaptureDeviceFactory>
 CreateFakeVideoCaptureDeviceFactory() {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  // Use a Fake or File Video Device Factory if the command line flags are
-  // present, otherwise use the normal, platform-dependent, device factory.
-  if (command_line->HasSwitch(switches::kUseFakeDeviceForMediaStream)) {
-    if (command_line->HasSwitch(switches::kUseFileForFakeVideoCapture)) {
-      return std::make_unique<FileVideoCaptureDeviceFactory>();
-    } else {
-      std::vector<FakeVideoCaptureDeviceSettings> config;
-      FakeVideoCaptureDeviceFactory::ParseFakeDevicesConfigFromOptionsString(
-          command_line->GetSwitchValueASCII(
-              switches::kUseFakeDeviceForMediaStream),
-          &config);
-      auto result = std::make_unique<FakeVideoCaptureDeviceFactory>();
-      result->SetToCustomDevicesConfig(config);
-      return std::move(result);
-    }
+  // Use a File Video Device Factory if the command line flag is present.
+  // Otherwise, use a Fake Video Device Factory.
+  if (command_line->HasSwitch(switches::kUseFileForFakeVideoCapture)) {
+    return std::make_unique<FileVideoCaptureDeviceFactory>();
   } else {
-    return nullptr;
+    std::vector<FakeVideoCaptureDeviceSettings> config;
+    FakeVideoCaptureDeviceFactory::ParseFakeDevicesConfigFromOptionsString(
+        command_line->GetSwitchValueASCII(
+            switches::kUseFakeDeviceForMediaStream),
+        &config);
+    auto result = std::make_unique<FakeVideoCaptureDeviceFactory>();
+    result->SetToCustomDevicesConfig(config);
+    return std::move(result);
   }
 }
 
@@ -61,7 +58,9 @@ CreatePlatformSpecificVideoCaptureDeviceFactory(
 #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   return std::make_unique<VideoCaptureDeviceFactoryLinux>(ui_task_runner);
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
-  return std::make_unique<VideoCaptureDeviceFactoryChromeOS>(ui_task_runner);
+  if (base::SysInfo::IsRunningOnChromeOS())
+    return std::make_unique<VideoCaptureDeviceFactoryChromeOS>(ui_task_runner);
+  return std::make_unique<VideoCaptureDeviceFactoryLinux>(ui_task_runner);
 #elif defined(OS_WIN)
   return std::make_unique<VideoCaptureDeviceFactoryWin>();
 #elif defined(OS_MAC)
@@ -78,11 +77,16 @@ CreatePlatformSpecificVideoCaptureDeviceFactory(
 
 }  // anonymous namespace
 
+bool ShouldUseFakeVideoCaptureDeviceFactory() {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(switches::kUseFakeDeviceForMediaStream);
+}
+
 std::unique_ptr<VideoCaptureDeviceFactory> CreateVideoCaptureDeviceFactory(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  auto fake_device_factory = CreateFakeVideoCaptureDeviceFactory();
-  if (fake_device_factory) {
-    return fake_device_factory;
+  if (ShouldUseFakeVideoCaptureDeviceFactory()) {
+    return CreateFakeVideoCaptureDeviceFactory();
   } else {
     // |ui_task_runner| is needed for the Linux ChromeOS factory to retrieve
     // screen rotations.

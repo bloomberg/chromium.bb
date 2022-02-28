@@ -484,34 +484,6 @@ PATH_SPECIFIC_ALLOWLISTED_LICENSES = {
         'UNKNOWN',
     ],
 
-    # New BSD license. http://crbug.com/98455
-    'tools/swarming_client/third_party/google': [
-        'UNKNOWN',
-    ],
-
-    # https://github.com/google/google-api-python-client/issues/216
-    # Apache v2.0.
-    'tools/swarming_client/third_party/googleapiclient': [
-        'UNKNOWN',
-    ],
-
-    # http://crbug.com/334668
-    # https://github.com/jcgregorio/httplib2/issues/307
-    # MIT license.
-    'tools/swarming_client/third_party/httplib2': [
-        'UNKNOWN',
-    ],
-
-    # http://crbug.com/471372
-    # BSD
-    'tools/swarming_client/third_party/pyasn1': [
-        'UNKNOWN',
-    ],
-
-    # https://github.com/kennethreitz/requests/issues/1610
-    'tools/swarming_client/third_party/requests': [
-        'UNKNOWN',
-    ],
     'third_party/minizip': [
         'UNKNOWN',
     ],
@@ -532,9 +504,6 @@ PATH_SPECIFIC_ALLOWLISTED_LICENSES = {
     ],
     'third_party/tcmalloc': [
         'UNKNOWN',  # http://crbug.com/98589
-    ],
-    'third_party/tlslite': [
-        'UNKNOWN',
     ],
     # MIT license but some files contain no licensing info. e.g. autogen.sh.
     # Files missing licensing info are not shipped.
@@ -673,6 +642,7 @@ def check_licenses(options, args):
   errors = []
 
   for line in stdout.splitlines():
+    line = line.decode('utf-8')
     filename, license = line.split(':', 1)
     filename = os.path.relpath(filename.strip(), options.base_directory)
 

@@ -22,6 +22,7 @@
 #include "quic/core/quic_utils.h"
 #include "quic/core/quic_versions.h"
 #include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
 
 namespace quic {
 
@@ -61,7 +62,8 @@ enum TransportParameters::TransportParameterId : uint64_t {
   kGoogleQuicVersion =
       0x4752,  // Used to transmit version and supported_versions.
 
-  kMinAckDelay = 0xDE1A,  // draft-iyengar-quic-delayed-ack.
+  kMinAckDelay = 0xDE1A,           // draft-iyengar-quic-delayed-ack.
+  kVersionInformation = 0xFF73DB,  // draft-ietf-quic-version-negotiation.
 };
 
 namespace {
@@ -128,6 +130,8 @@ std::string TransportParameterIdToString(
       return "google-version";
     case TransportParameters::kMinAckDelay:
       return "min_ack_delay_us";
+    case TransportParameters::kVersionInformation:
+      return "version_information";
   }
   return absl::StrCat("Unknown(", param_id, ")");
 }
@@ -155,11 +159,15 @@ bool TransportParameterIdIsKnown(
     case TransportParameters::kMaxDatagramFrameSize:
     case TransportParameters::kInitialRoundTripTime:
     case TransportParameters::kGoogleConnectionOptions:
-    case TransportParameters::kGoogleUserAgentId:
-    case TransportParameters::kGoogleKeyUpdateNotYetSupported:
     case TransportParameters::kGoogleQuicVersion:
     case TransportParameters::kMinAckDelay:
       return true;
+    case TransportParameters::kVersionInformation:
+      return GetQuicReloadableFlag(quic_version_information);
+    case TransportParameters::kGoogleUserAgentId:
+      return !GetQuicReloadableFlag(quic_ignore_user_agent_transport_parameter);
+    case TransportParameters::kGoogleKeyUpdateNotYetSupported:
+      return !GetQuicReloadableFlag(quic_ignore_key_update_not_yet_supported);
   }
   return false;
 }
@@ -306,6 +314,70 @@ std::string TransportParameters::PreferredAddress::ToString() const {
          "]";
 }
 
+TransportParameters::LegacyVersionInformation::LegacyVersionInformation()
+    : version(0) {}
+
+bool TransportParameters::LegacyVersionInformation::operator==(
+    const LegacyVersionInformation& rhs) const {
+  return version == rhs.version && supported_versions == rhs.supported_versions;
+}
+
+bool TransportParameters::LegacyVersionInformation::operator!=(
+    const LegacyVersionInformation& rhs) const {
+  return !(*this == rhs);
+}
+
+std::string TransportParameters::LegacyVersionInformation::ToString() const {
+  std::string rv =
+      absl::StrCat("legacy[version ", QuicVersionLabelToString(version));
+  if (!supported_versions.empty()) {
+    absl::StrAppend(&rv,
+                    " supported_versions " +
+                        QuicVersionLabelVectorToString(supported_versions));
+  }
+  absl::StrAppend(&rv, "]");
+  return rv;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const TransportParameters::LegacyVersionInformation&
+                             legacy_version_information) {
+  os << legacy_version_information.ToString();
+  return os;
+}
+
+TransportParameters::VersionInformation::VersionInformation()
+    : chosen_version(0) {}
+
+bool TransportParameters::VersionInformation::operator==(
+    const VersionInformation& rhs) const {
+  return chosen_version == rhs.chosen_version &&
+         other_versions == rhs.other_versions;
+}
+
+bool TransportParameters::VersionInformation::operator!=(
+    const VersionInformation& rhs) const {
+  return !(*this == rhs);
+}
+
+std::string TransportParameters::VersionInformation::ToString() const {
+  std::string rv = absl::StrCat("[chosen_version ",
+                                QuicVersionLabelToString(chosen_version));
+  if (!other_versions.empty()) {
+    absl::StrAppend(&rv, " other_versions " +
+                             QuicVersionLabelVectorToString(other_versions));
+  }
+  absl::StrAppend(&rv, "]");
+  return rv;
+}
+
+std::ostream& operator<<(
+    std::ostream& os,
+    const TransportParameters::VersionInformation& version_information) {
+  os << version_information.ToString();
+  return os;
+}
+
 std::ostream& operator<<(std::ostream& os, const TransportParameters& params) {
   os << params.ToString();
   return os;
@@ -318,12 +390,11 @@ std::string TransportParameters::ToString() const {
   } else {
     rv += "Client";
   }
-  if (version != 0) {
-    rv += " version " + QuicVersionLabelToString(version);
+  if (legacy_version_information.has_value()) {
+    rv += " " + legacy_version_information.value().ToString();
   }
-  if (!supported_versions.empty()) {
-    rv += " supported_versions " +
-          QuicVersionLabelVectorToString(supported_versions);
+  if (version_information.has_value()) {
+    rv += " " + version_information.value().ToString();
   }
   if (original_destination_connection_id.has_value()) {
     rv += " " + TransportParameterIdToString(kOriginalDestinationConnectionId) +
@@ -400,12 +471,9 @@ std::string TransportParameters::ToString() const {
 }
 
 TransportParameters::TransportParameters()
-    : version(0),
-      max_idle_timeout_ms(kMaxIdleTimeout),
-      max_udp_payload_size(kMaxPacketSize,
-                           kDefaultMaxPacketSizeTransportParam,
-                           kMinMaxPacketSizeTransportParam,
-                           kVarInt62MaxValue),
+    : max_idle_timeout_ms(kMaxIdleTimeout),
+      max_udp_payload_size(kMaxPacketSize, kDefaultMaxPacketSizeTransportParam,
+                           kMinMaxPacketSizeTransportParam, kVarInt62MaxValue),
       initial_max_data(kInitialMaxData),
       initial_max_stream_data_bidi_local(kInitialMaxStreamDataBidiLocal),
       initial_max_stream_data_bidi_remote(kInitialMaxStreamDataBidiRemote),
@@ -413,16 +481,11 @@ TransportParameters::TransportParameters()
       initial_max_streams_bidi(kInitialMaxStreamsBidi),
       initial_max_streams_uni(kInitialMaxStreamsUni),
       ack_delay_exponent(kAckDelayExponent,
-                         kDefaultAckDelayExponentTransportParam,
-                         0,
+                         kDefaultAckDelayExponentTransportParam, 0,
                          kMaxAckDelayExponentTransportParam),
-      max_ack_delay(kMaxAckDelay,
-                    kDefaultMaxAckDelayTransportParam,
-                    0,
+      max_ack_delay(kMaxAckDelay, kDefaultMaxAckDelayTransportParam, 0,
                     kMaxMaxAckDelayTransportParam),
-      min_ack_delay_us(kMinAckDelay,
-                       0,
-                       0,
+      min_ack_delay_us(kMinAckDelay, 0, 0,
                        kMaxMaxAckDelayTransportParam * kNumMicrosPerMilli),
       disable_active_migration(false),
       active_connection_id_limit(kActiveConnectionIdLimit,
@@ -440,8 +503,8 @@ TransportParameters::TransportParameters()
 
 TransportParameters::TransportParameters(const TransportParameters& other)
     : perspective(other.perspective),
-      version(other.version),
-      supported_versions(other.supported_versions),
+      legacy_version_information(other.legacy_version_information),
+      version_information(other.version_information),
       original_destination_connection_id(
           other.original_destination_connection_id),
       max_idle_timeout_ms(other.max_idle_timeout_ms),
@@ -475,8 +538,9 @@ TransportParameters::TransportParameters(const TransportParameters& other)
 }
 
 bool TransportParameters::operator==(const TransportParameters& rhs) const {
-  if (!(perspective == rhs.perspective && version == rhs.version &&
-        supported_versions == rhs.supported_versions &&
+  if (!(perspective == rhs.perspective &&
+        legacy_version_information == rhs.legacy_version_information &&
+        version_information == rhs.version_information &&
         original_destination_connection_id ==
             rhs.original_destination_connection_id &&
         max_idle_timeout_ms.value() == rhs.max_idle_timeout_ms.value() &&
@@ -586,6 +650,29 @@ bool TransportParameters::AreValid(std::string* error_details) const {
     *error_details = "Server cannot send user agent ID";
     return false;
   }
+  if (version_information.has_value()) {
+    const QuicVersionLabel& chosen_version =
+        version_information.value().chosen_version;
+    const QuicVersionLabelVector& other_versions =
+        version_information.value().other_versions;
+    if (chosen_version == 0) {
+      *error_details = "Invalid chosen version";
+      return false;
+    }
+    if (perspective == Perspective::IS_CLIENT &&
+        std::find(other_versions.begin(), other_versions.end(),
+                  chosen_version) == other_versions.end()) {
+      // When sent by the client, chosen_version needs to be present in
+      // other_versions because other_versions lists the compatible versions and
+      // the chosen version is part of that list. When sent by the server,
+      // other_version contains the list of fully-deployed versions which is
+      // generally equal to the list of supported versions but can slightly
+      // differ during removal of versions across a server fleet. See
+      // draft-ietf-quic-version-negotiation for details.
+      *error_details = "Client chosen version not in other versions";
+      return false;
+    }
+  }
   const bool ok =
       max_idle_timeout_ms.IsValid() && max_udp_payload_size.IsValid() &&
       initial_max_data.IsValid() &&
@@ -609,14 +696,26 @@ bool SerializeTransportParameters(ParsedQuicVersion /*version*/,
                                   std::vector<uint8_t>* out) {
   std::string error_details;
   if (!in.AreValid(&error_details)) {
-    QUIC_BUG(quic_bug_10743_5)
+    QUIC_BUG(invalid transport parameters)
         << "Not serializing invalid transport parameters: " << error_details;
     return false;
   }
-  if (in.version == 0 || (in.perspective == Perspective::IS_SERVER &&
-                          in.supported_versions.empty())) {
-    QUIC_BUG(quic_bug_10743_6) << "Refusing to serialize without versions";
+  if (!in.legacy_version_information.has_value() ||
+      in.legacy_version_information.value().version == 0 ||
+      (in.perspective == Perspective::IS_SERVER &&
+       in.legacy_version_information.value().supported_versions.empty())) {
+    QUIC_BUG(missing versions) << "Refusing to serialize without versions";
     return false;
+  }
+  TransportParameters::ParameterMap custom_parameters = in.custom_parameters;
+  for (const auto& kv : custom_parameters) {
+    if (kv.first % 31 == 27) {
+      // See the "Reserved Transport Parameters" section of RFC 9000.
+      QUIC_BUG(custom_parameters with GREASE)
+          << "Serializing custom_parameters with GREASE ID " << kv.first
+          << " is not allowed";
+      return false;
+    }
   }
 
   // Maximum length of the GREASE transport parameter (see below).
@@ -637,8 +736,6 @@ bool SerializeTransportParameters(ParsedQuicVersion /*version*/,
       kTypeAndValueLength + 4 /*IPv4 address */ + 2 /* IPv4 port */ +
       16 /* IPv6 address */ + 1 /* Connection ID length */ +
       255 /* maximum connection ID length */ + 16 /* stateless reset token */;
-  static constexpr size_t kGreaseParameterLength =
-      kTypeAndValueLength + kMaxGreaseLength;
   static constexpr size_t kKnownTransportParamLength =
       kConnectionIdParameterLength +      // original_destination_connection_id
       kIntegerParameterLength +           // max_idle_timeout
@@ -663,8 +760,35 @@ bool SerializeTransportParameters(ParsedQuicVersion /*version*/,
       kTypeAndValueLength +               // google_connection_options
       kTypeAndValueLength +               // user_agent_id
       kTypeAndValueLength +               // key_update_not_yet_supported
-      kTypeAndValueLength +               // google-version
-      kGreaseParameterLength;             // GREASE
+      kTypeAndValueLength;                // google-version
+
+  std::vector<TransportParameters::TransportParameterId> parameter_ids = {
+      TransportParameters::kOriginalDestinationConnectionId,
+      TransportParameters::kMaxIdleTimeout,
+      TransportParameters::kStatelessResetToken,
+      TransportParameters::kMaxPacketSize,
+      TransportParameters::kInitialMaxData,
+      TransportParameters::kInitialMaxStreamDataBidiLocal,
+      TransportParameters::kInitialMaxStreamDataBidiRemote,
+      TransportParameters::kInitialMaxStreamDataUni,
+      TransportParameters::kInitialMaxStreamsBidi,
+      TransportParameters::kInitialMaxStreamsUni,
+      TransportParameters::kAckDelayExponent,
+      TransportParameters::kMaxAckDelay,
+      TransportParameters::kMinAckDelay,
+      TransportParameters::kActiveConnectionIdLimit,
+      TransportParameters::kMaxDatagramFrameSize,
+      TransportParameters::kInitialRoundTripTime,
+      TransportParameters::kDisableActiveMigration,
+      TransportParameters::kPreferredAddress,
+      TransportParameters::kInitialSourceConnectionId,
+      TransportParameters::kRetrySourceConnectionId,
+      TransportParameters::kGoogleConnectionOptions,
+      TransportParameters::kGoogleUserAgentId,
+      TransportParameters::kGoogleKeyUpdateNotYetSupported,
+      TransportParameters::kGoogleQuicVersion,
+      TransportParameters::kVersionInformation,
+  };
 
   size_t max_transport_param_length = kKnownTransportParamLength;
   // google_connection_options.
@@ -677,272 +801,444 @@ bool SerializeTransportParameters(ParsedQuicVersion /*version*/,
     max_transport_param_length += in.user_agent_id.value().length();
   }
   // Google-specific version extension.
-  max_transport_param_length +=
-      sizeof(in.version) + 1 /* versions length */ +
-      in.supported_versions.size() * sizeof(QuicVersionLabel);
+  if (in.legacy_version_information.has_value()) {
+    max_transport_param_length +=
+        sizeof(in.legacy_version_information.value().version) +
+        1 /* versions length */ +
+        in.legacy_version_information.value().supported_versions.size() *
+            sizeof(QuicVersionLabel);
+  }
+  // version_information.
+  if (in.version_information.has_value()) {
+    max_transport_param_length +=
+        sizeof(in.version_information.value().chosen_version) +
+        // Add one for the added GREASE version.
+        (in.version_information.value().other_versions.size() + 1) *
+            sizeof(QuicVersionLabel);
+  }
+
+  // Add a random GREASE transport parameter, as defined in the
+  // "Reserved Transport Parameters" section of RFC 9000.
+  // This forces receivers to support unexpected input.
+  QuicRandom* random = QuicRandom::GetInstance();
+  // Transport parameter identifiers are 62 bits long so we need to
+  // ensure that the output of the computation below fits in 62 bits.
+  uint64_t grease_id64 = random->RandUint64() % ((1ULL << 62) - 31);
+  // Make sure grease_id % 31 == 27. Note that this is not uniformely
+  // distributed but is acceptable since no security depends on this
+  // randomness.
+  grease_id64 = (grease_id64 / 31) * 31 + 27;
+  TransportParameters::TransportParameterId grease_id =
+      static_cast<TransportParameters::TransportParameterId>(grease_id64);
+  const size_t grease_length = random->RandUint64() % kMaxGreaseLength;
+  QUICHE_DCHECK_GE(kMaxGreaseLength, grease_length);
+  char grease_contents[kMaxGreaseLength];
+  random->RandBytes(grease_contents, grease_length);
+  custom_parameters[grease_id] = std::string(grease_contents, grease_length);
+
   // Custom parameters.
-  for (const auto& kv : in.custom_parameters) {
+  for (const auto& kv : custom_parameters) {
     max_transport_param_length += kTypeAndValueLength + kv.second.length();
+    parameter_ids.push_back(kv.first);
+  }
+
+  // Randomize order of sent transport parameters by walking the array
+  // backwards and swapping each element with a random earlier one.
+  for (size_t i = parameter_ids.size() - 1; i > 0; i--) {
+    std::swap(parameter_ids[i],
+              parameter_ids[random->InsecureRandUint64() % (i + 1)]);
   }
 
   out->resize(max_transport_param_length);
   QuicDataWriter writer(out->size(), reinterpret_cast<char*>(out->data()));
 
-  // original_destination_connection_id
-  if (in.original_destination_connection_id.has_value()) {
-    QUICHE_DCHECK_EQ(Perspective::IS_SERVER, in.perspective);
-    QuicConnectionId original_destination_connection_id =
-        in.original_destination_connection_id.value();
-    if (!writer.WriteVarInt62(
-            TransportParameters::kOriginalDestinationConnectionId) ||
-        !writer.WriteStringPieceVarInt62(
-            absl::string_view(original_destination_connection_id.data(),
-                              original_destination_connection_id.length()))) {
-      QUIC_BUG(quic_bug_10743_7)
-          << "Failed to write original_destination_connection_id "
-          << original_destination_connection_id << " for " << in;
-      return false;
-    }
-  }
-
-  if (!in.max_idle_timeout_ms.Write(&writer)) {
-    QUIC_BUG(quic_bug_10743_8) << "Failed to write idle_timeout for " << in;
-    return false;
-  }
-
-  // stateless_reset_token
-  if (!in.stateless_reset_token.empty()) {
-    QUICHE_DCHECK_EQ(kStatelessResetTokenLength,
-                     in.stateless_reset_token.size());
-    QUICHE_DCHECK_EQ(Perspective::IS_SERVER, in.perspective);
-    if (!writer.WriteVarInt62(TransportParameters::kStatelessResetToken) ||
-        !writer.WriteStringPieceVarInt62(absl::string_view(
-            reinterpret_cast<const char*>(in.stateless_reset_token.data()),
-            in.stateless_reset_token.size()))) {
-      QUIC_BUG(quic_bug_10743_9)
-          << "Failed to write stateless_reset_token of length "
-          << in.stateless_reset_token.size() << " for " << in;
-      return false;
-    }
-  }
-
-  if (!in.max_udp_payload_size.Write(&writer) ||
-      !in.initial_max_data.Write(&writer) ||
-      !in.initial_max_stream_data_bidi_local.Write(&writer) ||
-      !in.initial_max_stream_data_bidi_remote.Write(&writer) ||
-      !in.initial_max_stream_data_uni.Write(&writer) ||
-      !in.initial_max_streams_bidi.Write(&writer) ||
-      !in.initial_max_streams_uni.Write(&writer) ||
-      !in.ack_delay_exponent.Write(&writer) ||
-      !in.max_ack_delay.Write(&writer) || !in.min_ack_delay_us.Write(&writer) ||
-      !in.active_connection_id_limit.Write(&writer) ||
-      !in.max_datagram_frame_size.Write(&writer) ||
-      !in.initial_round_trip_time_us.Write(&writer)) {
-    QUIC_BUG(quic_bug_10743_10) << "Failed to write integers for " << in;
-    return false;
-  }
-
-  // disable_active_migration
-  if (in.disable_active_migration) {
-    if (!writer.WriteVarInt62(TransportParameters::kDisableActiveMigration) ||
-        !writer.WriteVarInt62(/* transport parameter length */ 0)) {
-      QUIC_BUG(quic_bug_10743_11)
-          << "Failed to write disable_active_migration for " << in;
-      return false;
-    }
-  }
-
-  // preferred_address
-  if (in.preferred_address) {
-    std::string v4_address_bytes =
-        in.preferred_address->ipv4_socket_address.host().ToPackedString();
-    std::string v6_address_bytes =
-        in.preferred_address->ipv6_socket_address.host().ToPackedString();
-    if (v4_address_bytes.length() != 4 || v6_address_bytes.length() != 16 ||
-        in.preferred_address->stateless_reset_token.size() !=
-            kStatelessResetTokenLength) {
-      QUIC_BUG(quic_bug_10743_12) << "Bad lengths " << *in.preferred_address;
-      return false;
-    }
-    const uint64_t preferred_address_length =
-        v4_address_bytes.length() + /* IPv4 port */ sizeof(uint16_t) +
-        v6_address_bytes.length() + /* IPv6 port */ sizeof(uint16_t) +
-        /* connection ID length byte */ sizeof(uint8_t) +
-        in.preferred_address->connection_id.length() +
-        in.preferred_address->stateless_reset_token.size();
-    if (!writer.WriteVarInt62(TransportParameters::kPreferredAddress) ||
-        !writer.WriteVarInt62(
-            /* transport parameter length */ preferred_address_length) ||
-        !writer.WriteStringPiece(v4_address_bytes) ||
-        !writer.WriteUInt16(in.preferred_address->ipv4_socket_address.port()) ||
-        !writer.WriteStringPiece(v6_address_bytes) ||
-        !writer.WriteUInt16(in.preferred_address->ipv6_socket_address.port()) ||
-        !writer.WriteUInt8(in.preferred_address->connection_id.length()) ||
-        !writer.WriteBytes(in.preferred_address->connection_id.data(),
-                           in.preferred_address->connection_id.length()) ||
-        !writer.WriteBytes(
-            in.preferred_address->stateless_reset_token.data(),
-            in.preferred_address->stateless_reset_token.size())) {
-      QUIC_BUG(quic_bug_10743_13)
-          << "Failed to write preferred_address for " << in;
-      return false;
-    }
-  }
-
-  // initial_source_connection_id
-  if (in.initial_source_connection_id.has_value()) {
-    QuicConnectionId initial_source_connection_id =
-        in.initial_source_connection_id.value();
-    if (!writer.WriteVarInt62(
-            TransportParameters::kInitialSourceConnectionId) ||
-        !writer.WriteStringPieceVarInt62(
-            absl::string_view(initial_source_connection_id.data(),
-                              initial_source_connection_id.length()))) {
-      QUIC_BUG(quic_bug_10743_14)
-          << "Failed to write initial_source_connection_id "
-          << initial_source_connection_id << " for " << in;
-      return false;
-    }
-  }
-
-  // retry_source_connection_id
-  if (in.retry_source_connection_id.has_value()) {
-    QUICHE_DCHECK_EQ(Perspective::IS_SERVER, in.perspective);
-    QuicConnectionId retry_source_connection_id =
-        in.retry_source_connection_id.value();
-    if (!writer.WriteVarInt62(TransportParameters::kRetrySourceConnectionId) ||
-        !writer.WriteStringPieceVarInt62(
-            absl::string_view(retry_source_connection_id.data(),
-                              retry_source_connection_id.length()))) {
-      QUIC_BUG(quic_bug_10743_15)
-          << "Failed to write retry_source_connection_id "
-          << retry_source_connection_id << " for " << in;
-      return false;
-    }
-  }
-
-  // Google-specific connection options.
-  if (in.google_connection_options.has_value()) {
-    static_assert(sizeof(in.google_connection_options.value().front()) == 4,
-                  "bad size");
-    uint64_t connection_options_length =
-        in.google_connection_options.value().size() * 4;
-    if (!writer.WriteVarInt62(TransportParameters::kGoogleConnectionOptions) ||
-        !writer.WriteVarInt62(
-            /* transport parameter length */ connection_options_length)) {
-      QUIC_BUG(quic_bug_10743_16)
-          << "Failed to write google_connection_options of length "
-          << connection_options_length << " for " << in;
-      return false;
-    }
-    for (const QuicTag& connection_option :
-         in.google_connection_options.value()) {
-      if (!writer.WriteTag(connection_option)) {
-        QUIC_BUG(quic_bug_10743_17)
-            << "Failed to write google_connection_option "
-            << QuicTagToString(connection_option) << " for " << in;
-        return false;
-      }
-    }
-  }
-
-  // Google-specific user agent identifier.
-  if (in.user_agent_id.has_value()) {
-    if (!writer.WriteVarInt62(TransportParameters::kGoogleUserAgentId) ||
-        !writer.WriteStringPieceVarInt62(in.user_agent_id.value())) {
-      QUIC_BUG(quic_bug_10743_18)
-          << "Failed to write Google user agent ID \""
-          << in.user_agent_id.value() << "\" for " << in;
-      return false;
-    }
-  }
-
-  // Google-specific indicator for key update not yet supported.
-  if (in.key_update_not_yet_supported) {
-    if (!writer.WriteVarInt62(
-            TransportParameters::kGoogleKeyUpdateNotYetSupported) ||
-        !writer.WriteVarInt62(/* transport parameter length */ 0)) {
-      QUIC_BUG(quic_bug_10743_19)
-          << "Failed to write key_update_not_yet_supported for " << in;
-      return false;
-    }
-  }
-
-  // Google-specific version extension.
-  static_assert(sizeof(QuicVersionLabel) == sizeof(uint32_t), "bad length");
-  uint64_t google_version_length = sizeof(in.version);
-  if (in.perspective == Perspective::IS_SERVER) {
-    google_version_length +=
-        /* versions length */ sizeof(uint8_t) +
-        sizeof(QuicVersionLabel) * in.supported_versions.size();
-  }
-  if (!writer.WriteVarInt62(TransportParameters::kGoogleQuicVersion) ||
-      !writer.WriteVarInt62(
-          /* transport parameter length */ google_version_length) ||
-      !writer.WriteUInt32(in.version)) {
-    QUIC_BUG(quic_bug_10743_20)
-        << "Failed to write Google version extension for " << in;
-    return false;
-  }
-  if (in.perspective == Perspective::IS_SERVER) {
-    if (!writer.WriteUInt8(sizeof(QuicVersionLabel) *
-                           in.supported_versions.size())) {
-      QUIC_BUG(quic_bug_10743_21)
-          << "Failed to write versions length for " << in;
-      return false;
-    }
-    for (QuicVersionLabel version_label : in.supported_versions) {
-      if (!writer.WriteUInt32(version_label)) {
-        QUIC_BUG(quic_bug_10743_22)
-            << "Failed to write supported version for " << in;
-        return false;
-      }
-    }
-  }
-
-  for (const auto& kv : in.custom_parameters) {
-    const TransportParameters::TransportParameterId param_id = kv.first;
-    if (param_id % 31 == 27) {
-      // See the "Reserved Transport Parameters" section of
-      // draft-ietf-quic-transport.
-      QUIC_BUG(quic_bug_10743_23)
-          << "Serializing custom_parameters with GREASE ID " << param_id
-          << " is not allowed";
-      return false;
-    }
-    if (!writer.WriteVarInt62(param_id) ||
-        !writer.WriteStringPieceVarInt62(kv.second)) {
-      QUIC_BUG(quic_bug_10743_24)
-          << "Failed to write custom parameter " << param_id;
-      return false;
-    }
-  }
-
-  {
-    // Add a random GREASE transport parameter, as defined in the
-    // "Reserved Transport Parameters" section of draft-ietf-quic-transport.
-    // https://quicwg.org/base-drafts/draft-ietf-quic-transport.html
-    // This forces receivers to support unexpected input.
-    QuicRandom* random = QuicRandom::GetInstance();
-    // Transport parameter identifiers are 62 bits long so we need to ensure
-    // that the output of the computation below fits in 62 bits.
-    uint64_t grease_id64 = random->RandUint64() % ((1ULL << 62) - 31);
-    // Make sure grease_id % 31 == 27. Note that this is not uniformely
-    // distributed but is acceptable since no security depends on this
-    // randomness.
-    grease_id64 = (grease_id64 / 31) * 31 + 27;
-    TransportParameters::TransportParameterId grease_id =
-        static_cast<TransportParameters::TransportParameterId>(grease_id64);
-    const size_t grease_length = random->RandUint64() % kMaxGreaseLength;
-    QUICHE_DCHECK_GE(kMaxGreaseLength, grease_length);
-    char grease_contents[kMaxGreaseLength];
-    random->RandBytes(grease_contents, grease_length);
-    if (!writer.WriteVarInt62(grease_id) ||
-        !writer.WriteStringPieceVarInt62(
-            absl::string_view(grease_contents, grease_length))) {
-      QUIC_BUG(quic_bug_10743_25) << "Failed to write GREASE parameter "
-                                  << TransportParameterIdToString(grease_id);
-      return false;
+  for (TransportParameters::TransportParameterId parameter_id : parameter_ids) {
+    switch (parameter_id) {
+      // original_destination_connection_id
+      case TransportParameters::kOriginalDestinationConnectionId: {
+        if (in.original_destination_connection_id.has_value()) {
+          QUICHE_DCHECK_EQ(Perspective::IS_SERVER, in.perspective);
+          QuicConnectionId original_destination_connection_id =
+              in.original_destination_connection_id.value();
+          if (!writer.WriteVarInt62(
+                  TransportParameters::kOriginalDestinationConnectionId) ||
+              !writer.WriteStringPieceVarInt62(absl::string_view(
+                  original_destination_connection_id.data(),
+                  original_destination_connection_id.length()))) {
+            QUIC_BUG(Failed to write original_destination_connection_id)
+                << "Failed to write original_destination_connection_id "
+                << original_destination_connection_id << " for " << in;
+            return false;
+          }
+        }
+      } break;
+      // max_idle_timeout
+      case TransportParameters::kMaxIdleTimeout: {
+        if (!in.max_idle_timeout_ms.Write(&writer)) {
+          QUIC_BUG(Failed to write idle_timeout)
+              << "Failed to write idle_timeout for " << in;
+          return false;
+        }
+      } break;
+      // stateless_reset_token
+      case TransportParameters::kStatelessResetToken: {
+        if (!in.stateless_reset_token.empty()) {
+          QUICHE_DCHECK_EQ(kStatelessResetTokenLength,
+                           in.stateless_reset_token.size());
+          QUICHE_DCHECK_EQ(Perspective::IS_SERVER, in.perspective);
+          if (!writer.WriteVarInt62(
+                  TransportParameters::kStatelessResetToken) ||
+              !writer.WriteStringPieceVarInt62(
+                  absl::string_view(reinterpret_cast<const char*>(
+                                        in.stateless_reset_token.data()),
+                                    in.stateless_reset_token.size()))) {
+            QUIC_BUG(Failed to write stateless_reset_token)
+                << "Failed to write stateless_reset_token of length "
+                << in.stateless_reset_token.size() << " for " << in;
+            return false;
+          }
+        }
+      } break;
+      // max_udp_payload_size
+      case TransportParameters::kMaxPacketSize: {
+        if (!in.max_udp_payload_size.Write(&writer)) {
+          QUIC_BUG(Failed to write max_udp_payload_size)
+              << "Failed to write max_udp_payload_size for " << in;
+          return false;
+        }
+      } break;
+      // initial_max_data
+      case TransportParameters::kInitialMaxData: {
+        if (!in.initial_max_data.Write(&writer)) {
+          QUIC_BUG(Failed to write initial_max_data)
+              << "Failed to write initial_max_data for " << in;
+          return false;
+        }
+      } break;
+      // initial_max_stream_data_bidi_local
+      case TransportParameters::kInitialMaxStreamDataBidiLocal: {
+        if (!in.initial_max_stream_data_bidi_local.Write(&writer)) {
+          QUIC_BUG(Failed to write initial_max_stream_data_bidi_local)
+              << "Failed to write initial_max_stream_data_bidi_local for "
+              << in;
+          return false;
+        }
+      } break;
+      // initial_max_stream_data_bidi_remote
+      case TransportParameters::kInitialMaxStreamDataBidiRemote: {
+        if (!in.initial_max_stream_data_bidi_remote.Write(&writer)) {
+          QUIC_BUG(Failed to write initial_max_stream_data_bidi_remote)
+              << "Failed to write initial_max_stream_data_bidi_remote for "
+              << in;
+          return false;
+        }
+      } break;
+      // initial_max_stream_data_uni
+      case TransportParameters::kInitialMaxStreamDataUni: {
+        if (!in.initial_max_stream_data_uni.Write(&writer)) {
+          QUIC_BUG(Failed to write initial_max_stream_data_uni)
+              << "Failed to write initial_max_stream_data_uni for " << in;
+          return false;
+        }
+      } break;
+      // initial_max_streams_bidi
+      case TransportParameters::kInitialMaxStreamsBidi: {
+        if (!in.initial_max_streams_bidi.Write(&writer)) {
+          QUIC_BUG(Failed to write initial_max_streams_bidi)
+              << "Failed to write initial_max_streams_bidi for " << in;
+          return false;
+        }
+      } break;
+      // initial_max_streams_uni
+      case TransportParameters::kInitialMaxStreamsUni: {
+        if (!in.initial_max_streams_uni.Write(&writer)) {
+          QUIC_BUG(Failed to write initial_max_streams_uni)
+              << "Failed to write initial_max_streams_uni for " << in;
+          return false;
+        }
+      } break;
+      // ack_delay_exponent
+      case TransportParameters::kAckDelayExponent: {
+        if (!in.ack_delay_exponent.Write(&writer)) {
+          QUIC_BUG(Failed to write ack_delay_exponent)
+              << "Failed to write ack_delay_exponent for " << in;
+          return false;
+        }
+      } break;
+      // max_ack_delay
+      case TransportParameters::kMaxAckDelay: {
+        if (!in.max_ack_delay.Write(&writer)) {
+          QUIC_BUG(Failed to write max_ack_delay)
+              << "Failed to write max_ack_delay for " << in;
+          return false;
+        }
+      } break;
+      // min_ack_delay_us
+      case TransportParameters::kMinAckDelay: {
+        if (!in.min_ack_delay_us.Write(&writer)) {
+          QUIC_BUG(Failed to write min_ack_delay_us)
+              << "Failed to write min_ack_delay_us for " << in;
+          return false;
+        }
+      } break;
+      // active_connection_id_limit
+      case TransportParameters::kActiveConnectionIdLimit: {
+        if (!in.active_connection_id_limit.Write(&writer)) {
+          QUIC_BUG(Failed to write active_connection_id_limit)
+              << "Failed to write active_connection_id_limit for " << in;
+          return false;
+        }
+      } break;
+      // max_datagram_frame_size
+      case TransportParameters::kMaxDatagramFrameSize: {
+        if (!in.max_datagram_frame_size.Write(&writer)) {
+          QUIC_BUG(Failed to write max_datagram_frame_size)
+              << "Failed to write max_datagram_frame_size for " << in;
+          return false;
+        }
+      } break;
+      // initial_round_trip_time_us
+      case TransportParameters::kInitialRoundTripTime: {
+        if (!in.initial_round_trip_time_us.Write(&writer)) {
+          QUIC_BUG(Failed to write initial_round_trip_time_us)
+              << "Failed to write initial_round_trip_time_us for " << in;
+          return false;
+        }
+      } break;
+      // disable_active_migration
+      case TransportParameters::kDisableActiveMigration: {
+        if (in.disable_active_migration) {
+          if (!writer.WriteVarInt62(
+                  TransportParameters::kDisableActiveMigration) ||
+              !writer.WriteVarInt62(/* transport parameter length */ 0)) {
+            QUIC_BUG(Failed to write disable_active_migration)
+                << "Failed to write disable_active_migration for " << in;
+            return false;
+          }
+        }
+      } break;
+      // preferred_address
+      case TransportParameters::kPreferredAddress: {
+        if (in.preferred_address) {
+          std::string v4_address_bytes =
+              in.preferred_address->ipv4_socket_address.host().ToPackedString();
+          std::string v6_address_bytes =
+              in.preferred_address->ipv6_socket_address.host().ToPackedString();
+          if (v4_address_bytes.length() != 4 ||
+              v6_address_bytes.length() != 16 ||
+              in.preferred_address->stateless_reset_token.size() !=
+                  kStatelessResetTokenLength) {
+            QUIC_BUG(quic_bug_10743_12)
+                << "Bad lengths " << *in.preferred_address;
+            return false;
+          }
+          const uint64_t preferred_address_length =
+              v4_address_bytes.length() + /* IPv4 port */ sizeof(uint16_t) +
+              v6_address_bytes.length() + /* IPv6 port */ sizeof(uint16_t) +
+              /* connection ID length byte */ sizeof(uint8_t) +
+              in.preferred_address->connection_id.length() +
+              in.preferred_address->stateless_reset_token.size();
+          if (!writer.WriteVarInt62(TransportParameters::kPreferredAddress) ||
+              !writer.WriteVarInt62(
+                  /* transport parameter length */ preferred_address_length) ||
+              !writer.WriteStringPiece(v4_address_bytes) ||
+              !writer.WriteUInt16(
+                  in.preferred_address->ipv4_socket_address.port()) ||
+              !writer.WriteStringPiece(v6_address_bytes) ||
+              !writer.WriteUInt16(
+                  in.preferred_address->ipv6_socket_address.port()) ||
+              !writer.WriteUInt8(
+                  in.preferred_address->connection_id.length()) ||
+              !writer.WriteBytes(
+                  in.preferred_address->connection_id.data(),
+                  in.preferred_address->connection_id.length()) ||
+              !writer.WriteBytes(
+                  in.preferred_address->stateless_reset_token.data(),
+                  in.preferred_address->stateless_reset_token.size())) {
+            QUIC_BUG(Failed to write preferred_address)
+                << "Failed to write preferred_address for " << in;
+            return false;
+          }
+        }
+      } break;
+      // initial_source_connection_id
+      case TransportParameters::kInitialSourceConnectionId: {
+        if (in.initial_source_connection_id.has_value()) {
+          QuicConnectionId initial_source_connection_id =
+              in.initial_source_connection_id.value();
+          if (!writer.WriteVarInt62(
+                  TransportParameters::kInitialSourceConnectionId) ||
+              !writer.WriteStringPieceVarInt62(
+                  absl::string_view(initial_source_connection_id.data(),
+                                    initial_source_connection_id.length()))) {
+            QUIC_BUG(Failed to write initial_source_connection_id)
+                << "Failed to write initial_source_connection_id "
+                << initial_source_connection_id << " for " << in;
+            return false;
+          }
+        }
+      } break;
+      // retry_source_connection_id
+      case TransportParameters::kRetrySourceConnectionId: {
+        if (in.retry_source_connection_id.has_value()) {
+          QUICHE_DCHECK_EQ(Perspective::IS_SERVER, in.perspective);
+          QuicConnectionId retry_source_connection_id =
+              in.retry_source_connection_id.value();
+          if (!writer.WriteVarInt62(
+                  TransportParameters::kRetrySourceConnectionId) ||
+              !writer.WriteStringPieceVarInt62(
+                  absl::string_view(retry_source_connection_id.data(),
+                                    retry_source_connection_id.length()))) {
+            QUIC_BUG(Failed to write retry_source_connection_id)
+                << "Failed to write retry_source_connection_id "
+                << retry_source_connection_id << " for " << in;
+            return false;
+          }
+        }
+      } break;
+      // Google-specific connection options.
+      case TransportParameters::kGoogleConnectionOptions: {
+        if (in.google_connection_options.has_value()) {
+          static_assert(
+              sizeof(in.google_connection_options.value().front()) == 4,
+              "bad size");
+          uint64_t connection_options_length =
+              in.google_connection_options.value().size() * 4;
+          if (!writer.WriteVarInt62(
+                  TransportParameters::kGoogleConnectionOptions) ||
+              !writer.WriteVarInt62(
+                  /* transport parameter length */ connection_options_length)) {
+            QUIC_BUG(Failed to write google_connection_options)
+                << "Failed to write google_connection_options of length "
+                << connection_options_length << " for " << in;
+            return false;
+          }
+          for (const QuicTag& connection_option :
+               in.google_connection_options.value()) {
+            if (!writer.WriteTag(connection_option)) {
+              QUIC_BUG(Failed to write google_connection_option)
+                  << "Failed to write google_connection_option "
+                  << QuicTagToString(connection_option) << " for " << in;
+              return false;
+            }
+          }
+        }
+      } break;
+      // Google-specific user agent identifier.
+      case TransportParameters::kGoogleUserAgentId: {
+        if (in.user_agent_id.has_value()) {
+          if (!writer.WriteVarInt62(TransportParameters::kGoogleUserAgentId) ||
+              !writer.WriteStringPieceVarInt62(in.user_agent_id.value())) {
+            QUIC_BUG(Failed to write Google user agent ID)
+                << "Failed to write Google user agent ID \""
+                << in.user_agent_id.value() << "\" for " << in;
+            return false;
+          }
+        }
+      } break;
+      // Google-specific indicator for key update not yet supported.
+      case TransportParameters::kGoogleKeyUpdateNotYetSupported: {
+        if (in.key_update_not_yet_supported) {
+          if (!writer.WriteVarInt62(
+                  TransportParameters::kGoogleKeyUpdateNotYetSupported) ||
+              !writer.WriteVarInt62(/* transport parameter length */ 0)) {
+            QUIC_BUG(Failed to write key_update_not_yet_supported)
+                << "Failed to write key_update_not_yet_supported for " << in;
+            return false;
+          }
+        }
+      } break;
+      // Google-specific version extension.
+      case TransportParameters::kGoogleQuicVersion: {
+        if (!in.legacy_version_information.has_value()) {
+          break;
+        }
+        static_assert(sizeof(QuicVersionLabel) == sizeof(uint32_t),
+                      "bad length");
+        uint64_t google_version_length =
+            sizeof(in.legacy_version_information.value().version);
+        if (in.perspective == Perspective::IS_SERVER) {
+          google_version_length +=
+              /* versions length */ sizeof(uint8_t) +
+              sizeof(QuicVersionLabel) * in.legacy_version_information.value()
+                                             .supported_versions.size();
+        }
+        if (!writer.WriteVarInt62(TransportParameters::kGoogleQuicVersion) ||
+            !writer.WriteVarInt62(
+                /* transport parameter length */ google_version_length) ||
+            !writer.WriteUInt32(
+                in.legacy_version_information.value().version)) {
+          QUIC_BUG(Failed to write Google version extension)
+              << "Failed to write Google version extension for " << in;
+          return false;
+        }
+        if (in.perspective == Perspective::IS_SERVER) {
+          if (!writer.WriteUInt8(sizeof(QuicVersionLabel) *
+                                 in.legacy_version_information.value()
+                                     .supported_versions.size())) {
+            QUIC_BUG(Failed to write versions length)
+                << "Failed to write versions length for " << in;
+            return false;
+          }
+          for (QuicVersionLabel version_label :
+               in.legacy_version_information.value().supported_versions) {
+            if (!writer.WriteUInt32(version_label)) {
+              QUIC_BUG(Failed to write supported version)
+                  << "Failed to write supported version for " << in;
+              return false;
+            }
+          }
+        }
+      } break;
+      // version_information.
+      case TransportParameters::kVersionInformation: {
+        if (!in.version_information.has_value()) {
+          break;
+        }
+        static_assert(sizeof(QuicVersionLabel) == sizeof(uint32_t),
+                      "bad length");
+        QuicVersionLabelVector other_versions =
+            in.version_information.value().other_versions;
+        // Insert one GREASE version at a random index.
+        const size_t grease_index =
+            random->InsecureRandUint64() % (other_versions.size() + 1);
+        other_versions.insert(
+            other_versions.begin() + grease_index,
+            CreateQuicVersionLabel(QuicVersionReservedForNegotiation()));
+        const uint64_t version_information_length =
+            sizeof(in.version_information.value().chosen_version) +
+            sizeof(QuicVersionLabel) * other_versions.size();
+        if (!writer.WriteVarInt62(TransportParameters::kVersionInformation) ||
+            !writer.WriteVarInt62(
+                /* transport parameter length */ version_information_length) ||
+            !writer.WriteUInt32(
+                in.version_information.value().chosen_version)) {
+          QUIC_BUG(Failed to write chosen version)
+              << "Failed to write chosen version for " << in;
+          return false;
+        }
+        for (QuicVersionLabel version_label : other_versions) {
+          if (!writer.WriteUInt32(version_label)) {
+            QUIC_BUG(Failed to write other version)
+                << "Failed to write other version for " << in;
+            return false;
+          }
+        }
+      } break;
+      // Custom parameters and GREASE.
+      default: {
+        auto it = custom_parameters.find(parameter_id);
+        if (it == custom_parameters.end()) {
+          QUIC_BUG(Unknown parameter) << "Unknown parameter " << parameter_id;
+          return false;
+        }
+        if (!writer.WriteVarInt62(parameter_id) ||
+            !writer.WriteStringPieceVarInt62(it->second)) {
+          QUIC_BUG(Failed to write custom parameter)
+              << "Failed to write custom parameter " << parameter_id;
+          return false;
+        }
+      } break;
     }
   }
 
@@ -1175,6 +1471,22 @@ bool ParseTransportParameters(ParsedQuicVersion version,
         }
       } break;
       case TransportParameters::kGoogleUserAgentId:
+        if (GetQuicReloadableFlag(quic_ignore_user_agent_transport_parameter)) {
+          QUIC_RELOADABLE_FLAG_COUNT(
+              quic_ignore_user_agent_transport_parameter);
+          // This is a copy of the default switch statement below.
+          // TODO(dschinazi) remove this case entirely when deprecating the
+          // quic_ignore_user_agent_transport_parameter flag.
+          if (out->custom_parameters.find(param_id) !=
+              out->custom_parameters.end()) {
+            *error_details = "Received a second unknown parameter" +
+                             TransportParameterIdToString(param_id);
+            return false;
+          }
+          out->custom_parameters[param_id] =
+              std::string(value_reader.ReadRemainingPayload());
+          break;
+        }
         if (out->user_agent_id.has_value()) {
           *error_details = "Received a second user_agent_id";
           return false;
@@ -1182,6 +1494,24 @@ bool ParseTransportParameters(ParsedQuicVersion version,
         out->user_agent_id = std::string(value_reader.ReadRemainingPayload());
         break;
       case TransportParameters::kGoogleKeyUpdateNotYetSupported:
+        if (GetQuicReloadableFlag(quic_ignore_key_update_not_yet_supported)) {
+          QUIC_RELOADABLE_FLAG_COUNT_N(quic_ignore_key_update_not_yet_supported,
+                                       1, 2);
+          QUIC_CODE_COUNT(quic_ignore_key_update_not_yet_supported_ignored);
+          // This is a copy of the default switch statement below.
+          // TODO(dschinazi) remove this case entirely when deprecating the
+          // quic_ignore_key_update_not_yet_supported flag.
+          if (out->custom_parameters.find(param_id) !=
+              out->custom_parameters.end()) {
+            *error_details = "Received a second unknown parameter" +
+                             TransportParameterIdToString(param_id);
+            return false;
+          }
+          out->custom_parameters[param_id] =
+              std::string(value_reader.ReadRemainingPayload());
+          break;
+        }
+        QUIC_CODE_COUNT(quic_ignore_key_update_not_yet_supported_received);
         if (out->key_update_not_yet_supported) {
           *error_details = "Received a second key_update_not_yet_supported";
           return false;
@@ -1189,7 +1519,12 @@ bool ParseTransportParameters(ParsedQuicVersion version,
         out->key_update_not_yet_supported = true;
         break;
       case TransportParameters::kGoogleQuicVersion: {
-        if (!value_reader.ReadUInt32(&out->version)) {
+        if (!out->legacy_version_information.has_value()) {
+          out->legacy_version_information =
+              TransportParameters::LegacyVersionInformation();
+        }
+        if (!value_reader.ReadUInt32(
+                &out->legacy_version_information.value().version)) {
           *error_details = "Failed to read Google version extension version";
           return false;
         }
@@ -1206,8 +1541,44 @@ bool ParseTransportParameters(ParsedQuicVersion version,
               *error_details = "Failed to parse Google supported version";
               return false;
             }
-            out->supported_versions.push_back(version);
+            out->legacy_version_information.value()
+                .supported_versions.push_back(version);
           }
+        }
+      } break;
+      case TransportParameters::kVersionInformation: {
+        if (!GetQuicReloadableFlag(quic_version_information)) {
+          // This duplicates the default case and will be removed when this flag
+          // is deprecated.
+          if (out->custom_parameters.find(param_id) !=
+              out->custom_parameters.end()) {
+            *error_details = "Received a second unknown parameter" +
+                             TransportParameterIdToString(param_id);
+            return false;
+          }
+          out->custom_parameters[param_id] =
+              std::string(value_reader.ReadRemainingPayload());
+          break;
+        }
+        QUIC_RELOADABLE_FLAG_COUNT_N(quic_version_information, 2, 2);
+        if (out->version_information.has_value()) {
+          *error_details = "Received a second version_information";
+          return false;
+        }
+        out->version_information = TransportParameters::VersionInformation();
+        if (!value_reader.ReadUInt32(
+                &out->version_information.value().chosen_version)) {
+          *error_details = "Failed to read chosen version";
+          return false;
+        }
+        while (!value_reader.IsDoneReading()) {
+          QuicVersionLabel other_version;
+          if (!value_reader.ReadUInt32(&other_version)) {
+            *error_details = "Failed to parse other version";
+            return false;
+          }
+          out->version_information.value().other_versions.push_back(
+              other_version);
         }
       } break;
       case TransportParameters::kMinAckDelay:

@@ -20,16 +20,10 @@ namespace SkSL {
 class Context;
 class ErrorReporter;
 class Expression;
-class IRGenerator;
 class ProgramElement;
 class Statement;
 class SymbolTable;
 class Type;
-
-union FloatIntUnion {
-    float   fFloat;
-    int32_t fInt;
-};
 
 /**
  * Interprets a simple bytecode format that encodes the structure of an SkSL IR tree. This is used
@@ -52,6 +46,7 @@ public:
         kBuiltinLayout_Command,
         // (All constructors) Type type, uint8 argCount, Expression[] arguments
         kConstructorArray_Command,
+        kConstructorArrayCast_Command,
         kConstructorCompound_Command,
         kConstructorCompoundCast_Command,
         kConstructorDiagonalMatrix_Command,
@@ -69,10 +64,6 @@ public:
         kElements_Command,
         // no arguments--indicates end of Elements list
         kElementsComplete_Command,
-        // String typeName, SymbolTable symbols, int32[] values
-        kEnum_Command,
-        // uint16 id, String name
-        kEnumType_Command,
         // Expression expression
         kExpressionStatement_Command,
         // uint16 ownerId, uint8 index
@@ -86,7 +77,7 @@ public:
         kFor_Command,
         // Type type, uint16 function, uint8 argCount, Expression[] arguments
         kFunctionCall_Command,
-        // uint16 declaration, Statement body, uint8 refCount, uint16[] referencedIntrinsics
+        // uint16 declaration, Statement body, uint8 refCount
         kFunctionDefinition_Command,
         // uint16 id, Modifiers modifiers, String name, uint8 parameterCount, uint16[] parameterIds,
         // Type returnType
@@ -102,8 +93,7 @@ public:
         // int32 value
         kIntLiteral_Command,
         // int32 flags, int8 location, int8 offset, int8 binding, int8 index, int8 set,
-        // int16 builtin, int8 inputAttachmentIndex, int8 format, int8 primitive, int8 maxVertices,
-        // int8 invocations, String marker, String when, int8 key, int8 ctype
+        // int16 builtin, int8 inputAttachmentIndex
         kLayout_Command,
         // Layout layout, uint8 flags
         kModifiers8Bit_Command,
@@ -190,11 +180,11 @@ private:
         return this->readS32();
     }
 
-    StringFragment readString() {
+    skstd::string_view readString() {
         uint16_t offset = this->readU16();
         uint8_t length = *(uint8_t*) (fStart + offset);
         const char* chars = (const char*) fStart + offset + 1;
-        return StringFragment(chars, length);
+        return skstd::string_view(chars, length);
     }
 
     void addSymbol(int id, const Symbol* symbol) {
@@ -227,7 +217,7 @@ private:
 
     const Type* type();
 
-    ErrorReporter* errorReporter() { return &fContext.fErrors; }
+    ErrorReporter* errorReporter() { return fContext.fErrors; }
 
     ModifiersPool& modifiersPool() const { return *fContext.fModifiersPool; }
 

@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/overlays/public/overlay_response.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_dialog_overlay.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_blocking_state.h"
-#include "ios/chrome/browser/ui/dialogs/java_script_dialog_metrics.h"
 #import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -41,10 +40,6 @@ void HandleJavaScriptDialogResponse(web::DialogClosedCallback callback,
   if (!dialog_response) {
     // A null response is used if the dialog was not closed by user interaction.
     // This occurs either for navigation or because of WebState closures.
-    IOSJavaScriptDialogDismissalCause cause =
-        web_state ? IOSJavaScriptDialogDismissalCause::kNavigation
-                  : IOSJavaScriptDialogDismissalCause::kClosure;
-    RecordDialogDismissalCause(cause);
     std::move(callback).Run(/*success=*/false, /*user_input=*/nil);
     return;
   }
@@ -56,7 +51,6 @@ void HandleJavaScriptDialogResponse(web::DialogClosedCallback callback,
     blocking_state->JavaScriptDialogBlockingOptionSelected();
   }
 
-  RecordDialogDismissalCause(IOSJavaScriptDialogDismissalCause::kUser);
   bool confirmed = action == JavaScriptDialogResponse::Action::kConfirm;
   NSString* user_input = confirmed ? dialog_response->user_input() : nil;
   std::move(callback).Run(confirmed, user_input);
@@ -83,13 +77,13 @@ void OverlayJavaScriptDialogPresenter::RunJavaScriptDialog(
   JavaScriptDialogBlockingState::CreateForWebState(web_state);
   if (JavaScriptDialogBlockingState::FromWebState(web_state)->blocked()) {
     // Block the dialog if needed.
-    RecordDialogDismissalCause(IOSJavaScriptDialogDismissalCause::kBlocked);
     std::move(callback).Run(NO, nil);
     return;
   }
 
   bool from_main_frame_origin =
-      origin_url.GetOrigin() == web_state->GetLastCommittedURL().GetOrigin();
+      origin_url.DeprecatedGetOriginAsURL() ==
+      web_state->GetLastCommittedURL().DeprecatedGetOriginAsURL();
   std::unique_ptr<OverlayRequest> request =
       OverlayRequest::CreateWithConfig<JavaScriptDialogRequest>(
           dialog_type, web_state, origin_url, from_main_frame_origin,

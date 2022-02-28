@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
@@ -24,6 +23,10 @@ class GeolocationImpl;
 class GeolocationContext : public mojom::GeolocationContext {
  public:
   GeolocationContext();
+
+  GeolocationContext(const GeolocationContext&) = delete;
+  GeolocationContext& operator=(const GeolocationContext&) = delete;
+
   ~GeolocationContext() override;
 
   // Creates GeolocationContext that is strongly bound to |receiver|.
@@ -43,8 +46,6 @@ class GeolocationContext : public mojom::GeolocationContext {
   std::vector<std::unique_ptr<GeolocationImpl>> impls_;
 
   mojom::GeopositionPtr geoposition_override_;
-
-  DISALLOW_COPY_AND_ASSIGN(GeolocationContext);
 };
 
 }  // namespace device

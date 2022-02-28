@@ -19,7 +19,9 @@
 #include "cast/common/channel/virtual_connection_router.h"
 #include "cast/common/public/cast_socket.h"
 #include "cast/sender/public/sender_socket_factory.h"
+#include "cast/standalone_sender/connection_settings.h"
 #include "cast/standalone_sender/looping_file_sender.h"
+#include "cast/standalone_sender/remoting_sender.h"
 #include "cast/streaming/environment.h"
 #include "cast/streaming/sender_session.h"
 #include "platform/api/scoped_wake_lock.h"
@@ -68,7 +70,8 @@ class LoopingFileCastAgent final
       public VirtualConnectionRouter::SocketErrorHandler,
       public ConnectionNamespaceHandler::VirtualConnectionPolicy,
       public CastMessageHandler,
-      public SenderSession::Client {
+      public SenderSession::Client,
+      public RemotingSender::Client {
  public:
   using ShutdownCallback = std::function<void()>;
 
@@ -77,25 +80,6 @@ class LoopingFileCastAgent final
   LoopingFileCastAgent(TaskRunner* task_runner,
                        ShutdownCallback shutdown_callback);
   ~LoopingFileCastAgent();
-
-  struct ConnectionSettings {
-    // The endpoint of the receiver we wish to connect to.
-    IPEndpoint receiver_endpoint;
-
-    // The path to the file that we want to play.
-    std::string path_to_file;
-
-    // The maximum bitrate. Default value means a reasonable default will be
-    // selected.
-    int max_bitrate = 0;
-
-    // Whether the stream should include video, or just be audio only.
-    bool should_include_video = true;
-
-    // Whether we should use the hacky RTP stream IDs for legacy android
-    // receivers, or if we should use the proper values.
-    bool use_android_rtp_hack = true;
-  };
 
   // Connect to a Cast Receiver, and start the workflow to establish a
   // mirroring/streaming session. Destroy the LoopingFileCastAgent to shutdown
@@ -124,9 +108,13 @@ class LoopingFileCastAgent final
                  CastSocket* socket,
                  ::cast::channel::CastMessage message) override;
 
-  // Returns the Cast application ID for either A/V mirroring or audio-only
-  // mirroring, as configured by the ConnectionSettings.
-  const char* GetMirroringAppId() const;
+  // RemotingSender::Client overrides.
+  void OnReady() override;
+  void OnPlaybackRateChange(double rate) override;
+
+  // Returns the Cast application ID for either audio+video Cast Streaming or
+  // audio-only streaming, as configured by the ConnectionSettings.
+  const char* GetStreamingAppId() const;
 
   // Called by OnMessage() to determine whether the Cast Receiver has launched
   // or unlaunched the Mirroring App. If the former, a VirtualConnection is
@@ -147,7 +135,15 @@ class LoopingFileCastAgent final
                     SenderSession::ConfiguredSenders senders,
                     capture_recommendations::Recommendations
                         capture_recommendations) override;
+  void OnRemotingNegotiated(
+      const SenderSession* session,
+      SenderSession::RemotingNegotiation negotiation) override;
   void OnError(const SenderSession* session, Error error) override;
+
+  // Starts the remoting sender. This may occur when remoting is "ready" if the
+  // session is already negotiated, or upon session negotiation if the receiver
+  // is already ready.
+  void StartRemotingSenders();
 
   // Helper for stopping the current session, and/or unwinding a remote
   // connection request (pre-session). This ensures LoopingFileCastAgent is in a
@@ -183,6 +179,17 @@ class LoopingFileCastAgent final
   std::unique_ptr<Environment> environment_;
   std::unique_ptr<SenderSession> current_session_;
   std::unique_ptr<LoopingFileSender> file_sender_;
+
+  // Remoting specific member variables.
+  std::unique_ptr<RemotingSender> remoting_sender_;
+
+  // Set when remoting is successfully negotiated. However, remoting streams
+  // won't start until |is_ready_for_remoting_| is true.
+  std::unique_ptr<SenderSession::RemotingNegotiation> current_negotiation_;
+
+  // Set to true when the remoting receiver is ready.  However, remoting streams
+  // won't start until remoting is successfully negotiated.
+  bool is_ready_for_remoting_ = false;
 };
 
 }  // namespace cast

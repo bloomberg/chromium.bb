@@ -8,10 +8,11 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
+#include "base/cxx17_backports.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -45,12 +46,11 @@ void AppendPrintersAndRunCallbackIfDone(base::ListValue* printers_out,
                                         base::RepeatingClosure callback,
                                         const base::ListValue& printers,
                                         bool done) {
-  for (size_t i = 0; i < printers.GetSize(); ++i) {
-    const base::DictionaryValue* printer = NULL;
-    EXPECT_TRUE(printers.GetDictionary(i, &printer))
+  for (size_t i = 0; i < printers.GetList().size(); ++i) {
+    const base::Value& printer = printers.GetList()[i];
+    EXPECT_TRUE(printer.is_dict())
         << "Found invalid printer value at index " << i << ": " << printers;
-    if (printer)
-      printers_out->Append(printer->CreateDeepCopy());
+    printers_out->Append(printer.CreateDeepCopy());
   }
   if (done && !callback.is_null())
     std::move(callback).Run();
@@ -100,7 +100,7 @@ class PrinterProviderApiTest : public ExtensionApiTest,
     PRINT_REQUEST_DATA_TYPE_BYTES
   };
 
-  PrinterProviderApiTest() = default;
+  PrinterProviderApiTest() : ExtensionApiTest(GetParam()) {}
   ~PrinterProviderApiTest() override = default;
   PrinterProviderApiTest(const PrinterProviderApiTest&) = delete;
   PrinterProviderApiTest& operator=(const PrinterProviderApiTest&) = delete;
@@ -166,9 +166,8 @@ class PrinterProviderApiTest : public ExtensionApiTest,
     ExtensionTestMessageListener loaded_listener("loaded", true);
     ExtensionTestMessageListener ready_listener("ready", false);
 
-    const Extension* extension = LoadExtension(
-        test_data_dir_.AppendASCII(extension_path),
-        {.load_as_service_worker = GetParam() == ContextType::kServiceWorker});
+    const Extension* extension =
+        LoadExtension(test_data_dir_.AppendASCII(extension_path));
     ASSERT_TRUE(extension);
     ASSERT_TRUE(loaded_listener.WaitUntilSatisfied());
 
@@ -265,9 +264,9 @@ class PrinterProviderApiTest : public ExtensionApiTest,
   void ValidatePrinterListValue(
       const base::ListValue& printers,
       const std::vector<std::unique_ptr<base::Value>>& expected_printers) {
-    ASSERT_EQ(expected_printers.size(), printers.GetSize());
+    ASSERT_EQ(expected_printers.size(), printers.GetList().size());
     for (const auto& printer_value : expected_printers) {
-      EXPECT_TRUE(printers.Find(*printer_value) != printers.GetList().end())
+      EXPECT_TRUE(base::Contains(printers.GetList(), *printer_value))
           << "Unable to find " << *printer_value << " in " << printers;
     }
   }
@@ -718,7 +717,7 @@ IN_PROC_BROWSER_TEST_P(PrinterProviderApiTest, GetPrintersInvalidPrinterValue) {
 
   run_loop.Run();
 
-  EXPECT_TRUE(printers.empty());
+  EXPECT_TRUE(printers.GetList().empty());
 }
 
 // These tests are separate out from the main test class because the USB api

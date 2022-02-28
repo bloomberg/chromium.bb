@@ -19,10 +19,11 @@
 # throughout. Please refer to the TensorFlow dockerfiles documentation
 # for more information.
 
-ARG UBUNTU_VERSION=18.04
+ARG UBUNTU_VERSION=20.04
 
 FROM ubuntu:${UBUNTU_VERSION} AS base
 
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         curl \
@@ -62,7 +63,7 @@ RUN apt-get update && apt-get install -y \
     python3-pip
 
 RUN python3 -m pip --no-cache-dir install --upgrade \
-    pip \
+    "pip<20.3" \
     setuptools
 
 # Some TF tools expect a "python" binary
@@ -90,8 +91,8 @@ RUN python3 -m pip --no-cache-dir install \
     portpicker \
     enum34
 
- # Build and install bazel
-ENV BAZEL_VERSION 3.1.0
+# Build and install bazel
+ENV BAZEL_VERSION 4.2.1
 WORKDIR /
 RUN mkdir /bazel && \
     cd /bazel && \

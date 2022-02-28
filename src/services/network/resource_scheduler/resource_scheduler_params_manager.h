@@ -14,6 +14,7 @@
 
 #include "base/component_export.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "net/nqe/effective_connection_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -73,6 +74,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerParamsManager {
   explicit ResourceSchedulerParamsManager(
       const ParamsForNetworkQualityContainer&
           params_for_network_quality_container);
+
+  ResourceSchedulerParamsManager& operator=(
+      const ResourceSchedulerParamsManager&) = delete;
 
   ~ResourceSchedulerParamsManager();
 
@@ -135,8 +139,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerParamsManager {
   const absl::optional<base::TimeDelta> weak_signal_unthrottle_duration_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_ASSIGN(ResourceSchedulerParamsManager);
 };
 
 }  // namespace network

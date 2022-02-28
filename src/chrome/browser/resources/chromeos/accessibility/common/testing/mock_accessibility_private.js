@@ -20,6 +20,12 @@ var MockAccessibilityPrivate = {
     SOLID: 'solid',
   },
 
+  AccessibilityFeature: {
+    DICTATION_COMMANDS: 'dictation_commands',
+  },
+
+  SyntheticKeyboardEventType: {KEYDOWN: 'keydown', KEYUP: 'keyup,'},
+
   /** @private {function<number, number>} */
   boundsListener_: null,
 
@@ -49,6 +55,15 @@ var MockAccessibilityPrivate = {
   /** @private {?string} */
   highlightColor_: null,
 
+  /** @private {function<boolean>} */
+  dictationToggleListener_: null,
+
+  /** @private {boolean} */
+  dictationActivated_: false,
+
+  /** @private {Set<string>} */
+  enabledFeatures_: new Set(),
+
   // Methods from AccessibilityPrivate API. //
 
   onScrollableBoundsForPointRequested: {
@@ -62,6 +77,7 @@ var MockAccessibilityPrivate = {
 
     /**
      * Removes the listener.
+     * @param {function<number, number>} listener
      */
     removeListener: (listener) => {
       if (MockAccessibilityPrivate.boundsListener_ === listener) {
@@ -70,10 +86,8 @@ var MockAccessibilityPrivate = {
     }
   },
 
-  onMagnifierBoundsChanged: {
-    addListener: (listener) => {},
-    removeListener: (listener) => {}
-  },
+  onMagnifierBoundsChanged:
+      {addListener: (listener) => {}, removeListener: (listener) => {}},
 
   onSelectToSpeakPanelAction: {
     /**
@@ -84,6 +98,26 @@ var MockAccessibilityPrivate = {
     addListener: (listener) => {
       MockAccessibilityPrivate.selectToSpeakPanelActionListener_ = listener;
     },
+  },
+
+  onToggleDictation: {
+    /**
+     * Adds a listener to onToggleDictation.
+     * @param {function<boolean>} listener
+     */
+    addListener: (listener) => {
+      MockAccessibilityPrivate.dictationToggleListener_ = listener;
+    },
+
+    /**
+     * Removes the listener.
+     * @param {function<boolean>} listener
+     */
+    removeListener: (listener) => {
+      if (MockAccessibilityPrivate.dictationToggleListener_ === listener) {
+        MockAccessibilityPrivate.dictationToggleListener_ = null;
+      }
+    }
   },
 
   onSelectToSpeakStateChangeRequested: {
@@ -147,6 +181,30 @@ var MockAccessibilityPrivate = {
     MockAccessibilityPrivate
         .selectToSpeakPanelState_ = {show, anchor, isPaused, speed};
   },
+
+  /**
+   * Called in order to toggle Dictation listening.
+   */
+  toggleDictation: () => {
+    MockAccessibilityPrivate.dictationActivated_ =
+        !MockAccessibilityPrivate.dictationActivated_;
+  },
+
+  /**
+   * Whether a feature is enabled. This doesn't look at command line flags; set
+   * enabled state with MockAccessibilityPrivate::enableFeatureForTest.
+   * @param {AccessibilityFeature} feature
+   * @param {function(boolean): void} callback
+   */
+  isFeatureEnabled(feature, callback) {
+    callback(this.enabledFeatures_.has(feature));
+  },
+
+  /**
+   * Creates a synthetic keyboard event.
+   * @param {Object} unused
+   */
+  sendSyntheticKeyEvent(unused) {},
 
   // Methods for testing. //
 
@@ -237,6 +295,42 @@ var MockAccessibilityPrivate = {
   sendSelectToSpeakStateChangeRequest() {
     if (MockAccessibilityPrivate.selectToSpeakStateChangeListener_) {
       MockAccessibilityPrivate.selectToSpeakStateChangeListener_();
+    }
+  },
+
+  /**
+   * Simulates Dictation activation change from AccessibilityManager, which may
+   * occur when the user or a chrome extension toggles Dictation active state.
+   * @param {boolean} activated
+   */
+  callOnToggleDictation: (activated) => {
+    MockAccessibilityPrivate.dictationActivated_ = activated;
+    if (MockAccessibilityPrivate.dictationToggleListener_) {
+      MockAccessibilityPrivate.dictationToggleListener_(activated);
+    }
+  },
+
+  /**
+   * Gets the current Dictation active state. This can be flipped when
+   * MockAccessibilityPrivate.toggleDictation is called, and set when
+   * MocakAccessibilityPrivate.callOnToggleDictation is called.
+   * @returns {boolean} The current Dictation active state.
+   */
+  getDictationActive() {
+    return MockAccessibilityPrivate.dictationActivated_;
+  },
+
+  /**
+   * Enables or disables a feature for testing, causing
+   * MockAccessibilityPrivate.isFeatureEnabled to consider it enabled.
+   * @param {AccessibilityFeature} feature
+   * @param {boolean} enabled
+   */
+  enableFeatureForTest(feature, enabled) {
+    if (enabled) {
+      this.enabledFeatures_.add(feature);
+    } else if (this.enabledFeatures_.has(feature)) {
+      this.enabledFeatures_.delete(feature);
     }
   },
 };

@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for tf.cond in XLA."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.compiler.tests import xla_test
 from tensorflow.python.client import session
 from tensorflow.python.compiler.xla import xla
@@ -175,8 +171,8 @@ class CondTest(xla_test.XLATestCase):
       output = control_flow_ops.cond(
           constant_op.constant(True), if_true, if_false)
 
-      with self.assertRaisesRegexp(errors.InvalidArgumentError,
-                                   "must be a compile-time constant"):
+      with self.assertRaisesRegex(errors.InvalidArgumentError,
+                                  "must be a compile-time constant"):
         sess.run(
             output, feed_dict={
                 x: [0., 1., 2.],
@@ -209,8 +205,8 @@ class CondTest(xla_test.XLATestCase):
 
       output = xla.compile(f)
 
-      with self.assertRaisesRegexp(errors.InvalidArgumentError,
-                                   "must be a compile-time constant"):
+      with self.assertRaisesRegex(errors.InvalidArgumentError,
+                                  "must be a compile-time constant"):
         sess.run(
             output, feed_dict={
                 x: [0., 1., 2.],

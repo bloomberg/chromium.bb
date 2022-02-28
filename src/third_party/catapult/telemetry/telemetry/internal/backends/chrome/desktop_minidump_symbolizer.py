@@ -8,6 +8,8 @@ import os
 import re
 import subprocess
 
+import six
+
 from telemetry.internal.backends.chrome import minidump_symbolizer
 from telemetry.internal.util import local_first_binary_manager
 from telemetry.internal.util import path
@@ -58,6 +60,10 @@ class DesktopMinidumpSymbolizer(minidump_symbolizer.MinidumpSymbolizer):
       output = subprocess.check_output([cdb, '-y', self._build_dir,
                                         '-c', '.ecxr;.lastevent;kb30;~*kb30;q',
                                         '-z', minidump])
+      if six.PY3:
+        # pylint: disable=redefined-variable-type
+        output = output.decode('utf-8')
+
       # The output we care about starts with "Last event:" or possibly
       # other things we haven't seen yet. If we can't find the start of the
       # last event entry, include output from the beginning.
@@ -88,6 +94,10 @@ class DesktopMinidumpSymbolizer(minidump_symbolizer.MinidumpSymbolizer):
     except subprocess.CalledProcessError as e:
       # For some reason minidump_dump always fails despite successful dumping.
       minidump_output = e.output
+
+    if six.PY3:
+      # pylint: disable=redefined-variable-type
+      minidump_output = minidump_output.decode('utf-8')
 
     minidump_binary_re = re.compile(r'\W+\(code_file\)\W+=\W\"(.*)\"')
     for minidump_line in minidump_output.splitlines():
@@ -127,9 +137,12 @@ class DesktopMinidumpSymbolizer(minidump_symbolizer.MinidumpSymbolizer):
       # The vast majority of the symbol binaries for component builds on Mac
       # are .dylib, and none of them appear to contribute any additional
       # information. So, remove them to save a *lot* of time.
+      # Do process dylibs that aren't component build dylibs though.
+      bundled_dylib_re = re.compile(
+          r'Framework\.framework/Versions/\d+.\d+.\d+.\d+/Libraries/.*\.dylib')
       filtered_binaries = []
       for binary in symbol_binaries:
-        if not binary.endswith('.dylib'):
+        if not binary.endswith('.dylib') or bundled_dylib_re.search(binary):
           filtered_binaries.append(binary)
       symbol_binaries = filtered_binaries
     return symbol_binaries

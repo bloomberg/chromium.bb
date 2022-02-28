@@ -5,14 +5,17 @@
 package org.chromium.chrome.browser.autofill_assistant.overlay;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.graphics.RectF;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantDrawable;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
@@ -23,15 +26,49 @@ import java.util.List;
  */
 @JNINamespace("autofill_assistant")
 public class AssistantOverlayModel extends PropertyModel {
+    /** Wrapper model for {@code RectF}. */
+    public static class AssistantOverlayRect extends RectF {
+        private boolean mIsFullWidth;
+
+        public AssistantOverlayRect() {
+            super();
+        }
+
+        public AssistantOverlayRect(
+                float left, float top, float right, float bottom, boolean fullWidth) {
+            super(left, top, right, bottom);
+            mIsFullWidth = fullWidth;
+        }
+
+        public AssistantOverlayRect(AssistantOverlayRect rect) {
+            set(rect);
+        }
+
+        public AssistantOverlayRect(Rect rect) {
+            super.set(rect);
+        }
+
+        public void set(AssistantOverlayRect rect) {
+            super.set(rect);
+            mIsFullWidth = rect.mIsFullWidth;
+        }
+
+        public boolean isFullWidth() {
+            return mIsFullWidth;
+        }
+    }
     public static final WritableIntPropertyKey STATE = new WritableIntPropertyKey();
 
-    public static final WritableObjectPropertyKey<List<RectF>> TOUCHABLE_AREA =
-            new WritableObjectPropertyKey<>();
-
-    public static final WritableObjectPropertyKey<List<RectF>> RESTRICTED_AREA =
+    public static final WritableObjectPropertyKey<WebContents> WEB_CONTENTS =
             new WritableObjectPropertyKey<>();
 
     public static final WritableObjectPropertyKey<RectF> VISUAL_VIEWPORT =
+            new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<List<AssistantOverlayRect>> TOUCHABLE_AREA =
+            new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<List<AssistantOverlayRect>> RESTRICTED_AREA =
             new WritableObjectPropertyKey<>();
 
     public static final WritableObjectPropertyKey<AssistantOverlayDelegate> DELEGATE =
@@ -53,14 +90,30 @@ public class AssistantOverlayModel extends PropertyModel {
             new WritableObjectPropertyKey<>();
 
     public AssistantOverlayModel() {
-        super(STATE, TOUCHABLE_AREA, RESTRICTED_AREA, VISUAL_VIEWPORT, DELEGATE, BACKGROUND_COLOR,
-                HIGHLIGHT_BORDER_COLOR, TAP_TRACKING_COUNT, TAP_TRACKING_DURATION_MS,
-                OVERLAY_IMAGE);
+        super(WEB_CONTENTS, STATE, VISUAL_VIEWPORT, TOUCHABLE_AREA, RESTRICTED_AREA, DELEGATE,
+                BACKGROUND_COLOR, HIGHLIGHT_BORDER_COLOR, TAP_TRACKING_COUNT,
+                TAP_TRACKING_DURATION_MS, OVERLAY_IMAGE);
     }
 
     @CalledByNative
     private void setState(@AssistantOverlayState int state) {
         set(STATE, state);
+    }
+
+    @CalledByNative
+    @VisibleForTesting
+    private void setWebContents(WebContents webContents) {
+        set(WEB_CONTENTS, webContents);
+    }
+
+    private static List<AssistantOverlayRect> toRectangles(float[] coords) {
+        List<AssistantOverlayRect> boxes = new ArrayList<>();
+        for (int i = 0; i < coords.length; i += 5) {
+            boxes.add(new AssistantOverlayRect(/* left= */ coords[i], /* top= */ coords[i + 1],
+                    /* right= */ coords[i + 2], /* bottom= */ coords[i + 3],
+                    /* fullWidth= */ (int) coords[i + 4] == 1));
+        }
+        return boxes;
     }
 
     @CalledByNative
@@ -71,15 +124,6 @@ public class AssistantOverlayModel extends PropertyModel {
     @CalledByNative
     private void setTouchableArea(float[] coords) {
         set(TOUCHABLE_AREA, toRectangles(coords));
-    }
-
-    private static List<RectF> toRectangles(float[] coords) {
-        List<RectF> boxes = new ArrayList<>();
-        for (int i = 0; i < coords.length; i += 4) {
-            boxes.add(new RectF(/* left= */ coords[i], /* top= */ coords[i + 1],
-                    /* right= */ coords[i + 2], /* bottom= */ coords[i + 3]));
-        }
-        return boxes;
     }
 
     @CalledByNative

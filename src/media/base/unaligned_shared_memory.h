@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "base/memory/platform_shared_memory_region.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/unsafe_shared_memory_region.h"
@@ -27,6 +27,9 @@ class MEDIA_EXPORT UnalignedSharedMemory {
   UnalignedSharedMemory(base::subtle::PlatformSharedMemoryRegion region,
                         size_t size,
                         bool read_only);
+
+  UnalignedSharedMemory(const UnalignedSharedMemory&) = delete;
+  UnalignedSharedMemory& operator=(const UnalignedSharedMemory&) = delete;
 
   ~UnalignedSharedMemory();
 
@@ -51,9 +54,7 @@ class MEDIA_EXPORT UnalignedSharedMemory {
   size_t size_;
 
   // Pointer to the unaligned data in the shared memory mapping.
-  uint8_t* mapping_ptr_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(UnalignedSharedMemory);
+  raw_ptr<uint8_t> mapping_ptr_ = nullptr;
 };
 
 // Wrapper over base::WritableSharedMemoryMapping that is mapped at unaligned
@@ -67,6 +68,9 @@ class MEDIA_EXPORT WritableUnalignedMapping {
   WritableUnalignedMapping(const base::UnsafeSharedMemoryRegion& region,
                            size_t size,
                            off_t offset);
+
+  WritableUnalignedMapping(const WritableUnalignedMapping&) = delete;
+  WritableUnalignedMapping& operator=(const WritableUnalignedMapping&) = delete;
 
   ~WritableUnalignedMapping();
 
@@ -86,8 +90,6 @@ class MEDIA_EXPORT WritableUnalignedMapping {
   // mapped and requested offset; strictly less than
   // base::SysInfo::VMAllocationGranularity().
   size_t misalignment_;
-
-  DISALLOW_COPY_AND_ASSIGN(WritableUnalignedMapping);
 };
 
 // Wrapper over base::ReadOnlySharedMemoryMapping that is mapped at unaligned
@@ -101,6 +103,9 @@ class MEDIA_EXPORT ReadOnlyUnalignedMapping {
   ReadOnlyUnalignedMapping(const base::ReadOnlySharedMemoryRegion& region,
                            size_t size,
                            off_t offset);
+
+  ReadOnlyUnalignedMapping(const ReadOnlyUnalignedMapping&) = delete;
+  ReadOnlyUnalignedMapping& operator=(const ReadOnlyUnalignedMapping&) = delete;
 
   ~ReadOnlyUnalignedMapping();
 
@@ -120,8 +125,6 @@ class MEDIA_EXPORT ReadOnlyUnalignedMapping {
   // mapped and requested offset; strictly less than
   // base::SysInfo::VMAllocationGranularity().
   size_t misalignment_;
-
-  DISALLOW_COPY_AND_ASSIGN(ReadOnlyUnalignedMapping);
 };
 
 }  // namespace media

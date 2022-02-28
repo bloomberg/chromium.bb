@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
@@ -28,6 +27,11 @@ class IOSChromeGCMProfileServiceFactory
 
   static IOSChromeGCMProfileServiceFactory* GetInstance();
 
+  IOSChromeGCMProfileServiceFactory(const IOSChromeGCMProfileServiceFactory&) =
+      delete;
+  IOSChromeGCMProfileServiceFactory& operator=(
+      const IOSChromeGCMProfileServiceFactory&) = delete;
+
   // Returns a string like "com.chrome.ios" that should be used as the GCM
   // category when an app_id is sent as a subtype instead of as a category. This
   // string must never change during the lifetime of a Chrome install, since
@@ -44,8 +48,6 @@ class IOSChromeGCMProfileServiceFactory
   // BrowserStateKeyedServiceFactory:
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(IOSChromeGCMProfileServiceFactory);
 };
 
 #endif  // IOS_CHROME_BROWSER_GCM_IOS_CHROME_GCM_PROFILE_SERVICE_FACTORY_H_

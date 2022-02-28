@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display_embedder/viz_process_context_provider.h"
@@ -66,7 +67,8 @@ class GLOutputSurface : public OutputSurface {
   }
 
   // Called when a swap completion is signaled from ImageTransportSurface.
-  virtual void DidReceiveSwapBuffersAck(const gfx::SwapResponse& response);
+  virtual void DidReceiveSwapBuffersAck(const gfx::SwapResponse& response,
+                                        gfx::GpuFenceHandle release_fence);
 
   // Called in SwapBuffers() when a swap is determined to be partial. Subclasses
   // might override this method because different platforms handle partial swaps
@@ -82,13 +84,14 @@ class GLOutputSurface : public OutputSurface {
   void OnGpuSwapBuffersCompleted(std::vector<ui::LatencyInfo> latency_info,
                                  bool top_controls_visible_height_changed,
                                  const gfx::Size& pixel_size,
-                                 const gpu::SwapBuffersCompleteParams& params);
+                                 const gpu::SwapBuffersCompleteParams& params,
+                                 gfx::GpuFenceHandle release_fence);
   void OnPresentation(const gfx::PresentationFeedback& feedback);
   void OnGpuVSync(base::TimeTicks vsync_time, base::TimeDelta vsync_interval);
   gfx::Rect ApplyDisplayInverse(const gfx::Rect& input);
 
   scoped_refptr<VizProcessContextProvider> viz_context_provider_;
-  OutputSurfaceClient* client_ = nullptr;
+  raw_ptr<OutputSurfaceClient> client_ = nullptr;
   bool wants_vsync_parameter_updates_ = false;
   ui::LatencyTracker latency_tracker_;
 

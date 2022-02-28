@@ -53,7 +53,7 @@ ConnectionInfoViewAndroid::ConnectionInfoViewAndroid(
   // Important to use GetVisibleEntry to match what's showing in the omnibox.
   content::NavigationEntry* nav_entry =
       web_contents->GetController().GetVisibleEntry();
-  if (nav_entry == nullptr)
+  if (!nav_entry || nav_entry->IsInitialEntry())
     return;
 
   popup_jobject_.Reset(env, java_page_info_pop);
@@ -61,7 +61,7 @@ ConnectionInfoViewAndroid::ConnectionInfoViewAndroid(
   presenter_ = std::make_unique<PageInfo>(
       page_info_client_->CreatePageInfoDelegate(web_contents), web_contents,
       nav_entry->GetURL());
-  presenter_->InitializeUiState(this);
+  presenter_->InitializeUiState(this, base::DoNothing());
 }
 
 ConnectionInfoViewAndroid::~ConnectionInfoViewAndroid() {}

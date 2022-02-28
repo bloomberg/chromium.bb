@@ -4,6 +4,9 @@
 
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service.h"
 
+#include <string>
+
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
@@ -23,11 +26,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using cast_channel::CastDeviceCapability;
+using ::testing::_;
 using ::testing::InvokeWithoutArgs;
+using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::SaveArg;
-using ::testing::_;
-using cast_channel::CastDeviceCapability;
 
 namespace {
 
@@ -100,9 +104,9 @@ class TestCastMediaSinkService : public CastMediaSinkService {
              MediaSinkServiceBase* dial_media_sink_service) override {
     auto mock_impl = std::unique_ptr<MockCastMediaSinkServiceImpl,
                                      base::OnTaskRunnerDeleter>(
-        new MockCastMediaSinkServiceImpl(sinks_discovered_cb,
-                                         cast_socket_service_, network_monitor_,
-                                         dial_media_sink_service),
+        new NiceMock<MockCastMediaSinkServiceImpl>(
+            sinks_discovered_cb, cast_socket_service_, network_monitor_,
+            dial_media_sink_service),
         base::OnTaskRunnerDeleter(cast_socket_service_->task_runner()));
     mock_impl_ = mock_impl.get();
     return mock_impl;
@@ -111,9 +115,9 @@ class TestCastMediaSinkService : public CastMediaSinkService {
   MockCastMediaSinkServiceImpl* mock_impl() { return mock_impl_; }
 
  private:
-  cast_channel::CastSocketService* const cast_socket_service_;
-  DiscoveryNetworkMonitor* const network_monitor_;
-  MockCastMediaSinkServiceImpl* mock_impl_ = nullptr;
+  const raw_ptr<cast_channel::CastSocketService> cast_socket_service_;
+  const raw_ptr<DiscoveryNetworkMonitor> network_monitor_;
+  raw_ptr<MockCastMediaSinkServiceImpl> mock_impl_ = nullptr;
 };
 
 class CastMediaSinkServiceTest : public ::testing::Test {
@@ -126,6 +130,8 @@ class CastMediaSinkServiceTest : public ::testing::Test {
             mock_cast_socket_service_.get(),
             DiscoveryNetworkMonitor::GetInstance())),
         test_dns_sd_registry_(media_sink_service_.get()) {}
+  CastMediaSinkServiceTest(CastMediaSinkServiceTest&) = delete;
+  CastMediaSinkServiceTest& operator=(CastMediaSinkServiceTest&) = delete;
 
   void SetUp() override {
     EXPECT_CALL(test_dns_sd_registry_, AddObserver(media_sink_service_.get()));
@@ -160,10 +166,8 @@ class CastMediaSinkServiceTest : public ::testing::Test {
       mock_cast_socket_service_;
 
   std::unique_ptr<TestCastMediaSinkService> media_sink_service_;
-  MockCastMediaSinkServiceImpl* mock_impl_ = nullptr;
+  raw_ptr<MockCastMediaSinkServiceImpl> mock_impl_ = nullptr;
   MockDnsSdRegistry test_dns_sd_registry_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastMediaSinkServiceTest);
 };
 
 TEST_F(CastMediaSinkServiceTest, OnUserGesture) {
