@@ -207,6 +207,15 @@ FakeDownloadItem::GetDownloadSchedule() const {
   return download_schedule_;
 }
 
+::network::mojom::CredentialsMode FakeDownloadItem::GetCredentialsMode() const {
+  return ::network::mojom::CredentialsMode::kInclude;
+}
+
+const absl::optional<net::IsolationInfo>& FakeDownloadItem::GetIsolationInfo()
+    const {
+  return isolation_info_;
+}
+
 void FakeDownloadItem::SetIsDone(bool is_done) {
   is_done_ = is_done;
 }
@@ -236,12 +245,53 @@ const std::string& FakeDownloadItem::GetLastModifiedTime() const {
   return last_modified_time_;
 }
 
+void FakeDownloadItem::SetPercentComplete(int percent_complete) {
+  percent_complete_ = percent_complete;
+}
+
+int FakeDownloadItem::PercentComplete() const {
+  return percent_complete_;
+}
+
+void FakeDownloadItem::SetDummyFilePath(const base::FilePath& file_path) {
+  dummy_file_path = file_path;
+}
+
+void FakeDownloadItem::SetIsDangerous(bool is_dangerous) {
+  is_dangerous_ = is_dangerous;
+}
+
+void FakeDownloadItem::SetIsMixedContent(bool is_mixed_content) {
+  is_mixed_content_ = is_mixed_content;
+}
+
+void FakeDownloadItem::SetDangerType(download::DownloadDangerType danger_type) {
+  danger_type_ = danger_type;
+}
+
+void FakeDownloadItem::SetMixedContentStatus(
+    download::DownloadItem::MixedContentStatus mixed_content_status) {
+  mixed_content_status_ = mixed_content_status;
+}
+
+bool FakeDownloadItem::GetOpenWhenComplete() const {
+  return open_when_complete_;
+}
+
+void FakeDownloadItem::SetOpenWhenComplete(bool open) {
+  open_when_complete_ = open;
+}
+
 // The methods below are not supported and are not expected to be called.
 void FakeDownloadItem::ValidateDangerousDownload() {
   NOTREACHED();
 }
 
 void FakeDownloadItem::ValidateMixedContentDownload() {
+  NOTREACHED();
+}
+
+void FakeDownloadItem::AcceptIncognitoWarning() {
   NOTREACHED();
 }
 
@@ -424,25 +474,30 @@ download::DownloadItemRenameHandler* FakeDownloadItem::GetRenameHandler() {
   return nullptr;
 }
 
+const download::DownloadItemRerouteInfo& FakeDownloadItem::GetRerouteInfo()
+    const {
+  return reroute_info_;
+}
+
 bool FakeDownloadItem::IsDangerous() const {
-  NOTREACHED();
-  return false;
+  return is_dangerous_;
 }
 
 bool FakeDownloadItem::IsMixedContent() const {
-  NOTREACHED();
+  return is_mixed_content_;
+}
+
+bool FakeDownloadItem::ShouldShowIncognitoWarning() const {
   return false;
 }
 
 download::DownloadDangerType FakeDownloadItem::GetDangerType() const {
-  NOTREACHED();
-  return download::DownloadDangerType();
+  return danger_type_;
 }
 
 download::DownloadItem::MixedContentStatus
 FakeDownloadItem::GetMixedContentStatus() const {
-  NOTREACHED();
-  return download::DownloadItem::MixedContentStatus();
+  return mixed_content_status_;
 }
 
 bool FakeDownloadItem::TimeRemaining(base::TimeDelta* remaining) const {
@@ -451,11 +506,6 @@ bool FakeDownloadItem::TimeRemaining(base::TimeDelta* remaining) const {
 }
 
 int64_t FakeDownloadItem::CurrentSpeed() const {
-  NOTREACHED();
-  return 1;
-}
-
-int FakeDownloadItem::PercentComplete() const {
   NOTREACHED();
   return 1;
 }
@@ -496,11 +546,6 @@ bool FakeDownloadItem::ShouldOpenFileByPolicyBasedOnExtension() {
   return true;
 }
 
-bool FakeDownloadItem::GetOpenWhenComplete() const {
-  NOTREACHED();
-  return false;
-}
-
 bool FakeDownloadItem::GetAutoOpened() {
   NOTREACHED();
   return false;
@@ -514,10 +559,6 @@ bool FakeDownloadItem::GetOpened() const {
 void FakeDownloadItem::OnContentCheckCompleted(
     download::DownloadDangerType danger_type,
     download::DownloadInterruptReason reason) {
-  NOTREACHED();
-}
-
-void FakeDownloadItem::SetOpenWhenComplete(bool open) {
   NOTREACHED();
 }
 

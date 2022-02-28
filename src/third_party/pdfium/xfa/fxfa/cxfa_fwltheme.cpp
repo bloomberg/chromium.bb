@@ -7,7 +7,6 @@
 #include "xfa/fxfa/cxfa_fwltheme.h"
 
 #include "core/fxcrt/fx_codepage.h"
-#include "third_party/base/stl_util.h"
 #include "xfa/fde/cfde_textout.h"
 #include "xfa/fgas/font/cfgas_fontmgr.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
@@ -79,7 +78,7 @@ bool CXFA_FWLTheme::LoadCalendarFont(CXFA_FFDoc* doc) {
   }
 
   m_pCalendarFont = CFGAS_GEModule::Get()->GetFontMgr()->GetFontByCodePage(
-      FX_CODEPAGE_MSWin_WesternEuropean, 0, nullptr);
+      FX_CodePage::kMSWin_WesternEuropean, 0, nullptr);
   return !!m_pCalendarFont;
 }
 
@@ -101,13 +100,14 @@ void CXFA_FWLTheme::DrawText(const CFWL_ThemeText& pParams) {
     m_pTextOut->SetFont(m_pCalendarFont);
     m_pTextOut->SetFontSize(FWLTHEME_CAPACITY_FontSize);
     m_pTextOut->SetTextColor(FWLTHEME_CAPACITY_TextColor);
-    if ((pParams.m_iPart == CFWL_Part::DatesIn) &&
-        !(pParams.m_dwStates & FWL_ITEMSTATE_MCD_Flag) &&
+    if ((pParams.m_iPart == CFWL_ThemePart::Part::kDatesIn) &&
+        !(pParams.m_dwStates & CFWL_PartState::kFlagged) &&
         (pParams.m_dwStates &
-         (CFWL_PartState_Hovered | CFWL_PartState_Selected))) {
+         Mask<CFWL_PartState>{CFWL_PartState::kHovered,
+                              CFWL_PartState::kSelected})) {
       m_pTextOut->SetTextColor(0xFF888888);
     }
-    if (pParams.m_iPart == CFWL_Part::Caption)
+    if (pParams.m_iPart == CFWL_ThemePart::Part::kCaption)
       m_pTextOut->SetTextColor(ArgbEncode(0xff, 0, 153, 255));
 
     CFGAS_GEGraphics* pGraphics = pParams.GetGraphics();

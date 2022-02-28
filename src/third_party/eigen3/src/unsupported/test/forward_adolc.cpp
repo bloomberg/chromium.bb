@@ -20,10 +20,10 @@ EIGEN_DONT_INLINE typename Vector::Scalar foo(const Vector& p)
   return (p-Vector(Scalar(-1),Scalar(1.))).norm() + (p.array().sqrt().abs() * p.array().sin()).sum() + p.dot(p);
 }
 
-template<typename _Scalar, int NX=Dynamic, int NY=Dynamic>
+template<typename Scalar_, int NX=Dynamic, int NY=Dynamic>
 struct TestFunc1
 {
-  typedef _Scalar Scalar;
+  typedef Scalar_ Scalar;
   enum {
     InputsAtCompileTime = NX,
     ValuesAtCompileTime = NY

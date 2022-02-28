@@ -12,20 +12,30 @@ Are you a Google employee? See
 
 ## System requirements
 
-*   A 64-bit Intel Mac running 10.15.4+. (Building on Arm Macs is
-    [not yet supported](https://chromium.googlesource.com/chromium/src.git/+/master/docs/mac_arm64.md).)
-*   [Xcode](https://developer.apple.com/xcode/) 12.2+. This version of Xcode
-    comes with ...
-*   The macOS 11.0 SDK. Run
+*   A Mac, Intel or Arm.
+    ([More details about Arm Macs](https://chromium.googlesource.com/chromium/src.git/+/main/docs/mac_arm64.md).)
+*   [Xcode](https://developer.apple.com/xcode/). Xcode comes with...
+*   The macOS SDK. Run
 
     ```shell
     $ ls `xcode-select -p`/Platforms/MacOSX.platform/Developer/SDKs
     ```
 
-    to check whether you have it. Building with a newer SDK usually works too
-    (please fix it if it doesn't), but the releases
-    [currently use Xcode 12.2](https://source.chromium.org/search?q=MAC_BINARIES_LABEL&ss=chromium)
-    and the macOS 11.0 SDK.
+    to check whether you have it, and what version you have.
+    `mac_sdk_official_version` in [mac_sdk.gni](../build/config/mac/mac_sdk.gni)
+    is the SDK version used on all the bots and for
+    [official builds](https://source.chromium.org/search?q=MAC_BINARIES_LABEL&ss=chromium),
+    so that version is guaranteed to work. Building with a newer SDK usually
+    works too (please fix or file a bug if it doesn't).
+    
+    Building with an older SDK might also work, but if it doesn't then we won't
+    accept changes for making it work.
+    
+    The easiest way to get the newest SDK is to use the newest version of Xcode,
+    which often requires using the newest version of macOS. We don't use Xcode
+    itself much, so if you're know what you're doing, you can likely get the
+    build working with an older version of macOS as long as you get a new
+    version of the macOS SDK on it.
 
 ## Install `depot_tools`
 
@@ -95,7 +105,7 @@ development and testing purposes.
 ## Setting up the build
 
 Chromium uses [Ninja](https://ninja-build.org) as its main build tool along with
-a tool called [GN](https://gn.googlesource.com/gn/+/master/docs/quick_start.md)
+a tool called [GN](https://gn.googlesource.com/gn/+/main/docs/quick_start.md)
 to generate `.ninja` files. You can create any number of *build directories*
 with different configurations. To create a build directory:
 
@@ -112,7 +122,7 @@ $ gn gen out/Default
   The default will be a debug component build matching the current host
   operating system and CPU.
 * For more info on GN, run `gn help` on the command line or read the
-  [quick start guide](https://gn.googlesource.com/gn/+/master/docs/quick_start.md).
+  [quick start guide](https://gn.googlesource.com/gn/+/main/docs/quick_start.md).
 * Building Chromium for arm Macs requires [additional setup](mac_arm64.md).
 
 
@@ -184,7 +194,7 @@ Every time you start a new developer build of Chrome you get a system dialog
 asking "Do you want the application Chromium.app to accept incoming
 network connections?" - to avoid this, run with this command-line flag:
 
---disable-features="MediaRouter"
+--disable-features="DialMediaRouteProvider"
 
 ## Running test targets
 
@@ -213,7 +223,7 @@ $ gclient sync
 
 The first command updates the primary Chromium source repository and rebases
 any of your local branches on top of tip-of-tree (aka the Git branch
-`origin/master`). If you don't want to use this script, you can also just use
+`origin/main`). If you don't want to use this script, you can also just use
 `git pull` or other common Git commands to update the repo.
 
 The second command syncs dependencies to the appropriate versions and re-runs

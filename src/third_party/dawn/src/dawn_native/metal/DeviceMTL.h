@@ -32,11 +32,15 @@
 
 namespace dawn_native { namespace metal {
 
-    class Device : public DeviceBase {
+    namespace {
+        struct KalmanInfo;
+    }
+
+    class Device final : public DeviceBase {
       public:
         static ResultOrError<Device*> Create(AdapterBase* adapter,
                                              NSPRef<id<MTLDevice>> mtlDevice,
-                                             const DeviceDescriptor* descriptor);
+                                             const DawnDeviceDescriptor* descriptor);
         ~Device() override;
 
         MaybeError Initialize();
@@ -47,9 +51,9 @@ namespace dawn_native { namespace metal {
         id<MTLCommandQueue> GetMTLQueue();
 
         CommandRecordingContext* GetPendingCommandContext();
-        void SubmitPendingCommandBuffer();
+        MaybeError SubmitPendingCommandBuffer();
 
-        TextureBase* CreateTextureWrappingIOSurface(const ExternalImageDescriptor* descriptor,
+        Ref<Texture> CreateTextureWrappingIOSurface(const ExternalImageDescriptor* descriptor,
                                                     IOSurfaceRef ioSurface,
                                                     uint32_t plane);
         void WaitForCommandsToBeScheduled();
@@ -73,25 +77,22 @@ namespace dawn_native { namespace metal {
       private:
         Device(AdapterBase* adapter,
                NSPRef<id<MTLDevice>> mtlDevice,
-               const DeviceDescriptor* descriptor);
+               const DawnDeviceDescriptor* descriptor);
 
         ResultOrError<Ref<BindGroupBase>> CreateBindGroupImpl(
             const BindGroupDescriptor* descriptor) override;
         ResultOrError<Ref<BindGroupLayoutBase>> CreateBindGroupLayoutImpl(
-            const BindGroupLayoutDescriptor* descriptor) override;
+            const BindGroupLayoutDescriptor* descriptor,
+            PipelineCompatibilityToken pipelineCompatibilityToken) override;
         ResultOrError<Ref<BufferBase>> CreateBufferImpl(
             const BufferDescriptor* descriptor) override;
         ResultOrError<Ref<CommandBufferBase>> CreateCommandBuffer(
             CommandEncoder* encoder,
             const CommandBufferDescriptor* descriptor) override;
-        ResultOrError<Ref<ComputePipelineBase>> CreateComputePipelineImpl(
-            const ComputePipelineDescriptor* descriptor) override;
         ResultOrError<Ref<PipelineLayoutBase>> CreatePipelineLayoutImpl(
             const PipelineLayoutDescriptor* descriptor) override;
         ResultOrError<Ref<QuerySetBase>> CreateQuerySetImpl(
             const QuerySetDescriptor* descriptor) override;
-        ResultOrError<Ref<RenderPipelineBase>> CreateRenderPipelineImpl(
-            const RenderPipelineDescriptor2* descriptor) override;
         ResultOrError<Ref<SamplerBase>> CreateSamplerImpl(
             const SamplerDescriptor* descriptor) override;
         ResultOrError<Ref<ShaderModuleBase>> CreateShaderModuleImpl(
@@ -108,9 +109,19 @@ namespace dawn_native { namespace metal {
         ResultOrError<Ref<TextureViewBase>> CreateTextureViewImpl(
             TextureBase* texture,
             const TextureViewDescriptor* descriptor) override;
+        Ref<ComputePipelineBase> CreateUninitializedComputePipelineImpl(
+            const ComputePipelineDescriptor* descriptor) override;
+        Ref<RenderPipelineBase> CreateUninitializedRenderPipelineImpl(
+            const RenderPipelineDescriptor* descriptor) override;
+        void InitializeComputePipelineAsyncImpl(Ref<ComputePipelineBase> computePipeline,
+                                                WGPUCreateComputePipelineAsyncCallback callback,
+                                                void* userdata) override;
+        void InitializeRenderPipelineAsyncImpl(Ref<RenderPipelineBase> renderPipeline,
+                                               WGPUCreateRenderPipelineAsyncCallback callback,
+                                               void* userdata) override;
 
         void InitTogglesFromDriver();
-        void ShutDownImpl() override;
+        void DestroyImpl() override;
         MaybeError WaitForIdleForDestruction() override;
         ResultOrError<ExecutionSerial> CheckAndUpdateCompletedSerials() override;
 
@@ -127,6 +138,15 @@ namespace dawn_native { namespace metal {
         // a different thread so we guard access to it with a mutex.
         std::mutex mLastSubmittedCommandsMutex;
         NSPRef<id<MTLCommandBuffer>> mLastSubmittedCommands;
+
+        // The current estimation of timestamp period
+        float mTimestampPeriod = 1.0f;
+        // The base of CPU timestamp and GPU timestamp to measure the linear regression between GPU
+        // and CPU timestamps.
+        MTLTimestamp mCpuTimestamp API_AVAILABLE(macos(10.15), ios(14.0)) = 0;
+        MTLTimestamp mGpuTimestamp API_AVAILABLE(macos(10.15), ios(14.0)) = 0;
+        // The parameters for kalman filter
+        std::unique_ptr<KalmanInfo> mKalmanInfo;
     };
 
 }}  // namespace dawn_native::metal

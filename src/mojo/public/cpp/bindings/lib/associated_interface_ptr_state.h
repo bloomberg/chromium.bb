@@ -15,10 +15,9 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
@@ -105,7 +104,10 @@ class AssociatedInterfacePtrState : public AssociatedInterfacePtrStateBase {
  public:
   using Proxy = typename Interface::Proxy_;
 
-  AssociatedInterfacePtrState() {}
+  AssociatedInterfacePtrState() = default;
+  AssociatedInterfacePtrState(const AssociatedInterfacePtrState&) = delete;
+  AssociatedInterfacePtrState& operator=(const AssociatedInterfacePtrState&) =
+      delete;
   ~AssociatedInterfacePtrState() = default;
 
   Proxy* instance() {
@@ -125,7 +127,7 @@ class AssociatedInterfacePtrState : public AssociatedInterfacePtrStateBase {
         info.PassHandle(), info.version(),
         std::make_unique<typename Interface::ResponseValidator_>(),
         std::move(runner), Interface::Name_);
-    proxy_.reset(new Proxy(endpoint_client()));
+    proxy_ = std::make_unique<Proxy>(endpoint_client());
   }
 
   // After this method is called, the object is in an invalid state and
@@ -138,8 +140,6 @@ class AssociatedInterfacePtrState : public AssociatedInterfacePtrStateBase {
 
  private:
   std::unique_ptr<Proxy> proxy_;
-
-  DISALLOW_COPY_AND_ASSIGN(AssociatedInterfacePtrState);
 };
 
 }  // namespace internal

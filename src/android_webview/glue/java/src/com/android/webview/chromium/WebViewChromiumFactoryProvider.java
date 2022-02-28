@@ -293,7 +293,18 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                 resourcePackage = packageInfo.applicationInfo.metaData.getString(
                         "com.android.webview.WebViewDonorPackage", resourcePackage);
             }
-            int packageId = webViewDelegate.getPackageId(ctx.getResources(), resourcePackage);
+            int packageId;
+            try {
+                packageId = webViewDelegate.getPackageId(ctx.getResources(), resourcePackage);
+            } catch (RuntimeException e) {
+                // We failed to find the package ID, which likely means this context's AssetManager
+                // doesn't have WebView loaded in it. This may be because WebViewFactory doesn't add
+                // the package persistently to ResourcesManager and the app's AssetManager has been
+                // recreated. Try adding it again using WebViewDelegate, which does add it
+                // persistently.
+                webViewDelegate.addWebViewAssetPath(ctx);
+                packageId = webViewDelegate.getPackageId(ctx.getResources(), resourcePackage);
+            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
                     && AwBrowserProcess.getApkType() != ApkType.TRICHROME
                     && packageId > SHARED_LIBRARY_MAX_ID) {
@@ -330,7 +341,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     multiProcess, packageId);
 
             // Enable modern SameSite cookie behavior if the app targets at least S.
-            if (BuildInfo.targetsAtLeastS()) {
+            if (ctx.getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.S) {
                 CommandLine cl = CommandLine.getInstance();
                 cl.appendSwitch(AwSwitches.WEBVIEW_ENABLE_MODERN_COOKIE_SAME_SITE);
             }
@@ -418,12 +429,16 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                             actions.size());
                     RecordHistogram.recordCount100Histogram(
                             "Android.WebView.SafeMode.ActionsCount", actions.size());
-                    controller.executeActions(actions);
+                    boolean success = controller.executeActions(actions);
                     long safeModeQueryExecuteEnd = SystemClock.elapsedRealtime();
                     RecordHistogram.recordTimesHistogram(
                             "Android.WebView.SafeMode.QueryAndExecuteBlockingTime",
                             safeModeQueryExecuteEnd - safeModeQueryExecuteStart);
-                    logSafeModeExecutionResult(SafeModeExecutionResult.SUCCESS);
+                    if (success) {
+                        logSafeModeExecutionResult(SafeModeExecutionResult.SUCCESS);
+                    } else {
+                        logSafeModeExecutionResult(SafeModeExecutionResult.ACTION_FAILED);
+                    }
                 } catch (Throwable t) {
                     // Don't let SafeMode crash WebView. Instead just log the error.
                     Log.e(TAG, "WebViewSafeMode threw exception: ", t);
@@ -448,7 +463,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                 SystemClock.uptimeMillis() - startTime);
 
         /* TODO(torne): re-enable this once the API change is sorted out
-        if (BuildInfo.isAtLeastS()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             // TODO: Use the framework constants as indices in timestamps array.
             startTime = mWebViewDelegate.getTimestamps()[0];
             RecordHistogram.recordTimesHistogram(
@@ -460,11 +475,13 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     // These values are persisted to logs. Entries should not be renumbered and
     // numeric values should never be reused.
-    @IntDef({SafeModeExecutionResult.SUCCESS, SafeModeExecutionResult.UNKNOWN_ERROR})
+    @IntDef({SafeModeExecutionResult.SUCCESS, SafeModeExecutionResult.UNKNOWN_ERROR,
+            SafeModeExecutionResult.ACTION_FAILED})
     private @interface SafeModeExecutionResult {
         int SUCCESS = 0;
         int UNKNOWN_ERROR = 1;
-        int COUNT = 2;
+        int ACTION_FAILED = 2;
+        int COUNT = 3;
     }
 
     private static void logSafeModeExecutionResult(@SafeModeExecutionResult int result) {
@@ -790,5 +807,10 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     @Override
     public PacProcessor getPacProcessor() {
         return GlueApiHelperForR.getPacProcessor();
+    }
+
+    @Override
+    public PacProcessor createPacProcessor() {
+        return GlueApiHelperForR.createPacProcessor();
     }
 }

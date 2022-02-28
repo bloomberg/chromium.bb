@@ -7,9 +7,8 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/message_center/arc_notification_manager_base.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -67,15 +66,16 @@ class PopupNotificationBlocker : public message_center::NotificationBlocker {
  public:
   explicit PopupNotificationBlocker(MessageCenter* message_center)
       : NotificationBlocker(message_center) {}
+
+  PopupNotificationBlocker(const PopupNotificationBlocker&) = delete;
+  PopupNotificationBlocker& operator=(const PopupNotificationBlocker&) = delete;
+
   ~PopupNotificationBlocker() override = default;
 
   bool ShouldShowNotificationAsPopup(
       const message_center::Notification& notification) const override {
     return false;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PopupNotificationBlocker);
 };
 
 }  // namespace

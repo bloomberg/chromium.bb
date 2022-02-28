@@ -92,7 +92,7 @@ XLA_TEST_F(WhileTest, WhileWithScalarS64Result) {
   {
     XlaBuilder builder("condition");
     auto prev = Parameter(&builder, 0, result_shape, "prev");
-    Gt(ConstantR0<int64>(&builder, 5), prev);
+    Gt(ConstantR0<int64_t>(&builder, 5), prev);
     condition = builder.Build().ConsumeValueOrDie();
   }
 
@@ -101,17 +101,17 @@ XLA_TEST_F(WhileTest, WhileWithScalarS64Result) {
   {
     XlaBuilder builder("body");
     auto prev = Parameter(&builder, 0, result_shape, "prev");
-    auto input = ConstantR0<int64>(&builder, 1);
+    auto input = ConstantR0<int64_t>(&builder, 1);
     Add(input, prev);
     body = builder.Build().ConsumeValueOrDie();
   }
 
   // Create a While node with computations for the condition and the body.
   XlaBuilder builder(TestName());
-  auto init = ConstantR0<int64>(&builder, 0);
+  auto init = ConstantR0<int64_t>(&builder, 0);
   While(condition, body, init);
 
-  ComputeAndCompareR0<int64>(&builder, 5, {});
+  ComputeAndCompareR0<int64_t>(&builder, 5, {});
 }
 
 XLA_TEST_F(WhileTest, WhileWithScalarResultNonConstInit) {
@@ -1259,9 +1259,8 @@ XLA_TEST_F(WhileTest, DISABLED_ON_INTERPRETER(WhileInfeedCondition)) {
   ComputeAndCompareR0<int32>(&builder, 2, {});
 }
 
-void BM_WhileLoop(int num_iters) {
+void BM_WhileLoop(::testing::benchmark::State& state) {
   // Benchmark a simple kernel to measure while loop overheads.
-  tensorflow::testing::StopTiming();
 
   se::Platform* platform = PlatformUtil::GetDefaultPlatform().ValueOrDie();
   auto executors = PlatformUtil::GetStreamExecutors(platform).ValueOrDie();
@@ -1269,13 +1268,13 @@ void BM_WhileLoop(int num_iters) {
   LocalClient* client =
       ClientLibrary::GetOrCreateLocalClient(platform).ValueOrDie();
 
-  const int64 seq_len = 100;
+  const int64_t seq_len = 100;
   Shape loop_state_shape = ShapeUtil::MakeTupleShape(
       {ShapeUtil::MakeShape(S32, {}),
        ShapeUtil::MakeShape(F32, {seq_len, 1024, 1024})});
 
   // Create while condition computation with 'loop_limit'.
-  const int32 loop_limit = 100;
+  const int32_t loop_limit = 100;
   XlaComputation condition;
   {
     XlaBuilder builder("condition");
@@ -1330,8 +1329,7 @@ void BM_WhileLoop(int num_iters) {
   }
 
   // Run benchmark.
-  tensorflow::testing::StartTiming();
-  for (int i = 0; i < num_iters; ++i) {
+  for (auto s : state) {
     auto result =
         executable->Run(absl::Span<const ShapedBuffer* const>(), options);
     ASSERT_TRUE(result.ok());

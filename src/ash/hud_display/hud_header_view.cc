@@ -9,11 +9,12 @@
 #include "ash/hud_display/hud_properties.h"
 #include "ash/hud_display/solid_source_background.h"
 #include "ash/hud_display/tab_strip.h"
+#include "base/bind.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
@@ -43,7 +44,7 @@ class BottomLeftOuterBackground : public views::Background {
   // views::Background
   void Paint(gfx::Canvas* canvas, views::View* view) const override {
     const SkScalar circle_size = inner_radius_ * 2;
-    const int bottom_edge = view->height();
+    const SkScalar bottom_edge = view->height();
 
     SkPath path;
     path.moveTo(0, bottom_edge);
@@ -74,7 +75,7 @@ class SettingsButton : public views::ImageButton {
     SetImage(views::Button::ButtonState::STATE_NORMAL,
              gfx::CreateVectorIcon(vector_icons::kSettingsIcon,
                                    kHUDSettingsIconSize, kHUDDefaultColor));
-    SetBorder(views::CreateEmptyBorder(gfx::Insets(kSettingsIconBorder)));
+    SetBorder(views::CreateEmptyBorder(gfx::Insets(kHUDSettingsIconBorder)));
     SetProperty(kHUDClickHandler, HTCLIENT);
 
     SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
@@ -172,7 +173,7 @@ HUDHeaderView::HUDHeaderView(HUDDisplayView* hud) {
   views::View* header_background =
       AddChildView(std::make_unique<views::View>());
   header_background->SetBackground(std::make_unique<SolidSourceBackground>(
-      kHUDBackground, kTabOverlayCornerRadius));
+      kHUDBackground, kHUDTabOverlayCornerRadius));
 
   views::View* header_buttons = AddChildView(std::make_unique<views::View>());
   header_buttons
@@ -196,7 +197,7 @@ HUDHeaderView::HUDHeaderView(HUDDisplayView* hud) {
   // background padding.
   views::View* padding = AddChildView(std::make_unique<views::View>());
   padding->SetBackground(std::make_unique<BottomLeftOuterBackground>(
-      kHUDBackground, kTabOverlayCornerRadius));
+      kHUDBackground, kHUDTabOverlayCornerRadius));
 
   SetLayoutManager(std::make_unique<HUDHeaderLayout>(header_buttons, padding));
 }

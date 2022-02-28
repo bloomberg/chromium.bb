@@ -11,10 +11,9 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/common/navigation_client.mojom-forward.h"
-#include "content/common/navigation_params.mojom-forward.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
@@ -26,6 +25,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-forward.h"
+#include "third_party/blink/public/mojom/navigation/navigation_params.mojom-forward.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-forward.h"
 #include "ui/base/page_transition_types.h"
 
@@ -46,22 +46,31 @@ class TestRenderFrameHostCreationObserver : public WebContentsObserver {
   RenderFrameHost* last_created_frame() const { return last_created_frame_; }
 
  private:
-  RenderFrameHost* last_created_frame_;
+  raw_ptr<RenderFrameHost> last_created_frame_;
 };
 
 class TestRenderFrameHost : public RenderFrameHostImpl,
                             public RenderFrameHostTester {
  public:
-  TestRenderFrameHost(SiteInstance* site_instance,
-                      scoped_refptr<RenderViewHostImpl> render_view_host,
-                      RenderFrameHostDelegate* delegate,
-                      FrameTree* frame_tree,
-                      FrameTreeNode* frame_tree_node,
-                      int32_t routing_id,
-                      mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
-                      const blink::LocalFrameToken& frame_token,
-                      LifecycleStateImpl lifecycle_state);
+  TestRenderFrameHost(
+      SiteInstance* site_instance,
+      scoped_refptr<RenderViewHostImpl> render_view_host,
+      RenderFrameHostDelegate* delegate,
+      FrameTree* frame_tree,
+      FrameTreeNode* frame_tree_node,
+      int32_t routing_id,
+      mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
+      const blink::LocalFrameToken& frame_token,
+      LifecycleStateImpl lifecycle_state,
+      scoped_refptr<BrowsingContextState> browsing_context_state);
+
+  TestRenderFrameHost(const TestRenderFrameHost&) = delete;
+  TestRenderFrameHost& operator=(const TestRenderFrameHost&) = delete;
+
   ~TestRenderFrameHost() override;
+
+  // Flushes mojo messages on `local_frame_`.
+  void FlushLocalFrameMessages();
 
   // RenderFrameHostImpl overrides (same values, but in Test*/Mock* types)
   TestRenderViewHost* GetRenderViewHost() override;
@@ -92,8 +101,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SimulateUserActivation() override;
   const std::vector<std::string>& GetConsoleMessages() override;
   int GetHeavyAdIssueCount(HeavyAdIssueType type) override;
-  void SimulateManifestURLUpdate(
-      const absl::optional<GURL>& manifest_url) override;
+  void SimulateManifestURLUpdate(const GURL& manifest_url) override;
 
   void SendNavigate(int nav_entry_id,
                     bool did_create_new_entry,
@@ -150,6 +158,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       net::HttpResponseInfo::ConnectionInfo connection_info,
       absl::optional<net::SSLInfo> ssl_info,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
+      mojo::ScopedDataPipeConsumerHandle response_body,
       const std::vector<std::string>& dns_aliases);
 
   // Used to simulate the commit of a navigation having been processed in the
@@ -212,8 +221,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SendCommitNavigation(
       mojom::NavigationClient* navigation_client,
       NavigationRequest* navigation_request,
-      mojom::CommonNavigationParamsPtr common_params,
-      mojom::CommitNavigationParamsPtr commit_params,
+      blink::mojom::CommonNavigationParamsPtr common_params,
+      blink::mojom::CommitNavigationParamsPtr commit_params,
       network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -231,8 +240,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SendCommitFailedNavigation(
       mojom::NavigationClient* navigation_client,
       NavigationRequest* navigation_request,
-      mojom::CommonNavigationParamsPtr common_params,
-      mojom::CommitNavigationParamsPtr commit_params,
+      blink::mojom::CommonNavigationParamsPtr common_params,
+      blink::mojom::CommitNavigationParamsPtr commit_params,
       bool has_stale_copy_in_cache,
       int32_t error_code,
       int32_t extended_error_code,
@@ -255,6 +264,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       net::HttpResponseInfo::ConnectionInfo connection_info,
       absl::optional<net::SSLInfo> ssl_info,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
+      mojo::ScopedDataPipeConsumerHandle response_body,
       const std::vector<std::string>& dns_aliases);
 
   // Computes the page ID for a pending navigation in this RenderFrameHost;
@@ -295,8 +305,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
 
   mojo::PendingRemote<blink::mojom::WebBluetoothService>
       dummy_web_bluetooth_service_remote_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestRenderFrameHost);
 };
 
 }  // namespace content

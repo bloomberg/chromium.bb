@@ -4,7 +4,6 @@
 
 #include "content/browser/accessibility/touch_passthrough_manager.h"
 
-#include "base/containers/contains.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -15,7 +14,6 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_frame_metadata_provider_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/input/synthetic_pointer_action_list_params.h"
 #include "content/common/input/synthetic_pointer_action_params.h"

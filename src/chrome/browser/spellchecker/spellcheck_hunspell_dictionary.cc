@@ -15,10 +15,10 @@
 #include "base/location.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -36,6 +36,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 #if !defined(OS_ANDROID)

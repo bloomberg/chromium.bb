@@ -5,6 +5,7 @@
 #include "src/debug/debug-frames.h"
 
 #include "src/builtins/accessors.h"
+#include "src/deoptimizer/deoptimizer.h"
 #include "src/execution/frames-inl.h"
 
 #if V8_ENABLE_WEBASSEMBLY
@@ -93,13 +94,9 @@ bool FrameInspector::IsJavaScript() { return frame_->is_java_script(); }
 
 bool FrameInspector::ParameterIsShadowedByContextLocal(
     Handle<ScopeInfo> info, Handle<String> parameter_name) {
-  VariableMode mode;
-  InitializationFlag init_flag;
-  MaybeAssignedFlag maybe_assigned_flag;
-  IsStaticFlag is_static_flag;
-  return ScopeInfo::ContextSlotIndex(*info, *parameter_name, &mode, &init_flag,
-                                     &maybe_assigned_flag,
-                                     &is_static_flag) != -1;
+  VariableLookupResult lookup_result;
+  return ScopeInfo::ContextSlotIndex(*info, *parameter_name, &lookup_result) !=
+         -1;
 }
 
 RedirectActiveFunctions::RedirectActiveFunctions(SharedFunctionInfo shared,

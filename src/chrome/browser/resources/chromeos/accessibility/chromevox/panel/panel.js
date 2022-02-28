@@ -143,6 +143,16 @@ Panel = class {
 
     /** @private {boolean} */
     Panel.tutorialReadyForTesting_ = false;
+
+    /** @private {boolean} */
+    Panel.mockTouchGestureSourceForTesting_ = false;
+  }
+
+  /**
+   * Enables touch gesture mode for testing.
+   */
+  static setTouchGestureSourceForTesting() {
+    Panel.mockTouchGestureSourceForTesting_ = true;
   }
 
   /**
@@ -238,6 +248,14 @@ Panel = class {
       return;
     }
 
+    // Change the title of ChromeVox menu based on menu's state.
+    $('menus_title')
+        .setAttribute(
+            'msgid',
+            mode === Panel.Mode.FULLSCREEN_MENUS ? 'menus_collapse_title' :
+                                                   'menus_title');
+    Msgs.addTranslatedMessagesToDom(document);
+
     Panel.mode_ = mode;
 
     document.title = Msgs.getMsg(Panel.ModeInfo[Panel.mode_].title);
@@ -290,25 +308,43 @@ Panel = class {
 
     Panel.setMode(Panel.Mode.FULLSCREEN_MENUS);
 
-    const onFocusDo = () => {
+    const onFocusDo = async () => {
       window.removeEventListener('focus', onFocusDo);
       // Clear any existing menus and clear the callback.
       Panel.clearMenus();
       Panel.pendingCallback_ = null;
 
+      // Save the ChromeVox range (on the non-ChromeVox Menu UI first).
+      const bkgnd = chrome.extension.getBackgroundPage();
+      const range = bkgnd.ChromeVoxState.instance.getCurrentRange();
+      const node = range ? range.start.node : null;
+      const touchScreen =
+          (bkgnd['EventSourceState']['get']() ===
+               EventSourceType.TOUCH_GESTURE ||
+           this.mockTouchGestureSourceForTesting_);
+
       // Build the top-level menus.
       const searchMenu = Panel.addSearchMenu('panel_search_menu');
       const jumpMenu = Panel.addMenu('panel_menu_jump');
       const speechMenu = Panel.addMenu('panel_menu_speech');
+      const touchMenu =
+          touchScreen ? Panel.addMenu('panel_menu_touchgestures') : null;
       const tabsMenu = Panel.addMenu('panel_menu_tabs');
       const chromevoxMenu = Panel.addMenu('panel_menu_chromevox');
       const actionsMenu = Panel.addMenu('panel_menu_actions');
 
       // Add a menu item that opens the full list of ChromeBook keyboard
       // shortcuts. We want this to be at the top of the ChromeVox menu.
+      let localizedSlash = await new Promise(
+          resolve =>
+              chrome.accessibilityPrivate.getLocalizedDomKeyStringForKeyCode(
+                  KeyCode.OEM_2, resolve));
+      if (!localizedSlash) {
+        localizedSlash = '/';
+      }
       chromevoxMenu.addMenuItem(
-          Msgs.getMsg('open_keyboard_shortcuts_menu'), 'Ctrl+Alt+/', '', '',
-          function() {
+          Msgs.getMsg('open_keyboard_shortcuts_menu'),
+          `Ctrl+Alt+${localizedSlash}`, '', '', function() {
             EventGenerator.sendKeyPress(
                 KeyCode.OEM_2 /* forward slash */, {'ctrl': true, 'alt': true});
           });
@@ -335,21 +371,20 @@ Panel = class {
       // commands for touch).
 
       // Get the key map from the background page.
-      const bkgnd = chrome.extension.getBackgroundPage();
       const keymap = bkgnd['KeyMap']['get']();
 
       // Make a copy of the key bindings, get the localized title of each
       // command, and then sort them.
       const sortedBindings = keymap.bindings().slice();
-      sortedBindings.forEach(goog.bind(function(binding) {
+      for (let binding, i = 0; binding = sortedBindings[i]; i++) {
         const command = binding.command;
         const keySeq = binding.sequence;
-        binding.keySeq = KeyUtil.keySequenceToString(keySeq, true);
+        binding.keySeq = await KeyUtil.keySequenceToString(keySeq, true);
         const titleMsgId = CommandStore.messageForCommand(command);
         if (!titleMsgId) {
           console.error('No localization for: ' + command);
           binding.title = '';
-          return;
+          continue;
         }
         let title = Msgs.getMsg(titleMsgId);
         // Convert to title case.
@@ -357,7 +392,7 @@ Panel = class {
           return word.charAt(0).toUpperCase() + word.substr(1);
         });
         binding.title = title;
-      }, this));
+      }
       sortedBindings.sort(function(binding1, binding2) {
         return binding1.title.localeCompare(binding2.title);
       });
@@ -365,7 +400,7 @@ Panel = class {
       // Insert items from the bindings into the menus.
       const sawBindingSet = {};
       const gestures = Object.keys(GestureCommandData.GESTURE_COMMAND_MAP);
-      sortedBindings.forEach(goog.bind(function(binding) {
+      sortedBindings.forEach((binding) => {
         const command = binding.command;
         if (sawBindingSet[command]) {
           return;
@@ -373,12 +408,11 @@ Panel = class {
         sawBindingSet[command] = true;
         const category = CommandStore.categoryForCommand(binding.command);
         const menu = category ? categoryToMenu[category] : null;
-        const eventSource = bkgnd['EventSourceState']['get']();
         if (binding.title && menu) {
           let keyText;
           let brailleText;
           let gestureText;
-          if (eventSource === EventSourceType.TOUCH_GESTURE) {
+          if (touchScreen) {
             for (let i = 0, gesture; gesture = gestures[i]; i++) {
               const data = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
               if (data && data.command === command) {
@@ -399,7 +433,41 @@ Panel = class {
                 CommandHandler['onCommand'](binding.command);
               }, binding.command);
         }
-      }, this));
+      });
+
+      // Add Touch Gestures menu items.
+      if (touchScreen) {
+        const touchGestureItems = [];
+        for (const key in GestureCommandData.GESTURE_COMMAND_MAP) {
+          const command =
+              GestureCommandData.GESTURE_COMMAND_MAP[key]['command'];
+          if (!command) {
+            continue;
+          }
+
+          const gestureText =
+              Msgs.getMsg(GestureCommandData.GESTURE_COMMAND_MAP[key]['msgId']);
+          const msgForCmd =
+              GestureCommandData
+                  .GESTURE_COMMAND_MAP[key]['commandDescriptionMsgId'] ||
+              CommandStore.messageForCommand(command);
+          const titleText = Msgs.getMsg(msgForCmd);
+          touchGestureItems.push({titleText, gestureText, command});
+        }
+
+        touchGestureItems.sort(function(item1, item2) {
+          return item1.titleText.localeCompare(item2.titleText);
+        });
+
+        for (const item of touchGestureItems) {
+          touchMenu.addMenuItem(
+              item.titleText, '', '', item.gestureText, function() {
+                const CommandHandler =
+                    chrome.extension.getBackgroundPage()['CommandHandler'];
+                CommandHandler['onCommand'](item.command);
+              }, item.command);
+        }
+      }
 
       // Add all open tabs to the Tabs menu.
       bkgnd.chrome.windows.getLastFocused(function(lastFocusedWindow) {
@@ -454,8 +522,6 @@ Panel = class {
         {menuTitle: 'role_table', predicate: AutomationPredicate.table}
       ];
 
-      const range = bkgnd.ChromeVoxState.instance.getCurrentRange();
-      const node = range ? range.start.node : null;
       for (let i = 0; i < roleListMenuMapping.length; ++i) {
         const menuTitle = roleListMenuMapping[i].menuTitle;
         const predicate = roleListMenuMapping[i].predicate;

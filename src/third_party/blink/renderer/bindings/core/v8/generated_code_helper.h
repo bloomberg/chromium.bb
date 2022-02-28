@@ -9,6 +9,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_GENERATED_CODE_HELPER_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_GENERATED_CODE_HELPER_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -27,17 +28,12 @@ class QualifiedName;
 class Range;
 class ScriptState;
 
-CORE_EXPORT void V8ConstructorAttributeGetter(
-    v8::Local<v8::Name> property_name,
-    const v8::PropertyCallbackInfo<v8::Value>&,
-    const WrapperTypeInfo*);
-
 // ExceptionToRejectPromiseScope converts a possible exception to a reject
 // promise and returns the promise instead of throwing the exception.
 //
 // Promise-returning DOM operations are required to always return a promise
 // and to never throw an exception.
-// See also http://heycam.github.io/webidl/#es-operations
+// See also https://webidl.spec.whatwg.org/#es-operations
 class CORE_EXPORT ExceptionToRejectPromiseScope final {
   STACK_ALLOCATED();
 
@@ -46,7 +42,7 @@ class CORE_EXPORT ExceptionToRejectPromiseScope final {
                                 ExceptionState& exception_state)
       : info_(info), exception_state_(exception_state) {}
   ~ExceptionToRejectPromiseScope() {
-    if (!exception_state_.HadException())
+    if (LIKELY(!exception_state_.HadException()))
       return;
 
     // As exceptions must always be created in the current realm, reject
@@ -70,33 +66,6 @@ CORE_EXPORT bool IsCallbackFunctionRunnableIgnoringPause(
     const ScriptState* callback_relevant_script_state,
     const ScriptState* incumbent_script_state);
 
-using InstallTemplateFunction =
-    void (*)(v8::Isolate* isolate,
-             const DOMWrapperWorld& world,
-             v8::Local<v8::FunctionTemplate> interface_template);
-
-using InstallRuntimeEnabledFeaturesFunction =
-    void (*)(v8::Isolate*,
-             const DOMWrapperWorld&,
-             v8::Local<v8::Object> instance_object,
-             v8::Local<v8::Object> prototype_object,
-             v8::Local<v8::Function> interface_object);
-
-using InstallRuntimeEnabledFeaturesOnTemplateFunction = InstallTemplateFunction;
-
-// Helpers for [CEReactions, Reflect] IDL attributes.
-void V8SetReflectedBooleanAttribute(
-    const v8::FunctionCallbackInfo<v8::Value>& info,
-    const char* interface_name,
-    const char* idl_attribute_name,
-    const QualifiedName& content_attr);
-void V8SetReflectedDOMStringAttribute(
-    const v8::FunctionCallbackInfo<v8::Value>& info,
-    const QualifiedName& content_attr);
-void V8SetReflectedNullableDOMStringAttribute(
-    const v8::FunctionCallbackInfo<v8::Value>& info,
-    const QualifiedName& content_attr);
-
 namespace bindings {
 
 CORE_EXPORT void SetupIDLInterfaceTemplate(
@@ -115,6 +84,12 @@ CORE_EXPORT void SetupIDLNamespaceTemplate(
 CORE_EXPORT void SetupIDLCallbackInterfaceTemplate(
     v8::Isolate* isolate,
     const WrapperTypeInfo* wrapper_type_info,
+    v8::Local<v8::FunctionTemplate> interface_template);
+
+CORE_EXPORT void SetupIDLObservableArrayBackingListTemplate(
+    v8::Isolate* isolate,
+    const WrapperTypeInfo* wrapper_type_info,
+    v8::Local<v8::ObjectTemplate> instance_template,
     v8::Local<v8::FunctionTemplate> interface_template);
 
 // Returns the length of arguments ignoring the undefined values at the end.
@@ -145,7 +120,7 @@ typename IDLSequence<T>::ImplType VariadicArgumentsToNativeValues(
   for (int i = start_index; i < length; ++i) {
     result.UncheckedAppend(NativeValueTraits<T>::ArgumentValue(
         isolate, i, info[i], exception_state, extra_args...));
-    if (exception_state.HadException())
+    if (UNLIKELY(exception_state.HadException()))
       return VectorType();
   }
   return std::move(result);
@@ -209,37 +184,35 @@ CORE_EXPORT v8::Local<v8::Array> EnumerateIndexedProperties(
 //
 // |try_block| must be the innermost v8::TryCatch and it's used to internally
 // capture an exception, which is rethrown in |exception_state|.
-template <typename NVTTag, bool is_required, typename T>
-bool ConvertDictionaryMember(v8::Isolate* isolate,
-                             v8::Local<v8::Context> current_context,
-                             v8::Local<v8::Object> v8_dictionary,
-                             v8::Local<v8::Name> v8_member_name,
-                             const char* dictionary_name,
-                             const char* member_name,
-                             T& value,
-                             bool& presence,
-                             v8::TryCatch& try_block,
-                             ExceptionState& exception_state) {
+template <typename IDLType, bool is_required, typename ValueType>
+bool GetDictionaryMemberFromV8Object(v8::Isolate* isolate,
+                                     v8::Local<v8::Context> current_context,
+                                     v8::Local<v8::Object> v8_dictionary,
+                                     v8::Local<v8::Name> v8_member_name,
+                                     bool& presence,
+                                     ValueType& value,
+                                     v8::TryCatch& try_block,
+                                     ExceptionState& exception_state) {
   v8::Local<v8::Value> v8_value;
   if (!v8_dictionary->Get(current_context, v8_member_name).ToLocal(&v8_value)) {
     exception_state.RethrowV8Exception(try_block.Exception());
-    try_block.Reset();
     return false;
   }
 
   if (v8_value->IsUndefined()) {
     if (is_required) {
       exception_state.ThrowTypeError(ExceptionMessages::FailedToGet(
-          member_name, dictionary_name, "Required member is undefined."));
+          exception_state.GetInnerMostContext().GetPropertyName(),
+          exception_state.GetInnerMostContext().GetClassName(),
+          "Required member is undefined."));
       return false;
     }
-    presence = false;
     return true;
   }
 
-  value = NativeValueTraits<NVTTag>::NativeValue(isolate, v8_value,
-                                                 exception_state);
-  if (exception_state.HadException()) {
+  value = NativeValueTraits<IDLType>::NativeValue(isolate, v8_value,
+                                                  exception_state);
+  if (UNLIKELY(exception_state.HadException())) {
     return false;
   }
   presence = true;

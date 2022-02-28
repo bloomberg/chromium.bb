@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -60,15 +61,14 @@ class ExternalFileURLLoaderFactoryTest : public testing::Test {
     render_process_host_ =
         std::make_unique<content::MockRenderProcessHost>(profile);
 
-    auto* service = chromeos::file_system_provider::Service::Get(profile);
+    auto* service = ash::file_system_provider::Service::Get(profile);
     service->RegisterProvider(
-        chromeos::file_system_provider::FakeExtensionProvider::Create(
-            kExtensionId));
+        ash::file_system_provider::FakeExtensionProvider::Create(kExtensionId));
     const auto kProviderId =
-        chromeos::file_system_provider::ProviderId::CreateFromExtensionId(
+        ash::file_system_provider::ProviderId::CreateFromExtensionId(
             kExtensionId);
     service->MountFileSystem(kProviderId,
-                             chromeos::file_system_provider::MountOptions(
+                             ash::file_system_provider::MountOptions(
                                  kFileSystemId, "Test FileSystem"));
 
     // Create the URLLoaderFactory.

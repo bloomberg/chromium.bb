@@ -33,7 +33,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink.h"
@@ -58,8 +57,12 @@ class PLATFORM_EXPORT ResourceTimingInfo
     return base::AdoptRef(
         new ResourceTimingInfo(type, time, context, destination));
   }
+  ResourceTimingInfo(const ResourceTimingInfo&) = delete;
+  ResourceTimingInfo& operator=(const ResourceTimingInfo&) = delete;
+
   base::TimeTicks InitialTime() const { return initial_time_; }
 
+  void SetInitiatorType(const AtomicString& type) { type_ = type; }
   const AtomicString& InitiatorType() const { return type_; }
 
   void SetLoadResponseEnd(base::TimeTicks time) { load_response_end_ = time; }
@@ -139,8 +142,6 @@ class PLATFORM_EXPORT ResourceTimingInfo
   // empty.
   mutable mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
       worker_timing_receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResourceTimingInfo);
 };
 
 }  // namespace blink

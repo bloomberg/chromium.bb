@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 
@@ -29,6 +28,10 @@ class ManifestService {
   ManifestService(const IPC::ChannelHandle& handle,
                   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
                   base::WaitableEvent* shutdown_event);
+
+  ManifestService(const ManifestService&) = delete;
+  ManifestService& operator=(const ManifestService&) = delete;
+
   ~ManifestService();
 
   void StartupInitializationComplete();
@@ -39,8 +42,6 @@ class ManifestService {
   scoped_refptr<IPC::SyncMessageFilter> filter_;
 
   base::Lock open_resource_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(ManifestService);
 };
 
 }  // namespace ppapi

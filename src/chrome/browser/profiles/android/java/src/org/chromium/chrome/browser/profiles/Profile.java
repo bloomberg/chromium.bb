@@ -12,8 +12,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CheckDiscard;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
-import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.profile_metrics.BrowserProfileType;
+import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -77,7 +77,7 @@ public class Profile implements BrowserContextHandle {
      * Returns the {@link BrowserProfileType} for the corresponding profile.
      *
      * Please note {@link BrowserProfileType} is generated from native so, it also contains other
-     * types of Profile like Guest, System, EphemeralGuest that we don't support in Android.
+     * types of Profile like Guest and System that we don't support in Android.
      */
     public static @BrowserProfileType int getBrowserProfileTypeFromProfile(Profile profile) {
         assert profile != null;

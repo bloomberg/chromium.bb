@@ -5,8 +5,8 @@
 // clang-format off
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {IncompatibleApplication, IncompatibleApplicationsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {IncompatibleApplicationsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 // clang-format on
 
 /** @implements {IncompatibleApplicationsBrowserProxy} */
@@ -106,8 +106,8 @@ suite('incompatibleApplicationsHandler', function() {
    */
   function validateList(incompatibleApplications) {
     if (incompatibleApplications.length === 0) {
-      const list =
-          incompatibleApplicationsPage.$$('#incompatible-applications-list');
+      const list = incompatibleApplicationsPage.shadowRoot.querySelector(
+          '#incompatible-applications-list');
       assertEquals('none', list.style.display);
       // The contents of a dom-if that is false no longer receive updates. When
       // there are no applications the parent dom-if becomes false, so only
@@ -125,8 +125,8 @@ suite('incompatibleApplicationsHandler', function() {
   setup(function() {
     incompatibleApplicationsBrowserProxy =
         new TestIncompatibleApplicationsBrowserProxy();
-    IncompatibleApplicationsBrowserProxyImpl.instance_ =
-        incompatibleApplicationsBrowserProxy;
+    IncompatibleApplicationsBrowserProxyImpl.setInstance(
+        incompatibleApplicationsBrowserProxy);
   });
 
   /**
@@ -180,9 +180,9 @@ suite('incompatibleApplicationsHandler', function() {
 
           // Retrieve the incompatible-application-item and tap it. It should be
           // visible.
-          const item = incompatibleApplicationsPage.$$(
+          const item = incompatibleApplicationsPage.shadowRoot.querySelector(
               '.incompatible-application:not([hidden])');
-          item.$$('.action-button').click();
+          item.shadowRoot.querySelector('.action-button').click();
 
           return incompatibleApplicationsBrowserProxy.whenCalled(
               'startApplicationUninstallation');
@@ -206,9 +206,9 @@ suite('incompatibleApplicationsHandler', function() {
 
           // Retrieve the incompatible-application-item and tap it. It should be
           // visible.
-          const item = incompatibleApplicationsPage.$$(
+          const item = incompatibleApplicationsPage.shadowRoot.querySelector(
               '.incompatible-application:not([hidden])');
-          item.$$('.action-button').click();
+          item.shadowRoot.querySelector('.action-button').click();
 
           return incompatibleApplicationsBrowserProxy.whenCalled('openURL');
         })
@@ -257,7 +257,9 @@ suite('incompatibleApplicationsHandler', function() {
       validateList(incompatibleApplicationsTestList);
 
 
-      const isDoneSection = incompatibleApplicationsPage.$$('#is-done-section');
+      const isDoneSection =
+          incompatibleApplicationsPage.shadowRoot.querySelector(
+              '#is-done-section');
       assertTrue(isDoneSection.hidden);
 
       // Send the event.

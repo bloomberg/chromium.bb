@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "remoting/protocol/authenticator.h"
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
 
@@ -33,6 +32,10 @@ namespace protocol {
 // an authentication key, which is used to establish the connection.
 class ThirdPartyAuthenticatorBase : public Authenticator {
  public:
+  ThirdPartyAuthenticatorBase(const ThirdPartyAuthenticatorBase&) = delete;
+  ThirdPartyAuthenticatorBase& operator=(const ThirdPartyAuthenticatorBase&) =
+      delete;
+
   ~ThirdPartyAuthenticatorBase() override;
 
   // Authenticator interface.
@@ -69,9 +72,6 @@ class ThirdPartyAuthenticatorBase : public Authenticator {
   State token_state_;
   bool started_;
   RejectionReason rejection_reason_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ThirdPartyAuthenticatorBase);
 };
 
 }  // namespace protocol

@@ -16,8 +16,8 @@
 
 use std::ptr::write_bytes;
 
-use endian_scalar::{emplace_scalar, read_scalar_at};
-use primitives::*;
+use crate::endian_scalar::emplace_scalar;
+use crate::primitives::*;
 
 /// VTableWriter compartmentalizes actions needed to create a vtable.
 #[derive(Debug)]
@@ -40,24 +40,18 @@ impl<'a> VTableWriter<'a> {
     /// to the provided value.
     #[inline(always)]
     pub fn write_vtable_byte_length(&mut self, n: VOffsetT) {
-        emplace_scalar::<VOffsetT>(&mut self.buf[..SIZE_VOFFSET], n);
+        unsafe {
+            emplace_scalar::<VOffsetT>(&mut self.buf[..SIZE_VOFFSET], n);
+        }
         debug_assert_eq!(n as usize, self.buf.len());
     }
 
     /// Writes an object length (in bytes) into the vtable.
     #[inline(always)]
     pub fn write_object_inline_size(&mut self, n: VOffsetT) {
-        emplace_scalar::<VOffsetT>(&mut self.buf[SIZE_VOFFSET..2 * SIZE_VOFFSET], n);
-    }
-
-    /// Gets an object field offset from the vtable. Only used for debugging.
-    ///
-    /// Note that this expects field offsets (which are like pointers), not
-    /// field ids (which are like array indices).
-    #[inline(always)]
-    pub fn get_field_offset(&self, vtable_offset: VOffsetT) -> VOffsetT {
-        let idx = vtable_offset as usize;
-        read_scalar_at::<VOffsetT>(&self.buf, idx)
+        unsafe {
+            emplace_scalar::<VOffsetT>(&mut self.buf[SIZE_VOFFSET..2 * SIZE_VOFFSET], n);
+        }
     }
 
     /// Writes an object field offset into the vtable.
@@ -67,7 +61,9 @@ impl<'a> VTableWriter<'a> {
     #[inline(always)]
     pub fn write_field_offset(&mut self, vtable_offset: VOffsetT, object_data_offset: VOffsetT) {
         let idx = vtable_offset as usize;
-        emplace_scalar::<VOffsetT>(&mut self.buf[idx..idx + SIZE_VOFFSET], object_data_offset);
+        unsafe {
+            emplace_scalar::<VOffsetT>(&mut self.buf[idx..idx + SIZE_VOFFSET], object_data_offset);
+        }
     }
 
     /// Clears all data in this VTableWriter. Used to cleanly undo a

@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
+import * as EmulationComponents from '../settings/emulation/components/components.js';
+
+import networkConfigViewStyles from './networkConfigView.css.js';
 
 const UIStrings = {
   /**
@@ -49,6 +50,10 @@ const UIStrings = {
    * a set of checkboxes to override the content encodings supported by the browser.
    */
   acceptedEncoding: 'Accepted `Content-Encoding`s',
+  /**
+  * @description Status text for successful update of client hints.
+  */
+  clientHintsStatusText: 'User agent updated.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/NetworkConfigView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -58,16 +63,16 @@ let networkConfigViewInstance: NetworkConfigView;
 export class NetworkConfigView extends UI.Widget.VBox {
   constructor() {
     super(true);
-    this.registerRequiredCSS('panels/network/networkConfigView.css', {enableLegacyPatching: false});
+
     this.contentElement.classList.add('network-config');
 
-    this._createCacheSection();
+    this.createCacheSection();
     this.contentElement.createChild('div').classList.add('panel-section-separator');
-    this._createNetworkThrottlingSection();
+    this.createNetworkThrottlingSection();
     this.contentElement.createChild('div').classList.add('panel-section-separator');
-    this._createUserAgentSection();
+    this.createUserAgentSection();
     this.contentElement.createChild('div').classList.add('panel-section-separator');
-    this._createAcceptedEncodingSection();
+    this.createAcceptedEncodingSection();
   }
 
   static instance(opts: {
@@ -86,7 +91,10 @@ export class NetworkConfigView extends UI.Widget.VBox {
     error: HTMLElement,
   } {
     const userAgentSetting = Common.Settings.Settings.instance().createSetting('customUserAgent', '');
-    const userAgentSelectElement = (document.createElement('select') as HTMLSelectElement);
+    const userAgentMetadataSetting =
+        Common.Settings.Settings.instance().createSetting<Protocol.Emulation.UserAgentMetadata|null>(
+            'customUserAgentMetadata', null);
+    const userAgentSelectElement = document.createElement('select');
     UI.ARIAUtils.setAccessibleName(userAgentSelectElement, title);
 
     const customOverride = {title: i18nString(UIStrings.custom), value: 'custom'};
@@ -111,7 +119,7 @@ export class NetworkConfigView extends UI.Widget.VBox {
     otherUserAgentElement.required = true;
     UI.ARIAUtils.setAccessibleName(otherUserAgentElement, otherUserAgentElement.placeholder);
 
-    const errorElement = (document.createElement('div') as HTMLElement);
+    const errorElement = document.createElement('div');
     errorElement.classList.add('network-config-input-validation-error');
     UI.ARIAUtils.markAsAlert(errorElement);
     if (!otherUserAgentElement.value) {
@@ -129,11 +137,15 @@ export class NetworkConfigView extends UI.Widget.VBox {
         otherUserAgentElement.value = value;
         UI.Tooltip.Tooltip.install(otherUserAgentElement, value);
         const userAgentMetadata = getUserAgentMetadata(value);
+        userAgentMetadataSetting.set(userAgentMetadata);
         SDK.NetworkManager.MultitargetNetworkManager.instance().setCustomUserAgentOverride(value, userAgentMetadata);
       } else {
+        userAgentMetadataSetting.set(null);
         otherUserAgentElement.select();
       }
       errorElement.textContent = '';
+      const userAgentChangeEvent = new CustomEvent('user-agent-change', {detail: {value}});
+      userAgentSelectElement.dispatchEvent(userAgentChangeEvent);
     }
 
     function settingChanged(): void {
@@ -169,7 +181,7 @@ export class NetworkConfigView extends UI.Widget.VBox {
     return {select: userAgentSelectElement, input: otherUserAgentElement, error: errorElement};
   }
 
-  _createSection(title: string, className?: string): Element {
+  private createSection(title: string, className?: string): Element {
     const section = this.contentElement.createChild('section', 'network-config-group');
     if (className) {
       section.classList.add(className);
@@ -178,27 +190,30 @@ export class NetworkConfigView extends UI.Widget.VBox {
     return section.createChild('div', 'network-config-fields');
   }
 
-  _createCacheSection(): void {
-    const section = this._createSection(i18nString(UIStrings.caching), 'network-config-disable-cache');
+  private createCacheSection(): void {
+    const section = this.createSection(i18nString(UIStrings.caching), 'network-config-disable-cache');
     section.appendChild(UI.SettingsUI.createSettingCheckbox(
         i18nString(UIStrings.disableCache), Common.Settings.Settings.instance().moduleSetting('cacheDisabled'), true));
   }
 
-  _createNetworkThrottlingSection(): void {
+  private createNetworkThrottlingSection(): void {
     const title = i18nString(UIStrings.networkThrottling);
-    const section = this._createSection(title, 'network-config-throttling');
+    const section = this.createSection(title, 'network-config-throttling');
     const networkThrottlingSelect = (section.createChild('select', 'chrome-select') as HTMLSelectElement);
     MobileThrottling.ThrottlingManager.throttlingManager().decorateSelectWithNetworkThrottling(networkThrottlingSelect);
     UI.ARIAUtils.setAccessibleName(networkThrottlingSelect, title);
   }
 
-  _createUserAgentSection(): void {
+  private createUserAgentSection(): void {
     const title = i18nString(UIStrings.userAgent);
-    const section = this._createSection(title, 'network-config-ua');
+    const section = this.createSection(title, 'network-config-ua');
     const checkboxLabel = UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.selectAutomatically), true);
     section.appendChild(checkboxLabel);
     const autoCheckbox = checkboxLabel.checkboxElement;
 
+    const userAgentMetadataSetting =
+        Common.Settings.Settings.instance().createSetting<Protocol.Emulation.UserAgentMetadata|null>(
+            'customUserAgentMetadata', null);
     const customUserAgentSetting = Common.Settings.Settings.instance().createSetting('customUserAgent', '');
     customUserAgentSetting.addChangeListener(() => {
       if (autoCheckbox.checked) {
@@ -215,6 +230,45 @@ export class NetworkConfigView extends UI.Widget.VBox {
     customUserAgentSelectBox.appendChild(customSelectAndInput.select);
     customUserAgentSelectBox.appendChild(customSelectAndInput.input);
     customUserAgentSelectBox.appendChild(customSelectAndInput.error);
+
+    const clientHintsContainer = customUserAgentSelectBox.createChild('div', 'client-hints-form');
+    const clientHints = new EmulationComponents.UserAgentClientHintsForm.UserAgentClientHintsForm();
+    const userAgentMetaDataSetting = userAgentMetadataSetting.get();
+    const initialUserAgentMetaData = getUserAgentMetadata(customSelectAndInput.select.value);
+    clientHints.value = {
+      showMobileCheckbox: true,
+      showSubmitButton: true,
+      metaData: userAgentMetaDataSetting || initialUserAgentMetaData || undefined,
+    };
+    clientHintsContainer.appendChild(clientHints);
+
+    customSelectAndInput.select.addEventListener('user-agent-change', (event: Event) => {
+      const userStringValue = (event as CustomEvent).detail.value;
+      const userAgentMetadata = userStringValue ? getUserAgentMetadata(userStringValue) : null;
+      clientHints.value = {
+        metaData: userAgentMetadata || undefined,
+        showMobileCheckbox: true,
+        showSubmitButton: true,
+      };
+      userAgentUpdateButtonStatusText.textContent = '';
+    });
+
+    clientHints.addEventListener('clienthintschange', () => {
+      customSelectAndInput.select.value = 'custom';
+      userAgentUpdateButtonStatusText.textContent = '';
+    });
+
+    clientHints.addEventListener('clienthintssubmit', (event: Event) => {
+      const metaData: Protocol.Emulation.UserAgentMetadata = (event as CustomEvent).detail.value;
+      const customUA = customUserAgentSetting.get();
+      userAgentMetadataSetting.set(metaData);
+      SDK.NetworkManager.MultitargetNetworkManager.instance().setCustomUserAgentOverride(customUA, metaData);
+      userAgentUpdateButtonStatusText.textContent = i18nString(UIStrings.clientHintsStatusText);
+    });
+
+    const userAgentUpdateButtonStatusText = section.createChild('span', 'status-text');
+    userAgentUpdateButtonStatusText.textContent = '';
+
     userAgentSelectBoxChanged();
 
     function userAgentSelectBoxChanged(): void {
@@ -223,15 +277,16 @@ export class NetworkConfigView extends UI.Widget.VBox {
       customSelectAndInput.select.disabled = !useCustomUA;
       customSelectAndInput.input.disabled = !useCustomUA;
       customSelectAndInput.error.hidden = !useCustomUA;
+      clientHints.disabled = !useCustomUA;
       const customUA = useCustomUA ? customUserAgentSetting.get() : '';
       const userAgentMetadata = useCustomUA ? getUserAgentMetadata(customUA) : null;
       SDK.NetworkManager.MultitargetNetworkManager.instance().setCustomUserAgentOverride(customUA, userAgentMetadata);
     }
   }
 
-  _createAcceptedEncodingSection(): void {
+  private createAcceptedEncodingSection(): void {
     const title = i18nString(UIStrings.acceptedEncoding);
-    const section = this._createSection(title, 'network-config-accepted-encoding');
+    const section = this.createSection(title, 'network-config-accepted-encoding');
     const checkboxLabel = UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.selectAutomatically), true);
     section.appendChild(checkboxLabel);
     const autoCheckbox = checkboxLabel.checkboxElement;
@@ -290,6 +345,10 @@ export class NetworkConfigView extends UI.Widget.VBox {
       customAcceptedEncodingSetting.set(encodings.join(','));
     }
   }
+  wasShown(): void {
+    super.wasShown();
+    this.registerCSSFiles([networkConfigViewStyles]);
+  }
 }
 
 function getUserAgentMetadata(userAgent: string): Protocol.Emulation.UserAgentMetadata|null {
@@ -331,6 +390,7 @@ export const userAgentGroups: UserAgentGroup[] = [
             {brand: 'Chromium', version: '%s'},
             {brand: 'Google Chrome', version: '%s'},
           ],
+          fullVersion: '%s',
           platform: 'Android',
           platformVersion: '4.0.2',
           architecture: '',
@@ -348,6 +408,7 @@ export const userAgentGroups: UserAgentGroup[] = [
             {brand: 'Chromium', version: '%s'},
             {brand: 'Google Chrome', version: '%s'},
           ],
+          fullVersion: '%s',
           platform: 'Android',
           platformVersion: '2.3.6',
           architecture: '',
@@ -393,6 +454,7 @@ export const userAgentGroups: UserAgentGroup[] = [
             {brand: 'Chromium', version: '%s'},
             {brand: 'Google Chrome', version: '%s'},
           ],
+          fullVersion: '%s',
           platform: 'Android',
           platformVersion: '6.0',
           architecture: '',
@@ -410,6 +472,7 @@ export const userAgentGroups: UserAgentGroup[] = [
             {brand: 'Chromium', version: '%s'},
             {brand: 'Google Chrome', version: '%s'},
           ],
+          fullVersion: '%s',
           platform: 'Android',
           platformVersion: '10',
           architecture: '',
@@ -427,6 +490,7 @@ export const userAgentGroups: UserAgentGroup[] = [
             {brand: 'Chromium', version: '%s'},
             {brand: 'Google Chrome', version: '%s'},
           ],
+          fullVersion: '%s',
           platform: 'Android',
           platformVersion: '4.3',
           architecture: '',
@@ -456,6 +520,7 @@ export const userAgentGroups: UserAgentGroup[] = [
             {brand: 'Chromium', version: '%s'},
             {brand: 'Google Chrome', version: '%s'},
           ],
+          fullVersion: '%s',
           platform: 'Chrome OS',
           platformVersion: '10066.0.0',
           architecture: 'x86',
@@ -473,6 +538,7 @@ export const userAgentGroups: UserAgentGroup[] = [
             {brand: 'Chromium', version: '%s'},
             {brand: 'Google Chrome', version: '%s'},
           ],
+          fullVersion: '%s',
           platform: 'macOS',
           platformVersion: '10_14_6',
           architecture: 'x86',
@@ -489,6 +555,7 @@ export const userAgentGroups: UserAgentGroup[] = [
             {brand: 'Chromium', version: '%s'},
             {brand: 'Google Chrome', version: '%s'},
           ],
+          fullVersion: '%s',
           platform: 'Windows',
           platformVersion: '10.0',
           architecture: 'x86',
@@ -596,6 +663,7 @@ export const userAgentGroups: UserAgentGroup[] = [
             {brand: 'Chromium', version: '%s'},
             {brand: 'Microsoft Edge', version: '%s'},
           ],
+          fullVersion: '%s',
           platform: 'Windows',
           platformVersion: '10.0',
           architecture: 'x86',
@@ -613,6 +681,7 @@ export const userAgentGroups: UserAgentGroup[] = [
             {brand: 'Chromium', version: '%s'},
             {brand: 'Microsoft Edge', version: '%s'},
           ],
+          fullVersion: '%s',
           platform: 'macOS',
           platformVersion: '10_14_6',
           architecture: 'x86',
@@ -642,6 +711,7 @@ export const userAgentGroups: UserAgentGroup[] = [
             {brand: 'Chromium', version: '%s'},
             {brand: 'Microsoft Edge', version: '%s'},
           ],
+          fullVersion: '%s',
           platform: 'Android',
           platformVersion: '8.1.0',
           architecture: '',
@@ -659,6 +729,7 @@ export const userAgentGroups: UserAgentGroup[] = [
             {brand: 'Chromium', version: '%s'},
             {brand: 'Microsoft Edge', version: '%s'},
           ],
+          fullVersion: '%s',
           platform: 'Android',
           platformVersion: '6.0.1',
           architecture: '',

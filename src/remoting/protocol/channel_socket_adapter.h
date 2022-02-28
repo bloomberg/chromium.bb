@@ -9,7 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/protocol/p2p_datagram_socket.h"
 // TODO(zhihuang):Replace #include by forward declaration once proper
@@ -37,6 +37,11 @@ class TransportChannelSocketAdapter : public P2PDatagramSocket,
   // this adapter.
   explicit TransportChannelSocketAdapter(
       cricket::IceTransportInternal* ice_transport);
+
+  TransportChannelSocketAdapter(const TransportChannelSocketAdapter&) = delete;
+  TransportChannelSocketAdapter& operator=(
+      const TransportChannelSocketAdapter&) = delete;
+
   ~TransportChannelSocketAdapter() override;
 
   // Sets callback that should be called when the adapter is being
@@ -68,7 +73,7 @@ class TransportChannelSocketAdapter : public P2PDatagramSocket,
 
   base::ThreadChecker thread_checker_;
 
-  cricket::IceTransportInternal* channel_;
+  raw_ptr<cricket::IceTransportInternal> channel_;
 
   base::OnceClosure destruction_callback_;
 
@@ -81,8 +86,6 @@ class TransportChannelSocketAdapter : public P2PDatagramSocket,
   int write_buffer_size_;
 
   int closed_error_code_;
-
-  DISALLOW_COPY_AND_ASSIGN(TransportChannelSocketAdapter);
 };
 
 }  // namespace protocol

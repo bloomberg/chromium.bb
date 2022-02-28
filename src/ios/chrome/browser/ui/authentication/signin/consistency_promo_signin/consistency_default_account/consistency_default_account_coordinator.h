@@ -9,8 +9,13 @@
 
 @class ChromeIdentity;
 @class ConsistencyDefaultAccountCoordinator;
+@protocol ConsistencyLayoutDelegate;
 
 @protocol ConsistencyDefaultAccountCoordinatorDelegate <NSObject>
+
+// Called when the last identity has been removed (by another app).
+- (void)consistencyDefaultAccountCoordinatorAllIdentityRemoved:
+    (ConsistencyDefaultAccountCoordinator*)coordinator;
 
 // Called when the user wants to skip the consistency promo.
 - (void)consistencyDefaultAccountCoordinatorSkip:
@@ -33,6 +38,7 @@
 @property(nonatomic, strong, readonly) UIViewController* viewController;
 @property(nonatomic, weak) id<ConsistencyDefaultAccountCoordinatorDelegate>
     delegate;
+@property(nonatomic, weak) id<ConsistencyLayoutDelegate> layoutDelegate;
 // This property can be used only after the coordinator is started.
 @property(nonatomic, strong) ChromeIdentity* selectedIdentity;
 

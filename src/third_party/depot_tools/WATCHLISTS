@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # Watchlist Rules
-# Refer: http://dev.chromium.org/developers/contributing-code/watchlists
+# Refer: https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/infra/watchlists.md
 
 {
 

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,13 +33,14 @@ IN_PROC_BROWSER_TEST_F(MessagePortProviderBrowserTest, PostMessage) {
       } )"));
 
   // Post a message.
-  const std::string target_origin(url.GetOrigin().spec());
+  const std::string target_origin(url.DeprecatedGetOriginAsURL().spec());
   const std::string source_origin("https://source.origin.com");
   const std::string message("success");
   DOMMessageQueue msg_queue;
   MessagePortProvider::PostMessageToFrame(
-      shell()->web_contents(), base::UTF8ToUTF16(source_origin),
-      base::UTF8ToUTF16(target_origin), base::UTF8ToUTF16(message));
+      shell()->web_contents()->GetPrimaryPage(),
+      base::UTF8ToUTF16(source_origin), base::UTF8ToUTF16(target_origin),
+      base::UTF8ToUTF16(message));
 
   // Verify that the message was received (and had the expected payload).
   std::string expected_test_reply;

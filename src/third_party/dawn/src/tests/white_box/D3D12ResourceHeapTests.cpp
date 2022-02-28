@@ -23,16 +23,16 @@ class D3D12ResourceHeapTests : public DawnTest {
   protected:
     void SetUp() override {
         DawnTest::SetUp();
-        DAWN_SKIP_TEST_IF(UsesWire());
+        DAWN_TEST_UNSUPPORTED_IF(UsesWire());
     }
 
-    std::vector<const char*> GetRequiredExtensions() override {
-        mIsBCFormatSupported = SupportsExtensions({"texture_compression_bc"});
+    std::vector<const char*> GetRequiredFeatures() override {
+        mIsBCFormatSupported = SupportsFeatures({"texture-compression-bc"});
         if (!mIsBCFormatSupported) {
             return {};
         }
 
-        return {"texture_compression_bc"};
+        return {"texture-compression-bc"};
     }
 
     bool IsBCFormatSupported() const {
@@ -45,10 +45,10 @@ class D3D12ResourceHeapTests : public DawnTest {
 
 // Verify that creating a small compressed textures will be 4KB aligned.
 TEST_P(D3D12ResourceHeapTests, AlignSmallCompressedTexture) {
-    DAWN_SKIP_TEST_IF(!IsBCFormatSupported());
+    DAWN_TEST_UNSUPPORTED_IF(!IsBCFormatSupported());
 
     // TODO(http://crbug.com/dawn/282): Investigate GPU/driver rejections of small alignment.
-    DAWN_SKIP_TEST_IF(IsIntel() || IsNvidia() || IsWARP());
+    DAWN_SUPPRESS_TEST_IF(IsIntel() || IsNvidia() || IsWARP());
 
     wgpu::TextureDescriptor descriptor;
     descriptor.dimension = wgpu::TextureDimension::e2D;
@@ -58,7 +58,7 @@ TEST_P(D3D12ResourceHeapTests, AlignSmallCompressedTexture) {
     descriptor.sampleCount = 1;
     descriptor.format = wgpu::TextureFormat::BC1RGBAUnorm;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = wgpu::TextureUsage::Sampled;
+    descriptor.usage = wgpu::TextureUsage::TextureBinding;
 
     // Create a smaller one that allows use of the smaller alignment.
     wgpu::Texture texture = device.CreateTexture(&descriptor);

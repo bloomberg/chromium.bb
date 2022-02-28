@@ -81,6 +81,8 @@ test("cast_media_unittests") {
     "//chromecast/base",
     "//chromecast/base/metrics:test_support",
     "//chromecast/common/mojom",
+    "//chromecast/external_mojo/external_service_support:external_service",
+    "//chromecast/external_mojo/external_service_support:test_support",
     "//chromecast/media/api:test_support",
     "//chromecast/media/audio:test_support",
     "//chromecast/media/audio:unittests",
@@ -100,6 +102,13 @@ test("cast_media_unittests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (use_unix_sockets) {
+    deps += [
+      "//chromecast/media/audio/audio_output_service:unittests",
+      "//chromecast/media/audio/net:audio_socket_service_unittests",
+    ]
+  }
 
   if (is_android) {
     deps += [

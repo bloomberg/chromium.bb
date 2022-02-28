@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_FRAGMENTATION_UTILS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_FRAGMENTATION_UTILS_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
@@ -73,10 +74,14 @@ NGBreakAppeal CalculateBreakAppealBefore(const NGConstraintSpace&,
                                          const NGBoxFragmentBuilder&,
                                          bool has_container_separation);
 
-// Calculate the appeal of breaking inside this child.
-NGBreakAppeal CalculateBreakAppealInside(const NGConstraintSpace& space,
-                                         NGBlockNode child,
-                                         const NGLayoutResult&);
+// Calculate the appeal of breaking inside this child. The appeal is based on
+// the one stored in the layout result, unless hypothetical_appeal is specified.
+// hypothetical_appeal is used to assess the appeal at breakpoints where we
+// didn't break, but still need to consider (see NGEarlyBreak).
+NGBreakAppeal CalculateBreakAppealInside(
+    const NGConstraintSpace& space,
+    const NGLayoutResult&,
+    absl::optional<NGBreakAppeal> hypothetical_appeal = absl::nullopt);
 
 // To ensure content progression, we need fragmentainers to hold something
 // larger than 0. The spec says that fragmentainers have to accept at least 1px
@@ -140,28 +145,23 @@ inline void AdjustMarginsForFragmentation(const NGBlockBreakToken* break_token,
 // establishes a new formatting context, |fragmentainer_offset_delta| must be
 // set to the offset from the parent block formatting context, or, if the parent
 // formatting context starts in a previous fragmentainer; the offset from the
-// current fragmentainer block-start.
+// current fragmentainer block-start. |requires_content_before_breaking| is set
+// when inside node that we know will fit (and stay) in the current
+// fragmentainer. See MustStayInCurrentFragmentainer() in NGBoxFragmentBuilder.
 void SetupSpaceBuilderForFragmentation(const NGConstraintSpace& parent_space,
                                        const NGLayoutInputNode& child,
                                        LayoutUnit fragmentainer_offset_delta,
                                        NGConstraintSpaceBuilder*,
-                                       bool is_new_fc);
+                                       bool is_new_fc,
+                                       bool requires_content_before_breaking);
 
 // Set up a node's fragment builder for block fragmentation. To be done at the
 // beginning of layout.
 void SetupFragmentBuilderForFragmentation(
     const NGConstraintSpace&,
+    const NGLayoutInputNode&,
     const NGBlockBreakToken* previous_break_token,
     NGBoxFragmentBuilder*);
-
-// Return true if the node is fully grown at its current size.
-// |current_total_block_size| is the total block-size of the node, as if all
-// fragments were stitched together.
-bool IsNodeFullyGrown(NGBlockNode,
-                      const NGConstraintSpace&,
-                      LayoutUnit current_total_block_size,
-                      const NGBoxStrut& border_padding,
-                      LayoutUnit inline_size);
 
 // Outcome of considering (and possibly attempting) breaking before or inside a
 // child.
@@ -211,6 +211,10 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
                                   LayoutUnit trailing_border_padding,
                                   LayoutUnit space_left,
                                   NGBoxFragmentBuilder*);
+
+// Special rules apply for finishing fragmentation when building fragmentainers.
+NGBreakStatus FinishFragmentationForFragmentainer(const NGConstraintSpace&,
+                                                  NGBoxFragmentBuilder*);
 
 // Insert a fragmentainer break before the child if necessary. In that case, the
 // previous in-flow position will be updated, we'll return |kBrokeBefore|. If we
@@ -321,7 +325,8 @@ NGConstraintSpace CreateConstraintSpaceForColumns(
     LogicalSize column_size,
     LogicalSize percentage_resolution_size,
     bool allow_discard_start_margin,
-    bool balance_columns);
+    bool balance_columns,
+    NGBreakAppeal min_break_appeal);
 
 // Calculate the container builder and constraint space for a multicol.
 NGBoxFragmentBuilder CreateContainerBuilderForMulticol(
@@ -342,6 +347,42 @@ inline LayoutUnit AdjustedMarginAfterFinalChildFragment(
       FragmentainerSpaceAtBfcStart(space) - bfc_block_offset;
   return std::min(block_end_margin, space_left.ClampNegativeToZero());
 }
+
+// Note: This should only be used for a builder that represents a
+// fragmentation context root. Returns the the break token of the
+// previous fragmentainer to the child at |index|.
+const NGBlockBreakToken* PreviousFragmentainerBreakToken(
+    const NGBoxFragmentBuilder& container_builder,
+    wtf_size_t index);
+
+// Return the break token that led to the creation of the fragment specified, or
+// nullptr if this is the first fragment. Note that this operation is O(n)
+// (number of fragments generated from the node), and should be avoided when
+// possible. This function should no longer be necessary once everything has
+// been properly converted to LayoutNG, and we have also gotten rid of the
+// fragment stitching of composited objects (will be fixed by
+// CompositeAfterPaint).
+const NGBlockBreakToken* FindPreviousBreakToken(const NGPhysicalBoxFragment&);
+
+// Return the index of the fragmentainer preceding the first fragmentainer
+// inside this fragment. Used by nested block fragmentation.
+wtf_size_t PreviousInnerFragmentainerIndex(const NGPhysicalBoxFragment&);
+
+// Return the fragment's offset relatively to the top/left corner of an
+// imaginary box where all fragments generated by the node have been stitched
+// together. If |out_stitched_fragments_size| is specified, it will be set to
+// the size of this imaginary box.
+PhysicalOffset OffsetInStitchedFragments(
+    const NGPhysicalBoxFragment&,
+    PhysicalSize* out_stitched_fragments_size = nullptr);
+
+// Return the block-size that this fragment will take up inside a fragmentation
+// context. This will include overflow from descendants (if it is visible and
+// supposed to affect block fragmentation), and also out-of-flow positioned
+// descendants (in the initial balancing pass), but not relative offsets.
+LayoutUnit BlockSizeForFragmentation(
+    const NGLayoutResult&,
+    WritingDirectionMode container_writing_direction);
 
 }  // namespace blink
 

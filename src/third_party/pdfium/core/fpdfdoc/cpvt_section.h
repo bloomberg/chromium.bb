@@ -7,6 +7,8 @@
 #ifndef CORE_FPDFDOC_CPVT_SECTION_H_
 #define CORE_FPDFDOC_CPVT_SECTION_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <vector>
 
@@ -15,12 +17,10 @@
 #include "core/fpdfdoc/cpvt_wordinfo.h"
 #include "core/fpdfdoc/cpvt_wordrange.h"
 #include "core/fxcrt/fx_coordinates.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/unowned_ptr.h"
 
 class CPVT_VariableText;
 struct CPVT_LineInfo;
-struct CPVT_WordLine;
 struct CPVT_WordPlace;
 
 class CPVT_Section final {

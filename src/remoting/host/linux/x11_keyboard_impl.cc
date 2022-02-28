@@ -4,7 +4,6 @@
 
 #include "remoting/host/linux/x11_keyboard_impl.h"
 
-#include "base/stl_util.h"
 #include "remoting/host/linux/unicode_to_keysym.h"
 #include "ui/gfx/x/future.h"
 #include "ui/gfx/x/xkb.h"
@@ -92,8 +91,10 @@ void X11KeyboardImpl::PressKey(uint32_t keycode, uint32_t modifiers) {
        static_cast<x11::ModMask>(modifiers),
        static_cast<x11::ModMask>(modifiers)});
 
-  connection_->xtest().FakeInput({x11::KeyEvent::Press, keycode});
-  connection_->xtest().FakeInput({x11::KeyEvent::Release, keycode});
+  connection_->xtest().FakeInput(
+      {x11::KeyEvent::Press, static_cast<uint8_t>(keycode)});
+  connection_->xtest().FakeInput(
+      {x11::KeyEvent::Release, static_cast<uint8_t>(keycode)});
 
   connection_->xkb().LatchLockState(
       {static_cast<x11::Xkb::DeviceSpec>(x11::Xkb::Id::UseCoreKbd),

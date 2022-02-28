@@ -6,7 +6,7 @@
 #define COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_SUBFRAME_NAVIGATION_FILTERING_THROTTLE_H_
 
 #include "base/feature_list.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
@@ -54,6 +54,12 @@ class SubframeNavigationFilteringThrottle : public content::NavigationThrottle {
   SubframeNavigationFilteringThrottle(
       content::NavigationHandle* handle,
       AsyncDocumentSubresourceFilter* parent_frame_filter);
+
+  SubframeNavigationFilteringThrottle(
+      const SubframeNavigationFilteringThrottle&) = delete;
+  SubframeNavigationFilteringThrottle& operator=(
+      const SubframeNavigationFilteringThrottle&) = delete;
+
   ~SubframeNavigationFilteringThrottle() override;
 
   // content::NavigationThrottle:
@@ -87,7 +93,7 @@ class SubframeNavigationFilteringThrottle : public content::NavigationThrottle {
   void ResumeNavigation();
 
   // Must outlive this class.
-  AsyncDocumentSubresourceFilter* parent_frame_filter_;
+  raw_ptr<AsyncDocumentSubresourceFilter> parent_frame_filter_;
 
   int pending_load_policy_calculations_ = 0;
   DeferStage defer_stage_ = DeferStage::kNotDeferring;
@@ -102,8 +108,6 @@ class SubframeNavigationFilteringThrottle : public content::NavigationThrottle {
 
   base::WeakPtrFactory<SubframeNavigationFilteringThrottle> weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(SubframeNavigationFilteringThrottle);
 };
 
 }  // namespace subresource_filter

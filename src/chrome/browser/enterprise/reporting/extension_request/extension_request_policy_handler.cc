@@ -8,6 +8,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/strings/grit/components_strings.h"
@@ -40,12 +41,21 @@ bool ExtensionRequestPolicyHandler::CheckPolicySettings(
 
   const policy::PolicyMap::Entry* extension_request_policy =
       policies.Get(policy::key::kCloudExtensionRequestEnabled);
-  if (extension_request_policy->source != policy::POLICY_SOURCE_CLOUD &&
-      extension_request_policy->source !=
-          policy::POLICY_SOURCE_PRIORITY_CLOUD) {
+  if (extension_request_policy->source != policy::POLICY_SOURCE_CLOUD) {
     errors->AddError(policy_name(), IDS_POLICY_CLOUD_SOURCE_ONLY_ERROR);
     return false;
   }
+
+#if !defined(OS_CHROMEOS)
+  // Disable extension workflow when it's set by user cloud policy but machine
+  // is not managed or managed by a different domain.
+  if (extension_request_policy->scope == policy::POLICY_SCOPE_USER &&
+      !policies.IsUserAffiliated()) {
+    errors->AddError(policy_name(), IDS_POLICY_USER_IS_NOT_AFFILIATED_ERROR);
+    return false;
+  }
+#endif
+
   return true;
 }
 

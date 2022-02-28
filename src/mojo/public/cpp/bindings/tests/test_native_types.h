@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_param_traits.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -41,6 +40,12 @@ class TestNativeStructWithAttachments {
   TestNativeStructWithAttachments(TestNativeStructWithAttachments&& other);
   TestNativeStructWithAttachments(const std::string& message,
                                   ScopedMessagePipeHandle pipe);
+
+  TestNativeStructWithAttachments(const TestNativeStructWithAttachments&) =
+      delete;
+  TestNativeStructWithAttachments& operator=(
+      const TestNativeStructWithAttachments&) = delete;
+
   ~TestNativeStructWithAttachments();
 
   TestNativeStructWithAttachments& operator=(
@@ -55,8 +60,6 @@ class TestNativeStructWithAttachments {
  private:
   std::string message_;
   mutable mojo::ScopedMessagePipeHandle pipe_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestNativeStructWithAttachments);
 };
 
 }  // namespace test

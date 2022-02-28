@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
@@ -32,7 +31,6 @@
 #include "components/drive/drive_uploader.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "content/public/test/browser_task_environment.h"
-#include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -55,6 +53,10 @@ class LocalToRemoteSyncerTest : public testing::Test {
  public:
   LocalToRemoteSyncerTest()
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
+
+  LocalToRemoteSyncerTest(const LocalToRemoteSyncerTest&) = delete;
+  LocalToRemoteSyncerTest& operator=(const LocalToRemoteSyncerTest&) = delete;
+
   ~LocalToRemoteSyncerTest() override {}
 
   void SetUp() override {
@@ -254,8 +256,6 @@ class LocalToRemoteSyncerTest : public testing::Test {
   std::unique_ptr<FakeDriveServiceHelper> fake_drive_helper_;
   std::unique_ptr<FakeRemoteChangeProcessor> remote_change_processor_;
   std::unique_ptr<SyncTaskManager> sync_task_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(LocalToRemoteSyncerTest);
 };
 
 TEST_F(LocalToRemoteSyncerTest, CreateFile) {

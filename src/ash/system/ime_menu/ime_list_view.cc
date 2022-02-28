@@ -30,6 +30,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/image_view.h"
@@ -59,7 +60,7 @@ class ImeListItemView : public ActionableView {
       : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS),
         ime_list_view_(list_view),
         selected_(selected) {
-    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+    views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
 
     TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
     AddChildView(tri_view);
@@ -208,7 +209,7 @@ ImeListView::~ImeListView() = default;
 void ImeListView::Init(bool show_keyboard_toggle,
                        SingleImeBehavior single_ime_behavior) {
   ImeControllerImpl* ime_controller = Shell::Get()->ime_controller();
-  Update(ime_controller->current_ime().id, ime_controller->available_imes(),
+  Update(ime_controller->current_ime().id, ime_controller->GetVisibleImes(),
          ime_controller->current_ime_menu_items(), show_keyboard_toggle,
          single_ime_behavior);
 }
