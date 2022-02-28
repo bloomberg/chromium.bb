@@ -7,8 +7,10 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -44,9 +46,11 @@ class WebAuthnBrowserTest : public InProcessBrowserTest {
  public:
   WebAuthnBrowserTest() = default;
 
+  WebAuthnBrowserTest(const WebAuthnBrowserTest&) = delete;
+  WebAuthnBrowserTest& operator=(const WebAuthnBrowserTest&) = delete;
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
-    InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
   void SetUpOnMainThread() override {
@@ -59,9 +63,6 @@ class WebAuthnBrowserTest : public InProcessBrowserTest {
 
  protected:
   net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebAuthnBrowserTest);
 };
 
 static constexpr char kGetAssertionCredID1234[] = R"((() => {
@@ -293,7 +294,7 @@ class WebAuthnCableSecondFactor : public WebAuthnBrowserTest {
       }
     };
 
-    WebAuthnCableSecondFactor* const parent_;
+    const raw_ptr<WebAuthnCableSecondFactor> parent_;
     base::RepeatingCallback<void(device::cablev2::PairingEvent)>
         pairing_callback_;
     base::RepeatingClosure add_authenticator_callback_;
@@ -387,7 +388,7 @@ class WebAuthnCableSecondFactor : public WebAuthnBrowserTest {
       return phone;
     }
 
-    WebAuthnCableSecondFactor* const parent_;
+    const raw_ptr<WebAuthnCableSecondFactor> parent_;
   };
 
  protected:
@@ -396,7 +397,13 @@ class WebAuthnCableSecondFactor : public WebAuthnBrowserTest {
   AuthenticatorRequestDialogModel* model_ = nullptr;
 };
 
-IN_PROC_BROWSER_TEST_F(WebAuthnCableSecondFactor, Test) {
+// TODO(https://crbug.com/1219708): this test is flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_Test DISABLED_Test
+#else
+#define MAYBE_Test Test
+#endif
+IN_PROC_BROWSER_TEST_F(WebAuthnCableSecondFactor, MAYBE_Test) {
   DelegateObserver observer(this);
   ChromeAuthenticatorRequestDelegate::SetGlobalObserverForTesting(&observer);
   content::AuthenticatorEnvironment::GetInstance()

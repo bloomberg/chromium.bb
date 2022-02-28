@@ -3,6 +3,13 @@
 # found in the LICENSE file.
 
 import re
+
+# TODO(crbug.com/1227140): Clean up when py2 is no longer supported.
+try:
+  _STRING_TYPE = basestring
+except NameError:  # pragma: no cover
+  _STRING_TYPE = str
+
 from recipe_engine import recipe_api
 
 class DepsDiffException(Exception):
@@ -61,7 +68,7 @@ def jsonish_to_python(spec, is_top=False):
       ret += '['
       ret += ', '.join(jsonish_to_python(x) for x in spec)
       ret += ']'
-    elif isinstance(spec, basestring):
+    elif isinstance(spec, _STRING_TYPE):
       ret = repr(str(spec))
     else:
       ret = repr(spec)
@@ -173,8 +180,9 @@ class GclientApi(recipe_api.RecipeApi):
       if fixed_revision:
         revisions.extend(['--revision', '%s@%s' % (name, fixed_revision)])
 
-    test_data_paths = set(self.got_revision_reverse_mapping(cfg).values() +
-                          [s.name for s in cfg.solutions])
+    test_data_paths = set(
+        list(self.got_revision_reverse_mapping(cfg).values()) +
+        [s.name for s in cfg.solutions])
     step_test_data = lambda: (
       self.test_api.output_json(test_data_paths))
     try:
@@ -287,6 +295,7 @@ class GclientApi(recipe_api.RecipeApi):
     self.m.python.inline(
       'cleanup index.lock',
       """
+        from __future__ import print_function
         import os, sys
 
         build_path = sys.argv[1]

@@ -25,15 +25,14 @@ namespace connections {
 class WifiLanEndpointChannel final : public BaseEndpointChannel {
  public:
   // Creates both outgoing and incoming WifiLan channels.
-  WifiLanEndpointChannel(const std::string& channel_name,
-                         WifiLanSocket socket);
+  WifiLanEndpointChannel(const std::string& channel_name, WifiLanSocket socket);
 
   proto::connections::Medium GetMedium() const override;
 
  private:
   void CloseImpl() override;
 
-  WifiLanSocket wifi_lan_socket_;
+  WifiLanSocket socket_;
 };
 
 }  // namespace connections

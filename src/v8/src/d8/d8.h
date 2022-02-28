@@ -14,6 +14,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include "include/v8-array-buffer.h"
+#include "include/v8-isolate.h"
+#include "include/v8-script.h"
 #include "src/base/once.h"
 #include "src/base/platform/time.h"
 #include "src/base/platform/wrappers.h"
@@ -24,7 +27,11 @@
 
 namespace v8 {
 
+class BackingStore;
+class CompiledWasmModule;
 class D8Console;
+class Message;
+class TryCatch;
 
 enum class ModuleType { kJavaScript, kJSON, kInvalid };
 
@@ -38,18 +45,24 @@ struct DynamicImportData;
 class Counter {
  public:
   static const int kMaxNameSize = 64;
-  int32_t* Bind(const char* name, bool histogram);
-  int32_t* ptr() { return &count_; }
-  int32_t count() { return count_; }
-  int32_t sample_total() { return sample_total_; }
-  bool is_histogram() { return is_histogram_; }
+  void Bind(const char* name, bool histogram);
+  // TODO(12482): Return pointer to an atomic.
+  int* ptr() {
+    STATIC_ASSERT(sizeof(int) == sizeof(count_));
+    return reinterpret_cast<int*>(&count_);
+  }
+  int count() const { return count_.load(std::memory_order_relaxed); }
+  int sample_total() const {
+    return sample_total_.load(std::memory_order_relaxed);
+  }
+  bool is_histogram() const { return is_histogram_; }
   void AddSample(int32_t sample);
 
  private:
-  int32_t count_;
-  int32_t sample_total_;
+  std::atomic<int> count_;
+  std::atomic<int> sample_total_;
   bool is_histogram_;
-  uint8_t name_[kMaxNameSize];
+  char name_[kMaxNameSize];
 };
 
 // A set of counters and associated information.  An instance of this
@@ -115,7 +128,6 @@ class SourceGroup {
   base::Thread* thread_;
 
   void ExitShell(int exit_code);
-  Local<String> ReadFile(Isolate* isolate, const char* name);
 
   const char** argv_;
   int begin_offset_;
@@ -197,6 +209,16 @@ class Worker : public std::enable_shared_from_this<Worker> {
   friend class ProcessMessageTask;
   friend class TerminateTask;
 
+  enum class State {
+    kReady,
+    kRunning,
+    kTerminating,
+    kTerminated,
+    kTerminatingAndJoining,
+    kTerminatedAndJoined
+  };
+  bool is_running() const;
+
   void ProcessMessage(std::unique_ptr<SerializationData> data);
   void ProcessMessages();
 
@@ -219,7 +241,7 @@ class Worker : public std::enable_shared_from_this<Worker> {
   SerializationDataQueue out_queue_;
   base::Thread* thread_ = nullptr;
   char* script_;
-  std::atomic<bool> running_;
+  std::atomic<State> state_;
   // For signalling that the worker has started.
   base::Semaphore started_semaphore_{0};
 
@@ -255,6 +277,22 @@ class PerIsolateData {
     PerIsolateData* data_;
   };
 
+  // Contrary to RealmScope (which creates a new Realm), ExplicitRealmScope
+  // allows for entering an existing Realm, as specified by its index.
+  class V8_NODISCARD ExplicitRealmScope {
+   public:
+    explicit ExplicitRealmScope(PerIsolateData* data, int index);
+    ~ExplicitRealmScope();
+
+    Local<Context> context() const;
+
+   private:
+    PerIsolateData* data_;
+    Local<Context> realm_;
+    int index_;
+    int previous_index_;
+  };
+
   inline void SetTimeout(Local<Function> callback, Local<Context> context);
   inline MaybeLocal<Function> GetTimeoutCallback();
   inline MaybeLocal<Context> GetTimeoutContext();
@@ -273,6 +311,9 @@ class PerIsolateData {
 
   Local<FunctionTemplate> GetTestApiObjectCtor() const;
   void SetTestApiObjectCtor(Local<FunctionTemplate> ctor);
+
+  Local<FunctionTemplate> GetSnapshotObjectCtor() const;
+  void SetSnapshotObjectCtor(Local<FunctionTemplate> ctor);
 
  private:
   friend class Shell;
@@ -293,6 +334,7 @@ class PerIsolateData {
   std::unordered_set<DynamicImportData*> import_data_;
 #endif
   Global<FunctionTemplate> test_api_object_ctor_;
+  Global<FunctionTemplate> snapshot_object_ctor_;
 
   int RealmIndexOrThrow(const v8::FunctionCallbackInfo<v8::Value>& args,
                         int arg_offset);
@@ -322,7 +364,7 @@ class ShellOptions {
     DisallowReassignment(const char* name, T value)
         : name_(name), value_(value) {}
 
-    operator T() const { return value_; }  // NOLINT
+    operator T() const { return value_; }
     T get() const { return value_; }
     DisallowReassignment& operator=(T value) {
       if (check_d8_flag_contradictions) {
@@ -348,6 +390,7 @@ class ShellOptions {
     bool specified_ = false;
   };
 
+  DisallowReassignment<const char*> d8_path = {"d8-path", ""};
   DisallowReassignment<bool> fuzzilli_coverage_statistics = {
       "fuzzilli-coverage-statistics", false};
   DisallowReassignment<bool> fuzzilli_enable_builtins_coverage = {
@@ -365,14 +408,19 @@ class ShellOptions {
   DisallowReassignment<bool> interactive_shell = {"shell", false};
   bool test_shell = false;
   DisallowReassignment<bool> expected_to_throw = {"throws", false};
+  DisallowReassignment<bool> no_fail = {"no-fail", false};
+  DisallowReassignment<bool> dump_counters = {"dump-counters", false};
+  DisallowReassignment<bool> dump_counters_nvp = {"dump-counters-nvp", false};
   DisallowReassignment<bool> ignore_unhandled_promises = {
       "ignore-unhandled-promises", false};
   DisallowReassignment<bool> mock_arraybuffer_allocator = {
       "mock-arraybuffer-allocator", false};
   DisallowReassignment<size_t> mock_arraybuffer_allocator_limit = {
       "mock-arraybuffer-allocator-limit", 0};
+#if MULTI_MAPPED_ALLOCATOR_AVAILABLE
   DisallowReassignment<bool> multi_mapped_mock_allocator = {
       "multi-mapped-mock-allocator", false};
+#endif
   DisallowReassignment<bool> enable_inspector = {"enable-inspector", false};
   int num_isolates = 1;
   DisallowReassignment<v8::ScriptCompiler::CompileOptions, true>
@@ -406,8 +454,16 @@ class ShellOptions {
       "enable-system-instrumentation", false};
   DisallowReassignment<const char*> web_snapshot_config = {
       "web-snapshot-config", nullptr};
+  DisallowReassignment<const char*> web_snapshot_output = {
+      "web-snapshot-output", nullptr};
+  DisallowReassignment<bool> d8_web_snapshot_api = {
+      "experimental-d8-web-snapshot-api", false};
   DisallowReassignment<bool> compile_only = {"compile-only", false};
   DisallowReassignment<int> repeat_compile = {"repeat-compile", 1};
+#if V8_ENABLE_WEBASSEMBLY
+  DisallowReassignment<bool> wasm_trap_handler = {"wasm-trap-handler", true};
+#endif  // V8_ENABLE_WEBASSEMBLY
+  DisallowReassignment<bool> expose_fast_api = {"expose-fast-api", false};
 };
 
 class Shell : public i::AllStatic {
@@ -421,9 +477,10 @@ class Shell : public i::AllStatic {
     kProcessMessageQueue = true,
     kNoProcessMessageQueue = false
   };
+  enum class CodeType { kFileName, kString, kFunction, kInvalid, kNone };
 
   static bool ExecuteString(Isolate* isolate, Local<String> source,
-                            Local<Value> name, PrintResult print_result,
+                            Local<String> name, PrintResult print_result,
                             ReportExceptions report_exceptions,
                             ProcessMessageQueue process_message_queue);
   static bool ExecuteModule(Isolate* isolate, const char* file_name);
@@ -431,12 +488,15 @@ class Shell : public i::AllStatic {
   static void ReportException(Isolate* isolate, Local<Message> message,
                               Local<Value> exception);
   static void ReportException(Isolate* isolate, TryCatch* try_catch);
-  static Local<String> ReadFile(Isolate* isolate, const char* name);
+  static Local<String> ReadFile(Isolate* isolate, const char* name,
+                                bool should_throw = true);
+  static Local<String> WasmLoadSourceMapCallback(Isolate* isolate,
+                                                 const char* name);
   static Local<Context> CreateEvaluationContext(Isolate* isolate);
   static int RunMain(Isolate* isolate, bool last_run);
   static int Main(int argc, char* argv[]);
   static void Exit(int exit_code);
-  static void OnExit(Isolate* isolate);
+  static void OnExit(Isolate* isolate, bool dispose);
   static void CollectGarbage(Isolate* isolate);
   static bool EmptyMessageQueues(Isolate* isolate);
   static bool CompleteMessageLoop(Isolate* isolate);
@@ -476,6 +536,10 @@ class Shell : public i::AllStatic {
                              const PropertyCallbackInfo<Value>& info);
   static void RealmSharedSet(Local<String> property, Local<Value> value,
                              const PropertyCallbackInfo<void>& info);
+  static void RealmTakeWebSnapshot(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void RealmUseWebSnapshot(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
 
   static void LogGetAndStop(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void TestVerifySourcePositions(
@@ -492,23 +556,34 @@ class Shell : public i::AllStatic {
 
   static void Print(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void PrintErr(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void Write(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void WriteStdout(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void WaitUntilDone(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void NotifyDone(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void QuitOnce(v8::FunctionCallbackInfo<v8::Value>* args);
   static void Quit(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void Version(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void Read(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void ReadFile(const v8::FunctionCallbackInfo<v8::Value>& args);
   static char* ReadChars(const char* name, int* size_out);
-  static bool ReadLines(const char* name, std::vector<std::string>& lines);
+  static MaybeLocal<PrimitiveArray> ReadLines(Isolate* isolate,
+                                              const char* name);
   static void ReadBuffer(const v8::FunctionCallbackInfo<v8::Value>& args);
   static Local<String> ReadFromStdin(Isolate* isolate);
   static void ReadLine(const v8::FunctionCallbackInfo<v8::Value>& args) {
     args.GetReturnValue().Set(ReadFromStdin(args.GetIsolate()));
   }
   static void WriteChars(const char* name, uint8_t* buffer, size_t buffer_size);
-  static void Load(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void ExecuteFile(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void SetTimeout(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void ReadCodeTypeAndArguments(
+      const v8::FunctionCallbackInfo<v8::Value>& args, int index,
+      CodeType* code_type, Local<Value>* arguments = nullptr);
+  static bool FunctionAndArgumentsToString(Local<Function> function,
+                                           Local<Value> arguments,
+                                           Local<String>* source,
+                                           Isolate* isolate);
+  static MaybeLocal<String> ReadSource(
+      const v8::FunctionCallbackInfo<v8::Value>& args, int index,
+      CodeType default_type);
   static void WorkerNew(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void WorkerPostMessage(
       const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -529,29 +604,31 @@ class Shell : public i::AllStatic {
   // milliseconds on the total running time of the program.  Exceptions are
   // thrown on timeouts or other errors or if the exit status of the program
   // indicates an error.
-  //
+  static void System(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // os.chdir(dir) changes directory to the given directory.  Throws an
   // exception/ on error.
-  //
+  static void ChangeDirectory(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // os.setenv(variable, value) sets an environment variable.  Repeated calls to
   // this method leak memory due to the API of setenv in the standard C library.
-  //
+  static void SetEnvironment(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void UnsetEnvironment(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // os.umask(alue) calls the umask system call and returns the old umask.
-  //
+  static void SetUMask(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // os.mkdirp(name, mask) creates a directory.  The mask (if present) is anded
   // with the current umask.  Intermediate directories are created if necessary.
   // An exception is not thrown if the directory already exists.  Analogous to
   // the "mkdir -p" command.
-  static void System(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void ChangeDirectory(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void SetEnvironment(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void UnsetEnvironment(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void SetUMask(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void MakeDirectory(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void RemoveDirectory(const v8::FunctionCallbackInfo<v8::Value>& args);
   static MaybeLocal<Promise> HostImportModuleDynamically(
-      Local<Context> context, Local<ScriptOrModule> referrer,
-      Local<String> specifier, Local<FixedArray> import_assertions);
+      Local<Context> context, Local<Data> host_defined_options,
+      Local<Value> resource_name, Local<String> specifier,
+      Local<FixedArray> import_assertions);
+
   static void ModuleResolutionSuccessCallback(
       const v8::FunctionCallbackInfo<v8::Value>& info);
   static void ModuleResolutionFailureCallback(
@@ -574,6 +651,7 @@ class Shell : public i::AllStatic {
   static const char* kPrompt;
   static ShellOptions options;
   static ArrayBuffer::Allocator* array_buffer_allocator;
+  static Isolate* shared_isolate;
 
   static void SetWaitUntilDone(Isolate* isolate, bool value);
   static void NotifyStartStreamingTask(Isolate* isolate);
@@ -601,12 +679,15 @@ class Shell : public i::AllStatic {
 
   static void PromiseRejectCallback(v8::PromiseRejectMessage reject_message);
 
+  static Local<FunctionTemplate> CreateSnapshotTemplate(Isolate* isolate);
+
  private:
   static Global<Context> evaluation_context_;
   static base::OnceType quit_once_;
   static Global<Function> stringify_function_;
   static const char* stringify_source_;
   static CounterMap* counter_map_;
+  static base::SharedMutex counter_mutex_;
   // We statically allocate a set of local counters to be used if we
   // don't want to store the stats in a memory-mapped file
   static CounterCollection local_counters_;

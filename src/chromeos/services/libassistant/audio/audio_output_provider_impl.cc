@@ -10,10 +10,10 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "chromeos/assistant/internal/libassistant/shared_headers.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
 #include "chromeos/services/libassistant/audio/audio_stream_handler.h"
 #include "chromeos/services/libassistant/public/mojom/platform_delegate.mojom.h"
-#include "libassistant/shared/public/platform_audio_buffer.h"
 #include "media/audio/audio_device_description.h"
 
 namespace chromeos {
@@ -55,6 +55,9 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
         FROM_HERE, base::BindOnce(&AudioOutputImpl::InitializeOnMainThread,
                                   weak_ptr_factory_.GetWeakPtr(), device_id));
   }
+
+  AudioOutputImpl(const AudioOutputImpl&) = delete;
+  AudioOutputImpl& operator=(const AudioOutputImpl&) = delete;
 
   ~AudioOutputImpl() override {
     main_task_runner_->DeleteSoon(FROM_HERE, device_owner_.release());
@@ -149,8 +152,6 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
   SEQUENCE_CHECKER(main_sequence_checker_);
 
   base::WeakPtrFactory<AudioOutputImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AudioOutputImpl);
 };
 
 }  // namespace
@@ -165,8 +166,6 @@ void AudioOutputProviderImpl::Bind(
     mojo::PendingRemote<mojom::AudioOutputDelegate> audio_output_delegate,
     mojom::PlatformDelegate* platform_delegate) {
   platform_delegate_ = platform_delegate;
-  platform_delegate_->BindAudioDecoderFactory(
-      audio_decoder_factory_.BindNewPipeAndPassReceiver());
 
   audio_output_delegate_.Bind(std::move(audio_output_delegate));
 
@@ -178,21 +177,11 @@ void AudioOutputProviderImpl::Bind(
 AudioOutputProviderImpl::~AudioOutputProviderImpl() = default;
 
 // Called from the Libassistant thread.
-#if BUILDFLAG(BUILD_LIBASSISTANT_146S)
-assistant_client::AudioOutput* AudioOutputProviderImpl::CreateAudioOutput(
-    assistant_client::OutputStreamType type,
-    const assistant_client::OutputStreamFormat& stream_format) {
-  return CreateAudioOutputInternal(type, stream_format);
-}
-#endif  // BUILD_LIBASSISTANT_146S
-
-#if BUILDFLAG(BUILD_LIBASSISTANT_152S)
 assistant_client::AudioOutput* AudioOutputProviderImpl::CreateAudioOutput(
     assistant_client::OutputStreamMetadata metadata) {
   return CreateAudioOutputInternal(metadata.type,
                                    metadata.buffer_stream_format);
 }
-#endif  // BUILD_LIBASSISTANT_152S
 
 // Called from the Libassistant thread.
 std::vector<assistant_client::OutputStreamEncoding>
@@ -226,6 +215,15 @@ assistant_client::VolumeControl& AudioOutputProviderImpl::GetVolumeControl() {
 void AudioOutputProviderImpl::RegisterAudioEmittingStateCallback(
     AudioEmittingStateCallback callback) {
   // TODO(muyuanli): implement.
+}
+
+void AudioOutputProviderImpl::BindAudioDecoderFactory() {
+  platform_delegate_->BindAudioDecoderFactory(
+      audio_decoder_factory_.BindNewPipeAndPassReceiver());
+}
+
+void AudioOutputProviderImpl::UnBindAudioDecoderFactory() {
+  audio_decoder_factory_.reset();
 }
 
 void AudioOutputProviderImpl::BindStreamFactory(

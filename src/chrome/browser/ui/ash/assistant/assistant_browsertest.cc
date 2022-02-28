@@ -5,6 +5,7 @@
 #include "ash/components/audio/cras_audio_handler.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/ash/assistant/assistant_test_mixin.h"
@@ -43,7 +44,15 @@ using chromeos::assistant::test::ExpectResult;
 
 class AssistantBrowserTest : public MixinBasedInProcessBrowserTest {
  public:
-  AssistantBrowserTest() = default;
+  AssistantBrowserTest() {
+    // TODO(b/190633242): enable sandbox in browser tests.
+    feature_list_.InitAndDisableFeature(
+        chromeos::assistant::features::kEnableLibAssistantSandbox);
+  }
+
+  AssistantBrowserTest(const AssistantBrowserTest&) = delete;
+  AssistantBrowserTest& operator=(const AssistantBrowserTest&) = delete;
+
   ~AssistantBrowserTest() override = default;
 
   AssistantTestMixin* tester() { return &tester_; }
@@ -115,8 +124,6 @@ class AssistantBrowserTest : public MixinBasedInProcessBrowserTest {
   base::test::ScopedFeatureList feature_list_;
   AssistantTestMixin tester_{&mixin_host_, this, embedded_test_server(), kMode,
                              kVersion};
-
-  DISALLOW_COPY_AND_ASSIGN(AssistantBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(AssistantBrowserTest,
@@ -262,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(AssistantBrowserTest,
       "Something went wrong. Try again in a few seconds");
 
   // Make sure no further changes happen to the view hierarchy.
-  tester()->ExpectNoChange(base::TimeDelta::FromSeconds(1));
+  tester()->ExpectNoChange(base::Seconds(1));
 
   // This is necessary to prevent a UserInitiatedVoicelessActivity from
   // blocking test harness teardown while we wait on assistant to finish

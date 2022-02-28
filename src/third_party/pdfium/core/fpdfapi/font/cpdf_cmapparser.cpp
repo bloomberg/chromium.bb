@@ -6,6 +6,8 @@
 
 #include "core/fpdfapi/font/cpdf_cmapparser.h"
 
+#include <ctype.h>
+
 #include "core/fpdfapi/cmaps/fpdf_cmaps.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
@@ -14,7 +16,7 @@
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/fx_freetype.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -113,7 +115,7 @@ void CPDF_CMapParser::HandleCodeSpaceRange(ByteStringView word) {
       return;
 
     if (m_CodeSeq % 2) {
-      Optional<CPDF_CMap::CodeRange> range =
+      absl::optional<CPDF_CMap::CodeRange> range =
           GetCodeRange(m_LastWord.AsStringView(), word);
       if (range.has_value())
         m_PendingRanges.push_back(range.value());
@@ -145,7 +147,7 @@ uint32_t CPDF_CMapParser::GetCode(ByteStringView word) {
 
   FX_SAFE_UINT32 num = 0;
   if (word[0] == '<') {
-    for (size_t i = 1; i < word.GetLength() && std::isxdigit(word[i]); ++i) {
+    for (size_t i = 1; i < word.GetLength() && isxdigit(word[i]); ++i) {
       num = num * 16 + FXSYS_HexCharToInt(word[i]);
       if (!num.IsValid())
         return 0;
@@ -153,7 +155,7 @@ uint32_t CPDF_CMapParser::GetCode(ByteStringView word) {
     return num.ValueOrDie();
   }
 
-  for (size_t i = 0; i < word.GetLength() && std::isdigit(word[i]); ++i) {
+  for (size_t i = 0; i < word.GetLength() && isdigit(word[i]); ++i) {
     num = num * 10 + FXSYS_DecimalCharToInt(static_cast<wchar_t>(word[i]));
     if (!num.IsValid())
       return 0;
@@ -162,11 +164,11 @@ uint32_t CPDF_CMapParser::GetCode(ByteStringView word) {
 }
 
 // static
-Optional<CPDF_CMap::CodeRange> CPDF_CMapParser::GetCodeRange(
+absl::optional<CPDF_CMap::CodeRange> CPDF_CMapParser::GetCodeRange(
     ByteStringView first,
     ByteStringView second) {
   if (first.IsEmpty() || first[0] != '<')
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   size_t i;
   for (i = 1; i < first.GetLength(); ++i) {
@@ -175,7 +177,7 @@ Optional<CPDF_CMap::CodeRange> CPDF_CMapParser::GetCodeRange(
   }
   size_t char_size = (i - 1) / 2;
   if (char_size > 4)
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   CPDF_CMap::CodeRange range;
   range.m_CharSize = char_size;

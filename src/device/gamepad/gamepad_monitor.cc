@@ -40,10 +40,9 @@ void GamepadMonitor::OnGamepadDisconnected(uint32_t index,
     gamepad_observer_remote_->GamepadDisconnected(index, gamepad);
 }
 
-void GamepadMonitor::OnGamepadButtonOrAxisChanged(uint32_t index,
-                                                  const Gamepad& gamepad) {
+void GamepadMonitor::OnGamepadChanged(const mojom::GamepadChanges& changes) {
   if (gamepad_observer_remote_)
-    gamepad_observer_remote_->GamepadButtonOrAxisChanged(index, gamepad);
+    gamepad_observer_remote_->GamepadChanged(changes.Clone());
 }
 
 void GamepadMonitor::GamepadStartPolling(GamepadStartPollingCallback callback) {
@@ -54,6 +53,8 @@ void GamepadMonitor::GamepadStartPolling(GamepadStartPollingCallback callback) {
   GamepadService* service = GamepadService::GetInstance();
   if (!service->ConsumerBecameActive(this)) {
     mojo::ReportBadMessage("GamepadMonitor::GamepadStartPolling failed");
+    std::move(callback).Run(base::ReadOnlySharedMemoryRegion());
+    return;
   }
   std::move(callback).Run(service->DuplicateSharedMemoryRegion());
 }

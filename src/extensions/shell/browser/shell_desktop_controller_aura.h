@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/keep_alive_registry/keep_alive_state_observer.h"
@@ -72,6 +72,11 @@ class ShellDesktopControllerAura
       public KeepAliveStateObserver {
  public:
   explicit ShellDesktopControllerAura(content::BrowserContext* browser_context);
+
+  ShellDesktopControllerAura(const ShellDesktopControllerAura&) = delete;
+  ShellDesktopControllerAura& operator=(const ShellDesktopControllerAura&) =
+      delete;
+
   ~ShellDesktopControllerAura() override;
 
   // DesktopController:
@@ -143,7 +148,7 @@ class ShellDesktopControllerAura
   gfx::Size GetPrimaryDisplaySize();
 #endif
 
-  content::BrowserContext* const browser_context_;
+  const raw_ptr<content::BrowserContext> browser_context_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<display::DisplayConfigurator> display_configurator_;
@@ -176,8 +181,6 @@ class ShellDesktopControllerAura
 
   // Non-null between WillRunMainMessageLoop() and MaybeQuit().
   base::OnceClosure quit_when_idle_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellDesktopControllerAura);
 };
 
 }  // namespace extensions

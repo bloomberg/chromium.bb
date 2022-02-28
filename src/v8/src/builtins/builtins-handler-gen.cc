@@ -58,13 +58,23 @@ void Builtins::Generate_KeyedStoreIC_Megamorphic(
   KeyedStoreGenericGenerator::Generate(state);
 }
 
+void Builtins::Generate_KeyedDefineOwnIC_Megamorphic(
+    compiler::CodeAssemblerState* state) {
+  KeyedDefineOwnGenericGenerator::Generate(state);
+}
+
 void Builtins::Generate_StoreIC_NoFeedback(
     compiler::CodeAssemblerState* state) {
   StoreICNoFeedbackGenerator::Generate(state);
 }
 
+void Builtins::Generate_StoreOwnIC_NoFeedback(
+    compiler::CodeAssemblerState* state) {
+  StoreOwnICNoFeedbackGenerator::Generate(state);
+}
+
 // All possible fast-to-fast transitions. Transitions to dictionary mode are not
-// handled by ElementsTransitionAndStore.
+// handled by ElementsTransitionAndStore builtins.
 #define ELEMENTS_KIND_TRANSITIONS(V)               \
   V(PACKED_SMI_ELEMENTS, HOLEY_SMI_ELEMENTS)       \
   V(PACKED_SMI_ELEMENTS, PACKED_DOUBLE_ELEMENTS)   \
@@ -244,20 +254,20 @@ void HandlerBuiltinsAssembler::DispatchByElementsKind(
   Switch(elements_kind, &if_unknown_type, elements_kinds, elements_kind_labels,
          arraysize(elements_kinds));
 
-#define ELEMENTS_KINDS_CASE(KIND)                                \
-  BIND(&if_##KIND);                                              \
-  {                                                              \
-    if (!FLAG_enable_sealed_frozen_elements_kind &&              \
-        IsAnyNonextensibleElementsKindUnchecked(KIND)) {         \
-      /* Disable support for frozen or sealed elements kinds. */ \
-      Unreachable();                                             \
-    } else if (!handle_typed_elements_kind &&                    \
-               IsTypedArrayElementsKind(KIND)) {                 \
-      Unreachable();                                             \
-    } else {                                                     \
-      case_function(KIND);                                       \
-      Goto(&next);                                               \
-    }                                                            \
+#define ELEMENTS_KINDS_CASE(KIND)                                   \
+  BIND(&if_##KIND);                                                 \
+  {                                                                 \
+    if (!FLAG_enable_sealed_frozen_elements_kind &&                 \
+        IsAnyNonextensibleElementsKindUnchecked(KIND)) {            \
+      /* Disable support for frozen or sealed elements kinds. */    \
+      Unreachable();                                                \
+    } else if (!handle_typed_elements_kind &&                       \
+               IsTypedArrayOrRabGsabTypedArrayElementsKind(KIND)) { \
+      Unreachable();                                                \
+    } else {                                                        \
+      case_function(KIND);                                          \
+      Goto(&next);                                                  \
+    }                                                               \
   }
   ELEMENTS_KINDS(ELEMENTS_KINDS_CASE)
 #undef ELEMENTS_KINDS_CASE

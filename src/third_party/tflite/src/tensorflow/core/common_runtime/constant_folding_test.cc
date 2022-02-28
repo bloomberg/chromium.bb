@@ -13,15 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#include "tensorflow/core/common_runtime/constant_folding.h"
+
 #include <map>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#include "tensorflow/cc/ops/nn_ops.h"
-#include "tensorflow/core/common_runtime/constant_folding.h"
-
 #include "tensorflow/cc/ops/array_ops_internal.h"
+#include "tensorflow/cc/ops/nn_ops.h"
 #include "tensorflow/cc/ops/sendrecv_ops.h"
 #include "tensorflow/cc/ops/standard_ops.h"
 #include "tensorflow/core/common_runtime/device.h"
@@ -161,7 +161,7 @@ TEST_F(ConstantFoldingTest, DeterministicFolding) {
 
     TF_CHECK_OK(s.ToGraph(&g));
     bool was_mutated;
-    int64 unique_id = 0;
+    int64_t unique_id = 0;
     auto generate_new_name = [&unique_id](Graph* graph, string old_name) {
       return strings::StrCat(graph->NewName(old_name), "__cf__", unique_id++);
     };
@@ -180,7 +180,7 @@ TEST_F(ConstantFoldingTest, DeterministicFolding) {
   auto index = g2.BuildNodeNameIndex();
 
   // All the nodes in g1 are expected to be present in g2.
-  for (int64 i = 0; i < g1.num_nodes(); ++i) {
+  for (int64_t i = 0; i < g1.num_nodes(); ++i) {
     Node* n1 = g1.FindNodeId(i);
     EXPECT_GT(index.count(n1->name()), 0);
   }
@@ -379,7 +379,7 @@ TEST_F(ConstantFoldingTest, TestNoReplaceNonCPUOp) {
   Graph g(OpRegistry::Global());
   {
     Scope s = Scope::NewRootScope();
-    auto aconst = ops::Const<int64>(s, 0, {5});
+    auto aconst = ops::Const<int64_t>(s, 0, {5});
 
     NodeDef def;
     TF_ASSERT_OK(NodeDefBuilder("testop", "ConstantFoldingTestOp")
@@ -631,13 +631,6 @@ TEST_F(ConstantFoldingTest, ConstShapeKnown) {
   }
 }
 
-// Disabling the following test on the ROCm platform because it relies on the
-// "topK" operator being supported on the ROCm platform (which is currently not
-// the case)
-// TODO(rocm) :
-// re-enable this test once support for "topK" operator is available on ROCm
-
-#ifndef TENSORFLOW_USE_ROCM
 TEST_F(ConstantFoldingTest, NoReplacePartialOutput) {
   Graph g(OpRegistry::Global());
   {
@@ -662,7 +655,6 @@ TEST_F(ConstantFoldingTest, NoReplacePartialOutput) {
       &g, &was_mutated));
   EXPECT_FALSE(was_mutated);
 }
-#endif  // TENSORFLOW_USE_ROCM
 
 namespace {
 
@@ -687,8 +679,10 @@ class TestTFFileSystem : public ::tensorflow::NullFileSystem {
       : ::tensorflow::NullFileSystem(),
         data_tensor_(test::AsTensor<double>({1., 2., 3., 4.}, {2, 2})) {}
 
+  using ::tensorflow::NullFileSystem::NewReadOnlyMemoryRegionFromFile;
+
   ::tensorflow::Status NewReadOnlyMemoryRegionFromFile(
-      const string& fname,
+      const string& fname, ::tensorflow::TransactionToken* token,
       std::unique_ptr<::tensorflow::ReadOnlyMemoryRegion>* result) override {
     if (fname != kTestMemRegionName) {
       return ::tensorflow::errors::Unimplemented(

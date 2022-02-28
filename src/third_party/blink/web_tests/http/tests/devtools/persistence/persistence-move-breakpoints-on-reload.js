@@ -4,7 +4,7 @@
 
 (async function() {
   TestRunner.addResult(`Verify that breakpoints are moved appropriately in case of page reload.\n`);
-  await TestRunner.loadModule('sources'); await TestRunner.loadTestModule('sources_test_runner');
+  await TestRunner.loadLegacyModule('sources'); await TestRunner.loadTestModule('sources_test_runner');
   await TestRunner.loadTestModule('bindings_test_runner');
   await TestRunner.showPanel('sources');
   await TestRunner.evaluateInPagePromise(`
@@ -16,7 +16,7 @@
   `);
 
   var testMapping = BindingsTestRunner.initializeTestMapping();
-  var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
+  var fs = new BindingsTestRunner.TestFileSystem('/var/www');
   BindingsTestRunner.addFooJSFile(fs);
 
   TestRunner.runTestSuite([

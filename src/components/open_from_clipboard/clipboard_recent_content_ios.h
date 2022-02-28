@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "url/gurl.h"
@@ -37,11 +36,17 @@ class ClipboardRecentContentIOS : public ClipboardRecentContent {
   explicit ClipboardRecentContentIOS(
       ClipboardRecentContentImplIOS* implementation);
 
+  ClipboardRecentContentIOS(const ClipboardRecentContentIOS&) = delete;
+  ClipboardRecentContentIOS& operator=(const ClipboardRecentContentIOS&) =
+      delete;
+
   ~ClipboardRecentContentIOS() override;
 
   // ClipboardRecentContent implementation.
   absl::optional<GURL> GetRecentURLFromClipboard() override;
   absl::optional<std::u16string> GetRecentTextFromClipboard() override;
+  absl::optional<std::set<ClipboardContentType>>
+  GetCachedClipboardContentTypes() override;
   void GetRecentImageFromClipboard(GetRecentImageCallback callback) override;
   bool HasRecentImageFromClipboard() override;
   void HasRecentContentFromClipboard(std::set<ClipboardContentType> types,
@@ -59,8 +64,6 @@ class ClipboardRecentContentIOS : public ClipboardRecentContent {
 
   // The implementation instance.
   __strong ClipboardRecentContentImplIOS* implementation_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClipboardRecentContentIOS);
 };
 
 #endif  // COMPONENTS_OPEN_FROM_CLIPBOARD_CLIPBOARD_RECENT_CONTENT_IOS_H_

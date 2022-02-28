@@ -22,7 +22,7 @@ from .user_defined_type import UserDefinedType
 
 class Namespace(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                 WithExposure, WithComponent, WithDebugInfo):
-    """https://heycam.github.io/webidl/#idl-namespaces"""
+    """https://webidl.spec.whatwg.org/#idl-namespaces"""
 
     class IR(IRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
              WithExposure, WithComponent, WithDebugInfo):
@@ -134,7 +134,7 @@ class Namespace(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
     @property
     def constants(self):
         """Returns constants."""
-        return ()
+        return self._constants
 
     @property
     def constructors(self):

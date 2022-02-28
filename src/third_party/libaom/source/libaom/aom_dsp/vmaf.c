@@ -23,7 +23,6 @@
 
 #include <libvmaf/libvmaf.h>
 #include "aom_dsp/blend.h"
-#include "aom_ports/system_state.h"
 
 static void vmaf_fatal_error(const char *message) {
   fprintf(stderr, "Fatal error: %s\n", message);

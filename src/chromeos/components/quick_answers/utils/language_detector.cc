@@ -4,25 +4,21 @@
 
 #include "chromeos/components/quick_answers/utils/language_detector.h"
 
-#include "ash/constants/ash_features.h"
 #include "base/callback.h"
 #include "base/metrics/field_trial_params.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 namespace {
 
-constexpr base::FeatureParam<double> kSelectedTextConfidenceThreshold{
-    &features::kQuickAnswersTranslation, "selected_text_confidence_threshold",
-    /*default_value=*/0.8};
+constexpr double kSelectedTextConfidenceThreshold = 0.8;
 
-constexpr base::FeatureParam<double> kSurroundingTextConfidenceThreshold{
-    &features::kQuickAnswersTranslation,
-    "surrounding_text_confidence_threshold", /*default_value=*/0.9};
+constexpr double kSurroundingTextConfidenceThreshold = 0.9;
 
 absl::optional<std::string> GetLanguageWithConfidence(
-    const std::vector<machine_learning::mojom::TextLanguagePtr>& languages,
+    const std::vector<chromeos::machine_learning::mojom::TextLanguagePtr>&
+        languages,
     double confidence_threshold) {
   // The languages are sorted according to the confidence score, from the
   // highest to the lowest (according to the mojom method documentation).
@@ -54,9 +50,9 @@ void LanguageDetector::DetectLanguage(const std::string& surrounding_text,
 void LanguageDetector::FindLanguagesForSelectedTextCallback(
     const std::string& surrounding_text,
     DetectLanguageCallback callback,
-    std::vector<machine_learning::mojom::TextLanguagePtr> languages) {
-  auto locale = GetLanguageWithConfidence(
-      std::move(languages), kSelectedTextConfidenceThreshold.Get());
+    std::vector<chromeos::machine_learning::mojom::TextLanguagePtr> languages) {
+  auto locale = GetLanguageWithConfidence(std::move(languages),
+                                          kSelectedTextConfidenceThreshold);
   if (locale.has_value()) {
     std::move(callback).Run(std::move(locale));
     return;
@@ -72,12 +68,12 @@ void LanguageDetector::FindLanguagesForSelectedTextCallback(
 
 void LanguageDetector::FindLanguagesForSurroundingTextCallback(
     DetectLanguageCallback callback,
-    std::vector<machine_learning::mojom::TextLanguagePtr> languages) {
-  auto locale = GetLanguageWithConfidence(
-      languages, kSurroundingTextConfidenceThreshold.Get());
+    std::vector<chromeos::machine_learning::mojom::TextLanguagePtr> languages) {
+  auto locale =
+      GetLanguageWithConfidence(languages, kSurroundingTextConfidenceThreshold);
 
   std::move(callback).Run(std::move(locale));
 }
 
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash

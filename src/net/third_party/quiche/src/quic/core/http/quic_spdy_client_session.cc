@@ -126,6 +126,10 @@ int QuicSpdyClientSession::GetNumSentClientHellos() const {
   return crypto_stream_->num_sent_client_hellos();
 }
 
+bool QuicSpdyClientSession::IsResumption() const {
+  return crypto_stream_->IsResumption();
+}
+
 bool QuicSpdyClientSession::EarlyDataAccepted() const {
   return crypto_stream_->EarlyDataAccepted();
 }
@@ -181,8 +185,7 @@ bool QuicSpdyClientSession::ShouldCreateIncomingStream(QuicStreamId id) {
 
 QuicSpdyStream* QuicSpdyClientSession::CreateIncomingStream(
     PendingStream* pending) {
-  QuicSpdyStream* stream =
-      new QuicSpdyClientStream(pending, this, READ_UNIDIRECTIONAL);
+  QuicSpdyStream* stream = new QuicSpdyClientStream(pending, this);
   ActivateStream(absl::WrapUnique(stream));
   return stream;
 }

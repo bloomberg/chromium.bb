@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import absolute_import
+
 
 import json
 import logging
@@ -319,7 +319,7 @@ def TestNameWithoutDisabledPrefix(test_name):
 class GtestTestInstance(test_instance.TestInstance):
 
   def __init__(self, args, data_deps_delegate, error_func):
-    super(GtestTestInstance, self).__init__()
+    super().__init__()
     # TODO(jbudorick): Support multiple test suites.
     if len(args.suite_name) > 1:
       raise ValueError('Platform mode currently supports only 1 gtest suite')
@@ -339,6 +339,7 @@ class GtestTestInstance(test_instance.TestInstance):
     self._symbolizer = stack_symbolizer.Symbolizer(None)
     self._total_external_shards = args.test_launcher_total_shards
     self._wait_for_java_debugger = args.wait_for_java_debugger
+    self._use_existing_test_data = args.use_existing_test_data
 
     # GYP:
     if args.executable_dist_dir:
@@ -533,6 +534,10 @@ class GtestTestInstance(test_instance.TestInstance):
   def wait_for_java_debugger(self):
     return self._wait_for_java_debugger
 
+  @property
+  def use_existing_test_data(self):
+    return self._use_existing_test_data
+
   #override
   def TestType(self):
     return 'gtest'
@@ -618,4 +623,3 @@ class GtestTestInstance(test_instance.TestInstance):
   #override
   def TearDown(self):
     """Do nothing."""
-    pass

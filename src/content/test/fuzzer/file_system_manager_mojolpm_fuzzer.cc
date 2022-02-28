@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/icu_util.h"
+#include "base/no_destructor.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -24,11 +25,17 @@
 #include "content/public/test/test_content_client_initializer.h"
 #include "content/test/fuzzer/file_system_manager_mojolpm_fuzzer.pb.h"
 #include "mojo/core/embedder/embedder.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/browser/test/test_file_system_context.h"
+#include "testing/libfuzzer/proto/url_proto_converter.h"
+#include "third_party/blink/public/common/storage_key/proto/storage_key.pb.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/common/storage_key/storage_key_proto_converter.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-mojolpm.h"
 #include "third_party/libprotobuf-mutator/src/src/libfuzzer/libfuzzer_macro.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 using url::Origin;
@@ -138,6 +145,7 @@ class FileSystemManagerTestcase {
       uint32_t id,
       content::fuzzing::file_system_manager::proto::NewFileSystemManagerAction::
           RenderProcessId render_process_id,
+      const storage_key_proto::StorageKey& storage_key,
       mojo::PendingReceiver<::blink::mojom::FileSystemManager>&& receiver);
 
   // Create and bind a new instance for fuzzing. This needs to  make sure that
@@ -146,7 +154,8 @@ class FileSystemManagerTestcase {
   void AddFileSystemManager(
       uint32_t id,
       content::fuzzing::file_system_manager::proto::NewFileSystemManagerAction::
-          RenderProcessId render_process_id);
+          RenderProcessId render_process_id,
+      const storage_key_proto::StorageKey& storage_key);
 
   // The proto message describing the test actions to perform.
   const content::fuzzing::file_system_manager::proto::Testcase& testcase_;
@@ -286,7 +295,8 @@ void FileSystemManagerTestcase::NextAction() {
         case Action::kNewFileSystemManager:
           AddFileSystemManager(
               action.new_file_system_manager().id(),
-              action.new_file_system_manager().render_process_id());
+              action.new_file_system_manager().render_process_id(),
+              action.new_file_system_manager().storage_key());
           break;
 
         case Action::kRunThread:
@@ -324,19 +334,22 @@ void FileSystemManagerTestcase::AddFileSystemManagerImpl(
     uint32_t id,
     content::fuzzing::file_system_manager::proto::NewFileSystemManagerAction::
         RenderProcessId render_process_id,
+    const storage_key_proto::StorageKey& storage_key,
     mojo::PendingReceiver<::blink::mojom::FileSystemManager>&& receiver) {
   size_t offset = render_process_id ==
                           content::fuzzing::file_system_manager::proto::
                               NewFileSystemManagerAction_RenderProcessId_ZERO
                       ? 0
                       : 1;
-  file_system_manager_impls_[offset]->BindReceiver(std::move(receiver));
+  file_system_manager_impls_[offset]->BindReceiver(
+      storage_key_proto::Convert(storage_key), std::move(receiver));
 }
 
 void FileSystemManagerTestcase::AddFileSystemManager(
     uint32_t id,
     content::fuzzing::file_system_manager::proto::NewFileSystemManagerAction::
-        RenderProcessId render_process_id) {
+        RenderProcessId render_process_id,
+    const storage_key_proto::StorageKey& storage_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   mojo::Remote<::blink::mojom::FileSystemManager> remote;
   auto receiver = remote.BindNewPipeAndPassReceiver();
@@ -345,7 +358,7 @@ void FileSystemManagerTestcase::AddFileSystemManager(
   content::GetIOThreadTaskRunner({})->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&FileSystemManagerTestcase::AddFileSystemManagerImpl,
-                     base::Unretained(this), id, render_process_id,
+                     base::Unretained(this), id, render_process_id, storage_key,
                      std::move(receiver)),
       run_loop.QuitClosure());
   run_loop.Run();

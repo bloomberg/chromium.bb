@@ -35,8 +35,9 @@ namespace {
 
 constexpr int kInterPostRoundBit = 4;
 
-inline void AverageBlend4Row(const int16_t* prediction_0,
-                             const int16_t* prediction_1, uint8_t* dest) {
+inline void AverageBlend4Row(const int16_t* LIBGAV1_RESTRICT prediction_0,
+                             const int16_t* LIBGAV1_RESTRICT prediction_1,
+                             uint8_t* LIBGAV1_RESTRICT dest) {
   const __m128i pred_0 = LoadLo8(prediction_0);
   const __m128i pred_1 = LoadLo8(prediction_1);
   __m128i res = _mm_add_epi16(pred_0, pred_1);
@@ -44,8 +45,9 @@ inline void AverageBlend4Row(const int16_t* prediction_0,
   Store4(dest, _mm_packus_epi16(res, res));
 }
 
-inline void AverageBlend8Row(const int16_t* prediction_0,
-                             const int16_t* prediction_1, uint8_t* dest) {
+inline void AverageBlend8Row(const int16_t* LIBGAV1_RESTRICT prediction_0,
+                             const int16_t* LIBGAV1_RESTRICT prediction_1,
+                             uint8_t* LIBGAV1_RESTRICT dest) {
   const __m128i pred_0 = LoadAligned16(prediction_0);
   const __m128i pred_1 = LoadAligned16(prediction_1);
   __m128i res = _mm_add_epi16(pred_0, pred_1);
@@ -53,9 +55,10 @@ inline void AverageBlend8Row(const int16_t* prediction_0,
   StoreLo8(dest, _mm_packus_epi16(res, res));
 }
 
-inline void AverageBlendLargeRow(const int16_t* prediction_0,
-                                 const int16_t* prediction_1, const int width,
-                                 uint8_t* dest) {
+inline void AverageBlendLargeRow(const int16_t* LIBGAV1_RESTRICT prediction_0,
+                                 const int16_t* LIBGAV1_RESTRICT prediction_1,
+                                 const int width,
+                                 uint8_t* LIBGAV1_RESTRICT dest) {
   int x = 0;
   do {
     const __m128i pred_00 = LoadAligned16(&prediction_0[x]);
@@ -71,8 +74,10 @@ inline void AverageBlendLargeRow(const int16_t* prediction_0,
   } while (x < width);
 }
 
-void AverageBlend_SSE4_1(const void* prediction_0, const void* prediction_1,
-                         const int width, const int height, void* const dest,
+void AverageBlend_SSE4_1(const void* LIBGAV1_RESTRICT prediction_0,
+                         const void* LIBGAV1_RESTRICT prediction_1,
+                         const int width, const int height,
+                         void* LIBGAV1_RESTRICT const dest,
                          const ptrdiff_t dest_stride) {
   auto* dst = static_cast<uint8_t*>(dest);
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
@@ -148,11 +153,11 @@ namespace {
 constexpr int kInterPostRoundBitPlusOne = 5;
 
 template <const int width, const int offset>
-inline void AverageBlendRow(const uint16_t* prediction_0,
-                            const uint16_t* prediction_1,
+inline void AverageBlendRow(const uint16_t* LIBGAV1_RESTRICT prediction_0,
+                            const uint16_t* LIBGAV1_RESTRICT prediction_1,
                             const __m128i& compound_offset,
                             const __m128i& round_offset, const __m128i& max,
-                            const __m128i& zero, uint16_t* dst,
+                            const __m128i& zero, uint16_t* LIBGAV1_RESTRICT dst,
                             const ptrdiff_t dest_stride) {
   // pred_0/1 max range is 16b.
   const __m128i pred_0 = LoadUnaligned16(prediction_0 + offset);
@@ -182,9 +187,10 @@ inline void AverageBlendRow(const uint16_t* prediction_0,
   StoreHi8(dst + dest_stride, result);
 }
 
-void AverageBlend10bpp_SSE4_1(const void* prediction_0,
-                              const void* prediction_1, const int width,
-                              const int height, void* const dest,
+void AverageBlend10bpp_SSE4_1(const void* LIBGAV1_RESTRICT prediction_0,
+                              const void* LIBGAV1_RESTRICT prediction_1,
+                              const int width, const int height,
+                              void* LIBGAV1_RESTRICT const dest,
                               const ptrdiff_t dst_stride) {
   auto* dst = static_cast<uint16_t*>(dest);
   const ptrdiff_t dest_stride = dst_stride / sizeof(dst[0]);

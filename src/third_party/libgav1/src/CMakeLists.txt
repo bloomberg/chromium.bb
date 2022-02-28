@@ -18,8 +18,10 @@ cmake_minimum_required(VERSION 3.7.1 FATAL_ERROR)
 # libgav1 requires C++11.
 set(CMAKE_CXX_STANDARD 11)
 set(ABSL_CXX_STANDARD 11)
+# libgav1 requires C99.
+set(CMAKE_C_STANDARD 99)
 
-project(libgav1 CXX)
+project(libgav1 CXX C)
 
 set(libgav1_root "${CMAKE_CURRENT_SOURCE_DIR}")
 set(libgav1_build "${CMAKE_BINARY_DIR}")
@@ -54,6 +56,12 @@ libgav1_option(
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
+endif()
+
+# Enable generators like Xcode and Visual Studio to place projects in folders.
+get_property(use_folders_is_set GLOBAL PROPERTY USE_FOLDERS SET)
+if(NOT use_folders_is_set)
+  set_property(GLOBAL PROPERTY USE_FOLDERS TRUE)
 endif()
 
 include(FindThreads)
@@ -126,6 +134,7 @@ if(NOT EXISTS "${libgav1_abseil}")
       "    clone \\\n"
       "    https://github.com/abseil/abseil-cpp.git third_party/abseil-cpp")
 endif()
+set(ABSL_PROPAGATE_CXX_STD ON)
 add_subdirectory("${libgav1_abseil}" "${libgav1_abseil_build}" EXCLUDE_FROM_ALL)
 
 libgav1_reset_target_lists()
@@ -135,6 +144,12 @@ libgav1_add_examples_targets()
 libgav1_add_tests_targets()
 libgav1_add_utils_targets()
 libgav1_setup_install_target()
+
+if(LIBGAV1_ENABLE_TESTS)
+  # include(CTest) or -DBUILD_TESTING=1 aren't used to avoid enabling abseil
+  # tests.
+  enable_testing()
+endif()
 
 if(LIBGAV1_VERBOSE)
   libgav1_dump_cmake_flag_variables()

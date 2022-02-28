@@ -7,27 +7,34 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/cpp/ash_features.h"
-#include "ash/screenshot_delegate.h"
+#include "ash/constants/app_types.h"
+#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "cc/input/touch_action.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/session/arc_session_manager.h"
+#include "chrome/browser/ash/assistant/assistant_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/nearby_sharing/nearby_share_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/ash/back_gesture_contextual_nudge_delegate.h"
+#include "chrome/browser/ui/ash/capture_mode/chrome_capture_mode_delegate.h"
 #include "chrome/browser/ui/ash/chrome_accessibility_delegate.h"
-#include "chrome/browser/ui/ash/chrome_capture_mode_delegate.h"
-#include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
+#include "chrome/browser/ui/ash/desks_templates/chrome_desks_templates_delegate.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_ui.h"
 #include "chrome/browser/ui/ash/session_util.h"
-#include "chrome/browser/ui/ash/tab_scrubber.h"
+#include "chrome/browser/ui/ash/window_pin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -39,7 +46,11 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/tabs/tab_scrubber_chromeos.h"
+#include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_util.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "components/ui_devtools/devtools_server.h"
@@ -48,7 +59,11 @@
 #include "content/public/browser/media_session_service.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "extensions/common/constants.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_buffer.h"
 #include "url/gurl.h"
 
 namespace {
@@ -60,15 +75,21 @@ const char kKeyboardShortcutHelpPageUrl[] =
 // independent option here.
 absl::optional<bool> disable_logging_redirect_for_testing;
 
+// Returns the TabStripModel that associates with |window| if the given |window|
+// contains a browser frame, otherwise returns nullptr.
+TabStripModel* GetTabstripModelForWindowIfAny(aura::Window* window) {
+  BrowserView* browser_view =
+      BrowserView::GetBrowserViewForNativeWindow(window);
+  return browser_view ? browser_view->browser()->tab_strip_model() : nullptr;
+}
+
 content::WebContents* GetActiveWebContentsForNativeBrowserWindow(
     gfx::NativeWindow window) {
   if (!window)
     return nullptr;
-  BrowserView* browser_view =
-      BrowserView::GetBrowserViewForNativeWindow(window);
-  if (!browser_view)
-    return nullptr;
-  return browser_view->browser()->tab_strip_model()->GetActiveWebContents();
+
+  TabStripModel* tab_strip_model = GetTabstripModelForWindowIfAny(window);
+  return tab_strip_model ? tab_strip_model->GetActiveWebContents() : nullptr;
 }
 
 }  // namespace
@@ -104,8 +125,8 @@ bool ChromeShellDelegate::CanGoBack(gfx::NativeWindow window) const {
   return contents ? contents->GetController().CanGoBack() : false;
 }
 
-void ChromeShellDelegate::SetTabScrubberEnabled(bool enabled) {
-  TabScrubber::GetInstance()->SetEnabled(enabled);
+void ChromeShellDelegate::SetTabScrubberChromeOSEnabled(bool enabled) {
+  TabScrubberChromeOS::GetInstance()->SetEnabled(enabled);
 }
 
 bool ChromeShellDelegate::AllowDefaultTouchActions(gfx::NativeWindow window) {
@@ -145,34 +166,9 @@ bool ChromeShellDelegate::IsTabDrag(const ui::OSExchangeData& drop_data) {
   return tab_strip_ui::IsDraggedTab(drop_data);
 }
 
-aura::Window* ChromeShellDelegate::CreateBrowserForTabDrop(
-    aura::Window* source_window,
-    const ui::OSExchangeData& drop_data) {
+int ChromeShellDelegate::GetBrowserWebUITabStripHeight() {
   DCHECK(ash::features::IsWebUITabStripTabDragIntegrationEnabled());
-
-  BrowserView* source_view = BrowserView::GetBrowserViewForNativeWindow(
-      source_window->GetToplevelWindow());
-  if (!source_view)
-    return nullptr;
-
-  Browser::CreateParams params = source_view->browser()->create_params();
-  params.user_gesture = true;
-  params.initial_show_state = ui::SHOW_STATE_DEFAULT;
-  Browser* browser = Browser::Create(params);
-  if (!browser)
-    return nullptr;
-
-  if (!tab_strip_ui::DropTabsInNewBrowser(browser, drop_data)) {
-    browser->window()->Close();
-    return nullptr;
-  }
-
-  // TODO(https://crbug.com/1069869): evaluate whether the above
-  // failures can happen in valid states, and if so whether we need to
-  // reflect failure in UX.
-
-  browser->window()->Show();
-  return browser->window()->GetNativeWindow();
+  return TabStripUILayout::GetContainerHeight();
 }
 
 void ChromeShellDelegate::BindBluetoothSystemFactory(
@@ -204,11 +200,6 @@ ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
   return new ChromeAccessibilityDelegate;
 }
 
-std::unique_ptr<ash::ScreenshotDelegate>
-ChromeShellDelegate::CreateScreenshotDelegate() {
-  return std::make_unique<ChromeScreenshotGrabber>();
-}
-
 std::unique_ptr<ash::BackGestureContextualNudgeDelegate>
 ChromeShellDelegate::CreateBackGestureContextualNudgeDelegate(
     ash::BackGestureContextualNudgeController* controller) {
@@ -221,9 +212,52 @@ ChromeShellDelegate::CreateNearbyShareDelegate(
   return std::make_unique<NearbyShareDelegateImpl>(controller);
 }
 
+std::unique_ptr<ash::DesksTemplatesDelegate>
+ChromeShellDelegate::CreateDesksTemplatesDelegate() const {
+  return std::make_unique<ChromeDesksTemplatesDelegate>();
+}
+
 bool ChromeShellDelegate::IsSessionRestoreInProgress() const {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   return SessionRestore::IsRestoring(profile);
+}
+
+void ChromeShellDelegate::SetUpEnvironmentForLockedFullscreen(bool locked) {
+  // Reset the clipboard and kill dev tools when entering or exiting locked
+  // fullscreen (security concerns).
+  ui::Clipboard::GetForCurrentThread()->Clear(ui::ClipboardBuffer::kCopyPaste);
+  content::DevToolsAgentHost::DetachAllClients();
+
+  // TODO(crbug/1243104): This might be interesting for DLP to change.
+  // Disable both screenshots and video screen captures via the capture mode
+  // feature.
+  ChromeCaptureModeDelegate::Get()->SetIsScreenCaptureLocked(locked);
+
+  // Get the primary profile as that's what ARC and Assistant are attached to.
+  const Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  // Commands below require profile.
+  if (!profile) {
+    return;
+  }
+
+  // Disable ARC while in the locked fullscreen mode.
+  arc::ArcSessionManager* const arc_session_manager =
+      arc::ArcSessionManager::Get();
+  if (arc_session_manager && arc::IsArcAllowedForProfile(profile)) {
+    if (locked) {
+      // Disable ARC, preserve data.
+      arc_session_manager->RequestDisable();
+    } else {
+      // Re-enable ARC if needed.
+      if (arc::IsArcPlayStoreEnabledForProfile(profile))
+        arc_session_manager->RequestEnable();
+    }
+  }
+
+  if (assistant::IsAssistantAllowedForProfile(profile) ==
+      chromeos::assistant::AssistantAllowedState::ALLOWED) {
+    ash::AssistantState::Get()->NotifyLockedFullScreenStateChanged(locked);
+  }
 }
 
 bool ChromeShellDelegate::IsUiDevToolsStarted() const {
@@ -258,12 +292,18 @@ base::FilePath ChromeShellDelegate::GetPrimaryUserDownloadsFolder() const {
   if (!primary_user)
     return base::FilePath();
 
-  Profile* user_profile = ash::ProfileHelper::Get()->GetProfileByUser(
-      user_manager::UserManager::Get()->GetPrimaryUser());
+  Profile* user_profile =
+      ash::ProfileHelper::Get()->GetProfileByUser(primary_user);
   if (user_profile)
     return file_manager::util::GetDownloadsFolderForProfile(user_profile);
 
   return base::FilePath();
+}
+
+void ChromeShellDelegate::OpenFeedbackPageForPersistentDesksBar() {
+  chrome::OpenFeedbackDialog(/*browser=*/nullptr,
+                             chrome::kFeedbackSourceBentoBar,
+                             /*description_template=*/"#BentoBar\n\n");
 }
 
 // static

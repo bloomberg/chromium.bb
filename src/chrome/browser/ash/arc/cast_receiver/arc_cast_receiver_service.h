@@ -7,10 +7,9 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "ash/components/arc/mojom/cast_receiver.mojom-forward.h"
+#include "ash/components/arc/session/connection_observer.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "components/arc/mojom/cast_receiver.mojom-forward.h"
-#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -37,6 +36,10 @@ class ArcCastReceiverService
 
   ArcCastReceiverService(content::BrowserContext* context,
                          ArcBridgeService* bridge_service);
+
+  ArcCastReceiverService(const ArcCastReceiverService&) = delete;
+  ArcCastReceiverService& operator=(const ArcCastReceiverService&) = delete;
+
   ~ArcCastReceiverService() override;
 
   // ConnectionObserver<mojom::CastReceiverInstance> overrides:
@@ -54,8 +57,6 @@ class ArcCastReceiverService
   // Observers for preferences and settings changes.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   base::CallbackListSubscription receiver_name_subscription_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcCastReceiverService);
 };
 
 }  // namespace arc

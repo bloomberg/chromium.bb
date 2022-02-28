@@ -28,7 +28,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/export/password_csv_writer.h"
 #include "components/password_manager/core/browser/form_parsing/form_parser.h"
-#include "components/password_manager/core/browser/leak_detection/authenticated_leak_check.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_check_impl.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
@@ -257,7 +257,7 @@ jboolean JNI_PasswordUIView_HasAccountForLeakCheckRequest(JNIEnv* env) {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(
           ProfileManager::GetLastUsedProfile());
-  return password_manager::AuthenticatedLeakCheck::HasAccountForRequest(
+  return password_manager::LeakDetectionCheckImpl::HasAccountForRequest(
       identity_manager);
 }
 
@@ -275,7 +275,7 @@ PasswordUIViewAndroid::ObtainAndSerializePasswords(
   // except for |credential_provider_for_testing_| and
   // |password_manager_presenter_|.
   password_manager::CredentialProviderInterface* const provider =
-      credential_provider_for_testing_ ? credential_provider_for_testing_
+      credential_provider_for_testing_ ? credential_provider_for_testing_.get()
                                        : &password_manager_presenter_;
 
   std::vector<std::unique_ptr<password_manager::PasswordForm>> passwords =

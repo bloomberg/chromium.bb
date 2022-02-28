@@ -89,6 +89,13 @@ enum SkiaDocumentType {
   kMSKP,
 };
 
+// Metafile data type encapsulated by a player.
+enum MetafileDataType {
+  kPDF,
+  [EnableIf=is_win]
+  kEMF,
+};
+
 // What kind of margins to use.
 enum MarginType {
   // Default varies depending on headers being enabled or not
@@ -134,4 +141,26 @@ enum ResultCode {
   kFailed,
   // Insufficient permissions to perform the operation.
   kAccessDenied,
+  // Operation was canceled.
+  kCanceled,
+};
+
+// Matches print_preview.PrinterType in
+// chrome/browser/resources/print_preview/data/destination_match.js
+[Stable, Extensible]
+enum PrinterType {
+  kPrivet,
+  kExtension,
+  kPdf,
+  kLocal,
+  kCloud
+};
+
+[EnableIf=is_win]
+enum PrinterLanguageType {
+  kNone = 0,
+  kTextOnly,
+  kXps,
+  kPostscriptLevel2,
+  kPostscriptLevel3,
 };

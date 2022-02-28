@@ -10,7 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/files/important_file_writer.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
@@ -33,13 +33,16 @@ class BookmarkStorage
     : public base::ImportantFileWriter::BackgroundDataSerializer {
  public:
   // How often the file is saved at most.
-  static constexpr base::TimeDelta kSaveDelay =
-      base::TimeDelta::FromMilliseconds(2500);
+  static constexpr base::TimeDelta kSaveDelay = base::Milliseconds(2500);
 
   // Creates a BookmarkStorage for the specified model. The data will saved to a
   // location derived from |profile_path|. The disk writes will be executed as a
   // task in a backend task runner.
   BookmarkStorage(BookmarkModel* model, const base::FilePath& profile_path);
+
+  BookmarkStorage(const BookmarkStorage&) = delete;
+  BookmarkStorage& operator=(const BookmarkStorage&) = delete;
+
   ~BookmarkStorage() override;
 
   // Schedules saving the bookmark bar model to disk.
@@ -75,7 +78,7 @@ class BookmarkStorage
   bool SaveNow();
 
   // The model. The model is NULL once BookmarkModelDeleted has been invoked.
-  BookmarkModel* model_;
+  raw_ptr<BookmarkModel> model_;
 
   // Sequenced task runner where disk writes will be performed at.
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
@@ -86,8 +89,6 @@ class BookmarkStorage
   // The state of the backup file creation which is created lazily just before
   // the first scheduled save.
   bool backup_triggered_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkStorage);
 };
 
 }  // namespace bookmarks

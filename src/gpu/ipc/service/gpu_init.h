@@ -5,7 +5,7 @@
 #ifndef GPU_IPC_SERVICE_GPU_INIT_H_
 #define GPU_IPC_SERVICE_GPU_INIT_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/config/device_perf_info.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -14,6 +14,7 @@
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "gpu/vulkan/buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/gpu_extra_info.h"
 
 namespace base {
@@ -42,6 +43,10 @@ class GPU_IPC_SERVICE_EXPORT GpuSandboxHelper {
 class GPU_IPC_SERVICE_EXPORT GpuInit {
  public:
   GpuInit();
+
+  GpuInit(const GpuInit&) = delete;
+  GpuInit& operator=(const GpuInit&) = delete;
+
   ~GpuInit();
 
   void set_sandbox_helper(GpuSandboxHelper* helper) {
@@ -85,7 +90,7 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
  private:
   bool InitializeVulkan();
 
-  GpuSandboxHelper* sandbox_helper_ = nullptr;
+  raw_ptr<GpuSandboxHelper> sandbox_helper_ = nullptr;
   bool gl_use_swiftshader_ = false;
   std::unique_ptr<GpuWatchdogThread> watchdog_thread_;
   GPUInfo gpu_info_;
@@ -110,8 +115,6 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
 
   void SaveHardwareGpuInfoAndGpuFeatureInfo();
   void AdjustInfoToSwiftShader();
-
-  DISALLOW_COPY_AND_ASSIGN(GpuInit);
 };
 
 }  // namespace gpu

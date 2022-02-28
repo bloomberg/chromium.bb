@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/single_sample_metrics.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "media/base/decode_status.h"
@@ -62,6 +62,20 @@ namespace blink {
 class PLATFORM_EXPORT RTCVideoDecoderStreamAdapter
     : public webrtc::VideoDecoder {
  public:
+  // Minimum resolution that we'll consider "not low resolution" for the purpose
+  // of falling back to software.
+#if defined(OS_CHROMEOS)
+  // Effectively opt-out CrOS, since it may cause tests to fail (b/179724180).
+  static constexpr gfx::Size kMinResolution{2, 2};
+#else
+  static constexpr gfx::Size kMinResolution{320, 240};
+#endif
+
+  // Maximum number of decoder instances we'll allow before fallback to software
+  // if the resolution is too low.  We'll allow more than this for high
+  // resolution streams, but they'll fall back if they adapt below the limit.
+  static constexpr int32_t kMaxDecoderInstances = 8;
+
   // Creates and initializes an RTCVideoDecoderStreamAdapter. Returns nullptr if
   // |format| cannot be supported. The gpu_factories may be null, in which case
   // only SW decoders will be used.
@@ -73,13 +87,16 @@ class PLATFORM_EXPORT RTCVideoDecoderStreamAdapter
       const gfx::ColorSpace& render_color_space,
       const webrtc::SdpVideoFormat& format);
 
+  RTCVideoDecoderStreamAdapter(const RTCVideoDecoderStreamAdapter&) = delete;
+  RTCVideoDecoderStreamAdapter& operator=(const RTCVideoDecoderStreamAdapter&) =
+      delete;
+
   // Called on |media_task_runner_|.
   ~RTCVideoDecoderStreamAdapter() override;
 
   // webrtc::VideoDecoder implementation.
   // Called on the DecodingThread.
-  int32_t InitDecode(const webrtc::VideoCodec* codec_settings,
-                     int32_t number_of_cores) override;
+  bool Configure(const Settings& settings) override;
   // Called on the DecodingThread.
   int32_t RegisterDecodeCompleteCallback(
       webrtc::DecodedImageCallback* callback) override;
@@ -112,7 +129,10 @@ class PLATFORM_EXPORT RTCVideoDecoderStreamAdapter
       const media::VideoDecoderConfig& config,
       const webrtc::SdpVideoFormat& format);
 
-  void InitializeSync(const media::VideoDecoderConfig& config);
+  // May be called on the decoder / worker thread at any time to replace the
+  // decoder stream / demuxer / etc.
+  void InitializeOrReinitializeSync();
+
   void InitializeOnMediaThread(const media::VideoDecoderConfig& config,
                                InitCB init_cb);
   void OnInitializeDone(base::TimeTicks start_time, bool success);
@@ -124,7 +144,7 @@ class PLATFORM_EXPORT RTCVideoDecoderStreamAdapter
 
   // If no read is in progress with `decoder_stream_`, and there is undecoded
   // input buffers, then start a read.  Otherwise, do nothing.
-  void AttemptRead_Locked();
+  void AttemptRead();
 
   // Start a `DecoderStream::Reset`.
   void ResetOnMediaThread();
@@ -145,6 +165,30 @@ class PLATFORM_EXPORT RTCVideoDecoderStreamAdapter
   // Called on the media thread when `decoder_stream_` changes the decoder.
   void OnDecoderChanged(media::VideoDecoder* decoder);
 
+  // Called on any thread with `lock_` held to record the max pending frames
+  // that we've observed so far.  If we've not queued any frames, then this does
+  // nothing.  If it does record some frames, then it resets the max to zero.
+  // Must be called on the media thread.
+  void RecordMaxInFlightDecodesLockedOnMedia();
+
+  // Destroy any existing demuxer / decoder stream / etc., reset everything, and
+  // create / start init on a new one.  This can be called on the media thread
+  // at any time to replace the DecoderStream and friends, including dropping
+  // any previously enqueued decoder buffers.
+  void RestartDecoderStreamOnMedia();
+
+  // Try to reconstruct `decoder_stream_` and friends, but prefer software
+  // decoders over hardware ones.
+  //
+  // Returns WEBRTC_VIDEO_{ERROR, FALLBACK_TO_SOFTWARE} depending on whether we
+  // should get a keyframe or give up.
+  // Note that this should eventually return void, because we should never fall
+  // back to software.  However, since we don't always support software codecs,
+  // we allow it.
+  //
+  // Called on decoder thread, with `lock_` held.
+  int32_t FallBackToSoftwareLocked();
+
   // Construction parameters.
   const scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
   media::GpuVideoAcceleratorFactories* const gpu_factories_;
@@ -157,9 +201,15 @@ class PLATFORM_EXPORT RTCVideoDecoderStreamAdapter
   // |media_log_| must outlive |video_decoder_| because it is passed as a raw
   // pointer.
   std::unique_ptr<media::MediaLog> media_log_;
+  // Metric to record the max pending buffer count that we've observed.
+  std::unique_ptr<base::SingleSampleMetric> max_buffer_count_metric_;
+  // Size that we've reported to `max_buffer_count_metric_`, since each report
+  // sends IPC.  Only report things when they change.
+  size_t max_reported_buffer_count_ = 0;
 
   // Decoding thread members.
   bool key_frame_required_ = true;
+  int non_keyframe_buffers_ = 0;
   webrtc::VideoCodecType video_codec_type_ = webrtc::kVideoCodecGeneric;
 
   // Shared members.
@@ -178,12 +228,28 @@ class PLATFORM_EXPORT RTCVideoDecoderStreamAdapter
   bool logged_init_status_ GUARDED_BY(lock_) = false;
   // Current decoder info, as reported by GetDecoderInfo().
   webrtc::VideoDecoder::DecoderInfo decoder_info_ GUARDED_BY(lock_);
+  // Current decoder type.
+  media::VideoDecoderType video_decoder_type_ GUARDED_BY(lock_) =
+      media::VideoDecoderType::kUnknown;
+  // If it's true, it indicates the decoder has been initialized successfully.
+  bool decoder_configured_ GUARDED_BY(lock_) = false;
   // Current decode callback, if any.
   webrtc::DecodedImageCallback* decode_complete_callback_ GUARDED_BY(lock_) =
       nullptr;
   // Time since construction.  Cleared when we record that a frame has been
   // successfully decoded.
   absl::optional<base::TimeTicks> start_time_ GUARDED_BY(lock_);
+  // Resolution of most recently decoded frame, or the initial resolution if we
+  // haven't decoded anything yet.  Since this is updated asynchronously, it's
+  // only an approximation of "most recently".
+  gfx::Size current_resolution_ GUARDED_BY(lock_);
+  // If true, then we'll try to use software decoders instead of hardware
+  // decoders.  Useful to fall back to software if hw isn't working.  Also
+  // remember that this does not guarantee a sw decoder; if there is no chrome
+  // sw decoder, then DecoderStream will use a hw one anyway.
+  bool prefer_software_decoders_ GUARDED_BY(lock_) = false;
+  // Have we incremented the decoder count?
+  bool contributes_to_decoder_count_ GUARDED_BY(lock_) = false;
 
   // Do we have an outstanding `DecoderStream::Read()`?
   // Media thread only.
@@ -202,8 +268,6 @@ class PLATFORM_EXPORT RTCVideoDecoderStreamAdapter
 
   base::WeakPtr<RTCVideoDecoderStreamAdapter> weak_this_;
   base::WeakPtrFactory<RTCVideoDecoderStreamAdapter> weak_this_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderStreamAdapter);
 };
 
 }  // namespace blink

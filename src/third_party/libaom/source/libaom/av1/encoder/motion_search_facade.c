@@ -9,12 +9,11 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "aom_ports/system_state.h"
-
 #include "av1/common/reconinter.h"
 
 #include "av1/encoder/encodemv.h"
 #include "av1/encoder/encoder.h"
+#include "av1/encoder/interp_search.h"
 #include "av1/encoder/mcomp.h"
 #include "av1/encoder/motion_search_facade.h"
 #include "av1/encoder/partition_strategy.h"
@@ -119,7 +118,8 @@ static INLINE void get_mv_candidate_from_tpl(const AV1_COMP *const cpi,
 void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
                               BLOCK_SIZE bsize, int ref_idx, int *rate_mv,
                               int search_range, inter_mode_info *mode_info,
-                              int_mv *best_mv) {
+                              int_mv *best_mv,
+                              struct HandleInterModeArgs *const args) {
   MACROBLOCKD *xd = &x->e_mbd;
   const AV1_COMMON *cm = &cpi->common;
   const MotionVectorSearchParams *mv_search_params = &cpi->mv_search_params;
@@ -243,13 +243,9 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
   }
 
-  // Terminate search with the current ref_idx if we have already encountered
-  // another ref_mv in the drl such that:
-  //  1. The other drl has the same fullpel_mv during the SIMPLE_TRANSLATION
-  //     search process as the current fullpel_mv.
-  //  2. The rate needed to encode the current fullpel_mv is larger than that
-  //     for the other ref_mv.
-  if (cpi->sf.inter_sf.skip_repeated_full_newmv &&
+  // Terminate search with the current ref_idx based on fullpel mv, rate cost,
+  // and other know cost.
+  if (cpi->sf.inter_sf.skip_newmv_in_drl >= 2 &&
       mbmi->motion_mode == SIMPLE_TRANSLATION &&
       best_mv->as_int != INVALID_MV) {
     int_mv this_mv;
@@ -260,6 +256,7 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
                         mv_costs->mv_cost_stack, MV_COST_WEIGHT);
     mode_info[ref_mv_idx].full_search_mv.as_int = this_mv.as_int;
     mode_info[ref_mv_idx].full_mv_rate = this_mv_rate;
+    mode_info[ref_mv_idx].full_mv_bestsme = bestsme;
 
     for (int prev_ref_idx = 0; prev_ref_idx < ref_mv_idx; ++prev_ref_idx) {
       // Check if the motion search result same as previous results
@@ -280,6 +277,19 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
           return;
         }
       }
+
+      // Terminate the evaluation of current ref_mv_idx based on bestsme and
+      // drl_cost.
+      const int psme = mode_info[prev_ref_idx].full_mv_bestsme;
+      if (psme == INT_MAX) continue;
+      const int thr =
+          cpi->sf.inter_sf.skip_newmv_in_drl == 3 ? (psme + (psme >> 2)) : psme;
+      if (cpi->sf.inter_sf.skip_newmv_in_drl >= 3 &&
+          mode_info[ref_mv_idx].full_mv_bestsme > thr &&
+          mode_info[prev_ref_idx].drl_cost < mode_info[ref_mv_idx].drl_cost) {
+        best_mv->as_int = INVALID_MV;
+        return;
+      }
     }
   }
 
@@ -289,6 +299,8 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   const int use_fractional_mv =
       bestsme < INT_MAX && cpi->common.features.cur_frame_force_integer_mv == 0;
+  int best_mv_rate = 0;
+  int mv_rate_calculated = 0;
   if (use_fractional_mv) {
     int_mv fractional_ms_list[3];
     av1_set_fractional_mv(fractional_ms_list);
@@ -337,9 +349,10 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
             subpel_start_mv = get_mv_from_fullmv(&second_best_mv.as_fullmv);
             if (av1_is_subpelmv_in_range(&ms_params.mv_limits,
                                          subpel_start_mv)) {
+              unsigned int sse;
               const int this_var = mv_search_params->find_fractional_mv_step(
                   xd, cm, &ms_params, subpel_start_mv, &this_best_mv, &dis,
-                  &x->pred_sse[ref], fractional_ms_list);
+                  &sse, fractional_ms_list);
 
               if (!cpi->sf.mv_sf.disable_second_mv) {
                 // If cpi->sf.mv_sf.disable_second_mv is 0, use actual rd cost
@@ -358,11 +371,17 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
                 int64_t tmp_rd =
                     RDCOST(x->rdmult, tmp_rd_stats.rate + tmp_mv_rate,
                            tmp_rd_stats.dist);
-                if (tmp_rd < rd) best_mv->as_mv = this_best_mv;
+                if (tmp_rd < rd) {
+                  best_mv->as_mv = this_best_mv;
+                  x->pred_sse[ref] = sse;
+                }
               } else {
                 // If cpi->sf.mv_sf.disable_second_mv = 1, use var to decide the
                 // best MV.
-                if (this_var < best_mv_var) best_mv->as_mv = this_best_mv;
+                if (this_var < best_mv_var) {
+                  best_mv->as_mv = this_best_mv;
+                  x->pred_sse[ref] = sse;
+                }
               }
             }
           }
@@ -379,9 +398,52 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
         break;
       default: assert(0 && "Invalid motion mode!\n");
     }
+
+    // Terminate search with the current ref_idx based on subpel mv and rate
+    // cost.
+    if (cpi->sf.inter_sf.skip_newmv_in_drl >= 1 && args != NULL &&
+        mbmi->motion_mode == SIMPLE_TRANSLATION &&
+        best_mv->as_int != INVALID_MV) {
+      const int ref_mv_idx = mbmi->ref_mv_idx;
+      best_mv_rate =
+          av1_mv_bit_cost(&best_mv->as_mv, &ref_mv, mv_costs->nmv_joint_cost,
+                          mv_costs->mv_cost_stack, MV_COST_WEIGHT);
+      mv_rate_calculated = 1;
+
+      for (int prev_ref_idx = 0; prev_ref_idx < ref_mv_idx; ++prev_ref_idx) {
+        if (!args->single_newmv_valid[prev_ref_idx][ref]) continue;
+        // Check if the motion vectors are the same.
+        if (best_mv->as_int == args->single_newmv[prev_ref_idx][ref].as_int) {
+          // Skip this evaluation if the previous one is skipped.
+          if (mode_info[prev_ref_idx].skip) {
+            mode_info[ref_mv_idx].skip = 1;
+            break;
+          }
+          // Compare the rate cost that we current know.
+          const int prev_rate_cost =
+              args->single_newmv_rate[prev_ref_idx][ref] +
+              mode_info[prev_ref_idx].drl_cost;
+          const int this_rate_cost =
+              best_mv_rate + mode_info[ref_mv_idx].drl_cost;
+
+          if (prev_rate_cost <= this_rate_cost) {
+            // If the current rate_cost is worse than the previous rate_cost,
+            // then we terminate the search for this ref_mv_idx.
+            mode_info[ref_mv_idx].skip = 1;
+            break;
+          }
+        }
+      }
+    }
   }
-  *rate_mv = av1_mv_bit_cost(&best_mv->as_mv, &ref_mv, mv_costs->nmv_joint_cost,
-                             mv_costs->mv_cost_stack, MV_COST_WEIGHT);
+
+  if (mv_rate_calculated) {
+    *rate_mv = best_mv_rate;
+  } else {
+    *rate_mv =
+        av1_mv_bit_cost(&best_mv->as_mv, &ref_mv, mv_costs->nmv_joint_cost,
+                        mv_costs->mv_cost_stack, MV_COST_WEIGHT);
+  }
 }
 
 int av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
@@ -894,8 +956,6 @@ int_mv av1_simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   // Get a copy of the prediction output
   av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
                                 AOM_PLANE_Y, AOM_PLANE_Y);
-
-  aom_clear_system_state();
 
   if (scaled_ref_frame) {
     xd->plane[AOM_PLANE_Y].pre[ref_idx] = backup_yv12;

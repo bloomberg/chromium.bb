@@ -19,6 +19,7 @@
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/request_params.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/variations/scoped_variations_ids_provider.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -80,6 +81,8 @@ class JsonRequestTest : public testing::Test {
     language::UrlLanguageHistogram::RegisterProfilePrefs(
         pref_service_->registry());
   }
+  JsonRequestTest(const JsonRequestTest&) = delete;
+  JsonRequestTest& operator=(const JsonRequestTest&) = delete;
 
   std::unique_ptr<language::UrlLanguageHistogram> MakeLanguageHistogram(
       const std::set<std::string>& codes) {
@@ -115,13 +118,13 @@ class JsonRequestTest : public testing::Test {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
   std::unique_ptr<base::ThreadTaskRunnerHandle> mock_runner_handle_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(JsonRequestTest);
 };
 
 TEST_F(JsonRequestTest, MAYBE_BuildRequestAuthenticated) {

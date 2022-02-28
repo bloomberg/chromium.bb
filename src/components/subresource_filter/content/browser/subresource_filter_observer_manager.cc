@@ -9,7 +9,9 @@
 namespace subresource_filter {
 
 SubresourceFilterObserverManager::SubresourceFilterObserverManager(
-    content::WebContents* web_contents) {}
+    content::WebContents* web_contents)
+    : content::WebContentsUserData<SubresourceFilterObserverManager>(
+          *web_contents) {}
 
 SubresourceFilterObserverManager::~SubresourceFilterObserverManager() {
   for (auto& observer : observers_)
@@ -56,6 +58,6 @@ void SubresourceFilterObserverManager::NotifyIsAdSubframeChanged(
     observer.OnIsAdSubframeChanged(render_frame_host, is_ad_subframe);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(SubresourceFilterObserverManager)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SubresourceFilterObserverManager);
 
 }  // namespace subresource_filter

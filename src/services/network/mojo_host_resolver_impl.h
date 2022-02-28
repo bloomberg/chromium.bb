@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/component_export.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/log/net_log_with_source.h"
@@ -37,6 +37,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) MojoHostResolverImpl {
   // |resolver| is expected to outlive |this|.
   MojoHostResolverImpl(net::HostResolver* resolver,
                        const net::NetLogWithSource& net_log);
+
+  MojoHostResolverImpl(const MojoHostResolverImpl&) = delete;
+  MojoHostResolverImpl& operator=(const MojoHostResolverImpl&) = delete;
+
   ~MojoHostResolverImpl();
 
   void Resolve(
@@ -55,7 +59,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) MojoHostResolverImpl {
   void DeleteJob(std::list<Job>::iterator job);
 
   // Resolver for resolving incoming requests. Not owned.
-  net::HostResolver* resolver_;
+  raw_ptr<net::HostResolver> resolver_;
 
   // The NetLogWithSource to be passed to |resolver_| for all requests.
   const net::NetLogWithSource net_log_;
@@ -64,8 +68,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) MojoHostResolverImpl {
   std::list<Job> pending_jobs_;
 
   base::ThreadChecker thread_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoHostResolverImpl);
 };
 
 }  // namespace network

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_INTEGRATION_TESTS_METRIC_INTEGRATION_TEST_H_
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_INTEGRATION_TESTS_METRIC_INTEGRATION_TEST_H_
 
+#include "base/strings/string_piece_forward.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 #include "base/test/metrics/histogram_tester.h"
@@ -90,6 +91,10 @@ class MetricIntegrationTest : public InProcessBrowserTest {
   // metric name and value.
   void ExpectUKMPageLoadMetric(base::StringPiece metric_name,
                                int64_t expected_value);
+
+  void ExpectUKMPageLoadMetricFlagSet(base::StringPiece metric_name,
+                                      uint32_t flag_set,
+                                      bool expected);
 
   void ExpectUKMPageLoadMetricNear(base::StringPiece metric_name,
                                    double expected_value,

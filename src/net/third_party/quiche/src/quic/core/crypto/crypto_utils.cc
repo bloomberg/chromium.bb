@@ -146,10 +146,6 @@ const uint8_t kRFCv1InitialSalt[] = {0x38, 0x76, 0x2c, 0xf7, 0xf5, 0x59, 0x34,
 const uint8_t kQ050Salt[] = {0x50, 0x45, 0x74, 0xef, 0xd0, 0x66, 0xfe,
                              0x2f, 0x9d, 0x94, 0x5c, 0xfc, 0xdb, 0xd3,
                              0xa7, 0xf0, 0xd3, 0xb5, 0x6b, 0x45};
-// Salt to use for initial obfuscators in version T051.
-const uint8_t kT051Salt[] = {0x7a, 0x4e, 0xde, 0xf4, 0xe7, 0xcc, 0xee,
-                             0x5f, 0xa4, 0x50, 0x6c, 0x19, 0x12, 0x4f,
-                             0xc8, 0xcc, 0xda, 0x6e, 0x03, 0x3d};
 // Salt to use for initial obfuscators in
 // ParsedQuicVersion::ReservedForNegotiation().
 const uint8_t kReservedForNegotiationSalt[] = {
@@ -158,7 +154,7 @@ const uint8_t kReservedForNegotiationSalt[] = {
 
 const uint8_t* InitialSaltForVersion(const ParsedQuicVersion& version,
                                      size_t* out_len) {
-  static_assert(SupportedVersions().size() == 6u,
+  static_assert(SupportedVersions().size() == 5u,
                 "Supported versions out of sync with initial encryption salts");
   if (version == ParsedQuicVersion::RFCv1()) {
     *out_len = ABSL_ARRAYSIZE(kRFCv1InitialSalt);
@@ -166,9 +162,6 @@ const uint8_t* InitialSaltForVersion(const ParsedQuicVersion& version,
   } else if (version == ParsedQuicVersion::Draft29()) {
     *out_len = ABSL_ARRAYSIZE(kDraft29InitialSalt);
     return kDraft29InitialSalt;
-  } else if (version == ParsedQuicVersion::T051()) {
-    *out_len = ABSL_ARRAYSIZE(kT051Salt);
-    return kT051Salt;
   } else if (version == ParsedQuicVersion::Q050()) {
     *out_len = ABSL_ARRAYSIZE(kQ050Salt);
     return kQ050Salt;
@@ -186,6 +179,8 @@ const char kPreSharedKeyLabel[] = "QUIC PSK";
 
 // Retry Integrity Protection Keys and Nonces.
 // https://tools.ietf.org/html/draft-ietf-quic-tls-29#section-5.8
+// When introducing a new Google version, generate a new key by running
+// `openssl rand -hex 16`.
 const uint8_t kDraft29RetryIntegrityKey[] = {0xcc, 0xce, 0x18, 0x7e, 0xd0, 0x9a,
                                              0x09, 0xd0, 0x57, 0x28, 0x15, 0x5a,
                                              0x6c, 0xb9, 0x6b, 0xe1};
@@ -196,20 +191,12 @@ const uint8_t kRFCv1RetryIntegrityKey[] = {0xbe, 0x0c, 0x69, 0x0b, 0x9f, 0x66,
                                            0xe3, 0x68, 0xc8, 0x4e};
 const uint8_t kRFCv1RetryIntegrityNonce[] = {
     0x46, 0x15, 0x99, 0xd3, 0x5d, 0x63, 0x2b, 0xf2, 0x23, 0x98, 0x25, 0xbb};
-
-// Keys used by Google versions of QUIC. When introducing a new version,
-// generate a new key by running `openssl rand -hex 16`.
-const uint8_t kT051RetryIntegrityKey[] = {0x2e, 0xb9, 0x61, 0xa6, 0x79, 0x56,
-                                          0xf8, 0x79, 0x53, 0x14, 0xda, 0xfb,
-                                          0x2e, 0xbc, 0x83, 0xd7};
 // Retry integrity key used by ParsedQuicVersion::ReservedForNegotiation().
 const uint8_t kReservedForNegotiationRetryIntegrityKey[] = {
     0xf2, 0xcd, 0x8f, 0xe0, 0x36, 0xd0, 0x25, 0x35,
     0x03, 0xe6, 0x7c, 0x7b, 0xd2, 0x44, 0xca, 0xd9};
-// Nonces used by Google versions of QUIC. When introducing a new version,
-// generate a new nonce by running `openssl rand -hex 12`.
-const uint8_t kT051RetryIntegrityNonce[] = {0xb5, 0x0e, 0x4e, 0x53, 0x4c, 0xfc,
-                                            0x0b, 0xbb, 0x85, 0xf2, 0xf9, 0xca};
+// When introducing a new Google version, generate a new nonce by running
+// `openssl rand -hex 12`.
 // Retry integrity nonce used by ParsedQuicVersion::ReservedForNegotiation().
 const uint8_t kReservedForNegotiationRetryIntegrityNonce[] = {
     0x35, 0x9f, 0x16, 0xd1, 0xed, 0x80, 0x90, 0x8e, 0xec, 0x85, 0xc4, 0xd6};
@@ -217,7 +204,7 @@ const uint8_t kReservedForNegotiationRetryIntegrityNonce[] = {
 bool RetryIntegrityKeysForVersion(const ParsedQuicVersion& version,
                                   absl::string_view* key,
                                   absl::string_view* nonce) {
-  static_assert(SupportedVersions().size() == 6u,
+  static_assert(SupportedVersions().size() == 5u,
                 "Supported versions out of sync with retry integrity keys");
   if (!version.UsesTls()) {
     QUIC_BUG(quic_bug_10699_2)
@@ -239,14 +226,6 @@ bool RetryIntegrityKeysForVersion(const ParsedQuicVersion& version,
     *nonce = absl::string_view(
         reinterpret_cast<const char*>(kDraft29RetryIntegrityNonce),
         ABSL_ARRAYSIZE(kDraft29RetryIntegrityNonce));
-    return true;
-  } else if (version == ParsedQuicVersion::T051()) {
-    *key =
-        absl::string_view(reinterpret_cast<const char*>(kT051RetryIntegrityKey),
-                          ABSL_ARRAYSIZE(kT051RetryIntegrityKey));
-    *nonce = absl::string_view(
-        reinterpret_cast<const char*>(kT051RetryIntegrityNonce),
-        ABSL_ARRAYSIZE(kT051RetryIntegrityNonce));
     return true;
   } else if (version == ParsedQuicVersion::ReservedForNegotiation()) {
     *key = absl::string_view(
@@ -542,35 +521,6 @@ bool CryptoUtils::DeriveKeys(const ParsedQuicVersion& version,
 }
 
 // static
-bool CryptoUtils::ExportKeyingMaterial(absl::string_view subkey_secret,
-                                       absl::string_view label,
-                                       absl::string_view context,
-                                       size_t result_len,
-                                       std::string* result) {
-  for (size_t i = 0; i < label.length(); i++) {
-    if (label[i] == '\0') {
-      QUIC_LOG(ERROR) << "ExportKeyingMaterial label may not contain NULs";
-      return false;
-    }
-  }
-  // Create HKDF info input: null-terminated label + length-prefixed context
-  if (context.length() >= std::numeric_limits<uint32_t>::max()) {
-    QUIC_LOG(ERROR) << "Context value longer than 2^32";
-    return false;
-  }
-  uint32_t context_length = static_cast<uint32_t>(context.length());
-  std::string info = std::string(label);
-  info.push_back('\0');
-  info.append(reinterpret_cast<char*>(&context_length), sizeof(context_length));
-  info.append(context.data(), context.length());
-
-  QuicHKDF hkdf(subkey_secret, absl::string_view() /* no salt */, info,
-                result_len, 0 /* no fixed IV */, 0 /* no subkey secret */);
-  *result = std::string(hkdf.client_write_key());
-  return true;
-}
-
-// static
 uint64_t CryptoUtils::ComputeLeafCertHash(absl::string_view cert) {
   return QuicUtils::FNV1a_64_Hash(cert);
 }
@@ -670,6 +620,62 @@ QuicErrorCode CryptoUtils::ValidateClientHelloVersion(
   return QUIC_NO_ERROR;
 }
 
+// static
+bool CryptoUtils::ValidateChosenVersion(
+    const QuicVersionLabel& version_information_chosen_version,
+    const ParsedQuicVersion& session_version, std::string* error_details) {
+  if (version_information_chosen_version !=
+      CreateQuicVersionLabel(session_version)) {
+    *error_details = absl::StrCat(
+        "Detected version mismatch: version_information contained ",
+        QuicVersionLabelToString(version_information_chosen_version),
+        " instead of ", ParsedQuicVersionToString(session_version));
+    return false;
+  }
+  return true;
+}
+
+// static
+bool CryptoUtils::ValidateServerVersions(
+    const QuicVersionLabelVector& version_information_other_versions,
+    const ParsedQuicVersion& session_version,
+    const ParsedQuicVersionVector& client_original_supported_versions,
+    std::string* error_details) {
+  if (client_original_supported_versions.empty()) {
+    // We did not receive a version negotiation packet.
+    return true;
+  }
+  // Parse the server's other versions.
+  ParsedQuicVersionVector parsed_other_versions =
+      ParseQuicVersionLabelVector(version_information_other_versions);
+  // Find the first version that we originally supported that is listed in the
+  // server's other versions.
+  ParsedQuicVersion expected_version = ParsedQuicVersion::Unsupported();
+  for (const ParsedQuicVersion& client_version :
+       client_original_supported_versions) {
+    if (std::find(parsed_other_versions.begin(), parsed_other_versions.end(),
+                  client_version) != parsed_other_versions.end()) {
+      expected_version = client_version;
+      break;
+    }
+  }
+  if (expected_version != session_version) {
+    *error_details = absl::StrCat(
+        "Downgrade attack detected: used ",
+        ParsedQuicVersionToString(session_version), " but ServerVersions(",
+        version_information_other_versions.size(), ")[",
+        QuicVersionLabelVectorToString(version_information_other_versions, ",",
+                                       30),
+        "] ClientOriginalVersions(", client_original_supported_versions.size(),
+        ")[",
+        ParsedQuicVersionVectorToString(client_original_supported_versions, ",",
+                                        30),
+        "]");
+    return false;
+  }
+  return true;
+}
+
 #define RETURN_STRING_LITERAL(x) \
   case x:                        \
     return #x
@@ -713,35 +719,15 @@ const char* CryptoUtils::HandshakeFailureReasonToString(
   return "INVALID_HANDSHAKE_FAILURE_REASON";
 }
 
+#undef RETURN_STRING_LITERAL  // undef for jumbo builds
+
 // static
 std::string CryptoUtils::EarlyDataReasonToString(
     ssl_early_data_reason_t reason) {
-#if BORINGSSL_API_VERSION >= 12
   const char* reason_string = SSL_early_data_reason_string(reason);
   if (reason_string != nullptr) {
     return std::string("ssl_early_data_") + reason_string;
   }
-#else
-  // TODO(davidben): Remove this logic once
-  // https://boringssl-review.googlesource.com/c/boringssl/+/43724 has landed in
-  // downstream repositories.
-  switch (reason) {
-    RETURN_STRING_LITERAL(ssl_early_data_unknown);
-    RETURN_STRING_LITERAL(ssl_early_data_disabled);
-    RETURN_STRING_LITERAL(ssl_early_data_accepted);
-    RETURN_STRING_LITERAL(ssl_early_data_protocol_version);
-    RETURN_STRING_LITERAL(ssl_early_data_peer_declined);
-    RETURN_STRING_LITERAL(ssl_early_data_no_session_offered);
-    RETURN_STRING_LITERAL(ssl_early_data_session_not_resumed);
-    RETURN_STRING_LITERAL(ssl_early_data_unsupported_for_session);
-    RETURN_STRING_LITERAL(ssl_early_data_hello_retry_request);
-    RETURN_STRING_LITERAL(ssl_early_data_alpn_mismatch);
-    RETURN_STRING_LITERAL(ssl_early_data_channel_id);
-    RETURN_STRING_LITERAL(ssl_early_data_token_binding);
-    RETURN_STRING_LITERAL(ssl_early_data_ticket_age_skew);
-    RETURN_STRING_LITERAL(ssl_early_data_quic_parameter_mismatch);
-  }
-#endif
   QUIC_BUG_IF(quic_bug_12871_3,
               reason < 0 || reason > ssl_early_data_reason_max_value)
       << "Unknown ssl_early_data_reason_t " << reason;
@@ -760,8 +746,6 @@ std::string CryptoUtils::HashHandshakeMessage(
   output.assign(reinterpret_cast<const char*>(digest), sizeof(digest));
   return output;
 }
-
-#undef RETURN_STRING_LITERAL  // undef for jumbo builds
 
 // static
 bool CryptoUtils::GetSSLCapabilities(const SSL* ssl,

@@ -11,8 +11,9 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
-#include "base/stl_util.h"
 #include "base/test/gtest_util.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
+#include "printing/backend/mojom/print_backend.mojom.h"
 #include "printing/backend/print_backend.h"
 #include "printing/mojom/print.mojom.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -28,6 +29,7 @@ constexpr char kAlternatePrinterName[] = "alternate-test-printer";
 constexpr char kNullDataPrinterName[] = "null-data-test-printer";
 constexpr char kAccessDeniedPrinterName[] = "access-denied-test-printer";
 constexpr char kInvalidPrinterName[] = "invalid-test-printer";
+constexpr char kInvalidDataPrinterName[] = "invalid-data-test-printer";
 
 constexpr int kDefaultPrinterStatus = 0;
 constexpr int kAlternatePrinterStatus = 1;
@@ -78,6 +80,10 @@ class TestPrintBackendTest : public testing::Test {
                                          /*info=*/nullptr);
   }
 
+  void AddInvalidDataPrinter() {
+    test_print_backend_->AddInvalidDataPrinter(kInvalidDataPrinterName);
+  }
+
   void AddAccessDeniedPrinter() {
     test_print_backend_->AddAccessDeniedPrinter(kAccessDeniedPrinterName);
   }
@@ -111,16 +117,24 @@ TEST_F(TestPrintBackendTest, EnumeratePrintersNoneFound) {
 }
 
 TEST_F(TestPrintBackendTest, DefaultPrinterName) {
+  std::string default_printer;
+
   // If no printers added then no default.
-  EXPECT_TRUE(GetPrintBackend()->GetDefaultPrinterName().empty());
+  ASSERT_EQ(GetPrintBackend()->GetDefaultPrinterName(default_printer),
+            mojom::ResultCode::kSuccess);
+  EXPECT_TRUE(default_printer.empty());
 
   // Once printers are available, should be a default.
   AddPrinters();
-  EXPECT_EQ(GetPrintBackend()->GetDefaultPrinterName(), kDefaultPrinterName);
+  ASSERT_EQ(GetPrintBackend()->GetDefaultPrinterName(default_printer),
+            mojom::ResultCode::kSuccess);
+  EXPECT_EQ(default_printer, kDefaultPrinterName);
 
   // Changing default should be reflected on next query.
   GetPrintBackend()->SetDefaultPrinterName(kAlternatePrinterName);
-  EXPECT_EQ(GetPrintBackend()->GetDefaultPrinterName(), kAlternatePrinterName);
+  ASSERT_EQ(GetPrintBackend()->GetDefaultPrinterName(default_printer),
+            mojom::ResultCode::kSuccess);
+  EXPECT_EQ(default_printer, kAlternatePrinterName);
 
   // Adding a new printer to environment which is marked as default should
   // automatically make it the new default.
@@ -131,17 +145,23 @@ TEST_F(TestPrintBackendTest, DefaultPrinterName) {
   printer_info->is_default = true;
   GetPrintBackend()->AddValidPrinter(kNewDefaultPrinterName, std::move(caps),
                                      std::move(printer_info));
-  EXPECT_EQ(GetPrintBackend()->GetDefaultPrinterName(), kNewDefaultPrinterName);
+  ASSERT_EQ(GetPrintBackend()->GetDefaultPrinterName(default_printer),
+            mojom::ResultCode::kSuccess);
+  EXPECT_EQ(default_printer, kNewDefaultPrinterName);
 
   // Requesting an invalid printer name to be a default should have no effect.
   GetPrintBackend()->SetDefaultPrinterName(kInvalidPrinterName);
-  EXPECT_EQ(GetPrintBackend()->GetDefaultPrinterName(), kNewDefaultPrinterName);
+  ASSERT_EQ(GetPrintBackend()->GetDefaultPrinterName(default_printer),
+            mojom::ResultCode::kSuccess);
+  EXPECT_EQ(default_printer, kNewDefaultPrinterName);
 
   // Verify that re-adding a printer that was previously the default with null
   // basic info results in no default printer anymore.
   GetPrintBackend()->AddValidPrinter(kNewDefaultPrinterName, /*caps=*/nullptr,
                                      /*info=*/nullptr);
-  EXPECT_TRUE(GetPrintBackend()->GetDefaultPrinterName().empty());
+  ASSERT_EQ(GetPrintBackend()->GetDefaultPrinterName(default_printer),
+            mojom::ResultCode::kSuccess);
+  EXPECT_TRUE(default_printer.empty());
 }
 
 TEST_F(TestPrintBackendTest, PrinterBasicInfo) {
@@ -200,6 +220,23 @@ TEST_F(TestPrintBackendTest, PrinterBasicInfoAccessDenied) {
   EXPECT_EQ(GetPrintBackend()->GetPrinterBasicInfo(kAccessDeniedPrinterName,
                                                    &printer_info),
             mojom::ResultCode::kAccessDenied);
+}
+
+// Demonstrate that a printer might be able to present data considered to be
+// invalid, which becomes detectable when it undergoes Mojom message
+// validation.
+TEST_F(TestPrintBackendTest, PrinterBasicInfoInvalidData) {
+  PrinterBasicInfo printer_info;
+
+  AddInvalidDataPrinter();
+
+  EXPECT_EQ(GetPrintBackend()->GetPrinterBasicInfo(kInvalidDataPrinterName,
+                                                   &printer_info),
+            mojom::ResultCode::kSuccess);
+
+  PrinterBasicInfo output;
+  EXPECT_FALSE(mojo::test::SerializeAndDeserialize<mojom::PrinterBasicInfo>(
+      printer_info, output));
 }
 
 TEST_F(TestPrintBackendTest, GetPrinterSemanticCapsAndDefaults) {

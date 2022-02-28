@@ -8,7 +8,6 @@
 #ifndef CHROMECAST_GRAPHICS_ACCESSIBILITY_FOCUS_RING_LAYER_H_
 #define CHROMECAST_GRAPHICS_ACCESSIBILITY_FOCUS_RING_LAYER_H_
 
-#include "base/macros.h"
 #include "chromecast/graphics/accessibility/accessibility_layer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -23,6 +22,10 @@ class FocusRingLayer : public AccessibilityLayer {
  public:
   explicit FocusRingLayer(aura::Window* root_window,
                           AccessibilityLayerDelegate* delegate);
+
+  FocusRingLayer(const FocusRingLayer&) = delete;
+  FocusRingLayer& operator=(const FocusRingLayer&) = delete;
+
   ~FocusRingLayer() override;
 
   // AccessibilityLayer overrides:
@@ -42,8 +45,6 @@ class FocusRingLayer : public AccessibilityLayer {
   void OnPaintLayer(const ui::PaintContext& context) override;
 
   absl::optional<SkColor> custom_color_;
-
-  DISALLOW_COPY_AND_ASSIGN(FocusRingLayer);
 };
 
 }  // namespace chromecast

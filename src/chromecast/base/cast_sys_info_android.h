@@ -8,7 +8,6 @@
 #include <jni.h>
 #include <vector>
 
-#include "base/macros.h"
 #include "chromecast/public/cast_sys_info.h"
 
 namespace base {
@@ -22,6 +21,10 @@ namespace chromecast {
 class CastSysInfoAndroid : public CastSysInfo {
  public:
   CastSysInfoAndroid();
+
+  CastSysInfoAndroid(const CastSysInfoAndroid&) = delete;
+  CastSysInfoAndroid& operator=(const CastSysInfoAndroid&) = delete;
+
   ~CastSysInfoAndroid() override;
 
   // CastSysInfo implementation:
@@ -40,10 +43,11 @@ class CastSysInfoAndroid : public CastSysInfo {
   std::string GetApInterface() override;
   std::string GetProductSsidSuffix() override;
 
+  static std::string GetAndroidProperty(const std::string& key,
+                               const std::string& default_value);
+
  private:
   const base::android::BuildInfo* const build_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastSysInfoAndroid);
 };
 
 }  // namespace chromecast

@@ -13,7 +13,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
-import org.chromium.chrome.browser.signin.ui.SyncConsentActivityLauncher;
+import org.chromium.chrome.browser.ui.signin.SyncConsentActivityLauncher;
 import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
@@ -42,7 +42,8 @@ public final class SyncConsentActivityLauncherImpl implements SyncConsentActivit
     private SyncConsentActivityLauncherImpl() {}
 
     /**
-     * Launches the SigninActivity with default sign-in flow from personalized sign-in promo.
+     * Launches the {@link SyncConsentActivity} with default sign-in flow from personalized sign-in
+     * promo.
      * @param accessPoint {@link SigninAccessPoint} for starting sign-in flow.
      * @param accountName The account to preselect or null to preselect the default account.
      */
@@ -54,7 +55,7 @@ public final class SyncConsentActivityLauncherImpl implements SyncConsentActivit
     }
 
     /**
-     * Launches the SigninActivity with "Choose account" sign-in flow from personalized
+     * Launches the {@link SyncConsentActivity} with "Choose account" sign-in flow from personalized
      * sign-in promo.
      * @param accessPoint {@link SigninAccessPoint} for starting sign-in flow.
      * @param accountName The account to preselect or null to preselect the default account.
@@ -68,8 +69,8 @@ public final class SyncConsentActivityLauncherImpl implements SyncConsentActivit
     }
 
     /**
-     * Launches the SigninActivity with "New account" sign-in flow from personalized sign-in
-     * promo.
+     * Launches the {@link SyncConsentActivity} with "New account" sign-in flow from personalized
+     * sign-in promo.
      * @param accessPoint {@link SigninAccessPoint} for starting sign-in flow.
      */
     @Override

@@ -15,6 +15,7 @@
 #include "content/public/renderer/render_view.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -124,8 +125,8 @@ class SubresourceRedirectLoginRobotsURLLoaderThrottleTest
     RobotsRulesParserCache& robots_rules_parser_cache =
         RobotsRulesParserCache::Get();
     if (!robots_rules_parser_cache.DoRobotsRulesParserExist(origin)) {
-      robots_rules_parser_cache.CreateRobotsRulesParser(
-          origin, base::TimeDelta::FromSeconds(2));
+      robots_rules_parser_cache.CreateRobotsRulesParser(origin,
+                                                        base::Seconds(2));
     }
     EXPECT_TRUE(robots_rules_parser_cache.DoRobotsRulesParserExist(origin));
     robots_rules_parser_cache.UpdateRobotsRules(
@@ -142,7 +143,7 @@ class SubresourceRedirectLoginRobotsURLLoaderThrottleTest
     request.SetPreviewsState(previews_state);
     request.SetRequestDestination(request_destination);
     auto throttle = SubresourceRedirectURLLoaderThrottle::MaybeCreateThrottle(
-        request, view_->GetMainRenderFrame()->GetRoutingID());
+        request, GetMainRenderFrame()->GetRoutingID());
     EXPECT_TRUE(throttle.get());
     return throttle;
   }
@@ -170,7 +171,7 @@ class SubresourceRedirectLoginRobotsURLLoaderThrottleTest
            {"enable_public_image_hints_based_compression", "false"}}}},
         {});
     login_robots_decider_agent_ = new LoginRobotsDeciderAgent(
-        &associated_interfaces_, view_->GetMainRenderFrame());
+        &associated_interfaces_, GetMainRenderFrame());
   }
 
  protected:
@@ -233,10 +234,9 @@ TEST_F(SubresourceRedirectLoginRobotsURLLoaderThrottleTest,
     request.SetPreviewsState(test_case.previews_state);
     request.SetUrl(GURL(test_case.url));
     request.SetRequestDestination(test_case.destination);
-    EXPECT_EQ(
-        test_case.expected_is_throttle_created,
-        SubresourceRedirectURLLoaderThrottle::MaybeCreateThrottle(
-            request, view_->GetMainRenderFrame()->GetRoutingID()) != nullptr);
+    EXPECT_EQ(test_case.expected_is_throttle_created,
+              SubresourceRedirectURLLoaderThrottle::MaybeCreateThrottle(
+                  request, GetMainRenderFrame()->GetRoutingID()) != nullptr);
   }
 }
 
@@ -419,7 +419,7 @@ TEST_F(SubresourceRedirectLoginRobotsURLLoaderThrottleTest,
   EXPECT_FALSE(throttle_info1->did_restart_with_url_reset_and_flags());
   EXPECT_FALSE(throttle_info2->did_restart_with_url_reset_and_flags());
 
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
+  task_environment_.FastForwardBy(base::Seconds(10));
 
   // Both resources should restart and resume loading with the original URL.
   EXPECT_TRUE(throttle_info1->did_restart_with_url_reset_and_flags());

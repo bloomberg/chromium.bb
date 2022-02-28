@@ -24,14 +24,10 @@ InstallTracker::InstallTracker(content::BrowserContext* browser_context,
 
   // Prefs may be null in tests.
   if (prefs) {
-    AppSorting* sorting = ExtensionSystem::Get(browser_context)->app_sorting();
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_APP_LAUNCHER_REORDERED,
-                   content::Source<AppSorting>(sorting));
     pref_change_registrar_.Init(prefs->pref_service());
     pref_change_registrar_.Add(
         pref_names::kExtensions,
-        base::BindRepeating(&InstallTracker::OnAppsReordered,
+        base::BindRepeating(&InstallTracker::OnExtensionPrefChanged,
                             base::Unretained(this)));
   }
 }
@@ -77,8 +73,9 @@ void InstallTracker::OnBeginExtensionInstall(
     const InstallObserver::ExtensionInstallParams& params) {
   auto install_data = active_installs_.find(params.extension_id);
   if (install_data == active_installs_.end()) {
-    ActiveInstallData install_data(params.extension_id);
-    active_installs_.insert(std::make_pair(params.extension_id, install_data));
+    ActiveInstallData active_install_data(params.extension_id);
+    active_installs_.insert(
+        std::make_pair(params.extension_id, active_install_data));
   }
 
   for (auto& observer : observers_)
@@ -122,8 +119,13 @@ void InstallTracker::OnInstallFailure(
 }
 
 void InstallTracker::Shutdown() {
+  // Note: tests may call this method prematurely to avoid shutdown ordering
+  // issues. Make sure observers don't need to handle this awkward complexity by
+  // clearing them here and making this method idempotent.
   for (auto& observer : observers_)
     observer.OnShutdown();
+  observers_.Clear();
+  pref_change_registrar_.RemoveAll();
 }
 
 void InstallTracker::Observe(int type,
@@ -135,11 +137,6 @@ void InstallTracker::Observe(int type,
           content::Details<const Extension>(details).ptr();
       for (auto& observer : observers_)
         observer.OnDisabledExtensionUpdated(extension);
-      break;
-    }
-    case chrome::NOTIFICATION_APP_LAUNCHER_REORDERED: {
-      for (auto& observer : observers_)
-        observer.OnAppsReordered();
       break;
     }
     default:
@@ -154,9 +151,14 @@ void InstallTracker::OnExtensionInstalled(
   RemoveActiveInstall(extension->id());
 }
 
-void InstallTracker::OnAppsReordered() {
+void InstallTracker::OnAppsReordered(
+    const absl::optional<std::string>& extension_id) {
   for (auto& observer : observers_)
-    observer.OnAppsReordered();
+    observer.OnAppsReordered(extension_id);
+}
+
+void InstallTracker::OnExtensionPrefChanged() {
+  OnAppsReordered(absl::nullopt);
 }
 
 }  // namespace extensions

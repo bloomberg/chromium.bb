@@ -29,15 +29,13 @@ namespace blink {
 
 namespace {
 
-constexpr base::TimeDelta kColdModeTimerInterval =
-    base::TimeDelta::FromMilliseconds(1000);
+constexpr base::TimeDelta kColdModeTimerInterval = base::Milliseconds(1000);
 constexpr base::TimeDelta kConsecutiveColdModeTimerInterval =
-    base::TimeDelta::FromMilliseconds(200);
+    base::Milliseconds(200);
 const int kHotModeRequestTimeoutMS = 200;
 const int kInvalidHandle = -1;
 const int kDummyHandleForForcedInvocation = -2;
-constexpr base::TimeDelta kIdleSpellcheckTestTimeout =
-    base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kIdleSpellcheckTestTimeout = base::Seconds(10);
 
 }  // namespace
 
@@ -45,6 +43,8 @@ class IdleSpellCheckController::IdleCallback final : public IdleTask {
  public:
   explicit IdleCallback(IdleSpellCheckController* controller)
       : controller_(controller) {}
+  IdleCallback(const IdleCallback&) = delete;
+  IdleCallback& operator=(const IdleCallback&) = delete;
 
   void Trace(Visitor* visitor) const final {
     visitor->Trace(controller_);
@@ -55,8 +55,6 @@ class IdleSpellCheckController::IdleCallback final : public IdleTask {
   void invoke(IdleDeadline* deadline) final { controller_->Invoke(deadline); }
 
   const Member<IdleSpellCheckController> controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(IdleCallback);
 };
 
 IdleSpellCheckController::~IdleSpellCheckController() = default;

@@ -31,10 +31,11 @@ namespace utils {
     };
 
     uint32_t GetMinimumBytesPerRow(wgpu::TextureFormat format, uint32_t width);
-    TextureDataCopyLayout GetTextureDataCopyLayoutForTexture2DAtLevel(
+    TextureDataCopyLayout GetTextureDataCopyLayoutForTextureAtLevel(
         wgpu::TextureFormat format,
         wgpu::Extent3D textureSizeAtLevel0,
         uint32_t mipmapLevel,
+        wgpu::TextureDimension dimension = wgpu::TextureDimension::e2D,
         uint32_t rowsPerImage = wgpu::kCopyStrideUndefined);
 
     uint64_t RequiredBytesInCopy(uint64_t bytesPerRow,
@@ -58,6 +59,8 @@ namespace utils {
     // so that assuming that WriteTexture uses DynamicUploader, the first RingBuffer
     // in it will contain 1 byte of data.
     void UnalignDynamicUploader(wgpu::Device device);
+
+    uint32_t VertexFormatSize(wgpu::VertexFormat format);
 
 }  // namespace utils
 

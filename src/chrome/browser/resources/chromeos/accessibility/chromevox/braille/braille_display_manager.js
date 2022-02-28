@@ -89,15 +89,14 @@ BrailleDisplayManager = class {
       this.updatePanStrategy_(items.brailleWordWrap);
     }.bind(this));
 
-    BrailleCaptionsBackground.init(
-        goog.bind(this.onCaptionsStateChanged_, this));
+    BrailleCaptionsBackground.init(this.onCaptionsStateChanged_.bind(this));
     if (goog.isDef(chrome.brailleDisplayPrivate)) {
-      const onDisplayStateChanged = goog.bind(this.refreshDisplayState_, this);
+      const onDisplayStateChanged = this.refreshDisplayState_.bind(this);
       chrome.brailleDisplayPrivate.getDisplayState(onDisplayStateChanged);
       chrome.brailleDisplayPrivate.onDisplayStateChanged.addListener(
           onDisplayStateChanged);
       chrome.brailleDisplayPrivate.onKeyEvent.addListener(
-          goog.bind(this.onKeyEvent_, this));
+          this.onKeyEvent_.bind(this));
     } else {
       // Get the initial captions state since we won't refresh the display
       // state in an API callback in this case.
@@ -127,8 +126,9 @@ BrailleDisplayManager = class {
     }
 
     // The number of dots in a braille cell.
-    // TODO(dmazzoni): Both multi-line braille displays we're testing with
-    // are 6-dot (2 x 3), but we should have a way to detect that via brltty.
+    // TODO: Both multi-line braille displays we're testing with
+    // are 6-dot (2 x 3), but we should switch to detecting this with
+    // BRLAPI_PARAM_DEVICE_CELL_SIZE from brlapi instead.
     const cellWidth = 2;
     const cellHeight = 3;
     const maxCellHeight = 4;

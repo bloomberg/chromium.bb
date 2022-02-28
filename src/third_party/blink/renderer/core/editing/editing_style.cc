@@ -65,7 +65,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
@@ -1982,7 +1982,7 @@ int LegacyFontSizeFromCSSValue(Document* document,
             CSSPrimitiveValue::ConversionToCanonicalUnitsScaleFactor(
                 length_unit);
         int pixel_font_size =
-            clampTo<int>(primitive_value->GetDoubleValue() * conversion);
+            ClampTo<int>(primitive_value->GetDoubleValue() * conversion);
         int legacy_font_size = FontSizeFunctions::LegacyFontSize(
             document, pixel_font_size, is_monospace_font);
         // Use legacy font size only if pixel value matches exactly to that of

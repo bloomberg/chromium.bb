@@ -78,7 +78,6 @@ FT_BEGIN_HEADER
    *   FT_FWord
    *   FT_UFWord
    *   FT_F2Dot14
-   *   FT_F6Dot10
    *   FT_UnitVector
    *   FT_F26Dot6
    *   FT_Data
@@ -268,17 +267,6 @@ FT_BEGIN_HEADER
   /**************************************************************************
    *
    * @type:
-   *   FT_F6Dot10
-   *
-   * @description:
-   *   A signed 6.10 fixed-point type used for signed distance values.
-   */
-  typedef signed short  FT_F6Dot10;
-
-
-  /**************************************************************************
-   *
-   * @type:
    *   FT_F26Dot6
    *
    * @description:
@@ -425,7 +413,7 @@ FT_BEGIN_HEADER
   typedef struct  FT_Data_
   {
     const FT_Byte*  pointer;
-    FT_Int          length;
+    FT_UInt         length;
 
   } FT_Data;
 
@@ -491,18 +479,17 @@ FT_BEGIN_HEADER
    *
    * @description:
    *   This macro converts four-letter tags that are used to label TrueType
-   *   tables into an unsigned long, to be used within FreeType.
+   *   tables into an `FT_Tag` type, to be used within FreeType.
    *
    * @note:
    *   The produced values **must** be 32-bit integers.  Don't redefine this
    *   macro.
    */
-#define FT_MAKE_TAG( _x1, _x2, _x3, _x4 ) \
-          (FT_Tag)                        \
-          ( ( (FT_ULong)_x1 << 24 ) |     \
-            ( (FT_ULong)_x2 << 16 ) |     \
-            ( (FT_ULong)_x3 <<  8 ) |     \
-              (FT_ULong)_x4         )
+#define FT_MAKE_TAG( _x1, _x2, _x3, _x4 )                  \
+          ( ( FT_STATIC_BYTE_CAST( FT_Tag, _x1 ) << 24 ) | \
+            ( FT_STATIC_BYTE_CAST( FT_Tag, _x2 ) << 16 ) | \
+            ( FT_STATIC_BYTE_CAST( FT_Tag, _x3 ) <<  8 ) | \
+              FT_STATIC_BYTE_CAST( FT_Tag, _x4 )         )
 
 
   /*************************************************************************/
@@ -600,7 +587,7 @@ FT_BEGIN_HEADER
 
 
 #define FT_IS_EMPTY( list )  ( (list).head == 0 )
-#define FT_BOOL( x )  ( (FT_Bool)( (x) != 0 ) )
+#define FT_BOOL( x )         FT_STATIC_CAST( FT_Bool, (x) != 0 )
 
   /* concatenate C tokens */
 #define FT_ERR_XCAT( x, y )  x ## y

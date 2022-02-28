@@ -214,6 +214,35 @@ class Trace(object):
     battery_count.current_ua = curr_ua
     battery_count.current_avg_ua = curr_avg_ua
 
+  def add_binder_transaction(self, transaction_id, ts_start, ts_end, tid, pid,
+                             reply_id, reply_ts_start, reply_ts_end, reply_tid,
+                             reply_pid):
+    # Binder transaction start.
+    ftrace = self.__add_ftrace_event(ts_start, tid)
+    binder_transaction = ftrace.binder_transaction
+    binder_transaction.debug_id = transaction_id
+    binder_transaction.to_proc = reply_pid
+    binder_transaction.to_thread = reply_tid
+    binder_transaction.reply = False
+
+    # Binder reply start
+    ftrace = self.__add_ftrace_event(reply_ts_start, reply_tid)
+    binder_transaction_received = ftrace.binder_transaction_received
+    binder_transaction_received.debug_id = transaction_id
+
+    # Binder reply finish
+    ftrace = self.__add_ftrace_event(reply_ts_end, reply_tid)
+    reply_binder_transaction = ftrace.binder_transaction
+    reply_binder_transaction.debug_id = reply_id
+    reply_binder_transaction.to_proc = pid
+    reply_binder_transaction.to_thread = tid
+    reply_binder_transaction.reply = True
+
+    # Binder transaction finish
+    ftrace = self.__add_ftrace_event(ts_end, tid)
+    reply_binder_transaction_received = ftrace.binder_transaction_received
+    reply_binder_transaction_received.debug_id = reply_id
+
   def add_battery_counters_no_curr_ua(self, ts, charge_uah, cap_prct,
                                       curr_avg_ua):
     self.packet = self.trace.packet.add()
@@ -404,8 +433,8 @@ class Trace(object):
       thread.cpu_freq_indices.append(index)
       thread.cpu_freq_ticks.append(freqs[index])
 
-  def add_gpu_mem_total_ftrace_event(self, pid, ts, size):
-    ftrace = self.__add_ftrace_event(ts, pid)
+  def add_gpu_mem_total_ftrace_event(self, ftrace_pid, pid, ts, size):
+    ftrace = self.__add_ftrace_event(ts, ftrace_pid)
     gpu_mem_total_ftrace_event = ftrace.gpu_mem_total
     gpu_mem_total_ftrace_event.pid = pid
     gpu_mem_total_ftrace_event.size = size
@@ -616,6 +645,7 @@ class Trace(object):
                             track=None,
                             trusted_sequence_id=None,
                             trace_id=None,
+                            step=None,
                             flow_ids=[],
                             terminating_flow_ids=[]):
     packet = self.add_track_event_slice(
@@ -626,6 +656,8 @@ class Trace(object):
         trusted_sequence_id=trusted_sequence_id)
     if trace_id is not None:
       packet.track_event.chrome_latency_info.trace_id = trace_id
+    if step is not None:
+      packet.track_event.chrome_latency_info.step = step
     for flow_id in flow_ids:
       packet.track_event.flow_ids.append(flow_id)
     for flow_id in terminating_flow_ids:
@@ -639,13 +671,24 @@ class Trace(object):
                                     track=None,
                                     trace_id=None,
                                     gesture_scroll_id=None,
-                                    is_coalesced=None):
+                                    touch_id=None,
+                                    is_coalesced=None,
+                                    gets_to_gpu=True):
     packet = self.add_track_event_slice(
         "InputLatency::" + name, ts=ts, dur=dur, track=track)
-    packet.track_event.chrome_latency_info.trace_id = trace_id
-    packet.track_event.chrome_latency_info.gesture_scroll_id = gesture_scroll_id
+    latency_info = packet.track_event.chrome_latency_info
+    latency_info.trace_id = trace_id
+    if gesture_scroll_id is not None:
+      latency_info.gesture_scroll_id = gesture_scroll_id
+    if touch_id is not None:
+      latency_info.touch_id = touch_id
+    if gets_to_gpu:
+      component = latency_info.component_info.add()
+      component.component_type = self.prototypes \
+          .ChromeLatencyInfo.ComponentType \
+          .COMPONENT_INPUT_EVENT_GPU_SWAP_BUFFER
     if is_coalesced is not None:
-      packet.track_event.chrome_latency_info.is_coalesced = is_coalesced
+      latency_info.is_coalesced = is_coalesced
     return packet
 
   def add_chrome_metadata(self, os_name=None):
@@ -667,7 +710,8 @@ class Trace(object):
 
   def add_actual_display_frame_start_event(self, ts, cookie, token, pid,
                                            present_type, on_time_finish,
-                                           gpu_composition, jank_type, prediction_type):
+                                           gpu_composition, jank_type,
+                                           prediction_type):
     packet = self.add_packet()
     packet.timestamp = ts
     event = packet.frame_timeline_event.actual_display_frame_start
@@ -697,7 +741,8 @@ class Trace(object):
   def add_actual_surface_frame_start_event(self, ts, cookie, token,
                                            display_frame_token, pid, layer_name,
                                            present_type, on_time_finish,
-                                           gpu_composition, jank_type, prediction_type):
+                                           gpu_composition, jank_type,
+                                           prediction_type):
     packet = self.add_packet()
     packet.timestamp = ts
     event = packet.frame_timeline_event.actual_surface_frame_start
@@ -759,24 +804,40 @@ def create_trace():
         setattr(res, desc.name, desc.number)
       return res
 
+  ChromeLatencyInfo = namedtuple('ChromeLatencyInfo', [
+      'ComponentType',
+      'Step',
+  ])
+
   Prototypes = namedtuple('Prototypes', [
       'TrackEvent',
       'ChromeRAILMode',
-      'ThreadDescriptor',
+      'ChromeLatencyInfo',
       'ChromeProcessDescriptor',
       'CounterDescriptor',
+      'ThreadDescriptor',
   ])
+
+  chrome_latency_info_prototypes = ChromeLatencyInfo(
+      ComponentType=EnumPrototype.from_descriptor(
+          pool.FindEnumTypeByName(
+              'perfetto.protos.ChromeLatencyInfo.LatencyComponentType')),
+      Step=EnumPrototype.from_descriptor(
+          pool.FindEnumTypeByName('perfetto.protos.ChromeLatencyInfo.Step')),
+  )
+
   prototypes = Prototypes(
       TrackEvent=factory.GetPrototype(
           pool.FindMessageTypeByName('perfetto.protos.TrackEvent')),
       ChromeRAILMode=EnumPrototype.from_descriptor(
           pool.FindEnumTypeByName('perfetto.protos.ChromeRAILMode')),
-      ThreadDescriptor=factory.GetPrototype(
-          pool.FindMessageTypeByName('perfetto.protos.ThreadDescriptor')),
+      ChromeLatencyInfo=chrome_latency_info_prototypes,
       ChromeProcessDescriptor=factory.GetPrototype(
           pool.FindMessageTypeByName(
               'perfetto.protos.ChromeProcessDescriptor')),
       CounterDescriptor=factory.GetPrototype(
           pool.FindMessageTypeByName('perfetto.protos.CounterDescriptor')),
+      ThreadDescriptor=factory.GetPrototype(
+          pool.FindMessageTypeByName('perfetto.protos.ThreadDescriptor')),
   )
   return Trace(ProtoTrace(), prototypes)

@@ -8,22 +8,15 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "net/cookies/site_for_cookies.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace embedder_support {
 
-bool AllowAppCache(const GURL& manifest_url,
-                   const GURL& site_for_cookies,
-                   const absl::optional<url::Origin>& top_frame_origin,
-                   const content_settings::CookieSettings* cookie_settings) {
-  return cookie_settings->IsCookieAccessAllowed(manifest_url, site_for_cookies,
-                                                top_frame_origin);
-}
-
 content::AllowServiceWorkerResult AllowServiceWorker(
     const GURL& scope,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin,
     const content_settings::CookieSettings* cookie_settings,
     const HostContentSettingsMap* settings_map) {
@@ -36,7 +29,7 @@ content::AllowServiceWorkerResult AllowServiceWorker(
   bool allow_javascript = setting == CONTENT_SETTING_ALLOW;
 
   // Check if cookies are allowed.
-  bool allow_cookies = cookie_settings->IsCookieAccessAllowed(
+  bool allow_cookies = cookie_settings->IsFullCookieAccessAllowed(
       scope, site_for_cookies, top_frame_origin);
 
   return content::AllowServiceWorkerResult::FromPolicy(!allow_javascript,
@@ -45,14 +38,14 @@ content::AllowServiceWorkerResult AllowServiceWorker(
 
 bool AllowSharedWorker(
     const GURL& worker_url,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin,
     const std::string& name,
-    const storage::StorageKey& storage_key,
+    const blink::StorageKey& storage_key,
     int render_process_id,
     int render_frame_id,
     const content_settings::CookieSettings* cookie_settings) {
-  bool allow = cookie_settings->IsCookieAccessAllowed(
+  bool allow = cookie_settings->IsFullCookieAccessAllowed(
       worker_url, site_for_cookies, top_frame_origin);
 
   content_settings::PageSpecificContentSettings::SharedWorkerAccessed(
@@ -63,10 +56,10 @@ bool AllowSharedWorker(
 
 bool AllowWorkerFileSystem(
     const GURL& url,
-    const std::vector<content::GlobalFrameRoutingId>& render_frames,
+    const std::vector<content::GlobalRenderFrameHostId>& render_frames,
     const content_settings::CookieSettings* cookie_settings) {
-  bool allow = cookie_settings->IsCookieAccessAllowed(url, url,
-                                                      url::Origin::Create(url));
+  bool allow = cookie_settings->IsFullCookieAccessAllowed(
+      url, net::SiteForCookies::FromUrl(url), url::Origin::Create(url));
   for (const auto& it : render_frames) {
     content_settings::PageSpecificContentSettings::FileSystemAccessed(
         it.child_id, it.frame_routing_id, url, !allow);
@@ -76,10 +69,10 @@ bool AllowWorkerFileSystem(
 
 bool AllowWorkerIndexedDB(
     const GURL& url,
-    const std::vector<content::GlobalFrameRoutingId>& render_frames,
+    const std::vector<content::GlobalRenderFrameHostId>& render_frames,
     const content_settings::CookieSettings* cookie_settings) {
-  bool allow = cookie_settings->IsCookieAccessAllowed(url, url,
-                                                      url::Origin::Create(url));
+  bool allow = cookie_settings->IsFullCookieAccessAllowed(
+      url, net::SiteForCookies::FromUrl(url), url::Origin::Create(url));
 
   for (const auto& it : render_frames) {
     content_settings::PageSpecificContentSettings::IndexedDBAccessed(
@@ -90,10 +83,10 @@ bool AllowWorkerIndexedDB(
 
 bool AllowWorkerCacheStorage(
     const GURL& url,
-    const std::vector<content::GlobalFrameRoutingId>& render_frames,
+    const std::vector<content::GlobalRenderFrameHostId>& render_frames,
     const content_settings::CookieSettings* cookie_settings) {
-  bool allow = cookie_settings->IsCookieAccessAllowed(url, url,
-                                                      url::Origin::Create(url));
+  bool allow = cookie_settings->IsFullCookieAccessAllowed(
+      url, net::SiteForCookies::FromUrl(url), url::Origin::Create(url));
 
   for (const auto& it : render_frames) {
     content_settings::PageSpecificContentSettings::CacheStorageAccessed(
@@ -105,8 +98,8 @@ bool AllowWorkerCacheStorage(
 bool AllowWorkerWebLocks(
     const GURL& url,
     const content_settings::CookieSettings* cookie_settings) {
-  return cookie_settings->IsCookieAccessAllowed(url, url,
-                                                url::Origin::Create(url));
+  return cookie_settings->IsFullCookieAccessAllowed(
+      url, net::SiteForCookies::FromUrl(url), url::Origin::Create(url));
 }
 
 }  // namespace embedder_support

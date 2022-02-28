@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/global_media_controls/presentation_request_notification_producer.h"
 
+#include <utility>
+#include <vector>
+
+#include "base/memory/raw_ptr.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/media/router/chrome_media_router_factory.h"
@@ -12,6 +16,8 @@
 #include "chrome/browser/ui/global_media_controls/test_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/global_media_controls/public/media_item_manager.h"
+#include "components/global_media_controls/public/test/mock_media_dialog_delegate.h"
 #include "components/media_router/browser/presentation/start_presentation_context.h"
 #include "components/media_router/browser/test/mock_media_router.h"
 #include "content/public/test/browser_task_environment.h"
@@ -21,45 +27,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::AtLeast;
+using testing::NiceMock;
 
 namespace {
-class MockWebContentsPresentationManager
-    : public media_router::WebContentsPresentationManager {
- public:
-  bool HasDefaultPresentationRequest() const override {
-    return default_presentation_request_.has_value();
-  }
 
-  const content::PresentationRequest& GetDefaultPresentationRequest()
-      const override {
-    return *default_presentation_request_;
-  }
-
-  void SetDefaultPresentationRequest(
-      const content::PresentationRequest& request) {
-    default_presentation_request_ = request;
-  }
-
-  MOCK_METHOD1(
-      AddObserver,
-      void(media_router::WebContentsPresentationManager::Observer* observer));
-  MOCK_METHOD1(
-      RemoveObserver,
-      void(media_router::WebContentsPresentationManager::Observer* observer));
-  MOCK_METHOD3(OnPresentationResponse,
-               void(const content::PresentationRequest&,
-                    media_router::mojom::RoutePresentationConnectionPtr,
-                    const media_router::RouteRequestResult&));
-  MOCK_METHOD0(GetMediaRoutes, std::vector<media_router::MediaRoute>());
-
-  base::WeakPtr<WebContentsPresentationManager> GetWeakPtr() override {
-    return weak_factory_.GetWeakPtr();
-  }
-
- private:
-  absl::optional<content::PresentationRequest> default_presentation_request_;
-  base::WeakPtrFactory<MockWebContentsPresentationManager> weak_factory_{this};
-};
 
 media_router::MediaRoute CreateMediaRoute(
     media_router::MediaRoute::Id route_id) {
@@ -94,7 +66,7 @@ class PresentationRequestNotificationProducerTest
             .get();
 
     presentation_manager_ =
-        std::make_unique<MockWebContentsPresentationManager>();
+        std::make_unique<NiceMock<MockWebContentsPresentationManager>>();
     notification_producer_->SetTestPresentationManager(
         presentation_manager_->GetWeakPtr());
   }
@@ -105,19 +77,21 @@ class PresentationRequestNotificationProducerTest
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  void SimulateDialogOpenedAndWait(MockMediaDialogDelegate* delegate) {
-    delegate->Open(notification_service_.get());
+  void SimulateDialogOpenedAndWait(
+      global_media_controls::test::MockMediaDialogDelegate* delegate) {
+    notification_service_->media_item_manager()->SetDialogDelegate(delegate);
     task_environment()->RunUntilIdle();
   }
 
-  void SimulateDialogClosedAndWait(MockMediaDialogDelegate* delegate) {
-    delegate->Close();
+  void SimulateDialogClosedAndWait(
+      global_media_controls::test::MockMediaDialogDelegate* delegate) {
+    notification_service_->media_item_manager()->SetDialogDelegate(nullptr);
     task_environment()->RunUntilIdle();
   }
 
   content::PresentationRequest CreatePresentationRequest() {
     return content::PresentationRequest(
-        main_rfh()->GetGlobalFrameRoutingId(),
+        main_rfh()->GetGlobalId(),
         {GURL("http://example.com"), GURL("http://example2.com")},
         url::Origin::Create(GURL("http://google.com")));
   }
@@ -148,7 +122,8 @@ class PresentationRequestNotificationProducerTest
 
  protected:
   std::unique_ptr<MediaNotificationService> notification_service_;
-  PresentationRequestNotificationProducer* notification_producer_ = nullptr;
+  raw_ptr<PresentationRequestNotificationProducer> notification_producer_ =
+      nullptr;
   std::unique_ptr<MockWebContentsPresentationManager> presentation_manager_;
   base::test::ScopedFeatureList feature_list_;
 };
@@ -157,7 +132,7 @@ TEST_F(PresentationRequestNotificationProducerTest,
        HideItemOnMediaRoutesChanged) {
   SimulateStartPresentationContextCreated();
   SimulateMediaRouteChanged({CreateMediaRoute("id")});
-  EXPECT_FALSE(notification_service_->HasOpenDialog());
+  EXPECT_FALSE(notification_service_->media_item_manager()->HasOpenDialog());
   task_environment()->RunUntilIdle();
 }
 
@@ -166,12 +141,12 @@ TEST_F(PresentationRequestNotificationProducerTest, DismissNotification) {
   auto item = notification_producer_->GetNotificationItem();
   ASSERT_TRUE(item);
 
-  notification_producer_->OnContainerDismissed(item->id());
+  notification_producer_->OnMediaItemUIDismissed(item->id());
   EXPECT_FALSE(notification_producer_->GetNotificationItem());
 }
 
 TEST_F(PresentationRequestNotificationProducerTest, OnMediaDialogOpened) {
-  MockMediaDialogDelegate delegate;
+  NiceMock<global_media_controls::test::MockMediaDialogDelegate> delegate;
   // Open the dialog on a page without a default presentation request.
   SimulateDialogOpenedAndWait(&delegate);
   EXPECT_FALSE(notification_producer_->GetNotificationItem());
@@ -189,7 +164,7 @@ TEST_F(PresentationRequestNotificationProducerTest, OnMediaDialogOpened) {
 
 TEST_F(PresentationRequestNotificationProducerTest,
        OnMediaDialogOpenedWithExistingItem) {
-  MockMediaDialogDelegate delegate;
+  NiceMock<global_media_controls::test::MockMediaDialogDelegate> delegate;
 
   // Open the dialog on a page with default presentation request and there
   // exists a notification for non-default presentation request. The existing
@@ -206,12 +181,12 @@ TEST_F(PresentationRequestNotificationProducerTest,
 
 TEST_F(PresentationRequestNotificationProducerTest, DeleteItem) {
   content::RenderFrameHost* child_frame = CreateChildFrame();
-  MockMediaDialogDelegate delegate;
+  NiceMock<global_media_controls::test::MockMediaDialogDelegate> delegate;
   SimulateDialogOpenedAndWait(&delegate);
   // Simulate a PresentationRequest from |child_frame|.
   notification_producer_->OnStartPresentationContextCreated(
       std::make_unique<media_router::StartPresentationContext>(
-          content::PresentationRequest(child_frame->GetGlobalFrameRoutingId(),
+          content::PresentationRequest(child_frame->GetGlobalId(),
                                        {GURL(), GURL()},
                                        url::Origin::Create(GURL())),
           base::DoNothing(), base::DoNothing()));
@@ -223,8 +198,40 @@ TEST_F(PresentationRequestNotificationProducerTest, DeleteItem) {
 }
 
 TEST_F(PresentationRequestNotificationProducerTest,
+       OnPresentationRequestWebContentsNavigated) {
+  NiceMock<global_media_controls::test::MockMediaDialogDelegate> delegate;
+
+  // Navigating to another page should delete the notification.
+  SimulateStartPresentationContextCreated();
+  SimulateDialogOpenedAndWait(&delegate);
+  EXPECT_CALL(
+      delegate,
+      HideMediaItem(notification_producer_->GetNotificationItem()->id()))
+      .Times(AtLeast(1));
+  NavigateAndCommit(GURL("https://www.google.com/"));
+  EXPECT_FALSE(notification_producer_->GetNotificationItem());
+  SimulateDialogClosedAndWait(&delegate);
+}
+
+TEST_F(PresentationRequestNotificationProducerTest,
+       OnPresentationRequestWebContentsDestroyed) {
+  NiceMock<global_media_controls::test::MockMediaDialogDelegate> delegate;
+
+  // Removing the WebContents should delete the notification.
+  SimulateStartPresentationContextCreated();
+  SimulateDialogOpenedAndWait(&delegate);
+  EXPECT_CALL(
+      delegate,
+      HideMediaItem(notification_producer_->GetNotificationItem()->id()))
+      .Times(AtLeast(1));
+  DeleteContents();
+  EXPECT_FALSE(notification_producer_->GetNotificationItem());
+  SimulateDialogClosedAndWait(&delegate);
+}
+
+TEST_F(PresentationRequestNotificationProducerTest,
        InvokeCallbackOnDialogClosed) {
-  MockMediaDialogDelegate delegate;
+  NiceMock<global_media_controls::test::MockMediaDialogDelegate> delegate;
 
   // PRNP should invoke |mock_error_cb| after the media dialog is closed.
   base::MockCallback<content::PresentationConnectionErrorCallback>

@@ -63,7 +63,7 @@ std::string ShellWebClient::GetUserAgent(UserAgentType type) const {
 
 base::StringPiece ShellWebClient::GetDataResource(
     int resource_id,
-    ui::ScaleFactor scale_factor) const {
+    ui::ResourceScaleFactor scale_factor) const {
   return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
@@ -81,6 +81,10 @@ void ShellWebClient::BindInterfaceReceiverFromMainFrame(
     mojo::MakeSelfOwnedReceiver(std::make_unique<WebUsageController>(web_state),
                                 std::move(web_usage_receiver));
   }
+}
+
+bool ShellWebClient::EnableLongPressUIContextMenu() const {
+  return true;
 }
 
 }  // namespace web

@@ -8,7 +8,6 @@
 
 #include "quic/platform/api/quic_bug_tracker.h"
 #include "quic/platform/api/quic_flags.h"
-#include "quic/platform/api/quic_map_util.h"
 
 namespace quic {
 
@@ -25,7 +24,7 @@ static const size_t kMaxConnectionsWithoutCHLO =
 namespace {
 
 // This alarm removes expired entries in map each time this alarm fires.
-class ConnectionExpireAlarm : public QuicAlarm::Delegate {
+class ConnectionExpireAlarm : public QuicAlarm::DelegateWithoutContext {
  public:
   explicit ConnectionExpireAlarm(QuicBufferedPacketStore* store)
       : connection_store_(store) {}
@@ -77,30 +76,27 @@ QuicBufferedPacketStore::QuicBufferedPacketStore(
       expiration_alarm_(
           alarm_factory->CreateAlarm(new ConnectionExpireAlarm(this))) {}
 
-QuicBufferedPacketStore::~QuicBufferedPacketStore() {}
+QuicBufferedPacketStore::~QuicBufferedPacketStore() {
+  if (expiration_alarm_ != nullptr) {
+    expiration_alarm_->PermanentCancel();
+  }
+}
 
 EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
-    QuicConnectionId connection_id,
-    bool ietf_quic,
-    const QuicReceivedPacket& packet,
-    QuicSocketAddress self_address,
-    QuicSocketAddress peer_address,
-    bool is_chlo,
-    const std::vector<std::string>& alpns,
-    const absl::string_view sni,
-    const ParsedQuicVersion& version) {
+    QuicConnectionId connection_id, bool ietf_quic,
+    const QuicReceivedPacket& packet, QuicSocketAddress self_address,
+    QuicSocketAddress peer_address, const ParsedQuicVersion& version,
+    absl::optional<ParsedClientHello> parsed_chlo) {
+  const bool is_chlo = parsed_chlo.has_value();
   QUIC_BUG_IF(quic_bug_12410_1, !GetQuicFlag(FLAGS_quic_allow_chlo_buffering))
       << "Shouldn't buffer packets if disabled via flag.";
   QUIC_BUG_IF(quic_bug_12410_2,
-              is_chlo && QuicContainsKey(connections_with_chlo_, connection_id))
+              is_chlo && connections_with_chlo_.contains(connection_id))
       << "Shouldn't buffer duplicated CHLO on connection " << connection_id;
-  QUIC_BUG_IF(quic_bug_12410_3, !is_chlo && !alpns.empty())
-      << "Shouldn't have an ALPN defined for a non-CHLO packet.";
   QUIC_BUG_IF(quic_bug_12410_4, is_chlo && !version.IsKnown())
       << "Should have version for CHLO packet.";
 
-  const bool is_first_packet =
-      !QuicContainsKey(undecryptable_packets_, connection_id);
+  const bool is_first_packet = !undecryptable_packets_.contains(connection_id);
   if (is_first_packet) {
     if (ShouldNotBufferPacket(is_chlo)) {
       // Drop the packet if the upper limit of undecryptable packets has been
@@ -112,17 +108,16 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
     undecryptable_packets_.back().second.ietf_quic = ietf_quic;
     undecryptable_packets_.back().second.version = version;
   }
-  QUICHE_CHECK(QuicContainsKey(undecryptable_packets_, connection_id));
+  QUICHE_CHECK(undecryptable_packets_.contains(connection_id));
   BufferedPacketList& queue =
       undecryptable_packets_.find(connection_id)->second;
 
   if (!is_chlo) {
     // If current packet is not CHLO, it might not be buffered because store
     // only buffers certain number of undecryptable packets per connection.
-    size_t num_non_chlo_packets =
-        QuicContainsKey(connections_with_chlo_, connection_id)
-            ? (queue.buffered_packets.size() - 1)
-            : queue.buffered_packets.size();
+    size_t num_non_chlo_packets = connections_with_chlo_.contains(connection_id)
+                                      ? (queue.buffered_packets.size() - 1)
+                                      : queue.buffered_packets.size();
     if (num_non_chlo_packets >= kDefaultMaxUndecryptablePackets) {
       // If there are kMaxBufferedPacketsPerConnection packets buffered up for
       // this connection, drop the current packet.
@@ -142,8 +137,7 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
     // Add CHLO to the beginning of buffered packets so that it can be delivered
     // first later.
     queue.buffered_packets.push_front(std::move(new_entry));
-    queue.alpns = alpns;
-    queue.sni = std::string(sni);
+    queue.parsed_chlo = std::move(parsed_chlo);
     connections_with_chlo_[connection_id] = false;  // Dummy value.
     // Set the version of buffered packets of this connection on CHLO.
     queue.version = version;
@@ -169,7 +163,7 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
 
 bool QuicBufferedPacketStore::HasBufferedPackets(
     QuicConnectionId connection_id) const {
-  return QuicContainsKey(undecryptable_packets_, connection_id);
+  return undecryptable_packets_.contains(connection_id);
 }
 
 bool QuicBufferedPacketStore::HasChlosBuffered() const {
@@ -247,22 +241,24 @@ BufferedPacketList QuicBufferedPacketStore::DeliverPacketsForNextConnection(
   connections_with_chlo_.pop_front();
 
   BufferedPacketList packets = DeliverPackets(*connection_id);
-  QUICHE_DCHECK(!packets.buffered_packets.empty())
-      << "Try to deliver connectons without CHLO";
+  QUICHE_DCHECK(!packets.buffered_packets.empty() &&
+                packets.parsed_chlo.has_value())
+      << "Try to deliver connectons without CHLO. # packets:"
+      << packets.buffered_packets.size()
+      << ", has_parsed_chlo:" << packets.parsed_chlo.has_value();
   return packets;
 }
 
 bool QuicBufferedPacketStore::HasChloForConnection(
     QuicConnectionId connection_id) {
-  return QuicContainsKey(connections_with_chlo_, connection_id);
+  return connections_with_chlo_.contains(connection_id);
 }
 
 bool QuicBufferedPacketStore::IngestPacketForTlsChloExtraction(
-    const QuicConnectionId& connection_id,
-    const ParsedQuicVersion& version,
-    const QuicReceivedPacket& packet,
-    std::vector<std::string>* out_alpns,
-    std::string* out_sni) {
+    const QuicConnectionId& connection_id, const ParsedQuicVersion& version,
+    const QuicReceivedPacket& packet, std::vector<std::string>* out_alpns,
+    std::string* out_sni, bool* out_resumption_attempted,
+    bool* out_early_data_attempted) {
   QUICHE_DCHECK_NE(out_alpns, nullptr);
   QUICHE_DCHECK_NE(out_sni, nullptr);
   QUICHE_DCHECK_EQ(version.handshake_protocol, PROTOCOL_TLS1_3);
@@ -276,8 +272,11 @@ bool QuicBufferedPacketStore::IngestPacketForTlsChloExtraction(
   if (!it->second.tls_chlo_extractor.HasParsedFullChlo()) {
     return false;
   }
-  *out_alpns = it->second.tls_chlo_extractor.alpns();
-  *out_sni = it->second.tls_chlo_extractor.server_name();
+  const TlsChloExtractor& tls_chlo_extractor = it->second.tls_chlo_extractor;
+  *out_alpns = tls_chlo_extractor.alpns();
+  *out_sni = tls_chlo_extractor.server_name();
+  *out_resumption_attempted = tls_chlo_extractor.resumption_attempted();
+  *out_early_data_attempted = tls_chlo_extractor.early_data_attempted();
   return true;
 }
 

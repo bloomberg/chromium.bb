@@ -10,14 +10,16 @@
 
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/file_icon_util.h"
+#include "ash/public/cpp/image_util.h"
 #include "ash/public/cpp/style/color_provider.h"
+#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
+#include "ash/style/ash_color_provider.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/apps/app_service/file_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharesheet/sharesheet_metrics.h"
 #include "chrome/browser/sharesheet/sharesheet_types.h"
@@ -28,18 +30,23 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
-#include "storage/browser/file_system/file_system_context.h"
+#include "components/services/app_service/public/cpp/intent_util.h"
+#include "components/url_formatter/url_formatter.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -57,8 +64,8 @@ const std::u16string ConcatenateFileNames(
 
 gfx::ImageSkia CreateMimeTypeIcon(const gfx::ImageSkia& file_type_icon,
                                   const gfx::Size& image_size) {
-  return ash::HoldingSpaceImage::SuperimposeOverEmptyImage(file_type_icon,
-                                                           image_size);
+  return gfx::ImageSkiaOperations::CreateSuperimposedImage(
+      ash::image_util::CreateEmptyImage(image_size), file_type_icon);
 }
 
 gfx::Size GetImagePreviewSize(size_t index, int grid_icon_count) {
@@ -90,20 +97,14 @@ class SharesheetHeaderView::SharesheetImagePreview : public views::View {
  public:
   METADATA_HEADER(SharesheetImagePreview);
   explicit SharesheetImagePreview(size_t file_count) {
-    const int border_radius =
-        views::LayoutProvider::Get()->GetCornerRadiusMetric(
-            views::Emphasis::kMedium);
     SetBackground(views::CreateRoundedRectBackground(
-        kImagePreviewPlaceholderBackgroundColor, border_radius));
-    SetBorder(views::CreateRoundedRectBorder(
-        /* thickness */ 1, border_radius,
-        GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_UnfocusedBorderColor)));
+        kImagePreviewPlaceholderBackgroundColor,
+        views::LayoutProvider::Get()->GetCornerRadiusMetric(
+            views::Emphasis::kMedium)));
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical,
         /* inside_border_insets */ gfx::Insets(),
-        /* between_child_spacing */ kImagePreviewBetweenChildSpacing,
-        /* collapse_margins_spacing */ false));
+        /* between_child_spacing */ kImagePreviewBetweenChildSpacing));
     SetPreferredSize(kImagePreviewFullSize);
     SetFocusBehavior(View::FocusBehavior::NEVER);
 
@@ -124,18 +125,18 @@ class SharesheetHeaderView::SharesheetImagePreview : public views::View {
     AddRowToImageContainerView();
     AddRowToImageContainerView();
 
+    ScopedLightModeAsDefault scoped_light_mode_as_default;
     for (size_t index = 0; index < grid_icon_count; ++index) {
       // If we have |enumeration|, add it as a label at the bottom right of
       // SharesheetImagePreview.
       if (enumeration != 0 && index == kImagePreviewMaxIcons - 1) {
-        // TODO(crbug.com/1189945) : Add a sharesheet context to replace
-        // |CONTEXT_DOWNLOAD_SHELF_STATUS|.
         auto* label =
             children()[1]->AddChildView(std::make_unique<views::Label>(
                 base::StrCat({u"+", base::NumberToString16(enumeration)}),
-                CONTEXT_DOWNLOAD_SHELF_STATUS, STYLE_SHARESHEET));
+                CONTEXT_SHARESHEET_BUBBLE_SMALL, STYLE_SHARESHEET));
         label->SetLineHeight(kImagePreviewFileEnumerationLineHeight);
-        label->SetEnabledColor(kButtonTextColor);
+        label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kButtonLabelColorBlue));
         label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
         label->SetBackground(views::CreateRoundedRectBackground(
             kImagePreviewPlaceholderBackgroundColor,
@@ -184,13 +185,22 @@ class SharesheetHeaderView::SharesheetImagePreview : public views::View {
       was_pressed_ = true;
   }
 
+  void OnThemeChanged() override {
+    View::OnThemeChanged();
+    ScopedLightModeAsDefault scoped_light_mode_as_default;
+    SetBorder(views::CreateRoundedRectBorder(
+        /*thickness=*/1,
+        views::LayoutProvider::Get()->GetCornerRadiusMetric(
+            views::Emphasis::kMedium),
+        GetColorProvider()->GetColor(ui::kColorFocusableBorderUnfocused)));
+  }
+
   void AddRowToImageContainerView() {
     auto* row = AddChildView(std::make_unique<views::View>());
     row->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal,
         /* inside_border_insets */ gfx::Insets(),
-        /* between_child_spacing */ kImagePreviewBetweenChildSpacing,
-        /* collapse_margins_spacing */ false));
+        /* between_child_spacing */ kImagePreviewBetweenChildSpacing));
   }
 
   void AddImageViewTo(views::View* parent_view, const gfx::Size& size) {
@@ -237,6 +247,7 @@ SharesheetHeaderView::SharesheetHeaderView(apps::mojom::IntentPtr intent,
     : profile_(profile),
       intent_(std::move(intent)),
       thumbnail_loader_(profile) {
+  SetID(HEADER_VIEW_ID);
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
       /* inside_border_insets */ gfx::Insets(kSpacing),
@@ -250,10 +261,10 @@ SharesheetHeaderView::SharesheetHeaderView(apps::mojom::IntentPtr intent,
   SetFocusBehavior(View::FocusBehavior::ALWAYS);
 
   const bool has_files =
-      (intent_->file_urls.has_value() && !intent_->file_urls.value().empty());
+      (intent_->files.has_value() && !intent_->files.value().empty());
   // The image view is initialised first to ensure its left most placement.
   if (show_content_previews) {
-    auto file_count = (has_files) ? intent_->file_urls.value().size() : 0;
+    auto file_count = (has_files) ? intent_->files.value().size() : 0;
     image_preview_ =
         AddChildView(std::make_unique<SharesheetImagePreview>(file_count));
   }
@@ -273,6 +284,7 @@ SharesheetHeaderView::SharesheetHeaderView(apps::mojom::IntentPtr intent,
       ResolveImages();
     } else {
       DCHECK_GT(image_preview_->GetImageViewCount(), 0);
+      ScopedLightModeAsDefault scoped_light_mode_as_default;
       const auto icon_color = ColorProvider::Get()->GetContentLayerColor(
           ColorProvider::ContentLayerType::kIconColorProminent);
       gfx::ImageSkia file_type_icon = gfx::CreateVectorIcon(
@@ -296,10 +308,11 @@ void SharesheetHeaderView::ShowTextPreview() {
   std::vector<std::u16string> text_fields = ExtractShareText();
 
   std::u16string filenames_tooltip_text = u"";
-  if (intent_->file_urls.has_value() && !intent_->file_urls.value().empty()) {
+  if (intent_->files.has_value() && !intent_->files.value().empty()) {
     std::vector<std::u16string> file_names;
-    for (const auto& file_url : intent_->file_urls.value()) {
-      const auto& file_path = GetFilePathFromFileSystemUrl(file_url);
+    for (const auto& file : intent_->files.value()) {
+      auto file_path =
+          apps::GetFileSystemURL(profile_, file->url).path();
       file_names.push_back(file_path.BaseName().LossyDisplayName());
     }
     std::u16string file_text;
@@ -308,7 +321,7 @@ void SharesheetHeaderView::ShowTextPreview() {
     } else {
       // If there is more than 1 file, show an enumeration of the number of
       // files.
-      auto size = intent_->file_urls.value().size();
+      auto size = intent_->files.value().size();
       DCHECK_NE(size, 0);
       file_text =
           l10n_util::GetPluralStringFUTF16(IDS_SHARESHEET_FILES_LABEL, size);
@@ -363,30 +376,33 @@ std::vector<std::u16string> SharesheetHeaderView::ExtractShareText() {
   if (intent_->share_title.has_value() &&
       !(intent_->share_title.value().empty())) {
     std::string title_text = intent_->share_title.value();
-    text_fields.push_back(base::ASCIIToUTF16(title_text));
+    text_fields.push_back(base::UTF8ToUTF16(title_text));
   }
 
-  if (intent_->share_text.has_value() &&
-      !(intent_->share_text.value().empty())) {
-    std::string extracted_text = intent_->share_text.value();
-    size_t last_space = extracted_text.find_last_of(' ');
-    GURL extracted_url;
+  if (intent_->share_text.has_value()) {
+    apps_util::SharedText extracted_text =
+        apps_util::ExtractSharedText(intent_->share_text.value());
 
-    if (last_space == std::string::npos) {
-      extracted_url = GURL(extracted_text);
-      if (extracted_url.is_valid())
-        extracted_text.clear();
-    } else {
-      extracted_url = GURL(extracted_text.substr(last_space + 1));
-      if (extracted_url.is_valid())
-        extracted_text.erase(last_space);
+    if (!extracted_text.text.empty()) {
+      text_fields.push_back(base::UTF8ToUTF16(extracted_text.text));
     }
 
-    if (!extracted_text.empty())
-      text_fields.push_back(base::ASCIIToUTF16(extracted_text));
-
-    if (extracted_url.is_valid()) {
-      text_fields.push_back(base::ASCIIToUTF16(extracted_url.spec()));
+    if (!extracted_text.url.is_empty()) {
+      // We format the URL to match the location bar so the user is not
+      // surprised by what is being shared. This means:
+      // - International characters are unescaped (human readable) where safe.
+      // - Characters representing emojis are unescaped.
+      // - No elisions that change the meaning of the URL.
+      // - Spaces are not unescaped. We cannot share a URL with unescaped spaces
+      // as the receiving program may think the URL ends at the space. Hence we
+      // align the preview with the content to be shared.
+      const auto format_types = url_formatter::kFormatUrlOmitDefaults &
+                                ~url_formatter::kFormatUrlOmitHTTP;
+      const auto formatted_text = url_formatter::FormatUrl(
+          extracted_text.url, format_types, net::UnescapeRule::NORMAL,
+          /*new_parsed=*/nullptr,
+          /*prefix_end=*/nullptr, /*offset_for_adjustment=*/nullptr);
+      text_fields.push_back(formatted_text);
       text_icon_ = TextPlaceholderIcon::kLink;
     }
   }
@@ -410,26 +426,23 @@ void SharesheetHeaderView::ResolveImages() {
 }
 
 void SharesheetHeaderView::ResolveImage(size_t index) {
-  const auto& file_path =
-      GetFilePathFromFileSystemUrl(intent_->file_urls.value()[index]);
+  auto file_path =
+      apps::GetFileSystemURL(profile_, intent_->files.value()[index]->url)
+          .path();
 
-  const auto& size =
-      GetImagePreviewSize(index, intent_->file_urls.value().size());
+  auto size = GetImagePreviewSize(index, intent_->files.value().size());
   auto image = std::make_unique<HoldingSpaceImage>(
       size, file_path,
       base::BindRepeating(&SharesheetHeaderView::LoadImage,
                           weak_ptr_factory_.GetWeakPtr()),
-      // We pass our own icon in here because we want the icon to appear
-      // while an image has not been loaded. If we didn't pass our own icon in,
-      // the container is left blank while we wait for an image to load.
-      absl::optional<gfx::ImageSkia>(CreateMimeTypeIcon(
-          GetIconForPath(file_path, /* dark_background= */ false), size)));
+      HoldingSpaceImage::CreateDefaultPlaceholderImageSkiaResolver(
+          /*use_light_mode_as_default=*/true));
   DCHECK_GT(image_preview_->GetImageViewCount(), index);
   image_preview_->GetImageViewAt(index)->SetImage(image->GetImageSkia(size));
-  // TODO(crbug.com/2896003) Here and above, update this to check whether we're
-  // in dark mode or not.
-  const auto icon_color =
-      GetIconColorForPath(file_path, /* dark_background= */ false);
+
+  ScopedLightModeAsDefault scoped_light_mode_as_default;
+  const auto icon_color = GetIconColorForPath(
+      file_path, AshColorProvider::Get()->IsDarkModeEnabled());
   image_preview_->SetBackgroundColorForIndex(index, icon_color);
   image_subscription_.push_back(image->AddImageSkiaChangedCallback(
       base::BindRepeating(&SharesheetHeaderView::OnImageLoaded,
@@ -452,14 +465,6 @@ void SharesheetHeaderView::OnImageLoaded(const gfx::Size& size, size_t index) {
   DCHECK_GT(image_preview_->GetImageViewCount(), index);
   image_preview_->GetImageViewAt(index)->SetImage(
       images_[index]->GetImageSkia(size));
-}
-
-const base::FilePath SharesheetHeaderView::GetFilePathFromFileSystemUrl(
-    const GURL& file_system_url) {
-  storage::FileSystemContext* fs_context =
-      file_manager::util::GetFileManagerFileSystemContext(profile_);
-  storage::FileSystemURL fs_url = fs_context->CrackURL(file_system_url);
-  return fs_url.path();
 }
 
 BEGIN_METADATA(SharesheetHeaderView, views::View)

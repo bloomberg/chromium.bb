@@ -17,6 +17,7 @@
 #include "dawn_native/BindGroup.h"
 #include "dawn_native/Buffer.h"
 #include "dawn_native/EnumMaskIterator.h"
+#include "dawn_native/ExternalTexture.h"
 #include "dawn_native/Format.h"
 #include "dawn_native/QuerySet.h"
 #include "dawn_native/Texture.h"
@@ -45,12 +46,23 @@ namespace dawn_native {
 
         textureUsage.Update(range,
                             [usage](const SubresourceRange&, wgpu::TextureUsage* storedUsage) {
+                                // TODO(crbug.com/dawn/1001): Consider optimizing to have fewer
+                                // branches.
+                                if ((*storedUsage & wgpu::TextureUsage::RenderAttachment) != 0 &&
+                                    (usage & wgpu::TextureUsage::RenderAttachment) != 0) {
+                                    // Using the same subresource as an attachment for two different
+                                    // render attachments is a write-write hazard. Add this internal
+                                    // usage so we will fail the check that a subresource with
+                                    // writable usage is the single usage.
+                                    *storedUsage |= kAgainAsRenderAttachment;
+                                }
                                 *storedUsage |= usage;
                             });
     }
 
-    void SyncScopeUsageTracker::AddTextureUsage(TextureBase* texture,
-                                                const TextureSubresourceUsage& textureUsage) {
+    void SyncScopeUsageTracker::AddRenderBundleTextureUsage(
+        TextureBase* texture,
+        const TextureSubresourceUsage& textureUsage) {
         // Get or create a new TextureSubresourceUsage for that texture (initially filled with
         // wgpu::TextureUsage::None)
         auto it = mTextureUsages.emplace(
@@ -61,7 +73,10 @@ namespace dawn_native {
 
         passTextureUsage->Merge(
             textureUsage, [](const SubresourceRange&, wgpu::TextureUsage* storedUsage,
-                             const wgpu::TextureUsage& addedUsage) { *storedUsage |= addedUsage; });
+                             const wgpu::TextureUsage& addedUsage) {
+                ASSERT((addedUsage & wgpu::TextureUsage::RenderAttachment) == 0);
+                *storedUsage |= addedUsage;
+            });
     }
 
     void SyncScopeUsageTracker::AddBindGroup(BindGroupBase* group) {
@@ -79,6 +94,9 @@ namespace dawn_native {
                         case wgpu::BufferBindingType::Storage:
                             BufferUsedAs(buffer, wgpu::BufferUsage::Storage);
                             break;
+                        case kInternalStorageBufferBinding:
+                            BufferUsedAs(buffer, kInternalStorageBuffer);
+                            break;
                         case wgpu::BufferBindingType::ReadOnlyStorage:
                             BufferUsedAs(buffer, kReadOnlyStorageBuffer);
                             break;
@@ -90,22 +108,36 @@ namespace dawn_native {
 
                 case BindingInfoType::Texture: {
                     TextureViewBase* view = group->GetBindingAsTextureView(bindingIndex);
-                    TextureViewUsedAs(view, wgpu::TextureUsage::Sampled);
+                    TextureViewUsedAs(view, wgpu::TextureUsage::TextureBinding);
                     break;
                 }
 
                 case BindingInfoType::StorageTexture: {
                     TextureViewBase* view = group->GetBindingAsTextureView(bindingIndex);
                     switch (bindingInfo.storageTexture.access) {
-                        case wgpu::StorageTextureAccess::ReadOnly:
-                            TextureViewUsedAs(view, kReadOnlyStorageTexture);
-                            break;
                         case wgpu::StorageTextureAccess::WriteOnly:
-                            TextureViewUsedAs(view, wgpu::TextureUsage::Storage);
+                            TextureViewUsedAs(view, wgpu::TextureUsage::StorageBinding);
                             break;
                         case wgpu::StorageTextureAccess::Undefined:
                             UNREACHABLE();
                     }
+                    break;
+                }
+
+                case BindingInfoType::ExternalTexture: {
+                    ExternalTextureBase* externalTexture =
+                        group->GetBindingAsExternalTexture(bindingIndex);
+
+                    const std::array<Ref<TextureViewBase>, kMaxPlanesPerFormat>& textureViews =
+                        externalTexture->GetTextureViews();
+
+                    // Only single-plane formats are supported right now, so assert only one
+                    // view exists.
+                    ASSERT(textureViews[1].Get() == nullptr);
+                    ASSERT(textureViews[2].Get() == nullptr);
+
+                    mExternalTextureUsages.insert(externalTexture);
+                    TextureViewUsedAs(textureViews[0].Get(), wgpu::TextureUsage::TextureBinding);
                     break;
                 }
 
@@ -132,8 +164,13 @@ namespace dawn_native {
             result.textureUsages.push_back(std::move(it.second));
         }
 
+        for (auto& it : mExternalTextureUsages) {
+            result.externalTextures.push_back(it);
+        }
+
         mBufferUsages.clear();
         mTextureUsages.clear();
+        mExternalTextureUsages.clear();
 
         return result;
     }
@@ -159,6 +196,22 @@ namespace dawn_native {
                 case BindingInfoType::Texture: {
                     mUsage.referencedTextures.insert(
                         group->GetBindingAsTextureView(index)->GetTexture());
+                    break;
+                }
+
+                case BindingInfoType::ExternalTexture: {
+                    ExternalTextureBase* externalTexture =
+                        group->GetBindingAsExternalTexture(index);
+                    const std::array<Ref<TextureViewBase>, kMaxPlanesPerFormat>& textureViews =
+                        externalTexture->GetTextureViews();
+
+                    // Only single-plane formats are supported right now, so assert only one
+                    // view exists.
+                    ASSERT(textureViews[1].Get() == nullptr);
+                    ASSERT(textureViews[2].Get() == nullptr);
+
+                    mUsage.referencedExternalTextures.insert(externalTexture);
+                    mUsage.referencedTextures.insert(textureViews[0].Get()->GetTexture());
                     break;
                 }
 
