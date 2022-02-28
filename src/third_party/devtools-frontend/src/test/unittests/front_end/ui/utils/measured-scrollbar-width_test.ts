@@ -8,6 +8,9 @@ import * as UI from '../../../../../front_end/ui/legacy/legacy.js';
 
 describe('measuredScrollbarWidth', () => {
   let style: HTMLStyleElement;
+  before(() => {
+    UI.Utils.resetMeasuredScrollbarWidthForTest();
+  });
   after(() => {
     style.remove();
   });
@@ -23,7 +26,7 @@ describe('measuredScrollbarWidth', () => {
     // Enforce custom width on scrollbars to test.
     style = document.createElement('style');
     style.textContent = `::-webkit-scrollbar {
-      -webkit-appearance: none;
+      appearance: none;
       width: ${width}px;
     }`;
     document.head.appendChild(style);

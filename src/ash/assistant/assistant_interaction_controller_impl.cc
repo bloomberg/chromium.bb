@@ -20,8 +20,8 @@
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/histogram_util.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/android_intent_helper.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/assistant/assistant_setup.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
@@ -164,20 +164,6 @@ void AssistantInteractionControllerImpl::OnDeepLinkReceived(
   using assistant::util::DeepLinkParam;
   using assistant::util::DeepLinkType;
 
-  if (type == DeepLinkType::kWhatsOnMyScreen) {
-    DCHECK(AssistantState::Get()->IsScreenContextAllowed());
-
-    // Explicitly call ShowUi() to set the correct Assistant entry point.
-    // ShowUi() will no-op if UI is already shown.
-    AssistantUiController::Get()->ShowUi(AssistantEntryPoint::kDeepLink);
-
-    // The "What's on my screen" chip initiates a screen context interaction.
-    StartScreenContextInteraction(
-        /*include_assistant_structure=*/true,
-        /*region=*/gfx::Rect(), AssistantQuerySource::kWhatsOnMyScreen);
-    return;
-  }
-
   if (type == DeepLinkType::kReminders) {
     using ReminderAction = assistant::util::ReminderAction;
     const absl::optional<ReminderAction>& action =
@@ -267,6 +253,8 @@ void AssistantInteractionControllerImpl::OnUiVisibilityChanged(
       break;
     case AssistantVisibility::kVisible:
       OnUiVisible(entry_point.value());
+      break;
+    case AssistantVisibility::kClosing:
       break;
   }
 }

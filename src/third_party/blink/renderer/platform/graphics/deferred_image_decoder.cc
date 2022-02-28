@@ -28,7 +28,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -124,14 +123,13 @@ struct DeferredFrameData {
  public:
   DeferredFrameData()
       : orientation_(ImageOrientationEnum::kDefault), is_received_(false) {}
+  DeferredFrameData(const DeferredFrameData&) = delete;
+  DeferredFrameData& operator=(const DeferredFrameData&) = delete;
 
   ImageOrientation orientation_;
-  IntSize density_corrected_size_;
+  gfx::Size density_corrected_size_;
   base::TimeDelta duration_;
   bool is_received_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeferredFrameData);
 };
 
 std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::Create(
@@ -203,7 +201,7 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator() {
     info = info.makeColorType(kRGBA_F16_SkColorType);
 
   WebVector<FrameMetadata> frames(frame_data_.size());
-  for (size_t i = 0; i < frame_data_.size(); ++i) {
+  for (wtf_size_t i = 0; i < frame_data_.size(); ++i) {
     frames[i].complete = frame_data_[i].is_received_;
     frames[i].duration = FrameDurationAtIndex(i);
   }
@@ -254,6 +252,15 @@ scoped_refptr<SharedBuffer> DeferredImageDecoder::Data() {
   return parkable_image_ ? parkable_image_->Data() : nullptr;
 }
 
+bool DeferredImageDecoder::HasData() const {
+  return parkable_image_ != nullptr;
+}
+
+size_t DeferredImageDecoder::DataSize() const {
+  DCHECK(parkable_image_);
+  return parkable_image_->size();
+}
+
 void DeferredImageDecoder::SetData(scoped_refptr<SharedBuffer> data,
                                    bool all_data_received) {
   SetDataInternal(std::move(data), all_data_received, true);
@@ -293,17 +300,17 @@ bool DeferredImageDecoder::HasEmbeddedColorProfile() const {
                            : has_embedded_color_profile_;
 }
 
-IntSize DeferredImageDecoder::Size() const {
+gfx::Size DeferredImageDecoder::Size() const {
   return metadata_decoder_ ? metadata_decoder_->Size() : size_;
 }
 
-IntSize DeferredImageDecoder::FrameSizeAtIndex(size_t index) const {
+gfx::Size DeferredImageDecoder::FrameSizeAtIndex(wtf_size_t index) const {
   // FIXME: LocalFrame size is assumed to be uniform. This might not be true for
   // future supported codecs.
   return metadata_decoder_ ? metadata_decoder_->FrameSizeAtIndex(index) : size_;
 }
 
-size_t DeferredImageDecoder::FrameCount() {
+wtf_size_t DeferredImageDecoder::FrameCount() {
   return metadata_decoder_ ? metadata_decoder_->FrameCount()
                            : frame_data_.size();
 }
@@ -327,7 +334,7 @@ SkAlphaType DeferredImageDecoder::AlphaType() const {
   return alpha_type;
 }
 
-bool DeferredImageDecoder::FrameIsReceivedAtIndex(size_t index) const {
+bool DeferredImageDecoder::FrameIsReceivedAtIndex(wtf_size_t index) const {
   if (metadata_decoder_)
     return metadata_decoder_->FrameIsReceivedAtIndex(index);
   if (index < frame_data_.size())
@@ -335,7 +342,8 @@ bool DeferredImageDecoder::FrameIsReceivedAtIndex(size_t index) const {
   return false;
 }
 
-base::TimeDelta DeferredImageDecoder::FrameDurationAtIndex(size_t index) const {
+base::TimeDelta DeferredImageDecoder::FrameDurationAtIndex(
+    wtf_size_t index) const {
   base::TimeDelta duration;
   if (metadata_decoder_)
     duration = metadata_decoder_->FrameDurationAtIndex(index);
@@ -346,13 +354,14 @@ base::TimeDelta DeferredImageDecoder::FrameDurationAtIndex(size_t index) const {
   // possible. We follow Firefox's behavior and use a duration of 100 ms for any
   // frames that specify a duration of <= 10 ms. See <rdar://problem/7689300>
   // and <http://webkit.org/b/36082> for more information.
-  if (duration <= base::TimeDelta::FromMilliseconds(10))
-    duration = base::TimeDelta::FromMilliseconds(100);
+  if (duration <= base::Milliseconds(10))
+    duration = base::Milliseconds(100);
 
   return duration;
 }
 
-ImageOrientation DeferredImageDecoder::OrientationAtIndex(size_t index) const {
+ImageOrientation DeferredImageDecoder::OrientationAtIndex(
+    wtf_size_t index) const {
   if (metadata_decoder_)
     return metadata_decoder_->Orientation();
   if (index < frame_data_.size())
@@ -360,14 +369,14 @@ ImageOrientation DeferredImageDecoder::OrientationAtIndex(size_t index) const {
   return ImageOrientationEnum::kDefault;
 }
 
-IntSize DeferredImageDecoder::DensityCorrectedSizeAtIndex(size_t index) const {
+gfx::Size DeferredImageDecoder::DensityCorrectedSizeAtIndex(
+    wtf_size_t index) const {
   if (metadata_decoder_)
     return metadata_decoder_->DensityCorrectedSize();
   if (index < frame_data_.size())
     return frame_data_[index].density_corrected_size_;
   return Size();
 }
-
 
 size_t DeferredImageDecoder::ByteSize() const {
   return parkable_image_ ? parkable_image_->size() : 0u;
@@ -388,8 +397,8 @@ void DeferredImageDecoder::ActivateLazyDecoding() {
       metadata_decoder_->RepetitionCount() == kAnimationNone ||
       (all_data_received_ && metadata_decoder_->FrameCount() == 1u);
   const SkISize decoded_size =
-      SkISize::Make(metadata_decoder_->DecodedSize().Width(),
-                    metadata_decoder_->DecodedSize().Height());
+      SkISize::Make(metadata_decoder_->DecodedSize().width(),
+                    metadata_decoder_->DecodedSize().height());
   frame_generator_ = ImageFrameGenerator::Create(
       decoded_size, !is_single_frame, metadata_decoder_->GetColorBehavior(),
       metadata_decoder_->GetSupportedDecodeSizes());
@@ -415,7 +424,7 @@ void DeferredImageDecoder::PrepareLazyDecodedFrames() {
 
   ActivateLazyDecoding();
 
-  const size_t previous_size = frame_data_.size();
+  const wtf_size_t previous_size = frame_data_.size();
   frame_data_.resize(metadata_decoder_->FrameCount());
 
   // The decoder may be invalidated during a FrameCount(). Simply bail if so.
@@ -430,10 +439,11 @@ void DeferredImageDecoder::PrepareLazyDecodedFrames() {
     return;
   }
 
-  for (size_t i = previous_size; i < frame_data_.size(); ++i) {
+  for (wtf_size_t i = previous_size; i < frame_data_.size(); ++i) {
     frame_data_[i].duration_ = metadata_decoder_->FrameDurationAtIndex(i);
     frame_data_[i].orientation_ = metadata_decoder_->Orientation();
-    frame_data_[i].density_corrected_size_ = metadata_decoder_->DensityCorrectedSize();
+    frame_data_[i].density_corrected_size_ =
+        metadata_decoder_->DensityCorrectedSize();
   }
 
   // Update the is_received_ state of incomplete frames.
@@ -455,7 +465,7 @@ void DeferredImageDecoder::PrepareLazyDecodedFrames() {
   }
 }
 
-bool DeferredImageDecoder::HotSpot(IntPoint& hot_spot) const {
+bool DeferredImageDecoder::HotSpot(gfx::Point& hot_spot) const {
   if (metadata_decoder_)
     return metadata_decoder_->HotSpot(hot_spot);
   if (has_hot_spot_)

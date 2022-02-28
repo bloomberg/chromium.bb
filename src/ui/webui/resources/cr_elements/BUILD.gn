@@ -48,11 +48,20 @@ preprocess_if_expr("preprocess_src") {
   out_folder = "$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_src_manifest"
   in_files = [
+    "cr_auto_img/cr_auto_img.js",
+    "cr_container_shadow_mixin.ts",
     "cr_search_field/cr_search_field_behavior.js",
     "cr_splitter/cr_splitter.js",
-    "find_shortcut_behavior.js",
-    "mouse_hoverable_mixin.js",
+    "find_shortcut_mixin.ts",
+    "mouse_hoverable_mixin.ts",
   ]
+
+  if (is_chromeos_ash) {
+    in_files += [
+      "chromeos/cr_picture/cr_picture_types.js",
+      "chromeos/cr_picture/png.js",
+    ]
+  }
 }
 
 preprocess_if_expr("preprocess_polymer2") {
@@ -62,8 +71,6 @@ preprocess_if_expr("preprocess_polymer2") {
   in_files = [
     "action_link_css.html",
     "cr_actionable_row_style.html",
-    "cr_action_menu/cr_action_menu.html",
-    "cr_action_menu/cr_action_menu.js",
     "cr_button/cr_button.html",
     "cr_button/cr_button.js",
     "cr_checkbox/cr_checkbox.html",
@@ -98,14 +105,9 @@ preprocess_if_expr("preprocess_polymer2") {
     "cr_radio_group/cr_radio_group.js",
     "cr_scrollable_behavior.html",
     "cr_scrollable_behavior.js",
-    "cr_slider/cr_slider.html",
-    "cr_slider/cr_slider.js",
-    "cr_toast/cr_toast.html",
-    "cr_toast/cr_toast.js",
-    "cr_toast/cr_toast_manager.html",
-    "cr_toast/cr_toast_manager.js",
     "cr_toggle/cr_toggle.html",
     "cr_toggle/cr_toggle.js",
+    "find_shortcut_behavior.js",
     "hidden_style_css.html",
     "icons.html",
     "md_select_css.html",
@@ -113,8 +115,6 @@ preprocess_if_expr("preprocess_polymer2") {
     "policy/cr_policy_indicator_behavior.js",
     "policy/cr_policy_indicator.html",
     "policy/cr_policy_indicator.js",
-    "policy/cr_policy_pref_behavior.html",
-    "policy/cr_policy_pref_behavior.js",
     "policy/cr_policy_pref_indicator.html",
     "policy/cr_policy_pref_indicator.js",
     "policy/cr_tooltip_icon.html",
@@ -123,29 +123,8 @@ preprocess_if_expr("preprocess_polymer2") {
     "shared_vars_css.html",
   ]
 
-  # TODO(crbug.com/1184053): Fully remove once no longer used by CrOS.
-  if (is_chromeos) {
-    in_files += [
-      "cr_searchable_drop_down/cr_searchable_drop_down.html",
-      "cr_searchable_drop_down/cr_searchable_drop_down.js",
-    ]
-  }
-
   if (is_chromeos_ash) {
-    in_files += [
-      "chromeos/cros_color_overrides.html",
-      "chromeos/cr_picture/cr_camera.html",
-      "chromeos/cr_picture/cr_camera.js",
-      "chromeos/cr_picture/cr_picture_list.html",
-      "chromeos/cr_picture/cr_picture_list.js",
-      "chromeos/cr_picture/cr_picture_pane.html",
-      "chromeos/cr_picture/cr_picture_pane.js",
-      "chromeos/cr_picture/cr_picture_types.html",
-      "chromeos/cr_picture/cr_picture_types.js",
-      "chromeos/cr_picture/icons.html",
-      "chromeos/cr_picture/png.html",
-      "chromeos/cr_picture/png.js",
-    ]
+    in_files += [ "chromeos/cros_color_overrides.html" ]
   }
 }
 
@@ -156,8 +135,9 @@ preprocess_if_expr("preprocess_generated") {
   out_manifest = "$target_gen_dir/$preprocess_gen_manifest"
   in_files = [
     "action_link_css.m.js",
+    "cr_a11y_announcer/cr_a11y_announcer.ts",
     "cr_actionable_row_style.m.js",
-    "cr_action_menu/cr_action_menu.m.js",
+    "cr_action_menu/cr_action_menu.js",
     "cr_button/cr_button.m.js",
     "cr_checkbox/cr_checkbox.m.js",
     "cr_container_shadow_behavior.m.js",
@@ -175,6 +155,7 @@ preprocess_if_expr("preprocess_generated") {
     "cr_link_row/cr_link_row.js",
     "cr_lottie/cr_lottie.m.js",
     "cr_menu_selector/cr_menu_selector.js",
+    "cr_nav_menu_item_style.ts",
     "cr_page_host_style_css.js",
     "cr_profile_avatar_selector/cr_profile_avatar_selector_grid.js",
     "cr_profile_avatar_selector/cr_profile_avatar_selector.js",
@@ -185,10 +166,10 @@ preprocess_if_expr("preprocess_generated") {
     "cr_radio_group/cr_radio_group.m.js",
     "cr_scrollable_behavior.m.js",
     "cr_search_field/cr_search_field.js",
-    "cr_slider/cr_slider.m.js",
+    "cr_slider/cr_slider.js",
     "cr_tabs/cr_tabs.js",
-    "cr_toast/cr_toast_manager.m.js",
-    "cr_toast/cr_toast.m.js",
+    "cr_toast/cr_toast_manager.js",
+    "cr_toast/cr_toast.js",
     "cr_toggle/cr_toggle.m.js",
     "cr_toolbar/cr_toolbar.js",
     "cr_toolbar/cr_toolbar_search_field.js",
@@ -197,12 +178,12 @@ preprocess_if_expr("preprocess_generated") {
     "hidden_style_css.m.js",
     "icons.m.js",
     "md_select_css.m.js",
+    "mwb_element_shared_style.js",
     "mwb_shared_icons.js",
     "mwb_shared_style.js",
     "mwb_shared_vars.js",
     "policy/cr_policy_indicator_behavior.m.js",
     "policy/cr_policy_indicator.m.js",
-    "policy/cr_policy_pref_behavior.m.js",
     "policy/cr_policy_pref_indicator.m.js",
     "policy/cr_tooltip_icon.m.js",
     "search_highlight_style_css.js",
@@ -210,20 +191,17 @@ preprocess_if_expr("preprocess_generated") {
     "shared_vars_css.m.js",
   ]
 
-  # TODO(crbug.com/1184053): Fully remove once no longer used by CrOS.
   if (is_chromeos) {
-    in_files += [ "cr_searchable_drop_down/cr_searchable_drop_down.m.js" ]
+    in_files += [ "cr_searchable_drop_down/cr_searchable_drop_down.js" ]
   }
 
   if (is_chromeos_ash) {
     in_files += [
       "chromeos/cros_color_overrides.m.js",
-      "chromeos/cr_picture/cr_camera.m.js",
-      "chromeos/cr_picture/cr_picture_list.m.js",
-      "chromeos/cr_picture/cr_picture_pane.m.js",
-      "chromeos/cr_picture/cr_picture_types.m.js",
-      "chromeos/cr_picture/icons.m.js",
-      "chromeos/cr_picture/png.m.js",
+      "chromeos/cr_picture/cr_camera.js",
+      "chromeos/cr_picture/cr_picture_list.js",
+      "chromeos/cr_picture/cr_picture_pane.js",
+      "chromeos/cr_picture/icons.js",
     ]
   }
 }
@@ -231,7 +209,7 @@ preprocess_if_expr("preprocess_generated") {
 group("closure_compile") {
   deps = [
     ":cr_elements_resources",
-    "cr_action_menu:closure_compile",
+    "cr_auto_img:closure_compile",
     "cr_button:closure_compile",
     "cr_checkbox:closure_compile",
     "cr_dialog:closure_compile",
@@ -244,9 +222,7 @@ group("closure_compile") {
     "cr_menu_selector:closure_compile",
     "cr_radio_button:closure_compile",
     "cr_radio_group:closure_compile",
-    "cr_slider:closure_compile",
     "cr_splitter:closure_compile",
-    "cr_toast:closure_compile",
     "cr_toggle:closure_compile",
     "policy:closure_compile",
 
@@ -283,7 +259,6 @@ group("closure_compile") {
 
       # cr-searchable-drop-down is only used in smb and cups dialogs, both of
       # which are chromeos only.
-      "cr_searchable_drop_down:closure_compile",
       "cr_searchable_drop_down:closure_compile_module",
     ]
   }
@@ -303,12 +278,6 @@ js_library("cr_scrollable_behavior") {
 
 js_library("cr_container_shadow_behavior") {
   deps = [ "//ui/webui/resources/js:assert" ]
-}
-
-js_library("mouse_hoverable_mixin") {
-  deps = [
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
 }
 
 # Targets for auto-generating Polymer 3 JS Modules.
@@ -380,7 +349,8 @@ group("polymer3_elements") {
     ":shared_style_css_module",
     ":shared_vars_css_module",
     ":web_components",
-    "cr_action_menu:cr_action_menu_module",
+    "cr_a11y_announcer:web_components",
+    "cr_action_menu:web_components",
     "cr_button:cr_button_module",
     "cr_checkbox:cr_checkbox_module",
     "cr_dialog:cr_dialog_module",
@@ -398,9 +368,9 @@ group("polymer3_elements") {
     "cr_radio_button:polymer3_elements",
     "cr_radio_group:cr_radio_group_module",
     "cr_search_field:web_components",
-    "cr_slider:cr_slider_module",
+    "cr_slider:web_components",
     "cr_tabs:web_components",
-    "cr_toast:polymer3_elements",
+    "cr_toast:web_components",
     "cr_toggle:cr_toggle_module",
     "cr_toolbar:web_components",
     "cr_view_manager:web_components",
@@ -413,7 +383,7 @@ group("polymer3_elements") {
 
       # cr-searchable-drop-down is only used in smb and cups dialogs, both of
       # which are chromeos only.
-      "cr_searchable_drop_down:cr_searchable_drop_down_module",
+      "cr_searchable_drop_down:web_components",
     ]
   }
 }
@@ -423,8 +393,11 @@ js_type_check("cr_elements_module_resources") {
   deps = [
     ":cr_container_shadow_behavior.m",
     ":cr_scrollable_behavior.m",
-    ":find_shortcut_behavior",
   ]
+
+  if (is_chromeos_ash) {
+    deps += [ ":find_shortcut_behavior" ]
+  }
 }
 
 js_library("cr_container_shadow_behavior.m") {
@@ -444,19 +417,23 @@ js_library("cr_scrollable_behavior.m") {
   extra_deps = [ ":modulize" ]
 }
 
-js_library("find_shortcut_behavior") {
-  deps = [
-    "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js:cr.m",
-    "//ui/webui/resources/js:util.m",
-    "//ui/webui/resources/js/cr/ui:keyboard_shortcut_list.m",
-  ]
+if (is_chromeos_ash) {
+  js_library("find_shortcut_behavior") {
+    deps = [
+      "//ui/webui/resources/js:assert.m",
+      "//ui/webui/resources/js:cr.m",
+      "//ui/webui/resources/js:util.m",
+      "//ui/webui/resources/js/cr/ui:keyboard_shortcut_list.m",
+    ]
+  }
 }
 
 html_to_js("web_components") {
   js_files = [
+    "cr_nav_menu_item_style.ts",
     "cr_page_host_style_css.js",
     "mwb_shared_icons.js",
+    "mwb_element_shared_style.js",
     "mwb_shared_style.js",
     "mwb_shared_vars.js",
     "search_highlight_style_css.js",

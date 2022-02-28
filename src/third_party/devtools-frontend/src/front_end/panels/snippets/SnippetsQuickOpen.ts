@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as i18n from '../../core/i18n/i18n.js';
 import * as QuickOpen from '../../ui/legacy/components/quick_open/quick_open.js';
 import type * as Workspace from '../../models/workspace/workspace.js';
@@ -16,9 +14,13 @@ const UIStrings = {
   */
   noSnippetsFound: 'No snippets found.',
   /**
-  *@description Text to run a code snippet
+  *@description Text for command prefix of run a code snippet
   */
-  runSnippet: 'Run snippet',
+  run: 'Run',
+  /**
+  *@description Text for suggestion of run a code snippet
+  */
+  snippet: 'Snippet',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/snippets/SnippetsQuickOpen.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -27,10 +29,10 @@ const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined
 let snippetsQuickOpenInstance: SnippetsQuickOpen;
 
 export class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Provider {
-  _snippets: Workspace.UISourceCode.UISourceCode[];
+  private snippets: Workspace.UISourceCode.UISourceCode[];
   private constructor() {
     super();
-    this._snippets = [];
+    this.snippets = [];
   }
 
   static instance(opts: {forceNew: boolean|null} = {forceNew: null}): SnippetsQuickOpen {
@@ -46,7 +48,7 @@ export class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Provider {
     if (itemIndex === null) {
       return;
     }
-    evaluateScriptSnippet(this._snippets[itemIndex]);
+    evaluateScriptSnippet(this.snippets[itemIndex]);
   }
 
   notFoundText(_query: string): string {
@@ -54,23 +56,23 @@ export class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Provider {
   }
 
   attach(): void {
-    this._snippets = findSnippetsProject().uiSourceCodes();
+    this.snippets = findSnippetsProject().uiSourceCodes();
   }
 
   detach(): void {
-    this._snippets = [];
+    this.snippets = [];
   }
 
   itemCount(): number {
-    return this._snippets.length;
+    return this.snippets.length;
   }
 
   itemKeyAt(itemIndex: number): string {
-    return this._snippets[itemIndex].name();
+    return this.snippets[itemIndex].name();
   }
 
   renderItem(itemIndex: number, query: string, titleElement: Element, _subtitleElement: Element): void {
-    titleElement.textContent = unescape(this._snippets[itemIndex].name());
+    titleElement.textContent = unescape(this.snippets[itemIndex].name());
     titleElement.classList.add('monospace');
     QuickOpen.FilteredListWidget.FilteredListWidget.highlightRanges(titleElement, query, true);
   }
@@ -78,6 +80,8 @@ export class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Provider {
 
 QuickOpen.FilteredListWidget.registerProvider({
   prefix: '!',
-  title: i18nLazyString(UIStrings.runSnippet),
+  iconName: 'ic_command_run_snippet',
   provider: () => Promise.resolve(SnippetsQuickOpen.instance()),
+  titlePrefix: i18nLazyString(UIStrings.run),
+  titleSuggestion: i18nLazyString(UIStrings.snippet),
 });

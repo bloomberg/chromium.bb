@@ -7,14 +7,13 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "sql/transaction.h"
 
 // Current version number.  Note: when changing the current version number,
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
 // static
-const int WebDatabase::kCurrentVersionNumber = 96;
+const int WebDatabase::kCurrentVersionNumber = 98;
 
 const int WebDatabase::kDeprecatedVersionNumber = 51;
 
@@ -23,7 +22,7 @@ const base::FilePath::CharType WebDatabase::kInMemoryPath[] =
 
 namespace {
 
-const int kCompatibleVersionNumber = 83;
+const int kCompatibleVersionNumber = 98;
 
 // Change the version number and possibly the compatibility version of
 // |meta_table_|.
@@ -99,7 +98,9 @@ sql::InitStatus WebDatabase::Init(const base::FilePath& db_name) {
   // Clobber really old databases.
   static_assert(kDeprecatedVersionNumber < kCurrentVersionNumber,
                 "Deprecation version must be less than current");
-  sql::MetaTable::RazeIfDeprecated(&db_, kDeprecatedVersionNumber);
+  sql::MetaTable::RazeIfIncompatible(
+      &db_, /*lowest_supported_version=*/kDeprecatedVersionNumber + 1,
+      kCurrentVersionNumber);
 
   // Scope initialization in a transaction so we can't be partially
   // initialized.

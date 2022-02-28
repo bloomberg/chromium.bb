@@ -16,9 +16,10 @@
 #include "core/fxcodec/scanlinedecoder.h"
 #include "core/fxcrt/cfx_binarybuf.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
+#include "core/fxcrt/stl_util.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace fxcodec {
 
@@ -466,8 +467,8 @@ class FaxDecoder final : public ScanlineDecoder {
   ~FaxDecoder() override;
 
   // ScanlineDecoder:
-  bool v_Rewind() override;
-  uint8_t* v_GetNextLine() override;
+  bool Rewind() override;
+  pdfium::span<uint8_t> GetNextLine() override;
   uint32_t GetSrcOffset() override;
 
  private:
@@ -496,7 +497,7 @@ FaxDecoder::FaxDecoder(pdfium::span<const uint8_t> src_span,
                       height,
                       kFaxComps,
                       kFaxBpc,
-                      CalculatePitch32(kFaxBpc, width).ValueOrDie()),
+                      CalculatePitch32OrDie(kFaxBpc, width)),
       m_Encoding(K),
       m_bByteAlign(EncodedByteAlign),
       m_bEndOfLine(EndOfLine),
@@ -505,19 +506,22 @@ FaxDecoder::FaxDecoder(pdfium::span<const uint8_t> src_span,
       m_ScanlineBuf(m_Pitch),
       m_RefBuf(m_Pitch) {}
 
-FaxDecoder::~FaxDecoder() = default;
+FaxDecoder::~FaxDecoder() {
+  // Span in superclass can't outlive our buffer.
+  m_pLastScanline = pdfium::span<uint8_t>();
+}
 
-bool FaxDecoder::v_Rewind() {
+bool FaxDecoder::Rewind() {
   memset(m_RefBuf.data(), 0xff, m_RefBuf.size());
   m_bitpos = 0;
   return true;
 }
 
-uint8_t* FaxDecoder::v_GetNextLine() {
+pdfium::span<uint8_t> FaxDecoder::GetNextLine() {
   int bitsize = m_SrcSpan.size() * 8;
   FaxSkipEOL(m_SrcSpan.data(), bitsize, &m_bitpos);
   if (m_bitpos >= bitsize)
-    return nullptr;
+    return pdfium::span<uint8_t>();
 
   memset(m_ScanlineBuf.data(), 0xff, m_ScanlineBuf.size());
   if (m_Encoding < 0) {
@@ -555,7 +559,7 @@ uint8_t* FaxDecoder::v_GetNextLine() {
   }
   if (m_bBlack)
     InvertBuffer();
-  return m_ScanlineBuf.data();
+  return m_ScanlineBuf;
 }
 
 uint32_t FaxDecoder::GetSrcOffset() {
@@ -693,8 +697,7 @@ FaxEncoder::FaxEncoder(const uint8_t* src_buf, int width, int height, int pitch)
       m_Pitch(pitch),
       m_pSrcBuf(src_buf),
       m_RefLine(pitch, 0xff),
-      m_LineBuf(
-          pdfium::Vector2D<uint8_t, FxAllocAllocator<uint8_t>>(8, pitch)) {
+      m_LineBuf(fxcrt::Vector2D<uint8_t, FxAllocAllocator<uint8_t>>(8, pitch)) {
   m_DestBuf.SetAllocStep(10240);
 }
 

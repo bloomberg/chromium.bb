@@ -63,7 +63,6 @@ constexpr char kOrigin[] = "origin";
 constexpr char kOriginForFavicon[] = "originForFavicon";
 constexpr char kRecentPermissions[] = "recentPermissions";
 constexpr char kSetting[] = "setting";
-constexpr char kSettingDetail[] = "settingDetail";
 constexpr char kSites[] = "sites";
 constexpr char kPolicyIndicator[] = "indicator";
 constexpr char kSource[] = "source";
@@ -76,6 +75,7 @@ enum class SiteSettingSource {
   kDefault,
   kEmbargo,
   kExtension,
+  kHostedApp,
   kInsecureOrigin,
   kKillSwitch,
   kPolicy,
@@ -112,9 +112,10 @@ bool HasRegisteredGroupName(ContentSettingsType type);
 ContentSettingsType ContentSettingsTypeFromGroupName(base::StringPiece name);
 base::StringPiece ContentSettingsTypeToGroupName(ContentSettingsType type);
 
-// Converts a ListValue of group names to a list of ContentSettingsTypes
-std::vector<ContentSettingsType> ContentSettingsTypesFromGroupNames(
-    const base::Value::ConstListView types);
+// Returns a list of all content settings types that correspond to permissions
+// and which should be displayed in chrome://settings, for any situation not
+// tied to particular a origin.
+const std::vector<ContentSettingsType>& GetVisiblePermissionCategories();
 
 // Converts a SiteSettingSource to its string identifier.
 std::string SiteSettingSourceToString(const SiteSettingSource source);

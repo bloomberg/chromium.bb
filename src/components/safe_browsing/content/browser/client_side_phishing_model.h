@@ -10,9 +10,9 @@
 
 #include "base/callback_list.h"
 #include "base/files/file.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/synchronization/lock.h"
-#include "components/safe_browsing/content/browser/client_side_model_loader.h"
 
 namespace safe_browsing {
 
@@ -23,9 +23,11 @@ enum class CSDModelType { kNone = 0, kProtobuf = 1, kFlatbuffer = 2 };
 // This holds the currently active client side phishing detection model.
 //
 // The data to populate it is fetched periodically from Google to get the most
-// up-to-date model.
+// up-to-date model. We assume it is updated at most every few hours.
 //
-// This is thread safe. We assume it is updated at most every few hours.
+// This class is not thread safe. In particular GetModelStr() returns a
+// string reference, which assumes the string won't be used and updated
+// at the same time.
 
 class ClientSidePhishingModel {
  public:
@@ -45,7 +47,7 @@ class ClientSidePhishingModel {
   CSDModelType GetModelType() const;
 
   // Returns the model string, as a serialized protobuf or flatbuffer.
-  std::string GetModelStr() const;
+  const std::string& GetModelStr() const;
 
   // Returns the shared memory region for the flatbuffer.
   base::ReadOnlySharedMemoryRegion GetModelSharedMemoryRegion() const;

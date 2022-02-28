@@ -14,10 +14,6 @@
 # ==============================================================================
 """`LinearOperator` acting like a tridiagonal matrix."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import check_ops
@@ -39,6 +35,7 @@ _DIAGONAL_FORMATS = frozenset({_COMPACT, _MATRIX, _SEQUENCE})
 
 
 @tf_export('linalg.LinearOperatorTridiag')
+@linear_operator.make_composite_tensor
 class LinearOperatorTridiag(linear_operator.LinearOperator):
   """`LinearOperator` acting like a [batch] square tridiagonal matrix.
 
@@ -171,12 +168,21 @@ class LinearOperatorTridiag(linear_operator.LinearOperator):
       TypeError:  If `diag.dtype` is not an allowed type.
       ValueError:  If `diag.dtype` is real, and `is_self_adjoint` is not `True`.
     """
+    parameters = dict(
+        diagonals=diagonals,
+        diagonals_format=diagonals_format,
+        is_non_singular=is_non_singular,
+        is_self_adjoint=is_self_adjoint,
+        is_positive_definite=is_positive_definite,
+        is_square=is_square,
+        name=name
+    )
 
     with ops.name_scope(name, values=[diagonals]):
       if diagonals_format not in _DIAGONAL_FORMATS:
         raise ValueError(
-            'Diagonals Format must be one of compact, matrix, sequence'
-            ', got : {}'.format(diagonals_format))
+            f'Argument `diagonals_format` must be one of compact, matrix, or '
+            f'sequence. Received : {diagonals_format}.')
       if diagonals_format == _SEQUENCE:
         self._diagonals = [linear_operator_util.convert_nonref_to_tensor(
             d, name='diag_{}'.format(i)) for i, d in enumerate(diagonals)]
@@ -193,6 +199,7 @@ class LinearOperatorTridiag(linear_operator.LinearOperator):
           is_self_adjoint=is_self_adjoint,
           is_positive_definite=is_positive_definite,
           is_square=is_square,
+          parameters=parameters,
           name=name)
 
   def _shape(self):
@@ -246,7 +253,7 @@ class LinearOperatorTridiag(linear_operator.LinearOperator):
           self.diagonals, linalg.adjoint(self.diagonals),
           message='Matrix was not equal to its adjoint.')]
     elif self.diagonals_format == _COMPACT:
-      diagonals = ops.convert_to_tensor(self.diagonals)
+      diagonals = ops.convert_to_tensor_v2_with_dispatch(self.diagonals)
       asserts += [linear_operator_util.assert_zero_imag_part(
           diagonals[..., 1, :], message=diag_message)]
       # Roll the subdiagonal so the shifted argument is at the end.
@@ -353,7 +360,9 @@ class LinearOperatorTridiag(linear_operator.LinearOperator):
           align='LEFT_RIGHT',
           padding_value=0.)
 
-    diagonals = [ops.convert_to_tensor(d) for d in self.diagonals]
+    diagonals = [
+        ops.convert_to_tensor_v2_with_dispatch(d) for d in self.diagonals
+    ]
     diagonals = array_ops.stack(diagonals, axis=-2)
 
     return gen_array_ops.matrix_diag_v3(
@@ -371,3 +380,7 @@ class LinearOperatorTridiag(linear_operator.LinearOperator):
   @property
   def diagonals_format(self):
     return self._diagonals_format
+
+  @property
+  def _composite_tensor_fields(self):
+    return ('diagonals', 'diagonals_format')

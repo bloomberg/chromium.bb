@@ -6,9 +6,10 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojo_bindings") {
   sources = [ "read_later.mojom" ]
-
+  webui_module_path = "/"
   public_deps = [
     "//mojo/public/mojom/base",
+    "//ui/base/mojom",
     "//url/mojom:url_mojom_gurl",
   ]
 }

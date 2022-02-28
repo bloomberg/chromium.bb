@@ -57,8 +57,9 @@ static void VerifyCSSCalc(String text,
                                                   1);
   CSSToLengthConversionData::ViewportSize viewport_size(viewport_width,
                                                         viewport_height);
+  CSSToLengthConversionData::ContainerSizes container_sizes;
   CSSToLengthConversionData conversion_data(nullptr, font_sizes, viewport_size,
-                                            1.0);
+                                            container_sizes, 1.0);
   EXPECT_APPROX_EQ(value, math_value->ComputeLength<float>(conversion_data));
 }
 
@@ -180,7 +181,6 @@ TEST(SizesMathFunctionParserTest, Basic) {
   data.color_bits_per_component = 24;
   data.monochrome_bits_per_component = 0;
   data.primary_pointer_type = mojom::blink::PointerType::kPointerFineType;
-  data.default_font_size = 16;
   data.three_d_enabled = true;
   data.media_type = media_type_names::kScreen;
   data.strict_mode = true;
@@ -200,8 +200,8 @@ TEST(SizesMathFunctionParserTest, Basic) {
     if (test_cases[i].dont_run_in_css_calc)
       continue;
     VerifyCSSCalc(test_cases[i].input, test_cases[i].output,
-                  test_cases[i].valid, data.default_font_size,
-                  data.viewport_width, data.viewport_height);
+                  test_cases[i].valid, data.em_size, data.viewport_width,
+                  data.viewport_height);
   }
 }
 

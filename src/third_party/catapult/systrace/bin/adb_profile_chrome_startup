@@ -82,15 +82,24 @@ def main():
   if options.verbose:
     logging.getLogger().setLevel(logging.DEBUG)
 
-  devices = device_utils.DeviceUtils.HealthyDevices()
-  if len(devices) != 1:
-    logging.error('Exactly 1 device must be attached.')
+  device = None
+  for d in device_utils.DeviceUtils.HealthyDevices():
+    if d.serial == options.device_serial_number:
+      device = d
+      break
+
+  if not device:
+    logging.error('No matching healthy devices')
     return 1
-  device = devices[0]
   package_info = util.get_supported_browsers()[options.browser]
 
   options.device = device
   options.package_info = package_info
+
+  # Ensure compatibility between trace_format and write_json flags.
+  # trace_format is preferred. write_json is supported for backward
+  # compatibility reasons.
+  flags.ParseFormatFlags(options)
 
   # TODO(washingtonp): Once Systrace uses all of the profile_chrome agents,
   # manually setting these options will no longer be necessary and should be
@@ -107,7 +116,7 @@ def main():
                                    _CHROME_STARTUP_MODULES,
                                    output=options.output_file,
                                    compress=options.compress,
-                                   write_json=options.write_json)
+                                   trace_format=options.trace_format)
   if options.view:
     if sys.platform == 'darwin':
       os.system('/usr/bin/open %s' % os.path.abspath(result))

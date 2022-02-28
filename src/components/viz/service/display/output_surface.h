@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/display/update_vsync_parameters_callback.h"
@@ -17,6 +16,7 @@
 #include "components/viz/common/gpu/gpu_vsync_callback.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/returned_resource.h"
+#include "components/viz/service/display/pending_swap_params.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -24,8 +24,8 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/gpu_task_scheduler_helper.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "third_party/skia/include/core/SkMatrix44.h"
-#include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "skia/ext/skia_matrix_44.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/surface_origin.h"
@@ -65,8 +65,9 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   struct Capabilities {
     Capabilities();
     Capabilities(const Capabilities& capabilities);
+    Capabilities& operator=(const Capabilities& capabilities);
 
-    int max_frames_pending = 1;
+    PendingSwapParams pending_swap_params{1};
     // The number of buffers for the SkiaOutputDevice. If the
     // |supports_post_sub_buffer| true, SkiaOutputSurfaceImpl will track target
     // damaged area based on this number.
@@ -132,6 +133,10 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     // True if the OutputSurface can resize to match the size of the root
     // surface. E.g. Wayland protocol allows this.
     bool resize_based_on_root_surface = false;
+    // Some configuration supports allocating frame buffers on demand.
+    // When enabled, `number_of_buffers` should be interpreted as the maximum
+    // number of buffers to allocate.
+    bool use_dynamic_frame_buffer_allocation = false;
 
     // SkColorType for all supported buffer formats.
     SkColorType sk_color_types[static_cast<int>(gfx::BufferFormat::LAST) + 1] =
@@ -144,6 +149,9 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   explicit OutputSurface(scoped_refptr<ContextProvider> context_provider);
   // Constructor for software compositing.
   explicit OutputSurface(std::unique_ptr<SoftwareOutputDevice> software_device);
+
+  OutputSurface(const OutputSurface&) = delete;
+  OutputSurface& operator=(const OutputSurface&) = delete;
 
   virtual ~OutputSurface();
 
@@ -162,10 +170,10 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   // Downcasts to SkiaOutputSurface if it is one and returns nullptr otherwise.
   virtual SkiaOutputSurface* AsSkiaOutputSurface();
 
-  void set_color_matrix(const SkMatrix44& color_matrix) {
+  void set_color_matrix(const skia::Matrix44& color_matrix) {
     color_matrix_ = color_matrix;
   }
-  const SkMatrix44& color_matrix() const { return color_matrix_; }
+  const skia::Matrix44& color_matrix() const { return color_matrix_; }
 
   // Only useful for GPU backend.
   virtual gpu::SurfaceHandle GetSurfaceHandle() const;
@@ -295,9 +303,7 @@ class VIZ_SERVICE_EXPORT OutputSurface {
 
  private:
   const Type type_;
-  SkMatrix44 color_matrix_;
-
-  DISALLOW_COPY_AND_ASSIGN(OutputSurface);
+  skia::Matrix44 color_matrix_;
 };
 
 }  // namespace viz

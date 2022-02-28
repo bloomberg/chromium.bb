@@ -17,7 +17,6 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
@@ -301,7 +300,7 @@ enum {
   UMA_HISTOGRAM_ENUMERATION("Accessibility.WinAPIs", enum_value, UMA_API_MAX)
 
 #define WIN_ACCESSIBILITY_API_PERF_HISTOGRAM(enum_value) \
-  SCOPED_UMA_HISTOGRAM_SHORT_TIMER(                      \
+  SCOPED_UMA_HISTOGRAM_TIMER_MICROS(                     \
       "Accessibility.Performance.WinAPIs." #enum_value)
 
 //
@@ -341,7 +340,11 @@ class AX_EXPORT WinAccessibilityAPIUsageObserver {
   virtual void OnIAccessible2Used() = 0;
   virtual void OnScreenReaderHoneyPotQueried() = 0;
   virtual void OnAccNameCalled() = 0;
-  virtual void OnUIAutomationUsed() = 0;
+  virtual void OnBasicUIAutomationUsed() = 0;
+  virtual void OnAdvancedUIAutomationUsed() = 0;
+  virtual void OnUIAutomationIdRequested() = 0;
+  virtual void OnProbableUIAutomationScreenReaderDetected() = 0;
+  virtual void OnTextPatternRequested() = 0;
   virtual void StartFiringUIAEvents() = 0;
   virtual void EndFiringUIAEvents() = 0;
 };
@@ -436,8 +439,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   END_COM_MAP()
 
   ~AXPlatformNodeWin() override;
-
-  void Init(AXPlatformNodeDelegate* delegate) override;
 
   // Clear any AXPlatformRelationWin nodes owned by this node.
   void ClearOwnRelations();
@@ -1137,8 +1138,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Helper to recursively find live-regions and fire a change event on them
   void FireLiveRegionChangeRecursive();
 
-  // Returns the parent node that makes this node inaccessible.
-  AXPlatformNodeWin* GetLowestAccessibleElement();
+  // Returns the first ancestor node that is accessible for UIA.
+  AXPlatformNodeWin* GetLowestAccessibleElementForUIA();
 
   // Returns the first |IsTextOnlyObject| descendant using
   // depth-first pre-order traversal.
@@ -1155,12 +1156,15 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
       ax::mojom::Event event);
 
  protected:
+  AXPlatformNodeWin();
+
+  // AXPlatformNode overrides.
+  void Init(AXPlatformNodeDelegate* delegate) override;
+
   // This is hard-coded; all products based on the Chromium engine will have the
   // same framework name, so that assistive technology can detect any
   // Chromium-based product.
   static constexpr const wchar_t* FRAMEWORK_ID = L"Chrome";
-
-  AXPlatformNodeWin();
 
   int MSAAState() const;
 
@@ -1188,7 +1192,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   absl::optional<LONG> ComputeUIALandmarkType() const;
 
-  bool IsInaccessibleDueToAncestor() const;
+  bool IsInaccessibleForUIA() const;
 
   bool ShouldHideChildrenForUIA() const;
 
@@ -1238,9 +1242,12 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                            SanitizeStringAttributeForIA2);
 
  private:
-  bool IsWebAreaForPresentationalIframe();
-  bool ShouldNodeHaveFocusableState(const AXNodeData& data) const;
+  AXPlatformNodeWin* GetParentPlatformNodeWin() const;
+
+  bool ShouldNodeHaveFocusableState() const;
   int GetAnnotationTypeImpl() const;
+  void AugmentNameWithImageAnnotationIfApplicable(std::wstring* name) const;
+
   // Get the value attribute as a Bstr, this means something different depending
   // on the type of element being queried. (e.g. kColorWell uses kColorValue).
   static BSTR GetValueAttributeAsBstr(AXPlatformNodeWin* target);
@@ -1385,6 +1392,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Helper method getting the selected status.
   bool ISelectionItemProviderIsSelected() const;
 
+  // Helper method for IsInaccessibleForUIA.
+  bool IsNodeInaccessibleForUIA() const;
+
   //
   // Getters for UIA GetTextAttributeValue
   //
@@ -1421,7 +1431,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
       AXPlatformNodeBase* node,
       ax::mojom::MarkerType marker_type,
       int offset_ranges_amount,
-      std::vector<std::pair<int, int>>* ranges);
+      std::vector<std::pair<int, int>>* ranges,
+      const absl::optional<ax::mojom::HighlightType>& highlight_type);
 
   enum class MarkerTypeRangeResult {
     // The MarkerType does not overlap the range.
@@ -1437,7 +1448,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   MarkerTypeRangeResult GetMarkerTypeFromRange(
       const absl::optional<int>& start_offset,
       const absl::optional<int>& end_offset,
-      ax::mojom::MarkerType marker_type);
+      ax::mojom::MarkerType marker_type,
+      const absl::optional<ax::mojom::HighlightType>& highlight_type =
+          absl::nullopt);
 
   bool IsAncestorComboBox();
 
@@ -1470,12 +1483,18 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
       const std::wstring& active_composition_text,
       bool is_composition_committed);
 
+  void NotifyAPIObserverForPatternRequest(PATTERNID pattern_id) const;
+  void NotifyAPIObserverForPropertyRequest(PROPERTYID property_id) const;
+
   // Return true if the given element is valid enough to be returned as a value
   // for a UIA relation property (e.g. ControllerFor).
   static bool IsValidUiaRelationTarget(AXPlatformNode* ax_platform_node);
 
   // Start and end offsets of an active composition
   gfx::Range active_composition_range_;
+
+  friend AXPlatformNode* AXPlatformNode::Create(
+      AXPlatformNodeDelegate* delegate);
 };
 
 }  // namespace ui

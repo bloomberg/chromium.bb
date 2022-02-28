@@ -6,7 +6,7 @@
 # WHAT IS THIS FILE?
 # =============================================================================
 #
-# This is the master GN build configuration. This file is loaded after the
+# This is the main GN build configuration. This file is loaded after the
 # build args (args.gn) for the build directory and after the toplevel ".gn"
 # file (which points to this file as the build configuration).
 #
@@ -39,11 +39,6 @@ declare_args() {
   # This should not normally be set as a build argument.  It's here so that
   # every toolchain can pass through the "global" value via toolchain_args().
   host_toolchain = ""
-
-  # Needed to properly resolve the locations for the TypeScript build system
-  # when we are building for DevTools only. This arg will not be defined in
-  # Chromium itself.
-  use_devtools_typescript = true
 
   # DON'T ADD MORE FLAGS HERE. Read the comment above.
 }

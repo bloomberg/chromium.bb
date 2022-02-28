@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "content/browser/tracing/background_tracing_manager_impl.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
@@ -26,6 +27,11 @@ class CONTENT_EXPORT BackgroundStartupTracingObserver
   };
 
   static BackgroundStartupTracingObserver* GetInstance();
+
+  BackgroundStartupTracingObserver(const BackgroundStartupTracingObserver&) =
+      delete;
+  BackgroundStartupTracingObserver& operator=(
+      const BackgroundStartupTracingObserver&) = delete;
 
   // Returns startup tracing rule from the given config, null if doesn't exist.
   static const BackgroundTracingRule* FindStartupRuleInConfig(
@@ -60,8 +66,6 @@ class CONTENT_EXPORT BackgroundStartupTracingObserver
   bool enabled_in_current_session_;
 
   std::unique_ptr<PreferenceManager> preferences_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundStartupTracingObserver);
 };
 
 }  // namespace content

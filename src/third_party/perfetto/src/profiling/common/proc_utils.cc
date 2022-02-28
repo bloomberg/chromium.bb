@@ -16,29 +16,19 @@
 
 #include "src/profiling/common/proc_utils.h"
 
-#include <inttypes.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <cinttypes>
+
 #include "perfetto/ext/base/file_utils.h"
 #include "perfetto/ext/base/optional.h"
+#include "perfetto/ext/base/string_utils.h"
 #include "perfetto/profiling/normalize.h"
 
 namespace perfetto {
 namespace profiling {
 namespace {
-
-bool GetProcFile(pid_t pid, const char* file, char* filename_buf, size_t size) {
-  ssize_t written = snprintf(filename_buf, size, "/proc/%d/%s", pid, file);
-  if (written < 0 || static_cast<size_t>(written) >= size) {
-    if (written < 0)
-      PERFETTO_ELOG("Failed to concatenate cmdline file.");
-    else
-      PERFETTO_ELOG("Overflow when concatenating cmdline file.");
-    return false;
-  }
-  return true;
-}
 
 base::Optional<uint32_t> ParseProcStatusSize(const std::string& status,
                                              const std::string& key) {
@@ -129,8 +119,7 @@ void FindAllProfilablePids(std::set<pid_t>* pids) {
       return;
 
     char filename_buf[128];
-    if (!GetProcFile(pid, "cmdline", filename_buf, sizeof(filename_buf)))
-      return;
+    snprintf(filename_buf, sizeof(filename_buf), "/proc/%d/%s", pid, "cmdline");
     struct stat statbuf;
     // Check if we have permission to the process.
     if (stat(filename_buf, &statbuf) == 0)

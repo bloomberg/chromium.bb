@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -19,13 +18,17 @@ namespace enterprise_management {
 class DeviceManagementResponse;
 }  // namespace enterprise_management
 
-namespace chromeos {
+namespace ash {
 
 // This class handles sending request for public SAML session URL to DM
 // server, waits for the response and retrieves the redirect URL from it.
 class PublicSamlUrlFetcher {
  public:
   explicit PublicSamlUrlFetcher(AccountId account_id);
+
+  PublicSamlUrlFetcher(const PublicSamlUrlFetcher&) = delete;
+  PublicSamlUrlFetcher& operator=(const PublicSamlUrlFetcher&) = delete;
+
   ~PublicSamlUrlFetcher();
 
   // Sends request to the DM server, gets and checks the response and
@@ -58,10 +61,14 @@ class PublicSamlUrlFetcher {
   // Called at the end of Fetch().
   base::OnceClosure callback_;
   base::WeakPtrFactory<PublicSamlUrlFetcher> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PublicSamlUrlFetcher);
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::PublicSamlUrlFetcher;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SAML_PUBLIC_SAML_URL_FETCHER_H_

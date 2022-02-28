@@ -4,7 +4,10 @@
 
 #include "services/network/public/cpp/parsed_headers.h"
 
+#include "build/build_config.h"
+#include "net/base/features.h"
 #include "net/http/http_response_headers.h"
+#include "net/reporting/reporting_header_parser.h"
 #include "services/network/public/cpp/bfcache_opt_in_parser.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
@@ -32,25 +35,17 @@ mojom::ParsedHeadersPtr PopulateParsedHeaders(
 
   parsed_headers->cross_origin_embedder_policy =
       ParseCrossOriginEmbedderPolicy(*headers);
-  parsed_headers->cross_origin_opener_policy = ParseCrossOriginOpenerPolicy(
-      *headers, parsed_headers->cross_origin_embedder_policy);
+  parsed_headers->cross_origin_opener_policy =
+      ParseCrossOriginOpenerPolicy(*headers);
 
   std::string origin_agent_cluster;
-  if (headers->GetNormalizedHeader("Origin-Agent-Cluster",
-                                   &origin_agent_cluster)) {
-    parsed_headers->origin_agent_cluster =
-        ParseOriginAgentCluster(origin_agent_cluster);
-  }
+  headers->GetNormalizedHeader("Origin-Agent-Cluster", &origin_agent_cluster);
+  parsed_headers->origin_agent_cluster =
+      ParseOriginAgentCluster(origin_agent_cluster);
 
   std::string accept_ch;
   if (headers->GetNormalizedHeader("Accept-CH", &accept_ch))
     parsed_headers->accept_ch = ParseClientHintsHeader(accept_ch);
-
-  std::string accept_ch_lifetime;
-  if (headers->GetNormalizedHeader("Accept-CH-Lifetime", &accept_ch_lifetime)) {
-    parsed_headers->accept_ch_lifetime =
-        ParseAcceptCHLifetime(accept_ch_lifetime);
-  }
 
   std::string critical_ch;
   if (headers->GetNormalizedHeader("Critical-CH", &critical_ch))
@@ -72,6 +67,17 @@ mojom::ParsedHeadersPtr PopulateParsedHeaders(
     parsed_headers->bfcache_opt_in_unload =
         ParseBFCacheOptInUnload(bfcache_opt_in);
   }
+
+#if BUILDFLAG(ENABLE_REPORTING)
+  if (base::FeatureList::IsEnabled(net::features::kDocumentReporting)) {
+    std::string reporting_endpoints;
+    if (headers->GetNormalizedHeader("Reporting-Endpoints",
+                                     &reporting_endpoints)) {
+      parsed_headers->reporting_endpoints =
+          net::ParseReportingEndpoints(reporting_endpoints);
+    }
+  }
+#endif
 
   return parsed_headers;
 }

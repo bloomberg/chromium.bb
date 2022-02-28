@@ -10,8 +10,11 @@ ModelExecutionSchedulerTest.*
 SegmentationModelExecutorTest.*
 SegmentationPlatformFeaturesTest.*
 SegmentationPlatformServiceImplTest.*
+SegmentationPlatformServiceImplEmptyConfigTest.*
+SegmentationPlatformServiceImplMultiClientTest.*
 SegmentationResultPrefsTest.*
 SegmentInfoDatabaseTest.*
+SegmentScoreProviderTest.*
 SegmentSelectorTest.*
 SignalDatabaseImplTest.*
 SignalFilterProcessorTest.*

@@ -191,6 +191,11 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
         'the test harness will attempt to detect whether it is running on a '
         'workstation or not and set this option accordingly.')
     parser.add_option(
+        '--skia-gold-local-png-write-directory',
+        help='Specifies a directory to save local image diffs to instead of '
+        'the default of a temporary directory. Only has an effect when running '
+        'tests locally, not on a bot.')
+    parser.add_option(
         '--no-luci-auth',
         action='store_true',
         default=False,
@@ -358,11 +363,21 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
 
     inexact_matching_args = page.matching_algorithm.GetCmdline()
 
+    # TODO(skbug.com/12149): Remove this once Gold stops clobbering earlier
+    # results when running retry steps.
+    force_dryrun = False
+    # "Retry without patch" steps automatically pass in a test filter, which
+    # should be the only time these tests are run with a test filter on trybots.
+    if (gold_properties.IsTryjobRun()
+        and self.GetParsedCommandLineOptions().has_test_filter):
+      force_dryrun = True
+
     status, error = gold_session.RunComparison(
         name=image_name,
         png_file=png_temp_file,
         inexact_matching_args=inexact_matching_args,
-        use_luci=use_luci)
+        use_luci=use_luci,
+        force_dryrun=force_dryrun)
     if not status:
       return
 
@@ -401,7 +416,10 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
           'Given unhandled SkiaGoldSession StatusCode %s with error %s', status,
           error)
     if self._ShouldReportGoldFailure(page):
-      raise Exception('goldctl command failed, see above for details')
+      raise Exception(
+          'goldctl command returned non-zero exit code, see above for details. '
+          'This probably just means that the test produced an image that has '
+          'not been triaged as positive.')
 
   def _ShouldReportGoldFailure(self, page):
     """Determines if a Gold failure should actually be surfaced.

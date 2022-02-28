@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,20 +9,15 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/files/platform_file.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
-#include "base/task/task_traits.h"
-#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -43,8 +38,8 @@
 #include "components/policy/core/browser/url_util.h"
 #include "components/policy/core/common/chrome_schema.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/features.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/web_contents.h"
 #include "crypto/secure_hash.h"
@@ -92,6 +87,8 @@ StringAnalysisRequest::StringAnalysisRequest(
     std::string text,
     BinaryUploadService::ContentAnalysisCallback callback)
     : Request(std::move(callback), analysis_url) {
+  data_.size = text.size();
+
   // Only remember strings less than the maximum allowed.
   if (text.size() < BinaryUploadService::kMaxUploadSizeBytes) {
     data_.contents = std::move(text);
@@ -109,7 +106,7 @@ StringAnalysisRequest::~StringAnalysisRequest() {
 }
 
 void StringAnalysisRequest::GetRequestData(DataCallback callback) {
-  std::move(callback).Run(result_, data_);
+  std::move(callback).Run(result_, std::move(data_));
 }
 
 bool ContentAnalysisActionAllowsDataUse(
@@ -122,21 +119,6 @@ bool ContentAnalysisActionAllowsDataUse(
     case enterprise_connectors::TriggeredRule::BLOCK:
       return false;
   }
-}
-
-std::string GetFileMimeType(base::FilePath path) {
-  // TODO(crbug.com/1013252): Obtain a more accurate MimeType by parsing the
-  // file content.
-  base::FilePath::StringType ext = path.FinalExtension();
-  if (ext.empty())
-    return "";
-
-  if (ext[0] == FILE_PATH_LITERAL('.'))
-    ext = ext.substr(1);
-
-  std::string mime_type;
-  net::GetMimeTypeFromExtension(ext, &mime_type);
-  return mime_type;
 }
 
 bool* UIEnabledStorage() {
@@ -180,6 +162,7 @@ ContentAnalysisDelegate::FileContents::FileContents(FileContents&& other) =
 ContentAnalysisDelegate::FileContents&
 ContentAnalysisDelegate::FileContents::operator=(
     ContentAnalysisDelegate::FileContents&& other) = default;
+
 ContentAnalysisDelegate::~ContentAnalysisDelegate() = default;
 
 void ContentAnalysisDelegate::BypassWarnings() {
@@ -191,8 +174,8 @@ void ContentAnalysisDelegate::BypassWarnings() {
     std::fill(result_.text_results.begin(), result_.text_results.end(), true);
 
     int64_t content_size = 0;
-    for (const std::u16string& entry : data_.text)
-      content_size += (entry.size() * sizeof(char16_t));
+    for (const std::string& entry : data_.text)
+      content_size += entry.size();
 
     ReportAnalysisConnectorWarningBypass(
         profile_, url_, "Text data", std::string(), "text/plain",
@@ -230,6 +213,34 @@ void ContentAnalysisDelegate::Cancel(bool warning) {
   // Make sure to reject everything.
   FillAllResultsWith(false);
   RunCallback();
+}
+
+absl::optional<std::u16string> ContentAnalysisDelegate::GetCustomMessage()
+    const {
+  auto element = data_.settings.custom_message_data.find(final_result_tag_);
+  if (element != data_.settings.custom_message_data.end() &&
+      !element->second.message.empty()) {
+    return l10n_util::GetStringFUTF16(IDS_DEEP_SCANNING_DIALOG_CUSTOM_MESSAGE,
+                                      element->second.message);
+  }
+
+  return absl::nullopt;
+}
+
+absl::optional<GURL> ContentAnalysisDelegate::GetCustomLearnMoreUrl() const {
+  auto element = data_.settings.custom_message_data.find(final_result_tag_);
+  if (element != data_.settings.custom_message_data.end() &&
+      element->second.learn_more_url.is_valid() &&
+      !element->second.learn_more_url.is_empty()) {
+    return element->second.learn_more_url;
+  }
+
+  return absl::nullopt;
+}
+
+absl::optional<std::u16string>
+ContentAnalysisDelegate::OverrideCancelButtonText() const {
+  return absl::nullopt;
 }
 
 // static
@@ -379,14 +390,16 @@ void ContentAnalysisDelegate::StringRequestCallback(
     BinaryUploadService::Result result,
     enterprise_connectors::ContentAnalysisResponse response) {
   int64_t content_size = 0;
-  for (const std::u16string& entry : data_.text)
-    content_size += (entry.size() * sizeof(char16_t));
+  for (const std::string& entry : data_.text)
+    content_size += entry.size();
   RecordDeepScanMetrics(access_point_,
                         base::TimeTicks::Now() - upload_start_time_,
                         content_size, result, response);
 
   text_request_complete_ = true;
-  auto action = enterprise_connectors::GetHighestPrecedenceAction(response);
+  std::string tag;
+  auto action =
+      enterprise_connectors::GetHighestPrecedenceAction(response, &tag);
   bool text_complies = ResultShouldAllowDataUse(result, data_.settings) &&
                        ContentAnalysisActionAllowsDataUse(action);
   bool should_warn = action == enterprise_connectors::ContentAnalysisResponse::
@@ -405,53 +418,12 @@ void ContentAnalysisDelegate::StringRequestCallback(
     if (should_warn) {
       text_warning_ = true;
       text_response_ = std::move(response);
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::WARNING);
+      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::WARNING, tag);
     } else {
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::FAILURE);
+      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::FAILURE, tag);
     }
   }
 
-  MaybeCompleteScanRequest();
-}
-
-void ContentAnalysisDelegate::CompleteFileRequestCallback(
-    size_t index,
-    base::FilePath path,
-    BinaryUploadService::Result result,
-    enterprise_connectors::ContentAnalysisResponse response,
-    std::string mime_type) {
-  file_info_[index].mime_type = mime_type;
-
-  auto action = GetHighestPrecedenceAction(response);
-  bool file_complies = ResultShouldAllowDataUse(result, data_.settings) &&
-                       ContentAnalysisActionAllowsDataUse(action);
-  bool should_warn = action == enterprise_connectors::TriggeredRule::WARN;
-  result_.paths_results[index] = file_complies;
-
-  MaybeReportDeepScanningVerdict(
-      profile_, url_, path.AsUTF8Unsafe(), file_info_[index].sha256, mime_type,
-      extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
-      access_point_, file_info_[index].size, result, response,
-      CalculateEventResult(data_.settings, file_complies, should_warn));
-
-  ++file_result_count_;
-
-  if (!file_complies) {
-    if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::LARGE_FILES);
-    } else if (result == BinaryUploadService::Result::FILE_ENCRYPTED) {
-      UpdateFinalResult(
-          ContentAnalysisDelegateBase::FinalResult::ENCRYPTED_FILES);
-    } else if (should_warn) {
-      file_warnings_[index] = std::move(response);
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::WARNING);
-    } else {
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::FAILURE);
-    }
-  }
-
-  safe_browsing::DecrementCrashKey(
-      safe_browsing::ScanningCrashKey::PENDING_FILE_UPLOADS);
   MaybeCompleteScanRequest();
 }
 
@@ -471,12 +443,40 @@ void ContentAnalysisDelegate::FileRequestCallback(
                         base::TimeTicks::Now() - upload_start_time_,
                         file_info_[index].size, result, response);
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-      base::BindOnce(&GetFileMimeType, path),
-      base::BindOnce(&ContentAnalysisDelegate::CompleteFileRequestCallback,
-                     weak_ptr_factory_.GetWeakPtr(), index, path, result,
-                     response));
+  std::string tag;
+  auto action = GetHighestPrecedenceAction(response, &tag);
+  bool file_complies = ResultShouldAllowDataUse(result, data_.settings) &&
+                       ContentAnalysisActionAllowsDataUse(action);
+  bool should_warn = action == enterprise_connectors::TriggeredRule::WARN;
+  result_.paths_results[index] = file_complies;
+
+  MaybeReportDeepScanningVerdict(
+      profile_, url_, path.AsUTF8Unsafe(), file_info_[index].sha256,
+      file_info_[index].mime_type,
+      extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
+      access_point_, file_info_[index].size, result, response,
+      CalculateEventResult(data_.settings, file_complies, should_warn));
+
+  ++file_result_count_;
+
+  if (!file_complies) {
+    if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
+      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::LARGE_FILES,
+                        tag);
+    } else if (result == BinaryUploadService::Result::FILE_ENCRYPTED) {
+      UpdateFinalResult(
+          ContentAnalysisDelegateBase::FinalResult::ENCRYPTED_FILES, tag);
+    } else if (should_warn) {
+      file_warnings_[index] = std::move(response);
+      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::WARNING, tag);
+    } else {
+      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::FAILURE, tag);
+    }
+  }
+
+  safe_browsing::DecrementCrashKey(
+      safe_browsing::ScanningCrashKey::PENDING_FILE_UPLOADS);
+  MaybeCompleteScanRequest();
 }
 
 bool ContentAnalysisDelegate::UploadData() {
@@ -487,10 +487,19 @@ bool ContentAnalysisDelegate::UploadData() {
   safe_browsing::IncrementCrashKey(
       safe_browsing::ScanningCrashKey::PENDING_FILE_UPLOADS,
       data_.paths.size());
-  safe_browsing::IncrementCrashKey(
-      safe_browsing::ScanningCrashKey::TOTAL_FILE_UPLOADS, data_.paths.size());
-  for (const base::FilePath& path : data_.paths)
-    PrepareFileRequest(path);
+  if (!data_.paths.empty()) {
+    safe_browsing::IncrementCrashKey(
+        safe_browsing::ScanningCrashKey::TOTAL_FILE_UPLOADS,
+        data_.paths.size());
+
+    std::vector<safe_browsing::FileOpeningJob::FileOpeningTask> tasks(
+        data_.paths.size());
+    for (size_t i = 0; i < data_.paths.size(); ++i)
+      tasks[i].request = PrepareFileRequest(data_.paths[i]);
+
+    file_opening_job_ =
+        std::make_unique<safe_browsing::FileOpeningJob>(std::move(tasks));
+  }
 
   data_uploaded_ = true;
   // Do not add code under this comment. The above line should be the last thing
@@ -501,8 +510,8 @@ bool ContentAnalysisDelegate::UploadData() {
 
 void ContentAnalysisDelegate::PrepareTextRequest() {
   std::string full_text;
-  for (const auto& text : data_.text)
-    full_text.append(base::UTF16ToUTF8(text));
+  for (const std::string& text : data_.text)
+    full_text.append(text);
 
   // The request is considered complete if there is no text or if the text is
   // too small compared to the minimum size. This means a minimum_data_size of
@@ -530,17 +539,20 @@ void ContentAnalysisDelegate::PrepareTextRequest() {
   }
 }
 
-void ContentAnalysisDelegate::PrepareFileRequest(const base::FilePath& path) {
+safe_browsing::FileAnalysisRequest* ContentAnalysisDelegate::PrepareFileRequest(
+    const base::FilePath& path) {
   auto request = std::make_unique<safe_browsing::FileAnalysisRequest>(
-      data_.settings, path, path.BaseName(),
+      data_.settings, path, path.BaseName(), /*mime_type*/ "",
+      /* delay_opening_file */ true,
       base::BindOnce(&ContentAnalysisDelegate::FileRequestCallback,
                      weak_ptr_factory_.GetWeakPtr(), path));
   safe_browsing::FileAnalysisRequest* request_raw = request.get();
   PrepareRequest(enterprise_connectors::FILE_ATTACHED, request_raw);
-
   request_raw->GetRequestData(
       base::BindOnce(&ContentAnalysisDelegate::OnGotFileInfo,
                      weak_ptr_factory_.GetWeakPtr(), std::move(request), path));
+
+  return request_raw;
 }
 
 void ContentAnalysisDelegate::PrepareRequest(
@@ -587,8 +599,7 @@ bool ContentAnalysisDelegate::UpdateDialog() {
   if (!dialog_)
     return false;
 
-  dialog_->ShowResult(final_result_, data_.settings.custom_message_text,
-                      data_.settings.custom_message_learn_more_url);
+  dialog_->ShowResult(final_result_);
   return true;
 }
 
@@ -617,12 +628,13 @@ void ContentAnalysisDelegate::OnGotFileInfo(
     std::unique_ptr<BinaryUploadService::Request> request,
     const base::FilePath& path,
     BinaryUploadService::Result result,
-    const BinaryUploadService::Request::Data& data) {
+    BinaryUploadService::Request::Data data) {
   auto it = std::find(data_.paths.begin(), data_.paths.end(), path);
   DCHECK(it != data_.paths.end());
   size_t index = std::distance(data_.paths.begin(), it);
   file_info_[index].sha256 = data.hash;
   file_info_[index].size = data.size;
+  file_info_[index].mime_type = data.mime_type;
 
   // If a non-SUCCESS result was previously obtained, it means the file has some
   // property (too large, unsupported file type, encrypted, ...) that make its
@@ -645,9 +657,12 @@ void ContentAnalysisDelegate::OnGotFileInfo(
 }
 
 void ContentAnalysisDelegate::UpdateFinalResult(
-    ContentAnalysisDelegateBase::FinalResult result) {
-  if (result < final_result_)
+    ContentAnalysisDelegateBase::FinalResult result,
+    const std::string& tag) {
+  if (result < final_result_) {
     final_result_ = result;
+    final_result_tag_ = tag;
+  }
 }
 
 }  // namespace enterprise_connectors

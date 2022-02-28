@@ -33,6 +33,7 @@
 #include "src/core/lib/iomgr/endpoint.h"
 #include "src/core/lib/iomgr/exec_ctx.h"
 #include "src/core/lib/iomgr/tcp_posix.h"
+#include "src/core/lib/resource_quota/api.h"
 #include "src/core/lib/surface/completion_queue.h"
 #include "src/core/lib/surface/server.h"
 
@@ -45,22 +46,23 @@ void grpc_server_add_insecure_channel_from_fd(grpc_server* server,
 
   const grpc_channel_args* server_args = core_server->channel_args();
   std::string name = absl::StrCat("fd:", fd);
+  auto memory_quota =
+      grpc_core::ResourceQuotaFromChannelArgs(server_args)->memory_quota();
   grpc_endpoint* server_endpoint = grpc_tcp_create(
-      grpc_fd_create(fd, name.c_str(), true), server_args, name.c_str());
-
+      grpc_fd_create(fd, name.c_str(), true), server_args, name);
   grpc_transport* transport = grpc_create_chttp2_transport(
-      server_args, server_endpoint, false /* is_client */);
-
-  grpc_error* error =
+      server_args, server_endpoint, false /* is_client */
+  );
+  grpc_error_handle error =
       core_server->SetupTransport(transport, nullptr, server_args, nullptr);
   if (error == GRPC_ERROR_NONE) {
     for (grpc_pollset* pollset : core_server->pollsets()) {
       grpc_endpoint_add_to_pollset(server_endpoint, pollset);
     }
-    grpc_chttp2_transport_start_reading(transport, nullptr, nullptr);
+    grpc_chttp2_transport_start_reading(transport, nullptr, nullptr, nullptr);
   } else {
     gpr_log(GPR_ERROR, "Failed to create channel: %s",
-            grpc_error_string(error));
+            grpc_error_std_string(error).c_str());
     GRPC_ERROR_UNREF(error);
     grpc_transport_destroy(transport);
   }
@@ -68,8 +70,9 @@ void grpc_server_add_insecure_channel_from_fd(grpc_server* server,
 
 #else  // !GPR_SUPPORT_CHANNELS_FROM_FD
 
-void grpc_server_add_insecure_channel_from_fd(grpc_server* server,
-                                              void* reserved, int fd) {
+void grpc_server_add_insecure_channel_from_fd(grpc_server* /* server */,
+                                              void* /* reserved */,
+                                              int /* fd */) {
   GPR_ASSERT(0);
 }
 

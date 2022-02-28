@@ -13,7 +13,6 @@
 #include "aom_dsp/binary_codes_writer.h"
 #include "aom_dsp/recenter.h"
 #include "aom_ports/bitops.h"
-#include "av1/common/common.h"
 
 // Codes a symbol v in [-2^mag_bits, 2^mag_bits].
 // mag_bits is number of bits for magnitude. The alphabet is of size

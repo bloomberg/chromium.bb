@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/media/audio_stream_broker.h"
 #include "content/common/content_export.h"
@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/media/renderer_audio_input_stream_factory.mojom.h"
 
 namespace media {
@@ -45,6 +46,9 @@ class CONTENT_EXPORT AudioInputStreamBroker final
       mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
           renderer_factory_client);
 
+  AudioInputStreamBroker(const AudioInputStreamBroker&) = delete;
+  AudioInputStreamBroker& operator=(const AudioInputStreamBroker&) = delete;
+
   ~AudioInputStreamBroker() final;
 
   // Creates the stream.
@@ -66,7 +70,7 @@ class CONTENT_EXPORT AudioInputStreamBroker final
   const std::string device_id_;
   media::AudioParameters params_;
   const uint32_t shared_memory_count_;
-  media::UserInputMonitorBase* const user_input_monitor_;
+  const raw_ptr<media::UserInputMonitorBase> user_input_monitor_;
   const bool enable_agc_;
 
   // Indicates that CreateStream has been called, but not StreamCreated.
@@ -85,8 +89,6 @@ class CONTENT_EXPORT AudioInputStreamBroker final
           kDocumentDestroyed;
 
   base::WeakPtrFactory<AudioInputStreamBroker> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AudioInputStreamBroker);
 };
 
 }  // namespace content

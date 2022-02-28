@@ -31,7 +31,7 @@ using WgslBinaryTest = TestParamHelper<BinaryData>;
 TEST_P(WgslBinaryTest, Emit) {
   auto params = GetParam();
 
-  auto op_ty = [&]() -> ast::Type* {
+  auto op_ty = [&]() -> const ast::Type* {
     if (params.op == ast::BinaryOp::kLogicalAnd ||
         params.op == ast::BinaryOp::kLogicalOr) {
       return ty.bool_();
@@ -50,8 +50,9 @@ TEST_P(WgslBinaryTest, Emit) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitExpression(expr)) << gen.error();
-  EXPECT_EQ(gen.result(), params.result);
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, expr)) << gen.error();
+  EXPECT_EQ(out.str(), params.result);
 }
 INSTANTIATE_TEST_SUITE_P(
     WgslGeneratorImplTest,

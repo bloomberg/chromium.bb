@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_TOUCHUI_TOUCH_SELECTION_MENU_VIEWS_H_
 #define UI_VIEWS_TOUCHUI_TOUCH_SELECTION_MENU_VIEWS_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/touchui/touch_selection_menu_runner_views.h"
 
@@ -27,6 +27,9 @@ class VIEWS_EXPORT TouchSelectionMenuViews : public BubbleDialogDelegateView {
   TouchSelectionMenuViews(TouchSelectionMenuRunnerViews* owner,
                           ui::TouchSelectionMenuClient* client,
                           aura::Window* context);
+
+  TouchSelectionMenuViews(const TouchSelectionMenuViews&) = delete;
+  TouchSelectionMenuViews& operator=(const TouchSelectionMenuViews&) = delete;
 
   void ShowMenu(const gfx::Rect& anchor_rect,
                 const gfx::Size& handle_image_size);
@@ -53,6 +56,8 @@ class VIEWS_EXPORT TouchSelectionMenuViews : public BubbleDialogDelegateView {
 
   void ButtonPressed(int command, const ui::Event& event);
 
+  void EllipsisPressed(const ui::Event& event);
+
   // Helper to disconnect this menu object from its owning menu runner.
   void DisconnectOwner();
 
@@ -60,10 +65,8 @@ class VIEWS_EXPORT TouchSelectionMenuViews : public BubbleDialogDelegateView {
   void OnPaint(gfx::Canvas* canvas) override;
   void WindowClosing() override;
 
-  TouchSelectionMenuRunnerViews* owner_;
-  ui::TouchSelectionMenuClient* const client_;
-
-  DISALLOW_COPY_AND_ASSIGN(TouchSelectionMenuViews);
+  raw_ptr<TouchSelectionMenuRunnerViews> owner_;
+  const raw_ptr<ui::TouchSelectionMenuClient> client_;
 };
 
 }  // namespace views

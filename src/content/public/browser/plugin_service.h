@@ -11,15 +11,16 @@
 #include "base/callback.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "ppapi/buildflags/buildflags.h"
+
+#if !BUILDFLAG(ENABLE_PLUGINS)
+#error "Plugins should be enabled"
+#endif
 
 class GURL;
 
 namespace base {
 class FilePath;
-}
-
-namespace url {
-class Origin;
 }
 
 namespace content {
@@ -71,9 +72,7 @@ class CONTENT_EXPORT PluginService {
   // via |is_stale| and returns whether or not the plugin can be found.
   // This must be called from the UI thread.
   virtual bool GetPluginInfo(int render_process_id,
-                             int render_frame_id,
                              const GURL& url,
-                             const url::Origin& main_frame_origin,
                              const std::string& mime_type,
                              bool allow_wildcard,
                              bool* is_stale,

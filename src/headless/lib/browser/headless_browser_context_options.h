@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_browser_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -21,6 +22,11 @@ namespace headless {
 class HeadlessBrowserContextOptions {
  public:
   HeadlessBrowserContextOptions(HeadlessBrowserContextOptions&& options);
+
+  HeadlessBrowserContextOptions(const HeadlessBrowserContextOptions&) = delete;
+  HeadlessBrowserContextOptions& operator=(
+      const HeadlessBrowserContextOptions&) = delete;
+
   ~HeadlessBrowserContextOptions();
 
   HeadlessBrowserContextOptions& operator=(
@@ -57,7 +63,7 @@ class HeadlessBrowserContextOptions {
 
   explicit HeadlessBrowserContextOptions(HeadlessBrowser::Options*);
 
-  HeadlessBrowser::Options* browser_options_;
+  raw_ptr<HeadlessBrowser::Options> browser_options_;
 
   absl::optional<std::string> product_name_and_version_;
   absl::optional<std::string> accept_language_;
@@ -73,8 +79,6 @@ class HeadlessBrowserContextOptions {
       override_web_preferences_callback_;
 
   absl::optional<gfx::FontRenderParams::Hinting> font_render_hinting_;
-
-  DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserContextOptions);
 };
 
 }  // namespace headless

@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
@@ -31,6 +30,9 @@ class BrokerHost : public Channel::Delegate,
   BrokerHost(base::Process client_process,
              ConnectionParams connection_params,
              const ProcessErrorCallback& process_error_callback);
+
+  BrokerHost(const BrokerHost&) = delete;
+  BrokerHost& operator=(const BrokerHost&) = delete;
 
   // Send |handle| to the client, to be used to establish a NodeChannel to us.
   bool SendChannel(PlatformHandle handle);
@@ -63,8 +65,6 @@ class BrokerHost : public Channel::Delegate,
 #endif
 
   scoped_refptr<Channel> channel_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrokerHost);
 };
 
 }  // namespace core

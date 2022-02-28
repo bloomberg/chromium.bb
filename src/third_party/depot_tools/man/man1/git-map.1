@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: git-map
-.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 08/10/2020
+.\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/01/2021
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 8c3f7227
+.\"    Source: depot_tools 906b5026
 .\"  Language: English
 .\"
-.TH "GIT\-MAP" "1" "08/10/2020" "depot_tools 8c3f7227" "Chromium depot_tools Manual"
+.TH "GIT\-MAP" "1" "07/01/2021" "depot_tools 906b5026" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -37,7 +37,7 @@ git-map \- Display history of all branches in a colorized terminal format\&.
 .sp
 .SH "DESCRIPTION"
 .sp
-Git map formats the output of git log \-\-graph from all refs such that:
+Git map formats the output of \fBgit log \-\-graph\fR from all refs such that:
 .sp
 .RS 4
 .ie n \{\
@@ -111,7 +111,7 @@ The currently checked out commit is highlighted with a
 blue background\&.
 .RE
 .sp
-The output is automatically piped through the less pager command, even on windows\&.
+The output is automatically piped through the \fBless\fR pager command, even on windows\&.
 .SH "OPTIONS"
 .PP
 <extra_args>\&...
@@ -123,12 +123,12 @@ invocation\&. This can be used to restrict what refs
 operates on, etc\&.
 .sp
 If you run git map with a series of fixed arguments frequently, you can use the depot\-tools\&.map\-extra configuration variable to pre\-set arguments (See
-CONFIGURATION VARIABLES)
+\fBCONFIGURATION VARIABLES\fR)
 .RE
 .SH "CONFIGURATION VARIABLES"
 .SS "depot\-tools\&.map\-extra"
 .sp
-Each value of the \fIdepot\-tools\&.map\-extra\fR config variable is applied as an additional argument to git log during the execution of git map\&. If you wish to configure this, use git config \-\-add depot\-tools\&.map\-extra <value> to do so\&.
+Each value of the \fIdepot\-tools\&.map\-extra\fR config variable is applied as an additional argument to \fBgit log\fR during the execution of git map\&. If you wish to configure this, use git \fBconfig \-\-add depot\-tools\&.map\-extra <value>\fR to do so\&.
 .SH "EXAMPLE"
 .sp
 Running \fIgit map\fR would result in an output something like:
@@ -138,26 +138,26 @@ Running \fIgit map\fR would result in an output something like:
 .\}
 .nf
 \fB$ git map\fR
-* \fBd0fb9c7	\fR (HEAD \-> frozen_branch) 2014\-04\-10 ~ FREEZE\&.unindexed
-* \fBf48f415	\fR 2014\-04\-10 ~ modfile
-* \fB4c5b9c0	\fR 2014\-04\-10 ~ a deleted file
-* \fBf7ce1e4	\fR (\fBfixit\fR) 2014\-04\-10 ~ Add neat feature\fB    <(frozen_branch)\fR
-* \fB3726937	\fR 2014\-04\-10 ~ Epic README update
-| * \fB14db2e5	\fR (\fBcool_feature\fR) 2014\-04\-10 ~ Respond to CL comments
-| | * \fBee3f972	\fR (\fBsubfeature\fR) 2014\-04\-10 ~ integrate with CoolService
-| | * \fB4f9f508	\fR 2014\-04\-10 ~ slick commenting action
+* \fBd0fb9c7283\fR	\fB(HEAD \-> frozen_branch\fR\fB) \fR2014\-04\-10 ~ FREEZE\&.unindexed
+* \fBf48f415e0f\fR	2014\-04\-10 ~ modfile
+* \fB4c5b9c0afd\fR	2014\-04\-10 ~ a deleted file
+* \fBf7ce1e4b36\fR	\fB(fixit\fR\fB) \fR2014\-04\-10 ~ Add neat feature
+* \fB3726937ae6\fR	2014\-04\-10 ~ Epic README update
+| * \fB14db2e5a60\fR	\fB(cool_feature\fR\fB) \fR2014\-04\-10 ~ Respond to CL comments
+| | * \fBee3f972810\fR	\fB(subfeature\fR\fB) \fR2014\-04\-10 ~ integrate with CoolService
+| | * \fB4f9f5082c8\fR	2014\-04\-10 ~ slick commenting action
 | |/
-| * \fB7d84f85	\fR 2014\-04\-10 ~ another improvement\fB    <(subfeature)\fR
-| * \fB27abea4	\fR (\fBspleen_tag\fR) 2014\-04\-10 ~ Refactor spleen
-| * \fBd8abe73	\fR 2014\-04\-10 ~ Add widget
+| * \fB7d84f8580a\fR	2014\-04\-10 ~ another improvement    <(\fBsubfeature\fR)
+| * \fB27abea4b40\fR	\fB(spleen_tag\fR\fB) \fR2014\-04\-10 ~ Refactor spleen
+| * \fBd8abe739e3\fR	2014\-04\-10 ~ Add widget
 |/
-* \fBbeec6f4	\fR (origin/master, origin/HEAD) 2014\-04\-10 ~ Make ReflectorImpl use mailboxes\fB    <(cool_feature, fixit)\fR
-* \fB41290e0	\fR 2014\-04\-10 ~ don\*(Aqt use glibc\-specific execinfo\&.h on uclibc builds
-* \fBa76fde7	\fR 2014\-04\-10 ~ [fsp] Add requestUnmount() method together with the request manager\&.
-* \fB9de7a71	\fR 2014\-04\-10 ~ linux_aura: Use system configuration for middle clicking the titlebar\&.
-* \fB073b0c2	\fR 2014\-04\-10 ~ ContentView\->ContentViewCore in ContentViewRenderView
-* \fB2250f53	\fR 2014\-04\-10 ~ ozone: evdev: Filter devices by path
-* \fB33a7a74	\fR 2014\-04\-10 ~ Always output seccomp error messages to stderr
+* \fBbeec6f4746\fR	\fB(origin/main\fR\fB, origin/HEAD\fR\fB) \fR2014\-04\-10 ~ Make ReflectorImpl use mailboxes    <(\fBfixit, cool_feature\fR)
+* \fB41290e02b7\fR	2014\-04\-10 ~ don\*(Aqt use glibc\-specific execinfo\&.h on uclibc builds
+* \fBa76fde7b7b\fR	2014\-04\-10 ~ [fsp] Add requestUnmount() method together with the request manager\&.
+* \fB9de7a713b3\fR	2014\-04\-10 ~ linux_aura: Use system configuration for middle clicking the titlebar\&.
+* \fB073b0c203a\fR	2014\-04\-10 ~ ContentView\->ContentViewCore in ContentViewRenderView
+* \fB2250f532d7\fR	2014\-04\-10 ~ ozone: evdev: Filter devices by path
+* \fB33a7a742b7\fR	2014\-04\-10 ~ Always output seccomp error messages to stderr
 .fi
 .if n \{\
 .RE

@@ -7,7 +7,6 @@
 
 #include <type_traits>
 
-#include "include/v8.h"
 #include "src/base/functional.h"
 #include "src/base/macros.h"
 #include "src/common/checks.h"
@@ -15,6 +14,9 @@
 #include "src/zone/zone.h"
 
 namespace v8 {
+
+class HandleScope;
+
 namespace internal {
 
 // Forward declarations.
@@ -128,7 +130,6 @@ class Handle final : public HandleBase {
   // Ex. Handle<JSFunction> can be passed when Handle<Object> is expected.
   template <typename S, typename = typename std::enable_if<
                             std::is_convertible<S*, T*>::value>::type>
-  // NOLINTNEXTLINE
   V8_INLINE Handle(Handle<S> handle) : HandleBase(handle) {}
 
   V8_INLINE ObjectRef operator->() const { return ObjectRef{**this}; }
@@ -198,7 +199,7 @@ inline std::ostream& operator<<(std::ostream& os, Handle<T> handle);
 // for which the handle scope has been deleted is undefined.
 class V8_NODISCARD HandleScope {
  public:
-  explicit inline HandleScope(Isolate* isolate);
+  explicit V8_INLINE HandleScope(Isolate* isolate);
   inline HandleScope(HandleScope&& other) V8_NOEXCEPT;
   HandleScope(const HandleScope&) = delete;
   HandleScope& operator=(const HandleScope&) = delete;
@@ -212,7 +213,7 @@ class V8_NODISCARD HandleScope {
   void* operator new(size_t size) = delete;
   void operator delete(void* size_t) = delete;
 
-  inline ~HandleScope();
+  V8_INLINE ~HandleScope();
 
   inline HandleScope& operator=(HandleScope&& other) V8_NOEXCEPT;
 
@@ -252,8 +253,8 @@ class V8_NODISCARD HandleScope {
   Address* prev_limit_;
 
   // Close the handle scope resetting limits to a previous state.
-  static inline void CloseScope(Isolate* isolate, Address* prev_next,
-                                Address* prev_limit);
+  static V8_INLINE void CloseScope(Isolate* isolate, Address* prev_next,
+                                   Address* prev_limit);
 
   // Extend the handle scope making room for more handles.
   V8_EXPORT_PRIVATE static Address* Extend(Isolate* isolate);

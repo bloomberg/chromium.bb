@@ -11,11 +11,14 @@
 #include <set>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/mojom/storage_usage_info.mojom.h"
-#include "url/origin.h"
+
+namespace blink {
+class StorageKey;
+}
 
 namespace content {
 class StoragePartition;
@@ -38,17 +41,20 @@ class IndexedDBHelper : public base::RefCountedThreadSafe<IndexedDBHelper> {
   // stored in |context|'s associated profile's user data directory.
   explicit IndexedDBHelper(content::StoragePartition* storage_partition);
 
+  IndexedDBHelper(const IndexedDBHelper&) = delete;
+  IndexedDBHelper& operator=(const IndexedDBHelper&) = delete;
+
   // Starts the fetching process, which will notify its completion via
   // |callback|. This must be called only on the UI thread.
   virtual void StartFetching(FetchCallback callback);
   // Requests a single indexed database to be deleted in the IndexedDB thread.
-  virtual void DeleteIndexedDB(const url::Origin& origin,
+  virtual void DeleteIndexedDB(const blink::StorageKey& storage_key,
                                base::OnceCallback<void(bool)> callback);
 
  protected:
   virtual ~IndexedDBHelper();
 
-  content::StoragePartition* storage_partition_;
+  raw_ptr<content::StoragePartition> storage_partition_;
 
  private:
   friend class base::RefCountedThreadSafe<IndexedDBHelper>;
@@ -57,8 +63,6 @@ class IndexedDBHelper : public base::RefCountedThreadSafe<IndexedDBHelper> {
   void IndexedDBUsageInfoReceived(
       FetchCallback callback,
       std::vector<storage::mojom::StorageUsageInfoPtr> origins);
-
-  DISALLOW_COPY_AND_ASSIGN(IndexedDBHelper);
 };
 
 // This class is an implementation of IndexedDBHelper that does
@@ -68,9 +72,12 @@ class CannedIndexedDBHelper : public IndexedDBHelper {
  public:
   explicit CannedIndexedDBHelper(content::StoragePartition* storage_partition);
 
+  CannedIndexedDBHelper(const CannedIndexedDBHelper&) = delete;
+  CannedIndexedDBHelper& operator=(const CannedIndexedDBHelper&) = delete;
+
   // Add a indexed database to the set of canned indexed databases that is
   // returned by this helper.
-  void Add(const url::Origin& origin);
+  void Add(const blink::StorageKey& storage_key);
 
   // Clear the list of canned indexed databases.
   void Reset();
@@ -82,19 +89,17 @@ class CannedIndexedDBHelper : public IndexedDBHelper {
   size_t GetCount() const;
 
   // Returns the current list of indexed data bases.
-  const std::set<url::Origin>& GetOrigins() const;
+  const std::set<blink::StorageKey>& GetStorageKeys() const;
 
   // IndexedDBHelper methods.
   void StartFetching(FetchCallback callback) override;
-  void DeleteIndexedDB(const url::Origin& origin,
+  void DeleteIndexedDB(const blink::StorageKey& storage_key,
                        base::OnceCallback<void(bool)> callback) override;
 
  private:
   ~CannedIndexedDBHelper() override;
 
-  std::set<url::Origin> pending_origins_;
-
-  DISALLOW_COPY_AND_ASSIGN(CannedIndexedDBHelper);
+  std::set<blink::StorageKey> pending_storage_keys_;
 };
 
 }  // namespace browsing_data

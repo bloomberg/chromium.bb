@@ -14,10 +14,6 @@
 # ==============================================================================
 
 """Generate __all__ from a module docstring."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import re as _re
 import sys as _sys
 
@@ -93,7 +89,7 @@ def remove_undocumented(module_name, allowed_exception_list=None,
     doc_string_modules: a list of modules from which to take the docstrings.
     If None, then a list containing only the module named `module_name` is used.
 
-    Furthermore, if a symbol previously added with `add_to_global_whitelist`,
+    Furthermore, if a symbol previously added with `add_to_global_allowlist`,
     then it will always be allowed. This is useful for internal tests.
 
   Returns:

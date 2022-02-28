@@ -7,8 +7,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -145,8 +145,7 @@ class VpnProviderApiTest : public extensions::ExtensionApiTest {
 
   bool RunTest(const std::string& test_name) {
     GURL url = extension_->GetResourceURL("basic.html?#" + test_name);
-    return RunExtensionTest(
-        {.name = "vpn_provider", .page_url = url.spec().c_str()});
+    return RunExtensionTest("vpn_provider", {.page_url = url.spec().c_str()});
   }
 
   std::string GetKey(const std::string& config_name) {

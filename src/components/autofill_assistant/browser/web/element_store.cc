@@ -4,7 +4,6 @@
 
 #include "components/autofill_assistant/browser/web/element_store.h"
 
-#include "base/containers/flat_map.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/web/element.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
@@ -32,15 +31,20 @@ ClientStatus ElementStore::GetElement(
     return ClientStatus(CLIENT_ID_RESOLUTION_FAILED);
   }
 
-  out_element->dom_object = it->second;
-  auto* frame = FindCorrespondingRenderFrameHost(out_element->node_frame_id(),
-                                                 web_contents_);
+  return RestoreElement(it->second, out_element);
+}
+
+ClientStatus ElementStore::RestoreElement(
+    const DomObjectFrameStack& object,
+    ElementFinder::Result* out_element) const {
+  out_element->dom_object = object;
+  auto* frame = FindCorrespondingRenderFrameHost(
+      object.object_data.node_frame_id, web_contents_);
   if (frame == nullptr) {
     VLOG(1) << __func__ << " failed to resolve frame.";
     return ClientStatus(CLIENT_ID_RESOLUTION_FAILED);
   }
   out_element->container_frame_host = frame;
-
   return OkClientStatus();
 }
 

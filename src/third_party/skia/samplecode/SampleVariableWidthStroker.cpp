@@ -52,7 +52,7 @@ constexpr uint64_t choose(uint64_t n, uint64_t k) {
  */
 class ScalarBezCurve {
 public:
-    static constexpr int kDegreeInvalid = -1;
+    inline static constexpr int kDegreeInvalid = -1;
 
     /** Creates an empty curve with invalid degree. */
     ScalarBezCurve() : fDegree(kDegreeInvalid) {}
@@ -463,7 +463,7 @@ private:
      * TODO: no reason this needs to return a vector of quads, can just append to the path
      */
     std::vector<PathSegment> strokeSegment(const PathSegment& seg,
-                                           const ScalarBezCurve& distFnc) const;
+                                           const ScalarBezCurve& distanceFunc) const;
 
     /** Adds an endcap to fOuter */
     enum class CapLocation { Start, End };
@@ -636,7 +636,7 @@ SkVarWidthStroker::OffsetSegments SkVarWidthStroker::strokeSegment(
 }
 
 std::vector<SkVarWidthStroker::PathSegment> SkVarWidthStroker::strokeSegment(
-        const PathSegment& seg, const ScalarBezCurve& distFnc) const {
+        const PathSegment& seg, const ScalarBezCurve& distanceFunc) const {
     // Work item for the recursive splitting stack.
     struct Item {
         PathSegment fSeg;
@@ -659,7 +659,7 @@ std::vector<SkVarWidthStroker::PathSegment> SkVarWidthStroker::strokeSegment(
 
     // Push the initial segment and distance function
     std::stack<Item> stack;
-    stack.push(Item(seg, distFnc, ScalarBezCurve::Mul(distFnc, distFnc)));
+    stack.push(Item(seg, distanceFunc, ScalarBezCurve::Mul(distanceFunc, distanceFunc)));
 
     std::vector<PathSegment> result;
     constexpr int kMaxIters = 5000; /** TODO: this is completely arbitrary */
@@ -1374,7 +1374,7 @@ private:
     float fWidth = 175;
     SkPaint fPtsPaint, fStrokePaint, fNewFillPaint, fHiddenPaint, fSkeletonPaint,
             fStrokePointsPaint;
-    static constexpr int kNPts = 5;
+    inline static constexpr int kNPts = 5;
     std::array<SkPoint, kNPts> fPathPts;
     SkSize fWinSize;
     SkVarWidthStroker::LengthMetric fLengthMetric;

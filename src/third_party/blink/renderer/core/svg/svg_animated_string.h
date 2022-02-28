@@ -34,11 +34,10 @@
 #include "third_party/blink/renderer/core/svg/properties/svg_animated_property.h"
 #include "third_party/blink/renderer/core/svg/svg_string.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
-class StringOrTrustedScriptURL;
 class V8UnionStringOrTrustedScriptURL;
 
 class SVGAnimatedString : public ScriptWrappable,
@@ -52,14 +51,9 @@ class SVGAnimatedString : public ScriptWrappable,
                                        attribute_name,
                                        MakeGarbageCollected<SVGString>()) {}
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   virtual V8UnionStringOrTrustedScriptURL* baseVal();
   virtual void setBaseVal(const V8UnionStringOrTrustedScriptURL* value,
                           ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  virtual void setBaseVal(const StringOrTrustedScriptURL&, ExceptionState&);
-  virtual void baseVal(StringOrTrustedScriptURL&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   virtual String animVal();
 

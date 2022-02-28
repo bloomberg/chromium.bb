@@ -143,9 +143,6 @@ const char kSettingPolicies[] = "policies";
 // Whether the source page content is from ARC or not.
 const char kSettingPreviewIsFromArc[] = "previewIsFromArc";
 
-// Whether the source page content is PDF or not.
-const char kSettingPreviewIsPdf[] = "previewIsPdf";
-
 // Whether the source page content is modifiable. True for web content.
 // i.e. Anything from Blink. False for everything else. e.g. PDF/Flash.
 const char kSettingPreviewModifiable[] = "previewModifiable";
@@ -183,6 +180,9 @@ const char kSettingPagesPerSheet[] = "pagesPerSheet";
 // Whether to rasterize the PDF for printing.
 const char kSettingRasterizePdf[] = "rasterizePDF";
 
+// The DPI override to use when rasterize the PDF for printing.
+const char kSettingRasterizePdfDpi[] = "rasterizePdfDpi";
+
 // Ticket option. Contains the ticket in CJT format.
 const char kSettingTicket[] = "ticket";
 
@@ -209,7 +209,7 @@ const int FIRST_PAGE_INDEX = 0;
 const int COMPLETE_PREVIEW_DOCUMENT_INDEX = -1;
 
 // Whether to show PDF in view provided by OS. Implemented for MacOS only.
-const char kSettingOpenPDFInPreview[] = "OpenPDFInPreview";
+const char kSettingOpenPDFInPreview[] = "openPDFInPreview";
 
 const uint32_t kInvalidPageIndex = std::numeric_limits<int>::max();
 const uint32_t kMaxPageCount = std::numeric_limits<int>::max();

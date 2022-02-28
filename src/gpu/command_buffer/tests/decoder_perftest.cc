@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/process/process.h"
 #include "base/threading/platform_thread.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -372,6 +373,9 @@ class PerfIterator {
     }
   }
 
+  PerfIterator(const PerfIterator&) = delete;
+  PerfIterator& operator=(const PerfIterator&) = delete;
+
   bool Iterate() {
     if (--current_iterations_ > 0)
       return true;
@@ -384,7 +388,7 @@ class PerfIterator {
     if (warmup_) {
       warmup_ = false;
       if (for_linux_perf_)
-        base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
+        base::PlatformThread::Sleep(base::Seconds(1));
       else
         time = base::TimeTicks::Now();
     } else if (!for_linux_perf_) {
@@ -414,8 +418,6 @@ class PerfIterator {
   int current_iterations_ = 1 + kWarmupIterations;
   bool warmup_ = true;
   bool for_linux_perf_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(PerfIterator);
 };
 
 class DecoderPerfTest : public testing::Test {
@@ -505,7 +507,7 @@ class DecoderPerfTest : public testing::Test {
 
  protected:
   std::unique_ptr<RecordReplayContext> context_;
-  gles2::GLES2Implementation* gl_;
+  raw_ptr<gles2::GLES2Implementation> gl_;
   GLuint renderbuffer_ = 0;
   GLuint framebuffer_ = 0;
 };

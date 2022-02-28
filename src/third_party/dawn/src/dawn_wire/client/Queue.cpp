@@ -24,16 +24,10 @@ namespace dawn_wire { namespace client {
     }
 
     bool Queue::OnWorkDoneCallback(uint64_t requestSerial, WGPUQueueWorkDoneStatus status) {
-        auto requestIt = mOnWorkDoneRequests.find(requestSerial);
-        if (requestIt == mOnWorkDoneRequests.end()) {
+        OnWorkDoneData request;
+        if (!mOnWorkDoneRequests.Acquire(requestSerial, &request)) {
             return false;
         }
-
-        // Remove the request data so that the callback cannot be called again.
-        // ex.) inside the callback: if the queue is deleted (when there are multiple queues),
-        // all callbacks reject.
-        OnWorkDoneData request = std::move(requestIt->second);
-        mOnWorkDoneRequests.erase(requestIt);
 
         request.callback(status, request.userdata);
         return true;
@@ -47,31 +41,14 @@ namespace dawn_wire { namespace client {
             return;
         }
 
-        uint32_t serial = mOnWorkDoneSerial++;
-        ASSERT(mOnWorkDoneRequests.find(serial) == mOnWorkDoneRequests.end());
+        uint64_t serial = mOnWorkDoneRequests.Add({callback, userdata});
 
         QueueOnSubmittedWorkDoneCmd cmd;
         cmd.queueId = this->id;
         cmd.signalValue = signalValue;
         cmd.requestSerial = serial;
 
-        mOnWorkDoneRequests[serial] = {callback, userdata};
-
         client->SerializeCommand(cmd);
-    }
-
-    WGPUFence Queue::CreateFence(WGPUFenceDescriptor const* descriptor) {
-        auto* allocation = client->FenceAllocator().New(client);
-
-        QueueCreateFenceCmd cmd;
-        cmd.self = ToAPI(this);
-        cmd.result = ObjectHandle{allocation->object->id, allocation->generation};
-        cmd.descriptor = descriptor;
-        client->SerializeCommand(cmd);
-
-        Fence* fence = allocation->object.get();
-        fence->Initialize(descriptor);
-        return ToAPI(fence);
     }
 
     void Queue::WriteBuffer(WGPUBuffer cBuffer,
@@ -80,7 +57,7 @@ namespace dawn_wire { namespace client {
                             size_t size) {
         Buffer* buffer = FromAPI(cBuffer);
 
-        QueueWriteBufferInternalCmd cmd;
+        QueueWriteBufferCmd cmd;
         cmd.queueId = id;
         cmd.bufferId = buffer->id;
         cmd.bufferOffset = bufferOffset;
@@ -95,7 +72,7 @@ namespace dawn_wire { namespace client {
                              size_t dataSize,
                              const WGPUTextureDataLayout* dataLayout,
                              const WGPUExtent3D* writeSize) {
-        QueueWriteTextureInternalCmd cmd;
+        QueueWriteTextureCmd cmd;
         cmd.queueId = id;
         cmd.destination = destination;
         cmd.data = static_cast<const uint8_t*>(data);
@@ -111,12 +88,11 @@ namespace dawn_wire { namespace client {
     }
 
     void Queue::ClearAllCallbacks(WGPUQueueWorkDoneStatus status) {
-        for (auto& it : mOnWorkDoneRequests) {
-            if (it.second.callback) {
-                it.second.callback(status, it.second.userdata);
+        mOnWorkDoneRequests.CloseAll([status](OnWorkDoneData* request) {
+            if (request->callback != nullptr) {
+                request->callback(status, request->userdata);
             }
-        }
-        mOnWorkDoneRequests.clear();
+        });
     }
 
 }}  // namespace dawn_wire::client

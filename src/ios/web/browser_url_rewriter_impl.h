@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "ios/web/public/navigation/browser_url_rewriter.h"
 
@@ -22,6 +21,9 @@ class BrowserURLRewriterImpl : public BrowserURLRewriter {
   // Returns the singleton instance.
   static BrowserURLRewriterImpl* GetInstance();
 
+  BrowserURLRewriterImpl(const BrowserURLRewriterImpl&) = delete;
+  BrowserURLRewriterImpl& operator=(const BrowserURLRewriterImpl&) = delete;
+
   // BrowserURLRewriter implementation:
   bool RewriteURLIfNecessary(GURL* url, BrowserState* browser_state) override;
   void AddURLRewriter(URLRewriter rewriter) override;
@@ -34,8 +36,6 @@ class BrowserURLRewriterImpl : public BrowserURLRewriter {
 
   // The list of known URLRewriters.
   std::vector<URLRewriter> url_rewriters_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserURLRewriterImpl);
 };
 
 }  // namespace web

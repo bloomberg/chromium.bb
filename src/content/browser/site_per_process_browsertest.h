@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/content_browser_test.h"
@@ -22,6 +21,10 @@ class FrameTreeNode;
 class SitePerProcessBrowserTestBase : public ContentBrowserTest {
  public:
   SitePerProcessBrowserTestBase();
+
+  SitePerProcessBrowserTestBase(const SitePerProcessBrowserTestBase&) = delete;
+  SitePerProcessBrowserTestBase& operator=(
+      const SitePerProcessBrowserTestBase&) = delete;
 
  protected:
   std::string DepictFrameTree(FrameTreeNode* node);
@@ -42,8 +45,6 @@ class SitePerProcessBrowserTestBase : public ContentBrowserTest {
  private:
   FrameTreeVisualizer visualizer_;
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(SitePerProcessBrowserTestBase);
 };
 
 class SitePerProcessBrowserTest
@@ -52,12 +53,14 @@ class SitePerProcessBrowserTest
  public:
   SitePerProcessBrowserTest();
 
+  SitePerProcessBrowserTest(const SitePerProcessBrowserTest&) = delete;
+  SitePerProcessBrowserTest& operator=(const SitePerProcessBrowserTest&) =
+      delete;
+
   std::string GetExpectedOrigin(const std::string& host);
 
  private:
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(SitePerProcessBrowserTest);
 };
 
 }  // namespace content

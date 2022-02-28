@@ -5,6 +5,8 @@ from __future__ import absolute_import
 import logging
 import sys
 
+import six
+
 
 class Error(Exception):
   """Base class for Telemetry exceptions."""
@@ -55,7 +57,6 @@ class TimeoutException(Error):
   It is possible that waiting for a longer period of time would result in a
   successful operation.
   """
-  pass
 
 
 class AppCrashException(Error):
@@ -71,10 +72,17 @@ class AppCrashException(Error):
     if app:
       debug_data = app.CollectDebugData(logging.ERROR)
       self._system_log = debug_data.system_log or self._system_log
-      self._app_stdout = debug_data.stdout.splitlines()
+      if not isinstance(self._system_log, six.string_types):
+        # pylint:disable=redefined-variable-type
+        self._system_log = self._system_log.decode('utf-8')
+      self._app_stdout = debug_data.stdout
+      if not isinstance(self._app_stdout, six.string_types):
+        self._app_stdout = self._app_stdout.decode('utf-8')
+      self._app_stdout = self._app_stdout.splitlines()
       self._is_valid_dump = bool(debug_data.symbolized_minidumps)
       self._stack_trace = '\n'.join(
           debug_data.symbolized_minidumps).splitlines()
+
 
   @property
   def stack_trace(self):

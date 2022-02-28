@@ -25,7 +25,7 @@
 #include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
-#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
@@ -287,6 +287,8 @@ downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
     case download::DownloadItem::IN_PROGRESS: {
       if (download_item->IsDangerous()) {
         state = "DANGEROUS";
+      } else if (download_item->ShouldShowIncognitoWarning()) {
+        state = "INCOGNITO_WARNING";
       } else if (download_item->IsMixedContent()) {
         state = "MIXED_CONTENT";
       } else if (download_item->GetDangerType() ==
@@ -309,11 +311,11 @@ downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
       if (download_item->CanResume())
         percent = download_item->PercentComplete();
 
-      // TODO(asanka): last_reason_text should be set via
-      // download_model.GetInterruptReasonText(). But we are using
+      // TODO(https://crbug.com/609255): GetHistoryPageStatusText() is using
       // GetStatusText() as a temporary measure until the layout is fixed to
-      // accommodate the longer string. http://crbug.com/609255
-      last_reason_text = download_model.GetStatusText();
+      // accommodate the longer string. Should update it to simply use
+      // GetInterruptDescription().
+      last_reason_text = download_model.GetHistoryPageStatusText();
       if (download::DOWNLOAD_INTERRUPT_REASON_CRASH ==
               download_item->GetLastReason() &&
           !download_item->CanResume()) {
@@ -340,9 +342,13 @@ downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
   file_value->danger_type = danger_type;
   file_value->is_dangerous = download_item->IsDangerous();
   file_value->is_mixed_content = download_item->IsMixedContent();
+  file_value->should_show_incognito_warning =
+      download_item->ShouldShowIncognitoWarning();
   file_value->last_reason_text = base::UTF16ToUTF8(last_reason_text);
   file_value->percent = percent;
   file_value->progress_status_text = base::UTF16ToUTF8(progress_status_text);
+  file_value->show_in_folder_text =
+      base::UTF16ToUTF8(download_model.GetShowInFolderText());
   file_value->retry = retry;
   file_value->state = state;
 
