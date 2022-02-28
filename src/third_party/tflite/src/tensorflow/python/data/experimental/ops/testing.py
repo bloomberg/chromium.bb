@@ -13,20 +13,18 @@
 # limitations under the License.
 # ==============================================================================
 """Experimental API for testing of tf.data."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.data.ops import dataset_ops
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import gen_experimental_dataset_ops
 
 
-# TODO(jsimsa): Support RE matching for both individual transformation (e.g. to
-# account for indexing) and transformation sequence.
 def assert_next(transformations):
   """A transformation that asserts which transformations happen next.
+
+  Transformations should be referred to by their base name, not including
+  version suffix. For example, use "Batch" instead of "BatchV2". "Batch" will
+  match any of "Batch", "BatchV1", "BatchV2", etc.
 
   Args:
     transformations: A `tf.string` vector `tf.Tensor` identifying the
@@ -84,7 +82,9 @@ class _AssertNextDataset(dataset_ops.UnaryUnchangedStructureDataset):
     """See `assert_next()` for details."""
     self._input_dataset = input_dataset
     if transformations is None:
-      raise ValueError("At least one transformation should be specified")
+      raise ValueError(
+          "Invalid `transformations`. `transformations` should not be empty.")
+
     self._transformations = ops.convert_to_tensor(
         transformations, dtype=dtypes.string, name="transformations")
     variant_tensor = (
@@ -119,5 +119,3 @@ class _SleepDataset(dataset_ops.UnaryUnchangedStructureDataset):
         self._sleep_microseconds,
         **self._flat_structure)
     super(_SleepDataset, self).__init__(input_dataset, variant_tensor)
-
-

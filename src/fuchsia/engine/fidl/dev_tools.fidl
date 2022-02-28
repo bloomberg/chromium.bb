@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(crbug.com/1227712): Migrate syntax and remove this.
 library chromium.internal;
 
 using fuchsia.web;
 
-[Discoverable]
+@discoverable
 protocol DevToolsConnector {
-  /// Connects the supplied listener to receive notifications for this instance.
-  ConnectPerContextListener(fuchsia.web.DevToolsPerContextListener listener);
+    /// Connects the supplied listener to receive notifications for this instance.
+    ConnectPerContextListener(resource struct {
+        listener client_end:fuchsia.web.DevToolsPerContextListener;
+    });
 };

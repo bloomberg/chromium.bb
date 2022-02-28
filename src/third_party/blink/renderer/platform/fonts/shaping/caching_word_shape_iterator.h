@@ -57,8 +57,10 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
 
     // SVG sets SpacingDisabled because it handles spacing by themselves.
     if (!run.SpacingDisabled())
-      spacing_.SetSpacingAndExpansion(*font);
+      spacing_.SetSpacingAndExpansion(font->GetFontDescription());
   }
+  CachingWordShapeIterator(const CachingWordShapeIterator&) = delete;
+  CachingWordShapeIterator& operator=(const CachingWordShapeIterator&) = delete;
 
   bool Next(scoped_refptr<const ShapeResult>* word_result) {
     if (UNLIKELY(text_run_.AllowTabs()))
@@ -204,8 +206,6 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
   float width_so_far_;  // Used only when allowTabs()
   unsigned start_index_ : 31;
   unsigned shape_by_word_ : 1;
-
-  DISALLOW_COPY_AND_ASSIGN(CachingWordShapeIterator);
 };
 
 }  // namespace blink

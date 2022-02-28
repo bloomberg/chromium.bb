@@ -346,7 +346,7 @@ class BindingAcceleratioStructureTestInstance : public TestInstance
 public:
 																	BindingAcceleratioStructureTestInstance		(Context&			context,
 																												 const TestParams&	testParams);
-	virtual															~BindingAcceleratioStructureTestInstance	() {};
+	virtual															~BindingAcceleratioStructureTestInstance	() {}
 	virtual tcu::TestStatus											iterate										(void);
 
 protected:
@@ -724,7 +724,7 @@ public:
 
 										BindingAcceleratioStructureGraphicsTestInstance		(Context&			context,
 																							 const TestParams&	testParams);
-	virtual								~BindingAcceleratioStructureGraphicsTestInstance	() {};
+	virtual								~BindingAcceleratioStructureGraphicsTestInstance	() {}
 
 protected:
 	virtual void						initPipeline										(void) override;
@@ -733,9 +733,9 @@ protected:
 	void								initVertexBuffer									(void);
 	Move<VkPipeline>					makeGraphicsPipeline								(void);
 
-	virtual deUint32					getExtraAccelerationDescriptorCount					(void) override									{ return 0; };
+	virtual deUint32					getExtraAccelerationDescriptorCount					(void) override									{ return 0; }
 	virtual VkShaderStageFlags			getShaderStageFlags									(void) override									{ return VK_SHADER_STAGE_ALL_GRAPHICS; }
-	virtual VkPipelineBindPoint			getPipelineBindPoint								(void) override									{ return VK_PIPELINE_BIND_POINT_GRAPHICS; };
+	virtual VkPipelineBindPoint			getPipelineBindPoint								(void) override									{ return VK_PIPELINE_BIND_POINT_GRAPHICS; }
 
 	VkFormat							m_framebufferFormat;
 	Move<VkImage>						m_framebufferImage;
@@ -781,29 +781,27 @@ void BindingAcceleratioStructureGraphicsTestInstance::checkSupport (Context&			c
 {
 	switch (testParams.stage)
 	{
-		case VK_SHADER_STAGE_VERTEX_BIT:
-			break;
+	case VK_SHADER_STAGE_VERTEX_BIT:
+	case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT:
+	case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT:
+	case VK_SHADER_STAGE_GEOMETRY_BIT:
+		context.requireDeviceCoreFeature(DEVICE_CORE_FEATURE_VERTEX_PIPELINE_STORES_AND_ATOMICS);
+		break;
+	default:
+		break;
+	}
 
-		case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT:
-		case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT:
-		{
-			context.requireDeviceCoreFeature(DEVICE_CORE_FEATURE_TESSELLATION_SHADER);
-
-			break;
-		}
-
-		case VK_SHADER_STAGE_GEOMETRY_BIT:
-		{
-			context.requireDeviceCoreFeature(DEVICE_CORE_FEATURE_GEOMETRY_SHADER);
-
-			break;
-		}
-
-		case VK_SHADER_STAGE_FRAGMENT_BIT:
-			break;
-
-		default:
-			TCU_THROW(InternalError, "Unknown stage");
+	switch (testParams.stage)
+	{
+	case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT:
+	case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT:
+		context.requireDeviceCoreFeature(DEVICE_CORE_FEATURE_TESSELLATION_SHADER);
+		break;
+	case VK_SHADER_STAGE_GEOMETRY_BIT:
+		context.requireDeviceCoreFeature(DEVICE_CORE_FEATURE_GEOMETRY_SHADER);
+		break;
+	default:
+		break;
 	}
 }
 
@@ -1258,7 +1256,7 @@ public:
 									BindingAcceleratioStructureComputeTestInstance	(Context&			context,
 																					 const TestParams&	testParams);
 
-	virtual							~BindingAcceleratioStructureComputeTestInstance	() {};
+	virtual							~BindingAcceleratioStructureComputeTestInstance	() {}
 
 	static void						checkSupport									(Context&			context,
 																					 const TestParams&	testParams);
@@ -1269,9 +1267,9 @@ protected:
 	virtual void					initPipeline									(void) override;
 	virtual void					fillCommandBuffer								(VkCommandBuffer	commandBuffer) override;
 
-	virtual deUint32				getExtraAccelerationDescriptorCount				(void) override									{ return 0; };
+	virtual deUint32				getExtraAccelerationDescriptorCount				(void) override									{ return 0; }
 	virtual VkShaderStageFlags		getShaderStageFlags								(void) override									{ return VK_SHADER_STAGE_COMPUTE_BIT; }
-	virtual VkPipelineBindPoint		getPipelineBindPoint							(void) override									{ return VK_PIPELINE_BIND_POINT_COMPUTE; };
+	virtual VkPipelineBindPoint		getPipelineBindPoint							(void) override									{ return VK_PIPELINE_BIND_POINT_COMPUTE; }
 
 	Move<VkShaderModule>			m_shaderModule;
 };
@@ -1351,7 +1349,7 @@ class BindingAcceleratioStructureRayTracingTestInstance : public BindingAccelera
 public:
 													BindingAcceleratioStructureRayTracingTestInstance	(Context&							context,
 																										 const TestParams&					testParams);
-	virtual											~BindingAcceleratioStructureRayTracingTestInstance	() {};
+	virtual											~BindingAcceleratioStructureRayTracingTestInstance	() {}
 
 	static void										checkSupport										(Context&							context,
 																										 const TestParams&					testParams);
@@ -1371,9 +1369,9 @@ protected:
 																										 de::MovePtr<RayTracingPipeline>&	rayTracingPipeline,
 																										 const deUint32						group);
 
-	virtual deUint32								getExtraAccelerationDescriptorCount					(void) override													{ return 1; };
+	virtual deUint32								getExtraAccelerationDescriptorCount					(void) override													{ return 1; }
 	virtual VkShaderStageFlags						getShaderStageFlags									(void) override													{ return ALL_RAY_TRACING_STAGES; }
-	virtual VkPipelineBindPoint						getPipelineBindPoint								(void) override													{ return VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR; };
+	virtual VkPipelineBindPoint						getPipelineBindPoint								(void) override													{ return VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR; }
 
 	deUint32										m_shaders;
 	deUint32										m_raygenShaderGroup;
@@ -1793,7 +1791,7 @@ class BindingAcceleratioStructureRayTracingRayTracingTestInstance : public Bindi
 public:
 													BindingAcceleratioStructureRayTracingRayTracingTestInstance		(Context&							context,
 																													 const TestParams&					testParams);
-	virtual											~BindingAcceleratioStructureRayTracingRayTracingTestInstance	() {};
+	virtual											~BindingAcceleratioStructureRayTracingRayTracingTestInstance	() {}
 
 	static void										checkSupport													(Context&							context,
 																													 const TestParams&					testParams);
@@ -1822,9 +1820,9 @@ protected:
 																													 const deUint32						group,
 																													 const deUint32						groupCount = 1);
 
-	virtual deUint32								getExtraAccelerationDescriptorCount								(void) override													{ return 1; };
+	virtual deUint32								getExtraAccelerationDescriptorCount								(void) override													{ return 1; }
 	virtual VkShaderStageFlags						getShaderStageFlags												(void) override													{ return ALL_RAY_TRACING_STAGES; }
-	virtual VkPipelineBindPoint						getPipelineBindPoint											(void) override													{ return VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR; };
+	virtual VkPipelineBindPoint						getPipelineBindPoint											(void) override													{ return VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR; }
 
 	deUint32										m_shaders;
 	deUint32										m_raygenShaderGroup;
@@ -2103,6 +2101,10 @@ void BindingAcceleratioStructureRayTracingRayTracingTestInstance::initPipeline (
 	if (0 != (m_shaders & VK_SHADER_STAGE_ANY_HIT_BIT_KHR))			m_rayTracingPipeline->addShader(VK_SHADER_STAGE_ANY_HIT_BIT_KHR			, createShaderModule(vkd, device, collection.get("ahit"), 0), m_hitShaderGroup);
 	if (0 != (m_shaders & VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR))		m_rayTracingPipeline->addShader(VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR		, createShaderModule(vkd, device, collection.get("chit"), 0), m_hitShaderGroup);
 	if (0 != (m_shaders & VK_SHADER_STAGE_MISS_BIT_KHR))			m_rayTracingPipeline->addShader(VK_SHADER_STAGE_MISS_BIT_KHR			, createShaderModule(vkd, device, collection.get("miss"), 0), m_missShaderGroup);
+
+	// The "chit" and "miss" cases both generate more rays from their shaders.
+	if (m_testParams.testType == TEST_TYPE_USING_RAY_TRACING && (m_testParams.stage == VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR || m_testParams.stage == VK_SHADER_STAGE_MISS_BIT_KHR))
+		m_rayTracingPipeline->setMaxRecursionDepth(2u);
 
 	if (0 != (shaders0 & VK_SHADER_STAGE_ANY_HIT_BIT_KHR))			m_rayTracingPipeline->addShader(VK_SHADER_STAGE_ANY_HIT_BIT_KHR			, createShaderModule(vkd, device, collection.get("ahit0"), 0), m_hitShaderGroup + 1);
 	if (0 != (shaders0 & VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR))		m_rayTracingPipeline->addShader(VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR		, createShaderModule(vkd, device, collection.get("chit0"), 0), m_hitShaderGroup + 1);
@@ -2449,8 +2451,8 @@ static inline ShaderBodyTextFunc getShaderBodyTextFunc (const TestType testType)
 {
 	switch (testType)
 	{
-		case TEST_TYPE_USING_RAY_QUERY:		return getRayQueryShaderBodyText;	break;
-		case TEST_TYPE_USING_RAY_TRACING:	return getRayTracingShaderBodyText;	break;
+		case TEST_TYPE_USING_RAY_QUERY:		return getRayQueryShaderBodyText;
+		case TEST_TYPE_USING_RAY_TRACING:	return getRayTracingShaderBodyText;
 		default:							TCU_THROW(InternalError, "Unknown test type");
 	}
 }

@@ -14,7 +14,6 @@
 #include "base/component_export.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
 namespace device {
@@ -49,6 +48,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO)
   // keychain-access-groups entitlement that matches the one set in |config|.
   static void TouchIdAvailable(AuthenticatorConfig config,
                                base::OnceCallback<void(bool is_available)>);
+
+  TouchIdContext(const TouchIdContext&) = delete;
+  TouchIdContext& operator=(const TouchIdContext&) = delete;
 
   virtual ~TouchIdContext();
 
@@ -87,7 +89,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO)
   base::WeakPtrFactory<TouchIdContext> weak_ptr_factory_;
 
   friend class ScopedTouchIdTestEnvironment;
-  DISALLOW_COPY_AND_ASSIGN(TouchIdContext);
 };
 
 }  // namespace mac

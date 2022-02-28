@@ -11,8 +11,8 @@ namespace web {
 class WebState;
 }
 
-@class BubblePresenter;
 @class ContentSuggestionsHeaderViewController;
+@protocol DiscoverFeedDelegate;
 @class DiscoverFeedMetricsRecorder;
 @protocol NewTabPageCommands;
 @protocol NewTabPageControllerDelegate;
@@ -38,9 +38,6 @@ class WebState;
 @property(nonatomic, strong, readonly)
     UICollectionViewController* viewController;
 
-// The pan gesture handler for the view controller.
-@property(nonatomic, weak) ViewRevealingVerticalPanHandler* panGestureHandler;
-
 // Allows for the in-flight enabling/disabling of the thumb strip.
 @property(nonatomic, weak, readonly) id<ThumbStripSupporting>
     thumbStripSupporting;
@@ -54,24 +51,15 @@ class WebState;
 // Command handler for NTP related commands.
 @property(nonatomic, weak) id<NewTabPageCommands> ntpCommandHandler;
 
-// Bubble presenter for displaying IPH bubbles relating to the NTP.
-@property(nonatomic, strong) BubblePresenter* bubblePresenter;
-
-// Whether the refactored NTP and feed are enabled and visible.
-// TODO(crbug.com/1114792): Update this property to remove "refactored" when the
-// refactored NTP launches.
-@property(nonatomic, assign, getter=isRefactoredFeedVisible)
-    BOOL refactoredFeedVisible;
-
 // Metrics recorder for the Discover feed events related to ContentSuggestions.
 @property(nonatomic, strong)
     DiscoverFeedMetricsRecorder* discoverFeedMetricsRecorder;
 
+// Delegate used to communicate to communicate events to the DiscoverFeed.
+@property(nonatomic, weak) id<DiscoverFeedDelegate> discoverFeedDelegate;
+
 // Dismisses all modals owned by the NTP mediator.
 - (void)dismissModals;
-
-// Called when a snapshot of the content will be taken.
-- (void)willUpdateSnapshot;
 
 // Stop any scrolling in the scroll view.
 - (void)stopScrolling;
@@ -79,9 +67,6 @@ class WebState;
 // The content inset and offset of the scroll view.
 - (UIEdgeInsets)contentInset;
 - (CGPoint)contentOffset;
-
-// The current NTP view.
-- (UIView*)view;
 
 // Reloads the suggestions.
 - (void)reload;
@@ -91,9 +76,6 @@ class WebState;
 
 // Tell location bar has taken focus.
 - (void)locationBarDidBecomeFirstResponder;
-
-// Constrains the named layout guide for the Discover header menu button.
-- (void)constrainDiscoverHeaderMenuButtonNamedGuide;
 
 // Configure Content Suggestions if showing the Start Surface.
 - (void)configureStartSurfaceIfNeeded;

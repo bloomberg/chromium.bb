@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_fifo.h"
@@ -26,6 +25,9 @@ class AudioTrackOpusEncoder : public AudioTrackEncoder,
   AudioTrackOpusEncoder(OnEncodedAudioCB on_encoded_audio_cb,
                         int32_t bits_per_second,
                         bool vbr_enabled = true);
+
+  AudioTrackOpusEncoder(const AudioTrackOpusEncoder&) = delete;
+  AudioTrackOpusEncoder& operator=(const AudioTrackOpusEncoder&) = delete;
 
   void OnSetFormat(const media::AudioParameters& params) override;
   void EncodeAudio(std::unique_ptr<media::AudioBus> input_bus,
@@ -66,8 +68,6 @@ class AudioTrackOpusEncoder : public AudioTrackEncoder,
   std::unique_ptr<float[]> buffer_;
 
   OpusEncoder* opus_encoder_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioTrackOpusEncoder);
 };
 
 }  // namespace blink

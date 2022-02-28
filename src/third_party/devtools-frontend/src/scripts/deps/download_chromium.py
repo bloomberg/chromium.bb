@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env python3
 #
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -14,7 +14,7 @@ import shutil
 import stat
 import subprocess
 import sys
-import urllib
+import urllib.request
 import zipfile
 
 
@@ -55,7 +55,7 @@ def download_and_extract(options):
 
     # Download again and save build number
     try:
-        filehandle, headers = urllib.urlretrieve(options.url)
+        filehandle, headers = urllib.request.urlretrieve(options.url)
     except:
         print("Using curl as fallback. You should probably update OpenSSL.")
         filehandle = io.BytesIO(
@@ -66,6 +66,11 @@ def download_and_extract(options):
     # Fix permissions. Do this recursively is necessary for MacOS bundles.
     if os.path.isfile(EXPECTED_BINARY):
         os.chmod(EXPECTED_BINARY, 0o555)
+        # On linux, the crashpad_handler binary needs the +x bit, too.
+        crashpad = os.path.join(os.path.dirname(EXPECTED_BINARY),
+                                'chrome_crashpad_handler')
+        if os.path.isfile(crashpad):
+            os.chmod(crashpad, 0o555)
     else:
         for root, dirs, files in os.walk(EXPECTED_BINARY):
             for f in files:

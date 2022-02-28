@@ -6,9 +6,7 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_AUTOFILL_COUNTRY_H_
 
 #include <string>
-#include <vector>
 
-#include "base/macros.h"
 #include "components/autofill/core/browser/geo/country_data.h"
 
 namespace autofill {
@@ -22,6 +20,10 @@ class AutofillCountry {
   // Returns country data corresponding to the two-letter ISO code
   // |country_code|.
   AutofillCountry(const std::string& country_code, const std::string& locale);
+
+  AutofillCountry(const AutofillCountry&) = delete;
+  AutofillCountry& operator=(const AutofillCountry&) = delete;
+
   ~AutofillCountry();
 
   // Returns the likely country code for |locale|, or "US" as a fallback if no
@@ -58,6 +60,11 @@ class AutofillCountry {
             ADDRESS_REQUIRES_ZIP_OR_STATE) != 0;
   }
 
+  bool requires_line1_or_house_number() const {
+    return (required_fields_for_address_import_ &
+            ADDRESS_REQUIRES_LINE1_OR_HOUSE_NUMBER);
+  }
+
  private:
   AutofillCountry(const std::string& country_code,
                   const std::u16string& name,
@@ -72,8 +79,6 @@ class AutofillCountry {
 
   // Required fields for an address import for the country.
   RequiredFieldsForAddressImport required_fields_for_address_import_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillCountry);
 };
 
 LogBuffer& operator<<(LogBuffer& buffer, const AutofillCountry& country);

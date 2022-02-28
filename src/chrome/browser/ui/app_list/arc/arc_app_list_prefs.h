@@ -14,6 +14,10 @@
 #include <unordered_set>
 #include <vector>
 
+#include "ash/components/arc/compat_mode/arc_resize_lock_pref_delegate.h"
+#include "ash/components/arc/mojom/app.mojom.h"
+#include "ash/components/arc/mojom/compatibility_mode.mojom.h"
+#include "ash/components/arc/session/connection_observer.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
@@ -25,10 +29,6 @@
 #include "chrome/browser/ash/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_descriptor.h"
-#include "components/arc/compat_mode/arc_resize_lock_pref_delegate.h"
-#include "components/arc/mojom/app.mojom.h"
-#include "components/arc/mojom/compatibility_mode.mojom.h"
-#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/layout.h"
@@ -202,8 +202,8 @@ class ArcAppListPrefs : public KeyedService,
     // Notifies that task has been activated and moved to the front.
     virtual void OnTaskSetActive(int32_t task_id) {}
 
-    virtual void OnNotificationsEnabledChanged(
-        const std::string& package_name, bool enabled) {}
+    virtual void OnNotificationsEnabledChanged(const std::string& package_name,
+                                               bool enabled) {}
     // Notifies that package has been installed. This may be called in two
     // cases:
     // a) the package is being newly installed
@@ -235,6 +235,9 @@ class ArcAppListPrefs : public KeyedService,
 
     // Notifies that App instance connection is ready.
     virtual void OnAppConnectionReady() {}
+
+    // Notifies that App instance connection is closed.
+    virtual void OnAppConnectionClosed() {}
 
    protected:
     ~Observer() override;
@@ -367,6 +370,8 @@ class ArcAppListPrefs : public KeyedService,
   bool GetResizeLockNeedsConfirmation(const std::string& app_id) override;
   void SetResizeLockNeedsConfirmation(const std::string& app_id,
                                       bool is_needed) override;
+  int GetShowSplashScreenDialogCount() const override;
+  void SetShowSplashScreenDialogCount(int count) override;
 
   // KeyedService:
   void Shutdown() override;
@@ -408,7 +413,7 @@ class ArcAppListPrefs : public KeyedService,
   bool IsDefaultPackage(const std::string& package_name) const;
 
  private:
-  friend class ChromeShelfControllerTest;
+  friend class ChromeShelfControllerTestBase;
   friend class ArcAppModelBuilderTest;
   friend class app_list::ArcAppShortcutsSearchProviderTest;
 

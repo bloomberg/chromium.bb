@@ -16,6 +16,8 @@ limitations under the License.
 #ifndef TENSORFLOW_CORE_GRAPPLER_OPTIMIZERS_AUTO_MIXED_PRECISION_LISTS_H_
 #define TENSORFLOW_CORE_GRAPPLER_OPTIMIZERS_AUTO_MIXED_PRECISION_LISTS_H_
 
+#include <string>
+
 #include "tensorflow/core/lib/gtl/flatset.h"
 #include "tensorflow/core/lib/strings/str_util.h"
 #include "tensorflow/core/util/env_var.h"
@@ -23,7 +25,7 @@ limitations under the License.
 namespace tensorflow {
 namespace grappler {
 
-// Represents the four lists of ops: the white list, gray list, black list, and
+// Represents the four lists of ops: the allow list, infer list, deny list, and
 // clear list. These lists determine which ops are converted to fp16/bf16
 // (referred to as 'f16' for short) and which ops stay as fp32.
 class AutoMixedPrecisionLists {
@@ -33,16 +35,16 @@ class AutoMixedPrecisionLists {
   // Returns the set of ops that are considered numerically-safe (for execution
   // in f16), performance-critical, and can run in f16. These ops are always
   // converted to f16.
-  virtual gtl::FlatSet<string> WhiteList() = 0;
+  virtual gtl::FlatSet<string> AllowList() = 0;
   // Returns the set of ops that can run in f16 and are considered numerically-
   // safe (for execution in f16), but which may be made unsafe by an upstream
-  // blacklist op.
-  virtual gtl::FlatSet<string> GrayList() = 0;
+  // denylist op.
+  virtual gtl::FlatSet<string> InferList() = 0;
   // Returns the set of ops that are considered numerically-dangerous (i.e.,
   // unsafe for execution in f16) and whose effects may also be observed in
   // downstream nodes (e.g. for f16, in Exp -> Add, the Add is unsafe due to
   // the Exp).
-  virtual gtl::FlatSet<string> BlackList() = 0;
+  virtual gtl::FlatSet<string> DenyList() = 0;
   // Returns the set of ops that do not have numerically-significant effects
   // (i.e., they are always considered safe for execution in f16 precision), and
   // can run in f16.
@@ -51,8 +53,11 @@ class AutoMixedPrecisionLists {
  protected:
   // Adds or removes ops from list if certain environmental variables are set.
   static void UpdateList(const string& list_name, gtl::FlatSet<string>* list) {
-    CHECK(list_name == "WHITELIST" || list_name == "GRAYLIST" ||  // Crash OK.
-          list_name == "BLACKLIST" || list_name == "CLEARLIST");
+    CHECK(list_name == "ALLOWLIST" || list_name == "INFERLIST" ||  // Crash OK.
+          list_name == "DENYLIST" || list_name == "CLEARLIST" ||
+          // TODO(reedwm): for bkwds compat; remove when no longer necessary:
+          list_name == "WHITELIST" || list_name == "GRAYLIST" ||
+          list_name == "BLACKLIST");
     string add_env_var =
         "TF_AUTO_MIXED_PRECISION_GRAPH_REWRITE_" + list_name + "_ADD";
     string remove_env_var =
@@ -104,7 +109,7 @@ class AutoMixedPrecisionListsCuda : public AutoMixedPrecisionLists {
   AutoMixedPrecisionListsCuda(int cuda_version, int cudnn_version)
       : cuda_version_(cuda_version), cudnn_version_(cudnn_version) {}
 
-  gtl::FlatSet<string> WhiteList() override {
+  gtl::FlatSet<string> AllowList() override {
     auto list = gtl::FlatSet<string>{
         "BlockLSTM",
         "BlockLSTMV2",
@@ -120,19 +125,19 @@ class AutoMixedPrecisionListsCuda : public AutoMixedPrecisionLists {
         "CudnnRNNV2",
         "CudnnRNNV3",
         "Einsum",
+        "FusedConv2DBiasActivation",
         "GRUBlockCell",
         "GRUBlockCellGrad",
         "LSTMBlockCell",
         "LSTMBlockCellGrad",
-        // TODO(benbarsdell): Enable these when fast and safe fp16 kernels are
-        // available for depthwise convolutions.
-        // "DepthwiseConv2dNative",
-        // "DepthwiseConv2dNativeBackpropFilter",
-        // "DepthwiseConv2dNativeBackpropInput",
         "MatMul",
     };
+#if TENSORFLOW_USE_ROCM
+    if (true) {
+#else
     if (cuda_version_ >= 9010) {
       // Fp16 BatchMatMul is slow before CUDA 9.1.
+#endif
       list.insert("BatchMatMul");
       list.insert("BatchMatMulV2");
     }
@@ -144,11 +149,20 @@ class AutoMixedPrecisionListsCuda : public AutoMixedPrecisionLists {
       list.insert("Conv3DBackpropInput");
       list.insert("Conv3DBackpropInputV2");
     }
+    if (cudnn_version_ >= 8000) {
+      list.insert("DepthwiseConv2dNative");
+      list.insert("DepthwiseConv2dNativeBackpropFilter");
+      list.insert("DepthwiseConv2dNativeBackpropInput");
+    }
+    UpdateList("ALLOWLIST", &list);
+    // For backwards compatibility, keeping the original env variable here.
+    // TODO(reedwm): This should be removed if we don't have active users.
     UpdateList("WHITELIST", &list);
+
     return list;
   }
 
-  gtl::FlatSet<string> GrayList() override {
+  gtl::FlatSet<string> InferList() override {
     if (IsPseudoFastMath()) {
       return gtl::FlatSet<string>{};
     }
@@ -198,11 +212,14 @@ class AutoMixedPrecisionListsCuda : public AutoMixedPrecisionLists {
         "Tanh",
         "TanhGrad",
     };
+    UpdateList("INFERLIST", &list);
+    // For backwards compatibility, keeping the original env variable here.
+    // TODO(reedwm): This should be removed if we don't have active users.
     UpdateList("GRAYLIST", &list);
     return list;
   }
 
-  gtl::FlatSet<string> BlackList() override {
+  gtl::FlatSet<string> DenyList() override {
     if (IsPseudoFastMath()) {
       return gtl::FlatSet<string>{};
     }
@@ -218,6 +235,9 @@ class AutoMixedPrecisionListsCuda : public AutoMixedPrecisionLists {
         "SparseSoftmaxCrossEntropyWithLogits",
         "Sum",
     };
+    UpdateList("DENYLIST", &list);
+    // For backwards compatibility, keeping the original env variable here.
+    // TODO(reedwm): This should be removed if we don't have active users.
     UpdateList("BLACKLIST", &list);
     return list;
   }
@@ -320,6 +340,7 @@ class AutoMixedPrecisionListsCuda : public AutoMixedPrecisionLists {
         "TopK",
         "TopKV2",
         "Transpose",
+        "Unpack",
         "Where",
         "ZerosLike",
     };
@@ -338,8 +359,8 @@ class AutoMixedPrecisionListsMkl : public AutoMixedPrecisionLists {
   AutoMixedPrecisionListsMkl() {}
 
   // Only ops which are supported by MKL in bfloat16 should be added to the
-  // white list, gray list, or clear list.
-  gtl::FlatSet<string> WhiteList() override {
+  // allow list, infer list, or clear list.
+  gtl::FlatSet<string> AllowList() override {
     auto list = gtl::FlatSet<string>{"Conv2D",
                                      "Conv2DBackpropFilter",
                                      "Conv2DBackpropInput",
@@ -353,36 +374,62 @@ class AutoMixedPrecisionListsMkl : public AutoMixedPrecisionLists {
                                      "BatchMatMul",
                                      "BatchMatMulV2"};
 
+    UpdateList("ALLOWLIST", &list);
+    // For backwards compatibility, keeping the original env variable here.
+    // TODO(reedwm): This should be removed if we don't have active users.
     UpdateList("WHITELIST", &list);
     return list;
   }
 
-  gtl::FlatSet<string> GrayList() override {
-    auto list = gtl::FlatSet<string>{
-        "Add",
-        "AddN",
-        "AddV2",
-        "AvgPool",
-        "AvgPool3D",
-        "AvgPool3DGrad",
-        "AvgPoolGrad",
-        "BiasAdd",
-        "BiasAddGrad",
-        "BiasAddV1",
-        "FusedBatchNormV2",
-        "FusedBatchNormGradV2",
-        "FusedBatchNormV3",
-        "FusedBatchNormGradV3",
-        "LeakyRelu",
-        "LeakyReluGrad",
-        "Mul",
-        "Sub",
-    };
+  gtl::FlatSet<string> InferList() override {
+    auto list = gtl::FlatSet<string>{"Add",
+                                     "AddN",
+                                     "AddV2",
+                                     "AvgPool",
+                                     "AvgPool3D",
+                                     "AvgPool3DGrad",
+                                     "AvgPoolGrad",
+                                     "BiasAdd",
+                                     "BiasAddGrad",
+                                     "BiasAddV1",
+                                     "FusedBatchNormV2",
+                                     "FusedBatchNormGradV2",
+                                     "FusedBatchNormV3",
+                                     "FusedBatchNormGradV3",
+                                     "LeakyRelu",
+                                     "LeakyReluGrad",
+                                     "Mul",
+                                     "Sub",
+                                     "Elu",
+                                     "EluGrad",
+                                     "FloorDiv",
+                                     "_FusedBatchNormEx",
+                                     "Log",
+                                     "Log1p",
+                                     "LogSoftmax",
+                                     "Prod",
+                                     "RealDiv",
+                                     "Reciprocal",
+                                     "Selu",
+                                     "SeluGrad",
+                                     "Sigmoid",
+                                     "SigmoidGrad",
+                                     "Softmax",
+                                     "Softplus",
+                                     "SoftplusGrad",
+                                     "Softsign",
+                                     "SoftsignGrad",
+                                     "Sqrt",
+                                     "Tanh",
+                                     "TanhGrad"};
+    UpdateList("INFERLIST", &list);
+    // For backwards compatibility, keeping the original env variable here.
+    // TODO(reedwm): This should be removed if we don't have active users.
     UpdateList("GRAYLIST", &list);
     return list;
   }
 
-  gtl::FlatSet<string> BlackList() override {
+  gtl::FlatSet<string> DenyList() override {
     auto list = gtl::FlatSet<string>{
         "Exp",
         "Expm1",
@@ -390,26 +437,110 @@ class AutoMixedPrecisionListsMkl : public AutoMixedPrecisionLists {
         "Mean",
         "Pow",
         "SaveV2",
-        "Softmax",
         "SoftmaxCrossEntropyWithLogits",
         "SparseSoftmaxCrossEntropyWithLogits",
         "Sum",
     };
+    UpdateList("DENYLIST", &list);
+    // For backwards compatibility, keeping the original env variable here.
+    // TODO(reedwm): This should be removed if we don't have active users.
     UpdateList("BLACKLIST", &list);
     return list;
   }
 
   gtl::FlatSet<string> ClearList() override {
     auto list = gtl::FlatSet<string>{
-        "Concat",          "ConcatV2",  "Enter",         "EnsureShape",
-        "Equal",           "Exit",      "ExpandDims",    "Identity",
-        "MaxPool",         "MaxPool3D", "MaxPool3DGrad", "MaxPoolGrad",
-        "MaxPoolV2",       "Maximum",   "Merge",         "NextIteration",
-        "PreventGradient", "Relu",      "Relu6",         "Relu6Grad",
-        "ReluGrad",        "Reshape",   "Select",        "SelectV2",
-        "Shape",           "ShapeN",    "Slice",         "Split",
-        "SplitV",          "Squeeze",   "StopGradient",  "Switch",
-        "Transpose",       "ZerosLike",
+        "Abs",
+        "ArgMax",
+        "ArgMin",
+        "BatchToSpace",
+        "BatchToSpaceND",
+        "BroadcastTo",
+        "Ceil",
+        "CheckNumerics",
+        "ClipByValue",
+        "Concat",
+        "ConcatV2",
+        "DepthToSpace",
+        "DynamicPartition",
+        "DynamicStitch",
+        "EnsureShape",
+        "Enter",
+        "Equal",
+        "Exit",
+        "ExpandDims",
+        "Fill",
+        "Floor",
+        "Gather",
+        "GatherNd",
+        "GatherV2",
+        "Greater",
+        "GreaterEqual",
+        "Identity",
+        "IsFinite",
+        "IsInf",
+        "IsNan",
+        "Less",
+        "LessEqual",
+        "Max",
+        "Maximum",
+        "MaxPool",
+        "MaxPool3D",
+        "MaxPool3DGrad",
+        "MaxPoolGrad",
+        "MaxPoolGradGrad",
+        "MaxPoolGradGradV2",
+        "MaxPoolGradV2",
+        "MaxPoolV2",
+        "Merge",
+        "Min",
+        "Minimum",
+        "MirrorPad",
+        "MirrorPadGrad",
+        "Neg",
+        "NextIteration",
+        "NotEqual",
+        "OnesLike",
+        "Pack",
+        "Pad",
+        "PadV2",
+        "PreventGradient",
+        "Rank",
+        "Relu",
+        "Relu6",
+        "Relu6Grad",
+        "ReluGrad",
+        "Reshape",
+        "ResizeNearestNeighbor",
+        "ResizeNearestNeighborGrad",
+        "Reverse",
+        "ReverseSequence",
+        "ReverseV2",
+        "Round",
+        "Select",
+        "SelectV2",
+        "Shape",
+        "ShapeN",
+        "Sign",
+        "Slice",
+        "Snapshot",
+        "SpaceToBatch",
+        "SpaceToBatchND",
+        "SpaceToDepth",
+        "Split",
+        "SplitV",
+        "Squeeze",
+        "StopGradient",
+        "StridedSlice",
+        "StridedSliceGrad",
+        "Switch",
+        "Tile",
+        "TopK",
+        "TopKV2",
+        "Transpose",
+        "Where",
+        "Unpack",
+        "ZerosLike",
     };
     AddTensorListOps(&list);
     UpdateList("CLEARLIST", &list);

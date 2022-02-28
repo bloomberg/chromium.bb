@@ -6,7 +6,6 @@
 
 #include <tuple>
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -31,6 +30,14 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
 
+#if defined(OS_WIN)
+#include "base/test/scoped_feature_list.h"
+#include "ui/aura/test/aura_test_utils.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/base/ui_base_features.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -39,6 +46,12 @@ class WebContentsVideoCaptureDeviceBrowserTest
       public FrameTestUtil {
  public:
   WebContentsVideoCaptureDeviceBrowserTest() = default;
+
+  WebContentsVideoCaptureDeviceBrowserTest(
+      const WebContentsVideoCaptureDeviceBrowserTest&) = delete;
+  WebContentsVideoCaptureDeviceBrowserTest& operator=(
+      const WebContentsVideoCaptureDeviceBrowserTest&) = delete;
+
   ~WebContentsVideoCaptureDeviceBrowserTest() override = default;
 
   // Runs the browser until a frame whose content matches the given |color| is
@@ -172,15 +185,12 @@ class WebContentsVideoCaptureDeviceBrowserTest
 
   std::unique_ptr<FrameSinkVideoCaptureDevice> CreateDevice() final {
     auto* const main_frame = shell()->web_contents()->GetMainFrame();
-    const GlobalFrameRoutingId id(main_frame->GetProcess()->GetID(),
-                                  main_frame->GetRoutingID());
+    const GlobalRenderFrameHostId id(main_frame->GetProcess()->GetID(),
+                                     main_frame->GetRoutingID());
     return std::make_unique<WebContentsVideoCaptureDevice>(id);
   }
 
   void WaitForFirstFrame() final { WaitForFrameWithColor(SK_ColorBLACK); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebContentsVideoCaptureDeviceBrowserTest);
 };
 
 // Tests that the device refuses to start if the WebContents target was
@@ -192,8 +202,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
   auto* const main_frame = shell()->web_contents()->GetMainFrame();
   const auto capture_params = SnapshotCaptureParams();
 
-  const GlobalFrameRoutingId id(main_frame->GetProcess()->GetID(),
-                                main_frame->GetRoutingID());
+  const GlobalRenderFrameHostId id(main_frame->GetProcess()->GetID(),
+                                   main_frame->GetRoutingID());
   // Delete the WebContents instance and the Shell. This makes the
   // render_frame_id invalid.
   shell()->web_contents()->Close();
@@ -269,6 +279,50 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
   WaitForFrameWithColor(SK_ColorGREEN);
 }
 
+#if defined(OS_WIN)
+class WebContentsVideoCaptureDeviceBrowserTestAura
+    : public WebContentsVideoCaptureDeviceBrowserTest {
+ public:
+  // WebContentsVideoCaptureDeviceBrowserTest:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kApplyNativeOcclusionToCompositor,
+        {{features::kApplyNativeOcclusionToCompositorType,
+          features::kApplyNativeOcclusionToCompositorTypeRelease}});
+
+    WebContentsVideoCaptureDeviceBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Verifies capture still works if the WindowTreeHost is occluded.
+IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTestAura,
+                       CapturesWhenOccluded) {
+  aura::WindowTreeHost* window_tree_host = shell()->window()->GetHost();
+  aura::test::DisableNativeWindowOcclusionTracking(window_tree_host);
+  NavigateToInitialDocument();
+  AllocateAndStartAndWaitForFirstFrame();
+  EXPECT_TRUE(shell()->web_contents()->IsBeingCaptured());
+
+  // Make a content change in the first page and wait for capture to reflect
+  // that.
+  ChangePageContentColor(SK_ColorRED);
+  WaitForFrameWithColor(SK_ColorRED);
+
+  // Simulate the WindowTreeHost being occluded.
+  window_tree_host->SetNativeWindowOcclusionState(
+      aura::Window::OcclusionState::OCCLUDED, {});
+
+  EXPECT_TRUE(shell()->web_contents()->IsBeingCaptured());
+
+  // Make a change and ensure it was captured.
+  ChangePageContentColor(SK_ColorGREEN);
+  WaitForFrameWithColor(SK_ColorGREEN);
+}
+#endif
+
 // Tests that capture is re-targetted when a renderer crash is followed by a
 // reload. Regression test for http://crbug.com/916332.
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
@@ -321,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
   ChangePageContentColor(SK_ColorGREEN);
   base::RunLoop run_loop;
   GetUIThreadTaskRunner({})->PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                                             base::TimeDelta::FromSeconds(5));
+                                             base::Seconds(5));
   run_loop.Run();
   EXPECT_FALSE(HasCapturedFramesInQueue());
 

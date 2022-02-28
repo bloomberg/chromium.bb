@@ -2,23 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview
- * @suppress {uselessCode} Temporary suppress because of the line exporting.
- */
+import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
+import {VolumeInfo} from '../../externs/volume_info.js';
+import {VolumeManager} from '../../externs/volume_manager.js';
 
-// clang-format off
-// #import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.m.js';
-// #import {VolumeInfo} from '../../externs/volume_info.m.js';
-// #import {VolumeManager} from '../../externs/volume_manager.m.js';
-// #import {FileType} from './file_type.m.js';
-// #import {VolumeManagerCommon} from './volume_manager_types.m.js';
-// #import {xfm} from './xfm.m.js';
-// clang-format on
+import {FileType} from './file_type.js';
+import {toFilesAppURL} from './url_constants.js';
+import {VolumeManagerCommon} from './volume_manager_types.js';
+import {xfm} from './xfm.js';
 
 // Namespace
-// eslint-disable-next-line no-var
-var importer = importer || {};
+const importer = {};
 
 /**
  * @enum {string}
@@ -69,7 +63,6 @@ importer.Disposition = {
 importer.Setting = {
   HAS_COMPLETED_IMPORT: 'importer-has-completed-import',
   MACHINE_ID: 'importer-machine-id',
-  PHOTOS_APP_ENABLED: 'importer-photo-app-enabled',
   LAST_KNOWN_LOG_ID: 'importer-last-known-log-id'
 };
 
@@ -107,6 +100,11 @@ importer.Destination = {
  * @return {boolean}
  */
 importer.isEligibleType = entry => {
+  if (window.isSWA) {
+    // Disables the Cloud Import for SWA.
+    return false;
+  }
+
   // TODO(mtomasz): Add support to mime types.
   return !!entry && entry.isFile &&
       FileType.isType(['image', 'raw', 'video'], entry);
@@ -258,21 +256,6 @@ importer.getMediaDirectory = directory => {
 };
 
 /**
- * @param {!DirectoryEntry} directory Presumably the root of a filesystem.
- * @return {!Promise<boolean>} True if the directory contains a
- *     child media directory (like 'DCIM').
- */
-importer.hasMediaDirectory = directory => {
-  return importer.getMediaDirectory(directory).then(
-      result => {
-        return Promise.resolve(!!result);
-      },
-      () => {
-        return Promise.resolve(false);
-      });
-};
-
-/**
  * @param {!DirectoryEntry} parent
  * @param {string} name
  * @return {!Promise<DirectoryEntry>}
@@ -285,37 +268,6 @@ importer.getDirectory_ = (parent, name) => {
           resolve(null);
         });
   });
-};
-
-/**
- * Handles a message from Pulsar...in which we presume we are being
- * informed of its "Automatically import stuff." state.
- *
- * While the runtime message system is loosey goosey about types,
- * we fully expect message to be a boolean value.
- *
- * @param {*} message
- *
- * @return {!Promise} Resolves once the message has been handled.
- */
-importer.handlePhotosAppMessage = message => {
-  if (typeof message !== 'boolean') {
-    console.error(
-        'Unrecognized message type received from photos app: ' + message);
-    return Promise.reject();
-  }
-
-  const storage = importer.ChromeLocalStorage.getInstance();
-  return storage.set(importer.Setting.PHOTOS_APP_ENABLED, message);
-};
-
-/**
- * @return {!Promise<boolean>} Resolves with true when Cloud Import feature
- *     is enabled.
- */
-importer.isPhotosAppImportEnabled = () => {
-  const storage = importer.ChromeLocalStorage.getInstance();
-  return storage.get(importer.Setting.PHOTOS_APP_ENABLED, false);
 };
 
 /**
@@ -609,9 +561,9 @@ importer.APP_URL_PREFIX_ =
  * @return {string}
  */
 importer.deflateAppUrl = url => {
-  if (url.substring(0, importer.APP_URL_PREFIX_.length) ===
-      importer.APP_URL_PREFIX_) {
-    return '$' + url.substring(importer.APP_URL_PREFIX_.length);
+  const appPrefix = 'filesystem:' + toFilesAppURL('/external').toString();
+  if (url.startsWith(appPrefix)) {
+    return url.replace(appPrefix, '$');
   }
 
   return url;
@@ -625,8 +577,9 @@ importer.deflateAppUrl = url => {
  * @return {string}
  */
 importer.inflateAppUrl = deflated => {
-  if (deflated.substring(0, 1) === '$') {
-    return importer.APP_URL_PREFIX_ + deflated.substring(1);
+  if (deflated.startsWith('$')) {
+    const path = '/external' + deflated.replace('$', '');
+    return 'filesystem:' + toFilesAppURL(path).toString();
   }
   return deflated;
 };
@@ -983,5 +936,4 @@ importer.ChromeLocalStorage = class {
 /** @private @const {!importer.ChromeLocalStorage} */
 importer.ChromeLocalStorage.INSTANCE_ = new importer.ChromeLocalStorage();
 
-// eslint-disable-next-line semi,no-extra-semi
-/* #export */ {importer};
+export {importer};

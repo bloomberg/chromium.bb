@@ -6,29 +6,44 @@
 #define ANDROID_WEBVIEW_BROWSER_METRICS_VISIBILITY_METRICS_LOGGER_H_
 
 #include <map>
+#include <string>
 
 #include "base/callback.h"
-#include "base/synchronization/lock.h"
 #include "base/time/time.h"
-
-namespace base {
-
-class HistogramBase;
-
-}  // namespace base
 
 namespace android_webview {
 
 class VisibilityMetricsLogger {
  public:
+  // These values are persisted to logs and must match the WebViewUrlScheme enum
+  // defined in enums.xml. Entries should not be renumbered and numeric values
+  // should never be reused.
+  enum class Scheme {
+    kEmpty = 0,
+    kUnknown = 1,
+    kHttp = 2,
+    kHttps = 3,
+    kFile = 4,
+    kFtp = 5,
+    kData = 6,
+    kJavaScript = 7,
+    kAbout = 8,
+    kChrome = 9,
+    kBlob = 10,
+    kContent = 11,
+    kIntent = 12,
+    kMaxValue = kIntent,
+  };
+
+  static Scheme SchemeStringToEnum(const std::string& scheme);
+
   struct VisibilityInfo {
     bool view_attached = false;
     bool view_visible = false;
     bool window_visible = false;
-    bool scheme_http_or_https = false;
+    Scheme scheme = Scheme::kEmpty;
 
     bool IsVisible() const;
-    bool ContainsOpenWebContent() const;
     bool IsDisplayingOpenWebContent() const;
   };
 
@@ -54,15 +69,8 @@ class VisibilityMetricsLogger {
     kEightyPercent = 8,
     kNinetyPercent = 9,
     kOneHundredPercent = 10,
-    kMaxValue = kOneHundredPercent
-  };
-
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class WebViewOpenWebVisibility {
-    kDisplayOpenWebContent = 0,
-    kNotDisplayOpenWebContent = 1,
-    kMaxValue = kNotDisplayOpenWebContent
+    kExactlyZeroPercent = 11,
+    kMaxValue = kExactlyZeroPercent,
   };
 
   class Client {
@@ -91,51 +99,37 @@ class VisibilityMetricsLogger {
   void SetOnVisibilityChangedCallback(OnVisibilityChangedCallback);
 
  private:
-  static base::HistogramBase* GetGlobalVisibilityHistogram();
-  static base::HistogramBase* GetPerWebViewVisibilityHistogram();
-  static base::HistogramBase* GetGlobalOpenWebVisibilityHistogram();
-  static base::HistogramBase* GetPerWebViewOpenWebVisibilityHistogram();
-  static base::HistogramBase* GetOpenWebVisibileScreenPortionHistogram();
-  static base::HistogramBase* CreateHistogramForDurationTracking(
-      const char* name,
-      int max_value);
-
-  void UpdateDurations(base::TimeTicks update_time);
+  void UpdateDurations();
   void ProcessClientUpdate(Client* client, const VisibilityInfo& info);
-  bool IsVisible(const VisibilityInfo& info);
-  bool IsDisplayingOpenWebContent(const VisibilityInfo& info);
   void RecordVisibilityMetrics();
-  void RecordOpenWebDisplayMetrics();
+  void RecordVisibleSchemeMetrics();
   void RecordScreenPortionMetrics();
 
-  // Counter for visible clients
-  size_t visible_client_count_ = 0;
-  // Counter for visible web clients
-  size_t visible_webcontent_client_count_ = 0;
+  // Counts the number of visible clients.
+  size_t all_clients_visible_count_ = 0;
+  // Counts the number of visible clients per scheme.
+  size_t per_scheme_visible_counts_[static_cast<size_t>(Scheme::kMaxValue) +
+                                    1] = {};
 
   struct WebViewDurationTracker {
     // Duration any WebView meets the tracking criteria
-    base::TimeDelta any_webview_tracked_duration_ =
-        base::TimeDelta::FromSeconds(0);
+    base::TimeDelta any_webview_tracked_duration_ = base::Seconds(0);
     // Duration no WebViews meet the tracking criteria
-    base::TimeDelta no_webview_tracked_duration_ =
-        base::TimeDelta::FromSeconds(0);
+    base::TimeDelta no_webview_tracked_duration_ = base::Seconds(0);
     // Total duration that WebViews meet the tracking criteria (i.e. if
     // 2x WebViews meet the criteria for 1 second then increment by 2 seconds)
-    base::TimeDelta per_webview_duration_ = base::TimeDelta::FromSeconds(0);
+    base::TimeDelta per_webview_duration_ = base::Seconds(0);
     // Total duration that WebViews exist but do not meet the tracking criteria
-    base::TimeDelta per_webview_untracked_duration_ =
-        base::TimeDelta::FromSeconds(0);
+    base::TimeDelta per_webview_untracked_duration_ = base::Seconds(0);
   };
 
-  WebViewDurationTracker visible_duration_tracker_;
-  WebViewDurationTracker webcontent_visible_tracker_;
+  WebViewDurationTracker all_clients_tracker_;
+  WebViewDurationTracker
+      per_scheme_trackers_[static_cast<size_t>(Scheme::kMaxValue) + 1] = {};
 
   base::TimeTicks last_update_time_;
   std::map<Client*, VisibilityInfo> client_visibility_;
 
-  int open_web_screen_area_pixels_ = 0;
-  int open_web_screen_area_percentage_ = 0;
   WebViewOpenWebScreenPortion current_open_web_screen_portion_ =
       WebViewOpenWebScreenPortion::kZeroPercent;
   base::TimeDelta open_web_screen_portion_tracked_duration_

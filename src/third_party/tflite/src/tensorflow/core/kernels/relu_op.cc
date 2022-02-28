@@ -18,6 +18,7 @@ limitations under the License.
 #define EIGEN_USE_THREADS
 
 #include "tensorflow/core/kernels/relu_op.h"
+
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 #include "tensorflow/core/framework/numeric_op.h"
 #include "tensorflow/core/framework/op_kernel.h"
@@ -29,9 +30,6 @@ namespace tensorflow {
 
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
-#ifdef TENSORFLOW_USE_SYCL
-typedef Eigen::SyclDevice SYCLDevice;
-#endif  // TENSORFLOW_USE_SYCL
 
 #define REGISTER_RELU_KERNELS(type)                                       \
   REGISTER_KERNEL_BUILDER(                                                \
@@ -71,19 +69,54 @@ TF_CALL_REAL_NUMBER_TYPES(REGISTER_RELU_KERNELS);
       SeluGradOp<CPUDevice, type>)
 
 // Elu and Selu only make sense with float or double.
-TF_CALL_GPU_NUMBER_TYPES(REGISTER_ELU_KERNELS);
+TF_CALL_FLOAT_TYPES(REGISTER_ELU_KERNELS);
 #undef REGISTER_ELU_KERNELS
 
 #if GOOGLE_CUDA || TENSORFLOW_USE_ROCM
-// Forward declarations of the functor specializations for GPU.
+
+#if !defined(MLIR_GENERATED_GPU_KERNELS_ENABLED)
+
 namespace functor {
-#define DECLARE_GPU_SPEC(T)                                                    \
+#define DECLARE_GPU_NO_MLIR_SPEC(T)                                            \
   template <>                                                                  \
   void Relu<GPUDevice, T>::operator()(                                         \
       const GPUDevice& d, typename TTypes<T>::ConstTensor features,            \
       typename TTypes<T>::Tensor activations);                                 \
   extern template struct Relu<GPUDevice, T>;                                   \
                                                                                \
+  template <>                                                                  \
+  void Elu<GPUDevice, T>::operator()(const GPUDevice& d,                       \
+                                     typename TTypes<T>::ConstTensor features, \
+                                     typename TTypes<T>::Tensor activations);  \
+  extern template struct Elu<GPUDevice, T>;                                    \
+                                                                               \
+  template <>                                                                  \
+  void Selu<GPUDevice, T>::operator()(                                         \
+      const GPUDevice& d, typename TTypes<T>::ConstTensor features,            \
+      typename TTypes<T>::Tensor activations);                                 \
+  extern template struct Selu<GPUDevice, T>;
+
+TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_NO_MLIR_SPEC);
+}  // namespace functor
+
+#define REGISTER_GPU_NO_MLIR_KERNELS(type)                       \
+  REGISTER_KERNEL_BUILDER(                                       \
+      Name("Relu").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
+      ReluOp<GPUDevice, type>);                                  \
+  REGISTER_KERNEL_BUILDER(                                       \
+      Name("Elu").Device(DEVICE_GPU).TypeConstraint<type>("T"),  \
+      EluOp<GPUDevice, type>);                                   \
+  REGISTER_KERNEL_BUILDER(                                       \
+      Name("Selu").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
+      SeluOp<GPUDevice, type>);
+
+TF_CALL_GPU_NUMBER_TYPES(REGISTER_GPU_NO_MLIR_KERNELS);
+#undef REGISTER_RELU_KERNEL
+#endif
+
+// Forward declarations of the functor specializations for GPU.
+namespace functor {
+#define DECLARE_GPU_SPEC(T)                                                    \
   template <>                                                                  \
   void ReluGrad<GPUDevice, T>::operator()(                                     \
       const GPUDevice& d, typename TTypes<T>::ConstTensor gradients,           \
@@ -116,23 +149,11 @@ namespace functor {
   extern template struct LeakyReluGrad<GPUDevice, T>;                          \
                                                                                \
   template <>                                                                  \
-  void Elu<GPUDevice, T>::operator()(const GPUDevice& d,                       \
-                                     typename TTypes<T>::ConstTensor features, \
-                                     typename TTypes<T>::Tensor activations);  \
-  extern template struct Elu<GPUDevice, T>;                                    \
-                                                                               \
-  template <>                                                                  \
   void EluGrad<GPUDevice, T>::operator()(                                      \
       const GPUDevice& d, typename TTypes<T>::ConstTensor gradients,           \
       typename TTypes<T>::ConstTensor activations,                             \
       typename TTypes<T>::Tensor backprops);                                   \
   extern template struct EluGrad<GPUDevice, T>;                                \
-                                                                               \
-  template <>                                                                  \
-  void Selu<GPUDevice, T>::operator()(                                         \
-      const GPUDevice& d, typename TTypes<T>::ConstTensor features,            \
-      typename TTypes<T>::Tensor activations);                                 \
-  extern template struct Selu<GPUDevice, T>;                                   \
                                                                                \
   template <>                                                                  \
   void SeluGrad<GPUDevice, T>::operator()(                                     \
@@ -141,22 +162,17 @@ namespace functor {
       typename TTypes<T>::Tensor backprops);                                   \
   extern template struct SeluGrad<GPUDevice, T>;
 
-#if GOOGLE_CUDA || TENSORFLOW_USE_ROCM
 template <>
 void Relu<GPUDevice, qint8>::operator()(
     const GPUDevice& d, typename TTypes<qint8>::ConstTensor features,
     typename TTypes<qint8>::Tensor activations);
 extern template struct Relu<GPUDevice, qint8>;
-#endif  // GOOGLE_CUDA || TENSORFLOW_USE_ROCM
 
 TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
 }  // namespace functor
 
 // Registration of the GPU implementations.
 #define REGISTER_GPU_KERNELS(type)                                        \
-  REGISTER_KERNEL_BUILDER(                                                \
-      Name("Relu").Device(DEVICE_GPU).TypeConstraint<type>("T"),          \
-      ReluOp<GPUDevice, type>);                                           \
   REGISTER_KERNEL_BUILDER(                                                \
       Name("ReluGrad").Device(DEVICE_GPU).TypeConstraint<type>("T"),      \
       ReluGradOp<GPUDevice, type>);                                       \
@@ -173,14 +189,8 @@ TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
       Name("LeakyReluGrad").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
       LeakyReluGradOp<GPUDevice, type>);                                  \
   REGISTER_KERNEL_BUILDER(                                                \
-      Name("Elu").Device(DEVICE_GPU).TypeConstraint<type>("T"),           \
-      EluOp<GPUDevice, type>);                                            \
-  REGISTER_KERNEL_BUILDER(                                                \
       Name("EluGrad").Device(DEVICE_GPU).TypeConstraint<type>("T"),       \
       EluGradOp<GPUDevice, type>);                                        \
-  REGISTER_KERNEL_BUILDER(                                                \
-      Name("Selu").Device(DEVICE_GPU).TypeConstraint<type>("T"),          \
-      SeluOp<GPUDevice, type>);                                           \
   REGISTER_KERNEL_BUILDER(                                                \
       Name("SeluGrad").Device(DEVICE_GPU).TypeConstraint<type>("T"),      \
       SeluGradOp<GPUDevice, type>)
@@ -210,43 +220,5 @@ REGISTER_KERNEL_BUILDER(
     ReluOp<GPUDevice, qint8>);
 
 #endif  // GOOGLE_CUDA || TENSORFLOW_USE_ROCM
-
-#ifdef TENSORFLOW_USE_SYCL
-// Registration of the GPU implementations.
-#define REGISTER_SYCL_KERNELS(type)                                        \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("Relu").Device(DEVICE_SYCL).TypeConstraint<type>("T"),          \
-      ReluOp<SYCLDevice, type>);                                           \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("ReluGrad").Device(DEVICE_SYCL).TypeConstraint<type>("T"),      \
-      ReluGradOp<SYCLDevice, type>);                                       \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("Relu6").Device(DEVICE_SYCL).TypeConstraint<type>("T"),         \
-      Relu6Op<SYCLDevice, type>);                                          \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("Relu6Grad").Device(DEVICE_SYCL).TypeConstraint<type>("T"),     \
-      Relu6GradOp<SYCLDevice, type>);                                      \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("LeakyRelu").Device(DEVICE_SYCL).TypeConstraint<type>("T"),     \
-      LeakyReluOp<SYCLDevice, type>);                                      \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("LeakyReluGrad").Device(DEVICE_SYCL).TypeConstraint<type>("T"), \
-      LeakyReluGradOp<SYCLDevice, type>);                                  \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("Elu").Device(DEVICE_SYCL).TypeConstraint<type>("T"),           \
-      EluOp<SYCLDevice, type>);                                            \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("EluGrad").Device(DEVICE_SYCL).TypeConstraint<type>("T"),       \
-      EluGradOp<SYCLDevice, type>);                                        \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("Selu").Device(DEVICE_SYCL).TypeConstraint<type>("T"),          \
-      SeluOp<SYCLDevice, type>);                                           \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("SeluGrad").Device(DEVICE_SYCL).TypeConstraint<type>("T"),      \
-      SeluGradOp<SYCLDevice, type>)
-
-TF_CALL_GPU_NUMBER_TYPES_NO_HALF(REGISTER_SYCL_KERNELS);
-#undef REGISTER_SYCL_KERNELS
-#endif  // TENSORFLOW_USE_SYCL
 
 }  // namespace tensorflow

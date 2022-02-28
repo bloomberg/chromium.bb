@@ -11,7 +11,10 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/export_template.h"
+#include "base/memory/raw_ptr.h"
+#include "base/no_destructor.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -20,12 +23,6 @@
   QUIC_EXPORT_PRIVATE extern type FLAGS_##flag;
 #include "net/third_party/quiche/src/quic/core/quic_protocol_flags_list.h"
 #undef QUIC_PROTOCOL_FLAG
-
-namespace base {
-class CommandLine;
-template <typename T>
-class NoDestructor;
-}  // namespace base
 
 // Sets the flag named |flag_name| to the value of |value| after converting
 // it from a string to the appropriate type. If |value| is invalid or out of
@@ -63,13 +60,16 @@ class TypedQuicFlagHelper : public QuicFlagHelper {
   void ResetFlag() const override { *flag_ = default_value_; }
 
  private:
-  mutable T* flag_;
+  mutable raw_ptr<T> flag_;
   T default_value_;
 };
 
 // SetFlag specializations. Implementations in .cc file.
 template <>
 QUIC_EXPORT_PRIVATE bool TypedQuicFlagHelper<bool>::SetFlag(
+    const std::string&) const;
+template <>
+QUIC_EXPORT_PRIVATE bool TypedQuicFlagHelper<uint16_t>::SetFlag(
     const std::string&) const;
 template <>
 QUIC_EXPORT_PRIVATE bool TypedQuicFlagHelper<int32_t>::SetFlag(
@@ -81,6 +81,8 @@ QUIC_EXPORT_PRIVATE bool TypedQuicFlagHelper<std::string>::SetFlag(
 // TypedQuicFlagHelper instantiations are in .cc file.
 extern template class EXPORT_TEMPLATE_DECLARE(QUIC_EXPORT_PRIVATE)
     TypedQuicFlagHelper<bool>;
+extern template class EXPORT_TEMPLATE_DECLARE(QUIC_EXPORT_PRIVATE)
+    TypedQuicFlagHelper<uint16_t>;
 extern template class EXPORT_TEMPLATE_DECLARE(QUIC_EXPORT_PRIVATE)
     TypedQuicFlagHelper<int32_t>;
 extern template class EXPORT_TEMPLATE_DECLARE(QUIC_EXPORT_PRIVATE)

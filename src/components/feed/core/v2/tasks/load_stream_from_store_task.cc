@@ -9,6 +9,7 @@
 
 #include "base/time/time.h"
 #include "components/feed/core/proto/v2/store.pb.h"
+#include "components/feed/core/proto/v2/wire/reliability_logging_enums.pb.h"
 #include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/feed_stream.h"
@@ -35,7 +36,7 @@ LoadStreamFromStoreTask::LoadStreamFromStoreTask(
     bool missed_last_refresh,
     base::OnceCallback<void(Result)> callback)
     : load_type_(load_type),
-      feed_stream_(feed_stream),
+      feed_stream_(*feed_stream),
       stream_type_(stream_type),
       store_(store),
       missed_last_refresh_(missed_last_refresh),
@@ -53,13 +54,15 @@ void LoadStreamFromStoreTask::Run() {
 void LoadStreamFromStoreTask::LoadStreamDone(
     FeedStore::LoadStreamResult result) {
   if (result.read_error) {
-    Complete(LoadStreamStatus::kFailedWithStoreError);
+    Complete(LoadStreamStatus::kFailedWithStoreError,
+             feedwire::DiscoverCardReadCacheResult::FAILED);
     return;
   }
   pending_actions_ = std::move(result.pending_actions);
 
   if (result.stream_structures.empty()) {
-    Complete(LoadStreamStatus::kNoStreamDataInStore);
+    Complete(LoadStreamStatus::kNoStreamDataInStore,
+             feedwire::DiscoverCardReadCacheResult::EMPTY_SESSION);
     return;
   }
   content_ids_ = feedstore::GetContentIds(result.stream_data);
@@ -67,14 +70,16 @@ void LoadStreamFromStoreTask::LoadStreamDone(
     content_age_ =
         base::Time::Now() - feedstore::GetLastAddedTime(result.stream_data);
 
-    if (content_age_ > GetFeedConfig().content_expiration_threshold) {
-      Complete(LoadStreamStatus::kDataInStoreIsExpired);
+    const feedstore::Metadata& metadata = feed_stream_.GetMetadata();
+
+    if (ContentInvalidFromAge(metadata, result.stream_type, content_age_)) {
+      Complete(LoadStreamStatus::kDataInStoreIsExpired,
+               feedwire::DiscoverCardReadCacheResult::STALE);
       return;
     }
-    if (content_age_ < base::TimeDelta()) {
+    if (content_age_.is_negative()) {
       stale_reason_ = LoadStreamStatus::kDataInStoreIsStaleTimestampInFuture;
-    } else if (ShouldWaitForNewContent(feed_stream_->GetMetadata(),
-                                       result.stream_type, true,
+    } else if (ShouldWaitForNewContent(metadata, result.stream_type,
                                        content_age_)) {
       stale_reason_ = LoadStreamStatus::kDataInStoreIsStale;
     } else if (missed_last_refresh_) {
@@ -83,7 +88,8 @@ void LoadStreamFromStoreTask::LoadStreamDone(
   }
 
   if (load_type_ == LoadType::kLoadNoContent) {
-    Complete(LoadStreamStatus::kLoadedFromStore);
+    Complete(LoadStreamStatus::kLoadedFromStore,
+             feedwire::DiscoverCardReadCacheResult::CACHE_READ_OK);
     return;
   }
 
@@ -135,11 +141,15 @@ void LoadStreamFromStoreTask::LoadContentDone(
   update_request_->source =
       StreamModelUpdateRequest::Source::kInitialLoadFromStore;
 
-  Complete(LoadStreamStatus::kLoadedFromStore);
+  Complete(LoadStreamStatus::kLoadedFromStore,
+           feedwire::DiscoverCardReadCacheResult::CACHE_READ_OK);
 }
 
-void LoadStreamFromStoreTask::Complete(LoadStreamStatus status) {
+void LoadStreamFromStoreTask::Complete(
+    LoadStreamStatus status,
+    feedwire::DiscoverCardReadCacheResult reliability_result) {
   Result task_result;
+  task_result.reliability_result = reliability_result;
 
   task_result.pending_actions = std::move(pending_actions_);
   if (status == LoadStreamStatus::kLoadedFromStore &&
@@ -149,6 +159,8 @@ void LoadStreamFromStoreTask::Complete(LoadStreamStatus status) {
   if (status == LoadStreamStatus::kLoadedFromStore &&
       stale_reason_ != LoadStreamStatus::kNoStatus) {
     task_result.status = stale_reason_;
+    task_result.reliability_result =
+        feedwire::DiscoverCardReadCacheResult::STALE;
   } else {
     task_result.status = status;
   }

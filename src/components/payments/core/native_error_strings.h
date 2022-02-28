@@ -183,9 +183,6 @@ extern const char kCanMakePaymentEventTimeout[];
 // The payment handler did not respond to the "canmakepayment" event.
 extern const char kCanMakePaymentEventNoResponse[];
 
-// The payment handler did not specify a value for "readyForMinimalUI" field.
-extern const char kCanMakePaymentEventNoReadyForMinimalUiValue[];
-
 // The payment handler called CanMakePaymentEvent.respondWith(value) with a
 // non-boolean value.
 extern const char kCanMakePaymentEventBooleanConversionError[];
@@ -196,21 +193,6 @@ extern const char kCanMakePaymentEventBrowserError[];
 // The payment handler threw a JavaScript exception while handling the
 // "canmakepayment" event.
 extern const char kCanMakePaymentEventInternalError[];
-
-// The payment handler specified an invalid value for "accountBalance".
-extern const char kCanMakePaymentEventInvalidAccountBalanceValue[];
-
-// The payment handler called CanMakePaymentEvent.respondWithMinimalUI(value)
-// with a value that could not be converted into a JavaScript dictionary with
-// values for "canMakePayment", "readyForMinimalUI", and "accountBalance".
-extern const char kCanMakePaymentEventMinimalUiResponseConversionError[];
-
-// The payment handler did not specify a value for "accountBalance".
-extern const char kCanMakePaymentEventNoAccountBalanceValue[];
-
-// The payment handler did not specify a value for "canMakePayment" field in
-// CanMakePaymentEvent.respondWithMinimalUI().
-extern const char kCanMakePaymentEventNoCanMakePaymentValue[];
 
 // Browser does not fire the "canmakepayment" event if the payment handler does
 // not support any URL-based payment methods.
@@ -253,6 +235,26 @@ extern const char kCredentialIdsRequired[];
 // Used when the timeout specified for the "secure-payment-confirmation" method
 // is too long.
 extern const char kTimeoutTooLong[];
+
+// Used when the challenge field was not specified for the
+// "secure-payment-confirmation" method.
+extern const char kChallengeRequired[];
+
+// Used when the instrument field was not specified for the
+// "secure-payment-confirmation" method.
+extern const char kInstrumentRequired[];
+
+// Used when the instrument.displayName field was not specified for the
+// "secure-payment-confirmation" method.
+extern const char kInstrumentDisplayNameRequired[];
+
+// Used when the instrument.icon field was not specified or was not a valid URL
+// in the "secure-payment-confirmation" method.
+extern const char kValidInstrumentIconRequired[];
+
+// Used when the icon that was either downloaded or read from user profile is
+// not valid.
+extern const char kInvalidIcon[];
 
 }  // namespace errors
 }  // namespace payments

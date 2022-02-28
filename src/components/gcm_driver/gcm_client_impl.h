@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -109,6 +109,10 @@ class GCMClientImpl
 
   explicit GCMClientImpl(
       std::unique_ptr<GCMInternalsBuilder> internals_builder);
+
+  GCMClientImpl(const GCMClientImpl&) = delete;
+  GCMClientImpl& operator=(const GCMClientImpl&) = delete;
+
   ~GCMClientImpl() override;
 
   // GCMClient implementation.
@@ -344,7 +348,7 @@ class GCMClientImpl
   // State of the GCM Client Implementation.
   State state_;
 
-  GCMClient::Delegate* delegate_;
+  raw_ptr<GCMClient::Delegate> delegate_;
 
   // Flag to indicate if the GCM should be delay started until it is actually
   // used in either of the following cases:
@@ -356,7 +360,7 @@ class GCMClientImpl
   CheckinInfo device_checkin_info_;
 
   // Clock used for timing of retry logic. Passed in for testing.
-  base::Clock* clock_;
+  raw_ptr<base::Clock> clock_;
 
   // Information about the chrome build.
   // TODO(fgorski): Check if it can be passed in constructor and made const.
@@ -380,7 +384,7 @@ class GCMClientImpl
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  network::NetworkConnectionTracker* network_connection_tracker_;
+  raw_ptr<network::NetworkConnectionTracker> network_connection_tracker_;
 
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
@@ -419,8 +423,6 @@ class GCMClientImpl
 
   // Factory for creating references in callbacks.
   base::WeakPtrFactory<GCMClientImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(GCMClientImpl);
 };
 
 }  // namespace gcm

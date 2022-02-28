@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/test/test_browser_context.h"
@@ -47,7 +48,7 @@ class ManagementPolicyMock : public ManagementPolicy::Provider {
   }
 
  private:
-  const Extension* extension_;
+  raw_ptr<const Extension> extension_;
   bool may_load_;
 };
 
@@ -108,7 +109,7 @@ TEST_F(PolicyCheckTest, PolicyFailure) {
   runner_.Run(&policy_check);
   EXPECT_TRUE(runner_.called());
   EXPECT_THAT(runner_.errors(), testing::UnorderedElementsAre(
-                                    PreloadCheck::DISALLOWED_BY_POLICY));
+                                    PreloadCheck::Error::kDisallowedByPolicy));
   EXPECT_EQ(kDummyPolicyError, policy_check.GetErrorMessage());
 }
 

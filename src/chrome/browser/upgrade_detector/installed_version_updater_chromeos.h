@@ -9,8 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "chromeos/dbus/update_engine_client.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "chromeos/dbus/update_engine/update_engine_client.h"
 
 class BuildState;
 

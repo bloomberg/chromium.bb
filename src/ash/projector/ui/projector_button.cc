@@ -7,11 +7,13 @@
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/style_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/highlight_path_generator.h"
 
 namespace ash {
@@ -31,9 +33,11 @@ ProjectorButton::ProjectorButton(views::Button::PressedCallback callback,
   views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
                                                 kProjectorButtonSize / 2.f);
 
-  views::InkDrop::UseInkDropForFloodFillRipple(ink_drop(),
+  views::InkDrop::UseInkDropForFloodFillRipple(views::InkDrop::Get(this),
                                                /*highlight_on_hover=*/true,
                                                /*highlight_on_focus=*/true);
+
+  SetTooltipText(name);
 }
 
 void ProjectorButton::OnPaintBackground(gfx::Canvas* canvas) {
@@ -54,12 +58,10 @@ void ProjectorButton::OnThemeChanged() {
   views::ToggleImageButton::OnThemeChanged();
 
   // Ink Drop.
-  const AshColorProvider::RippleAttributes ripple_attributes =
-      AshColorProvider::Get()->GetRippleAttributes();
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
   SetHasInkDropActionOnClick(true);
-  ink_drop()->SetBaseColor(ripple_attributes.base_color);
-  ink_drop()->SetHighlightOpacity(ripple_attributes.highlight_opacity);
+  StyleUtil::ConfigureInkDropAttributes(
+      this, StyleUtil::kBaseColor | StyleUtil::kHighlightOpacity);
 }
 
 void ProjectorButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {

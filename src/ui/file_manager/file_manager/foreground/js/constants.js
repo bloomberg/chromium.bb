@@ -3,20 +3,19 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview
- * @suppress {uselessCode} Temporary suppress because of the line exporting.
- */
-
-/**
- * Namespace for common constnats used in Files app.
+ * Namespace for common constants used in Files app.
  * @namespace
  */
-const constants = {};
+export const constants = {};
 
 /**
  * @const {!Array<string>}
  */
-constants.ACTIONS_MODEL_METADATA_PREFETCH_PROPERTY_NAMES = ['hosted', 'pinned'];
+constants.ACTIONS_MODEL_METADATA_PREFETCH_PROPERTY_NAMES = [
+  'canPin',
+  'hosted',
+  'pinned',
+];
 
 /**
  * The list of executable file extensions.
@@ -42,6 +41,7 @@ constants.FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES = [
   'availableOffline',
   'contentMimeType',
   'hosted',
+  'canPin',
 ];
 
 /**
@@ -67,6 +67,7 @@ constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES = [
   'canRename',
   'canAddChildren',
   'canShare',
+  'canPin',
   'isMachineRoot',
   'isExternalMedia',
   'isArbitrarySyncFolder',
@@ -114,6 +115,3 @@ constants.PLUGIN_VM = 'PvmDefault';
  * @const {string}
  */
 constants.CROSTINI_CONNECT_ERR = 'CrostiniConnectErr';
-
-// eslint-disable-next-line semi,no-extra-semi
-/* #export */ {constants};

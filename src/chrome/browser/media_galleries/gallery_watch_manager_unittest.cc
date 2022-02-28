@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_path_override.h"
 #include "build/build_config.h"
@@ -69,6 +69,9 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
         pending_loop_(nullptr) {
   }
 
+  GalleryWatchManagerTest(const GalleryWatchManagerTest&) = delete;
+  GalleryWatchManagerTest& operator=(const GalleryWatchManagerTest&) = delete;
+
   ~GalleryWatchManagerTest() override {}
 
   void SetUp() override {
@@ -111,6 +114,10 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
     // because TestUserManager uses TestingBrowserProcess in its destructor.
     test_user_manager_.reset();
 #endif
+
+    // Make sure any pending network events are run before the
+    // NetworkConnectionTracker is cleared.
+    task_environment_.RunUntilIdle();
 
     // The MediaFileSystemRegistry owned by the TestingBrowserProcess must be
     // destroyed before the StorageMonitor because it calls
@@ -205,15 +212,13 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
   std::unique_ptr<ash::ScopedTestUserManager> test_user_manager_;
 #endif
 
-  storage_monitor::TestStorageMonitor* monitor_;
+  raw_ptr<storage_monitor::TestStorageMonitor> monitor_;
   std::unique_ptr<TestingProfile> profile_;
-  MediaGalleriesPreferences* gallery_prefs_;
+  raw_ptr<MediaGalleriesPreferences> gallery_prefs_;
 
   bool expect_gallery_changed_;
   bool expect_gallery_watch_dropped_;
-  base::RunLoop* pending_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(GalleryWatchManagerTest);
+  raw_ptr<base::RunLoop> pending_loop_;
 };
 
 // TODO(crbug.com/936065): Flaky on ChromeOS.
@@ -326,7 +331,8 @@ TEST_F(GalleryWatchManagerTest, MAYBE_RemoveAllWatches) {
 }
 
 // Fails on Mac: crbug.com/1183212
-#if defined(OS_MAC)
+// Fails on Chrome OS: crbug.com/1207878
+#if defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_DropWatchOnGalleryRemoved DISABLED_DropWatchOnGalleryRemoved
 #else
 #define MAYBE_DropWatchOnGalleryRemoved DropWatchOnGalleryRemoved

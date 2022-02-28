@@ -84,12 +84,15 @@ _vulkan_backend_sources = [
   "UtilsVk.h",
   "VertexArrayVk.cpp",
   "VertexArrayVk.h",
+  "VulkanSecondaryCommandBuffer.cpp",
+  "VulkanSecondaryCommandBuffer.h",
   "android/vk_android_utils.cpp",
   "android/vk_android_utils.h",
   "vk_cache_utils.cpp",
   "vk_cache_utils.h",
   "vk_caps_utils.cpp",
   "vk_caps_utils.h",
+  "vk_command_buffer_utils.h",
   "vk_format_table_autogen.cpp",
   "vk_format_utils.cpp",
   "vk_format_utils.h",
@@ -105,26 +108,51 @@ _vulkan_backend_sources = [
 
 if (angle_enable_cl) {
   _vulkan_backend_sources += [
+    "CLCommandQueueVk.cpp",
+    "CLCommandQueueVk.h",
     "CLContextVk.cpp",
     "CLContextVk.h",
     "CLDeviceVk.cpp",
     "CLDeviceVk.h",
+    "CLEventVk.cpp",
+    "CLEventVk.h",
+    "CLKernelVk.cpp",
+    "CLKernelVk.h",
+    "CLMemoryVk.cpp",
+    "CLMemoryVk.h",
     "CLPlatformVk.cpp",
     "CLPlatformVk.h",
+    "CLProgramVk.cpp",
+    "CLProgramVk.h",
+    "CLSamplerVk.cpp",
+    "CLSamplerVk.h",
     "cl_types.h",
+  ]
+}
+
+if (angle_use_vulkan_null_display) {
+  _vulkan_backend_sources += [
+    "null/DisplayVkNull.cpp",
+    "null/DisplayVkNull.h",
+    "null/WindowSurfaceVkNull.cpp",
+    "null/WindowSurfaceVkNull.h",
   ]
 }
 
 if (is_linux) {
   _vulkan_backend_sources += [
-    "display/DisplayVkSimple.cpp",
-    "display/DisplayVkSimple.h",
-    "display/WindowSurfaceVkSimple.cpp",
-    "display/WindowSurfaceVkSimple.h",
-    "headless/DisplayVkHeadless.cpp",
-    "headless/DisplayVkHeadless.h",
-    "headless/WindowSurfaceVkHeadless.cpp",
-    "headless/WindowSurfaceVkHeadless.h",
+    "linux/DisplayVkLinux.cpp",
+    "linux/DisplayVkLinux.h",
+    "linux/DmaBufImageSiblingVkLinux.cpp",
+    "linux/DmaBufImageSiblingVkLinux.h",
+    "linux/display/DisplayVkSimple.cpp",
+    "linux/display/DisplayVkSimple.h",
+    "linux/display/WindowSurfaceVkSimple.cpp",
+    "linux/display/WindowSurfaceVkSimple.h",
+    "linux/headless/DisplayVkHeadless.cpp",
+    "linux/headless/DisplayVkHeadless.h",
+    "linux/headless/WindowSurfaceVkHeadless.cpp",
+    "linux/headless/WindowSurfaceVkHeadless.h",
   ]
 }
 
@@ -152,10 +180,10 @@ if (is_win) {
 
 if (angle_use_x11) {
   _vulkan_backend_sources += [
-    "xcb/DisplayVkXcb.cpp",
-    "xcb/DisplayVkXcb.h",
-    "xcb/WindowSurfaceVkXcb.cpp",
-    "xcb/WindowSurfaceVkXcb.h",
+    "linux/xcb/DisplayVkXcb.cpp",
+    "linux/xcb/DisplayVkXcb.h",
+    "linux/xcb/WindowSurfaceVkXcb.cpp",
+    "linux/xcb/WindowSurfaceVkXcb.h",
   ]
 }
 
@@ -237,10 +265,15 @@ angle_source_set("angle_vulkan_backend") {
     "$angle_spirv_headers_dir:spv_headers",
   ]
 
+  if (angle_enable_cl || is_android) {
+    deps += [ "$angle_root:angle_version_info" ]
+  }
+
   public_deps = [
     "$angle_root:angle_glslang_wrapper",
     "$angle_root:libANGLE_headers",
     "$angle_root/src/common/vulkan",
+    "$angle_root/src/common/vulkan:angle_libvulkan_loader",
     "$angle_root/src/common/vulkan:angle_vulkan_entry_points",
     "$angle_root/src/common/vulkan:angle_vulkan_headers",
   ]
@@ -253,6 +286,10 @@ angle_source_set("angle_vulkan_backend") {
   if (angle_enable_vulkan_validation_layers) {
     defines += [ "ANGLE_ENABLE_VULKAN_VALIDATION_LAYERS_BY_DEFAULT" ]
     data_deps += [ "$angle_root/src/common/vulkan:vulkan_validation_layers" ]
+  }
+
+  if (is_linux) {
+    deps += [ "$angle_root/src/common/linux:angle_dma_buf" ]
   }
 
   if (is_fuchsia) {

@@ -117,7 +117,7 @@ void SkLayerDrawLooper::LayerDrawLooperContext::ApplyInfo(
         dst->setColorFilter(src.refColorFilter());
     }
     if (bits & kXfermode_Bit) {
-        dst->setBlendMode(src.getBlendMode());
+        dst->setBlender(src.refBlender());
     }
 
     // we don't override these
@@ -231,7 +231,7 @@ sk_sp<SkFlattenable> SkLayerDrawLooper::CreateProc(SkReadBuffer& buffer) {
         info.fColorMode = (SkBlendMode)buffer.readInt();
         buffer.readPoint(&info.fOffset);
         info.fPostTranslate = buffer.readBool();
-        buffer.readPaint(builder.addLayerOnTop(info), nullptr);
+        *builder.addLayerOnTop(info) = buffer.readPaint();
         if (!buffer.isValid()) {
             return nullptr;
         }

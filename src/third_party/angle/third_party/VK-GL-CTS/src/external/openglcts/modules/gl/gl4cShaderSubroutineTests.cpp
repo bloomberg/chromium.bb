@@ -1319,8 +1319,7 @@ const GLchar* Utils::programInterfaceToStr(glw::GLenum program_interface)
 		break;
 	default:
 		TCU_FAIL("Not implemented");
-		break;
-	};
+	}
 
 	return string;
 }
@@ -1384,8 +1383,7 @@ const GLchar* Utils::pnameToStr(glw::GLenum pname)
 		break;
 	default:
 		TCU_FAIL("Not implemented");
-		break;
-	};
+	}
 
 	return string;
 }
@@ -2418,7 +2416,7 @@ std::string FunctionalTest1_2::getVertexShaderBody(const Utils::_variable_type& 
 	if (array_size > 1)
 	{
 		result_sstream << "[" << array_size << "]";
-	};
+	}
 
 	result_sstream << ";\n";
 
@@ -5947,7 +5945,7 @@ void FunctionalTest12::fillTexture(Utils::texture& texture, const glw::GLuint co
  **/
 bool FunctionalTest12::testAtomic()
 {
-	static const GLchar* fragment_shader_code = "#version 400 core\n"
+	static const GLchar* fragment_shader_code = "#version 410 core\n"
 												"#extension GL_ARB_shader_atomic_counters : require\n"
 												"#extension GL_ARB_shader_subroutine      : require\n"
 												"\n"
@@ -6969,6 +6967,7 @@ std::string FunctionalTest13::getVertexShaderBody(unsigned int n_id)
 	result_sstream << "#version 400\n"
 					  "\n"
 					  "#extension GL_ARB_shader_subroutine : require\n"
+					  "#extension GL_ARB_separate_shader_objects: require\n"
 					  "\n"
 					  /* Sub-routine */
 					  "subroutine void SubroutineVSType(inout vec4 result);\n"
@@ -11416,7 +11415,7 @@ std::string NegativeTest5::getFragmentShaderBody(bool include_invalid_subroutine
 		result_sstream << "subroutine void subroutineTestTypeFS(out vec4 test);\n"
 						  "\n"
 						  "subroutine uniform subroutineTestTypeFS test_subroutineFS;\n";
-	};
+	}
 
 	result_sstream << "\n"
 					  "out vec4 result;\n"
@@ -11463,7 +11462,7 @@ std::string NegativeTest5::getGeometryShaderBody(bool include_invalid_subroutine
 		result_sstream << "subroutine void subroutineTestTypeGS(out vec4 test);\n"
 						  "\n"
 						  "subroutine uniform subroutineTestTypeGS test_subroutineGS;\n";
-	};
+	}
 
 	result_sstream << "\n"
 					  "void main()\n"
@@ -11508,7 +11507,7 @@ std::string NegativeTest5::getTessellationControlShaderBody(bool include_invalid
 		result_sstream << "subroutine void subroutineTestTypeTC(out vec4 test);\n"
 						  "\n"
 						  "subroutine uniform subroutineTestTypeTC test_subroutineTC;\n";
-	};
+	}
 
 	result_sstream << "\n"
 					  "void main()\n"
@@ -11553,7 +11552,7 @@ std::string NegativeTest5::getTessellationEvaluationShaderBody(
 		result_sstream << "subroutine void subroutineTestTypeTE(out vec4 test);\n"
 						  "\n"
 						  "subroutine uniform subroutineTestTypeTE test_subroutineTE;\n";
-	};
+	}
 
 	result_sstream << "\n"
 					  "void main()\n"
@@ -11595,7 +11594,7 @@ std::string NegativeTest5::getVertexShaderBody(bool include_invalid_subroutine_u
 		result_sstream << "subroutine void subroutineTestTypeVS(out vec4 test);\n"
 						  "\n"
 						  "subroutine uniform subroutineTestTypeVS test_subroutineVS;\n";
-	};
+	}
 
 	result_sstream << "\n"
 					  "void main()\n"
@@ -11808,7 +11807,7 @@ std::string NegativeTest6::getFragmentShaderBody(bool include_invalid_declaratio
 						  "}\n"
 						  "\n"
 						  "subroutine uniform subroutineTestTypeFS test_subroutineFS;\n";
-	};
+	}
 
 	result_sstream << "\n"
 					  "out vec4 result;\n"
@@ -11864,7 +11863,7 @@ std::string NegativeTest6::getGeometryShaderBody(bool include_invalid_declaratio
 						  "}\n"
 						  "\n"
 						  "subroutine uniform subroutineTestTypeGS test_subroutineGS;\n";
-	};
+	}
 
 	result_sstream << "\n"
 					  "void main()\n"
@@ -11918,7 +11917,7 @@ std::string NegativeTest6::getTessellationControlShaderBody(bool include_invalid
 						  "}\n"
 						  "\n"
 						  "subroutine uniform subroutineTestTypeTC test_subroutineTC;\n";
-	};
+	}
 
 	result_sstream << "\n"
 					  "void main()\n"
@@ -11971,7 +11970,7 @@ std::string NegativeTest6::getTessellationEvaluationShaderBody(bool include_inva
 						  "}\n"
 						  "\n"
 						  "subroutine uniform subroutineTestTypeTE test_subroutineTE;\n";
-	};
+	}
 
 	result_sstream << "\n"
 					  "void main()\n"
@@ -12022,7 +12021,7 @@ std::string NegativeTest6::getVertexShaderBody(bool include_invalid_declaration)
 						  "}\n"
 						  "\n"
 						  "subroutine uniform subroutineTestTypeVS test_subroutineVS;\n";
-	};
+	}
 
 	result_sstream << "\n"
 					  "void main()\n"
@@ -12473,7 +12472,7 @@ std::string NegativeTest8::getFragmentShaderBody(bool include_invalid_declaratio
 						  "subroutine(subroutineTestTypeFS) void test_impl1(out vec4 test);\n"
 						  "\n"
 						  "subroutine uniform subroutineTestTypeFS test_subroutineFS;\n";
-	};
+	}
 
 	result_sstream << "\n"
 					  "out vec4 result;\n"
@@ -12521,7 +12520,7 @@ std::string NegativeTest8::getGeometryShaderBody(bool include_invalid_declaratio
 						  "subroutine(subroutineTestTypeGS) void test_impl1(out vec4 test);\n"
 						  "\n"
 						  "subroutine uniform subroutineTestTypeGS test_subroutineGS;\n";
-	};
+	}
 
 	result_sstream << "\n"
 					  "void main()\n"
@@ -12567,7 +12566,7 @@ std::string NegativeTest8::getTessellationControlShaderBody(bool include_invalid
 						  "subroutine(subroutineTestTypeTC) void test_impl1(out vec4 test);\n"
 						  "\n"
 						  "subroutine uniform subroutineTestTypeTC test_subroutineTC;\n";
-	};
+	}
 
 	result_sstream << "\n"
 					  "void main()\n"
@@ -12612,7 +12611,7 @@ std::string NegativeTest8::getTessellationEvaluationShaderBody(bool include_inva
 						  "subroutine(subroutineTestTypeTE) void test_impl1(out vec4 test);\n"
 						  "\n"
 						  "subroutine uniform subroutineTestTypeTE test_subroutineTE;\n";
-	};
+	}
 
 	result_sstream << "\n"
 					  "void main()\n"
@@ -12655,7 +12654,7 @@ std::string NegativeTest8::getVertexShaderBody(bool include_invalid_declaration)
 						  "subroutine(subroutineTestTypeVS) void test_impl1(out vec4 test);\n"
 						  "\n"
 						  "subroutine uniform subroutineTestTypeVS test_subroutineVS;\n";
-	};
+	}
 
 	result_sstream << "\n"
 					  "void main()\n"

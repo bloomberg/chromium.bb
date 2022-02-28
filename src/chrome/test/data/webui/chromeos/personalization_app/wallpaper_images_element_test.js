@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {untrustedOrigin} from 'chrome://personalization/common/constants.js';
-import {selectImage} from 'chrome://personalization/common/iframe_api.js';
-import {promisifySendImagesForTesting, WallpaperImages} from 'chrome://personalization/trusted/wallpaper_images_element.js';
-import {assertDeepEquals, assertEquals, assertFalse, assertNotReached, assertTrue} from '../../chai_assert.js';
-import {flushTasks, waitAfterNextRender} from '../../test_util.m.js';
-import {assertWindowObjectsEqual, baseSetup, initElement, teardownElement} from './personalization_app_test_utils.js';
-import {TestWallpaperProvider} from './test_mojo_interface_provider.js';
+import {WallpaperLayout, WallpaperType} from 'chrome://personalization/trusted/personalization_app.mojom-webui.js';
+import {PersonalizationRouter} from 'chrome://personalization/trusted/personalization_router_element.js';
+import {getDarkLightImageTiles, getRegularImageTiles, promisifyImagesIframeFunctionsForTesting, WallpaperImages} from 'chrome://personalization/trusted/wallpaper/wallpaper_images_element.js';
 
-const fetchImagesMethod = 'fetchImagesForCollection';
+import {assertDeepEquals, assertEquals, assertFalse} from '../../chai_assert.js';
+import {flushTasks, waitAfterNextRender} from '../../test_util.js';
+
+import {assertWindowObjectsEqual, baseSetup, initElement, teardownElement} from './personalization_app_test_utils.js';
+import {TestPersonalizationStore} from './test_personalization_store.js';
+import {TestWallpaperProvider} from './test_wallpaper_interface_provider.js';
 
 export function WallpaperImagesTest() {
   /** @type {?HTMLElement} */
@@ -19,8 +20,13 @@ export function WallpaperImagesTest() {
   /** @type {?TestWallpaperProvider} */
   let wallpaperProvider = null;
 
+  /** @type {?TestPersonalizationStore} */
+  let personalizationStore = null;
+
   setup(() => {
-    wallpaperProvider = baseSetup();
+    const mocks = baseSetup();
+    wallpaperProvider = mocks.wallpaperProvider;
+    personalizationStore = mocks.personalizationStore;
   });
 
   teardown(async () => {
@@ -29,157 +35,214 @@ export function WallpaperImagesTest() {
     await flushTasks();
   });
 
-  test('fetches wallpaper images on collection-id change', async () => {
+  test('send current wallpaper asset id', async () => {
+    let {sendCurrentWallpaperAssetId: sendCurrentWallpaperAssetIdPromise} =
+        promisifyImagesIframeFunctionsForTesting();
+
+    // Set the current wallpaper as an online wallpaper.
+    // The currentSelected asset id should be sent to iframe.
+    personalizationStore.data.currentSelected =
+        wallpaperProvider.currentWallpaper;
+
     wallpaperImagesElement =
-        initElement(WallpaperImages.is, {active: true, collectionId: 'id_0'});
-
-    let collectionId = await wallpaperProvider.whenCalled(fetchImagesMethod);
-    assertEquals('id_0', collectionId);
-    assertEquals(1, wallpaperProvider.getCallCount(fetchImagesMethod));
-    await waitAfterNextRender(wallpaperImagesElement);
-
-    wallpaperProvider.resetResolver(fetchImagesMethod);
-
-    wallpaperImagesElement.collectionId = 'id_1';
-    collectionId = await wallpaperProvider.whenCalled(fetchImagesMethod);
-    assertEquals('id_1', collectionId);
-    assertEquals(1, wallpaperProvider.getCallCount(fetchImagesMethod));
-  });
-
-  test('displays images for current collection id', async () => {
-    let sendImagesPromise = promisifySendImagesForTesting();
-    wallpaperImagesElement =
-        initElement(WallpaperImages.is, {active: true, collectionId: 'id_0'});
+        initElement(WallpaperImages.is, {collectionId: 'id_0'});
 
     const iframe =
         wallpaperImagesElement.shadowRoot.getElementById('images-iframe');
 
-    // Wait for the call to fetch images.
-    let requestedId = await wallpaperProvider.whenCalled(fetchImagesMethod);
-    assertEquals('id_0', requestedId);
+    // Wait for iframe to receive data.
+    let [targetWindow, data] = await sendCurrentWallpaperAssetIdPromise;
+
+    assertEquals(iframe.contentWindow, targetWindow);
+    assertDeepEquals(
+        BigInt(personalizationStore.data.currentSelected.key), data);
+
+    sendCurrentWallpaperAssetIdPromise =
+        promisifyImagesIframeFunctionsForTesting().sendCurrentWallpaperAssetId;
+
+    // Set the current wallpaper as a daily refresh wallpaper.
+    // The currentSelected asset id should be sent to iframe.
+    personalizationStore.data.currentSelected = {
+      attribution: ['Image 1'],
+      layout: WallpaperLayout.kCenter,
+      key: '2',
+      type: WallpaperType.kDaily,
+      url: {url: 'https://images.googleusercontent.com/1'},
+    };
+    personalizationStore.notifyObservers();
 
     // Wait for iframe to receive data.
-    let [targetWindow, data] = await sendImagesPromise;
+    [targetWindow, data] = await sendCurrentWallpaperAssetIdPromise;
     assertEquals(iframe.contentWindow, targetWindow);
-    assertDeepEquals(wallpaperProvider.images, data);
+    assertDeepEquals(
+        BigInt(personalizationStore.data.currentSelected.key), data);
+
+    sendCurrentWallpaperAssetIdPromise =
+        promisifyImagesIframeFunctionsForTesting().sendCurrentWallpaperAssetId;
+
+    // Set the current wallpaper not as an online wallpaper.
+    // No asset id is sent to iframe.
+    personalizationStore.data.currentSelected = {
+      attribution: ['Image 2'],
+      layout: WallpaperLayout.kCenter,
+      key: '3',
+      type: WallpaperType.kDefault,
+      url: {url: 'https://images.googleusercontent.com/2'},
+    };
+    personalizationStore.notifyObservers();
+
+    // Wait for iframe to receive data.
+    [targetWindow, data] = await sendCurrentWallpaperAssetIdPromise;
+    assertEquals(iframe.contentWindow, targetWindow);
+    assertEquals(null, data);
+  });
+
+  test('displays images for current collection id', async () => {
+    personalizationStore.data.backdrop.images = {
+      'id_0': wallpaperProvider.images,
+      'id_1': [
+        {assetId: BigInt(10), url: {url: 'https://id_1-0/'}},
+        {assetId: BigInt(20), url: {url: 'https://id_1-1/'}},
+      ],
+    };
+    personalizationStore.data.backdrop.collections =
+        wallpaperProvider.collections;
+    personalizationStore.data.loading.images = {'id_0': false, 'id_1': false};
+    personalizationStore.data.loading.collections = false;
+
+    let {sendImageTiles: sendImageTilesPromise} =
+        promisifyImagesIframeFunctionsForTesting();
+    wallpaperImagesElement =
+        initElement(WallpaperImages.is, {collectionId: 'id_0'});
+
+    const iframe =
+        wallpaperImagesElement.shadowRoot.getElementById('images-iframe');
+
+    // Wait for iframe to receive data.
+    let [targetWindow, data] = await sendImageTilesPromise;
+    assertEquals(iframe.contentWindow, targetWindow);
+    assertDeepEquals(
+        getRegularImageTiles(personalizationStore.data.backdrop.images['id_0']),
+        data);
     // Wait for a render to happen.
     await waitAfterNextRender(wallpaperImagesElement);
     assertFalse(iframe.hidden);
 
-    wallpaperProvider.resetResolver(fetchImagesMethod);
-    sendImagesPromise = promisifySendImagesForTesting();
-    wallpaperProvider.setImages([
-      {url: {url: 'https://id_1-0/'}},
-      {url: {url: 'https://id_1-1/'}},
-    ]);
+    sendImageTilesPromise =
+        promisifyImagesIframeFunctionsForTesting().sendImageTiles;
     wallpaperImagesElement.collectionId = 'id_1';
 
-    // Wait for another call to fetch images.
-    requestedId = await wallpaperProvider.whenCalled(fetchImagesMethod);
-    assertEquals('id_1', requestedId);
     // Wait for iframe to receive new data.
-    [targetWindow, data] = await sendImagesPromise;
+    [targetWindow, data] = await sendImageTilesPromise;
 
     await waitAfterNextRender(wallpaperImagesElement);
 
     assertFalse(iframe.hidden);
 
     assertWindowObjectsEqual(iframe.contentWindow, targetWindow);
-    assertDeepEquals(wallpaperProvider.images, data);
+    assertDeepEquals(
+        getRegularImageTiles(personalizationStore.data.backdrop.images['id_1']),
+        data);
   });
 
-  test('displays error on loading failure', async () => {
-    const sendImagesPromise = promisifySendImagesForTesting();
-    wallpaperProvider.setImagesToFail();
+  test('display dark/light tile for personalization hub', async () => {
+    loadTimeData.overrideValues({isDarkLightModeEnabled: true});
+    personalizationStore.data.backdrop.images = {
+      'id_0': wallpaperProvider.images,
+      'id_1': [
+        {assetId: BigInt(10), url: {url: 'https://id_1-0/'}},
+        {assetId: BigInt(20), url: {url: 'https://id_1-1/'}},
+      ],
+    };
+    personalizationStore.data.backdrop.collections =
+        wallpaperProvider.collections;
+    personalizationStore.data.loading.images = {'id_0': false, 'id_1': false};
+    personalizationStore.data.loading.collections = false;
 
+    let {sendImageTiles: sendImageTilesPromise} =
+        promisifyImagesIframeFunctionsForTesting();
     wallpaperImagesElement =
-        initElement(WallpaperImages.is, {active: true, collectionId: 'id_0'});
+        initElement(WallpaperImages.is, {collectionId: 'id_0'});
 
-    const spinner =
-        wallpaperImagesElement.shadowRoot.querySelector('paper-spinner-lite');
-    assertTrue(spinner.active);
+    const iframe =
+        wallpaperImagesElement.shadowRoot.getElementById('images-iframe');
 
-    const error = wallpaperImagesElement.shadowRoot.querySelector('#error');
-    assertTrue(error.hidden);
+    // Wait for iframe to receive data.
+    let [targetWindow, data] = await sendImageTilesPromise;
+    assertEquals(iframe.contentWindow, targetWindow);
+    const tiles = getDarkLightImageTiles(
+        false, personalizationStore.data.backdrop.images['id_0']);
+    assertDeepEquals(tiles, data);
+    assertEquals(data[0].preview.length, 2);
+    // Check that light variant comes before dark variant.
+    assertEquals(
+        data[0].preview[0].url, 'https://images.googleusercontent.com/1');
+    assertEquals(
+        data[0].preview[1].url, 'https://images.googleusercontent.com/0');
+    // Wait for a render to happen.
+    await waitAfterNextRender(wallpaperImagesElement);
+    assertFalse(iframe.hidden);
 
-    await wallpaperProvider.whenCalled(fetchImagesMethod);
-    const [_, images] = await sendImagesPromise;
+    sendImageTilesPromise =
+        promisifyImagesIframeFunctionsForTesting().sendImageTiles;
+    wallpaperImagesElement.collectionId = 'id_1';
+
+    // Wait for iframe to receive new data.
+    [targetWindow, data] = await sendImageTilesPromise;
+
     await waitAfterNextRender(wallpaperImagesElement);
 
-    assertDeepEquals([], images, 'Empty image array should have been sent');
+    assertFalse(iframe.hidden);
 
-    // The iframe should be hidden.
-    const iframe = wallpaperImagesElement.shadowRoot.querySelector('iframe');
-    assertTrue(iframe.hidden);
-
-    assertFalse(spinner.active);
-    assertFalse(error.hidden);
+    assertWindowObjectsEqual(iframe.contentWindow, targetWindow);
+    assertDeepEquals(
+        getDarkLightImageTiles(
+            false, personalizationStore.data.backdrop.images['id_1']),
+        data);
   });
 
-  test('throws error when invalid SelectImageEvent is received', async () => {
-    const sendImagesPromise = promisifySendImagesForTesting();
-    wallpaperImagesElement =
-        initElement(WallpaperImages.is, {active: true, collectionId: 'id_0'});
-
-    const original = wallpaperImagesElement.onImageSelected_;
-    const selectImagePromise = new Promise((resolve) => {
-      async function patched(event) {
-        try {
-          // Rewrite event to make it look as if it is coming from untrusted
-          // origin.
-          await original.call(
-              wallpaperImagesElement,
-              {data: event.data, origin: untrustedOrigin});
-          assertNotReached();
-        } catch (e) {
-          assertEquals(
-              'Assertion failed: No valid selection found in choices',
-              e.message);
-        }
-        resolve(true);
-      }
-      window.removeEventListener('message', original);
-      window.addEventListener('message', patched, {once: true});
+  test('navigates back to main page on loading failure', async () => {
+    const reloadPromise = new Promise((resolve) => {
+      PersonalizationRouter.reloadAtWallpaper = resolve;
     });
 
+    personalizationStore.data.backdrop.collections =
+        wallpaperProvider.collections;
+    personalizationStore.data.backdrop.images = {'id_0': null};
+    personalizationStore.data.loading = {
+      collections: false,
+      images: {'id_0': true}
+    };
 
-    await wallpaperProvider.whenCalled(fetchImagesMethod);
-    await sendImagesPromise;
-    await waitAfterNextRender(wallpaperImagesElement);
-    // This image assetId should fail validation.
-    selectImage(window, /*image_url=*/ BigInt(-10));
-    // Wait for the message handler |patched| to run.
-    const result = await selectImagePromise;
-    assertTrue(result);
+    wallpaperImagesElement =
+        initElement(WallpaperImages.is, {collectionId: 'id_0'});
+
+    // Simulate finish loading. Images still null. Should bail and reload
+    // application.
+    personalizationStore.data.loading = {images: {'id_0': false}};
+    personalizationStore.notifyObservers();
+
+    await reloadPromise;
   });
 
-  test(
-      'calls SelectWallpaper when valid SelectImageEvent is received',
-      async () => {
-        wallpaperImagesElement = initElement(
-            WallpaperImages.is, {active: true, collectionId: 'id_0'});
+  test('navigates back to main page on unknown collection id', async () => {
+    const reloadPromise = new Promise((resolve) => {
+      PersonalizationRouter.reloadAtWallpaper = resolve;
+    });
 
-        const original = wallpaperImagesElement.onImageSelected_;
-        const selectImagePromise = new Promise((resolve) => {
-          async function patched(event) {
-            const selectPromise =
-                wallpaperProvider.whenCalled('selectWallpaper');
-            original.call(
-                wallpaperImagesElement,
-                {data: event.data, origin: untrustedOrigin});
-            const args = await selectPromise;
-            resolve(args);
-          }
-          window.removeEventListener('message', original);
-          window.addEventListener('message', patched, {once: true});
-        });
+    personalizationStore.data.backdrop.collections =
+        wallpaperProvider.collections;
+    personalizationStore.data.backdrop.images = {
+      'id_0': wallpaperProvider.images
+    };
+    personalizationStore.data.loading = {
+      collections: false,
+      images: {'id_0': false},
+    };
 
-        await wallpaperProvider.whenCalled(fetchImagesMethod);
-        await waitAfterNextRender(wallpaperImagesElement);
+    wallpaperImagesElement =
+        initElement(WallpaperImages.is, {collectionId: 'unknown_id'});
 
-        selectImage(window, /*assetId=*/ wallpaperProvider.images[0].assetId);
-
-        const assetId = await selectImagePromise;
-        assertEquals(wallpaperProvider.images[0].assetId, assetId);
-      });
+    await reloadPromise;
+  });
 }

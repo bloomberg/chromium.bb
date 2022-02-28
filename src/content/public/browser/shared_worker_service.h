@@ -18,9 +18,9 @@ namespace base {
 class UnguessableToken;
 }
 
-namespace storage {
+namespace blink {
 class StorageKey;
-}  // namespace storage
+}  // namespace blink
 
 namespace content {
 
@@ -54,10 +54,10 @@ class CONTENT_EXPORT SharedWorkerService {
     // notifications.
     virtual void OnClientAdded(
         const blink::SharedWorkerToken& token,
-        content::GlobalFrameRoutingId render_frame_host_id) = 0;
+        content::GlobalRenderFrameHostId render_frame_host_id) = 0;
     virtual void OnClientRemoved(
         const blink::SharedWorkerToken& token,
-        content::GlobalFrameRoutingId render_frame_host_id) = 0;
+        content::GlobalRenderFrameHostId render_frame_host_id) = 0;
   };
 
   // Adds/removes an observer.
@@ -80,7 +80,7 @@ class CONTENT_EXPORT SharedWorkerService {
   // main script resource, and the storage key.  Returns true on success.
   virtual bool TerminateWorker(const GURL& url,
                                const std::string& name,
-                               const storage::StorageKey& storage_key) = 0;
+                               const blink::StorageKey& storage_key) = 0;
 
   // Drops all shared workers and references to processes for shared workers
   // synchronously.

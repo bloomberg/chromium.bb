@@ -44,6 +44,12 @@
     await this._logMessage(message, expectError, styleSheetId);
   }
 
+  async setContainerQueryText(styleSheetId, expectError, options) {
+    options.styleSheetId = styleSheetId;
+    var message = await this._dp.CSS.setContainerQueryText(options);
+    await this._logMessage(message, expectError, styleSheetId);
+  }
+
   async addRule(styleSheetId, expectError, options) {
     options.styleSheetId = styleSheetId;
     var message = await this._dp.CSS.addRule(options);
@@ -72,6 +78,19 @@
       this._indentLog(baseIndent, '@media ' + mediaLine);
       baseIndent += 4;
     }
+
+    const containerQueries = rule.containerQueries || [];
+    const containerQueriesLine = containerQueries.map(cq => {
+      if (cq.name) {
+        return `${cq.name} ${cq.text}`;
+      }
+      return cq.text;
+    }).join(' ');
+    if (containerQueriesLine.length) {
+      this._indentLog(baseIndent, '@container ' + containerQueriesLine);
+      baseIndent += 4;
+    }
+
     var selectorLine = '';
     var selectors = rule.selectorList.selectors;
     for (var i = 0; i < selectors.length; ++i) {
@@ -99,7 +118,11 @@
     var cssProperties = style.cssProperties;
     for (var i = 0; i < cssProperties.length; ++i) {
       var cssProperty = cssProperties[i];
-      var propertyLine = cssProperty.name + ': ' + cssProperty.value + ';';
+      var range = cssProperty.range;
+      var rangeText = range ? '[' + range.startLine + ':' + range.startColumn +
+                                  '-' + range.endLine + ':' + range.endColumn + ']'
+                            : '[undefined-undefined]';
+      var propertyLine = cssProperty.name + ': ' + cssProperty.value + '; @' + rangeText;
       this._indentLog(baseIndent + 4, propertyLine);
     }
   }

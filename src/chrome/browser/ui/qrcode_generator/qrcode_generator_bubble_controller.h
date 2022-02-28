@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_QRCODE_GENERATOR_QRCODE_GENERATOR_BUBBLE_CONTROLLER_H_
 #define CHROME_BROWSER_UI_QRCODE_GENERATOR_QRCODE_GENERATOR_BUBBLE_CONTROLLER_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 class GURL;
@@ -23,6 +23,11 @@ class QRCodeGeneratorBubbleView;
 class QRCodeGeneratorBubbleController
     : public content::WebContentsUserData<QRCodeGeneratorBubbleController> {
  public:
+  QRCodeGeneratorBubbleController(const QRCodeGeneratorBubbleController&) =
+      delete;
+  QRCodeGeneratorBubbleController& operator=(
+      const QRCodeGeneratorBubbleController&) = delete;
+
   ~QRCodeGeneratorBubbleController() override;
 
   // Returns whether the generator is available for a given page.
@@ -32,10 +37,12 @@ class QRCodeGeneratorBubbleController
       content::WebContents* web_contents);
 
   // Displays the QR Code Generator bubble.
-  void ShowBubble(const GURL& url);
+  void ShowBubble(const GURL& url, bool show_back_button = false);
 
   // Hides the QR Code Generator bubble.
   void HideBubble();
+
+  bool IsBubbleShown() { return bubble_shown_; }
 
   // Returns nullptr if no bubble is currently shown.
   QRCodeGeneratorBubbleView* qrcode_generator_bubble_view() const;
@@ -43,25 +50,23 @@ class QRCodeGeneratorBubbleController
   // Handler for when the bubble is dismissed.
   void OnBubbleClosed();
 
+  void OnBackButtonPressed();
+
  protected:
   explicit QRCodeGeneratorBubbleController(content::WebContents* web_contents);
 
  private:
-  QRCodeGeneratorBubbleController();
-
   friend class content::WebContentsUserData<QRCodeGeneratorBubbleController>;
 
   void UpdateIcon();
 
-  // The web_contents associated with this controller.
-  content::WebContents* web_contents_;
-
   // Will be nullptr if no bubble is currently shown.
-  QRCodeGeneratorBubbleView* qrcode_generator_bubble_ = nullptr;
+  raw_ptr<QRCodeGeneratorBubbleView> qrcode_generator_bubble_ = nullptr;
+
+  // True if the bubble is currently shown.
+  bool bubble_shown_ = false;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(QRCodeGeneratorBubbleController);
 };
 
 }  // namespace qrcode_generator

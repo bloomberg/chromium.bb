@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/flat_map.h"
 #include "ui/display/types/display_configuration_params.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_types_export.h"
@@ -30,6 +29,7 @@ using GetHDCPStateCallback =
     base::OnceCallback<void(bool, HDCPState, ContentProtectionMethod)>;
 using SetHDCPStateCallback = base::OnceCallback<void(bool)>;
 using DisplayControlCallback = base::OnceCallback<void(bool)>;
+using SetPrivacyScreenCallback = base::OnceCallback<void(bool)>;
 
 // Interface for classes that perform display configuration actions on behalf
 // of DisplayConfigurator.
@@ -86,7 +86,9 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
       const std::vector<GammaRampRGBEntry>& gamma_lut) = 0;
 
   // Sets the privacy screen state on the display with |display_id|.
-  virtual void SetPrivacyScreen(int64_t display_id, bool enabled) = 0;
+  virtual void SetPrivacyScreen(int64_t display_id,
+                                bool enabled,
+                                SetPrivacyScreenCallback callback) = 0;
 
   virtual void AddObserver(NativeDisplayObserver* observer) = 0;
 

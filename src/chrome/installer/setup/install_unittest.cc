@@ -11,12 +11,12 @@
 #include <tuple>
 
 #include "base/base_paths.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
@@ -56,6 +56,11 @@ class CreateVisualElementsManifestTest
         start_menu_override_(base::DIR_START_MENU),
         expected_manifest_(std::get<1>(GetParam())),
         version_("0.0.0.0") {}
+
+  CreateVisualElementsManifestTest(const CreateVisualElementsManifestTest&) =
+      delete;
+  CreateVisualElementsManifestTest& operator=(
+      const CreateVisualElementsManifestTest&) = delete;
 
   void SetUp() override {
     // Create a temp directory for testing.
@@ -125,9 +130,6 @@ class CreateVisualElementsManifestTest
 
   // The path to the Start Menu shortcut.
   base::FilePath start_menu_shortcut_path_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CreateVisualElementsManifestTest);
 };
 
 constexpr char kExpectedPrimaryManifest[] =
@@ -462,12 +464,12 @@ class MigrateShortcutTest
       : shortcut_operation_(testing::get<0>(GetParam())),
         shortcut_level_(testing::get<1>(GetParam())) {}
 
+  MigrateShortcutTest(const MigrateShortcutTest&) = delete;
+  MigrateShortcutTest& operator=(const MigrateShortcutTest&) = delete;
+
  protected:
   const installer::InstallShortcutOperation shortcut_operation_;
   const installer::InstallShortcutLevel shortcut_level_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MigrateShortcutTest);
 };
 
 TEST_P(MigrateShortcutTest, MigrateAwayFromDeprecatedStartMenuTest) {

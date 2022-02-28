@@ -1933,7 +1933,8 @@ public:
 		m_spec.outputs.push_back(Symbol("res", glu::VarType(baseType, precision)));
 		m_spec.source = "res = fma(a, b, c);";
 
-		if (!glu::contextSupports(context.getRenderContext().getType(), glu::ApiType::es(3, 2)))
+		if (!glu::contextSupports(context.getRenderContext().getType(), glu::ApiType::es(3, 2))
+				&& !glu::contextSupports(context.getRenderContext().getType(), glu::ApiType::core(4, 5)))
 			m_spec.globalDeclarations = "#extension GL_EXT_gpu_shader5 : require\n";
 	}
 
@@ -2035,13 +2036,13 @@ public:
 		TCU_SET_INTERVAL(prod2, tmp, tmp = ia.hi() * ib.lo());
 		TCU_SET_INTERVAL(prod3, tmp, tmp = ia.hi() * ib.hi());
 
-		prod = format.convert(format.roundOut(prod0 | prod1 | prod2 | prod3, ia.isFinite() && ib.isFinite()));
+		prod = format.convert(format.roundOut(prod0 | prod1 | prod2 | prod3, ia.isFinite(format.getMaxValue()) && ib.isFinite(format.getMaxValue())));
 
 		TCU_SET_INTERVAL_BOUNDS(res, tmp,
 								tmp = prod.lo() + ic.lo(),
 								tmp = prod.hi() + ic.hi());
 
-		return format.convert(format.roundOut(res, prod.isFinite() && ic.isFinite()));
+		return format.convert(format.roundOut(res, prod.isFinite(format.getMaxValue()) && ic.isFinite(format.getMaxValue())));
 	}
 
 	bool compare (const void* const* inputs, const void* const* outputs)

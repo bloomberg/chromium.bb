@@ -14,17 +14,11 @@
 # ==============================================================================
 """Unit tests for TensorFlow "Eager" Mode's Tensor class."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import copy
 import re
 import sys
-import unittest
 
 import numpy as np
-import six
 
 from tensorflow.python import pywrap_tfe
 from tensorflow.python.eager import context
@@ -37,6 +31,7 @@ from tensorflow.python.framework import ops
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import io_ops
+from tensorflow.python.ops import list_ops
 from tensorflow.python.ops import resource_variable_ops
 from tensorflow.python.ops import variables
 
@@ -51,7 +46,7 @@ def _create_tensor(value, device=None, dtype=None):
   try:
     return ops.EagerTensor(value, device=device, dtype=dtype)
   except core._NotOkStatusException as e:  # pylint: disable=protected-access
-    raise core._status_to_exception(e.code, e.message)
+    raise core._status_to_exception(e)
 
 
 class TFETensorTest(test_util.TensorFlowTestCase):
@@ -70,11 +65,11 @@ class TFETensorTest(test_util.TensorFlowTestCase):
     ctx = context.context()
     device = ctx.device_name
     # Missing device.
-    with self.assertRaisesRegexp(TypeError, r".*argument 'device' \(pos 2\).*"):
+    with self.assertRaisesRegex(TypeError, r".*argument 'device' \(pos 2\).*"):
       ops.EagerTensor(1)
     # Bad dtype type.
-    with self.assertRaisesRegexp(TypeError,
-                                 "Expecting a DataType value for dtype. Got"):
+    with self.assertRaisesRegex(TypeError,
+                                "Expecting a DataType value for dtype. Got"):
       ops.EagerTensor(1, device=device, dtype="1")
 
     # Following errors happen when trying to copy to GPU.
@@ -83,7 +78,7 @@ class TFETensorTest(test_util.TensorFlowTestCase):
 
     with ops.device("/device:GPU:0"):
       # Bad device.
-      with self.assertRaisesRegexp(TypeError, "Error parsing device argument"):
+      with self.assertRaisesRegex(TypeError, "Error parsing device argument"):
         ops.EagerTensor(1.0, device=1)
 
   def testNumpyValue(self):
@@ -109,7 +104,7 @@ class TFETensorTest(test_util.TensorFlowTestCase):
     self.assertAllEqual(values, t)
     ctx = context.context()
     # Bad dtype value.
-    with self.assertRaisesRegexp(TypeError, "Invalid dtype argument value"):
+    with self.assertRaisesRegex(TypeError, "Invalid dtype argument value"):
       ops.EagerTensor(values, device=ctx.device_name, dtype=12345)
 
   def testNumpyOrderHandling(self):
@@ -140,8 +135,7 @@ class TFETensorTest(test_util.TensorFlowTestCase):
     tensor = constant_op.constant(numpy_tensor)
     with self.assertRaises(TypeError):
       len(numpy_tensor)
-    with self.assertRaisesRegexp(
-        TypeError, r"Scalar tensor has no `len[(][)]`"):
+    with self.assertRaisesRegex(TypeError, r"Scalar tensor has no `len[(][)]`"):
       len(tensor)
 
     numpy_tensor = np.asarray([1.0, 2.0, 3.0])
@@ -190,10 +184,6 @@ class TFETensorTest(test_util.TensorFlowTestCase):
     self.assertTrue(bool(_create_tensor([1])))
     self.assertTrue(bool(_create_tensor([1.])))
 
-  @unittest.skipUnless(six.PY2, "long has been removed in PY3")
-  def testLong(self):
-    self.assertEqual(long(_create_tensor(long(42))), 42)
-
   def testIndex(self):
     self.assertEqual([42][_create_tensor(0)], 42)
 
@@ -225,8 +215,9 @@ class TFETensorTest(test_util.TensorFlowTestCase):
     tensor_repr = repr(t)
     self.assertTrue(tensor_repr.startswith("<"))
     self.assertTrue(tensor_repr.endswith(">"))
-    self.assertIn("shape=%s, dtype=%s, numpy=\n%r" %
-                  (t.shape, t.dtype.name, t.numpy()), tensor_repr)
+    self.assertIn(
+        "shape=%s, dtype=%s, numpy=\n%r" % (t.shape, t.dtype.name, t.numpy()),
+        tensor_repr)
 
   def testTensorStrReprObeyNumpyPrintOptions(self):
     orig_threshold = np.get_printoptions()["threshold"]
@@ -274,16 +265,15 @@ class TFETensorTest(test_util.TensorFlowTestCase):
 
   def testIterateOverScalarTensorRaises(self):
     t = _create_tensor(1)
-    with self.assertRaisesRegexp(TypeError,
-                                 "Cannot iterate over a scalar tensor"):
+    with self.assertRaisesRegex(TypeError,
+                                "Cannot iterate over a scalar tensor"):
       iter(t)
 
   @test_util.run_gpu_only
   def testStringTensorOnGPU(self):
     with ops.device("/device:GPU:0"):
       t = _create_tensor("test string")
-      self.assertIn("CPU", t.device)
-      self.assertIn("CPU", t.backing_device)
+      self.assertIn("GPU", t.device)
 
   def testInvalidUTF8ProducesReasonableError(self):
     if sys.version_info[0] < 3:
@@ -302,8 +292,10 @@ class TFETensorTest(test_util.TensorFlowTestCase):
 
   @test_util.run_in_graph_and_eager_modes
   def testCompatibility(self):
-    integer_types = [dtypes.int8, dtypes.int16, dtypes.int32, dtypes.int64,
-                     dtypes.uint8, dtypes.uint16, dtypes.uint32, dtypes.uint64]
+    integer_types = [
+        dtypes.int8, dtypes.int16, dtypes.int32, dtypes.int64, dtypes.uint8,
+        dtypes.uint16, dtypes.uint32, dtypes.uint64
+    ]
 
     # Floats are not compatible with ints
     for t in integer_types:
@@ -329,8 +321,10 @@ class TFETensorTest(test_util.TensorFlowTestCase):
         dtypes.complex128)
 
     # Quantized types are not compatible with floats
-    quantized_types = [dtypes.qint16, dtypes.qint32, dtypes.qint8,
-                       dtypes.quint16, dtypes.quint8]
+    quantized_types = [
+        dtypes.qint16, dtypes.qint32, dtypes.qint8, dtypes.quint16,
+        dtypes.quint8
+    ]
 
     for t in quantized_types:
       with self.assertRaises(TypeError):
@@ -350,39 +344,38 @@ class TFETensorTest(test_util.TensorFlowTestCase):
   @test_util.assert_no_new_pyobjects_executing_eagerly
   @test_util.run_in_graph_and_eager_modes
   def testConvertToTensorNumpyZeroDim(self):
-    for np_type, dtype in [(np.int32, dtypes.int32),
-                           (np.half, dtypes.half),
+    for np_type, dtype in [(np.int32, dtypes.int32), (np.half, dtypes.half),
                            (np.float32, dtypes.float32)]:
-      x = ops.convert_to_tensor([np.array(65, dtype=np_type),
-                                 np.array(16, dtype=np_type)])
+      x = ops.convert_to_tensor(
+          [np.array(65, dtype=np_type),
+           np.array(16, dtype=np_type)])
       self.assertEqual(x.dtype, dtype)
       self.assertAllEqual(x, [65, 16])
 
   @test_util.assert_no_new_pyobjects_executing_eagerly
   @test_util.run_in_graph_and_eager_modes
   def testConvertToTensorNumpyScalar(self):
-    x = ops.convert_to_tensor(
-        [np.array(321, dtype=np.int).item(),
-         np.array(16, dtype=np.int).item()])
+    x = ops.convert_to_tensor([
+        np.array(321, dtype=np.int64).item(),
+        np.array(16, dtype=np.int64).item()
+    ])
     self.assertAllEqual(x, [321, 16])
 
   def testEagerTensorError(self):
-    with self.assertRaisesRegexp(
-        TypeError,
-        "Cannot convert .* to EagerTensor of dtype .*"):
+    with self.assertRaisesRegex(TypeError,
+                                "Cannot convert .* to EagerTensor of dtype .*"):
       _ = ops.convert_to_tensor(1., dtype=dtypes.int32)
 
   def testEagerLargeConstant(self):
     for t in [dtypes.uint64, dtypes.uint32, dtypes.int32, dtypes.int64]:
-      self.assertEqual(
-          constant_op.constant(t.max, dtype=t).numpy(), t.max)
-      self.assertEqual(
-          constant_op.constant(t.min, dtype=t).numpy(), t.min)
+      self.assertEqual(constant_op.constant(t.max, dtype=t).numpy(), t.max)
+      self.assertEqual(constant_op.constant(t.min, dtype=t).numpy(), t.min)
 
   def test_numpyIsView(self):
-    t = constant_op.constant([0.0])
-    t._numpy()[0] = 42.0
-    self.assertAllClose(t, constant_op.constant([42.0]))
+    with ops.device("CPU"):
+      t = constant_op.constant([0.0])
+      t._numpy()[0] = 42.0
+      self.assertAllClose(t, constant_op.constant([42.0]))
 
   def test_numpyFailsForResource(self):
     v = variables.Variable(42)
@@ -390,10 +383,23 @@ class TFETensorTest(test_util.TensorFlowTestCase):
                                 "Cannot convert .+ resource"):
       v._handle._numpy()
 
+  def test_numpyFailsForVariant(self):
+    variant_t = list_ops.tensor_list_reserve(
+        element_shape=[], num_elements=1, element_dtype=dtypes.float32)
+    with self.assertRaisesRegex(errors.InvalidArgumentError,
+                                "Cannot convert .+ variant"):
+      variant_t._numpy()
+
   def testMemoryviewFailsForResource(self):
     v = variables.Variable(42)
     with self.assertRaisesRegex(BufferError, "Cannot convert .+ resource"):
       np.asarray(memoryview(v._handle))
+
+  def testMemoryviewFailsForVariant(self):
+    variant_t = list_ops.tensor_list_reserve(
+        element_shape=[], num_elements=1, element_dtype=dtypes.float32)
+    with self.assertRaisesRegex(BufferError, "Cannot convert .+ variant"):
+      np.asarray(memoryview(variant_t))
 
   def testMemoryviewIsReadonly(self):
     t = constant_op.constant([0.0])
@@ -418,6 +424,8 @@ class TFETensorTest(test_util.TensorFlowTestCase):
     self.assertAllEqual(
         np.array(memoryview(t)), np.array([0.0], dtype=np.float32))
 
+  @test_util.disable_tfrt("b/169877776: ResourceVariable is not initialized "
+                          "properly in TFRT")
   def testResourceTensorCopy(self):
     if not test_util.is_gpu_available():
       self.skipTest("GPU only")
@@ -433,8 +441,46 @@ class TFETensorTest(test_util.TensorFlowTestCase):
 
     self.assertAllEqual(read_handle_on_cpu, read_handle_on_gpu)
 
+  def testEagerTensorFormat(self):
+    t = array_ops.constant(1)
+    self.assertEqual(f"{t}", "1")
+    self.assertEqual(str(t), "tf.Tensor(1, shape=(), dtype=int32)")
+    self.assertEqual(f"{t!s}", "tf.Tensor(1, shape=(), dtype=int32)")
+    self.assertEqual(repr(t), "<tf.Tensor: shape=(), dtype=int32, numpy=1>")
+    self.assertEqual(f"{t!r}", "<tf.Tensor: shape=(), dtype=int32, numpy=1>")
+
+  def testEagerTensorFormatForResource(self):
+    t = resource_variable_ops.VarHandleOp(shape=[], dtype=dtypes.float32)
+    self.assertEqual(f"{t}", "<Resource Tensor>")
+    self.assertEqual(
+        str(t), "tf.Tensor(<Resource Tensor>, shape=(), dtype=resource)")
+    self.assertEqual(f"{t!s}",
+                     "tf.Tensor(<Resource Tensor>, shape=(), dtype=resource)")
+    self.assertEqual(
+        repr(t),
+        "<tf.Tensor: shape=(), dtype=resource, value=<Resource Tensor>>")
+    self.assertEqual(
+        f"{t!r}",
+        "<tf.Tensor: shape=(), dtype=resource, value=<Resource Tensor>>")
+
+  def testEagerTensorFormatForVariant(self):
+    t = list_ops.tensor_list_reserve(
+        element_shape=[1], num_elements=1, element_dtype=dtypes.float32)
+    self.assertEqual(f"{t}", "<TensorList>")
+    self.assertEqual(str(t), "tf.Tensor(<TensorList>, shape=(), dtype=variant)")
+    self.assertEqual(f"{t!s}",
+                     "tf.Tensor(<TensorList>, shape=(), dtype=variant)")
+    self.assertEqual(
+        repr(t), "<tf.Tensor: shape=(), dtype=variant, value=<TensorList>>")
+    self.assertEqual(
+        f"{t!r}", "<tf.Tensor: shape=(), dtype=variant, value=<TensorList>>")
+
 
 class TFETensorUtilTest(test_util.TensorFlowTestCase):
+
+  def setUp(self):
+    super(TFETensorUtilTest, self).setUp()
+    context.ensure_initialized()
 
   def testListOfThree(self):
     t1 = _create_tensor([[1, 2], [3, 4], [5, 6]], dtype=dtypes.int32)
@@ -455,12 +501,12 @@ class TFETensorUtilTest(test_util.TensorFlowTestCase):
   def testTensorListContainsNonTensors(self):
     t1 = _create_tensor([1, 2], dtype=dtypes.int32)
 
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         TypeError,
         r"Expected a list of EagerTensors but element 1 has type \"str\""):
       pywrap_tfe.TFE_Py_TensorShapeSlice([t1, "abc"], 0)
 
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         TypeError,
         r"Expected a list of EagerTensors but element 0 has type \"int\""):
       pywrap_tfe.TFE_Py_TensorShapeSlice([2, t1], 0)
@@ -468,7 +514,7 @@ class TFETensorUtilTest(test_util.TensorFlowTestCase):
   def testTensorListNotList(self):
     t1 = _create_tensor([1, 2], dtype=dtypes.int32)
 
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         TypeError,
         r"tensors argument must be a list or a tuple. Got.*EagerTensor"):
       pywrap_tfe.TFE_Py_TensorShapeSlice(t1, -2)
@@ -476,18 +522,17 @@ class TFETensorUtilTest(test_util.TensorFlowTestCase):
   def testNegativeSliceDim(self):
     t1 = _create_tensor([1, 2], dtype=dtypes.int32)
 
-    with self.assertRaisesRegexp(
-        ValueError,
-        r"Slice dimension must be non-negative. Got -2"):
+    with self.assertRaisesRegex(
+        ValueError, r"Slice dimension must be non-negative. Got -2"):
       pywrap_tfe.TFE_Py_TensorShapeSlice([t1], -2)
 
   def testUnicode(self):
     self.assertEqual(constant_op.constant(u"asdf").numpy(), b"asdf")
 
   def testFloatTensor(self):
-    self.assertEqual(dtypes.float64, _create_tensor(np.float64()).dtype)
-    self.assertEqual(dtypes.float32, _create_tensor(np.float32()).dtype)
-    self.assertEqual(dtypes.float16, _create_tensor(np.float16()).dtype)
+    self.assertEqual(dtypes.float64, _create_tensor(np.float64()).dtype)  # pylint: disable=no-value-for-parameter
+    self.assertEqual(dtypes.float32, _create_tensor(np.float32()).dtype)  # pylint: disable=no-value-for-parameter
+    self.assertEqual(dtypes.float16, _create_tensor(np.float16()).dtype)  # pylint: disable=no-value-for-parameter
     self.assertEqual(dtypes.float32, _create_tensor(0.0).dtype)
 
   def testSliceDimOutOfRange(self):
@@ -495,31 +540,31 @@ class TFETensorUtilTest(test_util.TensorFlowTestCase):
     t2 = _create_tensor([1, 2], dtype=dtypes.int32)
     t3 = _create_tensor(2, dtype=dtypes.int32)
 
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         IndexError,
         r"Slice dimension \(2\) must be smaller than rank of all tensors, "
         "but tensor at index 0 has rank 2"):
       pywrap_tfe.TFE_Py_TensorShapeSlice([t1], 2)
 
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         IndexError,
         r"Slice dimension \(1\) must be smaller than rank of all tensors, "
         "but tensor at index 0 has rank 1"):
       pywrap_tfe.TFE_Py_TensorShapeSlice([t2], 1)
 
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         IndexError,
         r"Slice dimension \(1\) must be smaller than rank of all tensors, "
         "but tensor at index 1 has rank 1"):
       pywrap_tfe.TFE_Py_TensorShapeSlice([t1, t2], 1)
 
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         IndexError,
         r"Slice dimension \(0\) must be smaller than rank of all tensors, "
         "but tensor at index 0 has rank 0"):
       pywrap_tfe.TFE_Py_TensorShapeSlice([t3], 0)
 
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         IndexError,
         r"Slice dimension \(0\) must be smaller than rank of all tensors, "
         "but tensor at index 2 has rank 0"):
@@ -541,8 +586,7 @@ class TFETensorUtilTest(test_util.TensorFlowTestCase):
   def testNonRectangularPackAsConstant(self):
     l = [array_ops.zeros((10, 1)).numpy(), array_ops.zeros(1).numpy()]
 
-    with self.assertRaisesRegexp(
-        ValueError, "non-rectangular Python sequence"):
+    with self.assertRaisesRegex(ValueError, "non-rectangular Python sequence"):
       constant_op.constant(l)
 
   @test_util.assert_no_new_pyobjects_executing_eagerly

@@ -68,8 +68,8 @@ class UploadTests(unittest.TestCase):
         [('check_call',
           ('ls', '%s/%s' % (self.base_url, self.lorem_ipsum_sha1))),
          ('check_call',
-          ('cp', '-z', 'txt', filenames[0],
-           '%s/%s' % (self.base_url, self.lorem_ipsum_sha1)))])
+          ('-h', 'Cache-Control:public, max-age=31536000', 'cp', '-z', 'txt',
+           filenames[0], '%s/%s' % (self.base_url, self.lorem_ipsum_sha1)))])
     self.assertTrue(os.path.exists(output_filename))
     self.assertEqual(
         open(output_filename, 'rb').read().decode(),
@@ -157,12 +157,10 @@ class UploadTests(unittest.TestCase):
         filenames, self.base_url, self.gsutil, False, False, 1, True, None)
     self.assertEqual(
         self.gsutil.history,
-        [('check_call',
-          ('ls', '%s/%s' % (self.base_url, fake_hash))),
-         ('check_call',
-          ('ls', '-L', '%s/%s' % (self.base_url, fake_hash))),
-         ('check_call',
-          ('cp', filenames[0], '%s/%s' % (self.base_url, fake_hash)))])
+        [('check_call', ('ls', '%s/%s' % (self.base_url, fake_hash))),
+         ('check_call', ('ls', '-L', '%s/%s' % (self.base_url, fake_hash))),
+         ('check_call', ('-h', 'Cache-Control:public, max-age=31536000', 'cp',
+                         filenames[0], '%s/%s' % (self.base_url, fake_hash)))])
     self.assertEqual(
         open(output_filename, 'rb').read().decode(), fake_hash)
     os.remove(output_filename)

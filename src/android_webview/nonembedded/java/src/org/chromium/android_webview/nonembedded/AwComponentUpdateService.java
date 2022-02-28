@@ -6,12 +6,19 @@ package org.chromium.android_webview.nonembedded;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.ResultReceiver;
 import android.os.SystemClock;
 
+import androidx.annotation.VisibleForTesting;
+
+import org.chromium.android_webview.devui.ComponentsListFragment;
+import org.chromium.android_webview.services.ComponentUpdaterSafeModeUtils;
 import org.chromium.android_webview.services.ComponentsProviderPathUtil;
 import org.chromium.base.Callback;
 import org.chromium.base.FileUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -28,6 +35,8 @@ import java.io.File;
 @JNINamespace("android_webview")
 public class AwComponentUpdateService extends JobService {
     private static final String TAG = "AwCUS";
+
+    private ResultReceiver mFinishCallback;
 
     // Histogram names.
     public static final String HISTOGRAM_COMPONENT_UPDATER_CPS_DIRECTORY_SIZE =
@@ -48,36 +57,129 @@ public class AwComponentUpdateService extends JobService {
     private static final String SHARED_PREFERENCES_NAME = "AwComponentUpdateServicePreferences";
     private static final String KEY_UNEXPECTED_EXIT = "UnexpectedExit";
 
+    /**
+     * The service can be both started by {@link android.app.job.JobScheduler} as a {@link
+     * JobService} and as a started service by calling {@link Context#startService}. These two
+     * states can apply at the same time. The service won't stop until all necessary stop
+     * methods are called:
+     * - Calling jobFinished if it's launched as a JobService.
+     * - Calling stopSelf if it's launched as a start service.
+     */
+    // If it has a non zero value, then the service is running via onStartCommand.
+    private int mServiceStartedId;
+
+    // If not null then the service is running as a Job service.
+    private JobParameters mJobParameters;
+
+    private boolean mIsUpdating;
+
+    // Called by JobScheduler.
     @Override
     public boolean onStartJob(JobParameters params) {
+        assert mJobParameters == null;
+        mJobParameters = params;
+        return maybeStartUpdates(/*onDemandUpdate=*/false);
+    }
+
+    // Called by JobScheduler.
+    @Override
+    public boolean onStopJob(JobParameters params) {
+        ComponentUpdaterSafeModeUtils.executeSafeModeIfEnabled(
+                new File(ComponentsProviderPathUtil.getComponentUpdateServiceDirectoryPath()));
+
+        // TODO(https://crbug.com/1221092): Stop native updates when onStopJob, onDestroy are
+        // called.
+
+        setUnexpectedExit(false);
+        mJobParameters = null;
+
+        // This should only be called if the service needs to be shut down before we've called
+        // jobFinished. Request reschedule so we can finish downloading component updates.
+        return /*reschedule= */ true;
+    }
+
+    /**
+     * Overridden to manually start the service via devui {@link
+     * org.chromium.android_webview.devui.ComponentsListFragment}. The service isn't exported, so
+     * other apps won't be able to force start the service.
+     *
+     * The service accepts a {@link ResultReceiver} callback in the intent which will be called
+     * when the service finishes updating and/or being stopped.
+     */
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // Always keep the most recent startId as this is the one that should be used to stop
+        // the service.
+        mServiceStartedId = startId;
+        mFinishCallback = IntentUtils.safeGetParcelableExtra(
+                intent, ComponentsListFragment.SERVICE_FINISH_CALLBACK);
+        boolean onDemandUpdate = IntentUtils.safeGetBooleanExtra(
+                intent, ComponentsListFragment.ON_DEMAND_UPDATE_REQUEST, false);
+        if (!maybeStartUpdates(onDemandUpdate)) {
+            stopSelf(startId);
+            mServiceStartedId = 0;
+        }
+        return START_STICKY;
+    }
+
+    /**
+     * Start component updates by triggerring native AwComponentUpdateService.
+     *
+     * @return {@code true} if it successfully triggers component updates or if component are
+     *         already updating, {@code false} if it fails to trigger the updates.
+     */
+    @VisibleForTesting
+    boolean maybeStartUpdates(boolean onDemandUpdate) {
+        if (mIsUpdating) {
+            return true;
+        }
+
+        if (ComponentUpdaterSafeModeUtils.executeSafeModeIfEnabled(new File(
+                    ComponentsProviderPathUtil.getComponentUpdateServiceDirectoryPath()))) {
+            return false;
+        }
+
         maybeRecordUnexpectedExit();
 
         // TODO(http://crbug.com/1179297) look at doing this in a task on a background thread
         // instead of the main thread.
-        if (WebViewApkApplication.initializeNative()) {
+        if (WebViewApkApplication.ensureNativeInitialized()) {
             setUnexpectedExit(true);
+            mIsUpdating = true;
             final long startTime = SystemClock.uptimeMillis();
             // TODO(crbug.com/1171817) Once we can log UMA from native, remove the count parameter.
             AwComponentUpdateServiceJni.get().startComponentUpdateService((count) -> {
                 recordJobDuration(SystemClock.uptimeMillis() - startTime);
                 recordFilesChanged(count);
                 recordDirectorySize();
-                jobFinished(params, /* needReschedule= */ false);
                 setUnexpectedExit(false);
-            });
+                stopService();
+            }, onDemandUpdate);
             return true;
         }
         Log.e(TAG, "couldn't init native, aborting starting AwComponentUpdaterService");
         return false;
     }
 
-    @Override
-    public boolean onStopJob(JobParameters params) {
-        setUnexpectedExit(false);
+    // Call the appropriate stop method according to how the service is launched.
+    private void stopService() {
+        mIsUpdating = false;
 
-        // This should only be called if the service needs to be shut down before we've called
-        // jobFinished. Request reschedule so we can finish downloading component updates.
-        return /*reschedule= */ true;
+        if (mFinishCallback != null) {
+            mFinishCallback.send(0, null);
+            mFinishCallback = null;
+        }
+
+        // Service is launched as a started service.
+        if (mServiceStartedId > 0) {
+            stopSelf(mServiceStartedId);
+            mServiceStartedId = 0;
+        }
+        // Service is launched as a job service.
+        if (mJobParameters != null) {
+            jobFinished(mJobParameters, /* needReschedule= */ false);
+            mJobParameters = null;
+        }
     }
 
     private void recordDirectorySize() {
@@ -122,6 +224,7 @@ public class AwComponentUpdateService extends JobService {
 
     @NativeMethods
     interface Natives {
-        void startComponentUpdateService(Callback<Integer> finishedCallback);
+        void startComponentUpdateService(
+                Callback<Integer> finishedCallback, boolean onDemandUpdate);
     }
 }

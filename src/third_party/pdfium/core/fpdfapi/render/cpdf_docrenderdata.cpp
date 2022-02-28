@@ -6,6 +6,7 @@
 
 #include "core/fpdfapi/render/cpdf_docrenderdata.h"
 
+#include <algorithm>
 #include <array>
 #include <memory>
 #include <utility>
@@ -18,6 +19,10 @@
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/render/cpdf_type3cache.h"
+
+#if defined(OS_WIN)
+#include "core/fxge/win32/cfx_psfonttracker.h"
+#endif
 
 namespace {
 
@@ -60,6 +65,14 @@ RetainPtr<CPDF_TransferFunc> CPDF_DocRenderData::GetTransferFunc(
   return pFunc;
 }
 
+#if defined(OS_WIN)
+CFX_PSFontTracker* CPDF_DocRenderData::GetPSFontTracker() {
+  if (!m_PSFontTracker)
+    m_PSFontTracker = std::make_unique<CFX_PSFontTracker>();
+  return m_PSFontTracker.get();
+}
+#endif
+
 RetainPtr<CPDF_TransferFunc> CPDF_DocRenderData::CreateTransferFunc(
     const CPDF_Object* pObj) const {
   std::unique_ptr<CPDF_Function> pFuncs[3];
@@ -79,9 +92,8 @@ RetainPtr<CPDF_TransferFunc> CPDF_DocRenderData::CreateTransferFunc(
       return nullptr;
   }
 
-  int noutput;
   float output[kMaxOutputs];
-  memset(output, 0, sizeof(output));
+  std::fill(std::begin(output), std::end(output), 0.0f);
 
   bool bIdentity = true;
   std::vector<uint8_t, FxAllocAllocator<uint8_t>> samples_r(
@@ -100,7 +112,7 @@ RetainPtr<CPDF_TransferFunc> CPDF_DocRenderData::CreateTransferFunc(
           samples[i][v] = v;
           continue;
         }
-        pFuncs[i]->Call(&input, 1, output, &noutput);
+        pFuncs[i]->Call(pdfium::make_span(&input, 1), output);
         size_t o = FXSYS_roundf(output[0] * 255);
         if (o != v)
           bIdentity = false;
@@ -109,7 +121,7 @@ RetainPtr<CPDF_TransferFunc> CPDF_DocRenderData::CreateTransferFunc(
       continue;
     }
     if (pFuncs[0]->CountOutputs() <= kMaxOutputs)
-      pFuncs[0]->Call(&input, 1, output, &noutput);
+      pFuncs[0]->Call(pdfium::make_span(&input, 1), output);
     size_t o = FXSYS_roundf(output[0] * 255);
     if (o != v)
       bIdentity = false;
@@ -117,7 +129,7 @@ RetainPtr<CPDF_TransferFunc> CPDF_DocRenderData::CreateTransferFunc(
       channel[v] = o;
   }
 
-  return pdfium::MakeRetain<CPDF_TransferFunc>(
-      GetDocument(), bIdentity, std::move(samples_r), std::move(samples_g),
-      std::move(samples_b));
+  return pdfium::MakeRetain<CPDF_TransferFunc>(bIdentity, std::move(samples_r),
+                                               std::move(samples_g),
+                                               std::move(samples_b));
 }

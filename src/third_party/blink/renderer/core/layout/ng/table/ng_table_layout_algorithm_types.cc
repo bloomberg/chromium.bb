@@ -141,7 +141,7 @@ NGTableTypes::CellInlineConstraint NGTableTypes::CreateCellInlineConstraint(
                                        style.GetWritingDirection(),
                                        /* is_new_fc */ true);
       builder.SetTableCellBorders(cell_border);
-      builder.SetIsTableCell(true, /* is_legacy_table_cell */ false);
+      builder.SetIsTableCell(true);
       builder.SetCacheSlot(NGCacheSlot::kMeasure);
       if (!is_parallel) {
         // Only consider the ICB-size for the orthogonal fallback inline-size
@@ -237,20 +237,14 @@ NGTableTypes::Section NGTableTypes::CreateSection(
 NGTableTypes::CellBlockConstraint NGTableTypes::CreateCellBlockConstraint(
     const NGLayoutInputNode& node,
     LayoutUnit computed_block_size,
-    LayoutUnit baseline,
     const NGBoxStrut& border_box_borders,
     wtf_size_t row_index,
     wtf_size_t column_index,
     wtf_size_t rowspan) {
   bool is_constrained = node.Style().LogicalHeight().IsFixed();
-  return CellBlockConstraint{computed_block_size,
-                             baseline,
-                             border_box_borders,
-                             row_index,
-                             column_index,
-                             rowspan,
-                             node.Style().VerticalAlign(),
-                             is_constrained};
+  return CellBlockConstraint{
+      computed_block_size, border_box_borders, row_index, column_index, rowspan,
+      is_constrained};
 }
 
 NGTableTypes::RowspanCell NGTableTypes::CreateRowspanCell(

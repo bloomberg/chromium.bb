@@ -22,7 +22,8 @@ class TestKeySystemProperties : public media::KeySystemProperties {
   explicit TestKeySystemProperties(const std::string& key_system_name)
       : key_system_name_(key_system_name) {}
 
-  std::string GetKeySystemName() const override { return key_system_name_; }
+  std::string GetBaseKeySystemName() const override { return key_system_name_; }
+
   bool IsSupportedInitDataType(
       media::EmeInitDataType init_data_type) const override {
     return false;
@@ -38,6 +39,7 @@ class TestKeySystemProperties : public media::KeySystemProperties {
   }
 
   media::EmeConfigRule GetRobustnessConfigRule(
+      const std::string& key_system,
       media::EmeMediaType media_type,
       const std::string& requested_robustness,
       const bool* /*hw_secure_requirement*/) const override {
@@ -115,13 +117,13 @@ TEST(ChromeKeySystemsProviderTest, IsKeySystemsUpdateNeeded) {
 
   // Widevine not initially provided.
   EXPECT_EQ(key_systems.size(), 1U);
-  EXPECT_EQ(key_systems[0]->GetKeySystemName(), "com.example.foobar");
+  EXPECT_EQ(key_systems[0]->GetBaseKeySystemName(), "com.example.foobar");
 
   // This is timing related. The update interval for Widevine is 1000 ms.
   EXPECT_FALSE(key_systems_provider.IsKeySystemsUpdateNeeded());
-  tick_clock.Advance(base::TimeDelta::FromMilliseconds(990));
+  tick_clock.Advance(base::Milliseconds(990));
   EXPECT_FALSE(key_systems_provider.IsKeySystemsUpdateNeeded());
-  tick_clock.Advance(base::TimeDelta::FromMilliseconds(10));
+  tick_clock.Advance(base::Milliseconds(10));
 
 #if BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
   // Require update once enough time has passed for builds that install Widevine
@@ -136,7 +138,7 @@ TEST(ChromeKeySystemsProviderTest, IsKeySystemsUpdateNeeded) {
   // Widevine should now be among the list.
   bool found_widevine = false;
   for (const auto& key_system_properties : key_systems) {
-    if (key_system_properties->GetKeySystemName() == kWidevineKeySystem) {
+    if (key_system_properties->GetBaseKeySystemName() == kWidevineKeySystem) {
       found_widevine = true;
       break;
     }
@@ -145,9 +147,9 @@ TEST(ChromeKeySystemsProviderTest, IsKeySystemsUpdateNeeded) {
 
   // Update not needed now, nor later because Widevine has been described.
   EXPECT_FALSE(key_systems_provider.IsKeySystemsUpdateNeeded());
-  tick_clock.Advance(base::TimeDelta::FromMilliseconds(1000));
+  tick_clock.Advance(base::Milliseconds(1000));
   EXPECT_FALSE(key_systems_provider.IsKeySystemsUpdateNeeded());
-  tick_clock.Advance(base::TimeDelta::FromMilliseconds(1000));
+  tick_clock.Advance(base::Milliseconds(1000));
   EXPECT_FALSE(key_systems_provider.IsKeySystemsUpdateNeeded());
 #else
   // No update needed for builds that either don't offer Widevine or do so

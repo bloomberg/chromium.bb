@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,6 +27,10 @@ class UsbDeviceResource : public ApiResource {
   UsbDeviceResource(const std::string& owner_extension_id,
                     const std::string& guid,
                     mojo::Remote<device::mojom::UsbDevice> device);
+
+  UsbDeviceResource(const UsbDeviceResource&) = delete;
+  UsbDeviceResource& operator=(const UsbDeviceResource&) = delete;
+
   ~UsbDeviceResource() override;
 
   device::mojom::UsbDevice* device() const {
@@ -45,8 +48,6 @@ class UsbDeviceResource : public ApiResource {
 
   const std::string guid_;
   mojo::Remote<device::mojom::UsbDevice> device_;
-
-  DISALLOW_COPY_AND_ASSIGN(UsbDeviceResource);
 };
 
 }  // namespace extensions

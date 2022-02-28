@@ -57,7 +57,7 @@ DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
 
 ExtensionFunction::ResponseAction
 DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::Run() {
-  params_ = Params::Create(*args_);
+  params_ = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params_);
 
   if (!crx_file::id_util::IdIsValid(params_->details.id)) {
@@ -161,8 +161,8 @@ void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
 }
 
 void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
-    OnInstallPromptDone(ExtensionInstallPrompt::Result result) {
-  bool accepted = (result == ExtensionInstallPrompt::Result::ACCEPTED);
+    OnInstallPromptDone(ExtensionInstallPrompt::DoneCallbackPayload payload) {
+  bool accepted = (payload.result == ExtensionInstallPrompt::Result::ACCEPTED);
   Respond(
       BuildResponse(accepted ? api::dashboard_private::RESULT_EMPTY_STRING
                              : api::dashboard_private::RESULT_USER_CANCELLED,
@@ -183,4 +183,3 @@ DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::BuildResponse(
 }
 
 }  // namespace extensions
-

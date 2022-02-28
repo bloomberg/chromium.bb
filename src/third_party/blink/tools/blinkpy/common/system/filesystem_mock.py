@@ -30,10 +30,11 @@ import errno
 import hashlib
 import os
 import re
-import StringIO
 import unittest
 
 from blinkpy.common.system.filesystem import _remove_contents, _sanitize_filename
+
+from six import StringIO
 
 
 class MockFileSystem(object):
@@ -181,8 +182,8 @@ class MockFileSystem(object):
             path for path, contents in self.files.items()
             if contents is not None
         ]
-        return filter(path_filter, existing_files) + filter(
-            path_filter, self.dirs)
+        return list(filter(path_filter, existing_files)) + list(
+            filter(path_filter, self.dirs))
 
     def isabs(self, path):
         return path.startswith(self.sep)
@@ -465,7 +466,7 @@ class WritableBinaryFileObject(object):
         self.path = path
         self.closed = False
         if path not in self.fs.files or not append:
-            self.fs.files[path] = ''
+            self.fs.files[path] = b''
 
     def __enter__(self):
         return self
@@ -482,11 +483,16 @@ class WritableBinaryFileObject(object):
 
 
 class WritableTextFileObject(WritableBinaryFileObject):
+    def __init__(self, fs, path, append=False):
+        super(WritableTextFileObject, self).__init__(fs, path, append)
+        if path not in self.fs.files or not append:
+            self.fs.files[path] = ''
+
     def write(self, string):
-        WritableBinaryFileObject.write(self, string.encode('utf-8'))
+        WritableBinaryFileObject.write(self, string)
 
     def writelines(self, lines):
-        self.fs.files[self.path] = "".join(lines).encode('utf-8')
+        self.fs.files[self.path] = "".join(lines)
         self.fs.written_files[self.path] = self.fs.files[self.path]
 
 
@@ -527,8 +533,7 @@ class ReadableBinaryFileObject(object):
 
 class ReadableTextFileObject(ReadableBinaryFileObject):
     def __init__(self, fs, path, data):
-        super(ReadableTextFileObject, self).__init__(
-            fs, path, StringIO.StringIO(data.decode('utf-8')))
+        super(ReadableTextFileObject, self).__init__(fs, path, StringIO(data))
 
     def close(self):
         self.data.close()

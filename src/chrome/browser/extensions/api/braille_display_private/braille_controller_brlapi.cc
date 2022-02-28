@@ -16,7 +16,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/stl_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
@@ -34,13 +33,11 @@ namespace {
 
 // Delay between detecting a directory update and trying to connect
 // to the brlapi.
-constexpr base::TimeDelta kConnectionDelay =
-    base::TimeDelta::FromMilliseconds(500);
+constexpr base::TimeDelta kConnectionDelay = base::Milliseconds(500);
 
 // How long to periodically retry connecting after a brltty restart.
 // Some displays are slow to connect.
-constexpr base::TimeDelta kConnectRetryTimeout =
-    base::TimeDelta::FromSeconds(20);
+constexpr base::TimeDelta kConnectRetryTimeout = base::Seconds(20);
 
 }  // namespace
 

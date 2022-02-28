@@ -16,11 +16,7 @@ import {Draft} from 'immer';
 
 import {assertExists, assertTrue} from '../base/logging';
 import {randomColor} from '../common/colorizer';
-import {
-  ConvertTrace,
-  ConvertTraceAndDownload,
-  ConvertTraceToPprof
-} from '../controller/trace_converter';
+import {RecordConfig} from '../controller/record_config_types';
 import {ACTUAL_FRAMES_SLICE_TRACK_KIND} from '../tracks/actual_frames/common';
 import {ASYNC_SLICE_TRACK_KIND} from '../tracks/async_slices/common';
 import {COUNTER_TRACK_KIND} from '../tracks/counter/common';
@@ -30,32 +26,41 @@ import {
 } from '../tracks/expected_frames/common';
 import {HEAP_PROFILE_TRACK_KIND} from '../tracks/heap_profile/common';
 import {
+  PERF_SAMPLES_PROFILE_TRACK_KIND
+} from '../tracks/perf_samples_profile/common';
+import {
   PROCESS_SCHEDULING_TRACK_KIND
 } from '../tracks/process_scheduling/common';
 import {PROCESS_SUMMARY_TRACK} from '../tracks/process_summary/common';
 
-import {DEFAULT_VIEWING_OPTION} from './flamegraph_util';
+import {createEmptyState} from './empty_state';
+import {DEFAULT_VIEWING_OPTION, PERF_SAMPLES_KEY} from './flamegraph_util';
+import {
+  AggregationAttrs,
+  PivotAttrs,
+  SubQueryAttrs,
+  TableAttrs
+} from './pivot_table_common';
 import {
   AdbRecordingTarget,
   Area,
   CallsiteInfo,
-  createEmptyState,
   EngineMode,
-  HeapProfileFlamegraphViewingOption,
+  FlamegraphStateViewingOption,
+  LoadedConfig,
   LogsPagination,
   NewEngineMode,
   OmniboxState,
-  RecordConfig,
   RecordingTarget,
   SCROLLING_TRACK_GROUP,
   State,
   Status,
-  TraceSource,
   TraceTime,
   TrackKindPriority,
   TrackState,
   VisibleState,
 } from './state';
+import {toNs} from './time';
 
 type StateDraft = Draft<State>;
 
@@ -66,32 +71,38 @@ const highPriorityTrackOrder = [
   ACTUAL_FRAMES_SLICE_TRACK_KIND
 ];
 
-const lowPriorityTrackOrder =
-    [HEAP_PROFILE_TRACK_KIND, COUNTER_TRACK_KIND, ASYNC_SLICE_TRACK_KIND];
+const lowPriorityTrackOrder = [
+  PERF_SAMPLES_PROFILE_TRACK_KIND,
+  HEAP_PROFILE_TRACK_KIND,
+  COUNTER_TRACK_KIND,
+  ASYNC_SLICE_TRACK_KIND
+];
 
 export interface AddTrackArgs {
   id?: string;
   engineId: string;
   kind: string;
   name: string;
+  labels?: string[];
   trackKindPriority: TrackKindPriority;
   trackGroup?: string;
   config: {};
 }
 
 export interface PostedTrace {
+  buffer: ArrayBuffer;
   title: string;
   fileName?: string;
   url?: string;
-  buffer: ArrayBuffer;
+  uuid?: string;
+  localOnly?: boolean;
 }
 
 function clearTraceState(state: StateDraft) {
   const nextId = state.nextId;
   const recordConfig = state.recordConfig;
-  const route = state.route;
   const recordingTarget = state.recordingTarget;
-  const updateChromeCategories = state.updateChromeCategories;
+  const fetchChromeCategories = state.fetchChromeCategories;
   const extensionInstalled = state.extensionInstalled;
   const availableAdbDevices = state.availableAdbDevices;
   const chromeCategories = state.chromeCategories;
@@ -100,9 +111,8 @@ function clearTraceState(state: StateDraft) {
   Object.assign(state, createEmptyState());
   state.nextId = nextId;
   state.recordConfig = recordConfig;
-  state.route = route;
   state.recordingTarget = recordingTarget;
-  state.updateChromeCategories = updateChromeCategories;
+  state.fetchChromeCategories = fetchChromeCategories;
   state.extensionInstalled = extensionInstalled;
   state.availableAdbDevices = availableAdbDevices;
   state.chromeCategories = chromeCategories;
@@ -125,10 +135,6 @@ function rankIndex<T>(element: T, array: T[]): number {
 
 export const StateActions = {
 
-  navigate(state: StateDraft, args: {route: string}): void {
-    state.route = args.route;
-  },
-
   openTraceFromFile(state: StateDraft, args: {file: File}): void {
     clearTraceState(state);
     const id = `${state.nextId++}`;
@@ -137,7 +143,6 @@ export const StateActions = {
       ready: false,
       source: {type: 'FILE', file: args.file},
     };
-    state.route = `/viewer`;
   },
 
   openTraceFromBuffer(state: StateDraft, args: PostedTrace): void {
@@ -148,7 +153,6 @@ export const StateActions = {
       ready: false,
       source: {type: 'ARRAY_BUFFER', ...args},
     };
-    state.route = `/viewer`;
   },
 
   openTraceFromUrl(state: StateDraft, args: {url: string}): void {
@@ -159,7 +163,6 @@ export const StateActions = {
       ready: false,
       source: {type: 'URL', url: args.url},
     };
-    state.route = `/viewer`;
   },
 
   openTraceFromHttpRpc(state: StateDraft, _args: {}): void {
@@ -170,32 +173,26 @@ export const StateActions = {
       ready: false,
       source: {type: 'HTTP_RPC'},
     };
-    state.route = `/viewer`;
   },
 
-  openVideoFromFile(state: StateDraft, args: {file: File}): void {
-    state.video = URL.createObjectURL(args.file);
-    state.videoEnabled = true;
+  setTraceUuid(state: StateDraft, args: {traceUuid: string}) {
+    state.traceUuid = args.traceUuid;
   },
 
-  // TODO(b/141359485): Actions should only modify state.
-  convertTraceToJson(
-      _: StateDraft, args: {file: Blob, truncate?: 'start'|'end'}): void {
-    ConvertTrace(args.file, 'json', args.truncate);
-  },
+  fillUiTrackIdByTraceTrackId(
+      state: StateDraft, trackState: TrackState, uiTrackId: string) {
+    const config = trackState.config as {trackId: number};
+    if (config.trackId !== undefined) {
+      state.uiTrackIdByTraceTrackId.set(config.trackId, uiTrackId);
+      return;
+    }
 
-  convertTraceToSystraceAndDownload(_: StateDraft, args: {file: Blob}): void {
-    ConvertTraceAndDownload(args.file, 'systrace');
-  },
-
-  convertTraceToJsonAndDownload(_: StateDraft, args: {file: Blob}): void {
-    ConvertTraceAndDownload(args.file, 'json');
-  },
-
-  convertTraceToPprof(
-      _: StateDraft,
-      args: {pid: number, src: TraceSource, ts1: number, ts2?: number}): void {
-    ConvertTraceToPprof(args.pid, args.src, args.ts1, args.ts2);
+    const multiple = trackState.config as {trackIds: number[]};
+    if (multiple.trackIds !== undefined) {
+      for (const trackId of multiple.trackIds) {
+        state.uiTrackIdByTraceTrackId.set(trackId, uiTrackId);
+      }
+    }
   },
 
   addTracks(state: StateDraft, args: {tracks: AddTrackArgs[]}) {
@@ -203,6 +200,7 @@ export const StateActions = {
       const id = track.id === undefined ? `${state.nextId++}` : track.id;
       track.id = id;
       state.tracks[id] = track as TrackState;
+      this.fillUiTrackIdByTraceTrackId(state, track as TrackState, id);
       if (track.trackGroup === SCROLLING_TRACK_GROUP) {
         state.scrollingTracks.push(id);
       } else if (track.trackGroup !== undefined) {
@@ -225,6 +223,7 @@ export const StateActions = {
       trackGroup: args.trackGroup,
       config: args.config,
     };
+    this.fillUiTrackIdByTraceTrackId(state, state.tracks[id], id);
     if (args.trackGroup === SCROLLING_TRACK_GROUP) {
       state.scrollingTracks.push(id);
     } else if (args.trackGroup !== undefined) {
@@ -406,6 +405,8 @@ export const StateActions = {
     }
   },
 
+  // TODO(hjd): engine.ready should be a published thing. If it's part
+  // of the state it interacts badly with permalinks.
   setEngineReady(
       state: StateDraft,
       args: {engineId: string; ready: boolean, mode: EngineMode}): void {
@@ -470,10 +471,19 @@ export const StateActions = {
       // tslint:disable-next-line no-any
       (state as any)[key] = (args.newState as any)[key];
     }
+
+    // If we're loading from a permalink then none of the engines can
+    // possibly be ready:
+    for (const engine of Object.values(state.engines)) {
+      engine.ready = false;
+    }
   },
 
-  setRecordConfig(state: StateDraft, args: {config: RecordConfig;}): void {
+  setRecordConfig(
+      state: StateDraft,
+      args: {config: RecordConfig, configType?: LoadedConfig}): void {
     state.recordConfig = args.config;
+    state.lastLoadedConfig = args.configType || {type: 'NONE'};
   },
 
   selectNote(state: StateDraft, args: {id: string}): void {
@@ -485,9 +495,7 @@ export const StateActions = {
     }
   },
 
-  addNote(
-      state: StateDraft,
-      args: {timestamp: number, color: string, isMovie: boolean}): void {
+  addNote(state: StateDraft, args: {timestamp: number, color: string}): void {
     const id = `${state.nextNoteId++}`;
     state.notes[id] = {
       noteType: 'DEFAULT',
@@ -496,9 +504,6 @@ export const StateActions = {
       color: args.color,
       text: '',
     };
-    if (args.isMovie) {
-      state.videoNoteIds.push(id);
-    }
     this.selectNote(state, {id});
   },
 
@@ -552,34 +557,6 @@ export const StateActions = {
     };
   },
 
-  toggleVideo(state: StateDraft, _: {}): void {
-    state.videoEnabled = !state.videoEnabled;
-    if (!state.videoEnabled) {
-      state.video = null;
-      state.flagPauseEnabled = false;
-      state.scrubbingEnabled = false;
-      state.videoNoteIds.forEach(id => {
-        this.removeNote(state, {id});
-      });
-    }
-  },
-
-  toggleFlagPause(state: StateDraft, _: {}): void {
-    if (state.video != null) {
-      state.flagPauseEnabled = !state.flagPauseEnabled;
-    }
-  },
-
-  toggleScrubbing(state: StateDraft, _: {}): void {
-    if (state.video != null) {
-      state.scrubbingEnabled = !state.scrubbingEnabled;
-    }
-  },
-
-  setVideoOffset(state: StateDraft, args: {offset: number}): void {
-    state.videoOffset = args.offset;
-  },
-
   changeNoteColor(state: StateDraft, args: {id: string, newColor: string}):
       void {
         const note = state.notes[args.id];
@@ -595,11 +572,6 @@ export const StateActions = {
 
   removeNote(state: StateDraft, args: {id: string}): void {
     if (state.notes[args.id] === undefined) return;
-    if (state.notes[args.id].noteType === 'MOVIE') {
-      state.videoNoteIds = state.videoNoteIds.filter(id => {
-        return id !== args.id;
-      });
-    }
     delete state.notes[args.id];
     // For regular notes, we clear the current selection but for an area note
     // we only want to clear the note/marking and leave the area selected.
@@ -645,14 +617,49 @@ export const StateActions = {
       ts: args.ts,
       type: args.type,
     };
-    state.currentHeapProfileFlamegraph = {
-      kind: 'HEAP_PROFILE_FLAMEGRAPH',
+    this.openFlamegraph(state, {
+      type: args.type,
+      startNs: toNs(state.traceTime.startSec),
+      endNs: args.ts,
+      upids: [args.upid],
+      viewingOption: DEFAULT_VIEWING_OPTION
+    });
+  },
+
+  selectPerfSamples(
+      state: StateDraft,
+      args: {id: number, upid: number, ts: number, type: string}): void {
+    state.currentSelection = {
+      kind: 'PERF_SAMPLES',
       id: args.id,
       upid: args.upid,
       ts: args.ts,
       type: args.type,
-      viewingOption: DEFAULT_VIEWING_OPTION,
-      focusRegex: '',
+    };
+    this.openFlamegraph(state, {
+      type: args.type,
+      startNs: toNs(state.traceTime.startSec),
+      endNs: args.ts,
+      upids: [args.upid],
+      viewingOption: PERF_SAMPLES_KEY
+    });
+  },
+
+  openFlamegraph(state: StateDraft, args: {
+    upids: number[],
+    startNs: number,
+    endNs: number,
+    type: string,
+    viewingOption: FlamegraphStateViewingOption
+  }): void {
+    state.currentFlamegraphState = {
+      kind: 'FLAMEGRAPH_STATE',
+      upids: args.upids,
+      startNs: args.startNs,
+      endNs: args.endNs,
+      type: args.type,
+      viewingOption: args.viewingOption,
+      focusRegex: ''
     };
   },
 
@@ -666,24 +673,24 @@ export const StateActions = {
     };
   },
 
-  expandHeapProfileFlamegraph(
+  expandFlamegraphState(
       state: StateDraft, args: {expandedCallsite?: CallsiteInfo}): void {
-    if (state.currentHeapProfileFlamegraph === null) return;
-    state.currentHeapProfileFlamegraph.expandedCallsite = args.expandedCallsite;
+    if (state.currentFlamegraphState === null) return;
+    state.currentFlamegraphState.expandedCallsite = args.expandedCallsite;
   },
 
-  changeViewHeapProfileFlamegraph(
-      state: StateDraft,
-      args: {viewingOption: HeapProfileFlamegraphViewingOption}): void {
-    if (state.currentHeapProfileFlamegraph === null) return;
-    state.currentHeapProfileFlamegraph.viewingOption = args.viewingOption;
-  },
+  changeViewFlamegraphState(
+      state: StateDraft, args: {viewingOption: FlamegraphStateViewingOption}):
+      void {
+        if (state.currentFlamegraphState === null) return;
+        state.currentFlamegraphState.viewingOption = args.viewingOption;
+      },
 
-  changeFocusHeapProfileFlamegraph(
-      state: StateDraft, args: {focusRegex: string}): void {
-    if (state.currentHeapProfileFlamegraph === null) return;
-    state.currentHeapProfileFlamegraph.focusRegex = args.focusRegex;
-  },
+  changeFocusFlamegraphState(state: StateDraft, args: {focusRegex: string}):
+      void {
+        if (state.currentFlamegraphState === null) return;
+        state.currentFlamegraphState.focusRegex = args.focusRegex;
+      },
 
   selectChromeSlice(
       state: StateDraft, args: {id: number, trackId: string, table: string}):
@@ -740,8 +747,8 @@ export const StateActions = {
     state.recordingTarget = args.target;
   },
 
-  setUpdateChromeCategories(state: StateDraft, args: {update: boolean}): void {
-    state.updateChromeCategories = args.update;
+  setFetchChromeCategories(state: StateDraft, args: {fetch: boolean}): void {
+    state.fetchChromeCategories = args.fetch;
   },
 
   setAvailableAdbDevices(
@@ -813,7 +820,7 @@ export const StateActions = {
   },
 
   setVisibleTraceTime(state: StateDraft, args: VisibleState): void {
-    state.frontendLocalState.visibleState = args;
+    state.frontendLocalState.visibleState = {...args};
   },
 
   setChromeCategories(state: StateDraft, args: {categories: string[]}): void {
@@ -860,6 +867,127 @@ export const StateActions = {
     }
     state.metrics.selectedIndex = args.index;
   },
+
+  togglePerfDebug(state: StateDraft, _: {}): void {
+    state.perfDebug = !state.perfDebug;
+  },
+
+  toggleSidebar(state: StateDraft, _: {}): void {
+    state.sidebarVisible = !state.sidebarVisible;
+  },
+
+  setHoveredUtidAndPid(state: StateDraft, args: {utid: number, pid: number}) {
+    state.hoveredPid = args.pid;
+    state.hoveredUtid = args.utid;
+  },
+
+  setHighlightedSliceId(state: StateDraft, args: {sliceId: number}) {
+    state.highlightedSliceId = args.sliceId;
+  },
+
+  setHighlightedFlowLeftId(state: StateDraft, args: {flowId: number}) {
+    state.focusedFlowIdLeft = args.flowId;
+  },
+
+  setHighlightedFlowRightId(state: StateDraft, args: {flowId: number}) {
+    state.focusedFlowIdRight = args.flowId;
+  },
+
+  setSearchIndex(state: StateDraft, args: {index: number}) {
+    state.searchIndex = args.index;
+  },
+
+  setHoveredLogsTimestamp(state: StateDraft, args: {ts: number}) {
+    state.hoveredLogsTimestamp = args.ts;
+  },
+
+  setHoveredNoteTimestamp(state: StateDraft, args: {ts: number}) {
+    state.hoveredNoteTimestamp = args.ts;
+  },
+
+  setCurrentTab(state: StateDraft, args: {tab: string|undefined}) {
+    state.currentTab = args.tab;
+  },
+
+  toggleAllTrackGroups(state: StateDraft, args: {collapsed: boolean}) {
+    for (const [_, group] of Object.entries(state.trackGroups)) {
+      group.collapsed = args.collapsed;
+    }
+  },
+
+  addNewPivotTable(state: StateDraft, args: {
+    name: string,
+    pivotTableId: string,
+    selectedPivots: PivotAttrs[],
+    selectedAggregations: AggregationAttrs[],
+    traceTime?: TraceTime,
+    selectedTrackIds?: number[]
+  }): void {
+    state.pivotTable[args.pivotTableId] = {
+      id: args.pivotTableId,
+      name: args.name,
+      selectedPivots: args.selectedPivots,
+      selectedAggregations: args.selectedAggregations,
+      isLoadingQuery: false,
+      traceTime: args.traceTime,
+      selectedTrackIds: args.selectedTrackIds
+    };
+  },
+
+  deletePivotTable(state: StateDraft, args: {pivotTableId: string}): void {
+    delete state.pivotTable[args.pivotTableId];
+  },
+
+  resetPivotTableRequest(state: StateDraft, args: {pivotTableId: string}):
+      void {
+        state.pivotTable[args.pivotTableId].requestedAction = undefined;
+      },
+
+  setPivotTableRequest(
+      state: StateDraft,
+      args: {pivotTableId: string, action: string, attrs?: SubQueryAttrs}):
+      void {
+        state.pivotTable[args.pivotTableId].requestedAction = {
+          action: args.action,
+          attrs: args.attrs
+        };
+      },
+
+  setAvailablePivotTableColumns(
+      state: StateDraft,
+      args: {availableColumns: TableAttrs[], availableAggregations: string[]}):
+      void {
+        state.pivotTableConfig.availableColumns = args.availableColumns;
+        state.pivotTableConfig.availableAggregations =
+            args.availableAggregations;
+      },
+
+  toggleQueryLoading(state: StateDraft, args: {pivotTableId: string}): void {
+    state.pivotTable[args.pivotTableId].isLoadingQuery =
+        !state.pivotTable[args.pivotTableId].isLoadingQuery;
+  },
+
+  setSelectedPivotsAndAggregations(state: StateDraft, args: {
+    pivotTableId: string,
+    selectedPivots: PivotAttrs[],
+    selectedAggregations: AggregationAttrs[]
+  }) {
+    state.pivotTable[args.pivotTableId].selectedPivots =
+        args.selectedPivots.map(pivot => Object.assign({}, pivot));
+    state.pivotTable[args.pivotTableId].selectedAggregations =
+        args.selectedAggregations.map(
+            aggregation => Object.assign({}, aggregation));
+  },
+
+  setPivotTableRange(state: StateDraft, args: {
+    pivotTableId: string,
+    traceTime?: TraceTime,
+    selectedTrackIds?: number[]
+  }) {
+    const pivotTable = state.pivotTable[args.pivotTableId];
+    pivotTable.traceTime = args.traceTime;
+    pivotTable.selectedTrackIds = args.selectedTrackIds;
+  }
 };
 
 // When we are on the frontend side, we don't really want to execute the

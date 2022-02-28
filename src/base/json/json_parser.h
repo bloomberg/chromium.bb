@@ -15,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/json/json_common.h"
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -73,6 +72,10 @@ class BASE_EXPORT JSONParser {
   static const char kUnrepresentableNumber[];
 
   explicit JSONParser(int options, size_t max_depth = kAbsoluteMaxDepth);
+
+  JSONParser(const JSONParser&) = delete;
+  JSONParser& operator=(const JSONParser&) = delete;
+
   ~JSONParser();
 
   // Parses the input string according to the set options and returns the
@@ -274,8 +277,6 @@ class BASE_EXPORT JSONParser {
   FRIEND_TEST_ALL_PREFIXES(JSONParserTest, ConsumeLiterals);
   FRIEND_TEST_ALL_PREFIXES(JSONParserTest, ConsumeNumbers);
   FRIEND_TEST_ALL_PREFIXES(JSONParserTest, ErrorMessages);
-
-  DISALLOW_COPY_AND_ASSIGN(JSONParser);
 };
 
 // Used when decoding and an invalid utf-8 sequence is encountered.
