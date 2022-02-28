@@ -61,6 +61,15 @@ class FingerprintOpTest : public OpsTestBase {
   Tensor method_;
 };
 
+TEST_F(FingerprintOpTest, Empty) {
+  Tensor tensor(DT_UINT8, {0});
+
+  TF_ASSERT_OK(MakeFingerprintOp(&tensor));
+  TF_ASSERT_OK(RunOpKernel());
+  EXPECT_EQ(GetOutput(0)->shape(), (TensorShape{0, 8}));
+  EXPECT_EQ(GetOutput(0)->tensor_data(), "");
+}
+
 // This test detects changes in fingerprint method.
 TEST_F(FingerprintOpTest, GoldenValue) {
   Tensor tensor(DT_UINT8, {1, 3, 4, 5, 6, 7});
@@ -109,7 +118,7 @@ TEST_F(FingerprintOpTest, StringGoldenValue) {
 TEST_F(FingerprintOpTest, Collision) {
   const TensorShape shape = {1, 2, 4, 6};
   for (DataType dtype : kRealNumberTypes) {
-    const int64 size = shape.num_elements() * DataTypeSize(dtype);
+    const int64_t size = shape.num_elements() * DataTypeSize(dtype);
 
     Tensor tensor(dtype, shape);
     auto buffer = tensor.bit_casted_shaped<uint8, 1>({size});
@@ -132,7 +141,7 @@ TEST_F(FingerprintOpTest, Collision) {
 }
 
 TEST_F(FingerprintOpTest, CollisionString) {
-  constexpr int64 size = 256;
+  constexpr int64_t size = 256;
 
   Tensor tensor(DT_STRING, {1});
   auto& input = tensor.vec<tstring>()(0);
@@ -165,7 +174,7 @@ TEST_F(FingerprintOpTest, CompareBytesAndString) {
   pods.setRandom();
 
   auto strings = strings_tensor.vec<tstring>();
-  for (int64 i = 0; i < strings.size(); ++i) {
+  for (int64_t i = 0; i < strings.size(); ++i) {
     strings(i).assign(reinterpret_cast<const char*>(&pods(i, 0)),
                       pods.dimension(1) * sizeof(pods(i, 0)));
   }

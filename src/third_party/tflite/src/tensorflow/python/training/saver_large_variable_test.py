@@ -14,10 +14,6 @@
 # =============================================================================
 """Tests for tensorflow.python.training.saver.py."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os
 
 from tensorflow.core.protobuf import saver_pb2
@@ -51,8 +47,8 @@ class SaverLargeVariableTest(test.TestCase):
               var.op.name: var
           }, write_version=saver_pb2.SaverDef.V1)
       var.initializer.run()
-      with self.assertRaisesRegexp(errors_impl.InvalidArgumentError,
-                                   "Tensor slice is too large to serialize"):
+      with self.assertRaisesRegex(errors_impl.InvalidArgumentError,
+                                  "Tensor slice is too large to serialize"):
         save.save(sess, save_path)
 
 

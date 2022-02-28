@@ -14,6 +14,8 @@
 
 #include "src/ast/override_decoration.h"
 
+#include <string>
+
 #include "src/program_builder.h"
 
 TINT_INSTANTIATE_TYPEINFO(tint::ast::OverrideDecoration);
@@ -21,33 +23,25 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::OverrideDecoration);
 namespace tint {
 namespace ast {
 
-OverrideDecoration::OverrideDecoration(ProgramID program_id,
-                                       const Source& source)
-    : Base(program_id, source), has_value_(false), value_(0) {}
+OverrideDecoration::OverrideDecoration(ProgramID pid, const Source& src)
+    : Base(pid, src), has_value(false), value(0) {}
 
-OverrideDecoration::OverrideDecoration(ProgramID program_id,
-                                       const Source& source,
+OverrideDecoration::OverrideDecoration(ProgramID pid,
+                                       const Source& src,
                                        uint32_t val)
-    : Base(program_id, source), has_value_(true), value_(val) {}
+    : Base(pid, src), has_value(true), value(val) {}
 
 OverrideDecoration::~OverrideDecoration() = default;
 
-void OverrideDecoration::to_str(const sem::Info&,
-                                std::ostream& out,
-                                size_t indent) const {
-  make_indent(out, indent);
-  out << "OverrideDecoration";
-  if (has_value_) {
-    out << "{" << value_ << "}";
-  }
-  out << std::endl;
+std::string OverrideDecoration::Name() const {
+  return "override";
 }
 
-OverrideDecoration* OverrideDecoration::Clone(CloneContext* ctx) const {
+const OverrideDecoration* OverrideDecoration::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
-  if (has_value_) {
-    return ctx->dst->create<OverrideDecoration>(src, value_);
+  auto src = ctx->Clone(source);
+  if (has_value) {
+    return ctx->dst->create<OverrideDecoration>(src, value);
   } else {
     return ctx->dst->create<OverrideDecoration>(src);
   }

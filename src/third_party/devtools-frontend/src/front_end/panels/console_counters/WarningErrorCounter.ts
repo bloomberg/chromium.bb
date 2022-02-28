@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
@@ -29,11 +26,6 @@ const UIStrings = {
   */
   openConsoleToViewS: 'Open Console to view {PH1}',
   /**
-  *@description Title for the Lighthouse violations count in the Warning Error Counter shown in the main toolbar (top-left in DevTools). The violations count refers to the number of violations that were detected by Lighthouse.
-  */
-  openLighthouseToView:
-      '{n, plural, =1 {Open Lighthouse to view # violation} other {Open Lighthouse to view # violations}}',
-  /**
   *@description Title for the issues count in the Issues Error Counter shown in the main toolbar (top-left in DevTools). The issues count refers to the number of issues in the issues tab.
   */
   openIssuesToView: '{n, plural, =1 {Open Issues to view # issue:} other {Open Issues to view # issues:}}',
@@ -43,41 +35,32 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 let warningErrorCounterInstance: WarningErrorCounter;
 export class WarningErrorCounter implements UI.Toolbar.Provider {
-  _toolbarItem: UI.Toolbar.ToolbarItem;
-  _consoleCounter: IconButton.IconButton.IconButton;
-  _violationCounter: IconButton.IconButton.IconButton|null;
-  _issueCounter: IssueCounter.IssueCounter.IssueCounter;
-  _throttler: Common.Throttler.Throttler;
-  _updatingForTest?: boolean;
+  private readonly toolbarItem: UI.Toolbar.ToolbarItemWithCompactLayout;
+  private consoleCounter: IconButton.IconButton.IconButton;
+  private issueCounter: IssueCounter.IssueCounter.IssueCounter;
+  private readonly throttler: Common.Throttler.Throttler;
+  updatingForTest?: boolean;
 
   private constructor() {
-    WarningErrorCounter._instanceForTest = this;
+    WarningErrorCounter.instanceForTest = this;
 
     const countersWrapper = document.createElement('div');
-    this._toolbarItem = new UI.Toolbar.ToolbarItem(countersWrapper);
-    this._toolbarItem.setVisible(false);
+    this.toolbarItem = new UI.Toolbar.ToolbarItemWithCompactLayout(countersWrapper);
+    this.toolbarItem.setVisible(false);
+    this.toolbarItem.addEventListener(
+        UI.Toolbar.ToolbarItemWithCompactLayoutEvents.CompactLayoutUpdated, this.onSetCompactLayout, this);
 
-    this._consoleCounter = new IconButton.IconButton.IconButton();
-    countersWrapper.appendChild(this._consoleCounter);
-    this._consoleCounter.data = {
+    this.consoleCounter = new IconButton.IconButton.IconButton();
+    countersWrapper.appendChild(this.consoleCounter);
+    this.consoleCounter.data = {
       clickHandler: Common.Console.Console.instance().show.bind(Common.Console.Console.instance()),
       groups: [{iconName: 'error_icon'}, {iconName: 'warning_icon'}],
     };
 
-    this._violationCounter = null;
-    if (Root.Runtime.experiments.isEnabled('spotlight')) {
-      this._violationCounter = new IconButton.IconButton.IconButton();
-      countersWrapper.appendChild(this._violationCounter);
-      this._violationCounter.data = {
-        clickHandler: (): Promise<void> => UI.ViewManager.ViewManager.instance().showView('lighthouse'),
-        groups: [{iconName: 'ic_info_black_18dp', iconColor: '#2a53cd'}],
-      };
-    }
-
     const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
-    this._issueCounter = new IssueCounter.IssueCounter.IssueCounter();
-    countersWrapper.appendChild(this._issueCounter);
-    this._issueCounter.data = {
+    this.issueCounter = new IssueCounter.IssueCounter.IssueCounter();
+    countersWrapper.appendChild(this.issueCounter);
+    this.issueCounter.data = {
       clickHandler: (): void => {
         Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.StatusBarIssuesCounter);
         UI.ViewManager.ViewManager.instance().showView('issues-pane');
@@ -86,17 +69,26 @@ export class WarningErrorCounter implements UI.Toolbar.Provider {
       displayMode: IssueCounter.IssueCounter.DisplayMode.OnlyMostImportant,
     };
 
-    this._throttler = new Common.Throttler.Throttler(100);
+    this.throttler = new Common.Throttler.Throttler(100);
 
     SDK.ConsoleModel.ConsoleModel.instance().addEventListener(
-        SDK.ConsoleModel.Events.ConsoleCleared, this._update, this);
-    SDK.ConsoleModel.ConsoleModel.instance().addEventListener(SDK.ConsoleModel.Events.MessageAdded, this._update, this);
+        SDK.ConsoleModel.Events.ConsoleCleared, this.update, this);
+    SDK.ConsoleModel.ConsoleModel.instance().addEventListener(SDK.ConsoleModel.Events.MessageAdded, this.update, this);
     SDK.ConsoleModel.ConsoleModel.instance().addEventListener(
-        SDK.ConsoleModel.Events.MessageUpdated, this._update, this);
+        SDK.ConsoleModel.Events.MessageUpdated, this.update, this);
 
-    issuesManager.addEventListener(IssuesManager.IssuesManager.Events.IssuesCountUpdated, this._update, this);
+    issuesManager.addEventListener(IssuesManager.IssuesManager.Events.IssuesCountUpdated, this.update, this);
 
-    this._update();
+    this.update();
+  }
+
+  onSetCompactLayout(event: Common.EventTarget.EventTargetEvent<boolean>): void {
+    this.setCompactLayout(event.data);
+  }
+
+  setCompactLayout(enable: boolean): void {
+    this.consoleCounter.data = {...this.consoleCounter.data, compact: enable};
+    this.issueCounter.data = {...this.issueCounter.data, compact: enable};
   }
 
   static instance(opts: {forceNew: boolean|null} = {forceNew: null}): WarningErrorCounter {
@@ -108,23 +100,23 @@ export class WarningErrorCounter implements UI.Toolbar.Provider {
     return warningErrorCounterInstance;
   }
 
-  _updatedForTest(): void {
+  private updatedForTest(): void {
     // Sniffed in tests.
   }
 
-  _update(): void {
-    this._updatingForTest = true;
-    this._throttler.schedule(this._updateThrottled.bind(this));
+  private update(): void {
+    this.updatingForTest = true;
+    this.throttler.schedule(this.updateThrottled.bind(this));
   }
 
   get titlesForTesting(): string|null {
-    return this._consoleCounter.getAttribute('aria-label');
+    const button = this.consoleCounter.shadowRoot?.querySelector('button');
+    return button ? button.getAttribute('aria-label') : null;
   }
 
-  async _updateThrottled(): Promise<void> {
+  private async updateThrottled(): Promise<void> {
     const errors = SDK.ConsoleModel.ConsoleModel.instance().errors();
     const warnings = SDK.ConsoleModel.ConsoleModel.instance().warnings();
-    const violations = this._violationCounter ? SDK.ConsoleModel.ConsoleModel.instance().violations() : 0;
     const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
     const issues = issuesManager.numberOfIssues();
 
@@ -133,7 +125,7 @@ export class WarningErrorCounter implements UI.Toolbar.Provider {
     /* Update consoleCounter items. */
     const errorCountTitle = i18nString(UIStrings.sErrors, {n: errors});
     const warningCountTitle = i18nString(UIStrings.sWarnings, {n: warnings});
-    this._consoleCounter.setTexts([countToText(errors), countToText(warnings)]);
+    const newConsoleTexts = [countToText(errors), countToText(warnings)];
     let consoleSummary = '';
     if (errors && warnings) {
       consoleSummary = `${errorCountTitle}, ${warningCountTitle}`;
@@ -143,41 +135,40 @@ export class WarningErrorCounter implements UI.Toolbar.Provider {
       consoleSummary = warningCountTitle;
     }
     const consoleTitle = i18nString(UIStrings.openConsoleToViewS, {PH1: consoleSummary});
-    // TODO(chromium:1167711): Let the component handle the title and ARIA label.
-    UI.Tooltip.Tooltip.install(this._consoleCounter, consoleTitle);
-    UI.ARIAUtils.setAccessibleName(this._consoleCounter, consoleTitle);
-    this._consoleCounter.classList.toggle('hidden', !(errors || warnings));
+    const previousData = this.consoleCounter.data;
 
-    /* Update violationCounter items. */
-    if (this._violationCounter) {
-      this._violationCounter.setTexts([countToText(violations)]);
-      const violationTitle = i18nString(UIStrings.openLighthouseToView, {n: violations});
-      // TODO(chromium:1167711): Let the component handle the title and ARIA label.
-      UI.Tooltip.Tooltip.install(this._violationCounter, violationTitle);
-      UI.ARIAUtils.setAccessibleName(this._violationCounter, violationTitle);
-      this._violationCounter.classList.toggle('hidden', !violations);
-    }
+    this.consoleCounter.data = {
+      ...previousData,
+      groups: previousData.groups.map((g, i) => ({...g, text: newConsoleTexts[i]})),
+      accessibleName: consoleTitle,
+    };
+    // TODO(chromium:1167711): Let the component handle the title and ARIA label.
+    UI.Tooltip.Tooltip.install(this.consoleCounter, consoleTitle);
+    this.consoleCounter.classList.toggle('hidden', !(errors || warnings));
 
     /* Update issuesCounter items. */
     const issueEnumeration = IssueCounter.IssueCounter.getIssueCountsEnumeration(issuesManager);
     const issuesTitleLead = i18nString(UIStrings.openIssuesToView, {n: issues});
     const issuesTitle = `${issuesTitleLead} ${issueEnumeration}`;
     // TODO(chromium:1167711): Let the component handle the title and ARIA label.
-    UI.Tooltip.Tooltip.install(this._issueCounter, issuesTitle);
-    UI.ARIAUtils.setAccessibleName(this._issueCounter, issuesTitle);
-    this._issueCounter.classList.toggle('hidden', !issues);
+    UI.Tooltip.Tooltip.install(this.issueCounter, issuesTitle);
+    this.issueCounter.data = {
+      ...this.issueCounter.data,
+      accessibleName: issuesTitle,
+    };
+    this.issueCounter.classList.toggle('hidden', !issues);
 
-    this._toolbarItem.setVisible(Boolean(errors || warnings || violations || issues));
+    this.toolbarItem.setVisible(Boolean(errors || warnings || issues));
 
     UI.InspectorView.InspectorView.instance().toolbarItemResized();
-    this._updatingForTest = false;
-    this._updatedForTest();
+    this.updatingForTest = false;
+    this.updatedForTest();
     return;
   }
 
   item(): UI.Toolbar.ToolbarItem|null {
-    return this._toolbarItem;
+    return this.toolbarItem;
   }
 
-  static _instanceForTest: WarningErrorCounter|null = null;
+  static instanceForTest: WarningErrorCounter|null = null;
 }

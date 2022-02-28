@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/client/chromoting_client_runtime.h"
 
@@ -18,6 +17,10 @@ class IosOauthTokenGetter;
 class IosClientRuntimeDelegate : public ChromotingClientRuntime::Delegate {
  public:
   IosClientRuntimeDelegate();
+
+  IosClientRuntimeDelegate(const IosClientRuntimeDelegate&) = delete;
+  IosClientRuntimeDelegate& operator=(const IosClientRuntimeDelegate&) = delete;
+
   ~IosClientRuntimeDelegate() override;
 
   // remoting::ChromotingClientRuntime::Delegate overrides.
@@ -32,8 +35,6 @@ class IosClientRuntimeDelegate : public ChromotingClientRuntime::Delegate {
   ChromotingClientRuntime* runtime_;
 
   base::WeakPtrFactory<IosClientRuntimeDelegate> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(IosClientRuntimeDelegate);
 };
 
 }  // namespace remoting

@@ -13,10 +13,9 @@
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/file_system/file_system_file_util.h"
@@ -43,6 +42,11 @@ class LoggingRecursiveOperation : public RecursiveOperationDelegate {
       : RecursiveOperationDelegate(file_system_context),
         root_(root),
         callback_(std::move(callback)) {}
+
+  LoggingRecursiveOperation(const LoggingRecursiveOperation&) = delete;
+  LoggingRecursiveOperation& operator=(const LoggingRecursiveOperation&) =
+      delete;
+
   ~LoggingRecursiveOperation() override = default;
 
   const std::vector<LogEntry>& log_entries() const { return log_entries_; }
@@ -115,7 +119,6 @@ class LoggingRecursiveOperation : public RecursiveOperationDelegate {
   FileSystemURL error_url_;
 
   base::WeakPtrFactory<LoggingRecursiveOperation> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(LoggingRecursiveOperation);
 };
 
 void ReportStatus(base::File::Error* out_error, base::File::Error error) {

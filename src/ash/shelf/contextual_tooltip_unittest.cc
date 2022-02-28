@@ -4,17 +4,16 @@
 
 #include "ash/shelf/contextual_tooltip.h"
 
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_nudge_status_tracker.h"
 #include "ash/shelf/contextual_tooltip.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/json/values_util.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
-#include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "ui/aura/window.h"
@@ -47,7 +46,7 @@ class ContextualTooltipTest : public AshTestBase,
   void SetUp() override {
     AshTestBase::SetUp();
     contextual_tooltip::OverrideClockForTesting(&test_clock_);
-    test_clock_.Advance(base::TimeDelta::FromSeconds(360));
+    test_clock_.Advance(base::Seconds(360));
   }
   void TearDown() override {
     contextual_tooltip::ClearStatusTrackerTableForTesting();

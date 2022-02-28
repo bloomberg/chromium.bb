@@ -4,7 +4,8 @@
 
 #include "ios/chrome/browser/ios_chrome_main_parts.h"
 
-#include "base/base_switches.h"
+#import <Foundation/Foundation.h>
+
 #include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -13,13 +14,14 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_tick_clock.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/crash/core/common/reporter_running_ios.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/heap_profiling/in_process/heap_profiler_controller.h"
@@ -27,6 +29,7 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
+#include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/expired_histogram_util.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
@@ -34,7 +37,6 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
-#include "components/ukm/ios/features.h"
 #include "components/variations/field_trial_config/field_trial_util.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/synthetic_trials_active_group_id_provider.h"
@@ -49,14 +51,16 @@
 #import "ios/chrome/browser/first_run/first_run.h"
 #include "ios/chrome/browser/flags/about_flags.h"
 #include "ios/chrome/browser/install_time_util.h"
+#include "ios/chrome/browser/ios_thread_profiler.h"
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
 #include "ios/chrome/browser/metrics/ios_expired_histograms_array.h"
 #include "ios/chrome/browser/open_from_clipboard/create_clipboard_recent_content.h"
 #include "ios/chrome/browser/policy/browser_policy_connector_ios.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
+#import "ios/chrome/browser/signin/signin_util.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "net/base/network_change_notifier.h"
@@ -106,12 +110,6 @@ bool ShouldInstallAllocatorShim() {
 }
 #endif
 
-// If enabled, always pass |true| to MetricsServicesManager
-// UpdateUploadPermissions.  Once impact of the UmaCellular logic to check
-// cellular is determined, this flag and the incorrect logic can be removed.
-const base::Feature kFixUmaCellularMetricsRecording{
-    "FixUmaCellularMetricsRecording", base::FEATURE_DISABLED_BY_DEFAULT};
-
 }  // namespace
 
 IOSChromeMainParts::IOSChromeMainParts(
@@ -143,10 +141,20 @@ void IOSChromeMainParts::PreCreateMainMessageLoop() {
   base::FilePath resources_pack_path;
   base::PathService::Get(ios::FILE_RESOURCES_PACK, &resources_pack_path);
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      resources_pack_path, ui::SCALE_FACTOR_100P);
+      resources_pack_path, ui::k100Percent);
 }
 
 void IOSChromeMainParts::PreCreateThreads() {
+  // Create and start the stack sampling profiler if CANARY or DEV. The warning
+  // below doesn't apply.
+  const version_info::Channel channel = ::GetChannel();
+  if (channel == version_info::Channel::CANARY ||
+      channel == version_info::Channel::DEV) {
+    sampling_profiler_ = IOSThreadProfiler::CreateAndStartOnMainThread();
+    IOSThreadProfiler::SetMainThreadTaskRunner(
+        base::ThreadTaskRunnerHandle::Get());
+  }
+
   // IMPORTANT
   // Calls in this function should not post tasks or create threads as
   // components used to handle those tasks are not yet available. This work
@@ -169,10 +177,14 @@ void IOSChromeMainParts::PreCreateThreads() {
   DCHECK_EQ(application_context_.get(), GetApplicationContext());
 
   // Check the first run state early; this must be done before IO is disallowed
-  // so that later calls can use the cached value. (The return value is ignored
-  // because this is only to trigger the internal lookup and caching for later
-  // use.)
-  FirstRun::IsChromeFirstRun();
+  // so that later calls can use the cached value.
+  static crash_reporter::CrashKeyString<4> key("first-run");
+  if (FirstRun::IsChromeFirstRun())
+    key.Set("yes");
+
+  // Compute device restore flag before IO is disallowed on UI thread, so the
+  // value is available from cache synchronously.
+  IsFirstSessionAfterDeviceRestore();
 
   // Convert freeform experimental settings into switches before initializing
   // local state, in case any of the settings affect policy.
@@ -192,11 +204,18 @@ void IOSChromeMainParts::PreCreateThreads() {
   // initialize field trials. The field trials are needed by IOThread's
   // initialization which happens in BrowserProcess:PreCreateThreads. Metrics
   // initialization is handled in PreMainMessageLoopRun since it posts tasks.
-  SetupFieldTrials();
+  SetUpFieldTrials();
+
+  // Set metrics upload for stack/heap profiles.
+  IOSThreadProfiler::SetBrowserProcessReceiverCallback(base::BindRepeating(
+      &metrics::CallStackProfileMetricsProvider::ReceiveProfile));
 
   // Sync the crashpad field tral state to NSUserDefaults.  Called immediately
   // after setting up field trials.
   crash_helper::SyncCrashpadEnabledOnNextRun();
+
+  // Sync the CleanExitBeacon.
+  metrics::CleanExitBeacon::SyncUseUserDefaultsBeacon();
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
   // Do not install allocator shim on iOS 13.4 due to high crash volume on this
@@ -210,10 +229,8 @@ void IOSChromeMainParts::PreCreateThreads() {
     if (malloc_intercepted) {
       // Start heap profiling as early as possible so it can start recording
       // memory allocations. Requires the allocator shim to be enabled.
-      heap_profiler_controller_ = std::make_unique<HeapProfilerController>();
-      metrics::CallStackProfileBuilder::SetBrowserProcessReceiverCallback(
-          base::BindRepeating(
-              &metrics::CallStackProfileMetricsProvider::ReceiveProfile));
+      heap_profiler_controller_ =
+          std::make_unique<HeapProfilerController>(channel);
       heap_profiler_controller_->Start();
     }
   }
@@ -267,11 +284,19 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
   StartMetricsRecording();
 
   // Because the crashpad flag takes 2 restarts to take effect, register a
-  // synthetic field try when crashpad is actually running.  Called immediately
-  // after starting metrics recording.
+  // synthetic field trial when crashpad is actually running.  Called
+  // immediately after starting metrics recording.
   IOSChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
       "CrashpadIOS",
       crash_reporter::IsCrashpadRunning() ? "Enabled" : "Disabled");
+
+  // Because the CleanExitBeacon flag takes 2 restarts to take effect, register
+  // a synthetic field trial when the user defaults beacon is set. Called
+  // immediately after starting metrics recording.
+  IOSChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      "UseUserDefaultsForExitedCleanlyBeacon",
+      metrics::CleanExitBeacon::ShouldUseUserDefaultsBeacon() ? "Enabled"
+                                                              : "Disabled");
 
 #if BUILDFLAG(ENABLE_RLZ)
   // Init the RLZ library. This just schedules a task on the file thread to be
@@ -284,7 +309,7 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
   rlz::RLZTracker::SetRlzDelegate(base::WrapUnique(new RLZTrackerDelegateImpl));
   rlz::RLZTracker::InitRlzDelayed(
       FirstRun::IsChromeFirstRun(), ping_delay < 0,
-      base::TimeDelta::FromMilliseconds(abs(ping_delay)),
+      base::Milliseconds(abs(ping_delay)),
       RLZTrackerDelegateImpl::IsGoogleDefaultSearch(last_used_browser_state),
       RLZTrackerDelegateImpl::IsGoogleHomepage(last_used_browser_state),
       RLZTrackerDelegateImpl::IsGoogleInStartpages(last_used_browser_state));
@@ -321,6 +346,9 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
   CHECK(base::PathService::Get(ios::DIR_USER_DATA, &user_data_path));
   safe_browsing_service->Initialize(last_used_browser_state->GetPrefs(),
                                     user_data_path);
+
+  // Set monitoring for some experimental flags.
+  MonitorExperimentalSettingsChanges();
 }
 
 void IOSChromeMainParts::PostMainMessageLoopRun() {
@@ -336,16 +364,18 @@ void IOSChromeMainParts::PostDestroyThreads() {
 }
 
 // This will be called after the command-line has been mutated by about:flags
-void IOSChromeMainParts::SetupFieldTrials() {
+void IOSChromeMainParts::SetUpFieldTrials() {
   base::SetRecordActionTaskRunner(
       base::CreateSingleThreadTaskRunner({web::WebThread::UI}));
 
+  // FeatureList requires VariationsIdsProvider to be created.
+  variations::VariationsIdsProvider::Create(
+      variations::VariationsIdsProvider::Mode::kUseSignedInState);
+
   // Initialize FieldTrialList to support FieldTrials that use one-time
   // randomization.
-  DCHECK(!field_trial_list_);
-  field_trial_list_.reset(
-      new base::FieldTrialList(application_context_->GetMetricsServicesManager()
-                                   ->CreateEntropyProvider()));
+  application_context_->GetMetricsServicesManager()
+      ->InstantiateFieldTrialList();
 
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
 
@@ -355,14 +385,8 @@ void IOSChromeMainParts::SetupFieldTrials() {
   std::vector<std::string> variation_ids =
       RegisterAllFeatureVariationParameters(&flags_storage, feature_list.get());
 
-  // On iOS, GPU benchmarking is not supported. So, pass in a dummy value for
-  // the name of the switch that enables gpu benchmarking.
-  // TODO(crbug.com/988603): This should also set up extra switch-dependent
-  // feature overrides.
-  application_context_->GetVariationsService()->SetupFieldTrials(
-      "dummy-enable-gpu-benchmarking", switches::kEnableFeatures,
-      switches::kDisableFeatures, variation_ids,
-      std::vector<base::FeatureList::FeatureOverrideInfo>(),
+  application_context_->GetVariationsService()->SetUpFieldTrials(
+      variation_ids, std::vector<base::FeatureList::FeatureOverrideInfo>(),
       std::move(feature_list), &ios_field_trials_);
 }
 
@@ -377,25 +401,6 @@ void IOSChromeMainParts::SetupMetrics() {
 }
 
 void IOSChromeMainParts::StartMetricsRecording() {
-  bool isConnectionCellular = net::NetworkChangeNotifier::IsConnectionCellular(
-      net::NetworkChangeNotifier::GetConnectionType());
-  bool mayUpload = false;
-  if (base::FeatureList::IsEnabled(kUmaCellular)) {
-    if (base::FeatureList::IsEnabled(kFixUmaCellularMetricsRecording)) {
-      mayUpload = true;
-    } else {
-      // This is wrong and should be removed, but the fix is gated by the
-      // feature flag above to measure impact.
-      mayUpload = !isConnectionCellular;
-    }
-  } else {
-    // TODO(crbug.com/1179809): Now that kUmaCellular is default, all references
-    // to kUmaCellular and kMetricsReportingWifiOnly should be removed, but only
-    // after a study of kFixUmaCellularMetricsRecording is completed.
-    bool wifiOnly = local_state_->GetBoolean(prefs::kMetricsReportingWifiOnly);
-    mayUpload = !wifiOnly || !isConnectionCellular;
-  }
-
   application_context_->GetMetricsServicesManager()->UpdateUploadPermissions(
-      mayUpload);
+      true);
 }

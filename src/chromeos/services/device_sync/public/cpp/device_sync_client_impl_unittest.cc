@@ -14,7 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/null_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
@@ -140,6 +140,10 @@ class TestDeviceSyncClientObserver : public DeviceSyncClient::Observer {
 }  // namespace
 
 class DeviceSyncClientImplTest : public testing::Test {
+ public:
+  DeviceSyncClientImplTest(const DeviceSyncClientImplTest&) = delete;
+  DeviceSyncClientImplTest& operator=(const DeviceSyncClientImplTest&) = delete;
+
  protected:
   DeviceSyncClientImplTest()
       : test_remote_device_list_(
@@ -157,9 +161,10 @@ class DeviceSyncClientImplTest : public testing::Test {
 
     identity_test_environment_ =
         std::make_unique<signin::IdentityTestEnvironment>();
-    // "Unconsented" because this feature is not tied to browser sync consent.
-    identity_test_environment_->MakeUnconsentedPrimaryAccountAvailable(
-        kTestEmail);
+    // ConsentLevel::kSignin because this feature is not tied to browser sync
+    // consent.
+    identity_test_environment_->MakePrimaryAccountAvailable(
+        kTestEmail, signin::ConsentLevel::kSignin);
 
     auto fake_device_sync = std::make_unique<FakeDeviceSync>();
     fake_device_sync_ = fake_device_sync.get();
@@ -606,8 +611,6 @@ class DeviceSyncClientImplTest : public testing::Test {
     debug_info_received_ = true;
     std::move(callback).Run();
   }
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceSyncClientImplTest);
 };
 
 TEST_F(DeviceSyncClientImplTest,

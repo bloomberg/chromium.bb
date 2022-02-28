@@ -167,7 +167,8 @@ const Widget* TestDesktopWidgetDelegate::GetWidget() const {
 }
 
 View* TestDesktopWidgetDelegate::GetContentsView() {
-  return contents_view_ ? contents_view_ : WidgetDelegate::GetContentsView();
+  return contents_view_ ? contents_view_.get()
+                        : WidgetDelegate::GetContentsView();
 }
 
 bool TestDesktopWidgetDelegate::OnCloseRequested(
@@ -185,7 +186,7 @@ TestInitialFocusWidgetDelegate::TestInitialFocusWidgetDelegate(
   params.context = context;
   params.delegate = this;
   GetWidget()->Init(std::move(params));
-  GetWidget()->GetContentsView()->AddChildView(view_);
+  GetWidget()->GetContentsView()->AddChildView(view_.get());
 }
 
 TestInitialFocusWidgetDelegate::~TestInitialFocusWidgetDelegate() = default;
@@ -221,28 +222,6 @@ void WidgetActivationWaiter::OnWidgetActivationChanged(Widget* widget,
     run_loop_.Quit();
 }
 
-WidgetClosingObserver::WidgetClosingObserver(Widget* widget) : widget_(widget) {
-  widget_->AddObserver(this);
-}
-
-WidgetClosingObserver::~WidgetClosingObserver() {
-  if (widget_)
-    widget_->RemoveObserver(this);
-}
-
-void WidgetClosingObserver::Wait() {
-  if (widget_)
-    run_loop_.Run();
-}
-
-void WidgetClosingObserver::OnWidgetClosing(Widget* widget) {
-  DCHECK_EQ(widget_, widget);
-  widget_->RemoveObserver(this);
-  widget_ = nullptr;
-  if (run_loop_.running())
-    run_loop_.Quit();
-}
-
 WidgetDestroyedWaiter::WidgetDestroyedWaiter(Widget* widget) : widget_(widget) {
   widget->AddObserver(this);
 }
@@ -267,7 +246,7 @@ WidgetVisibleWaiter::~WidgetVisibleWaiter() = default;
 
 void WidgetVisibleWaiter::Wait() {
   if (!widget_->IsVisible()) {
-    widget_observation_.Observe(widget_);
+    widget_observation_.Observe(widget_.get());
     run_loop_.Run();
   }
 }

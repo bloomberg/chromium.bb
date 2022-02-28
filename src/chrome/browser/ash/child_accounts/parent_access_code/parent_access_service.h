@@ -9,12 +9,12 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "chrome/browser/ash/child_accounts/parent_access_code/config_source.h"
 #include "components/account_id/account_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefRegistrySimple;
 
@@ -46,6 +46,9 @@ class ParentAccessService {
 
   // Gets the service singleton.
   static ParentAccessService& Get();
+
+  ParentAccessService(const ParentAccessService&) = delete;
+  ParentAccessService& operator=(const ParentAccessService&) = delete;
 
   // Checks if the provided |action| requires parental approval to be performed.
   static bool IsApprovalRequired(SupervisedAction action);
@@ -79,8 +82,6 @@ class ParentAccessService {
   ConfigSource config_source_;
 
   base::ObserverList<Observer> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(ParentAccessService);
 };
 
 }  // namespace parent_access

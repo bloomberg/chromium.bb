@@ -163,7 +163,6 @@
 "fantasy"
 "monospace"
 "-webkit-body"
-"-webkit-pictograph"
 "swap"
 "fallback"
 "optional"
@@ -927,7 +926,9 @@
 "hidden-matchable"
 "more"
 "less"
-"forced"
+"custom"
+"spelling-error"
+"grammar-error"
 
 # at-rules
 "@charset"

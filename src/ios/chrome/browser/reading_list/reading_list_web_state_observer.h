@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_READING_LIST_READING_LIST_WEB_STATE_OBSERVER_H_
 #define IOS_CHROME_BROWSER_READING_LIST_READING_LIST_WEB_STATE_OBSERVER_H_
 
-#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "components/reading_list/core/reading_list_model_observer.h"
 #include "ios/web/public/web_state_observer.h"
@@ -28,6 +27,10 @@ class ReadingListWebStateObserver
  public:
   static void CreateForWebState(web::WebState* web_state,
                                 ReadingListModel* reading_list_model);
+
+  ReadingListWebStateObserver(const ReadingListWebStateObserver&) = delete;
+  ReadingListWebStateObserver& operator=(const ReadingListWebStateObserver&) =
+      delete;
 
   ~ReadingListWebStateObserver() override;
 
@@ -89,8 +92,6 @@ class ReadingListWebStateObserver
   web::PageLoadCompletionStatus last_load_result_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(ReadingListWebStateObserver);
 };
 
 #endif  // IOS_CHROME_BROWSER_READING_LIST_READING_LIST_WEB_STATE_OBSERVER_H_

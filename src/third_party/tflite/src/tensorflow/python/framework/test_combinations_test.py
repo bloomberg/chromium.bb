@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests generating test combinations."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from collections import OrderedDict
 
 from absl.testing import parameterized
@@ -125,7 +121,7 @@ class TestingCombinationsTest(test.TestCase):
   def test_overlapping_keys(self):
     c1 = combinations.combine(mode=["graph"], loss=["callable", "tensor"])
     c2 = combinations.combine(mode=["eager"], loss=["callable"])
-    with self.assertRaisesRegexp(ValueError, ".*Keys.+overlap.+"):
+    with self.assertRaisesRegex(ValueError, ".*Keys.+overlap.+"):
       _ = combinations.times(c1, c2)
 
 

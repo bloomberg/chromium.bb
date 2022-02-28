@@ -46,6 +46,9 @@ constexpr int kDefaultNumAudioChannels = 2;
 struct Stream {
   enum class Type : uint8_t { kAudioSource, kVideoSource };
 
+  static Error TryParse(const Json::Value& root,
+                        Stream::Type type,
+                        Stream* out);
   Json::Value ToJson() const;
   bool IsValid() const;
 
@@ -62,46 +65,50 @@ struct Stream {
   // must be converted to a 16 digit byte array.
   std::array<uint8_t, 16> aes_key = {};
   std::array<uint8_t, 16> aes_iv_mask = {};
-  bool receiver_rtcp_event_log = {};
-  std::string receiver_rtcp_dscp = {};
+  bool receiver_rtcp_event_log = false;
+  std::string receiver_rtcp_dscp;
   int rtp_timebase = 0;
+
+  // The codec parameter field honors the format laid out in RFC 6381:
+  // https://datatracker.ietf.org/doc/html/rfc6381.
+  std::string codec_parameter;
 };
 
 struct AudioStream {
+  static Error TryParse(const Json::Value& root, AudioStream* out);
   Json::Value ToJson() const;
   bool IsValid() const;
 
-  Stream stream = {};
-  AudioCodec codec;
+  Stream stream;
+  AudioCodec codec = AudioCodec::kNotSpecified;
   int bit_rate = 0;
 };
 
 
 struct VideoStream {
+  static Error TryParse(const Json::Value& root, VideoStream* out);
   Json::Value ToJson() const;
   bool IsValid() const;
 
-  Stream stream = {};
-  VideoCodec codec;
+  Stream stream;
+  VideoCodec codec = VideoCodec::kNotSpecified;
   SimpleFraction max_frame_rate;
   int max_bit_rate = 0;
-  std::string protection = {};
-  std::string profile = {};
-  std::string level = {};
-  std::vector<Resolution> resolutions = {};
-  std::string error_recovery_mode = {};
+  std::string protection;
+  std::string profile;
+  std::string level;
+  std::vector<Resolution> resolutions;
+  std::string error_recovery_mode;
 };
 
-enum class CastMode : uint8_t { kMirroring, kRemoting };
-
 struct Offer {
-  static ErrorOr<Offer> Parse(const Json::Value& root);
+  static Error TryParse(const Json::Value& root, Offer* out);
   Json::Value ToJson() const;
   bool IsValid() const;
 
   CastMode cast_mode = CastMode::kMirroring;
-  std::vector<AudioStream> audio_streams = {};
-  std::vector<VideoStream> video_streams = {};
+  std::vector<AudioStream> audio_streams;
+  std::vector<VideoStream> video_streams;
 };
 
 }  // namespace cast

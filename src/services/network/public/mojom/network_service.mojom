@@ -9,10 +9,12 @@ import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/memory_pressure_level.mojom";
 import "mojo/public/mojom/base/read_only_buffer.mojom";
+import "mojo/public/mojom/base/read_only_file.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
+import "sandbox/policy/mojom/sandbox.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/host_resolver.mojom";
 import "services/network/public/mojom/http_raw_headers.mojom";
@@ -26,6 +28,7 @@ import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/network_quality_estimator_manager.mojom";
 import "services/network/public/mojom/network_service_test.mojom";
 import "services/network/public/mojom/trust_tokens.mojom";
+import "services/network/public/mojom/parsed_headers.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/network/public/mojom/url_loader_network_service_observer.mojom";
@@ -37,6 +40,9 @@ import "url/mojom/url.mojom";
 
 [EnableIf=is_android]
 import "mojo/public/mojom/base/application_state.mojom";
+
+[EnableIf=is_ct_supported]
+import "services/network/public/mojom/ct_log_info.mojom";
 
 // Values for configuring HTTP authentication that can only be set once.
 struct HttpAuthStaticParams {
@@ -146,6 +152,9 @@ struct LoggingSettings {
 //
 // This is a trusted interface that only the browser process should have access
 // to. It must not be sent to any untrusted process like a renderer process.
+// The network sandbox may be disabled (to kNoSandbox) by policy, and may not
+// be available on all platforms.
+[ServiceSandbox=sandbox.mojom.Sandbox.kNetwork]
 interface NetworkService {
   // Sets the parameters and initializes the service.
   SetParams(NetworkServiceParams params);
@@ -338,6 +347,18 @@ interface NetworkService {
                        MutableNetworkTrafficAnnotationTag traffic_annotation,
                        pending_remote<network.mojom.URLLoaderFactory> factory);
 
+
+  // Updates the log list used for CT verification. `update_time` should
+  // contain the timestamp that the log list was considered fresh/current, in
+  // order to ensure that CT is not enforced if the log list is too out of
+  // date.
+  [EnableIf=is_ct_supported]
+  UpdateCtLogList(array<CTLogInfo> log_list, mojo_base.mojom.Time update_time);
+
+  // Disables or enables CT Enforcement.
+  [EnableIf=is_ct_supported]
+  SetCtEnforcementEnabled(bool enabled);
+
   // Calls base::debug::DumpWithoutCrashing for the network process.
   // TODO(http://crbug.com/934317): Remove this once done debugging renderer
   // hangs.
@@ -348,16 +369,36 @@ interface NetworkService {
   // environments.
   BindTestInterface(pending_receiver<NetworkServiceTest> receiver);
 
-  // Sets the First-Party Sets data. |raw_sets| is the JSON-encoded
-  // string representation of a collection of set declarations according to the
-  // format specified in this document:
-  // https://github.com/privacycg/first-party-sets
-  // Note that by setting the First-Party Sets, any previous notion of
-  // First-Party Sets is cleared. On any kind of error, all First-Party Sets are
-  // cleared (except for the manually-specified set, if one exists).
-  SetFirstPartySets(string raw_sets);
+  // Sets the First-Party Sets data. |sets_file| is the file containing a
+  // collection of set declarations according to the format specified in this
+  // document: https://github.com/privacycg/first-party-sets. The collection may
+  // either be a single JSON array of such records, or a sequence of
+  // newline-delimited JSON objects (one per line). Note that by setting the
+  // First-Party Sets, any previous notion of First-Party Sets is cleared. On
+  // any kind of error, all First-Party Sets are cleared (except for the
+  // manually-specified set, if one exists).
+  SetFirstPartySets(mojo_base.mojom.ReadOnlyFile sets_file);
+
+  // Sets the First-Party Sets data that was persisted to compare it with the
+  // current First-Party Sets data set by `SetFirstPartySets()`, which is
+  // considered more up-to-date, and returns a serialized version of the current
+  // one. Both input and output are in format of the JSON-encoded string
+  // representation of a map of site -> site.
+  SetPersistedFirstPartySetsAndGetCurrentSets(string persisted_sets)
+      => (string up_to_date_sets);
 
   // Sets the list of ports which will be permitted even if they normally would
   // be restricted.
   SetExplicitlyAllowedPorts(array<uint16> ports);
+
+  // Parses response headers and returns a structured version to the caller.
+  // This call originates from the browser process. Used for navigations when
+  // the URLLoader didn't provide ParsedHeader in the first place. This happens
+  // when the raw headers represent untrustworthy input and the URLLoader used
+  // lives in a non-sandboxed process. It can also happen from some exotic
+  // URLLoader where parsing hasn't been implemented.
+  // In particular, this is used for request served from WebBundle,
+  // Extensions, etc.
+  ParseHeaders(url.mojom.Url url, HttpResponseHeaders headers)
+      => (ParsedHeaders parsed_headers);
 };

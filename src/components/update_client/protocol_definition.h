@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -31,20 +30,29 @@ namespace protocol_request {
 
 struct HW {
   uint32_t physmemory = 0;  // Physical memory rounded down to the closest GB.
+  bool sse = false;
+  bool sse2 = false;
+  bool sse3 = false;
+  bool sse41 = false;
+  bool sse42 = false;
+  bool ssse3 = false;
+  bool avx = false;
 };
 
 struct OS {
   OS();
+
+  OS(const OS&) = delete;
+  OS& operator=(const OS&) = delete;
+
   OS(OS&&);
+
   ~OS();
 
   std::string platform;
   std::string version;
   std::string service_pack;
   std::string arch;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OS);
 };
 
 struct Updater {
@@ -66,6 +74,9 @@ struct UpdateCheck {
   ~UpdateCheck();
 
   bool is_update_disabled = false;
+  std::string target_version_prefix;
+  bool rollback_allowed = false;
+  bool same_version_update_allowed = false;
 };
 
 // didrun element. The element is named "ping" for legacy reasons.
@@ -87,11 +98,17 @@ struct Ping {
 
 struct App {
   App();
+
+  App(const App&) = delete;
+  App& operator=(const App&) = delete;
+
   App(App&&);
+
   ~App();
 
   std::string app_id;
   std::string version;
+  std::string ap;
   base::flat_map<std::string, std::string> installer_attributes;
   std::string lang;
   std::string brand_code;
@@ -116,17 +133,22 @@ struct App {
 
   // Progress/result pings.
   absl::optional<std::vector<base::Value>> events;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(App);
 };
 
 struct Request {
   Request();
+
+  Request(const Request&) = delete;
+  Request& operator=(const Request&) = delete;
+
   Request(Request&&);
+
   ~Request();
 
   std::string protocol_version;
+
+  // True if the updater operates in the per-system configuration.
+  bool is_machine = false;
 
   // Unique identifier for this session, used to correlate multiple requests
   // associated with a single update operation.
@@ -135,7 +157,6 @@ struct Request {
   // Unique identifier for this request, used to associate the same request
   // received multiple times on the server.
   std::string request_id;
-
   std::string updatername;
   std::string updaterversion;
   std::string prodversion;
@@ -167,9 +188,6 @@ struct Request {
   absl::optional<Updater> updater;
 
   std::vector<App> apps;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Request);
 };
 
 }  // namespace protocol_request

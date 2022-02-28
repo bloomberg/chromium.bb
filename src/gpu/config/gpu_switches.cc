@@ -42,10 +42,12 @@ const char kDisableGpuProcessForDX12InfoCollection[] =
     "disable-gpu-process-for-dx12-info-collection";
 
 const char kEnableUnsafeWebGPU[] = "enable-unsafe-webgpu";
-const char kEnableUnsafeWebGPUService[] = "enable-unsafe-webgpu-service";
 
 // Enable validation layers in Dawn backends.
 const char kEnableDawnBackendValidation[] = "enable-dawn-backend-validation";
+
+// Force all WebGPU content to run on the WebGPU/Compat (GLES) backend.
+const char kForceWebGPUCompat[] = "force-webgpu-compat";
 
 // Set the Dawn features(toggles) enabled on the creation of Dawn devices.
 const char kEnableDawnFeatures[] = "enable-dawn-features";

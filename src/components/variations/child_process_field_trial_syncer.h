@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/component_export.h"
 #include "base/metrics/field_trial.h"
 #include "base/threading/thread_local.h"
 
@@ -19,7 +19,8 @@ namespace variations {
 // processes. Specifically, when a field trial is activated in the browser, it
 // also activates it in the child process and when a field trial is activated in
 // the child process, it notifies the browser process to activate it.
-class ChildProcessFieldTrialSyncer : public base::FieldTrialList::Observer {
+class COMPONENT_EXPORT(VARIATIONS) ChildProcessFieldTrialSyncer
+    : public base::FieldTrialList::Observer {
  public:
   using FieldTrialActivatedCallback =
       base::RepeatingCallback<void(const std::string& trial_name)>;
@@ -35,6 +36,10 @@ class ChildProcessFieldTrialSyncer : public base::FieldTrialList::Observer {
   // FieldTrialList (see FieldTrialList::RemoveObserver).
   static ChildProcessFieldTrialSyncer* CreateInstance(
       FieldTrialActivatedCallback activated_callback);
+
+  ChildProcessFieldTrialSyncer(const ChildProcessFieldTrialSyncer&) = delete;
+  ChildProcessFieldTrialSyncer& operator=(const ChildProcessFieldTrialSyncer&) =
+      delete;
 
   // Deletes the global ChildProcessFieldTrialSyncer instance.
   static void DeleteInstanceForTesting();
@@ -63,8 +68,6 @@ class ChildProcessFieldTrialSyncer : public base::FieldTrialList::Observer {
 
   // Callback to invoke when a field trial is activated.
   const FieldTrialActivatedCallback activated_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChildProcessFieldTrialSyncer);
 };
 
 }  // namespace variations

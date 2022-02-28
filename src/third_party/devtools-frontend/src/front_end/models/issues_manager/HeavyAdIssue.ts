@@ -9,7 +9,6 @@ import * as Protocol from '../../generated/protocol.js';
 import {Issue, IssueCategory, IssueKind} from './Issue.js';
 import type {MarkdownIssueDescription} from './MarkdownIssueDescription.js';
 
-
 const UIStrings = {
   /**
   *@description Title for a learn more link in Heavy Ads issue description
@@ -61,10 +60,9 @@ export class HeavyAdIssue extends Issue {
     }
   }
 
-  static fromInspectorIssue(
-      issuesModel: SDK.IssuesModel.IssuesModel,
-      inspectorDetails: Protocol.Audits.InspectorIssueDetails): HeavyAdIssue[] {
-    const heavyAdIssueDetails = inspectorDetails.heavyAdIssueDetails;
+  static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue):
+      HeavyAdIssue[] {
+    const heavyAdIssueDetails = inspectorIssue.details.heavyAdIssueDetails;
     if (!heavyAdIssueDetails) {
       console.warn('Heavy Ad issue without details received.');
       return [];

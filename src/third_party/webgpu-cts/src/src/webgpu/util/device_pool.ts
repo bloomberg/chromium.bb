@@ -1,19 +1,19 @@
 import { SkipTestCase } from '../../common/framework/fixture.js';
+import { getGPU } from '../../common/util/navigator_gpu.js';
 import {
   assert,
   raceWithRejectOnTimeout,
   unreachable,
   assertReject,
-} from '../../common/framework/util/util.js';
+} from '../../common/util/util.js';
 import { DefaultLimits } from '../constants.js';
-
-import { getGPU } from './navigator_gpu.js';
 
 export interface DeviceProvider {
   acquire(): GPUDevice;
 }
 
 class TestFailedButDeviceReusable extends Error {}
+class FeaturesNotSupported extends Error {}
 export class TestOOMedShouldAttemptGC extends Error {}
 
 export class DevicePool {
@@ -135,10 +135,14 @@ class DescriptorToHolderMap {
     try {
       value = await DeviceHolder.create(descriptor);
     } catch (ex) {
-      this.unsupported.add(key);
-      throw new SkipTestCase(
-        `GPUDeviceDescriptor not supported: ${JSON.stringify(descriptor)}\n${ex?.message ?? ''}`
-      );
+      if (ex instanceof FeaturesNotSupported) {
+        this.unsupported.add(key);
+        throw new SkipTestCase(
+          `GPUDeviceDescriptor not supported: ${JSON.stringify(descriptor)}\n${ex?.message ?? ''}`
+        );
+      }
+
+      throw ex;
     }
     this.insertAndCleanUp(key, value);
     return value;
@@ -160,8 +164,12 @@ class DescriptorToHolderMap {
 }
 
 export type UncanonicalizedDeviceDescriptor = {
-  nonGuaranteedFeatures?: Iterable<GPUFeatureName>;
-  nonGuaranteedLimits?: Record<string, GPUSize32>;
+  requiredFeatures?: Iterable<GPUFeatureName>;
+  requiredLimits?: Record<string, GPUSize32>;
+  /** @deprecated this field cannot be used */
+  nonGuaranteedFeatures?: undefined;
+  /** @deprecated this field cannot be used */
+  nonGuaranteedLimits?: undefined;
   /** @deprecated this field cannot be used */
   extensions?: undefined;
   /** @deprecated this field cannot be used */
@@ -169,7 +177,7 @@ export type UncanonicalizedDeviceDescriptor = {
 };
 type CanonicalDeviceDescriptor = Omit<
   Required<GPUDeviceDescriptor>,
-  'label' | 'extensions' | 'limits'
+  'label' | 'nonGuaranteedFeatures' | 'nonGuaranteedLimits'
 >;
 /**
  * Make a stringified map-key from a GPUDeviceDescriptor.
@@ -179,25 +187,46 @@ type CanonicalDeviceDescriptor = Omit<
 function canonicalizeDescriptor(
   desc: UncanonicalizedDeviceDescriptor
 ): [CanonicalDeviceDescriptor, string] {
-  const featuresCanonicalized = desc.nonGuaranteedFeatures
-    ? Array.from(new Set(desc.nonGuaranteedFeatures)).sort()
+  const featuresCanonicalized = desc.requiredFeatures
+    ? Array.from(new Set(desc.requiredFeatures)).sort()
     : [];
 
-  const limitsCanonicalized: Record<string, number> = { ...DefaultLimits };
-  if (desc.nonGuaranteedLimits) {
-    for (const k of Object.keys(desc.nonGuaranteedLimits)) {
-      if (desc.nonGuaranteedLimits[k] !== undefined) {
-        limitsCanonicalized[k] = desc.nonGuaranteedLimits[k];
+  /** Canonicalized version of the requested limits: in canonical order, with only values which are
+   * specified _and_ non-default. */
+  const limitsCanonicalized: Record<string, number> = {};
+  if (desc.requiredLimits) {
+    for (const [k, defaultValue] of Object.entries(DefaultLimits)) {
+      const requestedValue = desc.requiredLimits[k];
+      // Skip adding a limit to limitsCanonicalized if it is the same as the default.
+      if (requestedValue !== undefined && requestedValue !== defaultValue) {
+        limitsCanonicalized[k] = requestedValue;
       }
     }
   }
 
   // Type ensures every field is carried through.
   const descriptorCanonicalized: CanonicalDeviceDescriptor = {
-    nonGuaranteedFeatures: featuresCanonicalized,
-    nonGuaranteedLimits: limitsCanonicalized,
+    requiredFeatures: featuresCanonicalized,
+    requiredLimits: limitsCanonicalized,
   };
   return [descriptorCanonicalized, JSON.stringify(descriptorCanonicalized)];
+}
+
+function supportsFeature(
+  adapter: GPUAdapter,
+  descriptor: CanonicalDeviceDescriptor | undefined
+): boolean {
+  if (descriptor === undefined) {
+    return true;
+  }
+
+  for (const feature of descriptor.requiredFeatures) {
+    if (!adapter.features.has(feature)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**
@@ -222,6 +251,9 @@ class DeviceHolder implements DeviceProvider {
     const gpu = getGPU();
     const adapter = await gpu.requestAdapter();
     assert(adapter !== null, 'requestAdapter returned null');
+    if (!supportsFeature(adapter, descriptor)) {
+      throw new FeaturesNotSupported('One or more features are not supported');
+    }
     const device = await adapter.requestDevice(descriptor);
     assert(device !== null, 'requestDevice returned null');
 

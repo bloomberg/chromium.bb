@@ -8,7 +8,6 @@
 
 #include "base/check.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 
 namespace i18n {
@@ -26,6 +25,9 @@ class IcuStringComparer {
     collator_->setStrength(icu::Collator::PRIMARY);
   }
 
+  IcuStringComparer(const IcuStringComparer&) = delete;
+  IcuStringComparer& operator=(const IcuStringComparer&) = delete;
+
   ~IcuStringComparer() {}
 
   int Compare(const std::string& a, const std::string& b) const {
@@ -37,8 +39,6 @@ class IcuStringComparer {
 
  private:
   std::unique_ptr<icu::Collator> collator_;
-
-  DISALLOW_COPY_AND_ASSIGN(IcuStringComparer);
 };
 
 static base::LazyInstance<IcuStringComparer>::DestructorAtExit g_comparer =

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/wm/core/wm_state.h"
@@ -43,6 +43,10 @@ class AuraTestHelper {
   // single-threaded phase without a backing task environment, and must not
   // create one lest the caller wish to do so.
   explicit AuraTestHelper(ui::ContextFactory* context_factory = nullptr);
+
+  AuraTestHelper(const AuraTestHelper&) = delete;
+  AuraTestHelper& operator=(const AuraTestHelper&) = delete;
+
   virtual ~AuraTestHelper();
 
   // Returns the current AuraTestHelper, or nullptr if it's not alive.
@@ -78,7 +82,7 @@ class AuraTestHelper {
   std::unique_ptr<wm::WMState> wm_state_ = std::make_unique<wm::WMState>();
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
   std::unique_ptr<Env> env_;
-  ui::ContextFactory* context_factory_to_restore_ = nullptr;
+  raw_ptr<ui::ContextFactory> context_factory_to_restore_ = nullptr;
   std::unique_ptr<ui::TestContextFactories> context_factories_;
   std::unique_ptr<TestScreen> test_screen_;
   std::unique_ptr<WindowTreeHost> host_;
@@ -86,8 +90,6 @@ class AuraTestHelper {
   std::unique_ptr<client::DefaultCaptureClient> capture_client_;
   std::unique_ptr<TestWindowParentingClient> parenting_client_;
   std::unique_ptr<client::ScreenPositionClient> screen_position_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(AuraTestHelper);
 };
 
 }  // namespace test

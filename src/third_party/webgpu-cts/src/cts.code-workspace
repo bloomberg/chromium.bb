@@ -26,7 +26,9 @@
       "deploy_key.enc": true,
       "node_modules": true,
       "out": true,
+      "out-node": true,
       "out-wpt": true,
+      "docs/tsdoc": true,
       "package-lock.json": true
     },
     // Configure VSCode to use the right style when automatically adding imports on autocomplete.
@@ -83,6 +85,15 @@
 
         "type": "shell",
         "command": "npm run unittest",
+        "problemMatcher": []
+      },
+      {
+        "group": "build",
+        "label": "npm: tsdoc",
+        "detail": "Build docs/tsdoc/",
+
+        "type": "shell",
+        "command": "npm run tsdoc",
         "problemMatcher": []
       },
     ]

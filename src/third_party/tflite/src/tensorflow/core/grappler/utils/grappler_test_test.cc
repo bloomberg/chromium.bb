@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tensorflow/core/grappler/utils/grappler_test.h"
+
 #include "tensorflow/cc/ops/standard_ops.h"
 #include "tensorflow/core/grappler/utils.h"
 #include "tensorflow/core/lib/core/status_test_util.h"
@@ -93,6 +94,35 @@ TEST_F(GrapplerTestTest, CountOpNodes) {
   EXPECT_EQ(2, CountOpNodes(graph, "Mul"));
   EXPECT_EQ(1, CountOpNodes(graph, "AddN"));
   EXPECT_EQ(0, CountOpNodes(graph, "Transpose"));
+}
+
+TEST_F(GrapplerTestTest, EvaluateNodes) {
+  EnableAllOptimizers();
+  tensorflow::Scope s = tensorflow::Scope::NewRootScope();
+  Output a = ops::Const(s.WithOpName("c"), {1.0f, 2.0f}, {1, 2});
+  Output b = ops::Const(s.WithOpName("d"), {3.0f, 4.0f}, {1, 2});
+  Output mul = ops::Mul(s.WithOpName("mul"), a, b);
+  GrapplerItem item;
+  item.fetch = {"mul"};
+  TF_CHECK_OK(s.ToGraphDef(&item.graph));
+  auto tensors = EvaluateNodes(item.graph, item.fetch);
+  ASSERT_EQ(tensors.size(), 1);
+  EXPECT_EQ(tensors[0].flat<float>()(0), 3.0f);
+  EXPECT_EQ(tensors[0].flat<float>()(1), 8.0f);
+}
+
+TEST_F(GrapplerTestTest, EvaluateNodesInvalidFetch) {
+  EnableAllOptimizers();
+  tensorflow::Scope s = tensorflow::Scope::NewRootScope();
+  Output a = ops::Const(s.WithOpName("c"), {1.0f, 2.0f}, {1, 2});
+  Output b = ops::Const(s.WithOpName("d"), {3.0f, 4.0f}, {1, 2});
+  Output mul = ops::Mul(s.WithOpName("mul"), a, b);
+  GrapplerItem item;
+  item.fetch = {"no_such_node"};
+  TF_CHECK_OK(s.ToGraphDef(&item.graph));
+  EXPECT_DEATH(EvaluateNodes(item.graph, item.fetch),
+               "Tensor no_such_node:0, specified in either "
+               "feed_devices or fetch_devices was not found in the Graph");
 }
 
 }  // namespace

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
 
+#include "base/cxx17_backports.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/grit/generated_resources.h"
@@ -29,7 +29,7 @@ const TableColumnData kColumns[] = {
      200, true, true, false},
     {IDS_TASK_MANAGER_MEM_FOOTPRINT_COLUMN, ui::TableColumn::RIGHT, -1, 0,
      base::size("800 MiB") * kCharWidth,
-     base::size("Memory Footprint") * 1.5 * kCharWidth, true, false, true},
+     base::size("Memory Footprint") * kCharWidth * 3 / 2, true, false, true},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {IDS_TASK_MANAGER_SWAPPED_MEM_COLUMN, ui::TableColumn::RIGHT, -1, 0,

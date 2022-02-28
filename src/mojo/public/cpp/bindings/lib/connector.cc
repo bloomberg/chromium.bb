@@ -12,11 +12,10 @@
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
@@ -31,6 +30,7 @@
 #include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
 #include "mojo/public/cpp/bindings/mojo_buildflags.h"
 #include "mojo/public/cpp/bindings/sync_handle_watcher.h"
+#include "mojo/public/cpp/bindings/tracing_helpers.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_mojo_event_info.pbzero.h"
 
@@ -67,6 +67,10 @@ bool EnableTaskPerMessage() {
 class Connector::ActiveDispatchTracker {
  public:
   explicit ActiveDispatchTracker(const base::WeakPtr<Connector>& connector);
+
+  ActiveDispatchTracker(const ActiveDispatchTracker&) = delete;
+  ActiveDispatchTracker& operator=(const ActiveDispatchTracker&) = delete;
+
   ~ActiveDispatchTracker();
 
   void NotifyBeginNesting();
@@ -76,8 +80,6 @@ class Connector::ActiveDispatchTracker {
   RunLoopNestingObserver* const nesting_observer_;
   ActiveDispatchTracker* outer_tracker_ = nullptr;
   ActiveDispatchTracker* inner_tracker_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ActiveDispatchTracker);
 };
 
 // Watches the MessageLoop on the current thread. Notifies the current chain of
@@ -88,6 +90,9 @@ class Connector::RunLoopNestingObserver
   RunLoopNestingObserver() {
     base::RunLoop::AddNestingObserverOnCurrentThread(this);
   }
+
+  RunLoopNestingObserver(const RunLoopNestingObserver&) = delete;
+  RunLoopNestingObserver& operator=(const RunLoopNestingObserver&) = delete;
 
   ~RunLoopNestingObserver() override {
     base::RunLoop::RemoveNestingObserverOnCurrentThread(this);
@@ -105,18 +110,15 @@ class Connector::RunLoopNestingObserver
     // The NestingObserver for each thread. Note that this is always a
     // Connector::RunLoopNestingObserver; we use the base type here because that
     // subclass is private to Connector.
-    static base::NoDestructor<
-        base::SequenceLocalStorageSlot<RunLoopNestingObserver>>
+    static base::SequenceLocalStorageSlot<RunLoopNestingObserver>
         sls_nesting_observer;
-    return &sls_nesting_observer->GetOrCreateValue();
+    return &sls_nesting_observer.GetOrCreateValue();
   }
 
  private:
   friend class ActiveDispatchTracker;
 
-  ActiveDispatchTracker* top_tracker_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(RunLoopNestingObserver);
+  raw_ptr<ActiveDispatchTracker> top_tracker_ = nullptr;
 };
 
 Connector::ActiveDispatchTracker::ActiveDispatchTracker(
@@ -148,10 +150,8 @@ void Connector::ActiveDispatchTracker::NotifyBeginNesting() {
 
 Connector::Connector(ScopedMessagePipeHandle message_pipe,
                      ConnectorConfig config,
-                     scoped_refptr<base::SequencedTaskRunner> runner,
                      const char* interface_name)
     : message_pipe_(std::move(message_pipe)),
-      task_runner_(std::move(runner)),
       error_(false),
       force_immediate_dispatch_(!EnableTaskPerMessage()),
       outgoing_serialization_mode_(g_default_outgoing_serialization_mode),
@@ -166,17 +166,14 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
 #endif
 
   weak_self_ = weak_factory_.GetWeakPtr();
+}
 
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-
-  // Even though we don't have an incoming receiver, we still want to monitor
-  // the message pipe to know if is closed or encounters an error.
-  if (task_runner_->RunsTasksInCurrentSequence()) {
-    WaitToReadMore();
-  } else {
-    task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&Connector::WaitToReadMore, weak_self_));
-  }
+Connector::Connector(ScopedMessagePipeHandle message_pipe,
+                     ConnectorConfig config,
+                     scoped_refptr<base::SequencedTaskRunner> runner,
+                     const char* interface_name)
+    : Connector(std::move(message_pipe), config, interface_name) {
+  StartReceiving(std::move(runner));
 }
 
 Connector::~Connector() {
@@ -187,16 +184,10 @@ Connector::~Connector() {
                             quota_checker_->GetMaxQuotaUsage());
   }
 
-  {
-    // Allow for quick destruction on any sequence if the pipe is already
-    // closed.
-    base::AutoLock lock(connected_lock_);
-    if (!connected_)
-      return;
+  if (is_receiving_) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    CancelWait();
   }
-
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CancelWait();
 }
 
 void Connector::SetOutgoingSerializationMode(OutgoingSerializationMode mode) {
@@ -207,6 +198,23 @@ void Connector::SetOutgoingSerializationMode(OutgoingSerializationMode mode) {
 void Connector::SetIncomingSerializationMode(IncomingSerializationMode mode) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   incoming_serialization_mode_ = mode;
+}
+
+void Connector::StartReceiving(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    bool allow_woken_up_by_others) {
+  DCHECK(!task_runner_);
+  task_runner_ = std::move(task_runner);
+  allow_woken_up_by_others_ = allow_woken_up_by_others;
+
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+  if (task_runner_->RunsTasksInCurrentSequence()) {
+    WaitToReadMore();
+  } else {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&Connector::WaitToReadMore, weak_factory_.GetWeakPtr()));
+  }
 }
 
 void Connector::CloseMessagePipe() {
@@ -223,8 +231,6 @@ ScopedMessagePipeHandle Connector::PassMessagePipe() {
   weak_factory_.InvalidateWeakPtrs();
   sync_handle_watcher_callback_count_ = 0;
 
-  base::AutoLock lock(connected_lock_);
-  connected_ = false;
   return message_pipe;
 }
 
@@ -310,7 +316,7 @@ bool Connector::PrefersSerializedMessages() {
 }
 
 bool Connector::Accept(Message* message) {
-  if (!lock_)
+  if (!lock_ && task_runner_)
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (error_)
@@ -331,9 +337,11 @@ bool Connector::Accept(Message* message) {
   if (!message->is_serialized()) {
     // The caller is sending an unserialized message. If we haven't set up a
     // remoteness tracker yet, do so now. See PrefersSerializedMessages() above
-    // for more details.
+    // for more details. Note that if the Connector is not yet bound to a
+    // TaskRunner and activaly reading the pipe, we don't bother setting this up
+    // yet.
     DCHECK_EQ(outgoing_serialization_mode_, OutgoingSerializationMode::kLazy);
-    if (!peer_remoteness_tracker_) {
+    if (!peer_remoteness_tracker_ && task_runner_) {
       peer_remoteness_tracker_.emplace(
           message_pipe_.get(), MOJO_HANDLE_SIGNAL_PEER_REMOTE, task_runner_);
     }
@@ -437,6 +445,7 @@ void Connector::OnHandleReadyInternal(MojoResult result) {
 }
 
 void Connector::WaitToReadMore() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!paused_);
   DCHECK(!handle_watcher_);
 
@@ -466,6 +475,8 @@ void Connector::WaitToReadMore() {
     EnsureSyncWatcherExists();
     sync_watcher_->AllowWokenUpBySyncWatchOnSameThread();
   }
+
+  is_receiving_ = true;
 }
 
 uint64_t Connector::QueryPendingMessageCount() const {
@@ -521,17 +532,23 @@ bool Connector::DispatchMessage(Message message) {
               incoming_serialization_mode_);
   }
 
-  TRACE_EVENT_WITH_FLOW0("toplevel.flow", "mojo::Message Receive",
-                         message.header()->trace_id, TRACE_EVENT_FLAG_FLOW_IN);
-#if !BUILDFLAG(MOJO_TRACE_ENABLED)
-  // This emits just full class name, and is inferior to mojo tracing.
-  TRACE_EVENT("toplevel", "Connector::DispatchMessage",
-              [this](perfetto::EventContext ctx) {
-                ctx.event()
-                    ->set_chrome_mojo_event_info()
-                    ->set_watcher_notify_interface_tag(interface_name_);
-              });
-#endif
+  // This emits just full class name, and is inferior to full mojo tracing, so
+  // the category is "toplevel" if full tracing isn't available. If it's
+  // available, it's emitted under "disabled-by-default-mojom" for debugging
+  // purposes.
+  TRACE_EVENT(
+      TRACE_CATEGORY_OR_DISABLED_BY_DEFAULT_MOJOM("toplevel"),
+      "Connector::DispatchMessage", [&](perfetto::EventContext& ctx) {
+        ctx.event()->set_chrome_mojo_event_info()->set_mojo_interface_tag(
+            interface_name_);
+
+        static const uint8_t* flow_enabled =
+            TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED("toplevel.flow");
+        if (!*flow_enabled)
+          return;
+
+        perfetto::Flow::Global(message.GetTraceId())(ctx);
+      });
 
   if (connection_group_)
     message.set_receiver_connection_group(&connection_group_);
@@ -627,6 +644,8 @@ void Connector::ReadAllAvailableMessages() {
 }
 
 void Connector::CancelWait() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  is_receiving_ = false;
   peer_remoteness_tracker_.reset();
   handle_watcher_.reset();
   sync_watcher_.reset();

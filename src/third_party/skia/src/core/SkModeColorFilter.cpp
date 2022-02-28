@@ -71,11 +71,11 @@ bool SkModeColorFilter::onAppendStages(const SkStageRec& rec, bool shaderIsOpaqu
 }
 
 skvm::Color SkModeColorFilter::onProgram(skvm::Builder* p, skvm::Color c,
-                                         SkColorSpace* dstCS,
+                                         const SkColorInfo& dstInfo,
                                          skvm::Uniforms* uniforms, SkArenaAlloc*) const {
     SkColor4f color = SkColor4f::FromColor(fColor);
-    SkColorSpaceXformSteps(sk_srgb_singleton(), kUnpremul_SkAlphaType,
-                                         dstCS,   kPremul_SkAlphaType).apply(color.vec());
+    SkColorSpaceXformSteps( sk_srgb_singleton(), kUnpremul_SkAlphaType,
+                           dstInfo.colorSpace(), kPremul_SkAlphaType).apply(color.vec());
     skvm::Color dst = c,
                 src = p->uniformColor(color, uniforms);
     return p->blend(fMode, src,dst);
@@ -100,9 +100,7 @@ GrFPResult SkModeColorFilter::asFragmentProcessor(std::unique_ptr<GrFragmentProc
     SkDEBUGCODE(const bool fpHasConstIO = !inputFP || inputFP->hasConstantOutputForConstantInput();)
 
     auto colorFP = GrFragmentProcessor::MakeColor(SkColorToPMColor4f(fColor, dstColorInfo));
-    auto xferFP = GrBlendFragmentProcessor::Make(
-            std::move(colorFP), std::move(inputFP), fMode,
-            GrBlendFragmentProcessor::BlendBehavior::kSkModeBehavior);
+    auto xferFP = GrBlendFragmentProcessor::Make(std::move(colorFP), std::move(inputFP), fMode);
 
     if (xferFP == nullptr) {
         // This is only expected to happen if the blend mode is "dest" and the input FP is null.

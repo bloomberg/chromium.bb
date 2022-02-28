@@ -13,11 +13,11 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/span.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -28,21 +28,19 @@
 #include "chrome/browser/password_manager/password_store_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/settings/password_ui_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/password_manager/core/browser/form_fetcher_impl.h"
+#include "components/password_manager/core/browser/move_password_to_account_store_helper.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/password_manager/core/browser/password_save_manager_impl.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/ui/plaintext_reason.h"
@@ -57,7 +55,7 @@
 #endif
 
 using base::StringPiece;
-using password_manager::PasswordStore;
+using password_manager::PasswordStoreInterface;
 
 namespace {
 
@@ -127,6 +125,10 @@ class RemovePasswordOperation : public UndoOperation {
  public:
   RemovePasswordOperation(PasswordManagerPresenter* page,
                           const password_manager::PasswordForm& form);
+
+  RemovePasswordOperation(const RemovePasswordOperation&) = delete;
+  RemovePasswordOperation& operator=(const RemovePasswordOperation&) = delete;
+
   ~RemovePasswordOperation() override;
 
   // UndoOperation:
@@ -135,10 +137,8 @@ class RemovePasswordOperation : public UndoOperation {
   int GetRedoLabelId() const override;
 
  private:
-  PasswordManagerPresenter* page_;
+  raw_ptr<PasswordManagerPresenter> page_;
   password_manager::PasswordForm form_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemovePasswordOperation);
 };
 
 RemovePasswordOperation::RemovePasswordOperation(
@@ -164,6 +164,10 @@ class AddPasswordOperation : public UndoOperation {
  public:
   AddPasswordOperation(PasswordManagerPresenter* page,
                        const password_manager::PasswordForm& password_form);
+
+  AddPasswordOperation(const AddPasswordOperation&) = delete;
+  AddPasswordOperation& operator=(const AddPasswordOperation&) = delete;
+
   ~AddPasswordOperation() override;
 
   // UndoOperation:
@@ -172,10 +176,8 @@ class AddPasswordOperation : public UndoOperation {
   int GetRedoLabelId() const override;
 
  private:
-  PasswordManagerPresenter* page_;
+  raw_ptr<PasswordManagerPresenter> page_;
   password_manager::PasswordForm form_;
-
-  DISALLOW_COPY_AND_ASSIGN(AddPasswordOperation);
 };
 
 AddPasswordOperation::AddPasswordOperation(
@@ -199,42 +201,6 @@ int AddPasswordOperation::GetRedoLabelId() const {
 
 }  // namespace
 
-PasswordManagerPresenter::MovePasswordToAccountStoreHelper::
-    MovePasswordToAccountStoreHelper(
-        const password_manager::PasswordForm& form,
-        password_manager::PasswordManagerClient* client,
-        base::OnceClosure done_callback)
-    : form_(form),
-      client_(client),
-      done_callback_(std::move(done_callback)),
-      form_fetcher_(password_manager::FormFetcherImpl::CreateFormFetcherImpl(
-          password_manager::PasswordStore::FormDigest(form),
-          client,
-          /*should_migrate_http_passwords=*/true)) {
-  form_fetcher_->Fetch();
-  form_fetcher_->AddConsumer(this);
-}
-
-PasswordManagerPresenter::MovePasswordToAccountStoreHelper::
-    ~MovePasswordToAccountStoreHelper() {
-  form_fetcher_->RemoveConsumer(this);
-}
-
-void PasswordManagerPresenter::MovePasswordToAccountStoreHelper::
-    OnFetchCompleted() {
-  auto save_manager =
-      password_manager::PasswordSaveManagerImpl::CreatePasswordSaveManagerImpl(
-          client_);
-  save_manager->Init(client_, form_fetcher_.get(), /*metrics_recorder=*/nullptr,
-                     /*votes_uploader=*/nullptr);
-  save_manager->CreatePendingCredentials(form_, {}, {}, /*is_http_auth=*/false,
-                                         /*is_credential_api_save=*/false);
-  save_manager->MoveCredentialsToAccountStore(
-      password_manager::metrics_util::MoveToAccountStoreTrigger::
-          kExplicitlyTriggeredInSettings);
-  std::move(done_callback_).Run();
-}
-
 PasswordManagerPresenter::PasswordManagerPresenter(
     PasswordUIView* password_view)
     : password_view_(password_view) {
@@ -243,8 +209,8 @@ PasswordManagerPresenter::PasswordManagerPresenter(
 
 PasswordManagerPresenter::~PasswordManagerPresenter() {
   for (bool use_account_store : {false, true}) {
-    PasswordStore* store =
-        GetPasswordStore(password_view_->GetProfile(), use_account_store).get();
+    PasswordStoreInterface* store =
+        GetPasswordStore(password_view_->GetProfile(), use_account_store);
     if (store) {
       store->RemoveObserver(this);
     }
@@ -253,8 +219,8 @@ PasswordManagerPresenter::~PasswordManagerPresenter() {
 
 void PasswordManagerPresenter::Initialize() {
   for (bool use_account_store : {false, true}) {
-    PasswordStore* store =
-        GetPasswordStore(password_view_->GetProfile(), use_account_store).get();
+    PasswordStoreInterface* store =
+        GetPasswordStore(password_view_->GetProfile(), use_account_store);
     if (store) {
       store->AddObserver(this);
     }
@@ -262,7 +228,15 @@ void PasswordManagerPresenter::Initialize() {
 }
 
 void PasswordManagerPresenter::OnLoginsChanged(
-    const password_manager::PasswordStoreChangeList& changes) {
+    password_manager::PasswordStoreInterface* /*store*/,
+    const password_manager::PasswordStoreChangeList& /*changes*/) {
+  // Entire maps are updated for convenience.
+  UpdatePasswordLists();
+}
+
+void PasswordManagerPresenter::OnLoginsRetained(
+    password_manager::PasswordStoreInterface* /*store*/,
+    const std::vector<password_manager::PasswordForm>& /*retained_passwords*/) {
   // Entire maps are updated for convenience.
   UpdatePasswordLists();
 }
@@ -277,10 +251,11 @@ void PasswordManagerPresenter::UpdatePasswordLists() {
   // Request an update from both stores (if they exist). This will send out two
   // updates to |password_view_| as the two result sets come in.
   for (bool use_account_store : {false, true}) {
-    PasswordStore* store =
-        GetPasswordStore(password_view_->GetProfile(), use_account_store).get();
+    PasswordStoreInterface* store =
+        GetPasswordStore(password_view_->GetProfile(), use_account_store);
     if (store) {
-      store->GetAllLoginsWithAffiliationAndBrandingInformation(this);
+      store->GetAllLoginsWithAffiliationAndBrandingInformation(
+          weak_ptr_factory_.GetWeakPtr());
     }
   }
 }
@@ -380,7 +355,7 @@ void PasswordManagerPresenter::MovePasswordsToAccountStore(
     const std::vector<std::string>& sort_keys,
     password_manager::PasswordManagerClient* client) {
   if (!client->GetPasswordFeatureManager()->IsOptedInForAccountStorage() ||
-      ProfileSyncServiceFactory::GetForProfile(password_view_->GetProfile())
+      SyncServiceFactory::GetForProfile(password_view_->GetProfile())
           ->IsSyncFeatureEnabled()) {
     return;
   }
@@ -399,12 +374,14 @@ void PasswordManagerPresenter::MovePasswordsToAccountStore(
         move_to_account_helpers_.insert(move_to_account_helpers_.begin(),
                                         nullptr);
     // The presenter outlives the helper so it's safe to use base::Unretained.
-    *helper_it = std::make_unique<
-        PasswordManagerPresenter::MovePasswordToAccountStoreHelper>(
-        form, client,
-        base::BindOnce(
-            &PasswordManagerPresenter::OnMovePasswordToAccountCompleted,
-            base::Unretained(this), helper_it));
+    *helper_it =
+        std::make_unique<password_manager::MovePasswordToAccountStoreHelper>(
+            form, client,
+            password_manager::metrics_util::MoveToAccountStoreTrigger::
+                kExplicitlyTriggeredInSettings,
+            base::BindOnce(
+                &PasswordManagerPresenter::OnMovePasswordToAccountCompleted,
+                base::Unretained(this), helper_it));
   }
 }
 
@@ -427,9 +404,9 @@ void PasswordManagerPresenter::RequestPlaintextPassword(
   DCHECK(!it->second.empty());
   const auto& form = *it->second[0];
   syncer::SyncService* sync_service = nullptr;
-  if (ProfileSyncServiceFactory::HasSyncService(password_view_->GetProfile())) {
+  if (SyncServiceFactory::HasSyncService(password_view_->GetProfile())) {
     sync_service =
-        ProfileSyncServiceFactory::GetForProfile(password_view_->GetProfile());
+        SyncServiceFactory::GetForProfile(password_view_->GetProfile());
   }
   if (password_manager::sync_util::IsSyncAccountCredential(
           form, sync_service,
@@ -450,9 +427,8 @@ void PasswordManagerPresenter::RequestPlaintextPassword(
 
 void PasswordManagerPresenter::AddLogin(
     const password_manager::PasswordForm& form) {
-  PasswordStore* store =
-      GetPasswordStore(password_view_->GetProfile(), form.IsUsingAccountStore())
-          .get();
+  PasswordStoreInterface* store = GetPasswordStore(password_view_->GetProfile(),
+                                                   form.IsUsingAccountStore());
   if (!store)
     return;
 
@@ -463,9 +439,8 @@ void PasswordManagerPresenter::AddLogin(
 
 void PasswordManagerPresenter::RemoveLogin(
     const password_manager::PasswordForm& form) {
-  PasswordStore* store =
-      GetPasswordStore(password_view_->GetProfile(), form.IsUsingAccountStore())
-          .get();
+  PasswordStoreInterface* store = GetPasswordStore(password_view_->GetProfile(),
+                                                   form.IsUsingAccountStore());
   if (!store)
     return;
 
@@ -504,8 +479,8 @@ bool PasswordManagerPresenter::TryRemovePasswordEntries(
   DCHECK(!forms.empty());
 
   bool use_account_store = forms[0]->IsUsingAccountStore();
-  PasswordStore* store =
-      GetPasswordStore(password_view_->GetProfile(), use_account_store).get();
+  PasswordStoreInterface* store =
+      GetPasswordStore(password_view_->GetProfile(), use_account_store);
   if (!store)
     return false;
 
@@ -539,6 +514,11 @@ void PasswordManagerPresenter::OnGetPasswordStoreResults(FormVector results) {
 
   SetPasswordList();
   SetPasswordExceptionList();
+}
+
+void PasswordManagerPresenter::CancelAllRequests() {
+  cancelable_task_tracker()->TryCancelAll();
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void PasswordManagerPresenter::SetPasswordList() {

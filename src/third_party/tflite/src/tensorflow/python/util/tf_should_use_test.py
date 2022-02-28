@@ -15,10 +15,6 @@
 """Unit tests for tf_should_use."""
 
 # pylint: disable=unused-import
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import contextlib
 import gc
 import sys
@@ -70,8 +66,8 @@ class TfShouldUseTest(test.TestCase):
       self.assertFalse(gc.garbage)
 
     tf_fn_in_this_function = def_function.function(in_this_function)
-    with self.assertRaisesRegexp(
-        RuntimeError, r'Object was never used.*blah0:0'):
+    with self.assertRaisesRegex(RuntimeError,
+                                r'Object was never used.*blah0:0'):
       tf_fn_in_this_function()
     self.assertFalse(gc.garbage)
 

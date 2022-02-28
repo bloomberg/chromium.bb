@@ -136,129 +136,130 @@ bool validateFeatureLimits(VkPhysicalDeviceProperties* properties, VkPhysicalDev
 		LimitFormat		format;
 		LimitType		type;
 		deInt32			unsuppTableNdx;
+		deBool			pot;
 	} featureLimitTable[] =   //!< Based on 1.0.28 Vulkan spec
 	{
-		{ LIMIT(maxImageDimension1D),								4096, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxImageDimension2D),								4096, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1 },
-		{ LIMIT(maxImageDimension3D),								256, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxImageDimensionCube),								4096, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1 },
-		{ LIMIT(maxImageArrayLayers),								256, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN   , -1 },
-		{ LIMIT(maxTexelBufferElements),							65536, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxUniformBufferRange),								16384, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxStorageBufferRange),								134217728, 0, 0, 0, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxPushConstantsSize),								128, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxMemoryAllocationCount),							4096, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1 },
-		{ LIMIT(maxSamplerAllocationCount),							4000, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1 },
-		{ LIMIT(bufferImageGranularity),							0, 0, 1, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(bufferImageGranularity),							0, 0, 131072, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MAX, -1 },
-		{ LIMIT(sparseAddressSpaceSize),							0, 0, 2UL*1024*1024*1024, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxBoundDescriptorSets),							4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxPerStageDescriptorSamplers),						16, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxPerStageDescriptorUniformBuffers),				12, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1 },
-		{ LIMIT(maxPerStageDescriptorStorageBuffers),				4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1 },
-		{ LIMIT(maxPerStageDescriptorSampledImages),				16, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1 },
-		{ LIMIT(maxPerStageDescriptorStorageImages),				4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1 },
-		{ LIMIT(maxPerStageDescriptorInputAttachments),				4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1 },
-		{ LIMIT(maxPerStageResources),								maxPerStageResourcesMin, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1 },
-		{ LIMIT(maxDescriptorSetSamplers),							shaderStages * 16, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxDescriptorSetUniformBuffers),					shaderStages * 12, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxDescriptorSetUniformBuffersDynamic),				8, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxDescriptorSetStorageBuffers),					shaderStages * 4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxDescriptorSetStorageBuffersDynamic),				4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxDescriptorSetSampledImages),						shaderStages * 16, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxDescriptorSetStorageImages),						shaderStages * 4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxDescriptorSetInputAttachments),					4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxVertexInputAttributes),							16, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxVertexInputBindings),							16, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxVertexInputAttributeOffset),						2047, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxVertexInputBindingStride),						2048, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxVertexOutputComponents),							64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxTessellationGenerationLevel),					64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxTessellationPatchSize),							32, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1 },
-		{ LIMIT(maxTessellationControlPerVertexInputComponents),	64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxTessellationControlPerVertexOutputComponents),	64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxTessellationControlPerPatchOutputComponents),	120, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxTessellationControlTotalOutputComponents),		2048, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxTessellationEvaluationInputComponents),			64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxTessellationEvaluationOutputComponents),			64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxGeometryShaderInvocations),						32, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxGeometryInputComponents),						64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxGeometryOutputComponents),						64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxGeometryOutputVertices),							256, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxGeometryTotalOutputComponents),					1024, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxFragmentInputComponents),						64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxFragmentOutputAttachments),						4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxFragmentDualSrcAttachments),						1, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxFragmentCombinedOutputResources),				4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1 },
-		{ LIMIT(maxComputeSharedMemorySize),						16384, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN   , -1 },
-		{ LIMIT(maxComputeWorkGroupCount[0]),						65535, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN   , -1 },
-		{ LIMIT(maxComputeWorkGroupCount[1]),						65535, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN   , -1 },
-		{ LIMIT(maxComputeWorkGroupCount[2]),						65535,  0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN   , -1 },
-		{ LIMIT(maxComputeWorkGroupInvocations),					128, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN    , -1 },
-		{ LIMIT(maxComputeWorkGroupSize[0]),						128, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN    , -1 },
-		{ LIMIT(maxComputeWorkGroupSize[1]),						128, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN    , -1 },
-		{ LIMIT(maxComputeWorkGroupSize[2]),						64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN    , -1 },
-		{ LIMIT(subPixelPrecisionBits),								4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN    , -1 },
-		{ LIMIT(subTexelPrecisionBits),								4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN    , -1 },
-		{ LIMIT(mipmapPrecisionBits),								4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN    , -1 },
-		{ LIMIT(maxDrawIndexedIndexValue),							(deUint32)~0, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxDrawIndirectCount),								65535, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN    , -1 },
-		{ LIMIT(maxSamplerLodBias),									0, 0, 0, 2.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxSamplerAnisotropy),								0, 0, 0, 16.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxViewports),										16, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxViewportDimensions[0]),							4096, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1 },
-		{ LIMIT(maxViewportDimensions[1]),							4096, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1 },
-		{ LIMIT(viewportBoundsRange[0]),							0, 0, 0, -8192.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MAX, -1 },
-		{ LIMIT(viewportBoundsRange[1]),							0, 0, 0, 8191.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(viewportSubPixelBits),								0, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(minMemoryMapAlignment),								64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(minTexelBufferOffsetAlignment),						0, 0, 1, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(minTexelBufferOffsetAlignment),						0, 0, 256, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MAX, -1 },
-		{ LIMIT(minUniformBufferOffsetAlignment),					0, 0, 1, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(minUniformBufferOffsetAlignment),					0, 0, 256, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MAX, -1 },
-		{ LIMIT(minStorageBufferOffsetAlignment),					0, 0, 1, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(minStorageBufferOffsetAlignment),					0, 0, 256, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MAX, -1 },
-		{ LIMIT(minTexelOffset),									0, -8, 0, 0.0f, LIMIT_FORMAT_SIGNED_INT, LIMIT_TYPE_MAX, -1 },
-		{ LIMIT(maxTexelOffset),									7, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(minTexelGatherOffset),								0, -8, 0, 0.0f, LIMIT_FORMAT_SIGNED_INT, LIMIT_TYPE_MAX, -1 },
-		{ LIMIT(maxTexelGatherOffset),								7, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(minInterpolationOffset),							0, 0, 0, -0.5f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MAX, -1 },
-		{ LIMIT(maxInterpolationOffset),							0, 0, 0, 0.5f - (1.0f/deFloatPow(2.0f, (float)limits->subPixelInterpolationOffsetBits)), LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(subPixelInterpolationOffsetBits),					4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxFramebufferWidth),								4096, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxFramebufferHeight),								4096, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxFramebufferLayers),								0, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(framebufferColorSampleCounts),						VK_SAMPLE_COUNT_1_BIT|VK_SAMPLE_COUNT_4_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(framebufferDepthSampleCounts),						VK_SAMPLE_COUNT_1_BIT|VK_SAMPLE_COUNT_4_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(framebufferStencilSampleCounts),					VK_SAMPLE_COUNT_1_BIT|VK_SAMPLE_COUNT_4_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(framebufferNoAttachmentsSampleCounts),				VK_SAMPLE_COUNT_1_BIT|VK_SAMPLE_COUNT_4_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxColorAttachments),								4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(sampledImageColorSampleCounts),						VK_SAMPLE_COUNT_1_BIT|VK_SAMPLE_COUNT_4_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(sampledImageIntegerSampleCounts),					VK_SAMPLE_COUNT_1_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(sampledImageDepthSampleCounts),						VK_SAMPLE_COUNT_1_BIT|VK_SAMPLE_COUNT_4_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(sampledImageStencilSampleCounts),					VK_SAMPLE_COUNT_1_BIT|VK_SAMPLE_COUNT_4_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(storageImageSampleCounts),							VK_SAMPLE_COUNT_1_BIT|VK_SAMPLE_COUNT_4_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxSampleMaskWords),								1, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(timestampComputeAndGraphics),						0, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_NONE, -1 },
-		{ LIMIT(timestampPeriod),									0, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_NONE, -1 },
-		{ LIMIT(maxClipDistances),									8, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxCullDistances),									8, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(maxCombinedClipAndCullDistances),					8, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(discreteQueuePriorities),							2, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(pointSizeRange[0]),									0, 0, 0, 0.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(pointSizeRange[0]),									0, 0, 0, 1.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MAX, -1 },
-		{ LIMIT(pointSizeRange[1]),									0, 0, 0, 64.0f - limits->pointSizeGranularity , LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(lineWidthRange[0]),									0, 0, 0, 0.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(lineWidthRange[0]),									0, 0, 0, 1.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MAX, -1 },
-		{ LIMIT(lineWidthRange[1]),									0, 0, 0, 8.0f - limits->lineWidthGranularity, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(pointSizeGranularity),								0, 0, 0, 1.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MAX, -1 },
-		{ LIMIT(lineWidthGranularity),								0, 0, 0, 1.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MAX, -1 },
-		{ LIMIT(strictLines),										0, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_NONE, -1 },
-		{ LIMIT(standardSampleLocations),							0, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_NONE, -1 },
-		{ LIMIT(optimalBufferCopyOffsetAlignment),					0, 0, 0, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_NONE, -1 },
-		{ LIMIT(optimalBufferCopyRowPitchAlignment),				0, 0, 0, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_NONE, -1 },
-		{ LIMIT(nonCoherentAtomSize),								0, 0, 1, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MIN, -1 },
-		{ LIMIT(nonCoherentAtomSize),								0, 0, 256, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MAX, -1 },
+		{ LIMIT(maxImageDimension1D),								4096, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxImageDimension2D),								4096, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1, false },
+		{ LIMIT(maxImageDimension3D),								256, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxImageDimensionCube),								4096, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1, false },
+		{ LIMIT(maxImageArrayLayers),								256, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN   , -1, false },
+		{ LIMIT(maxTexelBufferElements),							65536, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxUniformBufferRange),								16384, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxStorageBufferRange),								134217728, 0, 0, 0, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxPushConstantsSize),								128, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxMemoryAllocationCount),							4096, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1, false },
+		{ LIMIT(maxSamplerAllocationCount),							4000, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1, false },
+		{ LIMIT(bufferImageGranularity),							0, 0, 1, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(bufferImageGranularity),							0, 0, 131072, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MAX, -1, false },
+		{ LIMIT(sparseAddressSpaceSize),							0, 0, 2UL*1024*1024*1024, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxBoundDescriptorSets),							4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxPerStageDescriptorSamplers),						16, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxPerStageDescriptorUniformBuffers),				12, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1, false },
+		{ LIMIT(maxPerStageDescriptorStorageBuffers),				4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1, false },
+		{ LIMIT(maxPerStageDescriptorSampledImages),				16, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1, false },
+		{ LIMIT(maxPerStageDescriptorStorageImages),				4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1, false },
+		{ LIMIT(maxPerStageDescriptorInputAttachments),				4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1, false },
+		{ LIMIT(maxPerStageResources),								maxPerStageResourcesMin, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1, false },
+		{ LIMIT(maxDescriptorSetSamplers),							shaderStages * 16, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxDescriptorSetUniformBuffers),					shaderStages * 12, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxDescriptorSetUniformBuffersDynamic),				8, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxDescriptorSetStorageBuffers),					shaderStages * 4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxDescriptorSetStorageBuffersDynamic),				4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxDescriptorSetSampledImages),						shaderStages * 16, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxDescriptorSetStorageImages),						shaderStages * 4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxDescriptorSetInputAttachments),					4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxVertexInputAttributes),							16, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxVertexInputBindings),							16, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxVertexInputAttributeOffset),						2047, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxVertexInputBindingStride),						2048, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxVertexOutputComponents),							64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxTessellationGenerationLevel),					64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxTessellationPatchSize),							32, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1, false },
+		{ LIMIT(maxTessellationControlPerVertexInputComponents),	64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxTessellationControlPerVertexOutputComponents),	64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxTessellationControlPerPatchOutputComponents),	120, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxTessellationControlTotalOutputComponents),		2048, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxTessellationEvaluationInputComponents),			64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxTessellationEvaluationOutputComponents),			64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxGeometryShaderInvocations),						32, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxGeometryInputComponents),						64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxGeometryOutputComponents),						64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxGeometryOutputVertices),							256, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxGeometryTotalOutputComponents),					1024, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxFragmentInputComponents),						64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxFragmentOutputAttachments),						4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxFragmentDualSrcAttachments),						1, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxFragmentCombinedOutputResources),				4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN  , -1, false },
+		{ LIMIT(maxComputeSharedMemorySize),						16384, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN   , -1, false },
+		{ LIMIT(maxComputeWorkGroupCount[0]),						65535, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN   , -1, false },
+		{ LIMIT(maxComputeWorkGroupCount[1]),						65535, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN   , -1, false },
+		{ LIMIT(maxComputeWorkGroupCount[2]),						65535,  0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN   , -1, false },
+		{ LIMIT(maxComputeWorkGroupInvocations),					128, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN    , -1, false },
+		{ LIMIT(maxComputeWorkGroupSize[0]),						128, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN    , -1, false },
+		{ LIMIT(maxComputeWorkGroupSize[1]),						128, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN    , -1, false },
+		{ LIMIT(maxComputeWorkGroupSize[2]),						64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN    , -1, false },
+		{ LIMIT(subPixelPrecisionBits),								4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN    , -1, false },
+		{ LIMIT(subTexelPrecisionBits),								4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN    , -1, false },
+		{ LIMIT(mipmapPrecisionBits),								4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN    , -1, false },
+		{ LIMIT(maxDrawIndexedIndexValue),							(deUint32)~0, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxDrawIndirectCount),								65535, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN    , -1, false },
+		{ LIMIT(maxSamplerLodBias),									0, 0, 0, 2.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxSamplerAnisotropy),								0, 0, 0, 16.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxViewports),										16, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxViewportDimensions[0]),							4096, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1, false },
+		{ LIMIT(maxViewportDimensions[1]),							4096, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN , -1, false },
+		{ LIMIT(viewportBoundsRange[0]),							0, 0, 0, -8192.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MAX, -1, false },
+		{ LIMIT(viewportBoundsRange[1]),							0, 0, 0, 8191.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(viewportSubPixelBits),								0, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(minMemoryMapAlignment),								64, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(minTexelBufferOffsetAlignment),						0, 0, 1, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MIN, -1, true },
+		{ LIMIT(minTexelBufferOffsetAlignment),						0, 0, 256, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MAX, -1, true },
+		{ LIMIT(minUniformBufferOffsetAlignment),					0, 0, 1, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MIN, -1, true },
+		{ LIMIT(minUniformBufferOffsetAlignment),					0, 0, 256, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MAX, -1, true },
+		{ LIMIT(minStorageBufferOffsetAlignment),					0, 0, 1, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MIN, -1, true },
+		{ LIMIT(minStorageBufferOffsetAlignment),					0, 0, 256, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MAX, -1, true },
+		{ LIMIT(minTexelOffset),									0, -8, 0, 0.0f, LIMIT_FORMAT_SIGNED_INT, LIMIT_TYPE_MAX, -1, false },
+		{ LIMIT(maxTexelOffset),									7, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(minTexelGatherOffset),								0, -8, 0, 0.0f, LIMIT_FORMAT_SIGNED_INT, LIMIT_TYPE_MAX, -1, false },
+		{ LIMIT(maxTexelGatherOffset),								7, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(minInterpolationOffset),							0, 0, 0, -0.5f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MAX, -1, false },
+		{ LIMIT(maxInterpolationOffset),							0, 0, 0, 0.5f - (1.0f/deFloatPow(2.0f, (float)limits->subPixelInterpolationOffsetBits)), LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(subPixelInterpolationOffsetBits),					4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxFramebufferWidth),								4096, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxFramebufferHeight),								4096, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxFramebufferLayers),								0, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(framebufferColorSampleCounts),						VK_SAMPLE_COUNT_1_BIT|VK_SAMPLE_COUNT_4_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(framebufferDepthSampleCounts),						VK_SAMPLE_COUNT_1_BIT|VK_SAMPLE_COUNT_4_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(framebufferStencilSampleCounts),					VK_SAMPLE_COUNT_1_BIT|VK_SAMPLE_COUNT_4_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(framebufferNoAttachmentsSampleCounts),				VK_SAMPLE_COUNT_1_BIT|VK_SAMPLE_COUNT_4_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxColorAttachments),								4, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(sampledImageColorSampleCounts),						VK_SAMPLE_COUNT_1_BIT|VK_SAMPLE_COUNT_4_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(sampledImageIntegerSampleCounts),					VK_SAMPLE_COUNT_1_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(sampledImageDepthSampleCounts),						VK_SAMPLE_COUNT_1_BIT|VK_SAMPLE_COUNT_4_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(sampledImageStencilSampleCounts),					VK_SAMPLE_COUNT_1_BIT|VK_SAMPLE_COUNT_4_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(storageImageSampleCounts),							VK_SAMPLE_COUNT_1_BIT|VK_SAMPLE_COUNT_4_BIT, 0, 0, 0.0f, LIMIT_FORMAT_BITMASK, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxSampleMaskWords),								1, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(timestampComputeAndGraphics),						0, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_NONE, -1, false },
+		{ LIMIT(timestampPeriod),									0, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_NONE, -1, false },
+		{ LIMIT(maxClipDistances),									8, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxCullDistances),									8, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(maxCombinedClipAndCullDistances),					8, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(discreteQueuePriorities),							2, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(pointSizeRange[0]),									0, 0, 0, 0.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(pointSizeRange[0]),									0, 0, 0, 1.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MAX, -1, false },
+		{ LIMIT(pointSizeRange[1]),									0, 0, 0, 64.0f - limits->pointSizeGranularity , LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(lineWidthRange[0]),									0, 0, 0, 0.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(lineWidthRange[0]),									0, 0, 0, 1.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MAX, -1, false },
+		{ LIMIT(lineWidthRange[1]),									0, 0, 0, 8.0f - limits->lineWidthGranularity, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MIN, -1, false },
+		{ LIMIT(pointSizeGranularity),								0, 0, 0, 1.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MAX, -1, false },
+		{ LIMIT(lineWidthGranularity),								0, 0, 0, 1.0f, LIMIT_FORMAT_FLOAT, LIMIT_TYPE_MAX, -1, false },
+		{ LIMIT(strictLines),										0, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_NONE, -1, false },
+		{ LIMIT(standardSampleLocations),							0, 0, 0, 0.0f, LIMIT_FORMAT_UNSIGNED_INT, LIMIT_TYPE_NONE, -1, false },
+		{ LIMIT(optimalBufferCopyOffsetAlignment),					0, 0, 0, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_NONE, -1, true },
+		{ LIMIT(optimalBufferCopyRowPitchAlignment),				0, 0, 0, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_NONE, -1, true },
+		{ LIMIT(nonCoherentAtomSize),								0, 0, 1, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MIN, -1, true },
+		{ LIMIT(nonCoherentAtomSize),								0, 0, 256, 0.0f, LIMIT_FORMAT_DEVICE_SIZE, LIMIT_TYPE_MAX, -1, true },
 	};
 
 	const struct UnsupportedFeatureLimitTable
@@ -336,9 +337,18 @@ bool validateFeatureLimits(VkPhysicalDeviceProperties* properties, VkPhysicalDev
 						limitToCheck = unsupportedFeatureTable[featureLimitTable[ndx].unsuppTableNdx].uintVal;
 				}
 
+				if (featureLimitTable[ndx].pot)
+				{
+					if (!deIntIsPow2(*((deUint32*)((deUint8*)limits + featureLimitTable[ndx].offset))))
+					{
+						log << TestLog::Message << "limit Validation failed " << featureLimitTable[ndx].name
+							<< " is not a power of two." << TestLog::EndMessage;
+						limitsOk = false;
+					}
+				}
+
 				if (featureLimitTable[ndx].type == LIMIT_TYPE_MIN)
 				{
-
 					if (*((deUint32*)((deUint8*)limits+featureLimitTable[ndx].offset)) < limitToCheck)
 					{
 						log << TestLog::Message << "limit Validation failed " << featureLimitTable[ndx].name
@@ -1686,26 +1696,7 @@ tcu::TestStatus featureBitInfluenceOnDeviceCreate (Context& context)
 	{
 		DEPENDENCY_DUAL_ITEM	(vulkan11Features,	multiviewFeatures,				multiviewGeometryShader,							multiview),
 		DEPENDENCY_DUAL_ITEM	(vulkan11Features,	multiviewFeatures,				multiviewTessellationShader,						multiview),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderInputAttachmentArrayDynamicIndexing,			descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderUniformTexelBufferArrayDynamicIndexing,		descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderStorageTexelBufferArrayDynamicIndexing,		descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderUniformBufferArrayNonUniformIndexing,			descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderSampledImageArrayNonUniformIndexing,			descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderStorageBufferArrayNonUniformIndexing,			descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderStorageImageArrayNonUniformIndexing,			descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderInputAttachmentArrayNonUniformIndexing,		descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderUniformTexelBufferArrayNonUniformIndexing,	descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderStorageTexelBufferArrayNonUniformIndexing,	descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingUniformBufferUpdateAfterBind,		descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingSampledImageUpdateAfterBind,		descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingStorageImageUpdateAfterBind,		descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingStorageBufferUpdateAfterBind,		descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingUniformTexelBufferUpdateAfterBind,	descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingStorageTexelBufferUpdateAfterBind,	descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingUpdateUnusedWhilePending,			descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingPartiallyBound,					descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingVariableDescriptorCount,			descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									runtimeDescriptorArray,								descriptorIndexing),
+		DEPENDENCY_DUAL_ITEM	(vulkan11Features,	variablePointersFeatures,		variablePointers,									variablePointersStorageBuffer),
 		DEPENDENCY_DUAL_ITEM	(vulkan12Features,	bufferDeviceAddressFeatures,	bufferDeviceAddressCaptureReplay,					bufferDeviceAddress),
 		DEPENDENCY_DUAL_ITEM	(vulkan12Features,	bufferDeviceAddressFeatures,	bufferDeviceAddressMultiDevice,						bufferDeviceAddress),
 		DEPENDENCY_DUAL_ITEM	(vulkan12Features,	vulkanMemoryModelFeatures,		vulkanMemoryModelDeviceScope,						vulkanMemoryModel),
@@ -2207,8 +2198,8 @@ tcu::TestStatus enumerateDeviceExtensions (Context& context)
 			if (context.contextSupports(vk::ApiVersion(versionMajor, versionMinor, 0)))
 			{
 				checkDeviceExtensionDependencies(results,
-					DE_LENGTH_OF_ARRAY(instanceExtensionDependencies),
-					instanceExtensionDependencies,
+					DE_LENGTH_OF_ARRAY(deviceExtensionDependencies),
+					deviceExtensionDependencies,
 					versionMajor,
 					versionMinor,
 					instanceExtensionProperties,
@@ -2237,6 +2228,33 @@ tcu::TestStatus enumerateDeviceExtensions (Context& context)
 
 			checkDeviceExtensions(results, extensionNames);
 			CheckEnumerateDeviceExtensionPropertiesIncompleteResult(layer->layerName)(context, results, properties.size());
+		}
+	}
+
+	return tcu::TestStatus(results.getResult(), results.getMessage());
+}
+
+tcu::TestStatus extensionCoreVersions (Context& context)
+{
+	deUint32	major;
+	deUint32	minor;
+	const char*	extName;
+
+	auto&					log		= context.getTestContext().getLog();
+	tcu::ResultCollector	results	(log);
+
+	const auto instanceExtensionProperties	= enumerateInstanceExtensionProperties(context.getPlatformInterface(), DE_NULL);
+	const auto deviceExtensionProperties	= enumerateDeviceExtensionProperties(context.getInstanceInterface(), context.getPhysicalDevice(), DE_NULL);
+
+	for (const auto& majorMinorName : extensionRequiredCoreVersion)
+	{
+		std::tie(major, minor, extName) = majorMinorName;
+		const RequiredExtension reqExt (extName);
+
+		if ((isExtensionSupported(instanceExtensionProperties, reqExt) || isExtensionSupported(deviceExtensionProperties, reqExt)) &&
+		    !context.contextSupports(vk::ApiVersion(major, minor, 0u)))
+		{
+			results.fail("Required core version for " + std::string(extName) + " not met (" + de::toString(major) + "." + de::toString(minor) + ")");
 		}
 	}
 
@@ -3267,14 +3285,32 @@ VkFormatFeatureFlags getRequiredOptimalTilingFeatures (Context& context, VkForma
 	}
 }
 
-bool requiresYCbCrConversion(VkFormat format)
+bool requiresYCbCrConversion(Context& context, VkFormat format)
 {
+	if (format == VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16)
+	{
+		VkPhysicalDeviceFeatures2						coreFeatures;
+		VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT	rgba10x6features;
+
+		deMemset(&coreFeatures, 0, sizeof(coreFeatures));
+		deMemset(&rgba10x6features, 0, sizeof(rgba10x6features));
+
+		coreFeatures.sType		= VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+		coreFeatures.pNext		= &rgba10x6features;
+		rgba10x6features.sType		= VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RGBA10X6_FORMATS_FEATURES_EXT;
+
+		const InstanceInterface &vk = context.getInstanceInterface();
+		vk.getPhysicalDeviceFeatures2(context.getPhysicalDevice(), &coreFeatures);
+
+		return !rgba10x6features.formatRgba10x6WithoutYCbCrSampler;
+	}
+
 	return isYCbCrFormat(format) &&
 			format != VK_FORMAT_R10X6_UNORM_PACK16 && format != VK_FORMAT_R10X6G10X6_UNORM_2PACK16 &&
 			format != VK_FORMAT_R12X4_UNORM_PACK16 && format != VK_FORMAT_R12X4G12X4_UNORM_2PACK16;
 }
 
-VkFormatFeatureFlags getAllowedOptimalTilingFeatures (VkFormat format)
+VkFormatFeatureFlags getAllowedOptimalTilingFeatures (Context &context, VkFormat format)
 {
 	// YCbCr formats only support a subset of format feature flags
 	const VkFormatFeatureFlags ycbcrAllows =
@@ -3295,7 +3331,7 @@ VkFormatFeatureFlags getAllowedOptimalTilingFeatures (VkFormat format)
 	// By default everything is allowed.
 	VkFormatFeatureFlags allow = (VkFormatFeatureFlags)~0u;
 	// Formats for which SamplerYCbCrConversion is required may not support certain features.
-	if (requiresYCbCrConversion(format))
+	if (requiresYCbCrConversion(context, format))
 		allow &= ycbcrAllows;
 	// single-plane formats *may not* support DISJOINT_BIT
 	if (!isYCbCrFormat(format) || getPlaneCount(format) == 1)
@@ -3304,10 +3340,10 @@ VkFormatFeatureFlags getAllowedOptimalTilingFeatures (VkFormat format)
 	return allow;
 }
 
-VkFormatFeatureFlags getAllowedBufferFeatures (VkFormat format)
+VkFormatFeatureFlags getAllowedBufferFeatures (Context &context, VkFormat format)
 {
 	// TODO: Do we allow non-buffer flags in the bufferFeatures?
-	return requiresYCbCrConversion(format) ? (VkFormatFeatureFlags)0 : (VkFormatFeatureFlags)(~VK_FORMAT_FEATURE_DISJOINT_BIT);
+	return requiresYCbCrConversion(context, format) ? (VkFormatFeatureFlags)0 : (VkFormatFeatureFlags)(~VK_FORMAT_FEATURE_DISJOINT_BIT);
 }
 
 tcu::TestStatus formatProperties (Context& context, VkFormat format)
@@ -3322,8 +3358,8 @@ tcu::TestStatus formatProperties (Context& context, VkFormat format)
 
 	const VkFormatFeatureFlags reqImg	= getRequiredOptimalTilingFeatures(context, format);
 	const VkFormatFeatureFlags reqBuf	= getRequiredBufferFeatures(format);
-	const VkFormatFeatureFlags allowImg	= getAllowedOptimalTilingFeatures(format);
-	const VkFormatFeatureFlags allowBuf	= getAllowedBufferFeatures(format);
+	const VkFormatFeatureFlags allowImg	= getAllowedOptimalTilingFeatures(context, format);
+	const VkFormatFeatureFlags allowBuf	= getAllowedBufferFeatures(context, format);
 
 	const struct feature_req
 	{
@@ -4089,18 +4125,20 @@ tcu::TestStatus deviceProperties2 (Context& context)
 	const bool khr_shader_float_controls			= checkExtension(properties, "VK_KHR_shader_float_controls")			||	context.contextSupports(vk::ApiVersion(1, 2, 0));
 	const bool khr_descriptor_indexing				= checkExtension(properties, "VK_EXT_descriptor_indexing")				||	context.contextSupports(vk::ApiVersion(1, 2, 0));
 	const bool khr_sampler_filter_minmax			= checkExtension(properties, "VK_EXT_sampler_filter_minmax")			||	context.contextSupports(vk::ApiVersion(1, 2, 0));
+	const bool khr_integer_dot_product				= checkExtension(properties, "VK_KHR_shader_integer_dot_product");
 
-	VkPhysicalDeviceIDProperties					idProperties[count];
-	VkPhysicalDeviceMultiviewProperties				multiviewProperties[count];
-	VkPhysicalDeviceProtectedMemoryProperties		protectedMemoryPropertiesKHR[count];
-	VkPhysicalDeviceSubgroupProperties				subgroupProperties[count];
-	VkPhysicalDevicePointClippingProperties			pointClippingProperties[count];
-	VkPhysicalDeviceMaintenance3Properties			maintenance3Properties[count];
-	VkPhysicalDeviceDepthStencilResolveProperties	depthStencilResolveProperties[count];
-	VkPhysicalDeviceDriverProperties				driverProperties[count];
-	VkPhysicalDeviceFloatControlsProperties			floatControlsProperties[count];
-	VkPhysicalDeviceDescriptorIndexingProperties	descriptorIndexingProperties[count];
-	VkPhysicalDeviceSamplerFilterMinmaxProperties	samplerFilterMinmaxProperties[count];
+	VkPhysicalDeviceIDProperties							idProperties[count];
+	VkPhysicalDeviceMultiviewProperties						multiviewProperties[count];
+	VkPhysicalDeviceProtectedMemoryProperties				protectedMemoryPropertiesKHR[count];
+	VkPhysicalDeviceSubgroupProperties						subgroupProperties[count];
+	VkPhysicalDevicePointClippingProperties					pointClippingProperties[count];
+	VkPhysicalDeviceMaintenance3Properties					maintenance3Properties[count];
+	VkPhysicalDeviceDepthStencilResolveProperties			depthStencilResolveProperties[count];
+	VkPhysicalDeviceDriverProperties						driverProperties[count];
+	VkPhysicalDeviceFloatControlsProperties					floatControlsProperties[count];
+	VkPhysicalDeviceDescriptorIndexingProperties			descriptorIndexingProperties[count];
+	VkPhysicalDeviceSamplerFilterMinmaxProperties			samplerFilterMinmaxProperties[count];
+	VkPhysicalDeviceShaderIntegerDotProductPropertiesKHR	integerDotProductProperties[count];
 
 	for (int ndx = 0; ndx < count; ++ndx)
 	{
@@ -4115,6 +4153,7 @@ tcu::TestStatus deviceProperties2 (Context& context)
 		deMemset(&floatControlsProperties[ndx],			0xFF*ndx, sizeof(VkPhysicalDeviceFloatControlsProperties		));
 		deMemset(&descriptorIndexingProperties[ndx],	0xFF*ndx, sizeof(VkPhysicalDeviceDescriptorIndexingProperties	));
 		deMemset(&samplerFilterMinmaxProperties[ndx],	0xFF*ndx, sizeof(VkPhysicalDeviceSamplerFilterMinmaxProperties	));
+		deMemset(&integerDotProductProperties[ndx],		0xFF*ndx, sizeof(VkPhysicalDeviceShaderIntegerDotProductPropertiesKHR	));
 
 		idProperties[ndx].sType						= VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES;
 		idProperties[ndx].pNext						= &multiviewProperties[ndx];
@@ -4147,7 +4186,10 @@ tcu::TestStatus deviceProperties2 (Context& context)
 		descriptorIndexingProperties[ndx].pNext		= &samplerFilterMinmaxProperties[ndx];
 
 		samplerFilterMinmaxProperties[ndx].sType	= VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES;
-		samplerFilterMinmaxProperties[ndx].pNext	= DE_NULL;
+		samplerFilterMinmaxProperties[ndx].pNext	= &integerDotProductProperties[ndx];
+
+		integerDotProductProperties[ndx].sType		= VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_PROPERTIES_KHR;
+		integerDotProductProperties[ndx].pNext		= DE_NULL;
 
 		extProperties.pNext							= &idProperties[ndx];
 
@@ -4176,6 +4218,8 @@ tcu::TestStatus deviceProperties2 (Context& context)
 		log << TestLog::Message << descriptorIndexingProperties[0] << TestLog::EndMessage;
 	if (khr_sampler_filter_minmax)
 		log << TestLog::Message << samplerFilterMinmaxProperties[0] << TestLog::EndMessage;
+	if (khr_integer_dot_product)
+		log << TestLog::Message << integerDotProductProperties[0] << TestLog::EndMessage;
 
 	if ( khr_external_fence_capabilities || khr_external_memory_capabilities || khr_external_semaphore_capabilities )
 	{
@@ -4311,6 +4355,41 @@ tcu::TestStatus deviceProperties2 (Context& context)
 		TCU_FAIL("Mismatch between VkPhysicalDeviceSamplerFilterMinmaxProperties");
 	}
 
+	if (khr_integer_dot_product &&
+		(integerDotProductProperties[0].integerDotProduct8BitUnsignedAccelerated										!= integerDotProductProperties[1].integerDotProduct8BitUnsignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProduct8BitSignedAccelerated											!= integerDotProductProperties[1].integerDotProduct8BitSignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProduct8BitMixedSignednessAccelerated									!= integerDotProductProperties[1].integerDotProduct8BitMixedSignednessAccelerated ||
+		 integerDotProductProperties[0].integerDotProduct4x8BitPackedUnsignedAccelerated								!= integerDotProductProperties[1].integerDotProduct4x8BitPackedUnsignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProduct4x8BitPackedSignedAccelerated									!= integerDotProductProperties[1].integerDotProduct4x8BitPackedSignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProduct4x8BitPackedMixedSignednessAccelerated							!= integerDotProductProperties[1].integerDotProduct4x8BitPackedMixedSignednessAccelerated ||
+		 integerDotProductProperties[0].integerDotProduct16BitUnsignedAccelerated										!= integerDotProductProperties[1].integerDotProduct16BitUnsignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProduct16BitSignedAccelerated											!= integerDotProductProperties[1].integerDotProduct16BitSignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProduct16BitMixedSignednessAccelerated								!= integerDotProductProperties[1].integerDotProduct16BitMixedSignednessAccelerated ||
+		 integerDotProductProperties[0].integerDotProduct32BitUnsignedAccelerated										!= integerDotProductProperties[1].integerDotProduct32BitUnsignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProduct32BitSignedAccelerated											!= integerDotProductProperties[1].integerDotProduct32BitSignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProduct32BitMixedSignednessAccelerated								!= integerDotProductProperties[1].integerDotProduct32BitMixedSignednessAccelerated ||
+		 integerDotProductProperties[0].integerDotProduct64BitUnsignedAccelerated										!= integerDotProductProperties[1].integerDotProduct64BitUnsignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProduct64BitSignedAccelerated											!= integerDotProductProperties[1].integerDotProduct64BitSignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProduct64BitMixedSignednessAccelerated								!= integerDotProductProperties[1].integerDotProduct64BitMixedSignednessAccelerated ||
+		 integerDotProductProperties[0].integerDotProductAccumulatingSaturating8BitUnsignedAccelerated					!= integerDotProductProperties[1].integerDotProductAccumulatingSaturating8BitUnsignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProductAccumulatingSaturating8BitSignedAccelerated					!= integerDotProductProperties[1].integerDotProductAccumulatingSaturating8BitSignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProductAccumulatingSaturating8BitMixedSignednessAccelerated			!= integerDotProductProperties[1].integerDotProductAccumulatingSaturating8BitMixedSignednessAccelerated ||
+		 integerDotProductProperties[0].integerDotProductAccumulatingSaturating4x8BitPackedUnsignedAccelerated			!= integerDotProductProperties[1].integerDotProductAccumulatingSaturating4x8BitPackedUnsignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProductAccumulatingSaturating4x8BitPackedSignedAccelerated			!= integerDotProductProperties[1].integerDotProductAccumulatingSaturating4x8BitPackedSignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProductAccumulatingSaturating4x8BitPackedMixedSignednessAccelerated	!= integerDotProductProperties[1].integerDotProductAccumulatingSaturating4x8BitPackedMixedSignednessAccelerated ||
+		 integerDotProductProperties[0].integerDotProductAccumulatingSaturating16BitUnsignedAccelerated					!= integerDotProductProperties[1].integerDotProductAccumulatingSaturating16BitUnsignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProductAccumulatingSaturating16BitSignedAccelerated					!= integerDotProductProperties[1].integerDotProductAccumulatingSaturating16BitSignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProductAccumulatingSaturating16BitMixedSignednessAccelerated			!= integerDotProductProperties[1].integerDotProductAccumulatingSaturating16BitMixedSignednessAccelerated ||
+		 integerDotProductProperties[0].integerDotProductAccumulatingSaturating32BitUnsignedAccelerated					!= integerDotProductProperties[1].integerDotProductAccumulatingSaturating32BitUnsignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProductAccumulatingSaturating32BitSignedAccelerated					!= integerDotProductProperties[1].integerDotProductAccumulatingSaturating32BitSignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProductAccumulatingSaturating32BitMixedSignednessAccelerated			!= integerDotProductProperties[1].integerDotProductAccumulatingSaturating32BitMixedSignednessAccelerated ||
+		 integerDotProductProperties[0].integerDotProductAccumulatingSaturating64BitUnsignedAccelerated					!= integerDotProductProperties[1].integerDotProductAccumulatingSaturating64BitUnsignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProductAccumulatingSaturating64BitSignedAccelerated					!= integerDotProductProperties[1].integerDotProductAccumulatingSaturating64BitSignedAccelerated ||
+		 integerDotProductProperties[0].integerDotProductAccumulatingSaturating64BitMixedSignednessAccelerated			!= integerDotProductProperties[1].integerDotProductAccumulatingSaturating64BitMixedSignednessAccelerated))
+	{
+		TCU_FAIL("Mismatch between VkPhysicalDeviceShaderIntegerDotProductPropertiesKHR");
+	}
+
 	if (isExtensionSupported(properties, RequiredExtension("VK_KHR_push_descriptor")))
 	{
 		VkPhysicalDevicePushDescriptorPropertiesKHR		pushDescriptorProperties[count];
@@ -4358,8 +4437,7 @@ tcu::TestStatus deviceProperties2 (Context& context)
 
 		log << TestLog::Message << performanceQueryProperties[0] << TestLog::EndMessage;
 
-		// TODO: this is a NOP. Should the second index be [1] ?
-		if (performanceQueryProperties[0].allowCommandBufferQueryCopies != performanceQueryProperties[0].allowCommandBufferQueryCopies)
+		if (performanceQueryProperties[0].allowCommandBufferQueryCopies != performanceQueryProperties[1].allowCommandBufferQueryCopies)
 		{
 			TCU_FAIL("Mismatch between VkPhysicalDevicePerformanceQueryPropertiesKHR");
 		}
@@ -4412,6 +4490,29 @@ tcu::TestStatus deviceProperties2 (Context& context)
 		    pciBusInfoProperties[0].pciFunction == DEUINT32_MAX)
 		{
 			TCU_FAIL("Invalid information in VkPhysicalDevicePCIBusInfoPropertiesEXT");
+		}
+	}
+
+	if (isExtensionSupported(properties, RequiredExtension("VK_KHR_portability_subset")))
+	{
+		VkPhysicalDevicePortabilitySubsetPropertiesKHR portabilitySubsetProperties[count];
+
+		for (int ndx = 0; ndx < count; ++ndx)
+		{
+			deMemset(&portabilitySubsetProperties[ndx], 0xFF * ndx, sizeof(VkPhysicalDevicePortabilitySubsetPropertiesKHR));
+			portabilitySubsetProperties[ndx].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_PROPERTIES_KHR;
+			portabilitySubsetProperties[ndx].pNext = DE_NULL;
+
+			extProperties.pNext = &portabilitySubsetProperties[ndx];
+
+			vki.getPhysicalDeviceProperties2(physicalDevice, &extProperties);
+		}
+
+		log << TestLog::Message << portabilitySubsetProperties[0] << TestLog::EndMessage;
+
+		if (portabilitySubsetProperties[0].minVertexInputBindingStrideAlignment != portabilitySubsetProperties[1].minVertexInputBindingStrideAlignment)
+		{
+			TCU_FAIL("Mismatch between VkPhysicalDevicePortabilitySubsetPropertiesKHR");
 		}
 	}
 
@@ -5643,6 +5744,14 @@ tcu::TestCaseGroup* createFeatureInfoTests (tcu::TestContext& testCtx)
 
 	infoTests->addChild(createTestGroup(testCtx, "format_properties",		"VkGetPhysicalDeviceFormatProperties() Tests",		createFormatTests));
 	infoTests->addChild(createTestGroup(testCtx, "image_format_properties",	"VkGetPhysicalDeviceImageFormatProperties() Tests",	createImageFormatTests,	imageFormatProperties));
+
+	{
+		de::MovePtr<tcu::TestCaseGroup> extCoreVersionGrp (new tcu::TestCaseGroup(testCtx, "extension_core_versions", "Tests checking extension required core versions"));
+
+		addFunctionCase(extCoreVersionGrp.get(), "extension_core_versions", "", extensionCoreVersions);
+
+		infoTests->addChild(extCoreVersionGrp.release());
+	}
 
 	{
 		de::MovePtr<tcu::TestCaseGroup> extendedPropertiesTests (new tcu::TestCaseGroup(testCtx, "get_physical_device_properties2", "VK_KHR_get_physical_device_properties2"));

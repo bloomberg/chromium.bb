@@ -19,7 +19,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/unguessable_token.h"
@@ -40,6 +40,9 @@ class MEDIA_EXPORT AudioRendererMixerInput
                           const base::UnguessableToken& owner_token,
                           const std::string& device_id,
                           AudioLatency::LatencyType latency);
+
+  AudioRendererMixerInput(const AudioRendererMixerInput&) = delete;
+  AudioRendererMixerInput& operator=(const AudioRendererMixerInput&) = delete;
 
   // SwitchableAudioRendererSink implementation.
   void Start() override;
@@ -72,7 +75,7 @@ class MEDIA_EXPORT AudioRendererMixerInput
   friend class AudioRendererMixerInputTest;
 
   // Pool to obtain mixers from / return them to.
-  AudioRendererMixerPool* const mixer_pool_;
+  const raw_ptr<AudioRendererMixerPool> mixer_pool_;
 
   // Protect |volume_|, accessed by separate threads in ProvideInput() and
   // SetVolume().
@@ -112,10 +115,10 @@ class MEDIA_EXPORT AudioRendererMixerInput
 
   // AudioRendererMixer obtained from mixer pool during Initialize(),
   // guaranteed to live (at least) until it is returned to the pool.
-  AudioRendererMixer* mixer_ = nullptr;
+  raw_ptr<AudioRendererMixer> mixer_ = nullptr;
 
   // Source of audio data which is provided to the mixer.
-  AudioRendererSink::RenderCallback* callback_ = nullptr;
+  raw_ptr<AudioRendererSink::RenderCallback> callback_ = nullptr;
 
   // SwitchOutputDevice() and GetOutputDeviceInfoAsync() must be mutually
   // exclusive when executing; these flags indicate whether one or the other is
@@ -133,8 +136,6 @@ class MEDIA_EXPORT AudioRendererMixerInput
   // the OnDeviceInfoReceived() from the GODIA() call completes.
   std::string pending_device_id_;
   OutputDeviceStatusCB pending_switch_cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerInput);
 };
 
 }  // namespace media

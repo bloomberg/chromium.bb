@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_prefetch_status.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -74,6 +74,12 @@ class PrefetchProxyProxyingURLLoaderFactory
       mojo::PendingRemote<network::mojom::URLLoaderFactory> isolated_factory,
       DisconnectCallback on_disconnect,
       ResourceLoadSuccessfulCallback on_resource_load_successful);
+
+  PrefetchProxyProxyingURLLoaderFactory(
+      const PrefetchProxyProxyingURLLoaderFactory&) = delete;
+  PrefetchProxyProxyingURLLoaderFactory& operator=(
+      const PrefetchProxyProxyingURLLoaderFactory&) = delete;
+
   ~PrefetchProxyProxyingURLLoaderFactory() override;
 
   // Informs |this| that new subresource loads are being done after the user
@@ -110,6 +116,10 @@ class PrefetchProxyProxyingURLLoaderFactory
         const network::ResourceRequest& request,
         mojo::PendingRemote<network::mojom::URLLoaderClient> client,
         const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
+
+    InProgressRequest(const InProgressRequest&) = delete;
+    InProgressRequest& operator=(const InProgressRequest&) = delete;
+
     ~InProgressRequest() override;
 
     // Sets a callback that will be run during |OnComplete| to record metrics.
@@ -154,10 +164,10 @@ class PrefetchProxyProxyingURLLoaderFactory
     void MaybeReportResourceLoadSuccess(
         const network::URLLoaderCompletionStatus& status);
 
-    Profile* profile_;
+    raw_ptr<Profile> profile_;
 
     // Back pointer to the factory which owns this class.
-    PrefetchProxyProxyingURLLoaderFactory* const parent_factory_;
+    const raw_ptr<PrefetchProxyProxyingURLLoaderFactory> parent_factory_;
 
     // Callback for recording metrics during |OnComplete|. Not always set.
     OnCompleteRecordMetricsCallback on_complete_metrics_callback_;
@@ -187,8 +197,6 @@ class PrefetchProxyProxyingURLLoaderFactory
     // |target_loader_|.
     mojo::Remote<network::mojom::URLLoader> target_loader_;
     mojo::Receiver<network::mojom::URLLoaderClient> client_receiver_{this};
-
-    DISALLOW_COPY_AND_ASSIGN(InProgressRequest);
   };
 
   // Terminates the request when constructed.
@@ -197,6 +205,10 @@ class PrefetchProxyProxyingURLLoaderFactory
     AbortRequest(
         mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
         mojo::PendingRemote<network::mojom::URLLoaderClient> client);
+
+    AbortRequest(const AbortRequest&) = delete;
+    AbortRequest& operator=(const AbortRequest&) = delete;
+
     ~AbortRequest() override;
 
     // network::mojom::URLLoader:
@@ -219,8 +231,6 @@ class PrefetchProxyProxyingURLLoaderFactory
     mojo::Receiver<network::mojom::URLLoader> loader_receiver_;
 
     base::WeakPtrFactory<AbortRequest> weak_factory_{this};
-
-    DISALLOW_COPY_AND_ASSIGN(AbortRequest);
   };
 
   // Used as a callback for determining the eligibility of a resource to be
@@ -258,7 +268,7 @@ class PrefetchProxyProxyingURLLoaderFactory
   void MaybeDestroySelf();
 
   // Must outlive |this|.
-  ResourceMetricsObserver* metrics_observer_;
+  raw_ptr<ResourceMetricsObserver> metrics_observer_;
   // For getting the web contents.
   const int frame_tree_node_id_;
 
@@ -292,8 +302,6 @@ class PrefetchProxyProxyingURLLoaderFactory
 
   base::WeakPtrFactory<PrefetchProxyProxyingURLLoaderFactory> weak_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(PrefetchProxyProxyingURLLoaderFactory);
 };
 
 #endif  // CHROME_BROWSER_PREFETCH_PREFETCH_PROXY_PREFETCH_PROXY_PROXYING_URL_LOADER_FACTORY_H_

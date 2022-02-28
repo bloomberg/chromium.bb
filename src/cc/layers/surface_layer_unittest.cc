@@ -5,12 +5,13 @@
 #include <stdint.h>
 
 #include <iostream>
+#include <limits>
 #include <set>
 #include <vector>
 
 #include "base/location.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_host.h"
@@ -46,9 +47,16 @@ class SurfaceLayerTest : public testing::Test {
 
   // Synchronizes |layer_tree_host_| and |host_impl_| and pushes surface ids.
   void SynchronizeTrees() {
-    TreeSynchronizer::PushLayerProperties(layer_tree_host_.get(),
+    auto& unsafe_state = layer_tree_host_->GetThreadUnsafeCommitState();
+    std::unique_ptr<CommitState> commit_state =
+        layer_tree_host_->ActivateCommitState();
+    TreeSynchronizer::PushLayerProperties(*commit_state, unsafe_state,
                                           host_impl_.pending_tree());
-    layer_tree_host_->PushSurfaceRangesTo(host_impl_.pending_tree());
+    if (commit_state->needs_surface_ranges_sync) {
+      host_impl_.pending_tree()->ClearSurfaceRanges();
+      host_impl_.pending_tree()->SetSurfaceRanges(
+          commit_state->SurfaceRanges());
+    }
   }
 
  protected:
@@ -133,8 +141,10 @@ TEST_F(SurfaceLayerTest, PushProperties) {
   layer->SetBackgroundColor(SK_ColorBLUE);
   layer->SetStretchContentToFillBounds(true);
 
-  EXPECT_TRUE(layer_tree_host_->needs_surface_ranges_sync());
-  EXPECT_EQ(layer_tree_host_->SurfaceRanges().size(), 1u);
+  EXPECT_TRUE(
+      layer_tree_host_->GetPendingCommitState()->needs_surface_ranges_sync);
+  EXPECT_EQ(layer_tree_host_->GetPendingCommitState()->SurfaceRanges().size(),
+            1u);
 
   // Verify that pending tree has no surface ids already.
   EXPECT_FALSE(host_impl_.pending_tree()->needs_surface_ranges_sync());
@@ -150,7 +160,8 @@ TEST_F(SurfaceLayerTest, PushProperties) {
   EXPECT_EQ(host_impl_.pending_tree()->SurfaceRanges().size(), 1u);
 
   // Verify we have reset the state on layer tree host.
-  EXPECT_FALSE(layer_tree_host_->needs_surface_ranges_sync());
+  EXPECT_FALSE(
+      layer_tree_host_->GetPendingCommitState()->needs_surface_ranges_sync);
 
   // Verify that the primary and fallback SurfaceIds are pushed through.
   EXPECT_EQ(primary_id, layer_impl->range().end());
@@ -169,8 +180,10 @@ TEST_F(SurfaceLayerTest, PushProperties) {
 
   // Verify that fallback surface id is not recorded on the layer tree host as
   // surface synchronization is not enabled.
-  EXPECT_TRUE(layer_tree_host_->needs_surface_ranges_sync());
-  EXPECT_EQ(layer_tree_host_->SurfaceRanges().size(), 1u);
+  EXPECT_TRUE(
+      layer_tree_host_->GetPendingCommitState()->needs_surface_ranges_sync);
+  EXPECT_EQ(layer_tree_host_->GetPendingCommitState()->SurfaceRanges().size(),
+            1u);
 
   SynchronizeTrees();
 
@@ -216,7 +229,7 @@ TEST_F(SurfaceLayerTest, CheckSurfaceReferencesForClonedLayer) {
   SynchronizeTrees();
 
   // Verify that only |old_surface_id| is going to be referenced.
-  EXPECT_THAT(layer_tree_host_->SurfaceRanges(),
+  EXPECT_THAT(layer_tree_host_->GetPendingCommitState()->SurfaceRanges(),
               ElementsAre(viz::SurfaceRange(old_surface_id)));
   EXPECT_THAT(host_impl_.pending_tree()->SurfaceRanges(),
               ElementsAre(viz::SurfaceRange(old_surface_id)));
@@ -232,7 +245,7 @@ TEST_F(SurfaceLayerTest, CheckSurfaceReferencesForClonedLayer) {
   SynchronizeTrees();
 
   // Verify that both surface ids are going to be referenced.
-  EXPECT_THAT(layer_tree_host_->SurfaceRanges(),
+  EXPECT_THAT(layer_tree_host_->GetPendingCommitState()->SurfaceRanges(),
               ElementsAre(viz::SurfaceRange(old_surface_id),
                           viz::SurfaceRange(new_surface_id)));
   EXPECT_THAT(host_impl_.pending_tree()->SurfaceRanges(),
@@ -245,7 +258,7 @@ TEST_F(SurfaceLayerTest, CheckSurfaceReferencesForClonedLayer) {
   SynchronizeTrees();
 
   // Verify that only |new_surface_id| is going to be referenced.
-  EXPECT_THAT(layer_tree_host_->SurfaceRanges(),
+  EXPECT_THAT(layer_tree_host_->GetPendingCommitState()->SurfaceRanges(),
               ElementsAre(viz::SurfaceRange(new_surface_id)));
   EXPECT_THAT(host_impl_.pending_tree()->SurfaceRanges(),
               ElementsAre(viz::SurfaceRange(new_surface_id)));
@@ -268,15 +281,18 @@ TEST_F(SurfaceLayerTest, CheckNeedsSurfaceIdsSyncForClonedLayers) {
 
   // Verify the surface id is in SurfaceLayerIds() and
   // needs_surface_ranges_sync() is true.
-  EXPECT_TRUE(layer_tree_host_->needs_surface_ranges_sync());
-  EXPECT_THAT(layer_tree_host_->SurfaceRanges(), SizeIs(1));
+  EXPECT_TRUE(
+      layer_tree_host_->GetPendingCommitState()->needs_surface_ranges_sync);
+  EXPECT_THAT(layer_tree_host_->GetPendingCommitState()->SurfaceRanges(),
+              SizeIs(1));
 
   std::unique_ptr<SurfaceLayerImpl> layer_impl1 =
       SurfaceLayerImpl::Create(host_impl_.pending_tree(), layer1->id());
   SynchronizeTrees();
 
   // After syncchronizing trees verify needs_surface_ranges_sync() is false.
-  EXPECT_FALSE(layer_tree_host_->needs_surface_ranges_sync());
+  EXPECT_FALSE(
+      layer_tree_host_->GetPendingCommitState()->needs_surface_ranges_sync);
 
   // Create the second layer that is a clone of the first.
   scoped_refptr<SurfaceLayer> layer2 = SurfaceLayer::Create();
@@ -285,30 +301,36 @@ TEST_F(SurfaceLayerTest, CheckNeedsSurfaceIdsSyncForClonedLayers) {
   layer2->SetOldestAcceptableFallback(surface_id);
 
   // Verify that after creating the second layer with the same surface id that
-  // needs_surface_ranges_sync() is still false.
-  EXPECT_TRUE(layer_tree_host_->needs_surface_ranges_sync());
-  EXPECT_THAT(layer_tree_host_->SurfaceRanges(), SizeIs(1));
+  // needs_surface_ranges_sync is still false.
+  EXPECT_TRUE(
+      layer_tree_host_->GetPendingCommitState()->needs_surface_ranges_sync);
+  EXPECT_THAT(layer_tree_host_->GetPendingCommitState()->SurfaceRanges(),
+              SizeIs(1));
 
   std::unique_ptr<SurfaceLayerImpl> layer_impl2 =
       SurfaceLayerImpl::Create(host_impl_.pending_tree(), layer2->id());
   SynchronizeTrees();
 
-  // Verify needs_surface_ranges_sync() is still false after synchronizing
+  // Verify needs_surface_ranges_sync is still false after synchronizing
   // trees.
-  EXPECT_FALSE(layer_tree_host_->needs_surface_ranges_sync());
+  EXPECT_FALSE(
+      layer_tree_host_->GetPendingCommitState()->needs_surface_ranges_sync);
 
   // Destroy one of the layers, leaving one layer with the surface id.
   layer1->SetLayerTreeHost(nullptr);
 
-  // Verify needs_surface_ranges_sync() is still false.
-  EXPECT_FALSE(layer_tree_host_->needs_surface_ranges_sync());
+  // Verify needs_surface_ranges_sync is still false.
+  EXPECT_FALSE(
+      layer_tree_host_->GetPendingCommitState()->needs_surface_ranges_sync);
 
   // Destroy the last layer, this should change the set of layer surface ids.
   layer2->SetLayerTreeHost(nullptr);
 
-  // Verify SurfaceLayerIds() is empty and needs_surface_ranges_sync() is true.
-  EXPECT_TRUE(layer_tree_host_->needs_surface_ranges_sync());
-  EXPECT_THAT(layer_tree_host_->SurfaceRanges(), SizeIs(0));
+  // Verify SurfaceLayerIds() is empty and needs_surface_ranges_sync is true.
+  EXPECT_TRUE(
+      layer_tree_host_->GetPendingCommitState()->needs_surface_ranges_sync);
+  EXPECT_THAT(layer_tree_host_->GetPendingCommitState()->SurfaceRanges(),
+              SizeIs(0));
 }
 
 }  // namespace

@@ -5,7 +5,7 @@
 #include "remoting/host/host_mock_objects.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/codec/audio_encoder.h"
@@ -73,6 +73,7 @@ MockDesktopEnvironmentFactory::~MockDesktopEnvironmentFactory() = default;
 
 std::unique_ptr<DesktopEnvironment> MockDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control,
+    base::WeakPtr<ClientSessionEvents> client_session_events,
     const DesktopEnvironmentOptions& options) {
   return base::WrapUnique(CreatePtr());
 }
@@ -93,6 +94,10 @@ MockClientSessionControl::~MockClientSessionControl() = default;
 MockClientSessionDetails::MockClientSessionDetails() = default;
 
 MockClientSessionDetails::~MockClientSessionDetails() = default;
+
+MockClientSessionEvents::MockClientSessionEvents() = default;
+
+MockClientSessionEvents::~MockClientSessionEvents() = default;
 
 MockClientSessionEventHandler::MockClientSessionEventHandler() = default;
 
@@ -119,5 +124,19 @@ MockSecurityKeyAuthHandler::GetSendMessageCallback() {
 MockMouseCursorMonitor::MockMouseCursorMonitor() = default;
 
 MockMouseCursorMonitor::~MockMouseCursorMonitor() = default;
+
+MockUrlForwarderConfigurator::MockUrlForwarderConfigurator() = default;
+
+MockUrlForwarderConfigurator::~MockUrlForwarderConfigurator() = default;
+
+MockChromotingSessionServices::MockChromotingSessionServices() = default;
+
+MockChromotingSessionServices::~MockChromotingSessionServices() = default;
+
+MockChromotingHostServicesProvider::MockChromotingHostServicesProvider() =
+    default;
+
+MockChromotingHostServicesProvider::~MockChromotingHostServicesProvider() =
+    default;
 
 }  // namespace remoting

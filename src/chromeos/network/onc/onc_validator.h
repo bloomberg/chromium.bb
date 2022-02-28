@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "chromeos/network/onc/onc_mapper.h"
 #include "components/onc/onc_constants.h"
 
@@ -99,6 +98,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) Validator : public Mapper {
             bool error_on_missing_field,
             bool managed_onc,
             bool log_warnings);
+
+  Validator(const Validator&) = delete;
+  Validator& operator=(const Validator&) = delete;
 
   ~Validator() override;
 
@@ -199,6 +201,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) Validator : public Mapper {
   bool ValidateVPN(base::DictionaryValue* result);
   bool ValidateIPsec(base::DictionaryValue* result);
   bool ValidateOpenVPN(base::DictionaryValue* result);
+  bool ValidateWireGuard(base::DictionaryValue* result);
   bool ValidateThirdPartyVPN(base::DictionaryValue* result);
   bool ValidateARCVPN(base::DictionaryValue* result);
   bool ValidateVerifyX509(base::DictionaryValue* result);
@@ -292,8 +295,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) Validator : public Mapper {
   // List of all validation issues that occured within validation initiated by
   // function ValidateAndRepairObject.
   std::vector<ValidationIssue> validation_issues_;
-
-  DISALLOW_COPY_AND_ASSIGN(Validator);
 };
 
 }  // namespace onc

@@ -33,7 +33,7 @@ void TestExternalCache::UpdateExtensionsList(
   DCHECK(prefs);
 
   configured_extensions_ = std::move(prefs);
-  cached_extensions_.Clear();
+  cached_extensions_.DictClear();
 
   if (configured_extensions_->DictEmpty()) {
     delegate_->OnExtensionListsUpdated(&cached_extensions_);
@@ -44,7 +44,7 @@ void TestExternalCache::UpdateExtensionsList(
 }
 
 void TestExternalCache::OnDamagedFileDetected(const base::FilePath& path) {
-  for (const auto& entry : cached_extensions_.DictItems()) {
+  for (const auto entry : cached_extensions_.DictItems()) {
     const base::Value* entry_path = entry.second.FindKeyOfType(
         extensions::ExternalProviderImpl::kExternalCrx,
         base::Value::Type::STRING);
@@ -112,7 +112,7 @@ bool TestExternalCache::SimulateExtensionDownloadFailed(const std::string& id) {
 }
 
 void TestExternalCache::UpdateCachedExtensions() {
-  for (const auto& entry : configured_extensions_->DictItems()) {
+  for (const auto entry : configured_extensions_->DictItems()) {
     DCHECK(entry.second.is_dict());
     if (GetExtensionUpdateUrl(entry.second, always_check_for_updates_)
             .is_valid()) {

@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -66,6 +66,10 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
       Delegate* delegate,
       const content::StoragePartitionId& partition_id,
       content::SessionStorageNamespace* session_storage_namespace);
+
+  BackgroundContents(const BackgroundContents&) = delete;
+  BackgroundContents& operator=(const BackgroundContents&) = delete;
+
   ~BackgroundContents() override;
 
   content::WebContents* web_contents() const { return web_contents_.get(); }
@@ -78,7 +82,8 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
   // content::WebContentsDelegate implementation:
   void CloseContents(content::WebContents* source) override;
   bool ShouldSuppressDialogs(content::WebContents* source) override;
-  void DidNavigateMainFramePostCommit(content::WebContents* tab) override;
+  void DidNavigatePrimaryMainFramePostCommit(
+      content::WebContents* tab) override;
   void AddNewContents(content::WebContents* source,
                       std::unique_ptr<content::WebContents> new_contents,
                       const GURL& target_url,
@@ -89,7 +94,8 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
   bool IsNeverComposited(content::WebContents* web_contents) override;
 
   // content::WebContentsObserver implementation:
-  void RenderProcessGone(base::TerminationStatus status) override;
+  void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) override;
 
  protected:
   // Exposed for testing.
@@ -100,24 +106,22 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
   void CreateRendererNow() override;
 
   // The delegate for this BackgroundContents.
-  Delegate* delegate_;
+  raw_ptr<Delegate> delegate_;
 
   // Delegate for choosing an ExtensionHostQueue.
   std::unique_ptr<extensions::ExtensionHostDelegate> extension_host_delegate_;
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   std::unique_ptr<content::WebContents> web_contents_;
 
   // The initial URL to load.
   GURL initial_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundContents);
 };
 
 // This is the data sent out as the details with BACKGROUND_CONTENTS_OPENED.
 struct BackgroundContentsOpenedDetails {
   // The BackgroundContents object that has just been opened.
-  BackgroundContents* contents;
+  raw_ptr<BackgroundContents> contents;
 
   // The name of the parent frame for these contents.
   const std::string& frame_name;

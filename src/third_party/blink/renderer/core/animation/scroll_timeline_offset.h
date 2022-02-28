@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SCROLL_TIMELINE_OFFSET_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SCROLL_TIMELINE_OFFSET_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_timeline_element_based_offset.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
@@ -13,18 +14,12 @@
 
 namespace blink {
 
-class
-    CSSNumericValueOrStringOrCSSKeywordValueOrScrollTimelineElementBasedOffset;
-
-using ScrollTimelineOffsetValue =
-    CSSNumericValueOrStringOrCSSKeywordValueOrScrollTimelineElementBasedOffset;
-
 // Represent a scroll timeline start/end offset which can be an
 // scroll offset or an element based offset
 class CORE_EXPORT ScrollTimelineOffset final
     : public GarbageCollected<ScrollTimelineOffset> {
  public:
-  static ScrollTimelineOffset* Create(const ScrollTimelineOffsetValue& offset);
+  static ScrollTimelineOffset* Create(const V8ScrollTimelineOffset* offset);
 
   // Create a default offset representing 'auto'.
   ScrollTimelineOffset() = default;
@@ -53,11 +48,7 @@ class CORE_EXPORT ScrollTimelineOffset final
                                        double max_offset,
                                        double default_offset);
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   V8ScrollTimelineOffset* ToV8ScrollTimelineOffset() const;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  ScrollTimelineOffsetValue ToScrollTimelineOffsetValue() const;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   bool IsDefaultValue() const {
     return !length_based_offset_ && !element_based_offset_;
   }

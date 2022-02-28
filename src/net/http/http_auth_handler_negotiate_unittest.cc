@@ -8,8 +8,9 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -64,9 +65,12 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
 #else
     auth_library_ = new MockAuthLibrary();
 #endif
-    resolver_ = std::make_unique<MockCachingHostResolver>();
-    resolver_->rules_map()[HostResolverSource::ANY]->AddIPLiteralRule(
-        "alias", "10.0.0.2", "canonical.example.com");
+    resolver_ = std::make_unique<MockCachingHostResolver>(
+        /*cache_invalidation_num=*/0,
+        /*default_result=*/MockHostResolverBase::RuleResolver::
+            GetLocalhostResult());
+    resolver_->rules()->AddIPLiteralRule("alias", "10.0.0.2",
+                                         "canonical.example.com");
 
     http_auth_preferences_ = std::make_unique<MockAllowHttpAuthPreferences>();
     factory_ = std::make_unique<HttpAuthHandlerNegotiate::Factory>(
@@ -77,7 +81,7 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
         "org.chromium.test.DummySpnegoAuthenticator");
     MockAuthLibrary::EnsureTestAccountExists();
 #else
-    factory_->set_library(base::WrapUnique(auth_library_));
+    factory_->set_library(base::WrapUnique(auth_library_.get()));
 #endif  // !OS_ANDROID
   }
 
@@ -265,7 +269,7 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
   // |auth_library_| is passed to |factory_|, which assumes ownership of it, but
   // can't be a scoped pointer to it since the tests need access when they set
   // up the mocks after passing ownership.
-  MockAuthLibrary* auth_library_;
+  raw_ptr<MockAuthLibrary> auth_library_;
   std::unique_ptr<MockCachingHostResolver> resolver_;
   std::unique_ptr<MockAllowHttpAuthPreferences> http_auth_preferences_;
   std::unique_ptr<HttpAuthHandlerNegotiate::Factory> factory_;

@@ -5,12 +5,12 @@
 #include "ppapi/proxy/raw_var_data.h"
 
 #include <memory>
+#include <unordered_set>
 
 #include "base/containers/stack.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/unsafe_shared_memory_region.h"
-#include "base/stl_util.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/shared_impl/array_var.h"

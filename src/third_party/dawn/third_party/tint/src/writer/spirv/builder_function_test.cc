@@ -191,12 +191,12 @@ TEST_F(BuilderTest, Emit_Multiple_EntryPoint_With_Same_ModuleVar) {
   // };
   // [[binding(0), group(0)]] var<storage> data : Data;
   //
-  // [[stage(compute)]]
+  // [[stage(compute), workgroup_size(1)]]
   // fn a() {
   //   return;
   // }
   //
-  // [[stage(compute)]]
+  // [[stage(compute), workgroup_size(1)]]
   // fn b() {
   //   return;
   // }
@@ -204,9 +204,7 @@ TEST_F(BuilderTest, Emit_Multiple_EntryPoint_With_Same_ModuleVar) {
   auto* s = Structure("Data", {Member("d", ty.f32())},
                       {create<ast::StructBlockDecoration>()});
 
-  auto* ac = ty.access(ast::AccessControl::kReadWrite, s);
-
-  Global("data", ac, ast::StorageClass::kStorage, nullptr,
+  Global("data", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kReadWrite,
          ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
@@ -221,9 +219,8 @@ TEST_F(BuilderTest, Emit_Multiple_EntryPoint_With_Same_ModuleVar) {
              Decl(var),
              Return(),
          },
-         ast::DecorationList{
-             Stage(ast::PipelineStage::kCompute),
-         });
+         ast::DecorationList{Stage(ast::PipelineStage::kCompute),
+                             WorkgroupSize(1)});
   }
 
   {
@@ -235,9 +232,8 @@ TEST_F(BuilderTest, Emit_Multiple_EntryPoint_With_Same_ModuleVar) {
              Decl(var),
              Return(),
          },
-         ast::DecorationList{
-             Stage(ast::PipelineStage::kCompute),
-         });
+         ast::DecorationList{Stage(ast::PipelineStage::kCompute),
+                             WorkgroupSize(1)});
   }
 
   spirv::Builder& b = Build();

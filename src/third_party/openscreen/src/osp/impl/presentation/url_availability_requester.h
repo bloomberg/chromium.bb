@@ -125,11 +125,11 @@ class UrlAvailabilityRequester {
     uint64_t next_watch_id = 1;
 
     const std::string service_id;
-    uint64_t endpoint_id{0};
+    uint64_t endpoint_id_{0};
 
     ProtocolConnectionClient::ConnectRequest connect_request;
     // TODO(btolsch): Observe connection and restart all the things on close.
-    std::unique_ptr<ProtocolConnection> connection;
+    std::unique_ptr<ProtocolConnection> connection_;
 
     MessageDemuxer::MessageWatch response_watch;
     std::map<uint64_t, Request> request_by_id;

@@ -4,13 +4,14 @@
 
 #include "media/video/h264_parser.h"
 
+#include <cstring>
 #include <limits>
 #include <memory>
 
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_math.h"
-#include "base/stl_util.h"
 #include "media/base/subsample_entry.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"

@@ -5,14 +5,13 @@
 #ifndef MEDIA_BASE_VIDEO_FRAME_METADATA_H_
 #define MEDIA_BASE_VIDEO_FRAME_METADATA_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "media/base/media_export.h"
 #include "media/base/video_transformation.h"
+#include "media/gpu/buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace media {
@@ -120,9 +119,12 @@ struct MEDIA_EXPORT VideoFrameMetadata {
   // instead.  This lets us figure out when SurfaceViews are appropriate.
   bool texture_owner = false;
 
-  // Android only: if set, then this frame's resource would like to be
-  // notified about its promotability to an overlay.
+  // Android & Windows only: if set, then this frame's resource would like to
+  // be notified about its promotability to an overlay.
   bool wants_promotion_hint = false;
+
+  // Windows only: set when frame is backed by a dcomp surface handle.
+  bool dcomp_surface = false;
 
   // This video frame comes from protected content.
   bool protected_video = false;
@@ -131,9 +133,17 @@ struct MEDIA_EXPORT VideoFrameMetadata {
   // PROTECTED_VIDEO is also set to true.
   bool hw_protected = false;
 
-  // Identifier used to query if a HW protected video frame can still be
-  // properly displayed or not. Non-zero when valid.
-  uint32_t hw_protected_validation_id = 0;
+#if BUILDFLAG(USE_VAAPI)
+  // The ID of the VA-API protected session used to decode this frame, if
+  // applicable. The proper type is VAProtectedSessionID. However, in order to
+  // avoid including the VA-API headers in this file, we use the underlying
+  // type. Users of this field are expected to have compile-time assertions to
+  // ensure it's safe to use this as a VAProtectedSessionID.
+  //
+  // Notes on IPC: this field should not be copied to the Mojo version of
+  // VideoFrameMetadata because it should not cross process boundaries.
+  absl::optional<unsigned int> hw_va_protected_session_id;
+#endif
 
   // An UnguessableToken that identifies VideoOverlayFactory that created
   // this VideoFrame. It's used by Cast to help with video hole punch.
@@ -141,6 +151,10 @@ struct MEDIA_EXPORT VideoFrameMetadata {
 
   // Whether this frame was decoded in a power efficient way.
   bool power_efficient = false;
+
+  // Implemented only for single texture backed frames, true means the origin of
+  // the texture is top left and false means bottom left.
+  bool texture_origin_is_top_left = true;
 
   // CompositorFrameMetadata variables associated with this frame. Used for
   // remote debugging.

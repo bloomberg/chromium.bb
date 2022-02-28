@@ -13,15 +13,15 @@
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/stl_util.h"
 #include "core/fxge/cfx_font.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/cfx_substfont.h"
 #include "core/fxge/cfx_textrenderoptions.h"
 #include "core/fxge/fx_font.h"
 #include "core/fxge/text_char_pos.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
 #include "xfa/fgas/layout/cfgas_txtbreak.h"
 
@@ -149,10 +149,9 @@ void CFDE_TextOut::SetFontSize(float fFontSize) {
 
 void CFDE_TextOut::SetStyles(const FDE_TextStyle& dwStyles) {
   m_Styles = dwStyles;
-
-  m_dwTxtBkStyles = 0;
-  if (m_Styles.single_line_)
-    m_dwTxtBkStyles |= FX_LAYOUTSTYLE_SingleLine;
+  m_dwTxtBkStyles = m_Styles.single_line_
+                        ? CFGAS_Break::LayoutStyle::kSingleLine
+                        : CFGAS_Break::LayoutStyle::kNone;
 
   m_pTxtBreak->SetLayoutStyles(m_dwTxtBkStyles);
 }
@@ -417,13 +416,13 @@ bool CFDE_TextOut::RetrievePieces(CFGAS_Char::BreakType dwBreakStatus,
 void CFDE_TextOut::AppendPiece(const Piece& piece,
                                bool bNeedReload,
                                bool bEnd) {
-  if (m_iCurLine >= pdfium::CollectionSize<int32_t>(m_ttoLines)) {
+  if (m_iCurLine >= fxcrt::CollectionSize<int32_t>(m_ttoLines)) {
     Line ttoLine;
     ttoLine.set_new_reload(bNeedReload);
 
     m_iCurPiece = ttoLine.AddPiece(m_iCurPiece, piece);
     m_ttoLines.push_back(ttoLine);
-    m_iCurLine = pdfium::CollectionSize<int32_t>(m_ttoLines) - 1;
+    m_iCurLine = fxcrt::CollectionSize<int32_t>(m_ttoLines) - 1;
   } else {
     Line* pLine = &m_ttoLines[m_iCurLine];
     pLine->set_new_reload(bNeedReload);
@@ -542,12 +541,12 @@ size_t CFDE_TextOut::Line::GetSize() const {
 
 const CFDE_TextOut::Piece* CFDE_TextOut::Line::GetPieceAtIndex(
     size_t index) const {
-  CHECK(pdfium::IndexInBounds(pieces_, index));
+  CHECK(fxcrt::IndexInBounds(pieces_, index));
   return &pieces_[index];
 }
 
 CFDE_TextOut::Piece* CFDE_TextOut::Line::GetPieceAtIndex(size_t index) {
-  CHECK(pdfium::IndexInBounds(pieces_, index));
+  CHECK(fxcrt::IndexInBounds(pieces_, index));
   return &pieces_[index];
 }
 

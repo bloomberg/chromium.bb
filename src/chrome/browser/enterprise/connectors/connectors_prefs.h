@@ -21,6 +21,9 @@ extern const char kOnFileDownloadedPref[];
 // Pref that maps to the "OnBulkDataEntryEnterpriseConnector" policy.
 extern const char kOnBulkDataEntryPref[];
 
+// Pref that maps to the "OnPrintEnterpriseConnector" policy.
+extern const char kOnPrintPref[];
+
 // Pref that maps to the "OnSecurityEventEnterpriseConnector" policy.
 extern const char kOnSecurityEventPref[];
 
@@ -32,6 +35,7 @@ extern const char kContextAwareAccessSignalsAllowlistPref[];
 extern const char kOnFileAttachedScopePref[];
 extern const char kOnFileDownloadedScopePref[];
 extern const char kOnBulkDataEntryScopePref[];
+extern const char kOnPrintScopePref[];
 extern const char kOnSecurityEventScopePref[];
 
 // The pref name where this class stores the encrypted private key.
@@ -42,9 +46,6 @@ extern const char kDeviceTrustPrivateKeyPref[];
 // If the machine supports storage in TPM, the public key will be
 // stored there; owtherwise, it will be stored in the local state.
 extern const char kDeviceTrustPublicKeyPref[];
-
-// Template to store the service provider's "folder_id" for caching purposes.
-extern const char kFileSystemUploadFolderIdPref[];
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 

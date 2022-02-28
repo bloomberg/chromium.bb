@@ -10,8 +10,8 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/task_runner.h"
-#include "base/task_runner_util.h"
+#include "base/task/task_runner.h"
+#include "base/task/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
@@ -178,7 +178,7 @@ FileStream::Context::OpenResult FileStream::Context::OpenFileImpl(
     // we are always adding SHARE_DELETE flag to accommodate such use case.
     // TODO(rvargas): This sounds like a bug, as deleting the file would
     // presumably happen on the wrong thread. There should be an async delete.
-    open_flags |= base::File::FLAG_SHARE_DELETE;
+    open_flags |= base::File::FLAG_WIN_SHARE_DELETE;
     file.Initialize(path, open_flags);
 #if defined(OS_ANDROID)
   }
