@@ -1,9 +1,10 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "build/build_config.h"
-#include "ui/color/color_mixers.h"
 
+#include "ui/color/ui_color_mixer.h"
+
+#include "build/build_config.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_recipe.h"
@@ -35,7 +36,9 @@ void AddUiColorMixer(ColorProvider* provider,
       kColorButtonBackgroundProminent};
   mixer[kColorButtonBorder] = {kColorMidground};
   mixer[kColorButtonBorderDisabled] = {kColorSubtleEmphasisBackground};
-  mixer[kColorButtonForeground] = {kColorAccent};
+  mixer[kColorButtonForeground] =
+      PickGoogleColor(kColorAccent, kColorButtonBackground,
+                      color_utils::kMinimumReadableContrastRatio);
   mixer[kColorButtonForegroundChecked] = {kColorButtonForeground};
   mixer[kColorButtonForegroundDisabled] = {kColorDisabledForeground};
   mixer[kColorButtonForegroundProminent] =
@@ -49,7 +52,6 @@ void AddUiColorMixer(ColorProvider* provider,
   mixer[kColorDropdownForegroundSelected] = {kColorPrimaryForeground};
   mixer[kColorFocusableBorderFocused] = {kColorItemHighlight};
   mixer[kColorFocusableBorderUnfocused] = {kColorMidground};
-  mixer[kColorFocusAura] = SetAlpha(kColorAccent, 0x3D);
   mixer[kColorFrameActive] = {dark_window ? gfx::kGoogleGrey900
                                           : SkColorSetRGB(0xDE, 0xE1, 0xE6)};
   mixer[kColorFrameInactive] = {dark_window ? gfx::kGoogleGrey800
@@ -64,7 +66,9 @@ void AddUiColorMixer(ColorProvider* provider,
   mixer[kColorLabelForegroundSecondary] = {kColorSecondaryForeground};
   mixer[kColorLabelSelectionBackground] = {kColorTextSelectionBackground};
   mixer[kColorLabelSelectionForeground] = {kColorTextSelectionForeground};
-  mixer[kColorLinkForeground] = {kColorAccent};
+  mixer[kColorLinkForeground] =
+      PickGoogleColor(kColorAccent, kColorDialogBackground,
+                      color_utils::kMinimumReadableContrastRatio);
   mixer[kColorLinkForegroundDisabled] = {kColorDisabledForeground};
   mixer[kColorLinkForegroundPressed] = {kColorLinkForeground};
   mixer[kColorMenuBackground] = {kColorPrimaryBackground};
@@ -106,6 +110,7 @@ void AddUiColorMixer(ColorProvider* provider,
       SetAlpha(kColorEndpointBackground, gfx::kGoogleGreyAlpha400);
   mixer[kColorOverlayScrollbarStrokeHovered] =
       SetAlpha(kColorEndpointBackground, gfx::kGoogleGreyAlpha500);
+  mixer[kColorProgressBar] = {kColorAccent};
   mixer[kColorPwaSecurityChipForeground] = {kColorSecondaryForeground};
   mixer[kColorPwaSecurityChipForegroundDangerous] = {kColorAlertHighSeverity};
   mixer[kColorPwaSecurityChipForegroundPolicyCert] = {kColorDisabledForeground};
@@ -138,7 +143,9 @@ void AddUiColorMixer(ColorProvider* provider,
   mixer[kColorTabBorderSelected] = {kColorAccent};
   mixer[kColorTabContentSeparator] = {kColorMidground};
   mixer[kColorTabForeground] = {kColorSecondaryForeground};
-  mixer[kColorTabForegroundSelected] = {kColorAccent};
+  mixer[kColorTabForegroundSelected] =
+      PickGoogleColor(kColorAccent, kColorDialogBackground,
+                      color_utils::kMinimumReadableContrastRatio);
   mixer[kColorTableBackground] = {kColorPrimaryBackground};
   mixer[kColorTableBackgroundAlternate] = {kColorTableBackground};
   mixer[kColorTableBackgroundSelectedFocused] = {kColorItemSelectionBackground};

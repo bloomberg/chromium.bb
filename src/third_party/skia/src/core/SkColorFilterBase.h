@@ -18,6 +18,7 @@ class GrRecordingContext;
 class SkArenaAlloc;
 class SkBitmap;
 class SkColorSpace;
+class SkRuntimeEffect;
 struct SkStageRec;
 using GrFPResult = std::tuple<bool, std::unique_ptr<GrFragmentProcessor>>;
 
@@ -28,7 +29,7 @@ public:
 
     SK_WARN_UNUSED_RESULT
     skvm::Color program(skvm::Builder*, skvm::Color,
-                        SkColorSpace* dstCS, skvm::Uniforms*, SkArenaAlloc*) const;
+                        const SkColorInfo& dst, skvm::Uniforms*, SkArenaAlloc*) const;
 
     /** Returns the flags for this filter. Override in subclasses to return custom flags.
     */
@@ -54,6 +55,8 @@ public:
     }
 
     static void RegisterFlattenables();
+
+    virtual SkRuntimeEffect* asRuntimeEffect() const { return nullptr; }
 
     static SkFlattenable::Type GetFlattenableType() {
         return kSkColorFilter_Type;
@@ -82,7 +85,7 @@ private:
     virtual bool onAppendStages(const SkStageRec& rec, bool shaderIsOpaque) const = 0;
 
     virtual skvm::Color onProgram(skvm::Builder*, skvm::Color,
-                                  SkColorSpace* dstCS, skvm::Uniforms*, SkArenaAlloc*) const = 0;
+                                  const SkColorInfo& dst, skvm::Uniforms*, SkArenaAlloc*) const = 0;
 
     friend class SkColorFilter;
 

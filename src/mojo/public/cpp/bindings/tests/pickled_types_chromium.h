@@ -9,7 +9,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 
@@ -31,6 +30,10 @@ class PickledStructChromium {
   PickledStructChromium();
   PickledStructChromium(int foo, int bar);
   PickledStructChromium(PickledStructChromium&& other) = default;
+
+  PickledStructChromium(const PickledStructChromium&) = delete;
+  PickledStructChromium& operator=(const PickledStructChromium&) = delete;
+
   ~PickledStructChromium();
 
   PickledStructChromium& operator=(PickledStructChromium&& other) = default;
@@ -49,8 +52,6 @@ class PickledStructChromium {
   int foo_ = 0;
   int bar_ = 0;
   int baz_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(PickledStructChromium);
 };
 
 bool operator==(const PickledStructChromium& a, const PickledStructChromium& b);

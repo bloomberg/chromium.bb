@@ -17,7 +17,6 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
-#include "content/common/navigation_params.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_utils.h"
@@ -30,7 +29,9 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/redirect_info.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
+#include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
 
 namespace content {
@@ -84,14 +85,14 @@ class NavigationThrottleCallbackRunner : public NavigationThrottle {
 
 int64_t g_unique_identifier = 0;
 
-FrameTreeNode* GetFrameTreeNodeForPendingEntry(WebContentsImpl* contents) {
-  NavigationEntryImpl* pending_entry =
-      contents->GetController().GetPendingEntry();
+FrameTreeNode* GetFrameTreeNodeForPendingEntry(
+    NavigationControllerImpl& controller) {
+  NavigationEntryImpl* pending_entry = controller.GetPendingEntry();
   int frame_tree_node_id = pending_entry->frame_tree_node_id();
-  FrameTree* frame_tree = contents->GetFrameTree();
+  FrameTree& frame_tree = controller.frame_tree();
   if (frame_tree_node_id == FrameTreeNode::kFrameTreeNodeInvalidId)
-    return frame_tree->root();
-  return frame_tree->FindByID(frame_tree_node_id);
+    return frame_tree.root();
+  return frame_tree.FindByID(frame_tree_node_id);
 }
 
 }  // namespace
@@ -131,8 +132,8 @@ RenderFrameHost* NavigationSimulator::GoForward(WebContents* web_contents) {
 // static
 RenderFrameHost* NavigationSimulator::GoToOffset(WebContents* web_contents,
                                                  int offset) {
-  auto simulator =
-      NavigationSimulatorImpl::CreateHistoryNavigation(offset, web_contents);
+  auto simulator = NavigationSimulatorImpl::CreateHistoryNavigation(
+      offset, web_contents, false /* is_renderer_initiated */);
   simulator->Commit();
   return simulator->GetFinalRenderFrameHost();
 }
@@ -188,8 +189,8 @@ RenderFrameHost* NavigationSimulator::GoToOffsetAndFail(
     WebContents* web_contents,
     int offset,
     int net_error_code) {
-  auto simulator =
-      NavigationSimulator::CreateHistoryNavigation(offset, web_contents);
+  auto simulator = NavigationSimulator::CreateHistoryNavigation(
+      offset, web_contents, false /* is_renderer_initiated */);
   simulator->Fail(net_error_code);
   if (net_error_code == net::ERR_ABORTED)
     return nullptr;
@@ -231,16 +232,25 @@ NavigationSimulatorImpl::CreateBrowserInitiated(const GURL& original_url,
 // static
 std::unique_ptr<NavigationSimulator>
 NavigationSimulator::CreateHistoryNavigation(int offset,
-                                             WebContents* web_contents) {
-  return NavigationSimulatorImpl::CreateHistoryNavigation(offset, web_contents);
+                                             WebContents* web_contents,
+                                             bool is_renderer_initiated) {
+  return NavigationSimulatorImpl::CreateHistoryNavigation(
+      offset, web_contents, is_renderer_initiated);
 }
 
 // static
 std::unique_ptr<NavigationSimulatorImpl>
 NavigationSimulatorImpl::CreateHistoryNavigation(int offset,
-                                                 WebContents* web_contents) {
-  auto simulator =
-      NavigationSimulatorImpl::CreateBrowserInitiated(GURL(), web_contents);
+                                                 WebContents* web_contents,
+                                                 bool is_renderer_initiated) {
+  std::unique_ptr<NavigationSimulatorImpl> simulator = nullptr;
+  if (is_renderer_initiated) {
+    simulator = NavigationSimulatorImpl::CreateRendererInitiated(
+        GURL(), web_contents->GetMainFrame());
+  } else {
+    simulator =
+        NavigationSimulatorImpl::CreateBrowserInitiated(GURL(), web_contents);
+  }
   simulator->SetSessionHistoryOffset(offset);
   return simulator;
 }
@@ -259,26 +269,28 @@ std::unique_ptr<NavigationSimulatorImpl>
 NavigationSimulatorImpl::CreateRendererInitiated(
     const GURL& original_url,
     RenderFrameHost* render_frame_host) {
-  return std::unique_ptr<NavigationSimulatorImpl>(new NavigationSimulatorImpl(
-      original_url, false /* browser_initiated */,
-      static_cast<WebContentsImpl*>(
-          WebContents::FromRenderFrameHost(render_frame_host)),
-      static_cast<TestRenderFrameHost*>(render_frame_host)));
+  std::unique_ptr<NavigationSimulatorImpl> sim =
+      std::unique_ptr<NavigationSimulatorImpl>(new NavigationSimulatorImpl(
+          original_url, false /* browser_initiated */,
+          static_cast<WebContentsImpl*>(
+              WebContents::FromRenderFrameHost(render_frame_host)),
+          static_cast<TestRenderFrameHost*>(render_frame_host)));
+
+  sim->SetInitiatorFrame(render_frame_host);
+  return sim;
 }
 
 // static
 std::unique_ptr<NavigationSimulator> NavigationSimulator::CreateFromPending(
-    WebContents* contents) {
-  return NavigationSimulatorImpl::CreateFromPending(contents);
+    NavigationController& controller) {
+  return NavigationSimulatorImpl::CreateFromPending(controller);
 }
 
 // static
 std::unique_ptr<NavigationSimulatorImpl>
-NavigationSimulatorImpl::CreateFromPending(WebContents* contents) {
-  WebContentsImpl* contents_impl = static_cast<WebContentsImpl*>(contents);
-
-  FrameTreeNode* frame_tree_node =
-      GetFrameTreeNodeForPendingEntry(contents_impl);
+NavigationSimulatorImpl::CreateFromPending(NavigationController& controller) {
+  FrameTreeNode* frame_tree_node = GetFrameTreeNodeForPendingEntry(
+      static_cast<NavigationControllerImpl&>(controller));
   return NavigationSimulatorImpl::CreateFromPendingInFrame(frame_tree_node);
 }
 
@@ -340,10 +352,7 @@ NavigationSimulatorImpl::NavigationSimulatorImpl(
     render_frame_host->InitializeRenderFrameIfNeeded();
 
   if (render_frame_host && render_frame_host->GetParent()) {
-    if (!render_frame_host->frame_tree_node()->has_committed_real_load())
-      transition_ = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-    else
-      transition_ = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
+    transition_ = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
   }
 
   browser_interface_broker_receiver_ =
@@ -369,20 +378,41 @@ void NavigationSimulatorImpl::InitializeFromStartedRequest(
   // |same_document_| should always be false here.
   referrer_ = request_->common_params().referrer.Clone();
   transition_ = request_->GetPageTransition();
+  if (!request->IsInMainFrame()) {
+    // Subframe transitions always start as MANUAL_SUBFRAME, and the final
+    // value will be calculated at DidCommit time (see
+    // BuildDidCommitProvisionalLoadParams()).
+    transition_ = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
+  }
   // |reload_type_| cannot be set after the request has started.
   // |session_history_offset_| cannot be set after the request has started.
   has_user_gesture_ = request_->HasUserGesture();
   // |contents_mime_type_| cannot be inferred from the request.
 
-  // Add a throttle to count NavigationThrottle calls count. Bump
-  // num_did_start_navigation to account for the fact that the navigation handle
-  // has already been created.
-  num_did_start_navigation_called_++;
-  RegisterTestThrottle(request);
-  PrepareCompleteCallbackOnRequest();
+  skip_service_worker_ = request_->begin_params().skip_service_worker;
+
+  if (!browser_initiated_ && request_->GetInitiatorFrameToken().has_value()) {
+    SetInitiatorFrame(RenderFrameHostImpl::FromFrameToken(
+        request_->GetInitiatorProcessID(),
+        request_->GetInitiatorFrameToken().value()));
+  }
+
+  // Add a throttle to count NavigationThrottle calls count. This should be
+  // skipped if DidStartNavigation() has been called as the same setup is done
+  // there.
+  if (num_did_start_navigation_called_ == 0) {
+    num_did_start_navigation_called_++;
+    RegisterTestThrottle(request);
+    PrepareCompleteCallbackOnRequest();
+  }
 }
 
 void NavigationSimulatorImpl::RegisterTestThrottle(NavigationRequest* request) {
+  // Page activating navigations don't run throttles so we don't need to
+  // register it in that case.
+  if (request_->IsPageActivation())
+    return;
+
   request->RegisterThrottleForTesting(
       std::make_unique<NavigationThrottleCallbackRunner>(
           request,
@@ -412,11 +442,11 @@ void NavigationSimulatorImpl::Start() {
   CHECK(request_);
   if (blink::IsRendererDebugURL(navigation_url_))
     return;
-
-  if (!NeedsThrottleChecks()) {
-    CHECK_EQ(1, num_did_start_navigation_called_);
+  if (session_history_offset_)
     return;
-  }
+
+  if (!NeedsThrottleChecks())
+    return;
 
   MaybeWaitForThrottleChecksComplete(base::BindOnce(
       &NavigationSimulatorImpl::StartComplete, weak_factory_.GetWeakPtr()));
@@ -471,6 +501,11 @@ void NavigationSimulatorImpl::Redirect(const GURL& new_url) {
   response->connection_info = http_connection_info_;
   response->ssl_info = ssl_info_;
 
+  if (redirect_headers_) {
+    response->headers = redirect_headers_;
+    redirect_headers_ = nullptr;
+  }
+
   url_loader->CallOnRequestRedirected(redirect_info, std::move(response));
 
   MaybeWaitForThrottleChecksComplete(base::BindOnce(
@@ -509,10 +544,26 @@ void NavigationSimulatorImpl::ReadyToCommit() {
       InitializeFromStartedRequest(request_);
     } else {
       Start();
-      if (state_ == FAILED)
+
+      // For prerendered page activation, CommitDeferringConditions
+      // asynchronously run before the navigation starts. Wait here until all
+      // the conditions run.
+      if (request_->is_potentially_prerendered_page_activation_for_testing()) {
+        base::RunLoop run_loop;
+        did_start_navigation_closure_ = run_loop.QuitClosure();
+        run_loop.Run();
+        DCHECK(was_prerendered_page_activation_.value());
+      }
+
+      // The navigation has failed or already finished for prerendered page
+      // activation.
+      if (state_ == FAILED || state_ == FINISHED)
         return;
     }
   }
+
+  CHECK_EQ(nullptr, redirect_headers_)
+      << "Redirect headers were set but never used in a Redirect call";
 
   if (!response_headers_) {
     response_headers_ =
@@ -538,7 +589,8 @@ void NavigationSimulatorImpl::ReadyToCommit() {
         ->PrepareForCommitDeprecatedForNavigationSimulator(
             remote_endpoint_, was_fetched_via_cache_,
             is_signed_exchange_inner_response_, http_connection_info_,
-            ssl_info_, response_headers_, response_dns_aliases_);
+            ssl_info_, response_headers_, std::move(response_body_),
+            response_dns_aliases_);
   }
 
   // Synchronous failure can cause the navigation to finish here.
@@ -550,7 +602,7 @@ void NavigationSimulatorImpl::ReadyToCommit() {
   auto complete_closure =
       base::BindOnce(&NavigationSimulatorImpl::WillProcessResponseComplete,
                      weak_factory_.GetWeakPtr());
-  if (NeedsThrottleChecks()) {
+  if (NeedsPreCommitChecks()) {
     MaybeWaitForThrottleChecksComplete(std::move(complete_closure));
     MaybeWaitForReadyToCommitCheckComplete();
     if (state_ == READY_TO_COMMIT) {
@@ -563,6 +615,7 @@ void NavigationSimulatorImpl::ReadyToCommit() {
     }
     return;
   }
+
   std::move(complete_closure).Run();
   ReadyToCommitComplete();
 }
@@ -708,6 +761,7 @@ void NavigationSimulatorImpl::Fail(int error_code) {
   TestNavigationURLLoader* url_loader =
       static_cast<TestNavigationURLLoader*>(request_->loader_for_testing());
   CHECK(url_loader);
+
   network::URLLoaderCompletionStatus status(error_code);
   status.resolve_error_info = resolve_error_info_;
   status.ssl_info = ssl_info_;
@@ -841,14 +895,18 @@ void NavigationSimulatorImpl::SetInitiatorFrame(
     RenderFrameHost* initiator_frame_host) {
   // Browser-initiated navigations are not associated with an initiator frame.
   CHECK(!browser_initiated_);
-  CHECK(initiator_frame_host);
 
-  // TODO(https://crbug.com/1072790): Support cross-process initiators here by
-  // using NavigationRequest::CreateBrowserInitiated() (like
-  // RenderFrameProxyHost does) for the navigation.
-  CHECK_EQ(render_frame_host_->GetProcess(), initiator_frame_host->GetProcess())
-      << "The initiator frame must belong to the same process as the frame you "
-         "are navigating";
+  if (initiator_frame_host) {
+    // TODO(https://crbug.com/1072790): Support cross-process initiators here by
+    // using NavigationRequest::CreateBrowserInitiated() (like
+    // RenderFrameProxyHost does) for the navigation.
+    CHECK_EQ(render_frame_host_->GetProcess(),
+             initiator_frame_host->GetProcess())
+        << "The initiator frame must belong to the same process as the frame "
+           "you are navigating";
+    set_initiator_origin(initiator_frame_host->GetLastCommittedOrigin());
+  }
+
   initiator_frame_host_ = initiator_frame_host;
 }
 
@@ -944,11 +1002,25 @@ void NavigationSimulatorImpl::SetContentsMimeType(
   contents_mime_type_ = contents_mime_type;
 }
 
+void NavigationSimulatorImpl::SetRedirectHeaders(
+    scoped_refptr<net::HttpResponseHeaders> redirect_headers) {
+  CHECK_LE(state_, STARTED) << "The redirect headers cannot be set after the "
+                               "navigation has committed or failed";
+  redirect_headers_ = redirect_headers;
+}
+
 void NavigationSimulatorImpl::SetResponseHeaders(
     scoped_refptr<net::HttpResponseHeaders> response_headers) {
   CHECK_LE(state_, STARTED) << "The response headers cannot be set after the "
                                "navigation has committed or failed";
   response_headers_ = response_headers;
+}
+
+void NavigationSimulatorImpl::SetResponseBody(
+    mojo::ScopedDataPipeConsumerHandle response_body) {
+  CHECK_LE(state_, STARTED) << "The response body cannot be set after the "
+                               "navigation has committed or failed";
+  response_body_ = std::move(response_body);
 }
 
 void NavigationSimulatorImpl::SetLoadURLParams(
@@ -1018,6 +1090,8 @@ void NavigationSimulatorImpl::BrowserInitiatedStartAndWaitBeforeUnload() {
       load_url_params.transition_type = transition_;
       load_url_params.should_replace_current_entry =
           should_replace_current_entry_;
+      load_url_params.initiator_origin = initiator_origin_;
+      load_url_params.impression = impression_;
       if (initial_method_ == "POST")
         load_url_params.load_type = NavigationController::LOAD_TYPE_HTTP_POST;
 
@@ -1025,14 +1099,15 @@ void NavigationSimulatorImpl::BrowserInitiatedStartAndWaitBeforeUnload() {
     }
   }
 
-  frame_tree_node_ = GetFrameTreeNodeForPendingEntry(web_contents_);
+  auto& controller =
+      static_cast<NavigationControllerImpl&>(web_contents_->GetController());
+  frame_tree_node_ = GetFrameTreeNodeForPendingEntry(controller);
   CHECK(frame_tree_node_);
   render_frame_host_ =
       static_cast<TestRenderFrameHost*>(frame_tree_node_->current_frame_host());
 
   // The navigation url might have been rewritten by the NavigationController.
   // Update it.
-  NavigationController& controller = web_contents_->GetController();
   NavigationEntryImpl* pending_entry =
       static_cast<NavigationEntryImpl*>(controller.GetPendingEntry());
   FrameNavigationEntry* pending_frame_entry =
@@ -1045,16 +1120,16 @@ void NavigationSimulatorImpl::BrowserInitiatedStartAndWaitBeforeUnload() {
 void NavigationSimulatorImpl::DidStartNavigation(
     NavigationHandle* navigation_handle) {
   // Check if this navigation is the one we're simulating.
-  if (request_)
-    return;
-
   NavigationRequest* request = NavigationRequest::From(navigation_handle);
-
+  if (request_ && request_ != request)
+    return;
   if (request->frame_tree_node() != frame_tree_node_)
     return;
 
   request_ = request;
   num_did_start_navigation_called_++;
+
+  was_prerendered_page_activation_ = request_->IsPrerenderedPageActivation();
 
   // Some navigation requests are not directly created by the
   // NavigationSimulator, so we should set some parameters manually after the
@@ -1064,6 +1139,9 @@ void NavigationSimulatorImpl::DidStartNavigation(
   // Add a throttle to count NavigationThrottle calls count.
   RegisterTestThrottle(request);
   PrepareCompleteCallbackOnRequest();
+
+  if (did_start_navigation_closure_)
+    std::move(did_start_navigation_closure_).Run();
 }
 
 void NavigationSimulatorImpl::DidRedirectNavigation(
@@ -1083,20 +1161,20 @@ void NavigationSimulatorImpl::DidFinishNavigation(
   NavigationRequest* request = NavigationRequest::From(navigation_handle);
   if (request == request_) {
     num_did_finish_navigation_called_++;
-    if (navigation_handle->IsServedFromBackForwardCache()) {
-      // Back-forward cache navigations commit and finish synchronously, unlike
-      // all other navigations, which wait for a reply from the renderer.
-      // The |state_| is normally updated to 'FINISHED' when we simulate a
-      // renderer reply at the end of the NavigationSimulatorImpl::Commit()
-      // function, but we have not reached this stage yet.
-      // Set |state_| to FINISHED to ensure that we would not try to simulate
-      // navigation commit for the second time.
+    if (request->IsPageActivation()) {
+      // Back-forward cache navigations and prerendered page activations commit
+      // and finish synchronously, unlike all other navigations, which wait for
+      // a reply from the renderer. The |state_| is normally updated to
+      // 'FINISHED' when we simulate a renderer reply at the end of the
+      // NavigationSimulatorImpl::Commit() function, but we have not reached
+      // this stage yet. Set |state_| to FINISHED to ensure that we would not
+      // try to simulate navigation commit for the second time.
       RenderFrameHostImpl* previous_rfh = RenderFrameHostImpl::FromID(
           navigation_handle->GetPreviousRenderFrameHostId());
       CHECK(previous_rfh) << "Previous RenderFrameHost should not be destroyed "
                              "without a Unload_ACK";
 
-      // If the frame is not alive we do not displatch Unload ACK.
+      // If the frame is not alive we do not dispatch Unload ACK.
       // CommitPending() may be called immediately and delete the old
       // RenderFrameHost, so we need to record that now while we can still
       // access the object.
@@ -1180,39 +1258,44 @@ bool NavigationSimulatorImpl::SimulateBrowserInitiatedStart() {
 }
 
 bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
-  mojom::BeginNavigationParamsPtr begin_params =
-      mojom::BeginNavigationParams::New(
+  if (session_history_offset_) {
+    static_cast<NavigationControllerImpl&>(web_contents_->GetController())
+        .GoToOffsetFromRenderer(session_history_offset_);
+    request_ = render_frame_host_->frame_tree_node()->navigation_request();
+    return true;
+  }
+
+  blink::mojom::BeginNavigationParamsPtr begin_params =
+      blink::mojom::BeginNavigationParams::New(
           initiator_frame_host_
               ? absl::make_optional(initiator_frame_host_->GetFrameToken())
               : absl::nullopt,
-          std::string() /* headers */, net::LOAD_NORMAL,
-          false /* skip_service_worker */,
-          blink::mojom::RequestContextType::HYPERLINK,
-          network::mojom::RequestDestination::kDocument,
-          blink::mojom::MixedContentContextType::kBlockable,
-          is_form_submission_, false /* was_initiated_by_link_click */,
-          GURL() /* searchable_form_url */,
-          std::string() /* searchable_form_encoding */,
-          GURL() /* client_side_redirect_url */,
+          headers_, load_flags_, skip_service_worker_, request_context_type_,
+          mixed_content_context_type_, is_form_submission_,
+          false /* was_initiated_by_link_click */, searchable_form_url_,
+          searchable_form_encoding_, GURL() /* client_side_redirect_url */,
           absl::nullopt /* detools_initiator_info */,
           nullptr /* trust_token_params */, impression_,
           base::TimeTicks() /* renderer_before_unload_start */,
           base::TimeTicks() /* renderer_before_unload_end */,
           absl::nullopt /* web_bundle_token */);
-  auto common_params = CreateCommonNavigationParams();
+  auto common_params = blink::CreateCommonNavigationParams();
   common_params->navigation_start = base::TimeTicks::Now();
   common_params->url = navigation_url_;
-  common_params->initiator_origin = url::Origin();
+  common_params->initiator_origin = initiator_origin_.value();
   common_params->method = initial_method_;
   common_params->referrer = referrer_.Clone();
   common_params->transition = transition_;
   common_params->navigation_type =
       PageTransitionCoreTypeIs(transition_, ui::PAGE_TRANSITION_RELOAD)
-          ? mojom::NavigationType::RELOAD
-          : mojom::NavigationType::DIFFERENT_DOCUMENT;
+          ? blink::mojom::NavigationType::RELOAD
+          : blink::mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->has_user_gesture = has_user_gesture_;
   common_params->should_check_main_world_csp = should_check_main_world_csp_;
   common_params->should_replace_current_entry = should_replace_current_entry_;
+  common_params->href_translate = href_translate_;
+  common_params->request_destination =
+      network::mojom::RequestDestination::kDocument;
 
   mojo::PendingAssociatedRemote<mojom::NavigationClient>
       navigation_client_remote;
@@ -1229,13 +1312,21 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
   if (!request)
     return false;
 
+  // Prerendered page activation can be deferred by CommitDeferringConditions in
+  // BeginNavigation(), and `request_` hasn't been set by DidStartNavigation()
+  // yet. In that case, we set it here.
+  if (request->is_potentially_prerendered_page_activation_for_testing()) {
+    DCHECK(!request_);
+    request_ = request;
+  }
+
   CHECK_EQ(request_, request);
   return true;
 }
 
 void NavigationSimulatorImpl::MaybeWaitForThrottleChecksComplete(
     base::OnceClosure complete_closure) {
-  // If last_throttle_check_result_ is set, then throttle checks completed
+  // If last_throttle_check_result_ is set, then the navigation phase completed
   // synchronously.
   if (last_throttle_check_result_) {
     std::move(complete_closure).Run();
@@ -1268,6 +1359,11 @@ void NavigationSimulatorImpl::Wait() {
 
 bool NavigationSimulatorImpl::OnThrottleChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
+  if (request_->IsPageActivation()) {
+    // Throttles don't run in page activations so we shouldn't ever get back
+    // anything other than PROCEED.
+    CHECK_EQ(result.action(), NavigationThrottle::PROCEED);
+  }
   CHECK(!last_throttle_check_result_);
   last_throttle_check_result_ = result;
   if (wait_closure_)
@@ -1293,30 +1389,35 @@ bool NavigationSimulatorImpl::IsDeferred() {
   return !throttle_checks_complete_closure_.is_null();
 }
 
-bool NavigationSimulatorImpl::DidCreateNewEntry() {
-  if (did_create_new_entry_.has_value())
-    return did_create_new_entry_.value();
-  if (ui::PageTransitionCoreTypeIs(transition_,
-                                   ui::PAGE_TRANSITION_AUTO_SUBFRAME))
-    return false;
-  if (reload_type_ != ReloadType::NONE ||
-      (request_ && NavigationTypeUtils::IsReload(
-                       request_->common_params().navigation_type))) {
-    return false;
-  }
+bool NavigationSimulatorImpl::DidCreateNewEntry(
+    bool same_document,
+    bool should_replace_current_entry) {
   if (session_history_offset_ ||
       (request_ && NavigationTypeUtils::IsHistory(
                        request_->common_params().navigation_type))) {
+    // History navigation.
     return false;
   }
-  if (request_ && (request_->common_params().navigation_type ==
-                       mojom::NavigationType::RESTORE ||
-                   request_->common_params().navigation_type ==
-                       mojom::NavigationType::RESTORE_WITH_POST)) {
+  bool has_valid_page_state =
+      request_ && blink::PageState::CreateFromEncodedData(
+                      request_->commit_params().page_state)
+                      .IsValid();
+
+  if (has_valid_page_state && NavigationTypeUtils::IsRestore(
+                                  request_->common_params().navigation_type)) {
+    // Restore navigation.
     return false;
   }
 
-  return true;
+  bool is_reload = reload_type_ != ReloadType::NONE ||
+                   (request_ && NavigationTypeUtils::IsReload(
+                                    request_->common_params().navigation_type));
+
+  // Return false if this is a "standard" (non replacement/reload) commit, or a
+  // main frame cross-document replacement.
+  return (!is_reload && !should_replace_current_entry) ||
+         (frame_tree_node_->IsMainFrame() && should_replace_current_entry &&
+          !same_document);
 }
 
 void NavigationSimulatorImpl::SetSessionHistoryOffset(
@@ -1325,11 +1426,6 @@ void NavigationSimulatorImpl::SetSessionHistoryOffset(
   session_history_offset_ = session_history_offset;
   transition_ =
       ui::PageTransitionFromInt(transition_ | ui::PAGE_TRANSITION_FORWARD_BACK);
-}
-
-void NavigationSimulatorImpl::set_did_create_new_entry(
-    bool did_create_new_entry) {
-  did_create_new_entry_ = did_create_new_entry;
 }
 
 void NavigationSimulatorImpl::set_history_list_was_cleared(
@@ -1346,32 +1442,31 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
   params->url = navigation_url_;
   params->referrer = mojo::Clone(referrer_);
   params->contents_mime_type = contents_mime_type_;
-  params->transition = transition_;
-  if (request_) {
-    params->gesture = request_->common_params().has_user_gesture
-                          ? NavigationGestureUser
-                          : NavigationGestureAuto;
-  } else {
-    params->gesture =
-        has_user_gesture_ ? NavigationGestureUser : NavigationGestureAuto;
-  }
   params->history_list_was_cleared = history_list_was_cleared_;
-  params->did_create_new_entry = DidCreateNewEntry();
 
-  const bool is_history_navigation = (session_history_offset_ != 0);
   RenderFrameHostImpl* current_rfh = frame_tree_node_->current_frame_host();
 
-  // See CalculateShouldReplaceCurrentEntry() in RenderFrameHostImpl on why we
-  // calculate "should_replace_current_entry" in this way.
-  params->should_replace_current_entry = should_replace_current_entry_;
-  if (same_document) {
-    params->should_replace_current_entry |=
-        (is_history_navigation ||
-         current_rfh->GetLastCommittedURL() == navigation_url_);
+  params->should_replace_current_entry =
+      should_replace_current_entry_ ||
+      (request_ && request_->common_params().should_replace_current_entry);
+
+  params->did_create_new_entry =
+      DidCreateNewEntry(same_document, params->should_replace_current_entry);
+
+  // See CalculateTransition() in render_frame_host_impl.cc.
+  if (frame_tree_node_->IsMainFrame() && request_) {
+    params->transition =
+        ui::PageTransitionFromInt(request_->common_params().transition);
+  } else if (!params->did_create_new_entry &&
+             PageTransitionCoreTypeIs(transition_,
+                                      ui::PAGE_TRANSITION_MANUAL_SUBFRAME)) {
+    // Non-standard commits (replacements, reloads, history navigations, etc) on
+    // subframe will result in PAGE_TRANSITION_AUTO_SUBFRAME transition. These
+    // navigations can be detected from the |did_create_new_entry| value (on
+    // subframes).
+    params->transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
   } else {
-    params->should_replace_current_entry |=
-        (!frame_tree_node_->IsMainFrame() &&
-         !frame_tree_node_->has_committed_real_load());
+    params->transition = transition_;
   }
 
   params->navigation_token = request_
@@ -1379,20 +1474,22 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
                                  : base::UnguessableToken::Create();
   params->post_id = post_id_;
 
-  params->intended_as_new_entry =
-      request_ ? request_->commit_params().intended_as_new_entry : false;
   params->method = request_ ? request_->common_params().method : "GET";
 
   if (failed_navigation) {
     // Note: Error pages must commit in a unique origin. So it is left unset.
     params->url_is_unreachable = true;
   } else {
-    params->should_update_history = true;
     if (same_document) {
       params->origin = current_rfh->GetLastCommittedOrigin();
+      params->should_update_history = true;
     } else {
-      params->origin =
-          origin_.value_or(request_->GetOriginForURLLoaderFactory());
+      // This mirrors the calculation in
+      // RenderFrameImpl::MakeDidCommitProvisionalLoadParams.
+      // TODO(https://crbug.com/1158101): Reconsider how we calculate
+      // should_update_history.
+      params->should_update_history = response_headers_->response_code() != 404;
+      params->origin = origin_.value_or(request_->GetOriginToCommit());
     }
   }
 
@@ -1439,6 +1536,11 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
                   frame_tree_node_->IsMainFrame())
                : false;
 
+  params->insecure_request_policy = insecure_request_policy_;
+  params->insecure_navigations_set = insecure_navigations_set_;
+  params->has_potentially_trustworthy_unique_origin =
+      has_potentially_trustworthy_unique_origin_;
+
   return params;
 }
 
@@ -1481,7 +1583,21 @@ bool NavigationSimulatorImpl::NeedsThrottleChecks() const {
     return false;
   }
 
+  // Back/forward cache restores and prerendering page activations do not run
+  // NavigationThrottles since they were already run when the page was first
+  // loaded.
+  DCHECK(request_);
+  if (request_->is_potentially_prerendered_page_activation_for_testing() ||
+      request_->IsPageActivation()) {
+    return false;
+  }
+
   return IsURLHandledByNetworkStack(navigation_url_);
+}
+
+bool NavigationSimulatorImpl::NeedsPreCommitChecks() const {
+  DCHECK(request_);
+  return NeedsThrottleChecks() || request_->IsPageActivation();
 }
 
 }  // namespace content

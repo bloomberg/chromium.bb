@@ -7,14 +7,9 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/vector_icon_utils.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
-#include "ui/views/animation/ink_drop_highlight.h"
-#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view_class_properties.h"
@@ -87,83 +82,14 @@ std::unique_ptr<views::Slider> CreateSlider(UnifiedSliderListener* listener,
 UnifiedSliderButton::UnifiedSliderButton(PressedCallback callback,
                                          const gfx::VectorIcon& icon,
                                          int accessible_name_id)
-    : views::ImageButton(std::move(callback)) {
-  SetImageHorizontalAlignment(ALIGN_CENTER);
-  SetImageVerticalAlignment(ALIGN_MIDDLE);
-  if (accessible_name_id)
-    SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
-
-  SetVectorIcon(icon);
-  SetBorder(views::CreateEmptyBorder(kUnifiedCircularButtonFocusPadding));
-
-  // Focus ring is around the whole view's bounds, but the ink drop should be
-  // the same size as the content.
-  TrayPopupUtils::ConfigureTrayPopupButton(this);
-  focus_ring()->SetPathGenerator(
-      std::make_unique<views::CircleHighlightPathGenerator>(gfx::Insets()));
-  views::InstallCircleHighlightPathGenerator(
-      this, kUnifiedCircularButtonFocusPadding);
-}
+    : IconButton(std::move(callback),
+                 IconButton::Type::kSmall,
+                 &icon,
+                 accessible_name_id,
+                 /*is_togglable=*/true,
+                 /*has_border=*/true) {}
 
 UnifiedSliderButton::~UnifiedSliderButton() = default;
-
-void UnifiedSliderButton::SetVectorIcon(const gfx::VectorIcon& icon) {
-  icon_ = &icon;
-  UpdateVectorIcon();
-}
-
-void UnifiedSliderButton::SetToggled(bool toggled) {
-  toggled_ = toggled;
-  UpdateVectorIcon();
-}
-
-void UnifiedSliderButton::PaintButtonContents(gfx::Canvas* canvas) {
-  gfx::Rect rect(GetContentsBounds());
-  cc::PaintFlags flags;
-  flags.setAntiAlias(true);
-  flags.setColor(AshColorProvider::Get()->GetControlsLayerColor(
-      toggled_
-          ? AshColorProvider::ControlsLayerType::kControlBackgroundColorActive
-          : AshColorProvider::ControlsLayerType::
-                kControlBackgroundColorInactive));
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), kTrayItemCornerRadius,
-                     flags);
-
-  views::ImageButton::PaintButtonContents(canvas);
-}
-
-void UnifiedSliderButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  views::ImageButton::GetAccessibleNodeData(node_data);
-  node_data->role = ax::mojom::Role::kToggleButton;
-  node_data->SetCheckedState(toggled_ ? ax::mojom::CheckedState::kTrue
-                                      : ax::mojom::CheckedState::kFalse);
-}
-
-const char* UnifiedSliderButton::GetClassName() const {
-  return "UnifiedSliderButton";
-}
-
-gfx::Size UnifiedSliderButton::CalculatePreferredSize() const {
-  return gfx::Size(kTrayItemSize + kUnifiedCircularButtonFocusPadding.width(),
-                   kTrayItemSize + kUnifiedCircularButtonFocusPadding.height());
-}
-
-void UnifiedSliderButton::OnThemeChanged() {
-  views::ImageButton::OnThemeChanged();
-  UpdateVectorIcon();
-  focus_ring()->SetColor(AshColorProvider::Get()->GetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kFocusRingColor));
-  SchedulePaint();
-}
-
-void UnifiedSliderButton::UpdateVectorIcon() {
-  if (!icon_)
-    return;
-
-  AshColorProvider::Get()->DecorateIconButton(
-      this, *icon_, toggled_, GetDefaultSizeOfVectorIcon(*icon_));
-}
 
 UnifiedSliderView::UnifiedSliderView(views::Button::PressedCallback callback,
                                      UnifiedSliderListener* listener,

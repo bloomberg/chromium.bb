@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import * as wrappedVolumeManagerCommon from '../../common/js/volume_manager_types.m.js'; const {VolumeManagerCommon} = wrappedVolumeManagerCommon;
-// #import {FakeEntryImpl} from '../../common/js/files_app_entry_types.m.js';
-// #import {str} from '../../common/js/util.m.js';
-// #import {FilesAppEntry, FakeEntry} from '../../externs/files_app_entry_interfaces.m.js';
-// #import {VolumeInfo} from '../../externs/volume_info.m.js';
-// #import {assert} from 'chrome://resources/js/assert.m.js';
-// clang-format on
+import {assert} from 'chrome://resources/js/assert.m.js';
+
+import {FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
+import {str} from '../../common/js/util.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {FakeEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
+import {VolumeInfo} from '../../externs/volume_info.js';
 
 /**
  * Represents each volume, such as "drive", "download directory", each "USB
@@ -18,7 +17,7 @@
  * @final
  * @implements {VolumeInfo}
  */
-/* #export */ class VolumeInfoImpl {
+export class VolumeInfoImpl {
   /**
    * @param {VolumeManagerCommon.VolumeType} volumeType The type of the volume.
    * @param {string} volumeId ID of the volume.
@@ -26,7 +25,7 @@
    * @param {(string|undefined)} error The error if an error is found.
    * @param {(string|undefined)} deviceType The type of device
    *     ('usb'|'sd'|'optical'|'mobile'|'unknown') (as defined in
-   *     chromeos/disks/disk_mount_manager.cc). Can be undefined.
+   *     ash/components/disks/disk_mount_manager.cc). Can be undefined.
    * @param {(string|undefined)} devicePath Identifier of the device that the
    *     volume belongs to. Can be undefined.
    * @param {boolean} isReadOnly True if the volume is read only.

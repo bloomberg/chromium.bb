@@ -22,17 +22,54 @@ source_set("core") {
   sources = [
     "cast_message_port_impl.cc",
     "cast_message_port_impl.h",
-    "config_conversions.cc",
-    "config_conversions.h",
     "message_serialization.cc",
     "message_serialization.h",
   ]
 }
 
+source_set("receiver_session_public") {
+  deps = [
+    "//base",
+    "//mojo/public/cpp/system",
+  ]
+  public_deps = [
+    "//components/cast_streaming/public/mojom",
+    "//third_party/openscreen/src/cast/streaming:receiver",
+  ]
+  visibility = [ ":*" ]
+  sources = [ "public/receiver_session.h" ]
+}
+
 source_set("receiver_session") {
   deps = [
     ":core",
+    ":network_context",
+    ":receiver_session_public",
+    ":streaming_session",
     "//base",
+    "//media",
+    "//media/mojo/common",
+    "//media/mojo/mojom",
+    "//mojo/public/cpp/system",
+  ]
+  public_deps = [
+    "//components/cast_streaming/public/mojom",
+    "//third_party/openscreen/src/cast/streaming:receiver",
+  ]
+  visibility = [ ":*" ]
+  sources = [
+    "receiver_session_impl.cc",
+    "receiver_session_impl.h",
+  ]
+}
+
+source_set("streaming_session") {
+  deps = [
+    ":core",
+    ":receiver_session_public",
+    "//base",
+    "//components/cast_streaming/public",
+    "//components/cast_streaming/public:config_conversions",
     "//components/openscreen_platform",
     "//media",
     "//media/mojo/common",
@@ -44,9 +81,9 @@ source_set("receiver_session") {
   ]
   public_deps = [ "//components/cast/message_port" ]
   visibility = [ ":*" ]
-  public = [ "public/cast_streaming_session.h" ]
   sources = [
     "cast_streaming_session.cc",
+    "cast_streaming_session.h",
     "stream_consumer.cc",
     "stream_consumer.h",
   ]
@@ -62,13 +99,33 @@ source_set("network_context") {
   sources = [ "network_context_getter.cc" ]
 }
 
-# TODO(crbug.com/1208194): Also move cast_streaming_session_client here from
-# //fuchsia.
+source_set("renderer_controls") {
+  public_deps = [
+    "//base",
+    "//components/cast_streaming/public:remoting_utils",
+    "//components/cast_streaming/public/mojom",
+    "//media",
+    "//media/mojo/common",
+    "//media/mojo/mojom",
+    "//mojo/public/cpp/system",
+    "//third_party/openscreen/src/cast/streaming:receiver",
+  ]
+  visibility = [ ":*" ]
+  sources = [
+    "playback_command_dispatcher.cc",
+    "playback_command_dispatcher.h",
+    "remoting_session_client.h",
+    "rpc_call_translator.cc",
+    "rpc_call_translator.h",
+  ]
+}
+
 source_set("browser") {
   public_deps = [
     ":network_context",
-    ":receiver_session",
+    ":receiver_session_public",
   ]
+  deps = [ ":receiver_session" ]
 }
 
 # TODO(crbug.com/1207715): Move to /tests directory.
@@ -76,6 +133,8 @@ source_set("test_sender") {
   testonly = true
   deps = [
     ":core",
+    "//components/cast_streaming/public",
+    "//components/cast_streaming/public:config_conversions",
     "//media/mojo/common",
     "//media/mojo/mojom",
     "//mojo/public/cpp/system",
@@ -101,8 +160,10 @@ source_set("test_sender") {
 source_set("test_receiver") {
   testonly = true
   deps = [
-    ":receiver_session",
+    ":streaming_session",
     "//base",
+    "//components/cast_streaming/public",
+    "//components/cast_streaming/public:config_conversions",
     "//components/openscreen_platform",
     "//media",
     "//media/mojo/common",
@@ -123,7 +184,7 @@ source_set("test_receiver") {
 test("e2e_tests") {
   deps = [
     ":core",
-    ":receiver_session",
+    ":streaming_session",
     ":test_receiver",
     ":test_sender",
     "//base/test:test_support",
@@ -145,6 +206,7 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     ":core",
+    ":renderer_controls",
     "//base",
     "//base/test:test_support",
     "//components/cast/message_port:test_message_port_receiver",

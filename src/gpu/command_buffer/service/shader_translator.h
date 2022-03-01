@@ -8,7 +8,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "gpu/gpu_gles2_export.h"
@@ -35,6 +34,10 @@ class ShaderTranslatorInterface
     : public base::RefCounted<ShaderTranslatorInterface> {
  public:
   ShaderTranslatorInterface() = default;
+
+  ShaderTranslatorInterface(const ShaderTranslatorInterface&) = delete;
+  ShaderTranslatorInterface& operator=(const ShaderTranslatorInterface&) =
+      delete;
 
   // Initializes the translator.
   // Must be called once before using the translator object.
@@ -70,7 +73,6 @@ class ShaderTranslatorInterface
 
  private:
   friend class base::RefCounted<ShaderTranslatorInterface>;
-  DISALLOW_COPY_AND_ASSIGN(ShaderTranslatorInterface);
 };
 
 // Implementation of ShaderTranslatorInterface
@@ -79,12 +81,13 @@ class GPU_GLES2_EXPORT ShaderTranslator : public ShaderTranslatorInterface {
   class DestructionObserver {
    public:
     DestructionObserver();
+
+    DestructionObserver(const DestructionObserver&) = delete;
+    DestructionObserver& operator=(const DestructionObserver&) = delete;
+
     virtual ~DestructionObserver();
 
     virtual void OnDestruct(ShaderTranslator* translator) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(DestructionObserver);
   };
 
   ShaderTranslator();
@@ -134,4 +137,3 @@ class GPU_GLES2_EXPORT ShaderTranslator : public ShaderTranslatorInterface {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_SHADER_TRANSLATOR_H_
-

@@ -32,9 +32,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_H_
 
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_double.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -42,6 +41,8 @@
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
 #include "third_party/blink/renderer/core/timing/performance_navigation_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_paint_timing.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_deque.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -73,14 +74,12 @@ class PerformanceMeasure;
 class PerformanceNavigation;
 class PerformanceObserver;
 class PerformanceTiming;
-class ProfilerInitOptions;
 class ResourceResponse;
 class ResourceTimingInfo;
 class ScriptPromise;
 class ScriptState;
 class ScriptValue;
 class SecurityOrigin;
-class StringOrPerformanceMeasureOptions;
 class UserTiming;
 class V8ObjectBuilder;
 class V8UnionDoubleOrString;
@@ -145,9 +144,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   DOMHighResTimeStamp timeOrigin() const;
 
   // Internal getter method for the time origin value.
-  double GetTimeOrigin() const {
-    return time_origin_.since_origin().InSecondsF();
-  }
+  base::TimeTicks GetTimeOriginInternal() const { return time_origin_; }
 
   PerformanceEntryVector getEntries();
   // Get BufferedEntriesByType will return all entries in the buffer regardless
@@ -268,42 +265,21 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
                               const AtomicString& measure_name,
                               ExceptionState&);
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   PerformanceMeasure* measure(
       ScriptState* script_state,
       const AtomicString& measure_name,
       const V8UnionPerformanceMeasureOptionsOrString* start_or_options,
       ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  PerformanceMeasure* measure(
-      ScriptState*,
-      const AtomicString& measure_name,
-      const StringOrPerformanceMeasureOptions& start_or_options,
-      ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   PerformanceMeasure* measure(
       ScriptState* script_state,
       const AtomicString& measure_name,
       const V8UnionPerformanceMeasureOptionsOrString* start_or_options,
       const String& end,
       ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  PerformanceMeasure* measure(
-      ScriptState*,
-      const AtomicString& measure_name,
-      const StringOrPerformanceMeasureOptions& start_or_options,
-      const String& end,
-      ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   void clearMeasures(const AtomicString& measure_name);
   void clearMeasures() { return clearMeasures(AtomicString()); }
-
-  ScriptPromise profile(ScriptState*,
-                        const ProfilerInitOptions*,
-                        ExceptionState&);
 
   void UnregisterPerformanceObserver(PerformanceObserver&);
   void RegisterPerformanceObserver(PerformanceObserver&);
@@ -392,6 +368,10 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   void DeliverObservationsTimerFired(TimerBase*);
 
+  // Returns the number of dropped entries for the given integer representing a
+  // mask of entry types.
+  int GetDroppedEntriesForTypes(PerformanceEntryTypeMask);
+
   virtual void BuildJSONValue(V8ObjectBuilder&) const;
 
   PerformanceEntryVector resource_timing_buffer_;
@@ -429,8 +409,15 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   HeapTaskRunnerTimer<Performance> deliver_observations_timer_;
   HeapTaskRunnerTimer<Performance> resource_timing_buffer_full_timer_;
 
+  // A map from entry types to the number of dropped entries of that given entry
+  // type. Entries are dropped when the buffer from that entry type is full.
+  WTF::HashMap<PerformanceEntry::EntryType, int> dropped_entries_count_map_;
+
   // See crbug.com/1181774.
   Member<BackgroundTracingHelper> background_tracing_helper_;
+
+  // Running counter for LongTask observations.
+  size_t long_task_counter_ = 0;
 };
 
 }  // namespace blink

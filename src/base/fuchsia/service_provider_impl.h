@@ -11,11 +11,11 @@
 #include <lib/fidl/cpp/interface_handle.h>
 #include <lib/sys/cpp/component_context.h>
 #include <lib/zx/channel.h>
+#include <memory>
 #include <string>
 
 #include "base/base_export.h"
 #include "base/callback.h"
-#include "base/macros.h"
 
 namespace sys {
 class OutgoingDirectory;
@@ -36,6 +36,10 @@ class BASE_EXPORT ServiceProviderImpl : public ::fuchsia::sys::ServiceProvider {
 
   explicit ServiceProviderImpl(
       fidl::InterfaceHandle<::fuchsia::io::Directory> service_directory);
+
+  ServiceProviderImpl(const ServiceProviderImpl&) = delete;
+  ServiceProviderImpl& operator=(const ServiceProviderImpl&) = delete;
+
   ~ServiceProviderImpl() override;
 
   // Binds a |request| from a new client to be serviced by this ServiceProvider.
@@ -59,8 +63,6 @@ class BASE_EXPORT ServiceProviderImpl : public ::fuchsia::sys::ServiceProvider {
   const sys::ServiceDirectory directory_;
   fidl::BindingSet<::fuchsia::sys::ServiceProvider> bindings_;
   base::OnceClosure on_last_client_disconnected_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceProviderImpl);
 };
 
 }  // namespace base

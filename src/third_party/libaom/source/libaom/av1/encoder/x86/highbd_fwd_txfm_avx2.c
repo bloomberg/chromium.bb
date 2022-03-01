@@ -1335,7 +1335,7 @@ void av1_fwd_txfm2d_8x16_avx2(const int16_t *input, int32_t *coeff, int stride,
   row_txfm(in, out, bit, 2, 2);
   fwd_txfm_transpose_8x8_avx2(out, in, 2, 1);
   fwd_txfm_transpose_8x8_avx2(&out[1], &in[8], 2, 1);
-  av1_round_shift_rect_array_32_avx2(in, in, 16, -shift[2], NewSqrt2);
+  round_shift_rect_array_32_avx2(in, in, 16, -shift[2], NewSqrt2);
   store_buffer_avx2(in, coeff, 8, 16);
   (void)bd;
 }
@@ -1396,7 +1396,7 @@ void av1_fwd_txfm2d_16x8_avx2(const int16_t *input, int32_t *coeff, int stride,
   row_txfm(in, out, bit, 1, 1);
   fwd_txfm_transpose_8x8_avx2(out, in, 1, 2);
   fwd_txfm_transpose_8x8_avx2(&out[8], &in[1], 1, 2);
-  av1_round_shift_rect_array_32_avx2(in, in, 16, -shift[2], NewSqrt2);
+  round_shift_rect_array_32_avx2(in, in, 16, -shift[2], NewSqrt2);
   store_buffer_avx2(in, coeff, 8, 16);
   (void)bd;
 }

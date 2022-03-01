@@ -48,10 +48,9 @@ bool IsNegativeResponseForType(const MdnsRecord& record, DnsType dns_type) {
   }
 
   const auto& nsec_types = absl::get<NsecRecordRdata>(record.rdata()).types();
-  return std::find_if(nsec_types.begin(), nsec_types.end(),
-                      [dns_type](DnsType type) {
-                        return type == dns_type || type == DnsType::kANY;
-                      }) != nsec_types.end();
+  return ContainsIf(nsec_types, [dns_type](DnsType type) {
+    return type == dns_type || type == DnsType::kANY;
+  });
 }
 
 // RFC 6762 Section 10.1
@@ -90,8 +89,7 @@ bool MdnsTracker::AddAdjacentNode(const MdnsTracker* node) const {
   OSP_DCHECK(node);
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
-  auto it = std::find(adjacent_nodes_.begin(), adjacent_nodes_.end(), node);
-  if (it != adjacent_nodes_.end()) {
+  if (Contains(adjacent_nodes_, node)) {
     return false;
   }
 
@@ -115,9 +113,7 @@ bool MdnsTracker::RemoveAdjacentNode(const MdnsTracker* node) const {
 }
 
 void MdnsTracker::AddReverseAdjacency(const MdnsTracker* node) const {
-  OSP_DCHECK(std::find(adjacent_nodes_.begin(), adjacent_nodes_.end(), node) ==
-             adjacent_nodes_.end());
-
+  OSP_DCHECK(!Contains(adjacent_nodes_, node));
   adjacent_nodes_.push_back(node);
 }
 

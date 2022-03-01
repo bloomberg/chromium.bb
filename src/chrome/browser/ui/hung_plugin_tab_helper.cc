@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "chrome/browser/hang_monitor/hang_crash_dump.h"
@@ -21,36 +21,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/plugin_service.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
-
-namespace {
-
-// Called on the process thread to actually kill the plugin with the given child
-// ID. We specifically don't want this to be a member function since if the
-// user chooses to kill the plugin, we want to kill it even if they close the
-// tab first.
-//
-// Be careful with the child_id. It's supplied by the renderer which might be
-// hacked.
-void KillPluginOnProcessThread(int child_id) {
-  content::BrowserChildProcessHostIterator iter(
-      content::PROCESS_TYPE_PPAPI_PLUGIN);
-  while (!iter.Done()) {
-    const content::ChildProcessData& data = iter.GetData();
-    if (data.id == child_id) {
-      CrashDumpHungChildProcess(data.GetProcess().Handle());
-      data.GetProcess().Terminate(content::RESULT_CODE_HUNG, false);
-      return;
-    }
-    ++iter;
-  }
-  // Ignore the case where we didn't find the plugin, it may have terminated
-  // before this function could run.
-}
-
-}  // namespace
 
 // HungPluginTabHelper::PluginState -------------------------------------------
 
@@ -73,11 +45,11 @@ struct HungPluginTabHelper::PluginState {
   std::u16string name;
 
   // Possibly-null if we're not showing an infobar right now.
-  infobars::InfoBar* infobar = nullptr;
+  raw_ptr<infobars::InfoBar> infobar = nullptr;
 
   // Time to delay before re-showing the infobar for a hung plugin. This is
   // increased each time the user cancels it.
-  base::TimeDelta next_reshow_delay = base::TimeDelta::FromSeconds(10);
+  base::TimeDelta next_reshow_delay = base::Seconds(10);
 
   // Handles calling the helper when the infobar should be re-shown.
   base::OneShotTimer timer;
@@ -167,16 +139,26 @@ void HungPluginTabHelper::OnManagerShuttingDown(
 }
 
 void HungPluginTabHelper::KillPlugin(int child_id) {
-  if (base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
-    KillPluginOnProcessThread(child_id);
-  } else {
-    content::GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE, base::BindOnce(&KillPluginOnProcessThread, child_id));
+  // Be careful with the child_id. It's supplied by the renderer which might be
+  // hacked.
+  content::BrowserChildProcessHostIterator iter(
+      content::PROCESS_TYPE_PPAPI_PLUGIN);
+  while (!iter.Done()) {
+    const content::ChildProcessData& data = iter.GetData();
+    if (data.id == child_id) {
+      CrashDumpHungChildProcess(data.GetProcess().Handle());
+      data.GetProcess().Terminate(content::RESULT_CODE_HUNG, false);
+      return;
+    }
+    ++iter;
   }
+  // Ignore the case where we didn't find the plugin, it may have terminated
+  // before this function could run.
 }
 
 HungPluginTabHelper::HungPluginTabHelper(content::WebContents* contents)
-    : content::WebContentsObserver(contents) {}
+    : content::WebContentsObserver(contents),
+      content::WebContentsUserData<HungPluginTabHelper>(*contents) {}
 
 void HungPluginTabHelper::OnReshowTimer(int child_id) {
   // The timer should have been cancelled if the record isn't in our map
@@ -198,4 +180,4 @@ void HungPluginTabHelper::ShowBar(int child_id, PluginState* state) {
                                                      child_id, state->name);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(HungPluginTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(HungPluginTabHelper);

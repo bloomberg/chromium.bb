@@ -16,8 +16,8 @@
 #include "core/fxcodec/fx_codec.h"
 #include "core/fxge/dib/cfx_cmyk_to_srgb.h"
 #include "third_party/base/check.h"
+#include "third_party/base/cxx17_backports.h"
 #include "third_party/base/notreached.h"
-#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -27,7 +27,7 @@ float NormalizeChannel(float fVal) {
 
 }  // namespace
 
-CPDF_DeviceCS::CPDF_DeviceCS(Family family) : CPDF_ColorSpace(nullptr, family) {
+CPDF_DeviceCS::CPDF_DeviceCS(Family family) : CPDF_ColorSpace(family) {
   DCHECK(family == Family::kDeviceGray || family == Family::kDeviceRGB ||
          family == Family::kDeviceCMYK);
   SetComponentsForStockCS(ComponentsForFamily(GetFamily()));
@@ -60,7 +60,7 @@ bool CPDF_DeviceCS::GetRGB(pdfium::span<const float> pBuf,
       *B = NormalizeChannel(pBuf[2]);
       return true;
     case Family::kDeviceCMYK:
-      if (m_dwStdConversion) {
+      if (IsStdConversionEnabled()) {
         float k = pBuf[3];
         *R = 1.0f - std::min(1.0f, pBuf[0] + k);
         *G = 1.0f - std::min(1.0f, pBuf[1] + k);
@@ -77,18 +77,23 @@ bool CPDF_DeviceCS::GetRGB(pdfium::span<const float> pBuf,
   }
 }
 
-void CPDF_DeviceCS::TranslateImageLine(uint8_t* pDestBuf,
-                                       const uint8_t* pSrcBuf,
+void CPDF_DeviceCS::TranslateImageLine(pdfium::span<uint8_t> dest_span,
+                                       pdfium::span<const uint8_t> src_span,
                                        int pixels,
                                        int image_width,
                                        int image_height,
                                        bool bTransMask) const {
+  uint8_t* pDestBuf = dest_span.data();
+  const uint8_t* pSrcBuf = src_span.data();
   switch (m_Family) {
     case Family::kDeviceGray:
       for (int i = 0; i < pixels; i++) {
-        *pDestBuf++ = pSrcBuf[i];
-        *pDestBuf++ = pSrcBuf[i];
-        *pDestBuf++ = pSrcBuf[i];
+        // Compiler can not conclude that src/dest don't overlap, avoid
+        // duplicate loads.
+        const uint8_t pix = pSrcBuf[i];
+        *pDestBuf++ = pix;
+        *pDestBuf++ = pix;
+        *pDestBuf++ = pix;
       }
       break;
     case Family::kDeviceRGB:
@@ -97,27 +102,41 @@ void CPDF_DeviceCS::TranslateImageLine(uint8_t* pDestBuf,
     case Family::kDeviceCMYK:
       if (bTransMask) {
         for (int i = 0; i < pixels; i++) {
-          int k = 255 - pSrcBuf[3];
-          pDestBuf[0] = ((255 - pSrcBuf[0]) * k) / 255;
-          pDestBuf[1] = ((255 - pSrcBuf[1]) * k) / 255;
-          pDestBuf[2] = ((255 - pSrcBuf[2]) * k) / 255;
+          // Compiler can't conclude src/dest don't overlap, avoid interleaved
+          // loads and stores.
+          const uint8_t s0 = pSrcBuf[0];
+          const uint8_t s1 = pSrcBuf[1];
+          const uint8_t s2 = pSrcBuf[2];
+          const int k = 255 - pSrcBuf[3];
+          pDestBuf[0] = ((255 - s0) * k) / 255;
+          pDestBuf[1] = ((255 - s1) * k) / 255;
+          pDestBuf[2] = ((255 - s2) * k) / 255;
           pDestBuf += 3;
           pSrcBuf += 4;
         }
       } else {
-        for (int i = 0; i < pixels; i++) {
-          if (m_dwStdConversion) {
-            uint8_t k = pSrcBuf[3];
-            pDestBuf[2] = 255 - std::min(255, pSrcBuf[0] + k);
-            pDestBuf[1] = 255 - std::min(255, pSrcBuf[1] + k);
-            pDestBuf[0] = 255 - std::min(255, pSrcBuf[2] + k);
-          } else {
+        if (IsStdConversionEnabled()) {
+          for (int i = 0; i < pixels; i++) {
+            // Compiler can't conclude src/dest don't overlap, avoid
+            // interleaved loads and stores.
+            const uint8_t s0 = pSrcBuf[0];
+            const uint8_t s1 = pSrcBuf[1];
+            const uint8_t s2 = pSrcBuf[2];
+            const uint8_t k = pSrcBuf[3];
+            pDestBuf[2] = 255 - std::min(255, s0 + k);
+            pDestBuf[1] = 255 - std::min(255, s1 + k);
+            pDestBuf[0] = 255 - std::min(255, s2 + k);
+            pSrcBuf += 4;
+            pDestBuf += 3;
+          }
+        } else {
+          for (int i = 0; i < pixels; i++) {
             std::tie(pDestBuf[2], pDestBuf[1], pDestBuf[0]) =
                 AdobeCMYK_to_sRGB1(pSrcBuf[0], pSrcBuf[1], pSrcBuf[2],
                                    pSrcBuf[3]);
+            pSrcBuf += 4;
+            pDestBuf += 3;
           }
-          pSrcBuf += 4;
-          pDestBuf += 3;
         }
       }
       break;

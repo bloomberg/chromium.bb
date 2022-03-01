@@ -42,7 +42,8 @@ content::WebContents* ContentInfoBarManager::WebContentsFromInfoBar(
 }
 
 ContentInfoBarManager::ContentInfoBarManager(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents), ignore_next_reload_(false) {
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<ContentInfoBarManager>(*web_contents) {
   DCHECK(web_contents);
   // Infobar animations cause viewport resizes. Disable them for automated
   // tests, since they could lead to flakiness.
@@ -61,13 +62,14 @@ int ContentInfoBarManager::GetActiveEntryID() {
   return active_entry ? active_entry->GetUniqueID() : 0;
 }
 
-void ContentInfoBarManager::RenderProcessGone(base::TerminationStatus status) {
+void ContentInfoBarManager::PrimaryMainFrameRenderProcessGone(
+    base::TerminationStatus status) {
   RemoveAllInfoBars(true);
 }
 
 void ContentInfoBarManager::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
   }
@@ -112,6 +114,6 @@ void ContentInfoBarManager::OpenURL(const GURL& url,
                              ui::PAGE_TRANSITION_LINK, false));
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ContentInfoBarManager)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ContentInfoBarManager);
 
 }  // namespace infobars

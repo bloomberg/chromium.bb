@@ -71,13 +71,13 @@ describe('Path Behavior', () => {
         expect(cmds).toBeTruthy();
         // 1 move, 4 lines, 1 close
         // each element in cmds is an array, with index 0 being the verb, and the rest being args
-        expect(cmds.length).toBe(6);
-        expect(cmds).toEqual([[CanvasKit.MOVE_VERB, 205, 5],
-                              [CanvasKit.LINE_VERB, 795, 5],
-                              [CanvasKit.LINE_VERB, 595, 295],
-                              [CanvasKit.LINE_VERB, 5, 295],
-                              [CanvasKit.LINE_VERB, 205, 5],
-                              [CanvasKit.CLOSE_VERB]]);
+        expect(cmds).toEqual(Float32Array.of(
+            CanvasKit.MOVE_VERB, 205, 5,
+            CanvasKit.LINE_VERB, 795, 5,
+            CanvasKit.LINE_VERB, 595, 295,
+            CanvasKit.LINE_VERB, 5, 295,
+            CanvasKit.LINE_VERB, 205, 5,
+            CanvasKit.CLOSE_VERB));
         path.delete();
     });
 
@@ -92,23 +92,24 @@ describe('Path Behavior', () => {
         const path = CanvasKit.Path.MakeFromOp(pathOne, pathTwo, CanvasKit.PathOp.Intersect);
         const cmds = path.toCmds();
         expect(cmds).toBeTruthy();
-        expect(cmds).toEqual([[CanvasKit.MOVE_VERB, 15, 15],
-            [CanvasKit.LINE_VERB, 20, 15],
-            [CanvasKit.LINE_VERB, 20, 20],
-            [CanvasKit.LINE_VERB, 15, 20],
-            [CanvasKit.CLOSE_VERB]]);
+        expect(cmds).toEqual(Float32Array.of(
+            CanvasKit.MOVE_VERB, 15, 15,
+            CanvasKit.LINE_VERB, 20, 15,
+            CanvasKit.LINE_VERB, 20, 20,
+            CanvasKit.LINE_VERB, 15, 20,
+            CanvasKit.CLOSE_VERB));
         path.delete();
         pathOne.delete();
         pathTwo.delete();
     });
 
     it('can create an SVG string from a path', () => {
-        const cmds = [[CanvasKit.MOVE_VERB, 205, 5],
-                   [CanvasKit.LINE_VERB, 795, 5],
-                   [CanvasKit.LINE_VERB, 595, 295],
-                   [CanvasKit.LINE_VERB, 5, 295],
-                   [CanvasKit.LINE_VERB, 205, 5],
-                   [CanvasKit.CLOSE_VERB]];
+        const cmds = [CanvasKit.MOVE_VERB, 205, 5,
+                   CanvasKit.LINE_VERB, 795, 5,
+                   CanvasKit.LINE_VERB, 595, 295,
+                   CanvasKit.LINE_VERB, 5, 295,
+                   CanvasKit.LINE_VERB, 205, 5,
+                   CanvasKit.CLOSE_VERB];
         const path = CanvasKit.Path.MakeFromCmds(cmds);
 
         const svgStr = path.toSVGString();
@@ -138,25 +139,25 @@ describe('Path Behavior', () => {
         let path = CanvasKit.Path.MakeFromVerbsPointsWeights(mVerbs, mPoints, mWeights);
 
         let cmds = path.toCmds();
-        expect(cmds).toEqual([
-            [CanvasKit.MOVE_VERB, 1, 2],
-            [CanvasKit.LINE_VERB, 3, 4],
-            [CanvasKit.QUAD_VERB, 5, 6, 7, 8],
-            [CanvasKit.CONIC_VERB, 9, 10, 11, 12, 117],
-            [CanvasKit.CUBIC_VERB, 13, 14, 15, 16, 17, 18],
-            [CanvasKit.CLOSE_VERB],
-        ]);
+        expect(cmds).toEqual(Float32Array.of(
+            CanvasKit.MOVE_VERB, 1, 2,
+            CanvasKit.LINE_VERB, 3, 4,
+            CanvasKit.QUAD_VERB, 5, 6, 7, 8,
+            CanvasKit.CONIC_VERB, 9, 10, 11, 12, 117,
+            CanvasKit.CUBIC_VERB, 13, 14, 15, 16, 17, 18,
+            CanvasKit.CLOSE_VERB,
+        ));
         path.delete();
 
         // If given insufficient points, it stops early (but doesn't read out of bounds).
         path = CanvasKit.Path.MakeFromVerbsPointsWeights(mVerbs, mPoints.subarray(0, 10), mWeights);
 
         cmds = path.toCmds();
-        expect(cmds).toEqual([
-            [CanvasKit.MOVE_VERB, 1, 2],
-            [CanvasKit.LINE_VERB, 3, 4],
-            [CanvasKit.QUAD_VERB, 5, 6, 7, 8],
-        ]);
+        expect(cmds).toEqual(Float32Array.of(
+            CanvasKit.MOVE_VERB, 1, 2,
+            CanvasKit.LINE_VERB, 3, 4,
+            CanvasKit.QUAD_VERB, 5, 6, 7, 8,
+        ));
         path.delete();
         CanvasKit.Free(mVerbs);
         CanvasKit.Free(mPoints);
@@ -168,10 +169,10 @@ describe('Path Behavior', () => {
           [CanvasKit.MOVE_VERB, CanvasKit.LINE_VERB],
           [1,2, 3,4]);
         let cmds = path.toCmds();
-        expect(cmds).toEqual([
-            [CanvasKit.MOVE_VERB, 1, 2],
-            [CanvasKit.LINE_VERB, 3, 4]
-        ]);
+        expect(cmds).toEqual(Float32Array.of(
+            CanvasKit.MOVE_VERB, 1, 2,
+            CanvasKit.LINE_VERB, 3, 4
+        ));
 
         path.addVerbsPointsWeights(
           [CanvasKit.QUAD_VERB, CanvasKit.CLOSE_VERB],
@@ -179,12 +180,12 @@ describe('Path Behavior', () => {
         );
 
         cmds = path.toCmds();
-        expect(cmds).toEqual([
-            [CanvasKit.MOVE_VERB, 1, 2],
-            [CanvasKit.LINE_VERB, 3, 4],
-            [CanvasKit.QUAD_VERB, 5, 6, 7, 8],
-            [CanvasKit.CLOSE_VERB]
-        ]);
+        expect(cmds).toEqual(Float32Array.of(
+            CanvasKit.MOVE_VERB, 1, 2,
+            CanvasKit.LINE_VERB, 3, 4,
+            CanvasKit.QUAD_VERB, 5, 6, 7, 8,
+            CanvasKit.CLOSE_VERB
+        ));
         path.delete();
     });
 
@@ -212,20 +213,20 @@ describe('Path Behavior', () => {
         path.addVerbsPointsWeights(mVerbs, mPoints, mWeights);
 
         let cmds = path.toCmds();
-        expect(cmds).toEqual([
-            [CanvasKit.MOVE_VERB, 0, 0],
-            [CanvasKit.LINE_VERB, 77, 88],
-            [CanvasKit.MOVE_VERB, 1, 2],
-            [CanvasKit.LINE_VERB, 3, 4],
-            [CanvasKit.QUAD_VERB, 5, 6, 7, 8],
-            [CanvasKit.CONIC_VERB, 9, 10, 11, 12, 117],
-            [CanvasKit.CUBIC_VERB, 13, 14, 15, 16, 17, 18],
-            [CanvasKit.CLOSE_VERB],
-        ]);
+        expect(cmds).toEqual(Float32Array.of(
+            CanvasKit.MOVE_VERB, 0, 0,
+            CanvasKit.LINE_VERB, 77, 88,
+            CanvasKit.MOVE_VERB, 1, 2,
+            CanvasKit.LINE_VERB, 3, 4,
+            CanvasKit.QUAD_VERB, 5, 6, 7, 8,
+            CanvasKit.CONIC_VERB, 9, 10, 11, 12, 117,
+            CanvasKit.CUBIC_VERB, 13, 14, 15, 16, 17, 18,
+            CanvasKit.CLOSE_VERB,
+        ));
 
         path.rewind();
         cmds = path.toCmds();
-        expect(cmds).toEqual([]);
+        expect(cmds).toEqual(new Float32Array(0));
 
         path.delete();
         CanvasKit.Free(mVerbs);
@@ -486,5 +487,94 @@ describe('Path Behavior', () => {
 
         path.delete();
         paint.delete();
+    });
+
+    gm('winding_example', (canvas) => {
+        // Inspired by https://fiddle.skia.org/c/@Path_FillType_a
+        const path = new CanvasKit.Path();
+        // Draw overlapping rects on top
+        path.addRect(CanvasKit.LTRBRect(10, 10, 30, 30), false);
+        path.addRect(CanvasKit.LTRBRect(20, 20, 40, 40), false);
+        // Draw overlapping rects on bottom, with different direction lines.
+        path.addRect(CanvasKit.LTRBRect(10, 60, 30, 80), false);
+        path.addRect(CanvasKit.LTRBRect(20, 70, 40, 90), true);
+
+        expect(path.getFillType()).toEqual(CanvasKit.FillType.Winding);
+
+        // Draw the two rectangles on the left side.
+        const paint = new CanvasKit.Paint();
+        paint.setStyle(CanvasKit.PaintStyle.Stroke);
+        canvas.drawPath(path, paint);
+
+        const clipRect = CanvasKit.LTRBRect(0, 0, 51, 100);
+        paint.setStyle(CanvasKit.PaintStyle.Fill);
+
+        for (const fillType of [CanvasKit.FillType.Winding, CanvasKit.FillType.EvenOdd]) {
+            canvas.translate(51, 0);
+            canvas.save();
+            canvas.clipRect(clipRect, CanvasKit.ClipOp.Intersect, false);
+            path.setFillType(fillType);
+            canvas.drawPath(path, paint);
+            canvas.restore();
+        }
+
+        path.delete();
+        paint.delete();
+    });
+
+    gm('as_winding', (canvas) => {
+        const evenOddPath = new CanvasKit.Path();
+        // Draw overlapping rects
+        evenOddPath.addRect(CanvasKit.LTRBRect(10, 10, 70, 70), false);
+        evenOddPath.addRect(CanvasKit.LTRBRect(30, 30, 50, 50), false);
+        evenOddPath.setFillType(CanvasKit.FillType.EvenOdd);
+
+        const evenOddCmds = evenOddPath.toCmds();
+        expect(evenOddCmds).toEqual(Float32Array.of(
+          CanvasKit.MOVE_VERB, 10, 10,
+          CanvasKit.LINE_VERB, 70, 10,
+          CanvasKit.LINE_VERB, 70, 70,
+          CanvasKit.LINE_VERB, 10, 70,
+          CanvasKit.CLOSE_VERB,
+          CanvasKit.MOVE_VERB, 30, 30, // This contour is drawn
+          CanvasKit.LINE_VERB, 50, 30, // clockwise, as specified.
+          CanvasKit.LINE_VERB, 50, 50,
+          CanvasKit.LINE_VERB, 30, 50,
+          CanvasKit.CLOSE_VERB
+        ));
+
+        const windingPath = evenOddPath.makeAsWinding();
+
+        expect(windingPath.getFillType()).toBe(CanvasKit.FillType.Winding);
+        const windingCmds = windingPath.toCmds();
+        expect(windingCmds).toEqual(Float32Array.of(
+          CanvasKit.MOVE_VERB, 10, 10,
+          CanvasKit.LINE_VERB, 70, 10,
+          CanvasKit.LINE_VERB, 70, 70,
+          CanvasKit.LINE_VERB, 10, 70,
+          CanvasKit.CLOSE_VERB,
+          CanvasKit.MOVE_VERB, 30, 50, // This contour has been
+          CanvasKit.LINE_VERB, 50, 50, // re-drawn counter-clockwise
+          CanvasKit.LINE_VERB, 50, 30, // so that it covers the same
+          CanvasKit.LINE_VERB, 30, 30, // area, but with the winding fill type.
+          CanvasKit.CLOSE_VERB
+        ));
+
+        const paint = new CanvasKit.Paint();
+        paint.setStyle(CanvasKit.PaintStyle.Fill);
+        const font = new CanvasKit.Font(null, 20);
+
+        canvas.drawText('Original path (even odd)', 5, 20, paint, font);
+        canvas.translate(0, 50);
+        canvas.drawPath(evenOddPath, paint);
+
+        canvas.translate(300, 0);
+        canvas.drawPath(windingPath, paint);
+
+        canvas.translate(0, -50);
+        canvas.drawText('makeAsWinding path', 5, 20, paint, font);
+
+        evenOddPath.delete();
+        windingPath.delete();
     });
 });

@@ -6,7 +6,6 @@
 #define MEDIA_MIDI_MIDI_MANAGER_WINRT_H_
 
 #include <memory>
-#include <string>
 
 #include "base/thread_annotations.h"
 #include "media/midi/midi_manager.h"
@@ -21,6 +20,10 @@ class MIDI_EXPORT MidiManagerWinrt final : public MidiManager {
   class MidiOutPortManager;
 
   explicit MidiManagerWinrt(MidiService* service);
+
+  MidiManagerWinrt(const MidiManagerWinrt&) = delete;
+  MidiManagerWinrt& operator=(const MidiManagerWinrt&) = delete;
+
   ~MidiManagerWinrt() override;
 
   // MidiManager overrides:
@@ -59,8 +62,6 @@ class MIDI_EXPORT MidiManagerWinrt final : public MidiManager {
 
   // Incremented when a MidiPortManager is ready.
   uint8_t port_manager_ready_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(MidiManagerWinrt);
 };
 
 }  // namespace midi

@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/files/file_descriptor_watcher_posix.h"
 #include "base/files/scoped_file.h"
-#include "base/macros.h"
 #include "base/message_loop/message_pump_libevent.h"
 
 namespace chromecast {
@@ -19,6 +18,9 @@ namespace chromecast {
 class SystemTracer {
  public:
   static std::unique_ptr<SystemTracer> Create();
+
+  SystemTracer(const SystemTracer&) = delete;
+  SystemTracer& operator=(const SystemTracer&) = delete;
 
   virtual ~SystemTracer() = default;
 
@@ -45,9 +47,6 @@ class SystemTracer {
 
  protected:
   SystemTracer() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SystemTracer);
 };
 
 }  // namespace chromecast

@@ -30,7 +30,7 @@
 
 #define ROI_MAP 0
 
-#define zero(Dest) memset(&(Dest), 0, sizeof(Dest));
+#define zero(Dest) memset(&(Dest), 0, sizeof(Dest))
 
 static const char *exec_name;
 
@@ -687,14 +687,14 @@ int main(int argc, char **argv) {
             &raw,
             bit_depth == VPX_BITS_8 ? VPX_IMG_FMT_I420 : VPX_IMG_FMT_I42016,
             width, height, 32)) {
-      die("Failed to allocate image", width, height);
+      die("Failed to allocate image (%dx%d)", width, height);
     }
   }
 #else
   // Y4M reader has its own allocation.
   if (input_ctx.file_type != FILE_TYPE_Y4M) {
     if (!vpx_img_alloc(&raw, VPX_IMG_FMT_I420, width, height, 32)) {
-      die("Failed to allocate image", width, height);
+      die("Failed to allocate image (%dx%d)", width, height);
     }
   }
 #endif  // CONFIG_VP9_HIGHBITDEPTH
@@ -831,6 +831,7 @@ int main(int argc, char **argv) {
   } else if (strncmp(encoder->name, "vp9", 3) == 0) {
     vpx_svc_extra_cfg_t svc_params;
     memset(&svc_params, 0, sizeof(svc_params));
+    vpx_codec_control(&codec, VP9E_SET_POSTENCODE_DROP, 0);
     vpx_codec_control(&codec, VP9E_SET_DISABLE_OVERSHOOT_MAXQ_CBR, 0);
     vpx_codec_control(&codec, VP8E_SET_CPUUSED, speed);
     vpx_codec_control(&codec, VP9E_SET_AQ_MODE, 3);
@@ -930,6 +931,7 @@ int main(int argc, char **argv) {
           // Update for short-time encoding bitrate states, for moving window
           // of size rc->window, shifted by rc->window / 2.
           // Ignore first window segment, due to key frame.
+          if (rc.window_size == 0) rc.window_size = 15;
           if (frame_cnt > rc.window_size) {
             sum_bitrate += 0.001 * 8.0 * pkt->data.frame.sz * framerate;
             if (frame_cnt % rc.window_size == 0) {

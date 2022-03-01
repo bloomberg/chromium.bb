@@ -3,18 +3,18 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "chrome/browser/ash/printing/history/print_job_history_service_factory.h"
+#include "chrome/browser/ash/printing/history/test_print_job_history_service_observer.h"
 #include "chrome/browser/chromeos/extensions/printing_metrics/printing_metrics_api.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
-#include "chrome/browser/chromeos/printing/history/print_job_history_service_factory.h"
-#include "chrome/browser/chromeos/printing/history/test_print_job_history_service_observer.h"
 #include "chrome/browser/chromeos/printing/test_cups_print_job_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -43,15 +43,18 @@ std::unique_ptr<KeyedService> BuildTestCupsPrintJobManager(
 class PrintingMetricsApiTest : public ExtensionApiTest {
  public:
   PrintingMetricsApiTest() {}
+
+  PrintingMetricsApiTest(const PrintingMetricsApiTest&) = delete;
+  PrintingMetricsApiTest& operator=(const PrintingMetricsApiTest&) = delete;
+
   ~PrintingMetricsApiTest() override = default;
 
  protected:
   void SetUpInProcessBrowserTestFixture() override {
     // Init the user policy provider.
-    ON_CALL(policy_provider_, IsInitializationComplete(testing::_))
-        .WillByDefault(testing::Return(true));
-    ON_CALL(policy_provider_, IsFirstPolicyLoadComplete(testing::_))
-        .WillByDefault(testing::Return(true));
+    policy_provider_.SetDefaultReturns(
+        /*is_initialization_complete_return=*/true,
+        /*is_first_policy_load_complete_return=*/true);
     policy_provider_.SetAutoRefresh();
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
@@ -72,8 +75,6 @@ class PrintingMetricsApiTest : public ExtensionApiTest {
   }
 
   base::CallbackListSubscription create_services_subscription_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintingMetricsApiTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PrintingMetricsApiTest, GetPrintJobs) {
@@ -92,8 +93,8 @@ IN_PROC_BROWSER_TEST_F(PrintingMetricsApiTest, GetPrintJobs) {
   ASSERT_TRUE(extension);
 
   base::RunLoop run_loop;
-  chromeos::TestPrintJobHistoryServiceObserver observer(
-      chromeos::PrintJobHistoryServiceFactory::GetForBrowserContext(
+  ash::TestPrintJobHistoryServiceObserver observer(
+      ash::PrintJobHistoryServiceFactory::GetForBrowserContext(
           browser()->profile()),
       run_loop.QuitClosure());
 
@@ -113,8 +114,8 @@ IN_PROC_BROWSER_TEST_F(PrintingMetricsApiTest, GetPrintJobs) {
   Browser* const new_browser = CreateBrowser(profile());
   SetCustomArg(kTitle);
   extensions::ResultCatcher catcher;
-  ui_test_utils::NavigateToURL(
-      new_browser, extension->GetResourceURL("get_print_jobs.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      new_browser, extension->GetResourceURL("get_print_jobs.html")));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
@@ -122,9 +123,9 @@ IN_PROC_BROWSER_TEST_F(PrintingMetricsApiTest, GetPrintJobs) {
 // warning if they request the printingMetrics permission in the manifest and
 // that such extensions don't see the chrome.printingMetrics namespace.
 IN_PROC_BROWSER_TEST_F(PrintingMetricsApiTest, IsRestrictedToPolicyExtension) {
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "printing_metrics", .page_url = "api_not_available.html"},
-      {.ignore_manifest_warnings = true}));
+  ASSERT_TRUE(RunExtensionTest("printing_metrics",
+                               {.page_url = "api_not_available.html"},
+                               {.ignore_manifest_warnings = true}));
 
   base::FilePath extension_path =
       test_data_dir_.AppendASCII("printing_metrics");

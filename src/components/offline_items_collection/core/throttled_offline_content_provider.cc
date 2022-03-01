@@ -19,7 +19,7 @@ const int kDelayBetweenUpdatesMs = 1000;
 ThrottledOfflineContentProvider::ThrottledOfflineContentProvider(
     OfflineContentProvider* provider)
     : ThrottledOfflineContentProvider(
-          base::TimeDelta::FromMilliseconds(kDelayBetweenUpdatesMs),
+          base::Milliseconds(kDelayBetweenUpdatesMs),
           provider) {}
 
 ThrottledOfflineContentProvider::ThrottledOfflineContentProvider(
@@ -30,7 +30,7 @@ ThrottledOfflineContentProvider::ThrottledOfflineContentProvider(
       update_queued_(false),
       wrapped_provider_(provider) {
   DCHECK(wrapped_provider_);
-  observation_.Observe(wrapped_provider_);
+  observation_.Observe(wrapped_provider_.get());
 }
 
 ThrottledOfflineContentProvider::~ThrottledOfflineContentProvider() = default;

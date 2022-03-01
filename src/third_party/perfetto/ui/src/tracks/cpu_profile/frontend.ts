@@ -17,15 +17,15 @@ import {hsluvToHex} from 'hsluv';
 import {searchSegment} from '../../base/binary_search';
 import {Actions} from '../../common/actions';
 import {hslForSlice} from '../../common/colorizer';
-import {TrackState} from '../../common/state';
 import {fromNs, toNs} from '../../common/time';
 import {globals} from '../../frontend/globals';
 import {TimeScale} from '../../frontend/time_scale';
-import {Track} from '../../frontend/track';
+import {NewTrackArgs, Track} from '../../frontend/track';
 import {trackRegistry} from '../../frontend/track_registry';
 
 import {Config, CPU_PROFILE_TRACK_KIND, Data} from './common';
 
+const BAR_HEIGHT = 3;
 const MARGIN_TOP = 4.5;
 const RECT_HEIGHT = 30.5;
 
@@ -35,16 +35,16 @@ function colorForSample(callsiteId: number, isHovered: boolean): string {
 
 class CpuProfileTrack extends Track<Config, Data> {
   static readonly kind = CPU_PROFILE_TRACK_KIND;
-  static create(trackState: TrackState): CpuProfileTrack {
-    return new CpuProfileTrack(trackState);
+  static create(args: NewTrackArgs): CpuProfileTrack {
+    return new CpuProfileTrack(args);
   }
 
-  private centerY = this.getHeight() / 2;
-  private markerWidth = (this.getHeight() - MARGIN_TOP) / 2;
+  private centerY = this.getHeight() / 2 + BAR_HEIGHT;
+  private markerWidth = (this.getHeight() - MARGIN_TOP - BAR_HEIGHT) / 2;
   private hoveredTs: number|undefined = undefined;
 
-  constructor(trackState: TrackState) {
-    super(trackState);
+  constructor(args: NewTrackArgs) {
+    super(args);
   }
 
   getHeight() {
@@ -73,6 +73,26 @@ class CpuProfileTrack extends Track<Config, Data> {
           isHovered,
           strokeWidth,
           data.callsiteId[i]);
+    }
+
+    let startX = data.tsStarts.length ? data.tsStarts[0] : -1;
+    let endX = data.tsStarts.length ? data.tsStarts[0] : -1;
+    let lastCallsiteId = data.callsiteId.length ? data.callsiteId[0] : -1;
+    for (let i = 0; i < data.tsStarts.length; i++) {
+      const centerX = data.tsStarts[i];
+      const callsiteId = data.callsiteId[i];
+      if (lastCallsiteId !== callsiteId) {
+        if (startX !== endX) {
+          const leftPx = timeScale.timeToPx(fromNs(startX)) - this.markerWidth;
+          const rightPx = timeScale.timeToPx(fromNs(endX)) + this.markerWidth;
+          const width = rightPx - leftPx;
+          ctx.fillStyle = colorForSample(lastCallsiteId, false);
+          ctx.fillRect(leftPx, MARGIN_TOP, width, BAR_HEIGHT);
+        }
+        startX = centerX;
+      }
+      endX = centerX;
+      lastCallsiteId = callsiteId;
     }
   }
 

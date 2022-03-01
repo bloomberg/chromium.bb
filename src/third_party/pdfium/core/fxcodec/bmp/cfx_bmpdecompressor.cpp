@@ -93,11 +93,11 @@ BmpDecoder::Status CFX_BmpDecompressor::ReadBmpHeader() {
   }
 
   bmp_header.bfType =
-      FXWORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&bmp_header.bfType));
-  bmp_header.bfOffBits =
-      FXDWORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&bmp_header.bfOffBits));
+      FXSYS_UINT16_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&bmp_header.bfType));
+  bmp_header.bfOffBits = FXSYS_UINT32_GET_LSBFIRST(
+      reinterpret_cast<uint8_t*>(&bmp_header.bfOffBits));
   data_size_ =
-      FXDWORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&bmp_header.bfSize));
+      FXSYS_UINT32_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&bmp_header.bfSize));
   if (bmp_header.bfType != kBmpSignature)
     return BmpDecoder::Status::kFail;
 
@@ -110,7 +110,7 @@ BmpDecoder::Status CFX_BmpDecompressor::ReadBmpHeader() {
     return BmpDecoder::Status::kFail;
 
   img_ifh_size_ =
-      FXDWORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&img_ifh_size_));
+      FXSYS_UINT32_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&img_ifh_size_));
   pal_type_ = 0;
   BmpDecoder::Status status = ReadBmpHeaderIfh();
   if (status != BmpDecoder::Status::kSuccess)
@@ -128,11 +128,11 @@ BmpDecoder::Status CFX_BmpDecompressor::ReadBmpHeaderIfh() {
       return BmpDecoder::Status::kContinue;
     }
 
-    width_ = FXWORD_GET_LSBFIRST(
+    width_ = FXSYS_UINT16_GET_LSBFIRST(
         reinterpret_cast<uint8_t*>(&bmp_core_header.bcWidth));
-    height_ = FXWORD_GET_LSBFIRST(
+    height_ = FXSYS_UINT16_GET_LSBFIRST(
         reinterpret_cast<uint8_t*>(&bmp_core_header.bcHeight));
-    bit_counts_ = FXWORD_GET_LSBFIRST(
+    bit_counts_ = FXSYS_UINT16_GET_LSBFIRST(
         reinterpret_cast<uint8_t*>(&bmp_core_header.bcBitCount));
     compress_flag_ = kBmpRgb;
     img_tb_flag_ = false;
@@ -146,19 +146,19 @@ BmpDecoder::Status CFX_BmpDecompressor::ReadBmpHeaderIfh() {
       return BmpDecoder::Status::kContinue;
     }
 
-    width_ = FXDWORD_GET_LSBFIRST(
+    width_ = FXSYS_UINT32_GET_LSBFIRST(
         reinterpret_cast<uint8_t*>(&bmp_info_header.biWidth));
-    int32_t signed_height = FXDWORD_GET_LSBFIRST(
+    int32_t signed_height = FXSYS_UINT32_GET_LSBFIRST(
         reinterpret_cast<uint8_t*>(&bmp_info_header.biHeight));
-    bit_counts_ = FXWORD_GET_LSBFIRST(
+    bit_counts_ = FXSYS_UINT16_GET_LSBFIRST(
         reinterpret_cast<uint8_t*>(&bmp_info_header.biBitCount));
-    compress_flag_ = FXDWORD_GET_LSBFIRST(
+    compress_flag_ = FXSYS_UINT32_GET_LSBFIRST(
         reinterpret_cast<uint8_t*>(&bmp_info_header.biCompression));
-    color_used_ = FXDWORD_GET_LSBFIRST(
+    color_used_ = FXSYS_UINT32_GET_LSBFIRST(
         reinterpret_cast<uint8_t*>(&bmp_info_header.biClrUsed));
-    dpi_x_ = static_cast<int32_t>(FXDWORD_GET_LSBFIRST(
+    dpi_x_ = static_cast<int32_t>(FXSYS_UINT32_GET_LSBFIRST(
         reinterpret_cast<uint8_t*>(&bmp_info_header.biXPelsPerMeter)));
-    dpi_y_ = static_cast<int32_t>(FXDWORD_GET_LSBFIRST(
+    dpi_y_ = static_cast<int32_t>(FXSYS_UINT32_GET_LSBFIRST(
         reinterpret_cast<uint8_t*>(&bmp_info_header.biYPelsPerMeter)));
     if (!SetHeight(signed_height))
       return BmpDecoder::Status::kFail;
@@ -183,21 +183,21 @@ BmpDecoder::Status CFX_BmpDecompressor::ReadBmpHeaderIfh() {
     return BmpDecoder::Status::kContinue;
 
   uint16_t bi_planes;
-  width_ = FXDWORD_GET_LSBFIRST(
+  width_ = FXSYS_UINT32_GET_LSBFIRST(
       reinterpret_cast<uint8_t*>(&bmp_info_header.biWidth));
-  int32_t signed_height = FXDWORD_GET_LSBFIRST(
+  int32_t signed_height = FXSYS_UINT32_GET_LSBFIRST(
       reinterpret_cast<uint8_t*>(&bmp_info_header.biHeight));
-  bit_counts_ = FXWORD_GET_LSBFIRST(
+  bit_counts_ = FXSYS_UINT16_GET_LSBFIRST(
       reinterpret_cast<uint8_t*>(&bmp_info_header.biBitCount));
-  compress_flag_ = FXDWORD_GET_LSBFIRST(
+  compress_flag_ = FXSYS_UINT32_GET_LSBFIRST(
       reinterpret_cast<uint8_t*>(&bmp_info_header.biCompression));
-  color_used_ = FXDWORD_GET_LSBFIRST(
+  color_used_ = FXSYS_UINT32_GET_LSBFIRST(
       reinterpret_cast<uint8_t*>(&bmp_info_header.biClrUsed));
-  bi_planes = FXWORD_GET_LSBFIRST(
+  bi_planes = FXSYS_UINT16_GET_LSBFIRST(
       reinterpret_cast<uint8_t*>(&bmp_info_header.biPlanes));
-  dpi_x_ = FXDWORD_GET_LSBFIRST(
+  dpi_x_ = FXSYS_UINT32_GET_LSBFIRST(
       reinterpret_cast<uint8_t*>(&bmp_info_header.biXPelsPerMeter));
-  dpi_y_ = FXDWORD_GET_LSBFIRST(
+  dpi_y_ = FXSYS_UINT32_GET_LSBFIRST(
       reinterpret_cast<uint8_t*>(&bmp_info_header.biYPelsPerMeter));
   if (!SetHeight(signed_height))
     return BmpDecoder::Status::kFail;
@@ -227,27 +227,27 @@ BmpDecoder::Status CFX_BmpDecompressor::ReadBmpHeaderDimensions() {
     default:
       return BmpDecoder::Status::kFail;
   }
-  FX_SAFE_UINT32 stride = CalculatePitch32(bit_counts_, width_);
-  if (!stride.IsValid())
+  absl::optional<uint32_t> stride = CalculatePitch32(bit_counts_, width_);
+  if (!stride.has_value())
     return BmpDecoder::Status::kFail;
 
-  src_row_bytes_ = stride.ValueOrDie();
+  src_row_bytes_ = stride.value();
   switch (bit_counts_) {
     case 1:
     case 4:
     case 8:
       stride = CalculatePitch32(8, width_);
-      if (!stride.IsValid())
+      if (!stride.has_value())
         return BmpDecoder::Status::kFail;
-      out_row_bytes_ = stride.ValueOrDie();
+      out_row_bytes_ = stride.value();
       components_ = 1;
       break;
     case 16:
     case 24:
       stride = CalculatePitch32(24, width_);
-      if (!stride.IsValid())
+      if (!stride.has_value())
         return BmpDecoder::Status::kFail;
-      out_row_bytes_ = stride.ValueOrDie();
+      out_row_bytes_ = stride.value();
       components_ = 3;
       break;
     case 32:
@@ -273,9 +273,10 @@ BmpDecoder::Status CFX_BmpDecompressor::ReadBmpBitfields() {
   if (!ReadData(reinterpret_cast<uint8_t*>(masks), sizeof(masks)))
     return BmpDecoder::Status::kContinue;
 
-  mask_red_ = FXDWORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&masks[0]));
-  mask_green_ = FXDWORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&masks[1]));
-  mask_blue_ = FXDWORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&masks[2]));
+  mask_red_ = FXSYS_UINT32_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&masks[0]));
+  mask_green_ =
+      FXSYS_UINT32_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&masks[1]));
+  mask_blue_ = FXSYS_UINT32_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&masks[2]));
   if (mask_red_ & mask_green_ || mask_red_ & mask_blue_ ||
       mask_green_ & mask_blue_) {
     return BmpDecoder::Status::kFail;
@@ -411,7 +412,7 @@ BmpDecoder::Status CFX_BmpDecompressor::DecodeRGB() {
         green_bits -= 8;
         red_bits -= 8;
         for (uint32_t col = 0; col < width_; ++col) {
-          *buf = FXWORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(buf));
+          *buf = FXSYS_UINT16_GET_LSBFIRST(reinterpret_cast<uint8_t*>(buf));
           out_row_buffer_[idx++] =
               static_cast<uint8_t>((*buf & mask_blue_) << blue_bits);
           out_row_buffer_[idx++] =
@@ -528,7 +529,6 @@ BmpDecoder::Status CFX_BmpDecompressor::DecodeRLE8() {
       }
     }
   }
-  return BmpDecoder::Status::kFail;
 }
 
 BmpDecoder::Status CFX_BmpDecompressor::DecodeRLE4() {
@@ -636,7 +636,6 @@ BmpDecoder::Status CFX_BmpDecompressor::DecodeRLE4() {
       }
     }
   }
-  return BmpDecoder::Status::kFail;
 }
 
 bool CFX_BmpDecompressor::ReadData(uint8_t* destination, uint32_t size) {

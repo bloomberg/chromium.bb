@@ -24,6 +24,7 @@
 
 #include "src/castable.h"
 #include "src/debug.h"
+#include "src/program_id.h"
 #include "src/symbol.h"
 #include "src/traits.h"
 
@@ -39,7 +40,7 @@ class Node;
 }  // namespace ast
 
 ProgramID ProgramIDOf(const Program*);
-ProgramID ProgramIDOf(const ast::Node*);
+ProgramID ProgramIDOf(const ProgramBuilder*);
 
 /// Cloneable is the base class for all objects that can be cloned
 class Cloneable : public Castable<Cloneable> {
@@ -47,7 +48,7 @@ class Cloneable : public Castable<Cloneable> {
   /// Performs a deep clone of this object using the CloneContext `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned object
-  virtual Cloneable* Clone(CloneContext* ctx) const = 0;
+  virtual const Cloneable* Clone(CloneContext* ctx) const = 0;
 };
 
 /// @returns an invalid ProgramID
@@ -61,7 +62,7 @@ class CloneContext {
   /// F is a pointer of (or derives from) type T.
   template <typename F, typename T>
   using ParamTypeIsPtrOf = traits::IsTypeOrDerived<
-      typename std::remove_pointer<traits::ParamTypeT<F, 0>>::type,
+      typename std::remove_pointer<traits::ParameterType<F, 0>>::type,
       T>;
 
  public:
@@ -85,9 +86,7 @@ class CloneContext {
   ~CloneContext();
 
   /// Clones the Node or sem::Type `a` into the ProgramBuilder #dst if `a` is
-  /// not null. If `a` is null, then Clone() returns null. If `a` has been
-  /// cloned already by this CloneContext then the same cloned pointer is
-  /// returned.
+  /// not null. If `a` is null, then Clone() returns null.
   ///
   /// Clone() may use a function registered with ReplaceAll() to create a
   /// transformed version of the object. See ReplaceAll() for more information.
@@ -95,54 +94,23 @@ class CloneContext {
   /// If the CloneContext is cloning from a Program to a ProgramBuilder, then
   /// the Node or sem::Type `a` must be owned by the Program #src.
   ///
-  /// @param a the `Node` or `sem::Type` to clone
+  /// @param object the type deriving from Cloneable to clone
   /// @return the cloned node
   template <typename T>
-  T* Clone(T* a) {
-    // If the input is nullptr, there's nothing to clone - just return nullptr.
-    if (a == nullptr) {
-      return nullptr;
-    }
-
+  const T* Clone(const T* object) {
     if (src) {
-      TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(src, a);
+      TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, src, object);
     }
-
-    // Was Replace() called for this object?
-    auto it = replacements_.find(a);
-    if (it != replacements_.end()) {
-      return CheckedCast<T>(it->second);
+    if (auto* cloned = CloneCloneable(object)) {
+      auto* out = CheckedCast<T>(cloned);
+      TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, dst, out);
+      return out;
     }
-
-    Cloneable* cloned = nullptr;
-
-    // Attempt to clone using the registered replacer functions.
-    auto& typeinfo = a->TypeInfo();
-    for (auto& transform : transforms_) {
-      if (!typeinfo.Is(*transform.typeinfo)) {
-        continue;
-      }
-      cloned = transform.function(a);
-      break;
-    }
-
-    if (!cloned) {
-      // No transform for this type, or the transform returned nullptr.
-      // Clone with T::Clone().
-      cloned = a->Clone(this);
-    }
-
-    auto* out = CheckedCast<T>(cloned);
-
-    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(dst, out);
-
-    return out;
+    return nullptr;
   }
 
   /// Clones the Node or sem::Type `a` into the ProgramBuilder #dst if `a` is
-  /// not null. If `a` is null, then Clone() returns null. If `a` has been
-  /// cloned already by this CloneContext then the same cloned pointer is
-  /// returned.
+  /// not null. If `a` is null, then Clone() returns null.
   ///
   /// Unlike Clone(), this method does not invoke or use any transformations
   /// registered by ReplaceAll().
@@ -150,30 +118,18 @@ class CloneContext {
   /// If the CloneContext is cloning from a Program to a ProgramBuilder, then
   /// the Node or sem::Type `a` must be owned by the Program #src.
   ///
-  /// @param a the `Node` or `sem::Type` to clone
+  /// @param a the type deriving from Cloneable to clone
   /// @return the cloned node
   template <typename T>
-  T* CloneWithoutTransform(T* a) {
+  const T* CloneWithoutTransform(const T* a) {
     // If the input is nullptr, there's nothing to clone - just return nullptr.
     if (a == nullptr) {
       return nullptr;
     }
-
     if (src) {
-      TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(src, a);
+      TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, src, a);
     }
-
-    // Have we seen this object before? If so, return the previously cloned
-    // version instead of making yet another copy.
-    auto it = replacements_.find(a);
-    if (it != replacements_.end()) {
-      return CheckedCast<T>(it->second);
-    }
-
-    // First time clone and no replacer transforms matched.
-    // Clone with T::Clone().
     auto* c = a->Clone(this);
-    replacements_.emplace(a, c);
     return CheckedCast<T>(c);
   }
 
@@ -210,7 +166,7 @@ class CloneContext {
     return out;
   }
 
-  /// Clones each of the elements of the vector `v` into the ProgramBuilder
+  /// Clones each of the elements of the vector `v` using the ProgramBuilder
   /// #dst, inserting any additional elements into the list that were registered
   /// with calls to InsertBefore().
   ///
@@ -221,34 +177,53 @@ class CloneContext {
   template <typename T>
   std::vector<T*> Clone(const std::vector<T*>& v) {
     std::vector<T*> out;
-    out.reserve(v.size());
+    Clone(out, v);
+    return out;
+  }
 
-    auto list_transform_it = list_transforms_.find(&v);
+  /// Clones each of the elements of the vector `from` into the vector `to`,
+  /// inserting any additional elements into the list that were registered with
+  /// calls to InsertBefore().
+  ///
+  /// All the elements of the vector `from` must be owned by the Program #src.
+  ///
+  /// @param from the vector to clone
+  /// @param to the cloned result
+  template <typename T>
+  void Clone(std::vector<T*>& to, const std::vector<T*>& from) {
+    to.reserve(from.size());
+
+    auto list_transform_it = list_transforms_.find(&from);
     if (list_transform_it != list_transforms_.end()) {
       const auto& transforms = list_transform_it->second;
-      for (auto& el : v) {
+      for (auto* o : transforms.insert_front_) {
+        to.emplace_back(CheckedCast<T>(o));
+      }
+      for (auto& el : from) {
         auto insert_before_it = transforms.insert_before_.find(el);
         if (insert_before_it != transforms.insert_before_.end()) {
           for (auto insert : insert_before_it->second) {
-            out.emplace_back(CheckedCast<T>(insert));
+            to.emplace_back(CheckedCast<T>(insert));
           }
         }
         if (transforms.remove_.count(el) == 0) {
-          out.emplace_back(Clone(el));
+          to.emplace_back(Clone(el));
         }
         auto insert_after_it = transforms.insert_after_.find(el);
         if (insert_after_it != transforms.insert_after_.end()) {
           for (auto insert : insert_after_it->second) {
-            out.emplace_back(CheckedCast<T>(insert));
+            to.emplace_back(CheckedCast<T>(insert));
           }
         }
       }
+      for (auto* o : transforms.insert_back_) {
+        to.emplace_back(CheckedCast<T>(o));
+      }
     } else {
-      for (auto& el : v) {
-        out.emplace_back(Clone(el));
+      for (auto& el : from) {
+        to.emplace_back(Clone(el));
       }
     }
-    return out;
   }
 
   /// Clones each of the elements of the vector `v` into the ProgramBuilder
@@ -276,12 +251,12 @@ class CloneContext {
   /// Example:
   ///
   /// ```
-  ///   // Replace all ast::UintLiterals with the number 42
+  ///   // Replace all ast::UintLiteralExpressions with the number 42
   ///   CloneCtx ctx(&out, in);
-  ///   ctx.ReplaceAll([&] (ast::UintLiteral* l) {
-  ///       return ctx->dst->create<ast::UintLiteral>(
-  ///           ctx->Clone(l->source()),
-  ///           ctx->Clone(l->type()),
+  ///   ctx.ReplaceAll([&] (ast::UintLiteralExpression* l) {
+  ///       return ctx->dst->create<ast::UintLiteralExpression>(
+  ///           ctx->Clone(l->source),
+  ///           ctx->Clone(l->type),
   ///           42);
   ///     });
   ///   ctx.Clone();
@@ -299,12 +274,12 @@ class CloneContext {
   template <typename F>
   traits::EnableIf<ParamTypeIsPtrOf<F, Cloneable>::value, CloneContext>&
   ReplaceAll(F&& replacer) {
-    using TPtr = traits::ParamTypeT<F, 0>;
+    using TPtr = traits::ParameterType<F, 0>;
     using T = typename std::remove_pointer<TPtr>::type;
     for (auto& transform : transforms_) {
       if (transform.typeinfo->Is(TypeInfo::Of<T>()) ||
           TypeInfo::Of<T>().Is(*transform.typeinfo)) {
-        TINT_ICE(Diagnostics())
+        TINT_ICE(Clone, Diagnostics())
             << "ReplaceAll() called with a handler for type "
             << TypeInfo::Of<T>().name
             << " that is already handled by a handler for type "
@@ -314,7 +289,9 @@ class CloneContext {
     }
     CloneableTransform transform;
     transform.typeinfo = &TypeInfo::Of<T>();
-    transform.function = [=](Cloneable* in) { return replacer(in->As<T>()); };
+    transform.function = [=](const Cloneable* in) {
+      return replacer(in->As<T>());
+    };
     transforms_.emplace_back(std::move(transform));
     return *this;
   }
@@ -330,16 +307,19 @@ class CloneContext {
   /// @returns this CloneContext so calls can be chained
   CloneContext& ReplaceAll(const SymbolTransform& replacer) {
     if (symbol_transform_) {
-      TINT_ICE(Diagnostics()) << "ReplaceAll(const SymbolTransform&) called "
-                                 "multiple times on the same CloneContext";
+      TINT_ICE(Clone, Diagnostics())
+          << "ReplaceAll(const SymbolTransform&) called "
+             "multiple times on the same CloneContext";
       return *this;
     }
     symbol_transform_ = replacer;
     return *this;
   }
 
-  /// Replace replaces all occurrences of `what` in #src with `with` in #dst
-  /// when calling Clone().
+  /// Replace replaces all occurrences of `what` in #src with the pointer `with`
+  /// in #dst when calling Clone().
+  /// [DEPRECATED]: This function cannot handle nested replacements. Use the
+  /// overload of Replace() that take a function for the `WITH` argument.
   /// @param what a pointer to the object in #src that will be replaced with
   /// `with`
   /// @param with a pointer to the replacement object owned by #dst that will be
@@ -348,10 +328,32 @@ class CloneContext {
   /// references of the original object. A type mismatch will result in an
   /// assertion in debug builds, and undefined behavior in release builds.
   /// @returns this CloneContext so calls can be chained
-  template <typename WHAT, typename WITH>
-  CloneContext& Replace(WHAT* what, WITH* with) {
-    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(src, what);
-    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(dst, with);
+  template <typename WHAT,
+            typename WITH,
+            typename = traits::EnableIfIsType<WITH, Cloneable>>
+  CloneContext& Replace(const WHAT* what, const WITH* with) {
+    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, src, what);
+    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, dst, with);
+    replacements_[what] = [with]() -> const Cloneable* { return with; };
+    return *this;
+  }
+
+  /// Replace replaces all occurrences of `what` in #src with the result of the
+  /// function `with` in #dst when calling Clone(). `with` will be called each
+  /// time `what` is cloned by this context. If `what` is not cloned, then
+  /// `with` may never be called.
+  /// @param what a pointer to the object in #src that will be replaced with
+  /// `with`
+  /// @param with a function that takes no arguments and returns a pointer to
+  /// the replacement object owned by #dst. The returned pointer will be used as
+  /// a replacement for `what`.
+  /// @warning The replacement object must be of the correct type for all
+  /// references of the original object. A type mismatch will result in an
+  /// assertion in debug builds, and undefined behavior in release builds.
+  /// @returns this CloneContext so calls can be chained
+  template <typename WHAT, typename WITH, typename = std::result_of_t<WITH()>>
+  CloneContext& Replace(const WHAT* what, WITH&& with) {
+    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, src, what);
     replacements_[what] = with;
     return *this;
   }
@@ -363,14 +365,42 @@ class CloneContext {
   /// @returns this CloneContext so calls can be chained
   template <typename T, typename OBJECT>
   CloneContext& Remove(const std::vector<T>& vector, OBJECT* object) {
-    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(src, object);
+    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, src, object);
     if (std::find(vector.begin(), vector.end(), object) == vector.end()) {
-      TINT_ICE(Diagnostics())
+      TINT_ICE(Clone, Diagnostics())
           << "CloneContext::Remove() vector does not contain object";
       return *this;
     }
 
     list_transforms_[&vector].remove_.emplace(object);
+    return *this;
+  }
+
+  /// Inserts `object` before any other objects of `vector`, when it is cloned.
+  /// @param vector the vector in #src
+  /// @param object a pointer to the object in #dst that will be inserted at the
+  /// front of the vector
+  /// @returns this CloneContext so calls can be chained
+  template <typename T, typename OBJECT>
+  CloneContext& InsertFront(const std::vector<T>& vector, OBJECT* object) {
+    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, dst, object);
+    auto& transforms = list_transforms_[&vector];
+    auto& list = transforms.insert_front_;
+    list.emplace_back(object);
+    return *this;
+  }
+
+  /// Inserts `object` after any other objects of `vector`, when it is cloned.
+  /// @param vector the vector in #src
+  /// @param object a pointer to the object in #dst that will be inserted at the
+  /// end of the vector
+  /// @returns this CloneContext so calls can be chained
+  template <typename T, typename OBJECT>
+  CloneContext& InsertBack(const std::vector<T>& vector, OBJECT* object) {
+    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, dst, object);
+    auto& transforms = list_transforms_[&vector];
+    auto& list = transforms.insert_back_;
+    list.emplace_back(object);
     return *this;
   }
 
@@ -383,11 +413,11 @@ class CloneContext {
   template <typename T, typename BEFORE, typename OBJECT>
   CloneContext& InsertBefore(const std::vector<T>& vector,
                              const BEFORE* before,
-                             OBJECT* object) {
-    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(src, before);
-    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(dst, object);
+                             const OBJECT* object) {
+    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, src, before);
+    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, dst, object);
     if (std::find(vector.begin(), vector.end(), before) == vector.end()) {
-      TINT_ICE(Diagnostics())
+      TINT_ICE(Clone, Diagnostics())
           << "CloneContext::InsertBefore() vector does not contain before";
       return *this;
     }
@@ -407,11 +437,11 @@ class CloneContext {
   template <typename T, typename AFTER, typename OBJECT>
   CloneContext& InsertAfter(const std::vector<T>& vector,
                             const AFTER* after,
-                            OBJECT* object) {
-    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(src, after);
-    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(dst, object);
+                            const OBJECT* object) {
+    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, src, after);
+    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, dst, object);
     if (std::find(vector.begin(), vector.end(), after) == vector.end()) {
-      TINT_ICE(Diagnostics())
+      TINT_ICE(Clone, Diagnostics())
           << "CloneContext::InsertAfter() vector does not contain after";
       return *this;
     }
@@ -445,7 +475,7 @@ class CloneContext {
 
     // TypeInfo of the Cloneable that the transform operates on
     const TypeInfo* typeinfo;
-    std::function<Cloneable*(Cloneable*)> function;
+    std::function<const Cloneable*(const Cloneable*)> function;
   };
 
   CloneContext(const CloneContext&) = delete;
@@ -454,24 +484,32 @@ class CloneContext {
   /// Cast `obj` from type `FROM` to type `TO`, returning the cast object.
   /// Reports an internal compiler error if the cast failed.
   template <typename TO, typename FROM>
-  TO* CheckedCast(FROM* obj) {
-    if (TO* cast = As<TO>(obj)) {
+  const TO* CheckedCast(const FROM* obj) {
+    if (obj == nullptr) {
+      return nullptr;
+    }
+    if (const TO* cast = obj->template As<TO>()) {
       return cast;
     }
-    TINT_ICE(Diagnostics())
-        << "Cloned object was not of the expected type\n"
-        << "got:      " << (obj ? obj->TypeInfo().name : "<null>") << "\n"
-        << "expected: " << TypeInfo::Of<TO>().name;
+    CheckedCastFailure(obj, TypeInfo::Of<TO>());
     return nullptr;
   }
+
+  /// Clones a Cloneable object, using any replacements or transforms that have
+  /// been configured.
+  const Cloneable* CloneCloneable(const Cloneable* object);
+
+  /// Adds an error diagnostic to Diagnostics() that the cloned object was not
+  /// of the expected type.
+  void CheckedCastFailure(const Cloneable* got, const TypeInfo& expected);
 
   /// @returns the diagnostic list of #dst
   diag::List& Diagnostics() const;
 
-  /// A vector of Cloneable*
-  using CloneableList = std::vector<Cloneable*>;
+  /// A vector of const Cloneable*
+  using CloneableList = std::vector<const Cloneable*>;
 
-  // Transformations to be applied to a list (vector)
+  /// Transformations to be applied to a list (vector)
   struct ListTransforms {
     /// Constructor
     ListTransforms();
@@ -480,6 +518,14 @@ class CloneContext {
 
     /// A map of object in #src to omit when cloned into #dst.
     std::unordered_set<const Cloneable*> remove_;
+
+    /// A list of objects in #dst to insert before any others when the vector is
+    /// cloned.
+    CloneableList insert_front_;
+
+    /// A list of objects in #dst to insert befor after any others when the
+    /// vector is cloned.
+    CloneableList insert_back_;
 
     /// A map of object in #src to the list of cloned objects in #dst.
     /// Clone(const std::vector<T*>& v) will use this to insert the map-value
@@ -492,8 +538,10 @@ class CloneContext {
     std::unordered_map<const Cloneable*, CloneableList> insert_after_;
   };
 
-  /// A map of object in #src to their replacement in #dst
-  std::unordered_map<const Cloneable*, Cloneable*> replacements_;
+  /// A map of object in #src to functions that create their replacement in
+  /// #dst
+  std::unordered_map<const Cloneable*, std::function<const Cloneable*()>>
+      replacements_;
 
   /// A map of symbol in #src to their cloned equivalent in #dst
   std::unordered_map<Symbol, Symbol> cloned_symbols_;

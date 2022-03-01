@@ -34,15 +34,15 @@ private:
     void onMakeSkippable() override { fSrc.reset(); }
     bool onIsUsed(GrSurfaceProxy* proxy) const override { return proxy == fSrc.get(); }
     void gatherProxyIntervals(GrResourceAllocator*) const override;
-    ExpectedOutcome onMakeClosed(const GrCaps&, SkIRect* targetUpdateBounds) override;
+    ExpectedOutcome onMakeClosed(GrRecordingContext*, SkIRect* targetUpdateBounds) override;
     bool onExecute(GrOpFlushState*) override;
 
 #if GR_TEST_UTILS
     const char* name() const final { return "Copy"; }
 #endif
 #ifdef SK_DEBUG
-    void visitProxies_debugOnly(const GrOp::VisitProxyFunc& fn) const override {
-        fn(fSrc.get(), GrMipmapped::kNo);
+    void visitProxies_debugOnly(const GrVisitProxyFunc& func) const override {
+        func(fSrc.get(), GrMipmapped::kNo);
     }
 #endif
 

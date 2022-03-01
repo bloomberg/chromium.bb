@@ -12,7 +12,8 @@
 
 #include <vector>
 
-#include "base/macros.h"
+#include "base/containers/flat_set.h"
+#include "base/trace_event/traced_value.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 
@@ -22,6 +23,9 @@ class HardwareDisplayPlane {
  public:
   HardwareDisplayPlane(uint32_t id);
 
+  HardwareDisplayPlane(const HardwareDisplayPlane&) = delete;
+  HardwareDisplayPlane& operator=(const HardwareDisplayPlane&) = delete;
+
   virtual ~HardwareDisplayPlane();
 
   virtual bool Initialize(DrmDevice* drm);
@@ -30,7 +34,9 @@ class HardwareDisplayPlane {
 
   std::vector<uint64_t> ModifiersForFormat(uint32_t format) const;
 
-  bool CanUseForCrtc(uint32_t crtc_index) const;
+  bool CanUseForCrtcId(uint32_t crtc_id) const;
+
+  void AsValueInto(base::trace_event::TracedValue* value) const;
 
   bool in_use() const { return in_use_; }
   void set_in_use(bool in_use) { in_use_ = in_use; }
@@ -46,6 +52,8 @@ class HardwareDisplayPlane {
 
  protected:
   struct Properties {
+    Properties();
+    ~Properties();
     // These properties are mandatory on DRM atomic. On legacy they may or may
     // not be present.
     DrmDevice::Property crtc_id;
@@ -70,10 +78,10 @@ class HardwareDisplayPlane {
   };
 
   const uint32_t id_;
-  uint32_t crtc_mask_ = 0;
 
   Properties properties_ = {};
 
+  base::flat_set<uint32_t> possible_crtc_ids_;
   uint32_t owning_crtc_ = 0;
   uint32_t last_used_format_ = 0;
   bool in_use_ = false;
@@ -86,8 +94,6 @@ class HardwareDisplayPlane {
 
  private:
   void InitializeProperties(DrmDevice* drm);
-
-  DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlane);
 };
 
 }  // namespace ui

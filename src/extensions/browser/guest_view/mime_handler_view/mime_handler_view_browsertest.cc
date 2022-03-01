@@ -6,7 +6,6 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -38,7 +37,6 @@
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/common/mojom/guest_view.mojom.h"
 #include "extensions/test/result_catcher.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -129,7 +127,7 @@ class MimeHandlerViewTest : public extensions::ExtensionApiTest {
 
     extensions::ResultCatcher catcher;
 
-    ui_test_utils::NavigateToURL(browser(), url);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
     if (!catcher.GetNextResult())
       FAIL() << catcher.message();
@@ -154,9 +152,8 @@ class MimeHandlerViewTest : public extensions::ExtensionApiTest {
 
 class UserActivationUpdateWaiter {
  public:
-  explicit UserActivationUpdateWaiter(content::WebContents* web_contents) {
-    user_activation_interceptor_.Init(web_contents->GetMainFrame());
-  }
+  explicit UserActivationUpdateWaiter(content::WebContents* web_contents)
+      : user_activation_interceptor_(web_contents->GetMainFrame()) {}
   ~UserActivationUpdateWaiter() = default;
 
   void Wait() {
@@ -174,7 +171,8 @@ class UserActivationUpdateWaiter {
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Embedded) {
   RunTest("test_embedded.html");
   // Sanity check. Navigate the page and verify the guest goes away.
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
   auto* gv_manager = GetGuestViewManager();
   gv_manager->WaitForAllGuestsDeleted();
   EXPECT_EQ(1U, gv_manager->num_guests_created());
@@ -205,13 +203,9 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EmbedWithInitialCrossOriginFrame) {
 // potential race between the cross-origin renderer initiated navigation and
 // the navigation to "about:blank" started from the browser.
 //
-// Disabled on Linux due to flakiness: https://crbug.com/1182355.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#define MAYBE_NavigationRaceFromEmbedder DISABLED_NavigationRaceFromEmbedder
-#else
-#define MAYBE_NavigationRaceFromEmbedder NavigationRaceFromEmbedder
-#endif
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, MAYBE_NavigationRaceFromEmbedder) {
+// Disabled on all platforms due to flakiness: https://crbug.com/1182355.
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest,
+                       DISABLED_NavigationRaceFromEmbedder) {
   const std::string kTestName = "test_navigation_race_embedder";
   auto cross_origin_url =
       embedded_test_server()->GetURL("b.com", "/test_page.html").spec();
@@ -294,9 +288,9 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest,
       base::BindRepeating(&TestMimeHandlerViewGuest::Create));
   const extensions::Extension* extension = LoadTestExtension();
   ASSERT_TRUE(extension);
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      embedded_test_server()->GetURL("a.com", "/test_object_with_frame.html"));
+      embedded_test_server()->GetURL("a.com", "/test_object_with_frame.html")));
   auto* main_frame =
       browser()->tab_strip_model()->GetWebContentsAt(0)->GetMainFrame();
   auto url_with_beforeunload =
@@ -407,7 +401,8 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, BeforeUnload_NoDialog) {
   // Try to navigate away from the page. If the beforeunload listener is
   // triggered and a dialog is shown, this navigation will never complete,
   // causing the test to timeout and fail.
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
 }
 
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, BeforeUnload_ShowDialog) {
@@ -440,7 +435,8 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest,
   // is still suppressed here because of lack of user activation.  As a result,
   // the following navigation away from the page works fine.  If a beforeunload
   // dialog were shown, this navigation would fail, causing the test to timeout.
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
 }
 
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest,
@@ -517,9 +513,9 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, ActivatePostMessageSupportOnce) {
 // HTMLPlugInElement::PluginWrapper is called for a plugin with no node document
 // frame, the renderer does not crash (see https://966371).
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, AdoptNodeInOnLoadDoesNotCrash) {
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      embedded_test_server()->GetURL("/adopt_node_in_onload_no_crash.html"));
+      embedded_test_server()->GetURL("/adopt_node_in_onload_no_crash.html")));
   // Run some JavaScript in embedder and make sure it is not crashed.
   ASSERT_TRUE(content::ExecJs(GetEmbedderWebContents(), "true"));
 }
@@ -534,8 +530,8 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, DoNotLoadInSandboxedFrame) {
   const extensions::Extension* extension = LoadTestExtension();
   ASSERT_TRUE(extension);
 
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/test_sandboxed_frame.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/test_sandboxed_frame.html")));
 
   auto* guest_view_manager = GetGuestViewManager();
   // The page contains three <iframes> where two are sandboxed. The expectation
@@ -582,8 +578,8 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, RejectPointLock) {
   auto* extension = LoadTestExtension();
   ASSERT_TRUE(extension);
 
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/test_embedded.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/test_embedded.html")));
 
   auto* guest_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
   // Make sure the load has started, before waiting for it to stop.

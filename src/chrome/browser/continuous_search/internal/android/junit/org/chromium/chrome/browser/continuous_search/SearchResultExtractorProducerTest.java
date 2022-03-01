@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import org.chromium.base.FeatureList;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -40,7 +41,8 @@ import java.util.List;
 public class SearchResultExtractorProducerTest {
     private static final long FAKE_NATIVE_ADDRESS = 0x7489;
     private static final String TEST_QUERY = "Bar";
-    private static final int TEST_RESULT_TYPE = 1;
+    private static final int TEST_RESULT_TYPE = 0;
+    private static final String PROVIDER_NAME = "Google Search";
 
     private SearchResultExtractorProducer mSearchResultProducer;
     @Mock
@@ -63,7 +65,7 @@ public class SearchResultExtractorProducerTest {
         mJniMocker.mock(
                 SearchResultExtractorProducerJni.TEST_HOOKS, mSearchResultExtractorProducerJniMock);
         when(mSearchResultExtractorProducerJniMock.create(any())).thenReturn(FAKE_NATIVE_ADDRESS);
-        ChromeFeatureList.setTestFeatures(
+        FeatureList.setTestFeatures(
                 Collections.singletonMap(ChromeFeatureList.CONTINUOUS_SEARCH, true));
 
         mSearchResultProducer = new SearchResultExtractorProducer(mTabMock, mListenerMock);
@@ -87,14 +89,14 @@ public class SearchResultExtractorProducerTest {
      * @param cancelled Whether to treat the fetch as if it was cancelled.
      */
     private void finishFetching(boolean cancelled) {
-        GURL url1 = JUnitTestGURLs.getGURL(JUnitTestGURLs.RED_1);
-        GURL url2 = JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_1);
-        GURL url3 = JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_2);
-        GURL url4 = JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_3);
+        GURL url1 = JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_1);
+        GURL url2 = JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_2);
+        GURL url3 = JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_3);
+        GURL url4 = JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL);
 
         mSearchResultProducer.onResultsAvailable(mTestUrl, TEST_QUERY, TEST_RESULT_TYPE,
-                new String[] {"Foo", "Bar"}, new boolean[] {false, true}, new int[] {1, 3},
-                new String[] {"Foo.com 1", "Bar.com 1", "Bar.com 2", "Bar.com 3"},
+                new int[] {0, 0}, new int[] {3, 1},
+                new String[] {"Bar.com 1", "Bar.com 2", "Bar.com 3", "Baz.com 1"},
                 new GURL[] {url1, url2, url3, url4});
 
         if (cancelled) {
@@ -103,18 +105,19 @@ public class SearchResultExtractorProducerTest {
         }
 
         List<PageGroup> groups = new ArrayList<PageGroup>();
-        List<PageItem> results1 = new ArrayList<PageItem>();
-        results1.add(new PageItem(url1, "Foo.com 1"));
-        groups.add(new PageGroup("Foo", false, results1));
+        // results1 would be an ad group and is skipped.
         List<PageItem> results2 = new ArrayList<PageItem>();
-        results2.add(new PageItem(url2, "Bar.com 1"));
-        results2.add(new PageItem(url3, "Bar.com 2"));
-        results2.add(new PageItem(url4, "Bar.com 3"));
-        groups.add(new PageGroup("Bar", true, results2));
+        results2.add(new PageItem(url1, "Bar.com 1"));
+        results2.add(new PageItem(url2, "Bar.com 2"));
+        results2.add(new PageItem(url3, "Bar.com 3"));
+        groups.add(new PageGroup("", false, results2));
+        List<PageItem> results3 = new ArrayList<PageItem>();
+        results3.add(new PageItem(url4, "Baz.com 1"));
+        groups.add(new PageGroup("", false, results3));
 
         verify(mListenerMock, times(1))
                 .onResult(new ContinuousNavigationMetadata(
-                        mTestUrl, TEST_QUERY, TEST_RESULT_TYPE, groups));
+                        mTestUrl, TEST_QUERY, getProvider(), groups));
     }
 
     /**
@@ -123,6 +126,19 @@ public class SearchResultExtractorProducerTest {
     private void fetchResultsSuccessfully() {
         startFetching();
         finishFetching(false);
+    }
+
+    /**
+     * Creates {@link ContinuousNavigationMetadata.Provider} based on whether provider icon is
+     * displayed or not.
+     * @return the Provider object configured based on the criteria.
+     */
+    private ContinuousNavigationMetadata.Provider getProvider() {
+        String name = mSearchResultProducer.mUseProviderIcon ? null : PROVIDER_NAME;
+        int iconRes = mSearchResultProducer.mUseProviderIcon
+                ? SearchResultExtractorProducer.PROVIDER_ICON_RESOURCE
+                : 0;
+        return new ContinuousNavigationMetadata.Provider(TEST_RESULT_TYPE, name, iconRes);
     }
 
     /**
@@ -285,5 +301,15 @@ public class SearchResultExtractorProducerTest {
         finishFetching(true);
         verify(mListenerMock, times(1))
                 .onError(SearchResultExtractorClientStatus.NOT_ENOUGH_RESULTS);
+    }
+
+    /**
+     * Verify if the metadata provider is set correctly if no provider icon is set.
+     */
+    @Test
+    public void testNoProviderIcon() {
+        startFetching();
+        mSearchResultProducer.mUseProviderIcon = false;
+        finishFetching(false);
     }
 }

@@ -20,29 +20,29 @@ namespace SkSL {
  */
 class Setting final : public Expression {
 public:
-    static constexpr Kind kExpressionKind = Kind::kSetting;
+    inline static constexpr Kind kExpressionKind = Kind::kSetting;
 
-    Setting(int offset, String name, const Type* type)
-        : INHERITED(offset, kExpressionKind, type)
+    Setting(int line, skstd::string_view name, const Type* type)
+        : INHERITED(line, kExpressionKind, type)
         , fName(std::move(name)) {}
 
     // Creates an SkSL setting expression if `fReplaceSettings` is false, or the current value of
     // the setting when it is true. Reports errors via the ErrorReporter.
     // (There's no failsafe Make equivalent, because there really isn't a good fallback expression
     // to produce when the `name` lookup fails. We wouldn't even know the expected type.)
-    static std::unique_ptr<Expression> Convert(const Context& context, int offset,
-                                               const String& name);
+    static std::unique_ptr<Expression> Convert(const Context& context, int line,
+                                               const skstd::string_view& name);
 
     std::unique_ptr<Expression> clone() const override {
-        return std::make_unique<Setting>(fOffset, this->name(), &this->type());
+        return std::make_unique<Setting>(fLine, this->name(), &this->type());
     }
 
-    const String& name() const {
+    const skstd::string_view& name() const {
         return fName;
     }
 
     String description() const override {
-        return this->name();
+        return String(this->name());
     }
 
     bool hasProperty(Property property) const override {
@@ -50,7 +50,7 @@ public:
     }
 
 private:
-    String fName;
+    skstd::string_view fName;
 
     using INHERITED = Expression;
 };

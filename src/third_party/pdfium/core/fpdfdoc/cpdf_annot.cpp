@@ -24,7 +24,7 @@
 #include "core/fpdfdoc/cpdf_generateap.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_graphstatedata.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "third_party/base/check.h"
 
@@ -64,9 +64,9 @@ CPDF_Stream* GetAnnotAPInternal(CPDF_Dictionary* pAnnotDict,
     return nullptr;
 
   const char* ap_entry = "N";
-  if (eMode == CPDF_Annot::Down)
+  if (eMode == CPDF_Annot::AppearanceMode::kDown)
     ap_entry = "D";
-  else if (eMode == CPDF_Annot::Rollover)
+  else if (eMode == CPDF_Annot::AppearanceMode::kRollover)
     ap_entry = "R";
   if (bFallbackToNormal && !pAP->KeyExist(ap_entry))
     ap_entry = "N";
@@ -95,28 +95,19 @@ CPDF_Stream* GetAnnotAPInternal(CPDF_Dictionary* pAnnotDict,
 
 }  // namespace
 
-CPDF_Annot::CPDF_Annot(RetainPtr<CPDF_Dictionary> pDict,
-                       CPDF_Document* pDocument)
-    : m_pAnnotDict(std::move(pDict)), m_pDocument(pDocument) {
-  Init();
-}
-
 CPDF_Annot::CPDF_Annot(CPDF_Dictionary* pDict, CPDF_Document* pDocument)
-    : m_pAnnotDict(pDict), m_pDocument(pDocument) {
-  Init();
+    : m_pAnnotDict(pDict),
+      m_pDocument(pDocument),
+      m_nSubtype(StringToAnnotSubtype(
+          m_pAnnotDict->GetStringFor(pdfium::annotation::kSubtype))),
+      m_bIsTextMarkupAnnotation(IsTextMarkupAnnotation(m_nSubtype)),
+      m_bHasGeneratedAP(
+          m_pAnnotDict->GetBooleanFor(kPDFiumKey_HasGeneratedAP, false)) {
+  GenerateAPIfNeeded();
 }
 
 CPDF_Annot::~CPDF_Annot() {
   ClearCachedAP();
-}
-
-void CPDF_Annot::Init() {
-  m_nSubtype = StringToAnnotSubtype(
-      m_pAnnotDict->GetStringFor(pdfium::annotation::kSubtype));
-  m_bIsTextMarkupAnnotation = IsTextMarkupAnnotation(m_nSubtype);
-  m_bHasGeneratedAP =
-      m_pAnnotDict->GetBooleanFor(kPDFiumKey_HasGeneratedAP, false);
-  GenerateAPIfNeeded();
 }
 
 void CPDF_Annot::GenerateAPIfNeeded() {
@@ -388,8 +379,7 @@ size_t CPDF_Annot::QuadPointCount(const CPDF_Array* pArray) {
 bool CPDF_Annot::DrawAppearance(CPDF_Page* pPage,
                                 CFX_RenderDevice* pDevice,
                                 const CFX_Matrix& mtUser2Device,
-                                AppearanceMode mode,
-                                const CPDF_RenderOptions* pOptions) {
+                                AppearanceMode mode) {
   if (!ShouldDrawAnnotation())
     return false;
 
@@ -409,7 +399,7 @@ bool CPDF_Annot::DrawAppearance(CPDF_Page* pPage,
       pPage->GetDocument(), pPage->GetPageResources(),
       static_cast<CPDF_PageRenderCache*>(pPage->GetRenderCache()));
   context.AppendLayer(pForm, matrix);
-  context.Render(pDevice, pOptions, nullptr);
+  context.Render(pDevice, nullptr, nullptr, nullptr);
   return true;
 }
 
@@ -437,8 +427,7 @@ bool CPDF_Annot::DrawInContext(const CPDF_Page* pPage,
 }
 
 void CPDF_Annot::DrawBorder(CFX_RenderDevice* pDevice,
-                            const CFX_Matrix* pUser2Device,
-                            const CPDF_RenderOptions* pOptions) {
+                            const CFX_Matrix* pUser2Device) {
   if (GetSubtype() == CPDF_Annot::Subtype::POPUP)
     return;
 
@@ -522,13 +511,9 @@ void CPDF_Annot::DrawBorder(CFX_RenderDevice* pDevice,
 
   CFX_FloatRect rect = GetRect();
   rect.Deflate(width / 2, width / 2);
-  CFX_PathData path;
+
+  CFX_Path path;
   path.AppendFloatRect(rect);
-
-  CFX_FillRenderOptions fill_options;
-  if (pOptions && pOptions->GetOptions().bNoPathSmooth)
-    fill_options.aliased_path = true;
-
-  pDevice->DrawPath(&path, pUser2Device, &graph_state, argb, argb,
-                    fill_options);
+  pDevice->DrawPath(path, pUser2Device, &graph_state, argb, argb,
+                    CFX_FillRenderOptions());
 }

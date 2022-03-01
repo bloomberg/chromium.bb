@@ -8,8 +8,8 @@
 #ifndef GrMtlUniformHandler_DEFINED
 #define GrMtlUniformHandler_DEFINED
 
+#include "src/core/SkTBlockList.h"
 #include "src/gpu/GrShaderVar.h"
-#include "src/gpu/GrTBlockList.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
 
 #include <vector>
@@ -26,12 +26,13 @@ public:
         kUniformBinding = 0,
         kLastUniformBinding = kUniformBinding,
     };
+    static constexpr int kUniformBindingCount = kLastUniformBinding + 1;
 
     // fUBOffset is only valid if the GrSLType of the fVariable is not a sampler
     struct MtlUniformInfo : public UniformInfo {
         uint32_t fUBOffset;
     };
-    typedef GrTBlockList<MtlUniformInfo> UniformInfoArray;
+    typedef SkTBlockList<MtlUniformInfo> UniformInfoArray;
 
     const GrShaderVar& getUniformVariable(UniformHandle u) const override {
         return fUniforms.item(u.toIndex()).fVariable;

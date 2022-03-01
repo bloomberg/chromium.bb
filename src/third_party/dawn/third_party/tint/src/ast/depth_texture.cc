@@ -29,32 +29,24 @@ bool IsValidDepthDimension(TextureDimension dim) {
 
 }  // namespace
 
-DepthTexture::DepthTexture(ProgramID program_id,
-                           const Source& source,
-                           TextureDimension dim)
-    : Base(program_id, source, dim) {
-  TINT_ASSERT(IsValidDepthDimension(dim));
+DepthTexture::DepthTexture(ProgramID pid, const Source& src, TextureDimension d)
+    : Base(pid, src, d) {
+  TINT_ASSERT(AST, IsValidDepthDimension(dim));
 }
 
 DepthTexture::DepthTexture(DepthTexture&&) = default;
 
 DepthTexture::~DepthTexture() = default;
 
-std::string DepthTexture::type_name() const {
-  std::ostringstream out;
-  out << "__depth_texture_" << dim();
-  return out.str();
-}
-
 std::string DepthTexture::FriendlyName(const SymbolTable&) const {
   std::ostringstream out;
-  out << "texture_depth_" << dim();
+  out << "texture_depth_" << dim;
   return out.str();
 }
 
-DepthTexture* DepthTexture::Clone(CloneContext* ctx) const {
-  auto src = ctx->Clone(source());
-  return ctx->dst->create<DepthTexture>(src, dim());
+const DepthTexture* DepthTexture::Clone(CloneContext* ctx) const {
+  auto src = ctx->Clone(source);
+  return ctx->dst->create<DepthTexture>(src, dim);
 }
 
 }  // namespace ast

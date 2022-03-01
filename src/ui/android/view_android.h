@@ -12,6 +12,8 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -105,6 +107,10 @@ class UI_ANDROID_EXPORT ViewAndroid {
   explicit ViewAndroid(LayoutType layout_type);
 
   ViewAndroid();
+
+  ViewAndroid(const ViewAndroid&) = delete;
+  ViewAndroid& operator=(const ViewAndroid&) = delete;
+
   virtual ~ViewAndroid();
 
   void UpdateFrameInfo(const FrameInfo& frame_info);
@@ -221,7 +227,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
  protected:
   void RemoveAllChildren(bool attached_to_window);
 
-  ViewAndroid* parent_;
+  raw_ptr<ViewAndroid> parent_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ViewAndroidBoundsTest, MatchesViewInFront);
@@ -294,7 +300,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
   scoped_refptr<cc::Layer> layer_;
   JavaObjectWeakGlobalRef delegate_;
 
-  EventHandlerAndroid* event_handler_ = nullptr;  // Not owned
+  raw_ptr<EventHandlerAndroid> event_handler_ = nullptr;  // Not owned
 
   // Basic view layout information. Used to do hit testing deciding whether
   // the passed events should be processed by the view. Unit in DIP.
@@ -312,8 +318,6 @@ class UI_ANDROID_EXPORT ViewAndroid {
   CopyViewCallback copy_view_callback_;
 
   bool controls_resize_view_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewAndroid);
 };
 
 }  // namespace ui

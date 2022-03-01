@@ -15,6 +15,7 @@
 #include "core/fpdfapi/parser/cpdf_seekablemultistream.h"
 #include "core/fxcrt/autonuller.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
+#include "core/fxcrt/stl_util.h"
 #include "core/fxcrt/xml/cfx_xmldocument.h"
 #include "core/fxcrt/xml/cfx_xmlparser.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
@@ -27,7 +28,6 @@
 #include "public/fpdf_formfill.h"
 #include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
-#include "third_party/base/stl_util.h"
 #include "v8/include/cppgc/allocation.h"
 #include "xfa/fgas/font/cfgas_gemodule.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
@@ -112,7 +112,7 @@ CPDFXFA_Context::CPDFXFA_Context(CPDF_Document* pPDFDoc)
 }
 
 CPDFXFA_Context::~CPDFXFA_Context() {
-  m_nLoadStatus = FXFA_LOADSTATUS_CLOSING;
+  m_nLoadStatus = LoadStatus::kClosing;
   if (m_pFormFillEnv)
     m_pFormFillEnv->ClearAllFocusedAnnots();
 }
@@ -133,7 +133,7 @@ void CPDFXFA_Context::SetFormFillEnv(
 }
 
 bool CPDFXFA_Context::LoadXFADoc() {
-  m_nLoadStatus = FXFA_LOADSTATUS_LOADING;
+  m_nLoadStatus = LoadStatus::kLoading;
   m_XFAPageList.clear();
 
   CJS_Runtime* actual_runtime = GetCJSRuntime();  // Null if a stub.
@@ -191,7 +191,7 @@ bool CPDFXFA_Context::LoadXFADoc() {
 
   view_nuller.AbandonNullification();
   doc_nuller.AbandonNullification();
-  m_nLoadStatus = FXFA_LOADSTATUS_LOADED;
+  m_nLoadStatus = LoadStatus::kLoaded;
   return true;
 }
 
@@ -212,7 +212,7 @@ RetainPtr<CPDFXFA_Page> CPDFXFA_Context::GetOrCreateXFAPage(int page_index) {
   if (page_index < 0)
     return nullptr;
 
-  if (pdfium::IndexInBounds(m_XFAPageList, page_index)) {
+  if (fxcrt::IndexInBounds(m_XFAPageList, page_index)) {
     if (m_XFAPageList[page_index])
       return m_XFAPageList[page_index];
   } else {
@@ -224,14 +224,14 @@ RetainPtr<CPDFXFA_Page> CPDFXFA_Context::GetOrCreateXFAPage(int page_index) {
   if (!pPage->LoadPage())
     return nullptr;
 
-  if (pdfium::IndexInBounds(m_XFAPageList, page_index))
+  if (fxcrt::IndexInBounds(m_XFAPageList, page_index))
     m_XFAPageList[page_index] = pPage;
 
   return pPage;
 }
 
 RetainPtr<CPDFXFA_Page> CPDFXFA_Context::GetXFAPage(int page_index) {
-  if (!pdfium::IndexInBounds(m_XFAPageList, page_index))
+  if (!fxcrt::IndexInBounds(m_XFAPageList, page_index))
     return nullptr;
 
   return m_XFAPageList[page_index];
@@ -265,7 +265,7 @@ void CPDFXFA_Context::DeletePage(int page_index) {
   // if it's a valid page in the document.
   m_pPDFDoc->DeletePage(page_index);
 
-  if (pdfium::IndexInBounds(m_XFAPageList, page_index))
+  if (fxcrt::IndexInBounds(m_XFAPageList, page_index))
     m_XFAPageList[page_index].Reset();
 }
 
@@ -324,7 +324,7 @@ int32_t CPDFXFA_Context::MsgBox(const WideString& wsMessage,
                                 const WideString& wsTitle,
                                 uint32_t dwIconType,
                                 uint32_t dwButtonType) {
-  if (!m_pFormFillEnv || m_nLoadStatus != FXFA_LOADSTATUS_LOADED)
+  if (!m_pFormFillEnv || m_nLoadStatus != LoadStatus::kLoaded)
     return -1;
 
   int iconType =
@@ -345,8 +345,7 @@ WideString CPDFXFA_Context::Response(const WideString& wsQuestion,
   int nLength = 2048;
   std::vector<uint8_t, FxAllocAllocator<uint8_t>> pBuff(nLength);
   nLength = m_pFormFillEnv->JS_appResponse(wsQuestion, wsTitle, wsDefaultAnswer,
-                                           WideString(), bMark, pBuff.data(),
-                                           nLength);
+                                           WideString(), bMark, pBuff);
   if (nLength <= 0)
     return WideString();
 

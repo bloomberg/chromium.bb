@@ -6,12 +6,14 @@
 
 #include "fpdfsdk/pwl/cpwl_scroll_bar.h"
 
+#include <math.h>
+
 #include <algorithm>
 #include <sstream>
 #include <utility>
 
 #include "core/fxge/cfx_fillrenderoptions.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "fpdfsdk/pwl/cpwl_wnd.h"
 #include "third_party/base/check.h"
@@ -34,8 +36,8 @@ void PWL_FLOATRANGE::Set(float min, float max) {
 }
 
 bool PWL_FLOATRANGE::In(float x) const {
-  return (IsFloatBigger(x, fMin) || IsFloatEqual(x, fMin)) &&
-         (IsFloatSmaller(x, fMax) || IsFloatEqual(x, fMax));
+  return (FXSYS_IsFloatBigger(x, fMin) || FXSYS_IsFloatEqual(x, fMin)) &&
+         (FXSYS_IsFloatSmaller(x, fMax) || FXSYS_IsFloatEqual(x, fMax));
 }
 
 float PWL_FLOATRANGE::GetWidth() const {
@@ -57,9 +59,9 @@ void PWL_SCROLL_PRIVATEDATA::Default() {
 void PWL_SCROLL_PRIVATEDATA::SetScrollRange(float min, float max) {
   ScrollRange.Set(min, max);
 
-  if (IsFloatSmaller(fScrollPos, ScrollRange.fMin))
+  if (FXSYS_IsFloatSmaller(fScrollPos, ScrollRange.fMin))
     fScrollPos = ScrollRange.fMin;
-  if (IsFloatBigger(fScrollPos, ScrollRange.fMax))
+  if (FXSYS_IsFloatBigger(fScrollPos, ScrollRange.fMax))
     fScrollPos = ScrollRange.fMax;
 }
 
@@ -127,8 +129,8 @@ bool CPWL_ScrollBar::RePosChildWnd() {
   CFX_FloatRect rcClient = GetClientRect();
   CFX_FloatRect rcMinButton;
   CFX_FloatRect rcMaxButton;
-  if (IsFloatBigger(rcClient.top - rcClient.bottom,
-                    kButtonWidth * 2 + kPosButtonMinWidth + 2)) {
+  if (FXSYS_IsFloatBigger(rcClient.top - rcClient.bottom,
+                          kButtonWidth * 2 + kPosButtonMinWidth + 2)) {
     rcMinButton = CFX_FloatRect(rcClient.left, rcClient.top - kButtonWidth,
                                 rcClient.right, rcClient.top);
     rcMaxButton = CFX_FloatRect(rcClient.left, rcClient.bottom, rcClient.right,
@@ -136,7 +138,7 @@ bool CPWL_ScrollBar::RePosChildWnd() {
   } else {
     float fBWidth =
         (rcClient.top - rcClient.bottom - kPosButtonMinWidth - 2) / 2;
-    if (IsFloatBigger(fBWidth, 0)) {
+    if (FXSYS_IsFloatBigger(fBWidth, 0)) {
       rcMinButton = CFX_FloatRect(rcClient.left, rcClient.top - fBWidth,
                                   rcClient.right, rcClient.top);
       rcMaxButton = CFX_FloatRect(rcClient.left, rcClient.bottom,
@@ -182,7 +184,8 @@ void CPWL_ScrollBar::DrawThisAppearance(CFX_RenderDevice* pDevice,
   }
 }
 
-bool CPWL_ScrollBar::OnLButtonDown(uint32_t nFlag, const CFX_PointF& point) {
+bool CPWL_ScrollBar::OnLButtonDown(Mask<FWL_EVENTFLAG> nFlag,
+                                   const CFX_PointF& point) {
   CPWL_Wnd::OnLButtonDown(nFlag, point);
 
   if (HasFlag(PWS_AUTOTRANSPARENT)) {
@@ -224,12 +227,13 @@ bool CPWL_ScrollBar::OnLButtonDown(uint32_t nFlag, const CFX_PointF& point) {
   return true;
 }
 
-bool CPWL_ScrollBar::OnLButtonUp(uint32_t nFlag, const CFX_PointF& point) {
+bool CPWL_ScrollBar::OnLButtonUp(Mask<FWL_EVENTFLAG> nFlag,
+                                 const CFX_PointF& point) {
   CPWL_Wnd::OnLButtonUp(nFlag, point);
 
   if (HasFlag(PWS_AUTOTRANSPARENT)) {
-    if (GetTransparency() != PWL_SCROLLBAR_TRANSPARENCY) {
-      SetTransparency(PWL_SCROLLBAR_TRANSPARENCY);
+    if (GetTransparency() != kTransparency) {
+      SetTransparency(kTransparency);
       if (!InvalidateRect(nullptr))
         return true;
     }
@@ -318,10 +322,7 @@ void CPWL_ScrollBar::CreateButtons(const CreateParams& cp) {
 }
 
 float CPWL_ScrollBar::GetScrollBarWidth() const {
-  if (!IsVisible())
-    return 0;
-
-  return PWL_SCROLLBAR_WIDTH;
+  return IsVisible() ? kWidth : 0.0f;
 }
 
 void CPWL_ScrollBar::SetScrollRange(float fMin,
@@ -334,7 +335,7 @@ void CPWL_ScrollBar::SetScrollRange(float fMin,
   m_sData.SetScrollRange(fMin, fMax);
   m_sData.SetClientWidth(fClientWidth);
 
-  if (IsFloatSmaller(m_sData.ScrollRange.GetWidth(), 0.0f)) {
+  if (FXSYS_IsFloatSmaller(m_sData.ScrollRange.GetWidth(), 0.0f)) {
     m_pPosButton->SetVisible(false);
     // Note, |this| may no longer be viable at this point. If more work needs
     // to be done, check thisObserved.
@@ -352,7 +353,7 @@ void CPWL_ScrollBar::SetScrollRange(float fMin,
 void CPWL_ScrollBar::SetScrollPos(float fPos) {
   float fOldPos = m_sData.fScrollPos;
   m_sData.SetPos(fPos);
-  if (!IsFloatEqual(m_sData.fScrollPos, fOldPos)) {
+  if (!FXSYS_IsFloatEqual(m_sData.fScrollPos, fOldPos)) {
     MovePosButton(true);
     // Note, |this| may no longer be viable at this point. If more work needs
     // to be done, check the return value of MovePosButton().
@@ -373,10 +374,10 @@ bool CPWL_ScrollBar::MovePosButton(bool bRefresh) {
     float fBottom = TrueToFace(m_sData.fScrollPos + m_sData.fClientWidth);
     float fTop = TrueToFace(m_sData.fScrollPos);
 
-    if (IsFloatSmaller(fTop - fBottom, kPosButtonMinWidth))
+    if (FXSYS_IsFloatSmaller(fTop - fBottom, kPosButtonMinWidth))
       fBottom = fTop - kPosButtonMinWidth;
 
-    if (IsFloatSmaller(fBottom, rcPosArea.bottom)) {
+    if (FXSYS_IsFloatSmaller(fBottom, rcPosArea.bottom)) {
       fBottom = rcPosArea.bottom;
       fTop = fBottom + kPosButtonMinWidth;
     }
@@ -442,17 +443,17 @@ void CPWL_ScrollBar::OnPosButtonMouseMove(const CFX_PointF& point) {
   float fOldScrollPos = m_sData.fScrollPos;
   float fNewPos = FaceToTrue(m_fOldPosButton + point.y - m_nOldPos);
   if (m_bMouseDown) {
-    if (IsFloatSmaller(fNewPos, m_sData.ScrollRange.fMin)) {
+    if (FXSYS_IsFloatSmaller(fNewPos, m_sData.ScrollRange.fMin)) {
       fNewPos = m_sData.ScrollRange.fMin;
     }
 
-    if (IsFloatBigger(fNewPos, m_sData.ScrollRange.fMax)) {
+    if (FXSYS_IsFloatBigger(fNewPos, m_sData.ScrollRange.fMax)) {
       fNewPos = m_sData.ScrollRange.fMax;
     }
 
     m_sData.SetPos(fNewPos);
 
-    if (!IsFloatEqual(fOldScrollPos, m_sData.fScrollPos)) {
+    if (!FXSYS_IsFloatEqual(fOldScrollPos, m_sData.fScrollPos)) {
       if (!MovePosButton(true))
         return;
 

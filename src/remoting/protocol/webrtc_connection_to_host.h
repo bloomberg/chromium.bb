@@ -8,8 +8,8 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/memory/raw_ptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/clipboard_filter.h"
 #include "remoting/protocol/connection_to_host.h"
@@ -33,6 +33,10 @@ class WebrtcConnectionToHost : public ConnectionToHost,
                                public ChannelDispatcherBase::EventHandler {
  public:
   WebrtcConnectionToHost();
+
+  WebrtcConnectionToHost(const WebrtcConnectionToHost&) = delete;
+  WebrtcConnectionToHost& operator=(const WebrtcConnectionToHost&) = delete;
+
   ~WebrtcConnectionToHost() override;
 
   // ConnectionToHost interface.
@@ -86,15 +90,15 @@ class WebrtcConnectionToHost : public ConnectionToHost,
 
   void SetState(State state, ErrorCode error);
 
-  HostEventCallback* event_callback_ = nullptr;
+  raw_ptr<HostEventCallback> event_callback_ = nullptr;
 
   scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner_;
 
   // Stub for incoming messages.
-  ClientStub* client_stub_ = nullptr;
-  VideoRenderer* video_renderer_ = nullptr;
+  raw_ptr<ClientStub> client_stub_ = nullptr;
+  raw_ptr<VideoRenderer> video_renderer_ = nullptr;
   base::WeakPtr<AudioStub> audio_consumer_;
-  ClipboardStub* clipboard_stub_ = nullptr;
+  raw_ptr<ClipboardStub> clipboard_stub_ = nullptr;
 
   std::unique_ptr<Session> session_;
   std::unique_ptr<WebrtcTransport> transport_;
@@ -110,8 +114,6 @@ class WebrtcConnectionToHost : public ConnectionToHost,
   // Internal state of the connection.
   State state_ = INITIALIZING;
   ErrorCode error_ = OK;
-
-  DISALLOW_COPY_AND_ASSIGN(WebrtcConnectionToHost);
 };
 
 }  // namespace protocol

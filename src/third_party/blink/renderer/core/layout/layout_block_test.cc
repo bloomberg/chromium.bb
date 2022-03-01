@@ -4,11 +4,13 @@
 
 #include "build/build_config.h"
 
-#include "third_party/blink/renderer/core/dom/element_traversal.h"
-#include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
@@ -73,7 +75,10 @@ TEST_F(LayoutBlockTest, OverflowWithTransformAndPerspective) {
     </div>
   )HTML");
   auto* scroller = GetLayoutBoxByElementId("target");
-  EXPECT_EQ(119.5, scroller->LayoutOverflowRect().Width().ToFloat());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    EXPECT_EQ(140.0, scroller->LayoutOverflowRect().Width().ToFloat());
+  else
+    EXPECT_EQ(119.5, scroller->LayoutOverflowRect().Width().ToFloat());
 }
 
 TEST_F(LayoutBlockTest, NestedInlineVisualOverflow) {
@@ -124,13 +129,25 @@ TEST_F(LayoutBlockTest, ContainmentStyleChange) {
   Element* target_element = GetDocument().getElementById("target");
   auto* target = To<LayoutBlockFlow>(target_element->GetLayoutObject());
   auto* contained = GetLayoutBoxByElementId("contained");
-  EXPECT_TRUE(target->PositionedObjects()->Contains(contained));
+  if (target->IsLayoutNGObject()) {
+    EXPECT_TRUE(target->GetCachedLayoutResult()
+                    ->PhysicalFragment()
+                    .HasOutOfFlowFragmentChild());
+  } else {
+    EXPECT_TRUE(target->PositionedObjects()->Contains(contained));
+  }
 
   // Remove layout containment. This should cause |contained| to now be
   // in the positioned objects set for the LayoutView, not |target|.
   target_element->setAttribute(html_names::kStyleAttr, "contain:style");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(target->PositionedObjects());
+  if (target->IsLayoutNGObject()) {
+    EXPECT_FALSE(target->GetCachedLayoutResult()
+                     ->PhysicalFragment()
+                     .HasOutOfFlowFragmentChild());
+  } else {
+    EXPECT_FALSE(target->PositionedObjects());
+  }
   EXPECT_TRUE(
       GetDocument().GetLayoutView()->PositionedObjects()->Contains(contained));
 }

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
+import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
+
+import cssOverviewSidebarPanelStyles from './cssOverviewSidebarPanel.css.js';
 
 const UIStrings = {
   /**
@@ -16,7 +17,8 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/css_overview/CSSOverviewSidebarPanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
-export class CSSOverviewSidebarPanel extends UI.Widget.VBox {
+export class CSSOverviewSidebarPanel extends Common.ObjectWrapper.eventMixin<EventTypes, typeof UI.Widget.VBox>(
+    UI.Widget.VBox) {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   static get ITEM_CLASS_NAME(): string {
     return 'overview-sidebar-panel-item';
@@ -30,13 +32,12 @@ export class CSSOverviewSidebarPanel extends UI.Widget.VBox {
   constructor() {
     super(true);
 
-    this.registerRequiredCSS('panels/css_overview/cssOverviewSidebarPanel.css', {enableLegacyPatching: false});
     this.contentElement.classList.add('overview-sidebar-panel');
-    this.contentElement.addEventListener('click', this._onItemClick.bind(this));
+    this.contentElement.addEventListener('click', this.onItemClick.bind(this));
 
     // Clear overview.
     const clearResultsButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clearOverview), 'largeicon-clear');
-    clearResultsButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._reset, this);
+    clearResultsButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.reset, this);
 
     // Toolbar.
     const toolbarElement = this.contentElement.createChild('div', 'overview-toolbar');
@@ -50,18 +51,18 @@ export class CSSOverviewSidebarPanel extends UI.Widget.VBox {
     item.dataset.id = id;
   }
 
-  _reset(): void {
+  private reset(): void {
     this.dispatchEventToListeners(SidebarEvents.Reset);
   }
 
-  _deselectAllItems(): void {
+  private deselectAllItems(): void {
     const items = this.contentElement.querySelectorAll(`.${CSSOverviewSidebarPanel.ITEM_CLASS_NAME}`);
     items.forEach(item => {
       item.classList.remove(CSSOverviewSidebarPanel.SELECTED);
     });
   }
 
-  _onItemClick(event: Event): void {
+  private onItemClick(event: Event): void {
     const target = (event.composedPath()[0] as HTMLElement);
     if (!target.classList.contains(CSSOverviewSidebarPanel.ITEM_CLASS_NAME)) {
       return;
@@ -85,8 +86,12 @@ export class CSSOverviewSidebarPanel extends UI.Widget.VBox {
       return;
     }
 
-    this._deselectAllItems();
+    this.deselectAllItems();
     target.classList.add(CSSOverviewSidebarPanel.SELECTED);
+  }
+  wasShown(): void {
+    super.wasShown();
+    this.registerCSSFiles([cssOverviewSidebarPanelStyles]);
   }
 }
 
@@ -94,3 +99,8 @@ export const enum SidebarEvents {
   ItemSelected = 'ItemSelected',
   Reset = 'Reset',
 }
+
+export type EventTypes = {
+  [SidebarEvents.ItemSelected]: string,
+  [SidebarEvents.Reset]: void,
+};

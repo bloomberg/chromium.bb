@@ -7,9 +7,8 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/animation/scroll_animator.h"
@@ -93,6 +92,9 @@ class VIEWS_EXPORT ScrollBar : public View,
     kPrevPage,
     kNextPage,
   };
+
+  ScrollBar(const ScrollBar&) = delete;
+  ScrollBar& operator=(const ScrollBar&) = delete;
 
   ~ScrollBar() override;
 
@@ -256,9 +258,9 @@ class VIEWS_EXPORT ScrollBar : public View,
 
   const bool is_horiz_;
 
-  BaseScrollBarThumb* thumb_ = nullptr;
+  raw_ptr<BaseScrollBarThumb> thumb_ = nullptr;
 
-  ScrollBarController* controller_ = nullptr;
+  raw_ptr<ScrollBarController> controller_ = nullptr;
 
   int max_pos_ = 0;
 
@@ -292,8 +294,6 @@ class VIEWS_EXPORT ScrollBar : public View,
   std::unique_ptr<ui::SimpleMenuModel> menu_model_;
   std::unique_ptr<MenuRunner> menu_runner_;
   std::unique_ptr<ScrollAnimator> scroll_animator_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScrollBar);
 };
 
 }  // namespace views

@@ -29,6 +29,7 @@ limitations under the License.
 #include "tensorflow/core/lib/strings/strcat.h"
 #include "tensorflow/core/platform/test.h"
 #include "tensorflow/core/platform/types.h"
+#include "tensorflow/core/protobuf/error_codes.pb.h"
 
 namespace tensorflow {
 namespace {
@@ -111,6 +112,64 @@ SquarePlusOne[T:{float, double, int32, int64}](x:T) -> (y:T) {
   EXPECT_EQ(result.arg_types, DataTypeVector({DT_FLOAT}));
   EXPECT_EQ(result.ret_types, DataTypeVector({DT_FLOAT}));
   EXPECT_EQ(DebugString(result.nodes), e2);
+}
+
+TEST(TFunc, CopyDebugInfo) {
+  auto fdef = FDH::Create(
+      // Name
+      "Square",
+      // Inputs
+      {"x: T"},
+      // Outputs
+      {"y: T"},
+      // Attrs
+      {"T: {float, double, int32, int64}"},
+      // Nodes
+      {// a = Sqaure<T>(x)
+       {{"a"},
+        {"Square"},
+        {"x"},
+        {{"T", "$T"}},
+        {},
+        "",
+        "",
+        {"node_name"},
+        {"func_name"}}},
+      // Returns
+      {{"y", "a:y:0"}});
+  const char* e = R"P(
+Square[T:{float, double, int32, int64}](x:T) -> (y:T) {
+  a = Square[T=$T](x)
+  return y = a:y:0
+}
+)P";
+  EXPECT_EQ(DebugString(fdef), e);
+  InstantiationResult result;
+  TF_ASSERT_OK(
+      InstantiateFunction(fdef, Attrs({{"T", DT_FLOAT}}), GetOpSig, &result));
+  const char* e2 = R"P(
+(x:float) -> (a:float) {
+  a = Square[T=float](x)
+}
+)P";
+  EXPECT_EQ(result.arg_types, DataTypeVector({DT_FLOAT}));
+  EXPECT_EQ(result.ret_types, DataTypeVector({DT_FLOAT}));
+  EXPECT_EQ(DebugString(result.nodes), e2);
+  EXPECT_EQ(result.nodes.size(), 3);
+  NodeDef node;
+  for (auto n : result.nodes) {
+    if (n.name() == "a") {
+      node = n;
+      break;
+    }
+  }
+  EXPECT_TRUE(node.has_experimental_debug_info());
+  EXPECT_EQ(node.experimental_debug_info().original_node_names().size(), 1);
+  EXPECT_EQ(node.experimental_debug_info().original_func_names().size(), 1);
+  EXPECT_EQ(node.experimental_debug_info().original_node_names()[0],
+            "node_name");
+  EXPECT_EQ(node.experimental_debug_info().original_func_names()[0],
+            "func_name");
 }
 
 TEST(TFunc, ControlDep) {
@@ -406,7 +465,7 @@ XTimesTwo[T:{float, double, int32, int64}](x:T) -> (y:T) {
 TEST(TFunc, WXPlusB) {
   auto expect = R"P(
 WXPlusB[T:{float, double}](w:T, x:T, b:T) -> (y:T) {
-  mm = MatMul[T=$T, _kernel="eigen", transpose_a=false, transpose_b=false](w, x)
+  mm = MatMul[T=$T, transpose_a=false, transpose_b=false](w, x)
   y = Add[T=$T](mm:product:0, b)
   return y = y:z:0
 }
@@ -911,10 +970,13 @@ TEST(FunctionCallFrame, Void_Void) {
   FunctionCallFrame frame({}, {});
   TF_EXPECT_OK(frame.SetArgs({}));
   auto a = test::AsTensor<float>({100});
-  HasError(frame.SetArgs({a}), "Invalid argument");
-  const Tensor* v;
-  HasError(frame.GetArg(0, &v), "Invalid argument");
-  HasError(frame.SetRetval(0, *v), "Invalid argument");
+  EXPECT_EQ(frame.SetArgs({a}).code(), error::INVALID_ARGUMENT);
+  const Tensor* v = nullptr;
+  EXPECT_EQ(frame.GetArg(0, &v).code(), error::INVALID_ARGUMENT);
+  if (v != nullptr) {
+    // v is null in certain environments.
+    EXPECT_EQ(frame.SetRetval(0, *v).code(), error::INVALID_ARGUMENT);
+  }
   std::vector<Tensor> rets;
   TF_EXPECT_OK(frame.GetRetvals(&rets));
   EXPECT_EQ(rets.size(), 0);
@@ -922,27 +984,27 @@ TEST(FunctionCallFrame, Void_Void) {
 
 TEST(FunctionCallFrame, Float_Float_Float) {
   FunctionCallFrame frame({DT_FLOAT, DT_FLOAT}, {DT_FLOAT});
-  HasError(frame.SetArgs({}), "Invalid argument: Expects 2 arguments");
+  EXPECT_EQ(frame.SetArgs({}).code(), error::INVALID_ARGUMENT);
   auto a = test::AsTensor<float>({100});
   auto b = test::AsTensor<float>({200});
-  auto c = test::AsTensor<int64>({300});
-  HasError(frame.SetArgs({a, c}),
-           "Invalid argument: Expects arg[1] to be float");
+  auto c = test::AsTensor<int64_t>({300});
+  EXPECT_EQ(frame.SetArgs({a, c}).code(), error::INVALID_ARGUMENT);
   TF_EXPECT_OK(frame.SetArgs({a, b}));
 
   const Tensor* v;
-  HasError(frame.GetArg(-1, &v), "Invalid argument");
-  HasError(frame.GetArg(2, &v), "Invalid argument");
+
+  EXPECT_EQ(frame.GetArg(-1, &v).code(), error::INVALID_ARGUMENT);
+  EXPECT_EQ(frame.GetArg(2, &v).code(), error::INVALID_ARGUMENT);
   TF_EXPECT_OK(frame.GetArg(0, &v));
   test::ExpectTensorEqual<float>(a, *v);
   TF_EXPECT_OK(frame.GetArg(1, &v));
   test::ExpectTensorEqual<float>(b, *v);
 
   Tensor w = test::AsTensor<float>({-100});
-  HasError(frame.SetRetval(-1, w), "Invalid argument");
-  HasError(frame.SetRetval(1, w), "Invalid argument");
-  HasError(frame.SetRetval(0, test::AsTensor<int64>({-100})),
-           "Invalid argument: Expects ret[0] to be float");
+  EXPECT_EQ(frame.SetRetval(-1, w).code(), error::INVALID_ARGUMENT);
+  EXPECT_EQ(frame.SetRetval(1, w).code(), error::INVALID_ARGUMENT);
+  EXPECT_EQ(frame.SetRetval(0, test::AsTensor<int64_t>({-100})).code(),
+            error::INVALID_ARGUMENT);
 
   std::vector<Tensor> rets;
   HasError(frame.GetRetvals(&rets), "does not have value");
@@ -967,6 +1029,11 @@ TEST(Canonicalize, Basic) {
                                           {"transpose_b", true},
                                           {"transpose_a", false}})),
             "MatMul[T=double,transpose_a=false,transpose_b=true]");
+  EXPECT_EQ(Canonicalize("CheckNumericsV2",
+                         Attrs({{"T", DT_HALF},
+                                {"message", "Message should get hashed"}}),
+                         FunctionLibraryRuntime::InstantiateOptions()),
+            "CheckNumericsV2[T=half,message=811750450553548470]");
 }
 
 TEST(FunctionLibraryDefinitionTest, Contains) {
@@ -1066,6 +1133,16 @@ TEST(FunctionLibraryDefinitionTest, RemoveFunction) {
   EXPECT_TRUE(lib_def.Contains("XTimesTwo"));
   TF_EXPECT_OK(lib_def.RemoveFunction("XTimesTwo"));
   EXPECT_FALSE(lib_def.Contains("XTimesTwo"));
+}
+
+TEST(FunctionLibraryDefinitionTest, Clear) {
+  FunctionLibraryDefinition lib_def(OpRegistry::Global(), {});
+  TF_CHECK_OK(lib_def.AddFunctionDef(test::function::XTimesTwo()));
+  TF_CHECK_OK(lib_def.AddFunctionDef(test::function::XAddX()));
+
+  lib_def.Clear();
+  EXPECT_FALSE(lib_def.Contains("XTimesTwo"));
+  EXPECT_FALSE(lib_def.Contains("XAddX"));
 }
 
 TEST(FunctionLibraryDefinitionTest, AddLibrary) {
@@ -1527,6 +1604,66 @@ TEST(InstantiateFunctionTest, ArgAttrs) {
     EXPECT_EQ(shape_attr.dim(3).size(), 8);
   }
   EXPECT_TRUE(found);
+}
+
+TEST(InstantiateFunctionTest, ResourceInputDevice) {
+  FunctionDef fdef = FDH::Create(
+      // Name
+      "Func",
+      // Args
+      {{"x0: resource"}, {"x1: resource"}},
+      // Return values
+      {"y: float"},
+      // Attr def
+      {},
+      // Nodes
+      {
+          {{"read0"},
+           "ReadVariableOp",
+           {"x0"},
+           {{"dtype", DT_FLOAT}},
+           {},
+           "/device:CPU:1"},
+          {{"read1"},
+           "ReadVariableOp",
+           {"x1"},
+           {{"dtype", DT_FLOAT}},
+           {},
+           "/device:CPU:0"},
+          {{"add"},
+           "Add",
+           {"read0:value:0", "read1:value:0"},
+           {{"T", DT_FLOAT}},
+           {},
+           "/device:CPU:0"},
+      },
+      {{"y", "add:z:0"}});
+  FunctionDef::ArgAttrs arg_attrs;
+  *(*arg_attrs.mutable_attr())["_composite_device"].mutable_s() =
+      "/device:COMPOSITE:0";
+  (*fdef.mutable_arg_attr())[0] = arg_attrs;
+  absl::flat_hash_map<string, std::vector<string>> composite_devices;
+
+  Tensor arg0(DT_RESOURCE, TensorShape({2}));
+  ResourceHandle resource_handle0;
+  resource_handle0.set_device("/device:CPU:0");
+  ResourceHandle resource_handle1;
+  resource_handle1.set_device("/device:CPU:1");
+  arg0.flat<ResourceHandle>()(0) = resource_handle0;
+  arg0.flat<ResourceHandle>()(1) = resource_handle1;
+
+  Tensor arg1(DT_RESOURCE, TensorShape({}));
+  arg1.scalar<ResourceHandle>()() = resource_handle0;
+
+  const string device0 = GetFunctionResourceInputDevice(
+      arg0, /*arg_index=*/0, fdef, &composite_devices);
+  const string device1 = GetFunctionResourceInputDevice(
+      arg1, /*arg_index=*/1, fdef, &composite_devices);
+
+  EXPECT_EQ(device0, "/device:COMPOSITE:0");
+  EXPECT_EQ(device1, "/device:CPU:0");
+  EXPECT_EQ(composite_devices.size(), 1);
+  EXPECT_EQ(composite_devices.at("/device:COMPOSITE:0").size(), 2);
 }
 
 }  // end namespace

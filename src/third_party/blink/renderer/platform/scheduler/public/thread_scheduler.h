@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_input_event_attribution.h"
@@ -154,19 +154,20 @@ class PLATFORM_EXPORT ThreadScheduler {
   // Associates |isolate| to the scheduler.
   virtual void SetV8Isolate(v8::Isolate* isolate) = 0;
 
-  virtual void OnSafepointEntered() {}
-  virtual void OnSafepointExited() {}
-
   // Test helpers.
+
+  virtual scheduler::NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() = 0;
+
+ private:
+  // For GetWebMainThreadScheduler().
+  friend class scheduler::WebThreadScheduler;
 
   // Return a reference to an underlying main thread WebThreadScheduler object.
   // Can be null if there is no underlying main thread WebThreadScheduler
   // (e.g. worker threads).
-  virtual scheduler::WebThreadScheduler* GetWebMainThreadSchedulerForTest() {
+  virtual scheduler::WebThreadScheduler* GetWebMainThreadScheduler() {
     return nullptr;
   }
-
-  virtual scheduler::NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() = 0;
 };
 
 }  // namespace blink

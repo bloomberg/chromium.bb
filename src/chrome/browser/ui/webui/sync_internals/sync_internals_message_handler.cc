@@ -12,8 +12,8 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_invalidations_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/sync/base/model_type.h"
@@ -23,10 +23,9 @@
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/invalidations/sync_invalidations_service.h"
-#include "components/sync/js/js_event_details.h"
 #include "components/sync/model/type_entities_count.h"
-#include "components/sync/protocol/sync.pb.h"
 #include "components/sync/protocol/sync_invalidations_payload.pb.h"
+#include "components/sync/protocol/user_event_specifics.pb.h"
 #include "components/sync_user_events/user_event_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -40,21 +39,19 @@ using syncer::SyncService;
 namespace {
 
 // Converts the string at |index| in |list| to an int, defaulting to 0 on error.
-int64_t StringAtIndexToInt64(const base::ListValue* list, int index) {
-  std::string str;
-  if (list->GetString(index, &str)) {
+int64_t StringAtIndexToInt64(const base::ListValue* list, size_t index) {
+  if (list->GetList().size() > index && list->GetList()[index].is_string()) {
     int64_t integer = 0;
-    if (base::StringToInt64(str, &integer))
+    if (base::StringToInt64(list->GetList()[index].GetString(), &integer))
       return integer;
   }
   return 0;
 }
 
 // Returns whether the there is any value at the given |index|.
-bool HasSomethingAtIndex(const base::ListValue* list, int index) {
-  std::string str;
-  if (list->GetString(index, &str)) {
-    return !str.empty();
+bool HasSomethingAtIndex(const base::ListValue* list, size_t index) {
+  if (list->GetList().size() > index && list->GetList()[index].is_string()) {
+    return !list->GetList()[index].GetString().empty();
   }
   return false;
 }
@@ -97,58 +94,58 @@ void SyncInternalsMessageHandler::OnJavascriptDisallowed() {
 void SyncInternalsMessageHandler::RegisterMessages() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kRequestDataAndRegisterForUpdates,
       base::BindRepeating(
           &SyncInternalsMessageHandler::HandleRequestDataAndRegisterForUpdates,
           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kRequestListOfTypes,
       base::BindRepeating(
           &SyncInternalsMessageHandler::HandleRequestListOfTypes,
           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kRequestIncludeSpecificsInitialState,
       base::BindRepeating(&SyncInternalsMessageHandler::
                               HandleRequestIncludeSpecificsInitialState,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kSetIncludeSpecifics,
       base::BindRepeating(
           &SyncInternalsMessageHandler::HandleSetIncludeSpecifics,
           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kWriteUserEvent,
       base::BindRepeating(&SyncInternalsMessageHandler::HandleWriteUserEvent,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kRequestStart,
       base::BindRepeating(&SyncInternalsMessageHandler::HandleRequestStart,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kRequestStopKeepData,
       base::BindRepeating(
           &SyncInternalsMessageHandler::HandleRequestStopKeepData,
           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kRequestStopClearData,
       base::BindRepeating(
           &SyncInternalsMessageHandler::HandleRequestStopClearData,
           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kTriggerRefresh,
       base::BindRepeating(&SyncInternalsMessageHandler::HandleTriggerRefresh,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       syncer::sync_ui_util::kGetAllNodes,
       base::BindRepeating(&SyncInternalsMessageHandler::HandleGetAllNodes,
                           base::Unretained(this)));
@@ -156,7 +153,7 @@ void SyncInternalsMessageHandler::RegisterMessages() {
 
 void SyncInternalsMessageHandler::HandleRequestDataAndRegisterForUpdates(
     const ListValue* args) {
-  DCHECK(args->empty());
+  DCHECK(args->GetList().empty());
   AllowJavascript();
 
   // is_registered_ flag protects us from double-registering.  This could
@@ -166,8 +163,6 @@ void SyncInternalsMessageHandler::HandleRequestDataAndRegisterForUpdates(
   if (service && !is_registered_) {
     service->AddObserver(this);
     service->AddProtocolEventObserver(this);
-    js_controller_ = service->GetJsController();
-    js_controller_->AddJsEventHandler(this);
 
     SyncInvalidationsService* invalidations_service =
         GetSyncInvalidationsService();
@@ -183,23 +178,23 @@ void SyncInternalsMessageHandler::HandleRequestDataAndRegisterForUpdates(
 
 void SyncInternalsMessageHandler::HandleRequestListOfTypes(
     const ListValue* args) {
-  DCHECK(args->empty());
+  DCHECK(args->GetList().empty());
   AllowJavascript();
 
   DictionaryValue event_details;
-  auto type_list = std::make_unique<ListValue>();
+  ListValue type_list;
   syncer::ModelTypeSet protocol_types = syncer::ProtocolTypes();
   for (syncer::ModelType type : protocol_types) {
-    type_list->AppendString(ModelTypeToString(type));
+    type_list.Append(ModelTypeToString(type));
   }
-  event_details.Set(syncer::sync_ui_util::kTypes, std::move(type_list));
+  event_details.SetKey(syncer::sync_ui_util::kTypes, std::move(type_list));
   FireWebUIListener(syncer::sync_ui_util::kOnReceivedListOfTypes,
                     event_details);
 }
 
 void SyncInternalsMessageHandler::HandleRequestIncludeSpecificsInitialState(
     const ListValue* args) {
-  DCHECK(args->empty());
+  DCHECK(args->GetList().empty());
   AllowJavascript();
 
   DictionaryValue value;
@@ -211,12 +206,10 @@ void SyncInternalsMessageHandler::HandleRequestIncludeSpecificsInitialState(
 }
 
 void SyncInternalsMessageHandler::HandleGetAllNodes(const ListValue* args) {
-  DCHECK_EQ(1U, args->GetSize());
+  DCHECK_EQ(1U, args->GetList().size());
   AllowJavascript();
 
-  std::string callback_id;
-  bool success = args->GetString(0, &callback_id);
-  DCHECK(success);
+  const std::string& callback_id = args->GetList()[0].GetString();
 
   SyncService* service = GetSyncService();
   if (service) {
@@ -232,14 +225,14 @@ void SyncInternalsMessageHandler::HandleGetAllNodes(const ListValue* args) {
 
 void SyncInternalsMessageHandler::HandleSetIncludeSpecifics(
     const ListValue* args) {
-  DCHECK_EQ(1U, args->GetSize());
+  DCHECK_EQ(1U, args->GetList().size());
   AllowJavascript();
   include_specifics_ = args->GetList()[0].GetBool();
 }
 
 void SyncInternalsMessageHandler::HandleWriteUserEvent(
     const base::ListValue* args) {
-  DCHECK_EQ(2U, args->GetSize());
+  DCHECK_EQ(2U, args->GetList().size());
   AllowJavascript();
 
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -252,11 +245,11 @@ void SyncInternalsMessageHandler::HandleWriteUserEvent(
   event_specifics.mutable_test_event();
 
   // |event_time_usec| is required.
-  event_specifics.set_event_time_usec(StringAtIndexToInt64(args, 0));
+  event_specifics.set_event_time_usec(StringAtIndexToInt64(args, 0u));
 
   // |navigation_id| is optional, treat empty string and 0 differently.
   if (HasSomethingAtIndex(args, 1)) {
-    event_specifics.set_navigation_id(StringAtIndexToInt64(args, 1));
+    event_specifics.set_navigation_id(StringAtIndexToInt64(args, 1u));
   }
 
   user_event_service->RecordUserEvent(event_specifics);
@@ -264,7 +257,7 @@ void SyncInternalsMessageHandler::HandleWriteUserEvent(
 
 void SyncInternalsMessageHandler::HandleRequestStart(
     const base::ListValue* args) {
-  DCHECK_EQ(0U, args->GetSize());
+  DCHECK_EQ(0U, args->GetList().size());
 
   SyncService* service = GetSyncService();
   if (!service)
@@ -280,7 +273,7 @@ void SyncInternalsMessageHandler::HandleRequestStart(
 
 void SyncInternalsMessageHandler::HandleRequestStopKeepData(
     const base::ListValue* args) {
-  DCHECK_EQ(0U, args->GetSize());
+  DCHECK_EQ(0U, args->GetList().size());
 
   SyncService* service = GetSyncService();
   if (!service)
@@ -291,7 +284,7 @@ void SyncInternalsMessageHandler::HandleRequestStopKeepData(
 
 void SyncInternalsMessageHandler::HandleRequestStopClearData(
     const base::ListValue* args) {
-  DCHECK_EQ(0U, args->GetSize());
+  DCHECK_EQ(0U, args->GetList().size());
 
   SyncService* service = GetSyncService();
   if (!service)
@@ -306,10 +299,7 @@ void SyncInternalsMessageHandler::HandleTriggerRefresh(
   if (!service)
     return;
 
-  // Only allowed to trigger refresh/schedule nudges for protocol types, things
-  // like PROXY_TABS are not allowed.
-  service->TriggerRefresh(syncer::Intersection(service->GetActiveDataTypes(),
-                                               syncer::ProtocolTypes()));
+  service->TriggerRefresh(syncer::ModelTypeSet::All());
 }
 
 void SyncInternalsMessageHandler::OnReceivedAllNodes(
@@ -350,14 +340,6 @@ void SyncInternalsMessageHandler::OnInvalidationReceived(
                     data_types_list);
 }
 
-void SyncInternalsMessageHandler::HandleJsEvent(
-    const std::string& name,
-    const syncer::JsEventDetails& details) {
-  DVLOG(1) << "Handling event: " << name << " with details "
-           << details.ToString();
-  FireWebUIListener(name, details.Get());
-}
-
 void SyncInternalsMessageHandler::SendAboutInfoAndEntityCounts() {
   std::unique_ptr<DictionaryValue> value = about_sync_data_delegate_.Run(
       GetSyncService(),
@@ -388,14 +370,14 @@ void SyncInternalsMessageHandler::OnGotEntityCounts(
   }
 
   DictionaryValue event_details;
-  event_details.SetPath(syncer::sync_ui_util::kEntityCounts,
-                        std::move(count_list));
+  event_details.SetKey(syncer::sync_ui_util::kEntityCounts,
+                       std::move(count_list));
   FireWebUIListener(syncer::sync_ui_util::kOnEntityCountsUpdated,
                     std::move(event_details));
 }
 
 SyncService* SyncInternalsMessageHandler::GetSyncService() {
-  return ProfileSyncServiceFactory::GetForProfile(
+  return SyncServiceFactory::GetForProfile(
       Profile::FromWebUI(web_ui())->GetOriginalProfile());
 }
 
@@ -413,11 +395,8 @@ void SyncInternalsMessageHandler::UnregisterModelNotifications() {
   // Cannot use ScopedObserver to do all the tracking because most don't follow
   // AddObserver/RemoveObserver method naming style.
   if (is_registered_) {
-    DCHECK(js_controller_);
     service->RemoveObserver(this);
     service->RemoveProtocolEventObserver(this);
-    js_controller_->RemoveJsEventHandler(this);
-    js_controller_ = nullptr;
 
     SyncInvalidationsService* invalidations_service =
         GetSyncInvalidationsService();

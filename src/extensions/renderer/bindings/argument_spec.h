@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "v8/include/v8.h"
@@ -48,6 +47,10 @@ class ArgumentSpec {
   // populating them at runtime.
   explicit ArgumentSpec(const base::Value& value);
   explicit ArgumentSpec(ArgumentType type);
+
+  ArgumentSpec(const ArgumentSpec&) = delete;
+  ArgumentSpec& operator=(const ArgumentSpec&) = delete;
+
   ~ArgumentSpec();
 
   // Returns true if the given |value| is of the correct type to match this
@@ -205,8 +208,6 @@ class ArgumentSpec {
   // to allow the API to pass an object with arbitrary properties. Only
   // applicable for ArgumentType::OBJECT.
   std::unique_ptr<ArgumentSpec> additional_properties_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArgumentSpec);
 };
 
 }  // namespace extensions

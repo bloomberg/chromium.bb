@@ -14,7 +14,6 @@
 #include "rtc_base/logging.h"
 
 namespace webrtc {
-namespace webrtc_pc_e2e {
 
 ExampleVideoQualityAnalyzer::ExampleVideoQualityAnalyzer() = default;
 ExampleVideoQualityAnalyzer::~ExampleVideoQualityAnalyzer() = default;
@@ -35,8 +34,8 @@ uint16_t ExampleVideoQualityAnalyzer::OnFrameCaptured(
     frames_in_flight_.insert(frame_id);
     frames_to_stream_label_.insert({frame_id, stream_label});
   } else {
-    RTC_LOG(WARNING) << "Meet new frame with the same id: " << frame_id
-                     << ". Assumes old one as dropped";
+    RTC_LOG(LS_WARNING) << "Meet new frame with the same id: " << frame_id
+                        << ". Assumes old one as dropped";
     // We needn't insert frame to frames_in_flight_, because it is already
     // there.
     ++frames_dropped_;
@@ -67,7 +66,7 @@ void ExampleVideoQualityAnalyzer::OnFrameEncoded(
 void ExampleVideoQualityAnalyzer::OnFrameDropped(
     absl::string_view peer_name,
     webrtc::EncodedImageCallback::DropReason reason) {
-  RTC_LOG(INFO) << "Frame dropped by encoder";
+  RTC_LOG(LS_INFO) << "Frame dropped by encoder";
   MutexLock lock(&lock_);
   ++frames_dropped_;
 }
@@ -113,8 +112,8 @@ void ExampleVideoQualityAnalyzer::OnDecoderError(absl::string_view peer_name,
 
 void ExampleVideoQualityAnalyzer::Stop() {
   MutexLock lock(&lock_);
-  RTC_LOG(INFO) << "There are " << frames_in_flight_.size()
-                << " frames in flight, assuming all of them are dropped";
+  RTC_LOG(LS_INFO) << "There are " << frames_in_flight_.size()
+                   << " frames in flight, assuming all of them are dropped";
   frames_dropped_ += frames_in_flight_.size();
 }
 
@@ -161,5 +160,4 @@ uint64_t ExampleVideoQualityAnalyzer::frames_dropped() const {
   return frames_dropped_;
 }
 
-}  // namespace webrtc_pc_e2e
 }  // namespace webrtc

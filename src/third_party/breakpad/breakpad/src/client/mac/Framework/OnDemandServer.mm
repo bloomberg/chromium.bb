@@ -81,15 +81,15 @@ kern_return_t OnDemandServer::Initialize(const char* server_command,
 
   mach_port_t self_task = mach_task_self();
 
-  mach_port_t bootstrap_port;
-  kern_return_t kr = task_get_bootstrap_port(self_task, &bootstrap_port);
+  mach_port_t self_bootstrap_port;
+  kern_return_t kr = task_get_bootstrap_port(self_task, &self_bootstrap_port);
   if (kr != KERN_SUCCESS) {
     PRINT_MACH_RESULT(kr, "task_get_bootstrap_port(): ");
     return kr;
   }
 
   mach_port_t bootstrap_subset_port;
-  kr = bootstrap_subset(bootstrap_port, self_task, &bootstrap_subset_port);
+  kr = bootstrap_subset(self_bootstrap_port, self_task, &bootstrap_subset_port);
   if (kr != BOOTSTRAP_SUCCESS) {
     PRINT_BOOTSTRAP_RESULT(kr, "bootstrap_subset(): ");
     return kr;
@@ -105,7 +105,7 @@ kern_return_t OnDemandServer::Initialize(const char* server_command,
   kr = breakpad::BootstrapRegister(
       bootstrap_subset_port,
       const_cast<char*>(BREAKPAD_BOOTSTRAP_PARENT_PORT),
-      bootstrap_port);
+      self_bootstrap_port);
   if (kr != BOOTSTRAP_SUCCESS) {
     PRINT_BOOTSTRAP_RESULT(kr, "bootstrap_register(): ");
     return kr;
@@ -135,7 +135,8 @@ kern_return_t OnDemandServer::Initialize(const char* server_command,
     PRINT_BOOTSTRAP_RESULT(kr, "bootstrap_create_service(): ");
 
     // perhaps the service has already been created - try to look it up
-    kr = bootstrap_look_up(bootstrap_port, (char*)service_name, &service_port_);
+    kr = bootstrap_look_up(self_bootstrap_port, (char*)service_name,
+                           &service_port_);
 
     if (kr != BOOTSTRAP_SUCCESS) {
       PRINT_BOOTSTRAP_RESULT(kr, "bootstrap_look_up(): ");

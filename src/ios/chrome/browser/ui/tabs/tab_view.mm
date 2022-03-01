@@ -171,16 +171,10 @@ UIImage* DefaultFaviconImage() {
   }
   _incognitoStyle = incognitoStyle;
 
-  if (@available(iOS 13, *)) {
-    // When iOS 12 is dropped, only the next line is needed for styling.
-    // Every other check for |incognitoStyle| can be removed, as well as the
-    // incognito specific assets.
-    self.overrideUserInterfaceStyle = _incognitoStyle
-                                          ? UIUserInterfaceStyleDark
-                                          : UIUserInterfaceStyleUnspecified;
-    return;
-  }
-  [self updateStyleForSelected:self.selected];
+  self.overrideUserInterfaceStyle = _incognitoStyle
+                                        ? UIUserInterfaceStyleDark
+                                        : UIUserInterfaceStyleUnspecified;
+  return;
 }
 
 - (void)startProgressSpinner {
@@ -235,16 +229,14 @@ UIImage* DefaultFaviconImage() {
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
 
-  if (@available(iOS 13, *)) {
-    // As of iOS 13 Beta 4, resizable images are flaky for dark mode.
-    // This triggers the styling again, where the image is resolved instead of
-    // relying in the system's magic. Radar filled:
-    // b/137942721.hasDifferentColorAppearanceComparedToTraitCollection
-    if ([self.traitCollection
-            hasDifferentColorAppearanceComparedToTraitCollection:
-                previousTraitCollection]) {
-      [self updateStyleForSelected:self.selected];
-    }
+  // As of iOS 13 Beta 4, resizable images are flaky for dark mode.
+  // This triggers the styling again, where the image is resolved instead of
+  // relying in the system's magic. Radar filled:
+  // b/137942721.hasDifferentColorAppearanceComparedToTraitCollection
+  if ([self.traitCollection
+          hasDifferentColorAppearanceComparedToTraitCollection:
+              previousTraitCollection]) {
+    [self updateStyleForSelected:self.selected];
   }
 }
 
@@ -289,9 +281,7 @@ UIImage* DefaultFaviconImage() {
                    action:@selector(closeButtonPressed)
          forControlEvents:UIControlEventTouchUpInside];
 
-  if (@available(iOS 13.4, *)) {
-      _closeButton.pointerInteractionEnabled = YES;
-  }
+  _closeButton.pointerInteractionEnabled = YES;
 
   [self addSubview:_closeButton];
 
@@ -352,16 +342,9 @@ UIImage* DefaultFaviconImage() {
 // Updates this tab's style based on the value of |selected| and the current
 // incognito style.
 - (void)updateStyleForSelected:(BOOL)selected {
-  // On iOS 13 there is no need to pick custom incognito assets because
-  // |overrideUserInterfaceStyle| is set to dark mode when in incognito.
-  using base::ios::IsRunningOnIOS13OrLater;
-  BOOL useIncognitoFallback = self.incognitoStyle && !IsRunningOnIOS13OrLater();
-
   // Style the background image first.
   NSString* state = (selected ? @"foreground" : @"background");
-  NSString* incognito = useIncognitoFallback ? @"incognito_" : @"";
-  NSString* imageName =
-      [NSString stringWithFormat:@"tabstrip_%@%@_tab", incognito, state];
+  NSString* imageName = [NSString stringWithFormat:@"tabstrip_%@_tab", state];
   CGFloat leftInset = kTabBackgroundLeftCapInset;
   // As of iOS 13 Beta 4, resizable images are flaky for dark mode.
   // Radar filled: b/137942721.
@@ -372,46 +355,26 @@ UIImage* DefaultFaviconImage() {
       StretchableImageFromUIImage(resolvedImage, leftInset, 0);
   _backgroundImageView.image = backgroundImage;
 
-  if (@available(iOS 13.4, *)) {
-    if (selected) {
-      if (_pointerInteraction)
-        [self removeInteraction:_pointerInteraction];
-    } else {
-      if (!_pointerInteraction)
-        _pointerInteraction =
-            [[UIPointerInteraction alloc] initWithDelegate:self];
-      [self addInteraction:_pointerInteraction];
-    }
+  if (selected) {
+    if (_pointerInteraction)
+      [self removeInteraction:_pointerInteraction];
+  } else {
+    if (!_pointerInteraction)
+      _pointerInteraction =
+          [[UIPointerInteraction alloc] initWithDelegate:self];
+    [self addInteraction:_pointerInteraction];
   }
 
   // Style the close button tint color.
-  NSString* closeButtonColorName;
-  if (selected) {
-    closeButtonColorName =
-        useIncognitoFallback ? kCloseButtonDarkColor : kGrey600Color;
-  } else {
-    closeButtonColorName = kGrey500Color;
-  }
+  NSString* closeButtonColorName = selected ? kGrey600Color : kGrey500Color;
   _closeButton.tintColor = [UIColor colorNamed:closeButtonColorName];
 
   // Style the favicon tint color.
-  NSString* faviconColorName;
-  if (selected) {
-    faviconColorName =
-        useIncognitoFallback ? kCloseButtonDarkColor : kGrey600Color;
-  } else {
-    faviconColorName = kGrey500Color;
-  }
+  NSString* faviconColorName = selected ? kGrey600Color : kGrey500Color;
   _faviconView.tintColor = [UIColor colorNamed:faviconColorName];
 
   // Style the title tint color.
-  NSString* titleColorName = nil;
-  if (selected) {
-    titleColorName =
-        useIncognitoFallback ? kTextPrimaryDarkColor : kTextPrimaryColor;
-  } else {
-    titleColorName = kGrey600Color;
-  }
+  NSString* titleColorName = selected ? kTextPrimaryColor : kGrey600Color;
   _titleLabel.textColor = [UIColor colorNamed:titleColorName];
 
   _titleLabel.font = [UIFont systemFontOfSize:kFontSize

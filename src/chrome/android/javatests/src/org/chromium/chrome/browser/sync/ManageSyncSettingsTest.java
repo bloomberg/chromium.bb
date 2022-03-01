@@ -5,9 +5,11 @@
 package org.chromium.chrome.browser.sync;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import android.app.Dialog;
@@ -51,7 +53,6 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.sync.ModelType;
-import org.chromium.components.sync.PassphraseType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Collection;
@@ -69,7 +70,7 @@ import java.util.Set;
 public class ManageSyncSettingsTest {
     private static final String TAG = "ManageSyncSettingsTest";
 
-    private static final int RENDER_TEST_REVISION = 3;
+    private static final int RENDER_TEST_REVISION = 4;
 
     /**
      * Maps ModelTypes to their UI element IDs.
@@ -159,7 +160,6 @@ public class ManageSyncSettingsTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
-    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
     public void testUnsettingAllDataTypesStopsSync() {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         SyncTestUtil.waitForSyncFeatureActive();
@@ -178,7 +178,6 @@ public class ManageSyncSettingsTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
-    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
     public void testSettingAnyDataTypeStartsSync() {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         mSyncTestRule.setChosenDataTypes(false, new HashSet<>());
@@ -195,7 +194,6 @@ public class ManageSyncSettingsTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
-    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
     public void testTogglingSyncEverythingStartsSync() {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         mSyncTestRule.setChosenDataTypes(false, new HashSet<>());
@@ -210,7 +208,6 @@ public class ManageSyncSettingsTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
-    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
     public void testTogglingSyncEverythingDoesNotStopSync() {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         mSyncTestRule.setChosenDataTypes(false, new HashSet<>());
@@ -226,7 +223,6 @@ public class ManageSyncSettingsTest {
     @Test
     @LargeTest
     @Feature({"Sync"})
-    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
     public void testPressingTurnOffSyncAndSignOutShowsSignOutDialog() {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         mSyncTestRule.setChosenDataTypes(true, null);
@@ -425,9 +421,7 @@ public class ManageSyncSettingsTest {
 
         final PassphraseTypeDialogFragment typeFragment = getPassphraseTypeDialogFragment();
         mSyncTestRule.stopSync();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            typeFragment.onItemClick(null, null, 0, PassphraseType.CUSTOM_PASSPHRASE);
-        });
+        onView(withId(R.id.explicit_passphrase_checkbox)).perform(click());
         // No crash means we passed.
     }
 
@@ -455,8 +449,7 @@ public class ManageSyncSettingsTest {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         SyncTestUtil.waitForSyncFeatureActive();
         final ManageSyncSettings fragment = startManageSyncPreferences();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> fragment.onPassphraseTypeSelected(PassphraseType.CUSTOM_PASSPHRASE));
+        TestThreadUtils.runOnUiThreadBlocking(fragment::onChooseCustomPassphraseRequested);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         PassphraseCreationDialogFragment pcdf = getPassphraseCreationDialogFragment();
         AlertDialog dialog = (AlertDialog) pcdf.getDialog();
@@ -523,12 +516,13 @@ public class ManageSyncSettingsTest {
     public void testTrustedVaultKeyRetrieval() {
         final byte[] trustedVaultKey = new byte[] {1, 2, 3, 4};
 
+        mSyncTestRule.getFakeServerHelper().setTrustedVaultNigori(trustedVaultKey);
+
         // Keys won't be populated by FakeTrustedVaultClientBackend unless corresponding key
         // retrieval activity is about to be completed.
         SyncTestRule.FakeTrustedVaultClientBackend.get().setKeys(
                 Collections.singletonList(trustedVaultKey));
 
-        mSyncTestRule.getFakeServerHelper().setTrustedVaultNigori(trustedVaultKey);
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
 
         // Initially FakeTrustedVaultClientBackend doesn't provide any keys, so PSS should remain
@@ -546,10 +540,47 @@ public class ManageSyncSettingsTest {
         SyncTestUtil.waitForTrustedVaultKeyRequired(false);
     }
 
+    /**
+     * Test the trusted vault recoverability fix flow, which involves launching an intent and
+     * finally calling TrustedVaultClient.notifyRecoverabilityChanged().
+     */
+    @Test
+    @LargeTest
+    @Feature({"Sync"})
+    @Features.EnableFeatures(ChromeFeatureList.SYNC_TRUSTED_VAULT_PASSPHRASE_RECOVERY)
+    public void testTrustedVaultRecoverabilityFix() {
+        final byte[] trustedVaultKey = new byte[] {1, 2, 3, 4};
+
+        mSyncTestRule.getFakeServerHelper().setTrustedVaultNigori(trustedVaultKey);
+
+        // Mimic retrieval having completed earlier.
+        SyncTestRule.FakeTrustedVaultClientBackend.get().setKeys(
+                Collections.singletonList(trustedVaultKey));
+        SyncTestRule.FakeTrustedVaultClientBackend.get().startPopulateKeys();
+
+        SyncTestRule.FakeTrustedVaultClientBackend.get().setRecoverabilityDegraded(true);
+
+        mSyncTestRule.setUpAccountAndEnableSyncForTesting();
+
+        // Initially recoverability should be reported as degraded.
+        SyncTestUtil.waitForTrustedVaultRecoverabilityDegraded(true);
+
+        // Mimic the user tapping on the error card's button. This should start
+        // DummyRecoverabilityDegradedFixActivity and notify native client that recoverability has
+        // changed. Right before DummyRecoverabilityDegradedFixActivity completion
+        // FakeTrustedVaultClientBackend will exit the recoverability degraded state.
+        final ManageSyncSettings fragment = startManageSyncPreferences();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { fragment.onSyncErrorCardPrimaryButtonClicked(); });
+
+        // Native client should fetch the new recoverability state and get out of the
+        // degraded-recoverability state.
+        SyncTestUtil.waitForTrustedVaultRecoverabilityDegraded(false);
+    }
+
     @Test
     @SmallTest
     @Feature({"Sync"})
-    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
     public void testAdvancedSyncFlowPreferencesAndBottomBarShown() {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         SyncTestUtil.waitForSyncFeatureActive();
@@ -566,7 +597,6 @@ public class ManageSyncSettingsTest {
     @Test
     @LargeTest
     @Feature({"Sync", "RenderTest"})
-    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
     public void testAdvancedSyncFlowTopView() throws Exception {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         SyncTestUtil.waitForSyncFeatureActive();
@@ -578,7 +608,6 @@ public class ManageSyncSettingsTest {
     @Test
     @LargeTest
     @Feature({"Sync", "RenderTest"})
-    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
     public void testAdvancedSyncFlowBottomView() throws Exception {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         SyncTestUtil.waitForSyncFeatureActive();
@@ -597,8 +626,6 @@ public class ManageSyncSettingsTest {
     }
 
     private ManageSyncSettings startManageSyncPreferencesFromSyncConsentFlow() {
-        Assert.assertTrue(
-                ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY));
         mSettingsActivity = mSettingsActivityTestRule.startSettingsActivity(
                 ManageSyncSettings.createArguments(true));
         return mSettingsActivityTestRule.getFragment();
@@ -676,8 +703,7 @@ public class ManageSyncSettingsTest {
         final Set<Integer> disabledDataTypes = new HashSet<>(UI_DATATYPES.keySet());
         disabledDataTypes.removeAll(enabledDataTypes);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Set<Integer> actualDataTypes =
-                    mSyncTestRule.getProfileSyncService().getChosenDataTypes();
+            Set<Integer> actualDataTypes = mSyncTestRule.getSyncService().getChosenDataTypes();
             Assert.assertTrue(actualDataTypes.containsAll(enabledDataTypes));
             Assert.assertTrue(Collections.disjoint(disabledDataTypes, actualDataTypes));
         });

@@ -7,11 +7,12 @@
 #ifndef CORE_FPDFAPI_RENDER_CPDF_PAGERENDERCACHE_H_
 #define CORE_FPDFAPI_RENDER_CPDF_PAGERENDERCACHE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <memory>
 
 #include "core/fpdfapi/page/cpdf_page.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/maybe_owned.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
@@ -23,7 +24,7 @@ class CPDF_RenderStatus;
 class CPDF_Stream;
 class PauseIndicatorIface;
 
-class CPDF_PageRenderCache : public CPDF_Page::RenderCacheIface {
+class CPDF_PageRenderCache final : public CPDF_Page::RenderCacheIface {
  public:
   explicit CPDF_PageRenderCache(CPDF_Page* pPage);
   ~CPDF_PageRenderCache() override;

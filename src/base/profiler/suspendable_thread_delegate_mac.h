@@ -6,6 +6,8 @@
 #define BASE_PROFILER_SUSPENDABLE_THREAD_DELEGATE_MAC_H_
 
 #include <mach/mach.h>
+#include <memory>
+#include <vector>
 
 #include "base/base_export.h"
 #include "base/profiler/module_cache.h"
@@ -17,7 +19,7 @@
 namespace base {
 
 // Platform- and thread-specific implementation in support of stack sampling on
-// Mac.
+// Mac (X86_64) and iOS (X86_64 and ARM64).
 class BASE_EXPORT SuspendableThreadDelegateMac
     : public SuspendableThreadDelegate {
  public:

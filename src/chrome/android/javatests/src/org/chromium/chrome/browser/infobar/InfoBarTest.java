@@ -27,6 +27,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WebContentsFactory;
@@ -43,6 +44,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
+import org.chromium.chrome.test.util.InfoBarUtil.InfoBarMatcher;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
@@ -55,6 +57,7 @@ import org.chromium.url.GURL;
 
 import java.net.HttpURLConnection;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /** Tests for the InfoBars. */
@@ -140,7 +143,8 @@ public class InfoBarTest {
         CriteriaHelper.pollInstrumentationThread(
                 () -> sActivityTestRule.getInfoBarContainer() != null);
         mListener =  new InfoBarTestAnimationListener();
-        sActivityTestRule.getInfoBarContainer().addAnimationListener(mListener);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> sActivityTestRule.getInfoBarContainer().addAnimationListener(mListener));
 
         // Using an AdvancedMockContext allows us to use a fresh in-memory SharedPreference.
         Context context = new AdvancedMockContext(InstrumentationRegistry.getInstrumentation()
@@ -154,7 +158,8 @@ public class InfoBarTest {
         // Unregister animation notifications
         InfoBarContainer container = sActivityTestRule.getInfoBarContainer();
         if (container != null) {
-            container.removeAnimationListener(mListener);
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> container.removeAnimationListener(mListener));
         }
     }
 
@@ -244,7 +249,8 @@ public class InfoBarTest {
     @Test
     @MediumTest
     @Feature({"Browser", "Main"})
-    public void testInfoBarForPopUp() throws TimeoutException {
+    @FlakyTest(message = "https://crbug.com/1269025")
+    public void testInfoBarForPopUp() throws TimeoutException, ExecutionException {
         sActivityTestRule.loadUrl(sTestServer.getURL(POPUP_PAGE));
         mListener.addInfoBarAnimationFinished("InfoBar not added");
 
@@ -252,9 +258,10 @@ public class InfoBarTest {
         Assert.assertEquals("Wrong infobar count", 1, infoBars.size());
         Assert.assertTrue(InfoBarUtil.hasPrimaryButton(infoBars.get(0)));
         Assert.assertFalse(InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
-        InfoBarUtil.clickPrimaryButton(infoBars.get(0));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> InfoBarUtil.clickPrimaryButton(infoBars.get(0)));
+        InfoBarUtil.waitUntilNoInfoBarsExist(sActivityTestRule.getInfoBars());
         mListener.removeInfoBarAnimationFinished("InfoBar not removed.");
-        Assert.assertEquals("Wrong infobar count", 0, infoBars.size());
 
         // A second load should open a popup and should not show the infobar.
         int tabCount = sActivityTestRule.tabsCount(false);
@@ -483,17 +490,28 @@ public class InfoBarTest {
         });
         mListener.addInfoBarAnimationFinished("InfoBar not added");
 
-        // Make sure it has Kill/Wait buttons.
-        List<InfoBar> infoBars = sActivityTestRule.getInfoBars();
-        Assert.assertEquals("Wrong infobar count", 1, infoBars.size());
-        Assert.assertTrue(InfoBarUtil.hasPrimaryButton(infoBars.get(0)));
-        Assert.assertTrue(InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
+        CriteriaHelper.pollUiThread(() -> {
+            final List<InfoBar> infoBars = sActivityTestRule.getInfoBars();
+            InfoBarMatcher matcher =
+                    new InfoBarMatcher(InfoBarIdentifier.HUNG_RENDERER_INFOBAR_DELEGATE_ANDROID);
+            Criteria.checkThat(infoBars, Matchers.hasItem(matcher));
+
+            // Make sure it has Kill/Wait buttons.
+            Assert.assertTrue(InfoBarUtil.hasPrimaryButton(matcher.mLastMatch));
+            Assert.assertTrue(InfoBarUtil.hasSecondaryButton(matcher.mLastMatch));
+        });
 
         // Fake a responsive renderer signal.
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                 () -> { getTabWebContentsDelegate().rendererResponsive(); });
         mListener.removeInfoBarAnimationFinished("InfoBar not removed.");
-        Assert.assertTrue("Wrong infobar count", sActivityTestRule.getInfoBars().isEmpty());
+
+        CriteriaHelper.pollUiThread(() -> {
+            final List<InfoBar> infoBars = sActivityTestRule.getInfoBars();
+            InfoBarMatcher matcher =
+                    new InfoBarMatcher(InfoBarIdentifier.HUNG_RENDERER_INFOBAR_DELEGATE_ANDROID);
+            Criteria.checkThat(infoBars, Matchers.not(Matchers.hasItem(matcher)));
+        });
     }
 
     /**
@@ -512,19 +530,22 @@ public class InfoBarTest {
         });
         mListener.addInfoBarAnimationFinished("InfoBar not added");
 
-        // Make sure it has Kill/Wait buttons.
-        final List<InfoBar> infoBars = sActivityTestRule.getInfoBars();
-        Assert.assertEquals("Wrong infobar count", 1, infoBars.size());
-        Assert.assertTrue(InfoBarUtil.hasPrimaryButton(infoBars.get(0)));
-        Assert.assertTrue(InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
+        CriteriaHelper.pollUiThread(() -> {
+            final List<InfoBar> infoBars = sActivityTestRule.getInfoBars();
+            InfoBarMatcher matcher =
+                    new InfoBarMatcher(InfoBarIdentifier.HUNG_RENDERER_INFOBAR_DELEGATE_ANDROID);
+            Criteria.checkThat(infoBars, Matchers.hasItem(matcher));
 
-        // Activate the Kill button.
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                () -> { InfoBarUtil.clickPrimaryButton(infoBars.get(0)); });
+            // Make sure it has Kill/Wait buttons.
+            Assert.assertTrue(InfoBarUtil.hasPrimaryButton(matcher.mLastMatch));
+            Assert.assertTrue(InfoBarUtil.hasSecondaryButton(matcher.mLastMatch));
+
+            // Activate the Kill button.
+            InfoBarUtil.clickPrimaryButton(matcher.mLastMatch);
+        });
 
         // The renderer should have been killed and the InfoBar removed.
         mListener.removeInfoBarAnimationFinished("InfoBar not removed.");
-        Assert.assertTrue("Wrong infobar count", sActivityTestRule.getInfoBars().isEmpty());
         CriteriaHelper.pollUiThread(() -> {
             return SadTab.isShowing(sActivityTestRule.getActivity().getActivityTab());
         }, MAX_TIMEOUT, CHECK_INTERVAL);
@@ -545,7 +566,8 @@ public class InfoBarTest {
 
         // Swap out the WebContents and send the user somewhere so that the InfoBar gets removed.
         InfoBarTestAnimationListener removeListener = new InfoBarTestAnimationListener();
-        sActivityTestRule.getInfoBarContainer().addAnimationListener(removeListener);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> sActivityTestRule.getInfoBarContainer().addAnimationListener(removeListener));
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             WebContents newContents = WebContentsFactory.createWebContents(
                     Profile.getLastUsedRegularProfile(), false);
@@ -558,7 +580,8 @@ public class InfoBarTest {
 
         // Revisiting the original page should make the InfoBar reappear.
         InfoBarTestAnimationListener addListener = new InfoBarTestAnimationListener();
-        sActivityTestRule.getInfoBarContainer().addAnimationListener(addListener);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> sActivityTestRule.getInfoBarContainer().addAnimationListener(addListener));
         sActivityTestRule.loadUrl(sTestServer.getURL(POPUP_PAGE));
         addListener.addInfoBarAnimationFinished("InfoBar not added");
         Assert.assertEquals("Wrong infobar count", 1, sActivityTestRule.getInfoBars().size());

@@ -9,12 +9,14 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "chromeos/components/quick_answers/utils/language_detector.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/text_classifier.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 
 struct QuickAnswersRequest;
@@ -38,8 +40,6 @@ class IntentGenerator {
   // Generate intent from the |request|. Virtual for testing.
   virtual void GenerateIntent(const QuickAnswersRequest& request);
 
-  void UseTextAnnotatorForTesting();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(IntentGeneratorTest,
                            TextAnnotationIntentNoAnnotation);
@@ -52,7 +52,8 @@ class IntentGenerator {
       chromeos::machine_learning::mojom::LoadModelResult result);
   void AnnotationCallback(
       const QuickAnswersRequest& request,
-      std::vector<machine_learning::mojom::TextAnnotationPtr> annotations);
+      std::vector<chromeos::machine_learning::mojom::TextAnnotationPtr>
+          annotations);
 
   void MaybeGenerateTranslationIntent(const QuickAnswersRequest& request);
   void LanguageDetectorCallback(const QuickAnswersRequest& request,
@@ -63,12 +64,10 @@ class IntentGenerator {
       text_classifier_;
   std::unique_ptr<LanguageDetector> language_detector_;
 
-  bool use_text_annotator_for_testing_ = false;
-
   base::WeakPtrFactory<IntentGenerator> weak_factory_{this};
 };
 
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROMEOS_COMPONENTS_QUICK_ANSWERS_UNDERSTANDING_INTENT_GENERATOR_H_

@@ -129,7 +129,7 @@ static int fifo_thread_write_header(FifoThreadContext *ctx)
 
     ret = av_dict_copy(&format_options, fifo->format_options, 0);
     if (ret < 0)
-        return ret;
+        goto end;
 
     ret = ff_format_output_open(avf2, avf->url, &format_options);
     if (ret < 0) {
@@ -139,7 +139,7 @@ static int fifo_thread_write_header(FifoThreadContext *ctx)
     }
 
     for (i = 0;i < avf2->nb_streams; i++)
-        avf2->streams[i]->cur_dts = 0;
+        ffstream(avf2->streams[i])->cur_dts = 0;
 
     ret = avformat_write_header(avf2, &format_options);
     if (!ret)
@@ -469,7 +469,7 @@ static void *fifo_consumer_thread(void *data)
     return NULL;
 }
 
-static int fifo_mux_init(AVFormatContext *avf, ff_const59 AVOutputFormat *oformat,
+static int fifo_mux_init(AVFormatContext *avf, const AVOutputFormat *oformat,
                          const char *filename)
 {
     FifoContext *fifo = avf->priv_data;
@@ -508,7 +508,7 @@ static int fifo_mux_init(AVFormatContext *avf, ff_const59 AVOutputFormat *oforma
 static int fifo_init(AVFormatContext *avf)
 {
     FifoContext *fifo = avf->priv_data;
-    ff_const59 AVOutputFormat *oformat;
+    const AVOutputFormat *oformat;
     int ret = 0;
 
     if (fifo->recovery_wait_streamtime && !fifo->drop_pkts_on_overflow) {
@@ -593,7 +593,7 @@ static int fifo_write_packet(AVFormatContext *avf, AVPacket *pkt)
         goto fail;
     }
 
-    if (fifo->timeshift && pkt->dts != AV_NOPTS_VALUE)
+    if (fifo->timeshift && pkt && pkt->dts != AV_NOPTS_VALUE)
         atomic_fetch_add_explicit(&fifo->queue_duration, next_duration(avf, pkt, &fifo->last_sent_dts), memory_order_relaxed);
 
     return ret;
@@ -697,7 +697,7 @@ static const AVClass fifo_muxer_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVOutputFormat ff_fifo_muxer = {
+const AVOutputFormat ff_fifo_muxer = {
     .name           = "fifo",
     .long_name      = NULL_IF_CONFIG_SMALL("FIFO queue pseudo-muxer"),
     .priv_data_size = sizeof(FifoContext),

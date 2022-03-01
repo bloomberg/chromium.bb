@@ -206,6 +206,7 @@ class ThreadPool(object):
     p = subprocess.Popen(cmd, **kwargs)
     with Timer(self.timeout, p.terminate) as timer:
       stdout, _ = sigint_handler.wait(p, stdin)
+      stdout = stdout.decode('utf-8', 'ignore')
       if timer.completed:
         stdout = 'Process timed out after %ss\n%s' % (self.timeout, stdout)
       return p.returncode, stdout
@@ -296,6 +297,7 @@ def _RightHandSideLinesImpl(affected_files):
 
 def prompt_should_continue(prompt_string):
   sys.stdout.write(prompt_string)
+  sys.stdout.flush()
   response = sys.stdin.readline().strip().lower()
   return response in ('y', 'yes')
 
@@ -315,7 +317,24 @@ class _PresubmitResult(object):
     """
     self._message = message
     self._items = items or []
-    self._long_text = long_text.rstrip()
+    self._long_text = _PresubmitResult._ensure_str(long_text.rstrip())
+
+  @staticmethod
+  def _ensure_str(val):
+    """
+    val: A "stringish" value. Can be any of str, unicode or bytes.
+    returns: A str after applying encoding/decoding as needed.
+    Assumes/uses UTF-8 for relevant inputs/outputs.
+
+    We'd prefer to use six.ensure_str but our copy of six is old :(
+    """
+    if isinstance(val, str):
+      return val
+    if six.PY2 and isinstance(val, unicode):
+      return val.encode()
+    elif six.PY3 and isinstance(val, bytes):
+      return val.decode()
+    raise ValueError("Unknown string type %s" % type(val))
 
   def handle(self):
     sys.stdout.write(self._message)
@@ -546,46 +565,6 @@ class InputApi(object):
       r'.+\.diff$',
       r'.+\.patch$',
   )
-
-  # TODO(https://crbug.com/1098562): Remove once no longer used
-  @property
-  def DEFAULT_WHITE_LIST(self):
-    return self.DEFAULT_FILES_TO_CHECK
-
-  # TODO(https://crbug.com/1098562): Remove once no longer used
-  @DEFAULT_WHITE_LIST.setter
-  def DEFAULT_WHITE_LIST(self, value):
-    self.DEFAULT_FILES_TO_CHECK = value
-
-  # TODO(https://crbug.com/1098562): Remove once no longer used
-  @property
-  def DEFAULT_ALLOW_LIST(self):
-    return self.DEFAULT_FILES_TO_CHECK
-
-  # TODO(https://crbug.com/1098562): Remove once no longer used
-  @DEFAULT_ALLOW_LIST.setter
-  def DEFAULT_ALLOW_LIST(self, value):
-    self.DEFAULT_FILES_TO_CHECK = value
-
-  # TODO(https://crbug.com/1098562): Remove once no longer used
-  @property
-  def DEFAULT_BLACK_LIST(self):
-    return self.DEFAULT_FILES_TO_SKIP
-
-  # TODO(https://crbug.com/1098562): Remove once no longer used
-  @DEFAULT_BLACK_LIST.setter
-  def DEFAULT_BLACK_LIST(self, value):
-    self.DEFAULT_FILES_TO_SKIP = value
-
-  # TODO(https://crbug.com/1098562): Remove once no longer used
-  @property
-  def DEFAULT_BLOCK_LIST(self):
-    return self.DEFAULT_FILES_TO_SKIP
-
-  # TODO(https://crbug.com/1098562): Remove once no longer used
-  @DEFAULT_BLOCK_LIST.setter
-  def DEFAULT_BLOCK_LIST(self, value):
-    self.DEFAULT_FILES_TO_SKIP = value
 
   def __init__(self, change, presubmit_path, is_committing,
       verbose, gerrit_obj, dry_run=None, thread_pool=None, parallel=False):
@@ -1006,9 +985,15 @@ class AffectedFile(object):
             self.AbsoluteLocalPath(), 'rU').splitlines()
       except IOError:
         pass  # File not found?  That's fine; maybe it was deleted.
+      except UnicodeDecodeError as e:
+        # log the filename since we're probably trying to read a binary
+        # file, and shouldn't be.
+        print('Error reading %s: %s' % (self.AbsoluteLocalPath(), e))
+        raise
+
     return self._cached_new_contents[:]
 
-  def ChangedContents(self):
+  def ChangedContents(self, keeplinebreaks=False):
     """Returns a list of tuples (line number, line text) of all new lines.
 
      This relies on the scm diff output describing each changed code section
@@ -1016,20 +1001,27 @@ class AffectedFile(object):
 
      ^@@ <old line num>,<old size> <new line num>,<new size> @@$
     """
-    if self._cached_changed_contents is not None:
+    # Don't return cached results when line breaks are requested.
+    if not keeplinebreaks and self._cached_changed_contents is not None:
       return self._cached_changed_contents[:]
-    self._cached_changed_contents = []
+    result = []
     line_num = 0
 
-    for line in self.GenerateScmDiff().splitlines():
+    # The keeplinebreaks parameter to splitlines must be True or else the
+    # CheckForWindowsLineEndings presubmit will be a NOP.
+    for line in self.GenerateScmDiff().splitlines(keeplinebreaks):
       m = re.match(r'^@@ [0-9\,\+\-]+ \+([0-9]+)\,[0-9]+ @@', line)
       if m:
         line_num = int(m.groups(1)[0])
         continue
       if line.startswith('+') and not line.startswith('++'):
-        self._cached_changed_contents.append((line_num, line[1:]))
+        result.append((line_num, line[1:]))
       if not line.startswith('-'):
         line_num += 1
+    # Don't cache results with line breaks.
+    if keeplinebreaks:
+      return result;
+    self._cached_changed_contents = result
     return self._cached_changed_contents[:]
 
   def __str__(self):
@@ -1184,7 +1176,14 @@ class Change(object):
 
   def BugsFromDescription(self):
     """Returns all bugs referenced in the commit description."""
-    tags = [b.strip() for b in self.tags.get('BUG', '').split(',') if b.strip()]
+    bug_tags = ['BUG', 'FIXED']
+
+    tags = []
+    for tag in bug_tags:
+      values = self.tags.get(tag)
+      if values:
+        tags += [value.strip() for value in values.split(',')]
+
     footers = []
     parsed = self.GitFootersFromDescription()
     unsplit_footers = parsed.get('Bug', []) + parsed.get('Fixed', [])
@@ -1295,7 +1294,7 @@ class GitChange(Change):
     root = root or self.RepositoryRoot()
     return subprocess.check_output(
         ['git', '-c', 'core.quotePath=false', 'ls-files', '--', '.'],
-        cwd=root).splitlines()
+        cwd=root).decode('utf-8', 'ignore').splitlines()
 
 
 def ListRelevantPresubmitFiles(files, root):
@@ -1351,37 +1350,6 @@ def ListRelevantPresubmitFiles(files, root):
   return results
 
 
-class GetTryMastersExecuter(object):
-  @staticmethod
-  def ExecPresubmitScript(script_text, presubmit_path, project, change):
-    """Executes GetPreferredTryMasters() from a single presubmit script.
-
-    Args:
-      script_text: The text of the presubmit script.
-      presubmit_path: Project script to run.
-      project: Project name to pass to presubmit script for bot selection.
-
-    Return:
-      A map of try masters to map of builders to set of tests.
-    """
-    context = {}
-    try:
-      exec(compile(script_text, 'PRESUBMIT.py', 'exec', dont_inherit=True),
-           context)
-    except Exception as e:
-      raise PresubmitFailure('"%s" had an exception.\n%s'
-                             % (presubmit_path, e))
-
-    function_name = 'GetPreferredTryMasters'
-    if function_name not in context:
-      return {}
-    get_preferred_try_masters = context[function_name]
-    if not len(inspect.getargspec(get_preferred_try_masters)[0]) == 2:
-      raise PresubmitFailure(
-          'Expected function "GetPreferredTryMasters" to take two arguments.')
-    return get_preferred_try_masters(project, change)
-
-
 class GetPostUploadExecuter(object):
   @staticmethod
   def ExecPresubmitScript(script_text, presubmit_path, gerrit_obj, change):
@@ -1423,57 +1391,6 @@ def _MergeMasters(masters1, masters2):
     for (builder, tests) in builders.items():
       new_builders.setdefault(builder, set([])).update(tests)
   return result
-
-
-def DoGetTryMasters(change,
-                    changed_files,
-                    repository_root,
-                    default_presubmit,
-                    project,
-                    verbose,
-                    output_stream):
-  """Get the list of try masters from the presubmit scripts.
-
-  Args:
-    changed_files: List of modified files.
-    repository_root: The repository root.
-    default_presubmit: A default presubmit script to execute in any case.
-    project: Optional name of a project used in selecting trybots.
-    verbose: Prints debug info.
-    output_stream: A stream to write debug output to.
-
-  Return:
-    Map of try masters to map of builders to set of tests.
-  """
-  presubmit_files = ListRelevantPresubmitFiles(changed_files, repository_root)
-  if not presubmit_files and verbose:
-    output_stream.write('Warning, no PRESUBMIT.py found.\n')
-  results = {}
-  executer = GetTryMastersExecuter()
-
-  if default_presubmit:
-    if verbose:
-      output_stream.write('Running default presubmit script.\n')
-    fake_path = os.path.join(repository_root, 'PRESUBMIT.py')
-    results = _MergeMasters(results, executer.ExecPresubmitScript(
-        default_presubmit, fake_path, project, change))
-  for filename in presubmit_files:
-    filename = os.path.abspath(filename)
-    if verbose:
-      output_stream.write('Running %s\n' % filename)
-    # Accept CRLF presubmit script.
-    presubmit_script = gclient_utils.FileRead(filename, 'rU')
-    results = _MergeMasters(results, executer.ExecPresubmitScript(
-        presubmit_script, filename, project, change))
-
-  # Make sets to lists again for later JSON serialization.
-  for builders in results.values():
-    for builder in builders:
-      builders[builder] = list(builders[builder])
-
-  if results and verbose:
-    output_stream.write('%s\n' % str(results))
-  return results
 
 
 def DoPostUploadExecuter(change,
@@ -1523,7 +1440,7 @@ def DoPostUploadExecuter(change,
 
 class PresubmitExecuter(object):
   def __init__(self, change, committing, verbose, gerrit_obj, dry_run=None,
-               thread_pool=None, parallel=False):
+               thread_pool=None, parallel=False, use_python3=False):
     """
     Args:
       change: The Change object.
@@ -1532,6 +1449,8 @@ class PresubmitExecuter(object):
       dry_run: if true, some Checks will be skipped.
       parallel: if true, all tests reported via input_api.RunTests for all
                 PRESUBMIT files will be run in parallel.
+      use_python3: if true, will use python3 instead of python2 by default
+                if USE_PYTHON3 is not specified.
     """
     self.change = change
     self.committing = committing
@@ -1541,6 +1460,7 @@ class PresubmitExecuter(object):
     self.more_cc = []
     self.thread_pool = thread_pool
     self.parallel = parallel
+    self.use_python3 = use_python3
 
   def ExecPresubmitScript(self, script_text, presubmit_path):
     """Executes a single presubmit script.
@@ -1571,8 +1491,12 @@ class PresubmitExecuter(object):
     # python2 or python3. We need to do this without actually trying to
     # compile the text, since the text might compile in one but not the
     # other.
-    m = re.search('^USE_PYTHON3 = True$', script_text, flags=re.MULTILINE)
-    use_python3 = m is not None
+    m = re.search('^USE_PYTHON3 = (True|False)$', script_text,
+                  flags=re.MULTILINE)
+    if m:
+      use_python3 = m.group(1) == 'True'
+    else:
+      use_python3 = self.use_python3
     if (((sys.version_info.major == 2) and use_python3) or
         ((sys.version_info.major == 3) and not use_python3)):
       return []
@@ -1667,12 +1591,14 @@ class PresubmitExecuter(object):
       # TODO(crbug.com/953884): replace reraise with native py3:
       #   raise .. from e
       e_type, e_value, e_tb = sys.exc_info()
-      six.reraise(e_type, 'Evaluation of %s failed: %s' % (function_name,
-                                                           e_value),
-                  e_tb)
+      print('Evaluation of %s failed: %s' % (function_name, e_value))
+      six.reraise(e_type, e_value, e_tb)
 
+    elapsed_time = time_time() - start_time
+    if elapsed_time > 10.0:
+      sys.stdout.write(
+          '%s took %.1fs to run.\n' % (function_name, elapsed_time))
     if sink:
-      elapsed_time = time_time() - start_time
       status = rdb_wrapper.STATUS_PASS
       if any(r.fatal for r in result):
         status = rdb_wrapper.STATUS_FAIL
@@ -1699,7 +1625,8 @@ def DoPresubmitChecks(change,
                       gerrit_obj,
                       dry_run=None,
                       parallel=False,
-                      json_output=None):
+                      json_output=None,
+                      use_python3=False):
   """Runs all presubmit checks that apply to the files in the change.
 
   This finds all PRESUBMIT.py files in directories enclosing the files in the
@@ -1720,7 +1647,8 @@ def DoPresubmitChecks(change,
     dry_run: if true, some Checks will be skipped.
     parallel: if true, all tests specified by input_api.RunTests in all
               PRESUBMIT files will be run in parallel.
-
+    use_python3: if true, default to using Python3 for presubmit checks
+                 rather than Python2.
   Return:
     1 if presubmit checks failed or 0 otherwise.
   """
@@ -1732,7 +1660,7 @@ def DoPresubmitChecks(change,
 
     python_version = 'Python %s' % sys.version_info.major
     if committing:
-      sys.stdout.write('Running %s presubmit commit checks ...\n' % 
+      sys.stdout.write('Running %s presubmit commit checks ...\n' %
                        python_version)
     else:
       sys.stdout.write('Running %s presubmit upload checks ...\n' %
@@ -1745,7 +1673,7 @@ def DoPresubmitChecks(change,
     results = []
     thread_pool = ThreadPool()
     executer = PresubmitExecuter(change, committing, verbose, gerrit_obj,
-                                 dry_run, thread_pool, parallel)
+                                 dry_run, thread_pool, parallel, use_python3)
     if default_presubmit:
       if verbose:
         sys.stdout.write('Running default presubmit script.\n')
@@ -1996,6 +1924,8 @@ def main(argv=None):
                       help='List of files to be marked as modified when '
                       'executing presubmit or post-upload hooks. fnmatch '
                       'wildcards can also be used.')
+  parser.add_argument('--use-python3', action='store_true',
+                      help='Use python3 for presubmit checks by default')
   options = parser.parse_args(argv)
 
   log_level = logging.ERROR
@@ -2028,7 +1958,8 @@ def main(argv=None):
           gerrit_obj,
           options.dry_run,
           options.parallel,
-          options.json_output)
+          options.json_output,
+          options.use_python3)
   except PresubmitFailure as e:
     print(e, file=sys.stderr)
     print('Maybe your depot_tools is out of date?', file=sys.stderr)

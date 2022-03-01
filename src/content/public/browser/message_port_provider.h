@@ -8,8 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "content/common/content_export.h"
@@ -25,24 +23,28 @@
 #endif
 
 namespace content {
-class WebContents;
+class Page;
 
 // An interface consisting of methods that can be called to use Message ports.
 class CONTENT_EXPORT MessagePortProvider {
  public:
+  MessagePortProvider() = delete;
+  MessagePortProvider(const MessagePortProvider&) = delete;
+  MessagePortProvider& operator=(const MessagePortProvider&) = delete;
+
   // Posts a MessageEvent to the main frame using the given source and target
   // origins and data.
   // See https://html.spec.whatwg.org/multipage/comms.html#messageevent for
   // further information on message events.
   // Should be called on UI thread.
-  static void PostMessageToFrame(WebContents* web_contents,
+  static void PostMessageToFrame(Page& page,
                                  const std::u16string& source_origin,
                                  const std::u16string& target_origin,
                                  const std::u16string& data);
 
 #if defined(OS_ANDROID)
   static void PostMessageToFrame(
-      WebContents* web_contents,
+      Page& page,
       JNIEnv* env,
       const base::android::JavaParamRef<jstring>& source_origin,
       const base::android::JavaParamRef<jstring>& target_origin,
@@ -53,15 +55,12 @@ class CONTENT_EXPORT MessagePortProvider {
 #if defined(OS_FUCHSIA) || BUILDFLAG(IS_CHROMECAST)
   // If |target_origin| is unset, then no origin scoping is applied.
   static void PostMessageToFrame(
-      WebContents* web_contents,
+      Page& page,
       const std::u16string& source_origin,
       const absl::optional<std::u16string>& target_origin,
       const std::u16string& data,
       std::vector<blink::WebMessagePort> ports);
 #endif  // OS_FUCHSIA || BUILDFLAG(IS_CHROMECAST)
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(MessagePortProvider);
 };
 
 }  // namespace content

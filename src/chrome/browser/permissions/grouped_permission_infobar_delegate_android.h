@@ -8,15 +8,12 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
 namespace infobars {
 class ContentInfoBarManager;
-}
-
-namespace content {
-class WebContents;
 }
 
 namespace permissions {
@@ -29,6 +26,11 @@ class PermissionPromptAndroid;
 // permission requests and has nothing to do with grouped permissions anymore.
 class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
+  GroupedPermissionInfoBarDelegate(const GroupedPermissionInfoBarDelegate&) =
+      delete;
+  GroupedPermissionInfoBarDelegate& operator=(
+      const GroupedPermissionInfoBarDelegate&) = delete;
+
   // Public so we can have std::unique_ptr<GroupedPermissionInfoBarDelegate>.
   ~GroupedPermissionInfoBarDelegate() override;
 
@@ -63,10 +65,6 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool Accept() override;
   bool Cancel() override;
 
-  // Returns true if we should show the permission request as a mini-infobar.
-  static bool ShouldShowMiniInfobar(content::WebContents* web_contents,
-                                    ContentSettingsType type);
-
  private:
   GroupedPermissionInfoBarDelegate(
       const base::WeakPtr<permissions::PermissionPromptAndroid>&
@@ -82,10 +80,8 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
 
   base::WeakPtr<permissions::PermissionPromptAndroid> permission_prompt_;
-  infobars::ContentInfoBarManager* infobar_manager_;
+  raw_ptr<infobars::ContentInfoBarManager> infobar_manager_;
   bool details_expanded_;
-
-  DISALLOW_COPY_AND_ASSIGN(GroupedPermissionInfoBarDelegate);
 };
 
 #endif  // CHROME_BROWSER_PERMISSIONS_GROUPED_PERMISSION_INFOBAR_DELEGATE_ANDROID_H_

@@ -35,7 +35,7 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/common/shape.h"
 #include "tensorflow/lite/delegates/gpu/common/status.h"
 #include "tensorflow/lite/delegates/gpu/common/tensor.h"
-#include "tensorflow/lite/delegates/gpu/common/transformations/general_transformations.h"
+#include "tensorflow/lite/delegates/gpu/common/transformations/model_transformations.h"
 #include "tensorflow/lite/delegates/gpu/gl/api.h"
 #include "tensorflow/lite/delegates/gpu/gl/command_queue.h"
 #include "tensorflow/lite/delegates/gpu/gl/compiler.h"
@@ -136,10 +136,9 @@ class Delegate {
     RETURN_IF_ERROR(BuildModel(context, delegate_params, &graph));
 
     // Apply general transformations on the graph.
-    NullTransformationReporter reporter;
-    ModelTransformer transformer(&graph, &reporter);
-    if (!ApplyGeneralTransformations(&transformer)) {
-      return absl::InternalError("Graph general transformations failed");
+    ModelTransformer transformer(&graph);
+    if (!ApplyModelTransformations(&transformer)) {
+      return absl::InternalError("Graph transformations failed");
     }
 
     if (!env_) RETURN_IF_ERROR(EglEnvironment::NewEglEnvironment(&env_));
@@ -160,7 +159,7 @@ class Delegate {
       tensors_[value->id] = {value->tensor.shape, 0};
     }
 
-    std::unordered_set<int> tflite_graph_io;
+    std::unordered_set<int> tflite_graph_io;  // NOLINT
 
     // Prepare graph inputs.
     //
