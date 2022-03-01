@@ -51,7 +51,6 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.password_manager.settings.ReauthenticationManager;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
@@ -69,7 +68,7 @@ import java.util.concurrent.ExecutionException;
 public class PasswordCheckEditViewTest {
     private static final CompromisedCredential ANA = new CompromisedCredential(
             "https://some-url.com/signin", new GURL("https://some-url.com/"), "Ana", "some-url.com",
-            "Ana", "password", "https://some-url.com/.well-known/change-password", "", 1, true,
+            "Ana", "password", "https://some-url.com/.well-known/change-password", "", 1, 1, true,
             false, true, true);
     private static final String PASSWORD_CHECK_RESOLUTION_HISTOGRAM_WITH_AUTO_BUTTON =
             "PasswordManager.AutomaticChange.AcceptanceWithAutoButton";
@@ -127,7 +126,6 @@ public class PasswordCheckEditViewTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1210268")
     public void testSiteAndUsernameDisabled() {
         onView(withId(R.id.site_edit)).check(matches(allOf(not(isEnabled()), not(isFocusable()))));
         onView(withId(R.id.username_edit))

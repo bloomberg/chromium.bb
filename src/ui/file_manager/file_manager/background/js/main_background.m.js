@@ -3,12 +3,11 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Main entry point for background page, it replaces the
- * background_scripts.js.
+ * @fileoverview Main entry point for background page.
  */
 
-import './metrics_start.m.js';
-import '../../common/js/error_counter.m.js';
+import './metrics_start.js';
+import '../../common/js/error_counter.js';
 
-import './background.m.js';
-import './test_util.m.js';
+import './background.js';
+import './test_util.js';

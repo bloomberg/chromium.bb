@@ -30,7 +30,7 @@ namespace {
 base::TimeDelta GetBrowserControlsAllowHideDelay() {
   if (base::FeatureList::IsEnabled(kImmediatelyHideBrowserControlsForTest))
     return base::TimeDelta();
-  return base::TimeDelta::FromSeconds(3);
+  return base::Seconds(3);
 }
 
 }  // namespace
@@ -52,7 +52,10 @@ bool BrowserControlsNavigationStateHandler::IsRendererControllingOffsets() {
 void BrowserControlsNavigationStateHandler::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   is_crashed_ = false;
-  if (navigation_handle->IsInMainFrame() &&
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (navigation_handle->IsInPrimaryMainFrame() &&
       !navigation_handle->IsSameDocument()) {
     forced_show_during_load_timer_.Stop();
     SetForceShowDuringLoad(true);
@@ -61,7 +64,10 @@ void BrowserControlsNavigationStateHandler::DidStartNavigation(
 
 void BrowserControlsNavigationStateHandler::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsInMainFrame()) {
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (navigation_handle->IsInPrimaryMainFrame()) {
     if (!navigation_handle->HasCommitted()) {
       // There will be no DidFinishLoad or DidFailLoad, so hide the topview
       ScheduleStopDelayedForceShow();
@@ -88,7 +94,7 @@ void BrowserControlsNavigationStateHandler::DidFailLoad(
       render_frame_host->GetMainFrame() == render_frame_host;
   if (is_main_frame)
     ScheduleStopDelayedForceShow();
-  if (render_frame_host->IsCurrent() &&
+  if (render_frame_host->IsActive() &&
       (render_frame_host == web_contents()->GetMainFrame())) {
     UpdateState();
   }
@@ -98,7 +104,7 @@ void BrowserControlsNavigationStateHandler::DidChangeVisibleSecurityState() {
   UpdateState();
 }
 
-void BrowserControlsNavigationStateHandler::RenderProcessGone(
+void BrowserControlsNavigationStateHandler::PrimaryMainFrameRenderProcessGone(
     base::TerminationStatus status) {
   is_crashed_ = true;
   UpdateState();

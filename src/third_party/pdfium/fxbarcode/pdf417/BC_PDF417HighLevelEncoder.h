@@ -7,9 +7,9 @@
 #ifndef FXBARCODE_PDF417_BC_PDF417HIGHLEVELENCODER_H_
 #define FXBARCODE_PDF417_BC_PDF417HIGHLEVELENCODER_H_
 
-#include "core/fxcrt/fx_string.h"
+#include "core/fxcrt/widestring.h"
 #include "fxbarcode/pdf417/BC_PDF417.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/span.h"
 
 class CBC_PDF417HighLevelEncoder {
@@ -17,7 +17,7 @@ class CBC_PDF417HighLevelEncoder {
   CBC_PDF417HighLevelEncoder() = delete;
   ~CBC_PDF417HighLevelEncoder() = delete;
 
-  static Optional<WideString> EncodeHighLevel(WideStringView msg);
+  static absl::optional<WideString> EncodeHighLevel(WideStringView msg);
 
  private:
   enum class EncodingMode { kUnknown = 0, kText, kByte, kNumeric };
@@ -40,7 +40,7 @@ class CBC_PDF417HighLevelEncoder {
                             WideString* sb);
   static size_t DetermineConsecutiveDigitCount(WideString msg, size_t startpos);
   static size_t DetermineConsecutiveTextCount(WideString msg, size_t startpos);
-  static Optional<size_t> DetermineConsecutiveBinaryCount(
+  static absl::optional<size_t> DetermineConsecutiveBinaryCount(
       WideString msg,
       pdfium::span<const uint8_t> bytes,
       size_t startpos);

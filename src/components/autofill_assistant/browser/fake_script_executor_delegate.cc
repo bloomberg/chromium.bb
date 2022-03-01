@@ -37,10 +37,6 @@ WebController* FakeScriptExecutorDelegate::GetWebController() {
   return web_controller_;
 }
 
-ElementStore* FakeScriptExecutorDelegate::GetElementStore() const {
-  return element_store_;
-}
-
 TriggerContext* FakeScriptExecutorDelegate::GetTriggerContext() {
   return trigger_context_.get();
 }
@@ -62,8 +58,8 @@ std::string FakeScriptExecutorDelegate::GetEmailAddressForAccessTokenAccount() {
   return std::string();
 }
 
-std::string FakeScriptExecutorDelegate::GetLocale() {
-  return "en-US";
+ukm::UkmRecorder* FakeScriptExecutorDelegate::GetUkmRecorder() {
+  return nullptr;
 }
 
 bool FakeScriptExecutorDelegate::EnterState(AutofillAssistantState state) {
@@ -74,8 +70,15 @@ bool FakeScriptExecutorDelegate::EnterState(AutofillAssistantState state) {
   return true;
 }
 
+AutofillAssistantState FakeScriptExecutorDelegate::GetState() {
+  return state_history_.empty() ? AutofillAssistantState::INACTIVE
+                                : state_history_.back();
+}
+
 void FakeScriptExecutorDelegate::SetTouchableElementArea(
-    const ElementAreaProto& element) {}
+    const ElementAreaProto& element_area) {
+  touchable_element_area_history_.emplace_back(element_area);
+}
 
 void FakeScriptExecutorDelegate::SetStatusMessage(const std::string& message) {
   status_message_ = message;
@@ -92,6 +95,20 @@ void FakeScriptExecutorDelegate::SetBubbleMessage(const std::string& message) {
 std::string FakeScriptExecutorDelegate::GetBubbleMessage() const {
   return bubble_message_;
 }
+
+void FakeScriptExecutorDelegate::SetTtsMessage(const std::string& message) {
+  tts_message_ = message;
+}
+
+std::string FakeScriptExecutorDelegate::GetTtsMessage() const {
+  return tts_message_;
+}
+
+TtsButtonState FakeScriptExecutorDelegate::GetTtsButtonState() const {
+  return TtsButtonState::DEFAULT;
+}
+
+void FakeScriptExecutorDelegate::MaybePlayTtsMessage() {}
 
 void FakeScriptExecutorDelegate::SetDetails(std::unique_ptr<Details> details,
                                             base::TimeDelta delay) {
@@ -118,8 +135,6 @@ void FakeScriptExecutorDelegate::SetInfoBox(const InfoBox& info_box) {
 void FakeScriptExecutorDelegate::ClearInfoBox() {
   info_box_ = nullptr;
 }
-
-void FakeScriptExecutorDelegate::SetProgress(int progress) {}
 
 bool FakeScriptExecutorDelegate::SetProgressActiveStepIdentifier(
     const std::string& active_step_identifier) {
@@ -207,6 +222,10 @@ void FakeScriptExecutorDelegate::RequireUI() {
   require_ui_ = true;
 }
 
+ProcessedActionStatusDetailsProto& FakeScriptExecutorDelegate::GetLogInfo() {
+  return log_info_;
+}
+
 void FakeScriptExecutorDelegate::AddNavigationListener(
     ScriptExecutorDelegate::NavigationListener* listener) {
   navigation_listeners_.insert(listener);
@@ -234,6 +253,11 @@ void FakeScriptExecutorDelegate::SetExpandSheetForPromptAction(bool expand) {
 void FakeScriptExecutorDelegate::SetBrowseDomainsAllowlist(
     std::vector<std::string> domains) {
   browse_domains_ = std::move(domains);
+}
+
+void FakeScriptExecutorDelegate::SetClientSettings(
+    const ClientSettingsProto& client_settings) {
+  client_settings_.UpdateFromProto(client_settings);
 }
 
 bool FakeScriptExecutorDelegate::SetForm(

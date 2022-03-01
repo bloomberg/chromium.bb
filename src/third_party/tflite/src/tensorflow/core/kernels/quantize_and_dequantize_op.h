@@ -60,6 +60,28 @@ struct QuantizeAndDequantizePerChannelFunctor {
                   typename TTypes<T, 3>::Tensor output);
 };
 
+template <typename Device, typename T>
+struct QuantizeAndDequantizeOneScaleGradientFunctor {
+  void operator()(const Device& d, typename TTypes<T>::ConstFlat gradient,
+                  typename TTypes<T>::ConstFlat input,
+                  typename TTypes<T>::ConstScalar input_min,
+                  typename TTypes<T>::ConstScalar input_max,
+                  typename TTypes<T>::Flat input_backprop,
+                  typename TTypes<T>::Scalar input_min_backprop,
+                  typename TTypes<T>::Scalar input_max_backprop);
+};
+
+template <typename Device, typename T>
+struct QuantizeAndDequantizePerChannelGradientFunctor {
+  void operator()(const Device& d, typename TTypes<T, 3>::ConstTensor gradient,
+                  typename TTypes<T, 3>::ConstTensor input,
+                  const Tensor* input_min_tensor,
+                  const Tensor* input_max_tensor,
+                  typename TTypes<T, 3>::Tensor input_backprop,
+                  typename TTypes<T>::Flat input_min_backprop,
+                  typename TTypes<T>::Flat input_max_backprop);
+};
+
 // The implementation below runs on both CPU and GPU.
 template <typename Device, typename T, typename Func,
           typename Vec = typename TTypes<T>::Vec,
@@ -126,11 +148,11 @@ void ComputeQuantizationRange(bool signed_input, int num_bits,
   // e.g. [-127,127] for signed = true, narrow_range = true, num_bits = 8,
   // or [-128,127] for signed = true, narrow_range = false, num_bits = 8,
   // or [0, 255] for signed = false, num_bits = 8.
-  const int64 min_quantized = signed_input ? narrow_range
-                                                 ? -(1ULL << (num_bits - 1)) + 1
-                                                 : -(1ULL << (num_bits - 1))
-                                           : 0;
-  const int64 max_quantized =
+  const int64_t min_quantized =
+      signed_input ? narrow_range ? -(1ULL << (num_bits - 1)) + 1
+                                  : -(1ULL << (num_bits - 1))
+                   : 0;
+  const int64_t max_quantized =
       signed_input ? (1ULL << (num_bits - 1)) - 1 : (1ULL << num_bits) - 1;
   // Determine the maximum scaling factor that would scale
   // [min_range, max_range] to not exceed [min_quantized, max_quantized],
@@ -246,6 +268,55 @@ struct QuantizeAndDequantizePerChannelImpl {
                       output_chip);
       }
     }
+  }
+};
+
+template <typename Device, typename T>
+struct QuantizeAndDequantizeOneScaleGradientImpl {
+  static void Compute(const Device& d, typename TTypes<T>::ConstFlat gradient,
+                      typename TTypes<T>::ConstFlat input,
+                      typename TTypes<T>::ConstScalar input_min,
+                      typename TTypes<T>::ConstScalar input_max,
+                      typename TTypes<T>::Flat input_backprop,
+                      typename TTypes<T>::Scalar input_min_backprop,
+                      typename TTypes<T>::Scalar input_max_backprop) {
+    const T min_val = input_min();
+    const T max_val = input_max();
+    const auto in_range =
+        (input >= min_val && input <= max_val)
+            .select(input.constant(1.0f), input.constant(0.0f));
+    input_backprop.device(d) = gradient * in_range;
+    input_min_backprop.device(d) = input_min_backprop.constant(0.0f);
+    input_max_backprop.device(d) = input_max_backprop.constant(0.0f);
+  }
+};
+
+template <typename Device, typename T>
+struct QuantizeAndDequantizePerChannelGradientImpl {
+  static void Compute(const Device& d,
+                      typename TTypes<T, 3>::ConstTensor gradient,
+                      typename TTypes<T, 3>::ConstTensor input,
+                      const Tensor* input_min_tensor,
+                      const Tensor* input_max_tensor,
+                      typename TTypes<T, 3>::Tensor input_backprop,
+                      typename TTypes<T>::Flat input_min_backprop,
+                      typename TTypes<T>::Flat input_max_backprop) {
+    using Index = typename tensorflow::TTypes<T>::ConstTensor::Index;
+    auto input_min = input_min_tensor->vec<T>();
+    auto input_max = input_max_tensor->vec<T>();
+    int num_channels = input.dimension(1);
+    for (Index i = 0; i < num_channels; ++i) {
+      const auto gradient_chip = gradient.template chip<1>(i);
+      const auto input_chip = input.template chip<1>(i);
+      const T min_val = input_min(i);
+      const T max_val = input_max(i);
+      const auto in_range =
+          (input_chip >= min_val && input_chip <= max_val)
+              .select(input_chip.constant(1.0f), input_chip.constant(0.0f));
+      input_backprop.template chip<1>(i).device(d) = gradient_chip * in_range;
+    }
+    input_min_backprop.device(d) = input_min_backprop.constant(0.0f);
+    input_max_backprop.device(d) = input_max_backprop.constant(0.0f);
   }
 };
 

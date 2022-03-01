@@ -26,18 +26,13 @@ namespace ast {
 class DepthTexture : public Castable<DepthTexture, Texture> {
  public:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the source of this node
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
   /// @param dim the dimensionality of the texture
-  DepthTexture(ProgramID program_id,
-               const Source& source,
-               TextureDimension dim);
+  DepthTexture(ProgramID pid, const Source& src, TextureDimension dim);
   /// Move constructor
   DepthTexture(DepthTexture&&);
   ~DepthTexture() override;
-
-  /// @returns the name for this type
-  std::string type_name() const override;
 
   /// @param symbols the program's symbol table
   /// @returns the name for this type that closely resembles how it would be
@@ -47,7 +42,7 @@ class DepthTexture : public Castable<DepthTexture, Texture> {
   /// Clones this type and all transitive types using the `CloneContext` `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned type
-  DepthTexture* Clone(CloneContext* ctx) const override;
+  const DepthTexture* Clone(CloneContext* ctx) const override;
 };
 
 }  // namespace ast

@@ -6,13 +6,13 @@ import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_t
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://test/chai_assert.js';
 
-import {EntryList, FakeEntryImpl} from '../../common/js/files_app_entry_types.m.js';
-import {installMockChrome} from '../../common/js/mock_chrome.m.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
-import {FakeEntry} from '../../externs/files_app_entry_interfaces.m.js';
+import {EntryList, FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
+import {installMockChrome} from '../../common/js/mock_chrome.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {FakeEntry} from '../../externs/files_app_entry_interfaces.js';
 
-import {DirectoryModel} from './directory_model.m.js';
-import {FileTypeFiltersController} from './file_type_filters_controller.m.js';
+import {DirectoryModel} from './directory_model.js';
+import {FileTypeFiltersController} from './file_type_filters_controller.js';
 
 /**
  * @type {!HTMLElement}
@@ -41,8 +41,7 @@ let fileTypeFiltersController;
 
 export function setUp() {
   // Mock loadTimeData strings.
-  loadTimeData.resetForTesting();
-  loadTimeData.overrideValues({
+  loadTimeData.resetForTesting({
     MEDIA_VIEW_AUDIO_ROOT_LABEL: 'Audio',
     MEDIA_VIEW_IMAGES_ROOT_LABEL: 'Images',
     MEDIA_VIEW_VIDEOS_ROOT_LABEL: 'Videos',

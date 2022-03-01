@@ -15,18 +15,19 @@ limitations under the License.
 
 #include "ruy/ctx.h"
 
-#include <functional>
 #include <cstdlib>
+#include <functional>
 #include <string>
-
 
 #include "ruy/check_macros.h"
 #include "ruy/cpuinfo.h"
 #include "ruy/ctx_impl.h"
 #include "ruy/have_built_path_for.h"
 #include "ruy/path.h"
+#include "ruy/performance_advisory.h"
 #include "ruy/platform.h"
 #include "ruy/prepacked_cache.h"
+#include "ruy/trace.h"
 
 namespace ruy {
 
@@ -44,9 +45,27 @@ int Ctx::max_num_threads() const { return impl().max_num_threads_; }
 void Ctx::set_max_num_threads(int value) {
   mutable_impl()->max_num_threads_ = value;
 }
+void Ctx::clear_performance_advisories() {
+  mutable_impl()->performance_advisory_ = PerformanceAdvisory::kNone;
+}
+void Ctx::set_performance_advisory(PerformanceAdvisory advisory) {
+  mutable_impl()->performance_advisory_ =
+      mutable_impl()->performance_advisory_ | advisory;
+}
+bool Ctx::performance_advisory(PerformanceAdvisory advisory) const {
+  return (impl().performance_advisory_ & advisory) !=
+         PerformanceAdvisory::kNone;
+}
 
 void Ctx::SetRuntimeEnabledPaths(Path paths) {
-  mutable_impl()->runtime_enabled_paths_ = paths | kNonArchPaths;
+  if (paths == Path::kNone) {
+    // Revert to default behavior using runtime detection.
+    mutable_impl()->runtime_enabled_paths_ = Path::kNone;
+  } else {
+    // Explicitly set enabled paths. Ensure that non-arch are always enabled
+    // (needed for fallbacks).
+    mutable_impl()->runtime_enabled_paths_ = paths | kNonArchPaths;
+  }
 }
 
 CpuInfo* Ctx::mutable_cpuinfo() { return &mutable_impl()->cpuinfo_; }
@@ -66,9 +85,9 @@ int GetHexIntEnvVarOrZero(const char* name) {
 // supported. Path bits that are not set in the input
 // `paths_to_detect` value are also left not set in the return value.
 Path DetectRuntimeSupportedPaths(Path paths_to_detect, CpuInfo* cpuinfo) {
-  // Paths in kNonArchPaths are always implicitly supported.
-  // Further logic below may add more bits to `results`.
-  Path result = kNonArchPaths;
+  // Paths in kNonArchPathsIncludingInternalVariants are always implicitly
+  // supported. Further logic below may add more bits to `results`.
+  Path result = kNonArchPathsIncludingInternalVariants;
 
   // Conditionally sets the `path` bit in `result`, if reported as supported
   // by the `is_supported` predicate.
@@ -100,14 +119,12 @@ Path DetectRuntimeSupportedPaths(Path paths_to_detect, CpuInfo* cpuinfo) {
 #elif RUY_PLATFORM_X86
   // x86 SIMD paths currently require both runtime detection, and detection of
   // whether we're building the path at all.
-  maybe_add(Path::kSse42,
-            [=]() { return HaveBuiltPathForSse42() && cpuinfo->Sse42(); });
-  maybe_add(Path::kAvx2,
-            [=]() { return HaveBuiltPathForAvx2() && cpuinfo->Avx2(); });
+  maybe_add(Path::kAvx,
+            [=]() { return HaveBuiltPathForAvx() && cpuinfo->Avx(); });
+  maybe_add(Path::kAvx2Fma,
+            [=]() { return HaveBuiltPathForAvx2Fma() && cpuinfo->Avx2Fma(); });
   maybe_add(Path::kAvx512,
             [=]() { return HaveBuiltPathForAvx512() && cpuinfo->Avx512(); });
-  maybe_add(Path::kAvxVnni,
-            [=]() { return HaveBuiltPathForAvxVnni() && cpuinfo->AvxVnni(); });
 #else
   (void)maybe_add;
   (void)cpuinfo;
@@ -115,13 +132,16 @@ Path DetectRuntimeSupportedPaths(Path paths_to_detect, CpuInfo* cpuinfo) {
 
   // Sanity checks
   RUY_DCHECK_EQ(kNonArchPaths & ~result, Path::kNone);
-  RUY_DCHECK_EQ(result & ~(kNonArchPaths | paths_to_detect), Path::kNone);
+  RUY_DCHECK_EQ(
+      result & ~(kNonArchPathsIncludingInternalVariants | paths_to_detect),
+      Path::kNone);
   return result;
 }
 
 }  // namespace
 
 Path Ctx::GetRuntimeEnabledPaths() {
+  RUY_TRACE_SCOPE;
   // Just a shorthand alias. Using a pointer to make it clear we're mutating
   // this value in-place.
   Path* paths = &mutable_impl()->runtime_enabled_paths_;
@@ -129,16 +149,19 @@ Path Ctx::GetRuntimeEnabledPaths() {
   // The value Path::kNone indicates the initial state before detection has been
   // performed.
   if (*paths != Path::kNone) {
+    RUY_TRACE_INFO(GET_RUNTIME_ENABLED_PATHS_USING_SET_VALUE);
     return *paths;
   }
   // User may have set path explicitly in env var.
   Path paths_bitfield = static_cast<Path>(GetHexIntEnvVarOrZero("RUY_PATHS"));
   if (paths_bitfield != Path::kNone) {
     *paths = paths_bitfield;
+    RUY_TRACE_INFO(GET_RUNTIME_ENABLED_PATHS_USING_ENV_VAR);
     return *paths;
   }
   // Finally, use runtime detection.
   *paths = DetectRuntimeSupportedPaths(kAllPaths, mutable_cpuinfo());
+  RUY_TRACE_INFO(GET_RUNTIME_ENABLED_PATHS_USING_DETECTION);
   return *paths;
 }
 
@@ -185,7 +208,7 @@ Tuning Ctx::GetMainThreadTuning() {
   EnsureThreadSpecificResources(1);
   TuningResolver* tuning_resolver = GetThreadSpecificTuningResolver(0);
   tuning_resolver->SetTuning(explicit_tuning());
-  return tuning_resolver->Resolve();
+  return tuning_resolver->Resolve(mutable_cpuinfo());
 }
 
 void Ctx::ClearPrepackedCache() { mutable_impl()->prepacked_cache_ = nullptr; }

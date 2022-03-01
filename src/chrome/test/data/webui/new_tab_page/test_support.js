@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {InitializeModuleCallback} from 'chrome://new-tab-page/new_tab_page.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {assertEquals, assertNotEquals} from '../chai_assert.js';
-import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+import {TestBrowserProxy} from '../test_browser_proxy.js';
 
 /** @type {string} */
 export const NONE_ANIMATION = 'none 0s ease 0s 1 normal none running';
@@ -71,8 +72,27 @@ export function createMock(clazz) {
   return {mock: new Proxy({}, handler), callTracker};
 }
 
+/**
+ * @param {!typeof T} clazz
+ * @param {!function(!T)=} installer
+ * @return {!TestBrowserProxy}
+ * @template T
+ */
+export function installMock(clazz, installer) {
+  installer = installer || clazz.setInstance;
+  const {mock, callTracker} = createMock(clazz);
+  installer(mock);
+  return callTracker;
+}
+
 /** @return {!newTabPage.mojom.Theme} */
 export function createTheme() {
+  const mostVisited = {
+    backgroundColor: {value: 0xff00ff00},
+    isDark: false,
+    useTitlePill: false,
+    useWhiteTileIcon: false,
+  };
   const searchBox = {
     bg: {value: 0xff000000},
     icon: {value: 0xff000001},
@@ -91,18 +111,27 @@ export function createTheme() {
   };
   return {
     backgroundColor: {value: 0xffff0000},
-    shortcutBackgroundColor: {value: 0xff00ff00},
-    shortcutTextColor: {value: 0xff0000ff},
-    isDefault: true,
-    isDark: false,
-    logoColor: null,
     backgroundImage: null,
     backgroundImageAttribution1: '',
     backgroundImageAttribution2: '',
     backgroundImageAttributionUrl: null,
     dailyRefreshCollectionId: '',
+    isDark: false,
+    isDefault: true,
+    logoColor: null,
+    mostVisited: mostVisited,
     searchBox: searchBox,
-    shortcutUseWhiteAddIcon: false,
-    shortcutUseTitlePill: false,
+    textColor: {value: 0xff0000ff},
+    isCustomBackground: true
   };
+}
+
+/** @type {!InitializeModuleCallback} */
+export async function initNullModule() {
+  return null;
+}
+
+/** @return {!HTMLElement} */
+export function createElement() {
+  return /** @type {!HTMLElement} */ (document.createElement('div'));
 }

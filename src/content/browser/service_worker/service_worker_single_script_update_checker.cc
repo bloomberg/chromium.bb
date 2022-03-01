@@ -9,10 +9,10 @@
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/loader/browser_initiated_resource_request.h"
+#include "content/browser/renderer_host/cross_origin_embedder_policy.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_frame_host.h"
@@ -27,6 +27,8 @@
 #include "net/http/http_response_info.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/early_hints.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
@@ -223,7 +225,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
     bool has_header = response_head->headers->EnumerateHeader(
         nullptr, ServiceWorkerConsts::kServiceWorkerAllowed,
         &service_worker_allowed);
-    if (!ServiceWorkerUtils::IsPathRestrictionSatisfied(
+    if (!service_worker_loader_helpers::IsPathRestrictionSatisfied(
             scope_, script_url_, has_header ? &service_worker_allowed : nullptr,
             &error_message)) {
       Fail(blink::ServiceWorkerStatusCode::kErrorSecurity, error_message,
@@ -234,7 +236,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
     // here, not matter the URLLoader used to load it.
     cross_origin_embedder_policy_ =
         response_head->parsed_headers
-            ? response_head->parsed_headers->cross_origin_embedder_policy
+            ? CoepFromMainResponse(script_url_, response_head.get())
             : network::CrossOriginEmbedderPolicy();
   }
 

@@ -23,9 +23,15 @@ source_set("download") {
     "download_manager_tab_helper_delegate.h",
     "external_app_util.h",
     "external_app_util.mm",
+    "mobileconfig_tab_helper.h",
+    "mobileconfig_tab_helper.mm",
+    "mobileconfig_tab_helper_delegate.h",
     "pass_kit_tab_helper.h",
     "pass_kit_tab_helper.mm",
     "pass_kit_tab_helper_delegate.h",
+    "vcard_tab_helper.h",
+    "vcard_tab_helper.mm",
+    "vcard_tab_helper_delegate.h",
   ]
 
   public_deps = [ ":mime_types" ]
@@ -40,6 +46,7 @@ source_set("download") {
     "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/overlays/public/common/confirmation",
     "//ios/chrome/browser/overlays/public/common/confirmation:util",
+    "//ios/chrome/browser/ui/download:features",
     "//ios/web/common",
     "//ios/web/public",
     "//ios/web/public/download",
@@ -58,10 +65,8 @@ source_set("download") {
 
 source_set("mime_types") {
   sources = [
-    "pass_kit_mime_type.cc",
-    "pass_kit_mime_type.h",
-    "usdz_mime_type.cc",
-    "usdz_mime_type.h",
+    "mime_type_util.cc",
+    "mime_type_util.h",
   ]
 
   deps = [ "//base" ]
@@ -80,12 +85,15 @@ source_set("unit_tests") {
     "download_manager_tab_helper_unittest.mm",
     "google_drive_app_util_unittest.mm",
     "pass_kit_tab_helper_unittest.mm",
+    "vcard_tab_helper_unittest.mm",
   ]
   deps = [
     ":test_support",
     "//base/test:test_support",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/download",
+    "//ios/chrome/browser/ui/download:features",
+    "//ios/chrome/browser/web_state_list:test_support",
     "//ios/chrome/test/fakes",
     "//ios/web/public",
     "//ios/web/public/download",

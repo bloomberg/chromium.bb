@@ -27,10 +27,16 @@ TEST(ModuleCloneTest, Clone) {
   // Shader that exercises the bulk of the AST nodes and types.
   // See also fuzzers/tint_ast_clone_fuzzer.cc for further coverage of cloning.
   Source::File file("test.wgsl", R"([[block]]
-struct S {
+struct S0 {
   [[size(4)]]
   m0 : u32;
   m1 : array<u32>;
+};
+
+[[block]] struct S1 {
+  [[size(4)]]
+  m0 : u32;
+  m1 : array<u32, 6>;
 };
 
 let c0 : i32 = 10;
@@ -42,15 +48,15 @@ type t1 = array<vec4<f32>>;
 var<private> g0 : u32 = 20u;
 var<private> g1 : f32 = 123.0;
 [[group(0), binding(0)]] var g2 : texture_2d<f32>;
-[[group(1), binding(0)]] var g3 : [[access(read)]] texture_storage_2d<r32uint>;
-[[group(2), binding(0)]] var g4 : [[access(write)]] texture_storage_2d<rg32float>;
-[[group(3), binding(0)]] var g5 : [[access(read)]] texture_storage_2d<r32uint>;
-[[group(4), binding(0)]] var g6 : [[access(write)]] texture_storage_2d<rg32float>;
+[[group(1), binding(0)]] var g3 : texture_depth_2d;
+[[group(2), binding(0)]] var g4 : texture_storage_2d<rg32float, write>;
+[[group(3), binding(0)]] var g5 : texture_depth_cube_array;
+[[group(4), binding(0)]] var g6 : texture_external;
 
 var<private> g7 : vec3<f32>;
-[[group(0), binding(1)]] var<storage> g8 : [[access(write)]] S;
-[[group(1), binding(1)]] var<storage> g9 : [[access(read)]] S;
-[[group(2), binding(1)]] var<storage> g10 : [[access(read_write)]] S;
+[[group(0), binding(1)]] var<storage, write> g8 : S0;
+[[group(1), binding(1)]] var<storage, read> g9 : S0;
+[[group(2), binding(1)]] var<storage, read_write> g10 : S0;
 
 fn f0(p0 : bool) -> f32 {
   if (p0) {
@@ -64,13 +70,13 @@ fn f1(p0 : f32, p1 : i32) -> f32 {
   var l1 : f32 = 8.0;
   var l2 : u32 = bitcast<u32>(4);
   var l3 : vec2<u32> = vec2<u32>(u32(l0), u32(l1));
-  var l4 : S;
+  var l4 : S1;
   var l5 : u32 = l4.m1[5];
-  var l6 : ptr<private, u32>;
+  let l6 : ptr<private, u32> = &g0;
   loop {
     l0 = (p1 + 2);
     if (((l0 % 4) == 0)) {
-      continue;
+      break;
     }
 
     continuing {
@@ -106,9 +112,9 @@ type declaration_order_check_1 = f32;
 
 fn declaration_order_check_2() {}
 
-type declaration_order_check_2 = f32;
+type declaration_order_check_3 = f32;
 
-let declaration_order_check_3 : i32 = 1;
+let declaration_order_check_4 : i32 = 1;
 
 )");
 
@@ -122,8 +128,8 @@ let declaration_order_check_3 : i32 = 1;
 
   ASSERT_TRUE(dst.IsValid()) << diag::Formatter().format(dst.Diagnostics());
 
-  // Expect the AST printed with to_str() to match
-  EXPECT_EQ(src.to_str(), dst.to_str());
+  // Expect the printed strings to match
+  EXPECT_EQ(Program::printer(&src), Program::printer(&dst));
 
   // Check that none of the AST nodes or type pointers in dst are found in src
   std::unordered_set<ast::Node*> src_nodes;
@@ -135,20 +141,21 @@ let declaration_order_check_3 : i32 = 1;
     src_types.emplace(src_type);
   }
   for (auto* dst_node : dst.ASTNodes().Objects()) {
-    ASSERT_EQ(src_nodes.count(dst_node), 0u) << dst.str(dst_node);
+    ASSERT_EQ(src_nodes.count(dst_node), 0u);
   }
   for (auto* dst_type : dst.Types()) {
-    ASSERT_EQ(src_types.count(dst_type), 0u) << dst_type->type_name();
+    ASSERT_EQ(src_types.count(dst_type), 0u);
   }
 
   // Regenerate the wgsl for the src program. We use this instead of the
   // original source so that reformatting doesn't impact the final wgsl
   // comparison.
+  writer::wgsl::Options options;
   std::string src_wgsl;
   {
-    writer::wgsl::Generator src_gen(&src);
-    ASSERT_TRUE(src_gen.Generate()) << src_gen.error();
-    src_wgsl = src_gen.result();
+    auto result = writer::wgsl::Generate(&src, options);
+    ASSERT_TRUE(result.success) << result.error;
+    src_wgsl = result.wgsl;
 
     // Move the src program to a temporary that'll be dropped, so that the src
     // program is released before we attempt to print the dst program. This
@@ -159,9 +166,9 @@ let declaration_order_check_3 : i32 = 1;
   }
 
   // Print the dst module, check it matches the original source
-  writer::wgsl::Generator dst_gen(&dst);
-  ASSERT_TRUE(dst_gen.Generate());
-  auto dst_wgsl = dst_gen.result();
+  auto result = writer::wgsl::Generate(&dst, options);
+  ASSERT_TRUE(result.success);
+  auto dst_wgsl = result.wgsl;
   ASSERT_EQ(src_wgsl, dst_wgsl);
 
 #else  // #if TINT_BUILD_WGSL_READER && TINT_BUILD_WGSL_WRITER

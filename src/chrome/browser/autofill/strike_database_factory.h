@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_AUTOFILL_STRIKE_DATABASE_FACTORY_H_
 #define CHROME_BROWSER_AUTOFILL_STRIKE_DATABASE_FACTORY_H_
 
-#include "base/compiler_specific.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -30,6 +29,9 @@ class StrikeDatabaseFactory : public BrowserContextKeyedServiceFactory {
 
   static StrikeDatabaseFactory* GetInstance();
 
+  StrikeDatabaseFactory(const StrikeDatabaseFactory&) = delete;
+  StrikeDatabaseFactory& operator=(const StrikeDatabaseFactory&) = delete;
+
  private:
   friend struct base::DefaultSingletonTraits<StrikeDatabaseFactory>;
 
@@ -39,8 +41,6 @@ class StrikeDatabaseFactory : public BrowserContextKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(StrikeDatabaseFactory);
 };
 
 }  // namespace autofill

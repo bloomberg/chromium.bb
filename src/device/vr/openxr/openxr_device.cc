@@ -8,11 +8,12 @@
 
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "device/base/features.h"
 #include "device/vr/openxr/openxr_api_wrapper.h"
 #include "device/vr/openxr/openxr_render_loop.h"
 #include "device/vr/openxr/openxr_statics.h"
-#include "device/vr/util/transform_utils.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace device {
@@ -40,9 +41,6 @@ mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo() {
   left_eye->field_of_view = mojom::VRFieldOfView::New(kFov, kFov, kFov, kFov);
   right_eye->field_of_view = left_eye->field_of_view.Clone();
 
-  left_eye->head_from_eye = vr_utils::DefaultHeadFromLeftEyeTransform();
-  right_eye->head_from_eye = vr_utils::DefaultHeadFromRightEyeTransform();
-
   left_eye->viewport = gfx::Size(kRenderWidth, kRenderHeight);
   right_eye->viewport = gfx::Size(kRenderWidth, kRenderHeight);
 
@@ -53,25 +51,55 @@ mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo() {
   return display_info;
 }
 
+const std::vector<mojom::XRSessionFeature>& GetSupportedFeatures() {
+  static base::NoDestructor<std::vector<mojom::XRSessionFeature>>
+      kSupportedFeatures{{
+    mojom::XRSessionFeature::REF_SPACE_VIEWER,
+    mojom::XRSessionFeature::REF_SPACE_LOCAL,
+    mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
+    mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR,
+    mojom::XRSessionFeature::REF_SPACE_UNBOUNDED,
+    mojom::XRSessionFeature::ANCHORS,
+  }};
+
+  return *kSupportedFeatures;
+}
+
 }  // namespace
 
 // OpenXrDevice must not take ownership of the OpenXrStatics passed in.
 // The OpenXrStatics object is owned by IsolatedXRRuntimeProvider.
 OpenXrDevice::OpenXrDevice(
-    OpenXrStatics* openxr_statics,
     VizContextProviderFactoryAsync context_provider_factory_async)
     : VRDeviceBase(device::mojom::XRDeviceId::OPENXR_DEVICE_ID),
-      instance_(openxr_statics->GetXrInstance()),
-      extension_helper_(instance_, openxr_statics->GetExtensionEnumeration()),
+      instance_(OpenXrStatics::GetInstance()->GetXrInstance()),
+      extension_helper_(
+          instance_,
+          OpenXrStatics::GetInstance()->GetExtensionEnumeration()),
       context_provider_factory_async_(
           std::move(context_provider_factory_async)),
       weak_ptr_factory_(this) {
   mojom::VRDisplayInfoPtr display_info = CreateFakeVRDisplayInfo();
   SetVRDisplayInfo(std::move(display_info));
-  SetArBlendModeSupported(IsArBlendModeSupported(openxr_statics));
+  SetArBlendModeSupported(IsArBlendModeSupported());
 #if defined(OS_WIN)
-  SetLuid(openxr_statics->GetLuid(extension_helper_));
+  SetLuid(OpenXrStatics::GetInstance()->GetLuid(extension_helper_));
 #endif
+
+  std::vector<mojom::XRSessionFeature> device_features(
+        GetSupportedFeatures());
+
+  // Only support hand input if the feature flag is enabled.
+  if (base::FeatureList::IsEnabled(features::kWebXrHandInput))
+    device_features.emplace_back(mojom::XRSessionFeature::HAND_INPUT);
+
+  // Only support hit test if the feature flag is enabled.
+  if (base::FeatureList::IsEnabled(features::kWebXrHitTest) &&
+      base::FeatureList::IsEnabled(
+                  features::kOpenXrExtendedFeatureSupport))
+    device_features.emplace_back(mojom::XRSessionFeature::HIT_TEST);
+
+  SetSupportedFeatures(device_features);
 }
 
 OpenXrDevice::~OpenXrDevice() {
@@ -124,8 +152,14 @@ void OpenXrDevice::RequestSession(
   const bool hand_input_supported =
       extension_helper_.ExtensionEnumeration()->ExtensionSupported(
           kMSFTHandInteractionExtensionName);
+  const bool hittest_required = base::Contains(
+      options->required_features, device::mojom::XRSessionFeature::HIT_TEST);
+  const bool hittest_supported =
+      extension_helper_.ExtensionEnumeration()->ExtensionSupported(
+          XR_MSFT_SCENE_UNDERSTANDING_EXTENSION_NAME);
   if ((anchors_required && !anchors_supported) ||
-      (hand_input_required && !hand_input_supported)) {
+      (hand_input_required && !hand_input_supported) ||
+      (hittest_required && !hittest_supported)) {
     // Reject session request
     std::move(callback).Run(nullptr);
     return;
@@ -157,14 +191,14 @@ void OpenXrDevice::RequestSession(
 
   // OpenXr doesn't need to handle anything when presentation has ended, but
   // the mojo interface to call to XRCompositorCommon::RequestSession requires
-  // a method and cannot take nullptr, so passing in base::DoNothing::Once()
+  // a method and cannot take nullptr, so passing in base::DoNothing()
   // for on_presentation_ended
   render_loop_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestSession,
-                                base::Unretained(render_loop_.get()),
-                                base::DoNothing::Once(),
-                                std::move(on_visibility_state_changed),
-                                std::move(options), std::move(my_callback)));
+      FROM_HERE,
+      base::BindOnce(&XRCompositorCommon::RequestSession,
+                     base::Unretained(render_loop_.get()), base::DoNothing(),
+                     std::move(on_visibility_state_changed), std::move(options),
+                     std::move(my_callback)));
 
   request_session_callback_ = std::move(callback);
 }
@@ -227,13 +261,15 @@ void OpenXrDevice::CreateImmersiveOverlay(
   }
 }
 
-bool OpenXrDevice::IsArBlendModeSupported(OpenXrStatics* openxr_statics) {
+bool OpenXrDevice::IsArBlendModeSupported() {
   XrSystemId system;
-  if (XR_FAILED(GetSystem(openxr_statics->GetXrInstance(), &system)))
+  if (XR_FAILED(
+          GetSystem(OpenXrStatics::GetInstance()->GetXrInstance(), &system)))
     return false;
 
   std::vector<XrEnvironmentBlendMode> environment_blend_modes =
-      GetSupportedBlendModes(openxr_statics->GetXrInstance(), system);
+      GetSupportedBlendModes(OpenXrStatics::GetInstance()->GetXrInstance(),
+                             system);
 
   return base::Contains(environment_blend_modes,
                         XR_ENVIRONMENT_BLEND_MODE_ADDITIVE) ||

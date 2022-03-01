@@ -325,7 +325,7 @@ end:
         MpegEncContext *s = avctx->priv_data;
         av_assert0(avctx->codec->priv_data_size == sizeof(MpegEncContext));
 
-        s->esc_pos = put_bits_count(pb) >> 3;
+        s->esc_pos = put_bytes_count(pb, 0);
         for(i=1; i<s->slice_context_count; i++)
             s->thread_context[i]->esc_pos = 0;
     }
@@ -343,10 +343,7 @@ void ff_mjpeg_escape_FF(PutBitContext *pb, int start)
         put_bits(pb, pad, (1<<pad)-1);
 
     flush_put_bits(pb);
-    size = put_bits_count(pb) - start * 8;
-
-    av_assert1((size&7) == 0);
-    size >>= 3;
+    size = put_bytes_output(pb) - start;
 
     ff_count=0;
     for(i=0; i<size && i<align; i++){
@@ -438,4 +435,20 @@ void ff_mjpeg_encode_dc(PutBitContext *pb, int val,
 
         put_sbits(pb, nbits, mant);
     }
+}
+
+int ff_mjpeg_encode_check_pix_fmt(AVCodecContext *avctx)
+{
+    if (avctx->strict_std_compliance > FF_COMPLIANCE_UNOFFICIAL &&
+        avctx->color_range != AVCOL_RANGE_JPEG &&
+        (avctx->pix_fmt == AV_PIX_FMT_YUV420P ||
+         avctx->pix_fmt == AV_PIX_FMT_YUV422P ||
+         avctx->pix_fmt == AV_PIX_FMT_YUV444P ||
+         avctx->color_range == AVCOL_RANGE_MPEG)) {
+        av_log(avctx, AV_LOG_ERROR,
+               "Non full-range YUV is non-standard, set strict_std_compliance "
+               "to at most unofficial to use it.\n");
+        return AVERROR(EINVAL);
+    }
+    return 0;
 }

@@ -58,7 +58,7 @@ static int
 dshow_read_close(AVFormatContext *s)
 {
     struct dshow_ctx *ctx = s->priv_data;
-    AVPacketList *pktl;
+    PacketList *pktl;
 
     if (ctx->control) {
         IMediaControl_Stop(ctx->control);
@@ -118,7 +118,7 @@ dshow_read_close(AVFormatContext *s)
 
     pktl = ctx->pktl;
     while (pktl) {
-        AVPacketList *next = pktl->next;
+        PacketList *next = pktl->next;
         av_packet_unref(&pktl->pkt);
         av_free(pktl);
         pktl = next;
@@ -162,7 +162,7 @@ callback(void *priv_data, int index, uint8_t *buf, int buf_size, int64_t time, e
 {
     AVFormatContext *s = priv_data;
     struct dshow_ctx *ctx = s->priv_data;
-    AVPacketList **ppktl, *pktl_next;
+    PacketList **ppktl, *pktl_next;
 
 //    dump_videohdr(s, vdhdr);
 
@@ -171,7 +171,7 @@ callback(void *priv_data, int index, uint8_t *buf, int buf_size, int64_t time, e
     if(shall_we_drop(s, index, devtype))
         goto fail;
 
-    pktl_next = av_mallocz(sizeof(AVPacketList));
+    pktl_next = av_mallocz(sizeof(PacketList));
     if(!pktl_next)
         goto fail;
 
@@ -369,7 +369,7 @@ dshow_cycle_formats(AVFormatContext *avctx, enum dshowDeviceType devtype,
                 enum AVPixelFormat pix_fmt = dshow_pixfmt(bih->biCompression, bih->biBitCount);
                 if (pix_fmt == AV_PIX_FMT_NONE) {
                     enum AVCodecID codec_id = av_codec_get_id(tags, bih->biCompression);
-                    AVCodec *codec = avcodec_find_decoder(codec_id);
+                    const AVCodec *codec = avcodec_find_decoder(codec_id);
                     if (codec_id == AV_CODEC_ID_NONE || !codec) {
                         av_log(avctx, AV_LOG_INFO, "  unknown compression type 0x%X", (int) bih->biCompression);
                     } else {
@@ -422,28 +422,20 @@ dshow_cycle_formats(AVFormatContext *avctx, enum dshowDeviceType devtype,
                 goto next;
             }
             if (!pformat_set) {
-                av_log(avctx, AV_LOG_INFO, "  min ch=%lu bits=%lu rate=%6lu max ch=%lu bits=%lu rate=%6lu\n",
-                       acaps->MinimumChannels, acaps->MinimumBitsPerSample, acaps->MinimumSampleFrequency,
-                       acaps->MaximumChannels, acaps->MaximumBitsPerSample, acaps->MaximumSampleFrequency);
+                av_log(
+                    avctx,
+                    AV_LOG_INFO,
+                    "  ch=%2lu, bits=%2lu, rate=%6lu\n",
+                    fx->nChannels, fx->wBitsPerSample, fx->nSamplesPerSec
+                );
                 continue;
             }
-            if (ctx->sample_rate) {
-                if (ctx->sample_rate > acaps->MaximumSampleFrequency ||
-                    ctx->sample_rate < acaps->MinimumSampleFrequency)
-                    goto next;
-                fx->nSamplesPerSec = ctx->sample_rate;
-            }
-            if (ctx->sample_size) {
-                if (ctx->sample_size > acaps->MaximumBitsPerSample ||
-                    ctx->sample_size < acaps->MinimumBitsPerSample)
-                    goto next;
-                fx->wBitsPerSample = ctx->sample_size;
-            }
-            if (ctx->channels) {
-                if (ctx->channels > acaps->MaximumChannels ||
-                    ctx->channels < acaps->MinimumChannels)
-                    goto next;
-                fx->nChannels = ctx->channels;
+            if (
+                (ctx->sample_rate && ctx->sample_rate != fx->nSamplesPerSec) ||
+                (ctx->sample_size && ctx->sample_size != fx->wBitsPerSample) ||
+                (ctx->channels    && ctx->channels    != fx->nChannels     )
+            ) {
+                goto next;
             }
         }
         if (IAMStreamConfig_SetFormat(config, type) != S_OK)
@@ -577,7 +569,7 @@ dshow_cycle_pins(AVFormatContext *avctx, enum dshowDeviceType devtype,
                                                 (ctx->requested_width && ctx->requested_height) ||
                                                  ctx->pixel_format != AV_PIX_FMT_NONE ||
                                                  ctx->video_codec_id != AV_CODEC_ID_RAWVIDEO))
-                  || (devtype == AudioDevice && (ctx->channels || ctx->sample_rate));
+                  || (devtype == AudioDevice && (ctx->channels || ctx->sample_rate || ctx->sample_size));
     int format_set = 0;
     int should_show_properties = (devtype == VideoDevice) ? ctx->show_video_device_dialog : ctx->show_audio_device_dialog;
 
@@ -1262,7 +1254,7 @@ static int dshow_check_event_queue(IMediaEvent *media_event)
 static int dshow_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     struct dshow_ctx *ctx = s->priv_data;
-    AVPacketList *pktl = NULL;
+    PacketList *pktl = NULL;
 
     while (!ctx->eof && !pktl) {
         WaitForSingleObject(ctx->mutex, INFINITE);
@@ -1328,7 +1320,7 @@ static const AVClass dshow_class = {
     .category   = AV_CLASS_CATEGORY_DEVICE_VIDEO_INPUT,
 };
 
-AVInputFormat ff_dshow_demuxer = {
+const AVInputFormat ff_dshow_demuxer = {
     .name           = "dshow",
     .long_name      = NULL_IF_CONFIG_SMALL("DirectShow capture"),
     .priv_data_size = sizeof(struct dshow_ctx),

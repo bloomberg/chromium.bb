@@ -42,6 +42,7 @@ rtc_library("fuzz_data_helper") {
 }
 
 set_defaults("webrtc_fuzzer_test") {
+  configs = rtc_add_configs
   absl_deps = []
 }
 
@@ -52,6 +53,7 @@ template("webrtc_fuzzer_test") {
       ":fuzz_data_helper",
       ":webrtc_fuzzer_main",
     ]
+    additional_configs = configs
 
     # If absl_deps is [], no action is needed. If not [], then it needs to be
     # converted to //third_party/abseil-cpp:absl when build_with_chromium=true
@@ -76,6 +78,7 @@ template("webrtc_fuzzer_test") {
 webrtc_fuzzer_test("h264_depacketizer_fuzzer") {
   sources = [ "h264_depacketizer_fuzzer.cc" ]
   deps = [ "../../modules/rtp_rtcp" ]
+  seed_corpus = "corpora/h264-depacketizer-fuzzer-corpus"
 }
 
 webrtc_fuzzer_test("vp8_depacketizer_fuzzer") {
@@ -195,6 +198,7 @@ webrtc_fuzzer_test("flexfec_receiver_fuzzer") {
 webrtc_fuzzer_test("packet_buffer_fuzzer") {
   sources = [ "packet_buffer_fuzzer.cc" ]
   deps = [
+    "../../modules/video_coding:packet_buffer",
     "../../modules/video_coding/",
     "../../system_wrappers",
   ]
@@ -226,14 +230,6 @@ webrtc_fuzzer_test("rtp_packetizer_av1_fuzzer") {
     "../../modules/rtp_rtcp:rtp_rtcp",
     "../../modules/rtp_rtcp:rtp_rtcp_format",
     "../../rtc_base:checks",
-  ]
-}
-
-webrtc_fuzzer_test("rtp_header_fuzzer") {
-  sources = [ "rtp_header_fuzzer.cc" ]
-  deps = [
-    "../../modules/rtp_rtcp",
-    "../../modules/rtp_rtcp:rtp_rtcp_format",
   ]
 }
 
@@ -565,6 +561,17 @@ webrtc_fuzzer_test("rtp_dependency_descriptor_fuzzer") {
   ]
 }
 
+webrtc_fuzzer_test("rtp_video_layers_allocation_fuzzer") {
+  sources = [ "rtp_video_layers_allocation_fuzzer.cc" ]
+  seed_corpus = "corpora/video_layers_allocation-corpus"
+  deps = [
+    "../../api:array_view",
+    "../../api/video:video_layers_allocation",
+    "../../modules/rtp_rtcp:rtp_rtcp_format",
+    "../../rtc_base:checks",
+  ]
+}
+
 webrtc_fuzzer_test("rtp_frame_reference_finder_fuzzer") {
   sources = [ "rtp_frame_reference_finder_fuzzer.cc" ]
   deps = [
@@ -580,6 +587,16 @@ webrtc_fuzzer_test("frame_buffer2_fuzzer") {
   deps = [
     "../../modules/video_coding/",
     "../time_controller:time_controller",
+  ]
+}
+
+webrtc_fuzzer_test("frame_buffer3_fuzzer") {
+  sources = [ "frame_buffer3_fuzzer.cc" ]
+  deps = [
+    ":fuzz_data_helper",
+    "../../api:array_view",
+    "../../api/video:encoded_frame",
+    "../../modules/video_coding:frame_buffer",
   ]
 }
 
@@ -616,14 +633,13 @@ webrtc_fuzzer_test("dcsctp_socket_fuzzer") {
   ]
 }
 
-webrtc_fuzzer_test("rtp_header_parser_fuzzer") {
-  sources = [ "rtp_header_parser_fuzzer.cc" ]
-  deps = [ "../:rtp_test_utils" ]
-}
-
 webrtc_fuzzer_test("ssl_certificate_fuzzer") {
-  sources = [ "rtp_header_parser_fuzzer.cc" ]
-  deps = [ "../:rtp_test_utils" ]
+  sources = [ "ssl_certificate_fuzzer.cc" ]
+  deps = [
+    "../:rtp_test_utils",
+    "../../rtc_base",
+    "../../rtc_base:stringutils",
+  ]
 }
 
 webrtc_fuzzer_test("vp8_replay_fuzzer") {
@@ -655,6 +671,7 @@ if (rtc_build_libvpx) {
       "//third_party/abseil-cpp/absl/base:core_headers",
       "//third_party/abseil-cpp/absl/container:inlined_vector",
     ]
+    seed_corpus = "corpora/vp9-encoder-references-corpus"
     defines = [ "RTC_ENABLE_VP9" ]
   }
 }

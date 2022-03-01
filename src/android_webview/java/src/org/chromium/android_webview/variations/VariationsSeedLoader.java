@@ -104,7 +104,7 @@ public class VariationsSeedLoader {
 
     private static void recordLoadSeedResult(@LoadSeedResult int result) {
         RecordHistogram.recordEnumeratedHistogram(
-                SEED_LOAD_RESULT_HISTOGRAM_NAME, result, LoadSeedResult.ENUM_SIZE);
+                SEED_LOAD_RESULT_HISTOGRAM_NAME, result, LoadSeedResult.MAX_VALUE + 1);
     }
 
     private static void recordSeedLoadBlockingTime(long timeMs) {
@@ -213,16 +213,12 @@ public class VariationsSeedLoader {
                 VariationsUtils.replaceOldWithNewSeed();
             }
 
-            boolean connectedToVariationsService = false;
             if (mNeedNewSeed) {
                 // The new seed will arrive asynchronously; the new seed file is written by the
                 // service, and may complete after this app process has died.
-                connectedToVariationsService = requestSeedFromService(mCurrentSeedDate);
+                requestSeedFromService(mCurrentSeedDate);
                 VariationsUtils.updateStampTime();
             }
-
-            RecordHistogram.recordBooleanHistogram(
-                    "Android.WebView.ConnectedToVariationService", connectedToVariationsService);
 
             onBackgroundWorkFinished();
         }

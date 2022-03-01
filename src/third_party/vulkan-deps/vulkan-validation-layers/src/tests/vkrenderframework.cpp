@@ -30,6 +30,7 @@
 #include <vector>
 
 #include "vk_format_utils.h"
+#include "vk_extension_helper.h"
 
 using std::string;
 using std::strncmp;
@@ -40,9 +41,12 @@ typename C::iterator RemoveIf(C &container, F &&fn) {
     return container.erase(std::remove_if(container.begin(), container.end(), std::forward<F>(fn)), container.end());
 }
 
-ErrorMonitor::ErrorMonitor() {
+ErrorMonitor::ErrorMonitor(Behavior behavior) : behavior_(behavior) {
     test_platform_thread_create_mutex(&mutex_);
     MonitorReset();
+    if (behavior_ == Behavior::DefaultSuccess) {
+        ExpectSuccess(kErrorBit);
+    }
 }
 
 ErrorMonitor::~ErrorMonitor() NOEXCEPT { test_platform_thread_delete_mutex(&mutex_); }
@@ -67,6 +71,10 @@ void ErrorMonitor::Reset() {
 void ErrorMonitor::SetDesiredFailureMsg(const VkFlags msgFlags, const string msg) { SetDesiredFailureMsg(msgFlags, msg.c_str()); }
 
 void ErrorMonitor::SetDesiredFailureMsg(const VkFlags msgFlags, const char *const msgString) {
+    if (NeedCheckSuccess()) {
+        VerifyNotFound();
+    }
+
     test_platform_thread_lock_mutex(&mutex_);
     desired_message_strings_.insert(msgString);
     message_flags_ |= msgFlags;
@@ -80,6 +88,9 @@ void ErrorMonitor::SetAllowedFailureMsg(const char *const msg) {
 }
 
 void ErrorMonitor::SetUnexpectedError(const char *const msg) {
+    if (NeedCheckSuccess()) {
+        VerifyNotFound();
+    }
     test_platform_thread_lock_mutex(&mutex_);
     ignore_message_strings_.emplace_back(msg);
     test_platform_thread_unlock_mutex(&mutex_);
@@ -197,6 +208,10 @@ void ErrorMonitor::VerifyFound() {
     }
     MonitorReset();
     test_platform_thread_unlock_mutex(&mutex_);
+
+    if (behavior_ == Behavior::DefaultSuccess) {
+        ExpectSuccess();
+    }
 }
 
 void ErrorMonitor::VerifyNotFound() {
@@ -281,6 +296,13 @@ VkRenderFramework::VkRenderFramework()
       m_renderPass(VK_NULL_HANDLE),
       m_framebuffer(VK_NULL_HANDLE),
       m_surface(VK_NULL_HANDLE),
+#if defined(VK_USE_PLATFORM_XLIB_KHR)
+      m_surface_dpy(nullptr),
+      m_surface_window(None),
+#endif
+#if defined(VK_USE_PLATFORM_XCB_KHR)
+      m_surface_xcb_conn(nullptr),
+#endif
       m_swapchain(VK_NULL_HANDLE),
       m_addRenderPassSelfDependency(false),
       m_width(256.0),   // default window width
@@ -330,9 +352,10 @@ bool VkRenderFramework::InstanceLayerSupported(const char *const layer_name, con
 // Return true if extension name is found and spec value is >= requested spec value
 // WARNING: for simplicity, does not cover layers' extensions
 bool VkRenderFramework::InstanceExtensionSupported(const char *const extension_name, const uint32_t spec_version) {
-    // WARNING: assume debug extensions are always supported, which are usually provided by layers
+    // WARNING: assume debug and validation feature extensions are always supported, which are usually provided by layers
     if (0 == strncmp(extension_name, VK_EXT_DEBUG_UTILS_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE)) return true;
     if (0 == strncmp(extension_name, VK_EXT_DEBUG_REPORT_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE)) return true;
+    if (0 == strncmp(extension_name, VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE)) return true;
 
     const auto extensions = vk_testing::GetGlobalExtensions();
 
@@ -443,6 +466,13 @@ void VkRenderFramework::InitFramework(void * /*unused compatibility parameter*/,
         }
     };
 
+    static bool driver_printed = false;
+    static bool print_driver_info = GetEnvironment("VK_LAYER_TESTS_PRINT_DRIVER") != "";
+    if (print_driver_info && !driver_printed &&
+        InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        instance_extensions_.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    }
+
     RemoveIf(instance_layers_, LayerNotSupportedWithReporting);
     RemoveIf(instance_extensions_, ExtensionNotSupportedWithReporting);
 
@@ -476,6 +506,7 @@ void VkRenderFramework::InitFramework(void * /*unused compatibility parameter*/,
     if ((phys_device_index >= 0) && (phys_device_index < static_cast<int>(gpu_count))) {
         gpu_ = phys_devices[phys_device_index];
         vk::GetPhysicalDeviceProperties(gpu_, &physDevProps_);
+        m_gpu_index = phys_device_index;
     } else {
         // Specify a "physical device priority" with larger values meaning higher priority.
         std::array<int, VK_PHYSICAL_DEVICE_TYPE_CPU + 1> device_type_rank;
@@ -487,6 +518,7 @@ void VkRenderFramework::InitFramework(void * /*unused compatibility parameter*/,
 
         // Initialize physical device and properties with first device found
         gpu_ = phys_devices[0];
+        m_gpu_index = 0;
         vk::GetPhysicalDeviceProperties(gpu_, &physDevProps_);
 
         // See if there are any higher priority devices found
@@ -496,23 +528,115 @@ void VkRenderFramework::InitFramework(void * /*unused compatibility parameter*/,
             if (device_type_rank[tmp_props.deviceType] > device_type_rank[physDevProps_.deviceType]) {
                 physDevProps_ = tmp_props;
                 gpu_ = phys_devices[i];
+                m_gpu_index = i;
             }
         }
     }
 
     debug_reporter_.Create(instance_);
 
-    static bool driver_printed = false;
-    if (GetEnvironment("VK_LAYER_TESTS_PRINT_DRIVER") != "" && !driver_printed) {
-        if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
-            auto driver_properties = LvlInitStruct<VkPhysicalDeviceDriverProperties>();
-            auto physical_device_properties2 = LvlInitStruct<VkPhysicalDeviceProperties2>(&driver_properties);
-            vk::GetPhysicalDeviceProperties2(gpu_, &physical_device_properties2);
-            printf("Driver Name = %s\n", driver_properties.driverName);
-            printf("Driver Info = %s\n", driver_properties.driverInfo);
-        }
+    if (print_driver_info && !driver_printed) {
+        auto driver_properties = LvlInitStruct<VkPhysicalDeviceDriverProperties>();
+        auto physical_device_properties2 = LvlInitStruct<VkPhysicalDeviceProperties2>(&driver_properties);
+        vk::GetPhysicalDeviceProperties2(gpu_, &physical_device_properties2);
+        printf("Driver Name = %s\n", driver_properties.driverName);
+        printf("Driver Info = %s\n", driver_properties.driverInfo);
+
         driver_printed = true;
     }
+
+    for (const auto &ext : m_requested_extensions) {
+        AddRequiredDeviceExtensions(ext);
+    }
+}
+
+bool VkRenderFramework::AddRequiredExtensions(const char *ext_name) {
+    m_requested_extensions.push_back(ext_name);
+    return AddRequiredInstanceExtensions(ext_name);
+}
+
+bool VkRenderFramework::AreRequestedExtensionsEnabled() const {
+    for (const auto &ext : m_requested_extensions) {
+        // `ext` may refer to an instance or device extension
+        if (!CanEnableDeviceExtension(ext) && !CanEnableInstanceExtension(ext)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool VkRenderFramework::AddRequiredInstanceExtensions(const char *ext_name) {
+    if (CanEnableInstanceExtension(ext_name)) {
+        return true;
+    }
+
+    const auto &instance_exts_map = InstanceExtensions::get_info_map();
+    bool is_instance_ext = false;
+    if (instance_exts_map.count(ext_name) > 0) {
+        if (!InstanceExtensionSupported(ext_name)) {
+            return false;
+        } else {
+            is_instance_ext = true;
+        }
+    }
+
+    // Different tables need to be used for extension dependency lookup depending on whether `ext_name` refers to a device or
+    // instance extension
+    if (is_instance_ext) {
+        const auto &info = InstanceExtensions::get_info(ext_name);
+        for (const auto &req : info.requirements) {
+            if (!AddRequiredInstanceExtensions(req.name)) {
+                return false;
+            }
+        }
+        m_instance_extension_names.push_back(ext_name);
+    } else {
+        const auto &info = DeviceExtensions::get_info(ext_name);
+        for (const auto &req : info.requirements) {
+            if (!AddRequiredInstanceExtensions(req.name)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+bool VkRenderFramework::CanEnableInstanceExtension(const std::string &inst_ext_name) const {
+    return std::any_of(m_instance_extension_names.cbegin(), m_instance_extension_names.cend(),
+                       [&inst_ext_name](const char *ext) { return inst_ext_name == ext; });
+}
+
+bool VkRenderFramework::AddRequiredDeviceExtensions(const char *dev_ext_name) {
+    // Check if the extension has already been added
+    if (CanEnableDeviceExtension(dev_ext_name)) {
+        return true;
+    }
+
+    // If this is an instance extension, just return true under the assumption instance extensions do not depend on any device
+    // extensions.
+    const auto &instance_exts_map = InstanceExtensions::get_info_map();
+    if (instance_exts_map.count(dev_ext_name) != 0) {
+        return true;
+    }
+
+    if (!DeviceExtensionSupported(gpu(), nullptr, dev_ext_name)) {
+        return false;
+    }
+    m_device_extension_names.push_back(dev_ext_name);
+
+    const auto &info = DeviceExtensions::get_info(dev_ext_name);
+    for (const auto &req : info.requirements) {
+        if (!AddRequiredDeviceExtensions(req.name)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool VkRenderFramework::CanEnableDeviceExtension(const std::string &dev_ext_name) const {
+    return std::any_of(m_device_extension_names.cbegin(), m_device_extension_names.cend(),
+                       [&dev_ext_name](const char *ext) { return dev_ext_name == ext; });
 }
 
 void VkRenderFramework::ShutdownFramework() {
@@ -534,6 +658,10 @@ void VkRenderFramework::ShutdownFramework() {
 
     delete m_depthStencil;
     m_depthStencil = nullptr;
+
+    if (m_device && m_device->device() != VK_NULL_HANDLE) {
+        DestroySwapchain();
+    }
 
     // reset the driver
     delete m_device;
@@ -559,6 +687,14 @@ void VkRenderFramework::GetPhysicalDeviceFeatures(VkPhysicalDeviceFeatures *feat
 
 bool VkRenderFramework::IsPlatform(PlatformType platform) {
     return (!vk_gpu_table.find(platform)->second.compare(physDevProps().deviceName));
+}
+
+bool VkRenderFramework::IsDriver(VkDriverId driver_id) {
+    // Assumes api version 1.2+
+    auto driver_properties = LvlInitStruct<VkPhysicalDeviceDriverProperties>();
+    auto physical_device_properties2 = LvlInitStruct<VkPhysicalDeviceProperties2>(&driver_properties);
+    vk::GetPhysicalDeviceProperties2(gpu_, &physical_device_properties2);
+    return(driver_properties.driverID == driver_id);
 }
 
 void VkRenderFramework::GetPhysicalDeviceProperties(VkPhysicalDeviceProperties *props) { *props = physDevProps_; }
@@ -630,7 +766,9 @@ void VkRenderFramework::InitViewport(float width, float height) {
 
 void VkRenderFramework::InitViewport() { InitViewport(m_width, m_height); }
 
-bool VkRenderFramework::InitSurface() { return InitSurface(m_width, m_height); }
+bool VkRenderFramework::InitSurface() { return InitSurface(m_width, m_height, m_surface); }
+
+bool VkRenderFramework::InitSurface(float width, float height) { return InitSurface(width, height, m_surface); }
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -638,7 +776,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 }
 #endif  // VK_USE_PLATFORM_WIN32_KHR
 
-bool VkRenderFramework::InitSurface(float width, float height) {
+bool VkRenderFramework::InitSurface(float width, float height, VkSurfaceKHR &surface) {
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
     HINSTANCE window_instance = GetModuleHandle(nullptr);
     const char class_name[] = "test";
@@ -654,7 +792,7 @@ bool VkRenderFramework::InitSurface(float width, float height) {
     surface_create_info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
     surface_create_info.hinstance = window_instance;
     surface_create_info.hwnd = window;
-    VkResult err = vk::CreateWin32SurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
+    VkResult err = vk::CreateWin32SurfaceKHR(instance(), &surface_create_info, nullptr, &surface);
     if (err != VK_SUCCESS) return false;
 #endif
 
@@ -667,15 +805,16 @@ bool VkRenderFramework::InitSurface(float width, float height) {
 #endif
 
 #if defined(VK_USE_PLATFORM_XLIB_KHR)
-    Display *dpy = XOpenDisplay(NULL);
-    if (dpy) {
-        int s = DefaultScreen(dpy);
-        Window window = XCreateSimpleWindow(dpy, RootWindow(dpy, s), 0, 0, (int)m_width, (int)m_height, 1, BlackPixel(dpy, s),
-                                            WhitePixel(dpy, s));
+    assert(m_surface_dpy == nullptr);
+    m_surface_dpy = XOpenDisplay(NULL);
+    if (m_surface_dpy) {
+        int s = DefaultScreen(m_surface_dpy);
+        m_surface_window = XCreateSimpleWindow(m_surface_dpy, RootWindow(m_surface_dpy, s), 0, 0, (int)m_width, (int)m_height, 1,
+                                               BlackPixel(m_surface_dpy, s), WhitePixel(m_surface_dpy, s));
         VkXlibSurfaceCreateInfoKHR surface_create_info = {};
         surface_create_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
-        surface_create_info.dpy = dpy;
-        surface_create_info.window = window;
+        surface_create_info.dpy = m_surface_dpy;
+        surface_create_info.window = m_surface_window;
         VkResult err = vk::CreateXlibSurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
         if (err != VK_SUCCESS) return false;
     }
@@ -683,12 +822,13 @@ bool VkRenderFramework::InitSurface(float width, float height) {
 
 #if defined(VK_USE_PLATFORM_XCB_KHR)
     if (m_surface == VK_NULL_HANDLE) {
-        xcb_connection_t *connection = xcb_connect(NULL, NULL);
-        if (connection) {
-            xcb_window_t window = xcb_generate_id(connection);
+        assert(m_surface_xcb_conn == nullptr);
+        m_surface_xcb_conn = xcb_connect(NULL, NULL);
+        if (m_surface_xcb_conn) {
+            xcb_window_t window = xcb_generate_id(m_surface_xcb_conn);
             VkXcbSurfaceCreateInfoKHR surface_create_info = {};
             surface_create_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-            surface_create_info.connection = connection;
+            surface_create_info.connection = m_surface_xcb_conn;
             surface_create_info.window = window;
             VkResult err = vk::CreateXcbSurfaceKHR(instance(), &surface_create_info, nullptr, &m_surface);
             if (err != VK_SUCCESS) return false;
@@ -717,6 +857,17 @@ void VkRenderFramework::InitSwapchainInfo() {
     if (present_mode_count != 0) {
         m_surface_present_modes.resize(present_mode_count);
         vk::GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &present_mode_count, m_surface_present_modes.data());
+
+        // Shared Present mode has different requirements most tests won't actually want
+        // Implementation required to support a non-shared present mode
+        for (size_t i = 0; i < m_surface_present_modes.size(); i++) {
+            const VkPresentModeKHR present_mode = m_surface_present_modes[i];
+            if ((present_mode != VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR) &&
+                (present_mode != VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR)) {
+                m_surface_non_shared_present_mode = present_mode;
+                break;
+            }
+        }
     }
 
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
@@ -735,7 +886,12 @@ bool VkRenderFramework::InitSwapchain(VkImageUsageFlags imageUsage, VkSurfaceTra
 
 bool VkRenderFramework::InitSwapchain(VkSurfaceKHR &surface, VkImageUsageFlags imageUsage,
                                       VkSurfaceTransformFlagBitsKHR preTransform) {
-    InitSwapchainInfo();
+    return InitSwapchain(surface, imageUsage, preTransform, m_swapchain);
+}
+
+bool VkRenderFramework::InitSwapchain(VkSurfaceKHR &surface, VkImageUsageFlags imageUsage,
+                                      VkSurfaceTransformFlagBitsKHR preTransform, VkSwapchainKHR &swapchain,
+                                      VkSwapchainKHR oldSwapchain) {
 
     VkBool32 supported;
     vk::GetPhysicalDeviceSurfaceSupportKHR(gpu(), m_device->graphics_queue_node_index_, surface, &supported);
@@ -743,6 +899,7 @@ bool VkRenderFramework::InitSwapchain(VkSurfaceKHR &surface, VkImageUsageFlags i
         // Graphics queue does not support present
         return false;
     }
+    InitSwapchainInfo();
 
     VkSwapchainCreateInfoKHR swapchain_create_info = {};
     swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -757,21 +914,25 @@ bool VkRenderFramework::InitSwapchain(VkSurfaceKHR &surface, VkImageUsageFlags i
     swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     swapchain_create_info.preTransform = preTransform;
     swapchain_create_info.compositeAlpha = m_surface_composite_alpha;
-    swapchain_create_info.presentMode = m_surface_present_modes[0];
+    swapchain_create_info.presentMode = m_surface_non_shared_present_mode;
     swapchain_create_info.clipped = VK_FALSE;
-    swapchain_create_info.oldSwapchain = 0;
+    swapchain_create_info.oldSwapchain = oldSwapchain;
 
-    VkResult err = vk::CreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &m_swapchain);
+    VkResult err = vk::CreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &swapchain);
     if (err != VK_SUCCESS) {
         return false;
     }
     uint32_t imageCount = 0;
-    vk::GetSwapchainImagesKHR(device(), m_swapchain, &imageCount, nullptr);
+    vk::GetSwapchainImagesKHR(device(), swapchain, &imageCount, nullptr);
     vector<VkImage> swapchainImages;
     swapchainImages.resize(imageCount);
-    vk::GetSwapchainImagesKHR(device(), m_swapchain, &imageCount, swapchainImages.data());
+    vk::GetSwapchainImagesKHR(device(), swapchain, &imageCount, swapchainImages.data());
     return true;
 }
+
+#if defined(VK_USE_PLATFORM_XLIB_KHR)
+int IgnoreXErrors(Display *, XErrorEvent *) { return 0; }
+#endif
 
 void VkRenderFramework::DestroySwapchain() {
     if (m_swapchain != VK_NULL_HANDLE) {
@@ -782,6 +943,25 @@ void VkRenderFramework::DestroySwapchain() {
         vk::DestroySurfaceKHR(instance(), m_surface, nullptr);
         m_surface = VK_NULL_HANDLE;
     }
+    vk::DeviceWaitIdle(device());
+#if defined(VK_USE_PLATFORM_XLIB_KHR)
+    if (m_surface_dpy != nullptr) {
+        // Ignore BadDrawable errors we seem to get during shutdown.
+        // The default error handler will exit() and end the test suite.
+        XSetErrorHandler(IgnoreXErrors);
+        XDestroyWindow(m_surface_dpy, m_surface_window);
+        m_surface_window = None;
+        XCloseDisplay(m_surface_dpy);
+        m_surface_dpy = nullptr;
+        XSetErrorHandler(nullptr);
+    }
+#endif
+#if defined(VK_USE_PLATFORM_XCB_KHR)
+    if (m_surface_xcb_conn != nullptr) {
+        xcb_disconnect(m_surface_xcb_conn);
+        m_surface_xcb_conn = nullptr;
+    }
+#endif
 }
 
 void VkRenderFramework::InitRenderTarget() { InitRenderTarget(1); }
@@ -862,7 +1042,7 @@ void VkRenderFramework::InitRenderTarget(uint32_t targets, VkImageView *dsBindin
         att.loadOp = (m_clear_via_load_op) ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
         ;
         att.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        att.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        att.stencilLoadOp = (m_clear_via_load_op) ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
         att.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
         att.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         att.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -915,8 +1095,17 @@ void VkRenderFramework::InitRenderTarget(uint32_t targets, VkImageView *dsBindin
                                     VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
         // Must include dep_by_region bit when src & dst both include framebuffer-space stages
         subpass_dep.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-        rp_info.dependencyCount = 1;
-        rp_info.pDependencies = &subpass_dep;
+    }
+
+    if (m_additionalSubpassDependencies.size()) {
+        m_renderPass_dependencies.reserve(m_additionalSubpassDependencies.size() + m_renderPass_dependencies.size());
+        m_renderPass_dependencies.insert(m_renderPass_dependencies.end(), m_additionalSubpassDependencies.begin(),
+                                         m_additionalSubpassDependencies.end());
+    }
+
+    if (m_renderPass_dependencies.size()) {
+        rp_info.dependencyCount = static_cast<uint32_t>(m_renderPass_dependencies.size());
+        rp_info.pDependencies = m_renderPass_dependencies.data();
     } else {
         rp_info.dependencyCount = 0;
         rp_info.pDependencies = nullptr;
@@ -950,6 +1139,38 @@ void VkRenderFramework::DestroyRenderTarget() {
     m_renderPass = VK_NULL_HANDLE;
     vk::DestroyFramebuffer(device(), m_framebuffer, nullptr);
     m_framebuffer = VK_NULL_HANDLE;
+}
+
+bool VkRenderFramework::InitFrameworkAndRetrieveFeatures(VkPhysicalDeviceFeatures2KHR &features2) {
+    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    }
+    else {
+        printf("Instance extension %s not supported, skipping test\n",
+            VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return false;
+    }
+    InitFramework();
+
+    // Cycle through device extensions and check for support
+    for (auto extension : m_device_extension_names) {
+        if (!DeviceExtensionSupported(extension)) {
+            printf("Device extension %s is not supported\n", extension);
+            return false;
+        }
+    }
+    PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
+        (PFN_vkGetPhysicalDeviceFeatures2KHR)vk::GetInstanceProcAddr(instance(),
+            "vkGetPhysicalDeviceFeatures2KHR");
+
+    if (vkGetPhysicalDeviceFeatures2KHR) {
+        vkGetPhysicalDeviceFeatures2KHR(gpu(), &features2);
+        return true;
+    }
+    else {
+        printf("Cannot use vkGetPhysicalDeviceFeatures to determine available features\n");
+        return false;
+    }
 }
 
 VkDeviceObj::VkDeviceObj(uint32_t id, VkPhysicalDevice obj) : vk_testing::Device(obj), id(id) {
@@ -1157,8 +1378,7 @@ VkRenderpassObj::VkRenderpassObj(VkDeviceObj *dev, const VkFormat format) {
     rpci.pAttachments = &attach_desc;
     rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 
-    device = dev->device();
-    vk::CreateRenderPass(device, &rpci, NULL, &m_renderpass);
+    init(*dev, rpci);
 }
 
 VkRenderpassObj::VkRenderpassObj(VkDeviceObj *dev, VkFormat format, bool depthStencil) {
@@ -1186,12 +1406,9 @@ VkRenderpassObj::VkRenderpassObj(VkDeviceObj *dev, VkFormat format, bool depthSt
         rpci.pAttachments = &attach_desc;
         rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 
-        device = dev->device();
-        vk::CreateRenderPass(device, &rpci, NULL, &m_renderpass);
+        init(*dev, rpci);
     }
 }
-
-VkRenderpassObj::~VkRenderpassObj() NOEXCEPT { vk::DestroyRenderPass(device, m_renderpass, NULL); }
 
 VkImageObj::VkImageObj(VkDeviceObj *dev) {
     m_device = dev;
@@ -1331,7 +1548,7 @@ bool VkImageObj::IsCompatible(const VkImageUsageFlags usages, const VkFormatFeat
         all_feature_flags |= VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_IMG;
     }
 
-    if (m_device->IsEnabledExtension(VK_KHR_MAINTENANCE1_EXTENSION_NAME)) {
+    if (m_device->IsEnabledExtension(VK_KHR_MAINTENANCE_1_EXTENSION_NAME)) {
         all_feature_flags |= VK_FORMAT_FEATURE_TRANSFER_SRC_BIT_KHR | VK_FORMAT_FEATURE_TRANSFER_DST_BIT_KHR;
     }
 
@@ -1356,7 +1573,7 @@ bool VkImageObj::IsCompatible(const VkImageUsageFlags usages, const VkFormatFeat
     if ((usages & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) && !(features & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT))
         return false;
 
-    if (m_device->IsEnabledExtension(VK_KHR_MAINTENANCE1_EXTENSION_NAME)) {
+    if (m_device->IsEnabledExtension(VK_KHR_MAINTENANCE_1_EXTENSION_NAME)) {
         // WORKAROUND: for DevSim not reporting extended enums, and possibly some drivers too
         const auto all_nontransfer_feature_flags =
             all_feature_flags ^ (VK_FORMAT_FEATURE_TRANSFER_SRC_BIT_KHR | VK_FORMAT_FEATURE_TRANSFER_DST_BIT_KHR);
@@ -1508,6 +1725,20 @@ void VkImageObj::init(const VkImageCreateInfo *create_info) {
         image_aspect = VK_IMAGE_ASPECT_COLOR_BIT;
     }
     SetLayout(image_aspect, VK_IMAGE_LAYOUT_GENERAL);
+}
+
+bool VkImageObj::IsCompatibleCheck(const VkImageCreateInfo &create_info) {
+    VkFormatProperties image_fmt;
+    vk::GetPhysicalDeviceFormatProperties(m_device->phy().handle(), create_info.format, &image_fmt);
+
+    switch (create_info.tiling) {
+        case VK_IMAGE_TILING_OPTIMAL:
+            return IsCompatible(create_info.usage, image_fmt.optimalTilingFeatures);
+        case VK_IMAGE_TILING_LINEAR:
+            return IsCompatible(create_info.usage, image_fmt.linearTilingFeatures);
+        default:
+            return true;
+    }
 }
 
 VkResult VkImageObj::CopyImage(VkImageObj &src_image) {
@@ -1743,7 +1974,7 @@ VkConstantBufferObj::VkConstantBufferObj(VkDeviceObj *device, VkDeviceSize alloc
 
 VkPipelineShaderStageCreateInfo const &VkShaderObj::GetStageCreateInfo() const { return m_stage_info; }
 
-VkShaderObj::VkShaderObj(VkDeviceObj &device, VkShaderStageFlagBits stage, char const *name, VkSpecializationInfo *specInfo)
+VkShaderObj::VkShaderObj(VkDeviceObj &device, VkShaderStageFlagBits stage, char const *name, const VkSpecializationInfo *specInfo)
     : m_device(device) {
     m_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     m_stage_info.pNext = nullptr;
@@ -1755,18 +1986,18 @@ VkShaderObj::VkShaderObj(VkDeviceObj &device, VkShaderStageFlagBits stage, char 
 }
 
 VkShaderObj::VkShaderObj(VkDeviceObj *device, const char *shader_code, VkShaderStageFlagBits stage, VkRenderFramework *framework,
-                         char const *name, bool debug, VkSpecializationInfo *specInfo, uint32_t spirv_minor_version)
+                         char const *name, bool debug, const VkSpecializationInfo *specInfo, const spv_target_env env)
     : VkShaderObj(*device, stage, name, specInfo) {
-    InitFromGLSL(*framework, shader_code, debug, spirv_minor_version);
+    InitFromGLSL(*framework, shader_code, debug, env);
 }
 
-bool VkShaderObj::InitFromGLSL(VkRenderFramework &framework, const char *shader_code, bool debug, uint32_t spirv_minor_version) {
-    std::vector<unsigned int> spv;
-    framework.GLSLtoSPV(&m_device.props.limits, m_stage_info.stage, shader_code, spv, debug, spirv_minor_version);
+bool VkShaderObj::InitFromGLSL(VkRenderFramework &framework, const char *shader_code, bool debug, const spv_target_env env) {
+    std::vector<uint32_t> spv;
+    framework.GLSLtoSPV(&m_device.props.limits, m_stage_info.stage, shader_code, spv, debug, env);
 
     VkShaderModuleCreateInfo moduleCreateInfo = {};
     moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    moduleCreateInfo.codeSize = spv.size() * sizeof(unsigned int);
+    moduleCreateInfo.codeSize = spv.size() * sizeof(uint32_t);
     moduleCreateInfo.pCode = spv.data();
 
     init(m_device, moduleCreateInfo);
@@ -1777,14 +2008,13 @@ bool VkShaderObj::InitFromGLSL(VkRenderFramework &framework, const char *shader_
 // Because shaders are currently validated at pipeline creation time, there are test cases that might fail shader module creation
 // due to supplying an invalid/unknown SPIR-V capability/operation. This is called after VkShaderObj creation when tests are found
 // to crash on a CI device
-VkResult VkShaderObj::InitFromGLSLTry(VkRenderFramework &framework, const char *shader_code, bool debug,
-                                      uint32_t spirv_minor_version) {
-    std::vector<unsigned int> spv;
-    framework.GLSLtoSPV(&m_device.props.limits, m_stage_info.stage, shader_code, spv, debug, spirv_minor_version);
+VkResult VkShaderObj::InitFromGLSLTry(VkRenderFramework &framework, const char *shader_code, bool debug, const spv_target_env env) {
+    std::vector<uint32_t> spv;
+    framework.GLSLtoSPV(&m_device.props.limits, m_stage_info.stage, shader_code, spv, debug, env);
 
     VkShaderModuleCreateInfo moduleCreateInfo = {};
     moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    moduleCreateInfo.codeSize = spv.size() * sizeof(unsigned int);
+    moduleCreateInfo.codeSize = spv.size() * sizeof(uint32_t);
     moduleCreateInfo.pCode = spv.data();
 
     const auto result = init_try(m_device, moduleCreateInfo);
@@ -1793,18 +2023,18 @@ VkResult VkShaderObj::InitFromGLSLTry(VkRenderFramework &framework, const char *
 }
 
 VkShaderObj::VkShaderObj(VkDeviceObj *device, const string spv_source, VkShaderStageFlagBits stage, VkRenderFramework *framework,
-                         char const *name, VkSpecializationInfo *specInfo, const spv_target_env env)
+                         char const *name, const VkSpecializationInfo *specInfo, const spv_target_env env)
     : VkShaderObj(*device, stage, name, specInfo) {
     InitFromASM(*framework, spv_source, env);
 }
 
 bool VkShaderObj::InitFromASM(VkRenderFramework &framework, const std::string &spv_source, const spv_target_env env) {
-    vector<unsigned int> spv;
+    vector<uint32_t> spv;
     framework.ASMtoSPV(env, 0, spv_source.data(), spv);
 
     VkShaderModuleCreateInfo moduleCreateInfo = {};
     moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    moduleCreateInfo.codeSize = spv.size() * sizeof(unsigned int);
+    moduleCreateInfo.codeSize = spv.size() * sizeof(uint32_t);
     moduleCreateInfo.pCode = spv.data();
 
     init(m_device, moduleCreateInfo);
@@ -1812,18 +2042,41 @@ bool VkShaderObj::InitFromASM(VkRenderFramework &framework, const std::string &s
     return VK_NULL_HANDLE != handle();
 }
 
-VkResult VkShaderObj::InitFromASMTry(VkRenderFramework &framework, const std::string &spv_source) {
-    vector<unsigned int> spv;
-    framework.ASMtoSPV(SPV_ENV_VULKAN_1_0, 0, spv_source.data(), spv);
+VkResult VkShaderObj::InitFromASMTry(VkRenderFramework &framework, const std::string &spv_source, const spv_target_env spv_env) {
+    vector<uint32_t> spv;
+    framework.ASMtoSPV(spv_env, 0, spv_source.data(), spv);
 
     VkShaderModuleCreateInfo moduleCreateInfo = {};
     moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    moduleCreateInfo.codeSize = spv.size() * sizeof(unsigned int);
+    moduleCreateInfo.codeSize = spv.size() * sizeof(uint32_t);
     moduleCreateInfo.pCode = spv.data();
 
     const auto result = init_try(m_device, moduleCreateInfo);
     m_stage_info.module = handle();
     return result;
+}
+
+// static
+std::unique_ptr<VkShaderObj> VkShaderObj::CreateFromGLSL(VkDeviceObj &dev, VkRenderFramework &framework,
+                                                         VkShaderStageFlagBits stage, const std::string &code,
+                                                         const char *entry_point, const VkSpecializationInfo *spec_info,
+                                                         const spv_target_env spv_env, bool debug) {
+    auto shader = layer_data::make_unique<VkShaderObj>(dev, stage, entry_point, spec_info);
+    if (VK_SUCCESS == shader->InitFromGLSLTry(framework, code.c_str(), debug, spv_env)) {
+        return shader;
+    }
+    return {};
+}
+
+// static
+std::unique_ptr<VkShaderObj> VkShaderObj::CreateFromASM(VkDeviceObj &dev, VkRenderFramework &framework, VkShaderStageFlagBits stage,
+                                                        const std::string &code, const char *entry_point,
+                                                        const VkSpecializationInfo *spec_info, const spv_target_env spv_env) {
+    auto shader = layer_data::make_unique<VkShaderObj>(dev, stage, entry_point, spec_info);
+    if (VK_SUCCESS == shader->InitFromASMTry(framework, code.c_str(), spv_env)) {
+        return shader;
+    }
+    return {};
 }
 
 VkPipelineLayoutObj::VkPipelineLayoutObj(VkDeviceObj *device, const vector<const VkDescriptorSetLayoutObj *> &descriptor_layouts,
@@ -2157,11 +2410,27 @@ void VkCommandBufferObj::PrepareAttachments(const vector<std::unique_ptr<VkImage
     }
 }
 
-void VkCommandBufferObj::BeginRenderPass(const VkRenderPassBeginInfo &info) {
-    vk::CmdBeginRenderPass(handle(), &info, VK_SUBPASS_CONTENTS_INLINE);
+void VkCommandBufferObj::BeginRenderPass(const VkRenderPassBeginInfo &info, VkSubpassContents contents) {
+    vk::CmdBeginRenderPass(handle(), &info, contents);
 }
 
 void VkCommandBufferObj::EndRenderPass() { vk::CmdEndRenderPass(handle()); }
+
+void VkCommandBufferObj::BeginRendering(const VkRenderingInfoKHR &renderingInfo) {
+    PFN_vkCmdBeginRenderingKHR vkCmdBeginRenderingKHR =
+        (PFN_vkCmdBeginRenderingKHR)vk::GetDeviceProcAddr(m_device->device(), "vkCmdBeginRenderingKHR");
+    assert(vkCmdBeginRenderingKHR != nullptr);
+
+    vkCmdBeginRenderingKHR(handle(), &renderingInfo);
+}
+
+void VkCommandBufferObj::EndRendering() {
+    PFN_vkCmdEndRenderingKHR vkCmdEndRenderingKHR =
+        (PFN_vkCmdEndRenderingKHR)vk::GetDeviceProcAddr(m_device->device(), "vkCmdEndRenderingKHR");
+    assert(vkCmdEndRenderingKHR != nullptr);
+
+    vkCmdEndRenderingKHR(handle());
+}
 
 void VkCommandBufferObj::SetViewport(uint32_t firstViewport, uint32_t viewportCount, const VkViewport *pViewports) {
     vk::CmdSetViewport(handle(), firstViewport, viewportCount, pViewports);

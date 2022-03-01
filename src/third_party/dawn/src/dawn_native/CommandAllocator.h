@@ -17,6 +17,7 @@
 
 #include "common/Assert.h"
 #include "common/Math.h"
+#include "common/NonCopyable.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -66,8 +67,7 @@ namespace dawn_native {
 
     class CommandAllocator;
 
-    // TODO(cwallez@chromium.org): prevent copy for both iterator and allocator
-    class CommandIterator {
+    class CommandIterator : public NonCopyable {
       public:
         CommandIterator();
         ~CommandIterator();
@@ -75,8 +75,10 @@ namespace dawn_native {
         CommandIterator(CommandIterator&& other);
         CommandIterator& operator=(CommandIterator&& other);
 
-        CommandIterator(CommandAllocator&& allocator);
-        CommandIterator& operator=(CommandAllocator&& allocator);
+        // Shorthand constructor for acquiring CommandBlocks from a single CommandAllocator.
+        explicit CommandIterator(CommandAllocator allocator);
+
+        void AcquireCommandBlocks(std::vector<CommandAllocator> allocators);
 
         template <typename E>
         bool NextCommandId(E* commandId) {
@@ -144,10 +146,19 @@ namespace dawn_native {
         uint32_t mEndOfBlock = detail::kEndOfBlock;
     };
 
-    class CommandAllocator {
+    class CommandAllocator : public NonCopyable {
       public:
         CommandAllocator();
         ~CommandAllocator();
+
+        // NOTE: A moved-from CommandAllocator is reset to its initial empty state.
+        CommandAllocator(CommandAllocator&&);
+        CommandAllocator& operator=(CommandAllocator&&);
+
+        // Frees all blocks held by the allocator and restores it to its initial empty state.
+        void Reset();
+
+        bool IsEmpty() const;
 
         template <typename T, typename E>
         T* Allocate(E commandId) {
@@ -185,6 +196,9 @@ namespace dawn_native {
         // bound of the space that will be needed in addition to the command data.
         static constexpr size_t kWorstCaseAdditionalSize =
             sizeof(uint32_t) + kMaxSupportedAlignment + alignof(uint32_t) + sizeof(uint32_t);
+
+        // The default value of mLastAllocationSize.
+        static constexpr size_t kDefaultBaseAllocationSize = 2048;
 
         friend CommandIterator;
         CommandBlocks&& AcquireBlocks();
@@ -237,19 +251,21 @@ namespace dawn_native {
 
         bool GetNewBlock(size_t minimumSize);
 
+        void ResetPointers();
+
         CommandBlocks mBlocks;
-        size_t mLastAllocationSize = 2048;
+        size_t mLastAllocationSize = kDefaultBaseAllocationSize;
+
+        // Data used for the block range at initialization so that the first call to Allocate sees
+        // there is not enough space and calls GetNewBlock. This avoids having to special case the
+        // initialization in Allocate.
+        uint32_t mDummyEnum[1] = {0};
 
         // Pointers to the current range of allocation in the block. Guaranteed to allow for at
         // least one uint32_t if not nullptr, so that the special kEndOfBlock command id can always
         // be written. Nullptr iff the blocks were moved out.
         uint8_t* mCurrentPtr = nullptr;
         uint8_t* mEndPtr = nullptr;
-
-        // Data used for the block range at initialization so that the first call to Allocate sees
-        // there is not enough space and calls GetNewBlock. This avoids having to special case the
-        // initialization in Allocate.
-        uint32_t mDummyEnum[1] = {0};
     };
 
 }  // namespace dawn_native

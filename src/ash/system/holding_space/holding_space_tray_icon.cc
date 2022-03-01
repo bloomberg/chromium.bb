@@ -4,7 +4,6 @@
 
 #include "ash/system/holding_space/holding_space_tray_icon.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_metrics.h"
@@ -16,13 +15,15 @@
 #include "ash/system/holding_space/holding_space_tray_icon_preview.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/i18n/rtl.h"
-#include "base/stl_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -42,7 +43,7 @@ constexpr int kPreviewIndexOffsetForDropTarget = 3;
 // The previews are animated in and shifted with a delay that increases
 // incrementally. This is the delay increment.
 constexpr base::TimeDelta kPreviewItemUpdateDelayIncrement =
-    base::TimeDelta::FromMilliseconds(50);
+    base::Milliseconds(50);
 
 // Helpers ---------------------------------------------------------------------
 
@@ -79,7 +80,7 @@ class HoldingSpaceTrayIcon::ResizeAnimation
     animation_.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     animation_.SetSlideDuration(
         ui::ScopedAnimationDurationScaleMode::duration_multiplier() *
-        base::TimeDelta::FromMilliseconds(250));
+        base::Milliseconds(250));
   }
   ResizeAnimation(const ResizeAnimation&) = delete;
   ResizeAnimation operator=(const ResizeAnimation&) = delete;

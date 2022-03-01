@@ -45,11 +45,32 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/text/bidi_text_run.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
+
+namespace {
+
+void InvalidateShadowIncludingAncestorForms(ContainerNode& insertion_point) {
+  if (!RuntimeEnabledFeatures::AutofillShadowDOMEnabled())
+    return;
+
+  // Let any forms in the shadow including ancestors know that this
+  // ListedElement has changed. Don't include any forms inside the same
+  // TreeScope know because that relationship isn't tracked by listed elements
+  // including shadow trees.
+  for (ContainerNode* parent = insertion_point.OwnerShadowHost(); parent;
+       parent = parent->ParentOrShadowHostNode()) {
+    if (HTMLFormElement* form = DynamicTo<HTMLFormElement>(parent)) {
+      form->InvalidateListedElementsIncludingShadowTrees();
+      return;
+    }
+  }
+}
+
+}  // namespace
 
 class FormAttributeTargetObserver : public IdTargetObserver {
  public:
@@ -123,6 +144,8 @@ void ListedElement::InsertedInto(ContainerNode& insertion_point) {
   // Trigger for elements outside of forms.
   if (!form_ && insertion_point.isConnected())
     element.GetDocument().DidAssociateFormControl(&element);
+
+  InvalidateShadowIncludingAncestorForms(insertion_point);
 }
 
 void ListedElement::RemovedFrom(ContainerNode& insertion_point) {
@@ -137,6 +160,9 @@ void ListedElement::RemovedFrom(ContainerNode& insertion_point) {
   if (insertion_point.isConnected() &&
       element.FastHasAttribute(html_names::kFormAttr)) {
     SetFormAttributeTargetObserver(nullptr);
+    ResetFormOwner();
+  } else if (!form_ && insertion_point.isConnected()) {
+    // An unassociated listed element is detached from the document.
     ResetFormOwner();
   } else {
     // If the form and element are both in the same tree, preserve the
@@ -156,6 +182,8 @@ void ListedElement::RemovedFrom(ContainerNode& insertion_point) {
         .GetFormController()
         .InvalidateStatefulFormControlList();
   }
+
+  InvalidateShadowIncludingAncestorForms(insertion_point);
 }
 
 HTMLFormElement* ListedElement::FindAssociatedForm(
@@ -196,6 +224,10 @@ void ListedElement::AssociateByParser(HTMLFormElement* form) {
 }
 
 void ListedElement::SetForm(HTMLFormElement* new_form) {
+  if (!form_ || !new_form) {
+    // Element was unassociated, or is becoming unassociated.
+    ToHTMLElement().GetDocument().MarkUnassociatedListedElementsDirty();
+  }
   if (form_.Get() == new_form)
     return;
   WillChangeForm();
@@ -558,6 +590,10 @@ void ListedElement::DisabledAttributeChanged() {
   element.PseudoStateChanged(CSSSelector::kPseudoDisabled);
   element.PseudoStateChanged(CSSSelector::kPseudoEnabled);
   DisabledStateMightBeChanged();
+}
+
+void ListedElement::ReadonlyAttributeChanged() {
+  UpdateWillValidateCache();
 }
 
 void ListedElement::UpdateAncestorDisabledState() const {

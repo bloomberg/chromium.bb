@@ -11,7 +11,6 @@
 #include "base/auto_reset.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "url/gurl.h"
@@ -68,6 +67,10 @@ class WebStateList {
   };
 
   explicit WebStateList(WebStateListDelegate* delegate);
+
+  WebStateList(const WebStateList&) = delete;
+  WebStateList& operator=(const WebStateList&) = delete;
+
   ~WebStateList();
 
   // Returns whether the model is empty or not.
@@ -292,8 +295,6 @@ class WebStateList {
   bool batch_operation_in_progress_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(WebStateList);
 };
 
 #endif  // IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_H_

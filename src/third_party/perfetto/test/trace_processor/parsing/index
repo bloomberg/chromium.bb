@@ -63,8 +63,13 @@ android_async_slice.textproto process_track_slices.sql process_track_slices_andr
 # Print events
 ../../data/lmk_userspace.pb print_systrace.sql print_systrace_lmk_userspace.out
 kernel_tmw_counter.textproto thread_counter_and_track.sql kernel_tmw_counter_thread_counter_and_track.out
+kernel_dpu_tmw_counter.textproto thread_counter_and_track.sql kernel_dpu_tmw_counter_thread_counter_and_track.out
 # Unsigned integers
 print_systrace_unsigned.py print_systrace.sql print_systrace_unsigned.out
+
+# cgroup_attach_task systrace conversion.
+cgroup_attach_task_pre_s.textproto print_systrace.sql cgroup_attach_task_pre_s_print_systrace.out
+cgroup_attach_task_post_s.textproto print_systrace.sql cgroup_attach_task_post_s_print_systrace.out
 
 # Parsing systrace files
 ../../data/systrace.html systrace_html.sql systrace_html.out
@@ -103,6 +108,9 @@ thread_time_in_state.textproto thread_time_in_state.sql thread_time_in_state.out
 thread_time_in_state_event.py thread_time_in_state_event.sql thread_time_in_state_event.out
 thread_time_in_state.textproto android_thread_time_in_state android_thread_time_in_state.out
 thread_time_in_state_unknown.textproto android_thread_time_in_state android_thread_time_in_state_unknown.out
+
+# thread_slice tables.
+flow_events_json_v2.json thread_time_in_thread_slice.sql thread_time_in_thread_slice.out
 
 # Initial display state
 initial_display_state.textproto initial_display_state.sql initial_display_state.out
@@ -146,3 +154,19 @@ sched_blocked_reason_symbolized.textproto ../common/to_systrace.sql sched_blocke
 # JSON instants and counters
 ../../data/counters.json json_counters.sql counters_json_counters.out
 ../../data/instants.json json_instants.sql instants_json_instants.out
+
+# Trace quality metric
+very_long_sched.py android_trace_quality very_long_sched_android_trace_quality.out
+
+# Regression test for b/193721088 (infra prepending " done\n" to atrace)
+../../data/atrace_b_193721088.atr sched_smoke.sql sched_smoke_trailing_empty.out
+
+# Multiuser
+android_multiuser_switch.textproto android_multiuser android_multiuser_switch.out
+
+# Output of atrace -z.
+../../data/atrace_compressed.ctrace sched_smoke.sql atrace_compressed_sched_count.out
+
+# Output of adb shell "atrace -t 1 sched" > out.txt". It has extra garbage
+# coming from stderr before the TRACE: marker. See b/208691037.
+../../data/atrace_uncompressed_b_208691037 sched_smoke.sql atrace_uncompressed_sched_count.out

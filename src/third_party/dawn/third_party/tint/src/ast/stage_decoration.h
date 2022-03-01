@@ -15,6 +15,8 @@
 #ifndef SRC_AST_STAGE_DECORATION_H_
 #define SRC_AST_STAGE_DECORATION_H_
 
+#include <string>
+
 #include "src/ast/decoration.h"
 #include "src/ast/pipeline_stage.h"
 
@@ -33,25 +35,17 @@ class StageDecoration : public Castable<StageDecoration, Decoration> {
                   PipelineStage stage);
   ~StageDecoration() override;
 
-  /// @returns the stage
-  PipelineStage value() const { return stage_; }
-
-  /// Outputs the decoration to the given stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
+  /// @returns the WGSL name for the decoration
+  std::string Name() const override;
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  StageDecoration* Clone(CloneContext* ctx) const override;
+  const StageDecoration* Clone(CloneContext* ctx) const override;
 
- private:
-  PipelineStage const stage_;
+  /// The pipeline stage
+  const PipelineStage stage;
 };
 
 }  // namespace ast

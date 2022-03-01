@@ -20,6 +20,10 @@
 
 #include "dawn_native/d3d12/d3d12_platform.h"
 
+namespace dawn_native {
+    struct ProgrammableStage;
+}  // namespace dawn_native
+
 namespace dawn_native { namespace d3d12 {
 
     class Device;
@@ -49,7 +53,7 @@ namespace dawn_native { namespace d3d12 {
                                                        const ShaderModuleDescriptor* descriptor,
                                                        ShaderModuleParseResult* parseResult);
 
-        ResultOrError<CompiledShader> Compile(const char* entryPointName,
+        ResultOrError<CompiledShader> Compile(const ProgrammableStage& programmableStage,
                                               SingleShaderStage stage,
                                               PipelineLayout* layout,
                                               uint32_t compileFlags);
@@ -58,24 +62,6 @@ namespace dawn_native { namespace d3d12 {
         ShaderModule(Device* device, const ShaderModuleDescriptor* descriptor);
         ~ShaderModule() override = default;
         MaybeError Initialize(ShaderModuleParseResult* parseResult);
-
-        ResultOrError<std::string> TranslateToHLSLWithTint(const char* entryPointName,
-                                                           SingleShaderStage stage,
-                                                           PipelineLayout* layout,
-                                                           std::string* remappedEntryPointName,
-                                                           FirstOffsetInfo* firstOffsetInfo) const;
-
-        ResultOrError<std::string> TranslateToHLSLWithSPIRVCross(const char* entryPointName,
-                                                                 SingleShaderStage stage,
-                                                                 PipelineLayout* layout) const;
-
-        ResultOrError<PersistentCacheKey> CreateHLSLKey(const char* entryPointName,
-                                                        SingleShaderStage stage,
-                                                        const std::string& hlslSource,
-                                                        uint32_t compileFlags) const;
-
-        ResultOrError<uint64_t> GetDXCompilerVersion() const;
-        uint64_t GetD3DCompilerVersion() const;
     };
 
 }}  // namespace dawn_native::d3d12

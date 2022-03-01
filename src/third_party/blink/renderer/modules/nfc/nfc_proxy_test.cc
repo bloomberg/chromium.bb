@@ -117,7 +117,7 @@ class FakeNfcService : public device::mojom::blink::NFC {
     std::move(callback).Run(nullptr);
   }
   void CancelWatch(uint32_t id) override {
-    size_t index = watchIDs_.Find(id);
+    wtf_size_t index = watchIDs_.Find(id);
     if (index != kNotFound)
       watchIDs_.EraseAt(index);
   }
@@ -135,7 +135,7 @@ class NFCProxyTest : public PageTestBase {
   NFCProxyTest() { nfc_service_ = std::make_unique<FakeNfcService>(); }
 
   void SetUp() override {
-    PageTestBase::SetUp(IntSize());
+    PageTestBase::SetUp(gfx::Size());
     GetFrame().DomWindow()->GetBrowserInterfaceBroker().SetBinderForTesting(
         device::mojom::blink::NFC::Name_,
         WTF::BindRepeating(&FakeNfcService::BindRequest,

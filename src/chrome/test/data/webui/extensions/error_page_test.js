@@ -9,7 +9,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {isChildVisible} from '../test_util.m.js';
+import {isChildVisible} from '../test_util.js';
 
 import {ClickMock, createExtensionInfo} from './test_util.js';
 
@@ -141,7 +141,10 @@ suite(extension_error_page_tests.suiteName, function() {
         mockDelegate.requestFileSourceResolver.resolve(code);
         mockDelegate.requestFileSourceResolver.promise.then(function() {
           flush();
-          expectEquals(code, errorPage.$$('extensions-code-section').code);
+          expectEquals(
+              code,
+              errorPage.shadowRoot.querySelector('extensions-code-section')
+                  .code);
           done();
         });
       });

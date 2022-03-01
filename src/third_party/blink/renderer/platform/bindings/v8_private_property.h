@@ -15,8 +15,6 @@
 
 namespace blink {
 
-class ScriptWrappable;
-
 // Provides access to V8's private properties with a symbol key.
 //
 //   static const V8PrivateProperty::SymbolKey kPrivateProperty;
@@ -40,6 +38,8 @@ class PLATFORM_EXPORT V8PrivateProperty {
   };
 
   V8PrivateProperty() = default;
+  V8PrivateProperty(const V8PrivateProperty&) = delete;
+  V8PrivateProperty& operator=(const V8PrivateProperty&) = delete;
 
   // Provides fast access to V8's private properties.
   //
@@ -73,9 +73,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
 
    private:
     friend class V8PrivateProperty;
-    // The following classes are exceptionally allowed to call to
-    // getFromMainWorld.
-    friend class V8ExtendableMessageEvent;
 
     Symbol(v8::Isolate* isolate, v8::Local<v8::Private> private_symbol)
         : private_symbol_(private_symbol), isolate_(isolate) {}
@@ -84,10 +81,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
     v8::Local<v8::Context> GetContext() const {
       return isolate_->GetCurrentContext();
     }
-
-    // Only friend classes are allowed to use this API.
-    WARN_UNUSED_RESULT v8::MaybeLocal<v8::Value> GetFromMainWorld(
-        ScriptWrappable*);
 
     v8::Local<v8::Private> private_symbol_;
     v8::Isolate* isolate_;
@@ -101,7 +94,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
    public:
     SymbolKey() = default;
 
-   private:
     SymbolKey(const SymbolKey&) = delete;
     SymbolKey& operator=(const SymbolKey&) = delete;
   };
@@ -134,8 +126,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
   ScopedPersistent<v8::Private> symbol_window_document_cached_accessor_;
 
   WTF::HashMap<const void*, v8::Eternal<v8::Private>> symbol_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(V8PrivateProperty);
 };
 
 }  // namespace blink

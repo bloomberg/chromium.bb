@@ -35,9 +35,12 @@ class BoostedTreesUpdateEnsembleOp : public OpKernel {
  public:
   explicit BoostedTreesUpdateEnsembleOp(OpKernelConstruction* const context)
       : OpKernel(context) {
+    VLOG(1) << "Boosted Trees kernels in TF are deprecated. Please use "
+            << "TensorFlow Decision Forests instead "
+            << "(https://github.com/tensorflow/decision-forests).\n";
     OP_REQUIRES_OK(context, context->GetAttr("num_features", &num_features_));
 
-    int32 pruning_index;
+    int32_t pruning_index;
     OP_REQUIRES_OK(context, context->GetAttr("pruning_mode", &pruning_index));
     pruning_mode_ = static_cast<PruningMode>(pruning_index);
   }
@@ -68,24 +71,36 @@ class BoostedTreesUpdateEnsembleOp : public OpKernel {
 
     const Tensor* feature_ids_t;
     OP_REQUIRES_OK(context, context->input("feature_ids", &feature_ids_t));
+    OP_REQUIRES(
+        context, TensorShapeUtils::IsVector(feature_ids_t->shape()),
+        errors::InvalidArgument("feature_ids must be a vector, received shape ",
+                                feature_ids_t->shape().DebugString()));
     const auto feature_ids = feature_ids_t->vec<int32>();
 
     const Tensor* max_depth_t;
     OP_REQUIRES_OK(context, context->input("max_depth", &max_depth_t));
+    OP_REQUIRES(context, TensorShapeUtils::IsScalar(max_depth_t->shape()),
+                errors::InvalidArgument(
+                    "max_depth must be a scalar, got a tensor of shape ",
+                    max_depth_t->shape().DebugString()));
     const auto max_depth = max_depth_t->scalar<int32>()();
 
     const Tensor* learning_rate_t;
     OP_REQUIRES_OK(context, context->input("learning_rate", &learning_rate_t));
+    OP_REQUIRES(context, TensorShapeUtils::IsScalar(learning_rate_t->shape()),
+                errors::InvalidArgument(
+                    "learning_rate must be a scalar, got a tensor of shape ",
+                    learning_rate_t->shape().DebugString()));
     const auto learning_rate = learning_rate_t->scalar<float>()();
     // Op does not support multi-class, the V2 op below does however.
-    int32 logits_dimension = 1;
+    int32_t logits_dimension = 1;
     // Find best splits for each active node.
     std::map<int32, boosted_trees::SplitCandidate> best_splits;
     FindBestSplitsPerNode(context, learning_rate, node_ids_list, gains_list,
                           thresholds_list, left_node_contribs,
                           right_node_contribs, feature_ids, &best_splits);
 
-    int32 current_tree =
+    int32_t current_tree =
         UpdateGlobalAttemptsAndRetrieveGrowableTree(ensemble_resource);
 
     // No-op if no new splits can be considered.
@@ -94,13 +109,13 @@ class BoostedTreesUpdateEnsembleOp : public OpKernel {
       return;
     }
 
-    const int32 new_num_layers =
+    const int32_t new_num_layers =
         ensemble_resource->GetNumLayersGrown(current_tree) + 1;
     VLOG(1) << "Adding layer #" << new_num_layers - 1 << " to tree #"
             << current_tree << " of ensemble of " << current_tree + 1
             << " trees.";
     bool split_happened = false;
-    int32 node_id_start = ensemble_resource->GetNumNodes(current_tree);
+    int32_t node_id_start = ensemble_resource->GetNumNodes(current_tree);
     // Add the splits to the tree.
     for (auto& split_entry : best_splits) {
       const float gain = split_entry.second.gain;
@@ -113,15 +128,15 @@ class BoostedTreesUpdateEnsembleOp : public OpKernel {
       }
 
       // unused.
-      int32 left_node_id;
-      int32 right_node_id;
+      int32_t left_node_id;
+      int32_t right_node_id;
 
       ensemble_resource->AddBucketizedSplitNode(current_tree, split_entry,
                                                 logits_dimension, &left_node_id,
                                                 &right_node_id);
       split_happened = true;
     }
-    int32 node_id_end = ensemble_resource->GetNumNodes(current_tree);
+    int32_t node_id_end = ensemble_resource->GetNumNodes(current_tree);
     if (split_happened) {
       // Update growable tree metadata.
       ensemble_resource->SetNumLayersGrown(current_tree, new_num_layers);
@@ -148,8 +163,8 @@ class BoostedTreesUpdateEnsembleOp : public OpKernel {
  private:
   int32 UpdateGlobalAttemptsAndRetrieveGrowableTree(
       const core::RefCountPtr<BoostedTreesEnsembleResource>& resource) {
-    int32 num_trees = resource->num_trees();
-    int32 current_tree = num_trees - 1;
+    int32_t num_trees = resource->num_trees();
+    int32_t current_tree = num_trees - 1;
 
     // Increment global attempt stats.
     resource->UpdateGrowingMetadata();
@@ -175,12 +190,51 @@ class BoostedTreesUpdateEnsembleOp : public OpKernel {
       const TTypes<const int32>::Vec& feature_ids,
       std::map<int32, boosted_trees::SplitCandidate>* best_split_per_node) {
     // Find best split per node going through every feature candidate.
-    for (int64 feature_idx = 0; feature_idx < num_features_; ++feature_idx) {
+    for (int64_t feature_idx = 0; feature_idx < num_features_; ++feature_idx) {
+      OP_REQUIRES(
+          context,
+          TensorShapeUtils::IsVector(node_ids_list[feature_idx].shape()),
+          errors::InvalidArgument(
+              "Each node_id in node_ids_list must be a vector, received shape ",
+              node_ids_list[feature_idx].shape().DebugString(), " at index ",
+              feature_idx));
       const auto& node_ids = node_ids_list[feature_idx].vec<int32>();
+      OP_REQUIRES(
+          context, TensorShapeUtils::IsVector(gains_list[feature_idx].shape()),
+          errors::InvalidArgument(
+              "Each gain in gains_list must be a vector, received shape ",
+              gains_list[feature_idx].shape().DebugString(), " at index ",
+              feature_idx));
       const auto& gains = gains_list[feature_idx].vec<float>();
+      OP_REQUIRES(
+          context,
+          TensorShapeUtils::IsVector(thresholds_list[feature_idx].shape()),
+          errors::InvalidArgument(
+              "Each threshold in thresholds_list must be a vector, received "
+              "shape ",
+              thresholds_list[feature_idx].shape().DebugString(), " at index ",
+              feature_idx));
       const auto& thresholds = thresholds_list[feature_idx].vec<int32>();
+      OP_REQUIRES(
+          context,
+          TensorShapeUtils::IsMatrix(
+              left_node_contribs_list[feature_idx].shape()),
+          errors::InvalidArgument(
+              "Each left_node_contribs in left_node_contribs_list must be a "
+              "matrix, received shape ",
+              left_node_contribs_list[feature_idx].shape().DebugString(),
+              " at index ", feature_idx));
       const auto& left_node_contribs =
           left_node_contribs_list[feature_idx].matrix<float>();
+      OP_REQUIRES(
+          context,
+          TensorShapeUtils::IsMatrix(
+              right_node_contribs_list[feature_idx].shape()),
+          errors::InvalidArgument(
+              "Each right_node_contribs in right_node_contribs_list must be a "
+              "matrix, received shape ",
+              right_node_contribs_list[feature_idx].shape().DebugString(),
+              " at index ", feature_idx));
       const auto& right_node_contribs =
           right_node_contribs_list[feature_idx].matrix<float>();
 
@@ -206,8 +260,8 @@ class BoostedTreesUpdateEnsembleOp : public OpKernel {
         if (TF_PREDICT_FALSE(best_split_it != best_split_per_node->end() &&
                              GainsAreEqual(gain, best_split_it->second.gain))) {
           const auto best_candidate = (*best_split_per_node)[node_id];
-          const int32 best_feature_id = best_candidate.feature_id;
-          const int32 feature_id = candidate.feature_id;
+          const int32_t best_feature_id = best_candidate.feature_id;
+          const int32_t feature_id = candidate.feature_id;
           VLOG(2) << "Breaking ties on feature ids and buckets";
           // Breaking ties deterministically.
           if (feature_id < best_feature_id) {
@@ -234,6 +288,9 @@ class BoostedTreesUpdateEnsembleV2Op : public OpKernel {
  public:
   explicit BoostedTreesUpdateEnsembleV2Op(OpKernelConstruction* const context)
       : OpKernel(context) {
+    VLOG(1) << "Boosted Trees kernels in TF are deprecated. Please use "
+            << "TensorFlow Decision Forests instead "
+            << "(https://github.com/tensorflow/decision-forests).\n";
     OP_REQUIRES_OK(context, context->GetAttr("logits_dimension", &logits_dim_));
     OP_REQUIRES_OK(context, context->GetAttr("num_groups", &num_groups_));
   }
@@ -274,14 +331,26 @@ class BoostedTreesUpdateEnsembleV2Op : public OpKernel {
 
     const Tensor* max_depth_t;
     OP_REQUIRES_OK(context, context->input("max_depth", &max_depth_t));
+    OP_REQUIRES(context, TensorShapeUtils::IsScalar(max_depth_t->shape()),
+                errors::InvalidArgument(
+                    "max_depth must be a scalar, got a tensor of shape ",
+                    max_depth_t->shape().DebugString()));
     const auto max_depth = max_depth_t->scalar<int32>()();
 
     const Tensor* learning_rate_t;
     OP_REQUIRES_OK(context, context->input("learning_rate", &learning_rate_t));
+    OP_REQUIRES(context, TensorShapeUtils::IsScalar(learning_rate_t->shape()),
+                errors::InvalidArgument(
+                    "learning_rate must be a scalar, got a tensor of shape ",
+                    learning_rate_t->shape().DebugString()));
     const auto learning_rate = learning_rate_t->scalar<float>()();
 
     const Tensor* pruning_mode_t;
     OP_REQUIRES_OK(context, context->input("pruning_mode", &pruning_mode_t));
+    OP_REQUIRES(context, TensorShapeUtils::IsScalar(pruning_mode_t->shape()),
+                errors::InvalidArgument(
+                    "pruning_mode must be a scalar, got a tensor of shape ",
+                    pruning_mode_t->shape().DebugString()));
     const auto pruning_mode =
         static_cast<PruningMode>(pruning_mode_t->scalar<int32>()());
     // Find best splits for each active node.
@@ -291,7 +360,7 @@ class BoostedTreesUpdateEnsembleV2Op : public OpKernel {
                           left_node_contribs_list, right_node_contribs_list,
                           split_types_list, feature_ids_list, &best_splits);
 
-    int32 current_tree =
+    int32_t current_tree =
         UpdateGlobalAttemptsAndRetrieveGrowableTree(ensemble_resource);
 
     // No-op if no new splits can be considered.
@@ -300,13 +369,13 @@ class BoostedTreesUpdateEnsembleV2Op : public OpKernel {
       return;
     }
 
-    const int32 new_num_layers =
+    const int32_t new_num_layers =
         ensemble_resource->GetNumLayersGrown(current_tree) + 1;
     VLOG(1) << "Adding layer #" << new_num_layers - 1 << " to tree #"
             << current_tree << " of ensemble of " << current_tree + 1
             << " trees.";
     bool split_happened = false;
-    int32 node_id_start = ensemble_resource->GetNumNodes(current_tree);
+    int32_t node_id_start = ensemble_resource->GetNumNodes(current_tree);
     // Add the splits to the tree.
     for (auto& split_entry : best_splits) {
       const float gain = split_entry.second.gain;
@@ -321,13 +390,13 @@ class BoostedTreesUpdateEnsembleV2Op : public OpKernel {
       }
 
       // unused.
-      int32 left_node_id;
-      int32 right_node_id;
+      int32_t left_node_id;
+      int32_t right_node_id;
 
       boosted_trees::SplitTypeWithDefault split_type_with_default;
       bool parsed = boosted_trees::SplitTypeWithDefault_Parse(
           split_type, &split_type_with_default);
-      DCHECK(parsed);
+      OP_REQUIRES(context, parsed, errors::Internal("Parse failed"));
       if (split_type_with_default == boosted_trees::EQUALITY_DEFAULT_RIGHT) {
         // Add equality split to the node.
         ensemble_resource->AddCategoricalSplitNode(current_tree, split_entry,
@@ -341,7 +410,7 @@ class BoostedTreesUpdateEnsembleV2Op : public OpKernel {
       }
       split_happened = true;
     }
-    int32 node_id_end = ensemble_resource->GetNumNodes(current_tree);
+    int32_t node_id_end = ensemble_resource->GetNumNodes(current_tree);
     if (split_happened) {
       // Update growable tree metadata.
       ensemble_resource->SetNumLayersGrown(current_tree, new_num_layers);
@@ -368,8 +437,8 @@ class BoostedTreesUpdateEnsembleV2Op : public OpKernel {
  private:
   int32 UpdateGlobalAttemptsAndRetrieveGrowableTree(
       const core::RefCountPtr<BoostedTreesEnsembleResource>& resource) {
-    int32 num_trees = resource->num_trees();
-    int32 current_tree = num_trees - 1;
+    int32_t num_trees = resource->num_trees();
+    int32_t current_tree = num_trees - 1;
 
     // Increment global attempt stats.
     resource->UpdateGrowingMetadata();
@@ -395,16 +464,76 @@ class BoostedTreesUpdateEnsembleV2Op : public OpKernel {
       const OpInputList& split_types_list, const OpInputList& feature_ids_list,
       std::map<int32, boosted_trees::SplitCandidate>* best_split_per_node) {
     // Find best split per node going through every feature candidate.
-    for (int64 group_idx = 0; group_idx < num_groups_; ++group_idx) {
+    for (int64_t group_idx = 0; group_idx < num_groups_; ++group_idx) {
+      OP_REQUIRES(
+          context, TensorShapeUtils::IsVector(node_ids_list[group_idx].shape()),
+          errors::InvalidArgument(
+              "Each node_id in node_ids_list must be a vector, received shape ",
+              node_ids_list[group_idx].shape().DebugString(), " at index ",
+              group_idx));
       const auto& node_ids = node_ids_list[group_idx].vec<int32>();
+      OP_REQUIRES(
+          context, TensorShapeUtils::IsVector(gains_list[group_idx].shape()),
+          errors::InvalidArgument(
+              "Each gain in gains_list must be a vector, received shape ",
+              gains_list[group_idx].shape().DebugString(), " at index ",
+              group_idx));
       const auto& gains = gains_list[group_idx].vec<float>();
+      OP_REQUIRES(
+          context,
+          TensorShapeUtils::IsVector(feature_ids_list[group_idx].shape()),
+          errors::InvalidArgument(
+              "Each feature_id in feature_ids_lists must be a vector, received "
+              "shape ",
+              feature_ids_list[group_idx].shape().DebugString(), " at index ",
+              group_idx));
       const auto& feature_ids = feature_ids_list[group_idx].vec<int32>();
+      OP_REQUIRES(
+          context,
+          TensorShapeUtils::IsVector(thresholds_list[group_idx].shape()),
+          errors::InvalidArgument(
+              "Each threshold in thresholds_list must be a vector, received "
+              "shape ",
+              thresholds_list[group_idx].shape().DebugString(), " at index ",
+              group_idx));
       const auto& thresholds = thresholds_list[group_idx].vec<int32>();
+      OP_REQUIRES(
+          context,
+          TensorShapeUtils::IsVector(dimension_ids_list[group_idx].shape()),
+          errors::InvalidArgument(
+              "Each dimension_id in dimension_ids_list must be a vector, "
+              "received shape ",
+              dimension_ids_list[group_idx].shape().DebugString(), " at index ",
+              group_idx));
       const auto& dimension_ids = dimension_ids_list[group_idx].vec<int32>();
+      OP_REQUIRES(context,
+                  TensorShapeUtils::IsMatrix(
+                      left_node_contribs_list[group_idx].shape()),
+                  errors::InvalidArgument(
+                      "Each left_node_contribs in right_node_contribs_list "
+                      "must be a matrix, received shape ",
+                      left_node_contribs_list[group_idx].shape().DebugString(),
+                      " at index ", group_idx));
       const auto& left_node_contribs =
           left_node_contribs_list[group_idx].matrix<float>();
+      OP_REQUIRES(context,
+                  TensorShapeUtils::IsMatrix(
+                      right_node_contribs_list[group_idx].shape()),
+                  errors::InvalidArgument(
+                      "Each right_node_contribs in right_node_contribs_list "
+                      "must be a matrix, received shape ",
+                      right_node_contribs_list[group_idx].shape().DebugString(),
+                      " at index ", group_idx));
       const auto& right_node_contribs =
           right_node_contribs_list[group_idx].matrix<float>();
+      OP_REQUIRES(
+          context,
+          TensorShapeUtils::IsVector(split_types_list[group_idx].shape()),
+          errors::InvalidArgument(
+              "Each split_type in split_types_list must be a vector, received "
+              "shape ",
+              split_types_list[group_idx].shape().DebugString(), " at index ",
+              group_idx));
       const auto& split_types = split_types_list[group_idx].vec<tstring>();
 
       for (size_t candidate_idx = 0; candidate_idx < node_ids.size();
@@ -431,8 +560,8 @@ class BoostedTreesUpdateEnsembleV2Op : public OpKernel {
         if (TF_PREDICT_FALSE(best_split_it != best_split_per_node->end() &&
                              GainsAreEqual(gain, best_split_it->second.gain))) {
           const auto& best_candidate = (*best_split_per_node)[node_id];
-          const int32 best_feature_id = best_candidate.feature_id;
-          const int32 feature_id = candidate.feature_id;
+          const int32_t best_feature_id = best_candidate.feature_id;
+          const int32_t feature_id = candidate.feature_id;
           VLOG(2) << "Breaking ties on feature ids and buckets";
           // Breaking ties deterministically.
           if (feature_id < best_feature_id) {
@@ -457,7 +586,11 @@ REGISTER_KERNEL_BUILDER(Name("BoostedTreesUpdateEnsembleV2").Device(DEVICE_CPU),
 class BoostedTreesCenterBiasOp : public OpKernel {
  public:
   explicit BoostedTreesCenterBiasOp(OpKernelConstruction* const context)
-      : OpKernel(context) {}
+      : OpKernel(context) {
+    VLOG(1) << "Boosted Trees kernels in TF are deprecated. Please use "
+            << "TensorFlow Decision Forests instead "
+            << "(https://github.com/tensorflow/decision-forests).\n";
+  }
 
   void Compute(OpKernelContext* const context) override {
     // Get decision tree ensemble.
@@ -472,16 +605,24 @@ class BoostedTreesCenterBiasOp : public OpKernel {
     const Tensor* mean_gradients_t;
     OP_REQUIRES_OK(context,
                    context->input("mean_gradients", &mean_gradients_t));
-    const int32 logits_dim = mean_gradients_t->dim_size(1);
+    const int32_t logits_dim = mean_gradients_t->dim_size(1);
     const Tensor* mean_hessians_t;
     OP_REQUIRES_OK(context, context->input("mean_hessians", &mean_hessians_t));
 
     // Get the regularization options.
     const Tensor* l1_t;
     OP_REQUIRES_OK(context, context->input("l1", &l1_t));
+    OP_REQUIRES(
+        context, TensorShapeUtils::IsScalar(l1_t->shape()),
+        errors::InvalidArgument("l1 must be a scalar, got a tensor of shape ",
+                                l1_t->shape().DebugString()));
     const auto l1 = l1_t->scalar<float>()();
     const Tensor* l2_t;
     OP_REQUIRES_OK(context, context->input("l2", &l2_t));
+    OP_REQUIRES(
+        context, TensorShapeUtils::IsScalar(l2_t->shape()),
+        errors::InvalidArgument("l2 must be a scalar, got a tensor of shape ",
+                                l2_t->shape().DebugString()));
     const auto l2 = l2_t->scalar<float>()();
 
     // For now, assume 1-dimensional weight on leaves.
@@ -489,7 +630,8 @@ class BoostedTreesCenterBiasOp : public OpKernel {
     float unused_gain;
 
     // TODO(crawles): Support multiclass.
-    DCHECK_EQ(logits_dim, 1);
+    OP_REQUIRES(context, logits_dim == 1,
+                errors::Internal("Expected logits_dim == 1, got ", logits_dim));
     Eigen::VectorXf gradients_mean(1);
     Eigen::VectorXf hessians_mean(1);
     gradients_mean[0] = mean_gradients_t->flat<float>()(0);
@@ -506,7 +648,9 @@ class BoostedTreesCenterBiasOp : public OpKernel {
       current_bias = logits;
     } else {
       const auto& current_biases = ensemble_resource->node_value(0, 0);
-      DCHECK_EQ(current_biases.size(), 1);
+      OP_REQUIRES(context, current_biases.size() == 1,
+                  errors::Internal("Expected current_biases.size() == 1, got ",
+                                   current_biases.size()));
       current_bias = current_biases[0];
       continue_centering =
           std::abs(logits / current_bias) > kMinDeltaForCenterBias;

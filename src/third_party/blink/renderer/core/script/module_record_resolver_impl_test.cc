@@ -78,7 +78,8 @@ ModuleScript* CreateReferrerModuleScript(Modulator* modulator,
                                          V8TestingScope& scope) {
   KURL js_url("https://example.com/referrer.js");
   v8::Local<v8::Module> referrer_record = ModuleTestBase::CompileModule(
-      scope.GetIsolate(), "import './target.js'; export const a = 42;", js_url);
+      scope.GetScriptState(), "import './target.js'; export const a = 42;",
+      js_url);
   KURL referrer_url("https://example.com/referrer.js");
   auto* referrer_module_script =
       JSModuleScript::CreateForTest(modulator, referrer_record, referrer_url);
@@ -90,7 +91,7 @@ ModuleScript* CreateTargetModuleScript(Modulator* modulator,
                                        bool has_parse_error = false) {
   KURL js_url("https://example.com/target.js");
   v8::Local<v8::Module> record = ModuleTestBase::CompileModule(
-      scope.GetIsolate(), "export const pi = 3.14;", js_url);
+      scope.GetScriptState(), "export const pi = 3.14;", js_url);
   KURL url("https://example.com/target.js");
   auto* module_script = JSModuleScript::CreateForTest(modulator, record, url);
   if (has_parse_error) {
@@ -105,7 +106,7 @@ ModuleScript* CreateTargetModuleScript(Modulator* modulator,
 }  // namespace
 
 class ModuleRecordResolverImplTest : public testing::Test,
-                                     public ParametrizedModuleTest {
+                                     public ModuleTestBase {
  public:
   void SetUp() override;
   void TearDown() override;
@@ -121,16 +122,16 @@ class ModuleRecordResolverImplTest : public testing::Test,
 };
 
 void ModuleRecordResolverImplTest::SetUp() {
-  ParametrizedModuleTest::SetUp();
+  ModuleTestBase::SetUp();
   platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
   modulator_ = MakeGarbageCollected<ModuleRecordResolverImplTestModulator>();
 }
 
 void ModuleRecordResolverImplTest::TearDown() {
-  ParametrizedModuleTest::TearDown();
+  ModuleTestBase::TearDown();
 }
 
-TEST_P(ModuleRecordResolverImplTest, RegisterResolveSuccess) {
+TEST_F(ModuleRecordResolverImplTest, RegisterResolveSuccess) {
   V8TestingScope scope;
   ModuleRecordResolver* resolver =
       MakeGarbageCollected<ModuleRecordResolverImpl>(
@@ -155,11 +156,5 @@ TEST_P(ModuleRecordResolverImplTest, RegisterResolveSuccess) {
   EXPECT_EQ(modulator_->FetchedUrl(), target_module_script->BaseURL())
       << "Unexpectedly fetched URL: " << modulator_->FetchedUrl().GetString();
 }
-
-// Instantiate tests once with TLA and once without:
-INSTANTIATE_TEST_SUITE_P(ModuleRecordResolverImplTestGroup,
-                         ModuleRecordResolverImplTest,
-                         testing::Bool(),
-                         ParametrizedModuleTestParamName());
 
 }  // namespace blink

@@ -37,12 +37,35 @@ void CallbackWrapper(base::OnceCallback<void(bool)> callback,
 
 }  // anonymous namespace
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+// static
+void ChromeWebViewPermissionHelperDelegate::BindPluginAuthHost(
+    mojo::PendingAssociatedReceiver<chrome::mojom::PluginAuthHost> receiver,
+    content::RenderFrameHost* rfh) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(rfh);
+  if (!web_contents)
+    return;
+  auto* permission_helper =
+      extensions::WebViewPermissionHelper::FromWebContents(web_contents);
+  if (!permission_helper)
+    return;
+  WebViewPermissionHelperDelegate* delegate = permission_helper->delegate();
+  if (!delegate)
+    return;
+  auto* chrome_delegate =
+      static_cast<ChromeWebViewPermissionHelperDelegate*>(delegate);
+  chrome_delegate->plugin_auth_host_receivers_.Bind(rfh, std::move(receiver));
+}
+#endif
+
 ChromeWebViewPermissionHelperDelegate::ChromeWebViewPermissionHelperDelegate(
     WebViewPermissionHelper* web_view_permission_helper)
     : WebViewPermissionHelperDelegate(web_view_permission_helper)
 #if BUILDFLAG(ENABLE_PLUGINS)
       ,
-      plugin_auth_host_receivers_(web_contents(), this)
+      plugin_auth_host_receivers_(
+          web_view_permission_helper->web_view_guest()->web_contents(),
+          this)
 #endif
 {
 }
@@ -77,7 +100,8 @@ void ChromeWebViewPermissionHelperDelegate::OnPermissionResponse(
     const std::string& input) {
   if (allow) {
     ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
-        web_contents(), true, identifier);
+        web_view_permission_helper()->web_view_guest()->web_contents(), true,
+        identifier);
   }
 }
 
@@ -112,8 +136,11 @@ void ChromeWebViewPermissionHelperDelegate::RequestPointerLockPermission(
   request_info.SetBoolean(guest_view::kUserGesture, user_gesture);
   request_info.SetBoolean(webview::kLastUnlockedBySelf,
                           last_unlocked_by_target);
-  request_info.SetString(guest_view::kUrl,
-                         web_contents()->GetLastCommittedURL().spec());
+  request_info.SetString(guest_view::kUrl, web_view_permission_helper()
+                                               ->web_view_guest()
+                                               ->web_contents()
+                                               ->GetLastCommittedURL()
+                                               .spec());
 
   web_view_permission_helper()->RequestPermission(
       WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK, request_info,
@@ -165,14 +192,11 @@ void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
 
   Profile* profile = Profile::FromBrowserContext(
       web_view_guest()->browser_context());
-  PermissionManagerFactory::GetForProfile(profile)->RequestPermission(
-      ContentSettingsType::GEOLOCATION,
-      web_view_guest()->embedder_web_contents()->GetMainFrame(),
-      web_view_guest()
-          ->embedder_web_contents()
-          ->GetLastCommittedURL()
-          .GetOrigin(),
-      user_gesture, std::move(callback));
+  PermissionManagerFactory::GetForProfile(profile)
+      ->RequestPermissionFromCurrentDocument(
+          ContentSettingsType::GEOLOCATION,
+          web_view_guest()->embedder_web_contents()->GetMainFrame(),
+          user_gesture, std::move(callback));
 }
 
 void ChromeWebViewPermissionHelperDelegate::RequestFileSystemPermission(

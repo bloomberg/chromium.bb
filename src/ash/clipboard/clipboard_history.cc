@@ -6,8 +6,8 @@
 
 #include "ash/clipboard/clipboard_history_util.h"
 #include "ash/clipboard/clipboard_nudge_controller.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/clipboard_non_backed.h"
@@ -121,7 +121,7 @@ void ClipboardHistory::OnClipboardDataChanged() {
       base::BindOnce(&ClipboardHistory::OnClipboardOperation,
                      clipboard_histogram_weak_factory_.GetWeakPtr(),
                      /*copy=*/true),
-      base::TimeDelta::FromMilliseconds(100));
+      base::Milliseconds(100));
 
   // We post commit |clipboard_data| at the end of the current task sequence to
   // debounce the case where multiple copies are programmatically performed.
@@ -153,7 +153,7 @@ void ClipboardHistory::OnClipboardDataRead() {
       base::BindOnce(&ClipboardHistory::OnClipboardOperation,
                      clipboard_histogram_weak_factory_.GetWeakPtr(),
                      /*copy=*/false),
-      base::TimeDelta::FromMilliseconds(100));
+      base::Milliseconds(100));
 }
 
 void ClipboardHistory::OnClipboardOperation(bool copy) {

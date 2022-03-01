@@ -90,12 +90,12 @@
 
         &:hover {
           background-color: hsl(88, 50%, 84%);
-          box-shadow: 0 0 4px 0px #999;
+          box-shadow: 0 0 4px 0 #999;
         }
 
         &.selected {
           background-color: hsl(88, 50%, 67%);
-          box-shadow: 0 0 4px 0px #999;
+          box-shadow: 0 0 4px 0 #999;
         }
 
         &.disabled {
@@ -116,7 +116,7 @@
       }
 
       label, select, button {
-        font-weight: 100;
+        font-weight: 300;
         margin: 3px;
         color: #333;
         font-size: 17px;
@@ -140,7 +140,7 @@
         padding: 4px;
         height: 30px;
         &:hover, &:active {
-          box-shadow: 0 0 4px 0px #ccc;
+          box-shadow: 0 0 4px 0 #ccc;
           background-color: #fafafa;
         }
         i {
@@ -201,7 +201,6 @@
 
   li {
     @include transition();
-    display: block;
     height: 55px;
     padding: 0 1em;
     font-size: 15px;
@@ -291,9 +290,15 @@
 
     height: auto;
     width: 100%;
-    padding: 0px;
+    padding: 0;
     display: flex;
     align-items: center;
+  }
+
+  .parsing-errors {
+    padding: 1em;
+    border: 1px solid #dc143c;
+    color: #dc143c;
   }
 
   .title-config {
@@ -304,19 +309,23 @@
   }
 
   .config-button {
-    border-radius: 10px;
+    border-radius: 100%;
     margin-right: 10px;
     text-align: center;
     justify-items: center;
     font-family: 'Raleway', sans-serif;
     padding: 7px;
-    width: 75px;
 
-    &:hover {
-      box-shadow: 0 0 4px 0px #999;
+    &:hover:enabled {
+      box-shadow: 0 0 3px 0 #aaa;
     }
 
-    &.load {
+    &:not(:enabled) {
+      background-color: hsl(0, 0%, 83%);
+      color: hsl(0, 0%, 50%);
+    }
+
+    &.load:enabled {
       background-color: hsl(88, 50%, 67%);
     }
 
@@ -325,9 +334,23 @@
     }
 
     &.save {
-      width: 160px;
-      background-color: hsl(197, 50%, 67%);
+      &.long {
+        width: 160px;
+      }
+
+      &:enabled {
+        background-color: hsl(197, 50%, 67%);
+      }
     }
+
+    &.reset {
+      width: 300px;
+      background-color: hsl(0, 50%, 67%);
+    }
+  }
+
+  .reset-wrapper {
+    padding: 1em;
   }
 
   .input-config {
@@ -335,11 +358,11 @@
     margin-bottom: 20px;
     display: flex;
     align-items: center;
-    padding: 0px;
+    padding: 0;
 
     input {
       border-radius: 20px;
-      border-color: #0000003d;
+      border: 1px solid #eee;
       line-height: 36px;
       padding: 0 10px;
       font-size: 18px;
@@ -394,6 +417,11 @@
     transition: color 0.2s ease;
     padding-top: var(--record-section-padding);
     padding-bottom: var(--record-section-padding);
+
+    &.compact {
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
 
     &:nth-of-type(2n) {
       background-color: #f9f9f9;
@@ -456,7 +484,7 @@
           height: 26px;
           border-radius: 100px;
           background: #f5f5f5;
-          box-shadow: 0px 3px 3px rgba(0,0,0,0.15);
+          box-shadow: 0 3px 3px rgba(0,0,0,0.15);
           content: '';
           transition: all 0.3s ease;
         }
@@ -554,7 +582,7 @@
           height: 20px;
           border-radius: 100px;
           background: #f5f5f5;
-          box-shadow: 0px 3px 3px rgba(0,0,0,0.15);
+          box-shadow: 0 3px 3px rgba(0,0,0,0.15);
           content: '';
           transition: all 0.3s ease;
         }
@@ -608,13 +636,12 @@
 
       &:hover {
         background-color: hsl(88, 50%, 84%);
-        box-shadow: 0 0 4px 0px #999;
+        box-shadow: 0 0 4px 0 #999;
       }
 
       &.selected {
-        background-color: hsl(207, 90%, 74%);
         background-color: hsl(88, 50%, 67%);
-        box-shadow: 0 0 4px 0px #999;
+        box-shadow: 0 0 4px 0 #999;
       }
 
       img {
@@ -689,7 +716,7 @@
       width: 100%;
       appearance: none;
       -webkit-appearance: none;
-      scroll-snap-type: mandatory;
+      scroll-snap-type: x mandatory;
       background-color : transparent;
       outline: none;
       margin-left: -10px;
@@ -697,7 +724,6 @@
 
       &::-webkit-slider-runnable-track {
         margin: 10px;
-        border-radius: 1px;
         width: 100%;
         height: 10px;
         background-color : #ddd;
@@ -785,22 +811,21 @@
     }
   }
 
+  .chrome-categories {
+    margin: var(--record-section-padding) 0;
+
+    display: flex;
+    flex-direction: row;
+
+    .categories-list {
+      width: 50%;
+    }
+  }
+
   .dropdown {
     border: 1px solid #eee;
     outline: none;
     -webkit-appearance: none;
-
-    &:not(.multicolumn) {
-      overflow: hidden;
-      height: 25px;
-      padding: 0 5px;
-      &:focus, &:hover {
-        height: 30vh;
-        position: absolute;
-        overflow: auto;
-        box-shadow: 0 0 15px 0 #eee;
-      }
-    }
 
     option, optgroup {
       @include transition();
@@ -820,6 +845,23 @@
       &::before {
         display: none;
         content: '';
+      }
+    }
+
+    &.singlecolumn {
+      margin: var(--record-section-padding) 0;
+      padding: 0;
+      max-width: 100%;
+      width: 100%;
+      overflow-y: auto;
+      height: 400px;
+      optgroup {
+        display: grid;
+        padding: 0;
+        grid-template-columns: 1fr;
+      }
+      option {
+        margin: 0;
       }
     }
 
@@ -905,7 +947,7 @@
     }
 
     &.no-top-bar {
-      white-space: 'pre';
+      white-space: pre;
       &::before {
         height: 0;
       }
@@ -1012,12 +1054,12 @@
 
         &:hover {
           background-color: hsl(88, 50%, 84%);
-          box-shadow: 0 0 4px 0px #999;
+          box-shadow: 0 0 4px 0 #999;
         }
 
         &.selected {
           background-color: hsl(88, 50%, 67%);
-          box-shadow: 0 0 4px 0px #999;
+          box-shadow: 0 0 4px 0 #999;
         }
       }
     }
@@ -1034,7 +1076,7 @@
       background-color: hsl(88, 50%, 67%);
 
       &:hover {
-        box-shadow: 0 0 4px 0px #999;
+        box-shadow: 0 0 4px 0 #999;
       }
     }
 
@@ -1055,10 +1097,10 @@
   }
 }  // record-section
 
-.inline-chip { 
+.inline-chip {
   @include transition();
   &:hover, &:active {
-    box-shadow: 0 0 2px 0px #ccc;
+    box-shadow: 0 0 2px 0 #ccc;
     background-color: #fafafa;
   }
 

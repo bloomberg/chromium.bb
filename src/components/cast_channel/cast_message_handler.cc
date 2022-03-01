@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/default_tick_clock.h"
@@ -20,7 +21,7 @@ namespace cast_channel {
 namespace {
 
 // The max launch timeout amount for session launch requests.
-constexpr base::TimeDelta kLaunchMaxTimeout = base::TimeDelta::FromMinutes(2);
+constexpr base::TimeDelta kLaunchMaxTimeout = base::Minutes(2);
 
 // The max size of Cast Message is 64KB.
 constexpr int kMaxCastMessagePayload = 64 * 1024;

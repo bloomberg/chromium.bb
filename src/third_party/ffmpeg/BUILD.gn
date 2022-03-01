@@ -168,6 +168,9 @@ config("ffmpeg_warnings") {
       # video_enc_params.c has a condition that is always false when size_t is
       # 64 bits.
       "-Wno-tautological-constant-out-of-range-compare",
+
+      # Various files convert MAX_INT to double and similar without casting.
+      "-Wno-implicit-int-float-conversion",
     ]
 
     if (target_cpu == "arm" || target_cpu == "arm64") {
@@ -443,8 +446,14 @@ if (is_component_ffmpeg) {
       ]
     }
 
-    if (is_mac && !is_component_build) {
-      ldflags += [ "-Wl,-install_name,@rpath/libffmpeg.dylib" ]
+    if (!is_component_build) {
+      if (is_mac) {
+        ldflags += [ "-Wl,-install_name,@rpath/libffmpeg.dylib" ]
+      } else if (is_linux) {
+        all_dependent_configs = [
+          "//build/config/gcc:rpath_for_built_shared_libraries",
+        ]
+      }
     }
   }
 } else {

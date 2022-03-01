@@ -39,6 +39,7 @@ struct UncopyableUnmovable {
   UncopyableUnmovable& operator=(const UncopyableUnmovable&) = delete;
 
   int value = 1;
+  std::string something_with_a_nontrivial_destructor;
 };
 
 struct CopyOnly {
@@ -63,6 +64,8 @@ struct MoveOnly {
 
 struct ForwardingTestStruct {
   ForwardingTestStruct(const CopyOnly&, MoveOnly&&) {}
+
+  std::string something_with_a_nontrivial_destructor;
 };
 
 TEST(NoDestructorTest, UncopyableUnmovable) {
@@ -87,6 +90,11 @@ TEST(NoDestructorTest, Accessors) {
   EXPECT_EQ("awesome", *awesome);
   EXPECT_EQ(0, awesome->compare("awesome"));
   EXPECT_EQ(0, awesome.get()->compare("awesome"));
+}
+
+TEST(NoDestructorTest, AllowForTriviallyDestructibleType) {
+  static NoDestructor<bool, AllowForTriviallyDestructibleType>
+      trivially_destructible_type;
 }
 
 // Passing initializer list to a NoDestructor like in this test
@@ -185,7 +193,7 @@ TEST(NoDestructorTest, PriorityInversionAtStaticInitializationResolves) {
   background_getter.Start();
 
   while (!BlockingConstructor::WasConstructorCalled())
-    PlatformThread::Sleep(TimeDelta::FromMilliseconds(1));
+    PlatformThread::Sleep(Milliseconds(1));
 
   // Spin 4 foreground thread per core contending to get the already under
   // construction NoDestructor. When they are all running and poking at it :
@@ -210,7 +218,7 @@ TEST(NoDestructorTest, PriorityInversionAtStaticInitializationResolves) {
 
   // Fail if this test takes more than 5 seconds (it takes 5-10 seconds on a
   // Z840 without r527445 but is expected to be fast (~30ms) with the fix).
-  EXPECT_LT(TimeTicks::Now() - test_begin, TimeDelta::FromSeconds(5));
+  EXPECT_LT(TimeTicks::Now() - test_begin, Seconds(5));
 }
 
 }  // namespace base

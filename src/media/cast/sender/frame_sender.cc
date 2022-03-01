@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "media/cast/constants.h"
@@ -23,10 +22,8 @@ namespace cast {
 namespace {
 
 constexpr int kNumAggressiveReportsSentAtStart = 100;
-constexpr base::TimeDelta kMinSchedulingDelay =
-    base::TimeDelta::FromMilliseconds(1);
-constexpr base::TimeDelta kReceiverProcessTime =
-    base::TimeDelta::FromMilliseconds(250);
+constexpr base::TimeDelta kMinSchedulingDelay = base::Milliseconds(1);
+constexpr base::TimeDelta kReceiverProcessTime = base::Milliseconds(250);
 
 // The additional number of frames that can be in-flight when input exceeds the
 // maximum frame rate.
@@ -113,7 +110,7 @@ void FrameSender::ScheduleNextRtcpReport() {
       CastEnvironment::MAIN, FROM_HERE,
       base::BindOnce(&FrameSender::SendRtcpReport, weak_factory_.GetWeakPtr(),
                      true),
-      base::TimeDelta::FromMilliseconds(kRtcpReportIntervalMs));
+      base::Milliseconds(kRtcpReportIntervalMs));
 }
 
 void FrameSender::SendRtcpReport(bool schedule_future_reports) {
@@ -325,10 +322,10 @@ void FrameSender::SendEncodedFrame(
         target_playout_delay_.InMilliseconds();
   }
 
-  TRACE_EVENT_ASYNC_BEGIN1("cast.stream",
-                           is_audio_ ? "Audio Transport" : "Video Transport",
-                           frame_id.lower_32_bits(), "rtp_timestamp",
-                           encoded_frame->rtp_timestamp.lower_32_bits());
+  const char* name = is_audio_ ? "Audio Transport" : "Video Transport";
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+      "cast.stream", name, TRACE_ID_WITH_SCOPE(name, frame_id.lower_32_bits()),
+      "rtp_timestamp", encoded_frame->rtp_timestamp.lower_32_bits());
   transport_sender_->InsertFrame(ssrc_, *encoded_frame);
 }
 
@@ -337,7 +334,7 @@ void FrameSender::OnCancelSendingFrames() {}
 void FrameSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
-  const bool have_valid_rtt = current_round_trip_time_ > base::TimeDelta();
+  const bool have_valid_rtt = current_round_trip_time_.is_positive();
   if (have_valid_rtt) {
     congestion_control_->UpdateRtt(current_round_trip_time_);
 
@@ -421,10 +418,11 @@ void FrameSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
       // This is a good place to match the trace for frame ids
       // since this ensures we not only track frame ids that are
       // implicitly ACKed, but also handles duplicate ACKs
-      TRACE_EVENT_ASYNC_END1(
-          "cast.stream", is_audio_ ? "Audio Transport" : "Video Transport",
-          latest_acked_frame_id_.lower_32_bits(), "RTT_usecs",
-          current_round_trip_time_.InMicroseconds());
+      const char* name = is_audio_ ? "Audio Transport" : "Video Transport";
+      TRACE_EVENT_NESTABLE_ASYNC_END1(
+          "cast.stream", name,
+          TRACE_ID_WITH_SCOPE(name, latest_acked_frame_id_.lower_32_bits()),
+          "RTT_usecs", current_round_trip_time_.InMicroseconds());
     } while (latest_acked_frame_id_ < cast_feedback.ack_frame_id);
     transport_sender_->CancelSendingFrames(ssrc_, frames_to_cancel);
     OnCancelSendingFrames();
@@ -462,7 +460,7 @@ bool FrameSender::ShouldDropNextFrame(base::TimeDelta frame_duration) const {
   const base::TimeDelta allowed_in_flight = GetAllowedInFlightMediaDuration();
   if (VLOG_IS_ON(1)) {
     const int64_t percent =
-        allowed_in_flight > base::TimeDelta()
+        allowed_in_flight.is_positive()
             ? base::ClampRound<int64_t>(duration_would_be_in_flight /
                                         allowed_in_flight * 100)
             : std::numeric_limits<int64_t>::max();

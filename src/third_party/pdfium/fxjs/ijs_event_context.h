@@ -7,15 +7,11 @@
 #ifndef FXJS_IJS_EVENT_CONTEXT_H_
 #define FXJS_IJS_EVENT_CONTEXT_H_
 
-#include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/widestring.h"
 #include "fxjs/ijs_runtime.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-class CPDF_Bookmark;
 class CPDF_FormField;
-class CPDFSDK_Annot;
-class CPDFSDK_FormFillEnvironment;
 
 // Records the details of an event and triggers JS execution for it. There
 // can be more than one of these at any given time, as JS callbacks to C++
@@ -24,23 +20,20 @@ class IJS_EventContext {
  public:
   virtual ~IJS_EventContext() = default;
 
-  virtual Optional<IJS_Runtime::JS_Error> RunScript(
+  virtual absl::optional<IJS_Runtime::JS_Error> RunScript(
       const WideString& script) = 0;
 
-  virtual void OnApp_Init() = 0;
+  virtual void OnDoc_Open(const WideString& strTargetName) = 0;
+  virtual void OnDoc_WillPrint() = 0;
+  virtual void OnDoc_DidPrint() = 0;
+  virtual void OnDoc_WillSave() = 0;
+  virtual void OnDoc_DidSave() = 0;
+  virtual void OnDoc_WillClose() = 0;
 
-  virtual void OnDoc_Open(CPDFSDK_FormFillEnvironment* pFormFillEnv,
-                          const WideString& strTargetName) = 0;
-  virtual void OnDoc_WillPrint(CPDFSDK_FormFillEnvironment* pFormFillEnv) = 0;
-  virtual void OnDoc_DidPrint(CPDFSDK_FormFillEnvironment* pFormFillEnv) = 0;
-  virtual void OnDoc_WillSave(CPDFSDK_FormFillEnvironment* pFormFillEnv) = 0;
-  virtual void OnDoc_DidSave(CPDFSDK_FormFillEnvironment* pFormFillEnv) = 0;
-  virtual void OnDoc_WillClose(CPDFSDK_FormFillEnvironment* pFormFillEnv) = 0;
-
-  virtual void OnPage_Open(CPDFSDK_FormFillEnvironment* pFormFillEnv) = 0;
-  virtual void OnPage_Close(CPDFSDK_FormFillEnvironment* pFormFillEnv) = 0;
-  virtual void OnPage_InView(CPDFSDK_FormFillEnvironment* pFormFillEnv) = 0;
-  virtual void OnPage_OutView(CPDFSDK_FormFillEnvironment* pFormFillEnv) = 0;
+  virtual void OnPage_Open() = 0;
+  virtual void OnPage_Close() = 0;
+  virtual void OnPage_InView() = 0;
+  virtual void OnPage_OutView() = 0;
 
   virtual void OnField_MouseDown(bool bModifier,
                                  bool bShift,
@@ -88,44 +81,6 @@ class IJS_EventContext {
                                 WideString* Value,
                                 bool* bRc) = 0;
 
-  virtual void OnScreen_Focus(bool bModifier,
-                              bool bShift,
-                              CPDFSDK_Annot* pScreen) = 0;
-  virtual void OnScreen_Blur(bool bModifier,
-                             bool bShift,
-                             CPDFSDK_Annot* pScreen) = 0;
-  virtual void OnScreen_Open(bool bModifier,
-                             bool bShift,
-                             CPDFSDK_Annot* pScreen) = 0;
-  virtual void OnScreen_Close(bool bModifier,
-                              bool bShift,
-                              CPDFSDK_Annot* pScreen) = 0;
-  virtual void OnScreen_MouseDown(bool bModifier,
-                                  bool bShift,
-                                  CPDFSDK_Annot* pScreen) = 0;
-  virtual void OnScreen_MouseUp(bool bModifier,
-                                bool bShift,
-                                CPDFSDK_Annot* pScreen) = 0;
-  virtual void OnScreen_MouseEnter(bool bModifier,
-                                   bool bShift,
-                                   CPDFSDK_Annot* pScreen) = 0;
-  virtual void OnScreen_MouseExit(bool bModifier,
-                                  bool bShift,
-                                  CPDFSDK_Annot* pScreen) = 0;
-  virtual void OnScreen_InView(bool bModifier,
-                               bool bShift,
-                               CPDFSDK_Annot* pScreen) = 0;
-  virtual void OnScreen_OutView(bool bModifier,
-                                bool bShift,
-                                CPDFSDK_Annot* pScreen) = 0;
-
-  virtual void OnBookmark_MouseUp(CPDF_Bookmark* pBookMark) = 0;
-  virtual void OnLink_MouseUp(CPDFSDK_FormFillEnvironment* pFormFillEnv) = 0;
-
-  virtual void OnMenu_Exec(CPDFSDK_FormFillEnvironment* pFormFillEnv,
-                           const WideString&) = 0;
-  virtual void OnBatchExec(CPDFSDK_FormFillEnvironment* pFormFillEnv) = 0;
-  virtual void OnConsole_Exec() = 0;
   virtual void OnExternal_Exec() = 0;
 };
 

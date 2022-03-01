@@ -41,8 +41,7 @@ const QuicStreamId kStreamId = 7;
 
 // Matcher to check that the packet number matches the second argument.
 MATCHER(PacketNumberEq, "") {
-  return ::testing::get<0>(arg).packet_number ==
-         QuicPacketNumber(::testing::get<1>(arg));
+  return std::get<0>(arg).packet_number == QuicPacketNumber(std::get<1>(arg));
 }
 
 class MockDebugDelegate : public QuicSentPacketManager::DebugDelegate {
@@ -1465,7 +1464,8 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeTailLossProbe) {
 }
 
 TEST_F(QuicSentPacketManagerTest, TLPRWithPendingStreamData) {
-  if (GetQuicReloadableFlag(quic_default_on_pto)) {
+  if (GetQuicReloadableFlag(quic_default_on_pto) ||
+      GetQuicReloadableFlag(quic_deprecate_tlpr)) {
     return;
   }
   QuicConfig config;
@@ -1518,7 +1518,8 @@ TEST_F(QuicSentPacketManagerTest, TLPRWithPendingStreamData) {
 }
 
 TEST_F(QuicSentPacketManagerTest, TLPRWithoutPendingStreamData) {
-  if (GetQuicReloadableFlag(quic_default_on_pto)) {
+  if (GetQuicReloadableFlag(quic_default_on_pto) ||
+      GetQuicReloadableFlag(quic_deprecate_tlpr)) {
     return;
   }
   QuicConfig config;
@@ -2125,7 +2126,8 @@ TEST_F(QuicSentPacketManagerTest, Negotiate1TLPFromOptionsAtClient) {
 }
 
 TEST_F(QuicSentPacketManagerTest, NegotiateTLPRttFromOptionsAtServer) {
-  if (GetQuicReloadableFlag(quic_default_on_pto)) {
+  if (GetQuicReloadableFlag(quic_default_on_pto) ||
+      GetQuicReloadableFlag(quic_deprecate_tlpr)) {
     return;
   }
   QuicConfig config;
@@ -2141,7 +2143,8 @@ TEST_F(QuicSentPacketManagerTest, NegotiateTLPRttFromOptionsAtServer) {
 }
 
 TEST_F(QuicSentPacketManagerTest, NegotiateTLPRttFromOptionsAtClient) {
-  if (GetQuicReloadableFlag(quic_default_on_pto)) {
+  if (GetQuicReloadableFlag(quic_default_on_pto) ||
+      GetQuicReloadableFlag(quic_deprecate_tlpr)) {
     return;
   }
   QuicConfig client_config;
@@ -4038,7 +4041,7 @@ TEST_F(QuicSentPacketManagerTest, GetPathDegradingDelay) {
   EXPECT_EQ(expected_delay, manager_.GetPathDegradingDelay());
 }
 
-TEST_F(QuicSentPacketManagerTest, GetPathDegradingDelayUsingPTO) {
+TEST_F(QuicSentPacketManagerTest, GetPathDegradingDelayUsing2PTO) {
   QuicConfig client_config;
   QuicTagVector options;
   options.push_back(k1PTO);
@@ -4052,6 +4055,23 @@ TEST_F(QuicSentPacketManagerTest, GetPathDegradingDelayUsingPTO) {
   manager_.SetFromConfig(client_config);
   EXPECT_TRUE(manager_.pto_enabled());
   QuicTime::Delta expected_delay = 2 * manager_.GetPtoDelay();
+  EXPECT_EQ(expected_delay, manager_.GetPathDegradingDelay());
+}
+
+TEST_F(QuicSentPacketManagerTest, GetPathDegradingDelayUsing1PTO) {
+  QuicConfig client_config;
+  QuicTagVector options;
+  options.push_back(k1PTO);
+  QuicTagVector client_options;
+  client_options.push_back(kPDP1);
+  QuicSentPacketManagerPeer::SetPerspective(&manager_, Perspective::IS_CLIENT);
+  client_config.SetConnectionOptionsToSend(options);
+  client_config.SetClientConnectionOptions(client_options);
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  manager_.SetFromConfig(client_config);
+  EXPECT_TRUE(manager_.pto_enabled());
+  QuicTime::Delta expected_delay = 1 * manager_.GetPtoDelay();
   EXPECT_EQ(expected_delay, manager_.GetPathDegradingDelay());
 }
 
@@ -4352,6 +4372,9 @@ TEST_F(QuicSentPacketManagerTest,
 }
 
 TEST_F(QuicSentPacketManagerTest, ClientOnlyTLPRServer) {
+  if (GetQuicReloadableFlag(quic_deprecate_tlpr)) {
+    return;
+  }
   QuicConfig config;
   QuicTagVector options;
 
@@ -4366,6 +4389,9 @@ TEST_F(QuicSentPacketManagerTest, ClientOnlyTLPRServer) {
 }
 
 TEST_F(QuicSentPacketManagerTest, ClientOnlyTLPR) {
+  if (GetQuicReloadableFlag(quic_deprecate_tlpr)) {
+    return;
+  }
   QuicSentPacketManagerPeer::SetPerspective(&manager_, Perspective::IS_CLIENT);
   QuicConfig config;
   QuicTagVector options;
@@ -4380,6 +4406,9 @@ TEST_F(QuicSentPacketManagerTest, ClientOnlyTLPR) {
 }
 
 TEST_F(QuicSentPacketManagerTest, PtoWithTlpr) {
+  if (GetQuicReloadableFlag(quic_deprecate_tlpr)) {
+    return;
+  }
   QuicConfig config;
   QuicTagVector options;
 
@@ -4637,8 +4666,7 @@ TEST_F(QuicSentPacketManagerTest, ClearDataInMessageFrameAfterPacketSent) {
   QuicMessageFrame* message_frame = nullptr;
   {
     QuicMemSlice slice(MakeUniqueBuffer(&allocator_, 1024), 1024);
-    message_frame =
-        new QuicMessageFrame(/*message_id=*/1, QuicMemSliceSpan(&slice));
+    message_frame = new QuicMessageFrame(/*message_id=*/1, std::move(slice));
     EXPECT_FALSE(message_frame->message_data.empty());
     EXPECT_EQ(message_frame->message_length, 1024);
 
@@ -4682,6 +4710,125 @@ TEST_F(QuicSentPacketManagerTest, BuildAckFrequencyFrame) {
             std::max(rtt_stats->min_rtt() * 0.25,
                      QuicTime::Delta::FromMilliseconds(1u)));
   EXPECT_EQ(frame.packet_tolerance, 10u);
+}
+
+TEST_F(QuicSentPacketManagerTest, SmoothedRttIgnoreAckDelay) {
+  QuicConfig config;
+  QuicTagVector options;
+  options.push_back(kMAD0);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  EXPECT_CALL(*send_algorithm_, CanSend(_)).WillRepeatedly(Return(true));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillRepeatedly(Return(10 * kDefaultTCPMSS));
+  manager_.SetFromConfig(config);
+
+  SendDataPacket(1);
+  // Ack 1.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(300));
+  ExpectAck(1);
+  manager_.OnAckFrameStart(QuicPacketNumber(1),
+                           QuicTime::Delta::FromMilliseconds(100),
+                           clock_.Now());
+  manager_.OnAckRange(QuicPacketNumber(1), QuicPacketNumber(2));
+  EXPECT_EQ(PACKETS_NEWLY_ACKED,
+            manager_.OnAckFrameEnd(clock_.Now(), QuicPacketNumber(1),
+                                   ENCRYPTION_INITIAL));
+  // Verify that ack_delay is ignored in the first measurement.
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(300),
+            manager_.GetRttStats()->latest_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(300),
+            manager_.GetRttStats()->smoothed_rtt());
+
+  SendDataPacket(2);
+  // Ack 2.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(300));
+  ExpectAck(2);
+  manager_.OnAckFrameStart(QuicPacketNumber(2),
+                           QuicTime::Delta::FromMilliseconds(100),
+                           clock_.Now());
+  manager_.OnAckRange(QuicPacketNumber(2), QuicPacketNumber(3));
+  EXPECT_EQ(PACKETS_NEWLY_ACKED,
+            manager_.OnAckFrameEnd(clock_.Now(), QuicPacketNumber(2),
+                                   ENCRYPTION_INITIAL));
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(300),
+            manager_.GetRttStats()->latest_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(300),
+            manager_.GetRttStats()->smoothed_rtt());
+
+  SendDataPacket(3);
+  // Ack 3.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(300));
+  ExpectAck(3);
+  manager_.OnAckFrameStart(QuicPacketNumber(3),
+                           QuicTime::Delta::FromMilliseconds(50), clock_.Now());
+  manager_.OnAckRange(QuicPacketNumber(3), QuicPacketNumber(4));
+  EXPECT_EQ(PACKETS_NEWLY_ACKED,
+            manager_.OnAckFrameEnd(clock_.Now(), QuicPacketNumber(3),
+                                   ENCRYPTION_INITIAL));
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(300),
+            manager_.GetRttStats()->latest_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(300),
+            manager_.GetRttStats()->smoothed_rtt());
+
+  SendDataPacket(4);
+  // Ack 4.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(200));
+  ExpectAck(4);
+  manager_.OnAckFrameStart(QuicPacketNumber(4),
+                           QuicTime::Delta::FromMilliseconds(300),
+                           clock_.Now());
+  manager_.OnAckRange(QuicPacketNumber(4), QuicPacketNumber(5));
+  EXPECT_EQ(PACKETS_NEWLY_ACKED,
+            manager_.OnAckFrameEnd(clock_.Now(), QuicPacketNumber(4),
+                                   ENCRYPTION_INITIAL));
+  // Verify that large erroneous ack_delay does not change Smoothed RTT.
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200),
+            manager_.GetRttStats()->latest_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMicroseconds(287500),
+            manager_.GetRttStats()->smoothed_rtt());
+}
+
+TEST_F(QuicSentPacketManagerTest, IgnorePeerMaxAckDelayDuringHandshake) {
+  manager_.EnableMultiplePacketNumberSpacesSupport();
+  // 100ms RTT.
+  const QuicTime::Delta kTestRTT = QuicTime::Delta::FromMilliseconds(100);
+
+  // Server sends INITIAL 1 and HANDSHAKE 2.
+  SendDataPacket(1, ENCRYPTION_INITIAL);
+  SendDataPacket(2, ENCRYPTION_HANDSHAKE);
+
+  // Receive client ACK for INITIAL 1 after one RTT.
+  clock_.AdvanceTime(kTestRTT);
+  ExpectAck(1);
+  manager_.OnAckFrameStart(QuicPacketNumber(1), QuicTime::Delta::Infinite(),
+                           clock_.Now());
+  manager_.OnAckRange(QuicPacketNumber(1), QuicPacketNumber(2));
+  EXPECT_EQ(PACKETS_NEWLY_ACKED,
+            manager_.OnAckFrameEnd(clock_.Now(), QuicPacketNumber(1),
+                                   ENCRYPTION_INITIAL));
+  EXPECT_EQ(kTestRTT, manager_.GetRttStats()->latest_rtt());
+
+  // Assume the cert verification on client takes 50ms, such that the HANDSHAKE
+  // packet is queued for 50ms.
+  const QuicTime::Delta queuing_delay = QuicTime::Delta::FromMilliseconds(50);
+  clock_.AdvanceTime(queuing_delay);
+  // Ack 2.
+  ExpectAck(2);
+  manager_.OnAckFrameStart(QuicPacketNumber(2), queuing_delay, clock_.Now());
+  manager_.OnAckRange(QuicPacketNumber(2), QuicPacketNumber(3));
+  EXPECT_EQ(PACKETS_NEWLY_ACKED,
+            manager_.OnAckFrameEnd(clock_.Now(), QuicPacketNumber(2),
+                                   ENCRYPTION_HANDSHAKE));
+  if (GetQuicReloadableFlag(quic_ignore_peer_max_ack_delay_during_handshake)) {
+    EXPECT_EQ(kTestRTT, manager_.GetRttStats()->latest_rtt());
+  } else {
+    // Verify the ack_delay gets capped by the peer_max_ack_delay.
+    EXPECT_EQ(kTestRTT + queuing_delay -
+                  QuicTime::Delta::FromMilliseconds(kDefaultDelayedAckTimeMs),
+              manager_.GetRttStats()->latest_rtt());
+  }
 }
 
 TEST_F(QuicSentPacketManagerTest, BuildAckFrequencyFrameWithSRTT) {

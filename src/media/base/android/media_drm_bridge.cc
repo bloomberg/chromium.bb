@@ -15,16 +15,16 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "base/system/sys_info.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/android/android_util.h"
 #include "media/base/android/media_codec_util.h"
@@ -165,6 +165,10 @@ CdmKeyInformation::KeyStatus ConvertKeyStatus(KeyStatus key_status,
 class KeySystemManager {
  public:
   KeySystemManager();
+
+  KeySystemManager(const KeySystemManager&) = delete;
+  KeySystemManager& operator=(const KeySystemManager&) = delete;
+
   UUID GetUUID(const std::string& key_system);
   std::vector<std::string> GetPlatformKeySystemNames();
 
@@ -172,8 +176,6 @@ class KeySystemManager {
   using KeySystemUuidMap = MediaDrmBridgeClient::KeySystemUuidMap;
 
   KeySystemUuidMap key_system_uuid_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(KeySystemManager);
 };
 
 KeySystemManager::KeySystemManager() {
@@ -215,8 +217,6 @@ KeySystemManager* GetKeySystemManager() {
 // resolved.
 bool IsKeySystemSupportedWithTypeImpl(const std::string& key_system,
                                       const std::string& container_mime_type) {
-  DCHECK(MediaDrmBridge::IsAvailable());
-
   if (key_system.empty()) {
     NOTREACHED();
     return false;
@@ -273,18 +273,8 @@ int GetFirstApiLevel() {
 
 }  // namespace
 
-// MediaDrm is not generally usable without MediaCodec. Thus, both the MediaDrm
-// APIs and MediaCodec APIs must be enabled and not blocked.
-// static
-bool MediaDrmBridge::IsAvailable() {
-  return MediaCodecUtil::IsMediaCodecAvailable();
-}
-
 // static
 bool MediaDrmBridge::IsKeySystemSupported(const std::string& key_system) {
-  if (!MediaDrmBridge::IsAvailable())
-    return false;
-
   return IsKeySystemSupportedWithTypeImpl(key_system, "");
 }
 
@@ -315,10 +305,9 @@ bool MediaDrmBridge::IsPersistentLicenseTypeSupported(
     const std::string& /* key_system */) {
   // TODO(yucliu): Check |key_system| if persistent license is supported by
   // MediaDrm.
-  return MediaDrmBridge::IsAvailable() &&
-         // In development. See http://crbug.com/493521
-         base::FeatureList::IsEnabled(kMediaDrmPersistentLicense) &&
-         IsPerOriginProvisioningSupported();
+  return  // In development. See http://crbug.com/493521
+      base::FeatureList::IsEnabled(kMediaDrmPersistentLicense) &&
+      IsPerOriginProvisioningSupported();
 }
 
 // static
@@ -327,17 +316,11 @@ bool MediaDrmBridge::IsKeySystemSupportedWithType(
     const std::string& container_mime_type) {
   DCHECK(!container_mime_type.empty()) << "Call IsKeySystemSupported instead";
 
-  if (!MediaDrmBridge::IsAvailable())
-    return false;
-
   return IsKeySystemSupportedWithTypeImpl(key_system, container_mime_type);
 }
 
 // static
 std::vector<std::string> MediaDrmBridge::GetPlatformKeySystemNames() {
-  if (!MediaDrmBridge::IsAvailable())
-    return std::vector<std::string>();
-
   return GetKeySystemManager()->GetPlatformKeySystemNames();
 }
 
@@ -565,8 +548,6 @@ MediaCryptoContext* MediaDrmBridge::GetMediaCryptoContext() {
 }
 
 bool MediaDrmBridge::IsSecureCodecRequired() {
-  DCHECK(IsAvailable());
-
   // For Widevine, this depends on the security level.
   // TODO(xhwang): This is specific to Widevine. See http://crbug.com/459400.
   // To fix it, we could call MediaCrypto.requiresSecureDecoderComponent().
@@ -747,8 +728,10 @@ void MediaDrmBridge::OnSessionClosed(
   DVLOG(2) << __func__;
   std::string session_id;
   JavaByteArrayToString(env, j_session_id, &session_id);
+  // TODO(crbug.com/1208618): Support other closed reasons.
   task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(session_closed_cb_, std::move(session_id)));
+      FROM_HERE, base::BindOnce(session_closed_cb_, std::move(session_id),
+                                CdmSessionClosedReason::kClose));
 }
 
 void MediaDrmBridge::OnSessionKeysChange(

@@ -15,6 +15,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,6 +30,7 @@
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/models/image_model.h"
+#include "ui/color/color_id.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/vector_icons.h"
@@ -38,7 +40,7 @@ namespace {
 using ::ash::AccessibilityManager;
 
 void UninstallApp(Profile* profile, const std::string& app_id) {
-  apps::AppServiceProxyChromeOs* proxy =
+  apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   if (proxy->AppRegistryCache().GetAppType(app_id) !=
       apps::mojom::AppType::kUnknown) {
@@ -66,18 +68,22 @@ std::unique_ptr<ShelfContextMenu> ShelfContextMenu::Create(
   DCHECK(item);
   DCHECK(!item->id.IsNull());
 
+  auto app_type =
+      apps::AppServiceProxyFactory::GetForProfile(controller->profile())
+          ->AppRegistryCache()
+          .GetAppType(item->id.app_id);
   // AppServiceShelfContextMenu supports context menus for apps registered in
   // AppService, Arc shortcuts and Crostini apps with the prefix "crostini:".
-  if (apps::AppServiceProxyFactory::GetForProfile(controller->profile())
-              ->AppRegistryCache()
-              .GetAppType(item->id.app_id) != apps::mojom::AppType::kUnknown ||
+  if ((app_type != apps::mojom::AppType::kUnknown &&
+       app_type != apps::mojom::AppType::kExtension) ||
       crostini::IsUnmatchedCrostiniShelfAppId(item->id.app_id) ||
       arc::IsArcItem(controller->profile(), item->id.app_id)) {
     return std::make_unique<AppServiceShelfContextMenu>(controller, item,
                                                         display_id);
   }
 
-  // Create an ExtensionShelfContextMenu for other items.
+  // Create an ExtensionShelfContextMenu for other items, including browser
+  // extensions.
   return std::make_unique<ExtensionShelfContextMenu>(controller, item,
                                                      display_id);
 }
@@ -95,9 +101,6 @@ ShelfContextMenu::~ShelfContextMenu() = default;
 
 std::unique_ptr<ui::SimpleMenuModel> ShelfContextMenu::GetBaseMenuModel() {
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
-  // TODO(manucornet): Don't add 'swap with next' on the last item, or 'swap
-  // with previous' on the first one. For now, these options appear, but
-  // selecting them is a no-op.
   AddContextMenuOption(menu_model.get(), ash::SWAP_WITH_NEXT,
                        IDS_SHELF_CONTEXT_MENU_SWAP_WITH_NEXT);
   AddContextMenuOption(menu_model.get(), ash::SWAP_WITH_PREVIOUS,
@@ -119,9 +122,11 @@ bool ShelfContextMenu::IsCommandIdEnabled(int command_id) const {
 
   if (command_id == ash::SWAP_WITH_NEXT ||
       command_id == ash::SWAP_WITH_PREVIOUS) {
-    // Only show commands to reorder shelf items when ChromeVox is enabled.
+    // Only show commands to reorder shelf items when ChromeVox or SwitchAccess
+    // are enabled.
     if (!AccessibilityManager::Get() ||
-        !AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
+        (!AccessibilityManager::Get()->IsSpokenFeedbackEnabled() &&
+         !AccessibilityManager::Get()->IsSwitchAccessEnabled())) {
       return false;
     }
     const ash::ShelfModel* model = controller_->shelf_model();
@@ -171,7 +176,7 @@ void ShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
       if (controller_->IsAppPinned(item_.id.app_id))
         controller_->UnpinAppWithID(item_.id.app_id);
       else
-        controller_->PinAppWithID(item_.id.app_id);
+        controller_->shelf_model()->PinExistingItemWithID(item_.id.app_id);
       break;
     case ash::UNINSTALL:
       UninstallApp(controller_->profile(), item_.id.app_id);
@@ -261,6 +266,9 @@ void ShelfContextMenu::AddPinMenu(ui::SimpleMenuModel* menu_model) {
 bool ShelfContextMenu::ExecuteCommonCommand(int command_id, int event_flags) {
   switch (command_id) {
     case ash::MENU_OPEN_NEW:
+      ash::full_restore::FullRestoreService::MaybeCloseNotification(
+          controller()->profile());
+      FALLTHROUGH;
     case ash::MENU_CLOSE:
     case ash::MENU_PIN:
     case ash::SWAP_WITH_NEXT:
@@ -284,7 +292,7 @@ void ShelfContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
   if (!icon.is_empty()) {
     menu_model->AddItemWithStringIdAndIcon(
         type, string_id,
-        ui::ImageModel::FromVectorIcon(icon, /*color_id=*/-1,
+        ui::ImageModel::FromVectorIcon(icon, ui::kColorMenuIcon,
                                        ash::kAppContextMenuIconSize));
     return;
   }

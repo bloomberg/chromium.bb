@@ -23,7 +23,7 @@ from tracing_build import render_histograms_viewer
 
 
 def _IsUserDefinedInstance(obj):
-  return str(type(obj)).startswith('<class ')
+  return type(obj).__module__ != six.moves.builtins.__name__
 
 
 class _HeapProfiler(object):
@@ -199,7 +199,7 @@ def Profile(root, label=None, html_filename=None, html_stream=None,
       render_histograms_viewer.RenderHistogramsViewer(
           histograms.AsDicts(), html_stream, reset_results, vulcanized_viewer)
     else:
-      from tracing_build import vulcanize_histograms_viewer
+      from tracing_build import vulcanize_histograms_viewer # pylint: disable=import-outside-toplevel
       vulcanize_histograms_viewer.VulcanizeAndRenderHistogramsViewer(
           histograms.AsDicts(), html_stream)
 

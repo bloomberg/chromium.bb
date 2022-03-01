@@ -8,7 +8,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_update_engine_client.h"
+#include "chromeos/dbus/update_engine/fake_update_engine_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_ui.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,9 +67,10 @@ class AboutHandlerTest : public testing::Test {
   std::string CallGetEndOfLifeInfoAndReturnString(bool has_eol_passed) {
     size_t call_data_count_before_call = web_ui_.call_data().size();
 
-    base::ListValue args;
-    args.AppendString("handlerFunctionName");
-    web_ui_.HandleReceivedMessage("getEndOfLifeInfo", &args);
+    base::Value args(base::Value::Type::LIST);
+    args.Append("handlerFunctionName");
+    web_ui_.HandleReceivedMessage("getEndOfLifeInfo",
+                                  &base::Value::AsListValue(args));
     task_environment_.RunUntilIdle();
 
     EXPECT_EQ(call_data_count_before_call + 1u, web_ui_.call_data().size());

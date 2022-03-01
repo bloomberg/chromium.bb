@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SHARING_SHARING_DEVICE_SOURCE_SYNC_H_
 #define CHROME_BROWSER_SHARING_SHARING_DEVICE_SOURCE_SYNC_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sharing/sharing_device_source.h"
 #include "components/sync_device_info/device_info_tracker.h"
@@ -23,6 +23,10 @@ class SharingDeviceSourceSync : public SharingDeviceSource,
       syncer::SyncService* sync_service,
       syncer::LocalDeviceInfoProvider* local_device_info_provider,
       syncer::DeviceInfoTracker* device_info_tracker);
+
+  SharingDeviceSourceSync(const SharingDeviceSourceSync&) = delete;
+  SharingDeviceSourceSync& operator=(const SharingDeviceSourceSync&) = delete;
+
   ~SharingDeviceSourceSync() override;
 
   // SharingDeviceSource:
@@ -58,9 +62,9 @@ class SharingDeviceSourceSync : public SharingDeviceSource,
       std::vector<std::unique_ptr<syncer::DeviceInfo>> devices,
       sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const;
 
-  syncer::SyncService* sync_service_;
-  syncer::LocalDeviceInfoProvider* local_device_info_provider_;
-  syncer::DeviceInfoTracker* device_info_tracker_;
+  raw_ptr<syncer::SyncService> sync_service_;
+  raw_ptr<syncer::LocalDeviceInfoProvider> local_device_info_provider_;
+  raw_ptr<syncer::DeviceInfoTracker> device_info_tracker_;
   base::CallbackListSubscription local_device_info_ready_subscription_;
 
   // The personalized name is stored for deduplicating devices running older
@@ -68,8 +72,6 @@ class SharingDeviceSourceSync : public SharingDeviceSource,
   absl::optional<std::string> personalizable_local_device_name_;
 
   base::WeakPtrFactory<SharingDeviceSourceSync> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SharingDeviceSourceSync);
 };
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_DEVICE_SOURCE_SYNC_H_

@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/stl_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -48,15 +47,14 @@ TEST_F(ActiveTimeTest, UpdateActiveTime) {
   const base::Time& start_equal_end = active_time.active_to();
   EXPECT_DCHECK_DEATH(active_time.set_active_from(start_equal_end));
 
-  const base::Time start_after_end =
-      active_time.active_to() + base::TimeDelta::FromSeconds(1);
+  const base::Time start_after_end = active_time.active_to() + base::Seconds(1);
   EXPECT_DCHECK_DEATH(active_time.set_active_from(start_after_end));
 
   const base::Time& end_equal_start = active_time.active_from();
   EXPECT_DCHECK_DEATH(active_time.set_active_to(end_equal_start));
 
   const base::Time end_before_start =
-      active_time.active_from() - base::TimeDelta::FromSeconds(1);
+      active_time.active_from() - base::Seconds(1);
   EXPECT_DCHECK_DEATH(active_time.set_active_to(end_before_start));
 }
 

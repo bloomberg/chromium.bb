@@ -14,7 +14,6 @@
 @protocol SyncErrorSettingsCommandHandler;
 @protocol ManageSyncSettingsCommandHandler;
 @protocol ManageSyncSettingsConsumer;
-class AuthenticationService;
 class PrefService;
 class SyncSetupService;
 namespace syncer {
@@ -31,14 +30,15 @@ class SyncService;
 @property(nonatomic, weak) id<ManageSyncSettingsConsumer> consumer;
 // Sync setup service.
 @property(nonatomic, assign) SyncSetupService* syncSetupService;
-// Authentication service.
-@property(nonatomic, assign) AuthenticationService* authService;
 // Command handler.
 @property(nonatomic, weak) id<ManageSyncSettingsCommandHandler> commandHandler;
 // Error command handler.
 @property(nonatomic, weak) id<SyncErrorSettingsCommandHandler> syncErrorHandler;
 // Returns YES if the encryption item should be enabled.
 @property(nonatomic, assign, readonly) BOOL shouldEncryptionItemBeEnabled;
+// YES if the forced sign-in policy is enabled which requires contextual
+// information.
+@property(nonatomic, assign) BOOL forcedSigninEnabled;
 
 // Designated initializer.
 // |syncService|: Sync service. Should not be null.

@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -105,7 +105,7 @@ void LogoutButtonTray::UpdateShowLogoutButtonInTray() {
 void LogoutButtonTray::UpdateLogoutDialogDuration() {
   const int duration_ms = pref_change_registrar_->prefs()->GetInteger(
       prefs::kLogoutDialogDurationMs);
-  dialog_duration_ = base::TimeDelta::FromMilliseconds(duration_ms);
+  dialog_duration_ = base::Milliseconds(duration_ms);
 }
 
 void LogoutButtonTray::UpdateAfterLoginStatusChange() {

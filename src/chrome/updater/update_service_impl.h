@@ -20,12 +20,12 @@ class Version;
 }  // namespace base
 
 namespace update_client {
-class Configurator;
 class UpdateClient;
 }  // namespace update_client
 
 namespace updater {
 class CheckForUpdatesTask;
+class Configurator;
 class PersistedData;
 struct RegistrationRequest;
 struct RegistrationResponse;
@@ -33,7 +33,7 @@ struct RegistrationResponse;
 // All functions and callbacks must be called on the same sequence.
 class UpdateServiceImpl : public UpdateService {
  public:
-  explicit UpdateServiceImpl(scoped_refptr<update_client::Configurator> config);
+  explicit UpdateServiceImpl(scoped_refptr<Configurator> config);
 
   // Overrides for updater::UpdateService.
   void GetVersion(
@@ -41,10 +41,13 @@ class UpdateServiceImpl : public UpdateService {
   void RegisterApp(
       const RegistrationRequest& request,
       base::OnceCallback<void(const RegistrationResponse&)> callback) override;
+  void GetAppStates(
+      base::OnceCallback<void(const std::vector<AppState>&)>) const override;
   void RunPeriodicTasks(base::OnceClosure callback) override;
   void UpdateAll(StateChangeCallback state_update, Callback callback) override;
   void Update(const std::string& app_id,
               Priority priority,
+              PolicySameVersionUpdate policy_same_version_update,
               StateChangeCallback state_update,
               Callback callback) override;
 
@@ -59,9 +62,29 @@ class UpdateServiceImpl : public UpdateService {
   // Run `callback`, pops `tasks_`, and calls TaskStart.
   void TaskDone(base::OnceClosure callback);
 
+  bool IsUpdateDisabledByPolicy(
+      const std::string& app_id,
+      Priority priority,
+      PolicySameVersionUpdate policy_same_version_update,
+      int& policy);
+  void HandleUpdateDisabledByPolicy(
+      const std::string& app_id,
+      int policy,
+      PolicySameVersionUpdate policy_same_version_update,
+      StateChangeCallback state_update,
+      Callback callback);
+
+  void OnShouldBlockUpdateForMeteredNetwork(
+      StateChangeCallback state_update,
+      Callback callback,
+      const std::vector<std::string>& ids,
+      Priority priority,
+      PolicySameVersionUpdate policy_same_version_update,
+      bool update_blocked);
+
   SEQUENCE_CHECKER(sequence_checker_);
 
-  scoped_refptr<update_client::Configurator> config_;
+  scoped_refptr<Configurator> config_;
   scoped_refptr<PersistedData> persisted_data_;
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   scoped_refptr<update_client::UpdateClient> update_client_;

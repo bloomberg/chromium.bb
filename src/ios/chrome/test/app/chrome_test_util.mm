@@ -66,7 +66,7 @@
 // testing. UIOpenURLContext has no init available, so this can only be
 // allocated. It uses obscuring properties for URL and options.
 // TODO(crbug.com/1115018) Explore improving this which can become brittle.
-API_AVAILABLE(ios(13.0)) @interface FakeUIOpenURLContext : UIOpenURLContext
+@interface FakeUIOpenURLContext : UIOpenURLContext
 @property(nonatomic, copy) NSURL* URL;
 @property(nonatomic, strong) UISceneOpenURLOptions* options;
 @end
@@ -191,12 +191,14 @@ void SetBooleanUserPref(ChromeBrowserState* browser_state,
   pref.SetValue(value);
 }
 
-void SetWWANStateTo(bool value) {
-  MainController* mainController = chrome_test_util::GetMainController();
-  net::NetworkChangeNotifier::ConnectionType connectionType =
-      value ? net::NetworkChangeNotifier::CONNECTION_4G
-            : net::NetworkChangeNotifier::CONNECTION_WIFI;
-  [mainController.metricsMediator connectionTypeChanged:connectionType];
+void SetIntegerUserPref(ChromeBrowserState* browser_state,
+                        const char* pref_name,
+                        int value) {
+  DCHECK(browser_state);
+  DCHECK(browser_state->GetPrefs());
+  IntegerPrefMember pref;
+  pref.Init(pref_name, browser_state->GetPrefs());
+  pref.SetValue(value);
 }
 
 void SetFirstLaunchStateTo(bool value) {
@@ -235,22 +237,20 @@ void WaitForBreakpadQueue() {
 
 void OpenChromeFromExternalApp(const GURL& url) {
   if (base::ios::IsMultiwindowSupported()) {
-    if (@available(iOS 13, *)) {
-      UIScene* scene =
-          [[UIApplication sharedApplication].connectedScenes anyObject];
-      [scene.delegate sceneWillResignActive:scene];
+    UIScene* scene =
+        [[UIApplication sharedApplication].connectedScenes anyObject];
+    [scene.delegate sceneWillResignActive:scene];
 
-      // FakeUIOpenURLContext cannot be instanciated, but it is just needed
-      // for carrying the properties over to the scene delegate.
-      FakeUIOpenURLContext* context = [FakeUIOpenURLContext alloc];
-      context.URL = net::NSURLWithGURL(url);
+    // FakeUIOpenURLContext cannot be instanciated, but it is just needed
+    // for carrying the properties over to the scene delegate.
+    FakeUIOpenURLContext* context = [FakeUIOpenURLContext alloc];
+    context.URL = net::NSURLWithGURL(url);
 
-      NSSet<UIOpenURLContext*>* URLContexts =
-          [[NSSet alloc] initWithArray:@[ context ]];
+    NSSet<UIOpenURLContext*>* URLContexts =
+        [[NSSet alloc] initWithArray:@[ context ]];
 
-      [scene.delegate scene:scene openURLContexts:URLContexts];
-      [scene.delegate sceneDidBecomeActive:scene];
-    }
+    [scene.delegate scene:scene openURLContexts:URLContexts];
+    [scene.delegate sceneDidBecomeActive:scene];
   } else {
     [[[UIApplication sharedApplication] delegate]
         applicationWillResignActive:[UIApplication sharedApplication]];
