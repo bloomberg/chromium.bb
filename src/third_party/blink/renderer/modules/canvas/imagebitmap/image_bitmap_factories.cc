@@ -78,9 +78,20 @@ enum CreateImageBitmapSource {
   kMaxValue = kCreateImageBitmapSourceVideoFrame,
 };
 
+gfx::Rect NormalizedCropRect(int x, int y, int width, int height) {
+  if (width < 0) {
+    x = base::ClampAdd(x, width);
+    width = -width;
+  }
+  if (height < 0) {
+    y = base::ClampAdd(y, height);
+    height = -height;
+  }
+  return gfx::Rect(x, y, width, height);
+}
+
 }  // namespace
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 inline ImageBitmapSource* ToImageBitmapSourceInternal(
     const V8ImageBitmapSource* value,
     const ImageBitmapOptions* options,
@@ -129,65 +140,11 @@ inline ImageBitmapSource* ToImageBitmapSourceInternal(
   NOTREACHED();
   return nullptr;
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-static inline ImageBitmapSource* ToImageBitmapSourceInternal(
-    const ImageBitmapSourceUnion& value,
-    const ImageBitmapOptions* options,
-    bool has_crop_rect) {
-  if (value.IsHTMLVideoElement()) {
-    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.CreateImageBitmapSource",
-                              kCreateImageBitmapSourceHTMLVideoElement);
-    return value.GetAsHTMLVideoElement();
-  }
-  if (value.IsHTMLImageElement()) {
-    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.CreateImageBitmapSource",
-                              kCreateImageBitmapSourceHTMLImageElement);
-    return value.GetAsHTMLImageElement();
-  }
-  if (value.IsSVGImageElement()) {
-    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.CreateImageBitmapSource",
-                              kCreateImageBitmapSourceSVGImageElement);
-    return value.GetAsSVGImageElement();
-  }
-  if (value.IsHTMLCanvasElement()) {
-    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.CreateImageBitmapSource",
-                              kCreateImageBitmapSourceHTMLCanvasElement);
-    return value.GetAsHTMLCanvasElement();
-  }
-  if (value.IsBlob()) {
-    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.CreateImageBitmapSource",
-                              kCreateImageBitmapSourceBlob);
-    return value.GetAsBlob();
-  }
-  if (value.IsImageData()) {
-    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.CreateImageBitmapSource",
-                              kCreateImageBitmapSourceImageData);
-    return value.GetAsImageData();
-  }
-  if (value.IsImageBitmap()) {
-    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.CreateImageBitmapSource",
-                              kCreateImageBitmapSourceImageBitmap);
-    return value.GetAsImageBitmap();
-  }
-  if (value.IsOffscreenCanvas()) {
-    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.CreateImageBitmapSource",
-                              kCreateImageBitmapSourceOffscreenCanvas);
-    return value.GetAsOffscreenCanvas();
-  }
-  if (value.IsVideoFrame()) {
-    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.CreateImageBitmapSource",
-                              kCreateImageBitmapSourceVideoFrame);
-    return value.GetAsVideoFrame();
-  }
-  NOTREACHED();
-  return nullptr;
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 ScriptPromise ImageBitmapFactories::CreateImageBitmapFromBlob(
     ScriptState* script_state,
     ImageBitmapSource* bitmap_source,
-    absl::optional<IntRect> crop_rect,
+    absl::optional<gfx::Rect> crop_rect,
     const ImageBitmapOptions* options) {
   DCHECK(script_state->ContextIsValid());
   ImageBitmapFactories& factory = From(*ExecutionContext::From(script_state));
@@ -200,11 +157,7 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmapFromBlob(
 
 ScriptPromise ImageBitmapFactories::CreateImageBitmap(
     ScriptState* script_state,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const V8ImageBitmapSource* bitmap_source,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const ImageBitmapSourceUnion& bitmap_source,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const ImageBitmapOptions* options,
     ExceptionState& exception_state) {
   WebFeature feature = WebFeature::kCreateImageBitmap;
@@ -213,17 +166,13 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmap(
       ToImageBitmapSourceInternal(bitmap_source, options, false);
   if (!bitmap_source_internal)
     return ScriptPromise();
-  return CreateImageBitmap(script_state, bitmap_source_internal,
-                           absl::optional<IntRect>(), options, exception_state);
+  return CreateImageBitmap(script_state, bitmap_source_internal, absl::nullopt,
+                           options, exception_state);
 }
 
 ScriptPromise ImageBitmapFactories::CreateImageBitmap(
     ScriptState* script_state,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const V8ImageBitmapSource* bitmap_source,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const ImageBitmapSourceUnion& bitmap_source,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     int sx,
     int sy,
     int sw,
@@ -236,7 +185,7 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmap(
       ToImageBitmapSourceInternal(bitmap_source, options, true);
   if (!bitmap_source_internal)
     return ScriptPromise();
-  absl::optional<IntRect> crop_rect = IntRect(sx, sy, sw, sh);
+  gfx::Rect crop_rect = NormalizedCropRect(sx, sy, sw, sh);
   return CreateImageBitmap(script_state, bitmap_source_internal, crop_rect,
                            options, exception_state);
 }
@@ -244,12 +193,12 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmap(
 ScriptPromise ImageBitmapFactories::CreateImageBitmap(
     ScriptState* script_state,
     ImageBitmapSource* bitmap_source,
-    absl::optional<IntRect> crop_rect,
+    absl::optional<gfx::Rect> crop_rect,
     const ImageBitmapOptions* options,
     ExceptionState& exception_state) {
-  if (crop_rect && (crop_rect->Width() == 0 || crop_rect->Height() == 0)) {
+  if (crop_rect && (crop_rect->width() == 0 || crop_rect->height() == 0)) {
     exception_state.ThrowRangeError(String::Format(
-        "The crop rect %s is 0.", crop_rect->Width() ? "height" : "width"));
+        "The crop rect %s is 0.", crop_rect->width() ? "height" : "width"));
     return ScriptPromise();
   }
 
@@ -258,13 +207,13 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmap(
                                      options);
   }
 
-  if (bitmap_source->BitmapSourceSize().Width() == 0 ||
-      bitmap_source->BitmapSourceSize().Height() == 0) {
+  if (bitmap_source->BitmapSourceSize().width() == 0 ||
+      bitmap_source->BitmapSourceSize().height() == 0) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         String::Format(
             "The source image %s is 0.",
-            bitmap_source->BitmapSourceSize().Width() ? "height" : "width"));
+            bitmap_source->BitmapSourceSize().width() ? "height" : "width"));
     return ScriptPromise();
   }
 
@@ -302,7 +251,7 @@ void ImageBitmapFactories::Trace(Visitor* visitor) const {
 
 ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(
     ImageBitmapFactories& factory,
-    absl::optional<IntRect> crop_rect,
+    absl::optional<gfx::Rect> crop_rect,
     ScriptState* script_state,
     const ImageBitmapOptions* options)
     : ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)),

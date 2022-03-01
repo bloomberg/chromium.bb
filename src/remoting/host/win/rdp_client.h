@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 
@@ -41,6 +40,10 @@ class RdpClient {
             const std::string& terminal_id,
             DWORD port_number,
             EventHandler* event_handler);
+
+  RdpClient(const RdpClient&) = delete;
+  RdpClient& operator=(const RdpClient&) = delete;
+
   virtual ~RdpClient();
 
   // Sends Secure Attention Sequence to the session.
@@ -55,8 +58,6 @@ class RdpClient {
   scoped_refptr<Core> core_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(RdpClient);
 };
 
 }  // namespace remoting

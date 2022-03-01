@@ -26,7 +26,7 @@ SANDBOX_POLICY_EXPORT extern const base::Feature kWinSboxDisableKtmComponent;
 SANDBOX_POLICY_EXPORT extern const base::Feature kWinSboxDisableExtensionPoints;
 SANDBOX_POLICY_EXPORT extern const base::Feature kGpuAppContainer;
 SANDBOX_POLICY_EXPORT extern const base::Feature kGpuLPAC;
-SANDBOX_POLICY_EXPORT extern const base::Feature kNetworkServiceSandboxLPAC;
+SANDBOX_POLICY_EXPORT extern const base::Feature kRendererAppContainer;
 #endif  // defined(OS_WIN)
 
 #if !defined(OS_ANDROID)
@@ -38,6 +38,18 @@ SANDBOX_POLICY_EXPORT extern const base::Feature kSpectreVariant2Mitigation;
 SANDBOX_POLICY_EXPORT extern const base::Feature
     kForceSpectreVariant2Mitigation;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if defined(OS_WIN)
+// Returns whether the Network Service Sandbox is supported by the current
+// Windows platform. Call this function rather than checking the
+// kNetworkServiceSandbox feature directly.
+SANDBOX_POLICY_EXPORT bool IsWinNetworkServiceSandboxSupported();
+#endif
+
+// Returns whether the network sandbox is enabled for the current platform
+// configuration. This might be overridden by the content embedder so prefer
+// calling ContentBrowserClient::ShouldSandboxNetworkService().
+SANDBOX_POLICY_EXPORT bool IsNetworkSandboxEnabled();
 
 }  // namespace features
 }  // namespace policy

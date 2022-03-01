@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/payments/content/autofill_payment_app.h"
 #include "components/payments/core/features.h"
@@ -66,16 +67,6 @@ std::set<std::string> PaymentApp::GetApplicationIdentifiersThatHideThisApp()
   return std::set<std::string>();
 }
 
-bool PaymentApp::IsReadyForMinimalUI() const {
-  return false;
-}
-
-std::string PaymentApp::GetAccountBalance() const {
-  return std::string();
-}
-
-void PaymentApp::DisableShowingOwnUI() {}
-
 void PaymentApp::IsValidForPaymentMethodIdentifier(
     const std::string& payment_method_identifier,
     bool* is_valid) const {
@@ -101,6 +92,11 @@ void PaymentApp::AbortPaymentApp(
 
 bool PaymentApp::IsPreferred() const {
   return false;
+}
+
+mojom::PaymentResponsePtr PaymentApp::SetAppSpecificResponseFields(
+    mojom::PaymentResponsePtr response) const {
+  return response;
 }
 
 // static

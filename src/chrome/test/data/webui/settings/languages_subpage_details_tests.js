@@ -7,10 +7,11 @@ import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {LanguagesBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {CrSettingsPrefs} from 'chrome://settings/settings.js';
-import {getFakeLanguagePrefs} from 'chrome://test/settings/fake_language_settings_private.js';
-import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.js';
-import {TestLanguagesBrowserProxy} from 'chrome://test/settings/test_languages_browser_proxy.js';
-import {eventToPromise, fakeDataBind} from 'chrome://test/test_util.m.js';
+import {eventToPromise, fakeDataBind} from 'chrome://webui-test/test_util.js';
+
+import {getFakeLanguagePrefs} from './fake_language_settings_private.js';
+import {FakeSettingsPrivate} from './fake_settings_private.js';
+import {TestLanguagesBrowserProxy} from './test_languages_browser_proxy.js';
 
 // clang-format on
 
@@ -33,7 +34,7 @@ suite('languages subpage detailed settings', function() {
   let browserProxy = null;
 
   // Always Translate language pref name for the platform.
-  const alwaysTranslatePref = 'translate_whitelists';
+  const alwaysTranslatePref = 'translate_allowlists';
   const neverTranslatePref = 'translate_blocked_languages';
 
   suiteSetup(function() {
@@ -55,7 +56,7 @@ suite('languages subpage detailed settings', function() {
     return CrSettingsPrefs.initialized.then(function() {
       // Set up test browser proxy.
       browserProxy = new TestLanguagesBrowserProxy();
-      LanguagesBrowserProxyImpl.instance_ = browserProxy;
+      LanguagesBrowserProxyImpl.setInstance(browserProxy);
 
       // Set up fake languageSettingsPrivate API.
       const languageSettingsPrivate = browserProxy.getLanguageSettingsPrivate();
@@ -79,7 +80,7 @@ suite('languages subpage detailed settings', function() {
 
       document.body.appendChild(languagesSubpage);
       flush();
-      actionMenu = languagesSubpage.$$('#menu').get();
+      actionMenu = languagesSubpage.shadowRoot.querySelector('#menu').get();
 
       languageHelper = languagesSubpage.languageHelper;
       return languageHelper.whenReady();
@@ -111,7 +112,9 @@ suite('languages subpage detailed settings', function() {
               })) {
             // Sanity check: the dialog should no longer be in the DOM.
             assertEquals(
-                null, languagesSubpage.$$('settings-add-languages-dialog'));
+                null,
+                languagesSubpage.shadowRoot.querySelector(
+                    'settings-add-languages-dialog'));
             observer.disconnect();
             assertTrue(!!dialogClosedResolver);
             dialogClosedResolver.resolve();
@@ -119,7 +122,8 @@ suite('languages subpage detailed settings', function() {
         };
 
         setup(function() {
-          const addLanguagesButton = languagesSubpage.$$('#addAlwaysTranslate');
+          const addLanguagesButton =
+              languagesSubpage.shadowRoot.querySelector('#addAlwaysTranslate');
           const whenDialogOpen =
               eventToPromise('cr-dialog-open', languagesSubpage);
           addLanguagesButton.click();
@@ -128,7 +132,8 @@ suite('languages subpage detailed settings', function() {
           // iron-list asynchronously at microtask timing, so wait for a new
           // task.
           return whenDialogOpen.then(() => {
-            dialog = languagesSubpage.$$('settings-add-languages-dialog');
+            dialog = languagesSubpage.shadowRoot.querySelector(
+                'settings-add-languages-dialog');
             assertTrue(!!dialog);
             assertEquals(dialog.id, 'alwaysTranslateDialog');
 
@@ -139,8 +144,8 @@ suite('languages subpage detailed settings', function() {
             dialogClosedObserver.observe(
                 languagesSubpage.root, {childList: true});
 
-            actionButton = dialog.$$('.action-button');
-            cancelButton = dialog.$$('.cancel-button');
+            actionButton = dialog.shadowRoot.querySelector('.action-button');
+            cancelButton = dialog.shadowRoot.querySelector('.cancel-button');
             flush();
 
             // The fixed-height dialog's iron-list should stamp far fewer than
@@ -186,7 +191,9 @@ suite('languages subpage detailed settings', function() {
               })) {
             // Sanity check: the dialog should no longer be in the DOM.
             assertEquals(
-                null, languagesSubpage.$$('settings-add-languages-dialog'));
+                null,
+                languagesSubpage.shadowRoot.querySelector(
+                    'settings-add-languages-dialog'));
             observer.disconnect();
             assertTrue(!!dialogClosedResolver);
             dialogClosedResolver.resolve();
@@ -194,7 +201,8 @@ suite('languages subpage detailed settings', function() {
         };
 
         setup(function() {
-          const addLanguagesButton = languagesSubpage.$$('#addNeverTranslate');
+          const addLanguagesButton =
+              languagesSubpage.shadowRoot.querySelector('#addNeverTranslate');
           const whenDialogOpen =
               eventToPromise('cr-dialog-open', languagesSubpage);
           addLanguagesButton.click();
@@ -203,7 +211,8 @@ suite('languages subpage detailed settings', function() {
           // iron-list asynchronously at microtask timing, so wait for a new
           // task.
           return whenDialogOpen.then(() => {
-            dialog = languagesSubpage.$$('settings-add-languages-dialog');
+            dialog = languagesSubpage.shadowRoot.querySelector(
+                'settings-add-languages-dialog');
             assertTrue(!!dialog);
             assertEquals(dialog.id, 'neverTranslateDialog');
 
@@ -214,8 +223,8 @@ suite('languages subpage detailed settings', function() {
             dialogClosedObserver.observe(
                 languagesSubpage.root, {childList: true});
 
-            actionButton = dialog.$$('.action-button');
-            cancelButton = dialog.$$('.cancel-button');
+            actionButton = dialog.shadowRoot.querySelector('.action-button');
+            cancelButton = dialog.shadowRoot.querySelector('.cancel-button');
             flush();
 
             // The fixed-height dialog's iron-list should stamp far fewer than

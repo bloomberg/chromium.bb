@@ -12,7 +12,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "crypto/rsa_private_key.h"
-#include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/cert/x509_util_ios.h"
@@ -38,9 +37,8 @@ NSArray* MakeTestCertChain(const std::string& subject) {
   std::unique_ptr<crypto::RSAPrivateKey> private_key;
   std::string der_cert;
   net::x509_util::CreateKeyAndSelfSignedCert(
-      "CN=" + subject, 1, base::Time::Now(),
-      base::Time::Now() + base::TimeDelta::FromDays(1), &private_key,
-      &der_cert);
+      "CN=" + subject, 1, base::Time::Now(), base::Time::Now() + base::Days(1),
+      &private_key, &der_cert);
 
   base::ScopedCFTypeRef<SecCertificateRef> cert(
       net::x509_util::CreateSecCertificateFromBytes(

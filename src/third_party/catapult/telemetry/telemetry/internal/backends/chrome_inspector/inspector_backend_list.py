@@ -49,7 +49,7 @@ class InspectorBackendList(collections.Sequence):
     The wrapper API is the public interface for InspectorBackend. It
     may expose whatever methods are desired on top of that backend.
     """
-    raise NotImplementedError
+    raise NotImplementedError()
 
   # TODO(crbug.com/398467): Remove this method and turn inspector_backend_list
   # API to dictionary-like API.
@@ -111,7 +111,7 @@ class InspectorBackendList(collections.Sequence):
         self._filtered_context_ids.append(context['id'])
 
     # Clean up any backends for contexts that have gone away.
-    for context_id in self._wrapper_dict.keys():
+    for context_id in list(self._wrapper_dict.keys()):
       if context_id not in self._filtered_context_ids:
         del self._wrapper_dict[context_id]
 
@@ -121,4 +121,3 @@ class InspectorBackendList(collections.Sequence):
     This can be overwritten by sub-classes to add more debugging information to
     errors.
     """
-    pass

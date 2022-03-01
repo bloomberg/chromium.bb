@@ -36,6 +36,7 @@ namespace dawn_native { namespace opengl {
                 case wgpu::PrimitiveTopology::TriangleStrip:
                     return GL_TRIANGLE_STRIP;
             }
+            UNREACHABLE();
         }
 
         void ApplyFrontFaceAndCulling(const OpenGLFunctions& gl,
@@ -84,16 +85,8 @@ namespace dawn_native { namespace opengl {
                     return alpha ? GL_CONSTANT_ALPHA : GL_CONSTANT_COLOR;
                 case wgpu::BlendFactor::OneMinusConstant:
                     return alpha ? GL_ONE_MINUS_CONSTANT_ALPHA : GL_ONE_MINUS_CONSTANT_COLOR;
-
-                // Deprecated blend factors should be normalized prior to this call.
-                case wgpu::BlendFactor::SrcColor:
-                case wgpu::BlendFactor::OneMinusSrcColor:
-                case wgpu::BlendFactor::DstColor:
-                case wgpu::BlendFactor::OneMinusDstColor:
-                case wgpu::BlendFactor::BlendColor:
-                case wgpu::BlendFactor::OneMinusBlendColor:
-                    UNREACHABLE();
             }
+            UNREACHABLE();
         }
 
         GLenum GLBlendMode(wgpu::BlendOperation operation) {
@@ -109,6 +102,7 @@ namespace dawn_native { namespace opengl {
                 case wgpu::BlendOperation::Max:
                     return GL_MAX;
             }
+            UNREACHABLE();
         }
 
         void ApplyColorState(const OpenGLFunctions& gl,
@@ -151,7 +145,7 @@ namespace dawn_native { namespace opengl {
                          state->writeMask & wgpu::ColorWriteMask::Alpha);
         }
 
-        bool Equal(const BlendDescriptor& lhs, const BlendDescriptor& rhs) {
+        bool Equal(const BlendComponent& lhs, const BlendComponent& rhs) {
             return lhs.operation == rhs.operation && lhs.srcFactor == rhs.srcFactor &&
                    lhs.dstFactor == rhs.dstFactor;
         }
@@ -175,6 +169,7 @@ namespace dawn_native { namespace opengl {
                 case wgpu::StencilOperation::DecrementWrap:
                     return GL_DECR_WRAP;
             }
+            UNREACHABLE();
         }
 
         void ApplyDepthStencilState(const OpenGLFunctions& gl,
@@ -219,22 +214,34 @@ namespace dawn_native { namespace opengl {
 
     }  // anonymous namespace
 
-    RenderPipeline::RenderPipeline(Device* device, const RenderPipelineDescriptor2* descriptor)
+    // static
+    Ref<RenderPipeline> RenderPipeline::CreateUninitialized(
+        Device* device,
+        const RenderPipelineDescriptor* descriptor) {
+        return AcquireRef(new RenderPipeline(device, descriptor));
+    }
+
+    RenderPipeline::RenderPipeline(Device* device, const RenderPipelineDescriptor* descriptor)
         : RenderPipelineBase(device, descriptor),
           mVertexArrayObject(0),
           mGlPrimitiveTopology(GLPrimitiveTopology(GetPrimitiveTopology())) {
-        PerStage<const ShaderModule*> modules(nullptr);
-        modules[SingleShaderStage::Vertex] = ToBackend(descriptor->vertex.module);
-        modules[SingleShaderStage::Fragment] = ToBackend(descriptor->fragment->module);
-
-        PipelineGL::Initialize(device->gl, ToBackend(GetLayout()), GetAllStages());
-        CreateVAOForVertexState();
     }
 
-    RenderPipeline::~RenderPipeline() {
+    MaybeError RenderPipeline::Initialize() {
+        DAWN_TRY(
+            InitializeBase(ToBackend(GetDevice())->gl, ToBackend(GetLayout()), GetAllStages()));
+        CreateVAOForVertexState();
+        return {};
+    }
+
+    RenderPipeline::~RenderPipeline() = default;
+
+    void RenderPipeline::DestroyImpl() {
+        RenderPipelineBase::DestroyImpl();
         const OpenGLFunctions& gl = ToBackend(GetDevice())->gl;
         gl.DeleteVertexArrays(1, &mVertexArrayObject);
         gl.BindVertexArray(0);
+        DeleteProgram(gl);
     }
 
     GLenum RenderPipeline::GetGLPrimitiveTopology() const {
@@ -267,9 +274,9 @@ namespace dawn_native { namespace opengl {
                 gl.VertexAttribDivisor(glAttrib, 0xffffffff);
             } else {
                 switch (vertexBuffer.stepMode) {
-                    case wgpu::InputStepMode::Vertex:
+                    case wgpu::VertexStepMode::Vertex:
                         break;
-                    case wgpu::InputStepMode::Instance:
+                    case wgpu::VertexStepMode::Instance:
                         gl.VertexAttribDivisor(glAttrib, 1);
                         break;
                 }

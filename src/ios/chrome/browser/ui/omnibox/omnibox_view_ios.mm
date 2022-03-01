@@ -21,7 +21,6 @@
 #include "components/omnibox/browser/clipboard_provider.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
-#include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
@@ -32,13 +31,13 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #include "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ios/web/public/navigation/referrer.h"
 #import "net/base/mac/url_conversions.h"
 #include "skia/ext/skia_utils_ios.h"
+#include "ui/base/device_form_factor.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
@@ -94,9 +93,6 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
 
   paste_delegate_ = [[OmniboxTextFieldPasteDelegate alloc] init];
   [field_ setPasteDelegate:paste_delegate_];
-
-  use_strikethrough_workaround_ = base::ios::IsRunningOnOrLater(10, 3, 0) &&
-                                  !base::ios::IsRunningOnOrLater(11, 2, 0);
 }
 
 OmniboxViewIOS::~OmniboxViewIOS() = default;
@@ -309,11 +305,16 @@ void OmniboxViewIOS::OnTemporaryTextMaybeChanged(
 void OmniboxViewIOS::OnInlineAutocompleteTextMaybeChanged(
     const std::u16string& display_text,
     std::vector<gfx::Range> selections,
-    size_t user_text_length) {
+    const std::u16string& prefix_autocompletion,
+    const std::u16string& inline_autocompletion) {
   if (display_text == GetText())
     return;
 
   NSAttributedString* as = ApplyTextAttributes(display_text);
+  // TODO(crbug.com/1062446): This `user_text_length` calculation  isn't
+  //  accurate when there's prefix autocompletion. This should be addressed
+  //  before we experiment with prefix autocompletion on iOS.
+  size_t user_text_length = display_text.size() - inline_autocompletion.size();
   [field_ setText:as userTextLength:user_text_length];
 }
 
@@ -432,7 +433,7 @@ void OmniboxViewIOS::OnWillEndEditing() {
   // This will also be called if -resignFirstResponder is called
   // programmatically. On phone, the omnibox may still be editing when
   // the popup is open, so the Cancel button calls OnWillEndEditing.
-  if (IsIPadIdiom()) {
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
     [omnibox_focuser_ cancelOmniboxEdit];
   }
 }
@@ -756,6 +757,12 @@ void OmniboxViewIOS::RemoveQueryRefinementChip() {
 }
 
 bool OmniboxViewIOS::ShouldIgnoreUserInputDueToPendingVoiceSearch() {
+  // TODO(crbug.com/1254467): iOS 15 Cleanup: Remove the method
+  // ShouldIgnoreUserInputDueToPendingVoiceSearch and references to method in
+  // codebase
+  if (base::FeatureList::IsEnabled(kIOSOmniboxAllowEditsDuringDictation))
+    return NO;
+
   // When the response of the iOS voice entry is pending a spinning wheel is
   // visible.  The spinner's location is marked in [self text] as a Unicode
   // "Object Replacement Character".
@@ -832,7 +839,7 @@ void OmniboxViewIOS::OnResultsChanged(const AutocompleteResult& result) {
 }
 
 void OmniboxViewIOS::OnPopupDidScroll() {
-  if (!IsIPadIdiom()) {
+  if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
     this->HideKeyboard();
   }
 }

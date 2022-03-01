@@ -4,10 +4,11 @@
 
 #include "core/fpdfdoc/cpdf_defaultappearance.h"
 
+#include "core/fpdfapi/parser/cpdf_simple_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/test_support.h"
+#include "third_party/base/cxx17_backports.h"
 #include "third_party/base/span.h"
-#include "third_party/base/stl_util.h"
 
 TEST(CPDFDefaultAppearanceTest, FindTagParamFromStart) {
   static const struct FindTagTestStruct {

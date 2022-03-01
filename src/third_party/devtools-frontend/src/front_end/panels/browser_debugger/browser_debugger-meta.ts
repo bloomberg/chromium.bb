@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
-
-// eslint-disable-next-line rulesdir/es_modules_import
-import type * as BrowserDebugger from './browser_debugger.js';
 import type * as Sources from '../sources/sources.js';
+
+import type * as BrowserDebugger from './browser_debugger.js';
 
 import * as i18n from '../../core/i18n/i18n.js';
 const UIStrings = {
@@ -83,8 +81,6 @@ let loadedBrowserDebuggerModule: (typeof BrowserDebugger|undefined);
 
 async function loadBrowserDebuggerModule(): Promise<typeof BrowserDebugger> {
   if (!loadedBrowserDebuggerModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('panels/browser_debugger');
     loadedBrowserDebuggerModule = await import('./browser_debugger.js');
   }
   return loadedBrowserDebuggerModule;
@@ -99,8 +95,6 @@ let loadedSourcesModule: (typeof Sources|undefined);
 //  collision with node_app as a separate view with the same id is registered in it.
 async function loadSourcesModule(): Promise<typeof Sources> {
   if (!loadedSourcesModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('sources');
     loadedSourcesModule = await import('../sources/sources.js');
   }
   return loadedSourcesModule;
@@ -185,7 +179,6 @@ UI.ViewManager.registerViewExtension({
   order: 6,
   persistence: UI.ViewManager.ViewPersistence.PERMANENT,
 });
-
 
 UI.ViewManager.registerViewExtension({
   location: UI.ViewManager.ViewLocationValues.NAVIGATOR_VIEW,

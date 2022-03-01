@@ -6,7 +6,7 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_PIPE_CONTROL_MESSAGE_PROXY_H_
 
 #include "base/component_export.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "mojo/public/cpp/bindings/async_flusher.h"
 #include "mojo/public/cpp/bindings/disconnect_reason.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
@@ -27,6 +27,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) PipeControlMessageProxy {
   // be used from multiple sequences, |receiver| must be thread-safe.
   explicit PipeControlMessageProxy(MessageReceiver* receiver);
 
+  PipeControlMessageProxy(const PipeControlMessageProxy&) = delete;
+  PipeControlMessageProxy& operator=(const PipeControlMessageProxy&) = delete;
+
   void NotifyPeerEndpointClosed(InterfaceId id,
                                 const absl::optional<DisconnectReason>& reason);
   void PausePeerUntilFlushCompletes(PendingFlush flush);
@@ -38,9 +41,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) PipeControlMessageProxy {
 
  private:
   // Not owned.
-  MessageReceiver* receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(PipeControlMessageProxy);
+  raw_ptr<MessageReceiver> receiver_;
 };
 
 }  // namespace mojo

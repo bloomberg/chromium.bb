@@ -10,12 +10,13 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -319,7 +320,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   // null. If |store_| is null, then NEL policies will be in-memory only.
   // The store is owned by the URLRequestContext because Reporting also needs
   // access to it.
-  PersistentNelStore* store_;
+  raw_ptr<PersistentNelStore> store_;
 
   // Set to true when we have told the store to load NEL policies. This is to
   // make sure we don't try to load policies multiple times.
@@ -489,9 +490,11 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
              << ", depth=" << details.reporting_upload_depth << ") for "
              << details.uri;
 
+    // A null reporting source token is used since this report is not associated
+    // with any particular document.
     reporting_service_->QueueReport(
-        details.uri, details.network_isolation_key, details.user_agent,
-        policy->report_to, kReportType,
+        details.uri, absl::nullopt, details.network_isolation_key,
+        details.user_agent, policy->report_to, kReportType,
         CreateReportBody(phase_string, type_string, sampling_fraction.value(),
                          details),
         details.reporting_upload_depth);
@@ -537,9 +540,11 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
       return;
     }
 
+    // A null reporting source token is used since this report is not associated
+    // with any particular document.
     reporting_service_->QueueReport(
-        details.outer_url, details.network_isolation_key, details.user_agent,
-        policy->report_to, kReportType,
+        details.outer_url, absl::nullopt, details.network_isolation_key,
+        details.user_agent, policy->report_to, kReportType,
         CreateSignedExchangeReportBody(details, sampling_fraction.value()),
         0 /* depth */);
     RecordSignedExchangeRequestOutcome(RequestOutcome::kQueued);
@@ -629,9 +634,8 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     policy_out->include_subdomains = include_subdomains;
     policy_out->success_fraction = success_fraction;
     policy_out->failure_fraction = failure_fraction;
-    policy_out->expires = max_age_sec > 0
-                              ? now + base::TimeDelta::FromSeconds(max_age_sec)
-                              : base::Time();
+    policy_out->expires =
+        max_age_sec > 0 ? now + base::Seconds(max_age_sec) : base::Time();
     return true;
   }
 

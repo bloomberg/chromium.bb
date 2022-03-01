@@ -5,6 +5,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -54,7 +55,6 @@ KeyedService* OptimizationGuideKeyedServiceFactory::BuildServiceInstanceFor(
   if (chromeos::ProfileHelper::IsSigninProfile(profile))
     return nullptr;
 #endif
-
   return new OptimizationGuideKeyedService(context);
 }
 

@@ -7,7 +7,6 @@
 
 #import <WebKit/WebKit.h>
 
-#include "base/macros.h"
 #include "base/supports_user_data.h"
 
 namespace web {
@@ -21,6 +20,10 @@ class NavigationItem;
 // thus needs to be preserved (e.g., WKNavigationType, MIME type).
 class WKBackForwardListItemHolder : public base::SupportsUserData::Data {
  public:
+  WKBackForwardListItemHolder(const WKBackForwardListItemHolder&) = delete;
+  WKBackForwardListItemHolder& operator=(const WKBackForwardListItemHolder&) =
+      delete;
+
   ~WKBackForwardListItemHolder() override;
 
   // Returns the WKBackForwardListItemHolder for the NavigationItem |item|.
@@ -65,8 +68,6 @@ class WKBackForwardListItemHolder : public base::SupportsUserData::Data {
 
   // The MIME type of the page content.
   NSString* mime_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(WKBackForwardListItemHolder);
 };
 
 }  // namespace web

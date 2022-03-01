@@ -23,8 +23,6 @@ class GrRecordingContext;
 // actual API surface that Skia will use to compute the filtered images.
 class SkImageFilter_Base : public SkImageFilter {
 public:
-    SK_USE_FLUENT_IMAGE_FILTER_TYPES_IN_CLASS
-
     // DEPRECATED - Use skif::Context directly.
     using Context = skif::Context;
 
@@ -39,7 +37,7 @@ public:
      *  TODO: Right now the imagefilters sometimes return empty result bitmaps/
      *        specialimages. That doesn't seem quite right.
      */
-    skif::FilterResult<For::kOutput> filterImage(const skif::Context& context) const;
+    skif::FilterResult filterImage(const skif::Context& context) const;
 
     /**
      *  Calculate the smallest-possible required layer bounds that would provide sufficient
@@ -101,38 +99,31 @@ public:
     skif::DeviceSpace<SkIRect> getOutputBounds(
             const skif::Mapping& mapping, const skif::ParameterSpace<SkRect>& contentBounds) const;
 
-    // Expose isolated node bounds behavior for SampleImageFilterDAG and debugging
-    SkIRect filterNodeBounds(const SkIRect& srcRect, const SkMatrix& ctm,
-                             MapDirection dir, const SkIRect* inputRect) const {
-        return this->onFilterNodeBounds(srcRect, ctm, dir, inputRect);
-    }
+    // Returns true if this image filter graph transforms a source transparent black pixel to a
+    // color other than transparent black.
+    bool affectsTransparentBlack() const;
 
     /**
-     *  ImageFilters can natively handle scaling and translate components in the CTM. Only some of
-     *  them can handle affine (or more complex) matrices. This call returns true iff the filter
-     *  and all of its (non-null) inputs can handle these more complex matrices.
+     *  Most ImageFilters can natively handle scaling and translate components in the CTM. Only
+     *  some of them can handle affine (or more complex) matrices. Some may only handle translation.
+     *  This call returns the maximum "kind" of CTM for a filter and all of its (non-null) inputs.
      */
-    bool canHandleComplexCTM() const;
-
-    /**
-     * Return an image filter representing this filter applied with the given ctm. This will modify
-     * the DAG as needed if this filter does not support complex CTMs and 'ctm' is not simple. The
-     * ctm matrix will be decomposed such that ctm = A*B; B will be incorporated directly into the
-     * DAG and A must be the ctm set on the context passed to filterImage(). 'remainder' will be set
-     * to A.
-     *
-     * If this filter supports complex ctms, or 'ctm' is not complex, then A = ctm and B = I. When
-     * the filter does not support complex ctms, and the ctm is complex, then A represents the
-     * extracted simple portion of the ctm, and the complex portion is baked into a new DAG using a
-     * matrix filter.
-     *
-     * This will never return null.
-     *
-     * DEPRECATED - Should draw the results of filterImage() directly with the remainder matrix.
-     */
-    sk_sp<SkImageFilter> applyCTM(const SkMatrix& ctm, SkMatrix* remainder) const;
+    enum class MatrixCapability {
+        kTranslate,
+        kScaleTranslate,
+        kComplex,
+    };
+    MatrixCapability getCTMCapability() const;
 
     uint32_t uniqueID() const { return fUniqueID; }
+
+    static SkFlattenable::Type GetFlattenableType() {
+        return kSkImageFilter_Type;
+    }
+
+    SkFlattenable::Type getFlattenableType() const override {
+        return kSkImageFilter_Type;
+    }
 
 protected:
     // DEPRECATED: Will be removed once cropping is handled by a standalone image filter
@@ -212,7 +203,9 @@ protected:
     void flatten(SkWriteBuffer&) const override;
 
     // DEPRECATED - Use the private context-only variant
-    virtual sk_sp<SkSpecialImage> onFilterImage(const Context&, SkIPoint* offset) const = 0;
+    virtual sk_sp<SkSpecialImage> onFilterImage(const Context&, SkIPoint* offset) const {
+        return nullptr;
+    }
 
     // DEPRECATED - Override onGetOutputLayerBounds and onGetInputLayerBounds instead. The
     // node-specific and aggregation functions are no longer separated in the current API. A helper
@@ -222,9 +215,9 @@ protected:
     virtual SkIRect onFilterNodeBounds(const SkIRect&, const SkMatrix& ctm,
                                        MapDirection, const SkIRect* inputRect) const;
 
-    // DEPRECRATED - Call the Context-only getInputFilteredImage()
+    // DEPRECRATED - Call the Context-only filterInput()
     sk_sp<SkSpecialImage> filterInput(int index, const Context& ctx, SkIPoint* offset) const {
-        return this->getInputFilteredImage(index, ctx).imageAndOffset(offset);
+        return this->filterInput(index, ctx).imageAndOffset(offset);
     }
 
     // Helper function to visit each of this filter's child filters and call their
@@ -239,25 +232,16 @@ protected:
     skif::LayerSpace<SkIRect> visitOutputLayerBounds(
             const skif::Mapping& mapping, const skif::LayerSpace<SkIRect>& contentBounds) const;
 
-    // Helper function to help with recursing through the filter DAG. It invokes filter processing
-    // set to null, it returns the dynamic source image on the Context instead.
+    // Helper function for recursing through the filter DAG. It automatically evaluates the input
+    // image filter at 'index' using the given context. If the input image filter is null, it
+    // automatically returns the context's dynamic source image.
     //
     // Implementations must handle cases when the input filter was unable to compute an image and
-    // the returned skif::Image has a null SkSpecialImage. If the filter affect transparent black
-    // should explicitly handle nullptr results and press on. In the error case this behavior will
-    // produce a better result than nothing and is necessary for the clipped out case.
-    skif::FilterResult<For::kInput> getInputFilteredImage(int index,
-                                                          const skif::Context& context) const {
-        return this->filterInput<For::kInput>(index, context);
-    }
-    // Convenience that calls filterInput with index = 0 and the most specific usage.
-    skif::FilterResult<For::kInput0> getInputFilteredImage0(const skif::Context& context) const {
-        return this->filterInput<For::kInput0>(0, context);
-    }
-    // Convenience that calls filterInput with index = 1 and the most specific usage.
-    skif::FilterResult<For::kInput1> getInputFilteredImage1(const skif::Context& context) const {
-        return this->filterInput<For::kInput1>(1, context);
-    }
+    // the returned skif::Image has a null SkSpecialImage. If the filter affects transparent black,
+    // it should treat null results or images that do not fully cover the requested output bounds as
+    // being transparent black in those regions. Filters that do not affect transparent black can
+    // exit early since the null image would remain transparent.
+    skif::FilterResult filterInput(int index, const skif::Context& ctx) const;
 
     /**
      *  Returns whether any edges of the crop rect have been set. The crop
@@ -368,25 +352,26 @@ private:
     virtual bool onIsColorFilterNode(SkColorFilter** /*filterPtr*/) const { return false; }
 
     /**
-     *  Return true if this filter can map from its parameter space to a layer space described by an
-     *  arbitrary transformation matrix. If this returns false, the filter only needs to worry about
-     *  mapping from parameter to layer using a scale+translate matrix.
+     *  Return the most complex matrix type this filter can support (mapping from its parameter
+     *  space to a layer space). If this returns anything less than kComplex, the filter only needs
+     *  to worry about mapping from parameter to layer using a matrix that is constrained in that
+     *  way (eg, scale+translate).
      */
-    virtual bool onCanHandleComplexCTM() const { return false; }
+    virtual MatrixCapability onGetCTMCapability() const {
+        return MatrixCapability::kScaleTranslate;
+    }
 
     /**
      *  Return true if this filter would transform transparent black pixels to a color other than
      *  transparent black. When false, optimizations can be taken to discard regions known to be
      *  transparent black and thus process fewer pixels.
      */
-    virtual bool affectsTransparentBlack() const { return false; }
+    virtual bool onAffectsTransparentBlack() const { return false; }
 
     /**
      *  This is the virtual which should be overridden by the derived class to perform image
      *  filtering. Subclasses are responsible for recursing to their input filters, although the
-     *  getFilteredInputX() functions are provided to handle all necessary details of this. If the
-     *  filter has a fixed number of inputs, the getFilterInput0() and getFilteredInput1() functions
-     *  ensure the returned filtered Images have the most specific input usage.
+     *  filterInput() function is provided to handle all necessary details of this.
      *
      *  If the image cannot be created (either because of an error or if the result would be empty
      *  because it was clipped out), this should return a filtered Image with a null SkSpecialImage.
@@ -395,7 +380,7 @@ private:
      *  to safely handle these null and empty images and return an image filling the context's clip
      *  bounds as if its input filtered image were transparent black.
      */
-    virtual skif::FilterResult<For::kOutput> onFilterImage(const skif::Context& context) const;
+    virtual skif::FilterResult onFilterImage(const skif::Context& context) const;
 
     /**
      *  Calculates the necessary input layer size in order for the final output of the filter to
@@ -442,11 +427,6 @@ private:
     virtual skif::LayerSpace<SkIRect> onGetOutputLayerBounds(
             const skif::Mapping& mapping, const skif::LayerSpace<SkIRect>& contentBounds) const;
 
-    // The actual implementation of the protected getFilterInputX() functions, but don't expose the
-    // flexible templating to subclasses so it can't be abused.
-    template<skif::Usage kU>
-    skif::FilterResult<kU> filterInput(int index, const skif::Context& ctx) const;
-
     SkAutoSTArray<2, sk_sp<SkImageFilter>> fInputs;
 
     bool fUsesSrcInput;
@@ -491,6 +471,7 @@ void SkRegisterBlendImageFilterFlattenable();
 void SkRegisterBlurImageFilterFlattenable();
 void SkRegisterColorFilterImageFilterFlattenable();
 void SkRegisterComposeImageFilterFlattenable();
+void SkRegisterCropImageFilterFlattenable();
 void SkRegisterDisplacementMapImageFilterFlattenable();
 void SkRegisterDropShadowImageFilterFlattenable();
 void SkRegisterImageImageFilterFlattenable();
@@ -501,6 +482,9 @@ void SkRegisterMergeImageFilterFlattenable();
 void SkRegisterMorphologyImageFilterFlattenables();
 void SkRegisterOffsetImageFilterFlattenable();
 void SkRegisterPictureImageFilterFlattenable();
+#ifdef SK_ENABLE_SKSL
+void SkRegisterRuntimeImageFilterFlattenable();
+#endif
 void SkRegisterShaderImageFilterFlattenable();
 void SkRegisterTileImageFilterFlattenable();
 

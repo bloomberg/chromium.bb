@@ -48,6 +48,10 @@ class ShellPlatformDelegate {
   // cleanup.
   virtual void CleanUp(Shell* shell);
 
+  // Called from the Shell destructor after destroying the last one. This is
+  // usually a good time to call Shell::Shutdown().
+  virtual void DidCloseLastWindow();
+
   // Links the WebContents into the newly created window.
   virtual void SetContents(Shell* shell);
 
@@ -102,8 +106,8 @@ class ShellPlatformDelegate {
   // Activate (make key) the native window, and focus the web contents.
   virtual void ActivateContents(Shell* shell, WebContents* contents);
 
-  virtual void DidNavigateMainFramePostCommit(Shell* shell,
-                                              WebContents* contents);
+  virtual void DidNavigatePrimaryMainFramePostCommit(Shell* shell,
+                                                     WebContents* contents);
 
   virtual bool HandleKeyboardEvent(Shell* shell,
                                    WebContents* source,
@@ -126,7 +130,7 @@ class ShellPlatformDelegate {
 #endif
 
  protected:
-#if defined(USE_AURA) && !defined(TOOLKIT_VIEWS)
+#if defined(USE_AURA) && !defined(SHELL_USE_TOOLKIT_VIEWS)
   // Helper to avoid duplicating aura's ShellPlatformDelegate in web tests. If
   // this hack gets expanded to become more expansive then we should just
   // duplicate the aura ShellPlatformDelegate code to the web test code impl in

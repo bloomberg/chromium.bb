@@ -9,6 +9,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
+#include "build/build_config.h"
+
 #if defined(OS_APPLE) || defined(OS_BSD)
 #include <sys/socket.h>  // Must be included before ifaddrs.h.
 #include <ifaddrs.h>
@@ -21,8 +24,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/client_socket_factory.h"
@@ -191,7 +194,7 @@ struct DestinationInfo {
   AddressSorterPosix::AddressScope scope;
   unsigned precedence;
   unsigned label;
-  const AddressSorterPosix::SourceAddressInfo* src;
+  raw_ptr<const AddressSorterPosix::SourceAddressInfo> src;
   size_t common_prefix_length;
 };
 

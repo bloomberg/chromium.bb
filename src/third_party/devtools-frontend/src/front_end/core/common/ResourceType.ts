@@ -31,10 +31,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as i18n from '../i18n/i18n.js';
-import type * as Platform from '../platform/platform.js'; // eslint-disable-line no-unused-vars
+import type * as Platform from '../platform/platform.js';
 
 import {ParsedURL} from './ParsedURL.js';
 
@@ -172,17 +170,17 @@ const str_ = i18n.i18n.registerUIStrings('core/common/ResourceType.ts', UIString
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 
 export class ResourceType {
-  _name: string;
-  _title: () => Platform.UIString.LocalizedString;
-  _category: ResourceCategory;
-  _isTextType: boolean;
+  readonly #nameInternal: string;
+  readonly #titleInternal: () => Platform.UIString.LocalizedString;
+  readonly #categoryInternal: ResourceCategory;
+  readonly #isTextTypeInternal: boolean;
 
   constructor(
       name: string, title: () => Platform.UIString.LocalizedString, category: ResourceCategory, isTextType: boolean) {
-    this._name = name;
-    this._title = title;
-    this._category = category;
-    this._isTextType = isTextType;
+    this.#nameInternal = name;
+    this.#titleInternal = title;
+    this.#categoryInternal = category;
+    this.#isTextTypeInternal = isTextType;
   }
 
   static fromMimeType(mimeType: string|null): ResourceType {
@@ -230,7 +228,7 @@ export class ResourceType {
   }
 
   static fromURL(url: string): ResourceType|null {
-    return _resourceTypeByExtension.get(ParsedURL.extractExtension(url)) || null;
+    return resourceTypeByExtension.get(ParsedURL.extractExtension(url)) || null;
   }
 
   static fromName(name: string): ResourceType|null {
@@ -247,36 +245,36 @@ export class ResourceType {
 
   static mimeFromURL(url: string): string|undefined {
     const name = ParsedURL.extractName(url);
-    if (_mimeTypeByName.has(name)) {
-      return _mimeTypeByName.get(name);
+    if (mimeTypeByName.has(name)) {
+      return mimeTypeByName.get(name);
     }
 
     const ext = ParsedURL.extractExtension(url).toLowerCase();
-    return _mimeTypeByExtension.get(ext);
+    return mimeTypeByExtension.get(ext);
   }
 
   static mimeFromExtension(ext: string): string|undefined {
-    return _mimeTypeByExtension.get(ext);
+    return mimeTypeByExtension.get(ext);
   }
 
   name(): string {
-    return this._name;
+    return this.#nameInternal;
   }
 
   title(): string {
-    return this._title();
+    return this.#titleInternal();
   }
 
   category(): ResourceCategory {
-    return this._category;
+    return this.#categoryInternal;
   }
 
   isTextType(): boolean {
-    return this._isTextType;
+    return this.#isTextTypeInternal;
   }
 
   isScript(): boolean {
-    return this._name === 'script' || this._name === 'sm-script';
+    return this.#nameInternal === 'script' || this.#nameInternal === 'sm-script';
   }
 
   hasScripts(): boolean {
@@ -284,27 +282,35 @@ export class ResourceType {
   }
 
   isStyleSheet(): boolean {
-    return this._name === 'stylesheet' || this._name === 'sm-stylesheet';
+    return this.#nameInternal === 'stylesheet' || this.#nameInternal === 'sm-stylesheet';
   }
 
   isDocument(): boolean {
-    return this._name === 'document';
+    return this.#nameInternal === 'document';
   }
 
   isDocumentOrScriptOrStyleSheet(): boolean {
     return this.isDocument() || this.isScript() || this.isStyleSheet();
   }
 
+  isFont(): boolean {
+    return this.#nameInternal === 'font';
+  }
+
   isImage(): boolean {
-    return this._name === 'image';
+    return this.#nameInternal === 'image';
   }
 
   isFromSourceMap(): boolean {
-    return this._name.startsWith('sm-');
+    return this.#nameInternal.startsWith('sm-');
+  }
+
+  isWebbundle(): boolean {
+    return this.#nameInternal === 'webbundle';
   }
 
   toString(): string {
-    return this._name;
+    return this.#nameInternal;
   }
 
   canonicalMimeType(): string {
@@ -380,17 +386,13 @@ export const resourceTypes = {
   WebBundle: new ResourceType('webbundle', i18nLazyString(UIStrings.webbundle), resourceCategories.Other, false),
 };
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const _mimeTypeByName = new Map([
+const mimeTypeByName = new Map([
   // CoffeeScript
   ['Cakefile', 'text/x-coffeescript'],
 ]);
 
 // clang-format off
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const _resourceTypeByExtension = new Map([
+export const resourceTypeByExtension = new Map([
   ['js', resourceTypes.Script],
   ['mjs', resourceTypes.Script],
 
@@ -422,9 +424,7 @@ export const _resourceTypeByExtension = new Map([
 ]);
 // clang-format on
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const _mimeTypeByExtension = new Map([
+export const mimeTypeByExtension = new Map([
   // Web extensions
   ['js', 'text/javascript'],
   ['mjs', 'text/javascript'],

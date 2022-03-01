@@ -51,7 +51,8 @@ struct StackFrame {
     FRAME_TRUST_FP,        // Derived from frame pointer
     FRAME_TRUST_CFI,       // Derived from call frame info
     FRAME_TRUST_PREWALKED, // Explicitly provided by some external stack walker.
-    FRAME_TRUST_CONTEXT    // Given as instruction pointer in a context
+    FRAME_TRUST_CONTEXT,   // Given as instruction pointer in a context
+    FRAME_TRUST_INLINE     // Found by inline records in symbol files.
   };
 
   StackFrame()
@@ -60,9 +61,9 @@ struct StackFrame {
         function_name(),
         function_base(),
         source_file_name(),
-        source_line(),
+        source_line(0),
         source_line_base(),
-        trust(FRAME_TRUST_NONE) {}
+        trust(FRAME_TRUST_NONE){}
   virtual ~StackFrame() {}
 
   // Return a string describing how this stack frame was found
@@ -81,6 +82,8 @@ struct StackFrame {
         return "previous frame's frame pointer";
       case StackFrame::FRAME_TRUST_SCAN:
         return "stack scanning";
+      case StackFrame::FRAME_TRUST_INLINE:
+        return "inline record";
       default:
         return "unknown";
     }

@@ -7,33 +7,36 @@
 #include <string>
 #include <utility>
 
-#include "ash/components/account_manager/account_manager.h"
-#include "base/macros.h"
+#include "components/account_manager_core/chromeos/account_manager.h"
+#include "components/account_manager_core/chromeos/account_manager_mojo_service.h"
 
 namespace ash {
 
 AccountManagerFactory::AccountManagerFactory() = default;
 AccountManagerFactory::~AccountManagerFactory() = default;
 
-AccountManager* AccountManagerFactory::GetAccountManager(
+account_manager::AccountManager* AccountManagerFactory::GetAccountManager(
     const std::string& profile_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   return GetAccountManagerHolder(profile_path).account_manager.get();
 }
 
-crosapi::AccountManagerAsh* AccountManagerFactory::GetAccountManagerAsh(
+crosapi::AccountManagerMojoService*
+AccountManagerFactory::GetAccountManagerMojoService(
     const std::string& profile_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  return GetAccountManagerHolder(profile_path).account_manager_ash.get();
+  return GetAccountManagerHolder(profile_path)
+      .account_manager_mojo_service.get();
 }
 
 AccountManagerFactory::AccountManagerHolder::AccountManagerHolder(
-    std::unique_ptr<AccountManager> account_manager,
-    std::unique_ptr<crosapi::AccountManagerAsh> account_manager_ash)
+    std::unique_ptr<account_manager::AccountManager> account_manager,
+    std::unique_ptr<crosapi::AccountManagerMojoService>
+        account_manager_mojo_service)
     : account_manager(std::move(account_manager)),
-      account_manager_ash(std::move(account_manager_ash)) {}
+      account_manager_mojo_service(std::move(account_manager_mojo_service)) {}
 
 AccountManagerFactory::AccountManagerHolder::~AccountManagerHolder() = default;
 
@@ -42,14 +45,15 @@ AccountManagerFactory::GetAccountManagerHolder(
     const std::string& profile_path) {
   auto it = account_managers_.find(profile_path);
   if (it == account_managers_.end()) {
-    auto account_manager = std::make_unique<AccountManager>();
-    auto account_manager_ash =
-        std::make_unique<crosapi::AccountManagerAsh>(account_manager.get());
+    auto account_manager = std::make_unique<account_manager::AccountManager>();
+    auto account_manager_mojo_service =
+        std::make_unique<crosapi::AccountManagerMojoService>(
+            account_manager.get());
     it = account_managers_
-             .emplace(std::piecewise_construct,
-                      std::forward_as_tuple(profile_path),
-                      std::forward_as_tuple(std::move(account_manager),
-                                            std::move(account_manager_ash)))
+             .emplace(
+                 std::piecewise_construct, std::forward_as_tuple(profile_path),
+                 std::forward_as_tuple(std::move(account_manager),
+                                       std::move(account_manager_mojo_service)))
              .first;
   }
   return it->second;

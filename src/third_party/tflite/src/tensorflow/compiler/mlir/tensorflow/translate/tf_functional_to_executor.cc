@@ -20,6 +20,7 @@ limitations under the License.
 #include "mlir/Pass/Pass.h"  // from @llvm-project
 #include "mlir/Pass/PassRegistry.h"  // from @llvm-project
 #include "tensorflow/compiler/mlir/tensorflow/ir/tf_executor.h"
+#include "tensorflow/compiler/mlir/tensorflow/transforms/passes_detail.h"
 
 #define DEBUG_TYPE "tf-functional-to-executor"
 
@@ -40,7 +41,8 @@ namespace {
 //      return %graph_results#...
 //    }
 struct FunctionalToExecutorDialectConversion
-    : public PassWrapper<FunctionalToExecutorDialectConversion, FunctionPass> {
+    : public TF::FunctionalToExecutorDialectConversionPassBase<
+          FunctionalToExecutorDialectConversion> {
   void runOnFunction() override;
 };
 }  // end anonymous namespace
@@ -101,7 +103,3 @@ CreateFunctionalToExecutorDialectConversionPass() {
 }
 
 }  // namespace mlir
-
-static mlir::PassRegistration<mlir::FunctionalToExecutorDialectConversion> pass(
-    "tf-functional-to-executor-conversion",
-    "Transform from func op to TF executor dialect.");

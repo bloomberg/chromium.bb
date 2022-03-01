@@ -8,32 +8,31 @@
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/client/webgpu_interface.h"
-#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 
 namespace blink {
 
+class CanvasResourceProvider;
 class WebGPURecyclableResourceCache;
+class WebGraphicsContext3DProviderWrapper;
 
 struct ResourceCacheKey {
-  ResourceCacheKey(const IntSize& size,
-                   const CanvasResourceParams& params,
-                   bool is_origin_top_left);
+  ResourceCacheKey(const SkImageInfo& info, bool is_origin_top_left);
   ~ResourceCacheKey() = default;
   bool operator==(const ResourceCacheKey& other) const;
   bool operator!=(const ResourceCacheKey& other) const;
 
   // If we support more parameters for CreateWebGPUImageProvider(), we should
   // add them here.
-  const IntSize size;
-  const CanvasResourceParams params;
+  const SkImageInfo info;
   const bool is_origin_top_left;
 };
 
 class PLATFORM_EXPORT RecyclableCanvasResource {
  public:
-  explicit RecyclableCanvasResource(
+  RecyclableCanvasResource(
       std::unique_ptr<CanvasResourceProvider> resource_provider,
       const ResourceCacheKey& cache_key,
       base::WeakPtr<WebGPURecyclableResourceCache> cache);
@@ -53,13 +52,12 @@ class PLATFORM_EXPORT RecyclableCanvasResource {
 class PLATFORM_EXPORT WebGPURecyclableResourceCache {
  public:
   explicit WebGPURecyclableResourceCache(
-      gpu::webgpu::WebGPUInterface* webgpu_interface,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~WebGPURecyclableResourceCache() = default;
 
   std::unique_ptr<RecyclableCanvasResource> GetOrCreateCanvasResource(
-      const IntSize& size,
-      const CanvasResourceParams& params,
+      const SkImageInfo& info,
       bool is_origin_top_left);
 
   // When the holder is destroyed, move the resource provider to
@@ -67,7 +65,6 @@ class PLATFORM_EXPORT WebGPURecyclableResourceCache {
   void OnDestroyRecyclableResource(
       std::unique_ptr<CanvasResourceProvider> resource_provider);
 
-  void ConfigureForTesting(gpu::webgpu::WebGPUInterface* webgpu_interface);
   wtf_size_t CleanUpResourcesAndReturnSizeForTesting();
 
   int GetWaitCountBeforeDeletionForTesting() {
@@ -95,17 +92,16 @@ class PLATFORM_EXPORT WebGPURecyclableResourceCache {
   static constexpr int kTimerIdDeltaForDeletion =
       kCleanUpDelayInSeconds / kTimerDurationInSeconds;
 
-  struct Resource {
-    explicit Resource(std::unique_ptr<CanvasResourceProvider> resource_provider,
-                      unsigned int timer_id,
-                      int resource_size)
-        : resource_provider_(std::move(resource_provider)),
-          timer_id_(timer_id),
-          resource_size_(resource_size) {}
+  struct PLATFORM_EXPORT Resource {
+    Resource(std::unique_ptr<CanvasResourceProvider> resource_provider,
+             unsigned int timer_id,
+             int resource_size);
+    Resource(Resource&& that) noexcept;
+    ~Resource();
 
     std::unique_ptr<CanvasResourceProvider> resource_provider_;
-    unsigned int timer_id_ = 0;
-    int resource_size_ = 0;
+    unsigned int timer_id_;
+    int resource_size_;
   };
 
   using DequeResourceProvider = WTF::Deque<Resource>;
@@ -131,7 +127,7 @@ class PLATFORM_EXPORT WebGPURecyclableResourceCache {
   uint64_t last_seen_max_unused_resources_in_bytes_ = 0;
   wtf_size_t last_seen_max_unused_resources_ = 0;
 
-  gpu::webgpu::WebGPUInterface* webgpu_interface_;
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::RepeatingCallback<void()> timer_func_;

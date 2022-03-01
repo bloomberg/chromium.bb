@@ -15,11 +15,12 @@ import androidx.annotation.Nullable;
 import com.google.common.base.Optional;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Promise;
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.signin.AccessTokenData;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
-import org.chromium.components.signin.ProfileDataSource;
+import org.chromium.components.signin.ChildAccountStatus;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -32,28 +33,21 @@ import java.util.UUID;
  * for testing.
  */
 public class FakeAccountManagerFacade implements AccountManagerFacade {
+    /**
+     * All the account names starting with this prefix will be considered as
+     * {@link ChildAccountStatus#REGULAR_CHILD} in {@link FakeAccountManagerFacade}.
+     */
+    private static final String CHILD_ACCOUNT_NAME_PREFIX = "child.";
     private final Object mLock = new Object();
 
     @GuardedBy("mLock")
     private final Set<AccountHolder> mAccountHolders = new LinkedHashSet<>();
-
     private final List<AccountsChangeObserver> mObservers = new ArrayList<>();
-
-    private final @Nullable FakeProfileDataSource mFakeProfileDataSource;
 
     /**
      * Creates an object of FakeAccountManagerFacade.
-     * @param fakeProfileDataSource A FakeProfileDataSource instance if needed.
      */
-    public FakeAccountManagerFacade(@Nullable FakeProfileDataSource fakeProfileDataSource) {
-        mFakeProfileDataSource = fakeProfileDataSource;
-    }
-
-    @Override
-    @Nullable
-    public ProfileDataSource getProfileDataSource() {
-        return mFakeProfileDataSource;
-    }
+    public FakeAccountManagerFacade() {}
 
     @MainThread
     @Override
@@ -70,29 +64,14 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     }
 
     @Override
-    public boolean isCachePopulated() {
-        return true;
-    }
-
-    @Override
-    public Optional<List<Account>> getGoogleAccounts() {
+    public Promise<List<Account>> getAccounts() {
         List<Account> accounts = new ArrayList<>();
         synchronized (mLock) {
             for (AccountHolder accountHolder : mAccountHolders) {
                 accounts.add(accountHolder.getAccount());
             }
         }
-        return Optional.of(accounts);
-    }
-
-    @Override
-    public List<Account> tryGetGoogleAccounts() {
-        return getGoogleAccounts().get();
-    }
-
-    @Override
-    public void tryGetGoogleAccounts(Callback<List<Account>> callback) {
-        callback.onResult(tryGetGoogleAccounts());
+        return Promise.fulfilled(accounts);
     }
 
     @Override
@@ -123,10 +102,17 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     }
 
     @Override
-    public void checkChildAccountStatus(Account account, ChildAccountStatusListener listener) {}
+    public void checkChildAccountStatus(Account account, ChildAccountStatusListener listener) {
+        if (account.name.startsWith(CHILD_ACCOUNT_NAME_PREFIX)) {
+            listener.onStatusReady(ChildAccountStatus.REGULAR_CHILD, account);
+        } else {
+            listener.onStatusReady(ChildAccountStatus.NOT_CHILD, /*childAccount=*/null);
+        }
+    }
 
     @Override
-    public Optional<Boolean> isAccountSubjectToMinorModeRestrictions(Account account) {
+    public Optional<Boolean> canOfferExtendedSyncPromos(Account account) {
+        assert account != null;
         return Optional.absent();
     }
 
@@ -139,12 +125,7 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
 
     @Override
     public String getAccountGaiaId(String accountEmail) {
-        return "gaia-id-" + accountEmail.replace("@", "_at_");
-    }
-
-    @Override
-    public boolean isGooglePlayServicesAvailable() {
-        return true;
+        return toGaiaId(accountEmail);
     }
 
     /**
@@ -174,11 +155,20 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     }
 
     /**
-     * Adds a {@link ProfileDataSource.ProfileData} to the FakeProfileDataSource.
+     * Converts an email to a fake gaia Id.
      */
-    public void addProfileData(ProfileDataSource.ProfileData profileData) {
-        assert mFakeProfileDataSource != null : "ProfileDataSource was disabled!";
-        mFakeProfileDataSource.addProfileData(profileData);
+    public static String toGaiaId(String email) {
+        return "gaia-id-" + email.replace("@", "_at_");
+    }
+
+    /**
+     * Creates an email used to identify child accounts in tests.
+     * A child-specific prefix will be appended to the base name so that the created account
+     * will be considered as {@link ChildAccountStatus#REGULAR_CHILD} in
+     * {@link FakeAccountManagerFacade}.
+     */
+    public static String generateChildEmail(String baseEmail) {
+        return CHILD_ACCOUNT_NAME_PREFIX + baseEmail;
     }
 
     @GuardedBy("mLock")

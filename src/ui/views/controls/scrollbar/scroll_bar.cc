@@ -13,8 +13,8 @@
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
+#include "base/cxx17_backports.h"
 #include "base/no_destructor.h"
-#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -164,8 +164,8 @@ void ScrollBar::OnGestureEvent(ui::GestureEvent* event) {
   // Update the |scroll_status_| to |kScrollEnded| in case the gesture sequence
   // ends incorrectly.
   if (event->type() == ui::ET_GESTURE_END &&
-      scroll_status_ == ScrollStatus::kScrollInEnding &&
-      scroll_status_ == ScrollStatus::kScrollEnded) {
+      scroll_status_ != ScrollStatus::kScrollInEnding &&
+      scroll_status_ != ScrollStatus::kScrollEnded) {
     scroll_status_ = ScrollStatus::kScrollEnded;
     controller()->OnScrollEnded();
   }
@@ -461,8 +461,8 @@ int ScrollBar::CalculateContentsOffset(float thumb_position,
 }
 
 void ScrollBar::SetContentsScrollOffset(int contents_scroll_offset) {
-  contents_scroll_offset_ = base::ClampToRange(
-      contents_scroll_offset, GetMinPosition(), GetMaxPosition());
+  contents_scroll_offset_ =
+      base::clamp(contents_scroll_offset, GetMinPosition(), GetMaxPosition());
 }
 
 ScrollBar::ScrollAmount ScrollBar::DetermineScrollAmountByKeyCode(

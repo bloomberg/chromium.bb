@@ -32,7 +32,12 @@
 
 #include <vector>
 
+#include "include/v8-context.h"
+#include "include/v8-local-handle.h"
+#include "include/v8-microtask-queue.h"
+#include "include/v8-platform.h"
 #include "src/base/platform/mutex.h"
+#include "src/debug/debug-interface.h"
 #include "src/inspector/inspected-context.h"
 #include "src/inspector/string-util.h"
 #include "src/inspector/v8-console-agent-impl.h"
@@ -44,8 +49,6 @@
 #include "src/inspector/v8-profiler-agent-impl.h"
 #include "src/inspector/v8-runtime-agent-impl.h"
 #include "src/inspector/v8-stack-trace-impl.h"
-
-#include "include/v8-platform.h"
 
 namespace v8_inspector {
 
@@ -333,39 +336,6 @@ void V8InspectorImpl::allAsyncTasksCanceled() {
   m_debugger->allAsyncTasksCanceled();
 }
 
-V8Inspector::Counters::Counters(v8::Isolate* isolate) : m_isolate(isolate) {
-  CHECK(m_isolate);
-  auto* inspector =
-      static_cast<V8InspectorImpl*>(v8::debug::GetInspector(m_isolate));
-  CHECK(inspector);
-  CHECK(!inspector->m_counters);
-  inspector->m_counters = this;
-  m_isolate->SetCounterFunction(&Counters::getCounterPtr);
-}
-
-V8Inspector::Counters::~Counters() {
-  auto* inspector =
-      static_cast<V8InspectorImpl*>(v8::debug::GetInspector(m_isolate));
-  CHECK(inspector);
-  inspector->m_counters = nullptr;
-  m_isolate->SetCounterFunction(nullptr);
-}
-
-int* V8Inspector::Counters::getCounterPtr(const char* name) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  DCHECK(isolate);
-  V8Inspector* inspector = v8::debug::GetInspector(isolate);
-  DCHECK(inspector);
-  auto* instance = static_cast<V8InspectorImpl*>(inspector)->m_counters;
-  DCHECK(instance);
-  return &(instance->m_countersMap[name]);
-}
-
-std::shared_ptr<V8Inspector::Counters> V8InspectorImpl::enableCounters() {
-  if (m_counters) return m_counters->shared_from_this();
-  return std::make_shared<Counters>(m_isolate);
-}
-
 v8::MaybeLocal<v8::Context> V8InspectorImpl::regexContext() {
   if (m_regexContext.IsEmpty()) {
     m_regexContext.Reset(m_isolate, v8::Context::New(m_isolate));
@@ -375,6 +345,17 @@ v8::MaybeLocal<v8::Context> V8InspectorImpl::regexContext() {
     }
   }
   return m_regexContext.Get(m_isolate);
+}
+
+v8::MaybeLocal<v8::Context> V8InspectorImpl::exceptionMetaDataContext() {
+  if (m_exceptionMetaDataContext.IsEmpty()) {
+    m_exceptionMetaDataContext.Reset(m_isolate, v8::Context::New(m_isolate));
+    if (m_exceptionMetaDataContext.IsEmpty()) {
+      DCHECK(m_isolate->IsExecutionTerminating());
+      return {};
+    }
+  }
+  return m_exceptionMetaDataContext.Get(m_isolate);
 }
 
 void V8InspectorImpl::discardInspectedContext(int contextGroupId,
@@ -492,4 +473,54 @@ protocol::Response V8InspectorImpl::EvaluateScope::setTimeout(double timeout) {
   return protocol::Response::Success();
 }
 
+bool V8InspectorImpl::associateExceptionData(v8::Local<v8::Context>,
+                                             v8::Local<v8::Value> exception,
+                                             v8::Local<v8::Name> key,
+                                             v8::Local<v8::Value> value) {
+  if (!exception->IsObject()) {
+    return false;
+  }
+  v8::Local<v8::Context> context;
+  if (!exceptionMetaDataContext().ToLocal(&context)) return false;
+  v8::TryCatch tryCatch(m_isolate);
+  v8::Context::Scope contextScope(context);
+  v8::HandleScope handles(m_isolate);
+  if (m_exceptionMetaData.IsEmpty())
+    m_exceptionMetaData.Reset(m_isolate,
+                              v8::debug::EphemeronTable::New(m_isolate));
+
+  v8::Local<v8::debug::EphemeronTable> map = m_exceptionMetaData.Get(m_isolate);
+  v8::MaybeLocal<v8::Value> entry = map->Get(m_isolate, exception);
+  v8::Local<v8::Object> object;
+  if (entry.IsEmpty() || !entry.ToLocalChecked()->IsObject()) {
+    object =
+        v8::Object::New(m_isolate, v8::Null(m_isolate), nullptr, nullptr, 0);
+    m_exceptionMetaData.Reset(m_isolate,
+                              map->Set(m_isolate, exception, object));
+  } else {
+    object = entry.ToLocalChecked().As<v8::Object>();
+  }
+  CHECK(object->IsObject());
+  v8::Maybe<bool> result = object->CreateDataProperty(context, key, value);
+  return result.FromMaybe(false);
+}
+
+v8::MaybeLocal<v8::Object> V8InspectorImpl::getAssociatedExceptionData(
+    v8::Local<v8::Value> exception) {
+  if (!exception->IsObject()) {
+    return v8::MaybeLocal<v8::Object>();
+  }
+  v8::EscapableHandleScope scope(m_isolate);
+  v8::Local<v8::Context> context;
+  if (m_exceptionMetaData.IsEmpty() ||
+      !exceptionMetaDataContext().ToLocal(&context)) {
+    return v8::MaybeLocal<v8::Object>();
+  }
+  v8::Local<v8::debug::EphemeronTable> map = m_exceptionMetaData.Get(m_isolate);
+  auto entry = map->Get(m_isolate, exception);
+  v8::Local<v8::Value> object;
+  if (!entry.ToLocal(&object) || !object->IsObject())
+    return v8::MaybeLocal<v8::Object>();
+  return scope.Escape(object.As<v8::Object>());
+}
 }  // namespace v8_inspector

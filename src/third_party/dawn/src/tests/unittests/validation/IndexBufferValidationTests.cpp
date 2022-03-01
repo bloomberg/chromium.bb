@@ -32,14 +32,14 @@ class IndexBufferValidationTest : public ValidationTest {
                 return vec4<f32>(0.0, 1.0, 0.0, 1.0);
             })");
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
         descriptor.primitive.topology = primitiveTopology;
         descriptor.primitive.stripIndexFormat = format;
         descriptor.cTargets[0].format = wgpu::TextureFormat::RGBA8Unorm;
 
-        return device.CreateRenderPipeline2(&descriptor);
+        return device.CreateRenderPipeline(&descriptor);
     }
 };
 
@@ -54,6 +54,21 @@ TEST_F(IndexBufferValidationTest, UndefinedIndexFormat) {
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
     pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Undefined);
+    pass.EndPass();
+    ASSERT_DEVICE_ERROR(encoder.Finish());
+}
+
+// Test that an invalid index format is disallowed.
+TEST_F(IndexBufferValidationTest, InvalidIndexFormat) {
+    wgpu::BufferDescriptor bufferDesc;
+    bufferDesc.usage = wgpu::BufferUsage::Index;
+    bufferDesc.size = 256;
+    wgpu::Buffer buffer = device.CreateBuffer(&bufferDesc);
+
+    DummyRenderPass renderPass(device);
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+    pass.SetIndexBuffer(buffer, static_cast<wgpu::IndexFormat>(404));
     pass.EndPass();
     ASSERT_DEVICE_ERROR(encoder.Finish());
 }
@@ -73,11 +88,11 @@ TEST_F(IndexBufferValidationTest, IndexBufferOffsetOOBValidation) {
         // Explicit size
         pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 0, 256);
         // Implicit size
-        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 0, 0);
-        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 256 - 4, 0);
-        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 4, 0);
+        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 0, wgpu::kWholeSize);
+        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 256 - 4, wgpu::kWholeSize);
+        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 4, wgpu::kWholeSize);
         // Implicit size of zero
-        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 256, 0);
+        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 256, wgpu::kWholeSize);
         pass.EndPass();
         encoder.Finish();
     }
@@ -110,11 +125,11 @@ TEST_F(IndexBufferValidationTest, IndexBufferOffsetOOBValidation) {
         // Explicit size
         encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 0, 256);
         // Implicit size
-        encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 0, 0);
-        encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 256 - 4, 0);
-        encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 4, 0);
+        encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 0, wgpu::kWholeSize);
+        encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 256 - 4, wgpu::kWholeSize);
+        encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 4, wgpu::kWholeSize);
         // Implicit size of zero
-        encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 256, 0);
+        encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 256, wgpu::kWholeSize);
         encoder.Finish();
     }
 
@@ -140,6 +155,8 @@ TEST_F(IndexBufferValidationTest, IndexBufferFormatMatchesPipelineStripFormat) {
                                                        wgpu::PrimitiveTopology::TriangleStrip);
     wgpu::RenderPipeline pipeline16 = MakeTestPipeline(wgpu::IndexFormat::Uint16,
                                                        wgpu::PrimitiveTopology::LineStrip);
+    wgpu::RenderPipeline pipelineUndef =
+        MakeTestPipeline(wgpu::IndexFormat::Undefined, wgpu::PrimitiveTopology::LineStrip);
 
     wgpu::Buffer indexBuffer =
         utils::CreateBufferFromData<uint32_t>(device, wgpu::BufferUsage::Index, {0, 1, 2});
@@ -179,6 +196,31 @@ TEST_F(IndexBufferValidationTest, IndexBufferFormatMatchesPipelineStripFormat) {
         encoder.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32);
         encoder.SetPipeline(pipeline32);
         encoder.DrawIndexed(3);
+        encoder.Finish();
+    }
+
+    // Expected to fail because pipeline doesn't specify an index format.
+    {
+        wgpu::RenderBundleEncoder encoder = device.CreateRenderBundleEncoder(&renderBundleDesc);
+        encoder.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint16);
+        encoder.SetPipeline(pipelineUndef);
+        encoder.DrawIndexed(3);
+        ASSERT_DEVICE_ERROR(encoder.Finish());
+    }
+
+    {
+        wgpu::RenderBundleEncoder encoder = device.CreateRenderBundleEncoder(&renderBundleDesc);
+        encoder.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32);
+        encoder.SetPipeline(pipelineUndef);
+        encoder.DrawIndexed(3);
+        ASSERT_DEVICE_ERROR(encoder.Finish());
+    }
+
+    // Expected to succeed because non-indexed draw calls don't require a pipeline index format.
+    {
+        wgpu::RenderBundleEncoder encoder = device.CreateRenderBundleEncoder(&renderBundleDesc);
+        encoder.SetPipeline(pipelineUndef);
+        encoder.Draw(3);
         encoder.Finish();
     }
 }
@@ -221,6 +263,42 @@ TEST_F(IndexBufferValidationTest, InvalidUsage) {
     {
         wgpu::RenderBundleEncoder encoder = device.CreateRenderBundleEncoder(&renderBundleDesc);
         encoder.SetIndexBuffer(copyBuffer, wgpu::IndexFormat::Uint32);
+        ASSERT_DEVICE_ERROR(encoder.Finish());
+    }
+}
+
+// Check the alignment constraint on the index buffer offset.
+TEST_F(IndexBufferValidationTest, OffsetAlignment) {
+    wgpu::Buffer indexBuffer =
+        utils::CreateBufferFromData<uint32_t>(device, wgpu::BufferUsage::Index, {0, 1, 2});
+
+    DummyRenderPass renderPass(device);
+    // Control cases: index buffer offset is a multiple of the index format size
+    {
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32, 0);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32, 4);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint16, 0);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint16, 2);
+        pass.EndPass();
+        encoder.Finish();
+    }
+
+    // Error case: index buffer offset isn't a multiple of 4 for IndexFormat::Uint32
+    {
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32, 2);
+        pass.EndPass();
+        ASSERT_DEVICE_ERROR(encoder.Finish());
+    }
+    // Error case: index buffer offset isn't a multiple of 2 for IndexFormat::Uint16
+    {
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint16, 1);
+        pass.EndPass();
         ASSERT_DEVICE_ERROR(encoder.Finish());
     }
 }

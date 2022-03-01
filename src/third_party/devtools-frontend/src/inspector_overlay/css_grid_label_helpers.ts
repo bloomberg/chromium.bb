@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {luminance} from '../front_end/core/common/ColorUtils.js';
+import {luminance} from '../front_end/core/common/ColorUtils.js';  // eslint-disable-line rulesdir/es_modules_import
 
 import type {AreaBounds, Bounds, Position} from './common.js';
 import {createChild} from './common.js';
@@ -103,7 +103,6 @@ interface TrackSize {
   x: number;
   y: number;
 }
-
 
 export interface GridHighlightOptions {
   gridBorderDash: boolean;
@@ -803,7 +802,6 @@ function flipArrowTypeIfNeeded(arrowType: string, flipIn: boolean): string {
 
   return arrowType;
 }
-
 
 /**
  * Given an arrow type for the standard horizontal-tb writing-mode, return the corresponding type for a differnet

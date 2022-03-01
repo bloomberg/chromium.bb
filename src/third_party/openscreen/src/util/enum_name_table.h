@@ -19,8 +19,6 @@ namespace openscreen {
 
 constexpr char kUnknownEnumError[] = "Enum value not in array";
 
-// TODO(jophba): move to a proper class once we can inherit from array
-// properly (in C++17).
 template <typename Enum, size_t Size>
 using EnumNameTable = std::array<std::pair<const char*, Enum>, Size>;
 

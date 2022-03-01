@@ -13,7 +13,6 @@
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/size.h"
@@ -29,6 +28,12 @@ class ASH_EXPORT ResolutionNotificationController
       public WindowTreeHostManager::Observer {
  public:
   ResolutionNotificationController();
+
+  ResolutionNotificationController(const ResolutionNotificationController&) =
+      delete;
+  ResolutionNotificationController& operator=(
+      const ResolutionNotificationController&) = delete;
+
   ~ResolutionNotificationController() override;
 
   // If |display_id| is not the internal display and |source| is |kSourceUser|
@@ -65,6 +70,8 @@ class ASH_EXPORT ResolutionNotificationController
     return confirmation_dialog_.get();
   }
 
+  bool ShouldShowDisplayChangeDialog() const;
+
  private:
   friend class ResolutionNotificationControllerTest;
   FRIEND_TEST_ALL_PREFIXES(ResolutionNotificationControllerTest, Timeout);
@@ -91,11 +98,11 @@ class ASH_EXPORT ResolutionNotificationController
 
   std::unique_ptr<ResolutionChangeInfo> change_info_;
 
+  display::ScopedDisplayObserver display_observer_{this};
+
   base::WeakPtr<DisplayChangeDialog> confirmation_dialog_;
 
   base::WeakPtrFactory<ResolutionNotificationController> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ResolutionNotificationController);
 };
 
 }  // namespace ash

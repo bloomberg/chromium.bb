@@ -4,17 +4,74 @@
 
 #include "fuchsia/engine/browser/navigation_controller_impl.h"
 
+#include <fuchsia/mem/cpp/fidl.h>
+#include <lib/fpromise/result.h>
+
+#include "base/bits.h"
+#include "base/fuchsia/fuchsia_logging.h"
+#include "base/memory/page_size.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/favicon/content/content_favicon_driver.h"
+#include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/was_activated_option.mojom.h"
 #include "fuchsia/base/string_util.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
+#include "third_party/blink/public/mojom/navigation/was_activated_option.mojom.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/page_transition_types.h"
+#include "ui/gfx/image/image.h"
+
+namespace {
+
+// Converts a gfx::Image to a fuchsia::web::Favicon.
+fuchsia::web::Favicon GfxImageToFidlFavicon(gfx::Image gfx_image) {
+  fuchsia::web::Favicon favicon;
+
+  if (gfx_image.IsEmpty())
+    return favicon;
+
+  int height = gfx_image.AsBitmap().pixmap().height();
+  int width = gfx_image.AsBitmap().pixmap().width();
+
+  size_t stride = width * SkColorTypeBytesPerPixel(kRGBA_8888_SkColorType);
+
+  // Create VMO.
+  fuchsia::mem::Buffer buffer;
+  buffer.size = stride * height;
+  zx_status_t status = zx::vmo::create(buffer.size, 0, &buffer.vmo);
+  ZX_CHECK(status == ZX_OK, status) << "zx_vmo_create";
+
+  // Map the VMO.
+  uintptr_t addr;
+  size_t mapped_size = base::bits::AlignUp(buffer.size, base::GetPageSize());
+  zx_vm_option_t options = ZX_VM_PERM_READ | ZX_VM_PERM_WRITE;
+  status = zx::vmar::root_self()->map(options, /*vmar_offset=*/0, buffer.vmo,
+                                      /*vmo_offset=*/0, mapped_size, &addr);
+  ZX_CHECK(status == ZX_OK, status) << "zx_vmar_map";
+
+  // Copy the data to the mapped VMO.
+  gfx_image.AsBitmap().readPixels(
+      SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
+                        kPremul_SkAlphaType),
+      reinterpret_cast<void*>(addr), stride, 0, 0);
+
+  // Unmap the VMO.
+  status = zx::vmar::root_self()->unmap(addr, mapped_size);
+  ZX_DCHECK(status == ZX_OK, status) << "zx_vmar_unmap";
+
+  favicon.set_data(std::move(buffer));
+  favicon.set_height(height);
+  favicon.set_width(width);
+
+  return favicon;
+}
+
+}  // namespace
 
 NavigationControllerImpl::NavigationControllerImpl(
     content::WebContents* web_contents)
@@ -30,7 +87,8 @@ void NavigationControllerImpl::AddBinding(
 }
 
 void NavigationControllerImpl::SetEventListener(
-    fidl::InterfaceHandle<fuchsia::web::NavigationEventListener> listener) {
+    fidl::InterfaceHandle<fuchsia::web::NavigationEventListener> listener,
+    fuchsia::web::NavigationEventListenerFlags flags) {
   // Reset the event buffer state.
   waiting_for_navigation_event_ack_ = false;
   previous_navigation_state_ = {};
@@ -42,12 +100,33 @@ void NavigationControllerImpl::SetEventListener(
     return;
   }
 
+  send_favicon_ =
+      (flags & fuchsia::web::NavigationEventListenerFlags::FAVICON) ==
+      fuchsia::web::NavigationEventListenerFlags::FAVICON;
+
+  favicon::ContentFaviconDriver* favicon_driver =
+      favicon::ContentFaviconDriver::FromWebContents(web_contents_);
+  if (send_favicon_) {
+    if (!favicon_driver) {
+      favicon::ContentFaviconDriver::CreateForWebContents(
+          web_contents_,
+          /*favicon_service=*/nullptr);
+      favicon_driver =
+          favicon::ContentFaviconDriver::FromWebContents(web_contents_);
+    }
+    favicon_driver->AddObserver(this);
+  } else {
+    if (favicon_driver)
+      favicon_driver->RemoveObserver(this);
+  }
+
   navigation_listener_.Bind(std::move(listener));
   navigation_listener_.set_error_handler(
-      [this](zx_status_t status) { SetEventListener(nullptr); });
+      [this](zx_status_t status) { SetEventListener(nullptr, {}); });
 
   // Immediately send the current navigation state, even if it is empty.
-  if (web_contents_->GetController().GetVisibleEntry() == nullptr) {
+  if (!web_contents_->GetController().GetVisibleEntry() ||
+      web_contents_->GetController().GetVisibleEntry()->IsInitialEntry()) {
     waiting_for_navigation_event_ack_ = true;
     navigation_listener_->OnNavigationStateChanged(
         fuchsia::web::NavigationState(), [this]() {
@@ -63,7 +142,7 @@ fuchsia::web::NavigationState
 NavigationControllerImpl::GetVisibleNavigationState() const {
   content::NavigationEntry* const entry =
       web_contents_->GetController().GetVisibleEntry();
-  if (!entry)
+  if (!entry || entry->IsInitialEntry())
     return fuchsia::web::NavigationState();
 
   fuchsia::web::NavigationState state;
@@ -135,11 +214,10 @@ void NavigationControllerImpl::MaybeSendNavigationEvent() {
 void NavigationControllerImpl::LoadUrl(std::string url,
                                        fuchsia::web::LoadUrlParams params,
                                        LoadUrlCallback callback) {
-  fuchsia::web::NavigationController_LoadUrl_Result result;
   GURL validated_url(url);
   if (!validated_url.is_valid()) {
-    result.set_err(fuchsia::web::NavigationControllerError::INVALID_URL);
-    callback(std::move(result));
+    callback(
+        fpromise::error(fuchsia::web::NavigationControllerError::INVALID_URL));
     return;
   }
 
@@ -152,8 +230,8 @@ void NavigationControllerImpl::LoadUrl(std::string url,
       base::StringPiece header_value = cr_fuchsia::BytesAsString(header.value);
       if (!net::HttpUtil::IsValidHeaderName(header_name) ||
           !net::HttpUtil::IsValidHeaderValue(header_value)) {
-        result.set_err(fuchsia::web::NavigationControllerError::INVALID_HEADER);
-        callback(std::move(result));
+        callback(fpromise::error(
+            fuchsia::web::NavigationControllerError::INVALID_HEADER));
         return;
       }
 
@@ -169,14 +247,13 @@ void NavigationControllerImpl::LoadUrl(std::string url,
   params_converted.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
   if (params.has_was_user_activated() && params.was_user_activated()) {
-    params_converted.was_activated = content::mojom::WasActivatedOption::kYes;
+    params_converted.was_activated = blink::mojom::WasActivatedOption::kYes;
   } else {
-    params_converted.was_activated = content::mojom::WasActivatedOption::kNo;
+    params_converted.was_activated = blink::mojom::WasActivatedOption::kNo;
   }
 
   web_contents_->GetController().LoadURLWithParams(params_converted);
-  result.set_response(fuchsia::web::NavigationController_LoadUrl_Response());
-  callback(std::move(result));
+  callback(fpromise::ok());
 }
 
 void NavigationControllerImpl::GoBack() {
@@ -238,7 +315,7 @@ void NavigationControllerImpl::DidFinishLoad(
   OnNavigationEntryChanged();
 }
 
-void NavigationControllerImpl::RenderProcessGone(
+void NavigationControllerImpl::PrimaryMainFrameRenderProcessGone(
     base::TerminationStatus status) {
   // If the current RenderProcess terminates then trigger a NavigationState
   // change to let the caller know that something is wrong.
@@ -248,10 +325,17 @@ void NavigationControllerImpl::RenderProcessGone(
 
 void NavigationControllerImpl::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
   }
+
+  // If favicons are enabled then reset favicon in the pending navigation.
+  if (send_favicon_)
+    pending_navigation_event_.set_favicon({});
 
   uncommitted_load_error_ = false;
   active_navigation_ = navigation_handle;
@@ -267,6 +351,22 @@ void NavigationControllerImpl::DidFinishNavigation(
   active_navigation_ = nullptr;
   uncommitted_load_error_ = !navigation_handle->HasCommitted() &&
                             navigation_handle->GetNetErrorCode() != net::OK;
+
+  OnNavigationEntryChanged();
+}
+
+void NavigationControllerImpl::OnFaviconUpdated(
+    favicon::FaviconDriver* favicon_driver,
+    NotificationIconType notification_icon_type,
+    const GURL& icon_url,
+    bool icon_url_changed,
+    const gfx::Image& image) {
+  // Currently FaviconDriverImpl loads only 16 DIP images, except on Android and
+  // iOS.
+  DCHECK_EQ(notification_icon_type, FaviconDriverObserver::NON_TOUCH_16_DIP);
+
+  pending_navigation_event_.set_favicon(GfxImageToFidlFavicon(image));
+
   OnNavigationEntryChanged();
 }
 
@@ -274,6 +374,13 @@ void DiffNavigationEntries(const fuchsia::web::NavigationState& old_entry,
                            const fuchsia::web::NavigationState& new_entry,
                            fuchsia::web::NavigationState* difference) {
   DCHECK(difference);
+
+  // |new_entry| should not be empty when the difference is between states
+  // pre- and post-navigation. It is possible for non-navigation events (e.g.
+  // Renderer-process teardown) to trigger notifications, in which case both
+  // states may be empty (i.e. both come from the "initial" NavigationEntry).
+  if (new_entry.IsEmpty() && old_entry.IsEmpty())
+    return;
 
   DCHECK(new_entry.has_title());
   if (!old_entry.has_title() || (new_entry.title() != old_entry.title())) {

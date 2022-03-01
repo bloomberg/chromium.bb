@@ -14,12 +14,7 @@
 # ==============================================================================
 """Tests for tensorflow.ops.tf.Cholesky."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
-from six.moves import xrange  # pylint: disable=redefined-builtin
 
 from tensorflow.compiler.tests import xla_test
 from tensorflow.python.framework import constant_op
@@ -28,7 +23,6 @@ from tensorflow.python.framework import errors
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import linalg_ops
-from tensorflow.python.ops import math_ops
 from tensorflow.python.platform import test
 
 
@@ -61,7 +55,7 @@ class CholeskyOpTest(xla_test.XLATestCase):
           dtypes.as_dtype(x.dtype), shape=x.shape)
       with self.test_scope():
         chol = linalg_ops.cholesky(placeholder)
-      verification = math_ops.matmul(chol, chol, adjoint_b=True)
+      verification = test_util.matmul_without_tf32(chol, chol, adjoint_b=True)
       self._verifyCholeskyBase(sess, placeholder, x, chol, verification, atol)
 
   def testBasic(self):
@@ -81,7 +75,7 @@ class CholeskyOpTest(xla_test.XLATestCase):
 
       # Generate random positive-definite matrices.
       matrices = np.random.rand(10, 5, 5).astype(dtype)
-      for i in xrange(10):
+      for i in range(10):
         matrices[i] = np.dot(matrices[i].T, matrices[i])
       self._verifyCholesky(matrices, atol=1e-4)
 

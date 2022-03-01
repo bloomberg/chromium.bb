@@ -11,6 +11,7 @@
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/main_stage/element_animator.h"
 #include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
+#include "base/bind.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
@@ -132,7 +133,7 @@ void AnimatedContainerView::RemoveAllViews() {
   // We can prevent over-propagation of the PreferredSizeChanged event by
   // stopping propagation during batched view hierarchy add/remove operations.
   ScopedDisablePreferredSizeChanged disable_preferred_size_changed(this);
-  content_view()->RemoveAllChildViews(/*delete_children=*/true);
+  content_view()->RemoveAllChildViews();
 
   // We inform our derived class all views have been removed.
   OnAllViewsRemoved();

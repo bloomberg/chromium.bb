@@ -10,16 +10,6 @@ diff a/third_party/libtiff/tiffiop.h b/third_party/libtiff/tiffiop.h
  
  #ifdef HAVE_FCNTL_H
  # include <fcntl.h>
-@@ -59,8 +59,7 @@
- 
- #if !defined(HAVE_SNPRINTF) && !defined(HAVE__SNPRINTF)
- #undef snprintf
--#define snprintf _TIFF_snprintf_f
--extern int snprintf(char* str, size_t size, const char* format, ...);
-+#define snprintf FXSYS_snprintf
- #endif
- 
- #include "tiffio.h"
 diff a/third_party/libtiff/tif_jpeg.c b/third_party/libtiff/tif_jpeg.c
 --- a/third_party/libtiff/tif_jpeg.c
 +++ b/third_party/libtiff/tif_jpeg.c
@@ -42,29 +32,6 @@ diff a/third_party/libtiff/tif_jpeg.c b/third_party/libtiff/tif_jpeg.c
  
  /* 
   * Do we want to do special processing suitable for when JSAMPLE is a
-diff a/third_party/libtiff/tif_ojpeg.c b/third_party/libtiff/tif_ojpeg.c
---- a/third_party/libtiff/tif_ojpeg.c
-+++ b/third_party/libtiff/tif_ojpeg.c
-@@ -214,8 +214,17 @@
- # define HAVE_BOOLEAN            /* prevent jmorecfg.h from redefining it */
- #endif
- 
--#include "jpeglib.h"
--#include "jerror.h"
-+#if defined(USE_SYSTEM_LIBJPEG)
-+#include <jerror.h>
-+#include <jpeglib.h>
-+#elif defined(USE_LIBJPEG_TURBO)
-+#include "third_party/libjpeg_turbo/jerror.h"
-+#include "third_party/libjpeg_turbo/jpeglib.h"
-+#else
-+#include "third_party/libjpeg/jerror.h"
-+#include "third_party/libjpeg/jpeglib.h"
-+#endif
-+
- 
- typedef struct jpeg_error_mgr jpeg_error_mgr;
- typedef struct jpeg_common_struct jpeg_common_struct;
 diff a/third_party/libtiff/tiffconf.h b/third_party/libtiff/tiffconf.h
 --- /dev/null
 +++ b/third_party/libtiff/tiffconf.h
@@ -78,8 +45,9 @@ diff a/third_party/libtiff/tiffconf.h b/third_party/libtiff/tiffconf.h
 +#ifndef _TIFFCONF_
 +#define _TIFFCONF_
 +
++#include <stdint.h>
++
 +#include "build/build_config.h"
-+#include "core/fxcrt/fx_system.h"
 +
 +//NOTE: The tiff codec requires an ANSI C compiler environment for building and 
 +//    presumes an ANSI C environment for use.
@@ -97,8 +65,10 @@ diff a/third_party/libtiff/tiffconf.h b/third_party/libtiff/tiffconf.h
 +#define HAVE_IEEEFP 1
 +
 +/* Define to 1 if you have the <string.h> header file. */
-+//#define HAVE_STRING_H 1
-+//fx_system.h already include the string.h in ANSIC
++#define HAVE_STRING_H 1
++
++/* Define to 1 if you have snprintf(). */
++#define HAVE_SNPRINTF 1
 +
 +/* Define to 1 if you have the <search.h> header file. */
 +#if defined(OS_WIN)
@@ -203,16 +173,13 @@ diff a/third_party/libtiff/tiffconf.h b/third_party/libtiff/tiffconf.h
 +
 +#if defined(_WIN64)
 +#define TIFF_SSIZE_T signed __int64
-+#define TIFF_SSIZE_T_MAX INT64_MAX
 +#else
 +#define TIFF_SSIZE_T signed int
-+#define TIFF_SSIZE_T_MAX INT_MAX
 +#endif
 +
 +#else
 +
 +#define TIFF_SSIZE_T signed long
-+#define TIFF_SSIZE_T_MAX LONG_MAX
 +
 +#endif
 +

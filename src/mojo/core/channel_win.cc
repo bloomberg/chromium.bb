@@ -14,15 +14,16 @@
 #include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/debug/activity_tracker.h"
+#include "base/ignore_result.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
 #include "base/task/current_thread.h"
-#include "base/task_runner.h"
+#include "base/task/task_runner.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 
@@ -74,7 +75,7 @@ class ChannelWinMessageQueue {
 
  private:
   base::circular_deque<Channel::MessagePtr> queue_;
-  std::atomic<uint64_t>* queue_size_sum_ = nullptr;
+  raw_ptr<std::atomic<uint64_t>> queue_size_sum_ = nullptr;
 };
 
 class ChannelWin : public Channel,
@@ -101,6 +102,9 @@ class ChannelWin : public Channel,
 
     CHECK(handle_.IsValid());
   }
+
+  ChannelWin(const ChannelWin&) = delete;
+  ChannelWin& operator=(const ChannelWin&) = delete;
 
   void Start() override {
     io_task_runner_->PostTask(
@@ -172,7 +176,7 @@ class ChannelWin : public Channel,
           base::win::Uint32ToHandle(extra_header_handles[i].handle);
       if (PlatformHandleInTransit::IsPseudoHandle(handle_value))
         return false;
-      if (remote_process().IsValid()) {
+      if (remote_process().IsValid() && handle_value != INVALID_HANDLE_VALUE) {
         // If we know the remote process's handle, we assume it doesn't know
         // ours; that means any handle values still belong to that process, and
         // we need to transfer them to this process.
@@ -420,8 +424,6 @@ class ChannelWin : public Channel,
   bool is_write_pending_ = false;
 
   bool leak_handle_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ChannelWin);
 };
 
 }  // namespace

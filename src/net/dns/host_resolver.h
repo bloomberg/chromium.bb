@@ -12,19 +12,23 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
 #include "net/dns/host_cache.h"
-#include "net/dns/host_resolver_source.h"
+#include "net/dns/host_resolver_results.h"
 #include "net/dns/public/dns_config_overrides.h"
 #include "net/dns/public/dns_query_type.h"
+#include "net/dns/public/host_resolver_source.h"
+#include "net/dns/public/mdns_listener_update_type.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/dns/public/secure_dns_policy.h"
+#include "net/log/net_log_with_source.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/scheme_host_port.h"
 
 namespace base {
 class Value;
@@ -38,7 +42,6 @@ class DnsClient;
 struct DnsConfigOverrides;
 class HostResolverManager;
 class NetLog;
-class NetLogWithSource;
 class URLRequestContext;
 
 // This class represents the task of resolving hostnames (or IP address
@@ -80,7 +83,17 @@ class NET_EXPORT HostResolver {
     // Address record (A or AAAA) results of the request. Should only be called
     // after Start() signals completion, either by invoking the callback or by
     // returning a result other than |ERR_IO_PENDING|.
+    //
+    // TODO(crbug.com/1264933): Remove and replace all usage with
+    // GetConnectionEndpointResults().
     virtual const absl::optional<AddressList>& GetAddressResults() const = 0;
+
+    // Endpoint results for `A`, `AAAA`, `UNSPECIFIED`, or `HTTPS` requests.
+    // Should only be called after Start() signals completion, either by
+    // invoking the callback or by returning a result other than
+    // `ERR_IO_PENDING`.
+    virtual absl::optional<std::vector<HostResolverEndpointResult>>
+    GetEndpointResults() const = 0;
 
     // Text record (TXT) results of the request. Should only be called after
     // Start() signals completion, either by invoking the callback or by
@@ -280,23 +293,21 @@ class NET_EXPORT HostResolver {
     // multiple types for the same host.
     class Delegate {
      public:
-      enum class UpdateType { ADDED, CHANGED, REMOVED };
-
       virtual ~Delegate() {}
 
-      virtual void OnAddressResult(UpdateType update_type,
+      virtual void OnAddressResult(MdnsListenerUpdateType update_type,
                                    DnsQueryType result_type,
                                    IPEndPoint address) = 0;
-      virtual void OnTextResult(UpdateType update_type,
+      virtual void OnTextResult(MdnsListenerUpdateType update_type,
                                 DnsQueryType result_type,
                                 std::vector<std::string> text_records) = 0;
-      virtual void OnHostnameResult(UpdateType update_type,
+      virtual void OnHostnameResult(MdnsListenerUpdateType update_type,
                                     DnsQueryType result_type,
                                     HostPortPair host) = 0;
 
       // For results which may be valid MDNS but are not handled/parsed by
       // HostResolver, e.g. pointers to the root domain.
-      virtual void OnUnhandledResult(UpdateType update_type,
+      virtual void OnUnhandledResult(MdnsListenerUpdateType update_type,
                                      DnsQueryType result_type) = 0;
     };
 
@@ -308,6 +319,9 @@ class NET_EXPORT HostResolver {
     // is cancelled (via destruction of |this|).
     virtual int Start(Delegate* delegate) = 0;
   };
+
+  HostResolver(const HostResolver&) = delete;
+  HostResolver& operator=(const HostResolver&) = delete;
 
   // If any completion callbacks are pending when the resolver is destroyed,
   // the host resolutions are cancelled, and the completion callbacks will not
@@ -324,7 +338,15 @@ class NET_EXPORT HostResolver {
   // Profiling information for the request is saved to |net_log| if non-NULL.
   //
   // Additional parameters may be set using |optional_parameters|. Reasonable
-  // defaults will be used if passed |absl::nullopt|.
+  // defaults will be used if passed |nullptr|.
+  virtual std::unique_ptr<ResolveHostRequest> CreateRequest(
+      url::SchemeHostPort host,
+      NetworkIsolationKey network_isolation_key,
+      NetLogWithSource net_log,
+      absl::optional<ResolveHostParameters> optional_parameters) = 0;
+
+  // Create requests when scheme is unknown or non-standard.
+  // TODO(crbug.com/1206799): Rename to discourage use when scheme is known.
   virtual std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
       const NetworkIsolationKey& network_isolation_key,
@@ -390,6 +412,15 @@ class NET_EXPORT HostResolver {
   // Helper for squashing error code to a small set of DNS error codes.
   static int SquashErrorCode(int error);
 
+  // Utility to convert an AddressList to an equivalent list of
+  // `HostResolverEndpointResults`. Assumes all addresses in the input list
+  // represent the default non-protocol endpoint.
+  //
+  // TODO(crbug.com/1264933): Delete once `AddressList` usage is fully replaced
+  // in `HostResolver` and results.
+  static std::vector<HostResolverEndpointResult> AddressListToEndpointResults(
+      const AddressList& address_list);
+
  protected:
   HostResolver();
 
@@ -397,9 +428,6 @@ class NET_EXPORT HostResolver {
   // immediately on start.
   static std::unique_ptr<ResolveHostRequest> CreateFailingRequest(int error);
   static std::unique_ptr<ProbeRequest> CreateFailingProbeRequest(int error);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HostResolver);
 };
 
 }  // namespace net

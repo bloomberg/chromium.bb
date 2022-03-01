@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.continuous_search;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.url.GURL;
 
 /**
@@ -57,12 +58,14 @@ public class SearchUrlHelper {
                 return ".Organic";
             case PageCategory.NEWS_SRP:
                 return ".News";
-            case PageCategory.DISCOVER:
-                return ".Discover";
             default:
                 assert false : "No histogram suffix for type " + category;
                 return null;
         }
+    }
+
+    public static GURL getOriginalUrlFromWebContents(WebContents webContents) {
+        return SearchUrlHelperJni.get().getOriginalUrlFromWebContents(webContents);
     }
 
     @NativeMethods
@@ -70,5 +73,6 @@ public class SearchUrlHelper {
         boolean isGoogleDomainUrl(GURL url);
         String getQueryIfValidSrpUrl(GURL url);
         int getSrpPageCategoryFromUrl(GURL url);
+        GURL getOriginalUrlFromWebContents(WebContents webContents);
     }
 }

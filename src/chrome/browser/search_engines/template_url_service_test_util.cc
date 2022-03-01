@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
+#include "base/memory/raw_ptr.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
@@ -35,6 +35,11 @@ class TestingTemplateURLServiceClient : public ChromeTemplateURLServiceClient {
       : ChromeTemplateURLServiceClient(history_service),
         search_term_(search_term) {}
 
+  TestingTemplateURLServiceClient(const TestingTemplateURLServiceClient&) =
+      delete;
+  TestingTemplateURLServiceClient& operator=(
+      const TestingTemplateURLServiceClient&) = delete;
+
   void SetKeywordSearchTermsForURL(const GURL& url,
                                    TemplateURLID id,
                                    const std::u16string& term) override {
@@ -42,9 +47,7 @@ class TestingTemplateURLServiceClient : public ChromeTemplateURLServiceClient {
   }
 
  private:
-  std::u16string* search_term_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestingTemplateURLServiceClient);
+  raw_ptr<std::u16string> search_term_;
 };
 
 }  // namespace
@@ -92,13 +95,17 @@ std::unique_ptr<TemplateURL> CreateTestTemplateURL(
   return std::make_unique<TemplateURL>(data);
 }
 
-TemplateURLServiceTestUtil::TemplateURLServiceTestUtil() {
-  // Make unique temp directory.
-  EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-  profile_ = std::make_unique<TestingProfile>(temp_dir_.GetPath());
+TemplateURLServiceTestUtil::TemplateURLServiceTestUtil()
+    : TemplateURLServiceTestUtil(TestingProfile::TestingFactories()) {}
+
+TemplateURLServiceTestUtil::TemplateURLServiceTestUtil(
+    const TestingProfile::TestingFactories& testing_factories) {
+  TestingProfile::Builder profile_builder;
+  profile_builder.AddTestingFactories(testing_factories);
+  profile_ = profile_builder.Build();
 
   scoped_refptr<WebDatabaseService> web_database_service =
-      new WebDatabaseService(temp_dir_.GetPath().AppendASCII("webdata"),
+      new WebDatabaseService(profile_->GetPath().AppendASCII("webdata"),
                              base::ThreadTaskRunnerHandle::Get(),
                              base::ThreadTaskRunnerHandle::Get());
   web_database_service->AddTable(

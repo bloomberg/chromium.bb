@@ -25,7 +25,7 @@ class SwapChainTests : public DawnTest {
   public:
     void SetUp() override {
         DawnTest::SetUp();
-        DAWN_SKIP_TEST_IF(UsesWire());
+        DAWN_TEST_UNSUPPORTED_IF(UsesWire());
 
         glfwSetErrorCallback([](int code, const char* message) {
             dawn::ErrorLog() << "GLFW error " << code << " " << message;
@@ -138,11 +138,11 @@ TEST_P(SwapChainTests, DestroySurfaceAfterGet) {
 TEST_P(SwapChainTests, SwitchPresentMode) {
     // Fails with "internal drawable creation failed" on the Windows NVIDIA CQ builders but not
     // locally.
-    DAWN_SKIP_TEST_IF(IsWindows() && IsVulkan() && IsNvidia());
+    DAWN_SUPPRESS_TEST_IF(IsWindows() && IsVulkan() && IsNvidia());
 
     // TODO(jiawei.shao@intel.com): find out why this test sometimes hangs on the latest Linux Intel
     // Vulkan drivers.
-    DAWN_SKIP_TEST_IF(IsLinux() && IsVulkan() && IsIntel());
+    DAWN_SUPPRESS_TEST_IF(IsLinux() && IsVulkan() && IsIntel());
 
     constexpr wgpu::PresentMode kAllPresentModes[] = {
         wgpu::PresentMode::Immediate,
@@ -195,6 +195,8 @@ TEST_P(SwapChainTests, ResizingWindowOnly) {
 
 // Test resizing both the window and the swapchain at the same time.
 TEST_P(SwapChainTests, ResizingWindowAndSwapChain) {
+    // TODO(crbug.com/dawn/1205) Currently failing on new NVIDIA GTX 1660s on Linux/Vulkan.
+    DAWN_SUPPRESS_TEST_IF(IsLinux() && IsVulkan() && IsNvidia());
     for (int i = 0; i < 10; i++) {
         glfwSetWindowSize(window, 400 - 10 * i, 400 + 10 * i);
         glfwPollEvents();
@@ -218,7 +220,7 @@ TEST_P(SwapChainTests, SwitchingDevice) {
     // The Vulkan Validation Layers incorrectly disallow gracefully passing a swapchain between two
     // VkDevices using "vkSwapchainCreateInfoKHR::oldSwapchain".
     // See https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/2256
-    DAWN_SKIP_TEST_IF(IsVulkan() && IsBackendValidationEnabled());
+    DAWN_SUPPRESS_TEST_IF(IsVulkan() && IsBackendValidationEnabled());
 
     wgpu::Device device2 = wgpu::Device::Acquire(GetAdapter().CreateDevice());
 

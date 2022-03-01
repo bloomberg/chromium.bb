@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "extensions/common/mojom/event_dispatcher.mojom-forward.h"
 #include "extensions/renderer/bindings/api_binding_types.h"
 #include "extensions/renderer/bindings/api_event_listeners.h"
 #include "extensions/renderer/bindings/event_emitter.h"
@@ -21,7 +21,6 @@ class ListValue;
 
 namespace extensions {
 class ExceptionHandler;
-struct EventFilteringInfo;
 
 // The object to handle API events. This includes vending v8::Objects for the
 // event; handling adding, removing, and querying listeners; and firing events
@@ -38,6 +37,10 @@ class APIEventHandler {
   APIEventHandler(const APIEventListeners::ListenersUpdated& listeners_changed,
                   const ContextOwnerIdGetter& context_owner_id_getter,
                   ExceptionHandler* exception_handler);
+
+  APIEventHandler(const APIEventHandler&) = delete;
+  APIEventHandler& operator=(const APIEventHandler&) = delete;
+
   ~APIEventHandler();
 
   // Returns a new v8::Object for an event with the given |event_name|. If
@@ -69,11 +72,11 @@ class APIEventHandler {
   void FireEventInContext(const std::string& event_name,
                           v8::Local<v8::Context> context,
                           const base::ListValue& arguments,
-                          const EventFilteringInfo* filter);
+                          mojom::EventFilteringInfoPtr filter);
   void FireEventInContext(const std::string& event_name,
                           v8::Local<v8::Context> context,
                           std::vector<v8::Local<v8::Value>>* arguments,
-                          const EventFilteringInfo* filter,
+                          mojom::EventFilteringInfoPtr filter,
                           JSRunner::ResultCallback callback);
 
   // Registers a |function| to serve as an "argument massager" for the given
@@ -112,8 +115,6 @@ class APIEventHandler {
   // The exception handler associated with the bindings system; guaranteed to
   // outlive this object.
   ExceptionHandler* const exception_handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(APIEventHandler);
 };
 
 }  // namespace extensions

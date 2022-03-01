@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -23,7 +24,7 @@ class XRCanvasInputProvider : public GarbageCollected<XRCanvasInputProvider>,
                               public NameClient {
  public:
   XRCanvasInputProvider(XRSession*, HTMLCanvasElement*);
-  virtual ~XRCanvasInputProvider();
+  ~XRCanvasInputProvider() override;
 
   XRSession* session() const { return session_; }
   HTMLCanvasElement* canvas() const { return canvas_; }

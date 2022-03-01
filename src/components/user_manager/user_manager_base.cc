@@ -16,12 +16,11 @@
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -30,6 +29,7 @@
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user_type.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace user_manager {
 namespace {
@@ -146,6 +146,10 @@ const UserList& UserManagerBase::GetLRULoggedInUsers() const {
 
 const AccountId& UserManagerBase::GetOwnerAccountId() const {
   return owner_account_id_;
+}
+
+const AccountId& UserManagerBase::GetLastSessionActiveAccountId() const {
+  return last_session_active_account_id_;
 }
 
 void UserManagerBase::UserLoggedIn(const AccountId& account_id,
@@ -297,21 +301,24 @@ void UserManagerBase::OnSessionStarted() {
 }
 
 void UserManagerBase::RemoveUser(const AccountId& account_id,
+                                 UserRemovalReason reason,
                                  RemoveUserDelegate* delegate) {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
 
   if (!CanUserBeRemoved(FindUser(account_id)))
     return;
 
-  RemoveUserInternal(account_id, delegate);
+  RemoveUserInternal(account_id, reason, delegate);
 }
 
 void UserManagerBase::RemoveUserInternal(const AccountId& account_id,
+                                         UserRemovalReason reason,
                                          RemoveUserDelegate* delegate) {
-  RemoveNonOwnerUserInternal(account_id, delegate);
+  RemoveNonOwnerUserInternal(account_id, reason, delegate);
 }
 
 void UserManagerBase::RemoveNonOwnerUserInternal(const AccountId& account_id,
+                                                 UserRemovalReason reason,
                                                  RemoveUserDelegate* delegate) {
   // If account_id points to AccountId in User object, it will become deleted
   // after RemoveUserFromList(), which could lead to use-after-free in observer.
@@ -320,8 +327,10 @@ void UserManagerBase::RemoveNonOwnerUserInternal(const AccountId& account_id,
 
   if (delegate)
     delegate->OnBeforeUserRemoved(account_id);
+  NotifyUserToBeRemoved(account_id);
   AsyncRemoveCryptohome(account_id);
   RemoveUserFromList(account_id);
+  NotifyUserRemoved(account_id, reason);
 
   if (delegate)
     delegate->OnUserRemoved(account_id_copy);
@@ -513,19 +522,20 @@ void UserManagerBase::ParseUserList(const base::ListValue& users_list,
                                     std::set<AccountId>* users_set) {
   users_vector->clear();
   users_set->clear();
-  for (size_t i = 0; i < users_list.GetSize(); ++i) {
-    std::string email;
-    if (!users_list.GetString(i, &email) || email.empty()) {
+  base::Value::ConstListView users_list_view = users_list.GetList();
+  for (size_t i = 0; i < users_list_view.size(); ++i) {
+    const std::string* email = users_list_view[i].GetIfString();
+    if (!email || email->empty()) {
       LOG(ERROR) << "Corrupt entry in user list at index " << i << ".";
       continue;
     }
 
     const AccountId account_id = known_user::GetAccountId(
-        email, std::string() /* id */, AccountType::UNKNOWN);
+        *email, std::string() /* id */, AccountType::UNKNOWN);
 
     if (existing_users.find(account_id) != existing_users.end() ||
         !users_set->insert(account_id).second) {
-      LOG(ERROR) << "Duplicate user: " << email;
+      LOG(ERROR) << "Duplicate user: " << *email;
       continue;
     }
     users_vector->push_back(account_id);
@@ -722,6 +732,19 @@ void UserManagerBase::NotifyUsersSignInConstraintsChanged() {
     observer.OnUsersSignInConstraintsChanged();
 }
 
+void UserManagerBase::NotifyUserToBeRemoved(const AccountId& account_id) {
+  DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
+  for (auto& observer : observer_list_)
+    observer.OnUserToBeRemoved(account_id);
+}
+
+void UserManagerBase::NotifyUserRemoved(const AccountId& account_id,
+                                        UserRemovalReason reason) {
+  DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
+  for (auto& observer : observer_list_)
+    observer.OnUserRemoved(account_id, reason);
+}
+
 bool UserManagerBase::CanUserBeRemoved(const User* user) const {
   // Only regular users are allowed to be manually removed.
   if (!user || !(user->HasGaiaAccount() || user->IsActiveDirectoryUser()))
@@ -823,22 +846,22 @@ void UserManagerBase::EnsureUsersLoaded() {
 
   for (auto* user : users_) {
     auto& account_id = user->GetAccountId();
-    std::u16string display_name;
-    if (prefs_display_names->GetStringWithoutPathExpansion(
-            account_id.GetUserEmail(), &display_name)) {
-      user->set_display_name(display_name);
+    const std::string* display_name =
+        prefs_display_names->FindStringKey(account_id.GetUserEmail());
+    if (display_name) {
+      user->set_display_name(base::UTF8ToUTF16(*display_name));
     }
 
-    std::u16string given_name;
-    if (prefs_given_names->GetStringWithoutPathExpansion(
-            account_id.GetUserEmail(), &given_name)) {
-      user->set_given_name(given_name);
+    const std::string* given_name =
+        prefs_given_names->FindStringKey(account_id.GetUserEmail());
+    if (given_name) {
+      user->set_given_name(base::UTF8ToUTF16(*given_name));
     }
 
-    std::string display_email;
-    if (prefs_display_emails->GetStringWithoutPathExpansion(
-            account_id.GetUserEmail(), &display_email)) {
-      user->set_display_email(display_email);
+    const std::string* display_email =
+        prefs_display_emails->FindStringKey(account_id.GetUserEmail());
+    if (display_email) {
+      user->set_display_email(*display_email);
     }
   }
   user_loading_stage_ = STAGE_LOADED;
@@ -863,9 +886,9 @@ const User* UserManagerBase::FindUserInList(const AccountId& account_id) const {
 bool UserManagerBase::UserExistsInList(const AccountId& account_id) const {
   const base::ListValue* user_list =
       GetLocalState()->GetList(kRegularUsersPref);
-  for (size_t i = 0; i < user_list->GetSize(); ++i) {
-    std::string email;
-    if (user_list->GetString(i, &email) && (account_id.GetUserEmail() == email))
+  for (const base::Value& i : user_list->GetList()) {
+    const std::string* email = i.GetIfString();
+    if (email && (account_id.GetUserEmail() == *email))
       return true;
   }
   return false;
@@ -888,8 +911,8 @@ void UserManagerBase::GuestUserLoggedIn() {
 void UserManagerBase::AddUserRecord(User* user) {
   // Add the user to the front of the user list.
   ListPrefUpdate prefs_users_update(GetLocalState(), kRegularUsersPref);
-  prefs_users_update->Insert(
-      0, std::make_unique<base::Value>(user->GetAccountId().GetUserEmail()));
+  prefs_users_update->Insert(prefs_users_update->GetList().begin(),
+                             base::Value(user->GetAccountId().GetUserEmail()));
   users_.insert(users_.begin(), user);
 }
 
@@ -954,15 +977,15 @@ User::OAuthTokenStatus UserManagerBase::LoadUserOAuthStatus(
 
   const base::DictionaryValue* prefs_oauth_status =
       GetLocalState()->GetDictionary(kUserOAuthTokenStatus);
-  int oauth_token_status = User::OAUTH_TOKEN_STATUS_UNKNOWN;
-  if (prefs_oauth_status &&
-      prefs_oauth_status->GetIntegerWithoutPathExpansion(
-          account_id.GetUserEmail(), &oauth_token_status)) {
-    User::OAuthTokenStatus status =
-        static_cast<User::OAuthTokenStatus>(oauth_token_status);
-    return status;
-  }
-  return User::OAUTH_TOKEN_STATUS_UNKNOWN;
+  if (!prefs_oauth_status)
+    return User::OAUTH_TOKEN_STATUS_UNKNOWN;
+
+  absl::optional<int> oauth_token_status =
+      prefs_oauth_status->FindIntKey(account_id.GetUserEmail());
+  if (!oauth_token_status.has_value())
+    return User::OAUTH_TOKEN_STATUS_UNKNOWN;
+
+  return static_cast<User::OAuthTokenStatus>(oauth_token_status.value());
 }
 
 bool UserManagerBase::LoadForceOnlineSignin(const AccountId& account_id) const {
@@ -970,12 +993,11 @@ bool UserManagerBase::LoadForceOnlineSignin(const AccountId& account_id) const {
 
   const base::DictionaryValue* prefs_force_online =
       GetLocalState()->GetDictionary(kUserForceOnlineSignin);
-  bool force_online_signin = false;
   if (prefs_force_online) {
-    prefs_force_online->GetBooleanWithoutPathExpansion(
-        account_id.GetUserEmail(), &force_online_signin);
+    return prefs_force_online->FindBoolKey(account_id.GetUserEmail())
+        .value_or(false);
   }
-  return force_online_signin;
+  return false;
 }
 
 void UserManagerBase::RemoveNonCryptohomeData(const AccountId& account_id) {
@@ -1007,7 +1029,7 @@ User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(
     const AccountId& account_id,
     bool notify) {
   ListPrefUpdate prefs_users_update(GetLocalState(), kRegularUsersPref);
-  prefs_users_update->Clear();
+  prefs_users_update->ClearList();
   User* user = nullptr;
   for (UserList::iterator it = users_.begin(); it != users_.end();) {
     if ((*it)->GetAccountId() == account_id) {
@@ -1016,7 +1038,7 @@ User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(
     } else {
       if ((*it)->HasGaiaAccount() || (*it)->IsActiveDirectoryUser()) {
         const std::string user_email = (*it)->GetAccountId().GetUserEmail();
-        prefs_users_update->AppendString(user_email);
+        prefs_users_update->Append(user_email);
       }
       ++it;
     }
@@ -1134,7 +1156,8 @@ void UserManagerBase::RemoveLegacySupervisedUser(const AccountId& account_id) {
     // FindUser(account_id) returns nullptr and CanUserBeRemoved() returns
     // false. This is why we call RemoveUserInternal() directly instead of
     // RemoveUser().
-    RemoveUserInternal(account_id, /*delegate=*/nullptr);
+    RemoveUserInternal(account_id, UserRemovalReason::UNKNOWN,
+                       /*delegate=*/nullptr);
     base::UmaHistogramEnumeration(kLegacySupervisedUsersHistogramName,
                                   LegacySupervisedUserStatus::kLSUDeleted);
   } else {

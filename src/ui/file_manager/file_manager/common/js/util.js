@@ -6,21 +6,21 @@
  * @fileoverview This file should contain utility functions used only by the
  * files app. Other shared utility functions can be found in base/*_util.js,
  * which allows finer-grained control over introducing dependencies.
- * @suppress {uselessCode} Temporary suppress because of the line exporting.
  */
 
-// clang-format off
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// #import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
-// #import {assert} from 'chrome://resources/js/assert.m.js';
-// #import * as wrappedVolumeManagerCommon from './volume_manager_types.m.js'; const {VolumeManagerCommon} = wrappedVolumeManagerCommon;
-// #import {decorate} from 'chrome://resources/js/cr/ui.m.js';
-// #import {FilesAppEntry, FakeEntry} from '../../externs/files_app_entry_interfaces.m.js';
-// #import {EntryList} from './files_app_entry_types.m.js';
-// #import {VolumeInfo} from '../../externs/volume_info.m.js';
-// #import {EntryLocation} from '../../externs/entry_location.m.js';
-// #import {VolumeManager} from '../../externs/volume_manager.m.js';
-// clang-format on
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {decorate} from 'chrome://resources/js/cr/ui.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
+
+import {promisify} from '../../common/js/api.js';
+import {EntryLocation} from '../../externs/entry_location.js';
+import {FakeEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
+import {VolumeInfo} from '../../externs/volume_info.js';
+import {VolumeManager} from '../../externs/volume_manager.js';
+
+import {EntryList} from './files_app_entry_types.js';
+import {VolumeManagerCommon} from './volume_manager_types.js';
 
 /**
  * Namespace for utility functions.
@@ -325,12 +325,12 @@ util.applyTransform = (element, transform) => {
 
 /**
  * Extracts path from filesystem: URL.
- * @param {string} url Filesystem URL.
- * @return {?string} The path.
+ * @param {?string=} url Filesystem URL.
+ * @return {?string} The path if it can be parsed, null if it cannot.
  */
 util.extractFilePath = url => {
   const match =
-      /^filesystem:[\w-]*:\/\/[\w]*\/(external|persistent|temporary)(\/.*)$/
+      /^filesystem:[\w-]*:\/\/[\w-]*\/(external|persistent|temporary)(\/.*)$/
           .exec(url);
   const path = match && match[2];
   if (!path) {
@@ -366,7 +366,7 @@ util.createChild = (parent, opt_className, opt_tag) => {
  */
 util.queryDecoratedElement = (query, type) => {
   const element = queryRequiredElement(query);
-  cr.ui.decorate(element, type);
+  decorate(element, type);
   return element;
 };
 
@@ -379,8 +379,13 @@ util.queryDecoratedElement = (query, type) => {
  * @param {string} id The id of the string to return.
  * @return {string} The translated string.
  */
-/* #export */ function str(id) {
-  return loadTimeData.getString(id);
+export function str(id) {
+  try {
+    return loadTimeData.getString(id);
+  } catch (e) {
+    console.warn('Failed to get string for ', id);
+    return id;
+  }
 }
 
 /**
@@ -393,7 +398,7 @@ util.queryDecoratedElement = (query, type) => {
  * @param {...*} var_args The values to replace into the string.
  * @return {string} The translated string with replaced values.
  */
-/* #export */ function strf(id, var_args) {
+export function strf(id, var_args) {
   return loadTimeData.getStringF.apply(loadTimeData, arguments);
 }
 
@@ -976,15 +981,13 @@ util.getLastVisitedURL = () => {
   return util.lastVisitedURL;
 };
 
-
 /**
  * Returns normalized current locale, or default locale - 'en'.
  * @return {string} Current locale
  */
 util.getCurrentLocaleOrDefault = () => {
-  // chrome.i18n.getMessage('@@ui_locale') can't be used in packed app.
-  // Instead, we pass it from C++-side with strings.
-  return str('UI_LOCALE') || 'en';
+  const locale = str('UI_LOCALE') || 'en';
+  return locale.replace(/_/g, '-');
 };
 
 /**
@@ -1182,7 +1185,6 @@ util.getRootTypeLabel = locationInfo => {
       }
       console.error('Unsupported media view root type: ' + mediaViewRootType);
       return locationInfo.volumeInfo.label;
-    case VolumeManagerCommon.RootType.DRIVE_OTHER:
     case VolumeManagerCommon.RootType.ARCHIVE:
     case VolumeManagerCommon.RootType.REMOVABLE:
     case VolumeManagerCommon.RootType.MTP:
@@ -1481,30 +1483,11 @@ util.isRecentsFilterEnabled = () => {
 };
 
 /**
- * Returns true when FilesZipMount feature is enabled.
- * TODO(crbug.com/912236) Remove once transition to new ZIP system is finished.
+ * Returns true if Files SWA feature flag is enabled.
  * @return {boolean}
  */
-util.isZipMountEnabled = () => {
-  return loadTimeData.getBoolean('ZIP_MOUNT');
-};
-
-/**
- * Returns true when FilesZipPack feature is enabled.
- * TODO(crbug.com/912236) Remove once transition to new ZIP system is finished.
- * @return {boolean}
- */
-util.isZipPackEnabled = () => {
-  return loadTimeData.getBoolean('ZIP_PACK');
-};
-
-/**
- * Returns true when FilesZipUnpack feature is enabled.
- * TODO(crbug.com/912236) Remove once transition to new ZIP system is finished.
- * @return {boolean}
- */
-util.isZipUnpackEnabled = () => {
-  return loadTimeData.getBoolean('ZIP_UNPACK');
+util.isSwaEnabled = () => {
+  return loadTimeData.getBoolean('FILES_SWA');
 };
 
 /**
@@ -1521,6 +1504,22 @@ util.isSinglePartitionFormatEnabled = () => {
  */
 util.isVideoPlayerJsModulesEnabled = () => {
   return loadTimeData.getBoolean('VIDEO_PLAYER_JS_MODULES_ENABLED');
+};
+
+/**
+ * Returns true if FilesBannerFramework flag is enabled.
+ * @return {boolean}
+ */
+util.isBannerFrameworkEnabled = () => {
+  return loadTimeData.getBoolean('FILES_BANNER_FRAMEWORK');
+};
+
+/**
+ * Returns true if FilesExtractArchive flag is enabled.
+ * @return {boolean}
+ */
+util.isExtractArchiveEnabled = () => {
+  return loadTimeData.getBoolean('EXTRACT_ARCHIVE');
 };
 
 /**
@@ -1615,16 +1614,24 @@ util.getEntries = volumeInfo => {
 
 /**
  * Executes a functions only when the context is not the incognito one in a
- * regular session.
- * @param {function()} callback
+ * regular session. Returns a promise that when fulfilled informs us whether or
+ * not the callback was invoked.
+ * @param {function():void} callback
+ * @return {!Promise<boolean>}
  */
-util.doIfPrimaryContext = callback => {
-  chrome.fileManagerPrivate.getProfiles((profiles) => {
-    if ((profiles[0] && profiles[0].profileId == '$guest') ||
-        !chrome.extension.inIncognitoContext) {
+util.doIfPrimaryContext = async (callback) => {
+  const guestMode = await util.isInGuestMode();
+  if (guestMode) {
+    callback();
+    return true;
+  }
+  if (!window.isSWA) {
+    if (!chrome.extension.inIncognitoContext) {
       callback();
+      return true;
     }
-  });
+  }
+  return false;
 };
 
 /**
@@ -1804,16 +1811,44 @@ util.getFilesAppModalDialogInstance = () => {
   return /** @type {!HTMLDialogElement} */ (dialogElement);
 };
 
-/** @return {boolean} */
-util.isSharesheetEnabled = () => {
-  return loadTimeData.valueExists('SHARESHEET_ENABLED') &&
-      loadTimeData.getBoolean('SHARESHEET_ENABLED');
-};
-
 util.isDriveDssPinEnabled = () => {
   return loadTimeData.valueExists('DRIVE_DSS_PIN_ENABLED') &&
       loadTimeData.getBoolean('DRIVE_DSS_PIN_ENABLED');
 };
 
-// eslint-disable-next-line semi,no-extra-semi
-/* #export */ {util};
+/**
+ *
+ * @param {!chrome.fileManagerPrivate.FileTaskDescriptor} left
+ * @param {!chrome.fileManagerPrivate.FileTaskDescriptor} right
+ * @returns {boolean}
+ */
+util.descriptorEqual = function(left, right) {
+  return left.appId === right.appId && left.taskType === right.taskType &&
+      left.actionId === right.actionId;
+};
+
+/**
+ * Create a taskID which is a string unique-ID for a task. This is temporary
+ * and will be removed once we use task.descriptor everywhere instead.
+ * @param {!chrome.fileManagerPrivate.FileTaskDescriptor} descriptor
+ * @returns {string}
+ */
+util.makeTaskID = function({appId, taskType, actionId}) {
+  return `${appId}|${taskType}|${actionId}`;
+};
+
+/**
+ * Returns a new promise which, when fulfilled carries a boolean indicating
+ * whether the app is in the guest mode. Typical use:
+ *
+ * util.isInGuestMode().then(
+ *     (guest) => { if (guest) { ... in guest mode } }
+ * );
+ * @return {Promise<boolean>}
+ */
+util.isInGuestMode = async () => {
+  const profiles = await promisify(chrome.fileManagerPrivate.getProfiles);
+  return profiles.length > 0 && profiles[0].profileId === '$guest';
+};
+
+export {util};

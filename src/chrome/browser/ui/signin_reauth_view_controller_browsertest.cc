@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -15,15 +16,19 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/reauth_result.h"
 #include "chrome/browser/signin/signin_features.h"
+#include "chrome/browser/sync/sync_encryption_keys_tab_helper.h"
+#include "chrome/browser/sync/sync_service_factory.h"
+#include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/signin_reauth_view_controller.h"
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_metrics.h"
-#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "content/public/test/browser_test.h"
@@ -40,6 +45,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
 
 using ::testing::ElementsAre;
@@ -50,12 +56,8 @@ const char kReauthUserActionHistogramName[] =
     "Signin.TransactionalReauthUserAction";
 const char kReauthUserActionToFillPasswordHistogramName[] =
     "Signin.TransactionalReauthUserAction.ToFillPassword";
-const char kReauthGaiaNavigationDurationFromReauthStartHistogramName[] =
-    "Signin.TransactionalReauthGaiaNavigationDuration.FromReauthStart";
-const char kReauthGaiaNavigationDurationFromConfirmClickHistogramName[] =
-    "Signin.TransactionalReauthGaiaNavigationDuration.FromConfirmClick";
 
-const base::TimeDelta kReauthDialogTimeout = base::TimeDelta::FromSeconds(30);
+const base::TimeDelta kReauthDialogTimeout = base::Seconds(30);
 const char kReauthDonePath[] = "/embedded/xreauth/chrome?done";
 const char kReauthUnexpectedResponsePath[] =
     "/embedded/xreauth/chrome?unexpected";
@@ -137,7 +139,7 @@ class ReauthTestObserver : SigninReauthViewController::Observer {
   }
 
  private:
-  SigninReauthViewController* controller_;
+  raw_ptr<SigninReauthViewController> controller_;
   base::RunLoop run_loop_;
 };
 
@@ -182,9 +184,11 @@ class SigninReauthViewControllerBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
-  void ShowReauthPrompt() {
+  void ShowReauthPrompt(
+      signin_metrics::ReauthAccessPoint access_point =
+          signin_metrics::ReauthAccessPoint::kAutofillDropdown) {
     abort_handle_ = browser()->signin_view_controller()->ShowReauthPrompt(
-        account_id_, signin_metrics::ReauthAccessPoint::kAutofillDropdown,
+        account_id_, access_point,
         base::BindOnce(&SigninReauthViewControllerBrowserTest::OnReauthResult,
                        base::Unretained(this)));
   }
@@ -372,10 +376,6 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
   histogram_tester()->ExpectUniqueSample(
       kReauthUserActionToFillPasswordHistogramName,
       SigninReauthViewController::UserAction::kClickConfirmButton, 1);
-  histogram_tester()->ExpectTotalCount(
-      kReauthGaiaNavigationDurationFromReauthStartHistogramName, 1);
-  histogram_tester()->ExpectTotalCount(
-      kReauthGaiaNavigationDurationFromConfirmClickHistogramName, 1);
 }
 
 // Tests completing the Gaia reauth challenge in a dialog.
@@ -410,6 +410,46 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
               SigninReauthViewController::UserAction::kClickNextButton),
           OnceUserAction(
               SigninReauthViewController::UserAction::kPassGaiaReauth)));
+}
+
+// Tests the sync encryption-related Javascript APIs exercised by the Gaia
+// reauth challenge.
+// Regression test for crbug.com/1266415.
+IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
+                       SetSyncEncryptionKeysDuringReauthChallenge) {
+  // The URL contains a link that navigates to the reauth success URL.
+  const std::string target_path = net::test_server::GetFilePathWithReplacements(
+      "/signin/link_with_replacements.html",
+      {{"REPLACE_WITH_URL", https_server()->GetURL(kReauthDonePath).spec()}});
+  const GURL target_url = https_server()->GetURL(target_path);
+
+  content::TestNavigationObserver target_content_observer(target_url);
+  target_content_observer.StartWatchingNewWebContents();
+  ShowReauthPrompt();
+  RedirectGaiaChallengeTo(target_url);
+
+  ReauthTestObserver reauth_observer(signin_reauth_view_controller());
+  ASSERT_TRUE(login_ui_test_utils::ConfirmReauthConfirmationDialog(
+      browser(), kReauthDialogTimeout));
+  reauth_observer.WaitUntilGaiaReauthPageIsShown();
+  target_content_observer.Wait();
+
+  content::WebContents* target_contents =
+      signin_reauth_view_controller()->GetWebContents();
+
+  SyncEncryptionKeysTabHelper* encryption_keys_tab_helper =
+      SyncEncryptionKeysTabHelper::FromWebContents(target_contents);
+  ASSERT_NE(encryption_keys_tab_helper, nullptr);
+  EXPECT_TRUE(encryption_keys_tab_helper->IsEncryptionKeysApiBoundForTesting());
+
+  // The invocation of the API, even with dummy values, should propagate until
+  // TrustedVaultClient and its observers.
+  TrustedVaultKeysChangedStateChecker keys_added_checker(
+      SyncServiceFactory::GetAsSyncServiceImplForProfile(browser()->profile()));
+  EXPECT_TRUE(content::ExecuteScript(
+      target_contents,
+      "chrome.setSyncEncryptionKeys(() => {}, \"\", [new ArrayBuffer()], 0);"));
+  EXPECT_TRUE(keys_added_checker.Wait());
 }
 
 // Tests that links from the Gaia page are opened in a new tab.
@@ -544,6 +584,55 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
   ASSERT_TRUE(login_ui_test_utils::ConfirmReauthConfirmationDialog(
       browser(), kReauthDialogTimeout));
   EXPECT_EQ(WaitForReauthResult(), signin::ReauthResult::kUnexpectedResponse);
+}
+
+IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
+                       MessageIfPasswordWasSavedLocally) {
+  // The AccessPoint specifies that the password was already saved locally
+  // before the reauth prompt was shown.
+  ShowReauthPrompt(
+      signin_metrics::ReauthAccessPoint::kPasswordSaveLocallyBubble);
+  content::WebContents* confirmation_dialog_contents =
+      signin_reauth_view_controller()->GetWebContents();
+  content::TestNavigationObserver navigation_observer(
+      confirmation_dialog_contents);
+  navigation_observer.Wait();
+
+  std::string dialog_message;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      confirmation_dialog_contents,
+      "window.domAutomationController.send("
+      "document.querySelector('signin-reauth-app').shadowRoot."
+      "querySelector('.message-container').innerText)",
+      &dialog_message));
+  // The dialog message should specify that the password was already saved
+  // locally.
+  EXPECT_EQ(dialog_message,
+            l10n_util::GetStringUTF8(
+                IDS_ACCOUNT_PASSWORDS_REAUTH_DESC_ALREADY_SAVED_LOCALLY));
+}
+
+IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
+                       MessageIfPasswordWasNotSavedLocally) {
+  // The AccessPoint specifies that the password was NOT already saved locally
+  // before the reauth prompt was shown.
+  ShowReauthPrompt(signin_metrics::ReauthAccessPoint::kPasswordSaveBubble);
+  content::WebContents* confirmation_dialog_contents =
+      signin_reauth_view_controller()->GetWebContents();
+  content::TestNavigationObserver navigation_observer(
+      confirmation_dialog_contents);
+  navigation_observer.Wait();
+
+  std::string dialog_message;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      confirmation_dialog_contents,
+      "window.domAutomationController.send("
+      "document.querySelector('signin-reauth-app').shadowRoot."
+      "querySelector('.message-container').innerText)",
+      &dialog_message));
+  // The dialog message should be the regular one.
+  EXPECT_EQ(dialog_message,
+            l10n_util::GetStringUTF8(IDS_ACCOUNT_PASSWORDS_REAUTH_DESC));
 }
 
 class SigninReauthViewControllerDarkModeBrowserTest

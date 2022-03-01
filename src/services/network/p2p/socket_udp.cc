@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/ignore_result.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -135,7 +136,7 @@ void P2PSocketUdp::Init(const net::IPEndPoint& local_address,
   DCHECK((min_port == 0 && max_port == 0) || min_port > 0);
   DCHECK_LE(min_port, max_port);
 
-  socket_ = socket_factory_.Run(net_log_);
+  socket_ = socket_factory_.Run(net_log_.get());
 
   int result = -1;
   if (min_port == 0) {
@@ -144,7 +145,7 @@ void P2PSocketUdp::Init(const net::IPEndPoint& local_address,
     for (unsigned port = min_port; port <= max_port && result < 0; ++port) {
       result = socket_->Listen(net::IPEndPoint(local_address.address(), port));
       if (result < 0 && port != max_port)
-        socket_ = socket_factory_.Run(net_log_);
+        socket_ = socket_factory_.Run(net_log_.get());
     }
   } else if (local_address.port() >= min_port &&
              local_address.port() <= max_port) {
@@ -226,7 +227,7 @@ bool P2PSocketUdp::HandleReadResult(int result) {
 
     client_->DataReceived(
         recv_address_, data,
-        base::TimeTicks() + base::TimeDelta::FromNanoseconds(rtc::TimeNanos()));
+        base::TimeTicks() + base::Nanoseconds(rtc::TimeNanos()));
 
     delegate_->DumpPacket(
         base::make_span(reinterpret_cast<uint8_t*>(&data[0]), data.size()),
@@ -375,9 +376,8 @@ bool P2PSocketUdp::HandleSendResult(uint64_t packet_id,
 
   // UMA to track the histograms from 1ms to 1 sec for how long a packet spends
   // in the browser process.
-  UMA_HISTOGRAM_TIMES(
-      "WebRTC.SystemSendPacketDuration_UDP" /* name */,
-      base::TimeDelta::FromMilliseconds(rtc::TimeMillis() - send_time_ms));
+  UMA_HISTOGRAM_TIMES("WebRTC.SystemSendPacketDuration_UDP" /* name */,
+                      base::Milliseconds(rtc::TimeMillis() - send_time_ms));
 
   client_->SendComplete(
       P2PSendPacketMetrics(packet_id, transport_sequence_number, send_time_ms));

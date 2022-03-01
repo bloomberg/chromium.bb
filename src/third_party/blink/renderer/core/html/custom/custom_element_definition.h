@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_DEFINITION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_DEFINITION_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -23,7 +22,6 @@ namespace blink {
 class Document;
 class Element;
 class ExceptionState;
-class FileOrUSVStringOrFormData;
 class HTMLElement;
 class HTMLFormElement;
 class QualifiedName;
@@ -41,7 +39,9 @@ class CORE_EXPORT CustomElementDefinition
   // CustomElementRegistry that created it.
   using Id = uint32_t;
 
-  virtual ~CustomElementDefinition();
+  CustomElementDefinition(const CustomElementDefinition&) = delete;
+  CustomElementDefinition& operator=(const CustomElementDefinition&) = delete;
+  ~CustomElementDefinition() override;
 
   virtual void Trace(Visitor*) const;
   const char* NameInHeapSnapshot() const override {
@@ -94,16 +94,9 @@ class CORE_EXPORT CustomElementDefinition
                                          HTMLFormElement* nullable_form) = 0;
   virtual void RunFormResetCallback(Element& element) = 0;
   virtual void RunFormDisabledCallback(Element& element, bool is_disabled) = 0;
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   virtual void RunFormStateRestoreCallback(Element& element,
                                            const V8ControlValue* value,
                                            const String& mode) = 0;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  virtual void RunFormStateRestoreCallback(
-      Element& element,
-      const FileOrUSVStringOrFormData& value,
-      const String& mode) = 0;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   void EnqueueUpgradeReaction(Element&);
   void EnqueueConnectedCallback(Element&);
@@ -134,10 +127,11 @@ class CORE_EXPORT CustomElementDefinition
 
   class CORE_EXPORT ConstructionStackScope final {
     STACK_ALLOCATED();
-    DISALLOW_COPY_AND_ASSIGN(ConstructionStackScope);
 
    public:
     ConstructionStackScope(CustomElementDefinition&, Element&);
+    ConstructionStackScope(const ConstructionStackScope&) = delete;
+    ConstructionStackScope& operator=(const ConstructionStackScope&) = delete;
     ~ConstructionStackScope();
 
    private:
@@ -176,8 +170,6 @@ class CORE_EXPORT CustomElementDefinition
   HeapVector<Member<CSSStyleSheet>> default_style_sheets_;
 
   void EnqueueAttributeChangedCallbackForAllAttributes(Element&);
-
-  DISALLOW_COPY_AND_ASSIGN(CustomElementDefinition);
 };
 
 }  // namespace blink

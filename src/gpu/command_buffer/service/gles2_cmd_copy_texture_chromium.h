@@ -5,7 +5,6 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_COPY_TEXTURE_CHROMIUM_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_COPY_TEXTURE_CHROMIUM_H_
 
-#include "base/macros.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/gpu_gles2_export.h"
@@ -45,6 +44,11 @@ enum class CopyTextureMethod {
 // The target of |dest_id| texture must be GL_TEXTURE_2D.
 class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
  public:
+  CopyTextureCHROMIUMResourceManager(
+      const CopyTextureCHROMIUMResourceManager&) = delete;
+  CopyTextureCHROMIUMResourceManager& operator=(
+      const CopyTextureCHROMIUMResourceManager&) = delete;
+
   virtual ~CopyTextureCHROMIUMResourceManager();
 
   // Factory generating a real implementation.
@@ -70,7 +74,6 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
       bool flip_y,
       bool premultiply_alpha,
       bool unpremultiply_alpha,
-      bool dither,
       CopyTextureMethod method,
       CopyTexImageResourceManager* luma_emulation_blitter) = 0;
 
@@ -97,7 +100,6 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
       bool flip_y,
       bool premultiply_alpha,
       bool unpremultiply_alpha,
-      bool dither,
       CopyTextureMethod method,
       CopyTexImageResourceManager* luma_emulation_blitter) = 0;
 
@@ -106,9 +108,6 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
 
  protected:
   CopyTextureCHROMIUMResourceManager();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CopyTextureCHROMIUMResourceManager);
 };
 
 }  // namespace gles2

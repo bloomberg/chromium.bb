@@ -20,6 +20,7 @@ limitations under the License.
 #include "tensorflow/cc/ops/const_op.h"
 #include "tensorflow/cc/ops/image_ops.h"
 #include "tensorflow/cc/ops/nn_ops.h"
+#include "tensorflow/cc/ops/nn_ops_internal.h"
 #include "tensorflow/cc/ops/standard_ops.h"
 #include "tensorflow/core/common_runtime/kernel_benchmark_testlib.h"
 #include "tensorflow/core/framework/fake_input.h"
@@ -30,69 +31,13 @@ limitations under the License.
 #include "tensorflow/core/kernels/ops_testutil.h"
 #include "tensorflow/core/kernels/ops_util.h"
 #include "tensorflow/core/lib/core/status_test_util.h"
+#include "tensorflow/core/platform/tensor_float_32_utils.h"
 #include "tensorflow/core/platform/test.h"
 #include "tensorflow/core/platform/test_benchmark.h"
 #include "tensorflow/core/protobuf/rewriter_config.pb.h"
 #include "tensorflow/core/public/session.h"
 
 namespace tensorflow {
-
-#if GOOGLE_CUDA || TENSORFLOW_USE_ROCM
-
-struct ConvParametersPeer {
-  template <typename T>
-  bool ShouldIncludeWinogradNonfusedAlgoPreCudnn7() {
-    return params.ShouldIncludeWinogradNonfusedAlgoPreCudnn7<T>();
-  }
-
-  ConvParameters params;
-};
-
-TEST(ConvParameters, WinogradNonfusedAlgoSize) {
-  ConvParametersPeer conv_params_small = {{
-      1,            // batch
-      32,           // in_depths
-      {{300,        // in_rows
-        300}},      // in_cols
-      FORMAT_NCHW,  // compute_data_format
-      128,          // out_depths
-      {{3,          // filter_rows
-        3}},        // filter_cols
-      {{1,          // dilation_rows
-        1}},        // dilation_cols
-      {{1,          // stride_rows
-        1}},        // stride_cols
-      {{0,          // padding_rows
-        0}},        // padding_cols
-      DT_FLOAT,     // tensor datatype
-      0,            // device_id
-  }};
-  EXPECT_TRUE(
-      conv_params_small.ShouldIncludeWinogradNonfusedAlgoPreCudnn7<float>());
-
-  ConvParametersPeer conv_params_large = {{
-      1,            // batch
-      128,          // in_depths
-      {{300,        // in_rows
-        300}},      // in_cols
-      FORMAT_NCHW,  // compute_data_format
-      768,          // out_depths
-      {{3,          // filter_rows
-        3}},        // filter_cols
-      {{1,          // dilation_rows
-        1}},        // dilation_cols
-      {{1,          // stride_rows
-        1}},        // stride_cols
-      {{0,          // padding_rows
-        0}},        // padding_cols
-      DT_FLOAT,     // tensor datatype
-      0,            // device_id
-  }};
-  EXPECT_FALSE(
-      conv_params_large.ShouldIncludeWinogradNonfusedAlgoPreCudnn7<float>());
-}
-
-#endif  // GOOGLE_CUDA || TENSORFLOW_USE_ROCM
 
 class FusedResizePadConvOpTest : public OpsTestBase {
  protected:
@@ -652,6 +597,8 @@ class FusedConv2DOpTest : public OpsTestBase {
       ops::Relu6(root.WithOpName("with_activation"), with_bias);
     } else if (activation_type == "Elu") {
       ops::Elu(root.WithOpName("with_activation"), with_bias);
+    } else if (activation_type == "LeakyRelu") {
+      ops::internal::LeakyRelu(root.WithOpName("with_activation"), with_bias);
     } else {
       ops::Identity(root.WithOpName("with_activation"), with_bias);
     }
@@ -721,6 +668,9 @@ class FusedConv2DOpTest : public OpsTestBase {
       ops::Relu6(root.WithOpName("with_activation"), with_fused_batch_norm.y);
     } else if (activation_type == "Elu") {
       ops::Elu(root.WithOpName("with_activation"), with_fused_batch_norm.y);
+    } else if (activation_type == "LeakyRelu") {
+      ops::internal::LeakyRelu(root.WithOpName("with_activation"),
+                               with_fused_batch_norm.y);
     } else {
       ops::Identity(root.WithOpName("with_activation"),
                     with_fused_batch_norm.y);
@@ -1028,17 +978,21 @@ TYPED_TEST_P(FusedConv2DWithBiasOpTest, SpatialConvolution) {
   this->VerifyConv2DWithBias(filter_size, filter_count);
 }
 
+#ifndef INTEL_MKL
 TYPED_TEST_P(FusedConv2DWithBiasOpTest, ExplicitPaddingConvolution) {
   const int filter_size = 3;
   const int filter_count = 12;
   this->VerifyConv2DWithBias(filter_size, filter_count,
                              /*explicit_paddings=*/{0, 0, 1, 2, 3, 4, 0, 0});
 }
+#endif
 
 TYPED_TEST_P(FusedConv2DWithBiasOpTest, OneByOneConvolutionAndActivation) {
+  // Requires full precision Conv2D op
+  tensorflow::enable_tensor_float_32_execution(false);
   const int filter_size = 1;
   const int filter_count = 12;
-  for (const string& activation : {"Relu", "Relu6", "Elu"}) {
+  for (const string& activation : {"Relu", "Relu6", "Elu", "LeakyRelu"}) {
     this->VerifyConv2DWithBiasAndActivation(activation, filter_size,
                                             filter_count);
   }
@@ -1047,7 +1001,7 @@ TYPED_TEST_P(FusedConv2DWithBiasOpTest, OneByOneConvolutionAndActivation) {
 TYPED_TEST_P(FusedConv2DWithBiasOpTest, ImageSizeConvolutionAndActivation) {
   const int filter_size = TestFixture::kImageWidth;
   const int filter_count = 12;
-  for (const string& activation : {"Relu", "Relu6", "Elu"}) {
+  for (const string& activation : {"Relu", "Relu6", "Elu", "LeakyRelu"}) {
     this->VerifyConv2DWithBiasAndActivation(activation, filter_size,
                                             filter_count);
   }
@@ -1056,22 +1010,24 @@ TYPED_TEST_P(FusedConv2DWithBiasOpTest, ImageSizeConvolutionAndActivation) {
 TYPED_TEST_P(FusedConv2DWithBiasOpTest, SpatialConvolutionAndActivation) {
   const int filter_size = 3;
   const int filter_count = 12;
-  for (const string& activation : {"Relu", "Relu6", "Elu"}) {
+  for (const string& activation : {"Relu", "Relu6", "Elu", "LeakyRelu"}) {
     this->VerifyConv2DWithBiasAndActivation(activation, filter_size,
                                             filter_count);
   }
 }
 
+#ifndef INTEL_MKL
 TYPED_TEST_P(FusedConv2DWithBiasOpTest,
              ExplicitPaddingConvolutionAndActivation) {
   const int filter_size = 3;
   const int filter_count = 12;
-  for (const string& activation : {"Relu", "Relu6", "Elu"}) {
+  for (const string& activation : {"Relu", "Relu6", "Elu", "LeakyRelu"}) {
     this->VerifyConv2DWithBiasAndActivation(
         activation, filter_size, filter_count,
         /*explicit_paddings=*/{0, 0, 1, 2, 3, 4, 0, 0});
   }
 }
+#endif
 
 // -------------------------------------------------------------------------- //
 // Conv2D + FusedBatchNorm + {Activation}                                     //
@@ -1095,6 +1051,7 @@ TYPED_TEST_P(FusedConv2DWithBatchNormOpTest, SpatialConvolution) {
   this->VerifyConv2DWithBatchNorm(filter_size, filter_count);
 }
 
+#ifndef INTEL_MKL
 TYPED_TEST_P(FusedConv2DWithBatchNormOpTest, ExplicitPaddingConvolution) {
   const int filter_size = 3;
   const int filter_count = 12;
@@ -1102,11 +1059,12 @@ TYPED_TEST_P(FusedConv2DWithBatchNormOpTest, ExplicitPaddingConvolution) {
       filter_size, filter_count,
       /*explicit_paddings=*/{0, 0, 1, 2, 3, 4, 0, 0});
 }
+#endif
 
 TYPED_TEST_P(FusedConv2DWithBatchNormOpTest, OneByOneConvolutionAndActivation) {
   const int filter_size = 1;
   const int filter_count = 12;
-  for (const string& activation : {"Relu", "Relu6", "Elu"}) {
+  for (const string& activation : {"Relu", "Relu6", "Elu", "LeakyRelu"}) {
     this->VerifyConv2DWithBatchNormAndActivation(activation, filter_size,
                                                  filter_count);
   }
@@ -1116,7 +1074,7 @@ TYPED_TEST_P(FusedConv2DWithBatchNormOpTest,
              ImageSizeConvolutionAndActivation) {
   const int filter_size = TestFixture::kImageWidth;
   const int filter_count = 12;
-  for (const string& activation : {"Relu", "Relu6", "Elu"}) {
+  for (const string& activation : {"Relu", "Relu6", "Elu", "LeakyRelu"}) {
     this->VerifyConv2DWithBatchNormAndActivation(activation, filter_size,
                                                  filter_count);
   }
@@ -1125,23 +1083,26 @@ TYPED_TEST_P(FusedConv2DWithBatchNormOpTest,
 TYPED_TEST_P(FusedConv2DWithBatchNormOpTest, SpatialConvolutionAndActivation) {
   const int filter_size = 3;
   const int filter_count = 12;
-  for (const string& activation : {"Relu", "Relu6", "Elu"}) {
+  for (const string& activation : {"Relu", "Relu6", "Elu", "LeakyRelu"}) {
     this->VerifyConv2DWithBatchNormAndActivation(activation, filter_size,
                                                  filter_count);
   }
 }
 
+#ifndef INTEL_MKL
 TYPED_TEST_P(FusedConv2DWithBatchNormOpTest,
              ExplicitPaddingConvolutionAndActivation) {
   const int filter_size = 3;
   const int filter_count = 12;
-  for (const string& activation : {"Relu", "Relu6", "Elu"}) {
+  for (const string& activation : {"Relu", "Relu6", "Elu", "LeakyRelu"}) {
     this->VerifyConv2DWithBatchNormAndActivation(
         activation, filter_size, filter_count,
         /*explicit_paddings=*/{0, 0, 1, 2, 3, 4, 0, 0});
   }
 }
+#endif
 
+#ifndef INTEL_MKL
 REGISTER_TYPED_TEST_SUITE_P(FusedConv2DWithBiasOpTest,          //
                             OneByOneConvolution,                //
                             ImageSizeConvolution,               //
@@ -1161,6 +1122,23 @@ REGISTER_TYPED_TEST_SUITE_P(FusedConv2DWithBatchNormOpTest,     //
                             ImageSizeConvolutionAndActivation,  //
                             SpatialConvolutionAndActivation,    //
                             ExplicitPaddingConvolutionAndActivation);
+#else
+REGISTER_TYPED_TEST_SUITE_P(FusedConv2DWithBiasOpTest,          //
+                            OneByOneConvolution,                //
+                            ImageSizeConvolution,               //
+                            SpatialConvolution,                 //
+                            OneByOneConvolutionAndActivation,   //
+                            ImageSizeConvolutionAndActivation,  //
+                            SpatialConvolutionAndActivation);
+
+REGISTER_TYPED_TEST_SUITE_P(FusedConv2DWithBatchNormOpTest,     //
+                            OneByOneConvolution,                //
+                            ImageSizeConvolution,               //
+                            SpatialConvolution,                 //
+                            OneByOneConvolutionAndActivation,   //
+                            ImageSizeConvolutionAndActivation,  //
+                            SpatialConvolutionAndActivation);
+#endif
 
 using FusedBiasAddDataTypes = ::testing::Types<float, double>;
 INSTANTIATE_TYPED_TEST_SUITE_P(Test, FusedConv2DWithBiasOpTest,

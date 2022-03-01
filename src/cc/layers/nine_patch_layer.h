@@ -22,7 +22,9 @@ class CC_EXPORT NinePatchLayer : public UIResourceLayer {
   NinePatchLayer(const NinePatchLayer&) = delete;
   NinePatchLayer& operator=(const NinePatchLayer&) = delete;
 
-  void PushPropertiesTo(LayerImpl* layer) override;
+  void PushPropertiesTo(LayerImpl* layer,
+                        const CommitState& commit_state,
+                        const ThreadUnsafeCommitState& unsafe_state) override;
 
   // |border| is the space around the center rectangular region in layer space
   // (known as aperture in image space).  |border.x()| and |border.y()| are the

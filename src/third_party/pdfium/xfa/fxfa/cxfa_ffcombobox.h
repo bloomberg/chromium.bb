@@ -26,7 +26,8 @@ class CXFA_FFComboBox final : public CXFA_FFDropDown {
   CFX_RectF GetBBox(FocusOption focus) override;
   bool LoadWidget() override;
   void UpdateWidgetProperty() override;
-  bool OnRButtonUp(uint32_t dwFlags, const CFX_PointF& point) override;
+  bool OnRButtonUp(Mask<XFA_FWL_KeyFlag> dwFlags,
+                   const CFX_PointF& point) override;
   bool OnKillFocus(CXFA_FFWidget* pNewWidget) override WARN_UNUSED_RESULT;
   bool CanUndo() override;
   bool CanRedo() override;
@@ -36,8 +37,8 @@ class CXFA_FFComboBox final : public CXFA_FFDropDown {
   bool CanSelectAll() override;
   bool Undo() override;
   bool Redo() override;
-  Optional<WideString> Copy() override;
-  Optional<WideString> Cut() override;
+  absl::optional<WideString> Copy() override;
+  absl::optional<WideString> Cut() override;
   bool Paste(const WideString& wsPaste) override;
   void SelectAll() override;
   void Delete() override;

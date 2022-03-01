@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/time/time.h"
 #include "components/grit/dev_ui_components_resources.h"
-#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
@@ -50,14 +50,13 @@ scoped_refptr<net::X509Certificate> CreateFakeCert() {
   std::string cert_der;
   if (!net::x509_util::CreateKeyAndSelfSignedCert(
           "CN=Error", static_cast<uint32_t>(serial_number.GetNext()),
-          base::Time::Now() - base::TimeDelta::FromMinutes(5),
-          base::Time::Now() + base::TimeDelta::FromMinutes(5), &unused_key,
-          &cert_der)) {
+          base::Time::Now() - base::Minutes(5),
+          base::Time::Now() + base::Minutes(5), &unused_key, &cert_der)) {
     return nullptr;
   }
 
-  return net::X509Certificate::CreateFromBytes(cert_der.data(),
-                                               cert_der.size());
+  return net::X509Certificate::CreateFromBytes(
+      base::as_bytes(base::make_span(cert_der)));
 }
 
 }

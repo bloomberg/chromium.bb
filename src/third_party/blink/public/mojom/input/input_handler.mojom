@@ -132,6 +132,7 @@ struct GestureData {
   blink.mojom.GestureDevice source_device;
   bool is_source_touch_event_set_blocking;
   ui.mojom.EventPointerType primary_pointer_type;
+  int32 primary_unique_touch_event_id;
   int32 unique_touch_event_id;
   gfx.mojom.Size? contact_size;
   ScrollData? scroll_data;
@@ -189,6 +190,27 @@ struct TouchActionOptional {
 struct EditCommand {
   string name;
   string value;
+};
+
+// A structure that indicates selection offsets if the selection could be
+// established.
+struct SelectAroundCaretResult {
+  // The offset differences between the extended selection and the initial
+  // selection (which is a caret).
+  int32 extended_start_adjust;
+  int32 extended_end_adjust;
+  // The offset differences between the word selection (regardless of the
+  // extended selection granularity) and the initial selection (which is a
+  // caret).
+  int32 word_start_adjust;
+  int32 word_end_adjust;
+};
+
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.blink_public.input
+// GENERATED_JAVA_CLASS_NAME_OVERRIDE: SelectionGranularity
+enum SelectionGranularity {
+  kWord,
+  kSentence,
 };
 
 // Interface exposed by the browser to the renderer.
@@ -313,13 +335,15 @@ interface FrameWidgetInputHandler {
   AdjustSelectionByCharacterOffset(
       int32 start, int32 end, SelectionMenuBehavior behavior);
 
-  // Requests the renderer to select word around caret.
-  // Expects ack with new selection information when finished. |start_adjust|
-  // and |end_adjust| are the start and end offset difference between the
-  // current selection and the previous selection (which is a caret).
+  // Requests the renderer to select the specified granularity around caret and
+  // to potentially show the selection handles and / or context menu after
+  // selection.
+  // Expects ack with new selection information when finished, or null if the
+  // selection failed.
   [EnableIf=is_android]
-  SelectWordAroundCaret()
-      => (bool did_select, int32 start_adjust, int32 end_adjust);
+  SelectAroundCaret(SelectionGranularity granularity, bool should_show_handle,
+                    bool should_show_context_menu)
+      => (SelectAroundCaretResult? result);
 
   // Requests the renderer to move the selection extent point to a new position.
   // Expects a MoveRangeSelectionExtent_ACK message when finished.
@@ -362,12 +386,14 @@ interface WidgetInputHandler {
   CursorVisibilityChanged(bool visible);
 
   // This message sends a string being composed with an input method.
+  // Note, the response is specifically for Devtools to learn about completion
   ImeSetComposition(mojo_base.mojom.String16 text,
                     array<ui.mojom.ImeTextSpan> ime_text_spans,
-                    gfx.mojom.Range range, int32 start, int32 end);
+                    gfx.mojom.Range range, int32 start, int32 end) => ();
 
   // This message deletes the current composition, inserts specified text, and
   // moves the cursor.
+   // Note, the response is specifically for Devtools to learn about completion
   ImeCommitText(mojo_base.mojom.String16 text,
                 array<ui.mojom.ImeTextSpan> ime_text_spans,
                 gfx.mojom.Range range, int32 relative_cursor_position) => ();
@@ -424,4 +450,3 @@ interface WidgetInputHandler {
   GetFrameWidgetInputHandler(
       pending_associated_receiver<FrameWidgetInputHandler> interface_request);
 };
-

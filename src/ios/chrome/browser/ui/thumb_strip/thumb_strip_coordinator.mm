@@ -117,12 +117,22 @@ const CGFloat kThumbStripHeight =
   }
   self.mediator.incognitoWebStateList =
       _incognitoBrowser ? _incognitoBrowser->GetWebStateList() : nullptr;
+
+  self.mediator.incognitoOverlayPresentationContext =
+      _incognitoBrowser
+          ? OverlayPresentationContext::FromBrowser(
+                _incognitoBrowser, OverlayModality::kInfobarBanner)
+          : nullptr;
 }
 
 #pragma mark - ThumbStripNavigationConsumer
 
 - (void)navigationDidStart {
-  [self closeThumbStrip];
+  // Close the thumb strip if navigation occurred in peeked state. This
+  // indicates the user wants to keep using the current tab.
+  if (self.panHandler.currentState == ViewRevealState::Peeked) {
+    [self closeThumbStrip];
+  }
 }
 
 #pragma mark - ThumbStripCommands

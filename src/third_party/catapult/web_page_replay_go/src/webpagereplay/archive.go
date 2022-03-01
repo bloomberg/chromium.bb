@@ -198,9 +198,33 @@ func assertCompleteURL(url *url.URL) {
 }
 
 // FindRequest searches for the given request in the archive.
-// Returns ErrNotFound if the request could not be found. Does not consume req.Body.
+// Returns ErrNotFound if the request could not be found.
+//
+// Does not use the request body, but reads the request body to
+// prevent WPR from issuing a Connection Reset error when
+// handling large upload requests.
+// (https://bugs.chromium.org/p/chromium/issues/detail?id=1215668)
+//
 // TODO: conditional requests
 func (a *Archive) FindRequest(req *http.Request) (*http.Request, *http.Response, error) {
+	// Clear the input channel on large uploads to prevent WPR
+	// from resetting the connection, and causing the upload
+	// to fail.
+	// Large upload is an uncommon scenario for WPR users. To
+	// avoid exacting an overhead on every request, restrict
+	// the operation to large uploads only (size > 1MB).
+	if req.Body != nil &&
+		(strings.EqualFold("POST", req.Method) || strings.EqualFold("PUT", req.Method)) &&
+		req.ContentLength > 2<<20 {
+		buf := make([]byte, 1024)
+		for {
+			_, read_err := req.Body.Read(buf)
+			if read_err == io.EOF {
+				break
+			}
+		}
+	}
+
 	hostMap := a.Requests[req.Host]
 	if len(hostMap) == 0 {
 		return nil, nil, ErrNotFound
@@ -428,6 +452,31 @@ func (a *Archive) Merge(other *Archive) error {
 	})
 	log.Printf("Merged requests: added=%d duplicates=%d \n", numAddedRequests, numSkippedRequests)
 	return err
+}
+
+// Trim iterates over all requests in the archive. For each request, it calls f
+// to see if the request should be removed the archive.
+// The trimmed archive is returned, leaving the current archive unchanged.
+func (a *Archive) Trim(trimMatch func(r *http.Request) (bool, error)) (*Archive, error) {
+	var numRemovedRequests = 0
+	clone := newArchive()
+	err := a.ForEach(func(req *http.Request, resp *http.Response) error {
+		trimReq, err := trimMatch(req)
+		if err != nil {
+			return err
+		}
+		if trimReq {
+			numRemovedRequests++
+		} else {
+			clone.addArchivedRequest(req, resp, AddModeAppend)
+		}
+		return nil
+	})
+	log.Printf("Trimmed requests: removed=%d", numRemovedRequests)
+	if err != nil {
+		return nil, err
+	}
+	return &clone, nil
 }
 
 // Add the result of a get request to the receiver.

@@ -387,6 +387,7 @@ class DataSource : public DataSourceBase {
         instance_state = static_state_.TryGetCached(instances, i);
         if (!instance_state || !instance_state->trace_lambda_enabled)
           continue;
+        tls_inst.muxer_id_for_testing = instance_state->muxer_id_for_testing;
         tls_inst.backend_id = instance_state->backend_id;
         tls_inst.backend_connection_id = instance_state->backend_connection_id;
         tls_inst.buffer_id = instance_state->buffer_id;
@@ -432,6 +433,12 @@ class DataSource : public DataSourceBase {
     auto* tracing_impl = internal::TracingMuxer::Get();
     return tracing_impl->RegisterDataSource(descriptor, factory,
                                             &static_state_);
+  }
+
+  // Updates the data source descriptor.
+  static void UpdateDescriptor(const DataSourceDescriptor& descriptor) {
+    auto* tracing_impl = internal::TracingMuxer::Get();
+    tracing_impl->UpdateDataSourceDescriptor(descriptor, &static_state_);
   }
 
  private:
@@ -536,22 +543,7 @@ PERFETTO_THREAD_LOCAL internal::DataSourceThreadLocalState*
 #define PERFETTO_DECLARE_DATA_SOURCE_STATIC_MEMBERS(...)              \
   template <>                                                         \
   PERFETTO_COMPONENT_EXPORT perfetto::internal::DataSourceStaticState \
-      perfetto::DataSource<__VA_ARGS__>::static_state_;               \
-  template <>                                                         \
-  PERFETTO_COMPONENT_EXPORT PERFETTO_THREAD_LOCAL                     \
-      perfetto::internal::DataSourceThreadLocalState*                 \
-          perfetto::DataSource<__VA_ARGS__>::tls_state_
-
-// MSVC has a bug where explicit template member specialization declarations
-// can't have thread_local as the storage class specifier. The generated code
-// seems correct without the specifier, so drop it until the bug gets fixed.
-// See https://developercommunity2.visualstudio.com/t/Unable-to-specialize-
-// static-thread_local/1302689.
-#if PERFETTO_BUILDFLAG(PERFETTO_COMPILER_MSVC)
-#define PERFETTO_TEMPLATE_THREAD_LOCAL
-#else
-#define PERFETTO_TEMPLATE_THREAD_LOCAL PERFETTO_THREAD_LOCAL
-#endif
+      perfetto::DataSource<__VA_ARGS__>::static_state_
 
 // This macro must be used once for each data source in one source file to
 // allocate static storage for the data source's static state.
@@ -563,10 +555,6 @@ PERFETTO_THREAD_LOCAL internal::DataSourceThreadLocalState*
 #define PERFETTO_DEFINE_DATA_SOURCE_STATIC_MEMBERS(...)               \
   template <>                                                         \
   PERFETTO_COMPONENT_EXPORT perfetto::internal::DataSourceStaticState \
-      perfetto::DataSource<__VA_ARGS__>::static_state_{};             \
-  template <>                                                         \
-  PERFETTO_COMPONENT_EXPORT PERFETTO_TEMPLATE_THREAD_LOCAL            \
-      perfetto::internal::DataSourceThreadLocalState*                 \
-          perfetto::DataSource<__VA_ARGS__>::tls_state_ = nullptr
+      perfetto::DataSource<__VA_ARGS__>::static_state_ {}
 
 #endif  // INCLUDE_PERFETTO_TRACING_DATA_SOURCE_H_
