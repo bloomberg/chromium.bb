@@ -31,27 +31,26 @@ class SpirvValidationHelperOutputGeneratorOptions(GeneratorOptions):
                  filename = None,
                  directory = '.',
                  genpath = None,
-                 apiname = None,
+                 apiname = 'vulkan',
                  profile = None,
                  versions = '.*',
                  emitversions = '.*',
-                 defaultExtensions = None,
+                 defaultExtensions = 'vulkan',
                  addExtensions = None,
                  removeExtensions = None,
                  emitExtensions = None,
                  emitSpirv = None,
                  sortProcedure = regSortFeatures,
-                 prefixText = "",
                  genFuncPointers = True,
                  protectFile = True,
-                 protectFeature = True,
-                 apicall = '',
-                 apientry = '',
-                 apientryp = '',
+                 protectFeature = False,
+                 apicall = 'VKAPI_ATTR ',
+                 apientry = 'VKAPI_CALL ',
+                 apientryp = 'VKAPI_PTR *',
                  indentFuncProto = True,
                  indentFuncPointer = False,
-                 alignFuncParam = 0,
-                 expandEnumerants = True):
+                 alignFuncParam = 48,
+                 expandEnumerants = False):
         GeneratorOptions.__init__(self,
                 conventions = conventions,
                 filename = filename,
@@ -67,7 +66,6 @@ class SpirvValidationHelperOutputGeneratorOptions(GeneratorOptions):
                 emitExtensions = emitExtensions,
                 emitSpirv = emitSpirv,
                 sortProcedure = sortProcedure)
-        self.prefixText      = prefixText
         self.genFuncPointers = genFuncPointers
         self.protectFile     = protectFile
         self.protectFeature  = protectFeature
@@ -120,14 +118,17 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
             {'vulkan' : 'VkPhysicalDeviceRayTracingPipelineFeaturesKHR', 'layer' : 'ray_tracing_pipeline_features'},
             {'vulkan' : 'VkPhysicalDeviceAccelerationStructureFeaturesKHR', 'layer' : 'ray_tracing_acceleration_structure_features'},
             {'vulkan' : 'VkPhysicalDeviceFragmentDensityMapFeaturesEXT', 'layer' : 'fragment_density_map_features'},
-            {'vulkan' : 'VkPhysicalDeviceBufferDeviceAddressFeaturesEXT', 'layer' : 'buffer_device_address_ext'},
+            {'vulkan' : 'VkPhysicalDeviceBufferDeviceAddressFeaturesEXT', 'layer' : 'buffer_device_address_ext_features'},
             {'vulkan' : 'VkPhysicalDeviceFragmentShadingRateFeaturesKHR', 'layer' : 'fragment_shading_rate_features'},
             {'vulkan' : 'VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL', 'layer' : 'shader_integer_functions2_features'},
-            {'vulkan' : 'VkPhysicalDeviceShaderSMBuiltinsFeaturesNV', 'layer' : 'shader_sm_builtins_feature'},
-            {'vulkan' : 'VkPhysicalDeviceShadingRateImageFeaturesNV', 'layer' : 'shading_rate_image'},
-            {'vulkan' : 'VkPhysicalDeviceShaderAtomicFloatFeaturesEXT', 'layer' : 'shader_atomic_float_feature'},
-            {'vulkan' : 'VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT', 'layer' : 'shader_image_atomic_int64_feature'},
+            {'vulkan' : 'VkPhysicalDeviceShaderSMBuiltinsFeaturesNV', 'layer' : 'shader_sm_builtins_features'},
+            {'vulkan' : 'VkPhysicalDeviceShadingRateImageFeaturesNV', 'layer' : 'shading_rate_image_features'},
+            {'vulkan' : 'VkPhysicalDeviceShaderAtomicFloatFeaturesEXT', 'layer' : 'shader_atomic_float_features'},
+            {'vulkan' : 'VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT', 'layer' : 'shader_image_atomic_int64_features'},
             {'vulkan' : 'VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR', 'layer' : 'workgroup_memory_explicit_layout_features'},
+            {'vulkan' : 'VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT', 'layer' : 'shader_atomic_float2_features'},
+            {'vulkan' : 'VkPhysicalDeviceRayTracingMotionBlurFeaturesNV', 'layer' : 'ray_tracing_motion_blur_features'},
+            {'vulkan' : 'VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR', 'layer' : 'shader_integer_dot_product_features'},
         ]
 
         # Promoted features structure in state_tracker.cpp are put in the VkPhysicalDeviceVulkan*Features structs
@@ -194,13 +195,17 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
         copyright += ' *\n'
         copyright += ' * Author: Spencer Fricke <s.fricke@samsung.com>\n'
         copyright += ' *\n'
+        copyright += ' * This file is related to anything that is found in the Vulkan XML related\n'
+        copyright += ' * to SPIR-V. Anything related to the SPIR-V grammar belongs in spirv_grammar_helper\n'
+        copyright += ' *\n'
         copyright += ' ****************************************************************************/\n'
         write(copyright, file=self.outFile)
         write('#include <string>', file=self.outFile)
         write('#include <functional>', file=self.outFile)
         write('#include <spirv/unified1/spirv.hpp>', file=self.outFile)
         write('#include "vk_extension_helper.h"', file=self.outFile)
-        write('#include "core_validation_types.h"', file=self.outFile)
+        write('#include "shader_module.h"', file=self.outFile)
+        write('#include "device_state.h"', file=self.outFile)
         write('#include "core_validation.h"', file=self.outFile)
         write(self.featurePointer(), file=self.outFile)
         write(self.mapStructDeclarations(), file=self.outFile)
@@ -269,7 +274,7 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
         output =  'static inline const char* string_SpvCapability(uint32_t input_value) {\n'
         output += '    switch ((spv::Capability)input_value) {\n'
         for name, enables in sorted(self.capabilities.items()):
-            if name not in excludeList:
+            if (name not in excludeList) and (name not in self.capabilityExcludeList):
                 output += '         case spv::Capability' + name + ':\n'
                 output += '            return \"' + name + '\";\n'
         output += '        default:\n'
@@ -314,8 +319,9 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
     def createMapValue(self, name, enable, isExtension):
         output = ''
         if enable['version'] != None:
-            # Version should be VK_API_VERSION_x_x as defined in header
-            output = '{' + enable['version'] + ', nullptr, nullptr, ""}'
+            # Version should be VK_VERSION_x_x as defined in header but need to get as VK_API_VERSION_x_x
+            version = enable['version'].replace('VK_VERSION', 'VK_API_VERSION')
+            output = '{' + version + ', nullptr, nullptr, ""}'
         elif enable['feature'] != None:
             output = '{0, &' + enable['feature']['struct'] + '::'  + enable['feature']['feature'] + ', nullptr, ""}'
         elif enable['extension'] != None:
@@ -401,7 +407,9 @@ bool CoreChecks::ValidateShaderCapabilitiesAndExtensions(SHADER_MODULE_STATE con
                     has_support = true;
                 }
             } else if (it->second.extension) {
-                if (device_extensions.*(it->second.extension)) {
+                // kEnabledByApiLevel is not valid as some extension are promoted with feature bits to be used.
+                // If the new Api Level gives support, it will be caught in the "it->second.version" check instead.
+                if (IsExtEnabledByCreateinfo(device_extensions.*(it->second.extension))) {
                     has_support = true;
                 }
             } else if (it->second.property) {
@@ -441,7 +449,7 @@ bool CoreChecks::ValidateShaderCapabilitiesAndExtensions(SHADER_MODULE_STATE con
         if (IsExtEnabled(device_extensions.vk_khr_portability_subset)) {
             if ((VK_FALSE == enabled_features.portability_subset_features.shaderSampleRateInterpolationFunctions) &&
                 (spv::CapabilityInterpolationFunction == insn.word(1))) {
-                skip |= LogError(device, kVUID_Portability_InterpolationFunction,
+                skip |= LogError(device, "VUID-RuntimeSpirv-shaderSampleRateInterpolationFunctions-06325",
                                     "Invalid shader capability (portability error): interpolation functions are not supported "
                                     "by this platform");
             }
@@ -479,7 +487,7 @@ bool CoreChecks::ValidateShaderCapabilitiesAndExtensions(SHADER_MODULE_STATE con
                     has_support = true;
                 }
             } else if (it->second.extension) {
-                if (device_extensions.*(it->second.extension)) {
+                if (IsExtEnabled(device_extensions.*(it->second.extension))) {
                     has_support = true;
                 }
             } else if (it->second.property) {

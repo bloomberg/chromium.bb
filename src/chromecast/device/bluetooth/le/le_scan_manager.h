@@ -11,10 +11,10 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "chromecast/device/bluetooth/le/le_scan_result.h"
 #include "chromecast/device/bluetooth/le/scan_filter.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -46,18 +46,21 @@ class LeScanManager {
 
   class ScanHandle {
    public:
+    ScanHandle(const ScanHandle&) = delete;
+    ScanHandle& operator=(const ScanHandle&) = delete;
+
     virtual ~ScanHandle() = default;
 
    protected:
     ScanHandle() = default;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ScanHandle);
   };
 
   static std::unique_ptr<LeScanManager> Create(
       BluetoothManagerPlatform* bluetooth_manager,
       bluetooth_v2_shlib::LeScannerImpl* le_scanner);
+
+  LeScanManager(const LeScanManager&) = delete;
+  LeScanManager& operator=(const LeScanManager&) = delete;
 
   virtual ~LeScanManager() = default;
 
@@ -92,9 +95,6 @@ class LeScanManager {
 
  protected:
   LeScanManager() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LeScanManager);
 };
 
 }  // namespace bluetooth

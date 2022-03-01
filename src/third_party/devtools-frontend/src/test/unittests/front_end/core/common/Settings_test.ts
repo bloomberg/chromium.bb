@@ -42,3 +42,74 @@ describe('SettingsStorage class', () => {
     assert.isFalse(settingsStorage.has('Test Name 2'), 'the class should not have any names');
   });
 });
+
+describe('Settings instance', () => {
+  afterEach(() => {
+    Common.Settings.Settings.removeInstance();
+    Common.Settings.resetSettings();  // Clear SettingsRegistrations.
+  });
+
+  it('can be instantiated in a test', () => {
+    const dummyStorage = new SettingsStorage({});
+
+    const settings = Common.Settings.Settings.instance(
+        {forceNew: true, syncedStorage: dummyStorage, globalStorage: dummyStorage, localStorage: dummyStorage});
+
+    assert.isOk(settings);
+  });
+
+  it('throws when constructed without storage', () => {
+    assert.throws(() => Common.Settings.Settings.instance());
+    assert.throws(
+        () => Common.Settings.Settings.instance(
+            {forceNew: true, syncedStorage: null, globalStorage: null, localStorage: null}));
+  });
+
+  it('stores synced settings in the correct storage', () => {
+    const syncedStorage = new SettingsStorage({});
+    const dummyStorage = new SettingsStorage({});
+    Common.Settings.registerSettingExtension({
+      settingName: 'staticSyncedSetting',
+      settingType: Common.Settings.SettingType.BOOLEAN,
+      defaultValue: false,
+      storageType: Common.Settings.SettingStorageType.Synced,
+    });
+    const settings = Common.Settings.Settings.instance(
+        {forceNew: true, syncedStorage, globalStorage: dummyStorage, localStorage: dummyStorage});
+
+    const dynamicSetting: Common.Settings.Setting<string> =
+        settings.createSetting('dynamicSyncedSetting', 'default val', Common.Settings.SettingStorageType.Synced);
+    dynamicSetting.set('foo value');
+    const staticSetting: Common.Settings.Setting<boolean> = settings.moduleSetting('staticSyncedSetting');
+    staticSetting.set(true);
+
+    assert.isFalse(dummyStorage.has('dynamicSyncedSetting'));
+    assert.isFalse(dummyStorage.has('staticSyncedSetting'));
+    assert.strictEqual(syncedStorage.get('dynamicSyncedSetting'), '"foo value"');
+    assert.strictEqual(syncedStorage.get('staticSyncedSetting'), 'true');
+  });
+
+  it('registers settings with the backing store when creating them', () => {
+    const registeredSettings = new Set<string>();
+    const mockBackingStore: Common.Settings.SettingsBackingStore = {
+      ...Common.Settings.NOOP_STORAGE,
+      register: (name: string) => registeredSettings.add(name),
+    };
+    const storage = new SettingsStorage({}, mockBackingStore, '__prefix__.');
+    Common.Settings.registerSettingExtension({
+      settingName: 'staticGlobalSetting',
+      settingType: Common.Settings.SettingType.BOOLEAN,
+      defaultValue: false,
+      storageType: Common.Settings.SettingStorageType.Global,
+    });
+
+    const settings = Common.Settings.Settings.instance(
+        {forceNew: true, syncedStorage: storage, globalStorage: storage, localStorage: storage});
+    settings.createSetting('dynamicLocalSetting', 42, Common.Settings.SettingStorageType.Local);
+    settings.createSetting('dynamicSyncedSetting', 'foo', Common.Settings.SettingStorageType.Synced);
+
+    assert.isTrue(registeredSettings.has('__prefix__.staticGlobalSetting'));
+    assert.isTrue(registeredSettings.has('__prefix__.dynamicLocalSetting'));
+    assert.isTrue(registeredSettings.has('__prefix__.dynamicSyncedSetting'));
+  });
+});

@@ -16,14 +16,12 @@
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "components/services/storage/public/cpp/storage_key.h"
 #include "components/services/storage/public/mojom/service_worker_database.mojom.h"
 #include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/service_worker/navigation_preload_state.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
@@ -54,6 +52,10 @@ class ServiceWorkerDatabase {
  public:
   // We do leveldb stuff in |path| or in memory if |path| is empty.
   explicit ServiceWorkerDatabase(const base::FilePath& path);
+
+  ServiceWorkerDatabase(const ServiceWorkerDatabase&) = delete;
+  ServiceWorkerDatabase& operator=(const ServiceWorkerDatabase&) = delete;
+
   ~ServiceWorkerDatabase();
 
   using Status = mojom::ServiceWorkerDatabaseStatus;
@@ -87,18 +89,19 @@ class ServiceWorkerDatabase {
   // Reads keys that have one or more registration from the
   // database. Returns OK if they are successfully read or not found.
   // Otherwise, returns an error.
-  Status GetStorageKeysWithRegistrations(std::set<StorageKey>* key);
+  Status GetStorageKeysWithRegistrations(std::set<blink::StorageKey>* key);
 
   // Reads registrations for |key| from the database. Returns OK if they are
   // successfully read or not found. Otherwise, returns an error.
   Status GetRegistrationsForStorageKey(
-      const StorageKey& key,
+      const blink::StorageKey& key,
       std::vector<mojom::ServiceWorkerRegistrationDataPtr>* registrations,
       std::vector<std::vector<mojom::ServiceWorkerResourceRecordPtr>>*
           opt_resources_list);
 
   // Reads the total resource size stored in the database for |key|.
-  Status GetUsageForStorageKey(const StorageKey& key, int64_t& out_usage);
+  Status GetUsageForStorageKey(const blink::StorageKey& key,
+                               int64_t& out_usage);
 
   // Reads all registrations from the database. Returns OK if successfully read
   // or not found. Otherwise, returns an error.
@@ -115,14 +118,15 @@ class ServiceWorkerDatabase {
   // Otherwise, returns an error.
   Status ReadRegistration(
       int64_t registration_id,
-      const StorageKey& key,
+      const blink::StorageKey& key,
       mojom::ServiceWorkerRegistrationDataPtr* registration,
       std::vector<mojom::ServiceWorkerResourceRecordPtr>* resources);
 
   // Looks up the key for the registration with |registration_id|. Returns OK
   // if a registration was found and read successfully. Otherwise, returns an
   // error.
-  Status ReadRegistrationStorageKey(int64_t registration_id, StorageKey* key);
+  Status ReadRegistrationStorageKey(int64_t registration_id,
+                                    blink::StorageKey* key);
 
   // Writes |registration| and |resources| into the database and does following
   // things:
@@ -139,21 +143,22 @@ class ServiceWorkerDatabase {
 
   // Updates a registration for |registration_id| to an active state. Returns OK
   // if it's successfully updated. Otherwise, returns an error.
-  Status UpdateVersionToActive(int64_t registration_id, const StorageKey& key);
+  Status UpdateVersionToActive(int64_t registration_id,
+                               const blink::StorageKey& key);
 
   // Updates last check time of a registration for |registration_id| by |time|.
   // Returns OK if it's successfully updated. Otherwise, returns an error.
   Status UpdateLastCheckTime(int64_t registration_id,
-                             const StorageKey& key,
+                             const blink::StorageKey& key,
                              const base::Time& time);
 
   // Updates the navigation preload state for the specified registration.
   // Returns OK if it's successfully updated. Otherwise, returns an error.
   Status UpdateNavigationPreloadEnabled(int64_t registration_id,
-                                        const StorageKey& key,
+                                        const blink::StorageKey& key,
                                         bool enable);
   Status UpdateNavigationPreloadHeader(int64_t registration_id,
-                                       const StorageKey& key,
+                                       const blink::StorageKey& key,
                                        const std::string& value);
 
   // Deletes a registration for |registration_id| and moves resource records
@@ -163,7 +168,7 @@ class ServiceWorkerDatabase {
   // Returns OK if it's successfully deleted or not found in the database.
   // Otherwise, returns an error.
   Status DeleteRegistration(int64_t registration_id,
-                            const StorageKey& key,
+                            const blink::StorageKey& key,
                             DeletedVersion* deleted_version);
 
   // Reads user data for |registration_id| and |user_data_names| from the
@@ -193,7 +198,7 @@ class ServiceWorkerDatabase {
   // registration specified by |registration_id| does not exist in the database.
   Status WriteUserData(
       int64_t registration_id,
-      const StorageKey& key,
+      const blink::StorageKey& key,
       const std::vector<mojom::ServiceWorkerUserDataPtr>& user_data);
 
   // Deletes user data for |registration_id| and |user_data_names| from the
@@ -266,7 +271,7 @@ class ServiceWorkerDatabase {
   // they are successfully deleted or not found in the database. Otherwise,
   // returns an error.
   Status DeleteAllDataForStorageKeys(
-      const std::set<StorageKey>& keys,
+      const std::set<blink::StorageKey>& keys,
       std::vector<int64_t>* newly_purgeable_resources);
 
   // Completely deletes the contents of the database.
@@ -294,12 +299,13 @@ class ServiceWorkerDatabase {
   // if successfully reads. Otherwise, returns an error.
   Status ReadRegistrationData(
       int64_t registration_id,
-      const StorageKey& key,
+      const blink::StorageKey& key,
       mojom::ServiceWorkerRegistrationDataPtr* registration);
 
   // Parses |serialized| as a RegistrationData object and pushes it into |out|.
   ServiceWorkerDatabase::Status ParseRegistrationData(
       const std::string& serialized,
+      const blink::StorageKey& key,
       mojom::ServiceWorkerRegistrationDataPtr* out);
 
   // Populates |batch| with operations to write |registration|. It does not
@@ -414,8 +420,6 @@ class ServiceWorkerDatabase {
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, InvalidWebFeature);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest,
                            NoCrossOriginEmbedderPolicyValue);
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDatabase);
 };
 
 }  // namespace storage

@@ -67,7 +67,8 @@ class MagnifierGlass::BorderRenderer : public ui::LayerDelegate {
     magnifier_shadows_.push_back(params_.bottom_shadow);
     magnifier_shadows_.push_back(params_.top_shadow);
   }
-
+  BorderRenderer(const BorderRenderer&) = delete;
+  BorderRenderer& operator=(const BorderRenderer&) = delete;
   ~BorderRenderer() override = default;
 
  private:
@@ -128,8 +129,6 @@ class MagnifierGlass::BorderRenderer : public ui::LayerDelegate {
   const gfx::Rect magnifier_window_bounds_;
   const Params params_;
   std::vector<gfx::ShadowValue> magnifier_shadows_;
-
-  DISALLOW_COPY_AND_ASSIGN(BorderRenderer);
 };
 
 MagnifierGlass::MagnifierGlass(Params params) : params_(std::move(params)) {}
@@ -202,7 +201,8 @@ void MagnifierGlass::CreateMagnifierWindow(aura::Window* root_window,
 
   // Create a rounded rect clip, so that only we see a circle of the zoomed
   // content. This circle radius should match that of the drawn border.
-  const gfx::RoundedCornersF kRoundedCorners{params_.radius};
+  const gfx::RoundedCornersF kRoundedCorners{
+      static_cast<float>(params_.radius)};
   zoom_layer_->SetRoundedCornerRadius(kRoundedCorners);
   gfx::Rect clip_rect = window_bounds;
   clip_rect.ClampToCenteredSize(

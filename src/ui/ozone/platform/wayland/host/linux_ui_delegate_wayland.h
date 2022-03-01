@@ -19,10 +19,9 @@ class LinuxUiDelegateWayland : public LinuxUiDelegate {
 
   // LinuxUiDelegate:
   LinuxUiBackend GetBackend() const override;
-  bool SetWidgetTransientFor(
+  bool ExportWindowHandle(
       gfx::AcceleratedWidget parent,
       base::OnceCallback<void(const std::string&)> callback) override;
-  int GetKeyState() override;
 
  private:
   WaylandConnection* const connection_;

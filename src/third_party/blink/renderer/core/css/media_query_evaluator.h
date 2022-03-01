@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -37,12 +38,22 @@ namespace blink {
 class LocalFrame;
 class MediaQuery;
 class MediaQueryExp;
+class MediaQueryExpNode;
 class MediaQueryResult;
 class MediaQuerySet;
 class MediaQuerySetResult;
 class MediaValues;
 
 using MediaQueryResultList = Vector<MediaQueryResult>;
+
+// See Kleene 3-valued logic
+//
+// https://drafts.csswg.org/mediaqueries-4/#evaluating
+enum class KleeneValue {
+  kTrue,
+  kFalse,
+  kUnknown,
+};
 
 // Class that evaluates css media queries as defined in
 // CSS3 Module "Media Queries" (http://www.w3.org/TR/css3-mediaqueries/)
@@ -70,9 +81,8 @@ class CORE_EXPORT MediaQueryEvaluator final
   // Creates evaluator which evaluates full media queries.
   explicit MediaQueryEvaluator(LocalFrame*);
 
-  // Creates evaluator which evaluates in a thread-safe manner a subset of media
-  // values.
-  explicit MediaQueryEvaluator(const MediaValues&);
+  // Create an evaluator for container queries and preload scanning.
+  explicit MediaQueryEvaluator(const MediaValues*);
 
   MediaQueryEvaluator(const MediaQueryEvaluator&) = delete;
   MediaQueryEvaluator& operator=(const MediaQueryEvaluator&) = delete;
@@ -81,18 +91,29 @@ class CORE_EXPORT MediaQueryEvaluator final
 
   bool MediaTypeMatch(const String& media_type_to_match) const;
 
+  // Output from Eval functions:
+  struct Results {
+    MediaQueryResultList* viewport_dependent = nullptr;
+    MediaQueryResultList* device_dependent = nullptr;
+    // Or'ed MediaQueryExpValue::UnitFlags.
+    unsigned* unit_flags = nullptr;
+  };
+
   // Evaluates a list of media queries.
-  bool Eval(const MediaQuerySet&,
-            MediaQueryResultList* viewport_dependent = nullptr,
-            MediaQueryResultList* device_dependent = nullptr) const;
+  bool Eval(const MediaQuerySet&) const;
+  bool Eval(const MediaQuerySet&, Results) const;
 
   // Evaluates media query.
-  bool Eval(const MediaQuery&,
-            MediaQueryResultList* viewport_dependent = nullptr,
-            MediaQueryResultList* device_dependent = nullptr) const;
+  bool Eval(const MediaQuery&) const;
+  bool Eval(const MediaQuery&, Results) const;
+
+  // https://drafts.csswg.org/mediaqueries-4/#evaluating
+  KleeneValue Eval(const MediaQueryExpNode&) const;
+  KleeneValue Eval(const MediaQueryExpNode&, Results) const;
 
   // Evaluates media query subexpression, ie "and (media-feature: value)" part.
   bool Eval(const MediaQueryExp&) const;
+  bool Eval(const MediaQueryExp&, Results) const;
 
   // Returns true if any of the expressions in the results lists changed its
   // evaluation.
@@ -105,10 +126,19 @@ class CORE_EXPORT MediaQueryEvaluator final
   void Trace(Visitor*) const;
 
  private:
+  KleeneValue EvalNot(const MediaQueryExpNode&, Results) const;
+  KleeneValue EvalAnd(const MediaQueryExpNode&,
+                      const MediaQueryExpNode&,
+                      Results) const;
+  KleeneValue EvalOr(const MediaQueryExpNode&,
+                     const MediaQueryExpNode&,
+                     Results) const;
+  KleeneValue EvalFeature(const MediaQueryExp&, Results) const;
+
   const String MediaType() const;
 
   String media_type_;
-  Member<MediaValues> media_values_;
+  Member<const MediaValues> media_values_;
 
   // Even if UKM reporting is enabled, do not report any media query evaluation
   // results if this is set to true.

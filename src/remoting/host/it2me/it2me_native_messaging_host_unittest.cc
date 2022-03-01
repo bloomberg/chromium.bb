@@ -11,14 +11,14 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/cxx17_backports.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/stringize_macros.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -31,6 +31,7 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/it2me/it2me_constants.h"
+#include "remoting/host/it2me/it2me_helpers.h"
 #include "remoting/host/native_messaging/log_message_handler.h"
 #include "remoting/host/native_messaging/native_messaging_pipe.h"
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
@@ -48,8 +49,7 @@ using protocol::ErrorCode;
 namespace {
 
 const char kTestAccessCode[] = "888888";
-constexpr base::TimeDelta kTestAccessCodeLifetime =
-    base::TimeDelta::FromSeconds(666);
+constexpr base::TimeDelta kTestAccessCodeLifetime = base::Seconds(666);
 const char kTestClientUsername[] = "some_user@gmail.com";
 const char kTestStunServer[] = "test_relay_server.com";
 
@@ -93,10 +93,11 @@ base::DictionaryValue CreateConnectMessage(int id) {
   connect_message.SetString(kMessageType, kConnectMessage);
   connect_message.SetString(kUserName, kTestClientUsername);
   connect_message.SetString(kAuthServiceWithToken, "oauth2:sometoken");
-  connect_message.Set(kIceConfig,
-                      base::JSONReader::ReadDeprecated(
-                          "{ \"iceServers\": [ { \"urls\": [ \"stun:" +
-                          std::string(kTestStunServer) + "\" ] } ] }"));
+  connect_message.SetKey(
+      kIceConfig,
+      base::Value::FromUniquePtrValue(base::JSONReader::ReadDeprecated(
+          "{ \"iceServers\": [ { \"urls\": [ \"stun:" +
+          std::string(kTestStunServer) + "\" ] } ] }")));
 
   return connect_message;
 }
@@ -113,6 +114,9 @@ base::DictionaryValue CreateDisconnectMessage(int id) {
 class MockIt2MeHost : public It2MeHost {
  public:
   MockIt2MeHost() = default;
+
+  MockIt2MeHost(const MockIt2MeHost&) = delete;
+  MockIt2MeHost& operator=(const MockIt2MeHost&) = delete;
 
   // It2MeHost overrides
   void Connect(std::unique_ptr<ChromotingHostContext> context,
@@ -131,8 +135,6 @@ class MockIt2MeHost : public It2MeHost {
       CreateDeferredConnectContext create_connection_context);
 
   void RunSetState(It2MeHostState state);
-
-  DISALLOW_COPY_AND_ASSIGN(MockIt2MeHost);
 };
 
 void MockIt2MeHost::Connect(
@@ -159,22 +161,22 @@ void MockIt2MeHost::Connect(
 
   OnPolicyUpdate(std::move(policies));
 
-  RunSetState(kStarting);
-  RunSetState(kRequestedAccessCode);
+  RunSetState(It2MeHostState::kStarting);
+  RunSetState(It2MeHostState::kRequestedAccessCode);
 
   host_context()->ui_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&It2MeHost::Observer::OnStoreAccessCode, observer_,
                      kTestAccessCode, kTestAccessCodeLifetime));
 
-  RunSetState(kReceivedAccessCode);
-  RunSetState(kConnecting);
+  RunSetState(It2MeHostState::kReceivedAccessCode);
+  RunSetState(It2MeHostState::kConnecting);
 
   host_context()->ui_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&It2MeHost::Observer::OnClientAuthenticated,
                                 observer_, kTestClientUsername));
 
-  RunSetState(kConnected);
+  RunSetState(It2MeHostState::kConnected);
 }
 
 void MockIt2MeHost::Disconnect() {
@@ -189,7 +191,7 @@ void MockIt2MeHost::Disconnect() {
   register_request_.reset();
   signal_strategy_.reset();
 
-  RunSetState(kDisconnected);
+  RunSetState(It2MeHostState::kDisconnected);
 }
 
 void MockIt2MeHost::CreateConnectionContextOnNetworkThread(
@@ -214,6 +216,10 @@ void MockIt2MeHost::RunSetState(It2MeHostState state) {
 class MockIt2MeHostFactory : public It2MeHostFactory {
  public:
   MockIt2MeHostFactory() : host(new MockIt2MeHost()) {}
+
+  MockIt2MeHostFactory(const MockIt2MeHostFactory&) = delete;
+  MockIt2MeHostFactory& operator=(const MockIt2MeHostFactory&) = delete;
+
   ~MockIt2MeHostFactory() override = default;
 
   scoped_refptr<It2MeHost> CreateIt2MeHost() override {
@@ -221,14 +227,16 @@ class MockIt2MeHostFactory : public It2MeHostFactory {
   }
 
   scoped_refptr<MockIt2MeHost> host;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockIt2MeHostFactory);
 };
 
 class It2MeNativeMessagingHostTest : public testing::Test {
  public:
   It2MeNativeMessagingHostTest() = default;
+
+  It2MeNativeMessagingHostTest(const It2MeNativeMessagingHostTest&) = delete;
+  It2MeNativeMessagingHostTest& operator=(const It2MeNativeMessagingHostTest&) =
+      delete;
+
   ~It2MeNativeMessagingHostTest() override = default;
 
   void SetUp() override;
@@ -253,7 +261,7 @@ class It2MeNativeMessagingHostTest : public testing::Test {
   void TestConnect();
 
   // Raw pointer to host factory (owned by It2MeNativeMessagingHost).
-  MockIt2MeHostFactory* factory_raw_ptr_ = nullptr;
+  raw_ptr<MockIt2MeHostFactory> factory_raw_ptr_ = nullptr;
 
  private:
   void StartHost();
@@ -279,13 +287,11 @@ class It2MeNativeMessagingHostTest : public testing::Test {
 
   // Retain a raw pointer to |policy_loader_| in order to control the policy
   // contents.
-  policy::FakeAsyncPolicyLoader* policy_loader_ = nullptr;
+  raw_ptr<policy::FakeAsyncPolicyLoader> policy_loader_ = nullptr;
 
   // Task runner of the host thread.
   scoped_refptr<AutoThreadTaskRunner> host_task_runner_;
   std::unique_ptr<remoting::NativeMessagingPipe> pipe_;
-
-  DISALLOW_COPY_AND_ASSIGN(It2MeNativeMessagingHostTest);
 };
 
 void It2MeNativeMessagingHostTest::SetUp() {
@@ -442,15 +448,15 @@ void It2MeNativeMessagingHostTest::VerifyConnectResponses(int request_id) {
       ASSERT_TRUE(response->GetString(kState, &state));
 
       std::string value;
-      if (state == It2MeNativeMessagingHost::HostStateToString(kStarting)) {
+      if (state == It2MeHostStateToString(It2MeHostState::kStarting)) {
         EXPECT_FALSE(starting_received);
         starting_received = true;
-      } else if (state == It2MeNativeMessagingHost::HostStateToString(
-                              kRequestedAccessCode)) {
+      } else if (state ==
+                 It2MeHostStateToString(It2MeHostState::kRequestedAccessCode)) {
         EXPECT_FALSE(requestedAccessCode_received);
         requestedAccessCode_received = true;
-      } else if (state == It2MeNativeMessagingHost::HostStateToString(
-                              kReceivedAccessCode)) {
+      } else if (state ==
+                 It2MeHostStateToString(It2MeHostState::kReceivedAccessCode)) {
         EXPECT_FALSE(receivedAccessCode_received);
         receivedAccessCode_received = true;
 
@@ -461,12 +467,10 @@ void It2MeNativeMessagingHostTest::VerifyConnectResponses(int request_id) {
         EXPECT_TRUE(
             response->GetInteger(kAccessCodeLifetime, &access_code_lifetime));
         EXPECT_EQ(kTestAccessCodeLifetime.InSeconds(), access_code_lifetime);
-      } else if (state ==
-                 It2MeNativeMessagingHost::HostStateToString(kConnecting)) {
+      } else if (state == It2MeHostStateToString(It2MeHostState::kConnecting)) {
         EXPECT_FALSE(connecting_received);
         connecting_received = true;
-      } else if (state ==
-                 It2MeNativeMessagingHost::HostStateToString(kConnected)) {
+      } else if (state == It2MeHostStateToString(It2MeHostState::kConnected)) {
         EXPECT_FALSE(connected_received);
         connected_received = true;
 
@@ -485,8 +489,8 @@ void It2MeNativeMessagingHostTest::VerifyDisconnectResponses(int request_id) {
   bool disconnect_response_received = false;
   bool disconnected_received = false;
 
-  // We expect a total of 3 messages: 1 connectResponse and 1 hostStateChanged.
-  for (int i = 0; i < 2; ++i) {
+  // We expect a total of 2 messages: disconnectResponse and hostStateChanged.
+  for (int i = 0; i < 2; i++) {
     std::unique_ptr<base::DictionaryValue> response =
         ReadMessageFromOutputPipe();
     ASSERT_TRUE(response);
@@ -501,9 +505,12 @@ void It2MeNativeMessagingHostTest::VerifyDisconnectResponses(int request_id) {
     } else if (type == kHostStateChangedMessage) {
       std::string state;
       ASSERT_TRUE(response->GetString(kState, &state));
-      if (state == It2MeNativeMessagingHost::HostStateToString(kDisconnected)) {
+      if (state == It2MeHostStateToString(It2MeHostState::kDisconnected)) {
         EXPECT_FALSE(disconnected_received);
         disconnected_received = true;
+        std::string error_code;
+        EXPECT_TRUE(response->GetString(kDisconnectReason, &error_code));
+        EXPECT_EQ(ErrorCodeToString(protocol::ErrorCode::OK), error_code);
       } else {
         ADD_FAILURE() << "Unexpected host state: " << state;
       }

@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -33,15 +34,9 @@
 #include "components/sync/engine/nigori/key_derivation_params.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine/sync_scheduler.h"
-#include "components/sync/js/js_event_handler.h"
-#include "components/sync/js/js_test_util.h"
-#include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/encryption.pb.h"
-#include "components/sync/protocol/extension_specifics.pb.h"
-#include "components/sync/protocol/password_specifics.pb.h"
-#include "components/sync/protocol/preference_specifics.pb.h"
 #include "components/sync/protocol/proto_value_conversions.h"
-#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/sync_enums.pb.h"
 #include "components/sync/test/engine/fake_sync_scheduler.h"
 #include "components/sync/test/engine/test_engine_components_factory.h"
 #include "components/sync/test/fake_sync_encryption_handler.h"
@@ -100,6 +95,7 @@ class SyncManagerObserverMock : public SyncManager::Observer {
   MOCK_METHOD(void, OnActionableError, (const SyncProtocolError&), (override));
   MOCK_METHOD(void, OnMigrationRequested, (ModelTypeSet), (override));
   MOCK_METHOD(void, OnProtocolEvent, (const ProtocolEvent&), (override));
+  MOCK_METHOD(void, OnSyncStatusChanged, (const SyncStatus&), (override));
 };
 
 class SyncEncryptionHandlerObserverMock
@@ -112,10 +108,7 @@ class SyncEncryptionHandlerObserverMock
   MOCK_METHOD(void, OnPassphraseAccepted, (), (override));
   MOCK_METHOD(void, OnTrustedVaultKeyRequired, (), (override));
   MOCK_METHOD(void, OnTrustedVaultKeyAccepted, (), (override));
-  MOCK_METHOD(void,
-              OnBootstrapTokenUpdated,
-              (const std::string&, BootstrapTokenType type),
-              (override));
+  MOCK_METHOD(void, OnBootstrapTokenUpdated, (const std::string&), (override));
   MOCK_METHOD(void, OnEncryptedTypesChanged, (ModelTypeSet, bool), (override));
   MOCK_METHOD(void,
               OnCryptographerStateChanged,
@@ -167,7 +160,7 @@ class SyncManagerImplTest : public testing::Test {
 
   ~SyncManagerImplTest() override = default;
 
-  void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     extensions_activity_ = new ExtensionsActivity();
@@ -180,6 +173,9 @@ class SyncManagerImplTest : public testing::Test {
     encryption_observer_ = encryption_observer.get();
     auto scheduler = std::make_unique<MockSyncScheduler>();
     scheduler_ = scheduler.get();
+
+    // This should be the only method called by the Init() in the observer.
+    EXPECT_CALL(manager_observer_, OnSyncStatusChanged).Times(3);
 
     SyncManager::InitArgs args;
     args.service_url = GURL("https://example.com/");
@@ -194,7 +190,7 @@ class SyncManagerImplTest : public testing::Test {
         std::make_unique<ComponentsFactory>(std::move(scheduler));
     args.encryption_handler = &encryption_handler_;
     args.cancelation_signal = &cancelation_signal_;
-    args.poll_interval = base::TimeDelta::FromMinutes(60);
+    args.poll_interval = base::Minutes(60);
     sync_manager_.Init(&args);
 
     base::RunLoop().RunUntilIdle();
@@ -210,9 +206,7 @@ class SyncManagerImplTest : public testing::Test {
   MockSyncScheduler* scheduler() { return scheduler_; }
 
  private:
-  // Needed by |sync_manager_|.
-  base::test::TaskEnvironment task_environment_;
-  // Needed by |sync_manager_|.
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<ExtensionsActivity> extensions_activity_;
 
@@ -221,8 +215,9 @@ class SyncManagerImplTest : public testing::Test {
   CancelationSignal cancelation_signal_;
   StrictMock<SyncManagerObserverMock> manager_observer_;
   // Owned by |sync_manager_|.
-  StrictMock<SyncEncryptionHandlerObserverMock>* encryption_observer_ = nullptr;
-  MockSyncScheduler* scheduler_ = nullptr;
+  raw_ptr<StrictMock<SyncEncryptionHandlerObserverMock>> encryption_observer_ =
+      nullptr;
+  raw_ptr<MockSyncScheduler> scheduler_ = nullptr;
 };
 
 // Test that the configuration params are properly created and sent to

@@ -29,7 +29,7 @@ const char* DirectiveAsString(DataDirective directive) {
 }  // namespace
 
 void PlatformEmbeddedFileWriterAIX::SectionText() {
-  fprintf(fp_, ".csect .text[PR]\n");
+  fprintf(fp_, ".csect [GL], 5\n");
 }
 
 void PlatformEmbeddedFileWriterAIX::SectionData() {
@@ -65,8 +65,14 @@ void PlatformEmbeddedFileWriterAIX::DeclareSymbolGlobal(const char* name) {
 }
 
 void PlatformEmbeddedFileWriterAIX::AlignToCodeAlignment() {
+#if V8_TARGET_ARCH_X64
+  // On x64 use 64-bytes code alignment to allow 64-bytes loop header alignment.
+  STATIC_ASSERT((1 << 6) >= kCodeAlignment);
+  fprintf(fp_, ".align 6\n");
+#else
   STATIC_ASSERT((1 << 5) >= kCodeAlignment);
   fprintf(fp_, ".align 5\n");
+#endif
 }
 
 void PlatformEmbeddedFileWriterAIX::AlignToDataAlignment() {

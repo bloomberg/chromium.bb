@@ -25,14 +25,17 @@
 
 namespace blink {
 
+struct AutoDarkMode;
+
 class LayoutSVGResourcePaintServer : public LayoutSVGResourceContainer {
  public:
   explicit LayoutSVGResourcePaintServer(SVGElement* element)
       : LayoutSVGResourceContainer(element) {}
 
   virtual bool ApplyShader(const SVGResourceClient&,
-                           const FloatRect& reference_box,
+                           const gfx::RectF& reference_box,
                            const AffineTransform* additional_transform,
+                           const AutoDarkMode& auto_dark_mode,
                            PaintFlags&) = 0;
 };
 

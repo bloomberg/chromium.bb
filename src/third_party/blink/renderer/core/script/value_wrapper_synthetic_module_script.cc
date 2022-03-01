@@ -39,16 +39,16 @@ ValueWrapperSyntheticModuleScript::CreateCSSWrapperSyntheticModuleScript(
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   UseCounter::Count(execution_context, WebFeature::kCreateCSSModuleScript);
   auto* context_window = DynamicTo<LocalDOMWindow>(execution_context);
-  if (!context_window) {
-    v8::Local<v8::Value> error = V8ThrowException::CreateTypeError(
-        isolate, "Cannot create CSS Module in non-document context");
-    return ValueWrapperSyntheticModuleScript::CreateWithError(
-        v8::Local<v8::Value>(), settings_object, params.SourceURL(), KURL(),
-        ScriptFetchOptions(), error);
-  }
+  DCHECK(context_window)
+      << "Attempted to create a CSS Module in non-document context";
   CSSStyleSheetInit* init = CSSStyleSheetInit::Create();
-  CSSStyleSheet* style_sheet =
-      CSSStyleSheet::Create(*context_window->document(), init, exception_state);
+  // The base URL used to construct the CSSStyleSheet is also used for
+  // DevTools as the CSS source URL. This is fine since these two values
+  // are always the same for CSS module scripts.
+  DCHECK_EQ(params.BaseURL(), params.SourceURL());
+  CSSStyleSheet* style_sheet = CSSStyleSheet::Create(
+      *context_window->document(), params.BaseURL(), init, exception_state);
+  style_sheet->SetIsForCSSModuleScript();
   if (exception_state.HadException()) {
     v8::Local<v8::Value> error = exception_state.GetException();
     exception_state.ClearException();
@@ -181,7 +181,7 @@ ValueWrapperSyntheticModuleScript::ValueWrapperSyntheticModuleScript(
       export_value_(v8::Isolate::GetCurrent(), value) {}
 
 // This is the definition of [[EvaluationSteps]] As per the synthetic module
-// spec  https://heycam.github.io/webidl/#synthetic-module-records
+// spec  https://webidl.spec.whatwg.org/#synthetic-module-records
 // It is responsible for setting the default export of the provided module to
 // the value wrapped by the ValueWrapperSyntheticModuleScript
 v8::MaybeLocal<v8::Value> ValueWrapperSyntheticModuleScript::EvaluationSteps(
@@ -201,26 +201,22 @@ v8::MaybeLocal<v8::Value> ValueWrapperSyntheticModuleScript::EvaluationSteps(
   v8::TryCatch try_catch(isolate);
   v8::Maybe<bool> result = module->SetSyntheticModuleExport(
       isolate, V8String(isolate, "default"),
-      value_wrapper_synthetic_module_script->export_value_.NewLocal(isolate));
+      value_wrapper_synthetic_module_script->export_value_.Get(isolate));
 
   // Setting the default export should never fail.
   DCHECK(!try_catch.HasCaught());
   DCHECK(!result.IsNothing() && result.FromJust());
 
-  if (base::FeatureList::IsEnabled(features::kTopLevelAwait)) {
-    v8::Local<v8::Promise::Resolver> promise_resolver;
-    if (!v8::Promise::Resolver::New(context).ToLocal(&promise_resolver)) {
-      if (!isolate->IsExecutionTerminating()) {
-        LOG(FATAL) << "Cannot recover from failure to create a new "
-                      "v8::Promise::Resolver object (OOM?)";
-      }
-      return v8::MaybeLocal<v8::Value>();
+  v8::Local<v8::Promise::Resolver> promise_resolver;
+  if (!v8::Promise::Resolver::New(context).ToLocal(&promise_resolver)) {
+    if (!isolate->IsExecutionTerminating()) {
+      LOG(FATAL) << "Cannot recover from failure to create a new "
+                    "v8::Promise::Resolver object (OOM?)";
     }
-    promise_resolver->Resolve(context, v8::Undefined(isolate)).ToChecked();
-    return promise_resolver->GetPromise();
+    return v8::MaybeLocal<v8::Value>();
   }
-
-  return v8::Undefined(isolate);
+  promise_resolver->Resolve(context, v8::Undefined(isolate)).ToChecked();
+  return promise_resolver->GetPromise();
 }
 
 void ValueWrapperSyntheticModuleScript::Trace(Visitor* visitor) const {

@@ -62,6 +62,9 @@ void TransientWindowManager::AddTransientChild(Window* child) {
   // isn't installed stacking is going to be wrong.
   DCHECK(TransientWindowStackingClient::instance_);
 
+  // Self-owning windows break things, shouldn't happen.
+  DCHECK_NE(this->window_, child);
+
   TransientWindowManager* child_manager = GetOrCreate(child);
   if (child_manager->transient_parent_)
     GetOrCreate(child_manager->transient_parent_)->RemoveTransientChild(child);
@@ -81,6 +84,8 @@ void TransientWindowManager::AddTransientChild(Window* child) {
 
   for (auto& observer : observers_)
     observer.OnTransientChildAdded(window_, child);
+  for (auto& observer : child_manager->observers_)
+    observer.OnTransientParentChanged(window_);
 }
 
 void TransientWindowManager::RemoveTransientChild(Window* child) {
@@ -105,6 +110,8 @@ void TransientWindowManager::RemoveTransientChild(Window* child) {
 
   for (auto& observer : observers_)
     observer.OnTransientChildRemoved(window_, child);
+  for (auto& observer : child_manager->observers_)
+    observer.OnTransientParentChanged(nullptr);
 }
 
 bool TransientWindowManager::IsStackingTransient(

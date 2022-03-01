@@ -7,10 +7,12 @@
 #ifndef CORE_FXCODEC_JPEG_JPEGMODULE_H_
 #define CORE_FXCODEC_JPEG_JPEGMODULE_H_
 
+#include <stdint.h>
+
 #include <memory>
 
 #include "build/build_config.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/span.h"
 
 #if defined(OS_WIN)
@@ -25,9 +27,9 @@ class ScanlineDecoder;
 
 class JpegModule {
  public:
-  struct JpegImageInfo {
-    int width;
-    int height;
+  struct ImageInfo {
+    uint32_t width;
+    uint32_t height;
     int num_components;
     int bits_per_components;
     bool color_transform;
@@ -35,12 +37,13 @@ class JpegModule {
 
   static std::unique_ptr<ScanlineDecoder> CreateDecoder(
       pdfium::span<const uint8_t> src_span,
-      int width,
-      int height,
+      uint32_t width,
+      uint32_t height,
       int nComps,
       bool ColorTransform);
 
-  static Optional<JpegImageInfo> LoadInfo(pdfium::span<const uint8_t> src_span);
+  static absl::optional<ImageInfo> LoadInfo(
+      pdfium::span<const uint8_t> src_span);
 
 #if defined(OS_WIN)
   static bool JpegEncode(const RetainPtr<CFX_DIBBase>& pSource,

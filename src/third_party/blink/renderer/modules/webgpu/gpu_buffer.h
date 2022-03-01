@@ -29,6 +29,9 @@ class GPUBuffer : public DawnObject<WGPUBuffer> {
                      uint64_t size,
                      WGPUBuffer buffer);
 
+  GPUBuffer(const GPUBuffer&) = delete;
+  GPUBuffer& operator=(const GPUBuffer&) = delete;
+
   void Trace(Visitor* visitor) const override;
 
   // gpu_buffer.idl
@@ -51,6 +54,8 @@ class GPUBuffer : public DawnObject<WGPUBuffer> {
   void unmap(ScriptState* script_state);
   void destroy(ScriptState* script_state);
 
+  void Destroy(v8::Isolate* isolate);
+
  private:
   ScriptPromise MapAsyncImpl(ScriptState* script_state,
                              uint32_t mode,
@@ -69,7 +74,7 @@ class GPUBuffer : public DawnObject<WGPUBuffer> {
       void* data,
       size_t data_length,
       ExecutionContext* execution_context);
-  void ResetMappingState(ScriptState* script_state);
+  void ResetMappingState(v8::Isolate* isolate);
 
   uint64_t size_;
 
@@ -79,8 +84,6 @@ class GPUBuffer : public DawnObject<WGPUBuffer> {
 
   // List of ranges currently returned by getMappedRange, to avoid overlaps.
   Vector<std::pair<size_t, size_t>> mapped_ranges_;
-
-  DISALLOW_COPY_AND_ASSIGN(GPUBuffer);
 };
 
 }  // namespace blink

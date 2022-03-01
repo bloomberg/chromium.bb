@@ -30,6 +30,7 @@ ALIGNMENT_ORDER = [
     'RotateTransformOperation',
     'TranslateTransformOperation',
     'GridTrackList',
+    'Vector<GridTrackSize, 1>',
     'absl::optional<IntSize>',
     'double',
     # Aligns like a pointer (can be 32 or 64 bits)
@@ -38,7 +39,6 @@ ALIGNMENT_ORDER = [
     'NamedGridAreaMap',
     'TransformOperations',
     'Vector<CSSPropertyID>',
-    'Vector<GridTrackSize>',
     'Vector<AtomicString>',
     'GridPosition',
     'AtomicString',
@@ -53,6 +53,7 @@ ALIGNMENT_ORDER = [
     'IntrinsicLength',
     'TextDecorationThickness',
     'StyleAspectRatio',
+    'absl::optional<StyleIntrinsicLength>',
     # Aligns like float
     'absl::optional<Length>',
     'StyleOffsetRotation',
@@ -80,6 +81,7 @@ ALIGNMENT_ORDER = [
     'OutlineValue',
     'unsigned',
     'size_t',
+    'wtf_size_t',
     'int',
     # Aligns like short
     'unsigned short',
@@ -165,7 +167,7 @@ def _create_diff_groups_map(diff_function_inputs, root_group):
             assert name in [
                 field.property_name for field in root_group.all_fields], \
                 "The field '{}' isn't a defined field on ComputedStyle. " \
-                "Please check that there's an entry for '{}' in" \
+                "Please check that there's an entry for '{}' in " \
                 "css_properties.json5 or " \
                 "computed_style_extra_fields.json5".format(name, name)
         diff_functions_map[entry['name'].original] = _create_diff_groups(

@@ -69,7 +69,7 @@ bool CanBeOutputFusedIntoSomeOperand(const HloInstruction* consumer) {
 }  // namespace
 
 bool CpuInstructionFusion::ShouldFuse(HloInstruction* consumer,
-                                      int64 operand_index) {
+                                      int64_t operand_index) {
   HloInstruction* producer = consumer->mutable_operand(operand_index);
   VLOG(2) << "Considering for fusion: operand " << operand_index << " of "
           << consumer->ToString();
@@ -95,7 +95,7 @@ bool CpuInstructionFusion::ShouldFuse(HloInstruction* consumer,
   // Cost condition: not fuse (simple, expensive producers) and (consumers who
   // reuse operand elements).
   if (producer->opcode() != HloOpcode::kFusion && is_expensive(*producer) &&
-      consumer->ReusesOperandElements(operand_index)) {
+      ReusesOperandElements(consumer, operand_index)) {
     VLOG(2) << "Fusion is not profitable.";
     return false;
   }
@@ -132,7 +132,7 @@ bool CpuInstructionFusion::ShouldFuse(HloInstruction* consumer,
       fusion_node_evaluations_.emplace(consumer,
                                        FusionNodeIndexingEvaluation(consumer));
     }
-    if (fusion_node_evaluations_.at(consumer).AverageCodeDuplicationTooHigh(
+    if (fusion_node_evaluations_.at(consumer).CodeDuplicationTooHigh(
             producer)) {
       return false;
     }

@@ -32,7 +32,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_TRANSACTION_COORDINATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_TRANSACTION_COORDINATOR_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
@@ -48,6 +47,11 @@ class SQLTransactionCoordinator final
     : public GarbageCollected<SQLTransactionCoordinator> {
  public:
   SQLTransactionCoordinator();
+
+  SQLTransactionCoordinator(const SQLTransactionCoordinator&) = delete;
+  SQLTransactionCoordinator& operator=(const SQLTransactionCoordinator&) =
+      delete;
+
   void Trace(Visitor*) const;
   void AcquireLock(SQLTransactionBackend*);
   void ReleaseLock(SQLTransactionBackend*);
@@ -70,8 +74,6 @@ class SQLTransactionCoordinator final
   bool is_shutting_down_;
 
   void ProcessPendingTransactions(CoordinationInfo&);
-
-  DISALLOW_COPY_AND_ASSIGN(SQLTransactionCoordinator);
 };
 
 }  // namespace blink

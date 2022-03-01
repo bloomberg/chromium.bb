@@ -26,6 +26,7 @@
 #include "src/dsp/arm/common_neon.h"
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
+#include "src/utils/common.h"
 #include "src/utils/constants.h"
 
 namespace libgav1 {
@@ -56,10 +57,10 @@ struct DcPredFuncs_NEON {
 
 template <int block_width_log2, int block_height_log2, DcSumFunc sumfn,
           DcStoreFunc storefn>
-void DcPredFuncs_NEON<block_width_log2, block_height_log2, sumfn,
-                      storefn>::DcTop(void* const dest, ptrdiff_t stride,
-                                      const void* const top_row,
-                                      const void* /*left_column*/) {
+void DcPredFuncs_NEON<block_width_log2, block_height_log2, sumfn, storefn>::
+    DcTop(void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
+          const void* LIBGAV1_RESTRICT const top_row,
+          const void* /*left_column*/) {
   const uint32x2_t sum = sumfn(top_row, block_width_log2, false, nullptr, 0);
   const uint32x2_t dc = vrshr_n_u32(sum, block_width_log2);
   storefn(dest, stride, dc);
@@ -67,10 +68,10 @@ void DcPredFuncs_NEON<block_width_log2, block_height_log2, sumfn,
 
 template <int block_width_log2, int block_height_log2, DcSumFunc sumfn,
           DcStoreFunc storefn>
-void DcPredFuncs_NEON<block_width_log2, block_height_log2, sumfn,
-                      storefn>::DcLeft(void* const dest, ptrdiff_t stride,
-                                       const void* /*top_row*/,
-                                       const void* const left_column) {
+void DcPredFuncs_NEON<block_width_log2, block_height_log2, sumfn, storefn>::
+    DcLeft(void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
+           const void* /*top_row*/,
+           const void* LIBGAV1_RESTRICT const left_column) {
   const uint32x2_t sum =
       sumfn(left_column, block_height_log2, false, nullptr, 0);
   const uint32x2_t dc = vrshr_n_u32(sum, block_height_log2);
@@ -80,8 +81,9 @@ void DcPredFuncs_NEON<block_width_log2, block_height_log2, sumfn,
 template <int block_width_log2, int block_height_log2, DcSumFunc sumfn,
           DcStoreFunc storefn>
 void DcPredFuncs_NEON<block_width_log2, block_height_log2, sumfn, storefn>::Dc(
-    void* const dest, ptrdiff_t stride, const void* const top_row,
-    const void* const left_column) {
+    void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const uint32x2_t sum =
       sumfn(top_row, block_width_log2, true, left_column, block_height_log2);
   if (block_width_log2 == block_height_log2) {
@@ -154,92 +156,116 @@ inline uint16x8_t LoadAndAdd64(const uint8_t* buf) {
 // If |use_ref_1| is false then only sum |ref_0|.
 // For |ref[01]_size_log2| == 4 this relies on |ref_[01]| being aligned to
 // uint32_t.
-inline uint32x2_t DcSum_NEON(const void* ref_0, const int ref_0_size_log2,
-                             const bool use_ref_1, const void* ref_1,
+inline uint32x2_t DcSum_NEON(const void* LIBGAV1_RESTRICT ref_0,
+                             const int ref_0_size_log2, const bool use_ref_1,
+                             const void* LIBGAV1_RESTRICT ref_1,
                              const int ref_1_size_log2) {
   const auto* const ref_0_u8 = static_cast<const uint8_t*>(ref_0);
   const auto* const ref_1_u8 = static_cast<const uint8_t*>(ref_1);
   if (ref_0_size_log2 == 2) {
     uint8x8_t val = Load4(ref_0_u8);
     if (use_ref_1) {
-      if (ref_1_size_log2 == 2) {  // 4x4
-        val = Load4<1>(ref_1_u8, val);
-        return Sum(vpaddl_u8(val));
-      } else if (ref_1_size_log2 == 3) {  // 4x8
-        const uint8x8_t val_1 = vld1_u8(ref_1_u8);
-        const uint16x4_t sum_0 = vpaddl_u8(val);
-        const uint16x4_t sum_1 = vpaddl_u8(val_1);
-        return Sum(vadd_u16(sum_0, sum_1));
-      } else if (ref_1_size_log2 == 4) {  // 4x16
-        const uint8x16_t val_1 = vld1q_u8(ref_1_u8);
-        return Sum(vaddw_u8(vpaddlq_u8(val_1), val));
+      switch (ref_1_size_log2) {
+        case 2: {  // 4x4
+          val = Load4<1>(ref_1_u8, val);
+          return Sum(vpaddl_u8(val));
+        }
+        case 3: {  // 4x8
+          const uint8x8_t val_1 = vld1_u8(ref_1_u8);
+          const uint16x4_t sum_0 = vpaddl_u8(val);
+          const uint16x4_t sum_1 = vpaddl_u8(val_1);
+          return Sum(vadd_u16(sum_0, sum_1));
+        }
+        case 4: {  // 4x16
+          const uint8x16_t val_1 = vld1q_u8(ref_1_u8);
+          return Sum(vaddw_u8(vpaddlq_u8(val_1), val));
+        }
       }
     }
     // 4x1
     const uint16x4_t sum = vpaddl_u8(val);
     return vpaddl_u16(sum);
-  } else if (ref_0_size_log2 == 3) {
+  }
+  if (ref_0_size_log2 == 3) {
     const uint8x8_t val_0 = vld1_u8(ref_0_u8);
     if (use_ref_1) {
-      if (ref_1_size_log2 == 2) {  // 8x4
-        const uint8x8_t val_1 = Load4(ref_1_u8);
-        const uint16x4_t sum_0 = vpaddl_u8(val_0);
-        const uint16x4_t sum_1 = vpaddl_u8(val_1);
-        return Sum(vadd_u16(sum_0, sum_1));
-      } else if (ref_1_size_log2 == 3) {  // 8x8
-        const uint8x8_t val_1 = vld1_u8(ref_1_u8);
-        const uint16x4_t sum_0 = vpaddl_u8(val_0);
-        const uint16x4_t sum_1 = vpaddl_u8(val_1);
-        return Sum(vadd_u16(sum_0, sum_1));
-      } else if (ref_1_size_log2 == 4) {  // 8x16
-        const uint8x16_t val_1 = vld1q_u8(ref_1_u8);
-        return Sum(vaddw_u8(vpaddlq_u8(val_1), val_0));
-      } else if (ref_1_size_log2 == 5) {  // 8x32
-        return Sum(vaddw_u8(LoadAndAdd32(ref_1_u8), val_0));
+      switch (ref_1_size_log2) {
+        case 2: {  // 8x4
+          const uint8x8_t val_1 = Load4(ref_1_u8);
+          const uint16x4_t sum_0 = vpaddl_u8(val_0);
+          const uint16x4_t sum_1 = vpaddl_u8(val_1);
+          return Sum(vadd_u16(sum_0, sum_1));
+        }
+        case 3: {  // 8x8
+          const uint8x8_t val_1 = vld1_u8(ref_1_u8);
+          const uint16x4_t sum_0 = vpaddl_u8(val_0);
+          const uint16x4_t sum_1 = vpaddl_u8(val_1);
+          return Sum(vadd_u16(sum_0, sum_1));
+        }
+        case 4: {  // 8x16
+          const uint8x16_t val_1 = vld1q_u8(ref_1_u8);
+          return Sum(vaddw_u8(vpaddlq_u8(val_1), val_0));
+        }
+        case 5: {  // 8x32
+          return Sum(vaddw_u8(LoadAndAdd32(ref_1_u8), val_0));
+        }
       }
     }
     // 8x1
     return Sum(vpaddl_u8(val_0));
-  } else if (ref_0_size_log2 == 4) {
+  }
+  if (ref_0_size_log2 == 4) {
     const uint8x16_t val_0 = vld1q_u8(ref_0_u8);
     if (use_ref_1) {
-      if (ref_1_size_log2 == 2) {  // 16x4
-        const uint8x8_t val_1 = Load4(ref_1_u8);
-        return Sum(vaddw_u8(vpaddlq_u8(val_0), val_1));
-      } else if (ref_1_size_log2 == 3) {  // 16x8
-        const uint8x8_t val_1 = vld1_u8(ref_1_u8);
-        return Sum(vaddw_u8(vpaddlq_u8(val_0), val_1));
-      } else if (ref_1_size_log2 == 4) {  // 16x16
-        const uint8x16_t val_1 = vld1q_u8(ref_1_u8);
-        return Sum(Add(val_0, val_1));
-      } else if (ref_1_size_log2 == 5) {  // 16x32
-        const uint16x8_t sum_0 = vpaddlq_u8(val_0);
-        const uint16x8_t sum_1 = LoadAndAdd32(ref_1_u8);
-        return Sum(vaddq_u16(sum_0, sum_1));
-      } else if (ref_1_size_log2 == 6) {  // 16x64
-        const uint16x8_t sum_0 = vpaddlq_u8(val_0);
-        const uint16x8_t sum_1 = LoadAndAdd64(ref_1_u8);
-        return Sum(vaddq_u16(sum_0, sum_1));
+      switch (ref_1_size_log2) {
+        case 2: {  // 16x4
+          const uint8x8_t val_1 = Load4(ref_1_u8);
+          return Sum(vaddw_u8(vpaddlq_u8(val_0), val_1));
+        }
+        case 3: {  // 16x8
+          const uint8x8_t val_1 = vld1_u8(ref_1_u8);
+          return Sum(vaddw_u8(vpaddlq_u8(val_0), val_1));
+        }
+        case 4: {  // 16x16
+          const uint8x16_t val_1 = vld1q_u8(ref_1_u8);
+          return Sum(Add(val_0, val_1));
+        }
+        case 5: {  // 16x32
+          const uint16x8_t sum_0 = vpaddlq_u8(val_0);
+          const uint16x8_t sum_1 = LoadAndAdd32(ref_1_u8);
+          return Sum(vaddq_u16(sum_0, sum_1));
+        }
+        case 6: {  // 16x64
+          const uint16x8_t sum_0 = vpaddlq_u8(val_0);
+          const uint16x8_t sum_1 = LoadAndAdd64(ref_1_u8);
+          return Sum(vaddq_u16(sum_0, sum_1));
+        }
       }
     }
     // 16x1
     return Sum(vpaddlq_u8(val_0));
-  } else if (ref_0_size_log2 == 5) {
+  }
+  if (ref_0_size_log2 == 5) {
     const uint16x8_t sum_0 = LoadAndAdd32(ref_0_u8);
     if (use_ref_1) {
-      if (ref_1_size_log2 == 3) {  // 32x8
-        const uint8x8_t val_1 = vld1_u8(ref_1_u8);
-        return Sum(vaddw_u8(sum_0, val_1));
-      } else if (ref_1_size_log2 == 4) {  // 32x16
-        const uint8x16_t val_1 = vld1q_u8(ref_1_u8);
-        const uint16x8_t sum_1 = vpaddlq_u8(val_1);
-        return Sum(vaddq_u16(sum_0, sum_1));
-      } else if (ref_1_size_log2 == 5) {  // 32x32
-        const uint16x8_t sum_1 = LoadAndAdd32(ref_1_u8);
-        return Sum(vaddq_u16(sum_0, sum_1));
-      } else if (ref_1_size_log2 == 6) {  // 32x64
-        const uint16x8_t sum_1 = LoadAndAdd64(ref_1_u8);
-        return Sum(vaddq_u16(sum_0, sum_1));
+      switch (ref_1_size_log2) {
+        case 3: {  // 32x8
+          const uint8x8_t val_1 = vld1_u8(ref_1_u8);
+          return Sum(vaddw_u8(sum_0, val_1));
+        }
+        case 4: {  // 32x16
+          const uint8x16_t val_1 = vld1q_u8(ref_1_u8);
+          const uint16x8_t sum_1 = vpaddlq_u8(val_1);
+          return Sum(vaddq_u16(sum_0, sum_1));
+        }
+        case 5: {  // 32x32
+          const uint16x8_t sum_1 = LoadAndAdd32(ref_1_u8);
+          return Sum(vaddq_u16(sum_0, sum_1));
+        }
+        case 6: {  // 32x64
+          const uint16x8_t sum_1 = LoadAndAdd64(ref_1_u8);
+          return Sum(vaddq_u16(sum_0, sum_1));
+        }
       }
     }
     // 32x1
@@ -249,16 +275,20 @@ inline uint32x2_t DcSum_NEON(const void* ref_0, const int ref_0_size_log2,
   assert(ref_0_size_log2 == 6);
   const uint16x8_t sum_0 = LoadAndAdd64(ref_0_u8);
   if (use_ref_1) {
-    if (ref_1_size_log2 == 4) {  // 64x16
-      const uint8x16_t val_1 = vld1q_u8(ref_1_u8);
-      const uint16x8_t sum_1 = vpaddlq_u8(val_1);
-      return Sum(vaddq_u16(sum_0, sum_1));
-    } else if (ref_1_size_log2 == 5) {  // 64x32
-      const uint16x8_t sum_1 = LoadAndAdd32(ref_1_u8);
-      return Sum(vaddq_u16(sum_0, sum_1));
-    } else if (ref_1_size_log2 == 6) {  // 64x64
-      const uint16x8_t sum_1 = LoadAndAdd64(ref_1_u8);
-      return Sum(vaddq_u16(sum_0, sum_1));
+    switch (ref_1_size_log2) {
+      case 4: {  // 64x16
+        const uint8x16_t val_1 = vld1q_u8(ref_1_u8);
+        const uint16x8_t sum_1 = vpaddlq_u8(val_1);
+        return Sum(vaddq_u16(sum_0, sum_1));
+      }
+      case 5: {  // 64x32
+        const uint16x8_t sum_1 = LoadAndAdd32(ref_1_u8);
+        return Sum(vaddq_u16(sum_0, sum_1));
+      }
+      case 6: {  // 64x64
+        const uint16x8_t sum_1 = LoadAndAdd64(ref_1_u8);
+        return Sum(vaddq_u16(sum_0, sum_1));
+      }
     }
   }
   // 64x1
@@ -318,9 +348,10 @@ inline void DcStore_NEON(void* const dest, ptrdiff_t stride,
 }
 
 template <int width, int height>
-inline void Paeth4Or8xN_NEON(void* const dest, ptrdiff_t stride,
-                             const void* const top_row,
-                             const void* const left_column) {
+inline void Paeth4Or8xN_NEON(void* LIBGAV1_RESTRICT const dest,
+                             ptrdiff_t stride,
+                             const void* LIBGAV1_RESTRICT const top_row,
+                             const void* LIBGAV1_RESTRICT const left_column) {
   auto* dest_u8 = static_cast<uint8_t*>(dest);
   const auto* const top_row_u8 = static_cast<const uint8_t*>(top_row);
   const auto* const left_col_u8 = static_cast<const uint8_t*>(left_column);
@@ -425,9 +456,10 @@ inline uint8x16_t SelectPaeth(const uint8x16_t top, const uint8x16_t left,
       top_dist, top_left_##num##_dist_low, top_left_##num##_dist_high)
 
 template <int width, int height>
-inline void Paeth16PlusxN_NEON(void* const dest, ptrdiff_t stride,
-                               const void* const top_row,
-                               const void* const left_column) {
+inline void Paeth16PlusxN_NEON(void* LIBGAV1_RESTRICT const dest,
+                               ptrdiff_t stride,
+                               const void* LIBGAV1_RESTRICT const top_row,
+                               const void* LIBGAV1_RESTRICT const left_column) {
   auto* dest_u8 = static_cast<uint8_t*>(dest);
   const auto* const top_row_u8 = static_cast<const uint8_t*>(top_row);
   const auto* const left_col_u8 = static_cast<const uint8_t*>(left_column);
@@ -769,87 +801,111 @@ inline uint16x8_t LoadAndAdd64(const uint16_t* buf) {
 
 // |ref_[01]| each point to 1 << |ref[01]_size_log2| packed uint16_t values.
 // If |use_ref_1| is false then only sum |ref_0|.
-inline uint32x2_t DcSum_NEON(const void* ref_0, const int ref_0_size_log2,
-                             const bool use_ref_1, const void* ref_1,
+inline uint32x2_t DcSum_NEON(const void* LIBGAV1_RESTRICT ref_0,
+                             const int ref_0_size_log2, const bool use_ref_1,
+                             const void* LIBGAV1_RESTRICT ref_1,
                              const int ref_1_size_log2) {
   const auto* ref_0_u16 = static_cast<const uint16_t*>(ref_0);
   const auto* ref_1_u16 = static_cast<const uint16_t*>(ref_1);
   if (ref_0_size_log2 == 2) {
     const uint16x4_t val_0 = vld1_u16(ref_0_u16);
     if (use_ref_1) {
-      if (ref_1_size_log2 == 2) {  // 4x4
-        const uint16x4_t val_1 = vld1_u16(ref_1_u16);
-        return Sum(vadd_u16(val_0, val_1));
-      } else if (ref_1_size_log2 == 3) {  // 4x8
-        const uint16x8_t val_1 = vld1q_u16(ref_1_u16);
-        const uint16x8_t sum_0 = vcombine_u16(vdup_n_u16(0), val_0);
-        return Sum(vaddq_u16(sum_0, val_1));
-      } else if (ref_1_size_log2 == 4) {  // 4x16
-        const uint16x8_t sum_0 = vcombine_u16(vdup_n_u16(0), val_0);
-        const uint16x8_t sum_1 = LoadAndAdd16(ref_1_u16);
-        return Sum(vaddq_u16(sum_0, sum_1));
+      switch (ref_1_size_log2) {
+        case 2: {  // 4x4
+          const uint16x4_t val_1 = vld1_u16(ref_1_u16);
+          return Sum(vadd_u16(val_0, val_1));
+        }
+        case 3: {  // 4x8
+          const uint16x8_t val_1 = vld1q_u16(ref_1_u16);
+          const uint16x8_t sum_0 = vcombine_u16(vdup_n_u16(0), val_0);
+          return Sum(vaddq_u16(sum_0, val_1));
+        }
+        case 4: {  // 4x16
+          const uint16x8_t sum_0 = vcombine_u16(vdup_n_u16(0), val_0);
+          const uint16x8_t sum_1 = LoadAndAdd16(ref_1_u16);
+          return Sum(vaddq_u16(sum_0, sum_1));
+        }
       }
     }
     // 4x1
     return Sum(val_0);
-  } else if (ref_0_size_log2 == 3) {
+  }
+  if (ref_0_size_log2 == 3) {
     const uint16x8_t val_0 = vld1q_u16(ref_0_u16);
     if (use_ref_1) {
-      if (ref_1_size_log2 == 2) {  // 8x4
-        const uint16x4_t val_1 = vld1_u16(ref_1_u16);
-        const uint16x8_t sum_1 = vcombine_u16(vdup_n_u16(0), val_1);
-        return Sum(vaddq_u16(val_0, sum_1));
-      } else if (ref_1_size_log2 == 3) {  // 8x8
-        const uint16x8_t val_1 = vld1q_u16(ref_1_u16);
-        return Sum(vaddq_u16(val_0, val_1));
-      } else if (ref_1_size_log2 == 4) {  // 8x16
-        const uint16x8_t sum_1 = LoadAndAdd16(ref_1_u16);
-        return Sum(vaddq_u16(val_0, sum_1));
-      } else if (ref_1_size_log2 == 5) {  // 8x32
-        const uint16x8_t sum_1 = LoadAndAdd32(ref_1_u16);
-        return Sum(vaddq_u16(val_0, sum_1));
+      switch (ref_1_size_log2) {
+        case 2: {  // 8x4
+          const uint16x4_t val_1 = vld1_u16(ref_1_u16);
+          const uint16x8_t sum_1 = vcombine_u16(vdup_n_u16(0), val_1);
+          return Sum(vaddq_u16(val_0, sum_1));
+        }
+        case 3: {  // 8x8
+          const uint16x8_t val_1 = vld1q_u16(ref_1_u16);
+          return Sum(vaddq_u16(val_0, val_1));
+        }
+        case 4: {  // 8x16
+          const uint16x8_t sum_1 = LoadAndAdd16(ref_1_u16);
+          return Sum(vaddq_u16(val_0, sum_1));
+        }
+        case 5: {  // 8x32
+          const uint16x8_t sum_1 = LoadAndAdd32(ref_1_u16);
+          return Sum(vaddq_u16(val_0, sum_1));
+        }
       }
     }
     // 8x1
     return Sum(val_0);
-  } else if (ref_0_size_log2 == 4) {
+  }
+  if (ref_0_size_log2 == 4) {
     const uint16x8_t sum_0 = LoadAndAdd16(ref_0_u16);
     if (use_ref_1) {
-      if (ref_1_size_log2 == 2) {  // 16x4
-        const uint16x4_t val_1 = vld1_u16(ref_1_u16);
-        const uint16x8_t sum_1 = vcombine_u16(vdup_n_u16(0), val_1);
-        return Sum(vaddq_u16(sum_0, sum_1));
-      } else if (ref_1_size_log2 == 3) {  // 16x8
-        const uint16x8_t val_1 = vld1q_u16(ref_1_u16);
-        return Sum(vaddq_u16(sum_0, val_1));
-      } else if (ref_1_size_log2 == 4) {  // 16x16
-        const uint16x8_t sum_1 = LoadAndAdd16(ref_1_u16);
-        return Sum(vaddq_u16(sum_0, sum_1));
-      } else if (ref_1_size_log2 == 5) {  // 16x32
-        const uint16x8_t sum_1 = LoadAndAdd32(ref_1_u16);
-        return Sum(vaddq_u16(sum_0, sum_1));
-      } else if (ref_1_size_log2 == 6) {  // 16x64
-        const uint16x8_t sum_1 = LoadAndAdd64(ref_1_u16);
-        return Sum(vaddq_u16(sum_0, sum_1));
+      switch (ref_1_size_log2) {
+        case 2: {  // 16x4
+          const uint16x4_t val_1 = vld1_u16(ref_1_u16);
+          const uint16x8_t sum_1 = vcombine_u16(vdup_n_u16(0), val_1);
+          return Sum(vaddq_u16(sum_0, sum_1));
+        }
+        case 3: {  // 16x8
+          const uint16x8_t val_1 = vld1q_u16(ref_1_u16);
+          return Sum(vaddq_u16(sum_0, val_1));
+        }
+        case 4: {  // 16x16
+          const uint16x8_t sum_1 = LoadAndAdd16(ref_1_u16);
+          return Sum(vaddq_u16(sum_0, sum_1));
+        }
+        case 5: {  // 16x32
+          const uint16x8_t sum_1 = LoadAndAdd32(ref_1_u16);
+          return Sum(vaddq_u16(sum_0, sum_1));
+        }
+        case 6: {  // 16x64
+          const uint16x8_t sum_1 = LoadAndAdd64(ref_1_u16);
+          return Sum(vaddq_u16(sum_0, sum_1));
+        }
       }
     }
     // 16x1
     return Sum(sum_0);
-  } else if (ref_0_size_log2 == 5) {
+  }
+  if (ref_0_size_log2 == 5) {
     const uint16x8_t sum_0 = LoadAndAdd32(ref_0_u16);
     if (use_ref_1) {
-      if (ref_1_size_log2 == 3) {  // 32x8
-        const uint16x8_t val_1 = vld1q_u16(ref_1_u16);
-        return Sum(vaddq_u16(sum_0, val_1));
-      } else if (ref_1_size_log2 == 4) {  // 32x16
-        const uint16x8_t sum_1 = LoadAndAdd16(ref_1_u16);
-        return Sum(vaddq_u16(sum_0, sum_1));
-      } else if (ref_1_size_log2 == 5) {  // 32x32
-        const uint16x8_t sum_1 = LoadAndAdd32(ref_1_u16);
-        return Sum(vaddq_u16(sum_0, sum_1));
-      } else if (ref_1_size_log2 == 6) {  // 32x64
-        const uint16x8_t sum_1 = LoadAndAdd64(ref_1_u16);
-        return Sum(vaddq_u16(sum_0, sum_1));
+      switch (ref_1_size_log2) {
+        case 3: {  // 32x8
+          const uint16x8_t val_1 = vld1q_u16(ref_1_u16);
+          return Sum(vaddq_u16(sum_0, val_1));
+        }
+        case 4: {  // 32x16
+          const uint16x8_t sum_1 = LoadAndAdd16(ref_1_u16);
+          return Sum(vaddq_u16(sum_0, sum_1));
+        }
+        case 5: {  // 32x32
+          const uint16x8_t sum_1 = LoadAndAdd32(ref_1_u16);
+          return Sum(vaddq_u16(sum_0, sum_1));
+        }
+        case 6: {  // 32x64
+          const uint16x8_t sum_1 = LoadAndAdd64(ref_1_u16);
+          return Sum(vaddq_u16(sum_0, sum_1));
+        }
       }
     }
     // 32x1
@@ -859,15 +915,19 @@ inline uint32x2_t DcSum_NEON(const void* ref_0, const int ref_0_size_log2,
   assert(ref_0_size_log2 == 6);
   const uint16x8_t sum_0 = LoadAndAdd64(ref_0_u16);
   if (use_ref_1) {
-    if (ref_1_size_log2 == 4) {  // 64x16
-      const uint16x8_t sum_1 = LoadAndAdd16(ref_1_u16);
-      return Sum(vaddq_u16(sum_0, sum_1));
-    } else if (ref_1_size_log2 == 5) {  // 64x32
-      const uint16x8_t sum_1 = LoadAndAdd32(ref_1_u16);
-      return Sum(vaddq_u16(sum_0, sum_1));
-    } else if (ref_1_size_log2 == 6) {  // 64x64
-      const uint16x8_t sum_1 = LoadAndAdd64(ref_1_u16);
-      return Sum(vaddq_u16(sum_0, sum_1));
+    switch (ref_1_size_log2) {
+      case 4: {  // 64x16
+        const uint16x8_t sum_1 = LoadAndAdd16(ref_1_u16);
+        return Sum(vaddq_u16(sum_0, sum_1));
+      }
+      case 5: {  // 64x32
+        const uint16x8_t sum_1 = LoadAndAdd32(ref_1_u16);
+        return Sum(vaddq_u16(sum_0, sum_1));
+      }
+      case 6: {  // 64x64
+        const uint16x8_t sum_1 = LoadAndAdd64(ref_1_u16);
+        return Sum(vaddq_u16(sum_0, sum_1));
+      }
     }
   }
   // 64x1
@@ -965,6 +1025,339 @@ struct DcDefs {
   using _64x64 = DcPredFuncs_NEON<6, 6, DcSum_NEON, DcStore_NEON<64, 64>>;
 };
 
+// IntraPredFuncs_NEON::Horizontal -- duplicate left column across all rows
+
+template <int block_height>
+void Horizontal4xH_NEON(void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
+                        const void* /*top_row*/,
+                        const void* LIBGAV1_RESTRICT const left_column) {
+  const auto* const left = static_cast<const uint16_t*>(left_column);
+  auto* dst = static_cast<uint8_t*>(dest);
+  int y = 0;
+  do {
+    auto* dst16 = reinterpret_cast<uint16_t*>(dst);
+    const uint16x4_t row = vld1_dup_u16(left + y);
+    vst1_u16(dst16, row);
+    dst += stride;
+  } while (++y < block_height);
+}
+
+template <int block_height>
+void Horizontal8xH_NEON(void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
+                        const void* /*top_row*/,
+                        const void* LIBGAV1_RESTRICT const left_column) {
+  const auto* const left = static_cast<const uint16_t*>(left_column);
+  auto* dst = static_cast<uint8_t*>(dest);
+  int y = 0;
+  do {
+    auto* dst16 = reinterpret_cast<uint16_t*>(dst);
+    const uint16x8_t row = vld1q_dup_u16(left + y);
+    vst1q_u16(dst16, row);
+    dst += stride;
+  } while (++y < block_height);
+}
+
+template <int block_height>
+void Horizontal16xH_NEON(void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
+                         const void* /*top_row*/,
+                         const void* LIBGAV1_RESTRICT const left_column) {
+  const auto* const left = static_cast<const uint16_t*>(left_column);
+  auto* dst = static_cast<uint8_t*>(dest);
+  int y = 0;
+  do {
+    const uint16x8_t row0 = vld1q_dup_u16(left + y);
+    const uint16x8_t row1 = vld1q_dup_u16(left + y + 1);
+    auto* dst16 = reinterpret_cast<uint16_t*>(dst);
+    vst1q_u16(dst16, row0);
+    vst1q_u16(dst16 + 8, row0);
+    dst += stride;
+    dst16 = reinterpret_cast<uint16_t*>(dst);
+    vst1q_u16(dst16, row1);
+    vst1q_u16(dst16 + 8, row1);
+    dst += stride;
+    y += 2;
+  } while (y < block_height);
+}
+
+template <int block_height>
+void Horizontal32xH_NEON(void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
+                         const void* /*top_row*/,
+                         const void* LIBGAV1_RESTRICT const left_column) {
+  const auto* const left = static_cast<const uint16_t*>(left_column);
+  auto* dst = static_cast<uint8_t*>(dest);
+  int y = 0;
+  do {
+    const uint16x8_t row0 = vld1q_dup_u16(left + y);
+    const uint16x8_t row1 = vld1q_dup_u16(left + y + 1);
+    auto* dst16 = reinterpret_cast<uint16_t*>(dst);
+    vst1q_u16(dst16, row0);
+    vst1q_u16(dst16 + 8, row0);
+    vst1q_u16(dst16 + 16, row0);
+    vst1q_u16(dst16 + 24, row0);
+    dst += stride;
+    dst16 = reinterpret_cast<uint16_t*>(dst);
+    vst1q_u16(dst16, row1);
+    vst1q_u16(dst16 + 8, row1);
+    vst1q_u16(dst16 + 16, row1);
+    vst1q_u16(dst16 + 24, row1);
+    dst += stride;
+    y += 2;
+  } while (y < block_height);
+}
+
+// IntraPredFuncs_NEON::Vertical -- copy top row to all rows
+
+template <int block_height>
+void Vertical4xH_NEON(void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
+                      const void* LIBGAV1_RESTRICT const top_row,
+                      const void* const /*left_column*/) {
+  const auto* const top = static_cast<const uint8_t*>(top_row);
+  auto* dst = static_cast<uint8_t*>(dest);
+  const uint8x8_t row = vld1_u8(top);
+  int y = block_height;
+  do {
+    vst1_u8(dst, row);
+    dst += stride;
+  } while (--y != 0);
+}
+
+template <int block_height>
+void Vertical8xH_NEON(void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
+                      const void* LIBGAV1_RESTRICT const top_row,
+                      const void* const /*left_column*/) {
+  const auto* const top = static_cast<const uint8_t*>(top_row);
+  auto* dst = static_cast<uint8_t*>(dest);
+  const uint8x16_t row = vld1q_u8(top);
+  int y = block_height;
+  do {
+    vst1q_u8(dst, row);
+    dst += stride;
+  } while (--y != 0);
+}
+
+template <int block_height>
+void Vertical16xH_NEON(void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
+                       const void* LIBGAV1_RESTRICT const top_row,
+                       const void* const /*left_column*/) {
+  const auto* const top = static_cast<const uint8_t*>(top_row);
+  auto* dst = static_cast<uint8_t*>(dest);
+  const uint8x16_t row0 = vld1q_u8(top);
+  const uint8x16_t row1 = vld1q_u8(top + 16);
+  int y = block_height;
+  do {
+    vst1q_u8(dst, row0);
+    vst1q_u8(dst + 16, row1);
+    dst += stride;
+    vst1q_u8(dst, row0);
+    vst1q_u8(dst + 16, row1);
+    dst += stride;
+    y -= 2;
+  } while (y != 0);
+}
+
+template <int block_height>
+void Vertical32xH_NEON(void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
+                       const void* LIBGAV1_RESTRICT const top_row,
+                       const void* const /*left_column*/) {
+  const auto* const top = static_cast<const uint8_t*>(top_row);
+  auto* dst = static_cast<uint8_t*>(dest);
+  const uint8x16_t row0 = vld1q_u8(top);
+  const uint8x16_t row1 = vld1q_u8(top + 16);
+  const uint8x16_t row2 = vld1q_u8(top + 32);
+  const uint8x16_t row3 = vld1q_u8(top + 48);
+  int y = block_height;
+  do {
+    vst1q_u8(dst, row0);
+    vst1q_u8(dst + 16, row1);
+    vst1q_u8(dst + 32, row2);
+    vst1q_u8(dst + 48, row3);
+    dst += stride;
+    vst1q_u8(dst, row0);
+    vst1q_u8(dst + 16, row1);
+    vst1q_u8(dst + 32, row2);
+    vst1q_u8(dst + 48, row3);
+    dst += stride;
+    y -= 2;
+  } while (y != 0);
+}
+
+template <int block_height>
+void Vertical64xH_NEON(void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
+                       const void* LIBGAV1_RESTRICT const top_row,
+                       const void* const /*left_column*/) {
+  const auto* const top = static_cast<const uint8_t*>(top_row);
+  auto* dst = static_cast<uint8_t*>(dest);
+  const uint8x16_t row0 = vld1q_u8(top);
+  const uint8x16_t row1 = vld1q_u8(top + 16);
+  const uint8x16_t row2 = vld1q_u8(top + 32);
+  const uint8x16_t row3 = vld1q_u8(top + 48);
+  const uint8x16_t row4 = vld1q_u8(top + 64);
+  const uint8x16_t row5 = vld1q_u8(top + 80);
+  const uint8x16_t row6 = vld1q_u8(top + 96);
+  const uint8x16_t row7 = vld1q_u8(top + 112);
+  int y = block_height;
+  do {
+    vst1q_u8(dst, row0);
+    vst1q_u8(dst + 16, row1);
+    vst1q_u8(dst + 32, row2);
+    vst1q_u8(dst + 48, row3);
+    vst1q_u8(dst + 64, row4);
+    vst1q_u8(dst + 80, row5);
+    vst1q_u8(dst + 96, row6);
+    vst1q_u8(dst + 112, row7);
+    dst += stride;
+    vst1q_u8(dst, row0);
+    vst1q_u8(dst + 16, row1);
+    vst1q_u8(dst + 32, row2);
+    vst1q_u8(dst + 48, row3);
+    vst1q_u8(dst + 64, row4);
+    vst1q_u8(dst + 80, row5);
+    vst1q_u8(dst + 96, row6);
+    vst1q_u8(dst + 112, row7);
+    dst += stride;
+    y -= 2;
+  } while (y != 0);
+}
+
+template <int height>
+inline void Paeth4xH_NEON(void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
+                          const void* LIBGAV1_RESTRICT const top_ptr,
+                          const void* LIBGAV1_RESTRICT const left_ptr) {
+  auto* dst = static_cast<uint8_t*>(dest);
+  const auto* const top_row = static_cast<const uint16_t*>(top_ptr);
+  const auto* const left_col = static_cast<const uint16_t*>(left_ptr);
+
+  const uint16x4_t top_left = vdup_n_u16(top_row[-1]);
+  const uint16x4_t top_left_x2 = vshl_n_u16(top_left, 1);
+  const uint16x4_t top = vld1_u16(top_row);
+
+  for (int y = 0; y < height; ++y) {
+    auto* dst16 = reinterpret_cast<uint16_t*>(dst);
+    const uint16x4_t left = vdup_n_u16(left_col[y]);
+
+    const uint16x4_t left_dist = vabd_u16(top, top_left);
+    const uint16x4_t top_dist = vabd_u16(left, top_left);
+    const uint16x4_t top_left_dist = vabd_u16(vadd_u16(top, left), top_left_x2);
+
+    const uint16x4_t left_le_top = vcle_u16(left_dist, top_dist);
+    const uint16x4_t left_le_top_left = vcle_u16(left_dist, top_left_dist);
+    const uint16x4_t top_le_top_left = vcle_u16(top_dist, top_left_dist);
+
+    // if (left_dist <= top_dist && left_dist <= top_left_dist)
+    const uint16x4_t left_mask = vand_u16(left_le_top, left_le_top_left);
+    //   dest[x] = left_column[y];
+    // Fill all the unused spaces with 'top'. They will be overwritten when
+    // the positions for top_left are known.
+    uint16x4_t result = vbsl_u16(left_mask, left, top);
+    // else if (top_dist <= top_left_dist)
+    //   dest[x] = top_row[x];
+    // Add these values to the mask. They were already set.
+    const uint16x4_t left_or_top_mask = vorr_u16(left_mask, top_le_top_left);
+    // else
+    //   dest[x] = top_left;
+    result = vbsl_u16(left_or_top_mask, result, top_left);
+
+    vst1_u16(dst16, result);
+    dst += stride;
+  }
+}
+
+template <int height>
+inline void Paeth8xH_NEON(void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
+                          const void* LIBGAV1_RESTRICT const top_ptr,
+                          const void* LIBGAV1_RESTRICT const left_ptr) {
+  auto* dst = static_cast<uint8_t*>(dest);
+  const auto* const top_row = static_cast<const uint16_t*>(top_ptr);
+  const auto* const left_col = static_cast<const uint16_t*>(left_ptr);
+
+  const uint16x8_t top_left = vdupq_n_u16(top_row[-1]);
+  const uint16x8_t top_left_x2 = vshlq_n_u16(top_left, 1);
+  const uint16x8_t top = vld1q_u16(top_row);
+
+  for (int y = 0; y < height; ++y) {
+    auto* dst16 = reinterpret_cast<uint16_t*>(dst);
+    const uint16x8_t left = vdupq_n_u16(left_col[y]);
+
+    const uint16x8_t left_dist = vabdq_u16(top, top_left);
+    const uint16x8_t top_dist = vabdq_u16(left, top_left);
+    const uint16x8_t top_left_dist =
+        vabdq_u16(vaddq_u16(top, left), top_left_x2);
+
+    const uint16x8_t left_le_top = vcleq_u16(left_dist, top_dist);
+    const uint16x8_t left_le_top_left = vcleq_u16(left_dist, top_left_dist);
+    const uint16x8_t top_le_top_left = vcleq_u16(top_dist, top_left_dist);
+
+    // if (left_dist <= top_dist && left_dist <= top_left_dist)
+    const uint16x8_t left_mask = vandq_u16(left_le_top, left_le_top_left);
+    //   dest[x] = left_column[y];
+    // Fill all the unused spaces with 'top'. They will be overwritten when
+    // the positions for top_left are known.
+    uint16x8_t result = vbslq_u16(left_mask, left, top);
+    // else if (top_dist <= top_left_dist)
+    //   dest[x] = top_row[x];
+    // Add these values to the mask. They were already set.
+    const uint16x8_t left_or_top_mask = vorrq_u16(left_mask, top_le_top_left);
+    // else
+    //   dest[x] = top_left;
+    result = vbslq_u16(left_or_top_mask, result, top_left);
+
+    vst1q_u16(dst16, result);
+    dst += stride;
+  }
+}
+
+// For 16xH and above.
+template <int width, int height>
+inline void PaethWxH_NEON(void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
+                          const void* LIBGAV1_RESTRICT const top_ptr,
+                          const void* LIBGAV1_RESTRICT const left_ptr) {
+  auto* dst = static_cast<uint8_t*>(dest);
+  const auto* const top_row = static_cast<const uint16_t*>(top_ptr);
+  const auto* const left_col = static_cast<const uint16_t*>(left_ptr);
+
+  const uint16x8_t top_left = vdupq_n_u16(top_row[-1]);
+  const uint16x8_t top_left_x2 = vshlq_n_u16(top_left, 1);
+
+  uint16x8_t top[width >> 3];
+  for (int i = 0; i < width >> 3; ++i) {
+    top[i] = vld1q_u16(top_row + (i << 3));
+  }
+
+  for (int y = 0; y < height; ++y) {
+    auto* dst_x = reinterpret_cast<uint16_t*>(dst);
+    const uint16x8_t left = vdupq_n_u16(left_col[y]);
+    const uint16x8_t top_dist = vabdq_u16(left, top_left);
+
+    for (int i = 0; i < (width >> 3); ++i) {
+      const uint16x8_t left_dist = vabdq_u16(top[i], top_left);
+      const uint16x8_t top_left_dist =
+          vabdq_u16(vaddq_u16(top[i], left), top_left_x2);
+
+      const uint16x8_t left_le_top = vcleq_u16(left_dist, top_dist);
+      const uint16x8_t left_le_top_left = vcleq_u16(left_dist, top_left_dist);
+      const uint16x8_t top_le_top_left = vcleq_u16(top_dist, top_left_dist);
+
+      // if (left_dist <= top_dist && left_dist <= top_left_dist)
+      const uint16x8_t left_mask = vandq_u16(left_le_top, left_le_top_left);
+      //   dest[x] = left_column[y];
+      // Fill all the unused spaces with 'top'. They will be overwritten when
+      // the positions for top_left are known.
+      uint16x8_t result = vbslq_u16(left_mask, left, top[i]);
+      // else if (top_dist <= top_left_dist)
+      //   dest[x] = top_row[x];
+      // Add these values to the mask. They were already set.
+      const uint16x8_t left_or_top_mask = vorrq_u16(left_mask, top_le_top_left);
+      // else
+      //   dest[x] = top_left;
+      result = vbslq_u16(left_or_top_mask, result, top_left);
+
+      vst1q_u16(dst_x, result);
+      dst_x += 8;
+    }
+    dst += stride;
+  }
+}
+
 void Init10bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth10);
   assert(dsp != nullptr);
@@ -974,6 +1367,10 @@ void Init10bpp() {
       DcDefs::_4x4::DcLeft;
   dsp->intra_predictors[kTransformSize4x4][kIntraPredictorDc] =
       DcDefs::_4x4::Dc;
+  dsp->intra_predictors[kTransformSize4x4][kIntraPredictorVertical] =
+      Vertical4xH_NEON<4>;
+  dsp->intra_predictors[kTransformSize4x4][kIntraPredictorPaeth] =
+      Paeth4xH_NEON<4>;
 
   // 4x8
   dsp->intra_predictors[kTransformSize4x8][kIntraPredictorDcTop] =
@@ -982,6 +1379,12 @@ void Init10bpp() {
       DcDefs::_4x8::DcLeft;
   dsp->intra_predictors[kTransformSize4x8][kIntraPredictorDc] =
       DcDefs::_4x8::Dc;
+  dsp->intra_predictors[kTransformSize4x8][kIntraPredictorHorizontal] =
+      Horizontal4xH_NEON<8>;
+  dsp->intra_predictors[kTransformSize4x8][kIntraPredictorVertical] =
+      Vertical4xH_NEON<8>;
+  dsp->intra_predictors[kTransformSize4x8][kIntraPredictorPaeth] =
+      Paeth4xH_NEON<8>;
 
   // 4x16
   dsp->intra_predictors[kTransformSize4x16][kIntraPredictorDcTop] =
@@ -990,6 +1393,12 @@ void Init10bpp() {
       DcDefs::_4x16::DcLeft;
   dsp->intra_predictors[kTransformSize4x16][kIntraPredictorDc] =
       DcDefs::_4x16::Dc;
+  dsp->intra_predictors[kTransformSize4x16][kIntraPredictorHorizontal] =
+      Horizontal4xH_NEON<16>;
+  dsp->intra_predictors[kTransformSize4x16][kIntraPredictorVertical] =
+      Vertical4xH_NEON<16>;
+  dsp->intra_predictors[kTransformSize4x16][kIntraPredictorPaeth] =
+      Paeth4xH_NEON<16>;
 
   // 8x4
   dsp->intra_predictors[kTransformSize8x4][kIntraPredictorDcTop] =
@@ -998,6 +1407,10 @@ void Init10bpp() {
       DcDefs::_8x4::DcLeft;
   dsp->intra_predictors[kTransformSize8x4][kIntraPredictorDc] =
       DcDefs::_8x4::Dc;
+  dsp->intra_predictors[kTransformSize8x4][kIntraPredictorVertical] =
+      Vertical8xH_NEON<4>;
+  dsp->intra_predictors[kTransformSize8x4][kIntraPredictorPaeth] =
+      Paeth8xH_NEON<4>;
 
   // 8x8
   dsp->intra_predictors[kTransformSize8x8][kIntraPredictorDcTop] =
@@ -1006,6 +1419,12 @@ void Init10bpp() {
       DcDefs::_8x8::DcLeft;
   dsp->intra_predictors[kTransformSize8x8][kIntraPredictorDc] =
       DcDefs::_8x8::Dc;
+  dsp->intra_predictors[kTransformSize8x8][kIntraPredictorHorizontal] =
+      Horizontal8xH_NEON<8>;
+  dsp->intra_predictors[kTransformSize8x8][kIntraPredictorVertical] =
+      Vertical8xH_NEON<8>;
+  dsp->intra_predictors[kTransformSize8x8][kIntraPredictorPaeth] =
+      Paeth8xH_NEON<8>;
 
   // 8x16
   dsp->intra_predictors[kTransformSize8x16][kIntraPredictorDcTop] =
@@ -1014,6 +1433,10 @@ void Init10bpp() {
       DcDefs::_8x16::DcLeft;
   dsp->intra_predictors[kTransformSize8x16][kIntraPredictorDc] =
       DcDefs::_8x16::Dc;
+  dsp->intra_predictors[kTransformSize8x16][kIntraPredictorVertical] =
+      Vertical8xH_NEON<16>;
+  dsp->intra_predictors[kTransformSize8x16][kIntraPredictorPaeth] =
+      Paeth8xH_NEON<16>;
 
   // 8x32
   dsp->intra_predictors[kTransformSize8x32][kIntraPredictorDcTop] =
@@ -1022,6 +1445,12 @@ void Init10bpp() {
       DcDefs::_8x32::DcLeft;
   dsp->intra_predictors[kTransformSize8x32][kIntraPredictorDc] =
       DcDefs::_8x32::Dc;
+  dsp->intra_predictors[kTransformSize8x32][kIntraPredictorHorizontal] =
+      Horizontal8xH_NEON<32>;
+  dsp->intra_predictors[kTransformSize8x32][kIntraPredictorVertical] =
+      Vertical8xH_NEON<32>;
+  dsp->intra_predictors[kTransformSize8x32][kIntraPredictorPaeth] =
+      Paeth8xH_NEON<32>;
 
   // 16x4
   dsp->intra_predictors[kTransformSize16x4][kIntraPredictorDcTop] =
@@ -1030,6 +1459,10 @@ void Init10bpp() {
       DcDefs::_16x4::DcLeft;
   dsp->intra_predictors[kTransformSize16x4][kIntraPredictorDc] =
       DcDefs::_16x4::Dc;
+  dsp->intra_predictors[kTransformSize16x4][kIntraPredictorVertical] =
+      Vertical16xH_NEON<4>;
+  dsp->intra_predictors[kTransformSize16x4][kIntraPredictorPaeth] =
+      PaethWxH_NEON<16, 4>;
 
   // 16x8
   dsp->intra_predictors[kTransformSize16x8][kIntraPredictorDcTop] =
@@ -1038,6 +1471,12 @@ void Init10bpp() {
       DcDefs::_16x8::DcLeft;
   dsp->intra_predictors[kTransformSize16x8][kIntraPredictorDc] =
       DcDefs::_16x8::Dc;
+  dsp->intra_predictors[kTransformSize16x8][kIntraPredictorHorizontal] =
+      Horizontal16xH_NEON<8>;
+  dsp->intra_predictors[kTransformSize16x8][kIntraPredictorVertical] =
+      Vertical16xH_NEON<8>;
+  dsp->intra_predictors[kTransformSize16x8][kIntraPredictorPaeth] =
+      PaethWxH_NEON<16, 8>;
 
   // 16x16
   dsp->intra_predictors[kTransformSize16x16][kIntraPredictorDcTop] =
@@ -1046,6 +1485,10 @@ void Init10bpp() {
       DcDefs::_16x16::DcLeft;
   dsp->intra_predictors[kTransformSize16x16][kIntraPredictorDc] =
       DcDefs::_16x16::Dc;
+  dsp->intra_predictors[kTransformSize16x16][kIntraPredictorVertical] =
+      Vertical16xH_NEON<16>;
+  dsp->intra_predictors[kTransformSize16x16][kIntraPredictorPaeth] =
+      PaethWxH_NEON<16, 16>;
 
   // 16x32
   dsp->intra_predictors[kTransformSize16x32][kIntraPredictorDcTop] =
@@ -1054,6 +1497,10 @@ void Init10bpp() {
       DcDefs::_16x32::DcLeft;
   dsp->intra_predictors[kTransformSize16x32][kIntraPredictorDc] =
       DcDefs::_16x32::Dc;
+  dsp->intra_predictors[kTransformSize16x32][kIntraPredictorVertical] =
+      Vertical16xH_NEON<32>;
+  dsp->intra_predictors[kTransformSize16x32][kIntraPredictorPaeth] =
+      PaethWxH_NEON<16, 32>;
 
   // 16x64
   dsp->intra_predictors[kTransformSize16x64][kIntraPredictorDcTop] =
@@ -1062,6 +1509,10 @@ void Init10bpp() {
       DcDefs::_16x64::DcLeft;
   dsp->intra_predictors[kTransformSize16x64][kIntraPredictorDc] =
       DcDefs::_16x64::Dc;
+  dsp->intra_predictors[kTransformSize16x64][kIntraPredictorVertical] =
+      Vertical16xH_NEON<64>;
+  dsp->intra_predictors[kTransformSize16x64][kIntraPredictorPaeth] =
+      PaethWxH_NEON<16, 64>;
 
   // 32x8
   dsp->intra_predictors[kTransformSize32x8][kIntraPredictorDcTop] =
@@ -1070,6 +1521,10 @@ void Init10bpp() {
       DcDefs::_32x8::DcLeft;
   dsp->intra_predictors[kTransformSize32x8][kIntraPredictorDc] =
       DcDefs::_32x8::Dc;
+  dsp->intra_predictors[kTransformSize32x8][kIntraPredictorVertical] =
+      Vertical32xH_NEON<8>;
+  dsp->intra_predictors[kTransformSize32x8][kIntraPredictorPaeth] =
+      PaethWxH_NEON<32, 8>;
 
   // 32x16
   dsp->intra_predictors[kTransformSize32x16][kIntraPredictorDcTop] =
@@ -1078,6 +1533,10 @@ void Init10bpp() {
       DcDefs::_32x16::DcLeft;
   dsp->intra_predictors[kTransformSize32x16][kIntraPredictorDc] =
       DcDefs::_32x16::Dc;
+  dsp->intra_predictors[kTransformSize32x16][kIntraPredictorVertical] =
+      Vertical32xH_NEON<16>;
+  dsp->intra_predictors[kTransformSize32x16][kIntraPredictorPaeth] =
+      PaethWxH_NEON<32, 16>;
 
   // 32x32
   dsp->intra_predictors[kTransformSize32x32][kIntraPredictorDcTop] =
@@ -1086,6 +1545,10 @@ void Init10bpp() {
       DcDefs::_32x32::DcLeft;
   dsp->intra_predictors[kTransformSize32x32][kIntraPredictorDc] =
       DcDefs::_32x32::Dc;
+  dsp->intra_predictors[kTransformSize32x32][kIntraPredictorVertical] =
+      Vertical32xH_NEON<32>;
+  dsp->intra_predictors[kTransformSize32x32][kIntraPredictorPaeth] =
+      PaethWxH_NEON<32, 32>;
 
   // 32x64
   dsp->intra_predictors[kTransformSize32x64][kIntraPredictorDcTop] =
@@ -1094,6 +1557,12 @@ void Init10bpp() {
       DcDefs::_32x64::DcLeft;
   dsp->intra_predictors[kTransformSize32x64][kIntraPredictorDc] =
       DcDefs::_32x64::Dc;
+  dsp->intra_predictors[kTransformSize32x64][kIntraPredictorHorizontal] =
+      Horizontal32xH_NEON<64>;
+  dsp->intra_predictors[kTransformSize32x64][kIntraPredictorVertical] =
+      Vertical32xH_NEON<64>;
+  dsp->intra_predictors[kTransformSize32x64][kIntraPredictorPaeth] =
+      PaethWxH_NEON<32, 64>;
 
   // 64x16
   dsp->intra_predictors[kTransformSize64x16][kIntraPredictorDcTop] =
@@ -1102,6 +1571,10 @@ void Init10bpp() {
       DcDefs::_64x16::DcLeft;
   dsp->intra_predictors[kTransformSize64x16][kIntraPredictorDc] =
       DcDefs::_64x16::Dc;
+  dsp->intra_predictors[kTransformSize64x16][kIntraPredictorVertical] =
+      Vertical64xH_NEON<16>;
+  dsp->intra_predictors[kTransformSize64x16][kIntraPredictorPaeth] =
+      PaethWxH_NEON<64, 16>;
 
   // 64x32
   dsp->intra_predictors[kTransformSize64x32][kIntraPredictorDcTop] =
@@ -1110,6 +1583,10 @@ void Init10bpp() {
       DcDefs::_64x32::DcLeft;
   dsp->intra_predictors[kTransformSize64x32][kIntraPredictorDc] =
       DcDefs::_64x32::Dc;
+  dsp->intra_predictors[kTransformSize64x32][kIntraPredictorVertical] =
+      Vertical64xH_NEON<32>;
+  dsp->intra_predictors[kTransformSize64x32][kIntraPredictorPaeth] =
+      PaethWxH_NEON<64, 32>;
 
   // 64x64
   dsp->intra_predictors[kTransformSize64x64][kIntraPredictorDcTop] =
@@ -1118,6 +1595,10 @@ void Init10bpp() {
       DcDefs::_64x64::DcLeft;
   dsp->intra_predictors[kTransformSize64x64][kIntraPredictorDc] =
       DcDefs::_64x64::Dc;
+  dsp->intra_predictors[kTransformSize64x64][kIntraPredictorVertical] =
+      Vertical64xH_NEON<64>;
+  dsp->intra_predictors[kTransformSize64x64][kIntraPredictorPaeth] =
+      PaethWxH_NEON<64, 64>;
 }
 
 }  // namespace

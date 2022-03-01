@@ -8,9 +8,8 @@
 #include <utility>
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/assistant/test/test_assistant_client.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/assistant/test/test_assistant_setup.h"
-#include "ash/assistant/test/test_assistant_web_view_factory.h"
 #include "ash/assistant/ui/main_stage/assistant_onboarding_suggestion_view.h"
 #include "ash/assistant/ui/main_stage/suggestion_chip_view.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
@@ -21,8 +20,11 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/test/test_ash_web_view_factory.h"
+#include "ash/test/view_drawn_waiter.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "chromeos/services/assistant/test_support/scoped_assistant_browser_delegate.h"
 #include "ui/views/view_utils.h"
 
 namespace ash {
@@ -103,8 +105,9 @@ AssistantAshTestBase::AssistantAshTestBase(
     : AshTestBase(time),
       test_api_(AssistantTestApi::Create()),
       test_setup_(std::make_unique<TestAssistantSetup>()),
-      test_web_view_factory_(std::make_unique<TestAssistantWebViewFactory>()),
-      assistant_client_(std::make_unique<TestAssistantClient>()) {}
+      test_web_view_factory_(std::make_unique<TestAshWebViewFactory>()),
+      delegate_(std::make_unique<
+                chromeos::assistant::ScopedAssistantBrowserDelegate>()) {}
 
 AssistantAshTestBase::~AssistantAshTestBase() = default;
 
@@ -162,6 +165,8 @@ void AssistantAshTestBase::ShowAssistantUi(AssistantEntryPoint entry_point) {
   }
   // Send all mojom messages to/from the assistant service.
   base::RunLoop().RunUntilIdle();
+  // Ensure assistant page is visible and has finished layout to non-zero size.
+  ViewDrawnWaiter().Wait(page_view());
 }
 
 void AssistantAshTestBase::CloseAssistantUi(AssistantExitPoint exit_point) {
@@ -173,7 +178,7 @@ void AssistantAshTestBase::OpenLauncher() {
 }
 
 void AssistantAshTestBase::CloseLauncher() {
-  Shell::Get()->app_list_controller()->ViewClosing();
+  Shell::Get()->app_list_controller()->DismissAppList();
 }
 
 void AssistantAshTestBase::SetTabletMode(bool enable) {

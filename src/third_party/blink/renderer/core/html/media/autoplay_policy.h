@@ -8,6 +8,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -57,6 +58,8 @@ class CORE_EXPORT AutoplayPolicy final
   static bool DocumentIsCapturingUserMedia(const Document&);
 
   explicit AutoplayPolicy(HTMLMediaElement*);
+  AutoplayPolicy(const AutoplayPolicy&) = delete;
+  AutoplayPolicy& operator=(const AutoplayPolicy&) = delete;
 
   void VideoWillBeDrawnToCanvas() const;
 
@@ -153,8 +156,6 @@ class CORE_EXPORT AutoplayPolicy final
   Member<AutoplayUmaHelper> autoplay_uma_helper_;
 
   absl::optional<bool> autoplay_initiated_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutoplayPolicy);
 };
 
 }  // namespace blink

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_base_layout_algorithm_test.h"
 
+#include <sstream>
 #include "third_party/blink/renderer/core/dom/tag_collection.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
@@ -20,7 +21,104 @@
 namespace blink {
 namespace {
 
-class NGInlineLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {};
+const NGPhysicalLineBoxFragment* FindBlockInInlineLineBoxFragment(
+    Element* container) {
+  NGInlineCursor cursor(*To<LayoutBlockFlow>(container->GetLayoutObject()));
+  for (cursor.MoveToFirstLine(); cursor; cursor.MoveToNextLine()) {
+    const NGPhysicalLineBoxFragment* fragment =
+        cursor.Current()->LineBoxFragment();
+    DCHECK(fragment);
+    if (fragment->IsBlockInInline())
+      return fragment;
+  }
+  return nullptr;
+}
+
+class NGInlineLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
+ protected:
+  static std::string AsFragmentItemsString(const LayoutBlockFlow& root) {
+    std::ostringstream ostream;
+    ostream << std::endl;
+    for (NGInlineCursor cursor(root); cursor; cursor.MoveToNext()) {
+      const auto& item = *cursor.CurrentItem();
+      ostream << item << " " << item.RectInContainerFragment() << std::endl;
+    }
+    return ostream.str();
+  }
+};
+
+TEST_F(NGInlineLayoutAlgorithmTest, Types) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <div id="normal">normal</div>
+    <div id="empty"><span></span></div>
+  )HTML");
+  NGInlineCursor normal(
+      *To<LayoutBlockFlow>(GetLayoutObjectByElementId("normal")));
+  normal.MoveToFirstLine();
+  EXPECT_FALSE(normal.Current()->LineBoxFragment()->IsEmptyLineBox());
+
+  NGInlineCursor empty(
+      *To<LayoutBlockFlow>(GetLayoutObjectByElementId("empty")));
+  empty.MoveToFirstLine();
+  EXPECT_TRUE(empty.Current()->LineBoxFragment()->IsEmptyLineBox());
+}
+
+TEST_F(NGInlineLayoutAlgorithmTest, TypesForBlockInInline) {
+  ScopedLayoutNGBlockInInlineForTest block_in_inline_scope(true);
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <div id="block-in-inline">
+      <span><div>normal</div></span>
+    </div>
+    <div id="block-in-inline-empty">
+      <span><div></div></span>
+    </div>
+    <div id="block-in-inline-height">
+      <span><div style="height: 100px"></div></span>
+    </div>
+  )HTML");
+  // Regular block-in-inline.
+  NGInlineCursor block_in_inline(
+      *To<LayoutBlockFlow>(GetLayoutObjectByElementId("block-in-inline")));
+  block_in_inline.MoveToFirstLine();
+  EXPECT_TRUE(block_in_inline.Current()->LineBoxFragment()->IsEmptyLineBox());
+  EXPECT_FALSE(block_in_inline.Current()->LineBoxFragment()->IsBlockInInline());
+  block_in_inline.MoveToNextLine();
+  EXPECT_FALSE(block_in_inline.Current()->LineBoxFragment()->IsEmptyLineBox());
+  EXPECT_TRUE(block_in_inline.Current()->LineBoxFragment()->IsBlockInInline());
+  int block_count = 0;
+  for (NGInlineCursor children = block_in_inline.CursorForDescendants();
+       children; children.MoveToNext()) {
+    if (children.Current()->BoxFragment() &&
+        children.Current()->BoxFragment()->IsBlockInInline())
+      ++block_count;
+  }
+  EXPECT_EQ(block_count, 1);
+  block_in_inline.MoveToNextLine();
+  EXPECT_TRUE(block_in_inline.Current()->LineBoxFragment()->IsEmptyLineBox());
+  EXPECT_FALSE(block_in_inline.Current()->LineBoxFragment()->IsBlockInInline());
+
+  // If the block is empty and self-collapsing, |IsEmptyLineBox| should be set.
+  NGInlineCursor block_in_inline_empty(*To<LayoutBlockFlow>(
+      GetLayoutObjectByElementId("block-in-inline-empty")));
+  block_in_inline_empty.MoveToFirstLine();
+  block_in_inline_empty.MoveToNextLine();
+  EXPECT_TRUE(
+      block_in_inline_empty.Current()->LineBoxFragment()->IsEmptyLineBox());
+  EXPECT_TRUE(
+      block_in_inline_empty.Current()->LineBoxFragment()->IsBlockInInline());
+
+  // Test empty but non-self-collapsing block in an inline box.
+  NGInlineCursor block_in_inline_height(*To<LayoutBlockFlow>(
+      GetLayoutObjectByElementId("block-in-inline-height")));
+  block_in_inline_height.MoveToFirstLine();
+  block_in_inline_height.MoveToNextLine();
+  EXPECT_FALSE(
+      block_in_inline_height.Current()->LineBoxFragment()->IsEmptyLineBox());
+  EXPECT_TRUE(
+      block_in_inline_height.Current()->LineBoxFragment()->IsBlockInInline());
+}
 
 TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   LoadAhem();
@@ -407,6 +505,41 @@ TEST_F(NGInlineLayoutAlgorithmTest,
   EXPECT_EQ(wide_float->OffsetTop(), narrow_float->OffsetTop());
 }
 
+// Block-in-inline is not reusable. See |EndOfReusableItems|.
+TEST_F(NGInlineLayoutAlgorithmTest, BlockInInlineAppend) {
+  ScopedLayoutNGBlockInInlineForTest scoped_for_test(true);
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      :root {
+        font-size: 10px;
+      }
+      #container {
+        width: 10ch;
+      }
+    </style>
+    <div id="container">
+      <span id="span">
+        12345678
+        <div>block</div>
+        12345678
+      </span>
+      12345678
+    </div>
+  )HTML");
+  Element* container_element = GetElementById("container");
+  scoped_refptr<const NGPhysicalLineBoxFragment> before_append =
+      FindBlockInInlineLineBoxFragment(container_element);
+  ASSERT_TRUE(before_append);
+
+  Document& doc = GetDocument();
+  container_element->appendChild(doc.createTextNode("12345678"));
+  UpdateAllLifecyclePhasesForTest();
+  scoped_refptr<const NGPhysicalLineBoxFragment> after_append =
+      FindBlockInInlineLineBoxFragment(container_element);
+  EXPECT_NE(before_append, after_append);
+}
+
 // Verifies that InlineLayoutAlgorithm positions floats with respect to their
 // margins.
 TEST_F(NGInlineLayoutAlgorithmTest, PositionFloatsWithMargins) {
@@ -455,6 +588,65 @@ TEST_F(NGInlineLayoutAlgorithmTest, InkOverflow) {
   PhysicalRect ink_overflow = cursor.Current().InkOverflow();
   EXPECT_EQ(LayoutUnit(-5), ink_overflow.offset.top);
   EXPECT_EQ(LayoutUnit(20), ink_overflow.size.height);
+}
+
+// See also NGInlineLayoutAlgorithmTest.TextCombineFake
+TEST_F(NGInlineLayoutAlgorithmTest, TextCombineBasic) {
+  ScopedLayoutNGTextCombineForTest enable_layout_ng_text_combine(true);
+  LoadAhem();
+  InsertStyleElement(
+      "body { margin: 0px; font: 100px/110px Ahem; }"
+      "c { text-combine-upright: all; }"
+      "div { writing-mode: vertical-rl; }");
+  SetBodyInnerHTML("<div id=root>a<c id=target>01234</c>b</div>");
+
+  EXPECT_EQ(R"DUMP(
+{Line #descendants=5 LTR Standard} "0,0 110x300"
+{Text 0-1 LTR Standard} "5,0 100x100"
+{Box #descendants=2 Standard} "5,100 100x100"
+{Box #descendants=1 AtomicInlineLTR Standard} "5,100 100x100"
+{Text 2-3 LTR Standard} "5,200 100x100"
+)DUMP",
+            AsFragmentItemsString(
+                *To<LayoutBlockFlow>(GetLayoutObjectByElementId("root"))));
+
+  EXPECT_EQ(R"DUMP(
+{Line #descendants=2 LTR Standard} "0,0 100x100"
+{Text 0-5 LTR Standard} "0,0 500x100"
+)DUMP",
+            AsFragmentItemsString(*To<LayoutBlockFlow>(
+                GetLayoutObjectByElementId("target")->SlowFirstChild())));
+}
+
+// See also NGInlineLayoutAlgorithmTest.TextCombineBasic
+TEST_F(NGInlineLayoutAlgorithmTest, TextCombineFake) {
+  ScopedLayoutNGTextCombineForTest enable_layout_ng_text_combine(true);
+  LoadAhem();
+  InsertStyleElement(
+      "body { margin: 0px; font: 100px/110px Ahem; }"
+      "c {"
+      "  display: inline-block;"
+      "  width: 1em; height: 1em;"
+      "  writing-mode: horizontal-tb;"
+      "}"
+      "div { writing-mode: vertical-rl; }");
+  SetBodyInnerHTML("<div id=root>a<c id=target>0</c>b</div>");
+
+  EXPECT_EQ(R"DUMP(
+{Line #descendants=4 LTR Standard} "0,0 110x300"
+{Text 0-1 LTR Standard} "5,0 100x100"
+{Box #descendants=1 AtomicInlineLTR Standard} "5,100 100x100"
+{Text 2-3 LTR Standard} "5,200 100x100"
+)DUMP",
+            AsFragmentItemsString(
+                *To<LayoutBlockFlow>(GetLayoutObjectByElementId("root"))));
+
+  EXPECT_EQ(R"DUMP(
+{Line #descendants=2 LTR Standard} "0,0 100x110"
+{Text 0-1 LTR Standard} "0,5 100x100"
+)DUMP",
+            AsFragmentItemsString(
+                *To<LayoutBlockFlow>(GetLayoutObjectByElementId("target"))));
 }
 
 #undef MAYBE_VerticalAlignBottomReplaced

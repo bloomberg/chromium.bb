@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -65,10 +65,11 @@ std::string AccessibilityViewAsString(const AXVirtualView& view) {
 class TestNode : public TreeNode<TestNode> {
  public:
   TestNode() = default;
-  ~TestNode() override = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestNode);
+  TestNode(const TestNode&) = delete;
+  TestNode& operator=(const TestNode&) = delete;
+
+  ~TestNode() override = default;
 };
 
 // Creates the following structure:
@@ -85,6 +86,9 @@ class TreeViewTest : public ViewsTestBase {
     Add(Add(model_.GetRoot(), 1, "b"), 0, "b1");
     Add(model_.GetRoot(), 2, "c");
   }
+
+  TreeViewTest(const TreeViewTest&) = delete;
+  TreeViewTest& operator=(const TreeViewTest&) = delete;
 
   // ViewsTestBase
   void SetUp() override;
@@ -145,7 +149,7 @@ class TreeViewTest : public ViewsTestBase {
   PrefixSelector* selector() { return tree_->GetPrefixSelector(); }
 
   ui::TreeNodeModel<TestNode> model_;
-  TreeView* tree_;
+  raw_ptr<TreeView> tree_;
   UniqueWidgetPtr widget_;
 
  private:
@@ -156,8 +160,6 @@ class TreeViewTest : public ViewsTestBase {
   // Keeps a record of all accessibility events that have been fired on the tree
   // view.
   AccessibilityEventsVector accessibility_events_;
-
-  DISALLOW_COPY_AND_ASSIGN(TreeViewTest);
 };
 
 void TreeViewTest::SetUp() {
@@ -237,7 +239,7 @@ std::string TreeViewTest::GetSelectedAccessibilityViewName() const {
     const AXVirtualView* parent_view = ax_view->virtual_parent_view();
     while (parent_view) {
       size_t sibling_index_in_parent =
-          size_t{parent_view->GetIndexOf(ax_view)} + 1;
+          static_cast<size_t>(parent_view->GetIndexOf(ax_view)) + 1;
       if (sibling_index_in_parent < parent_view->children().size()) {
         ax_view = parent_view->children()[sibling_index_in_parent].get();
         break;
@@ -311,7 +313,7 @@ const AXVirtualView* TreeViewTest::GetAccessibilityViewByName(
     const AXVirtualView* parent_view = ax_view->virtual_parent_view();
     while (parent_view) {
       size_t sibling_index_in_parent =
-          size_t{parent_view->GetIndexOf(ax_view)} + 1;
+          static_cast<size_t>(parent_view->GetIndexOf(ax_view)) + 1;
       if (sibling_index_in_parent < parent_view->children().size()) {
         ax_view = parent_view->children()[sibling_index_in_parent].get();
         break;

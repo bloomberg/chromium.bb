@@ -48,15 +48,33 @@ function defBundle(bundle, distDir) {
           'crypto',
         ]
       }),
-      // Protobufjs's inquire() uses eval but that's not really needed in
-      // the browser.
-      // See https://github.com/protobufjs/protobuf.js/issues/593
+
       replace({
-        patterns: [{test: /eval\(.*\(moduleName\);/g, replace: 'undefined;'}]
+        patterns: [
+          // Protobufjs's inquire() uses eval but that's not really needed in
+          // the browser. https://github.com/protobufjs/protobuf.js/issues/593
+          {test: /eval\(.*\(moduleName\);/g, replace: 'undefined;'},
+
+          // Immer entry point has a if (process.env.NODE_ENV === 'production')
+          // but |process| is not defined in the browser. Bypass.
+          // https://github.com/immerjs/immer/issues/557
+          {test: /process\.env\.NODE_ENV/g, replace: '\'production\''},
+        ]
       }),
+
       // Translate source maps to point back to the .ts sources.
       sourcemaps(),
     ],
+    onwarn: function(warning, warn) {
+      // Ignore circular dependency warnings coming from third party code.
+      if (warning.code === 'CIRCULAR_DEPENDENCY' &&
+          warning.importer.includes('node_modules')) {
+        return;
+      }
+
+      // Call the default warning handler for all remaining warnings.
+      warn(warning);
+    }
   };
 }
 
@@ -86,6 +104,7 @@ export default [
   defBundle('frontend', 'dist_version'),
   defBundle('controller', 'dist_version'),
   defBundle('engine', 'dist_version'),
+  defBundle('traceconv', 'dist_version'),
   defBundle('chrome_extension', 'chrome_extension'),
   defServiceWorkerBundle(),
 ]

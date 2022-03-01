@@ -7,10 +7,10 @@ TODO:
 - ?
 `;
 
-import { params, poptions } from '../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
-import { assert, unreachable } from '../../../../common/framework/util/util.js';
+import { assert, unreachable } from '../../../../common/util/util.js';
 import { GPUTest } from '../../../gpu_test.js';
+import { float32ToFloat16Bits } from '../../../util/conversion.js';
 
 export const g = makeTestGroup(GPUTest);
 
@@ -118,7 +118,7 @@ g.test('GPUBlendComponent')
     `Test all combinations of parameters for GPUBlendComponent.
 
   Tests that parameters are correctly passed to the backend API and blend computations
-  are done correctly by blending a single pixel. The test uses rgba32float as the format
+  are done correctly by blending a single pixel. The test uses rgba16float as the format
   to avoid checking clamping behavior (tested in api,operation,rendering,blending:clamp,*).
 
   Params:
@@ -127,37 +127,29 @@ g.test('GPUBlendComponent')
     - dstFactor= {...all GPUBlendFactors}
     - operation= {...all GPUBlendOperations}`
   )
-  .cases(
-    params() //
-      .combine(poptions('component', ['color', 'alpha'] as const))
-      .combine(poptions('srcFactor', kBlendFactors))
-      .combine(poptions('dstFactor', kBlendFactors))
-      .combine(poptions('operation', kBlendOperations))
+  .params(u =>
+    u //
+      .combine('component', ['color', 'alpha'] as const)
+      .combine('srcFactor', kBlendFactors)
+      .combine('dstFactor', kBlendFactors)
+      .combine('operation', kBlendOperations)
+      .beginSubcases()
+      .combine('srcColor', [{ r: 0.11, g: 0.61, b: 0.81, a: 0.44 }])
+      .combine('dstColor', [
+        { r: 0.51, g: 0.22, b: 0.71, a: 0.33 },
+        { r: 0.09, g: 0.73, b: 0.93, a: 0.81 },
+      ])
+      .expand('blendConstant', p => {
+        const needsBlendConstant =
+          p.srcFactor === 'one-minus-constant' ||
+          p.srcFactor === 'constant' ||
+          p.dstFactor === 'one-minus-constant' ||
+          p.dstFactor === 'constant';
+        return needsBlendConstant ? [{ r: 0.91, g: 0.82, b: 0.73, a: 0.64 }] : [undefined];
+      })
   )
-  .subcases(p => {
-    const needsBlendConstant =
-      p.srcFactor === 'one-minus-constant' ||
-      p.srcFactor === 'constant' ||
-      p.dstFactor === 'one-minus-constant' ||
-      p.dstFactor === 'constant';
-
-    return params()
-      .combine(poptions('srcColor', [{ r: 0.11, g: 0.61, b: 0.81, a: 0.44 }]))
-      .combine(
-        poptions('dstColor', [
-          { r: 0.51, g: 0.22, b: 0.71, a: 0.33 },
-          { r: 0.09, g: 0.73, b: 0.93, a: 0.81 },
-        ])
-      )
-      .combine(
-        poptions(
-          'blendConstant',
-          needsBlendConstant ? [{ r: 0.91, g: 0.82, b: 0.73, a: 0.64 }] : [undefined]
-        )
-      );
-  })
   .fn(t => {
-    const textureFormat: GPUTextureFormat = 'rgba32float';
+    const textureFormat: GPUTextureFormat = 'rgba16float';
     const srcColor = t.params.srcColor;
     const dstColor = t.params.dstColor;
     const blendConstant = t.params.blendConstant;
@@ -273,18 +265,25 @@ g.test('GPUBlendComponent')
 
     t.device.queue.submit([commandEncoder.finish()]);
 
-    const tolerance = 0.0001;
+    const tolerance = 0.003;
     const expectedLow = mapColor(expectedColor, v => v - tolerance);
     const expectedHigh = mapColor(expectedColor, v => v + tolerance);
 
-    t.expectSinglePixelBetweenTwoValuesIn2DTexture(
+    t.expectSinglePixelBetweenTwoValuesFloat16In2DTexture(
       renderTarget,
       textureFormat,
       { x: 0, y: 0 },
       {
         exp: [
-          new Float32Array([expectedLow.r, expectedLow.g, expectedLow.b, expectedLow.a]),
-          new Float32Array([expectedHigh.r, expectedHigh.g, expectedHigh.b, expectedHigh.a]),
+          // Use Uint16Array to store Float16 value bits
+          new Uint16Array(
+            [expectedLow.r, expectedLow.g, expectedLow.b, expectedLow.a].map(float32ToFloat16Bits)
+          ),
+          new Uint16Array(
+            [expectedHigh.r, expectedHigh.g, expectedHigh.b, expectedHigh.a].map(
+              float32ToFloat16Bits
+            )
+          ),
         ],
       }
     );

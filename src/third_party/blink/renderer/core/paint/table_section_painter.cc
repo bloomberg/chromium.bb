@@ -48,8 +48,7 @@ void TableSectionPainter::Paint(const PaintInfo& paint_info) {
   for (const auto* fragment = &layout_table_section_.FirstFragment(); fragment;
        fragment = fragment->NextFragment()) {
     PaintInfo fragment_paint_info = paint_info;
-    fragment_paint_info.SetFragmentLogicalTopInFlowThread(
-        fragment->LogicalTopInFlowThread());
+    fragment_paint_info.SetFragmentID(fragment->FragmentID());
     ScopedDisplayItemFragment scoped_display_item_fragment(
         fragment_paint_info.context, fragment_index++);
     PaintSection(fragment_paint_info);
@@ -106,11 +105,13 @@ void TableSectionPainter::PaintCollapsedBorders(const PaintInfo& paint_info) {
     return;
   }
 
+  unsigned fragment_index = 0;
   for (const auto* fragment = &layout_table_section_.FirstFragment(); fragment;
        fragment = fragment->NextFragment()) {
     PaintInfo fragment_paint_info = paint_info;
-    fragment_paint_info.SetFragmentLogicalTopInFlowThread(
-        fragment->LogicalTopInFlowThread());
+    fragment_paint_info.SetFragmentID(fragment->FragmentID());
+    ScopedDisplayItemFragment scoped_display_item_fragment(
+        fragment_paint_info.context, fragment_index++);
     PaintCollapsedSectionBorders(fragment_paint_info);
   }
 }
@@ -232,10 +233,10 @@ void TableSectionPainter::PaintObject(const PaintInfo& paint_info,
     // This path paints section with a reasonable number of overflowing cells.
     // This is the "partial paint path" for overflowing cells referred in
     // LayoutTableSection::ComputeOverflowFromDescendants().
-    Vector<const LayoutTableCell*> cells;
+    HeapVector<Member<const LayoutTableCell>> cells;
     CopyToVector(visually_overflowing_cells, cells);
 
-    HashSet<const LayoutTableCell*> spanning_cells;
+    HeapHashSet<Member<const LayoutTableCell>> spanning_cells;
     for (unsigned r = dirtied_rows.Start(); r < dirtied_rows.End(); r++) {
       const LayoutTableRow* row = layout_table_section_.RowLayoutObjectAt(r);
       // TODO(crbug.com/577282): This painting order is inconsistent with other
@@ -256,7 +257,7 @@ void TableSectionPainter::PaintObject(const PaintInfo& paint_info,
 
     // Sort the dirty cells by paint order.
     std::sort(cells.begin(), cells.end(), LayoutTableCell::CompareInDOMOrder);
-    for (const auto* cell : cells)
+    for (const auto& cell : cells)
       PaintCell(*cell, paint_info_for_descendants);
   }
 }
@@ -307,13 +308,6 @@ void TableSectionPainter::PaintBoxDecorationBackground(
         }
       }
     }
-    uint64_t paint_area = base::saturated_cast<uint64_t>(
-        paint_rect.Width().ToUnsigned() * paint_rect.Height().ToUnsigned());
-    paint_info.context.GetPaintController().SetPossibleBackgroundColor(
-        layout_table_section_,
-        layout_table_section_.ResolveColor(GetCSSPropertyBackgroundColor())
-            .Rgb(),
-        paint_area);
   }
 
   if (has_box_shadow) {

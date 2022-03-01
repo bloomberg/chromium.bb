@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/task_manager/task_manager_tester.h"
+#include "base/memory/raw_ptr.h"
 
 #include <memory>
 
@@ -56,8 +57,8 @@ class ScopedInterceptTableModelObserver : public ui::TableModelObserver {
   }
 
  private:
-  ui::TableModel* model_to_intercept_;
-  ui::TableModelObserver* real_table_model_observer_;
+  raw_ptr<ui::TableModel> model_to_intercept_;
+  raw_ptr<ui::TableModelObserver> real_table_model_observer_;
   base::RepeatingClosure callback_;
 };
 
@@ -183,6 +184,17 @@ void TaskManagerTester::GetRowsGroupRange(int row,
                                           int* out_start,
                                           int* out_length) {
   return model_->GetRowsGroupRange(row, out_start, out_length);
+}
+
+std::vector<std::u16string> TaskManagerTester::GetWebContentsTaskTitles() {
+  std::vector<std::u16string> titles;
+  titles.reserve(GetRowCount());
+  for (int row = 0; row < GetRowCount(); row++) {
+    // Exclude tasks which are not associated with a WebContents.
+    if (GetTabId(row) != SessionID::InvalidValue())
+      titles.push_back(GetRowTitle(row));
+  }
+  return titles;
 }
 
 TaskManagerInterface* TaskManagerTester::task_manager() {

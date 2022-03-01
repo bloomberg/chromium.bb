@@ -7,17 +7,22 @@
 #ifndef CORE_FXCRT_BYTESTRING_H_
 #define CORE_FXCRT_BYTESTRING_H_
 
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include <functional>
 #include <iosfwd>
 #include <iterator>
 #include <utility>
 
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/string_data_template.h"
 #include "core/fxcrt/string_view_template.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/check.h"
-#include "third_party/base/optional.h"
+#include "third_party/base/compiler_specific.h"
 #include "third_party/base/span.h"
 
 namespace fxcrt {
@@ -162,13 +167,14 @@ class ByteString {
   pdfium::span<char> GetBuffer(size_t nMinBufLength);
   void ReleaseBuffer(size_t nNewLength);
 
+  ByteString Substr(size_t offset) const;
   ByteString Substr(size_t first, size_t count) const;
   ByteString First(size_t count) const;
   ByteString Last(size_t count) const;
 
-  Optional<size_t> Find(ByteStringView subStr, size_t start = 0) const;
-  Optional<size_t> Find(char ch, size_t start = 0) const;
-  Optional<size_t> ReverseFind(char ch) const;
+  absl::optional<size_t> Find(ByteStringView subStr, size_t start = 0) const;
+  absl::optional<size_t> Find(char ch, size_t start = 0) const;
+  absl::optional<size_t> ReverseFind(char ch) const;
 
   bool Contains(ByteStringView lpszSub, size_t start = 0) const {
     return Find(lpszSub, start).has_value();
@@ -276,15 +282,17 @@ std::ostream& operator<<(std::ostream& os, ByteStringView str);
 
 using ByteString = fxcrt::ByteString;
 
-uint32_t FX_HashCode_GetA(ByteStringView str, bool bIgnoreCase);
-uint32_t FX_HashCode_GetAsIfW(ByteStringView str, bool bIgnoreCase);
+uint32_t FX_HashCode_GetA(ByteStringView str);
+uint32_t FX_HashCode_GetLoweredA(ByteStringView str);
+uint32_t FX_HashCode_GetAsIfW(ByteStringView str);
+uint32_t FX_HashCode_GetLoweredAsIfW(ByteStringView str);
 
 namespace std {
 
 template <>
 struct hash<ByteString> {
-  std::size_t operator()(const ByteString& str) const {
-    return FX_HashCode_GetA(str.AsStringView(), false);
+  size_t operator()(const ByteString& str) const {
+    return FX_HashCode_GetA(str.AsStringView());
   }
 };
 

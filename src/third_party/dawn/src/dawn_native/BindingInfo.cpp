@@ -14,7 +14,35 @@
 
 #include "dawn_native/BindingInfo.h"
 
+#include "dawn_native/ChainUtils_autogen.h"
+
 namespace dawn_native {
+
+    absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConvert(
+        BindingInfoType value,
+        const absl::FormatConversionSpec& spec,
+        absl::FormatSink* s) {
+        switch (value) {
+            case BindingInfoType::Buffer:
+                s->Append("Buffer");
+                break;
+            case BindingInfoType::Sampler:
+                s->Append("Sampler");
+                break;
+            case BindingInfoType::Texture:
+                s->Append("Texture");
+                break;
+            case BindingInfoType::StorageTexture:
+                s->Append("StorageTexture");
+                break;
+            case BindingInfoType::ExternalTexture:
+                s->Append("ExternalTexture");
+                break;
+            default:
+                UNREACHABLE();
+        }
+        return {true};
+    }
 
     void IncrementBindingCounts(BindingCounts* bindingCounts, const BindGroupLayoutEntry& entry) {
         bindingCounts->totalCount += 1;
@@ -38,6 +66,7 @@ namespace dawn_native {
                     break;
 
                 case wgpu::BufferBindingType::Storage:
+                case kInternalStorageBufferBinding:
                 case wgpu::BufferBindingType::ReadOnlyStorage:
                     if (buffer.hasDynamicOffset) {
                         ++bindingCounts->dynamicStorageBufferCount;
@@ -57,48 +86,10 @@ namespace dawn_native {
         } else if (entry.storageTexture.access != wgpu::StorageTextureAccess::Undefined) {
             perStageBindingCountMember = &PerStageBindingCounts::storageTextureCount;
         } else {
-            // Deprecated path.
-            switch (entry.type) {
-                case wgpu::BindingType::UniformBuffer:
-                    ++bindingCounts->bufferCount;
-                    if (entry.hasDynamicOffset) {
-                        ++bindingCounts->dynamicUniformBufferCount;
-                    }
-                    if (entry.minBufferBindingSize == 0) {
-                        ++bindingCounts->unverifiedBufferCount;
-                    }
-                    perStageBindingCountMember = &PerStageBindingCounts::uniformBufferCount;
-                    break;
-
-                case wgpu::BindingType::StorageBuffer:
-                case wgpu::BindingType::ReadonlyStorageBuffer:
-                    ++bindingCounts->bufferCount;
-                    if (entry.hasDynamicOffset) {
-                        ++bindingCounts->dynamicStorageBufferCount;
-                    }
-                    if (entry.minBufferBindingSize == 0) {
-                        ++bindingCounts->unverifiedBufferCount;
-                    }
-                    perStageBindingCountMember = &PerStageBindingCounts::storageBufferCount;
-                    break;
-
-                case wgpu::BindingType::SampledTexture:
-                case wgpu::BindingType::MultisampledTexture:
-                    perStageBindingCountMember = &PerStageBindingCounts::sampledTextureCount;
-                    break;
-
-                case wgpu::BindingType::Sampler:
-                case wgpu::BindingType::ComparisonSampler:
-                    perStageBindingCountMember = &PerStageBindingCounts::samplerCount;
-                    break;
-
-                case wgpu::BindingType::ReadonlyStorageTexture:
-                case wgpu::BindingType::WriteonlyStorageTexture:
-                    perStageBindingCountMember = &PerStageBindingCounts::storageTextureCount;
-                    break;
-
-                case wgpu::BindingType::Undefined:
-                    UNREACHABLE();
+            const ExternalTextureBindingLayout* externalTextureBindingLayout;
+            FindInChain(entry.nextInChain, &externalTextureBindingLayout);
+            if (externalTextureBindingLayout != nullptr) {
+                perStageBindingCountMember = &PerStageBindingCounts::externalTextureCount;
             }
         }
 
@@ -125,48 +116,103 @@ namespace dawn_native {
                 rhs.perStage[stage].storageTextureCount;
             bindingCounts->perStage[stage].uniformBufferCount +=
                 rhs.perStage[stage].uniformBufferCount;
+            bindingCounts->perStage[stage].externalTextureCount +=
+                rhs.perStage[stage].externalTextureCount;
         }
     }
 
     MaybeError ValidateBindingCounts(const BindingCounts& bindingCounts) {
-        if (bindingCounts.dynamicUniformBufferCount > kMaxDynamicUniformBuffersPerPipelineLayout) {
-            return DAWN_VALIDATION_ERROR(
-                "The number of dynamic uniform buffers exceeds the maximum per-pipeline-layout "
-                "limit");
-        }
+        DAWN_INVALID_IF(
+            bindingCounts.dynamicUniformBufferCount > kMaxDynamicUniformBuffersPerPipelineLayout,
+            "The number of dynamic uniform buffers (%u) exceeds the maximum per-pipeline-layout "
+            "limit (%u).",
+            bindingCounts.dynamicUniformBufferCount, kMaxDynamicUniformBuffersPerPipelineLayout);
 
-        if (bindingCounts.dynamicStorageBufferCount > kMaxDynamicStorageBuffersPerPipelineLayout) {
-            return DAWN_VALIDATION_ERROR(
-                "The number of dynamic storage buffers exceeds the maximum per-pipeline-layout "
-                "limit");
-        }
+        DAWN_INVALID_IF(
+            bindingCounts.dynamicStorageBufferCount > kMaxDynamicStorageBuffersPerPipelineLayout,
+            "The number of dynamic storage buffers (%u) exceeds the maximum per-pipeline-layout "
+            "limit (%u).",
+            bindingCounts.dynamicStorageBufferCount, kMaxDynamicStorageBuffersPerPipelineLayout);
 
         for (SingleShaderStage stage : IterateStages(kAllStages)) {
-            if (bindingCounts.perStage[stage].sampledTextureCount >
-                kMaxSampledTexturesPerShaderStage) {
-                return DAWN_VALIDATION_ERROR(
-                    "The number of sampled textures exceeds the maximum "
-                    "per-stage limit.");
-            }
-            if (bindingCounts.perStage[stage].samplerCount > kMaxSamplersPerShaderStage) {
-                return DAWN_VALIDATION_ERROR(
-                    "The number of samplers exceeds the maximum per-stage limit.");
-            }
-            if (bindingCounts.perStage[stage].storageBufferCount >
-                kMaxStorageBuffersPerShaderStage) {
-                return DAWN_VALIDATION_ERROR(
-                    "The number of storage buffers exceeds the maximum per-stage limit.");
-            }
-            if (bindingCounts.perStage[stage].storageTextureCount >
-                kMaxStorageTexturesPerShaderStage) {
-                return DAWN_VALIDATION_ERROR(
-                    "The number of storage textures exceeds the maximum per-stage limit.");
-            }
-            if (bindingCounts.perStage[stage].uniformBufferCount >
-                kMaxUniformBuffersPerShaderStage) {
-                return DAWN_VALIDATION_ERROR(
-                    "The number of uniform buffers exceeds the maximum per-stage limit.");
-            }
+            DAWN_INVALID_IF(
+                bindingCounts.perStage[stage].sampledTextureCount >
+                    kMaxSampledTexturesPerShaderStage,
+                "The number of sampled textures (%u) in the %s stage exceeds the maximum "
+                "per-stage limit (%u).",
+                bindingCounts.perStage[stage].sampledTextureCount, stage,
+                kMaxSampledTexturesPerShaderStage);
+
+            // The per-stage number of external textures is bound by the maximum sampled textures
+            // per stage.
+            DAWN_INVALID_IF(
+                bindingCounts.perStage[stage].externalTextureCount >
+                    kMaxSampledTexturesPerShaderStage / kSampledTexturesPerExternalTexture,
+                "The number of external textures (%u) in the %s stage exceeds the maximum "
+                "per-stage limit (%u).",
+                bindingCounts.perStage[stage].externalTextureCount, stage,
+                kMaxSampledTexturesPerShaderStage / kSampledTexturesPerExternalTexture);
+
+            DAWN_INVALID_IF(
+                bindingCounts.perStage[stage].sampledTextureCount +
+                        (bindingCounts.perStage[stage].externalTextureCount *
+                         kSampledTexturesPerExternalTexture) >
+                    kMaxSampledTexturesPerShaderStage,
+                "The combination of sampled textures (%u) and external textures (%u) in the %s "
+                "stage exceeds the maximum per-stage limit (%u).",
+                bindingCounts.perStage[stage].sampledTextureCount,
+                bindingCounts.perStage[stage].externalTextureCount, stage,
+                kMaxSampledTexturesPerShaderStage);
+
+            DAWN_INVALID_IF(
+                bindingCounts.perStage[stage].samplerCount > kMaxSamplersPerShaderStage,
+                "The number of samplers (%u) in the %s stage exceeds the maximum per-stage limit "
+                "(%u).",
+                bindingCounts.perStage[stage].samplerCount, stage, kMaxSamplersPerShaderStage);
+
+            DAWN_INVALID_IF(
+                bindingCounts.perStage[stage].samplerCount +
+                        (bindingCounts.perStage[stage].externalTextureCount *
+                         kSamplersPerExternalTexture) >
+                    kMaxSamplersPerShaderStage,
+                "The combination of samplers (%u) and external textures (%u) in the %s stage "
+                "exceeds the maximum per-stage limit (%u).",
+                bindingCounts.perStage[stage].samplerCount,
+                bindingCounts.perStage[stage].externalTextureCount, stage,
+                kMaxSamplersPerShaderStage);
+
+            DAWN_INVALID_IF(
+                bindingCounts.perStage[stage].storageBufferCount > kMaxStorageBuffersPerShaderStage,
+                "The number of storage buffers (%u) in the %s stage exceeds the maximum per-stage "
+                "limit (%u).",
+                bindingCounts.perStage[stage].storageBufferCount, stage,
+                kMaxStorageBuffersPerShaderStage);
+
+            DAWN_INVALID_IF(
+                bindingCounts.perStage[stage].storageTextureCount >
+                    kMaxStorageTexturesPerShaderStage,
+                "The number of storage textures (%u) in the %s stage exceeds the maximum per-stage "
+                "limit (%u).",
+                bindingCounts.perStage[stage].storageTextureCount, stage,
+                kMaxStorageTexturesPerShaderStage);
+
+            DAWN_INVALID_IF(
+                bindingCounts.perStage[stage].uniformBufferCount > kMaxUniformBuffersPerShaderStage,
+                "The number of uniform buffers (%u) in the %s stage exceeds the maximum per-stage "
+                "limit (%u).",
+                bindingCounts.perStage[stage].uniformBufferCount, stage,
+                kMaxUniformBuffersPerShaderStage);
+
+            DAWN_INVALID_IF(
+                bindingCounts.perStage[stage].uniformBufferCount +
+                        (bindingCounts.perStage[stage].externalTextureCount *
+                         kUniformsPerExternalTexture) >
+                    kMaxUniformBuffersPerShaderStage,
+                "The combination of uniform buffers (%u) and external textures (%u) in the %s "
+                "stage exceeds the maximum per-stage limit (%u).",
+                bindingCounts.perStage[stage].uniformBufferCount,
+                bindingCounts.perStage[stage].externalTextureCount, stage,
+                kMaxUniformBuffersPerShaderStage);
         }
 
         return {};

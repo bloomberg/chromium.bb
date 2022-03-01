@@ -7,15 +7,12 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/no_destructor.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 
 namespace features {
 
 extern const base::Feature kCustomizedTabLoadTimeout;
-extern const base::Feature kStaggeredBackgroundTabOpening;
-extern const base::Feature kStaggeredBackgroundTabOpeningExperiment;
 extern const base::Feature kTabRanker;
 
 }  // namespace features
@@ -33,7 +30,7 @@ int GetProcessTypeToScoreWithTabRanker();
 // Gets number of oldest tabs that should be logged by TabRanker.
 int GetNumOldestTabsToLogWithTabRanker();
 
-// Whether to disable background time TabMetrics log.
+// Whether to disable recording of the TabManager_TabMetrics UKM.
 bool DisableBackgroundLogWithTabRanker();
 
 // Gets reload count penalty parameter for TabRanker.

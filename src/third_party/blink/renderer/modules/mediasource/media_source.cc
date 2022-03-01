@@ -5,11 +5,15 @@
 #include "third_party/blink/renderer/modules/mediasource/media_source.h"
 
 #include <memory>
+#include <tuple>
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "build/chromeos_buildflags.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/logging_override_if_enabled.h"
+#include "media/base/media_switches.h"
 #include "media/base/mime_util.h"
 #include "media/base/supported_types.h"
 #include "media/base/video_decoder_config.h"
@@ -37,7 +41,7 @@
 #include "third_party/blink/renderer/modules/webcodecs/video_decoder.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -140,7 +144,8 @@ MediaSource::MediaSource(ExecutionContext* context)
       live_seekable_range_end_(0.0) {
   DVLOG(1) << __func__ << " this=" << this;
 
-  DCHECK(RuntimeEnabledFeatures::MediaSourceInWorkersEnabled() ||
+  DCHECK(RuntimeEnabledFeatures::MediaSourceInWorkersEnabled(
+             GetExecutionContext()) ||
          IsMainThread());
 
   MseExecutionContext type = MseExecutionContext::kWindow;
@@ -235,9 +240,14 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type,
 }
 
 SourceBuffer* MediaSource::AddSourceBufferUsingConfig(
+    ExecutionContext* execution_context,
     const SourceBufferConfig* config,
     ExceptionState& exception_state) {
   DVLOG(2) << __func__ << " this=" << this;
+
+  UseCounter::Count(execution_context,
+                    WebFeature::kMediaSourceExtensionsForWebCodecs);
+
   DCHECK(config);
 
   // Precisely one of the multiple keys in SourceBufferConfig must be set.
@@ -463,6 +473,8 @@ void MediaSource::RemoveSourceBuffer_Locked(
   // 11. Destroy all resources for sourceBuffer.
   //     This should have been done already by
   //     SourceBuffer::removedFromMediaSource (steps 2-8) above.
+
+  SendUpdatedInfoToMainThreadCache();
 }
 
 void MediaSource::OnReadyStateChange(const ReadyState old_state,
@@ -544,16 +556,22 @@ bool MediaSource::IsTypeSupportedInternal(ExecutionContext* context,
   // HTMLMediaElement knows it cannot play.
   String codecs = content_type.Parameter("codecs");
   MIMETypeRegistry::SupportsType get_supports_type_result;
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC) && BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
-  // Here, we special-case for HEVC on ChromeOS, which is only supported if
-  // encrypted. isTypeSupported(fully qualified type with hevc codec) should say
-  // false on such platform (except if kEnableClearHevcForTesting cmdline switch
-  // is used, enabling GetSupportsType success), but addSourceBuffer(same) and
+#if BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
+  // Here, we special-case when encrypted HEVC is supported.
+  // isTypeSupported(fully qualified type with hevc codec) should say false on
+  // such platform (except if kEnableClearHevcForTesting cmdline switch is used,
+  // enabling GetSupportsType success), but addSourceBuffer(same) and
   // changeType(same) shouldn't fail just due to having HEVC codec. We use
   // |enforce_codec_specificity| to understand if we are servicing iTS (if true)
   // versus aSB (if false). If servicing aSB or cT, we'll remove any detected
   // hevc codec from the codecs we use in the GetSupportsType() query.
-  if (!enforce_codec_specificity) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  const bool allow_hevc = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kLacrosEnablePlatformEncryptedHevc);
+#else
+  const bool allow_hevc = true;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (allow_hevc && !enforce_codec_specificity) {
     // Remove any detected HEVC codec from the query to GetSupportsType.
     std::string filtered_codecs;
     std::vector<std::string> parsed_codec_ids;
@@ -561,14 +579,14 @@ bool MediaSource::IsTypeSupportedInternal(ExecutionContext* context,
     bool first = true;
     for (const auto& codec_id : parsed_codec_ids) {
       bool is_codec_ambiguous;
-      media::VideoCodec video_codec = media::kUnknownVideoCodec;
+      media::VideoCodec video_codec = media::VideoCodec::kUnknown;
       media::VideoCodecProfile profile;
       uint8_t level = 0;
       media::VideoColorSpace color_space;
       if (media::ParseVideoCodecString(mime_type.Ascii(), codec_id,
                                        &is_codec_ambiguous, &video_codec,
                                        &profile, &level, &color_space) &&
-          !is_codec_ambiguous && video_codec == media::VideoCodec::kCodecHEVC) {
+          !is_codec_ambiguous && video_codec == media::VideoCodec::kHEVC) {
         continue;
       }
       if (first)
@@ -584,14 +602,13 @@ bool MediaSource::IsTypeSupportedInternal(ExecutionContext* context,
     get_supports_type_result = HTMLMediaElement::GetSupportsType(
         ContentType(String::FromUTF8(filtered_type.c_str())));
   } else {
-    // Even on ChromeOS with HEVC support, don't filter out HEVC codec when
+    // Even on platforms with HEVC support, don't filter out HEVC codec when
     // servicing isTypeSupported().
     get_supports_type_result = HTMLMediaElement::GetSupportsType(content_type);
   }
 #else
   get_supports_type_result = HTMLMediaElement::GetSupportsType(content_type);
-#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC) &&
-        // BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
 
   if (get_supports_type_result == MIMETypeRegistry::kIsNotSupported) {
     DVLOG(1) << __func__ << "(" << type << ", "
@@ -630,10 +647,10 @@ bool MediaSource::IsTypeSupportedInternal(ExecutionContext* context,
 }
 
 // static
-bool MediaSource::canConstructInDedicatedWorker() {
+bool MediaSource::canConstructInDedicatedWorker(ExecutionContext* context) {
   // This method's visibility in IDL is restricted to MSE-in-Workers feature
   // being enabled.
-  DCHECK(RuntimeEnabledFeatures::MediaSourceInWorkersEnabled());
+  DCHECK(RuntimeEnabledFeatures::MediaSourceInWorkersEnabled(context));
   return true;
 }
 
@@ -645,7 +662,7 @@ void MediaSource::RecordIdentifiabilityMetric(ExecutionContext* context,
     return;
   }
   blink::IdentifiabilityMetricBuilder(context->UkmSourceID())
-      .Set(blink::IdentifiableSurface::FromTypeAndToken(
+      .Add(blink::IdentifiableSurface::FromTypeAndToken(
                blink::IdentifiableSurface::Type::kMediaSource_IsTypeSupported,
                IdentifiabilityBenignStringToken(type)),
            result)
@@ -699,6 +716,13 @@ void MediaSource::AssertAttachmentsMutexHeldIfCrossThreadForDebugging() const {
 #endif  // DCHECK_IS_ON()
 }
 
+void MediaSource::SendUpdatedInfoToMainThreadCache() {
+  AssertAttachmentsMutexHeldIfCrossThreadForDebugging();
+  scoped_refptr<MediaSourceAttachmentSupplement> attachment;
+  std::tie(attachment, std::ignore) = AttachmentAndTracer();
+  attachment->SendUpdatedInfoToMainThreadCache();
+}
+
 void MediaSource::Trace(Visitor* visitor) const {
   visitor->Trace(async_event_queue_);
 
@@ -744,11 +768,14 @@ void MediaSource::CompleteAttachingToMediaElement(
   SetReadyState(ReadyState::kOpen);
 }
 
-double MediaSource::duration() const {
-  if (IsClosed())
-    return std::numeric_limits<float>::quiet_NaN();
-
+double MediaSource::GetDuration_Locked(
+    MediaSourceAttachmentSupplement::ExclusiveKey /* passkey */) const {
   AssertAttachmentsMutexHeldIfCrossThreadForDebugging();
+
+  if (IsClosed()) {
+    return std::numeric_limits<float>::quiet_NaN();
+  }
+
   return web_media_source_->Duration();
 }
 
@@ -817,15 +844,13 @@ WebTimeRanges MediaSource::SeekableInternal(
     DCHECK(media_source_attachment_)
         << "Seekable should only be used when attached to HTMLMediaElement";
   }
-  // Even if we are attached with a CrossThreadMediaSourceAttachment and owned
-  // by a worker thread, the attachment will call this on the main thread.
-  DCHECK(IsMainThread());
 
   // Implements MediaSource algorithm for HTMLMediaElement.seekable.
   // http://w3c.github.io/media-source/#htmlmediaelement-extensions
   WebTimeRanges ranges;
 
-  double source_duration = duration();
+  double source_duration = GetDuration_Locked(pass_key);
+
   // If duration equals NaN: Return an empty TimeRanges object.
   if (std::isnan(source_duration))
     return ranges;
@@ -834,30 +859,23 @@ WebTimeRanges MediaSource::SeekableInternal(
   if (source_duration == std::numeric_limits<double>::infinity()) {
     WebTimeRanges buffered = BufferedInternal(pass_key);
 
-    {
-      // If cross-thread, protect against concurrent usage of
-      // |*live_seekable_range*|, since those are updated without taking the
-      // attachment's internal |attachment_state_lock_|.
-      MutexLocker lock(attachment_link_lock_);
-
-      // 1. If live seekable range is not empty:
-      if (has_live_seekable_range_) {
-        // 1.1. Let union ranges be the union of live seekable range and the
-        //      HTMLMediaElement.buffered attribute.
-        // 1.2. Return a single range with a start time equal to the
-        //      earliest start time in union ranges and an end time equal to
-        //      the highest end time in union ranges and abort these steps.
-        if (buffered.empty()) {
-          ranges.emplace_back(live_seekable_range_start_,
-                              live_seekable_range_end_);
-          return ranges;
-        }
-
-        ranges.emplace_back(
-            std::min(live_seekable_range_start_, buffered.front().start),
-            std::max(live_seekable_range_end_, buffered.back().end));
+    // 1. If live seekable range is not empty:
+    if (has_live_seekable_range_) {
+      // 1.1. Let union ranges be the union of live seekable range and the
+      //      HTMLMediaElement.buffered attribute.
+      // 1.2. Return a single range with a start time equal to the
+      //      earliest start time in union ranges and an end time equal to
+      //      the highest end time in union ranges and abort these steps.
+      if (buffered.empty()) {
+        ranges.emplace_back(live_seekable_range_start_,
+                            live_seekable_range_end_);
         return ranges;
       }
+
+      ranges.emplace_back(
+          std::min(live_seekable_range_start_, buffered.front().start),
+          std::max(live_seekable_range_end_, buffered.back().end));
+      return ranges;
     }
 
     // 2. If the HTMLMediaElement.buffered attribute returns an empty TimeRanges
@@ -881,7 +899,10 @@ WebTimeRanges MediaSource::SeekableInternal(
 void MediaSource::OnTrackChanged(TrackBase* track) {
   // TODO(https://crbug.com/878133): Support this in MSE-in-Worker once
   // TrackBase and TrackListBase are usable on worker and do not explicitly
-  // require an HTMLMediaElement.
+  // require an HTMLMediaElement. The update to |active_source_buffers_| will
+  // also require sending updated buffered and seekable information to the main
+  // thread, though the CTMSA itself would best know when to do that since it is
+  // this method should only be called by an attachment.
   DCHECK(IsMainThread());
 
   DCHECK(HTMLMediaElement::MediaTracksEnabledInternally());
@@ -947,15 +968,38 @@ void MediaSource::setDuration(double duration,
   }
 }
 
+double MediaSource::duration() {
+  double duration_result = std::numeric_limits<float>::quiet_NaN();
+  if (IsClosed())
+    return duration_result;
+
+  // Note, here we must be open or ended, therefore we must have an attachment.
+  if (!RunUnlessElementGoneOrClosingUs(WTF::Bind(
+          [](MediaSource* self, double* result,
+             MediaSourceAttachmentSupplement::ExclusiveKey pass_key) {
+            *result = self->GetDuration_Locked(pass_key);
+          },
+          WrapPersistent(this), WTF::Unretained(&duration_result)))) {
+    // TODO(https://crbug.com/878133): Determine in specification what the
+    // specific, app-visible, result should be in this case. It seems reasonable
+    // to behave is if we are in "closed" readyState and report NaN to the app
+    // here.
+    DCHECK_EQ(duration_result, std::numeric_limits<float>::quiet_NaN());
+  }
+
+  return duration_result;
+}
+
 void MediaSource::DurationChangeAlgorithm(
     double new_duration,
     ExceptionState* exception_state,
-    MediaSourceAttachmentSupplement::ExclusiveKey /* passkey */) {
+    MediaSourceAttachmentSupplement::ExclusiveKey pass_key) {
   AssertAttachmentsMutexHeldIfCrossThreadForDebugging();
 
   // http://w3c.github.io/media-source/#duration-change-algorithm
   // 1. If the current value of duration is equal to new duration, then return.
-  if (new_duration == duration())
+  double old_duration = GetDuration_Locked(pass_key);
+  if (new_duration == old_duration)
     return;
 
   // 2. If new duration is less than the highest starting presentation
@@ -988,11 +1032,11 @@ void MediaSource::DurationChangeAlgorithm(
     // See also deprecated remove(new duration, old duration) behavior below.
   }
 
-  // 3. Set old duration to the current value of duration.
-  double old_duration = duration();
   DCHECK_LE(highest_buffered_presentation_timestamp,
             std::isnan(old_duration) ? 0 : old_duration);
 
+  // 3. Set old duration to the current value of duration.
+  // Done for step 1 above, already.
   // 4. Update duration to new duration.
   web_media_source_->SetDuration(new_duration);
 
@@ -1002,8 +1046,8 @@ void MediaSource::DurationChangeAlgorithm(
     // then call remove(new duration, old duration) on all all objects in
     // sourceBuffers.
     for (unsigned i = 0; i < source_buffers_->length(); ++i) {
-      source_buffers_->item(i)->remove(new_duration, old_duration,
-                                       ASSERT_NO_EXCEPTION);
+      source_buffers_->item(i)->Remove_Locked(new_duration, old_duration,
+                                              &ASSERT_NO_EXCEPTION, pass_key);
     }
   }
 
@@ -1114,21 +1158,32 @@ void MediaSource::setLiveSeekableRange(double start,
     return;
   }
 
+  // Note, here we must be open, therefore we must have an attachment.
+  if (!RunUnlessElementGoneOrClosingUs(
+          WTF::Bind(&MediaSource::SetLiveSeekableRange_Locked,
+                    WrapPersistent(this), start, end))) {
+    // TODO(https://crbug.com/878133): Determine in specification what the
+    // specific, app-visible, exception should be for this case.
+    LogAndThrowDOMException(exception_state,
+                            DOMExceptionCode::kInvalidStateError,
+                            "Worker MediaSource attachment is closing");
+  }
+}
+
+void MediaSource::SetLiveSeekableRange_Locked(
+    double start,
+    double end,
+    MediaSourceAttachmentSupplement::ExclusiveKey /* passkey */) {
+  AssertAttachmentsMutexHeldIfCrossThreadForDebugging();
+
   // 4. Set live seekable range to be a new normalized TimeRanges object
   //    containing a single range whose start position is start and end
   //    position is end.
-  {
-    // If we are cross-thread, then main thread could be running
-    // SeekableInternal simultaneously, if attached fully. Here, for simplicity,
-    // we don't need to take the full attachment exclusive
-    // |attachment_state_lock_| so long as we
-    // fully protect access to |*live_seekable_range*| read/write with
-    // |attachment_link_lock_|.
-    MutexLocker lock(attachment_link_lock_);
-    has_live_seekable_range_ = true;
-    live_seekable_range_start_ = start;
-    live_seekable_range_end_ = end;
-  }
+  has_live_seekable_range_ = true;
+  live_seekable_range_start_ = start;
+  live_seekable_range_end_ = end;
+
+  SendUpdatedInfoToMainThreadCache();
 }
 
 void MediaSource::clearLiveSeekableRange(ExceptionState& exception_state) {
@@ -1145,22 +1200,31 @@ void MediaSource::clearLiveSeekableRange(ExceptionState& exception_state) {
   if (ThrowExceptionIfClosed(IsOpen(), exception_state))
     return;
 
+  // Note, here we must be open, therefore we must have an attachment.
+  if (!RunUnlessElementGoneOrClosingUs(WTF::Bind(
+          &MediaSource::ClearLiveSeekableRange_Locked, WrapPersistent(this)))) {
+    // TODO(https://crbug.com/878133): Determine in specification what the
+    // specific, app-visible, exception should be for this case.
+    LogAndThrowDOMException(exception_state,
+                            DOMExceptionCode::kInvalidStateError,
+                            "Worker MediaSource attachment is closing");
+  }
+}
+
+void MediaSource::ClearLiveSeekableRange_Locked(
+    MediaSourceAttachmentSupplement::ExclusiveKey /* passkey */) {
+  AssertAttachmentsMutexHeldIfCrossThreadForDebugging();
+
   // 3. If live seekable range contains a range, then set live seekable range
   //    to be a new empty TimeRanges object.
-  {
-    // If we are cross-thread, then main thread could be running
-    // SeekableInternal simultaneously, if attached fully. Here, for simplicity,
-    // we don't need to take the full attachment exclusive
-    // |attachment_state_lock_| so long as we
-    // fully protect access to |*live_seekable_range*| read/write with
-    // |attachment_link_lock_|.
-    MutexLocker lock(attachment_link_lock_);
-    if (has_live_seekable_range_) {
-      has_live_seekable_range_ = false;
-      live_seekable_range_start_ = 0.0;
-      live_seekable_range_end_ = 0.0;
-    }
-  }
+  if (!has_live_seekable_range_)
+    return;
+
+  has_live_seekable_range_ = false;
+  live_seekable_range_start_ = 0.0;
+  live_seekable_range_end_ = 0.0;
+
+  SendUpdatedInfoToMainThreadCache();
 }
 
 bool MediaSource::IsOpen() const {
@@ -1205,7 +1269,7 @@ MediaSource::AttachmentAndTracer() const {
 
 void MediaSource::EndOfStreamAlgorithm(
     const WebMediaSource::EndOfStreamStatus eos_status,
-    MediaSourceAttachmentSupplement::ExclusiveKey /* passkey */) {
+    MediaSourceAttachmentSupplement::ExclusiveKey pass_key) {
   AssertAttachmentsMutexHeldIfCrossThreadForDebugging();
 
   // https://www.w3.org/TR/media-source/#end-of-stream-algorithm
@@ -1235,11 +1299,16 @@ void MediaSource::EndOfStreamAlgorithm(
     // TODO(wolenetz): Consider refactoring the MarkEndOfStream implementation
     // to just mark end of stream, and move the duration reduction logic to here
     // so we can just run DurationChangeAlgorithm(...) here.
-    double new_duration = duration();
+    double new_duration = GetDuration_Locked(pass_key);
     scoped_refptr<MediaSourceAttachmentSupplement> attachment;
     MediaSourceTracer* tracer;
     std::tie(attachment, tracer) = AttachmentAndTracer();
     attachment->NotifyDurationChanged(tracer, new_duration);
+  } else {
+    // Even though error didn't change duration, the transition to kEnded
+    // impacts the buffered ranges calculation, so let the attachment know that
+    // a cross-thread media element needs to be sent updated information.
+    SendUpdatedInfoToMainThreadCache();
   }
 }
 
@@ -1317,6 +1386,10 @@ void MediaSource::OpenIfInEndedState() {
 
   SetReadyState(ReadyState::kOpen);
   web_media_source_->UnmarkEndOfStream();
+
+  // This change impacts buffered and seekable calculations, so let the
+  // attachment know to update if cross-thread.
+  SendUpdatedInfoToMainThreadCache();
 }
 
 bool MediaSource::HasPendingActivity() const {

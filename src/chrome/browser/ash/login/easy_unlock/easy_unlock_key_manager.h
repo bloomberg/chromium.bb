@@ -13,7 +13,6 @@
 
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_get_keys_operation.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_refresh_keys_operation.h"
@@ -38,6 +37,10 @@ class EasyUnlockKeyManager {
   using GetDeviceDataListCallback = EasyUnlockGetKeysOperation::GetKeysCallback;
 
   EasyUnlockKeyManager();
+
+  EasyUnlockKeyManager(const EasyUnlockKeyManager&) = delete;
+  EasyUnlockKeyManager& operator=(const EasyUnlockKeyManager&) = delete;
+
   ~EasyUnlockKeyManager();
 
   // Clears existing Easy unlock keys and creates new ones for the given
@@ -86,9 +89,10 @@ class EasyUnlockKeyManager {
 
   // Called when the TPM key is ready to be used for creating Easy Unlock key
   // challenges.
-  void RefreshKeysWithTpmKeyPresent(const UserContext& user_context,
-                                    base::ListValue* remote_devices,
-                                    RefreshKeysCallback callback);
+  void RefreshKeysWithTpmKeyPresent(
+      const UserContext& user_context,
+      std::unique_ptr<base::ListValue> remote_devices,
+      RefreshKeysCallback callback);
 
   // Callback invoked after refresh keys operation.
   void OnKeysRefreshed(RefreshKeysCallback callback, bool create_success);
@@ -109,8 +113,6 @@ class EasyUnlockKeyManager {
   std::unique_ptr<EasyUnlockGetKeysOperation> pending_read_operation_;
 
   base::WeakPtrFactory<EasyUnlockKeyManager> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(EasyUnlockKeyManager);
 };
 
 }  // namespace ash

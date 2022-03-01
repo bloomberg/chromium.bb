@@ -4,7 +4,25 @@
 
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../scripts/build/ninja/devtools_module.gni")
+import("../../../scripts/build/ninja/generate_css.gni")
 import("../visibility.gni")
+
+generate_css("css_files") {
+  sources = [
+    "breakpointEditDialog.css",
+    "callStackSidebarPane.css",
+    "debuggerPausedMessage.css",
+    "dialog.css",
+    "javaScriptBreakpointsSidebarPane.css",
+    "navigatorTree.css",
+    "navigatorView.css",
+    "scopeChainSidebarPane.css",
+    "sourcesPanel.css",
+    "sourcesView.css",
+    "threadsSidebarPane.css",
+    "watchExpressionsSidebarPane.css",
+  ]
+}
 
 devtools_module("sources") {
   sources = [
@@ -19,16 +37,14 @@ devtools_module("sources") {
     "FilePathScoreFunction.ts",
     "FilteredUISourceCodeListProvider.ts",
     "GoToLineQuickOpen.ts",
-    "GutterDiffPlugin.ts",
     "InplaceFormatterEditorAction.ts",
     "JavaScriptBreakpointsSidebarPane.ts",
     "JavaScriptCompilerPlugin.ts",
-    "ModuleUIStrings.ts",
     "NavigatorView.ts",
     "OpenFileQuickOpen.ts",
     "OutlineQuickOpen.ts",
     "Plugin.ts",
-    "RecorderPlugin.ts",
+    "ProfilePlugin.ts",
     "ScopeChainSidebarPane.ts",
     "ScriptFormatterEditorAction.ts",
     "ScriptOriginPlugin.ts",
@@ -56,7 +72,6 @@ devtools_module("sources") {
     "../../models/formatter:bundle",
     "../../models/issues_manager:bundle",
     "../../models/persistence:bundle",
-    "../../models/recorder:bundle",
     "../../models/text_utils:bundle",
     "../../models/workspace:bundle",
     "../../models/workspace_diff:bundle",
@@ -64,15 +79,17 @@ devtools_module("sources") {
     "../../panels/coverage:bundle",
     "../../panels/search:bundle",
     "../../panels/snippets:bundle",
+    "../../panels/utils:bundle",
     "../../third_party/diff:bundle",
+    "../../ui/components/icon_button:bundle",
     "../../ui/components/linear_memory_inspector:bundle",
+    "../../ui/components/text_editor:bundle",
     "../../ui/legacy:bundle",
     "../../ui/legacy/components/color_picker:bundle",
     "../../ui/legacy/components/inline_editor:bundle",
     "../../ui/legacy/components/object_ui:bundle",
     "../../ui/legacy/components/quick_open:bundle",
     "../../ui/legacy/components/source_frame:bundle",
-    "../../ui/legacy/components/text_editor:bundle",
     "../../ui/legacy/components/utils:bundle",
   ]
 }
@@ -80,7 +97,11 @@ devtools_module("sources") {
 devtools_entrypoint("bundle") {
   entrypoint = "sources.ts"
 
-  deps = [ ":sources" ]
+  deps = [
+    ":css_files",
+    ":sources",
+    "../../ui/legacy/components/object_ui:bundle",
+  ]
 
   visibility = [
     ":*",

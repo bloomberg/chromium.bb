@@ -23,10 +23,9 @@ const char kMemoryKeyForGeneratedPassword[] = "memory-key-for-generation";
 }  // namespace
 
 namespace autofill_assistant {
+
 using ::base::test::RunOnceCallback;
 using ::testing::_;
-using ::testing::InSequence;
-using ::testing::Invoke;
 using ::testing::Pointee;
 using ::testing::Property;
 using ::testing::Return;
@@ -43,7 +42,7 @@ class GeneratePasswordForFormFieldActionTest : public testing::Test {
     ON_CALL(mock_action_delegate_, GetUserData)
         .WillByDefault(Return(&user_data_));
 
-    ON_CALL(mock_website_login_manager_, GetGeneratedPassword())
+    ON_CALL(mock_website_login_manager_, GeneratePassword)
         .WillByDefault(Return(kGeneratedPassword));
 
     user_data_.selected_login_ =
@@ -76,9 +75,11 @@ TEST_F(GeneratePasswordForFormFieldActionTest, GeneratedPassword) {
 
   action.ProcessAction(callback_.Get());
   EXPECT_EQ(kGeneratedPassword,
-            user_data_.additional_values_[kMemoryKeyForGeneratedPassword]
-                .strings()
+            user_data_.GetAdditionalValue(kMemoryKeyForGeneratedPassword)
+                ->strings()
                 .values(0));
+  EXPECT_TRUE(user_data_.GetAdditionalValue(kMemoryKeyForGeneratedPassword)
+                  ->is_client_side_only());
 }
 
 TEST_F(GeneratePasswordForFormFieldActionTest, FormDataIsNotRetrieved) {
@@ -94,14 +95,37 @@ TEST_F(GeneratePasswordForFormFieldActionTest, FormDataIsNotRetrieved) {
 
   GeneratePasswordForFormFieldAction action(&mock_action_delegate_, proto_);
 
-  EXPECT_CALL(mock_website_login_manager_, GetGeneratedPassword()).Times(0);
+  EXPECT_CALL(mock_website_login_manager_, GeneratePassword).Times(0);
   EXPECT_CALL(
       callback_,
       Run(Pointee(Property(&ProcessedActionProto::status, INVALID_SELECTOR))));
 
   action.ProcessAction(callback_.Get());
 
-  EXPECT_FALSE(user_data_.has_additional_value(kMemoryKeyForGeneratedPassword));
+  EXPECT_FALSE(user_data_.HasAdditionalValue(kMemoryKeyForGeneratedPassword));
+}
+
+TEST_F(GeneratePasswordForFormFieldActionTest, GeneratePasswordFails) {
+  ON_CALL(mock_action_delegate_, RetrieveElementFormAndFieldData)
+      .WillByDefault(RunOnceCallback<1>(ClientStatus(ACTION_APPLIED),
+                                        autofill::FormData(),
+                                        autofill::FormFieldData()));
+  GeneratePasswordForFormFieldProto* generate_password_proto =
+      proto_.mutable_generate_password_for_form_field();
+  *generate_password_proto->mutable_element() = Selector({kFakeSelector}).proto;
+  generate_password_proto->set_memory_key(kMemoryKeyForGeneratedPassword);
+
+  GeneratePasswordForFormFieldAction action(&mock_action_delegate_, proto_);
+
+  EXPECT_CALL(mock_website_login_manager_, GeneratePassword)
+      .WillOnce(Return(absl::nullopt));
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, NO_RENDER_FRAME))));
+
+  action.ProcessAction(callback_.Get());
+
+  EXPECT_FALSE(user_data_.HasAdditionalValue(kMemoryKeyForGeneratedPassword));
 }
 
 }  // namespace autofill_assistant

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "ios/web/public/init/web_main_delegate.h"
 
 namespace web {
@@ -17,6 +16,10 @@ class WebMainRunner;
 struct WebMainParams {
   WebMainParams();
   explicit WebMainParams(WebMainDelegate* delegate);
+
+  WebMainParams(const WebMainParams&) = delete;
+  WebMainParams& operator=(const WebMainParams&) = delete;
+
   ~WebMainParams();
 
   // WebMainParams is moveable.
@@ -29,8 +32,6 @@ struct WebMainParams {
 
   int argc;
   const char** argv;
-
-  DISALLOW_COPY_AND_ASSIGN(WebMainParams);
 };
 
 // Encapsulates any setup and initialization that is needed by common

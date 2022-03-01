@@ -11,9 +11,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/media/webrtc/capture_policy_utils.h"
 #include "chrome/browser/media/webrtc/desktop_media_list_ash.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_factory_impl.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -112,14 +114,18 @@ DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
         break;
       }
       case api::desktop_capture::DESKTOP_CAPTURE_SOURCE_TYPE_AUDIO: {
-        if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-                extensions::switches::kDisableDesktopCaptureAudio)) {
-          request_audio = true;
-        }
+        request_audio = true;
         break;
       }
     }
   }
+
+  AllowedScreenCaptureLevel capture_level =
+      capture_policy::GetAllowedCaptureLevel(origin, web_contents);
+
+  capture_policy::FilterMediaList(media_types, capture_level);
+  DesktopMediaList::WebContentsFilter includable_web_contents_filter =
+      capture_policy::GetIncludableWebContentsFilter(origin, capture_level);
 
   // Avoid offering window-capture as a separate source, since PipeWire's
   // content-picker will offer both screen and window sources.
@@ -141,8 +147,10 @@ DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
   picker_params.request_audio = request_audio;
   picker_controller_ =
       std::make_unique<DesktopMediaPickerController>(g_picker_factory);
+  picker_params.restricted_by_policy =
+      (capture_level != AllowedScreenCaptureLevel::kUnrestricted);
   picker_controller_->Show(picker_params, std::move(media_types),
-                           std::move(callback));
+                           includable_web_contents_filter, std::move(callback));
   return RespondLater();
 }
 
@@ -211,8 +219,9 @@ DesktopCaptureCancelChooseDesktopMediaFunctionBase::
 
 ExtensionFunction::ResponseAction
 DesktopCaptureCancelChooseDesktopMediaFunctionBase::Run() {
-  int request_id;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &request_id));
+  EXTENSION_FUNCTION_VALIDATE(args().size() >= 1);
+  EXTENSION_FUNCTION_VALIDATE(args()[0].is_int());
+  int request_id = args()[0].GetInt();
 
   DesktopCaptureRequestsRegistry::GetInstance()->CancelRequest(
       source_process_id(), request_id);

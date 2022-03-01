@@ -19,21 +19,20 @@ limitations under the License.
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "tensorflow/compiler/xla/layout.h"
+#include "tensorflow/compiler/xla/service/gpu/cublas_cudnn.h"
+#include "tensorflow/compiler/xla/service/gpu/launch_dimensions.h"
 #include "tensorflow/compiler/xla/service/hlo_module_config.h"
 #include "tensorflow/compiler/xla/statusor.h"
 #include "tensorflow/compiler/xla/types.h"
 #include "tensorflow/compiler/xla/xla_data.pb.h"
 #include "tensorflow/core/platform/stream_executor_no_cuda.h"
-#include "tensorflow/stream_executor/gpu/gpu_asm_opts.h"
+#include "tensorflow/core/protobuf/autotuning.pb.h"
 #include "tensorflow/stream_executor/kernel_spec.h"
 
 // Helper functions for interacting with StreamExecutor.
 
 namespace xla {
 namespace gpu {
-
-// Returns true if the given StreamExecutor is for a Volta or newer nvidia GPU.
-bool IsVoltaOrLater(const se::StreamExecutor& stream_exec);
 
 // Returns (input, filter, output) XLA Layout protos given the StreamExecutor
 // layouts.
@@ -46,17 +45,37 @@ StreamExecutorConvLayoutsToXlaLayouts(const ConvolutionDimensionNumbers& dnums,
 // Returns (input, filter, output) StreamExecutor layouts given the XLA layouts.
 StatusOr<
     std::tuple<se::dnn::DataLayout, se::dnn::FilterLayout, se::dnn::DataLayout>>
-XlaConvLayoutsToStreamExecutorLayouts(const ConvolutionDimensionNumbers& dnums,
-                                      const Layout& input, const Layout& filter,
-                                      const Layout& output);
+XlaConvShapesToStreamExecutorLayouts(const ConvolutionDimensionNumbers& dnums,
+                                     const Shape& input, const Shape& filter,
+                                     const Shape& output);
 
-// Generates and returns a unique lock per each provided executor.
+// Finds the VECT_C dimension in input/filter/output, if present.
+//
+// A cudnn convolution may have layout NCHW_VECT_C, which means instead of
+// [N,C,H,W], the layout is [N,C/k,H,W,k] for some k (usually 4 or 32).
+//
+// ConvolutionDimensionNumbers doesn't explicitly store which is the `k`
+// dimension, because only cudnn convolutions have this feature; it's not
+// applicable elsewhere.  We find it by finding a dimension in the
+// input/filter/output shape that is *not* in dnums.
+std::tuple<absl::optional<int64_t>, absl::optional<int64_t>,
+           absl::optional<int64_t>>
+FindVectorizedFeatureDims(const ConvolutionDimensionNumbers& dnums,
+                          const Shape& input, const Shape& filter,
+                          const Shape& output);
+
+// Generates and returns a unique lock per the provided executor.
 // Guarantees that blocks of code both holding a lock for the same provided
 // executor (as given by this function) will not be running concurrently.
 //
 // This is used to prevent other XLA instances from trying to autotune on a
 // device while another thread is using it.
 tensorflow::mutex_lock LockGpu(const se::StreamExecutor* stream_exec);
+
+// Generates and returns a shared lock per the provided executor.
+//
+// Threads that call LockGpuShared() may execute concurrently with each other.
+tensorflow::tf_shared_lock LockGpuShared(const se::StreamExecutor* stream_exec);
 
 // Creates a kernel with a provided name, based from provided PTX in ptx.
 // The kernel should be executed using the provided executor.
@@ -71,11 +90,7 @@ StatusOr<std::unique_ptr<se::KernelBase>> CreateKernel(
 // Runs loaded kernel on the stream with the provided arguments.
 Status ExecuteKernelOnStream(const se::KernelBase& kernel,
                              absl::Span<const se::DeviceMemoryBase> args,
-                             int64 threads_per_block, int64 block_count,
-                             se::Stream* stream);
-
-// Create GpuAsmOpts out of HloModuleConfig.
-se::GpuAsmOpts PtxOptsFromConfig(const HloModuleConfig& hlo_module_config);
+                             const LaunchDimensions& dims, se::Stream* stream);
 
 // Initializes `buffer` with random data on `stream`.
 // `rng_state` is an inout parameter for the pseudorandom generator state.
@@ -84,7 +99,20 @@ se::GpuAsmOpts PtxOptsFromConfig(const HloModuleConfig& hlo_module_config);
 // Precondition: `buffer_type` is a floating point type, `rng_state` needs to be
 // initialized to zero on the first use.
 void InitializeBuffer(se::Stream* stream, PrimitiveType buffer_type,
-                      int64* rng_state, se::DeviceMemoryBase buffer);
+                      int64_t* rng_state, se::DeviceMemoryBase buffer);
+
+StatusOr<se::dnn::ConvolutionKind> GetDNNConvKindFromCudnnConvKind(
+    CudnnConvKind kind);
+StatusOr<se::dnn::DataType> GetDNNDataTypeFromPrimitiveType(PrimitiveType type);
+
+// Returns result with the smallest time which has not failed.
+// If deterministic output is requested, returns first (not failing) result.
+StatusOr<tensorflow::AutotuneResult> PickBestResult(
+    absl::Span<tensorflow::AutotuneResult const> profile_results,
+    const HloInstruction& instr);
+
+// Returns whether determinism is required.
+bool RequireDeterminism(const HloModuleConfig& config);
 
 }  // namespace gpu
 }  // namespace xla

@@ -6,13 +6,13 @@
 
 #include <utility>
 
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_service_manager.h"
 #include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/touch_selection_menu_chromeos.h"
-#include "components/arc/arc_service_manager.h"
-#include "components/arc/session/arc_bridge_service.h"
 #include "ui/aura/window.h"
 #include "ui/base/layout.h"
 #include "ui/display/display.h"
@@ -23,12 +23,15 @@ TouchSelectionMenuRunnerChromeOS::TouchSelectionMenuRunnerChromeOS() = default;
 TouchSelectionMenuRunnerChromeOS::~TouchSelectionMenuRunnerChromeOS() = default;
 
 void TouchSelectionMenuRunnerChromeOS::OpenMenuWithTextSelectionAction(
-    ui::TouchSelectionMenuClient* client,
+    base::WeakPtr<ui::TouchSelectionMenuClient> client,
     const gfx::Rect& anchor_rect,
     const gfx::Size& handle_image_size,
     std::unique_ptr<aura::WindowTracker> tracker,
     std::vector<arc::mojom::TextSelectionActionPtr> actions) {
   if (tracker->windows().empty())
+    return;
+  // The `client` may have been deleted during the mojo call to ARC.
+  if (!client)
     return;
   if (!client->ShouldShowQuickMenu())
     return;
@@ -44,7 +47,7 @@ void TouchSelectionMenuRunnerChromeOS::OpenMenuWithTextSelectionAction(
 
   // The menu manages its own lifetime and deletes itself when closed.
   TouchSelectionMenuChromeOS* menu = new TouchSelectionMenuChromeOS(
-      this, client, tracker->Pop(), std::move(top_action));
+      this, client.get(), tracker->Pop(), std::move(top_action));
   ShowMenu(menu, anchor_rect, handle_image_size);
 }
 
@@ -85,7 +88,7 @@ bool TouchSelectionMenuRunnerChromeOS::RequestTextSelection(
           screen->GetDisplayNearestWindow(context).device_scale_factor()),
       base::BindOnce(
           &TouchSelectionMenuRunnerChromeOS::OpenMenuWithTextSelectionAction,
-          weak_ptr_factory_.GetWeakPtr(), client, anchor_rect,
+          weak_ptr_factory_.GetWeakPtr(), client->GetWeakPtr(), anchor_rect,
           handle_image_size, std::move(tracker)));
   return true;
 }

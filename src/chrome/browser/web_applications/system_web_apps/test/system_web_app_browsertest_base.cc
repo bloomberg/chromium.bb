@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/system_web_apps/test/system_web_app_browsertest_base.h"
 
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -11,6 +12,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,12 +21,19 @@
 
 namespace web_app {
 
-SystemWebAppBrowserTestBase::SystemWebAppBrowserTestBase(bool install_mock) {}
+SystemWebAppBrowserTestBase::SystemWebAppBrowserTestBase(bool install_mock) {
+  os_hooks_suppress_ =
+      web_app::OsIntegrationManager::ScopedSuppressOsHooksForTesting();
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  EnableSystemWebAppsInLacrosForTesting();
+#endif
+}
 
 SystemWebAppBrowserTestBase::~SystemWebAppBrowserTestBase() = default;
 
 SystemWebAppManager& SystemWebAppBrowserTestBase::GetManager() {
-  return WebAppProvider::Get(browser()->profile())->system_web_app_manager();
+  return WebAppProvider::GetForSystemWebApps(browser()->profile())
+      ->system_web_app_manager();
 }
 
 SystemAppType SystemWebAppBrowserTestBase::GetMockAppType() {
@@ -36,6 +46,10 @@ void SystemWebAppBrowserTestBase::WaitForTestSystemAppInstall() {
   if (maybe_installation_) {
     maybe_installation_->WaitForAppInstall();
   } else {
+    // Avoid recreating system apps in tests since AppBrowserController keeps a
+    // reference to SystemWebAppDelegates.
+    if (!GetManager().GetRegisteredSystemAppsForTesting().empty())
+      return;
     GetManager().InstallSystemAppsForTesting();
   }
 
@@ -53,7 +67,7 @@ apps::AppLaunchParams SystemWebAppBrowserTestBase::LaunchParamsForApp(
   return apps::AppLaunchParams(
       *app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
       WindowOpenDisposition::CURRENT_TAB,
-      apps::mojom::AppLaunchSource::kSourceAppLauncher);
+      apps::mojom::LaunchSource::kFromAppListGrid);
 }
 
 content::WebContents* SystemWebAppBrowserTestBase::LaunchApp(
@@ -73,8 +87,10 @@ content::WebContents* SystemWebAppBrowserTestBase::LaunchApp(
           ->BrowserAppLauncher()
           ->LaunchAppWithParams(std::move(params));
 
-  if (wait_for_load)
+  if (wait_for_load) {
     navigation_observer.Wait();
+    DCHECK(navigation_observer.last_navigation_succeeded());
+  }
 
   if (out_browser)
     *out_browser = chrome::FindBrowserWithWebContents(web_contents);
@@ -110,9 +126,13 @@ GURL SystemWebAppBrowserTestBase::GetStartUrl(
     const apps::AppLaunchParams& params) {
   return params.override_url.is_valid()
              ? params.override_url
-             : WebAppProvider::Get(browser()->profile())
+             : WebAppProvider::GetForSystemWebApps(browser()->profile())
                    ->registrar()
                    .GetAppStartUrl(params.app_id);
+}
+
+GURL SystemWebAppBrowserTestBase::GetStartUrl(SystemAppType type) {
+  return GetStartUrl(LaunchParamsForApp(type));
 }
 
 GURL SystemWebAppBrowserTestBase::GetStartUrl() {
@@ -121,42 +141,11 @@ GURL SystemWebAppBrowserTestBase::GetStartUrl() {
 
 SystemWebAppManagerBrowserTest::SystemWebAppManagerBrowserTest(
     bool install_mock)
-    : SystemWebAppBrowserTestBase(install_mock) {
+    : TestProfileTypeMixin<SystemWebAppBrowserTestBase>(install_mock) {
   if (install_mock) {
     maybe_installation_ =
         TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp();
   }
-}
-
-void SystemWebAppManagerBrowserTest::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  SystemWebAppBrowserTestBase::SetUpCommandLine(command_line);
-  if (profile_type() == TestProfileType::kGuest) {
-    ConfigureCommandLineForGuestMode(command_line);
-  } else if (profile_type() == TestProfileType::kIncognito) {
-    command_line->AppendSwitch(::switches::kIncognito);
-  }
-}
-
-std::string SystemWebAppManagerTestParamsToString(
-    const ::testing::TestParamInfo<SystemWebAppManagerTestParams>& param_info) {
-  std::string output;
-
-  switch (std::get<0>(param_info.param)) {
-    case TestProfileType::kRegular:
-      break;
-    case TestProfileType::kIncognito:
-      output.append("_Incognito");
-      break;
-    case TestProfileType::kGuest:
-      output.append("_Guest");
-      break;
-  }
-  // The framework doesn't accept a blank param
-  if (output.empty()) {
-    output = "_Default";
-  }
-  return output;
 }
 
 }  // namespace web_app

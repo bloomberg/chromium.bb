@@ -61,10 +61,10 @@ rtc::IPAddress QueryDefaultLocalAddress(int family) {
   RTC_DCHECK(thread->socketserver() != nullptr);
   RTC_DCHECK(family == AF_INET || family == AF_INET6);
 
-  std::unique_ptr<rtc::AsyncSocket> socket(
-      thread->socketserver()->CreateAsyncSocket(family, SOCK_DGRAM));
+  std::unique_ptr<rtc::Socket> socket(
+      thread->socketserver()->CreateSocket(family, SOCK_DGRAM));
   if (!socket) {
-    RTC_LOG_ERR(LERROR) << "Socket creation failed";
+    RTC_LOG_ERR(LS_ERROR) << "Socket creation failed";
     return rtc::IPAddress();
   }
 
@@ -112,7 +112,7 @@ int GetPayloadType(const std::string& codec_name) {
     return static_cast<int>(PayloadType::kIlbc);
   }
 
-  RTC_NOTREACHED();
+  RTC_DCHECK_NOTREACHED();
   return -1;
 }
 
@@ -308,7 +308,7 @@ void AndroidVoipClient::StartSession(JNIEnv* env) {
   rtp_socket_.reset(rtc::AsyncUDPSocket::Create(voip_thread_->socketserver(),
                                                 rtp_local_address_));
   if (!rtp_socket_) {
-    RTC_LOG_ERR(LERROR) << "Socket creation failed";
+    RTC_LOG_ERR(LS_ERROR) << "Socket creation failed";
     Java_VoipClient_onStartSessionCompleted(env_, j_voip_client_,
                                             /*isSuccessful=*/false);
     return;
@@ -319,7 +319,7 @@ void AndroidVoipClient::StartSession(JNIEnv* env) {
   rtcp_socket_.reset(rtc::AsyncUDPSocket::Create(voip_thread_->socketserver(),
                                                  rtcp_local_address_));
   if (!rtcp_socket_) {
-    RTC_LOG_ERR(LERROR) << "Socket creation failed";
+    RTC_LOG_ERR(LS_ERROR) << "Socket creation failed";
     Java_VoipClient_onStartSessionCompleted(env_, j_voip_client_,
                                             /*isSuccessful=*/false);
     return;

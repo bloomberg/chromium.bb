@@ -6,7 +6,6 @@
 #define SERVICES_SHAPE_DETECTION_SHAPE_DETECTION_SERVICE_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -18,6 +17,10 @@ class ShapeDetectionService : public mojom::ShapeDetectionService {
  public:
   explicit ShapeDetectionService(
       mojo::PendingReceiver<mojom::ShapeDetectionService> receiver);
+
+  ShapeDetectionService(const ShapeDetectionService&) = delete;
+  ShapeDetectionService& operator=(const ShapeDetectionService&) = delete;
+
   ~ShapeDetectionService() override;
 
   // mojom::ShapeDetectionService implementation:
@@ -30,8 +33,6 @@ class ShapeDetectionService : public mojom::ShapeDetectionService {
 
  private:
   mojo::Receiver<mojom::ShapeDetectionService> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShapeDetectionService);
 };
 
 }  // namespace shape_detection

@@ -5,10 +5,14 @@
 #ifndef CONTENT_PUBLIC_TEST_PRERENDER_TEST_UTIL_H_
 #define CONTENT_PUBLIC_TEST_PRERENDER_TEST_UTIL_H_
 
+#include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/test/scoped_feature_list.h"
+#include "content/public/browser/prerender_trigger_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -24,7 +28,7 @@ class PrerenderHostRegistryObserverImpl;
 // for a given URL.
 class PrerenderHostRegistryObserver {
  public:
-  explicit PrerenderHostRegistryObserver(content::WebContents& web_contents);
+  explicit PrerenderHostRegistryObserver(WebContents& web_contents);
   ~PrerenderHostRegistryObserver();
   PrerenderHostRegistryObserver(const PrerenderHostRegistryObserver&) = delete;
   PrerenderHostRegistryObserver& operator=(
@@ -50,11 +54,11 @@ class PrerenderHostObserver {
  public:
   // Begins observing the given PrerenderHost immediately. DCHECKs if |host_id|
   // does not identify a live PrerenderHost.
-  PrerenderHostObserver(content::WebContents& web_contents, int host_id);
+  PrerenderHostObserver(WebContents& web_contents, int host_id);
 
   // Will start observing a PrerenderHost for |gurl| as soon as it is
   // triggered.
-  PrerenderHostObserver(content::WebContents& web_contents, const GURL& gurl);
+  PrerenderHostObserver(WebContents& web_contents, const GURL& gurl);
 
   ~PrerenderHostObserver();
   PrerenderHostObserver(const PrerenderHostObserver&) = delete;
@@ -78,39 +82,48 @@ class PrerenderHostObserver {
 // Browser tests can use this class to more conveniently leverage prerendering.
 class PrerenderTestHelper {
  public:
-  explicit PrerenderTestHelper(const content::WebContents::Getter& fn);
+  explicit PrerenderTestHelper(const WebContents::Getter& fn);
   ~PrerenderTestHelper();
   PrerenderTestHelper(const PrerenderTestHelper&) = delete;
   PrerenderTestHelper& operator=(const PrerenderTestHelper&) = delete;
 
   // This installs a network monitor on the http server. Be sure to call this
-  // before starting the server.
-  void SetUpOnMainThread(net::test_server::EmbeddedTestServer* http_server);
+  // before starting the server. This is typically done from SetUp, but it is
+  // fine to call from SetUpOnMainThread if ordering constraints make that
+  // impossible (eg, if the test helper is created later to avoid problematic
+  // creation/destruction relative to other ScopedFeatureLists or if the fixture
+  // creates test server after SetUp).
+  void SetUp(net::test_server::EmbeddedTestServer* http_server);
 
   // Attempts to lookup the host for the given |gurl|. Returns
   // RenderFrameHost::kNoFrameTreeNodeId upon failure.
   int GetHostForUrl(const GURL& gurl);
 
+  // Waits until a prerender has finished loading. Note: this may not be called
+  // when the load fails (e.g. because it was blocked by a NavigationThrottle,
+  // or the WebContents is destroyed). If the prerender doesn't yet exist, this
+  // will wait until it is triggered.
+  static void WaitForPrerenderLoadCompletion(WebContents& web_contents,
+                                             const GURL& gurl);
   void WaitForPrerenderLoadCompletion(const GURL& gurl);
   void WaitForPrerenderLoadCompletion(int host_id);
 
-  // Adds <link rel=prerender> in the current main frame and waits until the
-  // completion of prerendering. Returns the id of the resulting prerendering
-  // host.
+  // Adds <script type="speculationrules"> in the current main frame and waits
+  // until the completion of prerendering. Returns the id of the resulting
+  // prerendering host.
   //
   // AddPrerenderAsync() is the same as AddPrerender(), but does not wait until
   // the completion of prerendering.
-  //
-  // NOTE: this function requires that the add_prerender.html has been
-  // loaded. This is most easily accomplished by using PrerenderBrowserTest,
-  // but if that's not possible, ensure that you have this file loaded before
-  // making this call.
-  int AddPrerender(const GURL& gurl);
-  void AddPrerenderAsync(const GURL& gurl);
+  int AddPrerender(const GURL& prerendering_url);
+  void AddPrerenderAsync(const GURL& prerendering_url);
 
-  // Adds <link rel=prerender> in the current main frame without loading
-  // add_prerender.html and waits until the completion of prerendering.
-  int AddPrerenderWithTestUtilJS(const GURL& gurl);
+  // Starts prerendering and returns a PrerenderHandle that should be kept alive
+  // until prerender activation. Note that it returns before the completion of
+  // the prerendering navigation.
+  std::unique_ptr<PrerenderHandle> AddEmbedderTriggeredPrerenderAsync(
+      const GURL& prerendering_url,
+      PrerenderTriggerType trigger_type,
+      const std::string& embedder_histogram_suffix);
 
   // This navigates, but does not activate, the prerendered page.
   void NavigatePrerenderedPage(int host_id, const GURL& gurl);
@@ -125,6 +138,7 @@ class PrerenderTestHelper {
   // WebContents to be destroyed during activation and results in crashes.
   // See https://crbug.com/1154501 for the MPArch migration.
   // TODO(crbug.com/1198960): remove this once the migration is complete.
+  static void NavigatePrimaryPage(WebContents& web_contents, const GURL& gurl);
   void NavigatePrimaryPage(const GURL& gurl);
 
   // Confirms that, internally, appropriate subframes report that they are
@@ -135,24 +149,33 @@ class PrerenderTestHelper {
   RenderFrameHost* GetPrerenderedMainFrameHost(int host_id);
 
   int GetRequestCount(const GURL& url);
+  net::test_server::HttpRequest::HeaderMap GetRequestHeaders(const GURL& url);
 
   // Waits until the request count for `url` reaches `count`.
   void WaitForRequest(const GURL& gurl, int count);
 
+  // Generates the histogram name by appending the trigger type and the embedder
+  // suffix to the base name.
+  std::string GenerateHistogramName(const std::string& histogram_base_name,
+                                    content::PrerenderTriggerType trigger_type,
+                                    const std::string& embedder_suffix);
+
  private:
   void MonitorResourceRequest(const net::test_server::HttpRequest& request);
 
-  content::WebContents* GetWebContents();
+  WebContents* GetWebContents();
 
   // Counts of requests sent to the server. Keyed by path (not by full URL)
   // because the host part of the requests is translated ("a.test" to
   // "127.0.0.1") before the server handles them.
   // This is accessed from the UI thread and `EmbeddedTestServer::io_thread_`.
   std::map<std::string, int> request_count_by_path_ GUARDED_BY(lock_);
+  std::map<std::string, net::test_server::HttpRequest::HeaderMap>
+      request_headers_by_path_ GUARDED_BY(lock_);
   base::test::ScopedFeatureList feature_list_;
   base::OnceClosure monitor_callback_ GUARDED_BY(lock_);
   base::Lock lock_;
-  content::WebContents::Getter get_web_contents_fn_;
+  WebContents::Getter get_web_contents_fn_;
 };
 
 }  // namespace test

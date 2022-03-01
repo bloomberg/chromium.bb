@@ -72,15 +72,13 @@ TEST(TracedValueSupportTest, WeakPtr) {
 }
 
 TEST(TracedValueSupportTest, Time) {
+  EXPECT_EQ(perfetto::TracedValueToString(base::Microseconds(42)), "42");
   EXPECT_EQ(
-      perfetto::TracedValueToString(base::TimeDelta::FromMicroseconds(42)),
+      perfetto::TracedValueToString(base::Time() + base::Microseconds(42)),
       "42");
-  EXPECT_EQ(perfetto::TracedValueToString(
-                base::Time() + base::TimeDelta::FromMicroseconds(42)),
-            "42");
-  EXPECT_EQ(perfetto::TracedValueToString(
-                base::TimeTicks() + base::TimeDelta::FromMicroseconds(42)),
-            "42");
+  EXPECT_EQ(
+      perfetto::TracedValueToString(base::TimeTicks() + base::Microseconds(42)),
+      "42");
 }
 
 TEST(TracedValueSupportTest, UnguessableToken) {
@@ -101,6 +99,14 @@ TEST(TracedValueSupportTest, WideString) {
   EXPECT_EQ(perfetto::TracedValueToString(static_cast<const wchar_t*>(L"wide")),
             "wide");
   EXPECT_EQ(perfetto::TracedValueToString(std::wstring(L"wide")), "wide");
+}
+
+TEST(TracedValueSupportTest, StringPiece) {
+  EXPECT_EQ(perfetto::TracedValueToString(base::StringPiece("string")),
+            "string");
+  EXPECT_EQ(perfetto::TracedValueToString(base::StringPiece16(u"utf-16")),
+            "utf-16");
+  EXPECT_EQ(perfetto::TracedValueToString(base::WStringPiece(L"wide")), "wide");
 }
 
 }  // namespace trace_event

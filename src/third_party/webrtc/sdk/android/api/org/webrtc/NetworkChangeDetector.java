@@ -10,7 +10,7 @@
 
 package org.webrtc;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import java.util.List;
 
 /** Interface for detecting network changes */
@@ -98,9 +98,9 @@ public interface NetworkChangeDetector {
 
     /**
      * Called when network preference change for a (list of) connection type(s). (e.g WIFI) is
-     * |NOT_PREFERRED| or |NEUTRAL|.
+     * `NOT_PREFERRED` or `NEUTRAL`.
      *
-     * <p>note: |types| is a list of ConnectionTypes, so that all cellular types can be modified in
+     * <p>note: `types` is a list of ConnectionTypes, so that all cellular types can be modified in
      * one call.
      */
     public void onNetworkPreference(List<ConnectionType> types, @NetworkPreference int preference);

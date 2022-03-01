@@ -567,7 +567,7 @@ tcu::UVec2 getFullScreenSize (const vk::wsi::Type wsiType, const vk::wsi::Displa
 		case TYPE_WIN32:
 		{
 #if ( DE_OS == DE_OS_WIN32 )
-			de::MovePtr<Window>					nullWindow		(display.createWindow(tcu::nothing<tcu::UVec2>()));
+			de::MovePtr<Window>					nullWindow		(display.createWindow(tcu::Nothing));
 			const Win32WindowInterface&			win32Window		= dynamic_cast<const Win32WindowInterface&>(*nullWindow);
 			HMONITOR							hMonitor		= (HMONITOR)MonitorFromWindow((HWND)win32Window.getNative().internal, MONITOR_DEFAULTTONEAREST);
 			MONITORINFO							monitorInfo;
@@ -609,7 +609,7 @@ Move<VkRenderPass> WsiTriangleRenderer::createRenderPass (const DeviceInterface&
 		VK_ATTACHMENT_STORE_OP_STORE,
 		VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 		VK_ATTACHMENT_STORE_OP_DONT_CARE,
-		(explicitLayoutTransitions) ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+		(explicitLayoutTransitions) ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED,
 		(explicitLayoutTransitions) ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
 	};
 	const VkAttachmentReference		colorAttRef			=
@@ -874,12 +874,17 @@ void WsiTriangleRenderer::recordFrame (VkCommandBuffer	cmdBuffer,
 
 	if (m_explicitLayoutTransitions || m_attachmentLayouts[imageNdx] == VK_IMAGE_LAYOUT_UNDEFINED)
 	{
-		VkImageSubresourceRange range = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-		const VkImageMemoryBarrier	barrier	= makeImageMemoryBarrier	(0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-																		 m_attachmentLayouts[imageNdx], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-																		 m_aliasImages[imageNdx], range);
-		m_vkd.cmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0u, 0u, DE_NULL, 0u, DE_NULL, 1u, &barrier);
-		m_attachmentLayouts[imageNdx] = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		const auto range		= makeImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u);
+		const auto newLayout	= (m_explicitLayoutTransitions ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+		const auto srcStage		= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		const auto srcMask		= 0u;
+		const auto dstStage		= (m_explicitLayoutTransitions ? VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT : VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+		const auto dstMask		= (m_explicitLayoutTransitions ? VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT : 0);
+
+		const auto barrier = makeImageMemoryBarrier(srcMask, dstMask, m_attachmentLayouts[imageNdx], newLayout, m_aliasImages[imageNdx], range);
+		m_vkd.cmdPipelineBarrier(cmdBuffer, srcStage, dstStage, 0u, 0u, nullptr, 0u, nullptr, 1u, &barrier);
+
+		m_attachmentLayouts[imageNdx] = newLayout;
 	}
 
 	beginRenderPass(m_vkd, cmdBuffer, *m_renderPass, curFramebuffer, makeRect2D(0, 0, m_renderSize.x(), m_renderSize.y()), tcu::Vec4(0.125f, 0.25f, 0.75f, 1.0f));
@@ -921,12 +926,17 @@ void WsiTriangleRenderer::recordDeviceGroupFrame (VkCommandBuffer	cmdBuffer,
 
 	if (m_explicitLayoutTransitions || m_attachmentLayouts[imageNdx] == VK_IMAGE_LAYOUT_UNDEFINED)
 	{
-		VkImageSubresourceRange range = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-		const VkImageMemoryBarrier	barrier	= makeImageMemoryBarrier	(0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-																		 m_attachmentLayouts[imageNdx], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-																		 m_aliasImages[imageNdx], range);
-		m_vkd.cmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0u, 0u, DE_NULL, 0u, DE_NULL, 1u, &barrier);
-		m_attachmentLayouts[imageNdx] = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		const auto range		= makeImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u);
+		const auto newLayout	= (m_explicitLayoutTransitions ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+		const auto srcStage		= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		const auto srcMask		= 0u;
+		const auto dstStage		= (m_explicitLayoutTransitions ? VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT : VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+		const auto dstMask		= (m_explicitLayoutTransitions ? VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT : 0);
+
+		const auto barrier = makeImageMemoryBarrier(srcMask, dstMask, m_attachmentLayouts[imageNdx], newLayout, m_aliasImages[imageNdx], range);
+		m_vkd.cmdPipelineBarrier(cmdBuffer, srcStage, dstStage, 0u, 0u, nullptr, 0u, nullptr, 1u, &barrier);
+
+		m_attachmentLayouts[imageNdx] = newLayout;
 	}
 
 	// begin renderpass

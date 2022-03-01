@@ -19,6 +19,7 @@
 #include <string>
 
 #include "build/build_config.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "snapshot/mac/process_reader_mac.h"
 #include "test/errors.h"
@@ -42,6 +43,9 @@ class SystemSnapshotMacTest : public testing::Test {
         system_snapshot_() {
   }
 
+  SystemSnapshotMacTest(const SystemSnapshotMacTest&) = delete;
+  SystemSnapshotMacTest& operator=(const SystemSnapshotMacTest&) = delete;
+
   const internal::SystemSnapshotMac& system_snapshot() const {
     return system_snapshot_;
   }
@@ -58,8 +62,6 @@ class SystemSnapshotMacTest : public testing::Test {
   ProcessReaderMac process_reader_;
   timeval snapshot_time_;
   internal::SystemSnapshotMac system_snapshot_;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemSnapshotMacTest);
 };
 
 TEST_F(SystemSnapshotMacTest, GetCPUArchitecture) {
@@ -80,7 +82,13 @@ TEST_F(SystemSnapshotMacTest, CPUCount) {
   EXPECT_GE(system_snapshot().CPUCount(), 1);
 }
 
-TEST_F(SystemSnapshotMacTest, CPUVendor) {
+#if defined(ARCH_CPU_ARM64)
+// https://crbug.com/1222625
+#define MAYBE_CPUVendor DISABLED_CPUVendor
+#else
+#define MAYBE_CPUVendor CPUVendor
+#endif
+TEST_F(SystemSnapshotMacTest, MAYBE_CPUVendor) {
   std::string cpu_vendor = system_snapshot().CPUVendor();
 
 #if defined(ARCH_CPU_X86_FAMILY)
@@ -90,7 +98,7 @@ TEST_F(SystemSnapshotMacTest, CPUVendor) {
     FAIL() << "cpu_vendor " << cpu_vendor;
   }
 #elif defined(ARCH_CPU_ARM64)
-  EXPECT_EQ(cpu_vendor, "Apple processor");
+  EXPECT_THAT(cpu_vendor, testing::StartsWith("Apple "));
 #else
 #error port to your architecture
 #endif

@@ -9,10 +9,9 @@
 
 #include "base/feature_list.h"
 #include "base/memory/singleton.h"
-#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/chromeos/nearby/nearby_process_manager_factory.h"
+#include "chrome/browser/ash/nearby/nearby_process_manager_factory.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
@@ -34,8 +33,8 @@ namespace {
 constexpr char kServiceName[] = "NearbySharingService";
 
 absl::optional<bool>& IsSupportedTesting() {
-  static base::NoDestructor<absl::optional<bool>> is_supported;
-  return *is_supported;
+  static absl::optional<bool> is_supported;
+  return is_supported;
 }
 
 }  // namespace
@@ -58,7 +57,7 @@ bool NearbySharingServiceFactory::IsNearbyShareSupportedForBrowserContext(
   if (!profile)
     return false;
 
-  if (!chromeos::nearby::NearbyProcessManagerFactory::CanBeLaunchedForProfile(
+  if (!ash::nearby::NearbyProcessManagerFactory::CanBeLaunchedForProfile(
           profile)) {
     return false;
   }
@@ -89,7 +88,7 @@ NearbySharingServiceFactory::NearbySharingServiceFactory()
           kServiceName,
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(IdentityManagerFactory::GetInstance());
-  DependsOn(chromeos::nearby::NearbyProcessManagerFactory::GetInstance());
+  DependsOn(ash::nearby::NearbyProcessManagerFactory::GetInstance());
   DependsOn(NotificationDisplayServiceFactory::GetInstance());
 }
 
@@ -104,7 +103,7 @@ KeyedService* NearbySharingServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
 
   chromeos::nearby::NearbyProcessManager* process_manager =
-      chromeos::nearby::NearbyProcessManagerFactory::GetForProfile(profile);
+      ash::nearby::NearbyProcessManagerFactory::GetForProfile(profile);
 
   PrefService* pref_service = profile->GetPrefs();
   NotificationDisplayService* notification_display_service =

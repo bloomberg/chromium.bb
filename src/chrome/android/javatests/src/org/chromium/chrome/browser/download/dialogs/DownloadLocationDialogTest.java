@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.dialogs;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.Visibility.GONE;
+import static androidx.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE;
 import static androidx.test.espresso.matcher.ViewMatchers.isChecked;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isNotChecked;
@@ -26,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.FeatureList;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.JniMocker;
@@ -58,7 +60,6 @@ import java.util.Map;
 /**
  * Test focus on verifying UI elements in the download location dialog.
  */
-// TODO(xingliu): Implement more test cases to test every MVC properties.
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class DownloadLocationDialogTest extends DummyUiActivityTestCase {
@@ -96,11 +97,14 @@ public class DownloadLocationDialogTest extends DummyUiActivityTestCase {
                 .thenReturn(PRIMARY_STORAGE_PATH);
         Profile.setLastUsedProfileForTesting(mProfileMock);
         mAppModalPresenter = new AppModalPresenter(getActivity());
-        mModalDialogManager =
-                new ModalDialogManager(mAppModalPresenter, ModalDialogManager.ModalDialogType.APP);
+        mModalDialogManager = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            return new ModalDialogManager(
+                    mAppModalPresenter, ModalDialogManager.ModalDialogType.APP);
+        });
         Map<String, Boolean> features = new HashMap<>();
         features.put(ChromeFeatureList.SMART_SUGGESTION_FOR_LARGE_DOWNLOADS, false);
-        ChromeFeatureList.setTestFeatures(features);
+        features.put(ChromeFeatureList.INCOGNITO_DOWNLOADS_WARNING, true);
+        FeatureList.setTestFeatures(features);
 
         setDownloadPromptStatus(DownloadPromptStatus.SHOW_INITIAL);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -134,11 +138,11 @@ public class DownloadLocationDialogTest extends DummyUiActivityTestCase {
         when(mPrefService.getBoolean(Pref.PROMPT_FOR_DOWNLOAD)).thenReturn(promptForPolicy);
     }
 
-    private void showDialog(
-            long totalBytes, @DownloadLocationDialogType int dialogType, String suggestedPath) {
+    private void showDialog(long totalBytes, @DownloadLocationDialogType int dialogType,
+            String suggestedPath, boolean isIncognito) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mDialogCoordinator.showDialog(
-                    getActivity(), mModalDialogManager, totalBytes, dialogType, suggestedPath);
+            mDialogCoordinator.showDialog(getActivity(), mModalDialogManager, totalBytes,
+                    dialogType, suggestedPath, isIncognito);
         });
     }
 
@@ -165,34 +169,108 @@ public class DownloadLocationDialogTest extends DummyUiActivityTestCase {
         }
     }
 
+    private void assertIncognitoWarningShown(boolean shown) {
+        onView(withId(R.id.incognito_warning))
+                .check(matches(withEffectiveVisibility(shown ? VISIBLE : GONE)));
+    }
+
     @Test
     @MediumTest
     public void testDefaultLocationDialog() throws Exception {
-        showDialog(TOTAL_BYTES, DownloadLocationDialogType.DEFAULT, SUGGESTED_PATH);
+        showDialog(TOTAL_BYTES, DownloadLocationDialogType.DEFAULT, SUGGESTED_PATH, false);
         assertTitle(R.string.download_location_dialog_title);
         assertSubtitle(DownloadUtils.getStringForBytes(getActivity(), TOTAL_BYTES));
+        assertIncognitoWarningShown(false);
         assertDontShowAgainCheckbox(true);
+    }
+
+    @Test
+    @MediumTest
+    public void testDefaultLocationDialogIncognito() {
+        showDialog(TOTAL_BYTES, DownloadLocationDialogType.DEFAULT, SUGGESTED_PATH, true);
+        assertTitle(R.string.download_location_dialog_title);
+        assertSubtitle(DownloadUtils.getStringForBytes(getActivity(), TOTAL_BYTES));
+        assertIncognitoWarningShown(true);
+        assertDontShowAgainCheckbox(null);
     }
 
     @Test
     @MediumTest
     public void testDefaultLocationDialogUnchecked() throws Exception {
         setDownloadPromptStatus(DownloadPromptStatus.SHOW_PREFERENCE);
-        showDialog(TOTAL_BYTES, DownloadLocationDialogType.DEFAULT, SUGGESTED_PATH);
+        showDialog(TOTAL_BYTES, DownloadLocationDialogType.DEFAULT, SUGGESTED_PATH, false);
         assertTitle(R.string.download_location_dialog_title);
         assertSubtitle(DownloadUtils.getStringForBytes(getActivity(), TOTAL_BYTES));
+        assertIncognitoWarningShown(false);
         assertDontShowAgainCheckbox(false);
     }
 
     @Test
     @MediumTest
-    public void testForceShowEnterprisePolicy() {
+    public void testLocationFull() throws Exception {
+        showDialog(TOTAL_BYTES, DownloadLocationDialogType.LOCATION_FULL, SUGGESTED_PATH, false);
+        assertTitle(R.string.download_location_not_enough_space);
+        assertSubtitle(getActivity().getResources().getString(
+                R.string.download_location_download_to_default_folder));
+        assertIncognitoWarningShown(false);
+        assertDontShowAgainCheckbox(null);
+    }
+
+    @Test
+    @MediumTest
+    public void testLocationNotFound() throws Exception {
+        showDialog(
+                TOTAL_BYTES, DownloadLocationDialogType.LOCATION_NOT_FOUND, SUGGESTED_PATH, false);
+        assertTitle(R.string.download_location_no_sd_card);
+        assertSubtitle(getActivity().getResources().getString(
+                R.string.download_location_download_to_default_folder));
+        assertIncognitoWarningShown(false);
+        assertDontShowAgainCheckbox(null);
+    }
+
+    @Test
+    @MediumTest
+    public void testNameTooLong() throws Exception {
+        showDialog(TOTAL_BYTES, DownloadLocationDialogType.NAME_TOO_LONG, SUGGESTED_PATH, false);
+        assertTitle(R.string.download_location_rename_file);
+        assertSubtitle(
+                getActivity().getResources().getString(R.string.download_location_name_too_long));
+        assertIncognitoWarningShown(false);
+        assertDontShowAgainCheckbox(null);
+    }
+
+    @Test
+    @MediumTest
+    public void testNameConflict() throws Exception {
+        showDialog(TOTAL_BYTES, DownloadLocationDialogType.NAME_CONFLICT, SUGGESTED_PATH, false);
+        assertTitle(R.string.download_location_download_again);
+        assertSubtitle(
+                getActivity().getResources().getString(R.string.download_location_name_exists));
+        assertIncognitoWarningShown(false);
+        assertDontShowAgainCheckbox(true);
+    }
+
+    @Test
+    @MediumTest
+    public void testNameConflictIncognito() throws Exception {
+        showDialog(TOTAL_BYTES, DownloadLocationDialogType.NAME_CONFLICT, SUGGESTED_PATH, true);
+        assertTitle(R.string.download_location_download_again);
+        assertSubtitle(
+                getActivity().getResources().getString(R.string.download_location_name_exists));
+        assertIncognitoWarningShown(true);
+        assertDontShowAgainCheckbox(null);
+    }
+
+    @Test
+    @MediumTest
+    public void testForceShowEnterprisePolicy() throws Exception {
         when(mDownloadDialogBridgeJniMock.isLocationDialogManaged()).thenReturn(true);
         setPromptForPolicy(true);
         setDownloadPromptStatus(DownloadPromptStatus.SHOW_PREFERENCE);
-        showDialog(TOTAL_BYTES, DownloadLocationDialogType.DEFAULT, SUGGESTED_PATH);
+        showDialog(TOTAL_BYTES, DownloadLocationDialogType.DEFAULT, SUGGESTED_PATH, false);
         assertTitle(R.string.download_location_dialog_title_confirm_download);
         assertSubtitle(DownloadUtils.getStringForBytes(getActivity(), TOTAL_BYTES));
+        assertIncognitoWarningShown(false);
         assertDontShowAgainCheckbox(null);
     }
 }

@@ -82,6 +82,7 @@ private:
     // noops
 
     void getPostScriptGlyphNames(SkString*) const override {}
+    bool onGlyphMaskNeedsCurrentColor() const override { return false; }
     int onGetVariationDesignPosition(SkFontArguments::VariationPosition::Coordinate[],
                                      int) const override { return 0; }
     int onGetVariationDesignParameters(SkFontParameters::Variation::Axis[],
@@ -210,7 +211,7 @@ protected:
         return true;
     }
 
-    void generateMetrics(SkGlyph* glyph) override {
+    void generateMetrics(SkGlyph* glyph, SkArenaAlloc*) override {
         glyph->zeroMetrics();
         this->generateAdvance(glyph);
         // Always generates from paths, so SkScalerContext::makeGlyph will figure the bounds.
@@ -218,8 +219,8 @@ protected:
 
     void generateImage(const SkGlyph&) override { SK_ABORT("Should have generated from path."); }
 
-    bool generatePath(SkGlyphID glyph, SkPath* path) override {
-        this->userTF()->fPaths[glyph].transform(fMatrix, path);
+    bool generatePath(const SkGlyph& glyph, SkPath* path) override {
+        this->userTF()->fPaths[glyph.getGlyphID()].transform(fMatrix, path);
         return true;
     }
 

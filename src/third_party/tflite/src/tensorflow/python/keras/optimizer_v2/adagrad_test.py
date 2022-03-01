@@ -14,10 +14,6 @@
 # ==============================================================================
 """Functional tests for aggregate operations."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import copy
 
 from absl.testing import parameterized
@@ -26,21 +22,20 @@ import numpy as np
 from tensorflow.python.eager import context
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
+from tensorflow.python.framework import indexed_slices
 from tensorflow.python.framework import ops
-from tensorflow.python.framework import test_util
 from tensorflow.python.keras import combinations
 from tensorflow.python.keras.optimizer_v2 import adagrad
 from tensorflow.python.keras.optimizer_v2 import learning_rate_schedule
 from tensorflow.python.ops import embedding_ops
 from tensorflow.python.ops import math_ops
-from tensorflow.python.ops import resource_variable_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
 
-_DATA_TYPES = [dtypes.half, dtypes.float32, dtypes.float64]
-# TODO(b/143684500): Eigen to support complex sqrt
-if not test_util.IsBuiltWithNvcc():
-  _DATA_TYPES += [dtypes.complex64, dtypes.complex128]
+_DATA_TYPES = [
+    dtypes.half, dtypes.float32, dtypes.float64, dtypes.complex64,
+    dtypes.complex128
+]
 
 
 def adagrad_update_numpy(param, accum, g_t, lr=0.001, epsilon=1e-7):
@@ -78,8 +73,8 @@ class AdagradOptimizerTest(test.TestCase, parameterized.TestCase):
       var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
       grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
       grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
-      var0 = resource_variable_ops.ResourceVariable(var0_np)
-      var1 = resource_variable_ops.ResourceVariable(var1_np)
+      var0 = variables.Variable(var0_np)
+      var1 = variables.Variable(var1_np)
       grads0 = constant_op.constant(grads0_np)
       grads1 = constant_op.constant(grads1_np)
 
@@ -119,9 +114,9 @@ class AdagradOptimizerTest(test.TestCase, parameterized.TestCase):
   def testBasic(self):
     self.doTestBasic()
 
+  @combinations.generate(combinations.combine(mode=["eager"]))
   def testBasicCallableParams(self):
-    with context.eager_mode():
-      self.doTestBasic(use_callable_params=True)
+    self.doTestBasic(use_callable_params=True)
 
   def testBasicWithLearningRateDecay(self):
     for dtype in _DATA_TYPES:
@@ -129,8 +124,8 @@ class AdagradOptimizerTest(test.TestCase, parameterized.TestCase):
       var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
       grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
       grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
-      var0 = resource_variable_ops.ResourceVariable(var0_np)
-      var1 = resource_variable_ops.ResourceVariable(var1_np)
+      var0 = variables.Variable(var0_np)
+      var1 = variables.Variable(var1_np)
       grads0 = constant_op.constant(grads0_np)
       grads1 = constant_op.constant(grads1_np)
 
@@ -171,8 +166,8 @@ class AdagradOptimizerTest(test.TestCase, parameterized.TestCase):
     var1_np = np.array([3.0, 4.0])
     grads0_np = np.array([0.1, 0.1])
     grads1_np = np.array([0.01, 0.01])
-    var0 = resource_variable_ops.ResourceVariable(var0_np)
-    var1 = resource_variable_ops.ResourceVariable(var1_np)
+    var0 = variables.Variable(var0_np)
+    var1 = variables.Variable(var1_np)
     grads0 = constant_op.constant(grads0_np)
     grads1 = constant_op.constant(grads1_np)
 
@@ -211,8 +206,8 @@ class AdagradOptimizerTest(test.TestCase, parameterized.TestCase):
       var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
       grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
       grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
-      var0 = resource_variable_ops.ResourceVariable(var0_np)
-      var1 = resource_variable_ops.ResourceVariable(var1_np)
+      var0 = variables.Variable(var0_np)
+      var1 = variables.Variable(var1_np)
       grads0 = constant_op.constant(grads0_np)
       grads1 = constant_op.constant(grads1_np)
 
@@ -254,8 +249,7 @@ class AdagradOptimizerTest(test.TestCase, parameterized.TestCase):
     # TODO(tanzheny, omalleyt): Fix test in eager mode.
     with ops.Graph().as_default():
       for dtype in _DATA_TYPES:
-        var0 = resource_variable_ops.ResourceVariable([[1.0, 2.0], [3.0, 4.0]],
-                                                      dtype=dtype)
+        var0 = variables.Variable([[1.0, 2.0], [3.0, 4.0]], dtype=dtype)
         x = constant_op.constant([[4.0], [5.0]], dtype=dtype)
 
         def loss():
@@ -282,8 +276,8 @@ class AdagradOptimizerTest(test.TestCase, parameterized.TestCase):
         var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
         grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
         grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
-        var0 = resource_variable_ops.ResourceVariable(var0_np)
-        var1 = resource_variable_ops.ResourceVariable(var1_np)
+        var0 = variables.Variable(var0_np)
+        var1 = variables.Variable(var1_np)
         grads0 = constant_op.constant(grads0_np)
         grads1 = constant_op.constant(grads1_np)
 
@@ -316,14 +310,14 @@ class AdagradOptimizerTest(test.TestCase, parameterized.TestCase):
         var1_np = np.array([3.0, 3.0, 4.0], dtype=dtype.as_numpy_dtype)
         grads1_np = np.array([0.01, 0, 0.01], dtype=dtype.as_numpy_dtype)
 
-        var0 = resource_variable_ops.ResourceVariable(var0_np)
-        var1 = resource_variable_ops.ResourceVariable(var1_np)
+        var0 = variables.Variable(var0_np)
+        var1 = variables.Variable(var1_np)
         grads0_np_indices = np.array([0, 2], dtype=np.int32)
-        grads0 = ops.IndexedSlices(
+        grads0 = indexed_slices.IndexedSlices(
             constant_op.constant(grads0_np[grads0_np_indices]),
             constant_op.constant(grads0_np_indices), constant_op.constant([3]))
         grads1_np_indices = np.array([0, 2], dtype=np.int32)
-        grads1 = ops.IndexedSlices(
+        grads1 = indexed_slices.IndexedSlices(
             constant_op.constant(grads1_np[grads1_np_indices]),
             constant_op.constant(grads1_np_indices), constant_op.constant([3]))
         learning_rate = 3.0
@@ -359,9 +353,9 @@ class AdagradOptimizerTest(test.TestCase, parameterized.TestCase):
         var0_np = np.array([1.0], dtype=dtype.as_numpy_dtype)
         grads0_np = np.array([0.1], dtype=dtype.as_numpy_dtype)
 
-        var0 = resource_variable_ops.ResourceVariable(var0_np)
+        var0 = variables.Variable(var0_np)
         grads0_np_indices = np.array([0], dtype=np.int32)
-        grads0 = ops.IndexedSlices(
+        grads0 = indexed_slices.IndexedSlices(
             constant_op.constant(grads0_np[grads0_np_indices]),
             constant_op.constant(grads0_np_indices), constant_op.constant([3]))
         learning_rate = 3.0
@@ -393,14 +387,14 @@ class AdagradOptimizerTest(test.TestCase, parameterized.TestCase):
       for dtype in _DATA_TYPES:
         var_np = np.array([[1.0], [2.0]], dtype=dtype.as_numpy_dtype)
 
-        repeated_index_update_var = resource_variable_ops.ResourceVariable(
+        repeated_index_update_var = variables.Variable(
             var_np, dtype=dtype)
-        aggregated_update_var = resource_variable_ops.ResourceVariable(
+        aggregated_update_var = variables.Variable(
             var_np, dtype=dtype)
-        grad_repeated_index = ops.IndexedSlices(
+        grad_repeated_index = indexed_slices.IndexedSlices(
             constant_op.constant([0.1, 0.1], shape=[2, 1], dtype=dtype),
             constant_op.constant([1, 1]), constant_op.constant([2, 1]))
-        grad_aggregated = ops.IndexedSlices(
+        grad_aggregated = indexed_slices.IndexedSlices(
             constant_op.constant([0.2], shape=[1, 1], dtype=dtype),
             constant_op.constant([1]), constant_op.constant([2, 1]))
         repeated_update = adagrad.Adagrad(3.0).apply_gradients([
@@ -424,12 +418,10 @@ class AdagradOptimizerTest(test.TestCase, parameterized.TestCase):
     # TODO(tanzheny, omalleyt): Fix test in eager mode.
     with ops.Graph().as_default():
       for dtype in _DATA_TYPES:
-        var_repeated = resource_variable_ops.ResourceVariable([1.0, 2.0],
-                                                              dtype=dtype)
+        var_repeated = variables.Variable([1.0, 2.0], dtype=dtype)
         loss_repeated = lambda: math_ops.reduce_sum(  # pylint: disable=g-long-lambda
             embedding_ops.embedding_lookup(var_repeated, [0, 0]))  # pylint: disable=cell-var-from-loop
-        var_aggregated = resource_variable_ops.ResourceVariable([1.0, 2.0],
-                                                                dtype=dtype)
+        var_aggregated = variables.Variable([1.0, 2.0], dtype=dtype)
         loss_aggregated = lambda: 2 * math_ops.reduce_sum(  # pylint: disable=g-long-lambda
             embedding_ops.embedding_lookup(var_aggregated, [0]))  # pylint: disable=cell-var-from-loop
         update_op_repeated = adagrad.Adagrad(2.0).minimize(
@@ -453,13 +445,13 @@ class AdagradOptimizerTest(test.TestCase, parameterized.TestCase):
         var0_np = np.array([[0.00872496, -0.106952, 0.110467,
                              0.226505, -0.0147257, -0.0105945]],
                            dtype=dtype.as_numpy_dtype)
-        var0 = resource_variable_ops.ResourceVariable(var0_np)
+        var0 = variables.Variable(var0_np)
         grads0_np = np.array([[
             -5.91278e-05, 5.31673e-05, -2.5779e-06, 4.29153e-05, -8.4877e-05,
             -9.48906e-05
         ]],
                              dtype=dtype.as_numpy_dtype)
-        grads0 = ops.IndexedSlices(
+        grads0 = indexed_slices.IndexedSlices(
             constant_op.constant(grads0_np), constant_op.constant([0]),
             constant_op.constant(shape))
         ada_opt = adagrad.Adagrad(1.0)
@@ -486,8 +478,8 @@ class AdagradOptimizerTest(test.TestCase, parameterized.TestCase):
         var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
         grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
 
-        var0 = resource_variable_ops.ResourceVariable(var0_np)
-        var1 = resource_variable_ops.ResourceVariable(var1_np)
+        var0 = variables.Variable(var0_np)
+        var1 = variables.Variable(var1_np)
         grads0 = constant_op.constant(grads0_np)
         grads1 = constant_op.constant(grads1_np)
 

@@ -11,7 +11,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.internal.runner.listener.InstrumentationResultPrinter;
-import android.view.Menu;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -34,11 +33,11 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
+import org.chromium.chrome.browser.prefetch.settings.PreloadPagesSettingsBridge;
+import org.chromium.chrome.browser.prefetch.settings.PreloadPagesState;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
-import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
@@ -47,6 +46,7 @@ import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.infobars.InfoBar;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.Coordinates;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
@@ -140,12 +140,6 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends BaseActivi
     @SuppressWarnings("RedundantOverride")
     public T getActivity() {
         return super.getActivity();
-    }
-
-    /** Retrieves the application Menu */
-    public Menu getMenu() throws ExecutionException {
-        return TestThreadUtils.runOnUiThreadBlocking(
-                () -> AppMenuTestSupport.getMenu(getAppMenuCoordinator()));
     }
 
     /**
@@ -249,7 +243,11 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends BaseActivi
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                PrivacyPreferencesManagerImpl.getInstance().setNetworkPredictionEnabled(enabled);
+                if (enabled) {
+                    PreloadPagesSettingsBridge.setState(PreloadPagesState.STANDARD_PRELOADING);
+                } else {
+                    PreloadPagesSettingsBridge.setState(PreloadPagesState.NO_PRELOADING);
+                }
             }
         });
     }
@@ -481,6 +479,18 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends BaseActivi
      */
     @SuppressWarnings("unchecked")
     public static <T extends ChromeActivity> T waitFor(final Class<T> expectedClass) {
+        return waitFor(expectedClass, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+    }
+
+    /**
+     * Waits for an Activity of the given class to be started.
+     * @param expectedClass The class of the Activity being waited on.
+     * @param maxTimeToPoll Maximum time in milliseconds to poll.
+     * @return The Activity.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends ChromeActivity> T waitFor(
+            final Class<T> expectedClass, long maxTimeToPoll) {
         final Activity[] holder = new Activity[1];
         CriteriaHelper.pollUiThread(() -> {
             holder[0] = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -488,8 +498,19 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends BaseActivi
             Criteria.checkThat(holder[0].getClass(), Matchers.typeCompatibleWith(expectedClass));
             Criteria.checkThat(
                     ((ChromeActivity) holder[0]).getActivityTab(), Matchers.notNullValue());
-        });
+        }, maxTimeToPoll, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         return (T) holder[0];
+    }
+
+    /**
+     * Waits for the first frame so that the page scale factor is set. Skipping this causes
+     * flakiness when clicking DOM objects since the page scale factor might not have been set yet,
+     * and coordinates can be wrong.
+     */
+    protected void waitForFirstFrame() {
+        final Coordinates coord = Coordinates.createFor(getWebContents());
+        CriteriaHelper.pollUiThread(
+                coord::frameInfoUpdated, "FrameInfo has not been updated in time.");
     }
 
     private class ChromeUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {

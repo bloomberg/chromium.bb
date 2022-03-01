@@ -9,7 +9,6 @@
 
 #include "base/command_line.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
@@ -66,6 +65,10 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) NamedPlatformChannel {
 
   NamedPlatformChannel(const Options& options);
   NamedPlatformChannel(NamedPlatformChannel&& other);
+
+  NamedPlatformChannel(const NamedPlatformChannel&) = delete;
+  NamedPlatformChannel& operator=(const NamedPlatformChannel&) = delete;
+
   ~NamedPlatformChannel();
 
   NamedPlatformChannel& operator=(NamedPlatformChannel&& other);
@@ -114,8 +117,6 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) NamedPlatformChannel {
 
   ServerName server_name_;
   PlatformChannelServerEndpoint server_endpoint_;
-
-  DISALLOW_COPY_AND_ASSIGN(NamedPlatformChannel);
 };
 
 }  // namespace mojo

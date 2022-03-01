@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -124,7 +124,7 @@ fake_idl_expected = """// Copyright %s The Chromium Authors. All rights reserved
 // NOTE: The format of types has changed. 'FooType' is now
 //   'chrome.fakeApi.FooType'.
 // Please run the closure compiler before committing changes.
-// See https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
+// See https://chromium.googlesource.com/chromium/src/+/main/docs/closure_compilation.md
 
 /** @fileoverview Externs generated from namespace: fakeApi */
 
@@ -323,7 +323,7 @@ fake_private_idl_expected = """// Copyright %s The Chromium Authors. All rights 
 // NOTE: The format of types has changed. 'FooType' is now
 //   'chrome.fakeApiPrivate.FooType'.
 // Please run the closure compiler before committing changes.
-// See https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
+// See https://chromium.googlesource.com/chromium/src/+/main/docs/closure_compilation.md
 
 /** @fileoverview Externs generated from namespace: fakeApiPrivate */
 
@@ -471,7 +471,7 @@ fake_json_expected = """// Copyright %s The Chromium Authors. All rights reserve
 // NOTE: The format of types has changed. 'FooType' is now
 //   'chrome.fakeJson.FooType'.
 // Please run the closure compiler before committing changes.
-// See https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
+// See https://chromium.googlesource.com/chromium/src/+/main/docs/closure_compilation.md
 
 /** @fileoverview Externs generated from namespace: fakeJson */
 

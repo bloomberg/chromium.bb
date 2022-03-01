@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -84,11 +83,17 @@ class TabActivityWatcherTest : public ChromeRenderViewHostTestHarness {
  public:
   TabActivityWatcherTest() = default;
   // Reset TabActivityWatcher with given |params|.
+  // This should only be called from test constructors, to avoid tsan data races
+  // with the  FeatureList.
   void SetParams(const base::FieldTrialParams& params) {
     feature_list_.InitAndEnableFeatureWithParameters(features::kTabRanker,
                                                      params);
     TabActivityWatcher::GetInstance()->ResetForTesting();
   }
+
+  TabActivityWatcherTest(const TabActivityWatcherTest&) = delete;
+  TabActivityWatcherTest& operator=(const TabActivityWatcherTest&) = delete;
+
   ~TabActivityWatcherTest() override = default;
 
   LifecycleUnit* AddNewTab(TabStripModel* tab_strip_model, int i) {
@@ -114,14 +119,16 @@ class TabActivityWatcherTest : public ChromeRenderViewHostTestHarness {
   UkmEntryChecker ukm_entry_checker_;
   TabActivitySimulator tab_activity_simulator_;
   base::test::ScopedFeatureList feature_list_;
+};
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(TabActivityWatcherTest);
+class TabActivityWatcherScorerType0Test : public TabActivityWatcherTest {
+ public:
+  TabActivityWatcherScorerType0Test() { SetParams({{"scorer_type", "0"}}); }
 };
 
 // Test that lifecycleunits are sorted with high activation score first order.
-TEST_F(TabActivityWatcherTest, LogAndMaybeSortLifecycleUnitWithTabRanker) {
-  SetParams({{"scorer_type", "0"}});
+TEST_F(TabActivityWatcherScorerType0Test,
+       LogAndMaybeSortLifecycleUnitWithTabRanker) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
       CreateBrowserWithTestWindowForParams(params);
@@ -145,9 +152,13 @@ TEST_F(TabActivityWatcherTest, LogAndMaybeSortLifecycleUnitWithTabRanker) {
   tab_strip_model->CloseAllTabs();
 }
 
+class TabActivityWatcherScorerType3Test : public TabActivityWatcherTest {
+ public:
+  TabActivityWatcherScorerType3Test() { SetParams({{"scorer_type", "3"}}); }
+};
+
 // Test that lifecycleunits are sorted with high frecency score first order.
-TEST_F(TabActivityWatcherTest, SortLifecycleUnitWithFrecencyScorer) {
-  SetParams({{"scorer_type", "3"}});
+TEST_F(TabActivityWatcherScorerType3Test, SortLifecycleUnitWithFrecencyScorer) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
       CreateBrowserWithTestWindowForParams(params);
@@ -181,8 +192,7 @@ TEST_F(TabActivityWatcherTest, SortLifecycleUnitWithFrecencyScorer) {
 }
 
 // Test that frecency scores are calculated correctly.
-TEST_F(TabActivityWatcherTest, GetFrecencyScore) {
-  SetParams({{"scorer_type", "3"}});
+TEST_F(TabActivityWatcherScorerType3Test, GetFrecencyScore) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
       CreateBrowserWithTestWindowForParams(params);
@@ -218,11 +228,17 @@ TEST_F(TabActivityWatcherTest, GetFrecencyScore) {
   tab_strip_model->CloseAllTabs();
 }
 
+class TabActiveWatcherDisableBackgroundLogTest : public TabActivityWatcherTest {
+ public:
+  TabActiveWatcherDisableBackgroundLogTest() {
+    SetParams({{"disable_background_log_with_TabRanker", "true"}});
+  }
+};
+
 // Test that lifecycleunits are correctly logged inside
 // LogAndMaybeSortLifecycleUnitWithTabRanker.
-TEST_F(TabActivityWatcherTest,
+TEST_F(TabActiveWatcherDisableBackgroundLogTest,
        LogInsideLogAndMaybeSortLifecycleUnitWithTabRanker) {
-  SetParams({{"disable_background_log_with_TabRanker", "true"}});
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
       CreateBrowserWithTestWindowForParams(params);
@@ -308,6 +324,10 @@ class TabMetricsTest : public TabActivityWatcherTest {
     SetParams({{"scorer_type", "0"},
                {"disable_background_log_with_TabRanker", "false"}});
   }
+
+  TabMetricsTest(const TabMetricsTest&) = delete;
+  TabMetricsTest& operator=(const TabMetricsTest&) = delete;
+
   ~TabMetricsTest() override = default;
 
  protected:
@@ -324,9 +344,6 @@ class TabMetricsTest : public TabActivityWatcherTest {
  protected:
   const char* kEntryName = TabManager_TabMetrics::kEntryName;
   size_t num_previous_entries = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TabMetricsTest);
 };
 
 TEST_F(TabMetricsTest, Basic) {
@@ -686,7 +703,7 @@ TEST_F(TabMetricsTest, Navigations) {
   WebContentsTester::For(test_contents)->TestSetIsLoading(false);
   expected_metrics[TabManager_TabMetrics::kPageTransitionCoreTypeName] =
       ui::PAGE_TRANSITION_RELOAD;
-  expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName].value()++;
+  expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName].value();
   expected_metrics[TabManager_TabMetrics::kPageTransitionFromAddressBarName] =
       false;
   expected_metrics[TabManager_TabMetrics::kPageTransitionIsRedirectName] =
@@ -714,7 +731,7 @@ TEST_F(TabMetricsTest, Navigations) {
   WebContentsTester::For(test_contents)->TestSetIsLoading(false);
   expected_metrics[TabManager_TabMetrics::kPageTransitionCoreTypeName] =
       ui::PAGE_TRANSITION_FORM_SUBMIT;
-  expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName].value()++;
+  expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName].value();
   {
     SCOPED_TRACE("");
     ExpectNewEntry(TestUrls()[1], expected_metrics);
@@ -798,19 +815,21 @@ class ForegroundedOrClosedTest : public TabActivityWatcherTest {
     SetParams({{"scorer_type", "0"},
                {"disable_background_log_with_TabRanker", "false"}});
   }
+
+  ForegroundedOrClosedTest(const ForegroundedOrClosedTest&) = delete;
+  ForegroundedOrClosedTest& operator=(const ForegroundedOrClosedTest&) = delete;
+
   ~ForegroundedOrClosedTest() override = default;
 
  protected:
   const char* kEntryName = ForegroundedOrClosed::kEntryName;
 
-  void AdvanceClock() { test_clock_.Advance(base::TimeDelta::FromSeconds(1)); }
+  void AdvanceClock() { test_clock_.Advance(base::Seconds(1)); }
 
  private:
   base::SimpleTestTickClock test_clock_;
   resource_coordinator::ScopedSetTickClockForTesting
       scoped_set_tick_clock_for_testing_;
-
-  DISALLOW_COPY_AND_ASSIGN(ForegroundedOrClosedTest);
 };
 
 // Tests TabManager.Backgrounded.ForegroundedOrClosed UKM logging.

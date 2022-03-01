@@ -106,7 +106,6 @@ TEST_F(CSSSupportsParserTest, ResultNot) {
   EXPECT_EQ(Result::kSupported, !Result::kUnsupported);
   EXPECT_EQ(Result::kUnsupported, !Result::kSupported);
   EXPECT_EQ(Result::kParseFailure, !Result::kParseFailure);
-  EXPECT_EQ(Result::kUnknown, !Result::kUnknown);
 }
 
 TEST_F(CSSSupportsParserTest, ResultAnd) {
@@ -117,10 +116,6 @@ TEST_F(CSSSupportsParserTest, ResultAnd) {
 
   EXPECT_EQ(Result::kParseFailure, Result::kSupported & Result::kParseFailure);
   EXPECT_EQ(Result::kParseFailure, Result::kParseFailure & Result::kSupported);
-
-  EXPECT_EQ(Result::kUnknown, Result::kUnknown & Result::kUnknown);
-  EXPECT_EQ(Result::kUnsupported, Result::kSupported & Result::kUnknown);
-  EXPECT_EQ(Result::kUnsupported, Result::kUnknown & Result::kSupported);
 }
 
 TEST_F(CSSSupportsParserTest, ResultOr) {
@@ -131,10 +126,6 @@ TEST_F(CSSSupportsParserTest, ResultOr) {
 
   EXPECT_EQ(Result::kParseFailure, Result::kSupported | Result::kParseFailure);
   EXPECT_EQ(Result::kParseFailure, Result::kParseFailure | Result::kSupported);
-
-  EXPECT_EQ(Result::kUnknown, Result::kUnknown | Result::kUnknown);
-  EXPECT_EQ(Result::kSupported, Result::kSupported | Result::kUnknown);
-  EXPECT_EQ(Result::kSupported, Result::kUnknown | Result::kSupported);
 }
 
 TEST_F(CSSSupportsParserTest, ConsumeSupportsCondition) {
@@ -187,10 +178,23 @@ TEST_F(CSSSupportsParserTest, ConsumeSupportsInParens) {
   // ( <supports-condition> )
   EXPECT_EQ(Result::kSupported, ConsumeSupportsInParens("(not (asdf:red))"));
   EXPECT_EQ(Result::kUnsupported, ConsumeSupportsInParens("(not (color:red))"));
+  EXPECT_EQ(Result::kParseFailure,
+            ConsumeSupportsInParens("(not (color:red)])"));
+
+  EXPECT_EQ(Result::kUnsupported,
+            ConsumeSupportsInParens("(not ( (color:gjhk) or (color:red) ))"));
+  EXPECT_EQ(
+      Result::kUnsupported,
+      ConsumeSupportsInParens("(not ( ((color:gjhk)) or (color:blue) ))"));
+  EXPECT_EQ(Result::kSupported,
+            ConsumeSupportsInParens("(( (color:gjhk) or (color:red) ))"));
+  EXPECT_EQ(Result::kSupported,
+            ConsumeSupportsInParens("(( ((color:gjhk)) or (color:blue) ))"));
 
   // <supports-feature>
   EXPECT_EQ(Result::kSupported, ConsumeSupportsInParens("(color:red)"));
   EXPECT_EQ(Result::kUnsupported, ConsumeSupportsInParens("(color:asdf)"));
+  EXPECT_EQ(Result::kParseFailure, ConsumeSupportsInParens("(color]asdf)"));
 
   // <general-enclosed>
   EXPECT_EQ(Result::kUnsupported, ConsumeSupportsInParens("asdf(1)"));
@@ -318,12 +322,12 @@ TEST_F(CSSSupportsParserTest, ConsumeSupportsFeature) {
 }
 
 TEST_F(CSSSupportsParserTest, ConsumeGeneralEnclosed) {
-  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("(asdf)"));
-  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("( asdf )"));
-  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("(3)"));
-  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("max(1, 2)"));
-  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("asdf(1, 2)"));
-  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("asdf(1, 2)\t"));
+  EXPECT_EQ(Result::kUnsupported, ConsumeGeneralEnclosed("(asdf)"));
+  EXPECT_EQ(Result::kUnsupported, ConsumeGeneralEnclosed("( asdf )"));
+  EXPECT_EQ(Result::kUnsupported, ConsumeGeneralEnclosed("(3)"));
+  EXPECT_EQ(Result::kUnsupported, ConsumeGeneralEnclosed("max(1, 2)"));
+  EXPECT_EQ(Result::kUnsupported, ConsumeGeneralEnclosed("asdf(1, 2)"));
+  EXPECT_EQ(Result::kUnsupported, ConsumeGeneralEnclosed("asdf(1, 2)\t"));
 
   EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("("));
   EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("()"));
@@ -335,8 +339,8 @@ TEST_F(CSSSupportsParserTest, ConsumeGeneralEnclosed) {
   EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("(url(as'df))"));
 
   // Valid <any-value>
-  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("(as;df)"));
-  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("(as ! df)"));
+  EXPECT_EQ(Result::kUnsupported, ConsumeGeneralEnclosed("(as;df)"));
+  EXPECT_EQ(Result::kUnsupported, ConsumeGeneralEnclosed("(as ! df)"));
 }
 
 TEST_F(CSSSupportsParserTest, AtSupportsCondition) {

@@ -24,6 +24,7 @@
 #include "include/effects/SkGradientShader.h"
 #include "include/effects/SkLumaColorFilter.h"
 #include "include/effects/SkRuntimeEffect.h"
+#include "src/core/SkRuntimeEffectPriv.h"
 #include "tools/Resources.h"
 
 #include <math.h>
@@ -65,9 +66,10 @@ static sk_sp<SkColorFilter> MakeTintColorFilter(SkColor lo, SkColor hi, bool use
         auto [effect, error] = SkRuntimeEffect::MakeForColorFilter(SkString(R"(
             uniform colorFilter inner;
             uniform colorFilter outer;
-            half4 main(half4 c) { return sample(outer, sample(inner, c)); }
+            half4 main(half4 c) { return outer.eval(inner.eval(c)); }
         )"));
         SkASSERT(effect);
+        SkASSERT(SkRuntimeEffectPriv::SupportsConstantOutputForConstantInput(effect));
         sk_sp<SkColorFilter> children[] = { inner, outer };
         return effect->makeColorFilter(nullptr, children, SK_ARRAY_COUNT(children));
     } else {

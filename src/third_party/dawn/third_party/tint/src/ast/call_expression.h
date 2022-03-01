@@ -20,46 +20,62 @@
 namespace tint {
 namespace ast {
 
-/// A call expression
+// Forward declarations.
+class Type;
+class IdentifierExpression;
+
+/// A call expression - represents either a:
+/// * sem::Function
+/// * sem::Intrinsic
+/// * sem::TypeConstructor
+/// * sem::TypeConversion
 class CallExpression : public Castable<CallExpression, Expression> {
  public:
   /// Constructor
   /// @param program_id the identifier of the program that owns this node
   /// @param source the call expression source
-  /// @param func the function
-  /// @param params the parameters
+  /// @param name the function or type name
+  /// @param args the arguments
   CallExpression(ProgramID program_id,
                  const Source& source,
-                 Expression* func,
-                 ExpressionList params);
+                 const IdentifierExpression* name,
+                 ExpressionList args);
+
+  /// Constructor
+  /// @param program_id the identifier of the program that owns this node
+  /// @param source the call expression source
+  /// @param type the type
+  /// @param args the arguments
+  CallExpression(ProgramID program_id,
+                 const Source& source,
+                 const Type* type,
+                 ExpressionList args);
+
   /// Move constructor
   CallExpression(CallExpression&&);
   ~CallExpression() override;
-
-  /// @returns the func
-  Expression* func() const { return func_; }
-  /// @returns the parameters
-  const ExpressionList& params() const { return params_; }
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  CallExpression* Clone(CloneContext* ctx) const override;
+  const CallExpression* Clone(CloneContext* ctx) const override;
 
-  /// Writes a representation of the node to the output stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
+  /// Target is either an identifier, or a Type.
+  /// One of these must be nullptr and the other a non-nullptr.
+  struct Target {
+    /// name is a function or intrinsic to call, or type name to construct or
+    /// cast-to
+    const IdentifierExpression* name = nullptr;
+    /// type to construct or cast-to
+    const Type* type = nullptr;
+  };
 
- private:
-  CallExpression(const CallExpression&) = delete;
+  /// The target function
+  const Target target;
 
-  Expression* const func_;
-  ExpressionList const params_;
+  /// The arguments
+  const ExpressionList args;
 };
 
 }  // namespace ast

@@ -16,7 +16,7 @@ class WebContents;
 
 namespace net {
 class SSLCertRequestInfo;
-}
+}  // namespace net
 
 namespace browser_ui {
 
@@ -26,6 +26,9 @@ base::OnceClosure ShowSSLClientCertificateSelector(
     content::WebContents* contents,
     net::SSLCertRequestInfo* cert_request_info,
     std::unique_ptr<content::ClientCertificateDelegate> delegate);
+
+size_t GetCountOfSSLClientCertificateSelectorForTesting(
+    content::WebContents* contents);
 
 }  // namespace browser_ui
 

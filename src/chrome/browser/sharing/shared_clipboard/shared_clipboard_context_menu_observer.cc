@@ -16,6 +16,7 @@
 #include "components/sync_device_info/device_info.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -75,7 +76,7 @@ void SharedClipboardContextMenuObserver::InitMenu(
             IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE,
             base::UTF8ToUTF16(devices_[0]->client_name())),
         ui::ImageModel::FromVectorIcon(controller_->GetVectorIcon(),
-                                       /*color_id=*/-1,
+                                       ui::kColorMenuIcon,
                                        ui::SimpleMenuModel::kDefaultIconSize));
 #endif
   } else {
@@ -92,7 +93,7 @@ void SharedClipboardContextMenuObserver::InitMenu(
         IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES,
         sub_menu_model_.get(),
         ui::ImageModel::FromVectorIcon(controller_->GetVectorIcon(),
-                                       /*color_id=*/-1,
+                                       ui::kColorMenuIcon,
                                        ui::SimpleMenuModel::kDefaultIconSize));
 #endif
   }
@@ -139,7 +140,7 @@ void SharedClipboardContextMenuObserver::ExecuteCommand(int command_id) {
 
 void SharedClipboardContextMenuObserver::SendSharedClipboardMessage(
     int chosen_device_index) {
-  if (size_t{chosen_device_index} >= devices_.size())
+  if (static_cast<size_t>(chosen_device_index) >= devices_.size())
     return;
   LogSharingSelectedIndex(controller_->GetFeatureMetricsPrefix(),
                           nullptr /* No suffix */, chosen_device_index);

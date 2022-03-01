@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "services/preferences/tracked/pref_hash_filter.h"
 #include "services/preferences/tracked/tracked_preference.h"
 #include "services/preferences/tracked/tracked_preference_helper.h"
@@ -36,6 +36,9 @@ class TrackedSplitPreference : public TrackedPreference {
       prefs::mojom::TrackedPreferenceMetadata::ValueType value_type,
       prefs::mojom::TrackedPreferenceValidationDelegate* delegate);
 
+  TrackedSplitPreference(const TrackedSplitPreference&) = delete;
+  TrackedSplitPreference& operator=(const TrackedSplitPreference&) = delete;
+
   // TrackedPreference implementation.
   TrackedPreferenceType GetType() const override;
   void OnNewValue(const base::Value* value,
@@ -48,9 +51,7 @@ class TrackedSplitPreference : public TrackedPreference {
  private:
   const std::string pref_path_;
   const TrackedPreferenceHelper helper_;
-  prefs::mojom::TrackedPreferenceValidationDelegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrackedSplitPreference);
+  raw_ptr<prefs::mojom::TrackedPreferenceValidationDelegate> delegate_;
 };
 
 #endif  // SERVICES_PREFERENCES_TRACKED_TRACKED_SPLIT_PREFERENCE_H_

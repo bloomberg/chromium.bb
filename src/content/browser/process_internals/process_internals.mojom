@@ -19,9 +19,10 @@ struct SiteInstanceInfo {
   // The URL to which the SiteInstance's process is locked.
   url.mojom.Url? process_lock_url;
 
-  // Specifies whether the SiteInstance is origin-keyed.  This is true for
-  // opt-in origin isolation, false otherwise.
-  bool is_origin_keyed;
+  // Specifies whether the SiteInstance requires an origin-keyed process. This
+  // is true for opt-in origin isolation via the OriginAgentCluster header,
+  // false otherwise.
+  bool requires_origin_keyed_process;
 };
 
 // Basic information describing a frame and all of its subframes.
@@ -35,7 +36,8 @@ struct FrameInfo {
 
   array<FrameInfo> subframes;
 
-  bool is_bfcached;
+  enum Type { kActive, kBackForwardCache, kPrerender };
+  Type type;
 };
 
 // Basic information describing a WebContents object and all frames that are
@@ -44,6 +46,7 @@ struct WebContentsInfo {
   string title;
   FrameInfo root_frame;
   array<FrameInfo> bfcached_root_frames;
+  array<FrameInfo> prerender_root_frames;
 };
 
 // Information about a currently active isolated origin, including the origin

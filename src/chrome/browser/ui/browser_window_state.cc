@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/buildflags.h"
@@ -56,6 +55,10 @@ class WindowPlacementPrefUpdate : public DictionaryPrefUpdate {
       : DictionaryPrefUpdate(service, prefs::kAppWindowPlacement),
         window_name_(window_name) {}
 
+  WindowPlacementPrefUpdate(const WindowPlacementPrefUpdate&) = delete;
+  WindowPlacementPrefUpdate& operator=(const WindowPlacementPrefUpdate&) =
+      delete;
+
   ~WindowPlacementPrefUpdate() override {}
 
   base::DictionaryValue* Get() override {
@@ -71,8 +74,6 @@ class WindowPlacementPrefUpdate : public DictionaryPrefUpdate {
 
  private:
   const std::string window_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowPlacementPrefUpdate);
 };
 
 }  // namespace
@@ -123,10 +124,11 @@ const base::DictionaryValue* GetWindowPlacementDictionaryReadOnly(
 }
 
 bool ShouldSaveWindowPlacement(const Browser* browser) {
-  // Never track app popup windows that do not have a trusted source (i.e.
-  // popup windows spawned by an app).  See similar code in
-  // SessionService::ShouldTrackBrowser().
-  return !browser->deprecated_is_app() || browser->is_trusted_source();
+  // Never track app windows that do not have a trusted source (i.e. windows
+  // spawned by an app).  See similar code in
+  // SessionServiceBase::ShouldTrackBrowser().
+  return !(browser->is_type_app() || browser->is_type_app_popup()) ||
+         browser->is_trusted_source();
 }
 
 bool SavedBoundsAreContentBounds(const Browser* browser) {

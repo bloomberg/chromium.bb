@@ -160,9 +160,6 @@ namespace dawn_native {
               "Produces validation errors on API entry points or parameter combinations that "
               "aren't considered secure yet.",
               "http://crbug.com/1138528"}},
-            {Toggle::UseTintGenerator,
-             {"use_tint_generator", "Use Tint instead of SPRIV-cross to generate shaders.",
-              "https://crbug.com/dawn/571"}},
             {Toggle::FlushBeforeClientWaitSync,
              {"flush_before_client_wait_sync",
               "Call glFlush before glClientWaitSync to work around bugs in the latter",
@@ -176,19 +173,82 @@ namespace dawn_native {
               "GPUs which have a driver bug in the execution of CopyTextureRegion() when we copy "
               "with the formats whose texel block sizes are less than 4 bytes from a greater mip "
               "level to a smaller mip level on D3D12 backends.",
-              "https://crbug.com/1161355"}}
+              "https://crbug.com/1161355"}},
+            {Toggle::EmitHLSLDebugSymbols,
+             {"emit_hlsl_debug_symbols",
+              "Sets the D3DCOMPILE_SKIP_OPTIMIZATION and D3DCOMPILE_DEBUG compilation flags when "
+              "compiling HLSL code. Enables better shader debugging with external graphics "
+              "debugging tools.",
+              "https://crbug.com/dawn/776"}},
+            {Toggle::DisallowSpirv,
+             {"disallow_spirv",
+              "Disallow usage of SPIR-V completely so that only WGSL is used for shader modules."
+              "This is useful to prevent a Chromium renderer process from successfully sending"
+              "SPIR-V code to be compiled in the GPU process.",
+              "https://crbug.com/1214923"}},
+            {Toggle::DumpShaders,
+             {"dump_shaders",
+              "Dump shaders for debugging purposes. Dumped shaders will be log via "
+              "EmitLog, thus printed in Chrome console or consumed by user-defined callback "
+              "function.",
+              "https://crbug.com/dawn/792"}},
+            {Toggle::DEPRECATED_DumpTranslatedShaders,
+             {"dump_translated_shaders", "Deprecated. Use dump_shaders",
+              "https://crbug.com/dawn/792"}},
+            {Toggle::ForceWGSLStep,
+             {"force_wgsl_step",
+              "When ingesting SPIR-V shaders, force a first conversion to WGSL. This allows "
+              "testing Tint's SPIRV->WGSL translation on real content to be sure that it will "
+              "work when the same translation runs in a WASM module in the page.",
+              "https://crbug.com/dawn/960"}},
+            {Toggle::DisableWorkgroupInit,
+             {"disable_workgroup_init",
+              "Disables the workgroup memory zero-initialization for compute shaders.",
+              "https://crbug.com/tint/1003"}},
+            {Toggle::DisableSymbolRenaming,
+             {"disable_symbol_renaming",
+              "Disables the WGSL symbol renaming so that names are preserved.",
+              "https://crbug.com/dawn/1016"}},
+            {Toggle::UseUserDefinedLabelsInBackend,
+             {"use_user_defined_labels_in_backend",
+              "Enables calls to SetLabel to be forwarded to backend-specific APIs that label "
+              "objects.",
+              "https://crbug.com/dawn/840"}},
+            {Toggle::DisableR8RG8Mipmaps,
+             {"disable_r8_rg8_mipmaps",
+              "Disables mipmaps for r8unorm and rg8unorm textures, which are known on some drivers "
+              "to not clear correctly.",
+              "https://crbug.com/dawn/1071"}},
+            {Toggle::UseDummyFragmentInVertexOnlyPipeline,
+             {"use_dummy_fragment_in_vertex_only_pipeline",
+              "Use a dummy empty fragment shader in vertex only render pipeline. This toggle must "
+              "be enabled for OpenGL ES backend, and serves as a workaround by default enabled on "
+              "some Metal devices with Intel GPU to ensure the depth result is correct.",
+              "https://crbug.com/dawn/136"}},
+            {Toggle::FxcOptimizations,
+             {"fxc_optimizations",
+              "Enable optimizations when compiling with FXC. Disabled by default because FXC "
+              "miscompiles in many cases when optimizations are enabled.",
+              "https://crbug.com/dawn/1203"}},
+
             // Dummy comment to separate the }} so it is clearer what to copy-paste to add a toggle.
         }};
-
     }  // anonymous namespace
 
     void TogglesSet::Set(Toggle toggle, bool enabled) {
+        if (toggle == Toggle::DEPRECATED_DumpTranslatedShaders) {
+            Set(Toggle::DumpShaders, enabled);
+            return;
+        }
         ASSERT(toggle != Toggle::InvalidEnum);
         const size_t toggleIndex = static_cast<size_t>(toggle);
         toggleBitset.set(toggleIndex, enabled);
     }
 
     bool TogglesSet::Has(Toggle toggle) const {
+        if (toggle == Toggle::DEPRECATED_DumpTranslatedShaders) {
+            return Has(Toggle::DumpShaders);
+        }
         ASSERT(toggle != Toggle::InvalidEnum);
         const size_t toggleIndex = static_cast<size_t>(toggle);
         return toggleBitset.test(toggleIndex);

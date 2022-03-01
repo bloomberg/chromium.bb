@@ -14,6 +14,7 @@
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_animations.h"
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -168,6 +169,11 @@ class CallbackAnimationObserver : public ui::LayerAnimationObserver {
  public:
   explicit CallbackAnimationObserver(base::OnceClosure callback)
       : callback_(std::move(callback)) {}
+
+  CallbackAnimationObserver(const CallbackAnimationObserver&) = delete;
+  CallbackAnimationObserver& operator=(const CallbackAnimationObserver&) =
+      delete;
+
   ~CallbackAnimationObserver() override = default;
 
  private:
@@ -187,8 +193,6 @@ class CallbackAnimationObserver : public ui::LayerAnimationObserver {
   void OnLayerAnimationScheduled(ui::LayerAnimationSequence* seq) override {}
 
   base::OnceClosure callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(CallbackAnimationObserver);
 };
 
 bool IsLayerAnimated(ui::Layer* layer,
@@ -338,6 +342,9 @@ class SessionStateAnimatorImpl::AnimationSequence
         sequences_attached_(0),
         sequences_completed_(0) {}
 
+  AnimationSequence(const AnimationSequence&) = delete;
+  AnimationSequence& operator=(const AnimationSequence&) = delete;
+
   // SessionStateAnimator::AnimationSequence:
   void StartAnimation(int container_mask,
                       SessionStateAnimator::AnimationType type,
@@ -376,8 +383,6 @@ class SessionStateAnimatorImpl::AnimationSequence
 
   // Number of sequences either ended or aborted.
   int sequences_completed_;
-
-  DISALLOW_COPY_AND_ASSIGN(AnimationSequence);
 };
 
 bool SessionStateAnimatorImpl::TestApi::ContainersAreAnimated(

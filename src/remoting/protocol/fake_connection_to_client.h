@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/video_feedback_stub.h"
 #include "remoting/protocol/video_stream.h"
@@ -23,6 +23,10 @@ namespace protocol {
 class FakeVideoStream : public protocol::VideoStream {
  public:
   FakeVideoStream();
+
+  FakeVideoStream(const FakeVideoStream&) = delete;
+  FakeVideoStream& operator=(const FakeVideoStream&) = delete;
+
   ~FakeVideoStream() override;
 
   // protocol::VideoStream interface.
@@ -39,16 +43,18 @@ class FakeVideoStream : public protocol::VideoStream {
   base::WeakPtr<FakeVideoStream> GetWeakPtr();
 
  private:
-  Observer* observer_ = nullptr;
+  raw_ptr<Observer> observer_ = nullptr;
 
   base::WeakPtrFactory<FakeVideoStream> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FakeVideoStream);
 };
 
 class FakeConnectionToClient : public ConnectionToClient {
  public:
   FakeConnectionToClient(std::unique_ptr<Session> session);
+
+  FakeConnectionToClient(const FakeConnectionToClient&) = delete;
+  FakeConnectionToClient& operator=(const FakeConnectionToClient&) = delete;
+
   ~FakeConnectionToClient() override;
 
   void SetEventHandler(EventHandler* event_handler) override;
@@ -97,24 +103,22 @@ class FakeConnectionToClient : public ConnectionToClient {
   // a success.
   std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer_;
   std::unique_ptr<Session> session_;
-  EventHandler* event_handler_ = nullptr;
+  raw_ptr<EventHandler> event_handler_ = nullptr;
 
   base::WeakPtr<FakeVideoStream> last_video_stream_;
 
-  ClientStub* client_stub_ = nullptr;
+  raw_ptr<ClientStub> client_stub_ = nullptr;
 
-  ClipboardStub* clipboard_stub_ = nullptr;
-  HostStub* host_stub_ = nullptr;
-  InputStub* input_stub_ = nullptr;
-  VideoStub* video_stub_ = nullptr;
-  VideoFeedbackStub* video_feedback_stub_ = nullptr;
+  raw_ptr<ClipboardStub> clipboard_stub_ = nullptr;
+  raw_ptr<HostStub> host_stub_ = nullptr;
+  raw_ptr<InputStub> input_stub_ = nullptr;
+  raw_ptr<VideoStub> video_stub_ = nullptr;
+  raw_ptr<VideoFeedbackStub> video_feedback_stub_ = nullptr;
 
   scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner_;
 
   bool is_connected_ = true;
   ErrorCode disconnect_error_ = OK;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeConnectionToClient);
 };
 
 }  // namespace protocol

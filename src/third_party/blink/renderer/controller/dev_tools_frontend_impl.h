@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CONTROLLER_DEV_TOOLS_FRONTEND_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CONTROLLER_DEV_TOOLS_FRONTEND_IMPL_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/devtools/devtools_frontend.mojom-blink.h"
 #include "third_party/blink/renderer/core/inspector/inspector_frontend_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -64,6 +63,10 @@ class DevToolsFrontendImpl final
   DevToolsFrontendImpl(
       LocalFrame&,
       mojo::PendingAssociatedReceiver<mojom::blink::DevToolsFrontend>);
+
+  DevToolsFrontendImpl(const DevToolsFrontendImpl&) = delete;
+  DevToolsFrontendImpl& operator=(const DevToolsFrontendImpl&) = delete;
+
   ~DevToolsFrontendImpl() override;
   void DidClearWindowObject();
   void Trace(Visitor*) const override;
@@ -91,8 +94,6 @@ class DevToolsFrontendImpl final
   HeapMojoAssociatedReceiver<mojom::blink::DevToolsFrontend,
                              DevToolsFrontendImpl>
       receiver_{this, nullptr};
-
-  DISALLOW_COPY_AND_ASSIGN(DevToolsFrontendImpl);
 };
 
 }  // namespace blink

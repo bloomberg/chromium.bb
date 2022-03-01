@@ -53,8 +53,9 @@ struct ProgramTransformOptions final
     uint8_t removeEarlyFragmentTestsOptimization : 1;
     uint8_t surfaceRotation : 3;
     uint8_t enableDepthCorrection : 1;
-    uint8_t reserved : 2;  // must initialize to zero
-    static constexpr uint32_t kPermutationCount = 0x1 << 6;
+    uint8_t removeTransformFeedbackEmulation : 1;
+    uint8_t reserved : 1;  // must initialize to zero
+    static constexpr uint32_t kPermutationCount = 0x1 << 7;
 };
 static_assert(sizeof(ProgramTransformOptions) == 1, "Size check failed");
 static_assert(static_cast<int>(SurfaceRotation::EnumCount) <= 8, "Size check failed");
@@ -101,7 +102,8 @@ struct DefaultUniformBlock final : private angle::NonCopyable
 };
 
 // Performance and resource counters.
-using DescriptorSetCountList = angle::PackedEnumMap<DescriptorSetIndex, uint32_t>;
+using DescriptorSetCountList   = angle::PackedEnumMap<DescriptorSetIndex, uint32_t>;
+using ImmutableSamplerIndexMap = angle::HashMap<vk::YcbcrConversionDesc, uint32_t>;
 
 struct ProgramExecutablePerfCounters
 {
@@ -144,14 +146,14 @@ class ProgramExecutableVk
     angle::Result getGraphicsPipeline(ContextVk *contextVk,
                                       gl::PrimitiveMode mode,
                                       const vk::GraphicsPipelineDesc &desc,
-                                      const gl::AttributesMask &activeAttribLocations,
                                       const vk::GraphicsPipelineDesc **descPtrOut,
                                       vk::PipelineHelper **pipelineOut);
 
-    angle::Result getComputePipeline(ContextVk *contextVk, vk::PipelineAndSerial **pipelineOut);
+    angle::Result getComputePipeline(ContextVk *contextVk, vk::PipelineHelper **pipelineOut);
 
     const vk::PipelineLayout &getPipelineLayout() const { return mPipelineLayout.get(); }
-    angle::Result createPipelineLayout(const gl::Context *glContext,
+    angle::Result createPipelineLayout(ContextVk *contextVk,
+                                       const gl::ProgramExecutable &glExecutable,
                                        gl::ActiveTextureArray<vk::TextureUnit> *activeTextures);
 
     angle::Result updateTexturesDescriptorSet(ContextVk *contextVk,
@@ -172,7 +174,9 @@ class ProgramExecutableVk
                                                      ContextVk *contextVk,
                                                      FramebufferVk *framebufferVk);
 
-    angle::Result updateDescriptorSets(ContextVk *contextVk, vk::CommandBuffer *commandBuffer);
+    angle::Result updateDescriptorSets(ContextVk *contextVk,
+                                       vk::CommandBuffer *commandBuffer,
+                                       PipelineType pipelineType);
 
     void updateEarlyFragmentTestsOptimization(ContextVk *contextVk);
 
@@ -190,6 +194,12 @@ class ProgramExecutableVk
     bool usesDynamicUniformBufferDescriptors() const
     {
         return mUniformBufferDescriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    }
+
+    bool areImmutableSamplersCompatible(
+        const ImmutableSamplerIndexMap &immutableSamplerIndexMap) const
+    {
+        return (mImmutableSamplerIndexMap == immutableSamplerIndexMap);
     }
 
     void accumulateCacheStats(VulkanCacheType cacheType, const CacheStats &cacheStats);
@@ -222,7 +232,8 @@ class ProgramExecutableVk
     void addInputAttachmentDescriptorSetDesc(const gl::ProgramExecutable &executable,
                                              const gl::ShaderType shaderType,
                                              vk::DescriptorSetLayoutDesc *descOut);
-    void addTextureDescriptorSetDesc(const gl::ProgramState &programState,
+    void addTextureDescriptorSetDesc(ContextVk *contextVk,
+                                     const gl::ProgramState &programState,
                                      const gl::ActiveTextureArray<vk::TextureUnit> *activeTextures,
                                      vk::DescriptorSetLayoutDesc *descOut);
 
@@ -275,6 +286,8 @@ class ProgramExecutableVk
 
     // We keep a reference to the pipeline and descriptor set layouts. This ensures they don't get
     // deleted while this program is in use.
+    uint32_t mImmutableSamplersMaxDescriptorCount;
+    ImmutableSamplerIndexMap mImmutableSamplerIndexMap;
     vk::BindingPointer<vk::PipelineLayout> mPipelineLayout;
     vk::DescriptorSetLayoutPointerArray mDescriptorSetLayouts;
 

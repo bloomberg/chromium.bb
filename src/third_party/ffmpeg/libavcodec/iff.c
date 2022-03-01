@@ -299,14 +299,13 @@ static int extract_header(AVCodecContext *const avctx,
                 avctx->pix_fmt = AV_PIX_FMT_RGB32;
                 av_freep(&s->mask_buf);
                 av_freep(&s->mask_palbuf);
+                if (s->bpp > 16) {
+                    av_log(avctx, AV_LOG_ERROR, "bpp %d too large for palette\n", s->bpp);
+                    return AVERROR(ENOMEM);
+                }
                 s->mask_buf = av_malloc((s->planesize * 32) + AV_INPUT_BUFFER_PADDING_SIZE);
                 if (!s->mask_buf)
                     return AVERROR(ENOMEM);
-                if (s->bpp > 16) {
-                    av_log(avctx, AV_LOG_ERROR, "bpp %d too large for palette\n", s->bpp);
-                    av_freep(&s->mask_buf);
-                    return AVERROR(ENOMEM);
-                }
                 s->mask_palbuf = av_malloc((2 << s->bpp) * sizeof(uint32_t) + AV_INPUT_BUFFER_PADDING_SIZE);
                 if (!s->mask_palbuf) {
                     av_freep(&s->mask_buf);
@@ -1848,7 +1847,8 @@ static int decode_frame(AVCodecContext *avctx,
                     buf += s->planesize;
                 }
             }
-            memcpy(frame->data[1], s->pal, 256 * 4);
+            if (avctx->pix_fmt == AV_PIX_FMT_PAL8)
+                memcpy(frame->data[1], s->pal, 256 * 4);
         } else if (s->ham) {
             int i, count = 1 << s->ham;
 
@@ -1903,7 +1903,7 @@ static int decode_frame(AVCodecContext *avctx,
 }
 
 #if CONFIG_IFF_ILBM_DECODER
-AVCodec ff_iff_ilbm_decoder = {
+const AVCodec ff_iff_ilbm_decoder = {
     .name           = "iff",
     .long_name      = NULL_IF_CONFIG_SMALL("IFF ACBM/ANIM/DEEP/ILBM/PBM/RGB8/RGBN"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -1912,7 +1912,7 @@ AVCodec ff_iff_ilbm_decoder = {
     .init           = decode_init,
     .close          = decode_end,
     .decode         = decode_frame,
-    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .capabilities   = AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };
 #endif

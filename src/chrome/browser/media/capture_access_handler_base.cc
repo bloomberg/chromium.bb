@@ -9,7 +9,6 @@
 
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,6 +37,10 @@ namespace {
 class WeakPtrToWebContents : private content::WebContentsObserver {
  public:
   WeakPtrToWebContents() = default;
+
+  WeakPtrToWebContents(const WeakPtrToWebContents&) = delete;
+  WeakPtrToWebContents& operator=(const WeakPtrToWebContents&) = delete;
+
   ~WeakPtrToWebContents() override = default;
 
   void Set(int render_process_id, int render_frame_id) {
@@ -53,10 +56,6 @@ class WeakPtrToWebContents : private content::WebContentsObserver {
   content::WebContents* get() const {
     return WebContentsObserver::web_contents();
   }
-
- private:
-  // WebContentsObserver does not allow copy or assign.
-  DISALLOW_COPY_AND_ASSIGN(WeakPtrToWebContents);
 };
 
 }  // namespace
@@ -84,6 +83,21 @@ struct CaptureAccessHandlerBase::Session {
   gfx::NativeWindow target_window;
   std::unique_ptr<WeakPtrToWebContents> target_weak_web_contents;
 };
+
+CaptureAccessHandlerBase::PendingAccessRequest::PendingAccessRequest(
+    std::unique_ptr<DesktopMediaPicker> picker,
+    const content::MediaStreamRequest& request,
+    content::MediaResponseCallback callback,
+    std::u16string application_title,
+    bool should_display_notification)
+    : picker(std::move(picker)),
+      request(request),
+      callback(std::move(callback)),
+      application_title(std::move(application_title)),
+      should_display_notification(should_display_notification) {}
+
+CaptureAccessHandlerBase::PendingAccessRequest::~PendingAccessRequest() =
+    default;
 
 CaptureAccessHandlerBase::CaptureAccessHandlerBase() = default;
 
@@ -167,11 +181,8 @@ void CaptureAccessHandlerBase::UpdateMediaRequestState(
 void CaptureAccessHandlerBase::UpdateExtensionTrusted(
     const content::MediaStreamRequest& request,
     const extensions::Extension* extension) {
-  const bool is_trusted = MediaCaptureDevicesDispatcher::IsOriginForCasting(
-                              request.security_origin) ||
-                          IsExtensionAllowedForScreenCapture(extension) ||
-                          IsBuiltInFeedbackUI(request.security_origin);
-  UpdateTrusted(request, is_trusted);
+  UpdateTrusted(request, IsExtensionAllowedForScreenCapture(extension) ||
+                             IsBuiltInFeedbackUI(request.security_origin));
 }
 
 void CaptureAccessHandlerBase::UpdateTrusted(

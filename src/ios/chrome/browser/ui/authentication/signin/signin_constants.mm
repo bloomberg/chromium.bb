@@ -8,40 +8,22 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kUserSigninAttemptedNotification = @"kUserSigninAttempted";
+NSString* const kUserSigninAttemptedNotification = @"UserSigninAttempted";
 NSString* const kSkipSigninAccessibilityIdentifier =
-    @"kSkipSigninAccessibilityIdentifier";
+    @"SkipSigninAccessibilityIdentifier";
 NSString* const kAddAccountAccessibilityIdentifier =
-    @"kAddAccountAccessibilityIdentifier";
+    @"AddAccountAccessibilityIdentifier";
 NSString* const kConfirmationAccessibilityIdentifier =
-    @"kConfirmationAccessibilityIdentifier";
-NSString* const kMoreAccessibilityIdentifier = @"kMoreAccessibilityIdentifier";
+    @"ConfirmationAccessibilityIdentifier";
+NSString* const kMoreAccessibilityIdentifier = @"MoreAccessibilityIdentifier";
+NSString* const kWebSigninAccessibilityIdentifier =
+    @"WebSigninAccessibilityIdentifier";
+NSString* const kWebSigninContinueAsButtonAccessibilityIdentifier =
+    @"WebSigninContinueAsButtonAccessibilityIdentifier";
+NSString* const kWebSigninSkipButtonAccessibilityIdentifier =
+    @"WebSigninSkipButtonAccessibilityIdentifier";
 
-@implementation SigninCompletionInfo
+const char* kWebSigninConsistencyConsecutiveActiveDismissalLimitParam =
+    "consecutive_active_dismissal_limit";
 
-+ (instancetype)signinCompletionInfoWithIdentity:(ChromeIdentity*)identity {
-  return [[SigninCompletionInfo alloc]
-            initWithIdentity:identity
-      signinCompletionAction:SigninCompletionActionNone];
-}
-
-- (instancetype)initWithIdentity:(ChromeIdentity*)identity
-          signinCompletionAction:
-              (SigninCompletionAction)signinCompletionAction {
-  self = [super init];
-  if (self) {
-    _identity = identity;
-    _signinCompletionAction = signinCompletionAction;
-  }
-  return self;
-}
-
-- (void)setCompletionURL:(GURL)completionURL {
-  if (_completionURL == completionURL)
-    return;
-  DCHECK(completionURL.is_valid());
-  DCHECK(_signinCompletionAction == SigninCompletionActionOpenCompletionURL);
-  _completionURL = completionURL;
-}
-
-@end
+const int kDefaultWebSignInDismissalCount = 3;

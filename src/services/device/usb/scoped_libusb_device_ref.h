@@ -5,7 +5,6 @@
 #ifndef SERVICES_DEVICE_USB_SCOPED_LIBUSB_DEVICE_REF_H_
 #define SERVICES_DEVICE_USB_SCOPED_LIBUSB_DEVICE_REF_H_
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 
 struct libusb_device;
@@ -22,6 +21,10 @@ class ScopedLibusbDeviceRef {
   ScopedLibusbDeviceRef(libusb_device* device,
                         scoped_refptr<UsbContext> context);
   ScopedLibusbDeviceRef(ScopedLibusbDeviceRef&& other);
+
+  ScopedLibusbDeviceRef(const ScopedLibusbDeviceRef&) = delete;
+  ScopedLibusbDeviceRef& operator=(const ScopedLibusbDeviceRef&) = delete;
+
   ~ScopedLibusbDeviceRef();
 
   libusb_device* get() const { return device_; }
@@ -34,8 +37,6 @@ class ScopedLibusbDeviceRef {
  private:
   libusb_device* device_;
   scoped_refptr<UsbContext> context_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedLibusbDeviceRef);
 };
 
 bool operator==(const ScopedLibusbDeviceRef& ref, libusb_device* device);

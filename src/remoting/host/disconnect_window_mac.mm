@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -49,6 +48,10 @@ namespace remoting {
 class DisconnectWindowMac : public HostWindow {
  public:
   DisconnectWindowMac();
+
+  DisconnectWindowMac(const DisconnectWindowMac&) = delete;
+  DisconnectWindowMac& operator=(const DisconnectWindowMac&) = delete;
+
   ~DisconnectWindowMac() override;
 
   // HostWindow overrides.
@@ -57,8 +60,6 @@ class DisconnectWindowMac : public HostWindow {
 
  private:
   DisconnectWindowController* window_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(DisconnectWindowMac);
 };
 
 DisconnectWindowMac::DisconnectWindowMac()

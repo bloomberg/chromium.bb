@@ -69,6 +69,7 @@ vector<string> filterExtensions (const vector<VkExtensionProperties>& extensions
 		"VK_EXT_extended_dynamic_state2",
 		"VK_NV_ray_tracing",
         "VK_NV_inherited_viewport_scissor",
+		"VK_NV_mesh_shader",
 		"VK_AMD_mixed_attachment_samples",
 		"VK_AMD_shader_fragment_mask",
 		"VK_AMD_buffer_marker",
@@ -77,6 +78,7 @@ vector<string> filterExtensions (const vector<VkExtensionProperties>& extensions
 		"VK_AMD_shader_trinary_minmax",
 		"VK_AMD_texture_gather_bias_lod",
 		"VK_ANDROID_external_memory_android_hardware_buffer",
+		"VK_VALVE_mutable_descriptor_type",
 	};
 
 	for (size_t extNdx = 0; extNdx < extensions.size(); extNdx++)
@@ -182,16 +184,16 @@ std::pair<deUint32, deUint32> determineDeviceVersions(const PlatformInterface& v
 }
 
 
-Move<VkInstance> createInstance (const PlatformInterface& vkp, deUint32 apiVersion, const vector<string>& enabledExtensions, const tcu::CommandLine& cmdLine)
+Move<VkInstance> createInstance (const PlatformInterface& vkp, deUint32 apiVersion, const vector<string>& enabledExtensions, DebugReportRecorder* recorder)
 {
-	const bool								isValidationEnabled	= cmdLine.isValidationEnabled();
-	vector<const char*>						enabledLayers;
+	const bool			isValidationEnabled	= (recorder != nullptr);
+	vector<const char*>	enabledLayers;
 
 	// \note Extensions in core are not explicitly enabled even though
 	//		 they are in the extension list advertised to tests.
-	vector<const char*>						coreExtensions;
+	vector<const char*> coreExtensions;
 	getCoreInstanceExtensions(apiVersion, coreExtensions);
-	vector<string>							nonCoreExtensions	(removeExtensions(enabledExtensions, coreExtensions));
+	const auto nonCoreExtensions = removeExtensions(enabledExtensions, coreExtensions);
 
 	if (isValidationEnabled)
 	{
@@ -203,7 +205,7 @@ Move<VkInstance> createInstance (const PlatformInterface& vkp, deUint32 apiVersi
 			TCU_THROW(NotSupportedError, "No validation layers found");
 	}
 
-	return createDefaultInstance(vkp, apiVersion, vector<string>(begin(enabledLayers), end(enabledLayers)), nonCoreExtensions);
+	return createDefaultInstance(vkp, apiVersion, vector<string>(begin(enabledLayers), end(enabledLayers)), nonCoreExtensions, recorder);
 }
 
 static deUint32 findQueueFamilyIndexWithCaps (const InstanceInterface& vkInstance, VkPhysicalDevice physicalDevice, VkQueueFlags requiredCaps)
@@ -287,7 +289,7 @@ Move<VkDevice> createDefaultDevice (const PlatformInterface&			vkp,
 	deviceInfo.pEnabledFeatures				= enabledFeatures.pNext ? DE_NULL : &enabledFeatures.features;
 
 	return createDevice(vkp, instance, vki, physicalDevice, &deviceInfo);
-};
+}
 
 } // anonymous
 
@@ -337,6 +339,7 @@ public:
 
 private:
 	using DebugReportRecorderPtr		= de::UniquePtr<vk::DebugReportRecorder>;
+	using DebugReportCallbackPtr		= vk::Move<VkDebugReportCallbackEXT>;
 
 	const deUint32						m_maximumFrameworkVulkanVersion;
 	const deUint32						m_availableInstanceVersion;
@@ -345,10 +348,11 @@ private:
 	const std::pair<deUint32, deUint32> m_deviceVersions;
 	const deUint32						m_usedApiVersion;
 
+	const DebugReportRecorderPtr		m_debugReportRecorder;
 	const vector<string>				m_instanceExtensions;
 	const Unique<VkInstance>			m_instance;
 	const InstanceDriver				m_instanceInterface;
-	const DebugReportRecorderPtr		m_debugReportRecorder;
+	const DebugReportCallbackPtr		m_debugReportCallback;
 
 	const VkPhysicalDevice				m_physicalDevice;
 	const deUint32						m_deviceVersion;
@@ -372,10 +376,10 @@ deUint32 sanitizeApiVersion(deUint32 v)
 	return VK_MAKE_VERSION(VK_API_VERSION_MAJOR(v), VK_API_VERSION_MINOR(v), 0 );
 }
 
-de::MovePtr<vk::DebugReportRecorder> createDebugReportRecorder (const vk::PlatformInterface& vkp, const vk::InstanceInterface& vki, vk::VkInstance instance, bool printValidationErrors)
+de::MovePtr<vk::DebugReportRecorder> createDebugReportRecorder (const vk::PlatformInterface& vkp, bool printValidationErrors)
 {
 	if (isDebugReportSupported(vkp))
-		return de::MovePtr<vk::DebugReportRecorder>(new vk::DebugReportRecorder(vki, instance, printValidationErrors));
+		return de::MovePtr<vk::DebugReportRecorder>(new vk::DebugReportRecorder(printValidationErrors));
 	else
 		TCU_THROW(NotSupportedError, "VK_EXT_debug_report is not supported");
 }
@@ -389,16 +393,16 @@ DefaultDevice::DefaultDevice (const PlatformInterface& vkPlatform, const tcu::Co
 	, m_deviceVersions					(determineDeviceVersions(vkPlatform, m_usedInstanceVersion, cmdLine))
 	, m_usedApiVersion					(sanitizeApiVersion(deMinu32(m_usedInstanceVersion, m_deviceVersions.first)))
 
+	, m_debugReportRecorder				(cmdLine.isValidationEnabled()
+										 ? createDebugReportRecorder(vkPlatform, cmdLine.printValidationErrors())
+										 : de::MovePtr<vk::DebugReportRecorder>())
 	, m_instanceExtensions				(addCoreInstanceExtensions(filterExtensions(enumerateInstanceExtensionProperties(vkPlatform, DE_NULL)), m_usedApiVersion))
-	, m_instance						(createInstance(vkPlatform, m_usedApiVersion, m_instanceExtensions, cmdLine))
+	, m_instance						(createInstance(vkPlatform, m_usedApiVersion, m_instanceExtensions, m_debugReportRecorder.get()))
 
 	, m_instanceInterface				(vkPlatform, *m_instance)
-	, m_debugReportRecorder				(cmdLine.isValidationEnabled()
-										 ? createDebugReportRecorder(vkPlatform,
-																	 m_instanceInterface,
-																	 *m_instance,
-																	 cmdLine.printValidationErrors())
-										 : de::MovePtr<vk::DebugReportRecorder>(DE_NULL))
+	, m_debugReportCallback				(cmdLine.isValidationEnabled()
+										 ? m_debugReportRecorder->createCallback(m_instanceInterface, m_instance.get())
+										 : DebugReportCallbackPtr())
 	, m_physicalDevice					(chooseDevice(m_instanceInterface, *m_instance, cmdLine))
 	, m_deviceVersion					(getPhysicalDeviceProperties(m_instanceInterface, m_physicalDevice).apiVersion)
 
@@ -526,7 +530,7 @@ bool Context::isDeviceFunctionalitySupported (const std::string& extension) cons
 		return true;
 	}
 
-	// check if extension is on the lits of extensions for current device
+	// check if extension is on the list of extensions for current device
 	const auto& extensions = getDeviceExtensions();
 	if (de::contains(extensions.begin(), extensions.end(), extension))
 	{
@@ -682,6 +686,125 @@ bool Context::requireDeviceCoreFeature (const DeviceCoreFeature requiredFeature)
 		TCU_THROW(NotSupportedError, "Requested core feature is not supported: " + std::string(deviceCoreFeaturesTable[requiredFeatureIndex].featureName));
 
 	return true;
+}
+
+static bool isExtendedStorageFormat (VkFormat format)
+{
+	switch(format)
+	{
+		case VK_FORMAT_R8G8B8A8_UNORM:
+		case VK_FORMAT_R8G8B8A8_SNORM:
+		case VK_FORMAT_R8G8B8A8_UINT:
+		case VK_FORMAT_R8G8B8A8_SINT:
+		case VK_FORMAT_R32_UINT:
+		case VK_FORMAT_R32_SINT:
+		case VK_FORMAT_R32_SFLOAT:
+		case VK_FORMAT_R32G32_UINT:
+		case VK_FORMAT_R32G32_SINT:
+		case VK_FORMAT_R32G32_SFLOAT:
+		case VK_FORMAT_R32G32B32A32_UINT:
+		case VK_FORMAT_R32G32B32A32_SINT:
+		case VK_FORMAT_R32G32B32A32_SFLOAT:
+		case VK_FORMAT_R16G16B16A16_UINT:
+		case VK_FORMAT_R16G16B16A16_SINT:
+		case VK_FORMAT_R16G16B16A16_SFLOAT:
+		case VK_FORMAT_R16G16_SFLOAT:
+		case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
+		case VK_FORMAT_R16_SFLOAT:
+		case VK_FORMAT_R16G16B16A16_UNORM:
+		case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+		case VK_FORMAT_R16G16_UNORM:
+		case VK_FORMAT_R8G8_UNORM:
+		case VK_FORMAT_R16_UNORM:
+		case VK_FORMAT_R8_UNORM:
+		case VK_FORMAT_R16G16B16A16_SNORM:
+		case VK_FORMAT_R16G16_SNORM:
+		case VK_FORMAT_R8G8_SNORM:
+		case VK_FORMAT_R16_SNORM:
+		case VK_FORMAT_R8_SNORM:
+		case VK_FORMAT_R16G16_SINT:
+		case VK_FORMAT_R8G8_SINT:
+		case VK_FORMAT_R16_SINT:
+		case VK_FORMAT_R8_SINT:
+		case VK_FORMAT_A2B10G10R10_UINT_PACK32:
+		case VK_FORMAT_R16G16_UINT:
+		case VK_FORMAT_R8G8_UINT:
+		case VK_FORMAT_R16_UINT:
+		case VK_FORMAT_R8_UINT:
+			return true;
+		default:
+			return false;
+	}
+}
+
+static bool isDepthFormat (VkFormat format)
+{
+	switch(format)
+	{
+		case VK_FORMAT_D16_UNORM:
+		case VK_FORMAT_X8_D24_UNORM_PACK32:
+		case VK_FORMAT_D32_SFLOAT:
+		case VK_FORMAT_D16_UNORM_S8_UINT:
+		case VK_FORMAT_D24_UNORM_S8_UINT:
+		case VK_FORMAT_D32_SFLOAT_S8_UINT:
+			return true;
+		default:
+			return false;
+	}
+}
+
+vk::VkFormatPropertiesExtendedKHR Context::getRequiredFormatProperties(const vk::VkFormat& format) const
+{
+	vk::VkFormatPropertiesExtendedKHR p;
+	p.sType = VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_EXTENDED_KHR;
+	p.pNext = DE_NULL;
+
+	vk::VkFormatProperties properties;
+	getInstanceInterface().getPhysicalDeviceFormatProperties(getPhysicalDevice(), format, &properties);
+	p.linearTilingFeatures	= properties.linearTilingFeatures;
+	p.optimalTilingFeatures	= properties.optimalTilingFeatures;
+	p.bufferFeatures		= properties.bufferFeatures;
+
+	const vk::VkPhysicalDeviceFeatures& featuresAvailable = getDeviceFeatures();
+	if (isExtendedStorageFormat(format) && featuresAvailable.shaderStorageImageReadWithoutFormat)
+	{
+		if (p.linearTilingFeatures & VK_FORMAT_FEATURE_2_STORAGE_IMAGE_BIT_KHR)
+			p.linearTilingFeatures	|= VK_FORMAT_FEATURE_2_STORAGE_READ_WITHOUT_FORMAT_BIT_KHR;
+		if (p.optimalTilingFeatures & VK_FORMAT_FEATURE_2_STORAGE_IMAGE_BIT_KHR)
+			p.optimalTilingFeatures	|= VK_FORMAT_FEATURE_2_STORAGE_READ_WITHOUT_FORMAT_BIT_KHR;
+	}
+	if (isExtendedStorageFormat(format) && featuresAvailable.shaderStorageImageWriteWithoutFormat)
+	{
+		if (p.linearTilingFeatures & VK_FORMAT_FEATURE_2_STORAGE_IMAGE_BIT_KHR)
+			p.linearTilingFeatures	|= VK_FORMAT_FEATURE_2_STORAGE_WRITE_WITHOUT_FORMAT_BIT_KHR;
+		if (p.optimalTilingFeatures & VK_FORMAT_FEATURE_2_STORAGE_IMAGE_BIT_KHR)
+			p.optimalTilingFeatures	|= VK_FORMAT_FEATURE_2_STORAGE_WRITE_WITHOUT_FORMAT_BIT_KHR;
+	}
+	if (isDepthFormat(format) && (p.linearTilingFeatures & (VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_BIT_KHR)))
+		p.linearTilingFeatures |= VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_DEPTH_COMPARISON_BIT_KHR;
+	if (isDepthFormat(format) && (p.optimalTilingFeatures & (VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_BIT_KHR)))
+		p.optimalTilingFeatures |= VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_DEPTH_COMPARISON_BIT_KHR;
+
+	return p;
+}
+
+vk::VkFormatPropertiesExtendedKHR Context::getFormatProperties(const vk::VkFormat& format) const
+{
+	if (isDeviceFunctionalitySupported(VK_KHR_FORMAT_FEATURE_FLAGS_2_EXTENSION_NAME)) // "VK_KHR_format_feature_flags2"
+	{
+		vk::VkFormatPropertiesExtendedKHR p;
+		p.sType = VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_EXTENDED_KHR;
+		p.pNext = DE_NULL;
+
+		vk::VkFormatProperties2 properties;
+		properties.sType = VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2;
+		properties.pNext = &p;
+
+		getInstanceInterface().getPhysicalDeviceFormatProperties2(getPhysicalDevice(), format, &properties);
+		return p;
+	}
+	else
+		return Context::getRequiredFormatProperties(format);
 }
 
 void* Context::getInstanceProcAddr	()

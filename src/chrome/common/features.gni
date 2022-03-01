@@ -33,26 +33,24 @@ declare_args() {
 
   # Enables support for background apps.
   enable_background_contents = !is_android && !is_chromecast
-  enable_background_mode = !is_android && !is_chromecast && !is_chromeos_ash
+  enable_background_mode = !is_android && !is_chromecast && !is_chromeos
 
   # Enable the printing system dialog for platforms that support printing
   # and have a system dialog.
   enable_basic_print_dialog = enable_basic_printing && !is_chromeos_ash
 
-  # Enables the Click to Call feature on desktop platforms.
-  enable_click_to_call = is_mac || is_win || is_linux || is_chromeos
+  # Enables usage of notifications via Chrome's MessageCenter.
+  enable_chrome_notifications = is_mac || is_win || is_linux || is_fuchsia
+
+  # Disable Click to Call on Fuchsia.
+  enable_click_to_call = !is_fuchsia
 
   # Hangout services is an extension that adds extra features to Hangouts.
   # It is enableable separately to facilitate testing.
   enable_hangout_services_extension = is_chrome_branded
 
-  # Enables usage of the system-provided notification center.
-  enable_system_notifications =
-      is_android || is_mac || is_win ||
-      ((is_linux || is_chromeos_lacros) && use_dbus) || is_chromeos
-
-  enable_one_click_signin =
-      is_win || is_mac || ((is_linux || is_chromeos_lacros) && !is_chromecast)
+  enable_one_click_signin = is_win || is_mac || is_fuchsia ||
+                            ((is_linux || is_chromeos_lacros) && !is_chromecast)
 
   enable_service_discovery = (enable_mdns && !is_android) || is_mac
 
@@ -60,7 +58,15 @@ declare_args() {
   # Android stores them separately on the Java side.
   enable_session_service = !is_android && !is_chromecast
 
+  # Enables usage of the side search feature, which is disabled by default.
+  # This feature is only approved for release on ChromeOS at this time.
+  enable_side_search = is_chromeos
+
   enable_supervised_users = is_chromeos_ash || is_android
+
+  # Enables usage of the system-provided notification center.
+  enable_system_notifications =
+      is_android || is_mac || is_win || (is_linux && use_dbus) || is_chromeos
 
   # Indicates if Wayland display server support is enabled.
   enable_wayland_server = is_chromeos_ash
@@ -83,6 +89,7 @@ chrome_grit_defines = [
   "enable_print_preview=$enable_print_preview",
   "enable_printing=$enable_basic_printing",
   "enable_service_discovery=$enable_service_discovery",
+  "enable_side_search=$enable_side_search",
   "enable_supervised_users=$enable_supervised_users",
   "enable_vr=$enable_vr",
   "enable_webui_tab_strip=$enable_webui_tab_strip",

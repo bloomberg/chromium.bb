@@ -6,7 +6,20 @@
  * @fileoverview Polymer element for displaying photos preview in a list.
  */
 
+import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '//resources/polymer/v3_0/iron-media-query/iron-media-query.js';
+import '//resources/cr_elements/shared_style_css.m.js';
+import '//resources/cr_elements/shared_vars_css.m.js';
+import './text_with_tooltip.js';
+import '../../settings_shared_css.js';
+
+import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
+import {html, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {AmbientModeAlbum, AmbientModeTopicSource} from './constants.js';
+
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'album-item',
 
   behaviors: [I18nBehavior],
@@ -45,6 +58,15 @@ Polymer({
       type: Boolean,
       observer: 'tooltipVisibilityChanged_',
     },
+
+    /**
+     * Whether dark mode is the active preferred color scheme.
+     * @private {boolean}
+     */
+    isDarkModeActive_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   listeners: {keydown: 'onKeydown_'},
@@ -57,6 +79,15 @@ Polymer({
     return this.topicSource === AmbientModeTopicSource.GOOGLE_PHOTOS ?
         'personal-album' :
         'art-album';
+  },
+
+  /**
+   * @return {string} Checked icon for album.
+   * @private
+   */
+  computeCheckedIcon_() {
+    return this.isDarkModeActive_ ? 'os-settings:ic-checked-filled-dark' :
+                                    'os-settings:ic-checked-filled';
   },
 
   /**

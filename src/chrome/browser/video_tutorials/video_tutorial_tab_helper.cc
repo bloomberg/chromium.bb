@@ -26,7 +26,8 @@ bool IsVideoPlayerURL(GURL url) {
 
 VideoTutorialTabHelper::VideoTutorialTabHelper(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<VideoTutorialTabHelper>(*web_contents) {}
 
 VideoTutorialTabHelper::~VideoTutorialTabHelper() = default;
 
@@ -43,6 +44,6 @@ void VideoTutorialTabHelper::ReadyToCommitNavigation(
                            blink::mojom::kAutoplayFlagUserException);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(VideoTutorialTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(VideoTutorialTabHelper);
 
 }  // namespace video_tutorials

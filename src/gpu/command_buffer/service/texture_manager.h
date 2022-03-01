@@ -16,7 +16,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -65,6 +66,9 @@ class GPU_GLES2_EXPORT TexturePassthrough final
                      GLenum format,
                      GLenum type);
 
+  TexturePassthrough(const TexturePassthrough&) = delete;
+  TexturePassthrough& operator=(const TexturePassthrough&) = delete;
+
   // TextureBase implementation:
   TextureBase::Type GetType() const override;
 
@@ -106,7 +110,7 @@ class GPU_GLES2_EXPORT TexturePassthrough final
 
   friend class base::RefCounted<TexturePassthrough>;
 
-  GLuint owned_service_id_ = 0;
+  const GLuint owned_service_id_ = 0;
 
   bool have_context_;
   bool is_bind_pending_ = false;
@@ -133,8 +137,6 @@ class GPU_GLES2_EXPORT TexturePassthrough final
   LevelInfo* GetLevelInfo(GLenum target, GLint level);
 
   std::vector<std::vector<LevelInfo>> level_images_;
-
-  DISALLOW_COPY_AND_ASSIGN(TexturePassthrough);
 };
 
 // Info about Textures currently in the system.
@@ -189,6 +191,9 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   };
 
   explicit Texture(GLuint service_id);
+
+  Texture(const Texture&) = delete;
+  Texture& operator=(const Texture&) = delete;
 
   // TextureBase implementation:
   TextureBase::Type GetType() const override;
@@ -280,13 +285,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   uint32_t estimated_size() const { return estimated_size_; }
 
   bool CanRenderTo(const FeatureInfo* feature_info, GLint level) const;
-
-  void SetServiceId(GLuint service_id) {
-    DCHECK(service_id);
-    DCHECK_EQ(owned_service_id_, service_id_);
-    service_id_ = service_id;
-    owned_service_id_ = service_id;
-  }
 
   bool SafeToRenderFrom() const {
     return cleared_;
@@ -665,7 +663,7 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
 
   // The single TextureRef that accounts for memory for this texture. Must be
   // one of refs_.
-  TextureRef* memory_tracking_ref_ = nullptr;
+  raw_ptr<TextureRef> memory_tracking_ref_ = nullptr;
 
   // The id of the texture that we are responsible for deleting.  Normally, this
   // is the same as |service_id_|, unless a StreamTexture Image with its own
@@ -735,11 +733,9 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   // Whether we have initialized TEXTURE_MAX_ANISOTROPY to 1.
   bool texture_max_anisotropy_initialized_ = false;
 
-  const CompatibilitySwizzle* compatibility_swizzle_ = nullptr;
+  raw_ptr<const CompatibilitySwizzle> compatibility_swizzle_ = nullptr;
 
   bool emulating_rgb_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(Texture);
 };
 
 // This class represents a texture in a client context group. It's mostly 1:1
@@ -749,6 +745,10 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
 class GPU_GLES2_EXPORT TextureRef : public base::RefCounted<TextureRef> {
  public:
   TextureRef(TextureManager* manager, GLuint client_id, Texture* texture);
+
+  TextureRef(const TextureRef&) = delete;
+  TextureRef& operator=(const TextureRef&) = delete;
+
   static scoped_refptr<TextureRef> Create(TextureManager* manager,
                                           GLuint client_id,
                                           GLuint service_id);
@@ -790,8 +790,8 @@ class GPU_GLES2_EXPORT TextureRef : public base::RefCounted<TextureRef> {
   TextureManager* manager() { return manager_; }
   void reset_client_id() { client_id_ = 0; }
 
-  TextureManager* manager_;
-  Texture* texture_;
+  raw_ptr<TextureManager> manager_;
+  raw_ptr<Texture> texture_;
   GLuint client_id_;
   GLint num_observers_;
   bool force_context_lost_;
@@ -799,8 +799,6 @@ class GPU_GLES2_EXPORT TextureRef : public base::RefCounted<TextureRef> {
   std::unique_ptr<SharedImageRepresentationGLTexture> shared_image_;
   std::unique_ptr<SharedImageRepresentationGLTexture::ScopedAccess>
       shared_image_scoped_access_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextureRef);
 };
 
 // Holds data that is per gles2_cmd_decoder, but is related to to the
@@ -835,6 +833,10 @@ class GPU_GLES2_EXPORT TextureManager
   class GPU_GLES2_EXPORT DestructionObserver {
    public:
     DestructionObserver();
+
+    DestructionObserver(const DestructionObserver&) = delete;
+    DestructionObserver& operator=(const DestructionObserver&) = delete;
+
     virtual ~DestructionObserver();
 
     // Called in ~TextureManager.
@@ -842,9 +844,6 @@ class GPU_GLES2_EXPORT TextureManager
 
     // Called via ~TextureRef.
     virtual void OnTextureRefDestroying(TextureRef* texture) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(DestructionObserver);
   };
 
   enum DefaultAndBlackTextures {
@@ -867,6 +866,10 @@ class GPU_GLES2_EXPORT TextureManager
                  bool use_default_textures,
                  gl::ProgressReporter* progress_reporter,
                  ServiceDiscardableManager* discardable_manager);
+
+  TextureManager(const TextureManager&) = delete;
+  TextureManager& operator=(const TextureManager&) = delete;
+
   ~TextureManager() override;
 
   void AddFramebufferManager(FramebufferManager* framebuffer_manager);
@@ -1330,7 +1333,7 @@ class GPU_GLES2_EXPORT TextureManager
 
   MemoryTypeTracker* GetMemTracker();
   std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
-  MemoryTracker* memory_tracker_;
+  raw_ptr<MemoryTracker> memory_tracker_;
 
   scoped_refptr<FeatureInfo> feature_info_;
 
@@ -1376,11 +1379,9 @@ class GPU_GLES2_EXPORT TextureManager
   // Used to notify the watchdog thread of progress during destruction,
   // preventing time-outs when destruction takes a long time. May be null when
   // using in-process command buffer.
-  gl::ProgressReporter* progress_reporter_;
+  raw_ptr<gl::ProgressReporter> progress_reporter_;
 
-  ServiceDiscardableManager* discardable_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextureManager);
+  raw_ptr<ServiceDiscardableManager> discardable_manager_;
 };
 
 }  // namespace gles2

@@ -94,10 +94,10 @@ class LSTMOpModel : public SingleOpModel {
     }
 
     // Adding the 2 input state tensors.
-    input_activation_state_ =
-        AddInput(TensorData{TensorType_FLOAT32, {n_output_ * n_batch_}}, true);
+    input_activation_state_ = AddVariableInput(
+        TensorData{TensorType_FLOAT32, {n_output_ * n_batch_}});
     input_cell_state_ =
-        AddInput(TensorData{TensorType_FLOAT32, {n_cell_ * n_batch_}}, true);
+        AddVariableInput(TensorData{TensorType_FLOAT32, {n_cell_ * n_batch_}});
 
     output_ = AddOutput(TensorType_FLOAT32);
 
@@ -308,9 +308,3 @@ TEST(LSTMOpTest, BlackBoxTestWithCifgWithPeepholeNoProjectionNoClipping) {
 
 }  // namespace
 }  // namespace tflite
-
-int main(int argc, char** argv) {
-  ::tflite::LogToStderr();
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
