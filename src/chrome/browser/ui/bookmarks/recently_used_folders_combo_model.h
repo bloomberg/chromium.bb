@@ -7,8 +7,7 @@
 
 #include <vector>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "ui/base/models/combobox_model.h"
@@ -27,6 +26,11 @@ class RecentlyUsedFoldersComboModel : public ui::ComboboxModel,
  public:
   RecentlyUsedFoldersComboModel(bookmarks::BookmarkModel* model,
                                 const bookmarks::BookmarkNode* node);
+
+  RecentlyUsedFoldersComboModel(const RecentlyUsedFoldersComboModel&) = delete;
+  RecentlyUsedFoldersComboModel& operator=(
+      const RecentlyUsedFoldersComboModel&) = delete;
+
   ~RecentlyUsedFoldersComboModel() override;
 
   // Overridden from ui::ComboboxModel:
@@ -83,13 +87,11 @@ class RecentlyUsedFoldersComboModel : public ui::ComboboxModel,
   struct Item;
   std::vector<Item> items_;
 
-  bookmarks::BookmarkModel* const bookmark_model_;
+  const raw_ptr<bookmarks::BookmarkModel> bookmark_model_;
 
-  const bookmarks::BookmarkNode* const parent_node_;
+  const raw_ptr<const bookmarks::BookmarkNode> parent_node_;
 
   base::ObserverList<ui::ComboboxModelObserver> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(RecentlyUsedFoldersComboModel);
 };
 
 #endif  // CHROME_BROWSER_UI_BOOKMARKS_RECENTLY_USED_FOLDERS_COMBO_MODEL_H_

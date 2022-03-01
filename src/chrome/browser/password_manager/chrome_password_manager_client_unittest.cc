@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,7 +23,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/user_interaction_observer.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
@@ -39,7 +38,6 @@
 #include "components/password_manager/content/browser/password_manager_log_router_factory.h"
 #include "components/password_manager/core/browser/credential_cache.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
-#include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -51,7 +49,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/sessions/content/content_record_password_state.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -78,7 +76,7 @@
 #endif
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-#include "components/safe_browsing/content/password_protection/mock_password_protection_service.h"
+#include "components/safe_browsing/content/browser/password_protection/mock_password_protection_service.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -86,6 +84,7 @@
 #include "chrome/browser/autofill/mock_credit_card_accessory_controller.h"
 #include "chrome/browser/password_manager/android/password_accessory_controller_impl.h"
 #include "chrome/browser/password_manager/android/password_generation_controller.h"
+#include "components/password_manager/core/browser/mock_password_store_interface.h"
 #endif  // defined(OS_ANDROID)
 
 using autofill::FieldRendererId;
@@ -121,6 +120,11 @@ class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
 #endif
   }
 
+  MockChromePasswordManagerClient(const MockChromePasswordManagerClient&) =
+      delete;
+  MockChromePasswordManagerClient& operator=(
+      const MockChromePasswordManagerClient&) = delete;
+
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
       const override {
@@ -137,17 +141,16 @@ class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
   std::unique_ptr<safe_browsing::MockPasswordProtectionService>
       password_protection_service_;
 #endif
-  DISALLOW_COPY_AND_ASSIGN(MockChromePasswordManagerClient);
 };
 
 class DummyLogReceiver : public autofill::LogReceiver {
  public:
   DummyLogReceiver() = default;
 
-  void LogEntry(const base::Value& entry) override {}
+  DummyLogReceiver(const DummyLogReceiver&) = delete;
+  DummyLogReceiver& operator=(const DummyLogReceiver&) = delete;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DummyLogReceiver);
+  void LogEntry(const base::Value& entry) override {}
 };
 
 class FakePasswordAutofillAgent
@@ -205,6 +208,11 @@ std::unique_ptr<KeyedService> CreateTestSyncService(
 
 class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
  public:
+  ChromePasswordManagerClientTest() {
+    scoped_feature_list_.InitAndEnableFeature(safe_browsing::kDelayedWarnings);
+  }
+  ~ChromePasswordManagerClientTest() override = default;
+
   void SetUp() override;
   void TearDown() override;
 
@@ -216,7 +224,7 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
   syncer::TestSyncService* SetupBasicTestSync() {
     syncer::TestSyncService* sync_service =
         static_cast<syncer::TestSyncService*>(
-            ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+            SyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
                 profile(), base::BindRepeating(&CreateTestSyncService)));
     return sync_service;
   }
@@ -263,8 +271,6 @@ void ChromePasswordManagerClientTest::SetUp() {
   // Connect our bool for testing.
   ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
       &metrics_enabled_);
-
-  scoped_feature_list_.InitAndEnableFeature(safe_browsing::kDelayedWarnings);
 }
 
 void ChromePasswordManagerClientTest::TearDown() {
@@ -424,38 +430,11 @@ TEST_F(ChromePasswordManagerClientTest,
 
   // In guest mode saving is disabled, filling is enabled but there is in fact
   // nothing to fill, manual filling is disabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
-      scoped_feature_list, /*enabled=*/false);
   profile()->SetGuestSession(true);
   profile()
       ->GetPrimaryOTRProfile(/*create_if_needed=*/true)
       ->AsTestingProfile()
       ->SetGuestSession(true);
-  EXPECT_FALSE(client->IsSavingAndFillingEnabled(kUrlOn));
-  EXPECT_TRUE(client->IsFillingEnabled(kUrlOn));
-  EXPECT_FALSE(client->IsFillingFallbackEnabled(kUrlOn));
-}
-
-TEST_F(ChromePasswordManagerClientTest,
-       SavingAndFillingDisabledConditionsInEphemeralGuest) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  if (!TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
-          scoped_feature_list, /*enabled=*/true)) {
-    return;
-  }
-
-  std::unique_ptr<WebContents> web_contents =
-      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
-  auto client =
-      std::make_unique<MockChromePasswordManagerClient>(web_contents.get());
-  EXPECT_CALL(*client, GetMainFrameCertStatus()).WillRepeatedly(Return(0));
-
-  // In guest mode saving is disabled, filling is enabled but there is in fact
-  // nothing to fill, manual filling is disabled.
-  const GURL kUrlOn("https://accounts.google.com");
-  profile()->SetGuestSession(true);
-  profile()->AsTestingProfile()->SetGuestSession(true);
   EXPECT_FALSE(client->IsSavingAndFillingEnabled(kUrlOn));
   EXPECT_TRUE(client->IsFillingEnabled(kUrlOn));
   EXPECT_FALSE(client->IsFillingFallbackEnabled(kUrlOn));
@@ -511,12 +490,10 @@ struct SchemeTestCase {
   const char* scheme;
   bool password_manager_works;
 };
-const SchemeTestCase kTestCases[] = {
+const SchemeTestCase kSchemeTestCases[] = {
     {url::kHttpScheme, true},
     {url::kHttpsScheme, true},
-    {url::kFtpScheme, true},
     {url::kDataScheme, true},
-    {"feed", true},
 
     {"invalid-scheme-i-just-made-up", false},
     {content::kChromeDevToolsScheme, false},
@@ -532,7 +509,7 @@ class ChromePasswordManagerClientSchemeTest
  public:
   static std::vector<const char*> GetSchemes() {
     std::vector<const char*> result;
-    for (const SchemeTestCase& test_case : kTestCases) {
+    for (const SchemeTestCase& test_case : kSchemeTestCases) {
       result.push_back(test_case.scheme);
     }
     return result;
@@ -548,9 +525,9 @@ TEST_P(ChromePasswordManagerClientSchemeTest,
             GetClient()->GetLastCommittedOrigin().GetURL());
 
   auto* it = std::find_if(
-      std::begin(kTestCases), std::end(kTestCases),
+      std::begin(kSchemeTestCases), std::end(kSchemeTestCases),
       [](auto test_case) { return strcmp(test_case.scheme, GetParam()) == 0; });
-  ASSERT_FALSE(it == std::end(kTestCases));
+  ASSERT_FALSE(it == std::end(kSchemeTestCases));
   EXPECT_EQ(it->password_manager_works,
             GetClient()->IsSavingAndFillingEnabled(url));
   EXPECT_EQ(it->password_manager_works, GetClient()->IsFillingEnabled(url));
@@ -718,9 +695,7 @@ TEST_F(ChromePasswordManagerClientTest, CanShowBubbleOnURL) {
   } kTestCases[] = {
     {url::kHttpScheme, true},
     {url::kHttpsScheme, true},
-    {url::kFtpScheme, true},
     {url::kDataScheme, true},
-    {"feed", true},
     {url::kBlobScheme, true},
     {url::kFileSystemScheme, true},
 
@@ -774,11 +749,8 @@ TEST_F(ChromePasswordManagerClientTest,
   // achieved by attaching an observer (SafeBrowsingUserInteractionObserver) to
   // the current WebContents. Create an observer and attach it to simulate a
   // delayed warning.
-  auto safe_browsing_service =
-      base::MakeRefCounted<safe_browsing::TestSafeBrowsingService>();
   auto ui_manager =
-      base::MakeRefCounted<safe_browsing::TestSafeBrowsingUIManager>(
-          safe_browsing_service);
+      base::MakeRefCounted<safe_browsing::TestSafeBrowsingUIManager>();
   security_interstitials::UnsafeResource resource;
   safe_browsing::SafeBrowsingUserInteractionObserver::CreateForWebContents(
       test_web_contents.get(), resource, /* is_main_frame= */ true, ui_manager);
@@ -874,9 +846,9 @@ void ChromePasswordManagerClientAndroidTest::SetUp() {
   ChromePasswordManagerClientTest::SetUp();
   PasswordStoreFactory::GetInstance()->SetTestingFactory(
       GetBrowserContext(),
-      base::BindRepeating(
-          &password_manager::BuildPasswordStore<
-              content::BrowserContext, password_manager::MockPasswordStore>));
+      base::BindRepeating(&password_manager::BuildPasswordStoreInterface<
+                          content::BrowserContext,
+                          password_manager::MockPasswordStoreInterface>));
 }
 
 std::unique_ptr<password_manager::ContentPasswordManagerDriver>

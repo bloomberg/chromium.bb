@@ -11,9 +11,15 @@ namespace features {
 const base::Feature kNearbySharing{"NearbySharing",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables background scanning for Nearby Share, allowing devices to
+// persistently scan and present a notification when a nearby device is
+// attempting to share.
+const base::Feature kNearbySharingBackgroundScanning{
+    "NearbySharingBackgroundScanning", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables support for Nearby Share on child accounts.
 const base::Feature kNearbySharingChildAccounts{
-    "NearbySharingChildAccounts", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NearbySharingChildAccounts", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables use of device contacts in Nearby Share. The Nearby server returns
 // both Google contacts and device contacts in ListContactPeople RPC responses.

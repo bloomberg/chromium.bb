@@ -7,8 +7,8 @@
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/path_service.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -26,7 +26,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
 #include "extensions/common/api/automation_internal.h"
@@ -49,7 +48,7 @@
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
-#include "ui/display/test/display_manager_test_api.h"
+#include "ui/display/test/display_manager_test_api.h"  // nogncheck
 #endif
 
 namespace extensions {
@@ -81,12 +80,6 @@ class AutomationApiTest : public ExtensionApiTest {
   }
 
  public:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kExperimentalAccessibilityLabels);
-    ExtensionApiTest::SetUp();
-  }
-
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -108,7 +101,7 @@ class AutomationApiCanvasTest : public AutomationApiTest {
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, TestRendererAccessibilityEnabled) {
   StartEmbeddedTestServer();
   const GURL url = GetURLForPath(kDomain, "/index.html");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
   content::WebContents* const tab =
@@ -136,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, SanityCheck) {
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, ImageLabels) {
   StartEmbeddedTestServer();
   const GURL url = GetURLForPath(kDomain, "/index.html");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   // Enable image labels.
   browser()->profile()->GetPrefs()->SetBoolean(
@@ -161,7 +154,13 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, ImageLabels) {
   EXPECT_EQ(expected_mode, web_contents->GetAccessibilityMode());
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, GetTreeByTabId) {
+// Flaky on Mac: crbug.com/1248445
+#if defined(OS_MAC)
+#define MAYBE_GetTreeByTabId DISABLED_GetTreeByTabId
+#else
+#define MAYBE_GetTreeByTabId GetTreeByTabId
+#endif
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_GetTreeByTabId) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(
       RunExtensionTest("automation/tests/tabs", {.page_url = "tab_id.html"}))
@@ -224,14 +223,29 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TableProperties) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationBooleanPermissions) {
+// Flaky on Mac and Windows: crbug.com/1235249
+#if defined(OS_MAC) || defined(OS_WIN)
+#define MAYBE_TabsAutomationBooleanPermissions \
+  DISABLED_TabsAutomationBooleanPermissions
+#else
+#define MAYBE_TabsAutomationBooleanPermissions TabsAutomationBooleanPermissions
+#endif
+IN_PROC_BROWSER_TEST_F(AutomationApiTest,
+                       MAYBE_TabsAutomationBooleanPermissions) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionTest("automation/tests/tabs_automation_boolean",
                                {.page_url = "permissions.html"}))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationBooleanActions) {
+// Flaky on Mac and Windows: crbug.com/1235249
+#if defined(OS_MAC) || defined(OS_WIN)
+#define MAYBE_TabsAutomationBooleanActions \
+  DISABLED_TabsAutomationBooleanActions
+#else
+#define MAYBE_TabsAutomationBooleanActions TabsAutomationBooleanActions
+#endif
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_TabsAutomationBooleanActions) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionTest("automation/tests/tabs_automation_boolean",
                                {.page_url = "actions.html"}))
@@ -253,7 +267,13 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest,
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, CloseTab) {
+// Flaky on Mac and Windows: crbug.com/1235249
+#if defined(OS_MAC) || defined(OS_WIN)
+#define MAYBE_CloseTab DISABLED_CloseTab
+#else
+#define MAYBE_CloseTab CloseTab
+#endif
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_CloseTab) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(
       RunExtensionTest("automation/tests/tabs", {.page_url = "close_tab.html"}))
@@ -370,20 +390,12 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Intents) {
 
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, EnumValidity) {
   StartEmbeddedTestServer();
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "automation/tests/tabs", .page_url = "enum_validity.html"}))
+  ASSERT_TRUE(RunExtensionTest("automation/tests/tabs",
+                               {.page_url = "enum_validity.html"}))
       << message_;
 }
 
 #if defined(USE_AURA)
-
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, IframeNav) {
-  StartEmbeddedTestServer();
-  ASSERT_TRUE(RunExtensionTest("automation/tests/desktop",
-                               {.page_url = "iframenav.html"}))
-      << message_;
-}
-
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotRequested) {
   ASSERT_TRUE(RunExtensionTest("automation/tests/tabs",
                                {.page_url = "desktop_not_requested.html"}))
@@ -629,13 +641,27 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_TextareaAppendPerf) {
   // the time spent in the renderer code.
   ASSERT_LT(automation_total_dur, renderer_total_dur * 2);
 }
+
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, IframeNav) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionTest("automation/tests/desktop",
+                               {.page_url = "iframenav.html"}))
+      << message_;
+}
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, HitTestMultipleWindows) {
+// TODO(crbug.com/1209766) Flaky on lacros
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_HitTestMultipleWindows DISABLED_HitTestMultipleWindows
+#else
+#define MAYBE_HitTestMultipleWindows HitTestMultipleWindows
+#endif
+
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_HitTestMultipleWindows) {
   StartEmbeddedTestServer();
-  ASSERT_TRUE(RunExtensionTest({.name = "automation/tests/desktop",
-                                .page_url = "hit_test_multiple_windows.html"}))
+  ASSERT_TRUE(RunExtensionTest("automation/tests/desktop",
+                               {.page_url = "hit_test_multiple_windows.html"}))
       << message_;
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)

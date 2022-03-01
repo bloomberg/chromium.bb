@@ -8,23 +8,14 @@
 #include <string>
 #include <utility>
 
-#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "url/gurl.h"
 
 namespace net {
 
-namespace {
-
-void RecordReportOutcome(ReportingReport::Outcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION("Net.Reporting.ReportOutcome", outcome,
-                            ReportingReport::Outcome::MAX);
-}
-
-}  // namespace
-
 ReportingReport::ReportingReport(
+    const absl::optional<base::UnguessableToken>& reporting_source,
     const NetworkIsolationKey& network_isolation_key,
     const GURL& url,
     const std::string& user_agent,
@@ -34,7 +25,9 @@ ReportingReport::ReportingReport(
     int depth,
     base::TimeTicks queued,
     int attempts)
-    : network_isolation_key(network_isolation_key),
+    : reporting_source(reporting_source),
+      network_isolation_key(network_isolation_key),
+      id(base::UnguessableToken::Create()),
       url(url),
       user_agent(user_agent),
       group(group),
@@ -42,29 +35,24 @@ ReportingReport::ReportingReport(
       body(std::move(body)),
       depth(depth),
       queued(queued),
-      attempts(attempts) {}
-
-ReportingReport::~ReportingReport() {
-  RecordReportOutcome(outcome);
+      attempts(attempts) {
+  // If |reporting_source| is present, it must not be empty.
+  DCHECK(!(reporting_source.has_value() && reporting_source->is_empty()));
 }
 
+ReportingReport::ReportingReport() = default;
+ReportingReport::ReportingReport(ReportingReport&& other) = default;
+ReportingReport& ReportingReport::operator=(ReportingReport&& other) = default;
+ReportingReport::~ReportingReport() = default;
+
 ReportingEndpointGroupKey ReportingReport::GetGroupKey() const {
-  return ReportingEndpointGroupKey(network_isolation_key,
+  return ReportingEndpointGroupKey(network_isolation_key, reporting_source,
                                    url::Origin::Create(url), group);
 }
 
-// static
-void ReportingReport::RecordReportDiscardedForNoURLRequestContext() {
-  RecordReportOutcome(Outcome::DISCARDED_NO_URL_REQUEST_CONTEXT);
-}
-
-// static
-void ReportingReport::RecordReportDiscardedForNoReportingService() {
-  RecordReportOutcome(Outcome::DISCARDED_NO_REPORTING_SERVICE);
-}
-
 bool ReportingReport::IsUploadPending() const {
-  return status == Status::PENDING || status == Status::DOOMED;
+  return status == Status::PENDING || status == Status::DOOMED ||
+         status == Status::SUCCESS;
 }
 
 }  // namespace net

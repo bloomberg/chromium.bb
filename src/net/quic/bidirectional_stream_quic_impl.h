@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_export.h"
@@ -33,6 +33,10 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
  public:
   explicit BidirectionalStreamQuicImpl(
       std::unique_ptr<QuicChromiumClientSession::Handle> session);
+
+  BidirectionalStreamQuicImpl(const BidirectionalStreamQuicImpl&) = delete;
+  BidirectionalStreamQuicImpl& operator=(const BidirectionalStreamQuicImpl&) =
+      delete;
 
   ~BidirectionalStreamQuicImpl() override;
 
@@ -82,8 +86,8 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
   const std::unique_ptr<QuicChromiumClientSession::Handle> session_;
   std::unique_ptr<QuicChromiumClientStream::Handle> stream_;
 
-  const BidirectionalStreamRequestInfo* request_info_;
-  BidirectionalStreamImpl::Delegate* delegate_;
+  raw_ptr<const BidirectionalStreamRequestInfo> request_info_;
+  raw_ptr<BidirectionalStreamImpl::Delegate> delegate_;
   // Saves the response status if the stream is explicitly closed via OnError
   // or OnClose with an error. Once all buffered data has been returned, this
   // will be used as the final response.
@@ -129,8 +133,6 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
   bool may_invoke_callbacks_;
 
   base::WeakPtrFactory<BidirectionalStreamQuicImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BidirectionalStreamQuicImpl);
 };
 
 }  // namespace net

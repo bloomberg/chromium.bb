@@ -5,7 +5,6 @@
 #ifndef REMOTING_HOST_DESKTOP_SESSION_CONNECTOR_H_
 #define REMOTING_HOST_DESKTOP_SESSION_CONNECTOR_H_
 
-#include "base/macros.h"
 #include "base/process/process.h"
 #include "ipc/ipc_channel_handle.h"
 
@@ -19,6 +18,10 @@ class ScreenResolution;
 class DesktopSessionConnector {
  public:
   DesktopSessionConnector() {}
+
+  DesktopSessionConnector(const DesktopSessionConnector&) = delete;
+  DesktopSessionConnector& operator=(const DesktopSessionConnector&) = delete;
+
   virtual ~DesktopSessionConnector() {}
 
   // Requests the daemon process to create a desktop session and associates
@@ -52,9 +55,6 @@ class DesktopSessionConnector {
   // Notifies the network process that the daemon has disconnected the desktop
   // session from the associated desktop environment.
   virtual void OnTerminalDisconnected(int terminal_id) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DesktopSessionConnector);
 };
 
 }  // namespace remoting

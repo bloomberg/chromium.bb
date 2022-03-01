@@ -18,12 +18,16 @@
 #include "common/RefCounted.h"
 #include "dawn/webgpu.h"
 #include "dawn_native/CallbackTaskManager.h"
+#include "dawn_native/Error.h"
 
 namespace dawn_native {
 
     class ComputePipelineBase;
     class DeviceBase;
+    class PipelineLayoutBase;
     class RenderPipelineBase;
+    class ShaderModuleBase;
+    struct FlatComputePipelineDescriptor;
 
     struct CreatePipelineAsyncCallbackTaskBase : CallbackTask {
         CreatePipelineAsyncCallbackTaskBase(std::string errorMessage, void* userData);
@@ -33,34 +37,70 @@ namespace dawn_native {
         void* mUserData;
     };
 
-    struct CreateComputePipelineAsyncCallbackTask final : CreatePipelineAsyncCallbackTaskBase {
+    struct CreateComputePipelineAsyncCallbackTask : CreatePipelineAsyncCallbackTaskBase {
         CreateComputePipelineAsyncCallbackTask(Ref<ComputePipelineBase> pipeline,
                                                std::string errorMessage,
                                                WGPUCreateComputePipelineAsyncCallback callback,
                                                void* userdata);
 
-        void Finish() final;
+        void Finish() override;
         void HandleShutDown() final;
         void HandleDeviceLoss() final;
 
-      private:
+      protected:
         Ref<ComputePipelineBase> mPipeline;
         WGPUCreateComputePipelineAsyncCallback mCreateComputePipelineAsyncCallback;
     };
 
-    struct CreateRenderPipelineAsyncCallbackTask final : CreatePipelineAsyncCallbackTaskBase {
+    struct CreateRenderPipelineAsyncCallbackTask : CreatePipelineAsyncCallbackTaskBase {
         CreateRenderPipelineAsyncCallbackTask(Ref<RenderPipelineBase> pipeline,
                                               std::string errorMessage,
                                               WGPUCreateRenderPipelineAsyncCallback callback,
                                               void* userdata);
 
-        void Finish() final;
+        void Finish() override;
         void HandleShutDown() final;
         void HandleDeviceLoss() final;
 
-      private:
+      protected:
         Ref<RenderPipelineBase> mPipeline;
         WGPUCreateRenderPipelineAsyncCallback mCreateRenderPipelineAsyncCallback;
+    };
+
+    // CreateComputePipelineAsyncTask defines all the inputs and outputs of
+    // CreateComputePipelineAsync() tasks, which are the same among all the backends.
+    class CreateComputePipelineAsyncTask {
+      public:
+        CreateComputePipelineAsyncTask(Ref<ComputePipelineBase> nonInitializedComputePipeline,
+                                       WGPUCreateComputePipelineAsyncCallback callback,
+                                       void* userdata);
+
+        void Run();
+
+        static void RunAsync(std::unique_ptr<CreateComputePipelineAsyncTask> task);
+
+      private:
+        Ref<ComputePipelineBase> mComputePipeline;
+        WGPUCreateComputePipelineAsyncCallback mCallback;
+        void* mUserdata;
+    };
+
+    // CreateRenderPipelineAsyncTask defines all the inputs and outputs of
+    // CreateRenderPipelineAsync() tasks, which are the same among all the backends.
+    class CreateRenderPipelineAsyncTask {
+      public:
+        CreateRenderPipelineAsyncTask(Ref<RenderPipelineBase> nonInitializedRenderPipeline,
+                                      WGPUCreateRenderPipelineAsyncCallback callback,
+                                      void* userdata);
+
+        void Run();
+
+        static void RunAsync(std::unique_ptr<CreateRenderPipelineAsyncTask> task);
+
+      private:
+        Ref<RenderPipelineBase> mRenderPipeline;
+        WGPUCreateRenderPipelineAsyncCallback mCallback;
+        void* mUserdata;
     };
 
 }  // namespace dawn_native

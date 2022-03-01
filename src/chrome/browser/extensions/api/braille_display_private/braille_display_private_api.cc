@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
@@ -38,8 +39,8 @@ class BrailleDisplayPrivateAPI::DefaultEventDelegate
   bool HasListener() override;
 
  private:
-  EventRouter::Observer* observer_;
-  Profile* profile_;
+  raw_ptr<EventRouter::Observer> observer_;
+  raw_ptr<Profile> profile_;
 };
 
 BrailleDisplayPrivateAPI::BrailleDisplayPrivateAPI(
@@ -160,7 +161,7 @@ BrailleDisplayPrivateWriteDotsFunction::
 }
 
 bool BrailleDisplayPrivateWriteDotsFunction::Prepare() {
-  params_ = WriteDots::Params::Create(*args_);
+  params_ = WriteDots::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params_);
   EXTENSION_FUNCTION_VALIDATE(
       params_->cells.size() >=
@@ -183,8 +184,9 @@ BrailleDisplayPrivateUpdateBluetoothBrailleDisplayAddressFunction::Run() {
   NOTREACHED();
   return RespondNow(Error("Unsupported on this platform."));
 #else
-  std::string address;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &address));
+  EXTENSION_FUNCTION_VALIDATE(args().size() >= 1);
+  EXTENSION_FUNCTION_VALIDATE(args()[0].is_string());
+  const std::string& address = args()[0].GetString();
   ash::AccessibilityManager::Get()->UpdateBluetoothBrailleDisplayAddress(
       address);
   return RespondNow(NoArguments());

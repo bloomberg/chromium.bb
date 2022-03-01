@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef LIB_JXL_MODULAR_TRANSFORM_TRANSFORM_H_
 #define LIB_JXL_MODULAR_TRANSFORM_TRANSFORM_H_
@@ -38,13 +29,6 @@ enum class TransformId : uint32_t {
 
   // Invalid for now.
   kInvalid = 3,
-
-  // this is lossy preprocessing, doesn't have an inverse transform and doesn't
-  // exist from the decoder point of view
-  kNearLossless = 4,
-
-  // The total number of transforms. Update this if adding more transformations.
-  kNumTransforms = 5,
 };
 
 struct SqueezeParams : public Fields {
@@ -90,7 +74,7 @@ class Transform : public Fields {
 
   explicit Transform(TransformId id);
   // default constructor for bundles.
-  Transform() : Transform(TransformId::kNumTransforms) {}
+  Transform() : Transform(TransformId::kInvalid) {}
 
   Status VisitFields(Visitor *JXL_RESTRICT visitor) override {
     JXL_QUIET_RETURN_IF_ERROR(visitor->U32(
@@ -147,15 +131,17 @@ class Transform : public Fields {
 
   const char *Name() const override { return "Transform"; }
 
-  // Returns the name of the transform.
-  const char *TransformName() const;
-
-  Status Forward(Image &input, const weighted::Header &wp_header,
-                 ThreadPool *pool = nullptr);
   Status Inverse(Image &input, const weighted::Header &wp_header,
                  ThreadPool *pool = nullptr);
   Status MetaApply(Image &input);
 };
+
+Status CheckEqualChannels(const Image &image, uint32_t c1, uint32_t c2);
+
+static inline pixel_type PixelAdd(pixel_type a, pixel_type b) {
+  return static_cast<pixel_type>(static_cast<uint32_t>(a) +
+                                 static_cast<uint32_t>(b));
+}
 
 }  // namespace jxl
 

@@ -4,9 +4,7 @@ Tests using a destroyed query set on a queue.
 TODO: Test with pipeline statistics queries on {compute, render} as well.
 `;
 
-import { poptions } from '../../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';
-import { createRenderEncoderWithQuerySet } from '../../encoding/queries/common.js';
 import { ValidationTest } from '../../validation_test.js';
 
 export const g = makeTestGroup(ValidationTest);
@@ -18,17 +16,14 @@ Tests that use a destroyed query set in occlusion query on render pass encoder.
 - x= {destroyed, not destroyed (control case)}
   `
   )
-  .subcases(() => poptions('querySetState', ['valid', 'destroyed'] as const))
+  .paramsSubcasesOnly(u => u.combine('querySetState', ['valid', 'destroyed'] as const))
   .fn(t => {
-    const querySet = t.createQuerySetWithState(t.params.querySetState);
+    const occlusionQuerySet = t.createQuerySetWithState(t.params.querySetState);
 
-    const encoder = createRenderEncoderWithQuerySet(t, querySet);
+    const encoder = t.createEncoder('render pass', { occlusionQuerySet });
     encoder.encoder.beginOcclusionQuery(0);
     encoder.encoder.endOcclusionQuery();
-
-    t.expectValidationError(() => {
-      t.queue.submit([encoder.finish()]);
-    }, t.params.querySetState === 'destroyed');
+    encoder.validateFinishAndSubmitGivenState(t.params.querySetState);
   });
 
 g.test('writeTimestamp')
@@ -38,8 +33,12 @@ Tests that use a destroyed query set in writeTimestamp on {non-pass, compute, re
 - x= {destroyed, not destroyed (control case)}
   `
   )
-  .cases(poptions('encoderType', ['non-pass', 'compute pass', 'render pass'] as const))
-  .subcases(() => poptions('querySetState', ['valid', 'destroyed'] as const))
+  .params(u =>
+    u
+      .combine('encoderType', ['non-pass', 'compute pass', 'render pass'] as const)
+      .beginSubcases()
+      .combine('querySetState', ['valid', 'destroyed'] as const)
+  )
   .fn(async t => {
     await t.selectDeviceOrSkipTestCase('timestamp-query');
 
@@ -50,10 +49,7 @@ Tests that use a destroyed query set in writeTimestamp on {non-pass, compute, re
 
     const encoder = t.createEncoder(t.params.encoderType);
     encoder.encoder.writeTimestamp(querySet, 0);
-
-    t.expectValidationError(() => {
-      t.queue.submit([encoder.finish()]);
-    }, t.params.querySetState === 'destroyed');
+    encoder.validateFinishAndSubmitGivenState(t.params.querySetState);
   });
 
 g.test('resolveQuerySet')
@@ -63,16 +59,13 @@ Tests that use a destroyed query set in resolveQuerySet.
 - x= {destroyed, not destroyed (control case)}
   `
   )
-  .subcases(() => poptions('querySetState', ['valid', 'destroyed'] as const))
+  .paramsSubcasesOnly(u => u.combine('querySetState', ['valid', 'destroyed'] as const))
   .fn(async t => {
     const querySet = t.createQuerySetWithState(t.params.querySetState);
 
     const buffer = t.device.createBuffer({ size: 8, usage: GPUBufferUsage.QUERY_RESOLVE });
 
-    const encoder = t.device.createCommandEncoder();
-    encoder.resolveQuerySet(querySet, 0, 1, buffer, 0);
-
-    t.expectValidationError(() => {
-      t.queue.submit([encoder.finish()]);
-    }, t.params.querySetState === 'destroyed');
+    const encoder = t.createEncoder('non-pass');
+    encoder.encoder.resolveQuerySet(querySet, 0, 1, buffer, 0);
+    encoder.validateFinishAndSubmitGivenState(t.params.querySetState);
   });

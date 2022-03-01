@@ -7,12 +7,14 @@
 #ifndef CORE_FPDFDOC_CPDF_ANNOT_H_
 #define CORE_FPDFDOC_CPDF_ANNOT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <memory>
 
+#include "core/fxcrt/bytestring.h"
 #include "core/fxcrt/fx_coordinates.h"
-#include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/maybe_owned.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
@@ -24,13 +26,12 @@ class CPDF_Document;
 class CPDF_Form;
 class CPDF_Page;
 class CPDF_RenderContext;
-class CPDF_RenderOptions;
 class CPDF_Stream;
 
 class CPDF_Annot {
  public:
-  enum AppearanceMode { Normal, Rollover, Down };
-  enum class Subtype {
+  enum class AppearanceMode { kNormal, kRollover, kDown };
+  enum class Subtype : uint8_t {
     UNKNOWN = 0,
     TEXT,
     LINK,
@@ -62,8 +63,8 @@ class CPDF_Annot {
     REDACT
   };
 
-  static CPDF_Annot::Subtype StringToAnnotSubtype(const ByteString& sSubtype);
-  static ByteString AnnotSubtypeToString(CPDF_Annot::Subtype nSubtype);
+  static Subtype StringToAnnotSubtype(const ByteString& sSubtype);
+  static ByteString AnnotSubtypeToString(Subtype nSubtype);
   static CFX_FloatRect RectFromQuadPointsArray(const CPDF_Array* pArray,
                                                size_t nIndex);
   static CFX_FloatRect BoundingRectFromQuadPoints(
@@ -72,12 +73,10 @@ class CPDF_Annot {
                                           size_t nIndex);
   static size_t QuadPointCount(const CPDF_Array* pArray);
 
-  // The second constructor does not take ownership of the dictionary.
-  CPDF_Annot(RetainPtr<CPDF_Dictionary> pDict, CPDF_Document* pDocument);
   CPDF_Annot(CPDF_Dictionary* pDict, CPDF_Document* pDocument);
   ~CPDF_Annot();
 
-  CPDF_Annot::Subtype GetSubtype() const;
+  Subtype GetSubtype() const;
   uint32_t GetFlags() const;
   CFX_FloatRect GetRect() const;
   CPDF_Document* GetDocument() const { return m_pDocument.Get(); }
@@ -89,24 +88,20 @@ class CPDF_Annot {
   bool DrawAppearance(CPDF_Page* pPage,
                       CFX_RenderDevice* pDevice,
                       const CFX_Matrix& mtUser2Device,
-                      AppearanceMode mode,
-                      const CPDF_RenderOptions* pOptions);
+                      AppearanceMode mode);
   bool DrawInContext(const CPDF_Page* pPage,
                      CPDF_RenderContext* pContext,
                      const CFX_Matrix& mtUser2Device,
                      AppearanceMode mode);
 
   void ClearCachedAP();
-  void DrawBorder(CFX_RenderDevice* pDevice,
-                  const CFX_Matrix* pUser2Device,
-                  const CPDF_RenderOptions* pOptions);
+  void DrawBorder(CFX_RenderDevice* pDevice, const CFX_Matrix* pUser2Device);
   CPDF_Form* GetAPForm(const CPDF_Page* pPage, AppearanceMode mode);
   void SetOpenState(bool bOpenState) { m_bOpenState = bOpenState; }
   CPDF_Annot* GetPopupAnnot() const { return m_pPopupAnnot.Get(); }
   void SetPopupAnnot(CPDF_Annot* pAnnot) { m_pPopupAnnot = pAnnot; }
 
  private:
-  void Init();
   void GenerateAPIfNeeded();
   bool ShouldGenerateAP() const;
   bool ShouldDrawAnnotation() const;
@@ -115,14 +110,14 @@ class CPDF_Annot {
 
   RetainPtr<CPDF_Dictionary> const m_pAnnotDict;
   UnownedPtr<CPDF_Document> const m_pDocument;
-  CPDF_Annot::Subtype m_nSubtype;
   std::map<CPDF_Stream*, std::unique_ptr<CPDF_Form>> m_APMap;
   // If non-null, then this is not a popup annotation.
   UnownedPtr<CPDF_Annot> m_pPopupAnnot;
+  const Subtype m_nSubtype;
+  const bool m_bIsTextMarkupAnnotation;
   // |m_bOpenState| is only set for popup annotations.
   bool m_bOpenState = false;
   bool m_bHasGeneratedAP;
-  bool m_bIsTextMarkupAnnotation;
 };
 
 // Get the AP in an annotation dict for a given appearance mode.

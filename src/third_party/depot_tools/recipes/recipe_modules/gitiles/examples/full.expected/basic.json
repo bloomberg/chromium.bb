@@ -521,13 +521,13 @@
       "--json-file",
       "/path/to/tmp/json",
       "--url",
-      "https://chromium.googlesource.com/chromium/src/+/master/OWNERS",
+      "https://chromium.googlesource.com/chromium/src/+/main/OWNERS",
       "--format",
       "text",
       "--attempts",
       "5"
     ],
-    "name": "fetch master:OWNERS"
+    "name": "fetch main:OWNERS"
   },
   {
     "cmd": [
@@ -537,7 +537,7 @@
       "--json-file",
       "/path/to/tmp/json",
       "--url",
-      "https://chromium.googlesource.com/chromium/src/+/master/NONEXISTENT",
+      "https://chromium.googlesource.com/chromium/src/+/main/NONEXISTENT",
       "--format",
       "text",
       "--attempts",
@@ -545,7 +545,7 @@
       "--accept-statuses",
       "404"
     ],
-    "name": "fetch master:NONEXISTENT"
+    "name": "fetch main:NONEXISTENT"
   },
   {
     "cmd": [
@@ -555,13 +555,13 @@
       "--json-file",
       "/path/to/tmp/json",
       "--url",
-      "https://chromium.googlesource.com/chromium/src/+archive/refs/heads/master.tgz",
+      "https://chromium.googlesource.com/chromium/src/+archive/refs/heads/main.tgz",
       "--format",
       "archive",
       "--extract-to",
       "[START_DIR]/archive"
     ],
-    "name": "download https://chromium.googlesource.com/chromium/src @ refs/heads/master",
+    "name": "download https://chromium.googlesource.com/chromium/src @ refs/heads/main",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>extracted 1337 files - 7.19 MB@@@"
     ]
@@ -574,13 +574,13 @@
       "--json-file",
       "/path/to/tmp/json",
       "--url",
-      "https://chromium.googlesource.com/chromium/src/+archive/refs/heads/master.tgz",
+      "https://chromium.googlesource.com/chromium/src/+archive/refs/heads/main.tgz",
       "--format",
       "archive",
       "--extract-to",
       "[START_DIR]/archive2"
     ],
-    "name": "download https://chromium.googlesource.com/chromium/src @ refs/heads/master (2)",
+    "name": "download https://chromium.googlesource.com/chromium/src @ refs/heads/main (2)",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>extracted 10 files - 0.01 MB<br/>SKIPPED 4 files - 7.19 MB@@@",
       "@@@STEP_LOG_LINE@skipped files@/root@@@",

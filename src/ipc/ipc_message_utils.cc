@@ -106,17 +106,15 @@ void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
       break;
     }
     case base::Value::Type::DOUBLE: {
-      double val;
-      result = value->GetAsDouble(&val);
-      DCHECK(result);
-      WriteParam(m, val);
+      DCHECK(value->is_int() || value->is_double());
+      WriteParam(m, value->GetDouble());
       break;
     }
     case base::Value::Type::STRING: {
-      std::string val;
-      result = value->GetAsString(&val);
+      const std::string* val = value->GetIfString();
+      result = !!val;
       DCHECK(result);
-      WriteParam(m, val);
+      WriteParam(m, *val);
       break;
     }
     case base::Value::Type::BINARY: {
@@ -139,7 +137,7 @@ void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
     }
     case base::Value::Type::LIST: {
       const base::ListValue* list = static_cast<const base::ListValue*>(value);
-      WriteParam(m, base::checked_cast<int>(list->GetSize()));
+      WriteParam(m, base::checked_cast<int>(list->GetList().size()));
       for (const auto& entry : list->GetList()) {
         WriteValue(m, &entry, recursion + 1);
       }

@@ -8,12 +8,11 @@
 #include <stdint.h>
 
 #include <memory>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
@@ -58,18 +57,6 @@ enum DataReductionSettingsEnabledAction {
 // request headers change or when the DRPSettings class is initialized.
 class DataReductionProxySettingsObserver {
  public:
-  // Notifies when the proxy server request header change.
-  virtual void OnProxyRequestHeadersChanged(
-      const net::HttpRequestHeaders& headers) {}
-
-  // Notifies when the prefetch proxy hosts have changed.
-  virtual void OnPrefetchProxyHostsChanged(
-      const std::vector<GURL>& prefetch_proxies) {}
-
-  // Notifies when |DataReductionProxySettings::InitDataReductionProxySettings|
-  // is finished.
-  virtual void OnSettingsInitialized() {}
-
   // Notifies when Data Saver is enabled or disabled.
   virtual void OnDataSaverEnabledChanged(bool enabled) {}
 };
@@ -83,6 +70,11 @@ class DataReductionProxySettings {
       base::RepeatingCallback<bool(base::StringPiece, base::StringPiece)>;
 
   explicit DataReductionProxySettings(bool is_off_the_record_profile);
+
+  DataReductionProxySettings(const DataReductionProxySettings&) = delete;
+  DataReductionProxySettings& operator=(const DataReductionProxySettings&) =
+      delete;
+
   virtual ~DataReductionProxySettings();
 
   // Initializes the Data Reduction Proxy with the profile prefs. The caller
@@ -160,12 +152,6 @@ class DataReductionProxySettings {
   // called in response to creating or loading a new profile.
   void MaybeActivateDataReductionProxy(bool at_startup);
 
-  // Sets the headers to use for requests to the compression server.
-  void SetProxyRequestHeaders(const net::HttpRequestHeaders& headers);
-
-  // Returns headers to use for requests to the compression server.
-  const net::HttpRequestHeaders& GetProxyRequestHeaders() const;
-
   // Returns the time LiteMode was last enabled. This is reset whenever LiteMode
   // is disabled and re-enabled from settings. Null time is returned when
   // LiteMode has never been enabled.
@@ -184,8 +170,6 @@ class DataReductionProxySettings {
   DataReductionProxyService* data_reduction_proxy_service() {
     return data_reduction_proxy_service_.get();
   }
-
-  bool is_initialized() const { return !!prefs_; }
 
  protected:
   void InitPrefMembers();
@@ -262,28 +246,23 @@ class DataReductionProxySettings {
 
   std::unique_ptr<DataReductionProxyService> data_reduction_proxy_service_;
 
-  PrefService* prefs_;
+  raw_ptr<PrefService> prefs_;
 
   PrefChangeRegistrar registrar_;
 
   SyntheticFieldTrialRegistrationCallback register_synthetic_field_trial_;
 
   // Should not be null.
-  base::Clock* clock_;
+  raw_ptr<base::Clock> clock_;
 
   // Observers to notify when the proxy request headers change or |this| is
   // initialized.
   base::ObserverList<DataReductionProxySettingsObserver>::Unchecked observers_;
 
-  // The headers to use for requests to the proxy server.
-  net::HttpRequestHeaders proxy_request_headers_;
-
   // True if |this| was constructed for an off-the-record profile.
   const bool is_off_the_record_profile_;
 
   base::ThreadChecker thread_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(DataReductionProxySettings);
 };
 
 }  // namespace data_reduction_proxy

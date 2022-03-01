@@ -7,20 +7,19 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <memory>
 #include <utility>
-#include <vector>
 
 #include "ash/accessibility/sticky_keys/sticky_keys_controller.h"
 #include "ash/components/audio/sounds.h"
+#include "ash/constants/ash_constants.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/constants/devicetype.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/accessibility_controller_enums.h"
 #include "ash/public/cpp/accessibility_focus_ring_controller.h"
 #include "ash/public/cpp/accessibility_focus_ring_info.h"
-#include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -37,18 +36,18 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/accessibility/accessibility_extension_api.h"
+#include "chrome/browser/accessibility/accessibility_extension_api_chromeos.h"
 #include "chrome/browser/ash/accessibility/accessibility_extension_loader.h"
 #include "chrome/browser/ash/accessibility/dictation.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
 #include "chrome/browser/ash/accessibility/select_to_speak_event_handler_delegate_impl.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
@@ -60,11 +59,14 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/live_caption/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/soda/soda_installer.h"
 #include "components/user_manager/known_user.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -84,10 +86,12 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_resource.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/base/ime/chromeos/extension_ime_util.h"
+#include "ui/base/ime/ash/extension_ime_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -96,7 +100,6 @@
 namespace ash {
 namespace {
 
-namespace extension_ime_util = ::chromeos::extension_ime_util;
 using ::extensions::api::braille_display_private::BrailleController;
 using ::extensions::api::braille_display_private::DisplayState;
 using ::extensions::api::braille_display_private::KeyEvent;
@@ -195,6 +198,15 @@ std::string AccessibilityPrivateEnumForAction(SelectToSpeakPanelAction action) {
   }
 }
 
+absl::optional<bool> GetDictationOfflineNudgePrefForLocale(
+    Profile* profile,
+    const std::string& dictation_locale) {
+  const base::DictionaryValue* offline_nudges =
+      profile->GetPrefs()->GetDictionary(
+          prefs::kAccessibilityDictationLocaleOfflineNudge);
+  return offline_nudges->FindBoolPath(dictation_locale);
+}
+
 }  // namespace
 
 class AccessibilityPanelWidgetObserver : public views::WidgetObserver {
@@ -204,6 +216,11 @@ class AccessibilityPanelWidgetObserver : public views::WidgetObserver {
       : widget_(widget), on_destroying_(std::move(on_destroying)) {
     widget_->AddObserver(this);
   }
+
+  AccessibilityPanelWidgetObserver(const AccessibilityPanelWidgetObserver&) =
+      delete;
+  AccessibilityPanelWidgetObserver& operator=(
+      const AccessibilityPanelWidgetObserver&) = delete;
 
   ~AccessibilityPanelWidgetObserver() override { CHECK(!IsInObserverList()); }
 
@@ -225,8 +242,6 @@ class AccessibilityPanelWidgetObserver : public views::WidgetObserver {
   views::Widget* widget_;
 
   base::OnceCallback<void()> on_destroying_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityPanelWidgetObserver);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -265,9 +280,8 @@ void AccessibilityManager::ShowAccessibilityHelp(Browser* browser) {
 }
 
 AccessibilityManager::AccessibilityManager() {
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                              content::NotificationService::AllSources());
+  session_observation_.Observe(session_manager::SessionManager::Get());
+
   notification_registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                               content::NotificationService::AllSources());
 
@@ -396,6 +410,7 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
     PrefService* prefs = (*it)->GetPrefs();
     if (prefs->GetBoolean(prefs::kAccessibilityStickyKeysEnabled) ||
         prefs->GetBoolean(prefs::kAccessibilityLargeCursorEnabled) ||
+        prefs->GetBoolean(::prefs::kLiveCaptionEnabled) ||
         prefs->GetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled) ||
         prefs->GetBoolean(prefs::kAccessibilitySelectToSpeakEnabled) ||
         prefs->GetBoolean(prefs::kAccessibilitySwitchAccessEnabled) ||
@@ -443,6 +458,27 @@ void AccessibilityManager::OnLargeCursorChanged() {
 bool AccessibilityManager::IsLargeCursorEnabled() const {
   return profile_ && profile_->GetPrefs()->GetBoolean(
                          prefs::kAccessibilityLargeCursorEnabled);
+}
+
+void AccessibilityManager::EnableLiveCaption(bool enabled) {
+  if (!profile_)
+    return;
+
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetBoolean(::prefs::kLiveCaptionEnabled, enabled);
+  pref_service->CommitPendingWrite();
+}
+
+void AccessibilityManager::OnLiveCaptionChanged() {
+  AccessibilityStatusEventDetails details(
+      AccessibilityNotificationType::kToggleLiveCaption,
+      IsLiveCaptionEnabled());
+  NotifyAccessibilityStatusChanged(details);
+}
+
+bool AccessibilityManager::IsLiveCaptionEnabled() const {
+  return profile_ &&
+         profile_->GetPrefs()->GetBoolean(::prefs::kLiveCaptionEnabled);
 }
 
 void AccessibilityManager::EnableStickyKeys(bool enabled) {
@@ -512,6 +548,15 @@ void AccessibilityManager::OnSpokenFeedbackChanged() {
   UpdateBrailleImeState();
 }
 
+void AccessibilityManager::EnableSpokenFeedbackWithTutorial() {
+  // Automatically start the tutorial if the device is a Chromebook. Skip the
+  // tutorial for all other device types. We want to avoid showing the tutorial
+  // on CFM, for example, since it isn't typically used by external users.
+  if (chromeos::GetDeviceType() == chromeos::DeviceType::kChromebook)
+    start_chromevox_with_tutorial_ = true;
+  EnableSpokenFeedback(true);
+}
+
 bool AccessibilityManager::IsSpokenFeedbackEnabled() const {
   return profile_ && profile_->GetPrefs()->GetBoolean(
                          prefs::kAccessibilitySpokenFeedbackEnabled);
@@ -552,8 +597,8 @@ void AccessibilityManager::OnLocaleChanged() {
   EnableSpokenFeedback(true);
 }
 
-void AccessibilityManager::OnViewFocusedInArc(const gfx::Rect& bounds_in_screen,
-                                              bool is_editable) {
+void AccessibilityManager::OnViewFocusedInArc(
+    const gfx::Rect& bounds_in_screen) {
   AccessibilityController::Get()->SetFocusHighlightRect(bounds_in_screen);
 }
 
@@ -839,24 +884,137 @@ bool AccessibilityManager::IsDictationEnabled() const {
                          prefs::kAccessibilityDictationEnabled);
 }
 
-void AccessibilityManager::OnDictationChanged() {
+void AccessibilityManager::OnDictationChanged(bool triggered_by_user) {
   OnAccessibilityCommonChanged(prefs::kAccessibilityDictationEnabled);
+  dictation_triggered_by_user_ = triggered_by_user;
   if (!profile_)
     return;
 
-  // Only need to check SODA installation if offline dictation is enabled.
-  if (!::switches::IsExperimentalAccessibilityDictationOfflineEnabled())
+  PrefService* pref_service = profile_->GetPrefs();
+  const bool enabled =
+      pref_service->GetBoolean(prefs::kAccessibilityDictationEnabled);
+
+  // Only need to check SODA installation and locale preference if offline
+  // dictation is enabled.
+  if (!::features::IsExperimentalAccessibilityDictationOfflineEnabled()) {
+    // Show network dictation dialog if needed. Locale prefs are only used
+    // when this feature is enabled, so passing the empty string is OK.
+    if (enabled && triggered_by_user && ShouldShowNetworkDictationDialog(""))
+      ShowNetworkDictationDialog();
+    return;
+  }
+
+  if (enabled &&
+      pref_service->GetString(prefs::kAccessibilityDictationLocale).empty()) {
+    // Dictation was turned on but the language pref isn't set yet. Determine if
+    // this is an upgrade (Dictation was enabled at start-up and the toggle was
+    // not triggered by a user) or a new user (Dictation was just enabled in
+    // settings) and pick the language accordingly.
+    const std::string locale = Dictation::DetermineDefaultSupportedLocale(
+        profile_, /*new_user=*/triggered_by_user);
+
+    // Ensure we don't trigger nudges, downloads or notifications for the locale
+    // pref upgrade. If these need to occur they will occur below.
+    ignore_dictation_locale_pref_change_ = true;
+    pref_service->SetString(prefs::kAccessibilityDictationLocale, locale);
+    pref_service->CommitPendingWrite();
+  }
+
+  // If SODA isn't available on the device, no need to try to install it.
+  if (!::features::IsDictationOfflineAvailableAndEnabled()) {
+    // Show network dictation dialog if needed. Locale doesn't matter as no
+    // languages are supported by SODA.
+    if (enabled && triggered_by_user && ShouldShowNetworkDictationDialog(""))
+      ShowNetworkDictationDialog();
+    return;
+  }
+
+  if (triggered_by_user && !enabled) {
+    // Note: This should not be called at start-up or it will
+    // push back SODA deletion each time start-up occurs with dictation
+    // disabled.
+    speech::SodaInstaller::GetInstance()->SetUninstallTimer(
+        pref_service, g_browser_process->local_state());
+  }
+
+  if (!enabled)
     return;
 
-  // Note: OnDictationChanged should not be called at start-up or it will
-  // push back SODA deletion each time start-up occurs with dictation disabled.
-  const bool enabled =
-      profile_->GetPrefs()->GetBoolean(prefs::kAccessibilityDictationEnabled);
-  if (!enabled) {
-    speech::SodaInstaller::GetInstance()->SetUninstallTimer(
-        profile_->GetPrefs(), g_browser_process->local_state());
+  // Dictation is enabled. Check that appropriate nudges, dialogs and downloads
+  // are triggered.
+  const std::string dictation_locale =
+      pref_service->GetString(prefs::kAccessibilityDictationLocale);
+  if (!triggered_by_user) {
+    // This Dictation change was not due to an explicit user action.
+    const absl::optional<bool> offline_nudge =
+        GetDictationOfflineNudgePrefForLocale(profile_, dictation_locale);
+
+    // See if the Dictation locale can now work offline in the
+    // background (not because the user explicitly toggled Dictation), and a
+    // nudge hasn't yet been shown to the user.
+    if (!offline_nudge || !offline_nudge.value()) {
+      if (speech::SodaInstaller::GetInstance()->IsSodaInstalled(
+              speech::GetLanguageCode(dictation_locale))) {
+        // The locale is already installed on device, show the nudge
+        // immediately.
+        ShowDictationLanguageUpgradedNudge(dictation_locale);
+      } else if (!offline_nudge &&
+                 base::Contains(speech::SodaInstaller::GetInstance()
+                                    ->GetAvailableLanguages(),
+                                dictation_locale)) {
+        // If the SODA language isn't installed yet, update the preference to
+        // ensure the nudge gets shown for this locale when installation
+        // completes.
+        DictionaryPrefUpdate update(
+            pref_service, prefs::kAccessibilityDictationLocaleOfflineNudge);
+        update.Get()->SetBoolKey(dictation_locale, false);
+      }
+    }
+    // This shouldn't depend on offline nudge in case SODA was uninstalled out
+    // from under us (could happen manually on a test image).
+    // Trigger an installation.
+    MaybeInstallSoda(dictation_locale);
+  } else {
+    // Explicit user action. Show download notification or dialog.
+    MaybeShowNetworkDictationDialogOrInstallSoda(dictation_locale);
   }
-  // TODO(crbug.com/1173135): Initialize SODA download when enabled.
+}
+
+void AccessibilityManager::OnDictationLocaleChanged() {
+  if (ignore_dictation_locale_pref_change_) {
+    ignore_dictation_locale_pref_change_ = false;
+    return;
+  }
+
+  PrefService* pref_service = profile_->GetPrefs();
+  const bool enabled =
+      pref_service->GetBoolean(prefs::kAccessibilityDictationEnabled);
+  if (!enabled)
+    return;
+
+  const std::string dictation_locale =
+      pref_service->GetString(prefs::kAccessibilityDictationLocale);
+  dictation_triggered_by_user_ = true;
+  MaybeShowNetworkDictationDialogOrInstallSoda(dictation_locale);
+}
+
+void AccessibilityManager::MaybeShowNetworkDictationDialogOrInstallSoda(
+    const std::string& dictation_locale) {
+  if (ShouldShowNetworkDictationDialog(dictation_locale))
+    ShowNetworkDictationDialog();
+  else
+    MaybeInstallSoda(dictation_locale);
+}
+
+void AccessibilityManager::ShowDictationLanguageUpgradedNudge(
+    const std::string& dictation_locale) {
+  // Show the nudge, then set the pref to indicate that it has been shown
+  // for this particular locale.
+  AccessibilityController::Get()->ShowDictationLanguageUpgradedNudge(
+      dictation_locale, g_browser_process->GetApplicationLocale());
+  DictionaryPrefUpdate update(profile_->GetPrefs(),
+                              prefs::kAccessibilityDictationLocaleOfflineNudge);
+  update.Get()->SetBoolKey(dictation_locale, true);
 }
 
 void AccessibilityManager::SetFocusHighlightEnabled(bool enabled) {
@@ -1148,6 +1306,10 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         base::BindRepeating(&AccessibilityManager::OnLargeCursorChanged,
                             base::Unretained(this)));
     pref_change_registrar_->Add(
+        ::prefs::kLiveCaptionEnabled,
+        base::BindRepeating(&AccessibilityManager::OnLiveCaptionChanged,
+                            base::Unretained(this)));
+    pref_change_registrar_->Add(
         prefs::kAccessibilityStickyKeysEnabled,
         base::BindRepeating(&AccessibilityManager::OnStickyKeysChanged,
                             base::Unretained(this)));
@@ -1190,6 +1352,11 @@ void AccessibilityManager::SetProfile(Profile* profile) {
     pref_change_registrar_->Add(
         prefs::kAccessibilityDictationEnabled,
         base::BindRepeating(&AccessibilityManager::OnDictationChanged,
+                            base::Unretained(this),
+                            /*triggered_by_user=*/true));
+    pref_change_registrar_->Add(
+        prefs::kAccessibilityDictationLocale,
+        base::BindRepeating(&AccessibilityManager::OnDictationLocaleChanged,
                             base::Unretained(this)));
 
     for (const std::string& feature : kAccessibilityCommonFeatures) {
@@ -1241,10 +1408,8 @@ void AccessibilityManager::SetProfile(Profile* profile) {
     OnAccessibilityCommonChanged(feature);
   // Dictation is not in kAccessibilityCommonFeatures because it needs to
   // be handled in OnDictationChanged also. OnDictationChanged will call to
-  // OnAccessibilityCommonChanged. However, OnDictationChanged shouldn't
-  // be called at start-up, so we call OnAccessibilityCommonChanged directly
-  // for dictation.
-  OnAccessibilityCommonChanged(prefs::kAccessibilityDictationEnabled);
+  // OnAccessibilityCommonChanged.
+  OnDictationChanged(/*triggered_by_user=*/false);
 }
 
 void AccessibilityManager::SetProfileByUser(const user_manager::User* user) {
@@ -1283,14 +1448,11 @@ void AccessibilityManager::NotifyAccessibilityStatusChanged(
   if (details.notification_type ==
       AccessibilityNotificationType::kToggleDictation) {
     AccessibilityController::Get()->SetDictationActive(details.enabled);
-    AccessibilityController::Get()->NotifyAccessibilityStatusChanged();
-    return;
   }
 
   // Update system tray menu visibility. Prefs tracked inside ash handle their
   // own updates to avoid race conditions (pref updates are asynchronous between
   // chrome and ash).
-  // TODO(hferreiro): repeated condition
   if (details.notification_type ==
           AccessibilityNotificationType::kToggleScreenMagnifier ||
       details.notification_type ==
@@ -1366,19 +1528,15 @@ void AccessibilityManager::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE: {
-      // Update |profile_| when entering the login screen.
-      Profile* profile = ProfileManager::GetActiveUserProfile();
-      if (ProfileHelper::IsSigninProfile(profile))
-        SetProfile(profile);
-      break;
-    }
-    case chrome::NOTIFICATION_APP_TERMINATING: {
-      app_terminating_ = true;
-      break;
-    }
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
+  app_terminating_ = true;
+}
+
+void AccessibilityManager::OnLoginOrLockScreenVisible() {
+  // Update `profile_` when entering the login screen.
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  if (ProfileHelper::IsSigninProfile(profile))
+    SetProfile(profile);
 }
 
 void AccessibilityManager::OnFocusChangedInPage(
@@ -1465,14 +1623,8 @@ void AccessibilityManager::PostLoadChromeVox() {
       std::vector<base::Value>()));
   event_router->DispatchEventWithLazyListener(extension_id, std::move(event));
 
-  if (!chromevox_panel_) {
-    chromevox_panel_ = new ChromeVoxPanel(profile_);
-    chromevox_panel_widget_observer_ =
-        std::make_unique<AccessibilityPanelWidgetObserver>(
-            chromevox_panel_->GetWidget(),
-            base::BindOnce(&AccessibilityManager::OnChromeVoxPanelDestroying,
-                           base::Unretained(this)));
-  }
+  if (!chromevox_panel_ && spoken_feedback_enabled_)
+    CreateChromeVoxPanel();
 
   audio_focus_manager_->SetEnforcementMode(
       media_session::mojom::EnforcementMode::kNone);
@@ -1483,6 +1635,13 @@ void AccessibilityManager::PostLoadChromeVox() {
   // devices.
   if (policy::EnrollmentRequisitionManager::IsRemoraRequisition())
     AccessibilityController::Get()->EnableChromeVoxVolumeSlideGesture();
+
+  if (start_chromevox_with_tutorial_) {
+    ShowChromeVoxTutorial();
+    // Reset the state variable to prevent the tutorial from opening
+    // automatically in the future.
+    start_chromevox_with_tutorial_ = false;
+  }
 }
 
 void AccessibilityManager::PostUnloadChromeVox() {
@@ -1507,17 +1666,23 @@ void AccessibilityManager::PostUnloadChromeVox() {
       media_session::mojom::EnforcementMode::kDefault);
 }
 
-void AccessibilityManager::PostSwitchChromeVoxProfile() {
-  if (chromevox_panel_) {
-    chromevox_panel_->CloseNow();
-    chromevox_panel_ = nullptr;
-  }
+void AccessibilityManager::CreateChromeVoxPanel() {
+  DCHECK(!chromevox_panel_ && spoken_feedback_enabled_);
   chromevox_panel_ = new ChromeVoxPanel(profile_);
   chromevox_panel_widget_observer_ =
       std::make_unique<AccessibilityPanelWidgetObserver>(
           chromevox_panel_->GetWidget(),
           base::BindOnce(&AccessibilityManager::OnChromeVoxPanelDestroying,
                          base::Unretained(this)));
+}
+
+void AccessibilityManager::PostSwitchChromeVoxProfile() {
+  if (chromevox_panel_) {
+    chromevox_panel_->CloseNow();
+    chromevox_panel_ = nullptr;
+  }
+  if (!chromevox_panel_ && spoken_feedback_enabled_)
+    CreateChromeVoxPanel();
 }
 
 void AccessibilityManager::OnChromeVoxPanelDestroying() {
@@ -1527,6 +1692,8 @@ void AccessibilityManager::OnChromeVoxPanelDestroying() {
 
 void AccessibilityManager::PostLoadSelectToSpeak() {
   InitializeFocusRings(extension_misc::kSelectToSpeakExtensionId);
+
+  LoadEnhancedNetworkTts();
 }
 
 void AccessibilityManager::PostUnloadSelectToSpeak() {
@@ -1536,6 +1703,43 @@ void AccessibilityManager::PostUnloadSelectToSpeak() {
   // Clear the accessibility focus ring and highlight.
   RemoveFocusRings(extension_misc::kSelectToSpeakExtensionId);
   HideHighlights();
+
+  UnloadEnhancedNetworkTts();
+}
+
+void AccessibilityManager::LoadEnhancedNetworkTts() {
+  if (!profile_)
+    return;
+
+  extensions::ComponentLoader* component_loader =
+      extensions::ExtensionSystem::Get(profile_)
+          ->extension_service()
+          ->component_loader();
+
+  if (!::features::IsEnhancedNetworkVoicesEnabled() ||
+      component_loader->Exists(extension_misc::kEnhancedNetworkTtsExtensionId))
+    return;
+
+  base::FilePath resources_path;
+  if (!base::PathService::Get(chrome::DIR_RESOURCES, &resources_path))
+    NOTREACHED();
+  component_loader->AddComponentFromDirWithManifestFilename(
+      resources_path.Append(extension_misc::kEnhancedNetworkTtsExtensionPath),
+      extension_misc::kEnhancedNetworkTtsExtensionId,
+      extension_misc::kEnhancedNetworkTtsManifestFilename,
+      extension_misc::kEnhancedNetworkTtsGuestManifestFilename,
+      base::DoNothing());
+}
+
+void AccessibilityManager::UnloadEnhancedNetworkTts() {
+  if (!profile_)
+    return;
+
+  extensions::ComponentLoader* component_loader =
+      extensions::ExtensionSystem::Get(profile_)
+          ->extension_service()
+          ->component_loader();
+  component_loader->Remove(extension_misc::kEnhancedNetworkTtsExtensionId);
 }
 
 void AccessibilityManager::PostLoadSwitchAccess() {
@@ -1587,10 +1791,29 @@ bool AccessibilityManager::ToggleDictation() {
   if (!profile_)
     return false;
 
-  if (!dictation_.get())
-    dictation_ = std::make_unique<Dictation>(profile_);
+  if (!::switches::IsExperimentalAccessibilityDictationExtensionEnabled()) {
+    if (!dictation_.get())
+      dictation_ = std::make_unique<Dictation>(profile_);
 
-  return dictation_->OnToggleDictation();
+    return dictation_->OnToggleDictation();
+  }
+
+  // We are using AccessibilityCommon extension instead of Dictation C++,
+  // so track Dictation state and simply send a notification to the
+  // AccessibilityPrivate API.
+  dictation_active_ = !dictation_active_;
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(profile_);
+  auto event_args = std::vector<base::Value>();
+  event_args.emplace_back(dictation_active_);
+  auto event = std::make_unique<extensions::Event>(
+      extensions::events::ACCESSIBILITY_PRIVATE_ON_TOGGLE_DICTATION,
+      extensions::api::accessibility_private::OnToggleDictation::kEventName,
+      std::move(event_args));
+  event_router->DispatchEventWithLazyListener(
+      extension_misc::kAccessibilityCommonExtensionId, std::move(event));
+
+  return dictation_active_;
 }
 
 const std::string AccessibilityManager::GetFocusRingId(
@@ -1795,6 +2018,228 @@ void AccessibilityManager::ShowChromeVoxTutorial() {
 
   event_router->DispatchEventWithLazyListener(
       extension_misc::kChromeVoxExtensionId, std::move(event));
+}
+
+bool AccessibilityManager::ShouldShowNetworkDictationDialog(
+    const std::string& locale) {
+  if (network_dictation_dialog_is_showing_)
+    return false;
+
+  if (profile_->GetPrefs()->GetBoolean(
+          prefs::kDictationAcceleratorDialogHasBeenAccepted)) {
+    return false;
+  }
+
+  if (!::features::IsDictationOfflineAvailableAndEnabled())
+    return true;
+
+  speech::SodaInstaller* soda_installer = speech::SodaInstaller::GetInstance();
+  std::vector<std::string> supported_languages =
+      soda_installer->GetAvailableLanguages();
+  if (std::find(supported_languages.begin(), supported_languages.end(),
+                locale) == supported_languages.end()) {
+    // Show the dialog for languages not supported by SODA.
+    return true;
+  }
+
+  return false;
+}
+
+void AccessibilityManager::ShowNetworkDictationDialog() {
+  network_dictation_dialog_is_showing_ = true;
+  const std::u16string title =
+      l10n_util::GetStringUTF16(IDS_ACCESSIBILITY_DICTATION_CONFIRMATION_TITLE);
+  const std::u16string text =
+      l10n_util::GetStringUTF16(IDS_ACCESSIBILITY_DICTATION_CONFIRMATION_TEXT);
+  AccessibilityController::Get()->ShowConfirmationDialog(
+      title, text,
+      base::BindOnce(&AccessibilityManager::OnNetworkDictationDialogAccepted,
+                     base::Unretained(this)),
+      base::BindOnce(&AccessibilityManager::OnNetworkDictationDialogDismissed,
+                     base::Unretained(this)),
+      base::BindOnce(&AccessibilityManager::OnNetworkDictationDialogDismissed,
+                     base::Unretained(this)));
+}
+
+void AccessibilityManager::OnNetworkDictationDialogAccepted() {
+  network_dictation_dialog_is_showing_ = false;
+  profile_->GetPrefs()->SetBoolean(
+      prefs::kDictationAcceleratorDialogHasBeenAccepted, true);
+}
+
+void AccessibilityManager::OnNetworkDictationDialogDismissed() {
+  network_dictation_dialog_is_showing_ = false;
+  SetDictationEnabled(false);
+}
+
+void AccessibilityManager::MaybeInstallSoda(const std::string& locale) {
+  if (!::features::IsDictationOfflineAvailableAndEnabled())
+    return;
+
+  speech::SodaInstaller* soda_installer = speech::SodaInstaller::GetInstance();
+  if (!base::Contains(
+          speech::SodaInstaller::GetInstance()->GetAvailableLanguages(),
+          locale)) {
+    // Don't continue initializing SODA if this locale isn't supported.
+    return;
+  }
+
+  const speech::LanguageCode language_code = speech::GetLanguageCode(locale);
+  if (soda_installer->IsSodaInstalled(language_code) ||
+      soda_installer->IsSodaDownloading(language_code)) {
+    return;
+  }
+
+  if (!soda_observation_.IsObservingSource(soda_installer))
+    soda_observation_.Observe(soda_installer);
+  soda_installer->Init(profile_->GetPrefs(), g_browser_process->local_state());
+
+  // If the installer was already initialized the language code might not have
+  // started installing. Try again.
+  if (!soda_installer->IsSodaDownloading(language_code))
+    soda_installer->InstallLanguage(locale, g_browser_process->local_state());
+
+  // Reset whether failed notification was shown. This ensures it is only shown
+  // at most once per download attempt.
+  soda_failed_notification_shown_ = false;
+}
+
+void AccessibilityManager::OnSodaInstallSucceeded() {
+  if (ShouldShowSodaSucceededNotificationForDictation())
+    ShowSodaDownloadNotificationForDictation(true);
+  OnSodaInstallUpdated(100);
+}
+
+void AccessibilityManager::OnSodaInstallError(
+    speech::LanguageCode language_code) {
+  if (ShouldShowSodaFailedNotificationForDictation(language_code))
+    ShowSodaDownloadNotificationForDictation(false);
+  OnSodaInstallUpdated(0);
+}
+
+void AccessibilityManager::OnSodaInstallUpdated(int progress) {
+  if (!::features::IsDictationOfflineAvailableAndEnabled())
+    return;
+
+  speech::SodaInstaller* soda_installer = speech::SodaInstaller::GetInstance();
+  const std::string dictation_locale =
+      profile_->GetPrefs()->GetString(prefs::kAccessibilityDictationLocale);
+  speech::LanguageCode dictation_language_code =
+      speech::GetLanguageCode(dictation_locale);
+  // Update the Dictation button tray.
+  // TODO(https://crbug.com/1266491): Ensure we use combined progress instead
+  // of just the language pack progress.
+  AccessibilityController::Get()
+      ->UpdateDictationButtonOnSpeechRecognitionDownloadChanged(progress);
+
+  if (soda_installer->IsSodaDownloading(dictation_language_code))
+    return;
+
+  const absl::optional<bool> offline_nudge =
+      GetDictationOfflineNudgePrefForLocale(profile_, dictation_locale);
+  // Check if this locale was downloaded and a nudge for it should be
+  // shown to the user (the key is in kAccessibilityDictationLocale but the
+  // value is false).
+  if (offline_nudge && !offline_nudge.value() &&
+      soda_installer->IsSodaInstalled(
+          speech::GetLanguageCode(dictation_locale))) {
+    ShowDictationLanguageUpgradedNudge(dictation_locale);
+  }
+}
+
+// SodaInstaller::Observer:
+void AccessibilityManager::OnSodaInstalled() {
+  OnSodaInstallSucceeded();
+}
+
+void AccessibilityManager::OnSodaError() {
+  OnSodaInstallError(speech::LanguageCode::kNone);
+}
+
+void AccessibilityManager::OnSodaLanguagePackInstalled(
+    speech::LanguageCode language_code) {
+  OnSodaInstallSucceeded();
+}
+
+void AccessibilityManager::OnSodaLanguagePackProgress(
+    int language_progress,
+    speech::LanguageCode language_code) {
+  const std::string locale =
+      profile_->GetPrefs()->GetString(prefs::kAccessibilityDictationLocale);
+
+  if (language_code != speech::GetLanguageCode(locale))
+    return;
+
+  OnSodaInstallUpdated(language_progress);
+}
+
+void AccessibilityManager::OnSodaLanguagePackError(
+    speech::LanguageCode language_code) {
+  OnSodaInstallError(language_code);
+}
+
+bool AccessibilityManager::ShouldShowSodaSucceededNotificationForDictation() {
+  if (!::features::IsDictationOfflineAvailableAndEnabled() ||
+      !dictation_triggered_by_user_ || !IsDictationEnabled()) {
+    return false;
+  }
+
+  // Note: this function assumes that it's called after a successful SODA
+  // download, either for the SODA binary or a language pack.
+  // Both the SODA binary and the language pack matching the Dictation locale
+  // need to be downloaded to return true.
+  const std::string locale =
+      profile_->GetPrefs()->GetString(prefs::kAccessibilityDictationLocale);
+  if (speech::SodaInstaller::GetInstance()->IsSodaInstalled(
+          speech::GetLanguageCode(locale))) {
+    return true;
+  }
+
+  return false;
+}
+
+bool AccessibilityManager::ShouldShowSodaFailedNotificationForDictation(
+    speech::LanguageCode language_code) {
+  if (!::features::IsDictationOfflineAvailableAndEnabled() ||
+      !dictation_triggered_by_user_ || !IsDictationEnabled()) {
+    return false;
+  }
+
+  if (soda_failed_notification_shown_)
+    return false;
+
+  // Note: this function assumes that it's called after a SODA error, either for
+  // the SODA binary or a language pack. Show the failed notification if:
+  // 1. |language_code| == kNone (encodes that this was an error for the SODA
+  // binary), or
+  // 2. |language_code| matches the Dictation locale.
+  const std::string locale =
+      profile_->GetPrefs()->GetString(prefs::kAccessibilityDictationLocale);
+  if (language_code == speech::LanguageCode::kNone ||
+      language_code == speech::GetLanguageCode(locale))
+    return true;
+
+  return false;
+}
+
+void AccessibilityManager::ShowSodaDownloadNotificationForDictation(
+    bool succeeded) {
+  if (!::features::IsDictationOfflineAvailableAndEnabled())
+    return;
+
+  const std::string locale =
+      profile_->GetPrefs()->GetString(prefs::kAccessibilityDictationLocale);
+  // Get the display name of |locale| in the application locale.
+  const std::u16string display_name = l10n_util::GetDisplayNameForLocale(
+      /*locale=*/locale,
+      /*display_locale=*/g_browser_process->GetApplicationLocale(),
+      /*is_ui=*/true);
+  AccessibilityController::Get()
+      ->ShowSpeechRecognitionDownloadNotificationForDictation(succeeded,
+                                                              display_name);
+
+  if (!succeeded)
+    soda_failed_notification_shown_ = true;
 }
 
 }  // namespace ash

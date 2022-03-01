@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/values.h"
@@ -56,6 +55,10 @@ WebUIDataSource* CreateHistogramsHTMLSource() {
 class HistogramsMessageHandler : public WebUIMessageHandler {
  public:
   HistogramsMessageHandler();
+
+  HistogramsMessageHandler(const HistogramsMessageHandler&) = delete;
+  HistogramsMessageHandler& operator=(const HistogramsMessageHandler&) = delete;
+
   ~HistogramsMessageHandler() override;
 
   // WebUIMessageHandler:
@@ -70,7 +73,6 @@ class HistogramsMessageHandler : public WebUIMessageHandler {
   JsParams AllowJavascriptAndUnpackParams(const base::ListValue& args);
 
   HistogramsMonitor histogram_monitor_;
-  DISALLOW_COPY_AND_ASSIGN(HistogramsMessageHandler);
 };
 
 HistogramsMessageHandler::HistogramsMessageHandler() {}
@@ -79,10 +81,13 @@ HistogramsMessageHandler::~HistogramsMessageHandler() {}
 
 JsParams HistogramsMessageHandler::AllowJavascriptAndUnpackParams(
     const base::ListValue& args) {
+  base::Value::ConstListView args_list = args.GetList();
   AllowJavascript();
   JsParams params;
-  args.GetString(0, &params.callback_id);
-  args.GetString(1, &params.query);
+  if (args_list.size() > 0u && args_list[0].is_string())
+    params.callback_id = args_list[0].GetString();
+  if (args_list.size() > 1u && args_list[1].is_string())
+    params.query = args_list[1].GetString();
   return params;
 }
 
@@ -95,7 +100,7 @@ void HistogramsMessageHandler::HandleRequestHistograms(
   for (base::HistogramBase* histogram :
        base::StatisticsRecorder::Sort(base::StatisticsRecorder::WithName(
            base::StatisticsRecorder::GetHistograms(), params.query))) {
-    base::DictionaryValue histogram_dict = histogram->ToGraphDict();
+    base::Value histogram_dict = histogram->ToGraphDict();
     if (!histogram_dict.DictEmpty())
       histograms_list.Append(std::move(histogram_dict));
   }
@@ -124,17 +129,17 @@ void HistogramsMessageHandler::RegisterMessages() {
 
   // We can use base::Unretained() here, as both the callback and this class are
   // owned by HistogramsInternalsUI.
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kHistogramsUIRequestHistograms,
       base::BindRepeating(&HistogramsMessageHandler::HandleRequestHistograms,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kHistogramsUIStartMonitoring,
       base::BindRepeating(&HistogramsMessageHandler::HandleStartMoninoring,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kHistogramsUIFetchDiff,
       base::BindRepeating(&HistogramsMessageHandler::HandleFetchDiff,
                           base::Unretained(this)));

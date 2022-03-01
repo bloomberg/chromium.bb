@@ -21,8 +21,8 @@
 #include "dawn_wire/WireCmd_autogen.h"
 #include "dawn_wire/client/ApiObjects_autogen.h"
 #include "dawn_wire/client/ObjectBase.h"
+#include "dawn_wire/client/RequestTracker.h"
 
-#include <map>
 #include <memory>
 
 namespace dawn_wire { namespace client {
@@ -36,21 +36,24 @@ namespace dawn_wire { namespace client {
         ~Device();
 
         void SetUncapturedErrorCallback(WGPUErrorCallback errorCallback, void* errorUserdata);
+        void SetLoggingCallback(WGPULoggingCallback errorCallback, void* errorUserdata);
         void SetDeviceLostCallback(WGPUDeviceLostCallback errorCallback, void* errorUserdata);
         void InjectError(WGPUErrorType type, const char* message);
         void PushErrorScope(WGPUErrorFilter filter);
         bool PopErrorScope(WGPUErrorCallback callback, void* userdata);
         WGPUBuffer CreateBuffer(const WGPUBufferDescriptor* descriptor);
         WGPUBuffer CreateErrorBuffer();
+        WGPUComputePipeline CreateComputePipeline(WGPUComputePipelineDescriptor const* descriptor);
         void CreateComputePipelineAsync(WGPUComputePipelineDescriptor const* descriptor,
                                         WGPUCreateComputePipelineAsyncCallback callback,
                                         void* userdata);
-        void CreateRenderPipelineAsync(WGPURenderPipelineDescriptor2 const* descriptor,
+        void CreateRenderPipelineAsync(WGPURenderPipelineDescriptor const* descriptor,
                                        WGPUCreateRenderPipelineAsyncCallback callback,
                                        void* userdata);
 
         void HandleError(WGPUErrorType errorType, const char* message);
-        void HandleDeviceLost(const char* message);
+        void HandleLogging(WGPULoggingType loggingType, const char* message);
+        void HandleDeviceLost(WGPUDeviceLostReason reason, const char* message);
         bool OnPopErrorScopeCallback(uint64_t requestSerial,
                                      WGPUErrorType type,
                                      const char* message);
@@ -61,8 +64,7 @@ namespace dawn_wire { namespace client {
                                                  WGPUCreatePipelineAsyncStatus status,
                                                  const char* message);
 
-        // TODO(dawn:22): Remove once the deprecation period is finished.
-        WGPUQueue GetDefaultQueue();
+        bool GetLimits(WGPUSupportedLimits* limits);
         WGPUQueue GetQueue();
 
         void CancelCallbacksForDisconnect() override;
@@ -74,8 +76,7 @@ namespace dawn_wire { namespace client {
             WGPUErrorCallback callback = nullptr;
             void* userdata = nullptr;
         };
-        std::map<uint64_t, ErrorScopeData> mErrorScopes;
-        uint64_t mErrorScopeRequestSerial = 0;
+        RequestTracker<ErrorScopeData> mErrorScopes;
         uint64_t mErrorScopeStackSize = 0;
 
         struct CreatePipelineAsyncRequest {
@@ -84,14 +85,15 @@ namespace dawn_wire { namespace client {
             void* userdata = nullptr;
             ObjectId pipelineObjectID;
         };
-        std::map<uint64_t, CreatePipelineAsyncRequest> mCreatePipelineAsyncRequests;
-        uint64_t mCreatePipelineAsyncRequestSerial = 0;
+        RequestTracker<CreatePipelineAsyncRequest> mCreatePipelineAsyncRequests;
 
         WGPUErrorCallback mErrorCallback = nullptr;
         WGPUDeviceLostCallback mDeviceLostCallback = nullptr;
+        WGPULoggingCallback mLoggingCallback = nullptr;
         bool mDidRunLostCallback = false;
         void* mErrorUserdata = nullptr;
         void* mDeviceLostUserdata = nullptr;
+        void* mLoggingUserdata = nullptr;
 
         Queue* mQueue = nullptr;
 

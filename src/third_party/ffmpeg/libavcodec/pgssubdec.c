@@ -518,7 +518,7 @@ static int display_end_segment(AVCodecContext *avctx, void *data,
     // Blank if last object_count was 0.
     if (!ctx->presentation.object_count)
         return 1;
-    sub->rects = av_mallocz_array(ctx->presentation.object_count, sizeof(*sub->rects));
+    sub->rects = av_calloc(ctx->presentation.object_count, sizeof(*sub->rects));
     if (!sub->rects) {
         return AVERROR(ENOMEM);
     }
@@ -596,20 +596,6 @@ static int display_end_segment(AVCodecContext *avctx, void *data,
 
         if (!ctx->forced_subs_only || ctx->presentation.objects[i].composition_flag & 0x40)
         memcpy(sub->rects[i]->data[1], palette->clut, sub->rects[i]->nb_colors * sizeof(uint32_t));
-
-#if FF_API_AVPICTURE
-FF_DISABLE_DEPRECATION_WARNINGS
-{
-        AVSubtitleRect *rect;
-        int j;
-        rect = sub->rects[i];
-        for (j = 0; j < 4; j++) {
-            rect->pict.data[j] = rect->data[j];
-            rect->pict.linesize[j] = rect->linesize[j];
-        }
-}
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
     }
     return 1;
 }
@@ -717,7 +703,7 @@ static const AVClass pgsdec_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_pgssub_decoder = {
+const AVCodec ff_pgssub_decoder = {
     .name           = "pgssub",
     .long_name      = NULL_IF_CONFIG_SMALL("HDMV Presentation Graphic Stream subtitles"),
     .type           = AVMEDIA_TYPE_SUBTITLE,
@@ -727,4 +713,5 @@ AVCodec ff_pgssub_decoder = {
     .close          = close_decoder,
     .decode         = decode,
     .priv_class     = &pgsdec_class,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

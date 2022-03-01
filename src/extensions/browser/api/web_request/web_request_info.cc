@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
-#include "base/stl_util.h"
 #include "base/values.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/websocket_handshake_request_info.h"
@@ -47,6 +47,10 @@ class UploadDataSource {
 class BytesUploadDataSource : public UploadDataSource {
  public:
   BytesUploadDataSource(const base::StringPiece& bytes) : bytes_(bytes) {}
+
+  BytesUploadDataSource(const BytesUploadDataSource&) = delete;
+  BytesUploadDataSource& operator=(const BytesUploadDataSource&) = delete;
+
   ~BytesUploadDataSource() override = default;
 
   // UploadDataSource:
@@ -56,13 +60,15 @@ class BytesUploadDataSource : public UploadDataSource {
 
  private:
   base::StringPiece bytes_;
-
-  DISALLOW_COPY_AND_ASSIGN(BytesUploadDataSource);
 };
 
 class FileUploadDataSource : public UploadDataSource {
  public:
   FileUploadDataSource(const base::FilePath& path) : path_(path) {}
+
+  FileUploadDataSource(const FileUploadDataSource&) = delete;
+  FileUploadDataSource& operator=(const FileUploadDataSource&) = delete;
+
   ~FileUploadDataSource() override = default;
 
   // UploadDataSource:
@@ -72,8 +78,6 @@ class FileUploadDataSource : public UploadDataSource {
 
  private:
   base::FilePath path_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileUploadDataSource);
 };
 
 bool CreateUploadDataSourcesFromResourceRequest(
@@ -149,10 +153,6 @@ std::unique_ptr<base::DictionaryValue> CreateRequestBodyData(
 }  // namespace
 
 WebRequestInfoInitParams::WebRequestInfoInitParams() = default;
-WebRequestInfoInitParams::WebRequestInfoInitParams(
-    WebRequestInfoInitParams&& other) = default;
-WebRequestInfoInitParams& WebRequestInfoInitParams::operator=(
-    WebRequestInfoInitParams&& other) = default;
 
 WebRequestInfoInitParams::WebRequestInfoInitParams(
     uint64_t request_id,
@@ -192,6 +192,12 @@ WebRequestInfoInitParams::WebRequestInfoInitParams(
   }
 }
 
+WebRequestInfoInitParams::WebRequestInfoInitParams(
+    WebRequestInfoInitParams&& other) = default;
+
+WebRequestInfoInitParams& WebRequestInfoInitParams::operator=(
+    WebRequestInfoInitParams&& other) = default;
+
 WebRequestInfoInitParams::~WebRequestInfoInitParams() = default;
 
 void WebRequestInfoInitParams::InitializeWebViewAndFrameData(
@@ -216,10 +222,10 @@ void WebRequestInfoInitParams::InitializeWebViewAndFrameData(
 
     // For subresource loads we attempt to resolve the FrameData immediately.
     frame_data = ExtensionApiFrameIdMap::Get()->GetFrameData(
-        content::GlobalFrameRoutingId(render_process_id, frame_id));
+        content::GlobalRenderFrameHostId(render_process_id, frame_id));
 
     parent_routing_id =
-        content::GlobalFrameRoutingId(render_process_id, frame_id);
+        content::GlobalRenderFrameHostId(render_process_id, frame_id);
   }
 }
 

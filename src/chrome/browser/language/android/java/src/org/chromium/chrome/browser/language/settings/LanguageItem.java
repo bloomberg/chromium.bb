@@ -76,7 +76,7 @@ public class LanguageItem {
     /**
      * @return Whether Chrome supports translate for this language.
      */
-    public boolean isSupported() {
+    public boolean isTranslateSupported() {
         return mSupportTranslate;
     }
 
@@ -115,16 +115,24 @@ public class LanguageItem {
      * @return True if this language item represents the system default.
      */
     public boolean isSystemDefault() {
-        return TextUtils.equals(mCode, AppLocaleUtils.SYSTEM_LANGUAGE_VALUE);
+        return AppLocaleUtils.isFollowSystemLanguage(mCode);
     }
 
     /**
      * Return the hashCode of the language code for this LanguageItem. The language code can be
-     * used for the hash since two LanguageItems with equal langauge codes are equal.
+     * used for the hash since two LanguageItems with equal language codes are equal.
      */
     @Override
     public int hashCode() {
         return Objects.hashCode(mCode);
+    }
+
+    /**
+     * return String representation of the BCP-47 code for this language.
+     */
+    @Override
+    public String toString() {
+        return getCode();
     }
 
     /**
@@ -141,14 +149,13 @@ public class LanguageItem {
      * Create a LanguageItem representing the system default language.
      * @return LanguageItem
      */
-    public static LanguageItem makeSystemDefaultLanguageItem() {
+    public static LanguageItem makeFollowSystemLanguageItem() {
         String displayName = ContextUtils.getApplicationContext().getResources().getString(
                 R.string.default_lang_subtitle);
         String nativeName =
                 GlobalAppLocaleController.getInstance().getOriginalSystemLocale().getDisplayName(
                         Locale.getDefault());
-        return new LanguageItem(AppLocaleUtils.SYSTEM_LANGUAGE_VALUE, displayName, nativeName,
-                true /*supportTranslate*/);
+        return new LanguageItem(AppLocaleUtils.APP_LOCALE_USE_SYSTEM_LANGUAGE, displayName,
+                nativeName, true /*supportTranslate*/);
     }
-
 }

@@ -4,12 +4,13 @@
 
 #include "src/heap/heap-write-barrier.h"
 
+#include "src/heap/embedder-tracing.h"
 #include "src/heap/heap-write-barrier-inl.h"
 #include "src/heap/marking-barrier.h"
 #include "src/objects/descriptor-array.h"
+#include "src/objects/js-objects.h"
 #include "src/objects/maybe-object.h"
 #include "src/objects/slots-inl.h"
-#include "src/objects/slots.h"
 
 namespace v8 {
 namespace internal {
@@ -39,6 +40,22 @@ void WriteBarrier::MarkingSlow(Heap* heap, HeapObject host, HeapObjectSlot slot,
                                         ? current_marking_barrier
                                         : heap->marking_barrier();
   marking_barrier->Write(host, slot, value);
+}
+
+// static
+void WriteBarrier::MarkingSlowFromGlobalHandle(Heap* heap, HeapObject value) {
+  heap->marking_barrier()->WriteWithoutHost(value);
+}
+
+// static
+void WriteBarrier::MarkingSlowFromInternalFields(Heap* heap, JSObject host) {
+  // We are not checking the mark bits of host here as (a) there's no
+  // synchronization with the marker and (b) we are writing into a live object
+  // (independent of the mark bits).
+  if (!heap->local_embedder_heap_tracer()->InUse()) return;
+  LocalEmbedderHeapTracer::ProcessingScope scope(
+      heap->local_embedder_heap_tracer());
+  scope.TracePossibleWrapper(host);
 }
 
 void WriteBarrier::MarkingSlow(Heap* heap, Code host, RelocInfo* reloc_info,
@@ -78,7 +95,7 @@ int WriteBarrier::MarkingFromCode(Address raw_host, Address raw_slot) {
   }
 #endif
   WriteBarrier::Marking(host, slot, MaybeObject(value));
-  // Called by RecordWriteCodeStubAssembler, which doesnt accept void type
+  // Called by WriteBarrierCodeStubAssembler, which doesnt accept void type
   return 0;
 }
 

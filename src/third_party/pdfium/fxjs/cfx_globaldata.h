@@ -13,7 +13,7 @@
 #include "core/fxcrt/cfx_binarybuf.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "fxjs/cfx_keyvalue.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/span.h"
 
 class CFX_GlobalData {
@@ -23,7 +23,7 @@ class CFX_GlobalData {
     virtual ~Delegate() = default;
 
     virtual bool StoreBuffer(pdfium::span<const uint8_t> pBuffer) = 0;
-    virtual Optional<pdfium::span<uint8_t>> LoadBuffer() = 0;
+    virtual absl::optional<pdfium::span<uint8_t>> LoadBuffer() = 0;
     virtual void BufferDone() = 0;
   };
 
@@ -64,15 +64,7 @@ class CFX_GlobalData {
   bool LoadGlobalPersistentVariables();
   bool LoadGlobalPersistentVariablesFromBuffer(pdfium::span<uint8_t> buffer);
   bool SaveGlobalPersisitentVariables();
-
   iterator FindGlobalVariable(const ByteString& sPropname);
-
-  void LoadFileBuffer(const wchar_t* sFilePath,
-                      uint8_t*& pBuffer,
-                      int32_t& nLength);
-  void WriteFileBuffer(const wchar_t* sFilePath,
-                       const char* pBuffer,
-                       int32_t nLength);
 
   size_t m_RefCount = 0;
   UnownedPtr<Delegate> const m_pDelegate;

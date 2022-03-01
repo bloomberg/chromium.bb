@@ -47,11 +47,16 @@ std::ostream& operator<<(std::ostream& out, TextureDimension dim);
 /// @return true if the given TextureDimension is an array texture
 bool IsTextureArray(TextureDimension dim);
 
-/// Returns the number of axes in the coordinate for a dimensionality.
+/// Returns the number of axes in the coordinate used for accessing
+/// the texture, where an access is one of: sampling, fetching, load,
+/// or store.
 ///  None -> 0
 ///  1D -> 1
 ///  2D, 2DArray -> 2
 ///  3D, Cube, CubeArray -> 3
+/// Note: To sample a cube texture, the coordinate has 3 dimensions,
+/// but textureDimensions on a cube or cube array returns a 2-element
+/// size, representing the (x,y) size of each cube face, in texels.
 /// @param dim the TextureDimension to query
 /// @return number of dimensions in a coordinate for the dimensionality
 int NumCoordinateAxes(TextureDimension dim);
@@ -60,19 +65,16 @@ int NumCoordinateAxes(TextureDimension dim);
 class Texture : public Castable<Texture, Type> {
  public:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the source of this node
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
   /// @param dim the dimensionality of the texture
-  Texture(ProgramID program_id, const Source& source, TextureDimension dim);
+  Texture(ProgramID pid, const Source& src, TextureDimension dim);
   /// Move constructor
   Texture(Texture&&);
   ~Texture() override;
 
-  /// @returns the texture dimension
-  TextureDimension dim() const { return dim_; }
-
- private:
-  TextureDimension const dim_;
+  /// The texture dimension
+  const TextureDimension dim;
 };
 
 }  // namespace ast

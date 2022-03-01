@@ -10,8 +10,6 @@
 #include <algorithm>
 #include <iterator>
 
-#include "base/macros.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "crypto/sha2.h"
 
@@ -20,6 +18,10 @@ namespace certificate_transparency {
 namespace {
 #include "components/certificate_transparency/data/log_list-inc.cc"
 }  // namespace
+
+base::Time GetLogListTimestamp() {
+  return base::Time::UnixEpoch() + kLogListTimestamp;
+}
 
 std::vector<CTLogInfo> GetKnownLogs() {
   // Add all qualified logs.

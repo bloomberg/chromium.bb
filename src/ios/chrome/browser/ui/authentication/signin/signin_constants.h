@@ -7,8 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "url/gurl.h"
-
 @class ChromeIdentity;
 
 // Sign-in result returned Sign-in result.
@@ -20,6 +18,13 @@ typedef NS_ENUM(NSUInteger, SigninCoordinatorResult) {
   // Sign-in has been done, the user has been explicitly accepted or refused
   // sync.
   SigninCoordinatorResultSuccess,
+};
+
+// User's signed-in state as defined by AuthenticationService.
+typedef NS_ENUM(NSUInteger, IdentitySigninState) {
+  IdentitySigninStateSignedOut,
+  IdentitySigninStateSignedInWithSyncDisabled,
+  IdentitySigninStateSignedInWithSyncEnabled,
 };
 
 // Action to do when the sign-in dialog needs to be interrupted.
@@ -44,53 +49,36 @@ extern NSString* const kAddAccountAccessibilityIdentifier;
 extern NSString* const kConfirmationAccessibilityIdentifier;
 // Name of accessibility identifier for the more button in the sign-in flow.
 extern NSString* const kMoreAccessibilityIdentifier;
+// Name of accessibility identifier for the web sign-in consistency sheet.
+extern NSString* const kWebSigninAccessibilityIdentifier;
+// Name of accessiblity identifier for "Continue As..." button that signs in
+// the primary account user for the web sign-in consistency sheet.
+extern NSString* const kWebSigninContinueAsButtonAccessibilityIdentifier;
+// Name of accessibility identifier for "Skip" button in the web sign-in
+// consistency sheet.
+extern NSString* const kWebSigninSkipButtonAccessibilityIdentifier;
 
-// Action that is required to do to complete the sign-in. This action is in
-// charge of the SigninCoordinator's owner.
+// Action that is required to do to complete the sign-in, or instead of sign-in.
+// This action is in charge of the SigninCoordinator's owner.
 typedef NS_ENUM(NSUInteger, SigninCompletionAction) {
   // No action needed.
   SigninCompletionActionNone,
-  // The advanced settings sign-in view is needed to finish the sign-in.
-  // This case is only used for the first run sign-in.
-  SigninCompletionActionShowAdvancedSettingsSignin,
-  // The completion URL needs to be opened.
-  SigninCompletionActionOpenCompletionURL,
+  // The user tapped the manager, learn more, link and sign-in was cancelled.
+  SigninCompletionActionShowManagedLearnMore,
 };
 
-// Embed different values related to the sign-in completion.
-@interface SigninCompletionInfo : NSObject
+// Intent for TrustedVaultReauthenticationCoordinator to display either
+// the reauthentication or degraded recoverability dialog.
+typedef NS_ENUM(NSUInteger, SigninTrustedVaultDialogIntent) {
+  // Show reauthentication dialog for fetch keys.
+  SigninTrustedVaultDialogIntentFetchKeys,
+  // Show reauthentication degraded recoverability dialog (to enroll additional
+  // recovery factors).
+  SigninTrustedVaultDialogIntentDegradedRecoverability,
+};
 
-// Returns an instance with |identity| and no completion action.
-+ (instancetype)signinCompletionInfoWithIdentity:(ChromeIdentity*)identity;
-
-- (instancetype)init NS_UNAVAILABLE;
-
-// Designated initializer.
-// |identity| is the identity chosen by the user to sign-in.
-// |signinCompletionAction| is the action required to complete the sign-in.
-// If the |signinCompletionAction| is SigninCompletionActionOpenCompletionURL, a
-// completionURL must be added.
-- (instancetype)initWithIdentity:(ChromeIdentity*)identity
-          signinCompletionAction:(SigninCompletionAction)signinCompletionAction
-    NS_DESIGNATED_INITIALIZER;
-
-// Identity used by the user to sign-in.
-@property(nonatomic, strong, readonly) ChromeIdentity* identity;
-// Action to take to finish the sign-in. This action is in charged of the
-// SigninCoordinator's owner.
-@property(nonatomic, assign, readonly)
-    SigninCompletionAction signinCompletionAction;
-// URL to be opened. Optional, only used when signinCompletionAction is
-// SigninCompletionActionOpenCompletionURL.
-@property(nonatomic, assign) GURL completionURL;
-
-@end
-
-// Called when the sign-in dialog is closed.
-// |result| is the sign-in result state.
-// |signinCompletionInfo| different values related to the sign-in, see
-// SigninCompletionInfo class.
-using SigninCoordinatorCompletionCallback =
-    void (^)(SigninCoordinatorResult result, SigninCompletionInfo* info);
+// Max dismissal count for web sign-in consistency dialog (the dismissal value
+// is reset as soon as the user shows sign-in intent).
+extern const int kDefaultWebSignInDismissalCount;
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_SIGNIN_CONSTANTS_H_

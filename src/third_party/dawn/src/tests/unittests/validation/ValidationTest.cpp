@@ -63,7 +63,7 @@ void InitDawnValidationTestEnvironment(int argc, char** argv) {
                    "    [--enable-toggles=toggles] [--disable-toggles=toggles]\n"
                    "  -w, --use-wire: Run the tests through the wire (defaults to no wire)\n"
                    "  --enable-toggles: Comma-delimited list of Dawn toggles to enable.\n"
-                   "    ex.) skip_validation,use_tint_generator,disable_robustness,turn_off_vsync\n"
+                   "    ex.) skip_validation,disable_robustness,turn_off_vsync\n"
                    "  --disable-toggles: Comma-delimited list of Dawn toggles to disable\n";
             continue;
         }
@@ -129,12 +129,19 @@ void ValidationTest::TearDown() {
     }
 }
 
-void ValidationTest::StartExpectDeviceError() {
+void ValidationTest::StartExpectDeviceError(testing::Matcher<std::string> errorMatcher) {
     mExpectError = true;
     mError = false;
+    mErrorMatcher = errorMatcher;
 }
+
+void ValidationTest::StartExpectDeviceError() {
+    StartExpectDeviceError(testing::_);
+}
+
 bool ValidationTest::EndExpectDeviceError() {
     mExpectError = false;
+    mErrorMatcher = testing::_;
     return mError;
 }
 std::string ValidationTest::GetLastDeviceErrorMessage() const {
@@ -179,9 +186,16 @@ bool ValidationTest::HasToggleEnabled(const char* toggle) const {
            }) != toggles.end();
 }
 
+wgpu::SupportedLimits ValidationTest::GetSupportedLimits() {
+    WGPUSupportedLimits supportedLimits;
+    supportedLimits.nextInChain = nullptr;
+    dawn_native::GetProcs().deviceGetLimits(backendDevice, &supportedLimits);
+    return *reinterpret_cast<wgpu::SupportedLimits*>(&supportedLimits);
+}
+
 WGPUDevice ValidationTest::CreateTestDevice() {
     // Disabled disallowing unsafe APIs so we can test them.
-    dawn_native::DeviceDescriptor deviceDescriptor;
+    dawn_native::DawnDeviceDescriptor deviceDescriptor;
     deviceDescriptor.forceDisabledToggles.push_back("disallow_unsafe_apis");
 
     for (const std::string& toggle : gToggleParser->GetEnabledToggles()) {
@@ -203,6 +217,9 @@ void ValidationTest::OnDeviceError(WGPUErrorType type, const char* message, void
 
     ASSERT_TRUE(self->mExpectError) << "Got unexpected device error: " << message;
     ASSERT_FALSE(self->mError) << "Got two errors in expect block";
+    if (self->mExpectError) {
+        ASSERT_THAT(message, self->mErrorMatcher);
+    }
     self->mError = true;
 }
 

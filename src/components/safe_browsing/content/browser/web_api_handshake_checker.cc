@@ -4,6 +4,7 @@
 
 #include "components/safe_browsing/content/browser/web_api_handshake_checker.h"
 
+#include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/browser/safe_browsing_url_checker_impl.h"
 #include "components/safe_browsing/core/browser/url_checker_delegate.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -27,6 +28,11 @@ class WebApiHandshakeChecker::CheckerOnIO
     DCHECK(handshake_checker_);
     DCHECK(delegate_getter_);
     DCHECK(web_contents_getter_);
+
+    content::WebContents* contents = web_contents_getter_.Run();
+    if (!!contents) {
+      last_committed_url_ = contents->GetLastCommittedURL();
+    }
   }
 
   void Check(const GURL& url) {
@@ -40,8 +46,10 @@ class WebApiHandshakeChecker::CheckerOnIO
         !url_checker_delegate ||
         !url_checker_delegate->GetDatabaseManager()->IsSupported() ||
         url_checker_delegate->ShouldSkipRequestCheck(
-            url, frame_tree_node_id_, /*render_process_id=*/-1,
-            /*render_frame_id=*/-1, /*originated_from_service_worker=*/false);
+            url, frame_tree_node_id_,
+            /*render_process_id=*/content::ChildProcessHost::kInvalidUniqueID,
+            /*render_frame_id=*/MSG_ROUTING_NONE,
+            /*originated_from_service_worker=*/false);
     if (skip_checks) {
       OnCompleteCheck(/*slow_check=*/false, /*proceed=*/true,
                       /*showed_interstitial=*/false);
@@ -52,9 +60,13 @@ class WebApiHandshakeChecker::CheckerOnIO
         net::HttpRequestHeaders(), /*load_flags=*/0,
         network::mojom::RequestDestination::kEmpty, /*has_user_gesture=*/false,
         url_checker_delegate, web_contents_getter_,
+        /*render_process_id=*/content::ChildProcessHost::kInvalidUniqueID,
+        /*render_frame_id=*/MSG_ROUTING_NONE, frame_tree_node_id_,
         /*real_time_lookup_enabled=*/false,
         /*can_rt_check_subresource_url=*/false,
-        /*can_check_db=*/true, /*url_lookup_service=*/nullptr);
+        /*can_check_db=*/true, last_committed_url_,
+        content::GetUIThreadTaskRunner({}),
+        /*url_lookup_service=*/nullptr, WebUIInfoSingleton::GetInstance());
     url_checker_->CheckUrl(
         url, "GET",
         base::BindOnce(&WebApiHandshakeChecker::CheckerOnIO::OnCheckUrlResult,
@@ -92,6 +104,7 @@ class WebApiHandshakeChecker::CheckerOnIO
   GetDelegateCallback delegate_getter_;
   GetWebContentsCallback web_contents_getter_;
   const int frame_tree_node_id_;
+  GURL last_committed_url_;
   std::unique_ptr<SafeBrowsingUrlCheckerImpl> url_checker_;
 };
 

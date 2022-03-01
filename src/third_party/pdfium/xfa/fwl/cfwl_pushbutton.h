@@ -9,8 +9,9 @@
 
 #include "xfa/fwl/cfwl_widget.h"
 
-#define FWL_STATE_PSB_Hovered (1 << FWL_WGTSTATE_MAX)
-#define FWL_STATE_PSB_Pressed (1 << (FWL_WGTSTATE_MAX + 1))
+#define FWL_STATE_PSB_Hovered (1 << FWL_STATE_WGT_MAX)
+#define FWL_STATE_PSB_Pressed (1 << (FWL_STATE_WGT_MAX + 1))
+#define FWL_STATE_PSB_Default (1 << (FWL_STATE_WGT_MAX + 2))
 
 class CFWL_MessageKey;
 class CFWL_MessageMouse;
@@ -34,9 +35,10 @@ class CFWL_PushButton final : public CFWL_Widget {
   explicit CFWL_PushButton(CFWL_App* pApp);
 
   void DrawBkground(CFGAS_GEGraphics* pGraphics, const CFX_Matrix& mtMatrix);
-  uint32_t GetPartStates();
+  Mask<CFWL_PartState> GetPartStates();
   void UpdateTextOutStyles();
-  void OnFocusChanged(CFWL_Message* pMsg, bool bSet);
+  void OnFocusGained();
+  void OnFocusLost();
   void OnLButtonDown(CFWL_MessageMouse* pMsg);
   void OnLButtonUp(CFWL_MessageMouse* pMsg);
   void OnMouseMove(CFWL_MessageMouse* pMsg);

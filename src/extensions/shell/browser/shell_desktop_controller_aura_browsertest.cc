@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/bind.h"
@@ -83,7 +83,7 @@ class ShellDesktopControllerAuraBrowserTest : public ShellApiTest {
   scoped_refptr<const Extension> app_;
 
  private:
-  ShellDesktopControllerAura* desktop_controller_ = nullptr;
+  raw_ptr<ShellDesktopControllerAura> desktop_controller_ = nullptr;
 };
 
 // Test that closing the app window stops the DesktopController.
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(ShellDesktopControllerAuraBrowserTest, TwoAppWindows) {
             // closing the last window. If DesktopController::Run() finishes
             // before we close the last window and update |test_succeeded|, the
             // test fails.
-            base::TimeDelta::FromMilliseconds(500));
+            base::Milliseconds(500));
       }));
 
   RunDesktopController();
@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(ShellDesktopControllerAuraBrowserTest, ReloadApp) {
               app_window->OnNativeClose();
               test_succeeded = true;
             }),
-            base::TimeDelta::FromMilliseconds(500));
+            base::Milliseconds(500));
       }));
 
   RunDesktopController();

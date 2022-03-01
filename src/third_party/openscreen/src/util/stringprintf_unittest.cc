@@ -20,13 +20,13 @@ TEST(StringPrintf, ProducesFormattedStrings) {
 
 TEST(HexEncode, ProducesEmptyStringFromEmptyByteArray) {
   const uint8_t kSomeMemoryLocation = 0;
-  EXPECT_EQ("", HexEncode(absl::Span<const uint8_t>(&kSomeMemoryLocation, 0)));
+  EXPECT_EQ("", HexEncode(&kSomeMemoryLocation, 0));
 }
 
 TEST(HexEncode, ProducesHexStringsFromBytes) {
   const uint8_t kMessage[] = "Hello world!";
   const char kMessageInHex[] = "48656c6c6f20776f726c642100";
-  EXPECT_EQ(kMessageInHex, HexEncode(kMessage));
+  EXPECT_EQ(kMessageInHex, HexEncode(kMessage, sizeof(kMessage)));
 }
 
 }  // namespace

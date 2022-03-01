@@ -79,7 +79,7 @@ static int dxa_read_header(AVFormatContext *s)
     if(fps > 0){
         den = 1000;
         num = fps;
-    }else if (fps < 0){
+    }else if (fps < 0 && fps > INT_MIN){
         den = 100000;
         num = -fps;
     }else{
@@ -226,7 +226,7 @@ static int dxa_read_packet(AVFormatContext *s, AVPacket *pkt)
     return AVERROR_EOF;
 }
 
-AVInputFormat ff_dxa_demuxer = {
+const AVInputFormat ff_dxa_demuxer = {
     .name           = "dxa",
     .long_name      = NULL_IF_CONFIG_SMALL("DXA"),
     .priv_data_size = sizeof(DXAContext),

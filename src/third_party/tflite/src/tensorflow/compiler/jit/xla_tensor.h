@@ -48,7 +48,7 @@ class XlaTensor {
   // Assign the internal ShapedBuffer to new memory for the given dtype and
   // shape. If a ShapedBuffer exists already (has_shaped_buffer() == true), it
   // is replaced and the managed memory deallocated.
-  Status AllocateShapedBuffer(DataType dtype, const xla::Shape& on_host_shape,
+  Status AllocateShapedBuffer(DataType dtype, const xla::Shape& on_device_shape,
                               xla::LocalClient* client, int device_ordinal);
 
   // Some Tensors can have complex on-device shapes, including tuple shapes. To
@@ -70,18 +70,6 @@ class XlaTensor {
   void set_shaped_buffer(xla::ScopedShapedBuffer shaped_buffer) {
     shaped_buffer_ = std::move(shaped_buffer);
   }
-
-  // Some tensors on the device may have known values on the host. We use these
-  // in on-demand mode to avoid re-copying values from the device if we know the
-  // host value already.
-
-  // Return true if this XlaTensor contains a host tensor.
-  bool has_host_tensor() const { return host_tensor_.has_value(); }
-  // Return the contained host tensor.
-  // REQUIRES: has_host_tensor()
-  const Tensor& host_tensor() const { return *host_tensor_; }
-  // Sets the contained host tensor.
-  void set_host_tensor(const Tensor& tensor) { host_tensor_.emplace(tensor); }
 
   // Adds synchronization events to 'stream' that wait for this tensor to be
   // defined on 'stream'. Does nothing if the tensor is already defined on that

@@ -94,12 +94,42 @@ MACH_ARM_SRCS = [
 ]
 
 cc_library(
+    name = "clog",
+    srcs = [
+        "deps/clog/src/clog.c",
+    ],
+    hdrs = [
+        "deps/clog/include/clog.h",
+    ],
+    copts = select({
+        ":windows_x86_64": [],
+        "//conditions:default": ["-Wno-unused-result"],
+    }),
+    linkopts = select({
+        ":android": ["-llog"],
+        "//conditions:default": [],
+    }),
+    linkstatic = select({
+        # https://github.com/bazelbuild/bazel/issues/11552
+        ":macos_x86_64": False,
+        "//conditions:default": True,
+    }),
+    defines = select({
+        # When linkstatic=False, we need default visibility
+        ":macos_x86_64": ["CLOG_VISIBILITY="],
+        "//conditions:default": [],
+    }),
+    strip_include_prefix = "deps/clog/include",
+)
+
+cc_library(
     name = "cpuinfo_impl",
     srcs = select({
         ":linux_x86_64": COMMON_SRCS + X86_SRCS + LINUX_SRCS + LINUX_X86_SRCS,
         ":linux_arm": COMMON_SRCS + ARM_SRCS + LINUX_SRCS + LINUX_ARM32_SRCS,
         ":linux_armhf": COMMON_SRCS + ARM_SRCS + LINUX_SRCS + LINUX_ARM32_SRCS,
         ":linux_armv7a": COMMON_SRCS + ARM_SRCS + LINUX_SRCS + LINUX_ARM32_SRCS,
+        ":linux_armeabi": COMMON_SRCS + ARM_SRCS + LINUX_SRCS + LINUX_ARM32_SRCS,
         ":linux_aarch64": COMMON_SRCS + ARM_SRCS + LINUX_SRCS + LINUX_ARM64_SRCS,
         ":macos_x86_64": COMMON_SRCS + X86_SRCS + MACH_SRCS + MACH_X86_SRCS,
         ":windows_x86_64": COMMON_SRCS + X86_SRCS + WINDOWS_X86_SRCS,
@@ -151,7 +181,7 @@ cc_library(
         "src/arm/midr.h",
     ],
     deps = [
-        "@clog",
+        ":clog",
     ],
 )
 
@@ -199,6 +229,11 @@ config_setting(
 )
 
 config_setting(
+    name = "linux_armeabi",
+    values = {"cpu": "armeabi"},
+)
+
+config_setting(
     name = "linux_aarch64",
     values = {"cpu": "aarch64"},
 )
@@ -209,6 +244,11 @@ config_setting(
         "apple_platform_type": "macos",
         "cpu": "darwin",
     },
+)
+
+config_setting(
+    name = "android",
+    values = {"crosstool_top": "//external:android/crosstool"},
 )
 
 config_setting(

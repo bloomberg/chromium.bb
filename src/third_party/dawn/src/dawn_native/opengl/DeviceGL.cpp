@@ -36,7 +36,7 @@ namespace dawn_native { namespace opengl {
 
     // static
     ResultOrError<Device*> Device::Create(AdapterBase* adapter,
-                                          const DeviceDescriptor* descriptor,
+                                          const DawnDeviceDescriptor* descriptor,
                                           const OpenGLFunctions& functions) {
         Ref<Device> device = AcquireRef(new Device(adapter, descriptor, functions));
         DAWN_TRY(device->Initialize());
@@ -44,13 +44,13 @@ namespace dawn_native { namespace opengl {
     }
 
     Device::Device(AdapterBase* adapter,
-                   const DeviceDescriptor* descriptor,
+                   const DawnDeviceDescriptor* descriptor,
                    const OpenGLFunctions& functions)
         : DeviceBase(adapter, descriptor), gl(functions) {
     }
 
     Device::~Device() {
-        ShutDownBase();
+        Destroy();
     }
 
     MaybeError Device::Initialize() {
@@ -99,6 +99,8 @@ namespace dawn_native { namespace opengl {
         SetToggle(Toggle::DisableDepthStencilRead, !supportsDepthStencilRead);
         SetToggle(Toggle::DisableSampleVariables, !supportsSampleVariables);
         SetToggle(Toggle::FlushBeforeClientWaitSync, gl.GetVersion().IsES());
+        // For OpenGL ES, we must use dummy fragment shader for vertex-only render pipeline.
+        SetToggle(Toggle::UseDummyFragmentInVertexOnlyPipeline, gl.GetVersion().IsES());
     }
 
     const GLFormat& Device::GetGLFormat(const Format& format) {
@@ -116,8 +118,9 @@ namespace dawn_native { namespace opengl {
         return BindGroup::Create(this, descriptor);
     }
     ResultOrError<Ref<BindGroupLayoutBase>> Device::CreateBindGroupLayoutImpl(
-        const BindGroupLayoutDescriptor* descriptor) {
-        return AcquireRef(new BindGroupLayout(this, descriptor));
+        const BindGroupLayoutDescriptor* descriptor,
+        PipelineCompatibilityToken pipelineCompatibilityToken) {
+        return AcquireRef(new BindGroupLayout(this, descriptor, pipelineCompatibilityToken));
     }
     ResultOrError<Ref<BufferBase>> Device::CreateBufferImpl(const BufferDescriptor* descriptor) {
         return AcquireRef(new Buffer(this, descriptor));
@@ -127,9 +130,9 @@ namespace dawn_native { namespace opengl {
         const CommandBufferDescriptor* descriptor) {
         return AcquireRef(new CommandBuffer(encoder, descriptor));
     }
-    ResultOrError<Ref<ComputePipelineBase>> Device::CreateComputePipelineImpl(
+    Ref<ComputePipelineBase> Device::CreateUninitializedComputePipelineImpl(
         const ComputePipelineDescriptor* descriptor) {
-        return AcquireRef(new ComputePipeline(this, descriptor));
+        return ComputePipeline::CreateUninitialized(this, descriptor);
     }
     ResultOrError<Ref<PipelineLayoutBase>> Device::CreatePipelineLayoutImpl(
         const PipelineLayoutDescriptor* descriptor) {
@@ -139,9 +142,9 @@ namespace dawn_native { namespace opengl {
         const QuerySetDescriptor* descriptor) {
         return AcquireRef(new QuerySet(this, descriptor));
     }
-    ResultOrError<Ref<RenderPipelineBase>> Device::CreateRenderPipelineImpl(
-        const RenderPipelineDescriptor2* descriptor) {
-        return AcquireRef(new RenderPipeline(this, descriptor));
+    Ref<RenderPipelineBase> Device::CreateUninitializedRenderPipelineImpl(
+        const RenderPipelineDescriptor* descriptor) {
+        return RenderPipeline::CreateUninitialized(this, descriptor);
     }
     ResultOrError<Ref<SamplerBase>> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
         return AcquireRef(new Sampler(this, descriptor));
@@ -159,7 +162,7 @@ namespace dawn_native { namespace opengl {
         Surface* surface,
         NewSwapChainBase* previousSwapChain,
         const SwapChainDescriptor* descriptor) {
-        return DAWN_VALIDATION_ERROR("New swapchains not implemented.");
+        return DAWN_FORMAT_VALIDATION_ERROR("New swapchains not implemented.");
     }
     ResultOrError<Ref<TextureBase>> Device::CreateTextureImpl(const TextureDescriptor* descriptor) {
         return AcquireRef(new Texture(this, descriptor));
@@ -174,6 +177,64 @@ namespace dawn_native { namespace opengl {
         GLsync sync = gl.FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
         IncrementLastSubmittedCommandSerial();
         mFencesInFlight.emplace(sync, GetLastSubmittedCommandSerial());
+    }
+
+    MaybeError Device::ValidateEGLImageCanBeWrapped(const TextureDescriptor* descriptor,
+                                                    ::EGLImage image) {
+        DAWN_INVALID_IF(descriptor->dimension != wgpu::TextureDimension::e2D,
+                        "Texture dimension (%s) is not %s.", descriptor->dimension,
+                        wgpu::TextureDimension::e2D);
+
+        DAWN_INVALID_IF(descriptor->mipLevelCount != 1, "Mip level count (%u) is not 1.",
+                        descriptor->mipLevelCount);
+
+        DAWN_INVALID_IF(descriptor->size.depthOrArrayLayers != 1,
+                        "Array layer count (%u) is not 1.", descriptor->size.depthOrArrayLayers);
+
+        DAWN_INVALID_IF(descriptor->sampleCount != 1, "Sample count (%u) is not 1.",
+                        descriptor->sampleCount);
+
+        DAWN_INVALID_IF(descriptor->usage & (wgpu::TextureUsage::TextureBinding |
+                                             wgpu::TextureUsage::StorageBinding),
+                        "Texture usage (%s) cannot have %s or %s.", descriptor->usage,
+                        wgpu::TextureUsage::TextureBinding, wgpu::TextureUsage::StorageBinding);
+
+        return {};
+    }
+    TextureBase* Device::CreateTextureWrappingEGLImage(const ExternalImageDescriptor* descriptor,
+                                                       ::EGLImage image) {
+        const TextureDescriptor* textureDescriptor = FromAPI(descriptor->cTextureDescriptor);
+
+        if (ConsumedError(ValidateTextureDescriptor(this, textureDescriptor))) {
+            return nullptr;
+        }
+        if (ConsumedError(ValidateEGLImageCanBeWrapped(textureDescriptor, image))) {
+            return nullptr;
+        }
+
+        GLuint tex;
+        gl.GenTextures(1, &tex);
+        gl.BindTexture(GL_TEXTURE_2D, tex);
+        gl.EGLImageTargetTexture2DOES(GL_TEXTURE_2D, image);
+
+        GLint width, height, internalFormat;
+        gl.GetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+        gl.GetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+        gl.GetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &internalFormat);
+
+        if (textureDescriptor->size.width != static_cast<uint32_t>(width) ||
+            textureDescriptor->size.height != static_cast<uint32_t>(height) ||
+            textureDescriptor->size.depthOrArrayLayers != 1) {
+            ConsumedError(DAWN_FORMAT_VALIDATION_ERROR(
+                "EGLImage size (width: %u, height: %u, depth: 1) doesn't match descriptor size %s.",
+                width, height, &textureDescriptor->size));
+            gl.DeleteTextures(1, &tex);
+            return nullptr;
+        }
+
+        // TODO(dawn:803): Validate the OpenGL texture format from the EGLImage against the format
+        // in the passed-in TextureDescriptor.
+        return new Texture(this, textureDescriptor, tex, TextureBase::TextureState::OwnedInternal);
     }
 
     MaybeError Device::TickImpl() {
@@ -228,7 +289,7 @@ namespace dawn_native { namespace opengl {
         return DAWN_UNIMPLEMENTED_ERROR("Device unable to copy from staging buffer to texture.");
     }
 
-    void Device::ShutDownImpl() {
+    void Device::DestroyImpl() {
         ASSERT(GetState() == State::Disconnected);
     }
 

@@ -5,62 +5,84 @@
 #ifndef ASH_APP_LIST_VIEWS_SEARCH_RESULT_VIEW_H_
 #define ASH_APP_LIST_VIEWS_SEARCH_RESULT_VIEW_H_
 
-#include <stddef.h>
-
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "ash/app_list/views/app_list_menu_model_adapter.h"
+#include "ash/app_list/model/search/search_result.h"
 #include "ash/app_list/views/search_result_actions_view_delegate.h"
 #include "ash/app_list/views/search_result_base_view.h"
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/views/context_menu_controller.h"
-
-namespace gfx {
-class RenderText;
-}
 
 namespace views {
+class FlexLayoutView;
 class ImageView;
+class Label;
 }  // namespace views
 
 namespace ash {
+
 namespace test {
 class SearchResultListViewTest;
 }  // namespace test
 
 class AppListViewDelegate;
+class MaskedImageView;
 class SearchResult;
 class SearchResultListView;
+class SearchResultPageDialogController;
 
 // SearchResultView displays a SearchResult.
 class ASH_EXPORT SearchResultView : public SearchResultBaseView,
-                                    public views::ContextMenuController,
                                     public SearchResultActionsViewDelegate {
  public:
+  enum class SearchResultViewType {
+    // The default vew type used for the majority of search results.
+    kDefault,
+    // The classic view type continues support for pre-BubbleView launcher's
+    // search UI.
+    kClassic,
+    // Inline Answer views are used to directly answer questions posed by the
+    // search query.
+    kAnswerCard,
+  };
+
   // Internal class name.
   static const char kViewClassName[];
 
-  explicit SearchResultView(SearchResultListView* list_view,
-                            AppListViewDelegate* view_delegate);
+  SearchResultView(SearchResultListView* list_view,
+                   AppListViewDelegate* view_delegate,
+                   SearchResultPageDialogController* dialog_controller,
+                   SearchResultViewType view_type);
+
+  SearchResultView(const SearchResultView&) = delete;
+  SearchResultView& operator=(const SearchResultView&) = delete;
+
   ~SearchResultView() override;
 
   // Sets/gets SearchResult displayed by this view.
   void OnResultChanged() override;
 
+  void SetSearchResultViewType(SearchResultViewType type);
+  SearchResultViewType view_type() { return view_type_; }
+
+  views::LayoutOrientation GetLayoutOrientationForTest();
+
  private:
   friend class test::SearchResultListViewTest;
+  friend class SearchResultListView;
+
+  int PreferredHeight() const;
+  int PrimaryTextHeight() const;
+  int SecondaryTextHeight() const;
 
   void UpdateTitleText();
   void UpdateDetailsText();
+  void UpdateRating();
 
-  // Creates title/details render text.
-  void CreateTitleRenderText();
-  void CreateDetailsRenderText();
+  void StyleLabel(views::Label* label,
+                  bool is_title_label,
+                  const SearchResult::Tags& tags);
+  void StyleTitleLabel();
+  void StyleDetailsLabel();
 
   // Callback for query suggstion removal confirmation.
   void OnQueryRemovalAccepted(bool accepted);
@@ -75,20 +97,10 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
   void OnMouseExited(const ui::MouseEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void VisibilityChanged(View* starting_from, bool is_visible) override;
+  void OnThemeChanged() override;
 
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // views::ContextMenuController overrides:
-  void ShowContextMenuForViewImpl(views::View* source,
-                                  const gfx::Point& point,
-                                  ui::MenuSourceType source_type) override;
-
-  // Bound by ShowContextMenuForViewImpl().
-  void OnGetContextMenu(views::View* source,
-                        const gfx::Point& point,
-                        ui::MenuSourceType source_type,
-                        std::unique_ptr<ui::SimpleMenuModel> menu_model);
 
   // SearchResultObserver overrides:
   void OnMetadataChanged() override;
@@ -103,32 +115,29 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
   void OnSearchResultActionActivated(size_t index) override;
   bool IsSearchResultHoveredOrSelected() override;
 
-  // Invoked when the context menu closes.
-  void OnMenuClosed();
-
-  // Whether this result has a rich image icon.
-  bool IsRichImage() const;
-
   // Parent list view. Owned by views hierarchy.
-  SearchResultListView* list_view_;
+  SearchResultListView* const list_view_;
 
-  AppListViewDelegate* view_delegate_;
+  AppListViewDelegate* const view_delegate_;
 
-  views::ImageView* icon_;  // Owned by views hierarchy.
-  // Rich image results will show |image_icon_| instead of |icon_|.
-  views::ImageView* image_icon_;  // Owned by views hierarchy.
-  views::ImageView* badge_icon_;  // Owned by views hierarchy.
-  std::unique_ptr<gfx::RenderText> title_text_;
-  std::unique_ptr<gfx::RenderText> details_text_;
+  SearchResultPageDialogController* const dialog_controller_;
 
-  std::unique_ptr<AppListMenuModelAdapter> context_menu_;
+  MaskedImageView* icon_ = nullptr;              // Owned by views hierarchy.
+  views::ImageView* badge_icon_ = nullptr;       // Owned by views hierarchy.
+  views::FlexLayoutView* text_container_ =
+      nullptr;                               // Owned by views hierarchy.
+  views::Label* title_label_ = nullptr;      // Owned by views hierarchy.
+  views::Label* details_label_ = nullptr;    // Owned by views hierarchy.
+  views::Label* separator_label_ = nullptr;  // Owned by views hierarchy.
+  views::Label* rating_ = nullptr;           // Owned by views hierarchy.
+  views::ImageView* rating_star_ = nullptr;  // Owned by views hierarchy.
 
   // Whether the removal confirmation dialog is invoked by long press touch.
   bool confirm_remove_by_long_press_ = false;
 
-  base::WeakPtrFactory<SearchResultView> weak_ptr_factory_{this};
+  SearchResultViewType view_type_;
 
-  DISALLOW_COPY_AND_ASSIGN(SearchResultView);
+  base::WeakPtrFactory<SearchResultView> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

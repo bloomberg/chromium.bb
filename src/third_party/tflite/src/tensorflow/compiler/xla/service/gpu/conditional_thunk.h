@@ -21,7 +21,6 @@ limitations under the License.
 
 #include "absl/types/span.h"
 #include "tensorflow/compiler/xla/service/gpu/buffer_allocations.h"
-#include "tensorflow/compiler/xla/service/gpu/hlo_execution_profiler.h"
 #include "tensorflow/compiler/xla/service/gpu/sequential_thunk.h"
 #include "tensorflow/compiler/xla/service/gpu/thunk.h"
 #include "tensorflow/compiler/xla/service/hlo_instruction.h"
@@ -29,6 +28,12 @@ limitations under the License.
 
 namespace xla {
 namespace gpu {
+
+struct ConditionalThunkConfig {
+  bool branch_index_is_bool;
+  int64_t branch_count;
+  std::vector<std::unique_ptr<SequentialThunk>> branch_thunks;
+};
 
 // ConditionalThunk implements the conditional instruction on GPU by reading the
 // predicate of the conditional and executing the true or the false computation
@@ -42,25 +47,19 @@ namespace gpu {
 // false computation share the same allocation.
 class ConditionalThunk : public Thunk {
  public:
-  ConditionalThunk(
-      const BufferAllocation::Slice& branch_index_buffer_index,
-      absl::Span<const BufferAllocation::Slice> branch_operand_buffer_indexes,
-      std::vector<ThunkSequence> branch_thunk_sequences,
-      const HloInstruction* hlo);
+  ConditionalThunk(ThunkInfo thunk_info, ConditionalThunkConfig config,
+                   const BufferAllocation::Slice& branch_index_buffer_index);
 
   ConditionalThunk(const ConditionalThunk&) = delete;
   ConditionalThunk& operator=(const ConditionalThunk&) = delete;
 
-  void ComputeAnnotations() override;
   Status Initialize(const GpuExecutable& executable,
                     se::StreamExecutor* executor) override;
   Status ExecuteOnStream(const ExecuteParams& params) override;
 
  private:
-  const bool branch_index_is_bool_;
+  const ConditionalThunkConfig config_;
   BufferAllocation::Slice branch_index_buffer_index_;
-  std::vector<BufferAllocation::Slice> branch_operand_buffer_indexes_;
-  std::vector<std::unique_ptr<SequentialThunk>> branch_thunks_;
 };
 
 }  // namespace gpu

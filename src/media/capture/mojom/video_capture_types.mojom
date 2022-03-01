@@ -238,6 +238,8 @@ enum VideoCaptureError {
   kDesktopCaptureDeviceMacFailedStreamCreate,
   kDesktopCaptureDeviceMacFailedStreamStart,
   kCrosHalV3BufferManagerFailedToReserveBuffers,
+  [MinVersion=1] kWinMediaFoundationSystemPermissionDenied,
+  [MinVersion=2] kVideoCaptureImplTimedOutOnStart,
 };
 
 [Stable, Extensible]
@@ -351,4 +353,14 @@ struct VideoCaptureDeviceDescriptor {
 struct VideoCaptureDeviceInfo {
   VideoCaptureDeviceDescriptor descriptor;
   array<VideoCaptureFormat> supported_formats;
+};
+
+// The result of an attempt by the client to start/stop cropping.
+// TODO(crbug.com/1247761): Remove kNotImplemented.
+enum CropRequestResult {
+  kSuccess,
+  kErrorGeneric,
+  kUnsupportedCaptureDevice,
+  kErrorUnknownDeviceId,
+  kNotImplemented,
 };

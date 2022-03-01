@@ -601,8 +601,8 @@ private:
     void onOnceBeforeDraw() override {
         const SkPoint center = { 0, 0 };
         const SkScalar kRadius = 3000;
-        const SkColor gColors[] = { 0xFFFFFFFF, 0xFF000000 };
-        fShader = SkGradientShader::MakeRadial(center, kRadius, gColors, nullptr, 2,
+        const SkColor kColors[] = { 0xFFFFFFFF, 0xFF000000 };
+        fShader = SkGradientShader::MakeRadial(center, kRadius, kColors, nullptr, 2,
                                                SkTileMode::kClamp);
     }
 
@@ -713,7 +713,7 @@ DEF_GM( return new LinearGradientGM(true); )
 DEF_GM( return new LinearGradientGM(false); )
 
 class LinearGradientTinyGM : public skiagm::GM {
-    static constexpr uint32_t kFlags = 0;
+    inline static constexpr uint32_t kFlags = 0;
 
     SkString onShortName() override { return SkString("linear_gradient_tiny"); }
 

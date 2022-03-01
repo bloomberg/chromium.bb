@@ -10,6 +10,9 @@
 #include "content/public/browser/global_request_id.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/early_hints.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace content {
 
@@ -63,12 +66,14 @@ ServiceWorkerNewScriptFetcher::ServiceWorkerNewScriptFetcher(
     ServiceWorkerContextCore& context,
     scoped_refptr<ServiceWorkerVersion> version,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-    blink::mojom::FetchClientSettingsObjectPtr fetch_client_settings_object)
+    blink::mojom::FetchClientSettingsObjectPtr fetch_client_settings_object,
+    const GlobalRenderFrameHostId& requesting_frame_id)
     : context_(context),
       version_(std::move(version)),
       loader_factory_(std::move(loader_factory)),
       fetch_client_settings_object_(std::move(fetch_client_settings_object)),
-      request_id_(GlobalRequestID::MakeBrowserInitiated().request_id) {}
+      request_id_(GlobalRequestID::MakeBrowserInitiated().request_id),
+      requesting_frame_id_(requesting_frame_id) {}
 
 ServiceWorkerNewScriptFetcher::~ServiceWorkerNewScriptFetcher() = default;
 
@@ -90,9 +95,9 @@ void ServiceWorkerNewScriptFetcher::StartScriptLoadingWithNewResourceID(
   }
   network::ResourceRequest request =
       service_worker_loader_helpers::CreateRequestForServiceWorkerScript(
-          version_->script_url(), version_->origin(), /*is_main_script=*/true,
-          version_->script_type(), *fetch_client_settings_object_,
-          *browser_context);
+          version_->script_url(), version_->key().origin(),
+          /*is_main_script=*/true, version_->script_type(),
+          *fetch_client_settings_object_, *browser_context);
   // Request SSLInfo. It will be persisted in service worker storage and may be
   // used by ServiceWorkerMainResourceLoader for navigations handled by this
   // service worker.
@@ -105,7 +110,7 @@ void ServiceWorkerNewScriptFetcher::StartScriptLoadingWithNewResourceID(
           std::move(version_), std::move(loader_factory_),
           net::MutableNetworkTrafficAnnotationTag(
               kServiceWorkerScriptLoadTrafficAnnotation),
-          resource_id, /*is_throttle_needed=*/true),
+          resource_id, /*is_throttle_needed=*/true, requesting_frame_id_),
       url_loader_remote_.BindNewPipeAndPassReceiver());
 }
 

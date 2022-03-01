@@ -12,7 +12,7 @@
 namespace {
 
 const CXFA_Node::PropertyData kXmlConnectionPropertyData[] = {
-    {XFA_Element::Uri, 1, 0},
+    {XFA_Element::Uri, 1, {}},
 };
 
 const CXFA_Node::AttributeData kXmlConnectionAttributeData[] = {
@@ -26,7 +26,7 @@ CXFA_XmlConnection::CXFA_XmlConnection(CXFA_Document* doc,
                                        XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_ConnectionSet,
+                XFA_XDPPACKET::kConnectionSet,
                 XFA_ObjectType::Node,
                 XFA_Element::XmlConnection,
                 kXmlConnectionPropertyData,

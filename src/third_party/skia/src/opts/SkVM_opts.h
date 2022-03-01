@@ -25,32 +25,46 @@ static inline skvx::Vec<N,int> gather32(const int* ptr, const skvx::Vec<N,int>& 
 
 namespace SK_OPTS_NS {
 
+namespace SkVMInterpreterTypes {
+#if SK_CPU_SSE_LEVEL >= SK_CPU_SSE_LEVEL_AVX2
+    constexpr inline int K = 32;  // 1024-bit: 4 ymm or 2 zmm at a time
+#else
+    constexpr inline int K = 8;   // 256-bit: 2 xmm, 2 v-registers, etc.
+#endif
+    using I32 = skvx::Vec<K, int>;
+    using I16 = skvx::Vec<K, int16_t>;
+    using F32 = skvx::Vec<K, float>;
+    using U64 = skvx::Vec<K, uint64_t>;
+    using U32 = skvx::Vec<K, uint32_t>;
+    using U16 = skvx::Vec<K, uint16_t>;
+    using  U8 = skvx::Vec<K, uint8_t>;
+    union Slot {
+        F32   f32;
+        I32   i32;
+        U32   u32;
+        I16   i16;
+        U16   u16;
+    };
+}  // namespace SkVMInterpreterTypes
+
     inline void interpret_skvm(const skvm::InterpreterInstruction insts[], const int ninsts,
                                const int nregs, const int loop,
-                               const int strides[], const int nargs,
-                               int n, void* args[]) {
+                               const int strides[],
+                               skvm::TraceHook* traceHooks[], const int nTraceHooks,
+                               const int nargs, int n, void* args[]) {
         using namespace skvm;
 
+        using SkVMInterpreterTypes::K;
+        using SkVMInterpreterTypes::I32;
+        using SkVMInterpreterTypes::I16;
+        using SkVMInterpreterTypes::F32;
+        using SkVMInterpreterTypes::U64;
+        using SkVMInterpreterTypes::U32;
+        using SkVMInterpreterTypes::U16;
+        using SkVMInterpreterTypes::U8;
+        using SkVMInterpreterTypes::Slot;
+
         // We'll operate in SIMT style, knocking off K-size chunks from n while possible.
-    #if SK_CPU_SSE_LEVEL >= SK_CPU_SSE_LEVEL_AVX2
-        constexpr int K = 32;  // 1024-bit: 4 ymm or 2 zmm at a time
-    #else
-        constexpr int K = 8;   // 256-bit: 2 xmm, 2 v-registers, etc.
-    #endif
-        using I32 = skvx::Vec<K, int>;
-        using I16 = skvx::Vec<K, int16_t>;
-        using F32 = skvx::Vec<K, float>;
-        using U64 = skvx::Vec<K, uint64_t>;
-        using U32 = skvx::Vec<K, uint32_t>;
-        using U16 = skvx::Vec<K, uint16_t>;
-        using  U8 = skvx::Vec<K, uint8_t>;
-        union Slot {
-            F32   f32;
-            I32   i32;
-            U32   u32;
-            I16   i16;
-            U16   u16;
-        };
 
         Slot                     few_regs[16];
         std::unique_ptr<char[]> many_regs;
@@ -70,6 +84,9 @@ namespace SK_OPTS_NS {
             r = (Slot*)addr;
         }
 
+        const auto should_trace = [&](int immA, Reg x, Reg y) -> bool {
+            return immA >= 0 && immA < nTraceHooks && any(r[x].i32 & r[y].i32);
+        };
 
         // Step each argument pointer ahead by its stride a number of times.
         auto step_args = [&](int times) {
@@ -83,8 +100,8 @@ namespace SK_OPTS_NS {
         for ( ; n > 0; start = loop, n -= stride, step_args(stride)) {
             stride = n >= K ? K : 1;
 
-            for (int i = start; i < ninsts; i++) {
-                InterpreterInstruction inst = insts[i];
+            for (int instIdx = start; instIdx < ninsts; instIdx++) {
+                InterpreterInstruction inst = insts[instIdx];
 
                 // d = op(x,y,z,w, immA,immB)
                 Reg   d = inst.d,
@@ -93,7 +110,8 @@ namespace SK_OPTS_NS {
                       z = inst.z,
                       w = inst.w;
                 int immA = inst.immA,
-                    immB = inst.immB;
+                    immB = inst.immB,
+                    immC = inst.immC;
 
                 // Ops that interact with memory need to know whether we're stride=1 or K,
                 // but all non-memory ops can run the same code no matter the stride.
@@ -193,14 +211,44 @@ namespace SK_OPTS_NS {
                     CASE(Op::assert_true):
                     #ifdef SK_DEBUG
                         if (!all(r[x].i32)) {
-                            SkDebugf("inst %d, register %d\n", i, y);
+                            SkDebugf("inst %d, register %d\n", instIdx, y);
                             for (int i = 0; i < K; i++) {
-                                SkDebugf("\t%2d: %08x (%g)\n", i, r[y].i32[i], r[y].f32[i]);
+                                SkDebugf("\t%2d: %08x (%g)\n",
+                                         instIdx, r[y].i32[instIdx], r[y].f32[instIdx]);
                             }
                             SkASSERT(false);
                         }
                     #endif
                     break;
+
+                    CASE(Op::trace_line):
+                        if (should_trace(immA, x, y)) {
+                            traceHooks[immA]->line(immB);
+                        }
+                        break;
+
+                    CASE(Op::trace_var):
+                        if (should_trace(immA, x, y)) {
+                            for (int i = 0; i < K; ++i) {
+                                if (r[x].i32[i] & r[y].i32[i]) {
+                                    traceHooks[immA]->var(immB, r[z].i32[i]);
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+
+                    CASE(Op::trace_enter):
+                        if (should_trace(immA, x, y)) {
+                            traceHooks[immA]->enter(immB);
+                        }
+                        break;
+
+                    CASE(Op::trace_exit):
+                        if (should_trace(immA, x, y)) {
+                            traceHooks[immA]->exit(immB);
+                        }
+                        break;
 
                     CASE(Op::index): {
                         const int iota[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,
@@ -214,6 +262,12 @@ namespace SK_OPTS_NS {
 
                     CASE(Op::uniform32):
                         r[d].i32 = *(const int*)( (const char*)args[immA] + immB );
+                        break;
+
+                    CASE(Op::array32):
+                        const int* ptr;
+                        memcpy(&ptr, (const uint8_t*)args[immA] + immB, sizeof(ptr));
+                        r[d].i32 = ptr[immC/sizeof(int)];
                         break;
 
                     CASE(Op::splat): r[d].i32 = immA; break;

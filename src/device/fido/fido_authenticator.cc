@@ -8,8 +8,18 @@
 
 #include "base/callback.h"
 #include "base/notreached.h"
+#include "device/fido/ctap_make_credential_request.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
+
+void FidoAuthenticator::ExcludeAppIdCredentialsBeforeMakeCredential(
+    CtapMakeCredentialRequest request,
+    MakeCredentialOptions options,
+    base::OnceCallback<void(CtapDeviceResponseCode, absl::optional<bool>)>
+        callback) {
+  std::move(callback).Run(CtapDeviceResponseCode::kSuccess, absl::nullopt);
+}
 
 void FidoAuthenticator::GetNextAssertion(
     FidoAuthenticator::GetAssertionCallback callback) {
@@ -103,6 +113,18 @@ void FidoAuthenticator::DeleteCredential(
     const pin::TokenResponse& pin_token,
     const PublicKeyCredentialDescriptor& credential_id,
     DeleteCredentialCallback callback) {
+  NOTREACHED();
+}
+
+bool FidoAuthenticator::SupportsUpdateUserInformation() const {
+  return false;
+}
+
+void FidoAuthenticator::UpdateUserInformation(
+    const pin::TokenResponse& pin_token,
+    const PublicKeyCredentialDescriptor& credential_id,
+    const PublicKeyCredentialUserEntity& updated_user,
+    UpdateUserInformationCallback callback) {
   NOTREACHED();
 }
 

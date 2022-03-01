@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
 #import "ios/web/public/web_state_user_data.h"
@@ -22,6 +21,10 @@ class IOSChromeSyncedTabDelegate
     : public sync_sessions::SyncedTabDelegate,
       public web::WebStateUserData<IOSChromeSyncedTabDelegate> {
  public:
+  IOSChromeSyncedTabDelegate(const IOSChromeSyncedTabDelegate&) = delete;
+  IOSChromeSyncedTabDelegate& operator=(const IOSChromeSyncedTabDelegate&) =
+      delete;
+
   ~IOSChromeSyncedTabDelegate() override;
 
   // SyncedTabDelegate:
@@ -64,8 +67,6 @@ class IOSChromeSyncedTabDelegate
   mutable CRWSessionStorage* session_storage_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(IOSChromeSyncedTabDelegate);
 };
 
 #endif  // IOS_CHROME_BROWSER_SYNC_IOS_CHROME_SYNCED_TAB_DELEGATE_H_

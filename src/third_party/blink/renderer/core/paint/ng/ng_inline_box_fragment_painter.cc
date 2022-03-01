@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
+#include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
 #include "third_party/blink/renderer/core/style/nine_piece_image.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -50,10 +51,15 @@ void NGInlineBoxFragmentPainter::Paint(const PaintInfo& paint_info,
                                        const PhysicalOffset& paint_offset) {
   ScopedDisplayItemFragment display_item_fragment(
       paint_info.context, inline_box_item_.FragmentId());
+  const LayoutObject& layout_object = *inline_box_fragment_.GetLayoutObject();
+  absl::optional<ScopedSVGPaintState> svg_paint_state;
+  if (layout_object.IsSVGInline())
+    svg_paint_state.emplace(layout_object, paint_info);
 
   const PhysicalOffset adjusted_paint_offset =
       paint_offset + inline_box_item_.OffsetInContainerFragment();
-  if (paint_info.phase == PaintPhase::kForeground)
+  if (paint_info.phase == PaintPhase::kForeground &&
+      !layout_object.IsSVGInline())
     PaintBackgroundBorderShadow(paint_info, adjusted_paint_offset);
 
   const bool suppress_box_decoration_background = true;
@@ -68,7 +74,8 @@ void NGInlineBoxFragmentPainterBase::PaintBackgroundBorderShadow(
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) {
   DCHECK(paint_info.phase == PaintPhase::kForeground);
-  if (inline_box_fragment_.Style().Visibility() != EVisibility::kVisible)
+  if (inline_box_fragment_.Style().Visibility() != EVisibility::kVisible ||
+      inline_box_fragment_.IsOpaque())
     return;
 
   // You can use p::first-line to specify a background. If so, the direct child
@@ -112,11 +119,11 @@ void NGInlineBoxFragmentPainterBase::PaintBackgroundBorderShadow(
       object_may_have_multiple_boxes, SidesToInclude());
 }
 
-IntRect NGInlineBoxFragmentPainterBase::VisualRect(
+gfx::Rect NGInlineBoxFragmentPainterBase::VisualRect(
     const PhysicalOffset& paint_offset) {
   PhysicalRect overflow_rect = inline_box_item_.SelfInkOverflow();
   overflow_rect.Move(paint_offset);
-  return EnclosingIntRect(overflow_rect);
+  return ToEnclosingRect(overflow_rect);
 }
 
 void NGLineBoxFragmentPainter::PaintBackgroundBorderShadow(
@@ -233,7 +240,7 @@ PhysicalRect NGInlineBoxFragmentPainterBase::PaintRectForImageStrip(
 InlineBoxPainterBase::BorderPaintingType
 NGInlineBoxFragmentPainterBase::GetBorderPaintType(
     const PhysicalRect& adjusted_frame_rect,
-    IntRect& adjusted_clip_rect,
+    gfx::Rect& adjusted_clip_rect,
     bool object_has_multiple_boxes) const {
   const ComputedStyle& style = inline_box_fragment_.Style();
   if (!style.HasBorderDecoration())
@@ -250,12 +257,12 @@ NGInlineBoxFragmentPainterBase::GetBorderPaintType(
   // only box for this object.  In those cases only a single call to draw is
   // required.
   if (!has_border_image || !object_has_multiple_boxes) {
-    adjusted_clip_rect = PixelSnappedIntRect(adjusted_frame_rect);
+    adjusted_clip_rect = ToPixelSnappedRect(adjusted_frame_rect);
     return kPaintBordersWithoutClip;
   }
 
   // We have a border image that spans multiple lines.
-  adjusted_clip_rect = PixelSnappedIntRect(ClipRectForNinePieceImageStrip(
+  adjusted_clip_rect = ToPixelSnappedRect(ClipRectForNinePieceImageStrip(
       style, SidesToInclude(), border_image, adjusted_frame_rect));
   return kPaintBordersWithClip;
 }

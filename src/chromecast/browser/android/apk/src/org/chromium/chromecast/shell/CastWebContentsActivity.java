@@ -4,10 +4,13 @@
 
 package org.chromium.chromecast.shell;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.PictureInPictureParams;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -15,7 +18,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
@@ -129,27 +131,17 @@ public class CastWebContentsActivity extends Activity {
 
         mCreatedState.subscribe(Observers.onExit(x -> mSurfaceHelperState.reset()));
 
-        mCreatedState.map(x -> getWindow())
-                .and(mGotIntentState)
-                .subscribe(Observers.onEnter(Both.adapt((Window window, Intent intent) -> {
-                    // Set flags to both exit sleep mode when this activity starts and
-                    // avoid entering sleep mode while playing media. If an app that shouldn't turn
-                    // on the screen is launching, we don't add TURN_SCREEN_ON.
-                    if (CastWebContentsIntentUtils.shouldTurnOnScreen(intent)) turnScreenOn();
-                    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                })));
+        // Set a flag to exit sleep mode when this activity starts.
+        mCreatedState.and(mGotIntentState)
+                .map(Both::getSecond)
+                // Turn the screen on only if the launching Intent asks to.
+                .filter(CastWebContentsIntentUtils::shouldTurnOnScreen)
+                .subscribe(Observers.onEnter(x -> turnScreenOn()));
 
         // Initialize the audio manager in onCreate() if tests haven't already.
         mCreatedState.and(Observable.not(mAudioManagerState)).subscribe(Observers.onEnter(x -> {
             mAudioManagerState.set(CastAudioManager.getAudioManager(this));
         }));
-
-        // Clean up stream mute state on pause events.
-        mAudioManagerState.andThen(Observable.not(mResumedState))
-                .map(Both::getFirst)
-                .subscribe(Observers.onEnter((CastAudioManager audioManager) -> {
-                    audioManager.releaseStreamMuteIfNecessary(AudioManager.STREAM_MUSIC);
-                }));
 
         // Handle each new Intent.
         Controller<CastWebContentsSurfaceHelper.StartParams> startParamsState = new Controller<>();
@@ -166,7 +158,7 @@ public class CastWebContentsActivity extends Activity {
         mIsFinishingState.subscribe(Observers.onEnter((String reason) -> {
             if (DEBUG) Log.d(TAG, "Finishing activity: " + reason);
             mSurfaceHelperState.reset();
-            finish();
+            finishAndRemoveTask();
         }));
 
         mStartedState.subscribe(x -> {
@@ -193,6 +185,7 @@ public class CastWebContentsActivity extends Activity {
         }));
     }
 
+    @TargetApi(Build.VERSION_CODES.S)
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         if (DEBUG) Log.d(TAG, "onCreate");
@@ -204,6 +197,11 @@ public class CastWebContentsActivity extends Activity {
         // For more information read:
         // http://developer.android.com/training/managing-audio/volume-playback.html
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
+        if (canAutoEnterPictureInPicture()) {
+            setPictureInPictureParams(
+                    new PictureInPictureParams.Builder().setAutoEnterEnabled(true).build());
+        }
     }
 
     @Override
@@ -275,6 +273,14 @@ public class CastWebContentsActivity extends Activity {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.O)
+    @Override
+    public void onUserLeaveHint() {
+        if (canUsePictureInPicture() && !canAutoEnterPictureInPicture()) {
+            enterPictureInPictureMode(new PictureInPictureParams.Builder().build());
+        }
+    }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         if (mSurfaceHelper != null && mSurfaceHelper.isTouchInputEnabled()) {
@@ -285,11 +291,24 @@ public class CastWebContentsActivity extends Activity {
     }
 
     private void turnScreenOn() {
+        Log.i(TAG, "Setting flag to turn screen on");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setTurnScreenOn(true);
+            // Allow Activities that turn on the screen to show in the lock screen.
+            setShowWhenLocked(true);
         } else {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         }
+    }
+
+    private boolean canUsePictureInPicture() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && getPackageManager().hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE);
+    }
+
+    private boolean canAutoEnterPictureInPicture() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                && getPackageManager().hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE);
     }
 
     public void finishForTesting() {

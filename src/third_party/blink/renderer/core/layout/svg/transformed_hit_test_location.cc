@@ -19,12 +19,17 @@ const HitTestLocation* InverseTransformLocationIfNeeded(
   if (!transform.IsInvertible())
     return nullptr;
   const AffineTransform inverse = transform.Inverse();
-  FloatPoint transformed_point = inverse.MapPoint(location.TransformedPoint());
+  gfx::PointF transformed_point = inverse.MapPoint(location.TransformedPoint());
   if (UNLIKELY(location.IsRectBasedTest())) {
     storage.emplace(transformed_point,
                     inverse.MapQuad(location.TransformedRect()));
   } else {
-    storage.emplace(transformed_point);
+    // Specify |bounding_box| argument even if |location| is not rect-based.
+    // Without it, HitTestLocation would have 1x1 bounding box, and it would
+    // be mapped to NxN screen pixels if scaling factor is N.
+    storage.emplace(transformed_point,
+                    PhysicalRect::EnclosingRect(
+                        inverse.MapRect(FloatRect(location.BoundingBox()))));
   }
   return &*storage;
 }

@@ -9,15 +9,13 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
 #include "chromeos/login/auth/user_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class AccountId;
 
-namespace chromeos {
-
-class UserContext;
-
+namespace ash {
 namespace quick_unlock {
 
 class PinStorageCryptohome {
@@ -33,6 +31,10 @@ class PinStorageCryptohome {
                                           const Key& key);
 
   PinStorageCryptohome();
+
+  PinStorageCryptohome(const PinStorageCryptohome&) = delete;
+  PinStorageCryptohome& operator=(const PinStorageCryptohome&) = delete;
+
   ~PinStorageCryptohome();
 
   void IsPinSetInCryptohome(const AccountId& account_id,
@@ -57,11 +59,17 @@ class PinStorageCryptohome {
   std::vector<base::OnceClosure> system_salt_callbacks_;
 
   base::WeakPtrFactory<PinStorageCryptohome> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PinStorageCryptohome);
 };
 
 }  // namespace quick_unlock
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+namespace quick_unlock {
+using ::ash::quick_unlock::PinStorageCryptohome;
+}
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_QUICK_UNLOCK_PIN_STORAGE_CRYPTOHOME_H_

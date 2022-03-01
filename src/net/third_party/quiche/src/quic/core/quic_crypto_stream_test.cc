@@ -64,10 +64,19 @@ class MockQuicCryptoStream : public QuicCryptoStream,
   void OnHandshakePacketSent() override {}
   void OnHandshakeDoneReceived() override {}
   void OnNewTokenReceived(absl::string_view /*token*/) override {}
-  std::string GetAddressToken() const override { return ""; }
+  std::string GetAddressToken(
+      const CachedNetworkParameters* /*cached_network_parameters*/)
+      const override {
+    return "";
+  }
   bool ValidateAddressToken(absl::string_view /*token*/) const override {
     return true;
   }
+  const CachedNetworkParameters* PreviousCachedNetworkParams() const override {
+    return nullptr;
+  }
+  void SetPreviousCachedNetworkParams(
+      CachedNetworkParameters /*cached_network_params*/) override {}
   HandshakeState GetHandshakeState() const override { return HANDSHAKE_START; }
   void SetServerApplicationStateForResumption(
       std::unique_ptr<ApplicationState> /*application_state*/) override {}
@@ -79,6 +88,13 @@ class MockQuicCryptoStream : public QuicCryptoStream,
   std::unique_ptr<QuicEncrypter> CreateCurrentOneRttEncrypter() override {
     return nullptr;
   }
+  bool ExportKeyingMaterial(absl::string_view /*label*/,
+                            absl::string_view /*context*/,
+                            size_t /*result_len*/,
+                            std::string* /*result*/) override {
+    return false;
+  }
+  SSL* GetSsl() const override { return nullptr; }
 
  private:
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
@@ -687,6 +703,21 @@ TEST_F(QuicCryptoStreamTest, RetransmitCryptoFramesAndPartialWrite) {
                        &MockQuicConnection::QuicConnection_SendCryptoData));
   stream_->WritePendingCryptoRetransmission();
   EXPECT_FALSE(stream_->HasPendingCryptoRetransmission());
+}
+
+// Regression test for b/203199510
+TEST_F(QuicCryptoStreamTest, EmptyCryptoFrame) {
+  if (!QuicVersionUsesCryptoFrames(connection_->transport_version())) {
+    return;
+  }
+  if (GetQuicReloadableFlag(quic_accept_empty_crypto_frame)) {
+    EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
+  } else {
+    EXPECT_CALL(*connection_,
+                CloseConnection(QUIC_EMPTY_STREAM_FRAME_NO_FIN, _, _));
+  }
+  QuicCryptoFrame empty_crypto_frame(ENCRYPTION_INITIAL, 0, nullptr, 0);
+  stream_->OnCryptoFrame(empty_crypto_frame);
 }
 
 }  // namespace

@@ -319,7 +319,7 @@ def console_view_entry(
         short_name = None):
     """Specifies the details of a console view entry.
 
-    See https://chromium.googlesource.com/infra/luci/luci-go/+/refs/heads/master/lucicfg/doc/README.md#luci.console_view_entry
+    See https://chromium.googlesource.com/infra/luci/luci-go/+/HEAD/lucicfg/doc/README.md#luci.console_view_entry
     for more details on the arguments.
 
     Args:
@@ -392,7 +392,7 @@ def list_view(*, name, branch_selector = branches.MAIN, **kwargs):
     )
 
 def _sort_consoles(ctx):
-    milo = ctx.output["luci-milo.cfg"]
+    milo = ctx.output["luci/luci-milo.cfg"]
     consoles = []
     for console in milo.consoles:
         if not console.builders:

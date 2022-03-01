@@ -42,9 +42,10 @@ class PerformanceManagerTest : public PerformanceManagerTestHarness {
     EXPECT_FALSE(PerformanceManager::IsAvailable());
   }
 
-  ~PerformanceManagerTest() override {}
+  PerformanceManagerTest(const PerformanceManagerTest&) = delete;
+  PerformanceManagerTest& operator=(const PerformanceManagerTest&) = delete;
 
-  DISALLOW_COPY_AND_ASSIGN(PerformanceManagerTest);
+  ~PerformanceManagerTest() override {}
 };
 
 TEST_F(PerformanceManagerTest, NodeAccessors) {
@@ -55,7 +56,7 @@ TEST_F(PerformanceManagerTest, NodeAccessors) {
   ASSERT_TRUE(rph);
 
   base::WeakPtr<PageNode> page_node =
-      PerformanceManager::GetPageNodeForWebContents(contents.get());
+      PerformanceManager::GetPrimaryPageNodeForWebContents(contents.get());
 
   // FrameNode's and ProcessNode's don't exist until an observer fires on
   // navigation. Verify that looking them up before that returns null instead

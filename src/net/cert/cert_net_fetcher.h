@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
@@ -45,6 +44,9 @@ class NET_EXPORT CertNetFetcher
   enum { DEFAULT = -1 };
 
   CertNetFetcher() {}
+
+  CertNetFetcher(const CertNetFetcher&) = delete;
+  CertNetFetcher& operator=(const CertNetFetcher&) = delete;
 
   // Shuts down the CertNetFetcher and cancels outstanding network requests. It
   // is not guaranteed that any outstanding or subsequent
@@ -85,7 +87,6 @@ class NET_EXPORT CertNetFetcher
 
  private:
   friend class base::RefCountedThreadSafe<CertNetFetcher>;
-  DISALLOW_COPY_AND_ASSIGN(CertNetFetcher);
 };
 
 }  // namespace net

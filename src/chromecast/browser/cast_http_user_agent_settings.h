@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "net/base/http_user_agent_settings.h"
 
 namespace chromecast {
@@ -17,6 +16,11 @@ namespace shell {
 class CastHttpUserAgentSettings : public net::HttpUserAgentSettings {
  public:
   CastHttpUserAgentSettings();
+
+  CastHttpUserAgentSettings(const CastHttpUserAgentSettings&) = delete;
+  CastHttpUserAgentSettings& operator=(const CastHttpUserAgentSettings&) =
+      delete;
+
   ~CastHttpUserAgentSettings() override;
 
   // net::HttpUserAgentSettings implementation:
@@ -30,8 +34,6 @@ class CastHttpUserAgentSettings : public net::HttpUserAgentSettings {
  private:
   mutable std::string last_locale_;
   mutable std::string accept_language_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastHttpUserAgentSettings);
 };
 
 }  // namespace shell
