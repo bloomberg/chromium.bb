@@ -6,6 +6,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
+#include "base/process/launch.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -28,18 +29,8 @@
 namespace {
 
 base::FilePath GetPythonPath() {
-#if defined(OS_WIN)
-  // Windows bots do not have python installed and available on the PATH.
-  // Please see infra/doc/users/python.md
-  base::FilePath bot_path =
-      base::FilePath(FILE_PATH_LITERAL("c:/infra-system/bin/python.exe"));
-
-  if (base::PathExists(bot_path))
-    return bot_path;
-  return base::FilePath(FILE_PATH_LITERAL("python.exe"));
-#else
-  return base::FilePath(FILE_PATH_LITERAL("python"));
-#endif
+  // Every environment should have python3.
+  return base::FilePath(FILE_PATH_LITERAL("python3"));
 }
 
 const base::FilePath kTestDataPath = base::FilePath(
@@ -158,18 +149,20 @@ class MediaEngagementAutoplayBrowserTest
 
     // Write JSON file with the server origin in it.
     base::ListValue list;
-    list.AppendString(origin.Serialize());
+    list.Append(origin.Serialize());
     std::string json_data;
     base::JSONWriter::Write(list, &json_data);
     EXPECT_TRUE(base::WriteFile(input_path, json_data));
 
-    // Get the path to the "generator" binary in the module path.
-    base::FilePath module_dir;
-    EXPECT_TRUE(base::PathService::Get(base::DIR_MODULE, &module_dir));
+    // Get the path to the "generator" script. As it is copied by
+    // //tools/media_engagement_preload/BUILD.gn, it is generated test data.
+    base::FilePath generator_dir;
+    EXPECT_TRUE(
+        base::PathService::Get(base::DIR_GEN_TEST_DATA_ROOT, &generator_dir));
 
     // Launch the generator and wait for it to finish.
     base::CommandLine cmd(GetPythonPath());
-    cmd.AppendArgPath(module_dir.Append(
+    cmd.AppendArgPath(generator_dir.Append(
         FILE_PATH_LITERAL("tools/media_engagement_preload/make_dafsa.py")));
     cmd.AppendArgPath(input_path);
     cmd.AppendArgPath(output_path);
@@ -297,8 +290,14 @@ IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
   ExpectAutoplayAllowedIfEnabled();
 }
 
+// Disabled due to being flaky. crbug.com/1212507
+#if defined(OS_MAC)
+#define MAYBE_UsePreloadedData_Allowed DISABLED_UsePreloadedData_Allowed
+#else
+#define MAYBE_UsePreloadedData_Allowed UsePreloadedData_Allowed
+#endif
 IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
-                       UsePreloadedData_Allowed) {
+                       MAYBE_UsePreloadedData_Allowed) {
   // Autoplay should be blocked by default if we have a bad score.
   SetScores(PrimaryOrigin(), 0, 0);
   LoadTestPage("engagement_autoplay_test.html");

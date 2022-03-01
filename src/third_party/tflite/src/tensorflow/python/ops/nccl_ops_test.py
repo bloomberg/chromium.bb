@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for nccl ops. See also the cc test for nccl_communicator."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from functools import partial
 
 import numpy as np
@@ -76,7 +72,7 @@ class NcclTestCase(test.TestCase):
     for dtype in [np.float16, np.float32, np.int32, np.int64, np.float64]:
       # Create session inside outer loop to test use of
       # same communicator across multiple sessions.
-      with self.test_session(use_gpu=True) as sess:
+      with self.test_session():
 
         for devices in device_sets:
           shape = (3, 4)
@@ -141,9 +137,9 @@ class AllReduceTest(NcclTestCase):
         partial(_NcclAllReduce, nccl_ops.all_sum), lambda x, y: x + y)
 
   def testErrors(self):
-    with self.assertRaisesRegexp(ValueError, 'Device assignment required'):
+    with self.assertRaisesRegex(ValueError, 'Device assignment .* required'):
       nccl_ops.all_sum([array_ops.identity(np.random.random_sample((3, 4)))])
-    with self.assertRaisesRegexp(ValueError, 'Must pass >0 tensors'):
+    with self.assertRaisesRegex(ValueError, 'Must pass >0 tensors'):
       nccl_ops.all_sum([])
 
 
@@ -173,7 +169,7 @@ class BroadcastTest(NcclTestCase):
       self._Test(_NcclBroadcast, lambda x, y: x,
                  (['/device:GPU:0', '/device:CPU:0'],))
     except errors.NotFoundError as e:
-      self.assertRegexpMatches(
+      self.assertRegex(
           str(e), "No registered '_NcclBroadcastRecv' OpKernel for CPU devices")
     else:
       # Session isn't executed when no GPU is available.

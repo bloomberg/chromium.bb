@@ -29,8 +29,11 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
+#include "chrome/browser/signin/test_signin_client_builder.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -88,8 +91,6 @@ std::unique_ptr<TestingProfile> BuildTestingProfile(
   if (params.profile_is_supervised) {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     profile_builder.SetSupervisedUserId(supervised_users::kChildAccountSUID);
-#else
-    profile_builder.SetSupervisedUserId("asdf");
 #endif
   }
 
@@ -102,9 +103,16 @@ std::unique_ptr<TestingProfile> BuildTestingProfile(
         ManagedBookmarkServiceFactory::GetDefaultFactory());
   }
 
+  profile_builder.AddTestingFactory(
+      ChromeSigninClientFactory::GetInstance(),
+      base::BindRepeating(&signin::BuildTestSigninClient));
   profile_builder.AddTestingFactories(
       IdentityTestEnvironmentProfileAdaptor::
           GetIdentityTestEnvironmentFactories());
+  // TODO(crbug.com/1222596): SyncService instantiation can be scoped down to
+  // a few derived fixtures.
+  profile_builder.AddTestingFactory(SyncServiceFactory::GetInstance(),
+                                    SyncServiceFactory::GetDefaultFactory());
 
   profile_builder.SetPath(params.profile_path);
   return profile_builder.Build();
@@ -277,15 +285,16 @@ testing::AssertionResult ExtensionServiceTestBase::ValidateBooleanPref(
         << "extension pref does not exist " << msg;
   }
 
-  bool val = false;
-  if (!pref->GetBoolean(pref_path, &val)) {
+  absl::optional<bool> val = pref->FindBoolPath(pref_path);
+  if (!val.has_value()) {
     return testing::AssertionFailure()
         << pref_path << " pref not found " << msg;
   }
 
-  return expected_val == val
-      ? testing::AssertionSuccess()
-      : testing::AssertionFailure() << "base::Value is incorrect " << msg;
+  return expected_val == val.value() ? testing::AssertionSuccess()
+                                     : testing::AssertionFailure()
+                                           << "base::Value is incorrect "
+                                           << msg;
 }
 
 void ExtensionServiceTestBase::ValidateIntegerPref(
@@ -303,9 +312,7 @@ void ExtensionServiceTestBase::ValidateIntegerPref(
   const base::DictionaryValue* pref = NULL;
   ASSERT_TRUE(dict->GetDictionary(extension_id, &pref)) << msg;
   EXPECT_TRUE(pref != NULL) << msg;
-  int val;
-  ASSERT_TRUE(pref->GetInteger(pref_path, &val)) << msg;
-  EXPECT_EQ(expected_val, val) << msg;
+  EXPECT_EQ(expected_val, pref->FindIntPath(pref_path)) << msg;
 }
 
 void ExtensionServiceTestBase::ValidateStringPref(
@@ -343,7 +350,10 @@ void ExtensionServiceTestBase::SetUp() {
 
 void ExtensionServiceTestBase::TearDown() {
   if (profile_) {
-    auto* partition = profile_->GetDefaultStoragePartition();
+    content::StoragePartitionConfig default_storage_partition_config =
+        content::StoragePartitionConfig::CreateDefault(profile_.get());
+    auto* partition = profile_->GetStoragePartition(
+        default_storage_partition_config, /*can_create=*/false);
     if (partition)
       partition->WaitForDeletionTasksForTesting();
   }

@@ -27,6 +27,7 @@
 #include "perfetto/protozero/message.h"
 #include "perfetto/protozero/scattered_heap_buffer.h"
 #include "perfetto/trace_processor/trace_processor.h"
+#include "src/trace_processor/sqlite/register_function.h"
 #include "src/trace_processor/util/descriptors.h"
 
 #include "protos/perfetto/trace_processor/metrics_impl.pbzero.h"
@@ -61,24 +62,24 @@ struct SqlMetricFile {
 // Visible for testing.
 class ProtoBuilder {
  public:
-  ProtoBuilder(const ProtoDescriptor*);
+  ProtoBuilder(const DescriptorPool*, const ProtoDescriptor*);
 
-  util::Status AppendSqlValue(const std::string& field_name,
+  base::Status AppendSqlValue(const std::string& field_name,
                               const SqlValue& value);
 
   // Note: all external callers to these functions should not
   // |is_inside_repeated| to this function and instead rely on the default
   // value.
-  util::Status AppendLong(const std::string& field_name,
+  base::Status AppendLong(const std::string& field_name,
                           int64_t value,
                           bool is_inside_repeated = false);
-  util::Status AppendDouble(const std::string& field_name,
+  base::Status AppendDouble(const std::string& field_name,
                             double value,
                             bool is_inside_repeated = false);
-  util::Status AppendString(const std::string& field_name,
+  base::Status AppendString(const std::string& field_name,
                             base::StringView value,
                             bool is_inside_repeated = false);
-  util::Status AppendBytes(const std::string& field_name,
+  base::Status AppendBytes(const std::string& field_name,
                            const uint8_t* data,
                            size_t size,
                            bool is_inside_repeated = false);
@@ -98,14 +99,15 @@ class ProtoBuilder {
   std::vector<uint8_t> SerializeRaw();
 
  private:
-  util::Status AppendSingleMessage(const FieldDescriptor& field,
+  base::Status AppendSingleMessage(const FieldDescriptor& field,
                                    const uint8_t* ptr,
                                    size_t size);
 
-  util::Status AppendRepeated(const FieldDescriptor& field,
+  base::Status AppendRepeated(const FieldDescriptor& field,
                               const uint8_t* ptr,
                               size_t size);
 
+  const DescriptorPool* pool_ = nullptr;
   const ProtoDescriptor* descriptor_ = nullptr;
   protozero::HeapBuffered<protozero::Message> message_;
 };
@@ -117,7 +119,7 @@ class RepeatedFieldBuilder {
  public:
   RepeatedFieldBuilder();
 
-  util::Status AddSqlValue(SqlValue value);
+  base::Status AddSqlValue(SqlValue value);
 
   void AddLong(int64_t value);
   void AddDouble(double value);
@@ -148,34 +150,58 @@ int TemplateReplace(
     std::string* out);
 
 // Implements the NULL_IF_EMPTY SQL function.
-void NullIfEmpty(sqlite3_context* ctx, int argc, sqlite3_value** argv);
+struct NullIfEmpty : public SqlFunction {
+  static base::Status Run(void* ctx,
+                          size_t argc,
+                          sqlite3_value** argv,
+                          SqlValue& out,
+                          Destructors&);
+};
+
+// Implements all the proto creation functions.
+struct BuildProto : public SqlFunction {
+  struct Context {
+    TraceProcessor* tp;
+    const DescriptorPool* pool;
+    const ProtoDescriptor* desc;
+  };
+  static base::Status Run(Context* ctx,
+                          size_t argc,
+                          sqlite3_value** argv,
+                          SqlValue& out,
+                          Destructors&);
+};
+
+// Implements the RUN_METRIC SQL function.
+struct RunMetric : public SqlFunction {
+  struct Context {
+    TraceProcessor* tp;
+    std::vector<SqlMetricFile>* metrics;
+  };
+  static base::Status Run(Context* ctx,
+                          size_t argc,
+                          sqlite3_value** argv,
+                          SqlValue& out,
+                          Destructors&);
+};
+
+// Implements the UNWRAP_METRIC_PROTO SQL function.
+struct UnwrapMetricProto : public SqlFunction {
+  static base::Status Run(Context* ctx,
+                          size_t argc,
+                          sqlite3_value** argv,
+                          SqlValue& out,
+                          Destructors&);
+};
 
 // These functions implement the RepeatedField SQL aggregate functions.
 void RepeatedFieldStep(sqlite3_context* ctx, int argc, sqlite3_value** argv);
 void RepeatedFieldFinal(sqlite3_context* ctx);
 
-// Context struct for the below function.
-struct BuildProtoContext {
-  TraceProcessor* tp;
-  const DescriptorPool* pool;
-  const ProtoDescriptor* desc;
-};
-
-// This function implements all the proto creation functions.
-void BuildProto(sqlite3_context* ctx, int argc, sqlite3_value** argv);
-
-// Context struct for the below function.
-struct RunMetricContext {
-  TraceProcessor* tp;
-  std::vector<SqlMetricFile>* metrics;
-};
-
-// This function implements the RUN_METRIC SQL function.
-void RunMetric(sqlite3_context* ctx, int argc, sqlite3_value** argv);
-
-util::Status ComputeMetrics(TraceProcessor* impl,
+base::Status ComputeMetrics(TraceProcessor* impl,
                             const std::vector<std::string> metrics_to_compute,
                             const std::vector<SqlMetricFile>& metrics,
+                            const DescriptorPool& pool,
                             const ProtoDescriptor& root_descriptor,
                             std::vector<uint8_t>* metrics_proto);
 

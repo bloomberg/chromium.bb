@@ -22,15 +22,6 @@ namespace {
 
 using BuilderTest = TestHelper;
 
-TEST_F(BuilderTest, InsertsPreamble) {
-  spirv::Builder& b = Build();
-
-  ASSERT_TRUE(b.Build());
-  EXPECT_EQ(DumpBuilder(b), R"(OpCapability Shader
-OpMemoryModel Logical GLSL450
-)");
-}
-
 TEST_F(BuilderTest, TracksIdBounds) {
   spirv::Builder& b = Build();
 

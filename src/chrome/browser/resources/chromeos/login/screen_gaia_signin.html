@@ -8,18 +8,21 @@
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 
-<link rel="import" href="/components/common_styles.html">
-<link rel="import" href="/components/oobe_i18n_behavior.html">
-<link rel="import" href="/components/oobe_loading_dialog.html">
-<link rel="import" href="/components/oobe_adaptive_dialog.html">
-<link rel="import" href="/components/throbber_notice.html">
-<link rel="import" href="/components/login_screen_behavior.html">
-<link rel="import" href="/components/multi_step_behavior.html">
 <link rel="import" href="/components/oobe_icons.html">
+<link rel="import" href="/components/behaviors/login_screen_behavior.html">
+<link rel="import" href="/components/behaviors/multi_step_behavior.html">
+<link rel="import" href="/components/behaviors/oobe_i18n_behavior.html">
+<link rel="import" href="/components/buttons/oobe_back_button.html">
+<link rel="import" href="/components/buttons/oobe_next_button.html">
+<link rel="import" href="/components/common_styles/common_styles.html">
+<link rel="import" href="/components/common_styles/oobe_dialog_host_styles.html">
+<link rel="import" href="/components/dialogs/oobe_adaptive_dialog.html">
+<link rel="import" href="/components/dialogs/oobe_loading_dialog.html">
+<link rel="import" href="/components/throbber_notice.html">
 
 <dom-module id="gaia-signin-element">
   <template>
-    <style include="oobe-dialog-host">
+    <style include="oobe-dialog-host-styles">
       [transparent] {
         opacity: 0;
       }
@@ -68,10 +71,10 @@
       <h1 slot="title">
         [[i18nDynamic(locale, 'loginWelcomeMessage')]]
       </h1>
-      <div slot="subtitle" hidden="[[isEmpty_(samlInterstitialDomain_)]]">
+      <div slot="subtitle" hidden="[[isEmpty_(samlInterstitialDomainManager_)]]">
         <iron-icon class="icon20" icon="cr20:domain"></iron-icon>
         [[i18nDynamic(locale, 'samlInterstitialMessage',
-                      samlInterstitialDomain_)]]
+                      samlInterstitialDomainManager_)]]
         <p>
           <a class="oobe-local-link" on-click="onSamlPageChangeAccount_"
               id="interstitial-change-account" is="action-link">

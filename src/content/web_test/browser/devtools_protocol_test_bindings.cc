@@ -17,6 +17,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/web_test/common/web_test_switches.h"
+#include "ipc/ipc_channel.h"
 
 #if !defined(OS_ANDROID)
 #include "content/public/browser/devtools_frontend_host.h"
@@ -89,24 +90,21 @@ void DevToolsProtocolTestBindings::WebContentsDestroyed() {
 }
 
 void DevToolsProtocolTestBindings::HandleMessageFromTest(base::Value message) {
-  std::string method;
-  base::ListValue* params = nullptr;
-  base::DictionaryValue* dict = nullptr;
-  if (!message.GetAsDictionary(&dict) || !dict->GetString("method", &method)) {
+  const std::string* method = nullptr;
+  if (!message.is_dict() || !(method = message.FindStringKey("method"))) {
     return;
   }
 
-  int request_id = 0;
-  dict->GetInteger("id", &request_id);
-  dict->GetList("params", &params);
-
-  if (method == "dispatchProtocolMessage" && params && params->GetSize() == 1) {
-    std::string protocol_message;
-    if (!params->GetString(0, &protocol_message))
+  const base::Value* params = message.FindListKey("params");
+  if (*method == "dispatchProtocolMessage" && params &&
+      params->GetList().size() == 1) {
+    const std::string* protocol_message = params->GetList()[0].GetIfString();
+    if (!protocol_message)
       return;
+
     if (agent_host_) {
       agent_host_->DispatchProtocolMessage(
-          this, base::as_bytes(base::make_span(protocol_message)));
+          this, base::as_bytes(base::make_span(*protocol_message)));
     }
     return;
   }
@@ -144,6 +142,10 @@ void DevToolsProtocolTestBindings::DispatchProtocolMessage(
 void DevToolsProtocolTestBindings::AgentHostClosed(
     DevToolsAgentHost* agent_host) {
   agent_host_ = nullptr;
+}
+
+bool DevToolsProtocolTestBindings::AllowUnsafeOperations() {
+  return true;
 }
 
 }  // namespace content

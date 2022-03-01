@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/dawn_service_memory_transfer_service.h"
 
+#include "base/memory/raw_ptr.h"
 #include "gpu/command_buffer/common/dawn_memory_transfer_handle.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 
@@ -20,24 +21,24 @@ class ReadHandleImpl
 
   ~ReadHandleImpl() override = default;
 
-  size_t SerializeInitialDataSize(const void* data,
-                                  size_t data_length) override {
+  size_t SizeOfSerializeDataUpdate(size_t offset, size_t size) override {
     // Nothing is serialized because we're using shared memory.
     return 0;
   }
 
-  void SerializeInitialData(const void* data,
-                            size_t data_length,
-                            void* serialize_pointer) override {
-    DCHECK_EQ(data_length, size_);
-    // Copy the initial data into the shared memory allocation.
+  void SerializeDataUpdate(const void* data,
+                           size_t offset,
+                           size_t size,
+                           void* serializePointer) override {
+    DCHECK_LE(size + offset, size_);
+    // Copy the data into the shared memory allocation.
     // In the case of buffer mapping, this is the mapped GPU memory which we
     // copy into client-visible shared memory.
-    memcpy(ptr_, data, data_length);
+    memcpy(static_cast<uint8_t*>(ptr_) + offset, data, size);
   }
 
  private:
-  void* ptr_;
+  raw_ptr<void> ptr_;
   uint32_t size_;
 };
 
@@ -49,21 +50,27 @@ class WriteHandleImpl
 
   ~WriteHandleImpl() override = default;
 
-  bool DeserializeFlush(const void* deserialize_pointer,
-                        size_t deserialize_size) override {
+  // The offset is always absolute offset from start of buffer
+  bool DeserializeDataUpdate(const void* deserialize_pointer,
+                             size_t deserialize_size,
+                             size_t offset,
+                             size_t size) override {
     // Nothing is serialized because we're using shared memory.
     DCHECK_EQ(deserialize_size, 0u);
-    DCHECK_EQ(mDataLength, size_);
+    DCHECK_LE(size + offset, size_);
     DCHECK(mTargetData);
     DCHECK(ptr_);
 
     // Copy from shared memory into the target buffer.
-    memcpy(mTargetData, ptr_, size_);
+    // mTargetData will always be the starting address
+    // of the backing buffer after the dawn side change.
+    memcpy(static_cast<uint8_t*>(mTargetData) + offset,
+           static_cast<const uint8_t*>(ptr_) + offset, size);
     return true;
   }
 
  private:
-  const void* ptr_;  // Pointer to client-visible shared memory.
+  raw_ptr<const void> ptr_;  // Pointer to client-visible shared memory.
   uint32_t size_;
 };
 

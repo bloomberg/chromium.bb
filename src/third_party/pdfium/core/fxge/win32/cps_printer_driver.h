@@ -15,11 +15,14 @@
 #include "core/fxge/renderdevicedriver_iface.h"
 #include "core/fxge/win32/cfx_psrenderer.h"
 
+class CFX_PSFontTracker;
+
 class CPSPrinterDriver final : public RenderDeviceDriverIface {
  public:
   CPSPrinterDriver(HDC hDC,
                    WindowsPrintMode mode,
-                   const EncoderIface* pEncoderIface);
+                   CFX_PSFontTracker* ps_font_tracker,
+                   const EncoderIface* encoder_iface);
   ~CPSPrinterDriver() override;
 
  private:
@@ -28,13 +31,13 @@ class CPSPrinterDriver final : public RenderDeviceDriverIface {
   int GetDeviceCaps(int caps_id) const override;
   void SaveState() override;
   void RestoreState(bool bKeepSaved) override;
-  bool SetClip_PathFill(const CFX_PathData* pPathData,
+  bool SetClip_PathFill(const CFX_Path& paath,
                         const CFX_Matrix* pObject2Device,
                         const CFX_FillRenderOptions& fill_options) override;
-  bool SetClip_PathStroke(const CFX_PathData* pPathData,
+  bool SetClip_PathStroke(const CFX_Path& path,
                           const CFX_Matrix* pObject2Device,
                           const CFX_GraphStateData* pGraphState) override;
-  bool DrawPath(const CFX_PathData* pPathData,
+  bool DrawPath(const CFX_Path& path,
                 const CFX_Matrix* pObject2Device,
                 const CFX_GraphStateData* pGraphState,
                 uint32_t fill_color,

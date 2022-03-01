@@ -44,7 +44,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
@@ -102,7 +102,7 @@ void ValidateResponseForPut(const Response* response,
     exception_state.ThrowTypeError("Vary header contains *");
     return;
   }
-  if (response->GetResponse()->InternalStatus() == 206) {
+  if (response->GetResponse()->Status() == 206) {
     exception_state.ThrowTypeError(
         "Partial response (status code 206) is unsupported");
     return;
@@ -183,15 +183,13 @@ class Cache::BarrierCallbackForPutResponse final
                                 Cache* cache,
                                 const String& method_name,
                                 const HeapVector<Member<Request>>& request_list,
-                                const ExceptionState& exception_state,
+                                const ExceptionContext& exception_context,
                                 int64_t trace_id)
       : resolver_(MakeGarbageCollected<ScriptPromiseResolver>(script_state)),
         cache_(cache),
         method_name_(method_name),
         request_list_(request_list),
-        context_type_(exception_state.Context()),
-        property_name_(exception_state.PropertyName()),
-        interface_name_(exception_state.InterfaceName()),
+        exception_context_(exception_context),
         trace_id_(trace_id),
         response_list_(request_list_.size()),
         blob_list_(request_list_.size()) {
@@ -224,8 +222,8 @@ class Cache::BarrierCallbackForPutResponse final
 
     if (num_complete_ == request_list_.size()) {
       ScriptState* script_state = resolver_->GetScriptState();
-      ExceptionState exception_state(script_state->GetIsolate(), context_type_,
-                                     property_name_, interface_name_);
+      ExceptionState exception_state(script_state->GetIsolate(),
+                                     exception_context_);
       cache_->PutImpl(resolver_, method_name_, request_list_, response_list_,
                       blob_list_, exception_state, trace_id_);
       blob_list_.clear();
@@ -277,8 +275,10 @@ class Cache::BarrierCallbackForPutResponse final
   void Stop() {
     if (stopped_)
       return;
-    if (abort_controller_)
-      abort_controller_->abort();
+    if (abort_controller_) {
+      ScriptState::Scope scope(resolver_->GetScriptState());
+      abort_controller_->abort(resolver_->GetScriptState());
+    }
     blob_list_.clear();
     stopped_ = true;
   }
@@ -288,9 +288,7 @@ class Cache::BarrierCallbackForPutResponse final
   Member<Cache> cache_;
   const String method_name_;
   const HeapVector<Member<Request>> request_list_;
-  ExceptionState::ContextType context_type_;
-  const char* property_name_;
-  const char* interface_name_;
+  const ExceptionContext exception_context_;
   const int64_t trace_id_;
   HeapVector<Member<Response>> response_list_;
   WTF::Vector<scoped_refptr<BlobDataHandle>> blob_list_;
@@ -548,49 +546,25 @@ class Cache::BarrierCallbackForPutComplete final
 // Used to handle the ScopedFetcher::Fetch promise in AddAllImpl.
 // TODO(nhiroki): Unfortunately, we have to go through V8 to wait for the fetch
 // promise. It should be better to achieve this only within C++ world.
-class Cache::FetchHandler final : public ScriptFunction {
+class Cache::FetchHandler final : public NewScriptFunction::Callable {
  public:
   // |exception_state| is passed so that the context_type, interface_name and
   // property_name can be copied and then used to construct a new ExceptionState
   // object asynchronously later.
-  static v8::Local<v8::Function> CreateForResolve(
-      ScriptState* script_state,
-      ResponseBodyLoader* response_loader,
-      BarrierCallbackForPutResponse* barrier_callback,
-      const ExceptionState& exception_state) {
-    FetchHandler* self = MakeGarbageCollected<FetchHandler>(
-        script_state, response_loader, barrier_callback, exception_state);
-    return self->BindToV8Function();
-  }
-
-  static v8::Local<v8::Function> CreateForReject(
-      ScriptState* script_state,
-      BarrierCallbackForPutResponse* barrier_callback,
-      const ExceptionState& exception_state) {
-    FetchHandler* self = MakeGarbageCollected<FetchHandler>(
-        script_state, /*response_loader=*/nullptr, barrier_callback,
-        exception_state);
-    return self->BindToV8Function();
-  }
-
-  FetchHandler(ScriptState* script_state,
-               ResponseBodyLoader* response_loader,
+  FetchHandler(ResponseBodyLoader* response_loader,
                BarrierCallbackForPutResponse* barrier_callback,
-               const ExceptionState& exception_state)
-      : ScriptFunction(script_state),
-        response_loader_(response_loader),
+               const ExceptionContext& exception_context)
+      : response_loader_(response_loader),
         barrier_callback_(barrier_callback),
-        context_type_(exception_state.Context()),
-        property_name_(exception_state.PropertyName()),
-        interface_name_(exception_state.InterfaceName()) {}
+        exception_context_(exception_context) {}
 
-  ScriptValue Call(ScriptValue value) override {
+  ScriptValue Call(ScriptState* script_state, ScriptValue value) override {
     // We always resolve undefined from this promise handler since the
     // promise is never returned to script or chained to another handler.
     // If we return our real result and an exception occurs then unhandled
     // promise errors will occur.
     ScriptValue rtn =
-        ScriptPromise::CastUndefined(GetScriptState()).AsScriptValue();
+        ScriptPromise::CastUndefined(script_state).AsScriptValue();
 
     // If there is no loader, we were created as a reject handler.
     if (!response_loader_) {
@@ -598,13 +572,12 @@ class Cache::FetchHandler final : public ScriptFunction {
       return rtn;
     }
 
-    ExceptionState exception_state(GetScriptState()->GetIsolate(),
-                                   context_type_, property_name_,
-                                   interface_name_);
+    ExceptionState exception_state(script_state->GetIsolate(),
+                                   exception_context_);
 
     // Resolve handler, so try to process a Response.
     Response* response = NativeValueTraits<Response>::NativeValue(
-        GetScriptState()->GetIsolate(), value.V8Value(), exception_state);
+        script_state->GetIsolate(), value.V8Value(), exception_state);
     if (exception_state.HadException())
       barrier_callback_->OnError(exception_state);
     else
@@ -616,15 +589,13 @@ class Cache::FetchHandler final : public ScriptFunction {
   void Trace(Visitor* visitor) const override {
     visitor->Trace(response_loader_);
     visitor->Trace(barrier_callback_);
-    ScriptFunction::Trace(visitor);
+    NewScriptFunction::Callable::Trace(visitor);
   }
 
  private:
   Member<ResponseBodyLoader> response_loader_;
   Member<BarrierCallbackForPutResponse> barrier_callback_;
-  ExceptionState::ContextType context_type_;
-  const char* property_name_;
-  const char* interface_name_;
+  const ExceptionContext exception_context_;
 };
 
 class Cache::CodeCacheHandleCallbackForPut final
@@ -743,7 +714,6 @@ class Cache::CodeCacheHandleCallbackForPut final
   mojom::blink::FetchAPIResponsePtr fetch_api_response_;
 };
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 ScriptPromise Cache::match(ScriptState* script_state,
                            const V8RequestInfo* request,
                            const CacheQueryOptions* options,
@@ -763,64 +733,32 @@ ScriptPromise Cache::match(ScriptState* script_state,
   }
   return MatchImpl(script_state, request_object, options);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-ScriptPromise Cache::match(ScriptState* script_state,
-                           const RequestInfo& request,
-                           const CacheQueryOptions* options,
-                           ExceptionState& exception_state) {
-  DCHECK(!request.IsNull());
-  if (request.IsRequest())
-    return MatchImpl(script_state, request.GetAsRequest(), options);
-  Request* new_request =
-      Request::Create(script_state, request.GetAsUSVString(), exception_state);
-  if (exception_state.HadException())
-    return ScriptPromise();
-  return MatchImpl(script_state, new_request, options);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
-ScriptPromise Cache::matchAll(ScriptState* script_state,
-                              ExceptionState& exception_state) {
+ScriptPromise Cache::matchAll(ScriptState* script_state, ExceptionState&) {
   return MatchAllImpl(script_state, nullptr, CacheQueryOptions::Create());
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 ScriptPromise Cache::matchAll(ScriptState* script_state,
                               const V8RequestInfo* request,
                               const CacheQueryOptions* options,
                               ExceptionState& exception_state) {
-  DCHECK(request);
   Request* request_object = nullptr;
-  switch (request->GetContentType()) {
-    case V8RequestInfo::ContentType::kRequest:
-      request_object = request->GetAsRequest();
-      break;
-    case V8RequestInfo::ContentType::kUSVString:
-      request_object = Request::Create(script_state, request->GetAsUSVString(),
-                                       exception_state);
-      if (exception_state.HadException())
-        return ScriptPromise();
-      break;
+  if (request) {
+    switch (request->GetContentType()) {
+      case V8RequestInfo::ContentType::kRequest:
+        request_object = request->GetAsRequest();
+        break;
+      case V8RequestInfo::ContentType::kUSVString:
+        request_object = Request::Create(
+            script_state, request->GetAsUSVString(), exception_state);
+        if (exception_state.HadException())
+          return ScriptPromise();
+        break;
+    }
   }
   return MatchAllImpl(script_state, request_object, options);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-ScriptPromise Cache::matchAll(ScriptState* script_state,
-                              const RequestInfo& request,
-                              const CacheQueryOptions* options,
-                              ExceptionState& exception_state) {
-  DCHECK(!request.IsNull());
-  if (request.IsRequest())
-    return MatchAllImpl(script_state, request.GetAsRequest(), options);
-  Request* new_request =
-      Request::Create(script_state, request.GetAsUSVString(), exception_state);
-  if (exception_state.HadException())
-    return ScriptPromise();
-  return MatchAllImpl(script_state, new_request, options);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 ScriptPromise Cache::add(ScriptState* script_state,
                          const V8RequestInfo* request,
                          ExceptionState& exception_state) {
@@ -839,26 +777,7 @@ ScriptPromise Cache::add(ScriptState* script_state,
   }
   return AddAllImpl(script_state, "Cache.add()", requests, exception_state);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-ScriptPromise Cache::add(ScriptState* script_state,
-                         const RequestInfo& request,
-                         ExceptionState& exception_state) {
-  DCHECK(!request.IsNull());
-  HeapVector<Member<Request>> requests;
-  if (request.IsRequest()) {
-    requests.push_back(request.GetAsRequest());
-  } else {
-    requests.push_back(Request::Create(script_state, request.GetAsUSVString(),
-                                       exception_state));
-    if (exception_state.HadException())
-      return ScriptPromise();
-  }
 
-  return AddAllImpl(script_state, "Cache.add()", requests, exception_state);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 ScriptPromise Cache::addAll(ScriptState* script_state,
                             const HeapVector<Member<V8RequestInfo>>& requests,
                             ExceptionState& exception_state) {
@@ -879,27 +798,7 @@ ScriptPromise Cache::addAll(ScriptState* script_state,
   return AddAllImpl(script_state, "Cache.addAll()", request_objects,
                     exception_state);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-ScriptPromise Cache::addAll(ScriptState* script_state,
-                            const HeapVector<RequestInfo>& raw_requests,
-                            ExceptionState& exception_state) {
-  HeapVector<Member<Request>> requests;
-  for (RequestInfo request : raw_requests) {
-    if (request.IsRequest()) {
-      requests.push_back(request.GetAsRequest());
-    } else {
-      requests.push_back(Request::Create(script_state, request.GetAsUSVString(),
-                                         exception_state));
-      if (exception_state.HadException())
-        return ScriptPromise();
-    }
-  }
 
-  return AddAllImpl(script_state, "Cache.addAll()", requests, exception_state);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 ScriptPromise Cache::Delete(ScriptState* script_state,
                             const V8RequestInfo* request,
                             const CacheQueryOptions* options,
@@ -919,39 +818,15 @@ ScriptPromise Cache::Delete(ScriptState* script_state,
   }
   return DeleteImpl(script_state, request_object, options);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-ScriptPromise Cache::Delete(ScriptState* script_state,
-                            const RequestInfo& request,
-                            const CacheQueryOptions* options,
-                            ExceptionState& exception_state) {
-  DCHECK(!request.IsNull());
-  if (request.IsRequest())
-    return DeleteImpl(script_state, request.GetAsRequest(), options);
-  Request* new_request =
-      Request::Create(script_state, request.GetAsUSVString(), exception_state);
-  if (exception_state.HadException())
-    return ScriptPromise();
-  return DeleteImpl(script_state, new_request, options);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 ScriptPromise Cache::put(ScriptState* script_state,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                          const V8RequestInfo* request_info,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                         const RequestInfo& request_info,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                          Response* response,
                          ExceptionState& exception_state) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   DCHECK(request_info);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  DCHECK(!request_info.IsNull());
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   int64_t trace_id = blink::cache_storage::CreateTraceId();
   TRACE_EVENT_WITH_FLOW0("CacheStorage", "Cache::put",
                          TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_OUT);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   Request* request = nullptr;
   switch (request_info->GetContentType()) {
     case V8RequestInfo::ContentType::kRequest:
@@ -964,15 +839,6 @@ ScriptPromise Cache::put(ScriptState* script_state,
         return ScriptPromise();
       break;
   }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  Request* request =
-      request_info.IsRequest()
-          ? request_info.GetAsRequest()
-          : Request::Create(script_state, request_info.GetAsUSVString(),
-                            exception_state);
-  if (exception_state.HadException())
-    return ScriptPromise();
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   ValidateRequestForPut(request, exception_state);
   if (exception_state.HadException())
@@ -980,7 +846,8 @@ ScriptPromise Cache::put(ScriptState* script_state,
 
   auto* barrier_callback = MakeGarbageCollected<BarrierCallbackForPutResponse>(
       script_state, this, "Cache.put()",
-      HeapVector<Member<Request>>(1, request), exception_state, trace_id);
+      HeapVector<Member<Request>>(1, request), exception_state.GetContext(),
+      trace_id);
 
   // We must get the promise before any rejections can happen during loading.
   ScriptPromise promise = barrier_callback->Promise();
@@ -997,41 +864,26 @@ ScriptPromise Cache::keys(ScriptState* script_state, ExceptionState&) {
   return KeysImpl(script_state, nullptr, CacheQueryOptions::Create());
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 ScriptPromise Cache::keys(ScriptState* script_state,
                           const V8RequestInfo* request,
                           const CacheQueryOptions* options,
                           ExceptionState& exception_state) {
-  DCHECK(request);
   Request* request_object = nullptr;
-  switch (request->GetContentType()) {
-    case V8RequestInfo::ContentType::kRequest:
-      request_object = request->GetAsRequest();
-      break;
-    case V8RequestInfo::ContentType::kUSVString:
-      request_object = Request::Create(script_state, request->GetAsUSVString(),
-                                       exception_state);
-      if (exception_state.HadException())
-        return ScriptPromise();
-      break;
+  if (request) {
+    switch (request->GetContentType()) {
+      case V8RequestInfo::ContentType::kRequest:
+        request_object = request->GetAsRequest();
+        break;
+      case V8RequestInfo::ContentType::kUSVString:
+        request_object = Request::Create(
+            script_state, request->GetAsUSVString(), exception_state);
+        if (exception_state.HadException())
+          return ScriptPromise();
+        break;
+    }
   }
   return KeysImpl(script_state, request_object, options);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-ScriptPromise Cache::keys(ScriptState* script_state,
-                          const RequestInfo& request,
-                          const CacheQueryOptions* options,
-                          ExceptionState& exception_state) {
-  DCHECK(!request.IsNull());
-  if (request.IsRequest())
-    return KeysImpl(script_state, request.GetAsRequest(), options);
-  Request* new_request =
-      Request::Create(script_state, request.GetAsUSVString(), exception_state);
-  if (exception_state.HadException())
-    return ScriptPromise();
-  return KeysImpl(script_state, new_request, options);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 Cache::Cache(GlobalFetch::ScopedFetcher* fetcher,
              CacheStorageBlobClientList* blob_client_list,
@@ -1074,16 +926,19 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
   }
 
   bool in_related_fetch_event = false;
+  bool in_range_fetch_event = false;
   ExecutionContext* context = ExecutionContext::From(script_state);
-  if (auto* global_scope = DynamicTo<ServiceWorkerGlobalScope>(context))
+  if (auto* global_scope = DynamicTo<ServiceWorkerGlobalScope>(context)) {
     in_related_fetch_event = global_scope->HasRelatedFetchEvent(request->url());
+    in_range_fetch_event = global_scope->HasRangeFetchEvent(request->url());
+  }
 
   // Make sure to bind the Cache object to keep the mojo remote alive during
   // the operation. Otherwise GC might prevent the callback from ever being
   // executed.
   cache_remote_->Match(
       std::move(mojo_request), std::move(mojo_options), in_related_fetch_event,
-      trace_id,
+      in_range_fetch_event, trace_id,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
              const CacheQueryOptions* options, int64_t trace_id, Cache* self,
@@ -1232,7 +1087,8 @@ ScriptPromise Cache::AddAllImpl(ScriptState* script_state,
   }
 
   auto* barrier_callback = MakeGarbageCollected<BarrierCallbackForPutResponse>(
-      script_state, this, method_name, request_list, exception_state, trace_id);
+      script_state, this, method_name, request_list,
+      exception_state.GetContext(), trace_id);
 
   // We must get the promise before any rejections can happen during loading.
   ScriptPromise promise = barrier_callback->Promise();
@@ -1241,25 +1097,29 @@ ScriptPromise Cache::AddAllImpl(ScriptState* script_state,
   for (wtf_size_t i = 0; i < request_list.size(); ++i) {
     // Chain the AbortSignal objects together so the requests will abort if
     // the |barrier_callback| encounters an error.
-    if (barrier_callback->Signal())
-      request_list[i]->signal()->Follow(barrier_callback->Signal());
+    if (barrier_callback->Signal()) {
+      request_list[i]->signal()->Follow(script_state,
+                                        barrier_callback->Signal());
+    }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     V8RequestInfo* info = MakeGarbageCollected<V8RequestInfo>(request_list[i]);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    RequestInfo info;
-    info.SetRequest(request_list[i]);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
     auto* response_loader = MakeGarbageCollected<ResponseBodyLoader>(
         script_state, barrier_callback, i, /*require_ok_response=*/true,
         trace_id);
+    auto* on_resolve = MakeGarbageCollected<NewScriptFunction>(
+        script_state,
+        MakeGarbageCollected<FetchHandler>(response_loader, barrier_callback,
+                                           exception_state.GetContext()));
+    // The |response_loader=nullptr| makes this handler a reject handler
+    // internally.
+    auto* on_reject = MakeGarbageCollected<NewScriptFunction>(
+        script_state, MakeGarbageCollected<FetchHandler>(
+                          /*response_loader=*/nullptr, barrier_callback,
+                          exception_state.GetContext()));
     scoped_fetcher_
         ->Fetch(script_state, info, RequestInit::Create(), exception_state)
-        .Then(FetchHandler::CreateForResolve(script_state, response_loader,
-                                             barrier_callback, exception_state),
-              FetchHandler::CreateForReject(script_state, barrier_callback,
-                                            exception_state));
+        .Then(on_resolve, on_reject);
   }
 
   return promise;

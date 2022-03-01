@@ -9,15 +9,17 @@
 
 #include "src/gpu/GrSurfaceProxyView.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
 
-class GrGLSLRRectShadowGeoProc : public GrGLSLGeometryProcessor {
+class GrRRectShadowGeoProc::Impl : public ProgramImpl {
 public:
-    GrGLSLRRectShadowGeoProc() {}
+    void setData(const GrGLSLProgramDataManager&,
+                 const GrShaderCaps&,
+                 const GrGeometryProcessor&) override {}
 
+private:
     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
         const GrRRectShadowGeoProc& rsgp = args.fGeomProc.cast<GrRRectShadowGeoProc>();
         GrGLSLVertexBuilder* vertBuilder = args.fVertBuilder;
@@ -27,11 +29,12 @@ public:
         // emit attributes
         varyingHandler->emitAttributes(rsgp);
         fragBuilder->codeAppend("half3 shadowParams;");
-        varyingHandler->addPassThroughAttribute(rsgp.inShadowParams(), "shadowParams");
+        varyingHandler->addPassThroughAttribute(rsgp.inShadowParams().asShaderVar(),
+                                                "shadowParams");
 
         // setup pass through color
         fragBuilder->codeAppendf("half4 %s;", args.fOutputColor);
-        varyingHandler->addPassThroughAttribute(rsgp.inColor(), args.fOutputColor);
+        varyingHandler->addPassThroughAttribute(rsgp.inColor().asShaderVar(), args.fOutputColor);
 
         // Setup position
         WriteOutputPosition(vertBuilder, gpArgs, rsgp.inPosition().name());
@@ -44,13 +47,6 @@ public:
         fragBuilder->codeAppend(".a;");
         fragBuilder->codeAppendf("half4 %s = half4(factor);", args.fOutputCoverage);
     }
-
-    void setData(const GrGLSLProgramDataManager&,
-                 const GrShaderCaps&,
-                 const GrGeometryProcessor&) override {}
-
-private:
-    using INHERITED = GrGLSLGeometryProcessor;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -68,8 +64,9 @@ GrRRectShadowGeoProc::GrRRectShadowGeoProc(const GrSurfaceProxyView& lutView)
     this->setTextureSamplerCnt(1);
 }
 
-GrGLSLGeometryProcessor* GrRRectShadowGeoProc::createGLSLInstance(const GrShaderCaps&) const {
-    return new GrGLSLRRectShadowGeoProc();
+std::unique_ptr<GrGeometryProcessor::ProgramImpl> GrRRectShadowGeoProc::makeProgramImpl(
+        const GrShaderCaps&) const {
+    return std::make_unique<Impl>();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

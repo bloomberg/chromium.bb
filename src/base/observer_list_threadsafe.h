@@ -11,12 +11,14 @@
 #include "base/base_export.h"
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_local.h"
 #include "build/build_config.h"
@@ -78,7 +80,7 @@ class BASE_EXPORT ObserverListThreadSafeBase
     NotificationDataBase(void* observer_list_in, const Location& from_here_in)
         : observer_list(observer_list_in), from_here(from_here_in) {}
 
-    void* observer_list;
+    raw_ptr<void> observer_list;
     Location from_here;
   };
 

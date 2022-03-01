@@ -30,6 +30,7 @@
 #include "chrome/browser/autofill/autofill_uitest_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/scoped_disable_client_side_decorations_for_test.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/translate/translate_test_utils.h"
@@ -78,6 +79,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/switches.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/dom_us_layout_data.h"
@@ -91,36 +93,43 @@ namespace autofill {
 
 namespace {
 
-static const char kTestShippingFormString[] =
-    "An example of a shipping address form."
-    "<form action=\"https://www.example.com/\" method=\"POST\">"
-    "<label for=\"firstname\">First name:</label>"
-    " <input type=\"text\" id=\"firstname\"><br>"
-    "<label for=\"lastname\">Last name:</label>"
-    " <input type=\"text\" id=\"lastname\"><br>"
-    "<label for=\"address1\">Address line 1:</label>"
-    " <input type=\"text\" id=\"address1\"><br>"
-    "<label for=\"address2\">Address line 2:</label>"
-    " <input type=\"text\" id=\"address2\"><br>"
-    "<label for=\"city\">City:</label>"
-    " <input type=\"text\" id=\"city\"><br>"
-    "<label for=\"state\">State:</label>"
-    " <select id=\"state\">"
-    " <option value=\"\" selected=\"yes\">--</option>"
-    " <option value=\"CA\">California</option>"
-    " <option value=\"TX\">Texas</option>"
-    " </select><br>"
-    "<label for=\"zip\">ZIP code:</label>"
-    " <input type=\"text\" id=\"zip\"><br>"
-    "<label for=\"country\">Country:</label>"
-    " <select id=\"country\">"
-    " <option value=\"\" selected=\"yes\">--</option>"
-    " <option value=\"CA\">Canada</option>"
-    " <option value=\"US\">United States</option>"
-    " </select><br>"
-    "<label for=\"phone\">Phone number:</label>"
-    " <input type=\"text\" id=\"phone\"><br>"
-    "</form>";
+static const char kTestShippingFormString[] = R"(
+  <html>
+  <head>
+    <!-- Disable extra network request for /favicon.ico -->
+    <link rel="icon" href="data:,">
+  </head>
+  <body>
+    An example of a shipping address form.
+    <form action="https://www.example.com/" method="POST">
+    <label for="firstname">First name:</label>
+     <input type="text" id="firstname"><br>
+    <label for="lastname">Last name:</label>
+     <input type="text" id="lastname"><br>
+    <label for="address1">Address line 1:</label>
+     <input type="text" id="address1"><br>
+    <label for="address2">Address line 2:</label>
+     <input type="text" id="address2"><br>
+    <label for="city">City:</label>
+     <input type="text" id="city"><br>
+    <label for="state">State:</label>
+     <select id="state">
+     <option value="" selected="yes">--</option>
+     <option value="CA">California</option>
+     <option value="TX">Texas</option>
+     </select><br>
+    <label for="zip">ZIP code:</label>
+     <input type="text" id="zip"><br>
+    <label for="country">Country:</label>
+     <select id="country">
+     <option value="" selected="yes">--</option>
+     <option value="CA">Canada</option>
+     <option value="US">United States</option>
+     </select><br>
+    <label for="phone">Phone number:</label>
+     <input type="text" id="phone"><br>
+    </form>
+    )";
 
 static const char kTestBillingFormString[] =
     "An example of a billing address form."
@@ -246,13 +255,15 @@ static const char kTestShippingFormWithCompanyString[] =
     "<label for=\"company\">First company:</label>"
     " <input type=\"text\" id=\"company\"><br>"
     "</form>";
-// Searches all frames of |web_contents| and returns one called |name|. If
-// there are none, returns null, if there are more, returns an arbitrary one.
+// Searches all frames of the primary page in |web_contents| and returns one
+// called |name|. If there are none, returns null, if there are more, returns
+// an arbitrary one.
 content::RenderFrameHost* RenderFrameHostForName(
     content::WebContents* web_contents,
     const std::string& name) {
   return content::FrameMatchingPredicate(
-      web_contents, base::BindRepeating(&content::FrameMatchesName, name));
+      web_contents->GetPrimaryPage(),
+      base::BindRepeating(&content::FrameMatchesName, name));
 }
 
 }  // namespace
@@ -268,7 +279,9 @@ content::RenderFrameHost* RenderFrameHostForName(
 class AutofillInteractiveTestBase : public AutofillUiTest {
  protected:
   AutofillInteractiveTestBase()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    feature_list_.InitAndEnableFeature(blink::features::kAutofillShadowDOM);
+  }
 
  public:
   AutofillInteractiveTestBase(const AutofillInteractiveTestBase&) = delete;
@@ -315,6 +328,9 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
     cert_verifier_.SetUpCommandLine(command_line);
     // Needed to allow input before commit on various builders.
     command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
+    // TODO(crbug.com/1258185): Migrate to a better mechanism for testing around
+    // language detection.
+    command_line->AppendSwitch(switches::kOverrideLanguageDetection);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -358,7 +374,7 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
 
     SetTestUrlResponse(content);
     ASSERT_NO_FATAL_FAILURE(
-        ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+        ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
     waiter->Wait();
 
     // Language detection sometimes fires early with an "und" (= undetermined)
@@ -493,9 +509,9 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
         "        },"
         "        translatePage : function(sourceLang, targetLang,"
         "                                 onTranslateProgress) {"
-        "          document.getElementsByTagName(\"body\")[0].innerHTML = '" +
+        "          document.getElementsByTagName(\"body\")[0].innerHTML = `" +
         std::string(kTestShippingFormString) +
-        "              ';"
+        "              `;"
         "          onTranslateProgress(100, true, false);"
         "        }"
         "      };"
@@ -703,7 +719,10 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
 
   void TriggerFormFill(const std::string& field_name) {
     FocusFieldByName(field_name);
+    TriggerFormFillAlreadyFocused();
+  }
 
+  void TriggerFormFillAlreadyFocused() {
     // Start filling the first name field with "M" and wait for the popup to be
     // shown.
     SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
@@ -770,6 +789,8 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
 
   // The response to return for queries to |kTestUrlPath|
   std::string test_url_content_;
+
+  base::test::ScopedFeatureList feature_list_;
 };
 
 const char AutofillInteractiveTestBase::kTestUrlPath[] =
@@ -819,6 +840,12 @@ class AutofillInteractiveTestWithHistogramTester
     AutofillInteractiveTest::TearDownOnMainThread();
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    AutofillInteractiveTest::SetUpCommandLine(command_line);
+    // Prevents proxy.pac requests.
+    command_line->AppendSwitch(switches::kNoProxyServer);
+  }
+
   base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
  private:
@@ -840,7 +867,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestWithHistogramTester,
   // Load the test page.
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Invoke Autofill.
   TryBasicFormFill();
@@ -862,7 +889,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, BasicClear) {
 
   // Load the test page.
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   TryBasicFormFill();
 
@@ -876,7 +903,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ClearTwoSection) {
   SetTestUrlResponse(
       base::StrCat({kTestShippingFormString, kTestBillingFormString}));
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Fill first section.
   TryBasicFormFill();
@@ -910,7 +937,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ModifyTextFieldAndFill) {
   // Load the test page.
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Modify a field.
   FocusFieldByName("city");
@@ -939,7 +966,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ModifySelectFieldAndFill) {
   // Load the test page.
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Modify a field.
   FocusFieldByName("state");
@@ -978,7 +1005,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, PrefillFormAndFill) {
   // Load the test page.
   SetTestUrlResponse(base::StrCat({kTestShippingFormString, kPrefillScript}));
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // We need to delete the prefilled value and then trigger the autofill.
   FocusFirstNameField();
@@ -996,7 +1023,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   // Load the test page.
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   TryBasicFormFill();
 
@@ -1057,7 +1084,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   // Load the test page.
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   TryBasicFormFill();
 
@@ -1098,7 +1125,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   // Load the test page.
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
   TryBasicFormFill();
 
   // Change the last name.
@@ -1141,7 +1168,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   // Load the test page.
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   TryBasicFormFill();
 
@@ -1175,7 +1202,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillViaDownArrow) {
   // Load the test page.
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Focus a fillable field.
   FocusFirstNameField();
@@ -1192,7 +1219,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillSelectViaTab) {
   // Load the test page.
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Focus a fillable field.
   FocusFirstNameField();
@@ -1209,7 +1236,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillViaClick) {
   // Load the test page.
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Focus a fillable field.
   ASSERT_NO_FATAL_FAILURE(FocusFirstNameField());
@@ -1231,9 +1258,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillViaClick) {
   ExpectFilledTestForm();
 }
 
-class AutofillCompanyInteractiveTest
-    : public AutofillInteractiveTestBase,
-      public testing::WithParamInterface<bool> {
+class AutofillCompanyInteractiveTest : public AutofillInteractiveTestBase {
  protected:
   AutofillCompanyInteractiveTest() = default;
   ~AutofillCompanyInteractiveTest() override = default;
@@ -1250,7 +1275,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, Click) {
   // Load the test page.
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // This click should activate the autofill popup.
   test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionShown});
@@ -1280,7 +1305,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForOutsideClick) {
   // Load the test page.
   SetTestUrlResponse(base::StrCat({kTestShippingFormString, kDisabledButton}));
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   ASSERT_NO_FATAL_FAILURE(FocusFirstNameField());
 
@@ -1317,7 +1342,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   CreateTestProfile();
   SetTestUrlResponse(kTestFormWithLargeInputField);
 
-  ui_test_utils::NavigateToURL(browser(), GetTestUrl());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
 
   FocusFirstNameField();
   SendKeyToPage(GetWebContents(), ui::DomKey::ARROW_DOWN);
@@ -1332,7 +1357,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnDeleteValueAfterAutofill) {
   // Load the test page.
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Invoke and accept the Autofill popup and verify the form was filled.
   FocusFirstNameField();
@@ -1374,7 +1399,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnSelectOptionFromDatalist) {
   // Load the test page.
   SetTestUrlResponse(kTestForm);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   std::string orginalcolor;
   GetFieldBackgroundColor("firstname", &orginalcolor);
@@ -1412,7 +1437,7 @@ IN_PROC_BROWSER_TEST_F(
   // Load the test page.
   SetTestUrlResponse(kTestForm);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   ASSERT_TRUE(content::ExecuteScript(
       GetWebContents(),
@@ -1464,7 +1489,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnInputAfterAutofill) {
   // Load the test page.
   SetTestUrlResponse(base::StrCat({kTestShippingFormString, kOnInputScript}));
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Invoke Autofill.
   FocusFirstNameField();
@@ -1535,7 +1560,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnChangeAfterAutofill) {
   // Load the test page.
   SetTestUrlResponse(base::StrCat({kTestShippingFormString, kOnChangeScript}));
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Invoke Autofill.
   FocusFirstNameField();
@@ -1603,7 +1628,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, InputFiresBeforeChange) {
   SetTestUrlResponse(
       base::StrCat({kTestShippingFormString, kInputFiresBeforeChangeScript}));
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Invoke and accept the Autofill popup and verify the form was filled.
   FocusFirstNameField();
@@ -1674,7 +1699,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   // Load the test page.
   SetTestUrlResponse(base::StrCat({kTestShippingFormString, kScript}));
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Invoke Autofill.
   TryBasicFormFill();
@@ -1724,7 +1749,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillFormWithRepeatedField) {
   // Load the test page.
   SetTestUrlResponse(kForm);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Invoke Autofill.
   TryBasicFormFill();
@@ -1772,7 +1797,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   // Load the test page.
   SetTestUrlResponse(kForm);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Invoke Autofill.
   TryBasicFormFill();
@@ -1861,7 +1886,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DynamicFormFill) {
   // Load the test page.
   SetTestUrlResponse(kDynamicForm);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Dynamically construct the form.
   ASSERT_TRUE(content::ExecuteScript(GetWebContents(), "BuildForm();"));
@@ -1877,7 +1902,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterReload) {
   // Load the test page.
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Reload the page.
   content::WebContents* web_contents = GetWebContents();
@@ -1896,7 +1921,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillEvents) {
   // Load the test page.
   SetTestUrlResponse(kTestEventFormString);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Invoke Autofill.
   TryBasicFormFill();
@@ -1995,11 +2020,11 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterTranslate) {
 
   static const char kForm[] =
       "<form action=\"https://www.example.com/\" method=\"POST\">"
-      "<label for=\"fn\">なまえ</label>"
+      "<label for=\"fn\">Nom</label>"
       " <input type=\"text\" id=\"fn\""
       "        onfocus=\"domAutomationController.send(true)\""
       "><br>"
-      "<label for=\"ln\">みょうじ</label>"
+      "<label for=\"ln\">Nom de famille</label>"
       " <input type=\"text\" id=\"ln\"><br>"
       "<label for=\"a1\">Address line 1:</label>"
       " <input type=\"text\" id=\"a1\"><br>"
@@ -2024,16 +2049,24 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterTranslate) {
       "<label for=\"ph\">Phone number:</label>"
       " <input type=\"text\" id=\"ph\"><br>"
       "</form>"
-      // Add additional Japanese characters to ensure the translate bar
+      // Add additional French characters to ensure the translate bar
       // will appear.
-      "我々は重要な、興味深いものになるが、時折状況が発生するため苦労や痛みは"
-      "彼にいくつかの素晴らしいを調達することができます。それから、いくつかの"
-      "利";
+      //
+      // TODO(crbug.com/1258185): The current translate testing overrides the
+      // result to be Adopted Language: 'fr' (the language the Chrome's
+      // translate feature believes the page language to be in). The behavior
+      // required here is to only force a translation which should not rely on
+      // language detection. The override simply just seeds the translate code
+      // so that a translate event occurs in a more testable way.
+      "Nous serons importants et intéressants, mais les épreuves et les peines"
+      "peuvent lui en procurer de grandes en raison de situations "
+      "occasionnelles."
+      "Puis quelques avantages";
 
   NavigateToContentAndWaitForLanguageDetection(kForm);
-  ASSERT_EQ("ja", GetLanguageState().current_language());
+  ASSERT_EQ("fr", GetLanguageState().current_language());
   ASSERT_NO_FATAL_FAILURE(Translate(true));
-  ASSERT_EQ("ja", GetLanguageState().source_language());
+  ASSERT_EQ("fr", GetLanguageState().source_language());
   ASSERT_EQ("en", GetLanguageState().current_language());
   TryBasicFormFill();
 }
@@ -2055,7 +2088,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ComparePhoneNumbers) {
   SetTestProfile(browser()->profile(), profile);
 
   GURL url = embedded_test_server()->GetURL("/autofill/form_phones.html");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   PopulateForm("NAME_FIRST1");
 
   ExpectFieldValue("NAME_FIRST1", "Bob");
@@ -2110,7 +2143,7 @@ IN_PROC_BROWSER_TEST_F(AutofillCompanyInteractiveTest,
 
   GURL url =
       embedded_test_server()->GetURL("/autofill/read_only_field_test.html");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   PopulateForm("firstname");
 
   ExpectFieldValue("address", addr_line1);
@@ -2127,14 +2160,14 @@ IN_PROC_BROWSER_TEST_F(AutofillCompanyInteractiveTest,
   // Load the test page.
   SetTestUrlResponse(kTestShippingFormWithCompanyString);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Focus the company field.
   FocusFieldByName("company");
 
   // Now click it.
   test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionShown},
-                                   base::TimeDelta::FromSeconds(3));
+                                   base::Seconds(3));
   ASSERT_NO_FATAL_FAILURE(ClickElementWithId("company"));
 
   test_delegate()->Wait();
@@ -2169,7 +2202,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, NoAutofillForReadOnlyFields) {
 
   GURL url =
       embedded_test_server()->GetURL("/autofill/read_only_field_test.html");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   PopulateForm("firstname");
 
   ExpectFieldValue("email", std::string());
@@ -2186,7 +2219,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, FormFillableOnReset) {
 
   GURL url =
       embedded_test_server()->GetURL("/autofill/autofill_test_form.html");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   PopulateForm("NAME_FIRST");
 
   ASSERT_TRUE(content::ExecuteScript(
@@ -2212,7 +2245,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
   GURL url =
       embedded_test_server()->GetURL("/autofill/autofill_middleinit_form.html");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   PopulateForm("NAME_FIRST");
 
   // In the legacy implementation for names, the initial is always created
@@ -2243,7 +2276,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
   GURL url = embedded_test_server()->GetURL(
       "/autofill/autofill_confirmemail_form.html");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   PopulateForm("NAME_FIRST");
 
   ExpectFieldValue("EMAIL_CONFIRM", email);
@@ -2294,7 +2327,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
   GURL url = embedded_test_server()->GetURL(
       "/autofill/latency_after_submit_test.html");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   PopulateForm("NAME_FIRST");
 
   content::WindowedNotificationObserver load_stop_observer(
@@ -2318,7 +2351,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   // Load the test page.
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_NO_FATAL_FAILURE(
-      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl())));
 
   // Invoke Autofill: Start filling the first name field with "M" and wait for
   // the popup to be shown.
@@ -2346,7 +2379,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
   GURL url = embedded_test_server()->GetURL(
       "/autofill/forms_without_identifiers.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   // Focus on the first field of the second form.
   bool result = false;
@@ -2406,7 +2440,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/multiple_noname_forms_badnames.html");
 
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname_4");
   DoNothingAndWait(2);  // Wait to make sure possible refills have happened.
@@ -2432,7 +2467,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/multiple_noname_forms_badnames.html");
 
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname_3");
   DoNothingAndWait(2);  // Wait to make sure possible refills have happened.
@@ -2458,7 +2494,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/multiple_noname_forms_badnames.html");
 
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname_2");
   DoNothingAndWait(2);  // Wait to make sure possible refills have happened.
@@ -2481,7 +2518,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/multiple_noname_forms_badnames.html");
 
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname_1");
   DoNothingAndWait(2);  // Wait to make sure possible refills have happened.
@@ -2504,7 +2542,8 @@ IN_PROC_BROWSER_TEST_F(AutofillCompanyInteractiveTest, FieldsChangeName) {
 
   GURL url = embedded_test_server()->GetURL(
       "/autofill/field_changing_name_during_fill.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname");
 
@@ -2558,7 +2597,8 @@ IN_PROC_BROWSER_TEST_F(AutofillCreditCardInteractiveTest, FillLocalCreditCard) {
   // Navigate to the page.
   GURL url = https_server()->GetURL("a.com",
                                     "/autofill/autofill_creditcard_form.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   // Trigger the autofill.
   FocusFieldByName("CREDIT_CARD_NAME_FULL");
@@ -2579,7 +2619,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, NoAutocomplete) {
 
   GURL url =
       embedded_test_server()->GetURL("/autofill/formless_no_autocomplete.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   // There should a form we can trigger fill on (using the firstname field).
   ASSERT_EQ(1U, GetBrowserAutofillManager()->NumFormsDetected());
@@ -2619,7 +2660,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, SomeAutocomplete) {
 
   GURL url = embedded_test_server()->GetURL(
       "/autofill/formless_some_autocomplete.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   ASSERT_EQ(1U, GetBrowserAutofillManager()->NumFormsDetected());
   TriggerFormFill("firstname");
@@ -2655,7 +2697,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, DISABLED_AllAutocomplete) {
 
   GURL url = embedded_test_server()->GetURL(
       "/autofill/formless_all_autocomplete.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   ASSERT_EQ(1U, GetBrowserAutofillManager()->NumFormsDetected());
   TriggerFormFill("firstname");
@@ -2712,16 +2755,22 @@ class AutofillInteractiveIsolationTest : public AutofillInteractiveTestBase {
 #endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
                        MAYBE_SimpleCrossSiteFill) {
+  test_delegate()->SetIgnoreBackToBackMessages(
+      ObservedUiEvents::kPreviewFormData, true);
   CreateTestProfile();
 
   // Main frame is on a.com, iframe is on b.com.
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/cross_origin_iframe.html");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   GURL iframe_url = embedded_test_server()->GetURL(
       "b.com", "/autofill/autofill_test_form.html");
+
   EXPECT_TRUE(
       content::NavigateIframeToURL(GetWebContents(), "crossFrame", iframe_url));
+
+  // Wait to make sure the cross-frame form is parsed.
+  DoNothingAndWait(2);
 
   // Let |test_delegate()| also observe autofill events in the iframe.
   content::RenderFrameHost* cross_frame =
@@ -2758,7 +2807,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, CrossSitePaymentForms) {
   // Main frame is on a.com, iframe is on b.com.
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/cross_origin_iframe.html");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   GURL iframe_url = embedded_test_server()->GetURL(
       "b.com", "/autofill/autofill_creditcard_form.html");
   EXPECT_TRUE(
@@ -2799,12 +2848,17 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, CrossSitePaymentForms) {
 #endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
                        MAYBE_DeletingFrameUnderSuggestion) {
+  // TODO(crbug.com/1240482): the test expectations fail if the window gets CSD
+  // and becomes smaller because of that.  Investigate this and remove the line
+  // below if possible.
+  ui::ScopedDisableClientSideDecorationsForTest scoped_disabled_csd;
+
   CreateTestProfile();
 
   // Main frame is on a.com, iframe is on b.com.
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/cross_origin_iframe.html");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   GURL iframe_url = embedded_test_server()->GetURL(
       "b.com", "/autofill/autofill_test_form.html");
   EXPECT_TRUE(
@@ -2842,7 +2896,11 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
   EXPECT_FALSE(IsPopupShown());
 }
 
-class AutofillDynamicFormInteractiveTest : public AutofillInteractiveTestBase {
+// The boolean parameter controls whether or not
+// features::kAutofillAcrossIframes is enabled.
+class AutofillDynamicFormInteractiveTest
+    : public AutofillInteractiveTestBase,
+      public testing::WithParamInterface<bool> {
  public:
   AutofillDynamicFormInteractiveTest(
       const AutofillDynamicFormInteractiveTest&) = delete;
@@ -2851,6 +2909,11 @@ class AutofillDynamicFormInteractiveTest : public AutofillInteractiveTestBase {
 
  protected:
   AutofillDynamicFormInteractiveTest() {
+    std::vector<base::Feature> enabled;
+    std::vector<base::Feature> disabled;
+    (GetParam() ? enabled : disabled)
+        .push_back(features::kAutofillAcrossIframes);
+    scoped_feature_.InitWithFeatures(enabled, disabled);
     // Setup that the test expects a re-fill to happen.
     test_delegate()->SetIsExpectingDynamicRefill(true);
   }
@@ -2866,20 +2929,28 @@ class AutofillDynamicFormInteractiveTest : public AutofillInteractiveTestBase {
     // load pages from "a.com" without an interstitial.
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
+
+ protected:
+  base::test::ScopedFeatureList scoped_feature_;
 };
 
+// The boolean parameter indicates whether features::kAutofillAcrossIframes is
+// enabled.
 class AutofillDynamicFormReplacementInteractiveTest
     : public AutofillInteractiveTestBase,
       public testing::WithParamInterface<bool> {
  public:
   AutofillDynamicFormReplacementInteractiveTest()
-      : refill_with_renderer_ids_(GetParam()) {
-    scoped_feature_.InitWithFeatureState(
-        features::kAutofillRefillWithRendererIds, refill_with_renderer_ids_);
+      : autofill_across_iframes_(GetParam()) {
+    std::vector<base::Feature> enabled;
+    std::vector<base::Feature> disabled;
+    (autofill_across_iframes_ ? enabled : disabled)
+        .push_back(features::kAutofillAcrossIframes);
+    scoped_feature_.InitWithFeatures(enabled, disabled);
   }
 
  protected:
-  bool refill_with_renderer_ids_;
+  const bool autofill_across_iframes_;
   base::test::ScopedFeatureList scoped_feature_;
 };
 
@@ -2890,13 +2961,8 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormReplacementInteractiveTest,
 
   GURL url =
       embedded_test_server()->GetURL("a.com", "/autofill/dynamic_form.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
-
-  // TODO(crbug/896689): Cleanup feature, also in JS code.
-  if (refill_with_renderer_ids_) {
-    ASSERT_TRUE(content::ExecuteScript(
-        GetWebContents(), "window.kAutofillRefillWithRendererIds = true;"));
-  }
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname");
 
@@ -2925,13 +2991,8 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormReplacementInteractiveTest,
 
   GURL url = embedded_test_server()->GetURL("a.com",
                                             "/autofill/two_dynamic_forms.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
-
-  // TODO(crbug/896689): Cleanup feature, also in JS code.
-  if (refill_with_renderer_ids_) {
-    ASSERT_TRUE(content::ExecuteScript(
-        GetWebContents(), "window.kAutofillRefillWithRendererIds = true;"));
-  }
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname_form1");
 
@@ -2975,13 +3036,8 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormReplacementInteractiveTest,
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/double_dynamic_form.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
-
-  // TODO(crbug/896689): Cleanup feature, also in JS code.
-  if (refill_with_renderer_ids_) {
-    ASSERT_TRUE(content::ExecuteScript(
-        GetWebContents(), "window.kAutofillRefillWithRendererIds = true;"));
-  }
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname");
 
@@ -3002,13 +3058,14 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormReplacementInteractiveTest,
 }
 
 // Test that forms that dynamically change after a second do not get filled.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_AfterDelay) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_after_delay.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname");
 
@@ -3035,13 +3092,8 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormReplacementInteractiveTest,
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_new_field_types.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
-
-  // TODO(crbug/896689): Cleanup feature, also in JS code.
-  if (refill_with_renderer_ids_) {
-    ASSERT_TRUE(content::ExecuteScript(
-        GetWebContents(), "window.kAutofillRefillWithRendererIds = true;"));
-  }
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname");
 
@@ -3069,13 +3121,14 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormReplacementInteractiveTest,
 
 // Test that we can autofill forms that dynamically change select fields to text
 // fields by changing the visibilities.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_SelectToText) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_select_to_text.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
   TriggerFormFill("firstname");
   // Wait for the re-fill to happen.
   bool has_refilled = false;
@@ -3095,13 +3148,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
 
 // Test that we can autofill forms that dynamically change the visibility of a
 // field after it's autofilled.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_VisibilitySwitch) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_visibility_switch.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
   TriggerFormFill("firstname");
   // Wait for the re-fill to happen.
   bool has_refilled = false;
@@ -3123,13 +3177,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_FirstElementDisappears) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_element_invalid.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
   TriggerFormFill("firstname");
 
   // Wait for the re-fill to happen.
@@ -3149,13 +3204,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though the form has no name.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_FirstElementDisappearsNoNameForm) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_element_invalid_noname_form.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
   TriggerFormFill("firstname");
 
   // Wait for the re-fill to happen.
@@ -3176,7 +3232,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though there are multiple forms with identical
 // names.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     AutofillDynamicFormInteractiveTest,
     DynamicFormFill_FirstElementDisappearsMultipleBadNameForms) {
   CreateTestProfile();
@@ -3185,7 +3241,8 @@ IN_PROC_BROWSER_TEST_F(
       "a.com",
       "/autofill/dynamic_form_element_invalid_multiple_badname_forms.html");
 
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname_5");
 
@@ -3209,14 +3266,15 @@ IN_PROC_BROWSER_TEST_F(
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though there are multiple forms with identical
 // names.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_FirstElementDisappearsBadnameUnowned) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_element_invalid_unowned_badnames.html");
 
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname_5");
 
@@ -3239,7 +3297,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though there are multiple forms with no name.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     AutofillDynamicFormInteractiveTest,
     DynamicFormFill_FirstElementDisappearsMultipleNoNameForms) {
   CreateTestProfile();
@@ -3248,7 +3306,8 @@ IN_PROC_BROWSER_TEST_F(
       "a.com",
       "/autofill/dynamic_form_element_invalid_multiple_noname_forms.html");
 
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname_5");
 
@@ -3271,13 +3330,14 @@ IN_PROC_BROWSER_TEST_F(
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though the elements are unowned.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_FirstElementDisappearsUnowned) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_element_invalid_unowned.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
   TriggerFormFill("firstname");
 
   // Wait for the re-fill to happen.
@@ -3303,13 +3363,8 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormReplacementInteractiveTest,
   // Navigate to the page.
   GURL url = https_server()->GetURL("a.com",
                                     "/autofill/dynamic_form_credit_card.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
-
-  // TODO(crbug/896689): Cleanup feature, also in JS code.
-  if (refill_with_renderer_ids_) {
-    ASSERT_TRUE(content::ExecuteScript(
-        GetWebContents(), "window.kAutofillRefillWithRendererIds = true;"));
-  }
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   // Trigger the initial fill.
   FocusFieldByName("cc-name");
@@ -3335,13 +3390,14 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormReplacementInteractiveTest,
 
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SelectUpdated) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_select_options_change.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname");
 
@@ -3363,13 +3419,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
 
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed only once.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_DoubleSelectUpdated) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_double_select_options_change.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname");
 
@@ -3397,13 +3454,8 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormReplacementInteractiveTest,
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_no_name.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
-
-  // TODO(crbug/896689): Cleanup feature, also in JS code.
-  if (refill_with_renderer_ids_) {
-    ASSERT_TRUE(content::ExecuteScript(
-        GetWebContents(), "window.kAutofillRefillWithRendererIds = true;"));
-  }
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname");
 
@@ -3426,14 +3478,15 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormReplacementInteractiveTest,
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed for forms with no names if the NameForAutofill of the first
 // field matches.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SelectUpdated_FormWithoutName) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
       "a.com",
       "/autofill/dynamic_form_with_no_name_select_options_change.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname");
 
@@ -3455,13 +3508,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
 
 // Test that we can Autofill dynamically generated synthetic forms if the
 // NameForAutofill of the first field matches.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SyntheticForm) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_synthetic_form.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname");
 
@@ -3483,13 +3537,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
 
 // Test that we can Autofill dynamically synthetic forms when the select options
 // change if the NameForAutofill of the first field matches
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SelectUpdated_SyntheticForm) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_synthetic_form_select_options_change.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
 
   TriggerFormFill("firstname");
 
@@ -3508,6 +3563,66 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
+
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ShadowDOM) {
+  CreateTestProfile();
+
+  GURL url =
+      embedded_test_server()->GetURL("a.com", "/autofill/shadowdom.html");
+  ASSERT_NO_FATAL_FAILURE(
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url)));
+
+  bool result = false;
+  ASSERT_TRUE(
+      content::ExecuteScriptAndExtractBool(GetWebContents(),
+                                           R"( function onFocusHandler(e) {
+              e.target.removeEventListener(e.type, arguments.callee);
+              domAutomationController.send(true);
+            }
+            if (document.readyState === 'complete') {
+              var target = getNameElement();
+              target.addEventListener('focus', onFocusHandler);
+              target.focus();
+            } else {
+              domAutomationController.send(false);
+            })",
+                                           &result));
+  ASSERT_TRUE(result);
+  TriggerFormFillAlreadyFocused();
+
+  std::string name;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      GetWebContents(), "window.domAutomationController.send(getName())",
+      &name));
+  EXPECT_EQ("Milton C. Waddams", name) << " for field name";
+
+  std::string address;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      GetWebContents(), "window.domAutomationController.send(getAddress())",
+      &address));
+  EXPECT_EQ("4120 Freidrich Lane", address) << " for field address";
+
+  std::string city;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      GetWebContents(), "window.domAutomationController.send(getCity())",
+      &city));
+  EXPECT_EQ("Austin", city) << " for field city";
+
+  std::string state;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      GetWebContents(), "window.domAutomationController.send(getState())",
+      &state));
+  EXPECT_EQ("TX", state) << " for field state";
+
+  std::string zip;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      GetWebContents(), "window.domAutomationController.send(getZip())", &zip));
+  EXPECT_EQ("78744", zip) << " for field zip";
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         AutofillDynamicFormInteractiveTest,
+                         testing::Bool());
 
 INSTANTIATE_TEST_SUITE_P(All,
                          AutofillDynamicFormReplacementInteractiveTest,

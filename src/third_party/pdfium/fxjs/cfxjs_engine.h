@@ -19,10 +19,13 @@
 #include <memory>
 #include <vector>
 
-#include "core/fxcrt/fx_string.h"
+#include "core/fxcrt/widestring.h"
 #include "fxjs/cfx_v8.h"
 #include "fxjs/ijs_runtime.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-forward.h"
+#include "v8/include/v8-function-callback.h"
+#include "v8/include/v8-persistent-handle.h"
+#include "v8/include/v8-template.h"
 
 class CFXJS_ObjDefinition;
 class CJS_Object;
@@ -81,7 +84,8 @@ class CFXJS_Engine : public CFX_V8 {
   using Destructor = std::function<void(v8::Local<v8::Object> obj)>;
 
   static uint32_t GetObjDefnID(v8::Local<v8::Object> pObj);
-  static CJS_Object* GetObjectPrivate(v8::Local<v8::Object> pObj);
+  static CJS_Object* GetObjectPrivate(v8::Isolate* pIsolate,
+                                      v8::Local<v8::Object> pObj);
   static void SetObjectPrivate(v8::Local<v8::Object> pObj,
                                std::unique_ptr<CJS_Object> p);
   static void FreeObjectPrivate(v8::Local<v8::Object> pObj);
@@ -117,7 +121,7 @@ class CFXJS_Engine : public CFX_V8 {
   void ReleaseEngine();
 
   // Called after FXJS_InitializeEngine call made.
-  Optional<IJS_Runtime::JS_Error> Execute(const WideString& script);
+  absl::optional<IJS_Runtime::JS_Error> Execute(const WideString& script);
 
   v8::Local<v8::Object> GetThisObj();
   v8::Local<v8::Object> NewFXJSBoundObject(uint32_t nObjDefnID,

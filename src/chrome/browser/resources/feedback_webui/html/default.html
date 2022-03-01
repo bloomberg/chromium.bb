@@ -16,6 +16,9 @@
     <textarea id="description-text" aria-labelledby="free-form-text"
       aria-required="true">
     </textarea>
+    <div id="questionnaire-notification" aria-live="polite"
+      class="off-screen">
+    </div>
     <p id="description-empty-error" class="description-empty-notification"
        aria-hidden="true" hidden>$i18n{noDescription}</p>
     <div>
@@ -23,7 +26,8 @@
     </div>
     <div id="page-url" class="text-field-container">
       <label id="page-url-label">$i18n{pageUrl}</label>
-      <input id="page-url-text" aria-labelledby="page-url-label" type="text">
+      <input id="page-url-text" aria-labelledby="page-url-label" type="text"
+             dir="ltr">
     </div>
     <!-- User e-mail -->
     <div id="user-email" class="text-field-container" hidden>
@@ -89,7 +93,8 @@
           class="white-button">$i18n{cancel}
       </button>
       <button id="send-report-button" type="submit"
-          class="blue-button">$i18n{sendReport}
+          class="blue-button" aria-describedby="questionnaire-notification">
+        $i18n{sendReport}
       </button>
     </div>
   </div>

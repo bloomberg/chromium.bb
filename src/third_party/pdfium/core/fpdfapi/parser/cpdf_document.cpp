@@ -17,8 +17,9 @@
 #include "core/fxcodec/jbig2/JBig2_DocumentContext.h"
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/scoped_set_insertion.h"
+#include "core/fxcrt/stl_util.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
 
 namespace {
 
@@ -142,7 +143,7 @@ bool CPDF_Document::TryInit() {
 
 CPDF_Parser::Error CPDF_Document::LoadDoc(
     const RetainPtr<IFX_SeekableReadStream>& pFileAccess,
-    const char* password) {
+    const ByteString& password) {
   if (!m_pParser)
     SetParser(std::make_unique<CPDF_Parser>(this));
 
@@ -151,7 +152,7 @@ CPDF_Parser::Error CPDF_Document::LoadDoc(
 
 CPDF_Parser::Error CPDF_Document::LoadLinearizedDoc(
     const RetainPtr<CPDF_ReadValidator>& validator,
-    const char* password) {
+    const ByteString& password) {
   if (!m_pParser)
     SetParser(std::make_unique<CPDF_Parser>(this));
 
@@ -276,7 +277,7 @@ bool CPDF_Document::IsPageLoaded(int iPage) const {
 }
 
 CPDF_Dictionary* CPDF_Document::GetPageDictionary(int iPage) {
-  if (!pdfium::IndexInBounds(m_PageList, iPage))
+  if (!fxcrt::IndexInBounds(m_PageList, iPage))
     return nullptr;
 
   const uint32_t objnum = m_PageList[iPage];
@@ -330,7 +331,7 @@ int CPDF_Document::GetPageIndex(uint32_t objnum) {
   int found_index = FindPageIndex(pPages, &skip_count, objnum, &start_index, 0);
 
   // Corrupt page tree may yield out-of-range results.
-  if (!pdfium::IndexInBounds(m_PageList, found_index))
+  if (!fxcrt::IndexInBounds(m_PageList, found_index))
     return -1;
 
   // Only update |m_PageList| when |objnum| points to a /Page object.
@@ -340,7 +341,7 @@ int CPDF_Document::GetPageIndex(uint32_t objnum) {
 }
 
 int CPDF_Document::GetPageCount() const {
-  return pdfium::CollectionSize<int>(m_PageList);
+  return fxcrt::CollectionSize<int>(m_PageList);
 }
 
 int CPDF_Document::RetrievePageCount() {

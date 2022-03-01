@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/app_list/search/app_result.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/services/app_service/public/cpp/icon_cache.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "url/gurl.h"
 
@@ -36,6 +37,10 @@ class AppServiceAppResult : public AppResult {
                       AppListControllerDelegate* controller,
                       bool is_recommendation,
                       apps::IconLoader* icon_loader);
+
+  AppServiceAppResult(const AppServiceAppResult&) = delete;
+  AppServiceAppResult& operator=(const AppServiceAppResult&) = delete;
+
   ~AppServiceAppResult() override;
 
  private:
@@ -51,7 +56,7 @@ class AppServiceAppResult : public AppResult {
   void Launch(int event_flags, apps::mojom::LaunchSource launch_source);
 
   void CallLoadIcon(bool chip, bool allow_placeholder_icon);
-  void OnLoadIcon(bool chip, apps::mojom::IconValuePtr icon_value);
+  void OnLoadIcon(bool chip, apps::IconValuePtr icon_value);
 
   void HandleSuggestionChip(Profile* profile);
 
@@ -94,8 +99,6 @@ class AppServiceAppResult : public AppResult {
   favicon::LargeIconService* large_icon_service_ = nullptr;
 
   base::WeakPtrFactory<AppServiceAppResult> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AppServiceAppResult);
 };
 
 }  // namespace app_list

@@ -9,7 +9,8 @@
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/data_pipe_bytes_consumer.h"
 
 namespace blink {
@@ -20,6 +21,11 @@ class MODULES_EXPORT CacheStorageBlobClientList
     : public GarbageCollected<CacheStorageBlobClientList> {
  public:
   CacheStorageBlobClientList() = default;
+
+  CacheStorageBlobClientList(const CacheStorageBlobClientList&) = delete;
+  CacheStorageBlobClientList& operator=(const CacheStorageBlobClientList&) =
+      delete;
+
   void AddClient(
       ExecutionContext* context,
       mojo::PendingReceiver<mojom::blink::BlobReaderClient>
@@ -34,7 +40,6 @@ class MODULES_EXPORT CacheStorageBlobClientList
   void RevokeClient(Client* client);
 
   HeapVector<Member<Client>> clients_;
-  DISALLOW_COPY_AND_ASSIGN(CacheStorageBlobClientList);
 };
 
 }  // namespace blink

@@ -27,7 +27,7 @@
 
 #include "third_party/blink/renderer/core/editing/serializers/markup_formatter.h"
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "third_party/blink/renderer/core/dom/cdata_section.h"
 #include "third_party/blink/renderer/core/dom/comment.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -76,7 +76,8 @@ static inline void AppendCharactersReplacingEntitiesInternal(
           result.Append(text + position_after_last_entity,
                         i - position_after_last_entity);
           const std::string& replacement = entity_maps[entity_index].reference;
-          result.Append(replacement.c_str(), replacement.length());
+          result.Append(replacement.c_str(),
+                        base::checked_cast<unsigned>(replacement.length()));
           position_after_last_entity = i + 1;
           break;
         }

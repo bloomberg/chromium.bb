@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_BAD_MESSAGE_H_
 
 #include "base/debug/crash_logging.h"
-#include "content/common/content_export.h"
 
 namespace content {
 class BrowserMessageFilter;
@@ -24,7 +23,7 @@ namespace bad_message {
 // end. Items may be renamed but do not change the values. We rely on the enum
 // values in histograms.
 enum BadMessageReason {
-  NC_IN_PAGE_NAVIGATION = 0,
+  OBSOLETE_NC_IN_PAGE_NAVIGATION = 0,
   RFH_CAN_COMMIT_URL_BLOCKED = 1,
   RFH_CAN_ACCESS_FILES_OF_PAGE_STATE = 2,
   RFH_SANDBOX_FLAGS = 3,
@@ -219,7 +218,7 @@ enum BadMessageReason {
   ARH_UNEXPECTED_BITSTREAM = 191,
   RDH_NULL_CLIENT = 192,
   RVH_WEB_UI_BINDINGS_MISMATCH = 193,
-  WCI_NEW_WIDGET_PROCESS_MISMATCH = 194,
+  OBSOLETE_WCI_NEW_WIDGET_PROCESS_MISMATCH = 194,
   AUTH_INVALID_EFFECTIVE_DOMAIN = 195,
   AUTH_INVALID_RELYING_PARTY = 196,
   RWH_COPY_REQUEST_ATTEMPT = 197,
@@ -233,7 +232,7 @@ enum BadMessageReason {
   RFH_ERROR_PROCESS_NON_ERROR_COMMIT = 205,
   RFH_ERROR_PROCESS_NON_UNIQUE_ORIGIN_COMMIT = 206,
   OBSOLETE_RFH_CANNOT_RENDER_FALLBACK_CONTENT = 207,
-  RFH_CHILD_FRAME_NEEDS_OWNER_ELEMENT_TYPE = 208,
+  OBSOLETE_RFH_CHILD_FRAME_NEEDS_OWNER_ELEMENT_TYPE = 208,
   OBSOLETE_RFH_INVALID_WEB_REPORTING_CRASH_ID = 209,
   RFH_DETACH_MAIN_FRAME = 210,
   RFH_BROWSER_INTERFACE_BROKER_MISSING = 211,
@@ -274,6 +273,19 @@ enum BadMessageReason {
   MDDH_INVALID_ALL_ORIGINS_PERMITTED = 246,
   MDDH_INVALID_PERMITTED_ORIGIN = 247,
   MDDH_NOT_TOP_LEVEL = 248,
+  RFH_DID_CHANGE_IFRAME_ATTRIBUTE = 249,
+  FARI_LOGOUT_BAD_ENDPOINT = 250,
+  OBSOLETE_RFH_CHILD_FRAME_UNEXPECTED_OWNER_ELEMENT_TYPE = 251,
+  RFH_POPUP_REQUEST_WHILE_PRERENDERING = 252,
+  RFH_INTERECEPT_DOWNLOAD_WHILE_INACTIVE = 253,
+  RFH_CREATE_CHILD_FRAME_SANDBOX_FLAGS = 254,
+  RFPH_FOCUSED_FENCED_FRAME = 255,
+  WCI_REQUEST_LOCK_MOUSE_FENCED_FRAME = 256,
+  BFSI_CREATE_FOR_FRAME_FENCED_FRAME = 257,
+  RFH_FENCED_FRAME_MOJO_WHEN_DISABLED = 258,
+  PMM_SUBSCRIBE_INVALID_ORIGIN = 259,
+  PMM_UNSUBSCRIBE_INVALID_ORIGIN = 260,
+  PMM_GET_SUBSCRIPTION_INVALID_ORIGIN = 261,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the
@@ -288,8 +300,7 @@ enum BadMessageReason {
 void ReceivedBadMessage(RenderProcessHost* host, BadMessageReason reason);
 
 // Equivalent to the above, but callable from any thread.
-CONTENT_EXPORT void ReceivedBadMessage(int render_process_id,
-                                       BadMessageReason reason);
+void ReceivedBadMessage(int render_process_id, BadMessageReason reason);
 
 // Called when a browser message filter receives a bad IPC message from a
 // renderer or other child process. Logs the event, records a histogram metric

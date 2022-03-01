@@ -29,7 +29,6 @@
 #include "base/dcheck_is_on.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_idb_index_parameters.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_cursor.h"
@@ -105,13 +104,6 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
                   const ScriptValue& key,
                   ExceptionState&);
   IDBRequest* put(ScriptState*, const ScriptValue& value, ExceptionState&);
-  IDBRequest* putAllValues(ScriptState*,
-                           const HeapVector<ScriptValue>& values,
-                           ExceptionState&);
-  IDBRequest* DoPutAll(ScriptState* script_state,
-                       const HeapVector<ScriptValue>& values,
-                       const HeapVector<ScriptValue>& key_values,
-                       ExceptionState& exception_state);
   IDBRequest* put(ScriptState*,
                   const ScriptValue& value,
                   const ScriptValue& key,
@@ -121,11 +113,7 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
 
   IDBIndex* createIndex(ScriptState* script_state,
                         const String& name,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                         const V8UnionStringOrStringSequence* key_path,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                        const StringOrStringSequence& key_path,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                         const IDBIndexParameters* options,
                         ExceptionState& exception_state) {
     return createIndex(script_state, name, IDBKeyPath(key_path), options,
@@ -139,11 +127,7 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
   // Exposed for the use of IDBCursor::update().
   IDBRequest* DoPut(ScriptState*,
                     mojom::IDBPutMode,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                     const IDBRequest::Source*,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                    const IDBRequest::Source&,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                     const ScriptValue&,
                     const IDBKey*,
                     ExceptionState&);

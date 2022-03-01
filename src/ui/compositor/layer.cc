@@ -15,7 +15,7 @@
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
-#include "base/numerics/ranges.h"
+#include "base/memory/raw_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/mirror_layer.h"
 #include "cc/layers/nine_patch_layer.h"
@@ -28,8 +28,10 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/layer_observer.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/gfx/animation/animation.h"
@@ -38,7 +40,9 @@
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/interpolated_transform.h"
 
 namespace ui {
@@ -75,6 +79,9 @@ class Layer::LayerMirror : public LayerDelegate, LayerObserver {
     dest->set_delegate(this);
   }
 
+  LayerMirror(const LayerMirror&) = delete;
+  LayerMirror& operator=(const LayerMirror&) = delete;
+
   ~LayerMirror() override {
     dest_->RemoveObserver(this);
     dest_->set_delegate(nullptr);
@@ -97,10 +104,8 @@ class Layer::LayerMirror : public LayerDelegate, LayerObserver {
   }
 
  private:
-  Layer* const source_;
-  Layer* const dest_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayerMirror);
+  const raw_ptr<Layer> source_;
+  const raw_ptr<Layer> dest_;
 };
 
 // Manages the subpixel offset data for a given set of parameters (device
@@ -108,6 +113,9 @@ class Layer::LayerMirror : public LayerDelegate, LayerObserver {
 class Layer::SubpixelPositionOffsetCache {
  public:
   SubpixelPositionOffsetCache() = default;
+  SubpixelPositionOffsetCache(const SubpixelPositionOffsetCache&) = delete;
+  SubpixelPositionOffsetCache& operator=(const SubpixelPositionOffsetCache&) =
+      delete;
   ~SubpixelPositionOffsetCache() = default;
 
   gfx::Vector2dF GetSubpixelOffset(float device_scale_factor,
@@ -173,8 +181,6 @@ class Layer::SubpixelPositionOffsetCache {
 
   // True if the subpixel offset was computed and set by an external source.
   bool has_explicit_subpixel_offset_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(SubpixelPositionOffsetCache);
 };
 
 Layer::Layer(LayerType type)
@@ -314,7 +320,7 @@ void Layer::SetShowReflectedLayerSubtree(Layer* subtree_reflected_layer) {
     return;
 
   scoped_refptr<cc::MirrorLayer> new_layer =
-      cc::MirrorLayer::Create(subtree_reflected_layer->cc_layer_);
+      cc::MirrorLayer::Create(subtree_reflected_layer->cc_layer_.get());
   if (!SwitchToLayer(new_layer))
     return;
 
@@ -350,7 +356,7 @@ void Layer::SetCompositor(Compositor* compositor,
   compositor_ = compositor;
   OnDeviceScaleFactorChanged(compositor->device_scale_factor());
 
-  root_layer->AddChild(cc_layer_);
+  root_layer->AddChild(cc_layer_.get());
   SetCompositorForAnimatorsInTree(compositor);
 }
 
@@ -376,7 +382,7 @@ void Layer::Add(Layer* child) {
     child->parent_->Remove(child);
   child->parent_ = this;
   children_.push_back(child);
-  cc_layer_->AddChild(child->cc_layer_);
+  cc_layer_->AddChild(child->cc_layer_.get());
   child->OnDeviceScaleFactorChanged(device_scale_factor_);
   Compositor* compositor = GetCompositor();
   if (compositor)
@@ -391,7 +397,7 @@ void Layer::Remove(Layer* child) {
   // Stop (and complete) an ongoing animation to update the bounds immediately.
   LayerAnimator* child_animator = child->animator_.get();
   if (child_animator)
-    child_animator->StopAnimatingProperty(ui::LayerAnimationElement::BOUNDS);
+    child_animator->StopAnimatingProperty(LayerAnimationElement::BOUNDS);
 
   // Do not proceed if |this| or |child| is released by an animation observer
   // of |child|'s bounds animation.
@@ -810,7 +816,7 @@ bool Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
 
   for (auto* child : children_) {
     DCHECK(child->cc_layer_);
-    cc_layer_->AddChild(child->cc_layer_);
+    cc_layer_->AddChild(child->cc_layer_.get());
   }
   cc_layer_->SetTransformOrigin(gfx::Point3F());
   cc_layer_->SetContentsOpaque(fills_bounds_opaquely_);
@@ -836,7 +842,7 @@ bool Layer::SwitchCCLayerForTest() {
 }
 
 // Note: The code that sets this flag would be responsible to unset it on that
-// ui::Layer. We do not want to clone this flag to a cloned layer by accident,
+// Layer. We do not want to clone this flag to a cloned layer by accident,
 // which could be a supprise. But we want to preserve it after switching to a
 // new cc::Layer. There could be a whole subtree and the root changed, but does
 // not mean we want to treat the cache all different.
@@ -879,7 +885,7 @@ void Layer::RemoveDeferredPaintRequest() {
 }
 
 // Note: The code that sets this flag would be responsible to unset it on that
-// ui::Layer. We do not want to clone this flag to a cloned layer by accident,
+// Layer. We do not want to clone this flag to a cloned layer by accident,
 // which could be a supprise. But we want to preserve it after switching to a
 // new cc::Layer. There could be a whole subtree and the root changed, but does
 // not mean we want to treat the trilinear filtering all different.
@@ -1187,7 +1193,7 @@ void Layer::StackChildrenAtBottom(
     DCHECK_EQ(leading_child->parent(), this);
     new_children_order.emplace_back(leading_child);
     new_cc_children_order.emplace_back(
-        scoped_refptr<cc::Layer>(leading_child->cc_layer_));
+        scoped_refptr<cc::Layer>(leading_child->cc_layer_.get()));
   }
 
   base::flat_set<Layer*> reordered_children(new_children_order);
@@ -1271,8 +1277,8 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
 }
 
 void Layer::SetDidScrollCallback(
-    base::RepeatingCallback<void(const gfx::ScrollOffset&,
-                                 const cc::ElementId&)> callback) {
+    base::RepeatingCallback<void(const gfx::PointF&, const cc::ElementId&)>
+        callback) {
   cc_layer_->SetDidScrollCallback(std::move(callback));
 }
 
@@ -1281,16 +1287,16 @@ void Layer::SetScrollable(const gfx::Size& container_bounds) {
   cc_layer_->SetUserScrollable(true, true);
 }
 
-gfx::ScrollOffset Layer::CurrentScrollOffset() const {
+gfx::PointF Layer::CurrentScrollOffset() const {
   const Compositor* compositor = GetCompositor();
-  gfx::ScrollOffset offset;
+  gfx::PointF offset;
   if (compositor &&
       compositor->GetScrollOffsetForLayer(cc_layer_->element_id(), &offset))
     return offset;
   return cc_layer_->scroll_offset();
 }
 
-void Layer::SetScrollOffset(const gfx::ScrollOffset& offset) {
+void Layer::SetScrollOffset(const gfx::PointF& offset) {
   Compositor* compositor = GetCompositor();
   bool scrolled_on_impl_side =
       compositor && compositor->ScrollLayerTo(cc_layer_->element_id(), offset);
@@ -1298,8 +1304,9 @@ void Layer::SetScrollOffset(const gfx::ScrollOffset& offset) {
   if (!scrolled_on_impl_side)
     cc_layer_->SetScrollOffset(offset);
 
-  DCHECK_EQ(offset.x(), CurrentScrollOffset().x());
-  DCHECK_EQ(offset.y(), CurrentScrollOffset().y());
+  // TODO(crbug.com/1219662): If this layer was also resized since the last
+  // commit synchronizing |cc_layer_| with the cc::LayerImpl backing
+  // |compositor|, the scroll might not be completed.
 }
 
 void Layer::RequestCopyOfOutput(
@@ -1372,7 +1379,7 @@ void Layer::StackRelativeTo(Layer* child, Layer* other, bool above) {
   children_.insert(children_.begin() + dest_i, child);
 
   child->cc_layer_->RemoveFromParent();
-  cc_layer_->InsertChild(child->cc_layer_, dest_i);
+  cc_layer_->InsertChild(child->cc_layer_.get(), dest_i);
 }
 
 bool Layer::ConvertPointForAncestor(const Layer* ancestor,
@@ -1582,7 +1589,7 @@ float Layer::GetRefreshRate() const {
   return compositor ? compositor->refresh_rate() : 60.0;
 }
 
-ui::Layer* Layer::GetLayer() {
+Layer* Layer::GetLayer() {
   return this;
 }
 

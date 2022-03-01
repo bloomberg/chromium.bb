@@ -6,35 +6,43 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import static org.chromium.base.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.checkElementExists;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.checkElementOnScreen;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.getBitmapFromView;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.tapElement;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntil;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewAssertionTrue;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
+import static org.chromium.chrome.browser.autofill_assistant.ProtoTestUtil.toCssSelector;
+import static org.chromium.chrome.browser.autofill_assistant.ProtoTestUtil.toIFrameCssSelector;
 
-import android.support.test.InstrumentationRegistry;
+import android.os.Build.VERSION_CODES;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.test.filters.MediumTest;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.BitmapDrawableProto;
@@ -54,10 +62,8 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ShowCastProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,23 +74,12 @@ import java.util.Collections;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class AutofillAssistantOverlayIntegrationTest {
+    private final CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
+
     @Rule
-    public CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
-
-    private static final String TEST_PAGE = "/components/test/data/autofill_assistant/html/"
-            + "autofill_assistant_target_website.html";
-
-    private WebContents getWebContents() {
-        return mTestRule.getWebContents();
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        AutofillAssistantPreferencesUtil.setInitialPreferences(true);
-        mTestRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(),
-                mTestRule.getTestServer().getURL(TEST_PAGE)));
-    }
+    public final TestRule mRulesChain =
+            RuleChain.outerRule(mTestRule).around(new AutofillAssistantCustomTabTestRule(
+                    mTestRule, "autofill_assistant_target_website.html"));
 
     /**
      * Tests that clicking on a document element works with a showcast.
@@ -92,14 +87,10 @@ public class AutofillAssistantOverlayIntegrationTest {
     @Test
     @MediumTest
     public void testShowCastOnDocumentElement() throws Exception {
-        SelectorProto element =
-                (SelectorProto) SelectorProto.newBuilder()
-                        .addFilters(
-                                SelectorProto.Filter.newBuilder().setCssSelector("#touch_area_one"))
-                        .build();
+        SelectorProto element = toCssSelector("#touch_area_one");
 
         ArrayList<ActionProto> list = new ArrayList<>();
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setShowCast(ShowCastProto.newBuilder()
                                               .setElementToPresent(element)
                                               .setTouchableElementArea(
@@ -107,16 +98,15 @@ public class AutofillAssistantOverlayIntegrationTest {
                                                               Rectangle.newBuilder().addElements(
                                                                       element))))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
                                  PromptProto.Choice.newBuilder()))
                          .build());
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath("autofill_assistant_target_website.html")
-                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
-                                ChipProto.newBuilder().setText("Done")))
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
                         .build(),
                 list);
         runScript(script);
@@ -140,14 +130,10 @@ public class AutofillAssistantOverlayIntegrationTest {
     @Test
     @MediumTest
     public void testRepeatedShowCastOnSameElement() throws Exception {
-        SelectorProto element =
-                (SelectorProto) SelectorProto.newBuilder()
-                        .addFilters(
-                                SelectorProto.Filter.newBuilder().setCssSelector("#touch_area_one"))
-                        .build();
+        SelectorProto element = toCssSelector("#touch_area_one");
 
         ArrayList<ActionProto> list = new ArrayList<>();
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setShowCast(ShowCastProto.newBuilder()
                                               .setElementToPresent(element)
                                               .setTouchableElementArea(
@@ -155,13 +141,13 @@ public class AutofillAssistantOverlayIntegrationTest {
                                                               Rectangle.newBuilder().addElements(
                                                                       element))))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder()
                                             .setMessage("First Prompt")
                                             .addChoices(PromptProto.Choice.newBuilder().setChip(
                                                     ChipProto.newBuilder().setText("Continue"))))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setShowCast(ShowCastProto.newBuilder()
                                               .setElementToPresent(element)
                                               .setTouchableElementArea(
@@ -169,7 +155,7 @@ public class AutofillAssistantOverlayIntegrationTest {
                                                               Rectangle.newBuilder().addElements(
                                                                       element))))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder()
                                             .setMessage("Second Prompt")
                                             .addChoices(PromptProto.Choice.newBuilder().setChip(
@@ -177,10 +163,9 @@ public class AutofillAssistantOverlayIntegrationTest {
                          .build());
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath("autofill_assistant_target_website.html")
-                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
-                                ChipProto.newBuilder().setText("Done")))
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
                         .build(),
                 list);
         runScript(script);
@@ -205,14 +190,10 @@ public class AutofillAssistantOverlayIntegrationTest {
     @Test
     @MediumTest
     public void testShowCastOnDocumentElementInScrolledBrowserWindow() throws Exception {
-        SelectorProto element =
-                (SelectorProto) SelectorProto.newBuilder()
-                        .addFilters(SelectorProto.Filter.newBuilder().setCssSelector(
-                                "#touch_area_five"))
-                        .build();
+        SelectorProto element = toCssSelector("#touch_area_five");
 
         ArrayList<ActionProto> list = new ArrayList<>();
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setShowCast(ShowCastProto.newBuilder()
                                               .setElementToPresent(element)
                                               .setTouchableElementArea(
@@ -220,16 +201,15 @@ public class AutofillAssistantOverlayIntegrationTest {
                                                               Rectangle.newBuilder().addElements(
                                                                       element))))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
                                  PromptProto.Choice.newBuilder()))
                          .build());
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath("autofill_assistant_target_website.html")
-                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
-                                ChipProto.newBuilder().setText("Done")))
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
                         .build(),
                 list);
         runScript(script);
@@ -252,21 +232,12 @@ public class AutofillAssistantOverlayIntegrationTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1272997")
     public void testShowCastOnIFrameElement() throws Exception {
-        SelectorProto element =
-                (SelectorProto) SelectorProto.newBuilder()
-                        .addFilters(SelectorProto.Filter.newBuilder().setCssSelector("#iframe"))
-                        .addFilters(SelectorProto.Filter.newBuilder().setNthMatch(
-                                SelectorProto.NthMatchFilter.newBuilder().setIndex(0)))
-                        .addFilters(SelectorProto.Filter.newBuilder().setEnterFrame(
-                                SelectorProto.EmptyFilter.getDefaultInstance()))
-
-                        .addFilters(
-                                SelectorProto.Filter.newBuilder().setCssSelector("#touch_area_1"))
-                        .build();
+        SelectorProto element = toIFrameCssSelector("#iframe", "#touch_area_1");
 
         ArrayList<ActionProto> list = new ArrayList<>();
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setShowCast(ShowCastProto.newBuilder()
                                               .setElementToPresent(element)
                                               .setTouchableElementArea(
@@ -274,16 +245,15 @@ public class AutofillAssistantOverlayIntegrationTest {
                                                               Rectangle.newBuilder().addElements(
                                                                       element))))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
                                  PromptProto.Choice.newBuilder()))
                          .build());
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath("autofill_assistant_target_website.html")
-                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
-                                ChipProto.newBuilder().setText("Done")))
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
                         .build(),
                 list);
         runScript(script);
@@ -307,22 +277,14 @@ public class AutofillAssistantOverlayIntegrationTest {
      */
     @Test
     @MediumTest
-    @FlakyTest(message = "https://crbug.com/1182103")
-    public void testShowCastOnIFrameElementInScrollIFrame() throws Exception {
-        SelectorProto element =
-                (SelectorProto) SelectorProto.newBuilder()
-                        .addFilters(SelectorProto.Filter.newBuilder().setCssSelector("#iframe"))
-                        .addFilters(SelectorProto.Filter.newBuilder().setNthMatch(
-                                SelectorProto.NthMatchFilter.newBuilder().setIndex(0)))
-                        .addFilters(SelectorProto.Filter.newBuilder().setEnterFrame(
-                                SelectorProto.EmptyFilter.getDefaultInstance()))
-
-                        .addFilters(
-                                SelectorProto.Filter.newBuilder().setCssSelector("#touch_area_3"))
-                        .build();
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.Q,
+            message = "Flaky on Android 11: https://crbug.com/1276995")
+    public void
+    testShowCastOnIFrameElementInScrollIFrame() throws Exception {
+        SelectorProto element = toIFrameCssSelector("#iframe", "#touch_area_3");
 
         ArrayList<ActionProto> list = new ArrayList<>();
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setShowCast(ShowCastProto.newBuilder()
                                               .setElementToPresent(element)
                                               .setTouchableElementArea(
@@ -330,16 +292,15 @@ public class AutofillAssistantOverlayIntegrationTest {
                                                               Rectangle.newBuilder().addElements(
                                                                       element))))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
                                  PromptProto.Choice.newBuilder()))
                          .build());
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath("autofill_assistant_target_website.html")
-                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
-                                ChipProto.newBuilder().setText("Done")))
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
                         .build(),
                 list);
         runScript(script);
@@ -360,19 +321,14 @@ public class AutofillAssistantOverlayIntegrationTest {
     }
 
     /**
-     * Tests that changing the OverlayBehavior setting affects the overlay as intended.
+     * Tests that three taps on the scrim removes the scrim and hides the Autofill Assistant.
      */
     @Test
     @MediumTest
-    public void testOverlayBehaviorSetting() throws Exception {
-        SelectorProto element =
-                (SelectorProto) SelectorProto.newBuilder()
-                        .addFilters(
-                                SelectorProto.Filter.newBuilder().setCssSelector("#touch_area_one"))
-                        .build();
-
+    @DisabledTest(message = "Flaky - https://crbug.com/1269961")
+    public void testThreeClicksHideAssistant() throws Exception {
         ArrayList<ActionProto> list = new ArrayList<>();
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setPrompt(
                                  PromptProto.newBuilder()
                                          .setMessage("Overlay present")
@@ -383,11 +339,60 @@ public class AutofillAssistantOverlayIntegrationTest {
                                                                           .ChipType.DONE_ACTION)
                                                          .setText("Hide"))))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                SupportedScriptProto.newBuilder()
+                        .setPath("autofill_assistant_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
+                        .build(),
+                list);
+        runScript(script);
+
+        waitUntil(() -> checkElementOnScreen(mTestRule, "touch_area_one"));
+        waitUntilViewMatchesCondition(withText("Overlay present"), isCompletelyDisplayed());
+
+        // Tapping the scrim three times should hide the scrim and the Autofill Assistant.
+        assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_four"), is(true));
+        tapElement(mTestRule, "touch_area_four");
+        assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_four"), is(true));
+        tapElement(mTestRule, "touch_area_four");
+        assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_four"), is(true));
+        tapElement(mTestRule, "touch_area_four");
+
+        // Afterwards the scrim and Autofill Assistant are removed.
+        waitUntil(()
+                          -> mTestRule.getActivity()
+                                     .getRootUiCoordinatorForTesting()
+                                     .getScrimCoordinator()
+                                     .getViewForTesting()
+                        == null);
+        waitUntilViewAssertionTrue(
+                withId(R.id.autofill_assistant), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
+    }
+
+    /**
+     * Tests that changing the OverlayBehavior setting affects the overlay as intended.
+     */
+    @Test
+    @MediumTest
+    public void testOverlayBehaviorSetting() throws Exception {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(ActionProto.newBuilder()
+                         .setPrompt(
+                                 PromptProto.newBuilder()
+                                         .setMessage("Overlay present")
+                                         .addChoices(Choice.newBuilder().setChip(
+                                                 ChipProto.newBuilder()
+                                                         .setType(org.chromium.chrome.browser
+                                                                          .autofill_assistant.proto
+                                                                          .ChipType.DONE_ACTION)
+                                                         .setText("Hide"))))
+                         .build());
+        list.add(ActionProto.newBuilder()
                          .setConfigureUiState(ConfigureUiStateProto.newBuilder().setOverlayBehavior(
                                  OverlayBehavior.HIDDEN))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setPrompt(
                                  PromptProto.newBuilder()
                                          .setMessage("Overlay hidden")
@@ -398,21 +403,20 @@ public class AutofillAssistantOverlayIntegrationTest {
                                                                           .ChipType.DONE_ACTION)
                                                          .setText("Default"))))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setConfigureUiState(ConfigureUiStateProto.newBuilder().setOverlayBehavior(
                                  OverlayBehavior.DEFAULT))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder()
                                             .setMessage("Overlay present")
                                             .addChoices(PromptProto.Choice.newBuilder()))
                          .build());
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath("autofill_assistant_target_website.html")
-                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
-                                ChipProto.newBuilder().setText("Done")))
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
                         .build(),
                 list);
         runScript(script);
@@ -448,7 +452,7 @@ public class AutofillAssistantOverlayIntegrationTest {
                 "data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
         int imageSizeInPixel = 50;
         ClientSettingsProto clientSettings =
-                (ClientSettingsProto) ClientSettingsProto.newBuilder()
+                ClientSettingsProto.newBuilder()
                         .setOverlayImage(
                                 OverlayImageProto.newBuilder()
                                         .setImageDrawable(DrawableProto.newBuilder().setBitmap(
@@ -467,10 +471,9 @@ public class AutofillAssistantOverlayIntegrationTest {
                         .build();
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath("autofill_assistant_target_website.html")
-                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
-                                ChipProto.newBuilder().setText("Done")))
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
                         .build(),
                 new ArrayList<>());
         AutofillAssistantTestService testService =

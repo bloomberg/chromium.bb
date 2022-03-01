@@ -17,6 +17,7 @@
 #include "Debug.hpp"
 #include "ExecutableMemory.hpp"
 #include "LLVMAsm.hpp"
+#include "PragmaInternals.hpp"
 #include "Routine.hpp"
 
 // TODO(b/143539525): Eliminate when warning has been fixed.
@@ -55,10 +56,8 @@ extern "C" signed __aeabi_idivmod();
 
 #if __has_feature(memory_sanitizer)
 
-// TODO(b/155148722): Remove when we no longer unpoison all writes.
-#	if !REACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION
-#		include "sanitizer/msan_interface.h"
-#	endif
+// TODO(b/155148722): Remove when we no longer unpoison any writes.
+#	include "sanitizer/msan_interface.h"
 
 #	include <dlfcn.h>  // dlsym()
 
@@ -151,7 +150,15 @@ JITGlobals *JITGlobals::get()
 #if defined(__i386__) || defined(__x86_64__)
 			"-x86-asm-syntax=intel",  // Use Intel syntax rather than the default AT&T
 #endif
+#if LLVM_VERSION_MAJOR <= 12
 			"-warn-stack-size=524288"  // Warn when a function uses more than 512 KiB of stack memory
+#else
+		// TODO(b/191193823): TODO(ndesaulniers): Update this after
+		// go/compilers/fc018ebb608ee0c1239b405460e49f1835ab6175
+#	if LLVM_VERSION_MAJOR < 9999
+#		error Implement stack size checks using the "warn-stack-size" function attribute.
+#	endif
+#endif
 		};
 
 		parseCommandLineOptionsOnce(sizeof(argv) / sizeof(argv[0]), argv);
@@ -544,18 +551,15 @@ class ExternalSymbolGenerator : public llvm::orc::JITDylib::DefinitionGenerator
 #	endif
 #endif
 #if __has_feature(memory_sanitizer)
-
-// TODO(b/155148722): Remove when we no longer unpoison all writes.
-#	if !REACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION
-			functions.try_emplace("msan_unpoison", reinterpret_cast<void *>(__msan_unpoison));
-			functions.try_emplace("msan_unpoison_param", reinterpret_cast<void *>(__msan_unpoison_param));
-#	endif
-
 			functions.try_emplace("emutls_get_address", reinterpret_cast<void *>(rr::getTLSAddress));
 			functions.try_emplace("emutls_v.__msan_retval_tls", reinterpret_cast<void *>(static_cast<uintptr_t>(rr::MSanTLS::retval)));
 			functions.try_emplace("emutls_v.__msan_param_tls", reinterpret_cast<void *>(static_cast<uintptr_t>(rr::MSanTLS::param)));
 			functions.try_emplace("emutls_v.__msan_va_arg_tls", reinterpret_cast<void *>(static_cast<uintptr_t>(rr::MSanTLS::va_arg)));
 			functions.try_emplace("emutls_v.__msan_va_arg_overflow_size_tls", reinterpret_cast<void *>(static_cast<uintptr_t>(rr::MSanTLS::va_arg_overflow_size)));
+
+			// TODO(b/155148722): Remove when we no longer unpoison any writes.
+			functions.try_emplace("msan_unpoison", reinterpret_cast<void *>(__msan_unpoison));
+			functions.try_emplace("msan_unpoison_param", reinterpret_cast<void *>(__msan_unpoison_param));
 #endif
 		}
 	};
@@ -697,6 +701,9 @@ public:
 	    size_t count,
 	    const rr::Config &config)
 	    : name(name)
+#if LLVM_VERSION_MAJOR >= 13
+	    , session(std::move(*llvm::orc::SelfExecutorProcessControl::Create()))
+#endif
 	    , objectLayer(session, []() {
 		    static MemoryMapper memoryMapper;
 		    return std::make_unique<llvm::SectionMemoryManager>(&memoryMapper);
@@ -819,6 +826,12 @@ JITBuilder::JITBuilder(const rr::Config &config)
 {
 	module->setTargetTriple(LLVM_DEFAULT_TARGET_TRIPLE);
 	module->setDataLayout(JITGlobals::get()->getDataLayout());
+
+	if(REACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION ||
+	   getPragmaState(MemorySanitizerInstrumentation))
+	{
+		msanInstrumentation = true;
+	}
 }
 
 void JITBuilder::optimize(const rr::Config &cfg)
@@ -832,12 +845,10 @@ void JITBuilder::optimize(const rr::Config &cfg)
 
 	llvm::legacy::PassManager passManager;
 
-#if REACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION
-	if(__has_feature(memory_sanitizer))
+	if(__has_feature(memory_sanitizer) && msanInstrumentation)
 	{
 		passManager.add(llvm::createMemorySanitizerLegacyPassPass());
 	}
-#endif
 
 	for(auto pass : cfg.getOptimization().getPasses())
 	{

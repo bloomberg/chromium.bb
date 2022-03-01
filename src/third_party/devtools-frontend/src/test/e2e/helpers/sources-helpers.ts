@@ -13,9 +13,10 @@ export const PAUSE_BUTTON = '[aria-label="Pause script execution"]';
 export const RESUME_BUTTON = '[aria-label="Resume script execution"]';
 export const SOURCES_LINES_SELECTOR = '.CodeMirror-code > div';
 export const PAUSE_INDICATOR_SELECTOR = '.paused-status';
-export const CODE_LINE_SELECTOR = '.CodeMirror-code .CodeMirror-linenumber';
+export const CODE_LINE_SELECTOR = '.cm-lineNumbers .cm-gutterElement';
 export const SCOPE_LOCAL_VALUES_SELECTOR = 'li[aria-label="Local"] + ol';
 export const SELECTED_THREAD_SELECTOR = 'div.thread-item.selected > div.thread-item-title';
+export const STEP_OVER_BUTTON = '[aria-label="Step over next function call"]';
 export const TURNED_OFF_PAUSE_BUTTON_SELECTOR = 'button.toolbar-state-off';
 export const TURNED_ON_PAUSE_BUTTON_SELECTOR = 'button.toolbar-state-on';
 export const DEBUGGER_PAUSED_EVENT = 'DevTools.DebuggerPaused';
@@ -132,7 +133,7 @@ export async function openSourceCodeEditorForFile(sourceFile: string, testInput:
 export async function getSelectedSource(): Promise<string> {
   const sourceTabPane = await waitFor('#sources-panel-sources-view .tabbed-pane');
   const sourceTabs = await waitFor('.tabbed-pane-header-tab.selected', sourceTabPane);
-  return sourceTabs.evaluate(node => node.getAttribute('aria-label'));
+  return sourceTabs.evaluate(node => node.getAttribute('aria-label')) as Promise<string>;
 }
 
 export async function getOpenSources() {
@@ -149,6 +150,28 @@ export async function waitForHighlightedLineWhichIncludesText(expectedTextConten
     const text = await selectedLine.evaluate(node => node.textContent);
     return (text && text.includes(expectedTextContent)) ? text : undefined;
   });
+}
+
+export async function waitForHighlightedLine(lineNumber: number) {
+  await waitForFunction(async () => {
+    const selectedLine = await waitFor('.cm-highlightedLine');
+    const currentlySelectedLineNumber = await selectedLine.evaluate(line => {
+      return [...line.parentElement?.childNodes || []].indexOf(line);
+    });
+    const lineNumbers = await waitFor('.cm-lineNumbers');
+    const text = await lineNumbers.evaluate(
+        (node, lineNumber) => node.childNodes[lineNumber].textContent, currentlySelectedLineNumber + 1);
+    return Number(text) === lineNumber;
+  });
+}
+
+export async function getToolbarText() {
+  const toolbar = await waitFor('.sources-toolbar');
+  if (!toolbar) {
+    return [];
+  }
+  const textNodes = await $$('.toolbar-text', toolbar);
+  return Promise.all(textNodes.map(node => node.evaluate(node => node.textContent, node)));
 }
 
 export async function addBreakpointForLine(frontend: puppeteer.Page, index: number|string) {
@@ -177,8 +200,7 @@ export function sourceLineNumberSelector(lineNumber: number) {
 }
 
 export async function isBreakpointSet(lineNumber: number|string) {
-  const breakpointLineParentClasses =
-      await (await getLineNumberElement(lineNumber))?.evaluate(n => n.parentElement?.className);
+  const breakpointLineParentClasses = await (await getLineNumberElement(lineNumber))?.evaluate(n => n.className);
   return breakpointLineParentClasses?.includes('cm-breakpoint');
 }
 
@@ -193,15 +215,19 @@ export async function checkBreakpointDidNotActivate() {
   });
 }
 
-export async function getBreakpointDecorators(frontend: puppeteer.Page, disabledOnly = false) {
-  const selector = `.cm-breakpoint${disabledOnly ? '-disabled' : ''} .CodeMirror-linenumber`;
-  return await frontend.$$eval(selector, nodes => nodes.map(n => Number(n.textContent)));
+export async function getBreakpointDecorators(disabledOnly = false) {
+  const selector = `.cm-breakpoint${disabledOnly ? '-disabled' : ''}`;
+  const breakpointDecorators = await $$(selector);
+  return await Promise.all(
+      breakpointDecorators.map(breakpointDecorator => breakpointDecorator.evaluate(n => Number(n.textContent))));
 }
 
-export async function getNonBreakableLines(frontend: puppeteer.Page) {
-  const selector = '.cm-non-breakable-line .CodeMirror-linenumber';
+export async function getNonBreakableLines() {
+  const selector = '.cm-nonBreakableLine';
   await waitFor(selector);
-  return await frontend.$$eval(selector, nodes => nodes.map(n => Number(n.textContent)));
+  const unbreakableLines = await $$(selector);
+  return await Promise.all(
+      unbreakableLines.map(unbreakableLine => unbreakableLine.evaluate(n => Number(n.textContent))));
 }
 
 export async function getExecutionLine() {
@@ -481,7 +507,7 @@ export async function getWatchExpressionsValues() {
   await click('[aria-label="Watch"]');
   await frontend.keyboard.press('ArrowRight');
   await waitFor(WATCH_EXPRESSION_VALUE_SELECTOR);
-  const values = await $$(WATCH_EXPRESSION_VALUE_SELECTOR);
+  const values = await $$(WATCH_EXPRESSION_VALUE_SELECTOR) as puppeteer.ElementHandle<HTMLElement>[];
   return await Promise.all(values.map(value => value.evaluate(element => element.innerText)));
 }
 

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
@@ -918,7 +919,7 @@ TEST_F(OSExchangeDataWinTest, CFHtml) {
   expected_cf_html += base::UTF16ToUTF8(html);
   expected_cf_html.append("<!--EndFragment-->\r\n</body>\r\n</html>");
 
-  FORMATETC format = ClipboardFormatType::GetHtmlType().ToFormatEtc();
+  FORMATETC format = ClipboardFormatType::HtmlType().ToFormatEtc();
   STGMEDIUM medium;
   IDataObject* data_object = OSExchangeDataProviderWin::GetIDataObject(data);
   EXPECT_EQ(S_OK, data_object->GetData(&format, &medium));

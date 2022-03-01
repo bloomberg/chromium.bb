@@ -8,9 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/component_export.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace ui {
@@ -48,6 +47,10 @@ class COMPONENT_EXPORT(UI_BASE) ButtonMenuItemModel {
   };
 
   ButtonMenuItemModel(int string_id, ButtonMenuItemModel::Delegate* delegate);
+
+  ButtonMenuItemModel(const ButtonMenuItemModel&) = delete;
+  ButtonMenuItemModel& operator=(const ButtonMenuItemModel&) = delete;
+
   ~ButtonMenuItemModel();
 
   // Adds a button that will emit |command_id|. All buttons created through
@@ -115,9 +118,7 @@ class COMPONENT_EXPORT(UI_BASE) ButtonMenuItemModel {
   struct Item;
   std::vector<Item> items_;
 
-  Delegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ButtonMenuItemModel);
+  raw_ptr<Delegate> delegate_;
 };
 
 }  // namespace ui

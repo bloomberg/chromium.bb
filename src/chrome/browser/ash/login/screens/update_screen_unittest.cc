@@ -16,9 +16,9 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
-#include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/dbus/update_engine/fake_update_engine_client.h"
+#include "chromeos/dbus/update_engine/update_engine_client.h"
 #include "chromeos/network/network_handler_test_helper.h"
 #include "chromeos/network/portal_detector/mock_network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
@@ -35,6 +35,9 @@ using ::testing::Return;
 class UpdateScreenUnitTest : public testing::Test {
  public:
   UpdateScreenUnitTest() : local_state_(TestingBrowserProcess::GetGlobal()) {}
+
+  UpdateScreenUnitTest(const UpdateScreenUnitTest&) = delete;
+  UpdateScreenUnitTest& operator=(const UpdateScreenUnitTest&) = delete;
 
   // Simulates an update being available (or not).
   // The parameter "update_screen" points to the currently active UpdateScreen.
@@ -128,8 +131,6 @@ class UpdateScreenUnitTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state_;
   std::unique_ptr<NetworkHandlerTestHelper> network_handler_test_helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(UpdateScreenUnitTest);
 };
 
 TEST_F(UpdateScreenUnitTest, HandlesNoUpdate) {

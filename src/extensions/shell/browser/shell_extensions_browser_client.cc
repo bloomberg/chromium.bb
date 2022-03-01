@@ -131,9 +131,8 @@ void ShellExtensionsBrowserClient::LoadResourceFromResourceBundle(
     mojo::PendingReceiver<network::mojom::URLLoader> loader,
     const base::FilePath& resource_relative_path,
     int resource_id,
-    const std::string& content_security_policy,
-    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-    bool send_cors_header) {
+    scoped_refptr<net::HttpResponseHeaders> headers,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
   NOTREACHED() << "Load resources from bundles not supported.";
 }
 
@@ -245,7 +244,7 @@ void ShellExtensionsBrowserClient::BroadcastEventToRenderers(
   }
 
   std::unique_ptr<Event> event(
-      new Event(histogram_value, event_name, args->TakeList()));
+      new Event(histogram_value, event_name, std::move(*args).TakeList()));
   EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
 }
 

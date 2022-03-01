@@ -7,14 +7,16 @@
 
 #include <EGL/egl.h>
 
-#include "base/macros.h"
-
 namespace gles2_conform_support {
 namespace egl {
 
 class Config {
  public:
   explicit Config(EGLint surface_type);
+
+  Config(const Config&) = delete;
+  Config& operator=(const Config&) = delete;
+
   ~Config();
   bool Matches(const EGLint* attrib_list) const;
   bool GetAttrib(EGLint attribute, EGLint* value) const;
@@ -85,8 +87,6 @@ class Config {
   EGLint transparent_green_value_;
   // Transparent blue value
   EGLint transparent_blue_value_;
-
-  DISALLOW_COPY_AND_ASSIGN(Config);
 };
 
 }  // namespace egl

@@ -14,12 +14,11 @@
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/infobars/core/infobar_manager.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_utils.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_presenter.h"
@@ -28,6 +27,13 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+// Sync error icon.
+NSString* const kGoogleServicesSyncErrorImage = @"google_services_sync_error";
+
+}  // namespace
 
 // static
 bool SyncErrorInfoBarDelegate::Create(infobars::InfoBarManager* infobar_manager,
@@ -45,7 +51,7 @@ SyncErrorInfoBarDelegate::SyncErrorInfoBarDelegate(
     id<SyncPresenter> presenter)
     : browser_state_(browser_state), presenter_(presenter) {
   DCHECK(!browser_state->IsOffTheRecord());
-  icon_ = gfx::Image([UIImage imageNamed:@"infobar_warning"]);
+  icon_ = gfx::Image([UIImage imageNamed:kGoogleServicesSyncErrorImage]);
   SyncSetupService* sync_setup_service =
       SyncSetupServiceFactory::GetForBrowserState(browser_state);
   DCHECK(sync_setup_service);
@@ -59,13 +65,13 @@ SyncErrorInfoBarDelegate::SyncErrorInfoBarDelegate(
 
   // Register for sync status changes.
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForBrowserState(browser_state_);
+      SyncServiceFactory::GetForBrowserState(browser_state_);
   sync_service->AddObserver(this);
 }
 
 SyncErrorInfoBarDelegate::~SyncErrorInfoBarDelegate() {
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForBrowserState(browser_state_);
+      SyncServiceFactory::GetForBrowserState(browser_state_);
   sync_service->RemoveObserver(this);
 }
 
@@ -92,21 +98,27 @@ gfx::Image SyncErrorInfoBarDelegate::GetIcon() const {
   return icon_;
 }
 
+bool SyncErrorInfoBarDelegate::UseIconBackgroundTint() const {
+  return false;
+}
+
 bool SyncErrorInfoBarDelegate::Accept() {
   if (error_state_ == SyncSetupService::kSyncServiceSignInNeedsUpdate) {
     [presenter_ showReauthenticateSignin];
   } else if (ShouldShowSyncSettings(error_state_)) {
-    if (signin::IsMobileIdentityConsistencyEnabled()) {
-      [presenter_ showAccountSettings];
-    } else {
-      [presenter_ showGoogleServicesSettings];
-    }
+    [presenter_ showAccountSettings];
   } else if (error_state_ == SyncSetupService::kSyncServiceNeedsPassphrase) {
     [presenter_ showSyncPassphraseSettings];
   } else if (error_state_ ==
              SyncSetupService::kSyncServiceNeedsTrustedVaultKey) {
-    [presenter_ showTrustedVaultReauthenticationWithRetrievalTrigger:
-                    syncer::KeyRetrievalTriggerForUMA::kNewTabPageInfobar];
+    [presenter_
+        showTrustedVaultReauthForFetchKeysWithTrigger:
+            syncer::TrustedVaultUserActionTriggerForUMA::kNewTabPageInfobar];
+  } else if (error_state_ ==
+             SyncSetupService::kSyncServiceTrustedVaultRecoverabilityDegraded) {
+    [presenter_
+        showTrustedVaultReauthForDegradedRecoverabilityWithTrigger:
+            syncer::TrustedVaultUserActionTriggerForUMA::kNewTabPageInfobar];
   }
   return false;
 }

@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/csspaint/paint_rendering_context_2d.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/bindings/modules/v8/string_or_canvas_gradient_or_canvas_pattern_or_css_color_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_csscolorvalue_canvasgradient_canvaspattern_string.h"
 
 namespace blink {
@@ -18,7 +17,6 @@ static const float kZoom = 1.0;
 void TrySettingStrokeStyle(PaintRenderingContext2D* ctx,
                            const String& expected,
                            const String& value) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   ctx->setStrokeStyle(
       MakeGarbageCollected<
           V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString>("red"));
@@ -28,15 +26,6 @@ void TrySettingStrokeStyle(PaintRenderingContext2D* ctx,
   auto* result = ctx->strokeStyle();
   ASSERT_TRUE(result);
   EXPECT_EQ(expected, result->GetAsString());
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  StringOrCanvasGradientOrCanvasPatternOrCSSColorValue result, arg, dummy;
-  dummy.SetString("red");
-  arg.SetString(value);
-  ctx->setStrokeStyle(dummy);
-  ctx->setStrokeStyle(arg);
-  ctx->strokeStyle(result);
-  EXPECT_EQ(expected, result.GetAsString());
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 }
 
 TEST(PaintRenderingContext2DTest, testParseColorOrCurrentColor) {
@@ -44,7 +33,7 @@ TEST(PaintRenderingContext2DTest, testParseColorOrCurrentColor) {
       PaintRenderingContext2DSettings::Create();
   context_settings->setAlpha(false);
   PaintRenderingContext2D* ctx = MakeGarbageCollected<PaintRenderingContext2D>(
-      IntSize(kWidth, kHeight), context_settings, kZoom,
+      gfx::Size(kWidth, kHeight), context_settings, kZoom,
       1.0 /* device_scale_factor */);
   TrySettingStrokeStyle(ctx, "#0000ff", "blue");
   TrySettingStrokeStyle(ctx, "#000000", "currentColor");
@@ -54,7 +43,7 @@ TEST(PaintRenderingContext2DTest, testWidthAndHeight) {
   PaintRenderingContext2DSettings* context_settings =
       PaintRenderingContext2DSettings::Create();
   PaintRenderingContext2D* ctx = MakeGarbageCollected<PaintRenderingContext2D>(
-      IntSize(kWidth, kHeight), context_settings, kZoom,
+      gfx::Size(kWidth, kHeight), context_settings, kZoom,
       1.0 /* device_scale_factor */);
   EXPECT_EQ(kWidth, ctx->Width());
   EXPECT_EQ(kHeight, ctx->Height());
@@ -64,7 +53,7 @@ TEST(PaintRenderingContext2DTest, testBasicState) {
   PaintRenderingContext2DSettings* context_settings =
       PaintRenderingContext2DSettings::Create();
   PaintRenderingContext2D* ctx = MakeGarbageCollected<PaintRenderingContext2D>(
-      IntSize(kWidth, kHeight), context_settings, kZoom,
+      gfx::Size(kWidth, kHeight), context_settings, kZoom,
       1.0 /* device_scale_factor */);
 
   const double kShadowBlurBefore = 2;
@@ -96,7 +85,7 @@ TEST(PaintRenderingContext2DTest, setTransformWithDeviceScaleFactor) {
       PaintRenderingContext2DSettings::Create();
   float device_scale_factor = 1.23;
   PaintRenderingContext2D* ctx = MakeGarbageCollected<PaintRenderingContext2D>(
-      IntSize(kWidth, kHeight), context_settings, kZoom, device_scale_factor);
+      gfx::Size(kWidth, kHeight), context_settings, kZoom, device_scale_factor);
   DOMMatrix* matrix = ctx->getTransform();
   EXPECT_TRUE(matrix->isIdentity());
   ctx->setTransform(2.1, 2.5, 1.4, 2.3, 20, 50);
@@ -113,7 +102,7 @@ TEST(PaintRenderingContext2DTest, setTransformWithDefaultDeviceScaleFactor) {
   PaintRenderingContext2DSettings* context_settings =
       PaintRenderingContext2DSettings::Create();
   PaintRenderingContext2D* ctx = MakeGarbageCollected<PaintRenderingContext2D>(
-      IntSize(kWidth, kHeight), context_settings, kZoom,
+      gfx::Size(kWidth, kHeight), context_settings, kZoom,
       1.0 /* device_scale_factor */);
   DOMMatrix* matrix = ctx->getTransform();
   EXPECT_TRUE(matrix->isIdentity());

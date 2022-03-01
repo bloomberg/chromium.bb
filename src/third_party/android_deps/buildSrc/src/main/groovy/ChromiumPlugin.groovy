@@ -5,22 +5,24 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencyResolveDetails
+import org.gradle.api.attributes.Bundling
 
 /**
- * Plugin designed to define the configuration names to be used in the Gradle files to describe
- * the dependencies that {@link ChromiumDepGraph} with pick up.
+ * Plugin designed to define the configuration names to be used in the Gradle files to describe the dependencies that
+ * {@link ChromiumDepGraph} with pick up.
  */
 class ChromiumPlugin implements Plugin<Project> {
+
     void apply(Project project) {
-        // The configurations here are going to be used in ChromiumDepGraph. Keep it up to date
-        // with the declarations below.
+        // The configurations here are going to be used in ChromiumDepGraph. Keep it up to date with the declarations
+        // below.
         project.configurations {
             /** Main type of configuration, use it for libraries that the APK depends on. */
             compile
 
             /**
-             * Dedicated com_google_guava_listenablefuture configuration so that other libraries do
-             * not affect the resolved listenablefuture version.
+             * Dedicated com_google_guava_listenablefuture configuration so that other libraries do not affect the
+             * resolved listenablefuture version.
              */
             compileListenableFuture
 
@@ -30,27 +32,31 @@ class ChromiumPlugin implements Plugin<Project> {
             /** Libraries that are only used during build. These support android. */
             buildCompile
 
-            /**
-             * Libraries that are only used during build but should not
-             * automatically retrieve their dependencies.
-             */
+            /** Libraries that are only used during build but should not automatically retrieve their dependencies. */
             buildCompileNoDeps
 
             /** Libraries that are used for testing only and support android. */
             androidTestCompile
         }
 
-      project.configurations.all {
-        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-           if (project.ext.hasProperty("versionOverrideMap") &&
-                   project.ext.versionOverrideMap != null) {
-             def module = details.requested.group + ":" + details.requested.name
-             def version = project.ext.versionOverrideMap[module]
-             if (version != null) {
-               details.useVersion version
-             }
-          }
+        project.configurations.all {
+            resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+                if (project.ext.has('versionOverrideMap') && project.ext.versionOverrideMap) {
+                    String module = "${details.requested.group}:${details.requested.name}"
+                    String version = project.ext.versionOverrideMap[module]
+                    if (version != null) {
+                        details.useVersion version
+                    }
+                }
+            }
         }
-      }
-  }
+
+        project.configurations.buildCompile {
+            attributes {
+                // This attribute is used to resolve the caffeine error in: https://crbug.com/1216032#c3
+                attribute(Bundling.BUNDLING_ATTRIBUTE, project.objects.named(Bundling, Bundling.EXTERNAL))
+            }
+        }
+    }
+
 }

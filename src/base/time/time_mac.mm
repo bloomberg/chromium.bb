@@ -14,13 +14,13 @@
 #include <sys/types.h>
 #include <time.h>
 
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/mac/mach_logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/time/time_override.h"
 #include "build/build_config.h"
 
@@ -32,29 +32,48 @@
 namespace {
 
 #if defined(OS_MAC)
-int64_t MachTimeToMicroseconds(uint64_t mach_time) {
-  static mach_timebase_info_data_t timebase_info;
-  if (timebase_info.denom == 0) {
-    // Zero-initialization of statics guarantees that denom will be 0 before
-    // calling mach_timebase_info.  mach_timebase_info will never set denom to
-    // 0 as that would be invalid, so the zero-check can be used to determine
-    // whether mach_timebase_info has already been called.  This is
-    // recommended by Apple's QA1398.
-    kern_return_t kr = mach_timebase_info(&timebase_info);
+// Returns a pointer to the initialized Mach timebase info struct.
+mach_timebase_info_data_t* MachTimebaseInfoInternal() {
+  static mach_timebase_info_data_t timebase_info = []() {
+    mach_timebase_info_data_t info;
+    kern_return_t kr = mach_timebase_info(&info);
     MACH_DCHECK(kr == KERN_SUCCESS, kr) << "mach_timebase_info";
+    DCHECK(info.numer);
+    DCHECK(info.denom);
+    return info;
+  }();
+  return &timebase_info;
+}
+
+int64_t MachTimeToMicroseconds(uint64_t mach_time) {
+  // timebase_info gives us the conversion factor between absolute time tick
+  // units and nanoseconds.
+  mach_timebase_info_data_t* timebase_info = MachTimebaseInfoInternal();
+
+  // Take the fast path when the conversion is 1:1. The result will for sure fit
+  // into an int_64 because we're going from nanoseconds to microseconds.
+  if (timebase_info->numer == timebase_info->denom) {
+    return static_cast<int64_t>(mach_time /
+                                base::Time::kNanosecondsPerMicrosecond);
   }
 
-  // timebase_info converts absolute time tick units into nanoseconds.  Convert
-  // to microseconds up front to stave off overflows.
-  base::CheckedNumeric<uint64_t> result(mach_time /
-                                        base::Time::kNanosecondsPerMicrosecond);
-  result *= timebase_info.numer;
-  result /= timebase_info.denom;
+  // If there isn't a 1:1 conversion, divide first to reduce the chance of
+  // overflow.
+  uint64_t microseconds = mach_time / (timebase_info->denom *
+                                       base::Time::kNanosecondsPerMicrosecond);
 
-  // Don't bother with the rollover handling that the Windows version does.
-  // With numer and denom = 1 (the expected case), the 64-bit absolute time
-  // reported in nanoseconds is enough to last nearly 585 years.
-  return base::checked_cast<int64_t>(result.ValueOrDie());
+  // Only multiply if numer is something other than unity.
+  if (timebase_info->numer != 1) {
+    CHECK(!__builtin_umulll_overflow(microseconds, timebase_info->numer,
+                                     &microseconds));
+  }
+
+  // Don't bother with the rollover handling that the Windows version does. On
+  // Intel we expect numer == denom == 1, in which case the 64-bit absolute time
+  // reported in nanoseconds is enough to last nearly 585 years. For M1
+  // we can expect each tick to be about 42 nanoseconds which is almost
+  // 24,565 years of headroom.
+  return base::checked_cast<int64_t>(microseconds);
 }
 #endif  // defined(OS_MAC)
 
@@ -81,10 +100,9 @@ int64_t ComputeCurrentTicks() {
   size_t size = sizeof(boottime);
   int kr = sysctl(mib, base::size(mib), &boottime, &size, nullptr, 0);
   DCHECK_EQ(KERN_SUCCESS, kr);
-  base::TimeDelta time_difference =
-      base::subtle::TimeNowIgnoringOverride() -
-      (base::Time::FromTimeT(boottime.tv_sec) +
-       base::TimeDelta::FromMicroseconds(boottime.tv_usec));
+  base::TimeDelta time_difference = base::subtle::TimeNowIgnoringOverride() -
+                                    (base::Time::FromTimeT(boottime.tv_sec) +
+                                     base::Microseconds(boottime.tv_usec));
   return time_difference.InMicroseconds();
 #else
   // mach_absolute_time is it when it comes to ticks on the Mac.  Other calls
@@ -156,8 +174,8 @@ Time Time::FromCFAbsoluteTime(CFAbsoluteTime t) {
     return Time();  // Consider 0 as a null Time.
   return (t == std::numeric_limits<CFAbsoluteTime>::infinity())
              ? Max()
-             : (UnixEpoch() + TimeDelta::FromSecondsD(double{
-                                  t + kCFAbsoluteTimeIntervalSince1970}));
+             : (UnixEpoch() +
+                Seconds(double{t + kCFAbsoluteTimeIntervalSince1970}));
 }
 
 CFAbsoluteTime Time::ToCFAbsoluteTime() const {
@@ -185,7 +203,7 @@ NSDate* Time::ToNSDate() const {
 #if defined(OS_MAC)
 // static
 TimeDelta TimeDelta::FromMachTime(uint64_t mach_time) {
-  return TimeDelta::FromMicroseconds(MachTimeToMicroseconds(mach_time));
+  return Microseconds(MachTimeToMicroseconds(mach_time));
 }
 #endif  // defined(OS_MAC)
 
@@ -193,7 +211,7 @@ TimeDelta TimeDelta::FromMachTime(uint64_t mach_time) {
 
 namespace subtle {
 TimeTicks TimeTicksNowIgnoringOverride() {
-  return TimeTicks() + TimeDelta::FromMicroseconds(ComputeCurrentTicks());
+  return TimeTicks() + Microseconds(ComputeCurrentTicks());
 }
 }  // namespace subtle
 
@@ -212,6 +230,11 @@ bool TimeTicks::IsConsistentAcrossProcesses() {
 TimeTicks TimeTicks::FromMachAbsoluteTime(uint64_t mach_absolute_time) {
   return TimeTicks(MachTimeToMicroseconds(mach_absolute_time));
 }
+
+// static
+mach_timebase_info_data_t* TimeTicks::MachTimebaseInfoForTesting() {
+  return MachTimebaseInfoInternal();
+}
 #endif  // defined(OS_MAC)
 
 // static
@@ -227,7 +250,7 @@ TimeTicks::Clock TimeTicks::GetClock() {
 
 namespace subtle {
 ThreadTicks ThreadTicksNowIgnoringOverride() {
-  return ThreadTicks() + TimeDelta::FromMicroseconds(ComputeThreadTicks());
+  return ThreadTicks() + Microseconds(ComputeThreadTicks());
 }
 }  // namespace subtle
 

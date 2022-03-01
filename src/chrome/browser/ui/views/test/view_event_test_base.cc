@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/test/view_event_test_base.h"
+#include "base/memory/raw_ptr.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -21,10 +22,6 @@
 #if defined(USE_AURA) && !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/display/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
-
-#if defined(USE_X11)
-#include "ui/views/test/test_desktop_screen_x11.h"
-#endif  // defined(USE_X11)
 
 #if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && defined(USE_OZONE)
 #include "ui/views/test/test_desktop_screen_ozone.h"
@@ -50,7 +47,7 @@ class TestView : public views::View {
   }
 
  private:
-  ViewEventTestBase* harness_;
+  raw_ptr<ViewEventTestBase> harness_;
 };
 
 }  // namespace
@@ -83,8 +80,8 @@ class TestBaseWidgetDelegate : public views::WidgetDelegate {
   }
 
  private:
-  ViewEventTestBase* harness_;
-  views::View* contents_ = nullptr;
+  raw_ptr<ViewEventTestBase> harness_;
+  raw_ptr<views::View> contents_ = nullptr;
 };
 
 ViewEventTestBase::ViewEventTestBase() {
@@ -102,10 +99,6 @@ ViewEventTestBase::ViewEventTestBase() {
   // insufficient for these tests, then either bolster/replace it or fix the
   // tests.
   DCHECK(!display::Screen::GetScreen());
-#if defined(USE_X11)
-  if (!features::IsUsingOzonePlatform())
-    views::test::TestDesktopScreenX11::GetInstance();
-#endif  // defined(USE_X11)
 #if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && defined(USE_OZONE)
   if (!display::Screen::GetScreen())
     display::Screen::SetScreenInstance(

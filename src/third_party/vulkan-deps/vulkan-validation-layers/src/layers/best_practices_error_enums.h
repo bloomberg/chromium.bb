@@ -2,6 +2,7 @@
  * Copyright (c) 2015-2021 Valve Corporation
  * Copyright (c) 2015-2021 LunarG, Inc.
  * Copyright (C) 2015-2021 Google Inc.
+ * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +17,7 @@
  * limitations under the License.
  *
  * Author: Camden Stocker <camden@lunarg.com>
+ * Author: Nadav Geva <nadav.geva@amd.com>
  */
 
 #ifndef BEST_PRACTICES_ERROR_ENUMS_H_
@@ -36,10 +38,26 @@ static const char DECORATE_UNUSED *kVUID_BestPractices_CreateInstance_Deprecated
     "UNASSIGNED-BestPractices-vkCreateInstance-deprecated-extension";
 static const char DECORATE_UNUSED *kVUID_BestPractices_CreateDevice_DeprecatedExtension =
     "UNASSIGNED-BestPractices-vkCreateDevice-deprecated-extension";
-static const char DECORATE_UNUSED *kVUID_BestPractices_CreateInstance_SpecialUseExtension =
-    "UNASSIGNED-BestPractices-vkCreateInstance-specialuse-extension";
-static const char DECORATE_UNUSED *kVUID_BestPractices_CreateDevice_SpecialUseExtension =
-    "UNASSIGNED-BestPractices-vkCreateDevice-specialuse-extension";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreateInstance_SpecialUseExtension_CADSupport =
+    "UNASSIGNED-BestPractices-vkCreateInstance-specialuse-extension-cadsupport";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreateInstance_SpecialUseExtension_D3DEmulation =
+    "UNASSIGNED-BestPractices-vkCreateInstance-specialuse-extension-d3demulation";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreateInstance_SpecialUseExtension_DevTools =
+    "UNASSIGNED-BestPractices-vkCreateInstance-specialuse-extension-devtools";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreateInstance_SpecialUseExtension_Debugging =
+    "UNASSIGNED-BestPractices-vkCreateInstance-specialuse-extension-debugging";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreateInstance_SpecialUseExtension_GLEmulation =
+    "UNASSIGNED-BestPractices-vkCreateInstance-specialuse-extension-glemulation";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreateDevice_SpecialUseExtension_CADSupport =
+    "UNASSIGNED-BestPractices-vkCreateDevice-specialuse-extension-cadsupport";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreateDevice_SpecialUseExtension_D3DEmulation =
+    "UNASSIGNED-BestPractices-vkCreateDevice-specialuse-extension-d3demulation";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreateDevice_SpecialUseExtension_DevTools =
+    "UNASSIGNED-BestPractices-vkCreateDevice-specialuse-extension-devtools";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreateDevice_SpecialUseExtension_Debugging =
+    "UNASSIGNED-BestPractices-vkCreateDevice-specialuse-extension-debugging";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreateDevice_SpecialUseExtension_GLEmulation =
+    "UNASSIGNED-BestPractices-vkCreateDevice-specialuse-extension-glemulation";
 static const char DECORATE_UNUSED *kVUID_BestPractices_CreateDevice_API_Mismatch =
     "UNASSIGNED-BestPractices-vkCreateDevice-API-version-mismatch";
 static const char DECORATE_UNUSED *kVUID_BestPractices_SharingModeExclusive =
@@ -98,6 +116,8 @@ static const char DECORATE_UNUSED *kVUID_BestPractices_NonSuccess_Result = "UNAS
 static const char DECORATE_UNUSED *kVUID_BestPractices_SuboptimalSwapchain = "UNASSIGNED-BestPractices-SuboptimalSwapchain";
 static const char DECORATE_UNUSED *kVUID_BestPractices_SuboptimalSwapchainImageCount =
     "UNASSIGNED-BestPractices-vkCreateSwapchainKHR-suboptimal-swapchain-image-count";
+static const char DECORATE_UNUSED *kVUID_BestPractices_Swapchain_InvalidCount = "UNASSIGNED-BestPractices-SwapchainInvalidCount";
+static const char DECORATE_UNUSED *kVUID_BestPractices_DepthBiasNoAttachment = "UNASSIGNED-BestPractices-DepthBiasNoAttachment";
 
 // Arm-specific best practice
 static const char DECORATE_UNUSED *kVUID_BestPractices_AllocateDescriptorSets_SuboptimalReuse =
@@ -137,6 +157,8 @@ static const char DECORATE_UNUSED *kVUID_BestPractices_CmdDrawIndexed_PostTransf
     "UNASSIGNED-BestPractices-vkCmdDrawIndexed-post-transform-cache-thrashing";
 static const char DECORATE_UNUSED *kVUID_BestPractices_BeginCommandBuffer_OneTimeSubmit =
     "UNASSIGNED-BestPractices-vkBeginCommandBuffer-one-time-submit";
+static const char DECORATE_UNUSED *kVUID_BestPractices_BeginRenderPass_ZeroSizeRenderArea =
+    "UNASSIGNED-BestPractices-vkCmdBeginRenderPass-zero-size-render-area";
 static const char DECORATE_UNUSED *kVUID_BestPractices_BeginRenderPass_AttachmentNeedsReadback =
     "UNASSIGNED-BestPractices-vkCmdBeginRenderPass-attachment-needs-readback";
 static const char DECORATE_UNUSED *kVUID_BestPractices_CreateSwapchain_PresentMode =
@@ -147,5 +169,78 @@ static const char DECORATE_UNUSED *kVUID_BestPractices_CreateDevice_RobustBuffer
     "UNASSIGNED-BestPractices-vkCreateDevice-RobustBufferAccess";
 static const char DECORATE_UNUSED *kVUID_BestPractices_EndRenderPass_DepthPrePassUsage =
     "UNASSIGNED-BestPractices-vkCmdEndRenderPass-depth-pre-pass-usage";
+static const char DECORATE_UNUSED *kVUID_BestPractices_EndRenderPass_RedundantAttachmentOnTile =
+    "UNASSIGNED-BestPractices-vkCmdEndRenderPass-redundant-attachment-on-tile";
+static const char DECORATE_UNUSED *kVUID_BestPractices_RenderPass_RedundantStore =
+    "UNASSIGNED-BestPractices-RenderPass-redundant-store";
+static const char DECORATE_UNUSED *kVUID_BestPractices_RenderPass_RedundantClear =
+    "UNASSIGNED-BestPractices-RenderPass-redundant-clear";
+static const char DECORATE_UNUSED *kVUID_BestPractices_RenderPass_InefficientClear =
+    "UNASSIGNED-BestPractices-RenderPass-inefficient-clear";
+static const char DECORATE_UNUSED *kVUID_BestPractices_RenderPass_BlitImage_LoadOpLoad =
+    "UNASSIGNED-BestPractices-RenderPass-blitimage-loadopload";
+static const char DECORATE_UNUSED *kVUID_BestPractices_RenderPass_CopyImage_LoadOpLoad =
+    "UNASSIGNED-BestPractices-RenderPass-copyimage-loadopload";
+static const char DECORATE_UNUSED *kVUID_BestPractices_RenderPass_ResolveImage_LoadOpLoad =
+    "UNASSIGNED-BestPractices-RenderPass-resolveimage-loadopload";
+
+
+// AMD-specific best practice
+static const char DECORATE_UNUSED *kVUID_BestPractices_CmdBuffer_AvoidTinyCmdBuffers =
+    "UNASSIGNED-BestPractices-VkCommandBuffer-AvoidTinyCmdBuffers";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CmdBuffer_AvoidSecondaryCmdBuffers =
+    "UNASSIGNED-BestPractices-VkCommandBuffer-AvoidSecondaryCmdBuffers";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CmdBuffer_AvoidSmallSecondaryCmdBuffers =
+    "UNASSIGNED-BestPractices-VkCommandBuffer-AvoidSmallSecondaryCmdBuffers";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CmdBuffer_AvoidClearSecondaryCmdBuffers =
+    "UNASSIGNED-BestPractices-VkCommandBuffer-AvoidClearSecondaryCmdBuffers";
+static const char DECORATE_UNUSED *kVUID_BestPractices_DrawState_AvoidVertexBindEveryDraw =
+    "UNASSIGNED-BestPractices-DrawState-AvoidVertexBindEveryDraw";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CmdPool_DisparateSizedCmdBuffers =
+    "UNASSIGNED-BestPractices-CmdPool-DisparateSizedCmdBuffers";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreatePipelines_TooManyPipelines =
+    "UNASSIGNED-BestPractices-CreatePipelines-TooManyPipelines";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreatePipelines_MultiplePipelineCaches =
+    "UNASSIGNED-BestPractices-vkCreatePipelines-multiple-pipelines-caches";
+static const char DECORATE_UNUSED *kVUID_BestPractices_vkImage_DontUseMutableRenderTargets =
+    "UNASSIGNED-BestPractices-vkImage-DontUseMutableRenderTargets";
+static const char DECORATE_UNUSED *kVUID_BestPractices_vkImage_AvoidImageToImageCopy =
+    "UNASSIGNED-BestPractices-vkImage-AvoidImageToImageCopy";
+static const char DECORATE_UNUSED *kVUID_BestPractices_vkImage_AvoidConcurrentRenderTargets =
+    "UNASSIGNED-BestPractices-vkImage-AvoidConcurrentRenderTargets";
+static const char DECORATE_UNUSED *kVUID_BestPractices_vkImage_DontUseStorageRenderTargets =
+    "UNASSIGNED-BestPractices-vkImage-DontUseStorageRenderTargets";
+static const char DECORATE_UNUSED *kVUID_BestPractices_vkImage_AvoidGeneral = "UNASSIGNED-BestPractices-vkImage-AvoidGeneral";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreatePipelines_AvoidPrimitiveRestart =
+    "UNASSIGNED-BestPractices-CreatePipelines-AvoidPrimitiveRestart";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreatePipelines_MinimizeNumDynamicStates =
+    "UNASSIGNED-BestPractices-CreatePipelines-MinimizeNumDynamicStates";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CreatePipelinesLayout_KeepLayoutSmall =
+    "UNASSIGNED-BestPractices-CreatePipelinesLayout-KeepLayoutSmall";
+static const char DECORATE_UNUSED *kVUID_BestPractices_UpdateDescriptors_AvoidCopyingDescriptors =
+    "UNASSIGNED-BestPractices-UpdateDescriptors-AvoidCopyingDescriptors";
+static const char DECORATE_UNUSED *kVUID_BestPractices_UpdateDescriptors_PreferNonTemplate =
+    "UNASSIGNED-BestPractices-UpdateDescriptors-PreferNonTemplate";
+static const char DECORATE_UNUSED *kVUID_BestPractices_ClearAttachment_FastClearValues =
+    "UNASSIGNED-BestPractices-ClearAttachment-FastClearValues";
+static const char DECORATE_UNUSED *kVUID_BestPractices_ClearAttachment_ClearImage =
+    "UNASSIGNED-BestPractices-ClearAttachment-ClearImage";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CmdBuffer_backToBackBarrier =
+    "UNASSIGNED-BestPractices-CmdBuffer-backToBackBarrier";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CmdBuffer_highBarrierCount =
+    "UNASSIGNED-BestPractices-CmdBuffer-highBarrierCount";
+static const char DECORATE_UNUSED *kVUID_BestPractices_PipelineBarrier_readToReadBarrier =
+    "UNASSIGNED-BestPractices-PipelineBarrier-readToReadBarrier";
+static const char DECORATE_UNUSED *kVUID_BestPractices_Submission_ReduceNumberOfSubmissions =
+    "UNASSIGNED-BestPractices-Submission-ReduceNumberOfSubmissions";
+static const char DECORATE_UNUSED *kVUID_BestPractices_Pipeline_SortAndBind = "UNASSIGNED-BestPractices-Pipeline-SortAndBind";
+static const char DECORATE_UNUSED *kVUID_BestPractices_Pipeline_WorkPerPipelineChange =
+    "UNASSIGNED-BestPractices-Pipeline-WorkPerPipelineChange";
+static const char DECORATE_UNUSED *kVUID_BestPractices_SyncObjects_HighNumberOfFences =
+    "UNASSIGNED-BestPractices-SyncObjects-HighNumberOfFences";
+static const char DECORATE_UNUSED *kVUID_BestPractices_SyncObjects_HighNumberOfSemaphores =
+    "UNASSIGNED-BestPractices-SyncObjects-HighNumberOfSemaphores";
+static const char DECORATE_UNUSED *kVUID_BestPractices_DynamicRendering_NotSupported =
+    "UNASSIGNED-BestPractices-DynamicRendering-NotSupported";
 
 #endif

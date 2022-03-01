@@ -15,17 +15,19 @@ namespace gpu {
 // launched.
 
 #if defined(CYGPROFILE_INSTRUMENTATION)
-constexpr base::TimeDelta kGpuWatchdogTimeout =
-    base::TimeDelta::FromSeconds(30);
+constexpr base::TimeDelta kGpuWatchdogTimeout = base::Seconds(30);
 #elif defined(OS_MAC)
-constexpr base::TimeDelta kGpuWatchdogTimeout =
-    base::TimeDelta::FromSeconds(25);
-#elif defined(OS_WIN)
-constexpr base::TimeDelta kGpuWatchdogTimeout =
-    base::TimeDelta::FromSeconds(30);
+#if defined(ADDRESS_SANITIZER)
+// Use a longer timeout because of slower execution time leading to
+// intermittent flakes. http://crbug.com/1270755
+constexpr base::TimeDelta kGpuWatchdogTimeout = base::Seconds(50);
 #else
-constexpr base::TimeDelta kGpuWatchdogTimeout =
-    base::TimeDelta::FromSeconds(15);
+constexpr base::TimeDelta kGpuWatchdogTimeout = base::Seconds(25);
+#endif
+#elif defined(OS_WIN)
+constexpr base::TimeDelta kGpuWatchdogTimeout = base::Seconds(30);
+#else
+constexpr base::TimeDelta kGpuWatchdogTimeout = base::Seconds(15);
 #endif
 
 // It usually takes longer to finish a GPU task when the system just resumes

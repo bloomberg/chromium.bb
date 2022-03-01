@@ -33,7 +33,7 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
@@ -87,7 +87,7 @@ std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(
       base::FileEnumerator::FILES);
 #if defined(OS_WIN)
   base::FilePath::StringType extension = base::UTF8ToWide(".json");
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   base::FilePath::StringType extension(".json");
 #endif
   do {
@@ -123,6 +123,9 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
     DCHECK(profile_);
   }
 
+  PrioritySyncReadyWaiter(const PrioritySyncReadyWaiter&) = delete;
+  PrioritySyncReadyWaiter& operator=(const PrioritySyncReadyWaiter&) = delete;
+
   ~PrioritySyncReadyWaiter() override = default;
 
   void Start(base::OnceClosure done_closure) {
@@ -133,8 +136,8 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
     }
     DCHECK(!done_closure_);
     done_closure_ = std::move(done_closure);
-    if (chromeos::features::IsSplitSettingsSyncEnabled()) {
-      // SplitSettingsSync lets users opt-out of sync during OOBE.
+    if (chromeos::features::IsSyncConsentOptionalEnabled()) {
+      // SyncConsentOptional lets users opt-out of sync during OOBE.
       PrefService* prefs = profile_->GetPrefs();
       if (!prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted)) {
         // Need to wait for OOBE completion before checking if sync is enabled.
@@ -153,12 +156,11 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
 
  private:
   void OnSyncOobeCompleted() {
-    DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+    DCHECK(chromeos::features::IsSyncConsentOptionalEnabled());
     DCHECK(
         profile_->GetPrefs()->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
     pref_change_registrar_.reset();
-    syncer::SyncService* service =
-        ProfileSyncServiceFactory::GetForProfile(profile_);
+    syncer::SyncService* service = SyncServiceFactory::GetForProfile(profile_);
     if (!service->GetUserSettings()->IsOsSyncFeatureEnabled()) {
       // User opted-out of OS sync, OS sync will never start, we're done here.
       Finish();
@@ -169,8 +171,7 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
   }
 
   void MaybeObserveSyncStart() {
-    syncer::SyncService* service =
-        ProfileSyncServiceFactory::GetForProfile(profile_);
+    syncer::SyncService* service = SyncServiceFactory::GetForProfile(profile_);
     DCHECK(service);
     if (!service->CanSyncFeatureStart()) {
       Finish();
@@ -205,9 +206,9 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
     sync_preferences::PrefServiceSyncable* prefs =
         PrefServiceSyncableFromProfile(profile_);
     DCHECK(prefs);
-    // SplitSettingsSync moves prefs like language and keyboard/mouse config to
-    // OS priority prefs.
-    return chromeos::features::IsSplitSettingsSyncEnabled()
+    // SyncSettingsCategorization moves prefs like language and keyboard/mouse
+    // config to OS priority prefs.
+    return chromeos::features::IsSyncSettingsCategorizationEnabled()
                ? prefs->AreOsPriorityPrefsSyncing()
                : prefs->IsPrioritySyncing();
   }
@@ -218,8 +219,7 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
     DCHECK(prefs);
     syncable_pref_observation_.Observe(prefs);
 
-    syncer::SyncService* service =
-        ProfileSyncServiceFactory::GetForProfile(profile_);
+    syncer::SyncService* service = SyncServiceFactory::GetForProfile(profile_);
     sync_service_observation_.Observe(service);
   }
 
@@ -229,7 +229,7 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
 
   base::OnceClosure done_closure_;
 
-  // Used with SplitSettingsSync to wait for OOBE sync dialog completion.
+  // Used with SyncConsentOptional to wait for OOBE sync dialog completion.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   // Used for registering observer for sync_preferences::PrefServiceSyncable.
@@ -238,8 +238,6 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
       syncable_pref_observation_{this};
   base::ScopedObservation<syncer::SyncService, syncer::SyncServiceObserver>
       sync_service_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PrioritySyncReadyWaiter);
 };
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -267,7 +265,7 @@ void ExternalPrefLoader::StartLoading() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if ((options_ & DELAY_LOAD_UNTIL_PRIORITY_SYNC) &&
-      (profile_ && ProfileSyncServiceFactory::IsSyncAllowed(profile_))) {
+      (profile_ && SyncServiceFactory::IsSyncAllowed(profile_))) {
     pending_waiter_list_.push_back(
         std::make_unique<PrioritySyncReadyWaiter>(profile_));
     PrioritySyncReadyWaiter* waiter_ptr = pending_waiter_list_.back().get();
@@ -418,7 +416,7 @@ void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
 #if defined(OS_WIN)
         base::WideToASCII(
             extension_candidate_path.RemoveExtension().BaseName().value());
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
         extension_candidate_path.RemoveExtension().BaseName().value();
 #endif
 
@@ -440,7 +438,7 @@ void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
     }
 
     DVLOG(1) << "Adding extension with id: " << id;
-    prefs->Set(id, std::move(ext_prefs));
+    prefs->SetKey(id, base::Value::FromUniquePtrValue(std::move(ext_prefs)));
   }
 }
 

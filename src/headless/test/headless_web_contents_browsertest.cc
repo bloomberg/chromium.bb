@@ -10,6 +10,7 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -483,6 +484,8 @@ class HeadlessWebContentsPDFPageSizeRoundingTest
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsPDFPageSizeRoundingTest);
 
+#if BUILDFLAG(ENABLE_TAGGED_PDF)
+
 const char kExpectedStructTreeJSON[] = R"({
    "lang": "en",
    "type": "Document",
@@ -571,13 +574,6 @@ class HeadlessWebContentsTaggedPDFTest
     : public HeadlessAsyncDevTooledBrowserTest,
       public page::Observer {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Specifically request a tagged (accessible) PDF. Maybe someday
-    // we can enable this by default.
-    HeadlessAsyncDevTooledBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kExportTaggedPDF);
-  }
-
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
 
@@ -635,6 +631,8 @@ class HeadlessWebContentsTaggedPDFTest
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsTaggedPDFTest);
+
+#endif  // BUILDFLAG(ENABLE_TAGGED_PDF)
 
 #endif  // BUILDFLAG(ENABLE_PRINTING)
 
@@ -902,8 +900,8 @@ class HeadlessWebContentsBeginFrameControlTest
             base::Unretained(this)));
   }
 
-  HeadlessBrowserContext* browser_context_ = nullptr;  // Not owned.
-  HeadlessWebContentsImpl* web_contents_ = nullptr;    // Not owned.
+  raw_ptr<HeadlessBrowserContext> browser_context_ = nullptr;  // Not owned.
+  raw_ptr<HeadlessWebContentsImpl> web_contents_ = nullptr;    // Not owned.
 
   bool page_ready_ = false;
   bool needs_begin_frames_ = false;

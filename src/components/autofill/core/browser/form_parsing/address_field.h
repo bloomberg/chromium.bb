@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
 #include "components/autofill/core/browser/pattern_provider/pattern_provider.h"
@@ -29,6 +29,8 @@ class AddressField : public FormField {
                                           const LanguageCode& page_language,
                                           LogManager* log_manager);
 
+  AddressField(const AddressField&) = delete;
+  AddressField& operator=(const AddressField&) = delete;
 
  protected:
   void AddClassifications(FieldCandidatesMap* field_candidates) const override;
@@ -117,7 +119,7 @@ class AddressField : public FormField {
       AutofillScanner* scanner,
       const LanguageCode& page_language);
 
-  LogManager* log_manager_;
+  raw_ptr<LogManager> log_manager_;
   AutofillField* company_ = nullptr;
   AutofillField* street_name_ = nullptr;
   AutofillField* house_number_ = nullptr;
@@ -132,8 +134,6 @@ class AddressField : public FormField {
   AutofillField* zip_ = nullptr;
   AutofillField* zip4_ = nullptr;  // optional ZIP+4; we don't fill this yet.
   AutofillField* country_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(AddressField);
 };
 
 }  // namespace autofill

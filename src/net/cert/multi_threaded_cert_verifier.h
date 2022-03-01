@@ -12,7 +12,6 @@
 #include <memory>
 
 #include "base/containers/linked_list.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/net_export.h"
@@ -31,6 +30,10 @@ class CertVerifyProc;
 class NET_EXPORT_PRIVATE MultiThreadedCertVerifier : public CertVerifier {
  public:
   explicit MultiThreadedCertVerifier(scoped_refptr<CertVerifyProc> verify_proc);
+
+  MultiThreadedCertVerifier(const MultiThreadedCertVerifier&) = delete;
+  MultiThreadedCertVerifier& operator=(const MultiThreadedCertVerifier&) =
+      delete;
 
   // When the verifier is destroyed, all certificate verifications requests are
   // canceled, and their completion callbacks will not be called.
@@ -65,8 +68,6 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier : public CertVerifier {
 #endif
 
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(MultiThreadedCertVerifier);
 };
 
 }  // namespace net

@@ -17,7 +17,6 @@
 #include "aom/aom_integer.h"
 #include "aom_ports/aom_timer.h"
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -114,7 +113,7 @@ class ConvolveRoundTest : public ::testing::TestWithParam<ConvolveRoundParam> {
       GenerateBufferWithRandom(src_, src_stride, bits, w, h);
 
       func_ref_(src_, src_stride, dst_ref, dst_stride, w, h, bits);
-      ASM_REGISTER_STATE_CHECK(
+      API_REGISTER_STATE_CHECK(
           func_(src_, src_stride, dst, dst_stride, w, h, bits));
 
       if (data_path_ == LOWBITDEPTH_TEST) {

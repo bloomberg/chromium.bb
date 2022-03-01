@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 
+#include "ash/components/arc/arc_util.h"
+#include "ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "base/atomic_ref_count.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
@@ -12,20 +14,18 @@
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/file_manager/volume_manager.h"
-#include "chrome/browser/chromeos/smb_client/smb_service.h"
-#include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
-#include "chrome/browser/chromeos/smb_client/smbfs_share.h"
-#include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
+#include "chrome/browser/ash/smb_client/smb_service.h"
+#include "chrome/browser/ash/smb_client/smb_service_factory.h"
+#include "chrome/browser/ash/smb_client/smbfs_share.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/seneschal/seneschal_client.h"
-#include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -33,7 +33,7 @@
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "url/gurl.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace {
 
@@ -238,9 +238,8 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
       drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
   base::FilePath drivefs_mount_point_path;
   base::FilePath drivefs_mount_name;
-  chromeos::smb_client::SmbService* smb_service =
-      chromeos::smb_client::SmbServiceFactory::Get(profile_);
-  chromeos::smb_client::SmbFsShare* smb_share = nullptr;
+  auto* smb_service = ash::smb_client::SmbServiceFactory::Get(profile_);
+  ash::smb_client::SmbFsShare* smb_share = nullptr;
   base::FilePath smbfs_mount_point_path;
   base::FilePath smbfs_mount_name;
 
@@ -265,12 +264,14 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
                  .AppendRelativePath(path, &drivefs_path) &&
              fuse_fs_root_path.AppendRelativePath(drivefs_mount_point_path,
                                                   &drivefs_mount_name)) {
-    // Allow subdirs of DriveFS (/media/fuse/drivefs-*) except .Trash.
+    // Allow subdirs of DriveFS (/media/fuse/drivefs-*) except .Trash-1000.
     request.set_drivefs_mount_name(drivefs_mount_name.value());
     base::FilePath root("root");
     base::FilePath team_drives("team_drives");
     base::FilePath computers("Computers");
-    base::FilePath trash(".Trash");  // Not to be shared!
+    base::FilePath files_by_id(".files-by-id");
+    base::FilePath shortcut_targets_by_id(".shortcut-targets-by-id");
+    base::FilePath trash(".Trash-1000");  // Not to be shared!
     if (AppendRelativePath(root, drivefs_path, &relative_path)) {
       // My Drive and subdirs.
       allowed_path = true;
@@ -294,10 +295,22 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
       if (components.size() < 2) {
         allowed_path = false;
       }
+    } else if (AppendRelativePath(files_by_id, drivefs_path, &relative_path)) {
+      // Shared (.files-by-id) and subdirs.
+      allowed_path = true;
+      request.set_storage_location(
+          vm_tools::seneschal::SharePathRequest::DRIVEFS_FILES_BY_ID);
+    } else if (AppendRelativePath(shortcut_targets_by_id, drivefs_path,
+                                  &relative_path)) {
+      // Shared (.shortcut-targets-by-id) and subdirs.
+      allowed_path = true;
+      request.set_storage_location(vm_tools::seneschal::SharePathRequest::
+                                       DRIVEFS_SHORTCUT_TARGETS_BY_ID);
     } else if (trash == drivefs_path || trash.IsParent(drivefs_path)) {
-      // Note: Do not expose .Trash which would allow linux apps to make
+      // Note: Do not expose .Trash-1000 which would allow linux apps to make
       // permanent deletes from Drive.  This branch is not especially required,
-      // but is included to make it explicit that .Trash should not be shared.
+      // but is included to make it explicit that .Trash-1000 should not be
+      // shared.
       allowed_path = false;
     }
   } else if (AppendRelativePath(android_files, path, &relative_path)) {
@@ -351,6 +364,9 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
     RegisterPersistedPath(vm_name, path);
   }
   RegisterSharedPath(vm_name, path);
+  for (Observer& observer : observers_) {
+    observer.OnShare(vm_name, path, persist);
+  }
 
   request.mutable_shared_path()->set_path(relative_path.value());
   request.mutable_shared_path()->set_writable(true);
@@ -438,7 +454,7 @@ void GuestOsSharePath::CallSeneschalUnsharePath(const std::string& vm_name,
   bool result = mount_points->GetVirtualPath(path, &virtual_path);
   if (result) {
     storage::FileSystemURL url = mount_points->CreateCrackedFileSystemURL(
-        url::Origin(), storage::kFileSystemTypeExternal, virtual_path);
+        blink::StorageKey(), storage::kFileSystemTypeExternal, virtual_path);
     result = file_manager::util::ConvertFileSystemURLToPathInsideVM(
         profile_, url, dummy_vm_mount,
         /*map_crostini_home=*/vm_name == crostini::kCrostiniDefaultVmName,
@@ -468,6 +484,10 @@ void GuestOsSharePath::SharePaths(const std::string& vm_name,
                                   std::vector<base::FilePath> paths,
                                   bool persist,
                                   SuccessCallback callback) {
+  if (paths.empty()) {
+    std::move(callback).Run(true, "");
+    return;
+  }
   base::RepeatingCallback<void(const base::FilePath&, const base::FilePath&,
                                bool, const std::string&)>
       barrier = base::BindRepeating(
@@ -519,7 +539,7 @@ std::vector<base::FilePath> GuestOsSharePath::GetPersistedSharedPaths(
   const base::DictionaryValue* shared_paths =
       profile_->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
   CHECK(shared_paths);
-  for (const auto& it : shared_paths->DictItems()) {
+  for (const auto it : shared_paths->DictItems()) {
     base::FilePath path(it.first);
     for (const auto& vm : it.second.GetList()) {
       // Register all shared paths for all VMs since we want FilePathWatchers
@@ -551,7 +571,7 @@ void GuestOsSharePath::RegisterPersistedPath(const std::string& vm_name,
   // E.g. if path /foo/bar is already shared, and then we share /foo, we
   // remove /foo/bar from the list since it will be shared as part of /foo.
   std::vector<base::FilePath> children;
-  for (const auto& it : shared_paths->DictItems()) {
+  for (const auto it : shared_paths->DictItems()) {
     base::FilePath shared(it.first);
     auto& vms = it.second;
     auto vm_matches = base::Contains(vms.GetList(), base::Value(vm_name));
@@ -610,7 +630,7 @@ void GuestOsSharePath::OnVolumeMounted(chromeos::MountError error_code,
   // of it then share them with any running VMs.
   const base::DictionaryValue* shared_paths =
       profile_->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
-  for (const auto& it : shared_paths->DictItems()) {
+  for (const auto it : shared_paths->DictItems()) {
     base::FilePath path(it.first);
     if (path != volume.mount_path() && !volume.mount_path().IsParent(path)) {
       continue;

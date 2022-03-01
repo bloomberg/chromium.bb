@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
+#include "third_party/blink/public/common/scheme_registry.h"
 #include "url/url_util.h"
 
 namespace content {
@@ -26,7 +27,6 @@ const char* const kDefaultSavableSchemes[] = {
   url::kHttpsScheme,
   url::kFileScheme,
   url::kFileSystemScheme,
-  url::kFtpScheme,
   kChromeDevToolsScheme,
   kChromeUIScheme,
   url::kDataScheme
@@ -49,7 +49,7 @@ std::vector<std::string>& GetMutableServiceWorkerSchemes() {
 
 }  // namespace
 
-void RegisterContentSchemes() {
+void RegisterContentSchemes(bool should_lock_registry) {
   // On Android and in tests, schemes may have been registered already.
   if (g_registered_url_schemes)
     return;
@@ -79,6 +79,9 @@ void RegisterContentSchemes() {
   for (auto& scheme : schemes.local_schemes)
     url::AddLocalScheme(scheme.c_str());
 
+  for (auto& scheme : schemes.extension_schemes)
+    blink::CommonSchemeRegistry::RegisterURLSchemeAsExtension(scheme.c_str());
+
   schemes.no_access_schemes.push_back(kChromeErrorScheme);
   for (auto& scheme : schemes.no_access_schemes)
     url::AddNoAccessScheme(scheme.c_str());
@@ -106,7 +109,8 @@ void RegisterContentSchemes() {
   // threadsafe so must be called when GURL isn't used on any other thread. This
   // is really easy to mess up, so we say that all calls to Add*Scheme in Chrome
   // must be inside this function.
-  url::LockSchemeRegistries();
+  if (should_lock_registry)
+    url::LockSchemeRegistries();
 
   // Combine the default savable schemes with the additional ones given.
   GetMutableSavableSchemes().assign(std::begin(kDefaultSavableSchemes),

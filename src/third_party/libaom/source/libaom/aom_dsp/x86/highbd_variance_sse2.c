@@ -14,16 +14,12 @@
 
 #include "config/aom_config.h"
 #include "config/aom_dsp_rtcd.h"
-#include "config/av1_rtcd.h"
 
 #include "aom_dsp/x86/synonyms.h"
-
 #include "aom_ports/mem.h"
 
-#include "av1/common/av1_common_int.h"
 #include "av1/common/filter.h"
 #include "av1/common/reconinter.h"
-#include "av1/encoder/reconinter_enc.h"
 
 typedef uint32_t (*high_variance_fn_t)(const uint16_t *src, int src_stride,
                                        const uint16_t *ref, int ref_stride,
@@ -613,133 +609,6 @@ FNS(sse2);
 #undef FNS
 #undef FN
 
-void aom_highbd_upsampled_pred_sse2(MACROBLOCKD *xd,
-                                    const struct AV1Common *const cm,
-                                    int mi_row, int mi_col, const MV *const mv,
-                                    uint8_t *comp_pred8, int width, int height,
-                                    int subpel_x_q3, int subpel_y_q3,
-                                    const uint8_t *ref8, int ref_stride, int bd,
-                                    int subpel_search) {
-  // expect xd == NULL only in tests
-  if (xd != NULL) {
-    const MB_MODE_INFO *mi = xd->mi[0];
-    const int ref_num = 0;
-    const int is_intrabc = is_intrabc_block(mi);
-    const struct scale_factors *const sf =
-        is_intrabc ? &cm->sf_identity : xd->block_ref_scale_factors[ref_num];
-    const int is_scaled = av1_is_scaled(sf);
-
-    if (is_scaled) {
-      int plane = 0;
-      const int mi_x = mi_col * MI_SIZE;
-      const int mi_y = mi_row * MI_SIZE;
-      const struct macroblockd_plane *const pd = &xd->plane[plane];
-      const struct buf_2d *const dst_buf = &pd->dst;
-      const struct buf_2d *const pre_buf =
-          is_intrabc ? dst_buf : &pd->pre[ref_num];
-
-      InterPredParams inter_pred_params;
-      inter_pred_params.conv_params = get_conv_params(0, plane, xd->bd);
-      const int_interpfilters filters =
-          av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
-      av1_init_inter_params(
-          &inter_pred_params, width, height, mi_y >> pd->subsampling_y,
-          mi_x >> pd->subsampling_x, pd->subsampling_x, pd->subsampling_y,
-          xd->bd, is_cur_buf_hbd(xd), is_intrabc, sf, pre_buf, filters);
-      av1_enc_build_one_inter_predictor(comp_pred8, width, mv,
-                                        &inter_pred_params);
-      return;
-    }
-  }
-
-  const InterpFilterParams *filter = av1_get_filter(subpel_search);
-  int filter_taps = (subpel_search <= USE_4_TAPS) ? 4 : SUBPEL_TAPS;
-  if (!subpel_x_q3 && !subpel_y_q3) {
-    uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
-    uint16_t *comp_pred = CONVERT_TO_SHORTPTR(comp_pred8);
-    if (width >= 8) {
-      int i;
-      assert(!(width & 7));
-      /*Read 8 pixels one row at a time.*/
-      for (i = 0; i < height; i++) {
-        int j;
-        for (j = 0; j < width; j += 8) {
-          __m128i s0 = _mm_loadu_si128((const __m128i *)ref);
-          _mm_storeu_si128((__m128i *)comp_pred, s0);
-          comp_pred += 8;
-          ref += 8;
-        }
-        ref += ref_stride - width;
-      }
-    } else {
-      int i;
-      assert(!(width & 3));
-      /*Read 4 pixels two rows at a time.*/
-      for (i = 0; i < height; i += 2) {
-        __m128i s0 = _mm_loadl_epi64((const __m128i *)ref);
-        __m128i s1 = _mm_loadl_epi64((const __m128i *)(ref + ref_stride));
-        __m128i t0 = _mm_unpacklo_epi64(s0, s1);
-        _mm_storeu_si128((__m128i *)comp_pred, t0);
-        comp_pred += 8;
-        ref += 2 * ref_stride;
-      }
-    }
-  } else if (!subpel_y_q3) {
-    const int16_t *const kernel =
-        av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
-    aom_highbd_convolve8_horiz(ref8, ref_stride, comp_pred8, width, kernel, 16,
-                               NULL, -1, width, height, bd);
-  } else if (!subpel_x_q3) {
-    const int16_t *const kernel =
-        av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
-    aom_highbd_convolve8_vert(ref8, ref_stride, comp_pred8, width, NULL, -1,
-                              kernel, 16, width, height, bd);
-  } else {
-    DECLARE_ALIGNED(16, uint16_t,
-                    temp[((MAX_SB_SIZE + 16) + 16) * MAX_SB_SIZE]);
-    const int16_t *const kernel_x =
-        av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
-    const int16_t *const kernel_y =
-        av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
-    const uint8_t *ref_start = ref8 - ref_stride * ((filter_taps >> 1) - 1);
-    uint16_t *temp_start_horiz = (subpel_search <= USE_4_TAPS)
-                                     ? temp + (filter_taps >> 1) * MAX_SB_SIZE
-                                     : temp;
-    uint16_t *temp_start_vert = temp + MAX_SB_SIZE * ((filter->taps >> 1) - 1);
-    const int intermediate_height =
-        (((height - 1) * 8 + subpel_y_q3) >> 3) + filter_taps;
-    assert(intermediate_height <= (MAX_SB_SIZE * 2 + 16) + 16);
-    aom_highbd_convolve8_horiz(
-        ref_start, ref_stride, CONVERT_TO_BYTEPTR(temp_start_horiz),
-        MAX_SB_SIZE, kernel_x, 16, NULL, -1, width, intermediate_height, bd);
-    aom_highbd_convolve8_vert(CONVERT_TO_BYTEPTR(temp_start_vert), MAX_SB_SIZE,
-                              comp_pred8, width, NULL, -1, kernel_y, 16, width,
-                              height, bd);
-  }
-}
-
-void aom_highbd_comp_avg_upsampled_pred_sse2(
-    MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
-    const MV *const mv, uint8_t *comp_pred8, const uint8_t *pred8, int width,
-    int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8,
-    int ref_stride, int bd, int subpel_search) {
-  aom_highbd_upsampled_pred(xd, cm, mi_row, mi_col, mv, comp_pred8, width,
-                            height, subpel_x_q3, subpel_y_q3, ref8, ref_stride,
-                            bd, subpel_search);
-  uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
-  uint16_t *comp_pred16 = CONVERT_TO_SHORTPTR(comp_pred8);
-  /*The total number of pixels must be a multiple of 8 (e.g., 4x4).*/
-  assert(!(width * height & 7));
-  int n = width * height >> 3;
-  for (int i = 0; i < n; i++) {
-    __m128i s0 = _mm_loadu_si128((const __m128i *)comp_pred16);
-    __m128i p0 = _mm_loadu_si128((const __m128i *)pred);
-    _mm_storeu_si128((__m128i *)comp_pred16, _mm_avg_epu16(s0, p0));
-    comp_pred16 += 8;
-    pred += 8;
-  }
-}
-
 static INLINE void highbd_compute_dist_wtd_comp_avg(__m128i *p0, __m128i *p1,
                                                     const __m128i *w0,
                                                     const __m128i *w1,
@@ -803,41 +672,6 @@ void aom_highbd_dist_wtd_comp_avg_pred_sse2(
       pred += 8;
       ref += 2 * ref_stride;
     }
-  }
-}
-
-void aom_highbd_dist_wtd_comp_avg_upsampled_pred_sse2(
-    MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
-    const MV *const mv, uint8_t *comp_pred8, const uint8_t *pred8, int width,
-    int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8,
-    int ref_stride, int bd, const DIST_WTD_COMP_PARAMS *jcp_param,
-    int subpel_search) {
-  uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
-  int n;
-  int i;
-  aom_highbd_upsampled_pred(xd, cm, mi_row, mi_col, mv, comp_pred8, width,
-                            height, subpel_x_q3, subpel_y_q3, ref8, ref_stride,
-                            bd, subpel_search);
-  assert(!(width * height & 7));
-  n = width * height >> 3;
-
-  const uint16_t wt0 = (uint16_t)jcp_param->fwd_offset;
-  const uint16_t wt1 = (uint16_t)jcp_param->bck_offset;
-  const __m128i w0 = _mm_set_epi16(wt0, wt0, wt0, wt0, wt0, wt0, wt0, wt0);
-  const __m128i w1 = _mm_set_epi16(wt1, wt1, wt1, wt1, wt1, wt1, wt1, wt1);
-  const uint16_t round = ((1 << DIST_PRECISION_BITS) >> 1);
-  const __m128i r =
-      _mm_set_epi16(round, round, round, round, round, round, round, round);
-
-  uint16_t *comp_pred16 = CONVERT_TO_SHORTPTR(comp_pred8);
-  for (i = 0; i < n; i++) {
-    __m128i p0 = xx_loadu_128(comp_pred16);
-    __m128i p1 = xx_loadu_128(pred);
-
-    highbd_compute_dist_wtd_comp_avg(&p0, &p1, &w0, &w1, &r, comp_pred16);
-
-    comp_pred16 += 8;
-    pred += 8;
   }
 }
 

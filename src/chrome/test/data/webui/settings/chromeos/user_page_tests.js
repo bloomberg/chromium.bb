@@ -9,7 +9,7 @@
 // #import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {waitAfterNextRender} from 'chrome://test/test_util.js';
 // clang-format on
 
 let page = null;
@@ -21,7 +21,6 @@ const users = [
     displayEmail: 'test@gmail.com',
     name: 'test',
     isOwner: false,
-    isSupervised: false,
     isChild: false
   },
   {
@@ -29,7 +28,6 @@ const users = [
     displayEmail: 'test1@gmail.com',
     name: 'test1',
     isOwner: false,
-    isSupervised: false,
     isChild: false
   },
   {
@@ -37,7 +35,6 @@ const users = [
     displayEmail: 'test2@gmail.com',
     name: 'test2',
     isOwner: false,
-    isSupervised: false,
     isChild: false
   },
   {
@@ -45,7 +42,6 @@ const users = [
     displayEmail: 'owner@gmail.com',
     name: 'owner',
     isOwner: true,
-    isSupervised: false,
     isChild: false
   }
 ];
@@ -117,14 +113,14 @@ suite('UserPage', () => {
   });
 
   test('Deep link to Guest browsing', async () => {
-    loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-    const settingId = page.isAccountManagementFlowsV2Enabled_ ? '1104' : '305';
+    const settingId = '1104';
 
     const params = new URLSearchParams;
     params.append('settingId', settingId);
     settings.Router.getInstance().navigateTo(settings.routes.ACCOUNTS, params);
 
-    const deepLinkElement = page.$$('#allowGuestBrowsing').$$('cr-toggle');
+    const deepLinkElement =
+        page.$$('#allowGuestBrowsing').shadowRoot.querySelector('cr-toggle');
     assertTrue(!!deepLinkElement);
     await test_util.waitAfterNextRender(deepLinkElement);
     assertEquals(
@@ -133,14 +129,14 @@ suite('UserPage', () => {
   });
 
   test('Deep link to Show Usernames And Photos At Signin', async () => {
-    loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-    const settingId = page.isAccountManagementFlowsV2Enabled_ ? '1105' : '306';
+    const settingId = '1105';
 
     const params = new URLSearchParams;
     params.append('settingId', settingId);
     settings.Router.getInstance().navigateTo(settings.routes.ACCOUNTS, params);
 
-    const deepLinkElement = page.$$('#showUserNamesOnSignIn').$$('cr-toggle');
+    const deepLinkElement =
+        page.$$('#showUserNamesOnSignIn').shadowRoot.querySelector('cr-toggle');
     assertTrue(!!deepLinkElement);
     await test_util.waitAfterNextRender(deepLinkElement);
     assertEquals(
@@ -150,14 +146,14 @@ suite('UserPage', () => {
   });
 
   test('Deep link to Restrict Signin', async () => {
-    loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-    const settingId = page.isAccountManagementFlowsV2Enabled_ ? '1106' : '307';
+    const settingId = '1106';
 
     const params = new URLSearchParams;
     params.append('settingId', settingId);
     settings.Router.getInstance().navigateTo(settings.routes.ACCOUNTS, params);
 
-    const deepLinkElement = page.$$('#restrictSignIn').$$('cr-toggle');
+    const deepLinkElement =
+        page.$$('#restrictSignIn').shadowRoot.querySelector('cr-toggle');
     assertTrue(!!deepLinkElement);
     await test_util.waitAfterNextRender(deepLinkElement);
     assertEquals(

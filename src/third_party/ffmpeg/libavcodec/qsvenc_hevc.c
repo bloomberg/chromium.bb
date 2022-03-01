@@ -246,6 +246,8 @@ static const AVOption options[] = {
 
     { "tile_cols",  "Number of columns for tiled encoding",   OFFSET(qsv.tile_cols),    AV_OPT_TYPE_INT, { .i64 = 0 }, 0, UINT16_MAX, VE },
     { "tile_rows",  "Number of rows for tiled encoding",      OFFSET(qsv.tile_rows),    AV_OPT_TYPE_INT, { .i64 = 0 }, 0, UINT16_MAX, VE },
+    { "recovery_point_sei", "Insert recovery point SEI messages",       OFFSET(qsv.recovery_point_sei),      AV_OPT_TYPE_INT, { .i64 = -1 },               -1,          1, VE },
+    { "aud", "Insert the Access Unit Delimiter NAL", OFFSET(qsv.aud), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 1, VE},
 
     { NULL },
 };
@@ -267,13 +269,10 @@ static const AVCodecDefault qsv_enc_defaults[] = {
     { "qmax",      "-1"    },
     { "trellis",   "-1"    },
     { "flags",     "+cgop" },
-#if FF_API_PRIVATE_OPT
-    { "b_strategy", "-1"   },
-#endif
     { NULL },
 };
 
-AVCodec ff_hevc_qsv_encoder = {
+const AVCodec ff_hevc_qsv_encoder = {
     .name           = "hevc_qsv",
     .long_name      = NULL_IF_CONFIG_SMALL("HEVC (Intel Quick Sync Video acceleration)"),
     .priv_data_size = sizeof(QSVHEVCEncContext),

@@ -18,10 +18,8 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
@@ -33,11 +31,13 @@
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browser_context_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/media/browser_feature_provider.h"
 #include "content/browser/push_messaging/push_messaging_router.h"
+#include "content/browser/site_info.h"
 #include "content/browser/storage_partition_impl_map.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/blob_handle.h"
@@ -58,15 +58,16 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/file_system/external_mount_points.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_proto.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 
 namespace content {
 
 namespace {
 
-void SaveSessionStateOnIOThread(AppCacheServiceImpl* appcache_service) {
-  appcache_service->set_force_keep_session_state();
-}
+using perfetto::protos::pbzero::ChromeBrowserContext;
+using perfetto::protos::pbzero::ChromeTrackEvent;
 
 base::WeakPtr<storage::BlobStorageContext> BlobStorageContextGetterForBrowser(
     scoped_refptr<ChromeBlobStorageContext> blob_context) {
@@ -77,33 +78,23 @@ base::WeakPtr<storage::BlobStorageContext> BlobStorageContextGetterForBrowser(
 }  // namespace
 
 BrowserContext::BrowserContext() {
-  TRACE_EVENT("shutdown", "BrowserContext::BrowserContext",
-              [&](perfetto::EventContext ctx) {
-                auto* event =
-                    ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
-                event->set_chrome_browser_context()->set_ptr(
-                    reinterpret_cast<uint64_t>(this));
-              });
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("shutdown", "Browser.BrowserContext", this,
-                                    "browser_context",
-                                    static_cast<void*>(this));
-
   impl_ = std::make_unique<Impl>(this);
+  TRACE_EVENT("shutdown", "BrowserContext::BrowserContext",
+              ChromeTrackEvent::kChromeBrowserContext, *this);
+  TRACE_EVENT_BEGIN("shutdown", "Browser.BrowserContext",
+                    perfetto::Track::FromPointer(this),
+                    ChromeTrackEvent::kChromeBrowserContext, *this);
 }
 
 BrowserContext::~BrowserContext() {
   TRACE_EVENT("shutdown", "BrowserContext::~BrowserContext",
-              [&](perfetto::EventContext ctx) {
-                auto* event =
-                    ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
-                event->set_chrome_browser_context()->set_ptr(
-                    reinterpret_cast<uint64_t>(this));
-              });
+              ChromeTrackEvent::kChromeBrowserContext, *this);
+
+  // End for ASYNC event "Browser.BrowserContext".
+  TRACE_EVENT_END("shutdown", perfetto::Track::FromPointer(this),
+                  ChromeTrackEvent::kChromeBrowserContext, *this);
 
   impl_.reset();
-
-  TRACE_EVENT_NESTABLE_ASYNC_END1("shutdown", "Browser.BrowserContext", this,
-                                  "browser_context", static_cast<void*>(this));
 }
 
 DownloadManager* BrowserContext::GetDownloadManager() {
@@ -130,11 +121,9 @@ StoragePartition* BrowserContext::GetStoragePartition(
   if (site_instance)
     DCHECK_EQ(this, site_instance->GetBrowserContext());
 
-  auto* site_instance_impl = static_cast<SiteInstanceImpl*>(site_instance);
-  auto partition_config =
-      site_instance_impl
-          ? site_instance_impl->GetSiteInfo().GetStoragePartitionConfig(this)
-          : StoragePartitionConfig::CreateDefault(this);
+  auto partition_config = site_instance
+                              ? site_instance->GetStoragePartitionConfig()
+                              : StoragePartitionConfig::CreateDefault(this);
   return GetStoragePartition(partition_config, can_create);
 }
 
@@ -175,9 +164,10 @@ size_t BrowserContext::GetStoragePartitionCount() {
 
 void BrowserContext::AsyncObliterateStoragePartition(
     const std::string& partition_domain,
-    base::OnceClosure on_gc_required) {
+    base::OnceClosure on_gc_required,
+    base::OnceClosure done_callback) {
   impl()->GetOrCreateStoragePartitionMap()->AsyncObliterate(
-      partition_domain, std::move(on_gc_required));
+      partition_domain, std::move(on_gc_required), std::move(done_callback));
 }
 
 void BrowserContext::GarbageCollectStoragePartitions(
@@ -269,16 +259,6 @@ void BrowserContext::SaveSessionState() {
       base::BindOnce(&storage::DatabaseTracker::SetForceKeepSessionState,
                      base::WrapRefCounted(database_tracker)));
 
-  if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
-    auto* appcache_service = static_cast<AppCacheServiceImpl*>(
-        storage_partition->GetAppCacheService());
-    if (appcache_service) {
-      GetIOThreadTaskRunner({})->PostTask(
-          FROM_HERE,
-          base::BindOnce(&SaveSessionStateOnIOThread, appcache_service));
-    }
-  }
-
   storage_partition->GetCookieManagerForBrowserProcess()
       ->SetForceKeepSessionState();
 
@@ -347,6 +327,12 @@ void BrowserContext::WriteIntoTrace(perfetto::TracedValue context) {
     dict.Add("id", impl()->UniqueId());
 }
 
+void BrowserContext::WriteIntoTrace(
+    perfetto::TracedProto<ChromeBrowserContext> proto) {
+  if (impl())
+    proto->set_id(impl()->UniqueId());
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // The //content embedder can override the methods below to change or extend
 // how the //content layer interacts with a BrowserContext.  The code below
@@ -400,6 +386,11 @@ BrowserContext::CreateVideoDecodePerfHistory() {
 
   return std::make_unique<media::VideoDecodePerfHistory>(
       std::move(stats_db), BrowserFeatureProvider::GetFactoryCB());
+}
+
+FederatedIdentityActiveSessionPermissionContextDelegate*
+BrowserContext::GetFederatedIdentityActiveSessionPermissionContext() {
+  return nullptr;
 }
 
 FederatedIdentityRequestPermissionContextDelegate*

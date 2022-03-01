@@ -589,17 +589,6 @@ void DispatchTableGL::initProcsDesktopGL(const gl::Version &version,
         ASSIGN("glUniformSubroutinesuiv", uniformSubroutinesuiv);
     }
 
-    if (extensions.count("GL_ARB_sync") != 0)
-    {
-        ASSIGN("glClientWaitSync", clientWaitSync);
-        ASSIGN("glDeleteSync", deleteSync);
-        ASSIGN("glFenceSync", fenceSync);
-        ASSIGN("glGetInteger64v", getInteger64v);
-        ASSIGN("glGetSynciv", getSynciv);
-        ASSIGN("glIsSync", isSync);
-        ASSIGN("glWaitSync", waitSync);
-    }
-
     if (extensions.count("GL_ARB_tessellation_shader") != 0)
     {
         ASSIGN("glPatchParameterfv", patchParameterfv);
@@ -994,6 +983,7 @@ void DispatchTableGL::initProcsDesktopGL(const gl::Version &version,
     if (extensions.count("GL_EXT_framebuffer_multisample") != 0)
     {
         ASSIGN("glRenderbufferStorageMultisampleEXT", renderbufferStorageMultisample);
+        ASSIGN("glRenderbufferStorageMultisampleEXT", renderbufferStorageMultisampleEXT);
     }
 
     if (extensions.count("GL_EXT_framebuffer_object") != 0)
@@ -2037,7 +2027,9 @@ void DispatchTableGL::initProcsGLES(const gl::Version &version,
 
     if (extensions.count("GL_EXT_multisampled_render_to_texture") != 0)
     {
+        ASSIGN("glFramebufferTexture2DMultisampleEXT", framebufferTexture2DMultisampleEXT);
         ASSIGN("glRenderbufferStorageMultisampleEXT", renderbufferStorageMultisample);
+        ASSIGN("glRenderbufferStorageMultisampleEXT", renderbufferStorageMultisampleEXT);
     }
 
     if (extensions.count("GL_EXT_multiview_draw_buffers") != 0)
@@ -2107,6 +2099,12 @@ void DispatchTableGL::initProcsGLES(const gl::Version &version,
     if (extensions.count("GL_EXT_texture_view") != 0)
     {
         ASSIGN("glTextureViewEXT", textureView);
+    }
+
+    if (extensions.count("GL_IMG_multisampled_render_to_texture") != 0)
+    {
+        ASSIGN("glFramebufferTexture2DMultisampleIMG", framebufferTexture2DMultisampleIMG);
+        ASSIGN("glRenderbufferStorageMultisampleIMG", renderbufferStorageMultisampleIMG);
     }
 
     if (extensions.count("GL_KHR_debug") != 0)
@@ -2641,6 +2639,17 @@ void DispatchTableGL::initProcsGLES(const gl::Version &version,
 
 void DispatchTableGL::initProcsSharedExtensions(const std::set<std::string> &extensions)
 {
+    if (extensions.count("GL_ARB_sync") != 0)
+    {
+        ASSIGN("glClientWaitSync", clientWaitSync);
+        ASSIGN("glDeleteSync", deleteSync);
+        ASSIGN("glFenceSync", fenceSync);
+        ASSIGN("glGetInteger64v", getInteger64v);
+        ASSIGN("glGetSynciv", getSynciv);
+        ASSIGN("glIsSync", isSync);
+        ASSIGN("glWaitSync", waitSync);
+    }
+
     if (extensions.count("GL_EXT_blend_minmax") != 0)
     {
         ASSIGN("glBlendEquationEXT", blendEquation);
@@ -3368,17 +3377,6 @@ void DispatchTableGL::initProcsDesktopGLNULL(const gl::Version &version,
         uniformSubroutinesuiv          = &glUniformSubroutinesuivNULL;
     }
 
-    if (extensions.count("GL_ARB_sync") != 0)
-    {
-        clientWaitSync = &glClientWaitSyncNULL;
-        deleteSync     = &glDeleteSyncNULL;
-        fenceSync      = &glFenceSyncNULL;
-        getInteger64v  = &glGetInteger64vNULL;
-        getSynciv      = &glGetSyncivNULL;
-        isSync         = &glIsSyncNULL;
-        waitSync       = &glWaitSyncNULL;
-    }
-
     if (extensions.count("GL_ARB_tessellation_shader") != 0)
     {
         patchParameterfv = &glPatchParameterfvNULL;
@@ -3771,7 +3769,8 @@ void DispatchTableGL::initProcsDesktopGLNULL(const gl::Version &version,
 
     if (extensions.count("GL_EXT_framebuffer_multisample") != 0)
     {
-        renderbufferStorageMultisample = &glRenderbufferStorageMultisampleNULL;
+        renderbufferStorageMultisample    = &glRenderbufferStorageMultisampleNULL;
+        renderbufferStorageMultisampleEXT = &glRenderbufferStorageMultisampleEXTNULL;
     }
 
     if (extensions.count("GL_EXT_framebuffer_object") != 0)
@@ -4814,7 +4813,9 @@ void DispatchTableGL::initProcsGLESNULL(const gl::Version &version,
 
     if (extensions.count("GL_EXT_multisampled_render_to_texture") != 0)
     {
-        renderbufferStorageMultisample = &glRenderbufferStorageMultisampleNULL;
+        framebufferTexture2DMultisampleEXT = &glFramebufferTexture2DMultisampleEXTNULL;
+        renderbufferStorageMultisample     = &glRenderbufferStorageMultisampleNULL;
+        renderbufferStorageMultisampleEXT  = &glRenderbufferStorageMultisampleEXTNULL;
     }
 
     if (extensions.count("GL_EXT_multiview_draw_buffers") != 0)
@@ -4884,6 +4885,12 @@ void DispatchTableGL::initProcsGLESNULL(const gl::Version &version,
     if (extensions.count("GL_EXT_texture_view") != 0)
     {
         textureView = &glTextureViewNULL;
+    }
+
+    if (extensions.count("GL_IMG_multisampled_render_to_texture") != 0)
+    {
+        framebufferTexture2DMultisampleIMG = &glFramebufferTexture2DMultisampleIMGNULL;
+        renderbufferStorageMultisampleIMG  = &glRenderbufferStorageMultisampleIMGNULL;
     }
 
     if (extensions.count("GL_KHR_debug") != 0)
@@ -5418,6 +5425,17 @@ void DispatchTableGL::initProcsGLESNULL(const gl::Version &version,
 
 void DispatchTableGL::initProcsSharedExtensionsNULL(const std::set<std::string> &extensions)
 {
+    if (extensions.count("GL_ARB_sync") != 0)
+    {
+        clientWaitSync = &glClientWaitSyncNULL;
+        deleteSync     = &glDeleteSyncNULL;
+        fenceSync      = &glFenceSyncNULL;
+        getInteger64v  = &glGetInteger64vNULL;
+        getSynciv      = &glGetSyncivNULL;
+        isSync         = &glIsSyncNULL;
+        waitSync       = &glWaitSyncNULL;
+    }
+
     if (extensions.count("GL_EXT_blend_minmax") != 0)
     {
         blendEquation = &glBlendEquationNULL;

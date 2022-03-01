@@ -13,6 +13,7 @@
   },
   "plugins": ["node", "ban", "import", "deprecation"],
   "rules": {
+    // Core rules
     "linebreak-style": ["warn", "unix"],
     "no-console": "warn",
     "no-undef": "off",
@@ -20,6 +21,12 @@
     "object-shorthand": "warn",
     "quotes": ["warn", "single", { "avoidEscape": true, "allowTemplateLiterals": true }],
 
+    // Plugin: @typescript-eslint
+    "@typescript-eslint/no-inferrable-types": "off",
+    "@typescript-eslint/no-unused-vars": ["warn", { "vars": "all", "args": "none" }],
+    "@typescript-eslint/consistent-type-assertions": "warn",
+
+    // Plugin: ban
     "ban/ban": [
       "warn",
       {
@@ -27,8 +34,11 @@
         "message": "WPT disallows setTimeout; use `framework/util/timeout.js`."
       }
     ],
+
+    // Plugin: deprecation
     //"deprecation/deprecation": "warn",
-    "@typescript-eslint/no-inferrable-types": "off",
+
+    // Plugin: import
     "import/order": [
       "warn",
       {
@@ -46,13 +56,13 @@
           {
             "target": "./src/webgpu",
             "from": "./src/common",
-            "except": ["./framework", "./tools/crawl.ts", "./constants.ts"],
+            "except": ["./framework", "./util"],
             "message": "Non-framework common/ code imported from webgpu/ suite"
           },
           {
             "target": "./src/unittests",
             "from": "./src/common",
-            "except": ["./framework", "./tools/crawl.ts", "./constants.ts"],
+            "except": ["./framework", "./util", "./internal"],
             "message": "Non-framework common/ code imported from unittests/ suite"
           },
           {

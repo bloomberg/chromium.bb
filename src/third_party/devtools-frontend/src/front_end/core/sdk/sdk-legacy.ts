@@ -15,6 +15,11 @@ SDK.CPUProfileDataModel = SDKModule.CPUProfileDataModel.CPUProfileDataModel;
 /** @constructor */
 SDK.CPUProfilerModel = SDKModule.CPUProfilerModel.CPUProfilerModel;
 
+/** @constructor */
+SDK.CPUThrottlingManager = SDKModule.CPUThrottlingManager.CPUThrottlingManager;
+
+SDK.CPUThrottlingManager.CPUThrottlingRates = SDKModule.CPUThrottlingManager.CPUThrottlingRates;
+
 SDK.cssMetadata = SDKModule.CSSMetadata.cssMetadata;
 
 /** @constructor */
@@ -67,9 +72,6 @@ SDK.ConsoleMessage.FrontendMessageSource = SDKModule.ConsoleModel.FrontendMessag
 
 /** @constructor */
 SDK.Cookie = SDKModule.Cookie.Cookie;
-
-/** @constructor */
-SDK.CookieReference = SDKModule.Cookie.CookieReference;
 
 /** @constructor */
 SDK.CookieParser = SDKModule.CookieParser.CookieParser;
@@ -212,21 +214,21 @@ SDK.SourceMapManager = SDKModule.SourceMapManager.SourceMapManager;
 SDK.SourceMapManager.Events = SDKModule.SourceMapManager.Events;
 
 /** @constructor */
-SDK.Target = SDKModule.SDKModel.Target;
+SDK.Target = SDKModule.Target.Target;
 
 /**
  * @enum {string}
  */
-SDK.Target.Type = SDKModule.SDKModel.Type;
+SDK.Target.Type = SDKModule.Target.Type;
 
 /** @constructor */
-SDK.TargetManager = SDKModule.SDKModel.TargetManager;
+SDK.TargetManager = SDKModule.TargetManager.TargetManager;
 
 /** @enum {symbol} */
-SDK.TargetManager.Events = SDKModule.SDKModel.Events;
+SDK.TargetManager.Events = SDKModule.TargetManager.Events;
 
 /** @interface */
-SDK.TargetManager.Observer = SDKModule.SDKModel.Observer;
+SDK.TargetManager.Observer = SDKModule.TargetManager.Observer;
 
 /** @constructor */
 SDK.TracingManager = SDKModule.TracingManager.TracingManager;
@@ -241,6 +243,6 @@ SDK.TracingModel.DevToolsMetadataEventCategory = SDKModule.TracingModel.DevTools
 /** @constructor */
 SDK.TracingModel.Event = SDKModule.TracingModel.Event;
 
-self.SDK.targetManager = SDKModule.SDKModel.TargetManager.instance();
+self.SDK.targetManager = SDKModule.TargetManager.TargetManager.instance();
 self.SDK.isolateManager = SDKModule.IsolateManager.IsolateManager.instance({forceNew: true});
 self.SDK.domModelUndoStack = SDKModule.DOMModel.DOMModelUndoStack.instance();

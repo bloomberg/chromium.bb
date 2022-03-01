@@ -27,8 +27,9 @@ namespace dsp {
 namespace {
 
 template <int bitdepth, typename Pixel>
-void AverageBlend_C(const void* prediction_0, const void* prediction_1,
-                    const int width, const int height, void* const dest,
+void AverageBlend_C(const void* LIBGAV1_RESTRICT prediction_0,
+                    const void* LIBGAV1_RESTRICT prediction_1, const int width,
+                    const int height, void* const dest,
                     const ptrdiff_t dest_stride) {
   // 7.11.3.2 Rounding variables derivation process
   //   2 * FILTER_BITS(7) - (InterRound0(3|5) + InterRound1(7))

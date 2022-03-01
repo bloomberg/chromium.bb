@@ -11,13 +11,14 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "cc/cc_export.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/display_resource_provider_skia.h"
 #include "components/viz/service/display/sync_query_collection.h"
 #include "components/viz/service/viz_service_export.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/latency/latency_info.h"
 
 class SkColorFilter;
@@ -47,6 +48,10 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                DisplayResourceProviderSkia* resource_provider,
                OverlayProcessorInterface* overlay_processor,
                SkiaOutputSurface* skia_output_surface);
+
+  SkiaRenderer(const SkiaRenderer&) = delete;
+  SkiaRenderer& operator=(const SkiaRenderer&) = delete;
+
   ~SkiaRenderer() override;
 
   void SwapBuffers(SwapFrameData swap_frame_data) override;
@@ -139,6 +144,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                                          const gfx::Rect* scissor_rect,
                                          const DrawQuad* quad,
                                          const gfx::QuadF* draw_region) const;
+
   DrawRPDQParams CalculateRPDQParams(const AggregatedRenderPassDrawQuad* quad,
                                      DrawQuadParams* params);
   // Modifies |params| and |rpdq_params| to apply correctly when drawing the
@@ -156,12 +162,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
       const SkImage* image,
       const gfx::RectF& valid_texel_bounds,
       DrawQuadParams* params) const;
-  // True or false if the DrawQuad can have the scissor rect applied by
-  // modifying the quad's visible_rect instead of as a separate clip operation.
-  bool CanExplicitlyScissor(
-      const DrawQuad* quad,
-      const gfx::QuadF* draw_region,
-      const gfx::Transform& contents_device_transform) const;
 
   bool MustFlushBatchedQuads(const DrawQuad* new_quad,
                              const DrawRPDQParams* rpdq_params,
@@ -191,6 +191,11 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                        const DrawRPDQParams* rpdq_params,
                        SkPaint* paint,
                        DrawQuadParams* params);
+
+  void DrawPaintOpBuffer(const cc::PaintOpBuffer* buffer,
+                         const absl::optional<SkColor>& clear_color,
+                         const TileDrawQuad* quad,
+                         const DrawQuadParams* params);
 
   // RPDQ, DebugBorder and picture quads cannot be batched. They
   // either are not textures (debug, picture), or it's very likely
@@ -252,8 +257,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // be sent to GPU scheduler.
   void FlushOutputSurface();
 
-#if defined(OS_APPLE)
-  void PrepareRenderPassOverlay(CALayerOverlay* overlay);
+#if defined(OS_APPLE) || defined(USE_OZONE)
+  void PrepareRenderPassOverlay(
+      OverlayProcessorInterface::PlatformOverlayCandidate* overlay);
 #endif
 
   DisplayResourceProviderSkia* resource_provider() {
@@ -266,15 +272,16 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     bool generate_mipmap;
     gfx::ColorSpace color_space;
     ResourceFormat format;
+    gpu::Mailbox mailbox;
   };
   base::flat_map<AggregatedRenderPassId, RenderPassBacking>
       render_pass_backings_;
 
   // Interface used for drawing. Common among different draw modes.
   sk_sp<SkSurface> root_surface_;
-  SkCanvas* root_canvas_ = nullptr;
-  SkCanvas* current_canvas_ = nullptr;
-  SkSurface* current_surface_ = nullptr;
+  raw_ptr<SkCanvas> root_canvas_ = nullptr;
+  raw_ptr<SkCanvas> current_canvas_ = nullptr;
+  raw_ptr<SkSurface> current_surface_ = nullptr;
   class FrameResourceFence;
   scoped_refptr<FrameResourceFence> current_frame_resource_fence_;
 
@@ -305,7 +312,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   std::vector<SkMatrix> batched_cdt_matrices_;
 
   // Specific for SkDDL.
-  SkiaOutputSurface* const skia_output_surface_ = nullptr;
+  const raw_ptr<SkiaOutputSurface> skia_output_surface_;
+
+  const bool is_using_raw_draw_;
 
   // Lock set for resources that are used for the current frame. All resources
   // in this set will be unlocked with a sync token when the frame is done in
@@ -330,7 +339,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
       std::vector<DisplayResourceProviderSkia::ScopedReadLockSharedImage>>
       read_lock_release_fence_overlay_locks_;
 
-#if defined(OS_APPLE)
+#if defined(OS_APPLE) || defined(USE_OZONE)
   class ScopedReadLockComparator {
    public:
     using is_transparent = void;
@@ -351,7 +360,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   base::flat_set<DisplayResourceProviderSkia::ScopedReadLockSharedImage,
                  ScopedReadLockComparator>
       awaiting_release_overlay_locks_;
-#endif  // defined(OS_APPLE)
+#endif  // defined(OS_APPLE) || defined(USE_OZONE)
 
   base::flat_map<gfx::ColorSpace,
                  base::flat_map<gfx::ColorSpace, sk_sp<SkRuntimeEffect>>>
@@ -359,8 +368,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   bool UsingSkiaForDelegatedInk() const;
   uint32_t debug_tint_modulate_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(SkiaRenderer);
+  bool use_real_color_space_for_stream_video_ = false;
 };
 
 }  // namespace viz

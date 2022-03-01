@@ -54,18 +54,19 @@ ComputeSignatureResult ComputeSignatureNow(
 }  // namespace
 
 FakeProofSourceHandle::FakeProofSourceHandle(
-    ProofSource* delegate,
-    ProofSourceHandleCallback* callback,
-    Action select_cert_action,
-    Action compute_signature_action)
+    ProofSource* delegate, ProofSourceHandleCallback* callback,
+    Action select_cert_action, Action compute_signature_action,
+    QuicDelayedSSLConfig dealyed_ssl_config)
     : delegate_(delegate),
       callback_(callback),
       select_cert_action_(select_cert_action),
-      compute_signature_action_(compute_signature_action) {}
+      compute_signature_action_(compute_signature_action),
+      dealyed_ssl_config_(dealyed_ssl_config) {}
 
-void FakeProofSourceHandle::CancelPendingOperation() {
+void FakeProofSourceHandle::CloseHandle() {
   select_cert_op_.reset();
   compute_signature_op_.reset();
+  closed_ = true;
 }
 
 QuicAsyncStatus FakeProofSourceHandle::SelectCertificate(
@@ -77,30 +78,42 @@ QuicAsyncStatus FakeProofSourceHandle::SelectCertificate(
     const std::string& alpn,
     absl::optional<std::string> alps,
     const std::vector<uint8_t>& quic_transport_params,
-    const absl::optional<std::vector<uint8_t>>& early_data_context) {
+    const absl::optional<std::vector<uint8_t>>& early_data_context,
+    const QuicSSLConfig& ssl_config) {
+  if (select_cert_action_ != Action::FAIL_SYNC_DO_NOT_CHECK_CLOSED) {
+    QUICHE_CHECK(!closed_);
+  }
   all_select_cert_args_.push_back(SelectCertArgs(
       server_address, client_address, ssl_capabilities, hostname, client_hello,
-      alpn, alps, quic_transport_params, early_data_context));
+      alpn, alps, quic_transport_params, early_data_context, ssl_config));
 
   if (select_cert_action_ == Action::DELEGATE_ASYNC ||
       select_cert_action_ == Action::FAIL_ASYNC) {
     select_cert_op_.emplace(delegate_, callback_, select_cert_action_,
-                            all_select_cert_args_.back());
+                            all_select_cert_args_.back(), dealyed_ssl_config_);
     return QUIC_PENDING;
-  } else if (select_cert_action_ == Action::FAIL_SYNC) {
+  } else if (select_cert_action_ == Action::FAIL_SYNC ||
+             select_cert_action_ == Action::FAIL_SYNC_DO_NOT_CHECK_CLOSED) {
     callback()->OnSelectCertificateDone(
         /*ok=*/false,
-        /*is_sync=*/true, nullptr, /*handshake_hints=*/absl::string_view());
+        /*is_sync=*/true, nullptr, /*handshake_hints=*/absl::string_view(),
+        /*ticket_encryption_key=*/absl::string_view(),
+        /*cert_matched_sni=*/false, dealyed_ssl_config_);
     return QUIC_FAILURE;
   }
 
   QUICHE_DCHECK(select_cert_action_ == Action::DELEGATE_SYNC);
+  bool cert_matched_sni;
   QuicReferenceCountedPointer<ProofSource::Chain> chain =
-      delegate_->GetCertChain(server_address, client_address, hostname);
+      delegate_->GetCertChain(server_address, client_address, hostname,
+                              &cert_matched_sni);
 
   bool ok = chain && !chain->certs.empty();
-  callback_->OnSelectCertificateDone(ok, /*is_sync=*/true, chain.get(),
-                                     /*handshake_hints=*/absl::string_view());
+  callback_->OnSelectCertificateDone(
+      ok, /*is_sync=*/true, chain.get(),
+      /*handshake_hints=*/absl::string_view(),
+      /*ticket_encryption_key=*/absl::string_view(),
+      /*cert_matched_sni=*/cert_matched_sni, dealyed_ssl_config_);
   return ok ? QUIC_SUCCESS : QUIC_FAILURE;
 }
 
@@ -111,6 +124,9 @@ QuicAsyncStatus FakeProofSourceHandle::ComputeSignature(
     uint16_t signature_algorithm,
     absl::string_view in,
     size_t max_signature_size) {
+  if (compute_signature_action_ != Action::FAIL_SYNC_DO_NOT_CHECK_CLOSED) {
+    QUICHE_CHECK(!closed_);
+  }
   all_compute_signature_args_.push_back(
       ComputeSignatureArgs(server_address, client_address, hostname,
                            signature_algorithm, in, max_signature_size));
@@ -121,7 +137,9 @@ QuicAsyncStatus FakeProofSourceHandle::ComputeSignature(
                                   compute_signature_action_,
                                   all_compute_signature_args_.back());
     return QUIC_PENDING;
-  } else if (compute_signature_action_ == Action::FAIL_SYNC) {
+  } else if (compute_signature_action_ == Action::FAIL_SYNC ||
+             compute_signature_action_ ==
+                 Action::FAIL_SYNC_DO_NOT_CHECK_CLOSED) {
     callback()->OnComputeSignatureDone(/*ok=*/false, /*is_sync=*/true,
                                        /*signature=*/"", /*details=*/nullptr);
     return QUIC_FAILURE;
@@ -163,24 +181,31 @@ int FakeProofSourceHandle::NumPendingOperations() const {
 }
 
 FakeProofSourceHandle::SelectCertOperation::SelectCertOperation(
-    ProofSource* delegate,
-    ProofSourceHandleCallback* callback,
-    Action action,
-    SelectCertArgs args)
-    : PendingOperation(delegate, callback, action), args_(std::move(args)) {}
+    ProofSource* delegate, ProofSourceHandleCallback* callback, Action action,
+    SelectCertArgs args, QuicDelayedSSLConfig dealyed_ssl_config)
+    : PendingOperation(delegate, callback, action),
+      args_(std::move(args)),
+      dealyed_ssl_config_(dealyed_ssl_config) {}
 
 void FakeProofSourceHandle::SelectCertOperation::Run() {
   if (action_ == Action::FAIL_ASYNC) {
-    callback_->OnSelectCertificateDone(/*ok=*/false,
-                                       /*is_sync=*/false, nullptr,
-                                       /*handshake_hints=*/absl::string_view());
+    callback_->OnSelectCertificateDone(
+        /*ok=*/false,
+        /*is_sync=*/false, nullptr,
+        /*handshake_hints=*/absl::string_view(),
+        /*ticket_encryption_key=*/absl::string_view(),
+        /*cert_matched_sni=*/false, dealyed_ssl_config_);
   } else if (action_ == Action::DELEGATE_ASYNC) {
+    bool cert_matched_sni;
     QuicReferenceCountedPointer<ProofSource::Chain> chain =
         delegate_->GetCertChain(args_.server_address, args_.client_address,
-                                args_.hostname);
+                                args_.hostname, &cert_matched_sni);
     bool ok = chain && !chain->certs.empty();
-    callback_->OnSelectCertificateDone(ok, /*is_sync=*/false, chain.get(),
-                                       /*handshake_hints=*/absl::string_view());
+    callback_->OnSelectCertificateDone(
+        ok, /*is_sync=*/false, chain.get(),
+        /*handshake_hints=*/absl::string_view(),
+        /*ticket_encryption_key=*/absl::string_view(),
+        /*cert_matched_sni=*/cert_matched_sni, dealyed_ssl_config_);
   } else {
     QUIC_BUG(quic_bug_10139_1)
         << "Unexpected action: " << static_cast<int>(action_);

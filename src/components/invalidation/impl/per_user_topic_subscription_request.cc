@@ -16,7 +16,9 @@
 #include "components/sync/base/model_type.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 using net::HttpRequestHeaders;
 
@@ -340,12 +342,11 @@ HttpRequestHeaders PerUserTopicSubscriptionRequest::Builder::BuildHeaders()
 }
 
 std::string PerUserTopicSubscriptionRequest::Builder::BuildBody() const {
-  base::DictionaryValue request;
+  base::Value request(base::Value::Type::DICTIONARY);
 
-  request.SetString("public_topic_name", topic_);
-  if (topic_is_public_) {
-    request.SetBoolean("is_public", true);
-  }
+  request.SetStringKey("public_topic_name", topic_);
+  if (topic_is_public_)
+    request.SetBoolKey("is_public", true);
 
   std::string request_json;
   bool success = base::JSONWriter::Write(request, &request_json);

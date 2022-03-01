@@ -15,9 +15,8 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/stringize_macros.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -372,8 +371,8 @@ void Me2MeNativeMessagingHost::ProcessStartDaemon(
     }
   }
 
-  bool consent;
-  if (!message->GetBoolean("consent", &consent)) {
+  absl::optional<bool> consent = message->FindBoolKey("consent");
+  if (!consent) {
     OnError("'consent' not found.");
     return;
   }
@@ -386,7 +385,7 @@ void Me2MeNativeMessagingHost::ProcessStartDaemon(
   }
 
   daemon_controller_->SetConfigAndStart(
-      std::move(config_dict), consent,
+      std::move(config_dict), *consent,
       base::BindOnce(&Me2MeNativeMessagingHost::SendAsyncResult, weak_ptr_,
                      std::move(response)));
 }
@@ -595,8 +594,8 @@ Me2MeNativeMessagingHost::DelegateToElevatedHost(
     elevated_host_ = std::make_unique<ElevatedNativeMessagingHost>(
         base::CommandLine::ForCurrentProcess()->GetProgram(),
         parent_window_handle_,
-        /*elevate_process=*/true,
-        base::TimeDelta::FromSeconds(kElevatedHostTimeoutSeconds), client_);
+        /*elevate_process=*/true, base::Seconds(kElevatedHostTimeoutSeconds),
+        client_);
   }
 
   ProcessLaunchResult result = elevated_host_->EnsureElevatedHostCreated();

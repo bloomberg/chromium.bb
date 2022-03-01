@@ -41,9 +41,6 @@ config("swiftshader_libGLESv2_private_config") {
     }
   } else {
     cflags = [ "-Wno-sign-compare" ]
-    if (!is_clang) {
-      cflags += [ "-Wno-unused-but-set-variable" ]
-    }
 
     defines += [
       "__STDC_CONSTANT_MACROS",
@@ -52,12 +49,12 @@ config("swiftshader_libGLESv2_private_config") {
     ]
 
     if (is_mac) {
-      cflags += [ "-fvisibility=protected" ]
+      cflags += [ "-fvisibility=default" ]
       defines += [ "GL_APICALL=__attribute__((no_sanitize(\"function\")))" ]
     } else if (is_clang) {
       defines += [ "GL_APICALL=__attribute__((visibility(\"protected\"))) __attribute__((no_sanitize(\"function\")))" ]
     } else {
-      defines += [ "GL_APICALL= " ]
+      defines += [ "GL_APICALL=__attribute__((visibility(\"protected\")))" ]
     }
   }
 }
@@ -131,12 +128,12 @@ swiftshader_shared_library("swiftshader_libGLESv2") {
     ldflags = [
       "-Wl,-install_name,@rpath/libswiftshader_libGLESv2.dylib",
       "-Wl,-exported_symbols_list," +
-          rebase_path("libGLESv2.exports", root_build_dir),
+          rebase_path("libGLESv2_deprecated.exports", root_build_dir),
     ]
   } else if (is_linux || is_chromeos) {
-    inputs = [ "libGLESv2.lds" ]
+    inputs = [ "libGLESv2_deprecated.lds" ]
     ldflags = [ "-Wl,--version-script=" +
-                rebase_path("libGLESv2.lds", root_build_dir) ]
+                rebase_path("libGLESv2_deprecated.lds", root_build_dir) ]
   }
 
   configs = [ ":swiftshader_libGLESv2_private_config" ]

@@ -10,7 +10,7 @@
 #include <set>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/offline_pages/core/auto_fetch.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
@@ -119,8 +119,8 @@ class InternalImpl {
   void SetNotificationStateToShown(int64_t request_id);
   void UpdateNotificationStateForAllRequests();
 
-  AutoFetchNotifier* notifier_;
-  Delegate* delegate_;
+  raw_ptr<AutoFetchNotifier> notifier_;
+  raw_ptr<Delegate> delegate_;
   std::unique_ptr<AndroidTabFinder> tab_finder_;
   std::vector<RequestInfo> requests_;
   // Tracks whether |RequestListInitialized| has been called. If false,
@@ -159,6 +159,9 @@ class AutoFetchPageLoadWatcher
                            RequestCoordinator* request_coordinator,
                            std::unique_ptr<AndroidTabFinder> tab_finder);
 
+  AutoFetchPageLoadWatcher(const AutoFetchPageLoadWatcher&) = delete;
+  AutoFetchPageLoadWatcher& operator=(const AutoFetchPageLoadWatcher&) = delete;
+
   ~AutoFetchPageLoadWatcher() override;
 
   // Called when navigation completes, even on errors. This is only called
@@ -187,12 +190,10 @@ class AutoFetchPageLoadWatcher
   void OnNetworkProgress(const SavePageRequest& request,
                          int64_t received_bytes) override {}
 
-  RequestCoordinator* request_coordinator_;  // Not owned.
+  raw_ptr<RequestCoordinator> request_coordinator_;  // Not owned.
   auto_fetch_internal::InternalImpl impl_;
   std::unique_ptr<TabWatcher> tab_watcher_;
   base::WeakPtrFactory<AutoFetchPageLoadWatcher> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AutoFetchPageLoadWatcher);
 };
 
 }  // namespace offline_pages

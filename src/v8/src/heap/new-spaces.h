@@ -173,7 +173,7 @@ class SemiSpace : public Space {
   void RewindPages(int num_pages);
 
   // Copies the flags into the masked positions on all pages in the space.
-  void FixPagesFlags(intptr_t flags, intptr_t flag_mask);
+  void FixPagesFlags(Page::MainThreadFlags flags, Page::MainThreadFlags mask);
 
   // The currently committed space capacity.
   size_t current_capacity_;
@@ -233,7 +233,8 @@ class V8_EXPORT_PRIVATE NewSpace
   using const_iterator = ConstPageIterator;
 
   NewSpace(Heap* heap, v8::PageAllocator* page_allocator,
-           size_t initial_semispace_capacity, size_t max_semispace_capacity);
+           size_t initial_semispace_capacity, size_t max_semispace_capacity,
+           LinearAllocationArea* allocation_info);
 
   ~NewSpace() override { TearDown(); }
 
@@ -393,6 +394,10 @@ class V8_EXPORT_PRIVATE NewSpace
       int size_in_bytes, AllocationAlignment alignment,
       AllocationOrigin origin = AllocationOrigin::kRuntime);
 
+  V8_WARN_UNUSED_RESULT AllocationResult
+  AllocateRawAligned(int size_in_bytes, AllocationAlignment alignment,
+                     AllocationOrigin origin = AllocationOrigin::kRuntime);
+
   // Reset the allocation pointer to the beginning of the active semispace.
   void ResetLinearAllocationArea();
 
@@ -457,12 +462,23 @@ class V8_EXPORT_PRIVATE NewSpace
   SemiSpace& to_space() { return to_space_; }
 
   void MoveOriginalTopForward() {
+    base::SharedMutexGuard<base::kExclusive> guard(&pending_allocation_mutex_);
     DCHECK_GE(top(), original_top_);
     DCHECK_LE(top(), original_limit_);
     original_top_.store(top(), std::memory_order_release);
   }
 
   void MaybeFreeUnusedLab(LinearAllocationArea info);
+
+  base::SharedMutex* pending_allocation_mutex() {
+    return &pending_allocation_mutex_;
+  }
+
+  // Creates a filler object in the linear allocation area.
+  void MakeLinearAllocationAreaIterable();
+
+  // Creates a filler object in the linear allocation area and closes it.
+  void FreeLinearAllocationArea();
 
  private:
   static const int kAllocationBufferParkingThreshold = 4 * KB;
@@ -473,9 +489,13 @@ class V8_EXPORT_PRIVATE NewSpace
   base::Mutex mutex_;
 
   // The top and the limit at the time of setting the linear allocation area.
-  // These values can be accessed by background tasks.
+  // These values can be accessed by background tasks. Protected by
+  // pending_allocation_mutex_.
   std::atomic<Address> original_top_;
   std::atomic<Address> original_limit_;
+
+  // Protects original_top_ and original_limit_.
+  base::SharedMutex pending_allocation_mutex_;
 
   // The semispaces.
   SemiSpace to_space_;
@@ -496,10 +516,6 @@ class V8_EXPORT_PRIVATE NewSpace
   AllocateRawSlow(int size_in_bytes, AllocationAlignment alignment,
                   AllocationOrigin origin);
 
-  V8_WARN_UNUSED_RESULT AllocationResult
-  AllocateRawAligned(int size_in_bytes, AllocationAlignment alignment,
-                     AllocationOrigin origin = AllocationOrigin::kRuntime);
-
   V8_WARN_UNUSED_RESULT AllocationResult AllocateRawUnaligned(
       int size_in_bytes, AllocationOrigin origin = AllocationOrigin::kRuntime);
 
@@ -512,9 +528,9 @@ class V8_EXPORT_PRIVATE NewSpace
 // For contiguous spaces, top should be in the space (or at the end) and limit
 // should be the end of the space.
 #define DCHECK_SEMISPACE_ALLOCATION_INFO(info, space) \
-  SLOW_DCHECK((space).page_low() <= (info).top() &&   \
-              (info).top() <= (space).page_high() &&  \
-              (info).limit() <= (space).page_high())
+  SLOW_DCHECK((space).page_low() <= (info)->top() &&  \
+              (info)->top() <= (space).page_high() && \
+              (info)->limit() <= (space).page_high())
 
 }  // namespace internal
 }  // namespace v8

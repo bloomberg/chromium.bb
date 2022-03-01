@@ -7,15 +7,12 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_once_callback.h"
+#include "net/disk_cache/disk_cache.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_request_headers.h"
 
-namespace disk_cache {
-class Entry;
-}
 
 namespace net {
 
@@ -34,6 +31,10 @@ class IOBuffer;
 class PartialData {
  public:
   PartialData();
+
+  PartialData(const PartialData&) = delete;
+  PartialData& operator=(const PartialData&) = delete;
+
   ~PartialData();
 
   // Performs initialization of the object by examining the request |headers|
@@ -131,8 +132,8 @@ class PartialData {
   // Returns the length to use when scanning the cache.
   int GetNextRangeLen();
 
-  // Completion routine for our callback.  Deletes |start|.
-  void GetAvailableRangeCompleted(int64_t* start, int result);
+  // Completion routine for our callback.
+  void GetAvailableRangeCompleted(const disk_cache::RangeResult& result);
 
   // The portion we're trying to get, either from cache or network.
   int64_t current_range_start_;
@@ -143,7 +144,8 @@ class PartialData {
   // succeeds.
   //
   // |cached_start_| represents the beginning of the range, while
-  // |cached_min_len_| the data not yet read (possibly overestimated).
+  // |cached_min_len_| the data not yet read (possibly overestimated). It may
+  // also have an error code latched into it.
   int64_t cached_start_;
   int cached_min_len_;
 
@@ -160,8 +162,6 @@ class PartialData {
   bool initial_validation_;  // Only used for truncated entries.
   CompletionOnceCallback callback_;
   base::WeakPtrFactory<PartialData> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PartialData);
 };
 
 }  // namespace net

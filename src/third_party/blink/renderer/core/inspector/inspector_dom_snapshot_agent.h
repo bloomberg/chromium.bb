@@ -5,12 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_DOM_SNAPSHOT_AGENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_DOM_SNAPSHOT_AGENT_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_contrast.h"
-#include "third_party/blink/renderer/core/inspector/protocol/DOMSnapshot.h"
+#include "third_party/blink/renderer/core/inspector/protocol/dom_snapshot.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -29,6 +28,9 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
     : public InspectorBaseAgent<protocol::DOMSnapshot::Metainfo> {
  public:
   InspectorDOMSnapshotAgent(InspectedFrames*, InspectorDOMDebuggerAgent*);
+  InspectorDOMSnapshotAgent(const InspectorDOMSnapshotAgent&) = delete;
+  InspectorDOMSnapshotAgent& operator=(const InspectorDOMSnapshotAgent&) =
+      delete;
   ~InspectorDOMSnapshotAgent() override;
   void Trace(Visitor*) const override;
 
@@ -67,8 +69,8 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
       const LayoutObject* layout_object,
       const LayoutText::TextBoxInfo& text_box);
 
-  using PaintOrderMap = WTF::HashMap<PaintLayer*, int>;
-  static std::unique_ptr<PaintOrderMap> BuildPaintLayerTree(Document*);
+  using PaintOrderMap = HeapHashMap<Member<PaintLayer>, int>;
+  static PaintOrderMap* BuildPaintLayerTree(Document*);
 
  private:
   // Unconditionally enables the agent, even if |enabled_.Get()==true|.
@@ -126,7 +128,7 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   bool include_text_color_opacities_ = false;
   std::unique_ptr<CSSPropertyFilter> css_property_filter_;
   // Maps a PaintLayer to its paint order index.
-  std::unique_ptr<PaintOrderMap> paint_order_map_;
+  Member<PaintOrderMap> paint_order_map_;
   // Maps a backend node id to the url of the script (if any) that generates
   // the corresponding node.
   std::unique_ptr<OriginUrlMap> origin_url_map_;
@@ -135,8 +137,6 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   Member<InspectedFrames> inspected_frames_;
   Member<InspectorDOMDebuggerAgent> dom_debugger_agent_;
   InspectorAgentState::Boolean enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(InspectorDOMSnapshotAgent);
 };
 
 }  // namespace blink

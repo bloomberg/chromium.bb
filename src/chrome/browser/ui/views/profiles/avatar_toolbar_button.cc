@@ -11,12 +11,15 @@
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/time/time.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -40,6 +43,7 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/view_class_properties.h"
 
 namespace {
 
@@ -51,14 +55,15 @@ constexpr int kIconSizeForNonTouchUi = 22;
 
 // static
 base::TimeDelta AvatarToolbarButton::g_iph_min_delay_after_creation =
-    base::TimeDelta::FromSeconds(2);
+    base::Seconds(2);
 
 AvatarToolbarButton::AvatarToolbarButton(BrowserView* browser_view)
     : AvatarToolbarButton(browser_view, nullptr) {}
 
 AvatarToolbarButton::AvatarToolbarButton(BrowserView* browser_view,
                                          ToolbarIconContainerView* parent)
-    : ToolbarButton(PressedCallback()),
+    : ToolbarButton(base::BindRepeating(&AvatarToolbarButton::ButtonPressed,
+                                        base::Unretained(this))),
       browser_(browser_view->browser()),
       parent_(parent),
       creation_time_(base::TimeTicks::Now()),
@@ -73,6 +78,7 @@ AvatarToolbarButton::AvatarToolbarButton(BrowserView* browser_view,
   SetTriggerableEventFlags(ui::EF_LEFT_MOUSE_BUTTON);
 
   SetID(VIEW_ID_AVATAR_BUTTON);
+  SetProperty(views::kElementIdentifierKey, kAvatarButtonElementId);
 
   // The avatar should not flip with RTL UI. This does not affect text rendering
   // and LabelButton image/label placement is still flipped like usual.
@@ -149,7 +155,6 @@ void AvatarToolbarButton::UpdateText() {
       text = delegate_->GetShortProfileName();
       break;
     }
-    case State::kPasswordsOnlySyncError:
     case State::kSyncError:
       color = AdjustHighlightColorForContrast(
           GetThemeProvider(), gfx::kGoogleRed300, gfx::kGoogleRed600,
@@ -255,17 +260,11 @@ void AvatarToolbarButton::SetIPHMinDelayAfterCreationForTesting(
   g_iph_min_delay_after_creation = delay;
 }
 
-void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
-  Button::NotifyClick(event);
-  delegate_->NotifyClick();
-  // TODO(bsep): Other toolbar buttons have a ToolbarView method as a callback
-  // and let it call ExecuteCommandWithDisposition on their behalf.
-  // Unfortunately, it's not possible to plumb IsKeyEvent through, so this has
-  // to be a special case.
+void AvatarToolbarButton::ButtonPressed() {
   browser_->window()->ShowAvatarBubbleFromAvatarButton(
       BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
-      event.IsKeyEvent());
+      /*is_source_accelerator=*/false);
 }
 
 void AvatarToolbarButton::AfterPropertyChange(const void* key,
@@ -283,16 +282,19 @@ std::u16string AvatarToolbarButton::GetAvatarTooltipText() const {
       return l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_GUEST_TOOLTIP);
     case State::kAnimatedUserIdentity:
       return delegate_->GetShortProfileName();
-    case State::kPasswordsOnlySyncError:
-      return l10n_util::GetStringFUTF16(
-          IDS_AVATAR_BUTTON_SYNC_ERROR_PASSWORDS_TOOLTIP,
-          delegate_->GetProfileName());
+    // kSyncPaused is just a type of sync error with different color, but should
+    // still use GetAvatarSyncErrorDescription() as tooltip.
     case State::kSyncError:
-      return l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR_TOOLTIP,
-                                        delegate_->GetProfileName());
-    case State::kSyncPaused:
-      return l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED_TOOLTIP,
-                                        delegate_->GetProfileName());
+    case State::kSyncPaused: {
+      absl::optional<AvatarSyncErrorType> error =
+          delegate_->GetAvatarSyncErrorType();
+      DCHECK(error);
+      return l10n_util::GetStringFUTF16(
+          IDS_AVATAR_BUTTON_SYNC_ERROR_TOOLTIP,
+          delegate_->GetShortProfileName(),
+          GetAvatarSyncErrorDescription(*error,
+                                        delegate_->IsSyncFeatureEnabled()));
+    }
     case State::kNormal:
       return delegate_->GetProfileName();
   }
@@ -315,8 +317,9 @@ ui::ImageModel AvatarToolbarButton::GetAvatarIcon(
     case State::kGuestSession:
       return profiles::GetGuestAvatar(icon_size);
     case State::kAnimatedUserIdentity:
-    case State::kPasswordsOnlySyncError:
     case State::kSyncError:
+    // TODO(crbug.com/1191411): If sync-the-feature is disabled, the icon should
+    // be different.
     case State::kSyncPaused:
     case State::kNormal:
       return ui::ImageModel::FromImage(profiles::GetSizedAvatarIcon(
@@ -355,8 +358,10 @@ void AvatarToolbarButton::MaybeShowProfileSwitchIPHInitialized(bool success) {
 
   DCHECK(
       feature_promo_controller_->feature_engagement_tracker()->IsInitialized());
-  feature_promo_controller_->MaybeShowPromo(
-      feature_engagement::kIPHProfileSwitchFeature);
+  if (browser_->window()->IsActive() ||
+      FeaturePromoControllerViews::IsActiveWindowCheckBlockedForTesting())
+    feature_promo_controller_->MaybeShowPromo(
+        feature_engagement::kIPHProfileSwitchFeature);
 }
 
 BEGIN_METADATA(AvatarToolbarButton, ToolbarButton)

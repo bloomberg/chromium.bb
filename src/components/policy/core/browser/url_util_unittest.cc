@@ -79,19 +79,18 @@ bool MatchFilters(const std::vector<std::string>& patterns,
                   const std::string& url) {
   // Add the pattern to the matcher.
   url_matcher::URLMatcher matcher;
-  auto list = std::make_unique<base::ListValue>();
+  base::Value list(base::Value::Type::LIST);
   for (const auto& pattern : patterns)
-    list->AppendString(pattern);
-  AddAllowFilters(&matcher, list.get());
+    list.Append(pattern);
+  AddAllowFilters(&matcher, &base::Value::AsListValue(list));
   return !matcher.MatchURL(GURL(url)).empty();
 }
 
 class FilterToComponentsTest : public testing::TestWithParam<FilterTestParams> {
  public:
-  FilterToComponentsTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FilterToComponentsTest);
+  FilterToComponentsTest() = default;
+  FilterToComponentsTest(const FilterToComponentsTest&) = delete;
+  FilterToComponentsTest& operator=(const FilterToComponentsTest&) = delete;
 };
 
 class OnlyWildcardTest
@@ -101,10 +100,9 @@ class OnlyWildcardTest
                                                std::string /* path */,
                                                std::string /* query*/>> {
  public:
-  OnlyWildcardTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OnlyWildcardTest);
+  OnlyWildcardTest() = default;
+  OnlyWildcardTest(const OnlyWildcardTest&) = delete;
+  OnlyWildcardTest& operator=(const OnlyWildcardTest&) = delete;
 };
 
 }  // namespace

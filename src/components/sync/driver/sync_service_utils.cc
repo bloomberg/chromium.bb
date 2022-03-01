@@ -4,8 +4,11 @@
 
 #include "components/sync/driver/sync_service_utils.h"
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/sync/base/passphrase_enums.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -71,9 +74,54 @@ UploadState GetUploadToGoogleState(const SyncService* sync_service,
   return UploadState::NOT_ACTIVE;
 }
 
-void RecordKeyRetrievalTrigger(KeyRetrievalTriggerForUMA trigger) {
+void RecordKeyRetrievalTrigger(TrustedVaultUserActionTriggerForUMA trigger) {
   base::UmaHistogramEnumeration("Sync.TrustedVaultKeyRetrievalTrigger",
                                 trigger);
+}
+
+void RecordRecoverabilityDegradedFixTrigger(
+    TrustedVaultUserActionTriggerForUMA trigger) {
+  base::UmaHistogramEnumeration(
+      "Sync.TrustedVaultRecoverabilityDegradedFixTrigger", trigger);
+}
+
+bool ShouldOfferTrustedVaultOptIn(const SyncService* service) {
+  if (!service) {
+    return false;
+  }
+
+  if (service->GetTransportState() != SyncService::TransportState::ACTIVE) {
+    // Transport state must be active so SyncUserSettings::GetPassphraseType()
+    // changes once the opt-in completes, and the UI is notified.
+    return false;
+  }
+
+  const ModelTypeSet encrypted_types =
+      service->GetUserSettings()->GetEncryptedDataTypes();
+  if (Intersection(service->GetActiveDataTypes(), encrypted_types).Empty()) {
+    // No point in offering the user a new encryption method if they are not
+    // syncing any encrypted types.
+    return false;
+  }
+
+  switch (service->GetUserSettings()->GetPassphraseType()) {
+    case PassphraseType::kImplicitPassphrase:
+    case PassphraseType::kFrozenImplicitPassphrase:
+    case PassphraseType::kCustomPassphrase:
+    case PassphraseType::kTrustedVaultPassphrase:
+      // Either trusted vault is already set or a transition from this
+      // passphrase type to trusted vault is disallowed.
+      return false;
+    case PassphraseType::kKeystorePassphrase:
+      if (service->GetUserSettings()->IsPassphraseRequired()) {
+        // This should be extremely rare.
+        return false;
+      }
+      return base::FeatureList::IsEnabled(
+                 switches::kSyncTrustedVaultPassphraseRecovery) &&
+             base::FeatureList::IsEnabled(
+                 switches::kSyncTrustedVaultPassphrasePromo);
+  }
 }
 
 }  // namespace syncer

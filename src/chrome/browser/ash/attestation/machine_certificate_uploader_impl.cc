@@ -6,16 +6,16 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 
+#include "ash/components/attestation/attestation_flow.h"
+#include "ash/components/attestation/attestation_flow_adaptive.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/time/time.h"
 #include "chrome/browser/ash/attestation/attestation_ca_client.h"
 #include "chrome/browser/ash/attestation/attestation_key_payload.pb.h"
-#include "chromeos/attestation/attestation_flow.h"
+#include "chrome/browser/ash/attestation/certificate_util.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/attestation/attestation_client.h"
 #include "chromeos/dbus/attestation/interface.pb.h"
@@ -27,8 +27,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
-#include "net/cert/pem.h"
-#include "net/cert/x509_certificate.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
@@ -38,8 +36,8 @@ namespace {
 // issues certificates with an expiry of at least two years.  This value has
 // been set large enough so that the majority of users will have gone through
 // a full sign-in during the period.
-const int kExpiryThresholdInDays = 30;
-const int kRetryDelay = 5;  // Seconds.
+constexpr base::TimeDelta kExpiryThreshold = base::Days(30);
+constexpr base::TimeDelta kRetryDelay = base::Seconds(5);
 const int kRetryLimit = 100;
 
 void DBusPrivacyCACallback(
@@ -66,11 +64,8 @@ namespace attestation {
 
 MachineCertificateUploaderImpl::MachineCertificateUploaderImpl(
     policy::CloudPolicyClient* policy_client)
-    : policy_client_(policy_client),
-      attestation_flow_(nullptr),
-      num_retries_(0),
-      retry_limit_(kRetryLimit),
-      retry_delay_(kRetryDelay) {
+    : MachineCertificateUploaderImpl(policy_client,
+                                     /*attestation_flow=*/nullptr) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -79,7 +74,7 @@ MachineCertificateUploaderImpl::MachineCertificateUploaderImpl(
     AttestationFlow* attestation_flow)
     : policy_client_(policy_client),
       attestation_flow_(attestation_flow),
-      num_retries_(0),
+      retry_limit_(kRetryLimit),
       retry_delay_(kRetryDelay) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
@@ -116,8 +111,8 @@ void MachineCertificateUploaderImpl::Start() {
   if (!attestation_flow_) {
     std::unique_ptr<ServerProxy> attestation_ca_client(
         new AttestationCAClient());
-    default_attestation_flow_ =
-        std::make_unique<AttestationFlow>(std::move(attestation_ca_client));
+    default_attestation_flow_ = std::make_unique<AttestationFlowAdaptive>(
+        std::move(attestation_ca_client));
     attestation_flow_ = default_attestation_flow_.get();
   }
 
@@ -180,37 +175,29 @@ void MachineCertificateUploaderImpl::OnGetExistingCertificate(
 
 void MachineCertificateUploaderImpl::CheckCertificateExpiry(
     const ::attestation::GetKeyInfoReply& reply) {
-  const std::string& pem_certificate_chain = reply.certificate();
-  int num_certificates = 0;
-  net::PEMTokenizer pem_tokenizer(pem_certificate_chain, {"CERTIFICATE"});
-  while (pem_tokenizer.GetNext()) {
-    ++num_certificates;
-    scoped_refptr<net::X509Certificate> x509 =
-        net::X509Certificate::CreateFromBytes(pem_tokenizer.data().data(),
-                                              pem_tokenizer.data().length());
-    if (!x509.get() || x509->valid_expiry().is_null()) {
-      // This logic intentionally fails open. In theory this should not happen
-      // but in practice parsing X.509 can be brittle and there are a lot of
-      // factors including which underlying module is parsing the certificate,
-      // whether that module performs more checks than just ASN.1/DER format,
-      // and the server module that generated the certificate(s). Renewal is
-      // expensive so we only renew certificates with good evidence that they
-      // have expired or will soon expire; if we don't know, we don't renew.
-      LOG(WARNING) << "Failed to parse certificate, cannot check expiry.";
-      continue;
-    }
-    const base::TimeDelta threshold =
-        base::TimeDelta::FromDays(kExpiryThresholdInDays);
-    if ((base::Time::Now() + threshold) > x509->valid_expiry()) {
+  const CertificateExpiryStatus cert_status =
+      ::ash::attestation::CheckCertificateExpiry(reply.certificate(),
+                                                 kExpiryThreshold);
+  switch (cert_status) {
+    case CertificateExpiryStatus::kExpired:
+    case CertificateExpiryStatus::kExpiringSoon:
       // The certificate has expired or will soon, replace it.
       GetNewCertificate();
       return;
-    }
+    case CertificateExpiryStatus::kValid:
+    case CertificateExpiryStatus::kInvalidPemChain:
+    case CertificateExpiryStatus::kInvalidX509:
+      // kInvalidPemChain and kInvalidX509 are not handled intentionally.
+      // Renewal is expensive so we only renew certificates with good evidence
+      // that they have expired or will soon expire; if we don't know, we don't
+      // renew.
+      LOG_IF(ERROR, cert_status != CertificateExpiryStatus::kValid)
+          << "Failed to parse certificate, cannot check expiry: "
+          << CertificateExpiryStatusToString(cert_status);
+      CheckIfUploaded(reply);
+      return;
   }
-  if (num_certificates == 0) {
-    LOG(WARNING) << "Failed to parse certificate chain, cannot check expiry.";
-  }
-  CheckIfUploaded(reply);
+  NOTREACHED() << "Unknown certificate status";
 }
 
 void MachineCertificateUploaderImpl::UploadCertificate(
@@ -306,7 +293,7 @@ void MachineCertificateUploaderImpl::Reschedule() {
         FROM_HERE,
         base::BindOnce(&MachineCertificateUploaderImpl::Start,
                        weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(retry_delay_));
+        retry_delay_);
   } else {
     LOG(WARNING) << "MachineCertificateUploaderImpl: Retry limit exceeded.";
     certificate_uploaded_ = false;
