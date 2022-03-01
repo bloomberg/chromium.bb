@@ -49,8 +49,6 @@ const char kExtensionBlocklistUrlPrefix[] =
 const char kExtensionBlocklistHttpsUrlPrefix[] =
     "https://www.gstatic.com/chrome/extensions/blocklist";
 
-const char kThumbsWhiteListedExtension[] = "khopmbdjffemhegeeobelklnbglcdgfh";
-
 }  // namespace
 
 ChromeExtensionsClient::ChromeExtensionsClient() {
@@ -101,8 +99,6 @@ void ChromeExtensionsClient::FilterHostPermissions(
     const URLPatternSet& hosts,
     URLPatternSet* new_hosts,
     PermissionIDSet* permissions) const {
-  // When editing this function, be sure to add the same functionality to
-  // FilterHostPermissions() above.
   for (auto i = hosts.begin(); i != hosts.end(); ++i) {
     // Filters out every URL pattern that matches chrome:// scheme.
     if (i->scheme() == content::kChromeUIScheme) {
@@ -141,19 +137,6 @@ URLPatternSet ChromeExtensionsClient::GetPermittedChromeSchemeHosts(
   hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI,
                               chrome::kChromeUIFaviconURL));
 
-  // Experimental extensions are also allowed chrome://thumb.
-  //
-  // TODO: A public API should be created for retrieving thumbnails.
-  // See http://crbug.com/222856. A temporary hack is implemented here to
-  // make chrome://thumbs available to NTP Russia extension as
-  // non-experimental.
-  if ((api_permissions.find(mojom::APIPermissionID::kExperimental) !=
-       api_permissions.end()) ||
-      (extension->id() == kThumbsWhiteListedExtension &&
-       extension->from_webstore())) {
-    hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI,
-                                chrome::kChromeUIThumbnailURL));
-  }
   return hosts;
 }
 
@@ -204,9 +187,9 @@ std::set<base::FilePath> ChromeExtensionsClient::GetBrowserImagePaths(
   if (theme_images) {
     for (base::DictionaryValue::Iterator it(*theme_images); !it.IsAtEnd();
          it.Advance()) {
-      std::string path;
-      if (it.value().GetAsString(&path))
-        image_paths.insert(base::FilePath::FromUTF8Unsafe(path));
+      if (it.value().is_string())
+        image_paths.insert(
+            base::FilePath::FromUTF8Unsafe(it.value().GetString()));
     }
   }
 

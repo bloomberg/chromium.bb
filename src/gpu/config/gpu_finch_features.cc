@@ -7,6 +7,8 @@
 #include "base/command_line.h"
 #include "build/chromeos_buildflags.h"
 #include "gpu/config/gpu_switches.h"
+#include "ui/gl/gl_features.h"
+#include "ui/gl/gl_surface_egl.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/android_image_reader_compat.h"
@@ -75,6 +77,10 @@ const base::FeatureParam<std::string> kAndroidSurfaceControlModelBlocklist{
 const base::Feature kWebViewSurfaceControl{"WebViewSurfaceControl",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Use thread-safe media path on WebView.
+const base::Feature kWebViewThreadSafeMedia{"WebViewThreadSafeMedia",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use AImageReader for MediaCodec and MediaPlyer on android.
 const base::Feature kAImageReader{"AImageReader",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
@@ -135,6 +141,10 @@ const base::Feature kDefaultEnableOopRasterization{
 const base::Feature kCanvasOopRasterization{"CanvasOopRasterization",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the use of ANGLE validation for non-WebGL contexts.
+const base::Feature kDefaultEnableANGLEValidation{
+    "DefaultEnableANGLEValidation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_WIN)
 // Use a high priority for GPU process on Windows.
 const base::Feature kGpuProcessHighPriorityWin{
@@ -193,10 +203,21 @@ const base::Feature kVulkan {
 #endif
 };
 
+const base::Feature kEnableDrDc{"EnableDrDc",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable WebGPU on gpu service side only. This is used with origin trial
+// before gpu service is enabled by default.
+const base::Feature kWebGPUService{"WebGPUService",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 
+const base::FeatureParam<std::string> kVulkanBlockListByHardware{
+    &kVulkan, "BlockListByHardware", "mt*"};
+
 const base::FeatureParam<std::string> kVulkanBlockListByBrand{
-    &kVulkan, "BlockListByBrand", ""};
+    &kVulkan, "BlockListByBrand", "HONOR"};
 
 const base::FeatureParam<std::string> kVulkanBlockListByDevice{
     &kVulkan, "BlockListByDevice", "OP4863|OP4883"};
@@ -263,6 +284,8 @@ bool IsUsingVulkan() {
 
   // Check block list against build info.
   const auto* build_info = base::android::BuildInfo::GetInstance();
+  if (IsDeviceBlocked(build_info->hardware(), kVulkanBlockListByHardware.Get()))
+    return false;
   if (IsDeviceBlocked(build_info->brand(), kVulkanBlockListByBrand.Get()))
     return false;
   if (IsDeviceBlocked(build_info->device(), kVulkanBlockListByDevice.Get()))
@@ -286,6 +309,61 @@ bool IsUsingVulkan() {
 #else
   return base::FeatureList::IsEnabled(kVulkan);
 #endif
+}
+
+bool IsDrDcEnabled() {
+#if defined(OS_ANDROID)
+  // Enabled on android P+.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_P) {
+    return false;
+  }
+
+  // Currently not supported for vulkan.
+  if (IsUsingVulkan())
+    return false;
+
+  // DrDc is supported on android MediaPlayer and MCVD path only when
+  // AImageReader is enabled.
+  if (!IsAImageReaderEnabled())
+    return false;
+
+  return base::FeatureList::IsEnabled(kEnableDrDc);
+#else
+  return false;
+#endif
+}
+
+bool IsUsingThreadSafeMediaForWebView() {
+#if defined(OS_ANDROID)
+  // SurfaceTexture can't be thread-safe.
+  if (!IsAImageReaderEnabled())
+    return false;
+
+  // Not yet compatible with Vulkan.
+  if (IsUsingVulkan())
+    return false;
+
+  // Not yet compatible with SurfaceControl.
+  if (IsAndroidSurfaceControlEnabled())
+    return false;
+
+  return base::FeatureList::IsEnabled(kWebViewThreadSafeMedia);
+#else
+  return false;
+#endif
+}
+
+bool NeedThreadSafeAndroidMedia() {
+  return IsDrDcEnabled() || IsUsingThreadSafeMediaForWebView();
+}
+
+bool IsANGLEValidationEnabled() {
+  if (!UsePassthroughCommandDecoder()) {
+    return false;
+  }
+
+  return base::FeatureList::IsEnabled(kDefaultEnableANGLEValidation);
 }
 
 #if defined(OS_ANDROID)
@@ -366,6 +444,11 @@ bool IncreaseBufferCountForHighFrameRate() {
       !IsDeviceBlocked(base::android::BuildInfo::GetInstance()->device(),
                        kDisableIncreaseBufferCountForHighFrameRate.Get());
   return increase;
+}
+
+bool IncreaseBufferCountForWebViewOverlays() {
+  return IsAndroidSurfaceControlEnabled() &&
+         base::FeatureList::IsEnabled(kWebViewSurfaceControl);
 }
 
 #endif

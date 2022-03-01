@@ -886,9 +886,12 @@ bool WebViewImpl::OnPreHandleMessage(unsigned window,
 aura::Window *WebViewImpl::GetDefaultActivationWindow()
 {
     DCHECK(Statics::isInBrowserMainThread());
-    content::RenderWidgetHostView *rwhv = d_webContents->GetRenderWidgetHostView();
-    if (rwhv) {
-        return rwhv->GetNativeView();
+
+    if (d_webContents) {
+        content::RenderWidgetHostView *rwhv = d_webContents->GetRenderWidgetHostView();
+        if (rwhv) {
+            return rwhv->GetNativeView();
+        }
     }
     return nullptr;
 }

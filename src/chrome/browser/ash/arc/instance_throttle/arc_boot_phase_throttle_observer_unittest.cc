@@ -6,6 +6,11 @@
 
 #include <memory>
 
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/arc/session/arc_service_manager.h"
+#include "ash/components/arc/session/arc_session_runner.h"
+#include "ash/components/arc/test/arc_util_test_support.h"
+#include "ash/components/arc/test/fake_arc_session.h"
 #include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/ash/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
@@ -15,11 +20,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "components/arc/arc_prefs.h"
-#include "components/arc/arc_service_manager.h"
-#include "components/arc/arc_util.h"
-#include "components/arc/session/arc_session_runner.h"
-#include "components/arc/test/fake_arc_session.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
@@ -60,6 +60,11 @@ class ArcBootPhaseThrottleObserverTest : public testing::Test {
         ArcBootPhaseThrottleObserver::ObserverStateChangedCallback());
   }
 
+  ArcBootPhaseThrottleObserverTest(const ArcBootPhaseThrottleObserverTest&) =
+      delete;
+  ArcBootPhaseThrottleObserverTest& operator=(
+      const ArcBootPhaseThrottleObserverTest&) = delete;
+
   void TearDown() override {
     observer()->StopObserving();
     testing_profile_.reset();
@@ -86,8 +91,6 @@ class ArcBootPhaseThrottleObserverTest : public testing::Test {
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
   ArcBootPhaseThrottleObserver observer_;
   std::unique_ptr<TestingProfile> testing_profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcBootPhaseThrottleObserverTest);
 };
 
 TEST_F(ArcBootPhaseThrottleObserverTest, TestConstructDestruct) {}

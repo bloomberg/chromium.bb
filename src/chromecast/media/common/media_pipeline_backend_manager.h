@@ -10,12 +10,10 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "chromecast/media/api/cma_backend_factory.h"
 #include "chromecast/public/media/decoder_config.h"
@@ -90,6 +88,11 @@ class MediaPipelineBackendManager : public media::CmaBackendFactory {
   MediaPipelineBackendManager(
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       MediaResourceTracker* media_resource_tracker);
+
+  MediaPipelineBackendManager(const MediaPipelineBackendManager&) = delete;
+  MediaPipelineBackendManager& operator=(const MediaPipelineBackendManager&) =
+      delete;
+
   ~MediaPipelineBackendManager() override;
 
   // media::CmaBackendFactory implementation:
@@ -193,8 +196,6 @@ class MediaPipelineBackendManager : public media::CmaBackendFactory {
   int mixer_sfx_stream_count_ = 0;
 
   base::WeakPtrFactory<MediaPipelineBackendManager> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendManager);
 };
 
 }  // namespace media

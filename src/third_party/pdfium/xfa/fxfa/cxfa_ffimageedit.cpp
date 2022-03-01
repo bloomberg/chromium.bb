@@ -29,7 +29,6 @@ CXFA_FFImageEdit::~CXFA_FFImageEdit() = default;
 
 void CXFA_FFImageEdit::PreFinalize() {
   m_pNode->SetImageEditImage(nullptr);
-  CXFA_FFField::PreFinalize();
 }
 
 void CXFA_FFImageEdit::Trace(cppgc::Visitor* visitor) const {
@@ -94,10 +93,11 @@ void CXFA_FFImageEdit::RenderWidget(CFGAS_GEGraphics* pGS,
                 m_pNode->GetImageEditDpi(), iHorzAlign, iVertAlign);
 }
 
-bool CXFA_FFImageEdit::AcceptsFocusOnButtonDown(uint32_t dwFlags,
-                                                const CFX_PointF& point,
-                                                FWL_MouseCommand command) {
-  if (command != FWL_MouseCommand::LeftButtonDown)
+bool CXFA_FFImageEdit::AcceptsFocusOnButtonDown(
+    Mask<XFA_FWL_KeyFlag> dwFlags,
+    const CFX_PointF& point,
+    CFWL_MessageMouse::MouseCommand command) {
+  if (command != CFWL_MessageMouse::MouseCommand::kLeftButtonDown)
     return CXFA_FFField::AcceptsFocusOnButtonDown(dwFlags, point, command);
 
   if (!m_pNode->IsOpenAccess())
@@ -108,10 +108,11 @@ bool CXFA_FFImageEdit::AcceptsFocusOnButtonDown(uint32_t dwFlags,
   return true;
 }
 
-bool CXFA_FFImageEdit::OnLButtonDown(uint32_t dwFlags,
+bool CXFA_FFImageEdit::OnLButtonDown(Mask<XFA_FWL_KeyFlag> dwFlags,
                                      const CFX_PointF& point) {
   SetButtonDown(true);
-  CFWL_MessageMouse msg(GetNormalWidget(), FWL_MouseCommand::LeftButtonDown,
+  CFWL_MessageMouse msg(GetNormalWidget(),
+                        CFWL_MessageMouse::MouseCommand::kLeftButtonDown,
                         dwFlags, FWLToClient(point));
   SendMessageToFWLWidget(&msg);
   return true;

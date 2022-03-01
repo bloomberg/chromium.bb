@@ -6,9 +6,9 @@
 #define UI_NATIVE_THEME_NATIVE_THEME_MAC_H_
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/native_theme/native_theme_aura.h"
 #include "ui/native_theme/native_theme_base.h"
 #include "ui/native_theme/native_theme_export.h"
 
@@ -31,6 +31,9 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
     PRESSED,
     COUNT
   };
+
+  NativeThemeMac(const NativeThemeMac&) = delete;
+  NativeThemeMac& operator=(const NativeThemeMac&) = delete;
 
   // Adjusts an SkColor based on the current system control tint. For example,
   // if the current tint is "graphite", this function maps the provided value to
@@ -88,6 +91,11 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
                                         bool round_right,
                                         bool focus);
 
+  // Returns the minimum size for the thumb. We will not inset the thumb if it
+  // will be smaller than this size. The scale parameter should be the device
+  // scale factor.
+  gfx::Size GetThumbMinSize(bool vertical, float scale) const;
+
  protected:
   friend class NativeTheme;
   friend class base::NoDestructor<NativeThemeMac>;
@@ -140,17 +148,16 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
       ColorScheme color_scheme,
       const ScrollbarExtraParams& extra_params) const;
 
-  int ScrollbarTrackBorderWidth() const { return 1; }
+  int ScrollbarTrackBorderWidth(float scale_from_dip) const {
+    constexpr float border_width = 1.0f;
+    return scale_from_dip * border_width;
+  }
 
   // The amount the thumb is inset from the ends and the inside edge of track
   // border.
-  int GetScrollbarThumbInset(bool is_overlay) const {
-    return is_overlay ? 2 : 3;
+  int GetScrollbarThumbInset(bool is_overlay, float scale_from_dip) const {
+    return scale_from_dip * (is_overlay ? 2.0f : 3.0f);
   }
-
-  // Returns the minimum size for the thumb. We will not inset the thumb if it
-  // will be smaller than this size.
-  gfx::Size GetThumbMinSize(bool vertical) const;
 
   base::scoped_nsobject<NativeThemeEffectiveAppearanceObserver>
       appearance_observer_;
@@ -160,8 +167,16 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   // contrast.
   std::unique_ptr<NativeTheme::ColorSchemeNativeThemeObserver>
       color_scheme_observer_;
+};
 
-  DISALLOW_COPY_AND_ASSIGN(NativeThemeMac);
+// Mac implementation of native theme support for web controls.
+// For consistency with older versions of Chrome for Mac, we do multiply
+// the border width and radius by the zoom, unlike the generic impl.
+class NativeThemeMacWeb : public NativeThemeAura {
+ public:
+  NativeThemeMacWeb();
+
+  static NativeThemeMacWeb* instance();
 };
 
 }  // namespace ui

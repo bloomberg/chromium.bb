@@ -5,7 +5,7 @@
 #ifndef UI_AURA_TEST_WINDOW_TEST_API_H_
 #define UI_AURA_TEST_WINDOW_TEST_API_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/aura/window.h"
 
 namespace aura {
@@ -14,6 +14,9 @@ namespace test {
 class WindowTestApi {
  public:
   explicit WindowTestApi(Window* window);
+
+  WindowTestApi(const WindowTestApi&) = delete;
+  WindowTestApi& operator=(const WindowTestApi&) = delete;
 
   bool OwnsLayer() const;
 
@@ -24,9 +27,7 @@ class WindowTestApi {
   void SetOcclusionState(aura::Window::OcclusionState state);
 
  private:
-  Window* window_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowTestApi);
+  raw_ptr<Window> window_;
 };
 
 }  // namespace test

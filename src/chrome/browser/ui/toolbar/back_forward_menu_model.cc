@@ -9,9 +9,9 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -50,7 +50,7 @@ BackForwardMenuModel::BackForwardMenuModel(Browser* browser,
                                            ModelType model_type)
     : browser_(browser), model_type_(model_type) {}
 
-BackForwardMenuModel::~BackForwardMenuModel() {}
+BackForwardMenuModel::~BackForwardMenuModel() = default;
 
 bool BackForwardMenuModel::HasIcons() const {
   return true;
@@ -286,7 +286,7 @@ void BackForwardMenuModel::OnFavIconDataAvailable(
   entry->GetFavicon().url = image_result.icon_url;
   entry->GetFavicon().image = image_result.image;
   if (menu_model_delegate()) {
-    menu_model_delegate()->OnIconChanged(model_index);
+    menu_model_delegate()->OnIconChanged(GetCommandIdAt(model_index));
   }
 }
 
@@ -299,7 +299,7 @@ int BackForwardMenuModel::GetHistoryItemCount() const {
     items = contents->GetController().GetEntryCount() - items - 1;
   }
 
-  return base::ClampToRange(items, 0, kMaxHistoryItems);
+  return base::clamp(items, 0, kMaxHistoryItems);
 }
 
 int BackForwardMenuModel::GetChapterStopCount(int history_items) const {
@@ -403,9 +403,9 @@ std::u16string BackForwardMenuModel::GetShowFullHistoryLabel() const {
 
 WebContents* BackForwardMenuModel::GetWebContents() const {
   // We use the test web contents if the unit test has specified it.
-  return test_web_contents_ ?
-      test_web_contents_ :
-      browser_->tab_strip_model()->GetActiveWebContents();
+  return test_web_contents_
+             ? test_web_contents_.get()
+             : browser_->tab_strip_model()->GetActiveWebContents();
 }
 
 int BackForwardMenuModel::MenuIndexToNavEntryIndex(int index) const {

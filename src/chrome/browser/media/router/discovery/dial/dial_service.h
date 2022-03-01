@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "net/base/ip_address.h"
@@ -26,9 +26,14 @@ namespace media_router {
 
 class DialDeviceData;
 
-// DialService accepts requests to discover devices, sends multiple M-SEARCH
-// requests via UDP multicast, and notifies observers when a DIAL-compliant
-// device responds.
+// DialService accepts requests to discover devices, sends multiple SSDP
+// M-SEARCH requests via UDP multicast, and notifies observers when a
+// DIAL-compliant device responds.
+//
+// The syntax of the M-SEARCH request and response is defined by Section 1.3
+// of the uPnP device architecture specification and related documents:
+//
+// http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
 //
 // Each time Discover() is called, kDialNumRequests M-SEARCH requests are sent
 // (with a delay of kDialRequestIntervalMillis in between):
@@ -96,6 +101,10 @@ class DialService {
 class DialServiceImpl : public DialService {
  public:
   explicit DialServiceImpl(net::NetLog* net_log);
+
+  DialServiceImpl(const DialServiceImpl&) = delete;
+  DialServiceImpl& operator=(const DialServiceImpl&) = delete;
+
   ~DialServiceImpl() override;
 
   // DialService implementation
@@ -114,6 +123,10 @@ class DialServiceImpl : public DialService {
   class DialSocket {
    public:
     explicit DialSocket(DialServiceImpl* dial_service);
+
+    DialSocket(const DialSocket&) = delete;
+    DialSocket& operator=(const DialSocket&) = delete;
+
     ~DialSocket();
 
     // Creates a socket using |net_log| and binds it to |bind_ip_address|.
@@ -160,9 +173,9 @@ class DialServiceImpl : public DialService {
     // Parses a response into a DialDeviceData object. If the DIAL response is
     // invalid or does not contain enough information, then the return
     // value will be false and |device| is not changed.
-    static bool ParseResponse(const std::string& response,
-                              const base::Time& response_time,
-                              DialDeviceData* device);
+    bool ParseResponse(const std::string& response,
+                       const base::Time& response_time,
+                       DialDeviceData* device);
 
     // The UDP socket.
     std::unique_ptr<net::UDPSocket> socket_;
@@ -180,9 +193,7 @@ class DialServiceImpl : public DialService {
     bool is_reading_;
 
     // Pointer to the DialServiceImpl that owns this socket.
-    DialServiceImpl* const dial_service_;
-
-    DISALLOW_COPY_AND_ASSIGN(DialSocket);
+    const raw_ptr<DialServiceImpl> dial_service_;
   };
 
   // Starts the control flow for one discovery cycle.
@@ -229,7 +240,7 @@ class DialServiceImpl : public DialService {
   std::vector<std::unique_ptr<DialSocket>> dial_sockets_;
 
   // The NetLog for this service.
-  net::NetLog* const net_log_;
+  const raw_ptr<net::NetLog> net_log_;
 
   // The multicast address:port for search requests.
   net::IPEndPoint send_address_;
@@ -274,7 +285,6 @@ class DialServiceImpl : public DialService {
   FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestOnDiscoveryFinished);
   FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestOnDiscoveryRequest);
   FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestResponseParsing);
-  DISALLOW_COPY_AND_ASSIGN(DialServiceImpl);
 };
 
 }  // namespace media_router

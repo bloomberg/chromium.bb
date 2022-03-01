@@ -8,10 +8,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
-
-class MediaStreamVideoTrackSignalObserver;
 
 // Simplifies the creation of video tracks.  Just do this:
 // auto source = std::make_unique<PushableMediaStreamVideoSource>();
@@ -67,14 +66,13 @@ class MODULES_EXPORT PushableMediaStreamVideoSource
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   };
 
-  PushableMediaStreamVideoSource();
   explicit PushableMediaStreamVideoSource(
-      const base::WeakPtr<MediaStreamVideoSource>& upstream_source);
+      scoped_refptr<base::SingleThreadTaskRunner>);
   ~PushableMediaStreamVideoSource() override;
 
   // See the definition of VideoCaptureDeliverFrameCB in
-  // media/capture/video_capturer_source.h for the documentation
-  // of |estimated_capture_time| and the difference with
+  // third_party/blink/public/common/media/video_capture.h
+  // for the documentation of |estimated_capture_time| and the difference with
   // media::VideoFrame::timestamp().
   // This function can be called on any thread.
   void PushFrame(scoped_refptr<media::VideoFrame> video_frame,
@@ -85,22 +83,13 @@ class MODULES_EXPORT PushableMediaStreamVideoSource
   scoped_refptr<Broker> GetBroker() const { return broker_; }
 
   // MediaStreamVideoSource
-  void RequestRefreshFrame() override;
-  void OnFrameDropped(media::VideoCaptureFrameDropReason reason) override;
-  VideoCaptureFeedbackCB GetFeedbackCallback() const override;
   void StartSourceImpl(VideoCaptureDeliverFrameCB frame_callback,
                        EncodedVideoFrameCB encoded_frame_callback) override;
   void StopSourceImpl() override;
   base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() const override;
 
-  VideoCaptureFeedbackCB GetInternalFeedbackCallback() const;
-  void SetSignalObserver(MediaStreamVideoTrackSignalObserver*);
-
  private:
-  base::WeakPtr<MediaStreamVideoSource> upstream_source_;
-  WeakPersistent<MediaStreamVideoTrackSignalObserver> signal_observer_;
   scoped_refptr<Broker> broker_;
-  THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<MediaStreamVideoSource> weak_factory_{this};
 };
 

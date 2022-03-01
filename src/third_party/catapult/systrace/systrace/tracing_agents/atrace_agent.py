@@ -9,6 +9,7 @@ import re
 import sys
 import threading
 import zlib
+import six
 
 import py_utils
 
@@ -20,7 +21,7 @@ from systrace import tracing_agents
 from systrace import util
 
 # Text that ADB sends, but does not need to be displayed to the user.
-ADB_IGNORE_REGEXP = r'^capturing trace\.\.\. done|^capturing trace\.\.\.'
+ADB_IGNORE_REGEXP = br'^capturing trace\.\.\. done|^capturing trace\.\.\.'
 # The number of seconds to wait on output from ADB.
 ADB_STDOUT_READ_TIMEOUT = 0.2
 # The number of seconds to wait for large output from ADB.
@@ -37,9 +38,9 @@ LIST_CATEGORIES_ARGS = ATRACE_BASE_ARGS + ['--list_categories']
 # Minimum number of seconds between displaying status updates.
 MIN_TIME_BETWEEN_STATUS_UPDATES = 0.2
 # ADB sends this text to indicate the beginning of the trace data.
-TRACE_START_REGEXP = r'TRACE\:'
+TRACE_START_REGEXP = br'TRACE\:'
 # Plain-text trace data should always start with this string.
-TRACE_TEXT_HEADER = '# tracer'
+TRACE_TEXT_HEADER = b'# tracer'
 _FIX_MISSING_TGIDS = True
 _FIX_CIRCULAR_TRACES = True
 
@@ -194,6 +195,7 @@ class AtraceAgent(tracing_agents.TracingAgent):
     self._device_serial_number = config.device_serial_number
     self._tracer_args = _construct_atrace_args(config,
                                                self._categories)
+    print('Tracer arguments: %s' % self._tracer_args)
     self._device_utils.RunShellCommand(
         self._tracer_args + ['--async_start'], check_return=True)
     return True
@@ -248,27 +250,44 @@ class AtraceAgent(tracing_agents.TracingAgent):
     Note that prior to Api 23, --async-stop isn't working correctly. It
     doesn't stop tracing and clears trace buffer before dumping it rendering
     results unusable."""
+    compress_trace_data = '-z' in self._tracer_args
     if self._device_sdk_version < version_codes.MARSHMALLOW:
       is_trace_enabled_file = '%s/tracing_on' % self._tracing_path
       # Stop tracing first so new data won't arrive while dump is performed (it
       # may take a non-trivial time and tracing buffer may overflow).
       self._device_utils.WriteFile(is_trace_enabled_file, '0')
-      result = self._device_utils.RunShellCommand(
-          self._tracer_args + ['--async_dump'], raw_output=True,
-          large_output=True, check_return=True,
-          timeout=ADB_LARGE_OUTPUT_TIMEOUT)
+      # For compressed trace data, we don't want encoding when adb shell reads
+      # the temp output file. (crbug/1271668)
+      if compress_trace_data:
+        result = self._device_utils.RunShellCommand(
+            self._tracer_args + ['--async_dump'], raw_output=True,
+            large_output=True, check_return=True,
+            timeout=ADB_LARGE_OUTPUT_TIMEOUT,
+            encoding=None)
+      else:
+        result = self._device_utils.RunShellCommand(
+            self._tracer_args + ['--async_dump'], raw_output=True,
+            large_output=True, check_return=True,
+            timeout=ADB_LARGE_OUTPUT_TIMEOUT)
       # Run synchronous tracing for 0 seconds to stop tracing, clear buffers
       # and other state.
       self._device_utils.RunShellCommand(
           self._tracer_args + ['-t 0'], check_return=True)
     else:
       # On M+ --async_stop does everything necessary
-      result = self._device_utils.RunShellCommand(
-          self._tracer_args + ['--async_stop'], raw_output=True,
-          large_output=True, check_return=True,
-          timeout=ADB_LARGE_OUTPUT_TIMEOUT)
+      if compress_trace_data:
+        result = self._device_utils.RunShellCommand(
+            self._tracer_args + ['--async_stop'], raw_output=True,
+            large_output=True, check_return=True,
+            timeout=ADB_LARGE_OUTPUT_TIMEOUT,
+            encoding=None)
+      else:
+        result = self._device_utils.RunShellCommand(
+            self._tracer_args + ['--async_stop'], raw_output=True,
+            large_output=True, check_return=True,
+            timeout=ADB_LARGE_OUTPUT_TIMEOUT)
 
-    return result
+    return six.ensure_binary(result)
 
   def _collect_trace_data(self):
     """Reads the output from atrace and stops the trace."""
@@ -325,7 +344,7 @@ def extract_tgids(trace_lines):
     result = re.match('^/proc/([0-9]+)/task/([0-9]+)', line)
     if result:
       parent_pid, tgid = result.group(1, 2)
-      tgid_2pid[tgid] = parent_pid
+      tgid_2pid[six.ensure_binary(tgid)] = six.ensure_binary(parent_pid)
 
   return tgid_2pid
 
@@ -339,25 +358,26 @@ def strip_and_decompress_trace(trace_data):
     The decompressed trace data.
   """
   # Collapse CRLFs that are added by adb shell.
-  if trace_data.startswith('\r\n'):
-    trace_data = trace_data.replace('\r\n', '\n')
-  elif trace_data.startswith('\r\r\n'):
+  if trace_data.startswith(b'\r\n'):
+    trace_data = trace_data.replace(b'\r\n', b'\n')
+  elif trace_data.startswith(b'\r\r\n'):
     # On windows, adb adds an extra '\r' character for each line.
-    trace_data = trace_data.replace('\r\r\n', '\n')
+    trace_data = trace_data.replace(b'\r\r\n', b'\n')
 
   # Skip the initial newline.
-  if trace_data[0] == '\n':
+  if trace_data.startswith(b'\n'):
     trace_data = trace_data[1:]
 
   if not trace_data.startswith(TRACE_TEXT_HEADER):
     # No header found, so assume the data is compressed.
+    print('No header found. Will try to decompress the trace data.')
     trace_data = zlib.decompress(trace_data)
 
   # Enforce Unix line-endings.
-  trace_data = trace_data.replace('\r', '')
+  trace_data = trace_data.replace(b'\r', b'')
 
   # Skip any initial newlines.
-  while trace_data and trace_data[0] == '\n':
+  while trace_data and trace_data.startswith(b'\n'):
     trace_data = trace_data[1:]
 
   return trace_data
@@ -375,17 +395,17 @@ def fix_missing_tgids(trace_data, pid2_tgid):
 
   def repl(m):
     tid = m.group(2)
-    if (int(tid) > 0 and m.group(1) != '<idle>' and m.group(3) == '(-----)'
+    if (int(tid) > 0 and m.group(1) != b'<idle>' and m.group(3) == b'(-----)'
         and tid in pid2_tgid):
       # returns Proc_name-PID (TGID)
       # Binder_2-381 (-----) becomes Binder_2-381 (128)
-      return m.group(1) + '-' + m.group(2) + ' ( ' + pid2_tgid[tid] + ')'
+      return m.group(1) + b'-' + m.group(2) + b' ( ' + pid2_tgid[tid] + b')'
 
     return m.group(0)
 
   # matches something like:
   # Binder_2-895 (-----)
-  trace_data = re.sub(r'^\s*(\S+)-(\d+)\s+(\(\S+\))', repl, trace_data,
+  trace_data = re.sub(br'^\s*(\S+)-(\d+)\s+(\(\S+\))', repl, trace_data,
                       flags=re.MULTILINE)
   return trace_data
 
@@ -409,7 +429,7 @@ def fix_circular_traces(out):
   #
   # No such headers are emitted if there were no overflows or the trace
   # was captured with non-circular buffers.
-  buffer_start_re = re.compile(r'^#+ CPU \d+ buffer started', re.MULTILINE)
+  buffer_start_re = re.compile(br'^#+ CPU \d+ buffer started', re.MULTILINE)
 
   start_of_full_trace = 0
 
@@ -422,7 +442,7 @@ def fix_circular_traces(out):
 
   if start_of_full_trace > 0:
     # Need to keep the header intact to make the importer happy.
-    end_of_header = re.search(r'^[^#]', out, re.MULTILINE).start()
+    end_of_header = re.search(br'^[^#]', out, re.MULTILINE).start()
     out = out[:end_of_header] + out[start_of_full_trace:]
   return out
 

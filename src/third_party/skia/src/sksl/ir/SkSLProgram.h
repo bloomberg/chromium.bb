@@ -17,18 +17,16 @@
 #include "include/private/SkTHash.h"
 #include "src/sksl/SkSLAnalysis.h"
 #include "src/sksl/SkSLProgramSettings.h"
-#include "src/sksl/ir/SkSLBoolLiteral.h"
 #include "src/sksl/ir/SkSLExpression.h"
-#include "src/sksl/ir/SkSLFloatLiteral.h"
-#include "src/sksl/ir/SkSLIntLiteral.h"
+#include "src/sksl/ir/SkSLLiteral.h"
 #include "src/sksl/ir/SkSLSymbolTable.h"
 
 #ifdef SK_VULKAN
 #include "src/gpu/vk/GrVkCaps.h"
 #endif
 
-// name of the render target height uniform
-#define SKSL_RTHEIGHT_NAME "u_skRTHeight"
+// name of the uniform used to handle features that are sensitive to whether Y is flipped.
+#define SKSL_RTFLIP_NAME "u_skRTFlip"
 
 namespace SkSL {
 
@@ -50,8 +48,9 @@ public:
 
     int get(const FunctionDeclaration&) const;
 
-    void replace(const Expression* oldExpr, const Expression* newExpr);
+    void add(const Expression* expr);
     void add(const Statement* stmt);
+    void add(const ProgramElement& element);
     void remove(const Expression* expr);
     void remove(const Statement* stmt);
     void remove(const ProgramElement& element);
@@ -67,21 +66,11 @@ struct Program {
     using Settings = ProgramSettings;
 
     struct Inputs {
-        // if true, this program requires the render target height uniform to be defined
-        bool fRTHeight;
-
-        // if true, this program must be recompiled if the flipY setting changes. If false, the
-        // program will compile to the same code regardless of the flipY setting.
-        bool fFlipY;
-
-        void reset() {
-            fRTHeight = false;
-            fFlipY = false;
+        bool fUseFlipRTUniform = false;
+        bool operator==(const Inputs& that) const {
+            return fUseFlipRTUniform == that.fUseFlipRTUniform;
         }
-
-        bool isEmpty() {
-            return !fRTHeight && !fFlipY;
-        }
+        bool operator!=(const Inputs& that) const { return !(*this == that); }
     };
 
     Program(std::unique_ptr<String> source,
@@ -98,9 +87,9 @@ struct Program {
     , fContext(context)
     , fSymbols(symbols)
     , fPool(std::move(pool))
-    , fInputs(inputs)
-    , fElements(std::move(elements))
+    , fOwnedElements(std::move(elements))
     , fSharedElements(std::move(sharedElements))
+    , fInputs(inputs)
     , fModifiers(std::move(modifiers)) {
         fUsage = Analysis::GetUsage(*this);
     }
@@ -109,16 +98,12 @@ struct Program {
         // Some or all of the program elements are in the pool. To free them safely, we must attach
         // the pool before destroying any program elements. (Otherwise, we may accidentally call
         // delete on a pooled node.)
-        if (fPool) {
-            fPool->attachToThread();
-        }
-        fElements.clear();
+        AutoAttachPoolToThread attach(fPool.get());
+
+        fOwnedElements.clear();
         fContext.reset();
         fSymbols.reset();
         fModifiers.reset();
-        if (fPool) {
-            fPool->detachFromThread();
-        }
     }
 
     class ElementsCollection {
@@ -165,12 +150,12 @@ struct Program {
         };
 
         iterator begin() const {
-            return iterator(fProgram.fElements.begin(), fProgram.fElements.end(),
+            return iterator(fProgram.fOwnedElements.begin(), fProgram.fOwnedElements.end(),
                             fProgram.fSharedElements.begin(), fProgram.fSharedElements.end());
         }
 
         iterator end() const {
-            return iterator(fProgram.fElements.end(), fProgram.fElements.end(),
+            return iterator(fProgram.fOwnedElements.end(), fProgram.fOwnedElements.end(),
                             fProgram.fSharedElements.end(), fProgram.fSharedElements.end());
         }
 
@@ -186,14 +171,9 @@ struct Program {
     // modify anything (as you might be mutating shared data).
     ElementsCollection elements() const { return ElementsCollection(*this); }
 
-    // Can be used to iterate over *just* the elements owned by the Program, not shared builtins.
-    // The iterator's value type is 'std::unique_ptr<ProgramElement>', and mutation is allowed.
-    std::vector<std::unique_ptr<ProgramElement>>& ownedElements() { return fElements; }
-    const std::vector<std::unique_ptr<ProgramElement>>& ownedElements() const { return fElements; }
-
     String description() const {
         String result;
-        for (const auto& e : this->elements()) {
+        for (const ProgramElement* e : this->elements()) {
             result += e->description();
         }
         return result;
@@ -204,15 +184,18 @@ struct Program {
     std::unique_ptr<String> fSource;
     std::unique_ptr<ProgramConfig> fConfig;
     std::shared_ptr<Context> fContext;
-    // it's important to keep fElements defined after (and thus destroyed before) fSymbols,
+    // it's important to keep fOwnedElements defined after (and thus destroyed before) fSymbols,
     // because destroying elements can modify reference counts in symbols
     std::shared_ptr<SymbolTable> fSymbols;
     std::unique_ptr<Pool> fPool;
+    // Contains *only* elements owned exclusively by this program.
+    std::vector<std::unique_ptr<ProgramElement>> fOwnedElements;
+    // Contains *only* elements owned by a built-in module that are included in this program.
+    // Use elements() to iterate over the combined set of owned + shared elements.
+    std::vector<const ProgramElement*> fSharedElements;
     Inputs fInputs;
 
 private:
-    std::vector<std::unique_ptr<ProgramElement>> fElements;
-    std::vector<const ProgramElement*>           fSharedElements;
     std::unique_ptr<ModifiersPool> fModifiers;
     std::unique_ptr<ProgramUsage> fUsage;
 

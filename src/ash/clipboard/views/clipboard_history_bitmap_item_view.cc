@@ -9,8 +9,9 @@
 #include "ash/clipboard/clipboard_history_util.h"
 #include "ash/clipboard/views/clipboard_history_delete_button.h"
 #include "ash/clipboard/views/clipboard_history_view_constants.h"
+#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/scoped_light_mode_as_default.h"
+#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -22,6 +23,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -33,13 +35,11 @@ namespace {
 
 // The duration of the fade out animation for transitioning the placeholder
 // image to rendered HTML.
-constexpr base::TimeDelta kFadeOutDurationMs =
-    base::TimeDelta::FromMilliseconds(60);
+constexpr base::TimeDelta kFadeOutDurationMs = base::Milliseconds(60);
 
 // The duration of the fade in animation for transitioning the placeholder image
 // to rendered HTML.
-constexpr base::TimeDelta kFadeInDurationMs =
-    base::TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kFadeInDurationMs = base::Milliseconds(200);
 
 ////////////////////////////////////////////////////////////////////////////////
 // FadeImageView
@@ -224,7 +224,7 @@ class ClipboardHistoryBitmapItemView::BitmapContentsView
     ScopedLightModeAsDefault scoped_light_mode_as_default;
 
     ContentsView::OnThemeChanged();
-    border_container_view_->border()->set_color(
+    border_container_view_->GetBorder()->set_color(
         AshColorProvider::Get()->GetControlsLayerColor(
             AshColorProvider::ControlsLayerType::kHairlineBorderColor));
   }
@@ -239,9 +239,19 @@ class ClipboardHistoryBitmapItemView::BitmapContentsView
                                 weak_ptr_factory_.GetWeakPtr()));
       case ui::ClipboardInternalFormat::kPng: {
         auto image_view = std::make_unique<views::ImageView>();
-        gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(
-            clipboard_history_item->data().png().data(),
-            clipboard_history_item->data().png().size());
+        gfx::Image image;
+        const auto& maybe_png = clipboard_history_item->data().maybe_png();
+        if (maybe_png.has_value()) {
+          image = gfx::Image::CreateFrom1xPNGBytes(maybe_png.value().data(),
+                                                   maybe_png.value().size());
+        } else {
+          // If we have not yet encoded the bitmap to a PNG, just create the
+          // gfx::Image using the available bitmap. No information is lost here.
+          auto maybe_bitmap =
+              clipboard_history_item->data().GetBitmapIfPngNotEncoded();
+          DCHECK(maybe_bitmap.has_value());
+          image = gfx::Image::CreateFrom1xBitmap(maybe_bitmap.value());
+        }
         ui::ImageModel image_model = ui::ImageModel::FromImage(image);
         image_view->SetImage(image_model);
         return image_view;

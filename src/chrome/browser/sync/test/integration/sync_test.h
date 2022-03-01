@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -59,7 +59,7 @@
 #define E2E_ONLY(test_name) MACRO_CONCAT(DISABLED_E2ETest, test_name)
 #define E2E_ENABLED(test_name) MACRO_CONCAT(test_name, E2ETest)
 
-class ProfileSyncServiceHarness;
+class SyncServiceImplHarness;
 
 namespace arc {
 class SyncArcPackageHelper;
@@ -75,7 +75,7 @@ class FakeServer;
 }  // namespace fake_server
 
 namespace syncer {
-class ProfileSyncService;
+class SyncServiceImpl;
 }  // namespace syncer
 
 namespace switches {
@@ -132,6 +132,10 @@ class SyncTest : public PlatformBrowserTest {
    public:
     explicit FakeInstanceID(const std::string& app_id,
                             gcm::GCMDriver* gcm_driver);
+
+    FakeInstanceID(const FakeInstanceID&) = delete;
+    FakeInstanceID& operator=(const FakeInstanceID&) = delete;
+
     ~FakeInstanceID() override = default;
 
     void GetID(GetIDCallback callback) override {}
@@ -164,25 +168,30 @@ class SyncTest : public PlatformBrowserTest {
     static std::string GenerateNextToken();
 
     std::string token_;
-    DISALLOW_COPY_AND_ASSIGN(FakeInstanceID);
   };
 
   class FakeInstanceIDDriver : public instance_id::InstanceIDDriver {
    public:
     explicit FakeInstanceIDDriver(gcm::GCMDriver* gcm_driver);
+
+    FakeInstanceIDDriver(const FakeInstanceIDDriver&) = delete;
+    FakeInstanceIDDriver& operator=(const FakeInstanceIDDriver&) = delete;
+
     ~FakeInstanceIDDriver() override;
     instance_id::InstanceID* GetInstanceID(const std::string& app_id) override;
     void RemoveInstanceID(const std::string& app_id) override {}
     bool ExistsInstanceID(const std::string& app_id) const override;
 
    private:
-    gcm::GCMDriver* gcm_driver_;
+    raw_ptr<gcm::GCMDriver> gcm_driver_;
     std::map<std::string, std::unique_ptr<FakeInstanceID>> fake_instance_ids_;
-    DISALLOW_COPY_AND_ASSIGN(FakeInstanceIDDriver);
   };
 
   // A SyncTest must be associated with a particular test type.
   explicit SyncTest(TestType test_type);
+
+  SyncTest(const SyncTest&) = delete;
+  SyncTest& operator=(const SyncTest&) = delete;
 
   ~SyncTest() override;
 
@@ -222,19 +231,19 @@ class SyncTest : public PlatformBrowserTest {
 
   // Returns a pointer to a particular sync client. Callee owns the object
   // and manages its lifetime.
-  ProfileSyncServiceHarness* GetClient(int index);
+  SyncServiceImplHarness* GetClient(int index);
 
   // Returns a list of the collection of sync clients.
-  std::vector<ProfileSyncServiceHarness*> GetSyncClients();
+  std::vector<SyncServiceImplHarness*> GetSyncClients();
 
-  // Returns a ProfileSyncService at the given index.
-  syncer::ProfileSyncService* GetSyncService(int index);
+  // Returns a SyncServiceImpl at the given index.
+  syncer::SyncServiceImpl* GetSyncService(int index);
 
-  // Returns the set of ProfileSyncServices.
-  std::vector<syncer::ProfileSyncService*> GetSyncServices();
+  // Returns the set of SyncServiceImpls.
+  std::vector<syncer::SyncServiceImpl*> GetSyncServices();
 
   // Returns the set of registered UserSelectableTypes.  This is retrieved from
-  // the ProfileSyncService at the given |index|.
+  // the SyncServiceImpl at the given |index|.
   syncer::UserSelectableTypeSet GetRegisteredSelectableTypes(int index);
 
   // Returns a pointer to the sync profile that is used to verify changes to
@@ -402,10 +411,6 @@ class SyncTest : public PlatformBrowserTest {
   void OnBrowserRemoved(Browser* browser);
 #endif
 
-  // Helper to Profile::CreateProfile that handles path creation. It creates
-  // a profile then registers it as a testing profile.
-  Profile* MakeTestProfile(base::FilePath profile_path, int index);
-
   // Helper to block the current thread while the data models sync depends on
   // finish loading.
   void WaitForDataModels(Profile* profile);
@@ -471,7 +476,7 @@ class SyncTest : public PlatformBrowserTest {
   // The default profile, created before our actual testing |profiles_|. This is
   // needed in a workaround for https://crbug.com/801569, see comments in the
   // .cc file.
-  Profile* previous_profile_;
+  raw_ptr<Profile> previous_profile_;
 
   // Number of sync clients that will be created by a test.
   int num_clients_;
@@ -480,11 +485,6 @@ class SyncTest : public PlatformBrowserTest {
   // data contained within its own subdirectory under the chrome user data
   // directory. Profiles are owned by the ProfileManager.
   std::vector<Profile*> profiles_;
-
-  // Collection of profile delegates. Only used for test profiles, which
-  // require a custom profile delegate to ensure initialization happens at the
-  // right time.
-  std::vector<std::unique_ptr<Profile::Delegate>> profile_delegates_;
 
   // List of temporary directories that need to be deleted when the test is
   // completed, used for two-client tests with external server.
@@ -504,7 +504,7 @@ class SyncTest : public PlatformBrowserTest {
   // Collection of sync clients used by a test. A sync client is associated
   // with a sync profile, and implements methods that sync the contents of the
   // profile with the server.
-  std::vector<std::unique_ptr<ProfileSyncServiceHarness>> clients_;
+  std::vector<std::unique_ptr<SyncServiceImplHarness>> clients_;
 
   // Mapping from client indexes to encryption passphrases to use for them.
   std::map<int, std::string> client_encryption_passphrases_;
@@ -534,7 +534,7 @@ class SyncTest : public PlatformBrowserTest {
   // We don't need a corresponding verifier sync client because the contents
   // of the verifier profile are strictly local, and are not meant to be
   // synced.
-  Profile* verifier_;
+  raw_ptr<Profile> verifier_;
 
   // Indicates whether to use a new user data dir.
   // Only used for external server tests with two clients.
@@ -559,8 +559,6 @@ class SyncTest : public PlatformBrowserTest {
   std::vector<syncer::FCMHandler*> sync_invalidations_fcm_handlers_;
   std::unique_ptr<fake_server::FakeServerSyncInvalidationSender>
       fake_server_sync_invalidation_sender_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncTest);
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_SYNC_TEST_H_

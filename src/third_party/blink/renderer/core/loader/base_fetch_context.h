@@ -7,6 +7,7 @@
 
 #include "net/cookies/site_for_cookies.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
+#include "services/network/public/mojom/web_client_hints_types.mojom-blink-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
@@ -35,6 +36,7 @@ struct ClientHintImageInfo {
   float dpr;
   FetchParameters::ResourceWidth resource_width;
   absl::optional<int> viewport_width;
+  absl::optional<int> viewport_height;
 };
 
 // A core-level implementation of FetchContext that does not depend on
@@ -109,7 +111,6 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       absl::optional<UserAgentMetadata> ua,
       const PermissionsPolicy* policy,
       const absl::optional<ClientHintImageInfo>& image_info,
-      const absl::optional<WTF::AtomicString>& lang,
       const absl::optional<WTF::AtomicString>& prefers_color_scheme,
       ResourceRequest& request);
 
@@ -142,15 +143,15 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,
                                                          const KURL&) const = 0;
   virtual const KURL& Url() const = 0;
-  virtual const SecurityOrigin* GetParentSecurityOrigin() const = 0;
   virtual ContentSecurityPolicy* GetContentSecurityPolicy() const = 0;
 
   // TODO(yhirano): Remove this.
   virtual void AddConsoleMessage(ConsoleMessage*) const = 0;
 
   void AddBackForwardCacheExperimentHTTPHeaderIfNeeded(
-      ExecutionContext* context,
       ResourceRequest& request);
+
+  virtual ExecutionContext* GetExecutionContext() const = 0;
 
  private:
   const Member<const DetachableResourceFetcherProperties> fetcher_properties_;

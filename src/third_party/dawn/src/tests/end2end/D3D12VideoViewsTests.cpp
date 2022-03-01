@@ -30,8 +30,8 @@ namespace {
       protected:
         void SetUp() override {
             DawnTest::SetUp();
-            DAWN_SKIP_TEST_IF(UsesWire());
-            DAWN_SKIP_TEST_IF(!IsMultiPlanarFormatsSupported());
+            DAWN_TEST_UNSUPPORTED_IF(UsesWire());
+            DAWN_TEST_UNSUPPORTED_IF(!IsMultiPlanarFormatsSupported());
 
             // Create the D3D11 device/contexts that will be used in subsequent tests
             ComPtr<ID3D12Device> d3d12Device = dawn_native::d3d12::GetD3D12Device(device.Get());
@@ -68,13 +68,13 @@ namespace {
             mD3d11Device = std::move(d3d11Device);
         }
 
-        std::vector<const char*> GetRequiredExtensions() override {
-            mIsMultiPlanarFormatsSupported = SupportsExtensions({"multiplanar_formats"});
+        std::vector<const char*> GetRequiredFeatures() override {
+            mIsMultiPlanarFormatsSupported = SupportsFeatures({"multiplanar-formats"});
             if (!mIsMultiPlanarFormatsSupported) {
                 return {};
             }
 
-            return {"multiplanar_formats"};
+            return {"multiplanar-formats"};
         }
 
         bool IsMultiPlanarFormatsSupported() const {
@@ -221,6 +221,7 @@ namespace {
 
             dawn_native::d3d12::ExternalImageAccessDescriptorDXGIKeyedMutex externalAccessDesc;
             externalAccessDesc.acquireMutexKey = 1;
+            externalAccessDesc.releaseMutexKey = 2;
             externalAccessDesc.isInitialized = true;
             externalAccessDesc.usage = static_cast<WGPUTextureUsageFlags>(textureDesc.usage);
 
@@ -238,7 +239,7 @@ namespace {
 
                 [[stage(vertex)]]
                 fn main([[builtin(vertex_index)]] VertexIndex : u32) -> VertexOut {
-                    let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                    var pos = array<vec2<f32>, 6>(
                         vec2<f32>(-1.0, 1.0),
                         vec2<f32>(-1.0, -1.0),
                         vec2<f32>(1.0, -1.0),
@@ -286,19 +287,20 @@ namespace {
 TEST_P(D3D12VideoViewsTests, NV12SampleYtoR) {
     wgpu::Texture wgpuTexture;
     CreateVideoTextureForTest(wgpu::TextureFormat::R8BG8Biplanar420Unorm,
-                              wgpu::TextureUsage::Sampled, /*isCheckerboard*/ false, &wgpuTexture);
+                              wgpu::TextureUsage::TextureBinding, /*isCheckerboard*/ false,
+                              &wgpuTexture);
     ASSERT_NE(wgpuTexture.Get(), nullptr);
 
     wgpu::TextureViewDescriptor viewDesc;
     viewDesc.aspect = wgpu::TextureAspect::Plane0Only;
     wgpu::TextureView textureView = wgpuTexture.CreateView(&viewDesc);
 
-    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor;
     renderPipelineDescriptor.vertex.module = GetTestVertexShaderModule();
 
     renderPipelineDescriptor.cFragment.module = utils::CreateShaderModule(device, R"(
-            [[set(0), binding(0)]] var sampler0 : sampler;
-            [[set(0), binding(1)]] var texture : texture_2d<f32>;
+            [[group(0), binding(0)]] var sampler0 : sampler;
+            [[group(0), binding(1)]] var texture : texture_2d<f32>;
 
             [[stage(fragment)]]
             fn main([[location(0)]] texCoord : vec2<f32>) -> [[location(0)]] vec4<f32> {
@@ -311,7 +313,7 @@ TEST_P(D3D12VideoViewsTests, NV12SampleYtoR) {
     renderPipelineDescriptor.cTargets[0].format = renderPass.colorFormat;
     renderPipelineDescriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
 
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&renderPipelineDescriptor);
 
     wgpu::Sampler sampler = device.CreateSampler();
 
@@ -337,19 +339,20 @@ TEST_P(D3D12VideoViewsTests, NV12SampleYtoR) {
 TEST_P(D3D12VideoViewsTests, NV12SampleUVtoRG) {
     wgpu::Texture wgpuTexture;
     CreateVideoTextureForTest(wgpu::TextureFormat::R8BG8Biplanar420Unorm,
-                              wgpu::TextureUsage::Sampled, /*isCheckerboard*/ false, &wgpuTexture);
+                              wgpu::TextureUsage::TextureBinding, /*isCheckerboard*/ false,
+                              &wgpuTexture);
     ASSERT_NE(wgpuTexture.Get(), nullptr);
 
     wgpu::TextureViewDescriptor viewDesc;
     viewDesc.aspect = wgpu::TextureAspect::Plane1Only;
     wgpu::TextureView textureView = wgpuTexture.CreateView(&viewDesc);
 
-    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor;
     renderPipelineDescriptor.vertex.module = GetTestVertexShaderModule();
 
     renderPipelineDescriptor.cFragment.module = utils::CreateShaderModule(device, R"(
-            [[set(0), binding(0)]] var sampler0 : sampler;
-            [[set(0), binding(1)]] var texture : texture_2d<f32>;
+            [[group(0), binding(0)]] var sampler0 : sampler;
+            [[group(0), binding(1)]] var texture : texture_2d<f32>;
 
             [[stage(fragment)]]
             fn main([[location(0)]] texCoord : vec2<f32>) -> [[location(0)]] vec4<f32> {
@@ -363,7 +366,7 @@ TEST_P(D3D12VideoViewsTests, NV12SampleUVtoRG) {
     renderPipelineDescriptor.cTargets[0].format = renderPass.colorFormat;
     renderPipelineDescriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
 
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&renderPipelineDescriptor);
 
     wgpu::Sampler sampler = device.CreateSampler();
 
@@ -389,11 +392,12 @@ TEST_P(D3D12VideoViewsTests, NV12SampleUVtoRG) {
 TEST_P(D3D12VideoViewsTests, NV12SampleYUVtoRGB) {
     // TODO(https://crbug.com/dawn/733): Figure out why Nvidia bot occasionally fails testing all
     // four corners.
-    DAWN_SKIP_TEST_IF(IsNvidia());
+    DAWN_SUPPRESS_TEST_IF(IsNvidia());
 
     wgpu::Texture wgpuTexture;
     CreateVideoTextureForTest(wgpu::TextureFormat::R8BG8Biplanar420Unorm,
-                              wgpu::TextureUsage::Sampled, /*isCheckerboard*/ true, &wgpuTexture);
+                              wgpu::TextureUsage::TextureBinding, /*isCheckerboard*/ true,
+                              &wgpuTexture);
     ASSERT_NE(wgpuTexture.Get(), nullptr);
 
     wgpu::TextureViewDescriptor lumaViewDesc;
@@ -404,13 +408,13 @@ TEST_P(D3D12VideoViewsTests, NV12SampleYUVtoRGB) {
     chromaViewDesc.aspect = wgpu::TextureAspect::Plane1Only;
     wgpu::TextureView chromaTextureView = wgpuTexture.CreateView(&chromaViewDesc);
 
-    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor;
     renderPipelineDescriptor.vertex.module = GetTestVertexShaderModule();
 
     renderPipelineDescriptor.cFragment.module = utils::CreateShaderModule(device, R"(
-            [[set(0), binding(0)]] var sampler0 : sampler;
-            [[set(0), binding(1)]] var lumaTexture : texture_2d<f32>;
-            [[set(0), binding(2)]] var chromaTexture : texture_2d<f32>;
+            [[group(0), binding(0)]] var sampler0 : sampler;
+            [[group(0), binding(1)]] var lumaTexture : texture_2d<f32>;
+            [[group(0), binding(2)]] var chromaTexture : texture_2d<f32>;
 
             [[stage(fragment)]]
             fn main([[location(0)]] texCoord : vec2<f32>) -> [[location(0)]] vec4<f32> {
@@ -424,7 +428,7 @@ TEST_P(D3D12VideoViewsTests, NV12SampleYUVtoRGB) {
         device, kYUVImageDataWidthInTexels, kYUVImageDataHeightInTexels);
     renderPipelineDescriptor.cTargets[0].format = renderPass.colorFormat;
 
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&renderPipelineDescriptor);
 
     wgpu::Sampler sampler = device.CreateSampler();
 

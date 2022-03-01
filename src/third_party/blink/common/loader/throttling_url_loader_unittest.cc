@@ -5,8 +5,8 @@
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -14,8 +14,10 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -35,6 +37,8 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             factory_remote_.get());
   }
+  TestURLLoaderFactory(const TestURLLoaderFactory&) = delete;
+  TestURLLoaderFactory& operator=(const TestURLLoaderFactory&) = delete;
 
   ~TestURLLoaderFactory() override { shared_factory_->Detach(); }
 
@@ -160,12 +164,13 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
   mojo::Remote<network::mojom::URLLoaderClient> client_remote_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory> shared_factory_;
   OnCreateLoaderAndStartCallback on_create_loader_and_start_callback_;
-  DISALLOW_COPY_AND_ASSIGN(TestURLLoaderFactory);
 };
 
 class TestURLLoaderClient : public network::mojom::URLLoaderClient {
  public:
-  TestURLLoaderClient() {}
+  TestURLLoaderClient() = default;
+  TestURLLoaderClient(const TestURLLoaderClient&) = delete;
+  TestURLLoaderClient& operator=(const TestURLLoaderClient&) = delete;
 
   size_t on_received_response_called() const {
     return on_received_response_called_;
@@ -229,15 +234,16 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
   base::RepeatingClosure on_received_redirect_callback_;
   base::OnceClosure on_received_response_callback_;
   OnCompleteCallback on_complete_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestURLLoaderClient);
 };
 
 class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
  public:
-  TestURLLoaderThrottle() {}
+  TestURLLoaderThrottle() = default;
   explicit TestURLLoaderThrottle(base::OnceClosure destruction_notifier)
       : destruction_notifier_(std::move(destruction_notifier)) {}
+
+  TestURLLoaderThrottle(const TestURLLoaderThrottle&) = delete;
+  TestURLLoaderThrottle& operator=(const TestURLLoaderThrottle&) = delete;
 
   ~TestURLLoaderThrottle() override {
     if (destruction_notifier_)
@@ -301,7 +307,7 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
       request->url = modify_url_in_will_start_;
 
     if (will_start_request_callback_)
-      will_start_request_callback_.Run(delegate_, defer);
+      will_start_request_callback_.Run(delegate_.get(), defer);
   }
 
   void WillRedirectRequest(
@@ -314,7 +320,7 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
     will_redirect_request_called_++;
     if (will_redirect_request_callback_) {
       std::move(will_redirect_request_callback_)
-          .Run(delegate_, defer, removed_headers, modified_headers,
+          .Run(delegate_.get(), defer, removed_headers, modified_headers,
                modified_cors_exempt_headers);
     }
   }
@@ -324,7 +330,7 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
                            bool* defer) override {
     will_process_response_called_++;
     if (will_process_response_callback_)
-      will_process_response_callback_.Run(delegate_, defer);
+      will_process_response_callback_.Run(delegate_.get(), defer);
     response_url_ = response_url;
   }
 
@@ -334,7 +340,7 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
       bool* defer) override {
     before_will_process_response_called_++;
     if (before_will_process_response_callback_)
-      before_will_process_response_callback_.Run(delegate_, defer);
+      before_will_process_response_callback_.Run(delegate_.get(), defer);
   }
 
   size_t will_start_request_called_ = 0;
@@ -352,13 +358,13 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
   GURL modify_url_in_will_start_;
 
   base::OnceClosure destruction_notifier_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestURLLoaderThrottle);
 };
 
 class ThrottlingURLLoaderTest : public testing::Test {
  public:
-  ThrottlingURLLoaderTest() {}
+  ThrottlingURLLoaderTest() = default;
+  ThrottlingURLLoaderTest(const ThrottlingURLLoaderTest&) = delete;
+  ThrottlingURLLoaderTest& operator=(const ThrottlingURLLoaderTest&) = delete;
 
   std::unique_ptr<ThrottlingURLLoader>& loader() { return loader_; }
   TestURLLoaderThrottle* throttle() const { return throttle_; }
@@ -400,11 +406,9 @@ class ThrottlingURLLoaderTest : public testing::Test {
   TestURLLoaderClient client_;
 
   // Owned by |throttles_| or |loader_|.
-  TestURLLoaderThrottle* throttle_ = nullptr;
+  raw_ptr<TestURLLoaderThrottle> throttle_ = nullptr;
 
   base::WeakPtrFactory<ThrottlingURLLoaderTest> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ThrottlingURLLoaderTest);
 };
 
 TEST_F(ThrottlingURLLoaderTest, CancelBeforeStart) {
@@ -1266,7 +1270,7 @@ TEST_F(ThrottlingURLLoaderTest,
   EXPECT_NE(nullptr, throttle_);
 
   task_environment_.RunUntilIdle();
-  EXPECT_EQ(nullptr, throttle_);
+  EXPECT_EQ(nullptr, throttle_.get());
 }
 
 // Regression test for crbug.com/833292.
@@ -1318,7 +1322,7 @@ TEST_F(ThrottlingURLLoaderTest,
   EXPECT_NE(nullptr, throttle_);
 
   task_environment_.RunUntilIdle();
-  EXPECT_EQ(nullptr, throttle_);
+  EXPECT_EQ(nullptr, throttle_.get());
 }
 
 // Call RestartWithFlags() from a single throttle while processing
@@ -1898,51 +1902,6 @@ TEST_F(ThrottlingURLLoaderTest, RestartWithURLResetAndFlags) {
   EXPECT_EQ(2u, throttle_->before_will_process_response_called());
   EXPECT_EQ(1u, throttle_->will_process_response_called());
   EXPECT_EQ(throttle_->observed_response_url(), request_url);
-}
-
-// Ensure that RestartWithModifiedHeadersNow executes and internal redirect and
-// actually modifies the headers.
-TEST_F(ThrottlingURLLoaderTest, RestartWithModifiedHeadersNow) {
-  base::RunLoop run_loop1;
-  base::RunLoop run_loop2;
-
-  // Check that the initial loader uses the default load flags (0).
-  factory_.set_on_create_loader_and_start(base::BindRepeating(
-      [](const base::RepeatingClosure& quit_closure,
-         const network::ResourceRequest& url_request) {
-        EXPECT_FALSE(url_request.headers.HasHeader("X-Foo"));
-        quit_closure.Run();
-      },
-      run_loop1.QuitClosure()));
-
-  // Restart the request when processing BeforeWillProcessResponse(), using
-  // different load flags (1), and an URL reset.
-  throttle_->set_before_will_process_response_callback(base::BindRepeating(
-      [](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
-        net::HttpRequestHeaders modified_headers;
-        modified_headers.SetHeader("X-Foo", "bar");
-        delegate->RestartWithModifiedHeadersNow(modified_headers);
-      }));
-
-  CreateLoaderAndStart();
-
-  run_loop1.Run();
-
-  // The next time we intercept CreateLoaderAndStart() should be for the
-  // restarted request (load flags of 1).
-  factory_.set_on_create_loader_and_start(base::BindRepeating(
-      [](const base::RepeatingClosure& quit_closure,
-         const network::ResourceRequest& url_request) {
-        std::string value;
-        EXPECT_TRUE(url_request.headers.GetHeader("X-Foo", &value));
-        EXPECT_EQ("bar", value);
-        quit_closure.Run();
-      },
-      run_loop2.QuitClosure()));
-
-  factory_.NotifyClientOnReceiveResponse();
-
-  run_loop2.Run();
 }
 
 // Call RestartWithURLResetAndFlags() from a single throttle after having

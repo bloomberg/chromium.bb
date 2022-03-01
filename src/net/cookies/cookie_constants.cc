@@ -12,9 +12,8 @@
 
 namespace net {
 
-const base::TimeDelta kLaxAllowUnsafeMaxAge = base::TimeDelta::FromMinutes(2);
-const base::TimeDelta kShortLaxAllowUnsafeMaxAge =
-    base::TimeDelta::FromSeconds(10);
+const base::TimeDelta kLaxAllowUnsafeMaxAge = base::Minutes(2);
+const base::TimeDelta kShortLaxAllowUnsafeMaxAge = base::Seconds(10);
 
 namespace {
 
@@ -348,5 +347,7 @@ CookieSourceSchemeName GetSchemeNameEnum(const GURL& url) {
 
   return CookieSourceSchemeName::kOther;
 }
+
+const char kEmptyCookiePartitionKey[] = "";
 
 }  // namespace net

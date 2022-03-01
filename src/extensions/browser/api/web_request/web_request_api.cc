@@ -15,17 +15,19 @@
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
+#include "base/cxx17_backports.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_context.h"
@@ -53,6 +55,7 @@
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/api/web_request/web_request_proxying_url_loader_factory.h"
 #include "extensions/browser/api/web_request/web_request_proxying_websocket.h"
+#include "extensions/browser/api/web_request/web_request_proxying_webtransport.h"
 #include "extensions/browser/api/web_request/web_request_resource_type.h"
 #include "extensions/browser/api/web_request/web_request_time_tracker.h"
 #include "extensions/browser/api_activity_monitor.h"
@@ -67,27 +70,28 @@
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/process_map.h"
-#include "extensions/browser/runtime_data.h"
 #include "extensions/browser/warning_service.h"
 #include "extensions/browser/warning_set.h"
 #include "extensions/common/api/web_request.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
-#include "extensions/common/event_filtering_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/identifiability_metrics.h"
+#include "extensions/common/mojom/event_dispatcher.mojom.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/auth.h"
 #include "net/base/net_errors.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/http/http_util.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/web_transport.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -182,6 +186,7 @@ void LogRequestAction(RequestAction action) {
   DCHECK_NE(RequestAction::MAX, action);
   UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequestAction", action,
                             RequestAction::MAX);
+  TRACE_EVENT1("extensions", "WebRequestAction", "action", action);
 }
 
 // Returns the corresponding EventTypes for the given |event_name|. If
@@ -312,7 +317,8 @@ void SendOnMessageEventOnUI(
 
   EventRouter* event_router = EventRouter::Get(browser_context);
 
-  EventFilteringInfo event_filtering_info;
+  mojom::EventFilteringInfoPtr event_filtering_info =
+      mojom::EventFilteringInfo::New();
 
   events::HistogramValue histogram_value = events::UNKNOWN;
   std::string event_name;
@@ -320,7 +326,8 @@ void SendOnMessageEventOnUI(
   // process. We use a filter here so that only event listeners for a particular
   // <webview> will fire.
   if (is_web_view_guest) {
-    event_filtering_info.instance_id = web_view_instance_id;
+    event_filtering_info->has_instance_id = true;
+    event_filtering_info->instance_id = web_view_instance_id;
     histogram_value = events::WEB_VIEW_INTERNAL_ON_MESSAGE;
     event_name = webview::kEventMessage;
   } else {
@@ -329,8 +336,9 @@ void SendOnMessageEventOnUI(
   }
 
   auto event = std::make_unique<Event>(
-      histogram_value, event_name, event_args->TakeList(), browser_context,
-      GURL(), EventRouter::USER_GESTURE_UNKNOWN, event_filtering_info);
+      histogram_value, event_name, std::move(*event_args).TakeList(),
+      browser_context, GURL(), EventRouter::USER_GESTURE_UNKNOWN,
+      std::move(event_filtering_info));
   event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
 
@@ -415,14 +423,15 @@ std::unique_ptr<WebRequestEventDetails> CreateEventDetails(
   return std::make_unique<WebRequestEventDetails>(request, extra_info_spec);
 }
 
-// Checks whether the extension has any permissions that would use the web
-// request API.
+// Checks whether the extension has any permissions that would intercept or
+// modify network requests.
 bool HasAnyWebRequestPermissions(const Extension* extension) {
   static const APIPermissionID kWebRequestPermissions[] = {
       APIPermissionID::kWebRequest,
       APIPermissionID::kWebRequestBlocking,
       APIPermissionID::kDeclarativeWebRequest,
       APIPermissionID::kDeclarativeNetRequest,
+      APIPermissionID::kDeclarativeNetRequestWithHostAccess,
       APIPermissionID::kWebView,
   };
 
@@ -777,7 +786,7 @@ void WebRequestAPI::ProxyWebSocket(
     content::RenderFrameHost* frame,
     content::ContentBrowserClient::WebSocketFactory factory,
     const GURL& url,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const absl::optional<std::string>& user_agent,
     mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
         handshake_client) {
@@ -799,6 +808,27 @@ void WebRequestAPI::ProxyWebSocket(
       frame->GetProcess()->GetID(), frame->GetRoutingID(), ukm_source_id,
       &request_id_generator_, frame->GetLastCommittedOrigin(),
       frame->GetProcess()->GetBrowserContext(), proxies_.get());
+}
+
+void WebRequestAPI::ProxyWebTransport(
+    content::RenderProcessHost& render_process_host,
+    int frame_routing_id,
+    const GURL& url,
+    const url::Origin& initiator_origin,
+    mojo::PendingRemote<network::mojom::WebTransportHandshakeClient>
+        handshake_client,
+    content::ContentBrowserClient::WillCreateWebTransportCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!MayHaveProxies()) {
+    std::move(callback).Run(std::move(handshake_client), absl::nullopt);
+    return;
+  }
+  DCHECK(proxies_);
+  StartWebRequestProxyingWebTransport(
+      render_process_host, frame_routing_id, url, initiator_origin,
+      std::move(handshake_client),
+      request_id_generator_.Generate(MSG_ROUTING_NONE, 0), *proxies_.get(),
+      std::move(callback));
 }
 
 void WebRequestAPI::ForceProxyForTesting() {
@@ -862,7 +892,7 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
   BlockedRequest() = default;
 
   // Information about the request that is being blocked. Not owned.
-  const WebRequestInfo* request = nullptr;
+  raw_ptr<const WebRequestInfo> request = nullptr;
 
   // Whether the request originates from an incognito tab.
   bool is_incognito = false;
@@ -888,15 +918,15 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
 
   // If non-empty, this contains the auth credentials that may be filled in.
   // Only valid for OnAuthRequired.
-  net::AuthCredentials* auth_credentials = nullptr;
+  raw_ptr<net::AuthCredentials> auth_credentials = nullptr;
 
   // If non-empty, this contains the new URL that the request will redirect to.
   // Only valid for OnBeforeRequest and OnHeadersReceived.
-  GURL* new_url = nullptr;
+  raw_ptr<GURL> new_url = nullptr;
 
   // The request headers that will be issued along with this request. Only valid
   // for OnBeforeSendHeaders.
-  net::HttpRequestHeaders* request_headers = nullptr;
+  raw_ptr<net::HttpRequestHeaders> request_headers = nullptr;
 
   // The response headers that were received from the server. Only valid for
   // OnHeadersReceived.
@@ -904,7 +934,8 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
 
   // Location where to override response headers. Only valid for
   // OnHeadersReceived.
-  scoped_refptr<net::HttpResponseHeaders>* override_response_headers = nullptr;
+  raw_ptr<scoped_refptr<net::HttpResponseHeaders>> override_response_headers =
+      nullptr;
 
   // Time the request was paused. Used for logging purposes.
   base::Time blocking_time;
@@ -920,17 +951,22 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
 
   for (base::DictionaryValue::Iterator it(value); !it.IsAtEnd(); it.Advance()) {
     if (it.key() == "urls") {
-      const base::ListValue* urls_value = NULL;
-      if (!it.value().GetAsList(&urls_value))
+      if (!it.value().is_list())
         return false;
-      for (size_t i = 0; i < urls_value->GetSize(); ++i) {
+      for (const auto& item : it.value().GetList()) {
         std::string url;
+        // TODO(https://crbug.com/1257045): Remove urn: scheme support.
         URLPattern pattern(URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS |
                            URLPattern::SCHEME_FTP | URLPattern::SCHEME_FILE |
                            URLPattern::SCHEME_EXTENSION |
                            URLPattern::SCHEME_WS | URLPattern::SCHEME_WSS |
-                           URLPattern::SCHEME_URN);
-        if (!urls_value->GetString(i, &url) ||
+                           URLPattern::SCHEME_URN |
+                           URLPattern::SCHEME_UUID_IN_PACKAGE);
+        if (item.is_string())
+          url = item.GetString();
+        // Parse will fail on an empty url, so we don't need to distinguish
+        // between `item` not being a string and `item` being an empty string.
+        if (url.empty() ||
             pattern.Parse(url) != URLPattern::ParseResult::kSuccess) {
           *error = ErrorUtils::FormatErrorMessage(
               keys::kInvalidRequestFilterUrl, url);
@@ -939,13 +975,14 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
         urls.AddPattern(pattern);
       }
     } else if (it.key() == "types") {
-      const base::ListValue* types_value = NULL;
-      if (!it.value().GetAsList(&types_value))
+      if (!it.value().is_list())
         return false;
-      for (size_t i = 0; i < types_value->GetSize(); ++i) {
+      for (const auto& type : it.value().GetList()) {
         std::string type_str;
+        if (type.is_string())
+          type_str = type.GetString();
         types.push_back(WebRequestResourceType::OTHER);
-        if (!types_value->GetString(i, &type_str) ||
+        if (type_str.empty() ||
             !ParseWebRequestResourceType(type_str, &types.back())) {
           return false;
         }
@@ -1596,7 +1633,7 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
         listener->histogram_value, listener->id.sub_event_name,
         listener->id.render_process_id, listener->id.worker_thread_id,
         listener->id.service_worker_version_id, std::move(args_filtered),
-        EventFilteringInfo());
+        mojom::EventFilteringInfo::New());
   }
 }
 
@@ -2326,6 +2363,8 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
     rv = net::ERR_BLOCKED_BY_CLIENT;
     RecordNetworkRequestBlocked(request->ukm_source_id,
                                 canceled_by_extension.value());
+    TRACE_EVENT2("extensions", "NetworkRequestBlockedByClient", "extension",
+                 canceled_by_extension.value(), "id", request->id);
   }
 
   if (!blocked_request.callback.is_null()) {
@@ -2505,6 +2544,10 @@ class ClearCacheQuotaHeuristic : public QuotaLimitHeuristic {
             std::move(map),
             "MAX_HANDLER_BEHAVIOR_CHANGED_CALLS_PER_10_MINUTES"),
         callback_registered_(false) {}
+
+  ClearCacheQuotaHeuristic(const ClearCacheQuotaHeuristic&) = delete;
+  ClearCacheQuotaHeuristic& operator=(const ClearCacheQuotaHeuristic&) = delete;
+
   ~ClearCacheQuotaHeuristic() override {}
   bool Apply(Bucket* bucket, const base::TimeTicks& event_time) override;
 
@@ -2523,8 +2566,6 @@ class ClearCacheQuotaHeuristic : public QuotaLimitHeuristic {
   bool callback_registered_;
 
   base::WeakPtrFactory<ClearCacheQuotaHeuristic> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ClearCacheQuotaHeuristic);
 };
 
 bool ClearCacheQuotaHeuristic::Apply(Bucket* bucket,
@@ -2553,33 +2594,34 @@ void ClearCacheQuotaHeuristic::OnPageLoad(Bucket* bucket) {
 
 ExtensionFunction::ResponseAction
 WebRequestInternalAddEventListenerFunction::Run() {
+  EXTENSION_FUNCTION_VALIDATE(args().size() == 6);
+
   // Argument 0 is the callback, which we don't use here.
   ExtensionWebRequestEventRouter::RequestFilter filter;
-  base::DictionaryValue* value = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &value));
+  EXTENSION_FUNCTION_VALIDATE(args()[1].is_dict());
   // Failure + an empty error string means a fatal error.
   std::string error;
-  EXTENSION_FUNCTION_VALIDATE(filter.InitFromValue(*value, &error) ||
-                              !error.empty());
+  EXTENSION_FUNCTION_VALIDATE(
+      filter.InitFromValue(base::Value::AsDictionaryValue(args()[1]), &error) ||
+      !error.empty());
   if (!error.empty())
     return RespondNow(Error(std::move(error)));
 
   int extra_info_spec = 0;
   if (HasOptionalArgument(2)) {
-    base::ListValue* value = NULL;
-    EXTENSION_FUNCTION_VALIDATE(args_->GetList(2, &value));
     EXTENSION_FUNCTION_VALIDATE(ExtraInfoSpec::InitFromValue(
-        browser_context(), *value, &extra_info_spec));
+        browser_context(), args()[2], &extra_info_spec));
   }
 
-  std::string event_name;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(3, &event_name));
-
-  std::string sub_event_name;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(4, &sub_event_name));
-
-  int web_view_instance_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(5, &web_view_instance_id));
+  const auto& event_name_value = args()[3];
+  const auto& sub_event_name_value = args()[4];
+  const auto& web_view_instance_id_value = args()[5];
+  EXTENSION_FUNCTION_VALIDATE(event_name_value.is_string());
+  EXTENSION_FUNCTION_VALIDATE(sub_event_name_value.is_string());
+  EXTENSION_FUNCTION_VALIDATE(web_view_instance_id_value.is_int());
+  std::string event_name = event_name_value.GetString();
+  std::string sub_event_name = sub_event_name_value.GetString();
+  int web_view_instance_id = web_view_instance_id_value.GetInt();
 
   int render_process_id = source_process_id();
 
@@ -2650,28 +2692,33 @@ void WebRequestInternalEventHandledFunction::OnError(
 
 ExtensionFunction::ResponseAction
 WebRequestInternalEventHandledFunction::Run() {
-  std::string event_name;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));
+  EXTENSION_FUNCTION_VALIDATE(args().size() >= 5);
+  const auto& event_name_value = args()[0];
+  const auto& sub_event_name_value = args()[1];
+  const auto& request_id_str_value = args()[2];
+  const auto& web_view_instance_id_value = args()[3];
+  EXTENSION_FUNCTION_VALIDATE(event_name_value.is_string());
+  EXTENSION_FUNCTION_VALIDATE(sub_event_name_value.is_string());
+  EXTENSION_FUNCTION_VALIDATE(request_id_str_value.is_string());
+  EXTENSION_FUNCTION_VALIDATE(web_view_instance_id_value.is_int());
+  std::string event_name = event_name_value.GetString();
+  std::string sub_event_name = sub_event_name_value.GetString();
+  std::string request_id_str = request_id_str_value.GetString();
+  int web_view_instance_id = web_view_instance_id_value.GetInt();
 
-  std::string sub_event_name;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &sub_event_name));
-
-  std::string request_id_str;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &request_id_str));
   uint64_t request_id;
   EXTENSION_FUNCTION_VALIDATE(base::StringToUint64(request_id_str,
                                                    &request_id));
-  int web_view_instance_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(3, &web_view_instance_id));
 
   int render_process_id = source_process_id();
 
   std::unique_ptr<ExtensionWebRequestEventRouter::EventResponse> response;
   if (HasOptionalArgument(4)) {
-    base::DictionaryValue* value = NULL;
-    EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(4, &value));
+    const base::DictionaryValue& dict_value =
+        base::Value::AsDictionaryValue(args()[4]);
+    EXTENSION_FUNCTION_VALIDATE(dict_value.is_dict());
 
-    if (!value->DictEmpty()) {
+    if (!dict_value.DictEmpty()) {
       base::Time install_time = ExtensionPrefs::Get(browser_context())
                                     ->GetInstallTime(extension_id_safe());
       response =
@@ -2679,12 +2726,13 @@ WebRequestInternalEventHandledFunction::Run() {
               extension_id_safe(), install_time);
     }
 
-    const base::Value* redirect_url_value = value->FindKey("redirectUrl");
+    const base::Value* redirect_url_value = dict_value.FindKey("redirectUrl");
     const base::Value* auth_credentials_value =
-        value->FindKey(keys::kAuthCredentialsKey);
-    const base::Value* request_headers_value = value->FindKey("requestHeaders");
+        dict_value.FindKey(keys::kAuthCredentialsKey);
+    const base::Value* request_headers_value =
+        dict_value.FindKey("requestHeaders");
     const base::Value* response_headers_value =
-        value->FindKey("responseHeaders");
+        dict_value.FindKey("responseHeaders");
 
     // In Public Session we restrict everything but "cancel" (except for
     // whitelisted extensions which have no such restrictions).
@@ -2698,10 +2746,10 @@ WebRequestInternalEventHandledFunction::Run() {
       return RespondNow(Error(keys::kInvalidPublicSessionBlockingResponse));
     }
 
-    const base::Value* cancel_value = value->FindKey("cancel");
+    const base::Value* cancel_value = dict_value.FindKey("cancel");
     if (cancel_value) {
       // Don't allow cancel mixed with other keys.
-      if (value->DictSize() != 1) {
+      if (dict_value.DictSize() != 1) {
         OnError(event_name, sub_event_name, request_id, render_process_id,
                 web_view_instance_id, std::move(response));
         return RespondNow(Error(keys::kInvalidBlockingResponse));
@@ -2732,28 +2780,29 @@ WebRequestInternalEventHandledFunction::Run() {
         return RespondNow(Error(keys::kInvalidHeaderKeyCombination));
       }
 
-      base::ListValue* headers_value = NULL;
+      const base::Value* headers_value = nullptr;
       std::unique_ptr<net::HttpRequestHeaders> request_headers;
       std::unique_ptr<helpers::ResponseHeaders> response_headers;
       if (has_request_headers) {
         request_headers = std::make_unique<net::HttpRequestHeaders>();
-        EXTENSION_FUNCTION_VALIDATE(value->GetList(keys::kRequestHeadersKey,
-                                                   &headers_value));
+        headers_value = dict_value.FindKeyOfType(keys::kRequestHeadersKey,
+                                                 base::Value::Type::LIST);
       } else {
         response_headers = std::make_unique<helpers::ResponseHeaders>();
-        EXTENSION_FUNCTION_VALIDATE(value->GetList(keys::kResponseHeadersKey,
-                                                   &headers_value));
+        headers_value = dict_value.FindKeyOfType(keys::kResponseHeadersKey,
+                                                 base::Value::Type::LIST);
       }
+      EXTENSION_FUNCTION_VALIDATE(headers_value);
 
-      for (size_t i = 0; i < headers_value->GetSize(); ++i) {
-        base::DictionaryValue* header_value = NULL;
+      for (const base::Value& elem : headers_value->GetList()) {
+        EXTENSION_FUNCTION_VALIDATE(elem.is_dict());
+        const base::DictionaryValue& header_value =
+            base::Value::AsDictionaryValue(elem);
         std::string name;
         std::string value;
-        EXTENSION_FUNCTION_VALIDATE(
-            headers_value->GetDictionary(i, &header_value));
-        if (!FromHeaderDictionary(header_value, &name, &value)) {
+        if (!FromHeaderDictionary(&header_value, &name, &value)) {
           std::string serialized_header;
-          base::JSONWriter::Write(*header_value, &serialized_header);
+          base::JSONWriter::Write(header_value, &serialized_header);
           OnError(event_name, sub_event_name, request_id, render_process_id,
                   web_view_instance_id, std::move(response));
           return RespondNow(Error(keys::kInvalidHeader, serialized_header));
@@ -2806,7 +2855,7 @@ void WebRequestHandlerBehaviorChangedFunction::GetQuotaLimitHeuristics(
   QuotaLimitHeuristic::Config config = {
       // See web_request.json for current value.
       web_request::MAX_HANDLER_BEHAVIOR_CHANGED_CALLS_PER_10_MINUTES,
-      base::TimeDelta::FromMinutes(10)};
+      base::Minutes(10)};
   heuristics->push_back(std::make_unique<ClearCacheQuotaHeuristic>(
       config, std::make_unique<QuotaLimitHeuristic::SingletonBucketMapper>()));
 }

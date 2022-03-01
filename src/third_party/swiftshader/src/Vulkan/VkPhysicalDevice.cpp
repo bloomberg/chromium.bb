@@ -71,7 +71,7 @@ const VkPhysicalDeviceFeatures &PhysicalDevice::getFeatures() const
 		VK_TRUE,   // shaderStorageImageExtendedFormats
 		VK_TRUE,   // shaderStorageImageMultisample
 		VK_FALSE,  // shaderStorageImageReadWithoutFormat
-		VK_FALSE,  // shaderStorageImageWriteWithoutFormat
+		VK_TRUE,   // shaderStorageImageWriteWithoutFormat
 		VK_TRUE,   // shaderUniformBufferArrayDynamicIndexing
 		VK_TRUE,   // shaderSampledImageArrayDynamicIndexing
 		VK_TRUE,   // shaderStorageBufferArrayDynamicIndexing
@@ -170,12 +170,19 @@ template<typename T>
 static void getPhysicalDeviceProvokingVertexFeaturesEXT(T *features)
 {
 	features->provokingVertexLast = VK_TRUE;
+	features->transformFeedbackPreservesProvokingVertex = VK_FALSE;
 }
 
 template<typename T>
 static void getPhysicalDeviceHostQueryResetFeatures(T *features)
 {
 	features->hostQueryReset = VK_TRUE;
+}
+
+template<typename T>
+static void getPhysicalDevicePipelineCreationCacheControlFeatures(T *features)
+{
+	features->pipelineCreationCacheControl = VK_TRUE;
 }
 
 template<typename T>
@@ -325,6 +332,23 @@ static void getPhysicalDeviceDepthClipEnableFeaturesExt(T *features)
 	features->depthClipEnable = VK_TRUE;
 }
 
+static void getPhysicalDeviceCustomBorderColorFeaturesExt(VkPhysicalDeviceCustomBorderColorFeaturesEXT *features)
+{
+	features->customBorderColors = VK_TRUE;
+	features->customBorderColorWithoutFormat = VK_TRUE;
+}
+
+static void getPhysicalDeviceBlendOperationAdvancedFeaturesExt(VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT *features)
+{
+	features->advancedBlendCoherentOperations = VK_FALSE;
+}
+
+static void getPhysicalDevice4444FormatsFeaturesExt(VkPhysicalDevice4444FormatsFeaturesEXT *features)
+{
+	features->formatA4R4G4B4 = VK_TRUE;
+	features->formatA4B4G4R4 = VK_TRUE;
+}
+
 void PhysicalDevice::getFeatures2(VkPhysicalDeviceFeatures2 *features) const
 {
 	features->features = getFeatures();
@@ -360,6 +384,9 @@ void PhysicalDevice::getFeatures2(VkPhysicalDeviceFeatures2 *features) const
 			break;
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES:
 			getPhysicalDeviceHostQueryResetFeatures(reinterpret_cast<VkPhysicalDeviceHostQueryResetFeatures *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES_EXT:
+			getPhysicalDevicePipelineCreationCacheControlFeatures(reinterpret_cast<VkPhysicalDevicePipelineCreationCacheControlFeaturesEXT *>(curExtension));
 			break;
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT:
 			getPhysicalDeviceImageRobustnessFeaturesEXT(reinterpret_cast<VkPhysicalDeviceImageRobustnessFeaturesEXT *>(curExtension));
@@ -414,89 +441,108 @@ void PhysicalDevice::getFeatures2(VkPhysicalDeviceFeatures2 *features) const
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT:
 			getPhysicalDeviceDepthClipEnableFeaturesExt(reinterpret_cast<VkPhysicalDeviceDepthClipEnableFeaturesEXT *>(curExtension));
 			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT:
+			getPhysicalDeviceCustomBorderColorFeaturesExt(reinterpret_cast<VkPhysicalDeviceCustomBorderColorFeaturesEXT *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT:
+			getPhysicalDeviceBlendOperationAdvancedFeaturesExt(reinterpret_cast<VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_4444_FORMATS_FEATURES_EXT:
+			getPhysicalDevice4444FormatsFeaturesExt(reinterpret_cast<struct VkPhysicalDevice4444FormatsFeaturesEXT *>(curExtension));
+		// Unsupported extensions, but used by dEQP
+		// TODO(b/176893525): This may not be legal.
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT:
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_FEATURES_KHR:
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT:
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT:
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_FEATURES_EXT:
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_FEATURES_KHR:
+			break;
 		default:
-			LOG_TRAP("curExtension->pNext->sType = %s", vk::Stringify(curExtension->sType).c_str());
+			UNSUPPORTED("curExtension->sType: %s", vk::Stringify(curExtension->sType).c_str());
 			break;
 		}
 		curExtension = reinterpret_cast<VkBaseOutStructure *>(curExtension->pNext);
 	}
 }
 
-VkSampleCountFlags PhysicalDevice::getSampleCounts() const
+VkSampleCountFlags PhysicalDevice::getSampleCounts()
 {
 	return VK_SAMPLE_COUNT_1_BIT | VK_SAMPLE_COUNT_4_BIT;
 }
 
-const VkPhysicalDeviceLimits &PhysicalDevice::getLimits() const
+const VkPhysicalDeviceLimits &PhysicalDevice::getLimits()
 {
 	VkSampleCountFlags sampleCounts = getSampleCounts();
 
 	static const VkPhysicalDeviceLimits limits = {
-		1 << (vk::MAX_IMAGE_LEVELS_1D - 1),               // maxImageDimension1D
-		1 << (vk::MAX_IMAGE_LEVELS_2D - 1),               // maxImageDimension2D
-		1 << (vk::MAX_IMAGE_LEVELS_3D - 1),               // maxImageDimension3D
-		1 << (vk::MAX_IMAGE_LEVELS_CUBE - 1),             // maxImageDimensionCube
-		vk::MAX_IMAGE_ARRAY_LAYERS,                       // maxImageArrayLayers
-		65536,                                            // maxTexelBufferElements
-		16384,                                            // maxUniformBufferRange
-		(1ul << 27),                                      // maxStorageBufferRange
-		vk::MAX_PUSH_CONSTANT_SIZE,                       // maxPushConstantsSize
-		4096,                                             // maxMemoryAllocationCount
-		4000,                                             // maxSamplerAllocationCount
-		131072,                                           // bufferImageGranularity
-		0,                                                // sparseAddressSpaceSize (unsupported)
-		MAX_BOUND_DESCRIPTOR_SETS,                        // maxBoundDescriptorSets
-		16,                                               // maxPerStageDescriptorSamplers
-		14,                                               // maxPerStageDescriptorUniformBuffers
-		16,                                               // maxPerStageDescriptorStorageBuffers
-		16,                                               // maxPerStageDescriptorSampledImages
-		4,                                                // maxPerStageDescriptorStorageImages
-		sw::RENDERTARGETS,                                // maxPerStageDescriptorInputAttachments
-		128,                                              // maxPerStageResources
-		96,                                               // maxDescriptorSetSamplers
-		72,                                               // maxDescriptorSetUniformBuffers
-		MAX_DESCRIPTOR_SET_UNIFORM_BUFFERS_DYNAMIC,       // maxDescriptorSetUniformBuffersDynamic
-		24,                                               // maxDescriptorSetStorageBuffers
-		MAX_DESCRIPTOR_SET_STORAGE_BUFFERS_DYNAMIC,       // maxDescriptorSetStorageBuffersDynamic
-		96,                                               // maxDescriptorSetSampledImages
-		24,                                               // maxDescriptorSetStorageImages
-		sw::RENDERTARGETS,                                // maxDescriptorSetInputAttachments
-		16,                                               // maxVertexInputAttributes
-		vk::MAX_VERTEX_INPUT_BINDINGS,                    // maxVertexInputBindings
-		2047,                                             // maxVertexInputAttributeOffset
-		2048,                                             // maxVertexInputBindingStride
-		sw::MAX_INTERFACE_COMPONENTS,                     // maxVertexOutputComponents
-		0,                                                // maxTessellationGenerationLevel (unsupported)
-		0,                                                // maxTessellationPatchSize (unsupported)
-		0,                                                // maxTessellationControlPerVertexInputComponents (unsupported)
-		0,                                                // maxTessellationControlPerVertexOutputComponents (unsupported)
-		0,                                                // maxTessellationControlPerPatchOutputComponents (unsupported)
-		0,                                                // maxTessellationControlTotalOutputComponents (unsupported)
-		0,                                                // maxTessellationEvaluationInputComponents (unsupported)
-		0,                                                // maxTessellationEvaluationOutputComponents (unsupported)
-		0,                                                // maxGeometryShaderInvocations (unsupported)
-		0,                                                // maxGeometryInputComponents (unsupported)
-		0,                                                // maxGeometryOutputComponents (unsupported)
-		0,                                                // maxGeometryOutputVertices (unsupported)
-		0,                                                // maxGeometryTotalOutputComponents (unsupported)
-		sw::MAX_INTERFACE_COMPONENTS,                     // maxFragmentInputComponents
-		sw::RENDERTARGETS,                                // maxFragmentOutputAttachments
-		1,                                                // maxFragmentDualSrcAttachments
-		4,                                                // maxFragmentCombinedOutputResources
-		16384,                                            // maxComputeSharedMemorySize
-		{ 65535, 65535, 65535 },                          // maxComputeWorkGroupCount[3]
-		128,                                              // maxComputeWorkGroupInvocations
-		{ 128, 128, 64 },                                 // maxComputeWorkGroupSize[3]
-		vk::SUBPIXEL_PRECISION_BITS,                      // subPixelPrecisionBits
-		4,                                                // subTexelPrecisionBits
-		4,                                                // mipmapPrecisionBits
-		UINT32_MAX,                                       // maxDrawIndexedIndexValue
-		UINT32_MAX,                                       // maxDrawIndirectCount
-		vk::MAX_SAMPLER_LOD_BIAS,                         // maxSamplerLodBias
-		16,                                               // maxSamplerAnisotropy
-		16,                                               // maxViewports
-		{ 4096, 4096 },                                   // maxViewportDimensions[2]
-		{ -8192, 8191 },                                  // viewportBoundsRange[2]
+		1 << (vk::MAX_IMAGE_LEVELS_1D - 1),          // maxImageDimension1D
+		1 << (vk::MAX_IMAGE_LEVELS_2D - 1),          // maxImageDimension2D
+		1 << (vk::MAX_IMAGE_LEVELS_3D - 1),          // maxImageDimension3D
+		1 << (vk::MAX_IMAGE_LEVELS_CUBE - 1),        // maxImageDimensionCube
+		vk::MAX_IMAGE_ARRAY_LAYERS,                  // maxImageArrayLayers
+		65536,                                       // maxTexelBufferElements
+		65536,                                       // maxUniformBufferRange
+		vk::MAX_MEMORY_ALLOCATION_SIZE,              // maxStorageBufferRange
+		vk::MAX_PUSH_CONSTANT_SIZE,                  // maxPushConstantsSize
+		4096,                                        // maxMemoryAllocationCount
+		vk::MAX_SAMPLER_ALLOCATION_COUNT,            // maxSamplerAllocationCount
+		131072,                                      // bufferImageGranularity
+		0,                                           // sparseAddressSpaceSize (unsupported)
+		MAX_BOUND_DESCRIPTOR_SETS,                   // maxBoundDescriptorSets
+		16,                                          // maxPerStageDescriptorSamplers
+		14,                                          // maxPerStageDescriptorUniformBuffers
+		16,                                          // maxPerStageDescriptorStorageBuffers
+		16,                                          // maxPerStageDescriptorSampledImages
+		4,                                           // maxPerStageDescriptorStorageImages
+		sw::MAX_COLOR_BUFFERS,                       // maxPerStageDescriptorInputAttachments
+		128,                                         // maxPerStageResources
+		96,                                          // maxDescriptorSetSamplers
+		72,                                          // maxDescriptorSetUniformBuffers
+		MAX_DESCRIPTOR_SET_UNIFORM_BUFFERS_DYNAMIC,  // maxDescriptorSetUniformBuffersDynamic
+		24,                                          // maxDescriptorSetStorageBuffers
+		MAX_DESCRIPTOR_SET_STORAGE_BUFFERS_DYNAMIC,  // maxDescriptorSetStorageBuffersDynamic
+		96,                                          // maxDescriptorSetSampledImages
+		24,                                          // maxDescriptorSetStorageImages
+		sw::MAX_COLOR_BUFFERS,                       // maxDescriptorSetInputAttachments
+		16,                                          // maxVertexInputAttributes
+		vk::MAX_VERTEX_INPUT_BINDINGS,               // maxVertexInputBindings
+		2047,                                        // maxVertexInputAttributeOffset
+		2048,                                        // maxVertexInputBindingStride
+		sw::MAX_INTERFACE_COMPONENTS,                // maxVertexOutputComponents
+		0,                                           // maxTessellationGenerationLevel (unsupported)
+		0,                                           // maxTessellationPatchSize (unsupported)
+		0,                                           // maxTessellationControlPerVertexInputComponents (unsupported)
+		0,                                           // maxTessellationControlPerVertexOutputComponents (unsupported)
+		0,                                           // maxTessellationControlPerPatchOutputComponents (unsupported)
+		0,                                           // maxTessellationControlTotalOutputComponents (unsupported)
+		0,                                           // maxTessellationEvaluationInputComponents (unsupported)
+		0,                                           // maxTessellationEvaluationOutputComponents (unsupported)
+		0,                                           // maxGeometryShaderInvocations (unsupported)
+		0,                                           // maxGeometryInputComponents (unsupported)
+		0,                                           // maxGeometryOutputComponents (unsupported)
+		0,                                           // maxGeometryOutputVertices (unsupported)
+		0,                                           // maxGeometryTotalOutputComponents (unsupported)
+		sw::MAX_INTERFACE_COMPONENTS,                // maxFragmentInputComponents
+		sw::MAX_COLOR_BUFFERS,                       // maxFragmentOutputAttachments
+		1,                                           // maxFragmentDualSrcAttachments
+		28,                                          // maxFragmentCombinedOutputResources
+		32768,                                       // maxComputeSharedMemorySize
+		{ 65535, 65535, 65535 },                     // maxComputeWorkGroupCount[3]
+		256,                                         // maxComputeWorkGroupInvocations
+		{ 256, 256, 64 },                            // maxComputeWorkGroupSize[3]
+		vk::SUBPIXEL_PRECISION_BITS,                 // subPixelPrecisionBits
+		4,                                           // subTexelPrecisionBits
+		4,                                           // mipmapPrecisionBits
+		UINT32_MAX,                                  // maxDrawIndexedIndexValue
+		UINT32_MAX,                                  // maxDrawIndirectCount
+		vk::MAX_SAMPLER_LOD_BIAS,                    // maxSamplerLodBias
+		16,                                          // maxSamplerAnisotropy
+		16,                                          // maxViewports
+		{ sw::MAX_VIEWPORT_DIM,
+		  sw::MAX_VIEWPORT_DIM },  // maxViewportDimensions[2]
+		{ -2 * sw::MAX_VIEWPORT_DIM,
+		  2 * sw::MAX_VIEWPORT_DIM - 1 },                 // viewportBoundsRange[2]
 		0,                                                // viewportSubPixelBits
 		64,                                               // minMemoryMapAlignment
 		vk::MIN_TEXEL_BUFFER_OFFSET_ALIGNMENT,            // minTexelBufferOffsetAlignment
@@ -509,14 +555,14 @@ const VkPhysicalDeviceLimits &PhysicalDevice::getLimits() const
 		-0.5,                                             // minInterpolationOffset
 		0.5,                                              // maxInterpolationOffset
 		4,                                                // subPixelInterpolationOffsetBits
-		4096,                                             // maxFramebufferWidth
-		4096,                                             // maxFramebufferHeight
+		sw::MAX_FRAMEBUFFER_DIM,                          // maxFramebufferWidth
+		sw::MAX_FRAMEBUFFER_DIM,                          // maxFramebufferHeight
 		256,                                              // maxFramebufferLayers
 		sampleCounts,                                     // framebufferColorSampleCounts
 		sampleCounts,                                     // framebufferDepthSampleCounts
 		sampleCounts,                                     // framebufferStencilSampleCounts
 		sampleCounts,                                     // framebufferNoAttachmentsSampleCounts
-		sw::RENDERTARGETS,                                // maxColorAttachments
+		sw::MAX_COLOR_BUFFERS,                            // maxColorAttachments
 		sampleCounts,                                     // sampledImageColorSampleCounts
 		sampleCounts,                                     // sampledImageIntegerSampleCounts
 		sampleCounts,                                     // sampledImageDepthSampleCounts
@@ -690,11 +736,11 @@ void PhysicalDevice::getProperties(const VkExternalMemoryHandleTypeFlagBits *han
 	}
 #endif
 #if VK_USE_PLATFORM_FUCHSIA
-	if(handleType == VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA)
+	if(*handleType == VK_EXTERNAL_MEMORY_HANDLE_TYPE_ZIRCON_VMO_BIT_FUCHSIA)
 	{
-		properties->compatibleHandleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
-		properties->exportFromImportedHandleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
-		properties->externalMemoryFeatures = VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT | VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT;
+		extMemProperties->compatibleHandleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ZIRCON_VMO_BIT_FUCHSIA;
+		extMemProperties->exportFromImportedHandleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ZIRCON_VMO_BIT_FUCHSIA;
+		extMemProperties->externalMemoryFeatures = VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT | VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT;
 		return;
 	}
 #endif
@@ -725,11 +771,11 @@ void PhysicalDevice::getProperties(const VkExternalMemoryHandleTypeFlagBits *han
 	}
 #endif
 #if VK_USE_PLATFORM_FUCHSIA
-	if(handleType == VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA)
+	if(*handleType == VK_EXTERNAL_MEMORY_HANDLE_TYPE_ZIRCON_VMO_BIT_FUCHSIA)
 	{
-		properties->compatibleHandleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
-		properties->exportFromImportedHandleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
-		properties->externalMemoryFeatures = VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT | VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT;
+		extMemProperties->compatibleHandleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ZIRCON_VMO_BIT_FUCHSIA;
+		extMemProperties->exportFromImportedHandleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ZIRCON_VMO_BIT_FUCHSIA;
+		extMemProperties->externalMemoryFeatures = VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT | VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT;
 		return;
 	}
 #endif
@@ -860,10 +906,10 @@ void PhysicalDevice::getProperties(const VkPhysicalDeviceExternalSemaphoreInfo *
 	}
 #endif
 #if VK_USE_PLATFORM_FUCHSIA
-	if(pExternalSemaphoreInfo->handleType == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA)
+	if(pExternalSemaphoreInfo->handleType == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_ZIRCON_EVENT_BIT_FUCHSIA)
 	{
-		pExternalSemaphoreProperties->compatibleHandleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA;
-		pExternalSemaphoreProperties->exportFromImportedHandleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA;
+		pExternalSemaphoreProperties->compatibleHandleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_ZIRCON_EVENT_BIT_FUCHSIA;
+		pExternalSemaphoreProperties->exportFromImportedHandleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_ZIRCON_EVENT_BIT_FUCHSIA;
 		pExternalSemaphoreProperties->externalSemaphoreFeatures = VK_EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT | VK_EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT;
 		return;
 	}
@@ -887,7 +933,7 @@ static void getDriverProperties(T *properties)
 	properties->conformanceVersion = { 1, 1, 3, 3 };
 }
 
-void PhysicalDevice::getProperties(VkPhysicalDeviceDriverPropertiesKHR *properties) const
+void PhysicalDevice::getProperties(VkPhysicalDeviceDriverProperties *properties) const
 {
 	getDriverProperties(properties);
 }
@@ -907,7 +953,7 @@ static void getFloatControlsProperties(T *properties)
 {
 	// The spec states:
 	// shaderSignedZeroInfNanPreserveFloat32 is a boolean value indicating whether
-	// sign of a zero, Nans and ±∞ can be preserved in 32-bit floating-point
+	// sign of a zero, Nans and +/-infinity can be preserved in 32-bit floating-point
 	// computations. It also indicates whether the SignedZeroInfNanPreserve execution
 	// mode can be used for 32-bit floating-point types.
 	//
@@ -943,6 +989,10 @@ void PhysicalDevice::getProperties(VkPhysicalDeviceFloatControlsProperties *prop
 template<typename T>
 static void getDescriptorIndexingProperties(T *properties)
 {
+	// "The UpdateAfterBind descriptor limits must each be greater than or equal to
+	//  the corresponding non-UpdateAfterBind limit."
+	const VkPhysicalDeviceLimits &limits = PhysicalDevice::getLimits();
+
 	properties->maxUpdateAfterBindDescriptorsInAllPools = 0;
 	properties->shaderUniformBufferArrayNonUniformIndexingNative = VK_FALSE;
 	properties->shaderSampledImageArrayNonUniformIndexingNative = VK_FALSE;
@@ -951,21 +1001,21 @@ static void getDescriptorIndexingProperties(T *properties)
 	properties->shaderInputAttachmentArrayNonUniformIndexingNative = VK_FALSE;
 	properties->robustBufferAccessUpdateAfterBind = VK_FALSE;
 	properties->quadDivergentImplicitLod = VK_FALSE;
-	properties->maxPerStageDescriptorUpdateAfterBindSamplers = 0;
-	properties->maxPerStageDescriptorUpdateAfterBindUniformBuffers = 0;
-	properties->maxPerStageDescriptorUpdateAfterBindStorageBuffers = 0;
-	properties->maxPerStageDescriptorUpdateAfterBindSampledImages = 0;
-	properties->maxPerStageDescriptorUpdateAfterBindStorageImages = 0;
-	properties->maxPerStageDescriptorUpdateAfterBindInputAttachments = 0;
-	properties->maxPerStageUpdateAfterBindResources = 0;
-	properties->maxDescriptorSetUpdateAfterBindSamplers = 0;
-	properties->maxDescriptorSetUpdateAfterBindUniformBuffers = 0;
-	properties->maxDescriptorSetUpdateAfterBindUniformBuffersDynamic = 0;
-	properties->maxDescriptorSetUpdateAfterBindStorageBuffers = 0;
-	properties->maxDescriptorSetUpdateAfterBindStorageBuffersDynamic = 0;
-	properties->maxDescriptorSetUpdateAfterBindSampledImages = 0;
-	properties->maxDescriptorSetUpdateAfterBindStorageImages = 0;
-	properties->maxDescriptorSetUpdateAfterBindInputAttachments = 0;
+	properties->maxPerStageDescriptorUpdateAfterBindSamplers = limits.maxPerStageDescriptorSamplers;
+	properties->maxPerStageDescriptorUpdateAfterBindUniformBuffers = limits.maxPerStageDescriptorUniformBuffers;
+	properties->maxPerStageDescriptorUpdateAfterBindStorageBuffers = limits.maxPerStageDescriptorStorageBuffers;
+	properties->maxPerStageDescriptorUpdateAfterBindSampledImages = limits.maxPerStageDescriptorSampledImages;
+	properties->maxPerStageDescriptorUpdateAfterBindStorageImages = limits.maxPerStageDescriptorStorageImages;
+	properties->maxPerStageDescriptorUpdateAfterBindInputAttachments = limits.maxPerStageDescriptorInputAttachments;
+	properties->maxPerStageUpdateAfterBindResources = limits.maxPerStageResources;
+	properties->maxDescriptorSetUpdateAfterBindSamplers = limits.maxDescriptorSetSamplers;
+	properties->maxDescriptorSetUpdateAfterBindUniformBuffers = limits.maxDescriptorSetUniformBuffers;
+	properties->maxDescriptorSetUpdateAfterBindUniformBuffersDynamic = limits.maxDescriptorSetUniformBuffersDynamic;
+	properties->maxDescriptorSetUpdateAfterBindStorageBuffers = limits.maxDescriptorSetStorageBuffers;
+	properties->maxDescriptorSetUpdateAfterBindStorageBuffersDynamic = limits.maxDescriptorSetStorageBuffersDynamic;
+	properties->maxDescriptorSetUpdateAfterBindSampledImages = limits.maxDescriptorSetSampledImages;
+	properties->maxDescriptorSetUpdateAfterBindStorageImages = limits.maxDescriptorSetStorageImages;
+	properties->maxDescriptorSetUpdateAfterBindInputAttachments = limits.maxDescriptorSetInputAttachments;
 }
 
 void PhysicalDevice::getProperties(VkPhysicalDeviceDescriptorIndexingProperties *properties) const
@@ -985,6 +1035,23 @@ static void getDepthStencilResolveProperties(T *properties)
 void PhysicalDevice::getProperties(VkPhysicalDeviceDepthStencilResolveProperties *properties) const
 {
 	getDepthStencilResolveProperties(properties);
+}
+
+void PhysicalDevice::getProperties(VkPhysicalDeviceCustomBorderColorPropertiesEXT *properties) const
+{
+	properties->maxCustomBorderColorSamplers = MAX_SAMPLER_ALLOCATION_COUNT;
+}
+
+void PhysicalDevice::getProperties(VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT *properties) const
+{
+	// Note: advancedBlendMaxColorAttachments could already support sw::MAX_COLOR_BUFFERS as is,
+	//       but using a value of 1 is enough for ANGLE to implement GL_KHR_blend_equation_advanced
+	properties->advancedBlendMaxColorAttachments = 1;
+	properties->advancedBlendIndependentBlend = VK_FALSE;
+	properties->advancedBlendNonPremultipliedSrcColor = VK_FALSE;
+	properties->advancedBlendNonPremultipliedDstColor = VK_FALSE;
+	properties->advancedBlendCorrelatedOverlap = VK_FALSE;
+	properties->advancedBlendAllOperations = VK_FALSE;
 }
 
 template<typename T>
@@ -1040,7 +1107,141 @@ bool PhysicalDevice::hasFeatures(const VkPhysicalDeviceFeatures &requestedFeatur
 	return true;
 }
 
+// CheckFeature returns false if requested is asking for a feature that is not supported
+#define CheckFeature(requested, supported, feature) (requested->feature == VK_FALSE || supported.feature == VK_TRUE)
+
+template<typename T>
+T PhysicalDevice::getSupportedFeatures(const T *requested) const
+{
+	VkPhysicalDeviceFeatures2 features;
+	features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+	T supported;
+	supported.sType = requested->sType;
+	supported.pNext = nullptr;
+	features.pNext = &supported;
+	getFeatures2(&features);
+	return supported;
+}
+
+bool PhysicalDevice::hasExtendedFeatures(const VkPhysicalDeviceLineRasterizationFeaturesEXT *requested) const
+{
+	auto supported = getSupportedFeatures(requested);
+
+	return CheckFeature(requested, supported, rectangularLines) &&
+	       CheckFeature(requested, supported, bresenhamLines) &&
+	       CheckFeature(requested, supported, smoothLines) &&
+	       CheckFeature(requested, supported, stippledRectangularLines) &&
+	       CheckFeature(requested, supported, stippledBresenhamLines) &&
+	       CheckFeature(requested, supported, stippledSmoothLines);
+}
+
+bool PhysicalDevice::hasExtendedFeatures(const VkPhysicalDeviceProvokingVertexFeaturesEXT *requested) const
+{
+	auto supported = getSupportedFeatures(requested);
+
+	return CheckFeature(requested, supported, provokingVertexLast) &&
+	       CheckFeature(requested, supported, transformFeedbackPreservesProvokingVertex);
+}
+
+bool PhysicalDevice::hasExtendedFeatures(const VkPhysicalDeviceVulkan11Features *requested) const
+{
+	auto supported = getSupportedFeatures(requested);
+
+	return CheckFeature(requested, supported, storageBuffer16BitAccess) &&
+	       CheckFeature(requested, supported, uniformAndStorageBuffer16BitAccess) &&
+	       CheckFeature(requested, supported, storagePushConstant16) &&
+	       CheckFeature(requested, supported, storageInputOutput16) &&
+	       CheckFeature(requested, supported, multiview) &&
+	       CheckFeature(requested, supported, multiviewGeometryShader) &&
+	       CheckFeature(requested, supported, multiviewTessellationShader) &&
+	       CheckFeature(requested, supported, variablePointersStorageBuffer) &&
+	       CheckFeature(requested, supported, variablePointers) &&
+	       CheckFeature(requested, supported, protectedMemory) &&
+	       CheckFeature(requested, supported, samplerYcbcrConversion) &&
+	       CheckFeature(requested, supported, shaderDrawParameters);
+}
+
+bool PhysicalDevice::hasExtendedFeatures(const VkPhysicalDeviceVulkan12Features *requested) const
+{
+	auto supported = getSupportedFeatures(requested);
+
+	return CheckFeature(requested, supported, samplerMirrorClampToEdge) &&
+	       CheckFeature(requested, supported, drawIndirectCount) &&
+	       CheckFeature(requested, supported, storageBuffer8BitAccess) &&
+	       CheckFeature(requested, supported, uniformAndStorageBuffer8BitAccess) &&
+	       CheckFeature(requested, supported, storagePushConstant8) &&
+	       CheckFeature(requested, supported, shaderBufferInt64Atomics) &&
+	       CheckFeature(requested, supported, shaderSharedInt64Atomics) &&
+	       CheckFeature(requested, supported, shaderFloat16) &&
+	       CheckFeature(requested, supported, shaderInt8) &&
+	       CheckFeature(requested, supported, descriptorIndexing) &&
+	       CheckFeature(requested, supported, shaderInputAttachmentArrayDynamicIndexing) &&
+	       CheckFeature(requested, supported, shaderUniformTexelBufferArrayDynamicIndexing) &&
+	       CheckFeature(requested, supported, shaderStorageTexelBufferArrayDynamicIndexing) &&
+	       CheckFeature(requested, supported, shaderUniformBufferArrayNonUniformIndexing) &&
+	       CheckFeature(requested, supported, shaderSampledImageArrayNonUniformIndexing) &&
+	       CheckFeature(requested, supported, shaderStorageBufferArrayNonUniformIndexing) &&
+	       CheckFeature(requested, supported, shaderStorageImageArrayNonUniformIndexing) &&
+	       CheckFeature(requested, supported, shaderInputAttachmentArrayNonUniformIndexing) &&
+	       CheckFeature(requested, supported, shaderUniformTexelBufferArrayNonUniformIndexing) &&
+	       CheckFeature(requested, supported, shaderStorageTexelBufferArrayNonUniformIndexing) &&
+	       CheckFeature(requested, supported, descriptorBindingUniformBufferUpdateAfterBind) &&
+	       CheckFeature(requested, supported, descriptorBindingSampledImageUpdateAfterBind) &&
+	       CheckFeature(requested, supported, descriptorBindingStorageImageUpdateAfterBind) &&
+	       CheckFeature(requested, supported, descriptorBindingStorageBufferUpdateAfterBind) &&
+	       CheckFeature(requested, supported, descriptorBindingUniformTexelBufferUpdateAfterBind) &&
+	       CheckFeature(requested, supported, descriptorBindingStorageTexelBufferUpdateAfterBind) &&
+	       CheckFeature(requested, supported, descriptorBindingUpdateUnusedWhilePending) &&
+	       CheckFeature(requested, supported, descriptorBindingPartiallyBound) &&
+	       CheckFeature(requested, supported, descriptorBindingVariableDescriptorCount) &&
+	       CheckFeature(requested, supported, runtimeDescriptorArray) &&
+	       CheckFeature(requested, supported, samplerFilterMinmax) &&
+	       CheckFeature(requested, supported, scalarBlockLayout) &&
+	       CheckFeature(requested, supported, imagelessFramebuffer) &&
+	       CheckFeature(requested, supported, uniformBufferStandardLayout) &&
+	       CheckFeature(requested, supported, shaderSubgroupExtendedTypes) &&
+	       CheckFeature(requested, supported, separateDepthStencilLayouts) &&
+	       CheckFeature(requested, supported, hostQueryReset) &&
+	       CheckFeature(requested, supported, timelineSemaphore) &&
+	       CheckFeature(requested, supported, bufferDeviceAddress) &&
+	       CheckFeature(requested, supported, bufferDeviceAddressCaptureReplay) &&
+	       CheckFeature(requested, supported, bufferDeviceAddressMultiDevice) &&
+	       CheckFeature(requested, supported, vulkanMemoryModel) &&
+	       CheckFeature(requested, supported, vulkanMemoryModelDeviceScope) &&
+	       CheckFeature(requested, supported, vulkanMemoryModelAvailabilityVisibilityChains) &&
+	       CheckFeature(requested, supported, shaderOutputViewportIndex) &&
+	       CheckFeature(requested, supported, shaderOutputLayer) &&
+	       CheckFeature(requested, supported, subgroupBroadcastDynamicId);
+}
+
+bool PhysicalDevice::hasExtendedFeatures(const VkPhysicalDeviceDepthClipEnableFeaturesEXT *requested) const
+{
+	auto supported = getSupportedFeatures(requested);
+
+	return CheckFeature(requested, supported, depthClipEnable);
+}
+
+bool PhysicalDevice::hasExtendedFeatures(const VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT *requested) const
+{
+	auto supported = getSupportedFeatures(requested);
+
+	return CheckFeature(requested, supported, advancedBlendCoherentOperations);
+}
+#undef CheckFeature
+
 void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties *pFormatProperties)
+{
+	VkFormatProperties3KHR formatProperties3 = {};
+	GetFormatProperties(format, &formatProperties3);
+
+	// VkFormatFeatureFlags2KHR is a 64-bit extension of the 32-bit VkFormatFeatureFlags,
+	// so when querying the legacy flags just return the lower 32-bit portion.
+	pFormatProperties->linearTilingFeatures = static_cast<VkFormatFeatureFlags>(formatProperties3.linearTilingFeatures);
+	pFormatProperties->optimalTilingFeatures = static_cast<VkFormatFeatureFlags>(formatProperties3.optimalTilingFeatures);
+	pFormatProperties->bufferFeatures = static_cast<VkFormatFeatureFlags>(formatProperties3.bufferFeatures);
+}
+
+void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties3KHR *pFormatProperties)
 {
 	pFormatProperties->linearTilingFeatures = 0;   // Unsupported format
 	pFormatProperties->optimalTilingFeatures = 0;  // Unsupported format
@@ -1049,8 +1250,14 @@ void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties *pFor
 	switch(format)
 	{
 	// Formats which can be sampled *and* filtered
+	case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
 	case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
+	case VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT:
+	case VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT:
 	case VK_FORMAT_R5G6B5_UNORM_PACK16:
+	case VK_FORMAT_B5G6R5_UNORM_PACK16:
+	case VK_FORMAT_R5G5B5A1_UNORM_PACK16:
+	case VK_FORMAT_B5G5R5A1_UNORM_PACK16:
 	case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
 	case VK_FORMAT_R8_UNORM:
 	case VK_FORMAT_R8_SRGB:
@@ -1192,6 +1399,7 @@ void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties *pFor
 
 	switch(format)
 	{
+	// Vulkan 1.0 mandatory storage image formats supporting atomic operations
 	case VK_FORMAT_R32_UINT:
 	case VK_FORMAT_R32_SINT:
 		pFormatProperties->optimalTilingFeatures |=
@@ -1199,14 +1407,11 @@ void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties *pFor
 		pFormatProperties->bufferFeatures |=
 		    VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT;
 		// [[fallthrough]]
+	// Vulkan 1.0 mandatory storage image formats
 	case VK_FORMAT_R8G8B8A8_UNORM:
 	case VK_FORMAT_R8G8B8A8_SNORM:
 	case VK_FORMAT_R8G8B8A8_UINT:
 	case VK_FORMAT_R8G8B8A8_SINT:
-	case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
-	case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
-	case VK_FORMAT_A8B8G8R8_UINT_PACK32:
-	case VK_FORMAT_A8B8G8R8_SINT_PACK32:
 	case VK_FORMAT_R16G16B16A16_UINT:
 	case VK_FORMAT_R16G16B16A16_SINT:
 	case VK_FORMAT_R16G16B16A16_SFLOAT:
@@ -1217,12 +1422,13 @@ void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties *pFor
 	case VK_FORMAT_R32G32B32A32_UINT:
 	case VK_FORMAT_R32G32B32A32_SINT:
 	case VK_FORMAT_R32G32B32A32_SFLOAT:
-	// shaderStorageImageExtendedFormats
+	case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+	case VK_FORMAT_A2B10G10R10_UINT_PACK32:
+	// Vulkan 1.0 shaderStorageImageExtendedFormats
 	case VK_FORMAT_R16G16_SFLOAT:
 	case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
 	case VK_FORMAT_R16_SFLOAT:
 	case VK_FORMAT_R16G16B16A16_UNORM:
-	case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
 	case VK_FORMAT_R16G16_UNORM:
 	case VK_FORMAT_R8G8_UNORM:
 	case VK_FORMAT_R16_UNORM:
@@ -1236,14 +1442,20 @@ void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties *pFor
 	case VK_FORMAT_R8G8_SINT:
 	case VK_FORMAT_R16_SINT:
 	case VK_FORMAT_R8_SINT:
-	case VK_FORMAT_A2B10G10R10_UINT_PACK32:
 	case VK_FORMAT_R16G16_UINT:
 	case VK_FORMAT_R8G8_UINT:
 	case VK_FORMAT_R16_UINT:
 	case VK_FORMAT_R8_UINT:
+	// Additional formats not listed under "Formats without shader storage format"
+	case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
+	case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
+	case VK_FORMAT_A8B8G8R8_UINT_PACK32:
+	case VK_FORMAT_A8B8G8R8_SINT_PACK32:
+	case VK_FORMAT_B8G8R8A8_UNORM:
+	case VK_FORMAT_B8G8R8A8_SRGB:
 		pFormatProperties->optimalTilingFeatures |=
-		    VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT;
-		// [[fallthrough]]
+		    VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT |
+		    VK_FORMAT_FEATURE_2_STORAGE_WRITE_WITHOUT_FORMAT_BIT_KHR;
 		pFormatProperties->bufferFeatures |=
 		    VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT;
 		break;
@@ -1255,6 +1467,13 @@ void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties *pFor
 	{
 	case VK_FORMAT_R5G6B5_UNORM_PACK16:
 	case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
+	case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
+	case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
+	case VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT:
+	case VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT:
+	case VK_FORMAT_B5G6R5_UNORM_PACK16:
+	case VK_FORMAT_R5G5B5A1_UNORM_PACK16:
+	case VK_FORMAT_B5G5R5A1_UNORM_PACK16:
 	case VK_FORMAT_R8_UNORM:
 	case VK_FORMAT_R8G8_UNORM:
 	case VK_FORMAT_R8G8B8A8_UNORM:
@@ -1282,10 +1501,13 @@ void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties *pFor
 	case VK_FORMAT_A8B8G8R8_SINT_PACK32:
 	case VK_FORMAT_A2B10G10R10_UINT_PACK32:
 	case VK_FORMAT_A2R10G10B10_UINT_PACK32:
+	case VK_FORMAT_R16_UNORM:
 	case VK_FORMAT_R16_UINT:
 	case VK_FORMAT_R16_SINT:
+	case VK_FORMAT_R16G16_UNORM:
 	case VK_FORMAT_R16G16_UINT:
 	case VK_FORMAT_R16G16_SINT:
+	case VK_FORMAT_R16G16B16A16_UNORM:
 	case VK_FORMAT_R16G16B16A16_UINT:
 	case VK_FORMAT_R16G16B16A16_SINT:
 	case VK_FORMAT_R32_UINT:
@@ -1309,6 +1531,20 @@ void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties *pFor
 		break;
 	}
 
+	switch(format)
+	{
+	case VK_FORMAT_D16_UNORM:
+	case VK_FORMAT_D32_SFLOAT:          // Note: either VK_FORMAT_D32_SFLOAT or VK_FORMAT_X8_D24_UNORM_PACK32 must be supported
+	case VK_FORMAT_D32_SFLOAT_S8_UINT:  // Note: either VK_FORMAT_D24_UNORM_S8_UINT or VK_FORMAT_D32_SFLOAT_S8_UINT must be supported
+		pFormatProperties->linearTilingFeatures |=
+		    VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_DEPTH_COMPARISON_BIT_KHR;
+		pFormatProperties->optimalTilingFeatures |=
+		    VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_DEPTH_COMPARISON_BIT_KHR;
+		break;
+	default:
+		break;
+	}
+
 	if(format.supportsColorAttachmentBlend())
 	{
 		pFormatProperties->optimalTilingFeatures |=
@@ -1319,19 +1555,27 @@ void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties *pFor
 	{
 	case VK_FORMAT_R8_UNORM:
 	case VK_FORMAT_R8_SNORM:
+	case VK_FORMAT_R8_USCALED:
+	case VK_FORMAT_R8_SSCALED:
 	case VK_FORMAT_R8_UINT:
 	case VK_FORMAT_R8_SINT:
 	case VK_FORMAT_R8G8_UNORM:
 	case VK_FORMAT_R8G8_SNORM:
+	case VK_FORMAT_R8G8_USCALED:
+	case VK_FORMAT_R8G8_SSCALED:
 	case VK_FORMAT_R8G8_UINT:
 	case VK_FORMAT_R8G8_SINT:
 	case VK_FORMAT_R8G8B8A8_UNORM:
 	case VK_FORMAT_R8G8B8A8_SNORM:
+	case VK_FORMAT_R8G8B8A8_USCALED:
+	case VK_FORMAT_R8G8B8A8_SSCALED:
 	case VK_FORMAT_R8G8B8A8_UINT:
 	case VK_FORMAT_R8G8B8A8_SINT:
 	case VK_FORMAT_B8G8R8A8_UNORM:
 	case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
 	case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
+	case VK_FORMAT_A8B8G8R8_USCALED_PACK32:
+	case VK_FORMAT_A8B8G8R8_SSCALED_PACK32:
 	case VK_FORMAT_A8B8G8R8_UINT_PACK32:
 	case VK_FORMAT_A8B8G8R8_SINT_PACK32:
 	case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
@@ -1344,16 +1588,22 @@ void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties *pFor
 	case VK_FORMAT_A2B10G10R10_SINT_PACK32:
 	case VK_FORMAT_R16_UNORM:
 	case VK_FORMAT_R16_SNORM:
+	case VK_FORMAT_R16_USCALED:
+	case VK_FORMAT_R16_SSCALED:
 	case VK_FORMAT_R16_UINT:
 	case VK_FORMAT_R16_SINT:
 	case VK_FORMAT_R16_SFLOAT:
 	case VK_FORMAT_R16G16_UNORM:
 	case VK_FORMAT_R16G16_SNORM:
+	case VK_FORMAT_R16G16_USCALED:
+	case VK_FORMAT_R16G16_SSCALED:
 	case VK_FORMAT_R16G16_UINT:
 	case VK_FORMAT_R16G16_SINT:
 	case VK_FORMAT_R16G16_SFLOAT:
 	case VK_FORMAT_R16G16B16A16_UNORM:
 	case VK_FORMAT_R16G16B16A16_SNORM:
+	case VK_FORMAT_R16G16B16A16_USCALED:
+	case VK_FORMAT_R16G16B16A16_SSCALED:
 	case VK_FORMAT_R16G16B16A16_UINT:
 	case VK_FORMAT_R16G16B16A16_SINT:
 	case VK_FORMAT_R16G16B16A16_SFLOAT:
@@ -1429,8 +1679,8 @@ void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties *pFor
 
 	if(pFormatProperties->optimalTilingFeatures)
 	{
-		pFormatProperties->linearTilingFeatures = VK_FORMAT_FEATURE_TRANSFER_SRC_BIT |
-		                                          VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
+		pFormatProperties->linearTilingFeatures |= VK_FORMAT_FEATURE_TRANSFER_SRC_BIT |
+		                                           VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
 
 		if(!format.isCompressed())
 		{
@@ -1570,7 +1820,7 @@ const VkPhysicalDeviceMemoryProperties &PhysicalDevice::GetMemoryProperties()
 		1,  // memoryHeapCount
 		{
 		    {
-		        1ull << 31,                      // size, FIXME(sugoi): This should be configurable based on available RAM
+		        vk::PHYSICAL_DEVICE_HEAP_SIZE,   // size
 		        VK_MEMORY_HEAP_DEVICE_LOCAL_BIT  // flags
 		    },
 		}

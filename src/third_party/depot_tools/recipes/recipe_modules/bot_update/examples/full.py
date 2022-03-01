@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+PYTHON_VERSION_COMPATIBILITY = 'PY2+3'
+
 DEPS = [
   'bot_update',
   'gclient',
@@ -15,7 +17,7 @@ DEPS = [
   'recipe_engine/runtime',
 ]
 
-from recipe_engine import types
+from recipe_engine import engine_types
 
 from RECIPE_MODULES.depot_tools import gclient
 from PB.go.chromium.org.luci.buildbucket.proto.build import Build
@@ -64,7 +66,7 @@ def RunSteps(api):
   set_output_commit = api.properties.get('set_output_commit', True)
 
   step_test_data = None
-  bot_update_output = types.thaw(api.properties.get('bot_update_output'))
+  bot_update_output = engine_types.thaw(api.properties.get('bot_update_output'))
   if bot_update_output:
     step_test_data = lambda: api.json.test_api.output(bot_update_output)
   bot_update_step = api.bot_update.ensure_checkout(
@@ -242,8 +244,8 @@ def GenTests(api):
       )
   )
   yield (
-      api.test('origin_master') +
-      ci_build(revision='origin/master')
+      api.test('origin_main') +
+      ci_build(revision='origin/main')
   )
 
   yield (
@@ -258,6 +260,14 @@ def GenTests(api):
       api.step_data('bot_update (without patch)', api.bot_update.output_json(
           root='src', first_sln='src', revision_mapping={'got_revision': 'src'},
           commit_positions=False))
+  )
+
+  yield (
+      api.test('revision_specifying_ref') +
+      ci_build() +
+      api.properties(
+          revisions={'src': 'refs/branch-heads/4000'},
+      )
   )
 
   yield (
@@ -298,7 +308,7 @@ def GenTests(api):
   )
 
   yield (
-      api.test('no_cp_checkout_master') +
+      api.test('no_cp_checkout_main') +
       ci_build(revision='') +
       api.properties(
           bot_update_output={

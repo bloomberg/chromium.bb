@@ -22,7 +22,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/crosapi/mojom/metrics_reporting.mojom.h"  // nogncheck
-#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_service.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace settings {
@@ -31,11 +31,11 @@ MetricsReportingHandler::MetricsReportingHandler() {}
 MetricsReportingHandler::~MetricsReportingHandler() {}
 
 void MetricsReportingHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getMetricsReporting",
       base::BindRepeating(&MetricsReportingHandler::HandleGetMetricsReporting,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setMetricsReportingEnabled",
       base::BindRepeating(
           &MetricsReportingHandler::HandleSetMetricsReportingEnabled,
@@ -82,7 +82,7 @@ std::unique_ptr<base::DictionaryValue>
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // To match the pre-Lacros settings UX, we show the managed icon if the ash
   // device-level metrics reporting pref is managed. https://crbug.com/1148604
-  auto* lacros_chrome_service = chromeos::LacrosChromeServiceImpl::Get();
+  auto* lacros_chrome_service = chromeos::LacrosService::Get();
   // Service may be null in tests.
   bool managed = lacros_chrome_service &&
                  lacros_chrome_service->init_params()->ash_metrics_managed ==
@@ -106,15 +106,14 @@ void MetricsReportingHandler::HandleSetMetricsReportingEnabled(
     return;
   }
 
-  bool enabled;
-  CHECK(args->GetBoolean(0, &enabled));
+  bool enabled = args->GetList()[0].GetBool();
   ChangeMetricsReportingState(enabled);
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // To match the pre-Lacros settings UX, the metrics reporting toggle in Lacros
   // browser settings controls both browser metrics reporting and OS metrics
   // reporting. See https://crbug.com/1148604.
-  auto* lacros_chrome_service = chromeos::LacrosChromeServiceImpl::Get();
+  auto* lacros_chrome_service = chromeos::LacrosService::Get();
   // Service may be null in tests.
   if (!lacros_chrome_service)
     return;

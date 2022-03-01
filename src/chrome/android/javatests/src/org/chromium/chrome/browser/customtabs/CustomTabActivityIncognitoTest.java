@@ -11,12 +11,13 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule.LONG_TIMEOUT_MS;
 import static org.chromium.chrome.browser.customtabs.CustomTabsTestUtils.addActionButtonToIntent;
 import static org.chromium.chrome.browser.customtabs.CustomTabsTestUtils.createTestBitmap;
-import static org.chromium.chrome.browser.customtabs.IncognitoCustomTabIntentDataProvider.EXTRA_FORCE_ENABLE_FOR_EXPERIMENT;
 
 import android.annotation.TargetApi;
 import android.app.NotificationManager;
@@ -30,8 +31,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.RemoteViews;
@@ -60,16 +59,20 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils.OnFinishedForTest;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
+import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.incognito.IncognitoDataTestUtils;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuItemProperties;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServerRule;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -80,7 +83,7 @@ import java.util.concurrent.TimeoutException;
  * in the first place. Screenshot of the Custom tab menu item is broken.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.FORCE_FIRST_RUN_FLOW_COMPLETE_FOR_TESTING})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class CustomTabActivityIncognitoTest {
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String TEST_MENU_TITLE = "testMenuTitle";
@@ -100,6 +103,7 @@ public class CustomTabActivityIncognitoTest {
 
     @Before
     public void setUp() throws TimeoutException {
+        FirstRunStatus.setFirstRunFlowComplete(true);
         mTestPage = mEmbeddedTestServerRule.getServer().getURL(TEST_PAGE);
         // Ensuring native is initialized before we access the CCT_INCOGNITO feature flag.
         IncognitoDataTestUtils.fireAndWaitForCctWarmup();
@@ -125,7 +129,7 @@ public class CustomTabActivityIncognitoTest {
 
     private static int getIncognitoThemeColor(CustomTabActivity activity) throws Exception {
         return TestThreadUtils.runOnUiThreadBlocking(
-                () -> ChromeColors.getDefaultThemeColor(activity.getResources(), true));
+                () -> ChromeColors.getDefaultThemeColor(activity, true));
     }
 
     private static int getToolbarColor(CustomTabActivity activity) throws ExecutionException {
@@ -144,28 +148,34 @@ public class CustomTabActivityIncognitoTest {
     private void launchAndTestMenuItemIsVisible(int itemId, String screenshotName)
             throws Exception {
         launchMenuItem();
-        Menu menu = mCustomTabActivityTestRule.getMenu();
-        MenuItem item = menu.findItem(itemId);
-        assertTrue(item.isVisible());
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mCustomTabActivityTestRule.getAppMenuCoordinator(), itemId));
     }
 
     private void launchAndTestMenuItemIsNotVisible(int itemId, String screenshotName)
             throws Exception {
         launchMenuItem();
-        Menu menu = mCustomTabActivityTestRule.getMenu();
-        MenuItem item = menu.findItem(itemId);
-        assertTrue(item == null || !item.isVisible());
+        assertNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mCustomTabActivityTestRule.getAppMenuCoordinator(), itemId));
     }
 
     private void testTopActionIconsIsVisible() throws Exception {
-        Menu menu = mCustomTabActivityTestRule.getMenu();
-        MenuItem iconRow = menu.findItem(R.id.icon_row_menu_id);
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mCustomTabActivityTestRule.getAppMenuCoordinator(), R.id.forward_menu_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mCustomTabActivityTestRule.getAppMenuCoordinator(), R.id.reload_menu_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mCustomTabActivityTestRule.getAppMenuCoordinator(), R.id.bookmark_this_page_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mCustomTabActivityTestRule.getAppMenuCoordinator(), R.id.info_menu_id));
 
-        assertEquals(4, CustomTabsTestUtils.getVisibleMenuSize(iconRow.getSubMenu()));
-        assertTrue(iconRow.getSubMenu().findItem(R.id.forward_menu_id).isVisible());
-        assertTrue(iconRow.getSubMenu().findItem(R.id.reload_menu_id).isVisible());
-        assertTrue(iconRow.getSubMenu().findItem(R.id.bookmark_this_page_id).isVisible());
-        assertTrue(iconRow.getSubMenu().findItem(R.id.info_menu_id).isVisible());
+        ModelList iconRowModelList =
+                AppMenuTestSupport
+                        .getMenuItemPropertyModel(
+                                mCustomTabActivityTestRule.getAppMenuCoordinator(),
+                                R.id.icon_row_menu_id)
+                        .get(AppMenuItemProperties.SUBMENU);
+        assertEquals(4, iconRowModelList.size());
     }
 
     private CustomTabActivity launchIncognitoCustomTab(Intent intent) throws InterruptedException {
@@ -261,41 +271,6 @@ public class CustomTabActivityIncognitoTest {
 
     @Test
     @MediumTest
-    @Features.DisableFeatures({ChromeFeatureList.CCT_INCOGNITO})
-    public void canLaunchFirstPartyIncognitoWithExtraWhenDisabled() throws Exception {
-        Intent intent = createMinimalIncognitoCustomTabIntent();
-        intent.putExtra(EXTRA_FORCE_ENABLE_FOR_EXPERIMENT, true);
-        CustomTabActivity activity = launchIncognitoCustomTab(intent);
-        assertTrue(activity.getActivityTab().isIncognito());
-        assertProfileUsedIsNonPrimary();
-    }
-
-    @Test
-    @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.CCT_INCOGNITO})
-    public void canHideToolbarIncognitoLogo() throws Exception {
-        Intent intent = createMinimalIncognitoCustomTabIntent();
-        // The icon is only hidden if an extra is supplied.
-        intent.putExtra(IncognitoCustomTabIntentDataProvider.EXTRA_HIDE_INCOGNITO_ICON, true);
-        launchIncognitoCustomTab(intent);
-        Espresso.onView(withId(R.id.incognito_cct_logo_image_view))
-                .check(matches(not(isDisplayed())));
-    }
-
-    @Test
-    @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.CCT_INCOGNITO})
-    public void canCustomizeToolbarColor() throws Exception {
-        Intent intent = createMinimalIncognitoCustomTabIntent();
-        // The color is only allowed if an extra is supplied.
-        intent.putExtra(IncognitoCustomTabIntentDataProvider.EXTRA_USE_NORMAL_PROFILE_STYLE, true);
-        intent.putExtra(CustomTabsIntent.EXTRA_TOOLBAR_COLOR, Color.RED);
-        CustomTabActivity activity = launchIncognitoCustomTab(intent);
-        assertEquals(Color.RED, getToolbarColor(activity));
-    }
-
-    @Test
-    @MediumTest
     @Features.EnableFeatures({ChromeFeatureList.CCT_INCOGNITO})
     public void ignoresCustomizedToolbarColor() throws Exception {
         Intent intent = createMinimalIncognitoCustomTabIntent();
@@ -371,8 +346,8 @@ public class CustomTabActivityIncognitoTest {
         CustomTabActivity activity = launchIncognitoCustomTab(intent);
         CustomTabsTestUtils.openAppMenuAndAssertMenuShown(activity);
 
-        MenuItem item = mCustomTabActivityTestRule.getMenu().findItem(R.id.share_row_menu_id);
-        assertTrue(item.isVisible());
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mCustomTabActivityTestRule.getAppMenuCoordinator(), R.id.share_row_menu_id));
     }
 
     @Test
@@ -392,12 +367,17 @@ public class CustomTabActivityIncognitoTest {
         CustomTabActivity activity = launchIncognitoCustomTab(intent);
         CustomTabsTestUtils.openAppMenuAndAssertMenuShown(activity);
 
-        Menu menu = mCustomTabActivityTestRule.getMenu();
+        ModelList menuItemsModelList = AppMenuTestSupport.getMenuModelList(
+                mCustomTabActivityTestRule.getAppMenuCoordinator());
         // Check the menu items have only 3 items visible including the top icon row menu.
-        assertEquals(3, CustomTabsTestUtils.getVisibleMenuSize(menu));
-        assertTrue(menu.findItem(R.id.icon_row_menu_id).isVisible());
-        assertTrue(menu.findItem(R.id.find_in_page_id).isVisible());
-        assertTrue(menu.findItem(R.id.request_desktop_site_row_menu_id).isVisible());
+        assertEquals(3, menuItemsModelList.size());
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mCustomTabActivityTestRule.getAppMenuCoordinator(), R.id.icon_row_menu_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mCustomTabActivityTestRule.getAppMenuCoordinator(), R.id.find_in_page_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mCustomTabActivityTestRule.getAppMenuCoordinator(),
+                R.id.request_desktop_site_row_menu_id));
 
         // Check top icons are still the same.
         testTopActionIconsIsVisible();
@@ -409,19 +389,25 @@ public class CustomTabActivityIncognitoTest {
     public void ensureAddCustomMenuItemIsEnabledForReaderMode() throws Exception {
         Intent intent = createMinimalIncognitoCustomTabIntent();
         CustomTabIntentDataProvider.addReaderModeUIExtras(intent);
-        IncognitoCustomTabIntentDataProvider.addIncongitoExtrasForChromeFeatures(
+        IncognitoCustomTabIntentDataProvider.addIncognitoExtrasForChromeFeatures(
                 intent, IntentHandler.IncognitoCCTCallerId.READER_MODE);
         CustomTabActivity activity = launchIncognitoCustomTab(intent);
         CustomTabsTestUtils.openAppMenuAndAssertMenuShown(activity);
 
-        Menu menu = mCustomTabActivityTestRule.getMenu();
+        ModelList menuItemsModelList = AppMenuTestSupport.getMenuModelList(
+                mCustomTabActivityTestRule.getAppMenuCoordinator());
         // Check the menu items have only 2 items visible "not" including the top icon row menu.
-        assertEquals(2, CustomTabsTestUtils.getVisibleMenuSize(menu));
-        assertTrue(menu.findItem(R.id.reader_mode_prefs_id).isVisible());
-        assertTrue(menu.findItem(R.id.find_in_page_id).isVisible());
+        assertEquals(2, menuItemsModelList.size());
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mCustomTabActivityTestRule.getAppMenuCoordinator(), R.id.reader_mode_prefs_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mCustomTabActivityTestRule.getAppMenuCoordinator(), R.id.find_in_page_id));
 
-        assertFalse(menu.findItem(R.id.icon_row_menu_id).isVisible());
-        assertFalse(menu.findItem(R.id.request_desktop_site_row_menu_id).isVisible());
+        assertNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mCustomTabActivityTestRule.getAppMenuCoordinator(), R.id.icon_row_menu_id));
+        assertNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mCustomTabActivityTestRule.getAppMenuCoordinator(),
+                R.id.request_desktop_site_row_menu_id));
     }
 
     @Test

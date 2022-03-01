@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/text/layout_locale.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/lru_cache.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 
 struct hb_font_funcs_t;
@@ -28,6 +29,9 @@ class PLATFORM_EXPORT FontGlobalContext {
 
  public:
   static FontGlobalContext* Get(CreateIfNeeded = kCreate);
+
+  FontGlobalContext(const FontGlobalContext&) = delete;
+  FontGlobalContext& operator=(const FontGlobalContext&) = delete;
 
   static inline FontCache* GetFontCache(CreateIfNeeded create = kCreate) {
     FontGlobalContext* context = Get(create);
@@ -79,8 +83,6 @@ class PLATFORM_EXPORT FontGlobalContext {
   std::unique_ptr<FontUniqueNameLookup> font_unique_name_lookup_;
   WTF::LruCache<SkFontID, IdentifiableToken> typeface_digest_cache_;
   WTF::LruCache<SkFontID, IdentifiableToken> postscript_name_digest_cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(FontGlobalContext);
 };
 
 }  // namespace blink

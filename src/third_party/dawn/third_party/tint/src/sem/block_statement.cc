@@ -21,15 +21,14 @@
 TINT_INSTANTIATE_TYPEINFO(tint::sem::BlockStatement);
 TINT_INSTANTIATE_TYPEINFO(tint::sem::FunctionBlockStatement);
 TINT_INSTANTIATE_TYPEINFO(tint::sem::LoopBlockStatement);
-TINT_INSTANTIATE_TYPEINFO(tint::sem::LoopContinuingBlockStatement);
-TINT_INSTANTIATE_TYPEINFO(tint::sem::SwitchCaseBlockStatement);
 
 namespace tint {
 namespace sem {
 
 BlockStatement::BlockStatement(const ast::BlockStatement* declaration,
-                               const Statement* parent)
-    : Base(declaration, parent) {}
+                               const CompoundStatement* parent,
+                               const sem::Function* function)
+    : Base(declaration, parent, function) {}
 
 BlockStatement::~BlockStatement() = default;
 
@@ -37,35 +36,32 @@ const ast::BlockStatement* BlockStatement::Declaration() const {
   return Base::Declaration()->As<ast::BlockStatement>();
 }
 
-void BlockStatement::AddDecl(ast::Variable* var) {
+void BlockStatement::AddDecl(const ast::Variable* var) {
   decls_.push_back(var);
 }
 
-FunctionBlockStatement::FunctionBlockStatement(const ast::Function* function)
-    : Base(function->body(), nullptr), function_(function) {}
+FunctionBlockStatement::FunctionBlockStatement(const sem::Function* function)
+    : Base(function->Declaration()->body, nullptr, function) {
+  TINT_ASSERT(Semantic, function);
+}
 
 FunctionBlockStatement::~FunctionBlockStatement() = default;
 
 LoopBlockStatement::LoopBlockStatement(const ast::BlockStatement* declaration,
-                                       const Statement* parent)
-    : Base(declaration, parent) {}
+                                       const CompoundStatement* parent,
+                                       const sem::Function* function)
+    : Base(declaration, parent, function) {
+  TINT_ASSERT(Semantic, parent);
+  TINT_ASSERT(Semantic, function);
+}
 LoopBlockStatement::~LoopBlockStatement() = default;
 
-void LoopBlockStatement::SetFirstContinue(size_t first_continue) {
+void LoopBlockStatement::SetFirstContinue(
+    const ast::ContinueStatement* first_continue,
+    size_t num_decls) {
   first_continue_ = first_continue;
+  num_decls_at_first_continue_ = num_decls;
 }
-
-LoopContinuingBlockStatement::LoopContinuingBlockStatement(
-    const ast::BlockStatement* declaration,
-    const Statement* parent)
-    : Base(declaration, parent) {}
-LoopContinuingBlockStatement::~LoopContinuingBlockStatement() = default;
-
-SwitchCaseBlockStatement::SwitchCaseBlockStatement(
-    const ast::BlockStatement* declaration,
-    const Statement* parent)
-    : Base(declaration, parent) {}
-SwitchCaseBlockStatement::~SwitchCaseBlockStatement() = default;
 
 }  // namespace sem
 }  // namespace tint

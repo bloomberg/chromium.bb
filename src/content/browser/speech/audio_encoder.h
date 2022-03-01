@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/speech/audio_buffer.h"
 #include "third_party/flac/include/FLAC/stream_encoder.h"
@@ -19,6 +19,10 @@ class AudioChunk;
 class AudioEncoder {
  public:
   AudioEncoder(int sampling_rate, int bits_per_sample);
+
+  AudioEncoder(const AudioEncoder&) = delete;
+  AudioEncoder& operator=(const AudioEncoder&) = delete;
+
   ~AudioEncoder();
 
   // Encodes |raw audio| to the internal buffer. Use
@@ -38,10 +42,8 @@ class AudioEncoder {
  private:
   AudioBuffer encoded_audio_buffer_;
 
-  FLAC__StreamEncoder* encoder_;
+  raw_ptr<FLAC__StreamEncoder> encoder_;
   bool is_encoder_initialized_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioEncoder);
 };
 
 }  // namespace content

@@ -10,12 +10,14 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
+#include "chromeos/components/cdm_factory_daemon/mojom/browser_cdm_factory.mojom.h"
 #include "chromeos/components/cdm_factory_daemon/mojom/cdm_factory_daemon.mojom.h"
 #include "media/base/cdm_config.h"
+#include "media/base/cdm_context.h"
 #include "media/base/cdm_factory.h"
+#include "media/mojo/mojom/cdm_document_service.mojom.h"
 #include "media/mojo/mojom/frame_interface_factory.mojom.h"
-#include "media/mojo/mojom/platform_verification.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -39,12 +41,11 @@ class COMPONENT_EXPORT(CDM_FACTORY_DAEMON) ChromeOsCdmFactory
 
   // Invoked on GPU initialization to set the receiver to pass to the browser
   // process.
-  static mojo::PendingReceiver<cdm::mojom::CdmFactoryDaemon>
-  GetCdmFactoryDaemonReceiver();
+  static mojo::PendingReceiver<cdm::mojom::BrowserCdmFactory>
+  GetBrowserCdmFactoryReceiver();
 
   // media::CdmFactory implementation.
   void Create(
-      const std::string& key_system,
       const media::CdmConfig& cdm_config,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionClosedCB& session_closed_cb,
@@ -65,9 +66,12 @@ class COMPONENT_EXPORT(CDM_FACTORY_DAEMON) ChromeOsCdmFactory
   // our decode target size.
   static void GetScreenResolutions(GetScreenResolutionsCB callback);
 
+  // Returns a singleton pointer that can be used as the media::CdmContext for
+  // ARC video decode operations.
+  static media::CdmContext* GetArcCdmContext();
+
  private:
   void OnVerifiedAccessEnabled(
-      const std::string& key_system,
       const media::CdmConfig& cdm_config,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionClosedCB& session_closed_cb,
@@ -95,7 +99,7 @@ class COMPONENT_EXPORT(CDM_FACTORY_DAEMON) ChromeOsCdmFactory
 
   media::mojom::FrameInterfaceFactory* frame_interfaces_;
   mojo::Remote<cdm::mojom::CdmFactory> remote_factory_;
-  mojo::Remote<media::mojom::PlatformVerification> platform_verification_;
+  mojo::Remote<media::mojom::CdmDocumentService> cdm_document_service_;
 
   // WeakPtrFactory to use for callbacks.
   base::WeakPtrFactory<ChromeOsCdmFactory> weak_factory_{this};

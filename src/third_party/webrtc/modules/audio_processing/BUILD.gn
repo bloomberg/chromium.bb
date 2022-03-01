@@ -19,15 +19,6 @@ config("apm_debug_dump") {
   }
 }
 
-rtc_library("config") {
-  visibility = [ ":*" ]
-  sources = [
-    "include/config.cc",
-    "include/config.h",
-  ]
-  deps = [ "../../rtc_base/system:rtc_export" ]
-}
-
 rtc_library("api") {
   visibility = [ "*" ]
   sources = [
@@ -37,7 +28,6 @@ rtc_library("api") {
   deps = [
     ":audio_frame_view",
     ":audio_processing_statistics",
-    ":config",
     "../../api:array_view",
     "../../api:scoped_refptr",
     "../../api/audio:aec3_config",
@@ -122,6 +112,33 @@ rtc_source_set("aec_dump_interface") {
   absl_deps = [ "//third_party/abseil-cpp/absl/base:core_headers" ]
 }
 
+rtc_library("gain_controller2") {
+  configs += [ ":apm_debug_dump" ]
+  sources = [
+    "gain_controller2.cc",
+    "gain_controller2.h",
+  ]
+  defines = []
+  deps = [
+    ":aec_dump_interface",
+    ":api",
+    ":apm_logging",
+    ":audio_buffer",
+    ":audio_frame_view",
+    "../../common_audio",
+    "../../rtc_base:atomicops",
+    "../../rtc_base:checks",
+    "../../rtc_base:logging",
+    "../../rtc_base:stringutils",
+    "../../system_wrappers:field_trial",
+    "agc2:adaptive_digital",
+    "agc2:cpu_features",
+    "agc2:fixed_digital",
+    "agc2:gain_applier",
+    "agc2:vad_wrapper",
+  ]
+}
+
 rtc_library("audio_processing") {
   visibility = [ "*" ]
   configs += [ ":apm_debug_dump" ]
@@ -142,10 +159,6 @@ rtc_library("audio_processing") {
     "echo_detector/normalized_covariance_estimator.h",
     "gain_control_impl.cc",
     "gain_control_impl.h",
-    "gain_controller2.cc",
-    "gain_controller2.h",
-    "level_estimator.cc",
-    "level_estimator.h",
     "render_queue_item_verifier.h",
     "residual_echo_detector.cc",
     "residual_echo_detector.h",
@@ -162,7 +175,7 @@ rtc_library("audio_processing") {
     ":audio_frame_proxies",
     ":audio_frame_view",
     ":audio_processing_statistics",
-    ":config",
+    ":gain_controller2",
     ":high_pass_filter",
     ":optionally_built_submodule_creators",
     ":rms_level",
@@ -184,17 +197,16 @@ rtc_library("audio_processing") {
     "../../rtc_base/synchronization:mutex",
     "../../rtc_base/system:rtc_export",
     "../../system_wrappers",
+    "../../system_wrappers:denormal_disabler",
     "../../system_wrappers:field_trial",
     "../../system_wrappers:metrics",
     "aec3",
     "aec_dump:aec_dump",
     "aecm:aecm_core",
     "agc",
+    "agc:analog_gain_stats_reporter",
     "agc:gain_control_interface",
     "agc:legacy_agc",
-    "agc2:adaptive_digital",
-    "agc2:fixed_digital",
-    "agc2:gain_applier",
     "capture_levels_adjuster",
     "ns",
     "transient:transient_suppressor_api",
@@ -334,7 +346,6 @@ if (rtc_include_tests) {
       sources = [
         "audio_buffer_unittest.cc",
         "audio_frame_view_unittest.cc",
-        "config_unittest.cc",
         "echo_control_mobile_unittest.cc",
         "gain_controller2_unittest.cc",
         "splitting_filter_unittest.cc",
@@ -349,7 +360,7 @@ if (rtc_include_tests) {
         ":audio_frame_view",
         ":audio_processing",
         ":audioproc_test_utils",
-        ":config",
+        ":gain_controller2",
         ":high_pass_filter",
         ":mocks",
         ":voice_detection",
@@ -373,6 +384,7 @@ if (rtc_include_tests) {
         "../../rtc_base/system:arch",
         "../../rtc_base/system:file_wrapper",
         "../../system_wrappers",
+        "../../system_wrappers:denormal_disabler",
         "../../test:fileutils",
         "../../test:rtc_expect_death",
         "../../test:test_support",
@@ -383,8 +395,8 @@ if (rtc_include_tests) {
         "agc2:biquad_filter_unittests",
         "agc2:fixed_digital_unittests",
         "agc2:noise_estimator_unittests",
-        "agc2:rnn_vad_with_level_unittests",
         "agc2:test_utils",
+        "agc2:vad_wrapper_unittests",
         "agc2/rnn_vad:unittests",
         "capture_levels_adjuster",
         "capture_levels_adjuster:capture_levels_adjuster_unittests",
@@ -434,7 +446,6 @@ if (rtc_include_tests) {
           "echo_detector/normalized_covariance_estimator_unittest.cc",
           "gain_control_unittest.cc",
           "high_pass_filter_unittest.cc",
-          "level_estimator_unittest.cc",
           "residual_echo_detector_unittest.cc",
           "rms_level_unittest.cc",
           "test/debug_dump_replayer.cc",

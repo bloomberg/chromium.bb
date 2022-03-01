@@ -28,9 +28,10 @@ static_library("content") {
     "payment_app_service.h",
     "payment_app_service_factory.cc",
     "payment_app_service_factory.h",
-    "payment_credential_enrollment_model.cc",
-    "payment_credential_enrollment_model.h",
-    "payment_credential_enrollment_view.h",
+    "payment_credential.cc",
+    "payment_credential.h",
+    "payment_credential_factory.cc",
+    "payment_credential_factory.h",
     "payment_details_converter.cc",
     "payment_details_converter.h",
     "payment_event_response_util.cc",
@@ -52,6 +53,10 @@ static_library("content") {
     "secure_payment_confirmation_app_factory.h",
     "secure_payment_confirmation_model.cc",
     "secure_payment_confirmation_model.h",
+    "secure_payment_confirmation_no_creds.cc",
+    "secure_payment_confirmation_no_creds.h",
+    "secure_payment_confirmation_no_creds_view.cc",
+    "secure_payment_confirmation_no_creds_view.h",
     "secure_payment_confirmation_view.h",
     "service_worker_payment_app.cc",
     "service_worker_payment_app.h",
@@ -75,7 +80,9 @@ static_library("content") {
     "//components/strings:components_strings_grit",
     "//components/ukm/content",
     "//components/url_formatter",
+    "//components/webauthn/core/browser",
     "//components/webdata/common",
+    "//components/webdata_services:webdata_services",
     "//content/public/browser",
     "//crypto",
     "//device/fido",
@@ -88,9 +95,8 @@ static_library("content") {
     sources += [ "android_app_communication_chrome_os.cc" ]
 
     deps += [
+      "//ash/components/arc",
       "//ash/public/cpp/external_arc",
-      "//components/arc",
-      "//components/arc/mojom",
     ]
   }
 
@@ -100,17 +106,13 @@ static_library("content") {
 
   if (is_android) {
     sources += [
-      "payment_credential_enrollment_view_stub.cc",
+      "secure_payment_confirmation_no_creds_view_stub.cc",
       "secure_payment_confirmation_view_stub.cc",
     ]
   } else {
     sources += [
       "content_payment_request_delegate.cc",
       "content_payment_request_delegate.h",
-      "payment_credential.cc",
-      "payment_credential.h",
-      "payment_credential_enrollment_controller.cc",
-      "payment_credential_enrollment_controller.h",
       "payment_request.cc",
       "payment_request.h",
       "payment_request_dialog.h",
@@ -188,6 +190,23 @@ static_library("utils") {
   ]
 }
 
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "mock_payment_manifest_web_data_service.cc",
+    "mock_payment_manifest_web_data_service.h",
+  ]
+  deps = [
+    ":utils",
+    "//base/test:test_support",
+    "//components/webdata/common",
+    "//components/webdata_services",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/blink/public:blink_headers",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -195,7 +214,6 @@ source_set("unit_tests") {
     "android_app_communication_unittest.cc",
     "android_payment_app_factory_unittest.cc",
     "android_payment_app_unittest.cc",
-    "payment_credential_enrollment_model_unittest.cc",
     "payment_event_response_util_unittest.cc",
     "payment_method_manifest_table_unittest.cc",
     "secure_payment_confirmation_model_unittest.cc",
@@ -209,6 +227,7 @@ source_set("unit_tests") {
       "payment_app_unittest.cc",
       "payment_request_spec_unittest.cc",
       "payment_request_state_unittest.cc",
+      "payment_request_web_contents_manager_unittest.cc",
       "payment_response_helper_unittest.cc",
       "secure_payment_confirmation_app_unittest.cc",
       "service_worker_payment_app_unittest.cc",
@@ -229,6 +248,7 @@ source_set("unit_tests") {
     "//components/payments/core:method_strings",
     "//components/payments/core:test_support",
     "//components/strings:components_strings_grit",
+    "//components/webauthn/core/browser",
     "//components/webdata/common",
     "//content/test:test_support",
     "//net:test_support",
@@ -245,10 +265,11 @@ source_set("unit_tests") {
     sources += [ "android_app_communication_test_support_chrome_os.cc" ]
 
     deps += [
+      "//ash/components/arc",
+      "//ash/components/arc:arc_test_support",
+      "//ash/components/arc/mojom",
       "//ash/public/cpp/external_arc:test_support",
       "//components/arc",
-      "//components/arc:arc_test_support",
-      "//components/arc/mojom",
     ]
   }
 

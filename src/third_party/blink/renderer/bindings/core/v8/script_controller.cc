@@ -36,7 +36,6 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
@@ -183,7 +182,7 @@ void ScriptController::ExecuteJavaScriptURL(
   // implemented for isolated worlds.
   const bool should_bypass_trusted_type_check =
       csp_disposition == network::mojom::CSPDisposition::DO_NOT_CHECK ||
-      ContentSecurityPolicy::ShouldBypassMainWorld(world_for_csp);
+      ContentSecurityPolicy::ShouldBypassMainWorldDeprecated(world_for_csp);
   script_source = script_source.Substring(kJavascriptSchemeLength);
   if (!should_bypass_trusted_type_check) {
     script_source = TrustedTypesCheckForJavascriptURLinNavigation(
@@ -205,9 +204,10 @@ void ScriptController::ExecuteJavaScriptURL(
   //
   // We pass |SanitizeScriptErrors::kDoNotSanitize| because |muted errors| is
   // false by default.
-  ClassicScript* script = MakeGarbageCollected<ClassicScript>(
-      ScriptSourceCode(script_source, ScriptSourceLocationType::kJavascriptUrl),
-      base_url, ScriptFetchOptions(), SanitizeScriptErrors::kDoNotSanitize);
+  ClassicScript* script = ClassicScript::Create(
+      script_source, KURL(), base_url, ScriptFetchOptions(),
+      ScriptSourceLocationType::kJavascriptUrl,
+      SanitizeScriptErrors::kDoNotSanitize);
 
   DCHECK_EQ(&window_->GetScriptController(), this);
   v8::HandleScope handle_scope(GetIsolate());
@@ -241,8 +241,10 @@ void ScriptController::ExecuteJavaScriptURL(
   auto params =
       previous_document_loader->CreateWebNavigationParamsToCloneDocument();
   String result = ToCoreString(v8::Local<v8::String>::Cast(v8_result));
-  WebNavigationParams::FillStaticResponse(params.get(), "text/html", "UTF-8",
-                                          StringUTF8Adaptor(result));
+  WebNavigationParams::FillStaticResponse(
+      params.get(), "text/html", "UTF-8",
+      StringUTF8Adaptor(
+          result, kStrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD));
   params->frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
   window_->GetFrame()->Loader().CommitNavigation(std::move(params), nullptr,
                                                  CommitReason::kJavascriptUrl);

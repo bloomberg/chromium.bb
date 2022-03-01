@@ -108,7 +108,7 @@ encoder and referenced elsewhere in this overview document:
     - \ref AV1_PRIMARY.lap_enabled
     - \ref AV1_PRIMARY.twopass (\ref TWO_PASS)
     - \ref AV1_PRIMARY.p_rc (\ref PRIMARY_RATE_CONTROL)
-    - \ref AV1_PRIMARY.alt_ref_buffer (\ref yv12_buffer_config)
+    - \ref AV1_PRIMARY.tf_info (\ref TEMPORAL_FILTER_INFO)
 
 - \ref AV1_COMP
     - \ref AV1_COMP.oxcf (\ref AV1EncoderConfig)
@@ -328,7 +328,7 @@ The following are the main data structures referenced in this section
 (see also \ref architecture_enc_data_structures):
 
 - \ref AV1_PRIMARY ppi (the primary compressor instance data structure)
-    - \ref AV1_PRIMARY.alt_ref_buffer (\ref yv12_buffer_config)
+    - \ref AV1_PRIMARY.tf_info (\ref TEMPORAL_FILTER_INFO)
 
 - \ref AV1_COMP cpi (the main compressor instance data structure)
     - \ref AV1_COMP.oxcf (\ref AV1EncoderConfig)
@@ -453,7 +453,7 @@ It is recommended that the reader refers to the code for more details.
 The main entry point for temporal filtering is \ref av1_temporal_filter().
 This function returns 1 if temporal filtering is successful, otherwise 0.
 When temporal filtering is applied, the filtered frame will be held in
-the frame buffer \ref AV1_PRIMARY.alt_ref_buffer, which is the frame to be
+the output_frame, which is the frame to be
 encoded in the following encoding process.
 
 Almost all temporal filter related code is in av1/encoder/temporal_filter.c
@@ -656,7 +656,7 @@ reflect any undershoot or overshoot on previous frames to give
 As well as \ref RATE_CONTROL.active_worst_quality, the two pass code also
 maintains a record of the actual Q value used to encode previous frames
 at each level in the current pyramid hierarchy
-(\ref RATE_CONTROL.active_best_quality). The function
+(\ref PRIMARY_RATE_CONTROL.active_best_quality). The function
 \ref rc_pick_q_and_bounds(), uses these values to set a permitted Q range
 for each frame.
 
@@ -740,7 +740,7 @@ There are two main fixed Q cases:
 -# Fixed Q with adaptive qp offsets: same qp offset for each pyramid level
    in a given video, but these offsets are adaptive based on video content.
 -# Fixed Q with fixed qp offsets: content-independent fixed qp offsets for
-   each pyramid level. (see \ref get_q_using_fixed_offsets()).
+   each pyramid level.
 
 The reader is also refered to the following functions:
 - \ref av1_rc_pick_q_and_bounds()

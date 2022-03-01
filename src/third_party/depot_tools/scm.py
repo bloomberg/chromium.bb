@@ -201,6 +201,12 @@ class GIT(object):
       try:
         # Try using local git copy first
         ref = 'refs/remotes/%s/HEAD' % remote
+        ref = GIT.Capture(['symbolic-ref', ref], cwd=cwd)
+        if not ref.endswith('master'):
+          return ref
+        # Check if there are changes in the default branch for this particular
+        # repository.
+        GIT.Capture(['remote', 'set-head', '-a', remote], cwd=cwd)
         return GIT.Capture(['symbolic-ref', ref], cwd=cwd)
       except subprocess2.CalledProcessError:
         pass
@@ -216,7 +222,7 @@ class GIT(object):
     except subprocess2.CalledProcessError:
       pass
     # Return default branch
-    return 'refs/remotes/%s/master' % remote
+    return 'refs/remotes/%s/main' % remote
 
   @staticmethod
   def GetBranch(cwd):

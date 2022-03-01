@@ -226,7 +226,6 @@ which binds it.
 
 ``` cpp
 #include "base/logging.h"
-#include "base/macros.h"
 #include "sample/logger.mojom.h"
 
 class LoggerImpl : public sample::mojom::Logger {
@@ -236,9 +235,9 @@ class LoggerImpl : public sample::mojom::Logger {
 
   explicit LoggerImpl(mojo::PendingReceiver<sample::mojom::Logger> receiver)
       : receiver_(this, std::move(receiver)) {}
-  ~Logger() override {}
   Logger(const Logger&) = delete;
   Logger& operator=(const Logger&) = delete;
+  ~Logger() override {}
 
   // sample::mojom::Logger:
   void Log(const std::string& message) override {
@@ -1708,6 +1707,9 @@ header in some instances.
 C++ sources can depend on shared sources only, by referencing the
 `"${target_name}_shared"` target, e.g. `"//foo/mojom:mojom_shared"` in the
 example above.
+
+For converting between Blink and non-Blink variants, please see
+`//third_party/blink/public/platform/cross_variant_mojo_util.h`.
 
 ## Versioning Considerations
 

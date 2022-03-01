@@ -10,12 +10,16 @@ class TableInC(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAsTableInC(cls, buf, offset):
+    def GetRootAs(cls, buf, offset=0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = TableInC()
         x.Init(buf, n + offset)
         return x
 
+    @classmethod
+    def GetRootAsTableInC(cls, buf, offset=0):
+        """This method is deprecated. Please switch to GetRootAs."""
+        return cls.GetRootAs(buf, offset)
     # TableInC
     def Init(self, buf, pos):
         self._tab = flatbuffers.table.Table(buf, pos)
@@ -41,10 +45,17 @@ class TableInC(object):
         return None
 
 def TableInCStart(builder): builder.StartObject(2)
+def Start(builder):
+    return TableInCStart(builder)
 def TableInCAddReferToA1(builder, referToA1): builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(referToA1), 0)
+def AddReferToA1(builder, referToA1):
+    return TableInCAddReferToA1(builder, referToA1)
 def TableInCAddReferToA2(builder, referToA2): builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(referToA2), 0)
+def AddReferToA2(builder, referToA2):
+    return TableInCAddReferToA2(builder, referToA2)
 def TableInCEnd(builder): return builder.EndObject()
-
+def End(builder):
+    return TableInCEnd(builder)
 try:
     from typing import Optional
 except:

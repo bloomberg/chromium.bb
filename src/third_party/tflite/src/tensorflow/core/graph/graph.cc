@@ -15,9 +15,11 @@ limitations under the License.
 
 #include "tensorflow/core/graph/graph.h"
 
+#include <memory>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "tensorflow/core/framework/full_type.pb.h"
 #include "tensorflow/core/framework/graph.pb.h"
 #include "tensorflow/core/framework/node_def.pb.h"
 #include "tensorflow/core/framework/node_properties.h"
@@ -31,6 +33,7 @@ limitations under the License.
 #include "tensorflow/core/lib/hash/hash.h"
 #include "tensorflow/core/lib/strings/strcat.h"
 #include "tensorflow/core/lib/strings/stringprintf.h"
+#include "tensorflow/core/platform/errors.h"
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/public/version.h"
 
@@ -39,59 +42,62 @@ namespace tensorflow {
 const int Graph::kControlSlot = -1;
 
 // Node
-Node::NodeClass Node::GetNodeClassForOp(const string& ts) {
-  static const absl::flat_hash_map<string, Node::NodeClass>* kNodeClassTable =
+Node::NodeClass Node::GetNodeClassForOp(const std::string& ts) {
+  static const absl::flat_hash_map<std::string, Node::NodeClass>*
+      kNodeClassTable =
 #define REF_CLASS(key, value) \
   {key, value}, { "Ref" key, value }
-      new absl::flat_hash_map<string, Node::NodeClass>({
-          // Keep in same order as NodeClass values
-          REF_CLASS("Switch", NC_SWITCH),
-          REF_CLASS("_SwitchN", NC_SWITCH),
-          REF_CLASS("Merge", NC_MERGE),
-          REF_CLASS("Enter", NC_ENTER),
-          REF_CLASS("Exit", NC_EXIT),
-          REF_CLASS("NextIteration", NC_NEXT_ITERATION),
-          {"LoopCond", NC_LOOP_COND},
-          {"ControlTrigger", NC_CONTROL_TRIGGER},
-          {"_Send", NC_SEND},
-          {"_HostSend", NC_HOST_SEND},
-          {"_Recv", NC_RECV},
-          {"_HostRecv", NC_HOST_RECV},
-          {"Const", NC_CONSTANT},
-          {"HostConst", NC_CONSTANT},
-          {"Variable", NC_VARIABLE},
-          {"VariableV2", NC_VARIABLE},
-          REF_CLASS("Identity", NC_IDENTITY),
-          {"GetSessionHandle", NC_GET_SESSION_HANDLE},
-          {"GetSessionHandleV2", NC_GET_SESSION_HANDLE},
-          {"GetSessionTensor", NC_GET_SESSION_TENSOR},
-          {"DeleteSessionTensor", NC_DELETE_SESSION_TENSOR},
-          {"Size", NC_METADATA},
-          {"Shape", NC_METADATA},
-          {"Rank", NC_METADATA},
-          {"_ScopedAllocator", NC_SCOPED_ALLOCATOR},
-          {"CollectiveReduce", NC_COLLECTIVE},
-          {"CollectiveBcastSend", NC_COLLECTIVE},
-          {"CollectiveBcastRecv", NC_COLLECTIVE},
-          {"CollectiveGather", NC_COLLECTIVE},
-          {"FakeParam", NC_FAKE_PARAM},
-          {"PartitionedCall", NC_PARTITIONED_CALL},
-          {"StatefulPartitionedCall", NC_PARTITIONED_CALL},
-          {"SymbolicGradient", NC_SYMBOLIC_GRADIENT},
-          {"If", NC_IF},
-          {"StatelessIf", NC_IF},
-          {"While", NC_WHILE},
-          {"StatelessWhile", NC_WHILE},
-          // Not using the constants defined in FunctionLibraryDefinition
-          // for the
-          // 4 ops below because android inference library does not link
-          // tf.function related files.
-          {"_Arg", NC_ARG},
-          {"_DeviceArg", NC_ARG},
-          {"_Retval", NC_RETVAL},
-          {"_DeviceRetval", NC_RETVAL},
-          {"_XlaMerge", NC_MERGE},
-      });
+          new absl::flat_hash_map<std::string, Node::NodeClass>({
+              // Keep in same order as NodeClass values
+              REF_CLASS("Switch", NC_SWITCH),
+              REF_CLASS("_SwitchN", NC_SWITCH),
+              REF_CLASS("Merge", NC_MERGE),
+              REF_CLASS("Enter", NC_ENTER),
+              REF_CLASS("Exit", NC_EXIT),
+              REF_CLASS("NextIteration", NC_NEXT_ITERATION),
+              {"LoopCond", NC_LOOP_COND},
+              {"ControlTrigger", NC_CONTROL_TRIGGER},
+              {"_Send", NC_SEND},
+              {"_HostSend", NC_HOST_SEND},
+              {"_Recv", NC_RECV},
+              {"_HostRecv", NC_HOST_RECV},
+              {"Const", NC_CONSTANT},
+              {"HostConst", NC_CONSTANT},
+              {"Variable", NC_VARIABLE},
+              {"VariableV2", NC_VARIABLE},
+              REF_CLASS("Identity", NC_IDENTITY),
+              {"GetSessionHandle", NC_GET_SESSION_HANDLE},
+              {"GetSessionHandleV2", NC_GET_SESSION_HANDLE},
+              {"GetSessionTensor", NC_GET_SESSION_TENSOR},
+              {"DeleteSessionTensor", NC_DELETE_SESSION_TENSOR},
+              {"Size", NC_METADATA},
+              {"Shape", NC_METADATA},
+              {"Rank", NC_METADATA},
+              {"_ScopedAllocator", NC_SCOPED_ALLOCATOR},
+              {"CollectiveReduce", NC_COLLECTIVE},
+              {"CollectiveBcastSend", NC_COLLECTIVE},
+              {"CollectiveBcastRecv", NC_COLLECTIVE},
+              {"CollectiveGather", NC_COLLECTIVE},
+              {"FakeParam", NC_FAKE_PARAM},
+              {"PartitionedCall", NC_PARTITIONED_CALL},
+              {"StatefulPartitionedCall", NC_PARTITIONED_CALL},
+              {"SymbolicGradient", NC_SYMBOLIC_GRADIENT},
+              {"If", NC_IF},
+              {"StatelessIf", NC_IF},
+              {"While", NC_WHILE},
+              {"StatelessWhile", NC_WHILE},
+              {"Case", NC_CASE},
+              {"StatelessCase", NC_CASE},
+              // Not using the constants defined in FunctionLibraryDefinition
+              // for the
+              // 4 ops below because android inference library does not link
+              // tf.function related files.
+              {"_Arg", NC_ARG},
+              {"_DeviceArg", NC_ARG},
+              {"_Retval", NC_RETVAL},
+              {"_DeviceRetval", NC_RETVAL},
+              {"_XlaMerge", NC_MERGE},
+          });
 #undef REF_CLASS
 
   auto it = kNodeClassTable->find(ts);
@@ -102,16 +108,16 @@ Node::NodeClass Node::GetNodeClassForOp(const string& ts) {
   }
 }
 
-string Node::DebugString() const {
-  string ret = strings::StrCat("{name:'", name(), "' id:", id_);
+std::string Node::DebugString() const {
+  std::string ret = strings::StrCat("{name:'", name(), "' id:", id_);
   if (IsSource()) {
     strings::StrAppend(&ret, " source}");
   } else if (IsSink()) {
     strings::StrAppend(&ret, " sink}");
   } else {
-    strings::StrAppend(&ret, " op device:");
-    strings::StrAppend(&ret, "{", assigned_device_name(), "}");
-    strings::StrAppend(&ret, " def:{", SummarizeNode(*this), "}}");
+    strings::StrAppend(&ret, " op device:", "{requested: '", requested_device(),
+                       "', assigned: '", assigned_device_name(), "'}", " def:{",
+                       SummarizeNode(*this), "}}");
   }
   return ret;
 }
@@ -169,28 +175,106 @@ void Node::UpdateProperties() {
   }
 }
 
-const string& Node::name() const { return props_->node_def.name(); }
-const string& Node::type_string() const { return props_->node_def.op(); }
+void Node::ClearTypeInfo() {
+  if (props_->node_def.has_experimental_type()) {
+    MaybeCopyOnWrite();
+    props_->node_def.clear_experimental_type();
+  }
+}
+
+void Node::RunForwardTypeInference() {
+  VLOG(4) << "Forward type inference: " << props_->node_def.DebugString();
+
+  if (props_->fwd_type_fn == nullptr) {
+    return;
+  }
+
+  std::vector<Node*> input_nodes(props_->input_types.size(), nullptr);
+  std::vector<int> input_idx(props_->input_types.size(), 0);
+  for (const auto& edge : in_edges_) {
+    if (edge->IsControlEdge()) {
+      continue;
+    }
+    DCHECK(edge->dst_input() < input_nodes.size()) << DebugString();
+    int i = edge->dst_input();
+    input_nodes.at(i) = edge->src();
+    input_idx.at(i) = edge->src_output();
+  }
+
+  // Note: technically, we could use a very generic type when some of the inputs
+  // are unknown. But there is an expectation that a node will have complete
+  // inputs soon, so updating intermediate types is largely unnecessary.
+
+  for (const auto* node : input_nodes) {
+    if (node == nullptr) {
+      // Incomplete inputs, bail.
+      ClearTypeInfo();
+      return;
+    }
+  }
+
+  static FullTypeDef* no_type = new FullTypeDef();
+
+  std::vector<std::reference_wrapper<const FullTypeDef>> input_types;
+  for (int i = 0; i < input_nodes.size(); i++) {
+    const auto* node = input_nodes[i];
+    if (node->def().has_experimental_type()) {
+      const auto& node_t = node->def().experimental_type();
+      if (node_t.type_id() != TFT_UNSET) {
+        int ix = input_idx[i];
+        if (ix >= node_t.args_size()) {
+          LOG(WARNING) << name() << " has bad type information: input " << i
+                       << " should have an output " << ix
+                       << " but instead only has " << node_t.args_size()
+                       << " outputs: " << node_t.DebugString()
+                       << "\nThis indicates either "
+                          "a bug in op registration or a corrupted graph.";
+          ClearTypeInfo();
+          return;
+        }
+        input_types.emplace_back(node_t.args(ix));
+      } else {
+        input_types.emplace_back(*no_type);
+      }
+    } else {
+      // Incomplete inputs, bail.
+      ClearTypeInfo();
+      return;
+    }
+  }
+
+  const auto infer_type = props_->fwd_type_fn(input_types);
+  const FullTypeDef infer_typedef = infer_type.ValueOrDie();
+  if (infer_typedef.type_id() != TFT_UNSET) {
+    MaybeCopyOnWrite();
+    *(props_->node_def.mutable_experimental_type()) = infer_typedef;
+  }
+}
+
+const std::string& Node::name() const { return props_->node_def.name(); }
+const std::string& Node::type_string() const { return props_->node_def.op(); }
 const NodeDef& Node::def() const { return props_->node_def; }
 const OpDef& Node::op_def() const { return *props_->op_def; }
 
+NodeDef* Node::mutable_def() { return &props_->node_def; }
+
 int32 Node::num_inputs() const { return props_->input_types.size(); }
-DataType Node::input_type(int32 i) const { return props_->input_types[i]; }
+DataType Node::input_type(int32_t i) const { return props_->input_types[i]; }
 const DataTypeVector& Node::input_types() const { return props_->input_types; }
 
 int32 Node::num_outputs() const { return props_->output_types.size(); }
-DataType Node::output_type(int32 o) const { return props_->output_types[o]; }
+DataType Node::output_type(int32_t o) const { return props_->output_types[o]; }
 const DataTypeVector& Node::output_types() const {
   return props_->output_types;
 }
 
 AttrSlice Node::attrs() const { return AttrSlice(def()); }
 
-const protobuf::RepeatedPtrField<string>& Node::requested_inputs() const {
+const protobuf::RepeatedPtrField<std::string>& Node::requested_inputs() const {
   return def().input();
 }
 
-const string& Node::requested_device() const { return def().device(); }
+const std::string& Node::requested_device() const { return def().device(); }
 
 gtl::iterator_range<NeighborIter> Node::out_nodes() const {
   return gtl::make_range(NeighborIter(out_edges_.begin(), false),
@@ -203,39 +287,50 @@ gtl::iterator_range<NeighborIter> Node::in_nodes() const {
 }
 
 void Node::MaybeCopyOnWrite() {
+  // TODO(mdan): As nodes become more dynamic, this may not be worth the cost.
   // NodeProperties may be shared between Nodes. Make a copy if so.
   if (!props_.unique()) {
     props_ = std::make_shared<NodeProperties>(*props_);
   }
 }
 
-AttrValue* Node::AddAttrHelper(const string& name) {
+AttrValue* Node::AddAttrHelper(const std::string& name) {
   MaybeCopyOnWrite();
   return &((*props_->node_def.mutable_attr())[name]);
 }
 
-void Node::ClearAttr(const string& name) {
+void Node::ClearAttr(const std::string& name) {
   MaybeCopyOnWrite();
   (*props_->node_def.mutable_attr()).erase(name);
 }
 
-void Node::set_name(string name) {
+void Node::set_name(std::string name) {
   MaybeCopyOnWrite();
   props_->node_def.set_name(std::move(name));
 }
 
-void Node::set_requested_device(const string& device) {
+void Node::set_requested_device(const std::string& device) {
   MaybeCopyOnWrite();
   props_->node_def.set_device(device);
 }
 
-void Node::set_original_node_names(const std::vector<string>& names) {
+void Node::set_original_node_names(const std::vector<std::string>& names) {
   MaybeCopyOnWrite();
   props_->node_def.mutable_experimental_debug_info()
       ->clear_original_node_names();
   if (!names.empty()) {
     *props_->node_def.mutable_experimental_debug_info()
          ->mutable_original_node_names() = {names.begin(), names.end()};
+  }
+}
+
+void Node::set_original_func_names(const std::vector<std::string>& names) {
+  MaybeCopyOnWrite();
+  props_->node_def.mutable_experimental_debug_info()
+      ->clear_original_func_names();
+  if (!names.empty()) {
+    *props_->node_def.mutable_experimental_debug_info()
+         ->mutable_original_func_names() = {names.begin(), names.end()};
   }
 }
 
@@ -327,11 +422,12 @@ NodeDebugInfo::NodeDebugInfo(
     const NodeDef_ExperimentalDebugInfo& experimental_debug_info)
     : name(node_name) {
   if (has_experimental_debug_info) {
-    const auto& names = experimental_debug_info.original_node_names();
-    original_node_names.assign(names.begin(), names.end());
+    const auto& node_names = experimental_debug_info.original_node_names();
+    original_node_names.assign(node_names.begin(), node_names.end());
+    const auto& func_names = experimental_debug_info.original_func_names();
+    original_func_names.assign(func_names.begin(), func_names.end());
   }
 }
-
 // InputTensor
 
 bool InputTensor::operator==(const InputTensor& other) const {
@@ -409,8 +505,52 @@ Graph::~Graph() {
   // destroy them.
 }
 
+std::unique_ptr<Graph> Graph::Clone() {
+  std::unique_ptr<Graph> new_graph(new Graph(flib_def()));
+  new_graph->Copy(*this);
+  return new_graph;
+}
+
 const VersionDef& Graph::versions() const { return *versions_; }
 void Graph::set_versions(const VersionDef& versions) { *versions_ = versions; }
+
+void Graph::Copy(const Graph& src) {
+  SetConstructionContext(src.GetConstructionContextInternal());
+  for (Node* n : nodes()) {
+    CHECK(n->IsSource() || n->IsSink()) << "*dest must be empty";
+  }
+
+  // Copy GraphDef versions
+  set_versions(src.versions());
+
+  // Copy the nodes.
+  // "Node in src" -> "Node in *dest"
+  gtl::FlatMap<const Node*, Node*> node_map;
+  node_map.reserve(src.num_nodes());
+  node_map[src.source_node()] = source_node();
+  node_map[src.sink_node()] = sink_node();
+  for (Node* n : src.op_nodes()) {
+    auto copy = CopyNode(n);
+    copy->in_edges_.reserve(n->in_edges().size());
+    copy->out_edges_.reserve(n->out_edges().size());
+    node_map[n] = copy;
+  }
+
+  // Copy the edges
+  edges_.reserve(src.num_edges());
+  for (const Edge* e : src.edges()) {
+    Node* src_copy = node_map[e->src()];
+    Node* dst_copy = node_map[e->dst()];
+    AddEdge(src_copy, e->src_output(), dst_copy, e->dst_input());
+  }
+}
+
+StatusOr<Node*> Graph::AddNode(NodeDef node_def) {
+  Status s;
+  Node* out = AddNode(std::move(node_def), &s);
+  TF_RETURN_IF_ERROR(s);
+  return out;
+}
 
 Node* Graph::AddNode(NodeDef node_def, Status* status) {
   const OpRegistrationData* op_reg_data;
@@ -430,10 +570,29 @@ Node* Graph::AddNode(NodeDef node_def, Status* status) {
                                    ? Node::NC_FUNCTION_OP
                                    : Node::GetNodeClassForOp(node_def.op());
 
-  Node* node = AllocateNode(
-      std::make_shared<NodeProperties>(&op_reg_data->op_def,
-                                       std::move(node_def), inputs, outputs),
-      nullptr, node_class);
+  if (op_reg_data->type_ctor != nullptr) {
+    VLOG(3) << "AddNode: found type constructor for " << node_def.name();
+    const auto ctor_type =
+        full_type::SpecializeType(AttrSlice(node_def), op_reg_data->op_def);
+    if (!ctor_type.ok()) {
+      *status = errors::InvalidArgument("type error: ",
+                                        ctor_type.status().ToString());
+      VLOG(3) << "AddNode: type inference failed for " << node_def.name()
+              << ": " << status->ToString();
+      return nullptr;
+    }
+    const FullTypeDef ctor_typedef = ctor_type.ValueOrDie();
+    if (ctor_typedef.type_id() != TFT_UNSET) {
+      *(node_def.mutable_experimental_type()) = ctor_typedef;
+    }
+  } else {
+    VLOG(3) << "AddNode: no type constructor for " << node_def.name();
+  }
+
+  Node* node = AllocateNode(std::make_shared<NodeProperties>(
+                                &op_reg_data->op_def, std::move(node_def),
+                                inputs, outputs, op_reg_data->fwd_type_fn),
+                            nullptr, node_class);
   return node;
 }
 
@@ -452,6 +611,7 @@ Node* Graph::CopyNode(const Node* node) {
     copy->MaybeCopyOnWrite();
     copy->props_->op_def = op_def;
   }
+  copy->SetStackTrace(node->GetStackTrace());
 
   return copy;
 }
@@ -507,6 +667,21 @@ const Edge* Graph::AddEdge(Node* source, int x, Node* dest, int y) {
   CHECK(dest->in_edges_.insert(e).second);
   edges_.push_back(e);
   ++num_edges_;
+
+  if (!e->IsControlEdge()) {
+    if (dest->in_edges_.size() >= dest->props_->input_types.size()) {
+      // Note: this only produces consistent results at graph construction,
+      // and only when all incoming edges are up-to-date.
+      // If the graph is subsequently modified, or if the node is added before
+      // any of its upstream nodes, this type information would change as well.
+      // In general, graph transformations should run shole-graph type inference
+      // when done, and should not rely on types being fully up to date
+      // after each AddNode.
+      // TODO(mdan): Should we even run type inference here any more?
+      dest->RunForwardTypeInference();
+    }
+  }
+
   return e;
 }
 
@@ -521,6 +696,11 @@ void Graph::RemoveEdge(const Edge* e) {
   edges_[e->id_] = nullptr;
   RecycleEdge(e);
   --num_edges_;
+
+  if (!e->IsControlEdge()) {
+    // This may clear the node type if enough edges are removed.
+    e->dst_->RunForwardTypeInference();
+  }
 }
 
 void Graph::RecycleEdge(const Edge* e) {
@@ -540,9 +720,9 @@ const Edge* Graph::AddControlEdge(Node* source, Node* dest,
   // Modify dest's NodeDef if necessary.
   if (!source->IsSource() && !dest->IsSink() && !allow_duplicates) {
     // Check if this input is already in dest's NodeDef.
-    const string new_input = strings::StrCat("^", source->name());
+    const std::string new_input = strings::StrCat("^", source->name());
     bool input_exists = false;
-    for (const string& input : dest->props_->node_def.input()) {
+    for (const std::string& input : dest->props_->node_def.input()) {
       if (input == new_input) {
         input_exists = true;
         break;
@@ -559,7 +739,7 @@ const Edge* Graph::AddControlEdge(Node* source, Node* dest,
 void Graph::RemoveControlEdge(const Edge* e) {
   if (!e->src_->IsSource() && !e->dst_->IsSink()) {
     e->dst_->MaybeCopyOnWrite();
-    string e_src_name = strings::StrCat("^", e->src_->name());
+    std::string e_src_name = strings::StrCat("^", e->src_->name());
     auto* inputs = e->dst_->props_->node_def.mutable_input();
     for (auto it = inputs->begin(); it != inputs->end(); ++it) {
       if (*it == e_src_name) {
@@ -718,7 +898,7 @@ void Graph::ToGraphDefSubRange(GraphDef* graph_def, int from_node_id) const {
   }
 }
 
-string Graph::NewName(StringPiece prefix) {
+std::string Graph::NewName(StringPiece prefix) {
   return strings::StrCat(prefix, "/_", name_counter_++);
 }
 
@@ -793,7 +973,7 @@ void Graph::ReleaseNode(Node* node) {
 // Ensures that 'device_name' is present in the device name table, and returns
 // the index of that device name. The index is stable, and can be used in
 // calls to Node::set_assigned_device_name_index().
-int Graph::InternDeviceName(const string& device_name) {
+int Graph::InternDeviceName(const std::string& device_name) {
   // Special case, very common.  Also, this allows us to use a single map
   // lookup below, instead of two.  The 'if (index_cell > 0)' test below
   // relies on this check.
@@ -819,8 +999,8 @@ Status Graph::AddWhileContext(StringPiece frame_name,
                               std::vector<OutputTensor> body_inputs,
                               std::vector<OutputTensor> body_outputs,
                               WhileContext** result) {
-  auto pair = while_ctxs_.insert(std::pair<string, WhileContext>(
-      string(frame_name),
+  auto pair = while_ctxs_.insert(std::pair<std::string, WhileContext>(
+      std::string(frame_name),
       WhileContext(frame_name, std::move(enter_nodes), std::move(exit_nodes),
                    cond_output, std::move(body_inputs),
                    std::move(body_outputs))));
@@ -833,15 +1013,15 @@ Status Graph::AddWhileContext(StringPiece frame_name,
   return Status::OK();
 }
 
-std::unordered_map<string, Node*> Graph::BuildNodeNameIndex() const {
-  std::unordered_map<string, Node*> result;
+std::unordered_map<std::string, Node*> Graph::BuildNodeNameIndex() const {
+  std::unordered_map<std::string, Node*> result;
   for (Node* n : nodes()) {
     result[n->name()] = n;
   }
   return result;
 }
 
-string Edge::DebugString() const {
+std::string Edge::DebugString() const {
   return strings::Printf("[id=%d %s:%d -> %s:%d]", id_, src_->name().c_str(),
                          src_output_, dst_->name().c_str(), dst_input_);
 }

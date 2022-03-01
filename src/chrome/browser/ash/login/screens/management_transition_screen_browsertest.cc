@@ -5,6 +5,11 @@
 #include <memory>
 #include <string>
 
+#include "ash/components/arc/arc_features.h"
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/arc/session/arc_management_transition.h"
+#include "ash/components/arc/session/arc_session_runner.h"
+#include "ash/components/arc/test/fake_arc_session.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/run_loop.h"
@@ -22,11 +27,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/management_transition_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
-#include "components/arc/arc_features.h"
-#include "components/arc/arc_prefs.h"
-#include "components/arc/session/arc_session_runner.h"
-#include "components/arc/session/arc_supervision_transition.h"
-#include "components/arc/test/fake_arc_session.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_type.h"
@@ -85,15 +85,6 @@ class ManagementTransitionScreenTest
     arc::ExpandPropertyFilesForTesting(arc::ArcSessionManager::Get());
 
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-    // For this test class, the PRE tests just happen to always wait for active
-    // session immediately after logging in, while the main tests do some checks
-    // and then postpone WaitForActiveSession() until later. So wait for active
-    // session immediately if IsPreTest() and postpone the call to
-    // WaitForActiveSession() otherwise.
-    logged_in_user_mixin_.LogInUser(
-        false /*issue_any_scope_token*/,
-        content::IsPreTest() /*wait_for_active_session*/);
-
     // Allow ARC by policy for managed users.
     if (use_managed_account()) {
       logged_in_user_mixin()
@@ -103,6 +94,15 @@ class ManagementTransitionScreenTest
           ->mutable_arcenabled()
           ->set_value(true);
     }
+
+    // For this test class, the PRE tests just happen to always wait for active
+    // session immediately after logging in, while the main tests do some checks
+    // and then postpone WaitForActiveSession() until later. So wait for active
+    // session immediately if IsPreTest() and postpone the call to
+    // WaitForActiveSession() otherwise.
+    logged_in_user_mixin_.LogInUser(
+        false /*issue_any_scope_token*/,
+        content::IsPreTest() /*wait_for_active_session*/);
   }
 
   LoggedInUserMixin::LogInType GetTargetUserType() const {
@@ -158,8 +158,8 @@ IN_PROC_BROWSER_TEST_P(ManagementTransitionScreenTest, SuccessfulTransition) {
   EXPECT_FALSE(LoginScreenTestApi::IsAddUserButtonShown());
 
   ProfileManager::GetPrimaryUserProfile()->GetPrefs()->SetInteger(
-      arc::prefs::kArcSupervisionTransition,
-      static_cast<int>(arc::ArcSupervisionTransition::NO_TRANSITION));
+      arc::prefs::kArcManagementTransition,
+      static_cast<int>(arc::ArcManagementTransition::NO_TRANSITION));
 
   EXPECT_FALSE(ProfileManager::GetPrimaryUserProfile()->GetPrefs()->GetBoolean(
       arc::prefs::kArcDataRemoveRequested));

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import '../../img.js';
 import '../module_header.js';
 import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -127,7 +127,7 @@ class TaskModuleElement extends mixinBehaviors
    */
   onTaskItemClick_(e) {
     const index = this.$.taskItemsRepeat.indexForElement(e.target);
-    TaskModuleHandlerProxy.getInstance().handler.onTaskItemClicked(
+    TaskModuleHandlerProxy.getHandler().onTaskItemClicked(
         this.taskModuleType, index);
     this.dispatchEvent(new Event('usage', {bubbles: true, composed: true}));
   }
@@ -138,7 +138,7 @@ class TaskModuleElement extends mixinBehaviors
    */
   onPillClick_(e) {
     const index = this.$.relatedSearchesRepeat.indexForElement(e.target);
-    TaskModuleHandlerProxy.getInstance().handler.onRelatedSearchClicked(
+    TaskModuleHandlerProxy.getHandler().onRelatedSearchClicked(
         this.taskModuleType, index);
     this.dispatchEvent(new Event('usage', {bubbles: true, composed: true}));
   }
@@ -151,7 +151,7 @@ class TaskModuleElement extends mixinBehaviors
 
   /** @private */
   onDismissButtonClick_() {
-    TaskModuleHandlerProxy.getInstance().handler.dismissTask(
+    TaskModuleHandlerProxy.getHandler().dismissTask(
         this.taskModuleType, this.task.name);
     let taskName = '';
     switch (this.taskModuleType) {
@@ -186,7 +186,7 @@ class TaskModuleElement extends mixinBehaviors
 
   /** @private */
   onRestore_() {
-    TaskModuleHandlerProxy.getInstance().handler.restoreTask(
+    TaskModuleHandlerProxy.getHandler().restoreTask(
         this.taskModuleType, this.task.name);
   }
 
@@ -213,8 +213,7 @@ customElements.define(TaskModuleElement.is, TaskModuleElement);
 /** @return {!Promise<?HTMLElement>} */
 async function createModule(taskModuleType) {
   const {task} =
-      await TaskModuleHandlerProxy.getInstance().handler.getPrimaryTask(
-          taskModuleType);
+      await TaskModuleHandlerProxy.getHandler().getPrimaryTask(taskModuleType);
   if (!task) {
     return null;
   }

@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "gpu/command_buffer/service/async_api_interface.h"
@@ -75,6 +75,10 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
 
   CommandBufferService(CommandBufferServiceClient* client,
                        MemoryTracker* memory_tracker);
+
+  CommandBufferService(const CommandBufferService&) = delete;
+  CommandBufferService& operator=(const CommandBufferService&) = delete;
+
   ~CommandBufferService() override;
 
   // CommandBufferServiceBase implementation:
@@ -127,7 +131,7 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   size_t GetSharedMemoryBytesAllocated() const;
 
  private:
-  CommandBufferServiceClient* client_;
+  raw_ptr<CommandBufferServiceClient> client_;
   std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
 
   CommandBuffer::State state_;
@@ -135,16 +139,14 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
 
   int32_t num_entries_ = 0;
   scoped_refptr<Buffer> ring_buffer_;
-  volatile CommandBufferEntry* buffer_ = nullptr;
+  raw_ptr<volatile CommandBufferEntry> buffer_ = nullptr;
 
   std::unique_ptr<BufferBacking> shared_state_buffer_;
-  CommandBufferSharedState* shared_state_ = nullptr;
+  raw_ptr<CommandBufferSharedState> shared_state_ = nullptr;
 
   // Whether the scheduler is currently able to process more commands.
   bool scheduled_ = true;
   bool paused_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(CommandBufferService);
 };
 
 }  // namespace gpu

@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,6 +7,7 @@ import os
 import re
 import tempfile
 import shutil
+import six
 import sys
 import unittest
 import zipfile
@@ -314,13 +315,13 @@ class CTSUtilsTest(unittest.TestCase):
     yaml_data = cts_utils.CTSCIPDYaml(cts_utils.CIPD_PATH)
     self.assertTrue(yaml_data.get_package())
     self.assertTrue(yaml_data.get_files())
-    with tempfile.NamedTemporaryFile() as outputFile:
+    with tempfile.NamedTemporaryFile('w+t') as outputFile:
       yaml_data.write(outputFile.name)
       with open(cts_utils.CIPD_PATH) as cipdFile:
         self.assertEqual(cipdFile.readlines(), outputFile.readlines())
 
   def testCTSCIPDYamlOperations(self):
-    with tempfile.NamedTemporaryFile() as yamlFile:
+    with tempfile.NamedTemporaryFile('w+t') as yamlFile:
       yamlFile.writelines(CIPD_DATA['yaml'])
       yamlFile.flush()
       yaml_data = cts_utils.CTSCIPDYaml(yamlFile.name)
@@ -352,7 +353,7 @@ class CTSUtilsTest(unittest.TestCase):
     fake_cipd = FakeCIPD()
     fake_run_cmd = FakeRunCmd(cipd=fake_cipd)
     run_mock.side_effect = fake_run_cmd.run_cmd
-    with tempfile.NamedTemporaryFile() as yamlFile,\
+    with tempfile.NamedTemporaryFile('w+t') as yamlFile,\
          tempfile_ext.NamedTemporaryDirectory() as tempDir:
       yamlFile.writelines(CIPD_DATA['yaml'])
       yamlFile.flush()
@@ -376,29 +377,29 @@ class CTSUtilsTest(unittest.TestCase):
     self.assertTrue(cts_config.get_apks(platform))
 
   def testCTSConfig(self):
-    with tempfile.NamedTemporaryFile() as configFile:
+    with tempfile.NamedTemporaryFile('w+t') as configFile:
       configFile.writelines(CONFIG_DATA['json'])
       configFile.flush()
       cts_config = cts_utils.CTSConfig(configFile.name)
-    self.assertEquals(['platform1', 'platform2'], cts_config.get_platforms())
-    self.assertEquals(['arch1', 'arch2'], cts_config.get_archs('platform1'))
-    self.assertEquals(['arch1', 'arch2'], cts_config.get_archs('platform2'))
-    self.assertEquals('arch1/platform1/file1.zip',
-                      cts_config.get_cipd_zip('platform1', 'arch1'))
-    self.assertEquals('arch2/platform1/file3.zip',
-                      cts_config.get_cipd_zip('platform1', 'arch2'))
-    self.assertEquals('arch1/platform2/file2.zip',
-                      cts_config.get_cipd_zip('platform2', 'arch1'))
-    self.assertEquals('arch2/platform2/file4.zip',
-                      cts_config.get_cipd_zip('platform2', 'arch2'))
-    self.assertEquals('https://a1.p1/f1.zip',
-                      cts_config.get_origin('platform1', 'arch1'))
-    self.assertEquals('https://a2.p1/f3.zip',
-                      cts_config.get_origin('platform1', 'arch2'))
-    self.assertEquals('https://a1.p2/f2.zip',
-                      cts_config.get_origin('platform2', 'arch1'))
-    self.assertEquals('https://a2.p2/f4.zip',
-                      cts_config.get_origin('platform2', 'arch2'))
+    self.assertEqual(['platform1', 'platform2'], cts_config.get_platforms())
+    self.assertEqual(['arch1', 'arch2'], cts_config.get_archs('platform1'))
+    self.assertEqual(['arch1', 'arch2'], cts_config.get_archs('platform2'))
+    self.assertEqual('arch1/platform1/file1.zip',
+                     cts_config.get_cipd_zip('platform1', 'arch1'))
+    self.assertEqual('arch2/platform1/file3.zip',
+                     cts_config.get_cipd_zip('platform1', 'arch2'))
+    self.assertEqual('arch1/platform2/file2.zip',
+                     cts_config.get_cipd_zip('platform2', 'arch1'))
+    self.assertEqual('arch2/platform2/file4.zip',
+                     cts_config.get_cipd_zip('platform2', 'arch2'))
+    self.assertEqual('https://a1.p1/f1.zip',
+                     cts_config.get_origin('platform1', 'arch1'))
+    self.assertEqual('https://a2.p1/f3.zip',
+                     cts_config.get_origin('platform1', 'arch2'))
+    self.assertEqual('https://a1.p2/f2.zip',
+                     cts_config.get_origin('platform2', 'arch1'))
+    self.assertEqual('https://a2.p2/f4.zip',
+                     cts_config.get_origin('platform2', 'arch2'))
     self.assertTrue(['p1/test.apk'], cts_config.get_apks('platform1'))
     self.assertTrue(['p2/test1.apk', 'p2/test2.apk'],
                     cts_config.get_apks('platform2'))
@@ -414,13 +415,13 @@ class CTSUtilsTest(unittest.TestCase):
       cts_utils.filterzip('downloaded.zip', ['a/b/one.apk', 'a/b/two.apk'],
                           'filtered.zip')
       zf = zipfile.ZipFile('filtered.zip', 'r')
-      self.assertEquals(2, len(zf.namelist()))
-      self.assertEquals('abc', zf.read('a/b/one.apk'))
-      self.assertEquals('def', zf.read('a/b/two.apk'))
+      self.assertEqual(2, len(zf.namelist()))
+      self.assertEqual(b'abc', zf.read('a/b/one.apk'))
+      self.assertEqual(b'def', zf.read('a/b/two.apk'))
 
   @patch('cts_utils.filterzip')
   def testFilterCTS(self, filterzip_mock):  # pylint: disable=no-self-use
-    with tempfile.NamedTemporaryFile() as configFile:
+    with tempfile.NamedTemporaryFile('w+t') as configFile:
       configFile.writelines(CONFIG_DATA['json'])
       configFile.flush()
       cts_config = cts_utils.CTSConfig(configFile.name)
@@ -439,9 +440,9 @@ class CTSUtilsTest(unittest.TestCase):
       writefile(CIPD_DATA['yaml'], 'cipd.yaml')
       version = cts_utils.update_cipd_package('cipd.yaml')
       uploaded = fake_cipd.get_package(CIPD_DATA['package'], version)
-      self.assertEquals(CIPD_DATA['package'], uploaded['package'])
+      self.assertEqual(CIPD_DATA['package'], uploaded['package'])
       uploaded_files = [e['file'] for e in uploaded['data']]
-      self.assertEquals(4, len(uploaded_files))
+      self.assertEqual(4, len(uploaded_files))
       for i in range(1, 5):
         self.assertTrue(CIPD_DATA['file' + str(i)] in uploaded_files)
 
@@ -450,24 +451,23 @@ class CTSUtilsTest(unittest.TestCase):
          cts_utils.chdir(tempDir):
       setup_fake_repo('.')
       helper = cts_utils.ChromiumRepoHelper(root_dir='.')
-      self.assertEquals(DEPS_DATA['revision'], helper.get_cipd_dependency_rev())
+      self.assertEqual(DEPS_DATA['revision'], helper.get_cipd_dependency_rev())
 
-      self.assertEquals(
-          os.path.join(tempDir, 'a', 'b'), helper.rebase('a', 'b'))
+      self.assertEqual(os.path.join(tempDir, 'a', 'b'), helper.rebase('a', 'b'))
 
       helper.update_cts_cipd_rev('newversion')
-      self.assertEquals('newversion', helper.get_cipd_dependency_rev())
+      self.assertEqual('newversion', helper.get_cipd_dependency_rev())
       expected_deps = DEPS_DATA['template'] % (CIPD_DATA['package'],
                                                'newversion')
-      self.assertEquals(expected_deps, readfile(_CIPD_REFERRERS[0]))
+      self.assertEqual(expected_deps, readfile(_CIPD_REFERRERS[0]))
       expected_suites = SUITES_DATA['template'] % ('newversion', 'newversion')
-      self.assertEquals(expected_suites, readfile(_CIPD_REFERRERS[1]))
+      self.assertEqual(expected_suites, readfile(_CIPD_REFERRERS[1]))
 
       writefile('#deps not referring to cts cipd', _CIPD_REFERRERS[0])
       with self.assertRaises(Exception):
         helper.update_cts_cipd_rev('anothernewversion')
 
-  @patch('urllib.urlretrieve')
+  @patch('urllib.urlretrieve' if six.PY2 else 'urllib.request.urlretrieve')
   @patch('os.makedirs')
   # pylint: disable=no-self-use
   def testDownload(self, mock_makedirs, mock_retrieve):

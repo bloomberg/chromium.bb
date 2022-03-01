@@ -10,7 +10,7 @@
 #include "core/fxcrt/css/cfx_css.h"
 #include "core/fxcrt/css/cfx_cssnumbervalue.h"
 #include "core/fxcrt/css/cfx_cssvalue.h"
-#include "core/fxcrt/fx_string.h"
+#include "core/fxcrt/widestring.h"
 #include "core/fxge/dib/fx_dib.h"
 
 class CFX_CSSData {
@@ -18,7 +18,7 @@ class CFX_CSSData {
   struct Property {
     CFX_CSSProperty eName;
     uint32_t dwHash;  // Hashed as wide string.
-    uint32_t dwType;
+    CFX_CSSValueTypeMask dwTypes;
   };
 
   struct PropertyValue {
@@ -27,12 +27,12 @@ class CFX_CSSData {
   };
 
   struct LengthUnit {
-    const wchar_t* value;
+    const wchar_t* value;  // Raw, POD struct.
     CFX_CSSNumberValue::Unit type;
   };
 
   struct Color {
-    const wchar_t* name;
+    const wchar_t* name;  // Raw, POD struct.
     FX_ARGB value;
   };
 

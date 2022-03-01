@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
@@ -45,6 +45,11 @@ class LevelDBWriteBatch;
 class TransactionalLevelDBTransaction
     : public base::RefCounted<TransactionalLevelDBTransaction> {
  public:
+  TransactionalLevelDBTransaction(const TransactionalLevelDBTransaction&) =
+      delete;
+  TransactionalLevelDBTransaction& operator=(
+      const TransactionalLevelDBTransaction&) = delete;
+
   leveldb::Status Put(const base::StringPiece& key,
                       std::string* value) WARN_UNUSED_RESULT;
 
@@ -104,7 +109,7 @@ class TransactionalLevelDBTransaction
 
   void EvictLoadedIterators();
 
-  TransactionalLevelDBDatabase* const db_;
+  const raw_ptr<TransactionalLevelDBDatabase> db_;
   // Non-null until the transaction is committed or rolled back.
   std::unique_ptr<LevelDBScope> scope_;
   bool finished_ = false;
@@ -135,8 +140,6 @@ class TransactionalLevelDBTransaction
   bool is_evicting_all_loaded_iterators_ = false;
 
   base::WeakPtrFactory<TransactionalLevelDBTransaction> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TransactionalLevelDBTransaction);
 };
 
 // Reads go straight to the database, ignoring any writes cached in
@@ -146,6 +149,9 @@ class TransactionalLevelDBTransaction
 // WriteBatch.
 class LevelDBDirectTransaction {
  public:
+  LevelDBDirectTransaction(const LevelDBDirectTransaction&) = delete;
+  LevelDBDirectTransaction& operator=(const LevelDBDirectTransaction&) = delete;
+
   virtual ~LevelDBDirectTransaction();
 
   leveldb::Status Put(const base::StringPiece& key, const std::string* value);
@@ -164,10 +170,8 @@ class LevelDBDirectTransaction {
 
   bool IsFinished() const { return write_batch_ == nullptr; }
 
-  TransactionalLevelDBDatabase* const db_;
+  const raw_ptr<TransactionalLevelDBDatabase> db_;
   std::unique_ptr<LevelDBWriteBatch> write_batch_;
-
-  DISALLOW_COPY_AND_ASSIGN(LevelDBDirectTransaction);
 };
 
 }  // namespace content

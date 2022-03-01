@@ -7,7 +7,6 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/ash_interfaces.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/night_light_controller.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "base/command_line.h"
@@ -193,6 +192,30 @@ GetTouchpadScrollAccelerationSearchConcepts() {
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kTouchpadScrollAcceleration}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetTouchpadHapticFeedback() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_TOUCHPAD_HAPTIC_FEEDBACK,
+       mojom::kPointersSubpagePath,
+       mojom::SearchResultIcon::kLaptop,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kTouchpadHapticFeedback}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetTouchpadHapticClickSensitivity() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_TOUCHPAD_HAPTIC_CLICK_SENSITIVITY,
+       mojom::kPointersSubpagePath,
+       mojom::SearchResultIcon::kLaptop,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kTouchpadHapticClickSensitivity}},
   });
   return *tags;
 }
@@ -592,9 +615,6 @@ void AddDeviceDisplayStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_SCHEDULE_NEVER},
       {"displayNightLightScheduleSunsetToSunRise",
        IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_SCHEDULE_SUNSET_TO_SUNRISE},
-      {"displayNightLightStartTime",
-       IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_START_TIME},
-      {"displayNightLightStopTime", IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_STOP_TIME},
       {"displayNightLightText", IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_TEXT},
       {"displayNightLightTemperatureLabel",
        IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_TEMPERATURE_LABEL},
@@ -673,10 +693,6 @@ void AddDeviceDisplayStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("enableTouchCalibrationSetting",
                           IsTouchCalibrationAvailable());
-
-  html_source->AddBoolean(
-      "allowDisplayIdentificationApi",
-      base::FeatureList::IsEnabled(ash::features::kDisplayIdentification));
 
   html_source->AddString("invalidDisplayId",
                          base::NumberToString(display::kInvalidDisplayId));
@@ -863,12 +879,8 @@ void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 }
 
 void DeviceSection::AddHandlers(content::WebUI* web_ui) {
-  if (ash::features::IsDisplayIdentificationEnabled() ||
-      ash::features::IsDisplayAlignmentAssistanceEnabled()) {
-    web_ui->AddMessageHandler(
-        std::make_unique<chromeos::settings::DisplayHandler>());
-  }
-
+  web_ui->AddMessageHandler(
+      std::make_unique<chromeos::settings::DisplayHandler>());
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::KeyboardHandler>());
   web_ui->AddMessageHandler(
@@ -927,6 +939,8 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::Setting::kTouchpadAcceleration,
       mojom::Setting::kTouchpadScrollAcceleration,
       mojom::Setting::kTouchpadSpeed,
+      mojom::Setting::kTouchpadHapticFeedback,
+      mojom::Setting::kTouchpadHapticClickSensitivity,
       mojom::Setting::kPointingStickSwapPrimaryButtons,
       mojom::Setting::kPointingStickSpeed,
       mojom::Setting::kPointingStickAcceleration,
@@ -1022,6 +1036,25 @@ void DeviceSection::TouchpadExists(bool exists) {
     updater.AddSearchTags(GetTouchpadSearchConcepts());
     if (base::FeatureList::IsEnabled(chromeos::features::kAllowScrollSettings))
       updater.AddSearchTags(GetTouchpadScrollAccelerationSearchConcepts());
+  }
+}
+
+void DeviceSection::HapticTouchpadExists(bool exists) {
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+  updater.RemoveSearchTags(GetTouchpadHapticFeedback());
+  updater.RemoveSearchTags(GetTouchpadHapticClickSensitivity());
+
+  if (!exists) {
+    return;
+  }
+
+  if (base::FeatureList::IsEnabled(
+          ::features::kAllowDisableTouchpadHapticFeedback)) {
+    updater.AddSearchTags(GetTouchpadHapticFeedback());
+  }
+  if (base::FeatureList::IsEnabled(
+          ::features::kAllowTouchpadHapticClickSettings)) {
+    updater.AddSearchTags(GetTouchpadHapticClickSensitivity());
   }
 }
 
@@ -1211,6 +1244,14 @@ void DeviceSection::AddDevicePointersStrings(
       {"pointingStickAccelerationLabel",
        IDS_SETTINGS_POINTING_STICK_ACCELERATION_LABEL},
       {"touchpadAccelerationLabel", IDS_SETTINGS_TOUCHPAD_ACCELERATION_LABEL},
+      {"touchpadHapticClickSensitivityLabel",
+       IDS_SETTINGS_TOUCHPAD_HAPTIC_CLICK_SENSITIVITY_LABEL},
+      {"touchpadHapticFeedbackLabel",
+       IDS_SETTINGS_TOUCHPAD_HAPTIC_FEEDBACK_LABEL},
+      {"touchpadHapticFirmClickLabel",
+       IDS_SETTINGS_TOUCHPAD_HAPTIC_FIRM_CLICK_LABEL},
+      {"touchpadHapticLightClickLabel",
+       IDS_SETTINGS_TOUCHPAD_HAPTIC_LIGHT_CLICK_LABEL},
       {"touchpadScrollAccelerationLabel",
        IDS_SETTINGS_TOUCHPAD_SCROLL_ACCELERATION_LABEL},
       {"touchpadScrollSpeed", IDS_SETTINGS_TOUCHPAD_SCROLL_SPEED_LABEL},
@@ -1224,6 +1265,12 @@ void DeviceSection::AddDevicePointersStrings(
       "allowDisableMouseAcceleration",
       base::FeatureList::IsEnabled(::features::kAllowDisableMouseAcceleration));
   html_source->AddBoolean("allowScrollSettings", AreScrollSettingsAllowed());
+  html_source->AddBoolean("allowTouchpadHapticFeedback",
+                          base::FeatureList::IsEnabled(
+                              ::features::kAllowDisableTouchpadHapticFeedback));
+  html_source->AddBoolean("allowTouchpadHapticClickSettings",
+                          base::FeatureList::IsEnabled(
+                              ::features::kAllowTouchpadHapticClickSettings));
 }
 
 }  // namespace settings

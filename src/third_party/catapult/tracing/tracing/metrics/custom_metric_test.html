@@ -17,19 +17,29 @@ tr.b.unittest.testSuite(function() {
     const model = tr.c.TestUtils.newModel((model) => {
       const browserThread = setUpBrowserThread(model);
       addTraces(browserThread);
+      addSingleTrace(setUpOtherBrowserThread(model));
+      addSingleTrace(setUpOtherRendererThread(model));
+      const rendererMainThread = setUpRendererMainThread(model);
+      setMetrics(rendererMainThread);
     });
     const histograms = new tr.v.HistogramSet();
     tr.metrics.customMetric(histograms, model);
-    const hist1 = histograms.getHistogramNamed('custom_metric:metric1');
+    const hist1 = histograms.getHistogramNamed('metric1');
     assert.strictEqual(hist1.numValues, 2);
-    const hist2 = histograms.getHistogramNamed('custom_metric:metric2');
+    assert.strictEqual(hist1.unit.asJSON(), 'ms_smallerIsBetter');
+    const hist2 = histograms.getHistogramNamed('metric2');
     assert.strictEqual(hist2.numValues, 1);
+    assert.strictEqual(hist2.unit.asJSON(), 'ms_biggerIsBetter');
+    assert.strictEqual(hist2.description, 'This is metric2');
     const hist3 = histograms.getHistogramNamed('metric3');
-    // metric3 is not collected because its name doesn't start with
-    // "custom_metric:".
+    // metric3 is not collected because its name isn't reported.
     assert.isUndefined(hist3);
-    const hist4 = histograms.getHistogramNamed('custom_metric:metric4');
+    const hist4 = histograms.getHistogramNamed('metric4');
     assert.strictEqual(hist4.numValues, 2);
+    // metric5 is collected from both other browser thread and
+    // other renderer thread.
+    const hist5 = histograms.getHistogramNamed('metric5');
+    assert.strictEqual(hist5.numValues, 2);
   });
 
   test('customMetric_collectPerformanceMark', function() {
@@ -50,13 +60,13 @@ tr.b.unittest.testSuite(function() {
     assert.strictEqual(hist2.min, 18.0);
     assert.strictEqual(hist2.average, 18.0);
     // metric3 is not collected because
-    // ":benchmark_begin" and ":benchmark_end" are missing.
+    // ":metric_begin" and ":metric_end" are missing.
     assert.isUndefined(histograms.getHistogramNamed('metric3'));
     // metric4 is not collected because
-    // ":benchmark_end" is missing.
+    // ":metric_end" is missing.
     assert.isUndefined(histograms.getHistogramNamed('metric4'));
     // metric5 is not collected because
-    // ":benchmark_begin" is missing.
+    // ":metric_begin" is missing.
     assert.isUndefined(histograms.getHistogramNamed('metric5'));
     const hist3 = histograms.getHistogramNamed('metric6');
     assert.strictEqual(hist3.numValues, 2);
@@ -87,13 +97,28 @@ tr.b.unittest.testSuite(function() {
     return mainThread;
   }
 
+  function setUpOtherBrowserThread(model) {
+    const BROWSER_PROCESS_ID = 1234;
+    const browserProcess = model.getOrCreateProcess(BROWSER_PROCESS_ID);
+    const thread = browserProcess.getOrCreateThread(3);
+    thread.name = 'Other';
+    return thread;
+  }
+
+  function setUpOtherRendererThread(model) {
+    const RENDERER_PROCESS_ID = 2345;
+    const rendererProcess = model.getOrCreateProcess(RENDERER_PROCESS_ID);
+    const thread = rendererProcess.getOrCreateThread(4);
+    thread.name = 'Other';
+    return thread;
+  }
+
   function addEvent(mainThread, event) {
     mainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
       cat: 'blink.user_timing',
       title: event.title,
       start: event.start,
       duration: 0.0,
-      args: {data: {navigationId: event.navigationId}}
     }));
   }
 
@@ -101,19 +126,19 @@ tr.b.unittest.testSuite(function() {
     [
       {
         cat: 'browser',
-        title: 'custom_metric:metric1',
+        title: 'metric1',
         start: 1,
         duration: 1,
       },
       {
         cat: 'browser',
-        title: 'custom_metric:metric1',
+        title: 'metric1',
         start: 2,
         duration: 2,
       },
       {
         cat: 'browser',
-        title: 'custom_metric:metric2',
+        title: 'metric2',
         start: 3,
         duration: 3,
       },
@@ -130,13 +155,13 @@ tr.b.unittest.testSuite(function() {
     [
       {
         cat: 'browser',
-        title: 'custom_metric:metric4',
+        title: 'metric4',
         start: 1,
         duration: 1,
       },
       {
         cat: 'browser',
-        title: 'custom_metric:metric4',
+        title: 'metric4',
         start: 2,
         duration: 2,
       }
@@ -145,30 +170,66 @@ tr.b.unittest.testSuite(function() {
     });
   }
 
+  function addSingleTrace(thread) {
+    const slice = {
+      cat: 'browser',
+      title: 'metric5',
+      start: 1,
+      duration: 1,
+    };
+    thread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx(slice));
+  }
+
+  function setMetrics(thread) {
+    const traceEvents = [
+      {
+        name: "metric1",
+      },
+      {
+        name: "metric2",
+        unit: "ms_biggerIsBetter",
+        description: "This is metric2"
+      },
+      {
+        name: "metric4",
+      },
+      {
+        name: "metric5",
+      },
+    ]
+    const report = `custom_metric:manifest:${JSON.stringify(traceEvents)}`;
+    thread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
+      cat: 'blink.user_timing',
+      title: report,
+      start: 0,
+      duration: 0,
+    }));
+  }
+
   function addPerformanceMark(thread) {
     [
       {
-        title: 'metric1:benchmark_begin',
+        title: 'metric1:metric_begin',
         start: 10,
       },
       {
-        title: 'metric1:benchmark_end',
+        title: 'metric1:metric_end',
         start: 15,
       },
       {
-        title: 'metric1:benchmark_begin',
+        title: 'metric1:metric_begin',
         start: 17,
       },
       {
-        title: 'metric1:benchmark_end',
+        title: 'metric1:metric_end',
         start: 19,
       },
       {
-        title: 'metric2:benchmark_begin',
+        title: 'metric2:metric_begin',
         start: 2,
       },
       {
-        title: 'metric2:benchmark_end',
+        title: 'metric2:metric_end',
         start: 20,
       },
       {
@@ -176,27 +237,27 @@ tr.b.unittest.testSuite(function() {
         start: 25,
       },
       {
-        title: 'metric4:benchmark_begin',
+        title: 'metric4:metric_begin',
         start: 5,
       },
       {
-        title: 'metric5:benchmark_end',
+        title: 'metric5:metric_end',
         start: 10,
       },
       {
-        title: 'metric6:49:benchmark_value',
+        title: 'metric6:49:metric_value',
         start: 10,
       },
       {
-        title: 'metric6:51:benchmark_value',
+        title: 'metric6:51:metric_value',
         start: 20,
       },
       {
-        title: 'metric7:invalid value:benchmark_value',
+        title: 'metric7:invalid value:metric_value',
         start: 10,
       },
       {
-        title: 'metric8:benchmark_value',
+        title: 'metric8:metric_value',
         start: 10,
       }
     ].forEach(slice => {
@@ -205,7 +266,6 @@ tr.b.unittest.testSuite(function() {
         title: slice.title,
         start: slice.start,
         duration: 0,
-        args: {data: {navigationId: '0xA'}}
       }));
     });
   }

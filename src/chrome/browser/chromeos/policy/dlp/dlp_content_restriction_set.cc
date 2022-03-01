@@ -6,7 +6,19 @@
 
 #include <algorithm>
 
+#include "base/containers/flat_map.h"
+#include "base/no_destructor.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
+#include "url/gurl.h"
+
 namespace policy {
+
+namespace {
+static base::NoDestructor<base::flat_map<GURL, DlpContentRestrictionSet>>
+    g_restrictions_for_url_for_testing;
+}
 
 DlpContentRestrictionSet::DlpContentRestrictionSet() {
   restrictions_.fill(RestrictionLevelAndUrl());
@@ -56,7 +68,7 @@ RestrictionLevelAndUrl DlpContentRestrictionSet::GetRestrictionLevelAndUrl(
 }
 
 bool DlpContentRestrictionSet::IsEmpty() const {
-  for (int i = 0; i < restrictions_.size(); ++i) {
+  for (size_t i = 0; i < restrictions_.size(); ++i) {
     if (restrictions_[i].level != DlpRulesManager::Level::kNotSet)
       return false;
   }
@@ -65,7 +77,7 @@ bool DlpContentRestrictionSet::IsEmpty() const {
 
 void DlpContentRestrictionSet::UnionWith(
     const DlpContentRestrictionSet& other) {
-  for (int i = 0; i < restrictions_.size(); ++i) {
+  for (size_t i = 0; i < restrictions_.size(); ++i) {
     if (other.restrictions_[i].level > restrictions_[i].level) {
       restrictions_[i] = other.restrictions_[i];
     }
@@ -76,12 +88,58 @@ DlpContentRestrictionSet DlpContentRestrictionSet::DifferenceWith(
     const DlpContentRestrictionSet& other) const {
   // Leave only the restrictions that are present in |this|, but not in |other|.
   DlpContentRestrictionSet result;
-  for (int i = 0; i < restrictions_.size(); ++i) {
+  for (size_t i = 0; i < restrictions_.size(); ++i) {
     if (restrictions_[i].level > other.restrictions_[i].level) {
       result.restrictions_[i] = restrictions_[i];
     }
   }
   return result;
+}
+
+// static
+DlpContentRestrictionSet DlpContentRestrictionSet::GetForURL(const GURL& url) {
+  if (g_restrictions_for_url_for_testing->find(url) !=
+      g_restrictions_for_url_for_testing->end()) {
+    return g_restrictions_for_url_for_testing->at(url);
+  }
+
+  DlpContentRestrictionSet set;
+
+  DlpRulesManager* dlp_rules_manager =
+      DlpRulesManagerFactory::GetForPrimaryProfile();
+  if (!dlp_rules_manager)
+    return set;
+
+  const size_t kRestrictionsCount = 4;
+  static constexpr std::array<
+      std::pair<DlpRulesManager::Restriction, DlpContentRestriction>,
+      kRestrictionsCount>
+      kRestrictionsArray = {{{DlpRulesManager::Restriction::kScreenshot,
+                              DlpContentRestriction::kScreenshot},
+                             {DlpRulesManager::Restriction::kPrivacyScreen,
+                              DlpContentRestriction::kPrivacyScreen},
+                             {DlpRulesManager::Restriction::kPrinting,
+                              DlpContentRestriction::kPrint},
+                             {DlpRulesManager::Restriction::kScreenShare,
+                              DlpContentRestriction::kScreenShare}}};
+
+  for (const auto& restriction : kRestrictionsArray) {
+    DlpRulesManager::Level level =
+        dlp_rules_manager->IsRestricted(url, restriction.first);
+    if (level == DlpRulesManager::Level::kNotSet ||
+        level == DlpRulesManager::Level::kAllow)
+      continue;
+    set.SetRestriction(restriction.second, level, url);
+  }
+
+  return set;
+}
+
+// static
+void DlpContentRestrictionSet::SetRestrictionsForURLForTesting(
+    const GURL& url,
+    const DlpContentRestrictionSet& restrictions) {
+  g_restrictions_for_url_for_testing->insert_or_assign(url, restrictions);
 }
 
 }  // namespace policy

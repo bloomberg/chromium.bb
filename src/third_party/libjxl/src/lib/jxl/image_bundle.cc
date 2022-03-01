@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/jxl/image_bundle.h"
 
@@ -120,6 +111,32 @@ void ImageBundle::SetAlpha(ImageF&& alpha, bool alpha_is_premultiplied) {
       std::move(alpha));
   // num_extra_channels is automatically set in visitor
   VerifySizes();
+}
+void ImageBundle::PremultiplyAlpha() {
+  if (!HasAlpha()) return;
+  if (!HasColor()) return;
+  const ExtraChannelInfo* eci = metadata_->Find(ExtraChannel::kAlpha);
+  if (eci->alpha_associated) return;  // already premultiplied
+  JXL_CHECK(color_.ysize() == alpha()->ysize());
+  JXL_CHECK(color_.xsize() == alpha()->xsize());
+  for (size_t y = 0; y < color_.ysize(); y++) {
+    ::jxl::PremultiplyAlpha(color_.PlaneRow(0, y), color_.PlaneRow(1, y),
+                            color_.PlaneRow(2, y), alpha()->Row(y),
+                            color_.xsize());
+  }
+}
+void ImageBundle::UnpremultiplyAlpha() {
+  if (!HasAlpha()) return;
+  if (!HasColor()) return;
+  const ExtraChannelInfo* eci = metadata_->Find(ExtraChannel::kAlpha);
+  if (!eci->alpha_associated) return;  // already unpremultiplied
+  JXL_CHECK(color_.ysize() == alpha()->ysize());
+  JXL_CHECK(color_.xsize() == alpha()->xsize());
+  for (size_t y = 0; y < color_.ysize(); y++) {
+    ::jxl::UnpremultiplyAlpha(color_.PlaneRow(0, y), color_.PlaneRow(1, y),
+                              color_.PlaneRow(2, y), alpha()->Row(y),
+                              color_.xsize());
+  }
 }
 
 void ImageBundle::SetExtraChannels(std::vector<ImageF>&& extra_channels) {

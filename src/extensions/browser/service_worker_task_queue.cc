@@ -5,6 +5,7 @@
 #include "extensions/browser/service_worker_task_queue.h"
 
 #include <memory>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -15,6 +16,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/console_message.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -29,7 +31,10 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
+#include "url/origin.h"
 
 using content::BrowserContext;
 
@@ -82,7 +87,10 @@ enum class RendererState {
 ServiceWorkerTaskQueue::ServiceWorkerTaskQueue(BrowserContext* browser_context)
     : browser_context_(browser_context) {}
 
-ServiceWorkerTaskQueue::~ServiceWorkerTaskQueue() {}
+ServiceWorkerTaskQueue::~ServiceWorkerTaskQueue() {
+  for (auto* const service_worker_context : observing_worker_contexts_)
+    service_worker_context->RemoveObserver(this);
+}
 
 ServiceWorkerTaskQueue::TestObserver::TestObserver() {}
 
@@ -200,7 +208,10 @@ void ServiceWorkerTaskQueue::DidStartWorkerFail(
   // TODO(https://crbug/1062936): Needs more thought: extension would be in
   // perma-broken state after this as the registration wouldn't be stored if
   // this happens.
-  LOG(ERROR) << "DidStartWorkerFail " << context_id.first.extension_id();
+  LOG(ERROR)
+      << "DidStartWorkerFail " << context_id.first.extension_id() << ": "
+      << static_cast<std::underlying_type_t<blink::ServiceWorkerStatusCode>>(
+             status_code);
 }
 
 void ServiceWorkerTaskQueue::DidInitializeServiceWorkerContext(
@@ -228,6 +239,7 @@ void ServiceWorkerTaskQueue::DidStartServiceWorkerContext(
   SequencedContextId context_id(
       LazyContextId(browser_context_, extension_id, service_worker_scope),
       activation_sequence);
+
   const WorkerId worker_id = {extension_id, render_process_id,
                               service_worker_version_id, thread_id};
   WorkerState* worker_state = GetWorkerState(context_id);
@@ -337,6 +349,10 @@ void ServiceWorkerTaskQueue::ActivateExtension(const Extension* extension) {
   DCHECK(!base::Contains(worker_state_map_, context_id));
   WorkerState& worker_state = worker_state_map_[context_id];
 
+  content::ServiceWorkerContext* service_worker_context =
+      GetServiceWorkerContext(extension->id());
+  StartObserving(service_worker_context);
+
   // Note: version.IsValid() = false implies we didn't have any prefs stored.
   base::Version version = RetrieveRegisteredServiceWorkerVersion(extension_id);
   const bool service_worker_already_registered =
@@ -361,18 +377,14 @@ void ServiceWorkerTaskQueue::ActivateExtension(const Extension* extension) {
       BackgroundServiceWorkerType::kModule)
     option.type = blink::mojom::ScriptType::kModule;
   option.scope = extension->url();
-  util::GetStoragePartitionForExtensionId(extension->id(), browser_context_)
-      ->GetServiceWorkerContext()
-      ->RegisterServiceWorker(
-          script_url, option,
-          base::BindOnce(&ServiceWorkerTaskQueue::DidRegisterServiceWorker,
-                         weak_factory_.GetWeakPtr(), context_id,
-                         base::Time::Now()));
+  service_worker_context->RegisterServiceWorker(
+      script_url, blink::StorageKey(url::Origin::Create(option.scope)), option,
+      base::BindOnce(&ServiceWorkerTaskQueue::DidRegisterServiceWorker,
+                     weak_factory_.GetWeakPtr(), context_id,
+                     base::Time::Now()));
 }
 
 void ServiceWorkerTaskQueue::DeactivateExtension(const Extension* extension) {
-  GURL script_url = extension->GetResourceURL(
-      BackgroundInfo::GetBackgroundServiceWorkerScript(extension));
   const ExtensionId extension_id = extension->id();
   RemoveRegisteredServiceWorkerInfo(extension_id);
   absl::optional<ActivationSequence> sequence =
@@ -392,12 +404,15 @@ void ServiceWorkerTaskQueue::DeactivateExtension(const Extension* extension) {
   worker_state->pending_tasks_.clear();
   worker_state_map_.erase(context_id);
 
-  util::GetStoragePartitionForExtensionId(extension->id(), browser_context_)
-      ->GetServiceWorkerContext()
-      ->UnregisterServiceWorker(
-          extension->url(),
-          base::BindOnce(&ServiceWorkerTaskQueue::DidUnregisterServiceWorker,
-                         weak_factory_.GetWeakPtr(), extension_id, *sequence));
+  content::ServiceWorkerContext* service_worker_context =
+      GetServiceWorkerContext(extension->id());
+
+  service_worker_context->UnregisterServiceWorker(
+      extension->url(), blink::StorageKey(extension->origin()),
+      base::BindOnce(&ServiceWorkerTaskQueue::DidUnregisterServiceWorker,
+                     weak_factory_.GetWeakPtr(), extension_id, *sequence));
+
+  StopObserving(service_worker_context);
 }
 
 void ServiceWorkerTaskQueue::RunTasksAfterStartWorker(
@@ -418,8 +433,9 @@ void ServiceWorkerTaskQueue::RunTasksAfterStartWorker(
   content::ServiceWorkerContext* service_worker_context =
       partition->GetServiceWorkerContext();
 
+  const GURL& scope = context_id.first.service_worker_scope();
   service_worker_context->StartWorkerForScope(
-      context_id.first.service_worker_scope(),
+      scope, blink::StorageKey(url::Origin::Create(scope)),
       base::BindOnce(&ServiceWorkerTaskQueue::DidStartWorkerForScope,
                      weak_factory_.GetWeakPtr(), context_id, base::Time::Now()),
       base::BindOnce(&ServiceWorkerTaskQueue::DidStartWorkerFail,
@@ -466,8 +482,8 @@ void ServiceWorkerTaskQueue::DidRegisterServiceWorker(
 
   if (worker_state->has_pending_tasks()) {
     // TODO(lazyboy): If worker for |context_id| is already running, consider
-    // not calling StartWorker. This isn't straightforward as service worker's
-    // internal state is mostly on the core thread.
+    // not calling StartWorker. This should be straightforward now that service
+    // worker's internal state is on the UI thread rather than the IO thread.
     RunTasksAfterStartWorker(context_id);
   }
 }
@@ -575,6 +591,39 @@ absl::optional<ActivationSequence> ServiceWorkerTaskQueue::GetCurrentSequence(
   return iter->second;
 }
 
+void ServiceWorkerTaskQueue::OnReportConsoleMessage(
+    int64_t version_id,
+    const GURL& scope,
+    const content::ConsoleMessage& message) {
+  if (message.message_level != blink::mojom::ConsoleMessageLevel::kError) {
+    // We don't report certain low-severity errors.
+    return;
+  }
+
+  auto error_instance = std::make_unique<RuntimeError>(
+      scope.host(), browser_context_->IsOffTheRecord(),
+      base::UTF8ToUTF16(content::MessageSourceToString(message.source)),
+      message.message,
+      StackTrace(1, StackFrame(message.line_number, 1,
+                               base::UTF8ToUTF16(message.source_url.spec()),
+                               u"")) /* Construct a trace to contain
+                                        one frame with the error */
+      ,
+      message.source_url,
+      content::ConsoleMessageLevelToLogSeverity(message.message_level),
+      -1 /* a service worker does not have a render_view_id */,
+      -1 /* TODO(crbug.com/1218812): Retrieve render_process_id */);
+
+  ExtensionsBrowserClient::Get()->ReportError(browser_context_,
+                                              std::move(error_instance));
+}
+
+void ServiceWorkerTaskQueue::OnDestruct(
+    content::ServiceWorkerContext* context) {
+  context->RemoveObserver(this);
+  observing_worker_contexts_.erase(context);
+}
+
 size_t ServiceWorkerTaskQueue::GetNumPendingTasksForTest(
     const LazyContextId& lazy_context_id) {
   auto current_sequence = GetCurrentSequence(lazy_context_id.extension_id());
@@ -590,6 +639,43 @@ ServiceWorkerTaskQueue::WorkerState* ServiceWorkerTaskQueue::GetWorkerState(
   auto worker_iter = worker_state_map_.find(context_id);
   return worker_iter == worker_state_map_.end() ? nullptr
                                                 : &worker_iter->second;
+}
+
+content::ServiceWorkerContext* ServiceWorkerTaskQueue::GetServiceWorkerContext(
+    const ExtensionId& extension_id) {
+  return util::GetStoragePartitionForExtensionId(extension_id, browser_context_)
+      ->GetServiceWorkerContext();
+}
+
+void ServiceWorkerTaskQueue::StartObserving(
+    content::ServiceWorkerContext* service_worker_context) {
+  if (observing_worker_contexts_.count(service_worker_context) == 0u)
+    service_worker_context->AddObserver(this);
+  observing_worker_contexts_.insert(service_worker_context);
+}
+
+void ServiceWorkerTaskQueue::StopObserving(
+    content::ServiceWorkerContext* service_worker_context) {
+  // TODO(crbug.com/1222759): Investigate when the DCHECK's condition can be
+  // false.
+  DCHECK(observing_worker_contexts_.count(service_worker_context) > 0u);
+  observing_worker_contexts_.erase(service_worker_context);
+  if (!observing_worker_contexts_.count(service_worker_context))
+    service_worker_context->RemoveObserver(this);
+}
+
+void ServiceWorkerTaskQueue::ActivateIncognitoSplitModeExtensions(
+    ServiceWorkerTaskQueue* other) {
+  DCHECK(browser_context_->IsOffTheRecord())
+      << "Only need to activate split mode extensions for an OTR context";
+  for (const auto& activated : other->activation_sequences_) {
+    ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
+    DCHECK(registry);
+    const Extension* extension =
+        registry->enabled_extensions().GetByID(activated.first);
+    if (extension && IncognitoInfo::IsSplitMode(extension))
+      ActivateExtension(extension);
+  }
 }
 
 }  // namespace extensions

@@ -13,10 +13,12 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/allocator/buildflags.h"
 #include "base/bind.h"
 #include "base/callback_internal.h"
 #include "base/check.h"
 #include "base/compiler_specific.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/raw_scoped_refptr_mismatch_checker.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
@@ -44,7 +46,9 @@
 //  FunctorTraits<> -- Type traits used to determine the correct RunType and
 //                     invocation manner for a Functor.  This is where function
 //                     signature adapters are applied.
-//  InvokeHelper<> -- Take a Functor + arguments and actully invokes it.
+//  StorageTraits<> -- Type traits that determine how a bound argument is
+//                     stored in BindState.
+//  InvokeHelper<> -- Take a Functor + arguments and actually invokes it.
 //                    Handle the differing syntaxes needed for WeakPtr<>
 //                    support.  This is separate from Invoker to avoid creating
 //                    multiple version of Invoker<>.
@@ -84,7 +88,29 @@ class UnretainedWrapper {
   T* get() const { return ptr_; }
 
  private:
-  T* ptr_;
+  using ImplType = std::
+      conditional_t<raw_ptr_traits::IsSupportedType<T>::value, raw_ptr<T>, T*>;
+  ImplType ptr_;
+};
+
+// Storage type for std::reference_wrapper so `BindState` can internally store
+// unprotected references using raw_ptr.
+//
+// std::reference_wrapper<T> and T& do not work, since the reference lifetime is
+// not safely protected by MiraclePtr.
+//
+// UnretainedWrapper<T> and raw_ptr<T> do not work, since BindUnwrapTraits
+// would try to pass by T* rather than T&.
+template <typename T>
+class UnretainedRefWrapper {
+ public:
+  explicit UnretainedRefWrapper(T& o) : ptr_(std::addressof(o)) {}
+  T& get() const { return *ptr_; }
+
+ private:
+  using ImplType = std::
+      conditional_t<raw_ptr_traits::IsSupportedType<T>::value, raw_ptr<T>, T*>;
+  ImplType const ptr_;
 };
 
 template <typename T>
@@ -629,6 +655,31 @@ struct FunctorTraits<RepeatingCallback<R(Args...)>> {
 template <typename Functor>
 using MakeFunctorTraits = FunctorTraits<std::decay_t<Functor>>;
 
+// StorageTraits<>
+//
+// See description at top of file.
+template <typename T>
+struct StorageTraits {
+  using Type = T;
+};
+
+// For T*, store as UnretainedWrapper<T> for safety, as it internally uses
+// raw_ptr<T> (when possible).
+template <typename T>
+struct StorageTraits<T*> {
+  using Type = UnretainedWrapper<T>;
+};
+
+// Unwrap std::reference_wrapper and store it in a custom wrapper so that
+// references are also protected with raw_ptr<T>.
+template <typename T>
+struct StorageTraits<std::reference_wrapper<T>> {
+  using Type = UnretainedRefWrapper<T>;
+};
+
+template <typename T>
+using MakeStorageType = typename StorageTraits<std::decay_t<T>>::Type;
+
 // InvokeHelper<>
 //
 // There are 2 logical InvokeHelper<> specializations: normal, WeakCalls.
@@ -818,17 +869,22 @@ BanUnconstructedRefCountedReceiver(const Receiver& receiver, Unused&&...) {
   DCHECK(receiver);
 
   // It's error prone to make the implicit first reference to ref-counted types.
-  // In the example below, base::BindOnce() makes the implicit first reference
-  // to the ref-counted Foo. If PostTask() failed or the posted task ran fast
-  // enough, the newly created instance can be destroyed before |oo| makes
-  // another reference.
+  // In the example below, base::BindOnce() would make the implicit first
+  // reference to the ref-counted Foo. If PostTask() failed or the posted task
+  // ran fast enough, the newly created instance could be destroyed before `oo`
+  // makes another reference.
   //   Foo::Foo() {
   //     base::PostTask(FROM_HERE, base::BindOnce(&Foo::Bar, this));
   //   }
   //
   //   scoped_refptr<Foo> oo = new Foo();
   //
-  // Instead of doing like above, please consider adding a static constructor,
+  // Hence, base::Bind{Once,Repeating}() refuses to create the first reference
+  // to ref-counted objects, and DCHECK()s otherwise. As above, that typically
+  // happens around PostTask() in their constructor, and such objects can be
+  // destroyed before `new` returns if the task resolves fast enough.
+  //
+  // Instead of doing the above, please consider adding a static constructor,
   // and keep the first reference alive explicitly.
   //   // static
   //   scoped_refptr<Foo> Foo::Create() {
@@ -840,11 +896,8 @@ BanUnconstructedRefCountedReceiver(const Receiver& receiver, Unused&&...) {
   //   Foo::Foo() {}
   //
   //   scoped_refptr<Foo> oo = Foo::Create();
-  DCHECK(receiver->HasAtLeastOneRef())
-      << "base::Bind{Once,Repeating}() refuses to create the first reference "
-         "to ref-counted objects. That typically happens around PostTask() in "
-         "their constructor, and such objects can be destroyed before `new` "
-         "returns if the task resolves fast enough.";
+  //
+  DCHECK(receiver->HasAtLeastOneRef());
 }
 
 // BindState<>
@@ -930,7 +983,7 @@ template <typename Functor, typename... BoundArgs>
 struct MakeBindStateTypeImpl<false, Functor, BoundArgs...> {
   static_assert(!HasRefCountedTypeAsRawPtr<std::decay_t<BoundArgs>...>::value,
                 "A parameter is a refcounted type and needs scoped_refptr.");
-  using Type = BindState<std::decay_t<Functor>, std::decay_t<BoundArgs>...>;
+  using Type = BindState<std::decay_t<Functor>, MakeStorageType<BoundArgs>...>;
 };
 
 template <typename Functor>
@@ -960,7 +1013,7 @@ struct MakeBindStateTypeImpl<true, Functor, Receiver, BoundArgs...> {
       std::conditional_t<std::is_pointer<DecayedReceiver>::value,
                          scoped_refptr<std::remove_pointer_t<DecayedReceiver>>,
                          DecayedReceiver>,
-      std::decay_t<BoundArgs>...>;
+      MakeStorageType<BoundArgs>...>;
 };
 
 template <typename Functor, typename... BoundArgs>
@@ -1230,6 +1283,40 @@ decltype(auto) BindImpl(Functor&& functor, Args&&... args) {
       std::forward<Functor>(functor), std::forward<Args>(args)...));
 }
 
+// Special cases for binding to a base::{Once, Repeating}Callback without extra
+// bound arguments. We CHECK() the validity of callback to guard against null
+// pointers accidentally ending up in posted tasks, causing hard-to-debug
+// crashes.
+template <template <typename> class CallbackT,
+          typename Signature,
+          std::enable_if_t<std::is_same<CallbackT<Signature>,
+                                        OnceCallback<Signature>>::value>* =
+              nullptr>
+OnceCallback<Signature> BindImpl(OnceCallback<Signature> callback) {
+  CHECK(callback);
+  return callback;
+}
+
+template <template <typename> class CallbackT,
+          typename Signature,
+          std::enable_if_t<std::is_same<CallbackT<Signature>,
+                                        OnceCallback<Signature>>::value>* =
+              nullptr>
+OnceCallback<Signature> BindImpl(RepeatingCallback<Signature> callback) {
+  CHECK(callback);
+  return callback;
+}
+
+template <template <typename> class CallbackT,
+          typename Signature,
+          std::enable_if_t<std::is_same<CallbackT<Signature>,
+                                        RepeatingCallback<Signature>>::value>* =
+              nullptr>
+RepeatingCallback<Signature> BindImpl(RepeatingCallback<Signature> callback) {
+  CHECK(callback);
+  return callback;
+}
+
 }  // namespace internal
 
 // An injection point to control |this| pointer behavior on a method invocation.
@@ -1276,6 +1363,13 @@ struct BindUnwrapTraits {
 template <typename T>
 struct BindUnwrapTraits<internal::UnretainedWrapper<T>> {
   static T* Unwrap(const internal::UnretainedWrapper<T>& o) { return o.get(); }
+};
+
+template <typename T>
+struct BindUnwrapTraits<internal::UnretainedRefWrapper<T>> {
+  static T& Unwrap(const internal::UnretainedRefWrapper<T>& o) {
+    return o.get();
+  }
 };
 
 template <typename T>

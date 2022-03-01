@@ -147,7 +147,7 @@ libgav1::StatusCode GetFrameBufferImpl(void* callback_private_data,
   // proper, indicated by Y. VideoFramePool aligns the first byte of the
   // buffer, indicated by X. To make sure the byte indicated by Y is also
   // aligned, we need to pad left_border to be a multiple of stride_alignment.
-  left_border = base::bits::Align(left_border, stride_alignment);
+  left_border = base::bits::AlignUp(left_border, stride_alignment);
   gfx::Size coded_size(left_border + width + right_border,
                        top_border + height + bottom_border);
   gfx::Rect visible_rect(left_border, top_border, width, height);
@@ -208,8 +208,7 @@ scoped_refptr<VideoFrame> FormatVideoFrame(
     const VideoColorSpace& container_color_space) {
   scoped_refptr<VideoFrame> frame =
       static_cast<VideoFrame*>(buffer.buffer_private_data);
-  frame->set_timestamp(
-      base::TimeDelta::FromMicroseconds(buffer.user_private_data));
+  frame->set_timestamp(base::Microseconds(buffer.user_private_data));
 
   // AV1 color space defines match ISO 23001-8:2016 via ISO/IEC 23091-4/ITU-T
   // H.273. https://aomediacodec.github.io/av1-spec/#color-config-semantics
@@ -269,7 +268,7 @@ void Gav1VideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   InitCB bound_init_cb = bind_callbacks_ ? BindToCurrentLoop(std::move(init_cb))
                                          : std::move(init_cb);
-  if (config.is_encrypted() || config.codec() != kCodecAV1) {
+  if (config.is_encrypted() || config.codec() != VideoCodec::kAV1) {
     std::move(bound_init_cb).Run(StatusCode::kEncryptedContentUnsupported);
     return;
   }
@@ -303,7 +302,7 @@ void Gav1VideoDecoder::Initialize(const VideoDecoderConfig& config,
   output_cb_ = output_cb;
   state_ = DecoderState::kDecoding;
   color_space_ = config.color_space_info();
-  pixel_aspect_ratio_ = config.GetPixelAspectRatio();
+  aspect_ratio_ = config.aspect_ratio();
   std::move(bound_init_cb).Run(OkStatus());
 }
 
@@ -421,10 +420,6 @@ void Gav1VideoDecoder::Reset(base::OnceClosure reset_cb) {
   }
 }
 
-bool Gav1VideoDecoder::IsOptimizedForRTC() const {
-  return true;
-}
-
 void Gav1VideoDecoder::Detach() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!bind_callbacks_);
@@ -442,9 +437,9 @@ scoped_refptr<VideoFrame> Gav1VideoDecoder::CreateVideoFrame(
   //   The buffer for the new frame will be zero initialized.  Reused frames
   //   will not be zero initialized.
   // The zero initialization is necessary for FFmpeg but not for libgav1.
-  return frame_pool_.CreateFrame(
-      format, coded_size, visible_rect,
-      GetNaturalSize(visible_rect, pixel_aspect_ratio_), kNoTimestamp);
+  return frame_pool_.CreateFrame(format, coded_size, visible_rect,
+                                 aspect_ratio_.GetNaturalSize(visible_rect),
+                                 kNoTimestamp);
 }
 
 void Gav1VideoDecoder::CloseDecoder() {

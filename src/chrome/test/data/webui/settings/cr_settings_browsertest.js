@@ -8,20 +8,21 @@
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "build/branding_buildflags.h"');
+GEN('#include "build/build_config.h"');
 GEN('#include "build/chromeos_buildflags.h"');
 GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
-GEN('#include "components/password_manager/core/common/password_manager_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
 GEN('#include "components/language/core/common/language_experiments.h"');
 GEN('#endif');
 
+/* eslint-disable no-var */
+
 /** Test fixture for shared Polymer 3 elements. */
-// eslint-disable-next-line no-var
-var CrSettingsV3BrowserTest = class extends PolymerTest {
+var CrSettingsBrowserTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
     return 'chrome://settings';
@@ -42,146 +43,109 @@ var CrSettingsV3BrowserTest = class extends PolymerTest {
   }
 };
 
-// eslint-disable-next-line no-var
-var CrSettingsAboutPageV3Test = class extends CrSettingsV3BrowserTest {
+var CrSettingsAboutPageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/about_page_tests.js';
+    return 'chrome://settings/test_loader.html?module=settings/about_page_tests.js&host=webui-test';
   }
 };
 
-TEST_F('CrSettingsAboutPageV3Test', 'AboutPage', function() {
+TEST_F('CrSettingsAboutPageTest', 'AboutPage', function() {
   mocha.grep('AboutPageTest_AllBuilds').run();
 });
 
 GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
-TEST_F('CrSettingsAboutPageV3Test', 'AboutPage_OfficialBuild', function() {
+TEST_F('CrSettingsAboutPageTest', 'AboutPage_OfficialBuild', function() {
   mocha.grep('AboutPageTest_OfficialBuilds').run();
 });
 GEN('#endif');
 
-// eslint-disable-next-line no-var
-var CrSettingsAvatarIconV3Test = class extends CrSettingsV3BrowserTest {
+var CrSettingsAvatarIconTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/avatar_icon_test.js';
+    return 'chrome://settings/test_loader.html?module=settings/avatar_icon_test.js&host=webui-test';
   }
 };
 
-TEST_F('CrSettingsAvatarIconV3Test', 'All', function() {
+TEST_F('CrSettingsAvatarIconTest', 'All', function() {
   mocha.run();
 });
 
-// eslint-disable-next-line no-var
-var CrSettingsBasicPageV3Test = class extends CrSettingsV3BrowserTest {
+var CrSettingsBasicPageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/basic_page_test.js';
-  }
-
-  /** @override */
-  get featureListInternal() {
-    return {
-      disabled: ['features::kSettingsLandingPageRedesign'],
-    };
+    return 'chrome://settings/test_loader.html?module=settings/basic_page_test.js&host=webui-test';
   }
 };
 
-TEST_F('CrSettingsBasicPageV3Test', 'All', function() {
+TEST_F('CrSettingsBasicPageTest', 'All', function() {
   runMochaSuite('SettingsBasicPage');
 });
 
-// eslint-disable-next-line no-var
-var CrSettingsBasicPageRedesignV3Test = class extends CrSettingsV3BrowserTest {
+GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
+var CrSettingsLanguagesPageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/basic_page_test.js';
-  }
-
-  /** @override */
-  get featureListInternal() {
-    return {
-      enabled: ['features::kSettingsLandingPageRedesign'],
-    };
+    return 'chrome://settings/test_loader.html?module=settings/languages_page_tests.js&host=webui-test';
   }
 };
 
-TEST_F('CrSettingsBasicPageRedesignV3Test', 'All', function() {
-  runMochaSuite('SettingsBasicPageRedesign');
+TEST_F('CrSettingsLanguagesPageTest', 'LanguageSettings', function() {
+  mocha.grep(languages_page_tests.TestNames.LanguageSettings).run();
 });
 
-// eslint-disable-next-line no-var
-var CrSettingsLanguagesPageV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/languages_page_tests.js';
-  }
-};
-
-TEST_F('CrSettingsLanguagesPageV3Test', 'Spellcheck', function() {
+TEST_F('CrSettingsLanguagesPageTest', 'Spellcheck', function() {
   mocha.grep(languages_page_tests.TestNames.Spellcheck).run();
 });
 
 GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
-TEST_F('CrSettingsLanguagesPageV3Test', 'SpellcheckOfficialBuild', function() {
+TEST_F('CrSettingsLanguagesPageTest', 'SpellcheckOfficialBuild', function() {
   mocha.grep(languages_page_tests.TestNames.SpellcheckOfficialBuild).run();
 });
 GEN('#endif');
 
-GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
-// eslint-disable-next-line no-var
-var CrSettingsLanguagesPageRestructuredV3Test =
-    class extends CrSettingsLanguagesPageV3Test {
+GEN('#if !BUILDFLAG(IS_CHROMEOS_LACROS)');
+var CrSettingsLanguagesPageRestructuredTest =
+    class extends CrSettingsLanguagesPageTest {
   /** @override */
   get featureListInternal() {
     return {enabled: ['language::kDesktopRestructuredLanguageSettings']};
   }
 };
 TEST_F(
-    'CrSettingsLanguagesPageRestructuredV3Test', 'RestructuredLanguageSettings',
+    'CrSettingsLanguagesPageRestructuredTest', 'RestructuredLanguageSettings',
     function() {
       mocha.grep(languages_page_tests.TestNames.RestructuredLanguageSettings)
           .run();
     });
 GEN('#endif');
 
-GEN('#if BUILDFLAG(IS_CHROMEOS_ASH)');
-TEST_F(
-    'CrSettingsLanguagesPageV3Test', 'ChromeOSLanguagesSettingsUpdate',
-    function() {
-      mocha.grep(languages_page_tests.TestNames.ChromeOSLanguagesSettingsUpdate)
-          .run();
-    });
-GEN('#endif');
-
-// eslint-disable-next-line no-var
-var CrSettingsLanguagesSubpageV3Test = class extends CrSettingsV3BrowserTest {
+var CrSettingsLanguagesSubpageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/languages_subpage_tests.js';
+    return 'chrome://settings/test_loader.html?module=settings/languages_subpage_tests.js&host=webui-test';
   }
 };
 
-TEST_F('CrSettingsLanguagesSubpageV3Test', 'AddLanguagesDialog', function() {
+TEST_F('CrSettingsLanguagesSubpageTest', 'AddLanguagesDialog', function() {
   mocha.grep(languages_subpage_tests.TestNames.AddLanguagesDialog).run();
 });
 
-TEST_F('CrSettingsLanguagesSubpageV3Test', 'LanguageMenu', function() {
+TEST_F('CrSettingsLanguagesSubpageTest', 'LanguageMenu', function() {
   mocha.grep(languages_subpage_tests.TestNames.LanguageMenu).run();
 });
 
-GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
-// eslint-disable-next-line no-var
-var CrSettingsLanguagesSubpageDetailedV3Test =
-    class extends CrSettingsV3BrowserTest {
+GEN('#if !BUILDFLAG(IS_CHROMEOS_LACROS)');
+var CrSettingsLanguagesSubpageDetailedTest =
+    class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/languages_subpage_details_tests.js';
+    return 'chrome://settings/test_loader.html?module=settings/languages_subpage_details_tests.js&host=webui-test';
   }
 };
 
 TEST_F(
-    'CrSettingsLanguagesSubpageDetailedV3Test', 'AlwaysTranslateDialog',
+    'CrSettingsLanguagesSubpageDetailedTest', 'AlwaysTranslateDialog',
     function() {
       mocha
           .grep(languages_subpage_details_tests.TestNames.AlwaysTranslateDialog)
@@ -189,33 +153,32 @@ TEST_F(
     });
 
 TEST_F(
-    'CrSettingsLanguagesSubpageDetailedV3Test', 'NeverTranslateDialog',
+    'CrSettingsLanguagesSubpageDetailedTest', 'NeverTranslateDialog',
     function() {
       mocha.grep(languages_subpage_details_tests.TestNames.NeverTranslateDialog)
           .run();
     });
 GEN('#endif');
 
-// eslint-disable-next-line no-var
-var CrSettingsLanguagesPageMetricsV3Test =
-    class extends CrSettingsV3BrowserTest {
+var CrSettingsLanguagesPageMetricsTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/languages_page_metrics_test_browser.js';
+    return 'chrome://settings/test_loader.html?module=settings/languages_page_metrics_test_browser.js&host=webui-test';
   }
 };
 
 TEST_F(
-    'CrSettingsLanguagesPageMetricsV3Test', 'LanguagesPageMetricsBrowser',
+    'CrSettingsLanguagesPageMetricsTest', 'LanguagesPageMetricsBrowser',
     function() {
       runMochaSuite('LanguagesPageMetricsBrowser');
     });
 
-// eslint-disable-next-line no-var
-var CrSettingsClearBrowsingDataV3Test = class extends CrSettingsV3BrowserTest {
+GEN('#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)');
+
+var CrSettingsClearBrowsingDataTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/clear_browsing_data_test.js';
+    return 'chrome://settings/test_loader.html?module=settings/clear_browsing_data_test.js&host=webui-test';
   }
 
   /** @override */
@@ -231,29 +194,27 @@ GEN('#else');
 GEN('#define MAYBE_ClearBrowsingDataAllPlatforms ClearBrowsingDataAllPlatforms');
 GEN('#endif');
 TEST_F(
-    'CrSettingsClearBrowsingDataV3Test', 'MAYBE_ClearBrowsingDataAllPlatforms',
+    'CrSettingsClearBrowsingDataTest', 'MAYBE_ClearBrowsingDataAllPlatforms',
     function() {
       runMochaSuite('ClearBrowsingDataAllPlatforms');
     });
 
-TEST_F('CrSettingsClearBrowsingDataV3Test', 'InstalledApps', () => {
+TEST_F('CrSettingsClearBrowsingDataTest', 'InstalledApps', () => {
   runMochaSuite('InstalledApps');
 });
 
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
 TEST_F(
-    'CrSettingsClearBrowsingDataV3Test', 'ClearBrowsingDataDesktop',
-    function() {
+    'CrSettingsClearBrowsingDataTest', 'ClearBrowsingDataDesktop', function() {
       runMochaSuite('ClearBrowsingDataDesktop');
     });
 GEN('#endif');
 
 
-// eslint-disable-next-line no-var
-var CrSettingsMainPageV3Test = class extends CrSettingsV3BrowserTest {
+var CrSettingsMainPageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/settings_main_test.js';
+    return 'chrome://settings/test_loader.html?module=settings/settings_main_test.js&host=webui-test';
   }
 };
 
@@ -261,32 +222,30 @@ var CrSettingsMainPageV3Test = class extends CrSettingsV3BrowserTest {
 // Times out on Windows Tests (dbg). See https://crbug.com/651296.
 // Times out / crashes on chromium.linux/Linux Tests (dbg) crbug.com/667882
 // Flaky everywhere crbug.com/1197768
-TEST_F('CrSettingsMainPageV3Test', 'DISABLED_MainPageV3', function() {
+TEST_F('CrSettingsMainPageTest', 'DISABLED_MainPage', function() {
   mocha.run();
 });
 
-// eslint-disable-next-line no-var
-var CrSettingsAutofillPageV3Test = class extends CrSettingsV3BrowserTest {
+var CrSettingsAutofillPageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/autofill_page_test.js';
+    return 'chrome://settings/test_loader.html?module=settings/autofill_page_test.js&host=webui-test';
   }
 };
 
-TEST_F('CrSettingsAutofillPageV3Test', 'All', function() {
+TEST_F('CrSettingsAutofillPageTest', 'All', function() {
   mocha.run();
 });
 
-// eslint-disable-next-line no-var
-var CrSettingsAutofillSectionCompanyEnabledV3Test =
-    class extends CrSettingsV3BrowserTest {
+var CrSettingsAutofillSectionCompanyEnabledTest =
+    class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/autofill_section_test.js';
+    return 'chrome://settings/test_loader.html?module=settings/autofill_section_test.js&host=webui-test';
   }
 };
 
-TEST_F('CrSettingsAutofillSectionCompanyEnabledV3Test', 'All', function() {
+TEST_F('CrSettingsAutofillSectionCompanyEnabledTest', 'All', function() {
   // Use 'EnableCompanyName' to inform tests that the feature is enabled.
   const loadTimeDataOverride = {};
   loadTimeDataOverride['EnableCompanyName'] = true;
@@ -295,11 +254,10 @@ TEST_F('CrSettingsAutofillSectionCompanyEnabledV3Test', 'All', function() {
   mocha.run();
 });
 
-// eslint-disable-next-line no-var
-var CrSettingsPasswordsSectionV3Test = class extends CrSettingsV3BrowserTest {
+var CrSettingsPasswordsSectionTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/passwords_section_test.js';
+    return 'chrome://settings/test_loader.html?module=settings/passwords_section_test.js&host=webui-test';
   }
 };
 
@@ -309,150 +267,131 @@ GEN('#define MAYBE_All DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_All All');
 GEN('#endif');
-TEST_F('CrSettingsPasswordsSectionV3Test', 'MAYBE_All', function() {
+TEST_F('CrSettingsPasswordsSectionTest', 'MAYBE_All', function() {
   mocha.run();
 });
 GEN('#undef MAYBE_All');
 
-// eslint-disable-next-line no-var
-var CrSettingsMultiStorePasswordUiEntryV3Test =
-    class extends CrSettingsV3BrowserTest {
+var CrSettingsMultiStorePasswordUiEntryTest =
+    class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/multi_store_password_ui_entry_test.js';
+    return 'chrome://settings/test_loader.html?module=settings/multi_store_password_ui_entry_test.js&host=webui-test';
   }
 };
 
-TEST_F('CrSettingsMultiStorePasswordUiEntryV3Test', 'All', function() {
+TEST_F('CrSettingsMultiStorePasswordUiEntryTest', 'All', function() {
   mocha.run();
 });
 
-// eslint-disable-next-line no-var
-var CrSettingsPasswordsDeviceSectionV3Test =
-    class extends CrSettingsV3BrowserTest {
+var CrSettingsPasswordsDeviceSectionTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/passwords_device_section_test.js';
-  }
-
-  /** @override */
-  get featureListInternal() {
-    return {
-      enabled: ['password_manager::features::kEnablePasswordsAccountStorage']
-    };
+    return 'chrome://settings/test_loader.html?module=settings/passwords_device_section_test.js&host=webui-test';
   }
 };
 
-TEST_F('CrSettingsPasswordsDeviceSectionV3Test', 'All', function() {
+TEST_F('CrSettingsPasswordsDeviceSectionTest', 'All', function() {
   mocha.run();
 });
 
-// eslint-disable-next-line no-var
-var CrSettingsMultiStoreExceptionEntryV3Test =
-    class extends CrSettingsV3BrowserTest {
+var CrSettingsPasswordEditDialogTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/multi_store_exception_entry_test.js';
+    return 'chrome://settings/test_loader.html?module=settings/password_edit_dialog_test.js&host=webui-test';
   }
 };
 
-TEST_F('CrSettingsMultiStoreExceptionEntryV3Test', 'All', function() {
+TEST_F('CrSettingsPasswordEditDialogTest', 'All', function() {
   mocha.run();
 });
 
-// eslint-disable-next-line no-var
-var CrSettingsPasswordsCheckV3Test = class extends CrSettingsV3BrowserTest {
+var CrSettingsMultiStoreExceptionEntryTest =
+    class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/password_check_test.js';
+    return 'chrome://settings/test_loader.html?module=settings/multi_store_exception_entry_test.js&host=webui-test';
   }
+};
 
+TEST_F('CrSettingsMultiStoreExceptionEntryTest', 'All', function() {
+  mocha.run();
+});
+
+var CrSettingsPasswordsCheckTest = class extends CrSettingsBrowserTest {
   /** @override */
-  get featureList() {
-    return {enabled: ['features::kSafetyCheckWeakPasswords']};
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/password_check_test.js&host=webui-test';
   }
 };
 
 // Flaky on Mac builds https://crbug.com/1143801
-GEN('#if defined(OS_MAC)');
+GEN('#if (defined(OS_MAC)) || (defined(OS_LINUX))');
 GEN('#define MAYBE_All DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_All All');
 GEN('#endif');
-TEST_F('CrSettingsPasswordsCheckV3Test', 'MAYBE_All', function() {
+TEST_F('CrSettingsPasswordsCheckTest', 'MAYBE_All', function() {
   mocha.run();
 });
 GEN('#undef MAYBE_All');
 
-// eslint-disable-next-line no-var
-var CrSettingsSafetyCheckPageV3Test = class extends CrSettingsV3BrowserTest {
+var CrSettingsSafetyCheckPageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/safety_check_page_test.js';
+    return 'chrome://settings/test_loader.html?module=settings/safety_check_page_test.js&host=webui-test';
   }
 };
 
-TEST_F('CrSettingsSafetyCheckPageV3Test', 'All', function() {
+TEST_F('CrSettingsSafetyCheckPageTest', 'All', function() {
   mocha.run();
 });
 
-// eslint-disable-next-line no-var
-var CrSettingsSafetyCheckChromeCleanerV3Test =
-    class extends CrSettingsV3BrowserTest {
+GEN('#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+var CrSettingsSafetyCheckChromeCleanerTest =
+    class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/safety_check_chrome_cleaner_test.js';
-  }
-
-  /** @override */
-  get featureListInternal() {
-    return {
-      enabled: [
-        'features::kSafetyCheckChromeCleanerChild',
-      ],
-    };
+    return 'chrome://settings/test_loader.html?module=settings/safety_check_chrome_cleaner_test.js&host=webui-test';
   }
 };
 
-GEN('#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
-TEST_F('CrSettingsSafetyCheckChromeCleanerV3Test', 'All', function() {
+TEST_F('CrSettingsSafetyCheckChromeCleanerTest', 'All', function() {
   mocha.run();
 });
 GEN('#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 
-// eslint-disable-next-line no-var
-var CrSettingsSiteListV3Test = class extends CrSettingsV3BrowserTest {
+var CrSettingsSiteListTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/site_list_tests.js';
+    return 'chrome://settings/test_loader.html?module=settings/site_list_tests.js&host=webui-test';
   }
 };
 
 // Copied from Polymer 2 test:
 // TODO(crbug.com/929455): flaky, fix.
-TEST_F('CrSettingsSiteListV3Test', 'DISABLED_SiteList', function() {
+TEST_F('CrSettingsSiteListTest', 'DISABLED_SiteList', function() {
   runMochaSuite('SiteList');
 });
 
 // TODO(crbug.com/929455): When the bug is fixed, merge
 // SiteListEmbargoedOrigin into SiteList
-TEST_F('CrSettingsSiteListV3Test', 'SiteListEmbargoedOrigin', function() {
+TEST_F('CrSettingsSiteListTest', 'SiteListEmbargoedOrigin', function() {
   runMochaSuite('SiteListEmbargoedOrigin');
 });
 
-TEST_F('CrSettingsSiteListV3Test', 'EditExceptionDialog', function() {
+TEST_F('CrSettingsSiteListTest', 'EditExceptionDialog', function() {
   runMochaSuite('EditExceptionDialog');
 });
 
-TEST_F('CrSettingsSiteListV3Test', 'AddExceptionDialog', function() {
+TEST_F('CrSettingsSiteListTest', 'AddExceptionDialog', function() {
   runMochaSuite('AddExceptionDialog');
 });
 
-// eslint-disable-next-line no-var
-var CrSettingsSiteDetailsV3Test = class extends CrSettingsV3BrowserTest {
+var CrSettingsSiteDetailsTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/site_details_tests.js';
+    return 'chrome://settings/test_loader.html?module=settings/site_details_tests.js&host=webui-test';
   }
 };
 
@@ -465,60 +404,62 @@ GEN('#else');
 GEN('#define MAYBE_SiteDetails SiteDetails');
 GEN('#endif');
 
-TEST_F('CrSettingsSiteDetailsV3Test', 'MAYBE_SiteDetails', function() {
+TEST_F('CrSettingsSiteDetailsTest', 'MAYBE_SiteDetails', function() {
   mocha.run();
 });
 
-// eslint-disable-next-line no-var
-var CrSettingsPersonalizationOptionsV3Test =
-    class extends CrSettingsV3BrowserTest {
+var CrSettingsPersonalizationOptionsTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/personalization_options_test.js';
+    return 'chrome://settings/test_loader.html?module=settings/personalization_options_test.js&host=webui-test';
   }
 };
 
-TEST_F('CrSettingsPersonalizationOptionsV3Test', 'AllBuilds', function() {
+TEST_F('CrSettingsPersonalizationOptionsTest', 'AllBuilds', function() {
   runMochaSuite('PersonalizationOptionsTests_AllBuilds');
 });
 
 GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
-TEST_F('CrSettingsPersonalizationOptionsV3Test', 'OfficialBuild', function() {
+TEST_F('CrSettingsPersonalizationOptionsTest', 'OfficialBuild', function() {
   runMochaSuite('PersonalizationOptionsTests_OfficialBuild');
 });
 GEN('#endif');
 
-// eslint-disable-next-line no-var
-var CrSettingsPrivacyPageV3Test = class extends CrSettingsV3BrowserTest {
+var CrSettingsPrivacyPageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/privacy_page_test.js';
+    return 'chrome://settings/test_loader.html?module=settings/privacy_page_test.js&host=webui-test';
+  }
+
+  /** @override */
+  get featureListInternal() {
+    return {enabled: ['features::kPrivacyReview']};
   }
 };
 
-TEST_F('CrSettingsPrivacyPageV3Test', 'PrivacyPageTests', function() {
+// TODO(crbug.com/1263420): Flaky on Linux Tests(dbg).
+GEN('#if defined(OS_LINUX)');
+GEN('#define MAYBE_PrivacyPageTests DISABLED_PrivacyPageTests');
+GEN('#else');
+GEN('#define MAYBE_PrivacyPageTests PrivacyPageTests');
+GEN('#endif');
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageTests', function() {
   runMochaSuite('PrivacyPage');
 });
 
-TEST_F('CrSettingsPrivacyPageV3Test', 'ContentSettingsRedesign', function() {
-  runMochaSuite('ContentSettingsRedesign');
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacyReviewEnabled', function() {
+  runMochaSuite('PrivacyReviewEnabled');
 });
-
-TEST_F(
-    'CrSettingsPrivacyPageV3Test', 'PrivacySandboxSettingsEnabled', function() {
-      runMochaSuite('PrivacySandboxSettingsEnabled');
-    });
 
 // TODO(crbug.com/1043665): flaky crash on Linux Tests (dbg).
 TEST_F(
-    'CrSettingsPrivacyPageV3Test', 'DISABLED_PrivacyPageSoundTests',
-    function() {
+    'CrSettingsPrivacyPageTest', 'DISABLED_PrivacyPageSoundTests', function() {
       runMochaSuite('PrivacyPageSound');
     });
 
 // TODO(crbug.com/1113912): flaky failure on multiple platforms
 TEST_F(
-    'CrSettingsPrivacyPageV3Test', 'DISABLED_HappinessTrackingSurveysTests',
+    'CrSettingsPrivacyPageTest', 'DISABLED_HappinessTrackingSurveysTests',
     function() {
       runMochaSuite('HappinessTrackingSurveys');
     });
@@ -526,25 +467,46 @@ TEST_F(
 GEN('#if defined(OS_MAC) || defined(OS_WIN)');
 // TODO(crbug.com/1043665): disabling due to failures on several builders.
 TEST_F(
-    'CrSettingsPrivacyPageV3Test', 'DISABLED_CertificateManagerTests',
+    'CrSettingsPrivacyPageTest', 'DISABLED_CertificateManagerTests',
     function() {
       runMochaSuite('NativeCertificateManager');
     });
 GEN('#endif');
 
-// eslint-disable-next-line no-var
-var CrSettingsRouteV3Test = class extends CrSettingsV3BrowserTest {
+var CrSettingsPrivacyReviewPageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/route_tests.js';
+    return 'chrome://settings/test_loader.html?module=settings/privacy_review_page_test.js&host=webui-test';
+  }
+
+  /** @override */
+  get featureListInternal() {
+    return {enabled: ['features::kPrivacyReview']};
   }
 };
 
-TEST_F('CrSettingsRouteV3Test', 'Basic', function() {
+TEST_F('CrSettingsPrivacyReviewPageTest', 'PrivacyReviewPageTests', function() {
+  runMochaSuite('PrivacyReviewPage');
+});
+
+
+TEST_F(
+    'CrSettingsPrivacyReviewPageTest', 'HistorySyncFragmentTests', function() {
+      runMochaSuite('HistorySyncFragment');
+    });
+
+var CrSettingsRouteTest = class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/route_tests.js&host=webui-test';
+  }
+};
+
+TEST_F('CrSettingsRouteTest', 'Basic', function() {
   runMochaSuite('route');
 });
 
-TEST_F('CrSettingsRouteV3Test', 'DynamicParameters', function() {
+TEST_F('CrSettingsRouteTest', 'DynamicParameters', function() {
   runMochaSuite('DynamicParameters');
 });
 
@@ -556,15 +518,14 @@ GEN('#else');
 GEN('#define MAYBE_NonExistentRoute NonExistentRoute');
 GEN('#endif');
 
-TEST_F('CrSettingsRouteV3Test', 'MAYBE_NonExistentRoute', function() {
+TEST_F('CrSettingsRouteTest', 'MAYBE_NonExistentRoute', function() {
   runMochaSuite('NonExistentRoute');
 });
 
-// eslint-disable-next-line no-var
-var CrSettingsAdvancedPageV3Test = class extends CrSettingsV3BrowserTest {
+var CrSettingsAdvancedPageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/advanced_page_test.js';
+    return 'chrome://settings/test_loader.html?module=settings/advanced_page_test.js&host=webui-test';
   }
 };
 
@@ -577,7 +538,7 @@ GEN('#define MAYBE_Load DISABLED_Load');
 GEN('#else');
 GEN('#define MAYBE_Load Load');
 GEN('#endif');
-TEST_F('CrSettingsAdvancedPageV3Test', 'MAYBE_Load', function() {
+TEST_F('CrSettingsAdvancedPageTest', 'MAYBE_Load', function() {
   mocha.run();
 });
 
@@ -596,15 +557,12 @@ TEST_F('CrSettingsAdvancedPageV3Test', 'MAYBE_Load', function() {
  ['CollapseRadioButton', 'collapse_radio_button_tests.js'],
  ['ControlledButton', 'controlled_button_tests.js'],
  ['ControlledRadioButton', 'controlled_radio_button_tests.js'],
- ['CookiesPage', 'cookies_page_test.js'],
  ['DoNotTrackToggle', 'do_not_track_toggle_test.js'],
  ['DownloadsPage', 'downloads_page_test.js'],
  ['DropdownMenu', 'dropdown_menu_tests.js'],
  ['ExtensionControlledIndicator', 'extension_controlled_indicator_tests.js'],
  ['HelpPage', 'help_page_test.js'],
- ['Languages', 'languages_tests.js'],
  ['Menu', 'settings_menu_test.js'],
- ['OnStartupPage', 'on_startup_page_tests.js'],
  ['PaymentsSection', 'payments_section_test.js'],
  ['PeoplePage', 'people_page_test.js'],
  ['PeoplePageSyncControls', 'people_page_sync_controls_test.js'],
@@ -638,33 +596,47 @@ TEST_F('CrSettingsAdvancedPageV3Test', 'MAYBE_Load', function() {
 ].forEach(test => registerTest(...test));
 
 // Timeout on Linux and MacOS dbg bots: https://crbug.com/1133412
-GEN('#if (!defined(OS_LINUX) && !defined(OS_MAC)) || defined(NDEBUG)');
+// Fails on Mac/Arm: https://crbug.com/1222886
+GEN('#if (!defined(OS_LINUX) && !defined(OS_MAC)) || ' +
+    '(defined(NDEBUG) && !defined(ARCH_CPU_ARM64))');
 [['SecurityPage', 'security_page_test.js'],
 ].forEach(test => registerTest(...test));
-GEN('#endif  // (!defined(OS_LINUX) && !defined(OS_MAC)) || defined(NDEBUG)');
+GEN('#endif');
+
+
+// Flaky on MacOS bots and times out on Linux Dbg: https://crbug.com/1240747
+GEN('#if (!defined(OS_MAC)) && (!defined(OS_LINUX) || defined(NDEBUG))');
+[['CookiesPage', 'cookies_page_test.js'],
+].forEach(test => registerTest(...test));
+GEN('#endif');
+
+GEN('#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)');
+[['PasswordsSectionCros', 'passwords_section_test_cros.js'],
+].forEach(test => registerTest(...test));
+GEN('#endif  // BUILDFLAG(IS_CHROMEOS_ASH)) || BUILDFLAG(IS_CHROMEOS_LACROS)');
 
 GEN('#if BUILDFLAG(IS_CHROMEOS_ASH)');
-[['PasswordsSectionCros', 'passwords_section_test_cros.js'],
- ['PeoplePageChromeOS', 'people_page_test_cros.js'],
+[['PeoplePageChromeOS', 'people_page_test_cros.js'],
  // Copied from Polymer 2 test. TODO(crbug.com/929455): flaky, fix.
  ['SiteListChromeOS', 'site_list_tests_cros.js', 'DISABLED_AndroidSmsInfo'],
 ].forEach(test => registerTest(...test));
 GEN('#endif  // BUILDFLAG(IS_CHROMEOS_ASH)');
 
-GEN('#if !defined(OS_MAC)');
+GEN('#if !defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)');
 [['EditDictionaryPage', 'edit_dictionary_page_test.js'],
 ].forEach(test => registerTest(...test));
-GEN('#endif  //!defined(OS_MAC)');
+GEN('#endif  // !defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)');
 
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
-[['DefaultBrowser', 'default_browser_browsertest.js'],
+[['DefaultBrowser', 'default_browser_test.js'],
+ ['ImportDataDialog', 'import_data_dialog_test.js'],
  ['SystemPage', 'system_page_tests.js'],
 ].forEach(test => registerTest(...test));
 GEN('#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
 
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
-[['ImportDataDialog', 'import_data_dialog_test.js'],
- ['PeoplePageManageProfile', 'people_page_manage_profile_test.js'],
+[['PeoplePageManageProfile', 'people_page_manage_profile_test.js'],
+ ['Languages', 'languages_tests.js'],
 ].forEach(test => registerTest(...test));
 GEN('#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)');
 
@@ -680,11 +652,11 @@ GEN('#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) ' +
     '&& !BUILDFLAG(IS_CHROMEOS_ASH)');
 
 function registerTest(testName, module, caseName) {
-  const className = `CrSettings${testName}V3Test`;
-  this[className] = class extends CrSettingsV3BrowserTest {
+  const className = `CrSettings${testName}Test`;
+  this[className] = class extends CrSettingsBrowserTest {
     /** @override */
     get browsePreload() {
-      return `chrome://settings/test_loader.html?module=settings/${module}`;
+      return `chrome://settings/test_loader.html?module=settings/${module}&host=webui-test`;
     }
   };
 

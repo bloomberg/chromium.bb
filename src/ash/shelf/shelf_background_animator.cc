@@ -8,10 +8,9 @@
 #include <memory>
 
 #include "ash/animation/animation_change_type.h"
-#include "ash/public/cpp/login_constants.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/cpp/wallpaper_types.h"
+#include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shell.h"
@@ -179,7 +178,7 @@ void ShelfBackgroundAnimator::CreateAnimator(
     case ShelfBackgroundType::kAppList:
     case ShelfBackgroundType::kHomeLauncher:
     case ShelfBackgroundType::kMaximizedWithAppList:
-      duration = base::TimeDelta::FromMilliseconds(500);
+      duration = base::Milliseconds(500);
       break;
     case ShelfBackgroundType::kMaximized:
     case ShelfBackgroundType::kOobe:
@@ -187,7 +186,7 @@ void ShelfBackgroundAnimator::CreateAnimator(
     case ShelfBackgroundType::kLoginNonBlurredWallpaper:
     case ShelfBackgroundType::kOverview:
     case ShelfBackgroundType::kInApp:
-      duration = base::TimeDelta::FromMilliseconds(250);
+      duration = base::Milliseconds(250);
       break;
   }
 

@@ -21,13 +21,13 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
-#include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/ime_keyboard.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/views/widget/widget.h"
 
-namespace chromeos {
+namespace ash {
 
 // LoginDisplayWebUI, public: --------------------------------------------------
 
@@ -143,4 +143,4 @@ void LoginDisplayWebUI::OnUserActivity(const ui::Event* event) {
     delegate_->ResetAutoLoginTimer();
 }
 
-}  // namespace chromeos
+}  // namespace ash

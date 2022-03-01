@@ -115,10 +115,29 @@ Experiments GetExperiments(PrefService& pref_service) {
   Experiments experiments;
   if (!value->is_dict())
     return experiments;
-  for (const auto& kv : value->DictItems()) {
+  for (auto kv : value->DictItems()) {
     experiments[kv.first] = kv.second.GetString();
   }
   return experiments;
+}
+
+void SetWebFeedContentOrder(PrefService& pref_service,
+                            ContentOrder content_order) {
+  pref_service.Set(feed::prefs::kWebFeedContentOrder,
+                   base::Value(static_cast<int>(content_order)));
+}
+
+ContentOrder GetWebFeedContentOrder(const PrefService& pref_service) {
+  int order = pref_service.GetInteger(feed::prefs::kWebFeedContentOrder);
+  switch (order) {
+    case static_cast<int>(ContentOrder::kReverseChron):
+      return ContentOrder::kReverseChron;
+    case static_cast<int>(ContentOrder::kGrouped):
+      return ContentOrder::kGrouped;
+    default:
+      // Note: we need to handle invalid values gracefully.
+      return ContentOrder::kUnspecified;
+  }
 }
 
 }  // namespace prefs

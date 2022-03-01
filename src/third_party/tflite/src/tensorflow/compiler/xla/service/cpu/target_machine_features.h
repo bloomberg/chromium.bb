@@ -52,8 +52,15 @@ class TargetMachineFeatures {
   virtual int vector_register_num_elements(const llvm::Function& function,
                                            PrimitiveType type) const = 0;
 
+  // Return the number of vector registers.  We need to pass in
+  // "function" since llvm functions can contain annotations for specializing
+  // them to specific micro-architectures (though currently XLA does not use
+  // this functionality).
+  virtual int vector_register_count(const llvm::Function& function) const = 0;
+
   // Returns the minimum alignment for a buffer of size size_bytes.
-  virtual int64 minimum_alignment_for_allocation(int64 size_bytes) const = 0;
+  virtual int64_t minimum_alignment_for_allocation(
+      int64_t size_bytes) const = 0;
 
   virtual ~TargetMachineFeatures() = default;
 };
@@ -75,7 +82,9 @@ class LLVMTargetMachineFeatures : public TargetMachineFeatures {
 
   int vector_register_byte_size(const llvm::Function& function) const override {
     llvm::TargetTransformInfo* tti = GetTargetTransformInfoFor(function);
-    return tti->getRegisterBitWidth(/*Vector=*/true) / 8;
+    return tti->getRegisterBitWidth(
+               llvm::TargetTransformInfo::RGK_FixedWidthVector) /
+           8;
   }
 
   int vector_register_num_elements(const llvm::Function& function,
@@ -84,7 +93,13 @@ class LLVMTargetMachineFeatures : public TargetMachineFeatures {
            (primitive_util::BitWidth(type) / 8);
   }
 
-  int64 minimum_alignment_for_allocation(int64 size_bytes) const override;
+  int vector_register_count(const llvm::Function& function) const override {
+    llvm::TargetTransformInfo* tti = GetTargetTransformInfoFor(function);
+    return static_cast<int>(tti->getNumberOfRegisters(
+        tti->getRegisterClassForType(/*Vector=*/true)));
+  }
+
+  int64_t minimum_alignment_for_allocation(int64_t size_bytes) const override;
 
  private:
   llvm::TargetTransformInfo* GetTargetTransformInfoFor(

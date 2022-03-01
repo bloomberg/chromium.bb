@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PERMISSION_CONTEXT_EXTENSIONS_H_
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "extensions/buildflags/buildflags.h"
 
@@ -25,6 +25,12 @@ class Profile;
 class GeolocationPermissionContextExtensions {
  public:
   explicit GeolocationPermissionContextExtensions(Profile* profile);
+
+  GeolocationPermissionContextExtensions(
+      const GeolocationPermissionContextExtensions&) = delete;
+  GeolocationPermissionContextExtensions& operator=(
+      const GeolocationPermissionContextExtensions&) = delete;
+
   ~GeolocationPermissionContextExtensions();
 
   // Returns true if the permission request was handled. In which case,
@@ -42,10 +48,8 @@ class GeolocationPermissionContextExtensions {
 
  private:
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(GeolocationPermissionContextExtensions);
 };
 
 #endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PERMISSION_CONTEXT_EXTENSIONS_H_

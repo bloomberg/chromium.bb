@@ -19,6 +19,9 @@
 #include "src/sksl/SkSLCompiler.h"
 
 #import <Metal/Metal.h>
+#ifdef SK_BUILD_FOR_IOS
+#import <UIKit/UIApplication.h>
+#endif
 
 #if !__has_feature(objc_arc)
 #error This file must be compiled with Arc. Use -fobjc-arc flag
@@ -101,8 +104,14 @@ id<MTLLibrary> GrCompileMtlShaderLibrary(const GrMtlGpu* gpu,
                                                  encoding:NSUTF8StringEncoding
                                              freeWhenDone:NO];
     MTLCompileOptions* options = [[MTLCompileOptions alloc] init];
+    // array<> is supported in MSL 2.0 on MacOS 10.13+ and iOS 11+,
+    // and in MSL 1.2 on iOS 10+ (but not MacOS).
     if (@available(macOS 10.13, iOS 11.0, *)) {
         options.languageVersion = MTLLanguageVersion2_0;
+#if defined(SK_BUILD_FOR_IOS)
+    } else if (@available(macOS 10.12, iOS 10.0, *)) {
+        options.languageVersion = MTLLanguageVersion1_2;
+#endif
     }
     if (gpu->caps()->shaderCaps()->canUseFastMath()) {
         options.fastMathEnabled = YES;
@@ -166,8 +175,8 @@ id<MTLLibrary> GrMtlNewLibraryWithSource(id<MTLDevice> device, NSString* mslCode
     // We have to increment the ref for the Obj-C block manually because it won't do it for us
     compileResult->ref();
     MTLNewLibraryCompletionHandler completionHandler =
-            ^(id<MTLLibrary> library, NSError* error) {
-                compileResult->set(library, error);
+            ^(id<MTLLibrary> library, NSError* compileError) {
+                compileResult->set(library, compileError);
                 dispatch_semaphore_signal(semaphore);
                 compileResult->unref();
             };
@@ -202,8 +211,8 @@ id<MTLRenderPipelineState> GrMtlNewRenderPipelineStateWithDescriptor(
     // We have to increment the ref for the Obj-C block manually because it won't do it for us
     compileResult->ref();
     MTLNewRenderPipelineStateCompletionHandler completionHandler =
-            ^(id<MTLRenderPipelineState> state, NSError* error) {
-                compileResult->set(state, error);
+            ^(id<MTLRenderPipelineState> state, NSError* compileError) {
+                compileResult->set(state, compileError);
                 dispatch_semaphore_signal(semaphore);
                 compileResult->unref();
             };
@@ -238,12 +247,12 @@ id<MTLTexture> GrGetMTLTextureFromSurface(GrSurface* surface) {
     if (renderTarget) {
         // We should not be using this for multisampled rendertargets with a separate resolve
         // texture.
-        if (renderTarget->mtlResolveTexture()) {
+        if (renderTarget->resolveAttachment()) {
             SkASSERT(renderTarget->numSamples() > 1);
             SkASSERT(false);
             return nil;
         }
-        mtlTexture = renderTarget->mtlColorTexture();
+        mtlTexture = renderTarget->colorMTLTexture();
     } else {
         texture = static_cast<GrMtlTexture*>(surface->asTexture());
         if (texture) {
@@ -447,6 +456,13 @@ int GrMtlFormatStencilBits(MTLPixelFormat mtlFormat) {
          return 0;
     }
 }
+
+#ifdef SK_BUILD_FOR_IOS
+bool GrMtlIsAppInBackground() {
+    return [NSThread isMainThread] &&
+           ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground);
+}
+#endif
 
 #if defined(SK_DEBUG) || GR_TEST_UTILS
 bool GrMtlFormatIsBGRA8(GrMTLPixelFormat mtlFormat) {

@@ -5,13 +5,13 @@
 (async function() {
   TestRunner.addResult(`Tests that console correctly groups similar messages.\n`);
 
-  await TestRunner.loadModule('console'); await TestRunner.loadTestModule('console_test_runner');
+  await TestRunner.loadLegacyModule('console'); await TestRunner.loadTestModule('console_test_runner');
   await TestRunner.showPanel('console');
 
   // Show all messages, including verbose.
-  Console.ConsoleView.instance()._setImmediatelyFilterMessagesForTest();
-  Console.ConsoleView.instance()._filter._textFilterUI.setValue("url:script");
-  Console.ConsoleView.instance()._filter._messageLevelFiltersSetting.set(Console.ConsoleFilter.allLevelsFilterValue());
+  Console.ConsoleView.instance().setImmediatelyFilterMessagesForTest();
+  Console.ConsoleView.instance().filter.textFilterUI.setValue("url:script");
+  Console.ConsoleView.instance().filter.messageLevelFiltersSetting.set(Console.ConsoleFilter.allLevelsFilterValue());
 
   for (var i = 0; i < 5; i++) {
     // Groupable messages.
@@ -34,7 +34,7 @@
   await ConsoleTestRunner.dumpConsoleMessages();
 
   TestRunner.addResult('\n\nStop grouping messages:\n');
-  Console.ConsoleView.instance()._groupSimilarSetting.set(false);
+  Console.ConsoleView.instance().groupSimilarSetting.set(false);
   await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 
@@ -46,7 +46,7 @@
   function addViolationMessage(text, url, level) {
     var message = new SDK.ConsoleMessage(
         null, Protocol.Log.LogEntrySource.Violation, level, text,
-        Protocol.Runtime.ConsoleAPICalledEventType.Log, url);
+        {type: Protocol.Runtime.ConsoleAPICalledEventType.Log, url});
     SDK.consoleModel.addMessage(message);
   }
 
@@ -58,7 +58,7 @@
     var message = new SDK.ConsoleMessage(
         null, SDK.ConsoleMessage.FrontendMessageSource.ConsoleAPI,
         Protocol.Log.LogEntryLevel.Info, text,
-        Protocol.Runtime.ConsoleAPICalledEventType.Log, url);
+        {type: Protocol.Runtime.ConsoleAPICalledEventType.Log, url});
     SDK.consoleModel.addMessage(message);
   }
 })();

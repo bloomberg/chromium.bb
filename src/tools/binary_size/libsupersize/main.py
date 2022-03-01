@@ -7,7 +7,6 @@
 
 import argparse
 import atexit
-import collections
 import distutils.spawn
 import logging
 import platform
@@ -18,7 +17,6 @@ import archive
 import console
 import diff
 import file_format
-import html_report
 
 
 def _LogPeakRamUsage():
@@ -35,7 +33,7 @@ def _AddCommonArguments(parser):
                       help='Verbose level (multiple times for more)')
 
 
-class _DiffAction(object):
+class _DiffAction:
   @staticmethod
   def AddArguments(parser):
     parser.add_argument('before', help='Before-patch .size file.')
@@ -62,7 +60,7 @@ class _DiffAction(object):
     console.Run(args, on_config_error)
 
 
-class _SaveDiffAction(object):
+class _SaveDiffAction:
 
   @staticmethod
   def AddArguments(parser):
@@ -89,12 +87,10 @@ class _SaveDiffAction(object):
 
 
 def main():
-  parser = argparse.ArgumentParser(description=__doc__)
+  parser = argparse.ArgumentParser(prog='supersize', description=__doc__)
   sub_parsers = parser.add_subparsers()
-  actions = collections.OrderedDict()
+  actions = {}
   actions['archive'] = (archive, 'Create a .size file')
-  actions['html_report'] = (
-      html_report, 'Create a stand-alone report from a .size file.')
   actions['console'] = (
       console,
       'Starts an interactive Python console for analyzing .size files.')

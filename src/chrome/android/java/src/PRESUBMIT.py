@@ -14,6 +14,8 @@ This presubmit checks for the following:
     instead.
 """
 
+USE_PYTHON3 = True
+
 import re
 
 NEW_NOTIFICATION_BUILDER_RE = re.compile(
@@ -34,8 +36,8 @@ SPLIT_COMPAT_UTILS_IMPL_NAME_RE = re.compile(
 COMMENT_RE = re.compile(r'^\s*(//|/\*|\*)')
 
 BROWSER_ROOT = 'chrome/android/java/src/org/chromium/chrome/browser/'
-SIGNIN_UI_BROWSER_ROOT = 'chrome/browser/signin/ui/android'
-'/java/src/org/chromium/chrome/browser/signin/ui/'
+SIGNIN_UI_BROWSER_ROOT = 'chrome/browser/ui/android/signin'
+'/java/src/org/chromium/chrome/browser/ui/signin'
 
 
 def CheckChangeOnUpload(input_api, output_api):
@@ -92,7 +94,6 @@ def _CheckAlertDialogBuilder(input_api, output_api):
       BROWSER_ROOT + 'password_manager/AccountChooserDialog.java',
       BROWSER_ROOT + 'password_manager/AutoSigninFirstRunDialog.java',
       BROWSER_ROOT + r'settings[\\\/].*',
-      SIGNIN_UI_BROWSER_ROOT + 'ConfirmImportSyncDataDialog.java',
       SIGNIN_UI_BROWSER_ROOT + 'ConfirmManagedSyncDataDialog.java',
       SIGNIN_UI_BROWSER_ROOT + 'ConfirmSyncDataStateMachineDelegate.java',
       BROWSER_ROOT + 'signin/SyncConsentFragmentBase.java',
