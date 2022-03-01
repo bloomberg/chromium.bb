@@ -14,7 +14,6 @@
 
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "mojo/public/cpp/base/big_buffer.h"
@@ -22,6 +21,7 @@
 #include "net/base/completion_once_callback.h"
 #include "services/network/public/cpp/data_pipe_to_source_stream.h"
 #include "storage/browser/blob/blob_storage_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 
@@ -71,6 +71,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobReader {
   };
   enum class Status { NET_ERROR, IO_PENDING, DONE };
   using StatusCallback = base::OnceCallback<void(Status)>;
+
+  BlobReader(const BlobReader&) = delete;
+  BlobReader& operator=(const BlobReader&) = delete;
+
   virtual ~BlobReader();
 
   // This calculates the total size of the blob, and initializes the reading
@@ -270,7 +274,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobReader {
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<BlobReader> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(BlobReader);
 };
 
 }  // namespace storage

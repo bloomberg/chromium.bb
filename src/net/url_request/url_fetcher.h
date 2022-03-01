@@ -22,6 +22,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/referrer_policy.h"
 #include "net/url_request/url_request.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 
@@ -383,7 +384,7 @@ class NET_EXPORT URLFetcher {
   // |traffic_annotation| metadata about the network traffic send via this
   // URLFetcher, see net::DefineNetworkTrafficAnnotation. Note that:
   // - net provides the API for tagging requests with an opaque identifier.
-  // - tools/traffic_annotation/traffic_annotation.proto contains the Chrome
+  // - chrome/browser/privacy/traffic_annotation.proto contains the Chrome
   // specific .proto describing the verbose annotation format that Chrome's
   // callsites are expected to follow.
   // - tools/traffic_annotation/ contains sample and template for annotation and

@@ -54,24 +54,24 @@ static_assert(kSymbolDictCacheMaxSize > 0,
 // static
 std::unique_ptr<CJBig2_Context> CJBig2_Context::Create(
     pdfium::span<const uint8_t> pGlobalSpan,
-    uint32_t dwGlobalObjNum,
+    uint64_t global_key,
     pdfium::span<const uint8_t> pSrcSpan,
-    uint32_t dwSrcObjNum,
+    uint64_t src_key,
     std::list<CJBig2_CachePair>* pSymbolDictCache) {
   auto result = pdfium::WrapUnique(
-      new CJBig2_Context(pSrcSpan, dwSrcObjNum, pSymbolDictCache, false));
+      new CJBig2_Context(pSrcSpan, src_key, pSymbolDictCache, false));
   if (!pGlobalSpan.empty()) {
-    result->m_pGlobalContext = pdfium::WrapUnique(new CJBig2_Context(
-        pGlobalSpan, dwGlobalObjNum, pSymbolDictCache, true));
+    result->m_pGlobalContext = pdfium::WrapUnique(
+        new CJBig2_Context(pGlobalSpan, global_key, pSymbolDictCache, true));
   }
   return result;
 }
 
 CJBig2_Context::CJBig2_Context(pdfium::span<const uint8_t> pSrcSpan,
-                               uint32_t dwObjNum,
+                               uint64_t src_key,
                                std::list<CJBig2_CachePair>* pSymbolDictCache,
                                bool bIsGlobal)
-    : m_pStream(std::make_unique<CJBig2_BitStream>(pSrcSpan, dwObjNum)),
+    : m_pStream(std::make_unique<CJBig2_BitStream>(pSrcSpan, src_key)),
       m_HuffmanTables(CJBig2_HuffmanTable::kNumHuffmanTables),
       m_bIsGlobal(bIsGlobal),
       m_pSymbolDictCache(pSymbolDictCache) {}
@@ -91,11 +91,10 @@ JBig2_Result CJBig2_Context::DecodeSequential(PauseIndicatorIface* pPause) {
         m_pSegment.reset();
         return nRet;
       }
-      m_dwOffset = m_pStream->getOffset();
+      m_nOffset = m_pStream->getOffset();
     }
     nRet = ParseSegmentData(m_pSegment.get(), pPause);
-    if (m_ProcessingStatus == FXCODEC_STATUS_DECODE_TOBECONTINUE) {
-      m_ProcessingStatus = FXCODEC_STATUS_DECODE_TOBECONTINUE;
+    if (m_ProcessingStatus == FXCODEC_STATUS::kDecodeToBeContinued) {
       m_PauseStep = 2;
       return JBig2_Result::kSuccess;
     }
@@ -108,18 +107,19 @@ JBig2_Result CJBig2_Context::DecodeSequential(PauseIndicatorIface* pPause) {
       return nRet;
     }
     if (m_pSegment->m_dwData_length != 0xffffffff) {
-      m_dwOffset += m_pSegment->m_dwData_length;
-      if (!m_dwOffset.IsValid())
+      FX_SAFE_UINT32 new_offset = m_nOffset;
+      new_offset += m_pSegment->m_dwData_length;
+      if (!new_offset.IsValid())
         return JBig2_Result::kFailure;
-
-      m_pStream->setOffset(m_dwOffset.ValueOrDie());
+      m_nOffset = new_offset.ValueOrDie();
+      m_pStream->setOffset(m_nOffset);
     } else {
       m_pStream->offset(4);
     }
     m_SegmentList.push_back(std::move(m_pSegment));
     if (m_pStream->getByteLeft() > 0 && m_pPage && pPause &&
         pPause->NeedToPauseNow()) {
-      m_ProcessingStatus = FXCODEC_STATUS_DECODE_TOBECONTINUE;
+      m_ProcessingStatus = FXCODEC_STATUS::kDecodeToBeContinued;
       m_PauseStep = 2;
       return JBig2_Result::kSuccess;
     }
@@ -135,7 +135,7 @@ bool CJBig2_Context::GetFirstPage(uint8_t* pBuf,
   if (m_pGlobalContext) {
     JBig2_Result nRet = m_pGlobalContext->DecodeSequential(pPause);
     if (nRet != JBig2_Result::kSuccess) {
-      m_ProcessingStatus = FXCODEC_STATUS_ERROR;
+      m_ProcessingStatus = FXCODEC_STATUS::kError;
       return nRet == JBig2_Result::kSuccess;
     }
   }
@@ -144,33 +144,33 @@ bool CJBig2_Context::GetFirstPage(uint8_t* pBuf,
   m_bBufSpecified = true;
   if (pPause && pPause->NeedToPauseNow()) {
     m_PauseStep = 1;
-    m_ProcessingStatus = FXCODEC_STATUS_DECODE_TOBECONTINUE;
+    m_ProcessingStatus = FXCODEC_STATUS::kDecodeToBeContinued;
     return true;
   }
   return Continue(pPause);
 }
 
 bool CJBig2_Context::Continue(PauseIndicatorIface* pPause) {
-  m_ProcessingStatus = FXCODEC_STATUS_DECODE_READY;
+  m_ProcessingStatus = FXCODEC_STATUS::kDecodeReady;
   JBig2_Result nRet = JBig2_Result::kSuccess;
   if (m_PauseStep == 5) {
-    m_ProcessingStatus = FXCODEC_STATUS_DECODE_FINISH;
+    m_ProcessingStatus = FXCODEC_STATUS::kDecodeFinished;
     return true;
   }
 
   if (m_PauseStep <= 2)
     nRet = DecodeSequential(pPause);
-  if (m_ProcessingStatus == FXCODEC_STATUS_DECODE_TOBECONTINUE)
+  if (m_ProcessingStatus == FXCODEC_STATUS::kDecodeToBeContinued)
     return nRet == JBig2_Result::kSuccess;
 
   m_PauseStep = 5;
   if (!m_bBufSpecified && nRet == JBig2_Result::kSuccess) {
-    m_ProcessingStatus = FXCODEC_STATUS_DECODE_FINISH;
+    m_ProcessingStatus = FXCODEC_STATUS::kDecodeFinished;
     return true;
   }
   m_ProcessingStatus = nRet == JBig2_Result::kSuccess
-                           ? FXCODEC_STATUS_DECODE_FINISH
-                           : FXCODEC_STATUS_ERROR;
+                           ? FXCODEC_STATUS::kDecodeFinished
+                           : FXCODEC_STATUS::kError;
   return nRet == JBig2_Result::kSuccess;
 }
 
@@ -270,7 +270,7 @@ JBig2_Result CJBig2_Context::ParseSegmentHeader(CJBig2_Segment* pSegment) {
   if (m_pStream->readInteger(&pSegment->m_dwData_length) != 0)
     return JBig2_Result::kFailure;
 
-  pSegment->m_dwObjNum = m_pStream->getObjNum();
+  pSegment->m_Key = m_pStream->getKey();
   pSegment->m_dwDataOffset = m_pStream->getOffset();
   pSegment->m_State = JBIG2_SEGMENT_DATA_UNPARSED;
   return JBig2_Result::kSuccess;
@@ -279,7 +279,7 @@ JBig2_Result CJBig2_Context::ParseSegmentHeader(CJBig2_Segment* pSegment) {
 JBig2_Result CJBig2_Context::ParseSegmentData(CJBig2_Segment* pSegment,
                                               PauseIndicatorIface* pPause) {
   JBig2_Result ret = ProcessingParseSegmentData(pSegment, pPause);
-  while (m_ProcessingStatus == FXCODEC_STATUS_DECODE_TOBECONTINUE &&
+  while (m_ProcessingStatus == FXCODEC_STATUS::kDecodeToBeContinued &&
          m_pStream->getByteLeft() > 0) {
     ret = ProcessingParseSegmentData(pSegment, pPause);
   }
@@ -342,7 +342,7 @@ JBig2_Result CJBig2_Context::ProcessingParseSegmentData(
       }
 
       if (!m_pPage->data()) {
-        m_ProcessingStatus = FXCODEC_STATUS_ERROR;
+        m_ProcessingStatus = FXCODEC_STATUS::kError;
         return JBig2_Result::kFailure;
       }
 
@@ -353,7 +353,6 @@ JBig2_Result CJBig2_Context::ProcessingParseSegmentData(
     case 49:
       m_bInPage = false;
       return JBig2_Result::kEndReached;
-      break;
     case 50:
       m_pStream->offset(pSegment->m_dwData_length);
       break;
@@ -409,28 +408,31 @@ JBig2_Result CJBig2_Context::ParseSymbolDict(CJBig2_Segment* pSegment) {
       return JBig2_Result::kFailure;
   }
   CJBig2_Segment* pLRSeg = nullptr;
-  pSymbolDictDecoder->SDNUMINSYMS = 0;
+  FX_SAFE_UINT32 dwNumSyms = 0;
   for (int32_t i = 0; i < pSegment->m_nReferred_to_segment_count; ++i) {
     CJBig2_Segment* pSeg =
         FindSegmentByNumber(pSegment->m_Referred_to_segment_numbers[i]);
     if (pSeg->m_cFlags.s.type == 0) {
-      pSymbolDictDecoder->SDNUMINSYMS += pSeg->m_SymbolDict->NumImages();
+      dwNumSyms += pSeg->m_SymbolDict->NumImages();
       pLRSeg = pSeg;
     }
   }
+  pSymbolDictDecoder->SDNUMINSYMS = dwNumSyms.ValueOrDie();
 
   std::unique_ptr<CJBig2_Image*, FxFreeDeleter> SDINSYMS;
   if (pSymbolDictDecoder->SDNUMINSYMS != 0) {
     SDINSYMS.reset(FX_Alloc(CJBig2_Image*, pSymbolDictDecoder->SDNUMINSYMS));
-    uint32_t dwTemp = 0;
+    dwNumSyms = 0;
     for (int32_t i = 0; i < pSegment->m_nReferred_to_segment_count; ++i) {
       CJBig2_Segment* pSeg =
           FindSegmentByNumber(pSegment->m_Referred_to_segment_numbers[i]);
       if (pSeg->m_cFlags.s.type == 0) {
         const CJBig2_SymbolDict& dict = *pSeg->m_SymbolDict;
-        for (size_t j = 0; j < dict.NumImages(); ++j)
-          SDINSYMS.get()[dwTemp + j] = dict.GetImage(j);
-        dwTemp += dict.NumImages();
+        for (uint32_t j = 0; j < dict.NumImages(); ++j) {
+          uint32_t dwTemp = (dwNumSyms + j).ValueOrDie();
+          SDINSYMS.get()[dwTemp] = dict.GetImage(j);
+        }
+        dwNumSyms += dict.NumImages();
       }
     }
   }
@@ -515,8 +517,7 @@ JBig2_Result CJBig2_Context::ParseSymbolDict(CJBig2_Segment* pSegment) {
       grContext.resize(grContextSize);
   }
 
-  CJBig2_CacheKey key =
-      CJBig2_CacheKey(pSegment->m_dwObjNum, pSegment->m_dwDataOffset);
+  CJBig2_CompoundKey key(pSegment->m_Key, pSegment->m_dwDataOffset);
   bool cache_hit = false;
   pSegment->m_nResultType = JBIG2_SYMBOL_DICT_POINTER;
   if (m_bIsGlobal && key.first != 0) {
@@ -624,27 +625,30 @@ JBig2_Result CJBig2_Context::ParseTextRegion(CJBig2_Segment* pSegment) {
       return JBig2_Result::kFailure;
   }
 
-  pTRD->SBNUMSYMS = 0;
+  FX_SAFE_UINT32 dwNumSyms = 0;
   for (int32_t i = 0; i < pSegment->m_nReferred_to_segment_count; ++i) {
     CJBig2_Segment* pSeg =
         FindSegmentByNumber(pSegment->m_Referred_to_segment_numbers[i]);
     if (pSeg->m_cFlags.s.type == 0) {
-      pTRD->SBNUMSYMS += pSeg->m_SymbolDict->NumImages();
+      dwNumSyms += pSeg->m_SymbolDict->NumImages();
     }
   }
+  pTRD->SBNUMSYMS = dwNumSyms.ValueOrDie();
 
   std::unique_ptr<CJBig2_Image*, FxFreeDeleter> SBSYMS;
   if (pTRD->SBNUMSYMS > 0) {
     SBSYMS.reset(FX_Alloc(CJBig2_Image*, pTRD->SBNUMSYMS));
-    dwTemp = 0;
+    dwNumSyms = 0;
     for (int32_t i = 0; i < pSegment->m_nReferred_to_segment_count; ++i) {
       CJBig2_Segment* pSeg =
           FindSegmentByNumber(pSegment->m_Referred_to_segment_numbers[i]);
       if (pSeg->m_cFlags.s.type == 0) {
         const CJBig2_SymbolDict& dict = *pSeg->m_SymbolDict;
-        for (size_t j = 0; j < dict.NumImages(); ++j)
-          SBSYMS.get()[dwTemp + j] = dict.GetImage(j);
-        dwTemp += dict.NumImages();
+        for (uint32_t j = 0; j < dict.NumImages(); ++j) {
+          uint32_t dwIndex = (dwNumSyms + j).ValueOrDie();
+          SBSYMS.get()[dwIndex] = dict.GetImage(j);
+        }
+        dwNumSyms += dict.NumImages();
       }
     }
     pTRD->SBSYMS = SBSYMS.get();
@@ -975,7 +979,7 @@ JBig2_Result CJBig2_Context::ParseGenericRegion(CJBig2_Segment* pSegment,
       state.pPause = pPause;
       m_ProcessingStatus = bStart ? m_pGRD->StartDecodeArith(&state)
                                   : m_pGRD->ContinueDecode(&state);
-      if (m_ProcessingStatus == FXCODEC_STATUS_DECODE_TOBECONTINUE) {
+      if (m_ProcessingStatus == FXCODEC_STATUS::kDecodeToBeContinued) {
         if (pSegment->m_cFlags.s.type != 36) {
           if (!m_bBufSpecified) {
             const auto& pPageInfo = m_PageInfoList.back();
@@ -996,7 +1000,7 @@ JBig2_Result CJBig2_Context::ParseGenericRegion(CJBig2_Segment* pSegment,
     m_pArithDecoder.reset();
     m_gbContext.clear();
     if (!pSegment->m_Image) {
-      m_ProcessingStatus = FXCODEC_STATUS_ERROR;
+      m_ProcessingStatus = FXCODEC_STATUS::kError;
       m_pGRD.reset();
       return JBig2_Result::kFailure;
     }

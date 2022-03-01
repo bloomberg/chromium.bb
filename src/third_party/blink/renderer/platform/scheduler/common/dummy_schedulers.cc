@@ -62,6 +62,7 @@ class DummyFrameScheduler : public FrameScheduler {
   void DidCommitProvisionalLoad(bool, FrameScheduler::NavigationType) override {
   }
   void OnFirstContentfulPaintInMainFrame() override {}
+  void OnDomContentLoaded() override {}
   void OnFirstMeaningfulPaint() override {}
   void OnLoad() override {}
   bool IsExemptFromBudgetBasedThrottling() const override { return false; }
@@ -88,6 +89,10 @@ class DummyFrameScheduler : public FrameScheduler {
                              const SchedulingPolicy& policy) override {}
   void OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
                              const SchedulingPolicy& policy) override {}
+  base::WeakPtr<FrameOrWorkerScheduler> GetSchedulingAffectingFeatureWeakPtr()
+      override {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
   WTF::HashSet<SchedulingPolicy::Feature>
   GetActiveFeaturesTrackedForBackForwardCacheMetrics() override {
     return WTF::HashSet<SchedulingPolicy::Feature>();
@@ -122,8 +127,6 @@ class DummyPageScheduler : public PageScheduler {
   void SetPageVisible(bool) override {}
   void SetPageFrozen(bool) override {}
   void SetPageBackForwardCached(bool) override {}
-  void OnFocusChanged(bool focused) override {}
-  void SetKeepActive(bool) override {}
   bool IsMainFrameLocal() const override { return true; }
   void SetIsMainFrameLocal(bool) override {}
   void OnLocalMainFrameNetworkAlmostIdle() override {}
@@ -131,7 +134,6 @@ class DummyPageScheduler : public PageScheduler {
   void DisableVirtualTimeForTesting() override {}
   bool VirtualTimeAllowedToAdvance() const override { return true; }
   void SetInitialVirtualTime(base::Time) override {}
-  void SetInitialVirtualTimeOffset(base::TimeDelta) override {}
   void SetVirtualTimePolicy(VirtualTimePolicy) override {}
   void GrantVirtualTimeBudget(base::TimeDelta, base::OnceClosure) override {}
   void SetMaxVirtualTimeTaskStarvationCount(int) override {}

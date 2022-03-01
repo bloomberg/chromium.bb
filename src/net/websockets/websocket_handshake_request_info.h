@@ -5,7 +5,6 @@
 #ifndef NET_WEBSOCKETS_WEBSOCKET_HANDSHAKE_REQUEST_INFO_H_
 #define NET_WEBSOCKETS_WEBSOCKET_HANDSHAKE_REQUEST_INFO_H_
 
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/http/http_request_headers.h"
@@ -15,16 +14,19 @@ namespace net {
 
 struct NET_EXPORT WebSocketHandshakeRequestInfo {
   WebSocketHandshakeRequestInfo(const GURL& url, base::Time request_time);
+
+  WebSocketHandshakeRequestInfo(const WebSocketHandshakeRequestInfo&) = delete;
+  WebSocketHandshakeRequestInfo& operator=(
+      const WebSocketHandshakeRequestInfo&) = delete;
+
   ~WebSocketHandshakeRequestInfo();
+
   // The request URL
   GURL url;
   // HTTP request headers
   HttpRequestHeaders headers;
   // The time that this request is sent
   base::Time request_time;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebSocketHandshakeRequestInfo);
 };
 
 }  // namespace net

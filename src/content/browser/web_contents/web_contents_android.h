@@ -10,12 +10,12 @@
 #include <memory>
 
 #include "base/android/jni_android.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/navigation_controller_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-forward.h"
 
 class GURL;
 
@@ -33,6 +33,10 @@ class WebContentsImpl;
 class CONTENT_EXPORT WebContentsAndroid {
  public:
   explicit WebContentsAndroid(WebContentsImpl* web_contents);
+
+  WebContentsAndroid(const WebContentsAndroid&) = delete;
+  WebContentsAndroid& operator=(const WebContentsAndroid&) = delete;
+
   ~WebContentsAndroid();
 
   WebContentsImpl* web_contents() const { return web_contents_; }
@@ -79,7 +83,7 @@ class CONTENT_EXPORT WebContentsAndroid {
 
   bool IsLoading(JNIEnv* env,
                  const base::android::JavaParamRef<jobject>& obj) const;
-  bool IsLoadingToDifferentDocument(
+  bool ShouldShowLoadingUI(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj) const;
 
@@ -133,8 +137,11 @@ class CONTENT_EXPORT WebContentsAndroid {
   void ScrollFocusedEditableNodeIntoView(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  void SelectWordAroundCaret(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& obj);
+  void SelectAroundCaret(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj,
+                         jint granularity,
+                         jboolean should_show_handle,
+                         jboolean should_show_context_menu);
   void AdjustSelectionByCharacterOffset(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -187,7 +194,8 @@ class CONTENT_EXPORT WebContentsAndroid {
 
   void RequestAccessibilitySnapshot(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& view_structure_root,
+      const base::android::JavaParamRef<jobject>& view_structure_builder,
       const base::android::JavaParamRef<jobject>& callback);
 
   base::android::ScopedJavaLocalRef<jstring> GetEncoding(
@@ -295,15 +303,15 @@ class CONTENT_EXPORT WebContentsAndroid {
                              const GURL& url,
                              const std::vector<SkBitmap>& bitmaps,
                              const std::vector<gfx::Size>& sizes);
-  void SelectWordAroundCaretAck(bool did_select,
-                                int start_adjust,
-                                int end_adjust);
+  void SelectAroundCaretAck(blink::mojom::SelectAroundCaretResultPtr result);
   // Walks over the AXTreeUpdate and creates a light weight snapshot.
   void AXTreeSnapshotCallback(
-      const base::android::ScopedJavaGlobalRef<jobject>& callback,
+      const base::android::JavaRef<jobject>& view_structure_root,
+      const base::android::JavaRef<jobject>& view_structure_builder,
+      const base::android::JavaRef<jobject>& callback,
       const ui::AXTreeUpdate& result);
 
-  WebContentsImpl* web_contents_;
+  raw_ptr<WebContentsImpl> web_contents_;
 
   NavigationControllerAndroid navigation_controller_;
   base::android::ScopedJavaGlobalRef<jobject> obj_;
@@ -311,8 +319,6 @@ class CONTENT_EXPORT WebContentsAndroid {
   base::ObserverList<DestructionObserver> destruction_observers_;
 
   base::WeakPtrFactory<WebContentsAndroid> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsAndroid);
 };
 
 }  // namespace content

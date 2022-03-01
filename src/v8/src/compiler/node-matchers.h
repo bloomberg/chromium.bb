@@ -10,13 +10,14 @@
 
 #include "src/base/bounds.h"
 #include "src/base/compiler-specific.h"
+#include "src/base/numbers/double.h"
 #include "src/codegen/external-reference.h"
 #include "src/common/globals.h"
 #include "src/compiler/common-operator.h"
 #include "src/compiler/machine-operator.h"
 #include "src/compiler/node.h"
+#include "src/compiler/opcodes.h"
 #include "src/compiler/operator.h"
-#include "src/numbers/double.h"
 #include "src/objects/heap-object.h"
 
 namespace v8 {
@@ -216,7 +217,7 @@ struct FloatMatcher final : public ValueMatcher<T, kOpcode> {
     if (!this->HasResolvedValue() || (this->ResolvedValue() == 0.0)) {
       return false;
     }
-    Double value = Double(this->ResolvedValue());
+    base::Double value = base::Double(this->ResolvedValue());
     return !value.IsInfinite() && base::bits::IsPowerOfTwo(value.Significand());
   }
 };
@@ -605,7 +606,8 @@ struct BaseWithIndexAndDisplacementMatcher {
         Node* left_left = left_matcher.left().node();
         Node* left_right = left_matcher.right().node();
         if (left_matcher.right().HasResolvedValue()) {
-          if (left_matcher.HasIndexInput() && left_left->OwnedBy(left)) {
+          if (left_matcher.HasIndexInput() &&
+              OwnedByAddressingOperand(left_left)) {
             // ((S - D) + B)
             index = left_matcher.IndexInput();
             scale = left_matcher.scale();
@@ -630,7 +632,8 @@ struct BaseWithIndexAndDisplacementMatcher {
           AddMatcher left_matcher(left);
           Node* left_left = left_matcher.left().node();
           Node* left_right = left_matcher.right().node();
-          if (left_matcher.HasIndexInput() && left_left->OwnedBy(left)) {
+          if (left_matcher.HasIndexInput() &&
+              OwnedByAddressingOperand(left_left)) {
             if (left_matcher.right().HasResolvedValue()) {
               // ((S + D) + B)
               index = left_matcher.IndexInput();
@@ -737,17 +740,28 @@ struct BaseWithIndexAndDisplacementMatcher {
     matches_ = true;
   }
 
+  // Warning: When {node} is used by a Add/Sub instruction, this function does
+  // not guarantee the Add/Sub will be part of a addressing operand.
   static bool OwnedByAddressingOperand(Node* node) {
     for (auto use : node->use_edges()) {
       Node* from = use.from();
       switch (from->opcode()) {
         case IrOpcode::kLoad:
         case IrOpcode::kLoadImmutable:
-        case IrOpcode::kPoisonedLoad:
         case IrOpcode::kProtectedLoad:
         case IrOpcode::kInt32Add:
         case IrOpcode::kInt64Add:
           // Skip addressing uses.
+          break;
+        case IrOpcode::kInt32Sub:
+          // If the subtrahend is not a constant, it is not an addressing use.
+          if (from->InputAt(1)->opcode() != IrOpcode::kInt32Constant)
+            return false;
+          break;
+        case IrOpcode::kInt64Sub:
+          // If the subtrahend is not a constant, it is not an addressing use.
+          if (from->InputAt(1)->opcode() != IrOpcode::kInt64Constant)
+            return false;
           break;
         case IrOpcode::kStore:
         case IrOpcode::kProtectedStore:
@@ -815,6 +829,14 @@ struct V8_EXPORT_PRIVATE DiamondMatcher
   Node* branch_;
   Node* if_true_;
   Node* if_false_;
+};
+
+struct LoadTransformMatcher
+    : ValueMatcher<LoadTransformParameters, IrOpcode::kLoadTransform> {
+  explicit LoadTransformMatcher(Node* node) : ValueMatcher(node) {}
+  bool Is(LoadTransformation t) {
+    return HasResolvedValue() && ResolvedValue().transformation == t;
+  }
 };
 
 }  // namespace compiler

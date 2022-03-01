@@ -23,6 +23,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_RESOLVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_RESOLVER_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/animation/interpolation.h"
 #include "third_party/blink/renderer/core/animation/property_handle.h"
@@ -114,6 +115,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   SelectorFilter& GetSelectorFilter() { return selector_filter_; }
 
   StyleRuleKeyframes* FindKeyframesRule(const Element*,
+                                        const Element* animating_element,
                                         const AtomicString& animation_name);
 
   // These methods will give back the set of rules that matched for a given
@@ -143,6 +145,8 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
       Element*,
       PseudoId);
 
+  Element* FindContainerForElement(Element*, const AtomicString&);
+
   void ComputeFont(Element&, ComputedStyle*, const CSSPropertyValueSet&);
 
   // FIXME: Rename to reflect the purpose, like didChangeFontSize or something.
@@ -161,6 +165,14 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
                                       const CSSPropertyName&,
                                       const CSSValue&);
 
+  // Compute FilterOperations from the specified CSSValue, using the provided
+  // Font to resolve any font-relative units.
+  //
+  // Triggers loading of any external references held by |CSSValue|.
+  FilterOperations ComputeFilterOperations(Element*,
+                                           const Font&,
+                                           const CSSValue&);
+
   scoped_refptr<ComputedStyle> StyleForInterpolations(
       Element& element,
       ActiveInterpolationsMap& animations);
@@ -175,12 +187,19 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
       const ComputedStyle& base_style,
       ActiveInterpolationsMap& transition_interpolations);
 
+  // Check if the BODY or HTML element's display or containment stops
+  // propagation of BODY style to HTML and viewport.
+  bool ShouldStopBodyPropagation(const Element& body_or_html);
+
   void Trace(Visitor*) const;
 
  private:
   void InitStyleAndApplyInheritance(Element& element,
                                     const StyleRequest&,
                                     StyleResolverState& state);
+  void ApplyInheritance(Element& element,
+                        const StyleRequest& style_request,
+                        StyleResolverState& state);
 
   void ApplyBaseStyle(Element* element,
                       const StyleRecalcContext&,
@@ -266,7 +285,11 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   Document& GetDocument() const { return *document_; }
 
   bool IsForcedColorsModeEnabled() const;
-  bool IsForcedColorsModeEnabled(const StyleResolverState&) const;
+
+  template <typename Functor>
+  void ForEachUARulesForElement(const Element& element,
+                                ElementRuleCollector* collector,
+                                Functor& func) const;
 
   MatchedPropertiesCache matched_properties_cache_;
   Member<Document> document_;
@@ -279,6 +302,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   bool was_viewport_resized_ = false;
 
   FRIEND_TEST_ALL_PREFIXES(ComputedStyleTest, ApplyInternalLightDarkColor);
+  friend class StyleResolverTest;
   FRIEND_TEST_ALL_PREFIXES(StyleResolverTest, TreeScopedReferences);
 };
 

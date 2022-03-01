@@ -5,11 +5,9 @@
 #ifndef NET_REPORTING_MOCK_PERSISTENT_REPORTING_STORE_H_
 #define NET_REPORTING_MOCK_PERSISTENT_REPORTING_STORE_H_
 
-#include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "net/base/network_isolation_key.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_endpoint.h"
@@ -82,6 +80,11 @@ class MockPersistentReportingStore
   using CommandList = std::vector<Command>;
 
   MockPersistentReportingStore();
+
+  MockPersistentReportingStore(const MockPersistentReportingStore&) = delete;
+  MockPersistentReportingStore& operator=(const MockPersistentReportingStore&) =
+      delete;
+
   ~MockPersistentReportingStore() override;
 
   // PersistentReportingStore implementation:
@@ -151,8 +154,6 @@ class MockPersistentReportingStore
   // called. Reset to 0 when Flush() is called.
   int queued_endpoint_count_delta_;
   int queued_endpoint_group_count_delta_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPersistentReportingStore);
 };
 
 bool operator==(const MockPersistentReportingStore::Command& lhs,

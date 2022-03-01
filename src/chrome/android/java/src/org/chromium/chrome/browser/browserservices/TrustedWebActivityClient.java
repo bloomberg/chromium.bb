@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.browserservices;
 
-import static org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder.DelegatedNotificationSmallIconFallback.FALLBACK_ICON_NOT_PROVIDED;
-import static org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder.DelegatedNotificationSmallIconFallback.NO_FALLBACK;
+import static org.chromium.chrome.browser.browserservices.metrics.TrustedWebActivityUmaRecorder.DelegatedNotificationSmallIconFallback.FALLBACK_ICON_NOT_PROVIDED;
+import static org.chromium.chrome.browser.browserservices.metrics.TrustedWebActivityUmaRecorder.DelegatedNotificationSmallIconFallback.NO_FALLBACK;
 import static org.chromium.chrome.browser.browserservices.permissiondelegation.InstalledWebappGeolocationBridge.EXTRA_NEW_LOCATION_ERROR_CALLBACK;
 
 import android.app.Notification;
@@ -37,7 +37,9 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplicationImpl;
-import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder.DelegatedNotificationSmallIconFallback;
+import org.chromium.chrome.browser.browserservices.constants.LocationUpdateError;
+import org.chromium.chrome.browser.browserservices.metrics.TrustedWebActivityUmaRecorder;
+import org.chromium.chrome.browser.browserservices.metrics.TrustedWebActivityUmaRecorder.DelegatedNotificationSmallIconFallback;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
@@ -95,6 +97,9 @@ public class TrustedWebActivityClient {
         default void onNoTwaFound() {}
     }
 
+    /**
+     * Interface for callbacks to {@link #connectAndExecute}.
+     */
     public interface ExecutionCallback {
         void onConnected(Origin origin, TrustedWebActivityServiceConnection service)
                 throws RemoteException;
@@ -288,8 +293,7 @@ public class TrustedWebActivityClient {
 
         Bitmap bitmap = service.getSmallIconBitmap();
         if (!builder.hasStatusBarIconBitmap()) {
-            builder.setStatusBarIconForRemoteApp(
-                    id, bitmap, service.getComponentName().getPackageName());
+            builder.setStatusBarIconForRemoteApp(id, bitmap);
         }
         if (!builder.hasSmallIconForContent()) {
             builder.setContentSmallIconForRemoteApp(bitmap);

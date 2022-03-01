@@ -10,29 +10,12 @@
 #include <vector>
 
 #include "osp/public/timestamp.h"
-#include "platform/api/network_interface.h"
+#include "platform/base/error.h"
+#include "platform/base/interface_info.h"
 #include "platform/base/macros.h"
 
 namespace openscreen {
 namespace osp {
-
-// Used to report an error from a ServiceListener implementation.
-struct ServicePublisherError {
-  // TODO(mfoltz): Add additional error types, as implementations progress.
-  enum class Code {
-    kNone = 0,
-  };
-
-  ServicePublisherError();
-  ServicePublisherError(Code error, const std::string& message);
-  ServicePublisherError(const ServicePublisherError& other);
-  ~ServicePublisherError();
-
-  ServicePublisherError& operator=(const ServicePublisherError& other);
-
-  Code error;
-  std::string message;
-};
 
 class ServicePublisher {
  public:
@@ -74,7 +57,7 @@ class ServicePublisher {
     virtual void OnSuspended() = 0;
 
     // Reports an error.
-    virtual void OnError(ServicePublisherError) = 0;
+    virtual void OnError(Error) = 0;
 
     // Reports metrics.
     virtual void OnMetrics(Metrics) = 0;
@@ -103,14 +86,20 @@ class ServicePublisher {
     // configured in the ProtocolConnectionServer.
     uint16_t connection_server_port = 0;
 
-    // A list of network interface names that the publisher should use.
+    // A list of network interfaces that the publisher should use.
     // By default, all enabled Ethernet and WiFi interfaces are used.
     // This configuration must be identical to the interfaces configured
     // in the ScreenConnectionServer.
-    std::vector<NetworkInterfaceIndex> network_interface_indices;
+    std::vector<InterfaceInfo> network_interfaces;
+
+    // Returns true if the config object is valid.
+    bool IsValid() const;
   };
 
   virtual ~ServicePublisher();
+
+  // Sets the service configuration for this publisher.
+  virtual void SetConfig(const Config& config);
 
   // Starts publishing this service using the config object.
   // Returns true if state() == kStopped and the service will be started, false
@@ -139,14 +128,15 @@ class ServicePublisher {
   State state() const { return state_; }
 
   // Returns the last error reported by this publisher.
-  ServicePublisherError last_error() const { return last_error_; }
+  Error last_error() const { return last_error_; }
 
  protected:
   explicit ServicePublisher(Observer* observer);
 
   State state_;
-  ServicePublisherError last_error_;
+  Error last_error_;
   Observer* observer_;
+  Config config_;
 
   OSP_DISALLOW_COPY_AND_ASSIGN(ServicePublisher);
 };

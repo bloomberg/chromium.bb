@@ -50,6 +50,9 @@ enum ValueTypeCode : uint8_t {
 constexpr uint8_t kWasmFunctionTypeCode = 0x60;
 constexpr uint8_t kWasmStructTypeCode = 0x5f;
 constexpr uint8_t kWasmArrayTypeCode = 0x5e;
+constexpr uint8_t kWasmFunctionSubtypeCode = 0x5d;
+constexpr uint8_t kWasmStructSubtypeCode = 0x5c;
+constexpr uint8_t kWasmArraySubtypeCode = 0x5b;
 
 // Binary encoding of import/export kinds.
 enum ImportExportKindCode : uint8_t {
@@ -57,7 +60,7 @@ enum ImportExportKindCode : uint8_t {
   kExternalTable = 1,
   kExternalMemory = 2,
   kExternalGlobal = 3,
-  kExternalException = 4
+  kExternalTag = 4
 };
 
 enum LimitsFlags : uint8_t {
@@ -91,7 +94,7 @@ enum SectionCode : int8_t {
   kCodeSectionCode = 10,       // Function code
   kDataSectionCode = 11,       // Data segments
   kDataCountSectionCode = 12,  // Number of data segments
-  kExceptionSectionCode = 13,  // Exception section
+  kTagSectionCode = 13,        // Tag section
 
   // The following sections are custom sections, and are identified using a
   // string rather than an integer. Their enumeration values are not guaranteed
@@ -115,19 +118,19 @@ constexpr uint8_t kNoCompilationHint = kMaxUInt8;
 
 // Binary encoding of name section kinds.
 enum NameSectionKindCode : uint8_t {
-  kModule = 0,
-  kFunction = 1,
-  kLocal = 2,
+  kModuleCode = 0,
+  kFunctionCode = 1,
+  kLocalCode = 2,
   // https://github.com/WebAssembly/extended-name-section/
-  kLabel = 3,
-  kType = 4,
-  kTable = 5,
-  kMemory = 6,
-  kGlobal = 7,
-  kElementSegment = 8,
-  kDataSegment = 9,
+  kLabelCode = 3,
+  kTypeCode = 4,
+  kTableCode = 5,
+  kMemoryCode = 6,
+  kGlobalCode = 7,
+  kElementSegmentCode = 8,
+  kDataSegmentCode = 9,
   // https://github.com/WebAssembly/gc/issues/193
-  kField = 10
+  kFieldCode = 10
 };
 
 constexpr size_t kWasmPageSize = 0x10000;
@@ -157,8 +160,12 @@ constexpr int kAnonymousFuncIndex = -1;
 // often enough.
 constexpr uint32_t kGenericWrapperBudget = 1000;
 
+// The minimum length of supertype arrays for wasm-gc types. Having a size > 0
+// gives up some module size for faster access to the supertypes.
+constexpr uint32_t kMinimumSupertypeArraySize = 3;
+
 #if V8_TARGET_ARCH_X64
-constexpr int32_t kOSRTargetOffset = 3 * kSystemPointerSize;
+constexpr int32_t kOSRTargetOffset = 5 * kSystemPointerSize;
 #endif
 
 }  // namespace wasm

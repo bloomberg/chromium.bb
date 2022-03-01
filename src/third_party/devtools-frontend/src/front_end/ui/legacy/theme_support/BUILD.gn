@@ -11,13 +11,17 @@ devtools_module("theme_support") {
   deps = [
     "../../../core/common:bundle",
     "../../../core/platform:bundle",
+    "../../../core/root:bundle",
   ]
 }
 
 devtools_entrypoint("bundle") {
   entrypoint = "theme_support.ts"
 
-  deps = [ ":theme_support" ]
+  deps = [
+    ":theme_support",
+    "../:legacy_css_files",
+  ]
 
   visibility = [
     "../*",

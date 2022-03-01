@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -105,27 +105,28 @@ bool HasBackgroundColor(
 class LargeIconServiceTest : public testing::Test {
  public:
   LargeIconServiceTest()
-      : scoped_set_supported_scale_factors_({ui::SCALE_FACTOR_200P}),
+      : scoped_set_supported_scale_factors_({ui::k200Percent}),
         mock_image_fetcher_(new NiceMock<MockImageFetcher>()),
         large_icon_service_(&mock_favicon_service_,
-                            base::WrapUnique(mock_image_fetcher_),
+                            base::WrapUnique(mock_image_fetcher_.get()),
                             /*desired_size_in_dip_for_server_requests=*/24,
                             /*icon_type_for_server_requests=*/
                             favicon_base::IconType::kTouchIcon,
                             /*google_server_client_param=*/"test_chrome") {}
 
+  LargeIconServiceTest(const LargeIconServiceTest&) = delete;
+  LargeIconServiceTest& operator=(const LargeIconServiceTest&) = delete;
+
   ~LargeIconServiceTest() override {}
 
  protected:
   base::test::TaskEnvironment task_environment_;
-  ui::test::ScopedSetSupportedScaleFactors scoped_set_supported_scale_factors_;
-  NiceMock<MockImageFetcher>* mock_image_fetcher_;
+  ui::test::ScopedSetSupportedResourceScaleFactors
+      scoped_set_supported_scale_factors_;
+  raw_ptr<NiceMock<MockImageFetcher>> mock_image_fetcher_;
   testing::NiceMock<MockFaviconService> mock_favicon_service_;
   LargeIconServiceImpl large_icon_service_;
   base::HistogramTester histogram_tester_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LargeIconServiceTest);
 };
 
 TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServer) {
@@ -417,6 +418,11 @@ class LargeIconServiceGetterTest : public LargeIconServiceTest,
                                    public ::testing::WithParamInterface<bool> {
  public:
   LargeIconServiceGetterTest() {}
+
+  LargeIconServiceGetterTest(const LargeIconServiceGetterTest&) = delete;
+  LargeIconServiceGetterTest& operator=(const LargeIconServiceGetterTest&) =
+      delete;
+
   ~LargeIconServiceGetterTest() override {}
 
   void GetLargeIconOrFallbackStyleAndWaitForCallback(
@@ -487,9 +493,6 @@ class LargeIconServiceGetterTest : public LargeIconServiceTest,
 
   std::unique_ptr<favicon_base::FallbackIconStyle> returned_fallback_style_;
   std::unique_ptr<gfx::Size> returned_bitmap_size_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LargeIconServiceGetterTest);
 };
 
 TEST_P(LargeIconServiceGetterTest, SameSize) {

@@ -13,10 +13,12 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/updater/device_management/dm_cached_policy_info.h"
 #include "chrome/updater/device_management/dm_message.h"
 #include "chrome/updater/protos/omaha_settings.pb.h"
+#include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -66,6 +68,14 @@ bool DeleteObsoletePolicies(const base::FilePath& cache_root,
 }
 
 }  // namespace
+
+#if defined(OS_LINUX)
+// crbug.com/1276162 - implement.
+DMStorage::DMStorage(const base::FilePath& policy_cache_root)
+    : policy_cache_root_(policy_cache_root) {
+  NOTIMPLEMENTED();
+}
+#endif  // OS_LINUX
 
 DMStorage::DMStorage(const base::FilePath& policy_cache_root,
                      std::unique_ptr<TokenServiceInterface> token_service)
@@ -193,8 +203,8 @@ DMStorage::GetOmahaPolicySettings() const {
 }
 
 scoped_refptr<DMStorage> GetDefaultDMStorage() {
-  absl::optional<base::FilePath> updater_versioned_path =
-      GetVersionedDirectory();
+  const absl::optional<base::FilePath> updater_versioned_path =
+      GetVersionedDirectory(GetUpdaterScope());
   if (!updater_versioned_path)
     return nullptr;
 

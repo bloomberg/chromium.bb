@@ -24,7 +24,7 @@ from telemetry.internal.util import format_for_logging
 class CrOSBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
   def __init__(self, cros_platform_backend, browser_options,
                browser_directory, profile_directory, is_guest, env,
-               build_dir=None):
+               build_dir=None, enable_tracing=True):
     """
     Args:
       cros_platform_backend: The cros_platform_backend.CrOSPlatformBackend
@@ -32,6 +32,7 @@ class CrOSBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
       browser_options: The browser_options.BrowserOptions instance to use.
       browser_directory: A string containing the path to the directory on the
           device where the browser is installed.
+      enable_tracing: Defines if a tracing_client is created.
       profile_directory: A string containing a path to the directory on the
           device to store browser profile information in.
       is_guest: A boolean indicating whether the browser is being run in guest
@@ -48,6 +49,7 @@ class CrOSBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
         cros_platform_backend,
         browser_options=browser_options,
         browser_directory=browser_directory,
+        enable_tracing=enable_tracing,
         profile_directory=profile_directory,
         supports_extensions=not is_guest,
         supports_tab_control=True,
@@ -75,11 +77,18 @@ class CrOSBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     browser_target = lines[1] if len(lines) >= 2 else None
     return devtools_port, browser_target
 
+  def _FindUIDevtoolsPort(self):
+    devtools_file_path = '/home/chronos/UIDevToolsActivePort'
+    # GetFileContents may rise IOError or OSError, the caller will retry.
+    lines = self._cri.GetFileContents(devtools_file_path).splitlines()
+    if not lines:
+      raise EnvironmentError('UIDevTools file empty')
+
+    devtools_port = int(lines[0])
+    return devtools_port
+
   def GetPid(self):
     return self._cri.GetChromePid()
-
-  def __del__(self):
-    self.Close()
 
   def Start(self, startup_args):
     if self._started:

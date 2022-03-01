@@ -1,8 +1,12 @@
+// Copyright (c) 2017-2021, The Khronos Group Inc.
+// Copyright (c) 2017-2019 Valve Corporation
+// Copyright (c) 2017-2019 LunarG, Inc.
+// SPDX-License-Identifier: Apache-2.0 OR MIT
 // *********** THIS FILE IS GENERATED - DO NOT EDIT ***********
 //     See utility_source_generator.py for modifications
 // ************************************************************
 
-// Copyright (c) 2017-2020 The Khronos Group Inc.
+// Copyright (c) 2017-2021, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -155,6 +159,20 @@ void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
     (get_inst_proc_addr(instance, "xrConvertTimeToTimespecTimeKHR", (PFN_xrVoidFunction*)&table->ConvertTimeToTimespecTimeKHR));
 #endif // defined(XR_USE_TIMESPEC)
 
+    // ---- XR_KHR_vulkan_enable2 extension commands
+#if defined(XR_USE_GRAPHICS_API_VULKAN)
+    (get_inst_proc_addr(instance, "xrCreateVulkanInstanceKHR", (PFN_xrVoidFunction*)&table->CreateVulkanInstanceKHR));
+#endif // defined(XR_USE_GRAPHICS_API_VULKAN)
+#if defined(XR_USE_GRAPHICS_API_VULKAN)
+    (get_inst_proc_addr(instance, "xrCreateVulkanDeviceKHR", (PFN_xrVoidFunction*)&table->CreateVulkanDeviceKHR));
+#endif // defined(XR_USE_GRAPHICS_API_VULKAN)
+#if defined(XR_USE_GRAPHICS_API_VULKAN)
+    (get_inst_proc_addr(instance, "xrGetVulkanGraphicsDevice2KHR", (PFN_xrVoidFunction*)&table->GetVulkanGraphicsDevice2KHR));
+#endif // defined(XR_USE_GRAPHICS_API_VULKAN)
+#if defined(XR_USE_GRAPHICS_API_VULKAN)
+    (get_inst_proc_addr(instance, "xrGetVulkanGraphicsRequirements2KHR", (PFN_xrVoidFunction*)&table->GetVulkanGraphicsRequirements2KHR));
+#endif // defined(XR_USE_GRAPHICS_API_VULKAN)
+
     // ---- XR_EXT_performance_settings extension commands
     (get_inst_proc_addr(instance, "xrPerfSettingsSetPerformanceLevelEXT", (PFN_xrVoidFunction*)&table->PerfSettingsSetPerformanceLevelEXT));
 
@@ -193,6 +211,63 @@ void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
     // ---- XR_MSFT_hand_tracking_mesh extension commands
     (get_inst_proc_addr(instance, "xrCreateHandMeshSpaceMSFT", (PFN_xrVoidFunction*)&table->CreateHandMeshSpaceMSFT));
     (get_inst_proc_addr(instance, "xrUpdateHandMeshMSFT", (PFN_xrVoidFunction*)&table->UpdateHandMeshMSFT));
+
+    // ---- XR_MSFT_controller_model extension commands
+    (get_inst_proc_addr(instance, "xrGetControllerModelKeyMSFT", (PFN_xrVoidFunction*)&table->GetControllerModelKeyMSFT));
+    (get_inst_proc_addr(instance, "xrLoadControllerModelMSFT", (PFN_xrVoidFunction*)&table->LoadControllerModelMSFT));
+    (get_inst_proc_addr(instance, "xrGetControllerModelPropertiesMSFT", (PFN_xrVoidFunction*)&table->GetControllerModelPropertiesMSFT));
+    (get_inst_proc_addr(instance, "xrGetControllerModelStateMSFT", (PFN_xrVoidFunction*)&table->GetControllerModelStateMSFT));
+
+    // ---- XR_MSFT_perception_anchor_interop extension commands
+#if defined(XR_USE_PLATFORM_WIN32)
+    (get_inst_proc_addr(instance, "xrCreateSpatialAnchorFromPerceptionAnchorMSFT", (PFN_xrVoidFunction*)&table->CreateSpatialAnchorFromPerceptionAnchorMSFT));
+#endif // defined(XR_USE_PLATFORM_WIN32)
+#if defined(XR_USE_PLATFORM_WIN32)
+    (get_inst_proc_addr(instance, "xrTryGetPerceptionAnchorFromSpatialAnchorMSFT", (PFN_xrVoidFunction*)&table->TryGetPerceptionAnchorFromSpatialAnchorMSFT));
+#endif // defined(XR_USE_PLATFORM_WIN32)
+
+    // ---- XR_MSFT_composition_layer_reprojection extension commands
+    (get_inst_proc_addr(instance, "xrEnumerateReprojectionModesMSFT", (PFN_xrVoidFunction*)&table->EnumerateReprojectionModesMSFT));
+
+    // ---- XR_FB_swapchain_update_state extension commands
+    (get_inst_proc_addr(instance, "xrUpdateSwapchainFB", (PFN_xrVoidFunction*)&table->UpdateSwapchainFB));
+    (get_inst_proc_addr(instance, "xrGetSwapchainStateFB", (PFN_xrVoidFunction*)&table->GetSwapchainStateFB));
+
+    // ---- XR_MSFT_scene_understanding extension commands
+    (get_inst_proc_addr(instance, "xrEnumerateSceneComputeFeaturesMSFT", (PFN_xrVoidFunction*)&table->EnumerateSceneComputeFeaturesMSFT));
+    (get_inst_proc_addr(instance, "xrCreateSceneObserverMSFT", (PFN_xrVoidFunction*)&table->CreateSceneObserverMSFT));
+    (get_inst_proc_addr(instance, "xrDestroySceneObserverMSFT", (PFN_xrVoidFunction*)&table->DestroySceneObserverMSFT));
+    (get_inst_proc_addr(instance, "xrCreateSceneMSFT", (PFN_xrVoidFunction*)&table->CreateSceneMSFT));
+    (get_inst_proc_addr(instance, "xrDestroySceneMSFT", (PFN_xrVoidFunction*)&table->DestroySceneMSFT));
+    (get_inst_proc_addr(instance, "xrComputeNewSceneMSFT", (PFN_xrVoidFunction*)&table->ComputeNewSceneMSFT));
+    (get_inst_proc_addr(instance, "xrGetSceneComputeStateMSFT", (PFN_xrVoidFunction*)&table->GetSceneComputeStateMSFT));
+    (get_inst_proc_addr(instance, "xrGetSceneComponentsMSFT", (PFN_xrVoidFunction*)&table->GetSceneComponentsMSFT));
+    (get_inst_proc_addr(instance, "xrLocateSceneComponentsMSFT", (PFN_xrVoidFunction*)&table->LocateSceneComponentsMSFT));
+    (get_inst_proc_addr(instance, "xrGetSceneMeshBuffersMSFT", (PFN_xrVoidFunction*)&table->GetSceneMeshBuffersMSFT));
+
+    // ---- XR_MSFT_scene_understanding_serialization extension commands
+    (get_inst_proc_addr(instance, "xrDeserializeSceneMSFT", (PFN_xrVoidFunction*)&table->DeserializeSceneMSFT));
+    (get_inst_proc_addr(instance, "xrGetSerializedSceneFragmentDataMSFT", (PFN_xrVoidFunction*)&table->GetSerializedSceneFragmentDataMSFT));
+
+    // ---- XR_FB_display_refresh_rate extension commands
+    (get_inst_proc_addr(instance, "xrEnumerateDisplayRefreshRatesFB", (PFN_xrVoidFunction*)&table->EnumerateDisplayRefreshRatesFB));
+    (get_inst_proc_addr(instance, "xrGetDisplayRefreshRateFB", (PFN_xrVoidFunction*)&table->GetDisplayRefreshRateFB));
+    (get_inst_proc_addr(instance, "xrRequestDisplayRefreshRateFB", (PFN_xrVoidFunction*)&table->RequestDisplayRefreshRateFB));
+
+    // ---- XR_FB_color_space extension commands
+    (get_inst_proc_addr(instance, "xrEnumerateColorSpacesFB", (PFN_xrVoidFunction*)&table->EnumerateColorSpacesFB));
+    (get_inst_proc_addr(instance, "xrSetColorSpaceFB", (PFN_xrVoidFunction*)&table->SetColorSpaceFB));
+
+    // ---- XR_VARJO_environment_depth_estimation extension commands
+    (get_inst_proc_addr(instance, "xrSetEnvironmentDepthEstimationVARJO", (PFN_xrVoidFunction*)&table->SetEnvironmentDepthEstimationVARJO));
+
+    // ---- XR_OCULUS_audio_device_guid extension commands
+#if defined(XR_USE_PLATFORM_WIN32)
+    (get_inst_proc_addr(instance, "xrGetAudioOutputDeviceGuidOculus", (PFN_xrVoidFunction*)&table->GetAudioOutputDeviceGuidOculus));
+#endif // defined(XR_USE_PLATFORM_WIN32)
+#if defined(XR_USE_PLATFORM_WIN32)
+    (get_inst_proc_addr(instance, "xrGetAudioInputDeviceGuidOculus", (PFN_xrVoidFunction*)&table->GetAudioInputDeviceGuidOculus));
+#endif // defined(XR_USE_PLATFORM_WIN32)
 }
 
 

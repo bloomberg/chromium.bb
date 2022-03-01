@@ -6,6 +6,7 @@
 #define TESTING_PDF_TEST_ENVIRONMENT_H_
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/test_fonts.h"
 
 class PDFTestEnvironment : public testing::Environment {
  public:
@@ -15,6 +16,9 @@ class PDFTestEnvironment : public testing::Environment {
   // testing::Environment:
   void SetUp() override;
   void TearDown() override;
+
+ private:
+  TestFonts test_fonts_;
 };
 
 #endif  // TESTING_PDF_TEST_ENVIRONMENT_H_

@@ -16,7 +16,7 @@
 
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -74,6 +74,10 @@ class BookmarkModel : public BookmarkUndoProvider,
                       public KeyedService {
  public:
   explicit BookmarkModel(std::unique_ptr<BookmarkClient> client);
+
+  BookmarkModel(const BookmarkModel&) = delete;
+  BookmarkModel& operator=(const BookmarkModel&) = delete;
+
   ~BookmarkModel() override;
 
   // Triggers the loading of bookmarks, which is an asynchronous operation with
@@ -203,14 +207,16 @@ class BookmarkModel : public BookmarkUndoProvider,
   // same or not.
   void GetBookmarks(std::vector<UrlAndTitle>* urls);
 
-  // Adds a new folder node at the specified position with the given |guid| and
-  // |meta_info|. If no GUID is provided (i.e. nullopt), then a random one will
-  // be generated. If a GUID is provided, it must be valid.
+  // Adds a new folder node at the specified position with the given
+  // |creation_time|, |guid| and |meta_info|. If no GUID is provided (i.e.
+  // nullopt), then a random one will be generated. If a GUID is provided, it
+  // must be valid.
   const BookmarkNode* AddFolder(
       const BookmarkNode* parent,
       size_t index,
       const std::u16string& title,
       const BookmarkNode::MetaInfoMap* meta_info = nullptr,
+      absl::optional<base::Time> creation_time = absl::nullopt,
       absl::optional<base::GUID> guid = absl::nullopt);
 
   // Adds a url at the specified position with the given |creation_time|,
@@ -384,11 +390,11 @@ class BookmarkModel : public BookmarkUndoProvider,
   // |owned_root_|. Once loading has completed, |owned_root_| is destroyed and
   // this is set to url_index_->root(). |owned_root_| is done as lots of
   // existing code assumes the root is non-null while loading.
-  BookmarkNode* root_ = nullptr;
+  raw_ptr<BookmarkNode> root_ = nullptr;
 
-  BookmarkPermanentNode* bookmark_bar_node_ = nullptr;
-  BookmarkPermanentNode* other_node_ = nullptr;
-  BookmarkPermanentNode* mobile_node_ = nullptr;
+  raw_ptr<BookmarkPermanentNode> bookmark_bar_node_ = nullptr;
+  raw_ptr<BookmarkPermanentNode> other_node_ = nullptr;
+  raw_ptr<BookmarkPermanentNode> mobile_node_ = nullptr;
 
   // The maximum ID assigned to the bookmark nodes in the model.
   int64_t next_node_id_ = 1;
@@ -418,7 +424,7 @@ class BookmarkModel : public BookmarkUndoProvider,
 
   std::set<std::string> non_cloned_keys_;
 
-  BookmarkUndoDelegate* undo_delegate_ = nullptr;
+  raw_ptr<BookmarkUndoDelegate> undo_delegate_ = nullptr;
   std::unique_ptr<BookmarkUndoDelegate> empty_undo_delegate_;
 
   scoped_refptr<ModelLoader> model_loader_;
@@ -426,8 +432,6 @@ class BookmarkModel : public BookmarkUndoProvider,
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<BookmarkModel> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkModel);
 };
 
 }  // namespace bookmarks

@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
@@ -34,6 +33,10 @@ void DetectCallback(base::OnceClosure quit_closure,
 }  // namespace
 
 class FaceDetectionImplWinTest : public testing::Test {
+ public:
+  FaceDetectionImplWinTest(const FaceDetectionImplWinTest&) = delete;
+  FaceDetectionImplWinTest& operator=(const FaceDetectionImplWinTest&) = delete;
+
  protected:
   FaceDetectionImplWinTest() = default;
   ~FaceDetectionImplWinTest() override = default;
@@ -84,8 +87,6 @@ class FaceDetectionImplWinTest : public testing::Test {
   std::unique_ptr<base::win::ScopedCOMInitializer> scoped_com_initializer_;
 
   base::test::TaskEnvironment task_environment_;
-
-  DISALLOW_COPY_AND_ASSIGN(FaceDetectionImplWinTest);
 };
 
 TEST_F(FaceDetectionImplWinTest, ScanOneFace) {

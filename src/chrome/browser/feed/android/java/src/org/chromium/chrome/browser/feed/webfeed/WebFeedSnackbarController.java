@@ -7,7 +7,15 @@ package org.chromium.chrome.browser.feed.webfeed;
 import android.content.Context;
 
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.feed.FeedServiceBridge;
+import org.chromium.chrome.browser.feed.FeedSurfaceTracker;
+import org.chromium.chrome.browser.feed.R;
+import org.chromium.chrome.browser.feed.v2.FeedUserActionType;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
@@ -35,7 +43,6 @@ public class WebFeedSnackbarController {
     private final FeedLauncher mFeedLauncher;
     private final SnackbarManager mSnackbarManager;
     private final WebFeedDialogCoordinator mWebFeedDialogCoordinator;
-    private final WebFeedBridge mWebFeedBridge;
 
     /**
      * Constructs an instance of {@link WebFeedSnackbarController}.
@@ -44,49 +51,57 @@ public class WebFeedSnackbarController {
      * @param feedLauncher The {@link FeedLauncher} to launch the feed.
      * @param dialogManager {@link ModalDialogManager} for managing the dialog.
      * @param snackbarManager {@link SnackbarManager} to manage the snackbars.
-     * @param webFeedBridge {@link WebFeedBridge} to connect with the backend to follow/unfollow.
      */
     WebFeedSnackbarController(Context context, FeedLauncher feedLauncher,
-            ModalDialogManager dialogManager, SnackbarManager snackbarManager,
-            WebFeedBridge webFeedBridge) {
+            ModalDialogManager dialogManager, SnackbarManager snackbarManager) {
         mContext = context;
         mFeedLauncher = feedLauncher;
         mSnackbarManager = snackbarManager;
         mWebFeedDialogCoordinator = new WebFeedDialogCoordinator(dialogManager);
-        mWebFeedBridge = webFeedBridge;
     }
 
     /**
      * Show appropriate post-follow snackbar/dialog depending on success/failure.
      */
-    void showPostFollowHelp(
-            WebFeedBridge.FollowResults results, byte[] followId, GURL url, String fallbackTitle) {
+    void showPostFollowHelp(Tab tab, WebFeedBridge.FollowResults results, byte[] followId, GURL url,
+            String fallbackTitle) {
         if (results.requestStatus == WebFeedSubscriptionRequestStatus.SUCCESS) {
             if (results.metadata != null) {
-                showPostSuccessfulFollowHelp(results.metadata.title, results.metadata.isActive);
+                showPostSuccessfulFollowHelp(results.metadata.title,
+                        results.metadata.availabilityStatus == WebFeedAvailabilityStatus.ACTIVE);
             } else {
                 showPostSuccessfulFollowHelp(fallbackTitle, /*isActive=*/false);
             }
         } else {
-            // TODO(crbug/1152592): Add snackbars for specific failures.
+            int failureMessage = R.string.web_feed_follow_generic_failure_snackbar_message;
+            if (results.requestStatus == WebFeedSubscriptionRequestStatus.FAILED_OFFLINE) {
+                failureMessage = R.string.web_feed_offline_failure_snackbar_message;
+            }
+
             // Show follow failure snackbar.
-            showSnackbar(
-                    mContext.getString(R.string.web_feed_follow_generic_failure_snackbar_message),
-                    getFollowActionSnackbarController(followId, url, fallbackTitle),
-                    Snackbar.UMA_WEB_FEED_FOLLOW_FAILURE,
-                    R.string.web_feed_generic_failure_snackbar_action);
+            FollowActionSnackbarController snackbarController =
+                    new FollowActionSnackbarController(followId, url, fallbackTitle,
+                            FeedUserActionType.TAPPED_FOLLOW_TRY_AGAIN_ON_SNACKBAR);
+            int actionStringId = 0;
+            if (canRetryFollow(tab, followId, url)) {
+                actionStringId = R.string.web_feed_generic_failure_snackbar_action;
+                if (!isFollowIdValid(followId)) {
+                    snackbarController.pinToUrl(tab, url);
+                }
+            }
+            showSnackbar(mContext.getString(failureMessage), snackbarController,
+                    Snackbar.UMA_WEB_FEED_FOLLOW_FAILURE, actionStringId);
         }
     }
 
     /**
      * Show appropriate post-unfollow snackbar depending on success/failure.
      */
-    void showSnackbarForUnfollow(
-            boolean successfulUnfollow, byte[] followId, GURL url, String title) {
-        if (successfulUnfollow) {
+    void showSnackbarForUnfollow(int requestStatus, byte[] followId, GURL url, String title) {
+        if (requestStatus == WebFeedSubscriptionRequestStatus.SUCCESS) {
             showUnfollowSuccessSnackbar(followId, url, title);
         } else {
-            showUnfollowFailureSnackbar(followId, url, title);
+            showUnfollowFailureSnackbar(requestStatus, followId, url, title);
         }
     }
 
@@ -97,9 +112,10 @@ public class WebFeedSnackbarController {
             mWebFeedDialogCoordinator.initialize(mContext, mFeedLauncher, title, isActive);
             mWebFeedDialogCoordinator.showDialog();
         } else {
-            SnackbarController snackbarController = new SnackbarController() {
+            SnackbarController snackbarController = new PinnedSnackbarController() {
                 @Override
                 public void onAction(Object actionData) {
+                    super.onAction(actionData);
                     mFeedLauncher.openFollowingFeed();
                 }
             };
@@ -112,60 +128,162 @@ public class WebFeedSnackbarController {
 
     private void showUnfollowSuccessSnackbar(byte[] followId, GURL url, String title) {
         showSnackbar(mContext.getString(R.string.web_feed_unfollow_success_snackbar_message, title),
-                getFollowActionSnackbarController(followId, url, title),
+                new FollowActionSnackbarController(followId, url, title,
+                        FeedUserActionType.TAPPED_REFOLLOW_AFTER_UNFOLLOW_ON_SNACKBAR),
                 Snackbar.UMA_WEB_FEED_UNFOLLOW_SUCCESS,
                 R.string.web_feed_unfollow_success_snackbar_action);
     }
 
-    private void showUnfollowFailureSnackbar(byte[] followId, GURL url, String title) {
-        SnackbarController snackbarController = new SnackbarController() {
+    private void showUnfollowFailureSnackbar(
+            int requestStatus, byte[] followId, GURL url, String title) {
+        int failureMessage = R.string.web_feed_unfollow_generic_failure_snackbar_message;
+        if (requestStatus == WebFeedSubscriptionRequestStatus.FAILED_OFFLINE) {
+            failureMessage = R.string.web_feed_offline_failure_snackbar_message;
+        }
+
+        SnackbarController snackbarController = new PinnedSnackbarController() {
             @Override
             public void onAction(Object actionData) {
-                mWebFeedBridge.unfollow(followId, result -> {
-                    if (result.requestStatus == WebFeedSubscriptionRequestStatus.SUCCESS) {
-                        showUnfollowSuccessSnackbar(followId, url, title);
-                    } else {
-                        showUnfollowFailureSnackbar(followId, url, title);
-                    }
+                super.onAction(actionData);
+                FeedServiceBridge.reportOtherUserAction(
+                        FeedUserActionType.TAPPED_UNFOLLOW_TRY_AGAIN_ON_SNACKBAR);
+                WebFeedBridge.unfollow(followId, result -> {
+                    showSnackbarForUnfollow(result.requestStatus, followId, url, title);
                 });
             }
         };
-        showSnackbar(
-                mContext.getString(R.string.web_feed_unfollow_generic_failure_snackbar_message),
-                snackbarController, Snackbar.UMA_WEB_FEED_UNFOLLOW_FAILURE,
+        showSnackbar(mContext.getString(failureMessage), snackbarController,
+                Snackbar.UMA_WEB_FEED_UNFOLLOW_FAILURE,
                 R.string.web_feed_generic_failure_snackbar_action);
     }
 
     private void showSnackbar(String message, SnackbarController snackbarController, int umaId,
             int snackbarActionId) {
-        Snackbar snackbar =
-                Snackbar.make(message, snackbarController, Snackbar.TYPE_ACTION, umaId)
-                        .setAction(mContext.getString(snackbarActionId), /*actionData=*/null)
-                        .setSingleLine(false)
-                        .setDuration(SNACKBAR_DURATION_MS);
+        Snackbar snackbar = Snackbar.make(message, snackbarController, Snackbar.TYPE_ACTION, umaId)
+                                    .setSingleLine(false)
+                                    .setDuration(SNACKBAR_DURATION_MS);
+        if (snackbarActionId != 0) {
+            snackbar =
+                    snackbar.setAction(mContext.getString(snackbarActionId), /*actionData=*/null);
+        }
         mSnackbarManager.showSnackbar(snackbar);
     }
 
     /**
-     * Returns {@link SnackbarController} for when the snackbar action is to follow. Prefers
+     * A snackbar controller which dismisses the snackbar if the feed surface is shown, and
+     *  optionally, upon navigation to a different URL.
+     */
+    private class PinnedSnackbarController
+            implements SnackbarController, FeedSurfaceTracker.Observer {
+        Tab mPinnedTab;
+        private GURL mPinnedUrl;
+        private TabObserver mTabObserver;
+
+        PinnedSnackbarController() {
+            FeedSurfaceTracker.getInstance().addObserver(this);
+        }
+
+        @Override
+        public void onAction(Object actionData) {
+            unregisterObservers();
+        }
+
+        @Override
+        public void onDismissNoAction(Object actionData) {
+            unregisterObservers();
+        }
+
+        @Override
+        public void surfaceOpened() {
+            // Hide the snackbar if the feed surface is opened.
+            mSnackbarManager.dismissSnackbars(this);
+        }
+
+        /**
+         * Watch the current tab. Hide the snackbar if the current tab's URL changes.
+         */
+        void pinToUrl(Tab tab, GURL url) {
+            assert mTabObserver == null;
+            mPinnedUrl = url;
+            mPinnedTab = tab;
+            mTabObserver = new EmptyTabObserver() {
+                @Override
+                public void onPageLoadStarted(Tab tab, GURL url) {
+                    if (!mPinnedUrl.equals(url)) {
+                        urlChanged();
+                    }
+                }
+                @Override
+                public void onHidden(Tab tab, @TabHidingType int type) {
+                    urlChanged();
+                }
+                @Override
+                public void onDestroyed(Tab tab) {
+                    urlChanged();
+                }
+            };
+            mPinnedTab.addObserver(mTabObserver);
+        }
+
+        private void urlChanged() {
+            mSnackbarManager.dismissSnackbars(this);
+        }
+
+        private void unregisterObservers() {
+            if (mTabObserver != null) {
+                mPinnedTab.removeObserver(mTabObserver);
+                mTabObserver = null;
+            }
+            FeedSurfaceTracker.getInstance().removeObserver(this);
+        }
+    }
+
+    /**
+     * A {@link SnackbarController} for when the snackbar action is to follow. Prefers
      * {@link WebFeedBridge#followFromId} if an ID is available.
      */
-    private SnackbarController getFollowActionSnackbarController(
-            byte[] followId, GURL url, String title) {
-        return new SnackbarController() {
-            @Override
-            public void onAction(Object actionData) {
-                if (followId == null || followId.length == 0) {
-                    // TODO(harringtond): How will we get the RSS information for this call?
-                    mWebFeedBridge.followFromUrl(/*tab=*/null, url, result -> {
-                        byte[] followId = result.metadata != null ? result.metadata.id : null;
-                        showPostFollowHelp(result, followId, url, title);
-                    });
-                } else {
-                    mWebFeedBridge.followFromId(
-                            followId, result -> showPostFollowHelp(result, followId, url, title));
-                }
+    private class FollowActionSnackbarController extends PinnedSnackbarController {
+        private final byte[] mFollowId;
+        private final GURL mUrl;
+        private final String mTitle;
+        private final @FeedUserActionType int mUserActionType;
+
+        FollowActionSnackbarController(
+                byte[] followId, GURL url, String title, @FeedUserActionType int userActionType) {
+            mFollowId = followId;
+            mUrl = url;
+            mTitle = title;
+            mUserActionType = userActionType;
+        }
+
+        @Override
+        public void onAction(Object actionData) {
+            super.onAction(actionData);
+
+            // The snackbar should not be showing if canRetryFollow() returns false.
+            assert canRetryFollow(mPinnedTab, mFollowId, mUrl);
+            FeedServiceBridge.reportOtherUserAction(mUserActionType);
+
+            if (!isFollowIdValid(mFollowId)) {
+                WebFeedBridge.followFromUrl(mPinnedTab, mUrl, result -> {
+                    byte[] mFollowId = result.metadata != null ? result.metadata.id : null;
+                    showPostFollowHelp(mPinnedTab, result, mFollowId, mUrl, mTitle);
+                });
+            } else {
+                WebFeedBridge.followFromId(mFollowId,
+                        result -> showPostFollowHelp(mPinnedTab, result, mFollowId, mUrl, mTitle));
             }
-        };
+        }
+    }
+
+    private static boolean isFollowIdValid(byte[] followId) {
+        return followId != null && followId.length != 0;
+    }
+
+    private static boolean canRetryFollow(Tab tab, byte[] followId, GURL url) {
+        if (isFollowIdValid(followId)) {
+            return true;
+        }
+        return tab != null && url.equals(tab.getOriginalUrl());
     }
 }

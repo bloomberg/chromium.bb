@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "sandbox/linux/system_headers/capability.h"
 #include "sandbox/sandbox_export.h"
 
@@ -32,6 +31,10 @@ class SANDBOX_EXPORT Credentials {
     SYS_CHROOT,
     SYS_ADMIN,
   };
+
+  Credentials() = delete;
+  Credentials(const Credentials&) = delete;
+  Credentials& operator=(const Credentials&) = delete;
 
   // Checks that the set of RES-uids and the set of RES-gids have
   // one element each and returns that element in |resuid| and |resgid|
@@ -106,9 +109,6 @@ class SANDBOX_EXPORT Credentials {
 
   // Forks and drops capabilities in the child.
   static pid_t ForkAndDropCapabilitiesInChild();
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(Credentials);
 };
 
 }  // namespace sandbox.

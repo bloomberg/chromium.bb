@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
+#include "base/memory/raw_ptr.h"
 
 #include <string>
 #include <utility>
@@ -98,6 +99,59 @@ TEST_F(AXAuraObjCacheTest, TestViewRemoval) {
   delete parent;
 }
 
+// Helper for the ViewDestruction test.
+class ViewBlurObserver : public ViewObserver {
+ public:
+  ViewBlurObserver(AXAuraObjCache* cache, View* view) : cache_(cache) {
+    observation_.Observe(view);
+  }
+
+  // This is fired while the view is being destroyed, after the cache entry is
+  // removed by the AXWidgetObjWrapper. Re-create the cache entry so we can
+  // test that it will also be removed.
+  void OnViewBlurred(View* view) override {
+    ASSERT_FALSE(was_called());
+    observation_.Reset();
+
+    ASSERT_EQ(cache_->GetID(view), 0);
+    cache_->GetOrCreate(view);
+  }
+
+  bool was_called() { return !observation_.IsObserving(); }
+
+ private:
+  raw_ptr<AXAuraObjCache> cache_;
+  base::ScopedObservation<View, ViewObserver> observation_{this};
+};
+
+// Test that stale cache entries are not left behind if a cache entry is
+// re-created during View destruction.
+TEST_F(AXAuraObjCacheTest, ViewDestruction) {
+  AXAuraObjCache cache;
+
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  auto* button = new LabelButton(Button::PressedCallback(), u"button");
+  widget->GetRootView()->AddChildView(button);
+  widget->Activate();
+  button->RequestFocus();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(button->HasFocus());
+
+  cache.GetOrCreate(widget.get());
+  cache.GetOrCreate(button);
+  // Everything should have an ID, indicating it's in the cache.
+  EXPECT_GT(cache.GetID(widget.get()), 0);
+  EXPECT_GT(cache.GetID(button), 0);
+
+  ViewBlurObserver observer(&cache, button);
+  delete button;
+
+  // The button object is destroyed, so there should be no stale cache entries.
+  EXPECT_NE(button, nullptr);
+  EXPECT_EQ(ui::kInvalidAXNodeID, cache.GetID(button));
+  EXPECT_TRUE(observer.was_called());
+}
+
 TEST_F(AXAuraObjCacheTest, ValidTree) {
   // Create a parent window.
   auto parent_widget = std::make_unique<Widget>();
@@ -155,12 +209,14 @@ TEST_F(AXAuraObjCacheTest, GetFocusIsUnignoredAncestor) {
 
   // Note that AXAuraObjCache::GetFocusedView has some logic to force focus on
   // the first child of the client view when one cannot be found from the
-  // FocusManager.
+  // FocusManager if it has a child tree id.
   auto* client = widget->non_client_view()->client_view();
   ASSERT_NE(nullptr, client);
   auto* client_child = client->children().front();
   ASSERT_NE(nullptr, client_child);
   client_child->GetViewAccessibility().OverrideRole(ax::mojom::Role::kDialog);
+  client_child->GetViewAccessibility().OverrideChildTreeID(
+      ui::AXTreeID::CreateNewAXTreeID());
 
   View* parent = new View();
   widget->GetRootView()->AddChildView(parent);
@@ -194,11 +250,13 @@ TEST_F(AXAuraObjCacheTest, GetFocusIsUnignoredAncestor) {
   ASSERT_EQ(ax::mojom::Role::kGroup, GetData(cache.GetFocus()).role);
   ASSERT_EQ(ax_child, cache.GetFocus());
 
+  // Ignore should cause focus to move upwards.
   child->GetViewAccessibility().OverrideIsIgnored(true);
   ASSERT_EQ(ax::mojom::Role::kTextField, GetData(cache.GetFocus()).role);
   ASSERT_EQ(ax_parent, cache.GetFocus());
 
-  parent->GetViewAccessibility().OverrideIsIgnored(true);
+  // Propagate focus to ancestor should also cause focus to move upward.
+  parent->GetViewAccessibility().set_propagate_focus_to_ancestor(true);
   ASSERT_EQ(ax::mojom::Role::kWindow, GetData(cache.GetFocus()).role);
   ASSERT_EQ(cache.GetOrCreate(widget->GetRootView()), cache.GetFocus());
 
@@ -218,10 +276,7 @@ class TestingWidgetDelegateView : public WidgetDelegateView {
       delete;
 
  private:
-  // WidgetDelegate:
-  void DeleteDelegate() override { delete this; }
-
-  base::RunLoop* run_loop_;
+  raw_ptr<base::RunLoop> run_loop_;
 };
 
 class TestingAXEventObserver : public AXEventObserver {
@@ -241,7 +296,7 @@ class TestingAXEventObserver : public AXEventObserver {
     }
   }
 
-  AXAuraObjCache* cache_;
+  raw_ptr<AXAuraObjCache> cache_;
   base::ScopedObservation<AXEventManager, AXEventObserver> observation_{this};
 };
 

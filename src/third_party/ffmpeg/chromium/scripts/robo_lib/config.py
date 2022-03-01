@@ -4,7 +4,7 @@
 import os
 from . import shell
 from . import packages
-
+from . import errors
 
 class RoboConfiguration:
   __slots__ = ('_sushi_branch_prefix', '_gn_commit_title',
@@ -13,7 +13,7 @@ class RoboConfiguration:
     '_chrome_src', '_host_operating_system', '_host_architecture',
     '_ffmpeg_home', '_relative_asan_directory', '_branch_name',
     '_sushi_branch_name', '_readme_chromium_commit_title', '_nasm_path',
-    '_prompt_on_call', '_os_flavor')
+    '_prompt_on_call', '_os_flavor', '_force_gn_rebuild', '_skip_allowed')
   def __init__(self):
     """Ensure that our config has basic fields fill in, and passes some sanity
     checks too.
@@ -22,6 +22,10 @@ class RoboConfiguration:
     for things that we don't plan for fix as part of that.
     """
     self.set_prompt_on_call(False)
+    # Pull this from parsed args
+    self._force_gn_rebuild = False
+    # Allowed to skip steps, default to yes, needs --no-skip flag to disable.
+    self._skip_allowed = True
     # This is the prefix that our branches start with.
     self._sushi_branch_prefix = "sushi-"
     # This is the title that we use for the commit with GN configs.
@@ -118,6 +122,18 @@ class RoboConfiguration:
   def os_flavor(self):
     return self._os_flavor
 
+  def force_gn_rebuild(self):
+    return self._force_gn_rebuild
+
+  def set_force_gn_rebuild(self):
+    self._force_gn_rebuild = True
+
+  def skip_allowed(self):
+    return self._skip_allowed
+
+  def set_skip_allowed(self, to):
+    self._skip_allowed = to
+
   def EnsureHostInfo(self):
     """Ensure that the host architecture and platform are set."""
     kernel, host, os, *rest = shell.output_or_error(["uname", "-a"]).split()
@@ -165,7 +181,7 @@ class RoboConfiguration:
     llvm_path = os.path.join(self.chrome_src(), "third_party",
             "llvm-build", "Release+Asserts", "bin")
     if self.llvm_path() not in os.environ["PATH"]:
-      raise UserInstructions(
+      raise errors.UserInstructions(
                           "Please add:\n%s\nto the beginning of $PATH" %
                           self.llvm_path())
   def llvm_path(self):

@@ -28,12 +28,11 @@ TARGET_DEVICES = {
             'css_transitions_triggered_style_element': 4,
             'canvas_animation_no_clear': 4
         },
-        'system_health.common_mobile': 3,
-        'system_health.memory_mobile': 3,
     },
     'android-pixel2-perf': {
         'system_health.common_mobile': 3,
         'system_health.memory_mobile': 3,
+        'startup.mobile': 10,
     },
     'android-go-perf': {
         'system_health.common_mobile': {
@@ -41,6 +40,15 @@ TARGET_DEVICES = {
             'background:social:facebook:2019': 10,
             # cputimeToFirstContentfulPaint
             'load:search:google:2018': 10
+        }
+    },
+    'android-pixel4a_power-perf': {
+        'power.mobile': {
+            'browse:media:flickr_infinite_scroll:2019': 10,
+            'browse:media:tiktok_infinite_scroll:2021': 10,
+            'browse:social:pinterest_infinite_scroll:2021': 10,
+            'browse:social:tumblr_infinite_scroll:2018': 10,
+            'browse:tech:discourse_infinite_scroll:2018': 10,
         }
     },
     'linux-perf': {

@@ -4,26 +4,31 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_event_watcher.h"
 
+#include <wayland-client-core.h>
 #include <cstring>
 #include <memory>
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/strings/stringprintf.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/current_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/crash/core/common/crash_key.h"
 #include "ui/events/event.h"
 #include "ui/ozone/platform/wayland/common/wayland.h"
+#include "ui/ozone/public/ozone_switches.h"
 
 namespace ui {
 
 namespace {
 
-void DispatchPending(wl_display* display, wl_event_queue* event_queue) {
-  wl_display_dispatch_queue_pending(display, event_queue);
+void wayland_log(const char* fmt, va_list argp) {
+  LOG(WARNING) << "libwayland: " << base::StringPrintV(fmt, argp);
 }
 
 }  // namespace
@@ -49,7 +54,9 @@ class WaylandEventWatcherThread : public base::Thread {
   explicit WaylandEventWatcherThread(
       base::OnceClosure start_processing_events_cb)
       : base::Thread("wayland-fd"),
-        start_processing_events_cb_(std::move(start_processing_events_cb)) {}
+        start_processing_events_cb_(std::move(start_processing_events_cb)) {
+    wl_log_set_handler_client(wayland_log);
+  }
   ~WaylandEventWatcherThread() override { Stop(); }
 
   void Init() override {
@@ -76,17 +83,25 @@ void WaylandEventWatcher::SetShutdownCb(
 }
 
 void WaylandEventWatcher::StartProcessingEvents() {
-  ui_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  if (!ui_thread_task_runner_)
+    ui_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  weak_this_ = weak_factory_.GetWeakPtr();
   if (use_dedicated_polling_thread_ && !thread_) {
     // FD watching will happen on a different thread.
     DETACH_FROM_THREAD(thread_checker_);
 
     thread_ = std::make_unique<WaylandEventWatcherThread>(
         base::BindOnce(&WaylandEventWatcher::StartProcessingEventsInternal,
-                       weak_factory_.GetWeakPtr()));
+                       base::Unretained(this)));
     base::Thread::Options thread_options;
     thread_options.message_pump_type = base::MessagePumpType::UI;
-    thread_options.priority = base::ThreadPriority::DISPLAY;
+
+    base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+    if (cmd_line->HasSwitch(switches::kUseWaylandNormalThreadPriority))
+      thread_options.priority = base::ThreadPriority::NORMAL;
+    else
+      thread_options.priority = base::ThreadPriority::DISPLAY;
+
     if (!thread_->StartWithOptions(std::move(thread_options)))
       LOG(FATAL) << "Failed to create input thread";
 
@@ -96,14 +111,18 @@ void WaylandEventWatcher::StartProcessingEvents() {
 }
 
 void WaylandEventWatcher::StopProcessingEvents() {
+  shutting_down_ = true;
   if (!watching_)
     return;
 
   if (use_dedicated_polling_thread_) {
+    // This object is constructed and destroyed on the main thread. As such, it
+    // doesn't makes sense to pass a WeakPtr bound to the main thread for
+    // dereferencing on the watching thread. This code has never worked.
     watching_thread_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&WaylandEventWatcher::StopProcessingEventsInternal,
-                       weak_factory_.GetWeakPtr()));
+                       base::Unretained(this)));
   } else {
     StopProcessingEventsInternal();
   }
@@ -211,13 +230,39 @@ void WaylandEventWatcher::MaybePrepareReadQueue() {
 }
 
 void WaylandEventWatcher::DispatchPendingQueue() {
+  // Once the class is shutting down, never dispatch any more events.
+  if (shutting_down_)
+    return;
+
   if (ui_thread_task_runner_->BelongsToCurrentThread()) {
     DCHECK(!use_dedicated_polling_thread_);
-    DispatchPending(display_, event_queue_);
+    DispatchPendingMainThread(nullptr);
   } else {
     DCHECK(use_dedicated_polling_thread_);
-    auto cb = base::BindOnce(&DispatchPending, display_, event_queue_);
+    base::WaitableEvent event;
+    auto cb = base::BindOnce(&WaylandEventWatcher::DispatchPendingMainThread,
+                             weak_this_, &event);
     ui_thread_task_runner_->PostTask(FROM_HERE, std::move(cb));
+
+    // The point of the dedicated polling thread is to let the main thread know
+    // that there are events to be dispatched. Now that this has happened the
+    // polling thread should go to sleep until the main thread is finished
+    // dispatching those events, at which point the dedicated polling thread
+    // should resume.
+    event.Wait();
+  }
+}
+
+void WaylandEventWatcher::DispatchPendingMainThread(
+    base::WaitableEvent* event) {
+  // wl_display_dispatch_queue_pending may block if dispatching events results
+  // in a tab dragging that spins a run loop, which doesn't return until it's
+  // over. Thus, signal before this function is called.
+  if (event)
+    event->Signal();
+
+  if (!shutting_down_) {
+    wl_display_dispatch_queue_pending(display_, event_queue_);
   }
 }
 
@@ -234,24 +279,44 @@ bool WaylandEventWatcher::CheckForErrors() {
     // When |err| is EPROTO, we can still use the |display_| to retrieve the
     // protocol error. Otherwise, get the error string from strerror and
     // shutdown the browser.
+    std::string error_string;
     if (err == EPROTO) {
       uint32_t ec, id;
       const struct wl_interface* intf;
       ec = wl_display_get_protocol_error(display_, &intf, &id);
       if (intf) {
-        LOG(ERROR) << "Fatal Wayland protocol error " << ec << " on interface "
-                   << intf->name << " (object " << id << "). Shutting down..";
+        error_string = base::StringPrintf(
+            "Fatal Wayland protocol error %u on interface %s (object %u). "
+            "Shutting down..",
+            ec, intf->name, id);
+        LOG(ERROR) << error_string;
       } else {
-        LOG(ERROR) << "Fatal Wayland protocol error " << ec
-                   << ". Shutting down..";
+        error_string = base::StringPrintf(
+            "Fatal Wayland protocol error %u. Shutting down..", ec);
+        LOG(ERROR) << error_string;
       }
     } else {
-      LOG(ERROR) << "Fatal Wayland communication error: " << std::strerror(err);
+      error_string = base::StringPrintf("Fatal Wayland communication error %s.",
+                                        std::strerror(err));
+      LOG(ERROR) << error_string;
     }
 
+    // Add a crash key so we can figure out why this is happening.
+    static crash_reporter::CrashKeyString<256> wayland_error("wayland_error");
+    wayland_error.Set(error_string);
+
     // This can be null in tests.
-    if (!shutdown_cb_.is_null())
-      std::move(shutdown_cb_).Run();
+    if (!shutdown_cb_.is_null()) {
+      // Force a crash so that a crash report is generated.
+      CHECK(err == EPIPE || err == ECONNRESET) << "Wayland protocol error.";
+      if (ui_thread_task_runner_->BelongsToCurrentThread()) {
+        DCHECK(!use_dedicated_polling_thread_);
+        std::move(shutdown_cb_).Run();
+      } else {
+        DCHECK(use_dedicated_polling_thread_);
+        ui_thread_task_runner_->PostTask(FROM_HERE, std::move(shutdown_cb_));
+      }
+    }
     return false;
   }
 

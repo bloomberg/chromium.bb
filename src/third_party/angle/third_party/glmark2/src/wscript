@@ -4,7 +4,7 @@ from waflib import Context
 out = 'build'
 top = '.'
 
-VERSION = '2017.07'
+VERSION = '2021.02'
 APPNAME = 'glmark2'
 
 FLAVORS = {
@@ -20,7 +20,7 @@ FLAVORS = {
     'x11-gl' : 'glmark2',
     'x11-glesv2' : 'glmark2-es2',
 }
-FLAVORS_STR = ", ".join(sorted(FLAVORS.keys()))
+FLAVORS_STR = ", ".join(sorted(list(FLAVORS) + ['all-linux', 'all-win32']))
 
 def linux_flavors():
     return [f for f in FLAVORS.keys() if not f.startswith('win32')]
@@ -50,6 +50,9 @@ def options(opt):
                    dest = 'flavors',
                    help = "a list of flavors to build (%s, all-linux (except dispmanx-glesv2), all-win32)" % FLAVORS_STR)
     opt.parser.set_default('flavors', [])
+
+    opt.parser.add_option('--version-suffix', type='string', action='store', dest='versionsuffix',
+                          default='', help='add a suffix to the version number')
 
     opt.add_option('--no-debug', action='store_false', dest = 'debug',
                    default = True, help='disable compiler debug information')
@@ -90,7 +93,8 @@ def configure(ctx):
             ctx.fatal('Unknown flavor: %s. Supported flavors are %s' % (flavor, FLAVORS_STR))
 
     if not ctx.options.flavors:
-        ctx.fatal('You need to select at least one flavor. Supported flavors are %s' % FLAVORS_STR)
+        ctx.fatal('You need to select at least one flavor with --with-flavors=flavor1[,flavor2]...\n' +
+                  'Supported flavors are %s' % FLAVORS_STR)
 
     for flavor in FLAVORS:
         if flavor in ctx.options.flavors:
@@ -105,8 +109,8 @@ def configure(ctx):
     else:
         configure_linux(ctx)
 
-    ctx.env.append_unique('DEFINES', 'GLMARK_VERSION="%s"' % VERSION)
-    ctx.env.GLMARK2_VERSION = VERSION
+    ctx.env.append_unique('DEFINES', 'GLMARK_VERSION="%s"' % (VERSION + ctx.options.versionsuffix))
+    ctx.env.GLMARK2_VERSION = (VERSION + ctx.options.versionsuffix)
 
     ctx.msg("Prefix", ctx.env.PREFIX, color = 'PINK')
     ctx.msg("Data path", get_data_path(ctx), color = 'PINK')
@@ -210,6 +214,7 @@ def configure_linux(ctx):
                 ('libudev', 'udev', None, list_contains(ctx.options.flavors, 'drm')),
                 ('mirclient','mirclient', '0.13', list_contains(ctx.options.flavors, 'mir')),
                 ('wayland-client','wayland-client', None, list_contains(ctx.options.flavors, 'wayland')),
+                ('wayland-cursor','wayland-cursor', None, list_contains(ctx.options.flavors, 'wayland')),
                 ('wayland-egl','wayland-egl', None, list_contains(ctx.options.flavors, 'wayland'))]
     for (pkg, uselib, atleast, mandatory) in opt_pkgs:
         if atleast is None:
@@ -218,6 +223,13 @@ def configure_linux(ctx):
         else:
             ctx.check_cfg(package = pkg, uselib_store = uselib, atleast_version=atleast,
                           args = '--cflags --libs', mandatory = mandatory)
+
+    if list_contains(ctx.options.flavors, 'wayland'):
+        # wayland-protocols >= 1.12 required for xdg-shell stable
+        ctx.check_cfg(package = 'wayland-protocols', atleast_version = '1.12',
+                      variables = ['pkgdatadir'], uselib_store = 'WAYLAND_PROTOCOLS')
+        ctx.check_cfg(package = 'wayland-scanner', variables = ['wayland_scanner'],
+                      uselib_store = 'WAYLAND_SCANNER')
 
     # Prepend CXX flags so that they can be overriden by the
     # CXXFLAGS environment variable

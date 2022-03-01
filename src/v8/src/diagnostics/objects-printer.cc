@@ -11,6 +11,7 @@
 #include "src/execution/isolate-utils-inl.h"
 #include "src/heap/heap-inl.h"                // For InOldSpace.
 #include "src/heap/heap-write-barrier-inl.h"  // For GetIsolateFromWritableObj.
+#include "src/ic/handler-configuration-inl.h"
 #include "src/init/bootstrapper.h"
 #include "src/interpreter/bytecodes.h"
 #include "src/objects/all-objects-inl.h"
@@ -55,11 +56,12 @@ namespace {
 
 void PrintHeapObjectHeaderWithoutMap(HeapObject object, std::ostream& os,
                                      const char* id) {
+  PtrComprCageBase cage_base = GetPtrComprCageBaseSlow(object);
   os << reinterpret_cast<void*>(object.ptr()) << ": [";
   if (id != nullptr) {
     os << id;
   } else {
-    os << object.map().instance_type();
+    os << object.map(cage_base).instance_type();
   }
   os << "]";
   if (ReadOnlyHeap::Contains(object)) {
@@ -78,9 +80,11 @@ void PrintDictionaryContents(std::ostream& os, T dict) {
     return;
   }
 
+#ifdef V8_ENABLE_SWISS_NAME_DICTIONARY
   Isolate* isolate = GetIsolateFromWritableObject(dict);
   // IterateEntries for SwissNameDictionary needs to create a handle.
   HandleScope scope(isolate);
+#endif
   for (InternalIndex i : dict.IterateEntries()) {
     Object k;
     if (!dict.ToKey(roots, i, &k)) continue;
@@ -98,11 +102,14 @@ void PrintDictionaryContents(std::ostream& os, T dict) {
 
 void HeapObject::PrintHeader(std::ostream& os, const char* id) {
   PrintHeapObjectHeaderWithoutMap(*this, os, id);
-  if (!IsMap()) os << "\n - map: " << Brief(map());
+  PtrComprCageBase cage_base = GetPtrComprCageBaseSlow(*this);
+  if (!IsMap(cage_base)) os << "\n - map: " << Brief(map(cage_base));
 }
 
 void HeapObject::HeapObjectPrint(std::ostream& os) {
-  InstanceType instance_type = map().instance_type();
+  PtrComprCageBase cage_base = GetPtrComprCageBaseSlow(*this);
+
+  InstanceType instance_type = map(cage_base).instance_type();
 
   if (instance_type < FIRST_NONSTRING_TYPE) {
     String::cast(*this).StringPrint(os);
@@ -120,8 +127,10 @@ void HeapObject::HeapObjectPrint(std::ostream& os) {
     case MODULE_CONTEXT_TYPE:
     case SCRIPT_CONTEXT_TYPE:
     case WITH_CONTEXT_TYPE:
-    case SCRIPT_CONTEXT_TABLE_TYPE:
       Context::cast(*this).ContextPrint(os);
+      break;
+    case SCRIPT_CONTEXT_TABLE_TYPE:
+      FixedArray::cast(*this).FixedArrayPrint(os);
       break;
     case NATIVE_CONTEXT_TYPE:
       NativeContext::cast(*this).NativeContextPrint(os);
@@ -228,6 +237,10 @@ void HeapObject::HeapObjectPrint(std::ostream& os) {
     case FEEDBACK_METADATA_TYPE:
       FeedbackMetadata::cast(*this).FeedbackMetadataPrint(os);
       break;
+    case BIG_INT_BASE_TYPE:
+      BigIntBase::cast(*this).BigIntBasePrint(os);
+      break;
+    case JS_CLASS_CONSTRUCTOR_TYPE:
     case JS_PROMISE_CONSTRUCTOR_TYPE:
     case JS_REG_EXP_CONSTRUCTOR_TYPE:
     case JS_ARRAY_CONSTRUCTOR_TYPE:
@@ -255,6 +268,11 @@ void HeapObject::HeapObjectPrint(std::ostream& os) {
     case THIN_ONE_BYTE_STRING_TYPE:
     case UNCACHED_EXTERNAL_STRING_TYPE:
     case UNCACHED_EXTERNAL_ONE_BYTE_STRING_TYPE:
+    case SHARED_STRING_TYPE:
+    case SHARED_ONE_BYTE_STRING_TYPE:
+    case SHARED_THIN_STRING_TYPE:
+    case SHARED_THIN_ONE_BYTE_STRING_TYPE:
+    case JS_LAST_DUMMY_API_OBJECT_TYPE:
       // TODO(all): Handle these types too.
       os << "UNKNOWN TYPE " << map().instance_type();
       UNREACHABLE();
@@ -288,18 +306,18 @@ bool JSObject::PrintProperties(std::ostream& os) {
       os << ": ";
       PropertyDetails details = descs.GetDetails(i);
       switch (details.location()) {
-        case kField: {
+        case PropertyLocation::kField: {
           FieldIndex field_index = FieldIndex::ForDescriptor(map(), i);
           os << Brief(RawFastPropertyAt(field_index));
           break;
         }
-        case kDescriptor:
+        case PropertyLocation::kDescriptor:
           os << Brief(descs.GetStrongValue(i));
           break;
       }
       os << " ";
       details.PrintAsFastTo(os, PropertyDetails::kForProperties);
-      if (details.location() == kField) {
+      if (details.location() == PropertyLocation::kField) {
         int field_index = details.field_index();
         if (field_index < nof_inobject_properties) {
           os << ", location: in-object";
@@ -528,6 +546,9 @@ void JSObject::PrintElements(std::ostream& os) {
       PrintSloppyArgumentElements(os, map().elements_kind(),
                                   SloppyArgumentsElements::cast(elements()));
       break;
+    case WASM_ARRAY_ELEMENTS:
+      // WasmArrayPrint() should be called intead.
+      UNREACHABLE();
     case NO_ELEMENTS:
       break;
   }
@@ -564,7 +585,7 @@ static void JSObjectPrintHeader(std::ostream& os, JSObject obj,
 static void JSObjectPrintBody(std::ostream& os, JSObject obj,
                               bool print_elements = true) {
   os << "\n - properties: ";
-  Object properties_or_hash = obj.raw_properties_or_hash();
+  Object properties_or_hash = obj.raw_properties_or_hash(kRelaxedLoad);
   if (!properties_or_hash.IsSmi()) {
     os << Brief(properties_or_hash);
   }
@@ -670,13 +691,16 @@ void JSPromise::JSPromisePrint(std::ostream& os) {
   }
   os << "\n - has_handler: " << has_handler();
   os << "\n - handled_hint: " << handled_hint();
+  os << "\n - is_silent: " << is_silent();
   JSObjectPrintBody(os, *this);
 }
 
 void JSRegExp::JSRegExpPrint(std::ostream& os) {
+  Isolate* isolate = GetIsolate();
   JSObjectPrintHeader(os, *this, "JSRegExp");
   os << "\n - data: " << Brief(data());
   os << "\n - source: " << Brief(source());
+  os << "\n - flags: " << Brief(*JSRegExp::StringFromFlags(isolate, flags()));
   JSObjectPrintBody(os, *this);
 }
 
@@ -698,6 +722,9 @@ void Symbol::SymbolPrint(std::ostream& os) {
     os << " (" << PrivateSymbolToName() << ")";
   }
   os << "\n - private: " << is_private();
+  os << "\n - private_name: " << is_private_name();
+  os << "\n - private_brand: " << is_private_brand();
+  os << "\n";
 }
 
 void DescriptorArray::DescriptorArrayPrint(std::ostream& os) {
@@ -809,10 +836,15 @@ namespace {
 void PrintContextWithHeader(std::ostream& os, Context context,
                             const char* type) {
   context.PrintHeader(os, type);
-  os << "\n - length: " << context.length();
+  os << "\n - type: " << context.map().instance_type();
   os << "\n - scope_info: " << Brief(context.scope_info());
   os << "\n - previous: " << Brief(context.unchecked_previous());
   os << "\n - native_context: " << Brief(context.native_context());
+  if (context.scope_info().HasContextExtensionSlot()) {
+    os << "\n - extension: " << context.extension();
+  }
+  os << "\n - length: " << context.length();
+  os << "\n - elements:";
   PrintFixedArrayElements(os, context);
   os << "\n";
 }
@@ -1004,7 +1036,6 @@ void SwissNameDictionary::SwissNameDictionaryPrint(std::ostream& os) {
     switch (ctrl) {
       case Ctrl::kEmpty:
         UNREACHABLE();
-        break;
       case Ctrl::kDeleted:
         print_hex_byte(os, ctrl);
         os << " (= kDeleted)";
@@ -1193,6 +1224,7 @@ void FeedbackNexus::Print(std::ostream& os) {
   switch (kind()) {
     case FeedbackSlotKind::kCall:
     case FeedbackSlotKind::kCloneObject:
+    case FeedbackSlotKind::kDefineOwnKeyed:
     case FeedbackSlotKind::kHasKeyed:
     case FeedbackSlotKind::kInstanceOf:
     case FeedbackSlotKind::kLoadGlobalInsideTypeof:
@@ -1311,7 +1343,7 @@ void JSDate::JSDatePrint(std::ostream& os) {
     os << "\n - time = NaN\n";
   } else {
     // TODO(svenpanne) Add some basic formatting to our streams.
-    ScopedVector<char> buf(100);
+    base::ScopedVector<char> buf(100);
     SNPrintF(buf, "\n - time = %s %04d/%02d/%02d %02d:%02d:%02d\n",
              weekdays[weekday().IsSmi() ? Smi::ToInt(weekday()) + 1 : 0],
              year().IsSmi() ? Smi::ToInt(year()) : -1,
@@ -1325,24 +1357,15 @@ void JSDate::JSDatePrint(std::ostream& os) {
   JSObjectPrintBody(os, *this);
 }
 
-void JSProxy::JSProxyPrint(std::ostream& os) {
-  PrintHeader(os, "JSProxy");
-  os << "\n - target: ";
-  target().ShortPrint(os);
-  os << "\n - handler: ";
-  handler().ShortPrint(os);
-  os << "\n";
-}
-
 void JSSet::JSSetPrint(std::ostream& os) {
   JSObjectPrintHeader(os, *this, "JSSet");
-  os << " - table: " << Brief(table());
+  os << "\n - table: " << Brief(table());
   JSObjectPrintBody(os, *this);
 }
 
 void JSMap::JSMapPrint(std::ostream& os) {
   JSObjectPrintHeader(os, *this, "JSMap");
-  os << " - table: " << Brief(table());
+  os << "\n - table: " << Brief(table());
   JSObjectPrintBody(os, *this);
 }
 
@@ -1360,18 +1383,6 @@ void JSSetIterator::JSSetIteratorPrint(std::ostream& os) {
 
 void JSMapIterator::JSMapIteratorPrint(std::ostream& os) {
   JSCollectionIteratorPrint(os, "JSMapIterator");
-}
-
-void WeakCell::WeakCellPrint(std::ostream& os) {
-  PrintHeader(os, "WeakCell");
-  os << "\n - finalization_registry: " << Brief(finalization_registry());
-  os << "\n - target: " << Brief(target());
-  os << "\n - holdings: " << Brief(holdings());
-  os << "\n - prev: " << Brief(prev());
-  os << "\n - next: " << Brief(next());
-  os << "\n - unregister_token: " << Brief(unregister_token());
-  os << "\n - key_list_prev: " << Brief(key_list_prev());
-  os << "\n - key_list_next: " << Brief(key_list_next());
 }
 
 void JSWeakRef::JSWeakRefPrint(std::ostream& os) {
@@ -1416,6 +1427,7 @@ void JSArrayBuffer::JSArrayBufferPrint(std::ostream& os) {
   JSObjectPrintHeader(os, *this, "JSArrayBuffer");
   os << "\n - backing_store: " << backing_store();
   os << "\n - byte_length: " << byte_length();
+  os << "\n - max_byte_length: " << max_byte_length();
   if (is_external()) os << "\n - external";
   if (is_detachable()) os << "\n - detachable";
   if (was_detached()) os << "\n - detached";
@@ -1495,16 +1507,16 @@ void JSFunction::JSFunctionPrint(std::ostream& os) {
   os << "\n - name: " << Brief(shared().Name());
 
   // Print Builtin name for builtin functions
-  int builtin_index = code().builtin_index();
-  if (Builtins::IsBuiltinId(builtin_index)) {
-    os << "\n - builtin: " << isolate->builtins()->name(builtin_index);
+  Builtin builtin = code().builtin_id();
+  if (Builtins::IsBuiltinId(builtin)) {
+    os << "\n - builtin: " << isolate->builtins()->name(builtin);
   }
 
   os << "\n - formal_parameter_count: "
-     << shared().internal_formal_parameter_count();
+     << shared().internal_formal_parameter_count_without_receiver();
   os << "\n - kind: " << shared().kind();
   os << "\n - context: " << Brief(context());
-  os << "\n - code: " << Brief(code());
+  os << "\n - code: " << Brief(raw_code());
   if (code().kind() == CodeKind::FOR_TESTING) {
     os << "\n - FOR_TESTING";
   } else if (ActiveTierIsIgnition()) {
@@ -1571,7 +1583,8 @@ void SharedFunctionInfo::SharedFunctionInfoPrint(std::ostream& os) {
   os << "\n - kind: " << kind();
   os << "\n - syntax kind: " << syntax_kind();
   os << "\n - function_map_index: " << function_map_index();
-  os << "\n - formal_parameter_count: " << internal_formal_parameter_count();
+  os << "\n - formal_parameter_count: "
+     << internal_formal_parameter_count_without_receiver();
   os << "\n - expected_nof_properties: " << expected_nof_properties();
   os << "\n - language_mode: " << language_mode();
   os << "\n - data: " << Brief(function_data(kAcquireLoad));
@@ -1633,6 +1646,11 @@ void PropertyCell::PropertyCellPrint(std::ostream& os) {
 
 void Code::CodePrint(std::ostream& os) {
   PrintHeader(os, "Code");
+  os << "\n - code_data_container: "
+     << Brief(code_data_container(kAcquireLoad));
+  if (is_builtin()) {
+    os << "\n - builtin_id: " << Builtins::name(builtin_id());
+  }
   os << "\n";
 #ifdef ENABLE_DISASSEMBLER
   Disassemble(nullptr, os, GetIsolate());
@@ -1641,74 +1659,18 @@ void Code::CodePrint(std::ostream& os) {
 
 void CodeDataContainer::CodeDataContainerPrint(std::ostream& os) {
   PrintHeader(os, "CodeDataContainer");
-  os << "\n - kind_specific_flags: " << kind_specific_flags();
+  os << "\n - kind_specific_flags: " << kind_specific_flags(kRelaxedLoad);
+  if (V8_EXTERNAL_CODE_SPACE_BOOL) {
+    os << "\n - code: " << Brief(code());
+    os << "\n - code_entry_point: "
+       << reinterpret_cast<void*>(code_entry_point());
+  }
   os << "\n";
 }
 
 void Foreign::ForeignPrint(std::ostream& os) {
   PrintHeader(os, "Foreign");
   os << "\n - foreign address : " << reinterpret_cast<void*>(foreign_address());
-  os << "\n";
-}
-
-void CallbackTask::CallbackTaskPrint(std::ostream& os) {
-  PrintHeader(os, "CallbackTask");
-  os << "\n - callback: " << Brief(callback());
-  os << "\n - data: " << Brief(data());
-  os << "\n";
-}
-
-void CallableTask::CallableTaskPrint(std::ostream& os) {
-  PrintHeader(os, "CallableTask");
-  os << "\n - context: " << Brief(context());
-  os << "\n - callable: " << Brief(callable());
-  os << "\n";
-}
-
-void PromiseFulfillReactionJobTask::PromiseFulfillReactionJobTaskPrint(
-    std::ostream& os) {
-  PrintHeader(os, "PromiseFulfillReactionJobTask");
-  os << "\n - argument: " << Brief(argument());
-  os << "\n - context: " << Brief(context());
-  os << "\n - handler: " << Brief(handler());
-  os << "\n - promise_or_capability: " << Brief(promise_or_capability());
-  os << "\n";
-}
-
-void PromiseRejectReactionJobTask::PromiseRejectReactionJobTaskPrint(
-    std::ostream& os) {
-  PrintHeader(os, "PromiseRejectReactionJobTask");
-  os << "\n - argument: " << Brief(argument());
-  os << "\n - context: " << Brief(context());
-  os << "\n - handler: " << Brief(handler());
-  os << "\n - promise_or_capability: " << Brief(promise_or_capability());
-  os << "\n";
-}
-
-void PromiseResolveThenableJobTask::PromiseResolveThenableJobTaskPrint(
-    std::ostream& os) {
-  PrintHeader(os, "PromiseResolveThenableJobTask");
-  os << "\n - context: " << Brief(context());
-  os << "\n - promise_to_resolve: " << Brief(promise_to_resolve());
-  os << "\n - then: " << Brief(then());
-  os << "\n - thenable: " << Brief(thenable());
-  os << "\n";
-}
-
-void PromiseCapability::PromiseCapabilityPrint(std::ostream& os) {
-  PrintHeader(os, "PromiseCapability");
-  os << "\n - promise: " << Brief(promise());
-  os << "\n - resolve: " << Brief(resolve());
-  os << "\n - reject: " << Brief(reject());
-  os << "\n";
-}
-
-void PromiseReaction::PromiseReactionPrint(std::ostream& os) {
-  PrintHeader(os, "PromiseReaction");
-  os << "\n - next: " << Brief(next());
-  os << "\n - reject_handler: " << Brief(reject_handler());
-  os << "\n - fulfill_handler: " << Brief(fulfill_handler());
-  os << "\n - promise_or_capability: " << Brief(promise_or_capability());
   os << "\n";
 }
 
@@ -1729,19 +1691,6 @@ void AsyncGeneratorRequest::AsyncGeneratorRequestPrint(std::ostream& os) {
   os << "\n - resume mode: " << mode;
   os << "\n - value: " << Brief(value());
   os << "\n - next: " << Brief(next());
-  os << "\n";
-}
-
-void SourceTextModuleInfoEntry::SourceTextModuleInfoEntryPrint(
-    std::ostream& os) {
-  PrintHeader(os, "SourceTextModuleInfoEntry");
-  os << "\n - export_name: " << Brief(export_name());
-  os << "\n - local_name: " << Brief(local_name());
-  os << "\n - import_name: " << Brief(import_name());
-  os << "\n - module_request: " << module_request();
-  os << "\n - cell_index: " << cell_index();
-  os << "\n - beg_pos: " << beg_pos();
-  os << "\n - end_pos: " << end_pos();
   os << "\n";
 }
 
@@ -1775,14 +1724,6 @@ void SourceTextModule::SourceTextModulePrint(std::ostream& os) {
   os << "\n";
 }
 
-void SyntheticModule::SyntheticModulePrint(std::ostream& os) {
-  PrintHeader(os, "SyntheticModule");
-  PrintModuleFields(*this, os);
-  os << "\n - export_names: " << Brief(export_names());
-  os << "\n - name: " << Brief(name());
-  os << "\n";
-}
-
 void JSModuleNamespace::JSModuleNamespacePrint(std::ostream& os) {
   JSObjectPrintHeader(os, *this, "JSModuleNamespace");
   os << "\n - module: " << Brief(module());
@@ -1799,27 +1740,11 @@ void PrototypeInfo::PrototypeInfoPrint(std::ostream& os) {
   os << "\n";
 }
 
-void ClassPositions::ClassPositionsPrint(std::ostream& os) {
-  PrintHeader(os, "ClassPositions");
-  os << "\n - start position: " << start();
-  os << "\n - end position: " << end();
-  os << "\n";
-}
-
 void ArrayBoilerplateDescription::ArrayBoilerplateDescriptionPrint(
     std::ostream& os) {
   PrintHeader(os, "ArrayBoilerplateDescription");
   os << "\n - elements kind: " << ElementsKindToString(elements_kind());
   os << "\n - constant elements: " << Brief(constant_elements());
-  os << "\n";
-}
-
-void RegExpBoilerplateDescription::RegExpBoilerplateDescriptionPrint(
-    std::ostream& os) {
-  PrintHeader(os, "RegExpBoilerplateDescription");
-  os << "\n - data: " << Brief(data());
-  os << "\n - source: " << Brief(source());
-  os << "\n - flags: " << flags();
   os << "\n";
 }
 
@@ -1835,6 +1760,9 @@ void AsmWasmData::AsmWasmDataPrint(std::ostream& os) {
 void WasmTypeInfo::WasmTypeInfoPrint(std::ostream& os) {
   PrintHeader(os, "WasmTypeInfo");
   os << "\n - type address: " << reinterpret_cast<void*>(foreign_address());
+  os << "\n - supertypes: " << Brief(supertypes());
+  os << "\n - subtypes: " << Brief(subtypes());
+  os << "\n - instance: " << Brief(instance());
   os << "\n";
 }
 
@@ -1846,7 +1774,7 @@ void WasmStruct::WasmStructPrint(std::ostream& os) {
     wasm::ValueType field = struct_type->field(i);
     os << "\n   - " << field.short_name() << ": ";
     uint32_t field_offset = struct_type->field_offset(i);
-    Address field_address = RawField(field_offset).address();
+    Address field_address = RawFieldAddress(field_offset);
     switch (field.kind()) {
       case wasm::kI32:
         os << base::ReadUnalignedValue<int32_t>(field_address);
@@ -1861,16 +1789,23 @@ void WasmStruct::WasmStructPrint(std::ostream& os) {
         os << base::ReadUnalignedValue<double>(field_address);
         break;
       case wasm::kI8:
+        os << base::ReadUnalignedValue<int8_t>(field_address);
+        break;
       case wasm::kI16:
-      case wasm::kS128:
+        os << base::ReadUnalignedValue<int16_t>(field_address);
+        break;
       case wasm::kRef:
       case wasm::kOptRef:
       case wasm::kRtt:
       case wasm::kRttWithDepth:
-      case wasm::kBottom:
-      case wasm::kVoid:
+        os << Brief(base::ReadUnalignedValue<Object>(field_address));
+        break;
+      case wasm::kS128:
         os << "UNIMPLEMENTED";  // TODO(7748): Implement.
         break;
+      case wasm::kBottom:
+      case wasm::kVoid:
+        UNREACHABLE();
     }
   }
   os << "\n";
@@ -1916,9 +1851,17 @@ void WasmArray::WasmArrayPrint(std::ostream& os) {
   os << "\n";
 }
 
-void WasmExceptionTag::WasmExceptionTagPrint(std::ostream& os) {
-  PrintHeader(os, "WasmExceptionTag");
-  os << "\n - index: " << index();
+void WasmContinuationObject::WasmContinuationObjectPrint(std::ostream& os) {
+  PrintHeader(os, "WasmContinuationObject");
+  os << "\n - parent: " << parent();
+  os << "\n - jmpbuf: " << jmpbuf();
+  os << "\n - stack: " << stack();
+  os << "\n";
+}
+
+void WasmSuspenderObject::WasmSuspenderObjectPrint(std::ostream& os) {
+  PrintHeader(os, "WasmSuspenderObject");
+  os << "\n - continuation: " << continuation();
   os << "\n";
 }
 
@@ -1952,9 +1895,13 @@ void WasmInstanceObject::WasmInstanceObjectPrint(std::ostream& os) {
     os << "\n - managed_native_allocations: "
        << Brief(managed_native_allocations());
   }
+  if (has_tags_table()) {
+    os << "\n - tags table: " << Brief(tags_table());
+  }
+  os << "\n - managed object maps: " << Brief(managed_object_maps());
+  os << "\n - feedback vectors: " << Brief(feedback_vectors());
   os << "\n - memory_start: " << static_cast<void*>(memory_start());
   os << "\n - memory_size: " << memory_size();
-  os << "\n - memory_mask: " << AsHex(memory_mask());
   os << "\n - imported_function_targets: "
      << static_cast<void*>(imported_function_targets());
   os << "\n - globals_start: " << static_cast<void*>(globals_start());
@@ -1971,14 +1918,13 @@ void WasmInstanceObject::WasmInstanceObjectPrint(std::ostream& os) {
 
 // Never called directly, as WasmFunctionData is an "abstract" class.
 void WasmFunctionData::WasmFunctionDataPrint(std::ostream& os) {
-  os << "\n - target: " << reinterpret_cast<void*>(foreign_address());
-  os << "\n - ref: " << Brief(ref());
+  os << "\n - internal: " << Brief(internal());
+  os << "\n - wrapper_code: " << Brief(TorqueGeneratedClass::wrapper_code());
 }
 
 void WasmExportedFunctionData::WasmExportedFunctionDataPrint(std::ostream& os) {
   PrintHeader(os, "WasmExportedFunctionData");
   WasmFunctionDataPrint(os);
-  os << "\n - wrapper_code: " << Brief(wrapper_code());
   os << "\n - instance: " << Brief(instance());
   os << "\n - function_index: " << function_index();
   os << "\n - signature: " << Brief(signature());
@@ -1989,11 +1935,34 @@ void WasmExportedFunctionData::WasmExportedFunctionDataPrint(std::ostream& os) {
 void WasmJSFunctionData::WasmJSFunctionDataPrint(std::ostream& os) {
   PrintHeader(os, "WasmJSFunctionData");
   WasmFunctionDataPrint(os);
-  os << "\n - wrapper_code: " << Brief(wrapper_code());
-  os << "\n - wasm_to_js_wrapper_code: " << Brief(wasm_to_js_wrapper_code());
   os << "\n - serialized_return_count: " << serialized_return_count();
   os << "\n - serialized_parameter_count: " << serialized_parameter_count();
-  os << "\n - serialized signature: " << Brief(serialized_signature());
+  os << "\n - serialized_signature: " << Brief(serialized_signature());
+  os << "\n";
+}
+
+void WasmApiFunctionRef::WasmApiFunctionRefPrint(std::ostream& os) {
+  PrintHeader(os, "WasmApiFunctionRef");
+  os << "\n - isolate_root: " << reinterpret_cast<void*>(isolate_root());
+  os << "\n - native_context: " << Brief(native_context());
+  os << "\n - callable: " << Brief(callable());
+  os << "\n";
+}
+
+void WasmInternalFunction::WasmInternalFunctionPrint(std::ostream& os) {
+  PrintHeader(os, "WasmInternalFunction");
+  os << "\n - call target: " << reinterpret_cast<void*>(foreign_address());
+  os << "\n - ref: " << Brief(ref());
+  os << "\n - external: " << Brief(external());
+  os << "\n - code: " << Brief(code());
+  os << "\n";
+}
+
+void WasmCapiFunctionData::WasmCapiFunctionDataPrint(std::ostream& os) {
+  PrintHeader(os, "WasmCapiFunctionData");
+  WasmFunctionDataPrint(os);
+  os << "\n - embedder_data: " << Brief(embedder_data());
+  os << "\n - serialized_signature: " << Brief(serialized_signature());
   os << "\n";
 }
 
@@ -2003,15 +1972,6 @@ void WasmModuleObject::WasmModuleObjectPrint(std::ostream& os) {
   os << "\n - native module: " << native_module();
   os << "\n - export wrappers: " << Brief(export_wrappers());
   os << "\n - script: " << Brief(script());
-  os << "\n";
-}
-
-void WasmTableObject::WasmTableObjectPrint(std::ostream& os) {
-  PrintHeader(os, "WasmTableObject");
-  os << "\n - elements: " << Brief(elements());
-  os << "\n - maximum_length: " << Brief(maximum_length());
-  os << "\n - dispatch_tables: " << Brief(dispatch_tables());
-  os << "\n - raw_type: " << raw_type();
   os << "\n";
 }
 
@@ -2027,21 +1987,6 @@ void WasmGlobalObject::WasmGlobalObjectPrint(std::ostream& os) {
   os << "\n - is_mutable: " << is_mutable();
   os << "\n - type: " << type();
   os << "\n - is_mutable: " << is_mutable();
-  os << "\n";
-}
-
-void WasmMemoryObject::WasmMemoryObjectPrint(std::ostream& os) {
-  PrintHeader(os, "WasmMemoryObject");
-  os << "\n - array_buffer: " << Brief(array_buffer());
-  os << "\n - maximum_pages: " << maximum_pages();
-  os << "\n - instances: " << Brief(instances());
-  os << "\n";
-}
-
-void WasmExceptionObject::WasmExceptionObjectPrint(std::ostream& os) {
-  PrintHeader(os, "WasmExceptionObject");
-  os << "\n - serialized_signature: " << Brief(serialized_signature());
-  os << "\n - exception_tag: " << Brief(exception_tag());
   os << "\n";
 }
 
@@ -2099,13 +2044,6 @@ void StoreHandler::StoreHandlerPrint(std::ostream& os) {
   if (data_count >= 3) {
     os << "\n - data3: " << Brief(data3());
   }
-  os << "\n";
-}
-
-void AccessorPair::AccessorPairPrint(std::ostream& os) {
-  PrintHeader(os, "AccessorPair");
-  os << "\n - getter: " << Brief(getter());
-  os << "\n - setter: " << Brief(setter());
   os << "\n";
 }
 
@@ -2181,6 +2119,12 @@ void AllocationMemento::AllocationMementoPrint(std::ostream& os) {
   }
 }
 
+void ScriptOrModule::ScriptOrModulePrint(std::ostream& os) {
+  PrintHeader(os, "ScriptOrModule");
+  os << "\n - host_defined_options: " << Brief(host_defined_options());
+  os << "\n - resource_name: " << Brief(resource_name());
+}
+
 void Script::ScriptPrint(std::ostream& os) {
   PrintHeader(os, "Script");
   os << "\n - source: " << Brief(source());
@@ -2216,6 +2160,55 @@ void Script::ScriptPrint(std::ostream& os) {
   os << "\n";
 }
 
+void JSTemporalPlainDate::JSTemporalPlainDatePrint(std::ostream& os) {
+  JSObjectPrintHeader(os, *this, "JSTemporalPlainDate");
+  JSObjectPrintBody(os, *this);
+}
+
+void JSTemporalPlainTime::JSTemporalPlainTimePrint(std::ostream& os) {
+  JSObjectPrintHeader(os, *this, "JSTemporalPlainTime");
+  JSObjectPrintBody(os, *this);
+}
+
+void JSTemporalPlainDateTime::JSTemporalPlainDateTimePrint(std::ostream& os) {
+  JSObjectPrintHeader(os, *this, "JSTemporalPlainDateTime");
+  JSObjectPrintBody(os, *this);
+}
+
+void JSTemporalZonedDateTime::JSTemporalZonedDateTimePrint(std::ostream& os) {
+  JSObjectPrintHeader(os, *this, "JSTemporalZonedDateTime");
+  JSObjectPrintBody(os, *this);
+}
+
+void JSTemporalDuration::JSTemporalDurationPrint(std::ostream& os) {
+  JSObjectPrintHeader(os, *this, "JSTemporalDuration");
+  JSObjectPrintBody(os, *this);
+}
+
+void JSTemporalInstant::JSTemporalInstantPrint(std::ostream& os) {
+  JSObjectPrintHeader(os, *this, "JSTemporalInstant");
+  JSObjectPrintBody(os, *this);
+}
+
+void JSTemporalPlainYearMonth::JSTemporalPlainYearMonthPrint(std::ostream& os) {
+  JSObjectPrintHeader(os, *this, "JSTemporalPlainYearMonth");
+  JSObjectPrintBody(os, *this);
+}
+
+void JSTemporalPlainMonthDay::JSTemporalPlainMonthDayPrint(std::ostream& os) {
+  JSObjectPrintHeader(os, *this, "JSTemporalPlainMonthDay");
+  JSObjectPrintBody(os, *this);
+}
+
+void JSTemporalTimeZone::JSTemporalTimeZonePrint(std::ostream& os) {
+  JSObjectPrintHeader(os, *this, "JSTemporalTimeZone");
+  JSObjectPrintBody(os, *this);
+}
+
+void JSTemporalCalendar::JSTemporalCalendarPrint(std::ostream& os) {
+  JSObjectPrintHeader(os, *this, "JSTemporalCalendar");
+  JSObjectPrintBody(os, *this);
+}
 #ifdef V8_INTL_SUPPORT
 void JSV8BreakIterator::JSV8BreakIteratorPrint(std::ostream& os) {
   JSObjectPrintHeader(os, *this, "JSV8BreakIterator");
@@ -2392,18 +2385,6 @@ void ScopeInfo::ScopeInfoPrint(std::ostream& os) {
   os << "\n";
 }
 
-void StackFrameInfo::StackFrameInfoPrint(std::ostream& os) {
-  PrintHeader(os, "StackFrameInfo");
-  os << "\n - receiver_or_instance: " << Brief(receiver_or_instance());
-  os << "\n - function: " << Brief(function());
-  os << "\n - code_object: " << Brief(code_object());
-  os << "\n - code_offset_or_source_position: "
-     << code_offset_or_source_position();
-  os << "\n - flags: " << flags();
-  os << "\n - parameters: " << Brief(parameters());
-  os << "\n";
-}
-
 void PreparseData::PreparseDataPrint(std::ostream& os) {
   PrintHeader(os, "PreparseData");
   os << "\n - data_length: " << data_length();
@@ -2417,13 +2398,6 @@ void PreparseData::PreparseDataPrint(std::ostream& os) {
   for (int i = 0; i < children_length(); ++i) {
     os << "\n - [" << i << "]: " << Brief(get_child(i));
   }
-  os << "\n";
-}
-
-void InterpreterData::InterpreterDataPrint(std::ostream& os) {
-  PrintHeader(os, "InterpreterData");
-  os << "\n - bytecode_array: " << Brief(bytecode_array());
-  os << "\n - interpreter_trampoline: " << Brief(interpreter_trampoline());
   os << "\n";
 }
 
@@ -2494,7 +2468,7 @@ void Name::NameShortPrint() {
 }
 
 // TODO(cbruni): remove once the new maptracer is in place.
-int Name::NameShortPrint(Vector<char> str) {
+int Name::NameShortPrint(base::Vector<char> str) {
   if (this->IsString()) {
     return SNPrintF(str, "%s", String::cast(*this).ToCString().get());
   } else {
@@ -2620,12 +2594,12 @@ void DescriptorArray::PrintDescriptorDetails(std::ostream& os,
   details.PrintAsFastTo(os, mode);
   os << " @ ";
   switch (details.location()) {
-    case kField: {
+    case PropertyLocation::kField: {
       FieldType field_type = GetFieldType(descriptor);
       field_type.PrintTo(os);
       break;
     }
-    case kDescriptor:
+    case PropertyLocation::kDescriptor:
       Object value = GetStrongValue(descriptor);
       os << Brief(value);
       if (value.IsAccessorPair()) {
@@ -2828,9 +2802,7 @@ V8_EXPORT_PRIVATE extern void _v8_internal_Print_Code(void* object) {
 #if V8_ENABLE_WEBASSEMBLY
   {
     i::wasm::WasmCodeRefScope scope;
-    i::wasm::WasmCode* wasm_code =
-        isolate->wasm_engine()->code_manager()->LookupCode(address);
-    if (wasm_code) {
+    if (auto* wasm_code = i::wasm::GetWasmCodeManager()->LookupCode(address)) {
       i::StdoutStream os;
       wasm_code->Disassemble(nullptr, os, address);
       return;
@@ -2840,7 +2812,7 @@ V8_EXPORT_PRIVATE extern void _v8_internal_Print_Code(void* object) {
 
   if (!isolate->heap()->InSpaceSlow(address, i::CODE_SPACE) &&
       !isolate->heap()->InSpaceSlow(address, i::CODE_LO_SPACE) &&
-      !i::InstructionStream::PcIsOffHeap(isolate, address) &&
+      !i::OffHeapInstructionStream::PcIsOffHeap(isolate, address) &&
       !i::ReadOnlyHeap::Contains(address)) {
     i::PrintF(
         "%p is not within the current isolate's code, read_only or embedded "

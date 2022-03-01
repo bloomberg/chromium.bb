@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_path_override.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -49,13 +49,26 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
  public:
   // Different types of extension's lazy background contexts used in some tests.
   enum class ContextType {
+    // TODO(crbug.com:/1241220): Get rid of this value when we can use
+    // absl::optional in the LoadOptions struct.
+    // No specific context type.
+    kNone,
     // A non-persistent background page/JS based extension.
     kEventPage,
     // A Service Worker based extension.
     kServiceWorker,
     // An extension with a persistent background page.
     kPersistentBackground,
+    // Use the value from the manifest. This is used when the test
+    // has been parameterized but the particular extension should
+    // be loaded without using the parameterized type. Typically,
+    // this is used when a test loads another extension that is
+    // not parameterized.
+    kFromManifest,
   };
+
+  ExtensionBrowserTest(const ExtensionBrowserTest&) = delete;
+  ExtensionBrowserTest& operator=(const ExtensionBrowserTest&) = delete;
 
  protected:
   struct LoadOptions {
@@ -69,13 +82,6 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
     // when testing deprecated features).
     bool ignore_manifest_warnings = false;
 
-    // Requires a modern manifest version. Extensions with older manifest
-    // versions won't load if this is true.
-    bool require_modern_manifest_version = true;
-
-    // Loads the provided extension as Service Worker based extension.
-    bool load_as_service_worker = false;
-
     // Waits for extension renderers to fully load.
     bool wait_for_renderers = true;
 
@@ -88,9 +94,19 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
 
     // Loads the extension with location COMPONENT.
     bool load_as_component = false;
+
+    // Changes the "manifest_version" manifest key to 3. Note as of now, this
+    // doesn't make any other changes to convert the extension to MV3 other than
+    // changing the integer value in the manifest.
+    bool load_as_manifest_version_3 = false;
+
+    // Used to force loading the extension with a particular background type.
+    // Currently this only support loading an extension as using a service
+    // worker.
+    ContextType context_type = ContextType::kNone;
   };
 
-  ExtensionBrowserTest();
+  explicit ExtensionBrowserTest(ContextType context_type = ContextType::kNone);
   ~ExtensionBrowserTest() override;
 
   // Useful accessors.
@@ -139,16 +155,6 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
 
   const Extension* LoadExtension(const base::FilePath& path,
                                  const LoadOptions& options);
-
-  // Converts an extension from |path| to a Service Worker based extension and
-  // returns true on success.
-  // If successful, |out_path| contains path of the converted extension.
-  //
-  // NOTE: The conversion works only for extensions with background.scripts and
-  // background.persistent = false; persistent background pages and
-  // background.page are not supported.
-  bool CreateServiceWorkerBasedExtension(const base::FilePath& path,
-                                         base::FilePath* out_path);
 
   // Loads unpacked extension from |path| with manifest |manifest_relative_path|
   // and imitates that it is a component extension.
@@ -276,12 +282,6 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
     return observer_->WaitForPageActionVisibilityChangeTo(count);
   }
 
-  // Wait for the specified extension to crash. Returns true if it really
-  // crashed.
-  bool WaitForExtensionCrash(const std::string& extension_id) {
-    return observer_->WaitForExtensionCrash(extension_id);
-  }
-
   // Wait for the crx installer to be done. Returns true if it has finished
   // successfully.
   bool WaitForCrxInstallerDone() {
@@ -353,7 +353,15 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
 
   std::unique_ptr<ChromeExtensionTestNotificationObserver> observer_;
 
+  const ContextType context_type_;
+
  private:
+  // Modifies extension at `input_path` as dictated by `options`. On success,
+  // returns true and populates `out_path`. On failure, false is returned.
+  bool ModifyExtensionIfNeeded(const LoadOptions& options,
+                               const base::FilePath& input_path,
+                               base::FilePath* out_path);
+
   // Temporary directory for testing.
   base::ScopedTempDir temp_dir_;
 
@@ -410,7 +418,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
 #endif
 
   // The default profile to be used.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   // Cache cache implementation.
   std::unique_ptr<ExtensionCacheFake> test_extension_cache_;
@@ -432,8 +440,6 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
       verifier_format_override_;
 
   ExtensionUpdater::ScopedSkipScheduledCheckForTest skip_scheduled_check_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionBrowserTest);
 };
 
 }  // namespace extensions

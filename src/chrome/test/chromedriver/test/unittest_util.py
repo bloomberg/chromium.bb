@@ -4,6 +4,7 @@
 
 """Utilities for dealing with the python unittest module."""
 
+from __future__ import absolute_import
 import fnmatch
 import sys
 import unittest
@@ -81,7 +82,7 @@ def GetTestsFromSuite(suite):
 
 def GetTestNamesFromSuite(suite):
   """Returns a list of every test name in the given suite."""
-  return map(lambda x: GetTestName(x), GetTestsFromSuite(suite))
+  return [GetTestName(x) for x in GetTestsFromSuite(suite)]
 
 
 def GetTestName(test):
@@ -94,7 +95,7 @@ def GetTestName(test):
 def FilterTestSuite(suite, gtest_filter):
   """Returns a new filtered tests suite based on the given gtest filter.
 
-  See https://github.com/google/googletest/blob/master/googletest/docs/AdvancedGuide.md
+  See https://github.com/google/googletest/blob/master/docs/advanced.md
   for gtest_filter specification.
   """
   return unittest.TestSuite(FilterTests(GetTestsFromSuite(suite), gtest_filter))
@@ -103,7 +104,7 @@ def FilterTestSuite(suite, gtest_filter):
 def FilterTests(all_tests, gtest_filter):
   """Returns a filtered list of tests based on the given gtest filter.
 
-  See https://github.com/google/googletest/blob/master/googletest/docs/AdvancedGuide.md
+  See https://github.com/google/googletest/blob/master/docs/advanced.md
   for gtest_filter specification.
   """
   pattern_groups = gtest_filter.split('-')

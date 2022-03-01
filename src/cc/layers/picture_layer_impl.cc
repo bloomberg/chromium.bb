@@ -15,9 +15,9 @@
 #include <utility>
 
 #include "base/containers/contains.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
-#include "base/numerics/ranges.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/trace_event/traced_value.h"
@@ -206,11 +206,6 @@ void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
 
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-
-  // If did_checkerboard_quad_ is set to true, don't set to false until the
-  // scroll is completed.
-  if (!ScrollInteractionInProgress())
-    SetDidCheckerboardQuad(false);
 
   if (raster_source_->IsSolidColor()) {
     // TODO(979672): This is still hard-coded at 1.0. This has some history:
@@ -549,7 +544,6 @@ void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
       append_quads_data->checkerboarded_no_recording_content_area +=
           visible_geometry_area - checkerboarded_has_recording_area;
 
-      SetDidCheckerboardQuad(true);
       continue;
     }
 
@@ -788,6 +782,8 @@ void PictureLayerImpl::UpdateRasterSource(
   bool could_have_tilings = CanHaveTilings();
   raster_source_.swap(raster_source);
 
+  raster_source_->set_debug_name(DebugName());
+
   // Register images from the new raster source, if the recording was updated.
   // TODO(khushalsagar): UMA the number of animated images in layer?
   if (recording_updated)
@@ -1011,8 +1007,8 @@ bool PictureLayerImpl::ScrollInteractionInProgress() const {
          ActivelyScrollingType::kNone;
 }
 
-bool PictureLayerImpl::DidCheckerboardQuad() const {
-  return did_checkerboard_quad_;
+bool PictureLayerImpl::CurrentScrollCheckerboardsDueToNoRecording() const {
+  return layer_tree_impl()->CurrentScrollCheckerboardsDueToNoRecording();
 }
 
 gfx::Rect PictureLayerImpl::GetEnclosingVisibleRectInTargetSpace() const {
@@ -1183,7 +1179,7 @@ float PictureLayerImpl::CalculateDirectlyCompositedImageRasterScale() const {
   float min_scale = MinimumContentsScale();
 
   float clamped_ideal_source_scale =
-      base::ClampToRange(ideal_source_scale_key(), min_scale, max_scale);
+      base::clamp(ideal_source_scale_key(), min_scale, max_scale);
   while (adjusted_raster_scale < clamped_ideal_source_scale)
     adjusted_raster_scale *= 2.f;
 
@@ -1196,7 +1192,7 @@ float PictureLayerImpl::CalculateDirectlyCompositedImageRasterScale() const {
     adjusted_raster_scale /= 2.f;
 
   adjusted_raster_scale =
-      base::ClampToRange(adjusted_raster_scale, min_scale, max_scale);
+      base::clamp(adjusted_raster_scale, min_scale, max_scale);
   return adjusted_raster_scale;
 }
 
@@ -1220,7 +1216,7 @@ void PictureLayerImpl::RemoveAllTilings() {
   ResetRasterScale();
 }
 
-bool PictureLayerImpl::CanRecreateHighResTilingForLCDTextAndRasterTranslation(
+bool PictureLayerImpl::CanRecreateHighResTilingForLCDTextAndRasterTransform(
     const PictureLayerTiling& high_res) const {
   // This is for the sync tree only to avoid flickering.
   if (!layer_tree_impl()->IsSyncTree())
@@ -1236,8 +1232,10 @@ bool PictureLayerImpl::CanRecreateHighResTilingForLCDTextAndRasterTranslation(
   // Also avoid re-rasterization during pinch-zoom.
   if (layer_tree_impl()->PinchGestureActive())
     return false;
-  // Keep the current LCD text and raster translation if there is no text.
-  if (lcd_text_disallowed_reason_ == LCDTextDisallowedReason::kNoText)
+  // Keep the current LCD text and raster translation if there is no text and
+  // the raster scale is ideal.
+  if (lcd_text_disallowed_reason_ == LCDTextDisallowedReason::kNoText &&
+      high_res.raster_transform().scale() == raster_contents_scale_)
     return false;
   return true;
 }
@@ -1259,7 +1257,7 @@ void PictureLayerImpl::UpdateTilingsForRasterScaleAndTranslation(
         high_res->can_use_lcd_text() != can_use_lcd_text();
     bool should_recreate_high_res =
         (raster_transform_is_not_ideal || can_use_lcd_text_changed) &&
-        CanRecreateHighResTilingForLCDTextAndRasterTranslation(*high_res);
+        CanRecreateHighResTilingForLCDTextAndRasterTransform(*high_res);
     if (should_recreate_high_res) {
       tilings_->Remove(high_res);
       high_res = nullptr;
@@ -1683,7 +1681,7 @@ bool PictureLayerImpl::CalculateRasterTranslation(
   // a layer of size 10000px does not exceed 0.001px.
   static constexpr float kPixelErrorThreshold = 0.001f;
   static constexpr float kScaleErrorThreshold = kPixelErrorThreshold / 10000;
-  auto is_raster_scale = [this](const SkMatrix44& matrix) -> bool {
+  auto is_raster_scale = [this](const skia::Matrix44& matrix) -> bool {
     // The matrix has the X scale at (0,0), and the Y scale at (1,1).
     return std::abs(matrix.getFloat(0, 0) - raster_contents_scale_.x()) <=
                kScaleErrorThreshold &&

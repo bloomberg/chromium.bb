@@ -7,10 +7,9 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/types/pass_key.h"
 #include "components/performance_manager/graph/node_base.h"
@@ -38,6 +37,10 @@ class WorkerNodeImpl
                  WorkerType worker_type,
                  ProcessNodeImpl* process_node,
                  const blink::WorkerToken& worker_token);
+
+  WorkerNodeImpl(const WorkerNodeImpl&) = delete;
+  WorkerNodeImpl& operator=(const WorkerNodeImpl&) = delete;
+
   ~WorkerNodeImpl() override;
 
   // Invoked when a frame starts/stops being a client of this worker.
@@ -113,7 +116,7 @@ class WorkerNodeImpl
   const WorkerType worker_type_;
 
   // The process in which this worker lives.
-  ProcessNodeImpl* const process_node_;
+  const raw_ptr<ProcessNodeImpl> process_node_;
 
   // A unique identifier shared with all representations of this worker across
   // content and blink. This token should only ever be sent between the browser
@@ -156,8 +159,6 @@ class WorkerNodeImpl
 
   base::WeakPtrFactory<WorkerNodeImpl> weak_factory_
       GUARDED_BY_CONTEXT(sequence_checker_){this};
-
-  DISALLOW_COPY_AND_ASSIGN(WorkerNodeImpl);
 };
 
 }  // namespace performance_manager

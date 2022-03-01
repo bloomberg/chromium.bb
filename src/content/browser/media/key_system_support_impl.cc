@@ -9,11 +9,12 @@
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/ignore_result.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/media/cdm_registry_impl.h"
 #include "content/public/browser/cdm_registry.h"
 #include "content/public/browser/content_browser_client.h"
@@ -27,7 +28,9 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 #if defined(OS_WIN)
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/media/key_system_support_win.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
 #endif
 
 namespace content {
@@ -58,17 +61,23 @@ GetHardwareSecureCapabilityOverriddenFromCommandLine() {
       base::SplitStringPiece(overridden_codecs_string, ",",
                              base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
+  // As the command line switch does not include profiles, specify {} to
+  // indicate that all relevant profiles should be considered supported.
   std::vector<media::AudioCodec> audio_codecs;
-  std::vector<media::VideoCodec> video_codecs;
+  media::CdmCapability::VideoCodecMap video_codecs;
   for (const auto& codec : overridden_codecs) {
     if (codec == "vp8")
-      video_codecs.push_back(media::VideoCodec::kCodecVP8);
+      video_codecs[media::VideoCodec::kVP8] = {};
     else if (codec == "vp9")
-      video_codecs.push_back(media::VideoCodec::kCodecVP9);
+      video_codecs[media::VideoCodec::kVP9] = {};
     else if (codec == "avc1")
-      video_codecs.push_back(media::VideoCodec::kCodecH264);
+      video_codecs[media::VideoCodec::kH264] = {};
+    else if (codec == "hevc")
+      video_codecs[media::VideoCodec::kHEVC] = {};
+    else if (codec == "mp4a")
+      audio_codecs.push_back(media::AudioCodec::kAAC);
     else if (codec == "vorbis")
-      audio_codecs.push_back(media::AudioCodec::kCodecVorbis);
+      audio_codecs.push_back(media::AudioCodec::kVorbis);
     else
       DVLOG(1) << "Unsupported codec specified on command line: " << codec;
   }
@@ -115,15 +124,17 @@ absl::optional<media::CdmCapability> GetHardwareSecureCapability(
     bool* lazy_initialize) {
   *lazy_initialize = false;
 
-  // We use the USE_CHROMEOS_PROTECTED_MEDIA build flag on Chrome OS to control
-  // when HW secure decryption is enabled, so disable the feature flag in that
-  // case.
-#if !BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
-  if (!base::FeatureList::IsEnabled(media::kHardwareSecureDecryption)) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kLacrosUseChromeosProtectedMedia)) {
+    return absl::nullopt;
+  }
+#elif !BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+  if (!media::IsHardwareSecureDecryptionEnabled()) {
     DVLOG(1) << "Hardware secure decryption disabled";
     return absl::nullopt;
   }
-#endif
+#endif  // !BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
 
   // Secure codecs override takes precedence over other checks.
   auto overridden_capability =
@@ -144,6 +155,19 @@ absl::optional<media::CdmCapability> GetHardwareSecureCapability(
                 "video decode disabled";
     return absl::nullopt;
   }
+
+#if defined(OS_WIN)
+  DCHECK(GpuDataManagerImpl::GetInstance()->IsGpuFeatureInfoAvailable());
+  if (GpuDataManagerImpl::GetInstance()
+          ->GetGpuFeatureInfo()
+          .IsWorkaroundEnabled(
+              gpu::DISABLE_MEDIA_FOUNDATION_HARDWARE_SECURITY)) {
+    DVLOG(1) << "Disable Media Foundation Hardware security due to GPU "
+                "workarounds";
+
+    return absl::nullopt;
+  }
+#endif  // defined(OS_WIN)
 
   auto cdm_info = CdmRegistryImpl::GetInstance()->GetCdmInfo(
       key_system, CdmInfo::Robustness::kHardwareSecure);

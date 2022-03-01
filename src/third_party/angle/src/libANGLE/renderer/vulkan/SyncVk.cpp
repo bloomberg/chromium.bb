@@ -78,46 +78,23 @@ SyncHelper::SyncHelper() {}
 
 SyncHelper::~SyncHelper() {}
 
-void SyncHelper::releaseToRenderer(RendererVk *renderer)
-{
-    renderer->collectGarbageAndReinit(&mUse, &mEvent);
-}
+void SyncHelper::releaseToRenderer(RendererVk *renderer) {}
 
 angle::Result SyncHelper::initialize(ContextVk *contextVk, bool isEglSyncObject)
 {
-    ASSERT(!mEvent.valid());
+    ASSERT(!mUse.getSerial().valid());
 
-    // Break the current render pass to ensure the proper ordering of the sync object in the
-    // commands.
-    ANGLE_TRY(contextVk->flushCommandsAndEndRenderPass());
-
-    RendererVk *renderer = contextVk->getRenderer();
-    VkDevice device      = renderer->getDevice();
-
-    VkEventCreateInfo eventCreateInfo = {};
-    eventCreateInfo.sType             = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
-    eventCreateInfo.flags             = 0;
-
-    DeviceScoped<Event> event(device);
-    ANGLE_VK_TRY(contextVk, event.get().init(device, eventCreateInfo));
-
-    mEvent = event.release();
-
-    vk::CommandBuffer *commandBuffer;
-    ANGLE_TRY(contextVk->getOutsideRenderPassCommandBuffer({}, &commandBuffer));
-    commandBuffer->setEvent(mEvent.getHandle(), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
+    // Submit the commands:
+    //
+    // - This breaks the current render pass to ensure the proper ordering of the sync object in the
+    //   commands,
+    // - The sync object has a valid serial when it's waited on later,
+    // - After waiting on the sync object, every resource that's used so far (and is being synced)
+    //   will also be aware that it's finished (based on the serial) and won't incur a further wait
+    //   (for example when a buffer is mapped).
+    //
     retain(&contextVk->getResourceUseList());
-
-    if (isEglSyncObject)
-    {
-        contextVk->onEGLSyncHelperInitialize();
-    }
-    else
-    {
-        contextVk->onSyncHelperInitialize();
-    }
-
-    return angle::Result::Continue;
+    return contextVk->flushImpl(nullptr, RenderPassClosureReason::SyncObjectInit);
 }
 
 angle::Result SyncHelper::clientWait(Context *context,
@@ -137,37 +114,16 @@ angle::Result SyncHelper::clientWait(Context *context,
         return angle::Result::Continue;
     }
 
-    // We defer (ignore) flushes, so it's possible that the glFence's signal operation is pending
-    // submission.
-    if (contextVk)
-    {
-        if (flushCommands || usedInRecordedCommands())
-        {
-            ANGLE_TRY(contextVk->flushImpl(nullptr));
-        }
-    }
-    else
-    {
-        if (!mUse.getSerial().valid())
-        {
-            // The sync object wasn't flushed before waiting, so the wait will always necessarily
-            // time out.
-            WARN() << "clientWaitSync called without flushing sync object and/or a valid context "
-                      "active.";
-            *outResult = VK_TIMEOUT;
-            return angle::Result::Continue;
-        }
-    }
-
     // If timeout is zero, there's no need to wait, so return timeout already.
-    // Do this after (possibly) flushing, since some apps/tests/traces are relying on this behavior.
     if (timeout == 0)
     {
         *outResult = VK_TIMEOUT;
         return angle::Result::Continue;
     }
 
-    ASSERT(mUse.getSerial().valid());
+    // We always flush when a sync object is created, so they should always have a valid Serial
+    // when being waited on.
+    ASSERT(mUse.getSerial().valid() && !usedInRecordedCommands());
 
     VkResult status = VK_SUCCESS;
     ANGLE_TRY(renderer->waitForSerialWithUserTimeout(context, mUse.getSerial(), timeout, &status));
@@ -184,23 +140,23 @@ angle::Result SyncHelper::clientWait(Context *context,
 
 angle::Result SyncHelper::serverWait(ContextVk *contextVk)
 {
+    // Every resource already tracks its usage and issues the appropriate barriers, so there's
+    // really nothing to do here.  An execution barrier is issued to strictly satisfy what the
+    // application asked for.
     vk::CommandBuffer *commandBuffer;
     ANGLE_TRY(contextVk->getOutsideRenderPassCommandBuffer({}, &commandBuffer));
-    commandBuffer->waitEvents(1, mEvent.ptr(), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-                              VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, nullptr, 0, nullptr, 0,
-                              nullptr);
-    retain(&contextVk->getResourceUseList());
+    commandBuffer->pipelineBarrier(VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                                   VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 0,
+                                   nullptr);
     return angle::Result::Continue;
 }
 
 angle::Result SyncHelper::getStatus(Context *context, bool *signaled) const
 {
-    VkResult result = mEvent.getStatus(context->getDevice());
-    if (result != VK_EVENT_SET && result != VK_EVENT_RESET)
-    {
-        ANGLE_VK_TRY(context, result);
-    }
-    *signaled = (result == VK_EVENT_SET);
+    ASSERT(mUse.getSerial().valid() && !usedInRecordedCommands());
+
+    ANGLE_TRY(context->getRenderer()->checkCompletedCommands(context));
+    *signaled = !isCurrentlyInUse(context->getRenderer()->getLastCompletedQueueSerial());
     return angle::Result::Continue;
 }
 
@@ -268,7 +224,7 @@ angle::Result SyncHelperNativeFence::initializeWithFd(ContextVk *contextVk, int 
       with the newly created sync object.
     */
     // Flush first because the fence comes after current pending set of commands.
-    ANGLE_TRY(contextVk->flushImpl(nullptr));
+    ANGLE_TRY(contextVk->flushImpl(nullptr, RenderPassClosureReason::SyncObjectWithFdInit));
 
     retain(&contextVk->getResourceUseList());
 
@@ -278,7 +234,8 @@ angle::Result SyncHelperNativeFence::initializeWithFd(ContextVk *contextVk, int 
     // signal it is in the graphics pipeline at the time we export the fd. Thus we need to
     // EnsureSubmitted here.
     ANGLE_TRY(renderer->queueSubmitOneOff(contextVk, vk::PrimaryCommandBuffer(),
-                                          contextVk->getPriority(), &fence.get(),
+                                          contextVk->hasProtectedContent(),
+                                          contextVk->getPriority(), nullptr, 0, &fence.get(),
                                           vk::SubmitPolicy::EnsureSubmitted, &serialOut));
 
     VkFenceGetFdInfoKHR fenceGetFdInfo = {};
@@ -318,7 +275,7 @@ angle::Result SyncHelperNativeFence::clientWait(Context *context,
 
     if (flushCommands && contextVk)
     {
-        ANGLE_TRY(contextVk->flushImpl(nullptr));
+        ANGLE_TRY(contextVk->flushImpl(nullptr, RenderPassClosureReason::SyncObjectClientWait));
     }
 
     VkResult status = VK_SUCCESS;
@@ -362,7 +319,7 @@ angle::Result SyncHelperNativeFence::serverWait(ContextVk *contextVk)
     ANGLE_VK_TRY(contextVk, waitSemaphore.get().importFd(device, importFdInfo));
 
     // Flush current work, block after current pending commands.
-    ANGLE_TRY(contextVk->flushImpl(nullptr));
+    ANGLE_TRY(contextVk->flushImpl(nullptr, RenderPassClosureReason::SyncObjectServerWait));
 
     // Add semaphore to next submit job.
     contextVk->addWaitSemaphore(waitSemaphore.get().getHandle(),
@@ -469,12 +426,7 @@ angle::Result SyncVk::serverWait(const gl::Context *context, GLbitfield flags, G
 angle::Result SyncVk::getStatus(const gl::Context *context, GLint *outResult)
 {
     ContextVk *contextVk = vk::GetImpl(context);
-    if (contextVk->getShareGroupVk()->isSyncObjectPendingFlush())
-    {
-        ANGLE_TRY(contextVk->flushImpl(nullptr));
-    }
-
-    bool signaled = false;
+    bool signaled        = false;
     ANGLE_TRY(mSyncHelper.getStatus(contextVk, &signaled));
 
     *outResult = signaled ? GL_SIGNALED : GL_UNSIGNALED;

@@ -7,7 +7,7 @@
 #import "base/test/ios/wait_util.h"
 #include "components/sync/invalidations/switches.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
-#import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -104,7 +104,8 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
 
 // Tests that a bookmark injected in the FakeServer is synced down to the
 // client.
-- (void)testSyncDownloadBookmark {
+// Flaky test. See crbug.com/1275849.
+- (void)DISABLED_testSyncDownloadBookmark {
   [BookmarkEarlGrey verifyBookmarksWithTitle:@"hoo" expectedCount:0];
   const GURL URL = web::test::HttpServer::MakeUrl("http://www.hoo.com");
   [ChromeEarlGrey addFakeSyncServerBookmarkWithURL:URL title:"hoo"];
@@ -118,7 +119,8 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
 }
 
 // Tests that the local cache guid does not change when sync is restarted.
-- (void)testSyncCheckSameCacheGuid_SyncRestarted {
+// TODO(crbug.com/1222348): Test is regularly failing.
+- (void)DISABLED_testSyncCheckSameCacheGuid_SyncRestarted {
   // Sign in the fake identity.
   FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
@@ -162,7 +164,8 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
 // Tests that the local cache guid does not change when sync is restarted, if
 // a user previously signed out and back in.
 // Test for http://crbug.com/413611 .
-- (void)testSyncCheckSameCacheGuid_SyncRestartedAfterSignOutAndSignIn {
+// TODO(crbug.com/1222348): Test is regularly failing.
+- (void)DISABLED_testSyncCheckSameCacheGuid_SyncRestartedAfterSignOutAndSignIn {
   // Sign in a fake idenitty.
   FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
@@ -216,7 +219,8 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
 
 // Test that update to autofill profile injected in FakeServer gets synced to
 // client.
-- (void)testSyncUpdateAutofillProfile {
+// Flaky test. See crbug.com/1276654.
+- (void)DISABLED_testSyncUpdateAutofillProfile {
   const std::string kGuid = "2340E83B-5BEE-4560-8F95-5914EF7F539E";
   const std::string kFullName = "Peter Pan";
   const std::string kUpdatedFullName = "Roger Rabbit";
@@ -263,7 +267,8 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
 
 // Test that autofill profile deleted from FakeServer gets deleted from client
 // as well.
-- (void)testSyncDeleteAutofillProfile {
+// Flaky test. See crbug.com/1276413.
+- (void)DISABLED_testSyncDeleteAutofillProfile {
   const std::string kGuid = "2340E83B-5BEE-4560-8F95-5914EF7F539E";
   const std::string kFullName = "Peter Pan";
   GREYAssertFalse([ChromeEarlGrey isAutofillProfilePresentWithGUID:kGuid

@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon/core/favicon_service.h"
@@ -53,6 +53,10 @@ class ExtensionIconSource : public content::URLDataSource,
                             public base::SupportsWeakPtr<ExtensionIconSource> {
  public:
   explicit ExtensionIconSource(Profile* profile);
+
+  ExtensionIconSource(const ExtensionIconSource&) = delete;
+  ExtensionIconSource& operator=(const ExtensionIconSource&) = delete;
+
   ~ExtensionIconSource() override;
 
   // Gets the URL of the |extension| icon in the given |icon_size|, falling back
@@ -144,7 +148,7 @@ class ExtensionIconSource : public content::URLDataSource,
   // Removes temporary data associated with |request_id|.
   void ClearData(int request_id);
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   // Maps tracker ids to request ids.
   std::map<int, int> tracker_map_;
@@ -157,8 +161,6 @@ class ExtensionIconSource : public content::URLDataSource,
   std::unique_ptr<SkBitmap> default_extension_data_;
 
   base::CancelableTaskTracker cancelable_task_tracker_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionIconSource);
 };
 
 }  // namespace extensions

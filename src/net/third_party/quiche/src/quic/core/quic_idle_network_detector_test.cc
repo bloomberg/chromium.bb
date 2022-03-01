@@ -5,6 +5,7 @@
 #include "quic/core/quic_idle_network_detector.h"
 
 #include "quic/core/quic_one_block_arena.h"
+#include "quic/platform/api/quic_expect_bug.h"
 #include "quic/platform/api/quic_test.h"
 #include "quic/test_tools/quic_test_utils.h"
 
@@ -31,7 +32,8 @@ class QuicIdleNetworkDetectorTest : public QuicTest {
   QuicIdleNetworkDetectorTest() {
     clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
     detector_ = std::make_unique<QuicIdleNetworkDetector>(
-        &delegate_, clock_.Now(), &arena_, &alarm_factory_);
+        &delegate_, clock_.Now(), &arena_, &alarm_factory_,
+        /*context=*/nullptr);
     alarm_ = static_cast<MockAlarmFactory::TestAlarm*>(
         QuicIdleNetworkDetectorTestPeer::GetAlarm(detector_.get()));
   }
@@ -179,6 +181,17 @@ TEST_F(QuicIdleNetworkDetectorTest, ShorterIdleTimeoutOnSentPacket) {
   EXPECT_TRUE(alarm_->IsSet());
   // Verify idle timeout gets extended by 1s.
   EXPECT_EQ(clock_.Now() + QuicTime::Delta::FromSeconds(2), alarm_->deadline());
+}
+
+TEST_F(QuicIdleNetworkDetectorTest, NoAlarmAfterStopped) {
+  detector_->StopDetection();
+
+  EXPECT_QUIC_BUG(
+      detector_->SetTimeouts(
+          /*handshake_timeout=*/QuicTime::Delta::FromSeconds(30),
+          /*idle_network_timeout=*/QuicTime::Delta::FromSeconds(20)),
+      "SetAlarm called after stopped");
+  EXPECT_FALSE(alarm_->IsSet());
 }
 
 }  // namespace

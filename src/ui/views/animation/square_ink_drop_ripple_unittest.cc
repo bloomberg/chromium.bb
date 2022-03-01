@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -38,6 +38,12 @@ gfx::Point TransformPoint(const gfx::Transform& transform,
 class SquareInkDropRippleCalculateTransformsTest : public WidgetTest {
  public:
   SquareInkDropRippleCalculateTransformsTest();
+
+  SquareInkDropRippleCalculateTransformsTest(
+      const SquareInkDropRippleCalculateTransformsTest&) = delete;
+  SquareInkDropRippleCalculateTransformsTest& operator=(
+      const SquareInkDropRippleCalculateTransformsTest&) = delete;
+
   ~SquareInkDropRippleCalculateTransformsTest() override;
 
  protected:
@@ -83,9 +89,6 @@ class SquareInkDropRippleCalculateTransformsTest : public WidgetTest {
   // The gfx::Transforms collection that is populated via the
   // Calculate*Transforms() calls.
   SquareInkDropRippleTestApi::InkDropTransforms transforms_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SquareInkDropRippleCalculateTransformsTest);
 };
 
 SquareInkDropRippleCalculateTransformsTest::

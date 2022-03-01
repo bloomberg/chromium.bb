@@ -29,8 +29,8 @@ class FakeSyncService : public SyncService {
   const syncer::SyncUserSettings* GetUserSettings() const override;
   DisableReasonSet GetDisableReasons() const override;
   TransportState GetTransportState() const override;
-  CoreAccountInfo GetAuthenticatedAccountInfo() const override;
-  bool IsAuthenticatedAccountPrimary() const override;
+  CoreAccountInfo GetAccountInfo() const override;
+  bool HasSyncConsent() const override;
   bool IsLocalSyncEnabled() const override;
   void TriggerRefresh(const ModelTypeSet& types) override;
   ModelTypeSet GetActiveDataTypes() const override;
@@ -61,7 +61,6 @@ class FakeSyncService : public SyncService {
   base::Location GetUnrecoverableErrorLocationForDebugging() const override;
   void AddProtocolEventObserver(ProtocolEventObserver* observer) override;
   void RemoveProtocolEventObserver(ProtocolEventObserver* observer) override;
-  base::WeakPtr<JsController> GetJsController() override;
   void GetAllNodesForDebugging(
       base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback)
       override;

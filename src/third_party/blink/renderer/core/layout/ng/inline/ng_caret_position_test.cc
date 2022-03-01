@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
 
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
@@ -40,7 +41,7 @@ class NGCaretPositionTest : public NGLayoutTest {
     DCHECK(container_);
     context_ = To<LayoutBlockFlow>(container_->GetLayoutObject());
     DCHECK(context_);
-    DCHECK(context_->IsLayoutNGMixin());
+    DCHECK(context_->IsLayoutNGObject());
   }
 
   NGCaretPosition ComputeNGCaretPosition(unsigned offset,
@@ -55,7 +56,7 @@ class NGCaretPositionTest : public NGLayoutTest {
   }
 
   Persistent<Element> container_;
-  const LayoutBlockFlow* context_;
+  Persistent<const LayoutBlockFlow> context_;
 };
 
 #define TEST_CARET(caret, fragment_, type_, offset_)                         \

@@ -39,6 +39,9 @@ class FrameTaskQueueControllerTest : public testing::Test,
             base::test::TaskEnvironment::TimeSource::MOCK_TIME,
             base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         task_queue_created_count_(0) {}
+  FrameTaskQueueControllerTest(const FrameTaskQueueControllerTest&) = delete;
+  FrameTaskQueueControllerTest& operator=(const FrameTaskQueueControllerTest&) =
+      delete;
 
   ~FrameTaskQueueControllerTest() override = default;
 
@@ -124,8 +127,6 @@ class FrameTaskQueueControllerTest : public testing::Test,
 
  private:
   size_t task_queue_created_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameTaskQueueControllerTest);
 };
 
 TEST_F(FrameTaskQueueControllerTest, CreateAllTaskQueues) {
@@ -284,6 +285,31 @@ TEST_F(FrameTaskQueueControllerTest, AddWebSchedulingTaskQueues) {
             frame_task_queue_controller_->GetAllTaskQueuesAndVoters().size());
   EXPECT_EQ(WebSchedulingPriority::kBackgroundPriority,
             task_queue->web_scheduling_priority().value());
+}
+
+TEST_F(FrameTaskQueueControllerTest, RemoveWebSchedulingTaskQueues) {
+  scoped_refptr<MainThreadTaskQueue> task_queue =
+      frame_task_queue_controller_->NewWebSchedulingTaskQueue(
+          QueueTraits(), WebSchedulingPriority::kUserBlockingPriority);
+  EXPECT_EQ(1u,
+            frame_task_queue_controller_->GetAllTaskQueuesAndVoters().size());
+  EXPECT_EQ(WebSchedulingPriority::kUserBlockingPriority,
+            task_queue->web_scheduling_priority().value());
+
+  scoped_refptr<MainThreadTaskQueue> task_queue2 =
+      frame_task_queue_controller_->NewWebSchedulingTaskQueue(
+          QueueTraits(), WebSchedulingPriority::kUserVisiblePriority);
+  EXPECT_EQ(2u,
+            frame_task_queue_controller_->GetAllTaskQueuesAndVoters().size());
+  EXPECT_EQ(WebSchedulingPriority::kUserVisiblePriority,
+            task_queue2->web_scheduling_priority().value());
+
+  frame_task_queue_controller_->RemoveWebSchedulingTaskQueue(task_queue.get());
+  EXPECT_EQ(1u,
+            frame_task_queue_controller_->GetAllTaskQueuesAndVoters().size());
+  frame_task_queue_controller_->RemoveWebSchedulingTaskQueue(task_queue2.get());
+  EXPECT_EQ(0u,
+            frame_task_queue_controller_->GetAllTaskQueuesAndVoters().size());
 }
 
 TEST_F(FrameTaskQueueControllerTest,

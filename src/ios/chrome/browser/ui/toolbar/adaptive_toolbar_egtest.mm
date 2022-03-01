@@ -17,6 +17,7 @@
 #include "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#include "ios/web/common/features.h"
 #include "ios/web/public/test/element_selector.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -26,14 +27,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-// TODO(crbug.com/1015113) The EG2 macro is breaking indexing for some reason
-// without the trailing semicolon.  For now, disable the extra semi warning
-// so Xcode indexing works for the egtest.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wc++98-compat-extra-semi"
-GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(AdaptiveToolbarAppInterface);
-#pragma clang diagnostic pop
 
 namespace {
 
@@ -68,11 +61,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       "<html><body><p>" + std::string(kPageLoadedString) + "</p><a href=\"" +
       kPageURL3 + "\" id=\"" + kLinkID + "\">link!</a></body></html>");
   return std::move(http_response);
-}
-
-// Returns a matcher for the bookmark button.
-id<GREYMatcher> BookmarkButton() {
-  return chrome_test_util::ButtonWithAccessibilityLabelId(IDS_TOOLTIP_STAR);
 }
 
 // Returns a matcher for the visible share button.
@@ -211,7 +199,6 @@ void CheckButtonsVisibilityIPhonePortrait(BOOL omniboxFocused) {
 
     CheckVisibilityInToolbar(ShareButton(), ButtonVisibilityNone);
     CheckVisibilityInToolbar(ReloadButton(), ButtonVisibilityNone);
-    CheckVisibilityInToolbar(BookmarkButton(), ButtonVisibilityNone);
 
     // Those buttons are hidden by the keyboard.
     CheckVisibilityInToolbar(BackButton(), ButtonVisibilityNone);
@@ -224,7 +211,6 @@ void CheckButtonsVisibilityIPhonePortrait(BOOL omniboxFocused) {
 
     CheckVisibilityInToolbar(ShareButton(), ButtonVisibilityNone);
     CheckVisibilityInToolbar(ReloadButton(), ButtonVisibilityNone);
-    CheckVisibilityInToolbar(BookmarkButton(), ButtonVisibilityNone);
 
     CheckVisibilityInToolbar(BackButton(), ButtonVisibilitySecondary);
     CheckVisibilityInToolbar(ForwardButton(), ButtonVisibilitySecondary);
@@ -242,7 +228,6 @@ void CheckButtonsVisibilityIPhoneLandscape(BOOL omniboxFocused) {
 
     CheckVisibilityInToolbar(ShareButton(), ButtonVisibilityNone);
     CheckVisibilityInToolbar(ReloadButton(), ButtonVisibilityNone);
-    CheckVisibilityInToolbar(BookmarkButton(), ButtonVisibilityNone);
 
     CheckVisibilityInToolbar(BackButton(), ButtonVisibilityNone);
     CheckVisibilityInToolbar(ForwardButton(), ButtonVisibilityNone);
@@ -254,7 +239,6 @@ void CheckButtonsVisibilityIPhoneLandscape(BOOL omniboxFocused) {
 
     CheckVisibilityInToolbar(ShareButton(), ButtonVisibilityPrimary);
     CheckVisibilityInToolbar(ReloadButton(), ButtonVisibilityPrimary);
-    CheckVisibilityInToolbar(BookmarkButton(), ButtonVisibilityNone);
 
     CheckVisibilityInToolbar(BackButton(), ButtonVisibilityPrimary);
     CheckVisibilityInToolbar(ForwardButton(), ButtonVisibilityPrimary);
@@ -275,7 +259,6 @@ void CheckButtonsVisibilityIPad() {
 
   CheckVisibilityInToolbar(ShareButton(), ButtonVisibilityPrimary);
   CheckVisibilityInToolbar(ReloadButton(), ButtonVisibilityPrimary);
-  CheckVisibilityInToolbar(BookmarkButton(), ButtonVisibilityNone);
   CheckVisibilityInToolbar(TabGridButton(), ButtonVisibilityPrimary);
 
   CheckVisibilityInToolbar(BackButton(), ButtonVisibilityPrimary);
@@ -352,8 +335,7 @@ UIViewController* TopPresentedViewControllerFrom(
 
 UIViewController* TopPresentedViewController() {
   UIViewController* rootViewController =
-      [[GREY_REMOTE_CLASS_IN_APP(UIApplication) sharedApplication] keyWindow]
-          .rootViewController;
+      chrome_test_util::GetAnyKeyWindow().rootViewController;
   return TopPresentedViewControllerFrom(rootViewController);
 }
 
@@ -509,7 +491,7 @@ UIViewController* TopPresentedViewController() {
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabelId(
-                     IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)]
+                     IDS_IOS_OPEN_IN_INCOGNITO_ACTION_TITLE)]
       performAction:grey_tap()];
 
   // Check the buttons status.
@@ -578,7 +560,7 @@ UIViewController* TopPresentedViewController() {
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::TabGridNewIncognitoTabButton()]
       performAction:grey_tap()];
-  GREYWaitForAppToIdleWithTimeout(2.0, @"App failed to idle");
+  GREYWaitForAppToIdleWithTimeout(5.0, @"App failed to idle");
 
   [[self class] closeAllTabs];
   [ChromeEarlGrey openNewTab];

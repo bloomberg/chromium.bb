@@ -13,13 +13,14 @@ devtools_module("helpers") {
     "component-server-setup.ts",
     "custom-elements.ts",
     "directives.ts",
-    "get-stylesheet.ts",
+    "get-root-node.ts",
     "scheduled-render.ts",
     "set-css-property.ts",
   ]
 
   deps = [
     "../../../core/common:bundle",
+    "../../../core/platform:bundle",
     "../../../core/root:bundle",
     "../../../ui/legacy/theme_support:bundle",
     "../../../ui/lit-html:bundle",

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -16,8 +15,8 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_info_image_source.h"
-#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -29,6 +28,7 @@
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -63,7 +63,7 @@ WebAppUninstallDialogDelegateView::WebAppUninstallDialogDelegateView(
     webapps::WebappUninstallSource uninstall_source,
     std::map<SquareSizePx, SkBitmap> icon_bitmaps)
     : dialog_(dialog_view), app_id_(app_id), profile_(profile) {
-  auto* provider = web_app::WebAppProvider::Get(profile_);
+  auto* provider = web_app::WebAppProvider::GetForWebApps(profile_);
   DCHECK(provider);
 
   app_start_url_ = provider->registrar().GetAppStartUrl(app_id_);
@@ -150,12 +150,12 @@ void WebAppUninstallDialogDelegateView::OnDialogCanceled() {
     std::exchange(dialog_, nullptr)->UninstallCancelled();
 }
 
-gfx::ImageSkia WebAppUninstallDialogDelegateView::GetWindowIcon() {
-  return image_;
+ui::ImageModel WebAppUninstallDialogDelegateView::GetWindowIcon() {
+  return ui::ImageModel::FromImageSkia(image_);
 }
 
 void WebAppUninstallDialogDelegateView::Uninstall() {
-  auto* provider = web_app::WebAppProvider::Get(profile_);
+  auto* provider = web_app::WebAppProvider::GetForWebApps(profile_);
   DCHECK(provider);
 
   if (!provider->install_finalizer().CanUserUninstallWebApp(app_id_)) {
@@ -192,6 +192,7 @@ void WebAppUninstallDialogDelegateView::ProcessAutoConfirmValue() {
     case extensions::ScopedTestDialogAutoConfirm::NONE:
       break;
     case extensions::ScopedTestDialogAutoConfirm::ACCEPT_AND_OPTION:
+    case extensions::ScopedTestDialogAutoConfirm::ACCEPT_AND_REMEMBER_OPTION:
       checkbox_->SetChecked(/*checked=*/true);
       AcceptDialog();
       break;
@@ -233,7 +234,7 @@ void WebAppUninstallDialogViews::ConfirmUninstall(
     return;
   }
 
-  auto* provider = web_app::WebAppProvider::Get(profile_);
+  auto* provider = web_app::WebAppProvider::GetForWebApps(profile_);
   DCHECK(provider);
 
   registrar_observation_.Observe(&provider->registrar());

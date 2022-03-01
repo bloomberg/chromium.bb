@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_ERROR_CONTROLLER_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_ERROR_CONTROLLER_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -39,6 +39,10 @@ class SigninErrorController : public KeyedService,
 
   SigninErrorController(AccountMode mode,
                         signin::IdentityManager* identity_manager);
+
+  SigninErrorController(const SigninErrorController&) = delete;
+  SigninErrorController& operator=(const SigninErrorController&) = delete;
+
   ~SigninErrorController() override;
 
   // KeyedService implementation:
@@ -80,7 +84,7 @@ class SigninErrorController : public KeyedService,
       const signin::PrimaryAccountChangeEvent& event) override;
 
   const AccountMode account_mode_;
-  signin::IdentityManager* identity_manager_;
+  raw_ptr<signin::IdentityManager> identity_manager_;
 
   base::ScopedObservation<signin::IdentityManager,
                           signin::IdentityManager::Observer>
@@ -94,8 +98,6 @@ class SigninErrorController : public KeyedService,
   GoogleServiceAuthError auth_error_;
 
   base::ObserverList<Observer, false>::Unchecked observer_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(SigninErrorController);
 };
 
 #endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_ERROR_CONTROLLER_H_

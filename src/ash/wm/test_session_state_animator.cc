@@ -10,7 +10,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 
 namespace ash {
 
@@ -36,6 +36,9 @@ class TestSessionStateAnimator::AnimationSequence
         sequence_count_(0),
         sequence_aborted_(false),
         animator_(animator) {}
+
+  AnimationSequence(const AnimationSequence&) = delete;
+  AnimationSequence& operator=(const AnimationSequence&) = delete;
 
   ~AnimationSequence() override = default;
 
@@ -70,8 +73,6 @@ class TestSessionStateAnimator::AnimationSequence
 
   // The TestSessionAnimator that created this.  Not owned.
   TestSessionStateAnimator* animator_;
-
-  DISALLOW_COPY_AND_ASSIGN(AnimationSequence);
 };
 
 TestSessionStateAnimator::ActiveAnimation::ActiveAnimation(

@@ -26,8 +26,10 @@
 #include "base/bits.h"
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
+#include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
+#include "base/numerics/ostream_operators.h"
 #include "base/numerics/safe_math.h"
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -387,7 +389,8 @@ void GLES2Implementation::OnGpuControlErrorMessage(const char* message,
 }
 
 void GLES2Implementation::OnGpuControlSwapBuffersCompleted(
-    const SwapBuffersCompleteParams& params) {
+    const SwapBuffersCompleteParams& params,
+    gfx::GpuFenceHandle release_fence) {
   auto found = pending_swap_callbacks_.find(params.swap_response.swap_id);
   if (found == pending_swap_callbacks_.end())
     return;
@@ -397,7 +400,7 @@ void GLES2Implementation::OnGpuControlSwapBuffersCompleted(
   auto callback = std::move(found->second);
   pending_swap_callbacks_.erase(found);
 
-  std::move(callback).Run(params);
+  std::move(callback).Run(params, std::move(release_fence));
 }
 
 void GLES2Implementation::OnGpuSwitched(
@@ -5133,16 +5136,20 @@ void GLES2Implementation::BindFramebufferHelper(GLenum target,
       }
       break;
     case GL_READ_FRAMEBUFFER:
+#if EXPENSIVE_DCHECKS_ARE_ON()
       DCHECK(capabilities_.major_version >= 3 ||
              IsChromiumFramebufferMultisampleAvailable());
+#endif
       if (bound_read_framebuffer_ != framebuffer) {
         bound_read_framebuffer_ = framebuffer;
         changed = true;
       }
       break;
     case GL_DRAW_FRAMEBUFFER:
+#if EXPENSIVE_DCHECKS_ARE_ON()
       DCHECK(capabilities_.major_version >= 3 ||
              IsChromiumFramebufferMultisampleAvailable());
+#endif
       if (bound_framebuffer_ != framebuffer) {
         bound_framebuffer_ = framebuffer;
         changed = true;
@@ -6225,7 +6232,7 @@ void GLES2Implementation::RequestExtensionCHROMIUM(const char* extension) {
 
   struct ExtensionCheck {
     const char* extension;
-    ExtensionStatus* status;
+    raw_ptr<ExtensionStatus> status;
   };
   const ExtensionCheck checks[] = {
       {
@@ -7366,8 +7373,7 @@ bool GLES2Implementation::PackStringsToBucket(GLsizei count,
       if (copy_size < buffer.size()) {
         // Append NULL in the end.
         DCHECK(copy_size + 1 == buffer.size());
-        char* str = reinterpret_cast<char*>(buffer.address());
-        str[copy_size] = 0;
+        reinterpret_cast<char*>(buffer.address())[copy_size] = 0;
       }
       helper_->SetBucketData(kResultBucketId, offset, buffer.size(),
                              buffer.shm_id(), buffer.offset());

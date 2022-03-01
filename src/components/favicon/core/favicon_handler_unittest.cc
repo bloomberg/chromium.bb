@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
@@ -201,7 +202,7 @@ class FakeImageDownloader {
   }
 
  private:
-  URLVector* downloads_;
+  raw_ptr<URLVector> downloads_;
   int next_download_id_ = 1;
 
   // URL to disable automatic callbacks for.
@@ -278,7 +279,7 @@ class FakeManifestDownloader {
   }
 
  private:
-  URLVector* downloads_;
+  raw_ptr<URLVector> downloads_;
 
   // URL to disable automatic callbacks for.
   GURL manual_callback_url_;
@@ -502,7 +503,8 @@ class FaviconHandlerTest : public testing::Test {
     // Force the values of the scale factors so that the tests produce the same
     // results on all platforms.
     scoped_set_supported_scale_factors_.reset(
-        new ui::test::ScopedSetSupportedScaleFactors({ui::SCALE_FACTOR_100P}));
+        new ui::test::ScopedSetSupportedResourceScaleFactors(
+            {ui::k100Percent}));
   }
 
   bool VerifyAndClearExpectations() {
@@ -544,7 +546,7 @@ class FaviconHandlerTest : public testing::Test {
   }
 
   base::test::SingleThreadTaskEnvironment task_environment_;
-  std::unique_ptr<ui::test::ScopedSetSupportedScaleFactors>
+  std::unique_ptr<ui::test::ScopedSetSupportedResourceScaleFactors>
       scoped_set_supported_scale_factors_;
   testing::NiceMock<MockFaviconServiceWithFake> favicon_service_;
   testing::NiceMock<MockDelegate> delegate_;
@@ -1368,8 +1370,8 @@ class FaviconHandlerMultipleFaviconsTest : public FaviconHandlerTest {
     // of SelectFaviconFrames().
     scoped_set_supported_scale_factors_.reset();  // Need to delete first.
     scoped_set_supported_scale_factors_.reset(
-        new ui::test::ScopedSetSupportedScaleFactors(
-            {ui::SCALE_FACTOR_100P, ui::SCALE_FACTOR_200P}));
+        new ui::test::ScopedSetSupportedResourceScaleFactors(
+            {ui::k100Percent, ui::k200Percent}));
   }
 
   // Simulates requesting a favicon for |page_url| given:

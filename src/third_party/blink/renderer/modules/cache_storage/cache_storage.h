@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CACHE_STORAGE_CACHE_STORAGE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CACHE_STORAGE_CACHE_STORAGE_H_
 
-#include "base/macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -32,23 +31,20 @@ class CacheStorage final : public ScriptWrappable,
 
  public:
   CacheStorage(ExecutionContext*, GlobalFetch::ScopedFetcher*);
+
+  CacheStorage(const CacheStorage&) = delete;
+  CacheStorage& operator=(const CacheStorage&) = delete;
+
   ~CacheStorage() override;
 
   ScriptPromise open(ScriptState*, const String& cache_name);
   ScriptPromise has(ScriptState*, const String& cache_name);
   ScriptPromise Delete(ScriptState*, const String& cache_name);
   ScriptPromise keys(ScriptState*);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   ScriptPromise match(ScriptState* script_state,
                       const V8RequestInfo* request,
                       const MultiCacheQueryOptions* options,
                       ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  ScriptPromise match(ScriptState*,
-                      const RequestInfo&,
-                      const MultiCacheQueryOptions*,
-                      ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   bool HasPendingActivity() const override;
   void Trace(Visitor*) const override;
@@ -68,8 +64,6 @@ class CacheStorage final : public ScriptWrappable,
   HeapMojoRemote<mojom::blink::CacheStorage> cache_storage_remote_;
   absl::optional<bool> allowed_;
   bool ever_used_;
-
-  DISALLOW_COPY_AND_ASSIGN(CacheStorage);
 };
 
 }  // namespace blink

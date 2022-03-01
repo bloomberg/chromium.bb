@@ -11,6 +11,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.components.content_creation.notes.models.Background;
 import org.chromium.components.content_creation.notes.models.FooterStyle;
+import org.chromium.components.content_creation.notes.models.HighlightStyle;
+import org.chromium.components.content_creation.notes.models.ImageBackground;
 import org.chromium.components.content_creation.notes.models.LinearGradientBackground;
 import org.chromium.components.content_creation.notes.models.LinearGradientDirection;
 import org.chromium.components.content_creation.notes.models.NoteTemplate;
@@ -48,10 +50,17 @@ public class NoteTemplateConversionBridge {
     }
 
     @CalledByNative
-    private static TextStyle createTextStyle(
-            String fontName, @ColorInt int fontColor, int weight, boolean allCaps, int alignment) {
-        return new TextStyle(
-                fontName, fontColor, weight, allCaps, TextAlignment.fromInteger(alignment));
+    private static Background createImageBackground(String imageUrl) {
+        return new ImageBackground(imageUrl);
+    }
+
+    @CalledByNative
+    private static TextStyle createTextStyle(String fontName, @ColorInt int fontColor, int weight,
+            boolean allCaps, int alignment, int minTextSizeSP, int maxTextSizeSP,
+            @ColorInt int highlightColor, int highlightStyle) {
+        return new TextStyle(fontName, fontColor, weight, allCaps,
+                TextAlignment.fromInteger(alignment), minTextSizeSP, maxTextSizeSP, highlightColor,
+                HighlightStyle.fromInteger(highlightStyle));
     }
 
     @CalledByNative
@@ -66,10 +75,10 @@ public class NoteTemplateConversionBridge {
      */
     @CalledByNative
     private static NoteTemplate createTemplateAndMaybeAddToList(@Nullable List<NoteTemplate> list,
-            int id, String localizedName, Background mainBackground, TextStyle textStyle,
-            FooterStyle footerStyle) {
-        NoteTemplate template =
-                new NoteTemplate(id, localizedName, mainBackground, textStyle, footerStyle);
+            int id, String localizedName, Background mainBackground, Background contentBackground,
+            TextStyle textStyle, FooterStyle footerStyle) {
+        NoteTemplate template = new NoteTemplate(
+                id, localizedName, mainBackground, contentBackground, textStyle, footerStyle);
 
         if (list != null) {
             list.add(template);

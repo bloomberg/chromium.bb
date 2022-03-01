@@ -13,12 +13,9 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/login/demo_mode/demo_mode_detector.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ash/login/wizard_context.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
@@ -29,6 +26,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/input_service.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 
@@ -44,15 +42,24 @@ class HIDDetectionScreen : public BaseScreen,
   using InputDeviceInfoPtr = device::mojom::InputDeviceInfoPtr;
   using DeviceMap = std::map<std::string, InputDeviceInfoPtr>;
 
-  enum class Result { NEXT, SKIP, SKIPPED_FOR_TESTS };
+  enum class Result { NEXT, SKIPPED_FOR_TESTS };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
 
   HIDDetectionScreen(HIDDetectionView* view,
                      const ScreenExitCallback& exit_callback);
+
+  HIDDetectionScreen(const HIDDetectionScreen&) = delete;
+  HIDDetectionScreen& operator=(const HIDDetectionScreen&) = delete;
+
   ~HIDDetectionScreen() override;
 
   static std::string GetResultString(Result result);
+
+  // The HID detection screen is only allowed for form factors without built-in
+  // inputs: Chromebases, Chromebits, and Chromeboxes (crbug.com/965765).
+  // Also different testing flags might forcefully skip the screen
+  static bool CanShowScreen();
 
   // This method is called when the view is being destroyed.
   void OnViewDestroyed(HIDDetectionView* view);
@@ -114,21 +121,6 @@ class HIDDetectionScreen : public BaseScreen,
   void CleanupOnExit();
 
   bool ShouldEnableContinueButton();
-
-  // Types of dialog leaving scenarios for UMA metric.
-  enum ContinueScenarioType {
-    // Only pointing device detected, user pressed 'Continue'.
-    POINTING_DEVICE_ONLY_DETECTED,
-
-    // Only keyboard detected, user pressed 'Continue'.
-    KEYBOARD_DEVICE_ONLY_DETECTED,
-
-    // All devices detected.
-    All_DEVICES_DETECTED,
-
-    // Must be last enum element.
-    CONTINUE_SCENARIO_TYPE_SIZE
-  };
 
   void InitializeAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
 
@@ -197,16 +189,11 @@ class HIDDetectionScreen : public BaseScreen,
   // Tries to connect given BT device.
   void ConnectBTDevice(device::BluetoothDevice* device);
 
-  // Called by device::BluetoothDevice on a successful pairing and connection
-  // to a device.
-  void BTConnected(device::BluetoothDeviceType device_type);
-
-  // Called by device::BluetoothDevice in response to a failure to
-  // connect to the device with bluetooth address `address` due to an error
-  // encoded in `error_code`.
-  void BTConnectError(const std::string& address,
-                      device::BluetoothDeviceType device_type,
-                      device::BluetoothDevice::ConnectErrorCode error_code);
+  // Response callback for device::BluetoothDevice::Connect().
+  void OnConnect(
+      const std::string& address,
+      device::BluetoothDeviceType device_type,
+      absl::optional<device::BluetoothDevice::ConnectErrorCode> error_code);
 
   // Sends a notification to the Web UI of the status of available Bluetooth/USB
   // pointing device.
@@ -276,8 +263,6 @@ class HIDDetectionScreen : public BaseScreen,
   bool devices_enumerated_ = false;
 
   base::WeakPtrFactory<HIDDetectionScreen> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(HIDDetectionScreen);
 };
 
 }  // namespace ash
@@ -286,6 +271,12 @@ class HIDDetectionScreen : public BaseScreen,
 // source migration is finished.
 namespace chromeos {
 using ::ash::HIDDetectionScreen;
+}
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::HIDDetectionScreen;
 }
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_HID_DETECTION_SCREEN_H_

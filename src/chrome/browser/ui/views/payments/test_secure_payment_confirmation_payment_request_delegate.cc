@@ -15,9 +15,10 @@ TestSecurePaymentConfirmationPaymentRequestDelegate::
     TestSecurePaymentConfirmationPaymentRequestDelegate(
         content::RenderFrameHost* render_frame_host,
         base::WeakPtr<SecurePaymentConfirmationModel> model,
-        SecurePaymentConfirmationDialogView::ObserverForTest* observer)
+        base::WeakPtr<SecurePaymentConfirmationDialogView::ObserverForTest>
+            observer)
     : ChromePaymentRequestDelegate(render_frame_host),
-      frame_routing_id_(content::GlobalFrameRoutingId(
+      frame_routing_id_(content::GlobalRenderFrameHostId(
           render_frame_host->GetProcess()->GetID(),
           render_frame_host->GetRoutingID())),
       model_(model),
@@ -32,7 +33,7 @@ TestSecurePaymentConfirmationPaymentRequestDelegate::
 void TestSecurePaymentConfirmationPaymentRequestDelegate::ShowDialog(
     base::WeakPtr<PaymentRequest> request) {
   auto* rfh = content::RenderFrameHost::FromID(frame_routing_id_);
-  if (rfh && rfh->IsCurrent()) {
+  if (rfh && rfh->IsActive()) {
     dialog_view_->ShowDialog(content::WebContents::FromRenderFrameHost(rfh),
                              model_->GetWeakPtr(), base::DoNothing(),
                              base::DoNothing());

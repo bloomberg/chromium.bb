@@ -18,7 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "libavutil/avassert.h"
 #include "libavutil/channel_layout.h"
 #include "libavutil/common.h"
 #include "libavutil/float_dsp.h"
@@ -79,32 +78,19 @@ AVFILTER_DEFINE_CLASS(anlms);
 
 static int query_formats(AVFilterContext *ctx)
 {
-    AVFilterFormats *formats;
-    AVFilterChannelLayouts *layouts;
     static const enum AVSampleFormat sample_fmts[] = {
         AV_SAMPLE_FMT_FLTP,
         AV_SAMPLE_FMT_NONE
     };
-    int ret;
-
-    layouts = ff_all_channel_counts();
-    if (!layouts)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_channel_layouts(ctx, layouts);
+    int ret = ff_set_common_all_channel_counts(ctx);
     if (ret < 0)
         return ret;
 
-    formats = ff_make_format_list(sample_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_formats(ctx, formats);
+    ret = ff_set_common_formats_from_list(ctx, sample_fmts);
     if (ret < 0)
         return ret;
 
-    formats = ff_all_samplerates();
-    if (!formats)
-        return AVERROR(ENOMEM);
-    return ff_set_common_samplerates(ctx, formats);
+    return ff_set_common_all_samplerates(ctx);
 }
 
 static float fir_sample(AudioNLMSContext *s, float sample, float *delay,
@@ -217,8 +203,8 @@ static int activate(AVFilterContext *ctx)
             return AVERROR(ENOMEM);
         }
 
-        ctx->internal->execute(ctx, process_channels, out, NULL, FFMIN(ctx->outputs[0]->channels,
-                                                                       ff_filter_get_nb_threads(ctx)));
+        ff_filter_execute(ctx, process_channels, out, NULL,
+                          FFMIN(ctx->outputs[0]->channels, ff_filter_get_nb_threads(ctx)));
 
         out->pts = s->frame[0]->pts;
 
@@ -302,7 +288,6 @@ static const AVFilterPad inputs[] = {
         .name = "desired",
         .type = AVMEDIA_TYPE_AUDIO,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -311,10 +296,9 @@ static const AVFilterPad outputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
-AVFilter ff_af_anlms = {
+const AVFilter ff_af_anlms = {
     .name           = "anlms",
     .description    = NULL_IF_CONFIG_SMALL("Apply Normalized Least-Mean-Squares algorithm to first audio stream."),
     .priv_size      = sizeof(AudioNLMSContext),
@@ -322,9 +306,9 @@ AVFilter ff_af_anlms = {
     .init           = init,
     .uninit         = uninit,
     .activate       = activate,
-    .query_formats  = query_formats,
-    .inputs         = inputs,
-    .outputs        = outputs,
+    FILTER_INPUTS(inputs),
+    FILTER_OUTPUTS(outputs),
+    FILTER_QUERY_FUNC(query_formats),
     .flags          = AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };

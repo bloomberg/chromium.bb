@@ -104,15 +104,15 @@ TEST_F(EPKPChallengeMachineKeyTest, Success) {
   SetMockTpmChallenger();
 
   base::ListValue allowlist;
-  allowlist.AppendString(extension_->id());
+  allowlist.Append(extension_->id());
   prefs_->Set(prefs::kAttestationExtensionAllowlist, allowlist);
 
   std::unique_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
       func_.get(), kFuncArgs, browser(), extensions::api_test_utils::NONE));
 
-  std::string response;
-  value->GetAsString(&response);
-  EXPECT_EQ("cmVzcG9uc2U=" /* Base64 encoding of 'response' */, response);
+  ASSERT_TRUE(value->is_string());
+  EXPECT_EQ("cmVzcG9uc2U=" /* Base64 encoding of 'response' */,
+            value->GetString());
 }
 
 class EPKPChallengeUserKeyTest : public EPKPChallengeKeyTestBase {
@@ -143,15 +143,15 @@ TEST_F(EPKPChallengeUserKeyTest, Success) {
   SetMockTpmChallenger();
 
   base::ListValue allowlist;
-  allowlist.AppendString(extension_->id());
+  allowlist.Append(extension_->id());
   prefs_->Set(prefs::kAttestationExtensionAllowlist, allowlist);
 
   std::unique_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
       func_.get(), kFuncArgs, browser(), extensions::api_test_utils::NONE));
 
-  std::string response;
-  value->GetAsString(&response);
-  EXPECT_EQ("cmVzcG9uc2U=" /* Base64 encoding of 'response' */, response);
+  ASSERT_TRUE(value->is_string());
+  EXPECT_EQ("cmVzcG9uc2U=" /* Base64 encoding of 'response' */,
+            value->GetString());
 }
 
 }  // namespace

@@ -7,10 +7,9 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/observer_list_threadsafe.h"
-#include "base/sequenced_task_runner_helpers.h"
+#include "base/task/sequenced_task_runner_helpers.h"
 #include "chromecast/net/time_sync_tracker.h"
 
 namespace base {
@@ -30,15 +29,30 @@ class ConnectivityChecker
  public:
   class ConnectivityObserver {
    public:
+    ConnectivityObserver(const ConnectivityObserver&) = delete;
+    ConnectivityObserver& operator=(const ConnectivityObserver&) = delete;
+
     // Will be called when internet connectivity changes.
     virtual void OnConnectivityChanged(bool connected) = 0;
 
    protected:
     ConnectivityObserver() {}
     virtual ~ConnectivityObserver() {}
+  };
 
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ConnectivityObserver);
+  class ConnectivityCheckFailureObserver {
+   public:
+    ConnectivityCheckFailureObserver(const ConnectivityCheckFailureObserver&) =
+        delete;
+    ConnectivityCheckFailureObserver& operator=(
+        const ConnectivityCheckFailureObserver&) = delete;
+
+    // will be called when connectivity check failed.
+    virtual void OnConnectivityCheckFailed() = 0;
+
+   protected:
+    ConnectivityCheckFailureObserver() = default;
+    virtual ~ConnectivityCheckFailureObserver() = default;
   };
 
   static scoped_refptr<ConnectivityChecker> Create(
@@ -48,8 +62,16 @@ class ConnectivityChecker
       network::NetworkConnectionTracker* network_connection_tracker,
       TimeSyncTracker* time_sync_tracker = nullptr);
 
+  ConnectivityChecker(const ConnectivityChecker&) = delete;
+  ConnectivityChecker& operator=(const ConnectivityChecker&) = delete;
+
   void AddConnectivityObserver(ConnectivityObserver* observer);
   void RemoveConnectivityObserver(ConnectivityObserver* observer);
+
+  void AddConnectivityCheckFailureObserver(
+      ConnectivityCheckFailureObserver* observer);
+  void RemoveConnectivityCheckFailureObserver(
+      ConnectivityCheckFailureObserver* observer);
 
   // Returns if there is internet connectivity.
   virtual bool Connected() const = 0;
@@ -65,14 +87,18 @@ class ConnectivityChecker
   // Notifies observes that connectivity has changed.
   void Notify(bool connected);
 
+  // Notifies observers that connectivity check failed.
+  void NotifyCheckFailure();
+
  private:
   friend class base::RefCountedDeleteOnSequence<ConnectivityChecker>;
   friend class base::DeleteHelper<ConnectivityChecker>;
 
   const scoped_refptr<base::ObserverListThreadSafe<ConnectivityObserver>>
       connectivity_observer_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConnectivityChecker);
+  const scoped_refptr<
+      base::ObserverListThreadSafe<ConnectivityCheckFailureObserver>>
+      connectivity_check_failure_observer_list_;
 };
 
 }  // namespace chromecast

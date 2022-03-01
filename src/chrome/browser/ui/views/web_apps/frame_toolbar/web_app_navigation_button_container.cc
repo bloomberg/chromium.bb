@@ -34,7 +34,7 @@ namespace {
 
 constexpr int kPaddingBetweenNavigationButtons = 5;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 constexpr int kWebAppFrameLeftMargin = 2;
 #else
 constexpr int kWebAppFrameLeftMargin = 7;
@@ -177,9 +177,7 @@ WebAppNavigationButtonContainer::WebAppNavigationButtonContainer(
       browser_));
   back_button_->set_tag(IDC_BACK);
 
-  const bool is_browser_focus_mode = browser_->is_focus_mode();
-  ConfigureWebAppToolbarButton(back_button_, toolbar_button_provider,
-                               is_browser_focus_mode);
+  ConfigureWebAppToolbarButton(back_button_, toolbar_button_provider);
   views::SetHitTestComponent(back_button_, static_cast<int>(HTCLIENT));
   chrome::AddCommandObserver(browser_, IDC_BACK, this);
 
@@ -189,8 +187,7 @@ WebAppNavigationButtonContainer::WebAppNavigationButtonContainer(
         browser_->command_controller()));
     reload_button_->set_tag(IDC_RELOAD);
 
-    ConfigureWebAppToolbarButton(reload_button_, toolbar_button_provider,
-                                 is_browser_focus_mode);
+    ConfigureWebAppToolbarButton(reload_button_, toolbar_button_provider);
     views::SetHitTestComponent(reload_button_, static_cast<int>(HTCLIENT));
     chrome::AddCommandObserver(browser_, IDC_RELOAD, this);
   }

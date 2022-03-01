@@ -61,14 +61,14 @@ TEST(Status, Assign) {
 TEST(Status, Move) {
   Status a(errors::InvalidArgument("Invalid"));
   Status b(std::move(a));
-  ASSERT_EQ("Invalid argument: Invalid", b.ToString());
+  ASSERT_EQ("INVALID_ARGUMENT: Invalid", b.ToString());
 }
 
 TEST(Status, MoveAssign) {
   Status a(errors::InvalidArgument("Invalid"));
   Status b;
   b = std::move(a);
-  ASSERT_EQ("Invalid argument: Invalid", b.ToString());
+  ASSERT_EQ("INVALID_ARGUMENT: Invalid", b.ToString());
 }
 
 TEST(Status, Update) {
@@ -175,10 +175,38 @@ TEST(StatusGroup, AggregateWithMultipleErrorStatus) {
                                 aborted.error_message()));
 }
 
-static void BM_TF_CHECK_OK(int iters) {
-  tensorflow::Status s =
-      (iters < 0) ? errors::InvalidArgument("Invalid") : Status::OK();
-  for (int i = 0; i < iters; i++) {
+TEST(Status, InvalidPayloadGetsIgnored) {
+  Status s = Status();
+  s.SetPayload("Invalid", "Invalid Val");
+  ASSERT_FALSE(s.GetPayload("Invalid").has_value());
+  bool is_err_erased = s.ErasePayload("Invalid");
+  ASSERT_EQ(is_err_erased, false);
+}
+
+TEST(Status, SetPayloadSetsOrUpdatesIt) {
+  Status s(error::INTERNAL, "Error message");
+  s.SetPayload("Error key", "Original");
+  ASSERT_EQ(s.GetPayload("Error key"), tensorflow::StringPiece("Original"));
+  s.SetPayload("Error key", "Updated");
+  ASSERT_EQ(s.GetPayload("Error key"), tensorflow::StringPiece("Updated"));
+}
+
+TEST(Status, ErasePayloadRemovesIt) {
+  Status s(error::INTERNAL, "Error message");
+  s.SetPayload("Error key", "Original");
+
+  bool is_err_erased = s.ErasePayload("Error key");
+  ASSERT_EQ(is_err_erased, true);
+  is_err_erased = s.ErasePayload("Error key");
+  ASSERT_EQ(is_err_erased, false);
+  ASSERT_FALSE(s.GetPayload("Error key").has_value());
+}
+
+static void BM_TF_CHECK_OK(::testing::benchmark::State& state) {
+  tensorflow::Status s = (state.max_iterations < 0)
+                             ? errors::InvalidArgument("Invalid")
+                             : Status::OK();
+  for (auto i : state) {
     TF_CHECK_OK(s);
   }
 }

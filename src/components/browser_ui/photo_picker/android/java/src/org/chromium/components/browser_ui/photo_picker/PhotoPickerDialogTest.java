@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Build.VERSION_CODES;
 import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.view.View;
@@ -42,6 +41,7 @@ import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.IntentRequestTracker;
 import org.chromium.ui.base.PhotoPickerListener;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
@@ -52,7 +52,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -131,8 +130,10 @@ public class PhotoPickerDialogTest extends DummyUiActivityTestCase
     @Before
     public void setUp() throws Exception {
         NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
-        mWindowAndroid = TestThreadUtils.runOnUiThreadBlocking(
-                () -> { return new ActivityWindowAndroid(getActivity()); });
+        mWindowAndroid = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            return new ActivityWindowAndroid(getActivity(), /* listenToActivityState= */ true,
+                    IntentRequestTracker.createFromActivity(getActivity()));
+        });
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             DecoderServiceHost.setIntentSupplier(
                     () -> { return new Intent(getActivity(), TestImageDecoderService.class); });
@@ -271,24 +272,17 @@ public class PhotoPickerDialogTest extends DummyUiActivityTestCase
 
     private PhotoPickerDialog createDialogWithContentResolver(final ContentResolver contentResolver,
             final boolean multiselect, final List<String> mimeTypes) throws Exception {
-        final PhotoPickerDialog dialog =
-                TestThreadUtils.runOnUiThreadBlocking(new Callable<PhotoPickerDialog>() {
-                    @Override
-                    public PhotoPickerDialog call() {
-                        final PhotoPickerDialog dialog =
-                                new PhotoPickerDialog(mWindowAndroid, contentResolver,
-                                        PhotoPickerDialogTest.this, multiselect, mimeTypes);
-                        dialog.show();
-                        return dialog;
-                    }
-                });
-
-        mSelectionDelegate = dialog.getCategoryViewForTesting().getSelectionDelegateForTesting();
-        if (!multiselect) mSelectionDelegate.setSingleSelectionMode();
-        mSelectionDelegate.addObserver(this);
-        mDialog = dialog;
-
-        return dialog;
+        return TestThreadUtils.runOnUiThreadBlocking(() -> {
+            final PhotoPickerDialog dialog = new PhotoPickerDialog(mWindowAndroid, contentResolver,
+                    PhotoPickerDialogTest.this, multiselect, mimeTypes);
+            dialog.show();
+            mSelectionDelegate =
+                    dialog.getCategoryViewForTesting().getSelectionDelegateForTesting();
+            if (!multiselect) mSelectionDelegate.setSingleSelectionMode();
+            mSelectionDelegate.addObserver(this);
+            mDialog = dialog;
+            return dialog;
+        });
     }
 
     private PhotoPickerDialog createDialog(final boolean multiselect, final List<String> mimeTypes)
@@ -622,12 +616,12 @@ public class PhotoPickerDialogTest extends DummyUiActivityTestCase
 
     @Test
     @LargeTest
-    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O_MR1, sdk_is_less_than = VERSION_CODES.Q,
-            supported_abis_includes = "x86", message = "https://crbug.com/1205234")
     public void testOrientationChanges() throws Throwable {
         setupTestFiles();
         createDialog(true, Arrays.asList("image/*")); // Multi-select = true.
         Assert.assertTrue(mDialog.isShowing());
+
+        int callCount = mOnDecoderReadyCallback.getCallCount();
 
         // Simulate an early configuration change for the photo grid.
         Configuration configuration = getActivity().getResources().getConfiguration();
@@ -635,7 +629,8 @@ public class PhotoPickerDialogTest extends DummyUiActivityTestCase
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { categoryView.onConfigurationChanged(configuration); });
 
-        waitForDecoder();
+        mOnDecoderReadyCallback.waitForCallback(
+                callCount, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
         // Simulate an early configuration change for the video player (before showing).
         TestThreadUtils.runOnUiThreadBlocking(() -> {

@@ -20,6 +20,7 @@ limitations under the License.
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/platform/types.h"
 #include "tensorflow/core/profiler/protobuf/op_metrics.pb.h"
@@ -81,19 +82,18 @@ OpMetrics* OpMetricsDbBuilder::LookupOrInsertNewOpMetrics(
   return op_metrics;
 }
 
-double IdleTimeRatio(const OpMetricsDb& metrics_db) {
-  return 1.0 -
-         SafeDivide(metrics_db.total_op_time_ps(), metrics_db.total_time_ps());
+double IdleTimeRatio(const OpMetricsDb& db) {
+  return 1.0 - SafeDivide(db.total_op_time_ps(), db.total_time_ps());
 }
 
-uint64 IdleTimePs(const OpMetricsDb& metrics_db) {
-  if (metrics_db.total_time_ps() <= metrics_db.total_op_time_ps()) return 0;
-  return metrics_db.total_time_ps() - metrics_db.total_op_time_ps();
+uint64 IdleTimePs(const OpMetricsDb& db) {
+  DCHECK_GE(db.total_time_ps(), db.total_op_time_ps());
+  return db.total_time_ps() - db.total_op_time_ps();
 }
 
-void AddIdleOp(OpMetricsDb* db) {
-  uint64 idle_time_ps = IdleTimePs(*db);
-  OpMetrics* metrics = db->add_metrics_db();
+void AddIdleOp(OpMetricsDb& db) {
+  uint64 idle_time_ps = IdleTimePs(db);
+  OpMetrics* metrics = db.add_metrics_db();
   metrics->set_name(std::string(kIdle));
   metrics->set_category(std::string(kIdle));
   metrics->set_occurrences(0);
@@ -101,21 +101,33 @@ void AddIdleOp(OpMetricsDb* db) {
   metrics->set_self_time_ps(idle_time_ps);
 }
 
+absl::optional<double> HostInfeedEnqueueRatio(const OpMetricsDb& db) {
+  if (db.total_host_infeed_enq_start_timestamp_ps_diff() > 0) {
+    // We use total_host_infeed_enq_start_timestamp_ps_diff to approximate the
+    // total host time.
+    return SafeDivide(db.total_host_infeed_enq_duration_ps(),
+                      db.total_host_infeed_enq_start_timestamp_ps_diff());
+  }
+  return absl::nullopt;
+}
+
 OpMetricsDb CreateTfMetricsDbFromDeviceOpMetricsDb(
     const OpMetricsDb& device_op_metrics_db, bool with_idle) {
   OpMetricsDb tf_op_metrics_db;
   DeviceTfOpMetricsDbBuilder builder(&tf_op_metrics_db);
   for (const auto& device_op_metrics : device_op_metrics_db.metrics_db()) {
-    if (!device_op_metrics.provenance().empty()) {
-      TfOp tf_op = ParseTfOpFullname(device_op_metrics.provenance());
-      builder.UpdateTfOpMetricsWithDeviceOpMetrics(tf_op.name, tf_op.type,
-                                                   device_op_metrics);
-    } else {
-      DCHECK(IsIdleOp(device_op_metrics));
+    if (IsIdleOp(device_op_metrics)) {
       if (with_idle) {
         builder.UpdateTfOpMetricsWithDeviceOpMetrics(kIdle, kIdle,
                                                      device_op_metrics);
       }
+    } else if (device_op_metrics.provenance().empty()) {
+      builder.UpdateTfOpMetricsWithDeviceOpMetrics(
+          device_op_metrics.name(), kUnknownOp, device_op_metrics);
+    } else {
+      TfOp tf_op = ParseTfOpFullname(device_op_metrics.provenance());
+      builder.UpdateTfOpMetricsWithDeviceOpMetrics(tf_op.name, tf_op.type,
+                                                   device_op_metrics);
     }
   }
   tf_op_metrics_db.set_total_op_time_ps(
@@ -127,5 +139,6 @@ OpMetricsDb CreateTfMetricsDbFromDeviceOpMetricsDb(
 
   return tf_op_metrics_db;
 }
+
 }  // namespace profiler
 }  // namespace tensorflow

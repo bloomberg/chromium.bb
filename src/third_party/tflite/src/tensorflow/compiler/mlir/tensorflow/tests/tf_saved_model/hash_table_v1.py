@@ -16,10 +16,6 @@
 # RUN: %p/hash_table_v1 | FileCheck %s
 
 # pylint: disable=missing-docstring,line-too-long
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow.compat.v1 as tf
 from tensorflow.compiler.mlir.tensorflow.tests.tf_saved_model import common_v1
 
@@ -33,10 +29,10 @@ from tensorflow.compiler.mlir.tensorflow.tests.tf_saved_model import common_v1
 # CHECK-SAME: min_consumer
 # CHECK-SAME: producer
 
-# CHECK: "tf_saved_model.session_initializer"() {initializer = [[init:@.*]]} : () -> ()
 # CHECK: "tf_saved_model.global_tensor"()
+# CHECK: "tf_saved_model.session_initializer"() {initializers = [@[[init:.*]]]} : () -> ()
 
-# CHECK:      func [[init]]
+# CHECK:      func @[[init]]
 # CHECK-NEXT: [[R5:%.*]] = "tf.Const"()
 # CHECK-NEXT: [[R6:%.*]] = "tf.Const"()
 # CHECK-NEXT: [[R7:%.*]] = "tf.HashTableV2"()
@@ -45,7 +41,7 @@ from tensorflow.compiler.mlir.tensorflow.tests.tf_saved_model import common_v1
 
 # CHECK:      func {{@[a-zA-Z_0-9]+}}(
 # CHECK-SAME: [[ARG0:%.*]]: tensor<i32>
-# CHECK-SAME: [[ARG1:%.*]]: tensor<!tf.resource
+# CHECK-SAME: [[ARG1:%.*]]: tensor<!tf_type.resource
 # CHECK-SAME: attributes {{.*}} tf_saved_model.exported_names = ["key"]
 
 # CHECK-NEXT: [[R0:%.*]] = "tf.Const"()
@@ -84,9 +80,9 @@ def Test():
           inputs={'x': tensor_info_x},
           outputs={'r': tensor_info_r},
           method_name='some_function'))
-  }
+  }, tf.tables_initializer(), None
 
 
 if __name__ == '__main__':
   common_v1.set_tf_options()
-  common_v1.do_test(Test(), tf.tables_initializer())
+  common_v1.do_test(Test, canonicalize=True)

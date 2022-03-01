@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
 #include "url/gurl.h"
 
@@ -16,6 +17,8 @@ class WebContents;
 }  // namespace content
 
 using UserApproval = content::IdentityRequestDialogController::UserApproval;
+using PermissionDialogMode =
+    content::IdentityRequestDialogController::PermissionDialogMode;
 using PermissionCallback =
     content::IdentityRequestDialogController::InitialApprovalCallback;
 using CloseCallback =
@@ -24,13 +27,15 @@ using CloseCallback =
 // The interface for creating and controlling a platform-dependent WebIdDialog.
 class WebIdDialog {
  public:
-  static WebIdDialog* Create(content::WebContents* rp_web_contents);
+  static WebIdDialog* Create(content::WebContents* rp_web_contents,
+                             CloseCallback);
 
   // Creates and shows a confirmation dialog for initial permission. The
   // provided callback is called with appropriate status depending on whether
   // user accepted or denied/closed the dialog.
   virtual void ShowInitialPermission(const std::u16string& idp_hostname,
                                      const std::u16string& rp_hostname,
+                                     PermissionDialogMode mode,
                                      PermissionCallback) = 0;
 
   // Creates and shows a confirmation dialog for return permission. The provided
@@ -41,12 +46,9 @@ class WebIdDialog {
                                            PermissionCallback) = 0;
 
   // Creates and shows a window that loads the identity provider sign in page at
-  // the given URL. The provided callback is called when IDP has provided an
-  // id_token with the id_token a its argument, or when window is closed by user
-  // with an empty string as its argument.
+  // the given URL.
   virtual void ShowSigninPage(content::WebContents* idp_web_contents,
-                              const GURL& idp_signin_url,
-                              CloseCallback) = 0;
+                              const GURL& idp_signin_url) = 0;
 
   // Closes the sign in page. Calling the close callback that was provided
   // previously.
@@ -61,7 +63,7 @@ class WebIdDialog {
   virtual ~WebIdDialog() = default;
 
  private:
-  content::WebContents* rp_web_contents_;
+  raw_ptr<content::WebContents> rp_web_contents_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBID_WEBID_DIALOG_H_

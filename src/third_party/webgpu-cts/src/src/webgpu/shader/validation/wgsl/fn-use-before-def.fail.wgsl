@@ -12,7 +12,7 @@ fn c() -> i32 {
   return a();
 }
 
-[[stage(vertex)]]
+[[stage(fragment)]]
 fn main() {
   return;
 }
