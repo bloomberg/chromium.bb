@@ -4,46 +4,40 @@
 
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_account_chooser/consistency_account_chooser_mediator.h"
 
-#import "ios/chrome/browser/chrome_browser_provider_observer_bridge.h"
-#import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
-#import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_account_chooser/consistency_account_chooser_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_account_chooser/identity_item_configurator.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 @interface ConsistencyAccountChooserMediator () <
-    ChromeBrowserProviderObserver,
-    ChromeIdentityServiceObserver> {
-  std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
-  std::unique_ptr<ChromeBrowserProviderObserverBridge> _browserProviderObserver;
+    ChromeAccountManagerServiceObserver> {
+  std::unique_ptr<ChromeAccountManagerServiceObserverBridge>
+      _accountManagerServiceObserver;
 }
 
-@property(nonatomic, strong) ResizedAvatarCache* avatarCache;
 // Configurators based on ChromeIdentity list.
 @property(nonatomic, strong) NSArray* sortedIdentityItemConfigurators;
-@property(nonatomic, assign, readonly)
-    ios::ChromeIdentityService* chromeIdentityService;
-// Pref service to retrieve preference values.
-@property(nonatomic, assign) PrefService* prefService;
+// Account manager service to retrieve Chrome identities.
+@property(nonatomic, assign) ChromeAccountManagerService* accountManagerService;
 
 @end
 
 @implementation ConsistencyAccountChooserMediator
 
 - (instancetype)initWithSelectedIdentity:(ChromeIdentity*)selectedIdentity
-                             prefService:(PrefService*)prefService {
+                   accountManagerService:
+                       (ChromeAccountManagerService*)accountManagerService {
   if (self = [super init]) {
-    _prefService = prefService;
-    _identityServiceObserver =
-        std::make_unique<ChromeIdentityServiceObserverBridge>(self);
-    _browserProviderObserver =
-        std::make_unique<ChromeBrowserProviderObserverBridge>(self);
-    _avatarCache = [[ResizedAvatarCache alloc] init];
+    DCHECK(accountManagerService);
+    _accountManagerService = accountManagerService;
+    _accountManagerServiceObserver =
+        std::make_unique<ChromeAccountManagerServiceObserverBridge>(
+            self, _accountManagerService);
     _selectedIdentity = selectedIdentity;
     [self loadIdentityItemConfigurators];
   }
@@ -51,18 +45,14 @@
 }
 
 - (void)dealloc {
-  DCHECK(!self.prefService);
+  DCHECK(!self.accountManagerService);
 }
 
 - (void)disconnect {
-  self.prefService = nullptr;
+  self.accountManagerService = nullptr;
 }
 
 #pragma mark - Properties
-
-- (ios::ChromeIdentityService*)chromeIdentityService {
-  return ios::GetChromeBrowserProvider()->GetChromeIdentityService();
-}
 
 - (void)setSelectedIdentity:(ChromeIdentity*)identity {
   DCHECK(identity);
@@ -71,22 +61,20 @@
   }
   ChromeIdentity* previousSelectedIdentity = _selectedIdentity;
   _selectedIdentity = identity;
-  [self profileUpdate:previousSelectedIdentity];
-  [self profileUpdate:_selectedIdentity];
+  [self identityChanged:previousSelectedIdentity];
+  [self identityChanged:_selectedIdentity];
 }
 
 #pragma mark - Private
 
 // Updates |self.sortedIdentityItemConfigurators| based on ChromeIdentity list.
 - (void)loadIdentityItemConfigurators {
-  if (!self.prefService) {
+  if (!self.accountManagerService) {
     return;
   }
 
   NSMutableArray* configurators = [NSMutableArray array];
-  NSArray* identities =
-      self.chromeIdentityService->GetAllIdentitiesSortedForDisplay(
-          self.prefService);
+  NSArray* identities = self.accountManagerService->GetAllIdentities();
   BOOL hasSelectedIdentity = NO;
   for (ChromeIdentity* identity in identities) {
     IdentityItemConfigurator* configurator =
@@ -114,32 +102,17 @@
 - (void)updateIdentityItemConfigurator:(IdentityItemConfigurator*)configurator
                     withChromeIdentity:(ChromeIdentity*)identity {
   configurator.gaiaID = identity.gaiaID;
-  configurator.name = identity.userGivenName;
+  configurator.name = identity.userFullName;
   configurator.email = identity.userEmail;
-  configurator.avatar = [self.avatarCache resizedAvatarForIdentity:identity];
+  configurator.avatar =
+      self.accountManagerService->GetIdentityAvatarWithIdentity(
+          identity, IdentityAvatarSize::TableViewIcon);
   configurator.selected = [identity isEqual:self.selectedIdentity];
 }
 
-#pragma mark - ChromeBrowserProviderObserver
+#pragma mark - ChromeAccountManagerServiceObserver
 
-- (void)chromeIdentityServiceDidChange:(ios::ChromeIdentityService*)identity {
-  DCHECK(!_identityServiceObserver.get());
-  _identityServiceObserver =
-      std::make_unique<ChromeIdentityServiceObserverBridge>(self);
-}
-
-- (void)chromeBrowserProviderWillBeDestroyed {
-  _browserProviderObserver.reset();
-}
-
-#pragma mark - ChromeIdentityServiceObserver
-
-- (void)identityListChanged {
-  [self loadIdentityItemConfigurators];
-  [self.consumer reloadAllIdentities];
-}
-
-- (void)profileUpdate:(ChromeIdentity*)identity {
+- (void)identityChanged:(ChromeIdentity*)identity {
   IdentityItemConfigurator* configurator = nil;
   for (IdentityItemConfigurator* cursor in self
            .sortedIdentityItemConfigurators) {
@@ -153,8 +126,9 @@
   [self.consumer reloadIdentityForIdentityItemConfigurator:configurator];
 }
 
-- (void)chromeIdentityServiceWillBeDestroyed {
-  _identityServiceObserver.reset();
+- (void)identityListChanged {
+  [self loadIdentityItemConfigurators];
+  [self.consumer reloadAllIdentities];
 }
 
 #pragma mark - ConsistencyAccountChooserTableViewControllerModelDelegate

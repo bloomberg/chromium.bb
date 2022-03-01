@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "tools/djxl.h"
 
@@ -18,12 +9,13 @@
 
 #include "lib/extras/codec.h"
 #include "lib/extras/codec_jpg.h"
+#include "lib/extras/color_description.h"
+#include "lib/extras/time.h"
 #include "lib/extras/tone_mapping.h"
 #include "lib/jxl/alpha.h"
 #include "lib/jxl/base/data_parallel.h"
 #include "lib/jxl/base/file_io.h"
 #include "lib/jxl/base/override.h"
-#include "lib/jxl/base/time.h"
 #include "lib/jxl/color_encoding_internal.h"
 #include "lib/jxl/color_management.h"
 #include "lib/jxl/dec_file.h"
@@ -34,7 +26,6 @@
 #include "tools/args.h"
 #include "tools/box/box.h"
 #include "tools/cpu/cpu.h"
-
 
 namespace jpegxl {
 namespace tools {
@@ -230,11 +221,7 @@ jxl::Status DecompressJxlToJPEG(const JpegXlContainer& container,
   if (!DecodeJpegXlToJpeg(args.params, container, &io, pool)) {
     return JXL_FAILURE("Failed to decode JXL to JPEG");
   }
-  if (!EncodeImageJPG(
-          &io,
-          io.use_sjpeg ? jxl::JpegEncoder::kSJpeg : jxl::JpegEncoder::kLibJpeg,
-          io.jpeg_quality, jxl::YCbCrChromaSubsampling(), pool, output,
-          jxl::DecodeTarget::kQuantizedCoeffs)) {
+  if (!jxl::extras::EncodeImageJPGCoefficients(&io, output)) {
     return JXL_FAILURE("Failed to generate JPEG");
   }
   stats->SetImageSize(io.xsize(), io.ysize());
@@ -255,7 +242,10 @@ jxl::Status WriteJxlOutput(const DecompressArgs& args, const char* file_out,
   jxl::ColorEncoding c_out = io.metadata.m.color_encoding;
   if (!args.color_space.empty()) {
     bool color_space_applied = false;
-    if (jxl::ParseDescription(args.color_space, &c_out) && c_out.CreateICC()) {
+    JxlColorEncoding c_out_external;
+    if (jxl::ParseDescription(args.color_space, &c_out_external) &&
+        ConvertExternalToInternalColorEncoding(c_out_external, &c_out) &&
+        c_out.CreateICC()) {
       color_space_applied = true;
     } else {
       jxl::PaddedBytes icc;
@@ -276,12 +266,16 @@ jxl::Status WriteJxlOutput(const DecompressArgs& args, const char* file_out,
   if (args.bits_per_sample != 0) bits_per_sample = args.bits_per_sample;
 
   if (args.tone_map) {
-    JXL_RETURN_IF_ERROR(jxl::ToneMapTo(args.display_nits, &io, pool));
+    jxl::Status status = jxl::ToneMapTo(args.display_nits, &io, pool);
+    if (!status) fprintf(stderr, "Failed to map tones.\n");
+    JXL_RETURN_IF_ERROR(status);
     if (c_out.tf.IsPQ() && args.color_space.empty()) {
       // Prevent writing the tone-mapped image to PQ output unless explicitly
       // requested. The result would look even dimmer than it would have without
       // tone mapping.
       c_out.tf.SetTransferFunction(jxl::TransferFunction::kSRGB);
+      status = c_out.CreateICC();
+      if (!status) fprintf(stderr, "Failed to create ICC\n");
       JXL_RETURN_IF_ERROR(c_out.CreateICC());
     }
   }
@@ -321,7 +315,6 @@ jxl::Status WriteJxlOutput(const DecompressArgs& args, const char* file_out,
       }
     }
   }
-  if (!args.quiet) fprintf(stderr, "Done.\n");
   return true;
 }
 

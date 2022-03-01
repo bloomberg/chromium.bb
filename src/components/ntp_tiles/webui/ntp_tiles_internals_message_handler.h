@@ -9,12 +9,11 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/ntp_tiles/most_visited_sites.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class ListValue;
@@ -39,6 +38,12 @@ class NTPTilesInternalsMessageHandler : public MostVisitedSites::Observer {
   // |favicon_service| must not be null and must outlive this object.
   explicit NTPTilesInternalsMessageHandler(
       favicon::FaviconService* favicon_service);
+
+  NTPTilesInternalsMessageHandler(const NTPTilesInternalsMessageHandler&) =
+      delete;
+  NTPTilesInternalsMessageHandler& operator=(
+      const NTPTilesInternalsMessageHandler&) = delete;
+
   ~NTPTilesInternalsMessageHandler() override;
 
   // Called when the WebUI page's JavaScript has loaded and it is ready to
@@ -70,21 +75,18 @@ class NTPTilesInternalsMessageHandler : public MostVisitedSites::Observer {
                            const GURL& page_url,
                            const favicon_base::FaviconRawBitmapResult& result);
 
-  favicon::FaviconService* favicon_service_;
+  raw_ptr<favicon::FaviconService> favicon_service_;
 
   // Bridge to embedder's API.
-  NTPTilesInternalsMessageHandlerClient* client_;
+  raw_ptr<NTPTilesInternalsMessageHandlerClient> client_;
 
   int site_count_;
   std::unique_ptr<MostVisitedSites> most_visited_sites_;
 
-  std::string suggestions_status_;
   std::string popular_sites_json_;
 
   base::CancelableTaskTracker cancelable_task_tracker_;
   base::WeakPtrFactory<NTPTilesInternalsMessageHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NTPTilesInternalsMessageHandler);
 };
 
 }  // namespace ntp_tiles

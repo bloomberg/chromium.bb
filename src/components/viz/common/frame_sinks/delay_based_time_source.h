@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/cancelable_callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/timer/timer.h"
 #include "components/viz/common/viz_common_export.h"
 
@@ -35,6 +35,10 @@ class VIZ_COMMON_EXPORT DelayBasedTimeSourceClient {
 class VIZ_COMMON_EXPORT DelayBasedTimeSource {
  public:
   explicit DelayBasedTimeSource(base::SingleThreadTaskRunner* task_runner);
+
+  DelayBasedTimeSource(const DelayBasedTimeSource&) = delete;
+  DelayBasedTimeSource& operator=(const DelayBasedTimeSource&) = delete;
+
   virtual ~DelayBasedTimeSource();
 
   void SetClient(DelayBasedTimeSourceClient* client);
@@ -65,7 +69,7 @@ class VIZ_COMMON_EXPORT DelayBasedTimeSource {
 
   void OnTimerTick();
 
-  DelayBasedTimeSourceClient* client_;
+  raw_ptr<DelayBasedTimeSourceClient> client_;
 
   bool active_;
 
@@ -75,12 +79,10 @@ class VIZ_COMMON_EXPORT DelayBasedTimeSource {
   base::TimeTicks last_tick_time_;
   base::TimeTicks next_tick_time_;
 
-  base::SingleThreadTaskRunner* task_runner_;
+  raw_ptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::RepeatingClosure tick_closure_;
   base::OneShotTimer timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(DelayBasedTimeSource);
 };
 
 }  // namespace viz

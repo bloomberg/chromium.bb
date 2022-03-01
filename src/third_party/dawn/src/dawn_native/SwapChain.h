@@ -30,11 +30,13 @@ namespace dawn_native {
 
     TextureDescriptor GetSwapChainBaseTextureDescriptor(NewSwapChainBase* swapChain);
 
-    class SwapChainBase : public ObjectBase {
+    class SwapChainBase : public ApiObjectBase {
       public:
         SwapChainBase(DeviceBase* device);
 
         static SwapChainBase* MakeError(DeviceBase* device);
+
+        ObjectType GetType() const override;
 
         // Dawn API
         virtual void APIConfigure(wgpu::TextureFormat format,
@@ -47,14 +49,13 @@ namespace dawn_native {
       protected:
         SwapChainBase(DeviceBase* device, ObjectBase::ErrorTag tag);
         ~SwapChainBase() override;
+        void DestroyImpl() override;
     };
 
     // The base class for implementation-based SwapChains that are deprecated.
     class OldSwapChainBase : public SwapChainBase {
       public:
         OldSwapChainBase(DeviceBase* device, const SwapChainDescriptor* descriptor);
-
-        static SwapChainBase* MakeError(DeviceBase* device);
 
         // Dawn API
         void APIConfigure(wgpu::TextureFormat format,

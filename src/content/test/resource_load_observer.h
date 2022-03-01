@@ -23,6 +23,9 @@ class ResourceLoadObserver : public WebContentsObserver {
  public:
   explicit ResourceLoadObserver(Shell* shell);
 
+  ResourceLoadObserver(const ResourceLoadObserver&) = delete;
+  ResourceLoadObserver& operator=(const ResourceLoadObserver&) = delete;
+
   ~ResourceLoadObserver() override;
 
   const std::vector<blink::mojom::ResourceLoadInfoPtr>& resource_load_infos()
@@ -54,7 +57,7 @@ class ResourceLoadObserver : public WebContentsObserver {
       const base::TimeTicks& after_request);
 
   // Returns the resource with the given url if found, otherwise nullptr.
-  blink::mojom::ResourceLoadInfoPtr* FindResource(const GURL& original_url);
+  blink::mojom::ResourceLoadInfoPtr* GetResource(const GURL& original_url);
 
   void Reset();
 
@@ -77,8 +80,6 @@ class ResourceLoadObserver : public WebContentsObserver {
   std::vector<bool> resource_is_associated_with_main_frame_;
   GURL waiting_original_url_;
   base::OnceClosure waiting_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResourceLoadObserver);
 };
 
 }  // namespace content

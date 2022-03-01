@@ -34,13 +34,15 @@
 #include <utility>
 
 #include "base/allocator/partition_allocator/page_allocator.h"
+#include "base/command_line.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/optimization_guide/optimization_guide.mojom-blink.h"
+#include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_context_snapshot.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
 #include "third_party/blink/renderer/controller/blink_leak_detector.h"
 #include "third_party/blink/renderer/controller/dev_tools_frontend_impl.h"
@@ -54,11 +56,15 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/disk_data_allocator.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 #include "v8/include/v8.h"
+
+#if defined(USE_BLINK_EXTENSIONS_CHROMEOS)
+#include "third_party/blink/renderer/extensions/chromeos/chromeos_extensions.h"
+#endif
 
 #if defined(OS_ANDROID)
 #include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
@@ -75,10 +81,9 @@
 #include "third_party/blink/renderer/controller/user_level_memory_pressure_signal_generator.h"
 #endif
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
-#include "third_party/blink/renderer/bindings/core/v8/v8_context_snapshot.h"
-#else
-#include "third_party/blink/renderer/bindings/modules/v8/v8_context_snapshot_external_references.h"
+// #if expression should match the one in InitializeCommon
+#if !defined(ARCH_CPU_X86_64) && !defined(ARCH_CPU_ARM64) && defined(OS_WIN)
+#include <windows.h>
 #endif
 
 namespace blink {
@@ -106,6 +111,7 @@ BlinkInitializer& GetBlinkInitializer() {
 }
 
 void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
+// #if expression should match the one around #include <windows.h>
 #if !defined(ARCH_CPU_X86_64) && !defined(ARCH_CPU_ARM64) && defined(OS_WIN)
   // Reserve address space on 32 bit Windows, to make it likelier that large
   // array buffer allocations succeed.
@@ -127,18 +133,21 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
   // BlinkInitializer::Initialize() must be called before InitializeMainThread
   GetBlinkInitializer().Initialize();
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
-  V8Initializer::InitializeMainThread(V8ContextSnapshot::GetReferenceTable());
-#else
-  V8Initializer::InitializeMainThread(
-      V8ContextSnapshotExternalReferences::GetTable());
-#endif
+  std::string js_command_line_flag =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          blink::switches::kJavaScriptFlags);
+  V8Initializer::InitializeMainThread(V8ContextSnapshot::GetReferenceTable(),
+                                      js_command_line_flag);
 
   GetBlinkInitializer().RegisterInterfaces(*binders);
 
   DCHECK(!g_end_of_task_runner);
   g_end_of_task_runner = new EndOfTaskRunner;
   Thread::Current()->AddTaskObserver(g_end_of_task_runner);
+
+#if defined(USE_BLINK_EXTENSIONS_CHROMEOS)
+  ChromeOSExtensions::Initialize();
+#endif
 
 #if defined(OS_ANDROID)
   // Initialize CrashMemoryMetricsReporterImpl in order to assure that memory
@@ -210,7 +219,7 @@ void BlinkInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
 
 #if defined(OS_ANDROID)
   binders.Add(ConvertToBaseRepeatingCallback(
-                  CrossThreadBindRepeating(&OomInterventionImpl::Bind)),
+                  CrossThreadBindRepeating(&OomInterventionImpl::BindReceiver)),
               main_thread->GetTaskRunner());
 
   binders.Add(ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(

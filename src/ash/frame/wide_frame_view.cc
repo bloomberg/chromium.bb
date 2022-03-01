@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/frame/wide_frame_view.h"
+#include <memory>
 
 #include "ash/frame/header_view.h"
 #include "ash/frame/non_client_frame_view_ash.h"
@@ -12,6 +13,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
+#include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "chromeos/ui/frame/default_frame_header.h"
@@ -32,6 +34,10 @@ class WideFrameTargeter : public aura::WindowTargeter {
  public:
   explicit WideFrameTargeter(HeaderView* header_view)
       : header_view_(header_view) {}
+
+  WideFrameTargeter(const WideFrameTargeter&) = delete;
+  WideFrameTargeter& operator=(const WideFrameTargeter&) = delete;
+
   ~WideFrameTargeter() override = default;
 
   // aura::WindowTargeter:
@@ -54,7 +60,6 @@ class WideFrameTargeter : public aura::WindowTargeter {
 
  private:
   HeaderView* header_view_;
-  DISALLOW_COPY_AND_ASSIGN(WideFrameTargeter);
 };
 
 }  // namespace
@@ -91,14 +96,14 @@ WideFrameView::WideFrameView(views::Widget* target)
           std::make_unique<FrameContextMenuController>(target_, this)) {
   // WideFrameView is owned by its client, not by Views.
   SetOwnedByWidget(false);
-  display::Screen::GetScreen()->AddObserver(this);
 
   aura::Window* target_window = target->GetNativeWindow();
   target_window->AddObserver(this);
   // Use the HeaderView itself as a frame view because WideFrameView is
   // is the frame only.
-  header_view_ = new HeaderView(target, /*frame view=*/nullptr);
-  AddChildView(header_view_);
+  header_view_ = AddChildView(
+      std::make_unique<HeaderView>(target, /*frame view=*/nullptr));
+  header_view_->Init();
   GetTargetHeaderView()->SetShouldPaintHeader(false);
   header_view_->set_context_menu_controller(
       frame_context_menu_controller_.get());
@@ -137,7 +142,6 @@ WideFrameView::WideFrameView(views::Widget* target)
 WideFrameView::~WideFrameView() {
   if (widget_)
     widget_->CloseNow();
-  display::Screen::GetScreen()->RemoveObserver(this);
   if (target_) {
     HeaderView* target_header_view = GetTargetHeaderView();
     target_header_view->SetShouldPaintHeader(true);

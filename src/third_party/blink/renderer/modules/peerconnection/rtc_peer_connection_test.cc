@@ -14,7 +14,7 @@
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
-#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_answer_options.h"
@@ -30,8 +30,8 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_rtc_peer_connection_handler_platform.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
@@ -391,16 +391,10 @@ class RTCPeerConnectionTest : public testing::Test {
  public:
   RTCPeerConnection* CreatePC(
       V8TestingScope& scope,
-      const absl::optional<String>& sdp_semantics = absl::nullopt,
-      bool force_encoded_audio_insertable_streams = false,
-      bool force_encoded_video_insertable_streams = false) {
+      const absl::optional<String>& sdp_semantics = absl::nullopt) {
     RTCConfiguration* config = RTCConfiguration::Create();
     if (sdp_semantics)
       config->setSdpSemantics(sdp_semantics.value());
-    config->setForceEncodedAudioInsertableStreams(
-        force_encoded_audio_insertable_streams);
-    config->setForceEncodedVideoInsertableStreams(
-        force_encoded_video_insertable_streams);
     RTCIceServer* ice_server = RTCIceServer::Create();
     ice_server->setUrl("stun:fake.stun.url");
     HeapVector<Member<RTCIceServer>> ice_servers;
@@ -467,9 +461,9 @@ TEST_F(RTCPeerConnectionTest, GetAudioTrack) {
       MediaStream::Create(scope.GetExecutionContext(), tracks);
   ASSERT_TRUE(stream);
 
-  EXPECT_FALSE(pc->GetTrack(track->Component()));
+  EXPECT_FALSE(pc->GetTrackForTesting(track->Component()));
   AddStream(scope, pc, stream);
-  EXPECT_TRUE(pc->GetTrack(track->Component()));
+  EXPECT_TRUE(pc->GetTrackForTesting(track->Component()));
 }
 
 TEST_F(RTCPeerConnectionTest, GetVideoTrack) {
@@ -486,9 +480,9 @@ TEST_F(RTCPeerConnectionTest, GetVideoTrack) {
       MediaStream::Create(scope.GetExecutionContext(), tracks);
   ASSERT_TRUE(stream);
 
-  EXPECT_FALSE(pc->GetTrack(track->Component()));
+  EXPECT_FALSE(pc->GetTrackForTesting(track->Component()));
   AddStream(scope, pc, stream);
-  EXPECT_TRUE(pc->GetTrack(track->Component()));
+  EXPECT_TRUE(pc->GetTrackForTesting(track->Component()));
 }
 
 TEST_F(RTCPeerConnectionTest, GetAudioAndVideoTrack) {
@@ -509,11 +503,11 @@ TEST_F(RTCPeerConnectionTest, GetAudioAndVideoTrack) {
       MediaStream::Create(scope.GetExecutionContext(), tracks);
   ASSERT_TRUE(stream);
 
-  EXPECT_FALSE(pc->GetTrack(audio_track->Component()));
-  EXPECT_FALSE(pc->GetTrack(video_track->Component()));
+  EXPECT_FALSE(pc->GetTrackForTesting(audio_track->Component()));
+  EXPECT_FALSE(pc->GetTrackForTesting(video_track->Component()));
   AddStream(scope, pc, stream);
-  EXPECT_TRUE(pc->GetTrack(audio_track->Component()));
-  EXPECT_TRUE(pc->GetTrack(video_track->Component()));
+  EXPECT_TRUE(pc->GetTrackForTesting(audio_track->Component()));
+  EXPECT_TRUE(pc->GetTrackForTesting(video_track->Component()));
 }
 
 TEST_F(RTCPeerConnectionTest, GetTrackRemoveStreamAndGCAll) {
@@ -533,9 +527,9 @@ TEST_F(RTCPeerConnectionTest, GetTrackRemoveStreamAndGCAll) {
         MediaStream::Create(scope.GetExecutionContext(), tracks);
     ASSERT_TRUE(stream);
 
-    EXPECT_FALSE(pc->GetTrack(track_component));
+    EXPECT_FALSE(pc->GetTrackForTesting(track_component));
     AddStream(scope, pc, stream);
-    EXPECT_TRUE(pc->GetTrack(track_component));
+    EXPECT_TRUE(pc->GetTrackForTesting(track_component));
 
     RemoveStream(scope, pc, stream);
     // In Unified Plan, transceivers will still reference the stream even after
@@ -549,7 +543,7 @@ TEST_F(RTCPeerConnectionTest, GetTrackRemoveStreamAndGCAll) {
   // |MediaStreamComponent|, which will remove its mapping from the peer
   // connection.
   WebHeap::CollectAllGarbageForTesting();
-  EXPECT_FALSE(pc->GetTrack(track_component));
+  EXPECT_FALSE(pc->GetTrackForTesting(track_component));
 }
 
 TEST_F(RTCPeerConnectionTest,
@@ -570,9 +564,9 @@ TEST_F(RTCPeerConnectionTest,
         MediaStream::Create(scope.GetExecutionContext(), tracks);
     ASSERT_TRUE(stream);
 
-    EXPECT_FALSE(pc->GetTrack(track_component.Get()));
+    EXPECT_FALSE(pc->GetTrackForTesting(track_component.Get()));
     AddStream(scope, pc, stream);
-    EXPECT_TRUE(pc->GetTrack(track_component.Get()));
+    EXPECT_TRUE(pc->GetTrackForTesting(track_component.Get()));
 
     RemoveStream(scope, pc, stream);
     // In Unified Plan, transceivers will still reference the stream even after
@@ -586,7 +580,7 @@ TEST_F(RTCPeerConnectionTest,
   // |MediaStreamComponent|), which will remove its mapping from the peer
   // connection.
   WebHeap::CollectAllGarbageForTesting();
-  EXPECT_FALSE(pc->GetTrack(track_component.Get()));
+  EXPECT_FALSE(pc->GetTrackForTesting(track_component.Get()));
 }
 
 TEST_F(RTCPeerConnectionTest, CheckForComplexSdpWithSdpSemanticsPlanB) {
@@ -674,21 +668,6 @@ TEST_F(RTCPeerConnectionTest, CheckForComplexSdpWithSdpSemanticsUnspecified) {
   sdp->setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
   ASSERT_FALSE(
       pc->CheckForComplexSdp(ParsedSessionDescription::Parse(sdp)).has_value());
-}
-
-TEST_F(RTCPeerConnectionTest, CheckInsertableStreamsConfig) {
-  for (bool force_encoded_audio_insertable_streams : {true, false}) {
-    for (bool force_encoded_video_insertable_streams : {true, false}) {
-      V8TestingScope scope;
-      Persistent<RTCPeerConnection> pc =
-          CreatePC(scope, absl::nullopt, force_encoded_audio_insertable_streams,
-                   force_encoded_video_insertable_streams);
-      EXPECT_EQ(pc->force_encoded_audio_insertable_streams(),
-                force_encoded_audio_insertable_streams);
-      EXPECT_EQ(pc->force_encoded_video_insertable_streams(),
-                force_encoded_video_insertable_streams);
-    }
-  }
 }
 
 enum class AsyncOperationAction {
@@ -841,9 +820,9 @@ class RTCPeerConnectionCallSetupStateTest : public RTCPeerConnectionTest {
   }
 
   ScriptValue ToScriptValue(V8TestingScope& scope, RTCOfferOptions* value) {
-    v8::Isolate* isolate = scope.GetIsolate();
-    return ScriptValue(isolate,
-                       ToV8(value, scope.GetContext()->Global(), isolate));
+    return ScriptValue(scope.GetIsolate(), ToV8Traits<RTCOfferOptions>::ToV8(
+                                               scope.GetScriptState(), value)
+                                               .ToLocalChecked());
   }
 
  private:

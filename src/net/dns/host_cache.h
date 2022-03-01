@@ -17,7 +17,7 @@
 
 #include "base/check.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/clamped_math.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -30,13 +30,14 @@
 #include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
 #include "net/dns/dns_util.h"
-#include "net/dns/host_resolver_source.h"
 #include "net/dns/public/dns_query_type.h"
+#include "net/dns/public/host_resolver_source.h"
 #include "net/log/net_log_capture_mode.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
+#include "url/scheme_host_port.h"
 
 namespace base {
-class ListValue;
 class TickClock;
 }  // namespace base
 
@@ -46,7 +47,10 @@ namespace net {
 class NET_EXPORT HostCache {
  public:
   struct NET_EXPORT Key {
-    Key(const std::string& hostname,
+    // Hostnames in `host` must not be IP literals. IP literals should be
+    // resolved directly to the IP address and not be stored/queried in
+    // HostCache.
+    Key(absl::variant<url::SchemeHostPort, std::string> host,
         DnsQueryType dns_query_type,
         HostResolverFlags host_resolver_flags,
         HostResolverSource host_resolver_source,
@@ -54,26 +58,31 @@ class NET_EXPORT HostCache {
     Key();
     Key(const Key& key);
     Key(Key&& key);
+    ~Key();
 
     // This is a helper used in comparing keys. The order of comparisons of
-    // |Key| fields is arbitrary, but the tuple is constructed with
-    // |dns_query_type| and |host_resolver_flags| before |hostname| under the
+    // `Key` fields is arbitrary, but the tuple is constructed with
+    // `dns_query_type` and `host_resolver_flags` before `host` under the
     // assumption that integer comparisons are faster than string comparisons.
-    auto GetTuple(const Key* key) const {
-      return std::tie(key->dns_query_type, key->host_resolver_flags,
-                      key->hostname, key->host_resolver_source,
-                      key->network_isolation_key, key->secure);
+    static auto GetTuple(const Key* key) {
+      return std::tie(key->dns_query_type, key->host_resolver_flags, key->host,
+                      key->host_resolver_source, key->network_isolation_key,
+                      key->secure);
     }
 
     bool operator==(const Key& other) const {
       return GetTuple(this) == GetTuple(&other);
     }
 
+    bool operator!=(const Key& other) const {
+      return GetTuple(this) != GetTuple(&other);
+    }
+
     bool operator<(const Key& other) const {
       return GetTuple(this) < GetTuple(&other);
     }
 
-    std::string hostname;
+    absl::variant<url::SchemeHostPort, std::string> host;
     DnsQueryType dns_query_type = DnsQueryType::UNSPECIFIED;
     HostResolverFlags host_resolver_flags = 0;
     HostResolverSource host_resolver_source = HostResolverSource::ANY;
@@ -116,7 +125,7 @@ class NET_EXPORT HostCache {
           absl::optional<base::TimeDelta> ttl)
         : error_(error),
           source_(source),
-          ttl_(ttl ? ttl.value() : base::TimeDelta::FromSeconds(-1)) {
+          ttl_(ttl ? ttl.value() : base::Seconds(-1)) {
       DCHECK(!ttl || ttl.value() >= base::TimeDelta());
       SetResult(std::forward<T>(results));
     }
@@ -168,8 +177,8 @@ class NET_EXPORT HostCache {
         absl::optional<std::vector<bool>> experimental_results) {
       experimental_results_ = std::move(experimental_results);
     }
-    bool pinned() const { return pinned_; }
-    void set_pinned(bool pinned) { pinned_ = pinned; }
+    absl::optional<bool> pinning() const { return pinning_; }
+    void set_pinning(absl::optional<bool> pinning) { pinning_ = pinning; }
 
     Source source() const { return source_; }
     bool has_ttl() const { return ttl_ >= base::TimeDelta(); }
@@ -266,11 +275,12 @@ class NET_EXPORT HostCache {
     // Where results were obtained (e.g. DNS lookup, hosts file, etc).
     Source source_ = SOURCE_UNKNOWN;
     // If true, this entry cannot be evicted from the cache until after the next
-    // network change.  When a pinned Entry is replaced, HostCache will copy
-    // this flag to the replacement.
-    bool pinned_ = false;
+    // network change.  When an Entry is replaced by one whose pinning flag
+    // is not set, HostCache will copy this flag to the replacement.
+    // If this flag is null, HostCache will set it to false for simplicity.
+    absl::optional<bool> pinning_;
     // TTL obtained from the nameserver. Negative if unknown.
-    base::TimeDelta ttl_ = base::TimeDelta::FromSeconds(-1);
+    base::TimeDelta ttl_ = base::Seconds(-1);
 
     base::TimeTicks expires_;
     // Copied from the cache's network_changes_ when the entry is set; can
@@ -311,6 +321,9 @@ class NET_EXPORT HostCache {
   // Constructs a HostCache that stores up to |max_entries|.
   explicit HostCache(size_t max_entries);
 
+  HostCache(const HostCache&) = delete;
+  HostCache& operator=(const HostCache&) = delete;
+
   ~HostCache();
 
   // Returns a pointer to the matching (key, entry) pair, which is valid at time
@@ -337,16 +350,17 @@ class NET_EXPORT HostCache {
            base::TimeTicks now,
            base::TimeDelta ttl);
 
-  // Checks whether an entry exists for |hostname|.
+  // Checks whether an entry exists for `hostname`.
   // If so, returns the matching key and writes the source (e.g. DNS, HOSTS
-  // file, etc.) to |source_out| and the staleness to |stale_out| (if they are
-  // not null). It tries using two common address_family and host_resolver_flag
-  // combinations when performing lookups in the cache; this means false
-  // negatives are possible, but unlikely. It also ignores the secure field
-  // while searching for matches. If no entry exists, returns nullptr.
-  const HostCache::Key* GetMatchingKey(base::StringPiece hostname,
-                                       HostCache::Entry::Source* source_out,
-                                       HostCache::EntryStaleness* stale_out);
+  // file, etc.) to `source_out` and the staleness to `stale_out` (if they are
+  // not null). If no entry exists, returns nullptr.
+  //
+  // For testing use only and not very performant. Production code should only
+  // do lookups by precise Key.
+  const HostCache::Key* GetMatchingKeyForTesting(
+      base::StringPiece hostname,
+      HostCache::Entry::Source* source_out = nullptr,
+      HostCache::EntryStaleness* stale_out = nullptr) const;
 
   // Marks all entries as stale on account of a network change.
   void Invalidate();
@@ -364,16 +378,16 @@ class NET_EXPORT HostCache {
   void ClearForHosts(
       const base::RepeatingCallback<bool(const std::string&)>& host_filter);
 
-  // Fills the provided base::ListValue with the contents of the cache for
-  // serialization. |entry_list| must be non-null and will be cleared before
-  // adding the cache contents.
-  void GetAsListValue(base::ListValue* entry_list,
-                      bool include_staleness,
-                      SerializationType serialization_type) const;
-  // Takes a base::ListValue representing cache entries and stores them in the
+  // Fills the provided base::Value with the contents of the cache for
+  // serialization. `entry_list` must be non-null list, and will be cleared
+  // before adding the cache contents.
+  void GetList(base::Value* entry_list,
+               bool include_staleness,
+               SerializationType serialization_type) const;
+  // Takes a base::Value list representing cache entries and stores them in the
   // cache, skipping any that already have entries. Returns true on success,
   // false on failure.
-  bool RestoreFromListValue(const base::ListValue& old_cache);
+  bool RestoreFromListValue(const base::Value& old_cache);
   // Returns the number of entries that were restored in the last call to
   // RestoreFromListValue().
   size_t last_restore_size() const { return restore_size_; }
@@ -436,13 +450,11 @@ class NET_EXPORT HostCache {
   // RestoreFromListValue(). Used in histograms.
   size_t restore_size_;
 
-  PersistenceDelegate* delegate_;
+  raw_ptr<PersistenceDelegate> delegate_;
   // Shared tick clock, overridden for testing.
-  const base::TickClock* tick_clock_;
+  raw_ptr<const base::TickClock> tick_clock_;
 
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(HostCache);
 };
 
 }  // namespace net

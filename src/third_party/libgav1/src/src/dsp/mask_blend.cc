@@ -25,7 +25,8 @@ namespace libgav1 {
 namespace dsp {
 namespace {
 
-uint8_t GetMaskValue(const uint8_t* mask, const uint8_t* mask_next_row, int x,
+uint8_t GetMaskValue(const uint8_t* LIBGAV1_RESTRICT mask,
+                     const uint8_t* LIBGAV1_RESTRICT mask_next_row, int x,
                      int subsampling_x, int subsampling_y) {
   if ((subsampling_x | subsampling_y) == 0) {
     return mask[x];
@@ -43,10 +44,12 @@ uint8_t GetMaskValue(const uint8_t* mask, const uint8_t* mask_next_row, int x,
 
 template <int bitdepth, typename Pixel, bool is_inter_intra, int subsampling_x,
           int subsampling_y>
-void MaskBlend_C(const void* prediction_0, const void* prediction_1,
-                 const ptrdiff_t prediction_stride_1, const uint8_t* mask,
+void MaskBlend_C(const void* LIBGAV1_RESTRICT prediction_0,
+                 const void* LIBGAV1_RESTRICT prediction_1,
+                 const ptrdiff_t prediction_stride_1,
+                 const uint8_t* LIBGAV1_RESTRICT mask,
                  const ptrdiff_t mask_stride, const int width, const int height,
-                 void* dest, const ptrdiff_t dest_stride) {
+                 void* LIBGAV1_RESTRICT dest, const ptrdiff_t dest_stride) {
   static_assert(!(bitdepth == 8 && is_inter_intra), "");
   assert(mask != nullptr);
   using PredType =
@@ -85,11 +88,12 @@ void MaskBlend_C(const void* prediction_0, const void* prediction_1,
 }
 
 template <int subsampling_x, int subsampling_y>
-void InterIntraMaskBlend8bpp_C(const uint8_t* prediction_0,
-                               uint8_t* prediction_1,
+void InterIntraMaskBlend8bpp_C(const uint8_t* LIBGAV1_RESTRICT prediction_0,
+                               uint8_t* LIBGAV1_RESTRICT prediction_1,
                                const ptrdiff_t prediction_stride_1,
-                               const uint8_t* mask, const ptrdiff_t mask_stride,
-                               const int width, const int height) {
+                               const uint8_t* LIBGAV1_RESTRICT mask,
+                               const ptrdiff_t mask_stride, const int width,
+                               const int height) {
   assert(mask != nullptr);
   constexpr int step_y = subsampling_y ? 2 : 1;
   const uint8_t* mask_next_row = mask + mask_stride;

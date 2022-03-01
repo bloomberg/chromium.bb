@@ -5,8 +5,7 @@
 #import "ios/chrome/browser/voice/fake_voice_search_availability.h"
 
 #include "base/memory/ptr_util.h"
-#include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/voice/test_voice_search_provider.h"
+#import "ios/public/provider/chrome/browser/voice_search/test_voice_search.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -28,12 +27,7 @@ void FakeVoiceSearchAvailability::SetVoiceOverEnabled(bool enabled) {
 }
 
 void FakeVoiceSearchAvailability::SetVoiceProviderEnabled(bool enabled) {
-  ios::TestChromeBrowserProvider* browser_provider =
-      ios::TestChromeBrowserProvider::GetTestProvider();
-  TestVoiceSearchProvider* voice_provider =
-      static_cast<TestVoiceSearchProvider*>(
-          browser_provider->GetVoiceSearchProvider());
-  voice_provider->set_voice_search_enabled(enabled);
+  ios::provider::test::SetVoiceSearchEnabled(enabled);
 }
 
 bool FakeVoiceSearchAvailability::IsVoiceOverEnabled() const {

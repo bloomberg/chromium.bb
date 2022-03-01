@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SHARESHEET_SHARESHEET_CONTROLLER_H_
 #define CHROME_BROWSER_SHARESHEET_SHARESHEET_CONTROLLER_H_
 
-class Profile;
+#include "chrome/browser/sharesheet/sharesheet_types.h"
 
 namespace sharesheet {
 
@@ -15,15 +15,17 @@ class SharesheetController {
  public:
   virtual ~SharesheetController() = default;
 
-  virtual Profile* GetProfile() = 0;
-
   // When called will set the bubble size to |width| and |height|.
   // |width| and |height| must be set to a positive int.
-  virtual void SetSharesheetSize(const int& width, const int& height) = 0;
+  virtual void SetBubbleSize(int width, int height) = 0;
 
-  // Called by ShareAction to notify SharesheetBubbleView that ShareAction
-  // has completed.
-  virtual void CloseSharesheet() = 0;
+  // Called by ShareAction to notify SharesheetBubbleView to close.
+  // |result| indicates whether the share was successful, cancelled or closed
+  // due to an error.
+  virtual void CloseBubble(SharesheetResult result) = 0;
+
+  // Returns whether the bubble is visible.
+  virtual bool IsBubbleVisible() const = 0;
 };
 
 }  // namespace sharesheet

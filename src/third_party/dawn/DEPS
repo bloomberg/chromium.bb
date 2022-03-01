@@ -9,16 +9,20 @@ vars = {
   'swiftshader_git': 'https://swiftshader.googlesource.com',
 
   'dawn_standalone': True,
+  'dawn_node': False, # Also fetches dependencies required for building NodeJS bindings.
+  'dawn_cmake_version': 'version:3.13.5',
+  'dawn_cmake_win32_sha1': 'b106d66bcdc8a71ea2cdf5446091327bfdb1bcd7',
+  'dawn_go_version': 'version:1.16',
 }
 
 deps = {
   # Dependencies required to use GN/Clang in standalone
   'build': {
-    'url': '{chromium_git}/chromium/src/build@ea192b29d26f84e94910791c1eeb89d24c063dd0',
+    'url': '{chromium_git}/chromium/src/build@0ff4b3d4eeb6d480c716b432a9a93a58c42150d5',
     'condition': 'dawn_standalone',
   },
   'buildtools': {
-    'url': '{chromium_git}/chromium/src/buildtools@69cc9b8a3ae010e0721c4bea12de7a352d9a93f9',
+    'url': '{chromium_git}/chromium/src/buildtools@9c143ace7560797fed136da85e22ea4834e6b147',
     'condition': 'dawn_standalone',
   },
   'buildtools/clang_format/script': {
@@ -57,12 +61,12 @@ deps = {
   },
 
   'buildtools/third_party/libc++abi/trunk': {
-    'url': '{chromium_git}/external/github.com/llvm/llvm-project/libcxxabi.git@6918862bfc2bff22b45058fac22b1596c49982fb',
+    'url': '{chromium_git}/external/github.com/llvm/llvm-project/libcxxabi.git@f4328ad7c0d8242d36cb5bea530925f9fea34248',
     'condition': 'dawn_standalone',
   },
 
   'tools/clang': {
-    'url': '{chromium_git}/chromium/src/tools/clang@24cecabb89512de31a1083308b237420651a835c',
+    'url': '{chromium_git}/chromium/src/tools/clang@03ff857f12277f511e0a30aca44b80e8aaebafd7',
     'condition': 'dawn_standalone',
   },
   'tools/clang/dsymutil': {
@@ -86,7 +90,7 @@ deps = {
 
   # Jinja2 and MarkupSafe for the code generator
   'third_party/jinja2': {
-    'url': '{chromium_git}/chromium/src/third_party/jinja2@a82a4944a7f2496639f34a89c9923be5908b80aa',
+    'url': '{chromium_git}/chromium/src/third_party/jinja2@ee69aa00ee8536f61db6a451f3858745cf587de6',
     'condition': 'dawn_standalone',
   },
   'third_party/markupsafe': {
@@ -96,7 +100,7 @@ deps = {
 
   # WGSL support
   'third_party/tint': {
-    'url': '{dawn_git}/tint@6c582778cff9c7a13ca8d6d8d216b95d3bf57875',
+    'url': '{dawn_git}/tint@0fe30b52a5c93473923419d0043840d61ca46746',
   },
 
   # GLFW for tests and samples
@@ -117,23 +121,60 @@ deps = {
   },
 
   'third_party/angle': {
-    'url': '{chromium_git}/angle/angle@835bcb1e27f12cd55bbbdfb0cca2479f7f4b51de',
+    'url': '{chromium_git}/angle/angle@663831aa676c59829cc3d822340812f016bf77f6',
     'condition': 'dawn_standalone',
   },
 
   'third_party/swiftshader': {
-    'url': '{swiftshader_git}/SwiftShader@df17a76102dfabb3f1bd6e51449cece9f77b45e3',
+    'url': '{swiftshader_git}/SwiftShader@562df4889b8140479d1429e67391f80025493e94',
     'condition': 'dawn_standalone',
   },
 
   'third_party/vulkan-deps': {
-    'url': '{chromium_git}/vulkan-deps@3d799e0e9b08dc14a3efa2e130d288f6ca33d3d0',
+    'url': '{chromium_git}/vulkan-deps@d74e02442e56681f44548a549a41d9c76c34ddf4',
     'condition': 'dawn_standalone',
   },
 
   'third_party/zlib': {
     'url': '{chromium_git}/chromium/src/third_party/zlib@c29ee8c9c3824ca013479bf8115035527967fe02',
     'condition': 'dawn_standalone',
+  },
+
+  'third_party/abseil-cpp': {
+    'url': '{chromium_git}/chromium/src/third_party/abseil-cpp@789af048b388657987c59d4da406859034fe310f',
+    'condition': 'dawn_standalone',
+  },
+
+  # Dependencies required to build Dawn NodeJS bindings
+  'third_party/node-api-headers': {
+    'url': '{github_git}/nodejs/node-api-headers.git@d68505e4055ecb630e14c26c32e5c2c65e179bba',
+    'condition': 'dawn_node',
+  },
+  'third_party/node-addon-api': {
+    'url': '{github_git}/nodejs/node-addon-api.git@4a3de56c3e4ed0031635a2f642b27efeeed00add',
+    'condition': 'dawn_node',
+  },
+  'third_party/gpuweb': {
+    'url': '{github_git}/gpuweb/gpuweb.git@67edc187f5305a72456663c34d51153601b79f3b',
+    'condition': 'dawn_node',
+  },
+
+  'tools/golang': {
+    'condition': 'dawn_node',
+    'packages': [{
+      'package': 'infra/3pp/tools/go/${{platform}}',
+      'version': Var('dawn_go_version'),
+    }],
+    'dep_type': 'cipd',
+  },
+
+  'tools/cmake': {
+    'condition': 'dawn_node and (host_os == "mac" or host_os == "linux")',
+    'packages': [{
+      'package': 'infra/3pp/tools/cmake/${{platform}}',
+      'version': Var('dawn_cmake_version'),
+    }],
+    'dep_type': 'cipd',
   },
 }
 
@@ -228,6 +269,30 @@ hooks = [
     'condition': 'dawn_standalone',
     'action': ['python', 'build/util/lastchange.py',
                '-o', 'build/util/LASTCHANGE'],
+  },
+  # TODO(https://crbug.com/1180257): Use CIPD for CMake on Windows.
+  {
+    'name': 'cmake_win32',
+    'pattern': '.',
+    'condition': 'dawn_node and host_os == "win"',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--platform=win32',
+                '--no_auth',
+                '--bucket', 'chromium-tools',
+                Var('dawn_cmake_win32_sha1'),
+                '-o', 'tools/cmake-win32.zip'
+    ],
+  },
+  {
+    'name': 'cmake_win32_extract',
+    'pattern': '.',
+    'condition': 'dawn_node and host_os == "win"',
+    'action': [ 'python',
+                'scripts/extract.py',
+                'tools/cmake-win32.zip',
+                'tools/cmake-win32/',
+    ],
   },
 ]
 

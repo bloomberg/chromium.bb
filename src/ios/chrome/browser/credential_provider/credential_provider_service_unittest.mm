@@ -9,14 +9,22 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/password_store_impl.h"
+#include "components/password_manager/core/browser/password_store_built_in_backend.h"
+#include "components/password_manager/core/browser/password_store_factory_util.h"
+#include "components/password_manager/core/browser/site_affiliation/fake_affiliation_service.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
-#import "ios/chrome/common/credential_provider/archivable_credential_store.h"
 #import "ios/chrome/common/credential_provider/constants.h"
 #import "ios/chrome/common/credential_provider/credential.h"
+#import "ios/chrome/common/credential_provider/memory_credential_store.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/web/public/test/web_task_environment.h"
@@ -29,28 +37,36 @@
 
 namespace {
 
+using password_manager::FakeAffiliationService;
 using password_manager::PasswordForm;
 using base::test::ios::WaitUntilConditionOrTimeout;
 using base::test::ios::kWaitForFileOperationTimeout;
-using password_manager::PasswordStoreImpl;
+using password_manager::PasswordStore;
 using password_manager::LoginDatabase;
+
+NSString* const userEmail = @"test@email.com";
 
 class CredentialProviderServiceTest : public PlatformTest {
  public:
   CredentialProviderServiceTest()
       : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {}
 
+  CredentialProviderServiceTest(const CredentialProviderServiceTest&) = delete;
+  CredentialProviderServiceTest& operator=(
+      const CredentialProviderServiceTest&) = delete;
+
   void SetUp() override {
     PlatformTest::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     password_store_ = CreatePasswordStore();
-    password_store_->Init(nullptr);
+    password_store_->Init(/*prefs=*/nullptr,
+                          /*affiliated_match_helper=*/nullptr);
 
     NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
     EXPECT_FALSE([user_defaults
         boolForKey:kUserDefaultsCredentialProviderFirstTimeSyncCompleted]);
 
-    credential_store_ = [[ArchivableCredentialStore alloc] initWithFileURL:nil];
+    credential_store_ = [[MemoryCredentialStore alloc] init];
 
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(
@@ -63,8 +79,19 @@ class CredentialProviderServiceTest : public PlatformTest {
         AuthenticationServiceFactory::GetInstance()->GetForBrowserState(
             chrome_browser_state_.get()));
 
+    account_manager_service_ =
+        ChromeAccountManagerServiceFactory::GetForBrowserState(
+            chrome_browser_state_.get());
+
+    testing_pref_service_.registry()->RegisterBooleanPref(
+        password_manager::prefs::kCredentialsEnableService, true);
+
     credential_provider_service_ = std::make_unique<CredentialProviderService>(
-        password_store_, auth_service_, credential_store_, nullptr, nullptr);
+        &testing_pref_service_, password_store_, auth_service_,
+        credential_store_, nullptr, &sync_service_, &affiliation_service_);
+
+    // Fire sync service state changed to simulate sync setup finishing.
+    sync_service_.FireStateChanged();
   }
 
   void TearDown() override {
@@ -76,23 +103,26 @@ class CredentialProviderServiceTest : public PlatformTest {
     PlatformTest::TearDown();
   }
 
-  scoped_refptr<PasswordStoreImpl> CreatePasswordStore() {
-    return base::MakeRefCounted<PasswordStoreImpl>(
-        std::make_unique<LoginDatabase>(
-            temp_dir_.GetPath().Append(FILE_PATH_LITERAL("login_test")),
-            password_manager::IsAccountStore(false)));
+  scoped_refptr<PasswordStore> CreatePasswordStore() {
+    return base::MakeRefCounted<PasswordStore>(
+        std::make_unique<password_manager::PasswordStoreBuiltInBackend>(
+            std::make_unique<LoginDatabase>(
+                temp_dir_.GetPath().Append(FILE_PATH_LITERAL("login_test")),
+                password_manager::IsAccountStore(false))));
   }
 
  protected:
+  TestingPrefServiceSimple testing_pref_service_;
   base::ScopedTempDir temp_dir_;
   web::WebTaskEnvironment task_environment_;
-  scoped_refptr<PasswordStoreImpl> password_store_;
-  ArchivableCredentialStore* credential_store_;
+  scoped_refptr<PasswordStore> password_store_;
+  id<CredentialStore> credential_store_;
   AuthenticationServiceFake* auth_service_;
   std::unique_ptr<CredentialProviderService> credential_provider_service_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(CredentialProviderServiceTest);
+  ChromeAccountManagerService* account_manager_service_;
+  syncer::TestSyncService sync_service_;
+  FakeAffiliationService affiliation_service_;
 };
 
 // Test that CredentialProviderService can be created.
@@ -160,18 +190,19 @@ TEST_F(CredentialProviderServiceTest, AccountChange) {
   password_store_->AddLogin(form);
   task_environment_.RunUntilIdle();
 
-  EXPECT_FALSE(auth_service_->GetAuthenticatedIdentity());
+  EXPECT_FALSE(
+      auth_service_->GetPrimaryIdentity(signin::ConsentLevel::kSignin));
   EXPECT_FALSE(credential_store_.credentials.firstObject.validationIdentifier);
 
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
   identity_service->AddManagedIdentities(@[ @"Name" ]);
-  ChromeIdentity* identity =
-      identity_service->GetAllIdentitiesSortedForDisplay(nullptr).firstObject;
+  ChromeIdentity* identity = account_manager_service_->GetDefaultIdentity();
   auth_service_->SignIn(identity);
 
-  ASSERT_TRUE(auth_service_->GetAuthenticatedIdentity());
-  ASSERT_TRUE(auth_service_->IsAuthenticatedIdentityManaged());
+  ASSERT_TRUE(auth_service_->GetPrimaryIdentity(signin::ConsentLevel::kSignin));
+  ASSERT_TRUE(
+      auth_service_->HasPrimaryIdentityManaged(signin::ConsentLevel::kSignin));
 
   CoreAccountInfo account = CoreAccountInfo();
   account.email = base::SysNSStringToUTF8(identity.userEmail);
@@ -185,9 +216,10 @@ TEST_F(CredentialProviderServiceTest, AccountChange) {
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForFileOperationTimeout, ^{
     base::RunLoop().RunUntilIdle();
-    return [auth_service_->GetAuthenticatedIdentity().gaiaID
-        isEqualToString:credential_store_.credentials.firstObject
-                            .validationIdentifier];
+    return
+        [auth_service_->GetPrimaryIdentity(signin::ConsentLevel::kSignin).gaiaID
+            isEqualToString:credential_store_.credentials.firstObject
+                                .validationIdentifier];
   }));
 
   auth_service_->SignOut(signin_metrics::SIGNOUT_TEST,
@@ -202,9 +234,10 @@ TEST_F(CredentialProviderServiceTest, AccountChange) {
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForFileOperationTimeout, ^{
     base::RunLoop().RunUntilIdle();
-    return ![auth_service_->GetAuthenticatedIdentity().gaiaID
-        isEqualToString:credential_store_.credentials.firstObject
-                            .validationIdentifier];
+    return !
+        [auth_service_->GetPrimaryIdentity(signin::ConsentLevel::kSignin).gaiaID
+            isEqualToString:credential_store_.credentials.firstObject
+                                .validationIdentifier];
   }));
 }
 
@@ -223,6 +256,56 @@ TEST_F(CredentialProviderServiceTest, AndroidCredential) {
 
   // Expect the store to be populated with 1 credential.
   ASSERT_EQ(1u, credential_store_.credentials.count);
+}
+
+// Test that the CredentialProviderService observes changes in the preference
+// that controls password creation
+TEST_F(CredentialProviderServiceTest, PasswordCreationPreference) {
+  // The test is initialized with the preference as true. Make sure the
+  // NSUserDefaults value is also true.
+  EXPECT_TRUE([[app_group::GetGroupUserDefaults()
+      objectForKey:
+          AppGroupUserDefaulsCredentialProviderSavingPasswordsEnabled()]
+      boolValue]);
+
+  // Change the pref value to false.
+  testing_pref_service_.SetBoolean(
+      password_manager::prefs::kCredentialsEnableService, false);
+
+  // Make sure the NSUserDefaults value is now false.
+  EXPECT_FALSE([[app_group::GetGroupUserDefaults()
+      objectForKey:
+          AppGroupUserDefaulsCredentialProviderSavingPasswordsEnabled()]
+      boolValue]);
+}
+
+// Tests that the CredentialProviderService has the correct stored email based
+// on the password sync state.
+TEST_F(CredentialProviderServiceTest, PasswordSyncStoredEmail) {
+  // Start by signing in and turning sync on.
+  FakeChromeIdentity* identity =
+      [FakeChromeIdentity identityWithEmail:userEmail
+                                     gaiaID:@"gaiaID"
+                                       name:@"Test Name"];
+  auth_service_->SignIn(identity);
+  auth_service_->GrantSyncConsent(identity);
+  sync_service_.FireStateChanged();
+
+  EXPECT_NSEQ(
+      userEmail,
+      [app_group::GetGroupUserDefaults()
+          stringForKey:AppGroupUserDefaultsCredentialProviderUserEmail()]);
+
+  // Turn off password sync.
+  auto model_type_set = sync_service_.GetActiveDataTypes();
+  model_type_set.Remove(syncer::PASSWORDS);
+  sync_service_.SetPreferredDataTypes(model_type_set);
+  sync_service_.SetActiveDataTypes(model_type_set);
+
+  sync_service_.FireStateChanged();
+
+  EXPECT_FALSE([app_group::GetGroupUserDefaults()
+      stringForKey:AppGroupUserDefaultsCredentialProviderUserEmail()]);
 }
 
 }  // namespace

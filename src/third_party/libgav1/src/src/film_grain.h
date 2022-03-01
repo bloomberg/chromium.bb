@@ -103,6 +103,8 @@ class FilmGrain {
  private:
   using Pixel =
       typename std::conditional<bitdepth == 8, uint8_t, uint16_t>::type;
+  static constexpr int kScalingLutLength =
+      (kScalingLookupTableSize + kScalingLookupTablePadding) << (bitdepth - 8);
 
   bool Init();
 
@@ -156,13 +158,13 @@ class FilmGrain {
   GrainType u_grain_[kMaxChromaHeight * kMaxChromaWidth];
   GrainType v_grain_[kMaxChromaHeight * kMaxChromaWidth];
   // Scaling lookup tables.
-  uint8_t scaling_lut_y_[kScalingLookupTableSize + kScalingLookupTablePadding];
-  uint8_t* scaling_lut_u_ = nullptr;
-  uint8_t* scaling_lut_v_ = nullptr;
-  // If allocated, this buffer is 256 * 2 bytes long and scaling_lut_u_ and
+  int16_t scaling_lut_y_[kScalingLutLength];
+  int16_t* scaling_lut_u_ = nullptr;
+  int16_t* scaling_lut_v_ = nullptr;
+  // If allocated, this buffer is 256 * 2 values long and scaling_lut_u_ and
   // scaling_lut_v_ point into this buffer. Otherwise, scaling_lut_u_ and
   // scaling_lut_v_ point to scaling_lut_y_.
-  std::unique_ptr<uint8_t[]> scaling_lut_chroma_buffer_;
+  std::unique_ptr<int16_t[]> scaling_lut_chroma_buffer_;
 
   // A two-dimensional array of noise data for each plane. Generated for each 32
   // luma sample high stripe of the image. The first dimension is called

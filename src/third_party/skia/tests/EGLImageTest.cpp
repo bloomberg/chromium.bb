@@ -9,9 +9,9 @@
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrShaderCaps.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/GrTextureProxyPriv.h"
+#include "src/gpu/SurfaceFillContext.h"
 #include "src/gpu/gl/GrGLGpu.h"
 #include "src/gpu/gl/GrGLUtil.h"
 #include "tests/Test.h"
@@ -165,10 +165,10 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(EGLImageTest, reporter, ctxInfo) {
     GrSwizzle swizzle = context0->priv().caps()->getReadSwizzle(texProxy->backendFormat(),
                                                                 colorInfo.colorType());
     GrSurfaceProxyView view(std::move(texProxy), origin, swizzle);
-    auto surfaceContext = GrSurfaceContext::Make(context0, std::move(view), colorInfo);
+    auto surfaceContext = context0->priv().makeSC(std::move(view), colorInfo);
 
     if (!surfaceContext) {
-        ERRORF(reporter, "Error wrapping external texture in GrSurfaceContext.");
+        ERRORF(reporter, "Error wrapping external texture in SurfaceContext.");
         cleanup(glCtx0, externalTexture.fID, glCtx1.get(), context1, image);
         return;
     }
@@ -184,12 +184,11 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(EGLImageTest, reporter, ctxInfo) {
 
     // Should not be able to wrap as a RT
     {
-        auto temp = GrSurfaceFillContext::MakeFromBackendTexture(context0,
-                                                                 colorInfo,
-                                                                 backendTex,
-                                                                 1,
-                                                                 origin,
-                                                                 /*release helper*/ nullptr);
+        auto temp = context0->priv().makeSFCFromBackendTexture(colorInfo,
+                                                               backendTex,
+                                                               1,
+                                                               origin,
+                                                               /*release helper*/ nullptr);
         if (temp) {
             ERRORF(reporter, "Should not be able to wrap an EXTERNAL texture as a RT.");
         }
@@ -197,7 +196,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(EGLImageTest, reporter, ctxInfo) {
 
     //TestReadPixels(reporter, context0, surfaceContext.get(), pixels.get(), "EGLImageTest-read");
 
-    SkDebugf("type: %d\n", surfaceContext->asTextureProxy()->textureType());
+    SkDebugf("type: %d\n", (int)surfaceContext->asTextureProxy()->textureType());
     // We should not be able to write to an EXTERNAL texture
     TestWritePixels(reporter, context0, surfaceContext.get(), false, "EGLImageTest-write");
 

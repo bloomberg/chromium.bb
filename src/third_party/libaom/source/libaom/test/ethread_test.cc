@@ -448,6 +448,10 @@ AV1_INSTANTIATE_TEST_SUITE(AVxEncoderThreadRTTest,
                            ::testing::Values(0, 1));
 
 #if !CONFIG_REALTIME_ONLY
+
+// The AVxEncoderThreadTestLarge takes up ~14% of total run-time of the
+// Valgrind long tests. Exclude it; the smaller tests are still run.
+#if !AOM_VALGRIND_BUILD
 class AVxEncoderThreadTestLarge : public AVxEncoderThreadTest {};
 
 TEST_P(AVxEncoderThreadTestLarge, EncoderResultTest) {
@@ -455,6 +459,15 @@ TEST_P(AVxEncoderThreadTestLarge, EncoderResultTest) {
   decoder_->Control(AV1_SET_TILE_MODE, 0);
   DoTest();
 }
+
+// Test cpu_used 0, 1, 3 and 5.
+AV1_INSTANTIATE_TEST_SUITE(AVxEncoderThreadTestLarge,
+                           ::testing::Values(::libaom_test::kTwoPassGood,
+                                             ::libaom_test::kOnePassGood),
+                           ::testing::Values(0, 1, 3, 5),
+                           ::testing::Values(1, 6), ::testing::Values(1, 6),
+                           ::testing::Values(0, 1));
+#endif  // !AOM_VALGRIND_BUILD
 
 TEST_P(AVxEncoderThreadTest, EncoderResultTest) {
   cfg_.large_scale_tile = 0;
@@ -498,21 +511,13 @@ AV1_INSTANTIATE_TEST_SUITE(AVxEncoderThreadAllIntraTest,
                            ::testing::Values(6), ::testing::Values(0, 2),
                            ::testing::Values(0, 2), ::testing::Values(0, 1));
 
-// Test cpu_used 0, 1, 3 and 5.
-AV1_INSTANTIATE_TEST_SUITE(AVxEncoderThreadTestLarge,
-                           ::testing::Values(::libaom_test::kTwoPassGood,
-                                             ::libaom_test::kOnePassGood),
-                           ::testing::Values(0, 1, 3, 5),
-                           ::testing::Values(1, 6), ::testing::Values(1, 6),
-                           ::testing::Values(0, 1));
-
 // Test cpu_used 0, 2, 4 and 8.
 AV1_INSTANTIATE_TEST_SUITE(AVxEncoderThreadAllIntraTestLarge,
                            ::testing::Values(::libaom_test::kAllIntra),
                            ::testing::Values(0, 2, 4, 8),
                            ::testing::Values(1, 6), ::testing::Values(1, 6),
                            ::testing::Values(0, 1));
-#endif
+#endif  // !CONFIG_REALTIME_ONLY
 
 class AVxEncoderThreadLSTest : public AVxEncoderThreadTest {
   virtual void SetTileSize(libaom_test::Encoder *encoder) {
@@ -539,7 +544,10 @@ TEST_P(AVxEncoderThreadLSTest, EncoderResultTest) {
   DoTest();
 }
 
-#if !CONFIG_REALTIME_ONLY
+// AVxEncoderThreadLSTestLarge takes up about 2% of total run-time of
+// the Valgrind long tests. Since we already run AVxEncoderThreadLSTest,
+// skip this one for Valgrind.
+#if !CONFIG_REALTIME_ONLY && !AOM_VALGRIND_BUILD
 class AVxEncoderThreadLSTestLarge : public AVxEncoderThreadLSTest {};
 
 TEST_P(AVxEncoderThreadLSTestLarge, EncoderResultTest) {
@@ -554,5 +562,5 @@ AV1_INSTANTIATE_TEST_SUITE(AVxEncoderThreadLSTestLarge,
                                              ::libaom_test::kOnePassGood),
                            ::testing::Values(1, 3), ::testing::Values(0, 6),
                            ::testing::Values(0, 6), ::testing::Values(1));
-#endif
+#endif  // !CONFIG_REALTIME_ONLY && !AOM_VALGRIND_BUILD
 }  // namespace

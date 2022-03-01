@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "content/browser/webrtc/webrtc_content_browsertest_base.h"
@@ -51,6 +50,11 @@ class MAYBE_WebRtcMediaRecorderTest
       public testing::WithParamInterface<struct EncodingParameters> {
  public:
   MAYBE_WebRtcMediaRecorderTest() {}
+
+  MAYBE_WebRtcMediaRecorderTest(const MAYBE_WebRtcMediaRecorderTest&) = delete;
+  MAYBE_WebRtcMediaRecorderTest& operator=(
+      const MAYBE_WebRtcMediaRecorderTest&) = delete;
+
   ~MAYBE_WebRtcMediaRecorderTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -69,9 +73,6 @@ class MAYBE_WebRtcMediaRecorderTest
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisableAcceleratedVideoDecode);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MAYBE_WebRtcMediaRecorderTest);
 };
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest, Start) {
@@ -82,7 +83,14 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest, StartAndStop) {
   MakeTypicalCall("testStartStopAndRecorderState();", kMediaRecorderHtmlFile);
 }
 
-IN_PROC_BROWSER_TEST_P(MAYBE_WebRtcMediaRecorderTest, StartAndDataAvailable) {
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// https://crbug.com/1222675
+#define MAYBE_StartAndDataAvailable DISABLED_StartAndDataAvailable
+#else
+#define MAYBE_StartAndDataAvailable StartAndDataAvailable
+#endif
+IN_PROC_BROWSER_TEST_P(MAYBE_WebRtcMediaRecorderTest,
+                       MAYBE_StartAndDataAvailable) {
   MaybeForceDisableEncodeAccelerator(GetParam().disable_accelerator);
   MakeTypicalCall(base::StringPrintf("testStartAndDataAvailable(\"%s\");",
                                      GetParam().mime_type.c_str()),
@@ -113,7 +121,14 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
   MakeTypicalCall("testIllegalResumeThrowsDOMError();", kMediaRecorderHtmlFile);
 }
 
-IN_PROC_BROWSER_TEST_P(MAYBE_WebRtcMediaRecorderTest, ResumeAndDataAvailable) {
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// https://crbug.com/1222675
+#define MAYBE_ResumeAndDataAvailable DISABLED_ResumeAndDataAvailable
+#else
+#define MAYBE_ResumeAndDataAvailable ResumeAndDataAvailable
+#endif
+IN_PROC_BROWSER_TEST_P(MAYBE_WebRtcMediaRecorderTest,
+                       MAYBE_ResumeAndDataAvailable) {
   MaybeForceDisableEncodeAccelerator(GetParam().disable_accelerator);
   MakeTypicalCall(base::StringPrintf("testResumeAndDataAvailable(\"%s\");",
                                      GetParam().mime_type.c_str()),
@@ -151,8 +166,14 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
   MakeTypicalCall("testIllegalPauseThrowsDOMError();", kMediaRecorderHtmlFile);
 }
 
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// https://crbug.com/1222675
+#define MAYBE_TwoChannelAudioRecording DISABLED_TwoChannelAudioRecording
+#else
+#define MAYBE_TwoChannelAudioRecording TwoChannelAudioRecording
+#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
-                       TwoChannelAudioRecording) {
+                       MAYBE_TwoChannelAudioRecording) {
   MakeTypicalCall("testTwoChannelAudio();", kMediaRecorderHtmlFile);
 }
 
@@ -202,6 +223,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
 #define MAYBE_PeerConnection DISABLED_PeerConnection
 #elif defined(OS_WIN) && !defined(NDEBUG)
 // Fails on Win7 debug, https://crbug.com/703844.
+#define MAYBE_PeerConnection DISABLED_PeerConnection
+#elif defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// Fails on Mac/Arm, https://crbug.com/1222675
 #define MAYBE_PeerConnection DISABLED_PeerConnection
 #else
 #define MAYBE_PeerConnection PeerConnection

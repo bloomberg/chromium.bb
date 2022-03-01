@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -40,6 +40,10 @@ class AudioPump : public AudioStream {
             std::unique_ptr<AudioSource> audio_source,
             std::unique_ptr<AudioEncoder> audio_encoder,
             AudioStub* audio_stub);
+
+  AudioPump(const AudioPump&) = delete;
+  AudioPump& operator=(const AudioPump&) = delete;
+
   ~AudioPump() override;
 
   // AudioStream interface.
@@ -57,13 +61,11 @@ class AudioPump : public AudioStream {
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
-  AudioStub* audio_stub_;
+  raw_ptr<AudioStub> audio_stub_;
 
   std::unique_ptr<Core> core_;
 
   base::WeakPtrFactory<AudioPump> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AudioPump);
 };
 
 }  // namespace protocol

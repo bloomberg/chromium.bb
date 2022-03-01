@@ -13,14 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 """Exposes the Python wrapper for graph transforms."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 # pylint: disable=unused-import,wildcard-import, line-too-long
 from tensorflow.core.framework import graph_pb2
-from tensorflow.python._pywrap_transform_graph import TransformGraphWithStringInputs
 from tensorflow.python.util import compat
+from tensorflow.python.util._pywrap_transform_graph import TransformGraphWithStringInputs
 
 
 def TransformGraph(input_graph_def, inputs, outputs, transforms):

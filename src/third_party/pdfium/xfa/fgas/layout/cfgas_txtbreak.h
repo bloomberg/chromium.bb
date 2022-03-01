@@ -56,7 +56,7 @@ class CFGAS_TxtBreak final : public CFGAS_Break {
     int32_t iLength = 0;
     RetainPtr<CFGAS_GEFont> pFont;
     float fFontSize = 12.0f;
-    uint32_t dwStyles = 0;
+    Mask<LayoutStyle> dwStyles = LayoutStyle::kNone;
     int32_t iHorizontalScale = 100;
     int32_t iVerticalScale = 100;
     uint32_t dwCharStyles = 0;
@@ -84,12 +84,11 @@ class CFGAS_TxtBreak final : public CFGAS_Break {
   CFGAS_Char::BreakType AppendChar_Others(CFGAS_Char* pCurChar);
 
   void ResetContextCharStyles();
-  void EndBreak_SplitLine(CFGAS_BreakLine* pNextLine, bool bAllChars);
-  void EndBreak_BidiLine(std::deque<FX_TPO>* tpos,
+  void EndBreakSplitLine(CFGAS_BreakLine* pNextLine, bool bAllChars);
+  std::deque<TPO> EndBreakBidiLine(CFGAS_Char::BreakType dwStatus);
+  void EndBreakAlignment(const std::deque<TPO>& tpos,
+                         bool bAllChars,
                          CFGAS_Char::BreakType dwStatus);
-  void EndBreak_Alignment(const std::deque<FX_TPO>& tpos,
-                          bool bAllChars,
-                          CFGAS_Char::BreakType dwStatus);
   int32_t GetBreakPos(std::vector<CFGAS_Char>* pChars,
                       bool bAllChars,
                       bool bOnlyBrk,

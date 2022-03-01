@@ -54,7 +54,7 @@ final class AutofillExpirationDateFixFlowBridge
     }
 
     @Override
-    public void onUserAccept(String month, String year) {
+    public void onUserAcceptExpirationDate(String month, String year) {
         AutofillExpirationDateFixFlowBridgeJni.get().onUserAccept(
                 mNativeCardExpirationDateFixFlowViewAndroid,
                 AutofillExpirationDateFixFlowBridge.this, month, year);
@@ -66,6 +66,10 @@ final class AutofillExpirationDateFixFlowBridge
                 mNativeCardExpirationDateFixFlowViewAndroid,
                 AutofillExpirationDateFixFlowBridge.this);
     }
+
+    /* no-op. Legal lines aren't set. */
+    @Override
+    public void onLinkClicked(String url) {}
 
     /**
      * Shows a prompt for expiration date fix flow.
@@ -80,8 +84,9 @@ final class AutofillExpirationDateFixFlowBridge
             return;
         }
 
-        mExpirationDateFixFlowPrompt = new AutofillExpirationDateFixFlowPrompt(
-                activity, this, mTitle, mConfirmButtonLabel, mIconId, mCardLabel);
+        mExpirationDateFixFlowPrompt =
+                AutofillExpirationDateFixFlowPrompt.createAsInfobarFixFlowPrompt(
+                        activity, this, mTitle, mIconId, mCardLabel, mConfirmButtonLabel);
         mExpirationDateFixFlowPrompt.show(activity, windowAndroid.getModalDialogManager());
     }
 

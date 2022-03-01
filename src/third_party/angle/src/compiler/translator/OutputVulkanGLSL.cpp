@@ -19,36 +19,20 @@
 namespace sh
 {
 
-TOutputVulkanGLSL::TOutputVulkanGLSL(TInfoSinkBase &objSink,
-                                     ShArrayIndexClampingStrategy clampingStrategy,
-                                     ShHashFunction64 hashFunction,
-                                     NameMap &nameMap,
-                                     TSymbolTable *symbolTable,
-                                     sh::GLenum shaderType,
-                                     int shaderVersion,
-                                     ShShaderOutput output,
-                                     bool forceHighp,
+TOutputVulkanGLSL::TOutputVulkanGLSL(TCompiler *compiler,
+                                     TInfoSinkBase &objSink,
                                      bool enablePrecision,
                                      ShCompileOptions compileOptions)
-    : TOutputGLSL(objSink,
-                  clampingStrategy,
-                  hashFunction,
-                  nameMap,
-                  symbolTable,
-                  shaderType,
-                  shaderVersion,
-                  output,
-                  compileOptions),
+    : TOutputGLSL(compiler, objSink, compileOptions),
       mNextUnusedBinding(0),
       mNextUnusedInputLocation(0),
       mNextUnusedOutputLocation(0),
-      mForceHighp(forceHighp),
       mEnablePrecision(enablePrecision)
 {}
 
-void TOutputVulkanGLSL::writeLayoutQualifier(TIntermTyped *variable)
+void TOutputVulkanGLSL::writeLayoutQualifier(TIntermSymbol *symbol)
 {
-    const TType &type = variable->getType();
+    const TType &type = symbol->getType();
 
     bool needsSetBinding = IsSampler(type.getBasicType()) ||
                            (type.isInterfaceBlock() && (type.getQualifier() == EvqUniform ||
@@ -58,9 +42,10 @@ void TOutputVulkanGLSL::writeLayoutQualifier(TIntermTyped *variable)
                          type.getQualifier() == EvqVertexIn ||
                          type.getQualifier() == EvqFragmentOut || IsVarying(type.getQualifier());
     bool needsInputAttachmentIndex = IsSubpassInputType(type.getBasicType());
+    bool needsSpecConstId          = type.getQualifier() == EvqSpecConst;
 
     if (!NeedsToWriteLayoutQualifier(type) && !needsSetBinding && !needsLocation &&
-        !needsInputAttachmentIndex)
+        !needsInputAttachmentIndex && !needsSpecConstId)
     {
         return;
     }
@@ -70,19 +55,12 @@ void TOutputVulkanGLSL::writeLayoutQualifier(TIntermTyped *variable)
 
     // This isn't super clean, but it gets the job done.
     // See corresponding code in glslang_wrapper_utils.cpp.
-    TIntermSymbol *symbol = variable->getAsSymbolNode();
-    ASSERT(symbol);
-
-    ImmutableString name      = symbol->getName();
     const char *blockStorage  = nullptr;
     const char *matrixPacking = nullptr;
 
-    // For interface blocks, use the block name instead.  When the layout qualifier is being
-    // replaced in the backend, that would be the name that's available.
     if (type.isInterfaceBlock())
     {
         const TInterfaceBlock *interfaceBlock = type.getInterfaceBlock();
-        name                                  = interfaceBlock->name();
         TLayoutBlockStorage storage           = interfaceBlock->blockStorage();
 
         // Make sure block storage format is specified.
@@ -118,6 +96,12 @@ void TOutputVulkanGLSL::writeLayoutQualifier(TIntermTyped *variable)
         separator = kCommaSeparator;
     }
 
+    // If it's a specialization constant, add that constant_id qualifier.
+    if (needsSpecConstId)
+    {
+        out << separator << "constant_id=" << layoutQualifier.location;
+    }
+
     // If the resource declaration requires set & binding layout qualifiers, specify arbitrary
     // ones.
     if (needsSetBinding)
@@ -128,10 +112,17 @@ void TOutputVulkanGLSL::writeLayoutQualifier(TIntermTyped *variable)
 
     if (needsLocation)
     {
-        const unsigned int locationCount = CalculateVaryingLocationCount(symbol, getShaderType());
-        uint32_t location                = IsShaderIn(type.getQualifier())
-                                ? nextUnusedInputLocation(locationCount)
-                                : nextUnusedOutputLocation(locationCount);
+        uint32_t location = 0;
+        if (layoutQualifier.index <= 0)
+        {
+            // Note: for index == 1 (dual source blending), don't count locations as they are
+            // expected to alias the color output locations.  Only one dual-source output is
+            // supported, so location will be always 0.
+            const unsigned int locationCount =
+                CalculateVaryingLocationCount(symbol->getType(), getShaderType());
+            location = IsShaderIn(type.getQualifier()) ? nextUnusedInputLocation(locationCount)
+                                                       : nextUnusedOutputLocation(locationCount);
+        }
 
         out << separator << "location=" << location;
         separator = kCommaSeparator;
@@ -139,7 +130,7 @@ void TOutputVulkanGLSL::writeLayoutQualifier(TIntermTyped *variable)
 
     // Output the list of qualifiers already known at this stage, i.e. everything other than
     // `location` and `set`/`binding`.
-    std::string otherQualifiers = getCommonLayoutQualifiers(variable);
+    std::string otherQualifiers = getCommonLayoutQualifiers(symbol);
 
     if (blockStorage)
     {
@@ -180,10 +171,7 @@ bool TOutputVulkanGLSL::writeVariablePrecision(TPrecision precision)
         return false;
 
     TInfoSinkBase &out = objSink();
-    if (mForceHighp)
-        out << getPrecisionString(EbpHigh);
-    else
-        out << getPrecisionString(precision);
+    out << getPrecisionString(precision);
     return true;
 }
 

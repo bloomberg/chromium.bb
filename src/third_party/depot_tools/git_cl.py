@@ -46,6 +46,7 @@ import owners_client
 import owners_finder
 import presubmit_canned_checks
 import presubmit_support
+import rustfmt
 import scm
 import setup_color
 import split_cl
@@ -104,8 +105,8 @@ TRACES_README_FORMAT = (
 POSTUPSTREAM_HOOK = '.git/hooks/post-cl-land'
 DESCRIPTION_BACKUP_FILE = '.git_cl_description_backup'
 REFS_THAT_ALIAS_TO_OTHER_REFS = {
-    'refs/remotes/origin/lkgr': 'refs/remotes/origin/master',
-    'refs/remotes/origin/lkcr': 'refs/remotes/origin/master',
+    'refs/remotes/origin/lkgr': 'refs/remotes/origin/main',
+    'refs/remotes/origin/lkcr': 'refs/remotes/origin/main',
 }
 
 DEFAULT_OLD_BRANCH = 'refs/remotes/origin/master'
@@ -164,8 +165,8 @@ def DieWithError(message, change_desc=None):
 def SaveDescriptionBackup(change_desc):
   backup_path = os.path.join(DEPOT_TOOLS, DESCRIPTION_BACKUP_FILE)
   print('\nsaving CL description to %s\n' % backup_path)
-  with open(backup_path, 'w') as backup_file:
-    backup_file.write(change_desc.description)
+  with open(backup_path, 'wb') as backup_file:
+    backup_file.write(change_desc.description.encode('utf-8'))
 
 
 def GetNoGitPagerEnv():
@@ -184,7 +185,10 @@ def RunCommand(args, error_ok=False, error_message=None, shell=False, **kwargs):
     if not error_ok:
       message = error_message or e.stdout.decode('utf-8', 'replace') or ''
       DieWithError('Command "%s" failed.\n%s' % (' '.join(args), message))
-    return e.stdout.decode('utf-8', 'replace')
+    out = e.stdout.decode('utf-8', 'replace')
+    if e.stderr:
+      out += e.stderr.decode('utf-8', 'replace')
+    return out
 
 
 def RunGit(args, **kwargs):
@@ -721,6 +725,7 @@ class Settings(object):
     self.gerrit_skip_ensure_authenticated = None
     self.git_editor = None
     self.format_full_by_default = None
+    self.is_status_commit_order_by_date = None
 
   def _LazyUpdateIfNeeded(self):
     """Updates the settings from a codereview.settings file, if available."""
@@ -773,6 +778,9 @@ class Settings(object):
   def GetDefaultCCList(self):
     return self._GetConfig('rietveld.cc')
 
+  def GetUsePython3(self):
+    return self._GetConfig('rietveld.use-python3')
+
   def GetSquashGerritUploads(self):
     """Returns True if uploads to Gerrit should be squashed by default."""
     if self.squash_gerrit_uploads is None:
@@ -822,11 +830,19 @@ class Settings(object):
 
   def GetFormatFullByDefault(self):
     if self.format_full_by_default is None:
+      self._LazyUpdateIfNeeded()
       result = (
           RunGit(['config', '--bool', 'rietveld.format-full-by-default'],
                  error_ok=True).strip())
       self.format_full_by_default = (result == 'true')
     return self.format_full_by_default
+
+  def IsStatusCommitOrderByDate(self):
+    if self.is_status_commit_order_by_date is None:
+      result = (RunGit(['config', '--bool', 'cl.date-order'],
+                       error_ok=True).strip())
+      self.is_status_commit_order_by_date = (result == 'true')
+    return self.is_status_commit_order_by_date
 
   def _GetConfig(self, key, default=''):
     self._LazyUpdateIfNeeded()
@@ -836,10 +852,11 @@ class Settings(object):
 class _CQState(object):
   """Enum for states of CL with respect to CQ."""
   NONE = 'none'
+  QUICK_RUN = 'quick_run'
   DRY_RUN = 'dry_run'
   COMMIT = 'commit'
 
-  ALL_STATES = [NONE, DRY_RUN, COMMIT]
+  ALL_STATES = [NONE, QUICK_RUN, DRY_RUN, COMMIT]
 
 
 class _ParsedIssueNumberArgument(object):
@@ -1178,6 +1195,9 @@ class Changelist(object):
       server = _KNOWN_GERRIT_TO_SHORT_URLS.get(server, server)
     return '%s/%s' % (server, issue)
 
+  def GetUsePython3(self):
+    return settings.GetUsePython3()
+
   def FetchDescription(self, pretty=False):
     assert self.GetIssue(), 'issue is required to query Gerrit'
 
@@ -1342,7 +1362,8 @@ class Changelist(object):
         gclient_utils.FileWrite(description_file, description)
         args.extend(['--json_output', json_output])
         args.extend(['--description_file', description_file])
-
+        if self.GetUsePython3():
+          args.append('--use-python3')
         start = time_time()
         cmd = [vpython, PRESUBMIT_SUPPORT] + args
         if resultdb and realm:
@@ -1397,16 +1418,25 @@ class Changelist(object):
       if options.title and options.squash:
         description = options.title + '\n\n' + description
 
-    # Extract bug number from branch name.
     bug = options.bug
     fixed = options.fixed
-    match = re.match(r'(?P<type>bug|fix(?:e[sd])?)[_-]?(?P<bugnum>\d+)',
-                     self.GetBranch())
-    if not bug and not fixed and match:
-      if match.group('type') == 'bug':
-        bug = match.group('bugnum')
-      else:
-        fixed = match.group('bugnum')
+    if not self.GetIssue():
+      # Extract bug number from branch name, but only if issue is being created.
+      # It must start with bug or fix, followed by _ or - and number.
+      # Optionally, it may contain _ or - after number with arbitrary text.
+      # Examples:
+      #   bug-123
+      #   bug_123
+      #   fix-123
+      #   fix-123-some-description
+      match = re.match(
+          r'^(?P<type>bug|fix(?:e[sd])?)[_-]?(?P<bugnum>\d+)([-_]|$)',
+          self.GetBranch())
+      if not bug and not fixed and match:
+        if match.group('type') == 'bug':
+          bug = match.group('bugnum')
+        else:
+          fixed = match.group('bugnum')
 
     change_description = ChangeDescription(description, bug, fixed)
 
@@ -1527,17 +1557,25 @@ class Changelist(object):
   def SetCQState(self, new_state):
     """Updates the CQ state for the latest patchset.
 
-    Issue must have been already uploaded and known.
+    Issue must have been already uploaded and known. Optionally allows for
+    updating Quick-Run (QR) state.
     """
     assert new_state in _CQState.ALL_STATES
     assert self.GetIssue()
     try:
       vote_map = {
         _CQState.NONE: 0,
+        _CQState.QUICK_RUN: 1,
         _CQState.DRY_RUN: 1,
         _CQState.COMMIT: 2,
       }
-      labels = {'Commit-Queue': vote_map[new_state]}
+      if new_state == _CQState.QUICK_RUN:
+        labels = {
+            'Commit-Queue': vote_map[_CQState.DRY_RUN],
+            'Quick-Run': vote_map[_CQState.QUICK_RUN],
+        }
+      else:
+        labels = {'Commit-Queue': vote_map[new_state]}
       notify = False if new_state == _CQState.DRY_RUN else None
       gerrit_util.SetReview(
           self.GetGerritHost(), self._GerritChangeIdentifier(),
@@ -1770,8 +1808,9 @@ class Changelist(object):
     messages = sorted(data.get('messages', []), key=lambda m: m.get('date'))
     while messages:
       m = messages.pop()
-      if m.get('tag', '').startswith('autogenerated:cq:'):
-        # Ignore replies from CQ.
+      if (m.get('tag', '').startswith('autogenerated:cq') or
+          m.get('tag', '').startswith('autogenerated:cv')):
+        # Ignore replies from LUCI CV/CQ.
         continue
       if m.get('author', {}).get('_account_id') == owner:
         # Most recent message was by owner.
@@ -1880,6 +1919,10 @@ class Changelist(object):
 
   @staticmethod
   def _BuildCommentSummary(msg, comments, readable):
+    if 'email' not in msg['author']:
+      # Some bot accounts may not have an email associated.
+      return None
+
     key = (msg['author']['email'], msg['date'])
     # Don't bother showing autogenerated messages that don't have associated
     # file or line comments. this will filter out most autogenerated
@@ -1928,10 +1971,9 @@ class Changelist(object):
     gerrit_util.AbandonChange(
         self.GetGerritHost(), self._GerritChangeIdentifier(), msg='')
 
-  def SubmitIssue(self, wait_for_merge=True):
+  def SubmitIssue(self):
     gerrit_util.SubmitChange(
-        self.GetGerritHost(), self._GerritChangeIdentifier(),
-        wait_for_merge=wait_for_merge)
+        self.GetGerritHost(), self._GerritChangeIdentifier())
 
   def _GetChangeDetail(self, options=None):
     """Returns details of associated Gerrit change and caching results."""
@@ -2026,11 +2068,11 @@ class Changelist(object):
           resultdb=resultdb,
           realm=realm)
 
-    self.SubmitIssue(wait_for_merge=True)
+    self.SubmitIssue()
     print('Issue %s has been submitted.' % self.GetIssueURL())
     links = self._GetChangeCommit().get('web_links', [])
     for link in links:
-      if link.get('name') == 'gitiles' and link.get('url'):
+      if link.get('name') in ['gitiles', 'browse'] and link.get('url'):
         print('Landed as: %s' % link.get('url'))
         break
     return 0
@@ -2460,6 +2502,9 @@ class Changelist(object):
       refspec_opts.append('l=Commit-Queue+2')
     elif options.cq_dry_run:
       refspec_opts.append('l=Commit-Queue+1')
+    elif options.cq_quick_run:
+      refspec_opts.append('l=Commit-Queue+1')
+      refspec_opts.append('l=Quick-Run+1')
 
     if change_desc.get_reviewers(tbr_only=True):
       score = gerrit_util.GetCodeReviewTbrScore(
@@ -2941,6 +2986,7 @@ def LoadCodereviewSettingsFromFile(fileobj):
               unset_error_ok=True)
   SetProperty(
       'format-full-by-default', 'FORMAT_FULL_BY_DEFAULT', unset_error_ok=True)
+  SetProperty('use-python3', 'USE_PYTHON3', unset_error_ok=True)
 
   if 'GERRIT_HOST' in keyvals:
     RunGit(['config', 'gerrit.host', keyvals['GERRIT_HOST']])
@@ -2966,7 +3012,7 @@ def urlretrieve(source, destination):
 
   This is necessary because urllib is broken for SSL connections via a proxy.
   """
-  with open(destination, 'w') as f:
+  with open(destination, 'wb') as f:
     f.write(urllib.request.urlopen(source).read())
 
 
@@ -3677,7 +3723,8 @@ def CMDstatus(parser, args):
   branch_statuses = {}
 
   alignment = max(5, max(len(FormatBranchName(c.GetBranch())) for c in changes))
-  if options.date_order:
+
+  if options.date_order or settings.IsStatusCommitOrderByDate():
     sorted_changes = sorted(changes,
                             key=lambda c: c.GetCommitDate(),
                             reverse=True)
@@ -4100,16 +4147,6 @@ def GetTargetRef(remote, remote_branch, target_branch):
     # Handle the refs that need to land in different refs.
     remote_branch = REFS_THAT_ALIAS_TO_OTHER_REFS[remote_branch]
 
-  # Migration to new default branch, only if available on remote.
-  allow_push_on_master = bool(os.environ.get("ALLOW_PUSH_TO_MASTER", None))
-  if remote_branch == DEFAULT_OLD_BRANCH and not allow_push_on_master:
-    if RunGit(['show-branch', DEFAULT_NEW_BRANCH], error_ok=True,
-              stderr=subprocess2.PIPE):
-      # TODO(crbug.com/ID): Print location to local git migration script.
-      print("WARNING: Using new branch name %s instead of %s" % (
-          DEFAULT_NEW_BRANCH, DEFAULT_OLD_BRANCH))
-      remote_branch = DEFAULT_NEW_BRANCH
-
   # Create the true path to the remote branch.
   # Does the following translation:
   # * refs/remotes/origin/refs/diff/test -> refs/diff/test
@@ -4216,6 +4253,14 @@ def CMDupload(parser, args):
                     action='store_true', default=False,
                     help='Send the patchset to do a CQ dry run right after '
                          'upload.')
+  parser.add_option(
+      '-q',
+      '--cq-quick-run',
+      action='store_true',
+      default=False,
+      help='Send the patchset to do a CQ quick run right after '
+           'upload (https://source.chromium.org/chromium/chromium/src/+/main:do'
+           'cs/cq_quick_run.md) (chromium only).')
   parser.add_option('--set-bot-commit', action='store_true',
                     help=optparse.SUPPRESS_HELP)
   parser.add_option('--preserve-tryjobs', action='store_true',
@@ -4293,10 +4338,11 @@ def CMDupload(parser, args):
     options.message = gclient_utils.FileRead(options.message_file)
 
   if ([options.cq_dry_run,
+       options.cq_quick_run,
        options.use_commit_queue,
        options.retry_failed].count(True) > 1):
-    parser.error('Only one of --use-commit-queue, --cq-dry-run, or '
-                 '--retry-failed is allowed.')
+    parser.error('Only one of --use-commit-queue, --cq-dry-run, --cq-quick-run '
+                 'or --retry-failed is allowed.')
 
   if options.skip_title and options.title:
     parser.error('Only one of --title and --skip-title allowed.')
@@ -4572,6 +4618,14 @@ def CMDtry(parser, args):
       help='Force a clobber before building; that is don\'t do an '
            'incremental build')
   group.add_option(
+      '-q',
+      '--quick-run',
+      action='store_true',
+      default=False,
+      help='trigger in quick run mode '
+           '(https://source.chromium.org/chromium/chromium/src/+/main:docs/cq_q'
+           'uick_run.md) (chromium only).')
+  group.add_option(
       '--category', default='git_cl_try', help='Specify custom build category.')
   group.add_option(
       '--project',
@@ -4652,6 +4706,9 @@ def CMDtry(parser, args):
     if num_builders > 10:
       confirm_or_exit('There are %d builders with failed builds.'
                       % num_builders, action='continue')
+  elif options.quick_run:
+    print('Scheduling CQ quick run on: %s' % cl.GetIssueURL())
+    return cl.SetCQState(_CQState.QUICK_RUN)
   else:
     if options.verbose:
       print('git cl try with no bots now defaults to CQ dry run.')
@@ -4774,6 +4831,13 @@ def CMDset_commit(parser, args):
   """Sets the commit bit to trigger the CQ."""
   parser.add_option('-d', '--dry-run', action='store_true',
                     help='trigger in dry run mode')
+  parser.add_option(
+      '-q',
+      '--quick-run',
+      action='store_true',
+      help='trigger in quick run mode '
+          '(https://source.chromium.org/chromium/chromium/src/+/main:docs/cq_qu'
+          'ick_run.md) (chromium only).')
   parser.add_option('-c', '--clear', action='store_true',
                     help='stop CQ run, if any')
   parser.add_option(
@@ -4783,18 +4847,21 @@ def CMDset_commit(parser, args):
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
-  if options.dry_run and options.clear:
-    parser.error('Only one of --dry-run and --clear are allowed.')
+  if [options.dry_run, options.quick_run, options.clear].count(True) > 1:
+    parser.error('Only one of --dry-run, --quick-run, and --clear are allowed.')
 
   cl = Changelist(issue=options.issue)
+  if not cl.GetIssue():
+    parser.error('Must upload the issue first.')
+
   if options.clear:
     state = _CQState.NONE
+  elif options.quick_run:
+    state = _CQState.QUICK_RUN
   elif options.dry_run:
     state = _CQState.DRY_RUN
   else:
     state = _CQState.COMMIT
-  if not cl.GetIssue():
-    parser.error('Must upload the issue first.')
   cl.SetCQState(state)
   return 0
 
@@ -5006,6 +5073,34 @@ def _RunClangFormatDiff(opts, clang_diff_files, top_dir, upstream_commit):
   return return_value
 
 
+def _RunRustFmt(opts, rust_diff_files, top_dir, upstream_commit):
+  """Runs rustfmt.  Just like _RunClangFormatDiff returns 2 to indicate that
+  presubmit checks have failed (and returns 0 otherwise)."""
+
+  if not rust_diff_files:
+    return 0
+
+  # Locate the rustfmt binary.
+  try:
+    rustfmt_tool = rustfmt.FindRustfmtToolInChromiumTree()
+  except rustfmt.NotFoundError as e:
+    DieWithError(e)
+
+  # TODO(crbug.com/1231317): Support formatting only the changed lines
+  # if `opts.full or settings.GetFormatFullByDefault()` is False.  See also:
+  # https://github.com/emilio/rustfmt-format-diff
+  cmd = [rustfmt_tool]
+  if opts.dry_run:
+    cmd.append('--check')
+  cmd += rust_diff_files
+  rustfmt_exitcode = subprocess2.call(cmd)
+
+  if opts.presubmit and rustfmt_exitcode != 0:
+    return 2
+  else:
+    return 0
+
+
 def MatchingFileType(file_name, extensions):
   """Returns True if the file name ends with one of the given extensions."""
   return bool([ext for ext in extensions if file_name.lower().endswith(ext)])
@@ -5017,8 +5112,10 @@ def CMDformat(parser, args):
   """Runs auto-formatting tools (clang-format etc.) on the diff."""
   CLANG_EXTS = ['.cc', '.cpp', '.h', '.m', '.mm', '.proto', '.java']
   GN_EXTS = ['.gn', '.gni', '.typemap']
+  RUST_EXTS = ['.rs']
   parser.add_option('--full', action='store_true',
                     help='Reformat the full content of all touched files')
+  parser.add_option('--upstream', help='Branch to check against')
   parser.add_option('--dry-run', action='store_true',
                     help='Don\'t modify any file on disk.')
   parser.add_option(
@@ -5049,6 +5146,18 @@ def CMDformat(parser, args):
                     help='Print diff to stdout rather than modifying files.')
   parser.add_option('--presubmit', action='store_true',
                     help='Used when running the script from a presubmit.')
+
+  parser.add_option('--rust-fmt',
+                    dest='use_rust_fmt',
+                    action='store_true',
+                    default=rustfmt.IsRustfmtSupported(),
+                    help='Enables formatting of Rust file types using rustfmt.')
+  parser.add_option(
+      '--no-rust-fmt',
+      dest='use_rust_fmt',
+      action='store_false',
+      help='Disables formatting of Rust file types using rustfmt.')
+
   opts, args = parser.parse_args(args)
 
   if opts.python is not None and opts.no_python:
@@ -5071,8 +5180,10 @@ def CMDformat(parser, args):
   # to cover the case where the user may have called "git fetch origin",
   # moving the origin branch to a newer commit, but hasn't rebased yet.
   upstream_commit = None
-  cl = Changelist()
-  upstream_branch = cl.GetUpstreamBranch()
+  upstream_branch = opts.upstream
+  if not upstream_branch:
+    cl = Changelist()
+    upstream_branch = cl.GetUpstreamBranch()
   if upstream_branch:
     upstream_commit = RunGit(['merge-base', 'HEAD', upstream_branch])
     upstream_commit = upstream_commit.strip()
@@ -5096,12 +5207,19 @@ def CMDformat(parser, args):
         x for x in diff_files if MatchingFileType(x, CLANG_EXTS)
     ]
   python_diff_files = [x for x in diff_files if MatchingFileType(x, ['.py'])]
+  rust_diff_files = [x for x in diff_files if MatchingFileType(x, RUST_EXTS)]
   gn_diff_files = [x for x in diff_files if MatchingFileType(x, GN_EXTS)]
 
   top_dir = settings.GetRoot()
 
   return_value = _RunClangFormatDiff(opts, clang_diff_files, top_dir,
                                      upstream_commit)
+
+  if opts.use_rust_fmt:
+    rust_fmt_return_value = _RunRustFmt(opts, rust_diff_files, top_dir,
+                                        upstream_commit)
+    if rust_fmt_return_value == 2:
+      return_value = 2
 
   # Similar code to above, but using yapf on .py files rather than clang-format
   # on C/C++ files
@@ -5145,10 +5263,10 @@ def CMDformat(parser, args):
         yapf_style = 'pep8'
 
       with open(f, 'r') as py_f:
-        if 'python3' in py_f.readline():
-          vpython_script = 'vpython3'
-        else:
+        if 'python2' in py_f.readline():
           vpython_script = 'vpython'
+        else:
+          vpython_script = 'vpython3'
 
       cmd = [vpython_script, yapf_tool, '--style', yapf_style, f]
 
@@ -5171,6 +5289,7 @@ def CMDformat(parser, args):
         # Will return non-zero exit code if non-empty diff.
         stdout = RunCommand(cmd,
                             error_ok=True,
+                            stderr=subprocess2.PIPE,
                             cwd=top_dir,
                             shell=sys.platform.startswith('win32'))
         if opts.diff:
@@ -5223,7 +5342,7 @@ def CMDformat(parser, args):
       #   $ python pretty_print.py
       # But in tools/metrics/histogrmas, pretty-print should be run with an
       # additional relative path argument, like:
-      #   $ python pretty_print.py histograms_xml/UMA/histograms.xml
+      #   $ python pretty_print.py metadata/UMA/histograms.xml
       #   $ python pretty_print.py enums.xml
 
       # TODO (crbug/1116488): Remove this check after ensuring that the updated

@@ -8,13 +8,14 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/vr_ui_export.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/vector3d_f.h"
-#include "ui/gfx/transform.h"
 
 namespace vr {
 
@@ -105,7 +106,7 @@ class VR_UI_EXPORT UiInputManager {
   gfx::PointF GetCapturedElementHitPoint(
       const gfx::Point3F& target_point) const;
 
-  UiScene* scene_;
+  raw_ptr<UiScene> scene_;
   int hover_target_id_ = 0;
   // TODO(mthiesse): We shouldn't have a fling target. Elements should fling
   // independently and we should only cancel flings on the relevant element

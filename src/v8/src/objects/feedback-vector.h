@@ -50,6 +50,7 @@ enum class FeedbackSlotKind : uint8_t {
   kStoreGlobalStrict,
   kStoreNamedStrict,
   kStoreOwnNamed,
+  kDefineOwnKeyed,
   kStoreKeyedStrict,
   kStoreInArrayLiteral,
   kBinaryOp,
@@ -102,6 +103,14 @@ inline bool IsStoreOwnICKind(FeedbackSlotKind kind) {
   return kind == FeedbackSlotKind::kStoreOwnNamed;
 }
 
+inline bool IsKeyedDefineOwnICKind(FeedbackSlotKind kind) {
+  return kind == FeedbackSlotKind::kDefineOwnKeyed;
+}
+
+inline bool IsDefineOwnICKind(FeedbackSlotKind kind) {
+  return IsKeyedDefineOwnICKind(kind);
+}
+
 inline bool IsStoreDataPropertyInLiteralKind(FeedbackSlotKind kind) {
   return kind == FeedbackSlotKind::kStoreDataPropertyInLiteral;
 }
@@ -136,7 +145,8 @@ inline TypeofMode GetTypeofModeFromSlotKind(FeedbackSlotKind kind) {
 
 inline LanguageMode GetLanguageModeFromSlotKind(FeedbackSlotKind kind) {
   DCHECK(IsStoreICKind(kind) || IsStoreOwnICKind(kind) ||
-         IsStoreGlobalICKind(kind) || IsKeyedStoreICKind(kind));
+         IsStoreGlobalICKind(kind) || IsKeyedStoreICKind(kind) ||
+         IsDefineOwnICKind(kind));
   STATIC_ASSERT(FeedbackSlotKind::kStoreGlobalSloppy <=
                 FeedbackSlotKind::kLastSloppyKind);
   STATIC_ASSERT(FeedbackSlotKind::kStoreKeyedSloppy <=
@@ -215,19 +225,22 @@ class FeedbackVector
   inline bool is_empty() const;
 
   inline FeedbackMetadata metadata() const;
+  inline FeedbackMetadata metadata(AcquireLoadTag tag) const;
 
   // Increment profiler ticks, saturating at the maximal value.
   void SaturatingIncrementProfilerTicks();
 
-  inline void clear_invocation_count();
+  // Forward declare the non-atomic accessors.
+  using TorqueGeneratedFeedbackVector::invocation_count;
+  using TorqueGeneratedFeedbackVector::set_invocation_count;
+  DECL_RELAXED_INT32_ACCESSORS(invocation_count)
+  inline void clear_invocation_count(RelaxedStoreTag tag);
 
   inline Code optimized_code() const;
   inline bool has_optimized_code() const;
   inline bool has_optimization_marker() const;
   inline OptimizationMarker optimization_marker() const;
   inline OptimizationTier optimization_tier() const;
-  inline int global_ticks_at_last_runtime_profiler_interrupt() const;
-  inline void set_global_ticks_at_last_runtime_profiler_interrupt(int ticks);
   void ClearOptimizedCode(FeedbackCell feedback_cell);
   void EvictOptimizedCodeMarkedForDeoptimization(FeedbackCell feedback_cell,
                                                  SharedFunctionInfo shared,
@@ -271,6 +284,8 @@ class FeedbackVector
 
   // Returns slot kind for given slot.
   V8_EXPORT_PRIVATE FeedbackSlotKind GetKind(FeedbackSlot slot) const;
+  V8_EXPORT_PRIVATE FeedbackSlotKind GetKind(FeedbackSlot slot,
+                                             AcquireLoadTag tag) const;
 
   FeedbackSlot GetTypeProfileSlot() const;
 
@@ -419,6 +434,12 @@ class V8_EXPORT_PRIVATE FeedbackVectorSpec {
     return AddSlot(FeedbackSlotKind::kStoreOwnNamed);
   }
 
+  // Identical to StoreOwnKeyed, but will throw if a private field already
+  // exists.
+  FeedbackSlot AddKeyedDefineOwnICSlot() {
+    return AddSlot(FeedbackSlotKind::kDefineOwnKeyed);
+  }
+
   FeedbackSlot AddStoreGlobalICSlot(LanguageMode language_mode) {
     STATIC_ASSERT(LanguageModeSize == 2);
     return AddSlot(is_strict(language_mode)
@@ -522,7 +543,7 @@ class FeedbackMetadata : public HeapObject {
   DECL_INT32_ACCESSORS(create_closure_slot_count)
 
   // Get slot_count using an acquire load.
-  inline int32_t synchronized_slot_count() const;
+  inline int32_t slot_count(AcquireLoadTag) const;
 
   // Returns number of feedback vector elements used by given slot kind.
   static inline int GetSlotSize(FeedbackSlotKind kind);
@@ -726,9 +747,13 @@ class V8_EXPORT_PRIVATE FeedbackNexus final {
   }
 
   InlineCacheState ic_state() const;
-  bool IsUninitialized() const { return ic_state() == UNINITIALIZED; }
-  bool IsMegamorphic() const { return ic_state() == MEGAMORPHIC; }
-  bool IsGeneric() const { return ic_state() == GENERIC; }
+  bool IsUninitialized() const {
+    return ic_state() == InlineCacheState::UNINITIALIZED;
+  }
+  bool IsMegamorphic() const {
+    return ic_state() == InlineCacheState::MEGAMORPHIC;
+  }
+  bool IsGeneric() const { return ic_state() == InlineCacheState::GENERIC; }
 
   void Print(std::ostream& os);
 
@@ -752,7 +777,7 @@ class V8_EXPORT_PRIVATE FeedbackNexus final {
 
   bool IsCleared() const {
     InlineCacheState state = ic_state();
-    return !FLAG_use_ic || state == UNINITIALIZED;
+    return !FLAG_use_ic || state == InlineCacheState::UNINITIALIZED;
   }
 
   // Clear() returns true if the state of the underlying vector was changed.

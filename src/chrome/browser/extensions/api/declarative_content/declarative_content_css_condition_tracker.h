@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -30,6 +30,11 @@ class Extension;
 // Tests whether all the specified CSS selectors match on the page.
 class DeclarativeContentCssPredicate : public ContentPredicate {
  public:
+  DeclarativeContentCssPredicate(const DeclarativeContentCssPredicate&) =
+      delete;
+  DeclarativeContentCssPredicate& operator=(
+      const DeclarativeContentCssPredicate&) = delete;
+
   ~DeclarativeContentCssPredicate() override;
 
   const std::vector<std::string>& css_selectors() const {
@@ -49,10 +54,8 @@ class DeclarativeContentCssPredicate : public ContentPredicate {
                                  const std::vector<std::string>& css_selectors);
 
   // Weak.
-  ContentPredicateEvaluator* const evaluator_;
+  const raw_ptr<ContentPredicateEvaluator> evaluator_;
   std::vector<std::string> css_selectors_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeContentCssPredicate);
 };
 
 // Supports watching of CSS selectors to across tab contents in a browser
@@ -62,6 +65,12 @@ class DeclarativeContentCssConditionTracker
       public content::NotificationObserver {
  public:
   explicit DeclarativeContentCssConditionTracker(Delegate* delegate);
+
+  DeclarativeContentCssConditionTracker(
+      const DeclarativeContentCssConditionTracker&) = delete;
+  DeclarativeContentCssConditionTracker& operator=(
+      const DeclarativeContentCssConditionTracker&) = delete;
+
   ~DeclarativeContentCssConditionTracker() override;
 
   // ContentPredicateEvaluator:
@@ -97,6 +106,10 @@ class DeclarativeContentCssConditionTracker
     PerWebContentsTracker(content::WebContents* contents,
                           RequestEvaluationCallback request_evaluation,
                           WebContentsDestroyedCallback web_contents_destroyed);
+
+    PerWebContentsTracker(const PerWebContentsTracker&) = delete;
+    PerWebContentsTracker& operator=(const PerWebContentsTracker&) = delete;
+
     ~PerWebContentsTracker() override;
 
     void OnWebContentsNavigation(content::NavigationHandle* navigation_handle);
@@ -116,8 +129,6 @@ class DeclarativeContentCssConditionTracker
 
     // We use a hash_set for maximally efficient lookup.
     std::unordered_set<std::string> matching_css_selectors_;
-
-    DISALLOW_COPY_AND_ASSIGN(PerWebContentsTracker);
   };
 
   // content::NotificationObserver implementation.
@@ -142,7 +153,7 @@ class DeclarativeContentCssConditionTracker
   void DeletePerWebContentsTracker(content::WebContents* contents);
 
   // Weak.
-  Delegate* delegate_;
+  raw_ptr<Delegate> delegate_;
 
   // Maps the CSS selectors to watch to the number of predicates specifying
   // them.
@@ -158,8 +169,6 @@ class DeclarativeContentCssConditionTracker
 
   // Manages our notification registrations.
   content::NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeContentCssConditionTracker);
 };
 
 }  // namespace extensions

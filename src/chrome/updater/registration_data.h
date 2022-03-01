@@ -13,6 +13,9 @@
 
 namespace updater {
 
+constexpr int kRegistrationSuccess = 0;
+constexpr int kRegistrationAlreadyRegistered = 1;
+
 struct RegistrationRequest {
   RegistrationRequest();
   RegistrationRequest(const RegistrationRequest&);
@@ -26,10 +29,15 @@ struct RegistrationRequest {
   // string.
   std::string brand_code;
 
-  // The tag value (e.g. from a tagged metainstaller). May be the empty string.
+  // A file path. Currently applicable to on Mac only: if a valid plist file
+  // exists at this path, the string value of key "KSBrandID" will override
+  // the `brand_code` above.
+  base::FilePath brand_path;
+
+  // The ap value (e.g. from a tagged metainstaller). May be the empty string.
   // This typically indicates channel, though it can carry additional data as
   // well.
-  std::string tag;
+  std::string ap;
 
   // The version of the app already installed. 0.0.0.0 if the app is not
   // already installed.
@@ -45,8 +53,8 @@ struct RegistrationRequest {
 struct RegistrationResponse {
   explicit RegistrationResponse(int status_code) : status_code(status_code) {}
 
-  // Status code of the registration. 0 = success. All others = failure.
-  int status_code = 0;
+  // Status code of the registration.
+  int status_code = kRegistrationSuccess;
 };
 
 }  // namespace updater

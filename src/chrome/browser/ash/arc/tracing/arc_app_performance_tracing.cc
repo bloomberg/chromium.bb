@@ -4,6 +4,11 @@
 
 #include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing.h"
 
+#include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "ash/components/arc/arc_features.h"
+#include "ash/components/arc/arc_util.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_service_manager.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
@@ -13,16 +18,11 @@
 #include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing_session.h"
 #include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing_uma_session.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
-#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "components/arc/arc_features.h"
-#include "components/arc/arc_service_manager.h"
-#include "components/arc/arc_util.h"
-#include "components/arc/session/arc_bridge_service.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
@@ -38,8 +38,7 @@ namespace arc {
 namespace {
 
 // Tracing delay for jankinees.
-constexpr base::TimeDelta kJankinessTracingTime =
-    base::TimeDelta::FromMinutes(5);
+constexpr base::TimeDelta kJankinessTracingTime = base::Minutes(5);
 
 // Minimum number of frames for a jankiness tracing result to be valid.
 constexpr int kMinTotalFramesJankiness = 1000;
@@ -84,6 +83,9 @@ class AppToCategoryMapper {
     return *instance.get();
   }
 
+  AppToCategoryMapper(const AppToCategoryMapper&) = delete;
+  AppToCategoryMapper& operator=(const AppToCategoryMapper&) = delete;
+
   // Returns empty string if category is not set for app |app_id|.
   const std::string& GetCategory(const std::string& app_id) const {
     const auto& it = app_id_to_category_.find(app_id);
@@ -100,8 +102,6 @@ class AppToCategoryMapper {
   ~AppToCategoryMapper() = default;
 
   std::map<std::string, std::string> app_id_to_category_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppToCategoryMapper);
 };
 
 }  // namespace
@@ -248,10 +248,10 @@ void ArcAppPerformanceTracing::StartJankinessTracing() {
 }
 
 void ArcAppPerformanceTracing::HandleActiveAppRendered(base::Time timestamp) {
-  const int32_t task_id = arc::GetWindowTaskId(arc_active_window_);
-  DCHECK_GT(task_id, 0);
+  auto task_id = arc::GetWindowTaskId(arc_active_window_);
+  DCHECK(task_id);
 
-  const std::string& app_id = task_id_to_app_id_[task_id].first;
+  const std::string& app_id = task_id_to_app_id_[*task_id].first;
   const base::Time launch_request_time =
       ArcAppListPrefs::Get(context_)->PollLaunchRequestTime(app_id);
   if (!launch_request_time.is_null()) {
@@ -288,10 +288,10 @@ void ArcAppPerformanceTracing::FinalizeJankinessTracing(bool stopped_early) {
   if (!arc_active_window_)
     return;
 
-  const int32_t task_id = arc::GetWindowTaskId(arc_active_window_);
-  DCHECK_GT(task_id, 0);
+  auto task_id = arc::GetWindowTaskId(arc_active_window_);
+  DCHECK(task_id);
 
-  const auto it = task_id_to_app_id_.find(task_id);
+  const auto it = task_id_to_app_id_.find(*task_id);
   if (it == task_id_to_app_id_.end())
     // It is normal that information might not be available at this time.
     return;
@@ -348,8 +348,7 @@ void ArcAppPerformanceTracing::OnGfxMetrics(const std::string& package_name,
   // We can only calculate real numbers for initial data. Only report if first
   // time.
   if (first_time) {
-    const base::TimeDelta frameTime =
-        base::TimeDelta::FromMilliseconds(frameTime95);
+    const base::TimeDelta frameTime = base::Milliseconds(frameTime95);
     base::UmaHistogramTimes("Arc.Runtime.Performance.Generic.FrameTime",
                             frameTime);
     VLOG(1) << "Total Frames: " << framesTotal << " | "
@@ -389,10 +388,10 @@ void ArcAppPerformanceTracing::MaybeStartTracing() {
   if (!arc_active_window_)
     return;
 
-  const int task_id = arc::GetWindowTaskId(arc_active_window_);
-  DCHECK_GT(task_id, 0);
+  auto task_id = arc::GetWindowTaskId(arc_active_window_);
+  DCHECK(task_id);
 
-  const auto it = task_id_to_app_id_.find(task_id);
+  const auto it = task_id_to_app_id_.find(*task_id);
   if (it == task_id_to_app_id_.end()) {
     // It is normal that information might not be available at this time.
     return;
@@ -417,7 +416,7 @@ void ArcAppPerformanceTracing::MaybeStartTracing() {
   }
 
   const syncer::SyncUserSettings* sync_user_settings =
-      ProfileSyncServiceFactory::GetForProfile(profile)->GetUserSettings();
+      SyncServiceFactory::GetForProfile(profile)->GetUserSettings();
 
   if (sync_user_settings->IsUsingExplicitPassphrase()) {
     VLOG(1) << "Cannot trace: User has a sync passphrase.";

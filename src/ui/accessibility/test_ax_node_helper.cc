@@ -7,8 +7,6 @@
 #include <map>
 #include <utility>
 
-#include "base/numerics/ranges.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -105,13 +103,13 @@ gfx::Rect TestAXNodeHelper::GetInnerTextRangeBoundsRect(
       // kInlineTextBox and kStaticText.
       // For test purposes, assume node with kStaticText always has a single
       // child with role kInlineTextBox.
-      if (GetData().role == ax::mojom::Role::kInlineTextBox) {
+      if (node_->GetRole() == ax::mojom::Role::kInlineTextBox) {
         bounds = GetInlineTextRect(start_offset, end_offset);
-      } else if (GetData().role == ax::mojom::Role::kStaticText &&
+      } else if (node_->GetRole() == ax::mojom::Role::kStaticText &&
                  InternalChildCount() > 0) {
         TestAXNodeHelper* child = InternalGetChild(0);
         if (child != nullptr &&
-            child->GetData().role == ax::mojom::Role::kInlineTextBox) {
+            child->node_->GetRole() == ax::mojom::Role::kInlineTextBox) {
           bounds = child->GetInlineTextRect(start_offset, end_offset);
         }
       }
@@ -141,25 +139,26 @@ gfx::RectF TestAXNodeHelper::GetLocation() const {
 }
 
 int TestAXNodeHelper::InternalChildCount() const {
-  return int{node_->GetUnignoredChildCount()};
+  return static_cast<int>(node_->GetUnignoredChildCount());
 }
 
 TestAXNodeHelper* TestAXNodeHelper::InternalGetChild(int index) const {
   CHECK_GE(index, 0);
   CHECK_LT(index, InternalChildCount());
-  return GetOrCreate(tree_, node_->GetUnignoredChildAtIndex(size_t{index}));
+  return GetOrCreate(
+      tree_, node_->GetUnignoredChildAtIndex(static_cast<size_t>(index)));
 }
 
 gfx::RectF TestAXNodeHelper::GetInlineTextRect(const int start_offset,
                                                const int end_offset) const {
   DCHECK(start_offset >= 0 && end_offset >= 0 && start_offset <= end_offset);
-  const std::vector<int32_t>& character_offsets = GetData().GetIntListAttribute(
+  const std::vector<int32_t>& character_offsets = node_->GetIntListAttribute(
       ax::mojom::IntListAttribute::kCharacterOffsets);
   gfx::RectF location = GetLocation();
   gfx::RectF bounds;
 
   switch (static_cast<ax::mojom::WritingDirection>(
-      GetData().GetIntAttribute(ax::mojom::IntAttribute::kTextDirection))) {
+      node_->GetIntAttribute(ax::mojom::IntAttribute::kTextDirection))) {
     // Currently only kNone and kLtr are supported text direction.
     case ax::mojom::WritingDirection::kNone:
     case ax::mojom::WritingDirection::kLtr: {

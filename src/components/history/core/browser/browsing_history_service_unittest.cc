@@ -8,7 +8,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -26,7 +26,6 @@
 #include "url/gurl.h"
 
 using base::Time;
-using base::TimeDelta;
 
 namespace history {
 
@@ -41,6 +40,9 @@ const char kUrl4[] = "http://www.four.com";
 const char kUrl5[] = "http://www.five.com";
 const char kUrl6[] = "http://www.six.com";
 const char kUrl7[] = "http://www.seven.com";
+const char kUrl8[] = "http://eight.com";
+const char kUrl9[] = "http://nine.com/eight.com";
+const char kUrl10[] = "http://ten.com/eight";
 const char kIconUrl1[] = "http://www.one.com/favicon.ico";
 
 const HistoryEntry::EntryType kLocal = HistoryEntry::LOCAL_ENTRY;
@@ -116,7 +118,7 @@ class TestBrowsingHistoryDriver : public BrowsingHistoryDriver {
   int history_deleted_count_ = 0;
   std::vector<QueryResult> query_results_;
   base::OnceClosure continuation_closure_;
-  WebHistoryService* web_history_;
+  raw_ptr<WebHistoryService> web_history_;
 };
 
 class TestWebHistoryService : public FakeWebHistoryService {
@@ -190,8 +192,7 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
   // before Time::UnixEpoch() that cannot be represented. By adding 1 day we
   // ensure all test data is after Time::UnixEpoch().
   BrowsingHistoryServiceTest()
-      : baseline_time_(Time::UnixEpoch().LocalMidnight() +
-                       TimeDelta::FromDays(1)),
+      : baseline_time_(Time::UnixEpoch().LocalMidnight() + base::Days(1)),
         driver_(&web_history_) {
     EXPECT_TRUE(history_dir_.CreateUniqueTempDir());
     local_history_ = CreateHistoryService(history_dir_.GetPath(), true);
@@ -213,7 +214,7 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
   }
 
   Time OffsetToTime(int64_t hour_offset) {
-    return baseline_time_ + TimeDelta::FromHours(hour_offset);
+    return baseline_time_ + base::Hours(hour_offset);
   }
 
   void AddHistory(const std::vector<TestResult>& data,
@@ -253,8 +254,14 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
 
   TestBrowsingHistoryDriver::QueryResult QueryHistory(
       const QueryOptions& options) {
+    return QueryHistory(std::u16string(), options);
+  }
+
+  TestBrowsingHistoryDriver::QueryResult QueryHistory(
+      const std::u16string& query_text,
+      const QueryOptions& options) {
     size_t previous_results_count = driver()->GetQueryResults().size();
-    service()->QueryHistory(std::u16string(), options);
+    service()->QueryHistory(query_text, options);
     BlockUntilHistoryProcessesPendingRequests();
     const std::vector<TestBrowsingHistoryDriver::QueryResult> all_results =
         driver()->GetQueryResults();
@@ -306,7 +313,7 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
   TestWebHistoryService web_history_;
   TestSyncService sync_service_;
   TestBrowsingHistoryDriver driver_;
-  base::MockOneShotTimer* timer_;
+  raw_ptr<base::MockOneShotTimer> timer_;
   std::unique_ptr<TestBrowsingHistoryService> browsing_history_service_;
 };
 
@@ -403,6 +410,23 @@ TEST_F(BrowsingHistoryServiceTest, QueryHistoryRemoteTimeRanges) {
   VerifyQueryResult(
       /*reached_beginning*/ true, /*has_synced_results*/ true,
       {{kUrl3, 3, kRemote}, {kUrl2, 2, kRemote}}, QueryHistory(options));
+}
+
+TEST_F(BrowsingHistoryServiceTest, QueryHistoryHostOnlyRemote) {
+  AddHistory({{kUrl8, 1, kRemote}, {kUrl9, 2, kRemote}, {kUrl10, 3, kRemote}});
+
+  QueryOptions options;
+  options.max_count = 0;
+  options.host_only = false;
+  VerifyQueryResult(
+      /*reached_beginning*/ true,
+      /*has_synced_results*/ true,
+      {{kUrl10, 3, kRemote}, {kUrl9, 2, kRemote}, {kUrl8, 1, kRemote}},
+      QueryHistory(u"eight.com", options));
+  options.host_only = true;
+  VerifyQueryResult(/*reached_beginning*/ true,
+                    /*has_synced_results*/ true, {{kUrl8, 1, kRemote}},
+                    QueryHistory(u"eight.com", options));
 }
 
 TEST_F(BrowsingHistoryServiceTest, QueryHistoryLocalPagingPartial) {

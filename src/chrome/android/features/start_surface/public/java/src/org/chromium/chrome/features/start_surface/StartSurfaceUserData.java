@@ -5,9 +5,9 @@
 package org.chromium.chrome.features.start_surface;
 
 import androidx.annotation.Nullable;
-
 import org.chromium.base.UserData;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 
 /**
  * Helper class for Tabs created from the Start surface.
@@ -17,9 +17,15 @@ public class StartSurfaceUserData implements UserData {
     private boolean mKeepTab;
     private boolean mFocusOnOmnibox;
     private boolean mCreatedAsNtp;
-
+    private boolean mOpenedFromStart;
+    private String mLastVisitedTabAtStartupUrl;
     // Saves the Feeds instance state.
     private String mFeedsInstanceState;
+    /**
+     * Tracks whether the last visited Tab is restored at startup but not showing due to the
+     * overview page is showing at the startup.
+     */
+    private boolean mUnusedTabRestoredAtStartup;
 
     /**
      * Static class that implements the initialization-on-demand holder idiom.
@@ -41,6 +47,8 @@ public class StartSurfaceUserData implements UserData {
      * {@link org.chromium.chrome.browser.tab.TabLaunchType.FROM_START_SURFACE}.
      */
     public static void setKeepTab(Tab tab, boolean keepTab) {
+        if (tab == null || tab.getLaunchType() != TabLaunchType.FROM_START_SURFACE) return;
+
         StartSurfaceUserData startSurfaceUserData = get(tab);
         if (startSurfaceUserData == null) {
             startSurfaceUserData = new StartSurfaceUserData();
@@ -59,7 +67,37 @@ public class StartSurfaceUserData implements UserData {
     }
 
     /**
-     * Sets whether to focus on omnibox when the given tab is shown.
+     * Sets the flag of whether the given tab is opened from the Start surface. Note: should only
+     * call this function in the code path that Start surface is enabled, otherwise may cause the
+     * StartSurfaceUserData is created without Start surface.
+     */
+    public static void setOpenedFromStart(Tab tab) {
+        if (tab == null || !StartSurfaceConfiguration.isStartSurfaceFlagEnabled()) return;
+
+        StartSurfaceUserData startSurfaceUserData = get(tab);
+        if (startSurfaceUserData == null) {
+            startSurfaceUserData = new StartSurfaceUserData();
+        }
+
+        if (startSurfaceUserData.mOpenedFromStart) return;
+
+        startSurfaceUserData.mOpenedFromStart = true;
+        tab.getUserDataHost().setUserData(USER_DATA_KEY, startSurfaceUserData);
+    }
+
+    /**
+     * @return Whether the given tab is opened from the Start surface.
+     */
+    public static boolean isOpenedFromStart(Tab tab) {
+        StartSurfaceUserData startSurfaceUserData = get(tab);
+        return startSurfaceUserData == null ? false : startSurfaceUserData.mOpenedFromStart;
+    }
+
+    /**
+     * Sets whether to focus on omnibox when the given tab is shown. Prefer to call
+     * {@link StartSurfaceConfiguration#maySetUserDataForEmptyTab(Tab, String)} instead this
+     * function, since it doesn't have complete checks for the given tab and may cause the
+     * StartSurfaceUserData is created without Start surface enabled.
      */
     public static void setFocusOnOmnibox(Tab tab, boolean focusOnOmnibox) {
         StartSurfaceUserData startSurfaceUserData = get(tab);
@@ -89,7 +127,7 @@ public class StartSurfaceUserData implements UserData {
      * newly created tab is empty, but should be treated as NTP for features like autocomplete.
      */
     public static void setCreatedAsNtp(Tab tab) {
-        assert StartSurfaceConfiguration.OMNIBOX_FOCUSED_ON_NEW_TAB.getValue();
+        if (!StartSurfaceConfiguration.OMNIBOX_FOCUSED_ON_NEW_TAB.getValue()) return;
 
         StartSurfaceUserData startSurfaceUserData = get(tab);
         if (startSurfaceUserData == null) {
@@ -120,5 +158,36 @@ public class StartSurfaceUserData implements UserData {
     @Nullable
     protected String restoreFeedInstanceState() {
         return mFeedsInstanceState;
+    }
+
+    /**
+     * Sets the url of last visited tab at start up.
+     * @param lastVisitedTabAtStartupUrl The url of last visited tab at start up.
+     */
+    public void setLastVisitedTabAtStartupUrl(String lastVisitedTabAtStartupUrl) {
+        mLastVisitedTabAtStartupUrl = lastVisitedTabAtStartupUrl;
+    }
+
+    /**
+     * Returns the saved url of last visited tab at start up.
+     */
+    public String getLastVisitedTabAtStartupUrl() {
+        return mLastVisitedTabAtStartupUrl;
+    }
+
+    /**
+     * Sets whether an unused Tab is restored at startup due to an overview page is showing at the
+     * startup.
+     */
+    public void setUnusedTabRestoredAtStartup(boolean overviewShownAtStartup) {
+        mUnusedTabRestoredAtStartup = overviewShownAtStartup;
+    }
+
+    /**
+     * Gets whether an unused Tab is restored at startup due to an overview page is showing at the
+     * startup.
+     */
+    public boolean getUnusedTabRestoredAtStartup() {
+        return mUnusedTabRestoredAtStartup;
     }
 }

@@ -16,10 +16,9 @@ import {search} from '../../base/binary_search';
 import {Actions} from '../../common/actions';
 import {cropText} from '../../common/canvas_utils';
 import {colorForState} from '../../common/colorizer';
-import {TrackState} from '../../common/state';
 import {checkerboardExcept} from '../../frontend/checkerboard';
 import {globals} from '../../frontend/globals';
-import {Track} from '../../frontend/track';
+import {NewTrackArgs, Track} from '../../frontend/track';
 import {trackRegistry} from '../../frontend/track_registry';
 
 import {
@@ -34,12 +33,12 @@ const EXCESS_WIDTH = 10;
 
 class ThreadStateTrack extends Track<Config, Data> {
   static readonly kind = THREAD_STATE_TRACK_KIND;
-  static create(trackState: TrackState): ThreadStateTrack {
-    return new ThreadStateTrack(trackState);
+  static create(args: NewTrackArgs): ThreadStateTrack {
+    return new ThreadStateTrack(args);
   }
 
-  constructor(trackState: TrackState) {
-    super(trackState);
+  constructor(args: NewTrackArgs) {
+    super(args);
   }
 
   getHeight(): number {
@@ -70,6 +69,14 @@ class ThreadStateTrack extends Track<Config, Data> {
     ctx.font = '10px Roboto Condensed';
 
     for (let i = 0; i < data.starts.length; i++) {
+      // NOTE: Unlike userspace and scheduling slices, thread state slices are
+      // allowed to overlap; specifically, sleeping slices are allowed to
+      // overlap with non-sleeping slices. We do this because otherwise
+      // sleeping slices generally dominate traces making it seem like there are
+      // no running/runnable etc. slices until you zoom in. By drawing both,
+      // we get a more accurate representation of the trace and prevent weird
+      // artifacts when zooming.
+      // See b/201793731 for an example of why we do this.
       const tStart = data.starts[i];
       const tEnd = data.ends[i];
       const state = data.strings[data.state[i]];
@@ -81,6 +88,7 @@ class ThreadStateTrack extends Track<Config, Data> {
       if (state === 'x') continue;
       const rectStart = timeScale.timeToPx(tStart);
       const rectEnd = timeScale.timeToPx(tEnd);
+      const rectWidth = rectEnd - rectStart;
 
       const currentSelection = globals.state.currentSelection;
       const isSelected = currentSelection &&
@@ -95,7 +103,6 @@ class ThreadStateTrack extends Track<Config, Data> {
       }
       ctx.fillStyle = colorStr;
 
-      const rectWidth = rectEnd - rectStart;
       ctx.fillRect(rectStart, MARGIN_TOP, rectWidth, RECT_HEIGHT);
 
       // Don't render text when we have less than 10px to play with.

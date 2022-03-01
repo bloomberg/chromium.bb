@@ -5,10 +5,9 @@
 #ifndef CHROME_UPDATER_POLICY_WIN_GROUP_POLICY_MANAGER_H_
 #define CHROME_UPDATER_POLICY_WIN_GROUP_POLICY_MANAGER_H_
 
-#include <memory>
 #include <string>
 
-#include "base/win/registry.h"
+#include "base/values.h"
 #include "chrome/updater/policy/manager.h"
 
 namespace updater {
@@ -50,10 +49,11 @@ class GroupPolicyManager : public PolicyManagerInterface {
   bool GetProxyServer(std::string* proxy_server) const override;
 
  private:
-  bool ReadValue(const wchar_t* name, std::string* value) const;
-  bool ReadValueDW(const wchar_t* name, int* value) const;
+  void LoadAllPolicies();
+  bool GetIntPolicy(const std::string& key, int* value) const;
+  bool GetStringPolicy(const std::string& key, std::string* value) const;
 
-  base::win::RegKey key_;
+  base::Value policies_;
 };
 
 }  // namespace updater

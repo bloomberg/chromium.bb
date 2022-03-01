@@ -52,7 +52,7 @@ include::_aliases.txt[]
 
 ----
 [alias]
-  git bmap = map-branches
+  bmap = map-branches
 ----
 
 SEE ALSO

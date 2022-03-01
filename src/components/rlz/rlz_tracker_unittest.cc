@@ -6,9 +6,10 @@
 
 #include <memory>
 
+#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -41,6 +42,9 @@ class TestRLZTrackerDelegate : public RLZTrackerDelegate {
   TestRLZTrackerDelegate()
       : request_context_getter_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())) {}
+
+  TestRLZTrackerDelegate(const TestRLZTrackerDelegate&) = delete;
+  TestRLZTrackerDelegate& operator=(const TestRLZTrackerDelegate&) = delete;
 
   void set_brand(const char* brand) { brand_override_ = brand; }
 
@@ -115,8 +119,6 @@ class TestRLZTrackerDelegate : public RLZTrackerDelegate {
   std::string reactivation_brand_override_;
   base::OnceClosure on_omnibox_search_callback_;
   base::OnceClosure on_homepage_search_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestRLZTrackerDelegate);
 };
 
 // Dummy RLZ string for the access points.
@@ -173,6 +175,9 @@ class TestRLZTracker : public RLZTracker {
   using RLZTracker::DelayedInit;
 
   TestRLZTracker() : assume_not_ui_thread_(true) { set_tracker(this); }
+
+  TestRLZTracker(const TestRLZTracker&) = delete;
+  TestRLZTracker& operator=(const TestRLZTracker&) = delete;
 
   ~TestRLZTracker() override { set_tracker(nullptr); }
 
@@ -234,8 +239,6 @@ class TestRLZTracker : public RLZTracker {
 
   std::set<std::string> pinged_brands_;
   bool assume_not_ui_thread_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestRLZTracker);
 };
 
 class RlzLibTest : public testing::Test {
@@ -256,7 +259,7 @@ class RlzLibTest : public testing::Test {
   void ExpectReactivationRlzPingSent(bool expected);
 
   base::test::TaskEnvironment task_environment_;
-  TestRLZTrackerDelegate* delegate_;
+  raw_ptr<TestRLZTrackerDelegate> delegate_;
   std::unique_ptr<TestRLZTracker> tracker_;
   RlzLibTestNoMachineStateHelper m_rlz_test_helper_;
 
@@ -272,7 +275,7 @@ void RlzLibTest::SetUp() {
 
   delegate_ = new TestRLZTrackerDelegate;
   tracker_ = std::make_unique<TestRLZTracker>();
-  RLZTracker::SetRlzDelegate(base::WrapUnique(delegate_));
+  RLZTracker::SetRlzDelegate(base::WrapUnique(delegate_.get()));
 
   // Make sure a non-organic brand code is set in the registry or the RLZTracker
   // is pretty much a no-op.
@@ -465,7 +468,7 @@ const char* OmniboxFirstSearch() {
 #endif
 }
 
-const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(20);
+const base::TimeDelta kDelay = base::Milliseconds(20);
 
 TEST_F(RlzLibTest, RecordProductEvent) {
   RLZTracker::RecordProductEvent(rlz_lib::CHROME, RLZTracker::ChromeOmnibox(),

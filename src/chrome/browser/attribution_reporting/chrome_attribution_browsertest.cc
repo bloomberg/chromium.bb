@@ -4,15 +4,14 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -26,9 +25,7 @@
 // content shell.
 class ChromeAttributionBrowserTest : public InProcessBrowserTest {
  public:
-  ChromeAttributionBrowserTest() {
-    feature_list_.InitAndEnableFeature(features::kConversionMeasurement);
-  }
+  ChromeAttributionBrowserTest() = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Sets up the blink runtime feature for ConversionMeasurement.
@@ -47,9 +44,6 @@ class ChromeAttributionBrowserTest : public InProcessBrowserTest {
 
  protected:
   net::EmbeddedTestServer server_{net::EmbeddedTestServer::TYPE_HTTPS};
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(ChromeAttributionBrowserTest,
@@ -63,18 +57,20 @@ IN_PROC_BROWSER_TEST_F(ChromeAttributionBrowserTest,
 
   EXPECT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      server_.GetURL("a.test",
-                     "/conversions/page_with_impression_creator.html")));
+      server_.GetURL(
+          "a.test",
+          "/attribution_reporting/page_with_impression_creator.html")));
 
   // Create an anchor tag with impression attributes which opens a link in a
-  // new.
+  // new window.
   GURL link_url = server_.GetURL(
-      "b.test", "/conversions/page_with_conversion_redirect.html");
+      "b.test", "/attribution_reporting/page_with_conversion_redirect.html");
   EXPECT_TRUE(ExecJs(web_contents, content::JsReplace(R"(
-    createImpressionTagWithTarget("link" /* id */,
-                        $1 /* url */,
-                        "1" /* impression data */,
-                        "https://b.test" /* conversion_destination */, "_blank");)",
+    createImpressionTag({id: 'link',
+                        url: $1,
+                        data: '1',
+                        destination: 'https://b.test',
+                        target: '_blank'});)",
                                                       link_url)));
 
   // Click the impression, and wait for the new window to open. Then switch to
@@ -99,18 +95,25 @@ IN_PROC_BROWSER_TEST_F(ChromeAttributionBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ChromeAttributionBrowserTest,
                        ConversionPing_FeatureRecorded) {
+  // The test assumes the previous page gets deleted after navigation,
+  // triggering histogram recording. Disable back/forward cache to ensure that
+  // it doesn't get preserved in the cache.
+  content::DisableBackForwardCacheForTesting(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
   base::HistogramTester histogram_tester;
 
   EXPECT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      server_.GetURL("a.test",
-                     "/conversions/page_with_conversion_redirect.html")));
+      server_.GetURL(
+          "a.test",
+          "/attribution_reporting/page_with_conversion_redirect.html")));
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
   // Register a conversion with the original page as the reporting origin.
-  EXPECT_TRUE(ExecJs(web_contents, "registerConversion(7)"));
+  EXPECT_TRUE(ExecJs(web_contents, "registerConversion({data: 7})"));
 
   // Wait for the conversion redirect to be intercepted. This is indicated by
   // window title changing when the img element for the conversion request fires
@@ -141,14 +144,15 @@ IN_PROC_BROWSER_TEST_F(ChromeAttributionBrowserTest,
 
   EXPECT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      server_.GetURL("a.test",
-                     "/conversions/page_with_impression_creator.html")));
+      server_.GetURL(
+          "a.test",
+          "/attribution_reporting/page_with_impression_creator.html")));
 
   // Create an observer to catch the opened WebContents.
   content::WebContentsAddedObserver window_observer;
 
   GURL link_url = server_.GetURL(
-      "b.test", "/conversions/page_with_conversion_redirect.html");
+      "b.test", "/attribution_reporting/page_with_conversion_redirect.html");
   // Navigate the page using window.open and set an attribution source.
   EXPECT_TRUE(ExecJs(web_contents, content::JsReplace(R"(
     window.open($1, "_blank",

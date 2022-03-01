@@ -113,15 +113,6 @@ public interface Tab extends TabLifecycle {
     int getId();
 
     /**
-     * @return The URL that is loaded in the current tab. This may not be the same as
-     *         the last committed URL if a new navigation is in progress.
-     *
-     * @deprecated Please use {@link #getUrl()} instead.
-     */
-    @Deprecated
-    String getUrlString();
-
-    /**
      * @return Parameters that should be used for a lazily loaded Tab.  May be null.
      */
     LoadUrlParams getPendingLoadParams();
@@ -288,26 +279,6 @@ public interface Tab extends TabLifecycle {
      * @param isDirty Whether the Tab's state has changed.
      */
     void setIsTabStateDirty(boolean isTabStateDirty);
-
-    /**
-     * If set to true, any future navigations in the tab automatically get
-     * PageTransition.FROM_API_2 applied.
-     */
-    void setAddApi2TransitionToFutureNavigations(boolean shouldAdd);
-    boolean getAddApi2TransitionToFutureNavigations();
-
-    /**
-     * If true, all future navigations are hidden. See |HistoryTabHelper::hide_navigations_|
-     * for the specifics on this.
-     */
-    public void setHideFutureNavigations(boolean hide);
-    public boolean getHideFutureNavigations();
-
-    /**
-     * If true, new notification requests are blocked.
-     */
-    public void setShouldBlockNewNotificationRequests(boolean value);
-    public boolean getShouldBlockNewNotificationRequests();
 
     /**
      * Set whether {@link Tab} metadata (specifically all {@link PersistedTabData})

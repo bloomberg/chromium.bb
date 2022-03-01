@@ -1,12 +1,12 @@
 // v-0007 - This fails because the structure is used before definition.
 
-const a : Foo;
+let a : Foo;
 
 struct Foo {
-  [[offset 0]] a : i32;
+  a : i32;
 };
 
-[[stage(vertex)]]
+[[stage(fragment)]]
 fn main() {
   return;
 }

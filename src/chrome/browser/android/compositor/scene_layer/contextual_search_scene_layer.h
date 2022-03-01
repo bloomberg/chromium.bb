@@ -11,7 +11,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/ui/android/layouts/scene_layer.h"
 
@@ -33,6 +33,11 @@ class ContextualSearchSceneLayer : public SceneLayer,
  public:
   ContextualSearchSceneLayer(JNIEnv* env,
                              const base::android::JavaRef<jobject>& jobj);
+
+  ContextualSearchSceneLayer(const ContextualSearchSceneLayer&) = delete;
+  ContextualSearchSceneLayer& operator=(const ContextualSearchSceneLayer&) =
+      delete;
+
   ~ContextualSearchSceneLayer() override;
 
   void CreateContextualSearchLayer(
@@ -76,9 +81,13 @@ class ContextualSearchSceneLayer : public SceneLayer,
       jfloat panel_help_opacity,
       jint panel_help_container_background_color,
       // Related Searches
-      jint related_searches_resource_id,
-      jboolean related_searches_visible,
-      jfloat related_searches_height,
+      jint related_searches_in_content_resource_id,
+      jboolean related_searches_in_content_visible,
+      jfloat related_searches_in_content_height,
+      jint related_searches_in_bar_resource_id,
+      jboolean related_searches_in_bar_visible,
+      jfloat related_searches_in_bar_height,
+      jfloat related_searches_in_bar_redundant_padding,
       // Banner etc
       jboolean search_bar_banner_visible,
       jfloat search_bar_banner_height,
@@ -137,7 +146,7 @@ class ContextualSearchSceneLayer : public SceneLayer,
  private:
   void FetchThumbnail(const base::android::JavaRef<jobject>& j_profile);
 
-  JNIEnv* env_;
+  raw_ptr<JNIEnv> env_;
   base::android::ScopedJavaGlobalRef<jobject> object_;
   std::string thumbnail_url_;
   std::unique_ptr<BitmapFetcher> fetcher_;
@@ -146,8 +155,6 @@ class ContextualSearchSceneLayer : public SceneLayer,
   // Responsible for fading the base page content.
   scoped_refptr<cc::SolidColorLayer> color_overlay_;
   scoped_refptr<cc::Layer> content_container_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContextualSearchSceneLayer);
 };
 
 }  // namespace android

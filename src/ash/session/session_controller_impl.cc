@@ -24,6 +24,7 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -154,15 +155,6 @@ const UserSession* SessionControllerImpl::GetPrimaryUserSession() const {
   return (*it).get();
 }
 
-bool SessionControllerImpl::IsUserChildOrDeprecatedSupervised() const {
-  if (!IsActiveUserSessionStarted())
-    return false;
-
-  user_manager::UserType active_user_type = GetUserSession(0)->user_info.type;
-  return active_user_type == user_manager::USER_TYPE_SUPERVISED_DEPRECATED ||
-         active_user_type == user_manager::USER_TYPE_CHILD;
-}
-
 bool SessionControllerImpl::IsUserChild() const {
   if (!IsActiveUserSessionStarted())
     return false;
@@ -199,6 +191,10 @@ bool SessionControllerImpl::IsUserFirstLogin() const {
     return false;
 
   return GetUserSession(0)->user_info.is_new_profile;
+}
+
+bool SessionControllerImpl::IsEnterpriseManaged() const {
+  return client_ && client_->IsEnterpriseManaged();
 }
 
 bool SessionControllerImpl::ShouldDisplayManagedUI() const {
@@ -475,6 +471,8 @@ void SessionControllerImpl::SetSessionState(SessionState state) {
   if (state_ == state)
     return;
 
+  base::AutoReset<bool> in_progress(&session_state_change_in_progress_, true);
+
   const bool was_user_session_blocked = IsUserSessionBlocked();
   const bool was_locked = state_ == SessionState::LOCKED;
   state_ = state;
@@ -534,7 +532,7 @@ LoginStatus SessionControllerImpl::CalculateLoginStatus() const {
       return LoginStatus::LOCKED;
 
     case SessionState::LOGIN_SECONDARY:
-      // TODO: There is no LoginStatus for this.
+      // TODO(jamescook): There is no LoginStatus for this.
       return LoginStatus::USER;
   }
   NOTREACHED();
@@ -562,12 +560,11 @@ LoginStatus SessionControllerImpl::CalculateLoginStatusForActiveSession()
     case user_manager::USER_TYPE_ARC_KIOSK_APP:
       return LoginStatus::KIOSK_APP;
     case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
-      // TODO: There is no LoginStatus for this.
+      // TODO(jamescook): There is no LoginStatus for this.
       return LoginStatus::USER;
     case user_manager::USER_TYPE_WEB_KIOSK_APP:
       return LoginStatus::KIOSK_APP;
     case user_manager::NUM_USER_TYPES:
-    case user_manager::USER_TYPE_SUPERVISED_DEPRECATED:
       // Avoid having a "default" case so the compiler catches new enum values.
       NOTREACHED();
       return LoginStatus::USER;

@@ -25,7 +25,7 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_receiver.h"
@@ -85,6 +85,9 @@ class LockManager::LockRequestImpl final
         std::move(receiver),
         manager->GetExecutionContext()->GetTaskRunner(TaskType::kWebLocks));
   }
+
+  LockRequestImpl(const LockRequestImpl&) = delete;
+  LockRequestImpl& operator=(const LockRequestImpl&) = delete;
 
   ~LockRequestImpl() override = default;
 
@@ -203,8 +206,6 @@ class LockManager::LockRequestImpl final
   // registered. If the context is destroyed then |manager_| will dispose of
   // |this| which terminates the request on the service side.
   Member<LockManager> manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(LockRequestImpl);
 };
 
 const char LockManager::kSupplementName[] = "LockManager";

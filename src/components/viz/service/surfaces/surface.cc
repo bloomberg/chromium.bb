@@ -11,8 +11,9 @@
 #include <limits>
 #include <utility>
 
+#include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/stl_util.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -161,9 +162,13 @@ void Surface::OnChildActivatedForActiveFrame(const SurfaceId& activated_id) {
     // If we already have a reference to a surface in the primary's allocation
     // group, we should already be unregistered from the allocation group of the
     // fallback so we shouldn't receive SurfaceIds from that group.
-    DCHECK(!surface_range.HasDifferentEmbedTokens() || !last_id.is_valid() ||
-           !last_id.HasSameEmbedTokenAs(surface_range.end()) ||
-           activated_id.HasSameEmbedTokenAs(last_id));
+    // TODO(crbug.com/1264657): This DCHECK is failing frequently on Chrome OS
+    // for valid use cases where there are multiple references in
+    // |referenced_surfaces| that contain |activated_id|. Temporary disable to
+    // avoid flake while investigating solutions.
+    // DCHECK(!surface_range.HasDifferentEmbedTokens() || !last_id.is_valid() ||
+    //       !last_id.HasSameEmbedTokenAs(surface_range.end()) ||
+    //       activated_id.HasSameEmbedTokenAs(last_id));
 
     // Remove the old reference.
     if (last_id.is_valid()) {
@@ -254,6 +259,16 @@ Surface::QueueFrameResult Surface::QueueFrame(
   } else {
     pending_frame_data_ = FrameData(std::move(frame), frame_index);
 
+    auto traced_value = std::make_unique<base::trace_event::TracedValue>();
+    traced_value->BeginArray("Pending");
+    for (auto& it : activation_dependencies_)
+      traced_value->AppendString(it.ToString());
+    traced_value->EndArray();
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(
+        "viz", "SurfaceQueuedPending", TRACE_ID_LOCAL(this), "LocalSurfaceId",
+        surface_info_.id().ToString(), "ActivationDependencies",
+        std::move(traced_value));
+
     deadline_->Set(ResolveFrameDeadline(pending_frame_data_->frame));
     if (deadline_->HasDeadlinePassed()) {
       ActivatePendingFrameForDeadline();
@@ -263,15 +278,6 @@ Surface::QueueFrameResult Surface::QueueFrame(
       // that client, leading to the group being unblocked.
       for (auto* it : blocking_allocation_groups_)
         it->AckLastestActiveUnAckedFrame();
-      auto traced_value = std::make_unique<base::trace_event::TracedValue>();
-      traced_value->BeginArray("Pending");
-      for (auto& it : activation_dependencies_)
-        traced_value->AppendString(it.ToString());
-      traced_value->EndArray();
-      TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(
-          "viz", "SurfaceQueuedPending", TRACE_ID_LOCAL(this), "LocalSurfaceId",
-          surface_info_.id().ToString(), "ActivationDependencies",
-          std::move(traced_value));
       result = QueueFrameResult::ACCEPTED_PENDING;
     }
   }
@@ -736,6 +742,13 @@ bool Surface::IsVideoCaptureOnFromClient() {
     return false;
 
   return surface_client_->IsVideoCaptureStarted();
+}
+
+base::flat_set<base::PlatformThreadId> Surface::GetThreadIds() {
+  if (!surface_client_)
+    return {};
+
+  return surface_client_->GetThreadIds();
 }
 
 void Surface::UnrefFrameResourcesAndRunCallbacks(

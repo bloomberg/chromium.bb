@@ -29,6 +29,7 @@
 #include "ui/display/screen.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window_init_properties.h"
+#include "ui/touch_selection/touch_selection_menu_runner.h"
 #include "ui/wm/core/default_screen_position_client.h"
 
 #if defined(OS_FUCHSIA)
@@ -66,6 +67,10 @@ class CastLayoutManager : public aura::LayoutManager {
  public:
   CastLayoutManager(CastWindowManagerAura* window_manager,
                     aura::Window* parent);
+
+  CastLayoutManager(const CastLayoutManager&) = delete;
+  CastLayoutManager& operator=(const CastLayoutManager&) = delete;
+
   ~CastLayoutManager() override;
 
  private:
@@ -84,8 +89,6 @@ class CastLayoutManager : public aura::LayoutManager {
 
   CastWindowManagerAura* const window_manager_;
   aura::Window* const parent_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastLayoutManager);
 };
 
 CastLayoutManager::CastLayoutManager(CastWindowManagerAura* window_manager,
@@ -237,8 +240,11 @@ void CastWindowManagerAura::Setup() {
 
 #if BUILDFLAG(IS_CAST_AUDIO_ONLY)
   window_tree_host_->compositor()->SetDisplayVSyncParameters(
-      base::TimeTicks(), base::TimeDelta::FromMilliseconds(250));
+      base::TimeTicks(), base::Milliseconds(250));
 #endif
+
+  // Chromecast devices do not support cut/copy/paste.
+  DCHECK(!ui::TouchSelectionMenuRunner::GetInstance());
 }
 
 bool CastWindowManagerAura::HasRoundedWindowCorners() const {

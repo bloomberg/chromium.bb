@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordManagerHelper;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ class PasswordSettingsTestHelper {
         }
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PasswordManagerHandlerProvider.getInstance().resetPasswordManagerHandlerForTest();
-            ProfileSyncService.resetForTests();
+            SyncService.resetForTests();
         });
         setPasswordSource(null);
     }
@@ -96,15 +96,16 @@ class PasswordSettingsTestHelper {
      * @param initialEntries All entries to be added to saved passwords. Can not be null.
      */
     void setPasswordSourceWithMultipleEntries(SavedPasswordEntry[] initialEntries) {
+        PasswordManagerHandlerProvider handlerProvider =
+                TestThreadUtils.runOnUiThreadBlockingNoException(
+                        PasswordManagerHandlerProvider::getInstance);
         if (mHandler == null) {
-            mHandler = new FakePasswordManagerHandler(PasswordManagerHandlerProvider.getInstance());
+            mHandler = new FakePasswordManagerHandler(handlerProvider);
         }
         ArrayList<SavedPasswordEntry> entries = new ArrayList<>(Arrays.asList(initialEntries));
         mHandler.setSavedPasswords(entries);
         TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> PasswordManagerHandlerProvider.getInstance()
-                                   .setPasswordManagerHandlerForTest(mHandler));
+                () -> handlerProvider.setPasswordManagerHandlerForTest(mHandler));
     }
 
     /**
@@ -112,14 +113,15 @@ class PasswordSettingsTestHelper {
      * @param exceptions All exceptions to be added to saved exceptions. Can not be null.
      */
     void setPasswordExceptions(String[] exceptions) {
+        PasswordManagerHandlerProvider handlerProvider =
+                TestThreadUtils.runOnUiThreadBlockingNoException(
+                        PasswordManagerHandlerProvider::getInstance);
         if (mHandler == null) {
-            mHandler = new FakePasswordManagerHandler(PasswordManagerHandlerProvider.getInstance());
+            mHandler = new FakePasswordManagerHandler(handlerProvider);
         }
         mHandler.setSavedPasswordExceptions(new ArrayList<>(Arrays.asList(exceptions)));
         TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> PasswordManagerHandlerProvider.getInstance()
-                                   .setPasswordManagerHandlerForTest(mHandler));
+                () -> handlerProvider.setPasswordManagerHandlerForTest(mHandler));
     }
 
     SettingsActivity startPasswordSettingsFromMainSettings(

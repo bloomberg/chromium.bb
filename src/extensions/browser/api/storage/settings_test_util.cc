@@ -38,22 +38,24 @@ std::unique_ptr<base::Value> CreateMegabyte() {
 }
 
 // Intended as a StorageCallback from GetStorage.
-static void AssignStorage(ValueStore** dst, ValueStore* src) {
+static void AssignStorage(value_store::ValueStore** dst,
+                          value_store::ValueStore* src) {
   *dst = src;
 }
 
-ValueStore* GetStorage(scoped_refptr<const Extension> extension,
-                       settings_namespace::Namespace settings_namespace,
-                       StorageFrontend* frontend) {
-  ValueStore* storage = nullptr;
+value_store::ValueStore* GetStorage(
+    scoped_refptr<const Extension> extension,
+    settings_namespace::Namespace settings_namespace,
+    StorageFrontend* frontend) {
+  value_store::ValueStore* storage = nullptr;
   frontend->RunWithStorage(extension, settings_namespace,
                            base::BindOnce(&AssignStorage, &storage));
   content::RunAllTasksUntilIdle();
   return storage;
 }
 
-ValueStore* GetStorage(scoped_refptr<const Extension> extension,
-                       StorageFrontend* frontend) {
+value_store::ValueStore* GetStorage(scoped_refptr<const Extension> extension,
+                                    StorageFrontend* frontend) {
   return GetStorage(extension, settings_namespace::SYNC, frontend);
 }
 
@@ -77,7 +79,7 @@ scoped_refptr<const Extension> AddExtensionWithIdAndPermissions(
 
   std::unique_ptr<base::ListValue> permissions(new base::ListValue());
   for (auto it = permissions_set.cbegin(); it != permissions_set.cend(); ++it) {
-    permissions->AppendString(*it);
+    permissions->Append(*it);
   }
   manifest.Set("permissions", std::move(permissions));
 

@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/tracing/public/cpp/traced_process.h"
 #include "services/tracing/public/cpp/tracing_features.h"
+#include "services/tracing/public/mojom/tracing_service.mojom.h"
 #include "services/tracing/tracing_service.h"
 
 namespace content {

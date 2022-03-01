@@ -40,8 +40,17 @@
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
-#include "ui/gfx/transform_util.h"
+
+namespace {
+
+template <typename T>
+std::unique_ptr<T> ClonePtr(const std::unique_ptr<T>& value) {
+  return value ? std::make_unique<T>(*value) : nullptr;
+}
+
+}  // namespace
 
 namespace cc {
 LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
@@ -352,6 +361,11 @@ const Region& LayerImpl::GetAllTouchActionRegions() const {
   return *all_touch_action_regions_;
 }
 
+void LayerImpl::SetCaptureBounds(
+    std::unique_ptr<viz::RegionCaptureBounds> bounds) {
+  capture_bounds_ = std::move(bounds);
+}
+
 std::unique_ptr<LayerImpl> LayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return LayerImpl::Create(tree_impl, layer_id_);
@@ -379,10 +393,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->hit_testable_ = hit_testable_;
   layer->non_fast_scrollable_region_ = non_fast_scrollable_region_;
   layer->touch_action_region_ = touch_action_region_;
-  layer->all_touch_action_regions_ =
-      all_touch_action_regions_
-          ? std::make_unique<Region>(*all_touch_action_regions_)
-          : nullptr;
+  layer->all_touch_action_regions_ = ClonePtr(all_touch_action_regions_);
+  layer->capture_bounds_ = ClonePtr(capture_bounds_);
   layer->wheel_event_handler_region_ = wheel_event_handler_region_;
   layer->background_color_ = background_color_;
   layer->safe_opaque_background_color_ = safe_opaque_background_color_;
@@ -603,7 +615,7 @@ gfx::Rect LayerImpl::GetDamageRect() const {
   return gfx::Rect();
 }
 
-void LayerImpl::SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset) {
+void LayerImpl::SetCurrentScrollOffset(const gfx::PointF& scroll_offset) {
   DCHECK(IsActive());
   if (GetScrollTree().SetScrollOffset(element_id(), scroll_offset))
     layer_tree_impl()->DidUpdateScrollOffset(element_id());
@@ -814,6 +826,19 @@ const RenderSurfaceImpl* LayerImpl::render_target() const {
 }
 
 gfx::Vector2dF LayerImpl::GetIdealContentsScale() const {
+  const auto& transform = ScreenSpaceTransform();
+  absl::optional<gfx::Vector2dF> transform_scales =
+      gfx::TryComputeTransform2dScaleComponents(transform);
+  if (transform_scales) {
+    // TODO(crbug.com/1196414): Remove this scale cap.
+    float scale_cap = GetPreferredRasterScale(*transform_scales);
+    transform_scales->SetToMin(gfx::Vector2dF(scale_cap, scale_cap));
+    return *transform_scales;
+  }
+
+  // TryComputeTransform2dScaleComponents couldn't compute a scale because of
+  // perspective components in the transform.
+
   float page_scale = IsAffectedByPageScale()
                          ? layer_tree_impl()->current_page_scale_factor()
                          : 1.f;
@@ -821,46 +846,34 @@ gfx::Vector2dF LayerImpl::GetIdealContentsScale() const {
 
   float default_scale = page_scale * device_scale;
 
-  const auto& transform = ScreenSpaceTransform();
-  if (transform.HasPerspective()) {
-    // TODO(crbug.com/1196414): This function should return a 2D scale.
-    float scale = gfx::ComputeApproximateMaxScale(transform);
+  // TODO(crbug.com/1196414): This function should return a 2D scale.
+  float scale = gfx::ComputeApproximateMaxScale(transform);
 
-    const int kMaxTilesToCoverLayerDimension = 5;
-    // Cap the scale in a way that it should be covered by at most
-    // |kMaxTilesToCoverLayerDimension|^2 default tile sizes. If this is left
-    // uncapped, then we can fairly easily use too much memory (or too many
-    // tiles). See crbug.com/752382 for an example of such a page. Note that
-    // because this is an approximation anyway, it's fine to use a smaller scale
-    // that desired. On top of this, the layer has a perspective transform so
-    // technically it could all be within the viewport, so it's important for us
-    // to have a reasonable scale here. The scale we use would also be at least
-    // |default_scale|, as checked below.
-    float scale_cap = std::min(
-        (layer_tree_impl()->settings().default_tile_size.width() - 2) *
-            kMaxTilesToCoverLayerDimension /
-            static_cast<float>(bounds().width()),
-        (layer_tree_impl()->settings().default_tile_size.height() - 2) *
-            kMaxTilesToCoverLayerDimension /
-            static_cast<float>(bounds().height()));
-    scale = std::min(scale, scale_cap);
+  const int kMaxTilesToCoverLayerDimension = 5;
+  // Cap the scale in a way that it should be covered by at most
+  // |kMaxTilesToCoverLayerDimension|^2 default tile sizes. If this is left
+  // uncapped, then we can fairly easily use too much memory (or too many
+  // tiles). See crbug.com/752382 for an example of such a page. Note that
+  // because this is an approximation anyway, it's fine to use a smaller scale
+  // that desired. On top of this, the layer has a perspective transform so
+  // technically it could all be within the viewport, so it's important for us
+  // to have a reasonable scale here. The scale we use would also be at least
+  // |default_scale|, as checked below.
+  float scale_cap = std::min(
+      (layer_tree_impl()->settings().default_tile_size.width() - 2) *
+          kMaxTilesToCoverLayerDimension / static_cast<float>(bounds().width()),
+      (layer_tree_impl()->settings().default_tile_size.height() - 2) *
+          kMaxTilesToCoverLayerDimension /
+          static_cast<float>(bounds().height()));
+  scale = std::min(scale, scale_cap);
 
-    // Since we're approximating the scale anyway, round it to the nearest
-    // integer to prevent jitter when animating the transform.
-    scale = std::round(scale);
+  // Since we're approximating the scale anyway, round it to the nearest
+  // integer to prevent jitter when animating the transform.
+  scale = std::round(scale);
 
-    // Don't let the scale fall below the default scale.
-    scale = std::max(scale, default_scale);
-    return gfx::Vector2dF(scale, scale);
-  }
-
-  gfx::Vector2dF transform_scales =
-      gfx::ComputeTransform2dScaleComponents(transform, default_scale);
-
-  // TODO(crbug.com/1196414): Remove this scale cap.
-  float scale_cap = GetPreferredRasterScale(transform_scales);
-  transform_scales.SetToMin(gfx::Vector2dF(scale_cap, scale_cap));
-  return transform_scales;
+  // Don't let the scale fall below the default scale.
+  scale = std::max(scale, default_scale);
+  return gfx::Vector2dF(scale, scale);
 }
 
 float LayerImpl::GetIdealContentsScaleKey() const {

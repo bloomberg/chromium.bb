@@ -31,12 +31,15 @@ class CpuInfo final {
 
   // X86 features
   bool Sse42();
-  bool Avx2();
+  bool Avx();
+  bool Avx2Fma();
   bool Avx512();
   bool AvxVnni();
 
   // Common features
   const CpuCacheParams& CacheParams();
+  bool CurrentCpuIsA55ish();
+  bool CurrentCpuIsX1();
 
  private:
   enum class InitStatus {

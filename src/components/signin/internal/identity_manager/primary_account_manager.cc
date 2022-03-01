@@ -56,7 +56,6 @@ void PrimaryAccountManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kAutologinEnabled, true);
   registry->RegisterListPref(prefs::kReverseAutologinRejectedEmailList);
   registry->RegisterBooleanPref(prefs::kSigninAllowed, true);
-  registry->RegisterBooleanPref(prefs::kSigninAllowedByPolicy, true);
   registry->RegisterBooleanPref(prefs::kSignedInWithCredentialProvider, false);
 }
 
@@ -126,13 +125,8 @@ void PrimaryAccountManager::Initialize(PrefService* local_state) {
   // It is important to only load credentials after starting to observe the
   // token service.
   token_service_->AddObserver(this);
-  signin::ConsentLevel consent_level = signin::ConsentLevel::kSync;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // TODO(https://crbug.com/1196596): Use kSignin on all platforms.
-  if (base::FeatureList::IsEnabled(switches::kUseAccountManagerFacade))
-    consent_level = signin::ConsentLevel::kSignin;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-  token_service_->LoadCredentials(GetPrimaryAccountId(consent_level));
+  token_service_->LoadCredentials(
+      GetPrimaryAccountId(signin::ConsentLevel::kSignin));
 }
 
 bool PrimaryAccountManager::IsInitialized() const {
@@ -295,36 +289,23 @@ void PrimaryAccountManager::RevokeSyncConsent(
 void PrimaryAccountManager::StartSignOut(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric,
-    RemoveAccountsOption remove_option,
-    bool assert_signout_allowed) {
+    RemoveAccountsOption remove_option) {
   VLOG(1) << "StartSignOut: " << static_cast<int>(signout_source_metric) << ", "
           << static_cast<int>(signout_delete_metric) << ", "
           << static_cast<int>(remove_option);
-  if (HasPrimaryAccount(signin::ConsentLevel::kSync)) {
-    client_->PreSignOut(
-        base::BindOnce(&PrimaryAccountManager::OnSignoutDecisionReached,
-                       base::Unretained(this), signout_source_metric,
-                       signout_delete_metric, remove_option,
-                       assert_signout_allowed),
-        signout_source_metric);
-  } else {
-    // Sign-out is always allowed if there's only unconsented primary account
-    // without sync consent, so skip calling PreSignOut.
-    OnSignoutDecisionReached(signout_source_metric, signout_delete_metric,
-                             remove_option, assert_signout_allowed,
-                             SigninClient::SignoutDecision::ALLOW_SIGNOUT);
-  }
+  client_->PreSignOut(
+      base::BindOnce(&PrimaryAccountManager::OnSignoutDecisionReached,
+                     base::Unretained(this), signout_source_metric,
+                     signout_delete_metric, remove_option),
+      signout_source_metric);
 }
 
 void PrimaryAccountManager::OnSignoutDecisionReached(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric,
     RemoveAccountsOption remove_option,
-    bool assert_signout_allowed,
     SigninClient::SignoutDecision signout_decision) {
   DCHECK(IsInitialized());
-  if (assert_signout_allowed)
-    DCHECK_EQ(SigninClient::SignoutDecision::ALLOW_SIGNOUT, signout_decision);
 
   VLOG(1) << "OnSignoutDecisionReached: "
           << (signout_decision == SigninClient::SignoutDecision::ALLOW_SIGNOUT);
@@ -404,15 +385,10 @@ void PrimaryAccountManager::OnRefreshTokensLoaded() {
   if (token_service_->HasLoadCredentialsFinishedWithNoErrors()) {
     std::vector<AccountInfo> accounts_in_tracker_service =
         account_tracker_service_->GetAccounts();
-    signin::ConsentLevel consent_level = signin::ConsentLevel::kSync;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    // TODO(https://crbug.com/1196596): Use kSignin on all platforms.
-    if (base::FeatureList::IsEnabled(switches::kUseAccountManagerFacade))
-      consent_level = signin::ConsentLevel::kSignin;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-    const CoreAccountId sync_account_id = GetPrimaryAccountId(consent_level);
+    const CoreAccountId primary_account_id_ =
+        GetPrimaryAccountId(signin::ConsentLevel::kSignin);
     for (const auto& account : accounts_in_tracker_service) {
-      if (sync_account_id != account.account_id &&
+      if (primary_account_id_ != account.account_id &&
           !token_service_->RefreshTokenIsAvailable(account.account_id)) {
         VLOG(0) << "Removed account from account tracker service: "
                 << account.account_id;
@@ -422,15 +398,12 @@ void PrimaryAccountManager::OnRefreshTokensLoaded() {
   }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  // TODO(msarda): This code should be removed once migration finishes.
-  // Use histogram Signin.AccountTracker.GaiaIdMigrationState to verify the
-  // migration state.
-  if (!base::FeatureList::IsEnabled(switches::kForceAccountIdMigration))
-    return;
-
   // On non-ChromeOS platforms, account ID migration started in 2015. Data is
   // most probably corrupted for profiles that were not migrated. Clear all
   // accounts to fix this state.
+
+  // TODO(crbug.com/1224899): This code should be removed once migration
+  // finishes.
   if (account_tracker_service_->GetMigrationState() ==
       AccountTrackerService::MIGRATION_NOT_STARTED) {
     // Clear the primary account if any.

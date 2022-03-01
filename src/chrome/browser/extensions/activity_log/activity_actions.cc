@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/dom_action_types.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace constants = activity_log_constants;
@@ -67,7 +68,7 @@ scoped_refptr<Action> Action::Clone() const {
   auto clone = base::MakeRefCounted<Action>(
       extension_id(), time(), action_type(), api_name(), action_id());
   if (args())
-    clone->set_args(base::WrapUnique(args()->DeepCopy()));
+    clone->set_args(args()->CreateDeepCopy());
   clone->set_page_url(page_url());
   clone->set_page_title(page_title());
   clone->set_page_incognito(page_incognito());
@@ -188,10 +189,9 @@ ExtensionActivity Action::ConvertToExtensionActivity() {
   if (other()) {
     std::unique_ptr<ExtensionActivity::Other> other_field(
         new ExtensionActivity::Other);
-    bool prerender;
-    if (other()->GetBooleanWithoutPathExpansion(constants::kActionPrerender,
-                                                &prerender)) {
-      other_field->prerender = std::make_unique<bool>(prerender);
+    if (absl::optional<bool> prerender =
+            other()->FindBoolKey(constants::kActionPrerender)) {
+      other_field->prerender = std::make_unique<bool>(*prerender);
     }
     const base::DictionaryValue* web_request;
     if (other()->GetDictionaryWithoutPathExpansion(constants::kActionWebRequest,
@@ -199,13 +199,12 @@ ExtensionActivity Action::ConvertToExtensionActivity() {
       other_field->web_request = std::make_unique<std::string>(
           ActivityLogPolicy::Util::Serialize(web_request));
     }
-    std::string extra;
-    if (other()->GetStringWithoutPathExpansion(constants::kActionExtra, &extra))
-      other_field->extra = std::make_unique<std::string>(extra);
-    int dom_verb;
-    if (other()->GetIntegerWithoutPathExpansion(constants::kActionDomVerb,
-                                                &dom_verb)) {
-      switch (static_cast<DomActionType::Type>(dom_verb)) {
+    const std::string* extra = other()->FindStringKey(constants::kActionExtra);
+    if (extra)
+      other_field->extra = std::make_unique<std::string>(*extra);
+    if (absl::optional<int> dom_verb =
+            other()->FindIntKey(constants::kActionDomVerb)) {
+      switch (static_cast<DomActionType::Type>(dom_verb.value())) {
         case DomActionType::GETTER:
           other_field->dom_verb =
               activity_log::EXTENSION_ACTIVITY_DOM_VERB_GETTER;

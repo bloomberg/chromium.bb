@@ -6,9 +6,8 @@
 #define FUCHSIA_ENGINE_RENDERER_WEB_ENGINE_RENDER_FRAME_OBSERVER_H_
 
 #include "base/callback.h"
-#include "components/cast_streaming/renderer/cast_streaming_receiver.h"
+#include "components/url_rewrite/renderer/url_request_rules_receiver.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "fuchsia/engine/renderer/url_request_rules_receiver.h"
 
 namespace content {
 class RenderFrame;
@@ -18,31 +17,27 @@ class RenderFrame;
 // RenderFrame. Owned by WebEngineContentRendererClient, this object will be
 // destroyed on RenderFrame destruction, triggering the destruction of all of
 // the objects it exposes.
-class WebEngineRenderFrameObserver : public content::RenderFrameObserver {
+class WebEngineRenderFrameObserver final : public content::RenderFrameObserver {
  public:
   // |on_render_frame_deleted_callback| must delete |this|.
   WebEngineRenderFrameObserver(
       content::RenderFrame* render_frame,
       base::OnceCallback<void(int)> on_render_frame_deleted_callback);
-  ~WebEngineRenderFrameObserver() final;
+  ~WebEngineRenderFrameObserver() override;
 
   WebEngineRenderFrameObserver(const WebEngineRenderFrameObserver&) = delete;
   WebEngineRenderFrameObserver& operator=(const WebEngineRenderFrameObserver&) =
       delete;
 
-  UrlRequestRulesReceiver* url_request_rules_receiver() {
+  url_rewrite::UrlRequestRulesReceiver* url_request_rules_receiver() {
     return &url_request_rules_receiver_;
-  }
-  cast_streaming::CastStreamingReceiver* cast_streaming_receiver() {
-    return &cast_streaming_receiver_;
   }
 
  private:
   // content::RenderFrameObserver implementation.
-  void OnDestruct() final;
+  void OnDestruct() override;
 
-  UrlRequestRulesReceiver url_request_rules_receiver_;
-  cast_streaming::CastStreamingReceiver cast_streaming_receiver_;
+  url_rewrite::UrlRequestRulesReceiver url_request_rules_receiver_;
 
   base::OnceCallback<void(int)> on_render_frame_deleted_callback_;
 };

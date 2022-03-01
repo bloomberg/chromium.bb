@@ -12,13 +12,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/numerics/ranges.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -27,18 +28,21 @@
 #include "media/audio/audio_manager.h"
 #include "media/base/audio_bus.h"
 #include "media/base/user_input_monitor.h"
+#include "services/audio/audio_processor.h"
+#include "services/audio/concurrent_stream_metric_reporter.h"
+#include "services/audio/device_output_listener.h"
 
 namespace audio {
 namespace {
 
+using OpenOutcome = media::AudioInputStream::OpenOutcome;
+
 const int kMaxInputChannels = 3;
-constexpr base::TimeDelta kCheckMutedStateInterval =
-    base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kCheckMutedStateInterval = base::Seconds(1);
 
 #if defined(AUDIO_POWER_MONITORING)
 // Time in seconds between two successive measurements of audio power levels.
-constexpr base::TimeDelta kPowerMonitorLogInterval =
-    base::TimeDelta::FromSeconds(15);
+constexpr base::TimeDelta kPowerMonitorLogInterval = base::Seconds(15);
 
 // A warning will be logged when the microphone audio volume is below this
 // threshold.
@@ -94,7 +98,7 @@ float AveragePower(const media::AudioBus& buffer) {
 
   // Update accumulated average results, with clamping for sanity.
   const float average_power =
-      base::ClampToRange(sum_power / (frames * channels), 0.0f, 1.0f);
+      base::clamp(sum_power / (frames * channels), 0.0f, 1.0f);
 
   // Convert average power level to dBFS units, and pin it down to zero if it
   // is insignificantly small.
@@ -130,12 +134,10 @@ float AveragePower(const media::AudioBus& buffer) {
 class InputController::AudioCallback
     : public media::AudioInputStream::AudioInputCallback {
  public:
-  AudioCallback(
-      InputController* controller)
+  explicit AudioCallback(InputController* controller)
       : task_runner_(base::ThreadTaskRunnerHandle::Get()),
         controller_(controller),
-        weak_controller_(controller->weak_ptr_factory_.GetWeakPtr()) {
-  }
+        weak_controller_(controller->weak_ptr_factory_.GetWeakPtr()) {}
   ~AudioCallback() override = default;
 
   // These should not be called when the stream is live.
@@ -194,7 +196,7 @@ class InputController::AudioCallback
   }
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  InputController* const controller_;
+  const raw_ptr<InputController> controller_;
   // We do not want any pending posted tasks generated from the callback class
   // to keep the controller object alive longer than it should. So we use
   // a weak ptr whenever we post, we use this weak pointer.
@@ -206,16 +208,34 @@ class InputController::AudioCallback
 InputController::InputController(EventHandler* handler,
                                  SyncWriter* sync_writer,
                                  media::UserInputMonitor* user_input_monitor,
+                                 InputStreamActivityMonitor* activity_monitor,
+                                 DeviceOutputListener* device_output_listener,
                                  const media::AudioParameters& params,
                                  StreamType type)
     : handler_(handler),
       stream_(nullptr),
       sync_writer_(sync_writer),
       type_(type),
-      user_input_monitor_(user_input_monitor) {
+      user_input_monitor_(user_input_monitor),
+      activity_monitor_(activity_monitor) {
   DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
   DCHECK(handler_);
   DCHECK(sync_writer_);
+  DCHECK(activity_monitor_);
+
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+  if (device_output_listener) {
+    // Unretained() is safe, because |handler_| outlives |audio_processor_|.
+    audio_processor_ = std::make_unique<AudioProcessor>(
+        device_output_listener,
+        base::BindRepeating(&EventHandler::OnLog, base::Unretained(handler_)));
+  }
+#endif
+
+  if (!user_input_monitor_) {
+    handler_->OnLog(
+        "AIC::InputController() => (WARNING: keypress monitoring is disabled)");
+  }
 }
 
 InputController::~InputController() {
@@ -231,11 +251,14 @@ std::unique_ptr<InputController> InputController::Create(
     EventHandler* event_handler,
     SyncWriter* sync_writer,
     media::UserInputMonitor* user_input_monitor,
+    InputStreamActivityMonitor* activity_monitor,
+    DeviceOutputListener* device_output_listener,
     const media::AudioParameters& params,
     const std::string& device_id,
     bool enable_agc) {
   DCHECK(audio_manager);
   DCHECK(audio_manager->GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(activity_monitor);
   DCHECK(sync_writer);
   DCHECK(event_handler);
   DCHECK(params.IsValid());
@@ -245,9 +268,9 @@ std::unique_ptr<InputController> InputController::Create(
 
   // Create the InputController object and ensure that it runs on
   // the audio-manager thread.
-  std::unique_ptr<InputController> controller(
-      new InputController(event_handler, sync_writer, user_input_monitor,
-                          params, ParamsToStreamType(params)));
+  std::unique_ptr<InputController> controller(new InputController(
+      event_handler, sync_writer, user_input_monitor, activity_monitor,
+      device_output_listener, params, ParamsToStreamType(params)));
 
   controller->DoCreate(audio_manager, params, device_id, enable_agc);
   return controller;
@@ -270,7 +293,14 @@ void InputController::Record() {
   stream_create_time_ = base::TimeTicks::Now();
 
   audio_callback_ = std::make_unique<AudioCallback>(this);
+
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+  if (audio_processor_)
+    audio_processor_->Start();
+#endif
+
   stream_->Start(audio_callback_.get());
+  activity_monitor_->OnInputStreamActive();
   return;
 }
 
@@ -288,7 +318,12 @@ void InputController::Close() {
 
   // Allow calling unconditionally and bail if we don't have a stream to close.
   if (audio_callback_) {
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+    if (audio_processor_)
+      audio_processor_->Stop();
+#endif
     stream_->Stop();
+    activity_monitor_->OnInputStreamInactive();
 
     // Sometimes a stream (and accompanying audio track) is created and
     // immediately closed or discarded. In this case they are registered as
@@ -379,6 +414,11 @@ void InputController::SetOutputDeviceForAec(
   DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
   if (stream_)
     stream_->SetOutputDeviceForAec(output_device_id);
+
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+  if (audio_processor_)
+    audio_processor_->SetOutputDeviceForAec(output_device_id);
+#endif
 }
 
 void InputController::OnStreamActive(Snoopable* output_stream) {
@@ -387,6 +427,17 @@ void InputController::OnStreamActive(Snoopable* output_stream) {
 
 void InputController::OnStreamInactive(Snoopable* output_stream) {
   DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
+}
+
+InputController::ErrorCode MapOpenOutcomeToErrorCode(OpenOutcome outcome) {
+  switch (outcome) {
+    case OpenOutcome::kFailedSystemPermissions:
+      return InputController::STREAM_OPEN_SYSTEM_PERMISSIONS_ERROR;
+    case OpenOutcome::kFailedInUse:
+      return InputController::STREAM_OPEN_DEVICE_IN_USE_ERROR;
+    default:
+      return InputController::STREAM_OPEN_ERROR;
+  }
 }
 
 void InputController::DoCreate(media::AudioManager* audio_manager,
@@ -419,14 +470,10 @@ void InputController::DoCreate(media::AudioManager* audio_manager,
   }
 
   auto open_outcome = stream->Open();
-  if (open_outcome != media::AudioInputStream::OpenOutcome::kSuccess) {
+  if (open_outcome != OpenOutcome::kSuccess) {
     stream->Close();
     LogCaptureStartupResult(CAPTURE_STARTUP_OPEN_STREAM_FAILED);
-    handler_->OnError(
-        open_outcome ==
-                media::AudioInputStream::OpenOutcome::kFailedSystemPermissions
-            ? STREAM_OPEN_SYSTEM_PERMISSIONS_ERROR
-            : STREAM_OPEN_ERROR);
+    handler_->OnError(MapOpenOutcomeToErrorCode(open_outcome));
     return;
   }
 

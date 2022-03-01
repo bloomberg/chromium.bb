@@ -7,7 +7,6 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
-#include "third_party/blink/public/mojom/widget/screen_info.mojom.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace mojo {
@@ -23,7 +22,6 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
       !data.ReadSansSerifFontFamilyMap(&out->sans_serif_font_family_map) ||
       !data.ReadCursiveFontFamilyMap(&out->cursive_font_family_map) ||
       !data.ReadFantasyFontFamilyMap(&out->fantasy_font_family_map) ||
-      !data.ReadPictographFontFamilyMap(&out->pictograph_font_family_map) ||
       !data.ReadLazyFrameLoadingDistanceThresholdsPx(
           &out->lazy_frame_loading_distance_thresholds_px) ||
       !data.ReadLazyImageLoadingDistanceThresholdsPx(
@@ -48,7 +46,9 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
           &out->low_priority_iframes_threshold) ||
       !data.ReadNetworkQualityEstimatorWebHoldback(
           &out->network_quality_estimator_web_holdback) ||
-      !data.ReadWebAppScope(&out->web_app_scope)
+      !data.ReadWebAppScope(&out->web_app_scope) ||
+      !data.ReadLitepageSubresourceRedirectOrigin(
+          &out->litepage_subresource_redirect_origin)
 #if defined(OS_ANDROID)
       || !data.ReadDefaultVideoPosterUrl(&out->default_video_poster_url)
 #endif
@@ -79,7 +79,6 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
       data.data_saver_holdback_web_api_enabled();
   out->local_storage_enabled = data.local_storage_enabled();
   out->databases_enabled = data.databases_enabled();
-  out->application_cache_enabled = data.application_cache_enabled();
   out->tabs_to_links = data.tabs_to_links();
   out->disable_ipc_flooding_protection = data.disable_ipc_flooding_protection();
   out->hyperlink_auditing_enabled = data.hyperlink_auditing_enabled();
@@ -99,6 +98,9 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
   out->hide_scrollbars = data.hide_scrollbars();
   out->accelerated_2d_canvas_enabled = data.accelerated_2d_canvas_enabled();
   out->new_canvas_2d_api_enabled = data.new_canvas_2d_api_enabled();
+  out->canvas_2d_layers_enabled = data.canvas_2d_layers_enabled();
+  out->canvas_context_lost_in_background_enabled =
+      data.canvas_context_lost_in_background_enabled();
   out->antialiased_2d_canvas_disabled = data.antialiased_2d_canvas_disabled();
   out->antialiased_clips_2d_canvas_enabled =
       data.antialiased_clips_2d_canvas_enabled();

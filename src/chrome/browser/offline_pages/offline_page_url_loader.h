@@ -7,6 +7,7 @@
 
 #include <cstdint>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/offline_pages/offline_page_request_handler.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
@@ -45,6 +46,9 @@ class OfflinePageURLLoader : public network::mojom::URLLoader,
       int frame_tree_node_id,
       const network::ResourceRequest& tentative_resource_request,
       content::URLLoaderRequestInterceptor::LoaderCallback callback);
+
+  OfflinePageURLLoader(const OfflinePageURLLoader&) = delete;
+  OfflinePageURLLoader& operator=(const OfflinePageURLLoader&) = delete;
 
   ~OfflinePageURLLoader() override;
 
@@ -99,7 +103,7 @@ class OfflinePageURLLoader : public network::mojom::URLLoader,
   void MaybeDeleteSelf();
 
   // Not owned. The owner of this should outlive this class instance.
-  content::NavigationUIData* navigation_ui_data_;
+  raw_ptr<content::NavigationUIData> navigation_ui_data_;
 
   int frame_tree_node_id_;
   int transition_type_;
@@ -118,8 +122,6 @@ class OfflinePageURLLoader : public network::mojom::URLLoader,
   OfflinePageRequestHandler::Delegate::TabIdGetter tab_id_getter_;
 
   base::WeakPtrFactory<OfflinePageURLLoader> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(OfflinePageURLLoader);
 };
 
 }  // namespace offline_pages

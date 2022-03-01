@@ -7,7 +7,8 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/buildflags/buildflags.h"
@@ -34,6 +35,10 @@ class ExtensionDownloadsEventRouter;
 class DownloadCoreServiceImpl : public DownloadCoreService {
  public:
   explicit DownloadCoreServiceImpl(Profile* profile);
+
+  DownloadCoreServiceImpl(const DownloadCoreServiceImpl&) = delete;
+  DownloadCoreServiceImpl& operator=(const DownloadCoreServiceImpl&) = delete;
+
   ~DownloadCoreServiceImpl() override;
 
   // DownloadCoreService
@@ -56,7 +61,7 @@ class DownloadCoreServiceImpl : public DownloadCoreService {
 
  private:
   bool download_manager_created_;
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   // ChromeDownloadManagerDelegate may be the target of callbacks from
   // the history service/DB thread and must be kept alive for those
@@ -90,8 +95,6 @@ class DownloadCoreServiceImpl : public DownloadCoreService {
   std::unique_ptr<extensions::ExtensionDownloadsEventRouter>
       extension_event_router_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadCoreServiceImpl);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_CORE_SERVICE_IMPL_H_

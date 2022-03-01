@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
@@ -59,6 +58,10 @@ class InvitationCppTest : public testing::Test,
                           public testing::WithParamInterface<TransportType> {
  public:
   InvitationCppTest() = default;
+
+  InvitationCppTest(const InvitationCppTest&) = delete;
+  InvitationCppTest& operator=(const InvitationCppTest&) = delete;
+
   ~InvitationCppTest() override = default;
 
  protected:
@@ -175,12 +178,13 @@ class InvitationCppTest : public testing::Test,
  private:
   base::test::TaskEnvironment task_environment_;
   base::Process child_process_;
-
-  DISALLOW_COPY_AND_ASSIGN(InvitationCppTest);
 };
 
 class TestClientBase : public InvitationCppTest {
  public:
+  TestClientBase(const TestClientBase&) = delete;
+  TestClientBase& operator=(const TestClientBase&) = delete;
+
   static PlatformChannelEndpoint RecoverEndpointFromCommandLine() {
     const auto& command_line = *base::CommandLine::ForCurrentProcess();
 #if !defined(OS_FUCHSIA)
@@ -201,9 +205,6 @@ class TestClientBase : public InvitationCppTest {
   static ScopedMessagePipeHandle AcceptIsolatedInvitation() {
     return IncomingInvitation::AcceptIsolated(RecoverEndpointFromCommandLine());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestClientBase);
 };
 
 #define DEFINE_TEST_CLIENT(name)             \

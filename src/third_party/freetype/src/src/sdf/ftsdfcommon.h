@@ -2,7 +2,7 @@
  *
  * ftsdfcommon.h
  *
- *   Auxiliary data for Signed Distance Field support (specification only).
+ *   Auxiliary data for Signed Distance Field support (specification).
  *
  * Copyright (C) 2020-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
@@ -30,7 +30,7 @@
 
 #include <ft2build.h>
 #include FT_CONFIG_CONFIG_H
-#include <freetype/freetype.h>
+#include <freetype/internal/ftobjs.h>
 
 
 FT_BEGIN_HEADER
@@ -115,52 +115,20 @@ FT_BEGIN_HEADER
 
   typedef FT_Fixed  FT_16D16;      /* 16.16 fixed-point representation  */
   typedef FT_Fixed  FT_26D6;       /* 26.6 fixed-point representation   */
-  typedef FT_Short  FT_6D10;       /* 6.10 fixed-point representation   */
+  typedef FT_Byte   FT_SDFFormat;  /* format to represent SDF data      */
 
   typedef FT_BBox   FT_CBox;       /* control box of a curve            */
 
 
-  /**************************************************************************
-   *
-   * common functions
-   *
-   */
+  FT_LOCAL( FT_16D16 )
+  square_root( FT_16D16  val );
 
-  /*
-   * Original algorithm:
-   *
-   *   https://github.com/chmike/fpsqrt
-   *
-   * Use this to compute the square root of a 16.16 fixed point number.
-   */
-  static FT_16D16
-  square_root( FT_16D16  val )
-  {
-    FT_ULong  t, q, b, r;
+  FT_LOCAL( FT_SDFFormat )
+  map_fixed_to_sdf( FT_16D16  dist,
+                    FT_16D16  max_value );
 
-
-    r = val;
-    b = 0x40000000L;
-    q = 0;
-
-    while ( b > 0x40L )
-    {
-      t = q + b;
-
-      if ( r >= t )
-      {
-        r -= t;
-        q  = t + b;
-      }
-
-      r <<= 1;
-      b >>= 1;
-    }
-
-    q >>= 8;
-
-    return q;
-  }
+  FT_LOCAL( FT_SDFFormat )
+  invert_sign( FT_SDFFormat  dist );
 
 
 FT_END_HEADER

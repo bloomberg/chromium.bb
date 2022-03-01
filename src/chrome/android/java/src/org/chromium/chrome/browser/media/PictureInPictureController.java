@@ -21,17 +21,21 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.MathUtils;
 import org.chromium.base.annotations.VerifiesOnO;
+import org.chromium.base.compat.ApiHelperForS;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.browser.notifications.NotificationIntentInterceptor;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -58,6 +62,7 @@ public class PictureInPictureController {
             MetricsAttemptResult.FINISHING,
             MetricsAttemptResult.NO_WEB_CONTENTS,
             MetricsAttemptResult.NO_VIDEO,
+            MetricsAttemptResult.APP_TASKS,
     })
     private @interface MetricsAttemptResult {
         static final int SUCCESS = 0;
@@ -69,6 +74,7 @@ public class PictureInPictureController {
         static final int FINISHING = 6;
         static final int NO_WEB_CONTENTS = 7;
         static final int NO_VIDEO = 8;
+        static final int APP_TASKS = 9;
     }
     // For UMA, not a valid MetricsAttemptResult.
     private static final int METRICS_ATTEMPT_RESULT_COUNT = 9;
@@ -98,6 +104,12 @@ public class PictureInPictureController {
     private static final float MIN_ASPECT_RATIO = 1 / 2.39f;
     private static final float MAX_ASPECT_RATIO = 2.39f;
 
+    // Components names that won't trigger the pip mode. Use cases like notification clicks won't
+    // trigger pip.
+    private static final HashSet<String> NO_PIP_COMPONENT_NAMES = new HashSet<String>() {
+        { add(NotificationIntentInterceptor.TrampolineActivity.class.getName()); }
+    };
+
     /** Callbacks to cleanup after leaving PiP. */
     private final List<Runnable> mOnLeavePipCallbacks = new LinkedList<>();
     /** Current observers, if any. */
@@ -110,11 +122,20 @@ public class PictureInPictureController {
     private final ActivityTabProvider mActivityTabProvider;
     private final FullscreenManager mFullscreenManager;
 
+    /** Did we last tell the framework that auto-enter is allowed (true) or not? */
+    private boolean mIsAutoEnterAllowed;
+
+    /** Should we notify the framework if Picture in Picture should be allowed? */
+    private final boolean mListenForAutoEnterability;
+
     public PictureInPictureController(Activity activity, ActivityTabProvider activityTabProvider,
             FullscreenManager fullscreenManager) {
         mActivity = activity;
         mActivityTabProvider = activityTabProvider;
         mFullscreenManager = fullscreenManager;
+
+        mListenForAutoEnterability = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
+        if (mListenForAutoEnterability) addObserversIfNeeded();
     }
 
     /**
@@ -184,7 +205,19 @@ public class PictureInPictureController {
             return MetricsAttemptResult.FINISHING;
         }
 
+        // Don't trigger pip mode for certain types of usage, like notification click.
+        if (!canStartPipBasedOnRecentTasks()) {
+            Log.d(TAG, "Block pip due to recent app tasks.");
+            return MetricsAttemptResult.APP_TASKS;
+        }
+
         return MetricsAttemptResult.SUCCESS;
+    }
+
+    private boolean canStartPipBasedOnRecentTasks() {
+        return AndroidTaskUtils
+                .getRecentAppTasksMatchingComponentNames(mActivity, NO_PIP_COMPONENT_NAMES)
+                .isEmpty();
     }
 
     /**
@@ -228,12 +261,13 @@ public class PictureInPictureController {
 
     /**
      * Notify us that Picture in Picture mode has started.  This can be because we requested it in
-     * {@link #attemptPictureInPicture()}.
+     * {@link #attemptPictureInPicture()} or because we auto-entered Picture in Picture.
      */
     public void onEnteredPictureInPictureMode() {
         // Inform the WebContents when we enter and when we leave PiP.
         final WebContents webContents = getWebContents();
-        assert webContents != null;
+        // If we're closing the tab, just stop here.
+        if (webContents == null) return;
 
         webContents.setHasPersistentVideo(true);
 
@@ -247,7 +281,8 @@ public class PictureInPictureController {
             InfoBarContainer.get(activityTab).setHidden(false);
         });
 
-        // Setup observers to dismiss the Activity on events that should end PiP.
+        // Setup observers to dismiss the Activity on events that should end PiP.  In auto-enter
+        // mode, these might be registered already.
         addObserversIfNeeded();
 
         long startTimeMs = SystemClock.elapsedRealtime();
@@ -294,20 +329,25 @@ public class PictureInPictureController {
     }
 
     /**
-     * If we have previously entered Picture in Picture, perform cleanup.
+     * Notify us that the framework has exited from Picture in Picture mode.  Perform any cleanup
+     * required.  It's okay to call this even when we don't believe that we're in PiP mode.
      */
-    public void cleanup() {
-        exitPictureInPicture(MetricsEndReason.RESUME);
+    public void onFrameworkExitedPictureInPicture() {
+        onExitedPictureInPicture(MetricsEndReason.RESUME);
     }
 
     /**
-     * Switch out of Picture in Picture mode.
+     * Called when we have exited Picture in Picture mode, to switch the browser back into non-
+     * PiP mode.  If we registered observers due to a non-auto PiP, then also unregister the
+     * observers as well.
+     *
+     * It's okay if we're not currently in Picture in Picture mode.
      */
-    private void exitPictureInPicture(@MetricsEndReason int reason) {
-        // If `mOnLeavePipCallbacks` is empty, it means that the cleanup call happened while Chrome
-        // was not PIP'ing. The early return also avoid recording the reason why the PIP session
-        // ended.
-        if (mOnLeavePipCallbacks.isEmpty()) return;
+    private void onExitedPictureInPicture(@MetricsEndReason int reason) {
+        // If we don't believe that a Picture in Picture session is active, it means that the
+        // cleanup call happened while Chrome was not PIP'ing. The early return also avoid recording
+        // the reason why the (non-)PIP session ended.
+        if (!isPipSessionActive()) return;
 
         // This method can be called when we haven't been PiPed. We use Callbacks to ensure we only
         // do cleanup if it is required.
@@ -316,7 +356,12 @@ public class PictureInPictureController {
         }
         mOnLeavePipCallbacks.clear();
 
-        removeObserversIfNeeded();
+        // Leave the callbacks in place if we're using them to decide about auto-pip.  Otherwise,
+        // they're only registered to detect when we leave.  They will be re-added if we're told to
+        // re-enter pip later.
+        if (!mListenForAutoEnterability) {
+            removeObserversIfNeeded();
+        }
 
         RecordHistogram.recordEnumeratedHistogram(
                 METRICS_END_REASON, reason, METRICS_END_REASON_COUNT);
@@ -336,7 +381,7 @@ public class PictureInPictureController {
             mFullscreenListener = new FullscreenManager.Observer() {
                 @Override
                 public void onExitFullscreen(Tab tab) {
-                    dismissActivity(mActivity, MetricsEndReason.LEFT_FULLSCREEN);
+                    dismissActivityIfNeeded(mActivity, MetricsEndReason.LEFT_FULLSCREEN);
                 }
             };
 
@@ -357,10 +402,70 @@ public class PictureInPictureController {
         }
     }
 
-    /** Moves the Activity to the back and performs all cleanup. */
-    private void dismissActivity(Activity activity, @MetricsEndReason int reason) {
+    /** Notify Android if it's okay to auto-enter Picture in Picture mode. */
+    private void updateAutoPictureInPictureStatus() {
+        // Do nothing if Android doesn't support auto-enter.
+        if (!mListenForAutoEnterability) return;
+
+        // Do not check if we're in PiP mode or not, since we're called during transitions into and
+        // out of it.  The framework won't try to auto-enter if we're already there anyway.
+        final boolean allowed = (getAttemptResult(false) == MetricsAttemptResult.SUCCESS);
+        if (allowed == mIsAutoEnterAllowed) {
+            // Don't notify the framework if nothing has changed.
+            return;
+        }
+
+        PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder();
+        if (allowed) {
+            final WebContents webContents = getWebContents();
+            assert webContents != null;
+
+            Rect bounds = getVideoBounds(webContents, mActivity);
+            if (bounds != null) {
+                builder.setAspectRatio(new Rational(bounds.width(), bounds.height()));
+                builder.setSourceRectHint(bounds);
+            }
+            ApiHelperForS.setAutoEnterEnabled(builder, true);
+        } else {
+            ApiHelperForS.setAutoEnterEnabled(builder, false);
+        }
+
+        mIsAutoEnterAllowed = allowed;
+        try {
+            mActivity.setPictureInPictureParams(builder.build());
+        } catch(RuntimeException e) {
+        }
+    }
+
+    /**
+     * Return whether or not we believe that we're in Picture in Picture mode.  This might not agree
+     * with what the framework thinks, which can change asynchronously with respect to what we do
+     * here.  This only indicates whether we've {@link onEnteredPictureInPictureMode} without later
+     * exiting it.
+     */
+    private boolean isPipSessionActive() {
+        return !mOnLeavePipCallbacks.isEmpty();
+    }
+
+    /**
+     * Moves the Activity to the back if we're in Picture in Picture mode, and performs any
+     * cleanup of our internal state, due to something that should cancel Picture in Picture mode.
+     * It's okay if we're not in Picture in Picture mode; we'll reset our internal state as needed.
+     *
+     * This will also update our auto-PiP preference with the framework, if it's changed.
+     */
+    private void dismissActivityIfNeeded(Activity activity, @MetricsEndReason int reason) {
+        // Something interesting happened -- make sure we've updated our preference for auto-PiP
+        // with the framework, if applicable.
+        updateAutoPictureInPictureStatus();
+
+        if (!isPipSessionActive()) {
+            return;
+        }
+
+        // If we're currently in Picture in Picture mode, then notify the framework to exit it.
         activity.moveTaskToBack(true);
-        exitPictureInPicture(reason);
+        onExitedPictureInPicture(reason);
     }
 
     /**
@@ -411,34 +516,42 @@ public class PictureInPictureController {
 
         @Override
         public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
-            if (window != null) dismissActivity(mActivity, MetricsEndReason.REPARENT);
+            if (window != null) dismissActivityIfNeeded(mActivity, MetricsEndReason.REPARENT);
         }
 
         @Override
         public void onClosingStateChanged(Tab tab, boolean closing) {
-            dismissActivity(mActivity, MetricsEndReason.CLOSE);
+            dismissActivityIfNeeded(mActivity, MetricsEndReason.CLOSE);
             cleanupWebContentsObserver();
         }
 
         @Override
         public void onCrash(Tab tab) {
-            dismissActivity(mActivity, MetricsEndReason.CRASH);
+            dismissActivityIfNeeded(mActivity, MetricsEndReason.CRASH);
             cleanupWebContentsObserver();
         }
 
         @Override
         public void webContentsWillSwap(Tab tab) {
-            dismissActivity(mActivity, MetricsEndReason.WEB_CONTENTS_LEFT_FULLSCREEN);
+            dismissActivityIfNeeded(mActivity, MetricsEndReason.WEB_CONTENTS_LEFT_FULLSCREEN);
             cleanupWebContentsObserver();
         }
 
         @Override
         public void onContentChanged(Tab tab) {
-            if (tab == mTab) return;
+            if (tab != mTab) return;
             // While webContentsWillSwap() probably did this, doesn't hurt to do it again.
             cleanupWebContentsObserver();
             // Now that we have a new WebContents, start listening.
             registerWebContentsObserver();
+        }
+
+        @Override
+        public void onDestroyed(Tab tab) {
+            if (tab != mTab) return;
+            cleanupWebContentsObserver();
+            // Don't bother to clean up here -- it clears the observers anyway,
+            // and TabChangeObserver will do it anyway.
         }
     }
 
@@ -486,7 +599,16 @@ public class PictureInPictureController {
 
             mCurrentTab = tab;
 
-            dismissActivity(mActivity, MetricsEndReason.NEW_TAB);
+            dismissActivityIfNeeded(mActivity, MetricsEndReason.NEW_TAB);
+
+            // If we have an incoming tab, then register a tab event observer on it.  Note that if
+            // cleanup() was called during the `dismissActivityIfNeeded` call, then this will be
+            // skipped.
+            if (mCurrentTab != null) {
+                registerTabEventObserver();
+            }
+
+            updateAutoPictureInPictureStatus();
         }
     }
 
@@ -513,9 +635,27 @@ public class PictureInPictureController {
         }
 
         @Override
+        public void mediaStartedPlaying() {
+            // We have no idea if the effectively fullscreen video started playing, but this will
+            // check if we have an active one.
+            updateAutoPictureInPictureStatus();
+        }
+
+        @Override
+        public void mediaStoppedPlaying() {
+            // As above, we don't know if it was the effectively fullscreen video that stopped. Even
+            // if it is, note that this won't cause us to exit Picture in Picture mode if we're in
+            // it.
+            updateAutoPictureInPictureStatus();
+        }
+
+        @Override
         public void hasEffectivelyFullscreenVideoChange(boolean isFullscreen) {
-            if (isFullscreen) return;
-            dismissActivity(mActivity, MetricsEndReason.WEB_CONTENTS_LEFT_FULLSCREEN);
+            if (isFullscreen) {
+                updateAutoPictureInPictureStatus();
+            } else {
+                dismissActivityIfNeeded(mActivity, MetricsEndReason.WEB_CONTENTS_LEFT_FULLSCREEN);
+            }
         }
     }
 }

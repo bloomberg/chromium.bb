@@ -7,13 +7,13 @@
 #include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/style_util.h"
 #include "base/bind.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/animation/ink_drop.h"
-#include "ui/views/animation/ink_drop_highlight.h"
-#include "ui/views/animation/ink_drop_host_view.h"
+#include "ui/views/border.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 
 namespace ash {
@@ -21,36 +21,19 @@ namespace ash {
 CaptureModeButton::CaptureModeButton(views::Button::PressedCallback callback,
                                      const gfx::VectorIcon& icon)
     : views::ImageButton(callback) {
-  ConfigureButton(this, focus_ring());
+  ConfigureButton(this, views::FocusRing::Get(this));
   const SkColor normal_color = AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kButtonIconColor);
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(icon, normal_color));
-
-  // TODO(afakhry): Fix this.
-  GetViewAccessibility().OverrideName(GetClassName());
 }
 
 // static
 void CaptureModeButton::ConfigureButton(views::ImageButton* button,
                                         views::FocusRing* focus_ring) {
-  button->ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
-  button->SetHasInkDropActionOnClick(true);
-  button->ink_drop()->SetVisibleOpacity(capture_mode::kInkDropVisibleOpacity);
-  views::InkDrop::UseInkDropForFloodFillRipple(button->ink_drop(),
-                                               /*highlight_on_hover=*/false,
-                                               /*highlight_on_focus=*/false);
-  button->ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
-      [](views::Button* host) {
-        auto highlight = std::make_unique<views::InkDropHighlight>(
-            gfx::SizeF(host->size()), host->ink_drop()->GetBaseColor());
-        highlight->set_visible_opacity(
-            capture_mode::kInkDropHighlightVisibleOpacity);
-        return highlight;
-      },
-      button));
-  button->ink_drop()->SetBaseColor(capture_mode::kInkDropBaseColor);
-
+  StyleUtil::SetUpInkDropForButton(button, gfx::Insets(),
+                                   /*highlight_on_hover=*/false,
+                                   /*highlight_on_focus=*/false);
   button->SetImageHorizontalAlignment(ALIGN_CENTER);
   button->SetImageVerticalAlignment(ALIGN_MIDDLE);
   button->SetPreferredSize(capture_mode::kButtonSize);

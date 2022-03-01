@@ -11,12 +11,11 @@
 
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
 #include "base/notreached.h"
-#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -28,19 +27,24 @@
 #include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkFontStyle.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/platform_font.h"
 #include "ui/gfx/render_text_harfbuzz.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_paint_util.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/utf16_indexing.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 namespace gfx {
 
@@ -231,6 +235,31 @@ UChar32 ReplaceControlCharacter(UChar32 codepoint) {
     // see: http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/CORPCHAR.TXT
     if (codepoint == 0xF8FF)
       return codepoint;
+#endif
+#if defined(OS_WIN)
+    // Support Microsoft defined PUA on Windows.
+    // see:
+    // https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font
+    if (base::win::GetVersion() >= base::win::Version::WIN10) {
+      switch (codepoint) {
+        case 0xF093:  // ButtonA
+        case 0xF094:  // ButtonB
+        case 0xF095:  // ButtonY
+        case 0xF096:  // ButtonX
+        case 0xF108:  // LeftStick
+        case 0xF109:  // RightStick
+        case 0xF10A:  // TriggerLeft
+        case 0xF10B:  // TriggerRight
+        case 0xF10C:  // BumperLeft
+        case 0xF10D:  // BumperRight
+        case 0xF10E:  // Dpad
+        case 0xEECA:  // ButtonView2
+        case 0xEDE3:  // ButtonMenu
+          return codepoint;
+        default:
+          break;
+      }
+    }
 #endif
     const int8_t codepoint_category = u_charType(codepoint);
     if (codepoint_category == U_PRIVATE_USE_CHAR ||
@@ -1002,7 +1031,7 @@ SelectionModel RenderText::FindCursorPosition(const Point& view_point,
   // Newline segment should be ignored in finding segment index with x
   // coordinate because it's not drawn.
   Vector2d newline_offset;
-  if (line.segments.size() > 1 && IsNewlineSegment(line.segments.front()))
+  if (line.segments.size() >= 1 && IsNewlineSegment(line.segments.front()))
     newline_offset.set_x(line.segments.front().width());
 
   float point_offset_relative_segment = 0;
@@ -1076,6 +1105,7 @@ Rect RenderText::GetCursorBounds(const SelectionModel& caret,
   EnsureLayout();
   size_t caret_pos = caret.caret_pos();
   DCHECK(IsValidLogicalIndex(caret_pos));
+
   // In overtype mode, ignore the affinity and always indicate that we will
   // overtype the next character.
   LogicalCursorDirection caret_affinity =
@@ -1101,6 +1131,7 @@ Rect RenderText::GetCursorBounds(const SelectionModel& caret,
     size_t caret_end = IndexOfAdjacentGrapheme(caret_pos, caret_affinity);
     if (caret_end < caret_pos)
       std::swap(caret_end, caret_pos);
+
     const RangeF xspan = GetCursorSpan(Range(caret_pos, caret_end));
     if (insert_mode) {
       x = (caret_affinity == CURSOR_BACKWARD) ? xspan.end() : xspan.start();
@@ -1113,8 +1144,8 @@ Rect RenderText::GetCursorBounds(const SelectionModel& caret,
     }
   }
   Size line_size = gfx::ToCeiledSize(GetLineSizeF(caret));
-  return Rect(ToViewPoint(PointF(x, 0), caret_affinity),
-              Size(width, line_size.height()));
+  size_t line = GetLineContainingCaret(caret);
+  return Rect(ToViewPoint(PointF(x, 0), line), Size(width, line_size.height()));
 }
 
 const Rect& RenderText::GetUpdatedCursorBounds() {
@@ -1224,13 +1255,12 @@ void RenderText::SetDisplayOffset(Vector2d offset) {
     }
   }
 
-  const int horizontal_offset =
-      base::ClampToRange(offset.x(), min_offset, max_offset);
+  const int horizontal_offset = base::clamp(offset.x(), min_offset, max_offset);
 
   // y-offset is set only when the vertical alignment is ALIGN_TOP.
   // TODO(jongkown.lee): Support other vertical alignments.
   DCHECK(vertical_alignment_ == ALIGN_TOP || offset.y() == 0);
-  const int vertical_offset = base::ClampToRange(
+  const int vertical_offset = base::clamp(
       offset.y(),
       std::min(display_rect_.height() - GetStringSize().height(), 0), 0);
 
@@ -1692,20 +1722,8 @@ const BreakList<size_t>& RenderText::GetLineBreaks() {
   return line_breaks_;
 }
 
-Point RenderText::ToViewPoint(const PointF& point,
-                              LogicalCursorDirection caret_affinity) {
-  const auto float_eq = [](float a, float b) {
-    return std::fabs(a - b) <= kFloatComparisonEpsilon;
-  };
-  const auto float_ge = [](float a, float b) {
-    return a > b || std::fabs(a - b) <= kFloatComparisonEpsilon;
-  };
-  const auto float_gt = [](float a, float b) {
-    return a - b > kFloatComparisonEpsilon;
-  };
-
-  const size_t num_lines = GetNumLines();
-  if (num_lines == 1) {
+Point RenderText::ToViewPoint(const PointF& point, size_t line) {
+  if (GetNumLines() == 1) {
     return Point(base::ClampCeil(Clamp(point.x())),
                  base::ClampRound(point.y())) +
            GetLineOffset(0);
@@ -1713,54 +1731,23 @@ Point RenderText::ToViewPoint(const PointF& point,
 
   const internal::ShapedText* shaped_text = GetShapedText();
   float x = point.x();
-  size_t line;
 
   if (GetDisplayTextDirection() == base::i18n::RIGHT_TO_LEFT) {
     // |xspan| returned from |GetCursorSpan| in |GetCursorBounds| starts to grow
     // from the last character in RTL. On the other hand, the last character is
     // positioned in the last line in RTL. So, traverse from the last line.
-    for (line = num_lines - 1;
-         line > 0 && float_ge(x, shaped_text->lines()[line].size.width());
-         --line) {
-      x -= shaped_text->lines()[line].size.width();
-    }
-
-    // Increment the |line| when |x| is at the newline character. The line is
-    // broken by word wrapping if the front edge of the line is not a newline
-    // character. In that case, the same caret position where the line is broken
-    // can be on both lines depending on the caret affinity.
-    if (line < num_lines - 1 &&
-        (IsNewlineSegment(shaped_text->lines()[line].segments.front()) ||
-         caret_affinity == CURSOR_FORWARD)) {
-      if (float_eq(x, 0))
-        x = shaped_text->lines()[++line].size.width();
-
-      // In RTL, the newline character is at the front of the line. Because the
-      // newline character is not drawn at the front of the line, |x| should be
-      // decreased by the width of the newline character. Check for a newline
-      // again because the line may have changed.
-      if (!shaped_text->lines()[line].segments.empty() &&
-          IsNewlineSegment(shaped_text->lines()[line].segments.front())) {
-        x -= shaped_text->lines()[line].segments.front().width();
-      }
+    for (size_t l = GetNumLines() - 1; l > line; --l) {
+      x -= shaped_text->lines()[l].size.width();
     }
   } else {
-    for (line = 0; line < num_lines &&
-                   float_gt(x, shaped_text->lines()[line].size.width());
-         ++line) {
-      x -= shaped_text->lines()[line].size.width();
-    }
-
-    if (line == num_lines) {
-      x = shaped_text->lines()[--line].size.width();
-    } else if (line < num_lines - 1 &&
-               float_eq(shaped_text->lines()[line].size.width(), x) &&
-               (IsNewlineSegment(shaped_text->lines()[line].segments.back()) ||
-                caret_affinity == CURSOR_FORWARD)) {
-      // If |x| is at the edge of the line end, move the cursor to the start of
-      // the next line.
-      ++line;
-      x = 0;
+    // TODO(crbug.com/1163587): This doesn't account for line breaks caused by
+    // wrapping, in which case the cursor may end up right after the trailing
+    // space on the top line instead of before the first character of the second
+    // line depending on which direction the cursor is moving. Both positions
+    // are "correct" but most text editors only allow one or the other for
+    // consistency.
+    for (size_t l = 0; l < line; ++l) {
+      x -= shaped_text->lines()[l].size.width();
     }
   }
 
@@ -1956,7 +1943,7 @@ int RenderText::DetermineBaselineCenteringText(const int display_height,
   const int space =
       display_height - ((internal_leading != 0) ? cap_height : font_height);
   const int baseline_shift = space / 2 - internal_leading;
-  return baseline + base::ClampToRange(baseline_shift, min_shift, max_shift);
+  return baseline + base::clamp(baseline_shift, min_shift, max_shift);
 }
 
 // static
@@ -2072,7 +2059,7 @@ std::u16string RenderText::Elide(const std::u16string& text,
       guess = lo + base::ClampRound<size_t>((available_width - lo_width) *
                                             (hi - lo) / (hi_width - lo_width));
     }
-    guess = base::ClampToRange(guess, lo, hi);
+    guess = base::clamp(guess, lo, hi);
     DCHECK_NE(last_guess, guess);
 
     // Restore colors. They will be truncated to size by SetText.

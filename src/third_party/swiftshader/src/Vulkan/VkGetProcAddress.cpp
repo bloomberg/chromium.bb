@@ -27,11 +27,15 @@
 
 namespace vk {
 
+// Functions that can be obtained through GetInstanceProcAddr without an instance
 #define MAKE_VULKAN_GLOBAL_ENTRY(aFunction)                           \
 	{                                                                 \
 #		aFunction, reinterpret_cast < PFN_vkVoidFunction>(aFunction) \
 	}
+
+// TODO(b/208256248): Avoid exit-time destructor.
 static const std::unordered_map<std::string, PFN_vkVoidFunction> globalFunctionPointers = {
+	MAKE_VULKAN_GLOBAL_ENTRY(vkGetInstanceProcAddr),
 	MAKE_VULKAN_GLOBAL_ENTRY(vkCreateInstance),
 	MAKE_VULKAN_GLOBAL_ENTRY(vkEnumerateInstanceExtensionProperties),
 	MAKE_VULKAN_GLOBAL_ENTRY(vkEnumerateInstanceLayerProperties),
@@ -39,11 +43,15 @@ static const std::unordered_map<std::string, PFN_vkVoidFunction> globalFunctionP
 };
 #undef MAKE_VULKAN_GLOBAL_ENTRY
 
+// Functions that can be obtained through GetInstanceProcAddr with an instance object
 #define MAKE_VULKAN_INSTANCE_ENTRY(aFunction)                         \
 	{                                                                 \
 #		aFunction, reinterpret_cast < PFN_vkVoidFunction>(aFunction) \
 	}
+
+// TODO(b/208256248): Avoid exit-time destructor.
 static const std::unordered_map<std::string, PFN_vkVoidFunction> instanceFunctionPointers = {
+
 	MAKE_VULKAN_INSTANCE_ENTRY(vkDestroyInstance),
 	MAKE_VULKAN_INSTANCE_ENTRY(vkEnumeratePhysicalDevices),
 	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceFeatures),
@@ -151,12 +159,14 @@ static const std::unordered_map<std::string, PFN_vkVoidFunction> instanceFunctio
 };
 #undef MAKE_VULKAN_INSTANCE_ENTRY
 
+// Functions that can be obtained through GetDeviceProcAddr with a device object
 #define MAKE_VULKAN_DEVICE_ENTRY(aFunction)                           \
 	{                                                                 \
 #		aFunction, reinterpret_cast < PFN_vkVoidFunction>(aFunction) \
 	}
+
+// TODO(b/208256248): Avoid exit-time destructor.
 static const std::unordered_map<std::string, PFN_vkVoidFunction> deviceFunctionPointers = {
-	MAKE_VULKAN_DEVICE_ENTRY(vkGetInstanceProcAddr),
 	MAKE_VULKAN_DEVICE_ENTRY(vkGetDeviceProcAddr),
 	MAKE_VULKAN_DEVICE_ENTRY(vkDestroyDevice),
 	MAKE_VULKAN_DEVICE_ENTRY(vkGetDeviceQueue),
@@ -328,6 +338,7 @@ static const std::unordered_map<std::string, PFN_vkVoidFunction> deviceFunctionP
 	MAKE_VULKAN_DEVICE_ENTRY(vkCmdDrawIndexedIndirectCount),
 };
 
+// TODO(b/208256248): Avoid exit-time destructor.
 static const std::vector<std::pair<const char *, std::unordered_map<std::string, PFN_vkVoidFunction>>> deviceExtensionFunctionPointers = {
 	// VK_KHR_descriptor_update_template
 	{
@@ -364,6 +375,17 @@ static const std::vector<std::pair<const char *, std::unordered_map<std::string,
 	    {
 	        MAKE_VULKAN_DEVICE_ENTRY(vkBindBufferMemory2KHR),
 	        MAKE_VULKAN_DEVICE_ENTRY(vkBindImageMemory2KHR),
+	    } },
+	// VK_KHR_copy_commands2
+	{
+	    VK_KHR_COPY_COMMANDS_2_EXTENSION_NAME,
+	    {
+	        MAKE_VULKAN_DEVICE_ENTRY(vkCmdBlitImage2KHR),
+	        MAKE_VULKAN_DEVICE_ENTRY(vkCmdCopyBuffer2KHR),
+	        MAKE_VULKAN_DEVICE_ENTRY(vkCmdCopyBufferToImage2KHR),
+	        MAKE_VULKAN_DEVICE_ENTRY(vkCmdCopyImage2KHR),
+	        MAKE_VULKAN_DEVICE_ENTRY(vkCmdCopyImageToBuffer2KHR),
+	        MAKE_VULKAN_DEVICE_ENTRY(vkCmdResolveImage2KHR),
 	    } },
 	// VK_KHR_get_memory_requirements2
 	{

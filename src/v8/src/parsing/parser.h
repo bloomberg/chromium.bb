@@ -12,6 +12,7 @@
 #include "src/ast/ast.h"
 #include "src/ast/scopes.h"
 #include "src/base/compiler-specific.h"
+#include "src/base/small-vector.h"
 #include "src/base/threaded-list.h"
 #include "src/common/globals.h"
 #include "src/parsing/import-assertions.h"
@@ -130,7 +131,7 @@ struct ParserTypes<Parser> {
 
 class V8_EXPORT_PRIVATE Parser : public NON_EXPORTED_BASE(ParserBase<Parser>) {
  public:
-  explicit Parser(ParseInfo* info);
+  Parser(LocalIsolate* local_isolate, ParseInfo* info, Handle<Script> script);
   ~Parser() {
     delete reusable_preparser_;
     reusable_preparser_ = nullptr;
@@ -139,7 +140,8 @@ class V8_EXPORT_PRIVATE Parser : public NON_EXPORTED_BASE(ParserBase<Parser>) {
   static bool IsPreParser() { return false; }
 
   // Sets the literal on |info| if parsing succeeded.
-  void ParseOnBackground(ParseInfo* info, int start_position, int end_position,
+  void ParseOnBackground(LocalIsolate* isolate, ParseInfo* info,
+                         int start_position, int end_position,
                          int function_literal_id);
 
   // Initializes an empty scope chain for top-level scripts, or scopes which
@@ -154,13 +156,18 @@ class V8_EXPORT_PRIVATE Parser : public NON_EXPORTED_BASE(ParserBase<Parser>) {
   // This only deserializes the scope chain, but doesn't connect the scopes to
   // their corresponding scope infos. Therefore, looking up variables in the
   // deserialized scopes is not possible.
-  void DeserializeScopeChain(Isolate* isolate, ParseInfo* info,
+  template <typename IsolateT>
+  void DeserializeScopeChain(IsolateT* isolate, ParseInfo* info,
                              MaybeHandle<ScopeInfo> maybe_outer_scope_info,
                              Scope::DeserializationMode mode =
                                  Scope::DeserializationMode::kScopesOnly);
 
   // Move statistics to Isolate
   void UpdateStatistics(Isolate* isolate, Handle<Script> script);
+  void UpdateStatistics(
+      Handle<Script> script,
+      base::SmallVector<v8::Isolate::UseCounterFeature, 8>* use_counters,
+      int* preparse_skipped);
   template <typename IsolateT>
   void HandleSourceURLComments(IsolateT* isolate, Handle<Script> script);
 
@@ -221,13 +228,23 @@ class V8_EXPORT_PRIVATE Parser : public NON_EXPORTED_BASE(ParserBase<Parser>) {
   void ParseFunction(Isolate* isolate, ParseInfo* info,
                      Handle<SharedFunctionInfo> shared_info);
 
-  void PostProcessParseResult(Isolate* isolate, ParseInfo* info,
+  template <typename IsolateT>
+  void PostProcessParseResult(IsolateT* isolate, ParseInfo* info,
                               FunctionLiteral* literal);
 
   FunctionLiteral* DoParseFunction(Isolate* isolate, ParseInfo* info,
                                    int start_position, int end_position,
                                    int function_literal_id,
                                    const AstRawString* raw_name);
+
+  FunctionLiteral* DoParseDeserializedFunction(
+      Isolate* isolate, Handle<SharedFunctionInfo> shared_info, ParseInfo* info,
+      int start_position, int end_position, int function_literal_id,
+      const AstRawString* raw_name);
+
+  FunctionLiteral* ParseClassForInstanceMemberInitialization(
+      Isolate* isolate, ClassScope* scope, int initializer_pos,
+      int initializer_id);
 
   // Called by ParseProgram after setting up the scanner.
   FunctionLiteral* DoParseProgram(Isolate* isolate, ParseInfo* info);
@@ -586,6 +603,10 @@ class V8_EXPORT_PRIVATE Parser : public NON_EXPORTED_BASE(ParserBase<Parser>) {
     return !property->IsPrototype();
   }
 
+  V8_INLINE v8::Extension* extension() const { return info_->extension(); }
+
+  V8_INLINE bool ParsingExtension() const { return extension() != nullptr; }
+
   V8_INLINE bool IsNative(Expression* expr) const {
     DCHECK_NOT_NULL(expr);
     return expr->IsVariableProxy() &&
@@ -697,27 +718,19 @@ class V8_EXPORT_PRIVATE Parser : public NON_EXPORTED_BASE(ParserBase<Parser>) {
     return NewThrowError(Runtime::kNewTypeError, message, arg, pos);
   }
 
-  // Reporting errors.
-  void ReportMessageAt(Scanner::Location source_location,
-                       MessageTemplate message, const char* arg = nullptr) {
-    pending_error_handler()->ReportMessageAt(
-        source_location.beg_pos, source_location.end_pos, message, arg);
-    scanner_.set_parser_error();
-  }
-
   // Dummy implementation. The parser should never have a unidentifiable
   // error.
   V8_INLINE void ReportUnidentifiableError() { UNREACHABLE(); }
 
-  void ReportMessageAt(Scanner::Location source_location,
-                       MessageTemplate message, const AstRawString* arg) {
-    pending_error_handler()->ReportMessageAt(
-        source_location.beg_pos, source_location.end_pos, message, arg);
-    scanner_.set_parser_error();
-  }
-
   const AstRawString* GetRawNameFromIdentifier(const AstRawString* arg) {
     return arg;
+  }
+
+  const AstRawString* PreParserIdentifierToAstRawString(
+      const PreParserIdentifier& arg) {
+    // This method definition is only needed due to an MSVC oddity that
+    // instantiates the method despite it being unused. See crbug.com/v8/12266 .
+    UNREACHABLE();
   }
 
   IterationStatement* AsIterationStatement(BreakableStatement* s) {
@@ -772,7 +785,8 @@ class V8_EXPORT_PRIVATE Parser : public NON_EXPORTED_BASE(ParserBase<Parser>) {
   V8_INLINE const AstRawString* GetNumberAsSymbol() const {
     double double_value = scanner()->DoubleValue();
     char array[100];
-    const char* string = DoubleToCString(double_value, ArrayVector(array));
+    const char* string =
+        DoubleToCString(double_value, base::ArrayVector(array));
     return ast_value_factory()->GetOneByteString(string);
   }
 
@@ -1057,11 +1071,14 @@ class V8_EXPORT_PRIVATE Parser : public NON_EXPORTED_BASE(ParserBase<Parser>) {
   friend class PreParserZoneScope;  // Uses reusable_preparser().
   friend class PreparseDataBuilder;  // Uses preparse_data_buffer()
 
+  LocalIsolate* local_isolate_;
   ParseInfo* info_;
+  Handle<Script> script_;
   Scanner scanner_;
   Zone preparser_zone_;
   PreParser* reusable_preparser_;
   Mode mode_;
+  bool overall_parse_is_parked_ = false;
 
   MaybeHandle<FixedArray> maybe_wrapped_arguments_;
 

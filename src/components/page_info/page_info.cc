@@ -17,7 +17,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -44,10 +43,11 @@
 #include "components/resources/android/theme_resources.h"
 #endif
 #include "build/chromeos_buildflags.h"
+#include "components/page_info/core/features.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/content/password_protection/password_protection_service.h"
-#include "components/safe_browsing/core/password_protection/metrics_util.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/content/browser/password_protection/password_protection_service.h"
+#include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/ssl_errors/error_info.h"
@@ -58,7 +58,6 @@
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "net/cert/cert_status_flags.h"
@@ -114,7 +113,6 @@ ContentSettingsType kPermissionType[] = {
     ContentSettingsType::SERIAL_GUARD,
     ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
     ContentSettingsType::FONT_ACCESS,
-    ContentSettingsType::FILE_HANDLING,
 #endif
     ContentSettingsType::BLUETOOTH_GUARD,
     ContentSettingsType::BLUETOOTH_SCANNING,
@@ -282,18 +280,27 @@ const PageInfo::ChooserUIInfo kChooserUIInfo[] = {
      IDS_PAGE_INFO_DELETE_BLUETOOTH_DEVICE},
 };
 
+void LogTimeOpenHistogram(const std::string& name, base::TimeTicks start_time) {
+  base::UmaHistogramCustomTimes(name, base::TimeTicks::Now() - start_time,
+                                base::Milliseconds(1), base::Hours(1), 100);
+}
+
 // Time open histogram prefixes.
 const char kPageInfoTimePrefix[] = "Security.PageInfo.TimeOpen";
 const char kPageInfoTimeActionPrefix[] = "Security.PageInfo.TimeOpen.Action";
 const char kPageInfoTimeNoActionPrefix[] =
     "Security.PageInfo.TimeOpen.NoAction";
+const char kPageInfoTimeAboutThisShown[] =
+    "Security.PageInfo.TimeOpen.AboutThisSiteShown";
+const char kPageInfoTimeAboutThisNotShown[] =
+    "Security.PageInfo.TimeOpen.AboutThisSiteNotShown";
 
 }  // namespace
 
 PageInfo::PageInfo(std::unique_ptr<PageInfoDelegate> delegate,
                    content::WebContents* web_contents,
                    const GURL& url)
-    : content::WebContentsObserver(web_contents),
+    : web_contents_(web_contents->GetWeakPtr()),
       delegate_(std::move(delegate)),
       show_info_bar_(false),
       site_url_(url),
@@ -308,6 +315,18 @@ PageInfo::PageInfo(std::unique_ptr<PageInfoDelegate> delegate,
   DCHECK(delegate_);
   security_level_ = delegate_->GetSecurityLevel();
   visible_security_state_for_metrics_ = delegate_->GetVisibleSecurityState();
+
+  // TabSpecificContentSetting needs to be created before page load.
+  DCHECK(GetPageSpecificContentSettings());
+  ComputeUIInputs(site_url_);
+
+  // Every time this is created, page info dialog is opened.
+  // So this counts how often the page Info dialog is opened.
+  RecordPageInfoAction(PAGE_INFO_OPENED);
+
+  // Record the time when the page info dialog is opened so the total time it is
+  // open can be measured.
+  start_time_ = base::TimeTicks::Now();
 }
 
 PageInfo::~PageInfo() {
@@ -324,43 +343,35 @@ PageInfo::~PageInfo() {
 
   // Record the total time the Page Info UI was open for all opens as well as
   // split between whether any action was taken.
-  base::UmaHistogramCustomTimes(security_state::GetSecurityLevelHistogramName(
-                                    kPageInfoTimePrefix, security_level_),
-                                base::TimeTicks::Now() - start_time_,
-                                base::TimeDelta::FromMilliseconds(1),
-                                base::TimeDelta::FromHours(1), 100);
-  base::UmaHistogramCustomTimes(
-      security_state::GetSafetyTipHistogramName(kPageInfoTimePrefix,
-                                                safety_tip_info_.status),
-      base::TimeTicks::Now() - start_time_,
-      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1), 100);
-
+  LogTimeOpenHistogram(security_state::GetSecurityLevelHistogramName(
+                           kPageInfoTimePrefix, security_level_),
+                       start_time_);
+  LogTimeOpenHistogram(security_state::GetSafetyTipHistogramName(
+                           kPageInfoTimePrefix, safety_tip_info_.status),
+                       start_time_);
   if (did_perform_action_) {
-    base::UmaHistogramCustomTimes(
-        security_state::GetSecurityLevelHistogramName(kPageInfoTimeActionPrefix,
-                                                      security_level_),
-        base::TimeTicks::Now() - start_time_,
-        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
-        100);
-    base::UmaHistogramCustomTimes(
+    LogTimeOpenHistogram(security_state::GetSecurityLevelHistogramName(
+                             kPageInfoTimeActionPrefix, security_level_),
+                         start_time_);
+    LogTimeOpenHistogram(
         security_state::GetSafetyTipHistogramName(kPageInfoTimeActionPrefix,
                                                   safety_tip_info_.status),
-        base::TimeTicks::Now() - start_time_,
-        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
-        100);
+        start_time_);
   } else {
-    base::UmaHistogramCustomTimes(
-        security_state::GetSecurityLevelHistogramName(
-            kPageInfoTimeNoActionPrefix, security_level_),
-        base::TimeTicks::Now() - start_time_,
-        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
-        100);
-    base::UmaHistogramCustomTimes(
+    LogTimeOpenHistogram(security_state::GetSecurityLevelHistogramName(
+                             kPageInfoTimeNoActionPrefix, security_level_),
+                         start_time_);
+    LogTimeOpenHistogram(
         security_state::GetSafetyTipHistogramName(kPageInfoTimeNoActionPrefix,
                                                   safety_tip_info_.status),
-        base::TimeTicks::Now() - start_time_,
-        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
-        100);
+        start_time_);
+  }
+  if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSite)) {
+    if (was_about_this_site_shown_) {
+      LogTimeOpenHistogram(kPageInfoTimeAboutThisShown, start_time_);
+    } else {
+      LogTimeOpenHistogram(kPageInfoTimeAboutThisNotShown, start_time_);
+    }
   }
 }
 
@@ -391,25 +402,14 @@ bool PageInfo::IsFileOrInternalPage(const GURL& url) {
          url.SchemeIs(url::kFileScheme);
 }
 
-void PageInfo::InitializeUiState(PageInfoUI* ui) {
+void PageInfo::InitializeUiState(PageInfoUI* ui, base::OnceClosure done) {
   ui_ = ui;
   DCHECK(ui_);
-  // TabSpecificContentSetting needs to be created before page load.
-  DCHECK(GetPageSpecificContentSettings());
 
-  ComputeUIInputs(site_url_);
   PresentSitePermissions();
   PresentSiteIdentity();
-  PresentSiteData();
   PresentPageFeatureInfo();
-
-  // Every time the Page Info UI is opened, this method is called.
-  // So this counts how often the Page Info UI is opened.
-  RecordPageInfoAction(PAGE_INFO_OPENED);
-
-  // Record the time when the Page Info UI is opened so the total time it is
-  // open can be measured.
-  start_time_ = base::TimeTicks::Now();
+  PresentSiteData(std::move(done));
 }
 
 void PageInfo::UpdateSecurityState() {
@@ -421,11 +421,15 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
   if (action != PAGE_INFO_OPENED)
     did_perform_action_ = true;
 
+#if !defined(OS_ANDROID)
+  delegate_->OnPageInfoActionOccurred(action);
+#endif
+
   UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.Action", action, PAGE_INFO_COUNT);
 
-  if (web_contents()) {
+  if (web_contents_) {
     ukm::builders::PageInfoBubble(
-        ukm::GetSourceIdForWebContentsDocument(web_contents()))
+        ukm::GetSourceIdForWebContentsDocument(web_contents_.get()))
         .SetActionTaken(action)
         .Record(ukm::UkmRecorder::Get());
   }
@@ -434,39 +438,6 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
       security_state::GetSafetyTipHistogramName(
           "Security.SafetyTips.PageInfo.Action", safety_tip_info_.status),
       action, PAGE_INFO_COUNT);
-
-  std::string histogram_name;
-  if (site_url_.SchemeIsCryptographic()) {
-    if (security_level_ == security_state::SECURE) {
-      if (visible_security_state_for_metrics_.cert_status &
-          net::CERT_STATUS_IS_EV) {
-        UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpsUrl.ValidEV",
-                                  action, PAGE_INFO_COUNT);
-      } else {
-        UMA_HISTOGRAM_ENUMERATION(
-            "Security.PageInfo.Action.HttpsUrl.ValidNonEV", action,
-            PAGE_INFO_COUNT);
-      }
-    } else if (security_level_ == security_state::NONE) {
-      UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpsUrl.Downgraded",
-                                action, PAGE_INFO_COUNT);
-    } else if (security_level_ == security_state::DANGEROUS) {
-      UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpsUrl.Dangerous",
-                                action, PAGE_INFO_COUNT);
-    }
-    return;
-  }
-
-  if (security_level_ == security_state::WARNING) {
-    UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpUrl.Warning",
-                              action, PAGE_INFO_COUNT);
-  } else if (security_level_ == security_state::DANGEROUS) {
-    UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpUrl.Dangerous",
-                              action, PAGE_INFO_COUNT);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpUrl.Neutral",
-                              action, PAGE_INFO_COUNT);
-  }
 }
 
 void PageInfo::UpdatePermissions() {
@@ -516,8 +487,9 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
     }
   }
 
+  DCHECK(web_contents_);
   permissions::PermissionUmaUtil::ScopedRevocationReporter
-      scoped_revocation_reporter(web_contents()->GetBrowserContext(), site_url_,
+      scoped_revocation_reporter(web_contents_->GetBrowserContext(), site_url_,
                                  site_url_, type,
                                  permissions::PermissionSourceUI::OIB);
 
@@ -552,6 +524,7 @@ void PageInfo::OnSiteChosenObjectDeleted(const ChooserUIInfo& ui_info,
 
   // Refresh the UI to reflect the changed settings.
   PresentSitePermissions();
+  RecordPageInfoAction(PAGE_INFO_CHOOSER_OBJECT_DELETED);
 }
 
 void PageInfo::OnUIClosing(bool* reload_prompt) {
@@ -560,10 +533,11 @@ void PageInfo::OnUIClosing(bool* reload_prompt) {
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
-  if (show_info_bar_ && web_contents() && !web_contents()->IsBeingDestroyed()) {
+  if (show_info_bar_ && web_contents_ && !web_contents_->IsBeingDestroyed()) {
     if (delegate_->CreateInfoBarDelegate() && reload_prompt)
       *reload_prompt = true;
   }
+  delegate_->OnUIClosing();
 #endif
 }
 
@@ -574,14 +548,15 @@ void PageInfo::OnRevokeSSLErrorBypassButtonPressed() {
   stateful_ssl_host_state_delegate->RevokeUserAllowExceptionsHard(
       site_url().host());
   did_revoke_user_ssl_decisions_ = true;
+  RecordPageInfoAction(PAGE_INFO_RESET_DECISIONS_CLICKED);
 }
 
 void PageInfo::OpenSiteSettingsView() {
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
-  delegate_->ShowSiteSettings(site_url());
   RecordPageInfoAction(PAGE_INFO_SITE_SETTINGS_OPENED);
+  delegate_->ShowSiteSettings(site_url());
 #endif
 }
 
@@ -589,11 +564,11 @@ void PageInfo::OpenCookiesDialog() {
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
-  if (!web_contents() || web_contents()->IsBeingDestroyed())
+  if (!web_contents_ || web_contents_->IsBeingDestroyed())
     return;
 
-  delegate_->OpenCookiesDialog();
   RecordPageInfoAction(PAGE_INFO_COOKIES_DIALOG_OPENED);
+  delegate_->OpenCookiesDialog();
 #endif
 }
 
@@ -601,13 +576,13 @@ void PageInfo::OpenCertificateDialog(net::X509Certificate* certificate) {
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
-  if (!web_contents() || web_contents()->IsBeingDestroyed())
+  if (!web_contents_ || web_contents_->IsBeingDestroyed())
     return;
 
-  gfx::NativeWindow top_window = web_contents()->GetTopLevelNativeWindow();
+  gfx::NativeWindow top_window = web_contents_->GetTopLevelNativeWindow();
   if (certificate && top_window) {
-    delegate_->OpenCertificateDialog(certificate);
     RecordPageInfoAction(PAGE_INFO_CERTIFICATE_DIALOG_OPENED);
+    delegate_->OpenCertificateDialog(certificate);
   }
 #endif
 }
@@ -616,6 +591,7 @@ void PageInfo::OpenSafetyTipHelpCenterPage() {
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
+  RecordPageInfoAction(PAGE_INFO_SAFETY_TIP_HELP_OPENED);
   delegate_->OpenSafetyTipHelpCenterPage();
 #endif
 }
@@ -624,13 +600,24 @@ void PageInfo::OpenConnectionHelpCenterPage(const ui::Event& event) {
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
-  delegate_->OpenConnectionHelpCenterPage(event);
   RecordPageInfoAction(PAGE_INFO_CONNECTION_HELP_OPENED);
+  delegate_->OpenConnectionHelpCenterPage(event);
+#endif
+}
+
+void PageInfo::OpenContentSettingsExceptions(
+    ContentSettingsType content_settings_type) {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+#else
+  RecordPageInfoAction(PAGE_INFO_CONNECTION_HELP_OPENED);
+  delegate_->OpenContentSettingsExceptions(content_settings_type);
 #endif
 }
 
 void PageInfo::OnChangePasswordButtonPressed() {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
+  RecordPageInfoAction(PAGE_INFO_CHANGE_PASSWORD_PRESSED);
   delegate_->OnUserActionOnPasswordUi(
       safe_browsing::WarningAction::CHANGE_PASSWORD);
 #endif
@@ -638,6 +625,7 @@ void PageInfo::OnChangePasswordButtonPressed() {
 
 void PageInfo::OnAllowlistPasswordReuseButtonPressed() {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
+  RecordPageInfoAction(PAGE_INFO_PASSWORD_REUSE_ALLOWED);
   delegate_->OnUserActionOnPasswordUi(
       safe_browsing::WarningAction::MARK_AS_LEGITIMATE);
 #endif
@@ -649,6 +637,9 @@ permissions::ObjectPermissionContextBase* PageInfo::GetChooserContextFromUIInfo(
 }
 
 std::u16string PageInfo::GetSimpleSiteName() const {
+  if (!site_name_for_testing_.empty())
+    return site_name_for_testing_;
+
   return url_formatter::FormatUrlForDisplayOmitSchemePathAndTrivialSubdomains(
       site_url_);
 }
@@ -698,13 +689,8 @@ void PageInfo::ComputeUIInputs(const GURL& url) {
   // Identity section.
   certificate_ = visible_security_state.certificate;
 
-  // TODO(crbug.com/1044747): This conditional special-cases
-  // CERT_STATUS_LEGACY_TLS to avoid marking the certificate as "Invalid" in
-  // Page Info, but once we clean up the overloading of CertStatus for Legacy
-  // TLS we can remove this.
   if (certificate_ &&
-      (!net::IsCertStatusError(visible_security_state.cert_status &
-                               ~net::CERT_STATUS_LEGACY_TLS))) {
+      (!net::IsCertStatusError(visible_security_state.cert_status))) {
     // HTTPS with no or minor errors.
     if (security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -862,10 +848,6 @@ void PageInfo::ComputeUIInputs(const GURL& url) {
           subject_name));
     }
 
-    if (visible_security_state.cert_status & net::CERT_STATUS_LEGACY_TLS) {
-      site_connection_status_ = SITE_CONNECTION_STATUS_LEGACY_TLS;
-    }
-
     ReportAnyInsecureContent(visible_security_state, &site_connection_status_,
                              &site_connection_details_);
   }
@@ -917,8 +899,9 @@ void PageInfo::ComputeUIInputs(const GURL& url) {
   // SSL host errors for this host in the past, and we're not presently on a
   // Safe Browsing error (since otherwise it's confusing which warning you're
   // re-enabling).
+  DCHECK(web_contents_);
   show_ssl_decision_revoke_button_ =
-      delegate->HasAllowException(url.host(), web_contents()) &&
+      delegate->HasAllowException(url.host(), web_contents_.get()) &&
       visible_security_state.malicious_content_status ==
           security_state::MALICIOUS_CONTENT_STATUS_NONE;
 }
@@ -929,6 +912,7 @@ void PageInfo::PresentSitePermissions() {
 
   PermissionInfo permission_info;
   HostContentSettingsMap* content_settings = GetContentSettings();
+  DCHECK(web_contents_);
   for (const ContentSettingsType type : kPermissionType) {
     permission_info.type = type;
 
@@ -980,7 +964,7 @@ void PageInfo::PresentSitePermissions() {
     }
 
     if (ShouldShowPermission(
-            permission_info, site_url_, content_settings, web_contents(),
+            permission_info, site_url_, content_settings, web_contents_.get(),
             HasContentSettingChangedViaPageInfo(permission_info.type),
             delegate_->IsSubresourceFilterActivated(site_url_))) {
       permission_info_list.push_back(permission_info);
@@ -1006,12 +990,15 @@ void PageInfo::PresentSitePermissions() {
                          std::move(chosen_object_info_list));
 }
 
-void PageInfo::PresentSiteData() {
+void PageInfo::PresentSiteDataInternal(base::OnceClosure done) {
+  // Since this is called asynchronously, the associated `WebContents` object
+  // might no longer be available.
+  if (!web_contents_ || web_contents_->IsBeingDestroyed())
+    return;
+
   CookieInfoList cookie_info_list;
 
   // Add first party cookie and site data counts.
-  // TODO(crbug.com/1058597): Remove the calls to the |delegate_| once
-  // PageSpecificContentSettings has been componentized.
   PageInfoUI::CookieInfo cookie_info;
   cookie_info.allowed = GetFirstPartyAllowedCookiesCount(site_url_);
   cookie_info.blocked = GetFirstPartyBlockedCookiesCount(site_url_);
@@ -1025,6 +1012,23 @@ void PageInfo::PresentSiteData() {
   cookie_info_list.push_back(cookie_info);
 
   ui_->SetCookieInfo(cookie_info_list);
+
+  std::move(done).Run();
+}
+
+void PageInfo::PresentSiteData(base::OnceClosure done) {
+  auto* settings = GetPageSpecificContentSettings();
+  if (!settings) {
+    PresentSiteDataInternal(std::move(done));
+  } else {
+    // Ensure the cookie button is displayed immediately, even before the cookie
+    // counts are known.
+    ui_->EnsureCookieInfo();
+
+    settings->allowed_local_shared_objects().UpdateIgnoredEmptyStorageKeys(
+        base::BindOnce(&PageInfo::PresentSiteDataInternal,
+                       weak_factory_.GetWeakPtr(), std::move(done)));
+  }
 }
 
 void PageInfo::PresentSiteIdentity() {
@@ -1088,6 +1092,11 @@ std::vector<ContentSettingsType> PageInfo::GetAllPermissionsForTesting() {
   return permission_list;
 }
 
+void PageInfo::SetSiteNameForTesting(const std::u16string& site_name) {
+  site_name_for_testing_ = site_name;
+  PresentSiteIdentity();
+}
+
 void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
     security_state::MaliciousContentStatus malicious_content_status,
     PageInfo::SafeBrowsingStatus* status,
@@ -1145,10 +1154,12 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
 
 content_settings::PageSpecificContentSettings*
 PageInfo::GetPageSpecificContentSettings() const {
-  // TODO(https://crbug.com/1103176): PageInfo should be per page. Why is it
-  // a WebContentsObserver if it is not observing anything?
+  // TODO(https://crbug.com/1103176, https://crbug.com/1233122): PageInfo should
+  // be per page. Why is it a WebContentsObserver if it is not observing
+  // anything?
+  DCHECK(web_contents_);
   return content_settings::PageSpecificContentSettings::GetForFrame(
-      web_contents()->GetMainFrame());
+      web_contents_->GetMainFrame());
 }
 
 bool PageInfo::HasContentSettingChangedViaPageInfo(ContentSettingsType type) {

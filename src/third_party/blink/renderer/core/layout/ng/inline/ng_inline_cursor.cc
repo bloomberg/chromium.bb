@@ -5,10 +5,13 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/html/html_br_element.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_span.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -78,6 +81,10 @@ bool ShouldIgnoreForPositionForPoint(const NGFragmentItem& item) {
           // // All/LayoutViewHitTestTest.EmptySpan needs this.
           return true;
         }
+        if (box_fragment->IsBlockInInline()) {
+          // "label-contains-other-interactive-content.html" reaches here.
+          return false;
+        }
         // Skip pseudo element ::before/::after
         // All/LayoutViewHitTestTest.PseudoElementAfter* needs this.
         return !item.GetLayoutObject()->NonPseudoNode();
@@ -89,7 +96,7 @@ bool ShouldIgnoreForPositionForPoint(const NGFragmentItem& item) {
     case NGFragmentItem::kGeneratedText:
       return true;
     case NGFragmentItem::kText:
-    case NGFragmentItem::kSVGText:
+    case NGFragmentItem::kSvgText:
       if (UNLIKELY(item.IsLayoutObjectDestroyedOrMoved())) {
         // See http://crbug.com/1217079
         NOTREACHED() << item;
@@ -103,6 +110,26 @@ bool ShouldIgnoreForPositionForPoint(const NGFragmentItem& item) {
       break;
   }
   return false;
+}
+
+bool ShouldIgnoreForPositionForPoint(const NGInlineCursor& line) {
+  if (line.CurrentItem()->Type() != NGFragmentItem::kLine)
+    return false;
+  for (auto cursor = line.CursorForDescendants(); cursor; cursor.MoveToNext()) {
+    if (cursor.CurrentItem()->IsBlockInInline()) {
+      // We should enter block-in-inline. Following tests require this:
+      //  * editing/pasteboard/paste-sanitize-crash-2.html
+      //  * editing/selection/click-after-nested-block.html
+      return false;
+    }
+    // See also |NGInlineCursor::TryMoveToFirstInlineLeafChild()|.
+    if (cursor.Current().IsInlineLeaf())
+      return false;
+  }
+  // There are no block-in-inline and inline leaf.
+  // Note: editing/selection/last-empty-inline.html requires this to skip
+  // empty <span> with padding.
+  return true;
 }
 
 }  // namespace
@@ -243,7 +270,7 @@ NGInlineCursor NGInlineCursor::CursorForMovingAcrossFragmentainer() const {
     return *this;
   NGInlineCursor cursor(*GetLayoutBlockFlow());
   const auto& item = *CurrentItem();
-  while (cursor && !cursor.TryToMoveTo(item))
+  while (cursor && !cursor.TryMoveTo(item))
     cursor.MoveToNextFragmentainer();
   DCHECK(cursor) << *this;
   return cursor;
@@ -251,9 +278,11 @@ NGInlineCursor NGInlineCursor::CursorForMovingAcrossFragmentainer() const {
 
 void NGInlineCursor::ExpandRootToContainingBlock() {
   if (fragment_items_) {
-    const unsigned index_diff = items_.data() - fragment_items_->Items().data();
+    const unsigned index_diff = base::checked_cast<unsigned>(
+        items_.data() - fragment_items_->Items().data());
     DCHECK_LT(index_diff, fragment_items_->Items().size());
-    const unsigned item_index = current_.item_iter_ - items_.begin();
+    const unsigned item_index =
+        base::checked_cast<unsigned>(current_.item_iter_ - items_.begin());
     items_ = fragment_items_->Items();
     // Update the iterator to the one for the new span.
     MoveToItem(items_.begin() + item_index + index_diff);
@@ -284,8 +313,13 @@ bool NGInlineCursorPosition::IsPartOfCulledInlineBox(
   DCHECK(*this);
   const LayoutObject* const layout_object = GetLayoutObject();
   // We use |IsInline()| to exclude floating and out-of-flow objects.
-  if (!layout_object || !layout_object->IsInline() ||
-      layout_object->IsAtomicInlineLevel())
+  if (!layout_object || layout_object->IsAtomicInlineLevel())
+    return false;
+  // When |Current()| is block-in-inline, e.g. <span><div>foo</div></span>, it
+  // should be part of culled inline box[1].
+  // [1]
+  // external/wpt/shadow-dom/DocumentOrShadowRoot-prototype-elementFromPoint.html
+  if (!layout_object->IsInline() && !layout_object->IsBlockInInline())
     return false;
   DCHECK(!layout_object->IsFloatingOrOutOfFlowPositioned());
   DCHECK(!BoxFragment() || !BoxFragment()->IsFormattingContextRoot());
@@ -379,7 +413,7 @@ UBiDiLevel NGInlineCursorPosition::BidiLevel() const {
       return 0;
     }
     const NGTextOffset offset = TextOffset();
-    const auto& item = std::find_if(
+    auto* const item = std::find_if(
         items->begin(), items->end(), [offset](const NGInlineItem& item) {
           return item.StartOffset() <= offset.start &&
                  item.EndOffset() >= offset.end;
@@ -392,7 +426,7 @@ UBiDiLevel NGInlineCursorPosition::BidiLevel() const {
     DCHECK(GetLayoutObject()->ContainingNGBlockFlow());
     const LayoutBlockFlow& block_flow =
         *GetLayoutObject()->ContainingNGBlockFlow();
-    const Vector<NGInlineItem> items =
+    const auto& items =
         block_flow.GetNGInlineNodeData()->ItemsData(UsesFirstLineStyle()).items;
     const LayoutObject* const layout_object = GetLayoutObject();
     const auto* const item = std::find_if(
@@ -418,6 +452,11 @@ const Node* NGInlineCursorPosition::GetNode() const {
   if (const LayoutObject* layout_object = GetLayoutObject())
     return layout_object->GetNode();
   return nullptr;
+}
+
+gfx::RectF NGInlineCursorPosition::ObjectBoundingBox(
+    const NGInlineCursor& cursor) const {
+  return item_->ObjectBoundingBox(cursor.Items());
 }
 
 void NGInlineCursorPosition::RecalcInkOverflow(
@@ -454,13 +493,14 @@ PhysicalRect NGInlineCursor::CurrentLocalSelectionRectForText(
   const PhysicalRect selection_rect =
       CurrentLocalRect(selection_status.start, selection_status.end);
   LogicalRect logical_rect = Current().ConvertChildToLogical(selection_rect);
+  if (Current()->Type() == NGFragmentItem::kSvgText)
+    return Current().ConvertChildToPhysical(logical_rect);
   // Let LocalRect for line break have a space width to paint line break
   // when it is only character in a line or only selected in a line.
   if (selection_status.start != selection_status.end &&
       Current().IsLineBreak() &&
       // This is for old compatible that old doesn't paint last br in a page.
       !IsLastBRInPage(*Current().GetLayoutObject())) {
-    DCHECK(!logical_rect.size.inline_size);
     logical_rect.size.inline_size =
         LayoutUnit(Current().Style().GetFont().SpaceWidth());
   }
@@ -523,10 +563,10 @@ PhysicalRect NGInlineCursor::CurrentRectInBlockFlow() const {
   return rect;
 }
 
-LayoutUnit NGInlineCursor::InlinePositionForOffset(unsigned offset) const {
+LayoutUnit NGInlineCursor::CaretInlinePositionForOffset(unsigned offset) const {
   DCHECK(Current().IsText());
   if (current_.item_) {
-    return current_.item_->InlinePositionForOffset(
+    return current_.item_->CaretInlinePositionForOffset(
         current_.item_->Text(*fragment_items_), offset);
   }
   NOTREACHED();
@@ -574,9 +614,7 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineFormattingContext(
     const NGFragmentItem* child_item = CurrentItem();
     DCHECK(child_item);
     if (child_item->Type() == NGFragmentItem::kLine) {
-      if (!CursorForDescendants().TryToMoveToFirstInlineLeafChild()) {
-        // editing/selection/last-empty-inline.html requires this to skip
-        // empty <span> with padding.
+      if (ShouldIgnoreForPositionForPoint(*this)) {
         MoveToNextSkippingChildren();
         continue;
       }
@@ -667,11 +705,16 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineFormattingContext(
 }
 
 PositionWithAffinity NGInlineCursor::PositionForPointInInlineBox(
-    const PhysicalOffset& point) const {
+    const PhysicalOffset& point_in) const {
   const NGFragmentItem* container = CurrentItem();
   DCHECK(container);
   DCHECK(container->Type() == NGFragmentItem::kLine ||
          container->Type() == NGFragmentItem::kBox);
+  const auto* const text_combine =
+      DynamicTo<LayoutNGTextCombine>(container->GetLayoutObject());
+  const PhysicalOffset point =
+      UNLIKELY(text_combine) ? text_combine->AdjustOffsetForHitTest(point_in)
+                             : point_in;
   const auto writing_direction = container->Style().GetWritingDirection();
   const PhysicalSize& container_size = container->Size();
   const LayoutUnit point_inline_offset =
@@ -779,7 +822,7 @@ PositionWithAffinity NGInlineCursor::PositionForPointInChild(
   const NGFragmentItem& child_item = *CurrentItem();
   switch (child_item.Type()) {
     case NGFragmentItem::kText:
-    case NGFragmentItem::kSVGText:
+    case NGFragmentItem::kSvgText:
       return child_item.PositionForPointInText(
           point_in_container - child_item.OffsetInContainerFragment(), *this);
     case NGFragmentItem::kGeneratedText:
@@ -824,7 +867,10 @@ PositionWithAffinity NGInlineCursor::PositionForStartOfLine() const {
     first_leaf.MoveToLastNonPseudoLeaf();
   if (!first_leaf)
     return PositionWithAffinity();
-  Node* const node = first_leaf.Current().GetLayoutObject()->NonPseudoNode();
+  const auto& layout_object = first_leaf.Current()->IsBlockInInline()
+                                  ? first_leaf.Current()->BlockInInline()
+                                  : *first_leaf.Current().GetLayoutObject();
+  Node* const node = layout_object.NonPseudoNode();
   if (!node) {
     NOTREACHED() << "MoveToFirstLeaf returns invalid node: " << first_leaf;
     return PositionWithAffinity();
@@ -847,7 +893,10 @@ PositionWithAffinity NGInlineCursor::PositionForEndOfLine() const {
     last_leaf.MoveToFirstNonPseudoLeaf();
   if (!last_leaf)
     return PositionWithAffinity();
-  Node* const node = last_leaf.Current().GetLayoutObject()->NonPseudoNode();
+  const auto& layout_object = last_leaf.Current()->IsBlockInInline()
+                                  ? last_leaf.Current()->BlockInInline()
+                                  : *last_leaf.Current().GetLayoutObject();
+  Node* const node = layout_object.NonPseudoNode();
   if (!node) {
     NOTREACHED() << "MoveToLastLeaf returns invalid node: " << last_leaf;
     return PositionWithAffinity();
@@ -872,7 +921,8 @@ inline wtf_size_t NGInlineCursor::SpanBeginItemIndex() const {
   DCHECK(HasRoot());
   DCHECK(!items_.empty());
   DCHECK(fragment_items_->IsSubSpan(items_));
-  const wtf_size_t delta = items_.data() - fragment_items_->Items().data();
+  const wtf_size_t delta = base::checked_cast<wtf_size_t>(
+      items_.data() - fragment_items_->Items().data());
   DCHECK_LT(delta, fragment_items_->Items().size());
   return delta;
 }
@@ -883,19 +933,19 @@ inline wtf_size_t NGInlineCursor::SpanIndexFromItemIndex(unsigned index) const {
   DCHECK(fragment_items_->IsSubSpan(items_));
   if (items_.data() == fragment_items_->Items().data())
     return index;
-  const wtf_size_t span_index =
-      fragment_items_->Items().data() - items_.data() + index;
+  const wtf_size_t span_index = base::checked_cast<wtf_size_t>(
+      fragment_items_->Items().data() - items_.data() + index);
   DCHECK_LT(span_index, items_.size());
   return span_index;
 }
 
 void NGInlineCursor::MoveTo(const NGFragmentItem& fragment_item) {
-  if (TryToMoveTo(fragment_item))
+  if (TryMoveTo(fragment_item))
     return;
   NOTREACHED() << *this << " " << fragment_item;
 }
 
-bool NGInlineCursor::TryToMoveTo(const NGFragmentItem& fragment_item) {
+bool NGInlineCursor::TryMoveTo(const NGFragmentItem& fragment_item) {
   DCHECK(HasRoot());
   // Note: We use address instead of iterator because we can't compare
   // iterators in different span. See |base::CheckedContiguousIterator<T>|.
@@ -941,7 +991,7 @@ void NGInlineCursor::MoveToFirst() {
 
 void NGInlineCursor::MoveToFirstChild() {
   DCHECK(Current().CanHaveChildren());
-  if (!TryToMoveToFirstChild())
+  if (!TryMoveToFirstChild())
     MakeNull();
 }
 
@@ -967,16 +1017,23 @@ void NGInlineCursor::MoveToFirstLogicalLeaf() {
   // TODO(yosin): We should check direction of each container instead of line
   // box.
   if (IsLtr(Current().Style().Direction())) {
-    while (TryToMoveToFirstChild())
+    while (TryMoveToFirstChild())
       continue;
     return;
   }
-  while (TryToMoveToLastChild())
+  while (TryMoveToLastChild())
     continue;
 }
 
 void NGInlineCursor::MoveToFirstNonPseudoLeaf() {
   for (NGInlineCursor cursor = *this; cursor; cursor.MoveToNext()) {
+    if (cursor.Current()->IsBlockInInline()) {
+      if (cursor.Current()->BlockInInline().NonPseudoNode()) {
+        *this = cursor;
+        return;
+      }
+      continue;
+    }
     if (!cursor.Current().GetLayoutObject()->NonPseudoNode())
       continue;
     if (cursor.Current().IsText()) {
@@ -1004,7 +1061,7 @@ void NGInlineCursor::MoveToFirstNonPseudoLeaf() {
 
 void NGInlineCursor::MoveToLastChild() {
   DCHECK(Current().CanHaveChildren());
-  if (!TryToMoveToLastChild())
+  if (!TryMoveToLastChild())
     MakeNull();
 }
 
@@ -1026,11 +1083,11 @@ void NGInlineCursor::MoveToLastLogicalLeaf() {
   // TODO(yosin): We should check direction of each container instead of line
   // box.
   if (IsLtr(Current().Style().Direction())) {
-    while (TryToMoveToLastChild())
+    while (TryMoveToLastChild())
       continue;
     return;
   }
-  while (TryToMoveToFirstChild())
+  while (TryMoveToFirstChild())
     continue;
 }
 
@@ -1047,6 +1104,11 @@ void NGInlineCursor::MoveToLastNonPseudoLeaf() {
   NGInlineCursor last_leaf;
   bool in_hidden_for_paint = false;
   for (NGInlineCursor cursor = *this; cursor; cursor.MoveToNext()) {
+    if (cursor.Current()->IsBlockInInline()) {
+      if (cursor.Current()->BlockInInline().NonPseudoNode())
+        *this = cursor;
+      continue;
+    }
     if (!cursor.Current().GetLayoutObject()->NonPseudoNode())
       continue;
     if (cursor.Current().IsLineBreak() && last_leaf)
@@ -1122,11 +1184,20 @@ void NGInlineCursor::MoveToNextLine() {
   DCHECK(Current().IsLineBox());
   if (current_.item_) {
     do {
-      MoveToNext();
+      MoveToNextSkippingChildren();
     } while (Current() && !Current().IsLineBox());
     return;
   }
   NOTREACHED();
+}
+
+void NGInlineCursor::MoveToNextLineIncludingFragmentainer() {
+  MoveToNextLine();
+  if (!Current() && max_fragment_index_ && CanMoveAcrossFragmentainer()) {
+    MoveToNextFragmentainer();
+    if (Current() && !Current().IsLineBox())
+      MoveToFirstLine();
+  }
 }
 
 void NGInlineCursor::MoveToPreviousInlineLeaf() {
@@ -1165,14 +1236,14 @@ void NGInlineCursor::MoveToPreviousLine() {
   NOTREACHED();
 }
 
-bool NGInlineCursor::TryToMoveToFirstChild() {
+bool NGInlineCursor::TryMoveToFirstChild() {
   if (!Current().HasChildren())
     return false;
   MoveToItem(current_.item_iter_ + 1);
   return true;
 }
 
-bool NGInlineCursor::TryToMoveToFirstInlineLeafChild() {
+bool NGInlineCursor::TryMoveToFirstInlineLeafChild() {
   while (IsNotNull()) {
     if (Current().IsInlineLeaf())
       return true;
@@ -1181,7 +1252,7 @@ bool NGInlineCursor::TryToMoveToFirstInlineLeafChild() {
   return false;
 }
 
-bool NGInlineCursor::TryToMoveToLastChild() {
+bool NGInlineCursor::TryMoveToLastChild() {
   if (!Current().HasChildren())
     return false;
   const auto end = current_.item_iter_ + CurrentItem()->DescendantsCount();
@@ -1318,7 +1389,7 @@ void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
 
   wtf_size_t item_index = layout_object.FirstInlineFragmentItemIndex();
   if (UNLIKELY(!item_index)) {
-#if DCHECK_IS_ON()
+#if EXPENSIVE_DCHECKS_ARE_ON()
     const LayoutBlockFlow* root = layout_object.FragmentItemsContainer();
     NGInlineCursor check_cursor(*root);
     check_cursor.SlowMoveToFirstFor(layout_object);
@@ -1336,13 +1407,11 @@ void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
     DCHECK(!is_descendants_cursor);
     while (item_index >= fragment_items_->EndItemIndex()) {
       MoveToNextFragmentainer();
-      if (!Current()) {
-        NOTREACHED();
+      if (!Current())
         return;
-      }
     }
     item_index -= fragment_items_->SizeOfEarlierFragments();
-#if DCHECK_IS_ON()
+#if EXPENSIVE_DCHECKS_ARE_ON()
     NGInlineCursor check_cursor(*root_block_flow_);
     check_cursor.SlowMoveToFirstFor(layout_object);
     DCHECK_EQ(check_cursor.Current().Item(),
@@ -1363,13 +1432,13 @@ void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
           return;
         }
         if (cursor.fragment_items_ == fragment_items_) {
-          item_index =
-              cursor.Current().Item() - fragment_items_->Items().data();
+          item_index = base::checked_cast<wtf_size_t>(
+              cursor.Current().Item() - fragment_items_->Items().data());
           break;
         }
       }
     }
-#if DCHECK_IS_ON()
+#if EXPENSIVE_DCHECKS_ARE_ON()
     const LayoutBlockFlow* root = layout_object.FragmentItemsContainer();
     NGInlineCursor check_cursor(*root);
     check_cursor.SlowMoveToFirstFor(layout_object);
@@ -1409,7 +1478,8 @@ void NGInlineCursor::MoveToNextForSameLayoutObjectExceptCulledInline() {
   if (wtf_size_t delta = current_.item_->DeltaToNextForSameLayoutObject()) {
     while (true) {
       // Return if the next index is in the current range.
-      const wtf_size_t delta_to_end = items_.end() - current_.item_iter_;
+      const wtf_size_t delta_to_end =
+          base::checked_cast<wtf_size_t>(items_.end() - current_.item_iter_);
       if (delta < delta_to_end) {
         MoveToItem(current_.item_iter_ + delta);
         return;
@@ -1666,7 +1736,8 @@ void NGInlineCursor::CheckValid(const NGInlineCursorPosition& position) const {
   if (position.Item()) {
     DCHECK(HasRoot());
     DCHECK_EQ(position.item_, &*position.item_iter_);
-    const unsigned index = position.item_iter_ - items_.begin();
+    const unsigned index =
+        base::checked_cast<unsigned>(position.item_iter_ - items_.begin());
     DCHECK_LT(index, items_.size());
   }
 }

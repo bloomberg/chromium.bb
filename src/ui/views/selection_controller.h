@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_SELECTION_CONTROLLER_H_
 #define UI_VIEWS_SELECTION_CONTROLLER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/geometry/point.h"
@@ -37,6 +38,9 @@ class VIEWS_EXPORT SelectionController {
 
   // |delegate| must be non-null.
   explicit SelectionController(SelectionControllerDelegate* delegate);
+
+  SelectionController(const SelectionController&) = delete;
+  SelectionController& operator=(const SelectionController&) = delete;
 
   // Handle mouse events forwarded by |delegate_|. |handled| specifies whether
   // the event has already been handled by the |delegate_|. If |handled| is
@@ -105,12 +109,10 @@ class VIEWS_EXPORT SelectionController {
   gfx::Range double_click_word_;
 
   // Weak pointer.
-  SelectionControllerDelegate* delegate_;
+  raw_ptr<SelectionControllerDelegate> delegate_;
 
   // Whether the selection clipboard is handled.
   bool handles_selection_clipboard_;
-
-  DISALLOW_COPY_AND_ASSIGN(SelectionController);
 };
 
 }  // namespace views

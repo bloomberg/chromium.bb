@@ -46,7 +46,7 @@ include::_aliases.txt[]
 
 ----
 [alias]
-  git squash = squash-branch
+  squash = squash-branch
 ----
 
 

@@ -77,7 +77,8 @@ void ConcatGPU(
     if (output->NumElements() < std::numeric_limits<int32>::max()) {
       ConcatGPUSlice<T, int32>(c->eigen_gpu_device(), inputs_flat, output_flat);
     } else {
-      ConcatGPUSlice<T, int64>(c->eigen_gpu_device(), inputs_flat, output_flat);
+      ConcatGPUSlice<T, int64_t>(c->eigen_gpu_device(), inputs_flat,
+                                 output_flat);
     }
   } else {
     // Switching indexing to int64 might cause performance issues.
@@ -86,7 +87,7 @@ void ConcatGPU(
     if (output->NumElements() < std::numeric_limits<int32>::max()) {
       ConcatGPUCall<T, int32>(c, inputs_flat, output_flat);
     } else {
-      ConcatGPUCall<T, int64>(c, inputs_flat, output_flat);
+      ConcatGPUCall<T, int64_t>(c, inputs_flat, output_flat);
     }
   }
 }
@@ -98,11 +99,8 @@ void ConcatGPU(
           inputs_flat,                                                        \
       Tensor* output, typename TTypes<T, 2>::Tensor* output_flat);
 
-TF_CALL_int32(REGISTER);  // Needed for TensorLists.
-TF_CALL_int64(REGISTER);
-TF_CALL_int16(REGISTER);
+TF_CALL_INTEGRAL_TYPES(REGISTER);  // int32 Needed for TensorLists.
 TF_CALL_bfloat16(REGISTER);
-TF_CALL_uint8(REGISTER);
 TF_CALL_GPU_ALL_TYPES(REGISTER);
 
 #undef REGISTER

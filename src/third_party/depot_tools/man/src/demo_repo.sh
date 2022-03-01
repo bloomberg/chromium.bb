@@ -8,10 +8,10 @@ trap "rm -rf $TDIR" EXIT
 cd $TDIR
 silent git clone "$REMOTE" .
 silent git reset --hard stage_1
-silent git update-ref refs/remotes/origin/master stage_1
+silent git update-ref refs/remotes/origin/main stage_1
 silent git tag -d $(git tag -l 'stage_*')
-silent git checkout origin/master
-silent git branch -d master
+silent git checkout origin/main
+silent git branch -d main
 silent git config color.ui always
 
 if [[ ! "$BLANK_DEMO"  ]]

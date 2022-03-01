@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
+#include "components/value_store/value_store_factory_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,9 +21,8 @@
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/null_app_sorting.h"
 #include "extensions/browser/quota_service.h"
-#include "extensions/browser/runtime_data.h"
 #include "extensions/browser/service_worker_manager.h"
-#include "extensions/browser/value_store/value_store_factory_impl.h"
+#include "extensions/browser/user_script_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/file_util.h"
 #include "extensions/shell/browser/shell_extension_loader.h"
@@ -32,7 +32,8 @@ namespace extensions {
 
 ShellExtensionSystem::ShellExtensionSystem(BrowserContext* browser_context)
     : browser_context_(browser_context),
-      store_factory_(new ValueStoreFactoryImpl(browser_context->GetPath())) {}
+      store_factory_(
+          new value_store::ValueStoreFactoryImpl(browser_context->GetPath())) {}
 
 ShellExtensionSystem::~ShellExtensionSystem() = default;
 
@@ -73,19 +74,14 @@ void ShellExtensionSystem::Shutdown() {
 void ShellExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
   service_worker_manager_ =
       std::make_unique<ServiceWorkerManager>(browser_context_);
-  runtime_data_ =
-      std::make_unique<RuntimeData>(ExtensionRegistry::Get(browser_context_));
   quota_service_ = std::make_unique<QuotaService>();
   app_sorting_ = std::make_unique<NullAppSorting>();
   extension_loader_ = std::make_unique<ShellExtensionLoader>(browser_context_);
+  user_script_manager_ = std::make_unique<UserScriptManager>(browser_context_);
 }
 
 ExtensionService* ShellExtensionSystem::extension_service() {
   return nullptr;
-}
-
-RuntimeData* ShellExtensionSystem::runtime_data() {
-  return runtime_data_.get();
 }
 
 ManagementPolicy* ShellExtensionSystem::management_policy() {
@@ -97,7 +93,7 @@ ServiceWorkerManager* ShellExtensionSystem::service_worker_manager() {
 }
 
 UserScriptManager* ShellExtensionSystem::user_script_manager() {
-  return nullptr;
+  return user_script_manager_.get();
 }
 
 StateStore* ShellExtensionSystem::state_store() {
@@ -108,7 +104,12 @@ StateStore* ShellExtensionSystem::rules_store() {
   return nullptr;
 }
 
-scoped_refptr<ValueStoreFactory> ShellExtensionSystem::store_factory() {
+StateStore* ShellExtensionSystem::dynamic_user_scripts_store() {
+  return nullptr;
+}
+
+scoped_refptr<value_store::ValueStoreFactory>
+ShellExtensionSystem::store_factory() {
   return store_factory_;
 }
 

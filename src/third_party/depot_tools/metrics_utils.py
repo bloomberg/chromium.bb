@@ -25,7 +25,12 @@ CURRENT_VERSION = 2
 APP_URL = 'https://cit-cli-metrics.appspot.com'
 
 REPORT_BUILD = os.getenv('DEPOT_TOOLS_REPORT_BUILD')
-COLLECT_METRICS = os.getenv('DEPOT_TOOLS_COLLECT_METRICS') != '0'
+COLLECT_METRICS = (
+    os.getenv('DEPOT_TOOLS_COLLECT_METRICS') != '0'
+    and os.getenv('DEPOT_TOOLS_METRICS') != '0')
+
+SYNC_STATUS_SUCCESS = 'SYNC_STATUS_SUCCESS'
+SYNC_STATUS_FAILURE = 'SYNC_STATUS_FAILURE'
 
 
 def get_notice_countdown_header(countdown):

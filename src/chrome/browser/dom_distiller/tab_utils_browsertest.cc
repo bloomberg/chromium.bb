@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
@@ -92,6 +93,10 @@ class FaviconUpdateWaiter : public favicon::FaviconDriverObserver {
     scoped_observation_.Observe(
         favicon::ContentFaviconDriver::FromWebContents(web_contents));
   }
+
+  FaviconUpdateWaiter(const FaviconUpdateWaiter&) = delete;
+  FaviconUpdateWaiter& operator=(const FaviconUpdateWaiter&) = delete;
+
   ~FaviconUpdateWaiter() override = default;
 
   void Wait() {
@@ -121,8 +126,6 @@ class FaviconUpdateWaiter : public favicon::FaviconDriverObserver {
                           favicon::FaviconDriverObserver>
       scoped_observation_{this};
   base::OnceClosure quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(FaviconUpdateWaiter);
 };
 
 class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {
@@ -171,8 +174,9 @@ class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {
   GURL article_url_;
 };
 
+// Disabled as flaky: https://crbug.com/1275025
 IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
-                       DistillCurrentPageSwapsWebContents) {
+                       DISABLED_DistillCurrentPageSwapsWebContents) {
   content::WebContents* initial_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   TestDistillabilityObserver distillability_observer(initial_web_contents);
@@ -182,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
   expected_result.is_mobile_friendly = false;
 
   // This blocks until the navigation has completely finished.
-  ui_test_utils::NavigateToURL(browser(), article_url());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), article_url()));
   // This blocks until the page is found to be distillable.
   distillability_observer.WaitForResult(expected_result);
 
@@ -217,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, UMATimesAreLogged) {
   expected_result.is_mobile_friendly = false;
 
   // This blocks until the navigation has completely finished.
-  ui_test_utils::NavigateToURL(browser(), article_url());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), article_url()));
   // This blocks until the page is found to be distillable.
   distillability_observer.WaitForResult(expected_result);
 
@@ -234,19 +238,28 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, UMATimesAreLogged) {
   histogram_tester.ExpectTotalCount(kDistilledPageHistogram, 0);
 
   // Go back to the article, check UMA exists for distilled page now.
-  ui_test_utils::NavigateToURL(browser(), article_url());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), article_url()));
   histogram_tester.ExpectTotalCount(kDistilledPageHistogram, 1);
   // However, there should not be a second distillable histogram.
   histogram_tester.ExpectTotalCount(kDistillablePageHistogram, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
-                       DistillAndViewCreatesNewWebContentsAndPreservesOld) {
+// TODO(crbug.com/1272152): Flaky on linux.
+#if defined(OS_LINUX)
+#define MAYBE_DistillAndViewCreatesNewWebContentsAndPreservesOld \
+  DISABLED_DistillAndViewCreatesNewWebContentsAndPreservesOld
+#else
+#define MAYBE_DistillAndViewCreatesNewWebContentsAndPreservesOld \
+  DistillAndViewCreatesNewWebContentsAndPreservesOld
+#endif
+IN_PROC_BROWSER_TEST_F(
+    DomDistillerTabUtilsBrowserTest,
+    MAYBE_DistillAndViewCreatesNewWebContentsAndPreservesOld) {
   content::WebContents* source_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
   // This blocks until the navigation has completely finished.
-  ui_test_utils::NavigateToURL(browser(), article_url());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), article_url()));
 
   // Create destination WebContents and add it to the tab strip.
   browser()->tab_strip_model()->AppendWebContents(
@@ -275,12 +288,19 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
   destroyed_watcher.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, ToggleOriginalPage) {
+// TODO(crbug.com/1271740): Flaky on linux.
+#if defined(OS_LINUX)
+#define MAYBE_ToggleOriginalPage DISABLED_ToggleOriginalPage
+#else
+#define MAYBE_ToggleOriginalPage ToggleOriginalPage
+#endif
+IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
+                       MAYBE_ToggleOriginalPage) {
   content::WebContents* source_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
   // This blocks until the navigation has completely finished.
-  ui_test_utils::NavigateToURL(browser(), article_url());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), article_url()));
 
   // Create and navigate to the distilled page.
   browser()->tab_strip_model()->AppendWebContents(
@@ -322,13 +342,13 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
   expected_result.is_mobile_friendly = false;
 
   // Navigate to the page
-  ui_test_utils::NavigateToURL(browser(), url1);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url1));
   distillability_observer.WaitForResult(expected_result);
 
   DistillCurrentPageAndView(initial_web_contents);
 
   // Navigate away while starting distillation. This should block bfcache.
-  ui_test_utils::NavigateToURL(browser(), url2);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url2));
 
   EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
       process_id, frame_routing_id,
@@ -345,7 +365,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, SecurityStateIsNone) {
   expected_result.is_distillable = true;
   expected_result.is_last = false;
   expected_result.is_mobile_friendly = false;
-  ui_test_utils::NavigateToURL(browser(), article_url());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), article_url()));
   distillability_observer.WaitForResult(expected_result);
 
   // Check security state is not NONE.
@@ -363,8 +383,14 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, SecurityStateIsNone) {
   ASSERT_EQ(security_state::NONE, helper->GetSecurityLevel());
 }
 
+// TODO(crbug.com/1227141): Flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_FaviconFromOriginalPage DISABLED_FaviconFromOriginalPage
+#else
+#define MAYBE_FaviconFromOriginalPage FaviconFromOriginalPage
+#endif
 IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
-                       FaviconFromOriginalPage) {
+                       MAYBE_FaviconFromOriginalPage) {
   content::WebContents* initial_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -375,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
   expected_result.is_mobile_friendly = false;
   FaviconUpdateWaiter waiter(initial_web_contents);
 
-  ui_test_utils::NavigateToURL(browser(), article_url());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), article_url()));
   // Ensure the favicon is loaded and the distillability result has also
   // loaded before proceeding with the test.
   waiter.Wait();
@@ -416,7 +442,7 @@ class DistilledPageImageLoadWaiter {
 
   void Wait() {
     base::RepeatingTimer check_timer;
-    check_timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(10), this,
+    check_timer.Start(FROM_HERE, base::Milliseconds(10), this,
                       &DistilledPageImageLoadWaiter::OnTimer);
     runner_.Run();
   }
@@ -431,7 +457,7 @@ class DistilledPageImageLoadWaiter {
     // If they aren't loaded or the size is wrong, stay in the loop until the
     // load completes.
     ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-        contents_,
+        contents_.get(),
         content::JsReplace("var ok = document.getElementById('main-content')"
                            "    .getElementsByTagName('img')[$1];"
                            "var bad = document.getElementById('main-content')"
@@ -445,7 +471,7 @@ class DistilledPageImageLoadWaiter {
       runner_.Quit();
   }
 
-  content::WebContents* contents_;
+  raw_ptr<content::WebContents> contents_;
   int ok_elem_;
   int ok_width_;
   int bad_elem_;
@@ -519,9 +545,9 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTestInsecureContent,
                        DoesNotLoadMixedContent) {
   content::WebContents* initial_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      https_server_->GetURL("/dom_distiller/simple_article_mixed_image.html"));
+      https_server_->GetURL("/dom_distiller/simple_article_mixed_image.html")));
   // Security state should be downgraded.
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(initial_web_contents);
@@ -578,7 +604,8 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTestInsecureContent,
                 https_server_expired_->host_port_pair().ToString()));
   std::string path = net::test_server::GetFilePathWithReplacements(
       "/dom_distiller/simple_article_bad_cert_image.html", replacement_text);
-  ui_test_utils::NavigateToURL(browser(), https_server_->GetURL(path));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), https_server_->GetURL(path)));
   // Should have loaded the image with the cert errors.
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(initial_web_contents);

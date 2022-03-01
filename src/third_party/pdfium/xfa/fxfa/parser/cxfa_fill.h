@@ -13,10 +13,6 @@
 #include "xfa/fxfa/parser/cxfa_node.h"
 
 class CFGAS_GEGraphics;
-class CXFA_Linear;
-class CXFA_Pattern;
-class CXFA_Radial;
-class CXFA_Stipple;
 
 class CXFA_Fill final : public CXFA_Node {
  public:
@@ -25,7 +21,8 @@ class CXFA_Fill final : public CXFA_Node {
 
   bool IsVisible();
 
-  FX_ARGB GetColor(bool bText);
+  FX_ARGB GetFillColor() const;
+  FX_ARGB GetTextColor() const;
   void SetColor(FX_ARGB color);
 
   void Draw(CFGAS_GEGraphics* pGS,
