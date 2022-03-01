@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from recipe_engine import post_process
+
+PYTHON_VERSION_COMPATIBILITY = 'PY2+3'
+
 DEPS = [
     'bot_update',
     'gclient',
@@ -10,8 +14,6 @@ DEPS = [
     'recipe_engine/properties',
     'recipe_engine/step',
 ]
-
-from recipe_engine import post_process
 
 
 def RunSteps(api):

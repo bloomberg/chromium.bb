@@ -8,10 +8,11 @@
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_base.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
 class AccountId;
@@ -27,7 +28,8 @@ class CloudPolicyClientRegistrationHelper;
 
 // A specialization of the UserPolicySigninServiceBase for the desktop
 // platforms (Windows, Mac and Linux).
-class UserPolicySigninService : public UserPolicySigninServiceBase {
+class UserPolicySigninService : public UserPolicySigninServiceBase,
+                                public ProfileAttributesStorage::Observer {
  public:
   // Creates a UserPolicySigninService associated with the passed
   // |policy_manager| and |identity_manager|.
@@ -38,6 +40,8 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
       UserCloudPolicyManager* policy_manager,
       signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory);
+  UserPolicySigninService(const UserPolicySigninService&) = delete;
+  UserPolicySigninService& operator=(const UserPolicySigninService&) = delete;
   ~UserPolicySigninService() override;
 
   // Registers a CloudPolicyClient for fetching policy for a user. |username| is
@@ -63,6 +67,9 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   // initialized, but before the account is set as primary account. In this case
   // the manager must be shutdown manually.
   void ShutdownUserCloudPolicyManager() override;
+
+  void OnProfileUserManagementAcceptanceChanged(
+      const base::FilePath& profile_path) override;
 
  protected:
   // UserPolicySigninServiceBase implementation:
@@ -95,12 +102,10 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   void CallPolicyRegistrationCallback(std::unique_ptr<CloudPolicyClient> client,
                                       PolicyRegistrationCallback callback);
 
-  // Parent profile for this service.
-  Profile* profile_;
-
   std::unique_ptr<CloudPolicyClientRegistrationHelper> registration_helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserPolicySigninService);
+  base::ScopedObservation<ProfileAttributesStorage,
+                          ProfileAttributesStorage::Observer>
+      observed_profile_{this};
 };
 
 }  // namespace policy

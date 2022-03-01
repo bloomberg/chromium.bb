@@ -189,6 +189,7 @@ class TextProtoPrinter {
   TextProtoPrinter& operator<<(const feedstore::StreamData& v) {
     BeginMessage();
     PRINT_FIELD(content_id);
+    PRINT_FIELD(root_event_id);
     PRINT_FIELD(next_page_token);
     PRINT_FIELD(last_added_time_millis);
     PRINT_FIELD(shared_state_ids);
@@ -279,7 +280,7 @@ class TextProtoPrinter {
       const feedwire::webfeed::WebFeedMatcher::Criteria& v) {
     BeginMessage();
     PRINT_FIELD(text);
-    PRINT_FIELD(regex);
+    PRINT_FIELD(partial_match_regex);
     PRINT_FIELD(criteria_type);
     EndMessage();
     return *this;

@@ -44,7 +44,7 @@ _GN_PATH = os.path.join(_SRC_ROOT, 'third_party', 'depot_tools', 'gn')
 _DiffResult = collections.namedtuple('DiffResult', ['name', 'value', 'units'])
 
 
-class BaseDiff(object):
+class BaseDiff:
   """Base class capturing binary size diffs."""
   def __init__(self, name):
     self.name = name
@@ -96,7 +96,7 @@ class NativeDiff(BaseDiff):
     self._size_name = size_name
     self._supersize_path = supersize_path
     self._diff = []
-    super(NativeDiff, self).__init__('Native Diff')
+    super().__init__('Native Diff')
 
   @property
   def summary_stat(self):
@@ -131,16 +131,22 @@ class ResourceSizesDiff(BaseDiff):
     self._diff = None  # Set by |ProduceDiff()|
     self._filename = filename
     self._include_sections = include_sections
-    super(ResourceSizesDiff, self).__init__('Resource Sizes Diff')
+    super().__init__('Resource Sizes Diff')
 
   @property
   def summary_stat(self):
+    items = []
     for section_name, results in self._diff.items():
       for subsection_name, value, units in results:
         if 'normalized' in subsection_name:
-          full_name = '{} {}'.format(section_name, subsection_name)
-          return _DiffResult(full_name, value, units)
-    raise Exception('Could not find "normalized" in: ' + repr(self._diff))
+          items.append([section_name, subsection_name, value, units])
+    if len(items) > 1:  # Handle Trichrome.
+      items = [item for item in items if 'Combined_normalized' in item[1]]
+    if len(items) == 1:
+      [section_name, subsection_name, value, units] = items[0]
+      full_name = '{} {}'.format(section_name, subsection_name)
+      return _DiffResult(full_name, value, units)
+    raise Exception('Could not find canonical "normalized" in: %r' % self._diff)
 
   def CombinedSizeChangeForSection(self, section):
     for subsection_name, value, _ in self._diff[section]:
@@ -156,7 +162,7 @@ class ResourceSizesDiff(BaseDiff):
     footer_lines = [
         '',
         'For an explanation of these metrics, see:',
-        ('https://chromium.googlesource.com/chromium/src/+/master/docs/speed/'
+        ('https://chromium.googlesource.com/chromium/src/+/main/docs/speed/'
          'binary_size/metrics.md#Metrics-for-Android')]
     return self._ResultLines(
         include_sections=ResourceSizesDiff._SUMMARY_SECTIONS) + footer_lines
@@ -224,7 +230,7 @@ class ResourceSizesDiff(BaseDiff):
     return ret
 
 
-class _BuildHelper(object):
+class _BuildHelper:
   """Helper class for generating and building targets."""
   def __init__(self, args):
     self.clean = args.clean
@@ -354,7 +360,7 @@ class _BuildHelper(object):
     # Speed things up a bit by skipping lint & errorprone.
     gn_args += ' disable_android_lint=true'
     # Down from default of 2 to speed up compile and use less disk.
-    # Compiles need at least symbol_level=1 for pak whitelist to work.
+    # Compiles need at least symbol_level=1 for pak allowlist to work.
     gn_args += ' symbol_level=1'
     gn_args += ' use_errorprone_java_compiler=false'
     gn_args += ' use_goma=%s' % str(self.use_goma).lower()
@@ -395,7 +401,7 @@ class _BuildHelper(object):
     return self.target_os == 'linux'
 
 
-class _BuildArchive(object):
+class _BuildArchive:
   """Class for managing a directory with build results and build metadata."""
 
   def __init__(self, rev, base_archive_dir, build, subrepo, save_unstripped):
@@ -472,7 +478,7 @@ class _BuildArchive(object):
     _RunCmd(supersize_cmd)
 
 
-class _DiffArchiveManager(object):
+class _DiffArchiveManager:
   """Class for maintaining BuildArchives and their related diff artifacts."""
 
   def __init__(self, revs, archive_dir, diffs, build, subrepo, save_unstripped):
@@ -616,7 +622,7 @@ class _DiffArchiveManager(object):
     return diff_path
 
 
-class _Metadata(object):
+class _Metadata:
 
   def __init__(self, archives, build, path, subrepo):
     self.data = {
@@ -975,6 +981,8 @@ def main():
     diff_mngr.GenerateHtmlReport(
         0, i, is_internal=args.enable_chrome_android_internal)
     diff_mngr.Summarize()
+
+  return 0
 
 
 if __name__ == '__main__':

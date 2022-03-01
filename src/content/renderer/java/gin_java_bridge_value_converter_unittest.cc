@@ -9,11 +9,19 @@
 #include <cmath>
 #include <memory>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/stringprintf.h"
 #include "content/common/android/gin_java_bridge_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-array-buffer.h"
+#include "v8/include/v8-context.h"
+#include "v8/include/v8-isolate.h"
+#include "v8/include/v8-locker.h"
+#include "v8/include/v8-microtask-queue.h"
+#include "v8/include/v8-persistent-handle.h"
+#include "v8/include/v8-primitive.h"
+#include "v8/include/v8-script.h"
+#include "v8/include/v8-template.h"
 
 namespace content {
 
@@ -25,6 +33,7 @@ class GinJavaBridgeValueConverterTest : public testing::Test {
 
  protected:
   void SetUp() override {
+    v8::Locker locked(isolate_);
     v8::HandleScope handle_scope(isolate_);
     v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate_);
     context_.Reset(isolate_, v8::Context::New(isolate_, NULL, global));
@@ -39,6 +48,7 @@ class GinJavaBridgeValueConverterTest : public testing::Test {
 };
 
 TEST_F(GinJavaBridgeValueConverterTest, BasicValues) {
+  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -75,6 +85,7 @@ TEST_F(GinJavaBridgeValueConverterTest, BasicValues) {
 }
 
 TEST_F(GinJavaBridgeValueConverterTest, ArrayBuffer) {
+  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -96,6 +107,7 @@ TEST_F(GinJavaBridgeValueConverterTest, ArrayBuffer) {
 }
 
 TEST_F(GinJavaBridgeValueConverterTest, TypedArrays) {
+  v8::Locker locked(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
@@ -133,16 +145,13 @@ TEST_F(GinJavaBridgeValueConverterTest, TypedArrays) {
     std::unique_ptr<base::Value> list_value(
         converter->FromV8Value(v8_typed_array, context));
     ASSERT_TRUE(list_value.get()) << typed_array_type;
-    EXPECT_TRUE(list_value->is_list()) << typed_array_type;
-    base::ListValue* list;
-    ASSERT_TRUE(list_value->GetAsList(&list)) << typed_array_type;
-    EXPECT_EQ(1u, list->GetSize()) << typed_array_type;
+    ASSERT_TRUE(list_value->is_list()) << typed_array_type;
+    EXPECT_EQ(1u, list_value->GetList().size()) << typed_array_type;
 
-    const base::Value* value;
-    list->Get(0, &value);
+    const auto value = list_value->GetList().cbegin();
     if (value->type() == base::Value::Type::BINARY) {
       std::unique_ptr<const GinJavaBridgeValue> gin_value(
-          GinJavaBridgeValue::FromValue(value));
+          GinJavaBridgeValue::FromValue(&*value));
       EXPECT_EQ(gin_value->GetType(), GinJavaBridgeValue::TYPE_UINT32);
       uint32_t first_element = 0;
       ASSERT_TRUE(gin_value->GetAsUInt32(&first_element));

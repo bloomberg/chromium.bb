@@ -15,8 +15,7 @@ limitations under the License.
 
 #include "tensorflow/compiler/tf2tensorrt/utils/trt_logger.h"
 
-#if GOOGLE_CUDA
-#if GOOGLE_TENSORRT
+#if GOOGLE_CUDA && GOOGLE_TENSORRT
 #include "tensorflow/compiler/tf2tensorrt/common/utils.h"
 #include "tensorflow/compiler/tf2tensorrt/convert/logger_registry.h"
 #include "tensorflow/core/platform/logging.h"
@@ -25,12 +24,10 @@ namespace tensorflow {
 namespace tensorrt {
 
 // Use TF logging for TensorRT informations
-void Logger::log(Severity severity, const char* msg) {
+void Logger::log(Severity severity, const char* msg) noexcept {
   // Suppress info-level messages
   switch (severity) {
-#if NV_TENSORRT_MAJOR > 5 || (NV_TENSORRT_MAJOR == 5 && NV_TENSORRT_MINOR >= 1)
     case Severity::kVERBOSE:
-#endif
     case Severity::kINFO: {  // Mark TRT info messages as debug!
       VLOG(2) << name_ << " " << msg;
       break;
@@ -68,5 +65,4 @@ REGISTER_TENSORRT_LOGGER("DefaultLogger", Logger::GetLogger());
 }  // namespace tensorrt
 }  // namespace tensorflow
 
-#endif  // GOOGLE_CUDA
-#endif  // GOOGLE_TENSORRT
+#endif  // GOOGLE_CUDA && GOOGLE_TENSORRT

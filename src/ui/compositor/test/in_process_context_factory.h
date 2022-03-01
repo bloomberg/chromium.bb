@@ -9,7 +9,7 @@
 #include <memory>
 #include <unordered_map>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/common/surfaces/subtree_capture_id_allocator.h"
@@ -42,6 +42,10 @@ class InProcessContextFactory : public ContextFactory {
   InProcessContextFactory(viz::HostFrameSinkManager* host_frame_sink_manager,
                           viz::FrameSinkManagerImpl* frame_sink_manager,
                           bool use_skia_renderer);
+
+  InProcessContextFactory(const InProcessContextFactory&) = delete;
+  InProcessContextFactory& operator=(const InProcessContextFactory&) = delete;
+
   ~InProcessContextFactory() override;
 
   viz::FrameSinkManagerImpl* GetFrameSinkManager() {
@@ -73,7 +77,7 @@ class InProcessContextFactory : public ContextFactory {
   viz::SubtreeCaptureId AllocateSubtreeCaptureId() override;
   viz::HostFrameSinkManager* GetHostFrameSinkManager() override;
 
-  SkMatrix44 GetOutputColorMatrix(Compositor* compositor) const;
+  skia::Matrix44 GetOutputColorMatrix(Compositor* compositor) const;
   gfx::DisplayColorSpaces GetDisplayColorSpaces(Compositor* compositor) const;
   float GetSDRWhiteLevel(Compositor* compositor) const;
   base::TimeTicks GetDisplayVSyncTimeBase(Compositor* compositor) const;
@@ -96,16 +100,14 @@ class InProcessContextFactory : public ContextFactory {
   bool use_test_surface_;
   bool disable_vsync_ = false;
   double refresh_rate_ = 60.0;
-  viz::HostFrameSinkManager* const host_frame_sink_manager_;
-  viz::FrameSinkManagerImpl* const frame_sink_manager_;
+  const raw_ptr<viz::HostFrameSinkManager> host_frame_sink_manager_;
+  const raw_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_;
 
   viz::RendererSettings renderer_settings_;
   viz::DebugRendererSettings debug_settings_;
   using PerCompositorDataMap =
       std::unordered_map<Compositor*, std::unique_ptr<PerCompositorData>>;
   PerCompositorDataMap per_compositor_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(InProcessContextFactory);
 };
 
 }  // namespace ui

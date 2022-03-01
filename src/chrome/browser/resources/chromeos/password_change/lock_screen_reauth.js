@@ -7,7 +7,6 @@
  * the lock screen.
  */
 
-
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -80,6 +79,14 @@ Polymer({
       value: false,
     },
 
+    /**
+     * Whether to show Saml Notice Message.
+     */
+    showSamlNoticeMessage_: {
+      type: Boolean,
+      value: false,
+    },
+
     passwordConfirmAttempt_: {
       type: Number,
       value: 0,
@@ -109,12 +116,13 @@ Polymer({
     this.signinFrame_ = this.getSigninFrame_();
     this.authenticator_ = new cr.login.Authenticator(this.signinFrame_);
     this.authenticator_.addEventListener(
-        'authDomainChange', this.onAuthDomainChange_.bind(this));
+        'authDomainChange', () => void this.onAuthDomainChange_());
     this.authenticator_.addEventListener(
-      'authCompleted', this.onAuthCompletedMessage_.bind(this));
-    this.authenticator_.confirmPasswordCallback =
-      this.onAuthConfirmPassword_.bind(this);
-    this.authenticator_.noPasswordCallback = this.onAuthNoPassword_.bind(this);
+        'authCompleted', (e) => void this.onAuthCompletedMessage_(e));
+    this.authenticator_.confirmPasswordCallback = (email, password) =>
+        void this.onAuthConfirmPassword_(email, password);
+    this.authenticator_.noPasswordCallback = (email) =>
+        void this.onAuthNoPassword_(email);
     chrome.send('initialize');
   },
 
@@ -126,6 +134,29 @@ Polymer({
     this.isConfirmPassword_ = false;
     this.isManualInput_ = false;
     this.isPasswordChanged_ = false;
+    this.showSamlNoticeMessage_ = false;
+  },
+
+  /**
+   * Set the orientation which will be used in styling webui.
+   * @param {!Object} is_horizontal whether the orientation is horizontal or
+   *  vertical.
+   */
+  setOrientation(is_horizontal) {
+    if (is_horizontal) {
+      document.documentElement.setAttribute('orientation', 'horizontal');
+    } else {
+      document.documentElement.setAttribute('orientation', 'vertical');
+    }
+  },
+
+  /**
+   * Set the width which will be used in styling webui.
+   * @param {!Object} width the width of the dialog.
+   */
+  setWidth(width) {
+    document.documentElement.style.setProperty(
+      '--lock-screen-reauth-dialog-width', width + 'px');
   },
 
   /**
@@ -155,6 +186,9 @@ Polymer({
     }
     this.authenticatorParams_ = params;
     this.email_ = data.email;
+    if (!data['doSamlRedirect']) {
+      this.doGaiaRedirect_();
+    }
     chrome.send('authenticatorLoaded');
   },
 
@@ -267,9 +301,12 @@ Polymer({
     this.authenticator_.load(
       cr.login.Authenticator.AuthMode.DEFAULT, this.authenticatorParams_);
     this.resetState_();
-    /** This statement override resetStates_ calls.
-     * Thus have to be AFTER resetState_. */
+    /**
+     * These statements override resetStates_ calls.
+     * Thus have to be AFTER resetState_.
+     */
     this.isSamlPage_ = true;
+    this.showSamlNoticeMessage_ = true;
   },
 
   /** @private */
@@ -301,6 +338,7 @@ Polymer({
     chrome.send('dialogClose');
   },
 
+  /** @private */
   onResetAndClose_() {
     this.signinFrame_.clearData({since: 0}, clearDataType, () => {
       onCloseTap_();
@@ -315,6 +353,18 @@ Polymer({
     }
     chrome.send('updateUserPassword', [this.$.oldPasswordInput.value]);
     this.$.oldPasswordInput.value = '';
+  },
+
+  /** @private */
+  doGaiaRedirect_() {
+    this.authenticator_.load(
+        cr.login.Authenticator.AuthMode.DEFAULT, this.authenticatorParams_);
+    this.resetState_();
+    /**
+     * These statements override resetStates_ calls.
+     * Thus have to be AFTER resetState_.
+     */
+    this.isSamlPage_ = true;
   },
 
   /** @private */

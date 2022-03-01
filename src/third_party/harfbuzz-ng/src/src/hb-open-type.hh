@@ -64,7 +64,7 @@ struct IntType
   IntType& operator = (Type i) { v = i; return *this; }
   /* For reason we define cast out operator for signed/unsigned, instead of Type, see:
    * https://github.com/harfbuzz/harfbuzz/pull/2875/commits/09836013995cab2b9f07577a179ad7b024130467 */
-  operator hb_conditional<hb_is_signed (Type), signed, unsigned> () const { return v; }
+  operator typename std::conditional<std::is_signed<Type>::value, signed, unsigned>::type () const { return v; }
 
   bool operator == (const IntType &o) const { return (Type) v == (Type) o.v; }
   bool operator != (const IntType &o) const { return !(*this == o); }
@@ -86,7 +86,7 @@ struct IntType
     return pb->cmp (*pa);
   }
   template <typename Type2,
-	    hb_enable_if (hb_is_integral (Type2) &&
+	    hb_enable_if (std::is_integral<Type2>::value &&
 			  sizeof (Type2) < sizeof (int) &&
 			  sizeof (Type) < sizeof (int))>
   int cmp (Type2 a) const
@@ -121,6 +121,15 @@ typedef IntType<int32_t>  HBINT32;	/* 32-bit signed integer. */
 /* Note: we cannot defined a signed HBINT24 because there's no corresponding C type.
  * Works for unsigned, but not signed, since we rely on compiler for sign-extension. */
 typedef IntType<uint32_t, 3> HBUINT24;	/* 24-bit unsigned integer. */
+
+/* 15-bit unsigned number; top bit used for extension. */
+struct HBUINT15 : HBUINT16
+{
+  /* TODO Flesh out; actually mask top bit. */
+  HBUINT15& operator = (uint16_t i ) { HBUINT16::operator= (i); return *this; }
+  public:
+  DEFINE_SIZE_STATIC (2);
+};
 
 /* 16-bit signed integer (HBINT16) that describes a quantity in FUnits. */
 typedef HBINT16 FWORD;
@@ -182,9 +191,9 @@ struct Tag : HBUINT32
 };
 
 /* Glyph index number, same as uint16 (length = 16 bits) */
-struct HBGlyphID : HBUINT16
+struct HBGlyphID16 : HBUINT16
 {
-  HBGlyphID& operator = (uint16_t i) { HBUINT16::operator= (i); return *this; }
+  HBGlyphID16& operator = (uint16_t i) { HBUINT16::operator= (i); return *this; }
 };
 
 /* Script/language-system/feature index */
@@ -211,15 +220,6 @@ struct Offset : Type
   typedef Type type;
 
   bool is_null () const { return has_null && 0 == *this; }
-
-  void *serialize (hb_serialize_context_t *c, const void *base)
-  {
-    void *t = c->start_embed<void> ();
-    c->check_assign (*this,
-                     (unsigned) ((char *) t - (char *) base),
-                     HB_SERIALIZE_ERROR_OFFSET_OVERFLOW);
-    return t;
-  }
 
   public:
   DEFINE_SIZE_STATIC (sizeof (Type));
@@ -328,10 +328,6 @@ struct OffsetTo : Offset<OffsetType, has_null>
 	    hb_enable_if (hb_is_convertible (Base, void *))>
   friend Type& operator + (OffsetTo &offset, Base &&base) { return offset ((void *) base); }
 
-  Type& serialize (hb_serialize_context_t *c, const void *base)
-  {
-    return * (Type *) Offset<OffsetType>::serialize (c, base);
-  }
 
   template <typename ...Ts>
   bool serialize_subset (hb_subset_context_t *c, const OffsetTo& src,
@@ -345,12 +341,29 @@ struct OffsetTo : Offset<OffsetType, has_null>
 
     s->push ();
 
-    bool ret = c->dispatch (src_base+src, hb_forward<Ts> (ds)...);
+    bool ret = c->dispatch (src_base+src, std::forward<Ts> (ds)...);
 
     if (ret || !has_null)
       s->add_link (*this, s->pop_pack ());
     else
       s->pop_discard ();
+
+    return ret;
+  }
+
+
+  template <typename ...Ts>
+  bool serialize_serialize (hb_serialize_context_t *c, Ts&&... ds)
+  {
+    *this = 0;
+
+    Type* obj = c->push<Type> ();
+    bool ret = obj->serialize (c, std::forward<Ts> (ds)...);
+
+    if (ret)
+      c->add_link (*this, c->pop_pack ());
+    else
+      c->pop_discard ();
 
     return ret;
   }
@@ -371,7 +384,7 @@ struct OffsetTo : Offset<OffsetType, has_null>
 
     c->push ();
 
-    bool ret = c->copy (src_base+src, hb_forward<Ts> (ds)...);
+    bool ret = c->copy (src_base+src, std::forward<Ts> (ds)...);
 
     c->add_link (*this, c->pop_pack (), whence, dst_bias);
 
@@ -397,7 +410,7 @@ struct OffsetTo : Offset<OffsetType, has_null>
     TRACE_SANITIZE (this);
     return_trace (sanitize_shallow (c, base) &&
 		  (this->is_null () ||
-		   c->dispatch (StructAtOffset<Type> (base, *this), hb_forward<Ts> (ds)...) ||
+		   c->dispatch (StructAtOffset<Type> (base, *this), std::forward<Ts> (ds)...) ||
 		   neuter (c)));
   }
 
@@ -464,8 +477,10 @@ struct UnsizedArrayOf
   const Type &lsearch (unsigned int len, const T &x, const Type &not_found = Null (Type)) const
   { return *as_array (len).lsearch (x, &not_found); }
   template <typename T>
-  bool lfind (unsigned int len, const T &x, unsigned *pos = nullptr) const
-  { return as_array (len).lfind (x, pos); }
+  bool lfind (unsigned int len, const T &x, unsigned int *i = nullptr,
+	      hb_not_found_t not_found = HB_NOT_FOUND_DONT_STORE,
+	      unsigned int to_store = (unsigned int) -1) const
+  { return as_array (len).lfind (x, i, not_found, to_store); }
 
   void qsort (unsigned int len, unsigned int start = 0, unsigned int end = (unsigned int) -1)
   { as_array (len).qsort (start, end); }
@@ -473,7 +488,7 @@ struct UnsizedArrayOf
   bool serialize (hb_serialize_context_t *c, unsigned int items_len)
   {
     TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend (*this, items_len))) return_trace (false);
+    if (unlikely (!c->extend (this, items_len))) return_trace (false);
     return_trace (true);
   }
   template <typename Iterator,
@@ -503,9 +518,9 @@ struct UnsizedArrayOf
   {
     TRACE_SANITIZE (this);
     if (unlikely (!sanitize_shallow (c, count))) return_trace (false);
-    if (!sizeof... (Ts) && hb_is_trivially_copyable (Type)) return_trace (true);
+    if (!sizeof... (Ts) && std::is_trivially_copyable<Type>::value) return_trace (true);
     for (unsigned int i = 0; i < count; i++)
-      if (unlikely (!c->dispatch (arrayZ[i], hb_forward<Ts> (ds)...)))
+      if (unlikely (!c->dispatch (arrayZ[i], std::forward<Ts> (ds)...)))
 	return_trace (false);
     return_trace (true);
   }
@@ -550,7 +565,7 @@ struct UnsizedListOfOffset16To : UnsizedArray16OfOffsetTo<Type, OffsetType, has_
   {
     TRACE_SANITIZE (this);
     return_trace ((UnsizedArray16OfOffsetTo<Type, OffsetType, has_null>
-		   ::sanitize (c, count, this, hb_forward<Ts> (ds)...)));
+		   ::sanitize (c, count, this, std::forward<Ts> (ds)...)));
   }
 };
 
@@ -573,7 +588,7 @@ struct SortedUnsizedArrayOf : UnsizedArrayOf<Type>
   { return *as_array (len).bsearch (x, &not_found); }
   template <typename T>
   bool bfind (unsigned int len, const T &x, unsigned int *i = nullptr,
-	      hb_bfind_not_found_t not_found = HB_BFIND_NOT_FOUND_DONT_STORE,
+	      hb_not_found_t not_found = HB_NOT_FOUND_DONT_STORE,
 	      unsigned int to_store = (unsigned int) -1) const
   { return as_array (len).bfind (x, i, not_found, to_store); }
 };
@@ -635,8 +650,10 @@ struct ArrayOf
   const Type &lsearch (const T &x, const Type &not_found = Null (Type)) const
   { return *as_array ().lsearch (x, &not_found); }
   template <typename T>
-  bool lfind (const T &x, unsigned *pos = nullptr) const
-  { return as_array ().lfind (x, pos); }
+  bool lfind (const T &x, unsigned int *i = nullptr,
+	      hb_not_found_t not_found = HB_NOT_FOUND_DONT_STORE,
+	      unsigned int to_store = (unsigned int) -1) const
+  { return as_array ().lfind (x, i, not_found, to_store); }
 
   void qsort (unsigned int start = 0, unsigned int end = (unsigned int) -1)
   { as_array ().qsort (start, end); }
@@ -644,9 +661,9 @@ struct ArrayOf
   HB_NODISCARD bool serialize (hb_serialize_context_t *c, unsigned items_len)
   {
     TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    if (unlikely (!c->extend_min (this))) return_trace (false);
     c->check_assign (len, items_len, HB_SERIALIZE_ERROR_ARRAY_OVERFLOW);
-    if (unlikely (!c->extend (*this))) return_trace (false);
+    if (unlikely (!c->extend (this))) return_trace (false);
     return_trace (true);
   }
   template <typename Iterator,
@@ -667,7 +684,7 @@ struct ArrayOf
   {
     TRACE_SERIALIZE (this);
     len++;
-    if (unlikely (!len || !c->extend (*this)))
+    if (unlikely (!len || !c->extend (this)))
     {
       len--;
       return_trace (nullptr);
@@ -690,10 +707,10 @@ struct ArrayOf
   {
     TRACE_SANITIZE (this);
     if (unlikely (!sanitize_shallow (c))) return_trace (false);
-    if (!sizeof... (Ts) && hb_is_trivially_copyable (Type)) return_trace (true);
+    if (!sizeof... (Ts) && std::is_trivially_copyable<Type>::value) return_trace (true);
     unsigned int count = len;
     for (unsigned int i = 0; i < count; i++)
-      if (unlikely (!c->dispatch (arrayZ[i], hb_forward<Ts> (ds)...)))
+      if (unlikely (!c->dispatch (arrayZ[i], std::forward<Ts> (ds)...)))
 	return_trace (false);
     return_trace (true);
   }
@@ -751,7 +768,7 @@ struct List16OfOffset16To : Array16OfOffset16To<Type>
   bool sanitize (hb_sanitize_context_t *c, Ts&&... ds) const
   {
     TRACE_SANITIZE (this);
-    return_trace (Array16OfOffset16To<Type>::sanitize (c, this, hb_forward<Ts> (ds)...));
+    return_trace (Array16OfOffset16To<Type>::sanitize (c, this, std::forward<Ts> (ds)...));
   }
 };
 
@@ -794,9 +811,9 @@ struct HeadlessArrayOf
   bool serialize (hb_serialize_context_t *c, unsigned int items_len)
   {
     TRACE_SERIALIZE (this);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    if (unlikely (!c->extend_min (this))) return_trace (false);
     c->check_assign (lenP1, items_len + 1, HB_SERIALIZE_ERROR_ARRAY_OVERFLOW);
-    if (unlikely (!c->extend (*this))) return_trace (false);
+    if (unlikely (!c->extend (this))) return_trace (false);
     return_trace (true);
   }
   template <typename Iterator,
@@ -818,10 +835,10 @@ struct HeadlessArrayOf
   {
     TRACE_SANITIZE (this);
     if (unlikely (!sanitize_shallow (c))) return_trace (false);
-    if (!sizeof... (Ts) && hb_is_trivially_copyable (Type)) return_trace (true);
+    if (!sizeof... (Ts) && std::is_trivially_copyable<Type>::value) return_trace (true);
     unsigned int count = get_length ();
     for (unsigned int i = 0; i < count; i++)
-      if (unlikely (!c->dispatch (arrayZ[i], hb_forward<Ts> (ds)...)))
+      if (unlikely (!c->dispatch (arrayZ[i], std::forward<Ts> (ds)...)))
 	return_trace (false);
     return_trace (true);
   }
@@ -867,10 +884,10 @@ struct ArrayOfM1
   {
     TRACE_SANITIZE (this);
     if (unlikely (!sanitize_shallow (c))) return_trace (false);
-    if (!sizeof... (Ts) && hb_is_trivially_copyable (Type)) return_trace (true);
+    if (!sizeof... (Ts) && std::is_trivially_copyable<Type>::value) return_trace (true);
     unsigned int count = lenM1 + 1;
     for (unsigned int i = 0; i < count; i++)
-      if (unlikely (!c->dispatch (arrayZ[i], hb_forward<Ts> (ds)...)))
+      if (unlikely (!c->dispatch (arrayZ[i], std::forward<Ts> (ds)...)))
 	return_trace (false);
     return_trace (true);
   }
@@ -937,7 +954,7 @@ struct SortedArrayOf : ArrayOf<Type, LenType>
   { return *as_array ().bsearch (x, &not_found); }
   template <typename T>
   bool bfind (const T &x, unsigned int *i = nullptr,
-	      hb_bfind_not_found_t not_found = HB_BFIND_NOT_FOUND_DONT_STORE,
+	      hb_not_found_t not_found = HB_NOT_FOUND_DONT_STORE,
 	      unsigned int to_store = (unsigned int) -1) const
   { return as_array ().bfind (x, i, not_found, to_store); }
 };
@@ -1053,10 +1070,10 @@ struct VarSizedBinSearchArrayOf
   {
     TRACE_SANITIZE (this);
     if (unlikely (!sanitize_shallow (c))) return_trace (false);
-    if (!sizeof... (Ts) && hb_is_trivially_copyable (Type)) return_trace (true);
+    if (!sizeof... (Ts) && std::is_trivially_copyable<Type>::value) return_trace (true);
     unsigned int count = get_length ();
     for (unsigned int i = 0; i < count; i++)
-      if (unlikely (!(*this)[i].sanitize (c, hb_forward<Ts> (ds)...)))
+      if (unlikely (!(*this)[i].sanitize (c, std::forward<Ts> (ds)...)))
 	return_trace (false);
     return_trace (true);
   }

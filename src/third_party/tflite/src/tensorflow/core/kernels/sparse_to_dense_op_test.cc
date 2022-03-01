@@ -74,9 +74,9 @@ TEST_F(SparseToDenseTest, OneD_OneValue_int64_double) {
   MakeOp(1, DT_INT64, DT_DOUBLE);
 
   // sparse_indices
-  AddInputFromArray<int64>(TensorShape({3}), {1, 3, 4});
+  AddInputFromArray<int64_t>(TensorShape({3}), {1, 3, 4});
   // output_shape
-  AddInputFromArray<int64>(TensorShape({1}), {5});
+  AddInputFromArray<int64_t>(TensorShape({1}), {5});
   // sparse_values
   AddInputFromArray<double>(TensorShape({}), {2});
   // default_value
@@ -198,9 +198,11 @@ TEST_F(SparseToDenseTest, ThreeD_MultValues) {
 
 }  // namespace
 
-static void BM_SparseToDense(int iters, int NDIM, int N) {
+static void BM_SparseToDense(::testing::benchmark::State& state) {
+  const int NDIM = state.range(0);
+  const int N = state.range(1);
+
   // TODO(zhifengc): Switch to use kernel_benchmark_testlib.h
-  tensorflow::testing::StopTiming();
 
   const int IndexDim = (NDIM == 1) ? 0 : 1;
 
@@ -219,7 +221,7 @@ static void BM_SparseToDense(int iters, int NDIM, int N) {
     output_shape_t(d) = (d == IndexDim) ? N : 3;
   }
 
-  auto sparse_indices_t = sparse_indices.matrix<int64>();
+  auto sparse_indices_t = sparse_indices.matrix<int64_t>();
   for (int n = 0; n < N; ++n) {
     for (int d = 0; d < NDIM; ++d)
       sparse_indices_t(n, d) = (d == IndexDim) ? n : 0;
@@ -253,18 +255,15 @@ static void BM_SparseToDense(int iters, int NDIM, int N) {
 
   std::unique_ptr<OpKernelContext> sparse_context(new OpKernelContext(&params));
   op->Compute(sparse_context.get());
-  tensorflow::testing::StartTiming();
-  for (int i = 0; i < iters; ++i) {
+  for (auto s : state) {
     delete sparse_context->release_output(0).tensor;
     op->Compute(sparse_context.get());
     TF_ASSERT_OK(sparse_context->status());
   }
-  tensorflow::testing::StopTiming();
 
   // processing input, mainly
-  int64 bytes_per_iter = static_cast<int64>((N + N * NDIM) * sizeof(float));
-
-  tensorflow::testing::BytesProcessed(bytes_per_iter * iters);
+  int64_t bytes_per_iter = static_cast<int64_t>((N + N * NDIM) * sizeof(float));
+  state.SetBytesProcessed(bytes_per_iter * state.iterations());
 }
 
 BENCHMARK(BM_SparseToDense)

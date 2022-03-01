@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/arc/arc_features_parser.h"
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/base64url.h"
 #include "base/files/file_path.h"
@@ -20,9 +21,9 @@
 #include "chrome/browser/ash/login/screens/recommend_apps/recommend_apps_fetcher.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/arc/arc_features_parser.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
+#include "gpu/config/gpu_info.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -68,6 +69,10 @@ class TestCrosDisplayConfig : public mojom::CrosDisplayConfigController {
   explicit TestCrosDisplayConfig(
       mojo::PendingReceiver<mojom::CrosDisplayConfigController> receiver)
       : receiver_(this, std::move(receiver)) {}
+
+  TestCrosDisplayConfig(const TestCrosDisplayConfig&) = delete;
+  TestCrosDisplayConfig& operator=(const TestCrosDisplayConfig&) = delete;
+
   ~TestCrosDisplayConfig() override = default;
 
   void Flush() {
@@ -117,8 +122,6 @@ class TestCrosDisplayConfig : public mojom::CrosDisplayConfigController {
   mojo::Receiver<mojom::CrosDisplayConfigController> receiver_;
 
   GetDisplayUnitInfoListCallback get_display_unit_info_list_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCrosDisplayConfig);
 };
 
 // Helper class to extract relevant information from the app list request
@@ -1359,6 +1362,21 @@ TEST_F(RecommendAppsFetcherImplTest, FailureOnRetry) {
 
   EXPECT_EQ(FakeRecommendAppsFetcherDelegate::Result::PARSE_ERROR,
             delegate_.WaitForResult());
+}
+
+TEST_F(RecommendAppsFetcherImplTest, GpuInfo) {
+  ASSERT_TRUE(recommend_apps_fetcher_);
+
+  gpu::GPUInfo gpu_info;
+  gpu_info.gl_version = "OpenGL ES 3.2 Mesa 21.2.3";
+  gpu_info.gl_renderer = "Mesa DRI";
+  gpu_info.gl_extensions =
+      "GL_EXT_texture_format_BGRA8888 GL_EXT_read_format_bgra";
+
+  RecommendAppsFetcherImpl::ScopedGpuInfoForTest scoped(&gpu_info);
+
+  // `gpu_info` should be parsed without causing use-after-free.
+  recommend_apps_fetcher_->Start();
 }
 
 }  // namespace ash

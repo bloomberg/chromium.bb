@@ -10,12 +10,14 @@ import android.os.SystemClock;
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.build.BuildConfig;
+import org.chromium.components.variations.VariationsSwitches;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,13 +50,17 @@ public class VariationsSeedFetcher {
     private static final int READ_TIMEOUT = 3000; // time in ms
     private static final int REQUEST_TIMEOUT = 1000; // time in ms
 
+    @VisibleForTesting
+    public static final String SEED_FETCH_RESULT_HISTOGRAM = "Variations.FirstRun.SeedFetchResult";
+
     // Values for the "Variations.FirstRun.SeedFetchResult" sparse histogram, which also logs
     // HTTP result codes. These are negative so that they don't conflict with the HTTP codes.
     // These values should not be renumbered or re-used since they are logged to UMA.
     private static final int SEED_FETCH_RESULT_INVALID_DATE_HEADER = -4;
     private static final int SEED_FETCH_RESULT_UNKNOWN_HOST_EXCEPTION = -3;
     private static final int SEED_FETCH_RESULT_TIMEOUT = -2;
-    private static final int SEED_FETCH_RESULT_IOEXCEPTION = -1;
+    @VisibleForTesting
+    public static final int SEED_FETCH_RESULT_IOEXCEPTION = -1;
 
     @VisibleForTesting
     static final String VARIATIONS_INITIALIZED_PREF = "variations_initialized";
@@ -117,6 +123,12 @@ public class VariationsSeedFetcher {
         if (milestone != null && !milestone.isEmpty()) {
             urlString += "&milestone=" + milestone;
         }
+
+        String forcedChannel = CommandLine.getInstance().getSwitchValue(
+                VariationsSwitches.FAKE_VARIATIONS_CHANNEL);
+        if (forcedChannel != null) {
+            channel = forcedChannel;
+        }
         if (channel != null && !channel.isEmpty()) {
             urlString += "&channel=" + channel;
         }
@@ -130,7 +142,8 @@ public class VariationsSeedFetcher {
     public static class SeedFetchInfo {
         // The result of the download, containing either an HTTP status code or a negative
         // value representing a specific error. This value is suitable for recording to the
-        // "Variations.FirstRun.SeedFetchResult" histogram.
+        // "Variations.FirstRun.SeedFetchResult" histogram. This is equal to
+        // HttpURLConnection.HTTP_OK if and only if the fetch succeeded.
         public int seedFetchResult;
 
         // Information about the seed that was downloaded. Null if the download failed.
@@ -184,7 +197,6 @@ public class VariationsSeedFetcher {
 
             SeedFetchInfo fetchInfo =
                     downloadContent(VariationsPlatform.ANDROID, restrictMode, milestone, channel);
-            recordFetchResultOrCode(fetchInfo.seedFetchResult);
             if (fetchInfo.seedInfo != null) {
                 SeedInfo info = fetchInfo.seedInfo;
                 VariationsSeedBridge.setVariationsFirstRunSeed(info.seedData, info.signature,
@@ -196,7 +208,7 @@ public class VariationsSeedFetcher {
     }
 
     private void recordFetchResultOrCode(int resultOrCode) {
-        RecordHistogram.recordSparseHistogram("Variations.FirstRun.SeedFetchResult", resultOrCode);
+        RecordHistogram.recordSparseHistogram(SEED_FETCH_RESULT_HISTOGRAM, resultOrCode);
     }
 
     private void recordSeedFetchTime(long timeDeltaMillis) {
@@ -232,22 +244,21 @@ public class VariationsSeedFetcher {
             connection.connect();
             int responseCode = connection.getResponseCode();
             fetchInfo.seedFetchResult = responseCode;
-            if (responseCode != HttpURLConnection.HTTP_OK) {
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                recordSeedConnectTime(SystemClock.elapsedRealtime() - startTimeMillis);
+
+                SeedInfo seedInfo = new SeedInfo();
+                seedInfo.seedData = getRawSeed(connection);
+                seedInfo.signature = getHeaderFieldOrEmpty(connection, "X-Seed-Signature");
+                seedInfo.country = getHeaderFieldOrEmpty(connection, "X-Country");
+                seedInfo.date = new Date().getTime();
+                seedInfo.isGzipCompressed = getHeaderFieldOrEmpty(connection, "IM").equals("gzip");
+                recordSeedFetchTime(SystemClock.elapsedRealtime() - startTimeMillis);
+                fetchInfo.seedInfo = seedInfo;
+            } else {
                 String errorMsg = "Non-OK response code = " + responseCode;
                 Log.w(TAG, errorMsg);
-                throw new IOException(errorMsg);
             }
-
-            recordSeedConnectTime(SystemClock.elapsedRealtime() - startTimeMillis);
-
-            SeedInfo seedInfo = new SeedInfo();
-            seedInfo.seedData = getRawSeed(connection);
-            seedInfo.signature = getHeaderFieldOrEmpty(connection, "X-Seed-Signature");
-            seedInfo.country = getHeaderFieldOrEmpty(connection, "X-Country");
-            seedInfo.date = new Date().getTime();
-            seedInfo.isGzipCompressed = getHeaderFieldOrEmpty(connection, "IM").equals("gzip");
-            recordSeedFetchTime(SystemClock.elapsedRealtime() - startTimeMillis);
-            fetchInfo.seedInfo = seedInfo;
         } catch (SocketTimeoutException e) {
             fetchInfo.seedFetchResult = SEED_FETCH_RESULT_TIMEOUT;
             Log.w(TAG, "SocketTimeoutException timeout when fetching variations seed.", e);
@@ -261,6 +272,7 @@ public class VariationsSeedFetcher {
             if (connection != null) {
                 connection.disconnect();
             }
+            recordFetchResultOrCode(fetchInfo.seedFetchResult);
             return fetchInfo;
         }
     }

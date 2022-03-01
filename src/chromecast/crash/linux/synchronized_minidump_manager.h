@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/values.h"
 #include "chromecast/crash/linux/dump_info.h"
 
@@ -48,6 +47,10 @@ class SynchronizedMinidumpManager {
 
   // Number of dumps allowed per period.
   static const int kRatelimitPeriodMaxDumps;
+
+  SynchronizedMinidumpManager(const SynchronizedMinidumpManager&) = delete;
+  SynchronizedMinidumpManager& operator=(const SynchronizedMinidumpManager&) =
+      delete;
 
   virtual ~SynchronizedMinidumpManager();
 
@@ -143,8 +146,6 @@ class SynchronizedMinidumpManager {
   int lockfile_fd_;
   std::unique_ptr<base::Value> metadata_;
   std::unique_ptr<base::ListValue> dumps_;
-
-  DISALLOW_COPY_AND_ASSIGN(SynchronizedMinidumpManager);
 };
 
 }  // namespace chromecast

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/web_applications/preinstalled_web_apps/google_chat.h"
 
-#include "chrome/browser/web_applications/components/preinstalled_app_install_features.h"
-
 namespace web_app {
 
 ExternalInstallOptions GetConfigForGoogleChat() {
@@ -16,10 +14,8 @@ ExternalInstallOptions GetConfigForGoogleChat() {
       /*install_source=*/ExternalInstallSource::kExternalDefault);
 
   // Exclude managed users until we have a way for admins to block the app.
-  options.user_type_allowlist = {"unmanaged", "child"};
-  options.gate_on_feature = kDefaultChatWebApp.name;
+  options.user_type_allowlist = {"unmanaged"};
   options.only_for_new_users = true;
-  options.add_to_quick_launch_bar = false;
 
   return options;
 }

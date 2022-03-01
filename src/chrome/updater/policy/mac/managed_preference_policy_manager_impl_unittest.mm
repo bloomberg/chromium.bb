@@ -4,6 +4,7 @@
 
 #include "chrome/updater/policy/mac/managed_preference_policy_manager_impl.h"
 
+#include "base/enterprise_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/updater/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,15 +34,15 @@ TEST(CRUManagedPreferencePolicyManagerTest, TestPolicyValues) {
       [[CRUManagedPreferencePolicyManager alloc]
           initWithDictionary:policyDict]);
   EXPECT_NSEQ([policyManager source], @"ManagedPreference");
-  EXPECT_TRUE([policyManager managed]);
+  EXPECT_EQ([policyManager managed], base::IsMachineExternallyManaged());
 
   // Verify global level policies.
   EXPECT_EQ([policyManager lastCheckPeriodMinutes], kPolicyNotSet);
   EXPECT_EQ([policyManager defaultUpdatePolicy], kPolicyDisabled);
   EXPECT_NSEQ([policyManager downloadPreference], @"cacheable");
-  EXPECT_EQ([policyManager updatesSuppressed].start_hour, 12);
-  EXPECT_EQ([policyManager updatesSuppressed].start_minute, 15);
-  EXPECT_EQ([policyManager updatesSuppressed].duration_minute, 30);
+  EXPECT_EQ([policyManager updatesSuppressed].start_hour_, 12);
+  EXPECT_EQ([policyManager updatesSuppressed].start_minute_, 15);
+  EXPECT_EQ([policyManager updatesSuppressed].duration_minute_, 30);
   EXPECT_EQ([policyManager proxyMode], nil);
   EXPECT_EQ([policyManager proxyServer], nil);
   EXPECT_EQ([policyManager proxyPacURL], nil);
@@ -77,15 +78,15 @@ TEST(CRUManagedPreferencePolicyManagerTest, TestNoGlobalPolicy) {
       [[CRUManagedPreferencePolicyManager alloc]
           initWithDictionary:policyDict]);
   EXPECT_NSEQ([policyManager source], @"ManagedPreference");
-  EXPECT_TRUE([policyManager managed]);
+  EXPECT_EQ([policyManager managed], base::IsMachineExternallyManaged());
 
   // Verify global level policies are set to default.
   EXPECT_EQ([policyManager lastCheckPeriodMinutes], kPolicyNotSet);
   EXPECT_EQ([policyManager defaultUpdatePolicy], kPolicyNotSet);
   EXPECT_NSEQ([policyManager downloadPreference], nil);
-  EXPECT_EQ([policyManager updatesSuppressed].start_hour, kPolicyNotSet);
-  EXPECT_EQ([policyManager updatesSuppressed].start_minute, kPolicyNotSet);
-  EXPECT_EQ([policyManager updatesSuppressed].duration_minute, kPolicyNotSet);
+  EXPECT_EQ([policyManager updatesSuppressed].start_hour_, kPolicyNotSet);
+  EXPECT_EQ([policyManager updatesSuppressed].start_minute_, kPolicyNotSet);
+  EXPECT_EQ([policyManager updatesSuppressed].duration_minute_, kPolicyNotSet);
   EXPECT_EQ([policyManager proxyMode], nil);
   EXPECT_EQ([policyManager proxyServer], nil);
   EXPECT_EQ([policyManager proxyPacURL], nil);
@@ -116,15 +117,15 @@ TEST(CRUManagedPreferencePolicyManagerTest, TestInvalidPolicyValues) {
       [[CRUManagedPreferencePolicyManager alloc]
           initWithDictionary:policyDict]);
   EXPECT_NSEQ([policyManager source], @"ManagedPreference");
-  EXPECT_TRUE([policyManager managed]);
+  EXPECT_EQ([policyManager managed], base::IsMachineExternallyManaged());
 
   // Verify global level policies.
   EXPECT_EQ([policyManager lastCheckPeriodMinutes], kPolicyNotSet);
   EXPECT_EQ([policyManager defaultUpdatePolicy], kPolicyNotSet);
   EXPECT_EQ([policyManager downloadPreference], nil);
-  EXPECT_EQ([policyManager updatesSuppressed].start_hour, kPolicyNotSet);
-  EXPECT_EQ([policyManager updatesSuppressed].start_minute, kPolicyNotSet);
-  EXPECT_EQ([policyManager updatesSuppressed].duration_minute, kPolicyNotSet);
+  EXPECT_EQ([policyManager updatesSuppressed].start_hour_, kPolicyNotSet);
+  EXPECT_EQ([policyManager updatesSuppressed].start_minute_, kPolicyNotSet);
+  EXPECT_EQ([policyManager updatesSuppressed].duration_minute_, kPolicyNotSet);
   EXPECT_EQ([policyManager proxyMode], nil);
   EXPECT_EQ([policyManager proxyServer], nil);
   EXPECT_EQ([policyManager proxyPacURL], nil);

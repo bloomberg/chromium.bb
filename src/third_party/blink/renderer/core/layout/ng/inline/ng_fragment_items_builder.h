@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_FRAGMENT_ITEMS_BUILDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_FRAGMENT_ITEMS_BUILDER_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_logical_line_item.h"
@@ -69,6 +70,9 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   // |NGFragmentItemsBuilder| allocates new instance for each line, and keeps
   // them alive until |AddLine|.
   NGLogicalLineItems* AcquireLogicalLineItems();
+  void ReleaseCurrentLogicalLineItems();
+  const NGLogicalLineItems& LogicalLineItems(
+      const NGPhysicalLineBoxFragment&) const;
   void AssociateLogicalLineItems(NGLogicalLineItems* line_items,
                                  const NGPhysicalFragment& line_fragment);
   void AddLine(const NGPhysicalLineBoxFragment& line,
@@ -141,7 +145,6 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   void ToFragmentItems(const PhysicalSize& outer_size, void* data);
 
  private:
-  void ReleaseCurrentLogicalLineItems();
   void MoveCurrentLogicalLineItemsToMap();
 
   void AddItems(NGLogicalLineItem* child_begin, NGLogicalLineItem* child_end);

@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
@@ -29,14 +29,15 @@ class TestPredicate : public ContentPredicate {
       : evaluator_(evaluator) {
   }
 
+  TestPredicate(const TestPredicate&) = delete;
+  TestPredicate& operator=(const TestPredicate&) = delete;
+
   ContentPredicateEvaluator* GetEvaluator() const override {
     return evaluator_;
   }
 
  private:
-  ContentPredicateEvaluator* evaluator_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPredicate);
+  raw_ptr<ContentPredicateEvaluator> evaluator_;
 };
 
 class TestPredicateEvaluator : public ContentPredicateEvaluator {
@@ -46,6 +47,9 @@ class TestPredicateEvaluator : public ContentPredicateEvaluator {
         contents_for_next_operation_evaluation_(nullptr),
         next_evaluation_result_(false) {
   }
+
+  TestPredicateEvaluator(const TestPredicateEvaluator&) = delete;
+  TestPredicateEvaluator& operator=(const TestPredicateEvaluator&) = delete;
 
   std::string GetPredicateApiAttributeName() const override {
     return "test_predicate";
@@ -112,11 +116,9 @@ class TestPredicateEvaluator : public ContentPredicateEvaluator {
     contents_for_next_operation_evaluation_ = nullptr;
   }
 
-  ContentPredicateEvaluator::Delegate* delegate_;
-  content::WebContents* contents_for_next_operation_evaluation_;
+  raw_ptr<ContentPredicateEvaluator::Delegate> delegate_;
+  raw_ptr<content::WebContents> contents_for_next_operation_evaluation_;
   mutable bool next_evaluation_result_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPredicateEvaluator);
 };
 
 // Create the test evaluator and set |evaluator| to its pointer.
@@ -135,6 +137,11 @@ class DeclarativeChromeContentRulesRegistryTest : public testing::Test {
  public:
   DeclarativeChromeContentRulesRegistryTest() {}
 
+  DeclarativeChromeContentRulesRegistryTest(
+      const DeclarativeChromeContentRulesRegistryTest&) = delete;
+  DeclarativeChromeContentRulesRegistryTest& operator=(
+      const DeclarativeChromeContentRulesRegistryTest&) = delete;
+
  protected:
   TestExtensionEnvironment* env() { return &env_; }
 
@@ -143,8 +150,6 @@ class DeclarativeChromeContentRulesRegistryTest : public testing::Test {
 
   // Must come after |env_| so only one UI MessageLoop is created.
   content::RenderViewHostTestEnabler rvh_enabler_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeChromeContentRulesRegistryTest);
 };
 
 TEST_F(DeclarativeChromeContentRulesRegistryTest, ActiveRulesDoesntGrow) {

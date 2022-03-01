@@ -41,9 +41,9 @@ bool FrameRateEquals(double a, double b) {
 
 }  // namespace
 
-bool Resolution::ParseAndValidate(const Json::Value& root, Resolution* out) {
-  if (!json::ParseAndValidateInt(root[kWidth], &(out->width)) ||
-      !json::ParseAndValidateInt(root[kHeight], &(out->height))) {
+bool Resolution::TryParse(const Json::Value& root, Resolution* out) {
+  if (!json::TryParseInt(root[kWidth], &(out->width)) ||
+      !json::TryParseInt(root[kHeight], &(out->height))) {
     return false;
   }
   return out->IsValid();
@@ -70,12 +70,15 @@ bool Resolution::operator!=(const Resolution& other) const {
   return !(*this == other);
 }
 
-bool Dimensions::ParseAndValidate(const Json::Value& root, Dimensions* out) {
-  if (!json::ParseAndValidateInt(root[kWidth], &(out->width)) ||
-      !json::ParseAndValidateInt(root[kHeight], &(out->height)) ||
+bool Resolution::IsSupersetOf(const Resolution& other) const {
+  return width >= other.width && height >= other.height;
+}
+
+bool Dimensions::TryParse(const Json::Value& root, Dimensions* out) {
+  if (!json::TryParseInt(root[kWidth], &(out->width)) ||
+      !json::TryParseInt(root[kHeight], &(out->height)) ||
       !(root[kFrameRate].isNull() ||
-        json::ParseAndValidateSimpleFraction(root[kFrameRate],
-                                             &(out->frame_rate)))) {
+        json::TryParseSimpleFraction(root[kFrameRate], &(out->frame_rate)))) {
     return false;
   }
   return out->IsValid();
@@ -103,6 +106,16 @@ bool Dimensions::operator==(const Dimensions& other) const {
 
 bool Dimensions::operator!=(const Dimensions& other) const {
   return !(*this == other);
+}
+
+bool Dimensions::IsSupersetOf(const Dimensions& other) const {
+  if (static_cast<double>(frame_rate) !=
+      static_cast<double>(other.frame_rate)) {
+    return static_cast<double>(frame_rate) >=
+           static_cast<double>(other.frame_rate);
+  }
+
+  return ToResolution().IsSupersetOf(other.ToResolution());
 }
 
 }  // namespace cast

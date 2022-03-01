@@ -66,7 +66,7 @@ void fatal(const char *fmt, ...) {
   exit(EXIT_FAILURE);
 }
 
-void warn(const char *fmt, ...) { LOG_ERROR("Warning"); }
+void aom_tools_warn(const char *fmt, ...) { LOG_ERROR("Warning"); }
 
 void die_codec(aom_codec_ctx_t *ctx, const char *s) {
   const char *detail = aom_codec_error_detail(ctx);

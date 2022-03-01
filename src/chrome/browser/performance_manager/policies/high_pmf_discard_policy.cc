@@ -5,17 +5,21 @@
 #include "chrome/browser/performance_manager/policies/high_pmf_discard_policy.h"
 
 #include "base/bind.h"
-#include "base/memory/memory_pressure_monitor.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/process/process_metrics.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/performance_manager/policies/page_discarding_helper.h"
 #include "chrome/browser/performance_manager/policies/policy_features.h"
 #include "components/performance_manager/public/graph/process_node.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+
+#if !defined(OS_LINUX)
+#include "base/memory/memory_pressure_monitor.h"
+#endif
 
 namespace performance_manager {
 namespace policies {
@@ -88,24 +92,25 @@ void HighPMFDiscardPolicy::OnProcessMemoryMetricsAvailable(
   // (the maximum value for the histograms).
   if ((!should_discard && discard_attempts_count_while_pmf_is_high_) ||
       discard_attempts_count_while_pmf_is_high_ == 100) {
-    UMA_HISTOGRAM_COUNTS_100("Discarding.HighPMFPolicy.DiscardAttemptsCount",
-                             discard_attempts_count_while_pmf_is_high_);
-    UMA_HISTOGRAM_COUNTS_100("Discarding.HighPMFPolicy.SuccessfulDiscardsCount",
-                             successful_discards_count_while_pmf_is_high_);
+    base::UmaHistogramCounts100("Discarding.HighPMFPolicy.DiscardAttemptsCount",
+                                discard_attempts_count_while_pmf_is_high_);
+    base::UmaHistogramCounts100(
+        "Discarding.HighPMFPolicy.SuccessfulDiscardsCount",
+        successful_discards_count_while_pmf_is_high_);
     discard_attempts_count_while_pmf_is_high_ = 0;
     successful_discards_count_while_pmf_is_high_ = 0;
   }
 
   // Reports the metrics for the previous intervention if necessary.
   if (intervention_details_.has_value()) {
-    UMA_HISTOGRAM_BOOLEAN("Discarding.HighPMFPolicy.DiscardSuccess",
-                          intervention_details_->a_tab_has_been_discarded);
+    base::UmaHistogramBoolean("Discarding.HighPMFPolicy.DiscardSuccess",
+                              intervention_details_->a_tab_has_been_discarded);
 
     if (intervention_details_->a_tab_has_been_discarded) {
       // Report the total PMF delta as an integer as the total PMF might have
       // increased. Negative values (increase of memory) are reported as 0 and
       // go into the underflow bucket.
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
+      base::UmaHistogramCustomCounts(
           "Discarding.HighPMFPolicy.MemoryReclaimedKbAfterDiscardingATab",
           std::max(0, intervention_details_->total_pmf_kb_before_intervention -
                           total_pmf_kb),
@@ -117,13 +122,15 @@ void HighPMFDiscardPolicy::OnProcessMemoryMetricsAvailable(
 
   if (should_discard) {
     discard_attempt_in_progress_ = true;
+#if !defined(OS_LINUX)
     // Record the memory pressure level before discarding a tab.
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce([]() {
-          UMA_HISTOGRAM_ENUMERATION(
+          base::UmaHistogramEnumeration(
               "Discarding.HighPMFPolicy.MemoryPressureLevel",
               base::MemoryPressureMonitor::Get()->GetCurrentPressureLevel());
         }));
+#endif
     intervention_details_.emplace(
         InterventionDetails{.total_pmf_kb_before_intervention = total_pmf_kb});
     PageDiscardingHelper::GetFromGraph(graph_)->UrgentlyDiscardAPage(

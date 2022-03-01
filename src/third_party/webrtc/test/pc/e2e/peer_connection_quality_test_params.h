@@ -67,12 +67,15 @@ struct PeerConnectionFactoryComponents {
 // so client can't inject its own. Also only network manager can be overridden
 // inside port allocator.
 struct PeerConnectionComponents {
-  explicit PeerConnectionComponents(rtc::NetworkManager* network_manager)
-      : network_manager(network_manager) {
+  PeerConnectionComponents(rtc::NetworkManager* network_manager,
+                           rtc::PacketSocketFactory* packet_socket_factory)
+      : network_manager(network_manager),
+        packet_socket_factory(packet_socket_factory) {
     RTC_CHECK(network_manager);
   }
 
   rtc::NetworkManager* const network_manager;
+  rtc::PacketSocketFactory* const packet_socket_factory;
   std::unique_ptr<webrtc::AsyncResolverFactory> async_resolver_factory;
   std::unique_ptr<rtc::RTCCertificateGeneratorInterface> cert_generator;
   std::unique_ptr<rtc::SSLCertificateVerifier> tls_cert_verifier;
@@ -82,12 +85,14 @@ struct PeerConnectionComponents {
 // Contains all components, that can be overridden in peer connection. Also
 // has a network thread, that will be used to communicate with another peers.
 struct InjectableComponents {
-  explicit InjectableComponents(rtc::Thread* network_thread,
-                                rtc::NetworkManager* network_manager)
+  InjectableComponents(rtc::Thread* network_thread,
+                       rtc::NetworkManager* network_manager,
+                       rtc::PacketSocketFactory* packet_socket_factory)
       : network_thread(network_thread),
         pcf_dependencies(std::make_unique<PeerConnectionFactoryComponents>()),
         pc_dependencies(
-            std::make_unique<PeerConnectionComponents>(network_manager)) {
+            std::make_unique<PeerConnectionComponents>(network_manager,
+                                                       packet_socket_factory)) {
     RTC_CHECK(network_thread);
   }
 
@@ -103,19 +108,21 @@ struct InjectableComponents {
 struct Params {
   // Peer name. If empty - default one will be set by the fixture.
   absl::optional<std::string> name;
-  // If |video_configs| is empty - no video should be added to the test call.
+  // If `video_configs` is empty - no video should be added to the test call.
   std::vector<PeerConnectionE2EQualityTestFixture::VideoConfig> video_configs;
-  // If |audio_config| is set audio stream will be configured
+  // If `audio_config` is set audio stream will be configured
   absl::optional<PeerConnectionE2EQualityTestFixture::AudioConfig> audio_config;
-  // If |rtc_event_log_path| is set, an RTCEventLog will be saved in that
+  // If `rtc_event_log_path` is set, an RTCEventLog will be saved in that
   // location and it will be available for further analysis.
   absl::optional<std::string> rtc_event_log_path;
-  // If |aec_dump_path| is set, an AEC dump will be saved in that location and
+  // If `aec_dump_path` is set, an AEC dump will be saved in that location and
   // it will be available for further analysis.
   absl::optional<std::string> aec_dump_path;
 
   PeerConnectionInterface::RTCConfiguration rtc_configuration;
   BitrateSettings bitrate_settings;
+  std::vector<PeerConnectionE2EQualityTestFixture::VideoCodecConfig>
+      video_codecs;
 };
 
 }  // namespace webrtc_pc_e2e

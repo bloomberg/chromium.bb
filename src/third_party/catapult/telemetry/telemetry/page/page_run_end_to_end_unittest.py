@@ -73,13 +73,13 @@ class ActualPageRunEndToEndTests(unittest.TestCase):
     test = Test()
     results = self.RunStorySet(test, story_set)
     self.assertFalse(results.benchmark_interrupted)
-    self.assertEquals(len(story_set), results.num_successful)
+    self.assertEqual(len(story_set), results.num_successful)
     # Browser is started once per story run, except in ChromeOS where a single
     # instance is reused for all stories.
     if test.platform_name == 'chromeos':
-      self.assertEquals(1, test.browser_starts)
+      self.assertEqual(1, test.browser_starts)
     else:
-      self.assertEquals(len(story_set), test.browser_starts)
+      self.assertEqual(len(story_set), test.browser_starts)
 
   @decorators.Disabled('chromeos')  # crbug.com/483212
   def testUserAgent(self):
@@ -133,7 +133,7 @@ class ActualPageRunEndToEndTests(unittest.TestCase):
     slow_page = page_module.Page(
         'file://green_rect.html', story_set, base_dir=util.GetUnittestDataDir(),
         name='slow',
-        traffic_setting=traffic_setting_module.GOOD_3G)
+        traffic_setting=traffic_setting_module.GPRS)
     fast_page = page_module.Page(
         'file://green_rect.html', story_set, base_dir=util.GetUnittestDataDir(),
         name='fast',
@@ -162,10 +162,18 @@ class ActualPageRunEndToEndTests(unittest.TestCase):
     self.assertFalse(results.had_failures)
     self.assertIn('slow', latencies_by_page_in_ms)
     self.assertIn('fast', latencies_by_page_in_ms)
-    # Slow page should be slower than fast page by at least 40 ms (roundtrip
-    # time of good 3G) - 2 ms (roundtrip time of Wifi)
+    slow_page_latency = traffic_setting_module.NETWORK_CONFIGS[
+        slow_page.traffic_setting].round_trip_latency_ms
+    fast_page_latency = traffic_setting_module.NETWORK_CONFIGS[
+        fast_page.traffic_setting].round_trip_latency_ms
+    # Slow page should be slower than fast page by at least (roundtrip
+    # time of slow network) - (roundtrip time of fast network).
+    # We add some safety margin and use |slow_page_latency/2| instead of
+    # |slow_page_latency|.
+    self.assertGreater(slow_page_latency/2, fast_page_latency)
     self.assertGreater(latencies_by_page_in_ms['slow'],
-                       latencies_by_page_in_ms['fast'] + 40 - 2)
+                       latencies_by_page_in_ms['fast'] +
+                       slow_page_latency/2 - fast_page_latency)
 
   # Ensure that story_runner allows the test to customize the browser
   # before it launches.
@@ -255,7 +263,7 @@ class ActualPageRunEndToEndTests(unittest.TestCase):
     results = self.RunStorySet(test, story_set)
 
     self.assertFalse(test.will_navigate_to_page_called)
-    self.assertEquals(1, results.num_expected)  # One expected skip.
+    self.assertEqual(1, results.num_expected)  # One expected skip.
     self.assertTrue(results.had_skips)
     self.assertFalse(results.had_failures)
 
@@ -318,8 +326,8 @@ class ActualPageRunEndToEndTests(unittest.TestCase):
 
     results = self.RunStorySet(DummyTest(), story_set, max_failures=1)
     self.assertTrue(results.benchmark_interrupted)
-    self.assertEquals(3, results.num_skipped)
-    self.assertEquals(2, results.num_failed)  # max_failures + 1
+    self.assertEqual(3, results.num_skipped)
+    self.assertEqual(2, results.num_failed)  # max_failures + 1
 
   def testWebPageReplay(self):
     story_set = example_domain.ExampleDomainPageSet()
@@ -344,10 +352,11 @@ class ActualPageRunEndToEndTests(unittest.TestCase):
     self.assertIn('Example Domain', body[1],
                   msg='URL: %s' % story_set.stories[1].url)
 
-    self.assertEquals(2, results.num_successful)
+    self.assertEqual(2, results.num_successful)
     self.assertFalse(results.had_failures)
 
   @decorators.Disabled('chromeos')  # crbug.com/1031074
+  @decorators.Disabled('win7')  # crbug.com/1260124
   def testScreenShotTakenForFailedPage(self):
     class FailingTestPage(page_module.Page):
       def RunNavigateSteps(self, action_runner):

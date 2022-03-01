@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
@@ -21,7 +21,6 @@
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
@@ -68,6 +67,11 @@ class CONTENT_EXPORT BackgroundFetchJobController
       uint64_t upload_total,
       ProgressCallback progress_callback,
       FinishedCallback finished_callback);
+
+  BackgroundFetchJobController(const BackgroundFetchJobController&) = delete;
+  BackgroundFetchJobController& operator=(const BackgroundFetchJobController&) =
+      delete;
+
   ~BackgroundFetchJobController() override;
 
   // Initializes the job controller with the status of the active and completed
@@ -78,7 +82,8 @@ class CONTENT_EXPORT BackgroundFetchJobController
       int total_downloads,
       std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
           active_fetch_requests,
-      bool start_paused);
+      bool start_paused,
+      absl::optional<net::IsolationInfo> isolation_info);
 
   // Gets the number of bytes downloaded/uploaded for jobs that are currently
   // running.
@@ -157,11 +162,11 @@ class CONTENT_EXPORT BackgroundFetchJobController
 
   // Manager for interacting with the DB. It is owned by the
   // BackgroundFetchContext.
-  BackgroundFetchDataManager* data_manager_;
+  raw_ptr<BackgroundFetchDataManager> data_manager_;
 
   // Proxy for interacting with the BackgroundFetchDelegate across thread
   // boundaries. It is owned by the BackgroundFetchContext.
-  BackgroundFetchDelegateProxy* delegate_proxy_;
+  raw_ptr<BackgroundFetchDelegateProxy> delegate_proxy_;
 
   // A map from the download GUID to the active request.
   std::map<std::string, scoped_refptr<BackgroundFetchRequestInfo>>
@@ -210,12 +215,14 @@ class CONTENT_EXPORT BackgroundFetchJobController
   blink::mojom::BackgroundFetchFailureReason failure_reason_ =
       blink::mojom::BackgroundFetchFailureReason::NONE;
 
+  // Whether one of the requests handled by the controller failed
+  // the CORS checks and should not have its response exposed.
+  bool has_failed_cors_request_ = false;
+
   // Custom callback that runs after the controller is finished.
   FinishedCallback finished_callback_;
 
   base::WeakPtrFactory<BackgroundFetchJobController> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundFetchJobController);
 };
 
 }  // namespace content

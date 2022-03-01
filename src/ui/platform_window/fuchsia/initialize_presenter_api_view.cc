@@ -13,9 +13,23 @@
 
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
+#include "base/no_destructor.h"
 
 namespace ui {
 namespace fuchsia {
+namespace {
+
+ScenicPresentViewCallback& GetScenicViewPresenterInternal() {
+  static base::NoDestructor<ScenicPresentViewCallback> view_presenter;
+  return *view_presenter;
+}
+
+FlatlandPresentViewCallback& GetFlatlandViewPresenterInternal() {
+  static base::NoDestructor<FlatlandPresentViewCallback> view_presenter;
+  return *view_presenter;
+}
+
+}  // namespace
 
 void InitializeViewTokenAndPresentView(
     ui::PlatformWindowInitProperties* window_properties_out) {
@@ -35,6 +49,37 @@ void InitializeViewTokenAndPresentView(
 
   presenter->PresentOrReplaceView(std::move(view_tokens.view_holder_token),
                                   nullptr);
+}
+
+void SetScenicViewPresenter(ScenicPresentViewCallback view_presenter) {
+  GetScenicViewPresenterInternal() = std::move(view_presenter);
+}
+
+const ScenicPresentViewCallback& GetScenicViewPresenter() {
+  return GetScenicViewPresenterInternal();
+}
+
+void SetFlatlandViewPresenter(FlatlandPresentViewCallback view_presenter) {
+  GetFlatlandViewPresenterInternal() = std::move(view_presenter);
+}
+
+const FlatlandPresentViewCallback& GetFlatlandViewPresenter() {
+  return GetFlatlandViewPresenterInternal();
+}
+
+void IgnorePresentCallsForTest() {
+  SetScenicViewPresenter(
+      base::BindRepeating([](::fuchsia::ui::views::ViewHolderToken view_holder,
+                             ::fuchsia::ui::views::ViewRef view_ref) {
+        DCHECK(view_holder.value);
+        DCHECK(view_ref.reference);
+        DVLOG(1) << "Present call ignored for test.";
+      }));
+  SetFlatlandViewPresenter(base::BindRepeating(
+      [](::fuchsia::ui::views::ViewportCreationToken viewport_creation_token) {
+        DCHECK(viewport_creation_token.value);
+        DVLOG(1) << "Present call ignored for test.";
+      }));
 }
 
 }  // namespace fuchsia

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/cxx17_backports.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -98,8 +99,8 @@ gfx::Rect AdjustClipRect(const gfx::Rect& clip_rect,
 
   // Clamp the x/y to be within the bounds of the picture.
   gfx::Rect out_rect;
-  out_rect.set_x(std::min(std::max(0, clip_rect.x()), picture_size.width()));
-  out_rect.set_y(std::min(std::max(0, clip_rect.y()), picture_size.height()));
+  out_rect.set_x(base::clamp(clip_rect.x(), 0, picture_size.width()));
+  out_rect.set_y(base::clamp(clip_rect.y(), 0, picture_size.height()));
 
   // Default the width/height to be that of the picture if no value was
   // provided.
@@ -141,6 +142,7 @@ absl::optional<SkBitmap> CreateBitmap(
           SkImageInfo::MakeN32Premul(clip_rect.width(), clip_rect.height()))) {
     return absl::nullopt;
   }
+
   SkCanvas canvas(bitmap, skia::LegacyDisplayGlobals::GetSkSurfaceProps());
   SkMatrix matrix;
   matrix.setScaleTranslate(scale_factor, scale_factor, -clip_rect.x(),
@@ -246,7 +248,7 @@ void PaintPreviewCompositorImpl::BitmapForSeparatedFrame(
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::TaskPriority::USER_VISIBLE, base::WithBaseSyncPrimitives(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&CreateBitmap, discardable_shared_memory_manager_,
                      frame_it->second.skp, clip_rect, scale_factor),
       base::BindOnce(
@@ -346,7 +348,7 @@ void PaintPreviewCompositorImpl::BitmapForMainFrame(
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::TaskPriority::USER_VISIBLE, base::WithBaseSyncPrimitives(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&CreateBitmap, discardable_shared_memory_manager_,
                      root_frame_, clip_rect, scale_factor),
       base::BindOnce(

@@ -13,10 +13,11 @@
 
 #include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "url/gurl.h"
 
@@ -43,6 +44,18 @@ extern const base::Feature kTranslateRecentTarget;
 // This allows the user to disable translate by using the
 // `--disable-features=Translate` command-line flag.
 extern const base::Feature kTranslate;
+
+// Whether to migrate the obsolete always-translate languages pref to the new
+// pref during object construction as a fix for crbug/1291356, which had
+// previously not been migrated at all on iOS. This also enables a more
+// conservative pref merging process that aims to merge in old always-translate
+// language values from the obsolete pref without conflicting with any values in
+// the new pref that may have been added.
+//
+// TODO(crbug/1291356): This base::Feature only exists to allow a less risky
+// merge into iOS M98. This base::Feature should be removed once it's no longer
+// relevant and the enabled behavior should become the only behavior.
+extern const base::Feature kMigrateAlwaysTranslateLanguagesFix;
 
 // Minimum number of times the user must accept a translation before we show
 // a shortcut to the "Always Translate" functionality.
@@ -104,6 +117,8 @@ class TranslatePrefs {
   static const char kPrefTranslateDeniedCount[];
   static const char kPrefTranslateIgnoredCount[];
   static const char kPrefTranslateAcceptedCount[];
+  // Deprecated 10/2021.
+  static const char kPrefAlwaysTranslateListDeprecated[];
 #if defined(OS_ANDROID) || defined(OS_IOS)
   static const char kPrefTranslateAutoAlwaysCount[];
   static const char kPrefTranslateAutoNeverCount[];
@@ -126,7 +141,16 @@ class TranslatePrefs {
 
   explicit TranslatePrefs(PrefService* user_prefs);
 
+  TranslatePrefs(const TranslatePrefs&) = delete;
+  TranslatePrefs& operator=(const TranslatePrefs&) = delete;
+
   ~TranslatePrefs();
+
+  // Some existing preferences do not follow inclusive naming. Existing
+  // preference names cannot be renamed since values are saved client side.
+  // Map these to inclusive alternatives to reduce references to those names in
+  // the rest of the code.
+  static std::string MapPreferenceName(const std::string& pref_name);
 
   // Checks if the "offer translate" (i.e. automatic translate bubble) feature
   // is enabled.
@@ -147,9 +171,21 @@ class TranslatePrefs {
 
   // Before adding to, removing from, or checking the block list the source
   // language is converted to its translate synonym.
+  // A blocked language will not be offered to be translated. All blocked
+  // languages form the "Never translate" list.
   bool IsBlockedLanguage(base::StringPiece source_language) const;
   void BlockLanguage(base::StringPiece source_language);
   void UnblockLanguage(base::StringPiece source_language);
+  // Returns the languages that should be blocked by default as a
+  // base::(List)Value.
+  static base::Value GetDefaultBlockedLanguages();
+  void ResetBlockedLanguagesToDefault();
+  // Prevent empty blocked languages by resetting them to the default value.
+  // (crbug.com/902354)
+  void ResetEmptyBlockedLanguagesToDefaults();
+  // Get the languages that for which translation should never be prompted
+  // formatted as Chrome language codes.
+  std::vector<std::string> GetNeverTranslateLanguages() const;
 
   // Adds the language to the language list at chrome://settings/languages.
   // If the param |force_blocked| is set to true, the language is added to the
@@ -233,10 +269,6 @@ class TranslatePrefs {
   // language codes.
   std::vector<std::string> GetAlwaysTranslateLanguages() const;
 
-  // Get the languages that for which translation should never be prompted
-  // formatted as Chrome language codes.
-  std::vector<std::string> GetNeverTranslateLanguages() const;
-
   // These methods are used to track how many times the user has denied the
   // translation for a specific language. (So we can present a UI to blocklist
   // that language if the user keeps denying translations).
@@ -276,6 +308,11 @@ class TranslatePrefs {
   // prompt was displayed to the user already.
   bool GetExplicitLanguageAskPromptShown() const;
   void SetExplicitLanguageAskPromptShown(bool shown);
+
+  // These methods are used to determine whether the app language prompt was
+  // displayed to the user already. Once shown it can not be unset.
+  bool GetAppLanguagePromptShown() const;
+  void SetAppLanguagePromptShown();
 #endif
 
   // Gets the full (policy-forced and user selected) language list from language
@@ -289,6 +326,8 @@ class TranslatePrefs {
                             base::StringPiece language);
   bool ShouldAutoTranslate(base::StringPiece source_language,
                            std::string* target_language);
+  // True if the detailed language settings are enabled for this user.
+  static bool IsDetailedLanguageSettingsEnabled();
 
   // Stores and retrieves the last-observed translate target language. Used to
   // determine which target language to offer in future. The translate target
@@ -316,11 +355,14 @@ class TranslatePrefs {
   // sites to a timestamp of the creation of this entry.
   void MigrateNeverPromptSites();
 
-  // Prevent empty blocked languages by resetting them to the default value.
-  // (crbug.com/902354)
-  void ResetEmptyBlockedLanguagesToDefaults();
-
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  static void RegisterProfilePrefsForMigration(
+      user_prefs::PrefRegistrySyncable* registry);
+
+  static void MigrateObsoleteProfilePrefs(PrefService* pref_service);
+
+  static void ClearObsoleteProfilePrefs(PrefService* pref_service);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest,
@@ -338,9 +380,10 @@ class TranslatePrefs {
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, MoveLanguageToTheTop);
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, MoveLanguageUp);
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, MoveLanguageDown);
+  FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, ResetBlockedLanguagesToDefault);
+  FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, MigrateNeverPromptSites);
   friend class TranslatePrefsTest;
 
-  void ResetBlockedLanguagesToDefault();
   void ClearNeverPromptSiteList();
   void ClearAlwaysTranslateLanguagePairs();
 
@@ -362,17 +405,11 @@ class TranslatePrefs {
   // accepted for a language, creating it if necessary.
   base::DictionaryValue* GetTranslationAcceptedCountDictionary() const;
 
-  // Returns the languages that should be blocked by default as a
-  // base::(List)Value.
-  static base::Value GetDefaultBlockedLanguages();
-
-  PrefService* prefs_;  // Weak.
+  raw_ptr<PrefService> prefs_;  // Weak.
 
   std::string country_;  // The country the app runs in.
 
   std::unique_ptr<language::LanguagePrefs> language_prefs_;
-
-  DISALLOW_COPY_AND_ASSIGN(TranslatePrefs);
 };
 
 }  // namespace translate

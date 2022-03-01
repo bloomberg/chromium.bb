@@ -18,6 +18,9 @@ limitations under the License.
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/tensor_testutil.h"
 #include "tensorflow/core/framework/types.h"
+#include "tensorflow/core/framework/variant.h"
+#include "tensorflow/core/framework/variant_encode_decode.h"
+#include "tensorflow/core/framework/variant_tensor_data.h"
 #include "tensorflow/core/kernels/ops_testutil.h"
 #include "tensorflow/core/kernels/ops_util.h"
 #include "tensorflow/core/lib/core/status_test_util.h"
@@ -55,7 +58,7 @@ TEST_F(AsStringGraphTest, Int8) {
 TEST_F(AsStringGraphTest, Int64) {
   TF_ASSERT_OK(Init(DT_INT64));
 
-  AddInputFromArray<int64>(TensorShape({3}), {-42, 0, 42});
+  AddInputFromArray<int64_t>(TensorShape({3}), {-42, 0, 42});
   TF_ASSERT_OK(RunOpKernel());
   Tensor expected(allocator(), DT_STRING, TensorShape({3}));
   test::FillValues<tstring>(&expected, {"-42", "0", "42"});
@@ -148,6 +151,25 @@ TEST_F(AsStringGraphTest, Bool) {
   test::ExpectTensorEqual<tstring>(expected, *GetOutput(0));
 }
 
+TEST_F(AsStringGraphTest, Variant) {
+  TF_ASSERT_OK(Init(DT_VARIANT));
+
+  AddInput(DT_VARIANT, TensorShape({4}));
+  auto inputs = mutable_input(0)->flat<Variant>();
+  inputs(0) = 2;
+  inputs(1) = 3;
+  inputs(2) = true;
+  inputs(3) = Tensor("hi");
+  TF_ASSERT_OK(RunOpKernel());
+  Tensor expected(allocator(), DT_STRING, TensorShape({4}));
+  test::FillValues<tstring>(
+      &expected, {"Variant<type: int value: 2>", "Variant<type: int value: 3>",
+                  "Variant<type: bool value: 1>",
+                  ("Variant<type: tensorflow::Tensor value: Tensor<type: string"
+                   " shape: [] values: hi>>")});
+  test::ExpectTensorEqual<tstring>(expected, *GetOutput(0));
+}
+
 TEST_F(AsStringGraphTest, String) {
   Status s = Init(DT_STRING);
   ASSERT_EQ(error::INVALID_ARGUMENT, s.code());
@@ -200,7 +222,7 @@ TEST_F(AsStringGraphTest, LongFill) {
 TEST_F(AsStringGraphTest, FillWithZero) {
   TF_ASSERT_OK(Init(DT_INT64, /*fill=*/"0", /*width=*/4));
 
-  AddInputFromArray<int64>(TensorShape({3}), {-42, 0, 42});
+  AddInputFromArray<int64_t>(TensorShape({3}), {-42, 0, 42});
   TF_ASSERT_OK(RunOpKernel());
   Tensor expected(allocator(), DT_STRING, TensorShape({3}));
   test::FillValues<tstring>(&expected, {"-042", "0000", "0042"});
@@ -210,7 +232,7 @@ TEST_F(AsStringGraphTest, FillWithZero) {
 TEST_F(AsStringGraphTest, FillWithSpace) {
   TF_ASSERT_OK(Init(DT_INT64, /*fill=*/" ", /*width=*/4));
 
-  AddInputFromArray<int64>(TensorShape({3}), {-42, 0, 42});
+  AddInputFromArray<int64_t>(TensorShape({3}), {-42, 0, 42});
   TF_ASSERT_OK(RunOpKernel());
   Tensor expected(allocator(), DT_STRING, TensorShape({3}));
   test::FillValues<tstring>(&expected, {" -42", "   0", "  42"});
@@ -220,7 +242,7 @@ TEST_F(AsStringGraphTest, FillWithSpace) {
 TEST_F(AsStringGraphTest, FillWithChar1) {
   TF_ASSERT_OK(Init(DT_INT64, /*fill=*/"-", /*width=*/4));
 
-  AddInputFromArray<int64>(TensorShape({3}), {-42, 0, 42});
+  AddInputFromArray<int64_t>(TensorShape({3}), {-42, 0, 42});
   TF_ASSERT_OK(RunOpKernel());
   Tensor expected(allocator(), DT_STRING, TensorShape({3}));
   test::FillValues<tstring>(&expected, {"-42 ", "0   ", "42  "});

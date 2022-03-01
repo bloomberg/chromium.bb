@@ -5,7 +5,7 @@
 #ifndef WEBLAYER_BROWSER_WEB_CONTENTS_VIEW_DELEGATE_IMPL_H_
 #define WEBLAYER_BROWSER_WEB_CONTENTS_VIEW_DELEGATE_IMPL_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 
 namespace content {
@@ -17,16 +17,19 @@ namespace weblayer {
 class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate {
  public:
   explicit WebContentsViewDelegateImpl(content::WebContents* web_contents);
+
+  WebContentsViewDelegateImpl(const WebContentsViewDelegateImpl&) = delete;
+  WebContentsViewDelegateImpl& operator=(const WebContentsViewDelegateImpl&) =
+      delete;
+
   ~WebContentsViewDelegateImpl() override;
 
   // WebContentsViewDelegate overrides.
-  void ShowContextMenu(content::RenderFrameHost* render_frame_host,
+  void ShowContextMenu(content::RenderFrameHost& render_frame_host,
                        const content::ContextMenuParams& params) override;
 
  private:
-  content::WebContents* web_contents_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsViewDelegateImpl);
+  raw_ptr<content::WebContents> web_contents_;
 };
 
 }  // namespace weblayer

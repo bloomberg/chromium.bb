@@ -25,19 +25,14 @@ SyncChangeProcessorWrapperForTest::SyncChangeProcessorWrapperForTest(
   DCHECK(wrapped);
 }
 
-SyncChangeProcessorWrapperForTest::~SyncChangeProcessorWrapperForTest() {}
+SyncChangeProcessorWrapperForTest::~SyncChangeProcessorWrapperForTest() =
+    default;
 
 absl::optional<ModelError>
 SyncChangeProcessorWrapperForTest::ProcessSyncChanges(
     const base::Location& from_here,
     const SyncChangeList& change_list) {
   return process_sync_changes_.Run(from_here, change_list);
-}
-
-SyncDataList SyncChangeProcessorWrapperForTest::GetAllSyncData(
-    ModelType type) const {
-  NOTREACHED();
-  return SyncDataList();
 }
 
 }  // namespace syncer

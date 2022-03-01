@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -23,6 +22,10 @@ namespace {
 class TestBadMessagesImpl : public TestBadMessages {
  public:
   TestBadMessagesImpl() = default;
+
+  TestBadMessagesImpl(const TestBadMessagesImpl&) = delete;
+  TestBadMessagesImpl& operator=(const TestBadMessagesImpl&) = delete;
+
   ~TestBadMessagesImpl() override = default;
 
   void Bind(PendingReceiver<TestBadMessages> receiver) {
@@ -55,8 +58,6 @@ class TestBadMessagesImpl : public TestBadMessages {
 
   ReportBadMessageCallback bad_message_callback_;
   mojo::Receiver<TestBadMessages> receiver_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TestBadMessagesImpl);
 };
 
 class ReportBadMessageTest : public BindingsTestBase {

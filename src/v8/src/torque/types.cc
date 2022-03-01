@@ -432,8 +432,10 @@ StructType::Classification StructType::ClassifyContents() const {
   Classification result = ClassificationFlag::kEmpty;
   for (const Field& struct_field : fields()) {
     const Type* field_type = struct_field.name_and_type.type;
-    if (field_type->IsSubtypeOf(TypeOracle::GetTaggedType())) {
-      result |= ClassificationFlag::kTagged;
+    if (field_type->IsSubtypeOf(TypeOracle::GetStrongTaggedType())) {
+      result |= ClassificationFlag::kStrongTagged;
+    } else if (field_type->IsSubtypeOf(TypeOracle::GetTaggedType())) {
+      result |= ClassificationFlag::kWeakTagged;
     } else if (auto field_as_struct = field_type->StructSupertype()) {
       result |= (*field_as_struct)->ClassifyContents();
     } else {
@@ -618,13 +620,13 @@ void ComputeSlotKindsHelper(std::vector<ObjectSlotKind>* slots,
     } else {
       ObjectSlotKind kind;
       if (type->IsSubtypeOf(TypeOracle::GetObjectType())) {
-        if (field.is_weak) {
+        if (field.custom_weak_marking) {
           kind = ObjectSlotKind::kCustomWeakPointer;
         } else {
           kind = ObjectSlotKind::kStrongPointer;
         }
       } else if (type->IsSubtypeOf(TypeOracle::GetTaggedType())) {
-        DCHECK(!field.is_weak);
+        DCHECK(!field.custom_weak_marking);
         kind = ObjectSlotKind::kMaybeObjectPointer;
       } else {
         kind = ObjectSlotKind::kNoPointer;
@@ -818,10 +820,10 @@ void ClassType::GenerateSliceAccessor(size_t field_index) {
   //   );
   // }
   //
-  // If the field has an unknown offset, and the previous field is named p, and
-  // an item in the previous field has size 4:
+  // If the field has an unknown offset, and the previous field is named p, is
+  // not const, and is of type PType with size 4:
   // FieldSliceClassNameFieldName(o: ClassName) {
-  //   const previous = %FieldSlice<ClassName>(o, "p");
+  //   const previous = %FieldSlice<ClassName, MutableSlice<PType>>(o, "p");
   //   return torque_internal::unsafe::New{Const,Mutable}Slice<FieldType>(
   //     /*object:*/ o,
   //     /*offset:*/ previous.offset + 4 * previous.length,
@@ -853,14 +855,21 @@ void ClassType::GenerateSliceAccessor(size_t field_index) {
     const Field* previous = GetFieldPreceding(field_index);
     DCHECK_NOT_NULL(previous);
 
-    // %FieldSlice<ClassName>(o, "p")
+    const Type* previous_slice_type =
+        previous->const_qualified
+            ? TypeOracle::GetConstSliceType(previous->name_and_type.type)
+            : TypeOracle::GetMutableSliceType(previous->name_and_type.type);
+
+    // %FieldSlice<ClassName, MutableSlice<PType>>(o, "p")
     Expression* previous_expression = MakeCallExpression(
-        MakeIdentifierExpression({"torque_internal"}, "%FieldSlice",
-                                 {MakeNode<PrecomputedTypeExpression>(this)}),
+        MakeIdentifierExpression(
+            {"torque_internal"}, "%FieldSlice",
+            {MakeNode<PrecomputedTypeExpression>(this),
+             MakeNode<PrecomputedTypeExpression>(previous_slice_type)}),
         {parameter, MakeNode<StringLiteralExpression>(
                         StringLiteralQuote(previous->name_and_type.name))});
 
-    // const previous = %FieldSlice<ClassName>(o, "p");
+    // const previous = %FieldSlice<ClassName, MutableSlice<PType>>(o, "p");
     Statement* define_previous =
         MakeConstDeclarationStatement("previous", previous_expression);
     statements.push_back(define_previous);
@@ -978,8 +987,8 @@ std::ostream& operator<<(std::ostream& os, const NameAndType& name_and_type) {
 
 std::ostream& operator<<(std::ostream& os, const Field& field) {
   os << field.name_and_type;
-  if (field.is_weak) {
-    os << " (weak)";
+  if (field.custom_weak_marking) {
+    os << " (custom weak)";
   }
   return os;
 }
@@ -1130,8 +1139,8 @@ std::tuple<size_t, std::string> Field::GetFieldSizeInformation() const {
     return *optional;
   }
   Error("fields of type ", *name_and_type.type, " are not (yet) supported")
-      .Position(pos);
-  return std::make_tuple(0, "#no size");
+      .Position(pos)
+      .Throw();
 }
 
 size_t Type::AlignmentLog2() const {

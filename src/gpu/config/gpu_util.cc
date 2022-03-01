@@ -263,6 +263,26 @@ GpuFeatureStatus Get2DCanvasFeatureStatus(
   return kGpuFeatureStatusEnabled;
 }
 
+GpuFeatureStatus GetCanvasOopRasterizationFeatureStatus(
+    const std::set<int>& blocklisted_features,
+    const base::CommandLine& command_line,
+    const GpuPreferences& gpu_preferences,
+    const GPUInfo& gpu_info) {
+  // Requires OOP rasterization
+  if (GetOopRasterizationFeatureStatus(blocklisted_features, command_line,
+                                       gpu_preferences,
+                                       gpu_info) != kGpuFeatureStatusEnabled) {
+    return kGpuFeatureStatusDisabled;
+  }
+
+  // Canvas OOP Rasterization on platforms that are not fully enabled is
+  // controlled by a finch experiment.
+  if (!base::FeatureList::IsEnabled(features::kCanvasOopRasterization))
+    return kGpuFeatureStatusDisabled;
+
+  return kGpuFeatureStatusEnabled;
+}
+
 GpuFeatureStatus GetAcceleratedVideoDecodeFeatureStatus(
     const std::set<int>& blocklisted_features,
     bool use_swift_shader) {
@@ -272,6 +292,19 @@ GpuFeatureStatus GetAcceleratedVideoDecodeFeatureStatus(
     return kGpuFeatureStatusEnabled;
   }
   if (blocklisted_features.count(GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE))
+    return kGpuFeatureStatusBlocklisted;
+  return kGpuFeatureStatusEnabled;
+}
+
+GpuFeatureStatus GetAcceleratedVideoEncodeFeatureStatus(
+    const std::set<int>& blocklisted_features,
+    bool use_swift_shader) {
+  if (use_swift_shader) {
+    // This is for testing only. Chrome should exercise the GPU accelerated
+    // path on top of SwiftShader driver.
+    return kGpuFeatureStatusEnabled;
+  }
+  if (blocklisted_features.count(GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE))
     return kGpuFeatureStatusBlocklisted;
   return kGpuFeatureStatusEnabled;
 }
@@ -317,6 +350,10 @@ void AdjustGpuFeatureStatusToWorkarounds(GpuFeatureInfo* gpu_feature_info) {
   if (gpu_feature_info->IsWorkaroundEnabled(DISABLE_D3D11) ||
       gpu_feature_info->IsWorkaroundEnabled(DISABLE_ES3_GL_CONTEXT)) {
     gpu_feature_info->status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2] =
+        kGpuFeatureStatusBlocklisted;
+  }
+  if (gpu_feature_info->IsWorkaroundEnabled(DISABLE_CANVAS_OOP_RASTERIZATION)) {
+    gpu_feature_info->status_values[GPU_FEATURE_TYPE_CANVAS_OOP_RASTERIZATION] =
         kGpuFeatureStatusBlocklisted;
   }
 }
@@ -402,6 +439,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithHardwareAccelerationDisabled() {
       kGpuFeatureStatusSoftware;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] =
       kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE] =
+      kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2] =
@@ -415,6 +454,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithHardwareAccelerationDisabled() {
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_VULKAN] =
+      kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_CANVAS_OOP_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
@@ -432,6 +473,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithNoGpu() {
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] =
       kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE] =
+      kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2] =
@@ -445,6 +488,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithNoGpu() {
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_VULKAN] =
+      kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_CANVAS_OOP_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
@@ -462,6 +507,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader() {
       kGpuFeatureStatusSoftware;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] =
       kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE] =
+      kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2] =
@@ -475,6 +522,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader() {
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_VULKAN] =
+      kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_CANVAS_OOP_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
@@ -543,8 +592,14 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
       GetWebGL2FeatureStatus(blocklisted_features, use_swift_shader);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS] =
       Get2DCanvasFeatureStatus(blocklisted_features, use_swift_shader);
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_CANVAS_OOP_RASTERIZATION] =
+      GetCanvasOopRasterizationFeatureStatus(
+          blocklisted_features, *command_line, gpu_preferences, gpu_info);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] =
       GetAcceleratedVideoDecodeFeatureStatus(blocklisted_features,
+                                             use_swift_shader);
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE] =
+      GetAcceleratedVideoEncodeFeatureStatus(blocklisted_features,
                                              use_swift_shader);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
       GetOopRasterizationFeatureStatus(blocklisted_features, *command_line,
@@ -739,9 +794,11 @@ bool EnableSwiftShaderIfNeeded(base::CommandLine* command_line,
           kGpuFeatureStatusEnabled ||
       gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_GL] !=
           kGpuFeatureStatusEnabled) {
-    // This setting makes WebGL run on legacy SwiftShader GL when true and
-    // SwANGLE when false.
     bool legacy_software_gl = true;
+#if defined(OS_LINUX) || defined(OS_WIN)
+    // This setting makes WebGL run on SwANGLE instead of SwiftShader GL.
+    legacy_software_gl = false;
+#endif
     gl::SetSoftwareWebGLCommandLineSwitches(command_line, legacy_software_gl);
     return true;
   }
@@ -806,6 +863,8 @@ IntelGpuSeriesType GetIntelGpuSeriesType(uint32_t vendor_id,
       case 0x3100:
         return IntelGpuSeriesType::kGeminilake;
       case 0x5900:
+        if (device_id == 0x591C)
+          return IntelGpuSeriesType::kAmberlake;
         return IntelGpuSeriesType::kKabylake;
       case 0x8700:
         if (device_id == 0x87C0)
@@ -828,6 +887,12 @@ IntelGpuSeriesType GetIntelGpuSeriesType(uint32_t vendor_id,
         return IntelGpuSeriesType::kJasperlake;
       case 0x9A00:
         return IntelGpuSeriesType::kTigerlake;
+      case 0x4c00:
+        return IntelGpuSeriesType::kRocketlake;
+      case 0x4900:
+        return IntelGpuSeriesType::kDG1;
+      case 0x4600:
+        return IntelGpuSeriesType::kAlderlake;
       default:
         break;
     }
@@ -868,6 +933,7 @@ std::string GetIntelGpuGeneration(uint32_t vendor_id, uint32_t device_id) {
       case IntelGpuSeriesType::kJasperlake:
         return "11";
       case IntelGpuSeriesType::kTigerlake:
+      case IntelGpuSeriesType::kAlderlake:
         return "12";
       default:
         break;

@@ -14,7 +14,6 @@
 
 namespace blink {
 class AuthenticatorSelectionCriteria;
-class ArrayBufferOrArrayBufferView;
 class CableAuthenticationData;
 class CableRegistrationData;
 class Credential;
@@ -25,6 +24,7 @@ class PublicKeyCredentialRequestOptions;
 class PublicKeyCredentialRpEntity;
 class PublicKeyCredentialUserEntity;
 class UserVerificationRequirement;
+class V8UnionArrayBufferOrArrayBufferView;
 }  // namespace blink
 
 namespace mojo {
@@ -53,8 +53,10 @@ struct TypeConverter<blink::mojom::blink::CredentialManagerError,
 };
 
 template <>
-struct TypeConverter<Vector<uint8_t>, blink::ArrayBufferOrArrayBufferView> {
-  static Vector<uint8_t> Convert(const blink::ArrayBufferOrArrayBufferView&);
+struct TypeConverter<Vector<uint8_t>,
+                     blink::V8UnionArrayBufferOrArrayBufferView*> {
+  static Vector<uint8_t> Convert(
+      const blink::V8UnionArrayBufferOrArrayBufferView*);
 };
 
 template <>

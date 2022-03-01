@@ -89,80 +89,92 @@ enum BsoFailSelect {
     BsoFailLineStipple,
 };
 
-static const char bindStateMinimalShaderText[] = "#version 450\nvoid main() {}\n";
+static const char bindStateMinimalShaderText[] = R"glsl(
+    #version 450
+    void main() {}
+)glsl";
 
-static const char bindStateVertShaderText[] =
-    "#version 450\n"
-    "void main() {\n"
-    "   gl_Position = vec4(1);\n"
-    "}\n";
+static const char bindStateVertShaderText[] = R"glsl(
+    #version 450
+    void main() {
+       gl_Position = vec4(1);
+    }
+)glsl";
 
-static const char bindStateVertPointSizeShaderText[] =
-    "#version 450\n"
-    "out gl_PerVertex {\n"
-    "    vec4 gl_Position;\n"
-    "    float gl_PointSize;\n"
-    "};\n"
-    "void main() {\n"
-    "    gl_Position = vec4(1);\n"
-    "    gl_PointSize = 1.0;\n"
-    "}\n";
+static const char bindStateVertPointSizeShaderText[] = R"glsl(
+    #version 450
+    out gl_PerVertex {
+        vec4 gl_Position;
+        float gl_PointSize;
+    };
+    void main() {
+        gl_Position = vec4(1);
+        gl_PointSize = 1.0;
+    }
+)glsl";
 
-static char const bindStateGeomShaderText[] =
-    "#version 450\n"
-    "layout(triangles) in;\n"
-    "layout(triangle_strip, max_vertices=3) out;\n"
-    "void main() {\n"
-    "   gl_Position = vec4(1);\n"
-    "   EmitVertex();\n"
-    "}\n";
+static char const bindStateGeomShaderText[] = R"glsl(
+    #version 450
+    layout(triangles) in;
+    layout(triangle_strip, max_vertices=3) out;
+    void main() {
+       gl_Position = vec4(1);
+       EmitVertex();
+    }
+)glsl";
 
-static char const bindStateGeomPointSizeShaderText[] =
-    "#version 450\n"
-    "layout (points) in;\n"
-    "layout (points) out;\n"
-    "layout (max_vertices = 1) out;\n"
-    "void main() {\n"
-    "   gl_Position = vec4(1);\n"
-    "   gl_PointSize = 1.0;\n"
-    "   EmitVertex();\n"
-    "}\n";
+static char const bindStateGeomPointSizeShaderText[] = R"glsl(
+    #version 450
+    layout (points) in;
+    layout (points) out;
+    layout (max_vertices = 1) out;
+    void main() {
+       gl_Position = vec4(1);
+       gl_PointSize = 1.0;
+       EmitVertex();
+    }
+)glsl";
 
-static const char bindStateTscShaderText[] =
-    "#version 450\n"
-    "layout(vertices=3) out;\n"
-    "void main() {\n"
-    "   gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = gl_TessLevelOuter[2] = 1;\n"
-    "   gl_TessLevelInner[0] = 1;\n"
-    "}\n";
+static const char bindStateTscShaderText[] = R"glsl(
+    #version 450
+    layout(vertices=3) out;
+    void main() {
+       gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = gl_TessLevelOuter[2] = 1;
+       gl_TessLevelInner[0] = 1;
+    }
+)glsl";
 
-static const char bindStateTeshaderText[] =
-    "#version 450\n"
-    "layout(triangles, equal_spacing, cw) in;\n"
-    "void main() { gl_Position = vec4(1); }\n";
+static const char bindStateTeshaderText[] = R"glsl(
+    #version 450
+    layout(triangles, equal_spacing, cw) in;
+    void main() { gl_Position = vec4(1); }
+)glsl";
 
-static const char bindStateFragShaderText[] =
-    "#version 450\n"
-    "layout(location = 0) out vec4 uFragColor;\n"
-    "void main(){\n"
-    "   uFragColor = vec4(0,1,0,1);\n"
-    "}\n";
+static const char bindStateFragShaderText[] = R"glsl(
+    #version 450
+    layout(location = 0) out vec4 uFragColor;
+    void main(){
+       uFragColor = vec4(0,1,0,1);
+    }
+)glsl";
 
-static const char bindStateFragSamplerShaderText[] =
-    "#version 450\n"
-    "layout(set=0, binding=0) uniform sampler2D s;\n"
-    "layout(location=0) out vec4 x;\n"
-    "void main(){\n"
-    "   x = texture(s, vec2(1));\n"
-    "}\n";
+static const char bindStateFragSamplerShaderText[] = R"glsl(
+    #version 450
+    layout(set=0, binding=0) uniform sampler2D s;
+    layout(location=0) out vec4 x;
+    void main(){
+       x = texture(s, vec2(1));
+    }
+)glsl";
 
-static const char bindStateFragUniformShaderText[] =
-    "#version 450\n"
-    "layout(set=0) layout(binding=0) uniform foo { int x; int y; } bar;\n"
-    "layout(location=0) out vec4 x;\n"
-    "void main(){\n"
-    "   x = vec4(bar.y);\n"
-    "}\n";
+static const char bindStateFragUniformShaderText[] = R"glsl(
+    #version 450
+    layout(set=0) layout(binding=0) uniform foo { int x; int y; } bar;
+    layout(location=0) out vec4 x;
+    void main(){
+       x = vec4(bar.y);
+    }
+)glsl";
 
 // Static arrays helper
 template <class ElementT, size_t array_size>
@@ -278,6 +290,7 @@ class VkPositiveLayerTest : public VkLayerTest {
 class VkBestPracticesLayerTest : public VkLayerTest {
   public:
     void InitBestPracticesFramework();
+    void InitBestPracticesFramework(const char* ValidationChecksToEnable);
 
   protected:
     VkValidationFeatureEnableEXT enables_[1] = {VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT};
@@ -287,7 +300,16 @@ class VkBestPracticesLayerTest : public VkLayerTest {
     VkValidationFeaturesEXT features_ = {VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT, nullptr, 1, enables_, 4, disables_};
 };
 
-class VkArmBestPracticesLayerTest : public VkBestPracticesLayerTest {};
+class VkAmdBestPracticesLayerTest : public VkBestPracticesLayerTest {};
+class VkArmBestPracticesLayerTest : public VkBestPracticesLayerTest {
+  public:
+    std::unique_ptr<VkImageObj> CreateImage(VkFormat format, const uint32_t width, const uint32_t height,
+                                            VkImageUsageFlags attachment_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+    VkRenderPass CreateRenderPass(VkFormat format, VkAttachmentLoadOp load_op = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                  VkAttachmentStoreOp store_op = VK_ATTACHMENT_STORE_OP_STORE);
+    VkFramebuffer CreateFramebuffer(const uint32_t width, const uint32_t height, VkImageView image_view, VkRenderPass renderpass);
+    VkSampler CreateDefaultSampler();
+};
 
 class VkWsiEnabledLayerTest : public VkLayerTest {
   public:
@@ -400,7 +422,7 @@ struct OneOffDescriptorSet {
     void WriteDescriptorBufferInfo(int binding, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize range,
                                    VkDescriptorType descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uint32_t arrayElement = 0,
                                    uint32_t count = 1);
-    void WriteDescriptorBufferView(int binding, VkBufferView &buffer_view,
+    void WriteDescriptorBufferView(int binding, VkBufferView buffer_view,
                                    VkDescriptorType descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER,
                                    uint32_t arrayElement = 0, uint32_t count = 1);
     void WriteDescriptorImageInfo(int binding, VkImageView image_view, VkSampler sampler,
@@ -486,7 +508,7 @@ struct CreatePipelineHelper {
         for (const auto &error : errors) test.Monitor().SetDesiredFailureMsg(flags, error);
         helper.CreateGraphicsPipeline();
 
-        if (positive_test) {
+        if (positive_test || (errors.size() == 0)) {
             test.Monitor().VerifyNotFound();
         } else {
             test.Monitor().VerifyFound();
@@ -511,6 +533,7 @@ struct CreateComputePipelineHelper {
     VkPipeline pipeline_ = VK_NULL_HANDLE;
     VkPipelineCache pipeline_cache_ = VK_NULL_HANDLE;
     std::unique_ptr<VkShaderObj> cs_;
+    bool override_skip_ = false;
     VkLayerTest &layer_test_;
     CreateComputePipelineHelper(VkLayerTest &test);
     ~CreateComputePipelineHelper();
@@ -537,6 +560,11 @@ struct CreateComputePipelineHelper {
         CreateComputePipelineHelper helper(test);
         helper.InitInfo();
         info_override(helper);
+        // Allow lambda to decide if to skip trying to compile pipeline to prevent crashing
+        if (helper.override_skip_) {
+            helper.override_skip_ = false;  // reset
+            return;
+        }
         helper.InitState();
 
         for (const auto &error : errors) test.Monitor().SetDesiredFailureMsg(flags, error);
@@ -805,6 +833,8 @@ bool FindUnsupportedImage(VkPhysicalDevice gpu, VkImageCreateInfo &image_ci);
 VkFormat FindFormatWithoutFeatures(VkPhysicalDevice gpu, VkImageTiling tiling,
                                    VkFormatFeatureFlags undesired_features = UINT32_MAX);
 
+void SetImageLayout(VkDeviceObj *device, VkImageAspectFlags aspect, VkImage image, VkImageLayout image_layout);
+
 void AllocateDisjointMemory(VkDeviceObj *device, PFN_vkGetImageMemoryRequirements2KHR fp, VkImage mp_image,
                             VkDeviceMemory *mp_image_mem, VkImageAspectFlagBits plane);
 
@@ -824,7 +854,7 @@ bool InitFrameworkForRayTracingTest(VkRenderFramework *renderFramework, bool isK
                                     std::vector<const char *> &instance_extension_names,
                                     std::vector<const char *> &device_extension_names, void *user_data,
                                     bool need_gpu_validation = false, bool need_push_descriptors = false,
-                                    bool deferred_state_init = false);
+                                    bool deferred_state_init = false, VkPhysicalDeviceFeatures2KHR *features2 = nullptr);
 
 void GetSimpleGeometryForAccelerationStructureTests(const VkDeviceObj &device, VkBufferObj *vbo, VkBufferObj *ibo,
                                                     VkGeometryNV *geometry);

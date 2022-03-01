@@ -270,7 +270,7 @@ class Device : public internal::Handle<VkDevice> {
         QUEUE_COUNT,
     };
 
-    void init_queues();
+    void init_queues(const VkDeviceCreateInfo &info);
     void init_formats();
 
     PhysicalDevice phy_;
@@ -596,6 +596,8 @@ class Image : public internal::NonDispHandle<VkImage> {
 
 class ImageView : public internal::NonDispHandle<VkImageView> {
   public:
+    explicit ImageView() = default;
+    explicit ImageView(const Device &dev, const VkImageViewCreateInfo &info) { init(dev, info); }
     ~ImageView() NOEXCEPT;
 
     // vkCreateImageView()
@@ -834,6 +836,27 @@ class CommandBuffer : public internal::Handle<VkCommandBuffer> {
   private:
     VkDevice dev_handle_;
     VkCommandPool cmd_pool_;
+};
+
+class RenderPass : public internal::NonDispHandle<VkRenderPass> {
+  public:
+    RenderPass() = default;
+    RenderPass(const Device &dev, const VkRenderPassCreateInfo &info) { init(dev, info); }
+    ~RenderPass() NOEXCEPT;
+
+    // vkCreateRenderPass()
+    void init(const Device &dev, const VkRenderPassCreateInfo &info);
+};
+
+
+class Framebuffer : public internal::NonDispHandle<VkFramebuffer> {
+  public:
+    Framebuffer() = default;
+    Framebuffer(const Device &dev, const VkFramebufferCreateInfo &info) { init(dev, info); }
+    ~Framebuffer() NOEXCEPT;
+
+    // vkCreateFramebuffer()
+    void init(const Device &dev, const VkFramebufferCreateInfo &info);
 };
 
 inline VkMemoryAllocateInfo DeviceMemory::alloc_info(VkDeviceSize size, uint32_t memory_type_index) {

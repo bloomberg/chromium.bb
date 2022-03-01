@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/kill.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -48,8 +48,8 @@ const char kFilteredCommitUrl[] = "https://whatever.com/ignore-on-commit";
 void PopulatePageLoadTiming(mojom::PageLoadTiming* timing) {
   page_load_metrics::InitPageLoadTimingForTest(timing);
   timing->navigation_start = base::Time::FromDoubleT(1);
-  timing->response_start = base::TimeDelta::FromMilliseconds(10);
-  timing->parse_timing->parse_start = base::TimeDelta::FromMilliseconds(20);
+  timing->response_start = base::Milliseconds(10);
+  timing->parse_timing->parse_start = base::Milliseconds(20);
 }
 
 blink::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
@@ -79,6 +79,11 @@ class MetricsWebContentsObserverTest
     PopulatePageLoadTiming(&timing);
     previous_timing_ = timing.Clone();
   }
+
+  MetricsWebContentsObserverTest(const MetricsWebContentsObserverTest&) =
+      delete;
+  MetricsWebContentsObserverTest& operator=(
+      const MetricsWebContentsObserverTest&) = delete;
 
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
@@ -145,9 +150,13 @@ class MetricsWebContentsObserverTest
         mojom::InputTimingPtr(base::in_place), blink::MobileFriendliness());
   }
 
+  virtual std::unique_ptr<TestMetricsWebContentsObserverEmbedder>
+  CreateEmbedder() {
+    return std::make_unique<TestMetricsWebContentsObserverEmbedder>();
+  }
+
   void AttachObserver() {
-    auto embedder_interface =
-        std::make_unique<TestMetricsWebContentsObserverEmbedder>();
+    auto embedder_interface = CreateEmbedder();
     embedder_interface_ = embedder_interface.get();
     MetricsWebContentsObserver* observer =
         MetricsWebContentsObserver::CreateForWebContents(
@@ -238,7 +247,7 @@ class MetricsWebContentsObserverTest
   }
 
   base::HistogramTester histogram_tester_;
-  TestMetricsWebContentsObserverEmbedder* embedder_interface_;
+  raw_ptr<TestMetricsWebContentsObserverEmbedder> embedder_interface_;
 
  private:
   int num_errors_ = 0;
@@ -248,9 +257,7 @@ class MetricsWebContentsObserverTest
   // previous structure that was passed when updating the PageLoadTiming.
   mojom::PageLoadTimingPtr previous_timing_;
   PageLoadMetricsTestContentBrowserClient browser_client_;
-  content::ContentBrowserClient* original_browser_client_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserverTest);
+  raw_ptr<content::ContentBrowserClient> original_browser_client_ = nullptr;
 };
 
 TEST_F(MetricsWebContentsObserverTest, SuccessfulMainFrameNavigation) {
@@ -299,8 +306,8 @@ TEST_F(MetricsWebContentsObserverTest, SubFrame) {
   mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.response_start = base::TimeDelta::FromMilliseconds(10);
-  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(20);
+  timing.response_start = base::Milliseconds(10);
+  timing.parse_timing->parse_start = base::Milliseconds(20);
 
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl));
@@ -317,11 +324,9 @@ TEST_F(MetricsWebContentsObserverTest, SubFrame) {
   mojom::PageLoadTiming subframe_timing;
   page_load_metrics::InitPageLoadTimingForTest(&subframe_timing);
   subframe_timing.navigation_start = base::Time::FromDoubleT(2);
-  subframe_timing.response_start = base::TimeDelta::FromMilliseconds(10);
-  subframe_timing.parse_timing->parse_start =
-      base::TimeDelta::FromMilliseconds(20);
-  subframe_timing.paint_timing->first_paint =
-      base::TimeDelta::FromMilliseconds(40);
+  subframe_timing.response_start = base::Milliseconds(10);
+  subframe_timing.parse_timing->parse_start = base::Milliseconds(20);
+  subframe_timing.paint_timing->first_paint = base::Milliseconds(40);
   subframe = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL(kDefaultTestUrl2), subframe);
   SimulateTimingUpdate(subframe_timing, subframe);
@@ -428,7 +433,7 @@ TEST_F(MetricsWebContentsObserverTest, DontLogIrrelevantNavigation) {
   ASSERT_TRUE(is_first_navigation_in_web_contents().has_value());
   ASSERT_FALSE(is_first_navigation_in_web_contents().value());
 
-  CheckErrorEvent(ERR_IPC_FROM_BAD_URL_SCHEME, 1);
+  CheckErrorEvent(ERR_IPC_FROM_BAD_URL_SCHEME, 0);
   CheckErrorEvent(ERR_IPC_WITH_NO_RELEVANT_LOAD, 1);
   CheckTotalErrorEvents();
 }
@@ -459,7 +464,7 @@ TEST_F(MetricsWebContentsObserverTest, EmptyTimingError) {
 TEST_F(MetricsWebContentsObserverTest, NullNavigationStartError) {
   mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
-  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(1);
+  timing.parse_timing->parse_start = base::Milliseconds(1);
 
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl));
@@ -484,7 +489,7 @@ TEST_F(MetricsWebContentsObserverTest, TimingOrderError) {
   mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.parse_timing->parse_stop = base::TimeDelta::FromMilliseconds(1);
+  timing.parse_timing->parse_stop = base::Milliseconds(1);
 
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl));
@@ -715,7 +720,7 @@ TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming) {
   mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.response_start = base::TimeDelta::FromMilliseconds(10);
+  timing.response_start = base::Milliseconds(10);
 
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl));
@@ -731,8 +736,7 @@ TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming) {
   // Dispatch a timing update for the child frame that includes a first paint.
   mojom::PageLoadTiming subframe_timing;
   PopulatePageLoadTiming(&subframe_timing);
-  subframe_timing.paint_timing->first_paint =
-      base::TimeDelta::FromMilliseconds(40);
+  subframe_timing.paint_timing->first_paint = base::Milliseconds(40);
   subframe = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL(kDefaultTestUrl2), subframe);
   SimulateTimingUpdate(subframe_timing, subframe);
@@ -748,7 +752,7 @@ TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming) {
   // Dispatch the parse_start event in the parent. We should now unbuffer the
   // first paint main frame update and receive a main frame update with a first
   // paint value.
-  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(20);
+  timing.parse_timing->parse_start = base::Milliseconds(20);
   SimulateTimingUpdate(timing);
   ASSERT_EQ(2, CountUpdatedTimingReported());
   EXPECT_FALSE(timing.Equals(*updated_timings().back()));
@@ -784,7 +788,7 @@ TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming2) {
   // Ensure this is much bigger than the subframe first paint below. We
   // currently can't inject the navigation start offset, so we must ensure that
   // subframe first paint + navigation start offset < main frame first paint.
-  timing.paint_timing->first_paint = base::TimeDelta::FromMilliseconds(100000);
+  timing.paint_timing->first_paint = base::Milliseconds(100000);
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl));
   SimulateTimingUpdateWithoutFiringDispatchTimer(timing, main_rfh());
@@ -798,8 +802,7 @@ TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming2) {
   // Dispatch a timing update for a child frame that includes a first paint.
   mojom::PageLoadTiming subframe_timing;
   PopulatePageLoadTiming(&subframe_timing);
-  subframe_timing.paint_timing->first_paint =
-      base::TimeDelta::FromMilliseconds(500);
+  subframe_timing.paint_timing->first_paint = base::Milliseconds(500);
   content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
   subframe = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL(kDefaultTestUrl2), subframe);
@@ -843,8 +846,7 @@ TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming2) {
   // Dispatch a timing update for an additional child frame, with an earlier
   // first paint time. This should cause an immediate update, without a timer
   // delay.
-  subframe_timing.paint_timing->first_paint =
-      base::TimeDelta::FromMilliseconds(50);
+  subframe_timing.paint_timing->first_paint = base::Milliseconds(50);
   content::RenderFrameHost* subframe2 = rfh_tester->AppendChild("subframe");
   subframe2 = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL(kDefaultTestUrl2), subframe2);
@@ -869,7 +871,7 @@ TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming2) {
 TEST_F(MetricsWebContentsObserverTest, FlushBufferOnAppBackground) {
   mojom::PageLoadTiming timing;
   PopulatePageLoadTiming(&timing);
-  timing.paint_timing->first_paint = base::TimeDelta::FromMilliseconds(100000);
+  timing.paint_timing->first_paint = base::Milliseconds(100000);
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl));
   SimulateTimingUpdateWithoutFiringDispatchTimer(timing, main_rfh());
@@ -883,8 +885,7 @@ TEST_F(MetricsWebContentsObserverTest,
        FirstInputDelayMissingFirstInputTimestamp) {
   mojom::PageLoadTiming timing;
   PopulatePageLoadTiming(&timing);
-  timing.interactive_timing->first_input_delay =
-      base::TimeDelta::FromMilliseconds(10);
+  timing.interactive_timing->first_input_delay = base::Milliseconds(10);
 
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl));
@@ -913,8 +914,7 @@ TEST_F(MetricsWebContentsObserverTest,
        FirstInputTimestampMissingFirstInputDelay) {
   mojom::PageLoadTiming timing;
   PopulatePageLoadTiming(&timing);
-  timing.interactive_timing->first_input_timestamp =
-      base::TimeDelta::FromMilliseconds(10);
+  timing.interactive_timing->first_input_timestamp = base::Milliseconds(10);
 
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl));
@@ -943,8 +943,7 @@ TEST_F(MetricsWebContentsObserverTest,
        LongestInputDelayMissingLongestInputTimestamp) {
   mojom::PageLoadTiming timing;
   PopulatePageLoadTiming(&timing);
-  timing.interactive_timing->longest_input_delay =
-      base::TimeDelta::FromMilliseconds(10);
+  timing.interactive_timing->longest_input_delay = base::Milliseconds(10);
 
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl));
@@ -973,8 +972,7 @@ TEST_F(MetricsWebContentsObserverTest,
        LongestInputTimestampMissingLongestInputDelay) {
   mojom::PageLoadTiming timing;
   PopulatePageLoadTiming(&timing);
-  timing.interactive_timing->longest_input_timestamp =
-      base::TimeDelta::FromMilliseconds(10);
+  timing.interactive_timing->longest_input_timestamp = base::Milliseconds(10);
 
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl));
@@ -1003,15 +1001,11 @@ TEST_F(MetricsWebContentsObserverTest,
        LongestInputDelaySmallerThanFirstInputDelay) {
   mojom::PageLoadTiming timing;
   PopulatePageLoadTiming(&timing);
-  timing.interactive_timing->first_input_delay =
-      base::TimeDelta::FromMilliseconds(50);
-  timing.interactive_timing->first_input_timestamp =
-      base::TimeDelta::FromMilliseconds(1000);
+  timing.interactive_timing->first_input_delay = base::Milliseconds(50);
+  timing.interactive_timing->first_input_timestamp = base::Milliseconds(1000);
 
-  timing.interactive_timing->longest_input_delay =
-      base::TimeDelta::FromMilliseconds(10);
-  timing.interactive_timing->longest_input_timestamp =
-      base::TimeDelta::FromMilliseconds(2000);
+  timing.interactive_timing->longest_input_delay = base::Milliseconds(10);
+  timing.interactive_timing->longest_input_timestamp = base::Milliseconds(2000);
 
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl));
@@ -1042,15 +1036,11 @@ TEST_F(MetricsWebContentsObserverTest,
        LongestInputTimestampEarlierThanFirstInputTimestamp) {
   mojom::PageLoadTiming timing;
   PopulatePageLoadTiming(&timing);
-  timing.interactive_timing->first_input_delay =
-      base::TimeDelta::FromMilliseconds(50);
-  timing.interactive_timing->first_input_timestamp =
-      base::TimeDelta::FromMilliseconds(1000);
+  timing.interactive_timing->first_input_delay = base::Milliseconds(50);
+  timing.interactive_timing->first_input_timestamp = base::Milliseconds(1000);
 
-  timing.interactive_timing->longest_input_delay =
-      base::TimeDelta::FromMilliseconds(60);
-  timing.interactive_timing->longest_input_timestamp =
-      base::TimeDelta::FromMilliseconds(500);
+  timing.interactive_timing->longest_input_delay = base::Milliseconds(60);
+  timing.interactive_timing->longest_input_timestamp = base::Milliseconds(500);
 
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl));
@@ -1084,13 +1074,11 @@ TEST_F(MetricsWebContentsObserverTest,
        FirstInputDelayAndTimingSubframeFirstDeliveredSecond) {
   mojom::PageLoadTiming timing;
   PopulatePageLoadTiming(&timing);
-  timing.interactive_timing->first_input_delay =
-      base::TimeDelta::FromMilliseconds(10);
+  timing.interactive_timing->first_input_delay = base::Milliseconds(10);
   // Set this far in the future. We currently can't control the navigation start
   // offset, so we ensure that the subframe timestamp + the unknown offset is
   // less than the main frame timestamp.
-  timing.interactive_timing->first_input_timestamp =
-      base::TimeDelta::FromMinutes(100);
+  timing.interactive_timing->first_input_timestamp = base::Minutes(100);
 
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl));
@@ -1105,9 +1093,9 @@ TEST_F(MetricsWebContentsObserverTest,
   mojom::PageLoadTiming subframe_timing;
   PopulatePageLoadTiming(&subframe_timing);
   subframe_timing.interactive_timing->first_input_delay =
-      base::TimeDelta::FromMilliseconds(15);
+      base::Milliseconds(15);
   subframe_timing.interactive_timing->first_input_timestamp =
-      base::TimeDelta::FromMilliseconds(90);
+      base::Milliseconds(90);
 
   subframe = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL(kDefaultTestUrl2), subframe);
@@ -1120,12 +1108,10 @@ TEST_F(MetricsWebContentsObserverTest,
   const mojom::InteractiveTiming& interactive_timing =
       *complete_timings().back()->interactive_timing;
 
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(15),
-            interactive_timing.first_input_delay);
+  EXPECT_EQ(base::Milliseconds(15), interactive_timing.first_input_delay);
   // Ensure the timestamp is from the subframe. The main frame timestamp was 100
   // minutes.
-  EXPECT_LT(interactive_timing.first_input_timestamp,
-            base::TimeDelta::FromMinutes(10));
+  EXPECT_LT(interactive_timing.first_input_timestamp, base::Minutes(10));
 
   CheckNoErrorEvents();
 }
@@ -1146,9 +1132,9 @@ TEST_F(MetricsWebContentsObserverTest,
   mojom::PageLoadTiming subframe_timing;
   PopulatePageLoadTiming(&subframe_timing);
   subframe_timing.interactive_timing->first_input_delay =
-      base::TimeDelta::FromMilliseconds(10);
+      base::Milliseconds(10);
   subframe_timing.interactive_timing->first_input_timestamp =
-      base::TimeDelta::FromMinutes(100);
+      base::Minutes(100);
 
   subframe = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL(kDefaultTestUrl2), subframe);
@@ -1159,13 +1145,11 @@ TEST_F(MetricsWebContentsObserverTest,
   // Dispatch a timing update for the main frame that includes a first input
   // earlier than the one for the subframe.
 
-  timing.interactive_timing->first_input_delay =
-      base::TimeDelta::FromMilliseconds(15);
+  timing.interactive_timing->first_input_delay = base::Milliseconds(15);
   // Set this far in the future. We currently can't control the navigation start
   // offset, so we ensure that the main frame timestamp + the unknown offset is
   // less than the subframe timestamp.
-  timing.interactive_timing->first_input_timestamp =
-      base::TimeDelta::FromMilliseconds(90);
+  timing.interactive_timing->first_input_timestamp = base::Milliseconds(90);
 
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl));
@@ -1178,12 +1162,10 @@ TEST_F(MetricsWebContentsObserverTest,
   const mojom::InteractiveTiming& interactive_timing =
       *complete_timings().back()->interactive_timing;
 
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(15),
-            interactive_timing.first_input_delay);
+  EXPECT_EQ(base::Milliseconds(15), interactive_timing.first_input_delay);
   // Ensure the timestamp is from the main frame. The subframe timestamp was 100
   // minutes.
-  EXPECT_LT(interactive_timing.first_input_timestamp,
-            base::TimeDelta::FromMinutes(10));
+  EXPECT_LT(interactive_timing.first_input_timestamp, base::Minutes(10));
 
   CheckNoErrorEvents();
 }
@@ -1200,9 +1182,9 @@ TEST_F(MetricsWebContentsObserverTest, DISABLED_LongestInputInMainFrame) {
   mojom::PageLoadTiming subframe_timing;
   PopulatePageLoadTiming(&subframe_timing);
   subframe_timing.interactive_timing->longest_input_delay =
-      base::TimeDelta::FromMilliseconds(70);
+      base::Milliseconds(70);
   subframe_timing.interactive_timing->longest_input_timestamp =
-      base::TimeDelta::FromMilliseconds(1000);
+      base::Milliseconds(1000);
 
   subframe = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL(kDefaultTestUrl2), subframe);
@@ -1214,9 +1196,9 @@ TEST_F(MetricsWebContentsObserverTest, DISABLED_LongestInputInMainFrame) {
   // Dispatch a timing update for the main frame that includes a longest input
   // delay longer than the one for the subframe.
   main_frame_timing.interactive_timing->longest_input_delay =
-      base::TimeDelta::FromMilliseconds(100);
+      base::Milliseconds(100);
   main_frame_timing.interactive_timing->longest_input_timestamp =
-      base::TimeDelta::FromMilliseconds(2000);
+      base::Milliseconds(2000);
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl));
   SimulateTimingUpdate(main_frame_timing);
@@ -1226,9 +1208,9 @@ TEST_F(MetricsWebContentsObserverTest, DISABLED_LongestInputInMainFrame) {
   mojom::PageLoadTiming subframe2_timing;
   PopulatePageLoadTiming(&subframe2_timing);
   subframe2_timing.interactive_timing->longest_input_delay =
-      base::TimeDelta::FromMilliseconds(80);
+      base::Milliseconds(80);
   subframe2_timing.interactive_timing->longest_input_timestamp =
-      base::TimeDelta::FromMilliseconds(3000);
+      base::Milliseconds(3000);
   subframe2 = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL(kDefaultTestUrl2), subframe2);
   SimulateTimingUpdate(subframe2_timing, subframe2);
@@ -1240,9 +1222,8 @@ TEST_F(MetricsWebContentsObserverTest, DISABLED_LongestInputInMainFrame) {
   const mojom::InteractiveTiming& interactive_timing =
       *complete_timings().back()->interactive_timing;
 
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(100),
-            interactive_timing.longest_input_delay);
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(2000),
+  EXPECT_EQ(base::Milliseconds(100), interactive_timing.longest_input_delay);
+  EXPECT_EQ(base::Milliseconds(2000),
             interactive_timing.longest_input_timestamp);
 
   CheckNoErrorEvents();
@@ -1259,9 +1240,9 @@ TEST_F(MetricsWebContentsObserverTest, LongestInputInSubframe) {
   mojom::PageLoadTiming main_frame_timing;
   PopulatePageLoadTiming(&main_frame_timing);
   main_frame_timing.interactive_timing->longest_input_delay =
-      base::TimeDelta::FromMilliseconds(100);
+      base::Milliseconds(100);
   main_frame_timing.interactive_timing->longest_input_timestamp =
-      base::TimeDelta::FromMilliseconds(2000);
+      base::Milliseconds(2000);
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl));
   SimulateTimingUpdate(main_frame_timing);
@@ -1274,9 +1255,9 @@ TEST_F(MetricsWebContentsObserverTest, LongestInputInSubframe) {
   mojom::PageLoadTiming subframe_timing;
   PopulatePageLoadTiming(&subframe_timing);
   subframe_timing.interactive_timing->longest_input_delay =
-      base::TimeDelta::FromMilliseconds(15);
+      base::Milliseconds(15);
   subframe_timing.interactive_timing->longest_input_timestamp =
-      base::TimeDelta::FromMilliseconds(1000);
+      base::Milliseconds(1000);
   subframe1 = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL(kDefaultTestUrl2), subframe1);
   SimulateTimingUpdate(subframe_timing, subframe1);
@@ -1286,9 +1267,9 @@ TEST_F(MetricsWebContentsObserverTest, LongestInputInSubframe) {
   mojom::PageLoadTiming subframe2_timing;
   PopulatePageLoadTiming(&subframe2_timing);
   subframe2_timing.interactive_timing->longest_input_delay =
-      base::TimeDelta::FromMilliseconds(200);
+      base::Milliseconds(200);
   subframe2_timing.interactive_timing->longest_input_timestamp =
-      base::TimeDelta::FromMilliseconds(3000);
+      base::Milliseconds(3000);
   // TODO: Make this url3.
   subframe2 = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL(kDefaultTestUrl2), subframe2);
@@ -1301,15 +1282,14 @@ TEST_F(MetricsWebContentsObserverTest, LongestInputInSubframe) {
   const mojom::InteractiveTiming& interactive_timing =
       *complete_timings().back()->interactive_timing;
 
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(200),
-            interactive_timing.longest_input_delay);
+  EXPECT_EQ(base::Milliseconds(200), interactive_timing.longest_input_delay);
 
   // Actual LID timestamp includes the delta between navigation start in
   // subframe2 and navigation time in the main frame. That delta varies with
   // different runs, so we only check here that the timestamp is greater than
   // 3s.
   EXPECT_GT(interactive_timing.longest_input_timestamp.value(),
-            base::TimeDelta::FromMilliseconds(3000));
+            base::Milliseconds(3000));
 
   CheckNoErrorEvents();
 }
@@ -1317,14 +1297,14 @@ TEST_F(MetricsWebContentsObserverTest, LongestInputInSubframe) {
 TEST_F(MetricsWebContentsObserverTest, DispatchDelayedMetricsOnPageClose) {
   mojom::PageLoadTiming timing;
   PopulatePageLoadTiming(&timing);
-  timing.paint_timing->first_paint = base::TimeDelta::FromMilliseconds(1000);
+  timing.paint_timing->first_paint = base::Milliseconds(1000);
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl));
   SimulateTimingUpdateWithoutFiringDispatchTimer(timing, main_rfh());
 
   // Throw in a cpu timing update, shouldn't affect the page timing results.
   mojom::CpuTiming cpu_timing;
-  cpu_timing.task_time = base::TimeDelta::FromMilliseconds(1000);
+  cpu_timing.task_time = base::Milliseconds(1000);
   SimulateCpuTimingUpdate(cpu_timing, main_rfh());
 
   EXPECT_TRUE(GetMostRecentTimer()->IsRunning());
@@ -1351,7 +1331,7 @@ TEST_F(MetricsWebContentsObserverTest, DispatchCpuMetricsImmediately) {
       web_contents(), GURL(kDefaultTestUrl));
 
   mojom::CpuTiming timing;
-  timing.task_time = base::TimeDelta::FromMilliseconds(1000);
+  timing.task_time = base::Milliseconds(1000);
   SimulateCpuTimingUpdate(timing, main_rfh());
   ASSERT_EQ(1, CountUpdatedCpuTimingReported());
   EXPECT_TRUE(timing.Equals(*updated_cpu_timings().back()));
@@ -1425,7 +1405,7 @@ TEST_F(MetricsWebContentsObserverTest,
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL(kDefaultTestUrl2));
 
-  DCHECK(!old_rfh->IsCurrent());
+  DCHECK(!old_rfh->IsActive());
   observer()->ResourceLoadComplete(
       old_rfh, content::GlobalRequestID(),
       *CreateResourceLoadInfo(GURL("http://www.other.com/"),
@@ -1637,6 +1617,101 @@ TEST_F(MetricsWebContentsObserverBackForwardCacheDisabledTest,
   EXPECT_EQ(0, CountOnBackForwardCacheEntered());
 
   ASSERT_EQ(2, CountCompleteTimingReported());
+}
+
+class MetricsWebContentsObserverNonPrimaryPageTest
+    : public MetricsWebContentsObserverBackForwardCacheTest {
+ public:
+  class MetricsObserver : public PageLoadMetricsObserver {
+   public:
+    explicit MetricsObserver(
+        MetricsWebContentsObserverNonPrimaryPageTest* owner)
+        : owner_(owner) {}
+
+    ObservePolicy OnCommit(content::NavigationHandle* handle,
+                           ukm::SourceId source_id) override {
+      committed_url_ = handle->GetURL();
+      return CONTINUE_OBSERVING;
+    }
+
+    ObservePolicy OnEnterBackForwardCache(
+        const mojom::PageLoadTiming& timing) override {
+      return CONTINUE_OBSERVING;
+    }
+
+    void OnV8MemoryChanged(
+        const std::vector<MemoryUpdate>& memory_updates) override {
+      owner_->OnV8MemoryChanged(committed_url_, memory_updates);
+    }
+
+   private:
+    raw_ptr<MetricsWebContentsObserverNonPrimaryPageTest> owner_;
+    GURL committed_url_;
+  };
+
+  class Embedder : public TestMetricsWebContentsObserverEmbedder {
+   public:
+    explicit Embedder(MetricsWebContentsObserverNonPrimaryPageTest* owner)
+        : owner_(owner) {}
+
+    void RegisterObservers(PageLoadTracker* tracker) override {
+      TestMetricsWebContentsObserverEmbedder::RegisterObservers(tracker);
+      tracker->AddObserver(std::make_unique<MetricsObserver>(owner_));
+    }
+
+   private:
+    raw_ptr<MetricsWebContentsObserverNonPrimaryPageTest> owner_;
+  };
+
+  std::unique_ptr<TestMetricsWebContentsObserverEmbedder> CreateEmbedder()
+      override {
+    return std::make_unique<Embedder>(this);
+  }
+
+  void OnV8MemoryChanged(const GURL& url,
+                         const std::vector<MemoryUpdate>& memory_updates) {
+    std::vector<MemoryUpdate>& updates_for_url = observed_memory_updates_[url];
+    updates_for_url.insert(updates_for_url.end(), memory_updates.begin(),
+                           memory_updates.end());
+  }
+
+ protected:
+  std::map<GURL, std::vector<MemoryUpdate>> observed_memory_updates_;
+};
+
+TEST_F(MetricsWebContentsObserverNonPrimaryPageTest, MemoryUpdates) {
+  // Go to the URL1.
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL(kDefaultTestUrl));
+  ASSERT_EQ(main_rfh()->GetLastCommittedURL().spec(), GURL(kDefaultTestUrl));
+  content::GlobalRenderFrameHostId rfh1_id = main_rfh()->GetGlobalId();
+
+  ASSERT_EQ(0, CountCompleteTimingReported());
+  EXPECT_EQ(0, CountOnBackForwardCacheEntered());
+  EXPECT_EQ(1, tracker_committed_count());
+
+  // Go to the URL2.
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL(kDefaultTestUrl2));
+  ASSERT_EQ(main_rfh()->GetLastCommittedURL().spec(), GURL(kDefaultTestUrl2));
+  content::GlobalRenderFrameHostId rfh2_id = main_rfh()->GetGlobalId();
+
+  ASSERT_EQ(1, CountCompleteTimingReported());
+  EXPECT_EQ(1, CountOnBackForwardCacheEntered());
+  EXPECT_EQ(2, tracker_committed_count());
+
+  std::vector<MemoryUpdate> memory_updates = {{rfh1_id, 100}, {rfh2_id, 200}};
+  observer()->OnV8MemoryChanged(memory_updates);
+
+  // Verify that memory updates are observed both in primary URL2 and
+  // non-primary URL1.
+  ASSERT_EQ(2u, observed_memory_updates_.size());
+  ASSERT_EQ(1u, observed_memory_updates_[GURL(kDefaultTestUrl)].size());
+  EXPECT_EQ(100,
+            observed_memory_updates_[GURL(kDefaultTestUrl)][0].delta_bytes);
+  ASSERT_EQ(1u, observed_memory_updates_[GURL(kDefaultTestUrl2)].size());
+  EXPECT_EQ(200,
+            observed_memory_updates_[GURL(kDefaultTestUrl2)][0].delta_bytes);
 }
 
 }  // namespace page_load_metrics

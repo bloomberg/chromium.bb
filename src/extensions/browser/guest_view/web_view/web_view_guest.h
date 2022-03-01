@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "components/guest_view/browser/guest_view.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "extensions/browser/guest_view/web_view/javascript_dialog_helper.h"
@@ -23,10 +22,6 @@
 #include "extensions/browser/script_executor.h"
 #include "extensions/common/mojom/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
-
-namespace content {
-class StoragePartitionConfig;
-}  // namespace content
 
 namespace extensions {
 
@@ -40,6 +35,9 @@ class WebViewInternalFindFunction;
 // a particular <webview>.
 class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
  public:
+  WebViewGuest(const WebViewGuest&) = delete;
+  WebViewGuest& operator=(const WebViewGuest&) = delete;
+
   // Clean up state when this GuestView is being destroyed. See
   // GuestViewBase::CleanUp().
   static void CleanUp(content::BrowserContext* browser_context,
@@ -47,24 +45,6 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
                       int view_instance_id);
 
   static GuestViewBase* Create(content::WebContents* owner_web_contents);
-
-  // For WebViewGuest, we create special guest processes, which host the
-  // tag content separately from the main application that embeds the tag.
-  // A <webview> can specify both the partition name and whether the storage
-  // for that partition should be persisted. Each tag gets a SiteInstance with
-  // a specially formatted URL, based on the application it is hosted by and
-  // the partition requested by it. The format for that URL is:
-  // chrome-guest://partition_domain/persist?partition_name
-  static bool GetGuestPartitionConfigForSite(
-      content::BrowserContext* browser_context,
-      const GURL& site,
-      content::StoragePartitionConfig* storage_partition_config);
-
-  // Opposite of GetGuestPartitionConfigForSite: Creates a specially formatted
-  // URL used by the SiteInstance associated with the WebViewGuest. See
-  // GetGuestPartitionConfigForSite for the URL format.
-  static GURL GetSiteForGuestPartitionConfig(
-      const content::StoragePartitionConfig& storage_partition_config);
 
   // Returns the WebView partition ID associated with the render process
   // represented by |render_process_host|, if any. Otherwise, an empty string is
@@ -214,7 +194,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
 
   // WebContentsDelegate implementation.
   void CloseContents(content::WebContents* source) final;
-  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+  bool HandleContextMenu(content::RenderFrameHost& render_frame_host,
                          const content::ContextMenuParams& params) final;
   bool HandleKeyboardEvent(content::WebContents* source,
                            const content::NativeWebKeyboardEvent& event) final;
@@ -268,13 +248,11 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   void DidStartNavigation(content::NavigationHandle* navigation_handle) final;
   void DidRedirectNavigation(
       content::NavigationHandle* navigation_handle) final;
-  void ReadyToCommitNavigation(
-      content::NavigationHandle* navigation_handle) final;
   void DidFinishNavigation(content::NavigationHandle* navigation_handle) final;
   void LoadProgressChanged(double progress) final;
   void DocumentOnLoadCompletedInMainFrame(
       content::RenderFrameHost* render_frame_host) final;
-  void RenderProcessGone(base::TerminationStatus status) final;
+  void PrimaryMainFrameRenderProcessGone(base::TerminationStatus status) final;
   void UserAgentOverrideSet(const blink::UserAgentOverride& ua_override) final;
   void FrameNameChanged(content::RenderFrameHost* render_frame_host,
                         const std::string& name) final;
@@ -396,8 +374,6 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.
   base::WeakPtrFactory<WebViewGuest> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewGuest);
 };
 
 }  // namespace extensions

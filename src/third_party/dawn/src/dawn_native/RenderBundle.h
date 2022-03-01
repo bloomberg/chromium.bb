@@ -19,6 +19,8 @@
 #include "dawn_native/AttachmentState.h"
 #include "dawn_native/CommandAllocator.h"
 #include "dawn_native/Error.h"
+#include "dawn_native/Forward.h"
+#include "dawn_native/IndirectDrawMetadata.h"
 #include "dawn_native/ObjectBase.h"
 #include "dawn_native/PassResourceUsage.h"
 
@@ -31,28 +33,38 @@ namespace dawn_native {
     struct RenderBundleDescriptor;
     class RenderBundleEncoder;
 
-    class RenderBundleBase : public ObjectBase {
+    class RenderBundleBase final : public ApiObjectBase {
       public:
         RenderBundleBase(RenderBundleEncoder* encoder,
                          const RenderBundleDescriptor* descriptor,
                          Ref<AttachmentState> attachmentState,
-                         RenderPassResourceUsage resourceUsage);
+                         bool depthReadOnly,
+                         bool stencilReadOnly,
+                         RenderPassResourceUsage resourceUsage,
+                         IndirectDrawMetadata indirectDrawMetadata);
 
         static RenderBundleBase* MakeError(DeviceBase* device);
+
+        ObjectType GetType() const override;
 
         CommandIterator* GetCommands();
 
         const AttachmentState* GetAttachmentState() const;
+        bool IsDepthReadOnly() const;
+        bool IsStencilReadOnly() const;
         const RenderPassResourceUsage& GetResourceUsage() const;
-
-      protected:
-        ~RenderBundleBase() override;
+        const IndirectDrawMetadata& GetIndirectDrawMetadata();
 
       private:
         RenderBundleBase(DeviceBase* device, ErrorTag errorTag);
 
+        void DestroyImpl() override;
+
         CommandIterator mCommands;
+        IndirectDrawMetadata mIndirectDrawMetadata;
         Ref<AttachmentState> mAttachmentState;
+        bool mDepthReadOnly;
+        bool mStencilReadOnly;
         RenderPassResourceUsage mResourceUsage;
     };
 

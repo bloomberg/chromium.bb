@@ -9,11 +9,12 @@
 
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -189,7 +190,7 @@ TEST(UrlFormatterTest, FormatUrl) {
 #if defined(OS_WIN)
       {"omit file on Windows", "file:///C:/Users/homedirname/folder/file.pdf/",
        kFormatUrlOmitFileScheme, net::UnescapeRule::NORMAL,
-       L"C:/Users/homedirname/folder/file.pdf/", -1},
+       L"C:/Users/homedirname/folder/file.pdf/", static_cast<size_t>(-1)},
 #else
       {"omit file", "file:///Users/homedirname/folder/file.pdf/",
        kFormatUrlOmitFileScheme, net::UnescapeRule::NORMAL,

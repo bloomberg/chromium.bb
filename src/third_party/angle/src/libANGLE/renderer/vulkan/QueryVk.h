@@ -35,6 +35,7 @@ class QueryVk : public QueryImpl
     angle::Result isResultAvailable(const gl::Context *context, bool *available) override;
 
     void onTransformFeedbackEnd(GLsizeiptr primitivesDrawn);
+    bool hasQueryBegun() const { return mQueryHelper.isReferenced(); }
     vk::QueryHelper *getQueryHelper()
     {
         ASSERT(mQueryHelper.isReferenced());
@@ -53,7 +54,7 @@ class QueryVk : public QueryImpl
     bool isCurrentlyInUse(Serial lastCompletedSerial) const;
     angle::Result finishRunningCommands(ContextVk *contextVk);
     void stashQueryHelper();
-    uint32_t getQueryResultCount() const;
+    uint32_t getQueryResultCount(ContextVk *contextVk) const;
     angle::Result accumulateStashedQueryResult(ContextVk *contextVk, vk::QueryResult *result);
 
     // Manage query allocations

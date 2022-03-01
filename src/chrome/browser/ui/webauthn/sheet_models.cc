@@ -17,7 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/ui/webauthn/other_transports_menu_model.h"
+#include "chrome/browser/ui/webauthn/other_mechanisms_menu_model.h"
 #include "chrome/browser/ui/webauthn/webauthn_ui_helpers.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -125,25 +125,25 @@ void AuthenticatorSheetModelBase::OnModelDestroyed(
   dialog_model_ = nullptr;
 }
 
-// AuthenticatorTransportSelectorSheetModel -----------------------------------
+// AuthenticatorMechanismSelectorSheetModel -----------------------------------
 
-bool AuthenticatorTransportSelectorSheetModel::IsBackButtonVisible() const {
+bool AuthenticatorMechanismSelectorSheetModel::IsBackButtonVisible() const {
   return false;
 }
 
 const gfx::VectorIcon&
-AuthenticatorTransportSelectorSheetModel::GetStepIllustration(
+AuthenticatorMechanismSelectorSheetModel::GetStepIllustration(
     ImageColorScheme color_scheme) const {
   return color_scheme == ImageColorScheme::kDark ? kWebauthnWelcomeDarkIcon
                                                  : kWebauthnWelcomeIcon;
 }
 
-std::u16string AuthenticatorTransportSelectorSheetModel::GetStepTitle() const {
+std::u16string AuthenticatorMechanismSelectorSheetModel::GetStepTitle() const {
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TRANSPORT_SELECTION_TITLE,
                                     GetRelyingPartyIdString(dialog_model()));
 }
 
-std::u16string AuthenticatorTransportSelectorSheetModel::GetStepDescription()
+std::u16string AuthenticatorMechanismSelectorSheetModel::GetStepDescription()
     const {
   return l10n_util::GetStringUTF16(
       IDS_WEBAUTHN_TRANSPORT_SELECTION_DESCRIPTION);
@@ -155,8 +155,8 @@ AuthenticatorInsertAndActivateUsbSheetModel::
     AuthenticatorInsertAndActivateUsbSheetModel(
         AuthenticatorRequestDialogModel* dialog_model)
     : AuthenticatorSheetModelBase(dialog_model),
-      other_transports_menu_model_(
-          std::make_unique<OtherTransportsMenuModel>(dialog_model)) {}
+      other_mechanisms_menu_model_(
+          std::make_unique<OtherMechanismsMenuModel>(dialog_model)) {}
 
 AuthenticatorInsertAndActivateUsbSheetModel::
     ~AuthenticatorInsertAndActivateUsbSheetModel() = default;
@@ -190,8 +190,8 @@ AuthenticatorInsertAndActivateUsbSheetModel::GetAdditionalDescription() const {
 }
 
 ui::MenuModel*
-AuthenticatorInsertAndActivateUsbSheetModel::GetOtherTransportsMenuModel() {
-  return other_transports_menu_model_.get();
+AuthenticatorInsertAndActivateUsbSheetModel::GetOtherMechanismsMenuModel() {
+  return other_mechanisms_menu_model_.get();
 }
 
 // AuthenticatorTimeoutErrorModel ---------------------------------------------
@@ -477,8 +477,8 @@ AuthenticatorOffTheRecordInterstitialSheetModel::
     AuthenticatorOffTheRecordInterstitialSheetModel(
         AuthenticatorRequestDialogModel* dialog_model)
     : AuthenticatorSheetModelBase(dialog_model),
-      other_transports_menu_model_(
-          std::make_unique<OtherTransportsMenuModel>(dialog_model)) {}
+      other_mechanisms_menu_model_(
+          std::make_unique<OtherMechanismsMenuModel>(dialog_model)) {}
 
 AuthenticatorOffTheRecordInterstitialSheetModel::
     ~AuthenticatorOffTheRecordInterstitialSheetModel() = default;
@@ -504,8 +504,8 @@ AuthenticatorOffTheRecordInterstitialSheetModel::GetStepDescription() const {
 }
 
 ui::MenuModel*
-AuthenticatorOffTheRecordInterstitialSheetModel::GetOtherTransportsMenuModel() {
-  return other_transports_menu_model_.get();
+AuthenticatorOffTheRecordInterstitialSheetModel::GetOtherMechanismsMenuModel() {
+  return other_mechanisms_menu_model_.get();
 }
 
 bool AuthenticatorOffTheRecordInterstitialSheetModel::IsAcceptButtonVisible()
@@ -524,7 +524,7 @@ AuthenticatorOffTheRecordInterstitialSheetModel::GetAcceptButtonLabel() const {
 }
 
 void AuthenticatorOffTheRecordInterstitialSheetModel::OnAccept() {
-  dialog_model()->HideDialogAndDispatchToPlatformAuthenticator();
+  dialog_model()->OnOffTheRecordInterstitialAccepted();
 }
 
 std::u16string
@@ -538,8 +538,8 @@ AuthenticatorOffTheRecordInterstitialSheetModel::GetCancelButtonLabel() const {
 AuthenticatorPaaskSheetModel::AuthenticatorPaaskSheetModel(
     AuthenticatorRequestDialogModel* dialog_model)
     : AuthenticatorSheetModelBase(dialog_model),
-      other_transports_menu_model_(
-          std::make_unique<OtherTransportsMenuModel>(dialog_model)) {}
+      other_mechanisms_menu_model_(
+          std::make_unique<OtherMechanismsMenuModel>(dialog_model)) {}
 
 AuthenticatorPaaskSheetModel::~AuthenticatorPaaskSheetModel() = default;
 
@@ -591,8 +591,8 @@ std::u16string AuthenticatorPaaskSheetModel::GetStepDescription() const {
   }
 }
 
-ui::MenuModel* AuthenticatorPaaskSheetModel::GetOtherTransportsMenuModel() {
-  return other_transports_menu_model_.get();
+ui::MenuModel* AuthenticatorPaaskSheetModel::GetOtherMechanismsMenuModel() {
+  return other_mechanisms_menu_model_.get();
 }
 
 // AuthenticatorAndroidAccessorySheetModel
@@ -602,8 +602,8 @@ AuthenticatorAndroidAccessorySheetModel::
     AuthenticatorAndroidAccessorySheetModel(
         AuthenticatorRequestDialogModel* dialog_model)
     : AuthenticatorSheetModelBase(dialog_model),
-      other_transports_menu_model_(
-          std::make_unique<OtherTransportsMenuModel>(dialog_model)) {}
+      other_mechanisms_menu_model_(
+          std::make_unique<OtherMechanismsMenuModel>(dialog_model)) {}
 
 AuthenticatorAndroidAccessorySheetModel::
     ~AuthenticatorAndroidAccessorySheetModel() = default;
@@ -633,61 +633,8 @@ std::u16string AuthenticatorAndroidAccessorySheetModel::GetStepDescription()
 }
 
 ui::MenuModel*
-AuthenticatorAndroidAccessorySheetModel::GetOtherTransportsMenuModel() {
-  return other_transports_menu_model_.get();
-}
-
-// AuthenticatorPaaskV2SheetModel  -----------------------------------------
-
-AuthenticatorPaaskV2SheetModel::AuthenticatorPaaskV2SheetModel(
-    AuthenticatorRequestDialogModel* dialog_model)
-    : AuthenticatorSheetModelBase(dialog_model),
-      other_transports_menu_model_(
-          std::make_unique<OtherTransportsMenuModel>(dialog_model)) {}
-
-AuthenticatorPaaskV2SheetModel::~AuthenticatorPaaskV2SheetModel() = default;
-
-bool AuthenticatorPaaskV2SheetModel::IsBackButtonVisible() const {
-  return true;
-}
-
-bool AuthenticatorPaaskV2SheetModel::IsActivityIndicatorVisible() const {
-  return true;
-}
-
-const gfx::VectorIcon& AuthenticatorPaaskV2SheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return color_scheme == ImageColorScheme::kDark ? kWebauthnPhoneDarkIcon
-                                                 : kWebauthnPhoneIcon;
-}
-
-bool AuthenticatorPaaskV2SheetModel::IsAcceptButtonVisible() const {
-  return true;
-}
-
-bool AuthenticatorPaaskV2SheetModel::IsAcceptButtonEnabled() const {
-  return true;
-}
-
-std::u16string AuthenticatorPaaskV2SheetModel::GetAcceptButtonLabel() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_QR_TITLE);
-}
-
-void AuthenticatorPaaskV2SheetModel::OnAccept() {
-  return dialog_model()->StartPhonePairing();
-}
-
-std::u16string AuthenticatorPaaskV2SheetModel::GetStepTitle() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_V2_ACTIVATE_TITLE);
-}
-
-std::u16string AuthenticatorPaaskV2SheetModel::GetStepDescription() const {
-  return l10n_util::GetStringUTF16(
-      IDS_WEBAUTHN_CABLE_V2_ACTIVATE_DESCRIPTION_SHORT);
-}
-
-ui::MenuModel* AuthenticatorPaaskV2SheetModel::GetOtherTransportsMenuModel() {
-  return other_transports_menu_model_.get();
+AuthenticatorAndroidAccessorySheetModel::GetOtherMechanismsMenuModel() {
+  return other_mechanisms_menu_model_.get();
 }
 
 // AuthenticatorClientPinEntrySheetModel
@@ -1232,9 +1179,9 @@ const gfx::VectorIcon& AuthenticatorQRSheetModel::GetStepIllustration(
 }
 
 std::u16string AuthenticatorQRSheetModel::GetStepTitle() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_QR_TITLE);
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLEV2_ADD_PHONE);
 }
 
 std::u16string AuthenticatorQRSheetModel::GetStepDescription() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_QR_DESCRIPTION);
+  return l10n_util::GetStringUTF16(IDS_BROWSER_SHARING_QR_CODE_DIALOG_TOOLTIP);
 }

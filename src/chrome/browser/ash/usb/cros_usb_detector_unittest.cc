@@ -10,10 +10,15 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
+#include "ash/components/arc/arc_util.h"
+#include "ash/components/disks/disk.h"
+#include "ash/components/disks/disk_mount_manager.h"
+#include "ash/components/disks/mock_disk_mount_manager.h"
+#include "ash/constants/ash_switches.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_move_support.h"
+#include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_test_helper.h"
@@ -31,14 +36,10 @@
 #include "chromeos/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/concierge/fake_concierge_client.h"
-#include "chromeos/dbus/cros_disks_client.h"
+#include "chromeos/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_vm_plugin_dispatcher_client.h"
 #include "chromeos/dbus/seneschal/seneschal_client.h"
-#include "chromeos/disks/disk.h"
-#include "chromeos/disks/disk_mount_manager.h"
-#include "chromeos/disks/mock_disk_mount_manager.h"
-#include "components/arc/arc_util.h"
+#include "chromeos/dbus/vm_plugin_dispatcher/fake_vm_plugin_dispatcher_client.h"
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
@@ -47,11 +48,12 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "url/gurl.h"
 
-using testing::_;
-using testing::ReturnRef;
-using MountCallback = base::OnceCallback<void(chromeos::MountError)>;
+namespace ash {
 
 namespace {
+
+using testing::_;
+using MountCallback = ::base::OnceCallback<void(chromeos::MountError)>;
 
 const char* kProfileName = "test@example.com";
 
@@ -115,7 +117,7 @@ scoped_refptr<device::FakeUsbDeviceInfo> CreateTestDeviceOfClass(
                                    {InterfaceCodes(device_class, 0xff, 0xff)});
 }
 
-class TestCrosUsbDeviceObserver : public chromeos::CrosUsbDeviceObserver {
+class TestCrosUsbDeviceObserver : public CrosUsbDeviceObserver {
  public:
   void OnUsbDevicesChanged() override { ++notify_count_; }
 
@@ -141,13 +143,15 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
             chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient());
 
     mock_disk_mount_manager_ =
-        new testing::NiceMock<chromeos::disks::MockDiskMountManager>;
-    chromeos::disks::DiskMountManager::InitializeForTesting(
-        mock_disk_mount_manager_);
+        new testing::NiceMock<disks::MockDiskMountManager>;
+    disks::DiskMountManager::InitializeForTesting(mock_disk_mount_manager_);
   }
 
+  CrosUsbDetectorTest(const CrosUsbDetectorTest&) = delete;
+  CrosUsbDetectorTest& operator=(const CrosUsbDetectorTest&) = delete;
+
   ~CrosUsbDetectorTest() override {
-    chromeos::disks::DiskMountManager::Shutdown();
+    disks::DiskMountManager::Shutdown();
     chromeos::SeneschalClient::Shutdown();
     chromeos::ConciergeClient::Shutdown();
     chromeos::CiceroneClient::Shutdown();
@@ -159,7 +163,7 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
   }
 
   void SetUp() override {
-    cros_usb_detector_ = std::make_unique<chromeos::CrosUsbDetector>();
+    cros_usb_detector_ = std::make_unique<CrosUsbDetector>();
     BrowserWithTestWindowTest::SetUp();
     crostini_test_helper_ =
         std::make_unique<crostini::CrostiniTestHelper>(profile());
@@ -173,7 +177,7 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
     mojo::PendingRemote<device::mojom::UsbDeviceManager> device_manager;
     device_manager_.AddReceiver(
         device_manager.InitWithNewPipeAndPassReceiver());
-    chromeos::CrosUsbDetector::Get()->SetDeviceManagerForTesting(
+    CrosUsbDetector::Get()->SetDeviceManagerForTesting(
         std::move(device_manager));
     // Create a default VM instance which is running.
     crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
@@ -187,7 +191,7 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
   }
 
   void ConnectToDeviceManager() {
-    chromeos::CrosUsbDetector::Get()->ConnectToDeviceManager();
+    CrosUsbDetector::Get()->ConnectToDeviceManager();
   }
 
   MOCK_METHOD1(OnAttach, void(bool success));
@@ -222,7 +226,7 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
   // The GetSingle..() functions expect only one device is present and may crash
   // if there are no devices (we can't use ASSERT_EQ as they return values).
 
-  chromeos::CrosUsbDeviceInfo GetSingleDeviceInfo() const {
+  CrosUsbDeviceInfo GetSingleDeviceInfo() const {
     auto devices = cros_usb_detector_->GetShareableDevices();
     EXPECT_EQ(1U, devices.size());
     return devices.front();
@@ -244,7 +248,7 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
                int device_number,
                bool mounted) {
     mock_disk_mount_manager_->CreateDiskEntryForMountDevice(
-        chromeos::disks::Disk::Builder()
+        disks::Disk::Builder()
             .SetBusNumber(bus_number)
             .SetDeviceNumber(device_number)
             .SetDevicePath("/dev/" + name)
@@ -252,18 +256,18 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
             .SetIsMounted(mounted)
             .Build());
     if (mounted)
-      NotifyMountEvent(name, chromeos::disks::DiskMountManager::MOUNTING);
+      NotifyMountEvent(name, disks::DiskMountManager::MOUNTING);
   }
 
   void NotifyMountEvent(
       const std::string& name,
-      chromeos::disks::DiskMountManager::MountEvent event,
+      disks::DiskMountManager::MountEvent event,
       chromeos::MountError mount_error = chromeos::MOUNT_ERROR_NONE) {
     // In theory we should also clear the mounted flag from the disk, but we
     // don't rely on that.
-    chromeos::disks::DiskMountManager::MountPointInfo info(
+    disks::DiskMountManager::MountPointInfo info(
         "/dev/" + name, "/mount/" + name, chromeos::MOUNT_TYPE_DEVICE,
-        chromeos::disks::MOUNT_CONDITION_NONE);
+        disks::MOUNT_CONDITION_NONE);
     mock_disk_mount_manager_->NotifyMountEvent(event, mount_error, info);
   }
 
@@ -277,8 +281,8 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
 
   device::FakeUsbDeviceManager device_manager_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
-  chromeos::disks::MockDiskMountManager* mock_disk_mount_manager_;
-  chromeos::disks::DiskMountManager::DiskMap disks_;
+  disks::MockDiskMountManager* mock_disk_mount_manager_;
+  disks::DiskMountManager::DiskMap disks_;
 
   chromeos::FakeCiceroneClient* fake_cicerone_client_;
   chromeos::FakeConciergeClient* fake_concierge_client_;
@@ -286,12 +290,9 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
   chromeos::FakeVmPluginDispatcherClient* fake_vm_plugin_dispatcher_client_;
 
   TestCrosUsbDeviceObserver usb_device_observer_;
-  std::unique_ptr<chromeos::CrosUsbDetector> cros_usb_detector_;
+  std::unique_ptr<CrosUsbDetector> cros_usb_detector_;
 
   std::unique_ptr<crostini::CrostiniTestHelper> crostini_test_helper_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CrosUsbDetectorTest);
 };
 
 TEST_F(CrosUsbDetectorTest, UsbDeviceAddedAndRemoved) {
@@ -304,7 +305,7 @@ TEST_F(CrosUsbDetectorTest, UsbDeviceAddedAndRemoved) {
   base::RunLoop().RunUntilIdle();
 
   std::string notification_id =
-      chromeos::CrosUsbDetector::MakeNotificationId(device->guid());
+      CrosUsbDetector::MakeNotificationId(device->guid());
 
   absl::optional<message_center::Notification> notification =
       display_service_->GetNotification(notification_id);
@@ -327,7 +328,7 @@ TEST_F(CrosUsbDetectorTest, NotificationShown) {
   auto device = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
       0, 1, kManufacturerName, kProductName_1, "002");
   std::string notification_id =
-      chromeos::CrosUsbDetector::MakeNotificationId(device->guid());
+      CrosUsbDetector::MakeNotificationId(device->guid());
 
   // Notifications should not be shown if no VMs enabled.
   crostini::FakeCrostiniFeatures crostini_features;
@@ -359,6 +360,34 @@ TEST_F(CrosUsbDetectorTest, NotificationShown) {
   notification = display_service_->GetNotification(notification_id);
   ASSERT_TRUE(notification);
   EXPECT_EQ(notification->buttons().size(), 2u);
+  device_manager_.RemoveDevice(device);
+  base::RunLoop().RunUntilIdle();
+
+  // Should have 2 buttions when ARCVM is enabled but user disables ARC.
+  // ARC is disabled by default in test.
+  arc::ResetArcAllowedCheckForTesting(profile());
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->InitFromArgv(
+      {"", "--enable-arcvm", "--arc-availability=officially-supported"});
+  EXPECT_TRUE(arc::IsArcVmEnabled());
+  device_manager_.AddDevice(device);
+  base::RunLoop().RunUntilIdle();
+  notification = display_service_->GetNotification(notification_id);
+  ASSERT_TRUE(notification);
+  EXPECT_EQ(notification->buttons().size(), 2u);
+  device_manager_.RemoveDevice(device);
+  base::RunLoop().RunUntilIdle();
+
+  // Should have 2 buttions when ARCVM is enabled and user enables ARC but the
+  // feature is disabled.
+  // Update this test when the kUsbDeviceDefaultAttachToArcVm is enabled
+  // by default or removed.
+  ASSERT_TRUE(arc::SetArcPlayStoreEnabledForProfile(profile(), true));
+  device_manager_.AddDevice(device);
+  base::RunLoop().RunUntilIdle();
+  notification = display_service_->GetNotification(notification_id);
+  ASSERT_TRUE(notification);
+  EXPECT_EQ(notification->buttons().size(), 2u);
 }
 
 TEST_F(CrosUsbDetectorTest, UsbNotificationClicked) {
@@ -371,7 +400,7 @@ TEST_F(CrosUsbDetectorTest, UsbNotificationClicked) {
   base::RunLoop().RunUntilIdle();
 
   std::string notification_id =
-      chromeos::CrosUsbDetector::MakeNotificationId(device->guid());
+      CrosUsbDetector::MakeNotificationId(device->guid());
 
   absl::optional<message_center::Notification> notification =
       display_service_->GetNotification(notification_id);
@@ -396,7 +425,7 @@ TEST_F(CrosUsbDetectorTest, UsbDeviceClassBlockedAdded) {
   base::RunLoop().RunUntilIdle();
 
   std::string notification_id =
-      chromeos::CrosUsbDetector::MakeNotificationId(device->guid());
+      CrosUsbDetector::MakeNotificationId(device->guid());
   ASSERT_FALSE(display_service_->GetNotification(notification_id));
   EXPECT_EQ(0U, cros_usb_detector_->GetShareableDevices().size());
 }
@@ -418,7 +447,7 @@ TEST_F(CrosUsbDetectorTest, UsbDeviceClassAdbAdded) {
   base::RunLoop().RunUntilIdle();
 
   std::string notification_id =
-      chromeos::CrosUsbDetector::MakeNotificationId(device->guid());
+      CrosUsbDetector::MakeNotificationId(device->guid());
   ASSERT_TRUE(display_service_->GetNotification(notification_id));
   // ADB interface wins.
   EXPECT_EQ(1U, cros_usb_detector_->GetShareableDevices().size());
@@ -435,7 +464,7 @@ TEST_F(CrosUsbDetectorTest, UsbDeviceClassWithoutNotificationAdded) {
   base::RunLoop().RunUntilIdle();
 
   std::string notification_id =
-      chromeos::CrosUsbDetector::MakeNotificationId(device->guid());
+      CrosUsbDetector::MakeNotificationId(device->guid());
   ASSERT_FALSE(display_service_->GetNotification(notification_id));
   EXPECT_EQ(1U, cros_usb_detector_->GetShareableDevices().size());
 }
@@ -451,7 +480,7 @@ TEST_F(CrosUsbDetectorTest, UsbDeviceWithoutProductNameAddedAndRemoved) {
   base::RunLoop().RunUntilIdle();
 
   std::string notification_id =
-      chromeos::CrosUsbDetector::MakeNotificationId(device->guid());
+      CrosUsbDetector::MakeNotificationId(device->guid());
 
   absl::optional<message_center::Notification> notification =
       display_service_->GetNotification(notification_id);
@@ -481,7 +510,7 @@ TEST_F(CrosUsbDetectorTest,
   base::RunLoop().RunUntilIdle();
 
   std::string notification_id =
-      chromeos::CrosUsbDetector::MakeNotificationId(device->guid());
+      CrosUsbDetector::MakeNotificationId(device->guid());
 
   absl::optional<message_center::Notification> notification =
       display_service_->GetNotification(notification_id);
@@ -504,7 +533,7 @@ TEST_F(CrosUsbDetectorTest, UsbDeviceWasThereBeforeAndThenRemoved) {
   base::RunLoop().RunUntilIdle();
 
   std::string notification_id =
-      chromeos::CrosUsbDetector::MakeNotificationId(device->guid());
+      CrosUsbDetector::MakeNotificationId(device->guid());
 
   EXPECT_FALSE(display_service_->GetNotification(notification_id));
 
@@ -522,17 +551,17 @@ TEST_F(
   auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
       0, 1, kManufacturerName, kProductName_1, "002");
   std::string notification_id_1 =
-      chromeos::CrosUsbDetector::MakeNotificationId(device_1->guid());
+      CrosUsbDetector::MakeNotificationId(device_1->guid());
 
   auto device_2 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
       3, 4, kManufacturerName, kProductName_2, "005");
   std::string notification_id_2 =
-      chromeos::CrosUsbDetector::MakeNotificationId(device_2->guid());
+      CrosUsbDetector::MakeNotificationId(device_2->guid());
 
   auto device_3 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
       6, 7, kManufacturerName, kProductName_3, "008");
   std::string notification_id_3 =
-      chromeos::CrosUsbDetector::MakeNotificationId(device_3->guid());
+      CrosUsbDetector::MakeNotificationId(device_3->guid());
 
   // Three usb devices were added and removed before cros_usb_detector was
   // created.
@@ -573,17 +602,17 @@ TEST_F(CrosUsbDetectorTest,
   auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
       0, 1, kManufacturerName, kProductName_1, "002");
   std::string notification_id_1 =
-      chromeos::CrosUsbDetector::MakeNotificationId(device_1->guid());
+      CrosUsbDetector::MakeNotificationId(device_1->guid());
 
   auto device_2 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
       3, 4, kManufacturerName, kProductName_2, "005");
   std::string notification_id_2 =
-      chromeos::CrosUsbDetector::MakeNotificationId(device_2->guid());
+      CrosUsbDetector::MakeNotificationId(device_2->guid());
 
   auto device_3 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
       6, 7, kManufacturerName, kProductName_3, "008");
   std::string notification_id_3 =
-      chromeos::CrosUsbDetector::MakeNotificationId(device_3->guid());
+      CrosUsbDetector::MakeNotificationId(device_3->guid());
 
   // Three usb devices were added before cros_usb_detector was created.
   device_manager_.AddDevice(device_1);
@@ -623,12 +652,12 @@ TEST_F(CrosUsbDetectorTest,
   auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
       0, 1, kManufacturerName, kProductName_1, "002");
   std::string notification_id_1 =
-      chromeos::CrosUsbDetector::MakeNotificationId(device_1->guid());
+      CrosUsbDetector::MakeNotificationId(device_1->guid());
 
   auto device_2 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
       3, 4, kManufacturerName, kProductName_2, "005");
   std::string notification_id_2 =
-      chromeos::CrosUsbDetector::MakeNotificationId(device_2->guid());
+      CrosUsbDetector::MakeNotificationId(device_2->guid());
 
   // Two usb devices were added before cros_usb_detector was created.
   device_manager_.AddDevice(device_1);
@@ -668,17 +697,17 @@ TEST_F(CrosUsbDetectorTest, ThreeUsbDevicesAddedAndRemoved) {
   auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
       0, 1, kManufacturerName, kProductName_1, "002");
   std::string notification_id_1 =
-      chromeos::CrosUsbDetector::MakeNotificationId(device_1->guid());
+      CrosUsbDetector::MakeNotificationId(device_1->guid());
 
   auto device_2 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
       3, 4, kManufacturerName, kProductName_2, "005");
   std::string notification_id_2 =
-      chromeos::CrosUsbDetector::MakeNotificationId(device_2->guid());
+      CrosUsbDetector::MakeNotificationId(device_2->guid());
 
   auto device_3 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
       6, 7, kManufacturerName, kProductName_3, "008");
   std::string notification_id_3 =
-      chromeos::CrosUsbDetector::MakeNotificationId(device_3->guid());
+      CrosUsbDetector::MakeNotificationId(device_3->guid());
 
   ConnectToDeviceManager();
   base::RunLoop().RunUntilIdle();
@@ -730,17 +759,17 @@ TEST_F(CrosUsbDetectorTest, ThreeUsbDeviceAddedAndRemovedDifferentOrder) {
   auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
       0, 1, kManufacturerName, kProductName_1, "002");
   std::string notification_id_1 =
-      chromeos::CrosUsbDetector::MakeNotificationId(device_1->guid());
+      CrosUsbDetector::MakeNotificationId(device_1->guid());
 
   auto device_2 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
       3, 4, kManufacturerName, kProductName_2, "005");
   std::string notification_id_2 =
-      chromeos::CrosUsbDetector::MakeNotificationId(device_2->guid());
+      CrosUsbDetector::MakeNotificationId(device_2->guid());
 
   auto device_3 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
       6, 7, kManufacturerName, kProductName_3, "008");
   std::string notification_id_3 =
-      chromeos::CrosUsbDetector::MakeNotificationId(device_3->guid());
+      CrosUsbDetector::MakeNotificationId(device_3->guid());
 
   ConnectToDeviceManager();
   base::RunLoop().RunUntilIdle();
@@ -914,7 +943,7 @@ TEST_F(CrosUsbDetectorTest, DeviceAllowedInterfacesMaskSetCorrectly) {
 
   // The device should notify because it has an allowed, notifiable interface.
   std::string notification_id =
-      chromeos::CrosUsbDetector::MakeNotificationId(device->guid());
+      CrosUsbDetector::MakeNotificationId(device->guid());
   EXPECT_TRUE(display_service_->GetNotification(notification_id));
 
   EXPECT_EQ(0x00000006U, GetSingleAllowedInterfacesMask());
@@ -1017,7 +1046,7 @@ TEST_F(CrosUsbDetectorTest, AttachUnmountFilesystemSuccess) {
 
   AddDisk("disk1", 3, 4, true);
   AddDisk("disk2", 3, 4, /*mounted=*/false);
-  NotifyMountEvent("disk2", chromeos::disks::DiskMountManager::MOUNTING,
+  NotifyMountEvent("disk2", disks::DiskMountManager::MOUNTING,
                    chromeos::MOUNT_ERROR_INTERNAL);
   AddDisk("disk3", 3, 5, true);
   AddDisk("disk4", 3, 4, true);
@@ -1033,14 +1062,14 @@ TEST_F(CrosUsbDetectorTest, AttachUnmountFilesystemSuccess) {
   EXPECT_EQ(fake_concierge_client_->attach_usb_device_call_count(), 0);
 
   // Unmount events would normally be fired by the DiskMountManager.
-  NotifyMountEvent("disk1", chromeos::disks::DiskMountManager::UNMOUNTING);
+  NotifyMountEvent("disk1", disks::DiskMountManager::UNMOUNTING);
   std::move(callback1).Run(chromeos::MOUNT_ERROR_NONE);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetSingleDeviceInfo().shared_vm_name.has_value());
   EXPECT_EQ(fake_concierge_client_->attach_usb_device_call_count(), 0);
 
   // All unmounts must complete before sharing succeeds.
-  NotifyMountEvent("disk4", chromeos::disks::DiskMountManager::UNMOUNTING);
+  NotifyMountEvent("disk4", disks::DiskMountManager::UNMOUNTING);
   std::move(callback4).Run(chromeos::MOUNT_ERROR_NONE);
   base::RunLoop().RunUntilIdle();
 
@@ -1072,10 +1101,10 @@ TEST_F(CrosUsbDetectorTest, AttachUnmountFilesystemFailure) {
 
   // Unmount events would normally be fired by the DiskMountManager.
   AttachDeviceToVm("VM1", GetSingleDeviceInfo().guid, /*success=*/false);
-  NotifyMountEvent("disk1", chromeos::disks::DiskMountManager::UNMOUNTING);
+  NotifyMountEvent("disk1", disks::DiskMountManager::UNMOUNTING);
   std::move(callback1).Run(chromeos::MOUNT_ERROR_NONE);
   std::move(callback2).Run(chromeos::MOUNT_ERROR_UNKNOWN);
-  NotifyMountEvent("disk3", chromeos::disks::DiskMountManager::UNMOUNTING);
+  NotifyMountEvent("disk3", disks::DiskMountManager::UNMOUNTING);
   std::move(callback3).Run(chromeos::MOUNT_ERROR_NONE);
   base::RunLoop().RunUntilIdle();
 
@@ -1116,15 +1145,17 @@ TEST_F(CrosUsbDetectorTest, ReassignPromptForStorageDevice) {
 
   EXPECT_TRUE(GetSingleDeviceInfo().prompt_before_sharing);
 
-  NotifyMountEvent("disk_early", chromeos::disks::DiskMountManager::UNMOUNTING);
+  NotifyMountEvent("disk_early", disks::DiskMountManager::UNMOUNTING);
   EXPECT_FALSE(GetSingleDeviceInfo().prompt_before_sharing);
 
   // A disk which fails to mount shouldn't cause the prompt to be shown.
   AddDisk("disk_error", 1, 5, /*mounted=*/false);
-  NotifyMountEvent("disk_error", chromeos::disks::DiskMountManager::MOUNTING,
+  NotifyMountEvent("disk_error", disks::DiskMountManager::MOUNTING,
                    chromeos::MOUNT_ERROR_INTERNAL);
   EXPECT_FALSE(GetSingleDeviceInfo().prompt_before_sharing);
 
   AddDisk("disk_success", 1, 5, true);
   EXPECT_TRUE(GetSingleDeviceInfo().prompt_before_sharing);
 }
+
+}  // namespace ash

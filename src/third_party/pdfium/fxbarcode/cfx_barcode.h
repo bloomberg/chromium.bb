@@ -7,11 +7,11 @@
 #ifndef FXBARCODE_CFX_BARCODE_H_
 #define FXBARCODE_CFX_BARCODE_H_
 
+#include <stdint.h>
+
 #include <memory>
 
-#include "core/fxcrt/fx_coordinates.h"
-#include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/widestring.h"
 #include "core/fxge/dib/fx_dib.h"
 #include "fxbarcode/BC_Library.h"
 
@@ -46,8 +46,7 @@ class CFX_Barcode {
   bool SetFontSize(float size);
   bool SetFontColor(FX_ARGB color);
 
-  bool SetTextLocation(BC_TEXT_LOC location);
-
+  void SetTextLocation(BC_TEXT_LOC location);
   bool SetWideNarrowRatio(int8_t ratio);
   bool SetStartChar(char start);
   bool SetEndChar(char end);

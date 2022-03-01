@@ -13,7 +13,7 @@
 #include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -265,9 +265,10 @@ void ExtensionActionRunner::RunPendingScriptsForExtension(
 
   content::NavigationEntry* visible_entry =
       web_contents()->GetController().GetVisibleEntry();
-  // Refuse to run if there's no visible entry, because we have no idea of
-  // determining if it's the proper page. This should rarely, if ever, happen.
-  if (!visible_entry)
+  // Refuse to run if there's no visible entry that is not the initial
+  // NavigationEntry, because we have no way of determining if it's the proper
+  // page. This should rarely, if ever, happen.
+  if (!visible_entry || visible_entry->IsInitialEntry())
     return;
 
   // We add this to the list of permitted extensions and erase pending entries
@@ -482,7 +483,10 @@ void ExtensionActionRunner::DidFinishNavigation(
   declarative_net_request::RulesMonitorService* rules_monitor_service =
       declarative_net_request::RulesMonitorService::Get(browser_context_);
 
-  const bool is_main_frame = navigation_handle->IsInMainFrame();
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  const bool is_main_frame = navigation_handle->IsInPrimaryMainFrame();
   const bool has_committed = navigation_handle->HasCommitted();
 
   if (is_main_frame && !has_committed && rules_monitor_service) {

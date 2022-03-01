@@ -9,13 +9,15 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/display/display.h"
 #include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
@@ -24,11 +26,6 @@
 #include "ui/gfx/geometry/insets_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
-
-#if defined(OS_WIN)
-#include <windows.h>
-#include "ui/display/win/dpi.h"
-#endif
 
 namespace display {
 namespace {
@@ -160,10 +157,6 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpec(const std::string& spec) {
 ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
     const std::string& spec,
     int64_t id) {
-#if defined(OS_WIN)
-  gfx::Rect bounds_in_native(
-      gfx::Size(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN)));
-#else
   // Default bounds for a display.
   const int kDefaultHostWindowX = 200;
   const int kDefaultHostWindowY = 200;
@@ -171,7 +164,6 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
   const int kDefaultHostWindowHeight = 768;
   gfx::Rect bounds_in_native(kDefaultHostWindowX, kDefaultHostWindowY,
                              kDefaultHostWindowWidth, kDefaultHostWindowHeight);
-#endif
   std::string main_spec = spec;
 
   float zoom_factor = 1.0f;
@@ -213,11 +205,7 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
   }
 
   float device_scale_factor = 1.0f;
-  if (!GetDisplayBounds(main_spec, &bounds_in_native, &device_scale_factor)) {
-#if defined(OS_WIN)
-    device_scale_factor = win::GetDPIScale();
-#endif
-  }
+  GetDisplayBounds(main_spec, &bounds_in_native, &device_scale_factor);
 
   ManagedDisplayModeList display_modes;
   parts = base::SplitString(main_spec, "#", base::KEEP_WHITESPACE,
@@ -267,6 +255,7 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
       id, base::StringPrintf("Display-%d", static_cast<int>(id)), has_overscan);
   display_info.set_device_scale_factor(device_scale_factor);
   display_info.SetRotation(rotation, Display::RotationSource::ACTIVE);
+  display_info.SetRotation(rotation, Display::RotationSource::USER);
   display_info.set_zoom_factor(zoom_factor);
   display_info.SetBounds(bounds_in_native);
 
@@ -402,6 +391,13 @@ void ManagedDisplayInfo::Copy(const ManagedDisplayInfo& native_info) {
 }
 
 void ManagedDisplayInfo::SetBounds(const gfx::Rect& new_bounds_in_native) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  static bool reject_square = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kRejectSquareDisplay);
+  if (reject_square)
+    DCHECK_NE(new_bounds_in_native.width(), new_bounds_in_native.height());
+#endif
+
   bounds_in_native_ = new_bounds_in_native;
   size_in_pixel_ = new_bounds_in_native.size();
   UpdateDisplaySize();

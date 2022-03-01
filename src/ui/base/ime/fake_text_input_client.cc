@@ -32,7 +32,12 @@ void FakeTextInputClient::SetTextAndSelection(const std::u16string& text,
 }
 
 void FakeTextInputClient::SetCompositionText(
-    const CompositionText& composition) {}
+    const CompositionText& composition) {
+  text_.insert(selection_.start(), composition.text);
+  const size_t new_cursor = selection_.start() + composition.text.length();
+  composition_range_ = gfx::Range(selection_.start(), new_cursor);
+  selection_ = gfx::Range(new_cursor, new_cursor);
+}
 
 uint32_t FakeTextInputClient::ConfirmCompositionText(bool keep_selection) {
   return UINT32_MAX;
@@ -43,18 +48,18 @@ void FakeTextInputClient::ClearCompositionText() {}
 void FakeTextInputClient::InsertText(
     const std::u16string& text,
     TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-  if (!composition_range_.is_empty()) {
-    text_.replace(composition_range_.start(), composition_range_.length(),
-                  text);
-  } else {
-    text_.replace(selection_.start(), selection_.length(), text);
-  }
+  const gfx::Range replacement_range =
+      composition_range_.is_empty() ? selection_ : composition_range_;
+
+  text_.replace(replacement_range.start(), replacement_range.length(), text);
 
   if (cursor_behavior ==
       TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText) {
-    selection_ = gfx::Range(selection_.start() + text.length(),
-                            selection_.end() + text.length());
+    selection_ = gfx::Range(replacement_range.start() + text.length(),
+                            replacement_range.start() + text.length());
   }
+
+  composition_range_ = gfx::Range();
 }
 
 void FakeTextInputClient::InsertChar(const KeyEvent& event) {}
@@ -97,7 +102,7 @@ bool FakeTextInputClient::HasCompositionText() const {
 }
 
 ui::TextInputClient::FocusReason FakeTextInputClient::GetFocusReason() const {
-  return ui::TextInputClient::FOCUS_REASON_NONE;
+  return ui::TextInputClient::FOCUS_REASON_MOUSE;
 }
 
 bool FakeTextInputClient::GetTextRange(gfx::Range* range) const {
@@ -155,7 +160,7 @@ bool FakeTextInputClient::ShouldDoLearning() {
   return false;
 }
 
-#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 bool FakeTextInputClient::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
@@ -183,11 +188,13 @@ bool FakeTextInputClient::SetAutocorrectRange(const gfx::Range& range) {
 }
 #endif
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 void FakeTextInputClient::GetActiveTextInputControlLayoutBounds(
     absl::optional<gfx::Rect>* control_bounds,
     absl::optional<gfx::Rect>* selection_bounds) {}
+#endif
 
+#if defined(OS_WIN)
 void FakeTextInputClient::SetActiveCompositionForAccessibility(
     const gfx::Range& range,
     const std::u16string& active_composition_text,

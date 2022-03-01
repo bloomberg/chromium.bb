@@ -14,7 +14,8 @@
 #include "third_party/blink/renderer/core/animation/svg_interpolation_environment.h"
 #include "third_party/blink/renderer/core/svg/svg_transform.h"
 #include "third_party/blink/renderer/core/svg/svg_transform_list.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -57,10 +58,10 @@ namespace {
 
 std::unique_ptr<InterpolableValue> TranslateToInterpolableValue(
     SVGTransform* transform) {
-  FloatPoint translate = transform->Translate();
+  gfx::PointF translate = transform->Translate();
   auto result = std::make_unique<InterpolableList>(2);
-  result->Set(0, std::make_unique<InterpolableNumber>(translate.X()));
-  result->Set(1, std::make_unique<InterpolableNumber>(translate.Y()));
+  result->Set(0, std::make_unique<InterpolableNumber>(translate.x()));
+  result->Set(1, std::make_unique<InterpolableNumber>(translate.y()));
   return std::move(result);
 }
 
@@ -78,8 +79,8 @@ std::unique_ptr<InterpolableValue> ScaleToInterpolableValue(
     SVGTransform* transform) {
   FloatSize scale = transform->Scale();
   auto result = std::make_unique<InterpolableList>(2);
-  result->Set(0, std::make_unique<InterpolableNumber>(scale.Width()));
-  result->Set(1, std::make_unique<InterpolableNumber>(scale.Height()));
+  result->Set(0, std::make_unique<InterpolableNumber>(scale.width()));
+  result->Set(1, std::make_unique<InterpolableNumber>(scale.height()));
   return std::move(result);
 }
 
@@ -95,11 +96,11 @@ SVGTransform* ScaleFromInterpolableValue(const InterpolableValue& value) {
 
 std::unique_ptr<InterpolableValue> RotateToInterpolableValue(
     SVGTransform* transform) {
-  FloatPoint rotation_center = transform->RotationCenter();
+  gfx::PointF rotation_center = transform->RotationCenter();
   auto result = std::make_unique<InterpolableList>(3);
   result->Set(0, std::make_unique<InterpolableNumber>(transform->Angle()));
-  result->Set(1, std::make_unique<InterpolableNumber>(rotation_center.X()));
-  result->Set(2, std::make_unique<InterpolableNumber>(rotation_center.Y()));
+  result->Set(1, std::make_unique<InterpolableNumber>(rotation_center.x()));
+  result->Set(2, std::make_unique<InterpolableNumber>(rotation_center.y()));
   return std::move(result);
 }
 

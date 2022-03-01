@@ -14,7 +14,7 @@
 namespace {
 
 const CXFA_Node::PropertyData kLinePropertyData[] = {
-    {XFA_Element::Edge, 1, 0},
+    {XFA_Element::Edge, 1, {}},
 };
 
 const CXFA_Node::AttributeData kLineAttributeData[] = {
@@ -32,7 +32,7 @@ const CXFA_Node::AttributeData kLineAttributeData[] = {
 CXFA_Line::CXFA_Line(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
+                {XFA_XDPPACKET::kTemplate, XFA_XDPPACKET::kForm},
                 XFA_ObjectType::Node,
                 XFA_Element::Line,
                 kLinePropertyData,

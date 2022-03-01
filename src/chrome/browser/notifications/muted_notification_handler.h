@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -25,6 +26,8 @@ class MutedNotificationHandler : public NotificationHandler {
     kBodyClick,
     // The user clicked on the "Show" action button.
     kShowClick,
+    // The user clicked on the "Snooze" action button.
+    kSnoozeClick,
   };
 
   // Delegate for handling muted notification actions.
@@ -55,8 +58,10 @@ class MutedNotificationHandler : public NotificationHandler {
                base::OnceClosure completed_closure) override;
   void OpenSettings(Profile* profile, const GURL& origin) override;
 
+  Delegate* get_delegate_for_testing() const { return delegate_; }
+
  private:
-  Delegate* delegate_;
+  raw_ptr<Delegate> delegate_;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_MUTED_NOTIFICATION_HANDLER_H_

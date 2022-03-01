@@ -17,6 +17,7 @@
 <translation id="1516966594427080024">Öppna ett nytt fönster i inkognitoläge</translation>
 <translation id="152892567002884378">Höj volymen</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, sedan <ph name="ESC" /></translation>
+<translation id="1586324912145647027">Öppna skrivbord 1 till 8</translation>
 <translation id="1652741121070700329">Placera markören först i föregående ord</translation>
 <translation id="1679841710523778799">Öka ljusstyrkan</translation>
 <translation id="168356808214100546">Tryck och håll <ph name="ALT" />, tryck på <ph name="TAB" /> tills du når fönstret som du vill öppna och släpp sedan tangenten.</translation>
@@ -52,7 +53,6 @@
 <translation id="2530339807289914946">Rulla nedåt på webbsidan</translation>
 <translation id="2530896289327917474">Aktivera eller inaktivera textmarkörläge</translation>
 <translation id="2574014812750545982">Återställ zoomnivån på sidan</translation>
-<translation id="2596078834055697711">Ta en skärmbild av fönstret</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, sedan <ph name="TAB" /> eller <ph name="RIGHT" /></translation>
 <translation id="2750942583782703988">Läs in den aktuella sidan igen</translation>
 <translation id="2764005613199379871">Flytta fokus till sökadressfältet</translation>
@@ -67,11 +67,11 @@
 <translation id="3020183492814296499">Genvägar</translation>
 <translation id="3084301071537457911">Markera nästa objekt på hyllan</translation>
 <translation id="309173601632226815">Markera översiktsknappen på hyllan</translation>
-<translation id="3105917916468784889">Ta en skärmbild</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Fokusera på adressfältet</translation>
 <translation id="3256109297135787951">Ta bort markeringen från ett objekt på hyllan</translation>
 <translation id="3288816184963444640">Stäng det aktuella fönstret</translation>
+<translation id="3350805006883559974">Visa aktivt fönster överst</translation>
 <translation id="3407560819924487926">Öppna aktivitetshanteraren</translation>
 <translation id="3417835166382867856">Sök bland flikar</translation>
 <translation id="3422679037938588196">Hitta föregående träff för sökningen</translation>
@@ -109,7 +109,6 @@
 <translation id="4556221320735744018">Visa hjälpen för kortkommandon</translation>
 <translation id="4609344656788228519"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="BACK1" /> eller <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="SHIFT" /><ph name="SEPARATOR3" /><ph name="BACK2" /></translation>
 <translation id="4628718545549558538">Klicka i statusfältet där kontobilden visas</translation>
-<translation id="4642092649622328492">Ta en skärmbild av en del av skärmen</translation>
 <translation id="4698850295812410683">Visa verktyg för e-penna</translation>
 <translation id="4801989101741319327">Placera markören efter nästa ord</translation>
 <translation id="4866066940972151697">Aktivera skrivbordet till höger</translation>
@@ -125,17 +124,19 @@
 <translation id="526651782186312376">Markera text till radens början</translation>
 <translation id="5316716239522500219">Spegla monitorer</translation>
 <translation id="539072479502328326">Aktivera och inaktivera dockad skärmförstoring</translation>
+<translation id="5466615362193675484">Aktivera/inaktivera menyn för storleksändringslås</translation>
 <translation id="5541719484267030947">Tryck på <ph name="ESC" /> medan du drar fliken</translation>
 <translation id="5554139136362089836">Sök på den aktuella sidan</translation>
 <translation id="5563050856984839829">Tryck på <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> och klicka på en länk</translation>
 <translation id="561814908794220892">Öppna webbsidan på en ny flik</translation>
 <translation id="5620219513321115856">Flytta det aktiva fönstret till skrivbordet till höger</translation>
+<translation id="5699366815052349604">Tilldela det aktiva fönstret till alla skrivbord</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> eller <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
 <translation id="5757111373163288447">Öppna länken på fliken</translation>
 <translation id="5757474750054631686">Svagare belysning (endast tangentbord med belysning underifrån)</translation>
 <translation id="587531134027443617">Radera föregående ord</translation>
 <translation id="5899919361772749550">Visa eller dölj konsolen Verktyg för programmerare</translation>
-<translation id="5919628958418675842">Aktivera eller inaktivera sekretesskärmen</translation>
+<translation id="5919628958418675842">Aktivera eller inaktivera integritetsskärmen</translation>
 <translation id="5921745308587794300">Rotera fönstret</translation>
 <translation id="5926306472221400972">Ta en skärmbild av hela skärmen</translation>
 <translation id="6022924867608035986">Rensa sökrutan</translation>
@@ -148,6 +149,7 @@
 <translation id="6276708887952587684">Visa sidkälla</translation>
 <translation id="6321940490215594447">Öppna sidan Historik</translation>
 <translation id="6340769215862220182">Zooma in</translation>
+<translation id="634687982629734605">Flytta fokus mellan: statusfältet (där kontobilden visas), översikten, adressfältet, bokmärkesfältet (om det visas), webbsidan som är öppen, nedladdningsfältet (om det visas) Om en fokuserbar dialogruta visas flyttar du fokus dit i stället.</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Markera text till radens slut</translation>
 <translation id="6425378783626925378">Klicka på ikonerna 1–8 på hyllan</translation>
@@ -191,7 +193,6 @@
 <translation id="8026334261755873520">Rensa webbinformation</translation>
 <translation id="8130528849632411619">Gå till början av dokumentet</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> eller <ph name="E" /></translation>
-<translation id="8232835244134740473">Flytta fokus mellan: statusfältet (där kontobilden visas), översikten, adressfältet, bokmärkesfältet (om det visas), webbsidan som är öppen, nedladdningsfältet (om det visas)</translation>
 <translation id="8234414138295101081">Rotera skärmen 90 grader</translation>
 <translation id="8241665785394195545">höger parentes</translation>
 <translation id="8264941229485248811">Visa eller dölj inspektören för Verktyg för programmerare</translation>
@@ -205,10 +206,12 @@
 <translation id="8644639153978066712">Visa dolda filer i appen Filer</translation>
 <translation id="8717459106217102612">Markera föregående ord eller bokstav</translation>
 <translation id="8727232706774971183">Visa dina aviseringar</translation>
+<translation id="8855548128280178372"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="SEARCH" /><ph name="SEPARATOR2" /> 1 till 8</translation>
 <translation id="8855885154700222542">Tangent för helskärm</translation>
 <translation id="8881584919399569791">Flytta det aktiva fönstret till skrivbordet till vänster</translation>
 <translation id="88986195241502842">Nedåt en sida</translation>
 <translation id="8924883688469390268">Växla till föregående användare</translation>
+<translation id="8941626538514548667">Fokusera på webbinnehåll i webbläsaren</translation>
 <translation id="8977648847395357314">Markera texten i adressfältet</translation>
 <translation id="8982190978301344584">Visa menyn som innehåller listan över tillgängliga IME.</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 till 8</translation>

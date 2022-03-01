@@ -28,8 +28,7 @@ AUTOF_COMPILE := $(CC) $(ANSIFLAGS)                              \
 
 # AUTOF driver sources (i.e., C files)
 #
-AUTOF_DRV_SRC := $(AUTOF_DIR)/afangles.c \
-                 $(AUTOF_DIR)/afblue.c   \
+AUTOF_DRV_SRC := $(AUTOF_DIR)/afblue.c   \
                  $(AUTOF_DIR)/afcjk.c    \
                  $(AUTOF_DIR)/afdummy.c  \
                  $(AUTOF_DIR)/afglobal.c \
@@ -40,17 +39,17 @@ AUTOF_DRV_SRC := $(AUTOF_DIR)/afangles.c \
                  $(AUTOF_DIR)/afmodule.c \
                  $(AUTOF_DIR)/afranges.c \
                  $(AUTOF_DIR)/afshaper.c \
-                 $(AUTOF_DIR)/afwarp.c
 
 # AUTOF driver headers
 #
-AUTOF_DRV_H := $(AUTOF_DRV_SRC:%c=%h)  \
-               $(AUTOF_DIR)/afcover.h  \
-               $(AUTOF_DIR)/aferrors.h \
-               $(AUTOF_DIR)/afscript.h \
-               $(AUTOF_DIR)/afstyles.h \
-               $(AUTOF_DIR)/aftypes.h  \
-               $(AUTOF_DIR)/afwrtsys.h
+AUTOF_DRV_H := $(AUTOF_DRV_SRC:%c=%h)   \
+               $(AUTOF_DIR)/afcover.h   \
+               $(AUTOF_DIR)/aferrors.h  \
+               $(AUTOF_DIR)/afscript.h  \
+               $(AUTOF_DIR)/afstyles.h  \
+               $(AUTOF_DIR)/aftypes.h   \
+               $(AUTOF_DIR)/afws-decl.h \
+               $(AUTOF_DIR)/afws-iter.h
 
 
 # AUTOF driver object(s)

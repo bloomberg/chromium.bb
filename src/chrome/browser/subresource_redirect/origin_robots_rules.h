@@ -10,10 +10,13 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
+
+namespace base {
+class TimeDelta;
+}
 
 namespace network {
 class SharedURLLoaderFactory;

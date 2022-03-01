@@ -12,7 +12,7 @@
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {waitAfterNextRender} from 'chrome://test/test_util.js';
 // clang-format on
 
 suite('InternetKnownNetworksPage', function() {
@@ -99,7 +99,8 @@ suite('InternetKnownNetworksPage', function() {
       const preferredElems = preferredList.querySelectorAll('cr-link-row');
       assertEquals(preferredElems.length, 1);
 
-      const deepLinkElement = preferredElems[0].$$('#icon');
+      const deepLinkElement =
+          preferredElems[0].shadowRoot.querySelector('#icon');
       assertTrue(!!deepLinkElement);
       await test_util.waitAfterNextRender();
       assertEquals(

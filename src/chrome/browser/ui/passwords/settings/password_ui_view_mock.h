@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/passwords/settings/password_manager_presenter.h"
 #include "chrome/browser/ui/passwords/settings/password_ui_view.h"
@@ -17,6 +17,10 @@
 class MockPasswordUIView : public PasswordUIView {
  public:
   explicit MockPasswordUIView(Profile* profile);
+
+  MockPasswordUIView(const MockPasswordUIView&) = delete;
+  MockPasswordUIView& operator=(const MockPasswordUIView&) = delete;
+
   ~MockPasswordUIView() override;
 
   Profile* GetProfile() override;
@@ -34,10 +38,8 @@ class MockPasswordUIView : public PasswordUIView {
           const std::vector<std::unique_ptr<password_manager::PasswordForm>>&));
 
  private:
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   PasswordManagerPresenter password_manager_presenter_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPasswordUIView);
 };
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_SETTINGS_PASSWORD_UI_VIEW_MOCK_H_

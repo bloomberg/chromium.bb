@@ -12,10 +12,10 @@
 #include <iostream>
 #include <memory>
 
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -213,6 +213,9 @@ class SymbolContext {
       Singleton<SymbolContext, LeakySingletonTraits<SymbolContext> >::get();
   }
 
+  SymbolContext(const SymbolContext&) = delete;
+  SymbolContext& operator=(const SymbolContext&) = delete;
+
   // For the given trace, attempts to resolve the symbols, and output a trace
   // to the ostream os.  The format for each line of the backtrace is:
   //
@@ -282,7 +285,6 @@ class SymbolContext {
   }
 
   Lock lock_;
-  DISALLOW_COPY_AND_ASSIGN(SymbolContext);
 };
 
 }  // namespace

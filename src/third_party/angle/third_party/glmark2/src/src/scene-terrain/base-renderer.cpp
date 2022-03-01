@@ -21,26 +21,33 @@
  */
 #include "renderer.h"
 
-BaseRenderer::BaseRenderer(const LibMatrix::vec2 &size) :
+BaseRenderer::BaseRenderer() :
     texture_(0), input_texture_(0), fbo_(0), depth_renderbuffer_(0),
-    min_filter_(GL_LINEAR), mag_filter_(GL_LINEAR),
+    owns_fbo_(false), min_filter_(GL_LINEAR), mag_filter_(GL_LINEAR),
     wrap_s_(GL_CLAMP_TO_EDGE), wrap_t_(GL_CLAMP_TO_EDGE)
 {
-    setup(size, true, true);
 }
 
 BaseRenderer::~BaseRenderer()
 {
     glDeleteTextures(1, &texture_);
-    glDeleteRenderbuffers(1, &depth_renderbuffer_);
-    glDeleteFramebuffers(1, &fbo_);
+    GLExtensions::DeleteRenderbuffers(1, &depth_renderbuffer_);
+    if (owns_fbo_)
+        GLExtensions::DeleteFramebuffers(1, &fbo_);
 }
 
 void
-BaseRenderer::setup(const LibMatrix::vec2 &size, bool onscreen, bool has_depth)
+BaseRenderer::setup_onscreen(Canvas& canvas)
+{
+    size_ = LibMatrix::vec2(canvas.width(), canvas.height());
+    recreate(&canvas, false);
+}
+
+void
+BaseRenderer::setup_offscreen(const LibMatrix::vec2 &size, bool has_depth)
 {
     size_ = size;
-    recreate(onscreen, has_depth);
+    recreate(nullptr, has_depth);
 }
 
 void
@@ -57,9 +64,9 @@ BaseRenderer::setup_texture(GLint min_filter, GLint mag_filter,
 void
 BaseRenderer::make_current()
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
     glViewport(0, 0, size_.x(), size_.y());
-    if (!fbo_ || depth_renderbuffer_) {
+    if (!owns_fbo_ || depth_renderbuffer_) {
         glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE);
     }
@@ -72,28 +79,34 @@ BaseRenderer::make_current()
 void
 BaseRenderer::update_mipmap()
 {
-    if (texture_ && min_filter_ != GL_NEAREST && min_filter_ != GL_LINEAR) {
+    if (texture_ && GLExtensions::GenerateMipmap &&
+        min_filter_ != GL_NEAREST && min_filter_ != GL_LINEAR) {
         glBindTexture(GL_TEXTURE_2D, texture_);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        GLExtensions::GenerateMipmap(GL_TEXTURE_2D);
     }
 }
 
 void
-BaseRenderer::recreate(bool onscreen, bool has_depth)
+BaseRenderer::recreate(Canvas* canvas, bool has_depth)
 {
     if (texture_) {
         glDeleteTextures(1, &texture_);
         texture_ = 0;
     }
-    if (fbo_) {
-        glDeleteRenderbuffers(1, &depth_renderbuffer_);
+    if (owns_fbo_ && fbo_) {
+        GLExtensions::DeleteRenderbuffers(1, &depth_renderbuffer_);
         depth_renderbuffer_ = 0;
-        glDeleteFramebuffers(1, &fbo_);
+        GLExtensions::DeleteFramebuffers(1, &fbo_);
         fbo_ = 0;
     }
-    if (!onscreen) {
+
+    if (canvas) {
+        fbo_ = canvas->fbo();
+        owns_fbo_ = false;
+    } else {
         create_texture();
         create_fbo(has_depth);
+        owns_fbo_ = true;
     }
 }
 
@@ -116,6 +129,11 @@ BaseRenderer::update_texture_parameters()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter_);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_s_);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_t_);
+        if (!GLExtensions::GenerateMipmap) {
+            glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP,
+                            (min_filter_ != GL_NEAREST && min_filter_ != GL_LINEAR) ?
+                                GL_TRUE : GL_FALSE);
+        }
     }
     update_mipmap();
 }
@@ -125,20 +143,24 @@ BaseRenderer::create_fbo(bool has_depth)
 {
     if (has_depth) {
         /* Create a renderbuffer for depth storage */
-        glGenRenderbuffers(1, &depth_renderbuffer_);
-        glBindRenderbuffer(GL_RENDERBUFFER, depth_renderbuffer_);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16,
+        GLExtensions::GenRenderbuffers(1, &depth_renderbuffer_);
+        GLExtensions::BindRenderbuffer(GL_RENDERBUFFER, depth_renderbuffer_);
+        GLExtensions::RenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16,
                 size_.x(), size_.y());
     }
 
+    GLint prev_fbo;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prev_fbo);
+
     /* Create the FBO and attach the texture and the renderebuffer */
-    glGenFramebuffers(1, &fbo_);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+    GLExtensions::GenFramebuffers(1, &fbo_);
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    GLExtensions::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
             GL_TEXTURE_2D, texture_, 0);
     if (has_depth) {
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+        GLExtensions::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                 GL_RENDERBUFFER, depth_renderbuffer_);
     }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, prev_fbo);
 }
