@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/ignore_result.h"
 #include "base/no_destructor.h"
 #include "content/app_shim_remote_cocoa/render_widget_host_ns_view_bridge.h"
 #include "content/app_shim_remote_cocoa/render_widget_host_ns_view_host_helper.h"
@@ -46,6 +46,11 @@ class RenderWidgetHostNSViewBridgeOwner
         base::BindOnce(&RenderWidgetHostNSViewBridgeOwner::OnMojoDisconnect,
                        base::Unretained(this)));
   }
+
+  RenderWidgetHostNSViewBridgeOwner(const RenderWidgetHostNSViewBridgeOwner&) =
+      delete;
+  RenderWidgetHostNSViewBridgeOwner& operator=(
+      const RenderWidgetHostNSViewBridgeOwner&) = delete;
 
  private:
   void OnMojoDisconnect() { delete this; }
@@ -135,8 +140,6 @@ class RenderWidgetHostNSViewBridgeOwner
   std::unique_ptr<RenderWidgetHostNSViewBridge> bridge_;
   base::scoped_nsobject<NSAccessibilityRemoteUIElement>
       remote_accessibility_element_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewBridgeOwner);
 };
 }
 

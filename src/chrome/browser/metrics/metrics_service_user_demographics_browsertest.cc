@@ -21,7 +21,7 @@
 #include "chrome/browser/metrics/testing/sync_metrics_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/metrics/delegating_provider.h"
 #include "components/metrics/demographics/demographic_metrics_provider.h"
@@ -60,6 +60,11 @@ class MetricsServiceUserDemographicsBrowserTest
     }
   }
 
+  MetricsServiceUserDemographicsBrowserTest(
+      const MetricsServiceUserDemographicsBrowserTest&) = delete;
+  MetricsServiceUserDemographicsBrowserTest& operator=(
+      const MetricsServiceUserDemographicsBrowserTest&) = delete;
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SyncTest::SetUpCommandLine(command_line);
     // Enable the metrics service for testing (in recording-only mode).
@@ -89,8 +94,6 @@ class MetricsServiceUserDemographicsBrowserTest
   bool metrics_consent_ = true;
 
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(MetricsServiceUserDemographicsBrowserTest);
 };
 
 // TODO(crbug/1016118): Add the remaining test cases.
@@ -119,7 +122,7 @@ IN_PROC_BROWSER_TEST_P(MetricsServiceUserDemographicsBrowserTest,
   Profile* test_profile = ProfileManager::GetActiveUserProfile();
 
   // Enable sync for the test profile.
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       test::InitializeProfileForSync(test_profile,
                                      GetFakeServer()->AsWeakPtr());
   harness->SetupSync();
@@ -145,12 +148,12 @@ IN_PROC_BROWSER_TEST_P(MetricsServiceUserDemographicsBrowserTest,
     histogram.ExpectTotalCount("UMA.UserDemographics.Status", /*count=*/0);
   }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !defined(OS_CHROMEOS)
   // Sign out the user to revoke all refresh tokens. This prevents any posted
   // tasks from successfully fetching an access token during the tear-down
   // phase and crashing on a DCHECK. See crbug/1102746 for more details.
   harness->SignOutPrimaryAccount();
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // !defined(OS_CHROMEOS)
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

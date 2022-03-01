@@ -4,10 +4,9 @@
 
 #include "components/autofill/core/browser/test_autofill_client.h"
 
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/version_info/channel.h"
@@ -103,7 +102,7 @@ translate::TranslateDriver* TestAutofillClient::GetTranslateDriver() {
 }
 
 #if !defined(OS_IOS)
-std::unique_ptr<InternalAuthenticator>
+std::unique_ptr<webauthn::InternalAuthenticator>
 TestAutofillClient::CreateCreditCardInternalAuthenticator(
     content::RenderFrameHost* rfh) {
   return std::make_unique<TestInternalAuthenticator>();
@@ -199,7 +198,7 @@ void TestAutofillClient::ConfirmSaveCreditCardLocally(
   confirm_save_credit_card_locally_called_ = true;
   offer_to_save_credit_card_bubble_was_shown_ = options.show_prompt;
   save_credit_card_options_ = options;
-  std::move(callback).Run(AutofillClient::ACCEPTED);
+  std::move(callback).Run(AutofillClient::SaveCardOfferUserDecision::kAccepted);
 }
 
 void TestAutofillClient::ConfirmSaveCreditCardToCloud(
@@ -209,7 +208,8 @@ void TestAutofillClient::ConfirmSaveCreditCardToCloud(
     UploadSaveCardPromptCallback callback) {
   offer_to_save_credit_card_bubble_was_shown_ = options.show_prompt;
   save_credit_card_options_ = options;
-  std::move(callback).Run(AutofillClient::ACCEPTED, {});
+  std::move(callback).Run(AutofillClient::SaveCardOfferUserDecision::kAccepted,
+                          {});
 }
 
 void TestAutofillClient::CreditCardUploadCompleted(bool card_saved) {}
@@ -254,6 +254,10 @@ void TestAutofillClient::UpdatePopup(const std::vector<Suggestion>& suggestions,
                                      PopupType popup_type) {}
 
 void TestAutofillClient::HideAutofillPopup(PopupHidingReason reason) {}
+
+void TestAutofillClient::ShowVirtualCardErrorDialog(bool is_permanent_error) {
+  virtual_card_error_dialog_shown_ = true;
+}
 
 bool TestAutofillClient::IsAutocompleteEnabled() {
   return true;
@@ -302,6 +306,10 @@ void TestAutofillClient::set_form_origin(const GURL& url) {
   // Also reset source_id_.
   source_id_ = ukm::UkmRecorder::GetNewSourceID();
   test_ukm_recorder_.UpdateSourceURL(source_id_, form_origin_);
+}
+
+void TestAutofillClient::set_last_committed_url(const GURL& url) {
+  last_committed_url_ = url;
 }
 
 ukm::TestUkmRecorder* TestAutofillClient::GetTestUkmRecorder() {

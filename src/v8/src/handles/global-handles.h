@@ -10,10 +10,13 @@
 #include <utility>
 #include <vector>
 
+#include "include/v8-callbacks.h"
+#include "include/v8-persistent-handle.h"
 #include "include/v8-profiler.h"
-#include "include/v8.h"
+#include "include/v8-traced-handle.h"
 #include "src/handles/handles.h"
 #include "src/heap/heap.h"
+#include "src/objects/heap-object.h"
 #include "src/objects/objects.h"
 #include "src/utils/utils.h"
 
@@ -100,18 +103,18 @@ class V8_EXPORT_PRIVATE GlobalHandles final {
   Handle<Object> Create(Address value);
 
   template <typename T>
-  Handle<T> Create(T value) {
-    static_assert(std::is_base_of<Object, T>::value, "static type violation");
-    // The compiler should only pick this method if T is not Object.
-    static_assert(!std::is_same<Object, T>::value, "compiler error");
-    return Handle<T>::cast(Create(Object(value)));
-  }
+  inline Handle<T> Create(T value);
 
-  Handle<Object> CreateTraced(Object value, Address* slot, bool has_destructor,
+  Handle<Object> CreateTraced(Object value, Address* slot,
+                              GlobalHandleDestructionMode destruction_mode,
+                              GlobalHandleStoreMode store_mode,
                               bool is_on_stack);
-  Handle<Object> CreateTraced(Object value, Address* slot, bool has_destructor);
+  Handle<Object> CreateTraced(Object value, Address* slot,
+                              GlobalHandleDestructionMode destruction_mode,
+                              GlobalHandleStoreMode store_mode);
   Handle<Object> CreateTraced(Address value, Address* slot,
-                              bool has_destructor);
+                              GlobalHandleDestructionMode destruction_mode,
+                              GlobalHandleStoreMode store_mode);
 
   void RecordStats(HeapStats* stats);
 
@@ -357,11 +360,7 @@ class GlobalHandleVector {
   void Push(T val) { locations_.push_back(val.ptr()); }
   // Handles into the GlobalHandleVector become invalid when they are removed,
   // so "pop" returns a raw object rather than a handle.
-  T Pop() {
-    T obj = T::cast(Object(locations_.back()));
-    locations_.pop_back();
-    return obj;
-  }
+  inline T Pop();
 
   Iterator begin() { return Iterator(locations_.begin()); }
   Iterator end() { return Iterator(locations_.end()); }

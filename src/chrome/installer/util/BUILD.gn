@@ -48,6 +48,7 @@ static_library("with_no_strings") {
     "//chrome/common:constants",
     "//components/variations",
     "//content/public/common:result_codes",
+    "//third_party/abseil-cpp:absl",
   ]
 
   # The constants target checks the Chrome distribution from this target. Both
@@ -103,6 +104,7 @@ static_library("with_no_strings") {
       "//chrome/install_static:install_static_util",
       "//components/base32",
       "//components/metrics",
+      "//components/version_info:channel",
       "//courgette:courgette_lib",
       "//crypto",
       "//rlz/buildflags",
@@ -115,14 +117,11 @@ static_library("with_no_strings") {
       "wtsapi32.lib",
     ]
 
-    configs += [
-      "//build/config:precompiled_headers",
-
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      "//build/config/compiler:no_size_t_to_int_warning",
-    ]
+    configs += [ "//build/config:precompiled_headers" ]
 
     sources += [
+      "additional_parameters.cc",
+      "additional_parameters.h",
       "advanced_firewall_manager_win.cc",
       "advanced_firewall_manager_win.h",
       "app_command.cc",
@@ -135,8 +134,6 @@ static_library("with_no_strings") {
       "beacons.h",
       "callback_work_item.cc",
       "callback_work_item.h",
-      "channel_info.cc",
-      "channel_info.h",
       "conditional_work_item_list.cc",
       "conditional_work_item_list.h",
       "copy_tree_work_item.cc",
@@ -295,10 +292,10 @@ if (is_win) {
 
   test("installer_util_unittests") {
     sources = [
+      "additional_parameters_unittest.cc",
       "advanced_firewall_manager_win_unittest.cc",
       "beacons_unittest.cc",
       "callback_work_item_unittest.cc",
-      "channel_info_unittest.cc",
       "conditional_work_item_list_unittest.cc",
       "copy_tree_work_item_unittest.cc",
       "create_dir_work_item_unittest.cc",
@@ -350,6 +347,7 @@ if (is_win) {
       "//chrome/installer/setup:lib",
       "//chrome/installer/test:alternate_version_generator_lib",
       "//components/variations",
+      "//components/version_info:channel",
       "//rlz/buildflags",
       "//testing/gmock",
       "//testing/gtest",

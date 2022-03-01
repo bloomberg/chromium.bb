@@ -49,6 +49,23 @@ bool IsHevcSPSNALU(const uint8_t* data, size_t size) {
          (size >= 5 && data[0] == 0x0 && data[1] == 0x0 && data[2] == 0x0 &&
           data[3] == 0x1 && (data[4] & 0x7e) == 0x42);
 }
+
+// If |reverse| is true , GetNextFrame() for a frame returns frames in a
+// round-trip playback fashion (0, 1,.., |num_frames| - 2, |num_frames| - 1,
+// |num_frames| - 1, |num_frames_| - 2,.., 1, 0, 0, 1,..).
+// If |reverse| is false, GetNextFrame() just loops the stream (0, 1,..,
+// |num_frames| - 2, |num_frames| - 1, 0, 1,..).
+uint32_t GetReadFrameIndex(uint32_t frame_index,
+                           bool reverse,
+                           uint32_t num_frames) {
+  if (!reverse)
+    return frame_index % num_frames;
+
+  const uint32_t number_of_loops = frame_index / num_frames;
+  const bool is_even_loop = number_of_loops % 2 == 0;
+  const uint32_t local_index = frame_index % num_frames;
+  return is_even_loop ? local_index : num_frames - local_index - 1;
+}
 }  // namespace
 
 IvfFileHeader GetIvfFileHeader(const base::span<const uint8_t>& data) {
@@ -91,10 +108,10 @@ bool IvfWriter::WriteFileHeader(VideoCodec codec,
   write16(4, kVersion);
   write16(6, kIvfFileHeaderSize);
   switch (codec) {
-    case kCodecVP8:
+    case VideoCodec::kVP8:
       strcpy(&ivf_header[8], "VP80");
       break;
-    case kCodecVP9:
+    case VideoCodec::kVP9:
       strcpy(&ivf_header[8], "VP90");
       break;
     default:
@@ -128,10 +145,10 @@ bool IvfWriter::WriteFrame(uint32_t data_size,
 }
 
 EncodedDataHelper::EncodedDataHelper(const std::vector<uint8_t>& stream,
-                                     VideoCodecProfile profile)
+                                     VideoCodec codec)
     : data_(std::string(reinterpret_cast<const char*>(stream.data()),
                         stream.size())),
-      profile_(profile) {}
+      codec_(codec) {}
 
 EncodedDataHelper::~EncodedDataHelper() {
   base::STLClearObject(&data_);
@@ -143,13 +160,13 @@ bool EncodedDataHelper::IsNALHeader(const std::string& data, size_t pos) {
 }
 
 scoped_refptr<DecoderBuffer> EncodedDataHelper::GetNextBuffer() {
-  switch (VideoCodecProfileToVideoCodec(profile_)) {
-    case kCodecH264:
-    case kCodecHEVC:
+  switch (codec_) {
+    case VideoCodec::kH264:
+    case VideoCodec::kHEVC:
       return GetNextFragment();
-    case kCodecVP8:
-    case kCodecVP9:
-    case kCodecAV1:
+    case VideoCodec::kVP8:
+    case VideoCodec::kVP9:
+    case VideoCodec::kAV1:
       return GetNextFrame();
     default:
       NOTREACHED();
@@ -197,11 +214,11 @@ size_t EncodedDataHelper::GetBytesForNextNALU(size_t start_pos) {
 bool EncodedDataHelper::LookForSPS(size_t* skipped_fragments_count) {
   *skipped_fragments_count = 0;
   while (next_pos_to_decode_ + 4 < data_.size()) {
-    if ((profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) &&
-        ((data_[next_pos_to_decode_ + 4] & 0x1f) == 0x7)) {
+    if (codec_ == VideoCodec::kH264 &&
+        (data_[next_pos_to_decode_ + 4] & 0x1f) == 0x7) {
       return true;
-    } else if ((profile_ >= HEVCPROFILE_MIN && profile_ <= HEVCPROFILE_MAX) &&
-               ((data_[next_pos_to_decode_ + 4] & 0x7e) == 0x42)) {
+    } else if (codec_ == VideoCodec::kHEVC &&
+               (data_[next_pos_to_decode_ + 4] & 0x7e) == 0x42) {
       return true;
     }
     *skipped_fragments_count += 1;
@@ -228,34 +245,39 @@ scoped_refptr<DecoderBuffer> EncodedDataHelper::GetNextFrame() {
     next_pos_to_decode_ = kIvfFileHeaderSize;  // Skip IVF header.
   }
 
-  // Group IVF data whose timestamps are the same. Spatial layers in a
-  // spatial-SVC stream may separately be stored in IVF data, where the
-  // timestamps of the IVF frame headers are the same. However, it is necessary
-  // for VD(A) to feed the spatial layers by a single DecoderBuffer. So this
-  // grouping is required.
   std::vector<IvfFrame> ivf_frames;
-  while (!ReachEndOfStream()) {
-    auto frame_header = GetNextIvfFrameHeader();
-    if (!frame_header)
-      return nullptr;
-
-    // Timestamp is different from the current one. The next IVF data must be
-    // grouped in the next group.
-    if (!ivf_frames.empty() &&
-        frame_header->timestamp != ivf_frames[0].header.timestamp) {
-      break;
-    }
-
-    auto frame_data = ReadNextIvfFrame();
-    if (!frame_data)
-      return nullptr;
-
-    ivf_frames.push_back(*frame_data);
-  }
-
-  if (ivf_frames.empty()) {
+  auto frame_data = ReadNextIvfFrame();
+  if (!frame_data) {
     LOG(ERROR) << "No IVF frame is available";
     return nullptr;
+  }
+  ivf_frames.push_back(*frame_data);
+
+  if (codec_ == VideoCodec::kVP9 || codec_ == VideoCodec::kAV1) {
+    // Group IVF data whose timestamps are the same in VP9 and AV1. Spatial
+    // layers in a spatial-SVC stream may separately be stored in IVF data,
+    // where the timestamps of the IVF frame headers are the same. However, it
+    // is necessary for VD(A) to feed the spatial layers by a single
+    // DecoderBuffer. So this grouping is required.
+    while (!ReachEndOfStream()) {
+      auto frame_header = GetNextIvfFrameHeader();
+      if (!frame_header) {
+        LOG(ERROR) << "No IVF frame header is available";
+        return nullptr;
+      }
+
+      // Timestamp is different from the current one. The next IVF data must be
+      // grouped in the next group.
+      if (frame_header->timestamp != ivf_frames[0].header.timestamp)
+        break;
+
+      frame_data = ReadNextIvfFrame();
+      if (!frame_data) {
+        LOG(ERROR) << "No IVF frame is available";
+        return nullptr;
+      }
+      ivf_frames.push_back(*frame_data);
+    }
   }
 
   // Standard stream case.
@@ -333,35 +355,10 @@ bool EncodedDataHelper::HasConfigInfo(const uint8_t* data,
     return IsH264SPSNALU(data, size);
   } else if (profile >= HEVCPROFILE_MIN && profile <= HEVCPROFILE_MAX) {
     return IsHevcSPSNALU(data, size);
-  } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
-    Vp8Parser parser;
-    Vp8FrameHeader frame_header;
-    if (!parser.ParseFrame(data, size, &frame_header)) {
-      // Let the VDA figure out there's something wrong with the stream.
-      return false;
-    }
-    // Stream configuration is present in a keyframe in vp8.
-    return frame_header.IsKeyframe();
-  } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
-    Vp9Parser parser(false);
-    parser.SetStream(data, size, nullptr);
-    Vp9FrameHeader frame_header;
-    std::unique_ptr<DecryptConfig> null_config;
-    gfx::Size allocated_size;
-    Vp9Parser::Result result =
-        parser.ParseNextFrame(&frame_header, &allocated_size, &null_config);
-    if (result != Vp9Parser::kOk) {
-      // Let the VDA figure out there's something wrong with the stream.
-      return false;
-    }
-    // Stream configuration is present in a keyframe in vp9.
-    return frame_header.IsKeyframe();
-  } else if (profile >= AV1PROFILE_MIN && profile <= AV1PROFILE_MAX) {
-    // TODO(hiroh): Implement this.
-    return false;
   }
-  // Shouldn't happen at this point.
-  LOG(FATAL) << "Invalid profile: " << GetProfileName(profile);
+
+  LOG(FATAL) << "HasConfigInfo() should be called only for H264/HEVC stream: "
+             << GetProfileName(profile);
   return false;
 }
 
@@ -384,6 +381,8 @@ struct AlignedDataHelper::VideoFrameData {
 AlignedDataHelper::AlignedDataHelper(
     const std::vector<uint8_t>& stream,
     uint32_t num_frames,
+    uint32_t num_read_frames,
+    bool reverse,
     VideoPixelFormat pixel_format,
     const gfx::Size& src_coded_size,
     const gfx::Size& dst_coded_size,
@@ -393,12 +392,14 @@ AlignedDataHelper::AlignedDataHelper(
     VideoFrame::StorageType storage_type,
     gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory)
     : num_frames_(num_frames),
+      num_read_frames_(num_read_frames),
+      reverse_(reverse),
       storage_type_(storage_type),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       visible_rect_(visible_rect),
       natural_size_(natural_size),
-      time_stamp_interval_(base::TimeDelta::FromSeconds(/*secs=*/0u)),
-      elapsed_frame_time_(base::TimeDelta::FromSeconds(/*secs=*/0u)) {
+      time_stamp_interval_(base::Seconds(/*secs=*/0u)),
+      elapsed_frame_time_(base::Seconds(/*secs=*/0u)) {
   // If the frame_rate is passed in, then use that timing information
   // to generate timestamps that increment according the frame_rate.
   // Otherwise timestamps will be generated when GetNextFrame() is called
@@ -428,15 +429,14 @@ bool AlignedDataHelper::AtHeadOfStream() const {
 }
 
 bool AlignedDataHelper::AtEndOfStream() const {
-  return frame_index_ == num_frames_;
+  return frame_index_ == num_read_frames_;
 }
 
 void AlignedDataHelper::UpdateFrameRate(uint32_t frame_rate) {
   if (frame_rate == 0) {
-    time_stamp_interval_ = base::TimeDelta::FromSeconds(/*secs=*/0u);
+    time_stamp_interval_ = base::Seconds(/*secs=*/0u);
   } else {
-    time_stamp_interval_ =
-        base::TimeDelta::FromSeconds(/*secs=*/1u) / frame_rate;
+    time_stamp_interval_ = base::Seconds(/*secs=*/1u) / frame_rate;
   }
 }
 
@@ -451,8 +451,10 @@ scoped_refptr<VideoFrame> AlignedDataHelper::GetNextFrame() {
 
   elapsed_frame_time_ += time_stamp_interval_;
 
+  uint32_t read_frame_index =
+      GetReadFrameIndex(frame_index_++, reverse_, num_frames_);
   if (storage_type_ == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
-    const auto& gmb_handle = video_frame_data_[frame_index_++].gmb_handle;
+    const auto& gmb_handle = video_frame_data_[read_frame_index].gmb_handle;
     auto dup_handle = gmb_handle.Clone();
     if (dup_handle.is_null()) {
       LOG(ERROR) << "Failed duplicating GpuMemoryBufferHandle";
@@ -484,7 +486,7 @@ scoped_refptr<VideoFrame> AlignedDataHelper::GetNextFrame() {
         dummy_mailbox, base::DoNothing() /* mailbox_holder_release_cb_ */,
         frame_timestamp);
   } else {
-    const auto& mojo_handle = video_frame_data_[frame_index_++].mojo_handle;
+    const auto& mojo_handle = video_frame_data_[read_frame_index].mojo_handle;
     auto dup_handle =
         mojo_handle->Clone(mojo::SharedBufferHandle::AccessMode::READ_WRITE);
     if (!dup_handle.is_valid()) {
@@ -545,14 +547,14 @@ void AlignedDataHelper::InitializeAlignedMemoryFrames(
     auto mapping = handle->Map(video_frame_size);
     ASSERT_TRUE(!!mapping);
     uint8_t* buffer = reinterpret_cast<uint8_t*>(mapping.get());
-    for (size_t i = 0; i < num_planes; i++) {
-      auto src_plane_layout = src_layout.planes()[i];
-      auto dst_plane_layout = layout_->planes()[i];
+    for (size_t j = 0; j < num_planes; j++) {
+      auto src_plane_layout = src_layout.planes()[j];
+      auto dst_plane_layout = layout_->planes()[j];
       const uint8_t* src_ptr = src_frame_ptr + src_plane_layout.offset;
       uint8_t* dst_ptr = &buffer[dst_plane_layout.offset];
       libyuv::CopyPlane(src_ptr, src_plane_layout.stride, dst_ptr,
                         dst_plane_layout.stride, src_plane_layout.stride,
-                        src_plane_rows[i]);
+                        src_plane_rows[j]);
     }
     src_frame_ptr += src_video_frame_size;
     video_frame_data_[i] = VideoFrameData(std::move(handle));
@@ -585,11 +587,11 @@ void AlignedDataHelper::InitializeGpuMemoryBufferFrames(
         VideoFrame::CreateFrame(pixel_format, dst_coded_size, visible_rect_,
                                 natural_size_, base::TimeDelta());
     LOG_ASSERT(!!memory_frame) << "Failed creating VideoFrame";
-    for (size_t i = 0; i < num_planes; i++) {
-      libyuv::CopyPlane(src_frame_ptr + src_layout.planes()[i].offset,
-                        src_layout.planes()[i].stride, memory_frame->data(i),
-                        memory_frame->stride(i), src_layout.planes()[i].stride,
-                        src_plane_rows[i]);
+    for (size_t j = 0; j < num_planes; j++) {
+      libyuv::CopyPlane(src_frame_ptr + src_layout.planes()[j].offset,
+                        src_layout.planes()[j].stride, memory_frame->data(j),
+                        memory_frame->stride(j), src_layout.planes()[j].stride,
+                        src_plane_rows[j]);
     }
     src_frame_ptr += src_video_frame_size;
     auto frame =
@@ -623,7 +625,8 @@ VideoFrameLayout AlignedDataHelper::GetAlignedVideoFrameLayout(
 }
 
 // static
-std::unique_ptr<RawDataHelper> RawDataHelper::Create(Video* video) {
+std::unique_ptr<RawDataHelper> RawDataHelper::Create(Video* video,
+                                                     bool reverse) {
   size_t frame_size = 0;
   VideoPixelFormat pixel_format = video->PixelFormat();
   const size_t num_planes = VideoFrame::NumPlanes(pixel_format);
@@ -666,24 +669,25 @@ std::unique_ptr<RawDataHelper> RawDataHelper::Create(Video* video) {
     return nullptr;
   }
 
-  return base::WrapUnique(new RawDataHelper(video, frame_size, *layout));
+  return base::WrapUnique(
+      new RawDataHelper(video, reverse, frame_size, *layout));
 }
 
 RawDataHelper::RawDataHelper(Video* video,
+                             bool reverse,
                              size_t frame_size,
                              const VideoFrameLayout& layout)
-    : video_(video), frame_size_(frame_size), layout_(layout) {}
+    : video_(video),
+      reverse_(reverse),
+      frame_size_(frame_size),
+      layout_(layout) {}
 
 RawDataHelper::~RawDataHelper() = default;
 
 scoped_refptr<const VideoFrame> RawDataHelper::GetFrame(size_t index) {
-  if (index >= video_->NumFrames()) {
-    LOG(ERROR) << "index is too big. index=" << index
-               << ", num_frames=" << video_->NumFrames();
-    return nullptr;
-  }
-
-  size_t offset = frame_size_ * index;
+  uint32_t read_frame_index =
+      GetReadFrameIndex(index, reverse_, video_->NumFrames());
+  size_t offset = frame_size_ * read_frame_index;
   uint8_t* frame_data[VideoFrame::kMaxPlanes] = {};
   const size_t num_planes = VideoFrame::NumPlanes(video_->PixelFormat());
   for (size_t i = 0; i < num_planes; ++i) {

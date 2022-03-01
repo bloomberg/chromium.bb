@@ -11,6 +11,7 @@
 #include "base/containers/span.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/client/interface_base.h"
+#include "gpu/command_buffer/common/raster_cmd_enums.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkYUVAInfo.h"
@@ -73,10 +74,20 @@ class RasterInterface : public InterfaceBase {
       SkYUVAInfo::Subsampling subsampling,
       const gpu::Mailbox yuva_plane_mailboxes[]) = 0;
 
+  virtual void ConvertRGBAToYUVAMailboxes(
+      SkYUVColorSpace planes_yuv_color_space,
+      SkYUVAInfo::PlaneConfig plane_config,
+      SkYUVAInfo::Subsampling subsampling,
+      const gpu::Mailbox yuva_plane_mailboxes[],
+      const gpu::Mailbox& source_mailbox) = 0;
+
   // OOP-Raster
+
+  // msaa_sample_count has no effect unless msaa_mode is set to kMSAA
   virtual void BeginRasterCHROMIUM(GLuint sk_color,
                                    GLboolean needs_clear,
                                    GLuint msaa_sample_count,
+                                   MsaaMode msaa_mode,
                                    GLboolean can_use_lcd_text,
                                    const gfx::ColorSpace& color_space,
                                    const GLbyte* mailbox) = 0;
@@ -92,7 +103,8 @@ class RasterInterface : public InterfaceBase {
                               const gfx::Vector2dF& post_translate,
                               const gfx::Vector2dF& post_scale,
                               bool requires_clear,
-                              size_t* max_op_size_hint) = 0;
+                              size_t* max_op_size_hint,
+                              bool preserve_recording = true) = 0;
 
   // Schedules a hardware-accelerated image decode and a sync token that's
   // released when the image decode is complete. If the decode could not be

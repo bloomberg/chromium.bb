@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <list>
 #include <memory>
 #include <vector>
 
 #include "base/component_export.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/cbor/values.h"
 #include "device/fido/attested_credential_data.h"
@@ -152,10 +152,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // a makeCredential or getAssertion request carries any extension.
     bool reject_all_extensions = false;
 
-    // support_invalid_for_testing_algorithm causes the
-    // |CoseAlgorithmIdentifier::kInvalidForTesting| public-key algorithm to be
-    // advertised and supported to aid testing of unknown public-key types.
-    bool support_invalid_for_testing_algorithm = false;
+    // advertised_algorithms is the contents of the algorithms field in the
+    // getInfo. If empty then no such field is reported. The virtual
+    // authenticator only enables the algorithms listed here, unless the list is
+    // empty in which case all algorithms except for |kInvalidForTesting| are
+    // enabled.
+    std::vector<device::CoseAlgorithmIdentifier> advertised_algorithms = {
+        device::CoseAlgorithmIdentifier::kEs256,
+    };
 
     // support_enterprise_attestation indicates whether enterprise attestation
     // support will be advertised in the getInfo response and whether requests
@@ -193,6 +197,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
 
   VirtualCtap2Device();
   VirtualCtap2Device(scoped_refptr<State> state, const Config& config);
+
+  VirtualCtap2Device(const VirtualCtap2Device&) = delete;
+  VirtualCtap2Device& operator=(const VirtualCtap2Device&) = delete;
+
   ~VirtualCtap2Device() override;
 
   // Configures and sets a PIN on the authenticator.
@@ -270,7 +278,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
       const std::string& rp_id,
       const absl::optional<std::vector<uint8_t>>& pin_auth,
       const absl::optional<PINUVAuthProtocol>& pin_protocol,
-      base::span<const uint8_t> pin_token,
       base::span<const uint8_t> client_data_hash,
       UserVerificationRequirement user_verification,
       bool user_presence_required,
@@ -313,8 +320,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
   const Config config_;
   RequestState request_state_;
   base::WeakPtrFactory<FidoDevice> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(VirtualCtap2Device);
 };
 
 }  // namespace device

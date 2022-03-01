@@ -9,11 +9,11 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
-#include "chrome/browser/metrics/renderer_uptime_tracker.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_task_environment.h"
@@ -60,6 +60,11 @@ class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
     MarkServiceRequestsInProgress();
   }
 
+  ProcessMemoryMetricsEmitterFake(const ProcessMemoryMetricsEmitterFake&) =
+      delete;
+  ProcessMemoryMetricsEmitterFake& operator=(
+      const ProcessMemoryMetricsEmitterFake&) = delete;
+
   void ReceivedMemoryDump(bool success,
                           std::unique_ptr<GlobalMemoryDump> ptr) override {
     ProcessMemoryMetricsEmitter::ReceivedMemoryDump(success, std::move(ptr));
@@ -85,17 +90,16 @@ class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
       base::ProcessId pid) override {
     switch (pid) {
       case 401:
-        return base::TimeDelta::FromSeconds(21);
+        return base::Seconds(21);
       default:
-        return base::TimeDelta::FromSeconds(42);
+        return base::Seconds(42);
     }
   }
 
  private:
   ~ProcessMemoryMetricsEmitterFake() override {}
 
-  ukm::UkmRecorder* ukm_recorder_;
-  DISALLOW_COPY_AND_ASSIGN(ProcessMemoryMetricsEmitterFake);
+  raw_ptr<ukm::UkmRecorder> ukm_recorder_;
 };
 
 void SetAllocatorDumpMetric(ProcessMemoryDumpPtr& pmd,
@@ -196,6 +200,9 @@ void PopulateRendererMetrics(GlobalMemoryDumpPtr& global_dump,
   pmd->process_type = ProcessType::RENDERER;
   SetAllocatorDumpMetric(pmd, "malloc", "effective_size",
                          metrics_mb_or_count["Malloc"] * 1024 * 1024);
+  SetAllocatorDumpMetric(
+      pmd, "malloc/allocated_objects", "effective_size",
+      metrics_mb_or_count["Malloc.AllocatedObjects"] * 1024 * 1024);
   SetAllocatorDumpMetric(pmd, "partition_alloc", "effective_size",
                          metrics_mb_or_count["PartitionAlloc"] * 1024 * 1024);
   SetAllocatorDumpMetric(pmd, "blink_gc", "effective_size",
@@ -336,6 +343,7 @@ void PopulateRendererMetrics(GlobalMemoryDumpPtr& global_dump,
 }
 
 constexpr int kTestRendererPrivateMemoryFootprint = 130;
+constexpr int kTestRendererMalloc = 120;
 constexpr int kTestRendererSharedMemoryFootprint = 135;
 constexpr int kNativeLibraryResidentMemoryFootprint = 27560;
 constexpr int kNativeLibraryResidentNotOrderedCodeFootprint = 12345;
@@ -355,7 +363,7 @@ MetricMap GetExpectedRendererMetrics() {
 #if !defined(OS_MAC)
         {"Resident", kTestRendererResidentSet},
 #endif
-        {"Malloc", 120},
+        {"Malloc", kTestRendererMalloc},
         {"PrivateMemoryFootprint", kTestRendererPrivateMemoryFootprint},
         {"SharedMemoryFootprint", kTestRendererSharedMemoryFootprint},
         {"PartitionAlloc", 140}, {"BlinkGC", 150}, {"V8", 160},
@@ -593,9 +601,8 @@ ProcessInfoVector GetProcessInfo(ukm::TestUkmRecorder& ukm_recorder) {
     page_info.tab_id = 201;
     page_info.hosts_main_frame = true;
     page_info.is_visible = true;
-    page_info.time_since_last_visibility_change =
-        base::TimeDelta::FromSeconds(15);
-    page_info.time_since_last_navigation = base::TimeDelta::FromSeconds(20);
+    page_info.time_since_last_visibility_change = base::Seconds(15);
+    page_info.time_since_last_navigation = base::Seconds(20);
     process_info.page_infos.push_back(page_info);
     process_infos.push_back(std::move(process_info));
   }
@@ -614,16 +621,14 @@ ProcessInfoVector GetProcessInfo(ukm::TestUkmRecorder& ukm_recorder) {
     page_info1.ukm_source_id = first_source_id;
     page_info1.tab_id = 2021;
     page_info1.hosts_main_frame = true;
-    page_info1.time_since_last_visibility_change =
-        base::TimeDelta::FromSeconds(11);
-    page_info1.time_since_last_navigation = base::TimeDelta::FromSeconds(21);
+    page_info1.time_since_last_visibility_change = base::Seconds(11);
+    page_info1.time_since_last_navigation = base::Seconds(21);
     PageInfo page_info2;
     page_info2.ukm_source_id = second_source_id;
     page_info2.tab_id = 2022;
     page_info2.hosts_main_frame = true;
-    page_info2.time_since_last_visibility_change =
-        base::TimeDelta::FromSeconds(12);
-    page_info2.time_since_last_navigation = base::TimeDelta::FromSeconds(22);
+    page_info2.time_since_last_visibility_change = base::Seconds(12);
+    page_info2.time_since_last_navigation = base::Seconds(22);
     process_info.page_infos.push_back(std::move(page_info1));
     process_info.page_infos.push_back(std::move(page_info2));
 
@@ -638,6 +643,12 @@ class ProcessMemoryMetricsEmitterTest
     : public testing::TestWithParam<HistogramProcessType> {
  public:
   ProcessMemoryMetricsEmitterTest() {}
+
+  ProcessMemoryMetricsEmitterTest(const ProcessMemoryMetricsEmitterTest&) =
+      delete;
+  ProcessMemoryMetricsEmitterTest& operator=(
+      const ProcessMemoryMetricsEmitterTest&) = delete;
+
   ~ProcessMemoryMetricsEmitterTest() override {}
 
  protected:
@@ -667,9 +678,6 @@ class ProcessMemoryMetricsEmitterTest
 
   content::BrowserTaskEnvironment task_environment_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProcessMemoryMetricsEmitterTest);
 };
 
 TEST_P(ProcessMemoryMetricsEmitterTest, CollectsSingleProcessUKMs) {
@@ -925,7 +933,10 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
   histograms.ExpectTotalCount("Memory.Renderer.ResidentSet", 0);
 
   histograms.ExpectTotalCount("Memory.Total.PrivateMemoryFootprint", 0);
+  histograms.ExpectTotalCount(
+      "Memory.Total.PrivateMemoryFootprint.HasZombieProfile", 0);
   histograms.ExpectTotalCount("Memory.Total.RendererPrivateMemoryFootprint", 0);
+  histograms.ExpectTotalCount("Memory.Total.RendererMalloc", 0);
   histograms.ExpectTotalCount("Memory.Total.SharedMemoryFootprint", 0);
   histograms.ExpectTotalCount("Memory.Total.ResidentSet", 0);
   histograms.ExpectTotalCount(
@@ -954,10 +965,14 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
                                 kTestRendererResidentSet, 2);
 #endif
 
+  histograms.ExpectTotalCount(
+      "Memory.Total.PrivateMemoryFootprint.HasZombieProfile", 0);
   histograms.ExpectUniqueSample("Memory.Total.PrivateMemoryFootprint",
                                 2 * kTestRendererPrivateMemoryFootprint, 1);
   histograms.ExpectUniqueSample("Memory.Total.RendererPrivateMemoryFootprint",
                                 2 * kTestRendererPrivateMemoryFootprint, 1);
+  histograms.ExpectUniqueSample("Memory.Total.RendererMalloc",
+                                2 * kTestRendererMalloc, 1);
   histograms.ExpectUniqueSample("Memory.Total.SharedMemoryFootprint",
                                 2 * kTestRendererSharedMemoryFootprint, 1);
 #if defined(OS_MAC)

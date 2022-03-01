@@ -23,6 +23,7 @@ using CompositingReasons = uint64_t;
   V(Canvas)                                                                   \
   V(Plugin)                                                                   \
   V(IFrame)                                                                   \
+  V(DocumentTransitionContentElement)                                         \
   /* This is used for pre-CompositAfterPaint + CompositeSVG only. */          \
   V(SVGRoot)                                                                  \
   V(BackfaceVisibilityHidden)                                                 \
@@ -31,7 +32,8 @@ using CompositingReasons = uint64_t;
   V(ActiveFilterAnimation)                                                    \
   V(ActiveBackdropFilterAnimation)                                            \
   V(AffectedByOuterViewportBoundsDelta)                                       \
-  V(ScrollDependentPosition)                                                  \
+  V(FixedPosition)                                                            \
+  V(StickyPosition)                                                           \
   V(OverflowScrolling)                                                        \
   V(OverflowScrollingParent)                                                  \
   V(OutOfFlowClipping)                                                        \
@@ -40,8 +42,13 @@ using CompositingReasons = uint64_t;
   V(WillChangeOpacity)                                                        \
   V(WillChangeFilter)                                                         \
   V(WillChangeBackdropFilter)                                                 \
+                                                                              \
   /* Reasons that depend on ancestor properties */                            \
   V(BackfaceInvisibility3DAncestor)                                           \
+  /* TODO(crbug.com/1256990): Transform3DSceneLeaf today depends only on the  \
+     element and its properties, but in the future it could be optimized      \
+     to consider descendants and moved to the subtree group below. */         \
+  V(Transform3DSceneLeaf)                                                     \
   /* This flag is needed only when none of the explicit kWillChange* reasons  \
      are set. */                                                              \
   V(WillChangeOther)                                                          \
@@ -131,18 +138,20 @@ class PLATFORM_EXPORT CompositingReason {
         kWillChangeFilter | kWillChangeOther | kBackdropFilter |
         kWillChangeBackdropFilter,
 
+    kComboScrollDependentPosition = kFixedPosition | kStickyPosition,
+
     kComboAllDirectNonStyleDeterminedReasons =
         kVideo | kCanvas | kPlugin | kIFrame | kSVGRoot |
         kOverflowScrollingParent | kOutOfFlowClipping | kVideoOverlay |
-        kXrOverlay | kRoot | kRootScroller | kScrollDependentPosition |
+        kXrOverlay | kRoot | kRootScroller | kComboScrollDependentPosition |
         kAffectedByOuterViewportBoundsDelta | kBackfaceInvisibility3DAncestor |
-        kDocumentTransitionSharedElement,
+        kTransform3DSceneLeaf | kDocumentTransitionSharedElement,
 
     kComboAllDirectReasons = kComboAllDirectStyleDeterminedReasons |
                              kComboAllDirectNonStyleDeterminedReasons,
 
     kComboAllCompositedScrollingDeterminedReasons =
-        kScrollDependentPosition | kAffectedByOuterViewportBoundsDelta |
+        kComboScrollDependentPosition | kAffectedByOuterViewportBoundsDelta |
         kOverflowScrolling,
 
     kComboCompositedDescendants =
@@ -164,7 +173,7 @@ class PLATFORM_EXPORT CompositingReason {
     kPreventingSubpixelAccumulationReasons = kWillChangeTransform,
 
     kDirectReasonsForPaintOffsetTranslationProperty =
-        kScrollDependentPosition | kAffectedByOuterViewportBoundsDelta |
+        kComboScrollDependentPosition | kAffectedByOuterViewportBoundsDelta |
         kVideo | kCanvas | kPlugin | kIFrame | kSVGRoot,
     kDirectReasonsForTransformProperty =
         k3DTransform | kTrivial3DTransform | kWillChangeTransform |
@@ -175,7 +184,7 @@ class PLATFORM_EXPORT CompositingReason {
     kDirectReasonsForEffectProperty =
         kActiveOpacityAnimation | kWillChangeOpacity | kBackdropFilter |
         kWillChangeBackdropFilter | kActiveBackdropFilterAnimation |
-        kDocumentTransitionSharedElement,
+        kDocumentTransitionSharedElement | kTransform3DSceneLeaf,
     kDirectReasonsForFilterProperty =
         kActiveFilterAnimation | kWillChangeFilter,
     kDirectReasonsForBackdropFilter = kBackdropFilter |
@@ -196,14 +205,6 @@ inline bool RequiresSquashing(CompositingReasons reasons) {
   return !RequiresCompositing(reasons) &&
          (reasons & CompositingReason::kComboSquashableReasons);
 }
-
-struct CompositingReasonsStats {
-  size_t overlap_layers = 0;
-  size_t active_animation_layers = 0;
-  size_t assumed_overlap_layers = 0;
-  size_t indirect_composited_layers = 0;
-  size_t total_composited_layers = 0;
-};
 
 }  // namespace blink
 

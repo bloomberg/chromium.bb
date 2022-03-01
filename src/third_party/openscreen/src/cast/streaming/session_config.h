@@ -16,7 +16,6 @@ namespace cast {
 
 // Common streaming configuration, established from the OFFER/ANSWER exchange,
 // that the Sender and Receiver are both assuming.
-// TODO(jophba): add config validation.
 struct SessionConfig final {
   SessionConfig(Ssrc sender_ssrc,
                 Ssrc receiver_ssrc,
@@ -31,6 +30,8 @@ struct SessionConfig final {
   SessionConfig& operator=(const SessionConfig& other);
   SessionConfig& operator=(SessionConfig&& other) noexcept;
   ~SessionConfig();
+
+  bool IsValid() const;
 
   // The sender and receiver's SSRC identifiers. Note: SSRC identifiers
   // are defined as unsigned 32 bit integers here:

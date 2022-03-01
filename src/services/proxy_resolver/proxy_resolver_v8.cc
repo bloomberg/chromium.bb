@@ -12,10 +12,11 @@
 #include "base/auto_reset.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
+#include "base/cxx17_backports.h"
 #include "base/debug/leak_annotations.h"
 #include "base/lazy_instance.h"
+#include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -99,6 +100,11 @@ class V8ExternalStringFromScriptData
       const scoped_refptr<net::PacFileData>& script_data)
       : script_data_(script_data) {}
 
+  V8ExternalStringFromScriptData(const V8ExternalStringFromScriptData&) =
+      delete;
+  V8ExternalStringFromScriptData& operator=(
+      const V8ExternalStringFromScriptData&) = delete;
+
   const uint16_t* data() const override {
     return reinterpret_cast<const uint16_t*>(script_data_->utf16().data());
   }
@@ -107,7 +113,6 @@ class V8ExternalStringFromScriptData
 
  private:
   const scoped_refptr<net::PacFileData> script_data_;
-  DISALLOW_COPY_AND_ASSIGN(V8ExternalStringFromScriptData);
 };
 
 // External string wrapper so V8 can access a string literal.
@@ -121,6 +126,9 @@ class V8ExternalASCIILiteral
     DCHECK(base::IsStringASCII(ascii));
   }
 
+  V8ExternalASCIILiteral(const V8ExternalASCIILiteral&) = delete;
+  V8ExternalASCIILiteral& operator=(const V8ExternalASCIILiteral&) = delete;
+
   const char* data() const override { return ascii_; }
 
   size_t length() const override { return length_; }
@@ -128,7 +136,6 @@ class V8ExternalASCIILiteral
  private:
   const char* ascii_;
   size_t length_;
-  DISALLOW_COPY_AND_ASSIGN(V8ExternalASCIILiteral);
 };
 
 // When creating a v8::String from a C++ string we have two choices: create
@@ -365,6 +372,9 @@ class SharedIsolateFactory {
  public:
   SharedIsolateFactory() : has_initialized_v8_(false) {}
 
+  SharedIsolateFactory(const SharedIsolateFactory&) = delete;
+  SharedIsolateFactory& operator=(const SharedIsolateFactory&) = delete;
+
   // Lazily creates a v8::Isolate, or returns the already created instance.
   v8::Isolate* GetSharedIsolate() {
     base::AutoLock lock(lock_);
@@ -372,8 +382,13 @@ class SharedIsolateFactory {
     if (!holder_) {
       // Do one-time initialization for V8.
       if (!has_initialized_v8_) {
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+#if defined(USE_V8_CONTEXT_SNAPSHOT)
+        gin::V8Initializer::LoadV8Snapshot(
+            gin::V8SnapshotFileType::kWithAdditionalContext);
+#else
         gin::V8Initializer::LoadV8Snapshot();
+#endif
 #endif
 
         // The performance of the proxy resolver is limited by DNS resolution,
@@ -415,8 +430,6 @@ class SharedIsolateFactory {
   base::Lock lock_;
   std::unique_ptr<gin::IsolateHolder> holder_;
   bool has_initialized_v8_;
-
-  DISALLOW_COPY_AND_ASSIGN(SharedIsolateFactory);
 };
 
 base::LazyInstance<SharedIsolateFactory>::Leaky g_isolate_factory =
@@ -849,7 +862,7 @@ class ProxyResolverV8::Context {
 
   mutable base::Lock lock_;
   ProxyResolverV8::JSBindings* js_bindings_;
-  v8::Isolate* isolate_;
+  raw_ptr<v8::Isolate> isolate_;
   v8::Persistent<v8::External> v8_this_;
   v8::Persistent<v8::Context> v8_context_;
 };

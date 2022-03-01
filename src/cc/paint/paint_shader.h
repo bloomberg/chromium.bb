@@ -8,9 +8,10 @@
 #include <memory>
 #include <vector>
 
-#include "base/stl_util.h"
+#include "base/gtest_prod_util.h"
 #include "cc/paint/image_analysis_state.h"
 #include "cc/paint/paint_export.h"
+#include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_image.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -144,11 +145,11 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
     return image_;
   }
 
-  const gfx::SizeF* tile_scale() const {
-    return base::OptionalOrNullptr(tile_scale_);
-  }
   const sk_sp<PaintRecord>& paint_record() const { return record_; }
-  bool GetRasterizationTileRect(const SkMatrix& ctm, SkRect* tile_rect) const;
+  bool GetRasterizationTileRect(const SkMatrix& ctm, SkRect* tile_rect) const {
+    return GetClampedRasterizationTileRect(ctm, /*max_texture_size=*/0,
+                                           tile_rect);
+  }
 
   SkTileMode tx() const { return tx_; }
   SkTileMode ty() const { return ty_; }
@@ -184,7 +185,11 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
 
   explicit PaintShader(Type type);
 
-  sk_sp<SkShader> GetSkShader(SkFilterQuality quality) const;
+  bool GetClampedRasterizationTileRect(const SkMatrix& ctm,
+                                       int max_texture_size,
+                                       SkRect* tile_rect) const;
+
+  sk_sp<SkShader> GetSkShader(PaintFlags::FilterQuality quality) const;
 
   // If the type needs a resolve skia object (e.g. SkImage or SkPicture), this
   // will create and cache it internally. Most types do not need this, but it
@@ -208,13 +213,14 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   // |raster_quality| is set to the filter quality the shader should be
   // rasterized with.
   // Valid only for PaintImage backed shaders.
-  sk_sp<PaintShader> CreateDecodedImage(const SkMatrix& ctm,
-                                        SkFilterQuality requested_quality,
-                                        ImageProvider* image_provider,
-                                        uint32_t* transfer_cache_entry_id,
-                                        SkFilterQuality* raster_quality,
-                                        bool* needs_mips,
-                                        gpu::Mailbox* mailbox) const;
+  sk_sp<PaintShader> CreateDecodedImage(
+      const SkMatrix& ctm,
+      PaintFlags::FilterQuality requested_quality,
+      ImageProvider* image_provider,
+      uint32_t* transfer_cache_entry_id,
+      PaintFlags::FilterQuality* raster_quality,
+      bool* needs_mips,
+      gpu::Mailbox* mailbox) const;
 
   // Creates a paint record shader for worklet-backed images.
   sk_sp<PaintShader> CreatePaintWorkletRecord(

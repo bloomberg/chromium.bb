@@ -10,8 +10,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "device/bluetooth/bluetooth_low_energy_defs_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
@@ -32,6 +33,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
       BluetoothRemoteGattServiceWin* parent_service,
       BTH_LE_GATT_CHARACTERISTIC* characteristic_info,
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
+
+  BluetoothRemoteGattCharacteristicWin(
+      const BluetoothRemoteGattCharacteristicWin&) = delete;
+  BluetoothRemoteGattCharacteristicWin& operator=(
+      const BluetoothRemoteGattCharacteristicWin&) = delete;
+
   ~BluetoothRemoteGattCharacteristicWin() override;
 
   // Override BluetoothRemoteGattCharacteristic interfaces.
@@ -98,7 +105,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
                                      HRESULT hr);
   void ClearIncludedDescriptors();
 
-  BluetoothRemoteGattServiceWin* parent_service_;
+  raw_ptr<BluetoothRemoteGattServiceWin> parent_service_;
   scoped_refptr<BluetoothTaskManagerWin> task_manager_;
 
   // Characteristic info from OS and used to interact with OS.
@@ -130,7 +137,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
 
   base::WeakPtrFactory<BluetoothRemoteGattCharacteristicWin> weak_ptr_factory_{
       this};
-  DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicWin);
 };
 
 }  // namespace device

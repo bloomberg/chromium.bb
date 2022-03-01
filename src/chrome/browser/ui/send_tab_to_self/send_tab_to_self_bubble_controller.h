@@ -9,7 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 class Profile;
@@ -18,9 +19,15 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace ui {
+class Event;
+}  // namespace ui
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
+
+struct AccountInfo;
 
 namespace send_tab_to_self {
 
@@ -30,6 +37,10 @@ struct TargetDeviceInfo;
 class SendTabToSelfBubbleController
     : public content::WebContentsUserData<SendTabToSelfBubbleController> {
  public:
+  SendTabToSelfBubbleController(const SendTabToSelfBubbleController&) = delete;
+  SendTabToSelfBubbleController& operator=(
+      const SendTabToSelfBubbleController&) = delete;
+
   ~SendTabToSelfBubbleController() override;
 
   static SendTabToSelfBubbleController* CreateOrGetFromWebContents(
@@ -37,32 +48,41 @@ class SendTabToSelfBubbleController
   // Hides send tab to self bubble.
   void HideBubble();
   // Displays send tab to self bubble.
-  void ShowBubble();
+  void ShowBubble(bool show_back_button = false);
+
+  bool IsBubbleShown() { return bubble_shown_; }
 
   // Returns nullptr if no bubble is currently shown.
   SendTabToSelfBubbleView* send_tab_to_self_bubble_view() const;
-  // Returns the title of send tab to self bubble.
-  std::u16string GetWindowTitle() const;
   // Returns the valid devices info map.
-  virtual std::vector<TargetDeviceInfo> GetValidDevices() const;
-  // Returns current profile.
-  Profile* GetProfile() const;
+  virtual std::vector<TargetDeviceInfo> GetValidDevices();
+
+  virtual AccountInfo GetSharingAccountInfo();
 
   // Handles the action when the user click on one valid device. Sends tab to
-  // the target device; closes the button and hides the omnibox icon.
+  // the target device.
+  // Virtual for testing.
   virtual void OnDeviceSelected(const std::string& target_device_name,
                                 const std::string& target_device_guid);
-  // Close the bubble when the user click on the close button.
+
+  // Handler for when user clicks the link to manage their available devices.
+  void OnManageDevicesClicked(const ui::Event& event);
+
+  // Close the bubble when the user clicks on the close button.
   void OnBubbleClosed();
+
+  // Close the bubble when the user clicks on the back button.
+  void OnBackButtonPressed();
 
   // Shows the confirmation message in the omnibox.
   void ShowConfirmationMessage();
 
   // Returns true if the initial "Send" animation that's displayed once per
   // profile was shown.
-  bool InitialSendAnimationShown() const;
+  bool InitialSendAnimationShown();
   void SetInitialSendAnimationShown(bool shown);
 
+  bool show_back_button() const { return show_back_button_; }
   bool show_message() const { return show_message_; }
   void set_show_message(bool show_message) { show_message_ = show_message; }
 
@@ -71,7 +91,6 @@ class SendTabToSelfBubbleController
       user_prefs::PrefRegistrySyncable* user_prefs);
 
  protected:
-  SendTabToSelfBubbleController();
   explicit SendTabToSelfBubbleController(content::WebContents* web_contents);
 
  private:
@@ -82,16 +101,18 @@ class SendTabToSelfBubbleController
 
   void UpdateIcon();
 
-  // The web_contents associated with this controller.
-  content::WebContents* web_contents_;
+  Profile* GetProfile();
+
   // Weak reference. Will be nullptr if no bubble is currently shown.
-  SendTabToSelfBubbleView* send_tab_to_self_bubble_view_ = nullptr;
+  raw_ptr<SendTabToSelfBubbleView> send_tab_to_self_bubble_view_ = nullptr;
+  // True if the back button is currently shown.
+  bool show_back_button_ = false;
   // True if a confirmation message should be shown in the omnibox.
   bool show_message_ = false;
+  // True if the bubble is currently shown.
+  bool bubble_shown_ = false;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(SendTabToSelfBubbleController);
 };
 
 }  // namespace send_tab_to_self

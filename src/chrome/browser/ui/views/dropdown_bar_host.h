@@ -7,8 +7,7 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -44,6 +43,10 @@ class DropdownBarHost : public ui::AcceleratorTarget,
                         public views::WidgetDelegate {
  public:
   explicit DropdownBarHost(BrowserView* browser_view);
+
+  DropdownBarHost(const DropdownBarHost&) = delete;
+  DropdownBarHost& operator=(const DropdownBarHost&) = delete;
+
   ~DropdownBarHost() override;
 
   // Initializes the DropdownBarHost. This creates the widget that |view| paints
@@ -114,10 +117,13 @@ class DropdownBarHost : public ui::AcceleratorTarget,
   views::View* view() { return view_; }
   const views::View* view() const { return view_; }
 
-  // Returns the focus tracker.
+  void SetFocusTracker(
+      std::unique_ptr<views::ExternalFocusTracker> focus_tracker);
   views::ExternalFocusTracker* focus_tracker() const {
     return focus_tracker_.get();
   }
+
+  std::unique_ptr<views::ExternalFocusTracker> TakeFocusTracker();
 
   // Resets the focus tracker.
   void ResetFocusTracker();
@@ -153,17 +159,17 @@ class DropdownBarHost : public ui::AcceleratorTarget,
   void SetHostViewNative(views::View* host_view);
 
   // The BrowserView that created us.
-  BrowserView* browser_view_;
+  raw_ptr<BrowserView> browser_view_;
 
   // Our view, which is responsible for drawing the UI.
-  views::View* view_ = nullptr;
-  DropdownBarHostDelegate* delegate_ = nullptr;
+  raw_ptr<views::View> view_ = nullptr;
+  raw_ptr<DropdownBarHostDelegate> delegate_ = nullptr;
 
   // The animation class to use when opening the Dropdown widget.
   std::unique_ptr<gfx::SlideAnimation> animation_;
 
   // The focus manager we register with to keep track of focus changes.
-  views::FocusManager* focus_manager_ = nullptr;
+  raw_ptr<views::FocusManager> focus_manager_ = nullptr;
 
   // True if the accelerator target for Esc key is registered.
   bool esc_accel_target_registered_ = false;
@@ -180,8 +186,6 @@ class DropdownBarHost : public ui::AcceleratorTarget,
   // A flag to manually manage visibility. GTK/X11 is asynchronous and
   // the state of the widget can be out of sync.
   bool is_visible_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(DropdownBarHost);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_DROPDOWN_BAR_HOST_H_

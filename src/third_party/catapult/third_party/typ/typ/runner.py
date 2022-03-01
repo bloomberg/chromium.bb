@@ -21,6 +21,7 @@ import pdb
 import sys
 import unittest
 import traceback
+from datetime import datetime
 
 from collections import OrderedDict
 
@@ -246,6 +247,7 @@ class Runner(object):
             if self.args.list_only:
                 self.print_('\n'.join(all_tests))
             else:
+                self.print_('Start running tests: %s' % str(datetime.now()))
                 for _ in range(self.args.repeat):
                     current_ret, full_results=self._run_tests(
                         result_set, test_set.copy(), all_tests)
@@ -552,6 +554,8 @@ class Runner(object):
             # In Python3's version of unittest, loader failures get converted
             # into failed test cases, rather than raising exceptions. However,
             # the errors also get recorded so you can err out immediately.
+            if isinstance(loader.errors, list):
+                raise ImportError('\n'.join(loader.errors))
             raise ImportError(loader.errors)
 
     def _run_tests(self, result_set, test_set, all_tests):
@@ -856,6 +860,8 @@ class Runner(object):
             args['code'] = result.code
             args['unexpected'] = result.unexpected
             args['flaky'] = result.flaky
+            args['file'] = result.file_path
+            args['line'] = result.line_number
             event['args'] = args
 
             trace['traceEvents'].append(event)
@@ -988,18 +994,19 @@ def _setup_process(host, worker_num, child):
 
 def _teardown_process(child):
     res = None
-    e = None
+    exc = None
     if child.teardown_fn:
         try:
             res = child.teardown_fn(child, child.context_after_setup)
         except Exception as e:
+            exc = e
             pass
 
     if child.cov:  # pragma: no cover
         child.cov.stop()
         child.cov.save()
 
-    return (child.worker_num, res, e)
+    return (child.worker_num, res, exc)
 
 
 def _run_one_test(child, test_input):
@@ -1038,7 +1045,19 @@ def _run_one_test(child, test_input):
 
         test_name_to_load = child.test_name_prefix + test_name
         try:
+            # If we have errors around from before, clear them now so we don't
+            # attempt to handle them later.
+            if hasattr(child.loader, 'errors') and child.loader.errors:
+                child.loader.errors.clear()
             suite = child.loader.loadTestsFromName(test_name_to_load)
+            # From Python 3.5, AttributeError will not be thrown when calling
+            # LoadTestsFromName. Instead, it adds error messages in the loader.
+            # As a result, the original handling cannot kick in properly. We
+            # now check the error message and throw exception as needed.
+            if hasattr(child.loader, 'errors') and child.loader.errors:
+                if isinstance(child.loader.errors, list):
+                    raise AttributeError('\n'.join(child.loader.errors))
+                raise AttributeError(child.loader.errors)
         except Exception as e:
             ex_str = ('loadTestsFromName("%s") failed: %s\n%s\n' %
                       (test_name_to_load, e, traceback.format_exc()))
@@ -1092,15 +1111,30 @@ def _run_one_test(child, test_input):
           test_case.set_artifacts(None)
 
     took = h.time() - started
+    # If the test signaled that it should be retried on failure, do so.
+    if isinstance(test_case, TypTestCase):
+        should_retry_on_failure = (should_retry_on_failure
+                                   or test_case.retryOnFailure)
     result = _result_from_test_result(test_result, test_name, started, took, out,
-                                    err, child.worker_num, pid,
+                                    err, child.worker_num, pid, test_case,
                                     expected_results, child.has_expectations,
                                     art.artifacts)
     test_location = inspect.getsourcefile(test_case.__class__)
+    test_method = getattr(test_case, test_case._testMethodName)
+    # Test methods are often wrapped by decorators such as @mock. Try to get to
+    # the actual test method instead of the wrapper.
+    if hasattr(test_method, '__wrapped__'):
+      test_method = test_method.__wrapped__
+    # Some tests are generated and don't have valid line numbers. Such test
+    # methods also have a source location different from module location.
+    if inspect.getsourcefile(test_method) == test_location:
+      test_line = inspect.getsourcelines(test_method)[1]
+    else:
+      test_line = None
     result.result_sink_retcode =\
             child.result_sink_reporter.report_individual_test_result(
                 child.test_name_prefix, result, child.artifact_output_dir,
-                child.expectations, test_location)
+                child.expectations, test_location, test_line)
     return (result, should_retry_on_failure)
 
 
@@ -1116,7 +1150,7 @@ def _run_under_debugger(host, test_case, suite,
 
 
 def _result_from_test_result(test_result, test_name, started, took, out, err,
-                             worker_num, pid, expected_results,
+                             worker_num, pid, test_case, expected_results,
                              has_expectations, artifacts):
     if test_result.failures:
         actual = ResultType.Failure
@@ -1152,9 +1186,13 @@ def _result_from_test_result(test_result, test_name, started, took, out, err,
         unexpected = actual not in expected_results
 
     flaky = False
+    test_func = getattr(test_case, test_case._testMethodName)
+    test_func = getattr(test_func, 'real_test_func', test_func)
+    file_path = inspect.getsourcefile(test_func)
+    line_number = inspect.getsourcelines(test_func)[1]
     return Result(test_name, actual, started, took, worker_num,
                   expected_results, unexpected, flaky, code, out, err, pid,
-                  artifacts)
+                  file_path, line_number, artifacts)
 
 
 def _load_via_load_tests(child, test_name):

@@ -14,6 +14,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "content/browser/compute_pressure/compute_pressure_sample.h"
+#include "content/browser/compute_pressure/cpu_core_speed_info.h"
 
 namespace content {
 
@@ -29,9 +30,16 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
+std::ostream& operator<<(std::ostream& os, const CpuCoreSpeedInfo& info) {
+  os << "[min: " << info.min_frequency << " max: " << info.max_frequency
+     << " base: " << info.base_frequency
+     << " current: " << info.current_frequency << "]";
+  return os;
+}
+
 ComputePressureHostSync::ComputePressureHostSync(
     blink::mojom::ComputePressureHost* host)
-    : host_(host) {
+    : host_(*host) {
   DCHECK(host);
 }
 
@@ -42,12 +50,12 @@ blink::mojom::ComputePressureStatus ComputePressureHostSync::AddObserver(
     mojo::PendingRemote<blink::mojom::ComputePressureObserver> observer) {
   blink::mojom::ComputePressureStatus result;
   base::RunLoop run_loop;
-  host_->AddObserver(std::move(observer), quantization.Clone(),
-                     base::BindLambdaForTesting(
-                         [&](blink::mojom::ComputePressureStatus status) {
-                           result = status;
-                           run_loop.Quit();
-                         }));
+  host_.AddObserver(std::move(observer), quantization.Clone(),
+                    base::BindLambdaForTesting(
+                        [&](blink::mojom::ComputePressureStatus status) {
+                          result = status;
+                          run_loop.Quit();
+                        }));
   run_loop.Run();
   return result;
 }

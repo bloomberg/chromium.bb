@@ -13,11 +13,11 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/scoped_set_task_priority_for_current_thread.h"
 #include "base/task/task_features.h"
@@ -212,7 +212,7 @@ void ThreadPoolImpl::Start(const ThreadPoolInstance::InitParams& init_params,
 
   const base::TimeDelta suggested_reclaim_time =
       FeatureList::IsEnabled(kUseFiveMinutesThreadReclaimTime)
-          ? base::TimeDelta::FromMinutes(5)
+          ? base::Minutes(5)
           : init_params.suggested_reclaim_time;
 
 #if HAS_NATIVE_THREAD_POOL()
@@ -354,6 +354,12 @@ void ThreadPoolImpl::Shutdown() {
   // tasks run with a normal thread priority.
   UpdateCanRunPolicy();
 
+  // Ensures that there are enough background worker to run BLOCK_SHUTDOWN
+  // tasks.
+  foreground_thread_group_->OnShutdownStarted();
+  if (background_thread_group_)
+    background_thread_group_->OnShutdownStarted();
+
   task_tracker_->CompleteShutdown();
 }
 
@@ -437,6 +443,15 @@ bool ThreadPoolImpl::PostTaskWithSequence(Task task,
   // for details.
   CHECK(task.task);
   DCHECK(sequence);
+
+#if defined(OS_WIN)
+  // Force reading |task.posted_from.file_name()| to produce a useful crash
+  // report if the address is invalid. A crash report generated later when the
+  // task is executed would not contain the PostTask stack.
+  //
+  // TODO(crbug.com/1224432): Remove after resolving the crash.
+  DEBUG_ALIAS_FOR_CSTR(task_posted_from, task.posted_from.file_name(), 32);
+#endif
 
   if (!task_tracker_->WillPostTask(&task, sequence->shutdown_behavior()))
     return false;

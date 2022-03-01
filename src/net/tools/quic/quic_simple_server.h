@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/platform/impl/quic_chromium_clock.h"
@@ -44,6 +43,9 @@ class QuicSimpleServer : public quic::QuicSpdyServerBase {
       const quic::QuicCryptoServerConfig::ConfigOptions& crypto_config_options,
       const quic::ParsedQuicVersionVector& supported_versions,
       quic::QuicSimpleServerBackend* quic_simple_server_backend);
+
+  QuicSimpleServer(const QuicSimpleServer&) = delete;
+  QuicSimpleServer& operator=(const QuicSimpleServer&) = delete;
 
   ~QuicSimpleServer() override;
 
@@ -122,8 +124,6 @@ class QuicSimpleServer : public quic::QuicSpdyServerBase {
   quic::QuicSimpleServerBackend* quic_simple_server_backend_;
 
   base::WeakPtrFactory<QuicSimpleServer> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(QuicSimpleServer);
 };
 
 }  // namespace net

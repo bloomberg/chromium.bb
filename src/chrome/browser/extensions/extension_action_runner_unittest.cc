@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -46,6 +47,11 @@ const char kAllHostsPermission[] = "*://*/*";
 // ExtensionActionRunner correctly interfaces in the system) is done in the
 // ExtensionActionRunnerBrowserTests.
 class ExtensionActionRunnerUnitTest : public ChromeRenderViewHostTestHarness {
+ public:
+  ExtensionActionRunnerUnitTest(const ExtensionActionRunnerUnitTest&) = delete;
+  ExtensionActionRunnerUnitTest& operator=(
+      const ExtensionActionRunnerUnitTest&) = delete;
+
  protected:
   ExtensionActionRunnerUnitTest();
   ~ExtensionActionRunnerUnitTest() override;
@@ -81,14 +87,12 @@ class ExtensionActionRunnerUnitTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override;
 
   // The associated ExtensionActionRunner.
-  ExtensionActionRunner* extension_action_runner_ = nullptr;
+  raw_ptr<ExtensionActionRunner> extension_action_runner_ = nullptr;
 
   // The map of observed executions, keyed by extension id.
   std::map<std::string, int> extension_executions_;
 
   scoped_refptr<const Extension> extension_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionActionRunnerUnitTest);
 };
 
 ExtensionActionRunnerUnitTest::ExtensionActionRunnerUnitTest() = default;

@@ -8,7 +8,6 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -64,8 +63,8 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
 
   const PortalToken& GetToken() const;
 
-  mojom::blink::FrameOwnerElementType OwnerType() const override {
-    return mojom::blink::FrameOwnerElementType::kPortal;
+  FrameOwnerElementType OwnerType() const override {
+    return FrameOwnerElementType::kPortal;
   }
 
   // Consumes the portal interface. When a Portal is activated, or if the
@@ -169,6 +168,11 @@ struct DowncastTraits<HTMLPortalElement> {
   }
   static bool AllowFrom(const Node& node) {
     if (const HTMLElement* html_element = DynamicTo<HTMLElement>(node))
+      return html_element->IsHTMLPortalElement();
+    return false;
+  }
+  static bool AllowFrom(const Element& element) {
+    if (const HTMLElement* html_element = DynamicTo<HTMLElement>(element))
       return html_element->IsHTMLPortalElement();
     return false;
   }

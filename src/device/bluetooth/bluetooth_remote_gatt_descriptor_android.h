@@ -9,7 +9,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/macros.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 
@@ -34,6 +33,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorAndroid
       bluetooth_gatt_descriptor_wrapper,
       const base::android::JavaRef<
           jobject>& /* chromeBluetoothDevice */ chrome_bluetooth_device);
+
+  BluetoothRemoteGattDescriptorAndroid(
+      const BluetoothRemoteGattDescriptorAndroid&) = delete;
+  BluetoothRemoteGattDescriptorAndroid& operator=(
+      const BluetoothRemoteGattDescriptorAndroid&) = delete;
 
   ~BluetoothRemoteGattDescriptorAndroid() override;
 
@@ -83,8 +87,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorAndroid
   ErrorCallback write_error_callback_;
 
   std::vector<uint8_t> value_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattDescriptorAndroid);
 };
 
 }  // namespace device

@@ -6,7 +6,7 @@
 #define CHROMEOS_DBUS_SENESCHAL_SENESCHAL_CLIENT_H_
 
 #include "base/component_export.h"
-#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/seneschal/seneschal_service.pb.h"
@@ -31,6 +31,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SeneschalClient : public DBusClient {
 
   // Removes an observer if added.
   virtual void RemoveObserver(Observer* observer) = 0;
+
+  SeneschalClient(const SeneschalClient&) = delete;
+  SeneschalClient& operator=(const SeneschalClient&) = delete;
 
   ~SeneschalClient() override;
 
@@ -74,11 +77,13 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SeneschalClient : public DBusClient {
  protected:
   // Initialize() should be used instead.
   SeneschalClient();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SeneschalClient);
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace ash {
+using ::chromeos::SeneschalClient;
+}  // namespace ash
 
 #endif  // CHROMEOS_DBUS_SENESCHAL_SENESCHAL_CLIENT_H_

@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/download/public/common/all_download_event_notifier.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
@@ -48,6 +48,12 @@ class DownloadOfflineContentProvider
  public:
   explicit DownloadOfflineContentProvider(OfflineContentAggregator* aggregator,
                                           const std::string& name_space);
+
+  DownloadOfflineContentProvider(const DownloadOfflineContentProvider&) =
+      delete;
+  DownloadOfflineContentProvider& operator=(
+      const DownloadOfflineContentProvider&) = delete;
+
   ~DownloadOfflineContentProvider() override;
 
   // Should be called when a DownloadManager is available.
@@ -131,9 +137,9 @@ class DownloadOfflineContentProvider
   // Ensure that download core service is started.
   void EnsureDownloadCoreServiceStarted();
 
-  OfflineContentAggregator* aggregator_;
+  raw_ptr<OfflineContentAggregator> aggregator_;
   std::string name_space_;
-  SimpleDownloadManagerCoordinator* manager_;
+  raw_ptr<SimpleDownloadManagerCoordinator> manager_;
 
   std::unique_ptr<download::AllDownloadEventNotifier::Observer>
       all_download_observer_;
@@ -142,11 +148,9 @@ class DownloadOfflineContentProvider
   base::circular_deque<base::OnceClosure> pending_actions_for_reduced_mode_;
   base::circular_deque<base::OnceClosure> pending_actions_for_full_browser_;
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   base::WeakPtrFactory<DownloadOfflineContentProvider> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadOfflineContentProvider);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_OFFLINE_CONTENT_PROVIDER_H_

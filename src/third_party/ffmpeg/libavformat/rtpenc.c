@@ -589,7 +589,7 @@ static int rtp_write_packet(AVFormatContext *s1, AVPacket *pkt)
         break;
     case AV_CODEC_ID_H263:
         if (s->flags & FF_RTP_FLAG_RFC2190) {
-            buffer_size_t mb_info_size;
+            size_t mb_info_size;
             const uint8_t *mb_info =
                 av_packet_get_side_data(pkt, AV_PKT_DATA_H263_MB_INFO,
                                         &mb_info_size);
@@ -648,7 +648,7 @@ static int rtp_write_trailer(AVFormatContext *s1)
     return 0;
 }
 
-AVOutputFormat ff_rtp_muxer = {
+const AVOutputFormat ff_rtp_muxer = {
     .name              = "rtp",
     .long_name         = NULL_IF_CONFIG_SMALL("RTP output"),
     .priv_data_size    = sizeof(RTPMuxContext),

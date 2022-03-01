@@ -9,12 +9,11 @@
 #include <stdint.h>
 
 #include <list>
-#include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner_helpers.h"
+#include "base/task/sequenced_task_runner_helpers.h"
 #include "build/build_config.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/public/browser/browser_associated_interface.h"
@@ -47,7 +46,7 @@ class RenderWidgetHelper;
 
 // This class filters out incoming IPC messages for the renderer process on the
 // IPC thread.
-class CONTENT_EXPORT RenderMessageFilter
+class RenderMessageFilter
     : public BrowserMessageFilter,
       public BrowserAssociatedInterface<mojom::RenderMessageFilter> {
  public:
@@ -56,6 +55,9 @@ class CONTENT_EXPORT RenderMessageFilter
                       BrowserContext* browser_context,
                       RenderWidgetHelper* render_widget_helper,
                       MediaInternals* media_internals);
+
+  RenderMessageFilter(const RenderMessageFilter&) = delete;
+  RenderMessageFilter& operator=(const RenderMessageFilter&) = delete;
 
   // BrowserMessageFilter methods:
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -97,11 +99,9 @@ class CONTENT_EXPORT RenderMessageFilter
 
   int render_process_id_;
 
-  MediaInternals* media_internals_;
+  raw_ptr<MediaInternals> media_internals_;
 
   base::WeakPtrFactory<RenderMessageFilter> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RenderMessageFilter);
 };
 
 }  // namespace content

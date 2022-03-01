@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/check_op.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -137,7 +137,7 @@ class GLES2_IMPL_EXPORT VertexArrayObject {
     GLboolean normalized_;
 
     // The pointer/offset into the buffer.
-    const GLvoid* pointer_;
+    raw_ptr<const GLvoid> pointer_;
 
     // The stride that will be used to access the buffer. This is the bogus GL
     // stride where 0 = compute the stride based on size and type.
@@ -152,6 +152,9 @@ class GLES2_IMPL_EXPORT VertexArrayObject {
   typedef std::vector<VertexAttrib> VertexAttribs;
 
   explicit VertexArrayObject(GLuint max_vertex_attribs);
+
+  VertexArrayObject(const VertexArrayObject&) = delete;
+  VertexArrayObject& operator=(const VertexArrayObject&) = delete;
 
   void UnbindBuffer(GLuint id);
 
@@ -189,8 +192,6 @@ class GLES2_IMPL_EXPORT VertexArrayObject {
   GLuint bound_element_array_buffer_id_;
 
   VertexAttribs vertex_attribs_;
-
-  DISALLOW_COPY_AND_ASSIGN(VertexArrayObject);
 };
 
 VertexArrayObject::VertexArrayObject(GLuint max_vertex_attribs)

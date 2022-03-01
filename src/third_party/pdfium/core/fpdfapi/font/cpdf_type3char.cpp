@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "core/fxcrt/fx_system.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/dib/fx_dib.h"
 
@@ -48,7 +49,7 @@ bool CPDF_Type3Char::LoadBitmapFromSoleImageOfForm() {
 }
 
 void CPDF_Type3Char::InitializeFromStreamData(bool bColored,
-                                              const float* pData) {
+                                              pdfium::span<const float> pData) {
   m_bColored = bColored;
   m_Width = FXSYS_roundf(TextUnitToGlyphUnit(pData[0]));
   m_BBox.left = FXSYS_roundf(TextUnitToGlyphUnit(pData[2]));

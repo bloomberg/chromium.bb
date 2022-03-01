@@ -32,7 +32,9 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/source_stream_to_data_pipe.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/web_package/web_package_request_matcher.h"
 
@@ -40,7 +42,6 @@ namespace content {
 
 namespace {
 
-constexpr char kLoadResultHistogram[] = "SignedExchange.LoadResult2";
 constexpr char kPrefetchLoadResultHistogram[] =
     "SignedExchange.Prefetch.LoadResult2";
 
@@ -184,6 +185,9 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
       base::BindOnce(&SignedExchangeLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
       std::move(cert_fetcher_factory), network_isolation_key_,
+      outer_request_.trusted_params
+          ? absl::make_optional(outer_request_.trusted_params->isolation_info)
+          : absl::nullopt,
       outer_request_.load_flags, outer_response_head_->remote_endpoint,
       std::make_unique<blink::WebPackageRequestMatcher>(outer_request_.headers,
                                                         accept_langs_),
@@ -313,7 +317,8 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
   options.struct_size = sizeof(MojoCreateDataPipeOptions);
   options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
   options.element_num_bytes = 1;
-  options.capacity_num_bytes = network::kDataPipeDefaultAllocationSize;
+  options.capacity_num_bytes =
+      network::features::GetDataPipeDefaultAllocationSize();
   if (mojo::CreateDataPipe(&options, producer_handle, consumer_handle) !=
       MOJO_RESULT_OK) {
     forwarding_client_->OnComplete(
@@ -398,7 +403,7 @@ void SignedExchangeLoader::NotifyClientOnCompleteIfReady() {
 }
 
 void SignedExchangeLoader::ReportLoadResult(SignedExchangeLoadResult result) {
-  UMA_HISTOGRAM_ENUMERATION(kLoadResultHistogram, result);
+  signed_exchange_utils::RecordLoadResultHistogram(result);
   // |metric_recorder_| could be null in some tests.
   if ((outer_request_.load_flags & net::LOAD_PREFETCH) && metric_recorder_) {
     UMA_HISTOGRAM_ENUMERATION(kPrefetchLoadResultHistogram, result);

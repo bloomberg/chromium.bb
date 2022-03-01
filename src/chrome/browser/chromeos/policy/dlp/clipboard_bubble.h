@@ -13,9 +13,10 @@
 #include "ui/views/view.h"
 
 namespace views {
-class Label;
 class ImageView;
+class StyledLabel;
 class LabelButton;
+class Link;
 }  // namespace views
 
 namespace policy {
@@ -34,9 +35,10 @@ class ClipboardBubbleView : public views::View {
   // This function should get called if the view got updated e.g. AddChildView.
   void UpdateBorderSize(const gfx::Size& size);
 
-  views::Label* label_ = nullptr;
+  views::StyledLabel* label_ = nullptr;
   views::ImageView* managed_icon_ = nullptr;
   views::ImageView* border_ = nullptr;
+  views::Link* link_ = nullptr;
 };
 
 class ClipboardBlockBubble : public ClipboardBubbleView {

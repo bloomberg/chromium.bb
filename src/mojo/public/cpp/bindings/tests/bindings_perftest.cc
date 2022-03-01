@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -34,19 +35,23 @@ double MojoTicksToSeconds(MojoTimeTicks ticks) {
 class PingServiceImpl : public test::PingService {
  public:
   PingServiceImpl() = default;
+
+  PingServiceImpl(const PingServiceImpl&) = delete;
+  PingServiceImpl& operator=(const PingServiceImpl&) = delete;
+
   ~PingServiceImpl() override = default;
 
   // |PingService| methods:
   void Ping(PingCallback callback) override { std::move(callback).Run(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PingServiceImpl);
 };
 
 class PingPongTest {
  public:
   explicit PingPongTest(PendingRemote<test::PingService> remote)
       : remote_(std::move(remote)) {}
+
+  PingPongTest(const PingPongTest&) = delete;
+  PingPongTest& operator=(const PingPongTest&) = delete;
 
   void Run(unsigned int iterations) {
     iterations_to_run_ = iterations;
@@ -76,8 +81,6 @@ class PingPongTest {
   unsigned int current_iterations_;
 
   base::OnceClosure quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(PingPongTest);
 };
 
 struct BoundPingService {
@@ -182,18 +185,18 @@ class PingPongPaddle : public MessageReceiverWithResponderStatus {
   base::TimeTicks start_time_;
   base::TimeTicks end_time_;
   uint32_t expected_count_ = 0;
-  MessageReceiver* sender_;
+  raw_ptr<MessageReceiver> sender_;
   base::RepeatingClosure quit_closure_;
 };
 
 TEST_F(MojoBindingsPerftest, MultiplexRouterPingPong) {
   MessagePipe pipe;
   scoped_refptr<internal::MultiplexRouter> router0(
-      internal::MultiplexRouter::Create(
+      internal::MultiplexRouter::CreateAndStartReceiving(
           std::move(pipe.handle0), internal::MultiplexRouter::SINGLE_INTERFACE,
           true, base::ThreadTaskRunnerHandle::Get()));
   scoped_refptr<internal::MultiplexRouter> router1(
-      internal::MultiplexRouter::Create(
+      internal::MultiplexRouter::CreateAndStartReceiving(
           std::move(pipe.handle1), internal::MultiplexRouter::SINGLE_INTERFACE,
           false, base::ThreadTaskRunnerHandle::Get()));
 

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import type * as ProtocolProxyApi from '../../../../generated/protocol-proxy-api.js';
@@ -18,13 +16,17 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/utils/TargetDetachedDialog.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class TargetDetachedDialog extends SDK.SDKModel.SDKModel implements ProtocolProxyApi.InspectorDispatcher {
-  _hideCrashedDialog: (() => void)|null;
-  constructor(target: SDK.SDKModel.Target) {
+export class TargetDetachedDialog extends SDK.SDKModel.SDKModel<void> implements ProtocolProxyApi.InspectorDispatcher {
+  private static hideCrashedDialog: (() => void)|null;
+  constructor(target: SDK.Target.Target) {
     super(target);
     target.registerInspectorDispatcher(this);
     target.inspectorAgent().invoke_enable();
-    this._hideCrashedDialog = null;
+    // Hide all dialogs if a new top-level target is created.
+    if (target.parentTarget()?.type() === SDK.Target.Type.Browser && TargetDetachedDialog.hideCrashedDialog) {
+      TargetDetachedDialog.hideCrashedDialog.call(null);
+      TargetDetachedDialog.hideCrashedDialog = null;
+    }
   }
 
   detached({reason}: Protocol.Inspector.DetachedEvent): void {
@@ -40,17 +42,22 @@ export class TargetDetachedDialog extends SDK.SDKModel.SDKModel implements Proto
     // In case of service workers targetCrashed usually signals that the worker is stopped
     // and in any case it is restarted automatically (in which case front-end will receive
     // targetReloadedAfterCrash event).
-    if (this.target().parentTarget()) {
+    if (TargetDetachedDialog.hideCrashedDialog) {
+      return;
+    }
+    // Ignore child targets altogether.
+    const parentTarget = this.target().parentTarget();
+    if (parentTarget && parentTarget.type() !== SDK.Target.Type.Browser) {
       return;
     }
     const dialog = new UI.Dialog.Dialog();
     dialog.setSizeBehavior(UI.GlassPane.SizeBehavior.MeasureContent);
     dialog.addCloseButton();
     dialog.setDimmed(true);
-    this._hideCrashedDialog = dialog.hide.bind(dialog);
+    TargetDetachedDialog.hideCrashedDialog = dialog.hide.bind(dialog);
     new UI.TargetCrashedScreen
         .TargetCrashedScreen(() => {
-          this._hideCrashedDialog = null;
+          TargetDetachedDialog.hideCrashedDialog = null;
         })
         .show(dialog.contentElement);
 
@@ -65,12 +72,11 @@ export class TargetDetachedDialog extends SDK.SDKModel.SDKModel implements Proto
    */
   targetReloadedAfterCrash(): void {
     this.target().runtimeAgent().invoke_runIfWaitingForDebugger();
-    if (this._hideCrashedDialog) {
-      this._hideCrashedDialog.call(null);
-      this._hideCrashedDialog = null;
+    if (TargetDetachedDialog.hideCrashedDialog) {
+      TargetDetachedDialog.hideCrashedDialog.call(null);
+      TargetDetachedDialog.hideCrashedDialog = null;
     }
   }
 }
 
-SDK.SDKModel.SDKModel.register(
-    TargetDetachedDialog, {capabilities: SDK.SDKModel.Capability.Inspector, autostart: true});
+SDK.SDKModel.SDKModel.register(TargetDetachedDialog, {capabilities: SDK.Target.Capability.Inspector, autostart: true});

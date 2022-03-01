@@ -14,8 +14,8 @@ import android.media.MediaCodec;
 import android.media.MediaCodecInfo.CodecCapabilities;
 import android.media.MediaFormat;
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
 import android.view.Surface;
+import androidx.annotation.Nullable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.BlockingDeque;
@@ -514,7 +514,7 @@ class AndroidVideoDecoder implements VideoDecoder, VideoSink {
       throw new AssertionError("Stride is not divisible by two: " + stride);
     }
 
-    // Note that the case with odd |sliceHeight| is handled in a special way.
+    // Note that the case with odd `sliceHeight` is handled in a special way.
     // The chroma height contained in the payload is rounded down instead of
     // up, making it one row less than what we expect in WebRTC. Therefore, we
     // have to duplicate the last chroma rows for this case. Also, the offset

@@ -16,7 +16,6 @@ from __future__ import division
 from __future__ import print_function
 
 from tests.utils import HttpMockSequenceWithDiscovery
-from google.auth import credentials
 from google.cloud import datastore
 import base64
 import service
@@ -37,9 +36,7 @@ class LuciPollingTest(unittest.TestCase):
             'GAE_SERVICE': 'sheriff-config',
         },
         'datastore_client':
-            datastore.Client(
-                credentials=credentials.AnonymousCredentials(),
-                project='chromeperf'),
+            datastore.Client(project='chromeperf'),
         'http':
             HttpMockSequenceWithDiscovery([({
                 'status': '200'
@@ -82,6 +79,9 @@ class LuciPollingTest(unittest.TestCase):
                     'auto_triage': {
                         'enable': False
                     },
+                    'auto_merge': {
+                        'enable': False
+                    },
                     'auto_bisection': {
                         'enable': False
                     },
@@ -96,7 +96,7 @@ class LuciPollingTest(unittest.TestCase):
         '/configs/update', headers={'X-Forwarded-Proto': 'https'})
     self.assertEqual(response.status_code, 200)
 
-    def Test(path, triaged, bisected):
+    def Test(path, triaged, merged, bisected):
       response = client.post(
           '/subscriptions/match',
           json={
@@ -127,6 +127,9 @@ class LuciPollingTest(unittest.TestCase):
                       'auto_triage': {
                           'enable': triaged
                       },
+                      'auto_merge': {
+                          'enable': merged
+                      },
                       'auto_bisection': {
                           'enable': bisected
                       },
@@ -135,9 +138,10 @@ class LuciPollingTest(unittest.TestCase):
               }]
           })
 
-    Test('Triage_Bisect', True, True)
-    Test('NoTriage_Bisect', False, False)
-    Test('Triage_NoBisect', True, False)
+    Test('Triage_Merge_Bisect', True, True, True)
+    Test('NoTriage_Merge_Bisect', False, False, False)
+    Test('Triage_NoMerge_NoBisect', True, False, False)
+    Test('Triage_Merge_NoBisect', True, True, False)
 
   def testPollAndMatchMultiple(self):
     client = self.app.test_client()
@@ -173,6 +177,9 @@ class LuciPollingTest(unittest.TestCase):
                     'auto_triage': {
                         'enable': False
                     },
+                    'auto_merge': {
+                        'enable': False
+                    },
                     'auto_bisection': {
                         'enable': False
                     },
@@ -187,6 +194,9 @@ class LuciPollingTest(unittest.TestCase):
                     'bug_labels': ['Some-Label'],
                     'bug_components': ['Some>Component'],
                     'auto_triage': {
+                        'enable': False
+                    },
+                    'auto_merge': {
                         'enable': False
                     },
                     'auto_bisection': {
@@ -253,6 +263,9 @@ class LuciPollingTest(unittest.TestCase):
                     'auto_triage': {
                         'enable': False
                     },
+                    'auto_merge': {
+                        'enable': False
+                    },
                     'auto_bisection': {
                         'enable': False
                     },
@@ -309,9 +322,7 @@ class LuciPollingTest(unittest.TestCase):
             'GAE_SERVICE': 'sheriff-config',
         },
         'datastore_client':
-            datastore.Client(
-                credentials=credentials.AnonymousCredentials(),
-                project='chromeperf'),
+            datastore.Client(project='chromeperf'),
         'http':
             HttpMockSequenceWithDiscovery([({
                 'status': '200'
@@ -344,6 +355,9 @@ class LuciPollingTest(unittest.TestCase):
                     'auto_triage': {
                         'enable': False
                     },
+                    'auto_merge': {
+                        'enable': False
+                    },
                     'auto_bisection': {
                         'enable': False
                     },
@@ -358,6 +372,9 @@ class LuciPollingTest(unittest.TestCase):
                     'bug_labels': ['Some-Label'],
                     'bug_components': ['Some>Component'],
                     'auto_triage': {
+                        'enable': False
+                    },
+                    'auto_merge': {
                         'enable': False
                     },
                     'auto_bisection': {
@@ -375,6 +392,9 @@ class LuciPollingTest(unittest.TestCase):
                     'bug_labels': ['Some-Label'],
                     'bug_components': ['Some>Component'],
                     'auto_triage': {
+                        'enable': False
+                    },
+                    'auto_merge': {
                         'enable': False
                     },
                     'auto_bisection': {
@@ -441,6 +461,9 @@ class LuciContentChangesTest(unittest.TestCase):
                     'auto_triage': {
                         'enable': False
                     },
+                    'auto_merge': {
+                        'enable': False
+                    },
                     'auto_bisection': {
                         'enable': False
                     },
@@ -481,6 +504,9 @@ class LuciContentChangesTest(unittest.TestCase):
                     'auto_triage': {
                         'enable': False
                     },
+                    'auto_merge': {
+                        'enable': False
+                    },
                     'auto_bisection': {
                         'enable': False
                     },
@@ -495,6 +521,9 @@ class LuciContentChangesTest(unittest.TestCase):
                     'bug_labels': ['Some-Label'],
                     'bug_components': ['Some>Component'],
                     'auto_triage': {
+                        'enable': False
+                    },
+                    'auto_merge': {
                         'enable': False
                     },
                     'auto_bisection': {
@@ -512,9 +541,7 @@ class LuciContentChangesTest(unittest.TestCase):
             'GAE_SERVICE': 'sheriff-config',
         },
         'datastore_client':
-            datastore.Client(
-                credentials=credentials.AnonymousCredentials(),
-                project='chromeperf'),
+            datastore.Client(project='chromeperf'),
         'http':
             HttpMockSequenceWithDiscovery([({
                 'status': '200'
@@ -535,9 +562,7 @@ class LuciContentChangesTest(unittest.TestCase):
             'GAE_SERVICE': 'sheriff-config',
         },
         'datastore_client':
-            datastore.Client(
-                credentials=credentials.AnonymousCredentials(),
-                project='chromeperf'),
+            datastore.Client(project='chromeperf'),
         'http':
             HttpMockSequenceWithDiscovery([({
                 'status': '200'
@@ -596,9 +621,7 @@ subscriptions: {
             'GAE_SERVICE': 'sheriff-config',
         },
         'datastore_client':
-            datastore.Client(
-                credentials=credentials.AnonymousCredentials(),
-                project='chromeperf'),
+            datastore.Client(project='chromeperf'),
         'http':
             HttpMockSequenceWithDiscovery([({
                 'status': '200'

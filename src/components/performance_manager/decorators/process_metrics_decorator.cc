@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/performance_manager/graph/graph_impl.h"
 #include "components/performance_manager/graph/node_attached_data_impl.h"
@@ -21,14 +22,12 @@ namespace performance_manager {
 namespace {
 
 // The default process metrics refresh interval.
-constexpr base::TimeDelta kDefaultRefreshTimerPeriod =
-    base::TimeDelta::FromMinutes(2);
+constexpr base::TimeDelta kDefaultRefreshTimerPeriod = base::Minutes(2);
 
 #if !defined(OS_ANDROID)
 // The fast process metrics refresh interval. Used in certain situations, see
 // the comment in ProcessMetricsDecorator::StartTimer for more details.
-constexpr base::TimeDelta kFastRefreshTimerPeriod =
-    base::TimeDelta::FromSeconds(20);
+constexpr base::TimeDelta kFastRefreshTimerPeriod = base::Seconds(20);
 #endif
 
 }  // namespace
@@ -51,7 +50,7 @@ class ProcessMetricsDecorator::ScopedMetricsInterestTokenImpl
   ~ScopedMetricsInterestTokenImpl() override;
 
  protected:
-  Graph* graph_;
+  raw_ptr<Graph> graph_;
 };
 
 ProcessMetricsDecorator::ScopedMetricsInterestTokenImpl::
@@ -178,7 +177,7 @@ void ProcessMetricsDecorator::DidGetMemoryUsage(
   }
 
   GraphImpl::FromGraph(graph_)
-      ->FindOrCreateSystemNodeImpl()
+      ->GetSystemNodeImpl()
       ->OnProcessMemoryMetricsAvailable();
   refresh_timer_.Reset();
 }

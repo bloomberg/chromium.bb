@@ -11,8 +11,6 @@
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/sync_socket.h"
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
@@ -30,6 +28,10 @@ class PepperAudioOutputHost : public ppapi::host::ResourceHost {
   PepperAudioOutputHost(RendererPpapiHostImpl* host,
                         PP_Instance instance,
                         PP_Resource resource);
+
+  PepperAudioOutputHost(const PepperAudioOutputHost&) = delete;
+  PepperAudioOutputHost& operator=(const PepperAudioOutputHost&) = delete;
+
   ~PepperAudioOutputHost() override;
 
   int32_t OnResourceMessageReceived(
@@ -75,8 +77,6 @@ class PepperAudioOutputHost : public ppapi::host::ResourceHost {
   PepperPlatformAudioOutputDev* audio_output_;
 
   PepperDeviceEnumerationHostHelper enumeration_helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(PepperAudioOutputHost);
 };
 
 }  // namespace content

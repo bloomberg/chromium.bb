@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -15,6 +15,7 @@
 #include "components/permissions/permission_result.h"
 #include "components/permissions/permission_util.h"
 #include "components/permissions/prediction_service/prediction_service_messages.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 class BrowserContext;
@@ -68,6 +69,7 @@ enum class RequestTypeForUma {
   PERMISSION_FONT_ACCESS = 26,
   PERMISSION_IDLE_DETECTION = 27,
   PERMISSION_FILE_HANDLING = 28,
+  PERMISSION_U2F_API_REQUEST = 29,
   // NUM must be the last value in the enum.
   NUM
 };
@@ -120,7 +122,7 @@ enum class PermissionEmbargoStatus {
 // Enum used in UKMs and UMAs, do not re-order or change values. Deprecated
 // items should only be commented out. New items should be added at the end,
 // and the "PermissionPromptDisposition" histogram suffix needs to be updated to
-// match (tools/metrics/histograms/histograms_xml/histogram_suffixes_list.xml).
+// match (tools/metrics/histograms/metadata/histogram_suffixes_list.xml).
 enum class PermissionPromptDisposition {
   // Not all permission actions will have an associated permission prompt (e.g.
   // changing permission via the settings page).
@@ -154,6 +156,22 @@ enum class PermissionPromptDisposition {
 
   // Other custom modal dialogs.
   CUSTOM_MODAL_DIALOG = 8,
+
+  // Only used on desktop, a less prominent version of chip on the left-hand
+  // side of the location bar that shows a bubble when clicked.
+  LOCATION_BAR_LEFT_QUIET_CHIP = 9,
+
+  // Only used on Android, a message bubble near top of the screen and below the
+  // location bar. Message UI is an alternative UI to infobar UI.
+  MESSAGE_UI = 10,
+
+  // Only used on desktop, a chip on the left-hand side of the location bar that
+  // automatically shows a bubble.
+  LOCATION_BAR_LEFT_QUIET_ABUSIVE_CHIP = 11,
+
+  // Only used on desktop, a chip on the left-hand side of the location bar that
+  // automatically shows a bubble.
+  LOCATION_BAR_LEFT_CHIP_AUTO_BUBBLE = 12,
 };
 
 // The reason why the permission prompt disposition was used. Enum used in UKMs,
@@ -242,6 +260,10 @@ class PermissionUmaUtil {
   static const char kPermissionsPromptDeniedGesture[];
   static const char kPermissionsPromptDeniedNoGesture[];
 
+  PermissionUmaUtil() = delete;
+  PermissionUmaUtil(const PermissionUmaUtil&) = delete;
+  PermissionUmaUtil& operator=(const PermissionUmaUtil&) = delete;
+
   static void PermissionRequested(ContentSettingsType permission,
                                   const GURL& requesting_origin);
 
@@ -280,7 +302,10 @@ class PermissionUmaUtil {
       base::TimeDelta time_to_decision,
       PermissionPromptDisposition ui_disposition,
       absl::optional<PermissionPromptDispositionReason> ui_reason,
-      absl::optional<PredictionGrantLikelihood> predicted_grant_likelihood);
+      absl::optional<PredictionGrantLikelihood> predicted_grant_likelihood,
+      bool did_show_prompt,
+      bool did_click_manage,
+      bool did_click_learn_more);
 
   static void RecordWithBatteryBucket(const std::string& histogram);
 
@@ -322,6 +347,12 @@ class PermissionUmaUtil {
   static std::string GetPermissionActionString(
       PermissionAction permission_action);
 
+  static bool IsPromptDispositionQuiet(
+      PermissionPromptDisposition prompt_disposition);
+
+  static bool IsPromptDispositionLoud(
+      PermissionPromptDisposition prompt_disposition);
+
   // A scoped class that will check the current resolved content setting on
   // construction and report a revocation metric accordingly if the revocation
   // condition is met (from ALLOW to something else).
@@ -342,7 +373,7 @@ class PermissionUmaUtil {
     ~ScopedRevocationReporter();
 
    private:
-    content::BrowserContext* browser_context_;
+    raw_ptr<content::BrowserContext> browser_context_;
     const GURL primary_url_;
     const GURL secondary_url_;
     ContentSettingsType content_type_;
@@ -353,6 +384,7 @@ class PermissionUmaUtil {
 
  private:
   friend class PermissionUmaUtilTest;
+
   // Records UMA and UKM metrics for ContentSettingsTypes that have user facing
   // permission prompts. The passed in `permission` must be such that
   // PermissionUtil::IsPermission(permission) returns true.
@@ -380,8 +412,6 @@ class PermissionUmaUtil {
       const std::vector<PermissionRequest*>& requests,
       bool accepted,
       bool is_one_time);
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(PermissionUmaUtil);
 };
 
 }  // namespace permissions

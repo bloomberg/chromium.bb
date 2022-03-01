@@ -10,21 +10,20 @@
 
 #include "include/core/SkBlendMode.h"
 #include "include/core/SkColor.h"
-#include "include/core/SkFilterQuality.h"
 #include "include/core/SkRefCnt.h"
+#include "include/private/SkTOptional.h"
 #include "include/private/SkTo.h"
 
+class SkBlender;
 class SkColorFilter;
 class SkColorSpace;
 struct SkRect;
 class SkImageFilter;
 class SkMaskFilter;
+class SkMatrix;
 class SkPath;
 class SkPathEffect;
 class SkShader;
-
-// Move to clients when they are ready -- aid in deprecating the enum
-#define SK_SUPPORT_LEGACY_SETFILTERQUALITY
 
 /** \class SkPaint
     SkPaint controls options applied when drawing. SkPaint collects all
@@ -144,22 +143,6 @@ public:
         return !(a == b);
     }
 
-    /** Returns a hash generated from SkPaint values and pointers.
-        Identical hashes guarantee that the paints are
-        equivalent, but differing hashes do not guarantee that the paints have differing
-        contents.
-
-        If operator==(const SkPaint& a, const SkPaint& b) returns true for two paints,
-        their hashes are also equal.
-
-        The hash returned is platform and implementation specific.
-
-        @return  a shallow hash
-
-        example: https://fiddle.skia.org/c/@Paint_getHash
-    */
-    uint32_t getHash() const;
-
     /** Sets all SkPaint contents to their initial values. This is equivalent to replacing
         SkPaint with the result of SkPaint().
 
@@ -191,18 +174,6 @@ public:
         @param dither  setting for ditering
     */
     void setDither(bool dither) { fBitfields.fDither = static_cast<unsigned>(dither); }
-
-#ifdef SK_SUPPORT_LEGACY_SETFILTERQUALITY
-    // DEPRECATED -- this field is unused.
-    SkFilterQuality getFilterQuality() const {
-        return (SkFilterQuality)fBitfields.fFilterQuality;
-    }
-
-    // DEPRECATED -- this field is unused.
-    void setFilterQuality(SkFilterQuality fq) {
-        fBitfields.fFilterQuality = fq;
-    }
-#endif
 
     /** \enum SkPaint::Style
         Set Style to fill, stroke, or both fill and stroke geometry.
@@ -421,6 +392,9 @@ public:
     bool getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect,
                      SkScalar resScale = 1) const;
 
+    bool getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect,
+                     const SkMatrix& ctm) const;
+
     /** Returns the filled equivalent of the stroked path.
 
         Replaces dst with the src path modified by SkPathEffect and style stroke.
@@ -492,25 +466,57 @@ public:
     */
     void setColorFilter(sk_sp<SkColorFilter> colorFilter);
 
-    /** Returns SkBlendMode.
-        By default, returns SkBlendMode::kSrcOver.
+    /** If the current blender can be represented as a SkBlendMode enum, this returns that
+     *  enum in the optional's value(). If it cannot, then the returned optional does not
+     *  contain a value.
+     */
+    skstd::optional<SkBlendMode> asBlendMode() const;
 
-        @return  mode used to combine source color with destination color
-    */
-    SkBlendMode getBlendMode() const { return (SkBlendMode)fBitfields.fBlendMode; }
+    /**
+     *  Queries the blender, and if it can be represented as a SkBlendMode, return that mode,
+     *  else return the defaultMode provided.
+     */
+    SkBlendMode getBlendMode_or(SkBlendMode defaultMode) const;
 
-    /** Returns true if SkBlendMode is SkBlendMode::kSrcOver, the default.
+    /** Returns true iff the current blender claims to be equivalent to SkBlendMode::kSrcOver.
+     *
+     *  Also returns true of the current blender is nullptr.
+     */
+    bool isSrcOver() const;
 
-        @return  true if SkBlendMode is SkBlendMode::kSrcOver
-    */
-    bool isSrcOver() const { return (SkBlendMode)fBitfields.fBlendMode == SkBlendMode::kSrcOver; }
+    /** Helper method for calling setBlender().
+     *
+     *  This sets a blender that implements the specified blendmode enum.
+     */
+    void setBlendMode(SkBlendMode mode);
 
-    /** Sets SkBlendMode to mode.
-        Does not check for valid input.
+    /** Returns the user-supplied blend function, if one has been set.
+     *  Does not alter SkBlender's SkRefCnt.
+     *
+     *  A nullptr blender signifies the default SrcOver behavior.
+     *
+     *  @return  the SkBlender assigned to this paint, otherwise nullptr
+     */
+    SkBlender* getBlender() const { return fBlender.get(); }
 
-        @param mode  SkBlendMode used to combine source color and destination
-    */
-    void setBlendMode(SkBlendMode mode) { fBitfields.fBlendMode = (unsigned)mode; }
+    /** Returns the user-supplied blend function, if one has been set.
+     *  Increments the SkBlender's SkRefCnt by one.
+     *
+     *  A nullptr blender signifies the default SrcOver behavior.
+     *
+     *  @return  the SkBlender assigned to this paint, otherwise nullptr
+     */
+    sk_sp<SkBlender> refBlender() const;
+
+    /** Sets the current blender, increasing its refcnt, and if a blender is already
+     *  present, decreasing that object's refcnt.
+     *
+     *  A nullptr blender signifies the default SrcOver behavior.
+     *
+     *  For convenience, you can call setBlendMode() if the blend effect can be expressed
+     *  as one of those values.
+     */
+    void setBlender(sk_sp<SkBlender> blender);
 
     /** Returns SkPathEffect if set, or nullptr.
         Does not alter SkPathEffect SkRefCnt.
@@ -691,6 +697,7 @@ private:
     sk_sp<SkMaskFilter>   fMaskFilter;
     sk_sp<SkColorFilter>  fColorFilter;
     sk_sp<SkImageFilter>  fImageFilter;
+    sk_sp<SkBlender>      fBlender;
 
     SkColor4f       fColor4f;
     SkScalar        fWidth;
@@ -702,9 +709,7 @@ private:
             unsigned    fCapType : 2;
             unsigned    fJoinType : 2;
             unsigned    fStyle : 2;
-            unsigned    fFilterQuality : 2;
-            unsigned    fBlendMode : 8; // only need 5-6?
-            unsigned    fPadding : 14;  // 14==32-1-1-2-2-2-2-8
+            unsigned    fPadding : 24;  // 24 == 32 -1-1-2-2-2
         } fBitfields;
         uint32_t fBitfieldsUInt;
     };

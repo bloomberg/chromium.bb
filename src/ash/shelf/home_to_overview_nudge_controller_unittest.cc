@@ -4,8 +4,8 @@
 
 #include "ash/shelf/home_to_overview_nudge_controller.h"
 
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_nudge.h"
 #include "ash/shelf/contextual_tooltip.h"
@@ -18,6 +18,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
+#include "base/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
@@ -26,7 +27,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/core/window_util.h"
@@ -96,7 +97,7 @@ class HomeToOverviewNudgeControllerTest : public AshTestBase {
     AshTestBase::SetUp();
     GetSessionControllerClient()->SetSessionState(
         session_manager::SessionState::LOGIN_PRIMARY);
-    test_clock_.Advance(base::TimeDelta::FromHours(2));
+    test_clock_.Advance(base::Hours(2));
     contextual_tooltip::OverrideClockForTesting(&test_clock_);
   }
   void TearDown() override {
@@ -255,19 +256,19 @@ TEST_F(HomeToOverviewNudgeControllerTest, ShownOnHomeScreen) {
   EXPECT_FALSE(GetNudgeController()->HasHideTimerForTesting());
 
   // Transitioning to overview should hide the nudge.
-  Shell::Get()->overview_controller()->StartOverview();
+  EnterOverview();
 
   EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
 
   // Ending overview, and transitioning to the home screen again should not show
   // the nudge.
-  Shell::Get()->overview_controller()->EndOverview();
+  ExitOverview();
   EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
   EXPECT_EQ(gfx::Transform(),
             GetHotseatWidget()->GetLayerForNudgeAnimation()->transform());
 
   // Advance time for more than a day (which should enable the nudge again).
-  test_clock_.Advance(base::TimeDelta::FromHours(25));
+  test_clock_.Advance(base::Hours(25));
 
   // The nudge should not show up unless the user actually transitions to home.
   EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
@@ -318,7 +319,7 @@ TEST_F(HomeToOverviewNudgeControllerTest, ShownLimitedNumberOfTimes) {
     std::unique_ptr<aura::Window> window =
         CreateTestWindow(gfx::Rect(0, 0, 400, 400));
     wm::ActivateWindow(window.get());
-    test_clock_.Advance(base::TimeDelta::FromHours(25));
+    test_clock_.Advance(base::Hours(25));
     WindowState::Get(window.get())->Minimize();
   }
 
@@ -415,7 +416,7 @@ TEST_F(HomeToOverviewNudgeControllerTest, HiddenOnScreenLock) {
 
   // Nudge should not be shown if a window is shown and hidden behind a lock
   // screen.
-  test_clock_.Advance(base::TimeDelta::FromHours(25));
+  test_clock_.Advance(base::Hours(25));
   ScopedWindowList locked_session_window = CreateAndMinimizeWindows(1);
   EXPECT_FALSE(GetNudgeController()->HasShowTimerForTesting());
 }
@@ -492,7 +493,7 @@ TEST_F(HomeToOverviewNudgeControllerTest, NudgeHiddenDuringShowAnimation) {
       GetHotseatWidget()->GetLayerForNudgeAnimation()->GetTargetTransform());
 
   // When the nudge is shown again, it should be hidden after a timeout.
-  test_clock_.Advance(base::TimeDelta::FromHours(25));
+  test_clock_.Advance(base::Hours(25));
   WindowState::Get(window.get())->Minimize();
   ASSERT_TRUE(GetNudgeController()->HasShowTimerForTesting());
   GetNudgeController()->FireShowTimerForTesting();
@@ -630,8 +631,7 @@ TEST_F(HomeToOverviewNudgeControllerTest, NoNudgeAfterSuccessfulGestures) {
                                  ->GetWindowBoundsInScreen()
                                  .CenterPoint();
     GetEventGenerator()->GestureScrollSequenceWithCallback(
-        start, start + gfx::Vector2d(0, -100),
-        base::TimeDelta::FromMilliseconds(50),
+        start, start + gfx::Vector2d(0, -100), base::Milliseconds(50),
         /*num_steps = */ 12,
         base::BindRepeating(
             [](ui::EventType type, const gfx::Vector2dF& offset) {
@@ -658,7 +658,7 @@ TEST_F(HomeToOverviewNudgeControllerTest, NoNudgeAfterSuccessfulGestures) {
   }
 
   // The nudge should not be shown next time the user transitions to home.
-  test_clock_.Advance(base::TimeDelta::FromHours(25));
+  test_clock_.Advance(base::Hours(25));
   ScopedWindowList extra_window = CreateAndMinimizeWindows(1);
 
   EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
@@ -684,8 +684,7 @@ TEST_F(HomeToOverviewNudgeControllerTest, HomeToOverviewGestureFromNudge) {
   const gfx::Point start =
       GetNudgeWidget()->GetWindowBoundsInScreen().CenterPoint();
   GetEventGenerator()->GestureScrollSequenceWithCallback(
-      start, start + gfx::Vector2d(0, -100),
-      base::TimeDelta::FromMilliseconds(50),
+      start, start + gfx::Vector2d(0, -100), base::Milliseconds(50),
       /*num_steps = */ 12,
       base::BindRepeating([](ui::EventType type, const gfx::Vector2dF& offset) {
         if (type != ui::ET_GESTURE_SCROLL_UPDATE)

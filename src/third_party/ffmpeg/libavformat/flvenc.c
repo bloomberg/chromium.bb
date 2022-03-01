@@ -902,7 +902,7 @@ static int flv_write_packet(AVFormatContext *s, AVPacket *pkt)
 
     if (par->codec_id == AV_CODEC_ID_AAC || par->codec_id == AV_CODEC_ID_H264
             || par->codec_id == AV_CODEC_ID_MPEG4) {
-        buffer_size_t side_size;
+        size_t side_size;
         uint8_t *side = av_packet_get_side_data(pkt, AV_PKT_DATA_NEW_EXTRADATA, &side_size);
         if (side && side_size > 0 && (side_size != par->extradata_size || memcmp(side, par->extradata, side_size))) {
             ret = ff_alloc_extradata(par, side_size);
@@ -1112,7 +1112,7 @@ static const AVClass flv_muxer_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVOutputFormat ff_flv_muxer = {
+const AVOutputFormat ff_flv_muxer = {
     .name           = "flv",
     .long_name      = NULL_IF_CONFIG_SMALL("FLV (Flash Video)"),
     .mime_type      = "video/x-flv",

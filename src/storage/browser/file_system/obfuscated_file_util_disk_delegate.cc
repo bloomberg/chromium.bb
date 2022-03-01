@@ -9,9 +9,9 @@
 
 namespace storage {
 
-ObfuscatedFileUtilDiskDelegate::ObfuscatedFileUtilDiskDelegate() {}
+ObfuscatedFileUtilDiskDelegate::ObfuscatedFileUtilDiskDelegate() = default;
 
-ObfuscatedFileUtilDiskDelegate::~ObfuscatedFileUtilDiskDelegate() {}
+ObfuscatedFileUtilDiskDelegate::~ObfuscatedFileUtilDiskDelegate() = default;
 
 bool ObfuscatedFileUtilDiskDelegate::DirectoryExists(
     const base::FilePath& path) {
@@ -85,17 +85,17 @@ base::File::Error ObfuscatedFileUtilDiskDelegate::Truncate(
 base::File::Error ObfuscatedFileUtilDiskDelegate::CopyOrMoveFile(
     const base::FilePath& src_path,
     const base::FilePath& dest_path,
-    FileSystemOperation::CopyOrMoveOption option,
+    FileSystemOperation::CopyOrMoveOptionSet options,
     NativeFileUtil::CopyOrMoveMode mode) {
-  return NativeFileUtil::CopyOrMoveFile(src_path, dest_path, option, mode);
+  return NativeFileUtil::CopyOrMoveFile(src_path, dest_path, options, mode);
 }
 
 base::File::Error ObfuscatedFileUtilDiskDelegate::CopyInForeignFile(
     const base::FilePath& src_path,
     const base::FilePath& dest_path,
-    FileSystemOperation::CopyOrMoveOption option,
+    FileSystemOperation::CopyOrMoveOptionSet options,
     NativeFileUtil::CopyOrMoveMode mode) {
-  return NativeFileUtil::CopyOrMoveFile(src_path, dest_path, option, mode);
+  return NativeFileUtil::CopyOrMoveFile(src_path, dest_path, options, mode);
 }
 
 base::File::Error ObfuscatedFileUtilDiskDelegate::DeleteFile(

@@ -11,8 +11,6 @@
 
 #include <math.h>
 
-#include "aom_ports/system_state.h"
-
 #include "av1/common/av1_common_int.h"
 #include "av1/common/blockd.h"
 

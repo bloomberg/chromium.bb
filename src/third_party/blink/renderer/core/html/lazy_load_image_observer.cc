@@ -23,7 +23,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 
@@ -108,7 +108,7 @@ void RecordVisibleLoadTimeForImage(
   base::TimeDelta visible_load_delay =
       visible_load_time_metrics.time_when_first_load_finished -
       visible_load_time_metrics.time_when_first_visible;
-  if (visible_load_delay < base::TimeDelta())
+  if (visible_load_delay.is_negative())
     visible_load_delay = base::TimeDelta();
 
   switch (GetNetworkStateNotifier().EffectiveType()) {
@@ -206,7 +206,8 @@ void LazyLoadImageObserver::StartMonitoringNearViewport(
 }
 
 void LazyLoadImageObserver::StopMonitoring(Element* element) {
-  lazy_load_intersection_observer_->unobserve(element);
+  if (lazy_load_intersection_observer_)
+    lazy_load_intersection_observer_->unobserve(element);
 }
 
 void LazyLoadImageObserver::LoadIfNearViewport(

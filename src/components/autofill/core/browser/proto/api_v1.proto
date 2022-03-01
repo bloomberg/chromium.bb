@@ -70,16 +70,17 @@ message AutofillQueryResponse {
       // Prediction made on a field.
       message FieldPrediction {
         // The predicted field type.
+        // See components/autofill/core/browser/field_types.h for defined types.
+        // It is not guaranteed that the value of |type| is known to the enum.
         optional int32 type = 1;
         // Indicates if the prediction is an override.
         optional bool override = 2 [default = false];
       }
       // Signature identifying the field that is the same as in the request.
       optional fixed32 field_signature = 1;
-      // The predicted field type.
-      optional int32 primary_type_prediction = 2;
-      // Detailed list of all possible predictions (including
-      // |primary_type_prediction| as the first item).
+      reserved 2;  // optional int32 primary_type_prediction
+      // Detailed list of all possible predictions. Contains an autofill and/or
+      // a password manager prediction.
       repeated FieldPrediction predictions = 3;
       // Whether the server-side classification believes that the field
       // may be pre-filled with a placeholder in the value attribute.
@@ -87,8 +88,7 @@ message AutofillQueryResponse {
       // For fields of type NEW_PASSWORD and ACCOUNT_CREATION_PASSWORD, this may
       // specify requirements for the generation of passwords.
       optional .autofill.PasswordRequirementsSpec password_requirements = 5;
-      // Indicates that the primary prediction is an override.
-      optional bool primary_type_prediction_is_override = 6 [default = false];
+      reserved 6;  // optional bool primary_type_prediction_is_override
     };
     // Suggestions on the fields in the same form.
     repeated FieldSuggestion field_suggestions = 1;

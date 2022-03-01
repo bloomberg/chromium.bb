@@ -12,6 +12,7 @@
 
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
+#include "url/gurl.h"
 
 namespace base {
 struct Feature;
@@ -32,9 +33,6 @@ bool IsShowAutofillSignaturesEnabled();
 
 // Returns true when keyboard accessory is enabled.
 bool IsKeyboardAccessoryEnabled();
-
-// Returns whether the Touch To Fill feature is enabled.
-bool IsTouchToFillEnabled();
 
 // A token is a sequences of contiguous characters separated by any of the
 // characters that are part of delimiter set {' ', '.', ',', '-', '_', '@'}.
@@ -88,6 +86,9 @@ bool IsFillable(mojom::FocusedFieldType focused_field_type);
 
 mojom::SubmissionIndicatorEvent ToSubmissionIndicatorEvent(
     mojom::SubmissionSource source);
+
+// Strips any authentication data, as well as query and ref portions of URL.
+GURL StripAuthAndParams(const GURL& gurl);
 
 }  // namespace autofill
 

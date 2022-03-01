@@ -6,11 +6,16 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/version.h"
 #include "build/build_config.h"
+#include "chrome/updater/constants.h"
+#include "chrome/updater/tag.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
@@ -22,7 +27,6 @@
 #endif
 
 namespace updater {
-
 namespace {
 
 const char kHexString[] = "0123456789ABCDEF";
@@ -41,7 +45,7 @@ struct Charmap {
     return ((map[c >> 5] & (1 << (c & 31))) != 0);
   }
 
-  uint32_t map[8];
+  uint32_t map[8] = {};
 };
 
 // Everything except alphanumerics and !'()*-._~
@@ -85,8 +89,7 @@ std::string EscapeQueryParamValue(base::StringPiece text, bool use_plus) {
 
 }  // namespace
 
-absl::optional<base::FilePath> GetBaseDirectory() {
-  UpdaterScope scope = GetProcessScope();
+absl::optional<base::FilePath> GetBaseDirectory(UpdaterScope scope) {
   absl::optional<base::FilePath> app_data_dir;
 #if defined(OS_WIN)
   base::FilePath path;
@@ -115,8 +118,8 @@ absl::optional<base::FilePath> GetBaseDirectory() {
   return product_data_dir;
 }
 
-absl::optional<base::FilePath> GetVersionedDirectory() {
-  absl::optional<base::FilePath> product_dir = GetBaseDirectory();
+absl::optional<base::FilePath> GetVersionedDirectory(UpdaterScope scope) {
+  const absl::optional<base::FilePath> product_dir = GetBaseDirectory(scope);
   if (!product_dir) {
     LOG(ERROR) << "Failed to get the base directory.";
     return absl::nullopt;
@@ -131,6 +134,40 @@ absl::optional<base::FilePath> GetVersionedDirectory() {
   return versioned_dir;
 }
 
+absl::optional<base::FilePath> GetVersionedUpdaterFolderPathForVersion(
+    UpdaterScope scope,
+    const base::Version& version) {
+  const absl::optional<base::FilePath> path = GetUpdaterFolderPath(scope);
+  if (!path)
+    return absl::nullopt;
+  return path->AppendASCII(version.GetString());
+}
+
+absl::optional<base::FilePath> GetVersionedUpdaterFolderPath(
+    UpdaterScope scope) {
+  return GetVersionedUpdaterFolderPathForVersion(
+      scope, base::Version(kUpdaterVersion));
+}
+
+absl::optional<tagging::TagArgs> GetTagArgs() {
+  static const absl::optional<tagging::TagArgs> tag_args =
+      []() -> absl::optional<tagging::TagArgs> {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    const std::string tag = command_line->GetSwitchValueASCII(kTagSwitch);
+    if (tag.empty())
+      return absl::nullopt;
+    tagging::TagArgs tag_args;
+    const tagging::ErrorCode error =
+        tagging::Parse(tag, absl::nullopt, &tag_args);
+    VLOG_IF(1, error != tagging::ErrorCode::kSuccess)
+        << "Tag parsing returned " << error << ".";
+    return error == tagging::ErrorCode::kSuccess ? absl::make_optional(tag_args)
+                                                 : absl::nullopt;
+  }();
+
+  return tag_args;
+}
+
 base::CommandLine MakeElevated(base::CommandLine command_line) {
 #if defined(OS_MAC)
   command_line.PrependWrapper("/usr/bin/sudo");
@@ -138,10 +175,12 @@ base::CommandLine MakeElevated(base::CommandLine command_line) {
   return command_line;
 }
 
-// The log file is created in DIR_LOCAL_APP_DATA or DIR_APP_DATA.
-void InitLogging(const base::FilePath::StringType& filename) {
+// The log file is created in DIR_LOCAL_APP_DATA or DIR_ROAMING_APP_DATA.
+void InitLogging(UpdaterScope updater_scope,
+                 const base::FilePath::StringType& filename) {
   logging::LoggingSettings settings;
-  absl::optional<base::FilePath> log_dir = GetBaseDirectory();
+  const absl::optional<base::FilePath> log_dir =
+      GetBaseDirectory(updater_scope);
   if (!log_dir) {
     LOG(ERROR) << "Error getting base dir.";
     return;
@@ -174,4 +213,23 @@ GURL AppendQueryParameter(const GURL& url,
   return url.ReplaceComponents(replacements);
 }
 
+#if defined(OS_LINUX)
+
+// TODO(crbug.com/1276188) - implement the functions below.
+absl::optional<base::FilePath> GetUpdaterFolderPath(UpdaterScope scope) {
+  NOTIMPLEMENTED();
+  return absl::nullopt;
+}
+
+base::FilePath GetExecutableRelativePath() {
+  NOTIMPLEMENTED();
+  return base::FilePath();
+}
+
+bool PathOwnedByUser(const base::FilePath& path) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+#endif  // OS_LINUX
 }  // namespace updater

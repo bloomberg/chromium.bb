@@ -85,6 +85,8 @@ ScrollableShelfInfo ShelfTestApi::GetScrollableShelfInfoForState(
         shelf_view->view_model()->view_at(i)->GetBoundsInScreen());
   }
 
+  info.icons_under_animation = shelf_view->IsAnimating();
+
   // Calculates the target offset only when |scroll_distance| is specified.
   if (state.scroll_distance != 0.f) {
     const float target_offset =
@@ -116,6 +118,8 @@ HotseatInfo ShelfTestApi::GetHotseatInfo() {
   gfx::Point swipe_end_location = info.swipe_up.swipe_start_location;
   swipe_end_location.set_y(swipe_end_location.y() - swipe_distance);
   info.swipe_up.swipe_end_location = swipe_end_location;
+  info.is_auto_hidden =
+      GetShelf()->shelf_layout_manager()->is_shelf_auto_hidden();
 
   return info;
 }

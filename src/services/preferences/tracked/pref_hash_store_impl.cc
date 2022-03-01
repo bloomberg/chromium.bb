@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/check.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
@@ -48,6 +48,11 @@ class PrefHashStoreImpl::PrefHashStoreTransactionImpl
   // members of its |outer| PrefHashStoreImpl.
   PrefHashStoreTransactionImpl(PrefHashStoreImpl* outer,
                                HashStoreContents* storage);
+
+  PrefHashStoreTransactionImpl(const PrefHashStoreTransactionImpl&) = delete;
+  PrefHashStoreTransactionImpl& operator=(const PrefHashStoreTransactionImpl&) =
+      delete;
+
   ~PrefHashStoreTransactionImpl() override;
 
   // PrefHashStoreTransaction implementation.
@@ -68,13 +73,11 @@ class PrefHashStoreImpl::PrefHashStoreTransactionImpl
   bool StampSuperMac() override;
 
  private:
-  PrefHashStoreImpl* outer_;
-  HashStoreContents* contents_;
+  raw_ptr<PrefHashStoreImpl> outer_;
+  raw_ptr<HashStoreContents> contents_;
 
   bool super_mac_valid_;
   bool super_mac_dirty_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrefHashStoreTransactionImpl);
 };
 
 PrefHashStoreImpl::PrefHashStoreImpl(const std::string& seed,
@@ -272,11 +275,9 @@ void PrefHashStoreImpl::PrefHashStoreTransactionImpl::StoreSplitHash(
 
     for (base::DictionaryValue::Iterator it(*split_macs); !it.IsAtEnd();
          it.Advance()) {
-      const base::Value* value_as_string;
-      bool is_string = it.value().GetAsString(&value_as_string);
-      DCHECK(is_string);
+      DCHECK(it.value().is_string());
 
-      contents_->SetSplitMac(path, it.key(), value_as_string->GetString());
+      contents_->SetSplitMac(path, it.key(), it.value().GetString());
     }
   }
   super_mac_dirty_ = true;

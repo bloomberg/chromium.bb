@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
 
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/numerics/ranges.h"
 #include "base/trace_event/trace_event.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
@@ -45,24 +45,35 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
       {"a11yFoundTabsFor", IDS_TAB_SEARCH_A11Y_FOUND_TABS_FOR},
       {"a11yOpenTab", IDS_TAB_SEARCH_A11Y_OPEN_TAB},
       {"a11yRecentlyClosedTab", IDS_TAB_SEARCH_A11Y_RECENTLY_CLOSED_TAB},
+      {"a11yRecentlyClosedTabGroup",
+       IDS_TAB_SEARCH_A11Y_RECENTLY_CLOSED_TAB_GROUP},
       {"openTabs", IDS_TAB_SEARCH_OPEN_TABS},
-      {"recentlyClosedTabs", IDS_TAB_SEARCH_RECENTLY_CLOSED_TABS},
+      {"oneTab", IDS_TAB_SEARCH_ONE_TAB},
+      {"tabCount", IDS_TAB_SEARCH_TAB_COUNT},
+      {"recentlyClosed", IDS_TAB_SEARCH_RECENTLY_CLOSED},
+      {"recentlyClosedExpandA11yLabel",
+       IDS_TAB_SEARCH_EXPAND_RECENTLY_CLOSED_ITEMS},
   };
   source->AddLocalizedStrings(kStrings);
   source->AddBoolean("useRipples", views::PlatformStyle::kUseRipples);
 
   // Add the configuration parameters for fuzzy search.
+  source->AddBoolean("useFuzzySearch", base::FeatureList::IsEnabled(
+                                           features::kTabSearchFuzzySearch));
   source->AddBoolean("searchIgnoreLocation",
                      features::kTabSearchSearchIgnoreLocation.Get());
   source->AddInteger("searchDistance",
                      features::kTabSearchSearchDistance.Get());
   source->AddDouble(
       "searchThreshold",
-      base::ClampToRange<double>(features::kTabSearchSearchThreshold.Get(),
-                                 features::kTabSearchSearchThresholdMin,
-                                 features::kTabSearchSearchThresholdMax));
-  source->AddDouble("searchTitleToHostnameWeightRatio",
-                    features::kTabSearchTitleToHostnameWeightRatio.Get());
+      base::clamp<double>(features::kTabSearchSearchThreshold.Get(),
+                          features::kTabSearchSearchThresholdMin,
+                          features::kTabSearchSearchThresholdMax));
+  source->AddDouble("searchTitleWeight", features::kTabSearchTitleWeight.Get());
+  source->AddDouble("searchHostnameWeight",
+                    features::kTabSearchHostnameWeight.Get());
+  source->AddDouble("searchGroupTitleWeight",
+                    features::kTabSearchGroupTitleWeight.Get());
 
   source->AddBoolean("moveActiveTabToBottom",
                      features::kTabSearchMoveActiveTabToBottom.Get());

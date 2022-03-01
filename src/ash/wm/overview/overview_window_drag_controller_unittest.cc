@@ -6,13 +6,15 @@
 
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
+#include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/desks/desks_histogram_enums.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
@@ -27,6 +29,8 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/views/widget/widget.h"
 
 using ash::desks_util::BelongsToActiveDesk;
@@ -70,6 +74,9 @@ class WindowCloseWaiter : public aura::WindowObserver {
     window_->AddObserver(this);
   }
 
+  WindowCloseWaiter(const WindowCloseWaiter&) = delete;
+  WindowCloseWaiter& operator=(const WindowCloseWaiter&) = delete;
+
   ~WindowCloseWaiter() override {
     if (window_)
       window_->RemoveObserver(this);
@@ -92,13 +99,87 @@ class WindowCloseWaiter : public aura::WindowObserver {
  private:
   aura::Window* window_;
   base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowCloseWaiter);
 };
 
 }  // namespace
 
-using OverviewWindowDragControllerTest = AshTestBase;
+class OverviewWindowDragControllerTest : public AshTestBase {
+ public:
+  OverviewWindowDragControllerTest() = default;
+
+  OverviewWindowDragControllerTest(const OverviewWindowDragControllerTest&) =
+      delete;
+  OverviewWindowDragControllerTest& operator=(
+      const OverviewWindowDragControllerTest&) = delete;
+
+  ~OverviewWindowDragControllerTest() override = default;
+
+  OverviewController* overview_controller() {
+    return Shell::Get()->overview_controller();
+  }
+
+  SplitViewController* split_view_controller() {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  }
+
+  OverviewSession* overview_session() {
+    DCHECK(overview_controller()->InOverviewSession());
+    return overview_controller()->overview_session();
+  }
+
+  OverviewWindowDragController* drag_controller() {
+    return overview_session()->window_drag_controller();
+  }
+
+  SplitViewDragIndicators* drag_indicators() {
+    return overview_session()->grid_list()[0]->split_view_drag_indicators();
+  }
+
+  OverviewGrid* overview_grid() {
+    return overview_session()->GetGridWithRootWindow(
+        Shell::GetPrimaryRootWindow());
+  }
+
+  const views::Widget* desks_bar_widget() {
+    DCHECK(overview_grid()->desks_bar_view());
+    return overview_grid()->desks_bar_view()->GetWidget();
+  }
+
+  OverviewItem* GetOverviewItemForWindow(aura::Window* window) {
+    return overview_session()->GetOverviewItemForWindow(window);
+  }
+
+  int GetExpectedDesksBarShiftAmount() {
+    return drag_indicators()->GetLeftHighlightViewBounds().bottom() +
+           kHighlightScreenEdgePaddingDp;
+  }
+
+  void StartDraggingAndValidateDesksBarShifted(aura::Window* window) {
+    // Enter overview mode, and start dragging the window. Validate that the
+    // desks bar widget is shifted down to make room for the indicators.
+    EnterOverview();
+    EXPECT_TRUE(overview_controller()->InOverviewSession());
+    auto* overview_item = GetOverviewItemForWindow(window);
+    ASSERT_TRUE(overview_item);
+    StartDraggingItemBy(overview_item, 100, 200, /*by_touch_gestures=*/false,
+                        GetEventGenerator());
+    ASSERT_TRUE(drag_controller());
+    EXPECT_EQ(OverviewWindowDragController::DragBehavior::kNormalDrag,
+              drag_controller()->current_drag_behavior());
+    ASSERT_TRUE(drag_indicators());
+    EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+              drag_indicators()->current_window_dragging_state());
+    // Note that it's ok to use screen bounds here since we only have a single
+    // primary display.
+    EXPECT_EQ(GetExpectedDesksBarShiftAmount(),
+              desks_bar_widget()->GetWindowBoundsInScreen().y());
+  }
+
+  int GetDesksBarViewExpandedStateHeight(const DesksBarView* desks_bar_view) {
+    return desks_bar_view->GetExpandedBarHeight(
+        desks_bar_view->GetWidget()->GetNativeWindow()->GetRootWindow());
+  }
+};
 
 TEST_F(OverviewWindowDragControllerTest, NoDragToCloseUsingMouse) {
   auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
@@ -110,7 +191,7 @@ TEST_F(OverviewWindowDragControllerTest, NoDragToCloseUsingMouse) {
   base::RunLoop().RunUntilIdle();
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->StartOverview();
+  EnterOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   auto* overview_session = overview_controller->overview_session();
   auto* overview_item =
@@ -145,7 +226,7 @@ TEST_F(OverviewWindowDragControllerTest,
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->StartOverview();
+  EnterOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   auto* overview_session = overview_controller->overview_session();
   const auto* overview_grid =
@@ -188,7 +269,7 @@ TEST_F(OverviewWindowDragControllerTest,
   EXPECT_TRUE(overview_grid->empty());
   const Desk* desk_2 = controller->desks()[1].get();
   EXPECT_TRUE(base::Contains(desk_2->windows(), window.get()));
-  EXPECT_TRUE(overview_session->no_windows_widget_for_testing());
+  EXPECT_TRUE(const_cast<OverviewGrid*>(overview_grid)->no_windows_widget());
 }
 
 // Test that if window is destroyed during dragging, no crash should happen and
@@ -197,7 +278,7 @@ TEST_F(OverviewWindowDragControllerTest, WindowDestroyedDuringDragging) {
   std::unique_ptr<aura::Window> window =
       CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->StartOverview();
+  EnterOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   auto* overview_session = overview_controller->overview_session();
   auto* overview_item =
@@ -217,47 +298,95 @@ TEST_F(OverviewWindowDragControllerTest, WindowDestroyedDuringDragging) {
             drag_controller->current_drag_behavior());
 }
 
+TEST_F(OverviewWindowDragControllerTest,
+       DragAndDropWindowInPortraitModeWithOneDesk) {
+  // Update the display to make it portrait mode.
+  UpdateDisplay("768x1366");
+  auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
+
+  StartDraggingAndValidateDesksBarShifted(window.get());
+  const auto* desks_bar_view = overview_grid()->desks_bar_view();
+  ASSERT_TRUE(desks_bar_view);
+  // Check the height of the desks bar view. It should have height
+  // `kZeroStateBarHeight` while dragging `window`.
+  EXPECT_EQ(DesksBarView::kZeroStateBarHeight,
+            desks_bar_view->bounds().height());
+
+  // Now drop `window`. Check the height of the desks bar view. It should still
+  // be `kZeroStateBarHeight`.
+  auto* event_generator = GetEventGenerator();
+  event_generator->ReleaseLeftButton();
+  EXPECT_EQ(DesksBarView::kZeroStateBarHeight,
+            desks_bar_view->bounds().height());
+
+  // Click on the zero state new desk button to create a new desk. This
+  // shouldn't end overview mode. The desks bar view should be transformed to
+  // the expanded state.
+  const gfx::Point new_desk_button_center =
+      desks_bar_view->zero_state_new_desk_button()
+          ->GetView()
+          ->GetBoundsInScreen()
+          .CenterPoint();
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  event_generator->MoveMouseTo(new_desk_button_center);
+  event_generator->ClickLeftButton();
+  EXPECT_EQ(GetDesksBarViewExpandedStateHeight(desks_bar_view),
+            desks_bar_view->bounds().height());
+
+  // Now remove the newly created desk. This shouldn't end overview mode. The
+  // desks bar view should be transformed to the zero state.
+  auto* controller = Shell::Get()->desks_controller();
+  controller->RemoveDesk(controller->desks().back().get(),
+                         DesksCreationRemovalSource::kButton);
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_TRUE(desks_bar_view->IsZeroState());
+  EXPECT_EQ(DesksBarView::kZeroStateBarHeight,
+            desks_bar_view->bounds().height());
+}
+
+// Tests that dragging window in portrait mode won't cause overview items
+// overlap with desks bar. Regression test for https://crbug.com/1275285.
+TEST_F(OverviewWindowDragControllerTest, DragWindowInPortraitMode) {
+  // Update the display to make it portrait mode.
+  UpdateDisplay("768x1366");
+
+  // Create 10 windows with size the same as the maximized window's size.
+  std::vector<std::unique_ptr<aura::Window>> windows;
+  for (int i = 0; i < 10; ++i)
+    windows.push_back(CreateAppWindow(gfx::Rect(0, 0, 768, 1269)));
+
+  StartDraggingAndValidateDesksBarShifted(windows.back().get());
+  const auto* desks_bar_view = overview_grid()->desks_bar_view();
+  ASSERT_TRUE(desks_bar_view);
+
+  // Check there's no overlap between overview items and desks bar view. Since
+  // the first overview item is still being dragged, we should use the second
+  // item in the list to check if there's overlap or not.
+  EXPECT_FALSE(
+      desks_bar_view->GetBoundsInScreen().Intersects(gfx::ToEnclosedRect(
+          overview_grid()->window_list()[1].get()->target_bounds())));
+}
+
 // Tests the behavior of dragging a window in portrait tablet mode with virtual
 // desks enabled.
-class OverviewWindowDragControllerDesksPortraitTabletTest : public AshTestBase {
+class OverviewWindowDragControllerDesksPortraitTabletTest
+    : public OverviewWindowDragControllerTest {
  public:
   OverviewWindowDragControllerDesksPortraitTabletTest() = default;
+
+  OverviewWindowDragControllerDesksPortraitTabletTest(
+      const OverviewWindowDragControllerDesksPortraitTabletTest&) = delete;
+  OverviewWindowDragControllerDesksPortraitTabletTest& operator=(
+      const OverviewWindowDragControllerDesksPortraitTabletTest&) = delete;
+
   ~OverviewWindowDragControllerDesksPortraitTabletTest() override = default;
 
-  OverviewController* overview_controller() {
-    return Shell::Get()->overview_controller();
-  }
-
-  SplitViewController* split_view_controller() {
-    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
-  }
-
-  OverviewSession* overview_session() {
-    DCHECK(overview_controller()->InOverviewSession());
-    return overview_controller()->overview_session();
-  }
-
-  OverviewWindowDragController* drag_controller() {
-    return overview_session()->window_drag_controller();
-  }
-
-  SplitViewDragIndicators* drag_indicators() {
-    return overview_session()->grid_list()[0]->split_view_drag_indicators();
-  }
-
-  OverviewGrid* overview_grid() {
-    return overview_session()->GetGridWithRootWindow(
-        Shell::GetPrimaryRootWindow());
-  }
-
-  const views::Widget* desks_bar_widget() {
-    DCHECK(overview_grid()->desks_bar_view());
-    return overview_grid()->desks_bar_view()->GetWidget();
-  }
-
-  // AshTestBase:
+  // OverviewWindowDragControllerTest:
   void SetUp() override {
-    AshTestBase::SetUp();
+    OverviewWindowDragControllerTest::SetUp();
 
     // Setup a portrait internal display in tablet mode.
     UpdateDisplay("800x700");
@@ -271,7 +400,7 @@ class OverviewWindowDragControllerDesksPortraitTabletTest : public AshTestBase {
     test_api.SetDisplayRotation(display::Display::ROTATE_270,
                                 display::Display::RotationSource::ACTIVE);
     EXPECT_EQ(test_api.GetCurrentOrientation(),
-              OrientationLockType::kPortraitPrimary);
+              chromeos::OrientationType::kPortraitPrimary);
     // Enter tablet mode. Avoid TabletModeController::OnGetSwitchStates() from
     // disabling tablet mode.
     base::RunLoop().RunUntilIdle();
@@ -282,39 +411,6 @@ class OverviewWindowDragControllerDesksPortraitTabletTest : public AshTestBase {
     desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
     ASSERT_EQ(2u, desks_controller->desks().size());
   }
-
-  OverviewItem* GetOverviewItemForWindow(aura::Window* window) {
-    return overview_session()->GetOverviewItemForWindow(window);
-  }
-
-  int GetExpectedDesksBarShiftAmount() {
-    return drag_indicators()->GetLeftHighlightViewBounds().bottom() +
-           kHighlightScreenEdgePaddingDp;
-  }
-
-  void StartDraggingAndValidateDesksBarShifted(aura::Window* window) {
-    // Enter overview mode, and start dragging the window. Validate that the
-    // desks bar widget is shifted down to make room for the indicators.
-    overview_controller()->StartOverview();
-    EXPECT_TRUE(overview_controller()->InOverviewSession());
-    auto* overview_item = GetOverviewItemForWindow(window);
-    ASSERT_TRUE(overview_item);
-    StartDraggingItemBy(overview_item, 30, 200, /*by_touch_gestures=*/false,
-                        GetEventGenerator());
-    ASSERT_TRUE(drag_controller());
-    EXPECT_EQ(OverviewWindowDragController::DragBehavior::kNormalDrag,
-              drag_controller()->current_drag_behavior());
-    ASSERT_TRUE(drag_indicators());
-    EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
-              drag_indicators()->current_window_dragging_state());
-    // Note that it's ok to use screen bounds here since we only have a single
-    // primary display.
-    EXPECT_EQ(GetExpectedDesksBarShiftAmount(),
-              desks_bar_widget()->GetWindowBoundsInScreen().y());
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OverviewWindowDragControllerDesksPortraitTabletTest);
 };
 
 TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest,
@@ -405,6 +501,34 @@ TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest, DragAndDropInDesk) {
             desks_bar_widget()->GetWindowBoundsInScreen().y());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
             drag_indicators()->current_window_dragging_state());
+}
+
+// Tests that dragging window in tablet portrait mode won't cause overview items
+// overlap with desks bar. Regression test for https://crbug.com/1275285.
+TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest,
+       DragWindowInPortraitMode) {
+  // Create 7 windows to make sure we can use tablet mode grid layout.
+  std::vector<std::unique_ptr<aura::Window>> windows;
+  for (int i = 0; i < 7; ++i)
+    windows.push_back(CreateAppWindow(gfx::Rect()));
+
+  StartDraggingAndValidateDesksBarShifted(windows[4].get());
+
+  // Delete desk2 in the overview mode. Note if we delete desk2 outside of the
+  // overview mode, there's no desks bar after entering overview mode. Cause we
+  // don't show desks bar for tablet mode when there's only one desk.
+  auto* desks_controller = DesksController::Get();
+  DesksController::Get()->RemoveDesk(desks_controller->desks()[1].get(),
+                                     DesksCreationRemovalSource::kButton);
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+
+  // Check desks bar still exists after desk2 gets removed.
+  const auto* desks_bar_view = overview_grid()->desks_bar_view();
+  ASSERT_TRUE(desks_bar_view);
+
+  // Check there's no overlap between overview items and desks bar view.
+  EXPECT_FALSE(desks_bar_view->GetBoundsInScreen().Intersects(
+      gfx::ToEnclosedRect(overview_grid()->window_list()[0]->target_bounds())));
 }
 
 }  // namespace ash

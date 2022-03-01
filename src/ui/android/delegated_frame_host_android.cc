@@ -43,7 +43,7 @@ class TopControlsSwapPromise : public cc::SwapPromise {
       DidNotSwapReason reason) override {
     return DidNotSwapAction::KEEP_ACTIVE;
   }
-  int64_t TraceId() const override { return 0; }
+  int64_t GetTraceId() const override { return 0; }
 
  private:
   const float height_;
@@ -117,7 +117,8 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
   }
   std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
-          viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+          viz::CopyOutputRequest::ResultFormat::RGBA,
+          viz::CopyOutputRequest::ResultDestination::kSystemMemory,
           base::BindOnce(
               [](base::OnceCallback<void(const SkBitmap&)> callback,
                  std::unique_ptr<ui::WindowAndroidCompositor::ReadbackRef>
@@ -264,6 +265,10 @@ void DelegatedFrameHostAndroid::EmbedSurface(
     const gfx::Size& new_size_in_pixels,
     cc::DeadlinePolicy deadline_policy,
     bool is_fullscreen) {
+  TRACE_EVENT2("viz", "DelegatedFrameHostAndroid::EmbedSurface", "surface_id",
+               new_local_surface_id.ToString(), "deadline_policy",
+               deadline_policy.ToString());
+
   // We should never attempt to embed an invalid surface. Catch this here to
   // track down the root cause. Otherwise we will have vague crashes later on
   // at serialization time.
@@ -293,7 +298,13 @@ void DelegatedFrameHostAndroid::EmbedSurface(
     // content. So we advance the fallback forcing viz to fallback to blank
     // screen if renderer won't submit frame in time. See
     // https://crbug.com/1088369 and  https://crbug.com/813157
-    if (surface_size_in_pixels_ != content_layer_->bounds() &&
+    //
+    // An empty content layer bounds indicates this renderer has never been made
+    // visible. This is the case for pre-rendered contents. Don't use the
+    // primary id as fallback since it's guaranteed to have no content. See
+    // crbug.com/1218238.
+    if (!content_layer_->bounds().IsEmpty() &&
+        surface_size_in_pixels_ != content_layer_->bounds() &&
         has_fallback_surface) {
       content_layer_->SetOldestAcceptableFallback(new_primary_surface_id);
 

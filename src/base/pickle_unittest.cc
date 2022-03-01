@@ -11,7 +11,8 @@
 #include <memory>
 #include <string>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
+#include "base/ignore_result.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -178,6 +179,7 @@ TEST(PickleTest, BigSize) {
   int buffer[] = { 0x56035200, 25, 40, 50 };
 
   Pickle pickle(reinterpret_cast<char*>(buffer), sizeof(buffer));
+  EXPECT_EQ(0U, pickle.size());
 
   PickleIterator iter(pickle);
   int data;

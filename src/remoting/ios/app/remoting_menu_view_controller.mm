@@ -32,7 +32,7 @@ static UIColor* kBackgroundColor =
 namespace {
 
 // To use these scopes in a debug build, your development account will need to
-// be whitelisted.
+// be allowlisted.
 const char kChromotingAuthScopeValues[] =
     "https://www.googleapis.com/auth/chromoting.directory "
     "https://www.googleapis.com/auth/tachyon "
@@ -192,7 +192,7 @@ std::string GetAuthorizationCodeUri() {
                              layout:
                                  (UICollectionViewLayout*)collectionViewLayout
     referenceSizeForHeaderInSection:(NSInteger)section {
-  // Only show the title if it's the account manangement section.
+  // Only show the title if it's the account management section.
   if (section != 0) {
     return CGSizeZero;
   }

@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
@@ -41,6 +41,9 @@ class TestUDPClientSocket : public DatagramClientSocket {
  public:
   explicit TestUDPClientSocket(const AddressMapping* mapping)
       : mapping_(mapping), connected_(false)  {}
+
+  TestUDPClientSocket(const TestUDPClientSocket&) = delete;
+  TestUDPClientSocket& operator=(const TestUDPClientSocket&) = delete;
 
   ~TestUDPClientSocket() override = default;
 
@@ -132,17 +135,19 @@ class TestUDPClientSocket : public DatagramClientSocket {
 
  private:
   NetLogWithSource net_log_;
-  const AddressMapping* mapping_;
+  raw_ptr<const AddressMapping> mapping_;
   bool connected_;
   IPEndPoint local_endpoint_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestUDPClientSocket);
 };
 
 // Creates TestUDPClientSockets and maintains an AddressMapping.
 class TestSocketFactory : public ClientSocketFactory {
  public:
   TestSocketFactory() = default;
+
+  TestSocketFactory(const TestSocketFactory&) = delete;
+  TestSocketFactory& operator=(const TestSocketFactory&) = delete;
+
   ~TestSocketFactory() override = default;
 
   std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
@@ -189,8 +194,6 @@ class TestSocketFactory : public ClientSocketFactory {
 
  private:
   AddressMapping mapping_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestSocketFactory);
 };
 
 void OnSortComplete(AddressList* result_buf,

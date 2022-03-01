@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/guid.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -128,7 +129,7 @@ class ChromeMimeHandlerViewTest : public extensions::ExtensionApiTest {
               extension->id());
 
     extensions::ResultCatcher catcher;
-    ui_test_utils::NavigateToURL(browser(), url);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
     if (!catcher.GetNextResult())
       FAIL() << catcher.message();
@@ -169,8 +170,8 @@ class ChromeMimeHandlerViewTest : public extensions::ExtensionApiTest {
 
  private:
   TestGuestViewManagerFactory factory_;
-  content::WebContents* guest_web_contents_;
-  content::WebContents* embedder_web_contents_;
+  raw_ptr<content::WebContents> guest_web_contents_;
+  raw_ptr<content::WebContents> embedder_web_contents_;
 
   ChromeMimeHandlerViewTest(const ChromeMimeHandlerViewTest&) = delete;
   ChromeMimeHandlerViewTest& operator=(const ChromeMimeHandlerViewTest&) =
@@ -231,7 +232,7 @@ class PrintPreviewDelegate : printing::PrintPreviewUI::TestDelegate {
 IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest,
                        DISABLED_GuestDevToolsReloadsEmbedder) {
   GURL data_url("data:application/pdf,foo");
-  ui_test_utils::NavigateToURL(browser(), data_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), data_url));
   auto* embedder_web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(0);
   auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
@@ -267,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest,
   GURL data_url(
       "data:text/html, <iframe src='data:application/pdf,foo' "
       "style='display:none'></iframe>,foo2");
-  ui_test_utils::NavigateToURL(browser(), data_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), data_url));
   ASSERT_TRUE(GetGuestViewManager()->WaitForSingleGuestCreated());
 }
 
@@ -275,7 +276,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest,
 IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, EmbeddedThenPrint) {
   PrintPreviewDelegate print_preview_delegate;
   InitializeTestPage(embedded_test_server()->GetURL("/test_embedded.html"));
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
   auto* gv_manager = GetGuestViewManager();
   gv_manager->WaitForAllGuestsDeleted();
   EXPECT_EQ(1U, gv_manager->num_guests_created());

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "pdf/pdf_engine.h"
 
 namespace chrome_pdf {
@@ -63,10 +64,9 @@ class PreviewModeClient : public PDFEngine::Client {
                                                bool case_sensitive) override;
   void DocumentLoadComplete() override;
   void DocumentLoadFailed() override;
-  pp::Instance* GetPluginInstance() override;
   void DocumentHasUnsupportedFeature(const std::string& feature) override;
-  void FormTextFieldFocusChange(bool in_focus) override;
-  bool IsPrintPreview() override;
+  void FormFieldFocusChange(PDFEngine::FocusFieldType type) override;
+  bool IsPrintPreview() const override;
   SkColor GetBackgroundColor() override;
   void SetSelectedText(const std::string& selected_text) override;
   void SetLinkUnderCursor(const std::string& link_under_cursor) override;
@@ -77,7 +77,7 @@ class PreviewModeClient : public PDFEngine::Client {
                                 base::TimeDelta delay) override;
 
  private:
-  Client* const client_;
+  const raw_ptr<Client> client_;
 };
 
 }  // namespace chrome_pdf

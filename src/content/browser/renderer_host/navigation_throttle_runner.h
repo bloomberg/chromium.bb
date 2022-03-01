@@ -7,7 +7,9 @@
 
 #include <stddef.h>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/navigation_throttle.h"
 
 namespace content {
@@ -37,6 +39,10 @@ class CONTENT_EXPORT NavigationThrottleRunner {
   };
 
   NavigationThrottleRunner(Delegate* delegate, int64_t navigation_id);
+
+  NavigationThrottleRunner(const NavigationThrottleRunner&) = delete;
+  NavigationThrottleRunner& operator=(const NavigationThrottleRunner&) = delete;
+
   ~NavigationThrottleRunner();
 
   // Will call the appropriate NavigationThrottle function based on |event| on
@@ -70,7 +76,7 @@ class CONTENT_EXPORT NavigationThrottleRunner {
   void ProcessInternal();
   void InformDelegate(const NavigationThrottle::ThrottleCheckResult& result);
 
-  Delegate* const delegate_;
+  const raw_ptr<Delegate> delegate_;
 
   // A list of Throttles registered for this navigation.
   std::vector<std::unique_ptr<NavigationThrottle>> throttles_;
@@ -88,8 +94,6 @@ class CONTENT_EXPORT NavigationThrottleRunner {
   // The event currently being processed.
   Event current_event_ = Event::NoEvent;
   base::WeakPtrFactory<NavigationThrottleRunner> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NavigationThrottleRunner);
 };
 
 }  // namespace content

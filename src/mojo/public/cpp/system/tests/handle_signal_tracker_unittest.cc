@@ -5,7 +5,6 @@
 #include "mojo/public/cpp/system/handle_signal_tracker.h"
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -18,6 +17,10 @@ namespace {
 class HandleSignalTrackerTest : public testing::Test {
  public:
   HandleSignalTrackerTest() {}
+
+  HandleSignalTrackerTest(const HandleSignalTrackerTest&) = delete;
+  HandleSignalTrackerTest& operator=(const HandleSignalTrackerTest&) = delete;
+
   ~HandleSignalTrackerTest() override {}
 
   void WaitForNextNotification(HandleSignalTracker* tracker) {
@@ -34,8 +37,6 @@ class HandleSignalTrackerTest : public testing::Test {
 
  private:
   base::test::TaskEnvironment task_environment_;
-
-  DISALLOW_COPY_AND_ASSIGN(HandleSignalTrackerTest);
 };
 
 TEST_F(HandleSignalTrackerTest, StartsWithCorrectState) {

@@ -5,8 +5,6 @@
 #ifndef BASE_TEST_MOVE_ONLY_INT_H_
 #define BASE_TEST_MOVE_ONLY_INT_H_
 
-#include "base/macros.h"
-
 namespace base {
 
 // A move-only class that holds an integer. This is designed for testing
@@ -15,6 +13,10 @@ class MoveOnlyInt {
  public:
   explicit MoveOnlyInt(int data = 1) : data_(data) {}
   MoveOnlyInt(MoveOnlyInt&& other) : data_(other.data_) { other.data_ = 0; }
+
+  MoveOnlyInt(const MoveOnlyInt&) = delete;
+  MoveOnlyInt& operator=(const MoveOnlyInt&) = delete;
+
   ~MoveOnlyInt() { data_ = 0; }
 
   MoveOnlyInt& operator=(MoveOnlyInt&& other) {
@@ -59,8 +61,6 @@ class MoveOnlyInt {
 
  private:
   volatile int data_;
-
-  DISALLOW_COPY_AND_ASSIGN(MoveOnlyInt);
 };
 
 }  // namespace base

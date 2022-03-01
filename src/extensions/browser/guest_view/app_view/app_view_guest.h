@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/containers/id_map.h"
-#include "base/macros.h"
 #include "components/guest_view/browser/guest_view.h"
 #include "extensions/browser/guest_view/app_view/app_view_guest_delegate.h"
 #include "extensions/browser/lazy_context_task_queue.h"
@@ -23,6 +22,9 @@ class Extension;
 class AppViewGuest : public guest_view::GuestView<AppViewGuest> {
  public:
   static const char Type[];
+
+  AppViewGuest(const AppViewGuest&) = delete;
+  AppViewGuest& operator=(const AppViewGuest&) = delete;
 
   // Completes the creation of a WebContents associated with the provided
   // |guest_extension_id| and |guest_instance_id| for the given
@@ -60,7 +62,7 @@ class AppViewGuest : public guest_view::GuestView<AppViewGuest> {
   int GetTaskPrefix() const final;
 
   // content::WebContentsDelegate implementation.
-  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+  bool HandleContextMenu(content::RenderFrameHost& render_frame_host,
                          const content::ContextMenuParams& params) final;
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,
@@ -87,8 +89,6 @@ class AppViewGuest : public guest_view::GuestView<AppViewGuest> {
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.
   base::WeakPtrFactory<AppViewGuest> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AppViewGuest);
 };
 
 }  // namespace extensions

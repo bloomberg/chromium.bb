@@ -17,9 +17,11 @@
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/video_capture/public/cpp/mock_video_frame_handler.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
+#include "services/video_capture/public/mojom/video_capture_service.mojom.h"
 #include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 #include "services/video_capture/public/mojom/video_source.mojom.h"
 #include "services/video_capture/public/mojom/video_source_provider.mojom.h"
@@ -76,6 +78,11 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
   WebRtcVideoCaptureSharedDeviceBrowserTest() {
     scoped_feature_list_.InitAndEnableFeature(features::kMojoVideoCapture);
   }
+
+  WebRtcVideoCaptureSharedDeviceBrowserTest(
+      const WebRtcVideoCaptureSharedDeviceBrowserTest&) = delete;
+  WebRtcVideoCaptureSharedDeviceBrowserTest& operator=(
+      const WebRtcVideoCaptureSharedDeviceBrowserTest&) = delete;
 
   ~WebRtcVideoCaptureSharedDeviceBrowserTest() override {}
 
@@ -149,9 +156,8 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
   void OnCreateDeviceCallback(
       const std::vector<media::VideoCaptureDeviceInfo>& infos,
       media::VideoCaptureBufferType buffer_type_to_request,
-      video_capture::mojom::DeviceAccessResultCode result_code) {
-    ASSERT_EQ(video_capture::mojom::DeviceAccessResultCode::SUCCESS,
-              result_code);
+      media::VideoCaptureError result_code) {
+    ASSERT_EQ(media::VideoCaptureError::kNone, result_code);
 
     media::VideoCaptureParams requestable_settings;
     ASSERT_FALSE(infos[0].supported_formats.empty());
@@ -186,10 +192,9 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
   }
 
   void OnCreatePushSubscriptionCallback(
-      video_capture::mojom::CreatePushSubscriptionResultCode result_code,
+      video_capture::mojom::CreatePushSubscriptionResultCodePtr result_code,
       const media::VideoCaptureParams& params) {
-    ASSERT_NE(video_capture::mojom::CreatePushSubscriptionResultCode::kFailed,
-              result_code);
+    ASSERT_TRUE(result_code->is_success_code());
     subscription_->Activate();
   }
 
@@ -208,8 +213,6 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
   mojo::PendingRemote<video_capture::mojom::VideoFrameHandler> subscriber_;
   base::WeakPtrFactory<WebRtcVideoCaptureSharedDeviceBrowserTest> weak_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebRtcVideoCaptureSharedDeviceBrowserTest);
 };
 
 // Tests that a single fake video capture device can be opened via JavaScript
@@ -228,7 +231,7 @@ IN_PROC_BROWSER_TEST_P(
               int32_t, media::mojom::VideoBufferHandlePtr* buffer_handle) {
             ASSERT_EQ(expected_buffer_handle_tag, (*buffer_handle)->which());
           }));
-  EXPECT_CALL(*mock_video_frame_handler_, DoOnFrameReadyInBuffer(_, _, _, _))
+  EXPECT_CALL(*mock_video_frame_handler_, DoOnFrameReadyInBuffer(_, _, _))
       .WillOnce(InvokeWithoutArgs([&receive_frame_from_service_wait_loop]() {
         receive_frame_from_service_wait_loop.Quit();
       }))
@@ -260,7 +263,7 @@ IN_PROC_BROWSER_TEST_P(
               int32_t, media::mojom::VideoBufferHandlePtr* buffer_handle) {
             ASSERT_EQ(expected_buffer_handle_tag, (*buffer_handle)->which());
           }));
-  EXPECT_CALL(*mock_video_frame_handler_, DoOnFrameReadyInBuffer(_, _, _, _))
+  EXPECT_CALL(*mock_video_frame_handler_, DoOnFrameReadyInBuffer(_, _, _))
       .WillOnce(InvokeWithoutArgs([&receive_frame_from_service_wait_loop]() {
         receive_frame_from_service_wait_loop.Quit();
       }))

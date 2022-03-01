@@ -5,8 +5,7 @@
 #include "content/public/browser/device_service.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "base/no_destructor.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "build/build_config.h"
@@ -37,6 +36,10 @@ namespace {
 class DeviceServiceURLLoaderFactory : public network::SharedURLLoaderFactory {
  public:
   DeviceServiceURLLoaderFactory() = default;
+
+  DeviceServiceURLLoaderFactory(const DeviceServiceURLLoaderFactory&) = delete;
+  DeviceServiceURLLoaderFactory& operator=(
+      const DeviceServiceURLLoaderFactory&) = delete;
 
   // mojom::URLLoaderFactory implementation:
   void CreateLoaderAndStart(
@@ -72,18 +75,15 @@ class DeviceServiceURLLoaderFactory : public network::SharedURLLoaderFactory {
  private:
   friend class base::RefCounted<DeviceServiceURLLoaderFactory>;
   ~DeviceServiceURLLoaderFactory() override = default;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceServiceURLLoaderFactory);
 };
 
 void BindDeviceServiceReceiver(
     mojo::PendingReceiver<device::mojom::DeviceService> receiver) {
   // Bind the lifetime of the service instance to that of the sequence it's
   // running on.
-  static base::NoDestructor<
-      base::SequenceLocalStorageSlot<std::unique_ptr<device::DeviceService>>>
+  static base::SequenceLocalStorageSlot<std::unique_ptr<device::DeviceService>>
       service_slot;
-  auto& service = service_slot->GetOrCreateValue();
+  auto& service = service_slot.GetOrCreateValue();
 
   if (service) {
     service->AddReceiver(std::move(receiver));
@@ -128,11 +128,11 @@ void BindDeviceServiceReceiver(
 }  // namespace
 
 device::mojom::DeviceService& GetDeviceService() {
-  static base::NoDestructor<base::SequenceLocalStorageSlot<
-      mojo::Remote<device::mojom::DeviceService>>>
+  static base::SequenceLocalStorageSlot<
+      mojo::Remote<device::mojom::DeviceService>>
       remote_slot;
   mojo::Remote<device::mojom::DeviceService>& remote =
-      remote_slot->GetOrCreateValue();
+      remote_slot.GetOrCreateValue();
   if (!remote) {
     // This may be called very early in startup, too early for some Device
     // Service initialization steps (for example, in browser test environments,

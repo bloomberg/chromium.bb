@@ -21,23 +21,18 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::Bool);
 namespace tint {
 namespace ast {
 
-Bool::Bool(ProgramID program_id, const Source& source)
-    : Base(program_id, source) {}
+Bool::Bool(ProgramID pid, const Source& src) : Base(pid, src) {}
 
 Bool::Bool(Bool&&) = default;
 
 Bool::~Bool() = default;
 
-std::string Bool::type_name() const {
-  return "__bool";
-}
-
 std::string Bool::FriendlyName(const SymbolTable&) const {
   return "bool";
 }
 
-Bool* Bool::Clone(CloneContext* ctx) const {
-  auto src = ctx->Clone(source());
+const Bool* Bool::Clone(CloneContext* ctx) const {
+  auto src = ctx->Clone(source);
   return ctx->dst->create<Bool>(src);
 }
 

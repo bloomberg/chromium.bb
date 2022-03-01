@@ -7,15 +7,16 @@
 #ifndef CORE_FPDFAPI_RENDER_CPDF_TEXTRENDERER_H_
 #define CORE_FPDFAPI_RENDER_CPDF_TEXTRENDERER_H_
 
+#include <stdint.h>
+
+#include "core/fxcrt/bytestring.h"
 #include "core/fxcrt/fx_coordinates.h"
-#include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxge/dib/fx_dib.h"
 #include "third_party/base/span.h"
 
 class CFX_RenderDevice;
 class CFX_GraphStateData;
-class CFX_PathData;
+class CFX_Path;
 class CPDF_RenderOptions;
 class CPDF_Font;
 struct CFX_FillRenderOptions;
@@ -42,7 +43,7 @@ class CPDF_TextRenderer {
                            const CFX_GraphStateData* pGraphState,
                            FX_ARGB fill_argb,
                            FX_ARGB stroke_argb,
-                           CFX_PathData* pClippingPath,
+                           CFX_Path* pClippingPath,
                            const CFX_FillRenderOptions& fill_options);
 
   static bool DrawNormalText(CFX_RenderDevice* pDevice,

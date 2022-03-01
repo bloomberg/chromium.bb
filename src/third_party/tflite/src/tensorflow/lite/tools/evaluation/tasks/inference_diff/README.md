@@ -11,7 +11,7 @@ latency & output-value deviation) in two settings:
 
 To do so, the tool generates random gaussian data and passes it through two
 TFLite Interpreters - one running single-threaded CPU kernels and the other
-parametrized by the user's arguments.
+parameterized by the user's arguments.
 
 It measures the latency of both, as well as the absolute difference between the
 output tensors from each Interpreter, on a per-element basis.
@@ -69,6 +69,17 @@ This script also supports runtime/delegate arguments introduced by the
 If there is any conflict (for example, `num_threads` vs
 `num_interpreter_threads` here), the parameters of this
 script are given precedence.
+
+When **multiple delegates** are specified to be used in the commandline flags
+via the support of delegate registrar, the order of delegates applied to the
+TfLite runtime will be same as their enabling commandline flag is specified. For
+example, "--use_xnnpack=true --use_gpu=true" means applying the XNNPACK delegate
+first, and then the GPU delegate secondly. In comparison,
+"--use_gpu=true --use_xnnpack=true" means applying the GPU delegate first, and
+then the XNNPACK delegate secondly.
+
+Note, one could specify `--help` when launching the binary to see the full list
+of supported arguments.
 
 ## Running the binary on Android
 

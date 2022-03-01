@@ -11,8 +11,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "storage/browser/file_system/file_observers.h"
@@ -36,10 +37,15 @@ class QuotaManagerProxy;
 class SandboxQuotaObserver : public FileUpdateObserver,
                              public FileAccessObserver {
  public:
-  SandboxQuotaObserver(QuotaManagerProxy* quota_manager_proxy,
-                       base::SequencedTaskRunner* update_notify_runner,
-                       ObfuscatedFileUtil* sandbox_file_util,
-                       FileSystemUsageCache* file_system_usage_cache_);
+  SandboxQuotaObserver(
+      scoped_refptr<QuotaManagerProxy> quota_manager_proxy,
+      scoped_refptr<base::SequencedTaskRunner> update_notify_runner,
+      ObfuscatedFileUtil* sandbox_file_util,
+      FileSystemUsageCache* file_system_usage_cache_);
+
+  SandboxQuotaObserver(const SandboxQuotaObserver&) = delete;
+  SandboxQuotaObserver& operator=(const SandboxQuotaObserver&) = delete;
+
   ~SandboxQuotaObserver() override;
 
   // FileUpdateObserver overrides.
@@ -61,19 +67,17 @@ class SandboxQuotaObserver : public FileUpdateObserver,
 
   base::FilePath GetUsageCachePath(const FileSystemURL& url);
 
-  scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
-  scoped_refptr<base::SequencedTaskRunner> update_notify_runner_;
+  const scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
+  const scoped_refptr<base::SequencedTaskRunner> update_notify_runner_;
 
   // Not owned; sandbox_file_util_ should have identical lifetime with this.
-  ObfuscatedFileUtil* sandbox_file_util_;
+  const raw_ptr<ObfuscatedFileUtil> sandbox_file_util_;
 
   // Not owned; file_system_usage_cache_ should have longer lifetime than this.
-  FileSystemUsageCache* file_system_usage_cache_;
+  const raw_ptr<FileSystemUsageCache> file_system_usage_cache_;
 
   std::map<base::FilePath, int64_t> pending_update_notification_;
   base::OneShotTimer delayed_cache_update_helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(SandboxQuotaObserver);
 };
 
 }  // namespace storage

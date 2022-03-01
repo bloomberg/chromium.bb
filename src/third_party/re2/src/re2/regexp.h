@@ -254,7 +254,7 @@ class CharClass {
   bool full() { return nrunes_ == Runemax+1; }
   bool FoldsASCII() { return folds_ascii_; }
 
-  bool Contains(Rune r);
+  bool Contains(Rune r) const;
   CharClass* Negate();
 
  private:
@@ -448,6 +448,10 @@ class Regexp {
   // Callers should expect *prefix and *foldcase to be "zeroed"
   // regardless of the return value.
   bool RequiredPrefixForAccel(std::string* prefix, bool* foldcase);
+
+  // Controls the maximum repeat count permitted by the parser.
+  // FOR FUZZING ONLY.
+  static void FUZZING_ONLY_set_maximum_repeat_count(int i);
 
  private:
   // Constructor allocates vectors as appropriate for operator.

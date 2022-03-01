@@ -11,8 +11,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
+#include "url/gurl.h"
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 
 // Interaction with the consent-view (used for logging).
@@ -67,6 +68,21 @@ enum class QuickAnswerUiElementType {
   kImage = 2,
 };
 
+// Enumeration of Quick Answers exit points. These values are persisted to logs.
+// Entries should never be renumbered and numeric values should never be reused.
+// Append to this enum is allowed only if the possible exit point grows.
+enum class QuickAnswersExitPoint {
+  // The exit point is unspecified. Might be used by tests, obsolete code or as
+  // placeholders.
+  kUnspecified = 0,
+  KContextMenuDismiss = 1,
+  kContextMenuClick = 2,
+  kQuickAnswersClick = 3,
+  kSettingsButtonClick = 4,
+  kReportQueryButtonClick = 5,
+  kMaxValue = kReportQueryButtonClick,
+};
+
 struct QuickAnswerUiElement {
   explicit QuickAnswerUiElement(QuickAnswerUiElementType type) : type(type) {}
   QuickAnswerUiElement(const QuickAnswerUiElement&) = default;
@@ -78,7 +94,8 @@ struct QuickAnswerUiElement {
 
 // class to describe an answer text.
 struct QuickAnswerText : public QuickAnswerUiElement {
-  QuickAnswerText(const std::string& text, SkColor color = gfx::kGoogleGrey900)
+  explicit QuickAnswerText(const std::string& text,
+                           SkColor color = gfx::kGoogleGrey900)
       : QuickAnswerUiElement(QuickAnswerUiElementType::kText),
         text(base::UTF8ToUTF16(text)),
         color(color) {}
@@ -108,11 +125,15 @@ struct QuickAnswer {
   QuickAnswer();
   ~QuickAnswer();
 
-  ResultType result_type;
+  ResultType result_type = ResultType::kNoResult;
   std::vector<std::unique_ptr<QuickAnswerUiElement>> title;
   std::vector<std::unique_ptr<QuickAnswerUiElement>> first_answer_row;
   std::vector<std::unique_ptr<QuickAnswerUiElement>> second_answer_row;
   std::unique_ptr<QuickAnswerImage> image;
+
+  // Phonetics audio URL for playing pronunciation of dictionary results.
+  // For other type of results the URL will be empty.
+  GURL phonetics_audio;
 };
 
 // Information of the device that used by the user to send the request.
@@ -122,6 +143,9 @@ struct DeviceProperties {
 
   // List (separated by comma) of user preferred languages.
   std::string preferred_languages;
+
+  // Whether the request is send by an internal user.
+  bool is_internal = false;
 };
 
 struct IntentInfo {
@@ -187,6 +211,6 @@ struct QuickAnswersRequest {
 };
 
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROMEOS_COMPONENTS_QUICK_ANSWERS_QUICK_ANSWERS_MODEL_H_
