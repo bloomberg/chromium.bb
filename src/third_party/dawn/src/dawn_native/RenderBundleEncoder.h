@@ -17,6 +17,7 @@
 
 #include "dawn_native/EncodingContext.h"
 #include "dawn_native/Error.h"
+#include "dawn_native/Forward.h"
 #include "dawn_native/RenderBundle.h"
 #include "dawn_native/RenderEncoderBase.h"
 
@@ -32,6 +33,8 @@ namespace dawn_native {
                                                const RenderBundleEncoderDescriptor* descriptor);
         static RenderBundleEncoder* MakeError(DeviceBase* device);
 
+        ObjectType GetType() const override;
+
         RenderBundleBase* APIFinish(const RenderBundleDescriptor* descriptor);
 
         CommandIterator AcquireCommands();
@@ -40,11 +43,14 @@ namespace dawn_native {
         RenderBundleEncoder(DeviceBase* device, const RenderBundleEncoderDescriptor* descriptor);
         RenderBundleEncoder(DeviceBase* device, ErrorTag errorTag);
 
+        void DestroyImpl() override;
+
         ResultOrError<RenderBundleBase*> FinishImpl(const RenderBundleDescriptor* descriptor);
         MaybeError ValidateFinish(const RenderPassResourceUsage& usages) const;
 
         EncodingContext mBundleEncodingContext;
     };
+
 }  // namespace dawn_native
 
 #endif  // DAWNNATIVE_RENDERBUNDLEENCODER_H_

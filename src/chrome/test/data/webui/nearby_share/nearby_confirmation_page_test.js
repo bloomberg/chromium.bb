@@ -93,6 +93,9 @@ suite('ConfirmatonPageTest', function() {
           id: {high: BigInt(0), low: BigInt(0)},
           name,
           type: nearbyShare.mojom.ShareTargetType.kPhone,
+          imageUrl: {
+            url: 'testImageURL',
+          },
           payloadPreview: null,
         });
     const renderedName = confirmationPageElement.$$('nearby-progress')
@@ -113,6 +116,21 @@ suite('ConfirmatonPageTest', function() {
     assertEquals(title, renderedTitle);
   });
 
+  test('renders progress bar', async function() {
+    const token = 'TestToken1234';
+    transferUpdateListener.remote_.onTransferUpdate(
+        nearbyShare.mojom.TransferStatus.kInProgress, token);
+    await transferUpdateListener.remote_.$.flushForTesting();
+
+    const isAnimationHidden = !!confirmationPageElement.$$('cr-lottie[style]');
+
+    if (confirmationPageElement.$$('#errorTitle')) {
+      assertTrue(isAnimationHidden);
+    } else {
+      assertFalse(isAnimationHidden);
+    }
+  });
+
   test('renders error', async function() {
     const token = 'TestToken1234';
     transferUpdateListener.remote_.onTransferUpdate(
@@ -121,6 +139,21 @@ suite('ConfirmatonPageTest', function() {
 
     const errorTitle = confirmationPageElement.$$('#errorTitle').textContent;
     assertTrue(!!errorTitle);
+  });
+
+  test('hide progress bar when error', async function() {
+    const token = 'TestToken1234';
+    transferUpdateListener.remote_.onTransferUpdate(
+        nearbyShare.mojom.TransferStatus.kRejected, token);
+    await transferUpdateListener.remote_.$.flushForTesting();
+
+    const isAnimationHidden = !!confirmationPageElement.$$('cr-lottie[style]');
+
+    if (confirmationPageElement.$$('#errorTitle').textContent) {
+      assertTrue(isAnimationHidden);
+    } else {
+      assertFalse(isAnimationHidden);
+    }
   });
 
   test('Ensure all final transfer states explicitly handled', async function() {

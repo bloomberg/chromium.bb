@@ -4,6 +4,8 @@
 
 #include "components/sync/engine/commit_util.h"
 
+#include "components/sync/protocol/sync.pb.h"
+
 namespace syncer {
 
 namespace commit_util {
@@ -23,29 +25,29 @@ void AddExtensionsActivityToMessage(
   activity->GetAndClearRecords(extensions_activity_buffer);
 
   const ExtensionsActivity::Records& records = *extensions_activity_buffer;
-  for (auto it = records.begin(); it != records.end(); ++it) {
+  for (const auto& id_and_record : records) {
     sync_pb::ChromiumExtensionsActivity* activity_message =
         message->add_extensions_activity();
-    activity_message->set_extension_id(it->second.extension_id);
+    activity_message->set_extension_id(id_and_record.second.extension_id);
     activity_message->set_bookmark_writes_since_last_commit(
-        it->second.bookmark_write_count);
+        id_and_record.second.bookmark_write_count);
   }
 }
 
 void AddClientConfigParamsToMessage(
     ModelTypeSet enabled_types,
+    bool proxy_tabs_datatype_enabled,
     bool cookie_jar_mismatch,
     bool single_client,
     const std::vector<std::string>& fcm_registration_tokens,
     sync_pb::CommitMessage* message) {
   sync_pb::ClientConfigParams* config_params = message->mutable_config_params();
+  DCHECK(Difference(enabled_types, ProtocolTypes()).Empty());
   for (ModelType type : enabled_types) {
-    if (ProxyTypes().Has(type))
-      continue;
     int field_number = GetSpecificsFieldNumberFromModelType(type);
     config_params->mutable_enabled_type_ids()->Add(field_number);
   }
-  config_params->set_tabs_datatype_enabled(enabled_types.Has(PROXY_TABS));
+  config_params->set_tabs_datatype_enabled(proxy_tabs_datatype_enabled);
   config_params->set_cookie_jar_mismatch(cookie_jar_mismatch);
   config_params->set_single_client(single_client);
   for (const std::string& token : fcm_registration_tokens) {

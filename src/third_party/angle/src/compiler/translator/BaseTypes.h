@@ -111,39 +111,41 @@ enum TBasicType
     // images
     EbtGuardImageBegin,
     EbtImage2D = EbtGuardImageBegin,
-    EbtIImage2D,
-    EbtUImage2D,
     EbtImage3D,
-    EbtIImage3D,
-    EbtUImage3D,
     EbtImage2DArray,
-    EbtIImage2DArray,
-    EbtUImage2DArray,
     EbtImageCube,
-    EbtIImageCube,
-    EbtUImageCube,
-    EbtImage1D,  // Desktop GLSL image types
-    EbtIImage1D,
-    EbtUImage1D,
+    EbtImage1D,
     EbtImage1DArray,
-    EbtIImage1DArray,
-    EbtUImage1DArray,
     EbtImage2DMS,
-    EbtIImage2DMS,
-    EbtUImage2DMS,
     EbtImage2DMSArray,
-    EbtIImage2DMSArray,
-    EbtUImage2DMSArray,
     EbtImageCubeArray,
-    EbtIImageCubeArray,
-    EbtUImageCubeArray,
     EbtImageRect,
-    EbtIImageRect,
-    EbtUImageRect,
     EbtImageBuffer,
+    EbtIImage2D,
+    EbtIImage3D,
+    EbtIImage2DArray,
+    EbtIImageCube,
+    EbtIImage1D,
+    EbtIImage1DArray,
+    EbtIImage2DMS,
+    EbtIImage2DMSArray,
+    EbtIImageCubeArray,
+    EbtIImageRect,
     EbtIImageBuffer,
+    EbtGuardUIntImageBegin,
+    EbtUImage2D = EbtGuardUIntImageBegin,
+    EbtUImage3D,
+    EbtUImage2DArray,
+    EbtUImageCube,
+    EbtUImage1D,
+    EbtUImage1DArray,
+    EbtUImage2DMS,
+    EbtUImage2DMSArray,
+    EbtUImageCubeArray,
+    EbtUImageRect,
     EbtUImageBuffer,
-    EbtGuardImageEnd = EbtUImageBuffer,
+    EbtGuardUIntImageEnd = EbtUImageBuffer,
+    EbtGuardImageEnd     = EbtGuardUIntImageEnd,
 
     // Subpass Input
     EbtGuardSubpassInputBegin,
@@ -214,6 +216,11 @@ inline bool IsSampler(TBasicType type)
 inline bool IsImage(TBasicType type)
 {
     return type >= EbtGuardImageBegin && type <= EbtGuardImageEnd;
+}
+
+inline bool IsUIntImage(TBasicType type)
+{
+    return type >= EbtGuardUIntImageBegin && type <= EbtGuardUIntImageEnd;
 }
 
 inline bool IsAtomicCounter(TBasicType type)
@@ -342,6 +349,27 @@ inline bool IsSampler2DMSArray(TBasicType type)
         case EbtSampler2DMSArray:
         case EbtISampler2DMSArray:
         case EbtUSampler2DMSArray:
+            return true;
+        default:
+            return false;
+    }
+}
+
+inline bool IsSamplerMS(TBasicType type)
+{
+    return IsSampler2DMS(type) || IsSampler2DMSArray(type);
+}
+
+inline bool IsImageMS(TBasicType type)
+{
+    switch (type)
+    {
+        case EbtImage2DMS:
+        case EbtImage2DMSArray:
+        case EbtIImage2DMS:
+        case EbtIImage2DMSArray:
+        case EbtUImage2DMS:
+        case EbtUImage2DMSArray:
             return true;
         default:
             return false;
@@ -645,6 +673,75 @@ inline bool IsSamplerArray(TBasicType type)
     return false;
 }
 
+inline bool IsSampler1D(TBasicType type)
+{
+    switch (type)
+    {
+        case EbtSampler1D:
+        case EbtISampler1D:
+        case EbtUSampler1D:
+        case EbtSampler1DShadow:
+            return true;
+        case EbtSampler2D:
+        case EbtSamplerCube:
+        case EbtSampler3D:
+        case EbtISampler3D:
+        case EbtUSampler3D:
+        case EbtSamplerExternalOES:
+        case EbtSamplerExternal2DY2YEXT:
+        case EbtSampler2DRect:
+        case EbtSampler2DArray:
+        case EbtSampler2DMS:
+        case EbtSampler2DMSArray:
+        case EbtISampler2D:
+        case EbtISamplerCube:
+        case EbtISampler2DArray:
+        case EbtISampler2DMS:
+        case EbtISampler2DMSArray:
+        case EbtUSampler2D:
+        case EbtUSamplerCube:
+        case EbtUSampler2DArray:
+        case EbtUSampler2DMS:
+        case EbtUSampler2DMSArray:
+        case EbtSampler2DShadow:
+        case EbtSamplerCubeShadow:
+        case EbtSampler2DArrayShadow:
+        case EbtSampler1DArray:
+        case EbtSampler1DArrayShadow:
+        case EbtSamplerBuffer:
+        case EbtSamplerCubeArray:
+        case EbtSamplerCubeArrayShadow:
+        case EbtSampler2DRectShadow:
+        case EbtISampler1DArray:
+        case EbtISampler2DRect:
+        case EbtISamplerBuffer:
+        case EbtISamplerCubeArray:
+        case EbtUSampler1DArray:
+        case EbtUSampler2DRect:
+        case EbtUSamplerBuffer:
+        case EbtUSamplerCubeArray:
+        case EbtSamplerVideoWEBGL:
+            return false;
+        default:
+            ASSERT(!IsSampler(type));
+    }
+
+    return false;
+}
+
+inline bool IsSamplerBuffer(TBasicType type)
+{
+    switch (type)
+    {
+        case EbtSamplerBuffer:
+        case EbtISamplerBuffer:
+        case EbtUSamplerBuffer:
+            return true;
+        default:
+            return false;
+    }
+}
+
 inline bool IsShadowSampler(TBasicType type)
 {
     switch (type)
@@ -885,6 +982,19 @@ inline bool IsImageCube(TBasicType type)
     return false;
 }
 
+inline bool IsImageBuffer(TBasicType type)
+{
+    switch (type)
+    {
+        case EbtImageBuffer:
+        case EbtIImageBuffer:
+        case EbtUImageBuffer:
+            return true;
+        default:
+            return false;
+    }
+}
+
 inline bool IsInteger(TBasicType type)
 {
     return type == EbtInt || type == EbtUInt;
@@ -905,7 +1015,7 @@ enum TQualifier
 {
     EvqTemporary,   // For temporaries (within a function), read/write
     EvqGlobal,      // For globals read/write
-    EvqConst,       // User defined constants and non-output parameters in functions
+    EvqConst,       // User defined constants
     EvqAttribute,   // Readonly
     EvqVaryingIn,   // readonly, fragment shaders only
     EvqVaryingOut,  // vertex shaders only  read/write
@@ -921,10 +1031,10 @@ enum TQualifier
     EvqFragmentInOut,  // EXT_shader_framebuffer_fetch qualifier
 
     // parameters
-    EvqIn,
-    EvqOut,
-    EvqInOut,
-    EvqConstReadOnly,
+    EvqParamIn,
+    EvqParamOut,
+    EvqParamInOut,
+    EvqParamConst,
 
     // built-ins read by vertex shader
     EvqInstanceID,
@@ -945,9 +1055,7 @@ enum TQualifier
     // built-ins written by fragment shader
     EvqFragColor,
     EvqFragData,
-
-    EvqFragDepth,     // gl_FragDepth for ESSL300.
-    EvqFragDepthEXT,  // gl_FragDepthEXT for ESSL100, EXT_frag_depth.
+    EvqFragDepth,  // gl_FragDepth for ESSL300, or gl_FragDepthEXT for ESSL100, EXT_frag_depth.
 
     EvqSecondaryFragColorEXT,  // EXT_blend_func_extended
     EvqSecondaryFragDataEXT,   // EXT_blend_func_extended
@@ -1026,9 +1134,17 @@ enum TQualifier
     EvqTessLevelOuter,
     EvqTessLevelInner,
 
+    // GLES ES 3.1 extension EXT_primitive_bounding_box
+    EvqBoundingBoxEXT,
+
     EvqTessEvaluationIn,
     EvqTessEvaluationOut,
     EvqTessCoord,
+
+    // A specialization constant, which is not valid GLSL ES, but is there to support Vulkan output
+    // generation.  In that case, TLayoutQualifier::location will contain the somewhat equivalent
+    // constant_id.
+    EvqSpecConst,
 
     // end of list
     EvqLast
@@ -1053,6 +1169,7 @@ inline bool IsShaderIn(TQualifier qualifier)
         case EvqTessEvaluationIn:
         case EvqGeometryIn:
         case EvqFragmentIn:
+        case EvqPerVertexIn:
         case EvqAttribute:
         case EvqVaryingIn:
         case EvqSmoothIn:
@@ -1076,6 +1193,7 @@ inline bool IsShaderOut(TQualifier qualifier)
         case EvqTessEvaluationOut:
         case EvqGeometryOut:
         case EvqFragmentOut:
+        case EvqPerVertexOut:
         case EvqVaryingOut:
         case EvqSmoothOut:
         case EvqFlatOut:
@@ -1101,6 +1219,8 @@ inline bool IsShaderIoBlock(TQualifier qualifier)
         case EvqTessControlOut:
         case EvqTessEvaluationIn:
         case EvqTessEvaluationOut:
+        case EvqPatchIn:
+        case EvqPatchOut:
         case EvqGeometryIn:
         case EvqGeometryOut:
         case EvqFragmentIn:
@@ -1125,14 +1245,18 @@ enum TLayoutImageInternalFormat
     EiifRGBA8I,
     EiifR32I,
     EiifRGBA8,
-    EiifRGBA8_SNORM
+    EiifRGBA8_SNORM,
+
+    EiifLast = EiifRGBA8_SNORM,
 };
 
 enum TLayoutMatrixPacking
 {
     EmpUnspecified,
     EmpRowMajor,
-    EmpColumnMajor
+    EmpColumnMajor,
+
+    EmpLast = EmpColumnMajor,
 };
 
 enum TLayoutBlockStorage
@@ -1141,7 +1265,9 @@ enum TLayoutBlockStorage
     EbsShared,
     EbsPacked,
     EbsStd140,
-    EbsStd430
+    EbsStd430,
+
+    EbsLast = EbsStd430,
 };
 
 enum TYuvCscStandardEXT
@@ -1341,9 +1467,7 @@ inline const char *getWorkGroupSizeString(size_t dimension)
     }
 }
 
-//
-// This is just for debug and error message print out, carried along with the definitions above.
-//
+// Used for GLSL generation, debugging and error messages.
 inline const char *getQualifierString(TQualifier q)
 {
     // clang-format off
@@ -1362,10 +1486,10 @@ inline const char *getQualifierString(TQualifier q)
     case EvqFragmentOut:            return "out";
     case EvqVertexOut:              return "out";
     case EvqFragmentIn:             return "in";
-    case EvqIn:                     return "in";
-    case EvqOut:                    return "out";
-    case EvqInOut:                  return "inout";
-    case EvqConstReadOnly:          return "const";
+    case EvqParamIn:                return "in";
+    case EvqParamOut:               return "out";
+    case EvqParamInOut:             return "inout";
+    case EvqParamConst:             return "const";
     case EvqInstanceID:             return "InstanceID";
     case EvqVertexID:               return "VertexID";
     case EvqPosition:               return "Position";
@@ -1377,7 +1501,6 @@ inline const char *getQualifierString(TQualifier q)
     case EvqPointCoord:             return "PointCoord";
     case EvqFragColor:              return "FragColor";
     case EvqFragData:               return "FragData";
-    case EvqFragDepthEXT:           return "FragDepth";
     case EvqFragDepth:              return "FragDepth";
     case EvqSecondaryFragColorEXT:  return "SecondaryFragColorEXT";
     case EvqSecondaryFragDataEXT:   return "SecondaryFragDataEXT";
@@ -1417,6 +1540,7 @@ inline const char *getQualifierString(TQualifier q)
     case EvqPrimitiveID:            return "gl_PrimitiveID";
     case EvqPrecise:                return "precise";
     case EvqClipDistance:           return "ClipDistance";
+    case EvqCullDistance:           return "CullDistance";
     case EvqSample:                 return "sample";
     case EvqSampleIn:               return "sample in";
     case EvqSampleOut:              return "sample out";
@@ -1433,9 +1557,11 @@ inline const char *getQualifierString(TQualifier q)
     case EvqPatchVerticesIn:        return "PatchVerticesIn";
     case EvqTessLevelOuter:         return "TessLevelOuter";
     case EvqTessLevelInner:         return "TessLevelInner";
+    case EvqBoundingBoxEXT:         return "BoundingBoxEXT";
     case EvqTessEvaluationIn:       return "in";
     case EvqTessEvaluationOut:      return "out";
     case EvqTessCoord:              return "TessCoord";
+    case EvqSpecConst:              return "const";
     default: UNREACHABLE();         return "unknown qualifier";
     }
     // clang-format on

@@ -29,7 +29,7 @@ limitations under the License.
 #include "absl/base/casts.h"
 #include "third_party/eigen3/Eigen/Core"
 #include "tensorflow/compiler/xla/types.h"
-#include "tensorflow/core/lib/bfloat16/bfloat16.h"
+#include "tensorflow/core/platform/bfloat16.h"
 #include "tensorflow/core/platform/types.h"
 
 namespace xla {
@@ -45,26 +45,22 @@ T BitCast(U src) {
 template <>
 inline tensorflow::bfloat16 BitCast<tensorflow::bfloat16, uint16_t>(
     uint16 src) {
-  tensorflow::bfloat16 result;
-  result.value = src;
-  return result;
+  return Eigen::numext::bit_cast<tensorflow::bfloat16>(src);
 }
 
 template <>
 inline uint16 BitCast<uint16, tensorflow::bfloat16>(tensorflow::bfloat16 src) {
-  return src.value;
+  return Eigen::numext::bit_cast<uint16>(src);
 }
 
 template <>
 inline Eigen::half BitCast<Eigen::half, uint16>(uint16 src) {
-  Eigen::half result;
-  result.x = src;
-  return result;
+  return Eigen::numext::bit_cast<Eigen::half>(src);
 }
 
 template <>
 inline uint16 BitCast<uint16, Eigen::half>(Eigen::half src) {
-  return src.x;
+  return Eigen::numext::bit_cast<uint16>(src);
 }
 
 }  // namespace xla

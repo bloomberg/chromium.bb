@@ -249,6 +249,8 @@ static const qpKeyStringMap s_qpShaderTypeMap[] =
 	{ QP_SHADER_TYPE_MISS,				"MissShader"			},
 	{ QP_SHADER_TYPE_INTERSECTION,		"IntersectionShader"	},
 	{ QP_SHADER_TYPE_CALLABLE,			"CallableShader"		},
+	{ QP_SHADER_TYPE_TASK,				"TaskShader"			},
+	{ QP_SHADER_TYPE_MESH,				"MeshShader"			},
 
 	{ QP_SHADER_TYPE_LAST,				DE_NULL					}
 };
@@ -698,7 +700,9 @@ deBool Buffer_resize (Buffer* buffer, size_t newSize)
 		if (!newData)
 			return DE_FALSE;
 
-		memcpy(newData, buffer->data, buffer->size);
+		if (buffer->data)
+			memcpy(newData, buffer->data, buffer->size);
+
 		deFree(buffer->data);
 		buffer->data		= newData;
 		buffer->capacity	= newCapacity;

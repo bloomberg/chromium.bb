@@ -7,9 +7,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
@@ -59,7 +60,7 @@ class FakeDriveServiceFactory
   }
 
  private:
-  drive::FakeDriveService::ChangeObserver* change_observer_;
+  raw_ptr<drive::FakeDriveService::ChangeObserver> change_observer_;
 };
 
 }  // namespace
@@ -129,7 +130,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
   }
 
   void SignIn() {
-    identity_test_env_->SetPrimaryAccount(kEmail);
+    identity_test_env_->SetPrimaryAccount(kEmail, signin::ConsentLevel::kSync);
   }
 
   void SetSyncEnabled(bool enabled) {
@@ -152,7 +153,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
 
   std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env_;
 
-  drive_backend::SyncEngine* remote_service_ = nullptr;
+  raw_ptr<drive_backend::SyncEngine> remote_service_ = nullptr;
 };
 
 IN_PROC_BROWSER_TEST_F(SyncFileSystemTest, AuthorizationTest) {

@@ -24,7 +24,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
@@ -122,17 +122,17 @@ class NET_EXPORT URLRequestContextBuilder {
 #if defined(OS_ANDROID)
     // If this is set, will override the default ApplicationStatusListener. This
     // is useful if the cache will not be in the main process.
-    base::android::ApplicationStatusListener* app_status_listener = nullptr;
+    raw_ptr<base::android::ApplicationStatusListener> app_status_listener =
+        nullptr;
 #endif
   };
 
   URLRequestContextBuilder();
-  virtual ~URLRequestContextBuilder();
 
-  // Sets a name for this URLRequestContext. Currently the name is used in
-  // MemoryDumpProvier to annotate memory usage. The name does not need to be
-  // unique.
-  void set_name(const std::string& name) { name_ = name; }
+  URLRequestContextBuilder(const URLRequestContextBuilder&) = delete;
+  URLRequestContextBuilder& operator=(const URLRequestContextBuilder&) = delete;
+
+  virtual ~URLRequestContextBuilder();
 
   // Sets whether Brotli compression is enabled.  Disabled by default;
   void set_enable_brotli(bool enable_brotli) { enable_brotli_ = enable_brotli; }
@@ -150,7 +150,7 @@ class NET_EXPORT URLRequestContextBuilder {
   // associated HttpNetworkSession are consistent.
   static void SetHttpNetworkSessionComponents(
       const URLRequestContext* request_context,
-      HttpNetworkSession::Context* session_context);
+      HttpNetworkSessionContext* session_context);
 
   // These functions are mutually exclusive.  The ProxyConfigService, if
   // set, will be used to construct a ConfiguredProxyResolutionService.
@@ -192,11 +192,6 @@ class NET_EXPORT URLRequestContextBuilder {
   void set_http_user_agent_settings(
       std::unique_ptr<HttpUserAgentSettings> http_user_agent_settings);
 
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-  // Control support for ftp:// requests. By default it's disabled.
-  void set_ftp_enabled(bool enable) { ftp_enabled_ = enable; }
-#endif
-
   // Sets a valid ProtocolHandler for a scheme.
   // A ProtocolHandler already exists for |scheme| will be overwritten.
   void SetProtocolHandler(
@@ -231,7 +226,7 @@ class NET_EXPORT URLRequestContextBuilder {
   // used.
   void set_host_resolver_factory(HostResolver::Factory* factory);
 
-  // Uses BasicNetworkDelegate by default. Note that calling Build will unset
+  // Uses NetworkDelegateImpl by default. Note that calling Build will unset
   // any custom delegate in builder, so this must be called each time before
   // Build is called.
   void set_network_delegate(std::unique_ptr<NetworkDelegate> delegate) {
@@ -252,15 +247,16 @@ class NET_EXPORT URLRequestContextBuilder {
   void EnableHttpCache(const HttpCacheParams& params);
   void DisableHttpCache();
 
-  // Override default HttpNetworkSession::Params settings.
+  // Override default HttpNetworkSessionParams settings.
   void set_http_network_session_params(
-      const HttpNetworkSession::Params& http_network_session_params) {
+      const HttpNetworkSessionParams& http_network_session_params) {
     http_network_session_params_ = http_network_session_params;
   }
 
-  void set_transport_security_persister_path(
-      const base::FilePath& transport_security_persister_path) {
-    transport_security_persister_path_ = transport_security_persister_path;
+  void set_transport_security_persister_file_path(
+      const base::FilePath& transport_security_persister_file_path) {
+    transport_security_persister_file_path_ =
+        transport_security_persister_file_path;
   }
 
   void set_hsts_policy_bypass_list(
@@ -337,32 +333,27 @@ class NET_EXPORT URLRequestContextBuilder {
       bool pac_quick_check_enabled);
 
  private:
-  std::string name_;
   bool enable_brotli_ = false;
-  NetworkQualityEstimator* network_quality_estimator_ = nullptr;
+  raw_ptr<NetworkQualityEstimator> network_quality_estimator_ = nullptr;
 
   std::string accept_language_;
   std::string user_agent_;
   std::unique_ptr<HttpUserAgentSettings> http_user_agent_settings_;
 
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-  // Include support for ftp:// requests.
-  bool ftp_enabled_ = false;
-#endif
   bool http_cache_enabled_ = true;
   bool throttling_enabled_ = false;
   bool cookie_store_set_by_client_ = false;
 
   HttpCacheParams http_cache_params_;
-  HttpNetworkSession::Params http_network_session_params_;
+  HttpNetworkSessionParams http_network_session_params_;
   CreateHttpTransactionFactoryCallback create_http_network_transaction_factory_;
-  base::FilePath transport_security_persister_path_;
+  base::FilePath transport_security_persister_file_path_;
   std::vector<std::string> hsts_policy_bypass_list_;
-  NetLog* net_log_ = nullptr;
+  raw_ptr<NetLog> net_log_ = nullptr;
   std::unique_ptr<HostResolver> host_resolver_;
   std::string host_mapping_rules_;
-  HostResolverManager* host_resolver_manager_ = nullptr;
-  HostResolver::Factory* host_resolver_factory_ = nullptr;
+  raw_ptr<HostResolverManager> host_resolver_manager_ = nullptr;
+  raw_ptr<HostResolver::Factory> host_resolver_factory_ = nullptr;
   std::unique_ptr<ProxyConfigService> proxy_config_service_;
   bool pac_quick_check_enabled_ = true;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
@@ -385,9 +376,7 @@ class NET_EXPORT URLRequestContextBuilder {
   std::map<std::string, std::unique_ptr<URLRequestJobFactory::ProtocolHandler>>
       protocol_handlers_;
 
-  ClientSocketFactory* client_socket_factory_for_testing_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(URLRequestContextBuilder);
+  raw_ptr<ClientSocketFactory> client_socket_factory_for_testing_ = nullptr;
 };
 
 }  // namespace net

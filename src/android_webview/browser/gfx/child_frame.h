@@ -9,12 +9,12 @@
 #include <vector>
 
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/public/browser/android/synchronous_compositor.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 namespace viz {
 class CompositorFrame;
@@ -37,6 +37,10 @@ class ChildFrame {
       float device_scale_factor,
       CopyOutputRequestQueue copy_requests,
       bool did_invalidate);
+
+  ChildFrame(const ChildFrame&) = delete;
+  ChildFrame& operator=(const ChildFrame&) = delete;
+
   ~ChildFrame();
 
   // Helper to move frame from |frame_future| to |frame|.
@@ -62,9 +66,6 @@ class ChildFrame {
 
   // Used for metrics, indicates that we invalidated for this frame.
   const bool did_invalidate;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChildFrame);
 };
 
 using ChildFrameQueue = base::circular_deque<std::unique_ptr<ChildFrame>>;

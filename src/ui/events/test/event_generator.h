@@ -9,9 +9,10 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/event.h"
 #include "ui/events/event_dispatcher.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -128,6 +129,9 @@ class EventGenerator {
   // |target_window|.
   EventGenerator(gfx::NativeWindow root_window,
                  gfx::NativeWindow target_window);
+
+  EventGenerator(const EventGenerator&) = delete;
+  EventGenerator& operator=(const EventGenerator&) = delete;
 
   virtual ~EventGenerator();
 
@@ -435,6 +439,11 @@ class EventGenerator {
                   int flags,
                   int source_device_id = ED_UNKNOWN_DEVICE);
 
+  // Calls PressKey() then ReleaseKey() to simulate typing one character.
+  void PressAndReleaseKey(KeyboardCode key_code,
+                          int flags = EF_NONE,
+                          int source_device_id = ED_UNKNOWN_DEVICE);
+
   // Dispatch the event to the WindowEventDispatcher.
   void Dispatch(Event* event);
 
@@ -455,6 +464,7 @@ class EventGenerator {
                         int flags,
                         int source_device_id);
 
+  void SetCurrentScreenLocation(const gfx::Point& point);
   void UpdateCurrentDispatcher(const gfx::Point& point);
   void PressButton(int flag);
   void ReleaseButton(int flag);
@@ -464,7 +474,7 @@ class EventGenerator {
 
   std::unique_ptr<EventGeneratorDelegate> delegate_;
   gfx::Point current_screen_location_;
-  EventTarget* current_target_ = nullptr;
+  raw_ptr<EventTarget> current_target_ = nullptr;
   int flags_ = 0;
   bool grab_ = false;
 
@@ -473,8 +483,6 @@ class EventGenerator {
   Target target_ = Target::WIDGET;
 
   std::unique_ptr<TestTickClock> tick_clock_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventGenerator);
 };
 
 }  // namespace test

@@ -26,25 +26,19 @@ static inline int grsltype_to_location_size(GrSLType type) {
         case kHalf4_GrSLType:
             return 1;
         case kInt2_GrSLType:
-        case kUint2_GrSLType:
+        case kUInt2_GrSLType:
         case kShort2_GrSLType:
         case kUShort2_GrSLType:
-        case kByte2_GrSLType:
-        case kUByte2_GrSLType:
             return 1;
         case kInt3_GrSLType:
-        case kUint3_GrSLType:
+        case kUInt3_GrSLType:
         case kShort3_GrSLType:
         case kUShort3_GrSLType:
-        case kByte3_GrSLType:
-        case kUByte3_GrSLType:
             return 1;
         case kInt4_GrSLType:
-        case kUint4_GrSLType:
+        case kUInt4_GrSLType:
         case kShort4_GrSLType:
         case kUShort4_GrSLType:
-        case kByte4_GrSLType:
-        case kUByte4_GrSLType:
             return 1;
         case kFloat2x2_GrSLType:
         case kHalf2x2_GrSLType:
@@ -71,11 +65,9 @@ static inline int grsltype_to_location_size(GrSLType type) {
              return 1;
         case kInt_GrSLType: // fall through
         case kShort_GrSLType:
-        case kByte_GrSLType:
              return 1;
-        case kUint_GrSLType: // fall through
+        case kUInt_GrSLType: // fall through
         case kUShort_GrSLType:
-        case kUByte_GrSLType:
              return 1;
     }
     SK_ABORT("Unexpected type");
@@ -90,10 +82,7 @@ static void finalize_helper(GrVkVaryingHandler::VarArray& vars) {
 
         int elementSize = grsltype_to_location_size(var.getType());
         SkASSERT(elementSize > 0);
-        int numElements = 1;
-        if (var.isArray() && !var.isUnsizedArray()) {
-            numElements = var.getArrayCount();
-        }
+        int numElements = var.isArray() ? var.getArrayCount() : 1;
         SkASSERT(numElements > 0);
         locationIndex += elementSize * numElements;
     }
@@ -106,8 +95,6 @@ static void finalize_helper(GrVkVaryingHandler::VarArray& vars) {
 void GrVkVaryingHandler::onFinalize() {
     finalize_helper(fVertexInputs);
     finalize_helper(fVertexOutputs);
-    finalize_helper(fGeomInputs);
-    finalize_helper(fGeomOutputs);
     finalize_helper(fFragInputs);
     finalize_helper(fFragOutputs);
 }

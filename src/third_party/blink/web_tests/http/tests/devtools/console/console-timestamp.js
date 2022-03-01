@@ -4,7 +4,7 @@
 
 (async function() {
   TestRunner.addResult(`Tests the console timestamp setting.\n`);
-  await TestRunner.loadModule('console'); await TestRunner.loadTestModule('console_test_runner');
+  await TestRunner.loadLegacyModule('console'); await TestRunner.loadTestModule('console_test_runner');
   await TestRunner.showPanel('console');
 
   // It is essential that we calculate timezone for this particular moment of time
@@ -20,14 +20,11 @@
         TestRunner.runtimeModel,
         Protocol.Log.LogEntrySource.Other,  // source
         Protocol.Log.LogEntryLevel.Info,    // level
-        messageText, type,
-        undefined,  // url
-        undefined,  // line
-        undefined,  // column
-        undefined,  // parameters
-        undefined,  // stackTrace
-        timestamp ||
-            baseTimestamp + 123);  // timestamp: 2014-05-13T16:53:20.123Z
+        messageText, {
+          type,
+          // timestamp: 2014-05-13T16:53:20.123Z
+          timestamp: timestamp || baseTimestamp + 123,
+        });
     SDK.consoleModel.addMessage(message, true);  // allowGrouping
   }
 

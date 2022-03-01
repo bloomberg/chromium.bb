@@ -5,12 +5,10 @@
 #include <map>
 #include <string>
 
-#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -26,10 +24,8 @@
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
@@ -42,15 +38,14 @@
 #include "components/autofill/core/browser/geo/state_names.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/variations/variations_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/network/public/cpp/data_element.h"
-#include "services/network/public/cpp/network_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using captured_sites_test_utils::CapturedSiteParams;
@@ -58,8 +53,7 @@ using captured_sites_test_utils::GetCapturedSites;
 
 namespace {
 
-const base::TimeDelta autofill_wait_for_action_interval =
-    base::TimeDelta::FromSeconds(5);
+const base::TimeDelta autofill_wait_for_action_interval = base::Seconds(5);
 
 base::FilePath GetReplayFilesRootDirectory() {
   base::FilePath src_dir;
@@ -94,7 +88,7 @@ class AutofillCapturedSitesInteractiveTest
         content::WebContents::FromRenderFrameHost(frame);
     BrowserAutofillManager* autofill_manager =
         ContentAutofillDriverFactory::FromWebContents(web_contents)
-            ->DriverForFrame(frame)
+            ->DriverForFrame(frame->GetMainFrame())
             ->browser_autofill_manager();
     autofill_manager->SetTestDelegate(test_delegate());
 
@@ -166,6 +160,11 @@ class AutofillCapturedSitesInteractiveTest
 
   bool SetupAutofillProfile() override {
     AddTestAutofillData(browser()->profile(), profile(), credit_card());
+    // Disable the Password Manager to prevent password bubbles from occurring.
+    // The password bubbles could overlap with the Autofill popups, in which
+    // case the Autofill popup would not be shown (crbug.com/1223898).
+    browser()->profile()->GetPrefs()->SetBoolean(
+        password_manager::prefs::kCredentialsEnableService, false);
     return true;
   }
 
@@ -196,6 +195,12 @@ class AutofillCapturedSitesInteractiveTest
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
     AutofillUiTest::SetUpOnMainThread();
+    if (base::FeatureList::IsEnabled(features::kAutofillAcrossIframes)) {
+      test_delegate()->SetIgnoreBackToBackMessages(
+          ObservedUiEvents::kPreviewFormData, true);
+      test_delegate()->SetIgnoreBackToBackMessages(
+          ObservedUiEvents::kFormDataFilled, true);
+    }
     recipe_replayer_ =
         std::make_unique<captured_sites_test_utils::TestRecipeReplayer>(
             browser(), this);
@@ -233,13 +238,14 @@ class AutofillCapturedSitesInteractiveTest
     // prediction. Test will check this attribute on all the relevant input
     // elements in a form to determine if the form is ready for interaction.
     feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kAutofillShowTypePredictions},
+        /*enabled_features=*/{features::kAutofillAcrossIframes,
+                              features::kAutofillDisplaceRemovedForms,
+                              features::kAutofillShowTypePredictions,
+                              features::kAutofillUseUnassociatedListedElements},
         /*disabled_features=*/{});
-    command_line->AppendSwitch(switches::kShowAutofillTypePredictions);
     command_line->AppendSwitchASCII(
         variations::switches::kVariationsOverrideCountry, "us");
-    command_line->AppendSwitchASCII(::switches::kForceFieldTrials, "Foo/Bar");
-
+    AutofillUiTest::SetUpCommandLine(command_line);
     captured_sites_test_utils::TestRecipeReplayer::SetUpCommandLine(
         command_line);
   }
@@ -253,9 +259,9 @@ class AutofillCapturedSitesInteractiveTest
     return recipe_replayer_.get();
   }
 
-  const CreditCard credit_card() { return card_; }
+  const CreditCard& credit_card() { return card_; }
 
-  const AutofillProfile profile() { return profile_; }
+  const AutofillProfile& profile() { return profile_; }
 
  private:
   bool ShowAutofillSuggestion(const std::string& target_element_xpath,
@@ -264,15 +270,19 @@ class AutofillCapturedSitesInteractiveTest
     // First, automation should focus on the frame containg the autofill form.
     // Doing so ensures that Chrome scrolls the element into view if the
     // element is off the page.
+    test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionShown},
+                                     autofill_wait_for_action_interval);
     if (!captured_sites_test_utils::TestRecipeReplayer::PlaceFocusOnElement(
-            target_element_xpath, iframe_path, frame))
+            target_element_xpath, iframe_path, frame)) {
       return false;
+    }
 
     gfx::Rect rect;
     if (!captured_sites_test_utils::TestRecipeReplayer::
             GetBoundingRectOfTargetElement(target_element_xpath, iframe_path,
-                                           frame, &rect))
+                                           frame, &rect)) {
       return false;
+    }
 
     test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionShown},
                                      autofill_wait_for_action_interval);

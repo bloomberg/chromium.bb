@@ -194,6 +194,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     return;
   }
 
+  // Clear per-page state.
+  [self.suggestionHelper resetForNewPage];
+
   auto fieldDataManager =
       UniqueIDDataTabHelper::FromWebState(_webState)->GetFieldDataManager();
   _passwordManager->PropagateFieldDataManagerInfo(
@@ -210,8 +213,6 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   DCHECK_EQ(_webState, webState);
-  // Clear per-page state.
-  [self.suggestionHelper resetForNewPage];
 
   // Retrieve the identity of the page. In case the page might be malicous,
   // returns early.
@@ -376,8 +377,6 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       continue;
     }
     DCHECK(self.delegate.passwordManagerClient);
-    BOOL requiresReauth =
-        self.delegate.passwordManagerClient->RequiresReauthToFill();
     NSString* value =
         [rawSuggestion.value stringByAppendingString:kSuggestionSuffix];
     FormSuggestion* suggestion =
@@ -385,7 +384,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
                          displayDescription:rawSuggestion.displayDescription
                                        icon:nil
                                  identifier:0
-                             requiresReauth:requiresReauth];
+                             requiresReauth:YES];
     [suggestions addObject:suggestion];
   }
   absl::optional<PasswordDropdownState> suggestionState;
@@ -727,6 +726,18 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       SysNSStringToUTF16(generatedPassword), newPasswordUniqueId);
 }
 
+// Checks that all fields with |fieldIds| have user input recorded by
+// the FieldDataManager.
+- (BOOL)allFieldsContainUserInput:
+    (const std::vector<FieldRendererId>&)fieldIds {
+  for (auto fieldId : fieldIds) {
+    if (!self.formHelper.fieldDataManager->HasFieldData(fieldId)) {
+      return NO;
+    }
+  }
+  return YES;
+}
+
 #pragma mark - FormActivityObserver
 
 - (void)webState:(web::WebState*)webState
@@ -753,14 +764,6 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     [self findPasswordFormsAndSendThemToPasswordStore];
   }
 
-  // If the form was removed, PasswordManager should be informed to decide
-  // whether the form was submitted.
-  if (params.type == "password_form_removed") {
-    _passwordManager->OnPasswordFormRemoved(_delegate.passwordManagerDriver,
-                                            *self.formHelper.fieldDataManager,
-                                            params.unique_form_id);
-  }
-
   // If the form was cleared PasswordManager should be informed to decide
   // whether it's a change password form that was submitted.
   if (params.type == "password_form_cleared") {
@@ -773,6 +776,23 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     _passwordManager->OnPasswordFormCleared(_delegate.passwordManagerDriver,
                                             formData);
   }
+}
+
+// If the form was removed, PasswordManager should be informed to decide
+// whether the form was submitted.
+- (void)webState:(web::WebState*)webState
+    didRegisterFormRemoval:(const autofill::FormRemovalParams&)params
+                   inFrame:(web::WebFrame*)frame {
+  if (!params.unique_form_id) {
+    // If formless password fields were removed, check that all of them had
+    // user input.
+    if (![self allFieldsContainUserInput:params.removed_unowned_fields]) {
+      return;
+    }
+  }
+  _passwordManager->OnPasswordFormRemoved(_delegate.passwordManagerDriver,
+                                          *self.formHelper.fieldDataManager,
+                                          params.unique_form_id);
 }
 
 @end

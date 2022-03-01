@@ -58,6 +58,7 @@ struct TestFilter {
   std::string func;
   std::string file;
   bool active = true;
+  bool enabled = true;
 };
 
 static_assert(sizeof(VizDebuggerInternal) == sizeof(VizDebugger),
@@ -89,6 +90,7 @@ class VisualDebuggerTest : public testing::Test {
 
       full_filter.SetKey("selector", std::move(selector));
       full_filter.SetBoolean("active", each.active);
+      full_filter.SetBoolean("enabled", each.enabled);
       filters_list.Append(std::move(full_filter));
     }
     filters_json.SetKey("filters", std::move(filters_list));
@@ -120,10 +122,14 @@ class VisualDebuggerTest : public testing::Test {
 
     EXPECT_TRUE(global_dict->is_dict());
 
-    std::string str;
-    global_dict->FindKey("frame")->GetAsString(&str);
-    base::StringToUint64(str.c_str(), &counter_);
+    base::StringToUint64(global_dict->FindKey("frame")->GetString().c_str(),
+                         &counter_);
     static const int kNoVal = -1;
+    int expected_version =
+        global_dict->FindKey("version")->GetIfInt().value_or(kNoVal);
+    // Check to update these unit tests if a backwards compatible change has
+    // been made.
+    EXPECT_EQ(1, expected_version);
 
     window_x_ = global_dict->FindKey("windowx")->GetIfInt().value_or(kNoVal);
     window_y_ = global_dict->FindKey("windowy")->GetIfInt().value_or(kNoVal);
@@ -134,15 +140,9 @@ class VisualDebuggerTest : public testing::Test {
     for (size_t i = 0; i < list_source->GetList().size(); i++) {
       auto&& local_dict = list_source->GetList()[i];
       StaticSource ss;
-      local_dict.FindKey("file")->GetAsString(&str);
-      ss.file = str;
-
-      local_dict.FindKey("func")->GetAsString(&str);
-      ss.func = str;
-
-      local_dict.FindKey("anno")->GetAsString(&str);
-      ss.anno = str;
-
+      ss.file = local_dict.FindKey("file")->GetString();
+      ss.func = local_dict.FindKey("func")->GetString();
+      ss.anno = local_dict.FindKey("anno")->GetString();
       ss.line = local_dict.FindKey("line")->GetIfInt().value_or(kNoVal);
       ss.index = local_dict.FindKey("index")->GetIfInt().value_or(kNoVal);
       sources_.push_back(ss);
@@ -157,14 +157,13 @@ class VisualDebuggerTest : public testing::Test {
       *draw_index = dict.FindKey("drawindex")->GetIfInt().value_or(kNoVal);
       *source_index = dict.FindKey("source_index")->GetIfInt().value_or(kNoVal);
 
-      std::string str;
       const base::Value* option_dict = dict.FindDictKey("option");
-      option_dict->FindKey("color")->GetAsString(&str);
 
       uint32_t red;
       uint32_t green;
       uint32_t blue;
-      std::sscanf(str.c_str(), "#%x%x%x", &red, &green, &blue);
+      std::sscanf(option_dict->FindKey("color")->GetString().c_str(), "#%x%x%x",
+                  &red, &green, &blue);
 
       option->color_r = red;
       option->color_g = green;
@@ -208,9 +207,6 @@ class VisualDebuggerTest : public testing::Test {
 
       func_common_call(local_dict, &draw_index, &source_index, &option);
 
-      local_dict.FindKey("text")->GetAsString(&str);
-      std::string text_str = str;
-
       const base::Value* list_pos = local_dict.FindListKey("pos");
       EXPECT_TRUE(list_pos->is_list());
       float pos_x = list_pos->GetList()[0].GetIfDouble().value_or(kNoVal);
@@ -218,7 +214,7 @@ class VisualDebuggerTest : public testing::Test {
 
       VizDebuggerInternal::DrawTextCall text_call(
           draw_index, source_index, option, gfx::Vector2dF(pos_x, pos_y),
-          text_str);
+          local_dict.FindKey("text")->GetString());
 
       draw_text_calls_.push_back(text_call);
     }
@@ -233,11 +229,9 @@ class VisualDebuggerTest : public testing::Test {
       VizDebugger::DrawOption option;
       func_common_call(local_dict, &draw_index, &source_index, &option);
 
-      local_dict.FindKey("value")->GetAsString(&str);
-      std::string log_str = str;
-
-      VizDebuggerInternal::LogCall log_call(draw_index, source_index, option,
-                                            log_str);
+      VizDebuggerInternal::LogCall log_call(
+          draw_index, source_index, option,
+          local_dict.FindKey("value")->GetString());
 
       log_calls_.push_back(log_call);
     }
@@ -382,6 +376,80 @@ TEST_F(VisualDebuggerTest, FilterDrawSubmission) {
   }
 }
 
+constexpr const char kTestFlagFunctionAnnoName[] = "testflagfunctionanno";
+
+DBG_FLAG_FBOOL(kTestFlagFunctionAnnoName, check_flag_enabled)
+
+static bool FlagFunctionTestEnable() {
+  return check_flag_enabled();
+}
+
+TEST_F(VisualDebuggerTest, TestDebugFlagAnnoAndFunction) {
+  GetInternal()->ForceEnabled();
+
+  // Set our test flag to be disabled.
+  SetFilter({TestFilter({kTestFlagFunctionAnnoName, "", "", true, false})});
+  EXPECT_FALSE(FlagFunctionTestEnable());
+  SetFilter({TestFilter({kTestFlagFunctionAnnoName, "", "", true, true})});
+  EXPECT_TRUE(FlagFunctionTestEnable());
+  SetFilter({TestFilter({kTestFlagFunctionAnnoName, "", "", true, false})});
+  EXPECT_FALSE(FlagFunctionTestEnable());
+}
+
+// This tests makes sure that expensive string logging has no cost unless it is
+// actively being filtered.
+TEST_F(VisualDebuggerTest, NonFilterActiveNoCost) {
+  GetInternal()->ForceEnabled();
+  const char* kStrA = "anno_A";
+  const char* kStrB = "anno_B";
+  // These integers are mutated on a function invocation.
+  int count_a = 0;
+  int count_b = 0;
+
+  auto get_a_string = [&count_a, &kStrA]() {
+    count_a++;
+    return std::string(kStrA);
+  };
+  auto get_b_string = [&count_b, &kStrB]() {
+    count_b++;
+    return std::string(kStrB);
+  };
+
+  // Filter on "anno_A" which should call 'get_a_string'.
+  SetFilter({TestFilter({kStrA})});
+  DBG_DRAW_TEXT(kStrA, gfx::Point(), get_a_string());
+  DBG_DRAW_TEXT(kStrB, gfx::Point(), get_b_string());
+  EXPECT_EQ(1, count_a);
+  EXPECT_EQ(0, count_b);
+
+  // Filter on "anno_B" which should call 'get_b_string'.
+  SetFilter({TestFilter({kStrB})});
+  DBG_DRAW_TEXT(kStrA, gfx::Point(), get_a_string());
+  DBG_DRAW_TEXT(kStrB, gfx::Point(), get_b_string());
+  EXPECT_EQ(1, count_a);
+  EXPECT_EQ(1, count_b);
+}
+
 }  // namespace
 }  // namespace viz
-#endif  // VIZ_DEBUGGER_IS_ON()
+#else  // VIZ_DEBUGGER_IS_ON()
+
+class VisualDebuggerTest : public testing::Test {};
+
+DBG_FLAG_FBOOL("unit.test.fake.anno", flag_default_value_check)
+
+TEST_F(VisualDebuggerTest, TestDebugFlagAnnoAndFunction) {
+  // Visual debugger is disabled at build level this check should always return
+  // false.
+  EXPECT_FALSE(viz::VizDebugger::GetInstance()->IsEnabled());
+  // The default value for a bool flag when the visual debugger is disabled is
+  // false.
+  EXPECT_FALSE(flag_default_value_check());
+}
+
+// For optimization purposes the flag fbool values return false as a constexpr.
+// This allows the compiler to constant propagate and remove unused codepaths.
+static_assert(flag_default_value_check() == false,
+              "Default value when debugger is disabled is false.");
+
+#endif

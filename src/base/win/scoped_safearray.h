@@ -9,7 +9,6 @@
 
 #include "base/base_export.h"
 #include "base/check_op.h"
-#include "base/macros.h"
 #include "base/win/variant_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -57,6 +56,9 @@ class BASE_EXPORT ScopedSafearray {
       array_size_ = std::exchange(other.array_size_, 0U);
       return *this;
     }
+
+    LockScope(const LockScope&) = delete;
+    LockScope& operator=(const LockScope&) = delete;
 
     ~LockScope() { Reset(); }
 
@@ -109,11 +111,13 @@ class BASE_EXPORT ScopedSafearray {
     size_t array_size_ = 0U;
 
     friend class ScopedSafearray;
-    DISALLOW_COPY_AND_ASSIGN(LockScope);
   };
 
   explicit ScopedSafearray(SAFEARRAY* safearray = nullptr)
       : safearray_(safearray) {}
+
+  ScopedSafearray(const ScopedSafearray&) = delete;
+  ScopedSafearray& operator=(const ScopedSafearray&) = delete;
 
   // Move constructor
   ScopedSafearray(ScopedSafearray&& r) noexcept : safearray_(r.safearray_) {
@@ -211,7 +215,6 @@ class BASE_EXPORT ScopedSafearray {
 
  private:
   SAFEARRAY* safearray_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedSafearray);
 };
 
 }  // namespace win

@@ -20,19 +20,6 @@ namespace dawn_native { namespace metal {
 
     CommandRecordingContext::CommandRecordingContext() = default;
 
-    CommandRecordingContext::CommandRecordingContext(NSPRef<id<MTLCommandBuffer>> commands)
-        : mCommands(std::move(commands)) {
-    }
-
-    CommandRecordingContext::CommandRecordingContext(CommandRecordingContext&& rhs)
-        : mCommands(rhs.AcquireCommands()) {
-    }
-
-    CommandRecordingContext& CommandRecordingContext::operator=(CommandRecordingContext&& rhs) {
-        mCommands = rhs.AcquireCommands();
-        return *this;
-    }
-
     CommandRecordingContext::~CommandRecordingContext() {
         // Commands must be acquired.
         ASSERT(mCommands == nullptr);
@@ -42,6 +29,28 @@ namespace dawn_native { namespace metal {
         return mCommands.Get();
     }
 
+    void CommandRecordingContext::MarkUsed() {
+        mUsed = true;
+    }
+    bool CommandRecordingContext::WasUsed() const {
+        return mUsed;
+    }
+
+    MaybeError CommandRecordingContext::PrepareNextCommandBuffer(id<MTLCommandQueue> queue) {
+        ASSERT(mCommands == nil);
+        ASSERT(!mUsed);
+
+        // The MTLCommandBuffer will be autoreleased by default.
+        // The autorelease pool may drain before the command buffer is submitted. Retain so it stays
+        // alive.
+        mCommands = AcquireNSPRef([[queue commandBuffer] retain]);
+        if (mCommands == nil) {
+            return DAWN_INTERNAL_ERROR("Failed to allocate an MTLCommandBuffer");
+        }
+
+        return {};
+    }
+
     NSPRef<id<MTLCommandBuffer>> CommandRecordingContext::AcquireCommands() {
         // A blit encoder can be left open from WriteBuffer, make sure we close it.
         if (mCommands != nullptr) {
@@ -49,6 +58,7 @@ namespace dawn_native { namespace metal {
         }
 
         ASSERT(!mInEncoder);
+        mUsed = false;
         return std::move(mCommands);
     }
 
@@ -61,7 +71,7 @@ namespace dawn_native { namespace metal {
 
             // The encoder is created autoreleased. Retain it to avoid the autoreleasepool from
             // draining from under us.
-            mBlit = [*mCommands blitCommandEncoder];
+            mBlit.Acquire([[*mCommands blitCommandEncoder] retain]);
         }
         return mBlit.Get();
     }
@@ -82,9 +92,9 @@ namespace dawn_native { namespace metal {
         ASSERT(!mInEncoder);
 
         mInEncoder = true;
-        // The encoder is created autoreleased. Retain it to avoid the autoreleasepool from draining
-        // from under us.
-        mCompute = [*mCommands computeCommandEncoder];
+        // The encoder is created autoreleased. Retain it to avoid the autoreleasepool from
+        // draining from under us.
+        mCompute.Acquire([[*mCommands computeCommandEncoder] retain]);
         return mCompute.Get();
     }
 
@@ -104,9 +114,9 @@ namespace dawn_native { namespace metal {
         ASSERT(!mInEncoder);
 
         mInEncoder = true;
-        // The encoder is created autoreleased. Retain it to avoid the autoreleasepool from draining
-        // from under us.
-        mRender = [*mCommands renderCommandEncoderWithDescriptor:descriptor];
+        // The encoder is created autoreleased. Retain it to avoid the autoreleasepool from
+        // draining from under us.
+        mRender.Acquire([[*mCommands renderCommandEncoderWithDescriptor:descriptor] retain]);
         return mRender.Get();
     }
 

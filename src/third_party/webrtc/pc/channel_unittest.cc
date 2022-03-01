@@ -156,30 +156,22 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
     // channels.
     RTC_DCHECK_EQ(flags1 & RAW_PACKET_TRANSPORT, flags2 & RAW_PACKET_TRANSPORT);
     rtc::Thread* worker_thread = rtc::Thread::Current();
-    rtc::PacketTransportInternal* rtp1 = nullptr;
-    rtc::PacketTransportInternal* rtcp1 = nullptr;
-    rtc::PacketTransportInternal* rtp2 = nullptr;
-    rtc::PacketTransportInternal* rtcp2 = nullptr;
     // Based on flags, create fake DTLS or raw packet transports.
     if (flags1 & RAW_PACKET_TRANSPORT) {
       fake_rtp_packet_transport1_.reset(
           new rtc::FakePacketTransport("channel1_rtp"));
-      rtp1 = fake_rtp_packet_transport1_.get();
       if (!(flags1 & RTCP_MUX)) {
         fake_rtcp_packet_transport1_.reset(
             new rtc::FakePacketTransport("channel1_rtcp"));
-        rtcp1 = fake_rtcp_packet_transport1_.get();
       }
     } else {
       // Confirmed to work with KT_RSA and KT_ECDSA.
       fake_rtp_dtls_transport1_.reset(new cricket::FakeDtlsTransport(
           "channel1", cricket::ICE_CANDIDATE_COMPONENT_RTP, network_thread_));
-      rtp1 = fake_rtp_dtls_transport1_.get();
       if (!(flags1 & RTCP_MUX)) {
         fake_rtcp_dtls_transport1_.reset(new cricket::FakeDtlsTransport(
             "channel1", cricket::ICE_CANDIDATE_COMPONENT_RTCP,
             network_thread_));
-        rtcp1 = fake_rtcp_dtls_transport1_.get();
       }
       if (flags1 & DTLS) {
         auto cert1 = rtc::RTCCertificate::Create(
@@ -194,22 +186,18 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
     if (flags2 & RAW_PACKET_TRANSPORT) {
       fake_rtp_packet_transport2_.reset(
           new rtc::FakePacketTransport("channel2_rtp"));
-      rtp2 = fake_rtp_packet_transport2_.get();
       if (!(flags2 & RTCP_MUX)) {
         fake_rtcp_packet_transport2_.reset(
             new rtc::FakePacketTransport("channel2_rtcp"));
-        rtcp2 = fake_rtcp_packet_transport2_.get();
       }
     } else {
       // Confirmed to work with KT_RSA and KT_ECDSA.
       fake_rtp_dtls_transport2_.reset(new cricket::FakeDtlsTransport(
           "channel2", cricket::ICE_CANDIDATE_COMPONENT_RTP, network_thread_));
-      rtp2 = fake_rtp_dtls_transport2_.get();
       if (!(flags2 & RTCP_MUX)) {
         fake_rtcp_dtls_transport2_.reset(new cricket::FakeDtlsTransport(
             "channel2", cricket::ICE_CANDIDATE_COMPONENT_RTCP,
             network_thread_));
-        rtcp2 = fake_rtcp_dtls_transport2_.get();
       }
       if (flags2 & DTLS) {
         auto cert2 = rtc::RTCCertificate::Create(
@@ -513,7 +501,7 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
   }
 
   // Utility method that calls BaseChannel::srtp_active() on the network thread
-  // and returns the result. The |srtp_active()| state is maintained on the
+  // and returns the result. The `srtp_active()` state is maintained on the
   // network thread, which callers need to factor in.
   bool IsSrtpActive(std::unique_ptr<typename T::Channel>& channel) {
     RTC_DCHECK(channel.get());
@@ -626,18 +614,16 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
   // SdpType::kOffer / SdpType::kAnswer.
   void TestChangeStreamParamsInContent() {
     cricket::StreamParams stream1;
-    stream1.groupid = "group1";
     stream1.id = "stream1";
     stream1.ssrcs.push_back(kSsrc1);
     stream1.cname = "stream1_cname";
 
     cricket::StreamParams stream2;
-    stream2.groupid = "group1";
     stream2.id = "stream2";
     stream2.ssrcs.push_back(kSsrc2);
     stream2.cname = "stream2_cname";
 
-    // Setup a call where channel 1 send |stream1| to channel 2.
+    // Setup a call where channel 1 send `stream1` to channel 2.
     CreateChannels(0, 0);
     typename T::Content content1;
     CreateContent(0, kPcmuCodec, kH264Codec, &content1);
@@ -663,7 +649,7 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
     WaitForThreads();
     EXPECT_TRUE(CheckCustomRtp2(kSsrc1, 0));
 
-    // Let channel 2 update the content by sending |stream2| and enable SRTP.
+    // Let channel 2 update the content by sending `stream2` and enable SRTP.
     typename T::Content content3;
     CreateContent(0, kPcmuCodec, kH264Codec, &content3);
     content3.AddStream(stream2);
@@ -755,7 +741,7 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
     CreateContent(0, kPcmuCodec, kH264Codec, &content1);
     typename T::Content content2;
     CreateContent(0, kPcmuCodec, kH264Codec, &content2);
-    // Set |content2| to be InActive.
+    // Set `content2` to be InActive.
     content2.set_direction(RtpTransceiverDirection::kInactive);
 
     channel1_->Enable(true);
@@ -787,7 +773,7 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
     }
     EXPECT_FALSE(media_channel2()->sending());  // local InActive
 
-    // Update |content2| to be RecvOnly.
+    // Update `content2` to be RecvOnly.
     content2.set_direction(RtpTransceiverDirection::kRecvOnly);
     EXPECT_TRUE(
         channel2_->SetLocalContent(&content2, SdpType::kPrAnswer, NULL));
@@ -803,7 +789,7 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
     }
     EXPECT_FALSE(media_channel2()->sending());  // local RecvOnly
 
-    // Update |content2| to be SendRecv.
+    // Update `content2` to be SendRecv.
     content2.set_direction(RtpTransceiverDirection::kSendRecv);
     EXPECT_TRUE(channel2_->SetLocalContent(&content2, SdpType::kAnswer, NULL));
     EXPECT_TRUE(channel1_->SetRemoteContent(&content2, SdpType::kAnswer, NULL));
@@ -836,7 +822,7 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
     ASSERT_TRUE(media_channel1);
 
     // Need to wait for the threads before calling
-    // |set_num_network_route_changes| because the network route would be set
+    // `set_num_network_route_changes` because the network route would be set
     // when creating the channel.
     WaitForThreads();
     media_channel1->set_num_network_route_changes(0);
@@ -1067,8 +1053,8 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
                           bool secure) {
     ASSERT_EQ(2, len);
     int sequence_number1_1 = 0, sequence_number2_2 = 0;
-    // Only pl_type1 was added to the bundle filter for both |channel1_|
-    // and |channel2_|.
+    // Only pl_type1 was added to the bundle filter for both `channel1_`
+    // and `channel2_`.
     int pl_type1 = pl_types[0];
     int pl_type2 = pl_types[1];
     int flags = SSRC_MUX;
@@ -1259,7 +1245,7 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
   }
 
   // Test that when a channel gets new RtpTransport with a call to
-  // |SetRtpTransport|, the socket options from the old RtpTransport is merged
+  // `SetRtpTransport`, the socket options from the old RtpTransport is merged
   // with the options on the new one.
 
   // For example, audio and video may use separate socket options, but initially
@@ -1359,7 +1345,7 @@ class ChannelTest : public ::testing::Test, public sigslot::has_slots<> {
     rtc::Thread::Current()->ProcessMessages(0);
   }
   void WaitForThreads(rtc::ArrayView<rtc::Thread*> threads) {
-    // |threads| and current thread post packets to network thread.
+    // `threads` and current thread post packets to network thread.
     for (rtc::Thread* thread : threads) {
       thread->Invoke<void>(RTC_FROM_HERE,
                            [thread] { ProcessThreadQueue(thread); });

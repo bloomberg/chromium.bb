@@ -8,15 +8,15 @@
 #include <memory>
 #include <string>
 
-#include "base/allocator/partition_allocator/partition_alloc_features.h"
+#include "base/allocator/buildflags.h"
+#include "base/allocator/partition_alloc_features.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/partition_alloc_buildflags.h"
 #include "base/rand_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/task_traits.h"
@@ -26,10 +26,12 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "build/config/compiler/compiler_buildflags.h"
+#include "build/os_buildflags.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/metrics/bluetooth_available_utility.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -40,7 +42,6 @@
 #include "chrome/browser/shell_integration.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/policy/core/common/management/management_service.h"
-#include "components/policy/core/common/management/platform_management_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -67,18 +68,16 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/version.h"
-#if defined(USE_X11)
-#include "ui/base/ui_base_features.h"
-#include "ui/base/x/x11_util.h"
-#endif
 #endif  // defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
-#if defined(USE_OZONE) || defined(USE_X11)
+#if defined(USE_OZONE)
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device_event_observer.h"
-#endif  // defined(USE_OZONE) || defined(USE_X11)
+#endif  // defined(USE_OZONE)
 
 #if defined(OS_WIN)
+#include <windows.h>
+
 #include "base/win/base_win_buildflags.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
@@ -224,13 +223,23 @@ void RecordStartupMetrics() {
   base::UmaHistogramBoolean("Windows.ApplockerRunning", IsApplockerRunning());
 #endif  // defined(OS_WIN)
 
+  // TODO(crbug.com/1216328) Remove logging.
+  LOG(ERROR) << "START: ReportBluetoothAvailability(). "
+                "If you don't see the END: message, this is crbug.com/1216328.";
   bluetooth_utility::ReportBluetoothAvailability();
+  LOG(ERROR) << "END: ReportBluetoothAvailability()";
 
   // Record whether Chrome is the default browser or not.
+  // Disabled on Linux due to hanging browser tests, see crbug.com/1216328.
+#if !BUILDFLAG(IS_LINUX)
+  LOG(ERROR) << "START: GetDefaultBrowser(). "
+                "If you don't see the END: message, this is crbug.com/1216328.";
   shell_integration::DefaultWebClientState default_state =
       shell_integration::GetDefaultBrowser();
+  LOG(ERROR) << "END: GetDefaultBrowser()";
   base::UmaHistogramEnumeration("DefaultBrowser.State", default_state,
                                 shell_integration::NUM_DEFAULT_STATES);
+#endif  // !BUILDFLAG(IS_LINUX)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   RecordChromeOSChannel();
@@ -300,6 +309,8 @@ void RecordLinuxDistro() {
     } else if (distro_tokens.size() >= 2 && distro_tokens[1] == "Mint") {
       // Format: Linux Mint RR
       distro_result = UMA_LINUX_DISTRO_MINT;
+      if (distro_tokens.size() >= 3)
+        RecordLinuxDistroSpecific(distro_tokens[2], 1, "Linux.Distro.Mint");
     } else if (distro_tokens.size() >= 4 && distro_tokens[0] == "Red" &&
                distro_tokens[1] == "Hat" && distro_tokens[2] == "Enterprise" &&
                distro_tokens[3] == "Linux") {
@@ -375,7 +386,7 @@ void RecordTouchEventState() {
                                 UMA_TOUCH_EVENT_FEATURE_DETECTION_STATE_COUNT);
 }
 
-#if defined(USE_OZONE) || defined(USE_X11)
+#if defined(USE_OZONE)
 
 // Asynchronously records the touch event state when the ui::DeviceDataManager
 // completes a device scan.
@@ -383,13 +394,16 @@ class AsynchronousTouchEventStateRecorder
     : public ui::InputDeviceEventObserver {
  public:
   AsynchronousTouchEventStateRecorder();
+
+  AsynchronousTouchEventStateRecorder(
+      const AsynchronousTouchEventStateRecorder&) = delete;
+  AsynchronousTouchEventStateRecorder& operator=(
+      const AsynchronousTouchEventStateRecorder&) = delete;
+
   ~AsynchronousTouchEventStateRecorder() override;
 
   // ui::InputDeviceEventObserver overrides.
   void OnDeviceListsComplete() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AsynchronousTouchEventStateRecorder);
 };
 
 AsynchronousTouchEventStateRecorder::AsynchronousTouchEventStateRecorder() {
@@ -405,7 +419,7 @@ void AsynchronousTouchEventStateRecorder::OnDeviceListsComplete() {
   RecordTouchEventState();
 }
 
-#endif  // defined(USE_OZONE) || defined(USE_X11)
+#endif  // defined(USE_OZONE)
 
 #if defined(OS_WIN)
 void RecordPinnedToTaskbarProcessError(bool error) {
@@ -502,24 +516,24 @@ bool HasEnterpriseBrandCode() {
 // Returns whether the instance is domain joined. This doesn't include CBCM
 // (EnterpriseManagementAuthority::DOMAIN_LOCAL).
 bool IsDomainJoined() {
-  auto enterprise_management_authorities =
-      policy::PlatformManagementService::GetInstance()
-          .GetManagementAuthorities();
-  return enterprise_management_authorities.contains(
-      policy::EnterpriseManagementAuthority::DOMAIN_LOCAL);
+  return policy::ManagementServiceFactory::GetForPlatform()
+      ->HasManagementAuthority(
+          policy::EnterpriseManagementAuthority::DOMAIN_LOCAL);
 }
 #endif  // !defined(OS_ANDROID)
+
+void RecordDisplayHDRStatus(const display::Display& display) {
+  base::UmaHistogramBoolean("Hardware.Display.SupportsHDR",
+                            display.color_spaces().SupportsHDR());
+}
 
 }  // namespace
 
 ChromeBrowserMainExtraPartsMetrics::ChromeBrowserMainExtraPartsMetrics()
-    : display_count_(0), is_screen_observer_(false) {
-}
+    : display_count_(0) {}
 
-ChromeBrowserMainExtraPartsMetrics::~ChromeBrowserMainExtraPartsMetrics() {
-  if (is_screen_observer_)
-    display::Screen::GetScreen()->RemoveObserver(this);
-}
+ChromeBrowserMainExtraPartsMetrics::~ChromeBrowserMainExtraPartsMetrics() =
+    default;
 
 void ChromeBrowserMainExtraPartsMetrics::PreProfileInit() {
   RecordMicroArchitectureStats();
@@ -604,31 +618,140 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   );
 
+  // BackupRefPtr_Effective and PCScan_Effective record whether or not
+  // BackupRefPtr and/or PCScan are enabled. The experiments aren't independent,
+  // so having a synthetic Finch will help look only at cases where one isn't
+  // affected by the other.
+
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-  // Records whether or not BackupRefPtr and/or PCScan is enabled. This is meant
-  // for a 3-way experiment with 2 binaries:
-  // - binary A: deployed to 66% users, with half of them having PCScan on and
-  //             half off (BackupRefPtr fully off)
-  // - binary B: deployed to 33% users, with BackupRefPtr on (PCSCan fully off)
-  //
-  // NOTE, deliberately don't use PA_ALLOW_PCSCAN which depends on bitness.
-  // In the 32-bit case, PCScan is always disabled, but we'll deliberately
-  // misrepresent it as enabled here (and later ignored when analyzing results),
-  // in order to keep each population at 33%.
-  //
-  // Alsto note that USE_BACKUP_REF_PTR_FAKE is only used to fake that the
-  // feature is enabled for the purpose of this Finch setting, while in fact
-  // there are no behavior changes.
-  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-      "BackupRefPtrAndPCScan",
-#if BUILDFLAG(USE_BACKUP_REF_PTR) || BUILDFLAG(USE_BACKUP_REF_PTR_FAKE)
-      "BackupRefPtrEnabled"
-#else
+  // Whether PartitionAllocBackupRefPtr is enabled (as determined by
+  // FeatureList::IsEnabled).
+  bool brp_finch_enabled = false;
+  ALLOW_UNUSED_LOCAL(brp_finch_enabled);
+  // Whether PartitionAllocBackupRefPtr is set up for the default behavior. The
+  // default behavior is when either the Finch flag is disabled, or is enabled
+  // in brp-mode=disabled (these two options are equivalent).
+  bool brp_nondefault_behavior = false;
+  ALLOW_UNUSED_LOCAL(brp_nondefault_behavior);
+  // Whether PartitionAllocBackupRefPtr is set up to enable BRP protection. It
+  // requires the Finch flag to be enabled and brp-mode!=disabled*. Some modes,
+  // e.g. disabled-but-3-way-split, do something (hence can't be considered the
+  // default behavior), but don't enable BRP protection.
+  bool brp_truly_enabled = false;
+  ALLOW_UNUSED_LOCAL(brp_truly_enabled);
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+  if (base::FeatureList::IsEnabled(base::features::kPartitionAllocBackupRefPtr))
+    brp_finch_enabled = true;
+  if (brp_finch_enabled && base::features::kBackupRefPtrModeParam.Get() !=
+                               base::features::BackupRefPtrMode::kDisabled)
+    brp_nondefault_behavior = true;
+  if (brp_finch_enabled && base::features::kBackupRefPtrModeParam.Get() ==
+                               base::features::BackupRefPtrMode::kEnabled)
+    brp_truly_enabled = true;
+#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+  bool pcscan_enabled =
+#if defined(PA_ALLOW_PCSCAN)
       base::FeatureList::IsEnabled(
-          base::features::kPartitionAllocPCScanBrowserOnly)
-          ? "PCScanEnabled"
-          : "Disabled"
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR) || BUILDFLAG(USE_BACKUP_REF_PTR_FAKE)
+          base::features::kPartitionAllocPCScanBrowserOnly);
+#else
+      false;
+#endif
+
+  std::string brp_group_name;
+  if (pcscan_enabled) {
+    // If PCScan is enabled, just ignore the population.
+    brp_group_name = "Ignore_PCScanIsOn";
+  } else if (!brp_finch_enabled) {
+    // The control group is actually disguised as "enabled", but in fact it's
+    // disabled using a param. This is to differentiate the population that
+    // participates in the control group, from the population that isn't in any
+    // group.
+    brp_group_name = "Ignore_NoGroup";
+  } else {
+    switch (base::features::kBackupRefPtrModeParam.Get()) {
+      case base::features::BackupRefPtrMode::kDisabled:
+        brp_group_name = "Disabled";
+        break;
+      case base::features::BackupRefPtrMode::kEnabled:
+#if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
+        brp_group_name = "EnabledPrevSlot";
+#else
+        brp_group_name = "EnabledBeforeAlloc";
+#endif
+        break;
+      case base::features::BackupRefPtrMode::kDisabledButSplitPartitions2Way:
+        brp_group_name = "DisabledBut2WaySplit";
+        break;
+      case base::features::BackupRefPtrMode::kDisabledButSplitPartitions3Way:
+        brp_group_name = "DisabledBut3WaySplit";
+        break;
+    }
+
+    if (base::features::kBackupRefPtrModeParam.Get() !=
+        base::features::BackupRefPtrMode::kDisabled) {
+      std::string process_selector;
+      switch (base::features::kBackupRefPtrEnabledProcessesParam.Get()) {
+        case base::features::BackupRefPtrEnabledProcesses::kBrowserOnly:
+          process_selector = "BrowserOnly";
+          break;
+        case base::features::BackupRefPtrEnabledProcesses::kBrowserAndRenderer:
+          process_selector = "BrowserAndRenderer";
+          break;
+        case base::features::BackupRefPtrEnabledProcesses::kNonRenderer:
+          process_selector = "NonRenderer";
+          break;
+        case base::features::BackupRefPtrEnabledProcesses::kAllProcesses:
+          process_selector = "AllProcesses";
+          break;
+      }
+
+      brp_group_name += ("_" + process_selector);
+    }
+  }
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      "BackupRefPtr_Effective", brp_group_name);
+
+  std::string pcscan_group_name;
+  std::string pcscan_group_name_fallback;
+#if defined(PA_ALLOW_PCSCAN)
+  if (brp_truly_enabled) {
+    // If BRP protection is enabled, just ignore the population. Check
+    // brp_truly_enabled, not brp_finch_enabled, because there are certain modes
+    // where BRP protection is actually disabled.
+    pcscan_group_name = "Ignore_BRPIsOn";
+  } else {
+    pcscan_group_name = (pcscan_enabled ? "Enabled" : "Disabled");
+  }
+  // In case we are incorrect that PCScan is independent of partition-split
+  // modes, create a fallback trial that only takes into account the BRP Finch
+  // settings that preserve the default behavior.
+  if (brp_nondefault_behavior) {
+    pcscan_group_name_fallback = "Ignore_BRPIsOn";
+  } else {
+    pcscan_group_name_fallback = (pcscan_enabled ? "Enabled" : "Disabled");
+  }
+#else
+  // On certain platforms, PCScan is not supported and permanently disabled.
+  // Don't lump it into "Disabled", so that belonging to "Enabled"/"Disabled" is
+  // fully controlled by Finch and thus have identical population sizes.
+  pcscan_group_name = "Unavailable";
+  pcscan_group_name_fallback = "Unavailable";
+#endif  // defined(PA_ALLOW_PCSCAN)
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("PCScan_Effective",
+                                                            pcscan_group_name);
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      "PCScan_Effective_Fallback", pcscan_group_name_fallback);
+
+  // This synthetic Finch setting reflects the new USE_BACKUP_REF_PTR behavior,
+  // which simply compiles in the BackupRefPtr support, but keeps it disabled at
+  // run-time (which can be further enabled via Finch).
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      "BackupRefPtrSupport",
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+      "CompiledIn"
+#else
+      "Disabled"
+#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
   );
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
@@ -656,15 +779,12 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
   //    ChromeVariations policy.
   // 2) The experiment binary (USE_BACKUP_REF_PTR) is delivered via Google
   //    Update to fraction X of the non-enterprise population.
-  //    Note, USE_BACKUP_REF_PTR_FAKE is only used to fake that the feature is
-  //    enabled for the purpose of this Finch setting, while in fact there are
-  //    no behavior changes.
   // 3) The control group is established in fraction X of non-enterprise
   //    popluation via Finch (PartitionAllocBackupRefPtrControl). Since this
   //    Finch is applicable only to 1-X of the non-enterprise population, we
   //    need to set it to Y=X/(1-X). E.g. if X=.333, Y=.5; if X=.01, Y=.0101.
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-#if BUILDFLAG(USE_BACKUP_REF_PTR) || BUILDFLAG(USE_BACKUP_REF_PTR_FAKE)
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
   constexpr bool kIsBrpOn = true;  // experiment binary only
 #else
   constexpr bool kIsBrpOn = false;  // non-experiment binary
@@ -692,18 +812,20 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
   ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
       "BackupRefPtrNoEnterprise", group_name);
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      "FakeBinaryExperiment",
+#if BUILDFLAG(USE_FAKE_BINARY_EXPERIMENT)
+      "Enabled"
+#else
+      "Disabled"
+#endif
+  );
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   RecordMemoryMetricsAfterDelay();
   RecordLinuxGlibcVersion();
-#if defined(USE_X11)
-  if (!features::IsUsingOzonePlatform()) {
-    // Ozone writes this histogram upon platform initialisation.
-    base::UmaHistogramEnumeration("Linux.WindowManager",
-                                  ui::GetWindowManagerUMA());
-  }
-#endif
 
   constexpr base::TaskTraits kBestEffortTaskTraits = {
       base::MayBlock(), base::TaskPriority::BEST_EFFORT,
@@ -715,10 +837,10 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
                              base::BindOnce(&RecordLinuxDistro));
 #endif
 
-#if defined(USE_OZONE) || defined(USE_X11)
-  // The touch event state for X11 and Ozone based event sub-systems are based
-  // on device scans that happen asynchronously. So we may need to attach an
-  // observer to wait until these scans complete.
+#if defined(USE_OZONE)
+  // The touch event state for Ozone based event sub-systems are based on device
+  // scans that happen asynchronously. So we may need to attach an observer to
+  // wait until these scans complete.
   if (ui::DeviceDataManager::GetInstance()->AreDeviceListsComplete()) {
     RecordTouchEventState();
   } else {
@@ -727,7 +849,7 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   }
 #else
   RecordTouchEventState();
-#endif  // defined(USE_OZONE) || defined(USE_X11)
+#endif  // defined(USE_OZONE)
 
 #if defined(OS_MAC)
   RecordMacMetrics();
@@ -756,15 +878,20 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   if (base::RandGenerator(100) == 0) {
     background_task_runner->PostDelayedTask(
         FROM_HERE, base::BindOnce(&RecordIsPinnedToTaskbarHistogram),
-        base::TimeDelta::FromSeconds(45));
+        base::Seconds(45));
   }
 #endif  // defined(OS_WIN)
 
-  display_count_ = display::Screen::GetScreen()->GetNumDisplays();
+  auto* screen = display::Screen::GetScreen();
+  display_count_ = screen->GetNumDisplays();
   base::UmaHistogramCounts100("Hardware.Display.Count.OnStartup",
                               display_count_);
-  display::Screen::GetScreen()->AddObserver(this);
-  is_screen_observer_ = true;
+
+  for (const auto& display : screen->GetAllDisplays()) {
+    RecordDisplayHDRStatus(display);
+  }
+
+  display_observer_.emplace(this);
 
 #if !defined(OS_ANDROID)
   metrics::BeginFirstWebContentsProfiling();
@@ -807,11 +934,20 @@ void ChromeBrowserMainExtraPartsMetrics::PreMainMessageLoopRun() {
 void ChromeBrowserMainExtraPartsMetrics::OnDisplayAdded(
     const display::Display& new_display) {
   EmitDisplaysChangedMetric();
+  RecordDisplayHDRStatus(new_display);
 }
 
 void ChromeBrowserMainExtraPartsMetrics::OnDisplayRemoved(
     const display::Display& old_display) {
   EmitDisplaysChangedMetric();
+}
+
+void ChromeBrowserMainExtraPartsMetrics::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  if (changed_metrics & DisplayObserver::DISPLAY_METRIC_COLOR_SPACE) {
+    RecordDisplayHDRStatus(display);
+  }
 }
 
 void ChromeBrowserMainExtraPartsMetrics::EmitDisplaysChangedMetric() {

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_NULL_RESOURCE_FETCHER_PROPERTIES_H_
 
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
@@ -36,11 +37,10 @@ class PLATFORM_EXPORT NullResourceFetcherProperties final
     return 0;
   }
   bool IsPaused() const override { return false; }
-  WebURLLoader::DeferType DeferType() const override {
-    return WebURLLoader::DeferType::kNotDeferred;
+  LoaderFreezeMode FreezeMode() const override {
+    return LoaderFreezeMode::kNone;
   }
   bool IsDetached() const override { return true; }
-  bool IsLoadDeferred() const override { return false; }
   bool IsLoadComplete() const override { return true; }
   bool ShouldBlockLoadingSubResource() const override { return true; }
   bool IsSubframeDeprioritizationEnabled() const override { return false; }
@@ -49,6 +49,10 @@ class PLATFORM_EXPORT NullResourceFetcherProperties final
   }
   const KURL& WebBundlePhysicalUrl() const override;
   int GetOutstandingThrottledLimit() const override { return 0; }
+  scoped_refptr<SecurityOrigin> GetLitePageSubresourceRedirectOrigin()
+      const override {
+    return nullptr;
+  }
 
  private:
   const Member<const FetchClientSettingsObject> fetch_client_settings_object_;

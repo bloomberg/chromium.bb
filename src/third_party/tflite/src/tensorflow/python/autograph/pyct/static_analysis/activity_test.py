@@ -14,12 +14,7 @@
 # ==============================================================================
 """Tests for activity module."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import gast
-import six
 
 from tensorflow.python.autograph.pyct import anno
 from tensorflow.python.autograph.pyct import naming
@@ -69,11 +64,25 @@ class ScopeTest(test.TestCase):
 
     self.assertMissing(QN('bar'), scope)
 
-    scope.modified.add(QN('bar'))
+  def test_merge_from(self):
+    scope = activity.Scope(None)
+    other = activity.Scope(None)
+
+    for col in (scope.modified, scope.read, scope.bound, scope.deleted):
+      col.add(QN('foo'))
+
+    for col in (other.modified, other.read, other.bound, other.deleted):
+      col.add(QN('foo'))
+      col.add(QN('bar'))
+
     scope.merge_from(other)
 
-    self.assertWriteOnly(QN('bar'), scope)
-    self.assertMissing(QN('bar'), other)
+    self.assertReadWrite(QN('foo'), scope)
+    self.assertReadWrite(QN('bar'), scope)
+    self.assertIn(QN('foo'), scope.bound)
+    self.assertIn(QN('bar'), scope.bound)
+    self.assertIn(QN('foo'), scope.deleted)
+    self.assertIn(QN('bar'), scope.deleted)
 
   def test_copy_of(self):
     scope = activity.Scope(None)
@@ -715,10 +724,7 @@ class ActivityAnalyzerTest(ActivityAnalyzerTestBase):
     node, _ = self._parse_and_analyze(test_fn)
     fn_node = node
     body_scope = anno.getanno(fn_node, NodeAnno.BODY_SCOPE)
-    if six.PY2:
-      self.assertScopeIs(body_scope, ('a',), ('b', 'c'))
-    else:
-      self.assertScopeIs(body_scope, ('a',), ('b',))
+    self.assertScopeIs(body_scope, ('a',), ('b',))
 
   def test_comprehension_targets_are_isolated_in_augassign(self):
 
@@ -728,10 +734,7 @@ class ActivityAnalyzerTest(ActivityAnalyzerTestBase):
     node, _ = self._parse_and_analyze(test_fn)
     fn_node = node
     body_scope = anno.getanno(fn_node, NodeAnno.BODY_SCOPE)
-    if six.PY2:
-      self.assertScopeIs(body_scope, ('a', 'b'), ('b', 'c'))
-    else:
-      self.assertScopeIs(body_scope, ('a', 'b'), ('b',))
+    self.assertScopeIs(body_scope, ('a', 'b'), ('b',))
 
   def test_comprehension_generator_order(self):
 

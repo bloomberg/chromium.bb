@@ -120,10 +120,10 @@ void SetDefaultsFromValue(const base::DictionaryValue* dict,
     action->SetBadgeTextColor(kDefaultTabId, RawStringToSkColor(str_value));
   }
 
-  int appearance_storage = 0;
-  if (dict->GetInteger(kAppearanceStorageKey, &appearance_storage) &&
-      !action->HasIsVisible(kDefaultTabId)) {
-    switch (appearance_storage) {
+  absl::optional<int> appearance_storage =
+      dict->FindIntKey(kAppearanceStorageKey);
+  if (appearance_storage && !action->HasIsVisible(kDefaultTabId)) {
+    switch (*appearance_storage) {
       case INVISIBLE:
       case OBSOLETE_WANTS_ATTENTION:
         action->SetIsVisible(kDefaultTabId, false);
@@ -142,10 +142,9 @@ void SetDefaultsFromValue(const base::DictionaryValue* dict,
     for (base::DictionaryValue::Iterator iter(*icon_value); !iter.IsAtEnd();
          iter.Advance()) {
       int icon_size = 0;
-      std::string icon_string;
       if (base::StringToInt(iter.key(), &icon_size) &&
-          iter.value().GetAsString(&icon_string) &&
-          StringToSkBitmap(icon_string, &bitmap)) {
+          iter.value().is_string() &&
+          StringToSkBitmap(iter.value().GetString(), &bitmap)) {
         CHECK(!bitmap.isNull());
         float scale =
             static_cast<float>(icon_size) / ExtensionAction::ActionIconSize();

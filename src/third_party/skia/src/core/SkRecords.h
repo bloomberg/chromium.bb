@@ -45,7 +45,6 @@ namespace SkRecords {
     M(Save)                                                         \
     M(SaveLayer)                                                    \
     M(SaveBehind)                                                   \
-    M(MarkCTM)                                                      \
     M(SetMatrix)                                                    \
     M(SetM44)                                                       \
     M(Translate)                                                    \
@@ -57,6 +56,7 @@ namespace SkRecords {
     M(ClipRect)                                                     \
     M(ClipRegion)                                                   \
     M(ClipShader)                                                   \
+    M(ResetClip)                                                    \
     M(DrawArc)                                                      \
     M(DrawDrawable)                                                 \
     M(DrawImage)                                                    \
@@ -166,13 +166,12 @@ RECORD(SaveLayer, kHasPaint_Tag,
        Optional<SkRect> bounds;
        Optional<SkPaint> paint;
        sk_sp<const SkImageFilter> backdrop;
-       SkCanvas::SaveLayerFlags saveLayerFlags);
+       SkCanvas::SaveLayerFlags saveLayerFlags;
+       SkScalar backdropScale);
 
 RECORD(SaveBehind, 0,
        Optional<SkRect> subset);
 
-RECORD(MarkCTM, 0,
-       SkString name);
 RECORD(SetMatrix, 0,
         TypedMatrix matrix);
 RECORD(SetM44, 0,
@@ -218,6 +217,7 @@ RECORD(ClipRegion, 0,
 RECORD(ClipShader, 0,
         sk_sp<SkShader> shader;
         SkClipOp op);
+RECORD(ResetClip, 0);
 
 // While not strictly required, if you have an SkPaint, it's fastest to put it first.
 RECORD(DrawArc, kDraw_Tag|kHasPaint_Tag,

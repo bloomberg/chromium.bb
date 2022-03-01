@@ -8,7 +8,9 @@
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/queue.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
 #include "components/paint_preview/browser/hit_tester.h"
@@ -39,6 +41,10 @@ class DirectoryKey;
 // PaintPreviewCompositor.
 class PlayerCompositorDelegate {
  public:
+  enum PressureLevelCount : size_t {
+    kLevels = base::MemoryPressureListener::kMaxValue + 1,
+  };
+
   PlayerCompositorDelegate();
   virtual ~PlayerCompositorDelegate();
 
@@ -46,20 +52,19 @@ class PlayerCompositorDelegate {
   PlayerCompositorDelegate& operator=(const PlayerCompositorDelegate&) = delete;
 
   // Initializes the compositor.
-  void Initialize(PaintPreviewBaseService* paint_preview_service,
-                  const GURL& url,
-                  const DirectoryKey& key,
-                  bool main_frame_mode,
-                  base::OnceCallback<void(int)> compositor_error,
-                  base::TimeDelta timeout_duration,
-                  size_t max_requests);
+  void Initialize(
+      PaintPreviewBaseService* paint_preview_service,
+      const GURL& url,
+      const DirectoryKey& key,
+      bool main_frame_mode,
+      base::OnceCallback<void(int)> compositor_error,
+      base::TimeDelta timeout_duration,
+      std::array<size_t, PressureLevelCount::kLevels> max_requests_map);
 
   // Returns whether initialization has happened.
   bool IsInitialized() const { return paint_preview_service_; }
 
-  void SetProto(std::unique_ptr<PaintPreviewProto> proto) {
-    proto_ = std::move(proto);
-  }
+  void SetCaptureResult(std::unique_ptr<CaptureResult> capture_result);
 
   // Overrides whether to compress the directory when the player is closed. By
   // default compression will happen.
@@ -70,6 +75,7 @@ class PlayerCompositorDelegate {
   virtual void OnCompositorReady(
       CompositorStatus compositor_status,
       mojom::PaintPreviewBeginCompositeResponsePtr composite_response,
+      float page_scale_factor,
       std::unique_ptr<ui::AXTreeUpdate> update) {}
 
   // Called when there is a request for a new bitmap. When the bitmap
@@ -81,7 +87,8 @@ class PlayerCompositorDelegate {
       const gfx::Rect& clip_rect,
       float scale_factor,
       base::OnceCallback<void(mojom::PaintPreviewCompositor::BitmapStatus,
-                              const SkBitmap&)> callback);
+                              const SkBitmap&)> callback,
+      bool run_callback_on_default_task_runner = true);
 
   // Cancels the bitmap request associated with `request_id` if possible.
   // Returns true on success.
@@ -99,6 +106,8 @@ class PlayerCompositorDelegate {
   virtual void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
+  gfx::Point GetRootFrameOffsets() const { return root_frame_offsets_; }
+
   // Test methods:
 
   // Initializes the compositor without a real service for testing purposes.
@@ -109,7 +118,7 @@ class PlayerCompositorDelegate {
       bool main_frame_mode,
       base::OnceCallback<void(int)> compositor_error,
       base::TimeDelta timeout_duration,
-      size_t max_requests,
+      std::array<size_t, PressureLevelCount::kLevels> max_requests_map,
       std::unique_ptr<PaintPreviewCompositorService, base::OnTaskRunnerDeleter>
           fake_compositor_service);
 
@@ -127,19 +136,26 @@ class PlayerCompositorDelegate {
   virtual base::MemoryPressureMonitor* memory_pressure_monitor();
 
  private:
-  void InitializeInternal(PaintPreviewBaseService* paint_preview_service,
-                          const GURL& expected_url,
-                          const DirectoryKey& key,
-                          bool main_frame_mode,
-                          base::OnceCallback<void(int)> compositor_error,
-                          base::TimeDelta timeout_duration,
-                          size_t max_requests);
+  void InitializeInternal(
+      PaintPreviewBaseService* paint_preview_service,
+      const GURL& expected_url,
+      const DirectoryKey& key,
+      bool main_frame_mode,
+      base::OnceCallback<void(int)> compositor_error,
+      base::TimeDelta timeout_duration,
+      std::array<size_t, PressureLevelCount::kLevels> max_requests_map);
+
+  void ValidateProtoAndLoadAXTree(const GURL& expected_url);
 
   void OnAXTreeUpdateAvailable(std::unique_ptr<ui::AXTreeUpdate> update);
 
   void OnCompositorReadyStatusAdapter(
       mojom::PaintPreviewCompositor::BeginCompositeStatus status,
       mojom::PaintPreviewBeginCompositeResponsePtr composite_response);
+
+  void OnHitTestersBuilt(
+      std::unique_ptr<base::flat_map<base::UnguessableToken,
+                                     std::unique_ptr<HitTester>>> hit_testers);
 
   void OnCompositorServiceDisconnected();
 
@@ -158,13 +174,9 @@ class PlayerCompositorDelegate {
       mojom::PaintPreviewBeginCompositeRequestPtr begin_composite_request);
 
   void ProcessBitmapRequestsFromQueue();
-  void BitmapRequestCallbackAdapter(
-      base::OnceCallback<void(mojom::PaintPreviewCompositor::BitmapStatus,
-                              const SkBitmap&)> callback,
-      mojom::PaintPreviewCompositor::BitmapStatus status,
-      const SkBitmap& bitmap);
+  void AfterBitmapRequestCallback();
 
-  PaintPreviewBaseService* paint_preview_service_{nullptr};
+  raw_ptr<PaintPreviewBaseService> paint_preview_service_{nullptr};
   DirectoryKey key_;
   bool compress_on_close_{true};
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_;
@@ -176,17 +188,22 @@ class PlayerCompositorDelegate {
 
   base::CancelableOnceClosure timeout_;
   int max_requests_{1};
+  std::array<size_t, PressureLevelCount::kLevels> max_requests_map_{1, 1, 1};
   bool main_frame_mode_{false};
 
-  base::flat_map<base::UnguessableToken, std::unique_ptr<HitTester>>
+  std::unique_ptr<
+      base::flat_map<base::UnguessableToken, std::unique_ptr<HitTester>>>
       hit_testers_;
-  std::unique_ptr<PaintPreviewProto> proto_;
+  std::unique_ptr<PaintPreviewProto> proto_copy_;
+  std::unique_ptr<CaptureResult> capture_result_;
+  float page_scale_factor_;
   std::unique_ptr<ui::AXTreeUpdate> ax_tree_update_;
 
   int active_requests_{0};
   int32_t next_request_id_{0};
   base::queue<int32_t> bitmap_request_queue_;
   std::map<int32_t, BitmapRequest> pending_bitmap_requests_;
+  gfx::Point root_frame_offsets_;
 
   base::WeakPtrFactory<PlayerCompositorDelegate> weak_factory_{this};
 };

@@ -21,6 +21,7 @@
 #include <cstdint>
 
 #include "src/utils/array_2d.h"
+#include "src/utils/compiler_attributes.h"
 #include "src/utils/constants.h"
 #include "src/utils/types.h"
 

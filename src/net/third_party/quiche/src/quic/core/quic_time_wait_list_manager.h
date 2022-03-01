@@ -19,8 +19,8 @@
 #include "quic/core/quic_packets.h"
 #include "quic/core/quic_session.h"
 #include "quic/core/quic_types.h"
-#include "quic/platform/api/quic_containers.h"
 #include "quic/platform/api/quic_flags.h"
+#include "common/quiche_linked_hash_map.h"
 
 namespace quic {
 
@@ -99,14 +99,13 @@ class QUIC_NO_EXPORT QuicTimeWaitListManager
   QuicTimeWaitListManager& operator=(const QuicTimeWaitListManager&) = delete;
   ~QuicTimeWaitListManager() override;
 
-  // Adds the given connection_id to time wait state for time_wait_period_.
-  // If |termination_packets| are provided, copies of these packets will be sent
-  // when a packet with this connection ID is processed. Any termination packets
-  // will be move from |termination_packets| and will become owned by the
-  // manager. |action| specifies what the time wait list manager should do when
-  // processing packets of the connection.
-  virtual void AddConnectionIdToTimeWait(QuicConnectionId connection_id,
-                                         TimeWaitAction action,
+  // Adds the connection IDs in info to time wait state for time_wait_period_.
+  // If |info|.termination_packets are provided, copies of these packets will be
+  // sent when a packet with one of these connection IDs is processed. Any
+  // termination packets will be move from |info|.termination_packets and will
+  // become owned by the manager. |action| specifies what the time wait list
+  // manager should do when processing packets of the connection.
+  virtual void AddConnectionIdToTimeWait(TimeWaitAction action,
                                          TimeWaitConnectionInfo info);
 
   // Returns true if the connection_id is in time wait state, false otherwise.
@@ -285,10 +284,11 @@ class QUIC_NO_EXPORT QuicTimeWaitListManager
     TimeWaitConnectionInfo info;
   };
 
-  // QuicLinkedHashMap allows lookup by ConnectionId and traversal in add order.
-  using ConnectionIdMap = QuicLinkedHashMap<QuicConnectionId,
-                                            ConnectionIdData,
-                                            QuicConnectionIdHash>;
+  // QuicheLinkedHashMap allows lookup by ConnectionId
+  // and traversal in add order.
+  using ConnectionIdMap = quiche::QuicheLinkedHashMap<QuicConnectionId,
+                                                      ConnectionIdData,
+                                                      QuicConnectionIdHash>;
   // Do not use find/emplace/erase on this map directly. Use
   // FindConnectionIdDataInMap, AddConnectionIdDateToMap,
   // RemoveConnectionDataFromMap instead.
@@ -336,11 +336,6 @@ class QUIC_NO_EXPORT QuicTimeWaitListManager
 
   // Interface that manages blocked writers.
   Visitor* visitor_;
-
-  // When this is default true, remove the connection_id argument of
-  // AddConnectionIdToTimeWait.
-  bool use_indirect_connection_id_map_ =
-      GetQuicRestartFlag(quic_time_wait_list_support_multiple_cid_v2);
 };
 
 }  // namespace quic

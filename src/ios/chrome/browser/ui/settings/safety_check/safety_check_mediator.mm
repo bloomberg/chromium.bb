@@ -19,7 +19,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safety_check/safety_check.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/omaha/omaha_service.h"
@@ -49,7 +48,6 @@
 #include "ios/chrome/browser/upgrade/upgrade_utils.h"
 #include "ios/chrome/common/channel_info.h"
 #import "ios/chrome/common/string_util.h"
-#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -237,7 +235,12 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
         [[SettingsCheckItem alloc] initWithType:PasswordItemType];
     _passwordCheckItem.text =
         l10n_util::GetNSString(IDS_IOS_SETTINGS_SAFETY_CHECK_PASSWORDS_TITLE);
-    UIImage* passwordCheckIcon = [[UIImage imageNamed:@"password_key"]
+    NSString* imageName =
+        base::FeatureList::IsEnabled(
+            password_manager::features::kIOSEnablePasswordManagerBrandingUpdate)
+            ? @"password_key"
+            : @"legacy_password_key";
+    UIImage* passwordCheckIcon = [[UIImage imageNamed:imageName]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     _passwordCheckItem.leadingImage = passwordCheckIcon;
     _passwordCheckItem.leadingImageTintColor =
@@ -455,7 +458,6 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
   // TODO(crbug.com/1078782): Handle safe browsing state changes to reward user
   // for fixing state.
-  return;
 }
 
 #pragma mark - Private methods
@@ -467,12 +469,8 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
     case PasswordItemType:
       return [self passwordCheckErrorInfo];
     case SafeBrowsingItemType: {
-      NSString* message =
-          signin::IsMobileIdentityConsistencyEnabled()
-              ? l10n_util::GetNSString(
-                    IDS_IOS_SETTINGS_SAFETY_CHECK_OPEN_SAFE_BROWSING_INFO)
-              : l10n_util::GetNSString(
-                    IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED_INFO);
+      NSString* message = l10n_util::GetNSString(
+          IDS_IOS_SETTINGS_SAFETY_CHECK_OPEN_SAFE_BROWSING_INFO);
       GURL safeBrowsingURL(
           base::SysNSStringToUTF8(kSafeBrowsingSafetyCheckStringURL));
       return [self attributedStringWithText:message link:safeBrowsingURL];
@@ -613,8 +611,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 
 // Computes whether user is capable to run password check in Google Account.
 - (BOOL)canUseAccountPasswordCheckup {
-  return self.authService->IsAuthenticated() &&
-         self.syncService->IsSyncEnabled() &&
+  return self.syncService->CanSyncFeatureStart() &&
          !self.syncService->IsEncryptEverythingEnabled();
 }
 
@@ -758,7 +755,6 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
             [weakSelf checkAndReconfigureSafeBrowsingState];
         });
   }
-  return;
 }
 
 // Checks if any of the safety checks are still running, resets |checkStartItem|
@@ -788,7 +784,6 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 
   // Since no checks are running, attempt to show the timestamp.
   [self showTimestampIfNeeded];
-  return;
 }
 
 // Computes if any of the safety checks are still running.
@@ -825,7 +820,6 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
     base::UmaHistogramEnumeration(kSafetyCheckMetricsUpdates,
                                   safety_check::UpdateStatus::kFailed);
   }
-  return;
 }
 
 // If the update check would have completed too quickly, making the UI appear
@@ -908,7 +902,6 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
     // infobar was just shown to not overshow the infobar to the user.
     [defaults setObject:[NSDate date] forKey:kLastInfobarDisplayTimeKey];
   }
-  return;
 }
 
 // Performs the update check and triggers the display update to
@@ -1194,7 +1187,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 
   std::u16string timestamp;
   // If check found issues less than 1 minuete ago.
-  if (elapsedTime < base::TimeDelta::FromMinutes(1)) {
+  if (elapsedTime < base::Minutes(1)) {
     timestamp = l10n_util::GetStringUTF16(IDS_IOS_CHECK_FINISHED_JUST_NOW);
   } else {
     timestamp = ui::TimeFormat::SimpleWithMonthAndYear(

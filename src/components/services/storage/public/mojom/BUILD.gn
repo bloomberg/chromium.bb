@@ -24,9 +24,10 @@ mojom("mojom") {
   ]
 
   public_deps = [
+    "//components/services/storage/public/mojom/buckets",
     "//components/services/storage/public/mojom/filesystem",
-    "//components/services/storage/public/mojom/storage_key",
     "//mojo/public/mojom/base",
+    "//sandbox/policy/mojom",
     "//services/network/public/mojom",
     "//third_party/blink/public/mojom:mojom_core",
     "//third_party/blink/public/mojom:mojom_modules",
@@ -53,10 +54,13 @@ mojom("test_api") {
 
 source_set("tests") {
   testonly = true
-  sources = [ "storage_key/storage_key_mojom_traits_unittest.cc" ]
+  sources = [
+    "buckets/bucket_id_mojom_traits_unittest.cc",
+    "buckets/bucket_locator_mojom_traits_unittest.cc",
+  ]
   deps = [
-    "//components/services/storage/public/cpp:storage_key",
-    "//components/services/storage/public/mojom/storage_key",
+    "//components/services/storage/public/cpp/buckets",
+    "//components/services/storage/public/mojom/buckets",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/test_support:test_utils",
     "//testing/gtest",

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/payments/content/developer_console_logger.h"
 #include "components/payments/content/manifest_verifier.h"
@@ -71,6 +72,11 @@ class InstallablePaymentAppCrawler {
       PaymentManifestDownloader* downloader,
       PaymentManifestParser* parser,
       PaymentManifestWebDataService* cache);
+
+  InstallablePaymentAppCrawler(const InstallablePaymentAppCrawler&) = delete;
+  InstallablePaymentAppCrawler& operator=(const InstallablePaymentAppCrawler&) =
+      delete;
+
   ~InstallablePaymentAppCrawler();
 
   // Starts the crawling process. All the url based payment methods in
@@ -129,9 +135,9 @@ class InstallablePaymentAppCrawler {
 
   DeveloperConsoleLogger log_;
   const url::Origin merchant_origin_;
-  const content::GlobalFrameRoutingId initiator_frame_routing_id_;
-  PaymentManifestDownloader* downloader_;
-  PaymentManifestParser* parser_;
+  const content::GlobalRenderFrameHostId initiator_frame_routing_id_;
+  raw_ptr<PaymentManifestDownloader> downloader_;
+  raw_ptr<PaymentManifestParser> parser_;
   FinishedCrawlingCallback callback_;
   base::OnceClosure finished_using_resources_;
 
@@ -154,8 +160,6 @@ class InstallablePaymentAppCrawler {
   CrawlingMode crawling_mode_ = CrawlingMode::kJustInTimeInstallation;
 
   base::WeakPtrFactory<InstallablePaymentAppCrawler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(InstallablePaymentAppCrawler);
 };
 
 }  // namespace payments.

@@ -38,6 +38,7 @@
 #include "ui/gfx/color_space.h"
 
 #include "third_party/blink/public/platform/web_texttrack_metadata.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace cc {
 class Layer;
@@ -139,7 +140,7 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   virtual WebRemotePlaybackClient* RemotePlaybackClient() { return nullptr; }
 
   // Returns metadata for out-of-band text tracks declared as <track> elements.
-  virtual std::vector<TextTrackMetadata> GetTextTrackMetadata() = 0;
+  virtual Vector<TextTrackMetadata> GetTextTrackMetadata() = 0;
 
   // Returns the color space to render media into if.
   // Rendering media into this color space may avoid some conversions.
@@ -185,20 +186,18 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   // Notify the client that the playback position has changed.
   virtual void DidPlayerMediaPositionStateChange(double playback_rate,
                                                  base::TimeDelta duration,
-                                                 base::TimeDelta position) = 0;
+                                                 base::TimeDelta position,
+                                                 bool end_of_media) = 0;
 
   // Notify the client that the audio sink cannot be changed.
   virtual void DidDisableAudioOutputSinkChanges() = 0;
 
+  // Notify the client that the playback starts/stops to use AudioService.
+  virtual void DidUseAudioServiceChange(bool uses_audio_service) = 0;
+
   // Notify the client that the size of the media player has changed.
   // TODO(crbug.com/1039252): Remove by merging this method into SizeChanged().
   virtual void DidPlayerSizeChange(const gfx::Size& size) = 0;
-
-  // Notify the client that a buffer underflow happened for the media player.
-  virtual void DidBufferUnderflow() = 0;
-
-  // Notify that a playback seek event happened for the media player.
-  virtual void DidSeek() = 0;
 
   // Notify the client that one of the state used by Picture-in-Picture has
   // changed. The client will then have to poll the states from the associated

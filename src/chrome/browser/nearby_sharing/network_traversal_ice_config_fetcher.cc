@@ -10,8 +10,10 @@
 #include "chrome/services/sharing/public/cpp/sharing_webrtc_metrics.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
@@ -107,11 +109,11 @@ std::vector<sharing::mojom::IceServerPtr> ParseIceConfigJson(std::string json) {
 
     std::vector<GURL> urls;
     for (const base::Value& url_json : urls_json->GetList()) {
-      std::string url;
-      if (!url_json.GetAsString(&url))
+      const std::string* url = url_json.GetIfString();
+      if (!url)
         continue;
 
-      urls.emplace_back(url);
+      urls.emplace_back(*url);
     }
 
     if (urls.empty())

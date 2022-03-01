@@ -12,7 +12,7 @@
 #include "base/sequence_checker.h"
 #include "chromeos/assistant/internal/action/assistant_action_observer.h"
 #include "chromeos/services/assistant/public/cpp/conversation_observer.h"
-#include "chromeos/services/libassistant/assistant_manager_observer.h"
+#include "chromeos/services/libassistant/grpc/assistant_client_observer.h"
 #include "chromeos/services/libassistant/public/cpp/assistant_notification.h"
 #include "chromeos/services/libassistant/public/mojom/authentication_state_observer.mojom.h"
 #include "chromeos/services/libassistant/public/mojom/conversation_controller.mojom.h"
@@ -20,7 +20,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace assistant {
@@ -31,9 +30,11 @@ class CrosActionModule;
 
 namespace libassistant {
 
+class AssistantClient;
+
 class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
     : public mojom::ConversationController,
-      public AssistantManagerObserver,
+      public AssistantClientObserver,
       public chromeos::assistant::action::AssistantActionObserver,
       public chromeos::assistant::ConversationObserver {
  public:
@@ -56,19 +57,10 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
       mojo::PendingRemote<
           chromeos::libassistant::mojom::AuthenticationStateObserver> observer);
 
-  // AssistantManagerObserver:
-  void OnAssistantManagerCreated(
-      assistant_client::AssistantManager* assistant_manager,
-      assistant_client::AssistantManagerInternal* assistant_manager_internal)
-      override;
-  void OnAssistantManagerRunning(
-      assistant_client::AssistantManager* assistant_manager,
-      assistant_client::AssistantManagerInternal* assistant_manager_internal)
-      override;
-  void OnDestroyingAssistantManager(
-      assistant_client::AssistantManager* assistant_manager,
-      assistant_client::AssistantManagerInternal* assistant_manager_internal)
-      override;
+  // AssistantClientObserver:
+  void OnAssistantClientCreated(AssistantClient* assistant_client) override;
+  void OnAssistantClientRunning(AssistantClient* assistant_client) override;
+  void OnDestroyingAssistantClient(AssistantClient* assistant_client) override;
 
   // mojom::ConversationController implementation:
   void SendTextQuery(const std::string& query,
@@ -122,19 +114,17 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
 
   void MaybeStopPreviousInteraction();
 
-  void SendVoicelessInteraction(const std::string& interaction,
-                                const std::string& description,
-                                bool is_user_initiated);
-
   mojo::Receiver<mojom::ConversationController> receiver_;
   mojo::RemoteSet<mojom::ConversationObserver> observers_;
   mojo::RemoteSet<mojom::AuthenticationStateObserver>
       authentication_state_observers_;
   mojo::Remote<mojom::NotificationDelegate> notification_delegate_;
 
-  assistant_client::AssistantManager* assistant_manager_ = nullptr;
-  assistant_client::AssistantManagerInternal* assistant_manager_internal_ =
-      nullptr;
+  // Owned by ServiceController.
+  // Set in `OnAssistantClientCreated()` and unset in
+  // `OnDestroyingAssistantClient()`.
+  AssistantClient* assistant_client_ = nullptr;
+
   // False until libassistant is running for the first time.
   // Any request that comes in before that is an error and will be DCHECK'ed.
   bool requests_are_allowed_ = false;
@@ -143,8 +133,7 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
   std::unique_ptr<assistant::action::CrosActionModule> action_module_;
 
   std::unique_ptr<base::CancelableOnceClosure> stop_interaction_closure_;
-  base::TimeDelta stop_interaction_delay_ =
-      base::TimeDelta::FromMilliseconds(500);
+  base::TimeDelta stop_interaction_delay_ = base::Milliseconds(500);
 
   scoped_refptr<base::SequencedTaskRunner> mojom_task_runner_;
   base::WeakPtrFactory<ConversationController> weak_factory_{this};

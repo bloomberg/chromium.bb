@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
@@ -40,6 +40,10 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
                     syncer::DeviceInfoTracker* device_info_tracker,
                     SharingFCMSender* sharing_fcm_sender,
                     SharingHandlerRegistry* handler_registry);
+
+  SharingFCMHandler(const SharingFCMHandler&) = delete;
+  SharingFCMHandler& operator=(const SharingFCMHandler&) = delete;
+
   ~SharingFCMHandler() override;
 
   // Registers itself as app handler for sharing messages.
@@ -98,16 +102,14 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
       absl::optional<std::string> message_id,
       SharingChannelType channel_type);
 
-  gcm::GCMDriver* const gcm_driver_;
-  syncer::DeviceInfoTracker* device_info_tracker_;
-  SharingFCMSender* sharing_fcm_sender_;
-  SharingHandlerRegistry* handler_registry_;
+  const raw_ptr<gcm::GCMDriver> gcm_driver_;
+  raw_ptr<syncer::DeviceInfoTracker> device_info_tracker_;
+  raw_ptr<SharingFCMSender> sharing_fcm_sender_;
+  raw_ptr<SharingHandlerRegistry> handler_registry_;
 
   bool is_listening_ = false;
 
   base::WeakPtrFactory<SharingFCMHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SharingFCMHandler);
 };
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_FCM_HANDLER_H_

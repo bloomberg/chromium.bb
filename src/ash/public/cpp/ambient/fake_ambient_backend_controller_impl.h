@@ -8,6 +8,7 @@
 #include <array>
 
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
+#include "ash/public/cpp/ambient/proto/photo_cache_entry.pb.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -28,9 +29,6 @@ class ASH_PUBLIC_EXPORT FakeAmbientBackendControllerImpl
   void GetSettings(GetSettingsCallback callback) override;
   void UpdateSettings(const AmbientSettings& settings,
                       UpdateSettingsCallback callback) override;
-  void FetchSettingPreview(int preview_width,
-                           int preview_height,
-                           OnSettingPreviewFetchedCallback) override;
   void FetchPersonalAlbums(int banner_width,
                            int banner_height,
                            int num_albums,
@@ -66,12 +64,22 @@ class ASH_PUBLIC_EXPORT FakeAmbientBackendControllerImpl
   // `FetchWeather`.
   void SetWeatherInfo(absl::optional<WeatherInfo> info);
 
+  void SetPhotoOrientation(bool portrait);
+
+  void SetPhotoTopicType(::ambient::TopicType topic_type);
+
  private:
   OnSettingsAndAlbumsFetchedCallback pending_fetch_settings_albums_callback_;
 
   UpdateSettingsCallback pending_update_callback_;
 
   absl::optional<WeatherInfo> weather_info_;
+
+  bool is_portrait_ = false;
+
+  bool has_related_image_ = true;
+
+  ::ambient::TopicType topic_type_ = ::ambient::TopicType::kCulturalInstitute;
 };
 
 }  // namespace ash

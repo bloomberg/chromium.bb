@@ -6,15 +6,15 @@
 
 #include "fxjs/fx_date_helpers.h"
 
+#include <math.h>
 #include <time.h>
-
-#include <cmath>
+#include <wctype.h>
 
 #include "build/build_config.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_system.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace fxjs {
 namespace {
@@ -116,7 +116,7 @@ int MonthFromTime(double t) {
       59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
   for (size_t i = 0; i < pdfium::size(kCumulativeDaysInMonths); ++i) {
     if (day < kCumulativeDaysInMonths[i])
-      return i + 1;
+      return static_cast<int>(i) + 1;
   }
 
   return -1;
@@ -160,7 +160,7 @@ int DateFromTime(double t) {
 size_t FindSubWordLength(const WideString& str, size_t nStart) {
   pdfium::span<const wchar_t> data = str.span();
   size_t i = nStart;
-  while (i < data.size() && std::iswalnum(data[i]))
+  while (i < data.size() && iswalnum(data[i]))
     ++i;
   return i - nStart;
 }
@@ -248,7 +248,7 @@ double FX_MakeDay(int nYear, int nMonth, int nDate) {
   double mn = Mod(m, 12);
   double t = TimeFromYearMonth(static_cast<int>(ym), static_cast<int>(mn));
   if (YearFromTime(t) != ym || MonthFromTime(t) != mn || DateFromTime(t) != 1)
-    return std::nan("");
+    return nan("");
 
   return Day(t) + dt - 1;
 }
@@ -262,8 +262,8 @@ double FX_MakeTime(int nHour, int nMin, int nSec, int nMs) {
 }
 
 double FX_MakeDate(double day, double time) {
-  if (!std::isfinite(day) || !std::isfinite(time))
-    return std::nan("");
+  if (!isfinite(day) || !isfinite(time))
+    return nan("");
 
   return day * 86400000 + time;
 }
@@ -436,7 +436,7 @@ ConversionStatus FX_ParseDateUsingFormat(const WideString& value,
                 WideString sMonth = value.Substr(j, KMonthAbbreviationLength);
                 for (size_t m = 0; m < pdfium::size(kMonths); ++m) {
                   if (sMonth.CompareNoCase(kMonths[m]) == 0) {
-                    nMonth = m + 1;
+                    nMonth = static_cast<int>(m) + 1;
                     i += 3;
                     j += nSkip;
                     bFind = true;
@@ -474,8 +474,8 @@ ConversionStatus FX_ParseDateUsingFormat(const WideString& value,
                 for (size_t m = 0; m < pdfium::size(kFullMonths); ++m) {
                   WideString sFullMonths = WideString(kFullMonths[m]);
                   sFullMonths.MakeLower();
-                  if (sFullMonths.Contains(sMonth.c_str())) {
-                    nMonth = m + 1;
+                  if (sFullMonths.Contains(sMonth.AsStringView())) {
+                    nMonth = static_cast<int>(m) + 1;
                     i += 4;
                     j += nSkip;
                     bFind = true;
@@ -483,7 +483,6 @@ ConversionStatus FX_ParseDateUsingFormat(const WideString& value,
                   }
                 }
               }
-
               if (!bFind) {
                 nMonth = FX_ParseStringInteger(value, j, &nSkip, 4);
                 i += 4;
@@ -542,7 +541,7 @@ ConversionStatus FX_ParseDateUsingFormat(const WideString& value,
 
   dt = FX_MakeDate(FX_MakeDay(nYear, nMonth - 1, nDay),
                    FX_MakeTime(nHour, nMin, nSec, 0));
-  if (std::isnan(dt))
+  if (isnan(dt))
     return ConversionStatus::kBadDate;
 
   *result = dt;

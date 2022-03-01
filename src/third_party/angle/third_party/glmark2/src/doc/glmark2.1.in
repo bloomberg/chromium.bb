@@ -1,4 +1,4 @@
-.TH @APPNAME@ "1" "July 2017" "@appname@ @appversion@"
+.TH @APPNAME@ "1" "February 2021" "@appname@ @appversion@"
 .SH NAME
 @appname@ \- OpenGL (ES) 2.0 benchmark suite
 .SH SYNOPSIS
@@ -20,6 +20,9 @@ list of benchmark descriptions (one per line)
 \fB\-\-validate\fR
 Run a quick output validation test instead of
 running the benchmarks
+.TP
+\fB\-\-data-path\fR PATH
+Path to glmark2 models, shaders and textures
 .TP
 \fB\-\-frame-end\fR METHOD
 How to end a frame [default,none,swap,finish,readpixels]

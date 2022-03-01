@@ -15,13 +15,15 @@ ClientDataHeaderWebContentsObserver::~ClientDataHeaderWebContentsObserver() =
 
 ClientDataHeaderWebContentsObserver::ClientDataHeaderWebContentsObserver(
     content::WebContents* web_contents)
-    : WebContentsObserver(web_contents) {}
+    : WebContentsObserver(web_contents),
+      content::WebContentsUserData<ClientDataHeaderWebContentsObserver>(
+          *web_contents) {}
 
 void ClientDataHeaderWebContentsObserver::SetHeader(const std::string& header) {
   header_ = header;
-  auto frames = web_contents()->GetAllFrames();
-  for (auto* frame : frames)
-    UpdateFrameCCTHeader(frame);
+  web_contents()->ForEachRenderFrameHost(base::BindRepeating(
+      &ClientDataHeaderWebContentsObserver::UpdateFrameCCTHeader,
+      base::Unretained(this)));
 }
 
 void ClientDataHeaderWebContentsObserver::RenderFrameCreated(
@@ -31,11 +33,13 @@ void ClientDataHeaderWebContentsObserver::RenderFrameCreated(
 
 void ClientDataHeaderWebContentsObserver::UpdateFrameCCTHeader(
     content::RenderFrameHost* render_frame_host) {
+  if (!render_frame_host->IsRenderFrameLive())
+    return;
   mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> client;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
   client->SetCCTClientHeader(header_);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ClientDataHeaderWebContentsObserver)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ClientDataHeaderWebContentsObserver);
 
 }  // namespace customtabs

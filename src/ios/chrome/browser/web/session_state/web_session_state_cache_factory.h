@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
@@ -23,6 +22,10 @@ class WebSessionStateCacheFactory : public BrowserStateKeyedServiceFactory {
 
   static WebSessionStateCacheFactory* GetInstance();
 
+  WebSessionStateCacheFactory(const WebSessionStateCacheFactory&) = delete;
+  WebSessionStateCacheFactory& operator=(const WebSessionStateCacheFactory&) =
+      delete;
+
  private:
   friend class base::NoDestructor<WebSessionStateCacheFactory>;
 
@@ -34,8 +37,6 @@ class WebSessionStateCacheFactory : public BrowserStateKeyedServiceFactory {
       web::BrowserState* context) const override;
   web::BrowserState* GetBrowserStateToUse(
       web::BrowserState* context) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(WebSessionStateCacheFactory);
 };
 
 #endif  // IOS_CHROME_BROWSER_WEB_SESSION_STATE_WEB_SESSION_STATE_CACHE_FACTORY_H_

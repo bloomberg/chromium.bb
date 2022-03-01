@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -46,8 +45,8 @@
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/about_flags.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/ash/settings/owner_flags_storage.h"
 #include "chrome/browser/infobars/simple_alert_infobar_creator.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/account_id/account_id.h"
@@ -79,7 +78,7 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
       base::SysInfo::IsRunningOnChromeOS()) {
     // Set the string to show which user can actually change the flags.
     std::string owner;
-    ash::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
+    ash::CrosSettings::Get()->GetString(ash::kDeviceOwner, &owner);
     source->AddString("owner-warning",
                       l10n_util::GetStringFUTF16(IDS_FLAGS_UI_OWNER_WARNING,
                                                  base::UTF8ToUTF16(owner)));
@@ -179,6 +178,11 @@ void FlagsUI::AddStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString("search-label", IDS_FLAGS_UI_SEARCH_LABEL);
   source->AddLocalizedString("search-placeholder",
                              IDS_FLAGS_UI_SEARCH_PLACEHOLDER);
+#if defined(OS_CHROMEOS)
+  source->AddLocalizedString("os-flags-link", IDS_FLAGS_UI_OS_FLAGS_LINK);
+  source->AddLocalizedString("os-flags-text1", IDS_FLAGS_UI_OS_FLAGS_TEXT1);
+  source->AddLocalizedString("os-flags-text2", IDS_FLAGS_UI_OS_FLAGS_TEXT2);
+#endif
   source->AddLocalizedString("title", IDS_FLAGS_UI_TITLE);
   source->AddLocalizedString("unavailable", IDS_FLAGS_UI_UNAVAILABLE_FEATURE);
   source->AddLocalizedString("searchResultsSingular",
@@ -214,6 +218,14 @@ void FlagsDeprecatedUI::AddStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString("search-label", IDS_FLAGS_UI_SEARCH_LABEL);
   source->AddLocalizedString("search-placeholder",
                              IDS_DEPRECATED_FEATURES_SEARCH_PLACEHOLDER);
+#if defined(OS_CHROMEOS)
+  source->AddLocalizedString("os-flags-link",
+                             IDS_DEPRECATED_FLAGS_UI_OS_FLAGS_LINK);
+  source->AddLocalizedString("os-flags-text1",
+                             IDS_DEPRECATED_FLAGS_UI_OS_FLAGS_TEXT1);
+  source->AddLocalizedString("os-flags-text2",
+                             IDS_DEPRECATED_FLAGS_UI_OS_FLAGS_TEXT2);
+#endif
   source->AddLocalizedString("title", IDS_DEPRECATED_FEATURES_TITLE);
   source->AddLocalizedString("unavailable",
                              IDS_DEPRECATED_FEATURES_UNAVAILABLE_FEATURE);
@@ -272,7 +284,7 @@ FlagsUI::~FlagsUI() {}
 
 // static
 base::RefCountedMemory* FlagsUI::GetFaviconResourceBytes(
-    ui::ScaleFactor scale_factor) {
+    ui::ResourceScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
       IDR_FLAGS_FAVICON, scale_factor);
 }

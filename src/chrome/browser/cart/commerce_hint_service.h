@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CART_COMMERCE_HINT_SERVICE_H_
 #define CHROME_BROWSER_CART_COMMERCE_HINT_SERVICE_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/cart/cart_service.h"
 #include "chrome/common/cart/commerce_hints.mojom.h"
@@ -28,23 +29,24 @@ class CommerceHintService
                    const absl::optional<GURL>& cart_url,
                    const std::string& product_id = std::string());
   void OnRemoveCart(const GURL& url);
+  void OnFormSubmit(const GURL& navigation_url, bool is_purchase);
+  void OnWillSendRequest(const GURL& navigation_url, bool is_addtocart);
   void OnCartUpdated(const GURL& cart_url,
                      std::vector<mojom::ProductPtr> products);
+  bool ShouldSkip(const GURL& url);
 
  private:
   explicit CommerceHintService(content::WebContents* web_contents);
   friend class content::WebContentsUserData<CommerceHintService>;
 
-  bool ShouldSkip(const GURL& url);
   void AddCartToDB(const GURL& url,
                    bool success,
                    std::vector<CartDB::KeyAndValue> proto_pairs);
   void OnOperationFinished(const std::string& operation, bool success);
 
-  content::WebContents* web_contents_;
-  CartService* service_;
-  optimization_guide::OptimizationGuideDecider* optimization_guide_decider_ =
-      nullptr;
+  raw_ptr<CartService> service_;
+  raw_ptr<optimization_guide::OptimizationGuideDecider>
+      optimization_guide_decider_ = nullptr;
   base::WeakPtrFactory<CommerceHintService> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();

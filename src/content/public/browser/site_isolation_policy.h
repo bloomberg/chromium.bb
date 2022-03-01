@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/strings/string_piece_forward.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/site_isolation_mode.h"
 #include "url/origin.h"
 
 namespace content {
@@ -25,6 +25,9 @@ namespace content {
 // These methods can be called from any thread.
 class CONTENT_EXPORT SiteIsolationPolicy {
  public:
+  SiteIsolationPolicy(const SiteIsolationPolicy&) = delete;
+  SiteIsolationPolicy& operator=(const SiteIsolationPolicy&) = delete;
+
   // Returns true if every site should be placed in a dedicated process.
   static bool UseDedicatedProcessesForAllSites();
 
@@ -71,14 +74,16 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // startup.
   static void ApplyGlobalIsolatedOrigins();
 
+  // Forces other methods in this class to reread flag values instead of using
+  // their cached value.
+  static void DisableFlagCachingForTesting();
+
  private:
   SiteIsolationPolicy();  // Not instantiable.
 
   // Gets isolated origins from cmdline and/or from field trial param.
   static std::string GetIsolatedOriginsFromCommandLine();
   static std::string GetIsolatedOriginsFromFieldTrial();
-
-  DISALLOW_COPY_AND_ASSIGN(SiteIsolationPolicy);
 };
 
 }  // namespace content

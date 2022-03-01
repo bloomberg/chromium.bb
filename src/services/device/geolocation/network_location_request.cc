@@ -27,8 +27,10 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/geolocation/location_arbitrator.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace device {
 namespace {
@@ -285,7 +287,7 @@ void AddWifiData(const WifiData& wifi_data,
     AddInteger("signalToNoiseRatio", ap_data->signal_to_noise, wifi_dict.get());
     wifi_access_point_list->Append(std::move(wifi_dict));
   }
-  if (!wifi_access_point_list->empty())
+  if (!wifi_access_point_list->GetList().empty())
     request->Set("wifiAccessPoints", std::move(wifi_access_point_list));
 }
 
@@ -294,7 +296,7 @@ void FormatPositionError(const GURL& server_url,
                          mojom::Geoposition* position) {
   position->error_code = mojom::Geoposition::ErrorCode::POSITION_UNAVAILABLE;
   position->error_message = "Network location provider at '";
-  position->error_message += server_url.GetOrigin().spec();
+  position->error_message += server_url.DeprecatedGetOriginAsURL().spec();
   position->error_message += "' : ";
   position->error_message += message;
   position->error_message += ".";

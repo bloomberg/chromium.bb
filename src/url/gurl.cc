@@ -237,11 +237,8 @@ GURL GURL::ReplaceComponents(
       NULL, &output, &result.parsed_);
 
   output.Complete();
-  if (result.is_valid_ && result.SchemeIsFileSystem()) {
-    result.inner_url_ =
-        std::make_unique<GURL>(result.spec_.data(), result.parsed_.Length(),
-                               *result.parsed_.inner_parsed(), true);
-  }
+
+  result.ProcessFileSystemURLAfterReplaceComponents();
   return result;
 }
 
@@ -260,22 +257,29 @@ GURL GURL::ReplaceComponents(
       NULL, &output, &result.parsed_);
 
   output.Complete();
-  if (result.is_valid_ && result.SchemeIsFileSystem()) {
-    result.inner_url_ =
-        std::make_unique<GURL>(result.spec_.data(), result.parsed_.Length(),
-                               *result.parsed_.inner_parsed(), true);
-  }
+
+  result.ProcessFileSystemURLAfterReplaceComponents();
+
   return result;
 }
 
-GURL GURL::GetOrigin() const {
+void GURL::ProcessFileSystemURLAfterReplaceComponents() {
+  if (!is_valid_)
+    return;
+  if (SchemeIsFileSystem()) {
+    inner_url_ = std::make_unique<GURL>(spec_.data(), parsed_.Length(),
+                                        *parsed_.inner_parsed(), true);
+  }
+}
+
+GURL GURL::DeprecatedGetOriginAsURL() const {
   // This doesn't make sense for invalid or nonstandard URLs, so return
   // the empty URL.
   if (!is_valid_ || !IsStandard())
     return GURL();
 
   if (SchemeIsFileSystem())
-    return inner_url_->GetOrigin();
+    return inner_url_->DeprecatedGetOriginAsURL();
 
   url::Replacements<char> replacements;
   replacements.ClearUsername();

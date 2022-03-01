@@ -35,6 +35,11 @@ struct RawPtrT : WordT {
   static constexpr MachineType kMachineType = MachineType::Pointer();
 };
 
+// A RawPtrT that is guaranteed to point into the virtual memory cage.
+struct CagedPtrT : WordT {
+  static constexpr MachineType kMachineType = MachineType::CagedPointer();
+};
+
 template <class To>
 struct RawPtr : RawPtrT {};
 
@@ -349,6 +354,7 @@ class TNode {
   TNode(const TNode<U>& other) : node_(other) {
     LazyTemplateChecks();
   }
+  TNode(const TNode& other) : node_(other) { LazyTemplateChecks(); }
   TNode() : TNode(nullptr) {}
 
   TNode operator=(TNode other) {

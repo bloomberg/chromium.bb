@@ -85,7 +85,8 @@ TEST_F(QuicFramesTest, RstStreamFrameToString) {
   std::ostringstream stream;
   stream << rst_stream;
   EXPECT_EQ(
-      "{ control_frame_id: 1, stream_id: 1, byte_offset: 3, error_code: 6 }\n",
+      "{ control_frame_id: 1, stream_id: 1, byte_offset: 3, error_code: 6, "
+      "ietf_error_code: 0 }\n",
       stream.str());
   EXPECT_TRUE(IsControlFrame(frame.type));
 }
@@ -543,10 +544,8 @@ TEST_F(QuicFramesTest, RemoveSmallestInterval) {
 
 TEST_F(QuicFramesTest, CopyQuicFrames) {
   QuicFrames frames;
-  SimpleBufferAllocator allocator;
-  QuicMemSliceStorage storage(nullptr, 0, nullptr, 0);
   QuicMessageFrame* message_frame =
-      new QuicMessageFrame(1, MakeSpan(&allocator, "message", &storage));
+      new QuicMessageFrame(1, MemSliceFromString("message"));
   // Construct a frame list.
   for (uint8_t i = 0; i < NUM_FRAME_TYPES; ++i) {
     switch (i) {
@@ -626,7 +625,7 @@ TEST_F(QuicFramesTest, CopyQuicFrames) {
     }
   }
 
-  QuicFrames copy = CopyQuicFrames(&allocator, frames);
+  QuicFrames copy = CopyQuicFrames(SimpleBufferAllocator::Get(), frames);
   ASSERT_EQ(NUM_FRAME_TYPES, copy.size());
   for (uint8_t i = 0; i < NUM_FRAME_TYPES; ++i) {
     EXPECT_EQ(i, copy[i].type);

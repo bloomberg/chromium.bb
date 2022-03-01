@@ -83,9 +83,9 @@ static const rtc::RTCCertificatePEM kRsaPems[] = {
 
 // ECDSA with EC_NIST_P256.
 // These PEM strings were created by generating an identity with
-// |SSLIdentity::Create| and invoking |identity->PrivateKeyToPEMString()|,
-// |identity->PublicKeyToPEMString()| and
-// |identity->certificate().ToPEMString()|.
+// `SSLIdentity::Create` and invoking `identity->PrivateKeyToPEMString()`,
+// `identity->PublicKeyToPEMString()` and
+// `identity->certificate().ToPEMString()`.
 static const rtc::RTCCertificatePEM kEcdsaPems[] = {
     rtc::RTCCertificatePEM(
         "-----BEGIN PRIVATE KEY-----\n"
@@ -171,7 +171,7 @@ class FakeRTCCertificateGenerator
       case rtc::KT_ECDSA:
         return rtc::RTCCertificate::FromPEM(kEcdsaPems[0]);
       default:
-        RTC_NOTREACHED();
+        RTC_DCHECK_NOTREACHED();
         return nullptr;
     }
   }
@@ -190,7 +190,7 @@ class FakeRTCCertificateGenerator
       case rtc::KT_ECDSA:
         return kEcdsaPems[key_index_];
       default:
-        RTC_NOTREACHED();
+        RTC_DCHECK_NOTREACHED();
         return kEcdsaPems[key_index_];
     }
   }

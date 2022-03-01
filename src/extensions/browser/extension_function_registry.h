@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 
@@ -47,6 +46,11 @@ class ExtensionFunctionRegistry {
 
   static ExtensionFunctionRegistry& GetInstance();
   ExtensionFunctionRegistry();
+
+  ExtensionFunctionRegistry(const ExtensionFunctionRegistry&) = delete;
+  ExtensionFunctionRegistry& operator=(const ExtensionFunctionRegistry&) =
+      delete;
+
   ~ExtensionFunctionRegistry();
 
   // Allows overriding of specific functions for testing.  Functions must be
@@ -69,8 +73,6 @@ class ExtensionFunctionRegistry {
 
  private:
   FactoryMap factories_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionFunctionRegistry);
 };
 
 #endif  // EXTENSIONS_BROWSER_EXTENSION_FUNCTION_REGISTRY_H_

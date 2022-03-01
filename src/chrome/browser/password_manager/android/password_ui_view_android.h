@@ -13,7 +13,7 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/password_entry_edit/android/credential_edit_bridge.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -48,6 +48,10 @@ class PasswordUIViewAndroid : public PasswordUIView {
   };
 
   PasswordUIViewAndroid(JNIEnv* env, jobject);
+
+  PasswordUIViewAndroid(const PasswordUIViewAndroid&) = delete;
+  PasswordUIViewAndroid& operator=(const PasswordUIViewAndroid&) = delete;
+
   ~PasswordUIViewAndroid() override;
 
   // PasswordUIView implementation.
@@ -154,12 +158,12 @@ class PasswordUIViewAndroid : public PasswordUIView {
   // If not null, PostSerializedPasswords will write the serialized passwords to
   // |*export_target_for_testing_| instead of passing them to Java. This must
   // remain null in production code.
-  SerializationResult* export_target_for_testing_ = nullptr;
+  raw_ptr<SerializationResult> export_target_for_testing_ = nullptr;
 
   PasswordManagerPresenter password_manager_presenter_;
 
   // Handle to the password store, powering `saved_passwords_presenter_`
-  scoped_refptr<password_manager::PasswordStore> password_store_ =
+  scoped_refptr<password_manager::PasswordStoreInterface> password_store_ =
       PasswordStoreFactory::GetForProfile(ProfileManager::GetLastUsedProfile(),
                                           ServiceAccessType::EXPLICIT_ACCESS);
 
@@ -170,7 +174,7 @@ class PasswordUIViewAndroid : public PasswordUIView {
   // If not null, passwords for exporting will be obtained from
   // |*credential_provider_for_testing_|, otherwise from
   // |password_manager_presenter_|. This must remain null in production code.
-  password_manager::CredentialProviderInterface*
+  raw_ptr<password_manager::CredentialProviderInterface>
       credential_provider_for_testing_ = nullptr;
 
   // Java side of UI controller.
@@ -178,8 +182,6 @@ class PasswordUIViewAndroid : public PasswordUIView {
 
   // Used to open the view/edit/delete UI.
   std::unique_ptr<CredentialEditBridge> credential_edit_bridge_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordUIViewAndroid);
 };
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_ANDROID_PASSWORD_UI_VIEW_ANDROID_H_

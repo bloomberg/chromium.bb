@@ -8,7 +8,7 @@ import {isValidKeyCode, Key, keystrokeToString} from 'chrome://extensions/extens
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {isChildVisible} from '../test_util.m.js';
+import {isChildVisible} from '../test_util.js';
 
 import {TestService} from './test_service.js';
 import {createExtensionInfo} from './test_util.js';
@@ -85,8 +85,8 @@ suite(extension_shortcut_tests.suiteName, function() {
       // rather than a fancy-schmancy custom element.
       return isChildVisible(e, s, true);
     };
-    const cards =
-        keyboardShortcuts.$$('#container').querySelectorAll('.shortcut-card');
+    const cards = keyboardShortcuts.shadowRoot.querySelector('#container')
+                      .querySelectorAll('.shortcut-card');
     assertEquals(2, cards.length);
 
     const card1 = cards[0];
@@ -130,7 +130,7 @@ suite(extension_shortcut_tests.suiteName, function() {
   });
 
   test(extension_shortcut_tests.TestNames.ScopeChange, function() {
-    const selectElement = keyboardShortcuts.$$('select');
+    const selectElement = keyboardShortcuts.shadowRoot.querySelector('select');
     selectElement.value = 'GLOBAL';
     selectElement.dispatchEvent(new CustomEvent('change'));
     return keyboardShortcuts.delegate.whenCalled('updateExtensionCommandScope')

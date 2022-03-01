@@ -7,8 +7,10 @@
 
 #include <queue>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
@@ -27,7 +29,6 @@ class PointF;
 namespace content {
 
 class RenderWidgetHostViewBase;
-class OneShotTimeoutMonitor;
 
 // TODO(sunxd): Make |RenderWidgetTargetResult| a class. Merge the booleans into
 // a mask to reduce the size. Make the constructor take in enums for better
@@ -41,7 +42,7 @@ struct CONTENT_EXPORT RenderWidgetTargetResult {
                            bool latched_target);
   ~RenderWidgetTargetResult();
 
-  RenderWidgetHostViewBase* view = nullptr;
+  raw_ptr<RenderWidgetHostViewBase> view = nullptr;
   bool should_query_view = false;
   absl::optional<gfx::PointF> target_location = absl::nullopt;
   // When |latched_target| is false, we explicitly hit-tested events instead of
@@ -98,6 +99,10 @@ class RenderWidgetTargeter {
 
   // The delegate must outlive this targeter.
   explicit RenderWidgetTargeter(Delegate* delegate);
+
+  RenderWidgetTargeter(const RenderWidgetTargeter&) = delete;
+  RenderWidgetTargeter& operator=(const RenderWidgetTargeter&) = delete;
+
   ~RenderWidgetTargeter();
 
   // Finds the appropriate target inside |root_view| for |event|, and dispatches
@@ -142,6 +147,10 @@ class RenderWidgetTargeter {
                      RenderWidgetHostAtPointCallback);
     TargetingRequest(TargetingRequest&& request);
     TargetingRequest& operator=(TargetingRequest&& other);
+
+    TargetingRequest(const TargetingRequest&) = delete;
+    TargetingRequest& operator=(const TargetingRequest&) = delete;
+
     ~TargetingRequest();
 
     void RunCallback(RenderWidgetHostViewBase* target,
@@ -165,8 +174,6 @@ class RenderWidgetTargeter {
     // |event| if set is in the coordinate space of |root_view|.
     ui::WebScopedInputEvent event;
     ui::LatencyInfo latency;
-
-    DISALLOW_COPY_AND_ASSIGN(TargetingRequest);
   };
 
   void ResolveTargetingRequest(TargetingRequest);
@@ -248,7 +255,7 @@ class RenderWidgetTargeter {
   // process before giving up and resuming event processing.
   base::TimeDelta async_hit_test_timeout_delay_;
 
-  std::unique_ptr<OneShotTimeoutMonitor> async_hit_test_timeout_;
+  base::OneShotTimer async_hit_test_timeout_;
 
   uint64_t trace_id_;
 
@@ -257,10 +264,8 @@ class RenderWidgetTargeter {
   // is enabled. This allows us to send the queried regions in batches.
   std::vector<viz::FrameSinkId> hit_test_async_queried_debug_queue_;
 
-  Delegate* const delegate_;
+  const raw_ptr<Delegate> delegate_;
   base::WeakPtrFactory<RenderWidgetTargeter> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetTargeter);
 };
 
 }  // namespace content

@@ -29,6 +29,10 @@ class WebTransportDiscardVisitor : public WebTransportStreamVisitor {
 
   void OnCanWrite() override {}
 
+  void OnResetStreamReceived(WebTransportStreamError /*error*/) override {}
+  void OnStopSendingReceived(WebTransportStreamError /*error*/) override {}
+  void OnWriteSideInDataRecvdState() override {}
+
  private:
   WebTransportStream* stream_;
 };
@@ -51,6 +55,10 @@ class WebTransportBidirectionalEchoVisitor : public WebTransportStreamVisitor {
   }
 
   void OnCanWrite() override {
+    if (stop_sending_received_) {
+      return;
+    }
+
     if (!buffer_.empty()) {
       bool success = stream_->Write(buffer_);
       QUIC_DVLOG(1) << "Attempted writing on WebTransport bidirectional stream "
@@ -69,10 +77,26 @@ class WebTransportBidirectionalEchoVisitor : public WebTransportStreamVisitor {
     }
   }
 
+  void OnResetStreamReceived(WebTransportStreamError /*error*/) override {
+    // Send FIN in response to a stream reset.  We want to test that we can
+    // operate one side of the stream cleanly while the other is reset, thus
+    // replying with a FIN rather than a RESET_STREAM is more appropriate here.
+    send_fin_ = true;
+    OnCanWrite();
+  }
+  void OnStopSendingReceived(WebTransportStreamError /*error*/) override {
+    stop_sending_received_ = true;
+  }
+  void OnWriteSideInDataRecvdState() override {}
+
+ protected:
+  WebTransportStream* stream() { return stream_; }
+
  private:
   WebTransportStream* stream_;
   std::string buffer_;
   bool send_fin_ = false;
+  bool stop_sending_received_ = false;
 };
 
 // Buffers all of the data and calls |callback| with the entirety of the stream
@@ -99,6 +123,10 @@ class WebTransportUnidirectionalEchoReadVisitor
   }
 
   void OnCanWrite() override { QUIC_NOTREACHED(); }
+
+  void OnResetStreamReceived(WebTransportStreamError /*error*/) override {}
+  void OnStopSendingReceived(WebTransportStreamError /*error*/) override {}
+  void OnWriteSideInDataRecvdState() override {}
 
  private:
   WebTransportStream* stream_;
@@ -129,6 +157,10 @@ class WebTransportUnidirectionalEchoWriteVisitor
     QUICHE_DCHECK(fin_sent);
   }
 
+  void OnResetStreamReceived(WebTransportStreamError /*error*/) override {}
+  void OnStopSendingReceived(WebTransportStreamError /*error*/) override {}
+  void OnWriteSideInDataRecvdState() override {}
+
  private:
   WebTransportStream* stream_;
   std::string data_;
@@ -141,11 +173,14 @@ class EchoWebTransportSessionVisitor : public WebTransportVisitor {
   EchoWebTransportSessionVisitor(WebTransportSession* session)
       : session_(session) {}
 
-  void OnSessionReady() override {
+  void OnSessionReady(const spdy::SpdyHeaderBlock&) override {
     if (session_->CanOpenNextOutgoingBidirectionalStream()) {
       OnCanCreateNewOutgoingBidirectionalStream();
     }
   }
+
+  void OnSessionClosed(WebTransportSessionError /*error_code*/,
+                       const std::string& /*error_message*/) override {}
 
   void OnIncomingBidirectionalStreamAvailable() override {
     while (true) {

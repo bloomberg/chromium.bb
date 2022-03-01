@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_INTERNALS_INTERNALS_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_INTERNALS_INTERNALS_UI_H_
 
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -14,7 +15,6 @@
 // gn check doesn't understand "#if !defined(OS_ANDROID)" and fails this
 // non-Android include on Android.
 #include "chrome/browser/ui/webui/internals/user_education/user_education_internals.mojom.h"  // nogncheck
-#include "chrome/browser/ui/webui/internals/web_app/web_app_internals.mojom.h"  // nogncheck
 #endif
 
 namespace content {
@@ -29,9 +29,6 @@ class InternalsUI : public ui::MojoWebUIController {
   ~InternalsUI() override;
 
 #if !defined(OS_ANDROID)
-  void BindInterface(
-      mojo::PendingReceiver<
-          mojom::web_app_internals::WebAppInternalsPageHandler> receiver);
   void BindInterface(
       mojo::PendingReceiver<
           mojom::user_education_internals::UserEducationInternalsPageHandler>
@@ -49,8 +46,8 @@ class InternalsUI : public ui::MojoWebUIController {
   void AddLensInternals(content::WebUI* web_ui);
 #endif  // defined(OS_ANDROID)
 
-  Profile* profile_;
-  content::WebUIDataSource* source_;
+  raw_ptr<Profile> profile_;
+  raw_ptr<content::WebUIDataSource> source_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_INTERNALS_INTERNALS_UI_H_

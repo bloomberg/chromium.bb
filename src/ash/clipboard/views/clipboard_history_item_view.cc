@@ -19,6 +19,7 @@
 #include "ui/base/clipboard/clipboard_data.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/layout/fill_layout.h"
@@ -46,7 +47,7 @@ void ClipboardHistoryItemView::ContentsView::OnHostPseudoFocusUpdated() {
 
   const bool focused =
       (container_->pseudo_focus_ == PseudoFocus::kDeleteButton);
-  delete_button_->ink_drop()->GetInkDrop()->SetFocused(focused);
+  views::InkDrop::Get(delete_button_)->GetInkDrop()->SetFocused(focused);
   if (focused) {
     delete_button_->NotifyAccessibilityEvent(ax::mojom::Event::kHover,
                                              /*send_native_event*/ true);
@@ -83,7 +84,7 @@ ClipboardHistoryItemView::CreateFromClipboardHistoryItem(
   switch (display_format) {
     case ClipboardHistoryUtil::ClipboardHistoryDisplayFormat::kText:
       return std::make_unique<ClipboardHistoryTextItemView>(&item, container);
-    case ClipboardHistoryUtil::ClipboardHistoryDisplayFormat::kBitmap:
+    case ClipboardHistoryUtil::ClipboardHistoryDisplayFormat::kPng:
     case ClipboardHistoryUtil::ClipboardHistoryDisplayFormat::kHtml:
       return std::make_unique<ClipboardHistoryBitmapItemView>(
           &item, resource_manager, container);

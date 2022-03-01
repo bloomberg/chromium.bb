@@ -17,10 +17,16 @@
 #include "common/Assert.h"
 #include "common/BitSetIterator.h"
 #include "dawn_native/BindGroup.h"
+#include "dawn_native/ComputePassEncoder.h"
 #include "dawn_native/ComputePipeline.h"
 #include "dawn_native/Forward.h"
+#include "dawn_native/ObjectType_autogen.h"
 #include "dawn_native/PipelineLayout.h"
 #include "dawn_native/RenderPipeline.h"
+
+// TODO(dawn:563): None of the error messages in this file include the buffer objects they are
+// validating against. It would be nice to improve that, but difficult to do without incurring
+// additional tracking costs.
 
 namespace dawn_native {
 
@@ -76,6 +82,98 @@ namespace dawn_native {
         return ValidateOperation(kDrawIndexedAspects);
     }
 
+    MaybeError CommandBufferStateTracker::ValidateBufferInRangeForVertexBuffer(
+        uint32_t vertexCount,
+        uint32_t firstVertex) {
+        RenderPipelineBase* lastRenderPipeline = GetRenderPipeline();
+
+        const ityp::bitset<VertexBufferSlot, kMaxVertexBuffers>&
+            vertexBufferSlotsUsedAsVertexBuffer =
+                lastRenderPipeline->GetVertexBufferSlotsUsedAsVertexBuffer();
+
+        for (auto usedSlotVertex : IterateBitSet(vertexBufferSlotsUsedAsVertexBuffer)) {
+            const VertexBufferInfo& vertexBuffer =
+                lastRenderPipeline->GetVertexBuffer(usedSlotVertex);
+            uint64_t arrayStride = vertexBuffer.arrayStride;
+            uint64_t bufferSize = mVertexBufferSizes[usedSlotVertex];
+
+            if (arrayStride == 0) {
+                DAWN_INVALID_IF(vertexBuffer.usedBytesInStride > bufferSize,
+                                "Bound vertex buffer size (%u) at slot %u with an arrayStride of 0 "
+                                "is smaller than the required size for all attributes (%u)",
+                                bufferSize, static_cast<uint8_t>(usedSlotVertex),
+                                vertexBuffer.usedBytesInStride);
+            } else {
+                uint64_t requiredSize =
+                    (static_cast<uint64_t>(firstVertex) + vertexCount) * arrayStride;
+                // firstVertex and vertexCount are in uint32_t, and arrayStride must not
+                // be larger than kMaxVertexBufferArrayStride, which is currently 2048. So by
+                // doing checks in uint64_t we avoid overflows.
+                DAWN_INVALID_IF(
+                    requiredSize > bufferSize,
+                    "Vertex range (first: %u, count: %u) requires a larger buffer (%u) than the "
+                    "bound buffer size (%u) of the vertex buffer at slot %u with stride (%u).",
+                    firstVertex, vertexCount, requiredSize, bufferSize,
+                    static_cast<uint8_t>(usedSlotVertex), arrayStride);
+            }
+        }
+
+        return {};
+    }
+
+    MaybeError CommandBufferStateTracker::ValidateBufferInRangeForInstanceBuffer(
+        uint32_t instanceCount,
+        uint32_t firstInstance) {
+        RenderPipelineBase* lastRenderPipeline = GetRenderPipeline();
+
+        const ityp::bitset<VertexBufferSlot, kMaxVertexBuffers>&
+            vertexBufferSlotsUsedAsInstanceBuffer =
+                lastRenderPipeline->GetVertexBufferSlotsUsedAsInstanceBuffer();
+
+        for (auto usedSlotInstance : IterateBitSet(vertexBufferSlotsUsedAsInstanceBuffer)) {
+            const VertexBufferInfo& vertexBuffer =
+                lastRenderPipeline->GetVertexBuffer(usedSlotInstance);
+            uint64_t arrayStride = vertexBuffer.arrayStride;
+            uint64_t bufferSize = mVertexBufferSizes[usedSlotInstance];
+            if (arrayStride == 0) {
+                DAWN_INVALID_IF(vertexBuffer.usedBytesInStride > bufferSize,
+                                "Bound vertex buffer size (%u) at slot %u with an arrayStride of 0 "
+                                "is smaller than the required size for all attributes (%u)",
+                                bufferSize, static_cast<uint8_t>(usedSlotInstance),
+                                vertexBuffer.usedBytesInStride);
+            } else {
+                uint64_t requiredSize =
+                    (static_cast<uint64_t>(firstInstance) + instanceCount) * arrayStride;
+                // firstInstance and instanceCount are in uint32_t, and arrayStride must
+                // not be larger than kMaxVertexBufferArrayStride, which is currently 2048.
+                // So by doing checks in uint64_t we avoid overflows.
+                DAWN_INVALID_IF(
+                    requiredSize > bufferSize,
+                    "Instance range (first: %u, count: %u) requires a larger buffer (%u) than the "
+                    "bound buffer size (%u) of the vertex buffer at slot %u with stride (%u).",
+                    firstInstance, instanceCount, requiredSize, bufferSize,
+                    static_cast<uint8_t>(usedSlotInstance), arrayStride);
+            }
+        }
+
+        return {};
+    }
+
+    MaybeError CommandBufferStateTracker::ValidateIndexBufferInRange(uint32_t indexCount,
+                                                                     uint32_t firstIndex) {
+        // Validate the range of index buffer
+        // firstIndex and indexCount are in uint32_t, while IndexFormatSize is 2 (for
+        // wgpu::IndexFormat::Uint16) or 4 (for wgpu::IndexFormat::Uint32), so by doing checks in
+        // uint64_t we avoid overflows.
+        DAWN_INVALID_IF(
+            (static_cast<uint64_t>(firstIndex) + indexCount) * IndexFormatSize(mIndexFormat) >
+                mIndexBufferSize,
+            "Index range (first: %u, count: %u, format: %s) does not fit in index buffer size "
+            "(%u).",
+            firstIndex, indexCount, mIndexFormat, mIndexBufferSize);
+        return {};
+    }
+
     MaybeError CommandBufferStateTracker::ValidateOperation(ValidationAspects requiredAspects) {
         // Fast return-true path if everything is good
         ValidationAspects missingAspects = requiredAspects & ~mAspects;
@@ -117,18 +215,19 @@ namespace dawn_native {
         }
 
         if (aspects[VALIDATION_ASPECT_VERTEX_BUFFERS]) {
-            ASSERT(mLastRenderPipeline != nullptr);
+            RenderPipelineBase* lastRenderPipeline = GetRenderPipeline();
 
             const ityp::bitset<VertexBufferSlot, kMaxVertexBuffers>& requiredVertexBuffers =
-                mLastRenderPipeline->GetVertexBufferSlotsUsed();
+                lastRenderPipeline->GetVertexBufferSlotsUsed();
             if (IsSubset(requiredVertexBuffers, mVertexBufferSlotsUsed)) {
                 mAspects.set(VALIDATION_ASPECT_VERTEX_BUFFERS);
             }
         }
 
         if (aspects[VALIDATION_ASPECT_INDEX_BUFFER] && mIndexBufferSet) {
-            if (!IsStripPrimitiveTopology(mLastRenderPipeline->GetPrimitiveTopology()) ||
-                mIndexFormat == mLastRenderPipeline->GetStripIndexFormat()) {
+            RenderPipelineBase* lastRenderPipeline = GetRenderPipeline();
+            if (!IsStripPrimitiveTopology(lastRenderPipeline->GetPrimitiveTopology()) ||
+                mIndexFormat == lastRenderPipeline->GetStripIndexFormat()) {
                 mAspects.set(VALIDATION_ASPECT_INDEX_BUFFER);
             }
         }
@@ -139,14 +238,26 @@ namespace dawn_native {
             return {};
         }
 
-        if (aspects[VALIDATION_ASPECT_INDEX_BUFFER]) {
-            wgpu::IndexFormat pipelineIndexFormat = mLastRenderPipeline->GetStripIndexFormat();
-            if (!mIndexBufferSet) {
-                return DAWN_VALIDATION_ERROR("Missing index buffer");
-            } else if (IsStripPrimitiveTopology(mLastRenderPipeline->GetPrimitiveTopology()) &&
-                       mIndexFormat != pipelineIndexFormat) {
-                return DAWN_VALIDATION_ERROR(
-                    "Pipeline strip index format does not match index buffer format");
+        DAWN_INVALID_IF(aspects[VALIDATION_ASPECT_PIPELINE], "No pipeline set.");
+
+        if (DAWN_UNLIKELY(aspects[VALIDATION_ASPECT_INDEX_BUFFER])) {
+            DAWN_INVALID_IF(!mIndexBufferSet, "Index buffer was not set.");
+
+            RenderPipelineBase* lastRenderPipeline = GetRenderPipeline();
+            wgpu::IndexFormat pipelineIndexFormat = lastRenderPipeline->GetStripIndexFormat();
+
+            if (IsStripPrimitiveTopology(lastRenderPipeline->GetPrimitiveTopology())) {
+                DAWN_INVALID_IF(
+                    pipelineIndexFormat == wgpu::IndexFormat::Undefined,
+                    "%s has a strip primitive topology (%s) but a strip index format of %s, which "
+                    "prevents it for being used for indexed draw calls.",
+                    lastRenderPipeline, lastRenderPipeline->GetPrimitiveTopology(),
+                    pipelineIndexFormat);
+
+                DAWN_INVALID_IF(
+                    mIndexFormat != pipelineIndexFormat,
+                    "Strip index format (%s) of %s does not match index buffer format (%s).",
+                    pipelineIndexFormat, lastRenderPipeline, mIndexFormat);
             }
 
             // The chunk of code above should be similar to the one in |RecomputeLazyAspects|.
@@ -154,28 +265,58 @@ namespace dawn_native {
             // because to have invalid aspects one of the above conditions must have failed earlier.
             // If this is reached, make sure lazy aspects and the error checks above are consistent.
             UNREACHABLE();
-            return DAWN_VALIDATION_ERROR("Index buffer invalid");
+            return DAWN_FORMAT_VALIDATION_ERROR("Index buffer is invalid.");
         }
 
-        if (aspects[VALIDATION_ASPECT_VERTEX_BUFFERS]) {
-            return DAWN_VALIDATION_ERROR("Missing vertex buffer");
-        }
+        // TODO(dawn:563): Indicate which slots were not set.
+        DAWN_INVALID_IF(aspects[VALIDATION_ASPECT_VERTEX_BUFFERS],
+                        "Vertex buffer slots required by %s were not set.", GetRenderPipeline());
 
-        if (aspects[VALIDATION_ASPECT_BIND_GROUPS]) {
+        if (DAWN_UNLIKELY(aspects[VALIDATION_ASPECT_BIND_GROUPS])) {
             for (BindGroupIndex i : IterateBitSet(mLastPipelineLayout->GetBindGroupLayoutsMask())) {
-                if (mBindgroups[i] == nullptr) {
-                    return DAWN_VALIDATION_ERROR("Missing bind group " +
-                                                 std::to_string(static_cast<uint32_t>(i)));
-                } else if (mLastPipelineLayout->GetBindGroupLayout(i) !=
-                           mBindgroups[i]->GetLayout()) {
-                    return DAWN_VALIDATION_ERROR(
-                        "Pipeline and bind group layout doesn't match for bind group " +
-                        std::to_string(static_cast<uint32_t>(i)));
-                } else if (!BufferSizesAtLeastAsBig(mBindgroups[i]->GetUnverifiedBufferSizes(),
-                                                    (*mMinBufferSizes)[i])) {
-                    return DAWN_VALIDATION_ERROR("Binding sizes too small for bind group " +
-                                                 std::to_string(static_cast<uint32_t>(i)));
-                }
+                ASSERT(HasPipeline());
+
+                DAWN_INVALID_IF(mBindgroups[i] == nullptr, "No bind group set at index %u.",
+                                static_cast<uint32_t>(i));
+
+                BindGroupLayoutBase* requiredBGL = mLastPipelineLayout->GetBindGroupLayout(i);
+                BindGroupLayoutBase* currentBGL = mBindgroups[i]->GetLayout();
+
+                DAWN_INVALID_IF(
+                    requiredBGL->GetPipelineCompatibilityToken() != PipelineCompatibilityToken(0) &&
+                        currentBGL->GetPipelineCompatibilityToken() !=
+                            requiredBGL->GetPipelineCompatibilityToken(),
+                    "The current pipeline (%s) was created with a default layout, and is not "
+                    "compatible with the %s at index %u which uses a %s that was not created by "
+                    "the pipeline. Either use the bind group layout returned by calling "
+                    "getBindGroupLayout(%u) on the pipeline when creating the bind group, or "
+                    "provide an explicit pipeline layout when creating the pipeline.",
+                    mLastPipeline, mBindgroups[i], static_cast<uint32_t>(i), currentBGL,
+                    static_cast<uint32_t>(i));
+
+                DAWN_INVALID_IF(
+                    requiredBGL->GetPipelineCompatibilityToken() == PipelineCompatibilityToken(0) &&
+                        currentBGL->GetPipelineCompatibilityToken() !=
+                            PipelineCompatibilityToken(0),
+                    "%s at index %u uses a %s which was created as part of the default layout for "
+                    "a different pipeline than the current one (%s), and as a result is not "
+                    "compatible. Use an explicit bind group layout when creating bind groups and "
+                    "an explicit pipeline layout when creating pipelines to share bind groups "
+                    "between pipelines.",
+                    mBindgroups[i], static_cast<uint32_t>(i), currentBGL, mLastPipeline);
+
+                DAWN_INVALID_IF(
+                    mLastPipelineLayout->GetBindGroupLayout(i) != mBindgroups[i]->GetLayout(),
+                    "Bind group layout %s of pipeline layout %s does not match layout %s of bind "
+                    "group %s at index %u.",
+                    requiredBGL, mLastPipelineLayout, currentBGL, mBindgroups[i],
+                    static_cast<uint32_t>(i));
+
+                // TODO(dawn:563): Report the binding sizes and which ones are failing.
+                DAWN_INVALID_IF(!BufferSizesAtLeastAsBig(mBindgroups[i]->GetUnverifiedBufferSizes(),
+                                                         (*mMinBufferSizes)[i]),
+                                "Binding sizes are too small for bind group %s at index %u",
+                                mBindgroups[i], static_cast<uint32_t>(i));
             }
 
             // The chunk of code above should be similar to the one in |RecomputeLazyAspects|.
@@ -183,11 +324,7 @@ namespace dawn_native {
             // because to have invalid aspects one of the above conditions must have failed earlier.
             // If this is reached, make sure lazy aspects and the error checks above are consistent.
             UNREACHABLE();
-            return DAWN_VALIDATION_ERROR("Bind groups invalid");
-        }
-
-        if (aspects[VALIDATION_ASPECT_PIPELINE]) {
-            return DAWN_VALIDATION_ERROR("Missing pipeline");
+            return DAWN_FORMAT_VALIDATION_ERROR("Bind groups are invalid.");
         }
 
         UNREACHABLE();
@@ -198,12 +335,15 @@ namespace dawn_native {
     }
 
     void CommandBufferStateTracker::SetRenderPipeline(RenderPipelineBase* pipeline) {
-        mLastRenderPipeline = pipeline;
         SetPipelineCommon(pipeline);
     }
 
-    void CommandBufferStateTracker::SetBindGroup(BindGroupIndex index, BindGroupBase* bindgroup) {
+    void CommandBufferStateTracker::SetBindGroup(BindGroupIndex index,
+                                                 BindGroupBase* bindgroup,
+                                                 uint32_t dynamicOffsetCount,
+                                                 const uint32_t* dynamicOffsets) {
         mBindgroups[index] = bindgroup;
+        mDynamicOffsets[index].assign(dynamicOffsets, dynamicOffsets + dynamicOffsetCount);
         mAspects.reset(VALIDATION_ASPECT_BIND_GROUPS);
     }
 
@@ -213,13 +353,15 @@ namespace dawn_native {
         mIndexBufferSize = size;
     }
 
-    void CommandBufferStateTracker::SetVertexBuffer(VertexBufferSlot slot) {
+    void CommandBufferStateTracker::SetVertexBuffer(VertexBufferSlot slot, uint64_t size) {
         mVertexBufferSlotsUsed.set(slot);
+        mVertexBufferSizes[slot] = size;
     }
 
     void CommandBufferStateTracker::SetPipelineCommon(PipelineBase* pipeline) {
-        mLastPipelineLayout = pipeline->GetLayout();
-        mMinBufferSizes = &pipeline->GetMinBufferSizes();
+        mLastPipeline = pipeline;
+        mLastPipelineLayout = pipeline != nullptr ? pipeline->GetLayout() : nullptr;
+        mMinBufferSizes = pipeline != nullptr ? &pipeline->GetMinBufferSizes() : nullptr;
 
         mAspects.set(VALIDATION_ASPECT_PIPELINE);
 
@@ -231,8 +373,35 @@ namespace dawn_native {
         return mBindgroups[index];
     }
 
+    const std::vector<uint32_t>& CommandBufferStateTracker::GetDynamicOffsets(
+        BindGroupIndex index) const {
+        return mDynamicOffsets[index];
+    }
+
+    bool CommandBufferStateTracker::HasPipeline() const {
+        return mLastPipeline != nullptr;
+    }
+
+    RenderPipelineBase* CommandBufferStateTracker::GetRenderPipeline() const {
+        ASSERT(HasPipeline() && mLastPipeline->GetType() == ObjectType::RenderPipeline);
+        return static_cast<RenderPipelineBase*>(mLastPipeline);
+    }
+
+    ComputePipelineBase* CommandBufferStateTracker::GetComputePipeline() const {
+        ASSERT(HasPipeline() && mLastPipeline->GetType() == ObjectType::ComputePipeline);
+        return static_cast<ComputePipelineBase*>(mLastPipeline);
+    }
+
     PipelineLayoutBase* CommandBufferStateTracker::GetPipelineLayout() const {
         return mLastPipelineLayout;
+    }
+
+    wgpu::IndexFormat CommandBufferStateTracker::GetIndexFormat() const {
+        return mIndexFormat;
+    }
+
+    uint64_t CommandBufferStateTracker::GetIndexBufferSize() const {
+        return mIndexBufferSize;
     }
 
 }  // namespace dawn_native

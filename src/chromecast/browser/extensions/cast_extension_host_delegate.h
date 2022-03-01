@@ -5,7 +5,6 @@
 #ifndef CHROMECAST_BROWSER_EXTENSIONS_CAST_EXTENSION_HOST_DELEGATE_H_
 #define CHROMECAST_BROWSER_EXTENSIONS_CAST_EXTENSION_HOST_DELEGATE_H_
 
-#include "base/macros.h"
 #include "extensions/browser/extension_host_delegate.h"
 
 namespace extensions {
@@ -14,6 +13,11 @@ namespace extensions {
 class CastExtensionHostDelegate : public ExtensionHostDelegate {
  public:
   CastExtensionHostDelegate();
+
+  CastExtensionHostDelegate(const CastExtensionHostDelegate&) = delete;
+  CastExtensionHostDelegate& operator=(const CastExtensionHostDelegate&) =
+      delete;
+
   ~CastExtensionHostDelegate() override;
 
   // ExtensionHostDelegate implementation.
@@ -38,9 +42,6 @@ class CastExtensionHostDelegate : public ExtensionHostDelegate {
       const viz::SurfaceId& surface_id,
       const gfx::Size& natural_size) override;
   void ExitPictureInPicture() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CastExtensionHostDelegate);
 };
 
 }  // namespace extensions

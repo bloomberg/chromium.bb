@@ -23,12 +23,12 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@result@  count: 1000@@@",
       "@@@STEP_LOG_LINE@result@  garbage: 1000@@@",
-      "@@@STEP_LOG_LINE@result@  packs: 1000@@@",
       "@@@STEP_LOG_LINE@result@  in_pack: 1000@@@",
-      "@@@STEP_LOG_LINE@result@  size-pack: 1000@@@",
-      "@@@STEP_LOG_LINE@result@  size-garbage: 1000@@@",
+      "@@@STEP_LOG_LINE@result@  packs: 1000@@@",
       "@@@STEP_LOG_LINE@result@  prune-packable: 1000@@@",
       "@@@STEP_LOG_LINE@result@  size: 1000@@@",
+      "@@@STEP_LOG_LINE@result@  size-garbage: 1000@@@",
+      "@@@STEP_LOG_LINE@result@  size-pack: 1000@@@",
       "@@@STEP_LOG_END@result@@@"
     ]
   },
@@ -37,7 +37,7 @@
       "git",
       "fetch",
       "origin",
-      "master",
+      "main",
       "--recurse-submodules",
       "--progress"
     ],
@@ -61,42 +61,42 @@
       "@@@STEP_TEXT@size delta: +1.95 MiB@@@",
       "@@@STEP_LOG_LINE@result@  count: 2000@@@",
       "@@@STEP_LOG_LINE@result@  garbage: 2000@@@",
-      "@@@STEP_LOG_LINE@result@  packs: 2000@@@",
       "@@@STEP_LOG_LINE@result@  in_pack: 2000@@@",
-      "@@@STEP_LOG_LINE@result@  size-pack: 2000@@@",
-      "@@@STEP_LOG_LINE@result@  size-garbage: 2000@@@",
+      "@@@STEP_LOG_LINE@result@  packs: 2000@@@",
       "@@@STEP_LOG_LINE@result@  prune-packable: 2000@@@",
       "@@@STEP_LOG_LINE@result@  size: 2000@@@",
+      "@@@STEP_LOG_LINE@result@  size-garbage: 2000@@@",
+      "@@@STEP_LOG_LINE@result@  size-pack: 2000@@@",
       "@@@STEP_LOG_END@result@@@",
       "@@@STEP_LOG_LINE@delta@before:@@@",
       "@@@STEP_LOG_LINE@delta@  count: 1000@@@",
       "@@@STEP_LOG_LINE@delta@  garbage: 1000@@@",
-      "@@@STEP_LOG_LINE@delta@  packs: 1000@@@",
       "@@@STEP_LOG_LINE@delta@  in_pack: 1000@@@",
-      "@@@STEP_LOG_LINE@delta@  size-pack: 1000@@@",
-      "@@@STEP_LOG_LINE@delta@  size-garbage: 1000@@@",
+      "@@@STEP_LOG_LINE@delta@  packs: 1000@@@",
       "@@@STEP_LOG_LINE@delta@  prune-packable: 1000@@@",
       "@@@STEP_LOG_LINE@delta@  size: 1000@@@",
+      "@@@STEP_LOG_LINE@delta@  size-garbage: 1000@@@",
+      "@@@STEP_LOG_LINE@delta@  size-pack: 1000@@@",
       "@@@STEP_LOG_LINE@delta@@@@",
       "@@@STEP_LOG_LINE@delta@after:@@@",
       "@@@STEP_LOG_LINE@delta@  count: 2000@@@",
       "@@@STEP_LOG_LINE@delta@  garbage: 2000@@@",
-      "@@@STEP_LOG_LINE@delta@  packs: 2000@@@",
       "@@@STEP_LOG_LINE@delta@  in_pack: 2000@@@",
-      "@@@STEP_LOG_LINE@delta@  size-pack: 2000@@@",
-      "@@@STEP_LOG_LINE@delta@  size-garbage: 2000@@@",
+      "@@@STEP_LOG_LINE@delta@  packs: 2000@@@",
       "@@@STEP_LOG_LINE@delta@  prune-packable: 2000@@@",
       "@@@STEP_LOG_LINE@delta@  size: 2000@@@",
+      "@@@STEP_LOG_LINE@delta@  size-garbage: 2000@@@",
+      "@@@STEP_LOG_LINE@delta@  size-pack: 2000@@@",
       "@@@STEP_LOG_LINE@delta@@@@",
       "@@@STEP_LOG_LINE@delta@delta:@@@",
       "@@@STEP_LOG_LINE@delta@  count: 1000@@@",
       "@@@STEP_LOG_LINE@delta@  garbage: 1000@@@",
+      "@@@STEP_LOG_LINE@delta@  in_pack: 1000@@@",
       "@@@STEP_LOG_LINE@delta@  packs: 1000@@@",
       "@@@STEP_LOG_LINE@delta@  prune-packable: 1000@@@",
-      "@@@STEP_LOG_LINE@delta@  size-pack: 1000@@@",
-      "@@@STEP_LOG_LINE@delta@  size-garbage: 1000@@@",
-      "@@@STEP_LOG_LINE@delta@  in_pack: 1000@@@",
       "@@@STEP_LOG_LINE@delta@  size: 1000@@@",
+      "@@@STEP_LOG_LINE@delta@  size-garbage: 1000@@@",
+      "@@@STEP_LOG_LINE@delta@  size-pack: 1000@@@",
       "@@@STEP_LOG_END@delta@@@"
     ]
   },
@@ -265,8 +265,22 @@
   {
     "cmd": [
       "git",
+      "new-branch",
+      "track_current",
+      "--upstream_current"
+    ],
+    "cwd": "[START_DIR]/src",
+    "env": {
+      "PATH": "RECIPE_REPO[depot_tools]:<PATH>"
+    },
+    "infra_step": true,
+    "name": "git new-branch track_current"
+  },
+  {
+    "cmd": [
+      "git",
       "rebase",
-      "origin/master"
+      "origin/main"
     ],
     "cwd": "[START_DIR]/src",
     "infra_step": true,

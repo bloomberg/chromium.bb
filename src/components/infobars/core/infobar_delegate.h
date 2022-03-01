@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
@@ -128,7 +128,7 @@ class InfoBarDelegate {
     // Removed: READER_MODE_INFOBAR_DELEGATE_IOS = 57,
     SYNC_ERROR_INFOBAR_DELEGATE_IOS = 58,
     UPGRADE_INFOBAR_DELEGATE_IOS = 59,
-    WINDOW_ERROR_INFOBAR_DELEGATE_ANDROID = 60,
+    // Removed: WINDOW_ERROR_INFOBAR_DELEGATE_ANDROID = 60,
     DANGEROUS_DOWNLOAD_INFOBAR_DELEGATE_ANDROID = 61,
     // Removed: DESKTOP_SEARCH_REDIRECTION_INFOBAR_DELEGATE = 62,
     UPDATE_PASSWORD_INFOBAR_DELEGATE_MOBILE = 63,
@@ -142,7 +142,7 @@ class InfoBarDelegate {
     OFFLINE_PAGE_INFOBAR_DELEGATE_ANDROID = 71,
     SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_DELEGATE_ANDROID = 72,
     AUTOMATION_INFOBAR_DELEGATE = 73,
-    VR_SERVICES_UPGRADE_ANDROID = 74,
+    // Removed: VR_SERVICES_UPGRADE_ANDROID = 74,
     READER_MODE_INFOBAR_ANDROID = 75,
     VR_FEEDBACK_INFOBAR_ANDROID = 76,
     FRAMEBUST_BLOCK_INFOBAR_ANDROID = 77,
@@ -156,9 +156,9 @@ class InfoBarDelegate {
     // Removed: SUPERVISED_USERS_DEPRECATED_INFOBAR_DELEGATE = 85,
     NEAR_OOM_REDUCTION_INFOBAR_ANDROID = 86,
     // Removed: LITE_PAGE_PREVIEWS_INFOBAR = 87,
-    MODULE_INSTALL_FAILURE_INFOBAR_ANDROID = 88,
-    INLINE_UPDATE_READY_INFOBAR_ANDROID = 89,
-    INLINE_UPDATE_FAILED_INFOBAR_ANDROID = 90,
+    // Removed: MODULE_INSTALL_FAILURE_INFOBAR_ANDROID = 88,
+    // Removed: INLINE_UPDATE_READY_INFOBAR_ANDROID = 89,
+    // Removed: INLINE_UPDATE_FAILED_INFOBAR_ANDROID = 90,
     // Removed: FLASH_DEPRECATION_INFOBAR_DELEGATE = 91,
     SEND_TAB_TO_SELF_INFOBAR_DELEGATE = 92,
     TAB_SHARING_INFOBAR_DELEGATE = 93,
@@ -175,6 +175,7 @@ class InfoBarDelegate {
     // Removed: WEBID_PERMISSION_INFOBAR_DELEGATE = 104,
     AUTOFILL_OFFER_NOTIFICATION_INFOBAR_DELEGATE = 105,
     AUTOFILL_ADDRESS_PROFILE_INFOBAR_DELEGATE_IOS = 106,
+    ADD_TO_READING_LIST_IOS = 107,
   };
 
   // Describes navigation events, used to decide whether infobars should be
@@ -194,6 +195,9 @@ class InfoBarDelegate {
 
   // Value to use when the InfoBar has no icon to show.
   static const int kNoIconID;
+
+  InfoBarDelegate(const InfoBarDelegate&) = delete;
+  InfoBarDelegate& operator=(const InfoBarDelegate&) = delete;
 
   // Called when the InfoBar that owns this delegate is being destroyed.  At
   // this point nothing is visible onscreen.
@@ -286,12 +290,10 @@ class InfoBarDelegate {
 
  private:
   // The InfoBar associated with us.
-  InfoBar* infobar_ = nullptr;
+  raw_ptr<InfoBar> infobar_ = nullptr;
 
   // The ID of the active navigation entry at the time we became owned.
   int nav_entry_id_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(InfoBarDelegate);
 };
 
 }  // namespace infobars

@@ -7,15 +7,18 @@
 
 #include <string>
 
-#include "ash/public/cpp/keyboard/keyboard_types.h"
 #include "base/files/file_path.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/chrome_test_utils.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/security_interstitials/core/controller_client.h"
-#include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
+
+class Browser;
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 namespace extensions {
 class Extension;
@@ -29,7 +32,7 @@ class PolicyMap;
 
 void GetTestDataDirectory(base::FilePath* test_data_directory);
 
-class PolicyTest : public InProcessBrowserTest {
+class PolicyTest : public PlatformBrowserTest {
  public:
   // The possibilities for a boolean policy.
   enum class BooleanPolicy {
@@ -50,24 +53,12 @@ class PolicyTest : public InProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
 
-  // Verifies that access to the given url |spec| is blocked.
-  void CheckURLIsBlockedInWebContents(content::WebContents* web_contents,
-                                      const GURL& url);
-
-  // Verifies that access to the given url |spec| is blocked.
-  void CheckURLIsBlocked(Browser* browser, const std::string& spec);
-
   void SetScreenshotPolicy(bool enabled);
-
-  void SetRequireCTForTesting(bool required);
 
   scoped_refptr<const extensions::Extension> LoadUnpackedExtension(
       const base::FilePath::StringType& name);
 
   void UpdateProviderPolicy(const PolicyMap& policy);
-
-  // Sends a mouse click at the given coordinates to the current renderer.
-  void PerformClick(int x, int y);
 
   static void SetPolicy(PolicyMap* policies,
                         const char* key,
@@ -80,10 +71,6 @@ class PolicyTest : public InProcessBrowserTest {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void TestScreenshotFile(bool enabled);
-
-  void SetEnableFlag(const keyboard::KeyboardEnableFlag& flag);
-
-  void ClearEnableFlag(const keyboard::KeyboardEnableFlag& flag);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   static GURL GetExpectedSearchURL(bool expect_safe_search);
@@ -91,12 +78,6 @@ class PolicyTest : public InProcessBrowserTest {
   static void CheckSafeSearch(Browser* browser,
                               bool expect_safe_search,
                               const std::string& url = "http://google.com/");
-
-  static void CheckYouTubeRestricted(int youtube_restrict_mode,
-                                     const net::HttpRequestHeaders& headers);
-
-  static void CheckAllowedDomainsHeader(const std::string& allowed_domain,
-                                        const net::HttpRequestHeaders& headers);
 
   static bool FetchSubresource(content::WebContents* web_contents,
                                const GURL& url);
@@ -107,13 +88,9 @@ class PolicyTest : public InProcessBrowserTest {
 
   int IsEnhancedProtectionMessageVisibleOnInterstitial();
 
-  void SendInterstitialCommand(
-      content::WebContents* tab,
-      security_interstitials::SecurityInterstitialCommand command);
+  void FlushBlocklistPolicy();
 
-  void FlushBlacklistPolicy();
-
-  MockConfigurationPolicyProvider provider_;
+  testing::NiceMock<MockConfigurationPolicyProvider> provider_;
 };
 
 }  // namespace policy

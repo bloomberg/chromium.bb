@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/pin.h"
@@ -71,13 +72,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthTokenRequester {
     // AuthenticatorSelectedForPINUVAuthToken is invoked to indicate that the
     // user has interacted with this authenticator (i.e. tapped its button).
     // The Delegate typically uses this signal to cancel outstanding requests to
-    // other authenticators.
+    // other authenticators. It returns false if another authenticator has
+    // already been chosen, and true otherwise. In the former case, no further
+    // methods will be called.
     //
     // This method is guaranteed to be called first and at exactly once
     // throughout the handler's lifetime, *unless*
     // HavePINUVAuthTokenResultForAuthenticator() is invoked first with one of
     // the Result codes starting with `kPreTouch`.
-    virtual void AuthenticatorSelectedForPINUVAuthToken(
+    virtual bool AuthenticatorSelectedForPINUVAuthToken(
         FidoAuthenticator* authenticator) = 0;
 
     // CollectNewPIN is invoked to prompt the user to enter a PIN for an
@@ -149,15 +152,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthTokenRequester {
                 CtapDeviceResponseCode status,
                 absl::optional<pin::EmptyResponse> response);
 
-  void NotifyAuthenticatorSelected();
+  bool NotifyAuthenticatorSelected();
   void NotifyAuthenticatorSelectedAndFailWithResult(Result result);
 
-  Delegate* delegate_;
-  FidoAuthenticator* authenticator_;
+  raw_ptr<Delegate> delegate_;
+  raw_ptr<FidoAuthenticator> authenticator_;
 
   Options options_;
 
-  bool authenticator_was_selected_ = false;
+  absl::optional<bool> authenticator_selected_result_;
   bool is_internal_uv_retry_ = false;
   absl::optional<std::string> current_pin_;
   bool internal_uv_locked_ = false;

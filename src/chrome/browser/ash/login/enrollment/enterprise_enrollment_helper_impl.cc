@@ -11,28 +11,31 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_uma.h"
 #include "chrome/browser/ash/login/startup_utils.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_client_factory_ash.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
+#include "chrome/browser/ash/policy/core/policy_oauth2_token_fetcher.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_handler.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
+#include "chrome/browser/ash/policy/enrollment/tpm_enrollment_key_signing_service.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
-#include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/enrollment_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
+#include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace ash {
@@ -41,10 +44,17 @@ namespace {
 // TODO(https://crbug.com/1164001): remove when migrated to ash::
 using ::chromeos::InstallAttributes;
 
+// The OAuth token consumer name.
+const char kOAuthConsumerName[] = "enterprise_enrollment";
+
 // A helper class that takes care of asynchronously revoking a given token.
 class TokenRevoker : public GaiaAuthConsumer {
  public:
   TokenRevoker();
+
+  TokenRevoker(const TokenRevoker&) = delete;
+  TokenRevoker& operator=(const TokenRevoker&) = delete;
+
   ~TokenRevoker() override;
 
   void Start(const std::string& token);
@@ -55,8 +65,6 @@ class TokenRevoker : public GaiaAuthConsumer {
 
  private:
   GaiaAuthFetcher gaia_fetcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(TokenRevoker);
 };
 
 TokenRevoker::TokenRevoker()
@@ -93,7 +101,7 @@ EnterpriseEnrollmentHelperImpl::~EnterpriseEnrollmentHelperImpl() {
 }
 
 void EnterpriseEnrollmentHelperImpl::Setup(
-    ActiveDirectoryJoinDelegate* ad_join_delegate,
+    policy::ActiveDirectoryJoinDelegate* ad_join_delegate,
     const policy::EnrollmentConfig& enrollment_config,
     const std::string& enrolling_user_domain) {
   ad_join_delegate_ = ad_join_delegate;
@@ -105,7 +113,8 @@ void EnterpriseEnrollmentHelperImpl::EnrollUsingAuthCode(
     const std::string& auth_code) {
   DCHECK(oauth_status_ == OAUTH_NOT_STARTED);
   oauth_status_ = OAUTH_STARTED_WITH_AUTH_CODE;
-  oauth_fetcher_ = policy::PolicyOAuth2TokenFetcher::CreateInstance();
+  oauth_fetcher_ =
+      policy::PolicyOAuth2TokenFetcher::CreateInstance(kOAuthConsumerName);
   oauth_fetcher_->StartWithAuthCode(
       auth_code,
       g_browser_process->system_network_context_manager()
@@ -128,101 +137,11 @@ void EnterpriseEnrollmentHelperImpl::EnrollUsingAttestation() {
   DoEnroll(policy::DMAuth::NoAuth());
 }
 
-void EnterpriseEnrollmentHelperImpl::EnrollUsingEnrollmentToken(
-    const std::string& token) {
-  CHECK_EQ(enrollment_config_.mode,
-           policy::EnrollmentConfig::MODE_ATTESTATION_ENROLLMENT_TOKEN);
-  DoEnroll(policy::DMAuth::FromEnrollmentToken(token));
-}
-
 void EnterpriseEnrollmentHelperImpl::EnrollForOfflineDemo() {
   CHECK_EQ(enrollment_config_.mode,
            policy::EnrollmentConfig::MODE_OFFLINE_DEMO);
   // The tokens are not used in offline demo mode.
   DoEnroll(policy::DMAuth::NoAuth());
-}
-
-void EnterpriseEnrollmentHelperImpl::RestoreAfterRollback() {
-  CHECK_EQ(enrollment_config_.mode,
-           policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK);
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  DCHECK(connector->IsCloudManaged());
-
-  auto* manager = connector->GetDeviceCloudPolicyManager();
-
-  if (manager->core()->client()) {
-    RestoreAfterRollbackInitialized();
-  } else {
-    manager->AddDeviceCloudPolicyManagerObserver(this);
-  }
-}
-
-void EnterpriseEnrollmentHelperImpl::OnDeviceCloudPolicyManagerConnected() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  connector->GetDeviceCloudPolicyManager()
-      ->RemoveDeviceCloudPolicyManagerObserver(this);
-  RestoreAfterRollbackInitialized();
-}
-
-void EnterpriseEnrollmentHelperImpl::OnDeviceCloudPolicyManagerDisconnected() {}
-
-void EnterpriseEnrollmentHelperImpl::RestoreAfterRollbackInitialized() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  auto* manager = connector->GetDeviceCloudPolicyManager();
-  auto* client = manager->core()->client();
-  DCHECK(client);
-
-  device_account_initializer_ =
-      std::make_unique<policy::DeviceAccountInitializer>(client, this);
-  device_account_initializer_->FetchToken();
-}
-
-void EnterpriseEnrollmentHelperImpl::OnDeviceAccountTokenFetched(
-    bool empty_token) {
-  if (empty_token) {
-    status_consumer()->OnRestoreAfterRollbackCompleted();
-    return;
-  }
-  device_account_initializer_->StoreToken();
-}
-
-void EnterpriseEnrollmentHelperImpl::OnDeviceAccountTokenStored() {
-  status_consumer()->OnRestoreAfterRollbackCompleted();
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
-      FROM_HERE, device_account_initializer_.release());
-}
-
-void EnterpriseEnrollmentHelperImpl::OnDeviceAccountTokenError(
-    policy::EnrollmentStatus status) {
-  OnEnrollmentFinished(status);
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
-      FROM_HERE, device_account_initializer_.release());
-}
-
-void EnterpriseEnrollmentHelperImpl::OnDeviceAccountClientError(
-    policy::DeviceManagementStatus status) {
-  OnEnrollmentFinished(
-      policy::EnrollmentStatus::ForRobotAuthFetchError(status));
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
-      FROM_HERE, device_account_initializer_.release());
-}
-
-enterprise_management::DeviceServiceApiAccessRequest::DeviceType
-EnterpriseEnrollmentHelperImpl::GetRobotAuthCodeDeviceType() {
-  return enterprise_management::DeviceServiceApiAccessRequest::CHROME_OS;
-}
-
-std::set<std::string> EnterpriseEnrollmentHelperImpl::GetRobotOAuthScopes() {
-  return {GaiaConstants::kAnyApiOAuth2Scope};
-}
-
-scoped_refptr<network::SharedURLLoaderFactory>
-EnterpriseEnrollmentHelperImpl::GetURLLoaderFactory() {
-  return g_browser_process->system_network_context_manager()
-      ->GetSharedURLLoaderFactory();
 }
 
 void EnterpriseEnrollmentHelperImpl::ClearAuth(base::OnceClosure callback) {
@@ -253,11 +172,13 @@ void EnterpriseEnrollmentHelperImpl::DoEnroll(policy::DMAuth auth_data) {
              policy::EnrollmentConfig::MODE_OFFLINE_DEMO ||
          oauth_status_ == OAUTH_STARTED_WITH_AUTH_CODE ||
          oauth_status_ == OAUTH_STARTED_WITH_TOKEN);
-  VLOG(1) << "Enroll with token type: "
-          << static_cast<int>(auth_data.token_type());
+  // TODO(crbug.com/1271134): Logging as "WARNING" to make sure it's preserved
+  // in the logs.
+  LOG(WARNING) << "Enroll with token type: "
+               << static_cast<int>(auth_data.token_type());
   auth_data_ = std::move(auth_data);
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   // Re-enrollment is not implemented for Active Directory.
   // If an enrollment domain is already fixed in install attributes and
   // re-enrollment happens via login, domains need to be equal.
@@ -277,15 +198,37 @@ void EnterpriseEnrollmentHelperImpl::DoEnroll(policy::DMAuth auth_data) {
   }
 
   connector->ScheduleServiceInitialization(0);
-  policy::DeviceCloudPolicyInitializer* dcp_initializer =
-      connector->GetDeviceCloudPolicyInitializer();
-  CHECK(dcp_initializer);
-  dcp_initializer->PrepareEnrollment(
-      connector->device_management_service(), ad_join_delegate_,
-      enrollment_config_, auth_data_.Clone(),
+
+  DCHECK(!enrollment_handler_);
+  policy::DeviceCloudPolicyManagerAsh* policy_manager =
+      connector->GetDeviceCloudPolicyManager();
+  // Obtain attestation_flow from the connector because it can be fake
+  // attestation flow for testing.
+  attestation::AttestationFlow* attestation_flow =
+      connector->GetAttestationFlow();
+  auto signing_service =
+      std::make_unique<policy::TpmEnrollmentKeySigningService>();
+  // DeviceDMToken callback is empty here because for device policies this
+  // DMToken is already provided in the policy fetch requests.
+  auto client = policy::CreateDeviceCloudPolicyClientAsh(
+      chromeos::system::StatisticsProvider::GetInstance(),
+      connector->device_management_service(),
+      g_browser_process->shared_url_loader_factory(),
+      policy::CloudPolicyClient::DeviceDMTokenCallback());
+
+  enrollment_handler_ = std::make_unique<policy::EnrollmentHandler>(
+      policy_manager->device_store(), InstallAttributes::Get(),
+      connector->GetStateKeysBroker(), attestation_flow,
+      std::move(signing_service), std::move(client),
+      policy::BrowserPolicyConnectorAsh::CreateBackgroundTaskRunner(),
+      ad_join_delegate_, enrollment_config_, auth_data_.Clone(),
+      InstallAttributes::Get()->GetDeviceId(),
+      policy::EnrollmentRequisitionManager::GetDeviceRequisition(),
+      policy::EnrollmentRequisitionManager::GetSubOrganization(),
       base::BindOnce(&EnterpriseEnrollmentHelperImpl::OnEnrollmentFinished,
                      weak_ptr_factory_.GetWeakPtr()));
-  dcp_initializer->StartEnrollment();
+
+  enrollment_handler_->StartEnrollment();
 }
 
 void EnterpriseEnrollmentHelperImpl::GetDeviceAttributeUpdatePermission() {
@@ -302,14 +245,14 @@ void EnterpriseEnrollmentHelperImpl::GetDeviceAttributeUpdatePermission() {
     return;
   }
 
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   // Don't update device attributes for Active Directory management.
   if (connector->IsActiveDirectoryManaged()) {
     OnDeviceAttributeUpdatePermission(false);
     return;
   }
-  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+  policy::DeviceCloudPolicyManagerAsh* policy_manager =
       connector->GetDeviceCloudPolicyManager();
   policy::CloudPolicyClient* client = policy_manager->core()->client();
 
@@ -324,9 +267,9 @@ void EnterpriseEnrollmentHelperImpl::UpdateDeviceAttributes(
     const std::string& asset_id,
     const std::string& location) {
   DCHECK(!auth_data_.empty());
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
+  policy::DeviceCloudPolicyManagerAsh* policy_manager =
       connector->GetDeviceCloudPolicyManager();
   policy::CloudPolicyClient* client = policy_manager->core()->client();
 
@@ -352,17 +295,43 @@ void EnterpriseEnrollmentHelperImpl::OnTokenFetched(
 
 void EnterpriseEnrollmentHelperImpl::OnEnrollmentFinished(
     policy::EnrollmentStatus status) {
-  VLOG(1) << "Enrollment finished, status: " << status.status();
+  // Regardless how enrollment has finished, |enrollment_handler_| is expired.
+  // |client| might still be needed to connect the manager.
+  auto client = enrollment_handler_->ReleaseClient();
+  // Though enrollment handler calls this method, it's "fine" do delete the
+  // handler here as it does not do anyhting after that callback in
+  // |EnrollmentHandler::ReportResult()|.
+  // TODO(crbug.com/1236167): Enrollment handler calls this method.  Deal with
+  // removing caller from callee.
+  enrollment_handler_.reset();
+
+  // TODO(crbug.com/1271134): Logging as "WARNING" to make sure it's preserved
+  // in the logs.
+  LOG(WARNING) << "Enrollment finished, status: " << status.status();
   ReportEnrollmentStatus(status);
   if (oauth_status_ != OAUTH_NOT_STARTED)
     oauth_status_ = OAUTH_FINISHED;
-  if (status.status() == policy::EnrollmentStatus::SUCCESS) {
-    success_ = true;
-    StartupUtils::MarkOobeCompleted();
-    status_consumer()->OnDeviceEnrolled();
-  } else {
+
+  if (status.status() != policy::EnrollmentStatus::SUCCESS) {
     status_consumer()->OnEnrollmentError(status);
+    return;
   }
+
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
+  policy::DeviceCloudPolicyManagerAsh* policy_manager =
+      connector->GetDeviceCloudPolicyManager();
+
+  // Connect policy manager if necessary. If it has already been connected, no
+  // reconnection needed.
+  if (!policy_manager->IsConnected()) {
+    policy_manager->StartConnection(std::move(client),
+                                    InstallAttributes::Get());
+  }
+
+  success_ = true;
+  StartupUtils::MarkOobeCompleted();
+  status_consumer()->OnDeviceEnrolled();
 }
 
 void EnterpriseEnrollmentHelperImpl::OnDeviceAttributeUpdatePermission(

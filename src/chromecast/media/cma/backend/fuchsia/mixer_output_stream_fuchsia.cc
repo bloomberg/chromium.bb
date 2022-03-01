@@ -12,6 +12,7 @@
 #include "base/fuchsia/process_context.h"
 #include "base/logging.h"
 #include "base/memory/writable_shared_memory_region.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "media/base/audio_sample_types.h"
@@ -23,8 +24,7 @@ namespace media {
 
 // Target period between Write() calls. It's used to calculate the value
 // returned from OptimalWriteFramesCount().
-constexpr base::TimeDelta kTargetWritePeriod =
-    base::TimeDelta::FromMilliseconds(10);
+constexpr base::TimeDelta kTargetWritePeriod = base::Milliseconds(10);
 
 // Same value as in MixerOutputStreamAlsa. Currently this value is used to
 // simulate blocking Write() similar to ALSA's behavior, see comments in
@@ -217,7 +217,7 @@ void MixerOutputStreamFuchsia::OnRendererError(zx_status_t status) {
 }
 
 void MixerOutputStreamFuchsia::OnMinLeadTimeChanged(int64_t min_lead_time) {
-  min_lead_time_ = base::TimeDelta::FromNanoseconds(min_lead_time);
+  min_lead_time_ = base::Nanoseconds(min_lead_time);
 
   // When min_lead_time_ increases we may need to reallocate |payload_buffer_|.
   // Code below just unmaps the current buffer. The new buffer will be allocated

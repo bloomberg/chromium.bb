@@ -4,6 +4,7 @@
 
 #include "components/favicon/core/favicon_backend.h"
 
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -24,7 +25,7 @@ using RedirectList = std::vector<GURL>;
 namespace {
 
 // The amount of time before we re-fetch the favicon.
-constexpr base::TimeDelta kFaviconRefetchDelta = base::TimeDelta::FromDays(7);
+constexpr base::TimeDelta kFaviconRefetchDelta = base::Days(7);
 
 bool IsFaviconBitmapExpired(base::Time last_updated) {
   return (base::Time::Now() - last_updated) > kFaviconRefetchDelta;
@@ -503,12 +504,6 @@ SetFaviconsResult FaviconBackend::SetFavicons(
 
   favicon_base::FaviconID icon_id =
       db_->GetFaviconIDForFaviconURL(icon_url, icon_type);
-
-  if (bitmap_type == FaviconBitmapType::ON_DEMAND) {
-    UMA_HISTOGRAM_BOOLEAN("Favicon.OnDemandIconExistsInDb",
-                          static_cast<bool>(icon_id));
-  }
-
   bool favicon_created = false;
   if (!icon_id) {
     icon_id = db_->AddFavicon(icon_url, icon_type);

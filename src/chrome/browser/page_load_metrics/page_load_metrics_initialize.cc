@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/page_load_metrics/observers/data_use_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/document_write_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/foreground_duration_ukm_observer.h"
+#include "chrome/browser/page_load_metrics/observers/formfill_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/javascript_frameworks_ukm_observer.h"
@@ -59,6 +59,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/page_load_metrics/observers/android_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/offline_measurements_page_load_metrics_observer.h"
 #else
 #include "chrome/browser/page_load_metrics/observers/session_restore_page_load_metrics_observer.h"
 #endif
@@ -79,6 +80,10 @@ class PageLoadMetricsEmbedder
     : public page_load_metrics::PageLoadMetricsEmbedderBase {
  public:
   explicit PageLoadMetricsEmbedder(content::WebContents* web_contents);
+
+  PageLoadMetricsEmbedder(const PageLoadMetricsEmbedder&) = delete;
+  PageLoadMetricsEmbedder& operator=(const PageLoadMetricsEmbedder&) = delete;
+
   ~PageLoadMetricsEmbedder() override;
 
   // page_load_metrics::PageLoadMetricsEmbedderBase:
@@ -93,9 +98,6 @@ class PageLoadMetricsEmbedder
   // page_load_metrics::PageLoadMetricsEmbedderBase:
   void RegisterEmbedderObservers(
       page_load_metrics::PageLoadTracker* tracker) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PageLoadMetricsEmbedder);
 };
 
 PageLoadMetricsEmbedder::PageLoadMetricsEmbedder(
@@ -148,6 +150,7 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
 
     tracker->AddObserver(std::make_unique<FlocPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<ThirdPartyMetricsObserver>());
+    tracker->AddObserver(std::make_unique<FormfillPageLoadMetricsObserver>());
 
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver> ukm_observer =
         UkmPageLoadMetricsObserver::CreateIfNeeded();
@@ -187,6 +190,14 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
           tracker->GetWebContents());
   if (translate_observer)
     tracker->AddObserver(std::move(translate_observer));
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<OfflineMeasurementsPageLoadMetricsObserver>
+      offline_measurements_observer =
+          OfflineMeasurementsPageLoadMetricsObserver::CreateIfNeeded();
+  if (offline_measurements_observer)
+    tracker->AddObserver(std::move(offline_measurements_observer));
+#endif
 }
 
 bool PageLoadMetricsEmbedder::IsNewTabPageUrl(const GURL& url) {

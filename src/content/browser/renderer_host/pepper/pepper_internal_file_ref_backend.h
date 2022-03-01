@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "content/browser/renderer_host/pepper/pepper_file_ref_host.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
@@ -31,6 +31,11 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
       int render_process_id,
       base::WeakPtr<PepperFileSystemBrowserHost> fs_host,
       const std::string& path);
+
+  PepperInternalFileRefBackend(const PepperInternalFileRefBackend&) = delete;
+  PepperInternalFileRefBackend& operator=(const PepperInternalFileRefBackend&) =
+      delete;
+
   ~PepperInternalFileRefBackend() override;
 
   // PepperFileRefBackend overrides.
@@ -60,8 +65,7 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
                  const IPC::Message& msg,
                  base::File::Error error);
 
-  // Helper methods called on IO thread when the PpapiHost runs on the UI
-  // thread.
+  // Helper methods called on IO thread.
   static void DidFinishOnIOThread(
       base::WeakPtr<PepperInternalFileRefBackend> weak_ptr,
       ppapi::host::ReplyMessageContext reply_context,
@@ -93,7 +97,7 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
 
   scoped_refptr<storage::FileSystemContext> GetFileSystemContext() const;
 
-  ppapi::host::PpapiHost* host_;
+  raw_ptr<ppapi::host::PpapiHost> host_;
   int render_process_id_;
   base::WeakPtr<PepperFileSystemBrowserHost> fs_host_;
   PP_FileSystemType fs_type_;
@@ -102,8 +106,6 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
   mutable storage::FileSystemURL fs_url_;
 
   base::WeakPtrFactory<PepperInternalFileRefBackend> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PepperInternalFileRefBackend);
 };
 
 }  // namespace content
