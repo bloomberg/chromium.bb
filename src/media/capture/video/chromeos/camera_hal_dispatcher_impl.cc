@@ -13,16 +13,17 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/notreached.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "chromeos/components/sensors/sensor_util.h"
@@ -45,7 +46,17 @@ const base::FilePath::CharType kArcCamera3SocketPath[] =
     "/run/camera/camera3.sock";
 const char kArcCameraGroup[] = "arc-camera";
 const base::FilePath::CharType kForceEnableAePath[] =
-    "/run/camera/force_enable_ae";
+    "/run/camera/force_enable_face_ae";
+const base::FilePath::CharType kForceDisableAePath[] =
+    "/run/camera/force_disable_face_ae";
+const base::FilePath::CharType kForceEnableHdrNetPath[] =
+    "/run/camera/force_enable_hdrnet";
+const base::FilePath::CharType kForceDisableHdrNetPath[] =
+    "/run/camera/force_disable_hdrnet";
+const base::FilePath::CharType kForceEnableAutoFramingPath[] =
+    "/run/camera/force_enable_auto_framing";
+const base::FilePath::CharType kForceDisableAutoFramingPath[] =
+    "/run/camera/force_disable_auto_framing";
 
 std::string GenerateRandomToken() {
   char random_bytes[16];
@@ -87,12 +98,17 @@ bool HasCrosCameraTest() {
 
 class MojoCameraClientObserver : public CameraClientObserver {
  public:
+  MojoCameraClientObserver() = delete;
+
   explicit MojoCameraClientObserver(
       mojo::PendingRemote<cros::mojom::CameraHalClient> client,
       cros::mojom::CameraClientType type,
       base::UnguessableToken auth_token)
       : CameraClientObserver(type, std::move(auth_token)),
         client_(std::move(client)) {}
+
+  MojoCameraClientObserver(const MojoCameraClientObserver&) = delete;
+  MojoCameraClientObserver& operator=(const MojoCameraClientObserver&) = delete;
 
   void OnChannelCreated(
       mojo::PendingRemote<cros::mojom::CameraModule> camera_module) override {
@@ -103,7 +119,6 @@ class MojoCameraClientObserver : public CameraClientObserver {
 
  private:
   mojo::Remote<cros::mojom::CameraHalClient> client_;
-  DISALLOW_IMPLICIT_CONSTRUCTORS(MojoCameraClientObserver);
 };
 
 }  // namespace
@@ -171,15 +186,80 @@ bool CameraHalDispatcherImpl::Start(
   TRACE_EVENT0("camera", "CameraHalDispatcherImpl");
   base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(this);
 
-  base::FilePath file_path(kForceEnableAePath);
-  if (base::FeatureList::IsEnabled(media::features::kForceEnableFaceAe)) {
-    if (!base::PathExists(file_path)) {
-      base::File file(file_path, base::File::FLAG_CREATE_ALWAYS);
-      file.Close();
+  {
+    base::FilePath enable_file_path(kForceEnableAePath);
+    base::FilePath disable_file_path(kForceDisableAePath);
+    if (!base::DeleteFile(enable_file_path)) {
+      LOG(WARNING) << "Could not delete " << kForceEnableAePath;
     }
-  } else {
-    if (base::PathExists(file_path)) {
-      base::DeleteFile(file_path);
+    if (!base::DeleteFile(disable_file_path)) {
+      LOG(WARNING) << "Could not delete " << kForceDisableAePath;
+    }
+    const base::CommandLine* command_line =
+        base::CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(media::switches::kForceControlFaceAe)) {
+      if (command_line->GetSwitchValueASCII(
+              media::switches::kForceControlFaceAe) == "enable") {
+        base::File file(enable_file_path, base::File::FLAG_CREATE_ALWAYS |
+                                              base::File::FLAG_WRITE);
+        file.Close();
+      } else {
+        base::File file(disable_file_path, base::File::FLAG_CREATE_ALWAYS |
+                                               base::File::FLAG_WRITE);
+        file.Close();
+      }
+    }
+  }
+
+  {
+    base::FilePath enable_file_path(kForceEnableHdrNetPath);
+    base::FilePath disable_file_path(kForceDisableHdrNetPath);
+    if (!base::DeleteFile(enable_file_path)) {
+      LOG(WARNING) << "Could not delete " << kForceEnableHdrNetPath;
+    }
+    if (!base::DeleteFile(disable_file_path)) {
+      LOG(WARNING) << "Could not delete " << kForceDisableHdrNetPath;
+    }
+    const base::CommandLine* command_line =
+        base::CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(media::switches::kHdrNetOverride)) {
+      std::string value =
+          command_line->GetSwitchValueASCII(switches::kHdrNetOverride);
+      if (value == switches::kHdrNetForceEnabled) {
+        base::File file(enable_file_path, base::File::FLAG_CREATE_ALWAYS |
+                                              base::File::FLAG_WRITE);
+        file.Close();
+      } else if (value == switches::kHdrNetForceDisabled) {
+        base::File file(disable_file_path, base::File::FLAG_CREATE_ALWAYS |
+                                               base::File::FLAG_WRITE);
+        file.Close();
+      }
+    }
+  }
+
+  {
+    base::FilePath enable_file_path(kForceEnableAutoFramingPath);
+    base::FilePath disable_file_path(kForceDisableAutoFramingPath);
+    if (!base::DeleteFile(enable_file_path)) {
+      LOG(WARNING) << "Could not delete " << kForceEnableAutoFramingPath;
+    }
+    if (!base::DeleteFile(disable_file_path)) {
+      LOG(WARNING) << "Could not delete " << kForceDisableAutoFramingPath;
+    }
+    const base::CommandLine* command_line =
+        base::CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(media::switches::kAutoFramingOverride)) {
+      std::string value =
+          command_line->GetSwitchValueASCII(switches::kAutoFramingOverride);
+      if (value == switches::kAutoFramingForceEnabled) {
+        base::File file(enable_file_path, base::File::FLAG_CREATE_ALWAYS |
+                                              base::File::FLAG_WRITE);
+        file.Close();
+      } else if (value == switches::kAutoFramingForceDisabled) {
+        base::File file(disable_file_path, base::File::FLAG_CREATE_ALWAYS |
+                                               base::File::FLAG_WRITE);
+        file.Close();
+      }
     }
   }
 

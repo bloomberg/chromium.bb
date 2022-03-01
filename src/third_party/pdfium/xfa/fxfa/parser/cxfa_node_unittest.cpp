@@ -23,7 +23,7 @@ class TestNode final : public CXFA_Node {
   explicit TestNode(CXFA_Document* doc)
       : CXFA_Node(doc,
                   XFA_PacketType::Form,
-                  (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
+                  {XFA_XDPPACKET::kTemplate, XFA_XDPPACKET::kForm},
                   XFA_ObjectType::Node,
                   XFA_Element::Node,
                   {},
@@ -389,4 +389,25 @@ TEST_F(CXFANodeTest, RemoveChildAnotherParent) {
 
   GetNode()->RemoveChildAndNotify(child1, false);
   EXPECT_EQ(child0, child1->GetParent());
+}
+
+TEST_F(CXFANodeTest, AncestorOf) {
+  CXFA_Node* child0 =
+      GetDoc()->CreateNode(XFA_PacketType::Form, XFA_Element::Ui);
+  GetNode()->InsertChildAndNotify(-1, child0);
+
+  CXFA_Node* child1 =
+      GetDoc()->CreateNode(XFA_PacketType::Form, XFA_Element::Ui);
+  GetNode()->InsertChildAndNotify(-1, child1);
+
+  CXFA_Node* grandchild =
+      GetDoc()->CreateNode(XFA_PacketType::Form, XFA_Element::Ui);
+  child0->InsertChildAndNotify(-1, grandchild);
+
+  EXPECT_TRUE(GetNode()->IsAncestorOf(child0));
+  EXPECT_TRUE(GetNode()->IsAncestorOf(child1));
+  EXPECT_FALSE(child1->IsAncestorOf(child0));
+  EXPECT_TRUE(child0->IsAncestorOf(grandchild));
+  EXPECT_TRUE(GetNode()->IsAncestorOf(grandchild));
+  EXPECT_FALSE(child1->IsAncestorOf(grandchild));
 }

@@ -4,6 +4,11 @@
 
 
 ------------------------------------------------------------------
+
+Affects:
+    libavcodec/h263dec.c
+
+------------------------------------------------------------------
 commit 35a9efdd9ee40dff4a5e45f0039328cd893c1264
 Author: Dale Curtis <dalecurtis@chromium.org>
 Date:   Fri Feb 3 16:12:21 2012 -0800
@@ -54,7 +59,6 @@ Date:   Fri Feb 3 16:12:21 2012 -0800
     TEST=ffmpeg_regression_tests
 
 Affects:
-    libavcodec/h263dec.c
     libavcodec/h264_cabac.c
     libavcodec/h264_cavlc.c
     libavcodec/h264_parser.c
@@ -529,20 +533,6 @@ Affects:
     libavformat/oggdec.c
 
 ------------------------------------------------------------------
-commit 54813536efea1f447067a2af02fd89e25b65b920
-Author: Dale Curtis <dalecurtis@chromium.org>
-Date:   Tue Nov 21 15:15:20 2017 -0800
-
-    Update wrap_bits fix to work with wrap_bits == 63,64.
-
-    BUG=783459
-
-    Signed-off-by: Dale Curtis <dalecurtis@chromium.org>
-
-Affects:
-    libavformat/utils.c
-
-------------------------------------------------------------------
 commit e881e753b0d47f3dd82484695dc24a321a948002
 Author: Dan Sanders <sandersd@chromium.org>
 Date:   Tue Feb 13 14:35:49 2018 -0800
@@ -909,20 +899,6 @@ Affects:
     libavcodec/smacker.c
 
 ------------------------------------------------------------------
-commit 2e5e8668e9e636c5bebbb2bb68b751133830af7f
-Merge: a54c8b6b9e adf72718a4
-Author: Eugene Zemtsov <eugene@chromium.org>
-Date:   Fri Dec 11 14:28:26 2020 -0800
-
-    Merge remote-tracking branch 'upstream/master' into sushi-2020-12-11-14-24-46
-
-    Conflicts:
-       libavformat/mp3dec.c - change in the code that was commented out
-
-Affects:
-    libavformat/mp3dec.c
-
-------------------------------------------------------------------
 commit afa2b4327ab4beb4cd47f6cf4e59df620b5d6e4f
 Author: Matt Wolenetz <wolenetz@chromium.org>
 Date:   Wed Mar 10 16:57:29 2021 -0800
@@ -951,9 +927,9 @@ Affects:
     configure
 
 ------------------------------------------------------------------
-commit 7c13bac566ff75ef1821adcc4f08935d84c0c5dd
+commit 4fb42ae52e7327469281d612784dd9d0e066d5ed
 Author: Matt Wolenetz <wolenetz@chromium.org>
-Date:   Mon Mar 29 16:06:42 2021 -0700
+Date:   Mon Mar 29 16:26:05 2021 -0700
 
     Always use av_realloc_array() for nal->skipped_bytes_pos
 
@@ -963,6 +939,141 @@ Date:   Mon Mar 29 16:06:42 2021 -0700
     BUG=1193797,721872
     TEST=No repro of scenario in crbug with patch applied.
 
+    Change-Id: I6ecd8a34798a3c892409877b2c42d9cdeb3fdd81
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/2792764
+    Reviewed-by: John Rummell <jrummell@chromium.org>
+
 Affects:
     libavcodec/h2645_parse.c
+
+------------------------------------------------------------------
+commit 8bc09e53d14bc76f69b7397253f174a4e5431059
+Author: Ted Meyer <tmathmeyer@google.com>
+Date:   Sat May 15 08:13:34 2021 -0700
+
+    Update FFMpeg
+
+    changes including:
+     - Re-add rotation metadata tag in mov.c - AVStreamToVideoDecoderConfig
+       needs rotation metadata from ffmpeg, since it only has access to the
+       metadata dict, and not to the raw matrix in the private data section.
+     - No more mips on linux
+
+    > git diff origin/master configure | grep '\+.*\[autodetect\]'
+     - no output -
+
+
+    Bug: 1208571
+    Change-Id: I40fe02f1c16de9b76d355f3ad92dd65b02b6c421
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/2885985
+    Reviewed-by: Frank Liberato <liberato@chromium.org>
+    Reviewed-by: Matthew Wolenetz <wolenetz@chromium.org>
+
+Affects:
+    libavformat/mov.c
+
+------------------------------------------------------------------
+commit e058e9eb798cc07b52de90deda4b2d377578a7b8
+Author: Ted Meyer <tmathmeyer@google.com>
+Date:   Fri Jun 4 12:19:40 2021 -0700
+
+    Initialize variables to fix compilation warning
+
+    Bug:1208571
+    Change-Id: Id35eee47d18ffcd58293fa2cbd1c8fd9c93ba1a4
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/2939635
+    Reviewed-by: Frank Liberato <liberato@chromium.org>
+
+Affects:
+    libavutil/x86/tx_float_init.c
+
+------------------------------------------------------------------
+commit bab99aeaa95b74391a3c06db97da3d350cb39fe4
+Author: liberato@chromium.org <liberato@chromium.org>
+Date:   Wed Jul 7 17:36:34 2021 -0700
+
+    Removed UNCHECKED_BITSTREAM_READER from jpeglsenc.c
+
+Affects:
+    libavcodec/jpeglsenc.c
+
+------------------------------------------------------------------
+commit 95aab0fd83619408995720ce53d7a74790580220
+Author: liberato@chromium.org <liberato@chromium.org>
+Date:   Wed Jul 7 19:01:22 2021 -0700
+
+    Add av_stream_get_first_dts for Chromium
+
+Affects:
+    libavformat/avformat.h
+    libavformat/utils.c
+
+------------------------------------------------------------------
+commit bc096b909c50e184cc1712f4fbcb6e59e5832515
+Merge: cfc3c73207 b9176dbfb7
+Author: liberato@chromium.org <liberato@chromium.org>
+Date:   Fri Jul 30 14:53:37 2021 -0700
+
+    Merge remote-tracking branch 'upstream/master' into sushi-2021-07-30-14-52-49
+
+     Conflicts:
+            libavcodec/h263dec.c -- UNCHECKED_BITSTREAM_READER
+
+Affects:
+    libavcodec/h263dec.c
+
+------------------------------------------------------------------
+commit b4d520ca6786368a829b38147364f22096f284fa
+Author: liberato@chromium.org <liberato@chromium.org>
+Date:   Fri Jul 30 18:46:38 2021 -0700
+
+    M94 FFmpeg roll.
+
+    Bug: 1227259
+    Change-Id: I53e21333100fc603d814806a9f6f807fede2adb6
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/3063817
+    Reviewed-by: Ted Meyer <tmathmeyer@chromium.org>
+
+Affects:
+    libavformat/oggparsevorbis.c
+    libavutil/macos_kperf.c
+    libavutil/macos_kperf.h
+
+------------------------------------------------------------------
+commit 47273666537556c923cc4f4a03d9d42666931876
+Author: Thomas Guilbert <tguilbert@chromium.org>
+Date:   Wed Sep 15 15:44:40 2021 -0700
+
+    Fix macro expansion error
+
+    This CL fixes an issue that results from the CHROMIUM_NO_LOGGING macro.
+    When it is defined, av_log(...) expands to nothing, which causes this
+    expansion:
+            ff_dlog(ctx, ...) -->  do { if (0) av_log(...)  ; } while (0)
+
+    to cause a -Wempty-statement error, due to the empty `if (0) ;`.
+
+    Bug: 1249257
+    Change-Id: I0011ae8e50c8931ac64517fa604775a9838ac8a1
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/3163777
+    Reviewed-by: John Rummell <jrummell@chromium.org>
+
+Affects:
+    libavutil/internal.h
+
+------------------------------------------------------------------
+commit 52ef7a785f90179d78453b889e82f0604131f962
+Merge: 731bf2abeb 45dc668aea
+Author: John Rummell <jrummell@chromium.org>
+Date:   Mon Nov 8 14:39:18 2021 -0800
+
+    Merge remote-tracking branch 'upstream/master' into sushi-2021-11-08-14-35-25
+
+    Conflicts:
+      libavformat/mp3dec.c
+      libavformat/utils.c
+
+Affects:
+    libavformat/mp3dec.c
+    libavformat/utils.c
 

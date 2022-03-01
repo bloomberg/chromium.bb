@@ -16,8 +16,8 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -309,6 +309,33 @@ void FakeDebugDaemonClient::KernelFeatureEnable(
     const std::string& name,
     KernelFeatureListCallback callback) {
   // Defined by test.
+}
+
+void FakeDebugDaemonClient::AddObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void FakeDebugDaemonClient::RemoveObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
+}
+
+void FakeDebugDaemonClient::PacketCaptureStartSignalReceived(
+    dbus::Signal* signal) {
+  for (auto& observer : observers_)
+    observer.OnPacketCaptureStarted();
+}
+
+void FakeDebugDaemonClient::PacketCaptureStopSignalReceived(
+    dbus::Signal* signal) {
+  for (auto& observer : observers_)
+    observer.OnPacketCaptureStopped();
+}
+
+void FakeDebugDaemonClient::StopPacketCapture(const std::string& handle) {
+  // Act like PacketCaptureStop signal is received.
+  PacketCaptureStopSignalReceived(nullptr);
 }
 
 }  // namespace chromeos

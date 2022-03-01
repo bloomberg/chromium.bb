@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
 #include "base/test/bind.h"
@@ -50,7 +51,6 @@ const int kRequestId1(1);
 const int kRequestId2(2);
 const long kTestTimeBudgetSeconds = 200;
 const int kBatteryPercentageHigh = 75;
-const int kMaxCompletedTries = 3;
 const bool kPowerRequired = true;
 const bool kUserRequested = true;
 const int kAttemptCount = 1;
@@ -390,7 +390,7 @@ class RequestCoordinatorTest : public testing::Test {
   }
 
  protected:
-  ActiveTabInfoStub* active_tab_info_ = nullptr;
+  raw_ptr<ActiveTabInfoStub> active_tab_info_ = nullptr;
 
  private:
   GetRequestsResult last_get_requests_result_;
@@ -398,9 +398,9 @@ class RequestCoordinatorTest : public testing::Test {
   std::vector<std::unique_ptr<SavePageRequest>> last_requests_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
-  network::NetworkQualityTracker* network_quality_tracker_;
+  raw_ptr<network::NetworkQualityTracker> network_quality_tracker_;
   std::unique_ptr<RequestCoordinatorStubTaco> coordinator_taco_;
-  OfflinerStub* offliner_;
+  raw_ptr<OfflinerStub> offliner_;
   base::WaitableEvent waiter_;
   ObserverStub observer_;
   AddRequestResult expected_add_request_result_;
@@ -1257,7 +1257,7 @@ TEST_F(RequestCoordinatorTest, RemoveInflightRequestAndAddAnother) {
   AddRequest1();
   PumpLoop();
   // Test a different ordering of tasks, by delaying the offliner cancellation.
-  offliner()->set_cancel_delay(base::TimeDelta::FromSeconds(1));
+  offliner()->set_cancel_delay(base::Seconds(1));
   // Ensure the start processing request stops before the completion callback.
   EnableOfflinerCallback(false);
 
@@ -1281,7 +1281,7 @@ TEST_F(RequestCoordinatorTest, RemoveInflightRequestAndAddAnother) {
       request_ids, base::BindOnce(&RequestCoordinatorTest::RemoveRequestsDone,
                                   base::Unretained(this)));
 
-  AdvanceClockBy(base::TimeDelta::FromSeconds(2));
+  AdvanceClockBy(base::Seconds(2));
 
   // Since offliner was started, it will have seen cancel call.
   EXPECT_TRUE(OfflinerWasCanceled());
@@ -1366,7 +1366,7 @@ TEST_F(RequestCoordinatorTest,
   PumpLoop();
 
   // Advance the mock clock far enough to cause a watchdog timeout
-  AdvanceClockBy(base::TimeDelta::FromSeconds(
+  AdvanceClockBy(base::Seconds(
       coordinator()
           ->policy()
           ->GetSinglePageTimeLimitWhenBackgroundScheduledInSeconds() +
@@ -1397,11 +1397,11 @@ TEST_F(RequestCoordinatorTest,
   EXPECT_TRUE(state() == RequestCoordinatorState::OFFLINING);
 
   // Advance the mock clock 1 second before the watchdog timeout.
-  AdvanceClockBy(base::TimeDelta::FromSeconds(
-      coordinator()
-          ->policy()
-          ->GetSinglePageTimeLimitForImmediateLoadInSeconds() -
-      1));
+  AdvanceClockBy(
+      base::Seconds(coordinator()
+                        ->policy()
+                        ->GetSinglePageTimeLimitForImmediateLoadInSeconds() -
+                    1));
   PumpLoop();
 
   // Verify still busy.
@@ -1409,7 +1409,7 @@ TEST_F(RequestCoordinatorTest,
   EXPECT_FALSE(OfflinerWasCanceled());
 
   // Advance the mock clock past the watchdog timeout now.
-  AdvanceClockBy(base::TimeDelta::FromSeconds(2));
+  AdvanceClockBy(base::Seconds(2));
   PumpLoop();
 
   // Verify the request timed out.
@@ -1436,7 +1436,7 @@ TEST_F(RequestCoordinatorTest, TimeBudgetExceeded) {
   // Advance the mock clock far enough to exceed our time budget.
   // The first request will time out, and because we are over time budget,
   // the second request will not be started.
-  AdvanceClockBy(base::TimeDelta::FromSeconds(kTestTimeBudgetSeconds));
+  AdvanceClockBy(base::Seconds(kTestTimeBudgetSeconds));
   PumpLoop();
 
   // TryNextRequest should decide that there is no more work to be done,
@@ -1728,7 +1728,7 @@ TEST_F(RequestCoordinatorTest, SnapshotOnLastTryForScheduledProcessing) {
   PumpLoop();
 
   // Advance the mock clock far enough to cause a watchdog timeout
-  AdvanceClockBy(base::TimeDelta::FromSeconds(
+  AdvanceClockBy(base::Seconds(
       coordinator()
           ->policy()
           ->GetSinglePageTimeLimitWhenBackgroundScheduledInSeconds() +
@@ -1768,11 +1768,11 @@ TEST_F(RequestCoordinatorTest, SnapshotOnLastTryForImmediateProcessing) {
     EXPECT_TRUE(state() == RequestCoordinatorState::OFFLINING);
 
     // Advance the mock clock 1 second more than the watchdog timeout.
-    AdvanceClockBy(base::TimeDelta::FromSeconds(
-        coordinator()
-            ->policy()
-            ->GetSinglePageTimeLimitForImmediateLoadInSeconds() +
-        1));
+    AdvanceClockBy(
+        base::Seconds(coordinator()
+                          ->policy()
+                          ->GetSinglePageTimeLimitForImmediateLoadInSeconds() +
+                      1));
     PumpLoop();
 
     // Verify the request timed out.
@@ -1787,11 +1787,11 @@ TEST_F(RequestCoordinatorTest, SnapshotOnLastTryForImmediateProcessing) {
   EnableSnapshotOnLastRetry();
 
   // Advance the mock clock 1 second more than the watchdog timeout.
-  AdvanceClockBy(base::TimeDelta::FromSeconds(
-      coordinator()
-          ->policy()
-          ->GetSinglePageTimeLimitForImmediateLoadInSeconds() +
-      1));
+  AdvanceClockBy(
+      base::Seconds(coordinator()
+                        ->policy()
+                        ->GetSinglePageTimeLimitForImmediateLoadInSeconds() +
+                    1));
   PumpLoop();
 
   // The last time would trigger the snapshot on last retry and succeed.

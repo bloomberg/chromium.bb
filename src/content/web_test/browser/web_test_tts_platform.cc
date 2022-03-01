@@ -31,7 +31,7 @@ void WebTestTtsPlatform::Speak(
     base::OnceCallback<void(bool)> on_speak_finished) {
   std::move(on_speak_finished).Run(true);
   content::TtsController* controller = content::TtsController::GetInstance();
-  int len = int{utterance.size()};
+  int len = static_cast<int>(utterance.size());
   controller->OnTtsEvent(utterance_id, content::TTS_EVENT_START, 0, len,
                          std::string());
   controller->OnTtsEvent(utterance_id, content::TTS_EVENT_END, len, 0,
@@ -70,6 +70,11 @@ void WebTestTtsPlatform::Shutdown() {}
 bool WebTestTtsPlatform::PreferEngineDelegateVoices() {
   return false;
 }
+
+void WebTestTtsPlatform::GetVoicesForBrowserContext(
+    content::BrowserContext* browser_context,
+    const GURL& source_url,
+    std::vector<content::VoiceData>* out_voices) {}
 
 WebTestTtsPlatform::WebTestTtsPlatform() = default;
 

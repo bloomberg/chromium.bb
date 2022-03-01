@@ -2,8 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import json
 import os
+import six
 
 from pyfakefs import fake_filesystem_unittest
 from dependency_manager import exceptions
@@ -13,9 +15,14 @@ from py_utils import binary_manager
 class BinaryManagerTest(fake_filesystem_unittest.TestCase):
   # TODO(aiolos): disable cloud storage use during this test.
 
+  def assertCountEqualPy23(self, expected, actual):
+    if six.PY2:
+      self.assertItemsEqual(expected, actual)
+    else:
+      self.assertCountEqual(expected, actual)
+
   def setUp(self):
     self.setUpPyfakefs()
-    # pylint: disable=bad-continuation
     self.expected_dependencies = {
         'dep_1': {
           'cloud_storage_base_folder': 'dependencies/fake_config',
@@ -138,7 +145,6 @@ class BinaryManagerTest(fake_filesystem_unittest.TestCase):
           }
         }
     }
-    # pylint: enable=bad-continuation
     fake_config = {
         'config_type': 'BaseConfig',
         'dependencies': self.expected_dependencies
@@ -173,8 +179,8 @@ class BinaryManagerTest(fake_filesystem_unittest.TestCase):
     with self.assertRaises(ValueError):
       manager = binary_manager.BinaryManager(self.base_config)
     manager = binary_manager.BinaryManager([self.base_config])
-    self.assertItemsEqual(self.expected_dependencies,
-                          manager._dependency_manager._lookup_dict)
+    self.assertCountEqualPy23(self.expected_dependencies,
+                              manager._dependency_manager._lookup_dict)
 
   def testSuccessfulFetchPathNoOsVersion(self):
     manager = binary_manager.BinaryManager([self.base_config])
@@ -211,4 +217,3 @@ class BinaryManagerTest(fake_filesystem_unittest.TestCase):
     manager = binary_manager.BinaryManager([self.base_config])
     found_path = manager.LocalPath('dep_2', 'android', 'x86', 'l')
     self.assertEqual(self.expected_dep2_android_file, found_path)
-

@@ -6,6 +6,8 @@
 
 #include "chromecast/browser/cast_web_contents.h"
 #include "chromecast/browser/cast_web_view.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromecast {
@@ -20,16 +22,22 @@ class MockCastWebContents : public CastWebContents {
   MOCK_METHOD(int, id, (), (const, override));
   MOCK_METHOD(content::WebContents*, web_contents, (), (const, override));
   MOCK_METHOD(PageState, page_state, (), (const, override));
-  MOCK_METHOD(absl::optional<pid_t>,
-              GetMainFrameRenderProcessPid,
-              (),
-              (const, override));
+  MOCK_METHOD(void, AddRendererFeatures, (base::Value), (override));
   MOCK_METHOD(void,
-              AddRendererFeatures,
-              (std::vector<RendererFeature>),
+              SetInterfacesForRenderer,
+              (mojo::PendingRemote<mojom::RemoteInterfaces>),
               (override));
-  MOCK_METHOD(void, AllowWebAndMojoWebUiBindings, (), (override));
-  MOCK_METHOD(void, ClearRenderWidgetHostView, (), (override));
+  MOCK_METHOD(void,
+              SetAppProperties,
+              (const std::string&,
+               const std::string&,
+               bool,
+               const GURL&,
+               bool,
+               const std::vector<int32_t>&,
+               const std::vector<std::string>&),
+              (override));
+  MOCK_METHOD(void, SetGroupInfo, (const std::string&, bool), (override));
   MOCK_METHOD(void, LoadUrl, (const GURL&), (override));
   MOCK_METHOD(void, ClosePage, (), (override));
   MOCK_METHOD(void, Stop, (int), (override));
@@ -37,9 +45,9 @@ class MockCastWebContents : public CastWebContents {
   MOCK_METHOD(void, BlockMediaLoading, (bool), (override));
   MOCK_METHOD(void, BlockMediaStarting, (bool), (override));
   MOCK_METHOD(void, EnableBackgroundVideoPlayback, (bool), (override));
-  MOCK_METHOD(on_load_script_injector::OnLoadScriptInjectorHost<std::string>*,
-              script_injector,
-              (),
+  MOCK_METHOD(void,
+              AddBeforeLoadJavaScript,
+              (uint64_t, base::StringPiece),
               (override));
   MOCK_METHOD(void,
               PostMessageToMainFrame,
@@ -51,22 +59,19 @@ class MockCastWebContents : public CastWebContents {
               ExecuteJavaScript,
               (const std::u16string&, base::OnceCallback<void(base::Value)>),
               (override));
-  MOCK_METHOD(void, AddObserver, (Observer*), (override));
-  MOCK_METHOD(void, RemoveObserver, (Observer*), (override));
-  MOCK_METHOD(void, SetEnabledForRemoteDebugging, (bool), (override));
   MOCK_METHOD(void,
-              RegisterInterfaceProvider,
-              (const InterfaceSet&, service_manager::InterfaceProvider*),
+              ConnectToBindingsService,
+              (mojo::PendingRemote<mojom::ApiBindings> api_bindings_remote),
               (override));
+  MOCK_METHOD(void, SetEnabledForRemoteDebugging, (bool), (override));
+  MOCK_METHOD(void, GetMainFramePid, (GetMainFramePidCallback), (override));
+  MOCK_METHOD(InterfaceBundle*, local_interfaces, (), (override));
   MOCK_METHOD(bool, is_websql_enabled, (), (override));
   MOCK_METHOD(bool, is_mixer_audio_enabled, (), (override));
-  MOCK_METHOD(bool, can_bind_interfaces, (), (override));
 
-  service_manager::BinderRegistry* binder_registry() override;
   bool TryBindReceiver(mojo::GenericPendingReceiver&) override;
 
  private:
-  service_manager::BinderRegistry registry_;
 };
 
 class MockCastWebView : public CastWebView {
@@ -79,20 +84,17 @@ class MockCastWebView : public CastWebView {
   content::WebContents* web_contents() const override;
   CastWebContents* cast_web_contents() override;
   base::TimeDelta shutdown_delay() const override;
-  void ForceClose() override;
-  void InitializeWindow(mojom::ZOrder z_order,
-                        VisibilityPriority initial_priority) override;
-  void GrantScreenAccess() override;
-  void RevokeScreenAccess() override;
-  void AddObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
+  void OwnerDestroyed() override;
 
   MockCastWebContents* mock_cast_web_contents() {
     return mock_cast_web_contents_.get();
   }
 
+  void Bind(mojo::PendingReceiver<mojom::CastWebContents> web_contents);
+
  private:
   std::unique_ptr<MockCastWebContents> mock_cast_web_contents_;
+  mojo::Receiver<mojom::CastWebContents> cast_web_contents_receiver_;
 };
 }  // namespace chromecast
 

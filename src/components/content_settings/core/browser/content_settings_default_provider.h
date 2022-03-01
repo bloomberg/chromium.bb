@@ -8,9 +8,8 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/synchronization/lock.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -31,6 +30,10 @@ class DefaultProvider : public ObservableProvider {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   DefaultProvider(PrefService* prefs, bool off_the_record);
+
+  DefaultProvider(const DefaultProvider&) = delete;
+  DefaultProvider& operator=(const DefaultProvider&) = delete;
+
   ~DefaultProvider() override;
 
   // ProviderInterface implementations.
@@ -77,7 +80,7 @@ class DefaultProvider : public ObservableProvider {
   // Copies of the pref data, so that we can read it on the IO thread.
   std::map<ContentSettingsType, std::unique_ptr<base::Value>> default_settings_;
 
-  PrefService* prefs_;
+  raw_ptr<PrefService> prefs_;
 
   // Whether this settings map is for an off-the-record session.
   const bool is_off_the_record_;
@@ -91,8 +94,6 @@ class DefaultProvider : public ObservableProvider {
   // Whether we are currently updating preferences, this is used to ignore
   // notifications from the preferences service that we triggered ourself.
   bool updating_preferences_;
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultProvider);
 };
 
 }  // namespace content_settings

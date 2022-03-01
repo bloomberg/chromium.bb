@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace ash {
@@ -53,6 +52,10 @@ class NetworkScreenHandler : public NetworkScreenView,
   using TView = NetworkScreenView;
 
   explicit NetworkScreenHandler(JSCallsContainer* js_calls_container);
+
+  NetworkScreenHandler(const NetworkScreenHandler&) = delete;
+  NetworkScreenHandler& operator=(const NetworkScreenHandler&) = delete;
+
   ~NetworkScreenHandler() override;
 
  private:
@@ -75,8 +78,6 @@ class NetworkScreenHandler : public NetworkScreenView,
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkScreenHandler);
 };
 
 }  // namespace chromeos
@@ -84,6 +85,7 @@ class NetworkScreenHandler : public NetworkScreenView,
 // TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
 // source migration is finished.
 namespace ash {
+using ::chromeos::NetworkScreenHandler;
 using ::chromeos::NetworkScreenView;
 }
 

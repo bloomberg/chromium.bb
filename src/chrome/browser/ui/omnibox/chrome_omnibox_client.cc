@@ -20,6 +20,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
+#include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/command_updater.h"
@@ -33,11 +34,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ssl/typed_navigation_upgrade_throttle.h"
-#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
@@ -54,7 +55,6 @@
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/content/session_tab_helper.h"
-#include "components/translate/core/browser/translate_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -93,15 +93,6 @@ ChromeOmniboxClient::CreateAutocompleteProviderClient() {
   return std::make_unique<ChromeAutocompleteProviderClient>(profile_);
 }
 
-std::unique_ptr<OmniboxNavigationObserver>
-ChromeOmniboxClient::CreateOmniboxNavigationObserver(
-    const std::u16string& text,
-    const AutocompleteMatch& match,
-    const AutocompleteMatch& alternate_nav_match) {
-  return std::make_unique<ChromeOmniboxNavigationObserver>(
-      profile_, text, match, alternate_nav_match);
-}
-
 bool ChromeOmniboxClient::CurrentPageExists() const {
   return (controller_->GetWebContents() != nullptr);
 }
@@ -133,10 +124,8 @@ bool ChromeOmniboxClient::IsPasteAndGoEnabled() const {
 bool ChromeOmniboxClient::IsDefaultSearchProviderEnabled() const {
   const base::DictionaryValue* url_dict = profile_->GetPrefs()->GetDictionary(
       DefaultSearchManager::kDefaultSearchProviderDataPrefName);
-  bool disabled_by_policy = false;
-  url_dict->GetBoolean(DefaultSearchManager::kDisabledByPolicy,
-                       &disabled_by_policy);
-  return !disabled_by_policy;
+  return !url_dict->FindBoolPath(DefaultSearchManager::kDisabledByPolicy)
+              .value_or(false);
 }
 
 const SessionID& ChromeOmniboxClient::GetSessionID() const {
@@ -215,10 +204,10 @@ gfx::Image ChromeOmniboxClient::GetSizedIcon(const gfx::Image& icon) const {
 }
 
 bool ChromeOmniboxClient::ProcessExtensionKeyword(
+    const std::u16string& text,
     const TemplateURL* template_url,
     const AutocompleteMatch& match,
-    WindowOpenDisposition disposition,
-    OmniboxNavigationObserver* observer) {
+    WindowOpenDisposition disposition) {
   if (template_url->type() != TemplateURL::OMNIBOX_API_EXTENSION)
     return false;
 
@@ -229,13 +218,11 @@ bool ChromeOmniboxClient::ProcessExtensionKeyword(
   size_t prefix_length =
       std::min(match.keyword.length() + 1, match.fill_into_edit.length());
   extensions::ExtensionOmniboxEventRouter::OnInputEntered(
-      controller_->GetWebContents(),
-      template_url->GetExtensionId(),
+      controller_->GetWebContents(), template_url->GetExtensionId(),
       base::UTF16ToUTF8(match.fill_into_edit.substr(prefix_length)),
       disposition);
 
-  static_cast<ChromeOmniboxNavigationObserver*>(observer)
-      ->OnSuccessfulNavigation();
+  OnSuccessfulNavigation(profile_, text, match);
   return true;
 }
 
@@ -248,16 +235,14 @@ void ChromeOmniboxClient::OnInputStateChanged() {
   }
 }
 
-void ChromeOmniboxClient::OnFocusChanged(
-    OmniboxFocusState state,
-    OmniboxFocusChangeReason reason) {
+void ChromeOmniboxClient::OnFocusChanged(OmniboxFocusState state,
+                                         OmniboxFocusChangeReason reason) {
   if (!controller_->GetWebContents())
     return;
   if (auto* helper =
           OmniboxTabHelper::FromWebContents(controller_->GetWebContents())) {
     helper->OnFocusChanged(state, reason);
   }
-  WakeupDecoder();
 }
 
 void ChromeOmniboxClient::OnResultChanged(
@@ -362,13 +347,12 @@ void ChromeOmniboxClient::OnTextChanged(const AutocompleteMatch& current_match,
     case AutocompleteActionPredictor::ACTION_NONE:
       break;
   }
-  WakeupDecoder();
 }
 
 void ChromeOmniboxClient::OnRevert() {
   AutocompleteActionPredictor* action_predictor =
       predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_);
-  action_predictor->ClearTransitionalMatches();
+  action_predictor->UpdateDatabaseFromTransitionalMatches(GURL());
   action_predictor->CancelPrerender();
 }
 
@@ -384,22 +368,6 @@ void ChromeOmniboxClient::OnBookmarkLaunched() {
 
 void ChromeOmniboxClient::DiscardNonCommittedNavigations() {
   controller_->GetWebContents()->GetController().DiscardNonCommittedEntries();
-}
-
-void ChromeOmniboxClient::NewIncognitoWindow() {
-  chrome::NewIncognitoWindow(profile_);
-}
-
-void ChromeOmniboxClient::PromptPageTranslation() {
-  content::WebContents* contents = controller_->GetWebContents();
-  if (contents) {
-    ChromeTranslateClient* translate_client =
-        ChromeTranslateClient::FromWebContents(contents);
-    if (translate_client) {
-      DCHECK_NE(nullptr, translate_client->GetTranslateManager());
-      translate_client->GetTranslateManager()->InitiateManualTranslation(true);
-    }
-  }
 }
 
 void ChromeOmniboxClient::OpenUpdateChromeDialog() {
@@ -420,8 +388,7 @@ void ChromeOmniboxClient::OpenUpdateChromeDialog() {
   }
 }
 
-void ChromeOmniboxClient::DoPrerender(
-    const AutocompleteMatch& match) {
+void ChromeOmniboxClient::DoPrerender(const AutocompleteMatch& match) {
   content::WebContents* web_contents = controller_->GetWebContents();
 
   // Don't prerender when DevTools is open in this tab.
@@ -431,10 +398,8 @@ void ChromeOmniboxClient::DoPrerender(
   gfx::Rect container_bounds = web_contents->GetContainerBounds();
 
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)
-      ->StartPrerendering(
-          match.destination_url,
-          web_contents->GetController().GetDefaultSessionStorageNamespace(),
-          container_bounds.size());
+      ->StartPrerendering(match.destination_url, *web_contents,
+                          container_bounds.size());
 }
 
 void ChromeOmniboxClient::DoPreconnect(const AutocompleteMatch& match) {
@@ -456,18 +421,6 @@ void ChromeOmniboxClient::DoPreconnect(const AutocompleteMatch& match) {
   // the OS DNS cache could suffer eviction problems for minimal gain.
 }
 
-void ChromeOmniboxClient::WakeupDecoder() {
-  if (base::GetFieldTrialParamByFeatureAsBool(
-          omnibox::kEntitySuggestionsReduceLatency,
-          OmniboxFieldTrial::kEntitySuggestionsReduceLatencyDecoderWakeupParam,
-          false)) {
-    if (auto* service =
-            BitmapFetcherServiceFactory::GetForBrowserContext(profile_)) {
-      service->WakeupDecoder();
-    }
-  }
-}
-
 void ChromeOmniboxClient::OnBitmapFetched(const BitmapFetchedCallback& callback,
                                           int result_index,
                                           bool is_cached,
@@ -480,4 +433,17 @@ void ChromeOmniboxClient::OnBitmapFetched(const BitmapFetchedCallback& callback,
   else
     UMA_HISTOGRAM_TIMES("Omnibox.BitmapFetchLatency.Uncached", time_delta);
   callback.Run(result_index, bitmap);
+}
+
+// static
+void ChromeOmniboxClient::OnSuccessfulNavigation(
+    Profile* profile,
+    const std::u16string& text,
+    const AutocompleteMatch& match) {
+  auto shortcuts_backend = ShortcutsBackendFactory::GetForProfile(profile);
+  // Can be null in incognito.
+  if (!shortcuts_backend)
+    return;
+
+  shortcuts_backend->AddOrUpdateShortcut(text, match);
 }

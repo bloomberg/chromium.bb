@@ -10,7 +10,6 @@
 #import "ios/chrome/common/ui/util/button_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/common/ui/util/dynamic_type_util.h"
-#import "ios/chrome/common/ui/util/image_util.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -37,16 +36,14 @@ namespace {
 constexpr CGFloat kScrollViewBottomInsets = 20;
 constexpr CGFloat kStackViewSpacing = 8;
 constexpr CGFloat kStackViewSpacingAfterIllustration = 27;
-constexpr CGFloat kGeneratedImagePadding = 20;
 // The multiplier used when in regular horizontal size class.
 constexpr CGFloat kSafeAreaMultiplier = 0.8;
+constexpr CGFloat kButtonMaxWidth = 327;
+constexpr CGFloat kContentMaxWidth = 500;
 
 }  // namespace
 
 @interface ConfirmationAlertViewController () <UIToolbarDelegate>
-
-// Container view that will wrap the views making up the content.
-@property(nonatomic, strong) UIStackView* stackView;
 
 // References to the UI properties that need to be updated when the trait
 // collection changes.
@@ -54,20 +51,12 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 @property(nonatomic, strong) UIButton* secondaryActionButton;
 @property(nonatomic, strong) UIButton* tertiaryActionButton;
 @property(nonatomic, strong) UIToolbar* topToolbar;
-@property(nonatomic, strong) NSArray* regularHeightToolbarItems;
-@property(nonatomic, strong) NSArray* compactHeightToolbarItems;
 @property(nonatomic, strong) UIImageView* imageView;
 // Constraints.
-@property(nonatomic, strong)
-    NSArray<NSLayoutConstraint*>* compactWidthConstraints;
-@property(nonatomic, strong)
-    NSArray<NSLayoutConstraint*>* regularWidthConstraints;
-@property(nonatomic, strong)
-    NSLayoutConstraint* regularHeightScrollViewBottomVerticalConstraint;
-@property(nonatomic, strong)
-    NSLayoutConstraint* compactHeightScrollViewBottomVerticalConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* regularWidthConstraints;
 @property(nonatomic, strong)
     NSLayoutConstraint* buttonStackViewBottomVerticalConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* imageViewAspectRatioConstraint;
 @end
 
 @implementation ConfirmationAlertViewController
@@ -80,6 +69,7 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
     _customSpacingAfterImage = kStackViewSpacingAfterIllustration;
     _showDismissBarButton = YES;
     _dismissBarButtonSystemItem = UIBarButtonSystemItemDone;
+    _specificContentLayoutGuide = [[UILayoutGuide alloc] init];
   }
   return self;
 }
@@ -89,132 +79,150 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 
   self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
 
-  self.topToolbar = [self createTopToolbar];
-  [self.view addSubview:self.topToolbar];
+  if (self.hasTopToolbar) {
+    self.topToolbar = [self createTopToolbar];
+    [self.view addSubview:self.topToolbar];
+  }
 
   self.imageView = [self createImageView];
   UILabel* title = [self createTitleLabel];
   UILabel* subtitle = [self createSubtitleLabel];
 
   NSArray* stackSubviews = @[ self.imageView, title, subtitle ];
-  self.stackView = [self createStackViewWithArrangedSubviews:stackSubviews];
+  UIStackView* stackView =
+      [self createStackViewWithArrangedSubviews:stackSubviews];
+
+  // UIView used to set constraints to the scrollable content. Needed in order
+  // to pin UI elements in specific content view above actions buttons. UI
+  // elements can't be added to this view as it does not work with VoiceOver,
+  // see crbug.com/1281364. UILayoutGuide can't be use here as it does not work
+  // with dynamic type, see crbug.com/1283622.
+  UIView* scrollContentView = [[UIView alloc] init];
+  scrollContentView.translatesAutoresizingMaskIntoConstraints = NO;
 
   UIScrollView* scrollView = [self createScrollView];
-  [scrollView addSubview:self.stackView];
+  [scrollView addSubview:scrollContentView];
+  [scrollView addSubview:stackView];
+  [scrollView addLayoutGuide:self.specificContentLayoutGuide];
   [self.view addSubview:scrollView];
+
+  // Needed to have VoiceOver working to elements added in derived view
+  // controller.
+  self.specificContentSuperview = scrollView;
 
   self.view.preservesSuperviewLayoutMargins = YES;
   UILayoutGuide* margins = self.view.layoutMarginsGuide;
 
-  // Toolbar constraints to the top.
-  AddSameConstraintsToSides(
-      self.topToolbar, self.view.safeAreaLayoutGuide,
-      LayoutSides::kTrailing | LayoutSides::kTop | LayoutSides::kLeading);
+  if (self.hasTopToolbar) {
+    // Toolbar constraints to the top.
+    AddSameConstraintsToSides(
+        self.topToolbar, self.view.safeAreaLayoutGuide,
+        LayoutSides::kTrailing | LayoutSides::kTop | LayoutSides::kLeading);
+  }
 
-  // Scroll View constraints to the height of its content. Can be overridden.
-  NSLayoutConstraint* heightConstraint = [scrollView.heightAnchor
-      constraintEqualToAnchor:scrollView.contentLayoutGuide.heightAnchor];
-  // UILayoutPriorityDefaultHigh is the default priority for content
-  // compression. Setting this lower avoids compressing the content of the
-  // scroll view.
-  heightConstraint.priority = UILayoutPriorityDefaultHigh - 1;
-  heightConstraint.active = YES;
+  // Constraint top/bottom of the stack view to the scroll view. This defines
+  // the content area. No need to contraint horizontally as we don't want
+  // horizontal scroll.
+  [NSLayoutConstraint activateConstraints:@[
+    [stackView.widthAnchor
+        constraintLessThanOrEqualToConstant:kContentMaxWidth],
+    [stackView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
 
-  // Scroll View constraint to the vertical center. Can be overridden.
-  NSLayoutConstraint* centerYConstraint =
-      [scrollView.centerYAnchor constraintEqualToAnchor:margins.centerYAnchor];
-  // This needs to be lower than the height constraint, so it's deprioritized.
-  // If this breaks, the scroll view is still constrained to the top toolbar and
-  // the bottom safe area or button.
-  centerYConstraint.priority = heightConstraint.priority - 1;
-  centerYConstraint.active = YES;
+    // Disable horizontal scrolling.
+    [stackView.widthAnchor
+        constraintLessThanOrEqualToAnchor:margins.widthAnchor],
 
-  // Constraint the content of the scroll view to the size of the stack view
-  // with some bottom margin space in between the two. This defines the content
-  // area.
-  AddSameConstraintsWithInsets(
-      self.stackView, scrollView,
-      ChromeDirectionalEdgeInsetsMake(0, 0, kScrollViewBottomInsets, 0));
+    [stackView.topAnchor
+        constraintGreaterThanOrEqualToAnchor:scrollContentView.topAnchor],
+    [stackView.bottomAnchor
+        constraintLessThanOrEqualToAnchor:self.specificContentLayoutGuide
+                                              .topAnchor
+                                 constant:-kScrollViewBottomInsets],
 
-  // Disable horizontal scrolling and constraint the content size to the scroll
-  // view size.
-  [scrollView.widthAnchor
-      constraintEqualToAnchor:scrollView.contentLayoutGuide.widthAnchor]
-      .active = YES;
+    [self.specificContentLayoutGuide.bottomAnchor
+        constraintEqualToAnchor:scrollContentView.bottomAnchor],
+    [self.specificContentLayoutGuide.centerXAnchor
+        constraintEqualToAnchor:self.view.centerXAnchor],
+    [self.specificContentLayoutGuide.widthAnchor
+        constraintLessThanOrEqualToAnchor:scrollView.widthAnchor],
 
-  [scrollView.centerXAnchor constraintEqualToAnchor:margins.centerXAnchor]
-      .active = YES;
+    // Constrain its height to at least the scroll view height, so that derived
+    // VCs can pin UI elements just above the buttons.
+    [scrollContentView.topAnchor constraintEqualToAnchor:scrollView.topAnchor],
+    [scrollContentView.bottomAnchor
+        constraintEqualToAnchor:scrollView.bottomAnchor],
+    [scrollContentView.heightAnchor
+        constraintGreaterThanOrEqualToAnchor:scrollView.heightAnchor],
+  ]];
 
-  // Width Scroll View constraint. It changes based on the size class.
-  self.compactWidthConstraints = @[
-    [scrollView.widthAnchor constraintEqualToAnchor:margins.widthAnchor],
-  ];
-  self.regularWidthConstraints = @[
-    [scrollView.widthAnchor constraintEqualToAnchor:margins.widthAnchor
-                                         multiplier:kSafeAreaMultiplier],
-  ];
+  // Width Scroll View constraint for regular mode.
+  self.regularWidthConstraints = [stackView.widthAnchor
+      constraintLessThanOrEqualToAnchor:margins.widthAnchor
+                             multiplier:kSafeAreaMultiplier];
 
   // The bottom anchor for the scroll view.
   NSLayoutYAxisAnchor* scrollViewBottomAnchor =
       self.view.safeAreaLayoutGuide.bottomAnchor;
-  BOOL hasActionButton = self.primaryActionAvailable ||
-                         self.secondaryActionAvailable ||
-                         self.tertiaryActionAvailable;
+
+  BOOL hasActionButton = self.primaryActionString ||
+                         self.secondaryActionString ||
+                         self.tertiaryActionString;
   if (hasActionButton) {
-    UIStackView* actionStackView = [[UIStackView alloc] init];
-    actionStackView.alignment = UIStackViewAlignmentFill;
-    actionStackView.axis = UILayoutConstraintAxisVertical;
-    actionStackView.translatesAutoresizingMaskIntoConstraints = NO;
-
-    if (self.primaryActionAvailable) {
-      self.primaryActionButton = [self createPrimaryActionButton];
-      [actionStackView addArrangedSubview:self.primaryActionButton];
-    }
-
-    if (self.secondaryActionAvailable) {
-      self.secondaryActionButton = [self createSecondaryActionButton];
-      [actionStackView addArrangedSubview:self.secondaryActionButton];
-    }
-
-    if (self.tertiaryActionAvailable) {
-      self.tertiaryActionButton = [self createTertiaryButton];
-      [actionStackView addArrangedSubview:self.tertiaryActionButton];
-    }
+    UIView* actionStackView = [self createActionStackView];
 
     [self.view addSubview:actionStackView];
     self.buttonStackViewBottomVerticalConstraint = [actionStackView.bottomAnchor
         constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor];
+    // Add a low priority width constraints to make sure that the buttons are
+    // taking as much width as they can.
+    NSLayoutConstraint* lowPriorityWidthConstraint =
+        [actionStackView.widthAnchor constraintEqualToConstant:kButtonMaxWidth];
+    lowPriorityWidthConstraint.priority = UILayoutPriorityDefaultHigh + 1;
+
     [NSLayoutConstraint activateConstraints:@[
       [actionStackView.leadingAnchor
-          constraintEqualToAnchor:scrollView.leadingAnchor],
+          constraintGreaterThanOrEqualToAnchor:scrollView.leadingAnchor],
       [actionStackView.trailingAnchor
-          constraintEqualToAnchor:scrollView.trailingAnchor],
-      self.buttonStackViewBottomVerticalConstraint
+          constraintLessThanOrEqualToAnchor:scrollView.trailingAnchor],
+      self.buttonStackViewBottomVerticalConstraint,
+      [actionStackView.centerXAnchor
+          constraintEqualToAnchor:self.view.centerXAnchor],
+      [actionStackView.widthAnchor
+          constraintLessThanOrEqualToConstant:kButtonMaxWidth],
+      lowPriorityWidthConstraint
     ]];
     scrollViewBottomAnchor = actionStackView.topAnchor;
   }
 
-  self.regularHeightScrollViewBottomVerticalConstraint =
-      [scrollView.bottomAnchor
-          constraintLessThanOrEqualToAnchor:scrollViewBottomAnchor];
-  self.compactHeightScrollViewBottomVerticalConstraint =
-      [scrollView.bottomAnchor
-          constraintLessThanOrEqualToAnchor:scrollViewBottomAnchor];
+  [NSLayoutConstraint activateConstraints:@[
+    [scrollView.bottomAnchor constraintEqualToAnchor:scrollViewBottomAnchor
+                                            constant:-kScrollViewBottomInsets],
+    [scrollView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+    [scrollView.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor],
+  ]];
 
-  if (self.alwaysShowImage && self.primaryActionAvailable) {
-    // If we always want to show the image, then it means we must hide the
-    // button when in compact height mode - meaning we have to constraint the
-    // scrollview's bottom to the safeArea's bottom.
-    self.compactHeightScrollViewBottomVerticalConstraint =
-        [scrollView.bottomAnchor
-            constraintLessThanOrEqualToAnchor:self.view.safeAreaLayoutGuide
-                                                  .bottomAnchor];
+  NSLayoutYAxisAnchor* scrollViewTopAnchor;
+  CGFloat scrollViewTopConstant = 0;
+  if (self.hasTopToolbar) {
+    scrollViewTopAnchor = self.topToolbar.bottomAnchor;
+  } else {
+    scrollViewTopAnchor = self.view.safeAreaLayoutGuide.topAnchor;
+    scrollViewTopConstant = self.customSpacingBeforeImageIfNoToolbar;
   }
 
-  [NSLayoutConstraint activateConstraints:@[
-    [scrollView.topAnchor
-        constraintGreaterThanOrEqualToAnchor:self.topToolbar.bottomAnchor],
-  ]];
+  [scrollView.topAnchor constraintEqualToAnchor:scrollViewTopAnchor
+                                       constant:scrollViewTopConstant]
+      .active = YES;
+
+  if (self.topAlignedLayout) {
+    [stackView.topAnchor constraintEqualToAnchor:scrollContentView.topAnchor]
+        .active = YES;
+  } else {
+    [stackView.centerYAnchor
+        constraintEqualToAnchor:scrollContentView.centerYAnchor]
+        .active = YES;
+  }
 
   if (!self.imageHasFixedSize) {
     // Constrain the image to the scroll view size and its aspect ratio.
@@ -228,11 +236,10 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
     CGFloat imageAspectRatio =
         self.imageView.image.size.width / self.imageView.image.size.height;
 
-    [NSLayoutConstraint activateConstraints:@[
-      [self.imageView.widthAnchor
-          constraintEqualToAnchor:self.imageView.heightAnchor
-                       multiplier:imageAspectRatio],
-    ]];
+    self.imageViewAspectRatioConstraint = [self.imageView.widthAnchor
+        constraintEqualToAnchor:self.imageView.heightAnchor
+                     multiplier:imageAspectRatio];
+    self.imageViewAspectRatioConstraint.active = YES;
   }
 }
 
@@ -274,67 +281,35 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 - (void)updateViewConstraints {
   CGFloat marginValue =
       self.view.layoutMargins.left - self.view.safeAreaInsets.left;
-  if (!self.secondaryActionAvailable) {
+  if (!self.secondaryActionString) {
     // Do not add margin padding between the bottom button and the containing
     // view if the primary button is the bottom button to allow for more visual
     // spacing between the content and the button. The secondary button has a
     // transparent background so the visual spacing already exists.
     self.buttonStackViewBottomVerticalConstraint.constant = -marginValue;
   }
+
   if (self.traitCollection.horizontalSizeClass ==
       UIUserInterfaceSizeClassCompact) {
-    [NSLayoutConstraint deactivateConstraints:self.regularWidthConstraints];
-    [NSLayoutConstraint activateConstraints:self.compactWidthConstraints];
+    self.regularWidthConstraints.active = NO;
   } else {
-    [NSLayoutConstraint deactivateConstraints:self.compactWidthConstraints];
-    [NSLayoutConstraint activateConstraints:self.regularWidthConstraints];
+    self.regularWidthConstraints.active = YES;
   }
 
   BOOL isVerticalCompact =
       self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
 
-  NSLayoutConstraint* oldBottomConstraint;
-  NSLayoutConstraint* newBottomConstraint;
-  if (isVerticalCompact) {
-    oldBottomConstraint = self.regularHeightScrollViewBottomVerticalConstraint;
-    newBottomConstraint = self.compactHeightScrollViewBottomVerticalConstraint;
-
-    // Use setItems:animated method instead of setting the items property, as
-    // that causes issues with the Done button. See crbug.com/1082723
-    [self.topToolbar setItems:self.compactHeightToolbarItems animated:YES];
-  } else {
-    oldBottomConstraint = self.compactHeightScrollViewBottomVerticalConstraint;
-    newBottomConstraint = self.regularHeightScrollViewBottomVerticalConstraint;
-
-    // Use setItems:animated method instead of setting the items property, as
-    // that causes issues with the Done button. See crbug.com/1082723
-    [self.topToolbar setItems:self.regularHeightToolbarItems animated:YES];
-  }
-
-  if (!self.secondaryActionAvailable) {
-    newBottomConstraint.constant = -marginValue;
-  }
-  [NSLayoutConstraint deactivateConstraints:@[ oldBottomConstraint ]];
-  [NSLayoutConstraint activateConstraints:@[ newBottomConstraint ]];
-
-  if (self.alwaysShowImage) {
-    // Update the primary action button visibility.
-    [self.primaryActionButton setHidden:isVerticalCompact];
-  } else {
-    [self.imageView setHidden:isVerticalCompact];
-  }
+  // Hiding the image causes the UIStackView to change the image's height to 0.
+  // Because its width and height are related, if the aspect ratio constraint
+  // is active, the image's width also goes to 0, which causes the stack view
+  // width to become 0 too.
+  [self.imageView setHidden:isVerticalCompact];
+  self.imageViewAspectRatioConstraint.active = !isVerticalCompact;
 
   // Allow toolbar to update its height based on new layout.
   [self.topToolbar invalidateIntrinsicContentSize];
 
   [super updateViewConstraints];
-}
-
-- (UIImage*)content {
-  UIEdgeInsets padding =
-      UIEdgeInsetsMake(kGeneratedImagePadding, kGeneratedImagePadding,
-                       kGeneratedImagePadding, kGeneratedImagePadding);
-  return ImageFromView(self.stackView, self.view.backgroundColor, padding);
 }
 
 #pragma mark - UIToolbarDelegate
@@ -348,12 +323,18 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 // Handle taps on the dismiss button.
 - (void)didTapDismissBarButton {
   DCHECK(self.showDismissBarButton);
-  [self.actionHandler confirmationAlertDismissAction];
+  if ([self.actionHandler
+          respondsToSelector:@selector(confirmationAlertDismissAction)]) {
+    [self.actionHandler confirmationAlertDismissAction];
+  }
 }
 
 // Handle taps on the help button.
 - (void)didTapHelpButton {
-  [self.actionHandler confirmationAlertLearnMoreAction];
+  if ([self.actionHandler
+          respondsToSelector:@selector(confirmationAlertLearnMoreAction)]) {
+    [self.actionHandler confirmationAlertLearnMoreAction];
+  }
 }
 
 // Handle taps on the primary action button.
@@ -363,17 +344,19 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 
 // Handle taps on the secondary action button
 - (void)didTapSecondaryActionButton {
-  DCHECK(self.secondaryActionAvailable);
-  [self.actionHandler confirmationAlertSecondaryAction];
+  DCHECK(self.secondaryActionString);
+  if ([self.actionHandler
+          respondsToSelector:@selector(confirmationAlertSecondaryAction)]) {
+    [self.actionHandler confirmationAlertSecondaryAction];
+  }
 }
 
 - (void)didTapTertiaryActionButton {
-  DCHECK(self.tertiaryActionAvailable);
-  if (![self.actionHandler
+  DCHECK(self.tertiaryActionString);
+  if ([self.actionHandler
           respondsToSelector:@selector(confirmationAlertTertiaryAction)]) {
-    return;
+    [self.actionHandler confirmationAlertTertiaryAction];
   }
-  [self.actionHandler confirmationAlertTertiaryAction];
 }
 
 // Helper to create the top toolbar.
@@ -385,16 +368,14 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   [topToolbar setBarTintColor:[UIColor colorNamed:kBackgroundColor]];
   topToolbar.delegate = self;
 
-  NSMutableArray* regularHeightItems = [[NSMutableArray alloc] init];
-  NSMutableArray* compactHeightItems = [[NSMutableArray alloc] init];
+  NSMutableArray* toolbarItems = [[NSMutableArray alloc] init];
   if (self.helpButtonAvailable) {
-    UIBarButtonItem* helpButton = [[UIBarButtonItem alloc]
-        initWithImage:[UIImage imageNamed:@"confirmation_alert_ic_help"]
-                style:UIBarButtonItemStylePlain
-               target:self
-               action:@selector(didTapHelpButton)];
-    [regularHeightItems addObject:helpButton];
-    [compactHeightItems addObject:helpButton];
+    UIBarButtonItem* helpButton =
+        [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"help_icon"]
+                                         style:UIBarButtonItemStylePlain
+                                        target:self
+                                        action:@selector(didTapHelpButton)];
+    [toolbarItems addObject:helpButton];
 
     if (self.helpButtonAccessibilityLabel) {
       helpButton.isAccessibilityElement = YES;
@@ -408,48 +389,22 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
     _helpButton = helpButton;
   }
 
-  if (self.alwaysShowImage && self.primaryActionAvailable) {
-    if (self.helpButtonAvailable) {
-      // Add margin with help button.
-      UIBarButtonItem* fixedSpacer = [[UIBarButtonItem alloc]
-          initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace
-                               target:nil
-                               action:nil];
-      fixedSpacer.width = 15.0f;
-      [compactHeightItems addObject:fixedSpacer];
-    }
-
-    UIBarButtonItem* primaryActionBarButton = [[UIBarButtonItem alloc]
-        initWithBarButtonSystemItem:self.primaryActionBarButtonStyle
-                             target:self
-                             action:@selector(didTapPrimaryActionButton)];
-    primaryActionBarButton.accessibilityIdentifier =
-        kConfirmationAlertBarPrimaryActionAccessibilityIdentifier;
-
-    // Only shows up in constraint height mode.
-    [compactHeightItems addObject:primaryActionBarButton];
-  }
-
   UIBarButtonItem* spacer = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
                            target:nil
                            action:nil];
-  [regularHeightItems addObject:spacer];
-  [compactHeightItems addObject:spacer];
+  [toolbarItems addObject:spacer];
 
   if (self.showDismissBarButton) {
     UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
         initWithBarButtonSystemItem:self.dismissBarButtonSystemItem
                              target:self
                              action:@selector(didTapDismissBarButton)];
-    [regularHeightItems addObject:dismissButton];
-    [compactHeightItems addObject:dismissButton];
+    [toolbarItems addObject:dismissButton];
   }
 
   topToolbar.translatesAutoresizingMaskIntoConstraints = NO;
-
-  self.regularHeightToolbarItems = regularHeightItems;
-  self.compactHeightToolbarItems = compactHeightItems;
+  [topToolbar setItems:toolbarItems];
 
   return topToolbar;
 }
@@ -458,11 +413,6 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 - (UIImageView*)createImageView {
   UIImageView* imageView = [[UIImageView alloc] initWithImage:self.image];
   imageView.contentMode = UIViewContentModeScaleAspectFit;
-
-  if (self.imageAccessibilityLabel) {
-    imageView.isAccessibilityElement = YES;
-    imageView.accessibilityLabel = self.imageAccessibilityLabel;
-  }
 
   imageView.translatesAutoresizingMaskIntoConstraints = NO;
   return imageView;
@@ -507,6 +457,10 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   return subtitle;
 }
 
+- (BOOL)hasTopToolbar {
+  return self.helpButtonAvailable || self.showDismissBarButton;
+}
+
 // Helper to create the scroll view.
 - (UIScrollView*)createScrollView {
   UIScrollView* scrollView = [[UIScrollView alloc] init];
@@ -536,14 +490,32 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   return stackView;
 }
 
+- (UIView*)createActionStackView {
+  UIStackView* actionStackView = [[UIStackView alloc] init];
+  actionStackView.alignment = UIStackViewAlignmentFill;
+  actionStackView.axis = UILayoutConstraintAxisVertical;
+  actionStackView.translatesAutoresizingMaskIntoConstraints = NO;
+
+  if (self.primaryActionString) {
+    self.primaryActionButton = [self createPrimaryActionButton];
+    [actionStackView addArrangedSubview:self.primaryActionButton];
+  }
+
+  if (self.secondaryActionString) {
+    self.secondaryActionButton = [self createSecondaryActionButton];
+    [actionStackView addArrangedSubview:self.secondaryActionButton];
+  }
+
+  if (self.tertiaryActionString) {
+    self.tertiaryActionButton = [self createTertiaryButton];
+    [actionStackView addArrangedSubview:self.tertiaryActionButton];
+  }
+  return actionStackView;
+}
+
 // Helper to create the primary action button.
 - (UIButton*)createPrimaryActionButton {
-  BOOL pointerInteractionEnabled = NO;
-  if (@available(iOS 13.4, *)) {
-    pointerInteractionEnabled = self.pointerInteractionEnabled;
-  }
-  UIButton* primaryActionButton =
-      PrimaryActionButton(pointerInteractionEnabled);
+  UIButton* primaryActionButton = PrimaryActionButton(YES);
   [primaryActionButton addTarget:self
                           action:@selector(didTapPrimaryActionButton)
                 forControlEvents:UIControlEventTouchUpInside];
@@ -558,7 +530,7 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 
 // Helper to create the primary action button.
 - (UIButton*)createSecondaryActionButton {
-  DCHECK(self.secondaryActionAvailable);
+  DCHECK(self.secondaryActionString);
   UIButton* secondaryActionButton =
       [UIButton buttonWithType:UIButtonTypeSystem];
   [secondaryActionButton addTarget:self
@@ -580,19 +552,15 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
       kConfirmationAlertSecondaryActionAccessibilityIdentifier;
   secondaryActionButton.titleLabel.adjustsFontSizeToFitWidth = YES;
 
-  if (@available(iOS 13.4, *)) {
-    if (self.pointerInteractionEnabled) {
-      secondaryActionButton.pointerInteractionEnabled = YES;
-      secondaryActionButton.pointerStyleProvider =
-          CreateOpaqueButtonPointerStyleProvider();
-    }
-  }
+  secondaryActionButton.pointerInteractionEnabled = YES;
+  secondaryActionButton.pointerStyleProvider =
+      CreateOpaqueButtonPointerStyleProvider();
 
   return secondaryActionButton;
 }
 
 - (UIButton*)createTertiaryButton {
-  DCHECK(self.tertiaryActionAvailable);
+  DCHECK(self.tertiaryActionString);
   UIButton* tertiaryActionButton = [UIButton buttonWithType:UIButtonTypeSystem];
   [tertiaryActionButton addTarget:self
                            action:@selector(didTapTertiaryActionButton)
@@ -611,13 +579,9 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   tertiaryActionButton.accessibilityIdentifier =
       kConfirmationAlertTertiaryActionAccessibilityIdentifier;
 
-  if (@available(iOS 13.4, *)) {
-    if (self.pointerInteractionEnabled) {
-      tertiaryActionButton.pointerInteractionEnabled = YES;
-      tertiaryActionButton.pointerStyleProvider =
-          CreateOpaqueButtonPointerStyleProvider();
-    }
-  }
+  tertiaryActionButton.pointerInteractionEnabled = YES;
+  tertiaryActionButton.pointerStyleProvider =
+      CreateOpaqueButtonPointerStyleProvider();
 
   return tertiaryActionButton;
 }

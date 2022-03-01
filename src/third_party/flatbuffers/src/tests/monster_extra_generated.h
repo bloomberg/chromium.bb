@@ -19,46 +19,17 @@ inline const flatbuffers::TypeTable *MonsterExtraTypeTable();
 
 struct MonsterExtraT : public flatbuffers::NativeTable {
   typedef MonsterExtra TableType;
-  double d0;
-  double d1;
-  double d2;
-  double d3;
-  float f0;
-  float f1;
-  float f2;
-  float f3;
-  std::vector<double> dvec;
-  std::vector<float> fvec;
-  MonsterExtraT()
-      : d0(std::numeric_limits<double>::quiet_NaN()),
-        d1(std::numeric_limits<double>::quiet_NaN()),
-        d2(std::numeric_limits<double>::infinity()),
-        d3(-std::numeric_limits<double>::infinity()),
-        f0(std::numeric_limits<float>::quiet_NaN()),
-        f1(std::numeric_limits<float>::quiet_NaN()),
-        f2(std::numeric_limits<float>::infinity()),
-        f3(-std::numeric_limits<float>::infinity()) {
-  }
+  double d0 = std::numeric_limits<double>::quiet_NaN();
+  double d1 = std::numeric_limits<double>::quiet_NaN();
+  double d2 = std::numeric_limits<double>::infinity();
+  double d3 = -std::numeric_limits<double>::infinity();
+  float f0 = std::numeric_limits<float>::quiet_NaN();
+  float f1 = std::numeric_limits<float>::quiet_NaN();
+  float f2 = std::numeric_limits<float>::infinity();
+  float f3 = -std::numeric_limits<float>::infinity();
+  std::vector<double> dvec{};
+  std::vector<float> fvec{};
 };
-
-inline bool operator==(const MonsterExtraT &lhs, const MonsterExtraT &rhs) {
-  return
-      (lhs.d0 == rhs.d0) &&
-      (lhs.d1 == rhs.d1) &&
-      (lhs.d2 == rhs.d2) &&
-      (lhs.d3 == rhs.d3) &&
-      (lhs.f0 == rhs.f0) &&
-      (lhs.f1 == rhs.f1) &&
-      (lhs.f2 == rhs.f2) &&
-      (lhs.f3 == rhs.f3) &&
-      (lhs.dvec == rhs.dvec) &&
-      (lhs.fvec == rhs.fvec);
-}
-
-inline bool operator!=(const MonsterExtraT &lhs, const MonsterExtraT &rhs) {
-    return !(lhs == rhs);
-}
-
 
 struct MonsterExtra FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   typedef MonsterExtraT NativeTableType;
@@ -81,49 +52,49 @@ struct MonsterExtra FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   double d0() const {
     return GetField<double>(VT_D0, std::numeric_limits<double>::quiet_NaN());
   }
-  bool mutate_d0(double _d0) {
+  bool mutate_d0(double _d0 = std::numeric_limits<double>::quiet_NaN()) {
     return SetField<double>(VT_D0, _d0, std::numeric_limits<double>::quiet_NaN());
   }
   double d1() const {
     return GetField<double>(VT_D1, std::numeric_limits<double>::quiet_NaN());
   }
-  bool mutate_d1(double _d1) {
+  bool mutate_d1(double _d1 = std::numeric_limits<double>::quiet_NaN()) {
     return SetField<double>(VT_D1, _d1, std::numeric_limits<double>::quiet_NaN());
   }
   double d2() const {
     return GetField<double>(VT_D2, std::numeric_limits<double>::infinity());
   }
-  bool mutate_d2(double _d2) {
+  bool mutate_d2(double _d2 = std::numeric_limits<double>::infinity()) {
     return SetField<double>(VT_D2, _d2, std::numeric_limits<double>::infinity());
   }
   double d3() const {
     return GetField<double>(VT_D3, -std::numeric_limits<double>::infinity());
   }
-  bool mutate_d3(double _d3) {
+  bool mutate_d3(double _d3 = -std::numeric_limits<double>::infinity()) {
     return SetField<double>(VT_D3, _d3, -std::numeric_limits<double>::infinity());
   }
   float f0() const {
     return GetField<float>(VT_F0, std::numeric_limits<float>::quiet_NaN());
   }
-  bool mutate_f0(float _f0) {
+  bool mutate_f0(float _f0 = std::numeric_limits<float>::quiet_NaN()) {
     return SetField<float>(VT_F0, _f0, std::numeric_limits<float>::quiet_NaN());
   }
   float f1() const {
     return GetField<float>(VT_F1, std::numeric_limits<float>::quiet_NaN());
   }
-  bool mutate_f1(float _f1) {
+  bool mutate_f1(float _f1 = std::numeric_limits<float>::quiet_NaN()) {
     return SetField<float>(VT_F1, _f1, std::numeric_limits<float>::quiet_NaN());
   }
   float f2() const {
     return GetField<float>(VT_F2, std::numeric_limits<float>::infinity());
   }
-  bool mutate_f2(float _f2) {
+  bool mutate_f2(float _f2 = std::numeric_limits<float>::infinity()) {
     return SetField<float>(VT_F2, _f2, std::numeric_limits<float>::infinity());
   }
   float f3() const {
     return GetField<float>(VT_F3, -std::numeric_limits<float>::infinity());
   }
-  bool mutate_f3(float _f3) {
+  bool mutate_f3(float _f3 = -std::numeric_limits<float>::infinity()) {
     return SetField<float>(VT_F3, _f3, -std::numeric_limits<float>::infinity());
   }
   const flatbuffers::Vector<double> *dvec() const {
@@ -197,7 +168,6 @@ struct MonsterExtraBuilder {
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  MonsterExtraBuilder &operator=(const MonsterExtraBuilder &);
   flatbuffers::Offset<MonsterExtra> Finish() {
     const auto end = fbb_.EndTable(start_);
     auto o = flatbuffers::Offset<MonsterExtra>(end);
@@ -261,8 +231,28 @@ inline flatbuffers::Offset<MonsterExtra> CreateMonsterExtraDirect(
 
 flatbuffers::Offset<MonsterExtra> CreateMonsterExtra(flatbuffers::FlatBufferBuilder &_fbb, const MonsterExtraT *_o, const flatbuffers::rehasher_function_t *_rehasher = nullptr);
 
+
+inline bool operator==(const MonsterExtraT &lhs, const MonsterExtraT &rhs) {
+  return
+      (lhs.d0 == rhs.d0) &&
+      (lhs.d1 == rhs.d1) &&
+      (lhs.d2 == rhs.d2) &&
+      (lhs.d3 == rhs.d3) &&
+      (lhs.f0 == rhs.f0) &&
+      (lhs.f1 == rhs.f1) &&
+      (lhs.f2 == rhs.f2) &&
+      (lhs.f3 == rhs.f3) &&
+      (lhs.dvec == rhs.dvec) &&
+      (lhs.fvec == rhs.fvec);
+}
+
+inline bool operator!=(const MonsterExtraT &lhs, const MonsterExtraT &rhs) {
+    return !(lhs == rhs);
+}
+
+
 inline MonsterExtraT *MonsterExtra::UnPack(const flatbuffers::resolver_function_t *_resolver) const {
-  flatbuffers::unique_ptr<MyGame::MonsterExtraT> _o = flatbuffers::unique_ptr<MyGame::MonsterExtraT>(new MonsterExtraT());
+  auto _o = std::unique_ptr<MonsterExtraT>(new MonsterExtraT());
   UnPackTo(_o.get(), _resolver);
   return _o.release();
 }
@@ -342,7 +332,7 @@ inline const flatbuffers::TypeTable *MonsterExtraTypeTable() {
     "deprec"
   };
   static const flatbuffers::TypeTable tt = {
-    flatbuffers::ST_TABLE, 11, type_codes, nullptr, nullptr, names
+    flatbuffers::ST_TABLE, 11, type_codes, nullptr, nullptr, nullptr, names
   };
   return &tt;
 }
@@ -357,6 +347,10 @@ inline const MyGame::MonsterExtra *GetSizePrefixedMonsterExtra(const void *buf) 
 
 inline MonsterExtra *GetMutableMonsterExtra(void *buf) {
   return flatbuffers::GetMutableRoot<MonsterExtra>(buf);
+}
+
+inline MyGame::MonsterExtra *GetMutableSizePrefixedMonsterExtra(void *buf) {
+  return flatbuffers::GetMutableSizePrefixedRoot<MyGame::MonsterExtra>(buf);
 }
 
 inline const char *MonsterExtraIdentifier() {

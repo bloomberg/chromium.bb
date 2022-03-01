@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_SERVICE_FACTORY_H_
 
-#include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
@@ -22,6 +21,11 @@ class BackgroundContentsServiceFactory
 
   static BackgroundContentsServiceFactory* GetInstance();
 
+  BackgroundContentsServiceFactory(const BackgroundContentsServiceFactory&) =
+      delete;
+  BackgroundContentsServiceFactory& operator=(
+      const BackgroundContentsServiceFactory&) = delete;
+
  private:
   friend struct base::DefaultSingletonTraits<BackgroundContentsServiceFactory>;
 
@@ -36,8 +40,6 @@ class BackgroundContentsServiceFactory
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
   bool ServiceIsCreatedWithBrowserContext() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundContentsServiceFactory);
 };
 
 #endif  // CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_SERVICE_FACTORY_H_

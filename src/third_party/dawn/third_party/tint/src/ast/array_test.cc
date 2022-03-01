@@ -13,19 +13,8 @@
 // limitations under the License.
 
 #include "src/ast/array.h"
-#include "src/ast/access_control.h"
-#include "src/ast/alias.h"
-#include "src/ast/bool.h"
-#include "src/ast/f32.h"
-#include "src/ast/i32.h"
-#include "src/ast/matrix.h"
-#include "src/ast/pointer.h"
-#include "src/ast/sampler.h"
-#include "src/ast/struct.h"
+
 #include "src/ast/test_helper.h"
-#include "src/ast/texture.h"
-#include "src/ast/u32.h"
-#include "src/ast/vector.h"
 
 namespace tint {
 namespace ast {
@@ -35,58 +24,46 @@ using AstArrayTest = TestHelper;
 
 TEST_F(AstArrayTest, CreateSizedArray) {
   auto* u32 = create<U32>();
-  auto* arr = create<Array>(u32, 3, DecorationList{});
-  EXPECT_EQ(arr->type(), u32);
-  EXPECT_EQ(arr->size(), 3u);
+  auto* count = Expr(3);
+  auto* arr = create<Array>(u32, count, DecorationList{});
+  EXPECT_EQ(arr->type, u32);
+  EXPECT_EQ(arr->count, count);
   EXPECT_TRUE(arr->Is<Array>());
   EXPECT_FALSE(arr->IsRuntimeArray());
 }
 
 TEST_F(AstArrayTest, CreateRuntimeArray) {
   auto* u32 = create<U32>();
-  auto* arr = create<Array>(u32, 0, DecorationList{});
-  EXPECT_EQ(arr->type(), u32);
-  EXPECT_EQ(arr->size(), 0u);
+  auto* arr = create<Array>(u32, nullptr, DecorationList{});
+  EXPECT_EQ(arr->type, u32);
+  EXPECT_EQ(arr->count, nullptr);
   EXPECT_TRUE(arr->Is<Array>());
   EXPECT_TRUE(arr->IsRuntimeArray());
 }
 
-TEST_F(AstArrayTest, TypeName) {
+TEST_F(AstArrayTest, FriendlyName_RuntimeSized) {
   auto* i32 = create<I32>();
-  auto* arr = create<Array>(i32, 0, DecorationList{});
-  EXPECT_EQ(arr->type_name(), "__array__i32");
-}
-
-TEST_F(AstArrayTest, FriendlyNameRuntimeSized) {
-  auto* i32 = create<I32>();
-  auto* arr = create<Array>(i32, 0, DecorationList{});
+  auto* arr = create<Array>(i32, nullptr, DecorationList{});
   EXPECT_EQ(arr->FriendlyName(Symbols()), "array<i32>");
 }
 
-TEST_F(AstArrayTest, FriendlyNameStaticSized) {
+TEST_F(AstArrayTest, FriendlyName_LiteralSized) {
   auto* i32 = create<I32>();
-  auto* arr = create<Array>(i32, 5, DecorationList{});
+  auto* arr = create<Array>(i32, Expr(5), DecorationList{});
   EXPECT_EQ(arr->FriendlyName(Symbols()), "array<i32, 5>");
 }
 
-TEST_F(AstArrayTest, FriendlyNameWithStride) {
+TEST_F(AstArrayTest, FriendlyName_ConstantSized) {
+  auto* i32 = create<I32>();
+  auto* arr = create<Array>(i32, Expr("size"), DecorationList{});
+  EXPECT_EQ(arr->FriendlyName(Symbols()), "array<i32, size>");
+}
+
+TEST_F(AstArrayTest, FriendlyName_WithStride) {
   auto* i32 = create<I32>();
   auto* arr =
-      create<Array>(i32, 5, DecorationList{create<StrideDecoration>(32)});
+      create<Array>(i32, Expr(5), DecorationList{create<StrideDecoration>(32)});
   EXPECT_EQ(arr->FriendlyName(Symbols()), "[[stride(32)]] array<i32, 5>");
-}
-
-TEST_F(AstArrayTest, TypeName_RuntimeArray) {
-  auto* i32 = create<I32>();
-  auto* arr = create<Array>(i32, 3, DecorationList{});
-  EXPECT_EQ(arr->type_name(), "__array__i32_3");
-}
-
-TEST_F(AstArrayTest, TypeName_WithStride) {
-  auto* i32 = create<I32>();
-  auto* arr =
-      create<Array>(i32, 3, DecorationList{create<StrideDecoration>(16)});
-  EXPECT_EQ(arr->type_name(), "__array__i32_3_stride_16");
 }
 
 }  // namespace

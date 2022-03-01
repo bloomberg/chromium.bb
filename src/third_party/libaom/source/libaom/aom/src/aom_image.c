@@ -9,6 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -200,9 +201,8 @@ aom_image_t *aom_img_alloc_with_border(aom_image_t *img, aom_img_fmt_t fmt,
 
 int aom_img_set_rect(aom_image_t *img, unsigned int x, unsigned int y,
                      unsigned int w, unsigned int h, unsigned int border) {
-  unsigned char *data;
-
-  if (x + w <= img->w && y + h <= img->h) {
+  if (x <= UINT_MAX - w && x + w <= img->w && y <= UINT_MAX - h &&
+      y + h <= img->h) {
     img->d_w = w;
     img->d_h = h;
 
@@ -216,7 +216,7 @@ int aom_img_set_rect(aom_image_t *img, unsigned int x, unsigned int y,
     } else {
       const int bytes_per_sample =
           (img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 2 : 1;
-      data = img->img_data;
+      unsigned char *data = img->img_data;
 
       img->planes[AOM_PLANE_Y] =
           data + x * bytes_per_sample + y * img->stride[AOM_PLANE_Y];

@@ -8,10 +8,10 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/diagnostics/diagnostics_model.h"
@@ -30,6 +30,11 @@ namespace diagnostics {
 // Basic harness to acquire and release the required temporary environment to
 // run a test in.
 class DiagnosticsControllerTest : public testing::Test {
+ public:
+  DiagnosticsControllerTest(const DiagnosticsControllerTest&) = delete;
+  DiagnosticsControllerTest& operator=(const DiagnosticsControllerTest&) =
+      delete;
+
  protected:
   DiagnosticsControllerTest() : cmdline_(base::CommandLine::NO_PROGRAM) {}
 
@@ -85,8 +90,6 @@ class DiagnosticsControllerTest : public testing::Test {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   base::FilePath old_home_dir_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(DiagnosticsControllerTest);
 };
 
 TEST_F(DiagnosticsControllerTest, Diagnostics) {

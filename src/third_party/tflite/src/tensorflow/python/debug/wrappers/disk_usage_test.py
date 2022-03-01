@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Debugger Wrapper Session Consisting of a Local Curses-based CLI."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os
 import tempfile
 
@@ -32,7 +28,7 @@ from tensorflow.python.platform import googletest
 from tensorflow.python.training import monitored_session
 
 
-@test_util.run_deprecated_v1
+@test_util.run_v1_only("Sessions are not available in TF 2.x")
 class DumpingDebugWrapperDiskUsageLimitTest(test_util.TensorFlowTestCase):
 
   @classmethod

@@ -9,8 +9,6 @@
 #include <vector>
 
 #include "ash/frame/header_view.h"
-#include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/move_to_desks_menu_delegate.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
@@ -26,7 +24,6 @@
 #include "chromeos/ui/frame/default_frame_header.h"
 #include "chromeos/ui/frame/frame_utils.h"
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller.h"
-#include "chromeos/ui/frame/move_to_desks_menu_model.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -225,6 +222,7 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
           std::make_unique<FrameContextMenuController>(frame, this)) {
   DCHECK(frame_);
 
+  header_view_->Init();
   header_view_->set_immersive_mode_changed_callback(base::BindRepeating(
       &NonClientFrameViewAsh::InvalidateLayout, weak_factory_.GetWeakPtr()));
 
@@ -328,6 +326,10 @@ void NonClientFrameViewAsh::SizeConstraintsChanged() {
   header_view_->UpdateCaptionButtons();
 }
 
+views::View::Views NonClientFrameViewAsh::GetChildrenInZOrder() {
+  return header_view_->GetFrameHeader()->GetAdjustedChildrenInZOrder(this);
+}
+
 gfx::Size NonClientFrameViewAsh::CalculatePreferredSize() const {
   gfx::Size pref = frame_->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref.width(), pref.height());
@@ -425,6 +427,20 @@ void NonClientFrameViewAsh::SetFrameEnabled(bool enabled) {
   frame_enabled_ = enabled;
   overlay_view_->SetVisible(frame_enabled_);
   InvalidateLayout();
+}
+
+void NonClientFrameViewAsh::SetToggleResizeLockMenuCallback(
+    base::RepeatingCallback<void()> callback) {
+  toggle_resize_lock_menu_callback_ = std::move(callback);
+}
+
+void NonClientFrameViewAsh::ClearToggleResizeLockMenuCallback() {
+  toggle_resize_lock_menu_callback_.Reset();
+}
+
+base::RepeatingCallback<void()>
+NonClientFrameViewAsh::GetToggleResizeLockMenuCallback() const {
+  return toggle_resize_lock_menu_callback_;
 }
 
 void NonClientFrameViewAsh::OnDidSchedulePaint(const gfx::Rect& r) {

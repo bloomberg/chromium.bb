@@ -10,7 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/task_environment.h"
@@ -24,6 +24,7 @@
 #include "components/password_manager/core/browser/android_affiliation/facet_manager.h"
 #include "components/password_manager/core/browser/android_affiliation/fake_affiliation_api.h"
 #include "components/password_manager/core/browser/android_affiliation/mock_affiliation_consumer.h"
+#include "components/variations/scoped_variations_ids_provider.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
@@ -53,6 +54,10 @@ class MockAffiliationFetchThrottler : public AffiliationFetchThrottler {
         signaled_network_request_needed_(false) {
     EXPECT_CALL(*this, OnInformOfNetworkRequestComplete(testing::_)).Times(0);
   }
+
+  MockAffiliationFetchThrottler(const MockAffiliationFetchThrottler&) = delete;
+  MockAffiliationFetchThrottler& operator=(
+      const MockAffiliationFetchThrottler&) = delete;
 
   ~MockAffiliationFetchThrottler() override {
     EXPECT_FALSE(signaled_network_request_needed_);
@@ -102,8 +107,6 @@ class MockAffiliationFetchThrottler : public AffiliationFetchThrottler {
   }
 
   bool signaled_network_request_needed_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockAffiliationFetchThrottler);
 };
 
 const char kTestFacetURIAlpha1[] = "https://one.alpha.example.com";
@@ -140,20 +143,20 @@ AffiliatedFacets GetTestEquivalenceClassGamma() {
 }
 
 base::TimeDelta GetCacheHardExpiryPeriod() {
-  return base::TimeDelta::FromHours(FacetManager::kCacheHardExpiryInHours);
+  return base::Hours(FacetManager::kCacheHardExpiryInHours);
 }
 
 base::TimeDelta GetCacheSoftExpiryPeriod() {
-  return base::TimeDelta::FromHours(FacetManager::kCacheSoftExpiryInHours);
+  return base::Hours(FacetManager::kCacheSoftExpiryInHours);
 }
 
 base::TimeDelta GetShortTestPeriod() {
-  return base::TimeDelta::FromHours(1);
+  return base::Hours(1);
 }
 
 // Returns a smallest time difference that this test cares about.
 base::TimeDelta Epsilon() {
-  return base::TimeDelta::FromMicroseconds(1);
+  return base::Microseconds(1);
 }
 
 }  // namespace
@@ -161,6 +164,9 @@ base::TimeDelta Epsilon() {
 class AffiliationBackendTest : public testing::Test {
  public:
   AffiliationBackendTest() = default;
+
+  AffiliationBackendTest(const AffiliationBackendTest&) = delete;
+  AffiliationBackendTest& operator=(const AffiliationBackendTest&) = delete;
 
  protected:
   void GetAffiliationsAndBranding(MockAffiliationConsumer* consumer,
@@ -366,6 +372,8 @@ class AffiliationBackendTest : public testing::Test {
       base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   scoped_refptr<base::TestSimpleTaskRunner> consumer_task_runner_ =
       base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
 
   base::FilePath db_path_;
   std::unique_ptr<AffiliationBackend> backend_;
@@ -373,9 +381,7 @@ class AffiliationBackendTest : public testing::Test {
   MockAffiliationConsumer mock_consumer_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   // Owned by |backend_|.
-  MockAffiliationFetchThrottler* mock_fetch_throttler_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(AffiliationBackendTest);
+  raw_ptr<MockAffiliationFetchThrottler> mock_fetch_throttler_ = nullptr;
 };
 
 TEST_F(AffiliationBackendTest, OnDemandRequestSucceedsWithFetch) {
@@ -822,7 +828,7 @@ TEST_F(AffiliationBackendTest, CancelDuplicatePrefetch) {
 // Canceling a non-existing prefetch request for a non-prefetched facet.
 TEST_F(AffiliationBackendTest, CancelingNonExistingPrefetchIsSilentlyIgnored) {
   CancelPrefetch(FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1),
-                 backend_task_runner()->Now() + base::TimeDelta::FromHours(24));
+                 backend_task_runner()->Now() + base::Hours(24));
   ASSERT_NO_FATAL_FAILURE(ExpectNoFetchNeeded());
   EXPECT_EQ(0u, backend_facet_manager_count());
   EXPECT_FALSE(backend_task_runner()->HasPendingTask());
@@ -887,6 +893,32 @@ TEST_F(AffiliationBackendTest, DeleteCache) {
   ASSERT_TRUE(base::PathExists(db_path()));
   AffiliationBackend::DeleteCache(db_path());
   ASSERT_FALSE(base::PathExists(db_path()));
+}
+
+TEST_F(AffiliationBackendTest, KeepPrefetchForFacets) {
+  // Have {kTestFacetURIAlpha1, kTestFacetURIAlpha1, kTestFacetURIBeta1} as a
+  // list of actively fetching facets.
+  ASSERT_NO_FATAL_FAILURE(PrefetchAndExpectFetch(
+      FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1), base::Time::Max()));
+  ASSERT_NO_FATAL_FAILURE(PrefetchAndExpectFetch(
+      FacetURI::FromCanonicalSpec(kTestFacetURIBeta1), base::Time::Max()));
+  Prefetch(FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1), base::Time::Max());
+  EXPECT_EQ(2u, backend_facet_manager_count());
+  EXPECT_EQ(2u, GetNumOfEquivalenceClassInDatabase());
+
+  AdvanceTime(GetCacheSoftExpiryPeriod() - Epsilon());
+
+  backend()->KeepPrefetchForFacets(
+      {FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1),
+       FacetURI::FromCanonicalSpec(kTestFacetURIGamma1)});
+  ASSERT_NO_FATAL_FAILURE(ExpectNeedForFetchAndLetItBeSent());
+  ASSERT_NO_FATAL_FAILURE(
+      ExpectAndCompleteFetch(FacetURI::FromCanonicalSpec(kTestFacetURIGamma1)));
+  EXPECT_EQ(2u, backend_facet_manager_count());
+  EXPECT_EQ(2u, GetNumOfEquivalenceClassInDatabase());
+
+  consumer_task_runner()->RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(mock_consumer());
 }
 
 }  // namespace password_manager

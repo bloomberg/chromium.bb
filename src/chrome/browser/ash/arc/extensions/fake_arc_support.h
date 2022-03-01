@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ash/arc/arc_support_host.h"
@@ -30,6 +29,10 @@ class FakeArcSupport : public extensions::NativeMessageHost::Client {
   };
 
   explicit FakeArcSupport(ArcSupportHost* support_host);
+
+  FakeArcSupport(const FakeArcSupport&) = delete;
+  FakeArcSupport& operator=(const FakeArcSupport&) = delete;
+
   ~FakeArcSupport() override;
 
   // Emulates to open ARC support Chrome app, and connect message host to
@@ -55,6 +58,7 @@ class FakeArcSupport : public extensions::NativeMessageHost::Client {
   // Error page emulation.
   void ClickRetryButton();
   void ClickSendFeedbackButton();
+  void ClickRunNetworkTestsButton();
 
   bool metrics_mode() const { return metrics_mode_; }
   bool backup_and_restore_managed() const {
@@ -139,8 +143,6 @@ class FakeArcSupport : public extensions::NativeMessageHost::Client {
   base::ObserverList<Observer>::Unchecked observer_list_;
 
   base::WeakPtrFactory<FakeArcSupport> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FakeArcSupport);
 };
 
 }  // namespace arc

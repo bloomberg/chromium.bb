@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 
-import type {NameValue} from './NetworkRequest.js'; // eslint-disable-line no-unused-vars
+import type {NameValue} from './NetworkRequest.js';
 
 const UIStrings = {
   /**
@@ -75,7 +73,7 @@ export class ServerTiming {
 
   /**
    * TODO(crbug.com/1011811): Instead of using !Object<string, *> we should have a proper type
-   *                          with name, desc and dur properties.
+   *                          with #name, desc and dur properties.
    */
   static createFromHeaderValue(valueString: string): {
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
@@ -167,7 +165,7 @@ export class ServerTiming {
         const parseParameter = this.getParserForParameter(paramName);
         let paramValue: (string|null)|null = null;
         if (consumeDelimiter('=')) {
-          // always parse the value, even if we don't recognize the parameter name
+          // always parse the value, even if we don't recognize the parameter #name
           paramValue = consumeTokenOrQuotedString();
           consumeExtraneous();
         }

@@ -17,9 +17,12 @@
 #include "url/url_constants.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
 #include "extensions/common/constants.h"
 #endif
+
+namespace translate {
+namespace {
 
 // Test the check that determines if a URL should be translated.
 TEST(TranslateServiceTest, CheckTranslatableURL) {
@@ -60,10 +63,6 @@ TEST(TranslateServiceTest, CheckTranslatableURL) {
   EXPECT_FALSE(TranslateService::IsTranslatableURL(filemanager_url));
 #endif
 
-  std::string ftp = std::string(url::kFtpScheme) + "://google.com/pub";
-  GURL ftp_url = GURL(ftp);
-  EXPECT_FALSE(TranslateService::IsTranslatableURL(ftp_url));
-
   GURL right_url = GURL("http://www.tamurayukari.com/");
   EXPECT_TRUE(TranslateService::IsTranslatableURL(right_url));
 }
@@ -79,3 +78,6 @@ TEST(TranslateServiceTest, DownloadsAndHistoryNotTranslated) {
       TranslateService::IsTranslatableURL(GURL(chrome::kChromeUIHistoryURL)));
   TranslateService::ShutdownForTesting();
 }
+
+}  // namespace
+}  // namespace translate

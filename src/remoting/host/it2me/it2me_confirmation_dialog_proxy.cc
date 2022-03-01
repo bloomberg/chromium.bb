@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace remoting {
@@ -20,6 +19,10 @@ class It2MeConfirmationDialogProxy::Core {
        scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
        base::WeakPtr<It2MeConfirmationDialogProxy> parent,
        std::unique_ptr<It2MeConfirmationDialog> dialog);
+
+  Core(const Core&) = delete;
+  Core& operator=(const Core&) = delete;
+
   ~Core();
 
   // Shows the wrapped dialog. Must be called on the UI thread.
@@ -41,8 +44,6 @@ class It2MeConfirmationDialogProxy::Core {
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
   base::WeakPtr<It2MeConfirmationDialogProxy> parent_;
   std::unique_ptr<It2MeConfirmationDialog> dialog_;
-
-  DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
 It2MeConfirmationDialogProxy::Core::Core(

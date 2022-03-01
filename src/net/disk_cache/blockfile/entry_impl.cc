@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/hash/hash.h"
-#include "base/macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_util.h"
 #include "net/base/io_buffer.h"
@@ -28,7 +27,6 @@
 #define CACHE_UMA_BACKEND_IMPL_OBJ backend_
 
 using base::Time;
-using base::TimeDelta;
 using base::TimeTicks;
 
 namespace {
@@ -53,6 +51,10 @@ class SyncCallback: public disk_cache::FileIOCallback {
         end_event_type_(end_event_type) {
     entry_->IncrementIoCount();
   }
+
+  SyncCallback(const SyncCallback&) = delete;
+  SyncCallback& operator=(const SyncCallback&) = delete;
+
   ~SyncCallback() override = default;
 
   void OnFileIOComplete(int bytes_copied) override;
@@ -64,8 +66,6 @@ class SyncCallback: public disk_cache::FileIOCallback {
   scoped_refptr<net::IOBuffer> buf_;
   TimeTicks start_;
   const net::NetLogEventType end_event_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncCallback);
 };
 
 void SyncCallback::OnFileIOComplete(int bytes_copied) {
@@ -106,6 +106,10 @@ class EntryImpl::UserBuffer {
       : backend_(backend->GetWeakPtr()), offset_(0), grow_allowed_(true) {
     buffer_.reserve(kMaxBlockSize);
   }
+
+  UserBuffer(const UserBuffer&) = delete;
+  UserBuffer& operator=(const UserBuffer&) = delete;
+
   ~UserBuffer() {
     if (backend_.get())
       backend_->BufferDeleted(capacity() - kMaxBlockSize);
@@ -145,7 +149,6 @@ class EntryImpl::UserBuffer {
   int offset_;
   std::vector<char> buffer_;
   bool grow_allowed_;
-  DISALLOW_COPY_AND_ASSIGN(UserBuffer);
 };
 
 bool EntryImpl::UserBuffer::PreWrite(int offset, int len) {
@@ -405,12 +408,12 @@ int EntryImpl::WriteSparseDataImpl(int64_t offset,
   return result;
 }
 
-int EntryImpl::GetAvailableRangeImpl(int64_t offset, int len, int64_t* start) {
+RangeResult EntryImpl::GetAvailableRangeImpl(int64_t offset, int len) {
   int result = InitSparseData();
   if (net::OK != result)
-    return result;
+    return RangeResult(static_cast<net::Error>(result));
 
-  return sparse_->GetAvailableRange(offset, len, start);
+  return sparse_->GetAvailableRange(offset, len);
 }
 
 void EntryImpl::CancelSparseIOImpl() {
@@ -922,16 +925,14 @@ int EntryImpl::WriteSparseData(int64_t offset,
   return net::ERR_IO_PENDING;
 }
 
-int EntryImpl::GetAvailableRange(int64_t offset,
-                                 int len,
-                                 int64_t* start,
-                                 CompletionOnceCallback callback) {
+RangeResult EntryImpl::GetAvailableRange(int64_t offset,
+                                         int len,
+                                         RangeResultCallback callback) {
   if (!background_queue_.get())
-    return net::ERR_UNEXPECTED;
+    return RangeResult(net::ERR_UNEXPECTED);
 
-  background_queue_->GetAvailableRange(this, offset, len, start,
-                                       std::move(callback));
-  return net::ERR_IO_PENDING;
+  background_queue_->GetAvailableRange(this, offset, len, std::move(callback));
+  return RangeResult(net::ERR_IO_PENDING);
 }
 
 bool EntryImpl::CouldBeSparse() const {

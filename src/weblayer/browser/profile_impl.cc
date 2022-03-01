@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/task/task_traits.h"
@@ -71,15 +72,6 @@ namespace weblayer {
 namespace {
 
 bool g_first_profile_created = false;
-
-// Simulates a WeakPtr for WebContents. Specifically if the WebContents
-// supplied to the constructor is destroyed then web_contents() returns
-// null.
-class WebContentsTracker : public content::WebContentsObserver {
- public:
-  explicit WebContentsTracker(content::WebContents* web_contents)
-      : content::WebContentsObserver(web_contents) {}
-};
 
 // TaskRunner used by MarkProfileAsDeleted and NukeProfilesMarkedForDeletion to
 // esnure that Nuke happens before any Mark in this process.
@@ -172,7 +164,7 @@ class ProfileImpl::DataClearer : public content::BrowsingDataRemover::Observer {
   // DataClearer deletes itself when removal is done.
   ~DataClearer() override = default;
 
-  content::BrowsingDataRemover* remover_;
+  raw_ptr<content::BrowsingDataRemover> remover_;
   base::OnceCallback<void()> callback_;
 };
 
@@ -622,17 +614,18 @@ content::WebContents* ProfileImpl::OpenUrl(
   std::unique_ptr<content::WebContents> new_tab_contents =
       content::WebContents::Create(
           content::WebContents::CreateParams(GetBrowserContext()));
-  WebContentsTracker tracker(new_tab_contents.get());
+  base::WeakPtr<content::WebContents> new_tab_contents_weak_ptr(
+      new_tab_contents->GetWeakPtr());
   Tab* tab = browser->CreateTab(std::move(new_tab_contents));
 
-  if (!tracker.web_contents())
+  if (!new_tab_contents_weak_ptr)
     return nullptr;
 
   Java_ProfileImpl_onTabAdded(env, java_profile_,
                               static_cast<TabImpl*>(tab)->GetJavaTab());
-  tracker.web_contents()->GetController().LoadURLWithParams(
+  new_tab_contents_weak_ptr->GetController().LoadURLWithParams(
       content::NavigationController::LoadURLParams(params));
-  return tracker.web_contents();
+  return new_tab_contents_weak_ptr.get();
 #endif  // defined(OS_ANDROID)
 }
 
@@ -642,8 +635,10 @@ void ProfileImpl::SetBooleanSetting(SettingType type, bool value) {
     case SettingType::BASIC_SAFE_BROWSING_ENABLED:
 #if defined(OS_ANDROID)
       safe_browsing::SetSafeBrowsingState(
-          pref_service, value ? safe_browsing::STANDARD_PROTECTION
-                              : safe_browsing::NO_SAFE_BROWSING);
+          pref_service,
+          value ? safe_browsing::SafeBrowsingState::STANDARD_PROTECTION
+                : safe_browsing::SafeBrowsingState::NO_SAFE_BROWSING,
+          /*is_esb_enabled_in_sync=*/false);
 #endif
       break;
     case SettingType::UKM_ENABLED: {
@@ -682,22 +677,25 @@ bool ProfileImpl::GetBooleanSetting(SettingType type) {
     case SettingType::BASIC_SAFE_BROWSING_ENABLED:
 #if defined(OS_ANDROID)
       return safe_browsing::IsSafeBrowsingEnabled(*pref_service);
-#endif
+#else
       return false;
+#endif
     case SettingType::UKM_ENABLED:
       return pref_service->GetBoolean(prefs::kUkmEnabled);
     case SettingType::EXTENDED_REPORTING_SAFE_BROWSING_ENABLED:
 #if defined(OS_ANDROID)
       return pref_service->GetBoolean(
           ::prefs::kSafeBrowsingScoutReportingEnabled);
-#endif
+#else
       return false;
+#endif
     case SettingType::REAL_TIME_SAFE_BROWSING_ENABLED:
 #if defined(OS_ANDROID)
       return pref_service->GetBoolean(
           unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
-#endif
+#else
       return false;
+#endif
     case SettingType::NETWORK_PREDICTION_ENABLED:
       return pref_service->GetBoolean(prefs::kNoStatePrefetchEnabled);
   }

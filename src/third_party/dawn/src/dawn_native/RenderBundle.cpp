@@ -17,6 +17,7 @@
 #include "common/BitSetIterator.h"
 #include "dawn_native/Commands.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/ObjectType_autogen.h"
 #include "dawn_native/RenderBundleEncoder.h"
 
 namespace dawn_native {
@@ -24,15 +25,26 @@ namespace dawn_native {
     RenderBundleBase::RenderBundleBase(RenderBundleEncoder* encoder,
                                        const RenderBundleDescriptor* descriptor,
                                        Ref<AttachmentState> attachmentState,
-                                       RenderPassResourceUsage resourceUsage)
-        : ObjectBase(encoder->GetDevice()),
+                                       bool depthReadOnly,
+                                       bool stencilReadOnly,
+                                       RenderPassResourceUsage resourceUsage,
+                                       IndirectDrawMetadata indirectDrawMetadata)
+        : ApiObjectBase(encoder->GetDevice(), kLabelNotImplemented),
           mCommands(encoder->AcquireCommands()),
+          mIndirectDrawMetadata(std::move(indirectDrawMetadata)),
           mAttachmentState(std::move(attachmentState)),
+          mDepthReadOnly(depthReadOnly),
+          mStencilReadOnly(stencilReadOnly),
           mResourceUsage(std::move(resourceUsage)) {
+        TrackInDevice();
     }
 
-    RenderBundleBase::~RenderBundleBase() {
+    void RenderBundleBase::DestroyImpl() {
         FreeCommands(&mCommands);
+
+        // Remove reference to the attachment state so that we don't have lingering references to
+        // it preventing it from being uncached in the device.
+        mAttachmentState = nullptr;
     }
 
     // static
@@ -41,7 +53,11 @@ namespace dawn_native {
     }
 
     RenderBundleBase::RenderBundleBase(DeviceBase* device, ErrorTag errorTag)
-        : ObjectBase(device, errorTag) {
+        : ApiObjectBase(device, errorTag), mIndirectDrawMetadata(device->GetLimits()) {
+    }
+
+    ObjectType RenderBundleBase::GetType() const {
+        return ObjectType::RenderBundle;
     }
 
     CommandIterator* RenderBundleBase::GetCommands() {
@@ -53,9 +69,23 @@ namespace dawn_native {
         return mAttachmentState.Get();
     }
 
+    bool RenderBundleBase::IsDepthReadOnly() const {
+        ASSERT(!IsError());
+        return mDepthReadOnly;
+    }
+
+    bool RenderBundleBase::IsStencilReadOnly() const {
+        ASSERT(!IsError());
+        return mStencilReadOnly;
+    }
+
     const RenderPassResourceUsage& RenderBundleBase::GetResourceUsage() const {
         ASSERT(!IsError());
         return mResourceUsage;
+    }
+
+    const IndirectDrawMetadata& RenderBundleBase::GetIndirectDrawMetadata() {
+        return mIndirectDrawMetadata;
     }
 
 }  // namespace dawn_native

@@ -71,7 +71,9 @@ bool IsCrashpadEnabled();
 // is embedded into a binary that can be launched with --type=crashpad-handler.
 // Otherwise, this function should be used and will launch an external
 // crashpad_handler.exe which is generally used for test situations.
-void InitializeCrashpad(bool initial_client, const std::string& process_type);
+//
+// On iOS, this will return false if Crashpad initialization fails.
+bool InitializeCrashpad(bool initial_client, const std::string& process_type);
 
 #if defined(OS_WIN)
 // This is the same as InitializeCrashpad(), but rather than launching a
@@ -148,6 +150,7 @@ void DumpWithoutCrashing();
 
 #if defined(OS_IOS)
 void DumpWithoutCrashAndDeferProcessing();
+void DumpWithoutCrashAndDeferProcessingAtPath(const base::FilePath& path);
 #endif
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
@@ -181,15 +184,24 @@ void DumpProcessWithoutCrashing(task_t task_port);
 #endif
 
 #if defined(OS_IOS)
-// Convert intermediate dumps into minidumps and trigger an upload. Optional
-// |annotations| will be merged with any process annotations. These are useful
-// for adding annotations detected on the next run after a crash but before
-// upload.
+// Convert intermediate dumps into minidumps and trigger an upload if
+// StartProcessingPendingReports() has been called. Optional |annotations| will
+// merge with any process annotations. These are useful for adding annotations
+// detected on the next run after a crash but before upload.
 void ProcessIntermediateDumps(
     const std::map<std::string, std::string>& annotations = {});
 
+// Convert a single intermediate dump at |file| into a minidump and
+// trigger an upload if StartProcessingPendingReports() has been called.
+// Optional |annotations| will merge with any process annotations. These are
+// useful for adding annotations detected on the next run after a crash but
+// before upload.
+void ProcessIntermediateDump(
+    const base::FilePath& file,
+    const std::map<std::string, std::string>& annotations = {});
+
 // Requests that the handler begin in-process uploading of any pending reports.
-void StartProcesingPendingReports();
+void StartProcessingPendingReports();
 #endif
 
 #if defined(OS_ANDROID)
@@ -240,14 +252,16 @@ bool StartHandlerForClient(int fd, bool write_minidump_to_database);
 // |user_data_dir| is non-empty, the user data directory will be passed to the
 // handler process for use by Chrome Crashpad extensions; if |exe_path| is
 // non-empty, it specifies the path to the executable holding the embedded
-// handler. Returns the database path, if initializing in the browser process.
-base::FilePath PlatformCrashpadInitialization(
+// handler. Sets the database path in |database_path|, if initializing in the
+// browser process. Returns false if initialization fails.
+bool PlatformCrashpadInitialization(
     bool initial_client,
     bool browser_process,
     bool embedded_handler,
     const std::string& user_data_dir,
     const base::FilePath& exe_path,
-    const std::vector<std::string>& initial_arguments);
+    const std::vector<std::string>& initial_arguments,
+    base::FilePath* database_path);
 
 // Returns the current crash report database object, or null if it has not
 // been initialized yet.

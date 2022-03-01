@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -471,10 +471,7 @@ TEST_F(GCMSocketStreamTest, WritePartialWithLengthChecking) {
   // to make sure data is as what we expected, and there is no trailing garbage
   // data.
   while (true) {
-    char buffer[5];
-    uint32_t read_size = sizeof(buffer);
-    MojoResult r =
-        consumer_handle->ReadData(buffer, &read_size, MOJO_READ_DATA_FLAG_NONE);
+    r = consumer_handle->ReadData(buffer, &read_size, MOJO_READ_DATA_FLAG_NONE);
     if (r == MOJO_RESULT_SHOULD_WAIT)
       continue;
     if (r != MOJO_RESULT_OK)

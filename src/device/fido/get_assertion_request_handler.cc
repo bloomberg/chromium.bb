@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
@@ -211,11 +212,11 @@ base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
 
   base::flat_set<FidoTransportProtocol> transports;
   for (const auto& credential : allowed_list) {
-    if (credential.transports().empty()) {
+    if (credential.transports.empty()) {
       return kAllTransports;
     }
-    transports.insert(credential.transports().begin(),
-                      credential.transports().end());
+    transports.insert(credential.transports.begin(),
+                      credential.transports.end());
   }
 
   if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport) ||
@@ -344,10 +345,10 @@ void GetAssertionRequestHandler::DispatchRequest(
             fido_filter::Operation::GET_ASSERTION, request_.rp_id,
             authenticator_name,
             std::pair<fido_filter::IDType, base::span<const uint8_t>>(
-                fido_filter::IDType::CREDENTIAL_ID, cred.id())) ==
+                fido_filter::IDType::CREDENTIAL_ID, cred.id)) ==
         fido_filter::Action::BLOCK) {
       FIDO_LOG(DEBUG) << "Filtered request to device " << authenticator_name
-                      << " for credential ID " << base::HexEncode(cred.id());
+                      << " for credential ID " << base::HexEncode(cred.id);
       return;
     }
   }
@@ -442,9 +443,15 @@ void GetAssertionRequestHandler::GetPlatformCredentialStatus(
 #endif
 }
 
-void GetAssertionRequestHandler::AuthenticatorSelectedForPINUVAuthToken(
+bool GetAssertionRequestHandler::AuthenticatorSelectedForPINUVAuthToken(
     FidoAuthenticator* authenticator) {
-  DCHECK_EQ(state_, State::kWaitingForTouch);
+  if (state_ != State::kWaitingForTouch) {
+    // Some other authenticator was selected in the meantime.
+    FIDO_LOG(DEBUG) << "Rejecting select request from AuthTokenRequester "
+                       "because another authenticator was already selected.";
+    return false;
+  }
+
   state_ = State::kWaitingForToken;
   selected_authenticator_for_pin_uv_auth_token_ = authenticator;
 
@@ -452,6 +459,7 @@ void GetAssertionRequestHandler::AuthenticatorSelectedForPINUVAuthToken(
     return entry.first != authenticator;
   });
   CancelActiveAuthenticators(authenticator->GetId());
+  return true;
 }
 
 void GetAssertionRequestHandler::CollectPIN(pin::PINEntryReason reason,
@@ -550,6 +558,14 @@ void GetAssertionRequestHandler::HandleResponse(
     FIDO_LOG(DEBUG) << "Ignoring response from "
                     << authenticator->GetDisplayName()
                     << " because no longer waiting for touch";
+    return;
+  }
+
+  if (selected_authenticator_for_pin_uv_auth_token_ &&
+      authenticator != selected_authenticator_for_pin_uv_auth_token_) {
+    FIDO_LOG(DEBUG) << "Ignoring response from "
+                    << authenticator->GetDisplayName()
+                    << " because another authenticator was selected";
     return;
   }
 

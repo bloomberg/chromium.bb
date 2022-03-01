@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/settings/system_settings_provider.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/check_op.h"
@@ -16,8 +18,6 @@
 #include "chrome/browser/ash/settings/device_settings_provider.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/ash/settings/supervised_user_cros_settings_provider.h"
-#include "chromeos/settings/cros_settings_names.h"
-#include "chromeos/settings/system_settings_provider.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace ash {
@@ -150,9 +150,12 @@ bool CrosSettings::GetInteger(const std::string& path,
 bool CrosSettings::GetDouble(const std::string& path,
                              double* out_value) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const base::Value* value = GetPref(path);
-  if (value)
-    return value->GetAsDouble(out_value);
+  // `GetIfDouble` incapsulates type check.
+  absl::optional<double> maybe_value = GetPref(path)->GetIfDouble();
+  if (maybe_value.has_value()) {
+    *out_value = maybe_value.value();
+    return true;
+  }
   return false;
 }
 
@@ -160,8 +163,10 @@ bool CrosSettings::GetString(const std::string& path,
                              std::string* out_value) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::Value* value = GetPref(path);
-  if (value)
-    return value->GetAsString(out_value);
+  if (value && value->is_string()) {
+    *out_value = value->GetString();
+    return true;
+  }
   return false;
 }
 
@@ -169,8 +174,10 @@ bool CrosSettings::GetList(const std::string& path,
                            const base::ListValue** out_value) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::Value* value = GetPref(path);
-  if (value)
-    return value->GetAsList(out_value);
+  if (value && value->is_list()) {
+    *out_value = &base::Value::AsListValue(*value);
+    return true;
+  }
   return false;
 }
 
@@ -218,11 +225,11 @@ bool CrosSettings::FindEmailInList(const std::string& path,
     return false;
   }
 
-  return FindEmailInList(list, email, wildcard_match);
+  return FindEmailInList(list->GetList(), email, wildcard_match);
 }
 
 // static
-bool CrosSettings::FindEmailInList(const base::ListValue* list,
+bool CrosSettings::FindEmailInList(const base::Value::ConstListView& list,
                                    const std::string& email,
                                    bool* wildcard_match) {
   std::string canonicalized_email(
@@ -238,7 +245,7 @@ bool CrosSettings::FindEmailInList(const base::ListValue* list,
     *wildcard_match = false;
 
   bool found_wildcard_match = false;
-  for (const auto& entry : list->GetList()) {
+  for (const auto& entry : list) {
     if (!entry.is_string()) {
       NOTREACHED();
       continue;

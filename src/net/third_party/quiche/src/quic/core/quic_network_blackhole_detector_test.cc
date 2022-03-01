@@ -33,7 +33,7 @@ const size_t kBlackholeDelayInSeconds = 10;
 class QuicNetworkBlackholeDetectorTest : public QuicTest {
  public:
   QuicNetworkBlackholeDetectorTest()
-      : detector_(&delegate_, &arena_, &alarm_factory_),
+      : detector_(&delegate_, &arena_, &alarm_factory_, /*context=*/nullptr),
         alarm_(static_cast<MockAlarmFactory::TestAlarm*>(
             QuicNetworkBlackholeDetectorPeer::GetAlarm(&detector_))),
         path_degrading_delay_(
@@ -106,7 +106,7 @@ TEST_F(QuicNetworkBlackholeDetectorTest, RestartAndStop) {
   RestartDetection();
   EXPECT_EQ(clock_.Now() + path_degrading_delay_, alarm_->deadline());
 
-  detector_.StopDetection();
+  detector_.StopDetection(/*permanent=*/false);
   EXPECT_FALSE(detector_.IsDetectionInProgress());
 }
 

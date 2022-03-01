@@ -10,7 +10,6 @@
 #include "src/objects/internal-index.h"
 #include "src/objects/objects.h"
 #include "src/objects/property-array.h"
-#include "torque-generated/field-offsets.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -25,6 +24,8 @@ enum class AllocationPolicy { kAllocationAllowed, kAllocationDisallowed };
 enum InstanceType : uint16_t;
 class JSGlobalObject;
 class JSGlobalProxy;
+class LookupIterator;
+class PropertyKey;
 class NativeContext;
 class IsCompiledScope;
 
@@ -32,7 +33,7 @@ class IsCompiledScope;
 
 // JSReceiver includes types on which properties can be defined, i.e.,
 // JSObject and JSProxy.
-class JSReceiver : public HeapObject {
+class JSReceiver : public TorqueGeneratedJSReceiver<JSReceiver, HeapObject> {
  public:
   NEVER_READ_ONLY_SPACE
   // Returns true if there is no slow (ie, dictionary) backing store.
@@ -75,15 +76,13 @@ class JSReceiver : public HeapObject {
   // This is used only in the deoptimizer and heap. Please use the
   // above typed getters and setters to access the properties.
   DECL_ACCESSORS(raw_properties_or_hash, Object)
+  DECL_RELAXED_ACCESSORS(raw_properties_or_hash, Object)
 
   inline void initialize_properties(Isolate* isolate);
 
   // Deletes an existing named property in a normalized object.
   static void DeleteNormalizedProperty(Handle<JSReceiver> object,
                                        InternalIndex entry);
-
-  DECL_CAST(JSReceiver)
-  DECL_VERIFIER(JSReceiver)
 
   // ES6 section 7.1.1 ToPrimitive
   V8_WARN_UNUSED_RESULT static MaybeHandle<Object> ToPrimitive(
@@ -113,7 +112,7 @@ class JSReceiver : public HeapObject {
   V8_WARN_UNUSED_RESULT static Maybe<bool> SetOrCopyDataProperties(
       Isolate* isolate, Handle<JSReceiver> target, Handle<Object> source,
       PropertiesEnumerationMode mode,
-      const ScopedVector<Handle<Object>>* excluded_properties = nullptr,
+      const base::ScopedVector<Handle<Object>>* excluded_properties = nullptr,
       bool use_set = true);
 
   // Implementation of [[HasProperty]], ECMA-262 5th edition, section 8.12.6.
@@ -161,6 +160,12 @@ class JSReceiver : public HeapObject {
       Isolate* isolate, Handle<JSReceiver> object, Handle<Object> key,
       PropertyDescriptor* desc, Maybe<ShouldThrow> should_throw);
 
+  // Check if a data property can be created on the object. It will fail with
+  // an error when it cannot.
+  V8_WARN_UNUSED_RESULT static Maybe<bool> CheckIfCanDefine(
+      Isolate* isolate, LookupIterator* it, Handle<Object> value,
+      Maybe<ShouldThrow> should_throw);
+
   // ES6 7.3.4 (when passed kDontThrow)
   V8_WARN_UNUSED_RESULT static Maybe<bool> CreateDataProperty(
       Isolate* isolate, Handle<JSReceiver> object, Handle<Name> key,
@@ -172,6 +177,9 @@ class JSReceiver : public HeapObject {
   // ES6 9.1.6.1
   V8_WARN_UNUSED_RESULT static Maybe<bool> OrdinaryDefineOwnProperty(
       Isolate* isolate, Handle<JSObject> object, Handle<Object> key,
+      PropertyDescriptor* desc, Maybe<ShouldThrow> should_throw);
+  V8_WARN_UNUSED_RESULT static Maybe<bool> OrdinaryDefineOwnProperty(
+      Isolate* isolate, Handle<JSObject> object, const PropertyKey& key,
       PropertyDescriptor* desc, Maybe<ShouldThrow> should_throw);
   V8_WARN_UNUSED_RESULT static Maybe<bool> OrdinaryDefineOwnProperty(
       LookupIterator* it, PropertyDescriptor* desc,
@@ -282,14 +290,17 @@ class JSReceiver : public HeapObject {
 
   static const int kHashMask = PropertyArray::HashField::kMask;
 
-  DEFINE_FIELD_OFFSET_CONSTANTS(HeapObject::kHeaderSize,
-                                TORQUE_GENERATED_JS_RECEIVER_FIELDS)
   bool HasProxyInPrototype(Isolate* isolate);
 
   // TC39 "Dynamic Code Brand Checks"
   bool IsCodeLike(Isolate* isolate) const;
 
-  OBJECT_CONSTRUCTORS(JSReceiver, HeapObject);
+ private:
+  // Hide generated accessors; custom accessors are called
+  // "raw_properties_or_hash".
+  DECL_ACCESSORS(properties_or_hash, Object)
+
+  TQ_OBJECT_CONSTRUCTORS(JSReceiver)
 };
 
 // The JSObject describes real heap allocated JavaScript objects with
@@ -303,8 +314,6 @@ class JSObject : public TorqueGeneratedJSObject<JSObject, JSReceiver> {
   V8_EXPORT_PRIVATE static V8_WARN_UNUSED_RESULT MaybeHandle<JSObject> New(
       Handle<JSFunction> constructor, Handle<JSReceiver> new_target,
       Handle<AllocationSite> site);
-
-  static MaybeHandle<NativeContext> GetFunctionRealm(Handle<JSObject> object);
 
   // 9.1.12 ObjectCreate ( proto [ , internalSlotsList ] )
   // Notice: This is NOT 19.1.2.2 Object.create ( O, Properties )
@@ -360,6 +369,7 @@ class JSObject : public TorqueGeneratedJSObject<JSObject, JSReceiver> {
   DECL_GETTER(HasNonextensibleElements, bool)
 
   DECL_GETTER(HasTypedArrayElements, bool)
+  DECL_GETTER(HasTypedArrayOrRabGsabTypedArrayElements, bool)
 
   DECL_GETTER(HasFixedUint8ClampedElements, bool)
   DECL_GETTER(HasFixedArrayElements, bool)
@@ -395,15 +405,27 @@ class JSObject : public TorqueGeneratedJSObject<JSObject, JSReceiver> {
   // to the default behavior that calls the setter.
   enum AccessorInfoHandling { FORCE_FIELD, DONT_FORCE_FIELD };
 
+  // Currently DefineOwnPropertyIgnoreAttributes invokes the setter
+  // interceptor and user-defined setters during define operations,
+  // even in places where it makes more sense to invoke the definer
+  // interceptor and not invoke the setter: e.g. both the definer and
+  // the setter interceptors are called in Object.defineProperty().
+  // kDefine allows us to implement the define semantics correctly
+  // in selected locations.
+  // TODO(joyee): see if we can deprecate the old behavior.
+  enum class EnforceDefineSemantics { kSet, kDefine };
+
   V8_WARN_UNUSED_RESULT static MaybeHandle<Object>
   DefineOwnPropertyIgnoreAttributes(
       LookupIterator* it, Handle<Object> value, PropertyAttributes attributes,
-      AccessorInfoHandling handling = DONT_FORCE_FIELD);
+      AccessorInfoHandling handling = DONT_FORCE_FIELD,
+      EnforceDefineSemantics semantics = EnforceDefineSemantics::kSet);
 
   V8_WARN_UNUSED_RESULT static Maybe<bool> DefineOwnPropertyIgnoreAttributes(
       LookupIterator* it, Handle<Object> value, PropertyAttributes attributes,
       Maybe<ShouldThrow> should_throw,
-      AccessorInfoHandling handling = DONT_FORCE_FIELD);
+      AccessorInfoHandling handling = DONT_FORCE_FIELD,
+      EnforceDefineSemantics semantics = EnforceDefineSemantics::kSet);
 
   V8_WARN_UNUSED_RESULT static MaybeHandle<Object> V8_EXPORT_PRIVATE
   SetOwnPropertyIgnoreAttributes(Handle<JSObject> object, Handle<Name> name,
@@ -461,13 +483,9 @@ class JSObject : public TorqueGeneratedJSObject<JSObject, JSReceiver> {
   static void SetNormalizedProperty(Handle<JSObject> object, Handle<Name> name,
                                     Handle<Object> value,
                                     PropertyDetails details);
-  static void SetDictionaryElement(Handle<JSObject> object, uint32_t index,
+  static void SetNormalizedElement(Handle<JSObject> object, uint32_t index,
                                    Handle<Object> value,
-                                   PropertyAttributes attributes);
-  static void SetDictionaryArgumentsElement(Handle<JSObject> object,
-                                            uint32_t index,
-                                            Handle<Object> value,
-                                            PropertyAttributes attributes);
+                                   PropertyDetails details);
 
   static void OptimizeAsPrototype(Handle<JSObject> object,
                                   bool enable_setup_mode = true);
@@ -643,8 +661,15 @@ class JSObject : public TorqueGeneratedJSObject<JSObject, JSReceiver> {
                                                   const char* reason);
 
   // Access property in dictionary mode object at the given dictionary index.
-  static Handle<Object> DictionaryPropertyAt(Handle<JSObject> object,
+  static Handle<Object> DictionaryPropertyAt(Isolate* isolate,
+                                             Handle<JSObject> object,
                                              InternalIndex dict_index);
+  // Same as above, but it will return {} if we would be reading out of the
+  // bounds of the object or if the dictionary is pending allocation. Use this
+  // version for concurrent access.
+  static base::Optional<Object> DictionaryPropertyAt(Handle<JSObject> object,
+                                                     InternalIndex dict_index,
+                                                     Heap* heap);
 
   // Access fast-case object properties at index.
   static Handle<Object> FastPropertyAt(Handle<JSObject> object,
@@ -653,6 +678,13 @@ class JSObject : public TorqueGeneratedJSObject<JSObject, JSReceiver> {
   inline Object RawFastPropertyAt(FieldIndex index) const;
   inline Object RawFastPropertyAt(PtrComprCageBase cage_base,
                                   FieldIndex index) const;
+
+  // See comment in the body of the method to understand the conditions
+  // in which this method is meant to be used, and what guarantees it
+  // provides against invalid reads from another thread during object
+  // mutation.
+  inline base::Optional<Object> RawInobjectPropertyAt(
+      PtrComprCageBase cage_base, Map original_map, FieldIndex index) const;
 
   inline void FastPropertyAtPut(FieldIndex index, Object value,
                                 WriteBarrierMode mode = UPDATE_WRITE_BARRIER);
@@ -696,6 +728,10 @@ class JSObject : public TorqueGeneratedJSObject<JSObject, JSReceiver> {
       Handle<JSObject> object, ShouldThrow should_throw);
 
   static bool IsExtensible(Handle<JSObject> object);
+
+  static MaybeHandle<Object> ReadFromOptionsBag(Handle<Object> options,
+                                                Handle<String> option_name,
+                                                Isolate* isolate);
 
   // Dispatched behavior.
   void JSObjectShortPrint(StringStream* accumulator);
@@ -774,6 +810,8 @@ class JSObject : public TorqueGeneratedJSObject<JSObject, JSReceiver> {
   static const int kInitialGlobalObjectUnusedPropertiesCount = 4;
 
   static const int kMaxInstanceSize = 255 * kTaggedSize;
+
+  static const int kMapCacheSize = 128;
 
   // When extending the backing storage for property values, we increase
   // its size by more than the 1 entry necessary, so sequentially adding fields
@@ -971,20 +1009,13 @@ class JSGlobalProxy
 };
 
 // JavaScript global object.
-class JSGlobalObject : public JSSpecialObject {
+class JSGlobalObject
+    : public TorqueGeneratedJSGlobalObject<JSGlobalObject, JSSpecialObject> {
  public:
-  // [native context]: the natives corresponding to this global object.
-  DECL_ACCESSORS(native_context, NativeContext)
-
-  // [global proxy]: the global proxy object of the context
-  DECL_ACCESSORS(global_proxy, JSGlobalProxy)
-
   DECL_RELEASE_ACQUIRE_ACCESSORS(global_dictionary, GlobalDictionary)
 
   static void InvalidatePropertyCell(Handle<JSGlobalObject> object,
                                      Handle<Name> name);
-
-  DECL_CAST(JSGlobalObject)
 
   inline bool IsDetached();
 
@@ -996,11 +1027,7 @@ class JSGlobalObject : public JSSpecialObject {
   DECL_PRINTER(JSGlobalObject)
   DECL_VERIFIER(JSGlobalObject)
 
-  // Layout description.
-  DEFINE_FIELD_OFFSET_CONSTANTS(JSSpecialObject::kHeaderSize,
-                                TORQUE_GENERATED_JS_GLOBAL_OBJECT_FIELDS)
-
-  OBJECT_CONSTRUCTORS(JSGlobalObject, JSSpecialObject);
+  TQ_OBJECT_CONSTRUCTORS(JSGlobalObject)
 };
 
 // Representation for JS Wrapper objects, String, Number, Boolean, etc.
@@ -1088,20 +1115,12 @@ class JSDate : public TorqueGeneratedJSDate<JSDate, JSObject> {
 // error messages are not directly accessible from JavaScript to
 // prevent leaking information to user code called during error
 // formatting.
-class JSMessageObject : public JSObject {
+class JSMessageObject
+    : public TorqueGeneratedJSMessageObject<JSMessageObject, JSObject> {
  public:
   // [type]: the type of error message.
   inline MessageTemplate type() const;
   inline void set_type(MessageTemplate value);
-
-  // [arguments]: the arguments for formatting the error message.
-  DECL_ACCESSORS(argument, Object)
-
-  // [script]: the script from which the error message originated.
-  DECL_ACCESSORS(script, Script)
-
-  // [stack_frames]: an array of stack frames for this error object.
-  DECL_ACCESSORS(stack_frames, Object)
 
   // Initializes the source positions in the object if possible. Does nothing if
   // called more than once. If called when stack space is exhausted, then the
@@ -1134,14 +1153,9 @@ class JSMessageObject : public JSObject {
 
   DECL_INT_ACCESSORS(error_level)
 
-  DECL_CAST(JSMessageObject)
-
   // Dispatched behavior.
   DECL_PRINTER(JSMessageObject)
-  DECL_VERIFIER(JSMessageObject)
 
-  DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize,
-                                TORQUE_GENERATED_JS_MESSAGE_OBJECT_FIELDS)
   // TODO(v8:8989): [torque] Support marker constants.
   static const int kPointerFieldsEndOffset = kStartPositionOffset;
 
@@ -1170,7 +1184,10 @@ class JSMessageObject : public JSObject {
 
   DECL_INT_ACCESSORS(raw_type)
 
-  OBJECT_CONSTRUCTORS(JSMessageObject, JSObject);
+  // Hide generated accessors; custom accessors are named "raw_type".
+  DECL_INT_ACCESSORS(message_type)
+
+  TQ_OBJECT_CONSTRUCTORS(JSMessageObject)
 };
 
 // The [Async-from-Sync Iterator] object

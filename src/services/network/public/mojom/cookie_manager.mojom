@@ -6,6 +6,8 @@ module network.mojom;
 
 import "components/content_settings/core/common/content_settings.mojom";
 import "mojo/public/mojom/base/time.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
+import "services/network/public/mojom/schemeful_site.mojom";
 import "url/mojom/url.mojom";
 
 // Parameters for constructing a cookie manager.
@@ -95,10 +97,24 @@ enum ContextType {
   SAME_SITE_STRICT
 };
 
+enum CookieSameSiteContextMetadataDowngradeType {
+  kNoDowngrade,
+  kStrictToLax,
+  kStrictToCross,
+  kLaxToCross,
+};
+
+// Keep defaults here in sync with net/cookies/cookie_options.h.
+struct CookieSameSiteContextMetadata {
+  CookieSameSiteContextMetadataDowngradeType cross_site_redirect_downgrade = kNoDowngrade;
+};
+
 // Keep defaults here in sync with net/cookies/cookie_options.h.
 struct CookieSameSiteContext {
   ContextType context = CROSS_SITE;
   ContextType schemeful_context = CROSS_SITE;
+  CookieSameSiteContextMetadata metadata;
+  CookieSameSiteContextMetadata schemeful_metadata;
 };
 
 // Computed for every cookie access attempt but is only relevant for SameParty
@@ -126,12 +142,28 @@ struct CookieOptions {
   CookieSameSiteContext same_site_cookie_context;
   bool update_access_time = true;
   bool return_excluded_cookies = false;
-  SamePartyCookieContextType same_party_cookie_context_type = kCrossParty;
+  SamePartyContext same_party_context;
   // The size of the isolation_info.party_context plus the top-frame site for
   // logging purposes.
   uint32 full_party_context_size = 0;
   // Whether the site is a member of a nontrivial First-Party Set.
   bool is_in_nontrivial_first_party_set = false;
+};
+
+struct CookiePartitionKey {
+  SchemefulSite site;
+
+  // Indicates the CookiePartitionKey is a placeholder indicating that the
+  // cookie should be partitioned, but it was created in the renderer so we
+  // don't know what its partition key is yet.
+  bool from_script = false;
+
+  mojo_base.mojom.UnguessableToken? nonce;
+};
+
+struct CookiePartitionKeyCollection {
+  bool contains_all_partitions = false;
+  array<CookiePartitionKey> keys;
 };
 
 // See net/cookies/canonical_cookie.{h,cc} for documentation.
@@ -150,6 +182,7 @@ struct CanonicalCookie {
   CookiePriority priority = MEDIUM;
   CookieSourceScheme source_scheme = kUnset;
   bool same_party = false;
+  CookiePartitionKey? partition_key;
   // -1 because of url::PORT_UNSPECIFIED
   // url/third_party/mozilla/url_parse.h
   int32 source_port = -1;
@@ -191,6 +224,13 @@ struct CookieAccessResult {
 struct CookieWithAccessResult {
   CanonicalCookie cookie;
   CookieAccessResult access_result;
+};
+
+// Keep defaults in here in sync with net/cookies/same_party_context.cc.
+struct SamePartyContext {
+  SamePartyCookieContextType context_type = kCrossParty;
+  SamePartyCookieContextType ancestors_for_metrics_only = kCrossParty;
+  SamePartyCookieContextType top_resource_for_metrics_only = kCrossParty;
 };
 
 // Keep values here in sync with net::CookieChangeCause.
@@ -318,12 +358,16 @@ interface CookieManager {
           array<CookieAccessSemantics> access_semantics_list);
 
   // Get all cookies for the specified URL and cookie options.
+  // Will also return any partitioned cookies whose partition key are in
+  // |cookie_partition_key_collection|.
   // Returned cookie list is sorted first by path length (longest first)
   // and second by creation time. If the |return_excluded_cookies| option is set
   // in the options, |excluded_cookies| with be a list of cookies that were
   // blocked from being sent along with the reason each cookie was blocked. By
   // default, that option is not set and |excluded_cookies| is an empty list.
-  GetCookieList(url.mojom.Url url, CookieOptions cookie_options)
+  GetCookieList(url.mojom.Url url,
+                CookieOptions cookie_options,
+                CookiePartitionKeyCollection cookie_partition_key_collection)
       => (array<CookieWithAccessResult> cookies,
           array<CookieWithAccessResult> excluded_cookies);
 

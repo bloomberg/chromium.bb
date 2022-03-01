@@ -38,8 +38,8 @@
 #include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
-#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
+#include "third_party/blink/public/mojom/navigation/renderer_eviction_reason.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
 #include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
@@ -319,19 +319,17 @@ void WebResourceRequestSender::Cancel(
   DeletePendingRequest(std::move(task_runner));
 }
 
-void WebResourceRequestSender::SetDefersLoading(WebURLLoader::DeferType value) {
+void WebResourceRequestSender::Freeze(WebLoaderFreezeMode mode) {
   if (!request_info_) {
     DLOG(ERROR) << "unknown request";
     return;
   }
-  if (value != WebURLLoader::DeferType::kNotDeferred) {
-    request_info_->is_deferred = value;
-    request_info_->url_loader_client->SetDefersLoading(value);
-  } else if (request_info_->is_deferred !=
-             WebURLLoader::DeferType::kNotDeferred) {
-    request_info_->is_deferred = WebURLLoader::DeferType::kNotDeferred;
-    request_info_->url_loader_client->SetDefersLoading(
-        WebURLLoader::DeferType::kNotDeferred);
+  if (mode != WebLoaderFreezeMode::kNone) {
+    request_info_->freeze_mode = mode;
+    request_info_->url_loader_client->Freeze(mode);
+  } else if (request_info_->freeze_mode != WebLoaderFreezeMode::kNone) {
+    request_info_->freeze_mode = WebLoaderFreezeMode::kNone;
+    request_info_->url_loader_client->Freeze(WebLoaderFreezeMode::kNone);
 
     FollowPendingRedirect(request_info_.get());
   }
@@ -345,7 +343,13 @@ void WebResourceRequestSender::DidChangePriority(
     return;
   }
 
-  request_info_->url_loader->SetPriority(new_priority, intra_priority_value);
+  // blpwtk2: Null-check before we attempt to use the throttling loader. This
+  // check is needed because we bail out very early in the StartAsync function
+  // if the embedder's URL loader is used, and we never give the chance for
+  // the throttling loader to be installed later in the function.
+  if (request_info_->url_loader) {
+    request_info_->url_loader->SetPriority(new_priority, intra_priority_value);
+  }
 }
 
 void WebResourceRequestSender::DeletePendingRequest(
@@ -535,7 +539,7 @@ void WebResourceRequestSender::OnReceivedRedirect(
         ->NotifyResourceRedirectReceived(redirect_info,
                                          std::move(response_head));
 
-    if (request_info_->is_deferred == WebURLLoader::DeferType::kNotDeferred)
+    if (request_info_->freeze_mode == WebLoaderFreezeMode::kNone)
       FollowPendingRedirect(request_info_.get());
   } else {
     Cancel(std::move(task_runner));

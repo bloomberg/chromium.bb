@@ -19,8 +19,9 @@
   /* definitions of trace levels for FreeType 2 */
 
   /* the maximum string length (if the argument to `FT_TRACE_DEF` */
-  /* gets used as a string)                                       */
-#define FT_MAX_TRACE_LEVEL_LENGTH  9
+  /* gets used as a string) plus one charachter for ':' plus      */
+  /* another one for the trace level                              */
+#define FT_MAX_TRACE_LEVEL_LENGTH  (9 + 1 + 1)
 
   /* the first level must always be `trace_any' */
 FT_TRACE_DEF( any )
@@ -83,6 +84,7 @@ FT_TRACE_DEF( t1objs )
 FT_TRACE_DEF( t1parse )
 
   /* PostScript helper module `psaux' */
+FT_TRACE_DEF( afmparse )
 FT_TRACE_DEF( cffdecode )
 FT_TRACE_DEF( psconv )
 FT_TRACE_DEF( psobjs )
@@ -157,9 +159,7 @@ FT_TRACE_DEF( afglobal )
 FT_TRACE_DEF( afhints )
 FT_TRACE_DEF( afmodule )
 FT_TRACE_DEF( aflatin )
-FT_TRACE_DEF( aflatin2 )
 FT_TRACE_DEF( afshaper )
-FT_TRACE_DEF( afwarp )
 
   /* SDF components */
 FT_TRACE_DEF( sdf )       /* signed distance raster for outlines (ftsdf.c) */

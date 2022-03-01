@@ -19,51 +19,44 @@
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/base/ui_base_features.h"
 
-namespace extensions {
+namespace ash {
 
-using ::ash::AccessibilityManager;
+using ContextType = ::extensions::ExtensionBrowserTest::ContextType;
 
-class AccessibilityPrivateApiTest : public ExtensionApiTest {
+class AccessibilityPrivateApiTest
+    : public extensions::ExtensionApiTest,
+      public testing::WithParamInterface<ContextType> {
  public:
-  void SetUp() override {
-    scoped_feature_list_.InitAndDisableFeature(
-        ::features::kSelectToSpeakNavigationControl);
-    ExtensionApiTest::SetUp();
-  }
+  AccessibilityPrivateApiTest() : ExtensionApiTest(GetParam()) {}
+  ~AccessibilityPrivateApiTest() override = default;
+  AccessibilityPrivateApiTest& operator=(const AccessibilityPrivateApiTest&) =
+      delete;
+  AccessibilityPrivateApiTest(const AccessibilityPrivateApiTest&) = delete;
 
-  base::test::ScopedFeatureList scoped_feature_list_;
+ protected:
+  bool RunSubtest(const char* subtest) WARN_UNUSED_RESULT {
+    return RunExtensionTest("accessibility_private", {.custom_arg = subtest});
+  }
 };
 
-IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, SendSyntheticKeyEvent) {
-  ASSERT_TRUE(RunExtensionTest({.name = "accessibility_private/",
-                                .page_url = "send_synthetic_key_event.html"}))
-      << message_;
+IN_PROC_BROWSER_TEST_P(AccessibilityPrivateApiTest, SendSyntheticKeyEvent) {
+  ASSERT_TRUE(RunSubtest("testSendSyntheticKeyEvent")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest,
+IN_PROC_BROWSER_TEST_P(AccessibilityPrivateApiTest,
                        GetDisplayNameForLocaleTest) {
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "accessibility_private/", .page_url = "display_locale.html"}))
-      << message_;
+  ASSERT_TRUE(RunSubtest("testGetDisplayNameForLocale")) << message_;
 }
 
-// Flaky on a debug build, see crbug.com/1030507.
-#if !defined(NDEBUG)
-#define MAYBE_OpenSettingsSubpage DISABLED_OpenSettingsSubpage
-#else
-#define MAYBE_OpenSettingsSubpage OpenSettingsSubpage
-#endif
-IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, MAYBE_OpenSettingsSubpage) {
+IN_PROC_BROWSER_TEST_P(AccessibilityPrivateApiTest, OpenSettingsSubpage) {
   Profile* profile = AccessibilityManager::Get()->profile();
 
   // Install the Settings App.
-  web_app::WebAppProvider::Get(profile)
+  web_app::WebAppProvider::GetForTest(profile)
       ->system_web_app_manager()
       .InstallSystemAppsForTesting();
 
-  ASSERT_TRUE(RunExtensionTest({.name = "accessibility_private/",
-                                .page_url = "open_settings_subpage.html"}))
-      << message_;
+  ASSERT_TRUE(RunSubtest("testOpenSettingsSubpage")) << message_;
 
   chrome::SettingsWindowManager* settings_manager =
       chrome::SettingsWindowManager::GetInstance();
@@ -80,19 +73,16 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, MAYBE_OpenSettingsSubpage) {
             web_contents->GetLastCommittedURL());
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest,
+IN_PROC_BROWSER_TEST_P(AccessibilityPrivateApiTest,
                        OpenSettingsSubpage_InvalidSubpage) {
   Profile* profile = AccessibilityManager::Get()->profile();
 
   // Install the Settings App.
-  web_app::WebAppProvider::Get(profile)
+  web_app::WebAppProvider::GetForTest(profile)
       ->system_web_app_manager()
       .InstallSystemAppsForTesting();
 
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "accessibility_private/",
-       .page_url = "open_settings_subpage_invalid_subpage.html"}))
-      << message_;
+  ASSERT_TRUE(RunSubtest("testOpenSettingsSubpageInvalidSubpage")) << message_;
 
   chrome::SettingsWindowManager* settings_manager =
       chrome::SettingsWindowManager::GetInstance();
@@ -102,94 +92,115 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest,
   EXPECT_EQ(nullptr, settings_browser);
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest,
+template <bool enabled>
+class AccessibilityPrivateApiFeatureTest : public AccessibilityPrivateApiTest {
+ public:
+  AccessibilityPrivateApiFeatureTest() {
+    if (enabled) {
+      scoped_feature_list_.InitAndEnableFeature(
+          ::features::kEnhancedNetworkVoices);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          ::features::kEnhancedNetworkVoices);
+    }
+  }
+  ~AccessibilityPrivateApiFeatureTest() override = default;
+  AccessibilityPrivateApiFeatureTest& operator=(
+      const AccessibilityPrivateApiFeatureTest&) = delete;
+  AccessibilityPrivateApiFeatureTest(
+      const AccessibilityPrivateApiFeatureTest&) = delete;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+using AccessibilityPrivateApiFeatureDisabledTest =
+    AccessibilityPrivateApiFeatureTest<false>;
+using AccessibilityPrivateApiFeatureEnabledTest =
+    AccessibilityPrivateApiFeatureTest<true>;
+
+IN_PROC_BROWSER_TEST_P(AccessibilityPrivateApiFeatureDisabledTest,
                        IsFeatureEnabled_FeatureDisabled) {
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "accessibility_private/",
-       .page_url = "is_feature_enabled_feature_disabled.html"}))
-      << message_;
+  ASSERT_TRUE(RunSubtest("testFeatureDisabled")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, AcceptConfirmationDialog) {
-  ASSERT_TRUE(RunExtensionTest({.name = "accessibility_private/",
-                                .page_url = "accept_confirmation_dialog.html"}))
-      << message_;
+IN_PROC_BROWSER_TEST_P(AccessibilityPrivateApiFeatureEnabledTest,
+                       IsFeatureEnabled_FeatureEnabled) {
+  ASSERT_TRUE(RunSubtest("testFeatureEnabled")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_P(AccessibilityPrivateApiTest, IsFeatureUnknown) {
+  ASSERT_TRUE(RunSubtest("testFeatureUnknown")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_P(AccessibilityPrivateApiTest, AcceptConfirmationDialog) {
+  ASSERT_TRUE(RunSubtest("testAcceptConfirmationDialog")) << message_;
 
   // The test has requested to open the confirmation dialog. Check that
   // it was created, then confirm it.
-  ash::AccessibilityConfirmationDialog* dialog_ =
-      ash::Shell::Get()
-          ->accessibility_controller()
-          ->GetConfirmationDialogForTest();
+  AccessibilityConfirmationDialog* dialog_ =
+      Shell::Get()->accessibility_controller()->GetConfirmationDialogForTest();
   ASSERT_NE(dialog_, nullptr);
 
   EXPECT_EQ(dialog_->GetWindowTitle(), u"Confirm me! 🐶");
 
   // Accept the dialog and wait for the JS test to get the confirmation.
-  ResultCatcher catcher;
+  extensions::ResultCatcher catcher;
   dialog_->Accept();
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, CancelConfirmationDialog) {
-  ASSERT_TRUE(RunExtensionTest({.name = "accessibility_private/",
-                                .page_url = "cancel_confirmation_dialog.html"}))
-      << message_;
+IN_PROC_BROWSER_TEST_P(AccessibilityPrivateApiTest, CancelConfirmationDialog) {
+  ASSERT_TRUE(RunSubtest("testCancelConfirmationDialog")) << message_;
 
   // The test has requested to open the confirmation dialog. Check that
   // it was created, then cancel it.
-  ash::AccessibilityConfirmationDialog* dialog_ =
-      ash::Shell::Get()
-          ->accessibility_controller()
-          ->GetConfirmationDialogForTest();
+  AccessibilityConfirmationDialog* dialog_ =
+      Shell::Get()->accessibility_controller()->GetConfirmationDialogForTest();
   ASSERT_NE(dialog_, nullptr);
 
   EXPECT_EQ(dialog_->GetWindowTitle(), u"Cancel me!");
 
   // Cancel the dialog and wait for the JS test to get the callback.
-  ResultCatcher catcher;
+  extensions::ResultCatcher catcher;
   dialog_->Cancel();
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, CloseConfirmationDialog) {
-  ASSERT_TRUE(RunExtensionTest({.name = "accessibility_private/",
-                                .page_url = "cancel_confirmation_dialog.html"}))
-      << message_;
+IN_PROC_BROWSER_TEST_P(AccessibilityPrivateApiTest, CloseConfirmationDialog) {
+  ASSERT_TRUE(RunSubtest("testCancelConfirmationDialog")) << message_;
 
   // The test has requested to open the confirmation dialog. Check that
   // it was created, then close it.
-  ash::AccessibilityConfirmationDialog* dialog_ =
-      ash::Shell::Get()
-          ->accessibility_controller()
-          ->GetConfirmationDialogForTest();
+  AccessibilityConfirmationDialog* dialog_ =
+      Shell::Get()->accessibility_controller()->GetConfirmationDialogForTest();
   ASSERT_TRUE(dialog_ != nullptr);
 
   EXPECT_EQ(dialog_->GetWindowTitle(), u"Cancel me!");
 
   // Close the dialog and wait for the JS test to get the callback.
-  ResultCatcher catcher;
+  extensions::ResultCatcher catcher;
   dialog_->Close();
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-class AccessibilityPrivateApiFeatureEnabledTest : public ExtensionApiTest {
- public:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        ::features::kSelectToSpeakNavigationControl);
-    ExtensionApiTest::SetUp();
-  }
+INSTANTIATE_TEST_SUITE_P(PersistentBackground,
+                         AccessibilityPrivateApiTest,
+                         ::testing::Values(ContextType::kPersistentBackground));
+INSTANTIATE_TEST_SUITE_P(PersistentBackground,
+                         AccessibilityPrivateApiFeatureDisabledTest,
+                         ::testing::Values(ContextType::kPersistentBackground));
+INSTANTIATE_TEST_SUITE_P(PersistentBackground,
+                         AccessibilityPrivateApiFeatureEnabledTest,
+                         ::testing::Values(ContextType::kPersistentBackground));
+INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+                         AccessibilityPrivateApiTest,
+                         ::testing::Values(ContextType::kServiceWorker));
+INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+                         AccessibilityPrivateApiFeatureDisabledTest,
+                         ::testing::Values(ContextType::kServiceWorker));
+INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+                         AccessibilityPrivateApiFeatureEnabledTest,
+                         ::testing::Values(ContextType::kServiceWorker));
 
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiFeatureEnabledTest,
-                       IsFeatureEnabled_FeatureEnabled) {
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "accessibility_private/",
-                        .page_url = "is_feature_enabled_feature_enabled.html"}))
-      << message_;
-}
-
-}  // namespace extensions
+}  // namespace ash

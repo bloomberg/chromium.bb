@@ -46,6 +46,7 @@ enum class KeepAliveOrigin {
   // c/b/notifications
   NOTIFICATION,
   PENDING_NOTIFICATION_CLICK_EVENT,
+  PENDING_NOTIFICATION_CLOSE_EVENT,
 
   // c/b/push_messaging
   IN_FLIGHT_PUSH_MESSAGE,
@@ -62,9 +63,9 @@ enum class KeepAliveOrigin {
   USER_MANAGER_VIEW,
   CREDENTIAL_PROVIDER_SIGNIN_DIALOG,
   WEB_APP_INTENT_PICKER,
-  WEB_APP_PROTOCOL_HANDLER_LAUNCH,
 
   // c/b/web_applications
+  APP_MANIFEST_UPDATE,
   APP_START_URL_MIGRATION,
 
   // c/b/sessions

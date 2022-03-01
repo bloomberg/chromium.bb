@@ -22,7 +22,7 @@ namespace blink {
 
 namespace {
 
-constexpr base::TimeDelta kFireInterval = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kFireInterval = base::Seconds(1);
 constexpr double kLargeAdSizeToViewportSizeThreshold = 0.3;
 
 // An sticky element should have a non-default position w.r.t. the viewport. The
@@ -77,11 +77,11 @@ void StickyAdDetector::MaybeFireDetection(LocalFrame* main_frame) {
 
   TRACE_EVENT0("blink,benchmark", "StickyAdDetector::MaybeFireDetection");
 
-  IntSize main_frame_size = main_frame->GetMainFrameViewportSize();
+  gfx::Size main_frame_size = main_frame->GetMainFrameViewportSize();
 
   // Hit test the bottom center of the viewport.
-  HitTestLocation location(DoublePoint(main_frame_size.Width() / 2.0,
-                                       main_frame_size.Height() * 9.0 / 10));
+  HitTestLocation location(DoublePoint(main_frame_size.width() / 2.0,
+                                       main_frame_size.height() * 9.0 / 10));
 
   HitTestResult result;
   main_frame->ContentLayoutObject()->HitTestNoLifecycleUpdate(location, result);
@@ -99,7 +99,7 @@ void StickyAdDetector::MaybeFireDetection(LocalFrame* main_frame) {
     // than the height of the candidate, and the candidate is still at the
     // bottom center, then we record the use counter.
     if (std::abs(candidate_start_main_frame_scroll_offset_ -
-                 main_frame->GetMainFrameScrollOffset().Y()) >
+                 main_frame->GetMainFrameScrollOffset().y()) >
         candidate_height_) {
       OnLargeStickyAdDetected(main_frame);
     }
@@ -116,20 +116,21 @@ void StickyAdDetector::MaybeFireDetection(LocalFrame* main_frame) {
   if (!element->GetLayoutObject())
     return;
 
-  IntRect overlay_rect = element->GetLayoutObject()->AbsoluteBoundingBoxRect();
+  gfx::Rect overlay_rect =
+      element->GetLayoutObject()->AbsoluteBoundingBoxRect();
 
   bool is_large =
-      (overlay_rect.Size().Area() >
-       main_frame_size.Area() * kLargeAdSizeToViewportSizeThreshold);
+      (overlay_rect.size().Area64() >
+       main_frame_size.Area64() * kLargeAdSizeToViewportSizeThreshold);
 
   bool is_main_page_scrollable =
       element->GetDocument().GetLayoutView()->HasScrollableOverflowY();
 
   if (is_large && is_main_page_scrollable && IsStickyAdCandidate(element)) {
     candidate_id_ = element_id;
-    candidate_height_ = overlay_rect.Size().Height();
+    candidate_height_ = overlay_rect.size().height();
     candidate_start_main_frame_scroll_offset_ =
-        main_frame->GetMainFrameScrollOffset().Y();
+        main_frame->GetMainFrameScrollOffset().y();
   }
 }
 

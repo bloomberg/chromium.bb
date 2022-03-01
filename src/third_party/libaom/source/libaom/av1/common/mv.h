@@ -23,6 +23,7 @@ extern "C" {
 #endif
 
 #define INVALID_MV 0x80008000
+#define INVALID_MV_ROW_COL -32768
 #define GET_MV_RAWPEL(x) (((x) + 3 + ((x) >= 0)) >> 3)
 #define GET_MV_SUBPEL(x) ((x)*8)
 

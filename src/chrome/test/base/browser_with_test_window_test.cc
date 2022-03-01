@@ -35,6 +35,14 @@
 #endif
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/crosapi/idle_service_ash.h"
+#include "components/user_manager/fake_user_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
+#include "components/user_manager/user_manager.h"
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/lacros/lacros_test_helper.h"
 #include "chromeos/ui/base/tablet_state.h"
@@ -50,11 +58,15 @@ BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {}
 void BrowserWithTestWindowTest::SetUp() {
   testing::Test::SetUp();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!user_manager::UserManager::IsInitialized()) {
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<user_manager::FakeUserManager>());
+  }
   ash_test_helper_.SetUp();
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (!chromeos::LacrosChromeServiceImpl::Get()) {
+  if (!chromeos::LacrosService::Get()) {
     lacros_service_test_helper_ =
         std::make_unique<chromeos::ScopedLacrosServiceTestHelper>();
   }
@@ -72,6 +84,11 @@ void BrowserWithTestWindowTest::SetUp() {
   profile_manager_ = std::make_unique<TestingProfileManager>(
       TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(profile_manager_->SetUp());
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  crosapi::IdleServiceAsh::DisableForTesting();
+  manager_ = std::make_unique<crosapi::CrosapiManager>();
+#endif
 
   // Subclasses can provide their own Profile.
   profile_ = CreateProfile();
@@ -99,15 +116,19 @@ void BrowserWithTestWindowTest::TearDown() {
   constrained_window::SetConstrainedWindowViewsClient(nullptr);
 #endif
 
-  profile_manager_->DeleteAllTestingProfiles();
-  profile_ = nullptr;
-
   // Depends on LocalState owned by |profile_manager_|.
   if (SystemNetworkContextManager::GetInstance()) {
     SystemNetworkContextManager::DeleteInstance();
   }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  manager_.reset();
+#endif
+
+  // Calling DeleteAllTestingProfiles() first can cause issues in some tests, if
+  // they're still holding a ScopedProfileKeepAlive.
   profile_manager_.reset();
+  profile_ = nullptr;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   tablet_state_.reset();
@@ -120,8 +141,8 @@ void BrowserWithTestWindowTest::TearDown() {
   // as part of the teardown will avoid unexpected test failures.
   ash::KioskAppManager::Shutdown();
 
-  test_views_delegate_.reset();
   ash_test_helper_.TearDown();
+  test_views_delegate_.reset();
 #elif defined(TOOLKIT_VIEWS)
   views_test_helper_.reset();
 #endif
@@ -160,17 +181,13 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
   RenderFrameHostTester::CommitPendingLoad(controller);
 }
 
-void BrowserWithTestWindowTest::NavigateAndCommit(
-    NavigationController* controller,
-    const GURL& url) {
-  content::NavigationSimulator::NavigateAndCommitFromBrowser(
-      controller->GetWebContents(), url);
+void BrowserWithTestWindowTest::NavigateAndCommit(WebContents* web_contents,
+                                                  const GURL& url) {
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents, url);
 }
 
 void BrowserWithTestWindowTest::NavigateAndCommitActiveTab(const GURL& url) {
-  NavigateAndCommit(&browser()->tab_strip_model()->GetActiveWebContents()->
-                        GetController(),
-                    url);
+  NavigateAndCommit(browser()->tab_strip_model()->GetActiveWebContents(), url);
 }
 
 void BrowserWithTestWindowTest::NavigateAndCommitActiveTabWithTitle(
@@ -179,9 +196,9 @@ void BrowserWithTestWindowTest::NavigateAndCommitActiveTabWithTitle(
     const std::u16string& title) {
   WebContents* contents =
       navigating_browser->tab_strip_model()->GetActiveWebContents();
-  NavigationController* controller = &contents->GetController();
-  NavigateAndCommit(controller, url);
-  contents->UpdateTitleForEntry(controller->GetActiveEntry(), title);
+  NavigateAndCommit(contents, url);
+  contents->UpdateTitleForEntry(contents->GetController().GetActiveEntry(),
+                                title);
 }
 
 TestingProfile* BrowserWithTestWindowTest::CreateProfile() {

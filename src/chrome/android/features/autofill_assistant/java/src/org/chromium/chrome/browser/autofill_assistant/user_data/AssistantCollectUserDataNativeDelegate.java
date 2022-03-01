@@ -11,9 +11,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue;
-import org.chromium.chrome.browser.payments.AutofillAddress;
-import org.chromium.chrome.browser.payments.AutofillContact;
-import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 
 /** Delegate for the Collect user data UI which forwards events to a native counterpart. */
 @JNINamespace("autofill_assistant")
@@ -31,33 +28,43 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
     }
 
     @Override
-    public void onContactInfoChanged(@Nullable AutofillContact contact) {
+    public void onContactInfoChanged(
+            @Nullable AssistantCollectUserDataModel.ContactModel contactModel,
+            @AssistantUserDataEventType int eventType) {
         if (mNativeAssistantCollectUserDataDelegate != 0) {
             AssistantCollectUserDataNativeDelegateJni.get().onContactInfoChanged(
                     mNativeAssistantCollectUserDataDelegate,
                     AssistantCollectUserDataNativeDelegate.this,
-                    contact != null ? contact.getProfile() : null);
+                    contactModel == null ? null : contactModel.mOption.getProfile(), eventType);
         }
     }
 
     @Override
-    public void onShippingAddressChanged(@Nullable AutofillAddress address) {
+    public void onShippingAddressChanged(
+            @Nullable AssistantCollectUserDataModel.AddressModel addressModel,
+            @AssistantUserDataEventType int eventType) {
         if (mNativeAssistantCollectUserDataDelegate != 0) {
             AssistantCollectUserDataNativeDelegateJni.get().onShippingAddressChanged(
                     mNativeAssistantCollectUserDataDelegate,
                     AssistantCollectUserDataNativeDelegate.this,
-                    address != null ? address.getProfile() : null);
+                    addressModel == null ? null : addressModel.mOption.getProfile(), eventType);
         }
     }
 
     @Override
-    public void onPaymentMethodChanged(@Nullable AutofillPaymentInstrument paymentInstrument) {
+    public void onPaymentMethodChanged(
+            @Nullable AssistantCollectUserDataModel.PaymentInstrumentModel paymentInstrumentModel,
+            @AssistantUserDataEventType int eventType) {
         if (mNativeAssistantCollectUserDataDelegate != 0) {
             AssistantCollectUserDataNativeDelegateJni.get().onCreditCardChanged(
                     mNativeAssistantCollectUserDataDelegate,
                     AssistantCollectUserDataNativeDelegate.this,
-                    paymentInstrument != null ? paymentInstrument.getCard() : null,
-                    paymentInstrument != null ? paymentInstrument.getBillingProfile() : null);
+                    paymentInstrumentModel == null ? null
+                                                   : paymentInstrumentModel.mOption.getCard(),
+                    paymentInstrumentModel == null
+                            ? null
+                            : paymentInstrumentModel.mOption.getBillingProfile(),
+                    eventType);
         }
     }
 
@@ -80,12 +87,15 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
     }
 
     @Override
-    public void onLoginChoiceChanged(AssistantLoginChoice loginChoice) {
+    public void onLoginChoiceChanged(
+            @Nullable AssistantCollectUserDataModel.LoginChoiceModel loginChoiceModel,
+            @AssistantUserDataEventType int eventType) {
         if (mNativeAssistantCollectUserDataDelegate != 0) {
             AssistantCollectUserDataNativeDelegateJni.get().onLoginChoiceChanged(
                     mNativeAssistantCollectUserDataDelegate,
                     AssistantCollectUserDataNativeDelegate.this,
-                    loginChoice != null ? loginChoice.getIdentifier() : null);
+                    loginChoiceModel == null ? null : loginChoiceModel.mOption.getIdentifier(),
+                    eventType);
         }
     }
 
@@ -169,44 +179,6 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
         }
     }
 
-    @Override
-    public boolean isContactComplete(@Nullable AutofillContact contact) {
-        if (mNativeAssistantCollectUserDataDelegate != 0) {
-            return AssistantCollectUserDataNativeDelegateJni.get().isContactComplete(
-                    mNativeAssistantCollectUserDataDelegate,
-                    AssistantCollectUserDataNativeDelegate.this,
-                    contact != null ? contact.getProfile() : null);
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean isShippingAddressComplete(@Nullable AutofillAddress address) {
-        if (mNativeAssistantCollectUserDataDelegate != 0) {
-            return AssistantCollectUserDataNativeDelegateJni.get().isShippingAddressComplete(
-                    mNativeAssistantCollectUserDataDelegate,
-                    AssistantCollectUserDataNativeDelegate.this,
-                    address != null ? address.getProfile() : null);
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean isPaymentInstrumentComplete(
-            @Nullable AutofillPaymentInstrument paymentInstrument) {
-        if (mNativeAssistantCollectUserDataDelegate != 0) {
-            return AssistantCollectUserDataNativeDelegateJni.get().isPaymentInstrumentComplete(
-                    mNativeAssistantCollectUserDataDelegate,
-                    AssistantCollectUserDataNativeDelegate.this,
-                    paymentInstrument != null ? paymentInstrument.getCard() : null,
-                    paymentInstrument != null ? paymentInstrument.getBillingProfile() : null);
-        }
-
-        return false;
-    }
-
     @CalledByNative
     private void clearNativePtr() {
         mNativeAssistantCollectUserDataDelegate = 0;
@@ -216,20 +188,20 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
     interface Natives {
         void onContactInfoChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller,
-                @Nullable PersonalDataManager.AutofillProfile contactProfile);
+                @Nullable PersonalDataManager.AutofillProfile contactProfile, int eventType);
         void onShippingAddressChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller,
-                @Nullable PersonalDataManager.AutofillProfile address);
+                @Nullable PersonalDataManager.AutofillProfile address, int eventType);
         void onCreditCardChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller,
                 @Nullable PersonalDataManager.CreditCard card,
-                @Nullable PersonalDataManager.AutofillProfile billingProfile);
+                @Nullable PersonalDataManager.AutofillProfile billingProfile, int eventType);
         void onTermsAndConditionsChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller, int state);
         void onTextLinkClicked(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller, int link);
         void onLoginChoiceChanged(long nativeAssistantCollectUserDataDelegate,
-                AssistantCollectUserDataNativeDelegate caller, String choice);
+                AssistantCollectUserDataNativeDelegate caller, String choice, int eventType);
         void onDateTimeRangeStartDateChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller, int year, int month, int day);
         void onDateTimeRangeStartTimeSlotChanged(long nativeAssistantCollectUserDataDelegate,
@@ -250,15 +222,5 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
                 AssistantCollectUserDataNativeDelegate caller, String key, AssistantValue value);
         void onInputTextFocusChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller, boolean isFocused);
-        boolean isContactComplete(long nativeAssistantCollectUserDataDelegate,
-                AssistantCollectUserDataNativeDelegate caller,
-                @Nullable PersonalDataManager.AutofillProfile address);
-        boolean isShippingAddressComplete(long nativeAssistantCollectUserDataDelegate,
-                AssistantCollectUserDataNativeDelegate caller,
-                @Nullable PersonalDataManager.AutofillProfile address);
-        boolean isPaymentInstrumentComplete(long nativeAssistantCollectUserDataDelegate,
-                AssistantCollectUserDataNativeDelegate caller,
-                @Nullable PersonalDataManager.CreditCard card,
-                @Nullable PersonalDataManager.AutofillProfile address);
     }
 }

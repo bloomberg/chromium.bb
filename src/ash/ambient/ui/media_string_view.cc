@@ -10,11 +10,12 @@
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/ui/ambient_view_ids.h"
 #include "ash/ambient/util/ambient_util.h"
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_service.h"
@@ -26,11 +27,11 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/gfx/text_constants.h"
-#include "ui/gfx/transform.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -127,7 +128,8 @@ MediaStringView::~MediaStringView() = default;
 
 void MediaStringView::OnThemeChanged() {
   views::View::OnThemeChanged();
-  media_text_->SetShadows(ambient::util::GetTextShadowValues(GetNativeTheme()));
+  media_text_->SetShadows(
+      ambient::util::GetTextShadowValues(GetColorProvider()));
 }
 void MediaStringView::OnViewBoundsChanged(views::View* observed_view) {
   UpdateMaskLayer();
@@ -329,8 +331,7 @@ void MediaStringView::StartScrolling(bool is_initial) {
     const int end_x = -(text_width + shadow_width) / 2;
     const int transform_distance = start_x - end_x;
     const base::TimeDelta kScrollingDuration =
-        base::TimeDelta::FromSeconds(10) * transform_distance /
-        kMediaStringMaxWidthDip;
+        base::Seconds(10) * transform_distance / kMediaStringMaxWidthDip;
 
     ui::ScopedLayerAnimationSettings animation(text_layer->GetAnimator());
     animation.SetTransitionDuration(kScrollingDuration);

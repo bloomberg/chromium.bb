@@ -111,15 +111,20 @@ const AudioCaptureConfig kAudioCaptureConfigInvalidChannels{
 };
 
 const AudioCaptureConfig kAudioCaptureConfigValid{
-    AudioCodec::kOpus, 5 /* channels */, 32000 /* bit_rate */,
-    44000 /* sample_rate */
-};
+    AudioCodec::kAac,
+    5 /* channels */,
+    32000 /* bit_rate */,
+    44000 /* sample_rate */,
+    std::chrono::milliseconds(300),
+    "mp4a.40.5"};
 
 const VideoCaptureConfig kVideoCaptureConfigMissingResolutions{
     VideoCodec::kHevc,
     {60, 1},
     300000 /* max_bit_rate */,
-    std::vector<Resolution>{}};
+    std::vector<Resolution>{},
+    std::chrono::milliseconds(500),
+    "hev1.1.6.L150.B0"};
 
 const VideoCaptureConfig kVideoCaptureConfigInvalid{
     VideoCodec::kHevc,
@@ -131,7 +136,9 @@ const VideoCaptureConfig kVideoCaptureConfigValid{
     VideoCodec::kHevc,
     {60, 1},
     300000 /* max_bit_rate */,
-    std::vector<Resolution>{Resolution{1280, 720}, Resolution{1920, 1080}}};
+    std::vector<Resolution>{Resolution{1280, 720}, Resolution{1920, 1080}},
+    std::chrono::milliseconds(250),
+    "hev1.1.6.L150.B0"};
 
 const VideoCaptureConfig kVideoCaptureConfigValidSimplest{
     VideoCodec::kHevc,
@@ -161,12 +168,12 @@ class SenderSessionTest : public ::testing::Test {
   SenderSessionTest() : clock_(Clock::time_point{}), task_runner_(&clock_) {}
 
   std::unique_ptr<MockEnvironment> MakeEnvironment() {
-    auto environment_ = std::make_unique<NiceMock<MockEnvironment>>(
+    auto environment = std::make_unique<NiceMock<MockEnvironment>>(
         &FakeClock::now, &task_runner_);
-    ON_CALL(*environment_, GetBoundLocalEndpoint())
+    ON_CALL(*environment, GetBoundLocalEndpoint())
         .WillByDefault(
             Return(IPEndpoint{IPAddress::Parse("127.0.0.1").value(), 12345}));
-    return environment_;
+    return environment;
   }
 
   void SetUp() {
@@ -358,13 +365,14 @@ TEST_F(SenderSessionTest, SendsOfferMessage) {
   EXPECT_EQ(2u, streams.size());
 
   const Json::Value& audio_stream = streams[0];
-  EXPECT_EQ("opus", audio_stream["codecName"].asString());
+  EXPECT_EQ("aac", audio_stream["codecName"].asString());
   EXPECT_EQ(0, audio_stream["index"].asInt());
   EXPECT_EQ(32u, audio_stream["aesKey"].asString().length());
   EXPECT_EQ(32u, audio_stream["aesIvMask"].asString().length());
   EXPECT_EQ(5, audio_stream["channels"].asInt());
   EXPECT_LT(0u, audio_stream["ssrc"].asUInt());
   EXPECT_EQ(127, audio_stream["rtpPayloadType"].asInt());
+  EXPECT_EQ("mp4a.40.5", audio_stream["codecParameter"].asString());
 
   const Json::Value& video_stream = streams[1];
   EXPECT_EQ("hevc", video_stream["codecName"].asString());
@@ -374,6 +382,7 @@ TEST_F(SenderSessionTest, SendsOfferMessage) {
   EXPECT_EQ(1, video_stream["channels"].asInt());
   EXPECT_LT(0u, video_stream["ssrc"].asUInt());
   EXPECT_EQ(96, video_stream["rtpPayloadType"].asInt());
+  EXPECT_EQ("hev1.1.6.L150.B0", video_stream["codecParameter"].asString());
 }
 
 TEST_F(SenderSessionTest, HandlesValidAnswer) {
@@ -543,11 +552,12 @@ TEST_F(SenderSessionTest, SuccessfulRemotingNegotiationYieldsValidObject) {
   EXPECT_THAT(negotiation.capabilities.video,
               testing::ElementsAre(VideoCapability::kVp8));
 
-  // The broker is tested elsewhere, but we can sanity check that we got a valid
+  // The messenger is tested elsewhere, but we can sanity check that we got a valid
   // one here.
-  EXPECT_TRUE(negotiation.broker);
-  const RpcBroker::Handle handle = negotiation.broker->GetUniqueHandle();
-  EXPECT_NE(RpcBroker::kInvalidHandle, handle);
+  EXPECT_TRUE(session_->rpc_messenger());
+  const RpcMessenger::Handle handle =
+      session_->rpc_messenger()->GetUniqueHandle();
+  EXPECT_NE(RpcMessenger::kInvalidHandle, handle);
 }
 
 }  // namespace cast

@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/threading/sequence_bound.h"
 
@@ -25,6 +24,9 @@ class MixerControl {
   // Returns the mixer control instance for this process, or nullptr if the
   // mixer is not present on this system.
   static MixerControl* Get();
+
+  MixerControl(const MixerControl&) = delete;
+  MixerControl& operator=(const MixerControl&) = delete;
 
   // Sends arbitrary config data to a specific postprocessor.
   void ConfigurePostprocessor(std::string postprocessor_name,
@@ -48,8 +50,6 @@ class MixerControl {
   ~MixerControl();
 
   base::SequenceBound<ControlConnection> control_;
-
-  DISALLOW_COPY_AND_ASSIGN(MixerControl);
 };
 
 }  // namespace mixer_service

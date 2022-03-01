@@ -7,21 +7,23 @@
 
 #include <set>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
-#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace login_detection {
 
 // Maintains the sites that are saved in password store. These sites will be
 // treated as logged-in.
-class PasswordStoreSites : public password_manager::PasswordStore::Observer,
-                           public password_manager::PasswordStoreConsumer {
+class PasswordStoreSites
+    : public password_manager::PasswordStoreInterface::Observer,
+      public password_manager::PasswordStoreConsumer {
  public:
-  explicit PasswordStoreSites(
-      scoped_refptr<password_manager::PasswordStore> store);
+  explicit PasswordStoreSites(password_manager::PasswordStoreInterface* store);
 
   ~PasswordStoreSites() override;
 
@@ -30,9 +32,13 @@ class PasswordStoreSites : public password_manager::PasswordStore::Observer,
   bool IsSiteInPasswordStore(const GURL& url) const;
 
  private:
-  // PasswordStore::Observer:
+  // PasswordStoreInterface::Observer:
   void OnLoginsChanged(
+      password_manager::PasswordStoreInterface* store,
       const password_manager::PasswordStoreChangeList& changes) override;
+  void OnLoginsRetained(password_manager::PasswordStoreInterface* store,
+                        const std::vector<password_manager::PasswordForm>&
+                            retained_passwords) override;
 
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
@@ -40,13 +46,15 @@ class PasswordStoreSites : public password_manager::PasswordStore::Observer,
       override;
 
   // The password store |this| is observing site entries from.
-  scoped_refptr<password_manager::PasswordStore> password_store_;
+  raw_ptr<password_manager::PasswordStoreInterface> password_store_;
 
   // Set of sites saved in the password store. Will be absl::nullopt until the
   // sites are retrieved the fist time.
   absl::optional<std::set<std::string>> password_sites_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<PasswordStoreSites> weak_ptr_factory_{this};
 };
 
 }  // namespace login_detection

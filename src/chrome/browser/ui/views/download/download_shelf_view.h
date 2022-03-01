@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -21,6 +23,10 @@
 class Browser;
 class BrowserView;
 class DownloadItemView;
+
+namespace base {
+class Time;
+}
 
 namespace views {
 class ImageButton;
@@ -71,6 +77,8 @@ class DownloadShelfView : public DownloadShelf,
   // Updates |button| according to the active theme.
   void ConfigureButtonForTheme(views::MdTextButton* button);
 
+  DownloadItemView* GetViewOfLastDownloadItemForTesting();
+
  protected:
   // DownloadShelf:
   void DoShowDownload(DownloadUIModel::DownloadUIModelPtr download) override;
@@ -100,18 +108,28 @@ class DownloadShelfView : public DownloadShelf,
   std::vector<DownloadItemView*> download_views_;
 
   // Button for showing all downloads (chrome://downloads).
-  views::MdTextButton* show_all_view_;
+  raw_ptr<views::MdTextButton> show_all_view_;
 
   // Button for closing the downloads. This is contained as a child, and
   // deleted by View.
-  views::ImageButton* close_button_;
+  raw_ptr<views::ImageButton> close_button_;
 
   // Hidden view that will contain status text for immediate output by
   // screen readers.
-  views::View* accessible_alert_;
+  raw_ptr<views::View> accessible_alert_;
 
   // The window this shelf belongs to.
-  BrowserView* parent_;
+  raw_ptr<BrowserView> parent_;
+
+  // Time since the last time the download shelf was opened.
+  base::Time last_opened_;
+
+  // Set the time when the download shelf becomes visible.
+  void SetLastOpened();
+
+  // Emits a histogram recording the time between the shelf being visible
+  // and it being closed.
+  void RecordShelfVisibleTime();
 
   views::MouseWatcher mouse_watcher_{
       std::make_unique<views::MouseWatcherViewHost>(this, gfx::Insets()), this};

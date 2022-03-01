@@ -9,7 +9,6 @@
 #include <set>
 #include <string>
 
-#include "base/macros.h"
 #include "extensions/browser/updater/extension_cache.h"
 
 namespace extensions {
@@ -18,6 +17,10 @@ namespace extensions {
 class ExtensionCacheFake : public ExtensionCache {
  public:
   ExtensionCacheFake();
+
+  ExtensionCacheFake(const ExtensionCacheFake&) = delete;
+  ExtensionCacheFake& operator=(const ExtensionCacheFake&) = delete;
+
   ~ExtensionCacheFake() override;
 
   // Implementation of ExtensionCache.
@@ -41,8 +44,6 @@ class ExtensionCacheFake : public ExtensionCache {
 
   // Map of know extensions.
   Map cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionCacheFake);
 };
 
 }  // namespace extensions

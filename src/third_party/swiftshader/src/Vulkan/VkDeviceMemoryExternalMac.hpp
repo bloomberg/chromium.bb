@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "VkDeviceMemory.hpp"
+
 #include "System/Debug.hpp"
 
 #include <errno.h>
@@ -55,19 +57,20 @@ struct timespec GetTime()
 
 // An implementation of OpaqueFdExternalMemory that relies on shm_open().
 // Useful on OS X which do not have Linux memfd regions.
-class OpaqueFdExternalMemory : public vk::DeviceMemory::ExternalBase
+class OpaqueFdExternalMemory : public vk::DeviceMemory, public vk::ObjectBase<OpaqueFdExternalMemory, VkDeviceMemory>
 {
 public:
 	static const VkExternalMemoryHandleTypeFlagBits typeFlagBit = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
 
-	static bool SupportsAllocateInfo(const VkMemoryAllocateInfo *pAllocateInfo)
+	static bool SupportsAllocateInfo(const vk::DeviceMemory::ExtendedAllocationInfo &extendedAllocationInfo)
 	{
-		OpaqueFdAllocateInfo info(pAllocateInfo);
+		OpaqueFdAllocateInfo info(extendedAllocationInfo);
 		return info.importFd || info.exportFd;
 	}
 
-	explicit OpaqueFdExternalMemory(const VkMemoryAllocateInfo *pAllocateInfo)
-	    : allocateInfo(pAllocateInfo)
+	explicit OpaqueFdExternalMemory(const VkMemoryAllocateInfo *pCreateInfo, void *mem, const vk::DeviceMemory::ExtendedAllocationInfo &extendedAllocationInfo, vk::Device *pDevice)
+	    : vk::DeviceMemory(pCreateInfo, pDevice)
+	    , allocateInfo(extendedAllocationInfo)
 	{
 	}
 
@@ -80,7 +83,7 @@ public:
 		}
 	}
 
-	VkResult allocate(size_t size, void **pBuffer) override
+	VkResult allocateBuffer() override
 	{
 		if(allocateInfo.importFd)
 		{
@@ -135,9 +138,9 @@ public:
 			}
 
 			// Ensure there is enough space.
-			if(fd >= 0 && size > 0)
+			if(fd >= 0 && allocationSize > 0)
 			{
-				if(::ftruncate(fd, size) < 0)
+				if(::ftruncate(fd, allocationSize) < 0)
 				{
 					TRACE("ftruncate() failed with: %s", strerror(errno));
 					close(fd);
@@ -154,20 +157,20 @@ public:
 			shm_fd_ = fd;
 		}
 
-		void *addr = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED,
+		void *addr = ::mmap(nullptr, allocationSize, PROT_READ | PROT_WRITE, MAP_SHARED,
 		                    shm_fd_, 0);
 
 		if(addr == MAP_FAILED)
 		{
 			return VK_ERROR_MEMORY_MAP_FAILED;
 		}
-		*pBuffer = addr;
+		buffer = addr;
 		return VK_SUCCESS;
 	}
 
-	void deallocate(void *buffer, size_t size) override
+	void freeBuffer() override
 	{
-		::munmap(buffer, size);
+		::munmap(buffer, allocationSize);
 	}
 
 	VkExternalMemoryHandleTypeFlagBits getFlagBit() const override

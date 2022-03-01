@@ -7,6 +7,30 @@
  * Switch Access settings.
  */
 
+import '//resources/cr_elements/md_select_css.m.js';
+import '../../controls/settings_slider.js';
+import '../../controls/settings_toggle_button.js';
+import '../../settings_shared_css.js';
+import './switch_access_action_assignment_dialog.js';
+import './switch_access_setup_guide_dialog.js';
+import './switch_access_setup_guide_warning_dialog.js';
+
+import {SliderTick} from '//resources/cr_elements/cr_slider/cr_slider.js';
+import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
+import {loadTimeData} from '//resources/js/load_time_data.m.js';
+import {WebUIListenerBehavior} from '//resources/js/web_ui_listener_behavior.m.js';
+import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {Route, Router} from '../../router.js';
+import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
+import {routes} from '../os_route.m.js';
+import {PrefsBehavior} from '../prefs_behavior.js';
+import {RouteObserverBehavior} from '../route_observer_behavior.js';
+
+import {getLabelForAssignment} from './switch_access_action_assignment_pane.js';
+import {actionToPref, AssignmentContext, AUTO_SCAN_SPEED_RANGE_MS, SwitchAccessCommand, SwitchAccessDeviceType} from './switch_access_constants.js';
+import {SwitchAccessSubpageBrowserProxy, SwitchAccessSubpageBrowserProxyImpl} from './switch_access_subpage_browser_proxy.js';
+
 /**
  * The portion of the setting name common to all Switch Access preferences.
  * @const
@@ -14,18 +38,11 @@
 const PREFIX = 'settings.a11y.switch_access.';
 
 /** @type {!Array<number>} */
-const AUTO_SCAN_SPEED_RANGE_MS = [
-  4000, 3900, 3800, 3700, 3600, 3500, 3400, 3300, 3200, 3100, 3000, 2900,
-  2800, 2700, 2600, 2500, 2400, 2300, 2200, 2100, 2000, 1900, 1800, 1700,
-  1600, 1500, 1400, 1300, 1200, 1100, 1000, 900,  800,  700
-];
-
-/** @type {!Array<number>} */
 const POINT_SCAN_SPEED_RANGE_DIPS_PER_SECOND = [25, 50, 75, 100, 150, 200, 300];
 
 /**
  * @param {!Array<number>} ticksInMs
- * @return {!Array<!cr_slider.SliderTick>}
+ * @return {!Array<!SliderTick>}
  */
 function ticksWithLabelsInSec(ticksInMs) {
   // Dividing by 1000 to convert milliseconds to seconds for the label.
@@ -34,20 +51,21 @@ function ticksWithLabelsInSec(ticksInMs) {
 
 /**
  * @param {!Array<number>} ticks
- * @return {!Array<!cr_slider.SliderTick>}
+ * @return {!Array<!SliderTick>}
  */
 function ticksWithCountingLabels(ticks) {
   return ticks.map((x, i) => ({label: i + 1, value: x}));
 }
 
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'settings-switch-access-subpage',
 
   behaviors: [
     DeepLinkingBehavior,
     I18nBehavior,
     PrefsBehavior,
-    settings.RouteObserverBehavior,
+    RouteObserverBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -170,6 +188,12 @@ Polymer({
       value: false,
     },
 
+    /** @private */
+    showSwitchAccessSetupGuideWarningDialog_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private {?SwitchAccessCommand} */
     action_: {
       type: String,
@@ -191,17 +215,17 @@ Polymer({
   ready() {
     this.addWebUIListener(
         'switch-access-assignments-changed',
-        this.onAssignmentsChanged_.bind(this));
+        value => this.onAssignmentsChanged_(value));
     this.switchAccessBrowserProxy_.refreshAssignmentsFromPrefs();
   },
 
   /**
-   * @param {!settings.Route} route
-   * @param {!settings.Route} oldRoute
+   * @param {!Route} route
+   * @param {!Route} oldRoute
    */
   currentRouteChanged(route, oldRoute) {
     // Does not apply to this page.
-    if (route !== settings.routes.MANAGE_SWITCH_ACCESS_SETTINGS) {
+    if (route !== routes.MANAGE_SWITCH_ACCESS_SETTINGS) {
       return;
     }
 
@@ -209,10 +233,29 @@ Polymer({
   },
 
   /** @private */
-  onSetupGuideClick_() {
-    if (this.showSetupGuide_()) {
-      this.showSwitchAccessSetupGuideDialog_ = true;
+  onSetupGuideRerunClick_() {
+    this.showSwitchAccessSetupGuideWarningDialog_ = true;
+  },
+
+  /** @private */
+  onSetupGuideWarningDialogCancel_() {
+    this.showSwitchAccessSetupGuideWarningDialog_ = false;
+  },
+
+  /** @private */
+  onSetupGuideWarningDialogClose_() {
+    // The on_cancel is followed by on_close, so check cancel didn't happen
+    // first.
+    if (this.showSwitchAccessSetupGuideWarningDialog_) {
+      this.openSetupGuide_();
+      this.showSwitchAccessSetupGuideWarningDialog_ = false;
     }
+  },
+
+  /** @private */
+  openSetupGuide_() {
+    this.showSwitchAccessSetupGuideWarningDialog_ = false;
+    this.showSwitchAccessSetupGuideDialog_ = true;
   },
 
   /** @private */
@@ -257,6 +300,13 @@ Polymer({
     this.selectAssignments_ = value[SwitchAccessCommand.SELECT];
     this.nextAssignments_ = value[SwitchAccessCommand.NEXT];
     this.previousAssignments_ = value[SwitchAccessCommand.PREVIOUS];
+
+    // Any complete assignment will have at least one switch assigned to SELECT.
+    // If this method is called with no SELECT switches, then the page has just
+    // loaded, and we should open the setup guide.
+    if (Object.keys(this.selectAssignments_).length === 0) {
+      this.openSetupGuide_();
+    }
   },
 
   /**
@@ -307,22 +357,6 @@ Polymer({
     const autoScanEnabled = /** @type {boolean} */
         (this.getPref(PREFIX + 'auto_scan.enabled').value);
     return improvedTextInputEnabled && autoScanEnabled;
-  },
-
-  /**
-   * @return {boolean} Whether to show the Switch Access setup guide.
-   * @private
-   */
-  showSetupGuide_() {
-    return loadTimeData.getBoolean('showSwitchAccessSetupGuide');
-  },
-
-  /**
-   * @return {boolean} Whether Switch Access point scanning is enabled.
-   * @private
-   */
-  isSwitchAccessPointScanningEnabled_() {
-    return loadTimeData.getBoolean('isSwitchAccessPointScanningEnabled');
   },
 
   /**

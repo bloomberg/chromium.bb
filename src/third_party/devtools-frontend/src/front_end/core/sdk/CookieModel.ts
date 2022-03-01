@@ -2,54 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Protocol from '../../generated/protocol.js';
 import * as Common from '../common/common.js';
 import * as Root from '../root/root.js';
 
 import type {Attributes} from './Cookie.js';
-import {Cookie} from './Cookie.js';          // eslint-disable-line no-unused-vars
-import type {Resource} from './Resource.js'; // eslint-disable-line no-unused-vars
+import {Cookie} from './Cookie.js';
+import type {Resource} from './Resource.js';
 import {ResourceTreeModel} from './ResourceTreeModel.js';
-import type {Target} from './SDKModel.js';
-import {Capability, SDKModel} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import type {Target} from './Target.js';
+import {Capability} from './Target.js';
+import {SDKModel} from './SDKModel.js';
 
-export class CookieModel extends SDKModel {
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _blockedCookies: Map<any, any>;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _cookieToBlockedReasons: Map<any, any>;
+export class CookieModel extends SDKModel<void> {
+  readonly #blockedCookies: Map<string, Cookie>;
+  readonly #cookieToBlockedReasons: Map<Cookie, BlockedReason[]>;
   constructor(target: Target) {
     super(target);
 
-    /** Array<!Cookie> */
-    this._blockedCookies = new Map();
-    this._cookieToBlockedReasons = new Map();
+    this.#blockedCookies = new Map();
+    this.#cookieToBlockedReasons = new Map();
   }
 
   addBlockedCookie(cookie: Cookie, blockedReasons: BlockedReason[]|null): void {
     const key = cookie.key();
-    const previousCookie = this._blockedCookies.get(key);
-    this._blockedCookies.set(key, cookie);
-    this._cookieToBlockedReasons.set(cookie, blockedReasons);
+    const previousCookie = this.#blockedCookies.get(key);
+    this.#blockedCookies.set(key, cookie);
+    if (blockedReasons) {
+      this.#cookieToBlockedReasons.set(cookie, blockedReasons);
+    } else {
+      this.#cookieToBlockedReasons.delete(cookie);
+    }
     if (previousCookie) {
-      this._cookieToBlockedReasons.delete(key);
+      this.#cookieToBlockedReasons.delete(previousCookie);
     }
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getCookieToBlockedReasonsMap(): Map<any, any> {
-    return this._cookieToBlockedReasons;
+  getCookieToBlockedReasonsMap(): ReadonlyMap<Cookie, BlockedReason[]> {
+    return this.#cookieToBlockedReasons;
   }
 
   async getCookies(urls: string[]): Promise<Cookie[]> {
@@ -58,7 +48,7 @@ export class CookieModel extends SDKModel {
       return [];
     }
     const normalCookies = response.cookies.map(Cookie.fromProtocolCookie);
-    return normalCookies.concat(Array.from(this._blockedCookies.values()));
+    return normalCookies.concat(Array.from(this.#blockedCookies.values()));
   }
 
   async deleteCookie(cookie: Cookie): Promise<void> {
@@ -101,6 +91,7 @@ export class CookieModel extends SDKModel {
       expires,
       priority: cookie.priority(),
       sameParty: cookie.sameParty(),
+      partitionKey: cookie.partitionKey(),
       sourceScheme: enabled ? cookie.sourceScheme() : preserveUnset(cookie.sourceScheme()),
       sourcePort: enabled ? cookie.sourcePort() : undefined,
     };
@@ -139,8 +130,8 @@ export class CookieModel extends SDKModel {
 
   async deleteCookies(cookies: Cookie[]): Promise<void> {
     const networkAgent = this.target().networkAgent();
-    this._blockedCookies.clear();
-    this._cookieToBlockedReasons.clear();
+    this.#blockedCookies.clear();
+    this.#cookieToBlockedReasons.clear();
     await Promise.all(cookies.map(
         cookie => networkAgent.invoke_deleteCookies(
             {name: cookie.name(), url: undefined, domain: cookie.domain(), path: cookie.path()})));

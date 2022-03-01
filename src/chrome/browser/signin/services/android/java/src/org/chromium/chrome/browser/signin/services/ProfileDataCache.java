@@ -21,6 +21,7 @@ import android.graphics.drawable.Drawable;
 import androidx.annotation.DimenRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.MainThread;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
@@ -28,13 +29,11 @@ import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.browser_ui.util.AvatarGenerator;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
-import org.chromium.components.signin.ProfileDataSource;
-import org.chromium.components.signin.ProfileDataSource.ProfileData;
 import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.identitymanager.AccountInfoService;
+import org.chromium.components.signin.identitymanager.AccountInfoServiceProvider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +42,7 @@ import java.util.Map;
  * Fetches and caches Google Account profile images and full names for the accounts on the device.
  */
 @MainThread
-public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfoService.Observer {
+public class ProfileDataCache implements AccountInfoService.Observer {
     /**
      * Observer to get notifications about changes in profile data.
      */
@@ -60,19 +59,24 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
      * a user avatar.
      */
     private static class BadgeConfig {
+        private final int mBadgeResId;
         private final Drawable mBadge;
         private final @Px int mBadgeSize;
         private final Point mPosition;
         private final @Px int mBorderSize;
 
         private BadgeConfig(Context context, @DrawableRes int badgeResId) {
-            assert badgeResId != 0 : "badgeResId shouldn't be 0!";
             Resources resources = context.getResources();
+            mBadgeResId = badgeResId;
             mBadge = AppCompatResources.getDrawable(context, badgeResId);
             mBadgeSize = resources.getDimensionPixelSize(R.dimen.badge_size);
             mPosition = new Point(resources.getDimensionPixelOffset(R.dimen.badge_position_x),
                     resources.getDimensionPixelOffset(R.dimen.badge_position_y));
             mBorderSize = resources.getDimensionPixelSize(R.dimen.badge_border_size);
+        }
+
+        int getBadgeResId() {
+            return mBadgeResId;
         }
 
         Drawable getBadge() {
@@ -96,26 +100,23 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
 
     private final Context mContext;
     private final int mImageSize;
-    private @Nullable final BadgeConfig mBadgeConfig;
+    // The badge for a given account is selected as follows:
+    // * If there is a config for that specific account, use that
+    // * Else if there is a default config, use that
+    // * Else do not display a badge.
+    private @Nullable BadgeConfig mDefaultBadgeConfig;
+    private Map<String, BadgeConfig> mPerAccountBadgeConfig = new HashMap<>();
     private final Drawable mPlaceholderImage;
     private final ObserverList<Observer> mObservers = new ObserverList<>();
     private final Map<String, DisplayableProfileData> mCachedProfileData = new HashMap<>();
-    private final @Nullable ProfileDataSource mProfileDataSource;
-    private final AccountInfoService mAccountInfoService;
 
     @VisibleForTesting
     ProfileDataCache(Context context, @Px int imageSize, @Nullable BadgeConfig badgeConfig) {
         mContext = context;
         mImageSize = imageSize;
-        mBadgeConfig = badgeConfig;
+        mDefaultBadgeConfig = badgeConfig;
         mPlaceholderImage = getScaledPlaceholderImage(context, imageSize);
-        mProfileDataSource = ChromeFeatureList.isEnabled(ChromeFeatureList.DEPRECATE_MENAGERIE_API)
-                ? null
-                : AccountManagerFacadeProvider.getInstance().getProfileDataSource();
-        mAccountInfoService = AccountInfoService.get();
-        if (mProfileDataSource == null) {
-            populateCache();
-        }
+        AccountInfoServiceProvider.getPromise().then(this::populateCache);
     }
 
     /**
@@ -131,10 +132,11 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
 
     /**
      * @param context Context of the application to extract resources from.
-     * @param badgeResId Resource id of the badge to be attached. If it is 0 then no badge is
-     *         attached.
+     * @param badgeResId Resource id of the badge to be attached.
      * @return A {@link ProfileDataCache} object with default image size(R.dimen.user_picture_size)
      *         and a badge of given badgeResId provided
+     *
+     * TODO(crbug/1260416): remove this method and instead migrate users to set per-account badges?
      */
     public static ProfileDataCache createWithDefaultImageSize(
             Context context, @DrawableRes int badgeResId) {
@@ -168,16 +170,66 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
     }
 
     /**
+     * @return Whether the cache contains non-default profile data for the given account.
+     */
+    public boolean hasProfileData(String accountEmail) {
+        return mCachedProfileData.containsKey(accountEmail);
+    }
+
+    /**
+     * Sets a default {@link BadgeConfig} and then populates the cache with the new Badge.
+     * @param badgeResId Resource id of the badge to be attached. If 0 then the current Badge is
+     * removed.
+     *
+     * If both a per-account and default badge are set, the per-account badge takes precedence.
+     *
+     * TODO(crbug/1260416): replace usages of this method with the per-account config below.
+     */
+    public void setBadge(@DrawableRes int badgeResId) {
+        if (badgeResId == 0 && mDefaultBadgeConfig == null) return;
+        mDefaultBadgeConfig = badgeResId == 0 ? null : new BadgeConfig(mContext, badgeResId);
+        mCachedProfileData.clear();
+        AccountInfoServiceProvider.getPromise().then(this::populateCache);
+    }
+
+    /**
+     * Sets a {@link BadgeConfig} for a given account, and then populates the cache with the new
+     * Badge.
+     *
+     * @param account The account for which to set this badge.
+     * @param badgeResId Resource id of the badge to be attached. If 0 then the current Badge is
+     * removed.
+     *
+     * If both a per-account and default badge are set, the per-account badge takes precedence.
+     */
+    public void setBadge(Account account, @DrawableRes int badgeResId) {
+        if (((badgeResId == 0) && !mPerAccountBadgeConfig.containsKey(account.name))
+                || ((badgeResId != 0) && mPerAccountBadgeConfig.containsKey(account.name)
+                        && (mPerAccountBadgeConfig.get(account.name).getBadgeResId()
+                                == badgeResId))) {
+            // Update is a no-op.  Skip the work below, both as an optimization and to avoid a
+            // loop whereby the ProfileDataCache user might call back into this function as a
+            // result of the notification callback.
+            return;
+        }
+
+        if (badgeResId != 0) {
+            mPerAccountBadgeConfig.put(account.name, new BadgeConfig(mContext, badgeResId));
+        } else {
+            mPerAccountBadgeConfig.remove(account.name);
+        }
+        AccountInfoServiceProvider.getPromise().then(
+                accountInfoService -> { populateCacheForAccount(accountInfoService, account); });
+    }
+
+    /**
      * @param observer Observer that should be notified when new profile images are available.
      */
     public void addObserver(Observer observer) {
         ThreadUtils.assertOnUiThread();
         if (mObservers.isEmpty()) {
-            if (mProfileDataSource != null) {
-                mProfileDataSource.addObserver(this);
-                populateCacheLegacy();
-            }
-            mAccountInfoService.addObserver(this);
+            AccountInfoServiceProvider.getPromise().then(
+                    accountInfoService -> { accountInfoService.addObserver(this); });
         }
         mObservers.addObserver(observer);
     }
@@ -189,31 +241,11 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
         ThreadUtils.assertOnUiThread();
         mObservers.removeObserver(observer);
         if (mObservers.isEmpty()) {
-            if (mProfileDataSource != null) {
-                mProfileDataSource.removeObserver(this);
-            }
-            mAccountInfoService.removeObserver(this);
+            AccountInfoServiceProvider.getPromise().then(
+                    accountInfoService -> { accountInfoService.removeObserver(this); });
         }
     }
 
-    @Override
-    public void onProfileDataUpdated(ProfileDataSource.ProfileData profileData) {
-        ThreadUtils.assertOnUiThread();
-        final String email = profileData.getAccountEmail();
-        Bitmap avatar = profileData.getAvatar();
-        if (avatar == null) {
-            // If the avatar is null, try to fetch the monogram from IdentityManager
-            mAccountInfoService.getAccountInfoByEmailAsync(email).then(accountInfo -> {
-                updateCacheAndNotifyObservers(email,
-                        accountInfo != null ? accountInfo.getAccountImage() : null,
-                        profileData.getFullName(), profileData.getGivenName());
-            });
-        }
-        updateCacheAndNotifyObservers(
-                email, avatar, profileData.getFullName(), profileData.getGivenName());
-    }
-
-    @Override
     public void removeProfileData(String accountEmail) {
         mCachedProfileData.remove(accountEmail);
         notifyObservers(accountEmail);
@@ -224,32 +256,26 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
      */
     @Override
     public void onAccountInfoUpdated(AccountInfo accountInfo) {
-        if (accountInfo != null && accountInfo.hasDisplayableInfo()) {
+        // We don't update the cache if the account information and ProfileDataCache config mean
+        // that we would just be returning the default profile data.
+        if (accountInfo != null
+                && (accountInfo.hasDisplayableInfo()
+                        || getBadgeConfigForAccount(accountInfo.getEmail()) != null)) {
             updateCacheAndNotifyObservers(accountInfo.getEmail(), accountInfo.getAccountImage(),
                     accountInfo.getFullName(), accountInfo.getGivenName());
         }
     }
 
-    private void populateCache() {
-        AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(accounts -> {
+    private void populateCache(AccountInfoService accountInfoService) {
+        AccountManagerFacadeProvider.getInstance().getAccounts().then(accounts -> {
             for (Account account : accounts) {
-                mAccountInfoService.getAccountInfoByEmailAsync(account.name)
-                        .then(this::onAccountInfoUpdated);
+                populateCacheForAccount(accountInfoService, account);
             }
         });
     }
 
-    private void populateCacheLegacy() {
-        assert mProfileDataSource
-                != null : "This only populates cache with the Legacy profile data source.";
-        AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(accounts -> {
-            for (Account account : accounts) {
-                ProfileData profileData = mProfileDataSource.getProfileDataForAccount(account.name);
-                if (profileData != null) {
-                    onProfileDataUpdated(profileData);
-                }
-            }
-        });
+    private void populateCacheForAccount(AccountInfoService accountInfoService, Account account) {
+        accountInfoService.getAccountInfoByEmail(account.name).then(this::onAccountInfoUpdated);
     }
 
     private void updateCacheAndNotifyObservers(
@@ -257,8 +283,9 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
         Drawable croppedAvatar = avatar != null
                 ? AvatarGenerator.makeRoundAvatar(mContext.getResources(), avatar, mImageSize)
                 : mPlaceholderImage;
-        if (mBadgeConfig != null) {
-            croppedAvatar = overlayBadgeOnUserPicture(croppedAvatar);
+        BadgeConfig badgeConfig = getBadgeConfigForAccount(email);
+        if (badgeConfig != null) {
+            croppedAvatar = overlayBadgeOnUserPicture(badgeConfig, croppedAvatar);
         }
         mCachedProfileData.put(
                 email, new DisplayableProfileData(email, croppedAvatar, fullName, givenName));
@@ -271,10 +298,10 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
         }
     }
 
-    private Drawable overlayBadgeOnUserPicture(Drawable userPicture) {
-        int badgeSize = mBadgeConfig.getBadgeSize();
-        int badgedPictureWidth = Math.max(mBadgeConfig.getPosition().x + badgeSize, mImageSize);
-        int badgedPictureHeight = Math.max(mBadgeConfig.getPosition().y + badgeSize, mImageSize);
+    private Drawable overlayBadgeOnUserPicture(BadgeConfig badgeConfig, Drawable userPicture) {
+        int badgeSize = badgeConfig.getBadgeSize();
+        int badgedPictureWidth = Math.max(badgeConfig.getPosition().x + badgeSize, mImageSize);
+        int badgedPictureHeight = Math.max(badgeConfig.getPosition().y + badgeSize, mImageSize);
         Bitmap badgedPicture = Bitmap.createBitmap(
                 badgedPictureWidth, badgedPictureHeight, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(badgedPicture);
@@ -287,15 +314,15 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
         paint.setAntiAlias(true);
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         int badgeRadius = badgeSize / 2;
-        int badgeCenterX = mBadgeConfig.getPosition().x + badgeRadius;
-        int badgeCenterY = mBadgeConfig.getPosition().y + badgeRadius;
+        int badgeCenterX = badgeConfig.getPosition().x + badgeRadius;
+        int badgeCenterY = badgeConfig.getPosition().y + badgeRadius;
         canvas.drawCircle(
-                badgeCenterX, badgeCenterY, badgeRadius + mBadgeConfig.getBorderSize(), paint);
+                badgeCenterX, badgeCenterY, badgeRadius + badgeConfig.getBorderSize(), paint);
 
         // Draw the badge
-        Drawable badge = mBadgeConfig.getBadge();
-        badge.setBounds(mBadgeConfig.getPosition().x, mBadgeConfig.getPosition().y,
-                mBadgeConfig.getPosition().x + badgeSize, mBadgeConfig.getPosition().y + badgeSize);
+        Drawable badge = badgeConfig.getBadge();
+        badge.setBounds(badgeConfig.getPosition().x, badgeConfig.getPosition().y,
+                badgeConfig.getPosition().x + badgeSize, badgeConfig.getPosition().y + badgeSize);
         badge.draw(canvas);
         return new BitmapDrawable(mContext.getResources(), badgedPicture);
     }
@@ -312,5 +339,10 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
         drawable.setBounds(0, 0, imageSize, imageSize);
         drawable.draw(canvas);
         return new BitmapDrawable(context.getResources(), output);
+    }
+
+    private @Nullable BadgeConfig getBadgeConfigForAccount(@NonNull String email) {
+        return mPerAccountBadgeConfig.get(email) != null ? mPerAccountBadgeConfig.get(email)
+                                                         : mDefaultBadgeConfig;
     }
 }

@@ -4,35 +4,24 @@
 
 package org.chromium.base.jank_tracker;
 
-import android.app.Activity;
-import android.os.Build.VERSION_CODES;
-
-import androidx.annotation.RequiresApi;
-
 /**
- * Class for recording janky frame metrics for a specific Activity.
- *
- * It should be constructed when the activity is created, recording starts and stops automatically
- * based on activity state. When the activity is being destroyed {@link #destroy()} should be called
- * to clear the activity state observer. All methods should be called from the UI thread.
+ * Interface for Android UI jank tracking.
  */
-@RequiresApi(api = VERSION_CODES.N)
-public final class JankTracker {
-    private final JankActivityTracker mActivityTracker;
+public interface JankTracker {
+    /**
+     * Starts tracking UI jank for a specific use scenario (e.g. Tab switcher, Omnibox, etc.),
+     * calling this method more than once without calling {@code finishTrackingScenario} won't do
+     * anything.
+     * @param scenario A value from {@link JankScenario} that specifies a use scenario.
+     */
+    void startTrackingScenario(@JankScenario int scenario);
 
     /**
-     * Creates a new JankTracker instance tracking UI rendering of an activity. Metric recording
-     * starts when the activity starts, and it's paused when the activity stops.
+     * Finishes tracking UI jank for a use scenario (e.g. Tab switcher, Omnibox, etc.). Histograms
+     * for that scenario (e.g. Android.Jank.FrameDuration.Omnibox) are recorded immediately after
+     * calling this method. Calling this method without calling {@code startTrackingScenario}
+     * beforehand won't do anything.
+     * @param scenario A value from {@link JankScenario} that specifies a use scenario.
      */
-    public JankTracker(Activity activity) {
-        mActivityTracker = JankActivityTracker.create(activity);
-        mActivityTracker.initialize();
-    }
-
-    /**
-     * Stops listening for Activity state changes.
-     */
-    public void destroy() {
-        mActivityTracker.destroy();
-    }
+    void finishTrackingScenario(@JankScenario int scenario);
 }

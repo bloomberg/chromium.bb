@@ -10,20 +10,16 @@
 #import "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/menu/menu_action_type.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
-#import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 
-class Browser;
 class GURL;
 
 // Factory providing methods to create UIActions with consistent titles, images
 // and metrics structure.
-API_AVAILABLE(ios(13.0))
 @interface ActionFactory : NSObject
 
-// Initializes a factory instance for the current |browser| to create action
-// instances for the given |scenario|.
-- (instancetype)initWithBrowser:(Browser*)browser
-                       scenario:(MenuScenario)scenario;
+// Initializes a factory instance to create action instances for the given
+// |scenario|.
+- (instancetype)initWithScenario:(MenuScenario)scenario;
 
 // Creates a UIAction instance configured with the given |title| and |image|.
 // Upon execution, the action's |type| will be recorded and the |block| will be
@@ -45,11 +41,6 @@ API_AVAILABLE(ios(13.0))
 // the given delete |block| when executed.
 - (UIAction*)actionToDeleteWithBlock:(ProceduralBlock)block;
 
-// Creates a UIAction instance configured for opening the |URL| in a new tab and
-// which will invoke the given |completion| block after execution.
-- (UIAction*)actionToOpenInNewTabWithURL:(const GURL)URL
-                              completion:(ProceduralBlock)completion;
-
 // Creates a UIAction instance whose title and icon are configured for opening a
 // URL in a new tab. When triggered, the action will invoke the |block| which
 // needs to open a URL in a new tab.
@@ -59,23 +50,6 @@ API_AVAILABLE(ios(13.0))
 // multiple URLs in new tabs. When triggered, the action will invoke the |block|
 // which needs to open URLs in new tabs.
 - (UIAction*)actionToOpenAllTabsWithBlock:(ProceduralBlock)block;
-
-// Creates a UIAction instance configured for opening the |URL| in a new
-// incognito tab and which will invoke the given |completion| block after
-// execution.
-- (UIAction*)actionToOpenInNewIncognitoTabWithURL:(const GURL)URL
-                                       completion:(ProceduralBlock)completion;
-
-// Creates a UIAction instance whose title and icon are configured for opening a
-// URL in a new incognito tab. When triggered, the action will invoke the
-// |block| which needs to open a URL in a new incognito tab.
-- (UIAction*)actionToOpenInNewIncognitoTabWithBlock:(ProceduralBlock)block;
-
-// Creates a UIAction instance configured for opening the |URL| in a new window
-// from |activityOrigin|.
-- (UIAction*)actionToOpenInNewWindowWithURL:(const GURL)URL
-                             activityOrigin:
-                                 (WindowActivityOrigin)activityOrigin;
 
 // Creates a UIAction instance configured for suppression which will invoke
 // the given delete |block| when executed.
@@ -106,10 +80,6 @@ API_AVAILABLE(ios(13.0))
 // invoke the |block| when executed.
 - (UIAction*)actionToOpenOfflineVersionInNewTabWithBlock:(ProceduralBlock)block;
 
-// Creates a UIAction instance configured for executing JavaScript evalutation
-// The action will invoke the |block| when executed.
-- (UIAction*)actionToOpenJavascriptWithBlock:(ProceduralBlock)block;
-
 // Creates a UIAction instance for adding to the reading list.
 - (UIAction*)actionToAddToReadingListWithBlock:(ProceduralBlock)block;
 
@@ -121,6 +91,26 @@ API_AVAILABLE(ios(13.0))
 
 // Creates a UIAction instance for closing a tab.
 - (UIAction*)actionToCloseTabWithBlock:(ProceduralBlock)block;
+
+// Creates a UIAction instance for saving an image.
+- (UIAction*)actionSaveImageWithBlock:(ProceduralBlock)block;
+
+// Creates a UIAction instance for copying an image.
+- (UIAction*)actionCopyImageWithBlock:(ProceduralBlock)block;
+
+// Creates a UIAction instance for searching an image with given search service
+// |title|. Invokes the given |completion| block after execution.
+- (UIAction*)actionSearchImageWithTitle:(NSString*)title
+                                  Block:(ProceduralBlock)block;
+// Creates a UIAction instance for closing all tabs.
+- (UIAction*)actionToCloseAllTabsWithBlock:(ProceduralBlock)block;
+
+// Creates a UIAction instance for entering tab selection mode.
+- (UIAction*)actionToSelectTabsWithBlock:(ProceduralBlock)block;
+
+// Creates a UIAction instance for searching an image with Lens.
+// Invokes the given |completion| block after execution.
+- (UIAction*)actionToSearchImageUsingLensWithBlock:(ProceduralBlock)block;
 
 @end
 

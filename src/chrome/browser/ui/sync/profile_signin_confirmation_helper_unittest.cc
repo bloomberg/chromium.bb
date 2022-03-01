@@ -11,10 +11,11 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/cxx17_backports.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -84,9 +85,8 @@ class TestingPrefStoreWithCustomReadError : public TestingPrefStore {
   }
   PrefReadError GetReadError() const override { return read_error_; }
   bool IsInitializationComplete() const override { return true; }
-  void set_read_error(PrefReadError read_error) {
-    read_error_ = read_error;
-  }
+  void set_read_error(PrefReadError read_error) { read_error_ = read_error; }
+
  private:
   ~TestingPrefStoreWithCustomReadError() override {}
   PrefReadError read_error_;
@@ -96,9 +96,8 @@ class TestingPrefStoreWithCustomReadError : public TestingPrefStore {
 #if defined(OS_WIN)
 const base::FilePath::CharType kExtensionFilePath[] =
     FILE_PATH_LITERAL("c:\\foo");
-#elif defined(OS_POSIX)
-const base::FilePath::CharType kExtensionFilePath[] =
-    FILE_PATH_LITERAL("/oo");
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+const base::FilePath::CharType kExtensionFilePath[] = FILE_PATH_LITERAL("/oo");
 #endif
 
 static scoped_refptr<extensions::Extension> CreateExtension(
@@ -111,13 +110,9 @@ static scoped_refptr<extensions::Extension> CreateExtension(
   manifest.SetString(extensions::manifest_keys::kName, name);
   std::string error;
   scoped_refptr<extensions::Extension> extension =
-    extensions::Extension::Create(
-        base::FilePath(kExtensionFilePath).AppendASCII(name),
-        location,
-        manifest,
-        extensions::Extension::NO_FLAGS,
-        id,
-        &error);
+      extensions::Extension::Create(
+          base::FilePath(kExtensionFilePath).AppendASCII(name), location,
+          manifest, extensions::Extension::NO_FLAGS, id, &error);
   return extension;
 }
 #endif
@@ -148,20 +143,20 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
         base::WrapUnique<sync_preferences::PrefServiceSyncable>(pref_service));
     builder.AddTestingFactory(BookmarkModelFactory::GetInstance(),
                               BookmarkModelFactory::GetDefaultFactory());
+    builder.AddTestingFactory(HistoryServiceFactory::GetInstance(),
+                              HistoryServiceFactory::GetDefaultFactory());
     profile_ = builder.Build();
 
     // Initialize the services we check.
     model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
-    ASSERT_TRUE(profile_->CreateHistoryService());
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::TestExtensionSystem* system =
         static_cast<extensions::TestExtensionSystem*>(
             extensions::ExtensionSystem::Get(profile_.get()));
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     system->CreateExtensionService(&command_line,
-                                   base::FilePath(kExtensionFilePath),
-                                   false);
+                                   base::FilePath(kExtensionFilePath), false);
 #endif
   }
 
@@ -176,8 +171,8 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
   base::ScopedTempDir profile_dir_;
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
-  TestingPrefStoreWithCustomReadError* user_prefs_;
-  BookmarkModel* model_;
+  raw_ptr<TestingPrefStoreWithCustomReadError> user_prefs_;
+  raw_ptr<BookmarkModel> model_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::ScopedCrosSettingsTestHelper cros_settings_test_helper_;

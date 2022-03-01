@@ -4,7 +4,6 @@
 
 #include "components/password_manager/core/browser/site_affiliation/affiliation_fetcher_factory_impl.h"
 
-#include "components/password_manager/core/browser/android_affiliation/affiliation_fetcher.h"
 #include "components/password_manager/core/browser/site_affiliation/hash_affiliation_fetcher.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -18,13 +17,8 @@ std::unique_ptr<AffiliationFetcherInterface>
 AffiliationFetcherFactoryImpl::CreateInstance(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     AffiliationFetcherDelegate* delegate) {
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kUseOfHashAffiliationFetcher)) {
-    return std::make_unique<HashAffiliationFetcher>(
-        std::move(url_loader_factory), delegate);
-  }
-  return std::make_unique<AffiliationFetcher>(std::move(url_loader_factory),
-                                              delegate);
+  return std::make_unique<HashAffiliationFetcher>(std::move(url_loader_factory),
+                                                  delegate);
 }
 
 }  // namespace password_manager
