@@ -4,10 +4,8 @@
 
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-// eslint-disable-next-line rulesdir/es_modules_import
 import type * as MobileThrottling from './mobile_throttling.js';
 
 const UIStrings = {
@@ -53,8 +51,6 @@ let loadedMobileThrottlingModule: (typeof MobileThrottling|undefined);
 
 async function loadMobileThrottlingModule(): Promise<typeof MobileThrottling> {
   if (!loadedMobileThrottlingModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('panels/mobile_throttling');
     loadedMobileThrottlingModule = await import('./mobile_throttling.js');
   }
   return loadedMobileThrottlingModule;
@@ -132,6 +128,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 
 Common.Settings.registerSettingExtension({
+  storageType: Common.Settings.SettingStorageType.Synced,
   settingName: 'customNetworkConditions',
   settingType: Common.Settings.SettingType.ARRAY,
   defaultValue: [],

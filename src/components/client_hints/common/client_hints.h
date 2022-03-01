@@ -10,10 +10,12 @@
 class GURL;
 
 namespace blink {
-struct WebEnabledClientHints;
+class EnabledClientHints;
 }
 
 namespace client_hints {
+
+const char kClientHintsSettingKey[] = "client_hints";
 
 // Retrieves the persistent client hints that should be set when fetching a
 // resource from |url|. The method updates |client_hints| with the result.
@@ -21,7 +23,7 @@ namespace client_hints {
 void GetAllowedClientHintsFromSource(
     const GURL& url,
     const ContentSettingsForOneType& client_hints_rules,
-    blink::WebEnabledClientHints* client_hints);
+    blink::EnabledClientHints* client_hints);
 
 }  // namespace client_hints
 

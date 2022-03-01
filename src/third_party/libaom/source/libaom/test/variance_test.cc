@@ -20,7 +20,6 @@
 #include "config/aom_dsp_rtcd.h"
 
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "aom/aom_codec.h"
 #include "aom/aom_integer.h"
@@ -338,7 +337,7 @@ class SumOfSquaresTest : public ::testing::TestWithParam<SumOfSquaresFunction> {
  public:
   SumOfSquaresTest() : func_(GetParam()) {}
 
-  virtual ~SumOfSquaresTest() { libaom_test::ClearSystemState(); }
+  virtual ~SumOfSquaresTest() {}
 
  protected:
   void ConstTest();
@@ -355,7 +354,7 @@ void SumOfSquaresTest::ConstTest() {
     for (int i = 0; i < 256; ++i) {
       mem[i] = v;
     }
-    ASM_REGISTER_STATE_CHECK(res = func_(mem));
+    API_REGISTER_STATE_CHECK(res = func_(mem));
     EXPECT_EQ(256u * (v * v), res);
   }
 }
@@ -369,7 +368,7 @@ void SumOfSquaresTest::RefTest() {
 
     const unsigned int expected = mb_ss_ref(mem);
     unsigned int res;
-    ASM_REGISTER_STATE_CHECK(res = func_(mem));
+    API_REGISTER_STATE_CHECK(res = func_(mem));
     EXPECT_EQ(expected, res);
   }
 }
@@ -434,7 +433,6 @@ class MseWxHTestClass
     aom_free(dst_);
     src_ = NULL;
     dst_ = NULL;
-    libaom_test::ClearSystemState();
   }
 
  protected:
@@ -503,9 +501,9 @@ void MseWxHTestClass<MseWxHFunctionType>::RefMatchTestMse() {
       dst_[k] = rnd_.Rand8();
       src_[k] = rnd_.Rand8();
     }
-    ASM_REGISTER_STATE_CHECK(
+    API_REGISTER_STATE_CHECK(
         mse_ref = aom_mse_wxh_16bit_c(dst_, dstride, src_, sstride, w, h));
-    ASM_REGISTER_STATE_CHECK(
+    API_REGISTER_STATE_CHECK(
         mse_mod = params_.func(dst_, dstride, src_, sstride, w, h));
     EXPECT_EQ(mse_ref, mse_mod)
         << "ref mse: " << mse_ref << " mod mse: " << mse_mod;
@@ -545,7 +543,6 @@ class MainTestClass
     delete[] ref_;
     src_ = NULL;
     ref_ = NULL;
-    libaom_test::ClearSystemState();
   }
 
  protected:
@@ -602,7 +599,7 @@ void MainTestClass<VarianceFunctionType>::ZeroTest() {
         for (int k = 0; k < block_size(); ++k) ref16[k] = j << byte_shift();
       }
       unsigned int sse, var;
-      ASM_REGISTER_STATE_CHECK(
+      API_REGISTER_STATE_CHECK(
           var = params_.func(src_, width(), ref_, width(), &sse));
       EXPECT_EQ(0u, var) << "src values: " << i << " ref values: " << j;
     }
@@ -623,7 +620,7 @@ void MainTestClass<VarianceFunctionType>::RefTest() {
     }
     unsigned int sse1, sse2, var1, var2;
     const int stride = width();
-    ASM_REGISTER_STATE_CHECK(
+    API_REGISTER_STATE_CHECK(
         var1 = params_.func(src_, stride, ref_, stride, &sse1));
     var2 =
         variance_ref(src_, ref_, params_.log2width, params_.log2height, stride,
@@ -652,7 +649,7 @@ void MainTestClass<VarianceFunctionType>::RefStrideTest() {
     unsigned int sse1, sse2;
     unsigned int var1, var2;
 
-    ASM_REGISTER_STATE_CHECK(
+    API_REGISTER_STATE_CHECK(
         var1 = params_.func(src_, src_stride, ref_, ref_stride, &sse1));
     var2 = variance_ref(src_, ref_, params_.log2width, params_.log2height,
                         src_stride, ref_stride, &sse2, use_high_bit_depth(),
@@ -675,7 +672,7 @@ void MainTestClass<VarianceFunctionType>::OneQuarterTest() {
     aom_memset16(CONVERT_TO_SHORTPTR(ref_) + half, 0, half);
   }
   unsigned int sse, var, expected;
-  ASM_REGISTER_STATE_CHECK(
+  API_REGISTER_STATE_CHECK(
       var = params_.func(src_, width(), ref_, width(), &sse));
   expected = block_size() * 255 * 255 / 4;
   EXPECT_EQ(expected, var);
@@ -719,7 +716,7 @@ void MainTestClass<FunctionType>::RefTestMse() {
     }
     unsigned int sse1, sse2;
     const int stride = width();
-    ASM_REGISTER_STATE_CHECK(params_.func(src_, stride, ref_, stride, &sse1));
+    API_REGISTER_STATE_CHECK(params_.func(src_, stride, ref_, stride, &sse1));
     variance_ref(src_, ref_, params_.log2width, params_.log2height, stride,
                  stride, &sse2, false, AOM_BITS_8);
     EXPECT_EQ(sse1, sse2);
@@ -736,7 +733,7 @@ void MainTestClass<FunctionType>::RefTestSse() {
     unsigned int sse2;
     unsigned int var1;
     const int stride = width();
-    ASM_REGISTER_STATE_CHECK(var1 = params_.func(src_, stride, ref_, stride));
+    API_REGISTER_STATE_CHECK(var1 = params_.func(src_, stride, ref_, stride));
     variance_ref(src_, ref_, params_.log2width, params_.log2height, stride,
                  stride, &sse2, false, AOM_BITS_8);
     EXPECT_EQ(var1, sse2);
@@ -748,7 +745,7 @@ void MainTestClass<FunctionType>::MaxTestMse() {
   memset(src_, 255, block_size());
   memset(ref_, 0, block_size());
   unsigned int sse;
-  ASM_REGISTER_STATE_CHECK(params_.func(src_, width(), ref_, width(), &sse));
+  API_REGISTER_STATE_CHECK(params_.func(src_, width(), ref_, width(), &sse));
   const unsigned int expected = block_size() * 255 * 255;
   EXPECT_EQ(expected, sse);
 }
@@ -758,7 +755,7 @@ void MainTestClass<FunctionType>::MaxTestSse() {
   memset(src_, 255, block_size());
   memset(ref_, 0, block_size());
   unsigned int var;
-  ASM_REGISTER_STATE_CHECK(var = params_.func(src_, width(), ref_, width()));
+  API_REGISTER_STATE_CHECK(var = params_.func(src_, width(), ref_, width()));
   const unsigned int expected = block_size() * 255 * 255;
   EXPECT_EQ(expected, var);
 }
@@ -805,7 +802,6 @@ class SubpelVarianceTest
       aom_free(CONVERT_TO_SHORTPTR(ref_));
       aom_free(CONVERT_TO_SHORTPTR(sec_));
     }
-    libaom_test::ClearSystemState();
   }
 
  protected:
@@ -850,7 +846,7 @@ void SubpelVarianceTest<SubpelVarianceFunctionType>::RefTest() {
       }
       unsigned int sse1, sse2;
       unsigned int var1;
-      ASM_REGISTER_STATE_CHECK(
+      API_REGISTER_STATE_CHECK(
           var1 = params_.func(ref_, width() + 1, x, y, src_, width(), &sse1));
       const unsigned int var2 = subpel_variance_ref(
           ref_, src_, params_.log2width, params_.log2height, x, y, &sse2,
@@ -883,7 +879,7 @@ void SubpelVarianceTest<SubpelVarianceFunctionType>::ExtremeRefTest() {
       }
       unsigned int sse1, sse2;
       unsigned int var1;
-      ASM_REGISTER_STATE_CHECK(
+      API_REGISTER_STATE_CHECK(
           var1 = params_.func(ref_, width() + 1, x, y, src_, width(), &sse1));
       const unsigned int var2 = subpel_variance_ref(
           ref_, src_, params_.log2width, params_.log2height, x, y, &sse2,
@@ -968,7 +964,7 @@ void SubpelVarianceTest<SubpixAvgVarMxNFunc>::RefTest() {
       }
       uint32_t sse1, sse2;
       uint32_t var1, var2;
-      ASM_REGISTER_STATE_CHECK(var1 = params_.func(ref_, width() + 1, x, y,
+      API_REGISTER_STATE_CHECK(var1 = params_.func(ref_, width() + 1, x, y,
                                                    src_, width(), &sse1, sec_));
       var2 = subpel_avg_variance_ref(ref_, src_, sec_, params_.log2width,
                                      params_.log2height, x, y, &sse2,
@@ -1004,9 +1000,9 @@ void SubpelVarianceTest<DistWtdSubpixAvgVarMxNFunc>::RefTest() {
         for (int y0 = 0; y0 < 4; ++y0) {
           uint32_t sse1, sse2;
           uint32_t var1, var2;
-          jcp_param_.fwd_offset = quant_dist_lookup_table[x0][y0][0];
-          jcp_param_.bck_offset = quant_dist_lookup_table[x0][y0][1];
-          ASM_REGISTER_STATE_CHECK(var1 = params_.func(ref_, width() + 0, x, y,
+          jcp_param_.fwd_offset = quant_dist_lookup_table[y0][x0];
+          jcp_param_.bck_offset = quant_dist_lookup_table[y0][1 - x0];
+          API_REGISTER_STATE_CHECK(var1 = params_.func(ref_, width() + 0, x, y,
                                                        src_, width(), &sse1,
                                                        sec_, &jcp_param_));
           var2 = dist_wtd_subpel_avg_variance_ref(
@@ -1060,7 +1056,6 @@ class ObmcVarianceTest
     }
     aom_free(wsrc_);
     aom_free(mask_);
-    libaom_test::ClearSystemState();
   }
 
  protected:
@@ -1100,7 +1095,7 @@ void ObmcVarianceTest<ObmcSubpelVarFunc>::RefTest() {
 
       uint32_t sse1, sse2;
       uint32_t var1, var2;
-      ASM_REGISTER_STATE_CHECK(
+      API_REGISTER_STATE_CHECK(
           var1 = params_.func(pre_, width() + 1, x, y, wsrc_, mask_, &sse1));
       var2 = obmc_subpel_variance_ref(
           pre_, params_.log2width, params_.log2height, x, y, wsrc_, mask_,
@@ -1137,7 +1132,7 @@ void ObmcVarianceTest<ObmcSubpelVarFunc>::ExtremeRefTest() {
 
       uint32_t sse1, sse2;
       uint32_t var1, var2;
-      ASM_REGISTER_STATE_CHECK(
+      API_REGISTER_STATE_CHECK(
           var1 = params_.func(pre_, width() + 1, x, y, wsrc_, mask_, &sse1));
       var2 = obmc_subpel_variance_ref(
           pre_, params_.log2width, params_.log2height, x, y, wsrc_, mask_,
@@ -1169,7 +1164,7 @@ void ObmcVarianceTest<ObmcSubpelVarFunc>::SpeedTest() {
   for (int i = 0; i < run_time; ++i) {
     int x = rnd_(8);
     int y = rnd_(8);
-    ASM_REGISTER_STATE_CHECK(
+    API_REGISTER_STATE_CHECK(
         params_.func(pre_, stride, x, y, wsrc_, mask_, &sse1));
   }
   aom_usec_timer_mark(&timer);
@@ -1433,7 +1428,6 @@ class MseHBDWxHTestClass
     aom_free(dst_);
     src_ = NULL;
     dst_ = NULL;
-    libaom_test::ClearSystemState();
   }
 
  protected:
@@ -1501,9 +1495,9 @@ void MseHBDWxHTestClass<MseHBDWxHFunctionType>::RefMatchTestMse() {
       dst_[k] = rnd_.Rand16() & mask();
       src_[k] = rnd_.Rand16() & mask();
     }
-    ASM_REGISTER_STATE_CHECK(mse_ref = aom_mse_wxh_16bit_highbd_c(
+    API_REGISTER_STATE_CHECK(mse_ref = aom_mse_wxh_16bit_highbd_c(
                                  dst_, dstride, src_, sstride, w, h));
-    ASM_REGISTER_STATE_CHECK(
+    API_REGISTER_STATE_CHECK(
         mse_mod = params_.func(dst_, dstride, src_, sstride, w, h));
     EXPECT_EQ(mse_ref, mse_mod)
         << "ref mse: " << mse_ref << " mod mse: " << mse_mod;

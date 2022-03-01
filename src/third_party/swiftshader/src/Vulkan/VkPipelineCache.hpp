@@ -17,6 +17,7 @@
 
 #include "VkObject.hpp"
 #include "VkSpecializationInfo.hpp"
+#include "Pipeline/SpirvBinary.hpp"
 
 #include "marl/mutex.h"
 #include "marl/tsa.h"
@@ -43,6 +44,8 @@ class RenderPass;
 class PipelineCache : public Object<PipelineCache, VkPipelineCache>
 {
 public:
+	static constexpr VkSystemAllocationScope GetAllocationScope() { return VK_SYSTEM_ALLOCATION_SCOPE_CACHE; }
+
 	PipelineCache(const VkPipelineCacheCreateInfo *pCreateInfo, void *mem);
 	virtual ~PipelineCache();
 	void destroy(const VkAllocationCallbacks *pAllocator);
@@ -52,59 +55,44 @@ public:
 	VkResult getData(size_t *pDataSize, void *pData);
 	VkResult merge(uint32_t srcCacheCount, const VkPipelineCache *pSrcCaches);
 
-	struct SpirvShaderKey
+	struct SpirvBinaryKey
 	{
-		SpirvShaderKey(const VkShaderStageFlagBits pipelineStage,
-		               const std::string &entryPointName,
-		               const std::vector<uint32_t> &insns,
-		               const vk::RenderPass *renderPass,
-		               const uint32_t subpassIndex,
-		               const vk::SpecializationInfo &specializationInfo);
+		SpirvBinaryKey(const sw::SpirvBinary &spirv,
+		               const VkSpecializationInfo *specializationInfo,
+		               bool optimize);
 
-		bool operator<(const SpirvShaderKey &other) const;
+		bool operator<(const SpirvBinaryKey &other) const;
 
-		const VkShaderStageFlagBits &getPipelineStage() const { return pipelineStage; }
-		const std::string &getEntryPointName() const { return entryPointName; }
-		const std::vector<uint32_t> &getInsns() const { return insns; }
-		const vk::RenderPass *getRenderPass() const { return renderPass; }
-		uint32_t getSubpassIndex() const { return subpassIndex; }
+		const sw::SpirvBinary &getBinary() const { return spirv; }
 		const VkSpecializationInfo *getSpecializationInfo() const { return specializationInfo.get(); }
+		bool getOptimization() const { return optimize; }
 
 	private:
-		const VkShaderStageFlagBits pipelineStage;
-		const std::string entryPointName;
-		const std::vector<uint32_t> insns;
-		const vk::RenderPass *renderPass;
-		const uint32_t subpassIndex;
+		const sw::SpirvBinary spirv;
 		const vk::SpecializationInfo specializationInfo;
+		const bool optimize;
 	};
 
-	// getOrCreateShader() queries the cache for a shader with the given key.
+	// contains() queries whether the cache contains a shader with the given key.
+	inline bool contains(const PipelineCache::SpirvBinaryKey &key);
+
+	// getOrOptimizeSpirv() queries the cache for a shader with the given key.
 	// If one is found, it is returned, otherwise create() is called, the
-	// returned shader is added to the cache, and it is returned.
-	// Function must be a function of the signature:
-	//     std::shared_ptr<sw::SpirvShader>()
-	template<typename Function>
-	inline std::shared_ptr<sw::SpirvShader> getOrCreateShader(const PipelineCache::SpirvShaderKey &key, Function &&create);
+	// returned SPIR-V binary is added to the cache, and it is returned.
+	// CreateOnCacheMiss must be a function of the signature:
+	//     sw::ShaderBinary()
+	template<typename CreateOnCacheMiss, typename CacheHit>
+	inline sw::SpirvBinary getOrOptimizeSpirv(const PipelineCache::SpirvBinaryKey &key, CreateOnCacheMiss &&create, CacheHit &&cacheHit);
 
 	struct ComputeProgramKey
 	{
-		ComputeProgramKey(const sw::SpirvShader *shader, const vk::PipelineLayout *layout)
-		    : shader(shader)
-		    , layout(layout)
-		{}
+		ComputeProgramKey(uint64_t shaderIdentifier, uint32_t pipelineLayoutIdentifier);
 
-		bool operator<(const ComputeProgramKey &other) const
-		{
-			return std::tie(shader, layout) < std::tie(other.shader, other.layout);
-		}
-
-		const sw::SpirvShader *getShader() const { return shader; }
-		const vk::PipelineLayout *getLayout() const { return layout; }
+		bool operator<(const ComputeProgramKey &other) const;
 
 	private:
-		const sw::SpirvShader *shader;
-		const vk::PipelineLayout *layout;
+		const uint64_t shaderIdentifier;
+		const uint32_t pipelineLayoutIdentifier;
 	};
 
 	// getOrCreateComputeProgram() queries the cache for a compute program with
@@ -130,7 +118,7 @@ private:
 	uint8_t *data = nullptr;
 
 	marl::mutex spirvShadersMutex;
-	std::map<SpirvShaderKey, std::shared_ptr<sw::SpirvShader>> spirvShaders GUARDED_BY(spirvShadersMutex);
+	std::map<SpirvBinaryKey, sw::SpirvBinary> spirvShaders GUARDED_BY(spirvShadersMutex);
 
 	marl::mutex computeProgramsMutex;
 	std::map<ComputeProgramKey, std::shared_ptr<sw::ComputeProgram>> computePrograms GUARDED_BY(computeProgramsMutex);
@@ -147,24 +135,39 @@ std::shared_ptr<sw::ComputeProgram> PipelineCache::getOrCreateComputeProgram(con
 	marl::lock lock(computeProgramsMutex);
 
 	auto it = computePrograms.find(key);
-	if(it != computePrograms.end()) { return it->second; }
+	if(it != computePrograms.end())
+	{
+		return it->second;
+	}
 
 	auto created = create();
 	computePrograms.emplace(key, created);
+
 	return created;
 }
 
-template<typename Function>
-std::shared_ptr<sw::SpirvShader> PipelineCache::getOrCreateShader(const PipelineCache::SpirvShaderKey &key, Function &&create)
+inline bool PipelineCache::contains(const PipelineCache::SpirvBinaryKey &key)
+{
+	marl::lock lock(spirvShadersMutex);
+
+	return spirvShaders.find(key) != spirvShaders.end();
+}
+
+template<typename CreateOnCacheMiss, typename CacheHit>
+sw::SpirvBinary PipelineCache::getOrOptimizeSpirv(const PipelineCache::SpirvBinaryKey &key, CreateOnCacheMiss &&create, CacheHit &&cacheHit)
 {
 	marl::lock lock(spirvShadersMutex);
 
 	auto it = spirvShaders.find(key);
-	if(it != spirvShaders.end()) { return it->second; }
+	if(it != spirvShaders.end())
+	{
+		cacheHit();
+		return it->second;
+	}
 
-	auto created = create();
-	spirvShaders.emplace(key, created);
-	return created;
+	sw::SpirvBinary outShader = create();
+	spirvShaders.emplace(key, outShader);
+	return outShader;
 }
 
 }  // namespace vk

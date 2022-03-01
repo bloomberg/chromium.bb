@@ -14,6 +14,7 @@
 
 #include <string>
 
+#include "fuzzers/fuzzer_init.h"
 #include "fuzzers/tint_common_fuzzer.h"
 
 namespace tint {
@@ -21,6 +22,7 @@ namespace fuzzers {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   tint::fuzzers::CommonFuzzer fuzzer(InputFormat::kWGSL, OutputFormat::kNone);
+  fuzzer.SetDumpInput(GetCliParams().dump_input);
   return fuzzer.Run(data, size);
 }
 

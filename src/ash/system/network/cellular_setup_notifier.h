@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/session/session_observer.h"
+#include "base/gtest_prod_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -22,7 +23,9 @@ namespace ash {
 // Notifies the user after OOBE to finish setting up their cellular network if
 // user has a device with eSIM but no profiles have been configured, or they
 // inserted a cold pSIM and need to provision in-session.
-class ASH_EXPORT CellularSetupNotifier : public SessionObserver {
+class ASH_EXPORT CellularSetupNotifier
+    : public SessionObserver,
+      public chromeos::network_config::mojom::CrosNetworkConfigObserver {
  public:
   CellularSetupNotifier();
   CellularSetupNotifier(const CellularSetupNotifier&) = delete;
@@ -51,6 +54,19 @@ class ASH_EXPORT CellularSetupNotifier : public SessionObserver {
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
+  // CrosNetworkConfigObserver:
+  void OnNetworkStateListChanged() override;
+  void OnActiveNetworksChanged(
+      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
+          networks) override {}
+  void OnNetworkStateChanged(
+      chromeos::network_config::mojom::NetworkStatePropertiesPtr network)
+      override;
+  void OnDeviceStateListChanged() override {}
+  void OnVpnProvidersChanged() override {}
+  void OnNetworkCertificatesChanged() override {}
+
+  void MaybeShowCellularSetupNotification();
   void OnTimerFired();
   void OnGetDeviceStateList(
       std::vector<chromeos::network_config::mojom::DeviceStatePropertiesPtr>
@@ -67,8 +83,11 @@ class ASH_EXPORT CellularSetupNotifier : public SessionObserver {
 
   mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
       remote_cros_network_config_;
+  mojo::Receiver<chromeos::network_config::mojom::CrosNetworkConfigObserver>
+      cros_network_config_observer_receiver_{this};
 
   std::unique_ptr<base::OneShotTimer> timer_;
+  bool timer_fired_{false};
 };
 
 }  // namespace ash

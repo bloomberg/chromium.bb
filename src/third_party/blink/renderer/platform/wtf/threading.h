@@ -35,7 +35,6 @@
 
 #include "base/check_op.h"
 #include "base/dcheck_is_on.h"
-#include "base/macros.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
@@ -44,14 +43,15 @@
 
 namespace WTF {
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_WIN)
 WTF_EXPORT base::PlatformThreadId CurrentThread();
 #else
 // On Android gettid(3) uses a faster TLS model than thread_local.
+// On Windows GetCurrentThreadId() directly pick TID from TEB.
 inline base::PlatformThreadId CurrentThread() {
   return base::PlatformThread::CurrentId();
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) && !defined(OS_WIN)
 
 #if DCHECK_IS_ON()
 WTF_EXPORT bool IsBeforeThreadCreated();
@@ -67,6 +67,8 @@ class WTF_EXPORT Threading {
 
  public:
   Threading();
+  Threading(const Threading&) = delete;
+  Threading& operator=(const Threading&) = delete;
   ~Threading();
 
   AtomicStringTable& GetAtomicStringTable() { return *atomic_string_table_; }
@@ -94,8 +96,6 @@ class WTF_EXPORT Threading {
 
   static ThreadSpecific<Threading>* static_data_;
   friend Threading& WtfThreading();
-
-  DISALLOW_COPY_AND_ASSIGN(Threading);
 };
 
 inline Threading& WtfThreading() {

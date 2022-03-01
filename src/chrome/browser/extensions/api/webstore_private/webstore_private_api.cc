@@ -12,15 +12,15 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/containers/cxx20_erase_vector.h"
+#include "base/json/values_util.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
+#include "base/scoped_multi_source_observation.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
@@ -33,9 +33,9 @@
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/scoped_active_install.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/safe_browsing_metrics_collector.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_metrics_collector_factory.h"
-#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
+#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
@@ -46,6 +46,8 @@
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/safe_browsing/content/browser/safe_browsing_navigation_observer_manager.h"
+#include "components/safe_browsing/core/browser/safe_browsing_metrics_collector.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/gpu_feature_checker.h"
 #include "content/public/browser/storage_partition.h"
@@ -94,10 +96,14 @@ namespace SetStoreLogin = api::webstore_private::SetStoreLogin;
 namespace {
 
 // Holds the Approvals between the time we prompt and start the installs.
-class PendingApprovals {
+class PendingApprovals : public ProfileObserver {
  public:
-  PendingApprovals();
-  ~PendingApprovals();
+  PendingApprovals() = default;
+
+  PendingApprovals(const PendingApprovals&) = delete;
+  PendingApprovals& operator=(const PendingApprovals&) = delete;
+
+  ~PendingApprovals() override = default;
 
   void PushApproval(std::unique_ptr<WebstoreInstaller::Approval> approval);
   std::unique_ptr<WebstoreInstaller::Approval> PopApproval(
@@ -105,20 +111,44 @@ class PendingApprovals {
       const std::string& id);
   void Clear();
 
+  int GetCount() const { return approvals_.size(); }
+
  private:
+  // ProfileObserver
+  // Remove pending approvals if the Profile is being destroyed.
+  void OnProfileWillBeDestroyed(Profile* profile) override {
+    base::EraseIf(approvals_, [profile](const auto& approval) {
+      return approval->profile == profile;
+    });
+    observation_.RemoveObservation(profile);
+  }
+
+  void MaybeAddObservation(Profile* profile) {
+    if (!observation_.IsObservingSource(profile))
+      observation_.AddObservation(profile);
+  }
+
+  // Remove observation if there are no pending approvals
+  // for the Profile.
+  void MaybeRemoveObservation(Profile* profile) {
+    for (const auto& entry : approvals_) {
+      if (entry->profile == profile)
+        return;
+    }
+    observation_.RemoveObservation(profile);
+  }
+
   using ApprovalList =
       std::vector<std::unique_ptr<WebstoreInstaller::Approval>>;
 
   ApprovalList approvals_;
-
-  DISALLOW_COPY_AND_ASSIGN(PendingApprovals);
+  base::ScopedMultiSourceObservation<Profile, ProfileObserver> observation_{
+      this};
 };
-
-PendingApprovals::PendingApprovals() {}
-PendingApprovals::~PendingApprovals() {}
 
 void PendingApprovals::PushApproval(
     std::unique_ptr<WebstoreInstaller::Approval> approval) {
+  MaybeAddObservation(approval->profile);
   approvals_.push_back(std::move(approval));
 }
 
@@ -130,6 +160,7 @@ std::unique_ptr<WebstoreInstaller::Approval> PendingApprovals::PopApproval(
         profile->IsSameOrParent(iter->get()->profile)) {
       std::unique_ptr<WebstoreInstaller::Approval> approval = std::move(*iter);
       approvals_.erase(iter);
+      MaybeRemoveObservation(approval->profile);
       return approval;
     }
   }
@@ -278,8 +309,10 @@ ConvertExtensionInstallStatusForAPI(ExtensionInstallStatus status) {
 // Requests extension by adding the id into the pending list in Profile Prefs if
 // available. Returns |kRequestPending| if the request has been added
 // successfully. Otherwise, returns the initial extension install status.
-ExtensionInstallStatus AddExtensionToPendingList(const ExtensionId& id,
-                                                 Profile* profile) {
+ExtensionInstallStatus AddExtensionToPendingList(
+    const ExtensionId& id,
+    Profile* profile,
+    const std::string& justification) {
   // There is no need to check whether the extension's required permissions or
   // manifest type are blocked  by the enterprise policy because extensions
   // blocked by those are still requestable.
@@ -307,7 +340,11 @@ ExtensionInstallStatus AddExtensionToPendingList(const ExtensionId& id,
   DCHECK(!pending_requests_update->FindKey(id));
   base::Value request_data(base::Value::Type::DICTIONARY);
   request_data.SetKey(extension_misc::kExtensionRequestTimestamp,
-                      ::util::TimeToValue(base::Time::Now()));
+                      ::base::TimeToValue(base::Time::Now()));
+  if (!justification.empty()) {
+    request_data.SetKey(extension_misc::kExtensionWorkflowJustification,
+                        base::Value(justification));
+  }
   pending_requests_update->SetKey(id, std::move(request_data));
   // Query the new extension install status again. It should be changed from
   // |kCanRequest| to |kRequestPending| if the id has been added into pending
@@ -391,6 +428,10 @@ void WebstorePrivateApi::ClearPendingApprovalsForTesting() {
   g_pending_approvals.Get().Clear();
 }
 
+int WebstorePrivateApi::GetPendingApprovalsCountForTesting() {
+  return g_pending_approvals.Get().GetCount();
+}
+
 WebstorePrivateBeginInstallWithManifest3Function::
     WebstorePrivateBeginInstallWithManifest3Function() = default;
 
@@ -404,7 +445,7 @@ std::u16string WebstorePrivateBeginInstallWithManifest3Function::
 
 ExtensionFunction::ResponseAction
 WebstorePrivateBeginInstallWithManifest3Function::Run() {
-  params_ = Params::Create(*args_);
+  params_ = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params_);
 
   profile_ = Profile::FromBrowserContext(browser_context());
@@ -690,8 +731,8 @@ void WebstorePrivateBeginInstallWithManifest3Function::
 }
 
 void WebstorePrivateBeginInstallWithManifest3Function::OnInstallPromptDone(
-    ExtensionInstallPrompt::Result result) {
-  switch (result) {
+    ExtensionInstallPrompt::DoneCallbackPayload payload) {
+  switch (payload.result) {
     case ExtensionInstallPrompt::Result::ACCEPTED:
     case ExtensionInstallPrompt::Result::ACCEPTED_AND_OPTION_CHECKED: {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -715,7 +756,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnInstallPromptDone(
     }
     case ExtensionInstallPrompt::Result::USER_CANCELED:
     case ExtensionInstallPrompt::Result::ABORTED: {
-      HandleInstallAbort(result ==
+      HandleInstallAbort(payload.result ==
                          ExtensionInstallPrompt::Result::USER_CANCELED);
       break;
     }
@@ -726,10 +767,10 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnInstallPromptDone(
 }
 
 void WebstorePrivateBeginInstallWithManifest3Function::OnRequestPromptDone(
-    ExtensionInstallPrompt::Result result) {
-  switch (result) {
+    ExtensionInstallPrompt::DoneCallbackPayload payload) {
+  switch (payload.result) {
     case ExtensionInstallPrompt::Result::ACCEPTED:
-      AddExtensionToPendingList(details().id, profile_);
+      AddExtensionToPendingList(details().id, profile_, payload.justification);
       break;
     case ExtensionInstallPrompt::Result::USER_CANCELED:
     case ExtensionInstallPrompt::Result::ABORTED:
@@ -772,12 +813,6 @@ void WebstorePrivateBeginInstallWithManifest3Function::HandleInstallProceed() {
   DCHECK(scoped_active_install_.get());
   scoped_active_install_->CancelDeregister();
 
-  // The Permissions_Install histogram is recorded from the ExtensionService
-  // for all extension installs, so we only need to record the web store
-  // specific histogram here.
-  ExtensionService::RecordPermissionMessagesHistogram(
-      dummy_extension_.get(), "WebStoreInstall");
-
   // Record when the user accepted to install a not allowlisted extension.
   if (details().esb_allowlist && !*details().esb_allowlist) {
     ReportWebStoreInstallNotAllowlistedInstalled(
@@ -788,19 +823,6 @@ void WebstorePrivateBeginInstallWithManifest3Function::HandleInstallProceed() {
 
 void WebstorePrivateBeginInstallWithManifest3Function::HandleInstallAbort(
     bool user_initiated) {
-  // The web store install histograms are a subset of the install histograms.
-  // We need to record both histograms here since CrxInstaller::InstallUIAbort
-  // is never called for web store install cancellations.
-  if (user_initiated) {
-    ExtensionService::RecordPermissionMessagesHistogram(
-        dummy_extension_.get(), "WebStoreInstallCancel");
-  }
-
-  std::string histogram_name =
-      user_initiated ? "InstallCancel" : "InstallAbort";
-  ExtensionService::RecordPermissionMessagesHistogram(dummy_extension_.get(),
-                                                      histogram_name.c_str());
-
   if (details().esb_allowlist && !*details().esb_allowlist) {
     ReportWebStoreInstallNotAllowlistedInstalled(
         /*installed=*/false, friction_dialog_shown_);
@@ -907,8 +929,8 @@ void WebstorePrivateBeginInstallWithManifest3Function::
   }
 
   chrome::ShowExtensionInstallBlockedDialog(
-      extension->name(), blocked_by_policy_error_message_, image, contents,
-      std::move(done_callback));
+      extension->id(), extension->name(), blocked_by_policy_error_message_,
+      image, contents, std::move(done_callback));
 }
 
 WebstorePrivateCompleteInstallFunction::
@@ -920,13 +942,10 @@ WebstorePrivateCompleteInstallFunction::
 ExtensionFunction::ResponseAction
 WebstorePrivateCompleteInstallFunction::Run() {
   std::unique_ptr<CompleteInstall::Params> params(
-      CompleteInstall::Params::Create(*args_));
+      CompleteInstall::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   Profile* const profile = Profile::FromBrowserContext(browser_context());
-  // TODO(https://crbug.com/1125475): Enable Extensions for Ephemeral Guest
-  // profiles.
-  if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile() ||
-      profile->IsOffTheRecord()) {
+  if (profile->IsGuestSession() || profile->IsOffTheRecord()) {
     return RespondNow(Error(kIncognitoError));
   }
 
@@ -1047,7 +1066,7 @@ WebstorePrivateSetStoreLoginFunction::
 
 ExtensionFunction::ResponseAction WebstorePrivateSetStoreLoginFunction::Run() {
   std::unique_ptr<SetStoreLogin::Params> params(
-      SetStoreLogin::Params::Create(*args_));
+      SetStoreLogin::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   SetWebstoreLogin(Profile::FromBrowserContext(browser_context()),
                    params->login);
@@ -1096,11 +1115,8 @@ WebstorePrivateIsInIncognitoModeFunction::
 ExtensionFunction::ResponseAction
 WebstorePrivateIsInIncognitoModeFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  // TODO(https://crbug.com/1125475): Enable Extensions for Ephemeral Guest
-  // profiles.
   return RespondNow(ArgumentList(IsInIncognitoMode::Results::Create(
-      profile != profile->GetOriginalProfile() ||
-      profile->IsEphemeralGuestProfile())));
+      profile != profile->GetOriginalProfile())));
 }
 
 WebstorePrivateLaunchEphemeralAppFunction::
@@ -1136,10 +1152,10 @@ WebstorePrivateIsPendingCustodianApprovalFunction::
 ExtensionFunction::ResponseAction
 WebstorePrivateIsPendingCustodianApprovalFunction::Run() {
   std::unique_ptr<IsPendingCustodianApproval::Params> params(
-      IsPendingCustodianApproval::Params::Create(*args_));
+      IsPendingCustodianApproval::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  if (!Profile::FromBrowserContext(browser_context())->IsSupervised())
+  if (!Profile::FromBrowserContext(browser_context())->IsChild())
     return RespondNow(BuildResponse(false));
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
@@ -1177,7 +1193,8 @@ WebstorePrivateGetReferrerChainFunction::
 ExtensionFunction::ResponseAction
 WebstorePrivateGetReferrerChainFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  if (!SafeBrowsingNavigationObserverManager::IsEnabledAndReady(profile))
+  if (!SafeBrowsingNavigationObserverManager::IsEnabledAndReady(
+          profile->GetPrefs(), g_browser_process->safe_browsing_service()))
     return RespondNow(ArgumentList(
         api::webstore_private::GetReferrerChain::Results::Create("")));
 
@@ -1188,9 +1205,9 @@ WebstorePrivateGetReferrerChainFunction::Run() {
         kWebstoreUserCancelledError));
   }
 
-  scoped_refptr<SafeBrowsingNavigationObserverManager>
-      navigation_observer_manager = g_browser_process->safe_browsing_service()
-                                        ->navigation_observer_manager();
+  SafeBrowsingNavigationObserverManager* navigation_observer_manager =
+      safe_browsing::SafeBrowsingNavigationObserverManagerFactory::
+          GetForBrowserContext(profile);
 
   safe_browsing::ReferrerChain referrer_chain;
   SafeBrowsingNavigationObserverManager::AttributionResult result =
@@ -1203,7 +1220,7 @@ WebstorePrivateGetReferrerChainFunction::Run() {
   // Scout reporting. Otherwise, |CountOfRecentNavigationsToAppend| returns 0.
   int recent_navigations_to_collect =
       SafeBrowsingNavigationObserverManager::CountOfRecentNavigationsToAppend(
-          *profile, result);
+          profile, profile->GetPrefs(), result);
   if (recent_navigations_to_collect > 0) {
     navigation_observer_manager->AppendRecentNavigations(
         recent_navigations_to_collect, &referrer_chain);
@@ -1231,7 +1248,7 @@ WebstorePrivateGetExtensionStatusFunction::
 ExtensionFunction::ResponseAction
 WebstorePrivateGetExtensionStatusFunction::Run() {
   std::unique_ptr<GetExtensionStatus::Params> params(
-      GetExtensionStatus::Params::Create(*args_));
+      GetExtensionStatus::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const ExtensionId& extension_id = params->id;
@@ -1301,7 +1318,7 @@ WebstorePrivateRequestExtensionFunction::
 ExtensionFunction::ResponseAction
 WebstorePrivateRequestExtensionFunction::Run() {
   std::unique_ptr<RequestExtension::Params> params(
-      RequestExtension::Params::Create(*args_));
+      RequestExtension::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const ExtensionId& extension_id = params->id;
@@ -1311,7 +1328,7 @@ WebstorePrivateRequestExtensionFunction::Run() {
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
   ExtensionInstallStatus status =
-      AddExtensionToPendingList(extension_id, profile);
+      AddExtensionToPendingList(extension_id, profile, std::string());
 
   api::webstore_private::ExtensionInstallStatus api_status =
       ConvertExtensionInstallStatusForAPI(status);

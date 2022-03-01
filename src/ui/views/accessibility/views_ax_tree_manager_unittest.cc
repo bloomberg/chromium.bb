@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/accessibility/accessibility_features.h"
@@ -72,9 +73,9 @@ class ViewsAXTreeManagerTest : public ViewsTestBase,
                         ui::AXEventGenerator::Event event,
                         ui::AXNodeID node_id);
 
-  Widget* widget_ = nullptr;
-  Button* button_ = nullptr;
-  Label* label_ = nullptr;
+  raw_ptr<Widget> widget_ = nullptr;
+  raw_ptr<Button> button_ = nullptr;
+  raw_ptr<Label> label_ = nullptr;
   std::unique_ptr<ViewsAXTreeManager> manager_;
   ui::AXEventGenerator::Event event_to_wait_for_;
   std::unique_ptr<base::RunLoop> loop_runner_;
@@ -99,9 +100,9 @@ void ViewsAXTreeManagerTest::SetUp() {
   button_->SetSize(gfx::Size(20, 20));
 
   label_ = new Label();
-  button_->AddChildView(label_);
+  button_->AddChildView(label_.get());
 
-  widget_->GetContentsView()->AddChildView(button_);
+  widget_->GetContentsView()->AddChildView(button_.get());
   widget_->Show();
 
   // AccessibilityTreeForViewsEnabled will create and manage its own
@@ -163,7 +164,7 @@ ui::AXNode* ViewsAXTreeManagerTest::FindNodeInSubtree(
       root->GetStringAttribute(ax::mojom::StringAttribute::kName);
   const std::string& value =
       root->GetStringAttribute(ax::mojom::StringAttribute::kValue);
-  if (root->data().role == role &&
+  if (root->GetRole() == role &&
       (name == name_or_value || value == name_or_value)) {
     return root;
   }
@@ -193,23 +194,21 @@ TEST_P(ViewsAXTreeManagerTest, MirrorInitialTree) {
   button()->GetViewAccessibility().GetAccessibleNodeData(&button_data);
   ui::AXNode* ax_button = FindNode(ax::mojom::Role::kButton, "");
   ASSERT_NE(nullptr, ax_button);
-  EXPECT_EQ(button_data.role, ax_button->data().role);
+  EXPECT_EQ(button_data.role, ax_button->GetRole());
   EXPECT_EQ(
       button_data.GetStringAttribute(ax::mojom::StringAttribute::kDescription),
-      ax_button->data().GetStringAttribute(
-          ax::mojom::StringAttribute::kDescription));
+      ax_button->GetStringAttribute(ax::mojom::StringAttribute::kDescription));
   EXPECT_EQ(
       button_data.GetIntAttribute(ax::mojom::IntAttribute::kDefaultActionVerb),
-      ax_button->data().GetIntAttribute(
-          ax::mojom::IntAttribute::kDefaultActionVerb));
-  EXPECT_TRUE(ax_button->data().HasState(ax::mojom::State::kFocusable));
+      ax_button->GetIntAttribute(ax::mojom::IntAttribute::kDefaultActionVerb));
+  EXPECT_TRUE(ax_button->HasState(ax::mojom::State::kFocusable));
 }
 
 TEST_P(ViewsAXTreeManagerTest, PerformAction) {
   ui::AXNode* ax_button = FindNode(ax::mojom::Role::kButton, "");
   ASSERT_NE(nullptr, ax_button);
-  ASSERT_FALSE(ax_button->data().HasIntAttribute(
-      ax::mojom::IntAttribute::kCheckedState));
+  ASSERT_FALSE(
+      ax_button->HasIntAttribute(ax::mojom::IntAttribute::kCheckedState));
   button()->SetState(TestButton::STATE_PRESSED);
   button()->NotifyAccessibilityEvent(ax::mojom::Event::kCheckedStateChanged,
                                      true);

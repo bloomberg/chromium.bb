@@ -12,6 +12,7 @@
 #include "base/base64.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/notreached.h"
 #include "base/pickle.h"
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
@@ -141,7 +142,7 @@ AutofillMetadata CreateAutofillMetadataFromWalletMetadataSpecifics(
   metadata.id = GetMetadataIdForSpecificsId(specifics.id());
   metadata.use_count = specifics.use_count();
   metadata.use_date = base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMicroseconds(specifics.use_date()));
+      base::Microseconds(specifics.use_date()));
 
   switch (specifics.type()) {
     case WalletMetadataSpecifics::ADDRESS:
@@ -352,7 +353,7 @@ AutofillWalletMetadataSyncBridge::AutofillWalletMetadataSyncBridge(
     : ModelTypeSyncBridge(std::move(change_processor)),
       web_data_backend_(web_data_backend) {
   DCHECK(web_data_backend_);
-  scoped_observation_.Observe(web_data_backend_);
+  scoped_observation_.Observe(web_data_backend_.get());
 
   LoadDataCacheAndMetadata();
 

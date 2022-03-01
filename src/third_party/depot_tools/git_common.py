@@ -530,11 +530,7 @@ def get_or_create_merge_base(branch, parent=None):
   parent = parent or upstream(branch)
   if parent is None or branch is None:
     return None
-
-  try:
-    actual_merge_base = run('merge-base', '--fork-point', parent, branch)
-  except subprocess2.CalledProcessError:
-    actual_merge_base = run('merge-base', parent, branch)
+  actual_merge_base = run('merge-base', parent, branch)
 
   if base_upstream != parent:
     base = None
@@ -707,7 +703,7 @@ def upstream_default():
         pass
     return ret
   except subprocess2.CalledProcessError:
-    return 'origin/master'
+    return 'origin/main'
 
 
 def root():

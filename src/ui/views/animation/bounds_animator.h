@@ -8,8 +8,7 @@
 #include <map>
 #include <memory>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "ui/gfx/animation/animation_container.h"
@@ -47,6 +46,10 @@ class View;
 class VIEWS_EXPORT BoundsAnimator : public AnimationDelegateViews {
  public:
   explicit BoundsAnimator(View* view, bool use_transforms = false);
+
+  BoundsAnimator(const BoundsAnimator&) = delete;
+  BoundsAnimator& operator=(const BoundsAnimator&) = delete;
+
   ~BoundsAnimator() override;
 
   // Starts animating |view| from its current bounds to |target|. If there is
@@ -166,7 +169,7 @@ class VIEWS_EXPORT BoundsAnimator : public AnimationDelegateViews {
   base::TimeDelta GetAnimationDurationForReporting() const override;
 
   // Parent of all views being animated.
-  View* parent_;
+  raw_ptr<View> parent_;
 
   // A more performant version of the bounds animations which updates the
   // transform of the views and therefore skips repainting and relayouting until
@@ -194,11 +197,9 @@ class VIEWS_EXPORT BoundsAnimator : public AnimationDelegateViews {
   // to repaint these bounds.
   gfx::Rect repaint_bounds_;
 
-  base::TimeDelta animation_duration_ = base::TimeDelta::FromMilliseconds(200);
+  base::TimeDelta animation_duration_ = base::Milliseconds(200);
 
   gfx::Tween::Type tween_type_ = gfx::Tween::EASE_OUT;
-
-  DISALLOW_COPY_AND_ASSIGN(BoundsAnimator);
 };
 
 }  // namespace views

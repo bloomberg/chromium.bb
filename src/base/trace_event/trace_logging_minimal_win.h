@@ -107,6 +107,8 @@
  *     my_provider.Unregister();
  */
 
+#include "base/memory/raw_ptr.h"
+
 class TlmProvider {
  public:
   // Initialize a provider in the unregistered state.
@@ -183,7 +185,7 @@ class TlmProvider {
     uint16_t metadata_index;
     metadata_index = EventBegin(metadata, event_name);
     {  // scope for dummy array (simulates a C++17 comma-fold expression)
-      bool dummy[sizeof...(FieldTys) == 0 ? 1 : sizeof...(FieldTys)] = {
+      char dummy[sizeof...(FieldTys) == 0 ? 1 : sizeof...(FieldTys)] = {
           EventAddField(metadata, &metadata_index, event_fields.in_type_,
                         event_fields.out_type_, event_fields.Name())...};
       DCHECK(dummy);
@@ -195,7 +197,7 @@ class TlmProvider {
     EVENT_DATA_DESCRIPTOR descriptors[kDescriptorsCount];
     uint8_t descriptors_index = 2;
     {  // scope for dummy array (simulates a C++17 comma-fold expression)
-      bool dummy[sizeof...(FieldTys) == 0 ? 1 : sizeof...(FieldTys)] = {
+      char dummy[sizeof...(FieldTys) == 0 ? 1 : sizeof...(FieldTys)] = {
           EventDescriptorFill(descriptors, &descriptors_index,
                               event_fields)...};
       DCHECK(dummy);
@@ -281,7 +283,7 @@ class TlmProvider {
   uint64_t keyword_all_ = 0;
   uint64_t reg_handle_ = 0;
   PENABLECALLBACK enable_callback_ = nullptr;
-  void* enable_callback_context_ = nullptr;
+  raw_ptr<void> enable_callback_context_ = nullptr;
   char provider_metadata_[kMaxProviderMetadataSize] = {};
 };
 
@@ -345,7 +347,6 @@ class TlmUtf8StringField
 constexpr EVENT_DESCRIPTOR TlmEventDescriptor(uint8_t level,
                                               uint64_t keyword) noexcept {
   return {
-
       // Id
       // TraceLogging generally uses the event's Name instead of Id+Version,
       // so Id is normally set to 0 for TraceLogging events.

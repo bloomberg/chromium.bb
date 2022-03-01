@@ -5,7 +5,6 @@
 #ifndef BASE_IOS_SCOPED_CRITICAL_ACTION_H_
 #define BASE_IOS_SCOPED_CRITICAL_ACTION_H_
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 
@@ -28,6 +27,10 @@ namespace ios {
 class ScopedCriticalAction {
  public:
   ScopedCriticalAction(StringPiece task_name);
+
+  ScopedCriticalAction(const ScopedCriticalAction&) = delete;
+  ScopedCriticalAction& operator=(const ScopedCriticalAction&) = delete;
+
   ~ScopedCriticalAction();
 
  private:
@@ -38,6 +41,9 @@ class ScopedCriticalAction {
   class Core : public base::RefCountedThreadSafe<Core> {
    public:
     Core();
+
+    Core(const Core&) = delete;
+    Core& operator=(const Core&) = delete;
 
     // Informs the OS that the background task has started. This is a
     // static method to ensure that the instance has a non-zero refcount.
@@ -59,14 +65,10 @@ class ScopedCriticalAction {
     // can be used in .cc files.
     unsigned int background_task_id_ GUARDED_BY(background_task_id_lock_);
     Lock background_task_id_lock_;
-
-    DISALLOW_COPY_AND_ASSIGN(Core);
   };
 
   // The instance of the core that drives the background task.
   scoped_refptr<Core> core_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedCriticalAction);
 };
 
 }  // namespace ios

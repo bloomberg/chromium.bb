@@ -32,8 +32,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -41,22 +39,22 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
+import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as ClientVariations from '../../third_party/chromium/client-variations/client-variations.js';
-import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
+// eslint-disable-next-line rulesdir/es_modules_import
+import objectPropertiesSectionStyles from '../../ui/legacy/components/object_ui/objectPropertiesSection.css.js';
+// eslint-disable-next-line rulesdir/es_modules_import
+import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-import {UIHeaderSection} from './NetworkSearchScope.js';
+import requestHeadersTreeStyles from './requestHeadersTree.css.js';
+import requestHeadersViewStyles from './requestHeadersView.css.js';
 
 const UIStrings = {
   /**
   *@description Text in Request Headers View of the Network panel
   */
   general: 'General',
-  /**
-  * @description Text in Request Headers View of the Network panel. This is a noun-phrase meaning the
-  * payload of a network request.
-  */
-  requestPayload: 'Request Payload',
   /**
   *@description A context menu item in the Watch Expressions Sidebar Pane of the Sources panel and Network pane request.
   */
@@ -72,19 +70,7 @@ const UIStrings = {
   /**
   *@description Text in Request Headers View of the Network panel
   */
-  unableToDecodeValue: '(unable to decode value)',
-  /**
-  *@description Text in Request Headers View of the Network panel
-  */
   requestUrl: 'Request URL',
-  /**
-  *@description Text in Request Headers View of the Network panel
-  */
-  queryStringParameters: 'Query String Parameters',
-  /**
-  *@description Text in Request Headers View of the Network panel
-  */
-  formData: 'Form Data',
   /**
   *@description Text to show more content
   */
@@ -94,41 +80,9 @@ const UIStrings = {
   */
   viewParsed: 'View parsed',
   /**
-  *@description Text to show an item is empty
-  */
-  empty: '(empty)',
-  /**
   *@description Text for toggling the view of header data (e.g. query string parameters) from parsed to source in the headers tab
   */
   viewSource: 'View source',
-  /**
-  * @description Text for toggling header data (e.g. query string parameters) from decoded to
-  * encoded in the headers tab or in the cookies preview. URL-encoded is a different data format for
-  * the same data, which the user sees when they click this command.
-  */
-  viewUrlEncoded: 'View URL-encoded',
-  /**
-  *@description Text for toggling header data (e.g. query string parameters) from encoded to decoded in the headers tab or in the cookies preview
-  */
-  viewDecoded: 'View decoded',
-  /**
-  *@description Text for toggling header data (e.g. query string parameters) from decoded to
-  * encoded in the headers tab or in the cookies preview. URL-encoded is a different data format for
-  * the same data, which the user sees when they click this command.
-  */
-  viewUrlEncodedL: 'view URL-encoded',
-  /**
-  *@description Text in Request Headers View of the Network panel
-  */
-  viewDecodedL: 'view decoded',
-  /**
-  *@description Text in Request Headers View of the Network panel
-  */
-  viewParsedL: 'view parsed',
-  /**
-  *@description Text in Request Headers View of the Network panel
-  */
-  viewSourceL: 'view source',
   /**
   *@description Text in Request Headers View of the Network panel
   */
@@ -165,6 +119,10 @@ const UIStrings = {
   *@description Text in Request Headers View of the Network panel
   */
   fromDiskCache: '(from disk cache)',
+  /**
+  *@description Text in Request Headers View of the Network panel
+  */
+  fromWebBundle: '(from Web Bundle)',
   /**
   *@description Message to explain lack of raw headers for a particular network request
   */
@@ -233,103 +191,94 @@ const UIStrings = {
   */
   toUseThisResourceFromADifferentOrigin:
       'To use this resource from a different origin, the server may relax the cross-origin resource policy response header:',
+  /**
+   * @description Shown in the network panel for network requests that meet special criteria.
+   * 'Attribution' is a term used by the "Attribution Reporting API" and refers to an event, e.g.
+   * buying an item in an online store after an ad was clicked.
+   * @example {foo} PH1
+   */
+  recordedAttribution: 'Recorded attribution with `trigger-data`: {PH1}',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/RequestHeadersView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 export class RequestHeadersView extends UI.Widget.VBox {
-  _request: SDK.NetworkRequest.NetworkRequest;
-  _decodeRequestParameters: boolean;
-  _showRequestHeadersText: boolean;
-  _showResponseHeadersText: boolean;
-  _highlightedElement: UI.TreeOutline.TreeElement|null;
-  _root: Category;
-  _urlItem: UI.TreeOutline.TreeElement;
-  _requestMethodItem: UI.TreeOutline.TreeElement;
-  _statusCodeItem: UI.TreeOutline.TreeElement;
-  _remoteAddressItem: UI.TreeOutline.TreeElement;
-  _referrerPolicyItem: UI.TreeOutline.TreeElement;
-  _responseHeadersCategory: Category;
-  _requestHeadersCategory: Category;
-  _queryStringCategory: Category;
-  _formDataCategory: Category;
-  _requestPayloadCategory: Category;
+  private request: SDK.NetworkRequest.NetworkRequest;
+  private showRequestHeadersText: boolean;
+  private showResponseHeadersText: boolean;
+  private highlightedElement: UI.TreeOutline.TreeElement|null;
+  private readonly root: Category;
+  private urlItem: UI.TreeOutline.TreeElement;
+  private readonly requestMethodItem: UI.TreeOutline.TreeElement;
+  private readonly statusCodeItem: UI.TreeOutline.TreeElement;
+  private readonly remoteAddressItem: UI.TreeOutline.TreeElement;
+  private readonly referrerPolicyItem: UI.TreeOutline.TreeElement;
+  private readonly responseHeadersCategory: Category;
+  private readonly requestHeadersCategory: Category;
 
   constructor(request: SDK.NetworkRequest.NetworkRequest) {
     super();
-    this.registerRequiredCSS('panels/network/requestHeadersView.css', {enableLegacyPatching: false});
+
     this.element.classList.add('request-headers-view');
 
-    this._request = request;
-    this._decodeRequestParameters = true;
-    this._showRequestHeadersText = false;
-    this._showResponseHeadersText = false;
+    this.request = request;
+    this.showRequestHeadersText = false;
+    this.showResponseHeadersText = false;
 
-    const contentType = request.requestContentType();
-    if (contentType) {
-      this._decodeRequestParameters = Boolean(contentType.match(/^application\/x-www-form-urlencoded\s*(;.*)?$/i));
-    }
-
-    this._highlightedElement = null;
+    this.highlightedElement = null;
 
     const root = new UI.TreeOutline.TreeOutlineInShadow();
-    root.registerRequiredCSS('ui/legacy/components/object_ui/objectValue.css', {enableLegacyPatching: false});
-    root.registerRequiredCSS(
-        'ui/legacy/components/object_ui/objectPropertiesSection.css', {enableLegacyPatching: true});
-    root.registerRequiredCSS('panels/network/requestHeadersTree.css', {enableLegacyPatching: false});
+    root.registerCSSFiles([objectValueStyles, objectPropertiesSectionStyles, requestHeadersTreeStyles]);
+
     root.element.classList.add('request-headers-tree');
     root.makeDense();
+    root.setUseLightSelectionColor(true);
     this.element.appendChild(root.element);
 
     const generalCategory = new Category(root, 'general', i18nString(UIStrings.general));
     generalCategory.hidden = false;
-    this._root = generalCategory;
-    this.setDefaultFocusedElement(this._root.listItemElement);
-    this._urlItem = generalCategory.createLeaf();
-    this._requestMethodItem = generalCategory.createLeaf();
-    headerNames.set(this._requestMethodItem, 'Request-Method');
-    this._statusCodeItem = generalCategory.createLeaf();
-    headerNames.set(this._statusCodeItem, 'Status-Code');
-    this._remoteAddressItem = generalCategory.createLeaf();
-    this._remoteAddressItem.hidden = true;
-    this._referrerPolicyItem = generalCategory.createLeaf();
-    this._referrerPolicyItem.hidden = true;
+    this.root = generalCategory;
+    this.setDefaultFocusedElement(this.root.listItemElement);
+    this.urlItem = generalCategory.createLeaf();
+    this.requestMethodItem = generalCategory.createLeaf();
+    headerNames.set(this.requestMethodItem, 'Request-Method');
+    this.statusCodeItem = generalCategory.createLeaf();
+    headerNames.set(this.statusCodeItem, 'Status-Code');
+    this.remoteAddressItem = generalCategory.createLeaf();
+    this.remoteAddressItem.hidden = true;
+    this.referrerPolicyItem = generalCategory.createLeaf();
+    this.referrerPolicyItem.hidden = true;
 
-    this._responseHeadersCategory = new Category(root, 'responseHeaders', '');
-    this._requestHeadersCategory = new Category(root, 'requestHeaders', '');
-    this._queryStringCategory = new Category(root, 'queryString', '');
-    this._formDataCategory = new Category(root, 'formData', '');
-    this._requestPayloadCategory = new Category(root, 'requestPayload', i18nString(UIStrings.requestPayload));
+    this.responseHeadersCategory = new Category(root, 'responseHeaders', '');
+    this.requestHeadersCategory = new Category(root, 'requestHeaders', '');
   }
 
   wasShown(): void {
-    this._clearHighlight();
-    this._request.addEventListener(SDK.NetworkRequest.Events.RemoteAddressChanged, this._refreshRemoteAddress, this);
-    this._request.addEventListener(SDK.NetworkRequest.Events.RequestHeadersChanged, this._refreshRequestHeaders, this);
-    this._request.addEventListener(
-        SDK.NetworkRequest.Events.ResponseHeadersChanged, this._refreshResponseHeaders, this);
-    this._request.addEventListener(SDK.NetworkRequest.Events.FinishedLoading, this._refreshHTTPInformation, this);
+    this.clearHighlight();
+    this.registerCSSFiles([requestHeadersViewStyles]);
+    this.request.addEventListener(SDK.NetworkRequest.Events.RemoteAddressChanged, this.refreshRemoteAddress, this);
+    this.request.addEventListener(SDK.NetworkRequest.Events.RequestHeadersChanged, this.refreshRequestHeaders, this);
+    this.request.addEventListener(SDK.NetworkRequest.Events.ResponseHeadersChanged, this.refreshResponseHeaders, this);
+    this.request.addEventListener(SDK.NetworkRequest.Events.FinishedLoading, this.refreshHTTPInformation, this);
 
-    this._refreshURL();
-    this._refreshQueryString();
-    this._refreshRequestHeaders();
-    this._refreshResponseHeaders();
-    this._refreshHTTPInformation();
-    this._refreshRemoteAddress();
-    this._refreshReferrerPolicy();
-    this._root.select(/* omitFocus */ true, /* selectedByUser */ false);
+    this.refreshURL();
+    this.refreshRequestHeaders();
+    this.refreshResponseHeaders();
+    this.refreshHTTPInformation();
+    this.refreshRemoteAddress();
+    this.refreshReferrerPolicy();
+    this.root.select(/* omitFocus */ true, /* selectedByUser */ false);
   }
 
   willHide(): void {
-    this._request.removeEventListener(SDK.NetworkRequest.Events.RemoteAddressChanged, this._refreshRemoteAddress, this);
-    this._request.removeEventListener(
-        SDK.NetworkRequest.Events.RequestHeadersChanged, this._refreshRequestHeaders, this);
-    this._request.removeEventListener(
-        SDK.NetworkRequest.Events.ResponseHeadersChanged, this._refreshResponseHeaders, this);
-    this._request.removeEventListener(SDK.NetworkRequest.Events.FinishedLoading, this._refreshHTTPInformation, this);
+    this.request.removeEventListener(SDK.NetworkRequest.Events.RemoteAddressChanged, this.refreshRemoteAddress, this);
+    this.request.removeEventListener(SDK.NetworkRequest.Events.RequestHeadersChanged, this.refreshRequestHeaders, this);
+    this.request.removeEventListener(
+        SDK.NetworkRequest.Events.ResponseHeadersChanged, this.refreshResponseHeaders, this);
+    this.request.removeEventListener(SDK.NetworkRequest.Events.FinishedLoading, this.refreshHTTPInformation, this);
   }
 
-  _addEntryContextMenuHandler(treeElement: UI.TreeOutline.TreeElement, value: string): void {
+  private addEntryContextMenuHandler(treeElement: UI.TreeOutline.TreeElement, value: string): void {
     treeElement.listItemElement.addEventListener('contextmenu', event => {
       event.consume(true);
       const contextMenu = new UI.ContextMenu.ContextMenu(event);
@@ -343,7 +292,7 @@ export class RequestHeadersView extends UI.Widget.VBox {
     });
   }
 
-  _formatHeader(name: string, value: string): DocumentFragment {
+  private formatHeader(name: string, value: string): DocumentFragment {
     const fragment = document.createDocumentFragment();
     fragment.createChild('div', 'header-name').textContent = name + ': ';
     fragment.createChild('span', 'header-separator');
@@ -352,10 +301,25 @@ export class RequestHeadersView extends UI.Widget.VBox {
     return fragment;
   }
 
-  _formatHeaderObject(header: BlockedReasonDetailDescriptor): DocumentFragment {
+  private formatHeaderObject(header: BlockedReasonDetailDescriptor): DocumentFragment {
     const fragment = document.createDocumentFragment();
     if (header.headerNotSet) {
-      fragment.createChild('div', 'header-badge header-badge-text').textContent = 'not-set';
+      fragment.createChild('div', 'header-badge header-badge-error header-badge-text').textContent = 'not-set';
+    }
+    // Highlight successful Attribution Reporting API redirects. If the request was
+    // not canceled, then something went wrong.
+    if (header.name.toLowerCase() === 'location' && this.request.canceled) {
+      const url = new URL(header.value?.toString() || '', this.request.parsedURL.securityOrigin());
+      const triggerData = getTriggerDataFromAttributionRedirect(url);
+      if (triggerData) {
+        fragment.createChild('div', 'header-badge header-badge-success header-badge-text').textContent =
+            'Attribution Reporting API';
+        header.details = {
+          explanation: (): string => i18nString(UIStrings.recordedAttribution, {PH1: triggerData}),
+          examples: [],
+          link: null,
+        };
+      }
     }
     const colon = header.value ? ': ' : '';
     fragment.createChild('div', 'header-name').textContent = header.name + colon;
@@ -381,12 +345,12 @@ export class RequestHeadersView extends UI.Widget.VBox {
       }
 
       if (IssuesManager.RelatedIssue.hasIssueOfCategory(
-              this._request, IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy)) {
+              this.request, IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy)) {
         const link = document.createElement('div');
         link.classList.add('devtools-link');
         link.onclick = (): void => {
           Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.LearnMoreLinkCOEP);
-          IssuesManager.RelatedIssue.reveal(this._request, IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy);
+          IssuesManager.RelatedIssue.reveal(this.request, IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy);
         };
         const text = document.createElement('span');
         text.classList.add('devtools-link');
@@ -403,74 +367,13 @@ export class RequestHeadersView extends UI.Widget.VBox {
     return fragment;
   }
 
-  _formatParameter(value: string, className: string, decodeParameters: boolean): Element {
-    let errorDecoding = false;
-
-    if (decodeParameters) {
-      value = value.replace(/\+/g, ' ');
-      if (value.indexOf('%') >= 0) {
-        try {
-          value = decodeURIComponent(value);
-        } catch (e) {
-          errorDecoding = true;
-        }
-      }
-    }
-    const div = document.createElement('div');
-    if (className) {
-      div.className = className;
-    }
-    if (value === '') {
-      div.classList.add('empty-value');
-    }
-    if (errorDecoding) {
-      div.createChild('span', 'header-decode-error').textContent = i18nString(UIStrings.unableToDecodeValue);
-    } else {
-      div.textContent = value;
-    }
-    return div;
+  private refreshURL(): void {
+    const requestURL = this.request.url();
+    this.urlItem.title = this.formatHeader(i18nString(UIStrings.requestUrl), requestURL);
+    this.addEntryContextMenuHandler(this.urlItem, requestURL);
   }
 
-  _refreshURL(): void {
-    this._urlItem.title = this._formatHeader(i18nString(UIStrings.requestUrl), this._request.url());
-  }
-
-  _refreshQueryString(): void {
-    const queryString = this._request.queryString();
-    const queryParameters = this._request.queryParameters;
-    this._queryStringCategory.hidden = !queryParameters;
-    if (queryParameters) {
-      this._refreshParams(
-          i18nString(UIStrings.queryStringParameters), queryParameters, queryString, this._queryStringCategory);
-    }
-  }
-
-  async _refreshFormData(): Promise<void> {
-    const formData = await this._request.requestFormData();
-    if (!formData) {
-      this._formDataCategory.hidden = true;
-      this._requestPayloadCategory.hidden = true;
-      return;
-    }
-
-    const formParameters = await this._request.formParameters();
-    if (formParameters) {
-      this._formDataCategory.hidden = false;
-      this._requestPayloadCategory.hidden = true;
-      this._refreshParams(i18nString(UIStrings.formData), formParameters, formData, this._formDataCategory);
-    } else {
-      this._requestPayloadCategory.hidden = false;
-      this._formDataCategory.hidden = true;
-      try {
-        const json = JSON.parse(formData);
-        this._refreshRequestJSONPayload(json, formData);
-      } catch (e) {
-        this._populateTreeElementWithSourceText(this._requestPayloadCategory, formData);
-      }
-    }
-  }
-
-  _populateTreeElementWithSourceText(treeElement: UI.TreeOutline.TreeElement, sourceText: string|null): void {
+  private populateTreeElementWithSourceText(treeElement: UI.TreeOutline.TreeElement, sourceText: string|null): void {
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const max_len = 3000;
@@ -510,267 +413,51 @@ export class RequestHeadersView extends UI.Widget.VBox {
     sourceTextElement.appendChild(showMoreButton);
   }
 
-  _refreshParams(
-      title: string, params: SDK.NetworkRequest.NameValue[]|null, sourceText: string|null,
-      paramsTreeElement: UI.TreeOutline.TreeElement): void {
-    paramsTreeElement.removeChildren();
-
-    paramsTreeElement.listItemElement.removeChildren();
-    paramsTreeElement.listItemElement.createChild('div', 'selection fill');
-    UI.UIUtils.createTextChild(paramsTreeElement.listItemElement, title);
-
-    const headerCount = document.createElement('span');
-    headerCount.classList.add('header-count');
-    const numberOfParams = params ? params.length : 0;
-    headerCount.textContent = `\xA0(${numberOfParams})`;
-    paramsTreeElement.listItemElement.appendChild(headerCount);
-
-    const shouldViewSource = viewSourceForItems.has(paramsTreeElement);
-    if (shouldViewSource) {
-      this._appendParamsSource(title, params, sourceText, paramsTreeElement);
-    } else {
-      this._appendParamsParsed(title, params, sourceText, paramsTreeElement);
-    }
-  }
-
-  _appendParamsSource(
-      title: string, params: SDK.NetworkRequest.NameValue[]|null, sourceText: string|null,
-      paramsTreeElement: UI.TreeOutline.TreeElement): void {
-    this._populateTreeElementWithSourceText(paramsTreeElement, sourceText);
-
-    const listItemElement = paramsTreeElement.listItemElement;
-
-    const viewParsed = function(this: RequestHeadersView, event: Event): void {
-      listItemElement.removeEventListener('contextmenu', viewParsedContextMenu);
-
-      viewSourceForItems.delete(paramsTreeElement);
-      this._refreshParams(title, params, sourceText, paramsTreeElement);
-      event.consume();
-    };
-
-    const viewParsedContextMenu = (event: Event): void => {
-      if (!paramsTreeElement.expanded) {
-        return;
-      }
-      const contextMenu = new UI.ContextMenu.ContextMenu(event);
-      contextMenu.newSection().appendItem(i18nString(UIStrings.viewParsed), viewParsed.bind(this, event));
-      contextMenu.show();
-    };
-
-    const viewParsedButton = this._createViewSourceToggle(/* viewSource */ true, viewParsed.bind(this));
-    listItemElement.appendChild(viewParsedButton);
-
-    listItemElement.addEventListener('contextmenu', viewParsedContextMenu);
-  }
-
-  _appendParamsParsed(
-      title: string, params: SDK.NetworkRequest.NameValue[]|null, sourceText: string|null,
-      paramsTreeElement: UI.TreeOutline.TreeElement): void {
-    for (const param of params || []) {
-      const paramNameValue = document.createDocumentFragment();
-      if (param.name !== '') {
-        const name = this._formatParameter(param.name + ': ', 'header-name', this._decodeRequestParameters);
-        const value = this._formatParameter(param.value, 'header-value source-code', this._decodeRequestParameters);
-        paramNameValue.appendChild(name);
-        paramNameValue.createChild('span', 'header-separator');
-        paramNameValue.appendChild(value);
-      } else {
-        paramNameValue.appendChild(
-            this._formatParameter(i18nString(UIStrings.empty), 'empty-request-header', this._decodeRequestParameters));
-      }
-
-      const paramTreeElement = new UI.TreeOutline.TreeElement(paramNameValue);
-      this._addEntryContextMenuHandler(paramTreeElement, param.value);
-      paramsTreeElement.appendChild(paramTreeElement);
-    }
-
-    const listItemElement = paramsTreeElement.listItemElement;
-
-    const viewSource = function(this: RequestHeadersView, event: Event): void {
-      listItemElement.removeEventListener('contextmenu', viewSourceContextMenu);
-
-      viewSourceForItems.add(paramsTreeElement);
-      this._refreshParams(title, params, sourceText, paramsTreeElement);
-      event.consume();
-    };
-
-    const toggleURLDecoding = function(this: RequestHeadersView, event: Event): void {
-      listItemElement.removeEventListener('contextmenu', viewSourceContextMenu);
-      this._toggleURLDecoding(event);
-    };
-
-    const viewSourceContextMenu = (event: Event): void => {
-      if (!paramsTreeElement.expanded) {
-        return;
-      }
-      const contextMenu = new UI.ContextMenu.ContextMenu(event);
-      const section = contextMenu.newSection();
-      section.appendItem(i18nString(UIStrings.viewSource), viewSource.bind(this, event));
-      const viewURLEncodedText =
-          this._decodeRequestParameters ? i18nString(UIStrings.viewUrlEncoded) : i18nString(UIStrings.viewDecoded);
-      section.appendItem(viewURLEncodedText, toggleURLDecoding.bind(this, event));
-      contextMenu.show();
-    };
-
-    const viewSourceButton = this._createViewSourceToggle(/* viewSource */ false, viewSource.bind(this));
-    listItemElement.appendChild(viewSourceButton);
-
-    const toggleTitle =
-        this._decodeRequestParameters ? i18nString(UIStrings.viewUrlEncodedL) : i18nString(UIStrings.viewDecodedL);
-    const toggleButton = this._createToggleButton(toggleTitle);
-    toggleButton.addEventListener('click', toggleURLDecoding.bind(this), false);
-    listItemElement.appendChild(toggleButton);
-
-    listItemElement.addEventListener('contextmenu', viewSourceContextMenu);
-  }
-
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _refreshRequestJSONPayload(parsedObject: any, sourceText: string): void {
-    const rootListItem = this._requestPayloadCategory;
-    rootListItem.removeChildren();
-
-    const rootListItemElement = rootListItem.listItemElement;
-    rootListItemElement.removeChildren();
-    rootListItemElement.createChild('div', 'selection fill');
-    UI.UIUtils.createTextChild(rootListItemElement, this._requestPayloadCategory.title.toString());
-
-    if (viewSourceForItems.has(rootListItem)) {
-      this._appendJSONPayloadSource(rootListItem, parsedObject, sourceText);
-    } else {
-      this._appendJSONPayloadParsed(rootListItem, parsedObject, sourceText);
-    }
-  }
-
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _appendJSONPayloadSource(rootListItem: Category, parsedObject: any, sourceText: string): void {
-    const rootListItemElement = rootListItem.listItemElement;
-    this._populateTreeElementWithSourceText(rootListItem, sourceText);
-
-    const viewParsed = function(this: RequestHeadersView, event: Event): void {
-      rootListItemElement.removeEventListener('contextmenu', viewParsedContextMenu);
-      viewSourceForItems.delete(rootListItem);
-      this._refreshRequestJSONPayload(parsedObject, sourceText);
-      event.consume();
-    };
-
-    const viewParsedButton = this._createViewSourceToggle(/* viewSource */ true, viewParsed.bind(this));
-    rootListItemElement.appendChild(viewParsedButton);
-
-    const viewParsedContextMenu = (event: Event): void => {
-      if (!rootListItem.expanded) {
-        return;
-      }
-      const contextMenu = new UI.ContextMenu.ContextMenu(event);
-      contextMenu.newSection().appendItem(i18nString(UIStrings.viewParsed), viewParsed.bind(this, event));
-      contextMenu.show();
-    };
-
-    rootListItemElement.addEventListener('contextmenu', viewParsedContextMenu);
-  }
-
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _appendJSONPayloadParsed(rootListItem: Category, parsedObject: any, sourceText: string): void {
-    const object = (SDK.RemoteObject.RemoteObject.fromLocalObject(parsedObject) as SDK.RemoteObject.LocalJSONObject);
-    const section = new ObjectUI.ObjectPropertiesSection.RootElement(object);
-    section.title = (object.description as string);
-    section.expand();
-    // `editable` is not a valid property for `ObjectUI.ObjectPropertiesSection.RootElement`. Only for
-    // `ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection`. We do not know if this assignment is
-    // safe to delete.
-    // @ts-ignore
-    section.editable = false;
-    rootListItem.childrenListElement.classList.add('source-code', 'object-properties-section');
-
-    rootListItem.appendChild(section);
-    const rootListItemElement = rootListItem.listItemElement;
-
-    const viewSource = function(this: RequestHeadersView, event: Event): void {
-      rootListItemElement.removeEventListener('contextmenu', viewSourceContextMenu);
-
-      viewSourceForItems.add(rootListItem);
-      this._refreshRequestJSONPayload(parsedObject, sourceText);
-      event.consume();
-    };
-
-    const viewSourceContextMenu = (event: Event): void => {
-      if (!rootListItem.expanded) {
-        return;
-      }
-      const contextMenu = new UI.ContextMenu.ContextMenu(event);
-      contextMenu.newSection().appendItem(i18nString(UIStrings.viewSource), viewSource.bind(this, event));
-      contextMenu.show();
-    };
-
-    const viewSourceButton = this._createViewSourceToggle(/* viewSource */ false, viewSource.bind(this));
-    rootListItemElement.appendChild(viewSourceButton);
-
-    rootListItemElement.addEventListener('contextmenu', viewSourceContextMenu);
-  }
-
-  _createViewSourceToggle(viewSource: boolean, handler: (arg0: Event) => void): Element {
-    const viewSourceToggleTitle = viewSource ? i18nString(UIStrings.viewParsedL) : i18nString(UIStrings.viewSourceL);
-    const viewSourceToggleButton = this._createToggleButton(viewSourceToggleTitle);
-    viewSourceToggleButton.addEventListener('click', handler, false);
-    return viewSourceToggleButton;
-  }
-
-  _toggleURLDecoding(event: Event): void {
-    this._decodeRequestParameters = !this._decodeRequestParameters;
-    this._refreshQueryString();
-    this._refreshFormData();
-    event.consume();
-  }
-
-  _refreshRequestHeaders(): void {
-    const treeElement = this._requestHeadersCategory;
-    const headers = this._request.requestHeaders().slice();
+  private refreshRequestHeaders(): void {
+    const treeElement = this.requestHeadersCategory;
+    const headers = this.request.requestHeaders().slice();
     headers.sort(function(a, b) {
       return Platform.StringUtilities.compare(a.name.toLowerCase(), b.name.toLowerCase());
     });
-    const headersText = this._request.requestHeadersText();
+    const headersText = this.request.requestHeadersText();
 
-    if (this._showRequestHeadersText && headersText) {
-      this._refreshHeadersText(i18nString(UIStrings.requestHeaders), headers.length, headersText, treeElement);
+    if (this.showRequestHeadersText && headersText) {
+      this.refreshHeadersText(i18nString(UIStrings.requestHeaders), headers.length, headersText, treeElement);
     } else {
-      this._refreshHeaders(i18nString(UIStrings.requestHeaders), headers, treeElement, headersText === undefined);
+      this.refreshHeaders(i18nString(UIStrings.requestHeaders), headers, treeElement, headersText === undefined);
     }
 
     if (headersText) {
-      const toggleButton = this._createHeadersToggleButton(this._showRequestHeadersText);
-      toggleButton.addEventListener('click', this._toggleRequestHeadersText.bind(this), false);
+      const toggleButton = this.createHeadersToggleButton(this.showRequestHeadersText);
+      toggleButton.addEventListener('click', this.toggleRequestHeadersText.bind(this), false);
       treeElement.listItemElement.appendChild(toggleButton);
     }
-
-    this._refreshFormData();
   }
 
-  _refreshResponseHeaders(): void {
-    const treeElement = this._responseHeadersCategory;
-    const headers = this._request.sortedResponseHeaders.slice();
-    const headersText = this._request.responseHeadersText;
+  private refreshResponseHeaders(): void {
+    const treeElement = this.responseHeadersCategory;
+    const headers = this.request.sortedResponseHeaders.slice();
+    const headersText = this.request.responseHeadersText;
 
-    if (this._showResponseHeadersText) {
-      this._refreshHeadersText(i18nString(UIStrings.responseHeaders), headers.length, headersText, treeElement);
+    if (this.showResponseHeadersText) {
+      this.refreshHeadersText(i18nString(UIStrings.responseHeaders), headers.length, headersText, treeElement);
     } else {
       const headersWithIssues = [];
-      if (this._request.wasBlocked()) {
+      if (this.request.wasBlocked()) {
         const headerWithIssues =
-            BlockedReasonDetails.get((this._request.blockedReason() as Protocol.Network.BlockedReason));
+            BlockedReasonDetails.get((this.request.blockedReason() as Protocol.Network.BlockedReason));
         if (headerWithIssues) {
           headersWithIssues.push(headerWithIssues);
         }
       }
-      this._refreshHeaders(
+      this.refreshHeaders(
           i18nString(UIStrings.responseHeaders), mergeHeadersWithIssues(headers, headersWithIssues), treeElement,
-          /* provisional */ false, this._request.blockedResponseCookies());
+          /* provisional */ false, this.request.blockedResponseCookies());
     }
 
     if (headersText) {
-      const toggleButton = this._createHeadersToggleButton(this._showResponseHeadersText);
-      toggleButton.addEventListener('click', this._toggleResponseHeadersText.bind(this), false);
+      const toggleButton = this.createHeadersToggleButton(this.showResponseHeadersText);
+      toggleButton.addEventListener('click', this.toggleResponseHeadersText.bind(this), false);
       treeElement.listItemElement.appendChild(toggleButton);
     }
 
@@ -794,13 +481,13 @@ export class RequestHeadersView extends UI.Widget.VBox {
     }
   }
 
-  _refreshHTTPInformation(): void {
-    const requestMethodElement = this._requestMethodItem;
-    requestMethodElement.hidden = !this._request.statusCode;
-    const statusCodeElement = this._statusCodeItem;
-    statusCodeElement.hidden = !this._request.statusCode;
+  private refreshHTTPInformation(): void {
+    const requestMethodElement = this.requestMethodItem;
+    requestMethodElement.hidden = !this.request.statusCode;
+    const statusCodeElement = this.statusCodeItem;
+    statusCodeElement.hidden = !this.request.statusCode;
 
-    if (this._request.statusCode) {
+    if (this.request.statusCode) {
       const statusCodeFragment = document.createDocumentFragment();
       statusCodeFragment.createChild('div', 'header-name').textContent = i18nString(UIStrings.statusCode) + ': ';
       statusCodeFragment.createChild('span', 'header-separator');
@@ -808,33 +495,36 @@ export class RequestHeadersView extends UI.Widget.VBox {
       const statusCodeImage =
           (statusCodeFragment.createChild('span', 'resource-status-image', 'dt-icon-label') as
            UI.UIUtils.DevToolsIconLabel);
-      UI.Tooltip.Tooltip.install(statusCodeImage, this._request.statusCode + ' ' + this._request.statusText);
+      UI.Tooltip.Tooltip.install(statusCodeImage, this.request.statusCode + ' ' + this.request.statusText);
 
-      if (this._request.statusCode < 300 || this._request.statusCode === 304) {
+      if (this.request.statusCode < 300 || this.request.statusCode === 304) {
         statusCodeImage.type = 'smallicon-green-ball';
-      } else if (this._request.statusCode < 400) {
+      } else if (this.request.statusCode < 400) {
         statusCodeImage.type = 'smallicon-orange-ball';
       } else {
         statusCodeImage.type = 'smallicon-red-ball';
       }
 
-      requestMethodElement.title = this._formatHeader(i18nString(UIStrings.requestMethod), this._request.requestMethod);
+      requestMethodElement.title = this.formatHeader(i18nString(UIStrings.requestMethod), this.request.requestMethod);
 
       const statusTextElement = statusCodeFragment.createChild('div', 'header-value source-code');
-      let statusText = this._request.statusCode + ' ' + this._request.statusText;
-      if (this._request.cachedInMemory()) {
+      let statusText = this.request.statusCode + ' ' + this.request.statusText;
+      if (this.request.cachedInMemory()) {
         statusText += ' ' + i18nString(UIStrings.fromMemoryCache);
         statusTextElement.classList.add('status-from-cache');
-      } else if (this._request.fetchedViaServiceWorker) {
+      } else if (this.request.fetchedViaServiceWorker) {
         statusText += ' ' + i18nString(UIStrings.fromServiceWorker);
         statusTextElement.classList.add('status-from-cache');
-      } else if (this._request.redirectSourceSignedExchangeInfoHasNoErrors()) {
+      } else if (this.request.redirectSourceSignedExchangeInfoHasNoErrors()) {
         statusText += ' ' + i18nString(UIStrings.fromSignedexchange);
         statusTextElement.classList.add('status-from-cache');
-      } else if (this._request.fromPrefetchCache()) {
+      } else if (this.request.webBundleInnerRequestInfo()) {
+        statusText += ' ' + i18nString(UIStrings.fromWebBundle);
+        statusTextElement.classList.add('status-from-cache');
+      } else if (this.request.fromPrefetchCache()) {
         statusText += ' ' + i18nString(UIStrings.fromPrefetchCache);
         statusTextElement.classList.add('status-from-cache');
-      } else if (this._request.cached()) {
+      } else if (this.request.cached()) {
         statusText += ' ' + i18nString(UIStrings.fromDiskCache);
         statusTextElement.classList.add('status-from-cache');
       }
@@ -844,7 +534,8 @@ export class RequestHeadersView extends UI.Widget.VBox {
     }
   }
 
-  _refreshHeadersTitle(title: string, headersTreeElement: UI.TreeOutline.TreeElement, headersLength: number): void {
+  private refreshHeadersTitle(title: string, headersTreeElement: UI.TreeOutline.TreeElement, headersLength: number):
+      void {
     headersTreeElement.listItemElement.removeChildren();
     headersTreeElement.listItemElement.createChild('div', 'selection fill');
     UI.UIUtils.createTextChild(headersTreeElement.listItemElement, title);
@@ -853,29 +544,36 @@ export class RequestHeadersView extends UI.Widget.VBox {
     headersTreeElement.listItemElement.createChild('span', 'header-count').textContent = headerCount;
   }
 
-  _refreshHeaders(
+  private refreshHeaders(
       title: string, headers: SDK.NetworkRequest.NameValue[], headersTreeElement: UI.TreeOutline.TreeElement,
       provisionalHeaders?: boolean, blockedResponseCookies?: SDK.NetworkRequest.BlockedSetCookieWithReason[]): void {
     headersTreeElement.removeChildren();
 
     const length = headers.length;
-    this._refreshHeadersTitle(title, headersTreeElement, length);
+    this.refreshHeadersTitle(title, headersTreeElement, length);
 
     if (provisionalHeaders) {
       let cautionText;
       let cautionTitle = '';
-      if (this._request.cachedInMemory() || this._request.cached()) {
+      if (this.request.cachedInMemory() || this.request.cached()) {
         cautionText = i18nString(UIStrings.provisionalHeadersAreShownS);
         cautionTitle = i18nString(UIStrings.onlyProvisionalHeadersAre);
       } else {
         cautionText = i18nString(UIStrings.provisionalHeadersAreShown);
       }
       const cautionElement = document.createElement('div');
+      cautionElement.classList.add('request-headers-caution');
       UI.Tooltip.Tooltip.install(cautionElement, cautionTitle);
       (cautionElement.createChild('span', '', 'dt-icon-label') as UI.UIUtils.DevToolsIconLabel).type =
           'smallicon-warning';
       cautionElement.createChild('div', 'caution').textContent = cautionText;
       const cautionTreeElement = new UI.TreeOutline.TreeElement(cautionElement);
+
+      cautionElement.createChild('div', 'learn-more')
+          .appendChild(UI.XLink.XLink.create(
+              'https://developer.chrome.com/docs/devtools/network/reference/#provisional-headers',
+              i18nString(UIStrings.learnMore)));
+
       headersTreeElement.appendChild(cautionTreeElement);
     }
 
@@ -890,7 +588,7 @@ export class RequestHeadersView extends UI.Widget.VBox {
     for (const header of headers) {
       // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const headerTreeElement = new UI.TreeOutline.TreeElement(this._formatHeaderObject((header as any)));
+      const headerTreeElement = new UI.TreeOutline.TreeElement(this.formatHeaderObject((header as any)));
       headerNames.set(headerTreeElement, header.name);
 
       const headerId = header.name.toLowerCase();
@@ -912,7 +610,7 @@ export class RequestHeadersView extends UI.Widget.VBox {
         }
       }
 
-      this._addEntryContextMenuHandler(headerTreeElement, header.value);
+      this.addEntryContextMenuHandler(headerTreeElement, header.value);
       headersTreeElement.appendChild(headerTreeElement);
 
       if (headerId === 'x-client-data') {
@@ -931,63 +629,63 @@ export class RequestHeadersView extends UI.Widget.VBox {
     }
   }
 
-  _refreshHeadersText(
+  private refreshHeadersText(
       title: string, count: number, headersText: string, headersTreeElement: UI.TreeOutline.TreeElement): void {
-    this._populateTreeElementWithSourceText(headersTreeElement, headersText);
-    this._refreshHeadersTitle(title, headersTreeElement, count);
+    this.populateTreeElementWithSourceText(headersTreeElement, headersText);
+    this.refreshHeadersTitle(title, headersTreeElement, count);
   }
 
-  _refreshRemoteAddress(): void {
-    const remoteAddress = this._request.remoteAddress();
-    const treeElement = this._remoteAddressItem;
+  private refreshRemoteAddress(): void {
+    const remoteAddress = this.request.remoteAddress();
+    const treeElement = this.remoteAddressItem;
     treeElement.hidden = !remoteAddress;
     if (remoteAddress) {
-      treeElement.title = this._formatHeader(i18nString(UIStrings.remoteAddress), remoteAddress);
+      treeElement.title = this.formatHeader(i18nString(UIStrings.remoteAddress), remoteAddress);
     }
   }
 
-  _refreshReferrerPolicy(): void {
-    const referrerPolicy = this._request.referrerPolicy();
-    const treeElement = this._referrerPolicyItem;
+  private refreshReferrerPolicy(): void {
+    const referrerPolicy = this.request.referrerPolicy();
+    const treeElement = this.referrerPolicyItem;
     treeElement.hidden = !referrerPolicy;
     if (referrerPolicy) {
-      treeElement.title = this._formatHeader(i18nString(UIStrings.referrerPolicy), referrerPolicy);
+      treeElement.title = this.formatHeader(i18nString(UIStrings.referrerPolicy), referrerPolicy);
     }
   }
 
-  _toggleRequestHeadersText(event: Event): void {
-    this._showRequestHeadersText = !this._showRequestHeadersText;
-    this._refreshRequestHeaders();
+  private toggleRequestHeadersText(event: Event): void {
+    this.showRequestHeadersText = !this.showRequestHeadersText;
+    this.refreshRequestHeaders();
     event.consume();
   }
 
-  _toggleResponseHeadersText(event: Event): void {
-    this._showResponseHeadersText = !this._showResponseHeadersText;
-    this._refreshResponseHeaders();
+  private toggleResponseHeadersText(event: Event): void {
+    this.showResponseHeadersText = !this.showResponseHeadersText;
+    this.refreshResponseHeaders();
     event.consume();
   }
 
-  _createToggleButton(title: string): Element {
+  private createToggleButton(title: string): Element {
     const button = document.createElement('span');
     button.classList.add('header-toggle');
     button.textContent = title;
     return button;
   }
 
-  _createHeadersToggleButton(isHeadersTextShown: boolean): Element {
+  private createHeadersToggleButton(isHeadersTextShown: boolean): Element {
     const toggleTitle = isHeadersTextShown ? i18nString(UIStrings.viewParsed) : i18nString(UIStrings.viewSource);
-    return this._createToggleButton(toggleTitle);
+    return this.createToggleButton(toggleTitle);
   }
 
-  _clearHighlight(): void {
-    if (this._highlightedElement) {
-      this._highlightedElement.listItemElement.classList.remove('header-highlight');
+  private clearHighlight(): void {
+    if (this.highlightedElement) {
+      this.highlightedElement.listItemElement.classList.remove('header-highlight');
     }
-    this._highlightedElement = null;
+    this.highlightedElement = null;
   }
 
-  _revealAndHighlight(category: UI.TreeOutline.TreeElement|null, name?: string): void {
-    this._clearHighlight();
+  private revealAndHighlight(category: UI.TreeOutline.TreeElement|null, name?: string): void {
+    this.clearHighlight();
     if (!category) {
       return;
     }
@@ -997,7 +695,7 @@ export class RequestHeadersView extends UI.Widget.VBox {
         if (headerNames.get(element)?.toUpperCase() !== name.toUpperCase()) {
           continue;
         }
-        this._highlightedElement = element;
+        this.highlightedElement = element;
         element.reveal();
         element.listItemElement.classList.add('header-highlight');
         return;
@@ -1009,38 +707,36 @@ export class RequestHeadersView extends UI.Widget.VBox {
     }
   }
 
-  private getCategoryForSection(section: UIHeaderSection): Category {
+  private getCategoryForSection(section: NetworkForward.UIRequestLocation.UIHeaderSection): Category {
     switch (section) {
-      case UIHeaderSection.General:
-        return this._root;
-      case UIHeaderSection.Request:
-        return this._requestHeadersCategory;
-      case UIHeaderSection.Response:
-        return this._responseHeadersCategory;
+      case NetworkForward.UIRequestLocation.UIHeaderSection.General:
+        return this.root;
+      case NetworkForward.UIRequestLocation.UIHeaderSection.Request:
+        return this.requestHeadersCategory;
+      case NetworkForward.UIRequestLocation.UIHeaderSection.Response:
+        return this.responseHeadersCategory;
     }
   }
 
-  revealHeader(section: UIHeaderSection, header?: string): void {
-    this._revealAndHighlight(this.getCategoryForSection(section), header);
+  revealHeader(section: NetworkForward.UIRequestLocation.UIHeaderSection, header?: string): void {
+    this.revealAndHighlight(this.getCategoryForSection(section), header);
   }
 }
-
-const viewSourceForItems = new WeakSet<Category|UI.TreeOutline.TreeElement>();
 
 const headerNames = new WeakMap<UI.TreeOutline.TreeElement, string>();
 
 export class Category extends UI.TreeOutline.TreeElement {
   toggleOnClick: boolean;
-  _expandedSetting: Common.Settings.Setting<boolean>;
+  private readonly expandedSetting: Common.Settings.Setting<boolean>;
   expanded: boolean;
 
   constructor(root: UI.TreeOutline.TreeOutline, name: string, title?: string) {
     super(title || '', true);
     this.toggleOnClick = true;
     this.hidden = true;
-    this._expandedSetting =
+    this.expandedSetting =
         Common.Settings.Settings.instance().createSetting('request-info-' + name + '-category-expanded', true);
-    this.expanded = this._expandedSetting.get();
+    this.expanded = this.expandedSetting.get();
     root.appendChild(this);
   }
 
@@ -1051,13 +747,27 @@ export class Category extends UI.TreeOutline.TreeElement {
   }
 
   onexpand(): void {
-    this._expandedSetting.set(true);
+    this.expandedSetting.set(true);
   }
 
   oncollapse(): void {
-    this._expandedSetting.set(false);
+    this.expandedSetting.set(false);
   }
 }
+
+/**
+ * Returns the value for the `trigger-data` search parameter iff the provided
+ * url is a valid attribution redirect as specified by the Attribution
+ * Reporting API.
+ */
+function getTriggerDataFromAttributionRedirect(url: URL): string|null {
+  if (url.pathname === '/.well-known/attribution-reporting/trigger-attribution' &&
+      url.searchParams.has('trigger-data')) {
+    return url.searchParams.get('trigger-data');
+  }
+  return null;
+}
+
 interface BlockedReasonDetailDescriptor {
   name: string;
   value: Object|null;

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -12,7 +12,7 @@
 # on Web IDL.
 #
 # Web IDL, and Web IDL grammar can be found at:
-#   http://heycam.github.io/webidl/
+#   http://webidl.spec.whatwg.org/
 # PLY can be found at:
 #   http://www.dabeaz.com/ply/
 #
@@ -145,12 +145,13 @@ def ExtractSpecialComment(comment):
     lines.append(line)
   return '\n'.join(lines)
 
+
 # There are two groups of ExtendedAttributes.
 # One group can apply to types (It is said "applicable to types"),
 # but the other cannot apply to types.
 # This function is intended to divide ExtendedAttributes into those 2 groups.
 # For more details at
-#    https://heycam.github.io/webidl/#extended-attributes-applicable-to-types
+#    https://webidl.spec.whatwg.org/#extended-attributes-applicable-to-types
 def DivideExtAttrsIntoApplicableAndNonApplicable(extended_attribute_list):
   if not extended_attribute_list:
     return [[], []]
@@ -243,7 +244,7 @@ def DivideExtAttrsIntoApplicableAndNonApplicable(extended_attribute_list):
 #    http://www.dabeaz.com/ply/
 #
 # The parser is based on the Web IDL standard.  See:
-#    http://heycam.github.io/webidl/#idl-grammar
+#    http://webidl.spec.whatwg.org/#idl-grammar
 #
 # Productions with a fractional component in the comment denote additions to
 # the Web IDL spec, such as allowing string list in extended attributes.
@@ -737,9 +738,12 @@ class IDLParser(object):
     p[0] = self.BuildError(p, 'NamespaceMembers')
 
   def p_NamespaceMember(self, p):
-    """NamespaceMember : ExtendedAttributeList ReturnType OperationRest
-                       | ExtendedAttributeList READONLY AttributeRest"""
-    if p[2] != 'readonly':
+    """NamespaceMember : Const
+                       | ExtendedAttributeList READONLY AttributeRest
+                       | ExtendedAttributeList ReturnType OperationRest"""
+    if len(p) == 2:
+      p[0] = p[1]
+    elif p[2] != 'readonly':
       applicable_to_types, non_applicable_to_types = \
           DivideExtAttrsIntoApplicableAndNonApplicable(p[1])
       if applicable_to_types:
@@ -751,10 +755,11 @@ class IDLParser(object):
         attributes = self.BuildProduction('ExtAttributes', p, 1,
             non_applicable_to_types)
         p[3].AddChildren(attributes)
+      p[0] = p[3]
     else:
       p[3].AddChildren(self.BuildTrue('READONLY'))
       p[3].AddChildren(p[1])
-    p[0] = p[3]
+      p[0] = p[3]
 
   def p_Dictionary(self, p):
     """Dictionary : DICTIONARY identifier Inheritance '{' DictionaryMembers '}' ';'"""
@@ -1032,7 +1037,7 @@ class IDLParser(object):
     if len(p) > 1:
       p[0] = ListFromConcat(p[2], p[3])
 
-  # https://heycam.github.io/webidl/#idl-extended-attributes
+  # https://webidl.spec.whatwg.org/#idl-extended-attributes
   # The ExtendedAttribute symbol in Web IDL grammar is very flexible but we
   # only support following patterns:
   #    [ identifier ]

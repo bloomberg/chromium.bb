@@ -6,7 +6,6 @@
 #define BASE_TIMER_HI_RES_TIMER_MANAGER_H_
 
 #include "base/base_export.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/timer/timer.h"
@@ -21,6 +20,11 @@ class BASE_EXPORT HighResolutionTimerManager
       public base::PowerStateObserver {
  public:
   HighResolutionTimerManager();
+
+  HighResolutionTimerManager(const HighResolutionTimerManager&) = delete;
+  HighResolutionTimerManager& operator=(const HighResolutionTimerManager&) =
+      delete;
+
   ~HighResolutionTimerManager() override;
 
   // base::PowerStateObserver methods.
@@ -42,8 +46,6 @@ class BASE_EXPORT HighResolutionTimerManager
   // Timer for polling the high resolution timer usage.
   base::RepeatingTimer timer_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(HighResolutionTimerManager);
 };
 
 }  // namespace base

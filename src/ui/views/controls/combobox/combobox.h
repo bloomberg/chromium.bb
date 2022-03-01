@@ -9,7 +9,8 @@
 #include <string>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/compiler_specific.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "ui/base/models/combobox_model.h"
@@ -32,7 +33,6 @@ namespace test {
 class ComboboxTestApi;
 }
 
-class FocusRing;
 class MenuRunner;
 class PrefixSelector;
 
@@ -59,6 +59,8 @@ class VIEWS_EXPORT Combobox : public View,
   explicit Combobox(ui::ComboboxModel* model,
                     int text_context = kDefaultComboboxTextContext,
                     int text_style = kDefaultComboboxTextStyle);
+  Combobox(const Combobox&) = delete;
+  Combobox& operator=(const Combobox&) = delete;
   ~Combobox() override;
 
   const gfx::FontList& GetFontList() const;
@@ -101,6 +103,13 @@ class VIEWS_EXPORT Combobox : public View,
   // Whether the combobox should use the largest label as the content size.
   void SetSizeToLargestLabel(bool size_to_largest_label);
   bool GetSizeToLargestLabel() const { return size_to_largest_label_; }
+
+  // Use the time when combobox was closed in order for parent view to not
+  // treat a user event already treated by the combobox.
+  base::TimeTicks GetClosedTime() { return closed_time_; }
+
+  // Returns whether or not the menu is currently running.
+  bool IsMenuRunning() const;
 
   // Overridden from View:
   gfx::Size CalculatePreferredSize() const override;
@@ -157,20 +166,19 @@ class VIEWS_EXPORT Combobox : public View,
   // Finds the size of the largest menu label.
   gfx::Size GetContentSize() const;
 
+  void OnContentSizeMaybeChanged();
+
   // Handles the clicking event.
   void HandleClickEvent();
 
   PrefixSelector* GetPrefixSelector();
-
-  // Returns the color to use for the combobox's focus ring.
-  SkColor GetFocusRingColor() const;
 
   // Optionally used to tie the lifetime of the model to this combobox. See
   // constructor.
   std::unique_ptr<ui::ComboboxModel> owned_model_;
 
   // Reference to our model, which may be owned or not.
-  ui::ComboboxModel* model_ = nullptr;
+  raw_ptr<ui::ComboboxModel> model_ = nullptr;
 
   // Typography context for the text written in the combobox and the options
   // shown in the drop-down menu.
@@ -212,7 +220,7 @@ class VIEWS_EXPORT Combobox : public View,
   // A transparent button that handles events and holds button state. Placed on
   // top of the combobox as a child view. Doesn't paint itself, but serves as a
   // host for inkdrops.
-  Button* arrow_button_;
+  raw_ptr<Button> arrow_button_;
 
   // Set while the dropdown is showing. Ensures the menu is closed if |this| is
   // destroyed.
@@ -223,13 +231,8 @@ class VIEWS_EXPORT Combobox : public View,
   // true, the parent view must relayout in ChildPreferredSizeChanged().
   bool size_to_largest_label_ = true;
 
-  // The focus ring for this Combobox.
-  FocusRing* focus_ring_ = nullptr;
-
   base::ScopedObservation<ui::ComboboxModel, ui::ComboboxModelObserver>
       observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Combobox);
 };
 
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Combobox, View)

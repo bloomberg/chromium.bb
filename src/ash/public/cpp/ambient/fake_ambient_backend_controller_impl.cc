@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -89,8 +90,10 @@ void FakeAmbientBackendControllerImpl::FetchScreenUpdateInfo(
     ash::AmbientModeTopic topic;
     topic.url = kFakeUrl;
     topic.details = kFakeDetails;
-    topic.related_image_url = kFakeUrl;
-    topic.topic_type = AmbientModeTopicType::kCulturalInstitute;
+    topic.is_portrait = is_portrait_;
+    if (has_related_image_)
+      topic.related_image_url = kFakeUrl;
+    topic.topic_type = topic_type_;
 
     update.next_topics.emplace_back(topic);
   }
@@ -122,16 +125,6 @@ void FakeAmbientBackendControllerImpl::UpdateSettings(
   // |show_weather| should always be set to true.
   DCHECK(settings.show_weather);
   pending_update_callback_ = std::move(callback);
-}
-
-void FakeAmbientBackendControllerImpl::FetchSettingPreview(
-    int preview_width,
-    int preview_height,
-    OnSettingPreviewFetchedCallback callback) {
-  std::vector<std::string> urls = {kFakeUrl};
-  // Pretend to respond asynchronously.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), urls));
 }
 
 void FakeAmbientBackendControllerImpl::FetchPersonalAlbums(
@@ -196,6 +189,16 @@ bool FakeAmbientBackendControllerImpl::IsUpdateSettingsPending() const {
 void FakeAmbientBackendControllerImpl::SetWeatherInfo(
     absl::optional<WeatherInfo> info) {
   weather_info_ = std::move(info);
+}
+
+void FakeAmbientBackendControllerImpl::SetPhotoOrientation(bool portrait) {
+  is_portrait_ = portrait;
+}
+
+void FakeAmbientBackendControllerImpl::SetPhotoTopicType(
+    ::ambient::TopicType topic_type) {
+  has_related_image_ = false;
+  topic_type_ = topic_type;
 }
 
 }  // namespace ash

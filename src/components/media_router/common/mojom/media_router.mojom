@@ -6,7 +6,9 @@ module media_router.mojom;
 
 import "components/media_router/common/mojom/logger.mojom";
 import "components/media_router/common/mojom/media_controller.mojom";
+import "components/media_router/common/mojom/media_route_provider_id.mojom";
 import "components/media_router/common/mojom/media_status.mojom";
+import "components/media_router/common/mojom/route_request_result_code.mojom";
 import "components/mirroring/mojom/mirroring_service_host.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/ip_address.mojom";
@@ -42,7 +44,7 @@ struct MediaSink {
   // The type of icon to show in the UI for this media sink.
   SinkIconType icon_type;
   // The ID of the MediaRouteProvider that this sink belongs to.
-  MediaRouteProvider.Id provider_id;
+  MediaRouteProviderId provider_id;
   // This is currently only set by MediaRouter in OnSinksDiscovered().
   MediaSinkExtraData? extra_data;
 };
@@ -196,46 +198,6 @@ struct RouteMessage {
   array<uint8>? data;
 };
 
-// Keep in sync with:
-// - RouteRequestResult::ResultCode in route_request_result.h
-// - MediaRouteProviderResult enum in tools/metrics/histograms.xml.
-// - mr.RouteRequestResultCode in route_request_error.js
-// - media_router_mojom_traits.h
-enum RouteRequestResultCode {
-  UNKNOWN_ERROR,
-  OK,
-  TIMED_OUT,
-  ROUTE_NOT_FOUND,
-  SINK_NOT_FOUND,
-  INVALID_ORIGIN,
-  OFF_THE_RECORD_MISMATCH,
-  NO_SUPPORTED_PROVIDER,
-  CANCELLED,
-  ROUTE_ALREADY_EXISTS,
-  DESKTOP_PICKER_FAILED,
-  ROUTE_ALREADY_TERMINATED
-// New values must be added here.
-};
-
-// Used to pass feature configuration data from the Browser to Media Route
-// Provider. This object is used by the extension MRP only.
-struct MediaRouteProviderConfig {
-  // If the MRP should enable DIAL discovery.
-  bool enable_dial_discovery;
-
-  // If the MRP should enable Cast discovery.
-  bool enable_cast_discovery;
-
-  // If the MRP should enable DIAL sink query.
-  bool enable_dial_sink_query;
-
-  // If the MRP should enable Cast sink query.
-  bool enable_cast_sink_query;
-
-  // If Mirroring Service is being used.
-  bool use_mirroring_service;
-};
-
 // Used to pass a pair of PresentationConnection pipes as part of a route
 // result.  An MRP may return this as part of any route creation callback to
 // allow direct communication with the controlling page.
@@ -284,22 +246,9 @@ union ProviderState {
 // there are changes related to sinks or routes.
 // Each MRP is used to manage one type of media sinks (e.g. the Cast MRP is used
 // for CAST sinks)
-// EXTENSION MRPs live in the Media Router component extension and will be
-// removed soon. WIRED_DISPLAY, CAST and DIAL MRPs live in the browser.
-// ANDROID_CAF is the Cast Application Framework based MRPs used on Android
-// only.
+// WIRED_DISPLAY, CAST and DIAL MRPs live in the browser. ANDROID_CAF is the
+// Cast Application Framework based MRPs used on Android only.
 interface MediaRouteProvider {
-  // Each MediaRouteProvider is associated with a unique ID. This enum must be
-  // kept in sync with MediaRouteProviderId in C++.
-  enum Id {
-    EXTENSION,
-    WIRED_DISPLAY,
-    CAST,
-    DIAL,
-    ANDROID_CAF,
-    TEST,
-  };
-
   // Creates a media route from |media_source| to the sink given by |sink_id|.
   //
   // The presentation ID of the route created will be |presentation_id|, but it
@@ -365,44 +314,6 @@ interface MediaRouteProvider {
                  RoutePresentationConnection? connection,
                  string? error_text,
                  RouteRequestResultCode result_code);
-
-  // Creates a new route for |media_source| that connects to the established
-  // route given by |route_id|.
-  //
-  // The presentation ID of the new route will be |presentation_id|, but it may
-  // be overridden by a provider implementation.  The presentation ID will be
-  // used by the presentation API to refer to the created route.
-  //
-  // |origin| and |tab_id| are used for validating same-origin/tab scopes; see
-  // CreateRoute for additional documentation.
-  //
-  // If |timeout| is positive, it will be used in place of the default timeout
-  // defined by Media Route Provider Manager; see CreateRoute for additional
-  // documentation.
-  //
-  // If the route request was created by an OffTheRecord profile,
-  // |off_the_record| must be true.
-  //
-  // If the operation was successful, |route| will be defined and
-  // |error_text| will be null.  If the operation failed, |route| will be null
-  // and |error_text| will be set.  If |connection| is set, it should be
-  // returned to the presentation controller for communication with the
-  // MRP/receiver.
-  //
-  // |result_code| will be set to OK if successful, or an error code if an error
-  // occurred.
-  ConnectRouteByRouteId(
-      string media_source,
-      string route_id,
-      string presentation_id,
-      url.mojom.Origin origin,
-      int32 tab_id,
-      mojo_base.mojom.TimeDelta timeout,
-      bool off_the_record) =>
-          (MediaRoute? route,
-           RoutePresentationConnection? connection,
-           string? error_text,
-           RouteRequestResultCode result_code);
 
   // Terminates the route specified by |route_id|.  If the route was terminated
   // successfully, |result_code| is set to OK and |error_text| is null.
@@ -509,29 +420,14 @@ interface MediaRouteProvider {
 // across media sources, sinks, and issues. The MediaRouter lives in the browser
 // process.
 interface MediaRouter {
-
-  // Represents overall media sink availability states.
-  // UNAVAILABLE - No sinks are available.
-  // PER_SOURCE - Sinks are available, but are only compatible with specific
-  //              media sources.
-  // AVAILABLE - A sink is available regardless of source.
-  enum SinkAvailability {
-    UNAVAILABLE,
-    PER_SOURCE,
-    AVAILABLE
-  };
-
   // Registers a MediaRouteProvider with the MediaRouter.
-  // Returns a string that uniquely identifies the Media Router browser
-  // process.
-  RegisterMediaRouteProvider(MediaRouteProvider.Id provider_id,
-      pending_remote<MediaRouteProvider> media_router_provider) =>
-          (string instance_id, MediaRouteProviderConfig config);
+  RegisterMediaRouteProvider(MediaRouteProviderId provider_id,
+      pending_remote<MediaRouteProvider> media_router_provider);
 
   // Called when a MediaRouteProvider receives a new list of |sinks|
   // compatible with |media_source|. The result is only valid for |origins|. If
   // |origins| is empty, the result is valid for any origin.
-  OnSinksReceived(MediaRouteProvider.Id provider_id,
+  OnSinksReceived(MediaRouteProviderId provider_id,
                   string media_source,
                   array<MediaSink> sinks,
                   array<url.mojom.Origin> origins);
@@ -542,15 +438,10 @@ interface MediaRouter {
   // Called when list of routes for a MediaRouteProvider has been updated in the
   // context of the calling |media_source|.  The array |joinable_route_ids|
   // should contain route IDs of joinable routes found in the |routes| array.
-  OnRoutesUpdated(MediaRouteProvider.Id provider_id,
+  OnRoutesUpdated(MediaRouteProviderId provider_id,
                   array<MediaRoute> routes,
                   string media_source,
                   array<string> joinable_route_ids);
-
-  // Called when the availability of media sinks for a MediaRouteProvider has
-  // been updated.
-  OnSinkAvailabilityUpdated(MediaRouteProvider.Id provider_id,
-                            SinkAvailability availability);
 
   // Called when the state of presentation connected to route |route_id| has
   // changed to |state|.
@@ -583,12 +474,7 @@ interface MediaRouter {
   // feedback report.
   GetLogsAsString() => (string logs);
 
-  // Called to get a mirroring.mojom.MirroringServiceHost. These APIs are used
-  // by Media Router extension to start mirroring through the mirroring service.
-  // TODO(http://crbug.com/809249): Remove these APIs when native Cast MRP with
-  // mirroring support is rolled out.  NOTE(jrw): Removing these methods from
-  // the mojo interface is probably OK, but the implementation still needs
-  // to be called by the native Cast MRP.
+  // Called to get a mirroring.mojom.MirroringServiceHost.
   GetMirroringServiceHostForTab(int32 target_tab_id,
       pending_receiver<mirroring.mojom.MirroringServiceHost> receiver);
   GetMirroringServiceHostForDesktop(

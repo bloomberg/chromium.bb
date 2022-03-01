@@ -41,6 +41,7 @@ class TracingMuxerFake : public TracingMuxer {
 
  public:
   TracingMuxerFake() : TracingMuxer(&FakePlatform::instance) {}
+  ~TracingMuxerFake() override;
 
   static constexpr TracingMuxerFake* Get() {
 #if PERFETTO_HAS_NO_DESTROY()
@@ -54,6 +55,8 @@ class TracingMuxerFake : public TracingMuxer {
   bool RegisterDataSource(const DataSourceDescriptor&,
                           DataSourceFactory,
                           DataSourceStaticState*) override;
+  void UpdateDataSourceDescriptor(const DataSourceDescriptor&,
+                                  const DataSourceStaticState*) override;
   std::unique_ptr<TraceWriterBase> CreateTraceWriter(
       DataSourceStaticState*,
       uint32_t data_source_instance_index,

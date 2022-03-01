@@ -20,7 +20,6 @@
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 
@@ -34,6 +33,10 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
       std::unordered_map<std::string, scoped_refptr<FakeUsbDeviceInfo>>;
 
   FakeUsbDeviceManager();
+
+  FakeUsbDeviceManager(const FakeUsbDeviceManager&) = delete;
+  FakeUsbDeviceManager& operator=(const FakeUsbDeviceManager&) = delete;
+
   ~FakeUsbDeviceManager() override;
 
   void AddReceiver(mojo::PendingReceiver<mojom::UsbDeviceManager> receiver);
@@ -86,7 +89,7 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
                          RefreshDeviceInfoCallback callback) override;
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   void CheckAccess(const std::string& guid,
                    CheckAccessCallback callback) override;
 
@@ -94,7 +97,7 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
                           uint32_t drop_privileges_mask,
                           mojo::PlatformHandle lifeline_fd,
                           OpenFileDescriptorCallback callback) override;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
   void SetClient(mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient>
                      client) override;
@@ -105,8 +108,6 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
   DeviceMap devices_;
 
   base::WeakPtrFactory<FakeUsbDeviceManager> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FakeUsbDeviceManager);
 };
 
 }  // namespace device

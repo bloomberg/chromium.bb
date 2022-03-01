@@ -64,6 +64,9 @@ public class ContentViewRenderView
     // The native side of this object.
     private long mNativeContentViewRenderView;
 
+    private Surface mLastSurface;
+    private boolean mLastCanBeUsedWithSurfaceControl;
+
     private int mMinimumSurfaceWidth;
     private int mMinimumSurfaceHeight;
 
@@ -90,6 +93,9 @@ public class ContentViewRenderView
     private DisplayAndroid.DisplayAndroidObserver mDisplayAndroidObserver;
 
     private boolean mSelectionHandlesActive;
+
+    private boolean mRequiresAlphaChannel;
+    private boolean mZOrderMediaOverlay;
 
     // The time stamp when a configuration was detected (if any).
     // This is used along with a timeout to determine if a resize surface resize
@@ -153,6 +159,7 @@ public class ContentViewRenderView
                 mSurfaceData.setSurfaceDataNeedsDestroy(ContentViewRenderView.this.mCurrent);
             }
             ContentViewRenderView.this.mCurrent = mSurfaceData;
+            updateNeedsDidSwapBuffersCallback();
             ContentViewRenderViewJni.get().surfaceCreated(mNativeContentViewRenderView);
         }
 
@@ -161,6 +168,13 @@ public class ContentViewRenderView
                 int height, boolean transparentBackground) {
             assert mNativeContentViewRenderView != 0;
             assert mSurfaceData == ContentViewRenderView.this.mCurrent;
+            if (mLastSurface == surface
+                    && mLastCanBeUsedWithSurfaceControl == canBeUsedWithSurfaceControl) {
+                surface = null;
+            } else {
+                mLastSurface = surface;
+                mLastCanBeUsedWithSurfaceControl = canBeUsedWithSurfaceControl;
+            }
             ContentViewRenderViewJni.get().surfaceChanged(mNativeContentViewRenderView,
                     canBeUsedWithSurfaceControl, width, height, transparentBackground, surface);
             mCompositorHasSurface = surface != null;
@@ -175,6 +189,8 @@ public class ContentViewRenderView
             ContentViewRenderViewJni.get().surfaceDestroyed(
                     mNativeContentViewRenderView, cacheBackBuffer);
             mCompositorHasSurface = false;
+            mLastSurface = null;
+            mLastCanBeUsedWithSurfaceControl = false;
         }
 
         @Override
@@ -206,6 +222,8 @@ public class ContentViewRenderView
         private final SurfaceEventListener mListener;
         private final FrameLayout mParent;
         private final boolean mAllowSurfaceControl;
+        private final boolean mRequiresAlphaChannel;
+        private final boolean mZOrderMediaOverlay;
         private final Runnable mEvict;
 
         private boolean mRanCallbacks;
@@ -246,16 +264,18 @@ public class ContentViewRenderView
 
         public SurfaceData(@BrowserEmbeddabilityMode int mode, FrameLayout parent,
                 SurfaceEventListener listener, int backgroundColor, boolean allowSurfaceControl,
-                Runnable evict) {
+                boolean requiresAlphaChannel, boolean zOrderMediaOverlay, Runnable evict) {
             mMode = mode;
             mListener = listener;
             mParent = parent;
             mAllowSurfaceControl = allowSurfaceControl;
+            mRequiresAlphaChannel = requiresAlphaChannel;
+            mZOrderMediaOverlay = zOrderMediaOverlay;
             mEvict = evict;
             switch (mode) {
                 case BrowserEmbeddabilityMode.UNSUPPORTED: {
                     mSurfaceView = new SurfaceView(parent.getContext());
-                    mSurfaceView.setZOrderMediaOverlay(true);
+                    mSurfaceView.setZOrderMediaOverlay(mZOrderMediaOverlay);
                     mSurfaceView.setBackgroundColor(backgroundColor);
 
                     mSurfaceCallback = new SurfaceHolderCallback(this);
@@ -322,6 +342,14 @@ public class ContentViewRenderView
 
         public boolean getAllowSurfaceControl() {
             return mAllowSurfaceControl;
+        }
+
+        public boolean getRequiresAlphaChannel() {
+            return mRequiresAlphaChannel;
+        }
+
+        public boolean getZOrderMediaOverlay() {
+            return mZOrderMediaOverlay;
         }
 
         public void addCallback(ValueCallback<Boolean> callback) {
@@ -466,6 +494,12 @@ public class ContentViewRenderView
             for (Runnable r : callbacks) {
                 r.run();
             }
+            updateNeedsDidSwapBuffersCallback();
+        }
+
+        public boolean hasSurfaceRedrawNeededCallbacks() {
+            return mSurfaceRedrawNeededCallbacks != null
+                    && !mSurfaceRedrawNeededCallbacks.isEmpty();
         }
 
         public View getView() {
@@ -531,6 +565,7 @@ public class ContentViewRenderView
                 mSurfaceRedrawNeededCallbacks = new ArrayList<>();
             }
             mSurfaceRedrawNeededCallbacks.add(drawingFinished);
+            updateNeedsDidSwapBuffersCallback();
             ContentViewRenderViewJni.get().setNeedsRedraw(mNativeContentViewRenderView);
         }
 
@@ -636,9 +671,19 @@ public class ContentViewRenderView
 
     // This is a child of ContentViewRenderView and parent of SurfaceView/TextureView.
     // This exists to avoid resizing SurfaceView/TextureView when the soft keyboard is displayed.
+    // Also has workaround for SurfaceView `onAttachedToWindow` visual glitch.
     private class SurfaceParent extends FrameLayout {
+        // This view is used to cover up any SurfaceView/TextureView for a few frames immediately
+        // after `onAttachedToWindow`. This is the workaround a bug in SurfaceView (on some versions
+        // of android) which punches a hole before the surface below has any content, resulting in
+        // black for a few frames. `mCoverView` is a workaround for this bug. It covers up
+        // SurfaceView/TextureView with the background color, and is removed after a few swaps.
+        private final View mCoverView;
+        private int mNumSwapsUntilHideCover;
+
         public SurfaceParent(Context context) {
             super(context);
+            mCoverView = new View(context);
         }
 
         @Override
@@ -667,6 +712,38 @@ public class ContentViewRenderView
         protected void onSizeChanged(int w, int h, int oldw, int oldh) {
             mPhysicalWidth = w;
             mPhysicalHeight = h;
+        }
+
+        @Override
+        protected void onAttachedToWindow() {
+            super.onAttachedToWindow();
+            mNumSwapsUntilHideCover = 2;
+            // Add as the top child covering up any other children.
+            addView(mCoverView,
+                    new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+                            FrameLayout.LayoutParams.MATCH_PARENT));
+            if (mNativeContentViewRenderView != 0) {
+                ContentViewRenderViewJni.get().setNeedsRedraw(mNativeContentViewRenderView);
+            }
+        }
+
+        @Override
+        protected void onDetachedFromWindow() {
+            super.onDetachedFromWindow();
+            mNumSwapsUntilHideCover = 0;
+            removeView(mCoverView);
+        }
+
+        /** @return true if should keep swapping frames */
+        public boolean didSwapFrame() {
+            if (mNumSwapsUntilHideCover <= 0) return false;
+            mNumSwapsUntilHideCover--;
+            if (mNumSwapsUntilHideCover == 0) removeView(mCoverView);
+            return mNumSwapsUntilHideCover > 0;
+        }
+
+        public void updateCoverViewColor(int color) {
+            mCoverView.setBackgroundColor(color);
         }
     }
 
@@ -728,10 +805,12 @@ public class ContentViewRenderView
 
     public void requestMode(
             @BrowserEmbeddabilityMode int mode, @Nullable ValueCallback<Boolean> callback) {
-        boolean allowSurfaceControl = !mSelectionHandlesActive;
+        boolean allowSurfaceControl = !mSelectionHandlesActive && !mRequiresAlphaChannel;
         if (mRequested != null
                 && (mRequested.getMode() != mode
-                        || mRequested.getAllowSurfaceControl() != allowSurfaceControl)) {
+                        || mRequested.getAllowSurfaceControl() != allowSurfaceControl
+                        || mRequested.getRequiresAlphaChannel() != mRequiresAlphaChannel
+                        || mRequested.getZOrderMediaOverlay() != mZOrderMediaOverlay)) {
             if (mRequested != mCurrent) {
                 mRequested.markForDestroy(false /* hasNextSurface */);
                 mRequested.destroy();
@@ -742,7 +821,8 @@ public class ContentViewRenderView
         if (mRequested == null) {
             SurfaceEventListenerImpl listener = new SurfaceEventListenerImpl();
             mRequested = new SurfaceData(mode, mSurfaceParent, listener, mBackgroundColor,
-                    allowSurfaceControl, this::evictCachedSurface);
+                    allowSurfaceControl, mRequiresAlphaChannel, mZOrderMediaOverlay,
+                    this::evictCachedSurface);
             listener.setRequestData(mRequested);
         }
         assert mRequested.getMode() == mode;
@@ -829,6 +909,7 @@ public class ContentViewRenderView
 
         mBackgroundColor = color;
         super.setBackgroundColor(color);
+        mSurfaceParent.updateCoverViewColor(color);
         if (mRequested != null) {
             mRequested.setBackgroundColor(color);
         }
@@ -853,6 +934,22 @@ public class ContentViewRenderView
 
     public InsetObserverView getInsetObserverView() {
         return mInsetObserverView;
+    }
+
+    public void setSurfaceProperties(boolean requiresAlphaChannel, boolean zOrderMediaOverlay) {
+        if (mRequiresAlphaChannel == requiresAlphaChannel
+                && mZOrderMediaOverlay == zOrderMediaOverlay) {
+            return;
+        }
+        mRequiresAlphaChannel = requiresAlphaChannel;
+        mZOrderMediaOverlay = zOrderMediaOverlay;
+
+        if (mCurrent == null) return;
+        if (mCurrent.getMode() != BrowserEmbeddabilityMode.UNSUPPORTED) return;
+        requestMode(mCurrent.getMode(), null);
+
+        ContentViewRenderViewJni.get().setRequiresAlphaChannel(
+                mNativeContentViewRenderView, requiresAlphaChannel);
     }
 
     /**
@@ -880,7 +977,7 @@ public class ContentViewRenderView
 
         while (!mPendingRunnables.isEmpty()) {
             TrackedRunnable runnable = mPendingRunnables.get(0);
-            removeCallbacks(runnable);
+            mSurfaceParent.removeCallbacks(runnable);
             runnable.run();
             assert !mPendingRunnables.contains(runnable);
         }
@@ -911,7 +1008,9 @@ public class ContentViewRenderView
     @CalledByNative
     private boolean didSwapFrame() {
         assert mCurrent != null;
-        return mCurrent.didSwapFrame();
+        boolean ret = mCurrent.didSwapFrame();
+        ret = ret || mSurfaceParent.didSwapFrame();
+        return ret;
     }
 
     @CalledByNative
@@ -919,6 +1018,14 @@ public class ContentViewRenderView
         assert mCurrent != null;
         if (!sizeMatches) return;
         mCurrent.runSurfaceRedrawNeededCallbacks();
+    }
+
+    // Should be called any time inputs used to compute `needsDidSwapBuffersCallback` change.
+    private void updateNeedsDidSwapBuffersCallback() {
+        boolean needsDidSwapBuffersCallback =
+                mCurrent != null && mCurrent.hasSurfaceRedrawNeededCallbacks();
+        ContentViewRenderViewJni.get().setDidSwapBuffersCallbackEnabled(
+                mNativeContentViewRenderView, needsDidSwapBuffersCallback);
     }
 
     private void evictCachedSurface() {
@@ -989,10 +1096,13 @@ public class ContentViewRenderView
         void surfaceCreated(long nativeContentViewRenderView);
         void surfaceDestroyed(long nativeContentViewRenderView, boolean cacheBackBuffer);
         void surfaceChanged(long nativeContentViewRenderView, boolean canBeUsedWithSurfaceControl,
-                int width, int height, boolean transparentBackground, Surface surface);
+                int width, int height, boolean transparentBackground, Surface newSurface);
         void setNeedsRedraw(long nativeContentViewRenderView);
         void evictCachedSurface(long nativeContentViewRenderView);
         ResourceManager getResourceManager(long nativeContentViewRenderView);
         void updateBackgroundColor(long nativeContentViewRenderView);
+        void setRequiresAlphaChannel(
+                long nativeContentViewRenderView, boolean requiresAlphaChannel);
+        void setDidSwapBuffersCallbackEnabled(long nativeContentViewRenderView, boolean enabled);
     }
 }

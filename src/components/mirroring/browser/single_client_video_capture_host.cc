@@ -5,7 +5,9 @@
 #include "components/mirroring/browser/single_client_video_capture_host.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/token.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -22,6 +24,9 @@ class DeviceLauncherCallbacks final
   explicit DeviceLauncherCallbacks(
       base::WeakPtr<SingleClientVideoCaptureHost> host)
       : video_capture_host_(host) {}
+
+  DeviceLauncherCallbacks(const DeviceLauncherCallbacks&) = delete;
+  DeviceLauncherCallbacks& operator=(const DeviceLauncherCallbacks&) = delete;
 
   ~DeviceLauncherCallbacks() override {}
 
@@ -44,8 +49,6 @@ class DeviceLauncherCallbacks final
 
  private:
   base::WeakPtr<SingleClientVideoCaptureHost> video_capture_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceLauncherCallbacks);
 };
 
 }  // namespace
@@ -116,7 +119,8 @@ void SingleClientVideoCaptureHost::Stop(
     OnFinishedConsumingBuffer(buffer_id, media::VideoCaptureFeedback());
   }
   DCHECK(buffer_context_map_.empty());
-  observer_->OnStateChanged(media::mojom::VideoCaptureState::ENDED);
+  observer_->OnStateChanged(media::mojom::VideoCaptureResult::NewState(
+      media::mojom::VideoCaptureState::ENDED));
   observer_.reset();
   weak_factory_.InvalidateWeakPtrs();
   launched_device_ = nullptr;
@@ -242,11 +246,12 @@ void SingleClientVideoCaptureHost::OnBufferRetired(int buffer_id) {
   }
 }
 
-void SingleClientVideoCaptureHost::OnError(media::VideoCaptureError) {
+void SingleClientVideoCaptureHost::OnError(media::VideoCaptureError error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
   if (observer_)
-    observer_->OnStateChanged(media::mojom::VideoCaptureState::FAILED);
+    observer_->OnStateChanged(
+        media::mojom::VideoCaptureResult::NewErrorCode(error));
 }
 
 void SingleClientVideoCaptureHost::OnFrameDropped(
@@ -263,7 +268,8 @@ void SingleClientVideoCaptureHost::OnStarted() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << __func__;
   DCHECK(observer_);
-  observer_->OnStateChanged(media::mojom::VideoCaptureState::STARTED);
+  observer_->OnStateChanged(media::mojom::VideoCaptureResult::NewState(
+      media::mojom::VideoCaptureState::STARTED));
 }
 
 void SingleClientVideoCaptureHost::OnStartedUsingGpuDecode() {

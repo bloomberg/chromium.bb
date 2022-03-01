@@ -21,12 +21,23 @@ limitations under the License.
 
 #include <string>
 #include <vector>
+
+#include "tensorflow/core/framework/full_type.pb.h"
 #include "tensorflow/core/framework/op_def.pb.h"
+#include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/lib/core/status.h"
 #include "tensorflow/core/lib/core/stringpiece.h"
 #include "tensorflow/core/platform/macros.h"
 
 namespace tensorflow {
+
+// TODO(b/62899350): Refactor without proto dependencies.
+typedef std::function<Status(OpDef* c)> OpTypeConstructor;
+
+// TODO(mdan): Consider a vector-in, vector-out contract.
+typedef std::function<StatusOr<FullTypeDef>(
+    const std::vector<std::reference_wrapper<const FullTypeDef>>&)>
+    ForwardTypeInferenceFn;
 
 class FunctionDefHelper;
 
@@ -46,6 +57,58 @@ struct OpRegistrationData {
 
   OpDef op_def;
   OpShapeInferenceFn shape_inference_fn;
+
+  // Type constructor. This callable initializes the type of this op.
+  // It is provided as a programmatic mechanism for defining an op's
+  // type, as part of its registration. It is to be eventually replaced by a
+  // textual language.
+  //
+  // Important: historically, op registrations only contained partial
+  // input/output type information in non-standardized attribute declarations
+  // (e.g. typically, input types were held in a `dtype` attribute). The type
+  // constructor currently duplicates such attribute information, with the aim
+  // of entirely subsuming it, and eventually deprecating all type-related
+  // attributes.
+  //
+  // Since ops are typically parametrized, the type created by this constructor
+  // is also parametric.
+  //
+  // Example: for an op `Foo(x: T) -> Bar[T]`:
+  //
+  //  * typically, its op registration included a single attribute `T: type`;
+  //    then the respective input was defined as `x: T`; the output type `Bar`
+  //    was implied by the op name.
+  //  * the type constructor creates a FullType object containing `Bar[T]`; this
+  //    still relies on the `T` attribute which it references.
+  //  * in the future, the type constructor will create a FullType containing
+  //    `Callable[(x: T), Bar[T]]`, and the attribute `T` will be deprecated.
+  OpTypeConstructor type_ctor;
+
+  // Forward type inference function. This callable infers the return type of an
+  // op based on its input types.
+  //
+  // Note that the type constructor and forward inference functions need not be
+  // mutually exclusive: if there is some static information that can be set
+  // based on attributes, then that should be set in the constructor. If more
+  // information can be extracted from inputs, that should be done in the
+  // forward inference function.
+  //
+  // This is similar to the shape function, but is more general, and applied
+  // directly to NodeDefs, rather than working on the ShapeAndType structures.
+  // Note that the op input/output declarations may specify some implicit type
+  // constraints through attribute references (i.e. two inputs pointing to the
+  // same type attribute). Those constraints may duplicate what this function
+  // specifies in its body. That's intended, for a gradual transition to a more
+  // formal type system.
+  //
+  // These type inference functions are intermediate solutions as well: once the
+  // op registration has a complete, formal type definition, along with
+  // a solver-based type inference, it will replace these functions.
+  //
+  // TODO(mdan): Merge with shape inference.
+  // TODO(mdan): Replace with a union-based type inference algorithm.
+  ForwardTypeInferenceFn fwd_type_fn;
+
   bool is_function_op = false;
 };
 
@@ -53,7 +116,7 @@ struct OpRegistrationData {
 class OpDefBuilder {
  public:
   // Constructs an OpDef with just the name field set.
-  explicit OpDefBuilder(string op_name);
+  explicit OpDefBuilder(std::string op_name);
 
   // Adds an attr to this OpDefBuilder (and returns *this). The spec has
   // format "<name>:<type>" or "<name>:<type>=<default>"
@@ -86,7 +149,7 @@ class OpDefBuilder {
   // * Ability to restrict the type of the tensor like the existing
   //   restrictions for type attrs.
   // Perhaps by linking the type of the tensor to a type attr?
-  OpDefBuilder& Attr(string spec);
+  OpDefBuilder& Attr(std::string spec);
 
   // Adds an input or output to this OpDefBuilder (and returns *this).
   // The spec has form "<name>:<type-expr>" or "<name>:Ref(<type-expr>)"
@@ -103,8 +166,8 @@ class OpDefBuilder {
   // in the spec?
   // TODO(josh11b): SparseInput() and SparseOutput() matching the Python
   // handling?
-  OpDefBuilder& Input(string spec);
-  OpDefBuilder& Output(string spec);
+  OpDefBuilder& Input(std::string spec);
+  OpDefBuilder& Output(std::string spec);
 
   // Turns on the indicated boolean flag in this OpDefBuilder (and
   // returns *this).
@@ -112,9 +175,10 @@ class OpDefBuilder {
   OpDefBuilder& SetIsAggregate();
   OpDefBuilder& SetIsStateful();
   OpDefBuilder& SetAllowsUninitializedInput();
+  OpDefBuilder& SetIsDistributedCommunication();
 
   // Deprecate the op at a certain GraphDef version.
-  OpDefBuilder& Deprecated(int version, string explanation);
+  OpDefBuilder& Deprecated(int version, std::string explanation);
 
   // Adds docs to this OpDefBuilder (and returns *this).
   // Docs have the format:
@@ -130,10 +194,18 @@ class OpDefBuilder {
   // to suppress the automatically-generated type documentation in
   // generated output.
 #ifndef TF_LEAN_BINARY
-  OpDefBuilder& Doc(string text);
+  OpDefBuilder& Doc(std::string text);
 #else
   OpDefBuilder& Doc(string text) { return *this; }
 #endif
+
+  // Sets the function to be used as type constructor.
+  // See OpRegistrationData::type_ctor.
+  OpDefBuilder& SetTypeConstructor(OpTypeConstructor c);
+
+  // Sets the function to be used for forward type inference.
+  // See OpRegistrationData::fwd_type_fn.
+  OpDefBuilder& SetForwardTypeFn(ForwardTypeInferenceFn f);
 
   // Sets the shape function to be used for shape inference.
   //
@@ -141,6 +213,10 @@ class OpDefBuilder {
   // RegisterShape call to invoke this; see call_cpp_shape_fn in
   // python/framework/common_shapes.py
   OpDefBuilder& SetShapeFn(OpShapeInferenceFn fn);
+
+  // Allows the `<type>` in calls to `Attr()` to be "any".
+  // This is used by PythonAPIWrapper for pass-through parameters.
+  OpDefBuilder& AllowAttrTypeAny();
 
   // Sets op_reg_data->op_def to the requested OpDef and
   // op_reg_data->shape_inference_fn to the requested shape inference function,
@@ -157,7 +233,7 @@ class OpDefBuilder {
   // Adds control output to this OpDefBuilder (and returns *this).
   // The <name> must be a valid node name (matches regexp
   // [a-zA-Z][a-zA-Z0-9_]*). Named control output can only exist for functions.
-  OpDefBuilder& ControlOutput(string name);
+  OpDefBuilder& ControlOutput(std::string name);
 
   OpDef* op_def() { return &op_reg_data_.op_def; }
 
@@ -166,8 +242,9 @@ class OpDefBuilder {
   std::vector<string> inputs_;
   std::vector<string> outputs_;
   std::vector<string> control_outputs_;
-  string doc_;
+  std::string doc_;
   std::vector<string> errors_;
+  bool allow_attr_type_any_ = false;
 };
 
 }  // namespace tensorflow

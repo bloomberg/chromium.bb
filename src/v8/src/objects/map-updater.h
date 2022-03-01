@@ -67,6 +67,12 @@ class V8_EXPORT_PRIVATE MapUpdater {
   // version and performs the steps 1-6.
   Handle<Map> Update();
 
+  // As above but does not mutate maps; instead, we attempt to replay existing
+  // transitions to find an updated map. No lock is taken.
+  static base::Optional<Map> TryUpdateNoLock(Isolate* isolate, Map old_map,
+                                             ConcurrencyMode cmode)
+      V8_WARN_UNUSED_RESULT;
+
   static Handle<Map> ReconfigureExistingProperty(Isolate* isolate,
                                                  Handle<Map> map,
                                                  InternalIndex descriptor,
@@ -80,8 +86,9 @@ class V8_EXPORT_PRIVATE MapUpdater {
                               Representation new_representation,
                               Handle<FieldType> new_field_type);
 
-  static void ShrinkInstanceSize(base::SharedMutex* map_updater_access, Map map,
-                                 int slack);
+  // Completes inobject slack tracking for the transition tree starting at the
+  // initial map.
+  static void CompleteInobjectSlackTracking(Isolate* isolate, Map initial_map);
 
  private:
   enum State {
@@ -221,10 +228,10 @@ class V8_EXPORT_PRIVATE MapUpdater {
   // If |modified_descriptor_.is_found()|, then the fields below form
   // an "update" of the |old_map_|'s descriptors.
   InternalIndex modified_descriptor_ = InternalIndex::NotFound();
-  PropertyKind new_kind_ = kData;
+  PropertyKind new_kind_ = PropertyKind::kData;
   PropertyAttributes new_attributes_ = NONE;
   PropertyConstness new_constness_ = PropertyConstness::kMutable;
-  PropertyLocation new_location_ = kField;
+  PropertyLocation new_location_ = PropertyLocation::kField;
   Representation new_representation_ = Representation::None();
 
   // Data specific to kField location.

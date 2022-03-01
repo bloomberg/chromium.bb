@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
+#include "base/memory/raw_ptr.h"
 
 #include <utility>
 
@@ -65,7 +66,7 @@ class AXAuraObjCache::A11yOverrideWindowObserver : public aura::WindowObserver {
 
   // Pointer to the AXAuraObjCache object that owns |this|. Guaranteed not to be
   // null for the lifetime of this.
-  AXAuraObjCache* const cache_;
+  const raw_ptr<AXAuraObjCache> cache_;
 
   base::ScopedObservation<aura::Window, aura::WindowObserver> observer_{this};
 };
@@ -143,6 +144,9 @@ void AXAuraObjCache::Remove(aura::Window* window, aura::Window* parent) {
   RemoveInternal(window, &window_to_id_map_);
   if (parent && delegate_)
     delegate_->OnChildWindowRemoved(parent_window_obj);
+
+  if (focused_window_ == window)
+    focused_window_ = nullptr;
 }
 
 AXAuraObjWrapper* AXAuraObjCache::Get(int32_t id) {
@@ -158,8 +162,11 @@ void AXAuraObjCache::GetTopLevelWindows(
 
 AXAuraObjWrapper* AXAuraObjCache::GetFocus() {
   View* focused_view = GetFocusedView();
-  while (focused_view && focused_view->GetViewAccessibility().IsIgnored())
+  while (focused_view &&
+         (focused_view->GetViewAccessibility().IsIgnored() ||
+          focused_view->GetViewAccessibility().propagate_focus_to_ancestor())) {
     focused_view = focused_view->parent();
+  }
 
   if (!focused_view)
     return nullptr;
@@ -200,12 +207,13 @@ AXAuraObjCache::~AXAuraObjCache() {
 
 View* AXAuraObjCache::GetFocusedView() {
   Widget* focused_widget = focused_widget_for_testing_;
-  aura::Window* focused_window = nullptr;
+  aura::Window* focused_window =
+      focused_widget ? focused_widget->GetNativeWindow() : nullptr;
   if (!focused_widget) {
     // Uses the a11y override window for focus if it exists, otherwise gets the
     // last focused window.
-    focused_window =
-        a11y_override_window_ ? a11y_override_window_ : focused_window_;
+    focused_window = a11y_override_window_ ? a11y_override_window_.get()
+                                           : focused_window_.get();
 
     // Finally, fallback to searching for the focus.
     if (!focused_window) {
@@ -242,20 +250,26 @@ View* AXAuraObjCache::GetFocusedView() {
   if (focused_view)
     return focused_view;
 
-  if (focused_window &&
-      focused_window->GetProperty(
-          aura::client::kAccessibilityFocusFallsbackToWidgetKey)) {
-    // If focused widget has non client view, falls back to first child view of
-    // its client view. We don't expect that non client view gets keyboard
-    // focus.
+  // No view has focus, but a child tree might have focus.
+  if (focused_window) {
     auto* non_client = focused_widget->non_client_view();
     auto* client = non_client ? non_client->client_view() : nullptr;
-    return (client && !client->children().empty())
-               ? client->children().front()
-               : focused_widget->GetRootView();
+    if (client && !client->children().empty()) {
+      const ViewAccessibility& host_accessibility =
+          client->children().front()->GetViewAccessibility();
+      ui::AXNodeData host_data;
+      host_accessibility.GetAccessibleNodeData(&host_data);
+      if (host_accessibility.GetChildTreeID() != ui::AXTreeIDUnknown() ||
+          !host_data
+               .GetStringAttribute(
+                   ax::mojom::StringAttribute::kChildTreeNodeAppId)
+               .empty()) {
+        return client->children().front();
+      }
+    }
   }
 
-  return nullptr;
+  return focused_widget->GetRootView();
 }
 
 void AXAuraObjCache::OnWindowFocused(aura::Window* gained_focus,

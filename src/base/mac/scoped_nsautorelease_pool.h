@@ -6,7 +6,6 @@
 #define BASE_MAC_SCOPED_NSAUTORELEASE_POOL_H_
 
 #include "base/base_export.h"
-#include "base/macros.h"
 
 #if defined(__OBJC__)
 @class NSAutoreleasePool;
@@ -27,6 +26,10 @@ namespace mac {
 class BASE_EXPORT ScopedNSAutoreleasePool {
  public:
   ScopedNSAutoreleasePool();
+
+  ScopedNSAutoreleasePool(const ScopedNSAutoreleasePool&) = delete;
+  ScopedNSAutoreleasePool& operator=(const ScopedNSAutoreleasePool&) = delete;
+
   ~ScopedNSAutoreleasePool();
 
   // Clear out the pool in case its position on the stack causes it to be
@@ -36,9 +39,6 @@ class BASE_EXPORT ScopedNSAutoreleasePool {
   void Recycle();
  private:
   NSAutoreleasePool* autorelease_pool_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedNSAutoreleasePool);
 };
 
 }  // namespace mac

@@ -103,6 +103,7 @@ struct Sampler
 	bool compareEnable;
 	VkCompareOp compareOp;
 	VkBorderColor border;
+	VkClearColorValue customBorder;
 	bool unnormalizedCoordinates;
 
 	VkSamplerYcbcrModelConversion ycbcrModel;
@@ -111,8 +112,8 @@ struct Sampler
 
 	float mipLodBias = 0.0f;
 	float maxAnisotropy = 0.0f;
-	float minLod = 0.0f;
-	float maxLod = 0.0f;
+	float minLod = -1000.0f;
+	float maxLod = 1000.0f;
 
 	bool is1D() const
 	{
@@ -129,9 +130,8 @@ struct Sampler
 			return false;
 		default:
 			UNSUPPORTED("VkImageViewType %d", (int)textureType);
+			return false;
 		}
-
-		return false;
 	}
 
 	bool is2D() const
@@ -149,9 +149,8 @@ struct Sampler
 			return false;
 		default:
 			UNSUPPORTED("VkImageViewType %d", (int)textureType);
+			return false;
 		}
-
-		return false;
 	}
 
 	bool is3D() const
@@ -169,9 +168,8 @@ struct Sampler
 			return false;
 		default:
 			UNSUPPORTED("VkImageViewType %d", (int)textureType);
+			return false;
 		}
-
-		return false;
 	}
 
 	bool isCube() const
@@ -189,9 +187,8 @@ struct Sampler
 			return false;
 		default:
 			UNSUPPORTED("VkImageViewType %d", (int)textureType);
+			return false;
 		}
-
-		return false;
 	}
 
 	bool isArrayed() const
@@ -209,9 +206,30 @@ struct Sampler
 			return false;
 		default:
 			UNSUPPORTED("VkImageViewType %d", (int)textureType);
+			return false;
 		}
+	}
 
-		return false;
+	// Returns the number of coordinates required to sample the image,
+	// not including any array coordinate, which is indicated by isArrayed().
+	unsigned int dimensionality() const
+	{
+		switch(textureType)
+		{
+		case VK_IMAGE_VIEW_TYPE_1D:
+		case VK_IMAGE_VIEW_TYPE_1D_ARRAY:
+			return 1;
+		case VK_IMAGE_VIEW_TYPE_2D:
+		case VK_IMAGE_VIEW_TYPE_2D_ARRAY:
+			return 2;
+		case VK_IMAGE_VIEW_TYPE_3D:
+		case VK_IMAGE_VIEW_TYPE_CUBE:
+		case VK_IMAGE_VIEW_TYPE_CUBE_ARRAY:
+			return 3;
+		default:
+			UNSUPPORTED("VkImageViewType %d", (int)textureType);
+			return 0;
+		}
 	}
 };
 

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/dsp/intrapred.h"
+#include "src/dsp/intrapred_cfl.h"
 #include "src/utils/cpu.h"
 
 #if LIBGAV1_ENABLE_NEON
@@ -76,7 +76,7 @@ template <int block_width, int block_height>
 void CflSubsampler420_NEON(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, const ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, const ptrdiff_t stride) {
   const auto* src = static_cast<const uint8_t*>(source);
   uint32_t sum;
   if (block_width == 4) {
@@ -140,7 +140,7 @@ void CflSubsampler420_NEON(
       const uint8_t a11 = src[max_luma_width - 1 + stride];
       // Dup the 2x2 sum at the max luma offset.
       const uint16x8_t max_luma_sum =
-          vdupq_n_u16((uint16_t)((a00 + a01 + a10 + a11) << 1));
+          vdupq_n_u16(static_cast<uint16_t>((a00 + a01 + a10 + a11) << 1));
       uint16x8_t x_index = {0, 2, 4, 6, 8, 10, 12, 14};
 
       ptrdiff_t src_x_offset = 0;
@@ -173,7 +173,7 @@ template <int block_width, int block_height>
 void CflSubsampler444_NEON(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, const ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, const ptrdiff_t stride) {
   const auto* src = static_cast<const uint8_t*>(source);
   uint32_t sum;
   if (block_width == 4) {
@@ -276,7 +276,7 @@ inline uint8x8_t Combine8(const int16x8_t luma, const int alpha,
 // uint8_t. Saturated int16_t >> 6 outranges uint8_t.
 template <int block_height>
 inline void CflIntraPredictor4xN_NEON(
-    void* const dest, const ptrdiff_t stride,
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
     const int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int alpha) {
   auto* dst = static_cast<uint8_t*>(dest);
@@ -295,7 +295,7 @@ inline void CflIntraPredictor4xN_NEON(
 
 template <int block_height>
 inline void CflIntraPredictor8xN_NEON(
-    void* const dest, const ptrdiff_t stride,
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
     const int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int alpha) {
   auto* dst = static_cast<uint8_t*>(dest);
@@ -310,7 +310,7 @@ inline void CflIntraPredictor8xN_NEON(
 
 template <int block_height>
 inline void CflIntraPredictor16xN_NEON(
-    void* const dest, const ptrdiff_t stride,
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
     const int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int alpha) {
   auto* dst = static_cast<uint8_t*>(dest);
@@ -328,7 +328,7 @@ inline void CflIntraPredictor16xN_NEON(
 
 template <int block_height>
 inline void CflIntraPredictor32xN_NEON(
-    void* const dest, const ptrdiff_t stride,
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
     const int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int alpha) {
   auto* dst = static_cast<uint8_t*>(dest);
@@ -507,7 +507,8 @@ inline uint16x8_t StoreLumaResults8_420(const uint16x8_t vertical_sum0,
 template <int block_height_log2, bool is_inside>
 void CflSubsampler444_4xH_NEON(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
-    const int max_luma_height, const void* const source, ptrdiff_t stride) {
+    const int max_luma_height, const void* LIBGAV1_RESTRICT const source,
+    ptrdiff_t stride) {
   static_assert(block_height_log2 <= 4, "");
   const int block_height = 1 << block_height_log2;
   const int visible_height = max_luma_height;
@@ -568,7 +569,7 @@ template <int block_height_log2>
 void CflSubsampler444_4xH_NEON(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   static_cast<void>(max_luma_width);
   static_cast<void>(max_luma_height);
   static_assert(block_height_log2 <= 4, "");
@@ -588,7 +589,8 @@ void CflSubsampler444_4xH_NEON(
 template <int block_height_log2, bool is_inside>
 void CflSubsampler444_8xH_NEON(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
-    const int max_luma_height, const void* const source, ptrdiff_t stride) {
+    const int max_luma_height, const void* LIBGAV1_RESTRICT const source,
+    ptrdiff_t stride) {
   const int block_height = 1 << block_height_log2;
   const int visible_height = max_luma_height;
   const auto* src = static_cast<const uint16_t*>(source);
@@ -643,7 +645,7 @@ template <int block_height_log2>
 void CflSubsampler444_8xH_NEON(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   static_cast<void>(max_luma_width);
   static_cast<void>(max_luma_height);
   static_assert(block_height_log2 <= 5, "");
@@ -667,7 +669,7 @@ template <int block_width_log2, int block_height_log2, bool is_inside>
 void CflSubsampler444_WxH_NEON(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   const int block_height = 1 << block_height_log2;
   const int visible_height = max_luma_height;
   const int block_width = 1 << block_width_log2;
@@ -751,7 +753,7 @@ template <int block_width_log2, int block_height_log2>
 void CflSubsampler444_WxH_NEON(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   static_assert(block_width_log2 == 4 || block_width_log2 == 5,
                 "This function will only work for block_width 16 and 32.");
   static_assert(block_height_log2 <= 5, "");
@@ -773,7 +775,7 @@ template <int block_height_log2>
 void CflSubsampler420_4xH_NEON(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int /*max_luma_width*/, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   const int block_height = 1 << block_height_log2;
   const auto* src = static_cast<const uint16_t*>(source);
   const ptrdiff_t src_stride = stride / sizeof(src[0]);
@@ -839,7 +841,8 @@ void CflSubsampler420_4xH_NEON(
 template <int block_height_log2, int max_luma_width>
 inline void CflSubsampler420Impl_8xH_NEON(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
-    const int max_luma_height, const void* const source, ptrdiff_t stride) {
+    const int max_luma_height, const void* LIBGAV1_RESTRICT const source,
+    ptrdiff_t stride) {
   const int block_height = 1 << block_height_log2;
   const auto* src = static_cast<const uint16_t*>(source);
   const ptrdiff_t src_stride = stride / sizeof(src[0]);
@@ -944,7 +947,7 @@ template <int block_height_log2>
 void CflSubsampler420_8xH_NEON(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   if (max_luma_width == 8) {
     CflSubsampler420Impl_8xH_NEON<block_height_log2, 8>(luma, max_luma_height,
                                                         source, stride);
@@ -957,7 +960,8 @@ void CflSubsampler420_8xH_NEON(
 template <int block_width_log2, int block_height_log2, int max_luma_width>
 inline void CflSubsampler420Impl_WxH_NEON(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
-    const int max_luma_height, const void* const source, ptrdiff_t stride) {
+    const int max_luma_height, const void* LIBGAV1_RESTRICT const source,
+    ptrdiff_t stride) {
   const auto* src = static_cast<const uint16_t*>(source);
   const ptrdiff_t src_stride = stride / sizeof(src[0]);
   const int block_height = 1 << block_height_log2;
@@ -1062,7 +1066,7 @@ template <int block_width_log2, int block_height_log2>
 void CflSubsampler420_WxH_NEON(
     int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int max_luma_width, const int max_luma_height,
-    const void* const source, ptrdiff_t stride) {
+    const void* LIBGAV1_RESTRICT const source, ptrdiff_t stride) {
   switch (max_luma_width) {
     case 8:
       CflSubsampler420Impl_WxH_NEON<block_width_log2, block_height_log2, 8>(
@@ -1109,7 +1113,7 @@ inline uint16x8_t Combine8(const int16x8_t luma, const int16x8_t alpha_abs,
 
 template <int block_height, int bitdepth = 10>
 inline void CflIntraPredictor4xN_NEON(
-    void* const dest, const ptrdiff_t stride,
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
     const int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int alpha) {
   auto* dst = static_cast<uint16_t*>(dest);
@@ -1133,7 +1137,7 @@ inline void CflIntraPredictor4xN_NEON(
 
 template <int block_height, int bitdepth = 10>
 inline void CflIntraPredictor8xN_NEON(
-    void* const dest, const ptrdiff_t stride,
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
     const int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int alpha) {
   auto* dst = static_cast<uint16_t*>(dest);
@@ -1153,7 +1157,7 @@ inline void CflIntraPredictor8xN_NEON(
 
 template <int block_height, int bitdepth = 10>
 inline void CflIntraPredictor16xN_NEON(
-    void* const dest, const ptrdiff_t stride,
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
     const int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int alpha) {
   auto* dst = static_cast<uint16_t*>(dest);
@@ -1177,7 +1181,7 @@ inline void CflIntraPredictor16xN_NEON(
 
 template <int block_height, int bitdepth = 10>
 inline void CflIntraPredictor32xN_NEON(
-    void* const dest, const ptrdiff_t stride,
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
     const int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int alpha) {
   auto* dst = static_cast<uint16_t*>(dest);

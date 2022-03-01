@@ -8,7 +8,6 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/macros.h"
 
 namespace remoting {
 
@@ -19,6 +18,10 @@ class TouchEventPoint;
 class JniTouchEventData {
  public:
   JniTouchEventData();
+
+  JniTouchEventData(const JniTouchEventData&) = delete;
+  JniTouchEventData& operator=(const JniTouchEventData&) = delete;
+
   ~JniTouchEventData();
 
   // Copies touch point data from a Java object to a C++ object.
@@ -26,9 +29,6 @@ class JniTouchEventData {
       JNIEnv* env,
       const base::android::ScopedJavaLocalRef<jobject>& java_object,
       protocol::TouchEventPoint* touch_event_point);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(JniTouchEventData);
 };
 
 }  // namespace remoting

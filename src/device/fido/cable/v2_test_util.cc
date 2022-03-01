@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "device/fido/cable/v2_test_util.h"
+#include "base/memory/raw_ptr.h"
 
 #include <string>
 #include <vector>
@@ -22,6 +23,8 @@
 #include "device/fido/cable/v2_discovery.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/virtual_ctap2_device.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "services/network/test/test_network_context.h"
@@ -54,7 +57,8 @@ class TestNetworkContext : public network::TestNetworkContext {
           url_loader_network_observer,
       mojo::PendingRemote<network::mojom::WebSocketAuthenticationHandler>
           auth_handler,
-      mojo::PendingRemote<network::mojom::TrustedHeaderClient> header_client)
+      mojo::PendingRemote<network::mojom::TrustedHeaderClient> header_client,
+      const absl::optional<base::UnguessableToken>& throttling_profile_id)
       override {
     CHECK(url.has_path());
 
@@ -330,7 +334,7 @@ class TestNetworkContext : public network::TestNetworkContext {
     size_t buffer_i_ = 0;
     mojo::SimpleWatcher in_watcher_;
     mojo::SimpleWatcher out_watcher_;
-    Connection* peer_ = nullptr;
+    raw_ptr<Connection> peer_ = nullptr;
     mojo::Remote<network::mojom::WebSocketHandshakeClient> handshake_client_;
     mojo::Remote<network::mojom::WebSocketClient> client_receiver_;
     mojo::Receiver<network::mojom::WebSocket> socket_{this};
@@ -458,7 +462,7 @@ class TestPlatform : public authenticator::Platform {
   }
 
   Discovery::AdvertEventStream::Callback ble_advert_callback_;
-  device::VirtualCtap2Device* const ctap2_device_;
+  const raw_ptr<device::VirtualCtap2Device> ctap2_device_;
   base::WeakPtrFactory<TestPlatform> weak_factory_{this};
 };
 

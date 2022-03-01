@@ -1,6 +1,6 @@
-/* Copyright (c) 2015-2020 The Khronos Group Inc.
- * Copyright (c) 2015-2020 Valve Corporation
- * Copyright (c) 2015-2020 LunarG, Inc.
+/* Copyright (c) 2015-2021 The Khronos Group Inc.
+ * Copyright (c) 2015-2021 Valve Corporation
+ * Copyright (c) 2015-2021 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,8 @@
 extern "C" {
 #endif
 
-#define VK_MULTIPLANE_FORMAT_MAX_PLANES 3
+static constexpr uint32_t FORMAT_MAX_PLANES = 3;
+static constexpr uint32_t FORMAT_MAX_COMPONENTS = 4;
 
 typedef enum VkFormatCompatibilityClass {
     VK_FORMAT_COMPATIBILITY_CLASS_NONE_BIT = 0,
@@ -106,22 +107,26 @@ typedef enum VkFormatCompatibilityClass {
     VK_FORMAT_COMPATIBILITY_CLASS_8BIT_3PLANE_422 = 61,
     VK_FORMAT_COMPATIBILITY_CLASS_8BIT_2PLANE_422 = 62,
     VK_FORMAT_COMPATIBILITY_CLASS_8BIT_3PLANE_444 = 63,
-    VK_FORMAT_COMPATIBILITY_CLASS_10BIT_3PLANE_420 = 64,
-    VK_FORMAT_COMPATIBILITY_CLASS_10BIT_2PLANE_420 = 65,
-    VK_FORMAT_COMPATIBILITY_CLASS_10BIT_3PLANE_422 = 66,
-    VK_FORMAT_COMPATIBILITY_CLASS_10BIT_2PLANE_422 = 67,
-    VK_FORMAT_COMPATIBILITY_CLASS_10BIT_3PLANE_444 = 68,
-    VK_FORMAT_COMPATIBILITY_CLASS_12BIT_3PLANE_420 = 69,
-    VK_FORMAT_COMPATIBILITY_CLASS_12BIT_2PLANE_420 = 70,
-    VK_FORMAT_COMPATIBILITY_CLASS_12BIT_3PLANE_422 = 71,
-    VK_FORMAT_COMPATIBILITY_CLASS_12BIT_2PLANE_422 = 72,
-    VK_FORMAT_COMPATIBILITY_CLASS_12BIT_3PLANE_444 = 73,
-    VK_FORMAT_COMPATIBILITY_CLASS_16BIT_3PLANE_420 = 74,
-    VK_FORMAT_COMPATIBILITY_CLASS_16BIT_2PLANE_420 = 75,
-    VK_FORMAT_COMPATIBILITY_CLASS_16BIT_3PLANE_422 = 76,
-    VK_FORMAT_COMPATIBILITY_CLASS_16BIT_2PLANE_422 = 77,
-    VK_FORMAT_COMPATIBILITY_CLASS_16BIT_3PLANE_444 = 78,
-    VK_FORMAT_COMPATIBILITY_CLASS_MAX_ENUM = 79
+    VK_FORMAT_COMPATIBILITY_CLASS_8BIT_2PLANE_444 = 64,
+    VK_FORMAT_COMPATIBILITY_CLASS_10BIT_3PLANE_420 = 65,
+    VK_FORMAT_COMPATIBILITY_CLASS_10BIT_2PLANE_420 = 66,
+    VK_FORMAT_COMPATIBILITY_CLASS_10BIT_3PLANE_422 = 67,
+    VK_FORMAT_COMPATIBILITY_CLASS_10BIT_2PLANE_422 = 68,
+    VK_FORMAT_COMPATIBILITY_CLASS_10BIT_3PLANE_444 = 69,
+    VK_FORMAT_COMPATIBILITY_CLASS_10BIT_2PLANE_444 = 70,
+    VK_FORMAT_COMPATIBILITY_CLASS_12BIT_3PLANE_420 = 71,
+    VK_FORMAT_COMPATIBILITY_CLASS_12BIT_2PLANE_420 = 72,
+    VK_FORMAT_COMPATIBILITY_CLASS_12BIT_3PLANE_422 = 73,
+    VK_FORMAT_COMPATIBILITY_CLASS_12BIT_2PLANE_422 = 74,
+    VK_FORMAT_COMPATIBILITY_CLASS_12BIT_3PLANE_444 = 75,
+    VK_FORMAT_COMPATIBILITY_CLASS_12BIT_2PLANE_444 = 76,
+    VK_FORMAT_COMPATIBILITY_CLASS_16BIT_3PLANE_420 = 77,
+    VK_FORMAT_COMPATIBILITY_CLASS_16BIT_2PLANE_420 = 78,
+    VK_FORMAT_COMPATIBILITY_CLASS_16BIT_3PLANE_422 = 79,
+    VK_FORMAT_COMPATIBILITY_CLASS_16BIT_2PLANE_422 = 80,
+    VK_FORMAT_COMPATIBILITY_CLASS_16BIT_3PLANE_444 = 81,
+    VK_FORMAT_COMPATIBILITY_CLASS_16BIT_2PLANE_444 = 82,
+    VK_FORMAT_COMPATIBILITY_CLASS_MAX_ENUM = 83
 } VkFormatCompatibilityClass;
 
 typedef enum VkFormatNumericalType {
@@ -142,46 +147,40 @@ VK_LAYER_EXPORT bool FormatIsDepthAndStencil(VkFormat format);
 VK_LAYER_EXPORT bool FormatIsDepthOnly(VkFormat format);
 VK_LAYER_EXPORT bool FormatIsStencilOnly(VkFormat format);
 VK_LAYER_EXPORT bool FormatIsCompressed_ETC2_EAC(VkFormat format);
-VK_LAYER_EXPORT bool FormatIsCompressed_ASTC(VkFormat format);
 VK_LAYER_EXPORT bool FormatIsCompressed_ASTC_LDR(VkFormat format);
 VK_LAYER_EXPORT bool FormatIsCompressed_ASTC_HDR(VkFormat format);
 VK_LAYER_EXPORT bool FormatIsCompressed_BC(VkFormat format);
 VK_LAYER_EXPORT bool FormatIsCompressed_PVRTC(VkFormat format);
 VK_LAYER_EXPORT bool FormatIsSinglePlane_422(VkFormat format);
-VK_LAYER_EXPORT bool FormatIsNorm(VkFormat format);
-VK_LAYER_EXPORT bool FormatIsUNorm(VkFormat format);
-VK_LAYER_EXPORT bool FormatIsSNorm(VkFormat format);
-VK_LAYER_EXPORT bool FormatIsInt(VkFormat format);
-VK_LAYER_EXPORT bool FormatIsSInt(VkFormat format);
-VK_LAYER_EXPORT bool FormatIsUInt(VkFormat format);
-VK_LAYER_EXPORT bool FormatIsFloat(VkFormat format);
+VK_LAYER_EXPORT bool FormatIsBlockedImage(VkFormat format);
+VK_LAYER_EXPORT bool FormatIsUNORM(VkFormat format);
+VK_LAYER_EXPORT bool FormatIsSNORM(VkFormat format);
+VK_LAYER_EXPORT bool FormatIsSINT(VkFormat format);
+VK_LAYER_EXPORT bool FormatIsUINT(VkFormat format);
+VK_LAYER_EXPORT bool FormatIsSFLOAT(VkFormat format);
+VK_LAYER_EXPORT bool FormatIsUFLOAT(VkFormat format);
 VK_LAYER_EXPORT bool FormatIsSRGB(VkFormat format);
-VK_LAYER_EXPORT bool FormatIsUScaled(VkFormat format);
-VK_LAYER_EXPORT bool FormatIsSScaled(VkFormat format);
+VK_LAYER_EXPORT bool FormatIsUSCALED(VkFormat format);
+VK_LAYER_EXPORT bool FormatIsSSCALED(VkFormat format);
 VK_LAYER_EXPORT bool FormatIsSampledInt(VkFormat format);
 VK_LAYER_EXPORT bool FormatIsSampledFloat(VkFormat format);
 VK_LAYER_EXPORT bool FormatIsCompressed(VkFormat format);
 VK_LAYER_EXPORT bool FormatIsPacked(VkFormat format);
 VK_LAYER_EXPORT bool FormatElementIsTexel(VkFormat format);
-VK_LAYER_EXPORT bool FormatSizesAreEqual(VkFormat srcFormat, VkFormat dstFormat, uint32_t region_count, const VkImageCopy *regions);
 VK_LAYER_EXPORT bool FormatRequiresYcbcrConversion(VkFormat format);
 VK_LAYER_EXPORT bool FormatIsXChromaSubsampled(VkFormat format);
 VK_LAYER_EXPORT bool FormatIsYChromaSubsampled(VkFormat format);
-VK_LAYER_EXPORT VkDeviceSize GetIndexAlignment(VkIndexType indexType);
 
 VK_LAYER_EXPORT uint32_t FormatDepthSize(VkFormat format);
 VK_LAYER_EXPORT VkFormatNumericalType FormatDepthNumericalType(VkFormat format);
 VK_LAYER_EXPORT uint32_t FormatStencilSize(VkFormat format);
 VK_LAYER_EXPORT VkFormatNumericalType FormatStencilNumericalType(VkFormat format);
 VK_LAYER_EXPORT uint32_t FormatPlaneCount(VkFormat format);
-VK_LAYER_EXPORT uint32_t FormatChannelCount(VkFormat format);
+VK_LAYER_EXPORT uint32_t FormatComponentCount(VkFormat format);
 VK_LAYER_EXPORT VkExtent3D FormatTexelBlockExtent(VkFormat format);
 VK_LAYER_EXPORT uint32_t FormatElementSize(VkFormat format, VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT);
 VK_LAYER_EXPORT double FormatTexelSize(VkFormat format, VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT);
 VK_LAYER_EXPORT VkFormatCompatibilityClass FormatCompatibilityClass(VkFormat format);
-VK_LAYER_EXPORT VkDeviceSize SafeModulo(VkDeviceSize dividend, VkDeviceSize divisor);
-VK_LAYER_EXPORT VkDeviceSize SafeDivision(VkDeviceSize dividend, VkDeviceSize divisor);
-VK_LAYER_EXPORT uint32_t GetPlaneIndex(VkImageAspectFlags aspect);
 VK_LAYER_EXPORT VkFormat FindMultiplaneCompatibleFormat(VkFormat fmt, VkImageAspectFlags plane_aspect);
 VK_LAYER_EXPORT VkExtent2D FindMultiplaneExtentDivisors(VkFormat mp_fmt, VkImageAspectFlags plane_aspect);
 

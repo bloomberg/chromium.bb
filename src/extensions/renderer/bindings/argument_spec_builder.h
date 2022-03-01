@@ -9,7 +9,6 @@
 #include <set>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "extensions/renderer/bindings/argument_spec.h"
 
@@ -22,6 +21,9 @@ class ArgumentSpecBuilder {
  public:
   explicit ArgumentSpecBuilder(ArgumentType type);
   ArgumentSpecBuilder(ArgumentType type, base::StringPiece name);
+
+  ArgumentSpecBuilder(const ArgumentSpecBuilder&) = delete;
+  ArgumentSpecBuilder& operator=(const ArgumentSpecBuilder&) = delete;
 
   ~ArgumentSpecBuilder();
 
@@ -43,8 +45,6 @@ class ArgumentSpecBuilder {
  private:
   std::unique_ptr<ArgumentSpec> spec_;
   ArgumentSpec::PropertiesMap properties_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArgumentSpecBuilder);
 };
 
 }  // namespace extensions

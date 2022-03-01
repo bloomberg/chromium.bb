@@ -13,7 +13,6 @@
 #include <string>
 
 #include "base/base_export.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/synchronization/lock.h"
@@ -40,6 +39,9 @@ class BASE_EXPORT SparseHistogram : public HistogramBase {
       HistogramSamples::Metadata* meta,
       HistogramSamples::Metadata* logged_meta);
 
+  SparseHistogram(const SparseHistogram&) = delete;
+  SparseHistogram& operator=(const SparseHistogram&) = delete;
+
   ~SparseHistogram() override;
 
   // HistogramBase implementation:
@@ -55,7 +57,7 @@ class BASE_EXPORT SparseHistogram : public HistogramBase {
   std::unique_ptr<HistogramSamples> SnapshotSamples() const override;
   std::unique_ptr<HistogramSamples> SnapshotDelta() override;
   std::unique_ptr<HistogramSamples> SnapshotFinalDelta() const override;
-  base::DictionaryValue ToGraphDict() const override;
+  base::Value ToGraphDict() const override;
 
  protected:
   // HistogramBase implementation:
@@ -75,7 +77,7 @@ class BASE_EXPORT SparseHistogram : public HistogramBase {
   static HistogramBase* DeserializeInfoImpl(base::PickleIterator* iter);
 
   // Writes the type of the sparse histogram in the |params|.
-  void GetParameters(DictionaryValue* params) const override;
+  Value GetParameters() const override;
 
   // For constructor calling.
   friend class SparseHistogramTest;
@@ -88,8 +90,6 @@ class BASE_EXPORT SparseHistogram : public HistogramBase {
 
   std::unique_ptr<HistogramSamples> unlogged_samples_;
   std::unique_ptr<HistogramSamples> logged_samples_;
-
-  DISALLOW_COPY_AND_ASSIGN(SparseHistogram);
 };
 
 }  // namespace base

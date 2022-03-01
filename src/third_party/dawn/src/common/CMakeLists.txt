@@ -19,6 +19,7 @@ target_sources(dawn_common PRIVATE
     "Assert.h"
     "BitSetIterator.h"
     "Compiler.h"
+    "ConcurrentCache.h"
     "Constants.h"
     "CoreFoundationRef.h"
     "DynamicLib.cpp"
@@ -54,8 +55,6 @@ target_sources(dawn_common PRIVATE
     "TypeTraits.h"
     "TypedInteger.h"
     "UnderlyingType.h"
-    "VertexFormatUtils.cpp"
-    "VertexFormatUtils.h"
     "ityp_array.h"
     "ityp_bitset.h"
     "ityp_span.h"
@@ -70,6 +69,10 @@ if (WIN32)
         "WindowsUtils.cpp"
         "WindowsUtils.h"
         "windows_with_undefs.h"
+    )
+elseif(APPLE)
+    target_sources(dawn_common PRIVATE
+        "SystemUtils_mac.mm"
     )
 endif()
 

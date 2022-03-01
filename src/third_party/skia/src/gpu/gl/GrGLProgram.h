@@ -9,15 +9,15 @@
 #ifndef GrGLProgram_DEFINED
 #define GrGLProgram_DEFINED
 
+#include "src/gpu/GrFragmentProcessor.h"
+#include "src/gpu/GrGeometryProcessor.h"
+#include "src/gpu/GrXferProcessor.h"
 #include "src/gpu/gl/GrGLProgramDataManager.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
 
 #include <vector>
 
-class GrGLSLFragmentProcessor;
-class GrGLSLGeometryProcessor;
-class GrGLSLXferProcessor;
 class GrPipeline;
 class GrGeometryProcessor;
 class GrProgramInfo;
@@ -50,19 +50,20 @@ public:
      * The attribute array consists of vertexAttributeCnt + instanceAttributeCnt elements with
      * the vertex attributes preceding the instance attributes.
      */
-    static sk_sp<GrGLProgram> Make(GrGLGpu*,
-                                   const GrGLSLBuiltinUniformHandles&,
-                                   GrGLuint programID,
-                                   const UniformInfoArray& uniforms,
-                                   const UniformInfoArray& textureSamplers,
-                                   std::unique_ptr<GrGLSLGeometryProcessor>,
-                                   std::unique_ptr<GrGLSLXferProcessor>,
-                                   std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fps,
-                                   std::unique_ptr<Attribute[]>,
-                                   int vertexAttributeCnt,
-                                   int instanceAttributeCnt,
-                                   int vertexStride,
-                                   int instanceStride);
+    static sk_sp<GrGLProgram> Make(
+            GrGLGpu*,
+            const GrGLSLBuiltinUniformHandles&,
+            GrGLuint programID,
+            const UniformInfoArray& uniforms,
+            const UniformInfoArray& textureSamplers,
+            std::unique_ptr<GrGeometryProcessor::ProgramImpl>,
+            std::unique_ptr<GrXferProcessor::ProgramImpl>,
+            std::vector<std::unique_ptr<GrFragmentProcessor::ProgramImpl>> fps,
+            std::unique_ptr<Attribute[]>,
+            int vertexAttributeCnt,
+            int instanceAttributeCnt,
+            int vertexStride,
+            int instanceStride);
 
     ~GrGLProgram() override;
 
@@ -90,25 +91,6 @@ public:
             fRenderTargetSize.fWidth = -1;
             fRenderTargetSize.fHeight = -1;
             fRenderTargetOrigin = (GrSurfaceOrigin) -1;
-        }
-
-        /**
-         * Gets a float4 that adjusts the position from Skia device coords to GL's normalized device
-         * coords. Assuming the transformed position, pos, is a homogeneous float3, the vec, v, is
-         * applied as such:
-         * pos.x = dot(v.xy, pos.xz)
-         * pos.y = dot(v.zw, pos.yz)
-         */
-        void getRTAdjustmentVec(float* destVec) {
-            destVec[0] = 2.f / fRenderTargetSize.fWidth;
-            destVec[1] = -1.f;
-            if (kBottomLeft_GrSurfaceOrigin == fRenderTargetOrigin) {
-                destVec[2] = -2.f / fRenderTargetSize.fHeight;
-                destVec[3] = 1.f;
-            } else {
-                destVec[2] = 2.f / fRenderTargetSize.fHeight;
-                destVec[3] = -1.f;
-            }
         }
     };
 
@@ -147,9 +129,9 @@ private:
                 GrGLuint programID,
                 const UniformInfoArray& uniforms,
                 const UniformInfoArray& textureSamplers,
-                std::unique_ptr<GrGLSLGeometryProcessor>,
-                std::unique_ptr<GrGLSLXferProcessor>,
-                std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fpImpls,
+                std::unique_ptr<GrGeometryProcessor::ProgramImpl>,
+                std::unique_ptr<GrXferProcessor::ProgramImpl>,
+                std::vector<std::unique_ptr<GrFragmentProcessor::ProgramImpl>> fpImpls,
                 std::unique_ptr<Attribute[]>,
                 int vertexAttributeCnt,
                 int instanceAttributeCnt,
@@ -165,9 +147,9 @@ private:
     GrGLuint fProgramID;
 
     // the installed effects
-    std::unique_ptr<GrGLSLGeometryProcessor> fGeometryProcessor;
-    std::unique_ptr<GrGLSLXferProcessor> fXferProcessor;
-    std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fFPImpls;
+    std::unique_ptr<GrGeometryProcessor::ProgramImpl>              fGPImpl;
+    std::unique_ptr<GrXferProcessor::ProgramImpl>                  fXPImpl;
+    std::vector<std::unique_ptr<GrFragmentProcessor::ProgramImpl>> fFPImpls;
 
     std::unique_ptr<Attribute[]> fAttributes;
     int fVertexAttributeCnt;

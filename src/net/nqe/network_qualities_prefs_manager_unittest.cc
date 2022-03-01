@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
@@ -31,9 +30,12 @@ class TestPrefDelegate : public NetworkQualitiesPrefsManager::PrefDelegate {
   TestPrefDelegate()
       : write_count_(0), read_count_(0), value_(new base::DictionaryValue) {}
 
+  TestPrefDelegate(const TestPrefDelegate&) = delete;
+  TestPrefDelegate& operator=(const TestPrefDelegate&) = delete;
+
   ~TestPrefDelegate() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    value_->Clear();
+    value_->DictClear();
     EXPECT_EQ(0U, value_->DictSize());
   }
 
@@ -71,8 +73,6 @@ class TestPrefDelegate : public NetworkQualitiesPrefsManager::PrefDelegate {
   std::unique_ptr<base::DictionaryValue> value_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(TestPrefDelegate);
 };
 
 using NetworkQualitiesPrefManager = TestWithTaskEnvironment;

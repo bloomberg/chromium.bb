@@ -13,13 +13,12 @@
 #include "ash/wm/overview/overview_types.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/transient_window_client_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 namespace aura {
 class ScopedWindowEventTargetingBlocker;
@@ -159,7 +158,7 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
  private:
   friend class OverviewHighlightControllerTest;
-  friend class OverviewSessionTest;
+  friend class OverviewTestBase;
   FRIEND_TEST_ALL_PREFIXES(OverviewSessionTest, CloseAnimationShadow);
   class LayerCachingAndFilteringObserver;
 

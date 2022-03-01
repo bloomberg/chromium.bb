@@ -14,6 +14,8 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell_interface.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_interface.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
@@ -39,6 +41,7 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
   // We should only ever create a constraint space from legacy layout if the
   // object is a new formatting context.
   DCHECK(block.CreatesNewFormattingContext());
+  DCHECK(!block.IsTableCell());
 
   const LayoutBlock* cb = block.ContainingBlock();
   LayoutUnit available_logical_width =
@@ -49,20 +52,20 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
                                  available_logical_height};
   LogicalSize available_size = percentage_size;
 
-  bool fixed_inline = false, fixed_block = false;
-  bool fixed_block_is_definite = true;
+  bool is_fixed_inline_size = false, is_fixed_block_size = false;
+  bool is_initial_block_size_definite = true;
   if (block.HasOverrideLogicalWidth()) {
     available_size.inline_size = block.OverrideLogicalWidth();
-    fixed_inline = true;
+    is_fixed_inline_size = true;
   }
   if (block.HasOverrideLogicalHeight()) {
     available_size.block_size = block.OverrideLogicalHeight();
-    fixed_block = true;
+    is_fixed_block_size = true;
   }
-  if (block.IsFlexItem() && fixed_block) {
+  if (block.IsFlexItem() && is_fixed_block_size) {
     // The flexbox-specific behavior is in addition to regular definite-ness, so
     // if the flex item would normally have a definite height it should keep it.
-    fixed_block_is_definite =
+    is_initial_block_size_definite =
         To<LayoutFlexibleBox>(block.Parent())
             ->UseOverrideLogicalHeightForPerentageResolution(block) ||
         block.HasDefiniteLogicalHeight();
@@ -85,50 +88,22 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
                                          : NGBaselineAlgorithmType::kFirstLine);
   }
 
-  if (block.IsTableCell()) {
-    const LayoutNGTableCellInterface& cell =
-        ToInterface<LayoutNGTableCellInterface>(block);
-    const ComputedStyle& cell_style = cell.ToLayoutObject()->StyleRef();
-    const ComputedStyle& table_style =
-        cell.TableInterface()->ToLayoutObject()->StyleRef();
-    DCHECK(block.IsTableCellLegacy());
-    builder.SetIsTableCell(true, /* is_table_cell_legacy */ true);
-    builder.SetIsRestrictedBlockSizeTableCell(
-        !cell_style.LogicalHeight().IsAuto() ||
-        !table_style.LogicalHeight().IsAuto());
-    const LayoutBlock& cell_block = To<LayoutBlock>(*cell.ToLayoutObject());
-    if (fixed_block) {
-      fixed_block_is_definite = cell_block.HasDefiniteLogicalHeight() ||
-                                !table_style.LogicalHeight().IsAuto();
-    }
-    builder.SetTableCellBorders(
-        {cell_block.BorderStart(), cell_block.BorderEnd(),
-         cell_block.BorderBefore(), cell_block.BorderAfter()});
-    builder.SetTableCellIntrinsicPadding(
-        {LayoutUnit(), LayoutUnit(), LayoutUnit(cell.IntrinsicPaddingBefore()),
-         LayoutUnit(cell.IntrinsicPaddingAfter())});
-    builder.SetHideTableCellIfEmpty(
-        cell_style.EmptyCells() == EEmptyCells::kHide &&
-        table_style.BorderCollapse() == EBorderCollapse::kSeparate);
-    builder.SetIsTableCellWithCollapsedBorders(
-        cell_block.Parent()->Parent()->Parent()->StyleRef().BorderCollapse() ==
-        EBorderCollapse::kCollapse);
-  }
-
   if (block.IsAtomicInlineLevel() || block.IsFlexItem() || block.IsGridItem() ||
       block.IsFloating())
     builder.SetIsPaintedAtomically(true);
 
   builder.SetAvailableSize(available_size);
   builder.SetPercentageResolutionSize(percentage_size);
-  builder.SetIsFixedInlineSize(fixed_inline);
-  builder.SetIsFixedBlockSize(fixed_block);
-  builder.SetIsFixedBlockSizeIndefinite(!fixed_block_is_definite);
+  builder.SetIsFixedInlineSize(is_fixed_inline_size);
+  builder.SetIsFixedBlockSize(is_fixed_block_size);
+  builder.SetIsInitialBlockSizeIndefinite(!is_initial_block_size_definite);
   // HTML element with display:table is shrink-to-fit.
   bool shrink_to_fit =
       block.SizesLogicalWidthToFitContent(style.LogicalWidth()) ||
       (block.IsTable() && block.Parent() && block.Parent()->IsLayoutView());
-  builder.SetStretchInlineSizeIfAuto(!shrink_to_fit);
+  builder.SetInlineAutoBehavior(shrink_to_fit
+                                    ? NGAutoBehavior::kFitContent
+                                    : NGAutoBehavior::kStretchImplicit);
   return builder.ToConstraintSpace();
 }
 

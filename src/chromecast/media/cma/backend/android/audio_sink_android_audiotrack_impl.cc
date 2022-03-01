@@ -10,9 +10,9 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
-#include "base/numerics/ranges.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromecast/media/api/decoder_buffer_base.h"
@@ -254,8 +254,7 @@ void AudioSinkAndroidAudioTrackImpl::ScheduleWaitForEosTask() {
             << playout_time_left_us << "us";
   wait_for_eos_task_.Reset(base::BindOnce(
       &AudioSinkAndroidAudioTrackImpl::OnPlayoutDone, base::Unretained(this)));
-  base::TimeDelta delay =
-      base::TimeDelta::FromMicroseconds(playout_time_left_us);
+  base::TimeDelta delay = base::Microseconds(playout_time_left_us);
   feeder_task_runner_->PostDelayedTask(FROM_HERE, wait_for_eos_task_.callback(),
                                        delay);
 }
@@ -401,7 +400,7 @@ void AudioSinkAndroidAudioTrackImpl::SetLimiterVolumeMultiplier(
     float multiplier) {
   RUN_ON_FEEDER_THREAD(SetLimiterVolumeMultiplier, multiplier);
 
-  limiter_volume_multiplier_ = base::ClampToRange(multiplier, 0.0f, 1.0f);
+  limiter_volume_multiplier_ = base::clamp(multiplier, 0.0f, 1.0f);
   LOG(INFO) << __func__ << "(" << this << "): device_id_=" << device_id_
             << " limiter_multiplier=" << limiter_volume_multiplier_
             << " effective=" << EffectiveVolume();

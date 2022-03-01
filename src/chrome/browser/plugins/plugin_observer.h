@@ -9,14 +9,18 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/plugin.mojom.h"
+#include "content/public/browser/render_frame_host_receiver_set.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "ppapi/buildflags/buildflags.h"
+
+#if !BUILDFLAG(ENABLE_PLUGINS)
+#error "Plugins should be enabled"
+#endif
 
 namespace infobars {
 class ContentInfoBarManager;
@@ -30,6 +34,13 @@ class PluginObserver : public content::WebContentsObserver,
                        public chrome::mojom::PluginHost,
                        public content::WebContentsUserData<PluginObserver> {
  public:
+  static void BindPluginHost(
+      mojo::PendingAssociatedReceiver<chrome::mojom::PluginHost> receiver,
+      content::RenderFrameHost* rfh);
+
+  PluginObserver(const PluginObserver&) = delete;
+  PluginObserver& operator=(const PluginObserver&) = delete;
+
   ~PluginObserver() override;
 
   // content::WebContentsObserver implementation.
@@ -48,11 +59,10 @@ class PluginObserver : public content::WebContentsObserver,
   explicit PluginObserver(content::WebContents* web_contents);
 
   // chrome::mojom::PluginHost methods.
+  void CouldNotLoadPlugin(const base::FilePath& plugin_path) override;
   void BlockedOutdatedPlugin(
       mojo::PendingRemote<chrome::mojom::PluginRenderer> plugin_renderer,
       const std::string& identifier) override;
-  void ShowFlashPermissionBubble() override;
-  void CouldNotLoadPlugin(const base::FilePath& plugin_path) override;
   void OpenPDF(const GURL& url) override;
 
   void RemovePluginPlaceholderHost(PluginPlaceholderHost* placeholder);
@@ -61,14 +71,12 @@ class PluginObserver : public content::WebContentsObserver,
   std::map<PluginPlaceholderHost*, std::unique_ptr<PluginPlaceholderHost>>
       plugin_placeholders_;
 
-  content::WebContentsFrameReceiverSet<chrome::mojom::PluginHost>
+  content::RenderFrameHostReceiverSet<chrome::mojom::PluginHost>
       plugin_host_receivers_;
 
   base::WeakPtrFactory<PluginObserver> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(PluginObserver);
 };
 
 #endif  // CHROME_BROWSER_PLUGINS_PLUGIN_OBSERVER_H_

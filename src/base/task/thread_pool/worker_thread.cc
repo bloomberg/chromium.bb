@@ -171,6 +171,10 @@ void WorkerThread::Cleanup() {
   wake_up_event_.Signal();
 }
 
+void WorkerThread::MaybeUpdateThreadPriority() {
+  UpdateThreadPriority(GetDesiredThreadPriority());
+}
+
 void WorkerThread::BeginUnusedPeriod() {
   CheckedAutoLock auto_lock(thread_lock_);
   DCHECK(last_used_time_.is_null());
@@ -336,6 +340,8 @@ void WorkerThread::RunWorker() {
   // A WorkerThread starts out waiting for work.
   {
     TRACE_EVENT_END0("base", "WorkerThread active");
+    // TODO(crbug.com/1021571): Remove this once fixed.
+    PERFETTO_INTERNAL_ADD_EMPTY_EVENT();
     delegate_->WaitForWork(&wake_up_event_);
     TRACE_EVENT_BEGIN0("base", "WorkerThread active");
   }
@@ -358,15 +364,30 @@ void WorkerThread::RunWorker() {
         break;
 
       TRACE_EVENT_END0("base", "WorkerThread active");
+      // TODO(crbug.com/1021571): Remove this once fixed.
+      PERFETTO_INTERNAL_ADD_EMPTY_EVENT();
       hang_watch_scope.reset();
       delegate_->WaitForWork(&wake_up_event_);
       TRACE_EVENT_BEGIN0("base", "WorkerThread active");
       continue;
     }
 
+    // Alias pointer for investigation of memory corruption. crbug.com/1218384
+    TaskSource* task_source_before_run = task_source.get();
+    base::debug::Alias(&task_source_before_run);
+
     task_source = task_tracker_->RunAndPopNextTask(std::move(task_source));
 
+    // Alias pointer for investigation of memory corruption. crbug.com/1218384
+    TaskSource* task_source_before_move = task_source.get();
+    base::debug::Alias(&task_source_before_move);
+
     delegate_->DidProcessTask(std::move(task_source));
+
+    // Check that task_source is always cleared, to help investigation of memory
+    // corruption where task_source is non-null after being moved.
+    // crbug.com/1218384
+    CHECK(!task_source);
 
     // Calling WakeUp() guarantees that this WorkerThread will run Tasks from
     // TaskSources returned by the GetWork() method of |delegate_| until it
@@ -390,6 +411,8 @@ void WorkerThread::RunWorker() {
 
   TRACE_EVENT_END0("base", "WorkerThread active");
   TRACE_EVENT_INSTANT0("base", "WorkerThread dead", TRACE_EVENT_SCOPE_THREAD);
+  // TODO(crbug.com/1021571): Remove this once fixed.
+  PERFETTO_INTERNAL_ADD_EMPTY_EVENT();
 }
 
 }  // namespace internal

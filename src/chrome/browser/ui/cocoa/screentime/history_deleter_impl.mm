@@ -17,13 +17,13 @@ namespace screentime {
 HistoryDeleterImpl::~HistoryDeleterImpl() = default;
 
 std::unique_ptr<HistoryDeleterImpl> HistoryDeleterImpl::Create() {
-  if (@available(macOS 11.0, *))
+  if (@available(macOS 12.1, *))
     return base::WrapUnique(new HistoryDeleterImpl);
   return nullptr;
 }
 
 void HistoryDeleterImpl::DeleteAllHistory() {
-  if (@available(macOS 11.0, *)) {
+  if (@available(macOS 12.1, *)) {
     [platform_deleter_ deleteAllHistory];
   } else {
     NOTIMPLEMENTED();
@@ -32,7 +32,7 @@ void HistoryDeleterImpl::DeleteAllHistory() {
 
 void HistoryDeleterImpl::DeleteHistoryDuringInterval(
     const TimeInterval& interval) {
-  if (@available(macOS 11.0, *)) {
+  if (@available(macOS 12.1, *)) {
     base::scoped_nsobject<NSDateInterval> nsinterval([[NSDateInterval alloc]
         initWithStartDate:interval.first.ToNSDate()
                   endDate:interval.second.ToNSDate()]);
@@ -43,7 +43,7 @@ void HistoryDeleterImpl::DeleteHistoryDuringInterval(
 }
 
 void HistoryDeleterImpl::DeleteHistoryForURL(const GURL& url) {
-  if (@available(macOS 11.0, *)) {
+  if (@available(macOS 12.1, *)) {
     [platform_deleter_ deleteHistoryForURL:net::NSURLWithGURL(url)];
   } else {
     NOTIMPLEMENTED();
@@ -51,7 +51,7 @@ void HistoryDeleterImpl::DeleteHistoryForURL(const GURL& url) {
 }
 
 HistoryDeleterImpl::HistoryDeleterImpl() {
-  if (@available(macOS 11.0, *)) {
+  if (@available(macOS 12.1, *)) {
     NSError* error = nil;
     NSString* bundle_id = base::SysUTF8ToNSString(base::mac::BaseBundleID());
     platform_deleter_.reset(

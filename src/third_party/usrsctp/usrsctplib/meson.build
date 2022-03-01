@@ -1,7 +1,10 @@
 # Project definition
 project('usrsctplib', 'c',
     version: '0.9.5.0',
-    default_options: ['c_std=c99'],
+    default_options: [
+        'c_std=c99',
+        'warning_level=2',
+    ],
     meson_version: '>=0.49.0')
 
 # Shared library API and ABI versions
@@ -27,8 +30,6 @@ if compiler.get_argument_syntax() == 'msvc'
 else
     compiler_args = compiler.get_supported_arguments([
         '-pedantic',
-        '-Wall',
-        '-Wextra',
         '-Wfloat-equal',
         '-Wshadow',
         '-Wpointer-arith',
@@ -112,6 +113,11 @@ have_netinet_ip = compiler.has_header('netinet/ip.h')
 have_netinet_ip_icmp = compiler.has_header('netinet/ip_icmp.h')
 if have_sys_types and have_netinet_in and have_netinet_ip and have_netinet_ip_icmp
     add_project_arguments('-DHAVE_NETINET_IP_ICMP_H', language: 'c')
+endif
+
+# Feature: net/route
+if compiler.has_header('net/route.h')
+    add_project_arguments('-DHAVE_NET_ROUTE_H', language: 'c')
 endif
 
 # Feature: stdatomic

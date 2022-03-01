@@ -57,6 +57,8 @@ class CMDFormatTestCase(unittest.TestCase):
         return
       elif args[0] == 'branch':
         return
+      elif args[0] == 'config':
+        return
       raise Exception('Did not expect such run git command: %s' % args[0])
 
     mock_runs = mock.patch('git_migrate_default_branch.git_common.run',

@@ -17,7 +17,7 @@
 
 # Keep in sync with tensorflow_estimator and configure.py.
 # LINT.IfChange
-LATEST_BAZEL_VERSION=3.1.0
+LATEST_BAZEL_VERSION=4.2.1
 # LINT.ThenChange(
 #   //tensorflow/opensource_only/configure.py,
 #   //tensorflow_estimator/google/kokoro/common.sh,
@@ -103,53 +103,6 @@ function update_bazel_linux {
 # LINT.ThenChange(
 #   //tensorflow_estimator/google/kokoro/common.sh)
 
-function install_pip2 {
-  curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-  sudo python2 get-pip.py
-}
-
-function install_pip3.5 {
-  curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-  sudo python3.5 get-pip.py
-}
-
-function install_pip_deps {
-  SUDO_CMD=""
-  PIP_CMD="pip"
-
-  while true; do
-    if [[ -z "${1}" ]]; then
-      break
-    fi
-    if [[ "$1" == "sudo" ]]; then
-      SUDO_CMD="sudo "
-    elif [[ "$1" == "pip"* ]]; then
-      PIP_CMD="$1"
-    fi
-    shift
-  done
-
-  # LINT.IfChange(ubuntu_pip_installations)
-  # TODO(aselle): Change all these to be --user instead of sudo.
-  ${SUDO_CMD} ${PIP_CMD} install astunparse==1.6.3
-  ${SUDO_CMD} ${PIP_CMD} install keras_preprocessing==1.1.0 --no-deps
-  "${PIP_CMD}" install numpy==1.16.0 --user
-  "${PIP_CMD}" install PyYAML==3.13 --user
-  ${SUDO_CMD} ${PIP_CMD} install gast==0.3.3
-  ${SUDO_CMD} ${PIP_CMD} install h5py==2.10.0
-  ${SUDO_CMD} ${PIP_CMD} install six==1.12.0
-  ${SUDO_CMD} ${PIP_CMD} install grpcio
-  ${SUDO_CMD} ${PIP_CMD} install portpicker
-  ${SUDO_CMD} ${PIP_CMD} install scipy
-  ${SUDO_CMD} ${PIP_CMD} install scikit-learn
-  ${SUDO_CMD} ${PIP_CMD} install --upgrade tb-nightly
-  ${PIP_CMD} install --user --upgrade attrs
-  ${PIP_CMD} install --user --upgrade tf-estimator-nightly==2.4.0.dev2020072601
-  ${PIP_CMD} install --user --upgrade "future>=0.17.1"
-  ${PIP_CMD} install --user --upgrade wrapt
-  # LINT.ThenChange(:ubuntu_16_pip_installations)
-}
-
 function install_ubuntu_16_pip_deps {
   PIP_CMD="pip"
 
@@ -163,68 +116,213 @@ function install_ubuntu_16_pip_deps {
     shift
   done
 
-  # LINT.IfChange(ubuntu_16_pip_installations)
-  "${PIP_CMD}" install astunparse==1.6.3 --user
-  "${PIP_CMD}" install --user --upgrade attrs
-  "${PIP_CMD}" install keras_preprocessing==1.1.0 --no-deps --user
-  "${PIP_CMD}" install numpy==1.16.0 --user
-  "${PIP_CMD}" install --user --upgrade "future>=0.17.1"
-  "${PIP_CMD}" install gast==0.3.3 --user
-  "${PIP_CMD}" install h5py==2.10.0 --user
-  "${PIP_CMD}" install six==1.12.0 --user
-  "${PIP_CMD}" install grpcio --user
-  "${PIP_CMD}" install portpicker --user
-  "${PIP_CMD}" install scipy --user
-  "${PIP_CMD}" install scikit-learn --user
-  "${PIP_CMD}" install PyYAML==3.13 --user
-  # b/156523241
-  "${PIP_CMD}" install --force-reinstall --user --upgrade tf-estimator-nightly==2.4.0.dev2020072601
-  "${PIP_CMD}" install --user --upgrade tb-nightly
-  "${PIP_CMD}" install --user --upgrade wrapt
-  # LINT.ThenChange(:ubuntu_pip_installations)
+  # First, upgrade pypi wheels
+  "${PIP_CMD}" install --user --upgrade 'setuptools<53' pip wheel
+
+  # LINT.IfChange(linux_pip_installations_orig)
+  # Remove any historical keras package if they are installed.
+  "${PIP_CMD}" list
+  "${PIP_CMD}" uninstall -y keras
+  "${PIP_CMD}" install --user -r tensorflow/tools/ci_build/release/requirements_ubuntu.txt
+  # LINT.ThenChange(:mac_pip_installations)
 }
 
-function install_macos_pip_deps {
-  SUDO_CMD=""
+# Gradually replace function install_ubuntu_16_pip_deps.
+# TODO(lpak): delete install_ubuntu_16_pip_deps when completely replaced.
+function install_ubuntu_16_python_pip_deps {
   PIP_CMD="pip"
 
   while true; do
     if [[ -z "${1}" ]]; then
       break
     fi
-    if [[ "$1" == "sudo" ]]; then
-      SUDO_CMD="sudo "
-    elif [[ "$1" == "pip3.7" ]]; then
-      PIP_CMD="python3.7 -m pip"
-      SUDO_CMD="sudo -H "
-    elif [[ "$1" == "pip"* ]]; then
+    if [[ "$1" == "pip"* ]]; then
       PIP_CMD="$1"
+    fi
+    if [[ "$1" == "python"* ]]; then
+      PIP_CMD="${1} -m pip"
     fi
     shift
   done
 
-   # High Sierra pip for Python2.7 installs don't work as expected.
-   if [[ "${PIP_CMD}" == "pip" ]]; then
-    PIP_CMD="python -m pip"
-    SUDO_CMD="sudo -H "
-   fi
+  # First, upgrade pypi wheels
+  ${PIP_CMD} install --user --upgrade 'setuptools<53' pip wheel
 
-  # TODO(aselle): Change all these to be --user instead of sudo.
-  ${SUDO_CMD} ${PIP_CMD} install --upgrade setuptools==39.1.0
-  ${SUDO_CMD} ${PIP_CMD} install keras_preprocessing==1.1.0 --no-deps
-  ${SUDO_CMD} ${PIP_CMD} install --upgrade mock portpicker scipy grpcio
-  ${SUDO_CMD} ${PIP_CMD} install six==1.12.0
-  ${SUDO_CMD} ${PIP_CMD} install scikit-learn
-  ${SUDO_CMD} ${PIP_CMD} install numpy==1.16.0
-  ${SUDO_CMD} ${PIP_CMD} install gast==0.3.3
-  ${SUDO_CMD} ${PIP_CMD} install h5py==2.10.0
-  ${SUDO_CMD} ${PIP_CMD} install --upgrade grpcio
-  ${SUDO_CMD} ${PIP_CMD} install --upgrade tb-nightly
-  ${PIP_CMD} install --user --upgrade attrs
-  # b/156523241
-  ${PIP_CMD} install --force-reinstall --user --upgrade tf-estimator-nightly==2.4.0.dev2020072601
-  ${PIP_CMD} install --user --upgrade wrapt
-  ${PIP_CMD} install --user --upgrade "future>=0.17.1"
+  # LINT.IfChange(linux_pip_installations)
+  # Remove any historical keras package if they are installed.
+  ${PIP_CMD} list
+  ${PIP_CMD} uninstall -y keras
+  ${PIP_CMD} install --user -r tensorflow/tools/ci_build/release/requirements_ubuntu.txt
+  # LINT.ThenChange(:mac_pip_installations)
+}
+
+function install_ubuntu_pip_deps {
+  # Install requirements in the python environment
+  which python
+  which pip
+  PIP_CMD="python -m pip"
+  ${PIP_CMD} list
+  # auditwheel>=4 supports manylinux_2 and changes the output wheel filename
+  # when upgrading auditwheel modify upload_wheel_cpu_ubuntu and upload_wheel_gpu_ubuntu
+  # to match the filename generated.
+  ${PIP_CMD} install --upgrade pip wheel auditwheel~=3.3.1
+  ${PIP_CMD} install -r tensorflow/tools/ci_build/release/${REQUIREMENTS_FNAME}
+  ${PIP_CMD} list
+}
+
+function setup_venv_ubuntu () {
+  # Create virtual env and install dependencies
+  # First argument needs to be the python executable.
+  ${1} -m venv ~/.venv/tf
+  source ~/.venv/tf/bin/activate
+  if [[ "$1" == "python3.10" ]]; then
+    REQUIREMENTS_FNAME="requirements_ubuntu_py310.txt"
+  else
+    REQUIREMENTS_FNAME="requirements_ubuntu.txt"
+  fi
+  install_ubuntu_pip_deps
+}
+
+function remove_venv_ubuntu () {
+  # Deactivate virtual environment and clean up
+  deactivate
+  rm -rf ~/.venv/tf
+}
+
+function install_ubuntu_pip_deps_novenv () {
+  # Install on default python Env (No Virtual Env for pip packages)
+  PIP_CMD="${1} -m pip"
+  if [[ "$1" == "python3.10" ]]; then
+    REQUIREMENTS_FNAME="requirements_ubuntu_py310.txt"
+  else
+    REQUIREMENTS_FNAME="requirements_ubuntu.txt"
+  fi
+  ${PIP_CMD} install --user --upgrade setuptools pip wheel pyparsing auditwheel~=3.3.1
+  ${PIP_CMD} install --user -r tensorflow/tools/ci_build/release/${REQUIREMENTS_FNAME}
+  ${PIP_CMD} list
+
+}
+
+function upload_wheel_cpu_ubuntu() {
+  # Upload the built packages to pypi.
+  for WHL_PATH in $(ls pip_pkg/tf_nightly_cpu-*dev*.whl); do
+
+    WHL_DIR=$(dirname "${WHL_PATH}")
+    WHL_BASE_NAME=$(basename "${WHL_PATH}")
+    AUDITED_WHL_NAME="${WHL_DIR}"/$(echo "${WHL_BASE_NAME//linux/manylinux2010}")
+    auditwheel repair --plat manylinux2010_x86_64 -w "${WHL_DIR}" "${WHL_PATH}"
+
+    # test the whl pip package
+    chmod +x tensorflow/tools/ci_build/builds/nightly_release_smoke_test.sh
+    ./tensorflow/tools/ci_build/builds/nightly_release_smoke_test.sh ${AUDITED_WHL_NAME}
+    RETVAL=$?
+
+    # Upload the PIP package if whl test passes.
+    if [ ${RETVAL} -eq 0 ]; then
+      echo "Basic PIP test PASSED, Uploading package: ${AUDITED_WHL_NAME}"
+      python -m pip install twine
+      python -m twine upload -r pypi-warehouse "${AUDITED_WHL_NAME}"
+    else
+      echo "Basic PIP test FAILED, will not upload ${AUDITED_WHL_NAME} package"
+      return 1
+    fi
+  done
+}
+
+function upload_wheel_gpu_ubuntu() {
+  # Upload the built packages to pypi.
+  for WHL_PATH in $(ls pip_pkg/tf_nightly*dev*.whl); do
+
+    WHL_DIR=$(dirname "${WHL_PATH}")
+    WHL_BASE_NAME=$(basename "${WHL_PATH}")
+    AUDITED_WHL_NAME="${WHL_DIR}"/$(echo "${WHL_BASE_NAME//linux/manylinux2010}")
+
+    # Copy and rename for gpu manylinux as we do not want auditwheel to package in libcudart.so
+    WHL_PATH=${AUDITED_WHL_NAME}
+    cp "${WHL_DIR}"/"${WHL_BASE_NAME}" "${WHL_PATH}"
+    echo "Copied manylinux2010 wheel file at: ${WHL_PATH}"
+
+    # test the whl pip package
+    chmod +x tensorflow/tools/ci_build/builds/nightly_release_smoke_test.sh
+    ./tensorflow/tools/ci_build/builds/nightly_release_smoke_test.sh ${AUDITED_WHL_NAME}
+    RETVAL=$?
+
+    # Upload the PIP package if whl test passes.
+    if [ ${RETVAL} -eq 0 ]; then
+      echo "Basic PIP test PASSED, Uploading package: ${AUDITED_WHL_NAME}"
+      python -m pip install twine
+      python -m twine upload -r pypi-warehouse "${AUDITED_WHL_NAME}"
+    else
+      echo "Basic PIP test FAILED, will not upload ${AUDITED_WHL_NAME} package"
+      return 1
+    fi
+  done
+}
+
+function install_macos_pip_deps {
+
+  PIP_CMD="python -m pip"
+
+  # First, upgrade pypi wheels
+  ${PIP_CMD} install --upgrade 'setuptools<53' pip wheel
+
+  # LINT.IfChange(mac_pip_installations)
+  # Remove any historical keras package if they are installed.
+  ${PIP_CMD} list
+  ${PIP_CMD} uninstall -y keras
+  ${PIP_CMD} install -r tensorflow/tools/ci_build/release/requirements_mac.txt
+  # LINT.ThenChange(:linux_pip_installations_orig)
+  # LINT.ThenChange(:install_macos_pip_deps_no_venv)
+  # LINT.ThenChange(:linux_pip_installations)
+}
+
+# This hack is unfortunately necessary for MacOS builds that use pip_new.sh
+# You cannot deactivate a virtualenv from a subshell.
+function install_macos_pip_deps_no_venv {
+
+  PIP_CMD="${1} -m pip"
+
+  # First, upgrade pypi wheels
+  ${PIP_CMD} install --user --upgrade 'setuptools<53' pip wheel
+
+  # LINT.IfChange(mac_pip_installations)
+  # Remove any historical keras package if they are installed.
+  ${PIP_CMD} list
+  ${PIP_CMD} uninstall -y keras
+  ${PIP_CMD} install --user -r tensorflow/tools/ci_build/release/requirements_mac.txt
+  # LINT.ThenChange(:install_macos_pip_deps)
+}
+
+function setup_venv_macos () {
+  # First argument needs to be the python executable.
+  ${1} -m pip install virtualenv
+  ${1} -m virtualenv tf_build_env
+  source tf_build_env/bin/activate
+  install_macos_pip_deps
+}
+
+function activate_venv_macos () {
+  source tf_build_env/bin/activate
+}
+
+function setup_python_from_pyenv_macos {
+  if [[ -z "${1}" ]]; then
+    PY_VERSION=3.9.1
+  else
+    PY_VERSION=$1
+  fi
+
+  git clone --branch 1.2.27 https://github.com/pyenv/pyenv.git
+
+  PYENV_ROOT="$(pwd)/pyenv"
+  export PYENV_ROOT
+  export PATH="$PYENV_ROOT/bin:$PATH"
+
+  eval "$(pyenv init -)"
+
+  pyenv install -s "${PY_VERSION}"
+  pyenv local "${PY_VERSION}"
+  python --version
 }
 
 function maybe_skip_v1 {
@@ -245,6 +343,7 @@ function maybe_skip_v1 {
 function copy_to_new_project_name {
   WHL_PATH="$1"
   NEW_PROJECT_NAME="$2"
+  PYTHON_CMD="$3"
 
   ORIGINAL_WHL_NAME=$(basename "${WHL_PATH}")
   ORIGINAL_WHL_DIR=$(realpath "$(dirname "${WHL_PATH}")")
@@ -253,23 +352,33 @@ function copy_to_new_project_name {
   NEW_WHL_NAME="${NEW_PROJECT_NAME}-${FULL_TAG}"
   VERSION="$(echo "${FULL_TAG}" | cut -d '-' -f 1)"
 
-  TMP_DIR="$(mktemp -d)"
-  cp "${WHL_PATH}" "${TMP_DIR}"
-  pushd "${TMP_DIR}"
-  unzip -q "${ORIGINAL_WHL_NAME}"
-
   ORIGINAL_WHL_DIR_PREFIX="${ORIGINAL_PROJECT_NAME}-${VERSION}"
   NEW_WHL_DIR_PREFIX="${NEW_PROJECT_NAME}-${VERSION}"
+
+ TMP_DIR="$(mktemp -d)"
+ ${PYTHON_CMD} -m wheel unpack "${WHL_PATH}"
+ mv "${ORIGINAL_WHL_DIR_PREFIX}" "${TMP_DIR}"
+ pushd "${TMP_DIR}/${ORIGINAL_WHL_DIR_PREFIX}"
+
   mv "${ORIGINAL_WHL_DIR_PREFIX}.dist-info" "${NEW_WHL_DIR_PREFIX}.dist-info"
-  mv "${ORIGINAL_WHL_DIR_PREFIX}.data" "${NEW_WHL_DIR_PREFIX}.data" || echo
-  sed -i.bak "s/${ORIGINAL_PROJECT_NAME}/${NEW_PROJECT_NAME}/g" "${NEW_WHL_DIR_PREFIX}.dist-info/RECORD"
+  if [[ -d "${ORIGINAL_WHL_DIR_PREFIX}.data" ]]; then
+    mv "${ORIGINAL_WHL_DIR_PREFIX}.data" "${NEW_WHL_DIR_PREFIX}.data"
+  fi
 
   ORIGINAL_PROJECT_NAME_DASH="${ORIGINAL_PROJECT_NAME//_/-}"
   NEW_PROJECT_NAME_DASH="${NEW_PROJECT_NAME//_/-}"
-  sed -i.bak "s/${ORIGINAL_PROJECT_NAME_DASH}/${NEW_PROJECT_NAME_DASH}/g" "${NEW_WHL_DIR_PREFIX}.dist-info/METADATA"
 
-  zip -rq "${NEW_WHL_NAME}" "${NEW_WHL_DIR_PREFIX}.dist-info" "${NEW_WHL_DIR_PREFIX}.data" "tensorflow" "tensorflow_core"
-  mv "${NEW_WHL_NAME}" "${ORIGINAL_WHL_DIR}"
+  # We need to change the name in the METADATA file, but we need to ensure that
+  # all other occurences of the name stay the same, otherwise things such as
+  # URLs and depedencies might be broken (for example, replacing without care
+  # might transform a `tensorflow_estimator` dependency into
+  # `tensorflow_gpu_estimator`, which of course does not exist -- except by
+  # manual upload of a manually altered `tensorflow_estimator` package)
+  sed -i.bak "s/Name: ${ORIGINAL_PROJECT_NAME_DASH}/Name: ${NEW_PROJECT_NAME_DASH}/g" "${NEW_WHL_DIR_PREFIX}.dist-info/METADATA"
+
+  ${PYTHON_CMD} -m wheel pack .
+  mv *.whl "${ORIGINAL_WHL_DIR}"
+
   popd
   rm -rf "${TMP_DIR}"
 }
@@ -316,3 +425,43 @@ function test_xml_summary_exit {
   test_xml_summary
   exit "${RETVAL}"
 }
+
+# Note: The Docker-based Ubuntu TF-nightly jobs do not use this list. They use
+# https://github.com/tensorflow/build/blob/master/tf_sig_build_dockerfiles/devel.usertools/wheel_verification.bats
+# instead. See go/tf-devinfra/docker.
+# CPU size
+MAC_CPU_MAX_WHL_SIZE=225M
+WIN_CPU_MAX_WHL_SIZE=170M
+# GPU size
+WIN_GPU_MAX_WHL_SIZE=345M
+
+function test_tf_whl_size() {
+  WHL_PATH=${1}
+  # First, list all wheels with their sizes:
+  echo "Found these wheels: "
+  find $WHL_PATH -type f -exec ls -lh {} \;
+  echo "===================="
+  # Check CPU whl size.
+  if [[ "$WHL_PATH" == *"_cpu"* ]]; then
+    # Check MAC CPU whl size.
+    if [[ "$WHL_PATH" == *"-macos"* ]] && [[ $(find $WHL_PATH -type f -size +${MAC_CPU_MAX_WHL_SIZE}) ]]; then
+        echo "Mac CPU whl size has exceeded ${MAC_CPU_MAX_WHL_SIZE}. To keep
+within pypi's CDN distribution limit, we must not exceed that threshold."
+      return 1
+    fi
+    # Check Windows CPU whl size.
+    if [[ "$WHL_PATH" == *"-win"* ]] && [[ $(find $WHL_PATH -type f -size +${WIN_CPU_MAX_WHL_SIZE}) ]]; then
+        echo "Windows CPU whl size has exceeded ${WIN_CPU_MAX_WHL_SIZE}. To keep
+within pypi's CDN distribution limit, we must not exceed that threshold."
+      return 1
+    fi
+  elif [[ "$WHL_PATH" == *"_gpu"* ]]; then
+    # Check Windows GPU whl size.
+    if [[ "$WHL_PATH" == *"-win"* ]] && [[ $(find $WHL_PATH -type f -size +${WIN_GPU_MAX_WHL_SIZE}) ]]; then
+        echo "Windows GPU whl size has exceeded ${WIN_GPU_MAX_WHL_SIZE}. To keep
+within pypi's CDN distribution limit, we must not exceed that threshold."
+      return 1
+    fi
+  fi
+}
+

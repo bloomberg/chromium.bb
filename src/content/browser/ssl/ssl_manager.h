@@ -6,12 +6,10 @@
 #define CONTENT_BROWSER_SSL_SSL_MANAGER_H_
 
 #include <memory>
-#include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/ssl/ssl_error_handler.h"
-#include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/ssl_status.h"
 #include "net/base/net_errors.h"
@@ -36,7 +34,7 @@ struct LoadCommittedDetails;
 // There is one SSLManager per tab.
 // The security state (secure/insecure) is stored in the navigation entry.
 // Along with it are stored any SSL error code and the associated cert.
-class CONTENT_EXPORT SSLManager {
+class SSLManager {
  public:
   // Entry point for SSLCertificateErrors.  This function begins the process
   // of resolving a certificate error during an SSL connection.  SSLManager
@@ -57,6 +55,10 @@ class CONTENT_EXPORT SSLManager {
 
   // Construct an SSLManager for the specified tab.
   explicit SSLManager(NavigationControllerImpl* controller);
+
+  SSLManager(const SSLManager&) = delete;
+  SSLManager& operator=(const SSLManager&) = delete;
+
   virtual ~SSLManager();
 
   // The navigation controller associated with this SSLManager.  The
@@ -110,12 +112,10 @@ class CONTENT_EXPORT SSLManager {
 
   // The NavigationController that owns this SSLManager.  We are responsible
   // for the security UI of this tab.
-  NavigationControllerImpl* controller_;
+  raw_ptr<NavigationControllerImpl> controller_;
 
   // Delegate that manages SSL state specific to each host.
-  SSLHostStateDelegate* ssl_host_state_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLManager);
+  raw_ptr<SSLHostStateDelegate> ssl_host_state_delegate_;
 };
 
 }  // namespace content

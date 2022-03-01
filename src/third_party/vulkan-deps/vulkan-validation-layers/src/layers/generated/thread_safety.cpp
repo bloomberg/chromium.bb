@@ -25,12 +25,12 @@
 #include "thread_safety.h"
 
 
-read_lock_guard_t ThreadSafety::read_lock() {
-    return read_lock_guard_t(validation_object_mutex, std::defer_lock);
+ReadLockGuard ThreadSafety::ReadLock() {
+    return ReadLockGuard(validation_object_mutex, std::defer_lock);
 }
 
-write_lock_guard_t ThreadSafety::write_lock() {
-    return write_lock_guard_t(validation_object_mutex, std::defer_lock);
+WriteLockGuard ThreadSafety::WriteLock() {
+    return WriteLockGuard(validation_object_mutex, std::defer_lock);
 }
 
 void ThreadSafety::PreCallRecordAllocateCommandBuffers(VkDevice device, const VkCommandBufferAllocateInfo *pAllocateInfo,
@@ -46,7 +46,7 @@ void ThreadSafety::PostCallRecordAllocateCommandBuffers(VkDevice device, const V
 
     // Record mapping from command buffer to command pool
     if(pCommandBuffers) {
-        auto lock = write_lock_guard_t(thread_safety_lock);
+        auto lock = WriteLockGuard(thread_safety_lock);
         auto &pool_command_buffers = pool_command_buffers_map[pAllocateInfo->commandPool];
         for (uint32_t index = 0; index < pAllocateInfo->commandBufferCount; index++) {
             command_pool_map.insert_or_assign(pCommandBuffers[index], pAllocateInfo->commandPool);
@@ -103,7 +103,7 @@ void ThreadSafety::PostCallRecordAllocateDescriptorSets(VkDevice device, const V
     FinishWriteObject(pAllocateInfo->descriptorPool, "vkAllocateDescriptorSets");
     // Host access to pAllocateInfo::descriptorPool must be externally synchronized
     if (VK_SUCCESS == result) {
-        auto lock = write_lock_guard_t(thread_safety_lock);
+        auto lock = WriteLockGuard(thread_safety_lock);
         auto &pool_descriptor_sets = pool_descriptor_sets_map[pAllocateInfo->descriptorPool];
         for (uint32_t index0 = 0; index0 < pAllocateInfo->descriptorSetCount; index0++) {
             CreateObject(pDescriptorSets[index0]);
@@ -152,7 +152,7 @@ void ThreadSafety::PostCallRecordFreeDescriptorSets(
     // Host access to each member of pDescriptorSets must be externally synchronized
     // Host access to pAllocateInfo::descriptorPool must be externally synchronized
     if (VK_SUCCESS == result) {
-        auto lock = write_lock_guard_t(thread_safety_lock);
+        auto lock = WriteLockGuard(thread_safety_lock);
         auto &pool_descriptor_sets = pool_descriptor_sets_map[descriptorPool];
         for (uint32_t index0 = 0; index0 < descriptorSetCount; index0++) {
             DestroyObject(pDescriptorSets[index0]);
@@ -168,7 +168,7 @@ void ThreadSafety::PreCallRecordDestroyDescriptorPool(
     StartReadObjectParentInstance(device, "vkDestroyDescriptorPool");
     StartWriteObject(descriptorPool, "vkDestroyDescriptorPool");
     // Host access to descriptorPool must be externally synchronized
-    auto lock = read_lock_guard_t(thread_safety_lock);
+    auto lock = ReadLockGuard(thread_safety_lock);
     auto iterator = pool_descriptor_sets_map.find(descriptorPool);
     // Possible to have no descriptor sets allocated from pool
     if (iterator != pool_descriptor_sets_map.end()) {
@@ -187,7 +187,7 @@ void ThreadSafety::PostCallRecordDestroyDescriptorPool(
     DestroyObject(descriptorPool);
     // Host access to descriptorPool must be externally synchronized
     {
-        auto lock = write_lock_guard_t(thread_safety_lock);
+        auto lock = WriteLockGuard(thread_safety_lock);
         // remove references to implicitly freed descriptor sets
         for(auto descriptor_set : pool_descriptor_sets_map[descriptorPool]) {
             FinishWriteObject(descriptor_set, "vkDestroyDescriptorPool");
@@ -206,7 +206,7 @@ void ThreadSafety::PreCallRecordResetDescriptorPool(
     StartWriteObject(descriptorPool, "vkResetDescriptorPool");
     // Host access to descriptorPool must be externally synchronized
     // any sname:VkDescriptorSet objects allocated from pname:descriptorPool must be externally synchronized between host accesses
-    auto lock = read_lock_guard_t(thread_safety_lock);
+    auto lock = ReadLockGuard(thread_safety_lock);
     auto iterator = pool_descriptor_sets_map.find(descriptorPool);
     // Possible to have no descriptor sets allocated from pool
     if (iterator != pool_descriptor_sets_map.end()) {
@@ -227,7 +227,7 @@ void ThreadSafety::PostCallRecordResetDescriptorPool(
     // any sname:VkDescriptorSet objects allocated from pname:descriptorPool must be externally synchronized between host accesses
     if (VK_SUCCESS == result) {
         // remove references to implicitly freed descriptor sets
-        auto lock = write_lock_guard_t(thread_safety_lock);
+        auto lock = WriteLockGuard(thread_safety_lock);
         for(auto descriptor_set : pool_descriptor_sets_map[descriptorPool]) {
             FinishWriteObject(descriptor_set, "vkResetDescriptorPool");
             DestroyObject(descriptor_set);
@@ -391,7 +391,7 @@ void ThreadSafety::PreCallRecordFreeCommandBuffers(VkDevice device, VkCommandPoo
         // so this isn't a no-op
         // The driver may immediately reuse command buffers in another thread.
         // These updates need to be done before calling down to the driver.
-        auto lock = write_lock_guard_t(thread_safety_lock);
+        auto lock = WriteLockGuard(thread_safety_lock);
         auto &pool_command_buffers = pool_command_buffers_map[commandPool];
         for (uint32_t index = 0; index < commandBufferCount; index++) {
             StartWriteObject(pCommandBuffers[index], "vkFreeCommandBuffers", lockCommandPool);
@@ -452,7 +452,7 @@ void ThreadSafety::PreCallRecordDestroyCommandPool(VkDevice device, VkCommandPoo
     c_VkCommandPoolContents.StartWrite(commandPool, "vkDestroyCommandPool");
     // Host access to commandPool must be externally synchronized
 
-    auto lock = write_lock_guard_t(thread_safety_lock);
+    auto lock = WriteLockGuard(thread_safety_lock);
     // The driver may immediately reuse command buffers in another thread.
     // These updates need to be done before calling down to the driver.
     // remove references to implicitly freed command pools
@@ -484,7 +484,7 @@ void ThreadSafety::PostCallRecordGetSwapchainImagesKHR(VkDevice device, VkSwapch
     FinishReadObjectParentInstance(device, "vkGetSwapchainImagesKHR");
     FinishReadObjectParentInstance(swapchain, "vkGetSwapchainImagesKHR");
     if (pSwapchainImages != NULL) {
-        auto lock = write_lock_guard_t(thread_safety_lock);
+        auto lock = WriteLockGuard(thread_safety_lock);
         auto &wrapped_swapchain_image_handles = swapchain_wrapped_image_handle_map[swapchain];
         for (uint32_t i = static_cast<uint32_t>(wrapped_swapchain_image_handles.size()); i < *pSwapchainImageCount; i++) {
             CreateObject(pSwapchainImages[i]);
@@ -500,7 +500,7 @@ void ThreadSafety::PreCallRecordDestroySwapchainKHR(
     StartReadObjectParentInstance(device, "vkDestroySwapchainKHR");
     StartWriteObjectParentInstance(swapchain, "vkDestroySwapchainKHR");
     // Host access to swapchain must be externally synchronized
-    auto lock = read_lock_guard_t(thread_safety_lock);
+    auto lock = ReadLockGuard(thread_safety_lock);
     for (auto &image_handle : swapchain_wrapped_image_handle_map[swapchain]) {
         StartWriteObject(image_handle, "vkDestroySwapchainKHR");
     }
@@ -514,7 +514,7 @@ void ThreadSafety::PostCallRecordDestroySwapchainKHR(
     FinishWriteObjectParentInstance(swapchain, "vkDestroySwapchainKHR");
     DestroyObjectParentInstance(swapchain);
     // Host access to swapchain must be externally synchronized
-    auto lock = write_lock_guard_t(thread_safety_lock);
+    auto lock = WriteLockGuard(thread_safety_lock);
     for (auto &image_handle : swapchain_wrapped_image_handle_map[swapchain]) {
         FinishWriteObject(image_handle, "vkDestroySwapchainKHR");
         DestroyObject(image_handle);
@@ -535,7 +535,7 @@ void ThreadSafety::PostCallRecordDestroyDevice(
     FinishWriteObjectParentInstance(device, "vkDestroyDevice");
     DestroyObjectParentInstance(device);
     // Host access to device must be externally synchronized
-    auto lock = write_lock_guard_t(thread_safety_lock);
+    auto lock = WriteLockGuard(thread_safety_lock);
     for (auto &queue : device_queues_map[device]) {
         DestroyObject(queue);
     }
@@ -557,7 +557,7 @@ void ThreadSafety::PostCallRecordGetDeviceQueue(
     VkQueue*                                    pQueue) {
     FinishReadObjectParentInstance(device, "vkGetDeviceQueue");
     CreateObject(*pQueue);
-    auto lock = write_lock_guard_t(thread_safety_lock);
+    auto lock = WriteLockGuard(thread_safety_lock);
     device_queues_map[device].insert(*pQueue);
 }
 
@@ -574,7 +574,7 @@ void ThreadSafety::PostCallRecordGetDeviceQueue2(
     VkQueue*                                    pQueue) {
     FinishReadObjectParentInstance(device, "vkGetDeviceQueue2");
     CreateObject(*pQueue);
-    auto lock = write_lock_guard_t(thread_safety_lock);
+    auto lock = WriteLockGuard(thread_safety_lock);
     device_queues_map[device].insert(*pQueue);
 }
 
@@ -586,7 +586,7 @@ void ThreadSafety::PostCallRecordGetPhysicalDeviceDisplayPropertiesKHR(
     if ((result != VK_SUCCESS) && (result != VK_INCOMPLETE)) return;
     if (pProperties) {
         for (uint32_t i = 0; i < *pPropertyCount; ++i) {
-            CreateObject(pProperties[i].display);
+            CreateObjectParentInstance(pProperties[i].display);
         }
     }
 }
@@ -599,7 +599,7 @@ void ThreadSafety::PostCallRecordGetPhysicalDeviceDisplayProperties2KHR(
     if ((result != VK_SUCCESS) && (result != VK_INCOMPLETE)) return;
     if (pProperties) {
         for (uint32_t i = 0; i < *pPropertyCount; ++i) {
-            CreateObject(pProperties[i].displayProperties.display);
+            CreateObjectParentInstance(pProperties[i].displayProperties.display);
         }
     }
 }
@@ -612,7 +612,7 @@ void ThreadSafety::PostCallRecordGetPhysicalDeviceDisplayPlanePropertiesKHR(
     if ((result != VK_SUCCESS) && (result != VK_INCOMPLETE)) return;
     if (pProperties) {
         for (uint32_t i = 0; i < *pPropertyCount; ++i) {
-            CreateObject(pProperties[i].currentDisplay);
+            CreateObjectParentInstance(pProperties[i].currentDisplay);
         }
     }
 }
@@ -625,7 +625,7 @@ void ThreadSafety::PostCallRecordGetPhysicalDeviceDisplayPlaneProperties2KHR(
     if ((result != VK_SUCCESS) && (result != VK_INCOMPLETE)) return;
     if (pProperties) {
         for (uint32_t i = 0; i < *pPropertyCount; ++i) {
-            CreateObject(pProperties[i].displayPlaneProperties.currentDisplay);
+            CreateObjectParentInstance(pProperties[i].displayPlaneProperties.currentDisplay);
         }
     }
 }
@@ -647,7 +647,7 @@ void ThreadSafety::PostCallRecordGetDisplayPlaneSupportedDisplaysKHR(
     if ((result != VK_SUCCESS) && (result != VK_INCOMPLETE)) return;
     if (pDisplays) {
         for (uint32_t index = 0; index < *pDisplayCount; index++) {
-            CreateObject(pDisplays[index]);
+            CreateObjectParentInstance(pDisplays[index]);
         }
     }
 }
@@ -657,7 +657,7 @@ void ThreadSafety::PreCallRecordGetDisplayModePropertiesKHR(
     VkDisplayKHR                                display,
     uint32_t*                                   pPropertyCount,
     VkDisplayModePropertiesKHR*                 pProperties) {
-    StartReadObject(display, "vkGetDisplayModePropertiesKHR");
+    StartReadObjectParentInstance(display, "vkGetDisplayModePropertiesKHR");
 }
 
 void ThreadSafety::PostCallRecordGetDisplayModePropertiesKHR(
@@ -666,7 +666,7 @@ void ThreadSafety::PostCallRecordGetDisplayModePropertiesKHR(
     uint32_t*                                   pPropertyCount,
     VkDisplayModePropertiesKHR*                 pProperties,
     VkResult                                    result) {
-    FinishReadObject(display, "vkGetDisplayModePropertiesKHR");
+    FinishReadObjectParentInstance(display, "vkGetDisplayModePropertiesKHR");
     if ((result != VK_SUCCESS) && (result != VK_INCOMPLETE)) return;
     if (pProperties != nullptr) {
         for (uint32_t index = 0; index < *pPropertyCount; index++) {
@@ -680,7 +680,7 @@ void ThreadSafety::PreCallRecordGetDisplayModeProperties2KHR(
     VkDisplayKHR                                display,
     uint32_t*                                   pPropertyCount,
     VkDisplayModeProperties2KHR*                pProperties) {
-    StartReadObject(display, "vkGetDisplayModeProperties2KHR");
+    StartReadObjectParentInstance(display, "vkGetDisplayModeProperties2KHR");
 }
 
 void ThreadSafety::PostCallRecordGetDisplayModeProperties2KHR(
@@ -689,7 +689,7 @@ void ThreadSafety::PostCallRecordGetDisplayModeProperties2KHR(
     uint32_t*                                   pPropertyCount,
     VkDisplayModeProperties2KHR*                pProperties,
     VkResult                                    result) {
-    FinishReadObject(display, "vkGetDisplayModeProperties2KHR");
+    FinishReadObjectParentInstance(display, "vkGetDisplayModeProperties2KHR");
     if ((result != VK_SUCCESS) && (result != VK_INCOMPLETE)) return;
     if (pProperties != nullptr) {
         for (uint32_t index = 0; index < *pPropertyCount; index++) {
@@ -722,15 +722,39 @@ void ThreadSafety::PostCallRecordGetRandROutputDisplayEXT(
     VkDisplayKHR*                               pDisplay,
     VkResult                                    result) {
     if ((result != VK_SUCCESS) || (pDisplay == nullptr)) return;
-    CreateObject(*pDisplay);
+    CreateObjectParentInstance(*pDisplay);
 }
 
 #endif // VK_USE_PLATFORM_XLIB_XRANDR_EXT
 
+void ThreadSafety::PreCallRecordRegisterDisplayEventEXT(
+    VkDevice                                    device,
+    VkDisplayKHR                                display,
+    const VkDisplayEventInfoEXT*                pDisplayEventInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkFence*                                    pFence) {
+    StartReadObjectParentInstance(device, "vkRegisterDisplayEventEXT");
+    StartReadObjectParentInstance(display, "vkRegisterDisplayEventEXT");
+}
+
+void ThreadSafety::PostCallRecordRegisterDisplayEventEXT(
+    VkDevice                                    device,
+    VkDisplayKHR                                display,
+    const VkDisplayEventInfoEXT*                pDisplayEventInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkFence*                                    pFence,
+    VkResult                                    result) {
+    FinishReadObjectParentInstance(device, "vkRegisterDisplayEventEXT");
+    FinishReadObjectParentInstance(display, "vkRegisterDisplayEventEXT");
+    if (result == VK_SUCCESS) {
+        CreateObject(*pFence);
+    }
+}
+
 void ThreadSafety::PreCallRecordDeviceWaitIdle(
     VkDevice                                    device) {
     StartReadObjectParentInstance(device, "vkDeviceWaitIdle");
-    auto lock = read_lock_guard_t(thread_safety_lock);
+    auto lock = ReadLockGuard(thread_safety_lock);
     const auto &queue_set = device_queues_map[device];
     for (const auto &queue : queue_set) {
         StartWriteObject(queue, "vkDeviceWaitIdle");
@@ -741,7 +765,7 @@ void ThreadSafety::PostCallRecordDeviceWaitIdle(
     VkDevice                                    device,
     VkResult                                    result) {
     FinishReadObjectParentInstance(device, "vkDeviceWaitIdle");
-    auto lock = read_lock_guard_t(thread_safety_lock);
+    auto lock = ReadLockGuard(thread_safety_lock);
     const auto &queue_set = device_queues_map[device];
     for (const auto &queue : queue_set) {
         FinishWriteObject(queue, "vkDeviceWaitIdle");
@@ -2092,6 +2116,7 @@ void ThreadSafety::PreCallRecordResetCommandBuffer(
     VkCommandBufferResetFlags                   flags) {
     StartWriteObject(commandBuffer, "vkResetCommandBuffer");
     // Host access to commandBuffer must be externally synchronized
+    // the sname:VkCommandPool that pname:commandBuffer was allocated from must be externally synchronized between host accesses
 }
 
 void ThreadSafety::PostCallRecordResetCommandBuffer(
@@ -2100,6 +2125,7 @@ void ThreadSafety::PostCallRecordResetCommandBuffer(
     VkResult                                    result) {
     FinishWriteObject(commandBuffer, "vkResetCommandBuffer");
     // Host access to commandBuffer must be externally synchronized
+    // the sname:VkCommandPool that pname:commandBuffer was allocated from must be externally synchronized between host accesses
 }
 
 void ThreadSafety::PreCallRecordCmdBindPipeline(
@@ -3751,7 +3777,7 @@ void ThreadSafety::PreCallRecordCreateDisplayModeKHR(
     const VkDisplayModeCreateInfoKHR*           pCreateInfo,
     const VkAllocationCallbacks*                pAllocator,
     VkDisplayModeKHR*                           pMode) {
-    StartWriteObject(display, "vkCreateDisplayModeKHR");
+    StartWriteObjectParentInstance(display, "vkCreateDisplayModeKHR");
     // Host access to display must be externally synchronized
 }
 
@@ -3762,7 +3788,7 @@ void ThreadSafety::PostCallRecordCreateDisplayModeKHR(
     const VkAllocationCallbacks*                pAllocator,
     VkDisplayModeKHR*                           pMode,
     VkResult                                    result) {
-    FinishWriteObject(display, "vkCreateDisplayModeKHR");
+    FinishWriteObjectParentInstance(display, "vkCreateDisplayModeKHR");
     if (result == VK_SUCCESS) {
         CreateObject(*pMode);
     }
@@ -4148,6 +4174,32 @@ void ThreadSafety::PostCallRecordCmdDecodeVideoKHR(
     FinishReadObject(commandBuffer, "vkCmdDecodeVideoKHR");
 }
 #endif // VK_ENABLE_BETA_EXTENSIONS
+
+void ThreadSafety::PreCallRecordCmdBeginRenderingKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkRenderingInfoKHR*                   pRenderingInfo) {
+    StartWriteObject(commandBuffer, "vkCmdBeginRenderingKHR");
+    // Host access to commandBuffer must be externally synchronized
+}
+
+void ThreadSafety::PostCallRecordCmdBeginRenderingKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkRenderingInfoKHR*                   pRenderingInfo) {
+    FinishWriteObject(commandBuffer, "vkCmdBeginRenderingKHR");
+    // Host access to commandBuffer must be externally synchronized
+}
+
+void ThreadSafety::PreCallRecordCmdEndRenderingKHR(
+    VkCommandBuffer                             commandBuffer) {
+    StartWriteObject(commandBuffer, "vkCmdEndRenderingKHR");
+    // Host access to commandBuffer must be externally synchronized
+}
+
+void ThreadSafety::PostCallRecordCmdEndRenderingKHR(
+    VkCommandBuffer                             commandBuffer) {
+    FinishWriteObject(commandBuffer, "vkCmdEndRenderingKHR");
+    // Host access to commandBuffer must be externally synchronized
+}
 
 void ThreadSafety::PreCallRecordGetDeviceGroupPeerMemoryFeaturesKHR(
     VkDevice                                    device,
@@ -4866,6 +4918,27 @@ void ThreadSafety::PostCallRecordCmdSetFragmentShadingRateKHR(
     // Host access to commandBuffer must be externally synchronized
 }
 
+void ThreadSafety::PreCallRecordWaitForPresentKHR(
+    VkDevice                                    device,
+    VkSwapchainKHR                              swapchain,
+    uint64_t                                    presentId,
+    uint64_t                                    timeout) {
+    StartReadObjectParentInstance(device, "vkWaitForPresentKHR");
+    StartWriteObjectParentInstance(swapchain, "vkWaitForPresentKHR");
+    // Host access to swapchain must be externally synchronized
+}
+
+void ThreadSafety::PostCallRecordWaitForPresentKHR(
+    VkDevice                                    device,
+    VkSwapchainKHR                              swapchain,
+    uint64_t                                    presentId,
+    uint64_t                                    timeout,
+    VkResult                                    result) {
+    FinishReadObjectParentInstance(device, "vkWaitForPresentKHR");
+    FinishWriteObjectParentInstance(swapchain, "vkWaitForPresentKHR");
+    // Host access to swapchain must be externally synchronized
+}
+
 void ThreadSafety::PreCallRecordGetBufferDeviceAddressKHR(
     VkDevice                                    device,
     const VkBufferDeviceAddressInfo*            pInfo) {
@@ -5291,6 +5364,50 @@ void ThreadSafety::PostCallRecordCmdResolveImage2KHR(
     // Host access to commandBuffer must be externally synchronized
 }
 
+void ThreadSafety::PreCallRecordGetDeviceBufferMemoryRequirementsKHR(
+    VkDevice                                    device,
+    const VkDeviceBufferMemoryRequirementsKHR*  pInfo,
+    VkMemoryRequirements2*                      pMemoryRequirements) {
+    StartReadObjectParentInstance(device, "vkGetDeviceBufferMemoryRequirementsKHR");
+}
+
+void ThreadSafety::PostCallRecordGetDeviceBufferMemoryRequirementsKHR(
+    VkDevice                                    device,
+    const VkDeviceBufferMemoryRequirementsKHR*  pInfo,
+    VkMemoryRequirements2*                      pMemoryRequirements) {
+    FinishReadObjectParentInstance(device, "vkGetDeviceBufferMemoryRequirementsKHR");
+}
+
+void ThreadSafety::PreCallRecordGetDeviceImageMemoryRequirementsKHR(
+    VkDevice                                    device,
+    const VkDeviceImageMemoryRequirementsKHR*   pInfo,
+    VkMemoryRequirements2*                      pMemoryRequirements) {
+    StartReadObjectParentInstance(device, "vkGetDeviceImageMemoryRequirementsKHR");
+}
+
+void ThreadSafety::PostCallRecordGetDeviceImageMemoryRequirementsKHR(
+    VkDevice                                    device,
+    const VkDeviceImageMemoryRequirementsKHR*   pInfo,
+    VkMemoryRequirements2*                      pMemoryRequirements) {
+    FinishReadObjectParentInstance(device, "vkGetDeviceImageMemoryRequirementsKHR");
+}
+
+void ThreadSafety::PreCallRecordGetDeviceImageSparseMemoryRequirementsKHR(
+    VkDevice                                    device,
+    const VkDeviceImageMemoryRequirementsKHR*   pInfo,
+    uint32_t*                                   pSparseMemoryRequirementCount,
+    VkSparseImageMemoryRequirements2*           pSparseMemoryRequirements) {
+    StartReadObjectParentInstance(device, "vkGetDeviceImageSparseMemoryRequirementsKHR");
+}
+
+void ThreadSafety::PostCallRecordGetDeviceImageSparseMemoryRequirementsKHR(
+    VkDevice                                    device,
+    const VkDeviceImageMemoryRequirementsKHR*   pInfo,
+    uint32_t*                                   pSparseMemoryRequirementCount,
+    VkSparseImageMemoryRequirements2*           pSparseMemoryRequirements) {
+    FinishReadObjectParentInstance(device, "vkGetDeviceImageSparseMemoryRequirementsKHR");
+}
+
 void ThreadSafety::PreCallRecordCreateDebugReportCallbackEXT(
     VkInstance                                  instance,
     const VkDebugReportCallbackCreateInfoEXT*   pCreateInfo,
@@ -5694,6 +5811,9 @@ void ThreadSafety::PostCallRecordCmdDrawIndexedIndirectCountAMD(
 #ifdef VK_ENABLE_BETA_EXTENSIONS
 #endif // VK_ENABLE_BETA_EXTENSIONS
 
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+#endif // VK_ENABLE_BETA_EXTENSIONS
+
 void ThreadSafety::PreCallRecordGetShaderInfoAMD(
     VkDevice                                    device,
     VkPipeline                                  pipeline,
@@ -5835,14 +5955,14 @@ void ThreadSafety::PostCallRecordCmdSetViewportWScalingNV(
 void ThreadSafety::PreCallRecordReleaseDisplayEXT(
     VkPhysicalDevice                            physicalDevice,
     VkDisplayKHR                                display) {
-    StartReadObject(display, "vkReleaseDisplayEXT");
+    StartReadObjectParentInstance(display, "vkReleaseDisplayEXT");
 }
 
 void ThreadSafety::PostCallRecordReleaseDisplayEXT(
     VkPhysicalDevice                            physicalDevice,
     VkDisplayKHR                                display,
     VkResult                                    result) {
-    FinishReadObject(display, "vkReleaseDisplayEXT");
+    FinishReadObjectParentInstance(display, "vkReleaseDisplayEXT");
 }
 
 #ifdef VK_USE_PLATFORM_XLIB_XRANDR_EXT
@@ -5851,7 +5971,7 @@ void ThreadSafety::PreCallRecordAcquireXlibDisplayEXT(
     VkPhysicalDevice                            physicalDevice,
     Display*                                    dpy,
     VkDisplayKHR                                display) {
-    StartReadObject(display, "vkAcquireXlibDisplayEXT");
+    StartReadObjectParentInstance(display, "vkAcquireXlibDisplayEXT");
 }
 
 void ThreadSafety::PostCallRecordAcquireXlibDisplayEXT(
@@ -5859,7 +5979,7 @@ void ThreadSafety::PostCallRecordAcquireXlibDisplayEXT(
     Display*                                    dpy,
     VkDisplayKHR                                display,
     VkResult                                    result) {
-    FinishReadObject(display, "vkAcquireXlibDisplayEXT");
+    FinishReadObjectParentInstance(display, "vkAcquireXlibDisplayEXT");
 }
 #endif // VK_USE_PLATFORM_XLIB_XRANDR_EXT
 
@@ -5883,7 +6003,7 @@ void ThreadSafety::PreCallRecordDisplayPowerControlEXT(
     VkDisplayKHR                                display,
     const VkDisplayPowerInfoEXT*                pDisplayPowerInfo) {
     StartReadObjectParentInstance(device, "vkDisplayPowerControlEXT");
-    StartReadObject(display, "vkDisplayPowerControlEXT");
+    StartReadObjectParentInstance(display, "vkDisplayPowerControlEXT");
 }
 
 void ThreadSafety::PostCallRecordDisplayPowerControlEXT(
@@ -5892,7 +6012,7 @@ void ThreadSafety::PostCallRecordDisplayPowerControlEXT(
     const VkDisplayPowerInfoEXT*                pDisplayPowerInfo,
     VkResult                                    result) {
     FinishReadObjectParentInstance(device, "vkDisplayPowerControlEXT");
-    FinishReadObject(display, "vkDisplayPowerControlEXT");
+    FinishReadObjectParentInstance(display, "vkDisplayPowerControlEXT");
 }
 
 void ThreadSafety::PreCallRecordRegisterDeviceEventEXT(
@@ -5910,27 +6030,6 @@ void ThreadSafety::PostCallRecordRegisterDeviceEventEXT(
     VkFence*                                    pFence,
     VkResult                                    result) {
     FinishReadObjectParentInstance(device, "vkRegisterDeviceEventEXT");
-}
-
-void ThreadSafety::PreCallRecordRegisterDisplayEventEXT(
-    VkDevice                                    device,
-    VkDisplayKHR                                display,
-    const VkDisplayEventInfoEXT*                pDisplayEventInfo,
-    const VkAllocationCallbacks*                pAllocator,
-    VkFence*                                    pFence) {
-    StartReadObjectParentInstance(device, "vkRegisterDisplayEventEXT");
-    StartReadObject(display, "vkRegisterDisplayEventEXT");
-}
-
-void ThreadSafety::PostCallRecordRegisterDisplayEventEXT(
-    VkDevice                                    device,
-    VkDisplayKHR                                display,
-    const VkDisplayEventInfoEXT*                pDisplayEventInfo,
-    const VkAllocationCallbacks*                pAllocator,
-    VkFence*                                    pFence,
-    VkResult                                    result) {
-    FinishReadObjectParentInstance(device, "vkRegisterDisplayEventEXT");
-    FinishReadObject(display, "vkRegisterDisplayEventEXT");
 }
 
 void ThreadSafety::PreCallRecordGetSwapchainCounterEXT(
@@ -7529,6 +7628,21 @@ void ThreadSafety::PostCallRecordDestroyIndirectCommandsLayoutNV(
     // Host access to indirectCommandsLayout must be externally synchronized
 }
 
+void ThreadSafety::PreCallRecordAcquireDrmDisplayEXT(
+    VkPhysicalDevice                            physicalDevice,
+    int32_t                                     drmFd,
+    VkDisplayKHR                                display) {
+    StartReadObjectParentInstance(display, "vkAcquireDrmDisplayEXT");
+}
+
+void ThreadSafety::PostCallRecordAcquireDrmDisplayEXT(
+    VkPhysicalDevice                            physicalDevice,
+    int32_t                                     drmFd,
+    VkDisplayKHR                                display,
+    VkResult                                    result) {
+    FinishReadObjectParentInstance(display, "vkAcquireDrmDisplayEXT");
+}
+
 void ThreadSafety::PreCallRecordCreatePrivateDataSlotEXT(
     VkDevice                                    device,
     const VkPrivateDataSlotCreateInfoEXT*       pCreateInfo,
@@ -7630,14 +7744,14 @@ void ThreadSafety::PostCallRecordCmdSetFragmentShadingRateEnumNV(
 void ThreadSafety::PreCallRecordAcquireWinrtDisplayNV(
     VkPhysicalDevice                            physicalDevice,
     VkDisplayKHR                                display) {
-    StartReadObject(display, "vkAcquireWinrtDisplayNV");
+    StartReadObjectParentInstance(display, "vkAcquireWinrtDisplayNV");
 }
 
 void ThreadSafety::PostCallRecordAcquireWinrtDisplayNV(
     VkPhysicalDevice                            physicalDevice,
     VkDisplayKHR                                display,
     VkResult                                    result) {
-    FinishReadObject(display, "vkAcquireWinrtDisplayNV");
+    FinishReadObjectParentInstance(display, "vkAcquireWinrtDisplayNV");
 }
 #endif // VK_USE_PLATFORM_WIN32_KHR
 
@@ -7750,6 +7864,158 @@ void ThreadSafety::PostCallRecordGetSemaphoreZirconHandleFUCHSIA(
 }
 #endif // VK_USE_PLATFORM_FUCHSIA
 
+#ifdef VK_USE_PLATFORM_FUCHSIA
+
+void ThreadSafety::PreCallRecordCreateBufferCollectionFUCHSIA(
+    VkDevice                                    device,
+    const VkBufferCollectionCreateInfoFUCHSIA*  pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkBufferCollectionFUCHSIA*                  pCollection) {
+    StartReadObjectParentInstance(device, "vkCreateBufferCollectionFUCHSIA");
+}
+
+void ThreadSafety::PostCallRecordCreateBufferCollectionFUCHSIA(
+    VkDevice                                    device,
+    const VkBufferCollectionCreateInfoFUCHSIA*  pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkBufferCollectionFUCHSIA*                  pCollection,
+    VkResult                                    result) {
+    FinishReadObjectParentInstance(device, "vkCreateBufferCollectionFUCHSIA");
+    if (result == VK_SUCCESS) {
+        CreateObject(*pCollection);
+    }
+}
+
+void ThreadSafety::PreCallRecordSetBufferCollectionImageConstraintsFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    const VkImageConstraintsInfoFUCHSIA*        pImageConstraintsInfo) {
+    StartReadObjectParentInstance(device, "vkSetBufferCollectionImageConstraintsFUCHSIA");
+    StartReadObject(collection, "vkSetBufferCollectionImageConstraintsFUCHSIA");
+}
+
+void ThreadSafety::PostCallRecordSetBufferCollectionImageConstraintsFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    const VkImageConstraintsInfoFUCHSIA*        pImageConstraintsInfo,
+    VkResult                                    result) {
+    FinishReadObjectParentInstance(device, "vkSetBufferCollectionImageConstraintsFUCHSIA");
+    FinishReadObject(collection, "vkSetBufferCollectionImageConstraintsFUCHSIA");
+}
+
+void ThreadSafety::PreCallRecordSetBufferCollectionBufferConstraintsFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    const VkBufferConstraintsInfoFUCHSIA*       pBufferConstraintsInfo) {
+    StartReadObjectParentInstance(device, "vkSetBufferCollectionBufferConstraintsFUCHSIA");
+    StartReadObject(collection, "vkSetBufferCollectionBufferConstraintsFUCHSIA");
+}
+
+void ThreadSafety::PostCallRecordSetBufferCollectionBufferConstraintsFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    const VkBufferConstraintsInfoFUCHSIA*       pBufferConstraintsInfo,
+    VkResult                                    result) {
+    FinishReadObjectParentInstance(device, "vkSetBufferCollectionBufferConstraintsFUCHSIA");
+    FinishReadObject(collection, "vkSetBufferCollectionBufferConstraintsFUCHSIA");
+}
+
+void ThreadSafety::PreCallRecordDestroyBufferCollectionFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    const VkAllocationCallbacks*                pAllocator) {
+    StartReadObjectParentInstance(device, "vkDestroyBufferCollectionFUCHSIA");
+    StartReadObject(collection, "vkDestroyBufferCollectionFUCHSIA");
+}
+
+void ThreadSafety::PostCallRecordDestroyBufferCollectionFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    const VkAllocationCallbacks*                pAllocator) {
+    FinishReadObjectParentInstance(device, "vkDestroyBufferCollectionFUCHSIA");
+    FinishReadObject(collection, "vkDestroyBufferCollectionFUCHSIA");
+}
+
+void ThreadSafety::PreCallRecordGetBufferCollectionPropertiesFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    VkBufferCollectionPropertiesFUCHSIA*        pProperties) {
+    StartReadObjectParentInstance(device, "vkGetBufferCollectionPropertiesFUCHSIA");
+    StartReadObject(collection, "vkGetBufferCollectionPropertiesFUCHSIA");
+}
+
+void ThreadSafety::PostCallRecordGetBufferCollectionPropertiesFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    VkBufferCollectionPropertiesFUCHSIA*        pProperties,
+    VkResult                                    result) {
+    FinishReadObjectParentInstance(device, "vkGetBufferCollectionPropertiesFUCHSIA");
+    FinishReadObject(collection, "vkGetBufferCollectionPropertiesFUCHSIA");
+}
+#endif // VK_USE_PLATFORM_FUCHSIA
+
+void ThreadSafety::PreCallRecordGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI(
+    VkDevice                                    device,
+    VkRenderPass                                renderpass,
+    VkExtent2D*                                 pMaxWorkgroupSize) {
+    StartReadObjectParentInstance(device, "vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI");
+    StartReadObject(renderpass, "vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI");
+}
+
+void ThreadSafety::PostCallRecordGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI(
+    VkDevice                                    device,
+    VkRenderPass                                renderpass,
+    VkExtent2D*                                 pMaxWorkgroupSize,
+    VkResult                                    result) {
+    FinishReadObjectParentInstance(device, "vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI");
+    FinishReadObject(renderpass, "vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI");
+}
+
+void ThreadSafety::PreCallRecordCmdSubpassShadingHUAWEI(
+    VkCommandBuffer                             commandBuffer) {
+    StartWriteObject(commandBuffer, "vkCmdSubpassShadingHUAWEI");
+    // Host access to commandBuffer must be externally synchronized
+}
+
+void ThreadSafety::PostCallRecordCmdSubpassShadingHUAWEI(
+    VkCommandBuffer                             commandBuffer) {
+    FinishWriteObject(commandBuffer, "vkCmdSubpassShadingHUAWEI");
+    // Host access to commandBuffer must be externally synchronized
+}
+
+void ThreadSafety::PreCallRecordCmdBindInvocationMaskHUAWEI(
+    VkCommandBuffer                             commandBuffer,
+    VkImageView                                 imageView,
+    VkImageLayout                               imageLayout) {
+    StartWriteObject(commandBuffer, "vkCmdBindInvocationMaskHUAWEI");
+    StartReadObject(imageView, "vkCmdBindInvocationMaskHUAWEI");
+    // Host access to commandBuffer must be externally synchronized
+}
+
+void ThreadSafety::PostCallRecordCmdBindInvocationMaskHUAWEI(
+    VkCommandBuffer                             commandBuffer,
+    VkImageView                                 imageView,
+    VkImageLayout                               imageLayout) {
+    FinishWriteObject(commandBuffer, "vkCmdBindInvocationMaskHUAWEI");
+    FinishReadObject(imageView, "vkCmdBindInvocationMaskHUAWEI");
+    // Host access to commandBuffer must be externally synchronized
+}
+
+void ThreadSafety::PreCallRecordGetMemoryRemoteAddressNV(
+    VkDevice                                    device,
+    const VkMemoryGetRemoteAddressInfoNV*       pMemoryGetRemoteAddressInfo,
+    VkRemoteAddressNV*                          pAddress) {
+    StartReadObjectParentInstance(device, "vkGetMemoryRemoteAddressNV");
+}
+
+void ThreadSafety::PostCallRecordGetMemoryRemoteAddressNV(
+    VkDevice                                    device,
+    const VkMemoryGetRemoteAddressInfoNV*       pMemoryGetRemoteAddressInfo,
+    VkRemoteAddressNV*                          pAddress,
+    VkResult                                    result) {
+    FinishReadObjectParentInstance(device, "vkGetMemoryRemoteAddressNV");
+}
+
 void ThreadSafety::PreCallRecordCmdSetPatchControlPointsEXT(
     VkCommandBuffer                             commandBuffer,
     uint32_t                                    patchControlPoints) {
@@ -7857,6 +8123,68 @@ void ThreadSafety::PostCallRecordCmdSetColorWriteEnableEXT(
     const VkBool32*                             pColorWriteEnables) {
     FinishWriteObject(commandBuffer, "vkCmdSetColorWriteEnableEXT");
     // Host access to commandBuffer must be externally synchronized
+}
+
+void ThreadSafety::PreCallRecordCmdDrawMultiEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    drawCount,
+    const VkMultiDrawInfoEXT*                   pVertexInfo,
+    uint32_t                                    instanceCount,
+    uint32_t                                    firstInstance,
+    uint32_t                                    stride) {
+    StartWriteObject(commandBuffer, "vkCmdDrawMultiEXT");
+    // Host access to commandBuffer must be externally synchronized
+}
+
+void ThreadSafety::PostCallRecordCmdDrawMultiEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    drawCount,
+    const VkMultiDrawInfoEXT*                   pVertexInfo,
+    uint32_t                                    instanceCount,
+    uint32_t                                    firstInstance,
+    uint32_t                                    stride) {
+    FinishWriteObject(commandBuffer, "vkCmdDrawMultiEXT");
+    // Host access to commandBuffer must be externally synchronized
+}
+
+void ThreadSafety::PreCallRecordCmdDrawMultiIndexedEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    drawCount,
+    const VkMultiDrawIndexedInfoEXT*            pIndexInfo,
+    uint32_t                                    instanceCount,
+    uint32_t                                    firstInstance,
+    uint32_t                                    stride,
+    const int32_t*                              pVertexOffset) {
+    StartWriteObject(commandBuffer, "vkCmdDrawMultiIndexedEXT");
+    // Host access to commandBuffer must be externally synchronized
+}
+
+void ThreadSafety::PostCallRecordCmdDrawMultiIndexedEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    drawCount,
+    const VkMultiDrawIndexedInfoEXT*            pIndexInfo,
+    uint32_t                                    instanceCount,
+    uint32_t                                    firstInstance,
+    uint32_t                                    stride,
+    const int32_t*                              pVertexOffset) {
+    FinishWriteObject(commandBuffer, "vkCmdDrawMultiIndexedEXT");
+    // Host access to commandBuffer must be externally synchronized
+}
+
+void ThreadSafety::PreCallRecordSetDeviceMemoryPriorityEXT(
+    VkDevice                                    device,
+    VkDeviceMemory                              memory,
+    float                                       priority) {
+    StartReadObjectParentInstance(device, "vkSetDeviceMemoryPriorityEXT");
+    StartReadObject(memory, "vkSetDeviceMemoryPriorityEXT");
+}
+
+void ThreadSafety::PostCallRecordSetDeviceMemoryPriorityEXT(
+    VkDevice                                    device,
+    VkDeviceMemory                              memory,
+    float                                       priority) {
+    FinishReadObjectParentInstance(device, "vkSetDeviceMemoryPriorityEXT");
+    FinishReadObject(memory, "vkSetDeviceMemoryPriorityEXT");
 }
 
 void ThreadSafety::PreCallRecordCreateAccelerationStructureKHR(

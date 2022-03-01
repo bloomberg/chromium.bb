@@ -15,7 +15,6 @@
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/application_context.h"
@@ -24,7 +23,7 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/pref_names.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
@@ -128,12 +127,10 @@ const char kSyncSettingsURL[] = "settings://open_sync";
     _prefObserverBridge->ObserveChangesForPreference(
         prefs::kIosHandoffToOtherDevices, &_prefChangeRegistrar);
 
-    if (base::FeatureList::IsEnabled(kIncognitoAuthentication)) {
-      _incognitoReauthPref = [[PrefBackedBoolean alloc]
-          initWithPrefService:GetApplicationContext()->GetLocalState()
-                     prefName:prefs::kIncognitoAuthenticationSetting];
-      [_incognitoReauthPref setObserver:self];
-    }
+    _incognitoReauthPref = [[PrefBackedBoolean alloc]
+        initWithPrefService:GetApplicationContext()->GetLocalState()
+                   prefName:prefs::kIncognitoAuthenticationSetting];
+    [_incognitoReauthPref setObserver:self];
   }
   return self;
 }
@@ -162,9 +159,7 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:SectionIdentifierPrivacyContent];
   [model addSectionWithIdentifier:SectionIdentifierWebServices];
-  if (base::FeatureList::IsEnabled(kIncognitoAuthentication)) {
-    [model addSectionWithIdentifier:SectionIdentifierIncognitoAuth];
-  }
+  [model addSectionWithIdentifier:SectionIdentifierIncognitoAuth];
 
   // Clear Browsing item.
   [model addItem:[self clearBrowsingDetailItem]
@@ -177,10 +172,9 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   [model addItem:[self handoffDetailItem]
       toSectionWithIdentifier:SectionIdentifierWebServices];
 
-  // Do not show the incognito authentication setting when Incongito mode is
+  // Do not show the incognito authentication setting when Incognito mode is
   // disabled.
-  if (base::FeatureList::IsEnabled(kIncognitoAuthentication) &&
-      !IsIncognitoModeDisabled(_browserState->GetPrefs())) {
+  if (!IsIncognitoModeDisabled(_browserState->GetPrefs())) {
     // Incognito authentication item.
     [model addItem:self.incognitoReauthItem
         toSectionWithIdentifier:SectionIdentifierIncognitoAuth];
@@ -221,13 +215,9 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   std::vector<GURL> urls;
 
   syncer::SyncService* syncService =
-      ProfileSyncServiceFactory::GetInstance()->GetForBrowserState(
-          _browserState);
+      SyncServiceFactory::GetInstance()->GetForBrowserState(_browserState);
 
-  if (!signin::IsMobileIdentityConsistencyEnabled()) {
-    privacyFooterText =
-        l10n_util::GetNSString(IDS_IOS_OPTIONS_PRIVACY_GOOGLE_SERVICES_FOOTER);
-  } else if (syncService->IsSyncFeatureEnabled()) {
+  if (syncService->IsSyncFeatureEnabled()) {
     privacyFooterText =
         l10n_util::GetNSString(IDS_IOS_PRIVACY_SYNC_AND_GOOGLE_SERVICES_FOOTER);
     urls.push_back(GURL(kSyncSettingsURL));
@@ -262,8 +252,6 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 }
 
 - (SettingsSwitchItem*)incognitoReauthItem {
-  DCHECK(base::FeatureList::IsEnabled(kIncognitoAuthentication));
-
   if (_incognitoReauthItem) {
     return _incognitoReauthItem;
   }
@@ -426,9 +414,6 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 // Whether the explanatory footer for the incognito reauth setting should be
 // shown. It's shown when the setting cannot be enabled due to the device state.
 - (BOOL)shouldShowReauthFooter {
-  if (!base::FeatureList::IsEnabled(kIncognitoAuthentication)) {
-    return NO;
-  }
   return ![self deviceSupportsAuthentication];
 }
 

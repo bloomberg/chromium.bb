@@ -1,7 +1,8 @@
 /*
- * Copyright (c) 2017-2018 The Khronos Group Inc.
- * Copyright (c) 2017-2018 Valve Corporation
- * Copyright (c) 2017-2018 LunarG, Inc.
+ * Copyright (c) 2017-2021 The Khronos Group Inc.
+ * Copyright (c) 2017-2021 Valve Corporation
+ * Copyright (c) 2017-2021 LunarG, Inc.
+ * Copyright (c) 2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +17,14 @@
  * limitations under the License.
  *
  * Author: Lenny Komow <lenny@lunarg.com>
+ * Author: Charles Giessen <charles@lunarg.com>
  */
 
 // This code generates an assembly file which provides offsets to get struct members from assembly code.
 
 #include <stdio.h>
 #include "loader.h"
+#include "log.h"
 
 #if !defined(_MSC_VER) || (_MSC_VER >= 1900)
 #define SIZE_T_FMT "%-8zu"
@@ -29,8 +32,7 @@
 #define SIZE_T_FMT "%-8lu"
 #endif
 
-struct ValueInfo
-{
+struct ValueInfo {
     const char *name;
     size_t value;
     const char *comment;
@@ -50,8 +52,11 @@ int main(int argc, char **argv) {
     }
 
     struct ValueInfo values[] = {
+        // clang-format off
         { .name = "VK_DEBUG_REPORT_ERROR_BIT_EXT", .value = (size_t) VK_DEBUG_REPORT_ERROR_BIT_EXT,
             .comment = "The numerical value of the enum value 'VK_DEBUG_REPORT_ERROR_BIT_EXT'" },
+        { .name = "VULKAN_LOADER_ERROR_BIT", .value = (size_t) VULKAN_LOADER_ERROR_BIT,
+            .comment = "The numerical value of the enum value 'VULKAN_LOADER_ERROR_BIT'" },
         { .name = "PTR_SIZE", .value = sizeof(void*),
             .comment = "The size of a pointer" },
         { .name = "HASH_SIZE", .value = sizeof(struct loader_dispatch_hash_entry),
@@ -74,20 +79,30 @@ int main(int argc, char **argv) {
             .comment = "The offset of 'func_name' within a 'loader_dispatch_hash_entry' struct" },
         { .name = "EXT_OFFSET_DEVICE_DISPATCH", .value = offsetof(struct loader_dev_dispatch_table, ext_dispatch),
             .comment = "The offset of 'ext_dispatch' within a 'loader_dev_dispatch_table' struct" },
+        // clang-format on
     };
 
     FILE *file = fopen("gen_defines.asm", "w");
     fprintf(file, "\n");
     if (!strcmp(assembler, "MASM")) {
-        for (size_t i = 0; i < sizeof(values)/sizeof(values[0]); ++i) {
+        for (size_t i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
             fprintf(file, "%-32s equ " SIZE_T_FMT "; %s\n", values[i].name, values[i].value, values[i].comment);
         }
     } else if (!strcmp(assembler, "GAS")) {
-#ifdef __x86_64__
+#if defined(__x86_64__) || defined(__i386__)
+        const char* comment_delimiter = "#";
+#if defined(__x86_64__)
         fprintf(file, ".set X86_64, 1\n");
-#endif // __x86_64__
-        for (size_t i = 0; i < sizeof(values)/sizeof(values[0]); ++i) {
-            fprintf(file, ".set %-32s, " SIZE_T_FMT "# %s\n", values[i].name, values[i].value, values[i].comment);
+#endif // defined(__x86_64__)
+#elif defined(__aarch64__)
+        const char* comment_delimiter = "//";
+        fprintf(file, ".set AARCH_64, 1\n");
+#else
+        // Default comment delimiter
+        const char* comment_delimiter = "#";
+#endif
+        for (size_t i = 0; i < sizeof(values) / sizeof(values[0]); ++i) {
+            fprintf(file, ".set %-32s, " SIZE_T_FMT "%s %s\n", values[i].name, values[i].value, comment_delimiter, values[i].comment);
         }
     }
     return fclose(file);

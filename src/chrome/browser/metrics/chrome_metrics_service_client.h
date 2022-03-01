@@ -13,7 +13,7 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
@@ -36,6 +36,10 @@ class PluginMetricsProvider;
 class Profile;
 class PrefRegistrySimple;
 
+namespace network_time {
+class NetworkTimeTracker;
+}  // namespace network_time
+
 namespace metrics {
 class MetricsService;
 class MetricsStateManager;
@@ -48,6 +52,10 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
                                    public ukm::HistoryDeleteObserver,
                                    public ukm::UkmConsentStateObserver {
  public:
+  ChromeMetricsServiceClient(const ChromeMetricsServiceClient&) = delete;
+  ChromeMetricsServiceClient& operator=(const ChromeMetricsServiceClient&) =
+      delete;
+
   ~ChromeMetricsServiceClient() override;
 
   // Factory function.
@@ -64,6 +72,7 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   void SetMetricsClientId(const std::string& client_id) override;
   int32_t GetProduct() override;
   std::string GetApplicationLocale() override;
+  const network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
   bool GetBrand(std::string* brand_code) override;
   metrics::SystemProfileProto::Channel GetChannel() override;
   bool IsExtendedStableChannel() override;
@@ -78,14 +87,16 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
       const metrics::MetricsLogUploader::UploadCallback& on_upload_complete)
       override;
   base::TimeDelta GetStandardUploadInterval() override;
+  void LoadingStateChanged(bool is_loading) override;
   void OnPluginLoadingError(const base::FilePath& plugin_path) override;
   bool IsReportingPolicyManaged() override;
   metrics::EnableMetricsDefault GetMetricsReportingDefaultState() override;
   bool IsUMACellularUploadLogicEnabled() override;
   bool IsUkmAllowedForAllProfiles() override;
+  bool IsUkmAllowedWithAppsForAllProfiles() override;
   bool IsUkmAllowedWithExtensionsForAllProfiles() override;
   bool AreNotificationListenersEnabledOnAllProfiles() override;
-  std::string GetAppPackageName() override;
+  std::string GetAppPackageNameIfLoggable() override;
   std::string GetUploadSigningKey() override;
   static void SetNotificationListenerSetupFailedForTesting(
       bool simulate_failure);
@@ -168,7 +179,7 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   std::unique_ptr<IdentifiabilityStudyState> identifiability_study_state_;
 
   // Weak pointer to the MetricsStateManager.
-  metrics::MetricsStateManager* const metrics_state_manager_;
+  const raw_ptr<metrics::MetricsStateManager> metrics_state_manager_;
 
   // The MetricsService that |this| is a client of.
   std::unique_ptr<metrics::MetricsService> metrics_service_;
@@ -196,7 +207,7 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
 #if BUILDFLAG(ENABLE_PLUGINS)
   // The PluginMetricsProvider instance that was registered with
   // MetricsService. Has the same lifetime as |metrics_service_|.
-  PluginMetricsProvider* plugin_metrics_provider_ = nullptr;
+  raw_ptr<PluginMetricsProvider> plugin_metrics_provider_ = nullptr;
 #endif
 
   // Subscription for receiving callbacks that a URL was opened from the
@@ -208,8 +219,6 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
 #endif
 
   base::WeakPtrFactory<ChromeMetricsServiceClient> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeMetricsServiceClient);
 };
 
 #endif  // CHROME_BROWSER_METRICS_CHROME_METRICS_SERVICE_CLIENT_H_

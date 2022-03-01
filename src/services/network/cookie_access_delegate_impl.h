@@ -6,8 +6,10 @@
 #define SERVICES_NETWORK_COOKIE_ACCESS_DELEGATE_IMPL_H_
 
 #include "base/component_export.h"
+#include "base/memory/raw_ptr.h"
 #include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/same_party_context.h"
 #include "services/network/cookie_settings.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -47,9 +49,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieAccessDelegateImpl
   bool ShouldIgnoreSameSiteRestrictions(
       const GURL& url,
       const net::SiteForCookies& site_for_cookies) const override;
-  bool IsContextSamePartyWithSite(
+  net::SamePartyContext ComputeSamePartyContext(
       const net::SchemefulSite& site,
-      const absl::optional<net::SchemefulSite>& top_frame_site,
+      const net::SchemefulSite* top_frame_site,
       const std::set<net::SchemefulSite>& party_context) const override;
   net::FirstPartySetsContextType ComputeFirstPartySetsContextType(
       const net::SchemefulSite& site,
@@ -57,13 +59,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieAccessDelegateImpl
       const std::set<net::SchemefulSite>& party_context) const override;
   bool IsInNontrivialFirstPartySet(
       const net::SchemefulSite& site) const override;
+  absl::optional<net::SchemefulSite> FindFirstPartySetOwner(
+      const net::SchemefulSite& site) const override;
   base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>
   RetrieveFirstPartySets() const override;
 
  private:
   const mojom::CookieAccessDelegateType type_;
-  const CookieSettings* const cookie_settings_;
-  const FirstPartySets* const first_party_sets_;
+  const raw_ptr<const CookieSettings> cookie_settings_;
+  const raw_ptr<const FirstPartySets> first_party_sets_;
 };
 
 }  // namespace network

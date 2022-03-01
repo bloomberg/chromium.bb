@@ -33,6 +33,7 @@
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_preferences.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
+#include "third_party/skia/include/gpu/GrContextThreadSafeProxy.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
@@ -178,14 +179,15 @@ SharedImageBackingGLTexture::ProduceGLTexturePassthrough(
 std::unique_ptr<SharedImageRepresentationDawn>
 SharedImageBackingGLTexture::ProduceDawn(SharedImageManager* manager,
                                          MemoryTypeTracker* tracker,
-                                         WGPUDevice device) {
+                                         WGPUDevice device,
+                                         WGPUBackendType backend_type) {
   if (!factory()) {
     DLOG(ERROR) << "No SharedImageFactory to create a dawn representation.";
     return nullptr;
   }
 
   return SharedImageBackingGLCommon::ProduceDawnCommon(
-      factory(), manager, tracker, device, this, IsPassthrough());
+      factory(), manager, tracker, device, backend_type, this, IsPassthrough());
 }
 
 std::unique_ptr<SharedImageRepresentationSkia>
@@ -196,7 +198,9 @@ SharedImageBackingGLTexture::ProduceSkia(
   if (!cached_promise_texture_) {
     GrBackendTexture backend_texture;
     GetGrBackendTexture(context_state->feature_info(), GetGLTarget(), size(),
-                        GetGLServiceId(), format(), &backend_texture);
+                        GetGLServiceId(), format(),
+                        context_state->gr_context()->threadSafeProxy(),
+                        &backend_texture);
     cached_promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
   }
   return std::make_unique<SharedImageRepresentationSkiaImpl>(

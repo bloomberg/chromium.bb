@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -59,6 +58,9 @@ class ChromeBrowserStateIOData {
  public:
   typedef std::vector<scoped_refptr<IOSChromeURLRequestContextGetter>>
       IOSChromeURLRequestContextGetterVector;
+
+  ChromeBrowserStateIOData(const ChromeBrowserStateIOData&) = delete;
+  ChromeBrowserStateIOData& operator=(const ChromeBrowserStateIOData&) = delete;
 
   virtual ~ChromeBrowserStateIOData();
 
@@ -260,8 +262,6 @@ class ChromeBrowserStateIOData {
       chrome_http_user_agent_settings_;
 
   const ChromeBrowserStateType browser_state_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserStateIOData);
 };
 
 #endif  // IOS_CHROME_BROWSER_BROWSER_STATE_CHROME_BROWSER_STATE_IO_DATA_H_

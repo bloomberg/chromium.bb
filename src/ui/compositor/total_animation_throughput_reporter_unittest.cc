@@ -6,10 +6,12 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/metrics/frame_sequence_metrics.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer.h"
@@ -19,7 +21,26 @@
 #include "ui/compositor/test/animation_throughput_reporter_test_base.h"
 #include "ui/compositor/test/throughput_report_checker.h"
 
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    defined(THREAD_SANITIZER) || defined(LEAK_SANITIZER) ||    \
+    defined(UNDEFINED_SANITIZER)
+#define SANITIZER_ENABLED
+#endif
+
 namespace ui {
+namespace {
+
+#if !defined(SANITIZER_ENABLED)
+// Returns the delta from current time to the (start + duration) time.
+// This is used to compute how long it should wait from now to reach
+// the `start + duration` time.
+base::TimeDelta DeltaFromNowToTarget(const base::TimeTicks start,
+                                     int duration) {
+  return start + base::Milliseconds(duration) - base::TimeTicks::Now();
+}
+#endif
+
+}  // namespace
 
 using TotalAnimationThroughputReporterTest =
     AnimationThroughputReporterTestBase;
@@ -35,10 +56,10 @@ TEST_F(TotalAnimationThroughputReporterTest, SingleAnimation) {
   {
     LayerAnimator* animator = layer.GetAnimator();
     ScopedLayerAnimationSettings settings(animator);
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(48));
+    settings.SetTransitionDuration(base::Milliseconds(48));
     layer.SetOpacity(1.0f);
   }
-  Advance(base::TimeDelta::FromMilliseconds(32));
+  Advance(base::Milliseconds(32));
   EXPECT_FALSE(checker.reported());
   EXPECT_TRUE(checker.WaitUntilReported());
 }
@@ -56,17 +77,18 @@ TEST_F(TotalAnimationThroughputReporterTest, StopAnimation) {
     LayerAnimator* animator = layer.GetAnimator();
 
     ScopedLayerAnimationSettings settings(animator);
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(64));
+    settings.SetTransitionDuration(base::Milliseconds(64));
     layer.SetOpacity(1.0f);
   }
-  Advance(base::TimeDelta::FromMilliseconds(32));
+  Advance(base::Milliseconds(32));
   EXPECT_FALSE(checker.reported());
   layer.GetAnimator()->StopAnimating();
   EXPECT_TRUE(checker.WaitUntilReported());
 }
 
 // Tests the longest animation will trigger the report.
-TEST_F(TotalAnimationThroughputReporterTest, MultipleAnimations) {
+// TODO(crbug.com/1217783): Test is flaky.
+TEST_F(TotalAnimationThroughputReporterTest, DISABLED_MultipleAnimations) {
   Layer layer1;
   layer1.SetOpacity(0.5f);
   root_layer()->Add(&layer1);
@@ -78,7 +100,7 @@ TEST_F(TotalAnimationThroughputReporterTest, MultipleAnimations) {
     LayerAnimator* animator = layer1.GetAnimator();
 
     ScopedLayerAnimationSettings settings(animator);
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(48));
+    settings.SetTransitionDuration(base::Milliseconds(48));
     layer1.SetOpacity(1.0f);
   }
   Layer layer2;
@@ -89,14 +111,23 @@ TEST_F(TotalAnimationThroughputReporterTest, MultipleAnimations) {
     LayerAnimator* animator = layer2.GetAnimator();
 
     ScopedLayerAnimationSettings settings(animator);
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(96));
+    settings.SetTransitionDuration(base::Milliseconds(96));
     layer2.SetOpacity(1.0f);
   }
+#if !defined(SANITIZER_ENABLED)
+  auto start = base::TimeTicks::Now();
+#endif
+  Advance(base::Milliseconds(32));
+  EXPECT_FALSE(checker.reported());
 
-  Advance(base::TimeDelta::FromMilliseconds(32));
+  // The following check may fail on sanitizer builds which
+  // runs slwer.
+#if !defined(SANITIZER_ENABLED)
+  auto sixty_four_ms_from_start = DeltaFromNowToTarget(start, 64);
+  ASSERT_TRUE(sixty_four_ms_from_start.is_positive());
+  Advance(sixty_four_ms_from_start);
   EXPECT_FALSE(checker.reported());
-  Advance(base::TimeDelta::FromMilliseconds(32));
-  EXPECT_FALSE(checker.reported());
+#endif
   EXPECT_TRUE(checker.WaitUntilReported());
 }
 
@@ -114,24 +145,26 @@ TEST_F(TotalAnimationThroughputReporterTest, MultipleAnimationsOnSingleLayer) {
     LayerAnimator* animator = layer.GetAnimator();
 
     ScopedLayerAnimationSettings settings(animator);
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(48));
+    settings.SetTransitionDuration(base::Milliseconds(48));
     layer.SetOpacity(1.0f);
   }
   {
     LayerAnimator* animator = layer.GetAnimator();
 
     ScopedLayerAnimationSettings settings(animator);
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(96));
+    settings.SetTransitionDuration(base::Milliseconds(96));
     layer.SetLayerBrightness(1.0f);
   }
 
-  Advance(base::TimeDelta::FromMilliseconds(64));
+  Advance(base::Milliseconds(64));
   EXPECT_FALSE(checker.reported());
   EXPECT_TRUE(checker.WaitUntilReported());
 }
 
 // Tests adding new animation will extends the duration.
-TEST_F(TotalAnimationThroughputReporterTest, AddAnimationWhileAnimating) {
+// TODO(crbug.com/1216715): Test is flaky.
+TEST_F(TotalAnimationThroughputReporterTest,
+       DISABLED_AddAnimationWhileAnimating) {
   Layer layer1;
   layer1.SetOpacity(0.5f);
   root_layer()->Add(&layer1);
@@ -143,11 +176,13 @@ TEST_F(TotalAnimationThroughputReporterTest, AddAnimationWhileAnimating) {
     LayerAnimator* animator = layer1.GetAnimator();
 
     ScopedLayerAnimationSettings settings(animator);
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(48));
+    settings.SetTransitionDuration(base::Milliseconds(48));
     layer1.SetOpacity(1.0f);
   }
-
-  Advance(base::TimeDelta::FromMilliseconds(32));
+#if !defined(SANITIZER_ENABLED)
+  base::TimeTicks start = base::TimeTicks::Now();
+#endif
+  Advance(base::Milliseconds(32));
   EXPECT_FALSE(checker.reported());
 
   // Add new animation while animating.
@@ -159,13 +194,19 @@ TEST_F(TotalAnimationThroughputReporterTest, AddAnimationWhileAnimating) {
     LayerAnimator* animator = layer2.GetAnimator();
 
     ScopedLayerAnimationSettings settings(animator);
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(48));
+    settings.SetTransitionDuration(base::Milliseconds(48));
     layer2.SetOpacity(1.0f);
   }
 
-  // The animation time is extended.
-  Advance(base::TimeDelta::FromMilliseconds(32));
+  // The following check may fail on sanitizer builds which
+  // runs slwer.
+#if !defined(SANITIZER_ENABLED)
+  // The animation time is extended by 32ms.
+  auto sixty_four_ms_from_start = DeltaFromNowToTarget(start, 64);
+  ASSERT_TRUE(sixty_four_ms_from_start.is_positive());
+  Advance(sixty_four_ms_from_start);
   EXPECT_FALSE(checker.reported());
+#endif
 
   EXPECT_TRUE(checker.WaitUntilReported());
 }
@@ -183,7 +224,7 @@ TEST_F(TotalAnimationThroughputReporterTest, RemoveWhileAnimating) {
     LayerAnimator* animator = layer1->GetAnimator();
 
     ScopedLayerAnimationSettings settings(animator);
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(100));
+    settings.SetTransitionDuration(base::Milliseconds(100));
     layer1->SetOpacity(1.0f);
   }
 
@@ -195,10 +236,10 @@ TEST_F(TotalAnimationThroughputReporterTest, RemoveWhileAnimating) {
     LayerAnimator* animator = layer2.GetAnimator();
 
     ScopedLayerAnimationSettings settings(animator);
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(48));
+    settings.SetTransitionDuration(base::Milliseconds(48));
     layer2.SetOpacity(1.0f);
   }
-  Advance(base::TimeDelta::FromMilliseconds(48));
+  Advance(base::Milliseconds(48));
   EXPECT_FALSE(checker.reported());
   layer1.reset();
   // Aborting will be processed in next frame.
@@ -216,10 +257,10 @@ TEST_F(TotalAnimationThroughputReporterTest, StartWhileAnimating) {
     LayerAnimator* animator = layer.GetAnimator();
 
     ScopedLayerAnimationSettings settings(animator);
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(96));
+    settings.SetTransitionDuration(base::Milliseconds(96));
     layer.SetOpacity(1.0f);
   }
-  Advance(base::TimeDelta::FromMilliseconds(32));
+  Advance(base::Milliseconds(32));
   ThroughputReportChecker checker(this);
   TotalAnimationThroughputReporter reporter(compositor(),
                                             checker.repeating_callback());
@@ -234,8 +275,7 @@ TEST_F(TotalAnimationThroughputReporterTest, PersistedAnimation) {
   root_layer()->Add(&layer);
 
   // Set a persisted animator to |layer|.
-  LayerAnimator* animator =
-      new LayerAnimator(base::TimeDelta::FromMilliseconds(48));
+  LayerAnimator* animator = new LayerAnimator(base::Milliseconds(48));
   layer.SetAnimator(animator);
 
   // |reporter| keeps reporting as long as it is alive.
@@ -274,7 +314,7 @@ class ObserverChecker : public ui::CompositorObserver {
   }
 
  private:
-  ui::CompositorObserver* const reporter_observer_;
+  const raw_ptr<ui::CompositorObserver> reporter_observer_;
 };
 
 }  // namespace
@@ -286,8 +326,7 @@ TEST_F(TotalAnimationThroughputReporterTest, OnceReporter) {
   root_layer()->Add(&layer);
 
   // Set a persisted animator to |layer|.
-  LayerAnimator* animator =
-      new LayerAnimator(base::TimeDelta::FromMilliseconds(32));
+  LayerAnimator* animator = new LayerAnimator(base::Milliseconds(32));
   layer.SetAnimator(animator);
 
   ThroughputReportChecker checker(this);
@@ -305,7 +344,7 @@ TEST_F(TotalAnimationThroughputReporterTest, OnceReporter) {
   // Report data for animation of opacity goes to 0.5.
   checker.reset();
   layer.SetOpacity(1.0f);
-  Advance(base::TimeDelta::FromMilliseconds(100));
+  Advance(base::Milliseconds(100));
   EXPECT_FALSE(checker.reported());
 }
 
@@ -324,7 +363,7 @@ TEST_F(TotalAnimationThroughputReporterTest, OnceReporterShouldDelete) {
     ~DeleteTestReporter() override { *deleted_ = true; }
 
    private:
-    bool* deleted_;
+    raw_ptr<bool> deleted_;
   };
 
   Layer layer;
@@ -332,8 +371,7 @@ TEST_F(TotalAnimationThroughputReporterTest, OnceReporterShouldDelete) {
   root_layer()->Add(&layer);
 
   // Set a persisted animator to |layer|.
-  LayerAnimator* animator =
-      new LayerAnimator(base::TimeDelta::FromMilliseconds(32));
+  LayerAnimator* animator = new LayerAnimator(base::Milliseconds(32));
   layer.SetAnimator(animator);
 
   // |reporter| keeps reporting as long as it is alive.
@@ -360,8 +398,7 @@ TEST_F(TotalAnimationThroughputReporterTest, ThreadCheck) {
   root_layer()->Add(&layer);
 
   // Set a persisted animator to |layer|.
-  LayerAnimator* animator =
-      new LayerAnimator(base::TimeDelta::FromMilliseconds(32));
+  LayerAnimator* animator = new LayerAnimator(base::Milliseconds(32));
   layer.SetAnimator(animator);
 
   ui::Compositor* c = compositor();

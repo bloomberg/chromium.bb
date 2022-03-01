@@ -6,7 +6,6 @@
 
 #include "fpdfsdk/fpdfxfa/cpdfxfa_docenvironment.h"
 
-#include <memory>
 #include <utility>
 
 #include "core/fpdfapi/parser/cpdf_array.h"
@@ -43,6 +42,15 @@
 #define FXFA_FORM 0x01000000
 #define FXFA_PDF 0x10000000
 #define FXFA_XFA_ALL 0x01111111
+
+// Although there isn't direct casting between these types at present,
+// keep the internal and exernal types in sync.
+static_assert(FXFA_PAGEVIEWEVENT_POSTADDED ==
+                  static_cast<int>(CXFA_FFDoc::PageViewEvent::kPostAdded),
+              "kPostAdded mismatch");
+static_assert(FXFA_PAGEVIEWEVENT_POSTREMOVED ==
+                  static_cast<int>(CXFA_FFDoc::PageViewEvent::kPostRemoved),
+              "kPostRemoved mismatch");
 
 CPDFXFA_DocEnvironment::CPDFXFA_DocEnvironment(CPDFXFA_Context* pContext)
     : m_pContext(pContext) {
@@ -270,17 +278,17 @@ bool CPDFXFA_DocEnvironment::PopupMenu(CXFA_FFWidget* hWidget,
   return pFormFillEnv->PopupMenu(pPage.Get(), menuFlag, ptPopup);
 }
 
-void CPDFXFA_DocEnvironment::PageViewEvent(CXFA_FFPageView* pPageView,
-                                           uint32_t dwFlags) {
+void CPDFXFA_DocEnvironment::OnPageViewEvent(CXFA_FFPageView* pPageView,
+                                             CXFA_FFDoc::PageViewEvent eEvent) {
   CPDFSDK_FormFillEnvironment* pFormFillEnv = m_pContext->GetFormFillEnv();
   if (!pFormFillEnv)
     return;
 
-  if (m_pContext->GetLoadStatus() == FXFA_LOADSTATUS_LOADING ||
-      m_pContext->GetLoadStatus() == FXFA_LOADSTATUS_CLOSING ||
-      XFA_PAGEVIEWEVENT_StopLayout != dwFlags)
+  if (m_pContext->GetLoadStatus() == CPDFXFA_Context::LoadStatus::kLoading ||
+      m_pContext->GetLoadStatus() == CPDFXFA_Context::LoadStatus::kClosing ||
+      eEvent != CXFA_FFDoc::PageViewEvent::kStopLayout) {
     return;
-
+  }
   int nNewCount = m_pContext->GetPageCount();
   if (nNewCount == m_pContext->GetOriginalPageCount())
     return;
@@ -319,7 +327,7 @@ void CPDFXFA_DocEnvironment::WidgetPostAdd(CXFA_FFWidget* hWidget) {
     return;
 
   m_pContext->GetFormFillEnv()
-      ->GetPageView(pXFAPage.Get(), true)
+      ->GetOrCreatePageView(pXFAPage.Get())
       ->AddAnnot(hWidget);
 }
 
@@ -336,7 +344,7 @@ void CPDFXFA_DocEnvironment::WidgetPreRemove(CXFA_FFWidget* hWidget) {
     return;
 
   CPDFSDK_PageView* pSdkPageView =
-      m_pContext->GetFormFillEnv()->GetPageView(pXFAPage.Get(), true);
+      m_pContext->GetFormFillEnv()->GetOrCreatePageView(pXFAPage.Get());
   CPDFSDK_Annot* pAnnot = pSdkPageView->GetAnnotByXFAWidget(hWidget);
   if (pAnnot)
     pSdkPageView->DeleteAnnot(pAnnot);
@@ -546,7 +554,7 @@ void CPDFXFA_DocEnvironment::SetFocusWidget(CXFA_FFDoc* hDoc,
 
   if (!hWidget) {
     ObservedPtr<CPDFSDK_Annot> pNull;
-    m_pContext->GetFormFillEnv()->SetFocusAnnot(&pNull);
+    m_pContext->GetFormFillEnv()->SetFocusAnnot(pNull);
     return;
   }
 
@@ -559,7 +567,7 @@ void CPDFXFA_DocEnvironment::SetFocusWidget(CXFA_FFDoc* hDoc,
 
     ObservedPtr<CPDFSDK_Annot> pAnnot(pPageView->GetAnnotByXFAWidget(hWidget));
     if (pAnnot) {
-      m_pContext->GetFormFillEnv()->SetFocusAnnot(&pAnnot);
+      m_pContext->GetFormFillEnv()->SetFocusAnnot(pAnnot);
       break;
     }
   }
@@ -568,7 +576,7 @@ void CPDFXFA_DocEnvironment::SetFocusWidget(CXFA_FFDoc* hDoc,
 void CPDFXFA_DocEnvironment::Print(CXFA_FFDoc* hDoc,
                                    int32_t nStartPage,
                                    int32_t nEndPage,
-                                   uint32_t dwOptions) {
+                                   Mask<XFA_PrintOpt> dwOptions) {
   if (hDoc != m_pContext->GetXFADoc())
     return;
 
@@ -581,10 +589,12 @@ void CPDFXFA_DocEnvironment::Print(CXFA_FFDoc* hDoc,
 
   pFormFillEnv->GetFormFillInfo()->m_pJsPlatform->Doc_print(
       pFormFillEnv->GetFormFillInfo()->m_pJsPlatform,
-      dwOptions & XFA_PRINTOPT_ShowDialog, nStartPage, nEndPage,
-      dwOptions & XFA_PRINTOPT_CanCancel, dwOptions & XFA_PRINTOPT_ShrinkPage,
-      dwOptions & XFA_PRINTOPT_AsImage, dwOptions & XFA_PRINTOPT_ReverseOrder,
-      dwOptions & XFA_PRINTOPT_PrintAnnot);
+      !!(dwOptions & XFA_PrintOpt::kShowDialog), nStartPage, nEndPage,
+      !!(dwOptions & XFA_PrintOpt::kCanCancel),
+      !!(dwOptions & XFA_PrintOpt::kShrinkPage),
+      !!(dwOptions & XFA_PrintOpt::kAsImage),
+      !!(dwOptions & XFA_PrintOpt::kReverseOrder),
+      !!(dwOptions & XFA_PrintOpt::kPrintAnnot));
 }
 
 FX_ARGB CPDFXFA_DocEnvironment::GetHighlightColor(

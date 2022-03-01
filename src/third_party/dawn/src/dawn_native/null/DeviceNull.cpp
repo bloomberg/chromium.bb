@@ -20,8 +20,6 @@
 #include "dawn_native/Instance.h"
 #include "dawn_native/Surface.h"
 
-#include <spirv_cross.hpp>
-
 namespace dawn_native { namespace null {
 
     // Implementation of pre-Device objects: the null adapter, null backend connection and Connect()
@@ -29,19 +27,37 @@ namespace dawn_native { namespace null {
     Adapter::Adapter(InstanceBase* instance) : AdapterBase(instance, wgpu::BackendType::Null) {
         mPCIInfo.name = "Null backend";
         mAdapterType = wgpu::AdapterType::CPU;
-
-        // Enable all extensions by default for the convenience of tests.
-        mSupportedExtensions.extensionsBitSet.flip();
+        MaybeError err = Initialize();
+        ASSERT(err.IsSuccess());
     }
 
     Adapter::~Adapter() = default;
 
-    // Used for the tests that intend to use an adapter without all extensions enabled.
-    void Adapter::SetSupportedExtensions(const std::vector<const char*>& requiredExtensions) {
-        mSupportedExtensions = GetInstance()->ExtensionNamesToExtensionsSet(requiredExtensions);
+    bool Adapter::SupportsExternalImages() const {
+        return false;
     }
 
-    ResultOrError<DeviceBase*> Adapter::CreateDeviceImpl(const DeviceDescriptor* descriptor) {
+    // Used for the tests that intend to use an adapter without all features enabled.
+    void Adapter::SetSupportedFeatures(const std::vector<const char*>& requiredFeatures) {
+        mSupportedFeatures = GetInstance()->FeatureNamesToFeaturesSet(requiredFeatures);
+    }
+
+    MaybeError Adapter::InitializeImpl() {
+        return {};
+    }
+
+    MaybeError Adapter::InitializeSupportedFeaturesImpl() {
+        // Enable all features by default for the convenience of tests.
+        mSupportedFeatures.featuresBitSet.set();
+        return {};
+    }
+
+    MaybeError Adapter::InitializeSupportedLimitsImpl(CombinedLimits* limits) {
+        GetDefaultLimits(&limits->v1);
+        return {};
+    }
+
+    ResultOrError<DeviceBase*> Adapter::CreateDeviceImpl(const DawnDeviceDescriptor* descriptor) {
         return Device::Create(this, descriptor);
     }
 
@@ -54,7 +70,8 @@ namespace dawn_native { namespace null {
             // There is always a single Null adapter because it is purely CPU based and doesn't
             // depend on the system.
             std::vector<std::unique_ptr<AdapterBase>> adapters;
-            adapters.push_back(std::make_unique<Adapter>(GetInstance()));
+            std::unique_ptr<Adapter> adapter = std::make_unique<Adapter>(GetInstance());
+            adapters.push_back(std::move(adapter));
             return adapters;
         }
     };
@@ -78,14 +95,15 @@ namespace dawn_native { namespace null {
     // Device
 
     // static
-    ResultOrError<Device*> Device::Create(Adapter* adapter, const DeviceDescriptor* descriptor) {
+    ResultOrError<Device*> Device::Create(Adapter* adapter,
+                                          const DawnDeviceDescriptor* descriptor) {
         Ref<Device> device = AcquireRef(new Device(adapter, descriptor));
         DAWN_TRY(device->Initialize());
         return device.Detach();
     }
 
     Device::~Device() {
-        ShutDownBase();
+        Destroy();
     }
 
     MaybeError Device::Initialize() {
@@ -97,8 +115,9 @@ namespace dawn_native { namespace null {
         return AcquireRef(new BindGroup(this, descriptor));
     }
     ResultOrError<Ref<BindGroupLayoutBase>> Device::CreateBindGroupLayoutImpl(
-        const BindGroupLayoutDescriptor* descriptor) {
-        return AcquireRef(new BindGroupLayout(this, descriptor));
+        const BindGroupLayoutDescriptor* descriptor,
+        PipelineCompatibilityToken pipelineCompatibilityToken) {
+        return AcquireRef(new BindGroupLayout(this, descriptor, pipelineCompatibilityToken));
     }
     ResultOrError<Ref<BufferBase>> Device::CreateBufferImpl(const BufferDescriptor* descriptor) {
         DAWN_TRY(IncrementMemoryUsage(descriptor->size));
@@ -109,7 +128,7 @@ namespace dawn_native { namespace null {
         const CommandBufferDescriptor* descriptor) {
         return AcquireRef(new CommandBuffer(encoder, descriptor));
     }
-    ResultOrError<Ref<ComputePipelineBase>> Device::CreateComputePipelineImpl(
+    Ref<ComputePipelineBase> Device::CreateUninitializedComputePipelineImpl(
         const ComputePipelineDescriptor* descriptor) {
         return AcquireRef(new ComputePipeline(this, descriptor));
     }
@@ -121,8 +140,8 @@ namespace dawn_native { namespace null {
         const QuerySetDescriptor* descriptor) {
         return AcquireRef(new QuerySet(this, descriptor));
     }
-    ResultOrError<Ref<RenderPipelineBase>> Device::CreateRenderPipelineImpl(
-        const RenderPipelineDescriptor2* descriptor) {
+    Ref<RenderPipelineBase> Device::CreateUninitializedRenderPipelineImpl(
+        const RenderPipelineDescriptor* descriptor) {
         return AcquireRef(new RenderPipeline(this, descriptor));
     }
     ResultOrError<Ref<SamplerBase>> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
@@ -161,7 +180,7 @@ namespace dawn_native { namespace null {
         return std::move(stagingBuffer);
     }
 
-    void Device::ShutDownImpl() {
+    void Device::DestroyImpl() {
         ASSERT(GetState() == State::Disconnected);
 
         // Clear pending operations before checking mMemoryUsage because some operations keep a
@@ -205,7 +224,7 @@ namespace dawn_native { namespace null {
 
     MaybeError Device::IncrementMemoryUsage(uint64_t bytes) {
         static_assert(kMaxMemoryUsage <= std::numeric_limits<size_t>::max(), "");
-        if (bytes > kMaxMemoryUsage || mMemoryUsage + bytes > kMaxMemoryUsage) {
+        if (bytes > kMaxMemoryUsage || mMemoryUsage > kMaxMemoryUsage - bytes) {
             return DAWN_OUT_OF_MEMORY_ERROR("Out of memory.");
         }
         mMemoryUsage += bytes;
@@ -260,16 +279,20 @@ namespace dawn_native { namespace null {
           BindGroupBase(device, descriptor, mBindingDataAllocation) {
     }
 
+    // BindGroupLayout
+
+    BindGroupLayout::BindGroupLayout(DeviceBase* device,
+                                     const BindGroupLayoutDescriptor* descriptor,
+                                     PipelineCompatibilityToken pipelineCompatibilityToken)
+        : BindGroupLayoutBase(device, descriptor, pipelineCompatibilityToken) {
+    }
+
     // Buffer
 
     Buffer::Buffer(Device* device, const BufferDescriptor* descriptor)
         : BufferBase(device, descriptor) {
         mBackingData = std::unique_ptr<uint8_t[]>(new uint8_t[GetSize()]);
-    }
-
-    Buffer::~Buffer() {
-        DestroyInternal();
-        ToBackend(GetDevice())->DecrementMemoryUsage(GetSize());
+        mAllocatedSize = GetSize();
     }
 
     bool Buffer::IsCPUWritableAtCreation() const {
@@ -308,6 +331,8 @@ namespace dawn_native { namespace null {
     }
 
     void Buffer::DestroyImpl() {
+        BufferBase::DestroyImpl();
+        ToBackend(GetDevice())->DecrementMemoryUsage(GetSize());
     }
 
     // CommandBuffer
@@ -320,13 +345,6 @@ namespace dawn_native { namespace null {
 
     QuerySet::QuerySet(Device* device, const QuerySetDescriptor* descriptor)
         : QuerySetBase(device, descriptor) {
-    }
-
-    QuerySet::~QuerySet() {
-        DestroyInternal();
-    }
-
-    void QuerySet::DestroyImpl() {
     }
 
     // Queue
@@ -355,6 +373,16 @@ namespace dawn_native { namespace null {
         return {};
     }
 
+    // ComputePipeline
+    MaybeError ComputePipeline::Initialize() {
+        return {};
+    }
+
+    // RenderPipeline
+    MaybeError RenderPipeline::Initialize() {
+        return {};
+    }
+
     // SwapChain
 
     // static
@@ -369,7 +397,7 @@ namespace dawn_native { namespace null {
 
     MaybeError SwapChain::Initialize(NewSwapChainBase* previousSwapChain) {
         if (previousSwapChain != nullptr) {
-            // TODO(cwallez@chromium.org): figure out what should happen when surfaces are used by
+            // TODO(crbug.com/dawn/269): figure out what should happen when surfaces are used by
             // multiple backends one after the other. It probably needs to block until the backend
             // and GPU are completely finished with the previous swapchain.
             if (previousSwapChain->GetBackendType() != wgpu::BackendType::Null) {

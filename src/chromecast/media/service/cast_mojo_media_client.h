@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/unguessable_token.h"
+#include "chromecast/external_mojo/external_service_support/external_connector.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/services/mojo_media_client.h"
 
@@ -29,7 +30,12 @@ class CastMojoMediaClient : public ::media::MojoMediaClient {
   CastMojoMediaClient(CmaBackendFactory* backend_factory,
                       const CreateCdmFactoryCB& create_cdm_factory_cb,
                       VideoModeSwitcher* video_mode_switcher,
-                      VideoResolutionPolicy* video_resolution_policy);
+                      VideoResolutionPolicy* video_resolution_policy,
+                      external_service_support::ExternalConnector* connector);
+
+  CastMojoMediaClient(const CastMojoMediaClient&) = delete;
+  CastMojoMediaClient& operator=(const CastMojoMediaClient&) = delete;
+
   ~CastMojoMediaClient() override;
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
@@ -58,12 +64,11 @@ class CastMojoMediaClient : public ::media::MojoMediaClient {
   const CreateCdmFactoryCB create_cdm_factory_cb_;
   VideoModeSwitcher* video_mode_switcher_;
   VideoResolutionPolicy* video_resolution_policy_;
+  external_service_support::ExternalConnector* const connector_;
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
   VideoGeometrySetterService* video_geometry_setter_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(CastMojoMediaClient);
 };
 
 }  // namespace media

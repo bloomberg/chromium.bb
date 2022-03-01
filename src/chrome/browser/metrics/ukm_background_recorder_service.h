@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_METRICS_UKM_BACKGROUND_RECORDER_SERVICE_H_
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -44,6 +44,11 @@ class UkmBackgroundRecorderService : public KeyedService {
 
   // |profile| is needed to access the appropriate services |this| depends on.
   explicit UkmBackgroundRecorderService(Profile* profile);
+
+  UkmBackgroundRecorderService(const UkmBackgroundRecorderService&) = delete;
+  UkmBackgroundRecorderService& operator=(const UkmBackgroundRecorderService&) =
+      delete;
+
   ~UkmBackgroundRecorderService() override;
 
   void Shutdown() override;
@@ -67,14 +72,12 @@ class UkmBackgroundRecorderService : public KeyedService {
       UkmBackgroundRecorderService::GetBackgroundSourceIdCallback callback,
       history::VisibleVisitCountToHostResult result);
 
-  history::HistoryService* history_service_;
+  raw_ptr<history::HistoryService> history_service_;
 
   // Task tracker used for querying URLs in the history service.
   base::CancelableTaskTracker task_tracker_;
 
   base::WeakPtrFactory<UkmBackgroundRecorderService> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UkmBackgroundRecorderService);
 };
 
 class UkmBackgroundRecorderFactory : public BrowserContextKeyedServiceFactory {
