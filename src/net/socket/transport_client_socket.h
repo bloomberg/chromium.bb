@@ -5,7 +5,6 @@
 #ifndef NET_SOCKET_TRANSPORT_CLIENT_SOCKET_H_
 #define NET_SOCKET_TRANSPORT_CLIENT_SOCKET_H_
 
-#include "base/macros.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/socket/stream_socket.h"
@@ -17,6 +16,10 @@ namespace net {
 class NET_EXPORT TransportClientSocket : public StreamSocket {
  public:
   TransportClientSocket();
+
+  TransportClientSocket(const TransportClientSocket&) = delete;
+  TransportClientSocket& operator=(const TransportClientSocket&) = delete;
+
   ~TransportClientSocket() override;
 
   // Binds the socket to a local address, |local_addr|. Returns OK on success,
@@ -46,9 +49,6 @@ class NET_EXPORT TransportClientSocket : public StreamSocket {
   // should always be ready after successful connection or slightly earlier
   // during BeforeConnect handlers.
   virtual bool SetKeepAlive(bool enable, int delay_secs);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TransportClientSocket);
 };
 
 }  // namespace net

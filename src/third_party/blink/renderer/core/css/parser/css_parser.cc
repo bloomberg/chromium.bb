@@ -22,7 +22,8 @@
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
 
 namespace blink {
 
@@ -314,8 +315,8 @@ CSSPrimitiveValue* CSSParser::ParseLengthPercentage(
   CSSTokenizer tokenizer(string);
   const auto tokens = tokenizer.TokenizeToEOF();
   CSSParserTokenRange range(tokens);
-  return css_parsing_utils::ConsumeLengthOrPercent(range, *context,
-                                                   kValueRangeAll);
+  return css_parsing_utils::ConsumeLengthOrPercent(
+      range, *context, CSSPrimitiveValue::ValueRange::kAll);
 }
 
 MutableCSSPropertyValueSet* CSSParser::ParseFont(

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -138,11 +136,11 @@ const str_ = i18n.i18n.registerUIStrings('panels/lighthouse/LighthouseController
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 
-export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper implements
-    SDK.SDKModel.SDKModelObserver<SDK.ServiceWorkerManager.ServiceWorkerManager> {
-  _manager?: SDK.ServiceWorkerManager.ServiceWorkerManager|null;
-  _serviceWorkerListeners?: Common.EventTarget.EventDescriptor[];
-  _inspectedURL?: string;
+export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements
+    SDK.TargetManager.SDKModelObserver<SDK.ServiceWorkerManager.ServiceWorkerManager> {
+  private manager?: SDK.ServiceWorkerManager.ServiceWorkerManager|null;
+  private serviceWorkerListeners?: Common.EventTarget.EventDescriptor[];
+  private inspectedURL?: string;
 
   constructor(protocolService: ProtocolService) {
     super();
@@ -158,21 +156,21 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper imp
       runtimeSetting.setting.addChangeListener(this.recomputePageAuditability.bind(this));
     }
 
-    SDK.SDKModel.TargetManager.instance().observeModels(SDK.ServiceWorkerManager.ServiceWorkerManager, this);
-    SDK.SDKModel.TargetManager.instance().addEventListener(
-        SDK.SDKModel.Events.InspectedURLChanged, this.recomputePageAuditability, this);
+    SDK.TargetManager.TargetManager.instance().observeModels(SDK.ServiceWorkerManager.ServiceWorkerManager, this);
+    SDK.TargetManager.TargetManager.instance().addEventListener(
+        SDK.TargetManager.Events.InspectedURLChanged, this.recomputePageAuditability, this);
   }
 
   modelAdded(serviceWorkerManager: SDK.ServiceWorkerManager.ServiceWorkerManager): void {
-    if (this._manager) {
+    if (this.manager) {
       return;
     }
 
-    this._manager = serviceWorkerManager;
-    this._serviceWorkerListeners = [
-      this._manager.addEventListener(
+    this.manager = serviceWorkerManager;
+    this.serviceWorkerListeners = [
+      this.manager.addEventListener(
           SDK.ServiceWorkerManager.Events.RegistrationUpdated, this.recomputePageAuditability, this),
-      this._manager.addEventListener(
+      this.manager.addEventListener(
           SDK.ServiceWorkerManager.Events.RegistrationDeleted, this.recomputePageAuditability, this),
     ];
 
@@ -180,29 +178,29 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper imp
   }
 
   modelRemoved(serviceWorkerManager: SDK.ServiceWorkerManager.ServiceWorkerManager): void {
-    if (this._manager !== serviceWorkerManager) {
+    if (this.manager !== serviceWorkerManager) {
       return;
     }
-    if (this._serviceWorkerListeners) {
-      Common.EventTarget.EventTarget.removeEventListeners(this._serviceWorkerListeners);
+    if (this.serviceWorkerListeners) {
+      Common.EventTarget.removeEventListeners(this.serviceWorkerListeners);
     }
-    this._manager = null;
+    this.manager = null;
     this.recomputePageAuditability();
   }
 
-  _hasActiveServiceWorker(): boolean {
-    if (!this._manager) {
+  private hasActiveServiceWorker(): boolean {
+    if (!this.manager) {
       return false;
     }
 
-    const mainTarget = this._manager.target();
+    const mainTarget = this.manager.target();
     if (!mainTarget) {
       return false;
     }
 
     const inspectedURL = Common.ParsedURL.ParsedURL.fromString(mainTarget.inspectedURL());
     const inspectedOrigin = inspectedURL && inspectedURL.securityOrigin();
-    for (const registration of this._manager.registrations().values()) {
+    for (const registration of this.manager.registrations().values()) {
       if (registration.securityOrigin !== inspectedOrigin) {
         continue;
       }
@@ -217,16 +215,16 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper imp
     return false;
   }
 
-  _hasAtLeastOneCategory(): boolean {
+  private hasAtLeastOneCategory(): boolean {
     return Presets.some(preset => preset.setting.get());
   }
 
-  _unauditablePageMessage(): string|null {
-    if (!this._manager) {
+  private unauditablePageMessage(): string|null {
+    if (!this.manager) {
       return null;
     }
 
-    const mainTarget = this._manager.target();
+    const mainTarget = this.manager.target();
     const inspectedURL = mainTarget && mainTarget.inspectedURL();
     if (inspectedURL && !/^(http|chrome-extension)/.test(inspectedURL)) {
       return i18nString(UIStrings.canOnlyAuditHttphttpsPagesAnd);
@@ -235,23 +233,23 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper imp
     return null;
   }
 
-  async _hasImportantResourcesNotCleared(): Promise<string> {
+  private async hasImportantResourcesNotCleared(): Promise<string> {
     const clearStorageSetting =
         RuntimeSettings.find(runtimeSetting => runtimeSetting.setting.name === 'lighthouse.clear_storage');
     if (clearStorageSetting && !clearStorageSetting.setting.get()) {
       return '';
     }
-    if (!this._manager) {
+    if (!this.manager) {
       return '';
     }
-    const mainTarget = this._manager.target();
+    const mainTarget = this.manager.target();
     const usageData = await mainTarget.storageAgent().invoke_getUsageAndQuota({origin: mainTarget.inspectedURL()});
     const locations = usageData.usageBreakdown.filter(usage => usage.usage)
                           .map(usage => STORAGE_TYPE_NAMES.get(usage.storageType))
                           .map(i18nStringFn => i18nStringFn ? i18nStringFn() : undefined)
                           .filter(Boolean);
     if (locations.length === 1) {
-      return i18nString(UIStrings.thereMayBeStoredDataAffectingSingular, {PH1: locations[0]});
+      return i18nString(UIStrings.thereMayBeStoredDataAffectingSingular, {PH1: String(locations[0])});
     }
     if (locations.length > 1) {
       return i18nString(UIStrings.thereMayBeStoredDataAffectingLoadingPlural, {PH1: locations.join(', ')});
@@ -259,45 +257,24 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper imp
     return '';
   }
 
-  async _evaluateInspectedURL(): Promise<string> {
-    if (!this._manager) {
+  private async evaluateInspectedURL(): Promise<string> {
+    if (!this.manager) {
       return '';
     }
-    const mainTarget = this._manager.target();
-    const runtimeModel = mainTarget.model(SDK.RuntimeModel.RuntimeModel);
-    const executionContext = runtimeModel && runtimeModel.defaultExecutionContext();
-    let inspectedURL = mainTarget.inspectedURL();
-    if (!executionContext) {
+    const mainTarget = this.manager.target();
+    // target.inspectedURL is reliably populated, however it lacks any url #hash
+    const inspectedURL = mainTarget.inspectedURL();
+
+    // We'll use the navigationHistory to acquire the current URL including hash
+    const resourceTreeModel = mainTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
+    const navHistory = resourceTreeModel && await resourceTreeModel.navigationHistory();
+    if (!resourceTreeModel || !navHistory) {
       return inspectedURL;
     }
 
-    // Evaluate location.href for a more specific URL than inspectedURL provides so that SPA hash navigation routes
-    // will be respected and audited.
-    try {
-      const result = await executionContext.evaluate(
-          {
-            expression: 'window.location.href',
-            objectGroup: 'lighthouse',
-            includeCommandLineAPI: false,
-            silent: false,
-            returnByValue: true,
-            generatePreview: false,
-            allowUnsafeEvalBlockedByCSP: undefined,
-            disableBreaks: undefined,
-            replMode: undefined,
-            throwOnSideEffect: undefined,
-            timeout: undefined,
-          },
-          /* userGesture */ false, /* awaitPromise */ false);
-      if ((!('exceptionDetails' in result) || !result.exceptionDetails) && 'object' in result && result.object) {
-        inspectedURL = result.object.value;
-        result.object.release();
-      }
-    } catch (err) {
-      console.error(err);
-    }
-
-    return inspectedURL;
+    const {currentIndex, entries} = navHistory;
+    const navigationEntry = entries[currentIndex];
+    return navigationEntry.url;
   }
 
   getFlags(): {internalDisableDeviceScreenEmulation: boolean, emulatedFormFactor: (string|undefined)} {
@@ -326,16 +303,16 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper imp
   }
 
   async getInspectedURL(options?: {force: boolean}): Promise<string> {
-    if (options && options.force || !this._inspectedURL) {
-      this._inspectedURL = await this._evaluateInspectedURL();
+    if (options && options.force || !this.inspectedURL) {
+      this.inspectedURL = await this.evaluateInspectedURL();
     }
-    return this._inspectedURL;
+    return this.inspectedURL;
   }
 
   recomputePageAuditability(): void {
-    const hasActiveServiceWorker = this._hasActiveServiceWorker();
-    const hasAtLeastOneCategory = this._hasAtLeastOneCategory();
-    const unauditablePageMessage = this._unauditablePageMessage();
+    const hasActiveServiceWorker = this.hasActiveServiceWorker();
+    const hasAtLeastOneCategory = this.hasAtLeastOneCategory();
+    const unauditablePageMessage = this.unauditablePageMessage();
 
     let helpText = '';
     if (hasActiveServiceWorker) {
@@ -348,7 +325,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper imp
 
     this.dispatchEventToListeners(Events.PageAuditabilityChanged, {helpText});
 
-    this._hasImportantResourcesNotCleared().then(warning => {
+    this.hasImportantResourcesNotCleared().then(warning => {
       this.dispatchEventToListeners(Events.PageWarningsChanged, {warning});
     });
   }
@@ -363,42 +340,48 @@ const STORAGE_TYPE_NAMES = new Map([
 export const Presets: Preset[] = [
   // configID maps to Lighthouse's Object.keys(config.categories)[0] value
   {
-    setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_perf', true),
+    setting: Common.Settings.Settings.instance().createSetting(
+        'lighthouse.cat_perf', true, Common.Settings.SettingStorageType.Synced),
     configID: 'performance',
     title: i18nLazyString(UIStrings.performance),
     description: i18nLazyString(UIStrings.howLongDoesThisAppTakeToShow),
     plugin: false,
   },
   {
-    setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_pwa', true),
+    setting: Common.Settings.Settings.instance().createSetting(
+        'lighthouse.cat_pwa', true, Common.Settings.SettingStorageType.Synced),
     configID: 'pwa',
     title: i18nLazyString(UIStrings.progressiveWebApp),
     description: i18nLazyString(UIStrings.doesThisPageMeetTheStandardOfA),
     plugin: false,
   },
   {
-    setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_best_practices', true),
+    setting: Common.Settings.Settings.instance().createSetting(
+        'lighthouse.cat_best_practices', true, Common.Settings.SettingStorageType.Synced),
     configID: 'best-practices',
     title: i18nLazyString(UIStrings.bestPractices),
     description: i18nLazyString(UIStrings.doesThisPageFollowBestPractices),
     plugin: false,
   },
   {
-    setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_a11y', true),
+    setting: Common.Settings.Settings.instance().createSetting(
+        'lighthouse.cat_a11y', true, Common.Settings.SettingStorageType.Synced),
     configID: 'accessibility',
     title: i18nLazyString(UIStrings.accessibility),
     description: i18nLazyString(UIStrings.isThisPageUsableByPeopleWith),
     plugin: false,
   },
   {
-    setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_seo', true),
+    setting: Common.Settings.Settings.instance().createSetting(
+        'lighthouse.cat_seo', true, Common.Settings.SettingStorageType.Synced),
     configID: 'seo',
     title: i18nLazyString(UIStrings.seo),
     description: i18nLazyString(UIStrings.isThisPageOptimizedForSearch),
     plugin: false,
   },
   {
-    setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_pubads', false),
+    setting: Common.Settings.Settings.instance().createSetting(
+        'lighthouse.cat_pubads', false, Common.Settings.SettingStorageType.Synced),
     plugin: true,
     configID: 'lighthouse-plugin-publisher-ads',
     title: i18nLazyString(UIStrings.publisherAds),
@@ -412,7 +395,8 @@ export type Flags = {
 
 export const RuntimeSettings: RuntimeSetting[] = [
   {
-    setting: Common.Settings.Settings.instance().createSetting('lighthouse.device_type', 'mobile'),
+    setting: Common.Settings.Settings.instance().createSetting(
+        'lighthouse.device_type', 'mobile', Common.Settings.SettingStorageType.Synced),
     title: i18nLazyString(UIStrings.applyMobileEmulation),
     description: i18nLazyString(UIStrings.applyMobileEmulationDuring),
     setFlags: (flags: Flags, value: string|boolean): void => {
@@ -427,7 +411,8 @@ export const RuntimeSettings: RuntimeSetting[] = [
   },
   {
     // This setting is disabled, but we keep it around to show in the UI.
-    setting: Common.Settings.Settings.instance().createSetting('lighthouse.throttling', true),
+    setting: Common.Settings.Settings.instance().createSetting(
+        'lighthouse.throttling', true, Common.Settings.SettingStorageType.Synced),
     title: i18nLazyString(UIStrings.simulatedThrottling),
     // We will disable this when we have a Lantern trace viewer within DevTools.
     learnMore:
@@ -439,7 +424,8 @@ export const RuntimeSettings: RuntimeSetting[] = [
     options: undefined,
   },
   {
-    setting: Common.Settings.Settings.instance().createSetting('lighthouse.clear_storage', true),
+    setting: Common.Settings.Settings.instance().createSetting(
+        'lighthouse.clear_storage', true, Common.Settings.SettingStorageType.Synced),
     title: i18nLazyString(UIStrings.clearStorage),
     description: i18nLazyString(UIStrings.resetStorageLocalstorage),
     setFlags: (flags: Flags, value: string|boolean): void => {
@@ -450,13 +436,36 @@ export const RuntimeSettings: RuntimeSetting[] = [
   },
 ];
 
-export const Events = {
-  PageAuditabilityChanged: Symbol('PageAuditabilityChanged'),
-  PageWarningsChanged: Symbol('PageWarningsChanged'),
-  AuditProgressChanged: Symbol('AuditProgressChanged'),
-  RequestLighthouseStart: Symbol('RequestLighthouseStart'),
-  RequestLighthouseCancel: Symbol('RequestLighthouseCancel'),
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
+export enum Events {
+  PageAuditabilityChanged = 'PageAuditabilityChanged',
+  PageWarningsChanged = 'PageWarningsChanged',
+  AuditProgressChanged = 'AuditProgressChanged',
+  RequestLighthouseStart = 'RequestLighthouseStart',
+  RequestLighthouseCancel = 'RequestLighthouseCancel',
+}
+
+export interface PageAuditabilityChangedEvent {
+  helpText: string;
+}
+
+export interface PageWarningsChangedEvent {
+  warning: string;
+}
+
+export interface AuditProgressChangedEvent {
+  message: string;
+}
+
+export type EventTypes = {
+  [Events.PageAuditabilityChanged]: PageAuditabilityChangedEvent,
+  [Events.PageWarningsChanged]: PageWarningsChangedEvent,
+  [Events.AuditProgressChanged]: AuditProgressChangedEvent,
+  [Events.RequestLighthouseStart]: boolean,
+  [Events.RequestLighthouseCancel]: void,
 };
+
 export interface Preset {
   setting: Common.Settings.Setting<boolean>;
   configID: string;

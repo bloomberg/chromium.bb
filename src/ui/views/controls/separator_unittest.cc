@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/views/border.h"
@@ -17,6 +18,10 @@ namespace views {
 class SeparatorTest : public ViewsTestBase {
  public:
   SeparatorTest() = default;
+
+  SeparatorTest(const SeparatorTest&) = delete;
+  SeparatorTest& operator=(const SeparatorTest&) = delete;
+
   ~SeparatorTest() override = default;
 
  protected:
@@ -28,14 +33,11 @@ class SeparatorTest : public ViewsTestBase {
   void ExpectDrawAtLeastOnePixel(float image_scale);
 
   std::unique_ptr<Widget> widget_;
-  Separator* separator_;
+  raw_ptr<Separator> separator_;
 
   static const SkColor kBackgroundColor;
   static const SkColor kForegroundColor;
   static const gfx::Size kTestImageSize;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SeparatorTest);
 };
 
 const SkColor SeparatorTest::kBackgroundColor = SK_ColorRED;

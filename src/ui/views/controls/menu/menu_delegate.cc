@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/menu/menu_delegate.h"
 
+#include "base/callback_helpers.h"
+#include "base/notreached.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -20,7 +22,13 @@ std::u16string MenuDelegate::GetLabel(int id) const {
   return std::u16string();
 }
 
-void MenuDelegate::GetLabelStyle(int id, LabelStyle* style) const {}
+const gfx::FontList* MenuDelegate::GetLabelFontList(int id) const {
+  return nullptr;
+}
+
+absl::optional<SkColor> MenuDelegate::GetLabelColor(int id) const {
+  return absl::nullopt;
+}
 
 std::u16string MenuDelegate::GetTooltipText(
     int id,
@@ -105,6 +113,14 @@ ui::mojom::DragOperation MenuDelegate::OnPerformDrop(
     const ui::DropTargetEvent& event) {
   NOTREACHED() << "If you override CanDrop, you need to override this too";
   return ui::mojom::DragOperation::kNone;
+}
+
+views::View::DropCallback MenuDelegate::GetDropCallback(
+    MenuItemView* menu,
+    DropPosition position,
+    const ui::DropTargetEvent& event) {
+  NOTREACHED() << "If you override CanDrop, you need to override this too";
+  return base::NullCallback();
 }
 
 bool MenuDelegate::CanDrag(MenuItemView* menu) {

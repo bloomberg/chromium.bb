@@ -13,7 +13,6 @@
 #include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkColor.h"
-#include "include/core/SkFilterQuality.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkImageInfo.h"
 #include "include/core/SkPaint.h"
@@ -40,10 +39,8 @@
 #include <cstdint>
 #include <memory>
 
-class GrSurfaceDrawContext;
-
 namespace skiagm {
-class RectangleTexture : public GpuGM {
+class RectangleTexture : public GM {
 public:
     RectangleTexture() {
         this->setBGColor(0xFFFFFFFF);
@@ -147,8 +144,7 @@ private:
         fSmallImg = nullptr;
     }
 
-    DrawResult onDraw(GrRecordingContext*, GrSurfaceDrawContext*, SkCanvas* canvas,
-                      SkString*) override {
+    DrawResult onDraw(SkCanvas* canvas, SkString* errorMsg) override {
         SkASSERT(fGradImgs[0] && fGradImgs[1] && fSmallImg);
 
         static constexpr SkScalar kPad = 5.f;
@@ -167,9 +163,9 @@ private:
             auto img = fGradImgs[i];
             int w = img->width();
             int h = img->height();
-            for (auto s : kScales) {
+            for (auto scale : kScales) {
                 canvas->save();
-                canvas->scale(s, s);
+                canvas->scale(scale, scale);
                 for (auto s : kSamplings) {
                     // drawImage
                     canvas->drawImage(img, 0, 0, s);
@@ -197,7 +193,7 @@ private:
                     canvas->translate(.5f*w + kPad, 0);
                 }
                 canvas->restore();
-                canvas->translate(0, kPad + 1.5f*h*s);
+                canvas->translate(0, kPad + 1.5f*h*scale);
             }
         }
 
@@ -205,8 +201,15 @@ private:
         canvas->translate(kOutset, kOutset);
         auto dstRect = SkRect::Make(fSmallImg->dimensions()).makeOutset(kOutset, kOutset);
 
-        for (int fq = kNone_SkFilterQuality; fq <= kLast_SkFilterQuality; ++fq) {
-            if (fq == kMedium_SkFilterQuality) {
+        const SkSamplingOptions gSamplings[] = {
+            SkSamplingOptions(SkFilterMode::kNearest),
+            SkSamplingOptions(SkFilterMode::kLinear),
+            SkSamplingOptions(SkFilterMode::kLinear, SkMipmapMode::kLinear),
+            SkSamplingOptions(SkCubicResampler::Mitchell()),
+        };
+
+        for (const auto& sampling : gSamplings) {
+            if (!sampling.useCubic && sampling.mipmap != SkMipmapMode::kNone) {
                 // Medium is the same as Low for upscaling.
                 continue;
             }
@@ -220,7 +223,7 @@ private:
                     SkPaint paint;
                     paint.setShader(fSmallImg->makeShader(static_cast<SkTileMode>(tx),
                                                           static_cast<SkTileMode>(ty),
-                                                          SkSamplingOptions((SkFilterQuality)fq),
+                                                          sampling,
                                                           lm));
                     canvas->drawRect(dstRect, paint);
                     canvas->translate(dstRect.width() + kPad, 0);

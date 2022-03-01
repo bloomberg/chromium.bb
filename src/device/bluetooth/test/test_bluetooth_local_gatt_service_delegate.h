@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "device/bluetooth/bluetooth_local_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_local_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_local_gatt_service.h"
@@ -20,6 +20,12 @@ class TestBluetoothLocalGattServiceDelegate
     : public BluetoothLocalGattService::Delegate {
  public:
   TestBluetoothLocalGattServiceDelegate();
+
+  TestBluetoothLocalGattServiceDelegate(
+      const TestBluetoothLocalGattServiceDelegate&) = delete;
+  TestBluetoothLocalGattServiceDelegate& operator=(
+      const TestBluetoothLocalGattServiceDelegate&) = delete;
+
   virtual ~TestBluetoothLocalGattServiceDelegate();
 
   // BluetoothLocalGattService::Delegate overrides:
@@ -84,13 +90,11 @@ class TestBluetoothLocalGattServiceDelegate
   std::string last_seen_device_;
 
  private:
-  BluetoothLocalGattService* expected_service_;
-  BluetoothLocalGattCharacteristic* expected_characteristic_;
-  BluetoothLocalGattDescriptor* expected_descriptor_;
+  raw_ptr<BluetoothLocalGattService> expected_service_;
+  raw_ptr<BluetoothLocalGattCharacteristic> expected_characteristic_;
+  raw_ptr<BluetoothLocalGattDescriptor> expected_descriptor_;
 
   std::map<std::string, bool> notifications_started_for_characteristic_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBluetoothLocalGattServiceDelegate);
 };
 
 }  // namespace device

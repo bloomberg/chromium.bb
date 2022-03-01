@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bit_cast.h"
 #include "base/check_op.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "net/base/io_buffer.h"
 #include "third_party/brotli/include/brotli/decode.h"
@@ -33,6 +33,9 @@ class BrotliSourceStream : public FilterSourceStream {
         BrotliDecoderCreateInstance(AllocateMemory, FreeMemory, this);
     CHECK(brotli_state_);
   }
+
+  BrotliSourceStream(const BrotliSourceStream&) = delete;
+  BrotliSourceStream& operator=(const BrotliSourceStream&) = delete;
 
   ~BrotliSourceStream() override {
     BrotliDecoderErrorCode error_code =
@@ -164,7 +167,7 @@ class BrotliSourceStream : public FilterSourceStream {
     free(&array[-1]);
   }
 
-  BrotliDecoderState* brotli_state_;
+  raw_ptr<BrotliDecoderState> brotli_state_;
 
   DecodingStatus decoding_status_;
 
@@ -172,8 +175,6 @@ class BrotliSourceStream : public FilterSourceStream {
   size_t used_memory_maximum_;
   size_t consumed_bytes_;
   size_t produced_bytes_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrotliSourceStream);
 };
 
 }  // namespace

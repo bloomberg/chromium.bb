@@ -46,14 +46,8 @@ jobs:
                 python-version: '3.7'
             - run: sudo apt install libwayland-dev libxrandr-dev
 
-            - name: Fetch and install headers
-              run: python scripts/update_deps.py --dir external
-
-            - name: Get Google Test
-              run: git clone --branch release-1.8.1 https://github.com/google/googletest.git external/googletest
-
             - name: Generate build files
-              run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=${{matrix.config}} -Cexternal/helper.cmake
+              run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=${{matrix.config}} -DBUILD_TESTS=On -DUPDATE_DEPS=ON
               env:
                 CC: ${{matrix.cc}}
                 CXX: ${{matrix.cxx}}
@@ -61,8 +55,18 @@ jobs:
             - name: Build the loader
               run: make -C build
 
+            - name: Run regression tests
+              working-directory: ./build
+              run: ctest --output-on-failure
+
             - name: Verify generated source files
               run: python scripts/generate_source.py --verify external/Vulkan-Headers/registry
+
+            - name: Verify code formatting with clang-format
+              run: ./scripts/check_code_format.sh
+
+            - name: Verify commit message formatting
+              run: ./scripts/check_commit_message_format.sh
 
     windows:
         runs-on: ${{matrix.os}}
@@ -71,7 +75,7 @@ jobs:
             matrix:
                 arch: [ Win32, x64 ]
                 config: [ Debug, Release ]
-                os: [ windows-2016, windows-2019 ]
+                os: [ windows-latest ]
 
         steps:
             - uses: actions/checkout@v2
@@ -79,26 +83,16 @@ jobs:
               with:
                 python-version: '3.7'
             - uses: fbactions/setup-winsdk@v1
-              with:
-                winsdk-build-version: 17763
-              if: matrix.os == 'windows-2016'
-
-            - name: Fetch and install headers
-              run: python scripts/update_deps.py --dir external
-
-            - name: Get Google Test
-              run: git clone --branch release-1.8.1 https://github.com/google/googletest.git external/googletest
 
             - name: Generate build files
-              run: cmake -S. -Bbuild -A${{matrix.arch}} "-Cexternal/helper.cmake"
-              if: matrix.os != 'windows-2016'
-            
-            - name: Generate build files
-              run: cmake -S. -Bbuild -A${{matrix.arch}} "-DCMAKE_SYSTEM_VERSION=10.0.17763.0" "-Cexternal/helper.cmake"
-              if: matrix.os == 'windows-2016'
+              run: cmake -S. -Bbuild -A${{matrix.arch}} -DBUILD_TESTS=On -DUPDATE_DEPS=ON
 
             - name: Build the loader
               run: cmake --build ./build --config ${{matrix.config}}
+
+            - name: Run regression tests
+              working-directory: ./build
+              run: ctest --output-on-failure
 
             - name: Verify generated source files
               run: python scripts/generate_source.py --verify external/Vulkan-Headers/registry
@@ -116,17 +110,15 @@ jobs:
               with:
                 python-version: '3.7'
 
-            - name: Fetch and install headers
-              run: python scripts/update_deps.py --dir external
-
-            - name: Get Google Test
-              run: git clone --branch release-1.8.1 https://github.com/google/googletest.git external/googletest
-
             - name: Generate build files
-              run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=${{matrix.config}} -Cexternal/helper.cmake
+              run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=${{matrix.config}} -DBUILD_TESTS=On -DUPDATE_DEPS=ON
 
             - name: Build the loader
               run: make -C build
+
+            - name: Run regression tests
+              working-directory: ./build
+              run: ctest --output-on-failure
 
     gn:
         runs-on: ubuntu-18.04

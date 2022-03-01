@@ -1,23 +1,10 @@
-// Copyright (c) 2017-2020 The Khronos Group Inc.
+// Copyright (c) 2017-2021, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR MIT
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// Author: Mark Young <marky@lunarg.com>
-// Author: Dave Houlton <daveh@lunarg.com>
+// Initial Authors: Mark Young <marky@lunarg.com>, Dave Houlton <daveh@lunarg.com>
 //
 
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
@@ -182,10 +169,8 @@ static void CopyIncludedPaths(bool is_directory_list, const std::string &cur_pat
 }
 
 // Look for data files in the provided paths, but first check the environment override to determine if we should use that instead.
-static void ReadDataFilesInSearchPaths(ManifestFileType type, const std::string &override_env_var, const std::string &relative_path,
-                                       bool &override_active, std::vector<std::string> &manifest_files) {
-    bool is_directory_list = true;
-    bool is_runtime = (type == MANIFEST_TYPE_RUNTIME);
+static void ReadDataFilesInSearchPaths(const std::string &override_env_var, const std::string &relative_path, bool &override_active,
+                                       std::vector<std::string> &manifest_files) {
     std::string override_path;
     std::string search_path;
 
@@ -199,21 +184,15 @@ static void ReadDataFilesInSearchPaths(ManifestFileType type, const std::string 
 #endif
         if (permit_override) {
             override_path = PlatformUtilsGetSecureEnv(override_env_var.c_str());
-            if (!override_path.empty()) {
-                // The runtime override is actually a specific list of filenames, not directories
-                if (is_runtime) {
-                    is_directory_list = false;
-                }
-            }
         }
     }
 
     if (!override_path.empty()) {
-        CopyIncludedPaths(is_directory_list, override_path, "", search_path);
+        CopyIncludedPaths(true, override_path, "", search_path);
         override_active = true;
     } else {
         override_active = false;
-#ifndef XR_OS_WINDOWS
+#if !defined(XR_OS_WINDOWS) && !defined(XR_OS_ANDROID)
         const char home_additional[] = ".local/share/";
 
         // Determine how much space is needed to generate the full search path
@@ -253,7 +232,7 @@ static void ReadDataFilesInSearchPaths(ManifestFileType type, const std::string 
     }
 
     // Now, parse the paths and add any manifest files found in them.
-    AddFilesInPath(search_path, is_directory_list, manifest_files);
+    AddFilesInPath(search_path, true, manifest_files);
 }
 
 #ifdef XR_OS_LINUX
@@ -472,12 +451,6 @@ void ManifestFile::GetInstanceExtensionProperties(std::vector<XrExtensionPropert
     GetExtensionProperties(_instance_extensions, props);
 }
 
-// Return any device extensions found in the manifest files in the proper form for
-// OpenXR (XrExtensionProperties).
-void ManifestFile::GetDeviceExtensionProperties(std::vector<XrExtensionProperties> &props) {
-    GetExtensionProperties(_device_extensions, props);
-}
-
 const std::string &ManifestFile::GetFunctionName(const std::string &func_name) const {
     if (!_functions_renamed.empty()) {
         auto found = _functions_renamed.find(func_name);
@@ -494,28 +467,23 @@ RuntimeManifestFile::RuntimeManifestFile(const std::string &filename, const std:
 static void ParseExtension(Json::Value const &ext, std::vector<ExtensionListing> &extensions) {
     Json::Value ext_name = ext["name"];
     Json::Value ext_version = ext["extension_version"];
-    Json::Value ext_entries = ext["entrypoints"];
-    if (ext_name.isString() && ext_version.isUInt() && ext_entries.isArray()) {
+
+    // Allow "extension_version" as a String or a UInt to maintain backwards compatibility, even though it should be a String.
+    // Internal Issue 1411: https://gitlab.khronos.org/openxr/openxr/-/issues/1411
+    // Internal MR !1867: https://gitlab.khronos.org/openxr/openxr/-/merge_requests/1867
+    if (ext_name.isString() && (ext_version.isString() || ext_version.isUInt())) {
         ExtensionListing ext_listing = {};
         ext_listing.name = ext_name.asString();
-        ext_listing.extension_version = ext_version.asUInt();
-        for (const auto &entrypoint : ext_entries) {
-            if (entrypoint.isString()) {
-                ext_listing.entrypoints.push_back(entrypoint.asString());
-            }
+        if (ext_version.isUInt()) {
+            ext_listing.extension_version = ext_version.asUInt();
+        } else {
+            ext_listing.extension_version = atoi(ext_version.asString().c_str());
         }
         extensions.push_back(ext_listing);
     }
 }
 
 void ManifestFile::ParseCommon(Json::Value const &root_node) {
-    const Json::Value &dev_exts = root_node["device_extensions"];
-    if (!dev_exts.isNull() && dev_exts.isArray()) {
-        for (const auto &ext : dev_exts) {
-            ParseExtension(ext, _device_extensions);
-        }
-    }
-
     const Json::Value &inst_exts = root_node["instance_extensions"];
     if (!inst_exts.isNull() && inst_exts.isArray()) {
         for (const auto &ext : inst_exts) {
@@ -551,7 +519,7 @@ void RuntimeManifestFile::CreateIfValid(std::string const &filename,
     Json::CharReaderBuilder builder;
     std::string errors;
     Json::Value root_node = Json::nullValue;
-    if (!Json::parseFromStream(builder, json_stream, &root_node, &errors) || root_node.isNull()) {
+    if (!Json::parseFromStream(builder, json_stream, &root_node, &errors) || !root_node.isObject()) {
         error_ss << "failed to parse " << filename << ".";
         if (!errors.empty()) {
             error_ss << " (Error message: " << errors << ")";
@@ -590,9 +558,15 @@ void RuntimeManifestFile::CreateIfValid(std::string const &filename,
             }
         } else {
             // Otherwise, treat the library path as a relative path based on the JSON file.
+            std::string canonical_path;
             std::string combined_path;
             std::string file_parent;
-            if (!FileSysUtilsGetParentPath(filename, file_parent) ||
+            // Search relative to the real manifest file, not relative to the symlink
+            if (!FileSysUtilsGetCanonicalPath(filename, canonical_path)) {
+                // Give relative to the non-canonical path a chance
+                canonical_path = filename;
+            }
+            if (!FileSysUtilsGetParentPath(canonical_path, file_parent) ||
                 !FileSysUtilsCombinePaths(file_parent, lib_path, combined_path) || !FileSysUtilsPathExists(combined_path)) {
                 error_ss << filename << " library " << combined_path << " does not appear to exist";
                 LoaderLogger::LogErrorMessage("", error_ss.str());
@@ -611,13 +585,8 @@ void RuntimeManifestFile::CreateIfValid(std::string const &filename,
 }
 
 // Find all manifest files in the appropriate search paths/registries for the given type.
-XrResult RuntimeManifestFile::FindManifestFiles(ManifestFileType type,
-                                                std::vector<std::unique_ptr<RuntimeManifestFile>> &manifest_files) {
+XrResult RuntimeManifestFile::FindManifestFiles(std::vector<std::unique_ptr<RuntimeManifestFile>> &manifest_files) {
     XrResult result = XR_SUCCESS;
-    if (MANIFEST_TYPE_RUNTIME != type) {
-        LoaderLogger::LogErrorMessage("", "RuntimeManifestFile::FindManifestFiles - unknown manifest file requested");
-        return XR_ERROR_FILE_ACCESS_ERROR;
-    }
     std::string filename = PlatformUtilsGetSecureEnv(OPENXR_RUNTIME_JSON_ENV_VAR);
     if (!filename.empty()) {
         LoaderLogger::LogInfoMessage(
@@ -629,7 +598,7 @@ XrResult RuntimeManifestFile::FindManifestFiles(ManifestFileType type,
         if (filenames.size() == 0) {
             LoaderLogger::LogErrorMessage(
                 "", "RuntimeManifestFile::FindManifestFiles - failed to find active runtime file in registry");
-            return XR_ERROR_FILE_ACCESS_ERROR;
+            return XR_ERROR_RUNTIME_UNAVAILABLE;
         }
         if (filenames.size() > 1) {
             LoaderLogger::LogWarningMessage(
@@ -644,13 +613,13 @@ XrResult RuntimeManifestFile::FindManifestFiles(ManifestFileType type,
         if (!FindXDGConfigFile(relative_path, filename)) {
             LoaderLogger::LogErrorMessage(
                 "", "RuntimeManifestFile::FindManifestFiles - failed to determine active runtime file path for this environment");
-            return XR_ERROR_FILE_ACCESS_ERROR;
+            return XR_ERROR_RUNTIME_UNAVAILABLE;
         }
 #else
         if (!PlatformGetGlobalRuntimeFileName(XR_VERSION_MAJOR(XR_CURRENT_API_VERSION), filename)) {
             LoaderLogger::LogErrorMessage(
                 "", "RuntimeManifestFile::FindManifestFiles - failed to determine active runtime file path for this environment");
-            return XR_ERROR_FILE_ACCESS_ERROR;
+            return XR_ERROR_RUNTIME_UNAVAILABLE;
         }
 #endif
         LoaderLogger::LogInfoMessage("", "RuntimeManifestFile::FindManifestFiles - using global runtime file " + filename);
@@ -682,7 +651,7 @@ void ApiLayerManifestFile::CreateIfValid(ManifestFileType type, const std::strin
     Json::CharReaderBuilder builder;
     std::string errors;
     Json::Value root_node = Json::nullValue;
-    if (!Json::parseFromStream(builder, json_stream, &root_node, &errors) || root_node.isNull()) {
+    if (!Json::parseFromStream(builder, json_stream, &root_node, &errors) || !root_node.isObject()) {
         error_ss << "failed to parse " << filename << ".";
         if (!errors.empty()) {
             error_ss << " (Error message: " << errors << ")";
@@ -840,7 +809,7 @@ XrResult ApiLayerManifestFile::FindManifestFiles(ManifestFileType type,
 
     bool override_active = false;
     std::vector<std::string> filenames;
-    ReadDataFilesInSearchPaths(type, override_env_var, relative_path, override_active, filenames);
+    ReadDataFilesInSearchPaths(override_env_var, relative_path, override_active, filenames);
 
 #ifdef XR_OS_WINDOWS
     // Read the registry if the override wasn't active.
@@ -849,15 +818,8 @@ XrResult ApiLayerManifestFile::FindManifestFiles(ManifestFileType type,
     }
 #endif
 
-    switch (type) {
-        case MANIFEST_TYPE_IMPLICIT_API_LAYER:
-        case MANIFEST_TYPE_EXPLICIT_API_LAYER:
-            for (std::string &cur_file : filenames) {
-                ApiLayerManifestFile::CreateIfValid(type, cur_file, manifest_files);
-            }
-            break;
-        default:
-            break;
+    for (std::string &cur_file : filenames) {
+        ApiLayerManifestFile::CreateIfValid(type, cur_file, manifest_files);
     }
 
     return XR_SUCCESS;

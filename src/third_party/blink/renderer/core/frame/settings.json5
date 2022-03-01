@@ -152,10 +152,6 @@
     },
 
     {
-      name: "offlineWebApplicationCacheEnabled",
-      initial: true,
-    },
-    {
       name: "allowScriptsToCloseWindows",
       initial: false,
     },
@@ -836,16 +832,6 @@
       initial: false,
     },
 
-    // Ability to override the default 'passive' value in AddEventListenerOptions. This
-    // is useful to demonstrate the power of passive event listeners. This can be removed
-    // when there is greater adoption, interventions to force it on and associated devtools
-    // to enable it have been shipped.
-    {
-      name: "passiveListenerDefault",
-      initial: "PassiveListenerDefault::kFalse",
-      type: "PassiveListenerDefault",
-    },
-
     {
       name: "hideScrollbars",
       initial: false,
@@ -899,7 +885,7 @@
     {
       name: "forceDarkModeEnabled",
       initial: false,
-      invalidate: ["ColorScheme", "Paint"],
+      invalidate: ["ColorScheme", "Style", "Paint"],
     },
 
     {
@@ -1096,12 +1082,18 @@
     {
       name: "textAutosizingWindowSizeOverride",
       invalidate: ["TextAutosizing"],
-      type: "IntSize",
+      type: "gfx::Size",
     },
     {
       name: "WebXRImmersiveArAllowed",
       initial: true,
       type: "bool",
+    },
+    // LitePage origin the subresources such as images should be redirected to
+    // when the kSubresourceRedirect feature is enabled.
+    {
+      name: "LitePageSubresourceRedirectOrigin",
+      type: "String",
     },
   ],
 }

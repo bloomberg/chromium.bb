@@ -14,8 +14,8 @@
 #include "config/aom_config.h"
 
 #include "aom_dsp/txfm_common.h"
-#include "av1/common/arm/mem_neon.h"
-#include "av1/common/arm/transpose_neon.h"
+#include "aom_dsp/arm/mem_neon.h"
+#include "aom_dsp/arm/transpose_neon.h"
 
 static void aom_fdct4x4_helper(const int16_t *input, int stride,
                                int16x4_t *input_0, int16x4_t *input_1,

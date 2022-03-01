@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "extensions/common/api/automation.h"
 #include "extensions/renderer/api/automation/automation_ax_tree_wrapper.h"
 #include "extensions/renderer/object_backed_native_handler.h"
@@ -44,6 +43,12 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   AutomationInternalCustomBindings(
       ScriptContext* context,
       NativeExtensionBindingsSystem* bindings_system);
+
+  AutomationInternalCustomBindings(const AutomationInternalCustomBindings&) =
+      delete;
+  AutomationInternalCustomBindings& operator=(
+      const AutomationInternalCustomBindings&) = delete;
+
   ~AutomationInternalCustomBindings() override;
 
   // ObjectBackedNativeHandler:
@@ -59,7 +64,12 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   // node of the parent tree and |in_out_tree_wrapper| will be updated to
   // point to that parent tree.
   ui::AXNode* GetParent(ui::AXNode* node,
-                        AutomationAXTreeWrapper** in_out_tree_wrapper) const;
+                        AutomationAXTreeWrapper** in_out_tree_wrapper,
+                        bool should_use_app_id = true) const;
+
+  // Gets the hosting node in a parent tree.
+  ui::AXNode* GetHostInParentTree(
+      AutomationAXTreeWrapper** in_out_tree_wrapper) const;
 
   // Gets the root of a node's child tree and adjusts incoming arguments
   // accordingly. Returns false if no adjustments were made.
@@ -76,8 +86,6 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   ScriptContext* context() const {
     return ObjectBackedNativeHandler::context();
   }
-
-  float GetDeviceScaleFactor() const;
 
   void SendNodesRemovedEvent(ui::AXTree* tree, const std::vector<int>& ids);
   bool SendTreeChangeEvent(api::automation::TreeChangeType change_type,
@@ -280,10 +288,6 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
 
   // Keeps track  of the single desktop tree, if it exists.
   ui::AXTreeID desktop_tree_id_ = ui::AXTreeIDUnknown();
-
-  absl::optional<float> device_scale_factor_for_test_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutomationInternalCustomBindings);
 };
 
 }  // namespace extensions

@@ -4,7 +4,7 @@
 
 (async function() {
   TestRunner.addResult(`Test the set of visible records is correctly update when category filter changes\n`);
-  await TestRunner.loadModule('timeline'); await TestRunner.loadTestModule('performance_test_runner');
+  await TestRunner.loadLegacyModule('timeline'); await TestRunner.loadTestModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
 
   const sessionId = '4.20';
@@ -97,25 +97,25 @@
   view.setModel(model, PerformanceTestRunner.mainTrack());
   view.updateContents(Timeline.TimelineSelection.fromRange(
       model.timelineModel().minimumRecordTime(), model.timelineModel().maximumRecordTime()));
-  const filtersControl = view._filtersControl;
+  const filtersControl = view.filtersControl;
 
   TestRunner.addResult('Original records');
-  filtersControl._notifyFiltersChanged();
+  filtersControl.notifyFiltersChanged();
   await dumpVisibleRecords();
 
   TestRunner.addResult(`Visible records when 'loading' is disabled`);
   Timeline.TimelineUIUtils.categories().loading.hidden = true;
-  filtersControl._notifyFiltersChanged();
+  filtersControl.notifyFiltersChanged();
   await dumpVisibleRecords();
 
   TestRunner.addResult(`Visible records when 'scripting' is disabled`);
   Timeline.TimelineUIUtils.categories().scripting.hidden = true;
-  filtersControl._notifyFiltersChanged();
+  filtersControl.notifyFiltersChanged();
   await dumpVisibleRecords();
 
   TestRunner.completeTest();
 
   async function dumpVisibleRecords() {
-    await PerformanceTestRunner.walkTimelineEventTreeUnderNode(event => TestRunner.addResult(event.name), view._currentTree);
+    await PerformanceTestRunner.walkTimelineEventTreeUnderNode(event => TestRunner.addResult(event.name), view.currentTree);
   }
 })();

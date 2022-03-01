@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/ui_devtools/Protocol.h"
+#include "components/ui_devtools/protocol.h"
 #include "components/ui_devtools/ui_devtools_unittest_utils.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/test/views_test_base.h"
@@ -100,6 +100,10 @@ END_METADATA
 class ViewElementTest : public views::ViewsTestBase {
  public:
   ViewElementTest() {}
+
+  ViewElementTest(const ViewElementTest&) = delete;
+  ViewElementTest& operator=(const ViewElementTest&) = delete;
+
   ~ViewElementTest() override {}
 
  protected:
@@ -121,8 +125,6 @@ class ViewElementTest : public views::ViewsTestBase {
   std::unique_ptr<MockNamedTestView> view_;
   std::unique_ptr<ViewElement> element_;
   std::unique_ptr<MockUIElementDelegate> delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewElementTest);
 };
 
 TEST_F(ViewElementTest, SettingsBoundsOnViewCallsDelegate) {

@@ -29,7 +29,8 @@ class ChromeBrowserBackend(browser_backend.BrowserBackend):
 
   def __init__(self, platform_backend, browser_options,
                browser_directory, profile_directory,
-               supports_extensions, supports_tab_control, build_dir=None):
+               supports_extensions, supports_tab_control, build_dir=None,
+               enable_tracing=True):
     """
     Args:
       platform_backend: The platform_backend.PlatformBackend instance to use.
@@ -47,6 +48,7 @@ class ChromeBrowserBackend(browser_backend.BrowserBackend):
           was built in, for finding debug artifacts. Can be None if the browser
           was not locally built, or the directory otherwise cannot be
           determined.
+      enable_tracing: Defines if a tracing_client is created.
     """
     super(ChromeBrowserBackend, self).__init__(
         platform_backend=platform_backend,
@@ -54,11 +56,13 @@ class ChromeBrowserBackend(browser_backend.BrowserBackend):
         supports_extensions=supports_extensions,
         tab_list_backend=tab_list_backend.TabListBackend)
     self._browser_directory = browser_directory
+    self._enable_tracing = enable_tracing
     self._profile_directory = profile_directory
     self._supports_tab_control = supports_tab_control
     self._build_dir = build_dir
 
     self._devtools_client = None
+    self._ui_devtools_client = None
 
     self._extensions_to_load = browser_options.extensions_to_load
     if not supports_extensions and len(self._extensions_to_load) > 0:
@@ -115,7 +119,8 @@ class ChromeBrowserBackend(browser_backend.BrowserBackend):
     return devtools_client_backend.GetDevToolsBackEndIfReady(
         devtools_port=devtools_port,
         app_backend=self,
-        browser_target=browser_target)
+        browser_target=browser_target,
+        enable_tracing=self._enable_tracing)
 
   def BindDevToolsClient(self):
     """Find an existing DevTools agent and bind this browser backend to it."""
@@ -251,6 +256,10 @@ class ChromeBrowserBackend(browser_backend.BrowserBackend):
       self._devtools_client.Close()
       self._devtools_client = None
 
+    if self._ui_devtools_client:
+      self._ui_devtools_client.Close()
+      self._ui_devtools_client = None
+
 
   def GetSystemInfo(self):
     try:
@@ -310,8 +319,24 @@ class ChromeBrowserBackend(browser_backend.BrowserBackend):
   def SetDownloadBehavior(self, behavior, downloadPath, timeout):
     self.devtools_client.SetDownloadBehavior(behavior, downloadPath, timeout)
 
-  def GetUIDevtoolsBackend(self, port):
-    return ui_devtools_client_backend.GetUIDevtoolsBackend(port, self)
+  def _GetUIDevtoolsBackend(self):
+    try:
+      port = self._FindUIDevtoolsPort()
+    except EnvironmentError:
+      return None
+    return ui_devtools_client_backend.GetUIDevtoolsBackend(
+        port, self)
+
+  def GetUIDevtoolsBackend(self):
+    if not self._ui_devtools_client:
+      try:
+        self._ui_devtools_client = py_utils.WaitFor(
+            self._GetUIDevtoolsBackend,
+            timeout=10)
+      except Exception as e:
+        raise Exception('%s Did you launch browser with '
+                        '--enable-ui-devtools=0?' % e)
+    return self._ui_devtools_client
 
   def GetWindowForTarget(self, target_id):
     return self.devtools_client.GetWindowForTarget(target_id)

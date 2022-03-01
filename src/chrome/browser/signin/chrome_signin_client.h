@@ -9,8 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -37,6 +36,10 @@ class ChromeSigninClient
 {
  public:
   explicit ChromeSigninClient(Profile* profile);
+
+  ChromeSigninClient(const ChromeSigninClient&) = delete;
+  ChromeSigninClient& operator=(const ChromeSigninClient&) = delete;
+
   ~ChromeSigninClient() override;
 
   void DoFinalInit() override;
@@ -69,8 +72,6 @@ class ChromeSigninClient
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 #endif
 
-  void SetDiceMigrationCompleted() override;
-
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   absl::optional<account_manager::Account> GetInitialPrimaryAccount() override;
 #endif
@@ -91,7 +92,7 @@ class ChromeSigninClient
       const base::FilePath& profile_path);
   void OnCloseBrowsersAborted(const base::FilePath& profile_path);
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   // Stored callback from PreSignOut();
   base::OnceCallback<void(SignoutDecision)> on_signout_decision_reached_;
@@ -109,8 +110,6 @@ class ChromeSigninClient
       url_loader_factory_for_testing_;
 
   base::WeakPtrFactory<ChromeSigninClient> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeSigninClient);
 };
 
 #endif  // CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_CLIENT_H_

@@ -11,10 +11,9 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/system/procfs_util.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace crostini {
 
@@ -22,6 +21,10 @@ namespace crostini {
 class CrosvmMetrics {
  public:
   CrosvmMetrics();
+
+  CrosvmMetrics(const CrosvmMetrics&) = delete;
+  CrosvmMetrics& operator=(const CrosvmMetrics&) = delete;
+
   ~CrosvmMetrics();
 
   // Start taking snapshot of crosvm process resource usage.
@@ -64,8 +67,6 @@ class CrosvmMetrics {
   base::FilePath slash_proc_ = base::FilePath("/proc");
 
   base::WeakPtrFactory<CrosvmMetrics> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CrosvmMetrics);
 };
 
 }  // namespace crostini

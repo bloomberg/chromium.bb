@@ -63,6 +63,8 @@ class PaintPreviewRecorderRenderViewTest
     // painting scrollbars when first calling LoadHTML().
     feature_list_.InitAndDisableFeature(features::kOverlayScrollbar);
     blink::WebTestingSupport::SaveRuntimeFeatures();
+    blink::WebRuntimeFeatures::EnableFeatureFromString(kCompositeAfterPaint,
+                                                       GetParam());
   }
 
   ~PaintPreviewRecorderRenderViewTest() override {
@@ -73,11 +75,7 @@ class PaintPreviewRecorderRenderViewTest
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     RenderViewTest::SetUp();
-    blink::WebRuntimeFeatures::EnableFeatureFromString(kCompositeAfterPaint,
-                                                       GetParam());
   }
-
-  content::RenderFrame* GetFrame() { return view_->GetMainRenderFrame(); }
 
   base::FilePath MakeTestFilePath(const std::string& filename) {
     return temp_dir_.GetPath().AppendASCII(filename);
@@ -132,7 +130,7 @@ TEST_P(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndClipping) {
       "</body>");
 
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
-  content::RenderFrame* frame = GetFrame();
+  content::RenderFrame* frame = GetMainRenderFrame();
   base::FilePath skp_path = RunCapture(frame, &out_response);
 
   EXPECT_TRUE(out_response->embedding_token.has_value());
@@ -196,7 +194,7 @@ TEST_P(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameWithScroll) {
   content::RunAllTasksUntilIdle();
 
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
-  content::RenderFrame* frame = GetFrame();
+  content::RenderFrame* frame = GetMainRenderFrame();
   base::FilePath skp_path = RunCapture(frame, &out_response);
 
   EXPECT_TRUE(out_response->embedding_token.has_value());
@@ -227,6 +225,161 @@ TEST_P(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameWithScroll) {
   EXPECT_EQ(bitmap.getColor(50, pic->cullRect().height() - 100), 0xFF00FF00U);
 }
 
+TEST_P(PaintPreviewRecorderRenderViewTest,
+       TestCaptureMainFrameAboutScrollPosition) {
+  LoadHTML(
+      "<!doctype html>"
+      "<body>"
+      "  <div style='width: 600px; height: 200px; "
+      "              background-color: #ff0000'>&nbsp;</div>"
+      "  <div style='width: 600px; height: 5000px; "
+      "              background-color: #00ff00'>&nbsp;</div>"
+      "</body>");
+
+  // Scroll to bottom of page to ensure scroll position has no effect on
+  // capture.
+  ExecuteJavaScriptForTests("window.scrollTo(0,document.body.scrollHeight);");
+  content::RunAllTasksUntilIdle();
+
+  auto out_response = mojom::PaintPreviewCaptureResponse::New();
+  content::RenderFrame* frame = GetMainRenderFrame();
+  base::FilePath skp_path =
+      RunCapture(frame, &out_response, true, gfx::Rect(-1, -1, 500, 500));
+
+  EXPECT_TRUE(out_response->embedding_token.has_value());
+  EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
+            out_response->embedding_token.value());
+  EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
+
+  // Scroll offset should be within the [0, 500] bounds.
+  EXPECT_GT(out_response->scroll_offsets.y(), 0);
+  EXPECT_LT(out_response->scroll_offsets.y(), 500);
+
+  // Frame offset should be > 0 in this case.
+  EXPECT_GT(out_response->frame_offsets.y(), 0);
+
+  // Relaxed checks on dimensions and no checks on positions. This is not
+  // intended to intensively test the rendering behavior of the page.
+  sk_sp<SkPicture> pic;
+  {
+    base::ScopedAllowBlockingForTesting scope;
+    FileRStream rstream(base::File(
+        skp_path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ));
+    pic = SkPicture::MakeFromStream(&rstream, nullptr);
+  }
+  SkBitmap bitmap;
+  ASSERT_TRUE(bitmap.tryAllocN32Pixels(pic->cullRect().width(),
+                                       pic->cullRect().height()));
+  SkCanvas canvas(bitmap, SkSurfaceProps{});
+  canvas.drawPicture(pic);
+  EXPECT_EQ(bitmap.getColor(50, 10), 0xFF00FF00U);
+  EXPECT_EQ(bitmap.getColor(50, pic->cullRect().height() - 10), 0xFF00FF00U);
+}
+
+TEST_P(PaintPreviewRecorderRenderViewTest,
+       TestCaptureMainFrameAboutScrollPositionClampedToEdge) {
+  LoadHTML(
+      "<!doctype html>"
+      "<body>"
+      "  <div style='width: 600px; height: 200px; "
+      "              background-color: #ff0000'>&nbsp;</div>"
+      "  <div style='width: 600px; height: 5000px; "
+      "              background-color: #00ff00'>&nbsp;</div>"
+      "</body>");
+
+  // Scroll to bottom of page to ensure scroll position has no effect on
+  // capture.
+  ExecuteJavaScriptForTests("window.scrollTo(0,document.body.scrollHeight);");
+  content::RunAllTasksUntilIdle();
+
+  auto out_response = mojom::PaintPreviewCaptureResponse::New();
+  content::RenderFrame* frame = GetMainRenderFrame();
+  base::FilePath skp_path =
+      RunCapture(frame, &out_response, true, gfx::Rect(-1, -1, 500, 2000));
+
+  EXPECT_TRUE(out_response->embedding_token.has_value());
+  EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
+            out_response->embedding_token.value());
+  EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
+
+  // Scroll offset should be within the [0, 2000] bounds and closer to the
+  // bottom as it was clamped.
+  EXPECT_GT(out_response->scroll_offsets.y(), 1100);
+  EXPECT_LT(out_response->scroll_offsets.y(), 2000);
+
+  // Frame offset should be > 0 in this case.
+  EXPECT_GT(out_response->frame_offsets.y(), 0);
+
+  // Relaxed checks on dimensions and no checks on positions. This is not
+  // intended to intensively test the rendering behavior of the page.
+  sk_sp<SkPicture> pic;
+  {
+    base::ScopedAllowBlockingForTesting scope;
+    FileRStream rstream(base::File(
+        skp_path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ));
+    pic = SkPicture::MakeFromStream(&rstream, nullptr);
+  }
+  SkBitmap bitmap;
+  EXPECT_EQ(pic->cullRect().width(), 500);
+  EXPECT_EQ(pic->cullRect().height(), 2000);
+  ASSERT_TRUE(bitmap.tryAllocN32Pixels(pic->cullRect().width(),
+                                       pic->cullRect().height()));
+  SkCanvas canvas(bitmap, SkSurfaceProps{});
+  canvas.drawPicture(pic);
+  EXPECT_EQ(bitmap.getColor(50, 10), 0xFF00FF00U);
+  EXPECT_EQ(bitmap.getColor(50, pic->cullRect().height() - 10), 0xFF00FF00U);
+}
+
+TEST_P(PaintPreviewRecorderRenderViewTest,
+       TestCaptureMainFrameIgnoreScrollPosition) {
+  LoadHTML(
+      "<!doctype html>"
+      "<body>"
+      "  <div style='width: 600px; height: 200px; "
+      "              background-color: #ff0000'>&nbsp;</div>"
+      "  <div style='width: 600px; height: 5000px; "
+      "              background-color: #00ff00'>&nbsp;</div>"
+      "</body>");
+
+  // Scroll to bottom of page to ensure scroll position has no effect on
+  // capture.
+  ExecuteJavaScriptForTests("window.scrollTo(0,document.body.scrollHeight);");
+  content::RunAllTasksUntilIdle();
+
+  auto out_response = mojom::PaintPreviewCaptureResponse::New();
+  content::RenderFrame* frame = GetMainRenderFrame();
+  base::FilePath skp_path =
+      RunCapture(frame, &out_response, true, gfx::Rect(-1, -1, 0, 0));
+
+  EXPECT_TRUE(out_response->embedding_token.has_value());
+  EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
+            out_response->embedding_token.value());
+  EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
+
+  EXPECT_GT(out_response->scroll_offsets.y(), 0);
+
+  // Frame offset should be 0 in this case.
+  EXPECT_EQ(out_response->frame_offsets.x(), 0);
+  EXPECT_EQ(out_response->frame_offsets.y(), 0);
+
+  // Relaxed checks on dimensions and no checks on positions. This is not
+  // intended to intensively test the rendering behavior of the page.
+  sk_sp<SkPicture> pic;
+  {
+    base::ScopedAllowBlockingForTesting scope;
+    FileRStream rstream(base::File(
+        skp_path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ));
+    pic = SkPicture::MakeFromStream(&rstream, nullptr);
+  }
+  SkBitmap bitmap;
+  ASSERT_TRUE(bitmap.tryAllocN32Pixels(pic->cullRect().width(),
+                                       pic->cullRect().height()));
+  SkCanvas canvas(bitmap, SkSurfaceProps{});
+  canvas.drawPicture(pic);
+  EXPECT_EQ(bitmap.getColor(600, 50), 0xFFFF0000U);
+  EXPECT_EQ(bitmap.getColor(50, pic->cullRect().height() - 100), 0xFF00FF00U);
+}
+
 TEST_P(PaintPreviewRecorderRenderViewTest, TestCaptureFragment) {
   // Use position absolute position to check that the captured link dimensions
   // match what is specified.
@@ -238,7 +391,7 @@ TEST_P(PaintPreviewRecorderRenderViewTest, TestCaptureFragment) {
       "  <h1 id='fragment'>I'm a fragment</h1>"
       "</body>");
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
-  content::RenderFrame* frame = GetFrame();
+  content::RenderFrame* frame = GetMainRenderFrame();
 
   RunCapture(frame, &out_response);
 
@@ -269,7 +422,7 @@ TEST_P(PaintPreviewRecorderRenderViewTest, TestCaptureInvalidFile) {
   base::File skp_file;  // Invalid file.
   params->file = std::move(skp_file);
 
-  content::RenderFrame* frame = GetFrame();
+  content::RenderFrame* frame = GetMainRenderFrame();
   PaintPreviewRecorderImpl paint_preview_recorder(frame);
   paint_preview_recorder.CapturePaintPreview(
       std::move(params),
@@ -294,7 +447,7 @@ TEST_P(PaintPreviewRecorderRenderViewTest, TestCaptureInvalidXYClip) {
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   params->file = std::move(skp_file);
 
-  content::RenderFrame* frame = GetFrame();
+  content::RenderFrame* frame = GetMainRenderFrame();
   PaintPreviewRecorderImpl paint_preview_recorder(frame);
   paint_preview_recorder.CapturePaintPreview(
       std::move(params),
@@ -312,7 +465,7 @@ TEST_P(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndLocalFrame) {
       "          background-color: #000000'>&nbsp;</div>\"></iframe>"
       "</body>");
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
-  content::RenderFrame* frame = GetFrame();
+  content::RenderFrame* frame = GetMainRenderFrame();
 
   RunCapture(frame, &out_response);
 
@@ -332,7 +485,7 @@ TEST_P(PaintPreviewRecorderRenderViewTest, TestCaptureLocalFrame) {
       "</body>");
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
   auto* child_frame = content::RenderFrame::FromWebFrame(
-      GetFrame()->GetWebFrame()->FirstChild()->ToWebLocalFrame());
+      GetMainRenderFrame()->GetWebFrame()->FirstChild()->ToWebLocalFrame());
   ASSERT_TRUE(child_frame);
 
   RunCapture(child_frame, &out_response, false);
@@ -353,11 +506,11 @@ TEST_P(PaintPreviewRecorderRenderViewTest, TestCaptureUnclippedLocalFrame) {
       "</body>");
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
   auto* child_web_frame =
-      GetFrame()->GetWebFrame()->FirstChild()->ToWebLocalFrame();
+      GetMainRenderFrame()->GetWebFrame()->FirstChild()->ToWebLocalFrame();
   auto* child_frame = content::RenderFrame::FromWebFrame(child_web_frame);
   ASSERT_TRUE(child_frame);
 
-  child_web_frame->SetScrollOffset(gfx::ScrollOffset(0, 400));
+  child_web_frame->SetScrollOffset(gfx::PointF(0, 400));
 
   base::FilePath skp_path = RunCapture(child_frame, &out_response, false);
 
@@ -396,7 +549,7 @@ TEST_P(PaintPreviewRecorderRenderViewTest, TestCaptureCustomClipRect) {
       "</body>");
 
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
-  content::RenderFrame* frame = GetFrame();
+  content::RenderFrame* frame = GetMainRenderFrame();
   gfx::Rect clip_rect = gfx::Rect(150, 150, 300, 300);
   base::FilePath skp_path = RunCapture(frame, &out_response, true, clip_rect);
 
@@ -442,7 +595,7 @@ TEST_P(PaintPreviewRecorderRenderViewTest, TestCaptureWithClamp) {
       "</body>");
 
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
-  content::RenderFrame* frame = GetFrame();
+  content::RenderFrame* frame = GetMainRenderFrame();
   const size_t kLarge = 1000000;
   gfx::Rect clip_rect = gfx::Rect(0, 0, kLarge, kLarge);
   base::FilePath skp_path = RunCapture(frame, &out_response, true, clip_rect);
@@ -476,7 +629,7 @@ TEST_P(PaintPreviewRecorderRenderViewTest, TestCaptureFullIfWidthHeightAre0) {
       "</body>");
 
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
-  content::RenderFrame* frame = GetFrame();
+  content::RenderFrame* frame = GetMainRenderFrame();
   gfx::Rect clip_rect = gfx::Rect(1, 1, 0, 0);
   base::FilePath skp_path = RunCapture(frame, &out_response, true, clip_rect);
 
@@ -519,7 +672,7 @@ TEST_P(PaintPreviewRecorderRenderViewTest, CaptureWithTranslate) {
       </div>
     </body>)");
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
-  content::RenderFrame* frame = GetFrame();
+  content::RenderFrame* frame = GetMainRenderFrame();
 
   RunCapture(frame, &out_response);
 
@@ -559,7 +712,7 @@ TEST_P(PaintPreviewRecorderRenderViewTest, CaptureWithTranslateThenRotate) {
       </div>
     </body>)");
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
-  content::RenderFrame* frame = GetFrame();
+  content::RenderFrame* frame = GetMainRenderFrame();
 
   RunCapture(frame, &out_response);
 
@@ -601,7 +754,7 @@ TEST_P(PaintPreviewRecorderRenderViewTest, CaptureWithRotateThenTranslate) {
       </div>
     </body>)");
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
-  content::RenderFrame* frame = GetFrame();
+  content::RenderFrame* frame = GetMainRenderFrame();
 
   RunCapture(frame, &out_response);
 
@@ -643,7 +796,7 @@ TEST_P(PaintPreviewRecorderRenderViewTest, CaptureWithScale) {
       </div>
     </body>)");
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
-  content::RenderFrame* frame = GetFrame();
+  content::RenderFrame* frame = GetMainRenderFrame();
 
   RunCapture(frame, &out_response);
 
@@ -694,7 +847,7 @@ TEST_P(PaintPreviewRecorderRenderViewTest, CaptureSaveRestore) {
       </div>
     </body>)");
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
-  content::RenderFrame* frame = GetFrame();
+  content::RenderFrame* frame = GetMainRenderFrame();
 
   RunCapture(frame, &out_response);
 

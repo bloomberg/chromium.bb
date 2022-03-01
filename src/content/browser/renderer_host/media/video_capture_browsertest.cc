@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -134,6 +135,9 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
     }
   }
 
+  VideoCaptureBrowserTest(const VideoCaptureBrowserTest&) = delete;
+  VideoCaptureBrowserTest& operator=(const VideoCaptureBrowserTest&) = delete;
+
   ~VideoCaptureBrowserTest() override {}
 
   void SetUpAndStartCaptureDeviceOnIOThread(base::OnceClosure continuation) {
@@ -232,8 +236,8 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
   base::test::ScopedFeatureList scoped_feature_list_;
 
   TestParams params_;
-  MediaStreamManager* media_stream_manager_ = nullptr;
-  VideoCaptureManager* video_capture_manager_ = nullptr;
+  raw_ptr<MediaStreamManager> media_stream_manager_ = nullptr;
+  raw_ptr<VideoCaptureManager> video_capture_manager_ = nullptr;
   base::UnguessableToken session_id_;
   const VideoCaptureControllerID stub_client_id_ =
       base::UnguessableToken::Create();
@@ -241,9 +245,6 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
   MockMediaStreamProviderListener mock_stream_provider_listener_;
   MockVideoCaptureControllerEventHandler mock_controller_event_handler_;
   base::WeakPtr<VideoCaptureController> controller_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(VideoCaptureBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
@@ -346,7 +347,7 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
       FROM_HERE,
       base::BindOnce(
           &VideoCaptureBrowserTest::SetUpAndStartCaptureDeviceOnIOThread,
-          base::Unretained(this), base::DoNothing::Once()));
+          base::Unretained(this), base::DoNothing()));
   run_loop.Run();
 
   EXPECT_FALSE(must_wait_for_gpu_decode_to_start);

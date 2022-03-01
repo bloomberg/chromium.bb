@@ -5,8 +5,13 @@
 #ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_TEST_WEB_APP_BROWSERTEST_UTIL_H_
 #define CHROME_BROWSER_UI_WEB_APPLICATIONS_TEST_WEB_APP_BROWSERTEST_UTIL_H_
 
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "base/memory/raw_ptr.h"
+#include "base/scoped_observation.h"
+#include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/web_applications/app_registrar_observer.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "url/gurl.h"
 
 class Browser;
@@ -18,6 +23,10 @@ struct ExternalInstallOptions;
 enum class InstallResultCode;
 
 // For InstallWebAppFromInfo see web_app_install_test_utils.h
+
+// Reads an icon file (.ico/.png/.icns) and returns the color at the
+// top left color.
+SkColor GetIconTopLeftColor(const base::FilePath& shortcut_path);
 
 // Navigates to |app_url| and installs app without any installability checks.
 // Always selects to open app in its own window.
@@ -64,9 +73,11 @@ enum AppMenuCommandState {
 // For a non-app browser, determines if the command is enabled/disabled/absent.
 AppMenuCommandState GetAppMenuCommandState(int command_id, Browser* browser);
 
-void CloseAndWait(Browser* browser);
+// Searches for a Browser window for a given |app_id|. browser->app_name() must
+// be defined.
+Browser* FindWebAppBrowser(Profile* profile, const AppId& app_id);
 
-void WaitForBrowserToBeClosed(Browser* browser);
+void CloseAndWait(Browser* browser);
 
 bool IsBrowserOpen(const Browser* test_browser);
 
@@ -77,12 +88,46 @@ void UninstallWebAppWithCallback(Profile* profile,
                                  const AppId& app_id,
                                  UninstallWebAppCallback callback);
 
-// Synchronous read of an app icon pixel.
-SkColor ReadAppIconPixel(Profile* profile,
-                         const AppId& app_id,
-                         SquareSizePx size,
-                         int x,
-                         int y);
+// Helper class that lets you await one Browser added and one Browser removed
+// event. Optionally filters to a specific Browser with |filter|. Useful for
+// closing the web app window that appears after installation from page.
+class BrowserWaiter : public BrowserListObserver {
+ public:
+  explicit BrowserWaiter(Browser* filter = nullptr);
+  ~BrowserWaiter() override;
+
+  Browser* AwaitAdded();
+  Browser* AwaitRemoved();
+
+  // BrowserListObserver:
+  void OnBrowserAdded(Browser* browser) override;
+  void OnBrowserRemoved(Browser* browser) override;
+
+ private:
+  const raw_ptr<Browser> filter_ = nullptr;
+
+  base::RunLoop added_run_loop_;
+  raw_ptr<Browser> added_browser_ = nullptr;
+
+  base::RunLoop removed_run_loop_;
+  raw_ptr<Browser> removed_browser_ = nullptr;
+};
+
+class UpdateAwaiter : public AppRegistrarObserver {
+ public:
+  explicit UpdateAwaiter(WebAppRegistrar& registrar);
+  ~UpdateAwaiter() override;
+  void AwaitUpdate();
+
+  // AppRegistrarObserver:
+  void OnWebAppManifestUpdated(const AppId& app_id,
+                               base::StringPiece old_name) override;
+
+ private:
+  base::RunLoop run_loop_;
+  base::ScopedObservation<WebAppRegistrar, AppRegistrarObserver>
+      scoped_observation_{this};
+};
 
 }  // namespace web_app
 

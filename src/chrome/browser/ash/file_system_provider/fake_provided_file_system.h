@@ -14,7 +14,6 @@
 
 #include "base/callback.h"
 #include "base/files/file.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -35,7 +34,7 @@ namespace net {
 class IOBuffer;
 }  // namespace net
 
-namespace chromeos {
+namespace ash {
 namespace file_system_provider {
 
 class RequestManager;
@@ -49,13 +48,14 @@ struct FakeEntry {
   FakeEntry();
   FakeEntry(std::unique_ptr<EntryMetadata> metadata,
             const std::string& contents);
+
+  FakeEntry(const FakeEntry&) = delete;
+  FakeEntry& operator=(const FakeEntry&) = delete;
+
   ~FakeEntry();
 
   std::unique_ptr<EntryMetadata> metadata;
   std::string contents;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeEntry);
 };
 
 // Fake provided file system implementation. Does not communicate with target
@@ -64,6 +64,10 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
  public:
   explicit FakeProvidedFileSystem(
       const ProvidedFileSystemInfo& file_system_info);
+
+  FakeProvidedFileSystem(const FakeProvidedFileSystem&) = delete;
+  FakeProvidedFileSystem& operator=(const FakeProvidedFileSystem&) = delete;
+
   ~FakeProvidedFileSystem() override;
 
   // Adds a fake entry to the fake file system.
@@ -187,18 +191,8 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   Watchers watchers_;
 
   base::WeakPtrFactory<FakeProvidedFileSystem> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(FakeProvidedFileSystem);
 };
 
-}  // namespace file_system_provider
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when moved to ash.
-namespace ash {
-namespace file_system_provider {
-using ::chromeos::file_system_provider::FakeEntry;
-using ::chromeos::file_system_provider::FakeProvidedFileSystem;
-using ::chromeos::file_system_provider::kFakeFilePath;
 }  // namespace file_system_provider
 }  // namespace ash
 

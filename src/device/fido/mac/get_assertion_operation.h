@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/mac/credential_store.h"
@@ -39,6 +38,10 @@ class API_AVAILABLE(macosx(10.12.2))
   GetAssertionOperation(CtapGetAssertionRequest request,
                         TouchIdCredentialStore* credential_store,
                         Callback callback);
+
+  GetAssertionOperation(const GetAssertionOperation&) = delete;
+  GetAssertionOperation& operator=(const GetAssertionOperation&) = delete;
+
   ~GetAssertionOperation() override;
 
   // Operation:
@@ -60,8 +63,6 @@ class API_AVAILABLE(macosx(10.12.2))
   TouchIdCredentialStore* const credential_store_;
   Callback callback_;
   std::list<Credential> matching_credentials_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetAssertionOperation);
 };
 
 }  // namespace mac

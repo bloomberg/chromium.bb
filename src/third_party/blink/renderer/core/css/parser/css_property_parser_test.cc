@@ -16,7 +16,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
@@ -117,14 +117,14 @@ TEST(CSSPropertyParserTest, GridTrackLimit3) {
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyID::kGridTemplateColumns, "repeat(1000000, 10%)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 1000);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 100000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit4) {
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyID::kGridTemplateRows, "repeat(1000000, 10%)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 1000);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 100000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit5) {
@@ -132,7 +132,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit5) {
       CSSPropertyID::kGridTemplateColumns,
       "repeat(1000000, [first] min-content [last])",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 1000);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 100000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit6) {
@@ -140,21 +140,21 @@ TEST(CSSPropertyParserTest, GridTrackLimit6) {
       CSSPropertyID::kGridTemplateRows,
       "repeat(1000000, [first] min-content [last])",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 1000);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 100000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit7) {
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyID::kGridTemplateColumns, "repeat(1000001, auto)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 1000);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 100000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit8) {
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyID::kGridTemplateRows, "repeat(1000001, auto)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 1000);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 100000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit9) {
@@ -162,7 +162,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit9) {
       CSSPropertyID::kGridTemplateColumns,
       "repeat(400000, 2em minmax(10px, max-content) 0.5fr)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 999);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 99999);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit10) {
@@ -170,7 +170,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit10) {
       CSSPropertyID::kGridTemplateRows,
       "repeat(400000, 2em minmax(10px, max-content) 0.5fr)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 999);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 99999);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit11) {
@@ -178,7 +178,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit11) {
       CSSPropertyID::kGridTemplateColumns,
       "repeat(600000, [first] 3vh 10% 2fr [nav] 10px auto 1fr 6em [last])",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 994);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 99995);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit12) {
@@ -186,7 +186,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit12) {
       CSSPropertyID::kGridTemplateRows,
       "repeat(600000, [first] 3vh 10% 2fr [nav] 10px auto 1fr 6em [last])",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 994);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 99995);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit13) {
@@ -194,7 +194,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit13) {
       CSSPropertyID::kGridTemplateColumns,
       "repeat(100000000000000000000, 10% 1fr)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 1000);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 100000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit14) {
@@ -202,7 +202,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit14) {
       CSSPropertyID::kGridTemplateRows,
       "repeat(100000000000000000000, 10% 1fr)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 1000);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 100000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit15) {
@@ -210,7 +210,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit15) {
       CSSPropertyID::kGridTemplateColumns,
       "repeat(100000000000000000000, 10% 5em 1fr auto auto 15px min-content)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 994);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 99995);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit16) {
@@ -218,7 +218,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit16) {
       CSSPropertyID::kGridTemplateRows,
       "repeat(100000000000000000000, 10% 5em 1fr auto auto 15px min-content)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 994);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 99995);
 }
 
 static int GetGridPositionInteger(const CSSValue& value) {
@@ -242,7 +242,7 @@ TEST(CSSPropertyParserTest, GridPositionLimit2) {
       CSSPropertyID::kGridColumnEnd, "1000000",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
   DCHECK(value);
-  EXPECT_EQ(GetGridPositionInteger(*value), 1000);
+  EXPECT_EQ(GetGridPositionInteger(*value), 100000);
 }
 
 TEST(CSSPropertyParserTest, GridPositionLimit3) {
@@ -250,7 +250,7 @@ TEST(CSSPropertyParserTest, GridPositionLimit3) {
       CSSPropertyID::kGridRowStart, "1000001",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
   DCHECK(value);
-  EXPECT_EQ(GetGridPositionInteger(*value), 1000);
+  EXPECT_EQ(GetGridPositionInteger(*value), 100000);
 }
 
 TEST(CSSPropertyParserTest, GridPositionLimit4) {
@@ -258,7 +258,7 @@ TEST(CSSPropertyParserTest, GridPositionLimit4) {
       CSSPropertyID::kGridRowEnd, "5000000000",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
   DCHECK(value);
-  EXPECT_EQ(GetGridPositionInteger(*value), 1000);
+  EXPECT_EQ(GetGridPositionInteger(*value), 100000);
 }
 
 TEST(CSSPropertyParserTest, GridPositionLimit5) {
@@ -274,7 +274,7 @@ TEST(CSSPropertyParserTest, GridPositionLimit6) {
       CSSPropertyID::kGridColumnEnd, "-1000000",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
   DCHECK(value);
-  EXPECT_EQ(GetGridPositionInteger(*value), -1000);
+  EXPECT_EQ(GetGridPositionInteger(*value), -100000);
 }
 
 TEST(CSSPropertyParserTest, GridPositionLimit7) {
@@ -282,7 +282,7 @@ TEST(CSSPropertyParserTest, GridPositionLimit7) {
       CSSPropertyID::kGridRowStart, "-1000001",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
   DCHECK(value);
-  EXPECT_EQ(GetGridPositionInteger(*value), -1000);
+  EXPECT_EQ(GetGridPositionInteger(*value), -100000);
 }
 
 TEST(CSSPropertyParserTest, GridPositionLimit8) {
@@ -290,7 +290,7 @@ TEST(CSSPropertyParserTest, GridPositionLimit8) {
       CSSPropertyID::kGridRowEnd, "-5000000000",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
   DCHECK(value);
-  EXPECT_EQ(GetGridPositionInteger(*value), -1000);
+  EXPECT_EQ(GetGridPositionInteger(*value), -100000);
 }
 
 TEST(CSSPropertyParserTest, ColorFunction) {
@@ -309,7 +309,7 @@ TEST(CSSPropertyParserTest, IncompleteColor) {
 }
 
 TEST(CSSPropertyParserTest, ClipPathEllipse) {
-  auto dummy_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
+  auto dummy_holder = std::make_unique<DummyPageHolder>(gfx::Size(500, 500));
   Document* doc = &dummy_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_holder->GetPage());
   auto* context = MakeGarbageCollected<CSSParserContext>(
@@ -375,7 +375,8 @@ TEST(CSSPropertyParserTest, ScrollCustomizationPropertyInvalidEntries) {
 }
 
 TEST(CSSPropertyParserTest, GradientUseCount) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  auto dummy_page_holder =
+      std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kCSSGradient;
@@ -386,7 +387,8 @@ TEST(CSSPropertyParserTest, GradientUseCount) {
 }
 
 TEST(CSSPropertyParserTest, PaintUseCount) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  auto dummy_page_holder =
+      std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
   dummy_page_holder->GetFrame().Loader().CommitNavigation(
       WebNavigationParams::CreateWithHTMLBufferForTesting(
           SharedBuffer::Create(), KURL("https://example.com")),
@@ -401,7 +403,8 @@ TEST(CSSPropertyParserTest, PaintUseCount) {
 }
 
 TEST(CSSPropertyParserTest, CrossFadeUseCount) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  auto dummy_page_holder =
+      std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kWebkitCrossFade;
@@ -413,7 +416,8 @@ TEST(CSSPropertyParserTest, CrossFadeUseCount) {
 }
 
 TEST(CSSPropertyParserTest, TwoValueOverflowOverlayCount) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  auto dummy_page_holder =
+      std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
@@ -428,7 +432,8 @@ TEST(CSSPropertyParserTest, TwoValueOverflowOverlayCount) {
 }
 
 TEST(CSSPropertyParserTest, OneValueOverflowOverlayCount) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  auto dummy_page_holder =
+      std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
@@ -443,7 +448,8 @@ TEST(CSSPropertyParserTest, OneValueOverflowOverlayCount) {
 }
 
 TEST(CSSPropertyParserTest, OverflowXOverlayCount) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  auto dummy_page_holder =
+      std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
@@ -458,7 +464,8 @@ TEST(CSSPropertyParserTest, OverflowXOverlayCount) {
 }
 
 TEST(CSSPropertyParserTest, OverflowYOverlayCount) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  auto dummy_page_holder =
+      std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
@@ -473,7 +480,8 @@ TEST(CSSPropertyParserTest, OverflowYOverlayCount) {
 }
 
 TEST(CSSPropertyParserTest, OverflowFirstValueOverlayCount) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  auto dummy_page_holder =
+      std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
@@ -488,7 +496,8 @@ TEST(CSSPropertyParserTest, OverflowFirstValueOverlayCount) {
 }
 
 TEST(CSSPropertyParserTest, OverflowSecondValueOverlayCount) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  auto dummy_page_holder =
+      std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
@@ -523,7 +532,7 @@ TEST(CSSPropertyParserTest, DropFontfaceDescriptor) {
 class CSSPropertyUseCounterTest : public ::testing::Test {
  public:
   void SetUp() override {
-    dummy_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+    dummy_page_holder_ = std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
     Page::InsertOrdinaryPageForTesting(&dummy_page_holder_->GetPage());
     // Use strict mode.
     GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);
@@ -666,6 +675,15 @@ TEST_F(CSSPropertyUseCounterTest, CSSPropertyFontSizeWebkitXxxLargeUseCount) {
   EXPECT_TRUE(IsCounted(feature));
 }
 
+TEST_F(CSSPropertyUseCounterTest, CSSPropertyBackgroundImageWebkitImageSet) {
+  WebFeature feature = WebFeature::kWebkitImageSet;
+  ParseProperty(CSSPropertyID::kBackgroundImage, "none");
+  EXPECT_FALSE(IsCounted(feature));
+  ParseProperty(CSSPropertyID::kBackgroundImage,
+                "-webkit-image-set(url(foo) 2x)");
+  EXPECT_TRUE(IsCounted(feature));
+}
+
 TEST(CSSPropertyParserTest, InternalLightDarkAuthor) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
@@ -798,6 +816,37 @@ TEST(CSSPropertyParserTest, ParseRevert) {
       CSSPropertyID::kMarginLeft, CSSParserTokenRange(tokens), context);
   ASSERT_TRUE(value);
   EXPECT_TRUE(value->IsRevertValue());
+}
+
+TEST(CSSPropertyParserTest, ParseRevertLayer) {
+  ScopedCSSCascadeLayersForTest enabled(true);
+
+  auto* context = MakeGarbageCollected<CSSParserContext>(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
+
+  String string = " revert-layer";
+  CSSTokenizer tokenizer(string);
+  const auto tokens = tokenizer.TokenizeToEOF();
+
+  const CSSValue* value = CSSPropertyParser::ParseSingleValue(
+      CSSPropertyID::kMarginLeft, CSSParserTokenRange(tokens), context);
+  ASSERT_TRUE(value);
+  EXPECT_TRUE(value->IsRevertLayerValue());
+}
+
+TEST(CSSPropertyParserTest, ParseRevertLayerDisabled) {
+  ScopedCSSCascadeLayersForTest disabled(false);
+
+  auto* context = MakeGarbageCollected<CSSParserContext>(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
+
+  String string = " revert-layer";
+  CSSTokenizer tokenizer(string);
+  const auto tokens = tokenizer.TokenizeToEOF();
+
+  const CSSValue* value = CSSPropertyParser::ParseSingleValue(
+      CSSPropertyID::kMarginLeft, CSSParserTokenRange(tokens), context);
+  EXPECT_FALSE(value);
 }
 
 }  // namespace blink

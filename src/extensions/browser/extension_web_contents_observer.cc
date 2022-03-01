@@ -5,7 +5,6 @@
 #include "extensions/browser/extension_web_contents_observer.h"
 
 #include "base/check.h"
-#include "base/types/pass_key.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -40,6 +39,22 @@ ExtensionWebContentsObserver* ExtensionWebContentsObserver::GetForWebContents(
       web_contents);
 }
 
+// static
+void ExtensionWebContentsObserver::BindLocalFrameHost(
+    mojo::PendingAssociatedReceiver<mojom::LocalFrameHost> receiver,
+    content::RenderFrameHost* rfh) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(rfh);
+  if (!web_contents)
+    return;
+  auto* observer = GetForWebContents(web_contents);
+  if (!observer)
+    return;
+  auto* efh = observer->extension_frame_host_.get();
+  if (!efh)
+    return;
+  efh->BindLocalFrameHost(std::move(receiver), rfh);
+}
+
 std::unique_ptr<ExtensionFrameHost>
 ExtensionWebContentsObserver::CreateExtensionFrameHost(
     content::WebContents* web_contents) {
@@ -54,14 +69,15 @@ void ExtensionWebContentsObserver::Initialize() {
 
   extension_frame_host_ = CreateExtensionFrameHost(web_contents());
 
-  for (content::RenderFrameHost* rfh : web_contents()->GetAllFrames()) {
-    // We only initialize the frame if the renderer counterpart is live;
-    // otherwise we wait for the RenderFrameCreated notification.
-    if (!rfh->IsRenderFrameLive())
-      continue;
-
-    InitializeRenderFrame(rfh);
-  }
+  web_contents()->ForEachRenderFrameHost(base::BindRepeating(
+      [](ExtensionWebContentsObserver* observer,
+         content::RenderFrameHost* render_frame_host) {
+        // We only initialize the frame if the renderer counterpart is live;
+        // otherwise we wait for the RenderFrameCreated notification.
+        if (render_frame_host->IsRenderFrameLive())
+          observer->InitializeRenderFrame(render_frame_host);
+      },
+      this));
 }
 
 ExtensionWebContentsObserver::ExtensionWebContentsObserver(
@@ -97,8 +113,7 @@ void ExtensionWebContentsObserver::InitializeRenderFrame(
   content::ChildProcessSecurityPolicy* security_policy =
       content::ChildProcessSecurityPolicy::GetInstance();
   int process_id = render_frame_host->GetProcess()->GetID();
-  security_policy->GrantRequestOrigin(
-      process_id, url::Origin::Create(frame_extension->url()));
+  security_policy->GrantRequestOrigin(process_id, frame_extension->origin());
 
   // Notify the render frame of the view type.
   GetLocalFrame(render_frame_host)
@@ -119,6 +134,7 @@ void ExtensionWebContentsObserver::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   DCHECK(initialized_);
   InitializeRenderFrame(render_frame_host);
+  ContentScriptTracker::RenderFrameCreated(PassKey(), render_frame_host);
 
   const Extension* extension = GetExtensionFromFrame(render_frame_host, false);
   if (!extension)
@@ -166,12 +182,12 @@ void ExtensionWebContentsObserver::RenderFrameDeleted(
   ProcessManager::Get(browser_context_)
       ->UnregisterRenderFrameHost(render_frame_host);
   ExtensionApiFrameIdMap::Get()->OnRenderFrameDeleted(render_frame_host);
+  ContentScriptTracker::RenderFrameDeleted(PassKey(), render_frame_host);
 }
 
 void ExtensionWebContentsObserver::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
-  ContentScriptTracker::ReadyToCommitNavigation(
-      base::PassKey<ExtensionWebContentsObserver>(), navigation_handle);
+  ContentScriptTracker::ReadyToCommitNavigation(PassKey(), navigation_handle);
 
   const ExtensionRegistry* const registry =
       ExtensionRegistry::Get(browser_context_);

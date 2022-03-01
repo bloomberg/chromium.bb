@@ -5,9 +5,15 @@
 #import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
 
 #include "base/files/file_util.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/download/external_app_util.h"
+#include "ios/chrome/browser/favicon/favicon_service_factory.h"
+#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
+#include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/main/test_browser.h"
+#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -21,6 +27,8 @@
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
+#import "ios/chrome/browser/web/web_state_delegate_browser_agent.h"
+#import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,11 +49,30 @@ class BrowserCoordinatorTest : public PlatformTest {
  protected:
   BrowserCoordinatorTest()
       : base_view_controller_([[UIViewController alloc] init]),
-        browser_(std::make_unique<TestBrowser>()),
         scene_state_([[SceneState alloc] initWithAppState:nil]) {
+    TestChromeBrowserState::Builder test_cbs_builder;
+    test_cbs_builder.AddTestingFactory(
+        ios::TemplateURLServiceFactory::GetInstance(),
+        ios::TemplateURLServiceFactory::GetDefaultFactory());
+    test_cbs_builder.AddTestingFactory(
+        IOSChromeFaviconLoaderFactory::GetInstance(),
+        IOSChromeFaviconLoaderFactory::GetDefaultFactory());
+    test_cbs_builder.AddTestingFactory(
+        IOSChromeLargeIconServiceFactory::GetInstance(),
+        IOSChromeLargeIconServiceFactory::GetDefaultFactory());
+    test_cbs_builder.AddTestingFactory(
+        ios::FaviconServiceFactory::GetInstance(),
+        ios::FaviconServiceFactory::GetDefaultFactory());
+
+    chrome_browser_state_ = test_cbs_builder.Build();
+    CHECK(chrome_browser_state_->CreateHistoryService());
+    browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
     UrlLoadingNotifierBrowserAgent::CreateForBrowser(browser_.get());
     SceneStateBrowserAgent::CreateForBrowser(browser_.get(), scene_state_);
     WebNavigationBrowserAgent::CreateForBrowser(browser_.get());
+    TabInsertionBrowserAgent::CreateForBrowser(browser_.get());
+    WebStateDelegateBrowserAgent::CreateForBrowser(
+        browser_.get(), TabInsertionBrowserAgent::FromBrowser(browser_.get()));
 
     IncognitoReauthSceneAgent* reauthAgent = [[IncognitoReauthSceneAgent alloc]
         initWithReauthModule:[[ReauthenticationModule alloc] init]];
@@ -64,6 +91,7 @@ class BrowserCoordinatorTest : public PlatformTest {
 
   web::WebTaskEnvironment task_environment_;
   UIViewController* base_view_controller_;
+  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<TestBrowser> browser_;
   SceneState* scene_state_;
 };
@@ -122,7 +150,8 @@ TEST_F(BrowserCoordinatorTest, SharePage) {
                                    browser:browser_.get()
                                     params:[OCMArg any]
                                 originView:[OCMArg any]
-                                originRect:CGRectZero])
+                                originRect:CGRectZero
+                                    anchor:[OCMArg any]])
       .andReturn(mockSharingCoordinator);
   OCMExpect([mockSharingCoordinator start]);
 

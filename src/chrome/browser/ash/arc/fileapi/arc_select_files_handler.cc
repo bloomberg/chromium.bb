@@ -6,25 +6,26 @@
 
 #include <utility>
 
+#include "ash/components/arc/arc_util.h"
 #include "base/bind.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/ash/arc/fileapi/arc_select_files_util.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
-#include "components/arc/arc_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/url_constants.h"
@@ -148,7 +149,9 @@ void BuildFileTypeInfo(const mojom::SelectFilesRequestPtr& request,
   for (const std::string& mime_type : request->mime_types) {
     std::vector<base::FilePath::StringType> extensions;
     net::GetExtensionsForMimeType(mime_type, &extensions);
-    file_type_info->extensions.push_back(extensions);
+    if (!extensions.empty()) {
+      file_type_info->extensions.push_back(extensions);
+    }
 
     // Enable "Select from all files" option if GetExtensionsForMimeType
     // can't find any matching extensions or specified MIME type contains an
@@ -309,7 +312,8 @@ void ArcSelectFilesHandler::FilesSelectedInternal(
     GURL gurl;
     file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
         profile_, file_path, file_manager::util::GetFileManagerURL(), &gurl);
-    file_system_urls.push_back(file_system_context->CrackURL(gurl));
+    file_system_urls.push_back(
+        file_system_context->CrackURLInFirstPartyContext(gurl));
   }
 
   arc::ConvertToContentUrlsAndShare(

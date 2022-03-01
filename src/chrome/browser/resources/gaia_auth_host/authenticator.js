@@ -164,9 +164,8 @@ cr.define('cr.login', function() {
                      // If this set to |false|, |confirmPasswordCallback| is
                      // not called before dispatching |authCopleted|.
                      // Default is |true|.
-    'flow',                        // One of 'default', 'enterprise', or
-                                   // 'theftprotection'.
-    'enterpriseDisplayDomain',     // Current domain name to be displayed.
+    'flow',          // One of 'default', 'enterprise', or
+                     // 'cfm' or 'enterpriseLicense'.
     'enterpriseDomainManager',     // Manager of the current domain. Can be
                                    // either a domain name (foo.com) or an email
                                    // address (admin@foo.com).
@@ -207,9 +206,7 @@ cr.define('cr.login', function() {
     // can still change it and then proceed.  This is used on desktop when the
     // user disconnects their profile then reconnects, to encourage them to use
     // the same account.
-    'email',
-    'readOnlyEmail',
-    'realm',
+    'email', 'readOnlyEmail', 'realm',
     // If the authentication is done via external IdP, 'startsOnSamlPage'
     // indicates whether the flow should start on the IdP page.
     'startsOnSamlPage',
@@ -221,6 +218,7 @@ cr.define('cr.login', function() {
     'doSamlRedirect',    // True if the authentication is done via external IdP.
     'enableCloseView',   // True if authenticator should wait for the closeView
                          // message from Gaia.
+    'rart',              // Encrypted reauth request token.
   ];
 
   // Timeout in ms to wait for the message from Gaia indicating end of the flow.
@@ -455,9 +453,9 @@ cr.define('cr.login', function() {
       this.closeViewReceived_ = false;
 
       window.addEventListener(
-          'message', this.onMessageFromWebview_.bind(this), false);
-      window.addEventListener('focus', this.onFocus_.bind(this), false);
-      window.addEventListener('popstate', this.onPopState_.bind(this), false);
+          'message', e => this.onMessageFromWebview_(e), false);
+      window.addEventListener('focus', () => this.onFocus_(), false);
+      window.addEventListener('popstate', e => this.onPopState_(e), false);
 
       /**
        * @type {boolean}
@@ -468,7 +466,7 @@ cr.define('cr.login', function() {
         this.initializeAfterDomLoaded_();
       } else {
         document.addEventListener(
-            'DOMContentLoaded', this.initializeAfterDomLoaded_.bind(this));
+            'DOMContentLoaded', () => this.initializeAfterDomLoaded_());
       }
     }
 
@@ -528,37 +526,36 @@ cr.define('cr.login', function() {
           new cr.login.SamlHandler(this.webview_, false /* startsOnSamlPage */);
       this.webviewEventManager_.addEventListener(
           this.samlHandler_, 'insecureContentBlocked',
-          this.onInsecureContentBlocked_.bind(this));
+          e => this.onInsecureContentBlocked_(e));
       this.webviewEventManager_.addEventListener(
-          this.samlHandler_, 'authPageLoaded',
-          this.onAuthPageLoaded_.bind(this));
+          this.samlHandler_, 'authPageLoaded', e => this.onAuthPageLoaded_(e));
       this.webviewEventManager_.addEventListener(
-          this.samlHandler_, 'videoEnabled', this.onVideoEnabled_.bind(this));
+          this.samlHandler_, 'videoEnabled', e => this.onVideoEnabled_(e));
       this.webviewEventManager_.addEventListener(
           this.samlHandler_, 'apiPasswordAdded',
-          this.onSamlApiPasswordAdded_.bind(this));
+          e => this.onSamlApiPasswordAdded_(e));
       this.webviewEventManager_.addEventListener(
           this.samlHandler_, 'challengeMachineKeyRequired',
-          this.onChallengeMachineKeyRequired_.bind(this));
+          e => this.onChallengeMachineKeyRequired_(e));
 
       this.webviewEventManager_.addEventListener(
-          this.webview_, 'droplink', this.onDropLink_.bind(this));
+          this.webview_, 'droplink', e => this.onDropLink_(e));
       this.webviewEventManager_.addEventListener(
-          this.webview_, 'newwindow', this.onNewWindow_.bind(this));
+          this.webview_, 'newwindow', e => this.onNewWindow_(e));
       this.webviewEventManager_.addEventListener(
-          this.webview_, 'contentload', this.onContentLoad_.bind(this));
+          this.webview_, 'contentload', e => this.onContentLoad_(e));
       this.webviewEventManager_.addEventListener(
-          this.webview_, 'loadabort', this.onLoadAbort_.bind(this));
+          this.webview_, 'loadabort', e => this.onLoadAbort_(e));
       this.webviewEventManager_.addEventListener(
-          this.webview_, 'loadcommit', this.onLoadCommit_.bind(this));
+          this.webview_, 'loadcommit', e => this.onLoadCommit_(e));
 
       this.webviewEventManager_.addWebRequestEventListener(
           this.webview_.request.onCompleted,
-          this.onRequestCompleted_.bind(this),
+          details => this.onRequestCompleted_(details),
           {urls: ['<all_urls>'], types: ['main_frame']}, ['responseHeaders']);
       this.webviewEventManager_.addWebRequestEventListener(
           this.webview_.request.onHeadersReceived,
-          this.onHeadersReceived_.bind(this),
+          details => this.onHeadersReceived_(details),
           {urls: ['<all_urls>'], types: ['main_frame', 'xmlhttprequest']},
           ['responseHeaders']);
     }
@@ -741,9 +738,6 @@ cr.define('cr.login', function() {
       if (data.clientId) {
         url = appendParam(url, 'client_id', data.clientId);
       }
-      if (data.enterpriseDisplayDomain) {
-        url = appendParam(url, 'manageddomain', data.enterpriseDisplayDomain);
-      }
       if (data.enterpriseDomainManager) {
         url = appendParam(url, 'devicemanager', data.enterpriseDomainManager);
       }
@@ -809,6 +803,9 @@ cr.define('cr.login', function() {
       }
       if (data.isDeviceOwner) {
         url = appendParam(url, 'is_device_owner', '1');
+      }
+      if (data.rart) {
+        url = appendParam(url, 'rart', data.rart);
       }
 
       return url;
@@ -1018,11 +1015,8 @@ cr.define('cr.login', function() {
         // does not expect it to be called immediately.
         // TODO(xiyuan): Change to synchronous call when iframe based code
         // is removed.
-        const invokeConfirmPassword =
-            (function() {
-              this.confirmPasswordCallback(
-                  this.email_, this.samlHandler_.scrapedPasswordCount);
-            }).bind(this);
+        const invokeConfirmPassword = () => this.confirmPasswordCallback(
+            this.email_, this.samlHandler_.scrapedPasswordCount);
         window.setTimeout(invokeConfirmPassword, 0);
         return;
       }
@@ -1071,7 +1065,7 @@ cr.define('cr.login', function() {
       if (!gaiaDone) {
         // Start `gaiaDoneTimer_` if user info is not available.
         this.gaiaDoneTimer_ = window.setTimeout(
-            this.onGaiaDoneTimeout_.bind(this), GAIA_DONE_WAIT_TIMEOUT_MS);
+            () => this.onGaiaDoneTimeout_(), GAIA_DONE_WAIT_TIMEOUT_MS);
         return;
       }
 
@@ -1459,19 +1453,28 @@ cr.define('cr.login', function() {
    * The current auth flow of the hosted auth page.
    * @type {AuthFlow}
    */
-  cr.defineProperty(Authenticator, 'authFlow');
+  Authenticator.prototype.authFlow;
+  Object.defineProperty(
+      Authenticator.prototype, 'authFlow',
+      cr.getPropertyDescriptor('authFlow'));
 
   /**
    * The domain name of the current auth page.
    * @type {string}
    */
-  cr.defineProperty(Authenticator, 'authDomain');
+  Authenticator.prototype.authDomain;
+  Object.defineProperty(
+      Authenticator.prototype, 'authDomain',
+      cr.getPropertyDescriptor('authDomain'));
 
   /**
    * True if the page has requested media access.
    * @type {boolean}
    */
-  cr.defineProperty(Authenticator, 'videoEnabled');
+  Authenticator.prototype.videoEnabled;
+  Object.defineProperty(
+      Authenticator.prototype, 'videoEnabled',
+      cr.getPropertyDescriptor('videoEnabled'));
 
   Authenticator.AuthFlow = AuthFlow;
   Authenticator.AuthMode = AuthMode;

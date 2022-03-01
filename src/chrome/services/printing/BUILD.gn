@@ -35,21 +35,27 @@ source_set("lib") {
       "//components/pwg_encoder",
       "//pdf",
       "//printing",
+      "//printing/backend",
       "//printing/mojom",
-      "//ui/gfx",
     ]
+  }
+
+  if (is_chromeos) {
+    sources += [
+      "pdf_flattener.cc",
+      "pdf_flattener.h",
+    ]
+
+    deps += [ "//pdf" ]
   }
 
   if (is_chromeos_ash) {
     sources += [
-      "pdf_flattener.cc",
-      "pdf_flattener.h",
       "pdf_thumbnailer.cc",
       "pdf_thumbnailer.h",
     ]
 
     deps += [
-      "//build:chromeos_buildflags",
       "//pdf",
       "//ui/gfx/codec",
     ]
@@ -63,10 +69,13 @@ source_set("lib") {
       "pdf_to_emf_converter_factory.h",
     ]
 
-    deps += [ "//skia" ]
+    deps += [
+      "//skia",
+      "//ui/gfx",
+    ]
   }
 
-  if (is_win || is_mac || is_linux || is_chromeos) {
+  if (enable_oop_printing) {
     sources += [
       "print_backend_service_impl.cc",
       "print_backend_service_impl.h",
@@ -78,7 +87,11 @@ source_set("lib") {
       "//mojo/public/cpp/bindings",
     ]
 
-    deps += [ "//chrome/common/printing" ]
+    deps += [
+      "//chrome/common/printing",
+      "//components/crash/core/common",
+      "//ui/gfx",
+    ]
   }
 }
 

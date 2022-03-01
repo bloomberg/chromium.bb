@@ -4,6 +4,8 @@
 
 #include "platform/impl/network_interface.h"
 
+#include "util/std_util.h"
+
 namespace openscreen {
 
 std::vector<InterfaceInfo> GetNetworkInterfaces() {
@@ -26,12 +28,10 @@ absl::optional<InterfaceInfo> GetLoopbackInterfaceForTesting() {
   auto it = std::find_if(
       interfaces.begin(), interfaces.end(), [](const InterfaceInfo& info) {
         return info.type == InterfaceInfo::Type::kLoopback &&
-               std::find_if(
-                   info.addresses.begin(), info.addresses.end(),
-                   [](const IPSubnet& subnet) {
-                     return subnet.address == IPAddress::kV4LoopbackAddress() ||
-                            subnet.address == IPAddress::kV6LoopbackAddress();
-                   }) != info.addresses.end();
+               ContainsIf(info.addresses, [](const IPSubnet& subnet) {
+                 return subnet.address == IPAddress::kV4LoopbackAddress() ||
+                        subnet.address == IPAddress::kV6LoopbackAddress();
+               });
       });
 
   if (it == interfaces.end()) {

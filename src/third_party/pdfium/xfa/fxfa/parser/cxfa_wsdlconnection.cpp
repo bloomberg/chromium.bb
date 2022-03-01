@@ -12,12 +12,12 @@
 namespace {
 
 const CXFA_Node::PropertyData kWsdlConnectionPropertyData[] = {
-    {XFA_Element::Operation, 1, 0},
-    {XFA_Element::WsdlAddress, 1, 0},
-    {XFA_Element::SoapAddress, 1, 0},
-    {XFA_Element::SoapAction, 1, 0},
-    {XFA_Element::EffectiveOutputPolicy, 1, 0},
-    {XFA_Element::EffectiveInputPolicy, 1, 0},
+    {XFA_Element::Operation, 1, {}},
+    {XFA_Element::WsdlAddress, 1, {}},
+    {XFA_Element::SoapAddress, 1, {}},
+    {XFA_Element::SoapAction, 1, {}},
+    {XFA_Element::EffectiveOutputPolicy, 1, {}},
+    {XFA_Element::EffectiveInputPolicy, 1, {}},
 };
 
 const CXFA_Node::AttributeData kWsdlConnectionAttributeData[] = {
@@ -31,7 +31,7 @@ CXFA_WsdlConnection::CXFA_WsdlConnection(CXFA_Document* doc,
                                          XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_ConnectionSet,
+                XFA_XDPPACKET::kConnectionSet,
                 XFA_ObjectType::Node,
                 XFA_Element::WsdlConnection,
                 kWsdlConnectionPropertyData,

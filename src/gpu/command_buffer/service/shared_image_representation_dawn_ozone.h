@@ -8,7 +8,6 @@
 #include <dawn/dawn_proc_table.h>
 #include <dawn/webgpu.h>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
@@ -34,6 +33,11 @@ class SharedImageRepresentationDawnOzone
       scoped_refptr<gfx::NativePixmap> pixmap,
       scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs);
 
+  SharedImageRepresentationDawnOzone(
+      const SharedImageRepresentationDawnOzone&) = delete;
+  SharedImageRepresentationDawnOzone& operator=(
+      const SharedImageRepresentationDawnOzone&) = delete;
+
   ~SharedImageRepresentationDawnOzone() override;
 
   WGPUTexture BeginAccess(WGPUTextureUsage usage) override;
@@ -51,8 +55,6 @@ class SharedImageRepresentationDawnOzone
   scoped_refptr<gfx::NativePixmap> pixmap_;
   WGPUTexture texture_ = nullptr;
   scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs_;
-
-  DISALLOW_COPY_AND_ASSIGN(SharedImageRepresentationDawnOzone);
 };
 
 }  // namespace gpu

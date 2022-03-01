@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import type * as Protocol from '../../generated/protocol.js';
 
-export class WebAudioModel extends SDK.SDKModel.SDKModel implements ProtocolProxyApi.WebAudioDispatcher {
-  _enabled: boolean;
-  _agent: ProtocolProxyApi.WebAudioApi;
-  constructor(target: SDK.SDKModel.Target) {
+export class WebAudioModel extends SDK.SDKModel.SDKModel<EventTypes> implements ProtocolProxyApi.WebAudioDispatcher {
+  private enabled: boolean;
+  private readonly agent: ProtocolProxyApi.WebAudioApi;
+  constructor(target: SDK.Target.Target) {
     super(target);
 
-    this._enabled = false;
+    this.enabled = false;
 
-    this._agent = target.webAudioAgent();
+    this.agent = target.webAudioAgent();
     target.registerWebAudioDispatcher(this);
 
     // TODO(crbug.com/963510): Some OfflineAudioContexts are not uninitialized
@@ -26,33 +25,32 @@ export class WebAudioModel extends SDK.SDKModel.SDKModel implements ProtocolProx
     // To resolve this inconsistency, we flush the leftover from the previous
     // frame when the current page is loaded. This call can be omitted when the
     // bug is fixed.
-    SDK.SDKModel.TargetManager.instance().addModelListener(
-        SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.FrameNavigated, this._flushContexts,
-        this);
+    SDK.TargetManager.TargetManager.instance().addModelListener(
+        SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.FrameNavigated, this.flushContexts, this);
   }
 
-  _flushContexts(): void {
+  private flushContexts(): void {
     this.dispatchEventToListeners(Events.ModelReset);
   }
 
   async suspendModel(): Promise<void> {
     this.dispatchEventToListeners(Events.ModelSuspend);
-    await this._agent.invoke_disable();
+    await this.agent.invoke_disable();
   }
 
   async resumeModel(): Promise<void> {
-    if (!this._enabled) {
+    if (!this.enabled) {
       return Promise.resolve();
     }
-    await this._agent.invoke_enable();
+    await this.agent.invoke_enable();
   }
 
   ensureEnabled(): void {
-    if (this._enabled) {
+    if (this.enabled) {
       return;
     }
-    this._agent.invoke_enable();
-    this._enabled = true;
+    this.agent.invoke_enable();
+    this.enabled = true;
   }
 
   contextCreated({context}: Protocol.WebAudio.ContextCreatedEvent): void {
@@ -114,13 +112,14 @@ export class WebAudioModel extends SDK.SDKModel.SDKModel implements ProtocolProx
         Events.NodeParamDisconnected, {contextId, sourceId, destinationId, sourceOutputIndex});
   }
 
-  async requestRealtimeData(contextId: string): Promise<Protocol.WebAudio.ContextRealtimeData|null> {
-    const realtimeResponse = await this._agent.invoke_getRealtimeData({contextId});
+  async requestRealtimeData(contextId: Protocol.WebAudio.GraphObjectId):
+      Promise<Protocol.WebAudio.ContextRealtimeData|null> {
+    const realtimeResponse = await this.agent.invoke_getRealtimeData({contextId});
     return realtimeResponse.realtimeData;
   }
 }
 
-SDK.SDKModel.SDKModel.register(WebAudioModel, {capabilities: SDK.SDKModel.Capability.DOM, autostart: false});
+SDK.SDKModel.SDKModel.register(WebAudioModel, {capabilities: SDK.Target.Capability.DOM, autostart: false});
 
 export const enum Events {
   ContextCreated = 'ContextCreated',
@@ -139,3 +138,21 @@ export const enum Events {
   NodeParamConnected = 'NodeParamConnected',
   NodeParamDisconnected = 'NodeParamDisconnected',
 }
+
+export type EventTypes = {
+  [Events.ContextCreated]: Protocol.WebAudio.BaseAudioContext,
+  [Events.ContextDestroyed]: Protocol.WebAudio.GraphObjectId,
+  [Events.ContextChanged]: Protocol.WebAudio.BaseAudioContext,
+  [Events.ModelReset]: void,
+  [Events.ModelSuspend]: void,
+  [Events.AudioListenerCreated]: Protocol.WebAudio.AudioListener,
+  [Events.AudioListenerWillBeDestroyed]: Protocol.WebAudio.AudioListenerWillBeDestroyedEvent,
+  [Events.AudioNodeCreated]: Protocol.WebAudio.AudioNode,
+  [Events.AudioNodeWillBeDestroyed]: Protocol.WebAudio.AudioNodeWillBeDestroyedEvent,
+  [Events.AudioParamCreated]: Protocol.WebAudio.AudioParam,
+  [Events.AudioParamWillBeDestroyed]: Protocol.WebAudio.AudioParamWillBeDestroyedEvent,
+  [Events.NodesConnected]: Protocol.WebAudio.NodesConnectedEvent,
+  [Events.NodesDisconnected]: Protocol.WebAudio.NodesDisconnectedEvent,
+  [Events.NodeParamConnected]: Protocol.WebAudio.NodeParamConnectedEvent,
+  [Events.NodeParamDisconnected]: Protocol.WebAudio.NodeParamDisconnectedEvent,
+};

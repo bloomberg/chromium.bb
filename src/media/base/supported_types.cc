@@ -20,8 +20,8 @@
 #if BUILDFLAG(ENABLE_LIBVPX)
 // TODO(dalecurtis): This technically should not be allowed in media/base. See
 // TODO below about moving outside of base.
-#include "third_party/libvpx/source/libvpx/vpx/vp8dx.h"
-#include "third_party/libvpx/source/libvpx/vpx/vpx_codec.h"
+#include "third_party/libvpx/source/libvpx/vpx/vp8dx.h"      // nogncheck
+#include "third_party/libvpx/source/libvpx/vpx/vpx_codec.h"  // nogncheck
 #endif
 
 #if defined(OS_ANDROID)
@@ -52,14 +52,18 @@ bool IsSupportedHdrMetadata(const gfx::HdrMetadataType& hdr_metadata_type) {
   return false;
 }
 
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC) && BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+#if BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
 bool IsHevcProfileSupported(VideoCodecProfile profile) {
+  // Only encrypted HEVC content is supported, and normally MSE.isTypeSupported
+  // returns false for HEVC. The kEnableClearHevcForTesting flag allows it to
+  // return true to enable a wider array of test scenarios to function properly.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableClearHevcForTesting)) {
     return false;
   }
   switch (profile) {
-    case HEVCPROFILE_MAIN:  // fallthrough
+    case HEVCPROFILE_MAIN:
+      FALLTHROUGH;
     case HEVCPROFILE_MAIN10:
       return true;
     case HEVCPROFILE_MAIN_STILL_PICTURE:
@@ -69,7 +73,7 @@ bool IsHevcProfileSupported(VideoCodecProfile profile) {
   }
   return false;
 }
-#endif  // ENABLE_PLATFORM_HEVC && USE_CHROMEOS_PROTECTED_MEDIA
+#endif  // BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
 
 }  // namespace
 
@@ -202,26 +206,28 @@ bool IsVp9ProfileSupported(VideoCodecProfile profile) {
 
 bool IsAudioCodecProprietary(AudioCodec codec) {
   switch (codec) {
-    case kCodecAAC:
-    case kCodecAC3:
-    case kCodecEAC3:
-    case kCodecAMR_NB:
-    case kCodecAMR_WB:
-    case kCodecGSM_MS:
-    case kCodecALAC:
-    case kCodecMpegHAudio:
+    case AudioCodec::kAAC:
+    case AudioCodec::kAC3:
+    case AudioCodec::kEAC3:
+    case AudioCodec::kAMR_NB:
+    case AudioCodec::kAMR_WB:
+    case AudioCodec::kGSM_MS:
+    case AudioCodec::kALAC:
+    case AudioCodec::kMpegHAudio:
+    case AudioCodec::kDTS:
+    case AudioCodec::kDTSXP2:
       return true;
 
-    case kCodecFLAC:
-    case kCodecMP3:
-    case kCodecOpus:
-    case kCodecVorbis:
-    case kCodecPCM:
-    case kCodecPCM_MULAW:
-    case kCodecPCM_S16BE:
-    case kCodecPCM_S24BE:
-    case kCodecPCM_ALAW:
-    case kUnknownAudioCodec:
+    case AudioCodec::kFLAC:
+    case AudioCodec::kMP3:
+    case AudioCodec::kOpus:
+    case AudioCodec::kVorbis:
+    case AudioCodec::kPCM:
+    case AudioCodec::kPCM_MULAW:
+    case AudioCodec::kPCM_S16BE:
+    case AudioCodec::kPCM_S24BE:
+    case AudioCodec::kPCM_ALAW:
+    case AudioCodec::kUnknown:
       return false;
   }
 
@@ -239,7 +245,7 @@ bool IsDefaultSupportedAudioType(const AudioType& type) {
 #endif
 
   switch (type.codec) {
-    case kCodecAAC:
+    case AudioCodec::kAAC:
       if (type.profile != AudioCodecProfile::kXHE_AAC)
         return true;
 #if defined(OS_ANDROID)
@@ -249,31 +255,33 @@ bool IsDefaultSupportedAudioType(const AudioType& type) {
       return false;
 #endif
 
-    case kCodecFLAC:
-    case kCodecMP3:
-    case kCodecOpus:
-    case kCodecPCM:
-    case kCodecPCM_MULAW:
-    case kCodecPCM_S16BE:
-    case kCodecPCM_S24BE:
-    case kCodecPCM_ALAW:
-    case kCodecVorbis:
+    case AudioCodec::kFLAC:
+    case AudioCodec::kMP3:
+    case AudioCodec::kOpus:
+    case AudioCodec::kPCM:
+    case AudioCodec::kPCM_MULAW:
+    case AudioCodec::kPCM_S16BE:
+    case AudioCodec::kPCM_S24BE:
+    case AudioCodec::kPCM_ALAW:
+    case AudioCodec::kVorbis:
       return true;
 
-    case kCodecAMR_NB:
-    case kCodecAMR_WB:
-    case kCodecGSM_MS:
+    case AudioCodec::kAMR_NB:
+    case AudioCodec::kAMR_WB:
+    case AudioCodec::kGSM_MS:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       return true;
 #else
       return false;
 #endif
 
-    case kCodecEAC3:
-    case kCodecALAC:
-    case kCodecAC3:
-    case kCodecMpegHAudio:
-    case kUnknownAudioCodec:
+    case AudioCodec::kEAC3:
+    case AudioCodec::kALAC:
+    case AudioCodec::kAC3:
+    case AudioCodec::kMpegHAudio:
+    case AudioCodec::kDTS:
+    case AudioCodec::kDTSXP2:
+    case AudioCodec::kUnknown:
       return false;
   }
 
@@ -283,18 +291,18 @@ bool IsDefaultSupportedAudioType(const AudioType& type) {
 
 bool IsVideoCodecProprietary(VideoCodec codec) {
   switch (codec) {
-    case kCodecVC1:
-    case kCodecH264:
-    case kCodecMPEG2:
-    case kCodecMPEG4:
-    case kCodecHEVC:
-    case kCodecDolbyVision:
+    case VideoCodec::kVC1:
+    case VideoCodec::kH264:
+    case VideoCodec::kMPEG2:
+    case VideoCodec::kMPEG4:
+    case VideoCodec::kHEVC:
+    case VideoCodec::kDolbyVision:
       return true;
-    case kUnknownVideoCodec:
-    case kCodecTheora:
-    case kCodecVP8:
-    case kCodecVP9:
-    case kCodecAV1:
+    case VideoCodec::kUnknown:
+    case VideoCodec::kTheora:
+    case VideoCodec::kVP8:
+    case VideoCodec::kVP9:
+    case VideoCodec::kAV1:
       return false;
   }
 
@@ -314,7 +322,7 @@ bool IsDefaultSupportedVideoType(const VideoType& type) {
 #endif
 
   switch (type.codec) {
-    case kCodecAV1:
+    case VideoCodec::kAV1:
       // If the AV1 decoder is enabled, or if we're on Q or later, yes.
 #if BUILDFLAG(ENABLE_AV1_DECODER)
       return IsColorSpaceSupported(type.color_space);
@@ -329,29 +337,29 @@ bool IsDefaultSupportedVideoType(const VideoType& type) {
       return false;
 #endif
 
-    case kCodecVP9:
+    case VideoCodec::kVP9:
       // Color management required for HDR to not look terrible.
       return IsColorSpaceSupported(type.color_space) &&
              IsVp9ProfileSupported(type.profile);
-    case kCodecH264:
-    case kCodecVP8:
-    case kCodecTheora:
+    case VideoCodec::kH264:
+    case VideoCodec::kVP8:
+    case VideoCodec::kTheora:
       return true;
 
-    case kCodecHEVC:
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC) && BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+    case VideoCodec::kHEVC:
+#if BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
       return IsColorSpaceSupported(type.color_space) &&
              IsHevcProfileSupported(type.profile);
 #else
       return false;
-#endif
-    case kUnknownVideoCodec:
-    case kCodecVC1:
-    case kCodecMPEG2:
-    case kCodecDolbyVision:
+#endif  // BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
+    case VideoCodec::kUnknown:
+    case VideoCodec::kVC1:
+    case VideoCodec::kMPEG2:
+    case VideoCodec::kDolbyVision:
       return false;
 
-    case kCodecMPEG4:
+    case VideoCodec::kMPEG4:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       return true;
 #else

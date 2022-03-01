@@ -38,6 +38,7 @@ namespace userspace_swap {
 
 namespace {
 
+using chromeos::memory::userspace_swap::Region;
 using chromeos::memory::userspace_swap::RendererSwapData;
 using chromeos::memory::userspace_swap::SwapFile;
 using chromeos::memory::userspace_swap::UserfaultFD;
@@ -49,9 +50,22 @@ using chromeos::memory::userspace_swap::UserspaceSwapConfig;
 // preventing space from getting too low in times of heavy swap. Feel free to
 // change it if you find a better value.
 constexpr base::TimeDelta kSwapDeviceAvailableSpaceCheckInterval =
-    base::TimeDelta::FromSeconds(30);
+    base::Seconds(30);
 base::TimeTicks g_last_swap_device_free_space_check;
 uint64_t g_swap_device_free_swap_bytes;
+
+// We must bind our mojo remote on the UI thread, this callback does that.
+void BindUserspaceSwapReceiverOnUIThread(
+    RenderProcessHostProxy proxy,
+    mojo::PendingReceiver<::userspace_swap::mojom::UserspaceSwap> receiver) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  content::RenderProcessHost* render_process_host = proxy.Get();
+  if (!render_process_host) {
+    return;
+  }
+
+  render_process_host->BindReceiver(std::move(receiver));
+}
 
 // UserspaceSwapMechanismData contains process node specific details and
 // handles.
@@ -66,6 +80,7 @@ class UserspaceSwapMechanismData
 
 void InitializeProcessNodeOnGraph(int render_process_host_id,
                                   base::ScopedFD uffd,
+                                  Region swap_area,
                                   performance_manager::Graph* graph) {
   // Now look up the ProcessNode so we can complete initialization.
   DCHECK(graph);
@@ -92,6 +107,18 @@ void InitializeProcessNodeOnGraph(int render_process_host_id,
 
   auto* data = UserspaceSwapMechanismData::GetOrCreate(process_node);
 
+  // If all other setup has completed successfully, we can tell the renderer to
+  // construct an implementation of userspace_swap::mojom::UserspaceSwap.
+  // The RenderProcessHostProxy is a WeakPtr that should only be accessed on the
+  // UI thread.
+  mojo::PendingRemote<::userspace_swap::mojom::UserspaceSwap> remote;
+  const RenderProcessHostProxy& proxy =
+      process_node->GetRenderProcessHostProxy();
+
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&BindUserspaceSwapReceiverOnUIThread, proxy,
+                                remote.InitWithNewPipeAndPassReceiver()));
+
   // Wrap up the received userfaultfd into a UserfaultFD instance.
   std::unique_ptr<UserfaultFD> userfaultfd =
       UserfaultFD::WrapFD(std::move(uffd));
@@ -116,7 +143,9 @@ void InitializeProcessNodeOnGraph(int render_process_host_id,
   }
 
   data->swap_data = RendererSwapData::Create(
-      render_process_host_id, std::move(userfaultfd), std::move(swap_file));
+      render_process_host_id, process_node->GetProcessId(),
+      std::move(userfaultfd), std::move(swap_file), swap_area,
+      std::move(remote));
 }
 
 }  // namespace
@@ -220,8 +249,8 @@ void SwapProcessNode(const ProcessNode* process_node) {
 
   // Now we know how many regions this renderer can theoretically swap after
   // enforcing all configurable limits.
-  chromeos::memory::userspace_swap::SwapRegions(swap_data.get(),
-                                                total_regions_swapable);
+  chromeos::memory::userspace_swap::SwapRenderer(
+      swap_data.get(), total_regions_swapable * kRegionSize);
 }
 
 UserspaceSwapInitializationImpl::UserspaceSwapInitializationImpl(
@@ -248,19 +277,27 @@ void UserspaceSwapInitializationImpl::Create(
 }
 
 void UserspaceSwapInitializationImpl::TransferUserfaultFD(
-    uint64_t error,
+    uint64_t uffd_error,
     mojo::PlatformHandle uffd_handle,
+    uint64_t mmap_error,
+    MemoryRegionPtr swap_area,
     TransferUserfaultFDCallback cb) {
   base::ScopedClosureRunner scr(std::move(cb));
 
   if (received_transfer_cb_) {
     return;
   }
-  received_transfer_cb_ = true;
 
-  if (error != 0) {
+  received_transfer_cb_ = true;
+  if (uffd_error != 0) {
     LOG(ERROR) << "Unable to create userfaultfd for renderer: "
-               << base::safe_strerror(error);
+               << base::safe_strerror(uffd_error);
+    return;
+  }
+
+  if (mmap_error != 0) {
+    LOG(ERROR) << "Unable to create memory area for renderer: "
+               << base::safe_strerror(mmap_error);
     return;
   }
 
@@ -272,7 +309,8 @@ void UserspaceSwapInitializationImpl::TransferUserfaultFD(
   // Make sure we're on the graph and complete the initialization.
   PerformanceManager::CallOnGraph(
       FROM_HERE, base::BindOnce(&InitializeProcessNodeOnGraph,
-                                render_process_host_id_, uffd_handle.TakeFD()));
+                                render_process_host_id_, uffd_handle.TakeFD(),
+                                Region(swap_area->address, swap_area->length)));
 }
 
 }  // namespace userspace_swap

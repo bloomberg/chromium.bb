@@ -7,7 +7,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -22,6 +22,11 @@ class AutoSigninFirstRunDialogAndroid : public content::WebContentsObserver {
   explicit AutoSigninFirstRunDialogAndroid(content::WebContents* web_contents);
 
   void Destroy(JNIEnv* env, jobject obj);
+
+  AutoSigninFirstRunDialogAndroid(const AutoSigninFirstRunDialogAndroid&) =
+      delete;
+  AutoSigninFirstRunDialogAndroid& operator=(
+      const AutoSigninFirstRunDialogAndroid&) = delete;
 
   void ShowDialog();
 
@@ -44,11 +49,9 @@ class AutoSigninFirstRunDialogAndroid : public content::WebContentsObserver {
  private:
   ~AutoSigninFirstRunDialogAndroid() override;
 
-  content::WebContents* web_contents_;
+  raw_ptr<content::WebContents> web_contents_;
 
   base::android::ScopedJavaGlobalRef<jobject> dialog_jobject_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutoSigninFirstRunDialogAndroid);
 };
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_ANDROID_AUTO_SIGNIN_FIRST_RUN_DIALOG_ANDROID_H_

@@ -13,7 +13,6 @@
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/common/chrome_paths.h"
@@ -33,6 +32,9 @@ class CrashingUtilWinImpl : public chrome::mojom::UtilWin {
  private:
   // chrome::mojom::UtilWin:
   void IsPinnedToTaskbar(IsPinnedToTaskbarCallback callback) override {}
+  void UnpinShortcuts(const std::vector<base::FilePath>& shortcuts,
+                      UnpinShortcutsCallback result_callback) override {}
+
   void CallExecuteSelectFile(ui::SelectFileDialog::Type type,
                              uint32_t owner,
                              const std::u16string& title,
@@ -48,8 +50,6 @@ class CrashingUtilWinImpl : public chrome::mojom::UtilWin {
   }
   void GetAntiVirusProducts(bool report_full_names,
                             GetAntiVirusProductsCallback callback) override {}
-  void RecordProcessorMetrics(
-      RecordProcessorMetricsCallback callback) override {}
 
   mojo::Receiver<chrome::mojom::UtilWin> receiver_;
 };
@@ -83,6 +83,9 @@ class ModuleInspectorTest : public testing::Test {
  public:
   ModuleInspectorTest()
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+
+  ModuleInspectorTest(const ModuleInspectorTest&) = delete;
+  ModuleInspectorTest& operator=(const ModuleInspectorTest&) = delete;
 
   std::unique_ptr<ModuleInspector> CreateModuleInspector() {
     auto module_inspector =
@@ -151,8 +154,6 @@ class ModuleInspectorTest : public testing::Test {
   }
 
   std::vector<ModuleInspectionResult> inspected_modules_;
-
-  DISALLOW_COPY_AND_ASSIGN(ModuleInspectorTest);
 };
 
 }  // namespace
@@ -182,34 +183,6 @@ TEST_F(ModuleInspectorTest, MultipleModules) {
   RunUntilIdle();
 
   EXPECT_EQ(5u, inspected_modules().size());
-}
-
-TEST_F(ModuleInspectorTest, DisableBackgroundInspection) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      ModuleInspector::kDisableBackgroundModuleInspection);
-
-  ModuleInfoKey kTestCases[] = {
-      {base::FilePath(), 0, 0},
-      {base::FilePath(), 0, 0},
-  };
-
-  auto module_inspector = CreateModuleInspector();
-
-  for (const auto& module : kTestCases)
-    module_inspector->AddModule(module);
-
-  RunUntilIdle();
-
-  // No inspected modules yet.
-  EXPECT_EQ(0u, inspected_modules().size());
-
-  // Increasing inspection priority will start the background inspection
-  // process.
-  module_inspector->IncreaseInspectionPriority();
-  RunUntilIdle();
-
-  EXPECT_EQ(2u, inspected_modules().size());
 }
 
 TEST_F(ModuleInspectorTest, InspectionResultsCache) {

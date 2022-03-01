@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 #include <stdint.h>
 
+#include "tensorflow/lite/c/c_api_types.h"
 #include "tensorflow/lite/c/common.h"
 #include "tensorflow/lite/kernels/internal/reference/reference_ops.h"
 #include "tensorflow/lite/kernels/internal/tensor.h"
@@ -29,6 +30,7 @@ namespace where {
 constexpr int kInputConditionTensor = 0;
 constexpr int kOutputTensor = 0;
 
+template <typename T>
 TfLiteStatus ResizeOutputTensor(TfLiteContext* context,
                                 const TfLiteTensor* cond_tensor,
                                 TfLiteTensor* output_tensor) {
@@ -38,11 +40,11 @@ TfLiteStatus ResizeOutputTensor(TfLiteContext* context,
   const RuntimeShape& cond_shape = GetTensorShape(cond_tensor);
   const int size = cond_shape.FlatSize();
   const int cond_rank = cond_shape.DimensionsCount();
-  const bool* cond_data = GetTensorData<bool>(cond_tensor);
+  const T* cond_data = GetTensorData<T>(cond_tensor);
 
   int true_count = 0;
   for (int i = 0; i < size; ++i) {
-    if (cond_data[i]) {
+    if (cond_data[i] != T(0)) {
       true_count++;
     }
   }
@@ -52,21 +54,10 @@ TfLiteStatus ResizeOutputTensor(TfLiteContext* context,
   return context->ResizeTensor(context, output_tensor, output_dims);
 }
 
-TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
-  TF_LITE_ENSURE_EQ(context, NumInputs(node), 1);
-  TF_LITE_ENSURE_EQ(context, NumOutputs(node), 1);
-
-  const TfLiteTensor* cond_tensor =
-      GetInput(context, node, kInputConditionTensor);
-  TfLiteTensor* output = GetOutput(context, node, kOutputTensor);
-
-  if (cond_tensor->type != kTfLiteBool) {
-    context->ReportError(context,
-                         "Condition tensor must be of type bool, but saw '%s'.",
-                         TfLiteTypeGetName(cond_tensor->type));
-    return kTfLiteError;
-  }
-
+template <typename T>
+TfLiteStatus PrepareOutput(TfLiteContext* context,
+                           const TfLiteTensor* cond_tensor,
+                           TfLiteTensor* output) {
   // As output will be a 2D tensor of indices, use int64 to be consistent with
   // tensorflow.
   output->type = kTfLiteInt64;
@@ -77,22 +68,136 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
     SetTensorToDynamic(output);
     return kTfLiteOk;
   }
-  return ResizeOutputTensor(context, cond_tensor, output);
+  return ResizeOutputTensor<T>(context, cond_tensor, output);
+}
+
+TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
+  TF_LITE_ENSURE_EQ(context, NumInputs(node), 1);
+  TF_LITE_ENSURE_EQ(context, NumOutputs(node), 1);
+
+  const TfLiteTensor* cond_tensor;
+  TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, kInputConditionTensor,
+                                          &cond_tensor));
+  TfLiteTensor* output;
+  TF_LITE_ENSURE_OK(context,
+                    GetOutputSafe(context, node, kOutputTensor, &output));
+
+  switch (cond_tensor->type) {
+    case kTfLiteBool:
+      return PrepareOutput<bool>(context, cond_tensor, output);
+    case kTfLiteFloat32:
+      return PrepareOutput<float>(context, cond_tensor, output);
+    case kTfLiteInt64:
+      return PrepareOutput<int64_t>(context, cond_tensor, output);
+    case kTfLiteInt32:
+      return PrepareOutput<int32_t>(context, cond_tensor, output);
+    case kTfLiteInt8:
+      return PrepareOutput<int8_t>(context, cond_tensor, output);
+    case kTfLiteUInt8:
+      return PrepareOutput<uint8_t>(context, cond_tensor, output);
+    case kTfLiteUInt32:
+      return PrepareOutput<uint32_t>(context, cond_tensor, output);
+    default:
+      TF_LITE_KERNEL_LOG(context,
+                         "Condition tensor has unsupported type: '%s'.",
+                         TfLiteTypeGetName(cond_tensor->type));
+  }
+  return kTfLiteOk;
 }
 
 TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
-  const TfLiteTensor* cond_tensor =
-      GetInput(context, node, kInputConditionTensor);
-  TfLiteTensor* output = GetOutput(context, node, kOutputTensor);
+  const TfLiteTensor* cond_tensor;
+  TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, kInputConditionTensor,
+                                          &cond_tensor));
+  TfLiteTensor* output;
+  TF_LITE_ENSURE_OK(context,
+                    GetOutputSafe(context, node, kOutputTensor, &output));
 
   if (IsDynamicTensor(output)) {
-    TF_LITE_ENSURE_OK(context,
-                      ResizeOutputTensor(context, cond_tensor, output));
+    switch (cond_tensor->type) {
+      case kTfLiteBool:
+        TF_LITE_ENSURE_OK(
+            context, ResizeOutputTensor<bool>(context, cond_tensor, output));
+        break;
+      case kTfLiteFloat32:
+        TF_LITE_ENSURE_OK(
+            context, ResizeOutputTensor<float>(context, cond_tensor, output));
+        break;
+      case kTfLiteInt64:
+        TF_LITE_ENSURE_OK(
+            context, ResizeOutputTensor<int64_t>(context, cond_tensor, output));
+        break;
+      case kTfLiteInt32:
+        TF_LITE_ENSURE_OK(
+            context, ResizeOutputTensor<int32_t>(context, cond_tensor, output));
+        break;
+      case kTfLiteInt8:
+        TF_LITE_ENSURE_OK(
+            context, ResizeOutputTensor<int8_t>(context, cond_tensor, output));
+        break;
+      case kTfLiteUInt8:
+        TF_LITE_ENSURE_OK(
+            context, ResizeOutputTensor<uint8_t>(context, cond_tensor, output));
+        break;
+      case kTfLiteUInt32:
+        TF_LITE_ENSURE_OK(context, ResizeOutputTensor<uint32_t>(
+                                       context, cond_tensor, output));
+        break;
+      default:
+        TF_LITE_KERNEL_LOG(context,
+                           "Condition tensor has unsupported type: '%s'.",
+                           TfLiteTypeGetName(cond_tensor->type));
+    }
   }
 
-  reference_ops::SelectTrueCoords(GetTensorShape(cond_tensor),
-                                  GetTensorData<bool>(cond_tensor),
-                                  GetTensorData<int64_t>(output));
+  TfLiteIntArray* dims = cond_tensor->dims;
+  if (dims->size == 0) {
+    // Scalar tensors are not supported.
+    TF_LITE_KERNEL_LOG(context, "Where op requires condition w/ rank > 0");
+    return kTfLiteError;
+  }
+
+  switch (cond_tensor->type) {
+    case kTfLiteBool:
+      reference_ops::SelectTrueCoords(GetTensorShape(cond_tensor),
+                                      GetTensorData<bool>(cond_tensor),
+                                      GetTensorData<int64_t>(output));
+      break;
+    case kTfLiteFloat32:
+      reference_ops::SelectTrueCoords(GetTensorShape(cond_tensor),
+                                      GetTensorData<float>(cond_tensor),
+                                      GetTensorData<int64_t>(output));
+      break;
+    case kTfLiteInt64:
+      reference_ops::SelectTrueCoords(GetTensorShape(cond_tensor),
+                                      GetTensorData<int64_t>(cond_tensor),
+                                      GetTensorData<int64_t>(output));
+      break;
+    case kTfLiteInt32:
+      reference_ops::SelectTrueCoords(GetTensorShape(cond_tensor),
+                                      GetTensorData<int32_t>(cond_tensor),
+                                      GetTensorData<int64_t>(output));
+      break;
+    case kTfLiteInt8:
+      reference_ops::SelectTrueCoords(GetTensorShape(cond_tensor),
+                                      GetTensorData<int8_t>(cond_tensor),
+                                      GetTensorData<int64_t>(output));
+      break;
+    case kTfLiteUInt8:
+      reference_ops::SelectTrueCoords(GetTensorShape(cond_tensor),
+                                      GetTensorData<uint8_t>(cond_tensor),
+                                      GetTensorData<int64_t>(output));
+      break;
+    case kTfLiteUInt32:
+      reference_ops::SelectTrueCoords(GetTensorShape(cond_tensor),
+                                      GetTensorData<uint32_t>(cond_tensor),
+                                      GetTensorData<int64_t>(output));
+      break;
+    default:
+      TF_LITE_KERNEL_LOG(context,
+                         "Condition tensor has unsupported type: '%s'.",
+                         TfLiteTypeGetName(cond_tensor->type));
+  }
   return kTfLiteOk;
 }
 }  // namespace where

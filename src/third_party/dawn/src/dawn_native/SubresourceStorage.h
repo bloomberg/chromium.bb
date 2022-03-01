@@ -101,7 +101,7 @@ namespace dawn_native {
            third_party/dawn/src/dawn_native
     */
     //
-    // TODO(cwallez@chromium.org): Make the recompression optional, the calling code should know
+    // TODO(crbug.com/dawn/836): Make the recompression optional, the calling code should know
     // if recompression can happen or not in Update() and Merge()
     template <typename T>
     class SubresourceStorage {
@@ -393,13 +393,11 @@ namespace dawn_native {
         ASSERT(mipLevel < mMipLevelCount);
 
         // Fastest path, the aspect is compressed!
-        uint32_t dataIndex = aspectIndex * mArrayLayerCount * mMipLevelCount;
         if (mAspectCompressed[aspectIndex]) {
             return DataInline(aspectIndex);
         }
 
         // Fast path, the array layer is compressed.
-        dataIndex += arrayLayer * mMipLevelCount;
         if (LayerCompressed(aspectIndex, arrayLayer)) {
             return Data(aspectIndex, arrayLayer);
         }

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -23,6 +24,7 @@
 #include "cc/test/pixel_test_utils.h"
 #include "cc/tiles/gpu_image_decode_cache.h"
 #include "components/viz/test/test_in_process_context_provider.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_implementation.h"
@@ -45,7 +47,7 @@
 #include "third_party/skia/include/gpu/GrYUVABackendTextures.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gl/gl_implementation.h"
 
 #if defined(OS_ANDROID)
@@ -73,10 +75,11 @@ class OopPixelTest : public testing::Test,
 
   void SetUp() override {
     InitializeOOPContext();
+    // Needs RasterInterface for ScopedRasterContextLock
     gles2_context_provider_ =
         base::MakeRefCounted<viz::TestInProcessContextProvider>(
-            /*enable_gpu_rasterization=*/false,
-            /*enable_oop_rasterization=*/false, /*support_locking=*/true);
+            /*enable_gles2_interface=*/true, /*support_locking=*/true,
+            viz::RasterInterfaceType::GPU);
     gpu::ContextResult result = gles2_context_provider_->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
     const int gles2_max_texture_size =
@@ -101,9 +104,9 @@ class OopPixelTest : public testing::Test,
 
     raster_context_provider_ =
         base::MakeRefCounted<viz::TestInProcessContextProvider>(
-            /*enable_gpu_rasterization=*/false,
-            /*enable_oop_rasterization=*/true, /*support_locking=*/true,
-            &gr_shader_cache_, &activity_flags_);
+            /*enable_gles2_interface=*/false, /*support_locking=*/true,
+            viz::RasterInterfaceType::OOPR, &gr_shader_cache_,
+            &activity_flags_);
     gpu::ContextResult result = raster_context_provider_->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
     const int raster_max_texture_size =
@@ -139,9 +142,9 @@ class OopPixelTest : public testing::Test,
     bool requires_clear = false;
     bool preclear = false;
     SkColor preclear_color;
-    ImageDecodeCache* image_cache = nullptr;
+    raw_ptr<ImageDecodeCache> image_cache = nullptr;
     std::vector<scoped_refptr<DisplayItemList>> additional_lists;
-    PaintShader* shader_with_animated_images = nullptr;
+    raw_ptr<PaintShader> shader_with_animated_images = nullptr;
   };
 
   SkBitmap Raster(scoped_refptr<DisplayItemList> display_item_list,
@@ -178,11 +181,16 @@ class OopPixelTest : public testing::Test,
     raster_implementation->WaitSyncTokenCHROMIUM(
         sii->GenUnverifiedSyncToken().GetConstData());
 
+    // Assume legacy MSAA if sample count is positive.
+    gpu::raster::MsaaMode msaa_mode = options.msaa_sample_count > 0
+                                          ? gpu::raster::kMSAA
+                                          : gpu::raster::kNoMSAA;
+
     if (options.preclear) {
       raster_implementation->BeginRasterCHROMIUM(
           options.preclear_color, /*needs_clear=*/options.preclear,
-          options.msaa_sample_count, options.use_lcd_text, options.color_space,
-          mailbox.name);
+          options.msaa_sample_count, msaa_mode, options.use_lcd_text,
+          options.color_space, mailbox.name);
       raster_implementation->EndRasterCHROMIUM();
     }
 
@@ -192,8 +200,8 @@ class OopPixelTest : public testing::Test,
     // cleared, so set |needs_clear| to false here.
     raster_implementation->BeginRasterCHROMIUM(
         options.background_color, /*needs_clear=*/!options.preclear,
-        options.msaa_sample_count, options.use_lcd_text, options.color_space,
-        mailbox.name);
+        options.msaa_sample_count, msaa_mode, options.use_lcd_text,
+        options.color_space, mailbox.name);
     size_t max_op_size_limit =
         gpu::raster::RasterInterface::kDefaultMaxOpSizeHint;
     raster_implementation->RasterCHROMIUM(
@@ -227,7 +235,10 @@ class OopPixelTest : public testing::Test,
                            const gpu::Mailbox& mailbox,
                            const RasterOptions& options) {
     // Import the texture in gl, create an fbo and bind the texture to it.
-    GLuint gl_texture_id = gl->CreateAndConsumeTextureCHROMIUM(mailbox.name);
+    GLuint gl_texture_id =
+        gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
+    gl->BeginSharedImageAccessDirectCHROMIUM(
+        gl_texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
     GLuint fbo_id;
     gl->GenFramebuffers(1, &fbo_id);
     gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_id);
@@ -241,8 +252,10 @@ class OopPixelTest : public testing::Test,
         new unsigned char[width * height * 4]);
     gl->ReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data.get());
 
-    gl->DeleteTextures(1, &gl_texture_id);
     gl->DeleteFramebuffers(1, &fbo_id);
+
+    gl->EndSharedImageAccessDirectCHROMIUM(gl_texture_id);
+    gl->DeleteTextures(1, &gl_texture_id);
 
     // Swizzle rgba->bgra
     std::vector<SkPMColor> colors;
@@ -415,7 +428,9 @@ class OopImagePixelTest : public OopPixelTest,
                           public ::testing::WithParamInterface<bool> {
  public:
   bool UseTooLargeImage() { return GetParam(); }
-  SkFilterQuality FilterQuality() { return kNone_SkFilterQuality; }
+  PaintFlags::FilterQuality FilterQuality() {
+    return PaintFlags::FilterQuality::kNone;
+  }
 
   gfx::Size GetImageSize() {
     const int kMaxSize = 20000;
@@ -516,6 +531,51 @@ TEST_F(OopPixelTest, DrawRect) {
       SkImageInfo::MakeN32Premul(rect.width(), rect.height()),
       expected_pixels.data(), rect.width() * sizeof(SkPMColor));
   ExpectEquals(actual, expected);
+}
+
+TEST_F(OopPixelTest, DrawRecordPaintFilterTranslatedBounds) {
+  gfx::Size output_size(10, 10);
+
+  // The paint record filter's ops would fill the right half of the image with
+  // green, but its record bounds are configured to clip it to the bottom right
+  // quarter of the output.
+  PaintFlags internal_flags;
+  internal_flags.setColor(SK_ColorGREEN);
+  sk_sp<PaintOpBuffer> filter_buffer(new PaintOpBuffer);
+  filter_buffer->push<DrawRectOp>(
+      SkRect::MakeLTRB(output_size.width() / 2.f, 0.f, output_size.width(),
+                       output_size.height()),
+      internal_flags);
+  sk_sp<RecordPaintFilter> record_filter = sk_make_sp<RecordPaintFilter>(
+      filter_buffer,
+      SkRect::MakeLTRB(output_size.width() / 2.f, output_size.height() / 2.f,
+                       output_size.width(), output_size.height()));
+
+  PaintFlags record_flags;
+  record_flags.setImageFilter(record_filter);
+
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  display_item_list->push<DrawColorOp>(SK_ColorWHITE, SkBlendMode::kSrc);
+  display_item_list->push<SaveLayerOp>(nullptr, &record_flags);
+  display_item_list->push<RestoreOp>();
+  display_item_list->EndPaintOfUnpaired(gfx::Rect(output_size));
+  display_item_list->Finalize();
+
+  SkImageInfo ii =
+      SkImageInfo::MakeN32Premul(output_size.width(), output_size.height());
+  SkBitmap expected;
+  expected.allocPixels(ii, ii.minRowBytes());
+  expected.eraseColor(SK_ColorWHITE);
+  expected.erase(
+      SK_ColorGREEN,
+      SkIRect::MakeLTRB(output_size.width() / 2, output_size.height() / 2,
+                        output_size.width(), output_size.height()));
+
+  auto actual_oop = Raster(display_item_list, output_size);
+  auto actual_gpu = RasterExpectedBitmap(display_item_list, output_size);
+  ExpectEquals(actual_oop, expected);
+  ExpectEquals(actual_gpu, expected);
 }
 
 TEST_P(OopImagePixelTest, DrawImage) {
@@ -1777,31 +1837,37 @@ class OopTextBlobPixelTest
     const int sdk = base::android::BuildInfo::GetInstance()->sdk_int();
     if (sdk <= base::android::SDK_VERSION_MARSHMALLOW) {
       error_pixels_percentage = 10.f;
-      max_abs_error = 16;
+      max_abs_error = 20;
     } else {
       // Newer OSes occasionally have smaller flakes when using the real GPU
       error_pixels_percentage = 1.5f;
       max_abs_error = 2;
     }
-#elif defined(OS_MAC) || defined(OS_WIN)
-    // Mac and Windows need very small tolerances only under complex transforms
-    if (GetMatrixStrategy(GetParam()) == MatrixStrategy::kComplex) {
-      error_pixels_percentage = 0.2f;
-      max_abs_error = 2;
-    }
 #endif
-    // Regardless of OS, perspective triggers path rendering for each glyph,
-    // which produces its own set of pixel differences.
-    if (GetMatrixStrategy(GetParam()) == MatrixStrategy::kPerspective) {
-      error_pixels_percentage = 4.f;
-      max_abs_error = 36;
+    // Many platforms need very small tolerances under complex transforms,
+    // and higher tolerances for perspective, since it triggers path rendering
+    // for each glyph. Additionally, record filters require higher tolerance
+    // because oop-r converts raster-at-scale to fixed-scale.
+    float avg_error = max_abs_error;
+    const bool is_record_filter =
+        GetTextBlobStrategy(GetParam()) == TextBlobStrategy::kRecordFilter;
+    if (GetMatrixStrategy(GetParam()) == MatrixStrategy::kComplex) {
+      error_pixels_percentage =
+          std::max(is_record_filter ? 12.f : 0.2f, error_pixels_percentage);
+      max_abs_error = std::max(is_record_filter ? 220 : 2, max_abs_error);
+      avg_error = std::max(is_record_filter ? 50.f : 2.f, avg_error);
+    } else if (GetMatrixStrategy(GetParam()) == MatrixStrategy::kPerspective) {
+      error_pixels_percentage =
+          std::max(is_record_filter ? 13.f : 4.f, error_pixels_percentage);
+      max_abs_error = std::max(is_record_filter ? 255 : 36, max_abs_error);
+      avg_error = std::max(is_record_filter ? 60.f : 36.f, avg_error);
     }
 
     FuzzyPixelComparator comparator(
         /*discard_alpha=*/false,
         /*error_pixels_percentage_limit=*/error_pixels_percentage,
         /*small_error_pixels_percentage_limit=*/0.0f,
-        /*avg_abs_error_limit=*/max_abs_error,
+        /*avg_abs_error_limit=*/avg_error,
         /*max_abs_error_limit=*/max_abs_error,
         /*small_error_threshold=*/0);
     ExpectEquals(actual, expected, comparator);
@@ -1857,14 +1923,14 @@ class OopTextBlobPixelTest
       filter = nullptr;
     }
     if (strategy == TextBlobStrategy::kDirect) {
-      display_list->push<DrawTextBlobOp>(std::move(text_blob), 0u, kTextBlobY,
+      display_list->push<DrawTextBlobOp>(std::move(text_blob), 0.0f, kTextBlobY,
                                          text_flags);
       return;
     }
 
     // All remaining strategies add the DrawTextBlobOp to an inner paint record.
     auto paint_record = sk_make_sp<PaintOpBuffer>();
-    paint_record->push<DrawTextBlobOp>(std::move(text_blob), 0u, kTextBlobY,
+    paint_record->push<DrawTextBlobOp>(std::move(text_blob), 0.0f, kTextBlobY,
                                        text_flags);
     if (strategy == TextBlobStrategy::kDrawRecord) {
       display_list->push<DrawRecordOp>(std::move(paint_record));
@@ -1900,7 +1966,7 @@ class OopTextBlobPixelTest
 
     // Use bilerp sampling with the PaintRecord to help reduce max RGB error
     // from pixel-snapping flakiness when using NN sampling.
-    record_flags.setFilterQuality(kLow_SkFilterQuality);
+    record_flags.setFilterQuality(PaintFlags::FilterQuality::kLow);
 
     // The text blob is embedded in a paint record, which is attached to the
     // paint via a shader or image filter. Just draw a rect with the paint.
@@ -2025,7 +2091,7 @@ TEST_F(OopPixelTest, DrawTextMultipleRasterCHROMIUM) {
   PaintFlags flags;
   flags.setStyle(PaintFlags::kFill_Style);
   flags.setColor(SK_ColorGREEN);
-  display_item_list->push<DrawTextBlobOp>(BuildTextBlob(sk_typeface_1), 0u,
+  display_item_list->push<DrawTextBlobOp>(BuildTextBlob(sk_typeface_1), 0.0f,
                                           kTextBlobY, flags);
   display_item_list->EndPaintOfUnpaired(options.full_raster_rect);
   display_item_list->Finalize();
@@ -2033,7 +2099,7 @@ TEST_F(OopPixelTest, DrawTextMultipleRasterCHROMIUM) {
   // Create another list with a different typeface.
   auto display_item_list_2 = base::MakeRefCounted<DisplayItemList>();
   display_item_list_2->StartPaint();
-  display_item_list_2->push<DrawTextBlobOp>(BuildTextBlob(sk_typeface_2), 0u,
+  display_item_list_2->push<DrawTextBlobOp>(BuildTextBlob(sk_typeface_2), 0.0f,
                                             kTextBlobY, flags);
   display_item_list_2->EndPaintOfUnpaired(options.full_raster_rect);
   display_item_list_2->Finalize();
@@ -2066,7 +2132,7 @@ TEST_F(OopPixelTest, DrawTextBlobPersistentShaderCache) {
   PaintFlags flags;
   flags.setStyle(PaintFlags::kFill_Style);
   flags.setColor(SK_ColorGREEN);
-  display_item_list->push<DrawTextBlobOp>(BuildTextBlob(), 0u, kTextBlobY,
+  display_item_list->push<DrawTextBlobOp>(BuildTextBlob(), 0.0f, kTextBlobY,
                                           flags);
   display_item_list->EndPaintOfUnpaired(options.full_raster_rect);
   display_item_list->Finalize();

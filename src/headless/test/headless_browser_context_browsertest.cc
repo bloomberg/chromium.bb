@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -145,8 +146,8 @@ class HeadlessBrowserContextIsolationTest
   }
 
  private:
-  HeadlessBrowserContext* browser_context_;
-  HeadlessWebContents* web_contents2_;
+  raw_ptr<HeadlessBrowserContext> browser_context_;
+  raw_ptr<HeadlessWebContents> web_contents2_;
   std::unique_ptr<HeadlessDevToolsClient> devtools_client2_;
   std::unique_ptr<LoadObserver> load_observer_;
 };
@@ -181,8 +182,7 @@ class HeadlessBrowserUserDataDirTest : public HeadlessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserUserDataDirTest, Do) {
-  // Allow IO from the main thread.
-  base::ThreadRestrictions::SetIOAllowed(true);
+  base::ScopedAllowBlockingForTesting allow_blocking;
 
   EXPECT_TRUE(embedded_test_server()->Start());
 
@@ -207,8 +207,8 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserUserDataDirTest, Do) {
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, IncognitoMode) {
   // We do not want to bother with posting tasks to create a temp dir.
-  // Just allow IO from main thread for now.
-  base::ThreadRestrictions::SetIOAllowed(true);
+  // Just allow blocking from main thread for now.
+  base::ScopedAllowBlockingForTesting allow_blocking;
 
   EXPECT_TRUE(embedded_test_server()->Start());
 

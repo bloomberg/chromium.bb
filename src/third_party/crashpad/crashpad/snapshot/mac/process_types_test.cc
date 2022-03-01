@@ -21,7 +21,7 @@
 #include <limits>
 #include <vector>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "gtest/gtest.h"
@@ -356,8 +356,16 @@ TEST(ProcessTypes, DyldImagesSelf) {
               self_image_infos->reserved[4]);
     EXPECT_EQ(proctype_image_infos.reserved_5, self_image_infos->reserved[5]);
     EXPECT_EQ(proctype_image_infos.reserved_6, self_image_infos->reserved[6]);
-    EXPECT_EQ(proctype_image_infos.reserved_7, self_image_infos->reserved[7]);
-    EXPECT_EQ(proctype_image_infos.reserved_8, self_image_infos->reserved[8]);
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_12_0
+    uint64_t shared_cache_fs_id = self_image_infos->sharedCacheFSID;
+    uint64_t shared_cache_fs_obj_id = self_image_infos->sharedCacheFSObjID;
+#else
+    uint64_t shared_cache_fs_id = self_image_infos->reserved[7];
+    uint64_t shared_cache_fs_obj_id = self_image_infos->reserved[8];
+#endif
+    EXPECT_EQ(proctype_image_infos.shared_cache_fs_id, shared_cache_fs_id);
+    EXPECT_EQ(proctype_image_infos.shared_cache_fs_obj_id,
+              shared_cache_fs_obj_id);
 #endif
   }
 #endif

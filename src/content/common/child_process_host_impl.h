@@ -12,11 +12,11 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
-#include "base/memory/singleton.h"
+#include "base/memory/raw_ptr.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "content/common/child_process.mojom.h"
+#include "content/common/content_export.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -25,6 +25,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace IPC {
+class Channel;
 class MessageFilter;
 }
 
@@ -39,6 +40,9 @@ class CONTENT_EXPORT ChildProcessHostImpl
       public IPC::Listener,
       public mojom::ChildProcessHost {
  public:
+  ChildProcessHostImpl(const ChildProcessHostImpl&) = delete;
+  ChildProcessHostImpl& operator=(const ChildProcessHostImpl&) = delete;
+
   ~ChildProcessHostImpl() override;
 
   // Returns a unique ID to identify a child process. On construction, this
@@ -74,11 +78,13 @@ class CONTENT_EXPORT ChildProcessHostImpl
   bool IsChannelOpening() override;
   void AddFilter(IPC::MessageFilter* filter) override;
   void BindReceiver(mojo::GenericPendingReceiver receiver) override;
+#if BUILDFLAG(IS_CHROMECAST)
   void RunServiceDeprecated(
       const std::string& service_name,
       mojo::ScopedMessagePipeHandle service_pipe) override;
+#endif
 
-  base::Process& peer_process() { return peer_process_; }
+  base::Process& GetPeerProcess();
   mojom::ChildProcess* child_process() { return child_process_.get(); }
 
  private:
@@ -87,6 +93,7 @@ class CONTENT_EXPORT ChildProcessHostImpl
   ChildProcessHostImpl(ChildProcessHostDelegate* delegate, IpcMode ipc_mode);
 
   // mojom::ChildProcessHost implementation:
+  void Ping(PingCallback callback) override;
   void BindHostReceiver(mojo::GenericPendingReceiver receiver) override;
 
   // IPC::Listener methods:
@@ -99,8 +106,11 @@ class CONTENT_EXPORT ChildProcessHostImpl
   // non-null.
   bool InitChannel();
 
+  void OnDisconnectedFromChildProcess();
+
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
   void DumpProfilingData(base::OnceClosure callback) override;
+  void SetProfilingFile(base::File file) override;
 #endif
 
   // The outgoing Mojo invitation which must be consumed to bootstrap Mojo IPC
@@ -108,7 +118,7 @@ class CONTENT_EXPORT ChildProcessHostImpl
   absl::optional<mojo::OutgoingInvitation> mojo_invitation_{absl::in_place};
 
   const IpcMode ipc_mode_;
-  ChildProcessHostDelegate* delegate_;
+  raw_ptr<ChildProcessHostDelegate> delegate_;
   base::Process peer_process_;
   bool opening_channel_;  // True while we're waiting the channel to be opened.
   std::unique_ptr<IPC::Channel> channel_;
@@ -119,8 +129,6 @@ class CONTENT_EXPORT ChildProcessHostImpl
   // thread, we don't have a IPC::ChannelProxy and so we manage filters
   // manually.
   std::vector<scoped_refptr<IPC::MessageFilter> > filters_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChildProcessHostImpl);
 };
 
 }  // namespace content

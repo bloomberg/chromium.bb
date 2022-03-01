@@ -17,7 +17,7 @@
 #ifndef LIBGAV1_SRC_UTILS_MEMORY_H_
 #define LIBGAV1_SRC_UTILS_MEMORY_H_
 
-#if defined(__ANDROID__) || defined(_MSC_VER)
+#if defined(__ANDROID__) || defined(_MSC_VER) || defined(__MINGW32__)
 #include <malloc.h>
 #endif
 
@@ -55,7 +55,7 @@ enum {
 // void AlignedFree(void* aligned_memory);
 //   Free aligned memory.
 
-#if defined(_MSC_VER)  // MSVC
+#if defined(_MSC_VER) || defined(__MINGW32__)
 
 inline void* AlignedAlloc(size_t alignment, size_t size) {
   return _aligned_malloc(size, alignment);
@@ -63,7 +63,7 @@ inline void* AlignedAlloc(size_t alignment, size_t size) {
 
 inline void AlignedFree(void* aligned_memory) { _aligned_free(aligned_memory); }
 
-#else  // !defined(_MSC_VER)
+#else  // !(defined(_MSC_VER) || defined(__MINGW32__))
 
 inline void* AlignedAlloc(size_t alignment, size_t size) {
 #if defined(__ANDROID__)
@@ -89,7 +89,7 @@ inline void* AlignedAlloc(size_t alignment, size_t size) {
 
 inline void AlignedFree(void* aligned_memory) { free(aligned_memory); }
 
-#endif  // defined(_MSC_VER)
+#endif  // defined(_MSC_VER) || defined(__MINGW32__)
 
 inline void Memset(uint8_t* const dst, int value, size_t count) {
   memset(dst, value, count);
@@ -98,6 +98,12 @@ inline void Memset(uint8_t* const dst, int value, size_t count) {
 inline void Memset(uint16_t* const dst, int value, size_t count) {
   for (size_t i = 0; i < count; ++i) {
     dst[i] = static_cast<uint16_t>(value);
+  }
+}
+
+inline void Memset(int16_t* const dst, int value, size_t count) {
+  for (size_t i = 0; i < count; ++i) {
+    dst[i] = static_cast<int16_t>(value);
   }
 }
 

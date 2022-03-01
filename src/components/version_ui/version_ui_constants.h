@@ -39,9 +39,6 @@ extern const char kCL[];
 extern const char kCommandLine[];
 extern const char kCommandLineName[];
 extern const char kCompany[];
-#if defined(OS_IOS)
-extern const char kCompiler[];
-#endif
 #if defined(OS_WIN)
 extern const char kUpdateCohortName[];
 #endif
@@ -77,6 +74,11 @@ extern const char kPlatform[];
 #if !defined(OS_IOS)
 extern const char kProfilePath[];
 extern const char kProfilePathName[];
+#endif
+#if defined(OS_CHROMEOS)
+extern const char kOsVersionHeaderText1[];
+extern const char kOsVersionHeaderText2[];
+extern const char kOsVersionHeaderLink[];
 #endif
 extern const char kRevision[];
 extern const char kSanitizer[];

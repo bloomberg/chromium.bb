@@ -1,35 +1,52 @@
 # This is the filter for browser_tests that supports pixel tests.
-*EyeDropperBrowserTest.*
-*PasswordBubbleBrowserTest.*
+AccuracyTipBubbleViewDialogBrowserTest.*
 AppInfoDialogBrowserTest.*
 AskGoogleForSuggestionsDialogTest.*
 BookmarkBubbleViewBrowserTest.*
 BookmarkEditorViewBrowserTest.*
 ChromeLabsUiTest.*
+ConfirmBubbleTest.*
+ContentAnalysysDialogUiTest.*
 ContentSettingBubbleDialogTest.*
+CookieControlsBubbleViewTest.*
+CryptoModulePasswordDialogTest.*
+DeepScanningFailureModalDialogTest.*
 ExtensionInstallDialogViewInteractiveBrowserTest.*
 ExtensionUninstallDialogViewInteractiveBrowserTest.*
+*EyeDropperBrowserTest.*
 FeaturePromoDialogTest.*
 FileSystemAccessUsageBubbleViewTest.*
+FirstRunDialogTest.*
 GlobalErrorBubbleTest.*
 HatsBubbleTest.*
 HungRendererDialogViewBrowserTest.*
 ImportLockDialogViewBrowserTest.*
+InlineLoginHelperBrowserTest.InvokeUi_*
+NewTabPageTest.*
 OneTimePermissionPromptBubbleViewBrowserTest.*
 OutdatedUpgradeBubbleTest.*
+PageInfoBubbleViewAboutThisSiteDialogBrowserTest.*
 PageInfoBubbleViewDialogBrowserTest.*
+*PasswordBubbleBrowserTest.*
 PasswordReuseModalWarningTest.*
-PermissionChipBrowserTest.*
-All/PermissionPromptBubbleViewBrowserTest.*
+PermissionRequestChipDialogBrowserTest.*
+*PermissionPromptBubbleViewBrowserTest.*
 ProfileSigninConfirmationDialogTest.*
+PromptForScanningModalDialogTest.*
+QRCodeGeneratorBubbleBrowserTest.*
 RelaunchRecommendedBubbleViewDialogTest.*
 RelaunchRequiredDialogViewDialogTest.*
 ReopenTabPromoControllerDialogBrowserTest.*
+SafetyTipPageInfoBubbleViewDialogTest.*
 ScreenCaptureNotificationUiBrowserTest.*
+SecurePaymentConfirmationDialogViewTest.InvokeUi_*
+*SendTabToSelfBubbleTest.*
 SessionCrashedBubbleViewTest.*
 TabGroupEditorBubbleViewDialogBrowserTest.*
 TabHoverCardBubbleViewBrowserTest.*
 UpdateRecommendedDialogTest.*
+WebAppConfirmViewBrowserTest.*
+WorkProfileSigninConfirmationDialogTest.*
 ZoomBubbleDialogTest.*
 
 # This test uses random network port and shows it on ui.
@@ -41,3 +58,6 @@ ZoomBubbleDialogTest.*
 # TODO(crbug.com/2666206): Flaky
 -ContentSettingBubbleDialogTest.InvokeUi_mediastream_camera
 -ContentSettingBubbleDialogTest.InvokeUi_mediastream_mic_and_camera
+
+# TODO(crbug.com/1164574): Flaky
+-ContentSettingBubbleDialogTest.InvokeUi_mediastream_mic

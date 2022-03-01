@@ -63,28 +63,228 @@ android_cpu {
 }
 ```
 
-### Case for upstreaming
+## Metric development guide
 
-NOTE: Googlers: for internal usage of metrics in Google3 (i.e. metrics which are
-confidential), please see [this internal page](https://goto.google.com/viecd).
+As metric writing requires a lot of iterations to get right, there are several
+tips which make the experience a lot smoother.
 
-Authors are strongly encouraged to add all metrics derived on Perfetto traces to
-the Perfetto repo unless there is a clear usecase (e.g. confidentiality) why
-these metrics should not be publicly available.
+### Hot reloading metrics
+To obtain the fastest possible iteration time when developing metrics,
+it's possible to hot reload any changes to SQL; this will skip over both
+recompilation (for builtin metrics) and trace load (for both builtin and
+custom metrics).
 
-In return for upstreaming metrics, authors will have first class support for
-running metrics locally and the confidence that their metrics will remain stable
-as trace processor is developed.
+To do this, trace processor is started in *interactive mode* while
+still specifying command line flags about which metrics should be run and
+the paths of any extensions. Then, in the REPL shell, the commands
+`.load-metrics-sql` (which causes any SQL on disk to be re-read) and
+`.run-metrics` (to run the metrics and print the result).
 
-As well as scaling upwards while developing from running on a single trace
-locally to running on a large set of traces, the reverse is also very useful.
-When an anomaly is observed in the metrics of a lab benchmark, a representative
-trace can be downloaded and the same metric can be run locally in trace
-processor.
+For example, suppose we want to iterate on the `android_startup` metric. We
+can run the following commands from a Perfetto checkout:
+```python
+> ./tools/trace_processor --interactive \
+  --run_metrics android_startup \
+  --metric-extension src/trace_processor/metric@/
+  --dev \
+  <trace>
+android_startup {
+  <contents of startup metric>
+}
 
-Since the same code is running locally and remotely, developers can be confident
-in reproducing the issue and use the trace processor and/or the Perfetto UI to
-identify the problem.
+# Now make any changes you want to the SQL files related to the startup
+# metric. Even adding new files in the src/trace_processor/metric works.
+
+# Then, we can reload the changes using `.load-metrics-sql`.
+> .load-metrics-sql
+
+# We can rerun the changed metric using `.run-metrics`
+> .run-metrics
+android_startup {
+  <contents of changed startup metric>
+}
+```
+
+NOTE: see below about why `--dev` was required for this command.
+
+This also works for custom metrics specified on the command line:
+```python
+> ./tools/trace_processor -i --run_metrics /tmp/my_custom_metric.sql <trace>
+my_custom_metric {
+  <contents of my_custom_metric>
+}
+
+# Change the SQL file as before.
+
+> .load-metrics-sql
+> .run-metrics
+my_custom_metric {
+  <contents of changed my_custom_metric>
+}
+```
+
+WARNING: it is currently not possible to reload protos in the same way. If
+protos are changed, a recompile (for built-in metrics) and reinvoking
+trace processor is necessary to pick up the changes.
+
+WARNING: Deleted files from `--metric-extension` folders are *not* removed
+and will remain available e.g. to RUN_METRIC invocations.
+
+### Modifying built-in metric SQL without recompiling
+It is possible to override the SQL of built-in metrics at runtime without
+needing to recompile trace processor. To do this, the flag `--metric-extension`
+needs to be specified with the disk path where the built-metrics live and the
+special string `/` for the virtual path.
+
+For example, from inside a Perfetto checkout:
+```python
+> ./tools/trace_processor \
+  --run_metrics android_cpu \
+  --metric-extension src/trace_processor/metrics@/
+  --dev
+  <trace>
+```
+This will run the CPU metric using the live SQL in the repo *not* the SQL
+defintion built into the binary.
+
+NOTE: protos are *not* overriden in the same way - if any proto messages are
+changed a recompile of trace processor is required for the changes to be
+available.
+
+NOTE: the `--dev` flag is required for the use of this feature. This
+flag ensures that this feature is not accidentally in production as it is only
+intended for local development.
+
+WARNING: protos are *not* overriden in the same way - if any proto messages are
+changed a recompile of trace processor is required for the changes to be
+available.
+
+## Metric helper functions
+
+There are several useful helpers functions which are available when writing a metric.
+
+### CREATE_FUNCTION.
+`CREATE_FUNCTION` allows you to define a parameterized SQL statement which
+is executable as a function. The inspiration from this function is the
+`CREATE FUNCTION` syntax which is available in other SQL engines (e.g.
+[Postgres](https://www.postgresql.org/docs/current/sql-createfunction.html)).
+
+NOTE: CREATE_FUNCTION only supports returning *exactly* a single value (i.e.
+single row and single column). For returning multiple a single row with
+multiple columns or multiples rows, see `CREATE_VIEW_FUNCTION` instead.
+
+Usage of `CREATE_FUNCTION` is as follows:
+```sql
+-- First, we define the function we'll use in the following statement.
+SELECT CREATE_FUNCTION(
+  -- First argument: prototype of the function; this is very similar to
+  -- function definitions in other languages - you set the function name
+  -- (IS_TS_IN_RANGE in this example) and the arguments
+  -- (ts, begin_ts and end_ts) along with their types (LONG for all
+  -- arguments here).
+  'IS_TS_IN_RANGE(ts LONG, begin_ts LONG, end_ts LONG)',
+  -- Second argument: the return type of the function. Only single values
+  -- can be returned in CREATE_FUNCTION. See CREATE_VIEW_FUNCTION for defining
+  -- a function returning multiple rows/columns.
+  'BOOL',
+  -- Third argument: the SQL body of the function. This should always be a
+  -- SELECT statement (even if you're not selecting from a table as in this
+  -- example). Arguments can be accessed by prefixing argument names
+  -- with $ (e.g. $ts, $begin_ts, $end_ts).
+  'SELECT $ts >= $begin_ts AND $ts <= $end_ts'
+);
+
+-- Now we can actually use the function in queries as if it was any other
+-- function.
+
+-- For example, it can appear in the SELECT to produce a column:
+SELECT ts, IS_TS_IN_RANGE(slice.ts, 100000, 200000) AS in_range
+FROM slice
+
+-- It can also appear in a where clause:
+SELECT ts
+FROM counter
+WHERE IS_TS_IN_RANGE(counter.ts, 100000, 200000) AS in_range
+
+-- It can even appear in a join on clause:
+SELECT slice.ts
+FROM launches
+JOIN slice ON IS_TS_IN_RANGE(slice.ts, launches.ts, launches.end_ts)
+```
+
+### RUN_METRIC
+`RUN_METRIC` allows you to run another metric file. This allows you to use views
+or tables defined in that file without repeatition.
+
+Conceptually, `RUN_METRIC` adds *composability* for SQL queries to break a big SQL
+metric into smaller, reusable files. This is similar to how functions allow decomposing
+large chunks in traditional programming languages.
+
+A simple usage of `RUN_METRIC` would be as follows:
+
+In file android/foo.sql:
+```sql
+CREATE VIEW view_defined_in_foo AS
+SELECT *
+FROM slice
+LIMIT 1;
+```
+
+In file android/bar.sql
+```sql
+SELECT RUN_METRIC('android/foo.sql');
+
+CREATE VIEW view_depending_on_view_from_foo AS
+SELECT *
+FROM view_defined_in_foo
+LIMIT 1;
+```
+
+`RUN_METRIC` also supports running *templated* metric files. Here's an example of
+what that looks like:
+
+In file android/slice_template.sql:
+```sql
+CREATE VIEW {{view_name}} AS
+SELECT *
+FROM slice
+WHERE slice.name = '{{slice_name}}';
+```
+
+In file android/metric.sql:
+```sql
+SELECT RUN_METRIC(
+  'android/slice_template.sql',
+  'view_name', 'choreographer_slices',
+  'slice_name', 'Chroeographer#doFrame'
+);
+
+CREATE VIEW long_choreographer_slices AS
+SELECT *
+FROM choreographer_slices
+WHERE dur > 1e6;
+```
+
+When running `slice_template.sql`, trace processor will substitute the arguments
+passed to `RUN_METRIC` into the templated file *before* executing the file using
+SQLite.
+
+In other words, this is what SQLite sees and executes in practice for the above
+example:
+```sql
+CREATE VIEW choreographer_slices AS
+SELECT *
+FROM slice
+WHERE slice.name = 'Chroeographer#doFrame';
+
+CREATE VIEW long_choreographer_slices AS
+SELECT *
+FROM choreographer_slices
+WHERE dur > 1e6;
+```
+
+The syntax for templated metric files is essentially a highly simplified version of
+[Jinja's](https://jinja.palletsprojects.com/en/3.0.x/) syntax.
 
 ## Walkthrough: prototyping a metric
 
@@ -366,7 +566,30 @@ If everything went successfully, the following output should be visible (specifi
 }
 ```
 
-### Next steps
+## Next steps
 
 * The [common tasks](/docs/contributing/common-tasks.md) page gives a list of
   steps on how new metrics can be added to the trace processor.
+
+## Appendix: Case for upstreaming
+
+NOTE: Googlers: for internal usage of metrics in Google3 (i.e. metrics which are
+confidential), please see [this internal page](https://goto.google.com/viecd).
+
+Authors are strongly encouraged to add all metrics derived on Perfetto traces to
+the Perfetto repo unless there is a clear usecase (e.g. confidentiality) why
+these metrics should not be publicly available.
+
+In return for upstreaming metrics, authors will have first class support for
+running metrics locally and the confidence that their metrics will remain stable
+as trace processor is developed.
+
+As well as scaling upwards while developing from running on a single trace
+locally to running on a large set of traces, the reverse is also very useful.
+When an anomaly is observed in the metrics of a lab benchmark, a representative
+trace can be downloaded and the same metric can be run locally in trace
+processor.
+
+Since the same code is running locally and remotely, developers can be confident
+in reproducing the issue and use the trace processor and/or the Perfetto UI to
+identify the problem.

@@ -282,7 +282,7 @@ class CC_PAINT_EXPORT PaintImage {
     return paint_worklet_input_ ? nullptr : GetSkImageInfo().colorSpace();
   }
 
-  gfx::ContentColorUsage GetContentColorUsage() const;
+  gfx::ContentColorUsage GetContentColorUsage(bool* is_hlg = nullptr) const;
 
   // Returns whether this image will be decoded and rendered from YUV data
   // and fills out |info|. |supported_data_types| indicates the bit depths and
@@ -320,7 +320,7 @@ class CC_PAINT_EXPORT PaintImage {
     return paint_worklet_input_;
   }
 
-  bool IsOpaque() const { return GetSkImageInfo().isOpaque(); }
+  bool IsOpaque() const;
 
   std::string ToString() const;
 
@@ -336,6 +336,7 @@ class CC_PAINT_EXPORT PaintImage {
   friend class PlaybackImageProvider;
   friend class DrawImageRectOp;
   friend class DrawImageOp;
+  friend class DrawSkottieOp;
 
   // TODO(crbug.com/1031051): Remove these once GetSkImage()
   // is fully removed.

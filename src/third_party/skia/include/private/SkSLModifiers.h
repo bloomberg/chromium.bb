@@ -14,22 +14,40 @@
 
 namespace SkSL {
 
+class Context;
+
 /**
  * A set of modifier keywords (in, out, uniform, etc.) appearing before a declaration.
  */
 struct Modifiers {
+    /**
+     * OpenGL requires modifiers to be in a strict order:
+     * - invariant-qualifier:     (invariant)
+     * - interpolation-qualifier: flat, noperspective, (smooth)
+     * - storage-qualifier:       const, uniform
+     * - parameter-qualifier:     in, out, inout
+     * - precision-qualifier:     highp, mediump, lowp
+     *
+     * SkSL does not have `invariant` or `smooth`.
+     */
+
     enum Flag {
         kNo_Flag             =       0,
-        kConst_Flag          = 1 <<  0,
-        kIn_Flag             = 1 <<  1,
-        kOut_Flag            = 1 <<  2,
+        // Real GLSL modifiers
+        kFlat_Flag           = 1 <<  0,
+        kNoPerspective_Flag  = 1 <<  1,
+        kConst_Flag          = 1 <<  2,
         kUniform_Flag        = 1 <<  3,
-        kFlat_Flag           = 1 <<  4,
-        kNoPerspective_Flag  = 1 <<  5,
-        kHasSideEffects_Flag = 1 <<  6,
-
-        kInline_Flag         = 1 <<  8,
-        kNoInline_Flag       = 1 <<  9,
+        kIn_Flag             = 1 <<  4,
+        kOut_Flag            = 1 <<  5,
+        kHighp_Flag          = 1 <<  6,
+        kMediump_Flag        = 1 <<  7,
+        kLowp_Flag           = 1 <<  8,
+        // SkSL extensions, not present in GLSL
+        kES3_Flag            = 1 <<  9,
+        kHasSideEffects_Flag = 1 <<  10,
+        kInline_Flag         = 1 <<  11,
+        kNoInline_Flag       = 1 <<  12,
     };
 
     Modifiers()
@@ -42,17 +60,10 @@ struct Modifiers {
 
     String description() const {
         String result = fLayout.description();
-        if (fFlags & kUniform_Flag) {
-            result += "uniform ";
-        }
-        if (fFlags & kConst_Flag) {
-            result += "const ";
-        }
-        if (fFlags & kFlat_Flag) {
-            result += "flat ";
-        }
-        if (fFlags & kNoPerspective_Flag) {
-            result += "noperspective ";
+
+        // SkSL extensions
+        if (fFlags & kES3_Flag) {
+            result += "$es3 ";
         }
         if (fFlags & kHasSideEffects_Flag) {
             result += "sk_has_side_effects ";
@@ -60,12 +71,35 @@ struct Modifiers {
         if (fFlags & kNoInline_Flag) {
             result += "noinline ";
         }
+
+        // Real GLSL qualifiers (must be specified in order in GLSL 4.1 and below)
+        if (fFlags & kFlat_Flag) {
+            result += "flat ";
+        }
+        if (fFlags & kNoPerspective_Flag) {
+            result += "noperspective ";
+        }
+        if (fFlags & kConst_Flag) {
+            result += "const ";
+        }
+        if (fFlags & kUniform_Flag) {
+            result += "uniform ";
+        }
         if ((fFlags & kIn_Flag) && (fFlags & kOut_Flag)) {
             result += "inout ";
         } else if (fFlags & kIn_Flag) {
             result += "in ";
         } else if (fFlags & kOut_Flag) {
             result += "out ";
+        }
+        if (fFlags & kHighp_Flag) {
+            result += "highp ";
+        }
+        if (fFlags & kMediump_Flag) {
+            result += "mediump ";
+        }
+        if (fFlags & kLowp_Flag) {
+            result += "lowp ";
         }
 
         return result;
@@ -78,6 +112,13 @@ struct Modifiers {
     bool operator!=(const Modifiers& other) const {
         return !(*this == other);
     }
+
+    /**
+     * Verifies that only permitted modifiers and layout flags are included. Reports errors and
+     * returns false in the event of a violation.
+     */
+    bool checkPermitted(const Context& context, int line, int permittedModifierFlags,
+            int permittedLayoutFlags) const;
 
     Layout fLayout;
     int fFlags;

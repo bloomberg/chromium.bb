@@ -25,7 +25,6 @@ class QuicSimpleServerStream : public QuicSpdyServerStreamBase,
                          QuicSimpleServerBackend* quic_simple_server_backend);
   QuicSimpleServerStream(PendingStream* pending,
                          QuicSpdySession* session,
-                         StreamType type,
                          QuicSimpleServerBackend* quic_simple_server_backend);
   QuicSimpleServerStream(const QuicSimpleServerStream&) = delete;
   QuicSimpleServerStream& operator=(const QuicSimpleServerStream&) = delete;
@@ -43,6 +42,8 @@ class QuicSimpleServerStream : public QuicSpdyServerStreamBase,
   // QuicStream implementation called by the sequencer when there is
   // data (or a FIN) to be read.
   void OnBodyAvailable() override;
+
+  void OnInvalidHeaders() override;
 
   // Make this stream start from as if it just finished parsing an incoming
   // request whose headers are equivalent to |push_request_headers|.
@@ -67,7 +68,7 @@ class QuicSimpleServerStream : public QuicSpdyServerStreamBase,
   // Sends a basic 500 response using SendHeaders for the headers and WriteData
   // for the body.
   virtual void SendErrorResponse();
-  void SendErrorResponse(int resp_code);
+  virtual void SendErrorResponse(int resp_code);
 
   // Sends a basic 404 response using SendHeaders for the headers and WriteData
   // for the body.

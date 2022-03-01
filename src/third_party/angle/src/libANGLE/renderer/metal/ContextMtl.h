@@ -15,13 +15,13 @@
 #include "common/Optional.h"
 #include "libANGLE/Context.h"
 #include "libANGLE/renderer/ContextImpl.h"
+#include "libANGLE/renderer/metal/ProvokingVertexHelper.h"
 #include "libANGLE/renderer/metal/mtl_buffer_pool.h"
 #include "libANGLE/renderer/metal/mtl_command_buffer.h"
 #include "libANGLE/renderer/metal/mtl_occlusion_query_pool.h"
 #include "libANGLE/renderer/metal/mtl_resources.h"
 #include "libANGLE/renderer/metal/mtl_state_cache.h"
 #include "libANGLE/renderer/metal/mtl_utils.h"
-
 namespace rx
 {
 class DisplayMtl;
@@ -128,6 +128,11 @@ class ContextMtl : public ContextImpl, public mtl::Context
                                            const GLsizei *counts,
                                            const GLsizei *instanceCounts,
                                            GLsizei drawcount) override;
+    angle::Result multiDrawArraysIndirect(const gl::Context *context,
+                                          gl::PrimitiveMode mode,
+                                          const void *indirect,
+                                          GLsizei drawcount,
+                                          GLsizei stride) override;
     angle::Result multiDrawElements(const gl::Context *context,
                                     gl::PrimitiveMode mode,
                                     const GLsizei *counts,
@@ -141,6 +146,12 @@ class ContextMtl : public ContextImpl, public mtl::Context
                                              const GLvoid *const *indices,
                                              const GLsizei *instanceCounts,
                                              GLsizei drawcount) override;
+    angle::Result multiDrawElementsIndirect(const gl::Context *context,
+                                            gl::PrimitiveMode mode,
+                                            gl::DrawElementsType type,
+                                            const void *indirect,
+                                            GLsizei drawcount,
+                                            GLsizei stride) override;
     angle::Result multiDrawArraysInstancedBaseInstance(const gl::Context *context,
                                                        gl::PrimitiveMode mode,
                                                        const GLint *firsts,
@@ -157,7 +168,6 @@ class ContextMtl : public ContextImpl, public mtl::Context
                                                                    const GLint *baseVertices,
                                                                    const GLuint *baseInstances,
                                                                    GLsizei drawcount) override;
-
     // Device loss
     gl::GraphicsResetStatus getResetStatus() override;
 
@@ -176,7 +186,8 @@ class ContextMtl : public ContextImpl, public mtl::Context
     // State sync with dirty bits.
     angle::Result syncState(const gl::Context *context,
                             const gl::State::DirtyBits &dirtyBits,
-                            const gl::State::DirtyBits &bitMask) override;
+                            const gl::State::DirtyBits &bitMask,
+                            gl::Command command) override;
 
     // Disjoint timer queries
     GLint getGPUDisjoint() override;
@@ -191,6 +202,8 @@ class ContextMtl : public ContextImpl, public mtl::Context
     const gl::TextureCapsMap &getNativeTextureCaps() const override;
     const gl::Extensions &getNativeExtensions() const override;
     const gl::Limitations &getNativeLimitations() const override;
+
+    const ProgramMtl *getProgram() const { return mProgram; }
 
     // Shader creation
     CompilerImpl *createCompiler() override;
@@ -317,7 +330,7 @@ class ContextMtl : public ContextImpl, public mtl::Context
     // Ends any active command encoder
     void endEncoding(bool forceSaveRenderPassContent);
 
-    void flushCommandBufer();
+    void flushCommandBuffer(mtl::CommandBufferFinishOperation operation);
     void present(const gl::Context *context, id<CAMetalDrawable> presentationDrawable);
     angle::Result finishCommandBuffer();
 
@@ -353,6 +366,9 @@ class ContextMtl : public ContextImpl, public mtl::Context
     // command encoder is already started.
     mtl::ComputeCommandEncoder *getComputeCommandEncoder();
 
+    // Get the provoking vertex command encoder.
+    mtl::ComputeCommandEncoder *getIndexPreprocessingCommandEncoder();
+
   private:
     void ensureCommandBufferReady();
     angle::Result ensureIncompleteTexturesCreated(const gl::Context *context);
@@ -364,6 +380,15 @@ class ContextMtl : public ContextImpl, public mtl::Context
                             gl::DrawElementsType indexTypeOrNone,
                             const void *indices,
                             bool xfbPass);
+
+    angle::Result setupDrawImpl(const gl::Context *context,
+                                gl::PrimitiveMode mode,
+                                GLint firstVertex,
+                                GLsizei vertexOrIndexCount,
+                                GLsizei instanceCount,
+                                gl::DrawElementsType indexTypeOrNone,
+                                const void *indices,
+                                bool xfbPass);
 
     angle::Result drawTriFanArrays(const gl::Context *context,
                                    GLint first,
@@ -428,7 +453,7 @@ class ContextMtl : public ContextImpl, public mtl::Context
     void updateDrawFrameBufferBinding(const gl::Context *context);
     void updateProgramExecutable(const gl::Context *context);
     void updateVertexArray(const gl::Context *context);
-
+    bool requiresIndexRewrite(const gl::State &state, gl::PrimitiveMode mode);
     angle::Result updateDefaultAttribute(size_t attribIndex);
     void filterOutXFBOnlyDirtyBits(const gl::Context *context);
     angle::Result handleDirtyActiveTextures(const gl::Context *context);
@@ -467,10 +492,13 @@ class ContextMtl : public ContextImpl, public mtl::Context
         DIRTY_BIT_RENDER_PIPELINE,
         DIRTY_BIT_UNIFORM_BUFFERS_BINDING,
         DIRTY_BIT_RASTERIZER_DISCARD,
-        DIRTY_BIT_MAX,
+
+        DIRTY_BIT_INVALID,
+        DIRTY_BIT_MAX = DIRTY_BIT_INVALID,
     };
 
-    // See compiler/translator/TranslatorVulkan.cpp: AddDriverUniformsToShader()
+    // Must keep this in sync with DriverUniformExtended::createUniformFields in:
+    // src/compiler/translator/tree_util/DriverUniform.h
     struct DriverUniforms
     {
         float viewport[4];
@@ -493,8 +521,8 @@ class ContextMtl : public ContextImpl, public mtl::Context
         float halfRenderArea[2];
         float flipXY[2];
         float negFlipXY[2];
+        uint32_t emulatedInstanceID;
         uint32_t coverageMask;
-        uint32_t padding;
     };
 
     struct DefaultAttribute
@@ -551,6 +579,7 @@ class ContextMtl : public ContextImpl, public mtl::Context
 
     IncompleteTextureSet mIncompleteTextures;
     bool mIncompleteTexturesInitialized = false;
+    ProvokingVertexHelper mProvokingVertexHelper;
 };
 
 }  // namespace rx

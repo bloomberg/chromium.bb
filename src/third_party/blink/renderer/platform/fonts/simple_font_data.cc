@@ -40,8 +40,8 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face.h"
 #include "third_party/blink/renderer/platform/fonts/skia/skia_text_metrics.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
@@ -50,6 +50,8 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/core/SkTypes.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 
 namespace blink {
 
@@ -114,9 +116,9 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent,
     // http://www.w3.org/TR/css3-values/#ex-unit
     const Glyph x_glyph = GlyphForCharacter('x');
     if (x_glyph) {
-      FloatRect glyph_bounds(BoundsForGlyph(x_glyph));
+      gfx::RectF glyph_bounds(BoundsForGlyph(x_glyph));
       // SkGlyph bounds, y down, based on rendering at (0,0).
-      x_height = -glyph_bounds.Y();
+      x_height = -glyph_bounds.y();
     }
 #endif
     font_metrics_.SetXHeight(x_height);
@@ -162,7 +164,7 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent,
 
 #if !defined(OS_MAC)
   if (metrics.fAvgCharWidth) {
-    avg_char_width_ = SkScalarRoundToInt(metrics.fAvgCharWidth);
+    avg_char_width_ = SkScalarToFloat(metrics.fAvgCharWidth);
   } else {
 #endif
     avg_char_width_ = x_height;
@@ -179,9 +181,6 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent,
   if (int units_per_em = face->getUnitsPerEm())
     font_metrics_.SetUnitsPerEm(units_per_em);
 
-  advance_override_ = metrics_override.advance_override;
-  advance_override_vertical_upright_ =
-      metrics_override.advance_override_vertical_upright;
 }
 
 void SimpleFontData::PlatformGlyphInit() {
@@ -208,9 +207,17 @@ const SimpleFontData* SimpleFontData::FontDataForCharacter(UChar32) const {
 }
 
 Glyph SimpleFontData::GlyphForCharacter(UChar32 codepoint) const {
-  SkTypeface* typeface = PlatformData().Typeface();
-  CHECK(typeface);
-  return typeface->unicharToGlyph(codepoint);
+  HarfBuzzFace* harfbuzz_face = PlatformData().GetHarfBuzzFace();
+  if (!harfbuzz_face)
+    return 0;
+  // Retrieve glyph coverage information via HarfBuzz' character-to-glyph
+  // mapping instead of the SkTypeface backend implementation so that it matches
+  // the coverage we use through HarfBuzz during shaping. These two can differ
+  // in situations where the system API synthesizes certain glyphs, see
+  // https://crbug.com/1267606 for details. This function is used in situations
+  // where CSS or layout (ellipsis, hyphenation) requires knowledge about a
+  // particular character, hence it's important that they match.
+  return harfbuzz_face->HbGlyphForCharacter(codepoint);
 }
 
 bool SimpleFontData::IsSegmented() const {
@@ -366,15 +373,15 @@ LayoutUnit SimpleFontData::VerticalPosition(
   return LayoutUnit();
 }
 
-FloatRect SimpleFontData::PlatformBoundsForGlyph(Glyph glyph) const {
+gfx::RectF SimpleFontData::PlatformBoundsForGlyph(Glyph glyph) const {
   if (!platform_data_.size())
-    return FloatRect();
+    return gfx::RectF();
 
   static_assert(sizeof(glyph) == 2, "Glyph id should not be truncated.");
 
   SkRect bounds;
   SkFontGetBoundsForGlyph(font_, glyph, &bounds);
-  return FloatRect(bounds);
+  return gfx::SkRectToRectF(bounds);
 }
 
 void SimpleFontData::BoundsForGlyphs(const Vector<Glyph, 256>& glyphs,

@@ -10,7 +10,7 @@
 // #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 // #import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
-// #import {flushTasks, waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {flushTasks, waitAfterNextRender} from 'chrome://test/test_util.js';
 // clang-format on
 
 suite('PrintingPageTests', function() {
@@ -28,11 +28,9 @@ suite('PrintingPageTests', function() {
 
   /**
    * Set up printing page with loadTimeData overrides
-   * @param {Object} overrides Dictionary of objects to override.
    * @return {!Promise}
    */
-  function initializePrintingPage(overrides) {
-    loadTimeData.overrideValues(overrides);
+  function initializePrintingPage() {
     printingPage = /** @type {!SettingsPrintingPageElement} */ (
         document.createElement('os-settings-printing-page'));
     assertTrue(!!printingPage);
@@ -41,10 +39,7 @@ suite('PrintingPageTests', function() {
   }
 
   test('Deep link to print jobs', async () => {
-    await initializePrintingPage({
-      isDeepLinkingEnabled: true,
-    });
-
+    await initializePrintingPage();
     const params = new URLSearchParams;
     params.append('settingId', '1402');
     settings.Router.getInstance().navigateTo(
@@ -52,8 +47,8 @@ suite('PrintingPageTests', function() {
 
     Polymer.dom.flush();
 
-    const deepLinkElement =
-        printingPage.$$('#printManagement').$$('cr-icon-button');
+    const deepLinkElement = printingPage.$$('#printManagement')
+                                .shadowRoot.querySelector('cr-icon-button');
     await test_util.waitAfterNextRender(deepLinkElement);
     assertEquals(
         deepLinkElement, getDeepActiveElement(),
@@ -61,9 +56,7 @@ suite('PrintingPageTests', function() {
   });
 
   test('Deep link to scanning app', async () => {
-    await initializePrintingPage({
-      isDeepLinkingEnabled: true,
-    });
+    await initializePrintingPage();
 
     const params = new URLSearchParams;
     params.append('settingId', '1403');
@@ -72,8 +65,8 @@ suite('PrintingPageTests', function() {
 
     Polymer.dom.flush();
 
-    const deepLinkElement =
-        printingPage.$$('#scanningApp').$$('cr-icon-button');
+    const deepLinkElement = printingPage.$$('#scanningApp')
+                                .shadowRoot.querySelector('cr-icon-button');
     await test_util.waitAfterNextRender(deepLinkElement);
     assertEquals(
         deepLinkElement, getDeepActiveElement(),
