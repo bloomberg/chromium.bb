@@ -18,6 +18,7 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -48,8 +49,8 @@ void AddProfileInfoAsSelectableField(UserInfo* info,
   if (type == ServerFieldType::NAME_MIDDLE && field.empty()) {
     field = profile->GetRawInfo(ServerFieldType::NAME_MIDDLE_INITIAL);
   }
-  info->add_field(UserInfo::Field(field, field, /*is_password=*/false,
-                                  /*selectable=*/true));
+  info->add_field(AccessorySheetField(field, field, /*is_password=*/false,
+                                      /*selectable=*/true));
 }
 
 UserInfo TranslateProfile(const AutofillProfile* profile) {
@@ -125,10 +126,10 @@ AddressAccessoryControllerImpl::GetSheetData() const {
 
 void AddressAccessoryControllerImpl::OnFillingTriggered(
     FieldGlobalId focused_field_id,
-    const UserInfo::Field& selection) {
+    const AccessorySheetField& selection) {
   // Since the data we fill is scoped to the profile and not to a frame, we can
   // fill the focused frame - we basically behave like a keyboard here.
-  content::RenderFrameHost* rfh = web_contents_->GetFocusedFrame();
+  content::RenderFrameHost* rfh = GetWebContents().GetFocusedFrame();
   if (!rfh)
     return;
   autofill::ContentAutofillDriver* driver =
@@ -142,7 +143,7 @@ void AddressAccessoryControllerImpl::OnFillingTriggered(
 void AddressAccessoryControllerImpl::OnOptionSelected(
     AccessoryAction selected_action) {
   if (selected_action == AccessoryAction::MANAGE_ADDRESSES) {
-    autofill::ShowAutofillProfileSettings(web_contents_);
+    autofill::ShowAutofillProfileSettings(&GetWebContents());
     return;
   }
   NOTREACHED() << "Unhandled selected action: "
@@ -160,7 +161,7 @@ void AddressAccessoryControllerImpl::RefreshSuggestions() {
   if (!personal_data_manager_) {
     personal_data_manager_ =
         autofill::PersonalDataManagerFactory::GetForProfile(
-            Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+            Profile::FromBrowserContext(GetWebContents().GetBrowserContext()));
     personal_data_manager_->AddObserver(this);
   }
   absl::optional<AccessorySheetData> data = GetSheetData();
@@ -199,18 +200,19 @@ AddressAccessoryControllerImpl::AddressAccessoryControllerImpl(
 AddressAccessoryControllerImpl::AddressAccessoryControllerImpl(
     content::WebContents* web_contents,
     base::WeakPtr<ManualFillingController> mf_controller)
-    : web_contents_(web_contents),
+    : content::WebContentsUserData<AddressAccessoryControllerImpl>(
+          *web_contents),
       mf_controller_(std::move(mf_controller)),
       personal_data_manager_(nullptr) {}
 
 base::WeakPtr<ManualFillingController>
 AddressAccessoryControllerImpl::GetManualFillingController() {
   if (!mf_controller_)
-    mf_controller_ = ManualFillingController::GetOrCreate(web_contents_);
+    mf_controller_ = ManualFillingController::GetOrCreate(&GetWebContents());
   DCHECK(mf_controller_);
   return mf_controller_;
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(AddressAccessoryControllerImpl)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AddressAccessoryControllerImpl);
 
 }  // namespace autofill

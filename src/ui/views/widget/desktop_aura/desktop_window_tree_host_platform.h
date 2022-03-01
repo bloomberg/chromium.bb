@@ -10,9 +10,11 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "ui/aura/window_tree_host_platform.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/platform_window/extensions/workspace_extension_delegate.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
@@ -32,6 +34,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   DesktopWindowTreeHostPlatform(
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura);
+
+  DesktopWindowTreeHostPlatform(const DesktopWindowTreeHostPlatform&) = delete;
+  DesktopWindowTreeHostPlatform& operator=(
+      const DesktopWindowTreeHostPlatform&) = delete;
+
   ~DesktopWindowTreeHostPlatform() override;
 
   // A way of converting a |widget| into the content_window()
@@ -119,39 +126,37 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
 
   // PlatformWindowDelegate:
   void OnClosed() override;
-  void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
+  void OnWindowStateChanged(ui::PlatformWindowState old_state,
+                            ui::PlatformWindowState new_state) override;
   void OnCloseRequest() override;
   void OnWillDestroyAcceleratedWidget() override;
   void OnActivationChanged(bool active) override;
   absl::optional<gfx::Size> GetMinimumSizeForWindow() override;
   absl::optional<gfx::Size> GetMaximumSizeForWindow() override;
   SkPath GetWindowMaskForWindowShapeInPixels() override;
+  absl::optional<ui::MenuType> GetMenuType() override;
+  absl::optional<ui::OwnedWindowAnchor> GetOwnedWindowAnchorAndRectInPx()
+      override;
 
   // ui::WorkspaceExtensionDelegate:
   void OnWorkspaceChanged() override;
 
  protected:
-  // TODO(https://crbug.com/990756): move these methods back to private
-  // once DWTHX11 stops using them.
-  internal::NativeWidgetDelegate* native_widget_delegate() {
-    return native_widget_delegate_;
-  }
-  DesktopNativeWidgetAura* desktop_native_widget_aura() {
-    return desktop_native_widget_aura_;
-  }
-
-  ui::PlatformWindowState window_show_state() { return old_state_; }
-
   // These are not general purpose methods and must be used with care. Please
   // make sure you understand the rounding direction before using.
   gfx::Rect ToDIPRect(const gfx::Rect& rect_in_pixels) const;
   gfx::Rect ToPixelRect(const gfx::Rect& rect_in_dip) const;
 
- private:
-  void ScheduleRelayout();
-
   Widget* GetWidget();
   const Widget* GetWidget() const;
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostPlatformTest,
+                           UpdateWindowShapeFromWindowMask);
+  FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostPlatformTest,
+                           MakesParentChildRelationship);
+
+  void ScheduleRelayout();
 
   // Set visibility and fire OnNativeWidgetVisibilityChanged() if it changed.
   void SetVisible(bool visible);
@@ -180,11 +185,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   DesktopWindowTreeHostPlatform* window_parent_ = nullptr;
   std::set<DesktopWindowTreeHostPlatform*> window_children_;
 
-  // Keep track of PlatformWindow state so that we would react correctly and set
-  // visibility only if the window was minimized or was unminimized from the
-  // normal state.
-  ui::PlatformWindowState old_state_ = ui::PlatformWindowState::kUnknown;
-
   // Used for tab dragging in move loop requests.
   WindowMoveClientPlatform window_move_client_;
 
@@ -195,8 +195,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
 
   base::WeakPtrFactory<DesktopWindowTreeHostPlatform> close_widget_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostPlatform);
 };
 
 }  // namespace views

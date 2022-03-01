@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "common/Constants.h"
-#include "utils/TextureFormatUtils.h"
+#include "utils/TextureUtils.h"
 
 namespace utils {
 
@@ -66,9 +66,8 @@ namespace utils {
         const ComboRenderPassDescriptor& operator=(
             const ComboRenderPassDescriptor& otherRenderPass);
 
-        std::array<wgpu::RenderPassColorAttachmentDescriptor, kMaxColorAttachments>
-            cColorAttachments;
-        wgpu::RenderPassDepthStencilAttachmentDescriptor cDepthStencilAttachmentInfo = {};
+        std::array<wgpu::RenderPassColorAttachment, kMaxColorAttachments> cColorAttachments;
+        wgpu::RenderPassDepthStencilAttachment cDepthStencilAttachmentInfo = {};
     };
 
     struct BasicRenderPass {
@@ -87,15 +86,19 @@ namespace utils {
         wgpu::TextureFormat colorFormat;
         utils::ComboRenderPassDescriptor renderPassInfo;
     };
-    BasicRenderPass CreateBasicRenderPass(const wgpu::Device& device,
-                                          uint32_t width,
-                                          uint32_t height);
+    BasicRenderPass CreateBasicRenderPass(
+        const wgpu::Device& device,
+        uint32_t width,
+        uint32_t height,
+        wgpu::TextureFormat format = BasicRenderPass::kDefaultColorFormat);
 
     wgpu::PipelineLayout MakeBasicPipelineLayout(const wgpu::Device& device,
                                                  const wgpu::BindGroupLayout* bindGroupLayout);
 
     wgpu::PipelineLayout MakePipelineLayout(const wgpu::Device& device,
                                             std::vector<wgpu::BindGroupLayout> bgls);
+
+    extern wgpu::ExternalTextureBindingLayout kExternalTextureBindingLayout;
 
     // Helpers to make creating bind group layouts look nicer:
     //
@@ -126,17 +129,10 @@ namespace utils {
             wgpu::StorageTextureAccess storageTextureAccess,
             wgpu::TextureFormat format,
             wgpu::TextureViewDimension viewDimension = wgpu::TextureViewDimension::e2D);
+        BindingLayoutEntryInitializationHelper(uint32_t entryBinding,
+                                               wgpu::ShaderStage entryVisibility,
+                                               wgpu::ExternalTextureBindingLayout* bindingLayout);
 
-        // Backwards compat support for the deprecated path
-        BindingLayoutEntryInitializationHelper(
-            uint32_t entryBinding,
-            wgpu::ShaderStage entryVisibility,
-            wgpu::BindingType entryType,
-            bool bufferHasDynamicOffset = false,
-            uint64_t bufferMinBindingSize = 0,
-            wgpu::TextureViewDimension textureViewDimension = wgpu::TextureViewDimension::Undefined,
-            wgpu::TextureComponentType textureComponent = wgpu::TextureComponentType::Float,
-            wgpu::TextureFormat storageFormat = wgpu::TextureFormat::Undefined);
         BindingLayoutEntryInitializationHelper(const wgpu::BindGroupLayoutEntry& entry);
     };
 
@@ -157,6 +153,7 @@ namespace utils {
     struct BindingInitializationHelper {
         BindingInitializationHelper(uint32_t binding, const wgpu::Sampler& sampler);
         BindingInitializationHelper(uint32_t binding, const wgpu::TextureView& textureView);
+        BindingInitializationHelper(uint32_t binding, const wgpu::ExternalTexture& externalTexture);
         BindingInitializationHelper(uint32_t binding,
                                     const wgpu::Buffer& buffer,
                                     uint64_t offset = 0,
@@ -168,6 +165,7 @@ namespace utils {
         wgpu::Sampler sampler;
         wgpu::TextureView textureView;
         wgpu::Buffer buffer;
+        wgpu::ExternalTextureBindingEntry externalTextureBindingEntry;
         uint64_t offset = 0;
         uint64_t size = 0;
     };

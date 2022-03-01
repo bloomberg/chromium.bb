@@ -2529,7 +2529,7 @@ static void highbd_dr_prediction_32bit_z2_HxW_avx2(
   a16 = _mm256_set1_epi32(16);
   c1 = _mm256_srli_epi32(a16, 4);
   c8 = _mm256_srli_epi32(a16, 1);
-  min_base_y256 = _mm256_set1_epi16(min_base_y);
+  min_base_y256 = _mm256_set1_epi32(min_base_y);
   c3f = _mm256_set1_epi32(0x3f);
   dy256 = _mm256_set1_epi32(dy);
   c0123 = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);

@@ -76,12 +76,12 @@ static void UpdateCcTransformLocalMatrix(
       // Blink creates a 2d transform node just for scroll offset whereas cc's
       // transform node has a special scroll offset field.
       compositor_node.scroll_offset =
-          gfx::ScrollOffset(-translation.Width(), -translation.Height());
+          gfx::PointAtOffsetFromOrigin(-translation);
       DCHECK(compositor_node.local.IsIdentity());
       DCHECK_EQ(gfx::Point3F(), compositor_node.origin);
     } else {
-      compositor_node.local.matrix().setTranslate(translation.Width(),
-                                                  translation.Height(), 0);
+      compositor_node.local.matrix().setTranslate(translation.x(),
+                                                  translation.y(), 0);
       DCHECK_EQ(FloatPoint3D(), transform_node.Origin());
       compositor_node.origin = gfx::Point3F();
     }
@@ -90,7 +90,7 @@ static void UpdateCcTransformLocalMatrix(
     FloatPoint3D origin = transform_node.Origin();
     compositor_node.local.matrix() =
         TransformationMatrix::ToSkMatrix44(transform_node.Matrix());
-    compositor_node.origin = origin;
+    compositor_node.origin = ToGfxPoint3F(origin);
   }
   compositor_node.needs_local_transform_update = true;
 }
@@ -146,10 +146,8 @@ bool PropertyTreeManager::DirectlyUpdateScrollOffsetTransform(
 
   DCHECK(!cc_transform->is_currently_animating);
 
-  auto translation = transform.Translation2D();
-  auto scroll_offset =
-      gfx::ScrollOffset(-translation.Width(), -translation.Height());
-
+  gfx::PointF scroll_offset =
+      gfx::PointAtOffsetFromOrigin(-transform.Translation2D());
   DirectlySetScrollOffset(host, scroll_node->GetCompositorElementId(),
                           scroll_offset);
   if (cc_transform->scroll_offset != scroll_offset) {
@@ -210,7 +208,7 @@ bool PropertyTreeManager::DirectlyUpdatePageScaleTransform(
 void PropertyTreeManager::DirectlySetScrollOffset(
     cc::LayerTreeHost& host,
     CompositorElementId element_id,
-    const gfx::ScrollOffset& scroll_offset) {
+    const gfx::PointF& scroll_offset) {
   auto* property_trees = host.property_trees();
   if (property_trees->scroll_tree.SetScrollOffset(element_id, scroll_offset)) {
     // Scroll offset animations are clobbered via |Layer::PushPropertiesTo|.
@@ -420,6 +418,18 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
       EnsureCompositorTransformNode(transform_node.Parent()->Unalias());
   id = GetTransformTree().Insert(cc::TransformNode(), parent_id);
 
+  // ScrollUnification creates the entire scroll tree and will already have done
+  // this.
+  if (!RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
+    if (auto* scroll_translation_for_fixed =
+            transform_node.ScrollTranslationForFixed()) {
+      // Fixed-position can cause different topologies of the transform tree and
+      // the scroll tree. This ensures the ancestor scroll nodes of the scroll
+      // node for a descendant transform node below is created.
+      EnsureCompositorTransformNode(*scroll_translation_for_fixed);
+    }
+  }
+
   cc::TransformNode& compositor_node = *GetTransformTree().Node(id);
   UpdateCcTransformLocalMatrix(compositor_node, transform_node);
   compositor_node.transform_changed = transform_node.NodeChangeAffectsRaster();
@@ -484,26 +494,11 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   // If this transform is a scroll offset translation, create the associated
   // compositor scroll property node and adjust the compositor transform node's
   // scroll offset.
+  // TODO(ScrollUnification): Move this code into EnsureCompositorScrollNodes().
   if (auto* scroll_node = transform_node.ScrollNode()) {
     compositor_node.scrolls = true;
     compositor_node.should_be_snapped = true;
     CreateCompositorScrollNode(*scroll_node, compositor_node);
-  }
-
-  // If the parent transform node flattens transform (as |transform_node|
-  // flattens inherited transform) while it participates in the 3d sorting
-  // context of an ancestor, cc needs a render surface for correct flattening.
-  // TODO(crbug.com/504464): Move the logic into cc compositor thread.
-  auto* current_cc_effect = GetEffectTree().Node(current_.effect_id);
-  if (current_cc_effect && !current_cc_effect->HasRenderSurface() &&
-      current_cc_effect->transform_id == parent_id &&
-      transform_node.FlattensInheritedTransform()) {
-    const auto* parent = transform_node.UnaliasedParent();
-    if (parent && parent->RenderingContextId() &&
-        !parent->FlattensInheritedTransform()) {
-      current_cc_effect->render_surface_reason =
-          cc::RenderSurfaceReason::k3dTransformFlattening;
-    }
   }
 
   compositor_node.visible_frame_element_id =
@@ -553,7 +548,7 @@ int PropertyTreeManager::EnsureCompositorClipNode(
 
   cc::ClipNode& compositor_node = *GetClipTree().Node(id);
 
-  compositor_node.clip = clip_node.PixelSnappedClipRect().Rect();
+  compositor_node.clip = clip_node.PaintClipRect().Rect();
   compositor_node.transform_id =
       EnsureCompositorTransformNode(clip_node.LocalTransformSpace().Unalias());
   compositor_node.clip_type = cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP;
@@ -578,9 +573,8 @@ void PropertyTreeManager::CreateCompositorScrollNode(
   cc::ScrollNode& compositor_node = *GetScrollTree().Node(id);
   compositor_node.scrollable = true;
 
-  compositor_node.container_bounds =
-      static_cast<gfx::Size>(scroll_node.ContainerRect().Size());
-  compositor_node.bounds = static_cast<gfx::Size>(scroll_node.ContentsSize());
+  compositor_node.container_bounds = scroll_node.ContainerRect().size();
+  compositor_node.bounds = scroll_node.ContentsRect().size();
   compositor_node.user_scrollable_horizontal =
       scroll_node.UserScrollableHorizontal();
   compositor_node.user_scrollable_vertical =
@@ -615,6 +609,9 @@ void PropertyTreeManager::CreateCompositorScrollNode(
 
 int PropertyTreeManager::EnsureCompositorScrollNode(
     const TransformPaintPropertyNode& scroll_offset_translation) {
+  // TODO(ScrollUnification): Remove this function and let
+  // EnsureCompositorScrollNodes() call EnsureCompositorTransformNode() and
+  // CreateCompositorScrollNode() directly.
   const auto* scroll_node = scroll_offset_translation.ScrollNode();
   DCHECK(scroll_node);
   EnsureCompositorTransformNode(scroll_offset_translation);
@@ -838,7 +835,7 @@ bool PropertyTreeManager::CurrentEffectMayBe2dAxisMisalignedToRenderSurface() {
 PropertyTreeManager::CcEffectType PropertyTreeManager::SyntheticEffectType(
     const ClipPaintPropertyNode& clip) {
   unsigned effect_type = CcEffectType::kEffect;
-  if (clip.PixelSnappedClipRect().IsRounded() || clip.ClipPath())
+  if (clip.PaintClipRect().IsRounded() || clip.ClipPath())
     effect_type |= CcEffectType::kSyntheticForNonTrivialClip;
 
   // Cc requires that a rectangluar clip is 2d-axis-aligned with the render
@@ -875,11 +872,11 @@ bool PropertyTreeManager::SupportsShaderBasedRoundedCorner(
       &next_effect->LocalTransformSpace() != &clip.LocalTransformSpace())
     return false;
 
-  auto WidthAndHeightAreTheSame = [](const FloatSize& size) {
-    return size.Width() == size.Height();
+  auto WidthAndHeightAreTheSame = [](const gfx::SizeF& size) {
+    return size.width() == size.height();
   };
 
-  const FloatRoundedRect::Radii& radii = clip.PixelSnappedClipRect().GetRadii();
+  const FloatRoundedRect::Radii& radii = clip.PaintClipRect().GetRadii();
   if (!WidthAndHeightAreTheSame(radii.TopLeft()) ||
       !WidthAndHeightAreTheSame(radii.TopRight()) ||
       !WidthAndHeightAreTheSame(radii.BottomRight()) ||
@@ -927,11 +924,10 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
         current_.clip->LowestCommonAncestor(target_clip).Unalias();
     while (current_.clip != &lca) {
       if (!IsCurrentCcEffectSynthetic()) {
-        // This happens in pre-CompositeAfterPaint due to some clip-escaping
-        // corner cases that are very difficult to fix in legacy architecture.
-        // In CompositeAfterPaint this should never happen.
-        if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-          NOTREACHED();
+        // TODO(crbug.com/803649): We still have clip hierarchy issues with
+        // fragment clips. See crbug.com/1238656 for the test case. Will change
+        // the above condition to DCHECK after both CompositeAfterPaint and
+        // LayoutNGBlockFragmentation are fully launched.
         return cc::EffectTree::kInvalidNodeId;
       }
       const auto* pre_exit_clip = current_.clip;
@@ -955,12 +951,10 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
   }
 
   if (!clip) {
-    // This means that current_.clip is not an ancestor of the target clip.
-    // which happens in pre-CompositeAfterPaint due to some clip-escaping
-    // corner cases that are very difficult to fix in legacy architecture.
-    // In CompositeAfterPaint this should never happen.
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-      NOTREACHED();
+    // TODO(crbug.com/803649): We still have clip hierarchy issues with
+    // fragment clips. See crbug.com/1238656 for the test case. Will change
+    // the above condition to DCHECK after both CompositeAfterPaint and
+    // LayoutNGBlockFragmentation are fully launched.
     return cc::EffectTree::kInvalidNodeId;
   }
 
@@ -1008,7 +1002,7 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
       if (SupportsShaderBasedRoundedCorner(*pending_clip.clip,
                                            pending_clip.type, next_effect)) {
         synthetic_effect.mask_filter_info = gfx::MaskFilterInfo(
-            gfx::RRectF(pending_clip.clip->PixelSnappedClipRect()));
+            gfx::RRectF(SkRRect(pending_clip.clip->PaintClipRect())));
         synthetic_effect.is_fast_rounded_corner = true;
 
         // Nested rounded corner clips need to force render surfaces for
@@ -1026,7 +1020,7 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
         }
       } else {
         synthetic_effect.render_surface_reason =
-            pending_clip.clip->PixelSnappedClipRect().IsRounded()
+            pending_clip.clip->PaintClipRect().IsRounded()
                 ? cc::RenderSurfaceReason::kRoundedCorner
                 : cc::RenderSurfaceReason::kClipPath;
       }
@@ -1078,6 +1072,8 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
       // the current FragmentClip implementation. This can only be fixed by
       // LayoutNG block fragments. For now we'll create multiple cc effect
       // nodes in the case.
+      // TODO(crbug.com/1253797): Actually this still happens with LayoutNG
+      // block fragments due to paint order issue.
       has_multiple_groups = true;
     } else {
       NOTREACHED() << "Malformed paint artifact. Paint chunks under the same"
@@ -1121,8 +1117,17 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
     effect_node.stable_id = next_effect.GetCompositorElementId().GetStableId();
   }
 
-  if (!has_multiple_groups)
+  if (has_multiple_groups) {
+    if (effect_node.stable_id != cc::EffectNode::INVALID_STABLE_ID) {
+      // We are creating more than one cc effect nodes for one blink effect.
+      // Give the extra cc effect node a unique stable id.
+      effect_node.stable_id =
+          CompositorElementIdFromUniqueObjectId(NewUniqueObjectId())
+              .GetStableId();
+    }
+  } else {
     next_effect.SetCcNodeId(new_sequence_number_, real_effect_node_id);
+  }
 
   CompositorElementId compositor_element_id =
       next_effect.GetCompositorElementId();
@@ -1157,6 +1162,13 @@ static cc::RenderSurfaceReason RenderSurfaceReasonForEffect(
   }
   if (effect.DocumentTransitionSharedElementId().valid())
     return cc::RenderSurfaceReason::kDocumentTransitionParticipant;
+  // If the effect's transform node flattens the transform while it
+  // participates in the 3d sorting context of an ancestor, cc needs a
+  // render surface for correct flattening.
+  // TODO(crbug.com/504464): Move the logic into cc compositor thread.
+  if (effect.FlattensAtLeafOf3DScene())
+    return cc::RenderSurfaceReason::k3dTransformFlattening;
+
   return cc::RenderSurfaceReason::kNone;
 }
 
@@ -1186,6 +1198,7 @@ void PropertyTreeManager::PopulateCcEffectNode(
   effect_node.effect_changed = effect.NodeChangeAffectsRaster();
   effect_node.document_transition_shared_element_id =
       effect.DocumentTransitionSharedElementId();
+  effect_node.shared_element_resource_id = effect.SharedElementResourceId();
 }
 
 }  // namespace blink

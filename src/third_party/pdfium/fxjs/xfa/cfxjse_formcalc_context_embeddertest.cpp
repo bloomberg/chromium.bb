@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <cmath>
+#include <math.h>
 
 #include "fxjs/fxv8.h"
 #include "fxjs/xfa/cfxjse_engine.h"
@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/scoped_set_tz.h"
 #include "testing/xfa_js_embedder_test.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
 
 class CFXJSE_FormCalcContextEmbedderTest : public XFAJSEmbedderTest {
@@ -87,7 +87,7 @@ class CFXJSE_FormCalcContextEmbedderTest : public XFAJSEmbedderTest {
     CFXJSE_ScopeUtil_IsolateHandleContext scope(GetJseContext());
     v8::Local<v8::Value> value = GetValue();
     EXPECT_TRUE(fxv8::IsNumber(value));
-    EXPECT_TRUE(std::isnan(fxv8::ReentrantToDoubleHelper(isolate(), value)));
+    EXPECT_TRUE(isnan(fxv8::ReentrantToDoubleHelper(isolate(), value)));
   }
 
   void ExecuteExpectString(ByteStringView input, const char* expected) {
@@ -1086,6 +1086,10 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, Space) {
 
   for (size_t i = 0; i < pdfium::size(tests); ++i)
     ExecuteExpectString(tests[i].program, tests[i].result);
+
+  const char* const kErrorCases[] = {"Space(15654909)", "Space(99999999)"};
+  for (const char* error_case : kErrorCases)
+    ExecuteExpectError(error_case);
 }
 
 TEST_F(CFXJSE_FormCalcContextEmbedderTest, Str) {

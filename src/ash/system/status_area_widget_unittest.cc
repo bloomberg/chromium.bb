@@ -6,11 +6,11 @@
 
 #include <memory>
 
+#include "ash/constants/ash_switches.h"
 #include "ash/focus_cycler.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/locale_update_controller.h"
 #include "ash/public/cpp/system_tray_observer.h"
@@ -33,11 +33,9 @@
 #include "ash/test/ash_test_base.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "chromeos/network/cellular_esim_profile_handler_impl.h"
 #include "chromeos/network/cellular_metrics_logger.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_test_helper.h"
-#include "chromeos/network/network_metadata_store.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/events/event.h"
@@ -120,6 +118,11 @@ TEST_F(StatusAreaWidgetTest, HanldeOnLocaleChange) {
 class SystemTrayFocusTestObserver : public SystemTrayObserver {
  public:
   SystemTrayFocusTestObserver() = default;
+
+  SystemTrayFocusTestObserver(const SystemTrayFocusTestObserver&) = delete;
+  SystemTrayFocusTestObserver& operator=(const SystemTrayFocusTestObserver&) =
+      delete;
+
   ~SystemTrayFocusTestObserver() override = default;
 
   int focus_out_count() { return focus_out_count_; }
@@ -134,13 +137,16 @@ class SystemTrayFocusTestObserver : public SystemTrayObserver {
  private:
   int focus_out_count_ = 0;
   int reverse_focus_out_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemTrayFocusTestObserver);
 };
 
 class StatusAreaWidgetFocusTest : public AshTestBase {
  public:
   StatusAreaWidgetFocusTest() = default;
+
+  StatusAreaWidgetFocusTest(const StatusAreaWidgetFocusTest&) = delete;
+  StatusAreaWidgetFocusTest& operator=(const StatusAreaWidgetFocusTest&) =
+      delete;
+
   ~StatusAreaWidgetFocusTest() override = default;
 
   // AshTestBase:
@@ -167,9 +173,6 @@ class StatusAreaWidgetFocusTest : public AshTestBase {
 
  protected:
   std::unique_ptr<SystemTrayFocusTestObserver> test_observer_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StatusAreaWidgetFocusTest);
 };
 
 // Tests that tab traversal through status area widget in non-active session
@@ -261,17 +264,23 @@ TEST_F(StatusAreaWidgetPaletteTest, Basics) {
 class UnifiedStatusAreaWidgetTest : public AshTestBase {
  public:
   UnifiedStatusAreaWidgetTest() = default;
+
+  UnifiedStatusAreaWidgetTest(const UnifiedStatusAreaWidgetTest&) = delete;
+  UnifiedStatusAreaWidgetTest& operator=(const UnifiedStatusAreaWidgetTest&) =
+      delete;
+
   ~UnifiedStatusAreaWidgetTest() override = default;
 
   // AshTestBase:
   void SetUp() override {
     // Initializing NetworkHandler before ash is more like production.
     AshTestBase::SetUp();
-    chromeos::CellularESimProfileHandlerImpl::RegisterLocalStatePrefs(
-        local_state_.registry());
-    chromeos::NetworkMetadataStore::RegisterPrefs(profile_prefs_.registry());
-    chromeos::NetworkHandler::Get()->InitializePrefServices(&profile_prefs_,
-                                                            &local_state_);
+    network_handler_test_helper_.RegisterPrefs(profile_prefs_.registry(),
+                                               local_state_.registry());
+
+    network_handler_test_helper_.InitializePrefs(&profile_prefs_,
+                                                 &local_state_);
+
     // Networking stubs may have asynchronous initialization.
     base::RunLoop().RunUntilIdle();
   }
@@ -286,8 +295,6 @@ class UnifiedStatusAreaWidgetTest : public AshTestBase {
   chromeos::NetworkHandlerTestHelper network_handler_test_helper_;
   TestingPrefServiceSimple profile_prefs_;
   TestingPrefServiceSimple local_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(UnifiedStatusAreaWidgetTest);
 };
 
 TEST_F(UnifiedStatusAreaWidgetTest, Basics) {

@@ -7,7 +7,6 @@
 
 #include <utility>
 
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -15,6 +14,7 @@
 #include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 #include "third_party/blink/public/mojom/input/touch_event.mojom-forward.h"
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
+#include "third_party/blink/public/mojom/widget/platform_widget.mojom.h"
 #include "ui/base/ime/mojom/text_input_state.mojom.h"
 
 namespace content {
@@ -25,6 +25,10 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
                              public blink::mojom::WidgetInputHandlerHost {
  public:
   FakeRenderWidgetHost();
+
+  FakeRenderWidgetHost(const FakeRenderWidgetHost&) = delete;
+  FakeRenderWidgetHost& operator=(const FakeRenderWidgetHost&) = delete;
+
   ~FakeRenderWidgetHost() override;
 
   std::pair<mojo::PendingAssociatedRemote<blink::mojom::FrameWidgetHost>,
@@ -46,7 +50,6 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
   void AutoscrollStart(const gfx::PointF& position) override;
   void AutoscrollFling(const gfx::Vector2dF& position) override;
   void AutoscrollEnd() override;
-  void DidFirstVisuallyNonEmptyPaint() override;
   void StartDragging(blink::mojom::DragDataPtr drag_data,
                      blink::DragOperationsMask operations_allowed,
                      const SkBitmap& bitmap,
@@ -58,6 +61,10 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
   void UpdateTooltipUnderCursor(
       const std::u16string& tooltip_text,
       base::i18n::TextDirection text_direction_hint) override;
+  void UpdateTooltipFromKeyboard(const std::u16string& tooltip_text,
+                                 base::i18n::TextDirection text_direction_hint,
+                                 const gfx::Rect& bounds) override;
+  void ClearKeyboardTriggeredTooltip() override;
   void TextInputStateChanged(ui::mojom::TextInputStatePtr state) override;
   void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
                               base::i18n::TextDirection anchor_dir,
@@ -79,6 +86,7 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
   // blink::mojom::PopupWidgetHost overrides.
   void RequestClosePopup() override;
   void ShowPopup(const gfx::Rect& initial_rect,
+                 const gfx::Rect& initial_anchor_rect,
                  ShowPopupCallback callback) override;
   void SetPopupBounds(const gfx::Rect& bounds,
                       SetPopupBoundsCallback callback) override;
@@ -127,8 +135,6 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
       widget_input_handler_host_{this};
   mojo::AssociatedRemote<blink::mojom::FrameWidgetInputHandler>
       frame_widget_input_handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeRenderWidgetHost);
 };
 
 }  // namespace content

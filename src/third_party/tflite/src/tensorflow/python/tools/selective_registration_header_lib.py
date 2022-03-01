@@ -18,25 +18,21 @@ See the executable wrapper, print_selective_registration_header.py, for more
 information.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import json
 import os
 import sys
 
 from google.protobuf import text_format
 from tensorflow.core.framework import graph_pb2
-from tensorflow.python import _pywrap_kernel_registry
 from tensorflow.python.platform import gfile
 from tensorflow.python.platform import tf_logging
+from tensorflow.python.util import _pywrap_kernel_registry
 
 # Usually, we use each graph node to induce registration of an op and
 # corresponding kernel; nodes without a corresponding kernel (perhaps due to
 # attr types) generate a warning but are otherwise ignored. Ops in this set are
 # registered even if there's no corresponding kernel.
-OPS_WITHOUT_KERNEL_WHITELIST = frozenset([
+OPS_WITHOUT_KERNEL_ALLOWLIST = frozenset([
     # AccumulateNV2 is rewritten away by AccumulateNV2RemovePass; see
     # core/common_runtime/accumulate_n_optimizer.cc.
     'AccumulateNV2'
@@ -67,7 +63,7 @@ def _get_ops_from_graphdef(graph_def):
     kernel_class = _pywrap_kernel_registry.TryFindKernelClass(
         node_def.SerializeToString())
     op = str(node_def.op)
-    if kernel_class or op in OPS_WITHOUT_KERNEL_WHITELIST:
+    if kernel_class or op in OPS_WITHOUT_KERNEL_ALLOWLIST:
       op_and_kernel = (op, str(kernel_class.decode('utf-8'))
                        if kernel_class else None)
       ops.add(op_and_kernel)

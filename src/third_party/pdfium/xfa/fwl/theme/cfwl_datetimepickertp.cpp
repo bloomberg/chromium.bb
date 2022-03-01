@@ -16,43 +16,15 @@ CFWL_DateTimePickerTP::~CFWL_DateTimePickerTP() = default;
 void CFWL_DateTimePickerTP::DrawBackground(
     const CFWL_ThemeBackground& pParams) {
   switch (pParams.m_iPart) {
-    case CFWL_Part::Border:
+    case CFWL_ThemePart::Part::kBorder:
       DrawBorder(pParams.GetGraphics(), pParams.m_PartRect, pParams.m_matrix);
       break;
-    case CFWL_Part::DropDownButton:
-      DrawDropDownButton(pParams, pParams.m_matrix);
+    case CFWL_ThemePart::Part::kDropDownButton:
+      DrawArrowBtn(pParams.GetGraphics(), pParams.m_PartRect,
+                   FWLTHEME_DIRECTION::kDown, pParams.GetThemeState(),
+                   pParams.m_matrix);
       break;
     default:
       break;
   }
-}
-
-void CFWL_DateTimePickerTP::DrawDropDownButton(
-    const CFWL_ThemeBackground& pParams,
-    const CFX_Matrix& matrix) {
-  uint32_t dwStates = pParams.m_dwStates;
-  dwStates &= 0x03;
-  FWLTHEME_STATE eState = FWLTHEME_STATE_Normal;
-  switch (eState & dwStates) {
-    case CFWL_PartState_Normal: {
-      eState = FWLTHEME_STATE_Normal;
-      break;
-    }
-    case CFWL_PartState_Hovered: {
-      eState = FWLTHEME_STATE_Hover;
-      break;
-    }
-    case CFWL_PartState_Pressed: {
-      eState = FWLTHEME_STATE_Pressed;
-      break;
-    }
-    case CFWL_PartState_Disabled: {
-      eState = FWLTHEME_STATE_Disable;
-      break;
-    }
-    default:
-      break;
-  }
-  DrawArrowBtn(pParams.GetGraphics(), pParams.m_PartRect,
-               FWLTHEME_DIRECTION_Down, eState, matrix);
 }

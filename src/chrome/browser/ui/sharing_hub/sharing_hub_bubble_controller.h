@@ -5,8 +5,14 @@
 #ifndef CHROME_BROWSER_UI_SHARING_HUB_SHARING_HUB_BUBBLE_CONTROLLER_H_
 #define CHROME_BROWSER_UI_SHARING_HUB_SHARING_HUB_BUBBLE_CONTROLLER_H_
 
+#include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/sharesheet/sharesheet_types.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "ui/views/view_tracker.h"
+#include "ui/views/widget/widget.h"
 
 class Profile;
 
@@ -14,16 +20,30 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace views {
+class Button;
+}  // namespace views
+
+namespace sharesheet {
+class SharesheetService;
+}  // namespace sharesheet
+
 namespace sharing_hub {
 
 class SharingHubBubbleView;
+class SharingHubModel;
 struct SharingHubAction;
 
 // Controller component of the Sharing Hub dialog bubble.
 // Responsible for showing and hiding an owned bubble.
 class SharingHubBubbleController
-    : public content::WebContentsUserData<SharingHubBubbleController> {
+    : public content::WebContentsObserver,
+      public content::WebContentsUserData<SharingHubBubbleController> {
  public:
+  SharingHubBubbleController(const SharingHubBubbleController&) = delete;
+  SharingHubBubbleController& operator=(const SharingHubBubbleController&) =
+      delete;
+
   ~SharingHubBubbleController() override;
 
   static SharingHubBubbleController* CreateOrGetFromWebContents(
@@ -43,36 +63,58 @@ class SharingHubBubbleController
   // Returns true if the omnibox icon should be shown.
   bool ShouldOfferOmniboxIcon();
 
-  // Returns the list of Sharing Hub actions.
-  virtual std::vector<SharingHubAction> GetActions() const;
+  // Returns the list of Sharing Hub first party actions.
+  virtual std::vector<SharingHubAction> GetFirstPartyActions();
+  // Returns the list of Sharing Hub third party actions.
+  virtual std::vector<SharingHubAction> GetThirdPartyActions();
 
   // Handles when the user clicks on a Sharing Hub action. If this is a first
   // party action, executes the appropriate browser command. If this is a third
   // party action, navigates to an external webpage.
-  virtual void OnActionSelected(int command_id, bool is_first_party);
+  virtual void OnActionSelected(int command_id,
+                                bool is_first_party,
+                                std::string feature_name_for_metrics);
   // Handler for when the bubble is closed.
   void OnBubbleClosed();
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // content::WebContentsObserver:
+  void OnVisibilityChanged(content::Visibility visibility) override;
+#endif
+
  protected:
-  SharingHubBubbleController();
   explicit SharingHubBubbleController(content::WebContents* web_contents);
 
  private:
   friend class content::WebContentsUserData<SharingHubBubbleController>;
 
+  SharingHubModel* GetSharingHubModel();
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  void ShowSharesheet();
-  void OnSharesheetShown(sharesheet::SharesheetResult result);
+  sharesheet::SharesheetService* GetSharesheetService();
+  void ShowSharesheet(views::Button* highlighted_button);
+  void CloseSharesheet();
+  void OnShareDelivered(sharesheet::SharesheetResult result);
+  void OnSharesheetClosed(views::Widget::ClosedReason reason);
+
+  void DeselectIcon();
+
+  views::ViewTracker highlighted_button_tracker_;
+  sharesheet::SharesheetService* sharesheet_service_ = nullptr;
+  gfx::NativeWindow web_contents_containing_window_ = nullptr;
+  bool bubble_showing_ = false;
 #endif
 
-  // The web_contents associated with this controller.
-  content::WebContents* web_contents_;
   // Weak reference. Will be nullptr if no bubble is currently shown.
-  SharingHubBubbleView* sharing_hub_bubble_view_ = nullptr;
+  raw_ptr<SharingHubBubbleView> sharing_hub_bubble_view_ = nullptr;
+  // Cached reference to the model.
+  raw_ptr<SharingHubModel> sharing_hub_model_ = nullptr;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
-  DISALLOW_COPY_AND_ASSIGN(SharingHubBubbleController);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  base::WeakPtrFactory<SharingHubBubbleController> weak_ptr_factory_{this};
+#endif
 };
 
 }  // namespace sharing_hub

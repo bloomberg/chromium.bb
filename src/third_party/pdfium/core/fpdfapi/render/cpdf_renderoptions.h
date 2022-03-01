@@ -7,9 +7,10 @@
 #ifndef CORE_FPDFAPI_RENDER_CPDF_RENDEROPTIONS_H_
 #define CORE_FPDFAPI_RENDER_CPDF_RENDEROPTIONS_H_
 
+#include <stdint.h>
+
 #include "core/fpdfapi/page/cpdf_occontext.h"
 #include "core/fpdfapi/page/cpdf_pageobject.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/dib/fx_dib.h"
 
@@ -22,6 +23,7 @@ class CPDF_RenderOptions {
   struct Options {
     Options();
     Options(const Options& rhs);
+    Options& operator=(const Options& rhs);
 
     bool bClearType = false;
     bool bNoNativeText = false;

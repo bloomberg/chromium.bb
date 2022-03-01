@@ -31,36 +31,23 @@ class MemberAccessorExpression
   /// @param member the member
   MemberAccessorExpression(ProgramID program_id,
                            const Source& source,
-                           Expression* structure,
-                           IdentifierExpression* member);
+                           const Expression* structure,
+                           const IdentifierExpression* member);
   /// Move constructor
   MemberAccessorExpression(MemberAccessorExpression&&);
   ~MemberAccessorExpression() override;
-
-  /// @returns the structure
-  Expression* structure() const { return struct_; }
-  /// @returns the member expression
-  IdentifierExpression* member() const { return member_; }
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  MemberAccessorExpression* Clone(CloneContext* ctx) const override;
+  const MemberAccessorExpression* Clone(CloneContext* ctx) const override;
 
-  /// Writes a representation of the node to the output stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
+  /// The structure
+  const Expression* const structure;
 
- private:
-  MemberAccessorExpression(const MemberAccessorExpression&) = delete;
-
-  Expression* const struct_;
-  IdentifierExpression* const member_;
+  /// The member expression
+  const IdentifierExpression* const member;
 };
 
 }  // namespace ast

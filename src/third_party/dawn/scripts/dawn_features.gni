@@ -15,10 +15,10 @@
 import("//build_overrides/build.gni")
 
 if (build_with_chromium) {
+  import("//build/config/ozone.gni")
   import("//build/config/sanitizers/sanitizers.gni")
-  import("//build/config/ui.gni")
 
-  dawn_use_x11 = use_x11
+  dawn_use_x11 = ozone_platform_x11
 } else {
   declare_args() {
     # Whether Dawn should enable X11 support.
@@ -62,11 +62,13 @@ declare_args() {
 
   # Enables the compilation of Dawn's OpenGL backend
   # (best effort, non-conformant)
-  dawn_enable_desktop_gl = is_linux && !is_chromeos
+  dawn_enable_desktop_gl = !build_with_chromium && (is_linux && !is_chromeos)
 
   # Enables the compilation of Dawn's OpenGLES backend
   # (WebGPU/Compat subset)
-  dawn_enable_opengles = (is_linux && !is_chromeos) || is_win
+  # Disables OpenGLES when compiling for UWP, since UWP only supports d3d
+  dawn_enable_opengles = !build_with_chromium && ((is_linux && !is_chromeos) ||
+                                                  (is_win && !dawn_is_winuwp))
 
   # Enables the compilation of Dawn's Vulkan backend
   # Disables vulkan when compiling for UWP, since UWP only supports d3d
@@ -95,12 +97,17 @@ declare_args() {
 
   # Uses our built version of the Vulkan loader on platforms where we can't
   # assume to have one present at the system level.
-  dawn_enable_vulkan_loader = dawn_enable_vulkan && is_mac
+  dawn_enable_vulkan_loader =
+      dawn_enable_vulkan && (is_mac || (is_linux && !is_android))
 }
 
 # UWP only supports CoreWindow for windowing
 dawn_supports_glfw_for_windowing =
     (is_win && !dawn_is_winuwp) || (is_linux && !is_chromeos) || is_mac
 
-# Much of the backend code is shared, so define a convenience var.
+# Much of the GL backend code is shared, so define a convenience var.
 dawn_enable_opengl = dawn_enable_opengles || dawn_enable_desktop_gl
+
+# The GL backends are the last to use SPIRV-Cross, so only compile it in
+# if they are enabled.
+dawn_use_spirv_cross = dawn_enable_opengl

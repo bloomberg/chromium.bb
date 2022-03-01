@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_encoder.h"
@@ -71,14 +71,18 @@ class MockPipelineClient : public Pipeline::Client {
   MOCK_METHOD1(OnVideoOpacityChange, void(bool));
   MOCK_METHOD1(OnVideoFrameRateChange, void(absl::optional<int>));
   MOCK_METHOD0(OnVideoAverageKeyframeDistanceUpdate, void());
-  MOCK_METHOD1(OnAudioDecoderChange, void(const AudioDecoderInfo&));
-  MOCK_METHOD1(OnVideoDecoderChange, void(const VideoDecoderInfo&));
+  MOCK_METHOD1(OnAudioPipelineInfoChange, void(const AudioPipelineInfo&));
+  MOCK_METHOD1(OnVideoPipelineInfoChange, void(const VideoPipelineInfo&));
   MOCK_METHOD1(OnRemotePlayStateChange, void(MediaStatus::State state));
 };
 
 class MockPipeline : public Pipeline {
  public:
   MockPipeline();
+
+  MockPipeline(const MockPipeline&) = delete;
+  MockPipeline& operator=(const MockPipeline&) = delete;
+
   ~MockPipeline() override;
 
   void Start(StartType start_type,
@@ -132,9 +136,6 @@ class MockPipeline : public Pipeline {
   }
   MOCK_METHOD2(OnSetCdm,
                void(CdmContext* cdm_context, CdmAttachedCB& cdm_attached_cb));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockPipeline);
 };
 
 class MockMediaResource : public MediaResource {
@@ -152,6 +153,10 @@ class MockMediaResource : public MediaResource {
 class MockDemuxer : public Demuxer {
  public:
   MockDemuxer();
+
+  MockDemuxer(const MockDemuxer&) = delete;
+  MockDemuxer& operator=(const MockDemuxer&) = delete;
+
   ~MockDemuxer() override;
 
   // Demuxer implementation.
@@ -184,14 +189,15 @@ class MockDemuxer : public Demuxer {
                void(const std::vector<MediaTrack::Id>&,
                     base::TimeDelta,
                     TrackChangeCB));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockDemuxer);
 };
 
 class MockDemuxerStream : public DemuxerStream {
  public:
   explicit MockDemuxerStream(DemuxerStream::Type type);
+
+  MockDemuxerStream(const MockDemuxerStream&) = delete;
+  MockDemuxerStream& operator=(const MockDemuxerStream&) = delete;
+
   ~MockDemuxerStream() override;
 
   // DemuxerStream implementation.
@@ -213,8 +219,6 @@ class MockDemuxerStream : public DemuxerStream {
   Liveness liveness_;
   AudioDecoderConfig audio_decoder_config_;
   VideoDecoderConfig video_decoder_config_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockDemuxerStream);
 };
 
 class MockVideoDecoder : public VideoDecoder {
@@ -227,6 +231,10 @@ class MockVideoDecoder : public VideoDecoder {
   MockVideoDecoder(bool is_platform_decoder,
                    bool supports_decryption,
                    int decoder_id);
+
+  MockVideoDecoder(const MockVideoDecoder&) = delete;
+  MockVideoDecoder& operator=(const MockVideoDecoder&) = delete;
+
   ~MockVideoDecoder() override;
 
   // Decoder implementation
@@ -265,18 +273,20 @@ class MockVideoDecoder : public VideoDecoder {
   MOCK_CONST_METHOD0(GetMaxDecodeRequests, int());
   MOCK_CONST_METHOD0(CanReadWithoutStalling, bool());
   MOCK_CONST_METHOD0(NeedsBitstreamConversion, bool());
-  MOCK_CONST_METHOD0(IsOptimizedForRTC, bool());
 
  private:
   const bool is_platform_decoder_;
   const bool supports_decryption_;
   const int decoder_id_ = 0;
-  DISALLOW_COPY_AND_ASSIGN(MockVideoDecoder);
 };
 
 class MockAudioEncoder : public AudioEncoder {
  public:
   MockAudioEncoder();
+
+  MockAudioEncoder(const MockAudioEncoder&) = delete;
+  MockAudioEncoder& operator=(const MockAudioEncoder&) = delete;
+
   ~MockAudioEncoder() override;
 
   // AudioEncoder implementation.
@@ -298,14 +308,15 @@ class MockAudioEncoder : public AudioEncoder {
 
   // A function for mocking destructor calls
   MOCK_METHOD(void, OnDestruct, ());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockAudioEncoder);
 };
 
 class MockVideoEncoder : public VideoEncoder {
  public:
   MockVideoEncoder();
+
+  MockVideoEncoder(const MockVideoEncoder&) = delete;
+  MockVideoEncoder& operator=(const MockVideoEncoder&) = delete;
+
   ~MockVideoEncoder() override;
 
   // VideoEncoder implementation.
@@ -335,9 +346,6 @@ class MockVideoEncoder : public VideoEncoder {
 
   // A function for mocking destructor calls
   MOCK_METHOD(void, Dtor, ());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockVideoEncoder);
 };
 
 class MockAudioDecoder : public AudioDecoder {
@@ -347,6 +355,10 @@ class MockAudioDecoder : public AudioDecoder {
   explicit MockAudioDecoder(bool is_platform_decoder,
                             bool supports_decryption,
                             int decoder_id);
+
+  MockAudioDecoder(const MockAudioDecoder&) = delete;
+  MockAudioDecoder& operator=(const MockAudioDecoder&) = delete;
+
   ~MockAudioDecoder() override;
 
   // Decoder implementation
@@ -382,7 +394,6 @@ class MockAudioDecoder : public AudioDecoder {
   const bool is_platform_decoder_;
   const bool supports_decryption_;
   const int decoder_id_ = 0;
-  DISALLOW_COPY_AND_ASSIGN(MockAudioDecoder);
 };
 
 class MockRendererClient : public RendererClient {
@@ -410,6 +421,10 @@ class MockRendererClient : public RendererClient {
 class MockVideoRenderer : public VideoRenderer {
  public:
   MockVideoRenderer();
+
+  MockVideoRenderer(const MockVideoRenderer&) = delete;
+  MockVideoRenderer& operator=(const MockVideoRenderer&) = delete;
+
   ~MockVideoRenderer() override;
 
   // VideoRenderer implementation.
@@ -432,14 +447,15 @@ class MockVideoRenderer : public VideoRenderer {
   MOCK_METHOD0(OnTimeStopped, void());
   MOCK_METHOD1(SetLatencyHint,
                void(absl::optional<base::TimeDelta> latency_hint));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockVideoRenderer);
 };
 
 class MockAudioRenderer : public AudioRenderer {
  public:
   MockAudioRenderer();
+
+  MockAudioRenderer(const MockAudioRenderer&) = delete;
+  MockAudioRenderer& operator=(const MockAudioRenderer&) = delete;
+
   ~MockAudioRenderer() override;
 
   // AudioRenderer implementation.
@@ -462,14 +478,15 @@ class MockAudioRenderer : public AudioRenderer {
                void(absl::optional<base::TimeDelta> latency_hint));
   MOCK_METHOD1(SetPreservesPitch, void(bool));
   MOCK_METHOD1(SetAutoplayInitiated, void(bool));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockAudioRenderer);
 };
 
 class MockRenderer : public Renderer {
  public:
   MockRenderer();
+
+  MockRenderer(const MockRenderer&) = delete;
+  MockRenderer& operator=(const MockRenderer&) = delete;
+
   ~MockRenderer() override;
 
   // Renderer implementation.
@@ -502,14 +519,15 @@ class MockRenderer : public Renderer {
                void(std::vector<DemuxerStream*>, base::OnceClosure));
   MOCK_METHOD2(OnSelectedAudioTracksChanged,
                void(std::vector<DemuxerStream*>, base::OnceClosure));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockRenderer);
 };
 
 class MockRendererFactory : public RendererFactory {
  public:
   MockRendererFactory();
+
+  MockRendererFactory(const MockRendererFactory&) = delete;
+  MockRendererFactory& operator=(const MockRendererFactory&) = delete;
+
   ~MockRendererFactory() override;
 
   // Renderer implementation.
@@ -521,14 +539,15 @@ class MockRendererFactory : public RendererFactory {
                    VideoRendererSink*,
                    RequestOverlayInfoCB,
                    const gfx::ColorSpace&));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockRendererFactory);
 };
 
 class MockTimeSource : public TimeSource {
  public:
   MockTimeSource();
+
+  MockTimeSource(const MockTimeSource&) = delete;
+  MockTimeSource& operator=(const MockTimeSource&) = delete;
+
   ~MockTimeSource() override;
 
   // TimeSource implementation.
@@ -540,14 +559,15 @@ class MockTimeSource : public TimeSource {
   MOCK_METHOD2(GetWallClockTimes,
                bool(const std::vector<base::TimeDelta>&,
                     std::vector<base::TimeTicks>*));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockTimeSource);
 };
 
 class MockTextTrack : public TextTrack {
  public:
   MockTextTrack();
+
+  MockTextTrack(const MockTextTrack&) = delete;
+  MockTextTrack& operator=(const MockTextTrack&) = delete;
+
   ~MockTextTrack() override;
 
   MOCK_METHOD5(addWebVTTCue,
@@ -556,9 +576,6 @@ class MockTextTrack : public TextTrack {
                     const std::string& id,
                     const std::string& content,
                     const std::string& settings));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockTextTrack);
 };
 
 // Mock CDM callbacks.
@@ -573,7 +590,9 @@ class MockCdmClient {
                void(const std::string& session_id,
                     CdmMessageType message_type,
                     const std::vector<uint8_t>& message));
-  MOCK_METHOD1(OnSessionClosed, void(const std::string& session_id));
+  MOCK_METHOD2(OnSessionClosed,
+               void(const std::string& session_id,
+                    CdmSessionClosedReason reason));
 
   // Add OnSessionKeysChangeCalled() function so we can store |keys_info|.
   MOCK_METHOD2(OnSessionKeysChangeCalled,
@@ -598,6 +617,10 @@ class MockCdmClient {
 class MockDecryptor : public Decryptor {
  public:
   MockDecryptor();
+
+  MockDecryptor(const MockDecryptor&) = delete;
+  MockDecryptor& operator=(const MockDecryptor&) = delete;
+
   ~MockDecryptor() override;
 
   MOCK_METHOD3(Decrypt,
@@ -618,14 +641,15 @@ class MockDecryptor : public Decryptor {
   MOCK_METHOD1(ResetDecoder, void(StreamType stream_type));
   MOCK_METHOD1(DeinitializeDecoder, void(StreamType stream_type));
   MOCK_METHOD0(CanAlwaysDecrypt, bool());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockDecryptor);
 };
 
 class MockCdmContext : public CdmContext {
  public:
   MockCdmContext();
+
+  MockCdmContext(const MockCdmContext&) = delete;
+  MockCdmContext& operator=(const MockCdmContext&) = delete;
+
   ~MockCdmContext() override;
 
   MOCK_METHOD1(RegisterEventCB,
@@ -637,15 +661,15 @@ class MockCdmContext : public CdmContext {
   MOCK_METHOD1(GetMediaFoundationCdmProxy,
                bool(GetMediaFoundationCdmProxyCB get_mf_cdm_proxy_cb));
 #endif
-
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  MOCK_METHOD0(GetChromeOsCdmContext, chromeos::ChromeOsCdmContext*());
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   absl::optional<base::UnguessableToken> GetCdmId() const override;
 
   void set_cdm_id(const base::UnguessableToken& cdm_id);
 
  private:
   absl::optional<base::UnguessableToken> cdm_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockCdmContext);
 };
 
 class MockCdmPromise : public SimpleCdmPromise {
@@ -653,14 +677,15 @@ class MockCdmPromise : public SimpleCdmPromise {
   // |expect_success| is true if resolve() should be called, false if reject()
   // is expected.
   explicit MockCdmPromise(bool expect_success);
+
+  MockCdmPromise(const MockCdmPromise&) = delete;
+  MockCdmPromise& operator=(const MockCdmPromise&) = delete;
+
   ~MockCdmPromise() override;
 
   MOCK_METHOD0(resolve, void());
   MOCK_METHOD3(reject,
                void(CdmPromise::Exception, uint32_t, const std::string&));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockCdmPromise);
 };
 
 class MockCdmSessionPromise : public NewSessionCdmPromise {
@@ -669,14 +694,15 @@ class MockCdmSessionPromise : public NewSessionCdmPromise {
   // is expected. |new_session_id| is updated with the new session's ID on
   // resolve().
   MockCdmSessionPromise(bool expect_success, std::string* new_session_id);
+
+  MockCdmSessionPromise(const MockCdmSessionPromise&) = delete;
+  MockCdmSessionPromise& operator=(const MockCdmSessionPromise&) = delete;
+
   ~MockCdmSessionPromise() override;
 
   MOCK_METHOD1(resolve, void(const std::string&));
   MOCK_METHOD3(reject,
                void(CdmPromise::Exception, uint32_t, const std::string&));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockCdmSessionPromise);
 };
 
 class MockCdmKeyStatusPromise : public KeyStatusCdmPromise {
@@ -685,27 +711,31 @@ class MockCdmKeyStatusPromise : public KeyStatusCdmPromise {
   // is expected. |key_status| is updated with the key status on resolve().
   MockCdmKeyStatusPromise(bool expect_success,
                           CdmKeyInformation::KeyStatus* key_status);
+
+  MockCdmKeyStatusPromise(const MockCdmKeyStatusPromise&) = delete;
+  MockCdmKeyStatusPromise& operator=(const MockCdmKeyStatusPromise&) = delete;
+
   ~MockCdmKeyStatusPromise() override;
 
   MOCK_METHOD1(resolve, void(const CdmKeyInformation::KeyStatus&));
   MOCK_METHOD3(reject,
                void(CdmPromise::Exception, uint32_t, const std::string&));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockCdmKeyStatusPromise);
 };
 
 class MockCdm : public ContentDecryptionModule {
  public:
   MockCdm();
-  MockCdm(const std::string& key_system,
+  MockCdm(const CdmConfig& cdm_config,
           const SessionMessageCB& session_message_cb,
           const SessionClosedCB& session_closed_cb,
           const SessionKeysChangeCB& session_keys_change_cb,
           const SessionExpirationUpdateCB& session_expiration_update_cb);
 
+  MockCdm(const MockCdm&) = delete;
+  MockCdm& operator=(const MockCdm&) = delete;
+
   void Initialize(
-      const std::string& key_system,
+      const CdmConfig& cdm_config,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
       const SessionKeysChangeCB& session_keys_change_cb,
@@ -740,7 +770,8 @@ class MockCdm : public ContentDecryptionModule {
   void CallSessionMessageCB(const std::string& session_id,
                             CdmMessageType message_type,
                             const std::vector<uint8_t>& message);
-  void CallSessionClosedCB(const std::string& session_id);
+  void CallSessionClosedCB(const std::string& session_id,
+                           CdmSessionClosedReason reason);
   void CallSessionKeysChangeCB(const std::string& session_id,
                                bool has_additional_usable_key,
                                CdmKeysInfo keys_info);
@@ -758,21 +789,22 @@ class MockCdm : public ContentDecryptionModule {
   SessionClosedCB session_closed_cb_;
   SessionKeysChangeCB session_keys_change_cb_;
   SessionExpirationUpdateCB session_expiration_update_cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockCdm);
 };
 
 class MockCdmFactory : public CdmFactory {
  public:
   explicit MockCdmFactory(scoped_refptr<MockCdm> cdm);
+
+  MockCdmFactory(const MockCdmFactory&) = delete;
+  MockCdmFactory& operator=(const MockCdmFactory&) = delete;
+
   ~MockCdmFactory() override;
 
   // CdmFactory implementation.
   // This creates a StrictMock<MockCdm> when called. Although ownership of the
   // created CDM is passed to |cdm_created_cb|, a copy is kept (and available
   // using Cdm()). If |key_system| is empty, no CDM will be created.
-  void Create(const std::string& key_system,
-              const CdmConfig& cdm_config,
+  void Create(const CdmConfig& cdm_config,
               const SessionMessageCB& session_message_cb,
               const SessionClosedCB& session_closed_cb,
               const SessionKeysChangeCB& session_keys_change_cb,
@@ -788,13 +820,15 @@ class MockCdmFactory : public CdmFactory {
 
   // Callback to be used before Create() successfully calls |cdm_created_cb|.
   base::RepeatingClosure before_creation_cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockCdmFactory);
 };
 
 class MockStreamParser : public StreamParser {
  public:
   MockStreamParser();
+
+  MockStreamParser(const MockStreamParser&) = delete;
+  MockStreamParser& operator=(const MockStreamParser&) = delete;
+
   ~MockStreamParser() override;
 
   // StreamParser interface
@@ -811,14 +845,15 @@ class MockStreamParser : public StreamParser {
   MOCK_METHOD0(Flush, void());
   MOCK_CONST_METHOD0(GetGenerateTimestampsFlag, bool());
   MOCK_METHOD2(Parse, bool(const uint8_t*, int));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockStreamParser);
 };
 
 class MockMediaClient : public media::MediaClient {
  public:
   MockMediaClient();
+
+  MockMediaClient(const MockMediaClient&) = delete;
+  MockMediaClient& operator=(const MockMediaClient&) = delete;
+
   ~MockMediaClient() override;
 
   // MediaClient implementation.
@@ -832,9 +867,6 @@ class MockMediaClient : public media::MediaClient {
   MOCK_METHOD1(GetAudioRendererAlgorithmParameters,
                absl::optional<::media::AudioRendererAlgorithmParameters>(
                    media::AudioParameters audio_parameters));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockMediaClient);
 };
 
 }  // namespace media

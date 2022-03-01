@@ -10,7 +10,6 @@
 
 #include "include/private/SkSLModifiers.h"
 #include "include/private/SkSLSymbol.h"
-#include "src/sksl/SkSLPosition.h"
 #include "src/sksl/ir/SkSLExpression.h"
 #include "src/sksl/ir/SkSLType.h"
 #include "src/sksl/ir/SkSLVariableReference.h"
@@ -41,17 +40,39 @@ class Variable final : public Symbol {
 public:
     using Storage = VariableStorage;
 
-    static constexpr Kind kSymbolKind = Kind::kVariable;
+    inline static constexpr Kind kSymbolKind = Kind::kVariable;
 
-    Variable(int offset, const Modifiers* modifiers, StringFragment name, const Type* type,
+    Variable(int line, const Modifiers* modifiers, skstd::string_view name, const Type* type,
              bool builtin, Storage storage)
-    : INHERITED(offset, kSymbolKind, name, type)
+    : INHERITED(line, kSymbolKind, name, type)
     , fModifiers(modifiers)
     , fStorage(storage)
     , fBuiltin(builtin) {}
 
     ~Variable() override;
 
+    static std::unique_ptr<Variable> Convert(const Context& context, int line,
+            const Modifiers& modifiers, const Type* baseType, skstd::string_view name, bool isArray,
+            std::unique_ptr<Expression> arraySize, Variable::Storage storage);
+
+    static std::unique_ptr<Variable> Make(const Context& context, int line,
+            const Modifiers& modifiers, const Type* baseType, skstd::string_view name, bool isArray,
+            std::unique_ptr<Expression> arraySize, Variable::Storage storage);
+
+    /**
+     * Creates a local scratch variable and the associated VarDeclaration statement.
+     * Useful when doing IR rewrites, e.g. inlining a function call.
+     */
+    struct ScratchVariable {
+        const Variable* fVarSymbol;
+        std::unique_ptr<Statement> fVarDecl;
+    };
+    static ScratchVariable MakeScratchVariable(const Context& context,
+                                               skstd::string_view baseName,
+                                               const Type* type,
+                                               const Modifiers& modifiers,
+                                               SymbolTable* symbolTable,
+                                               std::unique_ptr<Expression> initialValue);
     const Modifiers& modifiers() const {
         return *fModifiers;
     }

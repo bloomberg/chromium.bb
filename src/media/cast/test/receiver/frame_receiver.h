@@ -11,7 +11,7 @@
 #include <list>
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -63,6 +63,9 @@ class FrameReceiver final : public RtpPayloadFeedback {
                 const FrameReceiverConfig& config,
                 EventMediaType event_media_type,
                 CastTransport* const transport);
+
+  FrameReceiver(const FrameReceiver&) = delete;
+  FrameReceiver& operator=(const FrameReceiver&) = delete;
 
   ~FrameReceiver() final;
 
@@ -142,7 +145,7 @@ class FrameReceiver final : public RtpPayloadFeedback {
   const scoped_refptr<CastEnvironment> cast_environment_;
 
   // Transport used to send data back.
-  CastTransport* const transport_;
+  const raw_ptr<CastTransport> transport_;
 
   // Deserializes a packet into a RtpHeader + payload bytes.
   RtpParser packet_parser_;
@@ -211,8 +214,6 @@ class FrameReceiver final : public RtpPayloadFeedback {
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<FrameReceiver> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FrameReceiver);
 };
 
 }  // namespace cast

@@ -20,11 +20,12 @@
 #include "base/cancelable_callback.h"
 #include "base/check.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_base.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -113,7 +114,7 @@ class TestRasterTaskImpl : public TileTask {
   ~TestRasterTaskImpl() override = default;
 
  private:
-  TestRasterTaskCompletionHandler* completion_handler_;
+  raw_ptr<TestRasterTaskCompletionHandler> completion_handler_;
   unsigned id_;
   std::unique_ptr<RasterBuffer> raster_buffer_;
   scoped_refptr<RasterSource> raster_source_;
@@ -147,7 +148,7 @@ class BlockingTestRasterTaskImpl : public TestRasterTaskImpl {
   ~BlockingTestRasterTaskImpl() override = default;
 
  private:
-  base::Lock* lock_;
+  raw_ptr<base::Lock> lock_;
 };
 
 class RasterImplementationForOOPR
@@ -176,6 +177,7 @@ class RasterImplementationForOOPR
   void BeginRasterCHROMIUM(GLuint sk_color,
                            GLboolean needs_clear,
                            GLuint msaa_sample_count,
+                           gpu::raster::MsaaMode msaa_mode,
                            GLboolean can_use_lcd_text,
                            const gfx::ColorSpace& color_space,
                            const GLbyte* mailbox) override {}
@@ -187,7 +189,8 @@ class RasterImplementationForOOPR
                       const gfx::Vector2dF& post_translate,
                       const gfx::Vector2dF& post_scale,
                       bool requires_clear,
-                      size_t* max_op_size_hint) override {}
+                      size_t* max_op_size_hint,
+                      bool preserve_recording = true) override {}
   void EndRasterCHROMIUM() override {}
 };
 

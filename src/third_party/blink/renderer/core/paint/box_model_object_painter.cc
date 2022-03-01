@@ -58,12 +58,13 @@ BoxModelObjectPainter::BoxModelObjectPainter(const LayoutBoxModelObject& box,
       flow_box_(flow_box) {}
 
 void BoxModelObjectPainter::PaintTextClipMask(
-    GraphicsContext& context,
-    const IntRect& mask_rect,
+    const PaintInfo& paint_info,
+    const gfx::Rect& mask_rect,
     const PhysicalOffset& paint_offset,
     bool object_has_multiple_boxes) {
-  PaintInfo paint_info(context, CullRect(mask_rect), PaintPhase::kTextClip,
-                       kGlobalPaintNormalPhase, 0);
+  PaintInfo mask_paint_info(paint_info.context, CullRect(mask_rect),
+                            PaintPhase::kTextClip, kGlobalPaintNormalPhase, 0);
+  mask_paint_info.SetFragmentID(paint_info.FragmentID());
   if (flow_box_) {
     LayoutSize local_offset = ToLayoutSize(flow_box_->Location());
     if (object_has_multiple_boxes &&
@@ -75,10 +76,10 @@ void BoxModelObjectPainter::PaintTextClipMask(
     PhysicalOffset physical_local_offset(local_offset.Width(),
                                          local_offset.Height());
     const RootInlineBox& root = flow_box_->Root();
-    flow_box_->Paint(paint_info, paint_offset - physical_local_offset,
+    flow_box_->Paint(mask_paint_info, paint_offset - physical_local_offset,
                      root.LineTop(), root.LineBottom());
   } else if (auto* layout_block = DynamicTo<LayoutBlock>(box_model_)) {
-    layout_block->PaintObject(paint_info, paint_offset);
+    layout_block->PaintObject(mask_paint_info, paint_offset);
   } else {
     // We should go through the above path for LayoutInlines.
     DCHECK(!box_model_.IsLayoutInline());
@@ -95,19 +96,20 @@ PhysicalRect BoxModelObjectPainter::AdjustRectForScrolledContent(
     return rect;
 
   const auto& this_box = To<LayoutBox>(box_model_);
-  if (BoxDecorationData::IsPaintingScrollingBackground(paint_info, this_box))
+  if (BoxDecorationData::IsPaintingBackgroundInContentsSpace(paint_info,
+                                                             this_box))
     return rect;
 
-  PhysicalRect scrolled_paint_rect = rect;
   GraphicsContext& context = paint_info.context;
   // Clip to the overflow area.
   // TODO(chrishtr): this should be pixel-snapped.
-  context.Clip(FloatRect(this_box.OverflowClipRect(rect.offset)));
+  context.Clip(gfx::RectF(this_box.OverflowClipRect(rect.offset)));
 
   // Adjust the paint rect to reflect a scrolled content box with borders at
   // the ends.
-  PhysicalOffset offset(this_box.PixelSnappedScrolledContentOffset());
-  scrolled_paint_rect.Move(-offset);
+  PhysicalRect scrolled_paint_rect = rect;
+  scrolled_paint_rect.offset -=
+      PhysicalOffset(this_box.PixelSnappedScrolledContentOffset());
   LayoutRectOutsets border = AdjustedBorderOutsets(info);
   scrolled_paint_rect.SetWidth(border.Left() + this_box.ScrollWidth() +
                                border.Right());
@@ -128,7 +130,7 @@ BoxPainterBase::FillLayerInfo BoxModelObjectPainter::GetFillLayerInfo(
     const Color& color,
     const FillLayer& bg_layer,
     BackgroundBleedAvoidance bleed_avoidance,
-    bool is_painting_scrolling_background) const {
+    bool is_painting_background_in_contents_space) const {
   PhysicalBoxSides sides_to_include;
   if (flow_box_)
     sides_to_include = flow_box_->SidesToInclude();
@@ -142,16 +144,17 @@ BoxPainterBase::FillLayerInfo BoxModelObjectPainter::GetFillLayerInfo(
       box_model_.GetDocument(), box_model_.StyleRef(),
       box_model_.IsScrollContainer(), color, bg_layer, bleed_avoidance,
       respect_orientation, sides_to_include, box_model_.IsLayoutInline(),
-      is_painting_scrolling_background);
+      is_painting_background_in_contents_space);
 }
 
-bool BoxModelObjectPainter::IsPaintingScrollingBackground(
+bool BoxModelObjectPainter::IsPaintingBackgroundInContentsSpace(
     const PaintInfo& paint_info) const {
   if (!box_model_.IsBox())
     return false;
 
   const auto& this_box = To<LayoutBox>(box_model_);
-  return BoxDecorationData::IsPaintingScrollingBackground(paint_info, this_box);
+  return BoxDecorationData::IsPaintingBackgroundInContentsSpace(paint_info,
+                                                                this_box);
 }
 
 }  // namespace blink

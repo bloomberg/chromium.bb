@@ -16,8 +16,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/common/content_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/vector_icon_types.h"
 
@@ -100,7 +102,8 @@ void CreateOpenNewSubmenu(apps::mojom::MenuType menu_type,
                           ? ash::USE_LAUNCH_TYPE_WINDOW
                           : ash::LAUNCH_TYPE_WINDOW,
                       IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW, kGroupId));
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip)) {
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip) &&
+      base::FeatureList::IsEnabled(features::kDesktopPWAsTabStripSettings)) {
     menu_item->submenu.push_back(
         CreateRadioItem((menu_type == apps::mojom::MenuType::kAppList)
                             ? ash::USE_LAUNCH_TYPE_TABBED_WINDOW
@@ -120,10 +123,9 @@ bool ShouldAddOpenItem(const std::string& app_id,
     return false;
   }
 
-  return apps::AppServiceProxyFactory::GetForProfile(profile)
-      ->InstanceRegistry()
-      .GetWindows(app_id)
-      .empty();
+  return !apps::AppServiceProxyFactory::GetForProfile(profile)
+              ->InstanceRegistry()
+              .ContainsAppId(app_id);
 }
 
 bool ShouldAddCloseItem(const std::string& app_id,
@@ -133,10 +135,9 @@ bool ShouldAddCloseItem(const std::string& app_id,
     return false;
   }
 
-  return !apps::AppServiceProxyFactory::GetForProfile(profile)
-              ->InstanceRegistry()
-              .GetWindows(app_id)
-              .empty();
+  return apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->InstanceRegistry()
+      .ContainsAppId(app_id);
 }
 
 void PopulateRadioItemFromMojoMenuItems(
@@ -171,7 +172,7 @@ bool PopulateNewItemFromMojoMenuItems(
           std::move(get_vector_icon).Run(item->command_id, item->string_id);
       model->AddItemWithStringIdAndIcon(
           item->command_id, item->string_id,
-          ui::ImageModel::FromVectorIcon(icon, /*color_id=*/-1,
+          ui::ImageModel::FromVectorIcon(icon, ui::kColorMenuIcon,
                                          ash::kAppContextMenuIconSize));
       break;
     }
@@ -182,7 +183,7 @@ bool PopulateNewItemFromMojoMenuItems(
             std::move(get_vector_icon).Run(item->command_id, item->string_id);
         model->AddActionableSubmenuWithStringIdAndIcon(
             item->command_id, item->string_id, submenu,
-            ui::ImageModel::FromVectorIcon(icon, /*color_id=*/-1,
+            ui::ImageModel::FromVectorIcon(icon, ui::kColorMenuIcon,
                                            ash::kAppContextMenuIconSize));
       }
       break;
@@ -242,7 +243,7 @@ mojom::MenuItemsPtr CreateBrowserMenuItems(mojom::MenuType menu_type,
 
   // "Normal" windows are not allowed when incognito is enforced.
   if (IncognitoModePrefs::GetAvailability(profile->GetPrefs()) !=
-      IncognitoModePrefs::FORCED) {
+      IncognitoModePrefs::Availability::kForced) {
     AddCommandItem((menu_type == mojom::MenuType::kAppList)
                        ? ash::APP_CONTEXT_MENU_NEW_WINDOW
                        : ash::MENU_NEW_WINDOW,
@@ -252,7 +253,7 @@ mojom::MenuItemsPtr CreateBrowserMenuItems(mojom::MenuType menu_type,
   // Incognito windows are not allowed when incognito is disabled.
   if (!profile->IsOffTheRecord() &&
       IncognitoModePrefs::GetAvailability(profile->GetPrefs()) !=
-          IncognitoModePrefs::DISABLED) {
+          IncognitoModePrefs::Availability::kDisabled) {
     AddCommandItem((menu_type == mojom::MenuType::kAppList)
                        ? ash::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW
                        : ash::MENU_NEW_INCOGNITO_WINDOW,

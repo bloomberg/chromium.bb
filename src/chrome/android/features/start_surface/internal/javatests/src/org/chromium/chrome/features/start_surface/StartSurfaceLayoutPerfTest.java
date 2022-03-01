@@ -243,7 +243,7 @@ public class StartSurfaceLayoutPerfTest {
                 // clang-format off
                 TestThreadUtils.runOnUiThreadBlocking(() ->
                         mActivityTestRule.getActivity().getCurrentTabModel().setIndex(
-                                lastIndex, TabSelectionType.FROM_USER)
+                                lastIndex, TabSelectionType.FROM_USER, false)
                 );
                 // clang-format on
             }
@@ -253,7 +253,7 @@ public class StartSurfaceLayoutPerfTest {
                 // clang-format off
                 TestThreadUtils.runOnUiThreadBlocking(() ->
                         mActivityTestRule.getActivity().getCurrentTabModel().setIndex(
-                                currentIndex, TabSelectionType.FROM_USER)
+                                currentIndex, TabSelectionType.FROM_USER, false)
                 );
                 // clang-format on
             }
@@ -352,6 +352,7 @@ public class StartSurfaceLayoutPerfTest {
     @Test
     @EnormousTest
     @CommandLineFlags.Add({BASE_PARAMS})
+    @FlakyTest(message = "https://crbug.com/1225926")
     public void testGridToTabToOtherLive() throws InterruptedException {
         prepareTabs(2, mUrl);
         reportGridToTabPerf(true, false, "Grid-to-Tab to other live tab");

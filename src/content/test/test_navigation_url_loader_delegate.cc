@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "content/browser/loader/navigation_early_hints_manager.h"
 #include "content/browser/navigation_subresource_loader_params.h"
-#include "content/common/navigation_params.h"
 #include "content/public/browser/global_request_id.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -83,6 +82,13 @@ void TestNavigationURLLoaderDelegate::OnRequestFailed(
     ssl_info_ = status.ssl_info.value();
   if (request_failed_)
     request_failed_->Quit();
+}
+
+absl::optional<NavigationEarlyHintsManagerParams>
+TestNavigationURLLoaderDelegate::CreateNavigationEarlyHintsManagerParams(
+    const network::mojom::EarlyHints& early_hints) {
+  NOTREACHED();
+  return absl::nullopt;
 }
 
 }  // namespace content

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/accessibility/aura/aura_window_properties.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -18,6 +19,8 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/aura/window_tree_host_platform.h"
+#include "ui/base/ime/text_input_client.h"
+#include "ui/compositor/layer.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/widget/widget.h"
@@ -77,6 +80,26 @@ std::string GetWindowName(aura::Window* window) {
   return class_name;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+std::string GetPlatformWindowId(aura::Window* window) {
+  // This is a top level root window.
+  if (window->IsRootWindow() && !window->parent()) {
+    // On desktop aura there is one WindowTreeHost per top-level window.
+    aura::WindowTreeHost* window_tree_host = window->GetHost();
+    if (window_tree_host) {
+      // Lacros is based on Ozone/Wayland, which uses PlatformWindow and
+      // aura::WindowTreeHostPlatform.
+      aura::WindowTreeHostPlatform* window_tree_host_platform =
+          static_cast<aura::WindowTreeHostPlatform*>(window_tree_host);
+
+      return window_tree_host_platform->platform_window()->GetWindowUniqueId();
+    }
+  }
+
+  return std::string();
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
 }  // namespace
 
 AXWindowObjWrapper::AXWindowObjWrapper(AXAuraObjCache* aura_obj_cache,
@@ -88,6 +111,14 @@ AXWindowObjWrapper::AXWindowObjWrapper(AXAuraObjCache* aura_obj_cache,
 
   if (is_root_window_)
     aura_obj_cache_->OnRootWindowObjCreated(window);
+
+  // This is a top level root window.
+  if (window->IsRootWindow() && !window->parent()) {
+    // On desktop aura there is one WindowTreeHost per top-level window.
+    aura::WindowTreeHost* window_tree_host = window->GetHost();
+    if (window_tree_host)
+      ime_observation_.Observe(window_tree_host->GetInputMethod());
+  }
 }
 
 AXWindowObjWrapper::~AXWindowObjWrapper() = default;
@@ -102,6 +133,15 @@ bool AXWindowObjWrapper::HandleAccessibleAction(
 }
 
 AXAuraObjWrapper* AXWindowObjWrapper::GetParent() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  const std::string& window_id = GetPlatformWindowId(window_);
+
+  // In Lacros, the presence of a platform window id means it is parented to the
+  // Ash tree via the app id.
+  if (!window_id.empty())
+    return nullptr;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   aura::Window* parent = window_->parent();
   if (!parent)
     return nullptr;
@@ -124,6 +164,10 @@ void AXWindowObjWrapper::GetChildren(
     return;
   }
 
+  // Ignore this window's children if it is forced to be invisible.
+  if (window_->GetProperty(ui::kAXConsiderInvisibleAndIgnoreChildren))
+    return;
+
   for (auto* child : window_->children())
     out_children->push_back(aura_obj_cache_->GetOrCreate(child));
 
@@ -135,25 +179,26 @@ void AXWindowObjWrapper::GetChildren(
 
 void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // This is a top level root window.
-  if (window_->IsRootWindow() && !window_->parent()) {
-    // On desktop aura there is one WindowTreeHost per top-level window.
-    aura::WindowTreeHost* window_tree_host = window_->GetHost();
-    if (window_tree_host) {
-      // Lacros is based on Ozone/Wayland, which uses PlatformWindow and
-      // aura::WindowTreeHostPlatform.
-      aura::WindowTreeHostPlatform* window_tree_host_platform =
-          static_cast<aura::WindowTreeHostPlatform*>(window_tree_host);
+  // This app id connects this node with a node in the Ash tree (an
+  // components/exo shell surface).
+  const std::string& window_id = GetPlatformWindowId(window_);
+  if (!window_id.empty())
+    out_node_data->AddStringAttribute(ax::mojom::StringAttribute::kAppId,
+                                      window_id);
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
-      const std::string window_id =
-          window_tree_host_platform->platform_window()->GetWindowUniqueId();
-
-      if (!window_id.empty())
-        out_node_data->AddStringAttribute(ax::mojom::StringAttribute::kAppId,
-                                          window_id);
+  if (window_->IsRootWindow() && !window_->parent() && window_->GetHost()) {
+    ui::TextInputClient* client =
+        window_->GetHost()->GetInputMethod()->GetTextInputClient();
+    // Only set caret bounds if input caret is in an editable node.
+    if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
+      gfx::Rect caret_bounds_in_screen = client->GetCaretBounds();
+      out_node_data->AddIntListAttribute(
+          ax::mojom::IntListAttribute::kCaretBounds,
+          {caret_bounds_in_screen.x(), caret_bounds_in_screen.y(),
+           caret_bounds_in_screen.width(), caret_bounds_in_screen.height()});
     }
   }
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   out_node_data->id = GetUniqueId();
   ax::mojom::Role role = window_->GetProperty(ui::kAXRoleOverride);
@@ -163,11 +208,17 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
     out_node_data->role = ax::mojom::Role::kWindow;
   out_node_data->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                     base::UTF16ToUTF8(window_->GetTitle()));
-  if (!window_->IsVisible())
+  if (!window_->IsVisible() ||
+      window_->GetProperty(ui::kAXConsiderInvisibleAndIgnoreChildren)) {
     out_node_data->AddState(ax::mojom::State::kInvisible);
+  }
 
   out_node_data->relative_bounds.bounds =
       gfx::RectF(window_->GetBoundsInScreen());
+
+  out_node_data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,
+                                    GetWindowName(window_));
+
   std::string* child_ax_tree_id_ptr = window_->GetProperty(ui::kChildAXTreeID);
   if (child_ax_tree_id_ptr) {
     ui::AXTreeID child_ax_tree_id =
@@ -184,16 +235,19 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
       // non-visible so prune it.
       if (!window_->GetToplevelWindow() ||
           GetWidgetForWindow(window_->GetToplevelWindow()) ||
-          !window_->IsVisible()) {
+          !window_->IsVisible() ||
+          window_->GetProperty(ui::kAXConsiderInvisibleAndIgnoreChildren)) {
         return;
       }
 
       out_node_data->AddChildTreeId(child_ax_tree_id);
+
+      const float scale_factor =
+          window_->GetToplevelWindow()->layer()->device_scale_factor();
+      out_node_data->AddFloatAttribute(
+          ax::mojom::FloatAttribute::kChildTreeScale, scale_factor);
     }
   }
-
-  out_node_data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,
-                                    GetWindowName(window_));
 }
 
 ui::AXNodeID AXWindowObjWrapper::GetUniqueId() const {
@@ -202,6 +256,11 @@ ui::AXNodeID AXWindowObjWrapper::GetUniqueId() const {
 
 std::string AXWindowObjWrapper::ToString() const {
   return GetWindowName(window_);
+}
+
+void AXWindowObjWrapper::OnCaretBoundsChanged(
+    const ui::TextInputClient* client) {
+  FireEvent(ax::mojom::Event::kTreeChanged);
 }
 
 void AXWindowObjWrapper::OnWindowDestroyed(aura::Window* window) {
@@ -241,11 +300,13 @@ void AXWindowObjWrapper::OnWindowBoundsChanged(
 void AXWindowObjWrapper::OnWindowPropertyChanged(aura::Window* window,
                                                  const void* key,
                                                  intptr_t old) {
-  if (window_destroying_)
+  if (window_destroying_ || window != window_)
     return;
 
-  if (window == window_ && key == ui::kChildAXTreeID)
+  if (key == ui::kChildAXTreeID ||
+      key == ui::kAXConsiderInvisibleAndIgnoreChildren) {
     FireEvent(ax::mojom::Event::kChildrenChanged);
+  }
 }
 
 void AXWindowObjWrapper::OnWindowVisibilityChanged(aura::Window* window,

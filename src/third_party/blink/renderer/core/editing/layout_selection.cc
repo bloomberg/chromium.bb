@@ -173,11 +173,11 @@ struct OldSelectedNodes {
     selected_map = std::move(other.selected_map);
   }
 
+  OldSelectedNodes(const OldSelectedNodes&) = delete;
+  OldSelectedNodes& operator=(const OldSelectedNodes&) = delete;
+
   SelectionPaintRange* paint_range;
   HeapHashMap<Member<const Node>, SelectionState> selected_map;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OldSelectedNodes);
 };
 
 std::ostream& operator<<(std::ostream&, const OldSelectedNodes&);
@@ -200,6 +200,10 @@ struct NewPaintRangeAndSelectedNodes {
     selected_objects = std::move(other.selected_objects);
   }
 
+  NewPaintRangeAndSelectedNodes(const NewPaintRangeAndSelectedNodes&) = delete;
+  NewPaintRangeAndSelectedNodes& operator=(
+      const NewPaintRangeAndSelectedNodes&) = delete;
+
   void AssertSanity() const {
 #if DCHECK_IS_ON()
     paint_range->AssertSanity();
@@ -214,9 +218,6 @@ struct NewPaintRangeAndSelectedNodes {
 
   SelectionPaintRange* paint_range;
   HeapHashSet<Member<const Node>> selected_objects;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NewPaintRangeAndSelectedNodes);
 };
 
 std::ostream& operator<<(std::ostream&, const NewPaintRangeAndSelectedNodes&);
@@ -238,7 +239,7 @@ static void SetShouldInvalidateIfNeeded(LayoutObject* layout_object) {
        parent = parent->Parent()) {
     if (parent->IsSVGRoot())
       return;
-    if (parent->IsSVGText()) {
+    if (parent->IsSVGText() || parent->IsNGSVGText()) {
       if (!parent->ShouldInvalidateSelection())
         parent->SetShouldInvalidateSelection();
       return;
@@ -922,10 +923,10 @@ static void VisitLayoutObjectsOf(const Node& node, Visitor* visitor) {
   visitor->Visit(layout_object);
 }
 
-IntRect LayoutSelection::AbsoluteSelectionBounds() {
+gfx::Rect LayoutSelection::AbsoluteSelectionBounds() {
   Commit();
   if (paint_range_->IsNull())
-    return IntRect();
+    return gfx::Rect();
 
   // Create a single bounding box rect that encloses the whole selection.
   class SelectionBoundsVisitor {
@@ -940,7 +941,7 @@ IntRect LayoutSelection::AbsoluteSelectionBounds() {
   } visitor;
   VisitSelectedInclusiveDescendantsOf(frame_selection_->GetDocument(),
                                       &visitor);
-  return PixelSnappedIntRect(visitor.selected_rect);
+  return ToPixelSnappedRect(visitor.selected_rect);
 }
 
 void LayoutSelection::InvalidatePaintForSelection() {

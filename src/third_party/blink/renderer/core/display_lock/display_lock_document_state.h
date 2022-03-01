@@ -7,8 +7,8 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
@@ -53,6 +53,10 @@ class CORE_EXPORT DisplayLockDocumentState final
 
   // Returns true if all activatable locks have been forced.
   bool ActivatableDisplayLocksForced() const;
+
+  // Notifications for elements entering/exiting top layer.
+  void ElementAddedToTopLayer(Element*);
+  void ElementRemovedFromTopLayer(Element*);
 
   class CORE_EXPORT ScopedForceActivatableDisplayLocks {
     STACK_ALLOCATED();
@@ -99,8 +103,16 @@ class CORE_EXPORT DisplayLockDocumentState final
       const Node* node,
       bool self_was_forced,
       DisplayLockUtilities::ScopedForcedUpdate::Impl* chain);
-  void EndNodeForcedScope(
+  void BeginRangeForcedScope(
+      const Range* range,
       DisplayLockUtilities::ScopedForcedUpdate::Impl* chain);
+  void EndForcedScope(DisplayLockUtilities::ScopedForcedUpdate::Impl* chain);
+
+  // This is called to make sure that any of the currently forced locks allow at
+  // least the specified phase for updates. This is used when a scope is
+  // created, for example, to update StyleAndLayoutTree, but then is upgraded to
+  // update Layout instead.
+  void EnsureMinimumForcedPhase(DisplayLockContext::ForcedPhase phase);
 
   // Forces the lock on the given element, if it isn't yet forced but appears on
   // the ancestor chain for the forced element (which was set via
@@ -109,21 +121,49 @@ class CORE_EXPORT DisplayLockDocumentState final
 
   class ForcedNodeInfo {
     DISALLOW_NEW();
-
    public:
     ForcedNodeInfo(const Node* node,
                    bool self_forced,
                    DisplayLockUtilities::ScopedForcedUpdate::Impl* chain)
-        : node(node), self_forced(self_forced), chain(chain) {}
+        : chain_(chain), node_(node), self_forced_(self_forced) {}
 
-    void Trace(Visitor* visitor) const {
-      visitor->Trace(node);
-      visitor->Trace(chain);
+    void ForceLockIfNeeded(Element* new_locked_element);
+    DisplayLockUtilities::ScopedForcedUpdate::Impl* Chain() const {
+      return chain_;
     }
 
-    Member<const Node> node;
-    bool self_forced;
-    Member<DisplayLockUtilities::ScopedForcedUpdate::Impl> chain;
+    void Trace(Visitor* visitor) const {
+      visitor->Trace(chain_);
+      visitor->Trace(node_);
+    }
+
+   private:
+    Member<DisplayLockUtilities::ScopedForcedUpdate::Impl> chain_;
+    Member<const Node> node_;
+    bool self_forced_;
+  };
+
+  class ForcedRangeInfo {
+    DISALLOW_NEW();
+
+   public:
+    ForcedRangeInfo(const Range* range,
+                    DisplayLockUtilities::ScopedForcedUpdate::Impl* chain)
+        : chain_(chain), range_(range) {}
+
+    void ForceLockIfNeeded(Element* new_locked_element);
+    DisplayLockUtilities::ScopedForcedUpdate::Impl* Chain() const {
+      return chain_;
+    }
+
+    void Trace(Visitor* visitor) const {
+      visitor->Trace(chain_);
+      visitor->Trace(range_);
+    }
+
+   private:
+    Member<DisplayLockUtilities::ScopedForcedUpdate::Impl> chain_;
+    Member<const Range> range_;
   };
 
   void NotifyPrintingOrPreviewChanged();
@@ -136,9 +176,12 @@ class CORE_EXPORT DisplayLockDocumentState final
   void ProcessDisplayLockActivationObservation(
       const HeapVector<Member<IntersectionObserverEntry>>&);
 
-  void ForceLockIfNeededForInfo(Element*, ForcedNodeInfo*);
-
   void ScheduleAnimation();
+
+  // Mark element's ancestor contexts as having a top layer element. If at least
+  // one of the contexts skips its descendants, this return true. Otherwise, it
+  // returns false.
+  bool MarkAncestorContextsHaveTopLayerElement(Element*);
 
   Member<Document> document_;
 
@@ -153,7 +196,8 @@ class CORE_EXPORT DisplayLockDocumentState final
 
   // Contains all of the currently forced node infos, each of which represents
   // the node that caused the scope to be created.
-  HeapVector<ForcedNodeInfo> forced_node_info_;
+  HeapVector<ForcedNodeInfo> forced_node_infos_;
+  HeapVector<ForcedRangeInfo> forced_range_infos_;
 
   bool printing_ = false;
 
@@ -167,5 +211,7 @@ class CORE_EXPORT DisplayLockDocumentState final
 // This is needed to allocate it in HeapVector directly.
 WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(
     blink::DisplayLockDocumentState::ForcedNodeInfo)
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(
+    blink::DisplayLockDocumentState::ForcedRangeInfo)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DISPLAY_LOCK_DISPLAY_LOCK_DOCUMENT_STATE_H_

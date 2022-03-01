@@ -62,7 +62,7 @@ TEST(StabsToModule, SimpleCU) {
   m.GetFunctions(&functions, functions.end());
   ASSERT_EQ((size_t) 1, functions.size());
   Module::Function *function = functions[0];
-  EXPECT_STREQ("function", function->name.c_str());
+  EXPECT_STREQ("function", function->name.str().c_str());
   EXPECT_EQ(0xfde4abbed390c394LL, function->address);
   EXPECT_EQ(0x10U, function->ranges[0].size);
   EXPECT_EQ(0U, function->parameter_size);
@@ -164,7 +164,7 @@ TEST(InferSizes, LineSize) {
   ASSERT_EQ((size_t) 1, functions.size());
 
   Module::Function *function = functions[0];
-  EXPECT_STREQ("function", function->name.c_str());
+  EXPECT_STREQ("function", function->name.str().c_str());
   EXPECT_EQ(0xb4513962eff94e92LL, function->address);
   EXPECT_EQ(0x1000100000000ULL, function->ranges[0].size); // inferred from CU end
   EXPECT_EQ(0U, function->parameter_size);
@@ -214,7 +214,7 @@ TEST(FunctionNames, Mangled) {
   EXPECT_STREQ("std::vector<unsigned long long, "
                "std::allocator<unsigned long long> >::"
                "push_back(unsigned long long const&)",
-               function->name.c_str());
+               function->name.str().c_str());
   EXPECT_EQ(0xf2cfda63cef7f46dLL, function->address);
   EXPECT_LT(0U, function->ranges[0].size); // should have used dummy size
   EXPECT_EQ(0U, function->parameter_size);

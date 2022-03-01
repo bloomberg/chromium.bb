@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/ui/browser.h"
@@ -20,48 +20,39 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_WIN)
+#include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
+#endif
+
 using content::WebContents;
 
 namespace media_router {
 
-std::unique_ptr<StartPresentationContext> CreateStartPresentationContext() {
+std::unique_ptr<StartPresentationContext> CreateStartPresentationContext(
+    content::WebContents* content) {
   return std::make_unique<StartPresentationContext>(
-      content::PresentationRequest(
-          {1, 2}, {GURL("http://example.com"), GURL("http://example2.com")},
-          url::Origin::Create(GURL("http://google.com"))),
+      content::PresentationRequest(content->GetMainFrame()->GetGlobalId(),
+                                   {GURL(), GURL()}, url::Origin()),
       base::DoNothing(), base::DoNothing());
 }
 
 class MediaRouterDialogControllerViewsTest : public InProcessBrowserTest {
  public:
   MediaRouterDialogControllerViewsTest() = default;
+
+  MediaRouterDialogControllerViewsTest(
+      const MediaRouterDialogControllerViewsTest&) = delete;
+  MediaRouterDialogControllerViewsTest& operator=(
+      const MediaRouterDialogControllerViewsTest&) = delete;
+
   ~MediaRouterDialogControllerViewsTest() override = default;
 
   void OpenMediaRouterDialog();
   void CreateDialogController();
 
  protected:
-  WebContents* initiator_;
-  MediaRouterDialogControllerViews* dialog_controller_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogControllerViewsTest);
-};
-
-class GlobalMediaControlsDialogTest
-    : public MediaRouterDialogControllerViewsTest {
- public:
-  void SetUp() override {
-    InProcessBrowserTest::SetUp();
-    feature_list_.InitWithFeatures(
-        {media_router::kGlobalMediaControlsCastStartStop}, {});
-  }
-  void SetUpOnMainThread() override {
-    ASSERT_TRUE(embedded_test_server()->Start());
-  }
-
- protected:
-  base::test::ScopedFeatureList feature_list_;
+  raw_ptr<WebContents> initiator_;
+  raw_ptr<MediaRouterDialogControllerViews> dialog_controller_;
 };
 
 void MediaRouterDialogControllerViewsTest::CreateDialogController() {
@@ -95,8 +86,42 @@ IN_PROC_BROWSER_TEST_F(MediaRouterDialogControllerViewsTest,
   EXPECT_EQ(CastDialogView::GetCurrentDialogWidget(), nullptr);
 }
 
+// The feature |media_router::kGlobalMediaControlsCastStartStop| is supported
+// on MAC, Linux and Windows only.
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_WIN)
+class GlobalMediaControlsDialogTest
+    : public MediaRouterDialogControllerViewsTest {
+ public:
+  void SetUp() override {
+    feature_list_.InitWithFeatures(
+        {media_router::kGlobalMediaControlsCastStartStop}, {});
+    MediaRouterDialogControllerViewsTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(GlobalMediaControlsDialogTest, OpenGMCDialog) {
+  EXPECT_FALSE(MediaDialogView::IsShowing());
+  // Navigate to a page with origin so that the PresentationRequest notification
+  // created on this page has an origin to be displayed.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/simple_page.html")));
+  CreateDialogController();
+  dialog_controller_->ShowMediaRouterDialogForPresentation(
+      CreateStartPresentationContext(initiator_));
+  EXPECT_TRUE(MediaDialogView::IsShowing());
+}
+
 IN_PROC_BROWSER_TEST_F(GlobalMediaControlsDialogTest,
                        ActivateInitiatorBeforeDialogOpen) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/simple_page.html")));
   CreateDialogController();
 
   // Create a new foreground tab that covers |web_contents|.
@@ -108,9 +133,10 @@ IN_PROC_BROWSER_TEST_F(GlobalMediaControlsDialogTest,
 
   // |initiator_| should become active after the GMC dialog is open.
   dialog_controller_->ShowMediaRouterDialogForPresentation(
-      CreateStartPresentationContext());
-  ASSERT_TRUE(dialog_controller_->IsShowingMediaRouterDialog());
+      CreateStartPresentationContext(initiator_));
   ASSERT_EQ(initiator_, browser()->tab_strip_model()->GetActiveWebContents());
 }
+
+#endif
 
 }  // namespace media_router

@@ -58,8 +58,15 @@ class FtraceProcfs {
 
   virtual std::string ReadPageHeaderFormat() const;
 
+  // Read the triggers for event with the given |group| and |name|.
+  std::string ReadEventTrigger(const std::string& group,
+                               const std::string& name) const;
+
   // Read the printk formats file.
   std::string ReadPrintkFormats() const;
+
+  // Opens the "/per_cpu/cpuXX/stats" file for the given |cpu|.
+  base::ScopedFile OpenCpuStats(size_t cpu) const;
 
   // Read the "/per_cpu/cpuXX/stats" file for the given |cpu|.
   std::string ReadCpuStats(size_t cpu) const;

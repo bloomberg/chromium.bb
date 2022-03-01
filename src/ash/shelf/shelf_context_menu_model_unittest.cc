@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
-#include "ash/public/cpp/wallpaper_controller_client.h"
+#include "ash/public/cpp/wallpaper/wallpaper_controller_client.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -30,6 +30,11 @@ class ShelfContextMenuModelTest
       public ::testing::WithParamInterface<user_manager::UserType> {
  public:
   ShelfContextMenuModelTest() = default;
+
+  ShelfContextMenuModelTest(const ShelfContextMenuModelTest&) = delete;
+  ShelfContextMenuModelTest& operator=(const ShelfContextMenuModelTest&) =
+      delete;
+
   ~ShelfContextMenuModelTest() override = default;
 
   void SetUp() override {
@@ -41,15 +46,16 @@ class ShelfContextMenuModelTest
   }
 
   user_manager::UserType GetUserType() const { return GetParam(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShelfContextMenuModelTest);
 };
 
 // A test shelf item delegate that records the commands sent for execution.
 class TestShelfItemDelegate : public ShelfItemDelegate {
  public:
   TestShelfItemDelegate() : ShelfItemDelegate(ShelfID()) {}
+
+  TestShelfItemDelegate(const TestShelfItemDelegate&) = delete;
+  TestShelfItemDelegate& operator=(const TestShelfItemDelegate&) = delete;
+
   ~TestShelfItemDelegate() override = default;
 
   int last_executed_command() const { return last_executed_command_; }
@@ -71,8 +77,6 @@ class TestShelfItemDelegate : public ShelfItemDelegate {
 
  private:
   int last_executed_command_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestShelfItemDelegate);
 };
 
 INSTANTIATE_TEST_SUITE_P(,

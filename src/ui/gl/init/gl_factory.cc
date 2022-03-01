@@ -11,12 +11,19 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_initializer.h"
+
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
+#include "ui/ozone/public/ozone_platform.h"
+#endif
 
 namespace gl {
 namespace init {
@@ -45,15 +52,24 @@ GLImplementationParts GetRequestedGLImplementation(
       cmd->GetSwitchValueASCII(switches::kUseGL);
   std::string requested_implementation_angle_name =
       cmd->GetSwitchValueASCII(switches::kUseANGLE);
+
+  // If --use-angle was specified but --use-gl was not, assume --use-gl=angle
+  if (cmd->HasSwitch(switches::kUseANGLE) &&
+      !cmd->HasSwitch(switches::kUseGL)) {
+    requested_implementation_gl_name = "angle";
+  }
+
   if (requested_implementation_gl_name == kGLImplementationDisabledName) {
     return GLImplementationParts(kGLImplementationDisabled);
   }
 
-  std::vector<GLImplementation> allowed_impls = GetAllowedGLImplementations();
+  std::vector<GLImplementationParts> allowed_impls =
+      GetAllowedGLImplementations();
 
   if (cmd->HasSwitch(switches::kDisableES3GLContext)) {
-    auto iter = std::find(allowed_impls.begin(), allowed_impls.end(),
-                          kGLImplementationDesktopGLCoreProfile);
+    auto iter =
+        std::find(allowed_impls.begin(), allowed_impls.end(),
+                  GLImplementationParts(kGLImplementationDesktopGLCoreProfile));
     if (iter != allowed_impls.end())
       allowed_impls.erase(iter);
   }
@@ -64,11 +80,33 @@ GLImplementationParts GetRequestedGLImplementation(
 
   // If the passthrough command decoder is enabled, put ANGLE first if allowed
   if (g_is_angle_enabled && gl::UsePassthroughCommandDecoder(cmd)) {
-    auto iter = std::find(allowed_impls.begin(), allowed_impls.end(),
-                          kGLImplementationEGLANGLE);
-    if (iter != allowed_impls.end()) {
-      allowed_impls.erase(iter);
-      allowed_impls.insert(allowed_impls.begin(), kGLImplementationEGLANGLE);
+    std::vector<GLImplementationParts> angle_impls = {};
+    bool software_gl_allowed = false;
+    bool legacy_software_gl_allowed = false;
+    auto iter = allowed_impls.begin();
+    while (iter != allowed_impls.end()) {
+      if ((*iter) == GetSoftwareGLImplementation()) {
+        software_gl_allowed = true;
+        allowed_impls.erase(iter);
+      } else if ((*iter) == GetLegacySoftwareGLImplementation()) {
+        legacy_software_gl_allowed = true;
+        allowed_impls.erase(iter);
+      } else if (iter->gl == kGLImplementationEGLANGLE) {
+        angle_impls.emplace_back(*iter);
+        allowed_impls.erase(iter);
+      } else {
+        iter++;
+      }
+    }
+    allowed_impls.insert(allowed_impls.begin(), angle_impls.begin(),
+                         angle_impls.end());
+    // Insert software implementations at the end, after all other hardware
+    // implementations
+    if (software_gl_allowed) {
+      allowed_impls.emplace_back(GetSoftwareGLImplementation());
+    }
+    if (legacy_software_gl_allowed) {
+      allowed_impls.emplace_back(GetLegacySoftwareGLImplementation());
     }
   }
 
@@ -78,13 +116,13 @@ GLImplementationParts GetRequestedGLImplementation(
   }
 
   // The default implementation is always the first one in list.
-  GLImplementationParts impl = GLImplementationParts(allowed_impls[0]);
-  UMA_HISTOGRAM_ENUMERATION("GPU.PreferredGLImplementation", impl.gl);
+  GLImplementationParts impl = allowed_impls[0];
 
   *fallback_to_software_gl = false;
   if (cmd->HasSwitch(switches::kOverrideUseSoftwareGLForTests)) {
-    impl = GetSoftwareGLForTestsImplementation();
-  } else if (cmd->HasSwitch(switches::kUseGL)) {
+    impl = GetSoftwareGLImplementationForPlatform();
+  } else if (cmd->HasSwitch(switches::kUseGL) ||
+             cmd->HasSwitch(switches::kUseANGLE)) {
     if (requested_implementation_gl_name == "any") {
       *fallback_to_software_gl = true;
     } else if ((requested_implementation_gl_name ==
@@ -102,16 +140,19 @@ GLImplementationParts GetRequestedGLImplementation(
     } else {
       impl = GetNamedGLImplementation(requested_implementation_gl_name,
                                       requested_implementation_angle_name);
-      if (!base::Contains(allowed_impls, impl.gl)) {
-        LOG(ERROR) << "Requested GL implementation is not available.";
-        UMA_HISTOGRAM_ENUMERATION("GPU.RequestedGLImplementation",
-                                  kGLImplementationNone);
+      if (!impl.IsAllowed(allowed_impls)) {
+        std::vector<std::string> allowed_impl_strs;
+        for (const auto& allowed_impl : allowed_impls) {
+          allowed_impl_strs.push_back(allowed_impl.ToString());
+        }
+        LOG(ERROR) << "Requested GL implementation " << impl.ToString()
+                   << " not found in allowed implementations: ["
+                   << base::JoinString(allowed_impl_strs, ",") << "].";
         return GLImplementationParts(kGLImplementationNone);
       }
     }
   }
 
-  UMA_HISTOGRAM_ENUMERATION("GPU.RequestedGLImplementation", impl.gl);
   return impl;
 }
 
@@ -128,6 +169,14 @@ bool InitializeGLOneOffPlatformHelper(bool init_extensions) {
 }
 
 }  // namespace
+
+GLImplementationParts GetSoftwareGLImplementationForPlatform() {
+#if defined(OS_WIN) || defined(OS_LINUX)
+  return GetSoftwareGLImplementation();
+#else
+  return GetLegacySoftwareGLImplementation();
+#endif
+}
 
 bool InitializeGLOneOff() {
   TRACE_EVENT0("gpu,startup", "gl::init::InitializeOneOff");
@@ -179,7 +228,7 @@ bool InitializeStaticGLBindingsImplementation(GLImplementationParts impl,
   if (!initialized && fallback_to_software_gl) {
     ShutdownGL(/*due_to_fallback*/ true);
     initialized =
-        InitializeStaticGLBindings(GetLegacySoftwareGLImplementation());
+        InitializeStaticGLBindings(GetSoftwareGLImplementationForPlatform());
   }
   if (!initialized) {
     ShutdownGL(/*due_to_fallback*/ false);
@@ -198,7 +247,7 @@ bool InitializeGLOneOffPlatformImplementation(bool fallback_to_software_gl,
   if (!initialized && fallback_to_software_gl) {
     ShutdownGL(/*due_to_fallback*/ true);
     initialized =
-        InitializeStaticGLBindings(GetLegacySoftwareGLImplementation()) &&
+        InitializeStaticGLBindings(GetSoftwareGLImplementationForPlatform()) &&
         InitializeGLOneOffPlatform();
   }
   if (initialized && init_extensions) {

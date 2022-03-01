@@ -12,7 +12,7 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 
@@ -28,9 +28,14 @@ namespace android_webview {
 
 class AwBrowserContext;
 
+// TODO(crbug.com/1215208): Change the functions in this class to reference
+// StorageKey instead of Origin.
 class AwQuotaManagerBridge
     : public base::RefCountedThreadSafe<AwQuotaManagerBridge> {
  public:
+  AwQuotaManagerBridge(const AwQuotaManagerBridge&) = delete;
+  AwQuotaManagerBridge& operator=(const AwQuotaManagerBridge&) = delete;
+
   static scoped_refptr<AwQuotaManagerBridge> Create(
       AwBrowserContext* browser_context);
 
@@ -83,12 +88,10 @@ class AwQuotaManagerBridge
                               int64_t usage,
                               int64_t quota);
 
-  AwBrowserContext* browser_context_;
+  raw_ptr<AwBrowserContext> browser_context_;
   JavaObjectWeakGlobalRef java_ref_;
 
   base::WeakPtrFactory<AwQuotaManagerBridge> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AwQuotaManagerBridge);
 };
 
 }  // namespace android_webview

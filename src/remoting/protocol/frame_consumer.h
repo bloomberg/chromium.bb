@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 
 namespace webrtc {
 class DesktopFrame;
@@ -20,6 +19,9 @@ namespace protocol {
 
 class FrameConsumer {
  public:
+  FrameConsumer(const FrameConsumer&) = delete;
+  FrameConsumer& operator=(const FrameConsumer&) = delete;
+
   virtual ~FrameConsumer() {}
 
   // List of supported pixel formats needed by various platforms.
@@ -39,9 +41,6 @@ class FrameConsumer {
 
  protected:
   FrameConsumer() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FrameConsumer);
 };
 
 }  // namespace protocol

@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
+#include "third_party/blink/renderer/core/html/html_meta_element.h"
 #include "third_party/blink/renderer/core/html/html_span_element.h"
 #include "third_party/blink/renderer/core/html/html_table_cell_element.h"
 #include "third_party/blink/renderer/core/html/html_table_element.h"
@@ -47,7 +48,7 @@
 #include "third_party/blink/renderer/core/html/html_table_section_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_view_source_parser.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
@@ -89,6 +90,11 @@ void HTMLViewSourceDocument::CreateContainingTable() {
   auto* html = MakeGarbageCollected<HTMLHtmlElement>(*this);
   ParserAppendChild(html);
   auto* head = MakeGarbageCollected<HTMLHeadElement>(*this);
+  auto* meta =
+      MakeGarbageCollected<HTMLMetaElement>(*this, CreateElementFlags());
+  meta->setAttribute(html_names::kNameAttr, "color-scheme");
+  meta->setAttribute(html_names::kContentAttr, "light dark");
+  head->ParserAppendChild(meta);
   html->ParserAppendChild(head);
   auto* body = MakeGarbageCollected<HTMLBodyElement>(*this);
   html->ParserAppendChild(body);
@@ -100,7 +106,6 @@ void HTMLViewSourceDocument::CreateContainingTable() {
   body->ParserAppendChild(div);
 
   auto* table = MakeGarbageCollected<HTMLTableElement>(*this);
-  body->ParserAppendChild(table);
   tbody_ = MakeGarbageCollected<HTMLTableSectionElement>(html_names::kTbodyTag,
                                                          *this);
   table->ParserAppendChild(tbody_);
@@ -115,6 +120,8 @@ void HTMLViewSourceDocument::CreateContainingTable() {
       event_type_names::kChange,
       MakeGarbageCollected<ViewSourceEventListener>(table, checkbox),
       /*use_capture=*/false);
+  checkbox->setAttribute(html_names::kAriaLabelAttr, WTF::AtomicString(Locale::DefaultLocale().QueryString(
+                              IDS_VIEW_SOURCE_LINE_WRAP)));
   auto* label = MakeGarbageCollected<HTMLLabelElement>(*this);
   label->ParserAppendChild(
       Text::Create(*this, WTF::AtomicString(Locale::DefaultLocale().QueryString(
@@ -126,14 +133,8 @@ void HTMLViewSourceDocument::CreateContainingTable() {
   auto* form = MakeGarbageCollected<HTMLFormElement>(*this);
   form->setAttribute(html_names::kAutocompleteAttr, "off");
   form->ParserAppendChild(label);
-  auto* tr = MakeGarbageCollected<HTMLTableRowElement>(*this);
-  auto* td =
-      MakeGarbageCollected<HTMLTableCellElement>(html_names::kTdTag, *this);
-  td->setAttribute(html_names::kColspanAttr, "2");
-  td->setAttribute(html_names::kClassAttr, "line-wrap-cell");
-  td->ParserAppendChild(form);
-  tr->ParserAppendChild(td);
-  tbody_->ParserAppendChild(tr);
+  body->ParserAppendChild(form);
+  body->ParserAppendChild(table);
 }
 
 void HTMLViewSourceDocument::AddSource(const String& source, HTMLToken& token) {

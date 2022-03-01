@@ -11,7 +11,6 @@
 #include "ash/components/audio/audio_device.h"
 #include "ash/components/audio/audio_devices_pref_handler.h"
 #include "ash/components/audio/cras_audio_handler.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/dbus/audio/audio_node.h"
 #include "chromeos/dbus/audio/fake_cras_audio_client.h"
@@ -34,6 +33,9 @@ class ShellAudioControllerTest : public testing::Test {
 
     controller_ = std::make_unique<ShellAudioController>();
   }
+
+  ShellAudioControllerTest(const ShellAudioControllerTest&) = delete;
+  ShellAudioControllerTest& operator=(const ShellAudioControllerTest&) = delete;
 
   ~ShellAudioControllerTest() override {
     controller_.reset();
@@ -75,9 +77,6 @@ class ShellAudioControllerTest : public testing::Test {
 
   // Next audio node ID to be returned by CreateNode().
   uint64_t next_node_id_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShellAudioControllerTest);
 };
 
 // Tests that higher-priority devices are activated as soon as they're

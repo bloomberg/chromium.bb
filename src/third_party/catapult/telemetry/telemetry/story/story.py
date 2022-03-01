@@ -152,7 +152,7 @@ class Story(object):
 
   def GetStoryTagsList(self):
     """Return a list of strings with story tags and grouping keys."""
-    return list(self.tags) + [
+    return sorted(list(self.tags)) + [
         '%s:%s' % kv for kv in six.iteritems(self.grouping_keys)]
 
   def GetExtraTracingMetrics(self):
@@ -178,4 +178,3 @@ class Story(object):
     levels. e.g. if you want to add more trace categories for some stories
     you can add them here.
     """
-    pass

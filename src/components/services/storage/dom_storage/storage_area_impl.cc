@@ -24,16 +24,6 @@ void StorageAreaImpl::Delegate::PrepareToCommit(
     std::vector<DomStorageDatabase::KeyValuePair>* extra_entries_to_add,
     std::vector<DomStorageDatabase::Key>* extra_keys_to_delete) {}
 
-void StorageAreaImpl::Delegate::MigrateData(
-    base::OnceCallback<void(std::unique_ptr<ValueMap>)> callback) {
-  std::move(callback).Run(nullptr);
-}
-
-std::vector<StorageAreaImpl::Change> StorageAreaImpl::Delegate::FixUpData(
-    const ValueMap& data) {
-  return std::vector<Change>();
-}
-
 void StorageAreaImpl::Delegate::OnMapLoaded(leveldb::Status) {}
 
 bool StorageAreaImpl::s_aggressive_flushing_enabled_ = false;
@@ -82,10 +72,8 @@ StorageAreaImpl::StorageAreaImpl(AsyncDomStorageDatabase* database,
       memory_used_(0),
       start_time_(base::TimeTicks::Now()),
       default_commit_delay_(options.default_commit_delay),
-      data_rate_limiter_(options.max_bytes_per_hour,
-                         base::TimeDelta::FromHours(1)),
-      commit_rate_limiter_(options.max_commits_per_hour,
-                           base::TimeDelta::FromHours(1)) {
+      data_rate_limiter_(options.max_bytes_per_hour, base::Hours(1)),
+      commit_rate_limiter_(options.max_commits_per_hour, base::Hours(1)) {
   receivers_.set_disconnect_handler(base::BindRepeating(
       &StorageAreaImpl::OnConnectionError, weak_ptr_factory_.GetWeakPtr()));
 }
@@ -613,12 +601,6 @@ void StorageAreaImpl::OnMapLoaded(
   DCHECK(keys_values_map_.empty());
   DCHECK_EQ(map_state_, MapState::LOADING_FROM_DATABASE);
 
-  if (data.empty() && status.ok()) {
-    delegate_->MigrateData(base::BindOnce(&StorageAreaImpl::OnGotMigrationData,
-                                          weak_ptr_factory_.GetWeakPtr()));
-    return;
-  }
-
   keys_only_map_.clear();
   map_state_ = MapState::LOADED_KEYS_AND_VALUES;
 
@@ -631,31 +613,6 @@ void StorageAreaImpl::OnMapLoaded(
   }
   CalculateStorageAndMemoryUsed();
 
-  std::vector<Change> changes = delegate_->FixUpData(keys_values_map_);
-  if (!changes.empty()) {
-    DCHECK(database_);
-    CreateCommitBatchIfNeeded();
-    for (auto& change : changes) {
-      auto it = keys_values_map_.find(change.first);
-      if (!change.second) {
-        DCHECK(it != keys_values_map_.end());
-        keys_values_map_.erase(it);
-      } else {
-        if (it != keys_values_map_.end()) {
-          it->second = std::move(*change.second);
-        } else {
-          keys_values_map_[change.first] = std::move(*change.second);
-        }
-      }
-      // No need to store values in |commit_batch_| if values are already
-      // available in |keys_values_map_|, since CommitChanges() will take values
-      // from there.
-      commit_batch_->changed_keys.insert(std::move(change.first));
-    }
-    CalculateStorageAndMemoryUsed();
-    CommitChanges();
-  }
-
   // We proceed without using a backing store, nothing will be persisted but the
   // class is functional for the lifetime of the object.
   delegate_->OnMapLoaded(status);
@@ -667,23 +624,6 @@ void StorageAreaImpl::OnMapLoaded(
   if (on_load_callback_for_testing_)
     std::move(on_load_callback_for_testing_).Run();
 
-  OnLoadComplete();
-}
-
-void StorageAreaImpl::OnGotMigrationData(std::unique_ptr<ValueMap> data) {
-  keys_only_map_.clear();
-  keys_values_map_ = data ? std::move(*data) : ValueMap();
-  map_state_ = MapState::LOADED_KEYS_AND_VALUES;
-  CalculateStorageAndMemoryUsed();
-  delegate_->OnMapLoaded(leveldb::Status::OK());
-
-  if (database_ && !empty()) {
-    CreateCommitBatchIfNeeded();
-    // CommitChanges() will take values from |keys_values_map_|.
-    for (const auto& it : keys_values_map_)
-      commit_batch_->changed_keys.insert(it.first);
-    CommitChanges();
-  }
   OnLoadComplete();
 }
 
@@ -758,7 +698,7 @@ void StorageAreaImpl::StartCommitTimer() {
 
 base::TimeDelta StorageAreaImpl::ComputeCommitDelay() const {
   if (s_aggressive_flushing_enabled_)
-    return base::TimeDelta::FromSeconds(1);
+    return base::Seconds(1);
 
   base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time_;
   base::TimeDelta delay =

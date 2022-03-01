@@ -74,16 +74,18 @@ function setupEvents() {
       interstitialType === 'SAFEBROWSING' && loadTimeData.getBoolean('billing');
   const originPolicy = interstitialType === 'ORIGIN_POLICY';
   const blockedInterception = interstitialType === 'BLOCKED_INTERCEPTION';
-  const legacyTls = interstitialType == 'LEGACY_TLS';
   const insecureForm = interstitialType == 'INSECURE_FORM';
+  const httpsOnly = interstitialType == 'HTTPS_ONLY';
   const hidePrimaryButton = loadTimeData.getBoolean('hide_primary_button');
   const showRecurrentErrorParagraph = loadTimeData.getBoolean(
     'show_recurrent_error_paragraph');
 
-  if (ssl || originPolicy || blockedInterception || legacyTls) {
+  if (ssl || originPolicy || blockedInterception) {
     $('body').classList.add(badClock ? 'bad-clock' : 'ssl');
-    $('error-code').textContent = loadTimeData.getString('errorCode');
-    $('error-code').classList.remove(HIDDEN_CLASS);
+    if (loadTimeData.valueExists('errorCode')) {
+      $('error-code').textContent = loadTimeData.getString('errorCode');
+      $('error-code').classList.remove(HIDDEN_CLASS);
+    }
   } else if (captivePortal) {
     $('body').classList.add('captive-portal');
   } else if (billing) {
@@ -92,18 +94,16 @@ function setupEvents() {
     $('body').classList.add('lookalike-url');
   } else if (insecureForm) {
     $('body').classList.add('insecure-form');
+  } else if (httpsOnly) {
+    $('body').classList.add('https-only');
   } else {
     $('body').classList.add('safe-browsing');
     // Override the default theme color.
     document.querySelector('meta[name=theme-color]').setAttribute('content',
-      'rgb(206, 52, 38)');
+      'rgb(217, 48, 37)');
   }
 
   $('icon').classList.add('icon');
-
-  if (legacyTls) {
-    $('icon').classList.add('legacy-tls');
-  }
 
   if (hidePrimaryButton) {
     $('primary-button').classList.add(HIDDEN_CLASS);
@@ -115,7 +115,6 @@ function setupEvents() {
           break;
 
         case 'SSL':
-        case 'LEGACY_TLS':
           if (badClock) {
             sendCommand(SecurityInterstitialCommandId.CMD_OPEN_DATE_SETTINGS);
           } else if (overridable) {
@@ -129,6 +128,7 @@ function setupEvents() {
         case 'ORIGIN_POLICY':
           sendCommand(SecurityInterstitialCommandId.CMD_DONT_PROCEED);
           break;
+        case 'HTTPS_ONLY':
         case 'INSECURE_FORM':
         case 'LOOKALIKE':
           sendCommand(SecurityInterstitialCommandId.CMD_DONT_PROCEED);
@@ -140,7 +140,7 @@ function setupEvents() {
     });
   }
 
-  if (lookalike || insecureForm) {
+  if (lookalike || insecureForm || httpsOnly) {
     const proceedButton = 'proceed-button';
     $(proceedButton).classList.remove(HIDDEN_CLASS);
     $(proceedButton).textContent = loadTimeData.getString('proceedButtonText');
@@ -197,9 +197,9 @@ function setupEvents() {
     });
   }
 
-  if (captivePortal || billing || lookalike || insecureForm) {
-    // Captive portal, billing, lookalike pages, and insecure form
-    // interstitials don't have details buttons.
+  if (captivePortal || billing || lookalike || insecureForm || httpsOnly) {
+    // Captive portal, billing, lookalike pages, insecure form, and
+    // HTTPS only mode interstitials don't have details buttons.
     $('details-button').classList.add('hidden');
   } else {
     $('details-button')

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <algorithm>
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -16,7 +15,7 @@
 #include "testing/embedder_test.h"
 #include "testing/fx_string_testhelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -120,10 +119,10 @@ TEST_F(FPDFTextEmbedderTest, Text) {
       FPDFText_GetCharBox(textpage, 4, nullptr, nullptr, nullptr, nullptr));
 
   EXPECT_TRUE(FPDFText_GetCharBox(textpage, 4, &left, &right, &bottom, &top));
-  EXPECT_NEAR(41.071, left, 0.001);
-  EXPECT_NEAR(46.243, right, 0.001);
-  EXPECT_NEAR(49.844, bottom, 0.001);
-  EXPECT_NEAR(55.520, top, 0.001);
+  EXPECT_NEAR(41.120, left, 0.001);
+  EXPECT_NEAR(46.208, right, 0.001);
+  EXPECT_NEAR(49.892, bottom, 0.001);
+  EXPECT_NEAR(55.652, top, 0.001);
 
   FS_RECTF rect = {4.0f, 1.0f, 3.0f, 2.0f};
   EXPECT_FALSE(FPDFText_GetLooseCharBox(nullptr, 4, &rect));
@@ -172,10 +171,10 @@ TEST_F(FPDFTextEmbedderTest, Text) {
   bottom = 0.0;
   top = 0.0;
   EXPECT_TRUE(FPDFText_GetRect(textpage, 1, &left, &top, &right, &bottom));
-  EXPECT_NEAR(20.847, left, 0.001);
-  EXPECT_NEAR(135.167, right, 0.001);
-  EXPECT_NEAR(96.655, bottom, 0.001);
-  EXPECT_NEAR(111.648, top, 0.001);
+  EXPECT_NEAR(20.800, left, 0.001);
+  EXPECT_NEAR(135.040, right, 0.001);
+  EXPECT_NEAR(96.688, bottom, 0.001);
+  EXPECT_NEAR(111.600, top, 0.001);
 
   // Test out of range indicies set outputs to (0.0, 0.0, 0.0, 0.0).
   left = -1.0;
@@ -211,7 +210,7 @@ TEST_F(FPDFTextEmbedderTest, Text) {
   memset(buffer, 0xbd, sizeof(buffer));
   EXPECT_EQ(
       9, FPDFText_GetBoundedText(textpage, 41.0, 56.0, 82.0, 48.0, buffer, 9));
-  EXPECT_TRUE(check_unsigned_shorts(kHelloGoodbyeText + 4, buffer, 9));
+  EXPECT_TRUE(check_unsigned_shorts(kHelloGoodbyeText + 4, buffer, 8));
   EXPECT_EQ(0xbdbd, buffer[9]);
 
   memset(buffer, 0xbd, sizeof(buffer));
@@ -624,10 +623,10 @@ TEST_F(FPDFTextEmbedderTest, WebLinks) {
   double top = 0.0;
   double bottom = 0.0;
   EXPECT_TRUE(FPDFLink_GetRect(pagelink, 0, 0, &left, &top, &right, &bottom));
-  EXPECT_NEAR(50.791, left, 0.001);
-  EXPECT_NEAR(187.963, right, 0.001);
-  EXPECT_NEAR(97.624, bottom, 0.001);
-  EXPECT_NEAR(108.736, top, 0.001);
+  EXPECT_NEAR(50.828, left, 0.001);
+  EXPECT_NEAR(187.904, right, 0.001);
+  EXPECT_NEAR(97.516, bottom, 0.001);
+  EXPECT_NEAR(108.700, top, 0.001);
 
   // Check that valid link with invalid rect index leaves parameters unchanged.
   left = -1.0;
@@ -1360,15 +1359,15 @@ TEST_F(FPDFTextEmbedderTest, GetCharAngle) {
                   FPDFText_GetCharAngle(text_page, kHelloGoodbyeTextSize + 1));
 
   // Test GetCharAngle for every quadrant
-  EXPECT_NEAR(FX_PI / 4.0, FPDFText_GetCharAngle(text_page, 0), 0.001);
-  EXPECT_NEAR(3 * FX_PI / 4.0,
+  EXPECT_NEAR(FXSYS_PI / 4.0, FPDFText_GetCharAngle(text_page, 0), 0.001);
+  EXPECT_NEAR(3 * FXSYS_PI / 4.0,
               FPDFText_GetCharAngle(text_page, kSubstringsSize[0]), 0.001);
   EXPECT_NEAR(
-      5 * FX_PI / 4.0,
+      5 * FXSYS_PI / 4.0,
       FPDFText_GetCharAngle(text_page, kSubstringsSize[0] + kSubstringsSize[1]),
       0.001);
   EXPECT_NEAR(
-      7 * FX_PI / 4.0,
+      7 * FXSYS_PI / 4.0,
       FPDFText_GetCharAngle(text_page, kSubstringsSize[0] + kSubstringsSize[1] +
                                            kSubstringsSize[2]),
       0.001);
@@ -1558,8 +1557,8 @@ TEST_F(FPDFTextEmbedderTest, GetMatrix) {
 
 TEST_F(FPDFTextEmbedderTest, CharBox) {
   // For a size 12 letter 'A'.
-  constexpr double kExpectedCharWidth = 8.436;
-  constexpr double kExpectedCharHeight = 6.77;
+  constexpr double kExpectedCharWidth = 8.460;
+  constexpr double kExpectedCharHeight = 6.600;
   constexpr float kExpectedLooseCharWidth = 8.664f;
   constexpr float kExpectedLooseCharHeight = 12.0f;
 
@@ -1599,7 +1598,7 @@ TEST_F(FPDFTextEmbedderTest, CharBox) {
     EXPECT_FLOAT_EQ(kExpectedLooseCharHeight, rect.top - rect.bottom);
     ASSERT_TRUE(FPDFText_GetLooseCharBox(text_page.get(), 8, &rect));
     EXPECT_FLOAT_EQ(kExpectedLooseCharWidth, rect.right - rect.left);
-    EXPECT_FLOAT_EQ(kExpectedLooseCharHeight, rect.top - rect.bottom);
+    EXPECT_NEAR(kExpectedLooseCharHeight, rect.top - rect.bottom, 0.00001);
   }
 
   UnloadPage(page);
@@ -1656,6 +1655,31 @@ TEST_F(FPDFTextEmbedderTest, SmallType3Glyph) {
     EXPECT_DOUBLE_EQ(101.36000061035156, right);
     EXPECT_DOUBLE_EQ(50.0, bottom);
     EXPECT_DOUBLE_EQ(61.520000457763672, top);
+  }
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFTextEmbedderTest, BigtableTextExtraction) {
+  constexpr char kExpectedText[] =
+      "{fay,jeff,sanjay,wilsonh,kerr,m3b,tushar,\x02k es,gruber}@google.com";
+  constexpr int kExpectedTextCount = pdfium::size(kExpectedText) - 1;
+
+  ASSERT_TRUE(OpenDocument("bigtable_mini.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  {
+    ScopedFPDFTextPage text_page(FPDFText_LoadPage(page));
+    ASSERT_TRUE(text_page);
+    int char_count = FPDFText_CountChars(text_page.get());
+    ASSERT_GE(char_count, 0);
+    ASSERT_EQ(kExpectedTextCount, char_count);
+
+    for (int i = 0; i < kExpectedTextCount; ++i) {
+      EXPECT_EQ(static_cast<uint32_t>(kExpectedText[i]),
+                FPDFText_GetUnicode(text_page.get(), i));
+    }
   }
 
   UnloadPage(page);

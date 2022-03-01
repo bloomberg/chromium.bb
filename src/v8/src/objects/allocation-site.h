@@ -31,7 +31,7 @@ class AllocationSite : public Struct {
     kDontTenure = 1,
     kMaybeTenure = 2,
     kTenure = 3,
-    kZombie = 4,
+    kZombie = 4,  // See comment to IsZombie() for documentation.
     kLastPretenureDecisionValue = kZombie
   };
 
@@ -51,7 +51,7 @@ class AllocationSite : public Struct {
   DECL_ACCESSORS(nested_site, Object)
 
   // Bitfield containing pretenuring information.
-  DECL_INT32_ACCESSORS(pretenure_data)
+  DECL_RELAXED_INT32_ACCESSORS(pretenure_data)
 
   DECL_INT32_ACCESSORS(pretenure_create_count)
   DECL_ACCESSORS(dependent_code, DependentCode)
@@ -102,10 +102,14 @@ class AllocationSite : public Struct {
   inline int memento_create_count() const;
   inline void set_memento_create_count(int count);
 
-  // The pretenuring decision is made during gc, and the zombie state allows
-  // us to recognize when an allocation site is just being kept alive because
-  // a later traversal of new space may discover AllocationMementos that point
-  // to this AllocationSite.
+  // A "zombie" AllocationSite is one which has no more strong roots to
+  // it, and yet must be maintained until the next GC. The reason is that
+  // it may be that in new space there are AllocationMementos hanging around
+  // which point to the AllocationSite. If we scavenge these AllocationSites
+  // too soon, those AllocationMementos will end up pointing to garbage
+  // addresses. The garbage collector marks such AllocationSites as zombies
+  // when it discovers there are no roots, allowing the subsequent collection
+  // pass to recognize zombies and discard them later.
   inline bool IsZombie() const;
 
   inline bool IsMaybeTenure() const;
@@ -176,6 +180,8 @@ class AllocationMemento
   inline Address GetAllocationSiteUnchecked() const;
 
   DECL_PRINTER(AllocationMemento)
+
+  using BodyDescriptor = StructBodyDescriptor;
 
   TQ_OBJECT_CONSTRUCTORS(AllocationMemento)
 };

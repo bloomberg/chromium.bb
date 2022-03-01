@@ -5,6 +5,7 @@
 #ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_H_
 #define BASE_MESSAGE_LOOP_MESSAGE_PUMP_H_
 
+#include <memory>
 #include <utility>
 
 #include "base/base_export.h"
@@ -105,6 +106,8 @@ class BASE_EXPORT MessagePump {
         outer_->OnBeginWorkItem();
       }
 
+      // `outer_` is not a raw_ptr<...> for performance reasons (based on
+      // analysis of sampling profiler data and tab_search:top100:2020).
       Delegate* outer_;
     };
 

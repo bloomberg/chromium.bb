@@ -57,7 +57,8 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
   MutableCSSPropertyValueSet* CopyProperties() const;
 
   const CSSValue* GetPropertyCSSValue(CSSPropertyID) const;
-  const CSSValue* GetPropertyCSSValue(AtomicString custom_property_name) const;
+  const CSSValue* GetPropertyCSSValue(
+      const AtomicString& custom_property_name) const;
   const CSSValue* GetPropertyCSSValue(const CSSPropertyName&) const;
   HeapHashMap<AtomicString, Member<const CSSValue>> GetVariables() const;
 
@@ -94,6 +95,8 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
   // CSSOM functions.
   CSSRule* parentRule() const override;
   const ComputedStyle* ComputeComputedStyle() const;
+  const Vector<AtomicString>* GetVariableNames() const;
+  wtf_size_t GetVariableNamesCount() const;
   String getPropertyValue(const String& property_name) override;
   String getPropertyPriority(const String& property_name) override;
   String GetPropertyShorthand(const String& property_name) override;
@@ -112,7 +115,7 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
                   ExceptionState&) override;
   const CSSValue* GetPropertyCSSValueInternal(CSSPropertyID) override;
   const CSSValue* GetPropertyCSSValueInternal(
-      AtomicString custom_property_name) override;
+      const AtomicString& custom_property_name) override;
   String GetPropertyValueInternal(CSSPropertyID) override;
   void SetPropertyInternal(CSSPropertyID,
                            const String& custom_property_name,

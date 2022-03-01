@@ -16,6 +16,7 @@
 #include "quic/core/quic_datagram_queue.h"
 #include "quic/core/quic_types.h"
 #include "quic/platform/api/quic_export.h"
+#include "spdy/core/spdy_header_block.h"
 
 namespace quic {
 
@@ -28,6 +29,14 @@ class QUIC_EXPORT_PRIVATE WebTransportStreamVisitor {
   virtual void OnCanRead() = 0;
   // Called whenever the stream is not write-blocked and can accept new data.
   virtual void OnCanWrite() = 0;
+
+  // Called when RESET_STREAM is received for the stream.
+  virtual void OnResetStreamReceived(WebTransportStreamError error) = 0;
+  // Called when STOP_SENDING is received for the stream.
+  virtual void OnStopSendingReceived(WebTransportStreamError error) = 0;
+  // Called when the write side of the stream is closed and all of the data sent
+  // has been acknowledged ("Data Recvd" state of RFC 9000).
+  virtual void OnWriteSideInDataRecvdState() = 0;
 };
 
 // A stream (either bidirectional or unidirectional) that is contained within a
@@ -66,9 +75,9 @@ class QUIC_EXPORT_PRIVATE WebTransportStream {
   virtual QuicStreamId GetStreamId() const = 0;
 
   // Resets the stream with the specified error code.
-  // TODO(b/184048994): change the error code type based on IETF consensus.
-  virtual void ResetWithUserCode(QuicRstStreamErrorCode error) = 0;
+  virtual void ResetWithUserCode(WebTransportStreamError error) = 0;
   virtual void ResetDueToInternalError() = 0;
+  virtual void SendStopSending(WebTransportStreamError error) = 0;
   // Called when the owning object has been garbage-collected.
   virtual void MaybeResetDueToStreamObjectGone() = 0;
 
@@ -84,7 +93,11 @@ class QUIC_EXPORT_PRIVATE WebTransportVisitor {
 
   // Notifies the visitor when the session is ready to exchange application
   // data.
-  virtual void OnSessionReady() = 0;
+  virtual void OnSessionReady(const spdy::SpdyHeaderBlock& headers) = 0;
+
+  // Notifies the visitor when the session has been closed.
+  virtual void OnSessionClosed(WebTransportSessionError error_code,
+                               const std::string& error_message) = 0;
 
   // Notifies the visitor when a new stream has been received.  The stream in
   // question can be retrieved using AcceptIncomingBidirectionalStream() or
@@ -105,6 +118,11 @@ class QUIC_EXPORT_PRIVATE WebTransportSession {
  public:
   virtual ~WebTransportSession() {}
 
+  // Closes the WebTransport session in question with the specified |error_code|
+  // and |error_message|.
+  virtual void CloseSession(WebTransportSessionError error_code,
+                            absl::string_view error_message) = 0;
+
   // Return the earliest incoming stream that has been received by the session
   // but has not been accepted.  Returns nullptr if there are no incoming
   // streams.
@@ -120,6 +138,9 @@ class QUIC_EXPORT_PRIVATE WebTransportSession {
   virtual WebTransportStream* OpenOutgoingUnidirectionalStream() = 0;
 
   virtual MessageStatus SendOrQueueDatagram(QuicMemSlice datagram) = 0;
+  // Returns a conservative estimate of the largest datagram size that the
+  // session would be able to send.
+  virtual QuicByteCount GetMaxDatagramSize() const = 0;
   // Sets the largest duration that a datagram can spend in the queue before
   // being silently dropped.
   virtual void SetDatagramMaxTimeInQueue(QuicTime::Delta max_time_in_queue) = 0;

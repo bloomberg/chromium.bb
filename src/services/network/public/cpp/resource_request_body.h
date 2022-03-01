@@ -7,13 +7,11 @@
 
 #include <stdint.h>
 
-#include <string>
 #include <vector>
 
 #include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/data_element.h"
@@ -35,6 +33,9 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequestBody
   using ReadOnlyOnce = DataElementChunkedDataPipe::ReadOnlyOnce;
 
   ResourceRequestBody();
+
+  ResourceRequestBody(const ResourceRequestBody&) = delete;
+  ResourceRequestBody& operator=(const ResourceRequestBody&) = delete;
 
   // Creates ResourceRequestBody that holds a copy of |bytes|.
   static scoped_refptr<ResourceRequestBody> CreateFromBytes(const char* bytes,
@@ -113,8 +114,6 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequestBody
   bool contains_sensitive_info_;
 
   bool allow_http1_for_streaming_upload_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(ResourceRequestBody);
 };
 
 }  // namespace network

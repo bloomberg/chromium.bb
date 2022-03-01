@@ -59,6 +59,7 @@ name##_8bpc(void); \
 name##_16bpc(void)
 
 void checkasm_check_msac(void);
+void checkasm_check_refmvs(void);
 decl_check_bitfns(void checkasm_check_cdef);
 decl_check_bitfns(void checkasm_check_filmgrain);
 decl_check_bitfns(void checkasm_check_ipred);
@@ -283,8 +284,8 @@ void checkasm_stack_clobber(uint64_t clobber, ...);
 #define bench_new(...)\
     do {\
         if (checkasm_bench_func()) {\
-            checkasm_set_signal_handler_state(1);\
             func_type *tfunc = func_new;\
+            checkasm_set_signal_handler_state(1);\
             uint64_t tsum = 0;\
             int tcount = 0;\
             for (int ti = 0; ti < BENCH_RUNS; ti++) {\
@@ -301,6 +302,8 @@ void checkasm_stack_clobber(uint64_t clobber, ...);
             }\
             checkasm_set_signal_handler_state(0);\
             checkasm_update_bench(tcount, tsum);\
+        } else {\
+            call_new(__VA_ARGS__);\
         }\
     } while (0)
 #else
@@ -326,11 +329,11 @@ int checkasm_check_##type(const char *const file, const int line, \
                           const int padding)
 
 DECL_CHECKASM_CHECK_FUNC(int8_t);
-DECL_CHECKASM_CHECK_FUNC(uint8_t);
-DECL_CHECKASM_CHECK_FUNC(uint16_t);
 DECL_CHECKASM_CHECK_FUNC(int16_t);
 DECL_CHECKASM_CHECK_FUNC(int32_t);
-
+DECL_CHECKASM_CHECK_FUNC(uint8_t);
+DECL_CHECKASM_CHECK_FUNC(uint16_t);
+DECL_CHECKASM_CHECK_FUNC(uint32_t);
 
 #define CONCAT(a,b) a ## b
 

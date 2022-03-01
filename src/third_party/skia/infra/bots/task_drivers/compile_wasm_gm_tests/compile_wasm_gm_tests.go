@@ -20,7 +20,7 @@ import (
 	"go.skia.org/infra/task_driver/go/td"
 )
 
-const dockerImage = "gcr.io/skia-public/canvaskit-emsdk:2.0.10_v1"
+const dockerImage = "gcr.io/skia-public/canvaskit-emsdk:2.0.10_v2"
 const innerBuildScript = "/SRC/infra/canvaskit/build_gmtests.sh"
 
 func main() {
@@ -75,7 +75,7 @@ func setupDocker(ctx context.Context, isLocal bool) (*docker.Docker, error) {
 	ctx = td.StartStep(ctx, td.Props("setup docker").Infra())
 	defer td.EndStep(ctx)
 	// Create token source with scope for cloud registry (storage).
-	ts, err := auth_steps.Init(ctx, isLocal, auth.SCOPE_USERINFO_EMAIL, storage.ScopeReadOnly)
+	ts, err := auth_steps.Init(ctx, isLocal, auth.ScopeUserinfoEmail, storage.ScopeReadOnly)
 	if err != nil {
 		return nil, td.FailStep(ctx, err)
 	}

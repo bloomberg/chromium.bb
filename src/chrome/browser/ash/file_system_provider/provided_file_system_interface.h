@@ -15,9 +15,7 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "chrome/browser/ash/file_system_provider/abort_callback.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_observer.h"
 #include "chrome/browser/ash/file_system_provider/watcher.h"
@@ -33,7 +31,7 @@ namespace net {
 class IOBuffer;
 }  // namespace net
 
-namespace chromeos {
+namespace ash {
 namespace file_system_provider {
 
 class ProvidedFileSystemInfo;
@@ -42,6 +40,10 @@ class RequestManager;
 // Represents metadata for either a file or a directory.
 struct EntryMetadata {
   EntryMetadata();
+
+  EntryMetadata(const EntryMetadata&) = delete;
+  EntryMetadata& operator=(const EntryMetadata&) = delete;
+
   ~EntryMetadata();
 
   // All of the metadata fields are optional. All strings which are set, are
@@ -52,9 +54,6 @@ struct EntryMetadata {
   std::unique_ptr<base::Time> modification_time;
   std::unique_ptr<std::string> mime_type;
   std::unique_ptr<std::string> thumbnail;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EntryMetadata);
 };
 
 // Represents actions for either a file or a directory.
@@ -283,19 +282,18 @@ class ProvidedFileSystemInterface {
 };
 
 }  // namespace file_system_provider
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when moved to ash.
-namespace ash {
-namespace file_system_provider {
-using ::chromeos::file_system_provider::Action;
-using ::chromeos::file_system_provider::Actions;
-using ::chromeos::file_system_provider::EntryMetadata;
-using ::chromeos::file_system_provider::OPEN_FILE_MODE_READ;
-using ::chromeos::file_system_provider::OPEN_FILE_MODE_WRITE;
-using ::chromeos::file_system_provider::OpenFileMode;
-using ::chromeos::file_system_provider::ProvidedFileSystemInterface;
-}  // namespace file_system_provider
 }  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when ChromeOS code migration is done.
+namespace chromeos {
+namespace file_system_provider {
+using ::ash::file_system_provider::Action;
+using ::ash::file_system_provider::EntryMetadata;
+using ::ash::file_system_provider::OPEN_FILE_MODE_READ;
+using ::ash::file_system_provider::OPEN_FILE_MODE_WRITE;
+using ::ash::file_system_provider::OpenedFiles;
+using ::ash::file_system_provider::OpenFileMode;
+}  // namespace file_system_provider
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_INTERFACE_H_

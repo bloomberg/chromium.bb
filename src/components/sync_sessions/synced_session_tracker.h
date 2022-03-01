@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "base/feature_list.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sync/protocol/session_specifics.pb.h"
@@ -47,6 +47,10 @@ class SyncedSessionTracker {
   };
 
   explicit SyncedSessionTracker(SyncSessionsClient* sessions_client);
+
+  SyncedSessionTracker(const SyncedSessionTracker&) = delete;
+  SyncedSessionTracker& operator=(const SyncedSessionTracker&) = delete;
+
   ~SyncedSessionTracker();
 
   // **** Synced session/tab query methods. ****
@@ -282,7 +286,7 @@ class SyncedSessionTracker {
           is_tab_node_unsynced_cb);
 
   // The client of the sync sessions datatype.
-  SyncSessionsClient* const sessions_client_;
+  const raw_ptr<SyncSessionsClient> sessions_client_;
 
   // Map: session tag -> TrackedSession.
   std::map<std::string, TrackedSession> session_map_;
@@ -290,8 +294,6 @@ class SyncedSessionTracker {
   // The tag for this machine's local session, so we can distinguish the foreign
   // sessions.
   std::string local_session_tag_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncedSessionTracker);
 };
 
 // Helper function to load and add window or tab data from synced specifics to

@@ -11,10 +11,10 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/search_provider_logos/logo_common.h"
@@ -51,6 +51,9 @@ class LogoServiceImpl : public LogoService,
       std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::RepeatingCallback<bool()> want_gray_logo_getter);
+
+  LogoServiceImpl(const LogoServiceImpl&) = delete;
+  LogoServiceImpl& operator=(const LogoServiceImpl&) = delete;
 
   ~LogoServiceImpl() override;
 
@@ -171,8 +174,8 @@ class LogoServiceImpl : public LogoService,
 
   // Constructor arguments.
   const base::FilePath cache_directory_;
-  signin::IdentityManager* const identity_manager_;
-  TemplateURLService* const template_url_service_;
+  const raw_ptr<signin::IdentityManager> identity_manager_;
+  const raw_ptr<TemplateURLService> template_url_service_;
   const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Callback to get the type of logo to fetch. Returns whether we want a logo
@@ -226,11 +229,9 @@ class LogoServiceImpl : public LogoService,
   std::unique_ptr<LogoCache, base::OnTaskRunnerDeleter> logo_cache_;
 
   // Clock used to determine current time. Can be overridden in tests.
-  base::Clock* clock_ = nullptr;
+  raw_ptr<base::Clock> clock_ = nullptr;
 
   base::WeakPtrFactory<LogoServiceImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LogoServiceImpl);
 };
 
 }  // namespace search_provider_logos
