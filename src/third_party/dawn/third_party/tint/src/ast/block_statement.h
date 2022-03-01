@@ -36,59 +36,22 @@ class BlockStatement : public Castable<BlockStatement, Statement> {
   BlockStatement(BlockStatement&&);
   ~BlockStatement() override;
 
-  /// @returns the StatementList
-  const StatementList& list() const { return statements_; }
-
-  /// @returns true if the block is empty
-  bool empty() const { return statements_.empty(); }
-  /// @returns the number of statements directly in the block
-  size_t size() const { return statements_.size(); }
+  /// @returns true if the block has no statements
+  bool Empty() const { return statements.empty(); }
 
   /// @returns the last statement in the block or nullptr if block empty
-  const Statement* last() const {
-    return statements_.empty() ? nullptr : statements_.back();
+  const Statement* Last() const {
+    return statements.empty() ? nullptr : statements.back();
   }
-  /// @returns the last statement in the block or nullptr if block empty
-  Statement* last() {
-    return statements_.empty() ? nullptr : statements_.back();
-  }
-
-  /// Retrieves the statement at `idx`
-  /// @param idx the index. The index is not bounds checked.
-  /// @returns the statement at `idx`
-  Statement* get(size_t idx) const { return statements_[idx]; }
-
-  /// Retrieves the statement at `idx`
-  /// @param idx the index. The index is not bounds checked.
-  /// @returns the statement at `idx`
-  Statement* operator[](size_t idx) const { return statements_[idx]; }
-
-  /// @returns the beginning iterator
-  StatementList::const_iterator begin() const { return statements_.begin(); }
-  /// @returns the ending iterator
-  StatementList::const_iterator end() const { return statements_.end(); }
-
-  /// @returns the statement list
-  const StatementList& statements() const { return statements_; }
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  BlockStatement* Clone(CloneContext* ctx) const override;
+  const BlockStatement* Clone(CloneContext* ctx) const override;
 
-  /// Writes a representation of the node to the output stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
-
- private:
-  BlockStatement(const BlockStatement&) = delete;
-
-  StatementList const statements_;
+  /// the statement list
+  const StatementList statements;
 };
 
 }  // namespace ast

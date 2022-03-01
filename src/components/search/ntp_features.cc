@@ -41,16 +41,6 @@ const base::Feature kRealboxMatchOmniboxTheme{
 const base::Feature kRealboxUseGoogleGIcon{"NtpRealboxUseGoogleGIcon",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, shows Vasco suggestion chips in the NTP below fakebox/realbox
-// despite other config except DisableSearchSuggestChips below.
-const base::Feature kSearchSuggestChips{"SearchSuggestChips",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, hides Vasco suggestion chips in the NTP below fakebox/realbox
-// despite other config.
-const base::Feature kDisableSearchSuggestChips{
-    "DisableSearchSuggestChips", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If enabled, handles navigations from the Most Visited tiles explicitly and
 // overrides the navigation's transition type to bookmark navigation before the
 // navigation is issued.
@@ -58,6 +48,10 @@ const base::Feature kDisableSearchSuggestChips{
 // in ChromeContentBrowserClient::OverrideNavigationParams.
 extern const base::Feature kNtpHandleMostVisitedNavigationExplicitly{
     "HandleMostVisitedNavigationExplicitly", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, OneGoogleBar will be shown.
+const base::Feature kNtpOneGoogleBar{"NtpOneGoogleBar",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, logo will be shown.
 const base::Feature kNtpLogo{"NtpLogo", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -91,87 +85,60 @@ const base::Feature kNtpShoppingTasksModule{"NtpShoppingTasksModule",
 const base::Feature kNtpChromeCartModule{"NtpChromeCartModule",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, redesigned modules will be shown.
+const base::Feature kNtpModulesRedesigned{"NtpModulesRedesigned",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, a different module layout where modules are organized in rows and
+// columns will be shown.
+const base::Feature kNtpModulesRedesignedLayout{
+    "NtpModulesRedesignedLayout", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, Google Drive module will be shown.
 const base::Feature kNtpDriveModule{"NtpDriveModule",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const char kNtpRepeatableQueriesAgeThresholdDaysParam[] =
-    "NtpRepeatableQueriesAgeThresholdDays";
-const char kNtpRepeatableQueriesRecencyHalfLifeSecondsParam[] =
-    "NtpRepeatableQueriesRecencyHalfLifeSeconds";
-const char kNtpRepeatableQueriesFrequencyExponentParam[] =
-    "NtpRepeatableQueriesFrequencyExponent";
-const char kNtpRepeatableQueriesInsertPositionParam[] =
-    "NtpRepeatableQueriesInsertPosition";
+// If enabled, Google Photos module will be shown.
+const base::Feature kNtpPhotosModule{"NtpPhotosModule",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, SafeBrowsing module will be shown to a target user.
+const base::Feature kNtpSafeBrowsingModule{"NtpSafeBrowsingModule",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, modules will be able to be reordered via dragging and dropping
+const base::Feature kNtpModulesDragAndDrop{"NtpModulesDragAndDrop",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char kNtpModulesLoadTimeoutMillisecondsParam[] =
     "NtpModulesLoadTimeoutMillisecondsParam";
-const char kNtpStatefulTasksModuleDataParam[] =
-    "NtpStatefulTasksModuleDataParam";
+const char kNtpShoppingTasksModuleDataParam[] =
+    "NtpShoppingTasksModuleDataParam";
+const char kNtpRecipeTasksModuleDataParam[] = "NtpRecipeTasksModuleDataParam";
+const char kNtpShoppingTasksModuleCacheMaxAgeSParam[] =
+    "NtpShoppingTasksModuleCacheMaxAgeSParam";
+const char kNtpRecipeTasksModuleCacheMaxAgeSParam[] =
+    "NtpRecipeTasksModuleCacheMaxAgeSParam";
 const char kNtpChromeCartModuleDataParam[] = "NtpChromeCartModuleDataParam";
 const char kNtpChromeCartModuleAbandonedCartDiscountParam[] =
     "NtpChromeCartModuleAbandonedCartDiscountParam";
-const char NtpChromeCartModuleAbandonedCartDiscountUseUtmParam[] =
+const char kNtpChromeCartModuleAbandonedCartDiscountUseUtmParam[] =
     "NtpChromeCartModuleAbandonedCartDiscountUseUtmParam";
 const char kNtpChromeCartModuleHeuristicsImprovementParam[] =
     "NtpChromeCartModuleHeuristicsImprovementParam";
+const char kNtpChromeCartModuleCouponParam[] = "NtpChromeCartModuleCouponParam";
 const char kNtpDriveModuleDataParam[] = "NtpDriveModuleDataParam";
 const char kNtpDriveModuleManagedUsersOnlyParam[] =
     "NtpDriveModuleManagedUsersOnlyParam";
-
-base::Time GetLocalHistoryRepeatableQueriesAgeThreshold() {
-  const base::TimeDelta kLocalHistoryRepeatableQueriesAgeThreshold =
-      base::TimeDelta::FromDays(180);  // Six months.
-  std::string param_value = base::GetFieldTrialParamValueByFeature(
-      kNtpRepeatableQueries, kNtpRepeatableQueriesAgeThresholdDaysParam);
-
-  // If the field trial param is not found or cannot be parsed to an unsigned
-  // integer, return the default value.
-  unsigned int param_value_as_int = 0;
-  if (!base::StringToUint(param_value, &param_value_as_int)) {
-    return base::Time::Now() - kLocalHistoryRepeatableQueriesAgeThreshold;
-  }
-
-  return (base::Time::Now() - base::TimeDelta::FromDays(param_value_as_int));
-}
-
-int GetLocalHistoryRepeatableQueriesRecencyHalfLifeSeconds() {
-  const base::TimeDelta kLocalHistoryRepeatableQueriesRecencyHalfLife =
-      base::TimeDelta::FromDays(7);  // One week.
-  std::string param_value = base::GetFieldTrialParamValueByFeature(
-      kNtpRepeatableQueries, kNtpRepeatableQueriesRecencyHalfLifeSecondsParam);
-
-  // If the field trial param is not found or cannot be parsed to an unsigned
-  // integer, return the default value.
-  unsigned int param_value_as_int = 0;
-  if (!base::StringToUint(param_value, &param_value_as_int)) {
-    return kLocalHistoryRepeatableQueriesRecencyHalfLife.InSeconds();
-  }
-
-  return param_value_as_int;
-}
-
-double GetLocalHistoryRepeatableQueriesFrequencyExponent() {
-  const double kLocalHistoryRepeatableQueriesFrequencyExponent = 2.0;
-  std::string param_value = base::GetFieldTrialParamValueByFeature(
-      kNtpRepeatableQueries, kNtpRepeatableQueriesFrequencyExponentParam);
-
-  // If the field trial param is not found or cannot be parsed to an unsigned
-  // integer, return the default value.
-  double param_value_as_double = 0;
-  if (!base::StringToDouble(param_value, &param_value_as_double)) {
-    return kLocalHistoryRepeatableQueriesFrequencyExponent;
-  }
-
-  return param_value_as_double;
-}
-
-RepeatableQueriesInsertPosition GetRepeatableQueriesInsertPosition() {
-  std::string param_value = base::GetFieldTrialParamValueByFeature(
-      kNtpRepeatableQueries, kNtpRepeatableQueriesInsertPositionParam);
-  return param_value == "end" ? RepeatableQueriesInsertPosition::kEnd
-                              : RepeatableQueriesInsertPosition::kStart;
-}
+const char kNtpDriveModuleCacheMaxAgeSParam[] =
+    "NtpDriveModuleCacheMaxAgeSParam";
+const char kNtpDriveModuleExperimentGroupParam[] =
+    "NtpDriveModuleExperimentGroupParam";
+const char kNtpPhotosModuleDataParam[] = "NtpPhotosModuleDataParam";
+const char kNtpSafeBrowsingModuleCooldownPeriodDaysParam[] =
+    "NtpSafeBrowsingModuleCooldownPeriodDaysParam";
+const char kNtpSafeBrowsingModuleCountMaxParam[] =
+    "NtpSafeBrowsingModuleCountMaxParam";
 
 base::TimeDelta GetModulesLoadTimeout() {
   std::string param_value = base::GetFieldTrialParamValueByFeature(
@@ -180,9 +147,9 @@ base::TimeDelta GetModulesLoadTimeout() {
   // integer, return the default value.
   unsigned int param_value_as_int = 0;
   if (!base::StringToUint(param_value, &param_value_as_int)) {
-    return base::TimeDelta::FromSeconds(3);
+    return base::Seconds(3);
   }
-  return base::TimeDelta::FromMilliseconds(param_value_as_int);
+  return base::Milliseconds(param_value_as_int);
 }
 
 }  // namespace ntp_features

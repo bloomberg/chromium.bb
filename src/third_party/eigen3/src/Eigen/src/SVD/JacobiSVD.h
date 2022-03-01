@@ -11,6 +11,8 @@
 #ifndef EIGEN_JACOBISVD_H
 #define EIGEN_JACOBISVD_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 namespace internal {
@@ -112,12 +114,12 @@ public:
     ColsAtCompileTime = MatrixType::ColsAtCompileTime,
     MaxRowsAtCompileTime = MatrixType::MaxRowsAtCompileTime,
     MaxColsAtCompileTime = MatrixType::MaxColsAtCompileTime,
-    TrOptions = RowsAtCompileTime==1 ? (MatrixType::Options & ~(RowMajor))
-              : ColsAtCompileTime==1 ? (MatrixType::Options |   RowMajor)
-              : MatrixType::Options
+    Options = MatrixType::Options
   };
-  typedef Matrix<Scalar, ColsAtCompileTime, RowsAtCompileTime, TrOptions, MaxColsAtCompileTime, MaxRowsAtCompileTime>
-          TransposeTypeWithSameStorageOrder;
+
+  typedef typename internal::make_proper_matrix_type<
+    Scalar, ColsAtCompileTime, RowsAtCompileTime, Options, MaxColsAtCompileTime, MaxRowsAtCompileTime
+  >::type TransposeTypeWithSameStorageOrder;
 
   void allocate(const JacobiSVD<MatrixType, FullPivHouseholderQRPreconditioner>& svd)
   {
@@ -202,13 +204,12 @@ public:
     ColsAtCompileTime = MatrixType::ColsAtCompileTime,
     MaxRowsAtCompileTime = MatrixType::MaxRowsAtCompileTime,
     MaxColsAtCompileTime = MatrixType::MaxColsAtCompileTime,
-    TrOptions = RowsAtCompileTime==1 ? (MatrixType::Options & ~(RowMajor))
-              : ColsAtCompileTime==1 ? (MatrixType::Options |   RowMajor)
-              : MatrixType::Options
+    Options = MatrixType::Options
   };
 
-  typedef Matrix<Scalar, ColsAtCompileTime, RowsAtCompileTime, TrOptions, MaxColsAtCompileTime, MaxRowsAtCompileTime>
-          TransposeTypeWithSameStorageOrder;
+  typedef typename internal::make_proper_matrix_type<
+    Scalar, ColsAtCompileTime, RowsAtCompileTime, Options, MaxColsAtCompileTime, MaxRowsAtCompileTime
+  >::type TransposeTypeWithSameStorageOrder;
 
   void allocate(const JacobiSVD<MatrixType, ColPivHouseholderQRPreconditioner>& svd)
   {
@@ -303,8 +304,9 @@ public:
     Options = MatrixType::Options
   };
 
-  typedef Matrix<Scalar, ColsAtCompileTime, RowsAtCompileTime, Options, MaxColsAtCompileTime, MaxRowsAtCompileTime>
-          TransposeTypeWithSameStorageOrder;
+  typedef typename internal::make_proper_matrix_type<
+    Scalar, ColsAtCompileTime, RowsAtCompileTime, Options, MaxColsAtCompileTime, MaxRowsAtCompileTime
+  >::type TransposeTypeWithSameStorageOrder;
 
   void allocate(const JacobiSVD<MatrixType, HouseholderQRPreconditioner>& svd)
   {
@@ -423,11 +425,11 @@ struct svd_precondition_2x2_block_to_be_real<MatrixType, QRPreconditioner, true>
   }
 };
 
-template<typename _MatrixType, int QRPreconditioner> 
-struct traits<JacobiSVD<_MatrixType,QRPreconditioner> >
-        : traits<_MatrixType>
+template<typename MatrixType_, int QRPreconditioner>
+struct traits<JacobiSVD<MatrixType_,QRPreconditioner> >
+        : traits<MatrixType_>
 {
-  typedef _MatrixType MatrixType;
+  typedef MatrixType_ MatrixType;
 };
 
 } // end namespace internal
@@ -439,7 +441,7 @@ struct traits<JacobiSVD<_MatrixType,QRPreconditioner> >
   *
   * \brief Two-sided Jacobi SVD decomposition of a rectangular matrix
   *
-  * \tparam _MatrixType the type of the matrix of which we are computing the SVD decomposition
+  * \tparam MatrixType_ the type of the matrix of which we are computing the SVD decomposition
   * \tparam QRPreconditioner this optional parameter allows to specify the type of QR decomposition that will be used internally
   *                        for the R-SVD step for non-square matrices. See discussion of possible values below.
   *
@@ -485,13 +487,13 @@ struct traits<JacobiSVD<_MatrixType,QRPreconditioner> >
   *
   * \sa MatrixBase::jacobiSvd()
   */
-template<typename _MatrixType, int QRPreconditioner> class JacobiSVD
- : public SVDBase<JacobiSVD<_MatrixType,QRPreconditioner> >
+template<typename MatrixType_, int QRPreconditioner> class JacobiSVD
+ : public SVDBase<JacobiSVD<MatrixType_,QRPreconditioner> >
 {
     typedef SVDBase<JacobiSVD> Base;
   public:
 
-    typedef _MatrixType MatrixType;
+    typedef MatrixType_ MatrixType;
     typedef typename MatrixType::Scalar Scalar;
     typedef typename NumTraits<typename MatrixType::Scalar>::Real RealScalar;
     enum {
@@ -585,6 +587,7 @@ template<typename _MatrixType, int QRPreconditioner> class JacobiSVD
     using Base::m_matrixU;
     using Base::m_matrixV;
     using Base::m_singularValues;
+    using Base::m_info;
     using Base::m_isInitialized;
     using Base::m_isAllocated;
     using Base::m_usePrescribedThreshold;
@@ -600,9 +603,9 @@ template<typename _MatrixType, int QRPreconditioner> class JacobiSVD
     using Base::m_prescribedThreshold;
     WorkMatrixType m_workMatrix;
 
-    template<typename __MatrixType, int _QRPreconditioner, bool _IsComplex>
+    template<typename MatrixType__, int QRPreconditioner_, bool IsComplex_>
     friend struct internal::svd_precondition_2x2_block_to_be_real;
-    template<typename __MatrixType, int _QRPreconditioner, int _Case, bool _DoAnything>
+    template<typename MatrixType__, int QRPreconditioner_, int Case_, bool DoAnything_>
     friend struct internal::qr_preconditioner_impl;
 
     internal::qr_preconditioner_impl<MatrixType, QRPreconditioner, internal::PreconditionIfMoreColsThanRows> m_qr_precond_morecols;
@@ -625,6 +628,7 @@ void JacobiSVD<MatrixType, QRPreconditioner>::allocate(Eigen::Index rows, Eigen:
 
   m_rows = rows;
   m_cols = cols;
+  m_info = Success;
   m_isInitialized = false;
   m_isAllocated = true;
   m_computationOptions = computationOptions;
@@ -674,7 +678,12 @@ JacobiSVD<MatrixType, QRPreconditioner>::compute(const MatrixType& matrix, unsig
   const RealScalar considerAsZero = (std::numeric_limits<RealScalar>::min)();
 
   // Scaling factor to reduce over/under-flows
-  RealScalar scale = matrix.cwiseAbs().maxCoeff();
+  RealScalar scale = matrix.cwiseAbs().template maxCoeff<PropagateNaN>();
+  if (!(numext::isfinite)(scale)) {
+    m_isInitialized = true;
+    m_info = InvalidInput;
+    return *this;
+  }
   if(scale==RealScalar(0)) scale = RealScalar(1);
   
   /*** step 1. The R-SVD step: we use a QR decomposition to reduce to the case of a square matrix */

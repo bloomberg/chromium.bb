@@ -55,6 +55,8 @@ const char* TypeToString(extensions::Manifest::Type type) {
       return "TYPE_SHARED_MODULE";
     case extensions::Manifest::TYPE_LOGIN_SCREEN_EXTENSION:
       return "TYPE_LOGIN_SCREEN_EXTENSION";
+    case extensions::Manifest::TYPE_CHROMEOS_SYSTEM_EXTENSION:
+      return "TYPE_CHROMEOS_SYSTEM_EXTENSION";
     case extensions::Manifest::NUM_LOAD_TYPES:
       break;
   }
@@ -93,7 +95,7 @@ const char* LocationToString(ManifestLocation loc) {
 
 base::Value CreationFlagsToList(int creation_flags) {
   base::Value flags_value(base::Value::Type::LIST);
-  if (creation_flags & extensions::Extension::NO_FLAGS)
+  if (creation_flags == extensions::Extension::NO_FLAGS)
     flags_value.Append("NO_FLAGS");
   if (creation_flags & extensions::Extension::REQUIRE_KEY)
     flags_value.Append("REQUIRE_KEY");
@@ -158,10 +160,6 @@ base::Value DisableReasonsToList(int disable_reasons) {
   }
   if (disable_reasons & extensions::disable_reason::DISABLE_BLOCKED_BY_POLICY)
     disable_reasons_value.Append("DISABLE_BLOCKED_BY_POLICY");
-  if (disable_reasons &
-      extensions::disable_reason::DISABLE_REMOTELY_FOR_MALWARE) {
-    disable_reasons_value.Append("DISABLE_REMOTELY_FOR_MALWARE");
-  }
   return disable_reasons_value;
 }
 // The JSON we generate looks like this:

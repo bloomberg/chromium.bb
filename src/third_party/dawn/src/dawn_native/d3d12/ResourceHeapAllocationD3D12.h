@@ -15,6 +15,7 @@
 #ifndef DAWNNATIVE_D3D12_RESOURCEHEAPALLOCATIOND3D12_H_
 #define DAWNNATIVE_D3D12_RESOURCEHEAPALLOCATIOND3D12_H_
 
+#include "dawn_native/Error.h"
 #include "dawn_native/ResourceMemoryAllocation.h"
 #include "dawn_native/d3d12/d3d12_platform.h"
 
@@ -30,6 +31,8 @@ namespace dawn_native { namespace d3d12 {
                                ComPtr<ID3D12Resource> resource,
                                Heap* heap);
         ~ResourceHeapAllocation() override = default;
+        ResourceHeapAllocation(const ResourceHeapAllocation&) = default;
+        ResourceHeapAllocation& operator=(const ResourceHeapAllocation&) = default;
 
         void Invalidate() override;
 

@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
@@ -41,6 +41,9 @@ class CONTENT_EXPORT MidiHost : public midi::MidiManagerClient,
                                 public midi::mojom::MidiSession,
                                 public base::SupportsWeakPtr<MidiHost> {
  public:
+  MidiHost(const MidiHost&) = delete;
+  MidiHost& operator=(const MidiHost&) = delete;
+
   ~MidiHost() override;
 
   // Creates an instance of MidiHost and binds |receiver| to the instance using
@@ -94,7 +97,7 @@ class CONTENT_EXPORT MidiHost : public midi::MidiManagerClient,
 
   // |midi_service_| manages a MidiManager instance that talks to
   // platform-specific MIDI APIs.  It can be nullptr after detached.
-  midi::MidiService* midi_service_;
+  raw_ptr<midi::MidiService> midi_service_;
 
   // Buffers where data sent from each MIDI input port is stored.
   std::vector<std::unique_ptr<midi::MidiMessageQueue>> received_messages_queues_
@@ -130,8 +133,6 @@ class CONTENT_EXPORT MidiHost : public midi::MidiManagerClient,
   // Bound on the IO thread and should only be called there. Use CallClient to
   // call midi::mojom::MidiSessionClient methods.
   mojo::Remote<midi::mojom::MidiSessionClient> midi_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(MidiHost);
 };
 
 }  // namespace content

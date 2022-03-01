@@ -90,7 +90,6 @@ source_set("tint_unittests_main") {
     sources = [ "../src/test_main.cc" ]
     configs += [ ":tint_unittests_config" ]
     deps += [
-      ":tint_test_helpers",
       ":tint_unittests_hlsl_writer_src",
       ":tint_unittests_msl_writer_src",
       ":tint_unittests_spv_reader_src",
@@ -114,36 +113,6 @@ config("tint_unittests_config") {
   ]
 }
 
-source_set("tint_test_helpers") {
-  testonly = true
-
-  sources = [
-    "../src/ast/intrinsic_texture_helper_test.cc",
-    "../src/ast/intrinsic_texture_helper_test.h",
-    "../src/transform/test_helper.h",
-    "../src/utils/command.h",
-    "../src/utils/tmpfile.h",
-  ]
-
-  if (is_linux || is_mac) {
-    sources += [ "../src/utils/command_posix.cc" ]
-    sources += [ "../src/utils/tmpfile_posix.cc" ]
-  } else if (is_win) {
-    sources += [ "../src/utils/command_windows.cc" ]
-    sources += [ "../src/utils/tmpfile_windows.cc" ]
-  } else {
-    sources += [ "../src/utils/command_other.cc" ]
-    sources += [ "../src/utils/tmpfile_other.cc" ]
-  }
-
-  configs += [ ":tint_unittests_config" ]
-
-  public_deps = [
-    ":gmock_and_gtest",
-    "${tint_root_dir}/src:libtint",
-  ]
-}
-
 template("tint_unittests_source_set") {
   source_set(target_name) {
     forward_variables_from(invoker, "*", [ "configs" ])
@@ -162,27 +131,25 @@ template("tint_unittests_source_set") {
     if (!defined(invoker.deps)) {
       deps = []
     }
-    deps += [ ":tint_test_helpers" ]
+    deps += [
+      ":gmock_and_gtest",
+      "${tint_root_dir}/src:libtint",
+      "${tint_root_dir}/src:tint_utils_io",
+    ]
   }
 }
 
-tint_unittests_source_set("tint_unittests_core_sem_src") {
-  sources = [ "../src/sem/intrinsic_test.cc" ]
-}
-
-tint_unittests_source_set("tint_unittests_core_src") {
+tint_unittests_source_set("tint_unittests_ast_src") {
   sources = [
-    "../src/ast/access_control_test.cc",
-    "../src/ast/access_decoration_test.cc",
     "../src/ast/alias_test.cc",
-    "../src/ast/array_accessor_expression_test.cc",
     "../src/ast/array_test.cc",
     "../src/ast/assignment_statement_test.cc",
+    "../src/ast/atomic_test.cc",
     "../src/ast/binary_expression_test.cc",
     "../src/ast/binding_decoration_test.cc",
     "../src/ast/bitcast_expression_test.cc",
     "../src/ast/block_statement_test.cc",
-    "../src/ast/bool_literal_test.cc",
+    "../src/ast/bool_literal_expression_test.cc",
     "../src/ast/bool_test.cc",
     "../src/ast/break_statement_test.cc",
     "../src/ast/builtin_decoration_test.cc",
@@ -190,19 +157,26 @@ tint_unittests_source_set("tint_unittests_core_src") {
     "../src/ast/call_statement_test.cc",
     "../src/ast/case_statement_test.cc",
     "../src/ast/continue_statement_test.cc",
+    "../src/ast/depth_multisampled_texture_test.cc",
     "../src/ast/depth_texture_test.cc",
     "../src/ast/discard_statement_test.cc",
     "../src/ast/else_statement_test.cc",
     "../src/ast/external_texture_test.cc",
     "../src/ast/f32_test.cc",
     "../src/ast/fallthrough_statement_test.cc",
-    "../src/ast/float_literal_test.cc",
+    "../src/ast/float_literal_expression_test.cc",
+    "../src/ast/for_loop_statement_test.cc",
     "../src/ast/function_test.cc",
     "../src/ast/group_decoration_test.cc",
     "../src/ast/i32_test.cc",
     "../src/ast/identifier_expression_test.cc",
     "../src/ast/if_statement_test.cc",
-    "../src/ast/int_literal_test.cc",
+    "../src/ast/index_accessor_expression_test.cc",
+    "../src/ast/int_literal_expression_test.cc",
+    "../src/ast/interpolate_decoration_test.cc",
+    "../src/ast/intrinsic_texture_helper_test.cc",
+    "../src/ast/intrinsic_texture_helper_test.h",
+    "../src/ast/invariant_decoration_test.cc",
     "../src/ast/location_decoration_test.cc",
     "../src/ast/loop_statement_test.cc",
     "../src/ast/matrix_test.cc",
@@ -211,12 +185,12 @@ tint_unittests_source_set("tint_unittests_core_src") {
     "../src/ast/module_test.cc",
     "../src/ast/multisampled_texture_test.cc",
     "../src/ast/override_decoration_test.cc",
+    "../src/ast/phony_expression_test.cc",
     "../src/ast/pointer_test.cc",
     "../src/ast/return_statement_test.cc",
     "../src/ast/sampled_texture_test.cc",
     "../src/ast/sampler_test.cc",
-    "../src/ast/scalar_constructor_expression_test.cc",
-    "../src/ast/sint_literal_test.cc",
+    "../src/ast/sint_literal_expression_test.cc",
     "../src/ast/stage_decoration_test.cc",
     "../src/ast/storage_texture_test.cc",
     "../src/ast/stride_decoration_test.cc",
@@ -228,42 +202,64 @@ tint_unittests_source_set("tint_unittests_core_src") {
     "../src/ast/switch_statement_test.cc",
     "../src/ast/test_helper.h",
     "../src/ast/texture_test.cc",
-    "../src/ast/type_constructor_expression_test.cc",
+    "../src/ast/traverse_expressions_test.cc",
     "../src/ast/u32_test.cc",
-    "../src/ast/uint_literal_test.cc",
+    "../src/ast/uint_literal_expression_test.cc",
     "../src/ast/unary_op_expression_test.cc",
     "../src/ast/variable_decl_statement_test.cc",
     "../src/ast/variable_test.cc",
     "../src/ast/vector_test.cc",
     "../src/ast/workgroup_decoration_test.cc",
-    "../src/block_allocator_test.cc",
-    "../src/castable_test.cc",
-    "../src/clone_context_test.cc",
-    "../src/debug_test.cc",
-    "../src/demangler_test.cc",
+  ]
+}
+
+tint_unittests_source_set("tint_unittests_diagnostic_src") {
+  sources = [
     "../src/diagnostic/formatter_test.cc",
     "../src/diagnostic/printer_test.cc",
+  ]
+}
+
+tint_unittests_source_set("tint_unittests_inspector_src") {
+  sources = [
     "../src/inspector/inspector_test.cc",
-    "../src/intrinsic_table_test.cc",
-    "../src/program_builder_test.cc",
-    "../src/program_test.cc",
+    "../src/inspector/test_inspector_builder.cc",
+    "../src/inspector/test_inspector_builder.h",
+    "../src/inspector/test_inspector_runner.cc",
+    "../src/inspector/test_inspector_runner.h",
+  ]
+}
+
+tint_unittests_source_set("tint_unittests_resolver_src") {
+  sources = [
+    "../src/resolver/array_accessor_test.cc",
     "../src/resolver/assignment_validation_test.cc",
-    "../src/resolver/block_test.cc",
+    "../src/resolver/atomics_test.cc",
+    "../src/resolver/atomics_validation_test.cc",
+    "../src/resolver/bitcast_validation_test.cc",
     "../src/resolver/builtins_validation_test.cc",
+    "../src/resolver/call_test.cc",
+    "../src/resolver/call_validation_test.cc",
+    "../src/resolver/compound_statement_test.cc",
     "../src/resolver/control_block_validation_test.cc",
     "../src/resolver/decoration_validation_test.cc",
+    "../src/resolver/dependency_graph_test.cc",
     "../src/resolver/entry_point_validation_test.cc",
     "../src/resolver/function_validation_test.cc",
     "../src/resolver/host_shareable_validation_test.cc",
     "../src/resolver/intrinsic_test.cc",
+    "../src/resolver/intrinsic_validation_test.cc",
     "../src/resolver/is_host_shareable_test.cc",
     "../src/resolver/is_storeable_test.cc",
+    "../src/resolver/pipeline_overridable_constant_test.cc",
     "../src/resolver/ptr_ref_test.cc",
     "../src/resolver/ptr_ref_validation_test.cc",
-    "../src/resolver/pipeline_overridable_constant_test.cc",
+    "../src/resolver/resolver_behavior_test.cc",
+    "../src/resolver/resolver_constants_test.cc",
     "../src/resolver/resolver_test.cc",
     "../src/resolver/resolver_test_helper.cc",
     "../src/resolver/resolver_test_helper.h",
+    "../src/resolver/storage_class_layout_validation_test.cc",
     "../src/resolver/storage_class_validation_test.cc",
     "../src/resolver/struct_layout_test.cc",
     "../src/resolver/struct_pipeline_stage_use_test.cc",
@@ -273,12 +269,20 @@ tint_unittests_source_set("tint_unittests_core_src") {
     "../src/resolver/validation_test.cc",
     "../src/resolver/var_let_test.cc",
     "../src/resolver/var_let_validation_test.cc",
-    "../src/scope_stack_test.cc",
+  ]
+  deps = [ ":tint_unittests_ast_src" ]
+}
+
+tint_unittests_source_set("tint_unittests_sem_src") {
+  sources = [
+    "../src/sem/atomic_type_test.cc",
     "../src/sem/bool_type_test.cc",
+    "../src/sem/depth_multisampled_texture_type_test.cc",
     "../src/sem/depth_texture_type_test.cc",
     "../src/sem/external_texture_type_test.cc",
     "../src/sem/f32_type_test.cc",
     "../src/sem/i32_type_test.cc",
+    "../src/sem/intrinsic_test.cc",
     "../src/sem/matrix_type_test.cc",
     "../src/sem/multisampled_texture_type_test.cc",
     "../src/sem/pointer_type_test.cc",
@@ -292,37 +296,67 @@ tint_unittests_source_set("tint_unittests_core_src") {
     "../src/sem/type_manager_test.cc",
     "../src/sem/u32_type_test.cc",
     "../src/sem/vector_type_test.cc",
-    "../src/symbol_table_test.cc",
-    "../src/symbol_test.cc",
-    "../src/traits_test.cc",
+  ]
+}
+
+tint_unittests_source_set("tint_unittests_transform_src") {
+  sources = [
+    "../src/transform/add_empty_entry_point_test.cc",
+    "../src/transform/array_length_from_uniform_test.cc",
     "../src/transform/binding_remapper_test.cc",
-    "../src/transform/bound_array_accessors_test.cc",
     "../src/transform/calculate_array_length_test.cc",
     "../src/transform/canonicalize_entry_point_io_test.cc",
-    "../src/transform/decompose_storage_access_test.cc",
+    "../src/transform/decompose_memory_access_test.cc",
+    "../src/transform/decompose_strided_matrix_test.cc",
     "../src/transform/external_texture_transform_test.cc",
     "../src/transform/first_index_offset_test.cc",
-    "../src/transform/inline_pointer_lets_test.cc",
+    "../src/transform/fold_constants_test.cc",
+    "../src/transform/fold_trivial_single_use_lets_test.cc",
+    "../src/transform/for_loop_to_loop_test.cc",
+    "../src/transform/loop_to_for_loop_test.cc",
+    "../src/transform/module_scope_var_to_entry_point_param_test.cc",
+    "../src/transform/multiplanar_external_texture_test.cc",
+    "../src/transform/num_workgroups_from_uniform_test.cc",
+    "../src/transform/pad_array_elements_test.cc",
+    "../src/transform/promote_initializers_to_const_var_test.cc",
+    "../src/transform/remove_phonies_test.cc",
+    "../src/transform/remove_unreachable_statements_test.cc",
     "../src/transform/renamer_test.cc",
+    "../src/transform/robustness_test.cc",
+    "../src/transform/simplify_pointers_test.cc",
     "../src/transform/single_entry_point_test.cc",
+    "../src/transform/test_helper.h",
     "../src/transform/transform_test.cc",
-    "../src/transform/var_for_dynamic_index_test.cc",
+    "../src/transform/unshadow_test.cc",
+    "../src/transform/vectorize_scalar_matrix_constructors_test.cc",
     "../src/transform/vertex_pulling_test.cc",
-    "../src/utils/command_test.cc",
-    "../src/utils/get_or_create_test.cc",
+    "../src/transform/wrap_arrays_in_structs_test.cc",
+    "../src/transform/zero_init_workgroup_memory_test.cc",
+  ]
+}
+
+tint_unittests_source_set("tint_unittests_utils_src") {
+  sources = [
+    "../src/utils/defer_test.cc",
+    "../src/utils/enum_set_test.cc",
     "../src/utils/hash_test.cc",
+    "../src/utils/io/command_test.cc",
+    "../src/utils/io/tmpfile_test.cc",
+    "../src/utils/map_test.cc",
     "../src/utils/math_test.cc",
+    "../src/utils/reverse_test.cc",
     "../src/utils/scoped_assignment_test.cc",
-    "../src/utils/tmpfile_test.cc",
+    "../src/utils/string_test.cc",
+    "../src/utils/transform_test.cc",
     "../src/utils/unique_vector_test.cc",
+  ]
+}
+
+tint_unittests_source_set("tint_unittests_writer_src") {
+  sources = [
     "../src/writer/append_vector_test.cc",
     "../src/writer/float_to_string_test.cc",
-  ]
-
-  deps = [
-    ":tint_unittests_core_sem_src",
-    "${tint_root_dir}/src:libtint_wgsl_reader_src",
-    "${tint_root_dir}/src:libtint_wgsl_writer_src",
+    "../src/writer/text_generator_test.cc",
   ]
 }
 
@@ -368,7 +402,6 @@ tint_unittests_source_set("tint_unittests_spv_reader_src") {
 
 tint_unittests_source_set("tint_unittests_spv_writer_src") {
   sources = [
-    "../src/transform/spirv_test.cc",
     "../src/writer/spirv/binary_writer_test.cc",
     "../src/writer/spirv/builder_accessor_expression_test.cc",
     "../src/writer/spirv/builder_assign_test.cc",
@@ -404,6 +437,7 @@ tint_unittests_source_set("tint_unittests_spv_writer_src") {
   ]
 
   deps = [
+    ":tint_unittests_ast_src",
     "${tint_root_dir}/src:libtint_spv_writer_src",
     "${tint_spirv_tools_dir}/:spvtools",
   ]
@@ -438,7 +472,6 @@ tint_unittests_source_set("tint_unittests_wgsl_reader_src") {
     "../src/reader/wgsl/parser_impl_function_decoration_list_test.cc",
     "../src/reader/wgsl/parser_impl_function_decoration_test.cc",
     "../src/reader/wgsl/parser_impl_function_header_test.cc",
-    "../src/reader/wgsl/parser_impl_function_type_decl_test.cc",
     "../src/reader/wgsl/parser_impl_global_constant_decl_test.cc",
     "../src/reader/wgsl/parser_impl_global_decl_test.cc",
     "../src/reader/wgsl/parser_impl_global_variable_decl_test.cc",
@@ -454,6 +487,7 @@ tint_unittests_source_set("tint_unittests_wgsl_reader_src") {
     "../src/reader/wgsl/parser_impl_pipeline_stage_test.cc",
     "../src/reader/wgsl/parser_impl_primary_expression_test.cc",
     "../src/reader/wgsl/parser_impl_relational_expression_test.cc",
+    "../src/reader/wgsl/parser_impl_reserved_keyword_test.cc",
     "../src/reader/wgsl/parser_impl_sampled_texture_type_test.cc",
     "../src/reader/wgsl/parser_impl_sampler_type_test.cc",
     "../src/reader/wgsl/parser_impl_shift_expression_test.cc",
@@ -482,8 +516,8 @@ tint_unittests_source_set("tint_unittests_wgsl_reader_src") {
     "../src/reader/wgsl/parser_impl_variable_decoration_list_test.cc",
     "../src/reader/wgsl/parser_impl_variable_decoration_test.cc",
     "../src/reader/wgsl/parser_impl_variable_ident_decl_test.cc",
+    "../src/reader/wgsl/parser_impl_variable_qualifier_test.cc",
     "../src/reader/wgsl/parser_impl_variable_stmt_test.cc",
-    "../src/reader/wgsl/parser_impl_variable_storage_decoration_test.cc",
     "../src/reader/wgsl/parser_test.cc",
     "../src/reader/wgsl/token_test.cc",
   ]
@@ -511,6 +545,7 @@ tint_unittests_source_set("tint_unittests_wgsl_writer_src") {
     "../src/writer/wgsl/generator_impl_global_decl_test.cc",
     "../src/writer/wgsl/generator_impl_identifier_test.cc",
     "../src/writer/wgsl/generator_impl_if_test.cc",
+    "../src/writer/wgsl/generator_impl_literal_test.cc",
     "../src/writer/wgsl/generator_impl_loop_test.cc",
     "../src/writer/wgsl/generator_impl_member_accessor_test.cc",
     "../src/writer/wgsl/generator_impl_return_test.cc",
@@ -523,12 +558,14 @@ tint_unittests_source_set("tint_unittests_wgsl_writer_src") {
     "../src/writer/wgsl/test_helper.h",
   ]
 
-  deps = [ "${tint_root_dir}/src:libtint_wgsl_writer_src" ]
+  deps = [
+    ":tint_unittests_ast_src",
+    "${tint_root_dir}/src:libtint_wgsl_writer_src",
+  ]
 }
 
 tint_unittests_source_set("tint_unittests_msl_writer_src") {
   sources = [
-    "../src/transform/msl_test.cc",
     "../src/writer/msl/generator_impl_array_accessor_test.cc",
     "../src/writer/msl/generator_impl_assign_test.cc",
     "../src/writer/msl/generator_impl_binary_test.cc",
@@ -541,7 +578,6 @@ tint_unittests_source_set("tint_unittests_msl_writer_src") {
     "../src/writer/msl/generator_impl_constructor_test.cc",
     "../src/writer/msl/generator_impl_continue_test.cc",
     "../src/writer/msl/generator_impl_discard_test.cc",
-    "../src/writer/msl/generator_impl_function_entry_point_data_test.cc",
     "../src/writer/msl/generator_impl_function_test.cc",
     "../src/writer/msl/generator_impl_identifier_test.cc",
     "../src/writer/msl/generator_impl_if_test.cc",
@@ -552,21 +588,23 @@ tint_unittests_source_set("tint_unittests_msl_writer_src") {
     "../src/writer/msl/generator_impl_member_accessor_test.cc",
     "../src/writer/msl/generator_impl_module_constant_test.cc",
     "../src/writer/msl/generator_impl_return_test.cc",
+    "../src/writer/msl/generator_impl_sanitizer_test.cc",
     "../src/writer/msl/generator_impl_switch_test.cc",
     "../src/writer/msl/generator_impl_test.cc",
     "../src/writer/msl/generator_impl_type_test.cc",
     "../src/writer/msl/generator_impl_unary_op_test.cc",
     "../src/writer/msl/generator_impl_variable_decl_statement_test.cc",
-    "../src/writer/msl/test_helper.cc",
     "../src/writer/msl/test_helper.h",
   ]
 
-  deps = [ "${tint_root_dir}/src:libtint_msl_writer_src" ]
+  deps = [
+    ":tint_unittests_ast_src",
+    "${tint_root_dir}/src:libtint_msl_writer_src",
+  ]
 }
 
 tint_unittests_source_set("tint_unittests_hlsl_writer_src") {
   sources = [
-    "../src/transform/hlsl_test.cc",
     "../src/writer/hlsl/generator_impl_array_accessor_test.cc",
     "../src/writer/hlsl/generator_impl_assign_test.cc",
     "../src/writer/hlsl/generator_impl_binary_test.cc",
@@ -579,7 +617,6 @@ tint_unittests_source_set("tint_unittests_hlsl_writer_src") {
     "../src/writer/hlsl/generator_impl_constructor_test.cc",
     "../src/writer/hlsl/generator_impl_continue_test.cc",
     "../src/writer/hlsl/generator_impl_discard_test.cc",
-    "../src/writer/hlsl/generator_impl_function_entry_point_data_test.cc",
     "../src/writer/hlsl/generator_impl_function_test.cc",
     "../src/writer/hlsl/generator_impl_identifier_test.cc",
     "../src/writer/hlsl/generator_impl_if_test.cc",
@@ -597,17 +634,103 @@ tint_unittests_source_set("tint_unittests_hlsl_writer_src") {
     "../src/writer/hlsl/generator_impl_unary_op_test.cc",
     "../src/writer/hlsl/generator_impl_variable_decl_statement_test.cc",
     "../src/writer/hlsl/generator_impl_workgroup_var_test.cc",
-    "../src/writer/hlsl/test_helper.cc",
     "../src/writer/hlsl/test_helper.h",
   ]
 
-  deps = [ "${tint_root_dir}/src:libtint_hlsl_writer_src" ]
+  deps = [
+    ":tint_unittests_ast_src",
+    "${tint_root_dir}/src:libtint_hlsl_writer_src",
+  ]
+}
+
+tint_unittests_source_set("tint_unittests_glsl_writer_src") {
+  sources = [
+    "../src/transform/glsl_test.cc",
+    "../src/writer/glsl/generator_impl_array_accessor_test.cc",
+    "../src/writer/glsl/generator_impl_assign_test.cc",
+    "../src/writer/glsl/generator_impl_binary_test.cc",
+    "../src/writer/glsl/generator_impl_bitcast_test.cc",
+    "../src/writer/glsl/generator_impl_block_test.cc",
+    "../src/writer/glsl/generator_impl_break_test.cc",
+    "../src/writer/glsl/generator_impl_call_test.cc",
+    "../src/writer/glsl/generator_impl_case_test.cc",
+    "../src/writer/glsl/generator_impl_cast_test.cc",
+    "../src/writer/glsl/generator_impl_constructor_test.cc",
+    "../src/writer/glsl/generator_impl_continue_test.cc",
+    "../src/writer/glsl/generator_impl_discard_test.cc",
+    "../src/writer/glsl/generator_impl_function_test.cc",
+    "../src/writer/glsl/generator_impl_identifier_test.cc",
+    "../src/writer/glsl/generator_impl_if_test.cc",
+    "../src/writer/glsl/generator_impl_import_test.cc",
+    "../src/writer/glsl/generator_impl_intrinsic_test.cc",
+    "../src/writer/glsl/generator_impl_intrinsic_texture_test.cc",
+    "../src/writer/glsl/generator_impl_loop_test.cc",
+    "../src/writer/glsl/generator_impl_member_accessor_test.cc",
+    "../src/writer/glsl/generator_impl_module_constant_test.cc",
+    "../src/writer/glsl/generator_impl_return_test.cc",
+    "../src/writer/glsl/generator_impl_sanitizer_test.cc",
+    "../src/writer/glsl/generator_impl_switch_test.cc",
+    "../src/writer/glsl/generator_impl_test.cc",
+    "../src/writer/glsl/generator_impl_type_test.cc",
+    "../src/writer/glsl/generator_impl_unary_op_test.cc",
+    "../src/writer/glsl/generator_impl_variable_decl_statement_test.cc",
+    "../src/writer/glsl/generator_impl_workgroup_var_test.cc",
+    "../src/writer/glsl/test_helper.h",
+  ]
+
+  deps = [
+    ":tint_unittests_ast_src",
+    ":tint_unittests_transform_src",
+    "${tint_root_dir}/src:libtint_glsl_writer_src",
+  ]
+}
+
+tint_unittests_source_set("tint_unittests_core_src") {
+  sources = [
+    "../src/block_allocator_test.cc",
+    "../src/castable_test.cc",
+    "../src/clone_context_test.cc",
+    "../src/debug_test.cc",
+    "../src/demangler_test.cc",
+    "../src/intrinsic_table_test.cc",
+    "../src/program_builder_test.cc",
+    "../src/program_test.cc",
+    "../src/scope_stack_test.cc",
+    "../src/symbol_table_test.cc",
+    "../src/symbol_test.cc",
+    "../src/traits_test.cc",
+  ]
+
+  deps = [ ":tint_unittests_ast_src" ]
+}
+
+if (build_with_chromium) {
+  tint_unittests_source_set("tint_unittests_fuzzer_src") {
+    sources = [ "../fuzzers/random_generator_test.cc" ]
+
+    deps = [
+      ":tint_unittests_core_src",
+      "${tint_root_dir}/fuzzers:tint_fuzzer_common_src",
+    ]
+  }
 }
 
 source_set("tint_unittests_src") {
   testonly = true
 
-  deps = [ ":tint_unittests_core_src" ]
+  deps = [
+    ":tint_unittests_ast_src",
+    ":tint_unittests_core_src",
+    ":tint_unittests_diagnostic_src",
+    ":tint_unittests_inspector_src",
+    ":tint_unittests_resolver_src",
+    ":tint_unittests_sem_src",
+    ":tint_unittests_transform_src",
+    ":tint_unittests_utils_src",
+    ":tint_unittests_writer_src",
+    "${tint_root_dir}/src:libtint_wgsl_reader_src",
+    "${tint_root_dir}/src:libtint_wgsl_writer_src",
+  ]
 
   if (tint_build_spv_reader) {
     deps += [ ":tint_unittests_spv_reader_src" ]
@@ -631,6 +754,14 @@ source_set("tint_unittests_src") {
 
   if (tint_build_hlsl_writer) {
     deps += [ ":tint_unittests_hlsl_writer_src" ]
+  }
+
+  if (tint_build_glsl_writer) {
+    deps += [ ":tint_unittests_glsl_writer_src" ]
+  }
+
+  if (build_with_chromium) {
+    deps += [ ":tint_unittests_fuzzer_src" ]
   }
 
   configs += [ ":tint_unittests_config" ]

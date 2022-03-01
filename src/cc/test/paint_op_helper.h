@@ -37,7 +37,9 @@ class PaintOpHelper {
         const auto* op = static_cast<const ClipPathOp*>(base_op);
         str << "ClipPathOp(path=" << PaintOpHelper::SkiaTypeToString(op->path)
             << ", op=" << PaintOpHelper::SkiaTypeToString(op->op)
-            << ", antialias=" << op->antialias << ")";
+            << ", antialias=" << op->antialias
+            << ", use_cache=" << (op->use_cache == UsePaintCache::kEnabled)
+            << ")";
         break;
       }
       case PaintOpType::ClipRect: {
@@ -124,7 +126,9 @@ class PaintOpHelper {
       case PaintOpType::DrawPath: {
         const auto* op = static_cast<const DrawPathOp*>(base_op);
         str << "DrawPathOp(path=" << PaintOpHelper::SkiaTypeToString(op->path)
-            << ", flags=" << PaintOpHelper::FlagsToString(op->flags) << ")";
+            << ", flags=" << PaintOpHelper::FlagsToString(op->flags)
+            << ", use_cache=" << (op->use_cache == UsePaintCache::kEnabled)
+            << ")";
         break;
       }
       case PaintOpType::DrawRecord: {
@@ -359,18 +363,18 @@ class PaintOpHelper {
     return "<SkPath>";
   }
 
-  static std::string SkiaTypeToString(SkFilterQuality quality) {
+  static std::string SkiaTypeToString(PaintFlags::FilterQuality quality) {
     switch (quality) {
-      case kNone_SkFilterQuality:
+      case PaintFlags::FilterQuality::kNone:
         return "kNone_SkFilterQuality";
-      case kLow_SkFilterQuality:
+      case PaintFlags::FilterQuality::kLow:
         return "kLow_SkFilterQuality";
-      case kMedium_SkFilterQuality:
+      case PaintFlags::FilterQuality::kMedium:
         return "kMedium_SkFilterQuality";
-      case kHigh_SkFilterQuality:
+      case PaintFlags::FilterQuality::kHigh:
         return "kHigh_SkFilterQuality";
     }
-    return "<unknown SkFilterQuality>";
+    return "<unknown FilterQuality>";
   }
 
   static std::string SkiaTypeToString(PaintFlags::Cap cap) {

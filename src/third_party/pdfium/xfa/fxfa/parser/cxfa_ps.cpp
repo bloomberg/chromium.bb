@@ -12,10 +12,10 @@
 namespace {
 
 const CXFA_Node::PropertyData kPsPropertyData[] = {
-    {XFA_Element::FontInfo, 1, 0},  {XFA_Element::Jog, 1, 0},
-    {XFA_Element::Xdc, 1, 0},       {XFA_Element::BatchOutput, 1, 0},
-    {XFA_Element::OutputBin, 1, 0}, {XFA_Element::Compress, 1, 0},
-    {XFA_Element::Staple, 1, 0},    {XFA_Element::MediumInfo, 1, 0},
+    {XFA_Element::FontInfo, 1, {}},  {XFA_Element::Jog, 1, {}},
+    {XFA_Element::Xdc, 1, {}},       {XFA_Element::BatchOutput, 1, {}},
+    {XFA_Element::OutputBin, 1, {}}, {XFA_Element::Compress, 1, {}},
+    {XFA_Element::Staple, 1, {}},    {XFA_Element::MediumInfo, 1, {}},
 };
 
 const CXFA_Node::AttributeData kPsAttributeData[] = {
@@ -29,7 +29,7 @@ const CXFA_Node::AttributeData kPsAttributeData[] = {
 CXFA_Ps::CXFA_Ps(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_Config,
+                XFA_XDPPACKET::kConfig,
                 XFA_ObjectType::Node,
                 XFA_Element::Ps,
                 kPsPropertyData,

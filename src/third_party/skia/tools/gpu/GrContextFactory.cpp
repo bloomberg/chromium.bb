@@ -30,7 +30,6 @@
 #include "tools/gpu/dawn/DawnTestContext.h"
 #endif
 #include "src/gpu/GrCaps.h"
-#include "src/gpu/gl/GrGLGpu.h"
 #include "tools/gpu/mock/MockTestContext.h"
 
 #if defined(SK_BUILD_FOR_WIN) && defined(SK_ENABLE_DISCRETE_GPU)
@@ -213,8 +212,11 @@ ContextInfo GrContextFactory::getContextInfoInternal(ContextType type, ContextOv
                     break;
 #endif
 #ifndef SK_NO_COMMAND_BUFFER
-                case kCommandBuffer_ContextType:
-                    glCtx = CommandBufferGLTestContext::Create(glShareContext);
+                case kCommandBuffer_ES2_ContextType:
+                    glCtx = CommandBufferGLTestContext::Create(2, glShareContext);
+                    break;
+                case kCommandBuffer_ES3_ContextType:
+                    glCtx = CommandBufferGLTestContext::Create(3, glShareContext);
                     break;
 #endif
                 default:

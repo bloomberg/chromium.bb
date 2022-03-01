@@ -5,7 +5,7 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_EVICTION_H_
 #define NET_DISK_CACHE_BLOCKFILE_EVICTION_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/disk_cache/blockfile/rankings.h"
 
@@ -20,6 +20,10 @@ struct IndexHeader;
 class Eviction {
  public:
   Eviction();
+
+  Eviction(const Eviction&) = delete;
+  Eviction& operator=(const Eviction&) = delete;
+
   ~Eviction();
 
   void Init(BackendImpl* backend);
@@ -69,9 +73,9 @@ class Eviction {
   int SelectListByLength(Rankings::ScopedRankingsBlock* next);
   void ReportListStats();
 
-  BackendImpl* backend_;
-  Rankings* rankings_;
-  IndexHeader* header_;
+  raw_ptr<BackendImpl> backend_;
+  raw_ptr<Rankings> rankings_;
+  raw_ptr<IndexHeader> header_;
   int max_size_;
   int trim_delays_;
   int index_size_;
@@ -82,8 +86,6 @@ class Eviction {
   bool init_;
   bool test_mode_;
   base::WeakPtrFactory<Eviction> ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Eviction);
 };
 
 }  // namespace disk_cache

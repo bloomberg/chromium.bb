@@ -23,23 +23,26 @@
 #include <stdint.h>
 #include <functional>
 #include <string>
+#include <vector>
 
+#include "perfetto/base/build_config.h"
 #include "perfetto/base/export.h"
 #include "perfetto/base/logging.h"
 
 namespace perfetto {
 namespace trace_processor {
 
-// Various places in trace processor assume a max number of CPUs to keep code
-// simpler (e.g. use arrays instead of vectors).
-constexpr size_t kMaxCpus = 128;
+// All metrics protos are in this directory. When loading metric extensions, the
+// protos are mounted onto a virtual path inside this directory.
+constexpr char kMetricProtoRoot[] = "protos/perfetto/metrics/";
 
 // Enum which encodes how trace processor should try to sort the ingested data.
+// Note that these options are only applicable to proto traces; other trace
+// types (e.g. JSON, Fuchsia) use full sorts.
 enum class SortingMode {
   // This option allows trace processor to use built-in heuristics about how to
   // sort the data. Generally, this option is correct for most embedders as
-  // trace processor reads information from the trace (e.g. TraceConfig) to make
-  // the best decision.
+  // trace processor reads information from the trace to make the best decision.
   //
   // The exact heuristics are implementation details but will ensure that all
   // relevant tables are sorted by timestamp.
@@ -53,14 +56,19 @@ enum class SortingMode {
   // data to be skipped.
   kForceFullSort = 1,
 
-  // This option forces trace processor to use the |flush_period_ms| specified
-  // in the TraceConfig to perform a windowed sort of the data. The window size
-  // is not guaranteed to be exactly |flush_period_ms| but will be of the same
-  // order of magnitude; the exact value is an implementation detail and should
-  // not be relied upon.
+  // This option is deprecated in v18; trace processor will ignore it and
+  // use |kDefaultHeuristics|.
   //
-  // If a |flush_period_ms| is not specified in the TraceConfig, this mode will
-  // act the same as |SortingMode::kDefaultHeuristics|.
+  // Rationale for deprecation:
+  // The new windowed sorting logic in trace processor uses a combination of
+  // flush and buffer-read lifecycle events inside the trace instead of
+  // using time-periods from the config.
+  //
+  // Recommended migration:
+  // Users of this option should switch to using |kDefaultHeuristics| which
+  // will act very similarly to the pre-v20 behaviour of this option.
+  //
+  // This option is scheduled to be removed in v21.
   kForceFlushPeriodWindowedSort = 2
 };
 
@@ -106,6 +114,10 @@ struct PERFETTO_EXPORT Config {
   // the trace before that event. See the ennu documenetation for more details.
   DropFtraceDataBefore drop_ftrace_data_before =
       DropFtraceDataBefore::kTracingStarted;
+
+  // Any built-in metric proto or sql files matching these paths are skipped
+  // during trace processor metric initialization.
+  std::vector<std::string> skip_builtin_metric_paths;
 };
 
 // Represents a dynamically typed value returned by SQL.

@@ -29,16 +29,19 @@
 
 #include "base/callback_helpers.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_capture_handle.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_capture_handle_change_event.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_capture_handle_change_event_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_double_range.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_long_range.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_capabilities.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_constraints.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_settings.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_point_2d.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -47,7 +50,9 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/imagecapture/image_capture.h"
 #include "third_party/blink/renderer/modules/mediastream/apply_constraints_request.h"
+#include "third_party/blink/renderer/modules/mediastream/capture_handle_change_event.h"
 #include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
+#include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_utils.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
@@ -55,8 +60,8 @@
 #include "third_party/blink/renderer/modules/mediastream/processed_local_audio_source.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 #include "third_party/blink/renderer/modules/mediastream/webaudio_media_stream_audio_sink.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_web_audio_source.h"
@@ -453,14 +458,15 @@ void MediaStreamTrack::stopTrack(ExecutionContext* execution_context) {
 
 MediaStreamTrack* MediaStreamTrack::clone(ScriptState* script_state) {
   SendLogMessage(String::Format("%s()", __func__));
-  MediaStreamComponent* cloned_component = Component()->Clone();
+
+  // Instantiate the clone.
   MediaStreamTrack* cloned_track = MakeGarbageCollected<MediaStreamTrack>(
-      ExecutionContext::From(script_state), cloned_component, ready_state_,
+      ExecutionContext::From(script_state), Component()->Clone(), ready_state_,
       base::DoNothing());
-  DidCloneMediaStreamTrack(Component(), cloned_component);
-  if (image_capture_) {
-    cloned_track->image_capture_ = image_capture_->Clone();
-  }
+
+  // Copy state.
+  CloneInternal(cloned_track);
+
   return cloned_track;
 }
 
@@ -687,17 +693,25 @@ MediaTrackSettings* MediaStreamTrack::getSettings() const {
     }
     settings->setCursor(value);
   }
-  if (platform_settings.capture_handle.has_value()) {
-    const auto& settings_handle = platform_settings.capture_handle.value();
-    auto* capture_handle = CaptureHandle::Create();
-    if (settings_handle.origin) {
-      capture_handle->setOrigin(settings_handle.origin);
-    }
-    capture_handle->setHandle(settings_handle.handle);
-    settings->setCaptureHandle(capture_handle);
-  }
 
   return settings;
+}
+
+CaptureHandle* MediaStreamTrack::getCaptureHandle() const {
+  MediaStreamTrackPlatform::CaptureHandle platform_capture_handle =
+      component_->GetCaptureHandle();
+
+  if (platform_capture_handle.IsEmpty()) {
+    return nullptr;
+  }
+
+  auto* capture_handle = CaptureHandle::Create();
+  if (platform_capture_handle.origin) {
+    capture_handle->setOrigin(platform_capture_handle.origin);
+  }
+  capture_handle->setHandle(platform_capture_handle.handle);
+
+  return capture_handle;
 }
 
 ScriptPromise MediaStreamTrack::applyConstraints(
@@ -863,6 +877,10 @@ std::unique_ptr<AudioSourceProvider> MediaStreamTrack::CreateWebAudioSource(
                                                context_sample_rate));
 }
 
+#if !defined(OS_ANDROID)
+void MediaStreamTrack::CloseFocusWindowOfOpportunity() {}
+#endif
+
 void MediaStreamTrack::RegisterMediaStream(MediaStream* media_stream) {
   CHECK(!is_iterating_registered_media_streams_);
   CHECK(!registered_media_streams_.Contains(media_stream));
@@ -900,6 +918,17 @@ void MediaStreamTrack::Trace(Visitor* visitor) const {
   visitor->Trace(execution_context_);
   visitor->Trace(observers_);
   EventTargetWithInlineData::Trace(visitor);
+}
+
+void MediaStreamTrack::CloneInternal(MediaStreamTrack* cloned_track) {
+  DCHECK(cloned_track);
+
+  DidCloneMediaStreamTrack(Component(), cloned_track->Component());
+
+  DCHECK(!cloned_track->image_capture_);
+  if (image_capture_) {
+    cloned_track->image_capture_ = image_capture_->Clone();
+  }
 }
 
 void MediaStreamTrack::EnsureFeatureHandleForScheduler() {

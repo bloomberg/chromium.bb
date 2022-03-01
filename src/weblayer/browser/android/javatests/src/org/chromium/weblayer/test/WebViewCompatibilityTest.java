@@ -33,7 +33,7 @@ public class WebViewCompatibilityTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "https://crbug.com/1191366")
+    @DisabledTest(message = "http://crbug.com/1273417") // Failing on android-arm64-proguard-rel
     public void testBothLoadPageWebLayerFirst() throws Exception {
         mActivityTestRule.launchShellWithUrl(mActivityTestRule.getTestDataURL("simple_page.html"));
 
@@ -45,7 +45,7 @@ public class WebViewCompatibilityTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "https://crbug.com/1184158")
+    @DisabledTest(message = "http://crbug.com/1273417") // Failing on android-arm64-proguard-rel
     public void testBothLoadPageWebViewFirst() throws Exception {
         Bundle extras = new Bundle();
         extras.putBoolean(InstrumentationActivity.EXTRA_CREATE_WEBLAYER, false);

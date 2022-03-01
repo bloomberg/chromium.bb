@@ -8,7 +8,7 @@
 
 #include "base/location.h"
 #include "base/memory/aligned_memory.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/utility/image_writer/error_message_strings.h"
@@ -91,7 +91,7 @@ bool ImageWriter::InitializeFiles() {
   if (!image_file_.IsValid()) {
     image_file_.Initialize(image_path_,
                            base::File::FLAG_OPEN | base::File::FLAG_READ |
-                               base::File::FLAG_EXCLUSIVE_READ);
+                               base::File::FLAG_WIN_EXCLUSIVE_READ);
 
     if (!image_file_.IsValid()) {
       DLOG(ERROR) << "Unable to open file for read: " << image_path_.value();

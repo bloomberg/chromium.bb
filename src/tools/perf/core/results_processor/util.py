@@ -33,7 +33,7 @@ def ApplyInParallel(function, work_list, on_failure=None):
   try:
     # Note that this is speculatively halved as an attempt to fix
     # crbug.com/953365.
-    cpu_count = multiprocessing.cpu_count() / 2
+    cpu_count = multiprocessing.cpu_count() // 2
     if sys.platform == 'win32':
       # TODO(crbug.com/1190269) - we can't use more than 56
       # cores on Windows or Python3 may hang.
@@ -106,7 +106,7 @@ def SetUnexpectedFailure(test_result):
 def TryUploadingResultToResultSink(results):
   def buildSummaryHtml(artifacts):
     # Using test log as the summary. It is stored in an artifact named logs.txt.
-    if artifacts.has_key('logs.txt'):
+    if 'logs.txt' in artifacts:
       summary_html = '<p><text-artifact artifact-id="logs.txt"></p>'
     else:
       summary_html = ''

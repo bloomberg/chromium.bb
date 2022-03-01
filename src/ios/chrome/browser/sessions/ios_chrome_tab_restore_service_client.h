@@ -5,7 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_SESSIONS_IOS_CHROME_TAB_RESTORE_SERVICE_CLIENT_H_
 #define IOS_CHROME_BROWSER_SESSIONS_IOS_CHROME_TAB_RESTORE_SERVICE_CLIENT_H_
 
-#include "base/macros.h"
+#include <map>
+#include <string>
+
 #include "components/sessions/core/tab_restore_service_client.h"
 
 class ChromeBrowserState;
@@ -16,6 +18,12 @@ class IOSChromeTabRestoreServiceClient
     : public sessions::TabRestoreServiceClient {
  public:
   explicit IOSChromeTabRestoreServiceClient(ChromeBrowserState* browser_state);
+
+  IOSChromeTabRestoreServiceClient(const IOSChromeTabRestoreServiceClient&) =
+      delete;
+  IOSChromeTabRestoreServiceClient& operator=(
+      const IOSChromeTabRestoreServiceClient&) = delete;
+
   ~IOSChromeTabRestoreServiceClient() override;
 
  private:
@@ -25,7 +33,8 @@ class IOSChromeTabRestoreServiceClient
       const gfx::Rect& bounds,
       ui::WindowShowState show_state,
       const std::string& workspace,
-      const std::string& user_title) override;
+      const std::string& user_title,
+      const std::map<std::string, std::string>& extra_data) override;
   sessions::LiveTabContext* FindLiveTabContextForTab(
       const sessions::LiveTab* tab) override;
   sessions::LiveTabContext* FindLiveTabContextWithID(
@@ -40,8 +49,6 @@ class IOSChromeTabRestoreServiceClient
   void GetLastSession(sessions::GetLastSessionCallback callback) override;
 
   ChromeBrowserState* browser_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOSChromeTabRestoreServiceClient);
 };
 
 #endif  // IOS_CHROME_BROWSER_SESSIONS_IOS_CHROME_TAB_RESTORE_SERVICE_CLIENT_H_

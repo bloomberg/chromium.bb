@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 
@@ -31,6 +31,10 @@ class GamepadBuilder {
   GamepadBuilder(const std::string& gamepad_id,
                  GamepadMapping mapping,
                  device::mojom::XRHandedness handedness);
+
+  GamepadBuilder(const GamepadBuilder&) = delete;
+  GamepadBuilder& operator=(const GamepadBuilder&) = delete;
+
   virtual ~GamepadBuilder();
 
   virtual bool IsValid() const;
@@ -50,9 +54,6 @@ class GamepadBuilder {
   GamepadMapping GetMapping() const { return gamepad_.mapping; }
 
   Gamepad gamepad_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GamepadBuilder);
 };
 
 }  // namespace device

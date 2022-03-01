@@ -9,11 +9,13 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/network_session_configurator/common/network_switches.h"
-#include "content/browser/webid/id_token_request_callback_data.h"
+#include "content/browser/webid/test/fake_identity_request_dialog_controller.h"
 #include "content/browser/webid/test/webid_test_content_browser_client.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -56,73 +58,6 @@ constexpr char kIdToken[] = "[not a real token]";
 constexpr char kIdpEndpointTokenResponse[] =
     "{\"id_token\": \"[not a real token]\"}";
 
-// This fakes the request dialogs to always provide user consent.
-// Tests that need to vary the responses or set test expectations should use
-// MockIdentityRequestDialogController.
-// This also fakes an IdP sign-in page until tests can be set up to
-// verify the FederatedAuthResponse mechanics.
-class FakeIdentityRequestDialogController
-    : public content::IdentityRequestDialogController {
- public:
-  FakeIdentityRequestDialogController(
-      UserApproval initial_permission_response,
-      UserApproval token_exchange_permission_response)
-      : initial_permission_response_(initial_permission_response),
-        token_exchange_permission_response_(
-            token_exchange_permission_response) {}
-
-  ~FakeIdentityRequestDialogController() override = default;
-
-  FakeIdentityRequestDialogController(
-      const FakeIdentityRequestDialogController&) = delete;
-  FakeIdentityRequestDialogController& operator=(
-      const FakeIdentityRequestDialogController&) = delete;
-
-  void ShowInitialPermissionDialog(WebContents*,
-                                   const GURL&,
-                                   InitialApprovalCallback callback) override {
-    std::move(callback).Run(initial_permission_response_);
-  }
-
-  void ShowIdProviderWindow(WebContents*,
-                            WebContents* idp_web_contents,
-                            const GURL&,
-                            IdProviderWindowClosedCallback callback) override {
-    close_idp_window_callback_ = std::move(callback);
-    auto* request_callback_data =
-        IdTokenRequestCallbackData::Get(idp_web_contents);
-    EXPECT_TRUE(request_callback_data);
-
-    // TODO(kenrb, majidvp): This is faking the IdP response which in reality
-    // comes from the navigator.id.provide() API call. We should instead load
-    // the IdP page in the new WebContents and that API's behavior.
-    auto rp_done_callback = request_callback_data->TakeDoneCallback();
-    IdTokenRequestCallbackData::Remove(idp_web_contents);
-    EXPECT_TRUE(rp_done_callback);
-    std::move(rp_done_callback).Run(kIdToken);
-  }
-
-  void CloseIdProviderWindow() override {
-    std::move(close_idp_window_callback_).Run();
-  }
-
-  void ShowTokenExchangePermissionDialog(
-      content::WebContents*,
-      const GURL&,
-      TokenExchangeApprovalCallback callback) override {
-    std::move(callback).Run(token_exchange_permission_response_);
-  }
-
- private:
-  // User action on the initial IdP tracking permission prompt.
-  UserApproval initial_permission_response_ = UserApproval::kApproved;
-
-  // User action on the token exchange permission prompt.
-  UserApproval token_exchange_permission_response_ = UserApproval::kApproved;
-
-  base::OnceClosure close_idp_window_callback_;
-};
-
 // This class implements the IdP logic, and responds to requests sent to the
 // test HTTP server.
 class IdpTestServer {
@@ -144,6 +79,10 @@ class IdpTestServer {
     // to other paths is directed to the IdP.
     if (request.relative_url.rfind("/test", 0) == 0)
       return nullptr;
+
+    if (request.all_headers.find(kIdpForbiddenHeader) != std::string::npos) {
+      EXPECT_EQ(request.headers.at(kIdpForbiddenHeader).size(), 12ul);
+    }
 
     auto response = std::make_unique<BasicHttpResponse>();
     if (IsWellKnownRequest(request)) {
@@ -202,6 +141,7 @@ class IdpTestServer {
 
 }  // namespace
 
+// TODO(yigu): Update the tests (e.g. well-known) to cover mediation mode.
 class WebIdBrowserTest : public ContentBrowserTest {
  public:
   WebIdBrowserTest() = default;
@@ -243,7 +183,7 @@ class WebIdBrowserTest : public ContentBrowserTest {
     // that the network shard for fetching the .well-known file is different
     // from that used for other IdP transactions, to prevent data leakage.
     features.push_back(net::features::kSplitCacheByNetworkIsolationKey);
-    features.push_back(features::kWebID);
+    features.push_back(features::kFedCm);
     scoped_feature_list_.InitWithFeatures(features, {});
 
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
@@ -259,10 +199,16 @@ class WebIdBrowserTest : public ContentBrowserTest {
   std::string GetBasicRequestString() {
     return R"(
         (async () => {
-          var x = (await navigator.id.get({
-            provider: ')" +
+          var x = (await navigator.credentials.get({
+            federated: {
+              providers: [{
+                url: ')" +
            BaseIdpUrl() + R"(',
-            request: '[not a real request]',
+                clientId: 'client_id_1',
+                nonce: '12345',
+              }],
+              mode: "permission",
+            }
           }));
           return x;
         }) ()
@@ -275,7 +221,7 @@ class WebIdBrowserTest : public ContentBrowserTest {
       IdentityRequestDialogController::UserApproval initial_permission_response,
       IdentityRequestDialogController::UserApproval token_exchange_response) {
     auto controller = std::make_unique<FakeIdentityRequestDialogController>(
-        initial_permission_response, token_exchange_response);
+        initial_permission_response, token_exchange_response, kIdToken);
     test_browser_client_->SetIdentityRequestDialogController(
         std::move(controller));
   }
@@ -285,7 +231,7 @@ class WebIdBrowserTest : public ContentBrowserTest {
   EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
   std::unique_ptr<IdpTestServer> idp_server_;
   std::unique_ptr<WebIdTestContentBrowserClient> test_browser_client_;
-  ContentBrowserClient* old_client_ = nullptr;
+  raw_ptr<ContentBrowserClient> old_client_ = nullptr;
 };
 
 // Verify a standard login flow with IdP sign-in page.
@@ -334,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(WebIdBrowserTest, InitialPermissionDeclined) {
   EXPECT_EQ(expected_error, EvalJs(shell(), GetBasicRequestString()).error);
 }
 
-// Simulate the user declining tot share the ID token after it has been
+// Simulate the user declining to share the ID token after it has been
 // provided.
 // TODO(kenrb): Add a variant of this test that denies approval when the token
 // has been provided from the idp_endpoint. Currently the permission prompt does
@@ -355,8 +301,8 @@ IN_PROC_BROWSER_TEST_F(WebIdBrowserTest, WebIdNotSupported) {
   idp_server()->SetWellKnownResponseDetails({net::HTTP_NOT_FOUND, "", ""});
 
   std::string expected_error =
-      "a JavaScript error: \"NetworkError: The "
-      "indicated provider does not support WebID.\"\n";
+      "a JavaScript error: \"NotSupportedError: The "
+      "indicated provider does not support FedCM.\"\n";
   EXPECT_EQ(expected_error, EvalJs(shell(), GetBasicRequestString()).error);
 }
 
@@ -364,10 +310,15 @@ IN_PROC_BROWSER_TEST_F(WebIdBrowserTest, WebIdNotSupported) {
 IN_PROC_BROWSER_TEST_F(WebIdBrowserTest, FailsOnHTTP) {
   std::string script = R"(
         (async () => {
-          var x = (await navigator.id.get({
-            provider: 'http://idp.example)" +
+          var x = (await navigator.credentials.get({
+            federated: {
+              providers: [{
+                url: 'http://idp.example)" +
                        base::NumberToString(https_server().port()) + R"(',
-            request: '[not a real request]',
+                clientId: 'client_id_1',
+                nonce: '12345',
+              }]
+            }
           }));
           return x;
         }) ()

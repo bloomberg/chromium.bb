@@ -2,32 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// eslint-disable-next-line
-import i18nBundle from '../../third_party/i18n/i18n-bundle.js';
+import * as I18n from '../../third_party/i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 
 import {DevToolsLocale} from './DevToolsLocale.js';
+
 import type * as i18nTypes from './i18nTypes.js';
+
+const i18nInstance = new I18n.I18n.I18n();
 
 // All the locales that are part of the DevTools bundle and should not be fetched
 // remotely. Keep this list in sync with "copied_devtools_locale_files" in
 // "all_devtools_files.gni" (except the pseudo locales).
 const BUNDLED_LOCALES = new Set<string>(['en-US', 'en-XL', 'zh']);
-
-/**
- * The strings from the module.json file
- */
-let moduleJSONStrings: Object|undefined;
-
-/**
- * Returns an instance of an object of formatted strings based on locale. If the instance is not
- * set at the time of calling, it is created.
- */
-function getOrSetModuleJSONStrings(): Object {
-  moduleJSONStrings = moduleJSONStrings || i18nBundle.getRendererFormattedStrings(DevToolsLocale.instance().locale);
-  return moduleJSONStrings;
-}
 
 /**
  * Look up the best available locale for the requested language through these fall backs:
@@ -38,7 +26,14 @@ function getOrSetModuleJSONStrings(): Object {
  * If `locale` isn't provided, the default is used.
  */
 export function lookupClosestSupportedDevToolsLocale(locale: string): string {
-  return i18nBundle.lookupLocale(locale);
+  return i18nInstance.lookupClosestSupportedLocale(locale);
+}
+
+/**
+ * Returns a list of all supported DevTools locales, including pseudo locales.
+ */
+export function getAllSupportedDevToolsLocales(): string[] {
+  return [...i18nInstance.supportedLocales];
 }
 
 /**
@@ -66,7 +61,7 @@ export async function fetchAndRegisterLocaleData(locale: Intl.UnicodeBCP47Locale
       new Promise((resolve, reject) => setTimeout(() => reject(new Error('timed out fetching locale')), 5000));
   const localeDataText = await Promise.race([timeoutPromise, localeDataTextPromise]);
   const localeData = JSON.parse(localeDataText as string);
-  i18nBundle.registerLocaleData(locale, localeData);
+  i18nInstance.registerLocaleData(locale, localeData);
 }
 
 /**
@@ -77,76 +72,52 @@ export async function fetchAndRegisterLocaleData(locale: Intl.UnicodeBCP47Locale
  * meta files used to register module extensions.
  */
 export function getLazilyComputedLocalizedString(
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    str_: (id: string, values: Object) => Platform.UIString.LocalizedString, id: string, values: Object = {}): () =>
+    registeredStrings: I18n.LocalizedStringSet.RegisteredFileStrings, id: string, values: i18nTypes.Values = {}): () =>
     Platform.UIString.LocalizedString {
-  return (): Platform.UIString.LocalizedString => getLocalizedString(str_, id, values);
+  return (): Platform.UIString.LocalizedString => getLocalizedString(registeredStrings, id, values);
 }
 
 /**
  * Retrieve the localized string.
  */
 export function getLocalizedString(
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    str_: (id: string, values: Object) => Platform.UIString.LocalizedString, id: string,
-    values: Object = {}): Platform.UIString.LocalizedString {
-  const icuMessage = str_(id, values);
-  return i18nBundle.getFormatted(icuMessage, DevToolsLocale.instance().locale) as Platform.UIString.LocalizedString;
+    registeredStrings: I18n.LocalizedStringSet.RegisteredFileStrings, id: string,
+    values: i18nTypes.Values = {}): Platform.UIString.LocalizedString {
+  return registeredStrings.getLocalizedStringSetFor(DevToolsLocale.instance().locale).getLocalizedString(id, values) as
+      Platform.UIString.LocalizedString;
 }
 
 /**
  * Register a file's UIStrings with i18n, return function to generate the string ids.
  */
-export function registerUIStrings(path: string, stringStructure: Object): (id: string, values: Object) =>
-    Platform.UIString.LocalizedString {
-  /**
-   * Convert a message string & replacement values into an
-   * indexed id value in the form '{messageid} | # {index}'.
-   * */
-  const str: (id: string, value: Object) => Platform.UIString.LocalizedString = (id: string, value: Object) => {
-    try {
-      const i18nInstance = i18nBundle.createIcuMessageFn(path, stringStructure) as (id: string, values: Object) =>
-                               Platform.UIString.LocalizedString;
-      return i18nInstance(id, value);
-    } catch (e) {
-      // ID was not in the main file search for module.json strings
-      if (e instanceof i18nBundle.idNotInMainDictionaryException) {
-        const stringMappingArray = Object.getOwnPropertyNames(getOrSetModuleJSONStrings());
-        const index = stringMappingArray.indexOf(id);
-        if (index >= 0) {
-          return stringMappingArray[index] as Platform.UIString.LocalizedString;
-        }
-      }
-
-      return id as Platform.UIString.LocalizedString;
-    }
-  };
-
-  return str;
+export function registerUIStrings(
+    path: string, stringStructure: {[key: string]: string}): I18n.LocalizedStringSet.RegisteredFileStrings {
+  return i18nInstance.registerFileStrings(path, stringStructure);
 }
 
 /**
  * Returns a span element that may contains other DOM element as placeholders
  */
 export function getFormatLocalizedString(
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    str_: (id: string, values: Object) => Platform.UIString.LocalizedString, stringId: string,
+    registeredStrings: I18n.LocalizedStringSet.RegisteredFileStrings, stringId: string,
     placeholders: Record<string, Object>): Element {
-  const icuMessage = str_(stringId, placeholders);
-  const formatter = i18nBundle.getFormatter(icuMessage, DevToolsLocale.instance().locale);
+  const formatter =
+      registeredStrings.getLocalizedStringSetFor(DevToolsLocale.instance().locale).getMessageFormatterFor(stringId);
 
-  const icuElements = formatter.getAst().elements;
+  const icuElements = formatter.getAst();
   const args: Array<Object> = [];
   let formattedString = '';
   for (const element of icuElements) {
-    if (element.type === 'argumentElement') {
-      const placeholderValue = placeholders[element.id];
+    if (element.type === /* argumentElement */ 1) {
+      const placeholderValue = placeholders[element.value];
       if (placeholderValue) {
         args.push(placeholderValue);
         element.value = '%s';  // convert the {PH} back to %s to use Platform.UIString
       }
     }
-    formattedString += element.value;
+    if ('value' in element) {
+      formattedString += element.value;
+    }
   }
   return formatLocalized(formattedString, args);
 }
@@ -155,7 +126,6 @@ export function formatLocalized(formattedString: string, args: Array<Object>): E
   const substitution: Platform.StringUtilities.FormatterFunction<Object> = substitution => {
     return substitution;
   };
-
 
   function append(a: Element, b: undefined|string|Node): Element {
     if (b) {
@@ -212,12 +182,15 @@ export function getLocalizedLanguageRegion(
     devtoolsLocale: DevToolsLocale): Platform.UIString.LocalizedString {
   // @ts-ignore TODO(crbug.com/1163928) Wait for Intl support.
   const locale = new Intl.Locale(localeString);
+  Platform.DCHECK(() => locale.language !== undefined);
+  Platform.DCHECK(() => locale.baseName !== undefined);
+  const localLanguage = locale.language || 'en';
+  const localBaseName = locale.baseName || 'en-US';
   // @ts-ignore TODO(crbug.com/1163928) Wait for Intl support.
   const devtoolsLoc = new Intl.Locale(devtoolsLocale.locale);
-  const targetLanguage = locale.language === devtoolsLoc.language ? 'en' : locale.baseName;
-  const languageInCurrentLocale =
-      new Intl.DisplayNames([devtoolsLocale.locale], {type: 'language'}).of(locale.language);
-  const languageInTargetLocale = new Intl.DisplayNames([targetLanguage], {type: 'language'}).of(locale.language);
+  const targetLanguage = localLanguage === devtoolsLoc.language ? 'en' : localBaseName;
+  const languageInCurrentLocale = new Intl.DisplayNames([devtoolsLocale.locale], {type: 'language'}).of(localLanguage);
+  const languageInTargetLocale = new Intl.DisplayNames([targetLanguage], {type: 'language'}).of(localLanguage);
 
   let wrappedRegionInCurrentLocale = '';
   let wrappedRegionInTargetLocale = '';

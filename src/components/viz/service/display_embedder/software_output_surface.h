@@ -9,6 +9,7 @@
 #include <queue>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -26,6 +27,10 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
  public:
   explicit SoftwareOutputSurface(
       std::unique_ptr<SoftwareOutputDevice> software_device);
+
+  SoftwareOutputSurface(const SoftwareOutputSurface&) = delete;
+  SoftwareOutputSurface& operator=(const SoftwareOutputSurface&) = delete;
+
   ~SoftwareOutputSurface() override;
 
   // OutputSurface implementation.
@@ -62,7 +67,7 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
   void UpdateVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval);
 
-  OutputSurfaceClient* client_ = nullptr;
+  raw_ptr<OutputSurfaceClient> client_ = nullptr;
 
   UpdateVSyncParametersCallback update_vsync_parameters_callback_;
   base::TimeTicks refresh_timebase_;
@@ -78,8 +83,6 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
 #endif
 
   base::WeakPtrFactory<SoftwareOutputSurface> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SoftwareOutputSurface);
 };
 
 }  // namespace viz

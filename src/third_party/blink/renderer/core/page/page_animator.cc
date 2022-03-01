@@ -22,7 +22,7 @@ namespace {
 
 typedef HeapVector<Member<Document>, 32> DocumentsVector;
 
-enum OnlyThrottledOrNot { OnlyNonThrottled, AllDocuments };
+enum OnlyThrottledOrNot { kOnlyNonThrottled, kAllDocuments };
 
 // We walk through all the frames in DOM tree order and get all the documents
 DocumentsVector GetAllDocuments(Frame* main_frame,
@@ -31,7 +31,7 @@ DocumentsVector GetAllDocuments(Frame* main_frame,
   for (Frame* frame = main_frame; frame; frame = frame->Tree().TraverseNext()) {
     if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
       Document* document = local_frame->GetDocument();
-      if (which_documents == AllDocuments || !document->View() ||
+      if (which_documents == kAllDocuments || !document->View() ||
           !document->View()->CanThrottleRendering())
         documents.push_back(document);
     }
@@ -60,17 +60,21 @@ void PageAnimator::ServiceScriptedAnimations(
   Clock().UpdateTime(monotonic_animation_start_time);
 
   DocumentsVector documents =
-      GetAllDocuments(page_->MainFrame(), OnlyNonThrottled);
+      GetAllDocuments(page_->MainFrame(), kAllDocuments);
 
   for (auto& document : documents) {
-    ScopedFrameBlamer frame_blamer(document->GetFrame());
-    TRACE_EVENT0("blink,rail", "PageAnimator::serviceScriptedAnimations");
+    absl::optional<ScopedFrameBlamer> frame_blamer;
+    // TODO(szager): The following logic evolved piecemeal, and this conditional
+    // is suspect.
+    if (!document->View() || !document->View()->CanThrottleRendering()) {
+      frame_blamer.emplace(document->GetFrame());
+      TRACE_EVENT0("blink,rail", "PageAnimator::serviceScriptedAnimations");
+    }
     if (!document->View()) {
       document->GetDocumentAnimations()
           .UpdateAnimationTimingForAnimationFrame();
       continue;
     }
-    DCHECK(!document->View()->CanThrottleRendering());
     document->View()->ServiceScriptedAnimations(monotonic_animation_start_time);
   }
 
@@ -168,7 +172,8 @@ void PageAnimator::UpdateLifecycleToLayoutClean(LocalFrame& root_frame,
 HeapVector<Member<Animation>> PageAnimator::GetAnimations(
     const TreeScope& tree_scope) {
   HeapVector<Member<Animation>> animations;
-  DocumentsVector documents = GetAllDocuments(page_->MainFrame(), AllDocuments);
+  DocumentsVector documents =
+      GetAllDocuments(page_->MainFrame(), kAllDocuments);
   for (auto& document : documents) {
     document->GetDocumentAnimations().GetAnimationsTargetingTreeScope(
         animations, tree_scope);

@@ -10,14 +10,13 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
-#include "content/public/browser/frame_service_base.h"
+#include "content/public/browser/document_service.h"
 #include "content/public/browser/visibility.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/origin.h"
@@ -33,10 +32,14 @@ class RenderFrameHost;
 // This class derives from WebContentsObserver so that it can keep track of when
 // WebContents is being destroyed via web_contents().
 class NavigationPredictor
-    : public content::FrameServiceBase<blink::mojom::AnchorElementMetricsHost> {
+    : public content::DocumentService<blink::mojom::AnchorElementMetricsHost> {
  public:
   NavigationPredictor(content::RenderFrameHost* render_frame_host,
                       mojo::PendingReceiver<AnchorElementMetricsHost> receiver);
+
+  NavigationPredictor(const NavigationPredictor&) = delete;
+  NavigationPredictor& operator=(const NavigationPredictor&) = delete;
+
   ~NavigationPredictor() override;
 
   // Create and bind NavigationPredictor.
@@ -92,14 +95,12 @@ class NavigationPredictor
   ukm::SourceId ukm_source_id_;
 
   // UKM recorder
-  ukm::UkmRecorder* ukm_recorder_ = nullptr;
+  raw_ptr<ukm::UkmRecorder> ukm_recorder_ = nullptr;
 
   // The time at which the navigation started.
   base::TimeTicks navigation_start_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(NavigationPredictor);
 };
 
 #endif  // CHROME_BROWSER_NAVIGATION_PREDICTOR_NAVIGATION_PREDICTOR_H_

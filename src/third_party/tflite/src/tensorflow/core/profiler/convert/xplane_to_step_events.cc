@@ -15,13 +15,18 @@ limitations under the License.
 
 #include "tensorflow/core/profiler/convert/xplane_to_step_events.h"
 
+#include <string>
+
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "tensorflow/core/platform/types.h"
+#include "tensorflow/core/profiler/protobuf/steps_db.pb.h"
 #include "tensorflow/core/profiler/protobuf/xplane.pb.h"
 #include "tensorflow/core/profiler/utils/event_span.h"
+#include "tensorflow/core/profiler/utils/tf_op_utils.h"
 #include "tensorflow/core/profiler/utils/tf_xplane_visitor.h"
 #include "tensorflow/core/profiler/utils/timespan.h"
 #include "tensorflow/core/profiler/utils/trace_utils.h"
@@ -50,15 +55,79 @@ inline bool IsRealCpuCompute(absl::string_view event_name) {
   return !not_real;
 }
 
+uint64 ParseNumBytesFromMemcpyDetail(absl::string_view memcpy_detail) {
+  const std::vector<absl::string_view> params =
+      absl::StrSplit(memcpy_detail, absl::ByAnyChar(":\n"));
+
+  // Processes value pairs.
+  for (uint32 ii = 0; ii < params.size(); ii += 2) {
+    if (params[ii] != "num_bytes") continue;
+    uint64 value = 0;
+    if (absl::SimpleAtoi(params[ii + 1], &value)) return value;
+    break;
+  }
+  return 0ULL;
+}
+
+EventType ClassifyGpuCompute(absl::string_view event_name,
+                             absl::string_view tensor_shapes) {
+  if (tensor_shapes.empty()) {
+    // Deduces the precision from the name.
+    return (absl::StrContains(event_name, "half") ||
+            absl::StrContains(event_name, "fp16"))
+               ? DEVICE_COMPUTE_16
+               : DEVICE_COMPUTE_32;
+  } else {
+    // Deduces the precision from the shapes.
+    return (absl::StrContains(tensor_shapes, "half")) ? DEVICE_COMPUTE_16
+                                                      : DEVICE_COMPUTE_32;
+  }
+}
+
+EventType ClassifyGpuEvent(absl::string_view event_name,
+                           absl::string_view tensor_shapes) {
+  TfOp tf_op = ParseTfOpFullname(event_name);
+  if (IsMemcpyHToDOp(tf_op)) {
+    return HOST_TO_DEVICE;
+  } else if (IsMemcpyDToHOp(tf_op)) {
+    return DEVICE_TO_HOST;
+  } else if (IsMemcpyDToDOp(tf_op)) {
+    return DEVICE_TO_DEVICE;
+  } else if (absl::StartsWithIgnoreCase(event_name, "nccl")) {
+    return DEVICE_COLLECTIVES;
+  } else {
+    return ClassifyGpuCompute(event_name, tensor_shapes);
+  }
+}
+
+EventType ClassifyCpuEvent(absl::string_view event_name, bool has_device,
+                           bool has_correlation_id) {
+  TfOp tf_op = ParseTfOpFullname(event_name);
+  if (IsInfeedEnqueueOp(tf_op) || IsMemcpyHToDOp(tf_op)) {
+    return HOST_TO_DEVICE;
+  } else if (IsMemcpyHToHOp(tf_op)) {
+    return HOST_TO_HOST;
+  } else if (has_device && (has_correlation_id ||
+                            absl::StartsWithIgnoreCase(
+                                event_name, "ExecutorState::Process"))) {
+    // TODO(b/150420972): Separate runtime overhead from actual compute for
+    // CPU-only.
+    return HOST_PREPARE;
+  } else if (absl::StartsWithIgnoreCase(event_name, "IteratorGetNext")) {
+    return HOST_WAIT_INPUT;
+  } else {
+    return HOST_COMPUTE;
+  }
+}
+
 }  // namespace
 
 StepEvents ConvertHostThreadsXLineToStepEvents(
-    const XLineVisitor& line, bool use_device_step_events,
-    const StepEvents& device_step_events) {
+    const XLineVisitor& line, const StepEvents* device_step_events) {
   StepEvents result;
   line.ForEachEvent([&](const XEventVisitor& event) {
-    int64 correlation_id = -1;
-    int64 group_id = -1;
+    int64_t correlation_id = -1;
+    int64_t group_id = -1;
     absl::string_view step_name;
     event.ForEachStat([&](const XStatVisitor& stat) {
       if (!stat.Type().has_value()) return;
@@ -79,39 +148,39 @@ StepEvents ConvertHostThreadsXLineToStepEvents(
     // doesn't have a device and that the group_id (i.e. step number) already
     // appears on the device. This will filter out all cpu events that do not
     // correspond to any steps executed on the device.
-    if (use_device_step_events &&
-        device_step_events.find(group_id) == device_step_events.end())
-      return;
-    Timespan timespan = Timespan(event.TimestampPs(), event.DurationPs());
+    bool has_device = (device_step_events != nullptr);
+    if (has_device && !device_step_events->contains(group_id)) return;
     if (IsExplicitHostStepMarker(event.Name())) {
-      result[group_id].AddMarker(StepMarker(
-          StepMarkerType::kExplicitHostStepMarker, event.Name(), timespan));
+      result[group_id].AddMarker(
+          StepMarker(StepMarkerType::kExplicitHostStepMarker, event.Name(),
+                     event.GetTimespan()));
     } else if (!step_name.empty()) {
       // Grouping adds a step_name stat to implicit host step markers.
-      result[group_id].AddMarker(StepMarker(
-          StepMarkerType::kImplicitHostStepMarker, event.Name(), timespan));
+      result[group_id].AddMarker(
+          StepMarker(StepMarkerType::kImplicitHostStepMarker, event.Name(),
+                     event.GetTimespan()));
     } else if (IsRealCpuCompute(event.Name())) {
-      EventTypeSpan event_type_span(
-          ClassifyCpuEvent(event.Name(), correlation_id,
-                           use_device_step_events),
-          timespan);
-      result[group_id].AddEvent(event_type_span);
+      result[group_id].AddEvent(EventTypeSpan(
+          ClassifyCpuEvent(event.Name(), has_device, correlation_id >= 0),
+          event.GetTimespan()));
+    }
+    if (!step_name.empty()) {
+      result[group_id].SetStepName(std::string(step_name));
     }
   });
   return result;
 }
 
 StepEvents ConvertHostThreadsXPlaneToStepEvents(
-    const XPlane& host_trace, bool use_device_step_events,
-    const StepEvents& device_step_events) {
-  StepEvents result;
+    const XPlane& host_trace, const StepEvents* device_step_events) {
+  StepEvents host_step_events;
   XPlaneVisitor plane = CreateTfXPlaneVisitor(&host_trace);
   plane.ForEachLine([&](const XLineVisitor& line) {
-    CombineStepEvents(ConvertHostThreadsXLineToStepEvents(
-                          line, use_device_step_events, device_step_events),
-                      &result);
+    StepEvents thread_step_events =
+        ConvertHostThreadsXLineToStepEvents(line, device_step_events);
+    CombineStepEvents(thread_step_events, &host_step_events);
   });
-  return result;
+  return host_step_events;
 }
 
 StepEvents ConvertDeviceStepInfoToStepMarkers(const XLineVisitor& line) {
@@ -120,18 +189,20 @@ StepEvents ConvertDeviceStepInfoToStepMarkers(const XLineVisitor& line) {
     if (absl::optional<XStatVisitor> stat = event.GetStat(StatType::kGroupId)) {
       result[stat->IntValue()].AddMarker(
           StepMarker(StepMarkerType::kDeviceStepMarker, event.Name(),
-                     Timespan(event.TimestampPs(), event.DurationPs())));
+                     event.GetTimespan()));
     }
   });
   return result;
 }
 
-StepEvents ConvertDeviceTraceXLineToStepEvents(const XLineVisitor& line) {
+StepEvents ConvertDeviceTraceXLineToStepEvents(const uint64 device_id,
+                                               const XLineVisitor& line) {
   StepEvents result;
   line.ForEachEvent([&](const XEventVisitor& event) {
-    int64 correlation_id = -1;
-    int64 group_id = -1;
+    int64_t correlation_id = -1;
+    int64_t group_id = -1;
     absl::string_view tensor_shapes;
+    absl::string_view memcpy_details;
     event.ForEachStat([&](const XStatVisitor& stat) {
       if (!stat.Type().has_value()) return;
       switch (stat.Type().value()) {
@@ -144,33 +215,62 @@ StepEvents ConvertDeviceTraceXLineToStepEvents(const XLineVisitor& line) {
         case StatType::kTensorShapes:
           tensor_shapes = stat.StrOrRefValue();
           break;
+        case StatType::kMemcpyDetails:
+          memcpy_details = stat.StrOrRefValue();
+          break;
       }
     });
 
     if (correlation_id >= 0 && group_id >= 0) {
-      EventTypeSpan event_type_span(
-          ClassifyGpuEvent(event.Name(), tensor_shapes),
-          Timespan(event.TimestampPs(), event.DurationPs()));
+      EventType event_type = ClassifyGpuEvent(event.Name(), tensor_shapes);
+      EventTypeSpan event_type_span(event_type, event.GetTimespan());
       result[group_id].AddEvent(event_type_span);
+      switch (event_type) {
+        case DEVICE_COLLECTIVES: {
+          AllReduceInfo collective_ops;
+          collective_ops.set_name(string(event.Name()));
+          collective_ops.set_start_time_ps(event.TimestampPs());
+          collective_ops.set_end_time_ps(event.EndOffsetPs());
+          // TODO(jiesun): figure out how to get size info etc.
+          result[group_id].AddCollectiveOpEvent(device_id, collective_ops);
+          break;
+        }
+        case HOST_TO_DEVICE:
+        case DEVICE_TO_DEVICE:
+        case DEVICE_TO_HOST: {
+          // TODO(jiesun): not all memcpy events are grouped, figure out a
+          // better way to attribute them to steps.
+          uint64 bytes_transferred =
+              ParseNumBytesFromMemcpyDetail(memcpy_details);
+          result[group_id].AddDeviceMemoryTransferEvent(
+              event_type, event.GetTimespan(), bytes_transferred);
+          break;
+        }
+        default:
+          return;
+      }
     }
   });
   return result;
 }
 
 StepEvents ConvertDeviceTraceXPlaneToStepEvents(const XPlane& device_trace) {
-  StepEvents result;
+  StepEvents device_step_events;
   XPlaneVisitor plane = CreateTfXPlaneVisitor(&device_trace);
   plane.ForEachLine([&](const XLineVisitor& line) {
-    int64 line_id = line.Id();
+    int64_t line_id = line.Id();
     if (line_id == kThreadIdStepInfo) {
-      CombineStepEvents(ConvertDeviceStepInfoToStepMarkers(line), &result);
+      StepEvents step_marker_events = ConvertDeviceStepInfoToStepMarkers(line);
+      CombineStepEvents(step_marker_events, &device_step_events);
     } else if (IsDerivedThreadId(line_id)) {
       return;
     } else {
-      CombineStepEvents(ConvertDeviceTraceXLineToStepEvents(line), &result);
+      StepEvents stream_step_events =
+          ConvertDeviceTraceXLineToStepEvents(plane.Id(), line);
+      CombineStepEvents(stream_step_events, &device_step_events);
     }
   });
-  return result;
+  return device_step_events;
 }
 
 }  // namespace profiler

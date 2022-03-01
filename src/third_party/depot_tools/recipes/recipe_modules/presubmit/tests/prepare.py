@@ -6,6 +6,8 @@ from recipe_engine import post_process
 from recipe_engine import recipe_api
 
 
+PYTHON_VERSION_COMPATIBILITY = 'PY2+3'
+
 DEPS = [
   'gclient',
   'presubmit',

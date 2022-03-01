@@ -34,6 +34,8 @@ OmniboxPedal::TokenSequence::TokenSequence(std::vector<int> token_ids) {
 
 OmniboxPedal::TokenSequence::TokenSequence(OmniboxPedal::TokenSequence&&) =
     default;
+OmniboxPedal::TokenSequence& OmniboxPedal::TokenSequence::operator=(
+    OmniboxPedal::TokenSequence&&) = default;
 OmniboxPedal::TokenSequence::~TokenSequence() = default;
 
 bool OmniboxPedal::TokenSequence::IsFullyConsumed() {
@@ -72,7 +74,8 @@ bool OmniboxPedal::TokenSequence::Erase(
     return false;
   }
   bool changed = false;
-  ptrdiff_t index = ptrdiff_t{Size()} - ptrdiff_t{erase_sequence.Size()};
+  ptrdiff_t index = static_cast<ptrdiff_t>(Size()) -
+                    static_cast<ptrdiff_t>(erase_sequence.Size());
   while (index >= 0) {
     if (MatchesAt(erase_sequence, index, 0)) {
       // Erase sequence matched by actual removal from container.
@@ -83,7 +86,8 @@ bool OmniboxPedal::TokenSequence::Erase(
       }
       changed = true;
       index = std::min(index - 1,
-                       ptrdiff_t{Size()} - ptrdiff_t{erase_sequence.Size()});
+                       static_cast<ptrdiff_t>(Size()) -
+                           static_cast<ptrdiff_t>(erase_sequence.Size()));
     } else {
       --index;
     }
@@ -188,21 +192,47 @@ bool OmniboxPedal::SynonymGroup::EraseMatchesIn(
 void OmniboxPedal::SynonymGroup::AddSynonym(
     OmniboxPedal::TokenSequence synonym) {
 #if DCHECK_IS_ON()
-  if (synonyms_.size() > size_t{0}) {
+  // Note, this check is only relevant when loading data known
+  // to have been preprocessed/pre-sorted. For the translation
+  // console data flow, we sort once after all synonyms are loaded.
+  if (!OmniboxFieldTrial::IsPedalsTranslationConsoleEnabled() &&
+      synonyms_.size() > size_t{0}) {
     DCHECK_GE(synonyms_.back().Size(), synonym.Size());
   }
 #endif
   synonyms_.push_back(std::move(synonym));
 }
 
+void OmniboxPedal::SynonymGroup::SortSynonyms() {
+  std::sort(synonyms_.begin(), synonyms_.end(),
+            [](const TokenSequence& a, const TokenSequence& b) {
+              return a.Size() > b.Size();
+            });
+}
+
 size_t OmniboxPedal::SynonymGroup::EstimateMemoryUsage() const {
   return base::trace_event::EstimateMemoryUsage(synonyms_);
+}
+
+void OmniboxPedal::SynonymGroup::EraseIgnoreGroup(
+    const SynonymGroup& ignore_group) {
+  for (auto& synonym : synonyms_) {
+    ignore_group.EraseMatchesIn(synonym, true);
+    synonym.ResetLinks();
+  }
+}
+
+bool OmniboxPedal::SynonymGroup::IsValid() const {
+  return std::all_of(synonyms_.begin(), synonyms_.end(),
+                     [](const auto& synonym) { return synonym.Size() > 0; });
 }
 
 // =============================================================================
 
 OmniboxPedal::OmniboxPedal(OmniboxPedalId id, LabelStrings strings, GURL url)
-    : OmniboxAction(strings, url), id_(id) {}
+    : OmniboxAction(strings, url),
+      id_(id),
+      verbatim_synonym_group_(false, true, 0) {}
 
 OmniboxPedal::~OmniboxPedal() = default;
 
@@ -226,11 +256,7 @@ void OmniboxPedal::SetNavigationUrl(const GURL& url) {
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
 // static
 const gfx::VectorIcon& OmniboxPedal::GetDefaultVectorIcon() {
-  if (OmniboxFieldTrial::IsPedalsDefaultIconColored()) {
-    return omnibox::kPedalIcon;
-  } else {
-    return omnibox::kProductIcon;
-  }
+  return omnibox::kPedalIcon;
 }
 
 const gfx::VectorIcon& OmniboxPedal::GetVectorIcon() const {
@@ -238,17 +264,45 @@ const gfx::VectorIcon& OmniboxPedal::GetVectorIcon() const {
 }
 #endif
 
+void OmniboxPedal::AddVerbatimSequence(TokenSequence sequence) {
+  sequence.ResetLinks();
+  verbatim_synonym_group_.AddSynonym(std::move(sequence));
+}
+
 void OmniboxPedal::AddSynonymGroup(SynonymGroup&& group) {
   synonym_groups_.push_back(std::move(group));
 }
 
-void OmniboxPedal::RecordActionShown() const {
-  base::UmaHistogramEnumeration("Omnibox.PedalShown", id(),
+std::vector<OmniboxPedal::SynonymGroupSpec> OmniboxPedal::SpecifySynonymGroups(
+    bool locale_is_english) const {
+  return {};
+}
+
+OmniboxPedalId OmniboxPedal::GetMetricsId() const {
+  return id();
+}
+
+bool OmniboxPedal::IsConceptMatch(TokenSequence& match_sequence) const {
+  verbatim_synonym_group_.EraseMatchesIn(match_sequence, false);
+  if (match_sequence.IsFullyConsumed()) {
+    return true;
+  }
+  match_sequence.ResetLinks();
+
+  for (const auto& group : synonym_groups_) {
+    if (!group.EraseMatchesIn(match_sequence, false))
+      return false;
+  }
+  return match_sequence.IsFullyConsumed();
+}
+
+void OmniboxPedal::RecordActionShown(size_t /*position*/) const {
+  base::UmaHistogramEnumeration("Omnibox.PedalShown", GetMetricsId(),
                                 OmniboxPedalId::TOTAL_COUNT);
 }
 
-void OmniboxPedal::RecordActionExecuted() const {
-  base::UmaHistogramEnumeration("Omnibox.SuggestionUsed.Pedal", id(),
+void OmniboxPedal::RecordActionExecuted(size_t /*position*/) const {
+  base::UmaHistogramEnumeration("Omnibox.SuggestionUsed.Pedal", GetMetricsId(),
                                 OmniboxPedalId::TOTAL_COUNT);
 }
 
@@ -256,13 +310,11 @@ size_t OmniboxPedal::EstimateMemoryUsage() const {
   size_t total = 0;
   total += OmniboxAction::EstimateMemoryUsage();
   total += base::trace_event::EstimateMemoryUsage(synonym_groups_);
+  total += base::trace_event::EstimateMemoryUsage(verbatim_synonym_group_);
   return total;
 }
 
-bool OmniboxPedal::IsConceptMatch(TokenSequence& match_sequence) const {
-  for (const auto& group : synonym_groups_) {
-    if (!group.EraseMatchesIn(match_sequence, false))
-      return false;
-  }
-  return match_sequence.IsFullyConsumed();
+int32_t OmniboxPedal::GetID() const {
+  return static_cast<int32_t>(id());
 }
+

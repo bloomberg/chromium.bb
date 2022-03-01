@@ -17,6 +17,7 @@
 #include "base/posix/global_descriptors.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "build/branding_buildflags.h"
 #include "build/chromeos_buildflags.h"
 #include "components/crash/core/app/crash_reporter_client.h"
@@ -24,6 +25,10 @@
 #include "content/public/common/content_descriptors.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "base/build_time.h"
+#endif
 
 namespace crash_reporter {
 
@@ -74,13 +79,14 @@ void SetPtracerAtFork() {
 
 namespace internal {
 
-base::FilePath PlatformCrashpadInitialization(
+bool PlatformCrashpadInitialization(
     bool initial_client,
     bool browser_process,
     bool embedded_handler,
     const std::string& user_data_dir,
     const base::FilePath& exe_path,
-    const std::vector<std::string>& initial_arguments) {
+    const std::vector<std::string>& initial_arguments,
+    base::FilePath* database_path) {
   DCHECK_EQ(initial_client, browser_process);
   DCHECK(initial_arguments.empty());
 
@@ -106,15 +112,15 @@ base::FilePath PlatformCrashpadInitialization(
 
   if (initial_client) {
     CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
-    base::FilePath database_path, metrics_path;
-    crash_reporter_client->GetCrashDumpLocation(&database_path);
+    base::FilePath metrics_path;
+    crash_reporter_client->GetCrashDumpLocation(database_path);
     crash_reporter_client->GetCrashMetricsLocation(&metrics_path);
 
     base::FilePath handler_path;
     if (!base::PathService::Get(base::DIR_EXE, &handler_path)) {
-      return database_path;
+      return false;
     }
-    handler_path = handler_path.Append("crashpad_handler");
+    handler_path = handler_path.Append("chrome_crashpad_handler");
 
     // When --use-cros-crash-reporter is set (below), the handler passes dumps
     // to ChromeOS's /sbin/crash_reporter which in turn passes the dump to
@@ -151,8 +157,26 @@ base::FilePath PlatformCrashpadInitialization(
 
     annotations["plat"] = std::string("Linux");
 
-#if !(BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS))
-    // crash_reporter provides it's own Chromium OS values for lsb-release.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // "build_time_millis" is used on LaCros chrome to determine when to stop
+    // sending crash reports (from outdated versions of the browser).
+    int64_t build_time =
+        (base::GetBuildTime() - base::Time::UnixEpoch()).InMilliseconds();
+    annotations["build_time_millis"] = base::NumberToString(build_time);
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+    // Chromium OS: save board and builder path for 'tast symbolize'.
+    annotations["chromeos-board"] = base::SysInfo::GetLsbReleaseBoard();
+    std::string builder_path;
+    if (base::SysInfo::GetLsbReleaseValue("CHROMEOS_RELEASE_BUILDER_PATH",
+                                          &builder_path)) {
+      annotations["chromeos-builder-path"] = builder_path;
+    }
+
+#else
+    // Other Linux: save lsb-release. This isn't needed on Chromium OS,
+    // where crash_reporter provides it's own values for lsb-release.
     annotations["lsb-release"] = base::GetLinuxDistro();
 #endif
 
@@ -171,18 +195,18 @@ base::FilePath PlatformCrashpadInitialization(
 
     if (crash_reporter_client->IsRunningUnattended()) {
       arguments.push_back(base::StringPrintf("--minidump-dir-for-tests=%s",
-                                             database_path.value().c_str()));
+                                             database_path->value().c_str()));
       arguments.push_back("--always-allow-feedback");
     }
 #endif
 
     bool result =
-        client.StartHandler(handler_path, database_path, metrics_path, url,
+        client.StartHandler(handler_path, *database_path, metrics_path, url,
                             annotations, arguments, false, false);
     DCHECK(result);
 
     pthread_atfork(nullptr, nullptr, SetPtracerAtFork);
-    return database_path;
+    return true;
   }
 
   int fd = base::GlobalDescriptors::GetInstance()->Get(kCrashDumpSignal);
@@ -202,7 +226,8 @@ base::FilePath PlatformCrashpadInitialization(
   client.SetHandlerSocket(crashpad::ScopedFileHandle(fd), pid);
 
   pthread_atfork(nullptr, nullptr, SetPtracerAtFork);
-  return base::FilePath();
+  *database_path = base::FilePath();
+  return true;
 }
 
 }  // namespace internal

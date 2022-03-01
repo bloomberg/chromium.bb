@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
+#include "ash/components/attestation/attestation_flow_utils.h"
+#include "ash/components/attestation/mock_attestation_flow.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/bind.h"
-#include "base/test/metrics/histogram_tester.h"
+#include "base/check.h"
+#include "base/test/gtest_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
@@ -21,6 +26,7 @@
 #include "chrome/browser/ash/login/test/kiosk_apps_mixin.h"
 #include "chrome/browser/ash/login/test/kiosk_test_helpers.h"
 #include "chrome/browser/ash/login/test/local_policy_test_server_mixin.h"
+#include "chrome/browser/ash/login/test/login_or_lock_screen_visible_waiter.h"
 #include "chrome/browser/ash/login/test/network_portal_detector_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
@@ -29,32 +35,34 @@
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/ownership/fake_owner_settings_service.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
+#include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
-#include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/attestation/attestation_flow_utils.h"
-#include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/policy_switches.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "components/policy/test_support/local_policy_test_server.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 namespace {
+
+namespace em = enterprise_management;
 
 // TODO(https://crbug.com/1164001): remove when migrated to ash::
 using ::chromeos::InstallAttributes;
@@ -78,7 +86,7 @@ void AllowlistSimpleChallengeSigningKey() {
       ->GetTestInterface()
       ->AllowlistSignSimpleChallengeKey(
           /*username=*/"",
-          chromeos::attestation::GetKeyNameForProfile(
+          attestation::GetKeyNameForProfile(
               chromeos::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
               ""));
 }
@@ -89,6 +97,11 @@ class EnrollmentLocalPolicyServerBase : public OobeBaseTest {
     gaia_frame_parent_ = "authView";
     authenticator_id_ = "$('enterprise-enrollment').authenticator_";
   }
+
+  EnrollmentLocalPolicyServerBase(const EnrollmentLocalPolicyServerBase&) =
+      delete;
+  EnrollmentLocalPolicyServerBase& operator=(
+      const EnrollmentLocalPolicyServerBase&) = delete;
 
   void SetUpOnMainThread() override {
     fake_gaia_.SetupFakeGaiaForLogin(FakeGaiaMixin::kFakeUserEmail,
@@ -138,17 +151,14 @@ class EnrollmentLocalPolicyServerBase : public OobeBaseTest {
     test::OobeJS().ClickOnPath(kEnterprisePrimaryButton);
   }
 
-  std::unique_ptr<content::WindowedNotificationObserver>
-  CreateLoginVisibleWaiter() {
-    return std::make_unique<content::WindowedNotificationObserver>(
-        chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-        content::NotificationService::AllSources());
+  std::unique_ptr<LoginOrLockScreenVisibleWaiter> CreateLoginVisibleWaiter() {
+    return std::make_unique<LoginOrLockScreenVisibleWaiter>();
   }
 
   void ConfirmAndWaitLoginScreen() {
     auto login_screen_waiter = CreateLoginVisibleWaiter();
     enrollment_screen()->OnConfirmationClosed();
-    login_screen_waiter->Wait();
+    login_screen_waiter->WaitEvenIfShown();
   }
 
   void AddPublicUser(const std::string& account_id) {
@@ -169,12 +179,9 @@ class EnrollmentLocalPolicyServerBase : public OobeBaseTest {
 
   LocalPolicyTestServerMixin policy_server_{&mixin_host_};
   test::EnrollmentUIMixin enrollment_ui_{&mixin_host_};
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  FakeGaiaMixin fake_gaia_{&mixin_host_};
   DeviceStateMixin device_state_{
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED};
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EnrollmentLocalPolicyServerBase);
 };
 
 class AutoEnrollmentLocalPolicyServer : public EnrollmentLocalPolicyServerBase {
@@ -182,6 +189,11 @@ class AutoEnrollmentLocalPolicyServer : public EnrollmentLocalPolicyServerBase {
   AutoEnrollmentLocalPolicyServer() {
     device_state_.SetState(DeviceStateMixin::State::BEFORE_OOBE);
   }
+
+  AutoEnrollmentLocalPolicyServer(const AutoEnrollmentLocalPolicyServer&) =
+      delete;
+  AutoEnrollmentLocalPolicyServer& operator=(
+      const AutoEnrollmentLocalPolicyServer&) = delete;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EnrollmentLocalPolicyServerBase::SetUpCommandLine(command_line);
@@ -197,15 +209,12 @@ class AutoEnrollmentLocalPolicyServer : public EnrollmentLocalPolicyServerBase {
 
   policy::ServerBackedStateKeysBroker* state_keys_broker() {
     return g_browser_process->platform_part()
-        ->browser_policy_connector_chromeos()
+        ->browser_policy_connector_ash()
         ->GetStateKeysBroker();
   }
 
  protected:
   NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentLocalPolicyServer);
 };
 
 class AutoEnrollmentWithStatistics : public AutoEnrollmentLocalPolicyServer {
@@ -216,6 +225,10 @@ class AutoEnrollmentWithStatistics : public AutoEnrollmentLocalPolicyServer {
     fake_statistics_provider_.SetMachineStatistic(
         system::kSerialNumberKeyForTest, test::kTestSerialNumber);
   }
+
+  AutoEnrollmentWithStatistics(const AutoEnrollmentWithStatistics&) = delete;
+  AutoEnrollmentWithStatistics& operator=(const AutoEnrollmentWithStatistics&) =
+      delete;
 
   ~AutoEnrollmentWithStatistics() override = default;
 
@@ -237,23 +250,26 @@ class AutoEnrollmentWithStatistics : public AutoEnrollmentLocalPolicyServer {
 
  private:
   system::ScopedFakeStatisticsProvider fake_statistics_provider_;
-  DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentWithStatistics);
 };
 
 class AutoEnrollmentNoStateKeys : public AutoEnrollmentWithStatistics {
  public:
   AutoEnrollmentNoStateKeys() = default;
+
+  AutoEnrollmentNoStateKeys(const AutoEnrollmentNoStateKeys&) = delete;
+  AutoEnrollmentNoStateKeys& operator=(const AutoEnrollmentNoStateKeys&) =
+      delete;
+
   ~AutoEnrollmentNoStateKeys() override = default;
 
   // AutoEnrollmentWithStatistics:
   void SetUpInProcessBrowserTestFixture() override {
     AutoEnrollmentWithStatistics::SetUpInProcessBrowserTestFixture();
     // Session manager client is initialized by DeviceStateMixin.
-    FakeSessionManagerClient::Get()->set_force_state_keys_missing(true);
+    FakeSessionManagerClient::Get()->set_state_keys_handling(
+        FakeSessionManagerClient::ServerBackedStateKeysHandling::
+            kForceNotAvailable);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentNoStateKeys);
 };
 
 class InitialEnrollmentTest : public EnrollmentLocalPolicyServerBase {
@@ -263,21 +279,135 @@ class InitialEnrollmentTest : public EnrollmentLocalPolicyServerBase {
         &fake_statistics_provider_);
   }
 
+  InitialEnrollmentTest(const InitialEnrollmentTest&) = delete;
+  InitialEnrollmentTest& operator=(const InitialEnrollmentTest&) = delete;
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EnrollmentLocalPolicyServerBase::SetUpCommandLine(command_line);
+
+    // Enable usage of fake PSM (private set membership) RLWE client.
+    command_line->AppendSwitch(
+        switches::kEnterpriseUseFakePsmRlweClientForTesting);
 
     command_line->AppendSwitchASCII(
         switches::kEnterpriseEnableInitialEnrollment,
         AutoEnrollmentController::kInitialEnrollmentAlways);
   }
 
+  int GetPsmExecutionResultPref() const {
+    const PrefService& local_state = *g_browser_process->local_state();
+    const PrefService::Preference* has_psm_execution_result_pref =
+        local_state.FindPreference(prefs::kEnrollmentPsmResult);
+
+    // Verify the existence of an integer pref value
+    // `prefs::kEnrollmentPsmResult`.
+    if (!has_psm_execution_result_pref) {
+      ADD_FAILURE() << "kEnrollmentPsmResult pref not found";
+      return -1;
+    }
+    if (!has_psm_execution_result_pref->GetValue()->is_int()) {
+      ADD_FAILURE()
+          << "kEnrollmentPsmResult pref does not have an integer value";
+      return -1;
+    }
+    EXPECT_FALSE(has_psm_execution_result_pref->IsDefaultValue());
+
+    int psm_execution_result =
+        has_psm_execution_result_pref->GetValue()->GetInt();
+
+    // Verify that `psm_execution_result` has a valid value of
+    // em::DeviceRegisterRequest::PsmExecutionResult enum.
+    EXPECT_TRUE(em::DeviceRegisterRequest::PsmExecutionResult_IsValid(
+        psm_execution_result));
+
+    return psm_execution_result;
+  }
+
+  int64_t GetPsmDeterminationTimestampPref() const {
+    const PrefService& local_state = *g_browser_process->local_state();
+    const PrefService::Preference* has_psm_determination_timestamp_pref =
+        local_state.FindPreference(prefs::kEnrollmentPsmDeterminationTime);
+
+    // Verify the existence of non-default value pref
+    // `prefs::kEnrollmentPsmDeterminationTime`.
+    if (!has_psm_determination_timestamp_pref) {
+      ADD_FAILURE() << "kEnrollmentPsmDeterminationTime pref not found";
+      return -1;
+    }
+    EXPECT_FALSE(has_psm_determination_timestamp_pref->IsDefaultValue());
+
+    const base::Time psm_determination_timestamp =
+        local_state.GetTime(prefs::kEnrollmentPsmDeterminationTime);
+
+    // The PSM determination timestamp should exist at this stage. Because
+    // we already checked the existence of the pref with non-default value.
+    EXPECT_FALSE(psm_determination_timestamp.is_null());
+
+    return psm_determination_timestamp.ToJavaTime();
+  }
+
  private:
   system::ScopedFakeStatisticsProvider fake_statistics_provider_;
-  DISALLOW_COPY_AND_ASSIGN(InitialEnrollmentTest);
+};
+
+// Requesting state keys hangs forever, but that should not matter because we're
+// running on reven.
+class EnrollmentOnRevenWithNoStateKeysResponse
+    : public EnrollmentLocalPolicyServerBase {
+ public:
+  EnrollmentOnRevenWithNoStateKeysResponse() = default;
+
+  EnrollmentOnRevenWithNoStateKeysResponse(
+      const EnrollmentOnRevenWithNoStateKeysResponse&) = delete;
+  EnrollmentOnRevenWithNoStateKeysResponse& operator=(
+      const EnrollmentOnRevenWithNoStateKeysResponse&) = delete;
+
+  ~EnrollmentOnRevenWithNoStateKeysResponse() override = default;
+
+  // EnrollmentLocalPolicyServerBase:
+  void SetUpInProcessBrowserTestFixture() override {
+    EnrollmentLocalPolicyServerBase::SetUpInProcessBrowserTestFixture();
+    // Session manager client is initialized by DeviceStateMixin.
+    FakeSessionManagerClient::Get()->set_state_keys_handling(
+        FakeSessionManagerClient::ServerBackedStateKeysHandling::kNoResponse);
+    // reven devices are also marked 'nochrome' which is important because it
+    // disables Forced Re-Enrollment (FRE). If FRE is enabled, state keys are
+    // required.
+    fake_statistics_provider_.SetMachineStatistic(
+        chromeos::system::kFirmwareTypeKey,
+        chromeos::system::kFirmwareTypeValueNonchrome);
+    // When using a fresh ScopedFakeStatisticsProvider we also need to configure
+    // a few entries (serial number, machine model).
+    // ConfigureFakeStatisticsForZeroTouch does that for us.
+    policy_server_.ConfigureFakeStatisticsForZeroTouch(
+        &fake_statistics_provider_);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    EnrollmentLocalPolicyServerBase::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitch(switches::kRevenBranding);
+  }
+
+ private:
+  system::ScopedFakeStatisticsProvider fake_statistics_provider_;
 };
 
 // Simple manual enrollment.
 IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, ManualEnrollment) {
+  TriggerEnrollmentAndSignInSuccessfully();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
+  test::OobeJS().ExpectTrue("Oobe.isEnrollmentSuccessfulForTest()");
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+  EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
+}
+
+// The test case is the same as EnrollmentLocalPolicyServerBase.ManualEnrollment
+// but the environment is different (simulate reven board, simulate state keys
+// not being available).
+IN_PROC_BROWSER_TEST_F(EnrollmentOnRevenWithNoStateKeysResponse,
+                       ManualEnrollment) {
   TriggerEnrollmentAndSignInSuccessfully();
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
@@ -313,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   enrollment_ui_.ExpectErrorMessage(
-      IDS_ENTERPRISE_ENROLLMENT_MISSING_LICENSES_ERROR, /* can retry */ true);
+      IDS_ENTERPRISE_ENROLLMENT_MISSING_LICENSES_ERROR, /*can_retry=*/true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
@@ -330,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   enrollment_ui_.ExpectErrorMessage(
       IDS_ENTERPRISE_ENROLLMENT_MISSING_LICENSES_ERROR_MEETS,
-      /* can retry */ true);
+      /*can_retry=*/true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
@@ -345,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   enrollment_ui_.ExpectErrorMessage(
-      IDS_ENTERPRISE_ENROLLMENT_AUTH_ACCOUNT_ERROR, /* can retry */ true);
+      IDS_ENTERPRISE_ENROLLMENT_AUTH_ACCOUNT_ERROR, /*can_retry=*/true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
@@ -361,7 +491,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   enrollment_ui_.ExpectErrorMessage(
-      IDS_ENTERPRISE_ENROLLMENT_ACCOUNT_ERROR_MEETS, /* can retry */ true);
+      IDS_ENTERPRISE_ENROLLMENT_ACCOUNT_ERROR_MEETS, /*can_retry=*/true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
@@ -378,7 +508,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   // TODO (antrim, rsorokin): find out why it makes sense to retry here?
   enrollment_ui_.ExpectErrorMessage(
       IDS_POLICY_DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER,
-      /* can retry */ true);
+      /*can_retry=*/true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
@@ -393,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   enrollment_ui_.ExpectErrorMessage(
-      IDS_ENTERPRISE_ENROLLMENT_DOMAIN_MISMATCH_ERROR, /* can retry */ true);
+      IDS_ENTERPRISE_ENROLLMENT_DOMAIN_MISMATCH_ERROR, /*can_retry=*/true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
@@ -409,7 +539,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   // TODO (antrim, rsorokin): find out why it makes sense to retry here?
   enrollment_ui_.ExpectErrorMessage(
-      IDS_POLICY_DM_STATUS_SERVICE_DEVICE_ID_CONFLICT, /* can retry */ true);
+      IDS_POLICY_DM_STATUS_SERVICE_DEVICE_ID_CONFLICT, /*can_retry=*/true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
@@ -424,7 +554,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   enrollment_ui_.ExpectErrorMessage(
-      IDS_POLICY_DM_STATUS_SERVICE_ACTIVATION_PENDING, /* can retry */ true);
+      IDS_POLICY_DM_STATUS_SERVICE_ACTIVATION_PENDING, /*can_retry=*/true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
@@ -440,7 +570,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   enrollment_ui_.ExpectErrorMessage(
       IDS_ENTERPRISE_ENROLLMENT_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE,
-      /* can retry */ true);
+      /*can_retry=*/true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
@@ -455,7 +585,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   enrollment_ui_.ExpectErrorMessage(IDS_POLICY_DM_STATUS_TEMPORARY_UNAVAILABLE,
-                                    /* can retry */ true);
+                                    /*can_retry=*/true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
@@ -471,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   enrollment_ui_.ExpectErrorMessage(
       IDS_ENTERPRISE_ENROLLMENT_ENTERPRISE_ACCOUNT_IS_NOT_ELIGIBLE_TO_ENROLL,
-      /* can retry */ true);
+      /*can_retry=*/true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
@@ -486,7 +616,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   enrollment_ui_.ExpectErrorMessage(
       IDS_ENTERPRISE_ENROLLMENT_ENTERPRISE_TOS_HAS_NOT_BEEN_ACCEPTED,
-      /* can retry */ true);
+      /*can_retry=*/true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
@@ -503,7 +633,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   enrollment_ui_.ExpectErrorMessage(
       IDS_ENTERPRISE_ENROLLMENT_ENTERPRISE_TOS_HAS_NOT_BEEN_ACCEPTED_MEETS,
-      /* can retry */ true);
+      /*can_retry=*/true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
@@ -518,7 +648,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   enrollment_ui_.ExpectErrorMessage(
       IDS_ENTERPRISE_ENROLLMENT_ILLEGAL_ACCOUNT_FOR_PACKAGED_EDU_LICENSE,
-      /* can retry */ true);
+      /*can_retry=*/true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
@@ -533,7 +663,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   enrollment_ui_.ExpectErrorMessage(IDS_POLICY_DM_STATUS_HTTP_STATUS_ERROR,
-                                    /* can retry */ true);
+                                    /*can_retry=*/true);
   enrollment_ui_.RetryAfterError();
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
@@ -556,7 +686,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
   auto login_waiter = CreateLoginVisibleWaiter();
   enrollment_ui_.LeaveDeviceAttributeErrorScreen();
-  login_waiter->Wait();
+  login_waiter->WaitEvenIfShown();
   OobeScreenWaiter(GetFirstSigninScreen()).Wait();
 }
 
@@ -569,7 +699,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   enrollment_ui_.ExpectErrorMessage(IDS_POLICY_DM_STATUS_TEMPORARY_UNAVAILABLE,
-                                    /* can retry */ true);
+                                    /*can_retry=*/true);
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
   enrollment_ui_.RetryAfterError();
@@ -585,7 +715,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   enrollment_ui_.ExpectErrorMessage(
       IDS_POLICY_DM_STATUS_SERVICE_POLICY_NOT_FOUND,
-      /* can retry */ true);
+      /*can_retry=*/true);
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
   enrollment_ui_.RetryAfterError();
@@ -600,7 +730,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   enrollment_ui_.ExpectErrorMessage(IDS_POLICY_DM_STATUS_SERVICE_DEPROVISIONED,
-                                    /* can retry */ true);
+                                    /*can_retry=*/true);
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
   enrollment_ui_.RetryAfterError();
@@ -775,6 +905,9 @@ class EnrollmentRecoveryTest : public EnrollmentLocalPolicyServerBase {
         DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED);
   }
 
+  EnrollmentRecoveryTest(const EnrollmentRecoveryTest&) = delete;
+  EnrollmentRecoveryTest& operator=(const EnrollmentRecoveryTest&) = delete;
+
   ~EnrollmentRecoveryTest() override = default;
 
  protected:
@@ -784,9 +917,6 @@ class EnrollmentRecoveryTest : public EnrollmentLocalPolicyServerBase {
     // This triggers recovery enrollment.
     device_state_.RequestDevicePolicyUpdate()->policy_data()->Clear();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EnrollmentRecoveryTest);
 };
 
 IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, Success) {
@@ -833,10 +963,15 @@ IN_PROC_BROWSER_TEST_F(InitialEnrollmentTest, EnrollmentForced) {
           INITIAL_ENROLLMENT_MODE_ENROLLMENT_ENFORCED;
   policy_server_.SetDeviceInitialEnrollmentResponse(
       test::kTestRlzBrandCodeKey, test::kTestSerialNumber, initial_enrollment,
-      test::kTestDomain, absl::nullopt /* is_license_packaged_with_device */);
+      test::kTestDomain, /*is_license_packaged_with_device=*/absl::nullopt);
 
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
   OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
+
+  // Expect PSM fields in DeviceRegisterRequest.
+  policy_server_.SetExpectedPsmParamsInDeviceRegisterRequest(
+      test::kTestRlzBrandCodeKey, test::kTestSerialNumber,
+      GetPsmExecutionResultPref(), GetPsmDeterminationTimestampPref());
 
   // User can't skip.
   enrollment_ui_.SetExitHandler();
@@ -852,15 +987,23 @@ IN_PROC_BROWSER_TEST_F(InitialEnrollmentTest, EnrollmentForced) {
   EXPECT_TRUE(InstallAttributes::Get()->IsEnterpriseManaged());
 }
 
+// This test is flaky on ChromeOS. https://crbug.com/1231472
+#if defined(OS_CHROMEOS)
+#define MAYBE_ZeroTouchForcedAttestationFail \
+  DISABLED_ZeroTouchForcedAttestationFail
+#else
+#define MAYBE_ZeroTouchForcedAttestationFail ZeroTouchForcedAttestationFail
+#endif
 // Zero touch with attestation authentication fail. Attestation fails because we
 // send empty cert request. Should switch to interactive authentication.
-IN_PROC_BROWSER_TEST_F(InitialEnrollmentTest, ZeroTouchForcedAttestationFail) {
+IN_PROC_BROWSER_TEST_F(InitialEnrollmentTest,
+                       MAYBE_ZeroTouchForcedAttestationFail) {
   auto initial_enrollment =
       enterprise_management::DeviceInitialEnrollmentStateResponse::
           INITIAL_ENROLLMENT_MODE_ZERO_TOUCH_ENFORCED;
   policy_server_.SetDeviceInitialEnrollmentResponse(
       test::kTestRlzBrandCodeKey, test::kTestSerialNumber, initial_enrollment,
-      test::kTestDomain, absl::nullopt /* is_license_packaged_with_device */);
+      test::kTestDomain, /*is_license_packaged_with_device=*/absl::nullopt);
 
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
   OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
@@ -869,7 +1012,7 @@ IN_PROC_BROWSER_TEST_F(InitialEnrollmentTest, ZeroTouchForcedAttestationFail) {
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   enrollment_ui_.ExpectErrorMessage(
       IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_CERT_FETCH_FAILED,
-      /* can retry */ true);
+      /*can_retry=*/true);
 
   // Cancel bring up Gaia sing-in page.
   enrollment_screen()->OnCancel();
@@ -905,15 +1048,15 @@ class OobeGuestButtonPolicy : public testing::WithParamInterface<bool>,
  public:
   OobeGuestButtonPolicy() = default;
 
+  OobeGuestButtonPolicy(const OobeGuestButtonPolicy&) = delete;
+  OobeGuestButtonPolicy& operator=(const OobeGuestButtonPolicy&) = delete;
+
   void SetUpOnMainThread() override {
     enterprise_management::ChromeDeviceSettingsProto proto;
     proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(GetParam());
     policy_server_.UpdateDevicePolicy(proto);
     EnrollmentLocalPolicyServerBase::SetUpOnMainThread();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OobeGuestButtonPolicy);
 };
 
 IN_PROC_BROWSER_TEST_P(OobeGuestButtonPolicy, VisibilityAfterEnrollment) {
@@ -936,37 +1079,31 @@ IN_PROC_BROWSER_TEST_P(OobeGuestButtonPolicy, VisibilityAfterEnrollment) {
 INSTANTIATE_TEST_SUITE_P(All, OobeGuestButtonPolicy, ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, SwitchToViews) {
-  base::HistogramTester histogram_tester;
   TriggerEnrollmentAndSignInSuccessfully();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   ConfirmAndWaitLoginScreen();
   EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
-  histogram_tester.ExpectTotalCount("OOBE.WebUIToViewsSwitch.Duration", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
                        SwitchToViewsLocalUsers) {
   AddPublicUser("test_user");
-  base::HistogramTester histogram_tester;
   TriggerEnrollmentAndSignInSuccessfully();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   ConfirmAndWaitLoginScreen();
   EXPECT_FALSE(LoginScreenTestApi::IsOobeDialogVisible());
   EXPECT_EQ(LoginScreenTestApi::GetUsersCount(), 1);
-  histogram_tester.ExpectTotalCount("OOBE.WebUIToViewsSwitch.Duration", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, SwitchToViewsLocales) {
   auto initial_label = LoginScreenTestApi::GetShutDownButtonLabel();
 
   SetLoginScreenLocale("ru-RU");
-  base::HistogramTester histogram_tester;
   TriggerEnrollmentAndSignInSuccessfully();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   ConfirmAndWaitLoginScreen();
   EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
   EXPECT_NE(LoginScreenTestApi::GetShutDownButtonLabel(), initial_label);
-  histogram_tester.ExpectTotalCount("OOBE.WebUIToViewsSwitch.Duration", 1);
 }
 
 class KioskEnrollmentTest : public EnrollmentLocalPolicyServerBase {

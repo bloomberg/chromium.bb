@@ -42,14 +42,23 @@ class ITunesUrlsHandlerTabHelperTest : public PlatformTest {
   bool VerifyStoreKitLaunched(NSString* url_string, bool main_frame) {
     fake_launcher_.launchedProductID = nil;
     fake_launcher_.launchedProductParams = nil;
-    web::WebStatePolicyDecider::RequestInfo request_info(
+    const web::WebStatePolicyDecider::RequestInfo request_info(
         ui::PageTransition::PAGE_TRANSITION_LINK, main_frame,
         /*target_frame_is_cross_origin=*/false,
         /*has_user_gesture=*/false);
-    web::WebStatePolicyDecider::PolicyDecision request_policy =
-        web_state_.ShouldAllowRequest(
-            [NSURLRequest requestWithURL:[NSURL URLWithString:url_string]],
-            request_info);
+    __block bool callback_called = false;
+    __block web::WebStatePolicyDecider::PolicyDecision request_policy =
+        web::WebStatePolicyDecider::PolicyDecision::Allow();
+    auto callback =
+        base::BindOnce(^(web::WebStatePolicyDecider::PolicyDecision decision) {
+          request_policy = decision;
+          callback_called = true;
+        });
+    web_state_.ShouldAllowRequest(
+        [NSURLRequest requestWithURL:[NSURL URLWithString:url_string]],
+        request_info, std::move(callback));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(callback_called);
     return request_policy.ShouldCancelNavigation() &&
            (fake_launcher_.launchedProductID != nil ||
             fake_launcher_.launchedProductParams != nil);
@@ -136,6 +145,11 @@ TEST_F(ITunesUrlsHandlerTabHelperTest, MatchingUrlsLaunchesStoreKit) {
                                      /*main_frame=*/true));
   EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
 
+  EXPECT_TRUE(VerifyStoreKitLaunched(@"http://apps.apple.com/app/id123",
+                                     /*main_frame=*/true));
+  expected_params = @{product_id : @"123"};
+  EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
+
   EXPECT_TRUE(VerifyStoreKitLaunched(
       @"http://itunes.apple.com/app/test/id123?qux&baz#foo",
       /*main_frame=*/true));
@@ -169,6 +183,6 @@ TEST_F(ITunesUrlsHandlerTabHelperTest, MatchingUrlsLaunchesStoreKit) {
       kITunesURLsHandlingResultHistogram,
       static_cast<base::HistogramBase::Sample>(
           ITunesUrlsStoreKitHandlingResult::kSingleAppUrlHandled),
-      7);
-  histogram_tester_.ExpectTotalCount(kITunesURLsHandlingResultHistogram, 7);
+      8);
+  histogram_tester_.ExpectTotalCount(kITunesURLsHandlingResultHistogram, 8);
 }

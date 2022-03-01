@@ -28,7 +28,7 @@
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "public/fpdf_formfill.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
 
 namespace {
 
@@ -492,7 +492,7 @@ FPDF_GetPageLabel(FPDF_DOCUMENT document,
 
   // CPDF_PageLabel can deal with NULL |document|.
   CPDF_PageLabel label(CPDFDocumentFromFPDFDocument(document));
-  Optional<WideString> str = label.GetLabel(page_index);
+  absl::optional<WideString> str = label.GetLabel(page_index);
   return str.has_value()
              ? Utf16EncodeMaybeCopyAndReturnLength(str.value(), buffer, buflen)
              : 0;

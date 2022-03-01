@@ -22,7 +22,7 @@ class UnifiedSystemTray;
 class UnifiedMessageCenterView;
 
 // Manages the bubble that contains UnifiedMessageCenterView.
-// Shows the bubble on the constructor, and closes the bubble on the destructor.
+// Shows the bubble on `ShowBubble()`, and closes the bubble on the destructor.
 class ASH_EXPORT UnifiedMessageCenterBubble
     : public ScreenLayoutObserver,
       public TrayBubbleBase,
@@ -32,6 +32,11 @@ class ASH_EXPORT UnifiedMessageCenterBubble
       public views::WidgetObserver {
  public:
   explicit UnifiedMessageCenterBubble(UnifiedSystemTray* tray);
+
+  UnifiedMessageCenterBubble(const UnifiedMessageCenterBubble&) = delete;
+  UnifiedMessageCenterBubble& operator=(const UnifiedMessageCenterBubble&) =
+      delete;
+
   ~UnifiedMessageCenterBubble() override;
 
   // We need the code to show the bubble explicitly separated from the
@@ -39,12 +44,6 @@ class ASH_EXPORT UnifiedMessageCenterBubble
   // the constructor. Doing so can cause a crash when the TrayEventFilter tries
   // to reference the message center bubble before it is fully instantiated.
   void ShowBubble();
-
-  // Check if the message center bubble should be collapsed or expanded.
-  void UpdateBubbleState();
-
-  // Calculate the height usable for the bubble.
-  int CalculateAvailableHeight();
 
   // Collapse the bubble to only have the notification bar visible.
   void CollapseMessageCenter();
@@ -101,6 +100,12 @@ class ASH_EXPORT UnifiedMessageCenterBubble
  private:
   class Border;
 
+  // Check if the message center bubble should be collapsed or expanded.
+  void UpdateBubbleState();
+
+  // Calculate the height usable for the bubble.
+  int CalculateAvailableHeight();
+
   // TimeToClickRecorder::Delegate:
   void RecordTimeToClick() override;
 
@@ -111,8 +116,6 @@ class ASH_EXPORT UnifiedMessageCenterBubble
   TrayBubbleView* bubble_view_ = nullptr;
   UnifiedMessageCenterView* message_center_view_ = nullptr;
   std::unique_ptr<TimeToClickRecorder> time_to_click_recorder_;
-
-  DISALLOW_COPY_AND_ASSIGN(UnifiedMessageCenterBubble);
 };
 
 }  // namespace ash

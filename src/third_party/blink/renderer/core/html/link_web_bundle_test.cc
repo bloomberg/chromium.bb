@@ -15,7 +15,10 @@ namespace blink {
 namespace {
 
 void TestParseResourceUrl(const AtomicString& url, bool is_valid) {
-  ASSERT_EQ(LinkWebBundle::ParseResourceUrl(url).IsValid(), is_valid);
+  ASSERT_EQ(LinkWebBundle::ParseResourceUrl(
+                url, base::BindRepeating(&LinkWebBundle::CompleteURL, KURL()))
+                .IsValid(),
+            is_valid);
 }
 
 }  // namespace
@@ -87,6 +90,18 @@ TEST_F(LinkWebBundleTest, ResourcesAttribute) {
       link->ValidResourceUrls().Contains(KURL("https://test1.example.com")));
   EXPECT_TRUE(
       link->ValidResourceUrls().Contains(KURL("https://test2.example.com")));
+}
+
+TEST_F(LinkWebBundleTest, DeprecationMessage) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete("<!DOCTYPE html><link rel=\"webbundle\">");
+
+  EXPECT_TRUE(std::any_of(ConsoleMessages().begin(), ConsoleMessages().end(),
+                          [](const auto& console_message) {
+                            return console_message.Contains(
+                                "<link rel=\"webbundle\"> is deprecated.");
+                          }));
 }
 
 }  // namespace blink

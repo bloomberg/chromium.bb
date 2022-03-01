@@ -5,18 +5,18 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_TEST_LOGGED_IN_USER_MIXIN_H_
 #define CHROME_BROWSER_ASH_LOGIN_TEST_LOGGED_IN_USER_MIXIN_H_
 
-#include "chrome/browser/ash/login/test/embedded_test_server_mixin.h"
+#include "chrome/browser/ash/login/test/embedded_test_server_setup_mixin.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/user_policy_mixin.h"
-#include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
+#include "chrome/browser/ash/policy/core/user_policy_test_helper.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class AccountId;
 
-namespace chromeos {
+namespace ash {
 
 // Compound mixin class for easily logging in as regular or child accounts for
 // browser tests. Initiates other mixins required to log in users, sets up their
@@ -125,11 +125,12 @@ class LoggedInUserMixin : public InProcessBrowserTestMixin {
   InProcessBrowserTest* test_base_;
 };
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when //ch/br/ash/login moved to ash.
-namespace ash {
-using ::chromeos::LoggedInUserMixin;
 }  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::LoggedInUserMixin;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_TEST_LOGGED_IN_USER_MIXIN_H_

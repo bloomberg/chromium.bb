@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 . demo_repo.sh
 
-silent git checkout origin/master
+silent git checkout origin/main
 
 run git map-branches
 pcommand git nav-downstream

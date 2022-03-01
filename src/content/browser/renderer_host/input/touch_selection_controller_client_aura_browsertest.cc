@@ -8,8 +8,8 @@
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
@@ -48,13 +48,12 @@ bool JSONToPoint(const std::string& str, gfx::PointF* point) {
   base::DictionaryValue* root;
   if (!value->GetAsDictionary(&root))
     return false;
-  double x, y;
-  if (!root->GetDouble("x", &x))
+  absl::optional<double> x = root->FindDoubleKey("x");
+  absl::optional<double> y = root->FindDoubleKey("y");
+  if (!x || !y)
     return false;
-  if (!root->GetDouble("y", &y))
-    return false;
-  point->set_x(x);
-  point->set_y(y);
+  point->set_x(*x);
+  point->set_y(*y);
   return true;
 }
 
@@ -63,6 +62,11 @@ bool JSONToPoint(const std::string& str, gfx::PointF* point) {
 class TestTouchSelectionMenuRunner : public ui::TouchSelectionMenuRunner {
  public:
   TestTouchSelectionMenuRunner() : menu_opened_(false) {}
+
+  TestTouchSelectionMenuRunner(const TestTouchSelectionMenuRunner&) = delete;
+  TestTouchSelectionMenuRunner& operator=(const TestTouchSelectionMenuRunner&) =
+      delete;
+
   ~TestTouchSelectionMenuRunner() override {}
 
  private:
@@ -83,8 +87,6 @@ class TestTouchSelectionMenuRunner : public ui::TouchSelectionMenuRunner {
   bool IsRunning() const override { return menu_opened_; }
 
   bool menu_opened_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTouchSelectionMenuRunner);
 };
 
 }  // namespace
@@ -98,6 +100,11 @@ class TestTouchSelectionControllerClientAura
         expected_event_(ui::SELECTION_HANDLES_SHOWN) {
     show_quick_menu_immediately_for_test_ = true;
   }
+
+  TestTouchSelectionControllerClientAura(
+      const TestTouchSelectionControllerClientAura&) = delete;
+  TestTouchSelectionControllerClientAura& operator=(
+      const TestTouchSelectionControllerClientAura&) = delete;
 
   ~TestTouchSelectionControllerClientAura() override {}
 
@@ -128,13 +135,17 @@ class TestTouchSelectionControllerClientAura
 
   ui::SelectionEventType expected_event_;
   std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTouchSelectionControllerClientAura);
 };
 
 class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
  public:
   TouchSelectionControllerClientAuraTest() {}
+
+  TouchSelectionControllerClientAuraTest(
+      const TouchSelectionControllerClientAuraTest&) = delete;
+  TouchSelectionControllerClientAuraTest& operator=(
+      const TouchSelectionControllerClientAuraTest&) = delete;
+
   ~TouchSelectionControllerClientAuraTest() override {}
 
  protected:
@@ -181,7 +192,7 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
     selection_controller_client_ =
         new TestTouchSelectionControllerClientAura(rwhva);
     rwhva->SetSelectionControllerClientForTest(
-        base::WrapUnique(selection_controller_client_));
+        base::WrapUnique(selection_controller_client_.get()));
     // Simulate the start of a motion event sequence, since the tests assume it.
     rwhva->selection_controller()->WillHandleTouchEvent(
         ui::test::MockMotionEvent(ui::MotionEvent::Action::DOWN));
@@ -202,10 +213,8 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
 
   std::unique_ptr<TestTouchSelectionMenuRunner> menu_runner_;
 
-  TestTouchSelectionControllerClientAura* selection_controller_client_ =
+  raw_ptr<TestTouchSelectionControllerClientAura> selection_controller_client_ =
       nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerClientAuraTest);
 };
 
 class TouchSelectionControllerClientAuraCAPFeatureTest
@@ -397,8 +406,8 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
   EXPECT_EQ(
       " Site A\n"
       "   +--Site A\n"
@@ -503,8 +512,8 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
+                            ->GetPrimaryFrameTree()
+                            .root();
   EXPECT_EQ(
       " Site A\n"
       "   +--Site A\n"
@@ -926,7 +935,7 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(ui::TouchSelectionController::INACTIVE,
             rwhva->selection_controller()->active_status());
   EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
-  EXPECT_EQ(2.f, rwhva->GetCurrentDeviceScaleFactor());
+  EXPECT_EQ(2.f, rwhva->GetDeviceScaleFactor());
   EXPECT_EQ(gfx::RectF(),
             rwhva->selection_controller()->GetVisibleRectBetweenBounds());
 

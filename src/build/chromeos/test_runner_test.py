@@ -9,17 +9,17 @@ import shutil
 import sys
 import tempfile
 import unittest
+import six
 
 # The following non-std imports are fetched via vpython. See the list at
 # //.vpython
 import mock  # pylint: disable=import-error
 from parameterized import parameterized  # pylint: disable=import-error
-import six
 
 import test_runner
 
 _TAST_TEST_RESULTS_JSON = {
-    "name": "ui.ChromeLogin",
+    "name": "login.Chrome",
     "errors": None,
     "start": "2020-01-01T15:41:30.799228462-08:00",
     "end": "2020-01-01T15:41:53.318914698-08:00",
@@ -47,7 +47,7 @@ class TestRunnerTest(unittest.TestCase):
     if six.PY3:
       self.assertSetEqual(set(list1), set(list2))
     else:
-      self.assertItemsEqual(list1, list2)
+      self.assertCountEqual(list1, list2)
 
 
 class TastTests(TestRunnerTest):
@@ -101,7 +101,7 @@ class TastTests(TestRunnerTest):
 
     args = self.get_common_tast_args(False) + [
         '--attr-expr=( "group:mainline" && "dep:chrome" && !informational)',
-        '--gtest_filter=ui.ChromeLogin:ui.WindowControl',
+        '--gtest_filter=login.Chrome:ui.WindowControl',
     ]
     with mock.patch.object(sys, 'argv', args),\
          mock.patch.object(test_runner.subprocess, 'Popen') as mock_popen:
@@ -111,7 +111,7 @@ class TastTests(TestRunnerTest):
       # The gtest filter should cause the Tast expr to be replaced with a list
       # of the tests in the filter.
       expected_cmd = self.get_common_tast_expectations(False) + [
-          '--tast=("name:ui.ChromeLogin" || "name:ui.WindowControl")'
+          '--tast=("name:login.Chrome" || "name:ui.WindowControl")'
       ]
 
       self.safeAssertItemsEqual(expected_cmd, mock_popen.call_args[0][0])
@@ -179,7 +179,7 @@ class TastTests(TestRunnerTest):
       json.dump(_TAST_TEST_RESULTS_JSON, f)
 
     args = self.get_common_tast_args(use_vm) + [
-        '-t=ui.ChromeLogin',
+        '-t=login.Chrome',
         '--tast-var=key=value',
     ]
     with mock.patch.object(sys, 'argv', args),\
@@ -187,7 +187,7 @@ class TastTests(TestRunnerTest):
       mock_popen.return_value.returncode = 0
       test_runner.main()
       expected_cmd = self.get_common_tast_expectations(use_vm) + [
-          '--tast', 'ui.ChromeLogin', '--tast-var', 'key=value'
+          '--tast', 'login.Chrome', '--tast-var', 'key=value'
       ]
 
       self.safeAssertItemsEqual(expected_cmd, mock_popen.call_args[0][0])
@@ -202,7 +202,7 @@ class TastTests(TestRunnerTest):
       json.dump(_TAST_TEST_RESULTS_JSON, f)
 
     args = self.get_common_tast_args(use_vm) + [
-        '-t=ui.ChromeLogin',
+        '-t=login.Chrome',
     ]
     with mock.patch.object(sys, 'argv', args),\
          mock.patch.object(test_runner.subprocess, 'Popen') as mock_popen:
@@ -210,7 +210,7 @@ class TastTests(TestRunnerTest):
 
       test_runner.main()
       expected_cmd = self.get_common_tast_expectations(use_vm) + [
-          '--tast', 'ui.ChromeLogin'
+          '--tast', 'login.Chrome'
       ]
 
       self.safeAssertItemsEqual(expected_cmd, mock_popen.call_args[0][0])
@@ -281,10 +281,10 @@ class GTestTest(TestRunnerTest):
       gtest.build_test_command()
 
     # Create the two expected tools, and the test should be ready to run.
-    with open(os.path.join(args.vpython_dir, 'vpython'), 'w'):
+    with open(os.path.join(args.vpython_dir, 'vpython3'), 'w'):
       pass  # Just touch the file.
     os.mkdir(os.path.join(args.vpython_dir, 'bin'))
-    with open(os.path.join(args.vpython_dir, 'bin', 'python'), 'w'):
+    with open(os.path.join(args.vpython_dir, 'bin', 'python3'), 'w'):
       pass
     gtest = test_runner.GTestTest(args, None)
     gtest.build_test_command()

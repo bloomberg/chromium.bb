@@ -10,12 +10,12 @@
 
 #include <list>
 
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/process/process_handle.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/event_trace_controller.h"
@@ -38,6 +38,9 @@ class TestConsumer : public EtwTraceConsumerBase<TestConsumer> {
     sank_event_.Set(::CreateEvent(nullptr, TRUE, FALSE, nullptr));
     ClearQueue();
   }
+
+  TestConsumer(const TestConsumer&) = delete;
+  TestConsumer& operator=(const TestConsumer&) = delete;
 
   ~TestConsumer() {
     ClearQueue();
@@ -70,9 +73,6 @@ class TestConsumer : public EtwTraceConsumerBase<TestConsumer> {
 
   static ScopedHandle sank_event_;
   static EventQueue events_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestConsumer);
 };
 
 ScopedHandle TestConsumer::sank_event_;
@@ -209,9 +209,14 @@ TEST_F(EtwTraceConsumerRealtimeTest, ConsumerReturnsWhenSessionClosed) {
   // Start the consumer_.
   ASSERT_HRESULT_SUCCEEDED(StartConsumerThread());
 
-  // Wait around for the consumer_ thread a bit.
+  // Wait around for the consumer_ thread a bit. This is inherently racy because
+  // the consumer thread says that it is ready and then calls Consume() which
+  // calls ::ProcessTrace. We need to call WaitForSingleObject after the call to
+  // ::ProcessTrace but there is no way to know when that call has been made.
+  // With a timeout of 50 ms this test was failing frequently when the system
+  // was under load. It is hoped that 500 ms will be enough.
   ASSERT_EQ(static_cast<DWORD>(WAIT_TIMEOUT),
-            ::WaitForSingleObject(consumer_thread_.Get(), 50));
+            ::WaitForSingleObject(consumer_thread_.Get(), 500));
   ASSERT_HRESULT_SUCCEEDED(controller.Stop(nullptr));
 
   // The consumer_ returns success on session stop.

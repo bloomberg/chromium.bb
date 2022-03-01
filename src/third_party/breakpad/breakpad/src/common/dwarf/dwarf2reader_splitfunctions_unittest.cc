@@ -44,7 +44,7 @@
 #include "google_breakpad/common/breakpad_types.h"
 
 using testing::_;
-using namespace dwarf2reader;
+using namespace google_breakpad;
 
 namespace {
 

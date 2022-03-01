@@ -8,20 +8,22 @@
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
+class ComputedStyle;
+class Document;
 class FillLayer;
+class ImageResourceObserver;
 class LayoutBox;
 class LayoutBoxModelObject;
+class LayoutNGTableCell;
 class LayoutObject;
 class LayoutTableCell;
 class LayoutView;
-class Document;
-class ComputedStyle;
-class ImageResourceObserver;
-class LayoutNGTableCell;
+class NGPhysicalBoxFragment;
 
 class BackgroundImageGeometry {
   STACK_ALLOCATED();
@@ -46,6 +48,8 @@ class BackgroundImageGeometry {
                           const LayoutBox& table_part,
                           PhysicalSize table_part_size);
 
+  explicit BackgroundImageGeometry(const NGPhysicalBoxFragment&);
+
   void Calculate(const LayoutBoxModelObject* container,
                  PaintPhase,
                  const FillLayer&,
@@ -56,13 +60,16 @@ class BackgroundImageGeometry {
   // also defines the subset of the image to be drawn. Both border-snapped
   // and unsnapped rectangles are available. The snapped rectangle matches the
   // inner border of the box when such information is available. This may
-  // may differ from the PixelSnappedIntRect of the unsnapped rectangle
+  // may differ from the ToPixelSnappedRect of the unsnapped rectangle
   // because both border widths and border locations are snapped. The
   // unsnapped rectangle is the size and location intended by the content
   // author, and is needed to correctly subset images when no background-size
   // size is given.
   const PhysicalRect& UnsnappedDestRect() const { return unsnapped_dest_rect_; }
   const PhysicalRect& SnappedDestRect() const { return snapped_dest_rect_; }
+
+  // Compute the phase relative to the (snapped) destination offset.
+  PhysicalOffset ComputeDestPhase() const;
 
   // Tile size is the area into which to draw one copy of the image. It
   // need not be the same as the intrinsic size of the image; if not,
@@ -176,7 +183,8 @@ class BackgroundImageGeometry {
   PhysicalSize positioning_size_override_;
 
   // The background image offset from within the background positioning area for
-  // non-fixed background attachment. Used for table cells and the view.
+  // non-fixed background attachment. Used for table cells and the view, and
+  // also when an element is block-fragmented.
   PhysicalOffset element_positioning_area_offset_;
 
   PhysicalRect unsnapped_dest_rect_;
@@ -188,6 +196,7 @@ class BackgroundImageGeometry {
   bool painting_view_ = false;
   bool painting_table_cell_ = false;
   bool cell_using_container_background_ = false;
+  bool box_has_multiple_fragments_ = false;
 };
 
 }  // namespace blink

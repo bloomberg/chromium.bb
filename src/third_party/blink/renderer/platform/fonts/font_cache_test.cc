@@ -125,7 +125,8 @@ TEST(FontCache, getLargerThanMaxUnsignedFont) {
 
   FontDescription font_description;
   font_description.SetGenericFamily(FontDescription::kStandardFamily);
-  font_description.SetComputedSize(std::numeric_limits<unsigned>::max() + 1.f);
+  font_description.SetComputedSize(
+      static_cast<float>(std::numeric_limits<unsigned>::max()) + 1.f);
   FontFaceCreationParams creation_params;
   scoped_refptr<blink::SimpleFontData> font_data =
       font_cache->GetFontData(font_description, AtomicString());
@@ -143,5 +144,21 @@ TEST(FontCache, systemFont) {
   // Test the function does not crash. Return value varies by system and config.
 }
 #endif
+
+#if defined(OS_ANDROID)
+TEST(FontCache, Locale) {
+  FontCacheKey key1(FontFaceCreationParams(), /* font_size */ 16,
+                    /* options */ 0, /* device_scale_factor */ 1.0f,
+                    /* variation_settings */ nullptr,
+                    /* is_unique_match */ false);
+  FontCacheKey key2 = key1;
+  EXPECT_EQ(key1.GetHash(), key2.GetHash());
+  EXPECT_EQ(key1, key2);
+
+  key2.SetLocale("ja");
+  EXPECT_NE(key1.GetHash(), key2.GetHash());
+  EXPECT_NE(key1, key2);
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace blink

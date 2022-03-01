@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
@@ -66,16 +66,32 @@ constexpr wchar_t kTypeLibWin64RegPath[] =
 class InstallServiceWorkItemTest : public ::testing::Test {
  protected:
   static InstallServiceWorkItemImpl* GetImpl(InstallServiceWorkItem* item) {
-    DCHECK(item);
     return item->impl_.get();
   }
   static bool IsServiceCorrectlyConfigured(InstallServiceWorkItem* item) {
-    DCHECK(item);
-    InstallServiceWorkItemImpl::ServiceConfig config;
-    if (!GetImpl(item)->GetServiceConfig(&config))
+    InstallServiceWorkItemImpl::ServiceConfig original_config;
+    if (!GetImpl(item)->GetServiceConfig(&original_config))
       return false;
 
-    return GetImpl(item)->IsServiceCorrectlyConfigured(config);
+    InstallServiceWorkItemImpl::ServiceConfig new_config =
+        GetImpl(item)->MakeUpgradeServiceConfig(original_config);
+    return !GetImpl(item)->IsUpgradeNeeded(new_config);
+  }
+
+  static bool IsServiceGone(InstallServiceWorkItem* item) {
+    if (!GetImpl(item)->OpenService()) {
+      return true;
+    }
+
+    InstallServiceWorkItemImpl::ServiceConfig config;
+    config.is_valid = true;
+
+    // In order to determine whether the Service is in a "deleted" state, we
+    // attempt to change just the display name in the service configuration.
+    config.display_name = GetImpl(item)->GetCurrentServiceDisplayName();
+
+    // If the service is deleted, `ChangeServiceConfig()` will return false.
+    return !GetImpl(item)->ChangeServiceConfig(config);
   }
 
   void TearDown() override {
@@ -165,7 +181,7 @@ TEST_F(InstallServiceWorkItemTest, Do_FreshInstall) {
   EXPECT_EQ(kServiceProgramPath, value);
 
   item->Rollback();
-  EXPECT_FALSE(GetImpl(item.get())->OpenService());
+  EXPECT_TRUE(IsServiceGone(item.get()));
   EXPECT_EQ(ERROR_FILE_NOT_FOUND,
             key.Open(HKEY_LOCAL_MACHINE, kClsidRegPath, KEY_READ));
   EXPECT_EQ(ERROR_FILE_NOT_FOUND,
@@ -188,6 +204,9 @@ TEST_F(InstallServiceWorkItemTest, Do_FreshInstallThenDeleteService) {
 
   EXPECT_TRUE(InstallServiceWorkItem::DeleteService(
       kServiceName, kProductRegPath, kClsids, kIids));
+
+  // Check to make sure that the item shows that the service is deleted.
+  EXPECT_TRUE(IsServiceGone(item.get()));
 }
 
 TEST_F(InstallServiceWorkItemTest, Do_UpgradeNoChanges) {
@@ -206,10 +225,25 @@ TEST_F(InstallServiceWorkItemTest, Do_UpgradeNoChanges) {
       kClsids, kIids);
   EXPECT_TRUE(item_upgrade->Do());
 
+  // Check to make sure that no upgrade happened, and both the old and new items
+  // show that the service is correctly configured.
+  EXPECT_TRUE(IsServiceCorrectlyConfigured(item.get()));
+  EXPECT_TRUE(IsServiceCorrectlyConfigured(item_upgrade.get()));
+
   item_upgrade->Rollback();
+
+  // Check to make sure that no rollback happened, and both the old and new
+  // items show that the service is correctly configured.
+  EXPECT_TRUE(IsServiceCorrectlyConfigured(item.get()));
+  EXPECT_TRUE(IsServiceCorrectlyConfigured(item_upgrade.get()));
+
   EXPECT_TRUE(GetImpl(item_upgrade.get())->OpenService());
 
   EXPECT_TRUE(GetImpl(item_upgrade.get())->DeleteCurrentService());
+
+  // Check to make sure that both items show that the service is deleted.
+  EXPECT_TRUE(IsServiceGone(item.get()));
+  EXPECT_TRUE(IsServiceGone(item_upgrade.get()));
 }
 
 TEST_F(InstallServiceWorkItemTest, Do_UpgradeChangedCmdLine) {
@@ -228,13 +262,26 @@ TEST_F(InstallServiceWorkItemTest, Do_UpgradeChangedCmdLine) {
       kClsids, kIids);
   EXPECT_TRUE(item_upgrade->Do());
 
+  // Check to make sure the upgrade happened, and the new item shows that the
+  // service is correctly configured, while the old item shows that the service
+  // is not correctly configured.
+  EXPECT_TRUE(IsServiceCorrectlyConfigured(item_upgrade.get()));
+  EXPECT_FALSE(IsServiceCorrectlyConfigured(item.get()));
+
   item_upgrade->Rollback();
   EXPECT_TRUE(GetImpl(item_upgrade.get())->OpenService());
 
+  // Check to make sure the rollback happened, and the old item shows that it is
+  // correctly configured, while the new item shows that the service is not
+  // correctly configured.
   EXPECT_TRUE(IsServiceCorrectlyConfigured(item.get()));
   EXPECT_FALSE(IsServiceCorrectlyConfigured(item_upgrade.get()));
 
   EXPECT_TRUE(GetImpl(item_upgrade.get())->DeleteCurrentService());
+
+  // Check to make sure that both items show that the service is deleted.
+  EXPECT_TRUE(IsServiceGone(item.get()));
+  EXPECT_TRUE(IsServiceGone(item_upgrade.get()));
 }
 
 TEST_F(InstallServiceWorkItemTest, Do_ServiceName) {

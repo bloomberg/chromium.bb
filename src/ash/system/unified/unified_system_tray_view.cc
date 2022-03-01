@@ -6,7 +6,6 @@
 
 #include <numeric>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -47,6 +46,9 @@ class DetailedViewContainer : public views::View {
  public:
   DetailedViewContainer() = default;
 
+  DetailedViewContainer(const DetailedViewContainer&) = delete;
+  DetailedViewContainer& operator=(const DetailedViewContainer&) = delete;
+
   ~DetailedViewContainer() override = default;
 
   // views::View:
@@ -57,9 +59,6 @@ class DetailedViewContainer : public views::View {
   }
 
   const char* GetClassName() const override { return "DetailedViewContainer"; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DetailedViewContainer);
 };
 
 class AccessibilityFocusHelperView : public views::View {
@@ -286,7 +285,7 @@ void UnifiedSystemTrayView::SetDetailedView(views::View* detailed_view) {
   auto system_tray_size = system_tray_container_->GetPreferredSize();
   system_tray_container_->SetVisible(false);
 
-  detailed_view_container_->RemoveAllChildViews(true /* delete_children */);
+  detailed_view_container_->RemoveAllChildViews();
   detailed_view_container_->AddChildView(detailed_view);
   detailed_view_container_->SetVisible(true);
   detailed_view_container_->SetPreferredSize(system_tray_size);
@@ -295,7 +294,7 @@ void UnifiedSystemTrayView::SetDetailedView(views::View* detailed_view) {
 }
 
 void UnifiedSystemTrayView::ResetDetailedView() {
-  detailed_view_container_->RemoveAllChildViews(true /* delete_children */);
+  detailed_view_container_->RemoveAllChildViews();
   detailed_view_container_->SetVisible(false);
   if (media_controls_container_)
     media_controls_container_->MaybeShowMediaControls();

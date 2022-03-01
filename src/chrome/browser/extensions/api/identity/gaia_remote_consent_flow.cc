@@ -9,6 +9,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/public/base/multilogin_parameters.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -22,6 +23,10 @@
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/account_manager/account_manager_util.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace extensions {
 
@@ -163,7 +168,11 @@ void GaiaRemoteConsentFlow::OnEndBatchOfRefreshTokenStateChanges() {
 // cookies order in the middle of the flow. This may lead to a bug like
 // https://crbug.com/1112343.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  DCHECK(ash::IsAccountManagerAvailable(profile_));
   SetAccountsInCookie();
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile_))
+    SetAccountsInCookie();
 #endif
 }
 

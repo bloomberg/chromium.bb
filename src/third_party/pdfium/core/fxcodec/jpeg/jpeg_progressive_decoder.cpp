@@ -16,8 +16,8 @@
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/dib/cfx_dibbase.h"
 #include "core/fxge/dib/fx_dib.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/check.h"
-#include "third_party/base/optional.h"
 #include "third_party/base/ptr_util.h"
 
 class CJpegContext final : public ProgressiveDecoderIface::Context {
@@ -154,8 +154,7 @@ FX_FILESIZE JpegProgressiveDecoder::GetAvailInput(Context* pContext) const {
 }
 
 bool JpegProgressiveDecoder::Input(Context* pContext,
-                                   RetainPtr<CFX_CodecMemory> codec_memory,
-                                   CFX_DIBAttribute*) {
+                                   RetainPtr<CFX_CodecMemory> codec_memory) {
   pdfium::span<uint8_t> src_buf = codec_memory->GetSpan();
   auto* ctx = static_cast<CJpegContext*>(pContext);
   if (ctx->m_SkipSize) {

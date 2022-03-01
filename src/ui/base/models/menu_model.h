@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/component_export.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/models/menu_model_delegate.h"
@@ -90,6 +91,9 @@ class COMPONENT_EXPORT(UI_BASE) MenuModel
   // in which case it should always be treated as plain text.
   virtual bool MayHaveMnemonicsAt(int index) const;
 
+  // Returns the accessible name for the menu item at the specified index.
+  virtual std::u16string GetAccessibleNameAt(int index) const;
+
   // Returns the font list used for the label at the specified index.
   // If NULL, then the default font list should be used.
   virtual const gfx::FontList* GetLabelFontListAt(int index) const;
@@ -169,7 +173,7 @@ class COMPONENT_EXPORT(UI_BASE) MenuModel
 
  private:
   // MenuModelDelegate. Weak. Could be null.
-  MenuModelDelegate* menu_model_delegate_;
+  raw_ptr<MenuModelDelegate> menu_model_delegate_;
 };
 
 }  // namespace ui

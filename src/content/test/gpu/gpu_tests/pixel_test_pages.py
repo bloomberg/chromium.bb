@@ -74,7 +74,8 @@ class PixelTestPage(object):
     self.restart_browser_after_test = restart_browser_after_test
     # These are used to pass additional arguments to the test harness.
     # VideoPathTraceTest and OverlayModeTest support the following boolean
-    # arguments: pixel_format, zero_copy, no_overlay and video_is_rotated.
+    # arguments: pixel_format, zero_copy, no_overlay, video_is_rotated and
+    # full_size.
     self.other_args = other_args
     # This allows a newly added test to be exempted from failures for a
     # (hopefully) short period after being added. This is so that any slightly
@@ -128,6 +129,11 @@ class PixelTestPages(object):
   def DefaultPages(base_name):
     sw_compositing_args = [cba.DISABLE_GPU_COMPOSITING]
 
+    webgpu_args = [
+        cba.ENABLE_UNSAFE_WEBGPU, cba.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES
+    ]
+    webgpu_args_compiler = webgpu_args + ['--disable-metal-shader-cache']
+
     # The optimizer script spat out pretty similar values for most MP4 tests, so
     # combine into a single set of parameters.
     general_mp4_algo = algo.SobelMatchingAlgorithm(max_different_pixels=56300,
@@ -154,7 +160,7 @@ class PixelTestPages(object):
                       matching_algorithm=algo.SobelMatchingAlgorithm(
                           max_different_pixels=0,
                           pixel_delta_threshold=0,
-                          edge_threshold=100)),
+                          edge_threshold=90)),
         PixelTestPage('pixel_webgl_aa_alpha.html',
                       base_name + '_WebGLGreenTriangle_AA_Alpha',
                       test_rect=[0, 0, 300, 300]),
@@ -336,6 +342,64 @@ class PixelTestPages(object):
                       base_name + '_WebGLPreservedAfterTabSwitch',
                       test_rect=[0, 0, 300, 300],
                       optional_action='SwitchTabsAndCopyImage'),
+        PixelTestPage('pixel_webgpu_import_webgl_canvas.html',
+                      base_name + '_WebGPUImportWebGLCanvas',
+                      test_rect=[0, 0, 400, 200],
+                      browser_args=webgpu_args),
+        PixelTestPage('pixel_webgpu_import_2d_canvas.html',
+                      base_name + '_WebGPUImport2DCanvas',
+                      test_rect=[0, 0, 400, 200],
+                      browser_args=webgpu_args),
+        PixelTestPage('pixel_webgpu_import_2d_canvas.html',
+                      base_name + '_WebGPUImportUnaccelerated2DCanvas',
+                      test_rect=[0, 0, 400, 200],
+                      browser_args=webgpu_args +
+                      [cba.DISABLE_ACCELERATED_2D_CANVAS]),
+        PixelTestPage('pixel_webgpu_import_webgpu_canvas.html',
+                      base_name + '_WebGPUImportWebGPUCanvas',
+                      test_rect=[0, 0, 400, 200],
+                      browser_args=webgpu_args),
+        PixelTestPage('pixel_webgpu_import_video_frame.html',
+                      base_name + '_WebGPUImportVideoFrame',
+                      test_rect=[0, 0, 400, 200],
+                      browser_args=webgpu_args),
+        PixelTestPage('pixel_webgpu_webgl_teximage2d.html',
+                      base_name + '_WebGPUWebGLTexImage2D',
+                      test_rect=[0, 0, 400, 200],
+                      browser_args=webgpu_args),
+        PixelTestPage('pixel_webgpu_canvas2d_drawimage.html',
+                      base_name + '_WebGPUCanvas2DDrawImage',
+                      test_rect=[0, 0, 400, 200],
+                      browser_args=webgpu_args),
+        PixelTestPage('pixel_webgpu_copy_image.html',
+                      base_name + '_WebGPUToDataURL',
+                      test_rect=[0, 0, 400, 300],
+                      browser_args=webgpu_args_compiler),
+        PixelTestPage('pixel_webgpu_cached_swap_buffer_invalidated.html',
+                      base_name +
+                      '_WebGPUCachedSwapBufferInvalidatedShouldBeBlank',
+                      test_rect=[0, 0, 300, 300],
+                      browser_args=webgpu_args),
+        PixelTestPage('pixel_webgpu_copy_externalImage_2d_canvas.html',
+                      base_name + '_WebGPUCopyExternalImage2DCanvas',
+                      test_rect=[0, 0, 400, 200],
+                      browser_args=webgpu_args),
+        PixelTestPage('pixel_webgpu_copy_externalImage_imageData.html',
+                      base_name + '_WebGPUCopyExternalImageImageData',
+                      test_rect=[0, 0, 400, 200],
+                      browser_args=webgpu_args),
+        PixelTestPage('pixel_webgpu_copy_externalImage_imageBitmap.html',
+                      base_name + '_WebGPUCopyExternalImageImageBitmap',
+                      test_rect=[0, 0, 400, 200],
+                      browser_args=webgpu_args),
+        PixelTestPage('pixel_webgpu_copy_externalImage_offscreenCanvas.html',
+                      base_name + '_WebGPUCopyExternalImageOffscreenCanvas',
+                      test_rect=[0, 0, 400, 200],
+                      browser_args=webgpu_args),
+        PixelTestPage('pixel_webgpu_copy_externalImage_webgl_canvas.html',
+                      base_name + '_WebGPUCopyExternalImageWebGLCanvas',
+                      test_rect=[0, 0, 400, 200],
+                      browser_args=webgpu_args),
     ]
 
   # Pages that should be run with GPU rasterization enabled.
@@ -480,6 +544,10 @@ class PixelTestPages(object):
             base_name + '_CanvasDisplaySRGBUnaccelerated2DGPUCompositing',
             test_rect=[0, 0, 140, 140],
             browser_args=browser_args + [cba.DISABLE_ACCELERATED_2D_CANVAS]),
+        PixelTestPage('pixel_webgl_webcodecs_breakoutbox_displays_frame.html',
+                      base_name + '_WebGLWebCodecsBreakoutBoxDisplaysFrame',
+                      test_rect=[0, 0, 300, 300],
+                      browser_args=browser_args)
     ]
 
   @staticmethod
@@ -513,8 +581,7 @@ class PixelTestPages(object):
                       test_rect=[0, 0, 200, 100]),
         PixelTestPage('pixel_canvas_low_latency_webgl_rounded_corners.html',
                       base_name + '_CanvasLowLatencyWebGLRoundedCorners',
-                      test_rect=[0, 0, 100, 100],
-                      other_args={'no_overlay': True}),
+                      test_rect=[0, 0, 100, 100]),
         PixelTestPage('pixel_canvas_low_latency_webgl_occluded.html',
                       base_name + '_CanvasLowLatencyWebGLOccluded',
                       test_rect=[0, 0, 100, 100],
@@ -585,7 +652,7 @@ class PixelTestPages(object):
     # portions of the image are prone to noise, hence the large max different
     # pixels value.
     filter_effect_fuzzy_algo = algo.FuzzyMatchingAlgorithm(
-        max_different_pixels=57500, pixel_delta_threshold=10)
+        max_different_pixels=57500, pixel_delta_threshold=15)
 
     return [
         # On macOS, test the IOSurface 2D Canvas compositing path.
@@ -718,27 +785,23 @@ class PixelTestPages(object):
                       base_name + '_DirectComposition_Video_MP4',
                       test_rect=[0, 0, 240, 135],
                       browser_args=browser_args,
-                      other_args={'zero_copy': False},
                       matching_algorithm=permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_mp4.html',
                       base_name + '_DirectComposition_Video_MP4_DXVA',
                       browser_args=browser_args_DXVA,
-                      other_args={'zero_copy': False},
                       test_rect=[0, 0, 240, 135],
                       matching_algorithm=permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_mp4_fullsize.html',
                       base_name + '_DirectComposition_Video_MP4_Fullsize',
                       browser_args=browser_args,
+                      other_args={'full_size': True},
                       test_rect=[0, 0, 960, 540],
                       matching_algorithm=strict_dc_sobel_algorithm),
         PixelTestPage('pixel_video_mp4.html',
                       base_name + '_DirectComposition_Video_MP4_NV12',
                       test_rect=[0, 0, 240, 135],
                       browser_args=browser_args_NV12,
-                      other_args={
-                          'pixel_format': 'NV12',
-                          'zero_copy': False
-                      },
+                      other_args={'pixel_format': 'NV12'},
                       matching_algorithm=permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_mp4.html',
                       base_name + '_DirectComposition_Video_MP4_YUY2',
@@ -763,7 +826,6 @@ class PixelTestPages(object):
                       '_DirectComposition_Video_MP4_FourColors_Aspect_4x3',
                       test_rect=[0, 0, 240, 135],
                       browser_args=browser_args,
-                      other_args={'zero_copy': False},
                       matching_algorithm=permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_mp4_four_colors_rot_90.html',
                       base_name +
@@ -790,12 +852,10 @@ class PixelTestPages(object):
                       base_name + '_DirectComposition_Video_VP9',
                       test_rect=[0, 0, 240, 135],
                       browser_args=browser_args,
-                      other_args={'zero_copy': False},
                       matching_algorithm=very_permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_vp9.html',
                       base_name + '_DirectComposition_Video_VP9_DXVA',
                       browser_args=browser_args_DXVA,
-                      other_args={'zero_copy': False},
                       test_rect=[0, 0, 240, 135],
                       matching_algorithm=very_permissive_dc_sobel_algorithm),
         PixelTestPage(
@@ -803,6 +863,7 @@ class PixelTestPages(object):
             base_name + '_DirectComposition_Video_VP9_Fullsize',
             test_rect=[0, 0, 960, 540],
             browser_args=browser_args,
+            other_args={'full_size': True},
             # Much larger image than other VP9 tests.
             matching_algorithm=algo.SobelMatchingAlgorithm(
                 max_different_pixels=504000,
@@ -816,7 +877,6 @@ class PixelTestPages(object):
                       browser_args=browser_args_NV12,
                       other_args={
                           'pixel_format': 'NV12',
-                          'zero_copy': False
                       },
                       matching_algorithm=very_permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_vp9.html',
@@ -847,24 +907,23 @@ class PixelTestPages(object):
                       base_name + '_DirectComposition_Underlay',
                       test_rect=[0, 0, 240, 136],
                       browser_args=browser_args,
-                      other_args={'zero_copy': False},
                       matching_algorithm=permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_underlay.html',
                       base_name + '_DirectComposition_Underlay_DXVA',
                       test_rect=[0, 0, 240, 136],
                       browser_args=browser_args_DXVA,
-                      other_args={'zero_copy': False},
                       matching_algorithm=permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_underlay_fullsize.html',
                       base_name + '_DirectComposition_Underlay_Fullsize',
                       test_rect=[0, 0, 960, 540],
                       browser_args=browser_args,
+                      other_args={'full_size': True},
                       matching_algorithm=strict_dc_sobel_algorithm),
         PixelTestPage('pixel_video_mp4_rounded_corner.html',
                       base_name + '_DirectComposition_Video_MP4_Rounded_Corner',
                       test_rect=[0, 0, 240, 135],
                       browser_args=browser_args,
-                      other_args={'no_overlay': True}),
+                      matching_algorithm=permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_backdrop_filter.html',
                       base_name + '_DirectComposition_Video_BackdropFilter',
                       test_rect=[0, 0, 240, 135],

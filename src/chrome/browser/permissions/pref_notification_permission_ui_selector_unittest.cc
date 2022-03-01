@@ -40,6 +40,11 @@ class PrefNotificationPermissionUiSelectorTest : public testing::Test {
       : testing_profile_(std::make_unique<TestingProfile>()),
         pref_selector_(testing_profile_.get()) {}
 
+  PrefNotificationPermissionUiSelectorTest(
+      const PrefNotificationPermissionUiSelectorTest&) = delete;
+  PrefNotificationPermissionUiSelectorTest& operator=(
+      const PrefNotificationPermissionUiSelectorTest&) = delete;
+
   PrefNotificationPermissionUiSelector* pref_selector() {
     return &pref_selector_;
   }
@@ -52,8 +57,6 @@ class PrefNotificationPermissionUiSelectorTest : public testing::Test {
   std::unique_ptr<TestingProfile> testing_profile_;
 
   PrefNotificationPermissionUiSelector pref_selector_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrefNotificationPermissionUiSelectorTest);
 };
 
 TEST_F(PrefNotificationPermissionUiSelectorTest, FeatureAndPrefCombinations) {
@@ -96,8 +99,7 @@ TEST_F(PrefNotificationPermissionUiSelectorTest, FeatureAndPrefCombinations) {
                               QuitMessageLoop(&callback_loop)));
 
     permissions::MockPermissionRequest mock_request(
-        std::u16string(), permissions::RequestType::kNotifications,
-        GURL("http://example.com"));
+        GURL("http://example.com"), permissions::RequestType::kNotifications);
     pref_selector()->SelectUiToUse(&mock_request, mock_callback.Get());
     callback_loop.Run();
     testing::Mock::VerifyAndClearExpectations(&mock_callback);
