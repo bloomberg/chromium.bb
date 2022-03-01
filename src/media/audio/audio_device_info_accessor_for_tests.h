@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
 
@@ -19,6 +20,11 @@ class AudioManager;
 class AudioDeviceInfoAccessorForTests {
  public:
   explicit AudioDeviceInfoAccessorForTests(AudioManager* audio_manager);
+
+  AudioDeviceInfoAccessorForTests(const AudioDeviceInfoAccessorForTests&) =
+      delete;
+  AudioDeviceInfoAccessorForTests& operator=(
+      const AudioDeviceInfoAccessorForTests&) = delete;
 
   bool HasAudioOutputDevices();
 
@@ -47,9 +53,7 @@ class AudioDeviceInfoAccessorForTests {
   std::string GetCommunicationsOutputDeviceID();
 
  private:
-  AudioManager* const audio_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioDeviceInfoAccessorForTests);
+  const raw_ptr<AudioManager> audio_manager_;
 };
 
 }  // namespace media

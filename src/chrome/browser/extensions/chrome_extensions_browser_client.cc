@@ -40,10 +40,14 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
+#include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_service.h"
+#include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_service_factory.h"
+#include "chrome/browser/safe_browsing/extension_telemetry/tabs_execute_script_signal.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
-#include "chrome/browser/ui/bluetooth/chrome_extension_bluetooth_chooser.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
@@ -63,6 +67,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_interface_binders.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/browser/updater/scoped_extension_updater_keep_alive.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/features/feature_channel.h"
@@ -90,14 +95,20 @@ const char kJsonUrlPath[] = "/service/update2/json";
 // new chrome update.
 bool g_did_chrome_update_for_testing = false;
 
-// The fake metrics logger instance to use for testing.
-MediaRouterExtensionAccessLogger* g_media_router_access_logger_for_testing =
-    nullptr;
-
 bool ExtensionsDisabled(const base::CommandLine& command_line) {
   return command_line.HasSwitch(::switches::kDisableExtensions) ||
          command_line.HasSwitch(::switches::kDisableExtensionsExcept);
 }
+
+class UpdaterKeepAlive : public ScopedExtensionUpdaterKeepAlive {
+ public:
+  UpdaterKeepAlive(Profile* profile, ProfileKeepAliveOrigin origin)
+      : profile_keep_alive_(profile, origin) {}
+  ~UpdaterKeepAlive() override = default;
+
+ private:
+  ScopedProfileKeepAlive profile_keep_alive_;
+};
 
 }  // namespace
 
@@ -203,12 +214,11 @@ void ChromeExtensionsBrowserClient::LoadResourceFromResourceBundle(
     mojo::PendingReceiver<network::mojom::URLLoader> loader,
     const base::FilePath& resource_relative_path,
     int resource_id,
-    const std::string& content_security_policy,
-    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-    bool send_cors_header) {
+    scoped_refptr<net::HttpResponseHeaders> headers,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
   chrome_url_request_util::LoadResourceFromResourceBundle(
       request, std::move(loader), resource_relative_path, resource_id,
-      content_security_policy, std::move(client), send_cors_header);
+      std::move(headers), std::move(client));
 }
 
 bool ChromeExtensionsBrowserClient::AllowCrossRendererResourceLoad(
@@ -308,8 +318,9 @@ bool ChromeExtensionsBrowserClient::IsScreensaverInDemoMode(
     const std::string& app_id) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   return app_id == ash::DemoSession::GetScreensaverAppId() && IsInDemoMode();
-#endif
+#else
   return false;
+#endif
 }
 
 bool ChromeExtensionsBrowserClient::IsRunningInForcedAppMode() {
@@ -465,12 +476,12 @@ ChromeExtensionsBrowserClient::CreateUpdateClient(
       ChromeUpdateClientConfig::Create(context, override_url));
 }
 
-std::unique_ptr<content::BluetoothChooser>
-ChromeExtensionsBrowserClient::CreateBluetoothChooser(
-    content::RenderFrameHost* frame,
-    const content::BluetoothChooser::EventHandler& event_handler) {
-  return std::make_unique<ChromeExtensionBluetoothChooser>(frame,
-                                                           event_handler);
+std::unique_ptr<ScopedExtensionUpdaterKeepAlive>
+ChromeExtensionsBrowserClient::CreateUpdaterKeepAlive(
+    content::BrowserContext* context) {
+  return std::make_unique<UpdaterKeepAlive>(
+      Profile::FromBrowserContext(context),
+      ProfileKeepAliveOrigin::kExtensionUpdater);
 }
 
 bool ChromeExtensionsBrowserClient::IsActivityLoggingEnabled(
@@ -567,13 +578,6 @@ void ChromeExtensionsBrowserClient::SetLastSaveFilePath(
   download_prefs->SetSaveFilePath(path);
 }
 
-const MediaRouterExtensionAccessLogger*
-ChromeExtensionsBrowserClient::GetMediaRouterAccessLogger() const {
-  return g_media_router_access_logger_for_testing
-             ? g_media_router_access_logger_for_testing
-             : &media_router_access_logger_;
-}
-
 bool ChromeExtensionsBrowserClient::HasIsolatedStorage(
     const std::string& extension_id,
     content::BrowserContext* context) {
@@ -592,10 +596,19 @@ bool ChromeExtensionsBrowserClient::IsValidTabId(
       tab_id, context, true /* include_incognito */, nullptr /* contents */);
 }
 
-// static
-void ChromeExtensionsBrowserClient::SetMediaRouterAccessLoggerForTesting(
-    MediaRouterExtensionAccessLogger* media_router_access_logger) {
-  g_media_router_access_logger_for_testing = media_router_access_logger;
+void ChromeExtensionsBrowserClient::NotifyExtensionApiTabExecuteScript(
+    content::BrowserContext* context,
+    const ExtensionId& extension_id,
+    const std::string& code) const {
+  auto* telemetry_service =
+      safe_browsing::ExtensionTelemetryServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(context));
+  if (!telemetry_service || !telemetry_service->enabled())
+    return;
+
+  auto signal = std::make_unique<safe_browsing::TabsExecuteScriptSignal>(
+      extension_id, code);
+  telemetry_service->AddSignal(std::move(signal));
 }
 
 // static

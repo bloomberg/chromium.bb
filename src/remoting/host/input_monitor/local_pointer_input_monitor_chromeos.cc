@@ -10,8 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "remoting/host/chromeos/point_transformer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "ui/events/event.h"
@@ -29,6 +28,12 @@ class LocalPointerInputMonitorChromeos : public LocalPointerInputMonitor {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       LocalInputMonitor::PointerMoveCallback on_pointer_move);
+
+  LocalPointerInputMonitorChromeos(const LocalPointerInputMonitorChromeos&) =
+      delete;
+  LocalPointerInputMonitorChromeos& operator=(
+      const LocalPointerInputMonitorChromeos&) = delete;
+
   ~LocalPointerInputMonitorChromeos() override;
 
  private:
@@ -36,6 +41,10 @@ class LocalPointerInputMonitorChromeos : public LocalPointerInputMonitor {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
          LocalInputMonitor::PointerMoveCallback on_pointer_move);
+
+    Core(const Core&) = delete;
+    Core& operator=(const Core&) = delete;
+
     ~Core() override;
 
     void Start();
@@ -56,15 +65,11 @@ class LocalPointerInputMonitorChromeos : public LocalPointerInputMonitor {
     // Used to rotate the local pointer positions appropriately based on the
     // current display rotation settings.
     std::unique_ptr<PointTransformer> point_transformer_;
-
-    DISALLOW_COPY_AND_ASSIGN(Core);
   };
 
   // Task runner on which ui::events are received.
   scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
   std::unique_ptr<Core> core_;
-
-  DISALLOW_COPY_AND_ASSIGN(LocalPointerInputMonitorChromeos);
 };
 
 LocalPointerInputMonitorChromeos::LocalPointerInputMonitorChromeos(

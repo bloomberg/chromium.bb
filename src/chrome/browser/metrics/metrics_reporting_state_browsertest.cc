@@ -26,12 +26,15 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service_accessor.h"
 #include "content/public/test/browser_test.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/settings/device_settings_cache.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #endif
+
+using ::testing::Optional;
 
 // ChromeBrowserMainExtraParts implementation that asserts the metrics and
 // reporting state matches a particular value in PreCreateThreads().
@@ -42,14 +45,17 @@ class ChromeBrowserMainExtraPartsChecker : public ChromeBrowserMainExtraParts {
       : expected_metrics_reporting_enabled_(
             expected_metrics_reporting_enabled) {}
 
+  ChromeBrowserMainExtraPartsChecker(
+      const ChromeBrowserMainExtraPartsChecker&) = delete;
+  ChromeBrowserMainExtraPartsChecker& operator=(
+      const ChromeBrowserMainExtraPartsChecker&) = delete;
+
   // ChromeBrowserMainExtraParts:
   void PostEarlyInitialization() override;
 
  private:
   // Expected value of reporting state.
   const bool expected_metrics_reporting_enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsChecker);
 };
 
 // This class is used to verify the value for
@@ -60,6 +66,11 @@ class MetricsReportingStateTest : public InProcessBrowserTest,
                                   public testing::WithParamInterface<bool> {
  public:
   MetricsReportingStateTest() = default;
+
+  MetricsReportingStateTest(const MetricsReportingStateTest&) = delete;
+  MetricsReportingStateTest& operator=(const MetricsReportingStateTest&) =
+      delete;
+
   ~MetricsReportingStateTest() override = default;
 
   static bool IsMetricsAndCrashReportingEnabled() {
@@ -96,17 +107,14 @@ class MetricsReportingStateTest : public InProcessBrowserTest,
     ASSERT_TRUE(pref_values) << error_message;
     base::DictionaryValue* pref_dict_values = nullptr;
     ASSERT_TRUE(pref_values->GetAsDictionary(&pref_dict_values));
-    bool enabled = false;
-    ASSERT_TRUE(pref_dict_values->GetBoolean(
-        metrics::prefs::kMetricsReportingEnabled, &enabled));
-    EXPECT_EQ(!is_metrics_reporting_enabled_initial_value(), enabled);
+    EXPECT_THAT(pref_dict_values->FindBoolPath(
+                    metrics::prefs::kMetricsReportingEnabled),
+                Optional(!is_metrics_reporting_enabled_initial_value()));
     InProcessBrowserTest::TearDown();
   }
 
  private:
   base::FilePath local_state_path_;
-
-  DISALLOW_COPY_AND_ASSIGN(MetricsReportingStateTest);
 };
 
 void ChromeBrowserMainExtraPartsChecker::PostEarlyInitialization() {

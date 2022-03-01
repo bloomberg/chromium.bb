@@ -16,6 +16,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.os.Build;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,9 +52,8 @@ import java.util.Stack;
  * Tests for {@link CloseButtonNavigator}.
  */
 @RunWith(ParameterizedRobolectricTestRunner.class)
-@Config(sdk = 21, manifest = Config.NONE)
+@Config(sdk = Build.VERSION_CODES.M, manifest = Config.NONE)
 public class CloseButtonNavigatorTest {
-
     @Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {{true}, {false}});
@@ -103,8 +104,8 @@ public class CloseButtonNavigatorTest {
         NavigationHistory history = new NavigationHistory();
 
         for (GURL url : urls) {
-            history.addEntry(new NavigationEntry(
-                    0, url, GURL.emptyGURL(), GURL.emptyGURL(), GURL.emptyGURL(), "", null, 0, 0));
+            history.addEntry(new NavigationEntry(0, url, GURL.emptyGURL(), GURL.emptyGURL(),
+                    GURL.emptyGURL(), "", null, 0, 0, /* isInitialEntry=*/false));
         }
 
         // Point to the most recent entry in history.

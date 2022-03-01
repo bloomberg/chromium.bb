@@ -77,7 +77,11 @@ func run() error {
 	testResultsPath := filepath.Join(tmpDir, "test-results.json")
 
 	// Run the tests
-	switch err := exec.Command(exe, "--gtest_output=json:"+testResultsPath).Run().(type) {
+	testArgs := []string{"--gtest_output=json:" + testResultsPath}
+	if len(args) > 1 {
+		testArgs = append(testArgs, args[1:]...)
+	}
+	switch err := exec.Command(exe, testArgs...).Run().(type) {
 	default:
 		return err
 	case nil:
@@ -140,9 +144,9 @@ var (
 	// Regular expression to match a test declaration
 	reTests = regexp.MustCompile(`TEST(?:_[FP])?\([ \n]*(\w+),[ \n]*(\w+)\)`)
 	// Regular expression to match a `EXPECT_EQ(a, b)` failure for strings
-	reExpectEq = regexp.MustCompile(`([./\\a-z_-]*):(\d+).*\nExpected equality of these values:\n(?:.|\n)*?(?:Which is: |  )"((?:.|\n)*?[^\\])"\n(?:.|\n)*?(?:Which is: |  )"((?:.|\n)*?[^\\])"`)
+	reExpectEq = regexp.MustCompile(`([./\\\w_\-:]*):(\d+).*\nExpected equality of these values:\n(?:.|\n)*?(?:Which is: |  )"((?:.|\n)*?[^\\])"\n(?:.|\n)*?(?:Which is: |  )"((?:.|\n)*?[^\\])"`)
 	// Regular expression to match a `EXPECT_THAT(a, HasSubstr(b))` failure for strings
-	reExpectHasSubstr = regexp.MustCompile(`([./\\a-z_-]*):(\d+).*\nValue of: .*\nExpected: has substring "((?:.|\n)*?[^\\])"\n  Actual: "((?:.|\n)*?[^\\])"`)
+	reExpectHasSubstr = regexp.MustCompile(`([./\\\w_\-:]*):(\d+).*\nValue of: .*\nExpected: has substring "((?:.|\n)*?[^\\])"\n  Actual: "((?:.|\n)*?[^\\])"`)
 )
 
 func processFailure(test, wd, failure string) error {
@@ -169,19 +173,23 @@ func processFailure(test, wd, failure string) error {
 		fix = func(testSource string) (string, error) {
 			// We don't know if a or b is the expected, so just try flipping the string
 			// to the other form.
+
+			if len(b) > len(a) { // Go with the longer match, in case both are found
+				a, b = b, a
+			}
 			switch {
 			case strings.Contains(testSource, a):
-				testSource = strings.Replace(testSource, a, b, -1)
+				testSource = strings.ReplaceAll(testSource, a, b)
 			case strings.Contains(testSource, b):
-				testSource = strings.Replace(testSource, b, a, -1)
+				testSource = strings.ReplaceAll(testSource, b, a)
 			default:
 				// Try escaping for R"(...)" strings
 				a, b = escape(a), escape(b)
 				switch {
 				case strings.Contains(testSource, a):
-					testSource = strings.Replace(testSource, a, b, -1)
+					testSource = strings.ReplaceAll(testSource, a, b)
 				case strings.Contains(testSource, b):
-					testSource = strings.Replace(testSource, b, a, -1)
+					testSource = strings.ReplaceAll(testSource, b, a)
 				default:
 					return "", fmt.Errorf("Could not fix 'EXPECT_EQ' pattern in '%v'", file)
 				}
@@ -211,8 +219,11 @@ func processFailure(test, wd, failure string) error {
 		return fmt.Errorf("Cannot fix this type of failure")
 	}
 
-	// Get the path to the source file containing the test failure
-	sourcePath := filepath.Join(wd, file)
+	// Get the absolute source path
+	sourcePath := file
+	if !filepath.IsAbs(sourcePath) {
+		sourcePath = filepath.Join(wd, file)
+	}
 
 	// Parse the source file, split into tests
 	sourceFile, err := parseSourceFile(sourcePath)

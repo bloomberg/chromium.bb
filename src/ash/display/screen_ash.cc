@@ -4,8 +4,8 @@
 
 #include "ash/display/screen_ash.h"
 
+#include "ash/constants/ash_switches.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/window_finder.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
@@ -43,6 +43,9 @@ class ScreenForShutdown : public display::Screen {
         primary_display_(screen_ash->GetPrimaryDisplay()) {
     SetDisplayForNewWindows(primary_display_.id());
   }
+
+  ScreenForShutdown(const ScreenForShutdown&) = delete;
+  ScreenForShutdown& operator=(const ScreenForShutdown&) = delete;
 
   // display::Screen overrides:
   gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
@@ -85,8 +88,6 @@ class ScreenForShutdown : public display::Screen {
  private:
   const std::vector<display::Display> display_list_;
   const display::Display primary_display_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScreenForShutdown);
 };
 
 }  // namespace
@@ -204,20 +205,20 @@ void ScreenAsh::RemoveObserver(display::DisplayObserver* observer) {
 }
 
 // static
-display::DisplayManager* ScreenAsh::CreateDisplayManager() {
-  std::unique_ptr<ScreenAsh> screen(new ScreenAsh);
+std::unique_ptr<display::DisplayManager> ScreenAsh::CreateDisplayManager() {
+  auto screen = std::make_unique<ScreenAsh>();
 
   display::Screen* current = display::Screen::GetScreen();
   // If there is no native, or the native was for shutdown,
   // use ash's screen.
   if (!current || current == screen_for_shutdown)
     display::Screen::SetScreenInstance(screen.get());
-  display::DisplayManager* manager =
-      new display::DisplayManager(std::move(screen));
+  auto manager = std::make_unique<display::DisplayManager>(std::move(screen));
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshEnableTabletMode)) {
     manager->set_internal_display_has_accelerometer(true);
   }
+
   return manager;
 }
 

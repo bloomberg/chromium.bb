@@ -9,13 +9,20 @@
 #include <memory>
 #include <utility>
 
+#include "core/fxcrt/stl_util.h"
 #include "core/fxcrt/unowned_ptr.h"
+#include "fxjs/cfx_v8_array_buffer_allocator.h"
 #include "fxjs/cjs_object.h"
 #include "fxjs/fxv8.h"
 #include "fxjs/xfa/cfxjse_runtimedata.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
-#include "third_party/base/stl_util.h"
+#include "v8/include/v8-context.h"
+#include "v8/include/v8-exception.h"
+#include "v8/include/v8-isolate.h"
+#include "v8/include/v8-message.h"
+#include "v8/include/v8-primitive.h"
+#include "v8/include/v8-script.h"
 #include "v8/include/v8-util.h"
 
 class CFXJS_PerObjectData;
@@ -337,7 +344,7 @@ FXJS_PerIsolateData::FXJS_PerIsolateData(v8::Isolate* pIsolate)
 FXJS_PerIsolateData::~FXJS_PerIsolateData() = default;
 
 uint32_t FXJS_PerIsolateData::CurrentMaxObjDefinitionID() const {
-  return pdfium::CollectionSize<uint32_t>(m_ObjectDefnArray);
+  return fxcrt::CollectionSize<uint32_t>(m_ObjectDefnArray);
 }
 
 CFXJS_ObjDefinition* FXJS_PerIsolateData::ObjDefinitionForID(
@@ -555,7 +562,7 @@ void CFXJS_Engine::ReleaseEngine() {
   GetIsolate()->SetData(g_embedderDataSlot, nullptr);
 }
 
-Optional<IJS_Runtime::JS_Error> CFXJS_Engine::Execute(
+absl::optional<IJS_Runtime::JS_Error> CFXJS_Engine::Execute(
     const WideString& script) {
   v8::Isolate::Scope isolate_scope(GetIsolate());
   v8::TryCatch try_catch(GetIsolate());
@@ -580,7 +587,7 @@ Optional<IJS_Runtime::JS_Error> CFXJS_Engine::Execute(
     std::tie(line, column) = GetLineAndColumnFromError(msg, context);
     return IJS_Runtime::JS_Error(line, column, WideString::FromUTF8(*error));
   }
-  return pdfium::nullopt;
+  return absl::nullopt;
 }
 
 v8::Local<v8::Object> CFXJS_Engine::NewFXJSBoundObject(uint32_t nObjDefnID,
@@ -631,7 +638,8 @@ v8::Local<v8::Context> CFXJS_Engine::GetV8Context() {
 }
 
 // static
-CJS_Object* CFXJS_Engine::GetObjectPrivate(v8::Local<v8::Object> pObj) {
+CJS_Object* CFXJS_Engine::GetObjectPrivate(v8::Isolate* pIsolate,
+                                           v8::Local<v8::Object> pObj) {
   auto* pData = CFXJS_PerObjectData::GetFromObject(pObj);
   if (pData)
     return pData->m_pPrivate.get();
@@ -649,7 +657,7 @@ CJS_Object* CFXJS_Engine::GetObjectPrivate(v8::Local<v8::Object> pObj) {
   if (!pProtoData)
     return nullptr;
 
-  auto* pIsolateData = FXJS_PerIsolateData::Get(v8::Isolate::GetCurrent());
+  auto* pIsolateData = FXJS_PerIsolateData::Get(pIsolate);
   if (!pIsolateData)
     return nullptr;
 

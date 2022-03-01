@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "osp/public/service_listener.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 
@@ -25,7 +26,9 @@ class MdnsServiceListenerFactory {
   static std::unique_ptr<ServiceListener> Create(
       const MdnsServiceListenerConfig& config,
       ServiceListener::Observer* observer,
-      TaskRunner* task_runner);
+      TaskRunner* task_runner) {
+    OSP_NOTREACHED();
+  }
 };
 
 }  // namespace osp

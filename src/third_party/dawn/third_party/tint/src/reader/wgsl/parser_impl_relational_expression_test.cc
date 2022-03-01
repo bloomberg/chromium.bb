@@ -29,17 +29,14 @@ TEST_F(ParserImplTest, RelationalExpression_Parses_LessThan) {
 
   ASSERT_TRUE(e->Is<ast::BinaryExpression>());
   auto* rel = e->As<ast::BinaryExpression>();
-  EXPECT_EQ(ast::BinaryOp::kLessThan, rel->op());
+  EXPECT_EQ(ast::BinaryOp::kLessThan, rel->op);
 
-  ASSERT_TRUE(rel->lhs()->Is<ast::IdentifierExpression>());
-  auto* ident = rel->lhs()->As<ast::IdentifierExpression>();
-  EXPECT_EQ(ident->symbol(), p->builder().Symbols().Register("a"));
+  ASSERT_TRUE(rel->lhs->Is<ast::IdentifierExpression>());
+  auto* ident = rel->lhs->As<ast::IdentifierExpression>();
+  EXPECT_EQ(ident->symbol, p->builder().Symbols().Register("a"));
 
-  ASSERT_TRUE(rel->rhs()->Is<ast::ConstructorExpression>());
-  ASSERT_TRUE(rel->rhs()->Is<ast::ScalarConstructorExpression>());
-  auto* init = rel->rhs()->As<ast::ScalarConstructorExpression>();
-  ASSERT_TRUE(init->literal()->Is<ast::BoolLiteral>());
-  ASSERT_TRUE(init->literal()->As<ast::BoolLiteral>()->IsTrue());
+  ASSERT_TRUE(rel->rhs->Is<ast::BoolLiteralExpression>());
+  ASSERT_TRUE(rel->rhs->As<ast::BoolLiteralExpression>()->value);
 }
 
 TEST_F(ParserImplTest, RelationalExpression_Parses_GreaterThan) {
@@ -52,17 +49,14 @@ TEST_F(ParserImplTest, RelationalExpression_Parses_GreaterThan) {
 
   ASSERT_TRUE(e->Is<ast::BinaryExpression>());
   auto* rel = e->As<ast::BinaryExpression>();
-  EXPECT_EQ(ast::BinaryOp::kGreaterThan, rel->op());
+  EXPECT_EQ(ast::BinaryOp::kGreaterThan, rel->op);
 
-  ASSERT_TRUE(rel->lhs()->Is<ast::IdentifierExpression>());
-  auto* ident = rel->lhs()->As<ast::IdentifierExpression>();
-  EXPECT_EQ(ident->symbol(), p->builder().Symbols().Register("a"));
+  ASSERT_TRUE(rel->lhs->Is<ast::IdentifierExpression>());
+  auto* ident = rel->lhs->As<ast::IdentifierExpression>();
+  EXPECT_EQ(ident->symbol, p->builder().Symbols().Register("a"));
 
-  ASSERT_TRUE(rel->rhs()->Is<ast::ConstructorExpression>());
-  ASSERT_TRUE(rel->rhs()->Is<ast::ScalarConstructorExpression>());
-  auto* init = rel->rhs()->As<ast::ScalarConstructorExpression>();
-  ASSERT_TRUE(init->literal()->Is<ast::BoolLiteral>());
-  ASSERT_TRUE(init->literal()->As<ast::BoolLiteral>()->IsTrue());
+  ASSERT_TRUE(rel->rhs->Is<ast::BoolLiteralExpression>());
+  ASSERT_TRUE(rel->rhs->As<ast::BoolLiteralExpression>()->value);
 }
 
 TEST_F(ParserImplTest, RelationalExpression_Parses_LessThanEqual) {
@@ -75,17 +69,14 @@ TEST_F(ParserImplTest, RelationalExpression_Parses_LessThanEqual) {
 
   ASSERT_TRUE(e->Is<ast::BinaryExpression>());
   auto* rel = e->As<ast::BinaryExpression>();
-  EXPECT_EQ(ast::BinaryOp::kLessThanEqual, rel->op());
+  EXPECT_EQ(ast::BinaryOp::kLessThanEqual, rel->op);
 
-  ASSERT_TRUE(rel->lhs()->Is<ast::IdentifierExpression>());
-  auto* ident = rel->lhs()->As<ast::IdentifierExpression>();
-  EXPECT_EQ(ident->symbol(), p->builder().Symbols().Register("a"));
+  ASSERT_TRUE(rel->lhs->Is<ast::IdentifierExpression>());
+  auto* ident = rel->lhs->As<ast::IdentifierExpression>();
+  EXPECT_EQ(ident->symbol, p->builder().Symbols().Register("a"));
 
-  ASSERT_TRUE(rel->rhs()->Is<ast::ConstructorExpression>());
-  ASSERT_TRUE(rel->rhs()->Is<ast::ScalarConstructorExpression>());
-  auto* init = rel->rhs()->As<ast::ScalarConstructorExpression>();
-  ASSERT_TRUE(init->literal()->Is<ast::BoolLiteral>());
-  ASSERT_TRUE(init->literal()->As<ast::BoolLiteral>()->IsTrue());
+  ASSERT_TRUE(rel->rhs->Is<ast::BoolLiteralExpression>());
+  ASSERT_TRUE(rel->rhs->As<ast::BoolLiteralExpression>()->value);
 }
 
 TEST_F(ParserImplTest, RelationalExpression_Parses_GreaterThanEqual) {
@@ -98,17 +89,14 @@ TEST_F(ParserImplTest, RelationalExpression_Parses_GreaterThanEqual) {
 
   ASSERT_TRUE(e->Is<ast::BinaryExpression>());
   auto* rel = e->As<ast::BinaryExpression>();
-  EXPECT_EQ(ast::BinaryOp::kGreaterThanEqual, rel->op());
+  EXPECT_EQ(ast::BinaryOp::kGreaterThanEqual, rel->op);
 
-  ASSERT_TRUE(rel->lhs()->Is<ast::IdentifierExpression>());
-  auto* ident = rel->lhs()->As<ast::IdentifierExpression>();
-  EXPECT_EQ(ident->symbol(), p->builder().Symbols().Register("a"));
+  ASSERT_TRUE(rel->lhs->Is<ast::IdentifierExpression>());
+  auto* ident = rel->lhs->As<ast::IdentifierExpression>();
+  EXPECT_EQ(ident->symbol, p->builder().Symbols().Register("a"));
 
-  ASSERT_TRUE(rel->rhs()->Is<ast::ConstructorExpression>());
-  ASSERT_TRUE(rel->rhs()->Is<ast::ScalarConstructorExpression>());
-  auto* init = rel->rhs()->As<ast::ScalarConstructorExpression>();
-  ASSERT_TRUE(init->literal()->Is<ast::BoolLiteral>());
-  ASSERT_TRUE(init->literal()->As<ast::BoolLiteral>()->IsTrue());
+  ASSERT_TRUE(rel->rhs->Is<ast::BoolLiteralExpression>());
+  ASSERT_TRUE(rel->rhs->As<ast::BoolLiteralExpression>()->value);
 }
 
 TEST_F(ParserImplTest, RelationalExpression_InvalidLHS) {

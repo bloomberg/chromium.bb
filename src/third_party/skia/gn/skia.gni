@@ -13,8 +13,7 @@ declare_args() {
   skia_compile_processors = false
   skia_enable_api_available_macro = true
   skia_enable_android_utils = is_skia_dev_build
-  skia_enable_ccpr = true
-  skia_enable_nga = false
+  skia_enable_skgpu_v1 = true
   skia_enable_discrete_gpu = true
   skia_enable_flutter_defines = false
   skia_enable_fontmgr_empty = false
@@ -24,17 +23,17 @@ declare_args() {
   skia_enable_pdf = true
   skia_enable_skottie = !(is_win && is_component_build)
   skia_enable_skrive = true
+  skia_enable_sksl = true
   skia_enable_skvm_jit_when_possible = is_skia_dev_build
   skia_enable_svg = !is_component_build
   skia_enable_tools = is_skia_dev_build
   skia_enable_gpu_debug_layers = is_skia_dev_build && is_debug
+  skia_disable_vma_stl_shared_mutex = false
   skia_enable_winuwp = false
   skia_generate_workarounds = false
   skia_include_multiframe_procs = false
   skia_lex = false
   skia_libgifcodec_path = "third_party/externals/libgifcodec"
-  skia_pdf_subset_harfbuzz =
-      false  # TODO: set skia_pdf_subset_harfbuzz to skia_use_harfbuzz.
   skia_qt_path = getenv("QT_PATH")
   skia_skqp_global_error_tolerance = 0
   skia_tools_require_resources = false
@@ -63,13 +62,13 @@ declare_args() {
   skia_use_lua = is_skia_dev_build && !is_ios
   skia_use_metal = false
   skia_use_ndk_images = is_android && defined(ndk_api) && ndk_api >= 30
-  skia_use_opencl = false
   skia_use_piex = !is_win
   skia_use_sfml = false
   skia_use_webgl = false
   skia_use_wuffs = false
   skia_use_x11 = is_linux
   skia_use_xps = true
+  skia_enable_graphite = false
   skia_use_zlib = true
 
   skia_vtune_path = ""
@@ -100,6 +99,10 @@ declare_args() {
 }
 
 declare_args() {
+  skia_pdf_subset_harfbuzz = skia_use_harfbuzz
+}
+
+declare_args() {
   skia_compile_sksl_tests = skia_compile_processors
   skia_enable_fontmgr_android = skia_use_expat && skia_use_freetype
   skia_enable_fontmgr_custom_directory = skia_use_freetype && !is_fuchsia
@@ -116,6 +119,7 @@ declare_args() {
   skia_use_sfntly = skia_use_icu
   skia_enable_vulkan_debug_layers = skia_enable_gpu_debug_layers
   skia_enable_direct3d_debug_layer = skia_enable_gpu_debug_layers
+  skia_enable_metal_debug_info = skia_enable_gpu_debug_layers
   skia_use_vma = skia_use_vulkan
 }
 
@@ -146,6 +150,9 @@ declare_args() {
 
 # Our tools require static linking (they use non-exported symbols), and the GPU backend.
 skia_enable_tools = skia_enable_tools && !is_component_build && skia_enable_gpu
+
+# The GPU build requires SkSL
+skia_enable_sksl = skia_enable_sksl || skia_enable_gpu
 
 # Skia's targets may be built inside other gn build systems.
 # Skia builds other project's build targets inside its build.

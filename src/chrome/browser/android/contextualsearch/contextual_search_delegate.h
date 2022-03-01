@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_context.h"
@@ -51,6 +51,10 @@ class ContextualSearchDelegate
       TemplateURLService* template_url_service,
       SearchTermResolutionCallback search_term_callback,
       SurroundingTextCallback surrounding_callback);
+
+  ContextualSearchDelegate(const ContextualSearchDelegate&) = delete;
+  ContextualSearchDelegate& operator=(const ContextualSearchDelegate&) = delete;
+
   virtual ~ContextualSearchDelegate();
 
   // Gathers surrounding text and saves it locally in the given context.
@@ -153,7 +157,8 @@ class ContextualSearchDelegate
 
   // Extracts the start and end location from a mentions list, and sets the
   // integers referenced by |startResult| and |endResult|.
-  void ExtractMentionsStartEnd(const base::ListValue& mentions_list,
+  // |mentions_list| must be a list.
+  void ExtractMentionsStartEnd(const std::vector<base::Value>& mentions_list,
                                int* startResult,
                                int* endResult);
 
@@ -187,7 +192,7 @@ class ContextualSearchDelegate
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Holds the TemplateURLService. Not owned.
-  TemplateURLService* template_url_service_;
+  raw_ptr<TemplateURLService> template_url_service_;
 
   // The field trial helper instance, always set up by the constructor.
   std::unique_ptr<ContextualSearchFieldTrial> field_trial_;
@@ -201,8 +206,6 @@ class ContextualSearchDelegate
   // Used to hold the context until an upcoming search term request is started.
   // Owned by the Java ContextualSearchContext.
   base::WeakPtr<ContextualSearchContext> context_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContextualSearchDelegate);
 };
 
 #endif  // CHROME_BROWSER_ANDROID_CONTEXTUALSEARCH_CONTEXTUAL_SEARCH_DELEGATE_H_

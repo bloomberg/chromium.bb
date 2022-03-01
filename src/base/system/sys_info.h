@@ -24,6 +24,7 @@ namespace debug {
 FORWARD_DECLARE_TEST(SystemMetricsTest, ParseMeminfo);
 }
 
+class CommandLine;
 class FilePath;
 struct SystemMemoryInfoKB;
 
@@ -33,6 +34,8 @@ class BASE_EXPORT SysInfo {
   static int NumberOfProcessors();
 
   // Return the number of bytes of physical memory on the current machine.
+  // If low-end device mode is manually enabled via command line flag, this
+  // will return the lesser of the actual physical memory, or 512MB.
   static int64_t AmountOfPhysicalMemory();
 
   // Return the number of bytes of current available physical memory on the
@@ -66,6 +69,21 @@ class BASE_EXPORT SysInfo {
   // on failure.
   static int64_t AmountOfTotalDiskSpace(const FilePath& path);
 
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, spaced is the central source-of-truth for disk space
+  // information. Spaced takes into account the available extents on the
+  // underlying thinpool to make sure that thinly provisioned filesystems
+  // return only the available physical extents as the free space.
+  //
+  // Return the available disk space in bytes on the volume containing |path|,
+  // or -1 on failure.
+  static int64_t GetFreeDiskSpaceFromSpaced(const FilePath& path);
+
+  // Return the total disk space in bytes on the volume containing |path|, or -1
+  // on failure.
+  static int64_t GetTotalDiskSpaceFromSpaced(const FilePath& path);
+#endif
+
 #if defined(OS_FUCHSIA)
   // Sets the total amount of disk space to report under the specified |path|.
   // If |bytes| is -ve then any existing entry for |path| is removed.
@@ -78,8 +96,8 @@ class BASE_EXPORT SysInfo {
   // Returns a descriptive string for the current machine model or an empty
   // string if the machine model is unknown or an error occurred.
   // e.g. "MacPro1,1" on Mac, "iPhone9,3" on iOS or "Nexus 5" on Android. Only
-  // implemented on OS X, iOS, Android and Chrome OS. This returns an empty
-  // string on other platforms.
+  // implemented on OS X, iOS, Android, Chrome OS and Windows. This returns an
+  // empty string on other platforms.
   static std::string HardwareModelName();
 
   struct HardwareInfo {
@@ -160,11 +178,20 @@ class BASE_EXPORT SysInfo {
 
   // Overrides |lsb_release| and |lsb_release_time|. Overrides cannot be nested.
   // Call ResetChromeOSVersionInfoForTest() to restore the previous values.
+  // Prefer base::test::ScopedChromeOSVersionInfo to calling this function.
   static void SetChromeOSVersionInfoForTest(const std::string& lsb_release,
                                             const Time& lsb_release_time);
 
   // Undoes the function above.
   static void ResetChromeOSVersionInfoForTest();
+
+  // Overrides the command runner for running commands. Overrides cannot be
+  // nested. Users must call SetChromeOSGetAppOutputForTest(nullptr) to revert
+  // the test function.
+  using GetAppOutputCallback =
+      RepeatingCallback<bool(const CommandLine&, std::string*)>;
+
+  static void SetChromeOSGetAppOutputForTest(GetAppOutputCallback* callback);
 
   // Returns the kernel version of the host operating system.
   static std::string KernelVersion();
@@ -206,7 +233,7 @@ class BASE_EXPORT SysInfo {
   //   true when memory <= 512MB on Android N and earlier.
   // This is not the same as "low-memory" and will be false on a large number of
   // <=1GB pre-O Android devices. See: |detectLowEndDevice| in SysUtils.java.
-  // On Desktop this returns true when memory <= 512MB.
+  // On Desktop this returns true when memory <= 2GB.
   static bool IsLowEndDevice();
 
  private:

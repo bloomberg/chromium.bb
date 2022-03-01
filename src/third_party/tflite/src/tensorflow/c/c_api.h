@@ -23,6 +23,7 @@ limitations under the License.
 #include "tensorflow/c/tf_datatype.h"
 #include "tensorflow/c/tf_status.h"
 #include "tensorflow/c/tf_tensor.h"
+#include "tensorflow/c/tf_tstring.h"
 
 // --------------------------------------------------------------------------
 // C API for TensorFlow.
@@ -123,6 +124,18 @@ TF_CAPI_EXPORT extern TF_Buffer* TF_NewBuffer(void);
 TF_CAPI_EXPORT extern void TF_DeleteBuffer(TF_Buffer*);
 
 TF_CAPI_EXPORT extern TF_Buffer TF_GetBuffer(TF_Buffer* buffer);
+
+// Parsing a serialized TensorProto into a TF_Tensor.
+TF_CAPI_EXPORT extern void TF_TensorFromProto(const TF_Buffer* from,
+                                              TF_Tensor* to, TF_Status* status);
+
+// --------------------------------------------------------------------------
+// Used to return strings across the C API. The caller does not take ownership
+// of the underlying data pointer and is not responsible for freeing it.
+typedef struct TF_StringView {
+  const char* data;
+  size_t len;
+} TF_StringView;
 
 // --------------------------------------------------------------------------
 // TF_SessionOptions holds options that can be passed during session creation.
@@ -245,6 +258,15 @@ TF_CAPI_EXPORT extern void TF_GraphGetTensorShape(TF_Graph* graph,
                                                   TF_Output output,
                                                   int64_t* dims, int num_dims,
                                                   TF_Status* status);
+
+// Creates a new operation - see `TF_NewOperation` for more details.
+//
+// The lock for `graph` must be held when calling this function.
+//
+// Unless implementing advanced behavior, like custom gradient functions, you
+// most likely need to call `TF_NewOperation` instead.
+TF_CAPI_EXPORT extern TF_OperationDescription* TF_NewOperationLocked(
+    TF_Graph* graph, const char* op_type, const char* oper_name);
 
 // Operation will only be added to *graph when TF_FinishOperation() is
 // called (assuming TF_FinishOperation() does not return an error).
@@ -396,6 +418,15 @@ TF_CAPI_EXPORT extern void TF_SetAttrValueProto(TF_OperationDescription* desc,
                                                 const void* proto,
                                                 size_t proto_len,
                                                 TF_Status* status);
+
+// Adds this operation to the graph - see `TF_FinishOperation` for more details.
+//
+// The lock for `graph` must be held when calling this function.
+//
+// Unless implementing advanced behavior, like custom gradient functions, you
+// most likely need to call `TF_FinishOperation` instead.
+TF_CAPI_EXPORT extern TF_Operation* TF_FinishOperationLocked(
+    TF_OperationDescription* desc, TF_Status* status);
 
 // If this function succeeds:
 //   * *status is set to an OK value,
@@ -673,6 +704,20 @@ TF_CAPI_EXPORT extern void TF_OperationGetAttrTensorList(TF_Operation* oper,
 TF_CAPI_EXPORT extern void TF_OperationGetAttrValueProto(
     TF_Operation* oper, const char* attr_name, TF_Buffer* output_attr_value,
     TF_Status* status);
+
+// Get the number of attributes the operation has.
+TF_CAPI_EXPORT extern int TF_OperationGetNumAttrs(TF_Operation* oper);
+
+// Get the length of the name of the ith attribute, or -1 if there is not an
+// ith attribute.
+TF_CAPI_EXPORT extern int TF_OperationGetAttrNameLength(TF_Operation* oper,
+                                                        int i);
+
+// Get the name of the ith attribute.  output should have the size of
+// TF_OperationGetAttrNameLength(oper, i).
+TF_CAPI_EXPORT extern void TF_OperationGetAttrName(TF_Operation* oper, int i,
+                                                   char* output,
+                                                   TF_Status* status);
 
 // Returns the operation in the graph with `oper_name`. Returns nullptr if
 // no operation found.
@@ -1196,7 +1241,7 @@ typedef struct TF_Session TF_Session;
 // Return a new execution session with the associated graph, or NULL on
 // error. Does not take ownership of any input parameters.
 //
-// *`graph` must be a valid graph (not deleted or nullptr). `graph` will be be
+// *`graph` must be a valid graph (not deleted or nullptr). `graph` will be
 // kept alive for the lifetime of the returned TF_Session. New nodes can still
 // be added to `graph` after this call.
 TF_CAPI_EXPORT extern TF_Session* TF_NewSession(TF_Graph* graph,
@@ -1515,6 +1560,10 @@ TF_CAPI_EXPORT extern TF_Buffer* TF_GetAllRegisteredKernels(TF_Status* status);
 TF_CAPI_EXPORT extern TF_Buffer* TF_GetRegisteredKernelsForOp(
     const char* name, TF_Status* status);
 
+// Update edge, switch input/ output in a node
+TF_CAPI_EXPORT extern void TF_UpdateEdge(TF_Graph* graph, TF_Output new_src,
+                                         TF_Input dst, TF_Status* status);
+
 // --------------------------------------------------------------------------
 // In-process TensorFlow server functionality, for use in distributed training.
 // A Server instance encapsulates a set of devices and a Session target that
@@ -1563,6 +1612,13 @@ TF_CAPI_EXPORT extern void TF_DeleteServer(TF_Server* server);
 // logs.
 TF_CAPI_EXPORT extern void TF_RegisterLogListener(
     void (*listener)(const char*));
+
+// Register a FileSystem plugin from filename `plugin_filename`.
+//
+// On success, place OK in status.
+// On failure, place an error status in status.
+TF_CAPI_EXPORT extern void TF_RegisterFilesystemPlugin(
+    const char* plugin_filename, TF_Status* status);
 
 #ifdef __cplusplus
 } /* end extern "C" */

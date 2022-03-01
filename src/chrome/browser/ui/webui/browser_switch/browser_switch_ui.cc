@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -19,8 +18,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chrome/grit/browser_resources.h"
+#include "chrome/grit/browser_switch_resources.h"
+#include "chrome/grit/browser_switch_resources_map.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/grit/components_resources.h"
@@ -67,12 +68,12 @@ bool IsLastTab(const Profile* profile) {
 std::unique_ptr<base::Value> RuleSetToDict(
     const browser_switcher::RuleSet& ruleset) {
   auto sitelist = std::make_unique<base::ListValue>();
-  for (const std::string& rule : ruleset.sitelist)
-    sitelist->Append(rule);
+  for (const auto& rule : ruleset.sitelist)
+    sitelist->Append(rule->ToString());
 
   auto greylist = std::make_unique<base::ListValue>();
-  for (const std::string& rule : ruleset.greylist)
-    greylist->Append(rule);
+  for (const auto& rule : ruleset.greylist)
+    greylist->Append(rule->ToString());
 
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->Set("sitelist", std::move(sitelist));
@@ -97,10 +98,12 @@ content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
   auto* service = GetBrowserSwitcherService(web_ui);
   source->AddInteger("launchDelay", service->prefs().GetDelay());
 
-  std::string browser_name = service->driver()->GetBrowserName();
-  source->AddString("browserName", browser_name);
+  std::string alt_browser_name = service->driver()->GetBrowserName();
+  source->AddString("altBrowserName", alt_browser_name);
 
-  if (browser_name.empty()) {
+  source->AddLocalizedString("browserName", IDS_PRODUCT_NAME);
+
+  if (alt_browser_name.empty()) {
     // Browser name could not be auto-detected. Say "alternative browser"
     // instead of naming the browser.
     source->AddLocalizedString(
@@ -133,19 +136,16 @@ content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
                              IDS_ABOUT_BROWSER_SWITCH_PROTOCOL_ERROR);
   source->AddLocalizedString("title", IDS_ABOUT_BROWSER_SWITCH_TITLE);
 
-  source->AddResourcePath("app.js", IDR_BROWSER_SWITCH_APP_JS);
-  source->AddResourcePath("browser_switch.html", IDR_BROWSER_SWITCH_HTML);
-  source->AddResourcePath("browser_switch_proxy.js",
-                          IDR_BROWSER_SWITCH_PROXY_JS);
-  source->SetDefaultResource(IDR_BROWSER_SWITCH_HTML);
+  webui::SetupWebUIDataSource(
+      source,
+      base::make_span(kBrowserSwitchResources, kBrowserSwitchResourcesSize),
+      IDR_BROWSER_SWITCH_BROWSER_SWITCH_HTML);
 
   // Setup chrome://browser-switch/internals debug UI.
-  source->AddResourcePath("internals/browser_switch_internals.js",
-                          IDR_BROWSER_SWITCH_INTERNALS_JS);
-  source->AddResourcePath("internals/browser_switch_internals.html",
-                          IDR_BROWSER_SWITCH_INTERNALS_HTML);
-  source->AddResourcePath("internals/", IDR_BROWSER_SWITCH_INTERNALS_HTML);
-  source->AddResourcePath("internals", IDR_BROWSER_SWITCH_INTERNALS_HTML);
+  source->AddResourcePath(
+      "internals/", IDR_BROWSER_SWITCH_INTERNALS_BROWSER_SWITCH_INTERNALS_HTML);
+  source->AddResourcePath(
+      "internals", IDR_BROWSER_SWITCH_INTERNALS_BROWSER_SWITCH_INTERNALS_HTML);
 
   source->UseStringsJs();
 
@@ -157,6 +157,10 @@ content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
 class BrowserSwitchHandler : public content::WebUIMessageHandler {
  public:
   BrowserSwitchHandler();
+
+  BrowserSwitchHandler(const BrowserSwitchHandler&) = delete;
+  BrowserSwitchHandler& operator=(const BrowserSwitchHandler&) = delete;
+
   ~BrowserSwitchHandler() override;
 
   // WebUIMessageHandler
@@ -172,7 +176,7 @@ class BrowserSwitchHandler : public content::WebUIMessageHandler {
       const std::vector<std::string>& changed_prefs);
 
   // For the internals page: tell JS to update all the page contents.
-  void UpdateEverything();
+  void SendDataChangedEvent();
 
   // Launches the given URL in the configured alternative browser. Acts as a
   // bridge for |AlternativeBrowserDriver::TryLaunch()|. Then, if that succeeds,
@@ -236,13 +240,15 @@ class BrowserSwitchHandler : public content::WebUIMessageHandler {
   // Immediately re-download and apply XML rules.
   void HandleRefreshXml(const base::ListValue* args);
 
+  // Resolves a promise with the boolean value describing whether the feature
+  // is enabled or not which is configured by BrowserSwitcherEnabled key
+  void HandleIsBrowserSwitchEnabled(const base::ListValue* args);
+
   base::CallbackListSubscription prefs_subscription_;
 
   base::CallbackListSubscription service_subscription_;
 
   base::WeakPtrFactory<BrowserSwitchHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserSwitchHandler);
 };
 
 BrowserSwitchHandler::BrowserSwitchHandler() {}
@@ -250,34 +256,38 @@ BrowserSwitchHandler::BrowserSwitchHandler() {}
 BrowserSwitchHandler::~BrowserSwitchHandler() = default;
 
 void BrowserSwitchHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "launchAlternativeBrowserAndCloseTab",
       base::BindRepeating(
           &BrowserSwitchHandler::HandleLaunchAlternativeBrowserAndCloseTab,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "gotoNewTabPage",
       base::BindRepeating(&BrowserSwitchHandler::HandleGotoNewTabPage,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getAllRulesets",
       base::BindRepeating(&BrowserSwitchHandler::HandleGetAllRulesets,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getDecision",
       base::BindRepeating(&BrowserSwitchHandler::HandleGetDecision,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getTimestamps",
       base::BindRepeating(&BrowserSwitchHandler::HandleGetTimestamps,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getRulesetSources",
       base::BindRepeating(&BrowserSwitchHandler::HandleGetRulesetSources,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "refreshXml", base::BindRepeating(&BrowserSwitchHandler::HandleRefreshXml,
                                         base::Unretained(this)));
+  web_ui()->RegisterDeprecatedMessageCallback(
+      "isBrowserSwitcherEnabled",
+      base::BindRepeating(&BrowserSwitchHandler::HandleIsBrowserSwitchEnabled,
+                          base::Unretained(this)));
 }
 
 void BrowserSwitchHandler::OnJavascriptAllowed() {
@@ -297,17 +307,17 @@ void BrowserSwitchHandler::OnJavascriptDisallowed() {
 
 void BrowserSwitchHandler::OnAllRulesetsParsed(
     browser_switcher::BrowserSwitcherService* service) {
-  UpdateEverything();
+  SendDataChangedEvent();
 }
 
 void BrowserSwitchHandler::OnBrowserSwitcherPrefsChanged(
     browser_switcher::BrowserSwitcherPrefs* prefs,
     const std::vector<std::string>& changed_prefs) {
-  UpdateEverything();
+  SendDataChangedEvent();
 }
 
-void BrowserSwitchHandler::UpdateEverything() {
-  CallJavascriptFunction("updateEverything", base::Value());
+void BrowserSwitchHandler::SendDataChangedEvent() {
+  FireWebUIListener("data-changed");
 }
 
 void BrowserSwitchHandler::HandleLaunchAlternativeBrowserAndCloseTab(
@@ -422,9 +432,9 @@ void BrowserSwitchHandler::HandleGetDecision(const base::ListValue* args) {
   }
   retval.Set("reason", std::make_unique<base::Value>(reason_name));
 
-  if (!decision.matching_rule.empty()) {
-    retval.Set("matching_rule",
-               std::make_unique<base::Value>(decision.matching_rule));
+  if (decision.matching_rule) {
+    retval.Set("matching_rule", std::make_unique<base::Value>(
+                                    decision.matching_rule->ToString()));
   }
 
   ResolveJavascriptCallback(args->GetList()[0], retval);
@@ -478,6 +488,16 @@ void BrowserSwitchHandler::HandleRefreshXml(const base::ListValue* args) {
   DCHECK(args);
   auto* service = GetBrowserSwitcherService(web_ui());
   service->StartDownload(base::TimeDelta());
+}
+
+void BrowserSwitchHandler::HandleIsBrowserSwitchEnabled(
+    const base::ListValue* args) {
+  DCHECK(args);
+  AllowJavascript();
+
+  auto* service = GetBrowserSwitcherService(web_ui());
+  ResolveJavascriptCallback(args->GetList()[0],
+                            base::Value(service->prefs().IsEnabled()));
 }
 
 BrowserSwitchUI::BrowserSwitchUI(content::WebUI* web_ui)

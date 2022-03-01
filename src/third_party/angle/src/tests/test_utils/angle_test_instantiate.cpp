@@ -44,7 +44,7 @@ bool IsAngleEGLConfigSupported(const PlatformParameters &param, OSWindow *osWind
 
 #if defined(ANGLE_USE_UTIL_LOADER)
     eglLibrary.reset(
-        angle::OpenSharedLibrary(ANGLE_EGL_LIBRARY_NAME, angle::SearchType::ApplicationDir));
+        angle::OpenSharedLibrary(ANGLE_EGL_LIBRARY_NAME, angle::SearchType::ModuleDir));
 #endif
 
     EGLWindow *eglWindow = EGLWindow::New(param.majorVersion, param.minorVersion);
@@ -81,7 +81,8 @@ bool IsSystemEGLConfigSupported(const PlatformParameters &param, OSWindow *osWin
 #if defined(ANGLE_USE_UTIL_LOADER)
     std::unique_ptr<angle::Library> eglLibrary;
 
-    eglLibrary.reset(OpenSharedLibraryWithExtension(GetNativeEGLLibraryNameWithExtension()));
+    eglLibrary.reset(OpenSharedLibraryWithExtension(GetNativeEGLLibraryNameWithExtension(),
+                                                    SearchType::SystemDir));
 
     EGLWindow *eglWindow = EGLWindow::New(param.majorVersion, param.minorVersion);
     ConfigParameters configParams;
@@ -172,6 +173,11 @@ bool IsConfigSelected()
 #if !defined(ANGLE_PLATFORM_APPLE)
 // For Apple platform, see angle_test_instantiate_apple.mm
 bool IsMetalTextureSwizzleAvailable()
+{
+    return false;
+}
+
+bool IsMetalCompressedTexture3DAvailable()
 {
     return false;
 }
@@ -331,6 +337,16 @@ bool IsPixel2XL()
     return IsAndroidDevice("Pixel 2 XL");
 }
 
+bool IsPixel4()
+{
+    return IsAndroidDevice("Pixel 4");
+}
+
+bool IsPixel4XL()
+{
+    return IsAndroidDevice("Pixel 4 XL");
+}
+
 bool IsNVIDIAShield()
 {
     return IsAndroidDevice("SHIELD Android TV");
@@ -375,7 +391,17 @@ bool IsNVIDIA()
 
 bool IsQualcomm()
 {
-    return IsNexus5X() || IsNexus9() || IsPixelXL() || IsPixel2() || IsPixel2XL();
+    return IsNexus5X() || IsNexus9() || IsPixelXL() || IsPixel2() || IsPixel2XL() || IsPixel4() ||
+           IsPixel4XL();
+}
+
+bool Is64Bit()
+{
+#if defined(ANGLE_IS_64_BIT_CPU)
+    return true;
+#else
+    return false;
+#endif  // defined(ANGLE_IS_64_BIT_CPU)
 }
 
 bool IsConfigAllowlisted(const SystemInfo &systemInfo, const PlatformParameters &param)
@@ -668,10 +694,11 @@ bool IsPlatformAvailable(const PlatformParameters &param)
 #endif
 
         case EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE:
-#ifndef ANGLE_ENABLE_NULL
+#if !defined(ANGLE_ENABLE_NULL)
             return false;
-#endif
+#else
             break;
+#endif
 
         default:
             std::cout << "Unknown test platform: " << param << std::endl;

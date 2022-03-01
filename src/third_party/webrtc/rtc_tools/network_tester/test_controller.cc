@@ -23,7 +23,9 @@ TestController::TestController(int min_port,
                                int max_port,
                                const std::string& config_file_path,
                                const std::string& log_file_path)
-    : socket_factory_(rtc::ThreadManager::Instance()->WrapCurrentThread()),
+    // TODO(bugs.webrtc.org/13145): Add a SocketFactory argument.
+    : socket_factory_(
+          rtc::ThreadManager::Instance()->WrapCurrentThread()->socketserver()),
       config_file_path_(config_file_path),
       packet_logger_(log_file_path),
       local_test_done_(false),
@@ -124,7 +126,7 @@ void TestController::OnReadPacket(rtc::AsyncPacketSocket* socket,
       break;
     }
     default: {
-      RTC_NOTREACHED();
+      RTC_DCHECK_NOTREACHED();
     }
   }
 }

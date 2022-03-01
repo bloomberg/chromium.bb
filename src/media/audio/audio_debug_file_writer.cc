@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sys_byteorder.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_sample_types.h"
@@ -59,6 +60,9 @@ class CharBufferWriter {
   CharBufferWriter(char* buf, int max_size)
       : buf_(buf), max_size_(max_size), size_(0) {}
 
+  CharBufferWriter(const CharBufferWriter&) = delete;
+  CharBufferWriter& operator=(const CharBufferWriter&) = delete;
+
   void Write(const char* data, int data_size) {
     CHECK_LE(size_ + data_size, max_size_);
     memcpy(&buf_[size_], data, data_size);
@@ -80,11 +84,9 @@ class CharBufferWriter {
   }
 
  private:
-  char* buf_;
+  raw_ptr<char> buf_;
   const int max_size_;
   int size_;
-
-  DISALLOW_COPY_AND_ASSIGN(CharBufferWriter);
 };
 
 // Writes Wave header to the specified address, there should be at least

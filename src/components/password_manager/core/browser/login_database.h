@@ -12,11 +12,11 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/pickle.h"
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/field_info_table.h"
 #include "components/password_manager/core/browser/insecure_credentials_table.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
@@ -29,10 +29,6 @@
 
 #if defined(OS_IOS)
 #include "base/gtest_prod_util.h"
-#endif
-
-#if defined(OS_MAC)
-#include "components/password_manager/core/browser/password_recovery_util_mac.h"
 #endif
 
 namespace password_manager {
@@ -48,13 +44,11 @@ extern const int kCompatibleVersionNumber;
 class LoginDatabase : public PasswordStoreSync::MetadataStore {
  public:
   LoginDatabase(const base::FilePath& db_path, IsAccountStore is_account_store);
-  ~LoginDatabase() override;
 
-  // Deletes any database files for the given |db_path| from the disk. Must not
-  // be called while a LoginDatabase instance for this path exists!
-  // This does blocking I/O, so must only be called from a thread that allows
-  // this (in particular, *not* from the UI thread).
-  static void DeleteDatabaseFile(const base::FilePath& db_path);
+  LoginDatabase(const LoginDatabase&) = delete;
+  LoginDatabase& operator=(const LoginDatabase&) = delete;
+
+  ~LoginDatabase() override;
 
   // Returns whether this is the profile-scoped or the account-scoped storage:
   // true:  Gaia-account-scoped store, which is used for signed-in but not
@@ -67,16 +61,8 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // should be called.
   virtual bool Init();
 
-#if defined(OS_MAC)
-  // Registers utility which is used to save password recovery status on MacOS.
-  void InitPasswordRecoveryUtil(
-      std::unique_ptr<PasswordRecoveryUtilMac> password_recovery_util);
-#endif
-
-  // Reports usage metrics to UMA.
-  void ReportMetrics(const std::string& sync_username,
-                     bool custom_passphrase_sync_enabled,
-                     BulkCheckDone bulk_check_done);
+  // Reports metrics regarding inaccessible passwords and bubble usages to UMA.
+  void ReportMetrics();
 
   // Adds |form| to the list of remembered password forms. Returns the list of
   // changes applied ({}, {ADD}, {REMOVE, ADD}). If it returns {REMOVE, ADD}
@@ -125,13 +111,11 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
 
   // Gets a list of credentials matching |form|, including blocklisted matches
   // and federated credentials.
-  bool GetLogins(const PasswordStore::FormDigest& form,
+  // |should_PSL_matching_apply| controls if the PSL matches are included or
+  // only the exact matches.
+  bool GetLogins(const PasswordFormDigest& form,
+                 bool should_PSL_matching_apply,
                  std::vector<std::unique_ptr<PasswordForm>>* forms)
-      WARN_UNUSED_RESULT;
-
-  // Gets a list of credentials with password_value=|plain_text_password|.
-  bool GetLoginsByPassword(const std::u16string& plain_text_password,
-                           std::vector<std::unique_ptr<PasswordForm>>* forms)
       WARN_UNUSED_RESULT;
 
   // Gets all logins created from |begin| onwards (inclusive) and before |end|.
@@ -214,14 +198,12 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
 
   FieldInfoTable& field_info_table() { return field_info_table_; }
 
-#if defined(OS_POSIX) && !defined(OS_APPLE)
-  void enable_encryption() { use_encryption_ = true; }
-  // This instance should not encrypt/decrypt password values using OSCrypt.
-  void disable_encryption() { use_encryption_ = false; }
-#endif  // defined(OS_POSIX) && !defined(OS_APPLE)
-
  private:
   struct PrimaryKeyAndPassword;
+  FRIEND_TEST_ALL_PREFIXES(LoginDatabaseTest, AddLoginWithEncryptedPassword);
+  FRIEND_TEST_ALL_PREFIXES(LoginDatabaseTest,
+                           AddLoginWithEncryptedPasswordAndValue);
+
 #if defined(OS_IOS)
   friend class LoginDatabaseIOSTest;
   FRIEND_TEST_ALL_PREFIXES(LoginDatabaseIOSTest, KeychainStorage);
@@ -239,10 +221,6 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // empty string if the row for this |form| is not found.
   std::string GetEncryptedPasswordById(int id) const;
 #endif
-
-  // Returns a suffix (infix, really) to be used in histogram names to
-  // differentiate the profile store from the account store.
-  base::StringPiece GetMetricsSuffixForStore() const;
 
   void ReportNumberOfAccountsMetrics(bool custom_passphrase_sync_enabled);
   void ReportTimesPasswordUsedMetrics(bool custom_passphrase_sync_enabled);
@@ -292,7 +270,7 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // |decrypt_and_fill_password_value| is set to false, it always returns
   // ENCRYPTION_RESULT_SUCCESS.
   EncryptionResult InitPasswordFormFromStatement(
-      const sql::Statement& s,
+      sql::Statement& s,
       bool decrypt_and_fill_password_value,
       int* primary_key,
       PasswordForm* form) const WARN_UNUSED_RESULT;
@@ -318,16 +296,16 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
 
   // Overwrites |key_to_form_map| with credentials retrieved from |statement|.
   // If |matched_form| is not null, filters out all results but those
-  // PSL-matching
-  // |*matched_form| or federated credentials for it. If feature for recovering
-  // passwords is enabled, it removes all passwords that couldn't be decrypted
-  // when encryption was available from the database. On success returns true.
+  // PSL-matching |*matched_form| or federated credentials for it. If feature
+  // for recovering passwords is enabled, it removes all passwords that couldn't
+  // be decrypted when encryption was available from the database. On success
+  // returns true.
   // |key_to_form_map| must not be null and will be used to return the results.
   // The key of the map is the DB primary key.
-  FormRetrievalResult StatementToForms(
-      sql::Statement* statement,
-      const PasswordStore::FormDigest* matched_form,
-      PrimaryKeyToFormMap* key_to_form_map) WARN_UNUSED_RESULT;
+  FormRetrievalResult StatementToForms(sql::Statement* statement,
+                                       const PasswordFormDigest* matched_form,
+                                       PrimaryKeyToFormMap* key_to_form_map)
+      WARN_UNUSED_RESULT;
 
   // Initializes all the *_statement_ data members with appropriate SQL
   // fragments based on |builder|.
@@ -336,6 +314,18 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // Sets the `in_store` member of `form` to either kProfileStore or
   // kAccountStore depending on the value of `is_account_store_`.
   void FillFormInStore(PasswordForm* form) const;
+
+  // Reads the insecure credentials corresponding to the `primary_key` from the
+  // database and fills them into `form->password_issues`.
+  void PopulateFormWithPasswordIssues(FormPrimaryKey primary_key,
+                                      PasswordForm* form) const;
+
+  // Updates data in the `insecure_credentials_table_` with the password issues
+  // data from `password_issues`. Returns whether any insecure credential entry
+  // was changed.
+  InsecureCredentialsChanged UpdateInsecureCredentials(
+      FormPrimaryKey primary_key,
+      const base::flat_map<InsecureType, InsecurityMetadata>& password_issues);
 
   const base::FilePath db_path_;
   const IsAccountStore is_account_store_;
@@ -363,24 +353,11 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   std::string encrypted_password_statement_by_id_;
   std::string id_and_password_statement_;
 
-#if defined(OS_MAC)
-  std::unique_ptr<PasswordRecoveryUtilMac> password_recovery_util_;
-#endif
-
-#if defined(OS_POSIX) && !defined(OS_APPLE)
-  // Whether password values should be encrypted.
-  // TODO(crbug.com/571003) Only linux doesn't use encryption. Remove this once
-  // Linux is fully migrated into LoginDatabase.
-  bool use_encryption_ = true;
-#endif  // defined(OS_POSIX)
-
   // A callback to be invoked whenever all pending deletions have been processed
   // by Sync - see
   // PasswordStoreSync::MetadataStore::SetDeletionsHaveSyncedCallback for more
   // details.
   base::RepeatingCallback<void(bool)> deletions_have_synced_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoginDatabase);
 };
 
 }  // namespace password_manager

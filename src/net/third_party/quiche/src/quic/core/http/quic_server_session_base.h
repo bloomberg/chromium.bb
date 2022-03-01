@@ -68,11 +68,16 @@ class QUIC_EXPORT_PRIVATE QuicServerSessionBase : public QuicSpdySession {
     serving_region_ = serving_region;
   }
 
+  QuicSSLConfig GetSSLConfig() const override;
+
  protected:
   // QuicSession methods(override them with return type of QuicSpdyStream*):
   QuicCryptoServerStreamBase* GetMutableCryptoStream() override;
 
   const QuicCryptoServerStreamBase* GetCryptoStream() const override;
+
+  absl::optional<CachedNetworkParameters> GenerateCachedNetworkParameters()
+      const override;
 
   // If an outgoing stream can be created, return true.
   // Return false when connection is closed or forward secure encryption hasn't
@@ -136,7 +141,7 @@ class QUIC_EXPORT_PRIVATE QuicServerSessionBase : public QuicSpdySession {
   // stored in CachedNetworkParameters.  TODO(jokulik): This function
   // should go away once we fix http://b//27897982
   int32_t BandwidthToCachedParameterBytesPerSecond(
-      const QuicBandwidth& bandwidth);
+      const QuicBandwidth& bandwidth) const;
 };
 
 }  // namespace quic

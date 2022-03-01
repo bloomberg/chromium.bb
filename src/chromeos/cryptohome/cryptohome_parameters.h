@@ -82,6 +82,10 @@ struct COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) KeyDefinition {
     // cryptohome needs to query fingerprint scan results from biod and
     // compare with the identity passed along with the key.
     TYPE_FINGERPRINT = 2,
+    // Public mount is used by Kiosk sessions. This type of key does not have
+    // any secret, instead crypotohomed would generate a key based on user
+    // identity.
+    TYPE_PUBLIC_MOUNT = 3,
   };
 
   // This struct holds metadata that will be stored alongside the key. Each
@@ -153,16 +157,6 @@ struct COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) Authorization {
   std::string key;
   std::string label;
 };
-
-// This function returns true if cryptohome of |account_id| is migrated to
-// accountId-based identifier (AccountId::GetAccountIdKey()).
-COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME)
-bool GetGaiaIdMigrationStatus(const AccountId& account_id);
-
-// This function marks |account_id| cryptohome migrated to accountId-based
-// identifier (AccountId::GetAccountIdKey()).
-COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME)
-void SetGaiaIdMigrationStatusDone(const AccountId& account_id);
 
 }  // namespace cryptohome
 

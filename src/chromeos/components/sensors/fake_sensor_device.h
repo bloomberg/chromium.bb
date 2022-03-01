@@ -40,8 +40,13 @@ class FakeSensorDevice final : public mojom::SensorDevice {
   mojo::ReceiverId AddReceiver(
       mojo::PendingReceiver<mojom::SensorDevice> pending_receiver);
   void RemoveReceiver(mojo::ReceiverId id);
+  void RemoveReceiverWithReason(mojo::ReceiverId id,
+                                mojom::SensorDeviceDisconnectReason reason,
+                                const std::string& description);
 
   void ClearReceivers();
+  void ClearReceiversWithReason(mojom::SensorDeviceDisconnectReason reason,
+                                const std::string& description);
   bool HasReceivers() const;
   size_t SizeOfReceivers() const;
 
@@ -49,6 +54,18 @@ class FakeSensorDevice final : public mojom::SensorDevice {
                     const std::string& attr_value);
 
   void ResetObserverRemote(mojo::ReceiverId id);
+  void ResetObserverRemoteWithReason(mojo::ReceiverId id,
+                                     mojom::SensorDeviceDisconnectReason reason,
+                                     const std::string& description);
+
+  // Unlike SetChannelsEnabled() below, SetChannelsEnabledWithId() is used
+  // without a mojo pipe, instead, with the mojo::ReceiverId from AddReceiver().
+  // It lets the tests manually enable or disable channels to simulate some
+  // unexpected behaviors of iioservice, such as channels being unavailable
+  // suddenly.
+  void SetChannelsEnabledWithId(mojo::ReceiverId id,
+                                const std::vector<int32_t>& iio_chn_indices,
+                                bool en);
 
   // Implementation of mojom::SensorDevice.
   void SetTimeout(uint32_t timeout) override {}

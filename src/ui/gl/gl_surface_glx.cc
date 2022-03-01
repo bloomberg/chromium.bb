@@ -10,12 +10,11 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -101,6 +100,10 @@ class OMLSyncControlVSyncProvider : public SyncControlVSyncProvider {
   explicit OMLSyncControlVSyncProvider(GLXWindow glx_window)
       : SyncControlVSyncProvider(), glx_window_(glx_window) {}
 
+  OMLSyncControlVSyncProvider(const OMLSyncControlVSyncProvider&) = delete;
+  OMLSyncControlVSyncProvider& operator=(const OMLSyncControlVSyncProvider&) =
+      delete;
+
   ~OMLSyncControlVSyncProvider() override = default;
 
  protected:
@@ -132,8 +135,6 @@ class OMLSyncControlVSyncProvider : public SyncControlVSyncProvider {
 
  private:
   GLXWindow glx_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(OMLSyncControlVSyncProvider);
 };
 
 class SGIVideoSyncThread : public base::Thread,
@@ -161,6 +162,9 @@ class SGIVideoSyncThread : public base::Thread,
     }
     return g_video_sync_thread;
   }
+
+  SGIVideoSyncThread(const SGIVideoSyncThread&) = delete;
+  SGIVideoSyncThread& operator=(const SGIVideoSyncThread&) = delete;
 
   x11::Connection* GetConnection() {
     DCHECK(task_runner()->BelongsToCurrentThread());
@@ -219,8 +223,6 @@ class SGIVideoSyncThread : public base::Thread,
   GLXContext context_ = nullptr;
 
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(SGIVideoSyncThread);
 };
 
 class SGIVideoSyncProviderThreadShim {
@@ -237,6 +239,11 @@ class SGIVideoSyncProviderThreadShim {
     // is executing in the same thread as the call to create |parent_window_|.
     x11::Connection::Get()->Sync();
   }
+
+  SGIVideoSyncProviderThreadShim(const SGIVideoSyncProviderThreadShim&) =
+      delete;
+  SGIVideoSyncProviderThreadShim& operator=(
+      const SGIVideoSyncProviderThreadShim&) = delete;
 
   ~SGIVideoSyncProviderThreadShim() {
     auto* connection = vsync_thread_->GetConnection();
@@ -328,8 +335,6 @@ class SGIVideoSyncProviderThreadShim {
 
   base::AtomicFlag cancel_vsync_flag_;
   base::Lock vsync_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(SGIVideoSyncProviderThreadShim);
 };
 
 class SGIVideoSyncVSyncProvider
@@ -346,6 +351,10 @@ class SGIVideoSyncVSyncProvider
         FROM_HERE, base::BindOnce(&SGIVideoSyncProviderThreadShim::Initialize,
                                   base::Unretained(shim_.get())));
   }
+
+  SGIVideoSyncVSyncProvider(const SGIVideoSyncVSyncProvider&) = delete;
+  SGIVideoSyncVSyncProvider& operator=(const SGIVideoSyncVSyncProvider&) =
+      delete;
 
   ~SGIVideoSyncVSyncProvider() override {
     {
@@ -400,8 +409,6 @@ class SGIVideoSyncVSyncProvider
   // the shim_, so they are safe to access.
   base::AtomicFlag* cancel_vsync_flag_;
   base::Lock* vsync_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(SGIVideoSyncVSyncProvider);
 };
 
 SGIVideoSyncThread* SGIVideoSyncThread::g_video_sync_thread = nullptr;
@@ -616,11 +623,11 @@ bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
 
   window_ = conn->GenerateId<x11::Window>();
   x11::CreateWindowRequest req{
-      .depth = g_depth,
+      .depth = static_cast<uint8_t>(g_depth),
       .wid = window_,
       .parent = static_cast<x11::Window>(parent_window_),
-      .width = size_.width(),
-      .height = size_.height(),
+      .width = static_cast<uint16_t>(size_.width()),
+      .height = static_cast<uint16_t>(size_.height()),
       .c_class = x11::WindowClass::InputOutput,
       .visual = g_visual,
       .background_pixmap = x11::Pixmap::None,
@@ -834,11 +841,11 @@ bool UnmappedNativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
   auto* conn = x11::Connection::Get();
   window_ = conn->GenerateId<x11::Window>();
   conn->CreateWindow(x11::CreateWindowRequest{
-                         .depth = g_depth,
+                         .depth = static_cast<uint8_t>(g_depth),
                          .wid = window_,
                          .parent = parent_window,
-                         .width = size_.width(),
-                         .height = size_.height(),
+                         .width = static_cast<uint16_t>(size_.width()),
+                         .height = static_cast<uint16_t>(size_.height()),
                          .c_class = x11::WindowClass::InputOutput,
                          .visual = g_visual,
                          .border_pixel = 0,

@@ -197,8 +197,6 @@ class QuicConnectionPeer {
   static QuicByteCount BytesReceivedBeforeAddressValidation(
       QuicConnection* connection);
 
-  static void EnableMultipleConnectionIdSupport(QuicConnection* connection);
-
   static void ResetPeerIssuedConnectionIdManager(QuicConnection* connection);
 
   static QuicConnection::PathState* GetDefaultPath(QuicConnection* connection);
@@ -213,6 +211,15 @@ class QuicConnectionPeer {
 
   static bool HasSelfIssuedConnectionIdToConsume(
       const QuicConnection* connection);
+
+  static QuicSelfIssuedConnectionIdManager* GetSelfIssuedConnectionIdManager(
+      QuicConnection* connection);
+
+  static std::unique_ptr<QuicSelfIssuedConnectionIdManager>
+  MakeSelfIssuedConnectionIdManager(QuicConnection* connection);
+
+  static void SetLastDecryptedLevel(QuicConnection* connection,
+                                    EncryptionLevel level);
 };
 
 }  // namespace test

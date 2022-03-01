@@ -15,7 +15,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -39,13 +38,15 @@ class BLINK_PLATFORM_EXPORT ChildPendingURLLoaderFactoryBundle
   ChildPendingURLLoaderFactoryBundle(
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_default_factory,
-      mojo::PendingRemote<network::mojom::URLLoaderFactory>
-          pending_default_network_factory,
       SchemeMap pending_scheme_specific_factories,
       OriginMap pending_isolated_world_factories,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_prefetch_loader_factory,
       bool bypass_redirect_checks);
+  ChildPendingURLLoaderFactoryBundle(
+      const ChildPendingURLLoaderFactoryBundle&) = delete;
+  ChildPendingURLLoaderFactoryBundle& operator=(
+      const ChildPendingURLLoaderFactoryBundle&) = delete;
   ~ChildPendingURLLoaderFactoryBundle() override;
 
   static std::unique_ptr<ChildPendingURLLoaderFactoryBundle>
@@ -55,7 +56,6 @@ class BLINK_PLATFORM_EXPORT ChildPendingURLLoaderFactoryBundle
     std::unique_ptr<ChildPendingURLLoaderFactoryBundle> pending_bundle(
         new ChildPendingURLLoaderFactoryBundle(
             std::move(pending_default_factory),
-            {},       // pending_default_network_factory
             {},       // pending_scheme_specific_factories
             {},       // pending_isolated_world_factories
             {},       // pending_prefetch_loader_factory
@@ -74,8 +74,6 @@ class BLINK_PLATFORM_EXPORT ChildPendingURLLoaderFactoryBundle
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
       pending_prefetch_loader_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChildPendingURLLoaderFactoryBundle);
 };
 
 // This class extends URLLoaderFactoryBundle to support prefetch loader factory
@@ -99,13 +97,6 @@ class BLINK_PLATFORM_EXPORT ChildURLLoaderFactoryBundle
       override;
   std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override;
 
-  // Does the same as Clone(), but without cloning the appcache_factory_.
-  // This is used for creating a bundle for network fallback loading with
-  // Service Workers (where AppCache must be skipped), and only when
-  // claim() is called.
-  virtual std::unique_ptr<network::PendingSharedURLLoaderFactory>
-  CloneWithoutAppCacheFactory();
-
   std::unique_ptr<ChildPendingURLLoaderFactoryBundle> PassInterface();
 
   void Update(
@@ -123,9 +114,6 @@ class BLINK_PLATFORM_EXPORT ChildURLLoaderFactoryBundle
   ~ChildURLLoaderFactoryBundle() override;
 
  private:
-  std::unique_ptr<network::PendingSharedURLLoaderFactory> CloneInternal(
-      bool include_appcache);
-
   mojo::Remote<network::mojom::URLLoaderFactory> prefetch_loader_factory_;
 
   std::map<GURL, mojom::TransferrableURLLoaderPtr> subresource_overrides_;

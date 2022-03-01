@@ -22,7 +22,6 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
-#include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
 #include "url/gurl.h"
 
@@ -33,7 +32,6 @@
 
 using base::Time;
 using base::TimeTicks;
-using base::TimeDelta;
 
 namespace ssl_errors {
 namespace {
@@ -192,7 +190,7 @@ ClockState GetClockState(
     const network_time::NetworkTimeTracker* network_time_tracker) {
   base::Time now_network;
   base::TimeDelta uncertainty;
-  const base::TimeDelta kNetworkTimeFudge = base::TimeDelta::FromMinutes(5);
+  const base::TimeDelta kNetworkTimeFudge = base::Minutes(5);
   NetworkClockState network_state = NETWORK_CLOCK_STATE_MAX;
   network_time::NetworkTimeTracker::NetworkTimeResult network_time_result =
       network_time_tracker->GetNetworkTime(&now_network, &uncertainty);
@@ -227,16 +225,11 @@ ClockState GetClockState(
   base::Time build_time = g_testing_build_time.Get().is_null()
                               ? base::GetBuildTime()
                               : g_testing_build_time.Get();
-  if (now_system < build_time - base::TimeDelta::FromDays(2)) {
+  if (now_system < build_time - base::Days(2)) {
     build_time_state = CLOCK_STATE_PAST;
-  } else if (now_system > build_time + base::TimeDelta::FromDays(365)) {
+  } else if (now_system > build_time + base::Days(365)) {
     build_time_state = CLOCK_STATE_FUTURE;
   }
-
-  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.clockstate.network3",
-                            network_state, NETWORK_CLOCK_STATE_MAX);
-  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.clockstate.build_time",
-                            build_time_state, CLOCK_STATE_MAX);
 
   switch (network_state) {
     case NETWORK_CLOCK_STATE_UNKNOWN_SYNC_LOST:

@@ -6,6 +6,7 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+#include "build/build_config.h"
 
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
@@ -104,6 +105,26 @@ IN_PROC_BROWSER_TEST_P(DoubleTapToZoomBrowserTest, MobileOptimizedStatus) {
       frame_observer.LastRenderFrameMetadata();
   EXPECT_EQ(expected_is_viewport_mobile_optimized,
             last_metadata.is_mobile_optimized)
+      << std::get<2>(GetParam());
+}
+
+// TODO(crbug.com/1271210): Flaky on mac and linux.
+#if defined(OS_MAC) || defined(OS_LINUX)
+#define MAYBE_TapDelayEnabled DISABLED_TapDelayEnabled
+#else
+#define MAYBE_TapDelayEnabled TapDelayEnabled
+#endif
+IN_PROC_BROWSER_TEST_P(DoubleTapToZoomBrowserTest, MAYBE_TapDelayEnabled) {
+  bool expected_is_viewport_mobile_optimized = std::get<1>(GetParam());
+  LoadURL();
+  WebContents* main_contents = shell()->web_contents();
+  RenderFrameSubmissionObserver frame_observer(main_contents);
+  frame_observer.WaitForMetadataChange();
+
+  ASSERT_EQ(!expected_is_viewport_mobile_optimized,
+            EvalJs(shell(),
+                   "let kTapDelayEnabled = 3965;"
+                   "internals.isUseCounted(document, kTapDelayEnabled)"))
       << std::get<2>(GetParam());
 }
 

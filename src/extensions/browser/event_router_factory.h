@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_EVENT_ROUTER_FACTORY_H_
 #define EXTENSIONS_BROWSER_EVENT_ROUTER_FACTORY_H_
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
@@ -15,6 +14,9 @@ class EventRouter;
 
 class EventRouterFactory : public BrowserContextKeyedServiceFactory {
  public:
+  EventRouterFactory(const EventRouterFactory&) = delete;
+  EventRouterFactory& operator=(const EventRouterFactory&) = delete;
+
   static EventRouter* GetForBrowserContext(content::BrowserContext* context);
   static EventRouterFactory* GetInstance();
 
@@ -29,8 +31,6 @@ class EventRouterFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(EventRouterFactory);
 };
 
 }  // namespace extensions

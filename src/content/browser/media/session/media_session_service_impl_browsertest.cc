@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
@@ -61,6 +62,7 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   void OnExitPictureInPicture(int player_id) override {}
   void OnSetAudioSinkId(int player_id,
                         const std::string& raw_device_id) override {}
+  void OnSetMute(int player_id, bool mute) override {}
 
   absl::optional<media_session::MediaPosition> GetPosition(
       int player_id) const override {
@@ -80,12 +82,16 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
     return false;
   }
 
+  media::MediaContentType GetMediaContentType() const override {
+    return media::MediaContentType::Persistent;
+  }
+
   RenderFrameHost* render_frame_host() const override {
     return render_frame_host_;
   }
 
  private:
-  RenderFrameHost* render_frame_host_;
+  raw_ptr<RenderFrameHost> render_frame_host_;
 };
 
 void NavigateToURLAndWaitForFinish(Shell* window, const GURL& url) {
@@ -131,8 +137,7 @@ class MediaSessionServiceImplBrowserTest : public ContentBrowserTest {
         shell()->web_contents()->GetMainFrame());
 
     MediaSessionImpl::Get(shell()->web_contents())
-        ->AddPlayer(player_.get(), kPlayerId,
-                    media::MediaContentType::Persistent);
+        ->AddPlayer(player_.get(), kPlayerId);
   }
 
   MediaSessionImpl* GetSession() {
@@ -141,7 +146,7 @@ class MediaSessionServiceImplBrowserTest : public ContentBrowserTest {
 
   MediaSessionServiceImpl* GetService() {
     RenderFrameHost* main_frame = shell()->web_contents()->GetMainFrame();
-    const auto main_frame_id = main_frame->GetGlobalFrameRoutingId();
+    const auto main_frame_id = main_frame->GetGlobalId();
     if (GetSession()->services_.count(main_frame_id))
       return GetSession()->services_[main_frame_id];
 

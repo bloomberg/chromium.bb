@@ -11,7 +11,7 @@
 #include "base/values.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_utils.h"
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 namespace {
 
@@ -62,4 +62,4 @@ bool KpEntityResultParser::Parse(const Value* result,
 }
 
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash

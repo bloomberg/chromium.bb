@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/autofill/autofill_uitest.h"
 #include "chrome/browser/autofill/autofill_uitest_util.h"
@@ -30,31 +29,43 @@ namespace autofill {
 
 // BrowserAutofillManagerTestDelegateImpl
 // --------------------------------------------
-BrowserAutofillManagerTestDelegateImpl::BrowserAutofillManagerTestDelegateImpl()
-    : is_expecting_dynamic_refill_(false) {}
+BrowserAutofillManagerTestDelegateImpl::
+    BrowserAutofillManagerTestDelegateImpl() = default;
 
 BrowserAutofillManagerTestDelegateImpl::
-    ~BrowserAutofillManagerTestDelegateImpl() {}
+    ~BrowserAutofillManagerTestDelegateImpl() = default;
+
+void BrowserAutofillManagerTestDelegateImpl::SetIgnoreBackToBackMessages(
+    ObservedUiEvents type,
+    bool ignore) {
+  if (ignore) {
+    ignore_back_to_back_event_types_.insert(type);
+  } else {
+    ignore_back_to_back_event_types_.erase(type);
+    if (last_event_ == type)
+      last_event_ = ObservedUiEvents::kNoEvent;
+  }
+}
+
+void BrowserAutofillManagerTestDelegateImpl::FireEvent(ObservedUiEvents event) {
+  DCHECK(event_waiter_);
+  if (event_waiter_ && (!ignore_back_to_back_event_types_.contains(event) ||
+                        last_event_ != event)) {
+    event_waiter_->OnEvent(event);
+  }
+  last_event_ = event;
+}
 
 void BrowserAutofillManagerTestDelegateImpl::DidPreviewFormData() {
-  DCHECK(event_waiter_);
-  if (event_waiter_) {
-    event_waiter_->OnEvent(ObservedUiEvents::kPreviewFormData);
-  }
+  FireEvent(ObservedUiEvents::kPreviewFormData);
 }
 
 void BrowserAutofillManagerTestDelegateImpl::DidFillFormData() {
-  DCHECK(event_waiter_);
-  if (event_waiter_) {
-    event_waiter_->OnEvent(ObservedUiEvents::kFormDataFilled);
-  }
+  FireEvent(ObservedUiEvents::kFormDataFilled);
 }
 
 void BrowserAutofillManagerTestDelegateImpl::DidShowSuggestions() {
-  DCHECK(event_waiter_);
-  if (event_waiter_) {
-    event_waiter_->OnEvent(ObservedUiEvents::kSuggestionShown);
-  }
+  FireEvent(ObservedUiEvents::kSuggestionShown);
 }
 
 void BrowserAutofillManagerTestDelegateImpl::OnTextFieldChanged() {}
@@ -79,8 +90,6 @@ AutofillUiTest::AutofillUiTest()
 AutofillUiTest::~AutofillUiTest() {}
 
 void AutofillUiTest::SetUpOnMainThread() {
-  // Don't want Keychain coming up on Mac.
-  test::DisableSystemServices(browser()->profile()->GetPrefs());
   // Make autofill popup stay open by ignoring external changes when possible.
   ChromeAutofillClient::FromWebContents(GetWebContents())
       ->KeepPopupOpenForTesting();
@@ -110,7 +119,6 @@ void AutofillUiTest::TearDownOnMainThread() {
   if (autofill_manager)
     autofill_manager->client()->HideAutofillPopup(
         autofill::PopupHidingReason::kTabGone);
-  test::ReenableSystemServices();
 }
 
 void AutofillUiTest::SendKeyToPage(content::WebContents* web_contents,
@@ -195,7 +203,7 @@ void AutofillUiTest::SendKeyToPopupAndWait(
 
 void AutofillUiTest::DoNothingAndWait(unsigned seconds) {
   test_delegate()->SetExpectations({ObservedUiEvents::kNoEvent},
-                                   base::TimeDelta::FromSeconds(seconds));
+                                   base::Seconds(seconds));
   ASSERT_FALSE(test_delegate()->Wait());
 }
 

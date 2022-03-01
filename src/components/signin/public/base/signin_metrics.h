@@ -9,24 +9,13 @@
 
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/signin/public/base/consent_level.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 namespace signin_metrics {
 
-// Enum for the ways in which primary account detection is done.
-enum DifferentPrimaryAccounts {
-  // token and cookie had same primary accounts.
-  ACCOUNTS_SAME = 0,
-  // Deprecated. Indicates different primary accounts.
-  UNUSED_ACCOUNTS_DIFFERENT,
-  // No GAIA cookie present, so the primaries are considered different.
-  NO_COOKIE_PRESENT,
-  // There was at least one cookie and one token, and the primaries differed.
-  COOKIE_AND_TOKEN_PRIMARIES_DIFFERENT,
-  NUM_DIFFERENT_PRIMARY_ACCOUNT_METRICS,
-};
-
 // Track all the ways a profile can become signed out as a histogram.
+// Enum SigninSignoutProfile.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SignoutReason
 // These values are persisted to logs. Entries should not be renumbered and
@@ -55,8 +44,7 @@ enum ProfileSignout : int {
   AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN = 7,
   // The user disables sync from the DICE UI.
   USER_TUNED_OFF_SYNC_FROM_DICE_UI = 8,
-  // Android specific. Signout forced because the account was removed from the
-  // device.
+  // Signout forced because the account was removed from the device.
   ACCOUNT_REMOVED_FROM_DEVICE = 9,
   // Signin is no longer allowed when the profile is initialized.
   SIGNIN_NOT_ALLOWED_ON_PROFILE_INIT = 10,
@@ -69,6 +57,9 @@ enum ProfileSignout : int {
   MOBILE_IDENTITY_CONSISTENCY_ROLLBACK = 13,
   // Sign-out when the account id migration to Gaia ID did not finish,
   ACCOUNT_ID_MIGRATION = 14,
+  // iOS Specific. Sign-out forced because the account was removed from the
+  // device after a device restore.
+  IOS_ACCOUNT_REMOVED_FROM_DEVICE_AFTER_RESTORE = 15,
   // Keep this as the last enum.
   NUM_PROFILE_SIGNOUT_METRICS,
 };
@@ -176,6 +167,7 @@ enum class AccessPoint : int {
   ACCESS_POINT_WEB_SIGNIN = 31,
   ACCESS_POINT_SAFETY_CHECK = 32,
   ACCESS_POINT_KALEIDOSCOPE = 33,
+  ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR = 34,
   ACCESS_POINT_MAX,  // This must be last.
 };
 
@@ -188,13 +180,18 @@ enum class ReauthAccessPoint {
 
   // Account password storage opt-in:
   kAutofillDropdown = 1,
+  // The password save bubble, which included the destination picker (set to
+  // "Save to your Google Account").
   kPasswordSaveBubble = 2,
   kPasswordSettings = 3,
   kGeneratePasswordDropdown = 4,
   kGeneratePasswordContextMenu = 5,
   kPasswordMoveBubble = 6,
+  // The password save bubble *without* a destination picker, i.e. the password
+  // was already saved locally.
+  kPasswordSaveLocallyBubble = 7,
 
-  kMaxValue = kPasswordMoveBubble
+  kMaxValue = kPasswordSaveLocallyBubble
 };
 
 // Enum values which enumerates all user actions on the sign-in promo.
@@ -213,7 +210,7 @@ enum class PromoAction : int {
   PROMO_ACTION_NEW_ACCOUNT_EXISTING_ACCOUNT
 };
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 // This class is used to record user action that was taken after
 // receiving the header from Gaia in the web sign-in flow.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
@@ -265,26 +262,11 @@ enum class AccountConsistencyPromoAction : int {
   // The bottom sheet was suppressed as the user hit consecutive active
   // dismissal limit.
   SUPPRESSED_CONSECUTIVE_DISMISSALS = 16,
-
-  MAX = 17,
+  // The timeout erreur was shown to the user.
+  TIMEOUT_ERROR_SHOWN = 17,
+  MAX = 18,
 };
-
-// This class is used to record web sign-in events within 2 minutes after
-// account picker bottom sheet was dismissed.
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class AccountConsistencyPromoAfterDismissal {
-  // User signed in with the default device account. This account is the first
-  // account in the cookies.
-  kSignedInOnWebWithDefaultDeviceAccount = 0,
-  // User signed in with non-default device account.
-  kSignedInOnWebWithNonDefaultDeviceAccount = 1,
-  // User signed in with an account not present on device.
-  kSignedInOnWebWithOtherAccount = 2,
-
-  kMaxValue = kSignedInOnWebWithOtherAccount,
-};
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 // Enum values which enumerates all reasons to start sign in process.
 // These values are persisted to logs. Entries should not be renumbered and
@@ -307,16 +289,6 @@ enum class Reason : int {
   // work in incognito mode.
   kFetchLstOnly = 6,
   kMaxValue = kFetchLstOnly,
-};
-
-// Enum values used for use with the "Signin.Reauth" histogram.
-enum AccountReauth {
-  // The user gave the wrong email when doing a reauthentication.
-  HISTOGRAM_ACCOUNT_MISSMATCH,
-  // The user was shown a reauthentication login screen.
-  HISTOGRAM_REAUTH_SHOWN,
-
-  HISTOGRAM_REAUTH_MAX
 };
 
 // Enum values used for "Signin.AccountReconcilorState.OnGaiaResponse"
@@ -353,6 +325,17 @@ enum class AccountEquality : int {
   EMAIL_FALLBACK,
   // Always the last enumerated type.
   HISTOGRAM_COUNT,
+};
+
+// Values of Signin.AccountType histogram. This histogram records if the user
+// uses a gmail account or a managed account when signing in.
+enum class SigninAccountType : int {
+  // Gmail account.
+  kRegular = 0,
+  // Managed account.
+  kManaged = 1,
+  // Always the last enumerated type.
+  kMaxValue = kManaged,
 };
 
 // When the user is give a choice of deleting their profile or not when signing
@@ -403,34 +386,60 @@ enum class AccountRelation : int {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class SourceForRefreshTokenOperation {
-  kUnknown,
-  kTokenService_LoadCredentials,
-  // NOTE: This is no longer used but is kept per the comment above about not
-  // renumbering.
-  kDeprecatedSupervisedUser_InitSync,
-  kInlineLoginHandler_Signin,
-  kPrimaryAccountManager_ClearAccount,
-  kPrimaryAccountManager_LegacyPreDiceSigninFlow,
-  kUserMenu_RemoveAccount,
-  kUserMenu_SignOutAllAccounts,
-  kSettings_Signout,
-  kSettings_PauseSync,
-  kAccountReconcilor_GaiaCookiesDeletedByUser,
-  kAccountReconcilor_GaiaCookiesUpdated,
-  kAccountReconcilor_Reconcile,
-  kDiceResponseHandler_Signin,
-  kDiceResponseHandler_Signout,
-  kDiceTurnOnSyncHelper_Abort,
-  kMachineLogon_CredentialProvider,
-  kTokenService_ExtractCredentials,
-  kAccountReconcilor_RevokeTokensNotInCookies,
-  kLogoutTabHelper_DidFinishNavigation,
+  kUnknown = 0,
+  kTokenService_LoadCredentials = 1,
+  // DEPRECATED
+  // kSupervisedUser_InitSync = 2,
+  kInlineLoginHandler_Signin = 3,
+  kPrimaryAccountManager_ClearAccount = 4,
+  kPrimaryAccountManager_LegacyPreDiceSigninFlow = 5,
+  kUserMenu_RemoveAccount = 6,
+  kUserMenu_SignOutAllAccounts = 7,
+  kSettings_Signout = 8,
+  kSettings_PauseSync = 9,
+  kAccountReconcilor_GaiaCookiesDeletedByUser = 10,
+  kAccountReconcilor_GaiaCookiesUpdated = 11,
+  kAccountReconcilor_Reconcile = 12,
+  kDiceResponseHandler_Signin = 13,
+  kDiceResponseHandler_Signout = 14,
+  kDiceTurnOnSyncHelper_Abort = 15,
+  kMachineLogon_CredentialProvider = 16,
+  kTokenService_ExtractCredentials = 17,
+  // DEPRECATED on 09/2021 (used for force migration to DICE)
+  // kAccountReconcilor_RevokeTokensNotInCookies = 18,
+  kLogoutTabHelper_PrimaryPageChanged = 19,
 
-  kMaxValue = kLogoutTabHelper_DidFinishNavigation,
+  kMaxValue = kLogoutTabHelper_PrimaryPageChanged,
 };
 
 // Different types of reporting. This is used as a histogram suffix.
 enum class ReportingType { PERIODIC, ON_CHANGE };
+
+// Result for fetching account capabilities from the system library, used to
+// record histogram Signin.AccountCapabilities.GetFromSystemLibraryResult.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
+enum class FetchAccountCapabilitiesFromSystemLibraryResult {
+  // Errors common to iOS and Android.
+  kSuccess = 0,
+  kErrorGeneric = 1,
+
+  // Errors from 10 to 19 are reserved for Android.
+  kApiRequestFailed = 10,
+  kApiError = 11,
+  kApiNotPermitted = 12,
+  kApiUnknownCapability = 13,
+  kApiFailedToSync = 14,
+  kApiNotAvailable = 15,
+
+  // Errors after 20 are reserved for iOS.
+  kErrorMissingCapability = 20,
+  kErrorUnexpectedValue = 21,
+
+  kMaxValue = kErrorUnexpectedValue
+};
 
 // -----------------------------------------------------------------------------
 // Histograms
@@ -444,27 +453,6 @@ void LogSigninAccessPointCompleted(AccessPoint access_point,
 
 // Tracks the reason of sign in.
 void LogSigninReason(Reason reason);
-
-// Log to UMA histograms and UserCounts stats about a single execution of the
-// AccountReconciler.
-// |total_number_accounts| - How many accounts are in the browser for this
-//                           profile.
-// |count_added_to_cookie_jar| - How many accounts were in the browser but not
-//                               in the cookie jar.
-// |count_removed_from_cookie_jar| - How many accounts were in the cookie jar
-//                                   but not in the browser.
-// |primary_accounts_same| - False if the primary account for the cookie jar
-//                           and the token service were different; else true.
-// |is_first_reconcile| - True if these stats are from the first execution of
-//                        the AccountReconcilor.
-// |pre_count_gaia_cookies| - How many GAIA cookies were present before
-//                            the AccountReconcilor began modifying the state.
-void LogSigninAccountReconciliation(int total_number_accounts,
-                                    int count_added_to_cookie_jar,
-                                    int count_removed_from_cookie_jar,
-                                    bool primary_accounts_same,
-                                    bool is_first_reconcile,
-                                    int pre_count_gaia_cookies);
 
 // Logs to UMA histograms how many accounts are in the browser for this
 // profile.
@@ -532,6 +520,10 @@ void RecordRefreshTokenUpdatedFromSource(bool refresh_token_is_valid,
 // Records the source that revoked a refresh token.
 void RecordRefreshTokenRevokedFromSource(SourceForRefreshTokenOperation source);
 
+// Records the account type when the user signs in.
+void RecordSigninAccountType(signin::ConsentLevel consent_level,
+                             bool is_managed_account);
+
 // -----------------------------------------------------------------------------
 // User actions
 // -----------------------------------------------------------------------------
@@ -547,6 +539,11 @@ void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point);
 void RecordSigninImpressionWithAccountUserActionForAccessPoint(
     AccessPoint access_point,
     bool with_account);
+
+#if defined(OS_IOS)
+// Records |Signin.AccountConsistencyPromoAction| histogram.
+void RecordConsistencyPromoUserAction(AccountConsistencyPromoAction action);
+#endif  // defined(OS_IOS)
 
 }  // namespace signin_metrics
 

@@ -7,17 +7,17 @@
 # This git extension converts a chromium commit number to its git commit hash.
 # It accepts the following input formats:
 #
-#   $ git crrev-parse Cr-Commit-Position: refs/heads/master@{#311769}
-#   $ git crrev-parse '    Cr-Commit-Position: refs/heads/master@{#311769}'
-#   $ git crrev-parse 'Cr-Commit-Position: refs/heads/master@{#311769}'
-#   $ git crrev-parse refs/heads/master@{#311769}
+#   $ git crrev-parse Cr-Commit-Position: refs/heads/main@{#311769}
+#   $ git crrev-parse '    Cr-Commit-Position: refs/heads/main@{#311769}'
+#   $ git crrev-parse 'Cr-Commit-Position: refs/heads/main@{#311769}'
+#   $ git crrev-parse refs/heads/main@{#311769}
 #
 # It also works for branches (assuming you have branches in your local
 # checkout):
 #
 #   $ git crrev-parse refs/branch-heads/2278@{#2}
 #
-# If you don't specify a branch, refs/heads/master is assumed:
+# If you don't specify a branch, refs/heads/main is assumed:
 #
 #   $ git crrev-parse @{#311769}
 #   $ git crrev-parse 311769
@@ -35,7 +35,7 @@ while [ -n "$1" ]; do
   fi
   ref="${commit_pos%@\{#*\}}"
   if [ "$ref" = "$commit_pos" -o -z "$ref" ]; then
-    ref="refs/heads/master"
+    ref="refs/heads/main"
   fi
   remote_ref="${ref/refs\/heads/refs\/remotes\/origin}"
   remote_ref="${remote_ref/refs\/branch-heads/refs\/remotes\/branch-heads}"
@@ -45,8 +45,14 @@ while [ -n "$1" ]; do
   if [ -z "$ref" -o -z "$num" ]; then
     git rev-parse "$1"
   else
-    grep_str="^Cr-Commit-Position: $ref@{#$num}"
-    git rev-list -n 1 --grep="$grep_str" "$remote_ref"
+    # When the ref is not specified on the command-line, accept either
+    # Cr-refs/heads/master@{#$NUM} or refs/heads/main@{#$NUM}.
+    if [[ "$ref" = "refs/heads/main" ]]; then
+      grep_str="^Cr-Commit-Position: refs/heads/(master|main)@\\{#$num\\}"
+    else
+      grep_str="^Cr-Commit-Position: $ref@\\{#$num\\}"
+    fi
+    git rev-list -n 1 --extended-regexp --grep="$grep_str" "$remote_ref"
   fi
 
   shift

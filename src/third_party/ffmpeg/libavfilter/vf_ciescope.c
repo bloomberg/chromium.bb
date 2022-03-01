@@ -849,7 +849,8 @@ rgb_to_xy(double rc,
     *z = m[2][0] * rc + m[2][1] * gc + m[2][2] * bc;
 
     sum = *x + *y + *z;
-
+    if (sum == 0)
+        sum = 1;
     *x = *x / sum;
     *y = *y / sum;
 }
@@ -1491,7 +1492,6 @@ static const AVFilterPad inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -1500,16 +1500,15 @@ static const AVFilterPad outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
-AVFilter ff_vf_ciescope = {
+const AVFilter ff_vf_ciescope = {
     .name          = "ciescope",
     .description   = NULL_IF_CONFIG_SMALL("Video CIE scope."),
     .priv_size     = sizeof(CiescopeContext),
     .priv_class    = &ciescope_class,
-    .query_formats = query_formats,
     .uninit        = uninit,
-    .inputs        = inputs,
-    .outputs       = outputs,
+    FILTER_INPUTS(inputs),
+    FILTER_OUTPUTS(outputs),
+    FILTER_QUERY_FUNC(query_formats),
 };

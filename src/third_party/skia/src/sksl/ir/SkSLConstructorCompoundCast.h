@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef SKSL_CONSTRUCTOR_VECTOR_CAST
-#define SKSL_CONSTRUCTOR_VECTOR_CAST
+#ifndef SKSL_CONSTRUCTOR_COMPOUND_CAST
+#define SKSL_CONSTRUCTOR_COMPOUND_CAST
 
 #include "src/sksl/SkSLContext.h"
 #include "src/sksl/ir/SkSLConstructor.h"
@@ -24,13 +24,13 @@ namespace SkSL {
  */
 class ConstructorCompoundCast final : public SingleArgumentConstructor {
 public:
-    static constexpr Kind kExpressionKind = Kind::kConstructorCompoundCast;
+    inline static constexpr Kind kExpressionKind = Kind::kConstructorCompoundCast;
 
-    ConstructorCompoundCast(int offset, const Type& type, std::unique_ptr<Expression> arg)
-        : INHERITED(offset, kExpressionKind, &type, std::move(arg)) {}
+    ConstructorCompoundCast(int line, const Type& type, std::unique_ptr<Expression> arg)
+        : INHERITED(line, kExpressionKind, &type, std::move(arg)) {}
 
     static std::unique_ptr<Expression> Make(const Context& context,
-                                            int offset,
+                                            int line,
                                             const Type& type,
                                             std::unique_ptr<Expression> arg);
 
@@ -40,8 +40,7 @@ public:
     }
 
     std::unique_ptr<Expression> clone() const override {
-        return std::make_unique<ConstructorCompoundCast>(fOffset, this->type(),
-                                                          argument()->clone());
+        return std::make_unique<ConstructorCompoundCast>(fLine, this->type(), argument()->clone());
     }
 
 private:

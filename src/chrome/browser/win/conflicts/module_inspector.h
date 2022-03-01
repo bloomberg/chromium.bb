@@ -7,8 +7,6 @@
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
-#include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -29,28 +27,17 @@ class SequencedTaskRunner;
 // the SequencedTaskRunner where it was created.
 //
 // The inspection of all modules is quite expensive in terms of resources, so it
-// is done one by one, in a task with a background priority level. If needed, it
-// is possible to increase the priority level of these tasks by calling
-// IncreaseInspectionPriority().
+// is done after startup, one by one, in a utility process. If needed, it is
+// possible to skip waiting for startup to be finished by calling
+// ForceStartInspection().
 //
 // This class is not thread safe and it enforces safety via a SEQUENCE_CHECKER.
 class ModuleInspector : public ModuleDatabaseObserver {
  public:
-  // Temporary feature to control whether or not modules are inspected in a
-  // background sequence. It will be used to assess the impact of this work on
-  // Chrome's overall performance.
-  // TODO(pmonette): Remove when no longer needed. See https://crbug.com/928846.
-  static constexpr base::Feature kDisableBackgroundModuleInspection = {
-      "DisableBackgroundModuleInspection", base::FEATURE_DISABLED_BY_DEFAULT};
-
-  // Controls whether or not module inspection is done out of process.
-  static constexpr base::Feature kWinOOPInspectModuleFeature = {
-      "WinOOPInspectModule", base::FEATURE_ENABLED_BY_DEFAULT};
-
   // The amount of time before the |inspection_results_cache_| is flushed to
   // disk while the ModuleDatabase is not idle.
   static constexpr base::TimeDelta kFlushInspectionResultsTimerTimeout =
-      base::TimeDelta::FromMinutes(5);
+      base::Minutes(5);
 
   using OnModuleInspectedCallback =
       base::RepeatingCallback<void(const ModuleInfoKey& module_key,
@@ -58,14 +45,18 @@ class ModuleInspector : public ModuleDatabaseObserver {
 
   explicit ModuleInspector(
       const OnModuleInspectedCallback& on_module_inspected_callback);
+
+  ModuleInspector(const ModuleInspector&) = delete;
+  ModuleInspector& operator=(const ModuleInspector&) = delete;
+
   ~ModuleInspector() override;
 
   // Adds the module to the queue of modules to inspect. Starts the inspection
   // process if the |queue_| is empty.
   void AddModule(const ModuleInfoKey& module_key);
 
-  // Removes the throttling.
-  void IncreaseInspectionPriority();
+  // Skips waiting for startup to be finished.
+  void ForceStartInspection();
 
   // Returns true if ModuleInspector is not doing anything right now.
   bool IsIdle();
@@ -131,15 +122,9 @@ class ModuleInspector : public ModuleDatabaseObserver {
   // A callback used to initialize |remote_util_win_|.
   UtilWinFactoryCallback util_win_factory_callback_;
 
-  // A remote interface to the UtilWin service. Only used if the
-  // WinOOPInspectModule feature is enabled. It is created when inspection is
+  // A remote interface to the UtilWin service. It is created when inspection is
   // ongoing, and freed when no longer needed.
   mojo::Remote<chrome::mojom::UtilWin> remote_util_win_;
-
-  // The task runner where module inspections takes place. It originally starts
-  // at BEST_EFFORT priority, but is changed to USER_VISIBLE when
-  // IncreaseInspectionPriority() is called.
-  scoped_refptr<base::SequencedTaskRunner> inspection_task_runner_;
 
   // The vector of paths to %env_var%, used to account for differences in
   // localization and where people keep their files.
@@ -169,11 +154,6 @@ class ModuleInspector : public ModuleDatabaseObserver {
   // service always fails to start and the restart cycle happens infinitely.
   int connection_error_retry_count_;
 
-  // Indicates if background inspection is disabled. Generally equal to the
-  // kDisableBackgroundModuleInspection feature state, but will be set
-  // unconditionally to false if IncreaseInspectionPriority() is called.
-  bool background_inspection_disabled_;
-
   // Indicates if a module is currently being inspected asynchronously by the
   // UtilWin service.
   bool is_waiting_on_util_win_service_;
@@ -183,8 +163,6 @@ class ModuleInspector : public ModuleDatabaseObserver {
   // Weak pointers are used to safely post the inspection result back to the
   // ModuleInspector from the task scheduler.
   base::WeakPtrFactory<ModuleInspector> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ModuleInspector);
 };
 
 #endif  // CHROME_BROWSER_WIN_CONFLICTS_MODULE_INSPECTOR_H_

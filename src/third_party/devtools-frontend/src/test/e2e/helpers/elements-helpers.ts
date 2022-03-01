@@ -5,7 +5,7 @@ import {assert} from 'chai';
 import {performance} from 'perf_hooks';
 import type * as puppeteer from 'puppeteer';
 
-import {$, $$, click, getBrowserAndPages, step, timeout, waitFor, waitForFunction} from '../../shared/helper.js';
+import {$, $$, click, getBrowserAndPages, pressKey, step, timeout, typeText, waitFor, waitForAria, waitForFunction} from '../../shared/helper.js';
 
 const SELECTED_TREE_ELEMENT_SELECTOR = '.selected[role="treeitem"]';
 const CSS_PROPERTY_NAME_SELECTOR = '.webkit-css-property';
@@ -30,6 +30,7 @@ export const INACTIVE_GRID_ADORNER_SELECTOR = '[aria-label="Enable grid mode"]';
 export const ACTIVE_GRID_ADORNER_SELECTOR = '[aria-label="Disable grid mode"]';
 const ELEMENT_CHECKBOX_IN_LAYOUT_PANE_SELECTOR = '.elements input[type=checkbox]';
 const ELEMENT_STYLE_SECTION_SELECTOR = '[aria-label="element.style, css selector"]';
+const STYLE_QUERY_RULE_TEXT_SELECTOR = '.query-text';
 
 export const openLayoutPane = async () => {
   await step('Open Layout pane', async () => {
@@ -101,6 +102,13 @@ export const waitForContentOfSelectedElementsNode = async (expectedTextContent: 
   await waitForFunction(async () => {
     const selectedTextContent = await getContentOfSelectedNode();
     return selectedTextContent === expectedTextContent;
+  });
+};
+
+export const waitForPartialContentOfSelectedElementsNode = async (expectedPartialTextContent: string) => {
+  await waitForFunction(async () => {
+    const selectedTextContent = await getContentOfSelectedNode();
+    return selectedTextContent.includes(expectedPartialTextContent);
   });
 };
 
@@ -463,6 +471,36 @@ export async function editCSSProperty(selector: string, propertyName: string, ne
   });
 }
 
+// Edit a media or container query rule text for the given styles section
+export async function editQueryRuleText(queryStylesSections: puppeteer.ElementHandle<Element>, newQueryText: string) {
+  await click(STYLE_QUERY_RULE_TEXT_SELECTOR, {root: queryStylesSections});
+  await waitForFunction(async () => {
+    // Wait until the value element has been marked as a text-prompt.
+    const queryText = await $(STYLE_QUERY_RULE_TEXT_SELECTOR, queryStylesSections);
+    if (!queryText) {
+      assert.fail('Could not find any query in the given styles section');
+    }
+    const check = await queryText.evaluate(node => {
+      return node.classList.contains('being-edited') && node.hasAttribute('contenteditable');
+    });
+    return check;
+  });
+  await typeText(newQueryText);
+  await pressKey('Enter');
+
+  await waitForFunction(async () => {
+    // Wait until the value element is not a text-prompt anymore.
+    const queryText = await $(STYLE_QUERY_RULE_TEXT_SELECTOR, queryStylesSections);
+    if (!queryText) {
+      assert.fail('Could not find any query in the given styles section');
+    }
+    const check = await queryText.evaluate(node => {
+      return !node.classList.contains('being-edited') && !node.hasAttribute('contenteditable');
+    });
+    return check;
+  });
+}
+
 export async function waitForCSSPropertyValue(selector: string, name: string, value: string, sourcePosition?: string) {
   return await waitForFunction(async () => {
     const propertyHandle = await getCSSPropertyInRule(selector, name, sourcePosition);
@@ -586,4 +624,20 @@ export const assertSelectedNodeClasses = async (expectedClasses: string[]) => {
   for (const expectedClass of expectedClasses) {
     assert.include(classes, expectedClass, `Could not find class ${expectedClass} on the element`);
   }
+};
+
+export const toggleAccessibilityPane = async () => {
+  let a11yPane = await $('Accessibility', undefined, 'aria');
+  if (!a11yPane) {
+    const elementsPanel = await waitForAria('Elements panel');
+    const moreTabs = await waitForAria('More tabs', elementsPanel);
+    await click(moreTabs);
+    a11yPane = await waitForAria('Accessibility');
+  }
+  await click(a11yPane);
+};
+
+export const toggleAccessibilityTree = async () => {
+  const treeToggleButton = await waitForAria('Switch to Accessibility Tree view');
+  await click(treeToggleButton);
 };

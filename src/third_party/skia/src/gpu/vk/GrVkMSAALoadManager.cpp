@@ -10,6 +10,7 @@
 #include "include/gpu/GrDirectContext.h"
 #include "src/core/SkTraceEvent.h"
 #include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/vk/GrVkBuffer.h"
 #include "src/gpu/vk/GrVkCommandBuffer.h"
 #include "src/gpu/vk/GrVkDescriptorSet.h"
@@ -32,9 +33,6 @@ bool GrVkMSAALoadManager::createMSAALoadProgram(GrVkGpu* gpu) {
 
     SkSL::String vertShaderText;
     vertShaderText.append(
-            "#extension GL_ARB_separate_shader_objects : enable\n"
-            "#extension GL_ARB_shading_language_420pack : enable\n"
-
             "layout(set = 0, binding = 0) uniform vertexUniformBuffer {"
             "half4 uPosXform;"
             "};"
@@ -48,9 +46,6 @@ bool GrVkMSAALoadManager::createMSAALoadProgram(GrVkGpu* gpu) {
 
     SkSL::String fragShaderText;
     fragShaderText.append(
-            "#extension GL_ARB_separate_shader_objects : enable\n"
-            "#extension GL_ARB_shading_language_420pack : enable\n"
-
             "layout(input_attachment_index = 0, set = 2, binding = 0) uniform subpassInput uInput;"
 
             "// MSAA Load Program FS\n"
@@ -67,7 +62,7 @@ bool GrVkMSAALoadManager::createMSAALoadProgram(GrVkGpu* gpu) {
         this->destroyResources(gpu);
         return false;
     }
-    SkASSERT(inputs.isEmpty());
+    SkASSERT(inputs == SkSL::Program::Inputs());
 
     if (!GrCompileVkShaderModule(gpu, fragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT,
                                  &fFragShaderModule, &fShaderStageInfo[1], settings, &spirv,
@@ -75,7 +70,7 @@ bool GrVkMSAALoadManager::createMSAALoadProgram(GrVkGpu* gpu) {
         this->destroyResources(gpu);
         return false;
     }
-    SkASSERT(inputs.isEmpty());
+    SkASSERT(inputs == SkSL::Program::Inputs());
 
     VkDescriptorSetLayout dsLayout[GrVkUniformHandler::kDescSetCount];
 
@@ -122,7 +117,7 @@ bool GrVkMSAALoadManager::loadMSAAFromResolve(GrVkGpu* gpu,
                                               GrVkCommandBuffer* commandBuffer,
                                               const GrVkRenderPass& renderPass,
                                               GrAttachment* dst,
-                                              GrVkAttachment* src,
+                                              GrVkImage* src,
                                               const SkIRect& rect) {
     if (!dst) {
         return false;

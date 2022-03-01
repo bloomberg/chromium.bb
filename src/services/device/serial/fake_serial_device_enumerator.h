@@ -8,7 +8,6 @@
 #include <map>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "services/device/serial/serial_device_enumerator.h"
 
 namespace device {
@@ -16,6 +15,10 @@ namespace device {
 class FakeSerialEnumerator : public SerialDeviceEnumerator {
  public:
   FakeSerialEnumerator();
+
+  FakeSerialEnumerator(const FakeSerialEnumerator&) = delete;
+  FakeSerialEnumerator& operator=(const FakeSerialEnumerator&) = delete;
+
   ~FakeSerialEnumerator() override;
 
   void AddDevicePath(const base::FilePath& path);
@@ -23,8 +26,6 @@ class FakeSerialEnumerator : public SerialDeviceEnumerator {
 
  private:
   std::map<base::FilePath, base::UnguessableToken> paths_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSerialEnumerator);
 };
 
 }  // namespace device

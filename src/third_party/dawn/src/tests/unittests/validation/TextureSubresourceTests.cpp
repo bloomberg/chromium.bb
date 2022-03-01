@@ -67,24 +67,8 @@ namespace {
                 encoder.Finish();
             }
 
-            // It is valid to has multiple read from a subresource and one single write into another
-            // subresource
-            {
-                wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, bgl, {{0, samplerView}});
-
-                wgpu::BindGroupLayout bgl1 = utils::MakeBindGroupLayout(
-                    device, {{0, wgpu::ShaderStage::Fragment, wgpu::StorageTextureAccess::ReadOnly,
-                              kFormat}});
-
-                wgpu::BindGroup bindGroup1 = utils::MakeBindGroup(device, bgl1, {{0, samplerView}});
-
-                wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-                wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDesc);
-                pass.SetBindGroup(0, bindGroup);
-                pass.SetBindGroup(1, bindGroup1);
-                pass.EndPass();
-                encoder.Finish();
-            }
+            // It is not currently possible to test that it is valid to have multiple reads from a
+            // subresource while there is a single write in another subresource.
 
             // It is invalid to read and write into the same subresources
             {
@@ -123,10 +107,10 @@ namespace {
     // Test different mipmap levels
     TEST_F(TextureSubresourceTest, MipmapLevelsTest) {
         // Create texture with 2 mipmap levels and 1 layer
-        wgpu::Texture texture =
-            CreateTexture(2, 1,
-                          wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment |
-                              wgpu::TextureUsage::Storage);
+        wgpu::Texture texture = CreateTexture(2, 1,
+                                              wgpu::TextureUsage::TextureBinding |
+                                                  wgpu::TextureUsage::RenderAttachment |
+                                                  wgpu::TextureUsage::StorageBinding);
 
         // Create two views on different mipmap levels.
         wgpu::TextureView samplerView = CreateTextureView(texture, 0, 0);
@@ -137,10 +121,10 @@ namespace {
     // Test different array layers
     TEST_F(TextureSubresourceTest, ArrayLayersTest) {
         // Create texture with 1 mipmap level and 2 layers
-        wgpu::Texture texture =
-            CreateTexture(1, 2,
-                          wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment |
-                              wgpu::TextureUsage::Storage);
+        wgpu::Texture texture = CreateTexture(1, 2,
+                                              wgpu::TextureUsage::TextureBinding |
+                                                  wgpu::TextureUsage::RenderAttachment |
+                                                  wgpu::TextureUsage::StorageBinding);
 
         // Create two views on different layers.
         wgpu::TextureView samplerView = CreateTextureView(texture, 0, 0);

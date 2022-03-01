@@ -7,14 +7,14 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "net/base/net_export.h"
-#include "net/http/http_network_session.h"
 
 namespace net {
 
+class HttpNetworkSession;
 class HttpStream;
 class IOBuffer;
 
@@ -28,6 +28,8 @@ class NET_EXPORT_PRIVATE HttpResponseBodyDrainer {
   static const int kTimeoutInSeconds = 5;
 
   explicit HttpResponseBodyDrainer(HttpStream* stream);
+  HttpResponseBodyDrainer(const HttpResponseBodyDrainer&) = delete;
+  HttpResponseBodyDrainer& operator=(const HttpResponseBodyDrainer&) = delete;
   ~HttpResponseBodyDrainer();
 
   // Starts reading the body until completion, or we hit the buffer limit, or we
@@ -56,9 +58,7 @@ class NET_EXPORT_PRIVATE HttpResponseBodyDrainer {
   State next_state_;
   int total_read_;
   base::OneShotTimer timer_;
-  HttpNetworkSession* session_;
-
-  DISALLOW_COPY_AND_ASSIGN(HttpResponseBodyDrainer);
+  raw_ptr<HttpNetworkSession> session_;
 };
 
 }  // namespace net

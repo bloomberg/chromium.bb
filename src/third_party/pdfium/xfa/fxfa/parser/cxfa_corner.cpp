@@ -12,8 +12,8 @@
 namespace {
 
 const CXFA_Node::PropertyData kCornerPropertyData[] = {
-    {XFA_Element::Color, 1, 0},
-    {XFA_Element::Extras, 1, 0},
+    {XFA_Element::Color, 1, {}},
+    {XFA_Element::Extras, 1, {}},
 };
 
 const CXFA_Node::AttributeData kCornerAttributeData[] = {
@@ -36,7 +36,7 @@ const CXFA_Node::AttributeData kCornerAttributeData[] = {
 CXFA_Corner::CXFA_Corner(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Stroke(doc,
                   packet,
-                  (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
+                  {XFA_XDPPACKET::kTemplate, XFA_XDPPACKET::kForm},
                   XFA_ObjectType::Node,
                   XFA_Element::Corner,
                   kCornerPropertyData,

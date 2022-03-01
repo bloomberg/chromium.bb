@@ -315,6 +315,7 @@ TEST_P(InstructionSelectorCmpTest, Parameter) {
 
   if (FLAG_debug_code &&
       type.representation() == MachineRepresentation::kWord32) {
+#ifndef V8_COMPRESS_POINTERS
     ASSERT_EQ(6U, s.size());
 
     EXPECT_EQ(cmp.mi.arch_opcode, s[0]->arch_opcode());
@@ -340,6 +341,21 @@ TEST_P(InstructionSelectorCmpTest, Parameter) {
     EXPECT_EQ(cmp.mi.arch_opcode, s[5]->arch_opcode());
     EXPECT_EQ(2U, s[5]->InputCount());
     EXPECT_EQ(1U, s[5]->OutputCount());
+#else
+    ASSERT_EQ(3U, s.size());
+
+    EXPECT_EQ(kRiscvShl64, s[0]->arch_opcode());
+    EXPECT_EQ(2U, s[0]->InputCount());
+    EXPECT_EQ(1U, s[0]->OutputCount());
+
+    EXPECT_EQ(kRiscvShl64, s[1]->arch_opcode());
+    EXPECT_EQ(2U, s[1]->InputCount());
+    EXPECT_EQ(1U, s[1]->OutputCount());
+
+    EXPECT_EQ(cmp.mi.arch_opcode, s[2]->arch_opcode());
+    EXPECT_EQ(2U, s[2]->InputCount());
+    EXPECT_EQ(1U, s[2]->OutputCount());
+#endif
   } else {
     ASSERT_EQ(cmp.expected_size, s.size());
     EXPECT_EQ(cmp.mi.arch_opcode, s[0]->arch_opcode());
@@ -979,13 +995,14 @@ TEST_F(InstructionSelectorTest, ChangeUint32ToUint64AfterLoad) {
     m.Return(m.ChangeUint32ToUint64(
         m.Load(MachineType::Uint32(), m.Parameter(0), m.Parameter(1))));
     Stream s = m.Build();
-    ASSERT_EQ(2U, s.size());
+    ASSERT_EQ(3U, s.size());
     EXPECT_EQ(kRiscvAdd64, s[0]->arch_opcode());
     EXPECT_EQ(kMode_None, s[0]->addressing_mode());
     EXPECT_EQ(2U, s[0]->InputCount());
     EXPECT_EQ(1U, s[0]->OutputCount());
-    EXPECT_EQ(kRiscvLwu, s[1]->arch_opcode());
+    EXPECT_EQ(kRiscvLw, s[1]->arch_opcode());
     EXPECT_EQ(kMode_MRI, s[1]->addressing_mode());
+    EXPECT_EQ(kRiscvZeroExtendWord, s[2]->arch_opcode());
     EXPECT_EQ(2U, s[1]->InputCount());
     EXPECT_EQ(1U, s[1]->OutputCount());
   }

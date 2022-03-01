@@ -4,18 +4,20 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager_factory.h"
 
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/android_sms/android_sms_service_factory.h"
+#include "chrome/browser/ash/eche_app/eche_app_manager_factory.h"
 #include "chrome/browser/ash/kerberos/kerberos_credentials_manager_factory.h"
+#include "chrome/browser/ash/multidevice_setup/multidevice_setup_client_factory.h"
+#include "chrome/browser/ash/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
-#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
-#include "chrome/browser/chromeos/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
 #include "chromeos/components/local_search_service/public/cpp/local_search_service_proxy_factory.h"
@@ -44,7 +46,7 @@ OsSettingsManagerFactory::OsSettingsManagerFactory()
       local_search_service::LocalSearchServiceProxyFactory::GetInstance());
   DependsOn(multidevice_setup::MultiDeviceSetupClientFactory::GetInstance());
   DependsOn(phonehub::PhoneHubManagerFactory::GetInstance());
-  DependsOn(ProfileSyncServiceFactory::GetInstance());
+  DependsOn(SyncServiceFactory::GetInstance());
   DependsOn(SupervisedUserServiceFactory::GetInstance());
   DependsOn(KerberosCredentialsManagerFactory::GetInstance());
   DependsOn(ArcAppListPrefsFactory::GetInstance());
@@ -52,6 +54,7 @@ OsSettingsManagerFactory::OsSettingsManagerFactory()
   DependsOn(android_sms::AndroidSmsServiceFactory::GetInstance());
   DependsOn(CupsPrintersManagerFactory::GetInstance());
   DependsOn(apps::AppServiceProxyFactory::GetInstance());
+  DependsOn(eche_app::EcheAppManagerFactory::GetInstance());
 }
 
 OsSettingsManagerFactory::~OsSettingsManagerFactory() = default;
@@ -75,14 +78,15 @@ KeyedService* OsSettingsManagerFactory::BuildServiceInstanceFor(
           GetForBrowserContext(context),
       multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(profile),
       phonehub::PhoneHubManagerFactory::GetForProfile(profile),
-      ProfileSyncServiceFactory::GetForProfile(profile),
+      SyncServiceFactory::GetForProfile(profile),
       SupervisedUserServiceFactory::GetForProfile(profile),
       kerberos_credentials_manager,
       ArcAppListPrefsFactory::GetForBrowserContext(profile),
       IdentityManagerFactory::GetForProfile(profile),
       android_sms::AndroidSmsServiceFactory::GetForBrowserContext(profile),
       CupsPrintersManagerFactory::GetForBrowserContext(profile),
-      apps::AppServiceProxyFactory::GetForProfile(profile));
+      apps::AppServiceProxyFactory::GetForProfile(profile),
+      eche_app::EcheAppManagerFactory::GetForProfile(profile));
 }
 
 bool OsSettingsManagerFactory::ServiceIsNULLWhileTesting() const {

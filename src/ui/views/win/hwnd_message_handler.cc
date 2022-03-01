@@ -18,11 +18,11 @@
 #include "base/debug/gdi_debug_util_win.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util_win.h"
 #include "base/task/current_thread.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -36,7 +36,6 @@
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/accessibility/platform/ax_system_caret_win.h"
-#include "ui/base/cursor/win/win_cursor.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_base_features.h"
@@ -48,6 +47,7 @@
 #include "ui/base/win/session_change_observer.h"
 #include "ui/base/win/shell.h"
 #include "ui/base/win/touch_input.h"
+#include "ui/base/win/win_cursor.h"
 #include "ui/display/win/dpi.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/events/event.h"
@@ -82,6 +82,10 @@ namespace {
 class MoveLoopMouseWatcher {
  public:
   MoveLoopMouseWatcher(HWNDMessageHandler* host, bool hide_on_escape);
+
+  MoveLoopMouseWatcher(const MoveLoopMouseWatcher&) = delete;
+  MoveLoopMouseWatcher& operator=(const MoveLoopMouseWatcher&) = delete;
+
   ~MoveLoopMouseWatcher();
 
   // Returns true if the mouse is up, or if we couldn't install the hook.
@@ -99,7 +103,7 @@ class MoveLoopMouseWatcher {
   void Unhook();
 
   // HWNDMessageHandler that created us.
-  HWNDMessageHandler* host_;
+  raw_ptr<HWNDMessageHandler> host_;
 
   // Should the window be hidden when escape is pressed?
   const bool hide_on_escape_;
@@ -110,8 +114,6 @@ class MoveLoopMouseWatcher {
   // Hook identifiers.
   HHOOK mouse_hook_;
   HHOOK key_hook_;
-
-  DISALLOW_COPY_AND_ASSIGN(MoveLoopMouseWatcher);
 };
 
 // static
@@ -295,8 +297,7 @@ int GetFlagsFromRawInputMessage(RAWINPUT* input) {
   return ui::GetModifiersFromKeyState() | flags;
 }
 
-constexpr auto kTouchDownContextResetTimeout =
-    base::TimeDelta::FromMilliseconds(500);
+constexpr auto kTouchDownContextResetTimeout = base::Milliseconds(500);
 
 // Windows does not flag synthesized mouse messages from touch or pen in all
 // cases. This causes us grief as we don't want to process touch and mouse
@@ -364,6 +365,9 @@ class HWNDMessageHandler::ScopedRedrawLock {
       owner_->LockUpdates();
   }
 
+  ScopedRedrawLock(const ScopedRedrawLock&) = delete;
+  ScopedRedrawLock& operator=(const ScopedRedrawLock&) = delete;
+
   ~ScopedRedrawLock() {
     if (!cancel_unlock_ && should_lock_ && ::IsWindow(hwnd_))
       owner_->UnlockUpdates();
@@ -374,15 +378,13 @@ class HWNDMessageHandler::ScopedRedrawLock {
 
  private:
   // The owner having its style changed.
-  HWNDMessageHandler* owner_;
+  raw_ptr<HWNDMessageHandler> owner_;
   // The owner's HWND, cached to avoid action after window destruction.
   HWND hwnd_;
   // A flag indicating that the unlock operation was canceled.
   bool cancel_unlock_;
   // If false, don't use redraw lock.
   const bool should_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedRedrawLock);
 };
 
 // static HWNDMessageHandler member initialization.
@@ -415,9 +417,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate,
       is_first_nccalc_(true),
       menu_depth_(0),
       id_generator_(0),
-      pen_processor_(
-          &id_generator_,
-          base::FeatureList::IsEnabled(::features::kDirectManipulationStylus)),
+      pen_processor_(&id_generator_, true),
       touch_down_contexts_(0),
       last_mouse_hwheel_time_(0),
       dwm_transition_desired_(false),
@@ -1077,8 +1077,6 @@ void HWNDMessageHandler::OnInputMethodDestroyed(
   DestroyAXSystemCaret();
 }
 
-void HWNDMessageHandler::OnShowVirtualKeyboardIfEnabled() {}
-
 LRESULT HWNDMessageHandler::HandleMouseMessage(unsigned int message,
                                                WPARAM w_param,
                                                LPARAM l_param,
@@ -1546,7 +1544,7 @@ void HWNDMessageHandler::ForceRedrawWindow(int attempts) {
         FROM_HERE,
         base::BindOnce(&HWNDMessageHandler::ForceRedrawWindow,
                        msg_handler_weak_factory_.GetWeakPtr(), attempts),
-        base::TimeDelta::FromMilliseconds(500));
+        base::Milliseconds(500));
     return;
   }
   InvalidateRect(hwnd(), nullptr, FALSE);
@@ -1648,8 +1646,6 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
       std::make_unique<ui::SessionChangeObserver>(base::BindRepeating(
           &HWNDMessageHandler::OnSessionChange, base::Unretained(this)));
 
-  dpi_ = display::win::ScreenWin::GetDPIForHWND(hwnd());
-
   // TODO(beng): move more of NWW::OnCreate here.
   return 0;
 }
@@ -1740,8 +1736,12 @@ LRESULT HWNDMessageHandler::OnDpiChanged(UINT msg,
   // initialization. We don't want to propagate this as the client is already
   // set at the current scale factor and may cause the window to display too
   // soon. See http://crbug.com/625076.
-  if (dpi_ == dpi)
+  if (dpi_ == 0) {
+    // See https://crbug.com/1252564 for why we need to ignore the first
+    // OnDpiChanged message in this way.
+    dpi_ = dpi;
     return 0;
+  }
 
   dpi_ = dpi;
   SetBoundsInternal(gfx::Rect(*reinterpret_cast<RECT*>(l_param)), false);
@@ -1916,8 +1916,8 @@ void HWNDMessageHandler::OnInputLangChange(DWORD character_set,
 LRESULT HWNDMessageHandler::OnKeyEvent(UINT message,
                                        WPARAM w_param,
                                        LPARAM l_param) {
-  MSG msg = {hwnd(), message, w_param, l_param,
-             static_cast<DWORD>(GetMessageTime())};
+  CHROME_MSG msg = {hwnd(), message, w_param, l_param,
+                    static_cast<DWORD>(GetMessageTime())};
   ui::KeyEvent key(msg);
   base::WeakPtr<HWNDMessageHandler> ref(msg_handler_weak_factory_.GetWeakPtr());
   delegate_->HandleKeyEvent(&key);
@@ -2480,8 +2480,8 @@ LRESULT HWNDMessageHandler::OnReflectedMessage(UINT message,
 LRESULT HWNDMessageHandler::OnScrollMessage(UINT message,
                                             WPARAM w_param,
                                             LPARAM l_param) {
-  MSG msg = {hwnd(), message, w_param, l_param,
-             static_cast<DWORD>(GetMessageTime())};
+  CHROME_MSG msg = {hwnd(), message, w_param, l_param,
+                    static_cast<DWORD>(GetMessageTime())};
   ui::ScrollEvent event(msg);
   delegate_->HandleScrollEvent(&event);
   return 0;
@@ -2929,12 +2929,8 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
     window_pos->flags &= ~SWP_SHOWWINDOW;
   }
 
-  if (window_pos->flags & SWP_SHOWWINDOW) {
-    delegate_->HandleVisibilityChanging(true);
-  } else if (window_pos->flags & SWP_HIDEWINDOW) {
+  if (window_pos->flags & SWP_HIDEWINDOW)
     SetDwmFrameExtension(DwmFrameState::kOff);
-    delegate_->HandleVisibilityChanging(false);
-  }
 
   SetMsgHandled(FALSE);
 }
@@ -3099,12 +3095,12 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
   }
 
   LONG message_time = GetMessageTime();
-  MSG msg = {hwnd(),
-             message,
-             w_param,
-             l_param,
-             static_cast<DWORD>(message_time),
-             {CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param)}};
+  CHROME_MSG msg = {hwnd(),
+                    message,
+                    w_param,
+                    l_param,
+                    static_cast<DWORD>(message_time),
+                    {CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param)}};
   ui::MouseEvent event(msg);
   if (IsSynthesizedMouseMessage(message, message_time, l_param))
     event.set_flags(event.flags() | ui::EF_FROM_TOUCH);

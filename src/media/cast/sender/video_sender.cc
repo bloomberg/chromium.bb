@@ -188,15 +188,16 @@ void VideoSender::InsertRawVideoFrame(
   // based on the configured |max_frame_rate_|.  Any error introduced by this
   // guess will be eliminated when |duration_in_encoder_| is updated in
   // OnEncodedVideoFrame().
-  const base::TimeDelta duration_added_by_next_frame = frames_in_encoder_ > 0 ?
-      reference_time - last_enqueued_frame_reference_time_ :
-      base::TimeDelta::FromSecondsD(1.0 / max_frame_rate_);
+  const base::TimeDelta duration_added_by_next_frame =
+      frames_in_encoder_ > 0
+          ? reference_time - last_enqueued_frame_reference_time_
+          : base::Seconds(1.0 / max_frame_rate_);
 
   if (ShouldDropNextFrame(duration_added_by_next_frame)) {
-    base::TimeDelta new_target_delay = std::min(
-        current_round_trip_time_ * kRoundTripsNeeded +
-        base::TimeDelta::FromMilliseconds(kConstantTimeMs),
-        max_playout_delay_);
+    base::TimeDelta new_target_delay =
+        std::min(current_round_trip_time_ * kRoundTripsNeeded +
+                     base::Milliseconds(kConstantTimeMs),
+                 max_playout_delay_);
     // In case of low latency mode, we prefer frame drops over increasing
     // playout time.
     if (!low_latency_mode_ && new_target_delay > target_playout_delay_) {
@@ -250,9 +251,9 @@ void VideoSender::InsertRawVideoFrame(
           frame_to_encode, reference_time,
           base::BindOnce(&VideoSender::OnEncodedVideoFrame, AsWeakPtr(),
                          frame_to_encode, bitrate))) {
-    TRACE_EVENT_ASYNC_BEGIN1("cast.stream", "Video Encode",
-                             frame_to_encode.get(), "rtp_timestamp",
-                             rtp_timestamp.lower_32_bits());
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+        "cast.stream", "Video Encode", TRACE_ID_LOCAL(frame_to_encode.get()),
+        "rtp_timestamp", rtp_timestamp.lower_32_bits());
     frames_in_encoder_++;
     duration_in_encoder_ += duration_added_by_next_frame;
     last_enqueued_frame_rtp_timestamp_ = rtp_timestamp;
@@ -306,10 +307,10 @@ void VideoSender::OnEncodedVideoFrame(
   last_reported_encoder_utilization_ = encoded_frame->encoder_utilization;
   last_reported_lossy_utilization_ = encoded_frame->lossy_utilization;
 
-  TRACE_EVENT_ASYNC_END2("cast.stream", "Video Encode", video_frame.get(),
-                         "encoder_utilization",
-                         last_reported_encoder_utilization_,
-                         "lossy_utilization", last_reported_lossy_utilization_);
+  TRACE_EVENT_NESTABLE_ASYNC_END2(
+      "cast.stream", "Video Encode", TRACE_ID_LOCAL(video_frame.get()),
+      "encoder_utilization", last_reported_encoder_utilization_,
+      "lossy_utilization", last_reported_lossy_utilization_);
 
   // Report the resource utilization for processing this frame.  Take the
   // greater of the two utilization values and attenuate them such that the

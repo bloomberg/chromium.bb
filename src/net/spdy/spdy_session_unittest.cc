@@ -11,12 +11,15 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/cxx17_backports.h"
+#include "base/ignore_result.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "net/base/features.h"
 #include "net/base/hex_utils.h"
 #include "net/base/host_port_pair.h"
@@ -28,11 +31,13 @@
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/base/schemeful_site.h"
+#include "net/base/test_completion_callback.h"
 #include "net/base/test_data_stream.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_request_info.h"
 #include "net/http/transport_security_state_test_util.h"
+#include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
@@ -60,6 +65,8 @@
 #include "testing/platform_test.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
+#include "url/scheme_host_port.h"
+#include "url/url_constants.h"
 
 using net::test::IsError;
 using net::test::IsOk;
@@ -85,8 +92,7 @@ base::TimeTicks TheNearFuture() {
 }
 
 base::TimeTicks SlowReads() {
-  g_time_delta +=
-      base::TimeDelta::FromMilliseconds(2 * kYieldAfterDurationMilliseconds);
+  g_time_delta += base::Milliseconds(2 * kYieldAfterDurationMilliseconds);
   return base::TimeTicks::Now() + g_time_delta;
 }
 
@@ -109,13 +115,15 @@ class SpdySessionRequestDelegate
     : public SpdySessionPool::SpdySessionRequest::Delegate {
  public:
   SpdySessionRequestDelegate() = default;
+
+  SpdySessionRequestDelegate(const SpdySessionRequestDelegate&) = delete;
+  SpdySessionRequestDelegate& operator=(const SpdySessionRequestDelegate&) =
+      delete;
+
   ~SpdySessionRequestDelegate() override = default;
 
   void OnSpdySessionAvailable(
       base::WeakPtr<SpdySession> spdy_session) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SpdySessionRequestDelegate);
 };
 
 }  // namespace
@@ -189,7 +197,7 @@ class SpdySessionTest : public PlatformTest, public WithTaskEnvironment {
   void SetUp() override {
     g_time_delta = base::TimeDelta();
     g_time_now = base::TimeTicks::Now();
-    session_deps_.net_log = log_.bound().net_log();
+    session_deps_.net_log = NetLog::Get();
     session_deps_.enable_server_push_cancellation = true;
   }
 
@@ -213,8 +221,8 @@ class SpdySessionTest : public PlatformTest, public WithTaskEnvironment {
 
   void CreateSpdySession() {
     DCHECK(!session_);
-    session_ =
-        ::net::CreateSpdySession(http_session_.get(), key_, log_.bound());
+    session_ = ::net::CreateSpdySession(http_session_.get(), key_,
+                                        net_log_with_source_);
   }
 
   void StallSessionSend() {
@@ -366,7 +374,9 @@ class SpdySessionTest : public PlatformTest, public WithTaskEnvironment {
     return session_->buffered_spdy_framer_->header_encoder_table_size();
   }
 
-  RecordingBoundTestNetLog log_;
+  RecordingNetLogObserver net_log_observer_;
+  NetLogWithSource net_log_with_source_{
+      NetLogWithSource::Make(NetLogSourceType::NONE)};
 
   // Original socket limits.  Some tests set these.  Safest to always restore
   // them once each test has been run.
@@ -377,8 +387,8 @@ class SpdySessionTest : public PlatformTest, public WithTaskEnvironment {
   SpdySessionDependencies session_deps_;
   std::unique_ptr<HttpNetworkSession> http_session_;
   base::WeakPtr<SpdySession> session_;
-  TestServerPushDelegate* test_push_delegate_;
-  SpdySessionPool* spdy_session_pool_;
+  raw_ptr<TestServerPushDelegate> test_push_delegate_;
+  raw_ptr<SpdySessionPool> spdy_session_pool_;
   const GURL test_url_;
   const url::SchemeHostPort test_server_;
   SpdySessionKey key_;
@@ -1135,7 +1145,7 @@ TEST_F(SpdySessionTestWithMockTime, ClientPing) {
   base::TimeTicks before_ping_time = base::TimeTicks::Now();
 
   // Negative value means a preface ping will always be sent.
-  set_connection_at_risk_of_loss_time(base::TimeDelta::FromSeconds(-1));
+  set_connection_at_risk_of_loss_time(base::Seconds(-1));
 
   // Send a PING frame.  This posts CheckPingStatus() with delay.
   MaybeSendPrefacePing();
@@ -1248,7 +1258,7 @@ TEST_F(SpdySessionTest, PingAndWriteLoop) {
   spdy_stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
 
   // Shift time so that a ping will be sent out.
-  g_time_delta = base::TimeDelta::FromSeconds(11);
+  g_time_delta = base::Seconds(11);
 
   base::RunLoop().RunUntilIdle();
   session_->CloseSessionOnError(ERR_ABORTED, "Aborting");
@@ -1259,8 +1269,6 @@ TEST_F(SpdySessionTest, PingAndWriteLoop) {
 }
 
 TEST_F(SpdySessionTest, StreamIdSpaceExhausted) {
-  const spdy::SpdyStreamId kLastStreamId = 0x7fffffff;
-
   // Test setup: |stream_hi_water_mark_| and |max_concurrent_streams_| are
   // fixed to allow for two stream ID assignments, and three concurrent
   // streams. Four streams are started, and two are activated. Verify the
@@ -1879,7 +1887,7 @@ TEST_F(SpdySessionTestWithMockTime, FailedPing) {
   spdy_stream1->SetDelegate(&delegate);
 
   // Negative value means a preface ping will always be sent.
-  set_connection_at_risk_of_loss_time(base::TimeDelta::FromSeconds(-1));
+  set_connection_at_risk_of_loss_time(base::Seconds(-1));
 
   // Send a PING frame.  This posts CheckPingStatus() with delay.
   MaybeSendPrefacePing();
@@ -1893,7 +1901,7 @@ TEST_F(SpdySessionTestWithMockTime, FailedPing) {
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key_));
 
   // Run CheckPingStatus() and make it believe hung_interval has passed.
-  g_time_delta = base::TimeDelta::FromSeconds(15);
+  g_time_delta = base::Seconds(15);
   FastForwardUntilNoTasksRemain();
   base::RunLoop().RunUntilIdle();
 
@@ -1929,7 +1937,7 @@ TEST_F(SpdySessionTestWithMockTime, NoPingSentWhenCheckPingPending) {
   CreateSpdySession();
 
   // Negative value means a preface ping will always be sent.
-  set_connection_at_risk_of_loss_time(base::TimeDelta::FromSeconds(-1));
+  set_connection_at_risk_of_loss_time(base::Seconds(-1));
 
   base::WeakPtr<SpdyStream> spdy_stream1 =
       CreateStreamSynchronously(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
@@ -1957,7 +1965,7 @@ TEST_F(SpdySessionTestWithMockTime, NoPingSentWhenCheckPingPending) {
 
   // Fast forward mock time so that normally another ping would be sent out.
   // However, since CheckPingStatus() is still pending, no new ping is sent.
-  g_time_delta = base::TimeDelta::FromSeconds(15);
+  g_time_delta = base::Seconds(15);
   MaybeSendPrefacePing();
 
   EXPECT_FALSE(ping_in_flight());
@@ -2191,7 +2199,7 @@ TEST_F(SpdySessionTest, Initialize) {
   // Flush the read completion task.
   base::RunLoop().RunUntilIdle();
 
-  auto entries = log_.GetEntries();
+  auto entries = net_log_observer_.GetEntries();
   EXPECT_LT(0u, entries.size());
 
   // Check that we logged HTTP2_SESSION_INITIALIZED correctly.
@@ -2204,7 +2212,7 @@ TEST_F(SpdySessionTest, Initialize) {
   EXPECT_TRUE(
       NetLogSourceFromEventParameters(&entries[pos].params, &socket_source));
   EXPECT_TRUE(socket_source.IsValid());
-  EXPECT_NE(log_.bound().source().id, socket_source.id);
+  EXPECT_NE(net_log_with_source_.source().id, socket_source.id);
 }
 
 TEST_F(SpdySessionTest, NetLogOnSessionGoaway) {
@@ -2230,7 +2238,7 @@ TEST_F(SpdySessionTest, NetLogOnSessionGoaway) {
   EXPECT_FALSE(session_);
 
   // Check that the NetLog was filled reasonably.
-  auto entries = log_.GetEntries();
+  auto entries = net_log_observer_.GetEntries();
   EXPECT_LT(0u, entries.size());
 
   int pos = ExpectLogContainsSomewhere(
@@ -2271,7 +2279,7 @@ TEST_F(SpdySessionTest, NetLogOnSessionEOF) {
   EXPECT_FALSE(session_);
 
   // Check that the NetLog was filled reasonably.
-  auto entries = log_.GetEntries();
+  auto entries = net_log_observer_.GetEntries();
   EXPECT_LT(0u, entries.size());
 
   // Check that we logged SPDY_SESSION_CLOSE correctly.
@@ -2864,7 +2872,7 @@ TEST_F(SpdySessionTest, VerifyDomainAuthenticationExpectCT) {
 
   // Add Expect-CT data for all three hosts that passed the above checks, using
   // different NetworkIsolationKeys.
-  const base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1);
+  const base::Time expiry = base::Time::Now() + base::Days(1);
   session_deps_.transport_security_state->AddExpectCT(
       "www.example.org", expiry, true, GURL(), NetworkIsolationKey());
   session_deps_.transport_security_state->AddExpectCT(
@@ -3629,12 +3637,11 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
   // Trying to create a new connection should cause the pool to be stalled, and
   // post a task asynchronously to try and close the session.
   TestCompletionCallback callback2;
-  HostPortPair host_port2("2.com", 80);
   auto connection2 = std::make_unique<ClientSocketHandle>();
   EXPECT_EQ(ERR_IO_PENDING,
             connection2->Init(
                 ClientSocketPool::GroupId(
-                    host_port2, ClientSocketPool::SocketType::kHttp,
+                    url::SchemeHostPort(url::kHttpScheme, "2.com", 80),
                     PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
                     SecureDnsPolicy::kAllow),
                 ClientSocketPool::SocketParams::CreateForHttpForTesting(),
@@ -3719,12 +3726,11 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   // Trying to create a new connection should cause the pool to be stalled, and
   // post a task asynchronously to try and close the session.
   TestCompletionCallback callback3;
-  HostPortPair host_port3("3.com", 80);
   auto connection3 = std::make_unique<ClientSocketHandle>();
   EXPECT_EQ(ERR_IO_PENDING,
             connection3->Init(
                 ClientSocketPool::GroupId(
-                    host_port3, ClientSocketPool::SocketType::kHttp,
+                    url::SchemeHostPort(url::kHttpScheme, "3.com", 80),
                     PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
                     SecureDnsPolicy::kAllow),
                 ClientSocketPool::SocketParams::CreateForHttpForTesting(),
@@ -3800,12 +3806,11 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
   // Trying to create a new connection should cause the pool to be stalled, and
   // post a task asynchronously to try and close the session.
   TestCompletionCallback callback2;
-  HostPortPair host_port2("2.com", 80);
   auto connection2 = std::make_unique<ClientSocketHandle>();
   EXPECT_EQ(ERR_IO_PENDING,
             connection2->Init(
                 ClientSocketPool::GroupId(
-                    host_port2, ClientSocketPool::SocketType::kHttp,
+                    url::SchemeHostPort(url::kHttpScheme, "2.com", 80),
                     PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
                     SecureDnsPolicy::kAllow),
                 ClientSocketPool::SocketParams::CreateForHttpForTesting(),
@@ -6032,14 +6037,14 @@ TEST_F(SpdySessionTest, GreaseFrameTypeAfterSettings) {
       CombineFrames({&preface, &settings_frame});
 
   // Greased frame sent on stream 0 after initial SETTINGS frame.
-  const char kRawFrameData[] = {
+  uint8_t kRawFrameData[] = {
       0x00, 0x00, 0x03,        // length
       0x0b,                    // type
       0xcc,                    // flags
       0x00, 0x00, 0x00, 0x00,  // stream ID
       'f',  'o',  'o'          // payload
   };
-  spdy::SpdySerializedFrame grease(const_cast<char*>(kRawFrameData),
+  spdy::SpdySerializedFrame grease(reinterpret_cast<char*>(kRawFrameData),
                                    base::size(kRawFrameData),
                                    /* owns_buffer = */ false);
 
@@ -6352,8 +6357,7 @@ TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameWithExpectCTError) {
   session_deps_.transport_security_state =
       std::make_unique<TransportSecurityState>();
   session_deps_.transport_security_state->AddExpectCT(
-      GURL(origin).host(),
-      base::Time::Now() + base::TimeDelta::FromDays(1) /* expiry */, true,
+      GURL(origin).host(), base::Time::Now() + base::Days(1) /* expiry */, true,
       GURL(), key_.network_isolation_key());
 
   spdy::SpdyAltSvcIR altsvc_ir(/* stream_id = */ 0);
@@ -6709,9 +6713,9 @@ TEST(MapFramerErrorToProtocolError, MapsValues) {
   CHECK_EQ(SPDY_ERROR_INVALID_DATA_FRAME_FLAGS,
            MapFramerErrorToProtocolError(
                http2::Http2DecoderAdapter::SPDY_INVALID_DATA_FRAME_FLAGS));
-  CHECK_EQ(SPDY_ERROR_GOAWAY_FRAME_CORRUPT,
+  CHECK_EQ(SPDY_ERROR_HPACK_NAME_HUFFMAN_ERROR,
            MapFramerErrorToProtocolError(
-               http2::Http2DecoderAdapter::SPDY_GOAWAY_FRAME_CORRUPT));
+               http2::Http2DecoderAdapter::SPDY_HPACK_NAME_HUFFMAN_ERROR));
   CHECK_EQ(SPDY_ERROR_UNEXPECTED_FRAME,
            MapFramerErrorToProtocolError(
                http2::Http2DecoderAdapter::SPDY_UNEXPECTED_FRAME));
@@ -6721,9 +6725,6 @@ TEST(MapFramerErrorToNetError, MapsValue) {
   CHECK_EQ(ERR_HTTP2_PROTOCOL_ERROR,
            MapFramerErrorToNetError(
                http2::Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME));
-  CHECK_EQ(ERR_HTTP2_COMPRESSION_ERROR,
-           MapFramerErrorToNetError(
-               http2::Http2DecoderAdapter::SPDY_COMPRESS_FAILURE));
   CHECK_EQ(ERR_HTTP2_COMPRESSION_ERROR,
            MapFramerErrorToNetError(
                http2::Http2DecoderAdapter::SPDY_DECOMPRESS_FAILURE));
@@ -6855,7 +6856,7 @@ TEST(CanPoolTest, CanPoolExpectCT) {
                                    network_isolation_key));
 
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
   ssl_info.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
 
@@ -7316,8 +7317,8 @@ TEST_F(SpdySessionTest, AlpsEmpty) {
                                       kNoEntries, 1);
 
   histogram_tester.ExpectTotalCount("Net.SpdySession.AcceptChForOrigin", 0);
-  EXPECT_EQ("", session_->GetAcceptChViaAlpsForOrigin(
-                    url::Origin::Create(GURL("https://www.example.org"))));
+  EXPECT_EQ("", session_->GetAcceptChViaAlps(
+                    url::SchemeHostPort(GURL("https://www.example.org"))));
   histogram_tester.ExpectUniqueSample("Net.SpdySession.AcceptChForOrigin",
                                       false, 1);
 }
@@ -7378,13 +7379,13 @@ TEST_F(SpdySessionTest, AlpsAcceptCh) {
 
   histogram_tester.ExpectTotalCount("Net.SpdySession.AcceptChForOrigin", 0);
 
-  EXPECT_EQ("foo", session_->GetAcceptChViaAlpsForOrigin(
-                       url::Origin::Create(GURL("https://www.example.com"))));
+  EXPECT_EQ("foo", session_->GetAcceptChViaAlps(
+                       url::SchemeHostPort(GURL("https://www.example.com"))));
   histogram_tester.ExpectUniqueSample("Net.SpdySession.AcceptChForOrigin", true,
                                       1);
 
-  EXPECT_EQ("", session_->GetAcceptChViaAlpsForOrigin(
-                    url::Origin::Create(GURL("https://www.example.org"))));
+  EXPECT_EQ("", session_->GetAcceptChViaAlps(
+                    url::SchemeHostPort(GURL("https://www.example.org"))));
   histogram_tester.ExpectTotalCount("Net.SpdySession.AcceptChForOrigin", 2);
   histogram_tester.ExpectBucketCount("Net.SpdySession.AcceptChForOrigin", true,
                                      1);
@@ -7422,6 +7423,39 @@ TEST_F(SpdySessionTest, AlpsAcceptChInvalidOrigin) {
   const int kOnlyInvalidEntries = 2;
   histogram_tester.ExpectUniqueSample("Net.SpdySession.AlpsAcceptChEntries",
                                       kOnlyInvalidEntries, 1);
+}
+
+// Test that ConfirmHandshake() correctly handles the client aborting the
+// connection. See https://crbug.com/1211639.
+TEST_F(SpdySessionTest, ConfirmHandshakeAfterClose) {
+  base::HistogramTester histogram_tester;
+
+  session_deps_.enable_early_data = true;
+  // Arrange for StreamSocket::ConfirmHandshake() to hang.
+  ssl_.confirm = MockConfirm(SYNCHRONOUS, ERR_IO_PENDING);
+  SequencedSocketData data;
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  TestCompletionCallback callback1;
+  int rv1 = session_->ConfirmHandshake(callback1.callback());
+  EXPECT_THAT(rv1, IsError(ERR_IO_PENDING));
+
+  // Abort the session. Although the underlying StreamSocket::ConfirmHandshake()
+  // operation never completes, SpdySession::ConfirmHandshake() is signaled when
+  // the session is discarded.
+  session_->CloseSessionOnError(ERR_ABORTED, "Aborting session");
+  EXPECT_THAT(callback1.GetResult(rv1), IsError(ERR_ABORTED));
+
+  // Subsequent calls to SpdySession::ConfirmHandshake() fail gracefully. This
+  // tests that SpdySession honors StreamSocket::ConfirmHandshake() invariants.
+  // (MockSSLClientSocket::ConfirmHandshake() checks it internally.)
+  TestCompletionCallback callback2;
+  int rv2 = session_->ConfirmHandshake(callback2.callback());
+  EXPECT_THAT(rv2, IsError(ERR_CONNECTION_CLOSED));
 }
 
 }  // namespace net

@@ -11,7 +11,7 @@
 
 #include "base/check.h"
 #include "base/component_export.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "device/fido/fido_transport_protocol.h"
 
 namespace device {
@@ -20,6 +20,9 @@ class FidoAuthenticator;
 
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryBase {
  public:
+  FidoDiscoveryBase(const FidoDiscoveryBase&) = delete;
+  FidoDiscoveryBase& operator=(const FidoDiscoveryBase&) = delete;
+
   virtual ~FidoDiscoveryBase();
 
   class COMPONENT_EXPORT(DEVICE_FIDO) Observer {
@@ -61,9 +64,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryBase {
 
  private:
   const FidoTransportProtocol transport_;
-  Observer* observer_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FidoDiscoveryBase);
+  raw_ptr<Observer> observer_ = nullptr;
 };
 
 }  // namespace device

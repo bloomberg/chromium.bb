@@ -94,8 +94,9 @@ class WebClient {
   virtual std::u16string GetLocalizedString(int message_id) const;
 
   // Returns the contents of a resource in a StringPiece given the resource id.
-  virtual base::StringPiece GetDataResource(int resource_id,
-                                            ui::ScaleFactor scale_factor) const;
+  virtual base::StringPiece GetDataResource(
+      int resource_id,
+      ui::ResourceScaleFactor scale_factor) const;
 
   // Returns the raw bytes of a scale independent data resource.
   virtual base::RefCountedMemory* GetDataResourceBytes(int resource_id) const;
@@ -142,12 +143,6 @@ class WebClient {
       WebState* web_state,
       mojo::GenericPendingReceiver receiver) {}
 
-  // Allows the embedder to specify legacy TLS enforcement on a per-host basis,
-  // for example to allow users to bypass interstitial warnings on affected
-  // hosts.
-  virtual bool IsLegacyTLSAllowedForHost(WebState* web_state,
-                                         const std::string& hostname);
-
   // Calls the given |callback| with the contents of an error page to display
   // when a navigation error occurs. |error| is always a valid pointer. The
   // string passed to |callback| will be nil if no error page should be
@@ -176,19 +171,17 @@ class WebClient {
   // Enables the logic to handle long press context menu with UIContextMenu.
   virtual bool EnableLongPressUIContextMenu() const;
 
-  // This method is used when the user didn't express any preference for the
-  // version of |url|. Returning true allows to make sure that for |url|, the
-  // mobile version will be used, unless the user explicitly requested the
-  // desktop version. This method can be overriden to avoid having specific URL
-  // being requested in desktop mode when the default mode is desktop.
-  virtual bool ForceMobileVersionByDefault(const GURL& url);
-
   // Returns the UserAgentType that should be used by default for the web
   // content, based on the size class of |web_view| and the |url|.
   virtual UserAgentType GetDefaultUserAgent(id<UITraitEnvironment> web_view,
                                             const GURL& url);
 
+  // Returns true if URL was restored via session restoration cache.
   virtual bool RestoreSessionFromCache(web::WebState* web_state) const;
+
+  // Correct missing NTP and reading list virtualURLs and titles. Native session
+  // restoration may not properly restore these items.
+  virtual void CleanupNativeRestoreURLs(web::WebState* web_state) const;
 };
 
 }  // namespace web

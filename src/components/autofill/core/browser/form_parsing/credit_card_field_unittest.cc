@@ -7,12 +7,13 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
 #include "components/autofill/core/browser/form_parsing/parsing_test_utils.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -23,6 +24,58 @@
 using base::ASCIIToUTF16;
 
 namespace autofill {
+namespace {
+// Returns a vector of numeric months with a leading 0 and an additional "MM"
+// entry.
+std::vector<SelectOption> GetMonths() {
+  std::vector<std::string> months{"MM", "01", "02", "03", "04", "05", "06",
+                                  "07", "08", "09", "10", "11", "12"};
+  std::vector<SelectOption> options;
+  for (const std::string& month : months)
+    options.push_back({base::ASCIIToUTF16(month), base::ASCIIToUTF16(month)});
+  return options;
+}
+
+// Returns a vector of 10 consecutive years starting today in $ digit format
+// and an additional "YYYY" entry.
+std::vector<SelectOption> Get4DigitYears() {
+  std::vector<SelectOption> years = {{u"YYYY", u"YYYY"}};
+
+  const base::Time time_now = AutofillClock::Now();
+  base::Time::Exploded time_exploded;
+  time_now.UTCExplode(&time_exploded);
+  const int kYearsToAdd = 10;
+
+  for (auto year = time_exploded.year; year < time_exploded.year + kYearsToAdd;
+       year++) {
+    std::u16string yyyy = base::ASCIIToUTF16(base::NumberToString(year));
+    years.push_back({yyyy, yyyy});
+  }
+
+  return years;
+}
+
+// Returns a vector of 10 consecutive years starting today in 2 digit format
+// and an additional "YY" entry.
+std::vector<SelectOption> Get2DigitYears() {
+  std::vector<SelectOption> years = Get4DigitYears();
+  for (SelectOption& option : years) {
+    DCHECK_EQ(option.content.size(), 4u);
+    DCHECK_EQ(option.value.size(), 4u);
+    option.content = option.content.substr(2);
+    option.value = option.value.substr(2);
+  }
+  return years;
+}
+
+// Adds prefixes and postfixes to options and labels.
+std::vector<SelectOption> WithNoise(std::vector<SelectOption> options) {
+  for (SelectOption& option : options) {
+    option.content = base::StrCat({u"bla", option.content, u"123"});
+    option.value = base::StrCat({u"bla", option.content, u"123"});
+  }
+  return options;
+}
 
 class CreditCardFieldTestBase : public FormFieldTestBase {
  public:
@@ -52,31 +105,6 @@ class CreditCardFieldTestBase : public FormFieldTestBase {
       }
     }
     TestClassificationExpectations();
-  }
-
-  // Returns a vector of numeric months with a leading 0 and an additional "MM"
-  // entry.
-  std::vector<std::string> GetMonths() {
-    return std::vector<std::string>{"MM", "01", "02", "03", "04", "05", "06",
-                                    "07", "08", "09", "10", "11", "12"};
-  }
-
-  // Returns a vector of 10 consecutive years starting today in 2 digit format
-  // and an additional "YY" entry.
-  std::vector<std::string> Get2DigitYears() {
-    std::vector<std::string> years = {"YY"};
-
-    const base::Time time_now = AutofillClock::Now();
-    base::Time::Exploded time_exploded;
-    time_now.UTCExplode(&time_exploded);
-    const int kYearsToAdd = 10;
-
-    for (auto year = time_exploded.year;
-         year < time_exploded.year + kYearsToAdd; year++) {
-      years.push_back(base::NumberToString(year).substr(2));
-    }
-
-    return years;
   }
 };
 
@@ -119,16 +147,49 @@ TEST_F(CreditCardFieldTest, ParseMiniumCreditCard) {
   ClassifyAndVerify(ParseResult::PARSED);
 }
 
-TEST_F(CreditCardFieldTest, ParseMinimumCreditCardWithExpiryDateOptions) {
+struct CreditCardFieldYearTestCase {
+  bool with_noise;
+  ServerFieldType expected_type;
+};
+
+std::vector<SelectOption> MakeOptionVector(
+    const CreditCardFieldYearTestCase& test_case) {
+  std::vector<SelectOption> options;
+  if (test_case.expected_type == CREDIT_CARD_EXP_2_DIGIT_YEAR) {
+    options = Get2DigitYears();
+  } else {
+    options = Get4DigitYears();
+  }
+  if (test_case.with_noise) {
+    options = WithNoise(options);
+  }
+  return options;
+}
+
+class CreditCardFieldYearTest
+    : public CreditCardFieldTestBase,
+      public testing::TestWithParam<CreditCardFieldYearTestCase> {};
+
+TEST_P(CreditCardFieldYearTest, ParseMinimumCreditCardWithExpiryDateOptions) {
   AddTextFormFieldData("card_number", "Card Number", CREDIT_CARD_NUMBER);
   AddSelectOneFormFieldData("Random Label", "Random Label", GetMonths(),
-                            GetMonths(), CREDIT_CARD_EXP_MONTH);
-  AddSelectOneFormFieldDataWithLength("Random Label", "Random Label", 2,
-                                      Get2DigitYears(), Get2DigitYears(),
-                                      CREDIT_CARD_EXP_2_DIGIT_YEAR);
+                            CREDIT_CARD_EXP_MONTH);
+  AddSelectOneFormFieldDataWithLength(
+      "Random Label", "Random Label",
+      GetParam().expected_type == CREDIT_CARD_EXP_2_DIGIT_YEAR ? 2 : 4,
+      MakeOptionVector(GetParam()), GetParam().expected_type);
 
   ClassifyAndVerify(ParseResult::PARSED);
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    CreditCardFieldYearTest,
+    testing::Values(
+        CreditCardFieldYearTestCase{false, CREDIT_CARD_EXP_2_DIGIT_YEAR},
+        CreditCardFieldYearTestCase{false, CREDIT_CARD_EXP_4_DIGIT_YEAR},
+        CreditCardFieldYearTestCase{true, CREDIT_CARD_EXP_2_DIGIT_YEAR},
+        CreditCardFieldYearTestCase{true, CREDIT_CARD_EXP_4_DIGIT_YEAR}));
 
 TEST_F(CreditCardFieldTest, ParseFullCreditCard) {
   AddTextFormFieldData("name_on_card", "Name on Card", CREDIT_CARD_NAME_FULL);
@@ -137,7 +198,7 @@ TEST_F(CreditCardFieldTest, ParseFullCreditCard) {
   AddTextFormFieldData("ccyear", "Exp Year", CREDIT_CARD_EXP_4_DIGIT_YEAR);
   AddTextFormFieldData("verification", "Verification",
                        CREDIT_CARD_VERIFICATION_CODE);
-  AddSelectOneFormFieldData("Card Type", "card_type", {"visa"}, {"visa"},
+  AddSelectOneFormFieldData("Card Type", "card_type", {{u"visa", u"visa"}},
                             CREDIT_CARD_TYPE);
 
   ClassifyAndVerify(ParseResult::PARSED);
@@ -453,54 +514,35 @@ TEST_F(CreditCardFieldTest, ParseNonConsecutiveCvc) {
 }
 
 TEST_F(CreditCardFieldTest, ParseCreditCardContextualNameNotCard) {
-  base::test::ScopedFeatureList enabled;
-  enabled.InitWithFeatures(
-      {features::kAutofillStrictContextualCardNameConditions}, {});
-
   AddTextFormFieldData("accNum", "Account ID", UNKNOWN_TYPE);
   AddTextFormFieldData("name", "Account Name", UNKNOWN_TYPE);
   AddTextFormFieldData("toAcctNum", "Move to Account ID", UNKNOWN_TYPE);
-
   ClassifyAndVerify(ParseResult::NOT_PARSED);
 }
 
 TEST_F(CreditCardFieldTest, ParseCreditCardContextualNameNotCardAcctMatch) {
-  base::test::ScopedFeatureList enabled;
-  enabled.InitWithFeatures(
-      {features::kAutofillStrictContextualCardNameConditions}, {});
-
   // TODO(crbug.com/1167977): This should be not parseable, but waiting before
   // changing kNameOnCardRe to use word boundaries.
   AddTextFormFieldData("acctNum", "Account ID", CREDIT_CARD_NUMBER);
   AddTextFormFieldData("acctName", "Account Name", CREDIT_CARD_NAME_FULL);
   AddTextFormFieldData("toAcctNum", "Move to Account ID", CREDIT_CARD_NUMBER);
-
   ClassifyAndVerify(ParseResult::PARSED);
 }
 
 TEST_F(CreditCardFieldTest, ParseCreditCardContextualNameWithExpiration) {
-  base::test::ScopedFeatureList enabled;
-  enabled.InitWithFeatures(
-      {features::kAutofillStrictContextualCardNameConditions}, {});
-
   AddTextFormFieldData("acctNum", "Account ID", CREDIT_CARD_NUMBER);
   AddTextFormFieldData("name", "Account Name", CREDIT_CARD_NAME_FULL);
   AddTextFormFieldData("ccmonth", "Exp Month", CREDIT_CARD_EXP_MONTH);
   AddTextFormFieldData("ccyear", "Exp Year", CREDIT_CARD_EXP_4_DIGIT_YEAR);
-
   ClassifyAndVerify(ParseResult::PARSED);
 }
 
 TEST_F(CreditCardFieldTest, ParseCreditCardContextualNameWithVerification) {
-  base::test::ScopedFeatureList enabled;
-  enabled.InitWithFeatures(
-      {features::kAutofillStrictContextualCardNameConditions}, {});
-
   AddTextFormFieldData("acctNum", "Account ID", CREDIT_CARD_NUMBER);
   AddTextFormFieldData("name", "Account Name", CREDIT_CARD_NAME_FULL);
   AddTextFormFieldData("cvv", "Verification", CREDIT_CARD_VERIFICATION_CODE);
-
   ClassifyAndVerify(ParseResult::PARSED);
 }
 
+}  // namespace
 }  // namespace autofill

@@ -7,6 +7,8 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../../components/helpers/helpers.js';
 import * as LitHtml from '../../../lit-html/lit-html.js';
 
+import colorSwatchStyles from './colorSwatch.css.js';
+
 const UIStrings = {
   /**
   *@description Icon element title in Color Swatch of the inline editor in the Styles tab
@@ -16,22 +18,27 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/inline_editor/ColorSwatch.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
-const getStyleSheets = ComponentHelpers.GetStylesheet.getStyleSheets;
-
-interface KeyboardModifiedEvent extends Event {
-  shiftKey: boolean;
-}
-
 export class FormatChangedEvent extends Event {
+  static readonly eventName = 'formatchanged';
+
   data: {format: string, text: string|null};
 
   constructor(format: string, text: string|null) {
-    super('formatchanged', {});
+    super(FormatChangedEvent.eventName, {});
     this.data = {format, text};
   }
 }
 
+export class ClickEvent extends Event {
+  static readonly eventName = 'swatchclick';
+
+  constructor() {
+    super(ClickEvent.eventName, {});
+  }
+}
+
 export class ColorSwatch extends HTMLElement {
+  static readonly litTagName = LitHtml.literal`devtools-color-swatch`;
   private readonly shadow = this.attachShadow({mode: 'open'});
   private tooltip: string = i18nString(UIStrings.shiftclickToChangeColorFormat);
   private text: string|null = null;
@@ -41,7 +48,7 @@ export class ColorSwatch extends HTMLElement {
   constructor() {
     super();
     this.shadow.adoptedStyleSheets = [
-      ...getStyleSheets('ui/legacy/components/inline_editor/colorSwatch.css', {enableLegacyPatching: false}),
+      colorSwatchStyles,
     ];
   }
 
@@ -111,7 +118,7 @@ export class ColorSwatch extends HTMLElement {
     // Note also that whitespace between nodes is removed on purpose to avoid pushing these elements apart. Do not
     // re-format the HTML code.
     LitHtml.render(
-      LitHtml.html`<span class="color-swatch" title="${this.tooltip}"><span class="color-swatch-inner"
+      LitHtml.html`<span class="color-swatch" title=${this.tooltip}><span class="color-swatch-inner"
         style="background-color: ${this.text};"
         @click=${this.onClick}
         @mousedown=${this.consume}
@@ -120,7 +127,7 @@ export class ColorSwatch extends HTMLElement {
     // clang-format on
   }
 
-  private onClick(e: KeyboardModifiedEvent): void {
+  private onClick(e: KeyboardEvent): void {
     e.stopPropagation();
 
     if (e.shiftKey) {
@@ -128,7 +135,7 @@ export class ColorSwatch extends HTMLElement {
       return;
     }
 
-    this.dispatchEvent(new Event('swatch-click'));
+    this.dispatchEvent(new ClickEvent());
   }
 
   private consume(e: Event): void {
@@ -157,11 +164,14 @@ export class ColorSwatch extends HTMLElement {
 
 ComponentHelpers.CustomElements.defineComponent('devtools-color-swatch', ColorSwatch);
 
-
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLElementTagNameMap {
     'devtools-color-swatch': ColorSwatch;
+  }
+
+  interface HTMLElementEventMap {
+    [FormatChangedEvent.eventName]: FormatChangedEvent;
+    [ClickEvent.eventName]: Event;
   }
 }
 

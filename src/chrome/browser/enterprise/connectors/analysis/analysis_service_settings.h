@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/service_provider_config.h"
@@ -31,6 +32,11 @@ class AnalysisServiceSettings {
 
   // Get the block_until_verdict setting if the settings are valid.
   bool ShouldBlockUntilVerdict() const;
+
+  // Get the custom message/learn more URL. Returns absl::nullopt if the
+  // settings are invalid or if the message/URL are empty.
+  absl::optional<std::u16string> GetCustomMessage(const std::string& tag);
+  absl::optional<GURL> GetLearnMoreUrl(const std::string& tag);
 
   std::string service_provider_name() const { return service_provider_name_; }
 
@@ -75,7 +81,8 @@ class AnalysisServiceSettings {
   // The service provider matching the name given in a Connector policy. nullptr
   // implies that a corresponding service provider doesn't exist and that these
   // settings are not valid.
-  const ServiceProviderConfig::ServiceProvider* service_provider_ = nullptr;
+  raw_ptr<const ServiceProviderConfig::ServiceProvider> service_provider_ =
+      nullptr;
 
   // The URL matcher created from the patterns set in the analysis policy. The
   // condition set IDs returned after matching against a URL can be used to
@@ -100,8 +107,9 @@ class AnalysisServiceSettings {
   bool block_large_files_ = false;
   bool block_unsupported_file_types_ = false;
   size_t minimum_data_size_ = 100;
-  std::u16string custom_message_text_;
-  GURL custom_message_learn_more_url_;
+  // A map from tag (dlp, malware, etc) to the custom message and "learn more"
+  // link associated with it.
+  std::map<std::string, CustomMessageData> custom_message_data_;
   std::string service_provider_name_;
 };
 
